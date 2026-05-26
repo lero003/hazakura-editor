@@ -32,8 +32,8 @@ Primary outcome: one coherent improvement per run, verified, documented, committ
 Choose the first useful slice that is both small and verifiable.
 
 1. File safety and close/quit behavior:
-   - app/window quit confirmation for dirty tabs
    - Cmd+W / Cmd+O / folder-open shortcuts
+   - app/window close confirmation manual-smoke follow-up if the new flow regresses
    - save failure recovery wording
    - line ending and trailing newline preservation research or implementation
 2. Editor reliability:

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-05-26
+Last reviewed: 2026-05-27
 
 `hazakura-note` は、Markdownを中心に安全にテキストを読む・書く・比べるための軽量エディタです。
 
@@ -31,6 +31,7 @@ Last reviewed: 2026-05-26
 - System / Light / Dark theme switching with persisted selection
 - Recent workspace, open tabs, and active tab restoration after restart
 - Rust-side binary-looking file rejection, large-file warning, editing size limit, and atomic save helper
+- Window close requests are stopped when open tabs have unsaved changes, with Save All / Discard All / Cancel choices
 
 ## Canonical Docs
 

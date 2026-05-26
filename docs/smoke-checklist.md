@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Manual prototype checks
 Authority: Medium
-Last reviewed: 2026-05-26
+Last reviewed: 2026-05-27
 
 Use this checklist after changes to file opening, workspace listing, tabs, saving, preview rendering, theme handling, workspace restoration, search, or save-conflict handling.
 
@@ -56,6 +56,17 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 4. Confirm the app offers Save, Discard, and Cancel.
 5. Cancel once and confirm the current tab stays open.
 6. Repeat and confirm Discard closes the tab without writing the unsaved text.
+
+## App / Window Close Confirmation
+
+1. Open two throwaway Markdown files.
+2. Edit both files without saving.
+3. Request app or window close from the window close control or Cmd+Q.
+4. Confirm the app stays open and offers Save All, Discard All, and Cancel.
+5. Cancel once and confirm both dirty tabs remain open with their unsaved text.
+6. Request close again and confirm Discard All exits without writing the unsaved text.
+7. Repeat with fresh edits and confirm Save All writes both files before closing.
+8. If one dirty file has an external save conflict, confirm Save All stops the close and leaves the app open.
 
 ## Theme Switching
 

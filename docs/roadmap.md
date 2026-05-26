@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Development sequence
 Authority: Medium
-Last reviewed: 2026-05-26
+Last reviewed: 2026-05-27
 
 ## Quality Strategy
 
@@ -75,6 +75,7 @@ Status: Completed on 2026-05-26
 - Active-file search
 - 外部変更衝突後の Reopen from disk / Close without saving / Keep editing
 - dirty tab close時の Save / Discard / Cancel 再確認
+- app/window close時の dirty tab 向け Save All / Discard All / Cancel 再確認
 - CodeMirror本文とpreview/statusの再読み込み同期
 - System / Light / Dark の復元と可読性確認
 - Rust側 file I/O / workspace listing / 除外 / バイナリ拒否 / 大容量境界テストの拡充

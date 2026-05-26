@@ -1,5 +1,9 @@
 import { invoke } from "@tauri-apps/api/core";
 import { confirm, open } from "@tauri-apps/plugin-dialog";
+import {
+  getCurrentWindow,
+  type CloseRequestedEvent,
+} from "@tauri-apps/api/window";
 
 export type TextFileDocument = {
   path: string;
@@ -76,6 +80,16 @@ export async function confirmDiscardUnsavedChanges(): Promise<boolean> {
       kind: "warning",
     },
   );
+}
+
+export async function closeCurrentWindow(): Promise<void> {
+  await getCurrentWindow().close();
+}
+
+export async function onCurrentWindowCloseRequested(
+  handler: (event: CloseRequestedEvent) => void | Promise<void>,
+): Promise<() => void> {
+  return getCurrentWindow().onCloseRequested(handler);
 }
 
 export async function openTextFile(path: string): Promise<TextFileDocument> {

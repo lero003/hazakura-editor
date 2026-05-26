@@ -2,7 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import EditorPane from "./components/EditorPane";
 import PreviewPane from "./components/PreviewPane";
 import {
+  closeCurrentWindow,
   listWorkspaceTree,
+  onCurrentWindowCloseRequested,
   openTextFile,
   pickMarkdownFile,
   pickWorkspaceFolder,
@@ -65,6 +67,7 @@ export default function App() {
   const [pendingCloseTabId, setPendingCloseTabId] = useState<string | null>(
     null,
   );
+  const [pendingAppClose, setPendingAppClose] = useState(false);
   const [findQuery, setFindQuery] = useState("");
   const [activeMatchIndex, setActiveMatchIndex] = useState(0);
   const [themePreference, setThemePreference] = useState<ThemePreference>(() =>
@@ -83,6 +86,8 @@ export default function App() {
     () => tabs.find((tab) => tab.id === pendingCloseTabId) ?? null,
     [pendingCloseTabId, tabs],
   );
+  const dirtyTabs = useMemo(() => tabs.filter(isDirty), [tabs]);
+  const dirtyTabCount = dirtyTabs.length;
   const resolvedTheme: ResolvedTheme =
     themePreference === "system" ? systemTheme : themePreference;
   const activeContents = activeTab?.contents ?? welcomeContents;
@@ -95,6 +100,7 @@ export default function App() {
     [activeContents, findQuery],
   );
   const activeFindMatch = findMatches[activeMatchIndex] ?? null;
+  const allowWindowCloseRef = useRef(false);
 
   const openFilePath = useCallback(
     async (path: string) => {
@@ -299,6 +305,34 @@ export default function App() {
     }
   }, [closeTabNow, pendingCloseTabId, saveTabById]);
 
+  const saveAllAndCloseWindow = useCallback(async () => {
+    if (dirtyTabs.length === 0) {
+      allowWindowCloseRef.current = true;
+      await closeCurrentWindow();
+      return;
+    }
+
+    setStatus("Saving before close...");
+
+    for (const tab of dirtyTabs) {
+      const saved = await saveTabById(tab.id);
+
+      if (!saved) {
+        setPendingAppClose(false);
+        setStatus("Close stopped");
+        return;
+      }
+    }
+
+    allowWindowCloseRef.current = true;
+    await closeCurrentWindow();
+  }, [dirtyTabs, saveTabById]);
+
+  const discardAllAndCloseWindow = useCallback(async () => {
+    allowWindowCloseRef.current = true;
+    await closeCurrentWindow();
+  }, []);
+
   const reopenTabFromDisk = useCallback(
     async (tabId: string) => {
       const tab = tabs.find((candidate) => candidate.id === tabId);
@@ -471,6 +505,33 @@ export default function App() {
       setActiveMatchIndex(Math.max(findMatches.length - 1, 0));
     }
   }, [activeMatchIndex, findMatches.length]);
+
+  useEffect(() => {
+    let cancelled = false;
+    let unlisten: (() => void) | null = null;
+
+    void onCurrentWindowCloseRequested((event) => {
+      if (allowWindowCloseRef.current || dirtyTabCount === 0) {
+        return;
+      }
+
+      event.preventDefault();
+      setPendingAppClose(true);
+      setStatus("Close needs confirmation");
+    }).then((nextUnlisten) => {
+      if (cancelled) {
+        nextUnlisten();
+        return;
+      }
+
+      unlisten = nextUnlisten;
+    });
+
+    return () => {
+      cancelled = true;
+      unlisten?.();
+    };
+  }, [dirtyTabCount]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -732,6 +793,34 @@ export default function App() {
           </section>
         </div>
       ) : null}
+
+      {pendingAppClose ? (
+        <div className="modal-backdrop" role="presentation">
+          <section
+            aria-labelledby="close-app-title"
+            aria-modal="true"
+            className="close-dialog"
+            role="dialog"
+          >
+            <h2 id="close-app-title">Unsaved changes</h2>
+            <p>
+              {formatDirtyTabCount(dirtyTabCount)} must be saved or discarded
+              before closing hazakura-note.
+            </p>
+            <div className="dialog-actions">
+              <button type="button" onClick={saveAllAndCloseWindow}>
+                Save All
+              </button>
+              <button type="button" onClick={discardAllAndCloseWindow}>
+                Discard All
+              </button>
+              <button type="button" onClick={() => setPendingAppClose(false)}>
+                Cancel
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </main>
   );
 }
@@ -901,6 +990,10 @@ function formatBytes(bytes: number): string {
   }
 
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatDirtyTabCount(count: number): string {
+  return count === 1 ? "1 unsaved tab" : `${count} unsaved tabs`;
 }
 
 function saveStatusLabel(tab: EditorTab | null, dirty: boolean): string {
