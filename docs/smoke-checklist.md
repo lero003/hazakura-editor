@@ -97,17 +97,18 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 ## Active File Search
 
 1. Open a file containing a repeated test word.
-2. Type the word into the Find field or use Cmd+F and type it.
-3. Confirm the match count appears.
-4. Confirm all visible matches are highlighted and the active match is visually stronger than the rest.
-5. Use Prev and Next and confirm the stronger active highlight and editor selection move together.
-6. With the Find field focused, press Enter and Shift+Enter and confirm the active match moves next and previous.
-7. Press Escape and confirm the Find field clears and keyboard focus returns to the editor.
-8. Search for a missing word and confirm highlights clear and the UI reports no matches without changing the file.
-9. Enable Case and confirm case mismatches are not counted.
-10. Enable Word and confirm substrings inside longer words are not counted.
-11. Enable Regex, enter a valid expression, and confirm matches are highlighted.
-12. Enter an invalid regex such as `[` and confirm the UI reports invalid regex without changing the file or crashing.
+2. Press Cmd+F and confirm the app's Find overlay opens without opening CodeMirror's built-in search panel.
+3. Type the word into the Find field.
+4. Confirm the match count appears.
+5. Confirm all visible matches are highlighted and the active match is visually stronger than the rest.
+6. Use Prev and Next and confirm the stronger active highlight and editor selection move together.
+7. With the Find field focused, press Enter and Shift+Enter and confirm the active match moves next and previous.
+8. Press Escape and confirm the Find overlay closes, highlights clear, and keyboard focus returns to the editor.
+9. Search for a missing word and confirm highlights clear and the UI reports no matches without changing the file.
+10. Enable Case and confirm case mismatches are not counted.
+11. Enable Word and confirm substrings inside longer words are not counted.
+12. Enable Regex, enter a valid expression, and confirm matches are highlighted.
+13. Enter an invalid regex such as `[` and confirm the UI reports invalid regex without changing the file or crashing.
 
 ## Editor Navigation And Display Settings
 

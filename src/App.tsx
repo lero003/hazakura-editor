@@ -123,6 +123,7 @@ export default function App() {
   );
   const [pendingAppClose, setPendingAppClose] = useState(false);
   const [findQuery, setFindQuery] = useState("");
+  const [findVisible, setFindVisible] = useState(false);
   const [searchOptions, setSearchOptions] = useState<SearchOptions>({
     caseSensitive: false,
     wholeWord: false,
@@ -909,6 +910,7 @@ export default function App() {
   const closeFindAndFocusEditor = useCallback(() => {
     setFindQuery("");
     setActiveMatchIndex(0);
+    setFindVisible(false);
     editorPaneRef.current?.focus();
     setStatus("Find closed");
   }, []);
@@ -1183,6 +1185,12 @@ export default function App() {
         return;
       }
 
+      if (event.key === "Escape" && findVisible) {
+        event.preventDefault();
+        closeFindAndFocusEditor();
+        return;
+      }
+
       if (
         (event.metaKey || event.ctrlKey) &&
         event.shiftKey &&
@@ -1207,8 +1215,11 @@ export default function App() {
 
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "f") {
         event.preventDefault();
-        findInputRef.current?.focus();
-        findInputRef.current?.select();
+        setFindVisible(true);
+        setTimeout(() => {
+          findInputRef.current?.focus();
+          findInputRef.current?.select();
+        }, 50);
         return;
       }
 
@@ -1237,16 +1248,18 @@ export default function App() {
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown, true);
 
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown, true);
     };
   }, [
     activeTabId,
     cancelPendingAppClose,
     cancelPendingTabClose,
     createNewFile,
+    findVisible,
+    closeFindAndFocusEditor,
     modalOpen,
     openFile,
     openWorkspace,
@@ -1271,134 +1284,140 @@ export default function App() {
   return (
     <main className="app-shell">
       <header className="top-bar">
-        <div className="brand-block">
-          <span className="app-name">hazakura-note</span>
-          <span className="app-subtitle">Markdown-safe editor prototype</span>
-        </div>
-        <div className="toolbar" role="toolbar" aria-label="Workspace actions">
-          <button type="button" onClick={createNewFile}>
-            New File
-          </button>
-          <button type="button" onClick={openWorkspace}>
-            Open Folder
-          </button>
-          <button type="button" onClick={openFile}>
-            Open
-          </button>
-          <button
-            type="button"
-            onClick={saveActiveTab}
-            disabled={!activeTab || !activeDirty}
-          >
-            Save
-          </button>
-          <button
-            type="button"
-            onClick={() => void saveActiveTabAs()}
-            disabled={!activeTab}
-          >
-            Save As
-          </button>
-          <label className="line-ending-control">
-            <span>Line</span>
-            <select
-              aria-label="Line endings"
-              value={activeTab?.line_ending ?? "lf"}
+        <div className="top-bar-left">
+          <div className="brand-block">
+            <span className="app-name">hazakura-note</span>
+            <span className="app-subtitle">Markdown-safe editor prototype</span>
+          </div>
+          <div className="file-actions-group" role="group" aria-label="File actions">
+            <button type="button" onClick={createNewFile}>
+              New File
+            </button>
+            <button type="button" onClick={openWorkspace}>
+              Open Folder
+            </button>
+            <button type="button" onClick={openFile}>
+              Open
+            </button>
+            <button
+              type="button"
+              onClick={saveActiveTab}
+              disabled={!activeTab || !activeDirty}
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              onClick={() => void saveActiveTabAs()}
               disabled={!activeTab}
-              onChange={(event) =>
-                convertActiveLineEnding(
-                  event.target.value as EditableLineEnding,
-                )
-              }
             >
-              <option value="lf">LF</option>
-              <option value="crlf">CRLF</option>
-            </select>
-          </label>
-          <label className="toggle-switch">
-            <input
-              type="checkbox"
-              checked={previewVisible}
-              onChange={(event) => setPreviewVisible(event.target.checked)}
-            />
-            <span className="slider"></span>
-            <span>Preview</span>
-          </label>
-          <label className="toggle-switch">
-            <input
-              type="checkbox"
-              checked={editorSettings.wrapLines}
-              onChange={(event) =>
-                setEditorSettings((current) => ({
-                  ...current,
-                  wrapLines: event.target.checked,
-                }))
-              }
-            />
-            <span className="slider"></span>
-            <span>Wrap</span>
-          </label>
-          <label className="toggle-switch">
-            <input
-              type="checkbox"
-              checked={editorSettings.showInvisibles}
-              onChange={(event) =>
-                setEditorSettings((current) => ({
-                  ...current,
-                  showInvisibles: event.target.checked,
-                }))
-              }
-            />
-            <span className="slider"></span>
-            <span>Invisibles</span>
-          </label>
-          <label className="number-control">
-            <span>Font</span>
-            <input
-              aria-label="Editor font size"
-              type="number"
-              min="12"
-              max="22"
-              value={editorSettings.fontSize}
-              onChange={(event) =>
-                setEditorSettings((current) => ({
-                  ...current,
-                  fontSize: clampNumber(Number(event.target.value), 12, 22, 14),
-                }))
-              }
-            />
-          </label>
-          <label className="line-ending-control">
-            <span>Tab</span>
-            <select
-              aria-label="Tab size"
-              value={editorSettings.tabSize}
-              onChange={(event) =>
-                setEditorSettings((current) => ({
-                  ...current,
-                  tabSize: clampNumber(Number(event.target.value), 2, 8, 2),
-                }))
-              }
-            >
-              <option value={2}>2</option>
-              <option value={4}>4</option>
-              <option value={8}>8</option>
-            </select>
-          </label>
-          <label className="theme-control">
-            <span>Theme</span>
-            <select
-              aria-label="Theme"
-              value={themePreference}
-              onChange={(event) =>
-                setThemePreference(event.target.value as ThemePreference)
-              }
-            >
-              <option value="system">System</option>
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
-            </select>
-          </label>
+              Save As
+            </button>
+          </div>
+        </div>
+        <div className="top-bar-right">
+          <div className="editor-actions-group" role="group" aria-label="Editor settings">
+            <label className="line-ending-control">
+              <span>Line</span>
+              <select
+                aria-label="Line endings"
+                value={activeTab?.line_ending ?? "lf"}
+                disabled={!activeTab}
+                onChange={(event) =>
+                  convertActiveLineEnding(
+                    event.target.value as EditableLineEnding,
+                  )
+                }
+              >
+                <option value="lf">LF</option>
+                <option value="crlf">CRLF</option>
+              </select>
+            </label>
+            <label className="toggle-switch">
+              <input
+                type="checkbox"
+                checked={previewVisible}
+                onChange={(event) => setPreviewVisible(event.target.checked)}
+              />
+              <span className="slider"></span>
+              <span>Preview</span>
+            </label>
+            <label className="toggle-switch">
+              <input
+                type="checkbox"
+                checked={editorSettings.wrapLines}
+                onChange={(event) =>
+                  setEditorSettings((current) => ({
+                    ...current,
+                    wrapLines: event.target.checked,
+                  }))
+                }
+              />
+              <span className="slider"></span>
+              <span>Wrap</span>
+            </label>
+            <label className="toggle-switch">
+              <input
+                type="checkbox"
+                checked={editorSettings.showInvisibles}
+                onChange={(event) =>
+                  setEditorSettings((current) => ({
+                    ...current,
+                    showInvisibles: event.target.checked,
+                  }))
+                }
+              />
+              <span className="slider"></span>
+              <span>Invisibles</span>
+            </label>
+            <label className="number-control">
+              <span>Font</span>
+              <input
+                aria-label="Editor font size"
+                type="number"
+                min="12"
+                max="22"
+                value={editorSettings.fontSize}
+                onChange={(event) =>
+                  setEditorSettings((current) => ({
+                    ...current,
+                    fontSize: clampNumber(Number(event.target.value), 12, 22, 14),
+                  }))
+                }
+              />
+            </label>
+            <label className="line-ending-control">
+              <span>Tab</span>
+              <select
+                aria-label="Tab size"
+                value={editorSettings.tabSize}
+                onChange={(event) =>
+                  setEditorSettings((current) => ({
+                    ...current,
+                    tabSize: clampNumber(Number(event.target.value), 2, 8, 2),
+                  }))
+                }
+              >
+                <option value={2}>2</option>
+                <option value={4}>4</option>
+                <option value={8}>8</option>
+              </select>
+            </label>
+            <label className="theme-control">
+              <span>Theme</span>
+              <select
+                aria-label="Theme"
+                value={themePreference}
+                onChange={(event) =>
+                  setThemePreference(event.target.value as ThemePreference)
+                }
+              >
+                <option value="system">System</option>
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+              </select>
+            </label>
+          </div>
         </div>
       </header>
 
@@ -1449,113 +1468,128 @@ export default function App() {
         </div>
       </section>
 
-      <section className="find-row" aria-label="Find in active file">
-        <label className="find-control">
-          <span>Find</span>
-          <input
-            ref={findInputRef}
-            type="search"
-            value={findQuery}
-            onChange={(event) => setFindQuery(event.target.value)}
-            onKeyDown={handleFindKeyDown}
-            placeholder="Search active file"
-          />
-        </label>
-        <div className="find-actions">
-          <button
-            type="button"
-            onClick={showPreviousMatch}
-            disabled={findMatches.length === 0}
-          >
-            Prev
-          </button>
-          <button
-            type="button"
-            onClick={showNextMatch}
-            disabled={findMatches.length === 0}
-          >
-            Next
-          </button>
-          <span className="find-count">
-            {findQuery
-              ? invalidRegex
-                ? "Invalid regex"
-                : findMatches.length > 0
-                ? `${activeMatchIndex + 1} / ${findMatches.length}`
-                : "No matches"
-              : "No search"}
-          </span>
-        </div>
-        <div className="find-options" aria-label="Find options">
-          <label className="toggle-control">
+      {findVisible ? (
+        <section className="find-row" aria-label="Find in active file">
+          <label className="find-control">
+            <span>Find</span>
             <input
-              type="checkbox"
-              checked={searchOptions.caseSensitive}
-              onChange={(event) =>
-                setSearchOptions((current) => ({
-                  ...current,
-                  caseSensitive: event.target.checked,
-                }))
-              }
+              ref={findInputRef}
+              type="search"
+              value={findQuery}
+              onChange={(event) => setFindQuery(event.target.value)}
+              onKeyDown={handleFindKeyDown}
+              placeholder="Search active file"
             />
-            <span>Case</span>
           </label>
-          <label className="toggle-control">
+          <div className="find-actions">
+            <button
+              type="button"
+              onClick={showPreviousMatch}
+              disabled={findMatches.length === 0}
+            >
+              Prev
+            </button>
+            <button
+              type="button"
+              onClick={showNextMatch}
+              disabled={findMatches.length === 0}
+            >
+              Next
+            </button>
+            <span className="find-count">
+              {findQuery
+                ? invalidRegex
+                  ? "Invalid regex"
+                  : findMatches.length > 0
+                  ? `${activeMatchIndex + 1} / ${findMatches.length}`
+                  : "No matches"
+                : "No search"}
+            </span>
+          </div>
+          <div className="find-options" aria-label="Find options">
+            <label className="toggle-control">
+              <input
+                type="checkbox"
+                checked={searchOptions.caseSensitive}
+                onChange={(event) =>
+                  setSearchOptions((current) => ({
+                    ...current,
+                    caseSensitive: event.target.checked,
+                  }))
+                }
+              />
+              <span>Case</span>
+            </label>
+            <label className="toggle-control">
+              <input
+                type="checkbox"
+                checked={searchOptions.wholeWord}
+                onChange={(event) =>
+                  setSearchOptions((current) => ({
+                    ...current,
+                    wholeWord: event.target.checked,
+                  }))
+                }
+              />
+              <span>Word</span>
+            </label>
+            <label className="toggle-control">
+              <input
+                type="checkbox"
+                checked={searchOptions.regex}
+                onChange={(event) =>
+                  setSearchOptions((current) => ({
+                    ...current,
+                    regex: event.target.checked,
+                  }))
+                }
+              />
+              <span>Regex</span>
+            </label>
+          </div>
+          <div className="goto-control">
+            <label htmlFor="go-to-line-input">Line</label>
             <input
-              type="checkbox"
-              checked={searchOptions.wholeWord}
-              onChange={(event) =>
-                setSearchOptions((current) => ({
-                  ...current,
-                  wholeWord: event.target.checked,
-                }))
-              }
-            />
-            <span>Word</span>
-          </label>
-          <label className="toggle-control">
-            <input
-              type="checkbox"
-              checked={searchOptions.regex}
-              onChange={(event) =>
-                setSearchOptions((current) => ({
-                  ...current,
-                  regex: event.target.checked,
-                }))
-              }
-            />
-            <span>Regex</span>
-          </label>
-        </div>
-        <div className="goto-control">
-          <label htmlFor="go-to-line-input">Line</label>
-          <input
-            aria-label="Go to line"
-            id="go-to-line-input"
-            type="number"
-            min="1"
-            value={goToLineValue}
-            onChange={(event) => setGoToLineValue(event.target.value)}
-            onKeyDown={(event) => {
-              if (isImeComposing(event.nativeEvent)) {
-                return;
-              }
+              aria-label="Go to line"
+              id="go-to-line-input"
+              type="number"
+              min="1"
+              value={goToLineValue}
+              onChange={(event) => setGoToLineValue(event.target.value)}
+              onKeyDown={(event) => {
+                if (isImeComposing(event.nativeEvent)) {
+                  return;
+                }
 
-              if (event.key === "Enter") {
-                event.preventDefault();
-                goToLine();
-              }
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  goToLine();
+                }
+              }}
+            />
+            <button aria-label="Go to line" type="button" onClick={goToLine}>
+              Go
+            </button>
+          </div>
+          <span className="shortcut-hint">
+            Cmd+N new · Cmd+O open · Cmd+Shift+O folder · Cmd+W close · Cmd+F find · Cmd+S save
+            · Cmd+Shift+S save as
+          </span>
+          <button
+            type="button"
+            className="find-close"
+            onClick={() => {
+              setFindVisible(false);
+              editorPaneRef.current?.focus();
             }}
-          />
-          <button aria-label="Go to line" type="button" onClick={goToLine}>
-            Go
+            aria-label="Close search"
+          >
+            <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 1L7 7M7 1L1 7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+            </svg>
           </button>
-        </div>
-        <span className="shortcut-hint">
-          Cmd+N new · Cmd+O open · Cmd+Shift+O folder · Cmd+W close · Cmd+F find · Cmd+S save
-          · Cmd+Shift+S save as
-        </span>
-      </section>
+        </section>
+      ) : null}
 
       <div className="message-row">
         {activeDraft && activeTab ? (

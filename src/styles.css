@@ -22,8 +22,8 @@
   color: var(--text);
   background: var(--bg);
   font-family:
-    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -83,27 +83,26 @@ button,
 select,
 input {
   border: 1px solid var(--border-strong);
-  border-radius: 8px;
+  border-radius: 6px;
   background: var(--surface);
   color: var(--text);
   font: inherit;
   font-size: 13px;
   box-shadow: var(--shadow-sm);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 button {
   cursor: pointer;
   font-weight: 550;
-  min-width: 78px;
-  padding: 8px 14px;
+  padding: 6px 12px;
 }
 
 select,
 .number-control input,
 .goto-control input {
-  min-height: 34px;
-  padding: 0 10px;
+  min-height: 30px;
+  padding: 0 8px;
 }
 
 button:hover:not(:disabled),
@@ -134,7 +133,7 @@ button:disabled {
 
 .app-shell {
   display: grid;
-  grid-template-rows: 58px 44px 42px min-content minmax(0, 1fr) 28px;
+  grid-template-rows: 58px 44px min-content minmax(0, 1fr) 28px;
   height: 100vh;
   background: var(--bg);
 }
@@ -186,13 +185,30 @@ button:disabled {
   font-weight: 500;
 }
 
-.toolbar {
-  align-items: center;
+.top-bar-left {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: flex-end;
+  align-items: center;
+  gap: 24px;
   min-width: 0;
+}
+
+.file-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.top-bar-right {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.editor-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
 }
 
 .theme-control,
@@ -202,12 +218,21 @@ button:disabled {
   color: var(--text-muted);
   display: flex;
   font-size: 12px;
-  gap: 8px;
+  gap: 6px;
   font-weight: 500;
 }
 
 .number-control input {
-  width: 58px;
+  width: 52px;
+  min-height: 28px;
+  padding: 0 6px;
+  text-align: center;
+}
+
+.line-ending-control select,
+.theme-control select {
+  min-height: 28px;
+  padding: 0 8px;
 }
 
 .toggle-control {
@@ -246,25 +271,25 @@ button:disabled {
 .toggle-switch .slider {
   position: relative;
   display: inline-block;
-  width: 32px;
-  height: 18px;
+  width: 28px;
+  height: 16px;
   background-color: var(--border-strong);
-  border-radius: 9px;
+  border-radius: 8px;
   transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .toggle-switch .slider::before {
   position: absolute;
   content: "";
-  height: 14px;
-  width: 14px;
+  height: 12px;
+  width: 12px;
   left: 2px;
   bottom: 2px;
   background-color: var(--surface-strong);
   border-radius: 50%;
   transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
 .toggle-switch input:checked + .slider {
@@ -272,7 +297,7 @@ button:disabled {
 }
 
 .toggle-switch input:checked + .slider::before {
-  transform: translateX(14px);
+  transform: translateX(12px);
 }
 
 .toggle-switch input:focus-visible + .slider {
@@ -432,13 +457,48 @@ button:disabled {
 
 /* 検索バーのスタイリッシュ化 / Find Panel */
 .find-row {
+  position: absolute;
+  top: 110px;
+  right: 24px;
   background: var(--surface);
-  border-bottom: 1px solid var(--border);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  padding: 8px 16px;
+  z-index: 50;
+  display: flex;
   flex-wrap: wrap;
-  gap: 16px;
-  min-width: 0;
-  padding: 6px 20px;
-  box-shadow: inset 0 -4px 8px -4px rgba(0, 0, 0, 0.02);
+  align-items: center;
+  gap: 12px;
+  max-width: calc(100% - 48px);
+  animation: slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.find-close {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: var(--text-muted);
+  min-width: unset;
+  padding: 0;
+  margin-left: auto;
+  transition: all 0.15s ease;
+}
+
+.find-close:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text);
+}
+
+:root[data-theme="dark"] .find-close:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .find-control {
@@ -525,22 +585,30 @@ button:disabled {
   min-height: 0;
 }
 
-/* 通知バナーのカード化とスライドアニメーション */
+/* 通知バナーのトースト化とスライドアニメーション */
+@keyframes slideUpToast {
+  from { transform: translateY(24px) scale(0.96); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
 .error-banner,
 .conflict-banner,
 .draft-banner {
-  animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  position: fixed;
+  bottom: 40px;
+  right: 20px;
+  width: 380px;
+  max-width: calc(100vw - 40px);
+  z-index: 99;
+  animation: slideUpToast 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   background: var(--danger);
   color: #fffafa;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 12px;
-  justify-content: space-between;
-  font-size: 13px;
-  padding: 10px 18px;
-  border-radius: 8px;
-  margin: 10px 16px 2px;
-  box-shadow: var(--shadow-md);
+  padding: 16px;
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
   border-left: 4px solid rgba(255,255,255,0.4);
 }
 
@@ -554,7 +622,6 @@ button:disabled {
 
 .message-copy {
   display: flex;
-  flex: 1;
   flex-direction: column;
   gap: 2px;
   min-width: 0;
@@ -569,25 +636,25 @@ button:disabled {
 
 .message-actions {
   display: flex;
-  flex: 0 1 auto;
-  flex-wrap: wrap;
   gap: 8px;
   justify-content: flex-end;
-  min-width: 0;
   align-items: center;
 }
 
 .message-actions button {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
   color: #fffafa;
   min-width: 0;
-  padding: 5px 12px;
+  padding: 6px 12px;
   box-shadow: none;
+  font-weight: 550;
+  transition: all 0.15s ease;
 }
 
 .message-actions button:hover {
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.25);
   border-color: rgba(255, 255, 255, 0.6);
 }
 
@@ -662,6 +729,7 @@ button:disabled {
   color: var(--text-muted);
   font-weight: 500;
   box-shadow: none;
+  transition: all 0.15s ease;
 }
 
 .tree-directory-button:hover,
@@ -711,9 +779,7 @@ button:disabled {
   background: var(--accent-soft);
   color: var(--text);
   font-weight: 600;
-  border-left: 3px solid var(--accent);
-  border-radius: 0 6px 6px 0;
-  padding-left: 25px; /* ボーダー幅の分減らす */
+  border-radius: 6px;
 }
 
 .tree-children {
@@ -758,7 +824,7 @@ button:disabled {
 .markdown-preview {
   color: var(--text);
   font-size: 15px;
-  line-height: 1.75;
+  line-height: 1.7;
   max-width: 760px;
   padding: 30px 40px 80px;
 }
@@ -769,28 +835,29 @@ button:disabled {
 .markdown-preview h4 {
   color: var(--text);
   font-weight: 700;
-  line-height: 1.3;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
 }
 
 .markdown-preview h1 {
   border-bottom: 2px solid var(--border);
-  font-size: 28px;
+  font-size: 26px;
   padding-bottom: 12px;
   margin-top: 0;
   margin-bottom: 24px;
 }
 
 .markdown-preview h2 {
-  font-size: 21px;
-  margin-top: 36px;
+  font-size: 20px;
+  margin-top: 32px;
   margin-bottom: 16px;
   border-bottom: 1px solid var(--border);
   padding-bottom: 6px;
 }
 
 .markdown-preview h3 {
-  font-size: 17px;
-  margin-top: 28px;
+  font-size: 16.5px;
+  margin-top: 24px;
   margin-bottom: 12px;
 }
 
@@ -800,9 +867,9 @@ button:disabled {
   font-family:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.88em;
-  padding: 3px 6px;
+  padding: 2px 5px;
   color: var(--accent);
-  font-weight: 500;
+  font-weight: 550;
 }
 
 .markdown-preview pre {
@@ -812,7 +879,7 @@ button:disabled {
   overflow: auto;
   padding: 16px;
   box-shadow: var(--shadow-md);
-  margin: 18px 0;
+  margin: 20px 0;
 }
 
 .markdown-preview pre code {
@@ -825,10 +892,9 @@ button:disabled {
 .markdown-preview blockquote {
   border-left: 4px solid var(--accent);
   background: var(--accent-soft);
-  color: var(--text);
-  margin-left: 0;
-  margin-right: 0;
-  padding: 10px 20px;
+  color: var(--text-muted);
+  margin: 20px 0;
+  padding: 12px 20px;
   border-radius: 0 8px 8px 0;
 }
 
@@ -935,7 +1001,7 @@ button:disabled {
 
 @media (max-width: 1040px) {
   .app-shell {
-    grid-template-rows: minmax(58px, auto) 44px minmax(42px, auto) min-content minmax(0, 1fr) 28px;
+    grid-template-rows: minmax(58px, auto) 44px min-content minmax(0, 1fr) 28px;
   }
 
   .top-bar {

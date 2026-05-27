@@ -211,6 +211,14 @@ Editor Keyboard Editing Polish checks on 2026-05-28:
 - Vite browser smoke at `http://127.0.0.1:1421/` confirmed collapsed-cursor Tab indentation, selected-line Tab / Shift+Tab indent and outdent, Shift+Arrow character selection status, and visible selection highlight rendering.
 - No fresh built-app manual smoke was claimed.
 
+UI Brush-up Search Overlay checks on 2026-05-28:
+
+- Cmd+F now opens the app's floating Find overlay without also opening CodeMirror's built-in search panel.
+- Escape from the Find field closes the overlay, clears highlights, and returns focus to the editor.
+- `npm run build:vite` passed.
+- Vite browser smoke at `http://127.0.0.1:1421/` confirmed search count, highlights, no CodeMirror search panel, no horizontal overflow, and editor focus restoration.
+- No fresh built-app manual smoke was claimed.
+
 Known verification note:
 
 - Vite reports a production chunk-size warning because CodeMirror and preview libraries are bundled together. This is acceptable for the prototype; revisit before distribution readiness.
@@ -219,6 +227,7 @@ Known verification note:
 - The Dirty Tab Close Failure Focus Polish did not include a fresh built-app manual failure/conflict smoke pass; use the updated smoke checklist before treating this path as distribution-grade.
 - The Discard All Draft Cleanup Polish did not include a fresh built-app manual restart smoke pass; use the updated smoke checklist before treating this path as distribution-grade.
 - The Editor Keyboard Editing Polish used Vite browser smoke only; repeat the new editor keyboard checklist in the built app before treating this path as distribution-grade.
+- The UI Brush-up Search Overlay checks used Vite browser smoke only; repeat active-file search in the built app before treating this path as distribution-grade.
 - Long file name clipping was re-smoked in the workspace tree during Source Preview Quality Polish. A narrower-window pass is still useful before binary distribution readiness.
 
 ## Risks / Unknowns
