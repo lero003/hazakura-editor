@@ -29,6 +29,7 @@ Last reviewed: 2026-05-27
 - Non-conflict save failures now state that local edits remain in the editor and offer Try save again / Keep editing actions.
 - Window close requests now stop when any open tab is unsaved and offer Save All, Discard All, or Cancel.
 - Cancelling dirty-tab and app/window close dialogs by button or Escape returns keyboard focus to the editor.
+- Dirty-tab and app/window close dialogs keep Tab / Shift+Tab focus cycling inside the dialog while it is open.
 - If Save from a dirty-tab close dialog fails or detects an external change, the close is stopped, the dialog is dismissed, editor focus returns, and the existing save-failure or conflict recovery actions remain visible.
 - Cmd+N creates a new file, Cmd+O opens a file, Cmd+Shift+O opens a folder, and Cmd+W closes the active tab through the same dirty-tab confirmation path as the tab close button.
 - Workspace tree loading now reads only direct children for the opened root or expanded directory, keeps heavy and hidden directory exclusions, rejects direct child listing outside the selected workspace root, and reports per-folder cap overflow as a partial listing instead of failing the whole workspace.
@@ -76,6 +77,7 @@ Last reviewed: 2026-05-27
 - Save-failure recovery wording and retry / keep-editing actions for non-conflict save errors
 - App/window close confirmation for dirty tabs
 - Dirty-tab and app/window close dialogs focus Cancel by default, can be cancelled with Escape, and return focus to the editor after cancellation
+- Dirty-tab and app/window close dialogs trap Tab / Shift+Tab focus while open
 - Failed or conflicted Save from the dirty-tab close dialog stops close and returns to the normal recovery banner
 - Long file name and constrained-width layout guardrails for tabs, the file tree, status/error rows, and close dialogs
 - Lazy file-tree directory expansion with per-folder partial-listing state
@@ -152,9 +154,20 @@ Source Preview Quality Polish smoke on 2026-05-27:
 - Modifying `alpha.md` outside the app, switching away, then switching back to the tab detected the external change and showed Reopen from disk / Close without saving / Keep editing before Save.
 - A small polish fix corrected the Go to Line button's accessible name and removed extra separator whitespace in metadata/status text.
 
+Modal Focus Trap Polish checks on 2026-05-27:
+
+- Dirty-tab and app/window close dialogs now keep Tab / Shift+Tab focus cycling inside the dialog while it is open.
+- `docs/smoke-checklist.md` now includes Tab / Shift+Tab focus-cycling checks for both close dialogs.
+- `npm run build:vite` passed.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.
+- `cargo test --manifest-path src-tauri/Cargo.toml` passed with 16 Rust tests.
+- `npm run build` passed and regenerated the local macOS `.app` bundle.
+- `git diff --check` passed.
+
 Known verification note:
 
 - Vite reports a production chunk-size warning because CodeMirror and preview libraries are bundled together. This is acceptable for the prototype; revisit before distribution readiness.
+- The Modal Focus Trap Polish did not include a fresh built-app manual focus-cycling smoke pass; use the updated smoke checklist before treating this path as distribution-grade.
 - Long file name clipping was re-smoked in the workspace tree during Source Preview Quality Polish. A narrower-window pass is still useful before binary distribution readiness.
 
 ## Risks / Unknowns

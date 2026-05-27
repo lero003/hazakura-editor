@@ -151,6 +151,8 @@ export default function App() {
   );
   const findInputRef = useRef<HTMLInputElement | null>(null);
   const editorPaneRef = useRef<EditorPaneHandle | null>(null);
+  const closeTabDialogRef = useRef<HTMLElement | null>(null);
+  const appCloseDialogRef = useRef<HTMLElement | null>(null);
   const closeTabCancelButtonRef = useRef<HTMLButtonElement | null>(null);
   const appCloseCancelButtonRef = useRef<HTMLButtonElement | null>(null);
   const tabsRef = useRef<EditorTab[]>([]);
@@ -1140,6 +1142,15 @@ export default function App() {
           }
         }
 
+        if (event.key === "Tab") {
+          trapFocusInElement(
+            pendingCloseTabId !== null
+              ? closeTabDialogRef.current
+              : appCloseDialogRef.current,
+            event,
+          );
+        }
+
         return;
       }
 
@@ -1646,6 +1657,7 @@ export default function App() {
             aria-labelledby="close-tab-title"
             aria-modal="true"
             className="close-dialog"
+            ref={closeTabDialogRef}
             role="dialog"
           >
             <h2 id="close-tab-title">Unsaved changes</h2>
@@ -1681,6 +1693,7 @@ export default function App() {
             aria-labelledby="close-app-title"
             aria-modal="true"
             className="close-dialog"
+            ref={appCloseDialogRef}
             role="dialog"
           >
             <h2 id="close-app-title">Unsaved changes</h2>
@@ -2012,6 +2025,64 @@ function readSystemTheme(): ResolvedTheme {
   return window.matchMedia("(prefers-color-scheme: dark)").matches
     ? "dark"
     : "light";
+}
+
+function trapFocusInElement(
+  container: HTMLElement | null,
+  event: KeyboardEvent,
+) {
+  if (!container) {
+    return;
+  }
+
+  const focusableElements = getFocusableElements(container);
+
+  if (focusableElements.length === 0) {
+    return;
+  }
+
+  const firstElement = focusableElements[0];
+  const lastElement = focusableElements[focusableElements.length - 1];
+  const activeElement =
+    document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
+
+  if (
+    event.shiftKey &&
+    (!activeElement ||
+      !container.contains(activeElement) ||
+      activeElement === firstElement)
+  ) {
+    event.preventDefault();
+    lastElement.focus();
+    return;
+  }
+
+  if (
+    !event.shiftKey &&
+    (!activeElement ||
+      !container.contains(activeElement) ||
+      activeElement === lastElement)
+  ) {
+    event.preventDefault();
+    firstElement.focus();
+  }
+}
+
+function getFocusableElements(container: HTMLElement): HTMLElement[] {
+  return Array.from(
+    container.querySelectorAll<HTMLElement>(
+      [
+        "button:not([disabled])",
+        "input:not([disabled])",
+        "select:not([disabled])",
+        "textarea:not([disabled])",
+        "a[href]",
+        '[tabindex]:not([tabindex="-1"])',
+      ].join(","),
+    ),
+  ).filter((element) => element.offsetParent !== null);
 }
 
 function findTextMatches(
