@@ -37,6 +37,8 @@ export type WorkspaceTreeEntry = {
   path: string;
   kind: "directory" | "file";
   children: WorkspaceTreeEntry[];
+  children_loaded: boolean;
+  children_truncated: boolean;
 };
 
 export async function pickMarkdownFile(): Promise<string | null> {
@@ -130,6 +132,16 @@ export async function listWorkspaceTree(
   root: string,
 ): Promise<WorkspaceTreeEntry> {
   return invoke<WorkspaceTreeEntry>("list_workspace_tree", { root });
+}
+
+export async function listWorkspaceDirectory(
+  root: string,
+  directory: string,
+): Promise<WorkspaceTreeEntry> {
+  return invoke<WorkspaceTreeEntry>("list_workspace_directory", {
+    root,
+    directory,
+  });
 }
 
 export async function saveTextFile(

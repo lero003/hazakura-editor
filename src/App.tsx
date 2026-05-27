@@ -11,6 +11,7 @@ import PreviewPane from "./components/PreviewPane";
 import {
   closeCurrentWindow,
   createTextFile,
+  listWorkspaceDirectory,
   listWorkspaceTree,
   onCurrentWindowCloseRequested,
   openTextFile,
@@ -142,6 +143,40 @@ export default function App() {
     const tree = await listWorkspaceTree(workspaceRootPath);
     setWorkspaceTree(tree);
   }, [workspaceRootPath]);
+
+  const loadWorkspaceDirectory = useCallback(
+    async (directoryPath: string) => {
+      if (!workspaceRootPath) {
+        return;
+      }
+
+      setGlobalError(null);
+      setStatus("Reading folder...");
+
+      try {
+        const directory = await listWorkspaceDirectory(
+          workspaceRootPath,
+          directoryPath,
+        );
+
+        setWorkspaceTree((currentTree) =>
+          currentTree
+            ? replaceWorkspaceTreeEntry(currentTree, directory)
+            : currentTree,
+        );
+        setStatus(
+          directory.children_truncated
+            ? "Folder partially loaded"
+            : "Folder loaded",
+        );
+      } catch (err) {
+        setGlobalError(String(err));
+        setStatus("Folder load failed");
+        throw err;
+      }
+    },
+    [workspaceRootPath],
+  );
 
   const openFilePath = useCallback(
     async (path: string) => {
@@ -965,6 +1000,7 @@ export default function App() {
             <WorkspaceTree
               activePath={activeTab?.path ?? null}
               entry={workspaceTree}
+              onLoadDirectory={loadWorkspaceDirectory}
               onOpenFile={openFilePath}
             />
           ) : (
@@ -1073,29 +1109,42 @@ export default function App() {
 function WorkspaceTree({
   activePath,
   entry,
+  onLoadDirectory,
   onOpenFile,
 }: {
   activePath: string | null;
   entry: WorkspaceTreeEntry;
+  onLoadDirectory: (path: string) => Promise<void>;
   onOpenFile: (path: string) => void | Promise<void>;
 }) {
   return (
     <div className="workspace-tree">
-      <TreeEntry activePath={activePath} entry={entry} onOpenFile={onOpenFile} />
+      <TreeEntry
+        activePath={activePath}
+        defaultExpanded
+        entry={entry}
+        onLoadDirectory={onLoadDirectory}
+        onOpenFile={onOpenFile}
+      />
     </div>
   );
 }
 
 function TreeEntry({
   activePath,
+  defaultExpanded = false,
   entry,
+  onLoadDirectory,
   onOpenFile,
 }: {
   activePath: string | null;
+  defaultExpanded?: boolean;
   entry: WorkspaceTreeEntry;
+  onLoadDirectory: (path: string) => Promise<void>;
   onOpenFile: (path: string) => void | Promise<void>;
 }) {
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(defaultExpanded);
+  const [loading, setLoading] = useState(false);
   const isDirectory = entry.kind === "directory";
 
   if (!isDirectory) {
@@ -1111,17 +1160,38 @@ function TreeEntry({
     );
   }
 
+  const toggleDirectory = async () => {
+    if (expanded) {
+      setExpanded(false);
+      return;
+    }
+
+    if (!entry.children_loaded) {
+      setLoading(true);
+
+      try {
+        await onLoadDirectory(entry.path);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    setExpanded(true);
+  };
+
   return (
     <div className="tree-directory">
       <button
         aria-expanded={expanded}
         className="tree-directory-button"
-        onClick={() => setExpanded((current) => !current)}
+        disabled={loading}
+        onClick={() => void toggleDirectory()}
         title={entry.path}
         type="button"
       >
         <span aria-hidden="true">{expanded ? "v" : ">"}</span>
         <span className="tree-name">{entry.name}</span>
+        {loading ? <span className="tree-meta">Loading...</span> : null}
       </button>
       {expanded ? (
         <div className="tree-children">
@@ -1130,9 +1200,15 @@ function TreeEntry({
               activePath={activePath}
               entry={child}
               key={child.path}
+              onLoadDirectory={onLoadDirectory}
               onOpenFile={onOpenFile}
             />
           ))}
+          {entry.children_truncated ? (
+            <div className="tree-partial" role="note">
+              Some entries are hidden by the per-folder limit.
+            </div>
+          ) : null}
         </div>
       ) : null}
     </div>
@@ -1147,6 +1223,22 @@ function createEditorTab(file: TextFileDocument): EditorTab {
     lastSavedContents: file.contents,
     saveStatus: "idle",
     error: null,
+  };
+}
+
+function replaceWorkspaceTreeEntry(
+  tree: WorkspaceTreeEntry,
+  replacement: WorkspaceTreeEntry,
+): WorkspaceTreeEntry {
+  if (tree.path === replacement.path) {
+    return replacement;
+  }
+
+  return {
+    ...tree,
+    children: tree.children.map((child) =>
+      replaceWorkspaceTreeEntry(child, replacement),
+    ),
   };
 }
 

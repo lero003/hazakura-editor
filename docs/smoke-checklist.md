@@ -47,9 +47,20 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 2. Add excluded folders such as `.git`, `node_modules`, `target`, and `dist`.
 3. Open the folder with Open Folder.
 4. Confirm the file tree shows normal folders and files, and does not show excluded folders.
-5. Open at least two files from the tree.
-6. Confirm each file opens in its own tab.
-7. Switch tabs and confirm the editor, preview, status, and active tree item match the selected tab.
+5. Confirm nested folders are not recursively populated until expanded.
+6. Expand a nested folder and confirm its direct children appear on demand.
+7. Open at least two files from the tree.
+8. Confirm each file opens in its own tab.
+9. Switch tabs and confirm the editor, preview, status, and active tree item match the selected tab.
+
+## Large Workspace Tree
+
+1. Create a throwaway folder outside the repo with more than 2,000 entries inside one child directory.
+2. Open the throwaway folder with Open Folder and confirm the root listing completes instead of failing the whole workspace.
+3. Expand the large child directory.
+4. Confirm the directory shows visible entries and a partial-listing note.
+5. Confirm excluded folders such as `.git`, `node_modules`, `target`, and `dist` still do not appear.
+6. Open a normal Markdown file from the same workspace and confirm it opens in a tab.
 
 ## Active File Search
 

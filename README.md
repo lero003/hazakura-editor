@@ -22,13 +22,14 @@ Last reviewed: 2026-05-27
 ## Current Features
 
 - Markdown/text file creation, open, edit, save, and sanitized preview
-- Folder picker with a bounded file tree
+- Folder picker with a lazy, bounded file tree
 - File-tree, Open, and restored files unified into the same tab model
 - Multiple tabs with active-tab editor, preview, size, and save status
 - Tab-level unsaved state and Save / Discard / Cancel before closing dirty tabs
 - Keyboard shortcuts for New File, Open, Open Folder, Save, Find, and tab close
 - External-change save conflict detection with Reopen from disk / Close without saving / Keep editing actions
 - Non-conflict save failures keep local edits and show Try save again / Keep editing recovery actions
+- Workspace tree directory expansion loads direct children on demand, keeps heavy / hidden directory exclusions, and shows a partial-listing note instead of failing the whole workspace when one folder exceeds the entry cap
 - In-file search for the active tab, with visible match highlights, active-match selection, and keyboard next / previous / return-to-editor flow
 - System / Light / Dark theme switching with persisted selection
 - Theme switching reconfigures the active editor without recreating it, preserving the current editor session state during theme changes
@@ -83,6 +84,7 @@ git diff --check
 ## Known Limits
 
 - Unsaved text is not restored after restart; only workspace, tab paths, active tab, and theme are restored.
+- The file tree is a workspace browser, not an index. Very large directories are capped per folder and may show only the first visible entries.
 - Save conflicts are recoverable by reopening, closing, or keeping local edits, but there is no merge editor or advanced diff.
 - The app is not signed or notarized with an Apple Developer ID.
 - There is no Git integration, LSP, terminal, AI assistance, plugin system, arbitrary command execution, or project-wide analysis.

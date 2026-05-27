@@ -7,7 +7,6 @@ use std::time::UNIX_EPOCH;
 const LARGE_FILE_WARNING_BYTES: u64 = 5 * 1024 * 1024;
 const MAX_EDITABLE_BYTES: u64 = 10 * 1024 * 1024;
 const BINARY_SNIFF_BYTES: u64 = 8192;
-const MAX_WORKSPACE_DEPTH: usize = 6;
 const MAX_WORKSPACE_ENTRIES: usize = 2000;
 const EXCLUDED_WORKSPACE_DIRS: &[&str] = &[
     ".git",
@@ -58,6 +57,8 @@ struct WorkspaceTreeEntry {
     path: String,
     kind: WorkspaceEntryKind,
     children: Vec<WorkspaceTreeEntry>,
+    children_loaded: bool,
+    children_truncated: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -187,15 +188,31 @@ fn save_text_file(
 #[tauri::command]
 fn list_workspace_tree(root: String) -> Result<WorkspaceTreeEntry, String> {
     let root_path = PathBuf::from(&root);
-    let metadata =
-        fs::metadata(&root_path).map_err(|err| format!("Cannot read workspace folder: {err}"))?;
+    ensure_workspace_root(&root_path)?;
+
+    build_workspace_directory(&root_path)
+}
+
+#[tauri::command]
+fn list_workspace_directory(root: String, directory: String) -> Result<WorkspaceTreeEntry, String> {
+    let root_path = PathBuf::from(&root);
+    let directory_path = PathBuf::from(&directory);
+    let canonical_root = ensure_workspace_root(&root_path)?;
+    let canonical_directory = fs::canonicalize(&directory_path)
+        .map_err(|err| format!("Cannot read workspace folder: {err}"))?;
+
+    if !canonical_directory.starts_with(&canonical_root) {
+        return Err("Selected folder is outside the workspace root.".to_string());
+    }
+
+    let metadata = fs::metadata(&directory_path)
+        .map_err(|err| format!("Cannot read workspace folder: {err}"))?;
 
     if !metadata.is_dir() {
         return Err("Selected workspace path is not a folder.".to_string());
     }
 
-    let mut entry_count = 0;
-    build_workspace_tree(&root_path, 0, &mut entry_count)
+    build_workspace_directory(&directory_path)
 }
 
 fn readable_text_metadata(path: &Path) -> Result<fs::Metadata, String> {
@@ -216,72 +233,76 @@ fn readable_text_metadata(path: &Path) -> Result<fs::Metadata, String> {
     Ok(metadata)
 }
 
-fn build_workspace_tree(
-    path: &Path,
-    depth: usize,
-    entry_count: &mut usize,
-) -> Result<WorkspaceTreeEntry, String> {
-    if *entry_count >= MAX_WORKSPACE_ENTRIES {
-        return Err(format!(
-            "Workspace listing stopped after {MAX_WORKSPACE_ENTRIES} entries."
-        ));
+fn ensure_workspace_root(root_path: &Path) -> Result<PathBuf, String> {
+    let metadata =
+        fs::metadata(root_path).map_err(|err| format!("Cannot read workspace folder: {err}"))?;
+
+    if !metadata.is_dir() {
+        return Err("Selected workspace path is not a folder.".to_string());
     }
 
-    *entry_count += 1;
+    fs::canonicalize(root_path).map_err(|err| format!("Cannot read workspace folder: {err}"))
+}
 
+fn build_workspace_directory(path: &Path) -> Result<WorkspaceTreeEntry, String> {
     let name = path
         .file_name()
         .and_then(|name| name.to_str())
         .unwrap_or_else(|| path.to_str().unwrap_or("workspace"))
         .to_string();
     let mut children = Vec::new();
+    let mut children_truncated = false;
 
-    if depth < MAX_WORKSPACE_DEPTH {
-        let mut entries = fs::read_dir(path)
-            .map_err(|err| format!("Cannot list workspace folder contents: {err}"))?
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(|err| format!("Cannot list workspace folder contents: {err}"))?;
-
-        entries.sort_by(|left, right| {
-            let left_path = left.path();
-            let right_path = right.path();
-            let left_is_dir = left_path.is_dir();
-            let right_is_dir = right_path.is_dir();
-
-            right_is_dir
-                .cmp(&left_is_dir)
-                .then_with(|| left.file_name().cmp(&right.file_name()))
-        });
-
-        for entry in entries {
-            let child_path = entry.path();
+    let mut entries = fs::read_dir(path)
+        .map_err(|err| format!("Cannot list workspace folder contents: {err}"))?
+        .map(|entry| {
+            let entry =
+                entry.map_err(|err| format!("Cannot list workspace folder contents: {err}"))?;
             let file_type = entry
                 .file_type()
                 .map_err(|err| format!("Cannot inspect workspace entry: {err}"))?;
-            let child_name = entry.file_name().to_string_lossy().to_string();
+            Ok((entry, file_type))
+        })
+        .collect::<Result<Vec<_>, String>>()?;
 
-            if file_type.is_dir() {
-                if should_skip_workspace_dir(&child_name) {
-                    continue;
-                }
+    entries.sort_by(|(left, left_type), (right, right_type)| {
+        let left_is_dir = left_type.is_dir();
+        let right_is_dir = right_type.is_dir();
 
-                children.push(build_workspace_tree(&child_path, depth + 1, entry_count)?);
-            } else if file_type.is_file() {
-                if *entry_count >= MAX_WORKSPACE_ENTRIES {
-                    return Err(format!(
-                        "Workspace listing stopped after {MAX_WORKSPACE_ENTRIES} entries."
-                    ));
-                }
+        right_is_dir
+            .cmp(&left_is_dir)
+            .then_with(|| left.file_name().cmp(&right.file_name()))
+    });
 
-                *entry_count += 1;
-                children.push(WorkspaceTreeEntry {
-                    name: child_name,
-                    path: child_path.to_string_lossy().to_string(),
-                    kind: WorkspaceEntryKind::File,
-                    children: Vec::new(),
-                });
-            }
+    for (entry, file_type) in entries {
+        let child_path = entry.path();
+        let child_name = entry.file_name().to_string_lossy().to_string();
+
+        if file_type.is_dir() && should_skip_workspace_dir(&child_name) {
+            continue;
         }
+
+        if !file_type.is_dir() && !file_type.is_file() {
+            continue;
+        }
+
+        if children.len() >= MAX_WORKSPACE_ENTRIES {
+            children_truncated = true;
+            continue;
+        }
+
+        children.push(WorkspaceTreeEntry {
+            name: child_name,
+            path: child_path.to_string_lossy().to_string(),
+            kind: if file_type.is_dir() {
+                WorkspaceEntryKind::Directory
+            } else {
+                WorkspaceEntryKind::File
+            },
+            children: Vec::new(),
+            children_loaded: file_type.is_file(),
+            children_truncated: false,
+        });
     }
 
     Ok(WorkspaceTreeEntry {
@@ -289,6 +310,8 @@ fn build_workspace_tree(
         path: path.to_string_lossy().to_string(),
         kind: WorkspaceEntryKind::Directory,
         children,
+        children_loaded: true,
+        children_truncated,
     })
 }
 
@@ -409,6 +432,7 @@ pub fn run() {
             open_text_file,
             create_text_file,
             get_file_metadata,
+            list_workspace_directory,
             list_workspace_tree,
             save_text_file
         ])
@@ -671,15 +695,60 @@ mod tests {
         assert!(!names.contains(&".git"));
         assert!(!names.contains(&"target"));
         assert!(!names.contains(&"dist"));
+        assert!(tree.children_loaded);
+        assert!(!tree.children_truncated);
 
         let notes = tree
             .children
             .iter()
             .find(|entry| entry.name == "notes")
             .expect("notes dir");
-        assert_eq!(notes.children[0].name, "today.md");
+        assert!(!notes.children_loaded);
+        assert!(notes.children.is_empty());
+
+        let notes_tree =
+            list_workspace_directory(dir.to_string_lossy().to_string(), notes.path.to_string())
+                .expect("list notes dir");
+        assert_eq!(notes_tree.children[0].name, "today.md");
+        assert!(notes_tree.children_loaded);
 
         let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn workspace_tree_uses_per_directory_cap_without_failing_root() {
+        let dir = unique_test_dir("workspace_tree_cap");
+        fs::create_dir_all(&dir).expect("create test dir");
+
+        for index in 0..(MAX_WORKSPACE_ENTRIES + 5) {
+            fs::write(dir.join(format!("{index:04}.md")), "# Note\n").expect("write note");
+        }
+
+        let tree = list_workspace_tree(dir.to_string_lossy().to_string()).expect("list workspace");
+
+        assert_eq!(tree.children.len(), MAX_WORKSPACE_ENTRIES);
+        assert!(tree.children_truncated);
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn workspace_directory_rejects_paths_outside_root() {
+        let root = unique_test_dir("workspace_root");
+        let outside = unique_test_dir("workspace_outside");
+        fs::create_dir_all(&root).expect("create root dir");
+        fs::create_dir_all(&outside).expect("create outside dir");
+
+        let err = list_workspace_directory(
+            root.to_string_lossy().to_string(),
+            outside.to_string_lossy().to_string(),
+        )
+        .expect_err("outside folder should fail");
+
+        assert!(err.contains("outside the workspace root"));
+
+        let _ = fs::remove_dir_all(root);
+        let _ = fs::remove_dir_all(outside);
     }
 
     #[test]

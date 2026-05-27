@@ -403,9 +403,24 @@ button:disabled {
 
 .tree-name {
   display: block;
+  flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.tree-meta,
+.tree-partial {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.tree-meta {
+  flex: 0 0 auto;
+}
+
+.tree-partial {
+  padding: 5px 10px 5px 28px;
 }
 
 .tree-file {

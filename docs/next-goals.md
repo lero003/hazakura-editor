@@ -98,3 +98,20 @@ Use the reusable automation prompt in `docs/development-automation.md`.
 - code変更では既存の品質ゲートを通す
 - UI挙動を変えた場合は smoke checklist を更新または実施する
 - 検証が通った場合だけ、関連差分をcommit/pushする
+
+### Ready Slice: Lazy Workspace Tree Smoke
+
+```txt
+hazakura-note の lazy workspace tree を、built appで手動smokeする。
+throwaway folderを使い、Open Folder時にroot直下だけで表示が完了すること、directory展開時に直下childrenが読み込まれること、`.git`、`node_modules`、`target`、`dist`、隠しディレクトリが表示されないことを確認する。
+1 directoryあたり2,000件を超えるfixtureも作り、workspace全体がerrorにならず、partial-listing noteが表示されることを確認する。
+Git状態、LSP、terminal、任意コマンド、プロジェクト全体解析、background indexingには広げない。
+手動結果に合わせて docs/current-status.md と docs/smoke-checklist.md のみ必要最小限で更新する。
+```
+
+Acceptance:
+
+- 大きいworkspaceでもOpen Folderがroot直下表示で完了する
+- directory展開時だけ直下childrenが表示される
+- 1 directoryあたりの上限超過はpartial-listing noteとして表示される
+- 除外ディレクトリを深掘りしない

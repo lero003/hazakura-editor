@@ -79,6 +79,7 @@ Status: Completed on 2026-05-26
 - dirty tab / app close確認をCancelまたはEscapeで閉じた後のeditor focus復帰
 - 長いファイル名と狭い表示幅で tabs / file tree / status / error / close dialog が主要操作を押し出さない表示ガード
 - Cmd+O / Cmd+Shift+O / Cmd+W の基本ショートカット
+- Workspace treeのlazy loading: Open Folder時はroot直下だけを読み、directory展開時に直下childrenを読む。除外directoryは維持し、directory単位の上限超過はpartial listingとして表示する。
 - CodeMirror本文とpreview/statusの再読み込み同期
 - 既存ファイルの LF / CRLF 改行コード保持
 - 末尾改行の有無を保存時に勝手に変更しない契約のRustテスト化

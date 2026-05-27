@@ -8,7 +8,7 @@ Last reviewed: 2026-05-27
 ## Current State
 
 - A touchable Tauri desktop prototype exists.
-- The prototype creates user-selected text/Markdown files, opens a user-selected folder, shows a bounded file tree, opens multiple files in tabs, edits the active tab with CodeMirror 6, saves through Rust with external-change protection, searches with visible match highlights and keyboard navigation, and renders a sanitized Markdown preview.
+- The prototype creates user-selected text/Markdown files, opens a user-selected folder, shows a lazy bounded file tree, opens multiple files in tabs, edits the active tab with CodeMirror 6, saves through Rust with external-change protection, searches with visible match highlights and keyboard navigation, and renders a sanitized Markdown preview.
 - Existing LF / CRLF line endings are detected when a file is opened and preserved through save.
 - Save writes the editor text without adding or removing a final trailing newline by policy; Rust tests cover LF and CRLF final-newline presence.
 - Recent workspace, open tabs, active tab, and theme preference are restored after restart.
@@ -18,6 +18,7 @@ Last reviewed: 2026-05-27
 - Window close requests now stop when any open tab is unsaved and offer Save All, Discard All, or Cancel.
 - Cancelling dirty-tab and app/window close dialogs by button or Escape returns keyboard focus to the editor.
 - Cmd+N creates a new file, Cmd+O opens a file, Cmd+Shift+O opens a folder, and Cmd+W closes the active tab through the same dirty-tab confirmation path as the tab close button.
+- Workspace tree loading now reads only direct children for the opened root or expanded directory, keeps heavy and hidden directory exclusions, rejects direct child listing outside the selected workspace root, and reports per-folder cap overflow as a partial listing instead of failing the whole workspace.
 - The built macOS app bundle is generated at `src-tauri/target/release/bundle/macos/hazakura-note.app`.
 
 ## Implemented
@@ -31,6 +32,7 @@ Last reviewed: 2026-05-27
 - Native save-path dialog through `@tauri-apps/plugin-dialog`
 - Rust commands for creating, opening, and saving UTF-8 text files
 - Rust command for bounded workspace tree listing
+- Rust command for bounded direct directory listing inside the selected workspace root
 - Save-conflict detection using a Rust-generated file fingerprint
 - LF / CRLF line-ending detection and save preservation
 - Final-newline presence preservation on save
@@ -49,6 +51,7 @@ Last reviewed: 2026-05-27
 - App/window close confirmation for dirty tabs
 - Dirty-tab and app/window close dialogs focus Cancel by default, can be cancelled with Escape, and return focus to the editor after cancellation
 - Long file name and constrained-width layout guardrails for tabs, the file tree, status/error rows, and close dialogs
+- Lazy file-tree directory expansion with per-folder partial-listing state
 - Binary-looking file rejection
 - 5 MB large-file warning flag
 - 10 MB prototype editing limit
@@ -94,10 +97,12 @@ Known verification note:
 - Search highlight visibility and keyboard search flow have build coverage and smoke-checklist coverage, but still need a manual built-app smoke pass.
 - Long file name and constrained-width layout guardrails have build coverage and smoke-checklist coverage, but still need a manual built-app smoke pass.
 - Theme switching without resetting the active editor session has build coverage and smoke-checklist coverage, but still needs a manual built-app smoke pass.
+- Lazy workspace tree loading, per-folder cap handling, and root-boundary rejection have Rust test coverage and smoke-checklist coverage, but still need a manual built-app smoke pass.
 
 ## Risks / Unknowns
 
 - Unsaved text is not restored after restart; only workspace path, tab paths, active tab, and theme preference are restored.
+- Workspace listing is intentionally lazy and not a project index. Very large directories can still be partially listed when a single folder exceeds the per-folder cap.
 - Save-conflict recovery is explicit but still simple. There is no merge editor or diff-assisted recovery flow yet.
 - Undo/redo remain CodeMirror defaults and have not received dedicated product-level controls beyond preserving the active editor session during theme changes.
 - The app is not signed or notarized.
@@ -107,8 +112,9 @@ Known verification note:
 
 1. Run recurring automation from `docs/development-automation.md` to harden one small slice at a time.
 2. Manually smoke app/window close confirmation including Cancel focus, Escape cancellation, editor focus return after cancellation, keyboard shortcuts, New File, CRLF save preservation, final-newline preservation, save-failure recovery, search highlight visibility, theme switching during undo/redo, and long file name / constrained-width layout in the built app before adding new Markdown features.
-3. Decide whether unsaved draft restoration belongs in the product or should remain intentionally out of scope.
-4. Keep signing, notarization, and installer packaging separate from editor/workspace hardening.
+3. Manually smoke lazy workspace tree behavior in the built app with a large throwaway folder: root open should complete, directory expansion should load children on demand, excluded folders should stay hidden, and per-folder cap overflow should show a partial-listing note.
+4. Decide whether unsaved draft restoration belongs in the product or should remain intentionally out of scope.
+5. Keep signing, notarization, and installer packaging separate from editor/workspace hardening.
 
 ## Avoid
 

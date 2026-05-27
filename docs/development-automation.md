@@ -41,17 +41,22 @@ Choose the first useful slice that is both small and verifiable.
    - search highlight visibility manual-smoke follow-up if the new highlights regress
    - focus movement and keyboard-only operation
    - long file name and narrow window layout
-3. Markdown writing comfort:
+3. Workspace scalability:
+   - lazy workspace tree manual-smoke follow-up if root open, directory expansion, exclusions, or partial-listing state regresses
+   - keep `.git`, `node_modules`, `target`, `dist`, and hidden-directory exclusions
+   - use a per-directory entry cap with a visible partial-listing state instead of failing the whole folder open
+   - verify large folders without adding project-wide indexing, Git status inspection, or background analysis
+4. Markdown writing comfort:
    - heading outline
    - light Markdown insertion aids
    - checkbox or link helpers
    - preview scroll behavior
-4. Local release readiness:
+5. Local release readiness:
    - GitHub Actions for existing quality gates
    - app version/about metadata
    - release candidate checklist
    - packaging docs, without signing or notarization claims
-5. Verified no-op:
+6. Verified no-op:
    - If no small useful slice is safe, run the relevant checks, update docs only if facts changed, and report no-op clearly.
 
 ## Boundaries
@@ -122,7 +127,7 @@ Advance hazakura-note by one small, verifiable quality-hardening slice.
 
 Start by reading AGENTS.md, README.md, docs/current-status.md, docs/roadmap.md, docs/smoke-checklist.md, docs/development-automation.md, and checking git status --short --branch. Treat existing uncommitted changes as user or previous-run work and do not revert them.
 
-Use docs/development-automation.md as the source of truth. Prefer file safety and close/quit behavior first, then editor reliability, Markdown writing comfort, local release readiness, and verified no-op if no useful small slice is safe.
+Use docs/development-automation.md as the source of truth. Prefer file safety and close/quit behavior first, then editor reliability, workspace scalability, Markdown writing comfort, local release readiness, and verified no-op if no useful small slice is safe.
 
 Do not implement Git integration, LSP, terminal, AI assistance, arbitrary command execution, plugin systems, project-wide analysis/indexing, signing/notarization completion, merge editor, advanced Git diff, or dependency/lockfile changes without explicit user approval.
 
