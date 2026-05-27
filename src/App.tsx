@@ -574,6 +574,10 @@ export default function App() {
 
   const handleFindKeyDown = useCallback(
     (event: ReactKeyboardEvent<HTMLInputElement>) => {
+      if (isImeComposing(event.nativeEvent)) {
+        return;
+      }
+
       if (event.key === "Escape") {
         event.preventDefault();
         event.stopPropagation();
@@ -731,6 +735,10 @@ export default function App() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (isImeComposing(event)) {
+        return;
+      }
+
       if (modalOpen) {
         if (event.key === "Escape") {
           event.preventDefault();
@@ -787,7 +795,6 @@ export default function App() {
 
         return;
       }
-
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -1320,6 +1327,10 @@ function findTextMatches(source: string, query: string): TextMatch[] {
   }
 
   return matches;
+}
+
+function isImeComposing(event: KeyboardEvent): boolean {
+  return event.isComposing || event.key === "Process";
 }
 
 function formatBytes(bytes: number): string {

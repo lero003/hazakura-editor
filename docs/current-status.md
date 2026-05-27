@@ -13,6 +13,7 @@ Last reviewed: 2026-05-27
 - Save writes the editor text without adding or removing a final trailing newline by policy; Rust tests cover LF and CRLF final-newline presence.
 - Recent workspace, open tabs, active tab, and theme preference are restored after restart.
 - Theme changes now reconfigure the active CodeMirror editor without recreating it, so the current cursor, selection, and undo/redo session state are not reset by switching Light / Dark / System.
+- Find-field Enter / Escape handling and global shortcuts now ignore active IME composition events, so Japanese conversion is not mistaken for search movement, find close, save, open, or tab-close commands.
 - Save conflicts now present explicit recovery choices: Reopen from disk, Close without saving, and Keep editing.
 - Non-conflict save failures now state that local edits remain in the editor and offer Try save again / Keep editing actions.
 - Window close requests now stop when any open tab is unsaved and offer Save All, Discard All, or Cancel.
@@ -46,6 +47,7 @@ Last reviewed: 2026-05-27
 - Recent workspace restoration through `localStorage`
 - Open tab and active tab restoration through `localStorage`
 - Active-file search with match count, previous/next controls, visible match highlights, active-match selection, Enter / Shift+Enter match navigation, and Escape return-to-editor behavior
+- IME-safe keyboard handling for find-field Enter / Escape and global shortcuts during active composition
 - Keyboard shortcuts for New File, Open, Open Folder, Save, Find, and active-tab close
 - Conflict recovery actions for reloading, closing, or continuing with local edits
 - Save-failure recovery wording and retry / keep-editing actions for non-conflict save errors
@@ -98,6 +100,7 @@ Known verification note:
 - Failed or conflicted Save from the dirty-tab close dialog has build coverage and smoke-checklist coverage, but still needs a manual built-app smoke pass.
 - Non-conflict save-failure recovery wording and actions have build coverage and smoke-checklist coverage, but still need a manual built-app smoke pass.
 - Search highlight visibility and keyboard search flow have build coverage and smoke-checklist coverage, but still need a manual built-app smoke pass.
+- Japanese IME composition guards for find-field Enter / Escape and global shortcuts have build coverage and smoke-checklist coverage, but still need a manual built-app smoke pass.
 - Long file name and constrained-width layout guardrails have build coverage and smoke-checklist coverage, but still need a manual built-app smoke pass.
 - Theme switching without resetting the active editor session has build coverage and smoke-checklist coverage, but still needs a manual built-app smoke pass.
 - Lazy workspace tree loading, per-folder cap handling, and root-boundary rejection have Rust test coverage and smoke-checklist coverage, but still need a manual built-app smoke pass.
@@ -114,7 +117,7 @@ Known verification note:
 ## Next Actions
 
 1. Run recurring automation from `docs/development-automation.md` to harden one small slice at a time.
-2. Manually smoke app/window close confirmation including Cancel focus, Escape cancellation, editor focus return after cancellation, keyboard shortcuts, New File, CRLF save preservation, final-newline preservation, save-failure recovery, search highlight visibility, theme switching during undo/redo, and long file name / constrained-width layout in the built app before adding new Markdown features.
+2. Manually smoke app/window close confirmation including Cancel focus, Escape cancellation, editor focus return after cancellation, keyboard shortcuts, New File, CRLF save preservation, final-newline preservation, save-failure recovery, search highlight visibility, Japanese IME composition, theme switching during undo/redo, and long file name / constrained-width layout in the built app before adding new Markdown features.
 3. Manually smoke lazy workspace tree behavior in the built app with a large throwaway folder: root open should complete, directory expansion should load children on demand, excluded folders should stay hidden, and per-folder cap overflow should show a partial-listing note.
 4. Decide whether unsaved draft restoration belongs in the product or should remain intentionally out of scope.
 5. Keep signing, notarization, and installer packaging separate from editor/workspace hardening.

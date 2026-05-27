@@ -73,6 +73,16 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 7. Press Escape and confirm the Find field clears and keyboard focus returns to the editor.
 8. Search for a missing word and confirm highlights clear and the UI reports no matches without changing the file.
 
+## Japanese IME
+
+1. Open a throwaway Markdown file and focus the editor.
+2. Enable a Japanese IME and start composing text.
+3. Press Enter to confirm conversion and confirm it inserts text instead of triggering Save, Open, Find, or tab close behavior.
+4. Open the Find field, start composing a Japanese query, and press Enter to confirm conversion.
+5. Confirm the Find field keeps focus and does not move to the next or previous match while composition is active.
+6. Start another Find-field composition and press Escape while composition is active if your IME uses Escape for candidate cancellation.
+7. Confirm the Find field does not close until Escape is pressed after composition ends.
+
 ## Keyboard Shortcuts
 
 1. Press Cmd+N and confirm the native new-file path picker opens.

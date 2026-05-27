@@ -31,6 +31,7 @@ Last reviewed: 2026-05-27
 - Non-conflict save failures keep local edits and show Try save again / Keep editing recovery actions
 - Workspace tree directory expansion loads direct children on demand, keeps heavy / hidden directory exclusions, and shows a partial-listing note instead of failing the whole workspace when one folder exceeds the entry cap
 - In-file search for the active tab, with visible match highlights, active-match selection, and keyboard next / previous / return-to-editor flow
+- Find-field and global shortcut handling ignores active IME composition so Japanese text conversion is not mistaken for editor commands
 - System / Light / Dark theme switching with persisted selection
 - Theme switching reconfigures the active editor without recreating it, preserving the current editor session state during theme changes
 - Recent workspace, open tabs, and active tab restoration after restart
