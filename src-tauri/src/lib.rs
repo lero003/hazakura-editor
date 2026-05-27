@@ -16,6 +16,7 @@ const MENU_OPEN_FILE: &str = "open-file";
 const MENU_OPEN_FOLDER: &str = "open-folder";
 const MENU_SAVE: &str = "save";
 const MENU_SAVE_AS: &str = "save-as";
+const MENU_CLOSE_WINDOW: &str = "close-window";
 const MENU_TOGGLE_PREVIEW: &str = "toggle-preview";
 const MENU_TOGGLE_WRAP: &str = "toggle-wrap";
 const MENU_TOGGLE_INVISIBLES: &str = "toggle-invisibles";
@@ -565,7 +566,13 @@ fn build_app_menu_with_state<R: tauri::Runtime>(
                 Some("CmdOrCtrl+Shift+S"),
             )?,
             &PredefinedMenuItem::separator(app)?,
-            &PredefinedMenuItem::close_window(app, None)?,
+            &MenuItem::with_id(
+                app,
+                MENU_CLOSE_WINDOW,
+                "Close Window",
+                true,
+                Some("CmdOrCtrl+Shift+W"),
+            )?,
         ],
     )?;
     let view_menu = Submenu::with_items(
@@ -733,6 +740,7 @@ fn emit_app_menu_event<R: tauri::Runtime>(
                 | MENU_OPEN_FOLDER
                 | MENU_SAVE
                 | MENU_SAVE_AS
+                | MENU_CLOSE_WINDOW
                 | MENU_TOGGLE_PREVIEW
                 | MENU_TOGGLE_WRAP
                 | MENU_TOGGLE_INVISIBLES

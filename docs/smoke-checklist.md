@@ -68,8 +68,16 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 
 1. Open a Markdown file long enough for both editor and preview to scroll.
 2. Turn Preview on.
-3. Scroll the editor downward and confirm the preview follows to the matching approximate position.
-4. Scroll the preview back near the top and confirm the editor returns near the matching approximate position.
+3. Scroll the editor downward and confirm the preview follows to the matching approximate position without jittering.
+4. Scroll the preview back upward and confirm the editor follows to the matching approximate position without jittering.
+5. Confirm small scroll-position differences are tolerated instead of causing continuous fine adjustment.
+
+## Editor / Preview Split
+
+1. Open a Markdown file with Preview on.
+2. Drag the divider between editor and preview to make the preview wider.
+3. Confirm both panes remain usable and the preview can be made visibly larger.
+4. Focus the divider and press ArrowLeft / ArrowRight to confirm keyboard resizing works.
 
 ## Markdown Input Helpers
 
@@ -117,6 +125,16 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 7. Open at least two files from the tree.
 8. Confirm each file opens in its own tab.
 9. Switch tabs and confirm the editor, preview, status, and active tree item match the selected tab.
+
+## Workspace Image Preview
+
+1. Create a throwaway workspace with a Markdown file and a small PNG/JPEG/GIF/WebP image.
+2. Open the folder with File > Open Folder.
+3. Select the image from the workspace tree and confirm it opens as a read-only preview in the work area.
+4. Confirm the image file is highlighted in the workspace tree and the status bar identifies the selected image.
+5. Press Cmd+W and confirm the image preview closes without closing the app.
+6. Open the Markdown file from the same tree and confirm text editing, tabs, and Markdown preview still work normally.
+7. Add a Markdown local image reference to the text file and confirm the Markdown preview still shows an image-blocked note instead of loading it.
 
 ## Large Workspace Tree
 
@@ -184,7 +202,7 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 5. Confirm the app offers Save, Discard, and Cancel through the same dirty-tab confirmation used by the tab close button.
 6. Cancel once and confirm the tab stays open with its unsaved text and keyboard focus returns to the editor.
 7. Repeat Cmd+W and confirm Discard closes the tab without writing the unsaved text.
-8. Press Cmd+W with no active tab and confirm the window stays open.
+8. Press Cmd+Shift+W and confirm the window close path is requested.
 
 ## Editor Keyboard Editing
 
@@ -213,7 +231,7 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 
 1. Open two throwaway Markdown files.
 2. Edit both files without saving.
-3. Request app or window close from the window close control or Cmd+Q.
+3. Request app or window close from the window close control, Cmd+Shift+W, or Cmd+Q.
 4. Confirm the app stays open and offers Save All, Discard All, and Cancel.
 5. Confirm Cancel receives initial keyboard focus.
 6. Press Tab and Shift+Tab repeatedly and confirm focus cycles among Save All, Discard All, and Cancel without moving behind the dialog.

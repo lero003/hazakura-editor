@@ -53,7 +53,7 @@ export type EditorPaneHandle = {
   focus: () => void;
   goToLine: (line: number) => void;
   applyMarkdownFormat: (format: MarkdownFormat) => void;
-  setScrollRatio: (ratio: number) => void;
+  setScrollRatio: (ratio: number, tolerancePx?: number) => boolean;
 };
 
 const setSearchMatchesEffect =
@@ -188,17 +188,26 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         applyMarkdownFormat(view, format);
         view.focus();
       },
-      setScrollRatio(ratio) {
+      setScrollRatio(ratio, tolerancePx = 0) {
         const view = viewRef.current;
 
         if (!view) {
-          return;
+          return false;
         }
 
         const scroller = view.scrollDOM;
         const scrollableHeight = scroller.scrollHeight - scroller.clientHeight;
-        scroller.scrollTop =
-          scrollableHeight <= 0 ? 0 : scrollableHeight * clampScrollRatio(ratio);
+        const nextScrollTop =
+          scrollableHeight <= 0
+            ? 0
+            : scrollableHeight * clampScrollRatio(ratio);
+
+        if (Math.abs(scroller.scrollTop - nextScrollTop) < tolerancePx) {
+          return false;
+        }
+
+        scroller.scrollTop = nextScrollTop;
+        return true;
       },
     }),
     [],

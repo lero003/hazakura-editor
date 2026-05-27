@@ -1,11 +1,13 @@
 import {
   type KeyboardEvent as ReactKeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
+import { convertFileSrc } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import EditorPane, {
   type EditorPaneHandle,
@@ -46,6 +48,10 @@ const RECENT_FOLDERS_STORAGE_KEY = "hazakura-note-recent-folders";
 const MAX_RESTORED_TABS = 12;
 const MAX_STORED_DRAFTS = 20;
 const MAX_RECENT_ITEMS = 8;
+const SCROLL_SYNC_TOLERANCE_PX = 10;
+const DEFAULT_PREVIEW_COLUMN_PERCENT = 42;
+const MIN_PREVIEW_COLUMN_PERCENT = 25;
+const MAX_PREVIEW_COLUMN_PERCENT = 75;
 
 type SaveStatus = "idle" | "saving" | "saved" | "error" | "conflict";
 type ThemePreference = "system" | "light" | "dark";
@@ -109,9 +115,18 @@ type TextDocumentStats = {
   hasFinalNewline: boolean;
 };
 
+type ImagePreviewState = {
+  path: string;
+  name: string;
+  url: string;
+};
+
 export default function App() {
   const [tabs, setTabs] = useState<EditorTab[]>([]);
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<ImagePreviewState | null>(
+    null,
+  );
   const [workspaceTree, setWorkspaceTree] =
     useState<WorkspaceTreeEntry | null>(null);
   const [workspaceRootPath, setWorkspaceRootPath] = useState<string | null>(
@@ -150,6 +165,9 @@ export default function App() {
   const [previewVisible, setPreviewVisible] = useState(() =>
     readStoredPreviewVisible(),
   );
+  const [previewColumnPercent, setPreviewColumnPercent] = useState(
+    DEFAULT_PREVIEW_COLUMN_PERCENT,
+  );
   const [recentFiles, setRecentFiles] = useState<RecentEntry[]>(() =>
     readStoredRecentEntries(RECENT_FILES_STORAGE_KEY),
   );
@@ -167,6 +185,7 @@ export default function App() {
   const closeTabCancelButtonRef = useRef<HTMLButtonElement | null>(null);
   const appCloseCancelButtonRef = useRef<HTMLButtonElement | null>(null);
   const preferencesCloseButtonRef = useRef<HTMLButtonElement | null>(null);
+  const editorPreviewGridRef = useRef<HTMLDivElement | null>(null);
   const previewPaneRef = useRef<HTMLDivElement | null>(null);
   const previewScrollFrameRef = useRef<number | null>(null);
   const scrollSyncSourceRef = useRef<"editor" | "preview" | null>(null);
@@ -191,14 +210,17 @@ export default function App() {
   const activeError = activeTab?.error ?? globalError;
   const activeConflict = activeTab?.saveStatus === "conflict";
   const activeSaveError = isSaveFailureError(activeTab);
+  const hasWorkspaceSelection = Boolean(activeTab || selectedImage);
   const activeDocumentStats = useMemo(
     () => analyzeTextDocument(activeContents, activeTab?.line_ending),
     [activeContents, activeTab?.line_ending],
   );
   const activeDocumentMeta = activeTab
     ? formatActiveDocumentMeta(activeDocumentStats, activeTab, activeDirty)
+    : selectedImage
+      ? `Image · ${selectedImage.name}`
     : "No file open";
-  const documentKey = activeTab?.path ?? "welcome";
+  const documentKey = activeTab?.path ?? selectedImage?.path ?? "welcome";
   const findMatches = useMemo(
     () => findTextMatches(activeContents, findQuery, searchOptions),
     [activeContents, findQuery, searchOptions],
@@ -218,6 +240,12 @@ export default function App() {
   const discardingWindowCloseRef = useRef(false);
   const modalOpen =
     pendingCloseTab !== null || pendingAppClose || preferencesOpen;
+  const editorPreviewGridStyle =
+    previewVisible && activeTab
+      ? {
+          gridTemplateColumns: `minmax(280px, ${100 - previewColumnPercent}%) 6px minmax(260px, ${previewColumnPercent}%)`,
+        }
+      : undefined;
 
   const focusEditorSoon = useCallback(() => {
     window.requestAnimationFrame(() => {
@@ -244,13 +272,20 @@ export default function App() {
       }
 
       const scrollableHeight = previewPane.scrollHeight - previewPane.clientHeight;
-      scrollSyncSourceRef.current = "editor";
-      previewPane.scrollTop = scrollableHeight <= 0 ? 0 : scrollableHeight * ratio;
-      window.setTimeout(() => {
-        if (scrollSyncSourceRef.current === "editor") {
-          scrollSyncSourceRef.current = null;
-        }
-      }, 0);
+      const nextScrollTop = scrollableHeight <= 0 ? 0 : scrollableHeight * ratio;
+
+      if (
+        Math.abs(previewPane.scrollTop - nextScrollTop) >=
+        SCROLL_SYNC_TOLERANCE_PX
+      ) {
+        scrollSyncSourceRef.current = "editor";
+        previewPane.scrollTop = nextScrollTop;
+        window.setTimeout(() => {
+          if (scrollSyncSourceRef.current === "editor") {
+            scrollSyncSourceRef.current = null;
+          }
+        }, 80);
+      }
     });
   }, []);
 
@@ -270,13 +305,80 @@ export default function App() {
       scrollableHeight <= 0 ? 0 : previewPane.scrollTop / scrollableHeight;
 
     scrollSyncSourceRef.current = "preview";
-    editorPaneRef.current?.setScrollRatio(ratio);
-    window.setTimeout(() => {
-      if (scrollSyncSourceRef.current === "preview") {
-        scrollSyncSourceRef.current = null;
-      }
-    }, 0);
+    const didSync = editorPaneRef.current?.setScrollRatio(
+      ratio,
+      SCROLL_SYNC_TOLERANCE_PX,
+    );
+
+    if (didSync) {
+      window.setTimeout(() => {
+        if (scrollSyncSourceRef.current === "preview") {
+          scrollSyncSourceRef.current = null;
+        }
+      }, 80);
+      return;
+    }
+
+    scrollSyncSourceRef.current = null;
   }, []);
+
+  const resizePreviewColumn = useCallback((clientX: number) => {
+    const grid = editorPreviewGridRef.current;
+
+    if (!grid) {
+      return;
+    }
+
+    const rect = grid.getBoundingClientRect();
+    const previewPercent = ((rect.right - clientX) / rect.width) * 100;
+
+    setPreviewColumnPercent(
+      clampNumber(
+        previewPercent,
+        MIN_PREVIEW_COLUMN_PERCENT,
+        MAX_PREVIEW_COLUMN_PERCENT,
+        DEFAULT_PREVIEW_COLUMN_PERCENT,
+      ),
+    );
+  }, []);
+
+  const handlePreviewResizePointerDown = useCallback(
+    (event: ReactPointerEvent<HTMLDivElement>) => {
+      event.currentTarget.setPointerCapture(event.pointerId);
+      resizePreviewColumn(event.clientX);
+    },
+    [resizePreviewColumn],
+  );
+
+  const handlePreviewResizePointerMove = useCallback(
+    (event: ReactPointerEvent<HTMLDivElement>) => {
+      if (!event.currentTarget.hasPointerCapture(event.pointerId)) {
+        return;
+      }
+
+      resizePreviewColumn(event.clientX);
+    },
+    [resizePreviewColumn],
+  );
+
+  const handlePreviewResizeKeyDown = useCallback(
+    (event: ReactKeyboardEvent<HTMLDivElement>) => {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") {
+        return;
+      }
+
+      event.preventDefault();
+      setPreviewColumnPercent((currentPercent) =>
+        clampNumber(
+          currentPercent + (event.key === "ArrowLeft" ? 5 : -5),
+          MIN_PREVIEW_COLUMN_PERCENT,
+          MAX_PREVIEW_COLUMN_PERCENT,
+          currentPercent,
+        ),
+      );
+    },
+    [],
+  );
 
   const cancelPendingTabClose = useCallback(() => {
     setPendingCloseTabId(null);
@@ -352,6 +454,7 @@ export default function App() {
       const existingTab = tabs.find((tab) => tab.path === path);
       if (existingTab) {
         setActiveTabId(existingTab.id);
+        setSelectedImage(null);
         rememberRecentFile(path);
         setStatus("Tab focused");
         return;
@@ -380,6 +483,7 @@ export default function App() {
           );
         }
         setActiveTabId(path);
+        setSelectedImage(null);
         rememberRecentFile(path);
         setStatus(
           draft
@@ -394,6 +498,25 @@ export default function App() {
       }
     },
     [rememberRecentFile, tabs],
+  );
+
+  const openWorkspaceFile = useCallback(
+    async (path: string) => {
+      if (isSupportedImageFile(path)) {
+        setGlobalError(null);
+        setActiveTabId(null);
+        setSelectedImage({
+          path,
+          name: fileNameFromPath(path),
+          url: convertFileSrc(path),
+        });
+        setStatus("Image preview opened");
+        return;
+      }
+
+      await openFilePath(path);
+    },
+    [openFilePath],
   );
 
   const createNewFile = useCallback(async () => {
@@ -414,6 +537,7 @@ export default function App() {
 
       if (existingTab) {
         setActiveTabId(existingTab.id);
+        setSelectedImage(null);
         rememberRecentFile(path);
         setStatus("Tab focused");
         return;
@@ -430,6 +554,7 @@ export default function App() {
           : [...currentTabs, nextTab],
       );
       setActiveTabId(path);
+      setSelectedImage(null);
       rememberRecentFile(path);
 
       if (workspaceRootPath) {
@@ -477,6 +602,7 @@ export default function App() {
         const tree = await listWorkspaceTree(path);
         setWorkspaceTree(tree);
         setWorkspaceRootPath(path);
+        setSelectedImage(null);
         rememberRecentFolder(path);
         setStatus("Folder opened");
       } catch (err) {
@@ -661,11 +787,23 @@ export default function App() {
     workspaceRootPath,
   ]);
 
+  const requestWindowClose = useCallback(async () => {
+    setStatus("Closing window...");
+
+    try {
+      await closeCurrentWindow();
+    } catch (err) {
+      setGlobalError(`Close failed: ${String(err)}`);
+      setStatus("Close failed");
+    }
+  }, []);
+
   const appMenuActionsRef = useRef({
     createNewFile,
     openFile,
     openWorkspace,
     openWorkspacePath,
+    requestWindowClose,
     saveActiveTab,
     saveActiveTabAs,
   });
@@ -676,6 +814,7 @@ export default function App() {
       openFile,
       openWorkspace,
       openWorkspacePath,
+      requestWindowClose,
       saveActiveTab,
       saveActiveTabAs,
     };
@@ -684,6 +823,7 @@ export default function App() {
     openFile,
     openWorkspace,
     openWorkspacePath,
+    requestWindowClose,
     saveActiveTab,
     saveActiveTabAs,
   ]);
@@ -733,6 +873,9 @@ export default function App() {
           break;
         case "save-as":
           void actions.saveActiveTabAs();
+          break;
+        case "close-window":
+          void actions.requestWindowClose();
           break;
         case "toggle-preview":
           setPreviewVisible((current) => !current);
@@ -1210,14 +1353,16 @@ export default function App() {
   }, [recentFolders]);
 
   useEffect(() => {
-    const title = activeTab
+    const title = selectedImage
+      ? `${selectedImage.name} - hazakura-note`
+      : activeTab
       ? `${activeTab.name}${activeDirty ? " *" : ""} - hazakura-note`
       : "hazakura-note";
 
     void setCurrentWindowTitle(title).catch((err) => {
       console.warn("Failed to update window title", err);
     });
-  }, [activeDirty, activeTab]);
+  }, [activeDirty, activeTab, selectedImage]);
 
   useEffect(() => {
     const menuRecentFiles: AppMenuRecentItem[] = recentFiles.map((entry) => ({
@@ -1547,6 +1692,16 @@ export default function App() {
       if (
         (event.metaKey || event.ctrlKey) &&
         event.shiftKey &&
+        event.key.toLowerCase() === "w"
+      ) {
+        event.preventDefault();
+        void requestWindowClose();
+        return;
+      }
+
+      if (
+        (event.metaKey || event.ctrlKey) &&
+        event.shiftKey &&
         event.key.toLowerCase() === "s"
       ) {
         event.preventDefault();
@@ -1631,7 +1786,10 @@ export default function App() {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "w") {
         event.preventDefault();
 
-        if (activeTabId) {
+        if (selectedImage) {
+          setSelectedImage(null);
+          setStatus("Image preview closed");
+        } else if (activeTabId) {
           requestCloseTab(activeTabId);
         } else {
           setStatus("No active tab to close");
@@ -1660,9 +1818,11 @@ export default function App() {
     pendingAppClose,
     pendingCloseTabId,
     preferencesOpen,
+    requestWindowClose,
     requestCloseTab,
     saveActiveTabAs,
     saveActiveTab,
+    selectedImage,
   ]);
 
   useEffect(() => {
@@ -1700,7 +1860,10 @@ export default function App() {
                   <button
                     aria-selected={tab.id === activeTabId}
                     className="tab-button"
-                    onClick={() => setActiveTabId(tab.id)}
+                    onClick={() => {
+                      setSelectedImage(null);
+                      setActiveTabId(tab.id);
+                    }}
                     role="tab"
                     title={tab.path}
                     type="button"
@@ -2001,10 +2164,10 @@ export default function App() {
           </div>
           {workspaceTree ? (
             <WorkspaceTree
-              activePath={activeTab?.path ?? null}
+              activePath={selectedImage?.path ?? activeTab?.path ?? null}
               entry={workspaceTree}
               onLoadDirectory={loadWorkspaceDirectory}
-              onOpenFile={openFilePath}
+              onOpenFile={openWorkspaceFile}
             />
           ) : (
             <div className="workspace-empty">
@@ -2016,7 +2179,9 @@ export default function App() {
           )}
         </aside>
         <div
-          className={`editor-preview-grid${previewVisible && activeTab ? "" : " preview-hidden"}${activeTab ? "" : " empty-session"}`}
+          ref={editorPreviewGridRef}
+          className={`editor-preview-grid${previewVisible && activeTab ? "" : " preview-hidden"}${hasWorkspaceSelection ? "" : " empty-session"}`}
+          style={editorPreviewGridStyle}
         >
           <div className="pane editor-pane" aria-label="Editor">
             {activeTab ? (
@@ -2035,6 +2200,8 @@ export default function App() {
                 value={activeContents}
                 wrapLines={editorSettings.wrapLines}
               />
+            ) : selectedImage ? (
+              <ImagePreviewPane image={selectedImage} />
             ) : (
               <StartPanel
                 onNewFile={createNewFile}
@@ -2045,6 +2212,22 @@ export default function App() {
               />
             )}
           </div>
+          {previewVisible && activeTab ? (
+            <div
+              aria-label="Resize editor and preview columns"
+              aria-orientation="vertical"
+              aria-valuemax={MAX_PREVIEW_COLUMN_PERCENT}
+              aria-valuemin={MIN_PREVIEW_COLUMN_PERCENT}
+              aria-valuenow={Math.round(previewColumnPercent)}
+              className="pane-resizer"
+              onKeyDown={handlePreviewResizeKeyDown}
+              onPointerDown={handlePreviewResizePointerDown}
+              onPointerMove={handlePreviewResizePointerMove}
+              role="separator"
+              tabIndex={0}
+              title="Drag to resize editor and preview"
+            />
+          ) : null}
           {previewVisible && activeTab ? (
             <div
               className="pane preview-pane"
@@ -2319,6 +2502,20 @@ function StartPanel({
   );
 }
 
+function ImagePreviewPane({ image }: { image: ImagePreviewState }) {
+  return (
+    <div className="image-preview-pane">
+      <div className="image-preview-header">
+        <span>Image Preview</span>
+        <strong title={image.path}>{image.name}</strong>
+      </div>
+      <div className="image-preview-stage">
+        <img src={image.url} alt={image.name} />
+      </div>
+    </div>
+  );
+}
+
 function WorkspaceTree({
   activePath,
   entry,
@@ -2397,6 +2594,16 @@ function TextFileIcon() {
   );
 }
 
+function ImageFileIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2.5 3C2.5 2.17157 3.17157 1.5 4 1.5H12C12.8284 1.5 13.5 2.17157 13.5 3V13C13.5 13.8284 12.8284 14.5 12 14.5H4C3.17157 14.5 2.5 13.8284 2.5 13V3Z" stroke="var(--text-muted)" strokeWidth="1.4"/>
+      <path d="M4.25 11.25L6.25 8.75L8.25 10.75L9.75 8.75L12 11.25" stroke="var(--text-muted)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="10.5" cy="5.25" r="1" fill="var(--text-muted)" opacity="0.75"/>
+    </svg>
+  );
+}
+
 function ChevronIcon({ expanded }: { expanded: boolean }) {
   return (
     <svg
@@ -2435,6 +2642,7 @@ function TreeEntry({
 
   if (!isDirectory) {
     const isMarkdown = entry.name.toLowerCase().endsWith(".md") || entry.name.toLowerCase().endsWith(".markdown");
+    const isImage = isSupportedImageFile(entry.name);
     return (
       <button
         className={`tree-file${entry.path === activePath ? " active" : ""}`}
@@ -2442,7 +2650,13 @@ function TreeEntry({
         title={entry.path}
         type="button"
       >
-        {isMarkdown ? <MarkdownFileIcon /> : <TextFileIcon />}
+        {isImage ? (
+          <ImageFileIcon />
+        ) : isMarkdown ? (
+          <MarkdownFileIcon />
+        ) : (
+          <TextFileIcon />
+        )}
         <span className="tree-name">{entry.name}</span>
       </button>
     );
@@ -3077,6 +3291,12 @@ function formatFileType(fileName: string): string {
     default:
       return extension ? extension.toUpperCase() : "Plain text";
   }
+}
+
+function isSupportedImageFile(path: string): boolean {
+  const extension = path.split(".").at(-1)?.toLowerCase() ?? "";
+
+  return ["png", "jpg", "jpeg", "gif", "webp"].includes(extension);
 }
 
 function formatLineEndingKind(lineEnding: LineEndingKind): string {

@@ -19,7 +19,7 @@ Cadence: recurring local development loop, intended for small quality slices.
 
 Current phase: Source Preview Quality Polish (`docs/roadmap.md` v0.3.5).
 
-Primary outcome: one coherent smoke-driven improvement per run, verified, documented, committed, and pushed when checks pass.
+Primary outcome: one coherent quality-hardening improvement per run, verified, documented, committed, and pushed when checks pass.
 
 The automation should begin from built-app smoke whenever practical. If the smoke finds no actionable issue, a verified no-op is acceptable.
 
@@ -37,7 +37,7 @@ Choose the first useful slice that is both small and verifiable.
 
 1. Smoke-driven source preview polish:
    - rerun one narrow section of `docs/smoke-checklist.md` in the built app
-   - prefer checks that previously carried risk: save failure recovery, external-change recheck, dirty close, draft restore, Save As, line endings, preview sanitize, workspace tree, theme switching, search, long file names, and constrained-width layout
+   - prefer checks that previously carried risk: save failure recovery, external-change recheck, dirty close, draft restore, Save As, line endings, preview sanitize, workspace image preview, scroll sync, resizable panes, window close, workspace tree, theme switching, search, long file names, and constrained-width layout
    - fix only the smallest issue found by that smoke
 2. File safety and close/quit behavior:
    - app/window close confirmation manual-smoke follow-up if the new flow regresses
@@ -133,17 +133,17 @@ If checks fail:
 ## Reusable Automation Prompt
 
 ```txt
-Advance hazakura-note by one small, verifiable source-preview quality slice.
+Advance hazakura-note by one small, verifiable quality-hardening slice.
 
 Start by reading AGENTS.md, README.md, docs/current-status.md, docs/roadmap.md, docs/smoke-checklist.md, docs/development-automation.md, and checking git status --short --branch. Treat existing uncommitted changes as user or previous-run work and do not revert them.
 
-Use docs/development-automation.md as the source of truth. The current lane is Source Preview Quality Polish. Prefer built-app smoke first, then file safety and close/quit behavior, editor reliability, workspace scalability, Markdown writing comfort, local release readiness, and verified no-op if no useful small slice is safe.
+Use docs/development-automation.md as the source of truth. The current lane is Source Preview Quality Polish, with quality hardening as the priority. Prefer built-app smoke first, especially around file safety, close/quit behavior, workspace image preview, scroll sync, resizable panes, editor reliability, workspace scalability, Markdown writing comfort, local release readiness, and verified no-op if no useful small slice is safe.
 
 Do not implement Git integration, LSP, terminal, AI assistance, arbitrary command execution, plugin systems, project-wide analysis/indexing, signing/notarization completion, merge editor, advanced Git diff, or dependency/lockfile changes without explicit user approval.
 
 For substantial implementation, automation changes, Git/GitHub mutation, release work, or command-selection uncertainty, run Hazakura Habitat first and read agent_context.md before continuing. Consult command_policy.md before risky or mutating commands.
 
-Choose exactly one coherent slice. Prefer one narrow built-app smoke section from docs/smoke-checklist.md, fix only the smallest actionable issue found, update the relevant docs, and verify it. For code changes run npm run build:vite, cargo fmt --manifest-path src-tauri/Cargo.toml -- --check, cargo test --manifest-path src-tauri/Cargo.toml, npm run build, and git diff --check. For docs-only changes run git diff --check. For UI behavior changes, update or exercise docs/smoke-checklist.md and do not claim manual smoke passed unless it was actually exercised.
+Choose exactly one coherent slice. Prefer one narrow built-app smoke section from docs/smoke-checklist.md, fix only the smallest actionable quality issue found, update the relevant docs, and verify it. For code changes run npm run build:vite, cargo fmt --manifest-path src-tauri/Cargo.toml -- --check, cargo test --manifest-path src-tauri/Cargo.toml, npm run build, and git diff --check. For docs-only changes run git diff --check. For UI behavior changes, update or exercise docs/smoke-checklist.md and do not claim manual smoke passed unless it was actually exercised.
 
 If checks pass, stage only related files, commit with a concise message, and push to the configured HTTPS tracking branch. If checks fail, do not commit or push; report the failing command and next fix.
 

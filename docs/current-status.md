@@ -8,7 +8,7 @@ Last reviewed: 2026-05-28
 ## Current State
 
 - A touchable Tauri desktop prototype exists.
-- The prototype creates user-selected text/Markdown files, opens a user-selected folder, shows a lazy bounded file tree, opens multiple files in tabs, edits the active tab with CodeMirror 6, saves through Rust with external-change protection, searches with visible match highlights and keyboard/navigation options, and renders a toggleable sanitized Markdown preview.
+- The prototype creates user-selected text/Markdown files, opens a user-selected folder, shows a lazy bounded file tree, opens multiple files in tabs, edits the active tab with CodeMirror 6, saves through Rust with external-change protection, searches with visible match highlights and keyboard/navigation options, renders a toggleable sanitized Markdown preview, and shows selected workspace images in a read-only preview.
 - Existing LF / CRLF line endings are detected when a file is opened and preserved through save.
 - The status bar shows approximate UTF-8 byte count, character count, saved line-ending mode, final-newline state, and clean/unsaved state.
 - Line endings can be explicitly converted between LF and CRLF; conversion marks the tab unsaved until saved.
@@ -19,7 +19,9 @@ Last reviewed: 2026-05-28
 - The workspace header includes a small open-folder action for switching workspace without returning to the native menu.
 - Save writes the editor text without adding or removing a final trailing newline by policy; Rust tests cover LF and CRLF final-newline presence.
 - Markdown preview shows embedded `data:image` PNG/JPEG/GIF/WebP images and blocks external or local image references with an in-preview note.
-- Markdown preview and editor panes use lightweight scroll-position synchronization while preview is visible.
+- Selecting a PNG/JPEG/GIF/WebP file in the workspace tree opens a read-only local image preview in the work area without adding Markdown local-image loading.
+- Markdown preview and editor panes use lightweight bidirectional scroll synchronization with a small tolerance to avoid jitter while preview is visible.
+- The editor / preview split can be resized with a draggable vertical divider while preview is visible.
 - Recent workspace, open tabs, active tab, and theme preference are restored after restart.
 - Unsaved dirty tab drafts are stored locally and offered for explicit restoration after restart when the on-disk file still matches the draft's saved fingerprint.
 - Editor display settings for wrap, invisible characters, font size, and tab size are persisted locally and adjustable from Preferences.
@@ -39,7 +41,7 @@ Last reviewed: 2026-05-28
 - If Save from a dirty-tab close dialog fails or detects an external change, the close is stopped, the failed tab is selected, the dialog is dismissed, editor focus returns, and the existing save-failure or conflict recovery actions remain visible.
 - If Save All from the app/window close dialog fails or detects an external change, the close is stopped, the failed tab is selected, editor focus returns, and the existing save-failure or conflict recovery actions remain visible.
 - Discard All from the app/window close dialog removes matching stored unsaved drafts before close, so intentionally discarded edits are not offered for restoration on restart.
-- Cmd+N creates a new file, Cmd+O opens a file, Cmd+Shift+O opens a folder, and Cmd+W closes the active tab through the same dirty-tab confirmation path as the tab close button.
+- Cmd+N creates a new file, Cmd+O opens a file, Cmd+Shift+O opens a folder, Cmd+W closes the active tab through the same dirty-tab confirmation path as the tab close button, and Cmd+Shift+W requests window close.
 - Workspace tree loading now reads only direct children for the opened root or expanded directory, keeps heavy and hidden directory exclusions, rejects direct child listing outside the selected workspace root, and reports per-folder cap overflow as a partial listing instead of failing the whole workspace.
 - Atomic save cleanup removes the hidden temporary save file if the final replace step fails and refuses to overwrite a pre-existing hidden save temp file.
 - The built macOS app bundle is generated at `src-tauri/target/release/bundle/macos/hazakura-note.app`.
@@ -64,7 +66,9 @@ Last reviewed: 2026-05-28
 - Final-newline presence preservation on save
 - Preview visibility toggle through View / Preferences with `localStorage` persistence
 - Safe embedded-image preview policy for Markdown preview
-- Lightweight editor/preview scroll synchronization while Markdown preview is visible
+- Read-only local workspace image preview for PNG/JPEG/GIF/WebP files
+- Lightweight bidirectional editor/preview scroll synchronization while Markdown preview is visible
+- Resizable editor / preview columns while Markdown preview is visible
 - Multiple open file tabs
 - Tab-level unsaved state
 - Save / Discard / Cancel confirmation before closing an unsaved tab
@@ -88,7 +92,7 @@ Last reviewed: 2026-05-28
 - Native View menu actions for Preview, Wrap, Invisibles, Theme, and Preferences
 - Preferences dialog for display settings that were previously exposed in the top toolbar
 - Dynamic window title for active file and unsaved state
-- Keyboard shortcuts for New File, Open, Open Folder, Save, Find, and active-tab close
+- Keyboard shortcuts for New File, Open, Open Folder, Save, Find, active-tab close, and window close
 - Conflict recovery actions for reloading, closing, or continuing with local edits
 - Save-failure recovery wording and retry / keep-editing actions for non-conflict save errors
 - App/window close confirmation for dirty tabs
@@ -263,6 +267,13 @@ Find Close Polish checks on 2026-05-28:
 - `docs/smoke-checklist.md` now includes the close-button highlight-clear check in Active File Search.
 - Automated local gates passed after this change; no fresh built-app manual smoke was claimed.
 
+Workspace Image Preview / Quality Automation checks on 2026-05-28:
+
+- Workspace tree image selection now opens a read-only local PNG/JPEG/GIF/WebP preview in the work area.
+- Markdown preview image safety remains unchanged: local and external Markdown image references stay blocked, while embedded `data:image` references remain allowed.
+- `docs/development-automation.md` and the saved `hazakura-note-quality-loop` automation now prioritize quality-hardening slices that begin from built-app smoke when practical.
+- Automated local gates passed after this change; no fresh built-app manual smoke was claimed.
+
 Known verification note:
 
 - Vite reports a production chunk-size warning because CodeMirror and preview libraries are bundled together. This is acceptable for the prototype; revisit before distribution readiness.
@@ -273,6 +284,7 @@ Known verification note:
 - The Editor Keyboard Editing Polish used Vite browser smoke only; repeat the new editor keyboard checklist in the built app before treating this path as distribution-grade.
 - The UI Brush-up Search Overlay checks used Vite browser smoke only; repeat active-file search in the built app before treating this path as distribution-grade.
 - The Find Close Polish did not include a fresh built-app manual active-file search pass; use the updated close-button check before treating this path as distribution-grade.
+- The Workspace Image Preview / Quality Automation checks did not include a fresh built-app image-selection smoke pass; use the new workspace image checklist before treating this path as distribution-grade.
 - The Local Bundle Signature Polish made the generated bundle pass `codesign --verify` and `open -n` returned success, but the current sandboxed automation session could not inspect the running app menus; repeat built-app launch and native File menu smoke outside the sandbox before treating this path as distribution-grade.
 - Long file name clipping was re-smoked in the workspace tree during Source Preview Quality Polish. A narrower-window pass is still useful before binary distribution readiness.
 
