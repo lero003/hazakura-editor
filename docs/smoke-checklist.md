@@ -17,6 +17,8 @@ Latest Source Preview Quality Polish pass: 2026-05-27 with `/Users/keisetsu/Proj
 
 Latest Dirty Tab Close Failure Focus Polish checks: 2026-05-28 automated gates passed after updating the inactive-tab failed-selection path. No fresh built-app manual smoke was claimed.
 
+Latest Discard All Draft Cleanup Polish checks: 2026-05-28 automated gates passed after clearing discarded app/window close drafts before close. No fresh built-app manual smoke was claimed.
+
 ## Build First
 
 ```bash
@@ -171,8 +173,9 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 7. Press Escape once and confirm both dirty tabs remain open with their unsaved text and keyboard focus returns to the editor.
 8. Request close again, choose Cancel, and confirm both dirty tabs remain open with keyboard focus returned to the editor.
 9. Request close again and confirm Discard All exits without writing the unsaved text.
-10. Repeat with fresh edits and confirm Save All writes both files before closing.
-11. If one dirty file has an external save conflict or save failure, confirm Save All stops the close, leaves the app open, selects the failed tab, returns keyboard focus to the editor, and shows the normal recovery actions.
+10. Reopen the app and confirm the files discarded by Discard All are not offered as recoverable unsaved drafts.
+11. Repeat with fresh edits and confirm Save All writes both files before closing.
+12. If one dirty file has an external save conflict or save failure, confirm Save All stops the close, leaves the app open, selects the failed tab, returns keyboard focus to the editor, and shows the normal recovery actions.
 
 ## Theme Switching
 

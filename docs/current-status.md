@@ -32,6 +32,7 @@ Last reviewed: 2026-05-28
 - Dirty-tab and app/window close dialogs keep Tab / Shift+Tab focus cycling inside the dialog while it is open.
 - If Save from a dirty-tab close dialog fails or detects an external change, the close is stopped, the failed tab is selected, the dialog is dismissed, editor focus returns, and the existing save-failure or conflict recovery actions remain visible.
 - If Save All from the app/window close dialog fails or detects an external change, the close is stopped, the failed tab is selected, editor focus returns, and the existing save-failure or conflict recovery actions remain visible.
+- Discard All from the app/window close dialog removes matching stored unsaved drafts before close, so intentionally discarded edits are not offered for restoration on restart.
 - Cmd+N creates a new file, Cmd+O opens a file, Cmd+Shift+O opens a folder, and Cmd+W closes the active tab through the same dirty-tab confirmation path as the tab close button.
 - Workspace tree loading now reads only direct children for the opened root or expanded directory, keeps heavy and hidden directory exclusions, rejects direct child listing outside the selected workspace root, and reports per-folder cap overflow as a partial listing instead of failing the whole workspace.
 - Atomic save cleanup removes the hidden temporary save file if the final replace step fails and refuses to overwrite a pre-existing hidden save temp file.
@@ -82,6 +83,7 @@ Last reviewed: 2026-05-28
 - Dirty-tab and app/window close dialogs trap Tab / Shift+Tab focus while open
 - Failed or conflicted Save from the dirty-tab close dialog selects the failed tab and returns to the normal recovery banner
 - Failed or conflicted Save All from the app/window close dialog selects the failed tab and returns to the normal recovery banner
+- Discard All from the app/window close dialog clears matching stored recovery drafts before close
 - Long file name and constrained-width layout guardrails for tabs, the file tree, status/error rows, and close dialogs
 - Lazy file-tree directory expansion with per-folder partial-listing state
 - Binary-looking file rejection
@@ -191,12 +193,19 @@ Atomic Save Temp Collision Polish checks on 2026-05-28:
 - Rust tests cover successful atomic replacement, cleanup after a failed replace attempt, and pre-existing temp-file preservation.
 - Automated local gates passed after this change; no fresh built-app manual smoke was claimed.
 
+Discard All Draft Cleanup Polish checks on 2026-05-28:
+
+- Discard All from the app/window close dialog now suppresses draft persistence during the requested close and removes stored recovery drafts for the discarded dirty tabs.
+- `docs/smoke-checklist.md` now includes a restart check that discarded dirty tabs are not offered as recoverable drafts.
+- Automated local gates passed after this change; no fresh built-app manual smoke was claimed.
+
 Known verification note:
 
 - Vite reports a production chunk-size warning because CodeMirror and preview libraries are bundled together. This is acceptable for the prototype; revisit before distribution readiness.
 - The Modal Focus Trap Polish did not include a fresh built-app manual focus-cycling smoke pass; use the updated smoke checklist before treating this path as distribution-grade.
 - The App Close Save All Failure Focus Polish did not include a fresh built-app manual failure/conflict smoke pass; use the updated smoke checklist before treating this path as distribution-grade.
 - The Dirty Tab Close Failure Focus Polish did not include a fresh built-app manual failure/conflict smoke pass; use the updated smoke checklist before treating this path as distribution-grade.
+- The Discard All Draft Cleanup Polish did not include a fresh built-app manual restart smoke pass; use the updated smoke checklist before treating this path as distribution-grade.
 - Long file name clipping was re-smoked in the workspace tree during Source Preview Quality Polish. A narrower-window pass is still useful before binary distribution readiness.
 
 ## Risks / Unknowns

@@ -200,6 +200,7 @@ export default function App() {
       ? !canCompileRegex(findQuery)
       : false;
   const allowWindowCloseRef = useRef(false);
+  const discardingWindowCloseRef = useRef(false);
   const modalOpen = pendingCloseTab !== null || pendingAppClose;
 
   const focusEditorSoon = useCallback(() => {
@@ -665,9 +666,36 @@ export default function App() {
   }, [dirtyTabs, focusEditorSoon, saveTabById]);
 
   const discardAllAndCloseWindow = useCallback(async () => {
+    const discardedDraftPaths = dirtyTabs.map((tab) => tab.path);
+
+    discardingWindowCloseRef.current = true;
+    removeStoredDrafts(discardedDraftPaths);
+    setPendingDrafts((currentDrafts) =>
+      currentDrafts.filter(
+        (draft) => !discardedDraftPaths.includes(draft.path),
+      ),
+    );
     allowWindowCloseRef.current = true;
-    await closeCurrentWindow();
-  }, []);
+
+    try {
+      await closeCurrentWindow();
+    } catch (err) {
+      allowWindowCloseRef.current = false;
+      discardingWindowCloseRef.current = false;
+      writeStoredDrafts(
+        [
+          ...readStoredDrafts(),
+          ...tabsRef.current.filter(isDirty).map(draftRecordFromTab),
+        ].reduce<DraftRecord[]>(
+          (records, draft) => upsertDraftRecord(records, draft),
+          [],
+        ),
+      );
+      setPendingAppClose(false);
+      setGlobalError(`Close failed: ${String(err)}`);
+      setStatus("Close failed");
+    }
+  }, [dirtyTabs]);
 
   const reopenTabFromDisk = useCallback(
     async (tabId: string) => {
@@ -1017,13 +1045,11 @@ export default function App() {
       return;
     }
 
-    const dirtyDrafts = tabs.filter(isDirty).map((tab) => ({
-      path: tab.path,
-      contents: tab.contents,
-      line_ending: tab.line_ending,
-      savedFingerprint: tab.fingerprint,
-      updatedAt: Date.now(),
-    }));
+    if (discardingWindowCloseRef.current) {
+      return;
+    }
+
+    const dirtyDrafts = tabs.filter(isDirty).map(draftRecordFromTab);
     writeStoredDrafts(
       [...pendingDrafts, ...dirtyDrafts].reduce<DraftRecord[]>(
         (records, draft) => upsertDraftRecord(records, draft),
@@ -1966,6 +1992,26 @@ function removeStoredDraft(path: string) {
   writeStoredDrafts(
     readStoredDrafts().filter((draft) => draft.path !== path),
   );
+}
+
+function removeStoredDrafts(paths: string[]) {
+  if (paths.length === 0) {
+    return;
+  }
+
+  writeStoredDrafts(
+    readStoredDrafts().filter((draft) => !paths.includes(draft.path)),
+  );
+}
+
+function draftRecordFromTab(tab: EditorTab): DraftRecord {
+  return {
+    path: tab.path,
+    contents: tab.contents,
+    line_ending: tab.line_ending,
+    savedFingerprint: tab.fingerprint,
+    updatedAt: Date.now(),
+  };
 }
 
 function upsertDraftRecord(

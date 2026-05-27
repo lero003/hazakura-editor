@@ -51,6 +51,7 @@ Last reviewed: 2026-05-28
 - Dirty-tab and app/window close dialogs keep Tab / Shift+Tab focus within the dialog while it is open
 - Failed or conflicted saves from the dirty-tab close dialog stop the close, select the failed tab, and return to the editor with the normal recovery actions visible
 - Failed or conflicted Save All from the app/window close dialog stops the close, selects the failed tab, and returns to the editor with the normal recovery actions visible
+- Discard All from the app/window close dialog clears matching unsaved recovery drafts so intentionally discarded edits are not offered after restart
 - Long file names are clipped or wrapped in tabs, the file tree, status/error rows, and close dialogs so core controls stay reachable
 
 ## Canonical Docs
