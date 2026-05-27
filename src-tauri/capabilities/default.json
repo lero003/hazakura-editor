@@ -3,5 +3,9 @@
   "identifier": "default",
   "description": "Default desktop permissions for the hazakura-note prototype",
   "windows": ["main"],
-  "permissions": ["core:default", "dialog:default"]
+  "permissions": [
+    "core:default",
+    "core:window:allow-set-title",
+    "dialog:default"
+  ]
 }

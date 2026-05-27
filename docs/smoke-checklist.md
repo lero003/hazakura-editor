@@ -73,6 +73,16 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 5. Type text, save it, and confirm the file on disk contains the saved text.
 6. Try choosing an existing file path and confirm the app does not overwrite it.
 
+## Native Menus And Preferences
+
+1. Launch the built app with no open tabs and confirm the start panel is shown instead of editable welcome text.
+2. Confirm File > Save and File > Save As are disabled when no tab is open.
+3. Open a file and confirm the window title changes to the active file name.
+4. Edit the file and confirm the window title marks unsaved state, then save and confirm the mark clears.
+5. Confirm File > Recent Files can reopen a recently opened file.
+6. Toggle View > Preview, View > Wrap Lines, and View > Show Invisibles and confirm each setting changes the editor or preview.
+7. Open View > Preferences and confirm Font size, Tab size, Theme, Preview, Wrap, and Invisibles persist after restart.
+
 ## Workspace Tree And Tabs
 
 1. Create a throwaway folder outside the repo with nested Markdown files.
@@ -206,7 +216,7 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 3. Confirm the same long filename clips in the file tree instead of widening the sidebar.
 4. Edit the file, request tab close, and confirm the close dialog wraps the filename while Save, Discard, and Cancel remain visible.
 5. Trigger a save failure or conflict with that file when practical and confirm the message row wraps while recovery buttons remain reachable.
-6. Resize the window to the app minimum width and confirm the toolbar, find row, editor, preview, and status bar remain usable without controls overlapping.
+6. Resize the window to the app minimum width and confirm the top bar, tabs row, find row, editor, preview, and status bar remain usable without controls overlapping.
 
 ## Workspace Restoration
 

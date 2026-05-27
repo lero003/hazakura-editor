@@ -5,6 +5,21 @@ import {
   type CloseRequestedEvent,
 } from "@tauri-apps/api/window";
 
+export type AppMenuRecentItem = {
+  label: string;
+};
+
+export type AppMenuState = {
+  hasActiveTab: boolean;
+  activeDirty: boolean;
+  previewVisible: boolean;
+  wrapLines: boolean;
+  showInvisibles: boolean;
+  themePreference: "system" | "light" | "dark";
+  recentFiles: AppMenuRecentItem[];
+  recentFolders: AppMenuRecentItem[];
+};
+
 export type TextFileDocument = {
   path: string;
   name: string;
@@ -132,6 +147,15 @@ export async function closeCurrentWindow(): Promise<void> {
   await getCurrentWindow().close();
 }
 
+export async function setCurrentWindowTitle(title: string): Promise<void> {
+  if (!isTauriRuntime()) {
+    document.title = title;
+    return;
+  }
+
+  await getCurrentWindow().setTitle(title);
+}
+
 export async function onCurrentWindowCloseRequested(
   handler: (event: CloseRequestedEvent) => void | Promise<void>,
 ): Promise<() => void> {
@@ -194,6 +218,14 @@ export async function saveTextFileAs(
     contents,
     lineEnding,
   });
+}
+
+export async function updateAppMenuState(state: AppMenuState): Promise<void> {
+  if (!isTauriRuntime()) {
+    return;
+  }
+
+  await invoke("update_app_menu_state", { state });
 }
 
 function normalizeSelectedTextFilePath(path: string): string {

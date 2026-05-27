@@ -13,18 +13,20 @@ Last reviewed: 2026-05-28
 - The active tab shows approximate UTF-8 byte count, character count, saved line-ending mode, final-newline state, and clean/unsaved state.
 - Line endings can be explicitly converted between LF and CRLF; conversion marks the tab unsaved until saved.
 - Save As can create a new UTF-8 text file with common text extensions such as `.txt`, `.log`, `.json`, `.yaml`, `.toml`, `.csv`, `.css`, and `.html`, while refusing to overwrite an existing file.
-- New File, Open, Open Folder, Save, and Save As are available from the native File menu instead of occupying the top toolbar.
+- New File, Open, Open Folder, Save, Save As, and Recent file/folder actions are available from the native File menu instead of occupying the top toolbar.
+- Preview, Wrap, Invisibles, Theme, Font, and Tab display settings now live in the native View menu and Preferences dialog, leaving the top bar mostly informational.
+- The app window title follows the active file and marks unsaved state.
 - Save writes the editor text without adding or removing a final trailing newline by policy; Rust tests cover LF and CRLF final-newline presence.
 - Markdown preview shows embedded `data:image` PNG/JPEG/GIF/WebP images and blocks external or local image references with an in-preview note.
 - Recent workspace, open tabs, active tab, and theme preference are restored after restart.
 - Unsaved dirty tab drafts are stored locally and offered for explicit restoration after restart when the on-disk file still matches the draft's saved fingerprint.
-- Editor display settings for wrap, invisible characters, font size, and tab size are persisted locally.
+- Editor display settings for wrap, invisible characters, font size, and tab size are persisted locally and adjustable from Preferences.
 - Theme changes now reconfigure the active CodeMirror editor without recreating it, so the current cursor, selection, and undo/redo session state are not reset by switching Light / Dark / System.
 - The status bar shows cursor line/column and approximate selection character/line counts.
 - The active tab metadata includes a simple file type/mode label derived from the extension.
 - Active-file search supports case-sensitive, whole-word, and safe regex modes, with invalid regex input reported without throwing.
 - Go to Line jumps the active editor to a requested line.
-- The active tab is rechecked for external on-disk changes when it gains focus through tab switching or app focus/visibility changes.
+- The active tab is rechecked for external on-disk changes when it gains focus through tab switching or app focus/visibility changes, and external-change recovery is surfaced as a focused banner.
 - Find-field Enter / Escape handling and global shortcuts now ignore active IME composition events, so Japanese conversion is not mistaken for search movement, find close, save, open, or tab-close commands.
 - Editor-local keyboard editing keeps Tab inside the editor for indentation, supports Shift+Tab outdent, and preserves Shift+Arrow text selection.
 - Save conflicts now present explicit recovery choices: Reopen from disk, Close without saving, and Keep editing.
@@ -55,10 +57,10 @@ Last reviewed: 2026-05-28
 - Rust command for bounded direct directory listing inside the selected workspace root
 - Save-conflict detection using a Rust-generated file fingerprint
 - LF / CRLF line-ending detection and save preservation
-- Explicit LF / CRLF conversion control in the toolbar
+- Explicit LF / CRLF conversion control in the tab metadata row
 - Approximate byte count, character count, line-ending mode, and final-newline status in the tab metadata row
 - Final-newline presence preservation on save
-- Preview visibility toggle with `localStorage` persistence
+- Preview visibility toggle through View / Preferences with `localStorage` persistence
 - Safe embedded-image preview policy for Markdown preview
 - Multiple open file tabs
 - Tab-level unsaved state
@@ -78,7 +80,10 @@ Last reviewed: 2026-05-28
 - External-change metadata recheck on app focus / visibility return and active tab switch
 - IME-safe keyboard handling for find-field Enter / Escape and global shortcuts during active composition
 - Editor-local Tab / Shift+Tab indentation and Shift+Arrow selection key handling
-- Native File menu actions for New File, Open, Open Folder, Save, and Save As
+- Native File menu actions for New File, Open, Open Folder, Save, Save As, and Recent file/folder reopening
+- Native View menu actions for Preview, Wrap, Invisibles, Theme, and Preferences
+- Preferences dialog for display settings that were previously exposed in the top toolbar
+- Dynamic window title for active file and unsaved state
 - Keyboard shortcuts for New File, Open, Open Folder, Save, Find, and active-tab close
 - Conflict recovery actions for reloading, closing, or continuing with local edits
 - Save-failure recovery wording and retry / keep-editing actions for non-conflict save errors
@@ -127,13 +132,22 @@ Native File Menu UI polish on 2026-05-28:
 - `npm run build` passed and regenerated the local macOS `.app` bundle.
 - The regenerated `.app` launched, and macOS System Events confirmed the native File menu contains New File, Open, Open Folder, Save, and Save As.
 
+Application Completion Polish on 2026-05-28:
+
+- Top toolbar display settings were moved into the native View menu and Preferences dialog.
+- File menu Save / Save As now reflect whether the active document can be saved, and File menu Recent Files / Recent Folders are populated from local history.
+- The empty editor state now shows a focused start panel instead of editable welcome copy.
+- The workspace pane now has a stable workspace header, and the window title follows the active file plus unsaved state.
+- `npm run build:vite`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build`, and `git diff --check` passed.
+- Built-app checks confirmed the native File menu, View menu, disabled Save state, disabled Save As state with no open tab, dynamic window title for an active restored file, Preferences dialog rendering, and the no-file start panel.
+
 Local Bundle Signature Polish checks on 2026-05-28:
 
 - `src-tauri/tauri.conf.json` now points the bundle at `icons/icon.icns` and uses ad-hoc macOS signing for local build validation.
 - `npm run build` passed and regenerated the local macOS `.app` bundle with `Contents/Resources/icon.icns`.
 - `codesign --verify --deep --strict --verbose=2 src-tauri/target/release/bundle/macos/hazakura-note.app` passed.
 - No Developer ID signing or notarization was added.
-- In this sandboxed automation session, `open -n src-tauri/target/release/bundle/macos/hazakura-note.app` returned success after the bundle signature fix, but System Events menu inspection failed with `-1728` / connection-invalid errors, so no fresh native menu smoke was claimed for this polish.
+- Later built-app smoke on 2026-05-28 successfully inspected native menus through System Events, so the earlier menu-inspection blocker is no longer current.
 
 Runtime smoke:
 

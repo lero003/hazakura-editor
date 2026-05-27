@@ -26,44 +26,25 @@ import {
   pickWorkspaceFolder,
   saveTextFile,
   saveTextFileAs,
+  setCurrentWindowTitle,
+  updateAppMenuState,
+  type AppMenuRecentItem,
   type SavedFileState,
   type TextFileDocument,
   type WorkspaceTreeEntry,
 } from "./tauri";
 
-const WELCOME_MARKDOWN = `# hazakura-note
-
-安全に開く。静かに書く。差分で確かめる。
-
-メニューバーの File からMarkdownファイルを作成・選択できます。
-
-- Markdownを編集できます
-- 右側でプレビューできます
-- Cmd+Oで開き、Cmd+Wでタブを閉じ、Cmd+Sで保存できます
-`;
-
 const APP_MENU_ACTION_EVENT = "hazakura-note://menu-action";
-const APP_MENU_ACTIONS = [
-  "new-file",
-  "open-file",
-  "open-folder",
-  "save",
-  "save-as",
-] as const;
-
-type AppMenuAction = (typeof APP_MENU_ACTIONS)[number];
-
-function isAppMenuAction(action: string): action is AppMenuAction {
-  return (APP_MENU_ACTIONS as readonly string[]).includes(action);
-}
-
 const THEME_STORAGE_KEY = "hazakura-note-theme";
 const WORKSPACE_STATE_STORAGE_KEY = "hazakura-note-workspace-state";
 const PREVIEW_VISIBLE_STORAGE_KEY = "hazakura-note-preview-visible";
 const EDITOR_SETTINGS_STORAGE_KEY = "hazakura-note-editor-settings";
 const DRAFT_STATE_STORAGE_KEY = "hazakura-note-unsaved-drafts";
+const RECENT_FILES_STORAGE_KEY = "hazakura-note-recent-files";
+const RECENT_FOLDERS_STORAGE_KEY = "hazakura-note-recent-folders";
 const MAX_RESTORED_TABS = 12;
 const MAX_STORED_DRAFTS = 20;
+const MAX_RECENT_ITEMS = 8;
 
 type SaveStatus = "idle" | "saving" | "saved" | "error" | "conflict";
 type ThemePreference = "system" | "light" | "dark";
@@ -114,6 +95,12 @@ type DraftRecord = {
   updatedAt: number;
 };
 
+type RecentEntry = {
+  path: string;
+  label: string;
+  openedAt: number;
+};
+
 type TextDocumentStats = {
   bytes: number;
   characters: number;
@@ -130,13 +117,13 @@ export default function App() {
     null,
   );
   const [restoreComplete, setRestoreComplete] = useState(false);
-  const [welcomeContents, setWelcomeContents] = useState(WELCOME_MARKDOWN);
   const [status, setStatus] = useState("Ready");
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [pendingCloseTabId, setPendingCloseTabId] = useState<string | null>(
     null,
   );
   const [pendingAppClose, setPendingAppClose] = useState(false);
+  const [preferencesOpen, setPreferencesOpen] = useState(false);
   const [findQuery, setFindQuery] = useState("");
   const [findVisible, setFindVisible] = useState(false);
   const [searchOptions, setSearchOptions] = useState<SearchOptions>({
@@ -162,6 +149,12 @@ export default function App() {
   const [previewVisible, setPreviewVisible] = useState(() =>
     readStoredPreviewVisible(),
   );
+  const [recentFiles, setRecentFiles] = useState<RecentEntry[]>(() =>
+    readStoredRecentEntries(RECENT_FILES_STORAGE_KEY),
+  );
+  const [recentFolders, setRecentFolders] = useState<RecentEntry[]>(() =>
+    readStoredRecentEntries(RECENT_FOLDERS_STORAGE_KEY),
+  );
   const [systemTheme, setSystemTheme] = useState<ResolvedTheme>(() =>
     readSystemTheme(),
   );
@@ -169,9 +162,13 @@ export default function App() {
   const editorPaneRef = useRef<EditorPaneHandle | null>(null);
   const closeTabDialogRef = useRef<HTMLElement | null>(null);
   const appCloseDialogRef = useRef<HTMLElement | null>(null);
+  const preferencesDialogRef = useRef<HTMLElement | null>(null);
   const closeTabCancelButtonRef = useRef<HTMLButtonElement | null>(null);
   const appCloseCancelButtonRef = useRef<HTMLButtonElement | null>(null);
+  const preferencesCloseButtonRef = useRef<HTMLButtonElement | null>(null);
   const tabsRef = useRef<EditorTab[]>([]);
+  const recentFilesRef = useRef<RecentEntry[]>(recentFiles);
+  const recentFoldersRef = useRef<RecentEntry[]>(recentFolders);
 
   const activeTab = useMemo(
     () => tabs.find((tab) => tab.id === activeTabId) ?? null,
@@ -185,7 +182,7 @@ export default function App() {
   const dirtyTabCount = dirtyTabs.length;
   const resolvedTheme: ResolvedTheme =
     themePreference === "system" ? systemTheme : themePreference;
-  const activeContents = activeTab?.contents ?? welcomeContents;
+  const activeContents = activeTab?.contents ?? "";
   const activeDirty = activeTab ? isDirty(activeTab) : false;
   const activeError = activeTab?.error ?? globalError;
   const activeConflict = activeTab?.saveStatus === "conflict";
@@ -196,9 +193,7 @@ export default function App() {
   );
   const activeDocumentMeta = activeTab
     ? formatActiveDocumentMeta(activeDocumentStats, activeTab, activeDirty)
-    : previewVisible
-      ? "Preview only"
-      : "No file open";
+    : "No file open";
   const documentKey = activeTab?.path ?? "welcome";
   const findMatches = useMemo(
     () => findTextMatches(activeContents, findQuery, searchOptions),
@@ -217,7 +212,8 @@ export default function App() {
       : false;
   const allowWindowCloseRef = useRef(false);
   const discardingWindowCloseRef = useRef(false);
-  const modalOpen = pendingCloseTab !== null || pendingAppClose;
+  const modalOpen =
+    pendingCloseTab !== null || pendingAppClose || preferencesOpen;
 
   const focusEditorSoon = useCallback(() => {
     window.requestAnimationFrame(() => {
@@ -245,6 +241,18 @@ export default function App() {
     const tree = await listWorkspaceTree(workspaceRootPath);
     setWorkspaceTree(tree);
   }, [workspaceRootPath]);
+
+  const rememberRecentFile = useCallback((path: string) => {
+    setRecentFiles((currentEntries) =>
+      upsertRecentEntry(currentEntries, path, fileNameFromPath(path)),
+    );
+  }, []);
+
+  const rememberRecentFolder = useCallback((path: string) => {
+    setRecentFolders((currentEntries) =>
+      upsertRecentEntry(currentEntries, path, folderLabelFromPath(path)),
+    );
+  }, []);
 
   const loadWorkspaceDirectory = useCallback(
     async (directoryPath: string) => {
@@ -287,6 +295,7 @@ export default function App() {
       const existingTab = tabs.find((tab) => tab.path === path);
       if (existingTab) {
         setActiveTabId(existingTab.id);
+        rememberRecentFile(path);
         setStatus("Tab focused");
         return;
       }
@@ -314,6 +323,7 @@ export default function App() {
           );
         }
         setActiveTabId(path);
+        rememberRecentFile(path);
         setStatus(
           draft
             ? "Opened with recoverable draft"
@@ -326,7 +336,7 @@ export default function App() {
         setStatus("Open failed");
       }
     },
-    [tabs],
+    [rememberRecentFile, tabs],
   );
 
   const createNewFile = useCallback(async () => {
@@ -347,6 +357,7 @@ export default function App() {
 
       if (existingTab) {
         setActiveTabId(existingTab.id);
+        rememberRecentFile(path);
         setStatus("Tab focused");
         return;
       }
@@ -362,6 +373,7 @@ export default function App() {
           : [...currentTabs, nextTab],
       );
       setActiveTabId(path);
+      rememberRecentFile(path);
 
       if (workspaceRootPath) {
         try {
@@ -378,7 +390,7 @@ export default function App() {
       setGlobalError(String(err));
       setStatus("New file failed");
     }
-  }, [refreshWorkspaceTree, tabs, workspaceRootPath]);
+  }, [refreshWorkspaceTree, rememberRecentFile, tabs, workspaceRootPath]);
 
   const openFile = useCallback(async () => {
     setGlobalError(null);
@@ -399,6 +411,25 @@ export default function App() {
     }
   }, [openFilePath]);
 
+  const openWorkspacePath = useCallback(
+    async (path: string) => {
+      setGlobalError(null);
+      setStatus("Reading folder...");
+
+      try {
+        const tree = await listWorkspaceTree(path);
+        setWorkspaceTree(tree);
+        setWorkspaceRootPath(path);
+        rememberRecentFolder(path);
+        setStatus("Folder opened");
+      } catch (err) {
+        setGlobalError(String(err));
+        setStatus("Folder open failed");
+      }
+    },
+    [rememberRecentFolder],
+  );
+
   const openWorkspace = useCallback(async () => {
     setGlobalError(null);
     setStatus("Choosing folder...");
@@ -411,16 +442,12 @@ export default function App() {
         return;
       }
 
-      setStatus("Reading folder...");
-      const tree = await listWorkspaceTree(path);
-      setWorkspaceTree(tree);
-      setWorkspaceRootPath(path);
-      setStatus("Folder opened");
+      await openWorkspacePath(path);
     } catch (err) {
       setGlobalError(String(err));
       setStatus("Folder open failed");
     }
-  }, []);
+  }, [openWorkspacePath]);
 
   const saveTabById = useCallback(
     async (tabId: string): Promise<boolean> => {
@@ -539,6 +566,7 @@ export default function App() {
         currentTabs.map((tab) => (tab.id === activeTab.id ? nextTab : tab)),
       );
       setActiveTabId(nextTab.id);
+      rememberRecentFile(nextTab.path);
       removeStoredDraft(activeTab.path);
 
       if (workspaceRootPath) {
@@ -568,12 +596,19 @@ export default function App() {
       );
       setStatus("Save As failed");
     }
-  }, [activeTab, refreshWorkspaceTree, tabs, workspaceRootPath]);
+  }, [
+    activeTab,
+    refreshWorkspaceTree,
+    rememberRecentFile,
+    tabs,
+    workspaceRootPath,
+  ]);
 
   const appMenuActionsRef = useRef({
     createNewFile,
     openFile,
     openWorkspace,
+    openWorkspacePath,
     saveActiveTab,
     saveActiveTabAs,
   });
@@ -583,23 +618,50 @@ export default function App() {
       createNewFile,
       openFile,
       openWorkspace,
+      openWorkspacePath,
       saveActiveTab,
       saveActiveTabAs,
     };
-  }, [createNewFile, openFile, openWorkspace, saveActiveTab, saveActiveTabAs]);
+  }, [
+    createNewFile,
+    openFile,
+    openWorkspace,
+    openWorkspacePath,
+    saveActiveTab,
+    saveActiveTabAs,
+  ]);
 
   useEffect(() => {
     let disposed = false;
     let unlisten: UnlistenFn | null = null;
 
     void listen<string>(APP_MENU_ACTION_EVENT, (event) => {
-      if (!isAppMenuAction(event.payload)) {
+      const actions = appMenuActionsRef.current;
+      const action = event.payload;
+
+      if (action.startsWith("recent-file-")) {
+        const index = Number(action.slice("recent-file-".length));
+        const recentFile = recentFilesRef.current[index];
+
+        if (recentFile) {
+          void openFilePath(recentFile.path);
+        }
+
         return;
       }
 
-      const actions = appMenuActionsRef.current;
+      if (action.startsWith("recent-folder-")) {
+        const index = Number(action.slice("recent-folder-".length));
+        const recentFolder = recentFoldersRef.current[index];
 
-      switch (event.payload) {
+        if (recentFolder) {
+          void actions.openWorkspacePath(recentFolder.path);
+        }
+
+        return;
+      }
+
+      switch (action) {
         case "new-file":
           void actions.createNewFile();
           break;
@@ -614,6 +676,33 @@ export default function App() {
           break;
         case "save-as":
           void actions.saveActiveTabAs();
+          break;
+        case "toggle-preview":
+          setPreviewVisible((current) => !current);
+          break;
+        case "toggle-wrap":
+          setEditorSettings((current) => ({
+            ...current,
+            wrapLines: !current.wrapLines,
+          }));
+          break;
+        case "toggle-invisibles":
+          setEditorSettings((current) => ({
+            ...current,
+            showInvisibles: !current.showInvisibles,
+          }));
+          break;
+        case "theme-system":
+          setThemePreference("system");
+          break;
+        case "theme-light":
+          setThemePreference("light");
+          break;
+        case "theme-dark":
+          setThemePreference("dark");
+          break;
+        case "preferences":
+          setPreferencesOpen(true);
           break;
       }
     })
@@ -633,7 +722,7 @@ export default function App() {
       disposed = true;
       unlisten?.();
     };
-  }, []);
+  }, [openFilePath]);
 
   const convertActiveLineEnding = useCallback(
     (lineEnding: EditableLineEnding) => {
@@ -922,7 +1011,7 @@ export default function App() {
                   externalFingerprint: metadata.fingerprint,
                   saveStatus: "conflict",
                   error:
-                    "External change detected. The file changed on disk since it was opened; saving is stopped until you choose what to do.",
+                    "The file changed on disk since it was opened. Saving is stopped until you choose how to continue.",
                 }
               : candidate,
           ),
@@ -949,7 +1038,6 @@ export default function App() {
   const handleEditorChange = useCallback(
     (nextValue: string) => {
       if (!activeTabId) {
-        setWelcomeContents(nextValue);
         return;
       }
 
@@ -1025,6 +1113,65 @@ export default function App() {
   useEffect(() => {
     tabsRef.current = tabs;
   }, [tabs]);
+
+  useEffect(() => {
+    recentFilesRef.current = recentFiles;
+  }, [recentFiles]);
+
+  useEffect(() => {
+    recentFoldersRef.current = recentFolders;
+  }, [recentFolders]);
+
+  useEffect(() => {
+    writeStoredRecentEntries(RECENT_FILES_STORAGE_KEY, recentFiles);
+  }, [recentFiles]);
+
+  useEffect(() => {
+    writeStoredRecentEntries(RECENT_FOLDERS_STORAGE_KEY, recentFolders);
+  }, [recentFolders]);
+
+  useEffect(() => {
+    const title = activeTab
+      ? `${activeTab.name}${activeDirty ? " *" : ""} - hazakura-note`
+      : "hazakura-note";
+
+    void setCurrentWindowTitle(title).catch((err) => {
+      console.warn("Failed to update window title", err);
+    });
+  }, [activeDirty, activeTab]);
+
+  useEffect(() => {
+    const menuRecentFiles: AppMenuRecentItem[] = recentFiles.map((entry) => ({
+      label: entry.label,
+    }));
+    const menuRecentFolders: AppMenuRecentItem[] = recentFolders.map(
+      (entry) => ({
+        label: entry.label,
+      }),
+    );
+
+    void updateAppMenuState({
+      hasActiveTab: Boolean(activeTab),
+      activeDirty,
+      previewVisible,
+      wrapLines: editorSettings.wrapLines,
+      showInvisibles: editorSettings.showInvisibles,
+      themePreference,
+      recentFiles: menuRecentFiles,
+      recentFolders: menuRecentFolders,
+    }).catch((err) => {
+      console.warn("Failed to update app menu state", err);
+    });
+  }, [
+    activeDirty,
+    activeTab,
+    editorSettings.showInvisibles,
+    editorSettings.wrapLines,
+    previewVisible,
+    recentFiles,
+    recentFolders,
+    themePreference,
+  ]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1250,6 +1397,9 @@ export default function App() {
             cancelPendingTabClose();
           } else if (pendingAppClose) {
             cancelPendingAppClose();
+          } else if (preferencesOpen) {
+            setPreferencesOpen(false);
+            focusEditorSoon();
           }
         }
 
@@ -1257,7 +1407,9 @@ export default function App() {
           trapFocusInElement(
             pendingCloseTabId !== null
               ? closeTabDialogRef.current
-              : appCloseDialogRef.current,
+              : pendingAppClose
+                ? appCloseDialogRef.current
+                : preferencesDialogRef.current,
             event,
           );
         }
@@ -1268,6 +1420,48 @@ export default function App() {
       if (event.key === "Escape" && findVisible) {
         event.preventDefault();
         closeFindAndFocusEditor();
+        return;
+      }
+
+      if ((event.metaKey || event.ctrlKey) && event.key === ",") {
+        event.preventDefault();
+        setPreferencesOpen(true);
+        return;
+      }
+
+      if (
+        (event.metaKey || event.ctrlKey) &&
+        event.altKey &&
+        event.key.toLowerCase() === "p"
+      ) {
+        event.preventDefault();
+        setPreviewVisible((current) => !current);
+        return;
+      }
+
+      if (
+        (event.metaKey || event.ctrlKey) &&
+        event.altKey &&
+        event.key.toLowerCase() === "w"
+      ) {
+        event.preventDefault();
+        setEditorSettings((current) => ({
+          ...current,
+          wrapLines: !current.wrapLines,
+        }));
+        return;
+      }
+
+      if (
+        (event.metaKey || event.ctrlKey) &&
+        event.altKey &&
+        event.key.toLowerCase() === "i"
+      ) {
+        event.preventDefault();
+        setEditorSettings((current) => ({
+          ...current,
+          showInvisibles: !current.showInvisibles,
+        }));
         return;
       }
 
@@ -1345,6 +1539,7 @@ export default function App() {
     openWorkspace,
     pendingAppClose,
     pendingCloseTabId,
+    preferencesOpen,
     requestCloseTab,
     saveActiveTabAs,
     saveActiveTab,
@@ -1358,8 +1553,13 @@ export default function App() {
 
     if (pendingAppClose) {
       appCloseCancelButtonRef.current?.focus();
+      return;
     }
-  }, [pendingAppClose, pendingCloseTab]);
+
+    if (preferencesOpen) {
+      preferencesCloseButtonRef.current?.focus();
+    }
+  }, [pendingAppClose, pendingCloseTab, preferencesOpen]);
 
   return (
     <main className="app-shell">
@@ -1370,108 +1570,10 @@ export default function App() {
           </div>
         </div>
         <div className="top-bar-right">
-          <div className="editor-actions-group" role="group" aria-label="Editor settings">
-            <label className="line-ending-control">
-              <span>Line</span>
-              <select
-                aria-label="Line endings"
-                value={activeTab?.line_ending ?? "lf"}
-                disabled={!activeTab}
-                onChange={(event) =>
-                  convertActiveLineEnding(
-                    event.target.value as EditableLineEnding,
-                  )
-                }
-              >
-                <option value="lf">LF</option>
-                <option value="crlf">CRLF</option>
-              </select>
-            </label>
-            <label className="toggle-switch">
-              <input
-                type="checkbox"
-                checked={previewVisible}
-                onChange={(event) => setPreviewVisible(event.target.checked)}
-              />
-              <span className="slider"></span>
-              <span>Preview</span>
-            </label>
-            <label className="toggle-switch">
-              <input
-                type="checkbox"
-                checked={editorSettings.wrapLines}
-                onChange={(event) =>
-                  setEditorSettings((current) => ({
-                    ...current,
-                    wrapLines: event.target.checked,
-                  }))
-                }
-              />
-              <span className="slider"></span>
-              <span>Wrap</span>
-            </label>
-            <label className="toggle-switch">
-              <input
-                type="checkbox"
-                checked={editorSettings.showInvisibles}
-                onChange={(event) =>
-                  setEditorSettings((current) => ({
-                    ...current,
-                    showInvisibles: event.target.checked,
-                  }))
-                }
-              />
-              <span className="slider"></span>
-              <span>Invisibles</span>
-            </label>
-            <label className="number-control">
-              <span>Font</span>
-              <input
-                aria-label="Editor font size"
-                type="number"
-                min="12"
-                max="22"
-                value={editorSettings.fontSize}
-                onChange={(event) =>
-                  setEditorSettings((current) => ({
-                    ...current,
-                    fontSize: clampNumber(Number(event.target.value), 12, 22, 14),
-                  }))
-                }
-              />
-            </label>
-            <label className="line-ending-control">
-              <span>Tab</span>
-              <select
-                aria-label="Tab size"
-                value={editorSettings.tabSize}
-                onChange={(event) =>
-                  setEditorSettings((current) => ({
-                    ...current,
-                    tabSize: clampNumber(Number(event.target.value), 2, 8, 2),
-                  }))
-                }
-              >
-                <option value={2}>2</option>
-                <option value={4}>4</option>
-                <option value={8}>8</option>
-              </select>
-            </label>
-            <label className="theme-control">
-              <span>Theme</span>
-              <select
-                aria-label="Theme"
-                value={themePreference}
-                onChange={(event) =>
-                  setThemePreference(event.target.value as ThemePreference)
-                }
-              >
-                <option value="system">System</option>
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-              </select>
-            </label>
-          </div>
+          <span className="top-bar-state">
+            {activeTab ? activeTab.name : "No file open"}
+            {activeDirty ? " *" : ""}
+          </span>
         </div>
       </header>
 
@@ -1518,7 +1620,24 @@ export default function App() {
           )}
         </div>
         <div className="document-meta">
-          {activeDocumentMeta}
+          {activeTab ? (
+            <label className="line-ending-compact">
+              <span>Line</span>
+              <select
+                aria-label="Line endings"
+                value={activeTab.line_ending}
+                onChange={(event) =>
+                  convertActiveLineEnding(
+                    event.target.value as EditableLineEnding,
+                  )
+                }
+              >
+                <option value="lf">LF</option>
+                <option value="crlf">CRLF</option>
+              </select>
+            </label>
+          ) : null}
+          <span className="document-meta-text">{activeDocumentMeta}</span>
         </div>
       </section>
 
@@ -1625,10 +1744,6 @@ export default function App() {
               Go
             </button>
           </div>
-          <span className="shortcut-hint">
-            Cmd+N new · Cmd+O open · Cmd+Shift+O folder · Cmd+W close · Cmd+F find · Cmd+S save
-            · Cmd+Shift+S save as
-          </span>
           <button
             type="button"
             className="find-close"
@@ -1672,8 +1787,12 @@ export default function App() {
             className={activeConflict ? "conflict-banner" : "error-banner"}
           >
             <span className="message-copy">
-              {activeSaveError ? formatSaveFailureMessage() : activeError}
-              {activeSaveError ? (
+              {activeConflict
+                ? "File changed on disk"
+                : activeSaveError
+                  ? formatSaveFailureMessage()
+                  : activeError}
+              {activeConflict || activeSaveError ? (
                 <span className="message-detail">{activeError}</span>
               ) : null}
             </span>
@@ -1717,6 +1836,12 @@ export default function App() {
 
       <section className="workspace">
         <aside className="file-tree-pane" aria-label="Workspace file tree">
+          <div className="workspace-header">
+            <span className="workspace-kicker">Workspace</span>
+            <span className="workspace-title" title={workspaceRootPath ?? ""}>
+              {workspaceRootPath ? folderLabelFromPath(workspaceRootPath) : "None"}
+            </span>
+          </div>
           {workspaceTree ? (
             <WorkspaceTree
               activePath={activeTab?.path ?? null}
@@ -1734,25 +1859,35 @@ export default function App() {
           )}
         </aside>
         <div
-          className={`editor-preview-grid${previewVisible ? "" : " preview-hidden"}`}
+          className={`editor-preview-grid${previewVisible && activeTab ? "" : " preview-hidden"}${activeTab ? "" : " empty-session"}`}
         >
           <div className="pane editor-pane" aria-label="Editor">
-            <EditorPane
-              ref={editorPaneRef}
-              activeSearchMatchIndex={activeMatchIndex}
-              documentKey={documentKey}
-              fontSize={editorSettings.fontSize}
-              onChange={handleEditorChange}
-              onSelectionChange={setSelectionInfo}
-              searchMatches={findMatches}
-              showInvisibles={editorSettings.showInvisibles}
-              tabSize={editorSettings.tabSize}
-              theme={resolvedTheme}
-              value={activeContents}
-              wrapLines={editorSettings.wrapLines}
-            />
+            {activeTab ? (
+              <EditorPane
+                ref={editorPaneRef}
+                activeSearchMatchIndex={activeMatchIndex}
+                documentKey={documentKey}
+                fontSize={editorSettings.fontSize}
+                onChange={handleEditorChange}
+                onSelectionChange={setSelectionInfo}
+                searchMatches={findMatches}
+                showInvisibles={editorSettings.showInvisibles}
+                tabSize={editorSettings.tabSize}
+                theme={resolvedTheme}
+                value={activeContents}
+                wrapLines={editorSettings.wrapLines}
+              />
+            ) : (
+              <StartPanel
+                onNewFile={createNewFile}
+                onOpenFile={openFile}
+                onOpenFolder={openWorkspace}
+                recentFiles={recentFiles}
+                onOpenRecentFile={(path) => void openFilePath(path)}
+              />
+            )}
           </div>
-          {previewVisible ? (
+          {previewVisible && activeTab ? (
             <div className="pane preview-pane" aria-label="Markdown preview">
               <PreviewPane source={activeContents} />
             </div>
@@ -1839,7 +1974,188 @@ export default function App() {
           </section>
         </div>
       ) : null}
+
+      {preferencesOpen ? (
+        <div className="modal-backdrop" role="presentation">
+          <section
+            aria-labelledby="preferences-title"
+            aria-modal="true"
+            className="preferences-dialog"
+            ref={preferencesDialogRef}
+            role="dialog"
+          >
+            <div className="preferences-header">
+              <h2 id="preferences-title">Preferences</h2>
+              <button
+                aria-label="Close preferences"
+                className="icon-button"
+                onClick={() => {
+                  setPreferencesOpen(false);
+                  focusEditorSoon();
+                }}
+                ref={preferencesCloseButtonRef}
+                type="button"
+              >
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1.5 1.5L8.5 8.5M8.5 1.5L1.5 8.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                </svg>
+              </button>
+            </div>
+            <div className="preferences-sections">
+              <section className="preference-section" aria-label="Editor display">
+                <h3>Editor</h3>
+                <label className="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={editorSettings.wrapLines}
+                    onChange={(event) =>
+                      setEditorSettings((current) => ({
+                        ...current,
+                        wrapLines: event.target.checked,
+                      }))
+                    }
+                  />
+                  <span className="slider"></span>
+                  <span>Wrap lines</span>
+                </label>
+                <label className="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={editorSettings.showInvisibles}
+                    onChange={(event) =>
+                      setEditorSettings((current) => ({
+                        ...current,
+                        showInvisibles: event.target.checked,
+                      }))
+                    }
+                  />
+                  <span className="slider"></span>
+                  <span>Show invisibles</span>
+                </label>
+                <label className="field-control">
+                  <span>Font size</span>
+                  <input
+                    aria-label="Editor font size"
+                    type="number"
+                    min="12"
+                    max="22"
+                    value={editorSettings.fontSize}
+                    onChange={(event) =>
+                      setEditorSettings((current) => ({
+                        ...current,
+                        fontSize: clampNumber(
+                          Number(event.target.value),
+                          12,
+                          22,
+                          14,
+                        ),
+                      }))
+                    }
+                  />
+                </label>
+                <label className="field-control">
+                  <span>Tab size</span>
+                  <select
+                    aria-label="Tab size"
+                    value={editorSettings.tabSize}
+                    onChange={(event) =>
+                      setEditorSettings((current) => ({
+                        ...current,
+                        tabSize: clampNumber(
+                          Number(event.target.value),
+                          2,
+                          8,
+                          2,
+                        ),
+                      }))
+                    }
+                  >
+                    <option value={2}>2</option>
+                    <option value={4}>4</option>
+                    <option value={8}>8</option>
+                  </select>
+                </label>
+              </section>
+              <section className="preference-section" aria-label="Appearance">
+                <h3>Appearance</h3>
+                <label className="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={previewVisible}
+                    onChange={(event) => setPreviewVisible(event.target.checked)}
+                  />
+                  <span className="slider"></span>
+                  <span>Preview pane</span>
+                </label>
+                <label className="field-control">
+                  <span>Theme</span>
+                  <select
+                    aria-label="Theme"
+                    value={themePreference}
+                    onChange={(event) =>
+                      setThemePreference(event.target.value as ThemePreference)
+                    }
+                  >
+                    <option value="system">System</option>
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                  </select>
+                </label>
+              </section>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </main>
+  );
+}
+
+function StartPanel({
+  onNewFile,
+  onOpenFile,
+  onOpenFolder,
+  onOpenRecentFile,
+  recentFiles,
+}: {
+  onNewFile: () => void | Promise<void>;
+  onOpenFile: () => void | Promise<void>;
+  onOpenFolder: () => void | Promise<void>;
+  onOpenRecentFile: (path: string) => void;
+  recentFiles: RecentEntry[];
+}) {
+  return (
+    <div className="start-panel">
+      <div className="start-panel-main">
+        <span className="start-kicker">hazakura-note</span>
+        <h1>静かに書き始める</h1>
+        <div className="start-actions" aria-label="Start actions">
+          <button type="button" onClick={() => void onOpenFile()}>
+            Open File
+          </button>
+          <button type="button" onClick={() => void onOpenFolder()}>
+            Open Folder
+          </button>
+          <button type="button" onClick={() => void onNewFile()}>
+            New File
+          </button>
+        </div>
+      </div>
+      {recentFiles.length > 0 ? (
+        <div className="start-recent" aria-label="Recent files">
+          <span>Recent</span>
+          {recentFiles.slice(0, 4).map((entry) => (
+            <button
+              key={entry.path}
+              type="button"
+              onClick={() => onOpenRecentFile(entry.path)}
+              title={entry.path}
+            >
+              {entry.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -2120,6 +2436,67 @@ function readStoredDrafts(): DraftRecord[] {
   } catch {
     return [];
   }
+}
+
+function readStoredRecentEntries(storageKey: string): RecentEntry[] {
+  const value = window.localStorage.getItem(storageKey);
+
+  if (!value) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(value) as unknown;
+
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed
+      .filter(isRecentEntry)
+      .sort((a, b) => b.openedAt - a.openedAt)
+      .slice(0, MAX_RECENT_ITEMS);
+  } catch {
+    return [];
+  }
+}
+
+function writeStoredRecentEntries(storageKey: string, entries: RecentEntry[]) {
+  const normalizedEntries = entries
+    .sort((a, b) => b.openedAt - a.openedAt)
+    .slice(0, MAX_RECENT_ITEMS);
+
+  if (normalizedEntries.length === 0) {
+    window.localStorage.removeItem(storageKey);
+    return;
+  }
+
+  window.localStorage.setItem(storageKey, JSON.stringify(normalizedEntries));
+}
+
+function upsertRecentEntry(
+  entries: RecentEntry[],
+  path: string,
+  label: string,
+): RecentEntry[] {
+  return [
+    { path, label, openedAt: Date.now() },
+    ...entries.filter((entry) => entry.path !== path),
+  ].slice(0, MAX_RECENT_ITEMS);
+}
+
+function isRecentEntry(value: unknown): value is RecentEntry {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as Partial<RecentEntry>;
+
+  return (
+    typeof candidate.path === "string" &&
+    typeof candidate.label === "string" &&
+    typeof candidate.openedAt === "number"
+  );
 }
 
 function writeStoredDrafts(drafts: DraftRecord[]) {
@@ -2601,6 +2978,22 @@ function formatSaveFailureMessage(): string {
 
 function suggestedNewFilePath(workspaceRootPath: string | null): string | null {
   return workspaceRootPath ? `${workspaceRootPath}/untitled.md` : "untitled.md";
+}
+
+function fileNameFromPath(path: string): string {
+  const slashIndex = path.lastIndexOf("/");
+  const fileName = slashIndex === -1 ? path : path.slice(slashIndex + 1);
+
+  return fileName || path;
+}
+
+function folderLabelFromPath(path: string): string {
+  const normalizedPath = path.endsWith("/") ? path.slice(0, -1) : path;
+  const slashIndex = normalizedPath.lastIndexOf("/");
+  const folderName =
+    slashIndex === -1 ? normalizedPath : normalizedPath.slice(slashIndex + 1);
+
+  return folderName || normalizedPath || path;
 }
 
 function suggestedSaveAsPath(path: string): string {

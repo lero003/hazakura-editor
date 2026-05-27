@@ -1,9 +1,9 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::fs::{self, File, OpenOptions};
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::time::UNIX_EPOCH;
-use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
+use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri::Emitter;
 
 const LARGE_FILE_WARNING_BYTES: u64 = 5 * 1024 * 1024;
@@ -16,6 +16,15 @@ const MENU_OPEN_FILE: &str = "open-file";
 const MENU_OPEN_FOLDER: &str = "open-folder";
 const MENU_SAVE: &str = "save";
 const MENU_SAVE_AS: &str = "save-as";
+const MENU_TOGGLE_PREVIEW: &str = "toggle-preview";
+const MENU_TOGGLE_WRAP: &str = "toggle-wrap";
+const MENU_TOGGLE_INVISIBLES: &str = "toggle-invisibles";
+const MENU_THEME_SYSTEM: &str = "theme-system";
+const MENU_THEME_LIGHT: &str = "theme-light";
+const MENU_THEME_DARK: &str = "theme-dark";
+const MENU_PREFERENCES: &str = "preferences";
+const MENU_RECENT_FILE_PREFIX: &str = "recent-file-";
+const MENU_RECENT_FOLDER_PREFIX: &str = "recent-folder-";
 const EXCLUDED_WORKSPACE_DIRS: &[&str] = &[
     ".git",
     ".hg",
@@ -57,6 +66,24 @@ struct FileMetadataState {
     modified_ms: Option<u64>,
     fingerprint: String,
     large_file_warning: bool,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct AppMenuState {
+    has_active_tab: bool,
+    active_dirty: bool,
+    preview_visible: bool,
+    wrap_lines: bool,
+    show_invisibles: bool,
+    theme_preference: String,
+    recent_files: Vec<AppMenuRecentItem>,
+    recent_folders: Vec<AppMenuRecentItem>,
+}
+
+#[derive(Debug, Deserialize)]
+struct AppMenuRecentItem {
+    label: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -480,7 +507,23 @@ fn modified_ms(metadata: &fs::Metadata) -> Option<u64> {
 
 #[cfg(desktop)]
 fn build_app_menu<R: tauri::Runtime>(app: &tauri::AppHandle<R>) -> tauri::Result<Menu<R>> {
+    build_app_menu_with_state(app, None)
+}
+
+#[cfg(desktop)]
+fn build_app_menu_with_state<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+    state: Option<&AppMenuState>,
+) -> tauri::Result<Menu<R>> {
     let menu = Menu::default(app)?;
+    let has_active_tab = state.map(|state| state.has_active_tab).unwrap_or(false);
+    let active_dirty = state.map(|state| state.active_dirty).unwrap_or(false);
+    let preview_visible = state.map(|state| state.preview_visible).unwrap_or(true);
+    let wrap_lines = state.map(|state| state.wrap_lines).unwrap_or(true);
+    let show_invisibles = state.map(|state| state.show_invisibles).unwrap_or(false);
+    let theme_preference = state
+        .map(|state| state.theme_preference.as_str())
+        .unwrap_or("system");
     let file_menu = Submenu::with_items(
         app,
         "File",
@@ -496,16 +539,106 @@ fn build_app_menu<R: tauri::Runtime>(app: &tauri::AppHandle<R>) -> tauri::Result
                 Some("CmdOrCtrl+Shift+O"),
             )?,
             &PredefinedMenuItem::separator(app)?,
-            &MenuItem::with_id(app, MENU_SAVE, "Save", true, Some("CmdOrCtrl+S"))?,
+            &recent_submenu(
+                app,
+                "Recent Files",
+                MENU_RECENT_FILE_PREFIX,
+                state
+                    .map(|state| state.recent_files.as_slice())
+                    .unwrap_or(&[]),
+            )?,
+            &recent_submenu(
+                app,
+                "Recent Folders",
+                MENU_RECENT_FOLDER_PREFIX,
+                state
+                    .map(|state| state.recent_folders.as_slice())
+                    .unwrap_or(&[]),
+            )?,
+            &PredefinedMenuItem::separator(app)?,
+            &MenuItem::with_id(app, MENU_SAVE, "Save", active_dirty, Some("CmdOrCtrl+S"))?,
             &MenuItem::with_id(
                 app,
                 MENU_SAVE_AS,
                 "Save As...",
-                true,
+                has_active_tab,
                 Some("CmdOrCtrl+Shift+S"),
             )?,
             &PredefinedMenuItem::separator(app)?,
             &PredefinedMenuItem::close_window(app, None)?,
+        ],
+    )?;
+    let view_menu = Submenu::with_items(
+        app,
+        "View",
+        true,
+        &[
+            &CheckMenuItem::with_id(
+                app,
+                MENU_TOGGLE_PREVIEW,
+                "Preview",
+                true,
+                preview_visible,
+                Some("CmdOrCtrl+Option+P"),
+            )?,
+            &CheckMenuItem::with_id(
+                app,
+                MENU_TOGGLE_WRAP,
+                "Wrap Lines",
+                true,
+                wrap_lines,
+                Some("CmdOrCtrl+Option+W"),
+            )?,
+            &CheckMenuItem::with_id(
+                app,
+                MENU_TOGGLE_INVISIBLES,
+                "Show Invisibles",
+                true,
+                show_invisibles,
+                Some("CmdOrCtrl+Option+I"),
+            )?,
+            &PredefinedMenuItem::separator(app)?,
+            &Submenu::with_items(
+                app,
+                "Theme",
+                true,
+                &[
+                    &CheckMenuItem::with_id(
+                        app,
+                        MENU_THEME_SYSTEM,
+                        "System",
+                        true,
+                        theme_preference == "system",
+                        None::<&str>,
+                    )?,
+                    &CheckMenuItem::with_id(
+                        app,
+                        MENU_THEME_LIGHT,
+                        "Light",
+                        true,
+                        theme_preference == "light",
+                        None::<&str>,
+                    )?,
+                    &CheckMenuItem::with_id(
+                        app,
+                        MENU_THEME_DARK,
+                        "Dark",
+                        true,
+                        theme_preference == "dark",
+                        None::<&str>,
+                    )?,
+                ],
+            )?,
+            &PredefinedMenuItem::separator(app)?,
+            &MenuItem::with_id(
+                app,
+                MENU_PREFERENCES,
+                "Preferences...",
+                true,
+                Some("CmdOrCtrl+,"),
+            )?,
+            &PredefinedMenuItem::separator(app)?,
+            &PredefinedMenuItem::fullscreen(app, None)?,
         ],
     )?;
 
@@ -513,6 +646,8 @@ fn build_app_menu<R: tauri::Runtime>(app: &tauri::AppHandle<R>) -> tauri::Result
     {
         menu.remove_at(1)?;
         menu.insert(&file_menu, 1)?;
+        menu.remove_at(3)?;
+        menu.insert(&view_menu, 3)?;
     }
 
     #[cfg(not(any(
@@ -526,6 +661,7 @@ fn build_app_menu<R: tauri::Runtime>(app: &tauri::AppHandle<R>) -> tauri::Result
     {
         menu.remove_at(0)?;
         menu.insert(&file_menu, 0)?;
+        menu.insert(&view_menu, 2)?;
     }
 
     #[cfg(any(
@@ -537,9 +673,48 @@ fn build_app_menu<R: tauri::Runtime>(app: &tauri::AppHandle<R>) -> tauri::Result
     ))]
     {
         menu.insert(&file_menu, 0)?;
+        menu.insert(&view_menu, 2)?;
     }
 
     Ok(menu)
+}
+
+#[cfg(desktop)]
+fn recent_submenu<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+    title: &str,
+    id_prefix: &str,
+    items: &[AppMenuRecentItem],
+) -> tauri::Result<Submenu<R>> {
+    let submenu = Submenu::new(app, title, true)?;
+
+    if items.is_empty() {
+        submenu.append(&MenuItem::new(app, "No Recent Items", false, None::<&str>)?)?;
+        return Ok(submenu);
+    }
+
+    for (index, item) in items.iter().take(8).enumerate() {
+        submenu.append(&MenuItem::with_id(
+            app,
+            format!("{id_prefix}{index}"),
+            menu_label(&item.label),
+            true,
+            None::<&str>,
+        )?)?;
+    }
+
+    Ok(submenu)
+}
+
+#[cfg(desktop)]
+fn menu_label(label: &str) -> String {
+    let trimmed = label.trim();
+
+    if trimmed.is_empty() {
+        return "Untitled".to_string();
+    }
+
+    trimmed.replace('&', "&&")
 }
 
 #[cfg(desktop)]
@@ -549,12 +724,40 @@ fn emit_app_menu_event<R: tauri::Runtime>(
 ) {
     let action = event.id().as_ref();
 
-    if matches!(
-        action,
-        MENU_NEW_FILE | MENU_OPEN_FILE | MENU_OPEN_FOLDER | MENU_SAVE | MENU_SAVE_AS
-    ) {
+    if action.starts_with(MENU_RECENT_FILE_PREFIX)
+        || action.starts_with(MENU_RECENT_FOLDER_PREFIX)
+        || matches!(
+            action,
+            MENU_NEW_FILE
+                | MENU_OPEN_FILE
+                | MENU_OPEN_FOLDER
+                | MENU_SAVE
+                | MENU_SAVE_AS
+                | MENU_TOGGLE_PREVIEW
+                | MENU_TOGGLE_WRAP
+                | MENU_TOGGLE_INVISIBLES
+                | MENU_THEME_SYSTEM
+                | MENU_THEME_LIGHT
+                | MENU_THEME_DARK
+                | MENU_PREFERENCES
+        )
+    {
         let _ = app.emit(MENU_ACTION_EVENT, action);
     }
+}
+
+#[cfg(desktop)]
+#[tauri::command]
+fn update_app_menu_state<R: tauri::Runtime>(
+    app: tauri::AppHandle<R>,
+    state: AppMenuState,
+) -> Result<(), String> {
+    let menu = build_app_menu_with_state(&app, Some(&state))
+        .map_err(|err| format!("Cannot build app menu: {err}"))?;
+    app.set_menu(menu)
+        .map_err(|err| format!("Cannot update app menu: {err}"))?;
+
+    Ok(())
 }
 
 fn metadata_fingerprint(metadata: &fs::Metadata) -> String {
@@ -585,7 +788,8 @@ pub fn run() {
             list_workspace_directory,
             list_workspace_tree,
             save_text_file,
-            save_text_file_as
+            save_text_file_as,
+            update_app_menu_state
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
