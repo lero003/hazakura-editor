@@ -17,8 +17,10 @@ import {
   openTextFile,
   pickMarkdownFile,
   pickNewMarkdownFilePath,
+  pickSaveAsTextFilePath,
   pickWorkspaceFolder,
   saveTextFile,
+  saveTextFileAs,
   type SavedFileState,
   type TextFileDocument,
   type WorkspaceTreeEntry,
@@ -38,16 +40,20 @@ const WELCOME_MARKDOWN = `# hazakura-note
 
 const THEME_STORAGE_KEY = "hazakura-note-theme";
 const WORKSPACE_STATE_STORAGE_KEY = "hazakura-note-workspace-state";
+const PREVIEW_VISIBLE_STORAGE_KEY = "hazakura-note-preview-visible";
 const MAX_RESTORED_TABS = 12;
 
 type SaveStatus = "idle" | "saving" | "saved" | "error" | "conflict";
 type ThemePreference = "system" | "light" | "dark";
 type ResolvedTheme = "light" | "dark";
+type EditableLineEnding = "lf" | "crlf";
+type LineEndingKind = EditableLineEnding | "mixed" | "none";
 
 type EditorTab = TextFileDocument & {
   id: string;
   contents: string;
   lastSavedContents: string;
+  lastSavedLineEnding: EditableLineEnding;
   saveStatus: SaveStatus;
   error: string | null;
 };
@@ -61,6 +67,13 @@ type PersistedWorkspaceState = {
 type TextMatch = {
   from: number;
   to: number;
+};
+
+type TextDocumentStats = {
+  bytes: number;
+  characters: number;
+  lineEnding: LineEndingKind;
+  hasFinalNewline: boolean;
 };
 
 export default function App() {
@@ -83,6 +96,9 @@ export default function App() {
   const [activeMatchIndex, setActiveMatchIndex] = useState(0);
   const [themePreference, setThemePreference] = useState<ThemePreference>(() =>
     readStoredThemePreference(),
+  );
+  const [previewVisible, setPreviewVisible] = useState(() =>
+    readStoredPreviewVisible(),
   );
   const [systemTheme, setSystemTheme] = useState<ResolvedTheme>(() =>
     readSystemTheme(),
@@ -109,6 +125,10 @@ export default function App() {
   const activeError = activeTab?.error ?? globalError;
   const activeConflict = activeTab?.saveStatus === "conflict";
   const activeSaveError = isSaveFailureError(activeTab);
+  const activeDocumentStats = useMemo(
+    () => analyzeTextDocument(activeContents, activeTab?.line_ending),
+    [activeContents, activeTab?.line_ending],
+  );
   const documentKey = activeTab?.path ?? "welcome";
   const findMatches = useMemo(
     () => findTextMatches(activeContents, findQuery),
@@ -343,6 +363,7 @@ export default function App() {
                   fingerprint: saved.fingerprint,
                   large_file_warning: saved.size >= 5 * 1024 * 1024,
                   lastSavedContents: tab.contents,
+                  lastSavedLineEnding: saved.line_ending,
                   saveStatus: "saved",
                   error: null,
                 }
@@ -383,6 +404,102 @@ export default function App() {
 
     await saveTabById(activeTabId);
   }, [activeTabId, saveTabById]);
+
+  const saveActiveTabAs = useCallback(async () => {
+    if (!activeTab) {
+      setStatus("No active tab to save");
+      return;
+    }
+
+    setGlobalError(null);
+    setStatus("Choosing Save As path...");
+
+    try {
+      const path = await pickSaveAsTextFilePath(suggestedSaveAsPath(activeTab.path));
+
+      if (!path) {
+        setStatus("Save As cancelled");
+        return;
+      }
+
+      if (tabs.some((tab) => tab.path === path && tab.id !== activeTab.id)) {
+        setGlobalError("A tab is already open at the selected Save As path.");
+        setStatus("Save As stopped");
+        return;
+      }
+
+      setStatus("Saving as...");
+
+      const savedFile = await saveTextFileAs(
+        path,
+        activeTab.contents,
+        activeTab.line_ending,
+      );
+      const nextTab = createEditorTab(savedFile);
+
+      setTabs((currentTabs) =>
+        currentTabs.map((tab) => (tab.id === activeTab.id ? nextTab : tab)),
+      );
+      setActiveTabId(nextTab.id);
+
+      if (workspaceRootPath) {
+        try {
+          await refreshWorkspaceTree();
+        } catch (err) {
+          setGlobalError(String(err));
+          setStatus("Saved as; folder refresh failed");
+          return;
+        }
+      }
+
+      setStatus("Saved as");
+    } catch (err) {
+      const message = String(err);
+
+      setTabs((currentTabs) =>
+        currentTabs.map((tab) =>
+          tab.id === activeTab.id
+            ? {
+                ...tab,
+                saveStatus: "error",
+                error: message,
+              }
+            : tab,
+        ),
+      );
+      setStatus("Save As failed");
+    }
+  }, [activeTab, refreshWorkspaceTree, tabs, workspaceRootPath]);
+
+  const convertActiveLineEnding = useCallback(
+    (lineEnding: EditableLineEnding) => {
+      if (!activeTab) {
+        setStatus("No active tab to convert");
+        return;
+      }
+
+      const nextContents = normalizeTextLineEndings(
+        activeTab.contents,
+        "lf",
+      );
+
+      setTabs((currentTabs) =>
+        currentTabs.map((tab) =>
+          tab.id === activeTab.id
+            ? {
+                ...tab,
+                contents: nextContents,
+                line_ending: lineEnding,
+                saveStatus: "idle",
+                error: null,
+              }
+            : tab,
+        ),
+      );
+      setStatus(`Line endings set to ${formatLineEndingKind(lineEnding)}`);
+    },
+    [activeTab],
+  );
 
   const closeTabNow = useCallback(
     (tabId: string) => {
@@ -734,6 +851,13 @@ export default function App() {
   }, [resolvedTheme, themePreference]);
 
   useEffect(() => {
+    window.localStorage.setItem(
+      PREVIEW_VISIBLE_STORAGE_KEY,
+      previewVisible ? "true" : "false",
+    );
+  }, [previewVisible]);
+
+  useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (isImeComposing(event)) {
         return;
@@ -750,6 +874,16 @@ export default function App() {
           }
         }
 
+        return;
+      }
+
+      if (
+        (event.metaKey || event.ctrlKey) &&
+        event.shiftKey &&
+        event.key.toLowerCase() === "s"
+      ) {
+        event.preventDefault();
+        void saveActiveTabAs();
         return;
       }
 
@@ -813,6 +947,7 @@ export default function App() {
     pendingAppClose,
     pendingCloseTabId,
     requestCloseTab,
+    saveActiveTabAs,
     saveActiveTab,
   ]);
 
@@ -851,6 +986,37 @@ export default function App() {
           >
             Save
           </button>
+          <button
+            type="button"
+            onClick={() => void saveActiveTabAs()}
+            disabled={!activeTab}
+          >
+            Save As
+          </button>
+          <label className="line-ending-control">
+            <span>Line</span>
+            <select
+              aria-label="Line endings"
+              value={activeTab?.line_ending ?? "lf"}
+              disabled={!activeTab}
+              onChange={(event) =>
+                convertActiveLineEnding(
+                  event.target.value as EditableLineEnding,
+                )
+              }
+            >
+              <option value="lf">LF</option>
+              <option value="crlf">CRLF</option>
+            </select>
+          </label>
+          <label className="toggle-control">
+            <input
+              type="checkbox"
+              checked={previewVisible}
+              onChange={(event) => setPreviewVisible(event.target.checked)}
+            />
+            <span>Preview</span>
+          </label>
           <label className="theme-control">
             <span>Theme</span>
             <select
@@ -911,7 +1077,11 @@ export default function App() {
           )}
         </div>
         <div className="document-meta">
-          {activeTab ? formatBytes(activeTab.size) : "Preview only"}
+          {activeTab
+            ? formatDocumentMeta(activeDocumentStats)
+            : previewVisible
+              ? "Preview only"
+              : "No file open"}
           {activeTab?.large_file_warning ? " · large file" : ""}
           {activeTab ? (activeDirty ? " · unsaved" : " · clean") : ""}
         </div>
@@ -954,6 +1124,7 @@ export default function App() {
         </div>
         <span className="shortcut-hint">
           Cmd+N new · Cmd+O open · Cmd+Shift+O folder · Cmd+W close · Cmd+F find · Cmd+S save
+          · Cmd+Shift+S save as
         </span>
       </section>
 
@@ -1024,7 +1195,9 @@ export default function App() {
             </div>
           )}
         </aside>
-        <div className="editor-preview-grid">
+        <div
+          className={`editor-preview-grid${previewVisible ? "" : " preview-hidden"}`}
+        >
           <div className="pane editor-pane" aria-label="Editor">
             <EditorPane
               ref={editorPaneRef}
@@ -1036,9 +1209,11 @@ export default function App() {
               value={activeContents}
             />
           </div>
-          <div className="pane preview-pane" aria-label="Markdown preview">
-            <PreviewPane source={activeContents} />
-          </div>
+          {previewVisible ? (
+            <div className="pane preview-pane" aria-label="Markdown preview">
+              <PreviewPane source={activeContents} />
+            </div>
+          ) : null}
         </div>
       </section>
 
@@ -1228,11 +1403,14 @@ function TreeEntry({
 }
 
 function createEditorTab(file: TextFileDocument): EditorTab {
+  const editorContents = normalizeTextLineEndings(file.contents, "lf");
+
   return {
     ...file,
     id: file.path,
-    contents: file.contents,
-    lastSavedContents: file.contents,
+    contents: editorContents,
+    lastSavedContents: editorContents,
+    lastSavedLineEnding: file.line_ending,
     saveStatus: "idle",
     error: null,
   };
@@ -1255,7 +1433,10 @@ function replaceWorkspaceTreeEntry(
 }
 
 function isDirty(tab: EditorTab): boolean {
-  return tab.contents !== tab.lastSavedContents;
+  return (
+    tab.contents !== tab.lastSavedContents ||
+    tab.line_ending !== tab.lastSavedLineEnding
+  );
 }
 
 function readStoredThemePreference(): ThemePreference {
@@ -1266,6 +1447,10 @@ function readStoredThemePreference(): ThemePreference {
   }
 
   return "system";
+}
+
+function readStoredPreviewVisible(): boolean {
+  return window.localStorage.getItem(PREVIEW_VISIBLE_STORAGE_KEY) !== "false";
 }
 
 function readPersistedWorkspaceState(): PersistedWorkspaceState | null {
@@ -1333,6 +1518,105 @@ function isImeComposing(event: KeyboardEvent): boolean {
   return event.isComposing || event.key === "Process";
 }
 
+function analyzeTextDocument(
+  contents: string,
+  savedLineEnding?: EditableLineEnding,
+): TextDocumentStats {
+  const counts = countLineEndings(contents);
+  const byteContents = savedLineEnding
+    ? normalizeTextLineEndings(contents, savedLineEnding)
+    : contents;
+
+  return {
+    bytes: new TextEncoder().encode(byteContents).length,
+    characters: Array.from(contents).length,
+    lineEnding: savedLineEnding ?? summarizeLineEndings(counts),
+    hasFinalNewline: contents.endsWith("\n") || contents.endsWith("\r"),
+  };
+}
+
+function countLineEndings(contents: string) {
+  let crlf = 0;
+  let lf = 0;
+  let cr = 0;
+
+  for (let index = 0; index < contents.length; index += 1) {
+    const char = contents[index];
+    const nextChar = contents[index + 1];
+
+    if (char === "\r" && nextChar === "\n") {
+      crlf += 1;
+      index += 1;
+    } else if (char === "\n") {
+      lf += 1;
+    } else if (char === "\r") {
+      cr += 1;
+    }
+  }
+
+  return { crlf, lf, cr };
+}
+
+function summarizeLineEndings({
+  crlf,
+  lf,
+  cr,
+}: {
+  crlf: number;
+  lf: number;
+  cr: number;
+}): LineEndingKind {
+  const usedKinds = [crlf > 0, lf > 0, cr > 0].filter(Boolean).length;
+
+  if (usedKinds === 0) {
+    return "none";
+  }
+
+  if (usedKinds > 1 || cr > 0) {
+    return "mixed";
+  }
+
+  return crlf > 0 ? "crlf" : "lf";
+}
+
+function normalizeTextLineEndings(
+  contents: string,
+  lineEnding: EditableLineEnding,
+): string {
+  const lfContents = contents.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+
+  if (lineEnding === "lf") {
+    return lfContents;
+  }
+
+  return lfContents.replace(/\n/g, "\r\n");
+}
+
+function formatDocumentMeta(stats: TextDocumentStats): string {
+  return [
+    formatBytes(stats.bytes),
+    `${stats.characters.toLocaleString()} chars`,
+    formatLineEndingKind(stats.lineEnding),
+    stats.hasFinalNewline ? "final newline" : "no final newline",
+  ].join(" · ");
+}
+
+function formatLineEndingKind(lineEnding: LineEndingKind): string {
+  if (lineEnding === "crlf") {
+    return "CRLF";
+  }
+
+  if (lineEnding === "mixed") {
+    return "Mixed";
+  }
+
+  if (lineEnding === "none") {
+    return "No line endings";
+  }
+
+  return "LF";
+}
+
 function formatBytes(bytes: number): string {
   if (bytes < 1024) {
     return `${bytes} B`;
@@ -1362,6 +1646,19 @@ function formatSaveFailureMessage(): string {
 
 function suggestedNewFilePath(workspaceRootPath: string | null): string | null {
   return workspaceRootPath ? `${workspaceRootPath}/untitled.md` : "untitled.md";
+}
+
+function suggestedSaveAsPath(path: string): string {
+  const slashIndex = path.lastIndexOf("/");
+  const directory = slashIndex === -1 ? "" : path.slice(0, slashIndex + 1);
+  const fileName = slashIndex === -1 ? path : path.slice(slashIndex + 1);
+  const dotIndex = fileName.lastIndexOf(".");
+
+  if (dotIndex <= 0) {
+    return `${directory}${fileName}-copy`;
+  }
+
+  return `${directory}${fileName.slice(0, dotIndex)}-copy${fileName.slice(dotIndex)}`;
 }
 
 function saveStatusLabel(tab: EditorTab | null, dirty: boolean): string {

@@ -41,27 +41,43 @@ export type WorkspaceTreeEntry = {
   children_truncated: boolean;
 };
 
+const TEXT_FILE_EXTENSIONS = [
+  "md",
+  "markdown",
+  "mdown",
+  "txt",
+  "text",
+  "log",
+  "json",
+  "jsonl",
+  "yaml",
+  "yml",
+  "toml",
+  "csv",
+  "tsv",
+  "css",
+  "html",
+  "xml",
+  "ini",
+  "conf",
+];
+
+const TEXT_FILE_FILTERS = [
+  {
+    name: "Markdown",
+    extensions: ["md", "markdown", "mdown"],
+  },
+  {
+    name: "Text",
+    extensions: TEXT_FILE_EXTENSIONS,
+  },
+];
+
 export async function pickMarkdownFile(): Promise<string | null> {
   const selected = await open({
     multiple: false,
     directory: false,
-    filters: [
-      {
-        name: "Text",
-        extensions: [
-          "md",
-          "markdown",
-          "mdown",
-          "txt",
-          "json",
-          "yaml",
-          "yml",
-          "toml",
-          "css",
-          "html",
-        ],
-      },
-    ],
+    filters: TEXT_FILE_FILTERS,
   });
 
   return typeof selected === "string" ? selected : null;
@@ -72,19 +88,25 @@ export async function pickNewMarkdownFilePath(
 ): Promise<string | null> {
   const selected = await saveDialog({
     defaultPath: defaultPath ?? "untitled.md",
-    filters: [
-      {
-        name: "Markdown",
-        extensions: ["md", "markdown"],
-      },
-      {
-        name: "Text",
-        extensions: ["txt", "json", "yaml", "yml", "toml", "css", "html"],
-      },
-    ],
+    filters: TEXT_FILE_FILTERS,
   });
 
-  return typeof selected === "string" ? selected : null;
+  return typeof selected === "string"
+    ? normalizeSelectedTextFilePath(selected)
+    : null;
+}
+
+export async function pickSaveAsTextFilePath(
+  defaultPath: string | null,
+): Promise<string | null> {
+  const selected = await saveDialog({
+    defaultPath: defaultPath ?? "untitled-copy.md",
+    filters: TEXT_FILE_FILTERS,
+  });
+
+  return typeof selected === "string"
+    ? normalizeSelectedTextFilePath(selected)
+    : null;
 }
 
 export async function pickWorkspaceFolder(): Promise<string | null> {
@@ -156,4 +178,39 @@ export async function saveTextFile(
     expectedFingerprint,
     lineEnding,
   });
+}
+
+export async function saveTextFileAs(
+  path: string,
+  contents: string,
+  lineEnding: "lf" | "crlf",
+): Promise<TextFileDocument> {
+  return invoke<TextFileDocument>("save_text_file_as", {
+    path,
+    contents,
+    lineEnding,
+  });
+}
+
+function normalizeSelectedTextFilePath(path: string): string {
+  const slashIndex = path.lastIndexOf("/");
+  const directory = slashIndex === -1 ? "" : path.slice(0, slashIndex + 1);
+  const fileName = slashIndex === -1 ? path : path.slice(slashIndex + 1);
+  const segments = fileName.split(".");
+
+  if (segments.length < 3) {
+    return path;
+  }
+
+  const finalExtension = segments.at(-1)?.toLowerCase() ?? "";
+  const typedExtension = segments.at(-2)?.toLowerCase() ?? "";
+
+  if (
+    TEXT_FILE_EXTENSIONS.includes(finalExtension) &&
+    TEXT_FILE_EXTENSIONS.includes(typedExtension)
+  ) {
+    return `${directory}${segments.slice(0, -1).join(".")}`;
+  }
+
+  return path;
 }

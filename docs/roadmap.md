@@ -96,24 +96,42 @@ Status: Completed on 2026-05-26
 
 ## v0.3.2: Source Release Readiness
 
-Status: Planned
+Status: Evidence gathered on 2026-05-27; tag approval pending
 
 目的: 署名済みアプリ配布ではなく、source-only developer preview として公開判断できる状態にする。
 
-- `docs/source-release-checklist.md` に従ってsource release境界を確認する
-- `package.json`、`src-tauri/tauri.conf.json`、`src-tauri/Cargo.toml` のversion alignmentを確認する
-- READMEのbuild-from-source手順とKnown Limitsをsource release向けに確認する
-- source release notesを準備する
-- built appでfile safety、workspace tree、search、IME、theme、close確認のmanual smoke evidenceを残す
-- 既存のlocal quality gatesを通す
+- `docs/source-release-checklist.md` に従ってsource release境界を確認済み
+- `package.json`、`src-tauri/tauri.conf.json`、`src-tauri/Cargo.toml` のversion alignmentは `0.1.0` で確認済み
+- READMEのbuild-from-source手順とKnown Limitsをsource release向けに確認済み
+- source release notesの種を `docs/source-release-checklist.md` に記録済み
+- built appでfile safety、workspace tree、search、theme、close確認のmanual smoke evidenceを `docs/current-status.md` に記録済み
+- Japanese IME smokeはbuilt appで人間の手動入力により確認済み
+- 既存のlocal quality gatesはこのフェーズで実行済み
 
 このフェーズでは、Apple Developer ID署名、notarization、installer、自動更新、binary asset publicationは扱わない。tag作成、push、GitHub Release公開は、ユーザーの明示承認がある場合だけ行う。
+
+## v0.3.3: Text Editor Usability Pack
+
+Status: Completed on 2026-05-27
+
+目的: Markdown-first safe editorのまま、一般的なテキストエディタとして最低限ほしい表示・保存・preview操作を足す。
+
+- active tab metadataとして、概算byte数、文字数、改行コード、末尾改行の有無、clean/unsaved状態を表示
+- LF / CRLF の明示変換controlを追加し、変換後は保存までdirtyとして扱う
+- Save Asを追加し、`.md` 以外の一般的なUTF-8 text extensionにも新規保存できるようにする
+- Save Asは既存ファイルを上書きしない
+- macOS Save panelが `name.log.txt` のような二重拡張子を返した場合、既知のtext extension同士に限り意図した `name.log` に正規化する
+- Preview表示のON/OFFを追加し、選択を `localStorage` に保持
+- Markdown preview内の画像は、embedded `data:image` PNG/JPEG/GIF/WebPのみ表示し、外部/ローカル画像参照はブロック表示にする
+- built appでmetadata、preview toggle、image policy、CRLF -> LF変換、Save As to `.log` をmanual smoke済み
+
+このフェーズでは、画像ファイルブラウザ、外部画像読み込み、ローカル画像プロトコル、UI刷新、Git連携、LSP、terminal、AI支援は扱わない。
 
 ## v0.4: Markdown Workspace
 
 目的: Markdownを書く体験を軽くする。
 
-Before starting broad Markdown helpers, let the recurring automation close small reliability gaps from `docs/development-automation.md`, especially save-failure manual smoke, IME smoke, keyboard-only operation, and layout rough edges.
+Before starting broad Markdown helpers, let the recurring automation close small reliability gaps from `docs/development-automation.md`, especially keyboard-only operation, layout rough edges, and small reliability regressions found during manual smoke.
 
 - Markdownプレビュー
 - 見出しアウトライン

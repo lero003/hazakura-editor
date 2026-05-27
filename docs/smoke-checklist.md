@@ -7,6 +7,10 @@ Last reviewed: 2026-05-27
 
 Use this checklist after changes to file creation, file opening, workspace listing, tabs, saving, preview rendering, theme handling, workspace restoration, search, or save-conflict handling.
 
+Latest built-app source-release pass: 2026-05-27 with `/tmp/hazakura-note-release-smoke-20260527202313`. Confirmed New File create/existing-file non-overwrite, Open -> Edit -> Save, CRLF/final-newline preservation, conflict stop, save-failure recovery, dirty-tab close cancellation, app/window close cancellation, active-file search, Japanese IME composition guard, lazy workspace tree partial listing, theme switching/session persistence, and sanitize preview.
+
+Latest Text Editor Usability Pack pass: 2026-05-27 with `/tmp/hazakura-note-usability-smoke.VHMxWZ`. Confirmed active-tab byte/character/line-ending/final-newline metadata, CRLF clean-open behavior, explicit LF conversion and save, Save As to `.log`, preview toggle, and safe image preview policy.
+
 ## Build First
 
 ```bash
@@ -31,6 +35,24 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 8. Open the same file again from the Open button or file tree and confirm the existing tab is focused instead of duplicated.
 9. Repeat with a CRLF fixture and confirm saving preserves CRLF line endings on disk.
 10. Repeat with one fixture that ends in a final newline and one fixture that does not, then confirm saving does not add or remove the final newline.
+
+## Text Metadata And Line Endings
+
+1. Open a LF fixture and confirm the metadata row shows byte count, character count, `LF`, final-newline state, and clean/unsaved state.
+2. Open a CRLF fixture and confirm it opens clean while the metadata row shows `CRLF`.
+3. Change the Line control from CRLF to LF and confirm the tab becomes unsaved.
+4. Save and confirm the tab returns to clean.
+5. Read the file from disk and confirm CRLF bytes were converted to LF bytes.
+6. Repeat LF to CRLF if the changed area is safe to overwrite in a throwaway fixture.
+
+## Save As
+
+1. Open a throwaway text file.
+2. Click Save As or press Cmd+Shift+S.
+3. Save to a new common text extension such as `.log`, `.txt`, `.json`, `.yaml`, `.toml`, or `.csv`.
+4. Confirm the tab switches to the new path and remains clean.
+5. Confirm the new file exists on disk with the expected text and selected line endings.
+6. Try Save As to an existing path and confirm the app refuses to overwrite it.
 
 ## New File
 
@@ -72,6 +94,15 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 6. With the Find field focused, press Enter and Shift+Enter and confirm the active match moves next and previous.
 7. Press Escape and confirm the Find field clears and keyboard focus returns to the editor.
 8. Search for a missing word and confirm highlights clear and the UI reports no matches without changing the file.
+
+## Preview Toggle And Images
+
+1. Toggle Preview off and confirm the editor expands into the preview area.
+2. Toggle Preview on and confirm Markdown preview returns.
+3. Restart the app and confirm the Preview setting is restored.
+4. Add a Markdown external image such as `![remote](https://example.com/image.png)` and confirm the preview shows an image-blocked note instead of loading it.
+5. Add an embedded `data:image/png;base64` image in a throwaway note and confirm the preview treats it as an image.
+6. Confirm `script`, `iframe`, and inline event handlers still do not execute or appear as active content.
 
 ## Japanese IME
 

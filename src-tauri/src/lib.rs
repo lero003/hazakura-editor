@@ -186,6 +186,37 @@ fn save_text_file(
 }
 
 #[tauri::command]
+fn save_text_file_as(
+    path: String,
+    contents: String,
+    line_ending: String,
+) -> Result<TextFileDocument, String> {
+    let path_buf = PathBuf::from(&path);
+
+    if path_buf.exists() {
+        return Err("A file already exists at the selected path.".to_string());
+    }
+
+    let parent = path_buf
+        .parent()
+        .ok_or_else(|| "Cannot save a file without a parent directory.".to_string())?;
+
+    if !parent.is_dir() {
+        return Err("Selected folder does not exist.".to_string());
+    }
+
+    path_buf
+        .file_name()
+        .and_then(|name| name.to_str())
+        .ok_or_else(|| "Cannot save a file with an invalid name.".to_string())?;
+
+    let normalized_contents = normalize_line_endings(&contents, &line_ending);
+    write_new_file(&path_buf, normalized_contents.as_bytes())?;
+
+    open_text_file(path)
+}
+
+#[tauri::command]
 fn list_workspace_tree(root: String) -> Result<WorkspaceTreeEntry, String> {
     let root_path = PathBuf::from(&root);
     ensure_workspace_root(&root_path)?;
@@ -405,6 +436,21 @@ fn atomic_write(path: &Path, bytes: &[u8]) -> Result<(), String> {
     Ok(())
 }
 
+fn write_new_file(path: &Path, bytes: &[u8]) -> Result<(), String> {
+    let mut file = OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(path)
+        .map_err(|err| format!("Cannot create file: {err}"))?;
+
+    file.write_all(bytes)
+        .map_err(|err| format!("Cannot write file: {err}"))?;
+    file.sync_all()
+        .map_err(|err| format!("Cannot sync file: {err}"))?;
+
+    Ok(())
+}
+
 fn modified_ms(metadata: &fs::Metadata) -> Option<u64> {
     metadata
         .modified()
@@ -434,7 +480,8 @@ pub fn run() {
             get_file_metadata,
             list_workspace_directory,
             list_workspace_tree,
-            save_text_file
+            save_text_file,
+            save_text_file_as
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -650,6 +697,52 @@ mod tests {
         assert_eq!(
             fs::read(&path).expect("read saved file"),
             b"# Changed\r\n\r\nBody"
+        );
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn save_text_file_as_creates_new_text_extension_with_requested_line_endings() {
+        let dir = unique_test_dir("save_as_text_extension");
+        fs::create_dir_all(&dir).expect("create test dir");
+        let path = dir.join("note.log");
+
+        let document = save_text_file_as(
+            path.to_string_lossy().to_string(),
+            "First\nSecond\n".to_string(),
+            "crlf".to_string(),
+        )
+        .expect("save as text file");
+
+        assert_eq!(document.name, "note.log");
+        assert_eq!(document.line_ending, "crlf");
+        assert_eq!(
+            fs::read(&path).expect("read saved-as file"),
+            b"First\r\nSecond\r\n"
+        );
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn save_text_file_as_rejects_existing_file() {
+        let dir = unique_test_dir("save_as_existing");
+        fs::create_dir_all(&dir).expect("create test dir");
+        let path = dir.join("existing.txt");
+        fs::write(&path, "Keep me\n").expect("write fixture");
+
+        let err = save_text_file_as(
+            path.to_string_lossy().to_string(),
+            "Overwrite attempt\n".to_string(),
+            "lf".to_string(),
+        )
+        .expect_err("save as should not overwrite existing file");
+
+        assert!(err.contains("already exists"));
+        assert_eq!(
+            fs::read_to_string(&path).expect("read protected file"),
+            "Keep me\n"
         );
 
         let _ = fs::remove_dir_all(dir);

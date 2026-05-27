@@ -25,6 +25,10 @@ Last reviewed: 2026-05-27
 - Folder picker with a lazy, bounded file tree
 - File-tree, Open, and restored files unified into the same tab model
 - Multiple tabs with active-tab editor, preview, size, and save status
+- Active-tab metadata for approximate bytes, character count, LF / CRLF line-ending mode, and final-newline state
+- Explicit LF / CRLF conversion before save
+- Save As to a new common UTF-8 text file extension, with existing-file overwrite rejection
+- Preview visibility toggle with persisted preference
 - Tab-level unsaved state and Save / Discard / Cancel before closing dirty tabs
 - Keyboard shortcuts for New File, Open, Open Folder, Save, Find, and tab close
 - External-change save conflict detection with Reopen from disk / Close without saving / Keep editing actions
@@ -38,6 +42,7 @@ Last reviewed: 2026-05-27
 - Rust-side binary-looking file rejection, large-file warning, editing size limit, and atomic save helper
 - Existing LF / CRLF line endings are preserved on save
 - Existing final-newline presence is preserved on save; the app does not add or remove a trailing newline by policy
+- Markdown preview blocks external/local image references and allows embedded `data:image` PNG/JPEG/GIF/WebP images
 - Window and dirty-tab close requests are stopped when open tabs have unsaved changes, with safe keyboard cancellation, Save / Discard choices, and editor focus restored after cancellation
 - Failed or conflicted saves from the dirty-tab close dialog stop the close and return to the editor with the normal recovery actions visible
 - Long file names are clipped or wrapped in tabs, the file tree, status/error rows, and close dialogs so core controls stay reachable
@@ -83,6 +88,13 @@ cargo test --manifest-path src-tauri/Cargo.toml
 npm run build
 git diff --check
 ```
+
+Source-only developer preview boundary:
+
+- Current intended source version is `0.1.0` across npm, Tauri, and Cargo metadata.
+- Source users build locally with `npm install` and `npm run build`.
+- The generated local `.app` is unsigned and not notarized.
+- Tag creation, push, and GitHub Release publication require explicit user approval.
 
 ## Known Limits
 

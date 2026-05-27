@@ -1,6 +1,6 @@
 # Source Release Checklist
 
-Status: Draft
+Status: Evidence gathered; release approval pending
 Scope: Source-only release readiness
 Authority: High
 Last reviewed: 2026-05-27
@@ -60,14 +60,20 @@ Use the built app and record concise evidence in `docs/current-status.md` before
 - Lazy workspace tree opens a large throwaway workspace, loads expanded directories on demand, hides excluded directories, and shows partial listing when a folder exceeds the cap
 - Theme switching keeps editor cursor/selection and undo/redo session state
 
+2026-05-27 built-app evidence:
+
+- Confirmed with `/tmp/hazakura-note-release-smoke-20260527202313`: New File create, existing-file non-overwrite, Open -> Edit -> Save, CRLF preservation, final-newline preservation, external-change conflict, non-conflict save failure recovery, dirty-tab close cancellation, app/window close cancellation, active-file search, lazy workspace tree, theme switching, restart theme persistence, and Markdown preview sanitize.
+- Japanese IME composition was confirmed by human manual smoke in the built app; editor and Find-field composition confirmation did not trigger editor shortcuts while composing.
+- Follow-up Text Editor Usability Pack smoke used `/tmp/hazakura-note-usability-smoke.VHMxWZ` and confirmed metadata display, preview toggle, safe image preview policy, LF conversion save, and Save As to `.log`.
+
 ## Version And Release Notes
 
 Before tagging:
 
-- Confirm `package.json`, `src-tauri/tauri.conf.json`, and `src-tauri/Cargo.toml` carry the intended version.
-- Add or update release notes for the source preview.
-- State clearly that users build from source with `npm install` and `npm run build`.
-- State clearly that the built local app is unsigned and not notarized.
+- Confirm `package.json`, `src-tauri/tauri.conf.json`, and `src-tauri/Cargo.toml` carry the intended version. Current checked version: `0.1.0` in all three files.
+- Add or update release notes for the source preview. Current source-release note seed: source-only developer preview, local build from source, unsigned/not notarized local `.app`, no binary assets.
+- State clearly that users build from source with `npm install` and `npm run build`. This is present in `README.md`.
+- State clearly that the built local app is unsigned and not notarized. This is present in `README.md` Known Limits.
 - Keep known limits visible in `README.md` and `docs/current-status.md`.
 
 ## Stop Conditions
