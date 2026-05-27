@@ -36,13 +36,13 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 ## Open -> Edit -> Save
 
 1. Create a throwaway Markdown file outside the repo.
-2. Open it with the app's Open button.
+2. Open it with File > Open or Cmd+O.
 3. Edit the text.
 4. Confirm the title and status bar show unsaved state.
-5. Save.
-6. Confirm the Save button disables and the status returns to clean.
+5. Save with File > Save or Cmd+S.
+6. Confirm the status returns to clean.
 7. Read the file from disk and confirm the edited text was written.
-8. Open the same file again from the Open button or file tree and confirm the existing tab is focused instead of duplicated.
+8. Open the same file again from File > Open or the file tree and confirm the existing tab is focused instead of duplicated.
 9. Repeat with a CRLF fixture and confirm saving preserves CRLF line endings on disk.
 10. Repeat with one fixture that ends in a final newline and one fixture that does not, then confirm saving does not add or remove the final newline.
 
@@ -58,7 +58,7 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 ## Save As
 
 1. Open a throwaway text file.
-2. Click Save As or press Cmd+Shift+S.
+2. Use File > Save As or press Cmd+Shift+S.
 3. Save to a new common text extension such as `.log`, `.txt`, `.json`, `.yaml`, `.toml`, or `.csv`.
 4. Confirm the tab switches to the new path and remains clean.
 5. Confirm the new file exists on disk with the expected text and selected line endings.
@@ -66,8 +66,8 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 
 ## New File
 
-1. Open a throwaway folder outside the repo with Open Folder.
-2. Click New File or press Cmd+N.
+1. Open a throwaway folder outside the repo with File > Open Folder.
+2. Use File > New File or press Cmd+N.
 3. Choose a new Markdown filename inside the throwaway folder.
 4. Confirm the new file opens as a clean tab and appears in the file tree.
 5. Type text, save it, and confirm the file on disk contains the saved text.
@@ -77,7 +77,7 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 
 1. Create a throwaway folder outside the repo with nested Markdown files.
 2. Add excluded folders such as `.git`, `node_modules`, `target`, and `dist`.
-3. Open the folder with Open Folder.
+3. Open the folder with File > Open Folder.
 4. Confirm the file tree shows normal folders and files, and does not show excluded folders.
 5. Confirm nested folders are not recursively populated until expanded.
 6. Expand a nested folder and confirm its direct children appear on demand.
@@ -88,7 +88,7 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 ## Large Workspace Tree
 
 1. Create a throwaway folder outside the repo with more than 2,000 entries inside one child directory.
-2. Open the throwaway folder with Open Folder and confirm the root listing completes instead of failing the whole workspace.
+2. Open the throwaway folder with File > Open Folder and confirm the root listing completes instead of failing the whole workspace.
 3. Expand the large child directory.
 4. Confirm the directory shows visible entries and a partial-listing note.
 5. Confirm excluded folders such as `.git`, `node_modules`, `target`, and `dist` still do not appear.

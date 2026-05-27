@@ -28,6 +28,7 @@ Last reviewed: 2026-05-28
 - Active-tab metadata for approximate bytes, character count, LF / CRLF line-ending mode, and final-newline state
 - Explicit LF / CRLF conversion before save
 - Save As to a new common UTF-8 text file extension, with existing-file overwrite rejection
+- Native File menu entries for New File, Open, Open Folder, Save, and Save As
 - Preview visibility toggle with persisted preference
 - Tab-level unsaved state and Save / Discard / Cancel before closing dirty tabs
 - Keyboard shortcuts for New File, Open, Open Folder, Save, Find, and tab close

@@ -133,7 +133,7 @@ button:disabled {
 
 .app-shell {
   display: grid;
-  grid-template-rows: 58px 44px min-content minmax(0, 1fr) 28px;
+  grid-template-rows: 48px 44px min-content minmax(0, 1fr) 28px;
   height: 100vh;
   background: var(--bg);
 }
@@ -167,8 +167,7 @@ button:disabled {
 
 .brand-block {
   display: flex;
-  flex-direction: column;
-  gap: 1px;
+  align-items: center;
   min-width: 0;
 }
 
@@ -179,23 +178,10 @@ button:disabled {
   color: var(--accent);
 }
 
-.app-subtitle {
-  color: var(--text-muted);
-  font-size: 11px;
-  font-weight: 500;
-}
-
 .top-bar-left {
   display: flex;
   align-items: center;
-  gap: 24px;
   min-width: 0;
-}
-
-.file-actions-group {
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }
 
 .top-bar-right {
@@ -1001,7 +987,7 @@ button:disabled {
 
 @media (max-width: 1040px) {
   .app-shell {
-    grid-template-rows: minmax(58px, auto) 44px min-content minmax(0, 1fr) 28px;
+    grid-template-rows: minmax(48px, auto) 44px min-content minmax(0, 1fr) 28px;
   }
 
   .top-bar {

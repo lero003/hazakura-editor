@@ -3,11 +3,19 @@ use std::fs::{self, File, OpenOptions};
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::time::UNIX_EPOCH;
+use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
+use tauri::Emitter;
 
 const LARGE_FILE_WARNING_BYTES: u64 = 5 * 1024 * 1024;
 const MAX_EDITABLE_BYTES: u64 = 10 * 1024 * 1024;
 const BINARY_SNIFF_BYTES: u64 = 8192;
 const MAX_WORKSPACE_ENTRIES: usize = 2000;
+const MENU_ACTION_EVENT: &str = "hazakura-note://menu-action";
+const MENU_NEW_FILE: &str = "new-file";
+const MENU_OPEN_FILE: &str = "open-file";
+const MENU_OPEN_FOLDER: &str = "open-folder";
+const MENU_SAVE: &str = "save";
+const MENU_SAVE_AS: &str = "save-as";
 const EXCLUDED_WORKSPACE_DIRS: &[&str] = &[
     ".git",
     ".hg",
@@ -470,6 +478,85 @@ fn modified_ms(metadata: &fs::Metadata) -> Option<u64> {
         .and_then(|duration| u64::try_from(duration.as_millis()).ok())
 }
 
+#[cfg(desktop)]
+fn build_app_menu<R: tauri::Runtime>(app: &tauri::AppHandle<R>) -> tauri::Result<Menu<R>> {
+    let menu = Menu::default(app)?;
+    let file_menu = Submenu::with_items(
+        app,
+        "File",
+        true,
+        &[
+            &MenuItem::with_id(app, MENU_NEW_FILE, "New File", true, Some("CmdOrCtrl+N"))?,
+            &MenuItem::with_id(app, MENU_OPEN_FILE, "Open...", true, Some("CmdOrCtrl+O"))?,
+            &MenuItem::with_id(
+                app,
+                MENU_OPEN_FOLDER,
+                "Open Folder...",
+                true,
+                Some("CmdOrCtrl+Shift+O"),
+            )?,
+            &PredefinedMenuItem::separator(app)?,
+            &MenuItem::with_id(app, MENU_SAVE, "Save", true, Some("CmdOrCtrl+S"))?,
+            &MenuItem::with_id(
+                app,
+                MENU_SAVE_AS,
+                "Save As...",
+                true,
+                Some("CmdOrCtrl+Shift+S"),
+            )?,
+            &PredefinedMenuItem::separator(app)?,
+            &PredefinedMenuItem::close_window(app, None)?,
+        ],
+    )?;
+
+    #[cfg(target_os = "macos")]
+    {
+        menu.remove_at(1)?;
+        menu.insert(&file_menu, 1)?;
+    }
+
+    #[cfg(not(any(
+        target_os = "macos",
+        target_os = "linux",
+        target_os = "dragonfly",
+        target_os = "freebsd",
+        target_os = "netbsd",
+        target_os = "openbsd"
+    )))]
+    {
+        menu.remove_at(0)?;
+        menu.insert(&file_menu, 0)?;
+    }
+
+    #[cfg(any(
+        target_os = "linux",
+        target_os = "dragonfly",
+        target_os = "freebsd",
+        target_os = "netbsd",
+        target_os = "openbsd"
+    ))]
+    {
+        menu.insert(&file_menu, 0)?;
+    }
+
+    Ok(menu)
+}
+
+#[cfg(desktop)]
+fn emit_app_menu_event<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+    event: tauri::menu::MenuEvent,
+) {
+    let action = event.id().as_ref();
+
+    if matches!(
+        action,
+        MENU_NEW_FILE | MENU_OPEN_FILE | MENU_OPEN_FOLDER | MENU_SAVE | MENU_SAVE_AS
+    ) {
+        let _ = app.emit(MENU_ACTION_EVENT, action);
+    }
+}
+
 fn metadata_fingerprint(metadata: &fs::Metadata) -> String {
     let modified_ns = metadata
         .modified()
@@ -483,8 +570,14 @@ fn metadata_fingerprint(metadata: &fs::Metadata) -> String {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
-        .plugin(tauri_plugin_dialog::init())
+    let builder = tauri::Builder::default().plugin(tauri_plugin_dialog::init());
+
+    #[cfg(desktop)]
+    let builder = builder
+        .menu(build_app_menu)
+        .on_menu_event(emit_app_menu_event);
+
+    builder
         .invoke_handler(tauri::generate_handler![
             open_text_file,
             create_text_file,

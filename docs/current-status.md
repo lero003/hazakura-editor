@@ -13,6 +13,7 @@ Last reviewed: 2026-05-28
 - The active tab shows approximate UTF-8 byte count, character count, saved line-ending mode, final-newline state, and clean/unsaved state.
 - Line endings can be explicitly converted between LF and CRLF; conversion marks the tab unsaved until saved.
 - Save As can create a new UTF-8 text file with common text extensions such as `.txt`, `.log`, `.json`, `.yaml`, `.toml`, `.csv`, `.css`, and `.html`, while refusing to overwrite an existing file.
+- New File, Open, Open Folder, Save, and Save As are available from the native File menu instead of occupying the top toolbar.
 - Save writes the editor text without adding or removing a final trailing newline by policy; Rust tests cover LF and CRLF final-newline presence.
 - Markdown preview shows embedded `data:image` PNG/JPEG/GIF/WebP images and blocks external or local image references with an in-preview note.
 - Recent workspace, open tabs, active tab, and theme preference are restored after restart.
@@ -77,6 +78,7 @@ Last reviewed: 2026-05-28
 - External-change metadata recheck on app focus / visibility return and active tab switch
 - IME-safe keyboard handling for find-field Enter / Escape and global shortcuts during active composition
 - Editor-local Tab / Shift+Tab indentation and Shift+Arrow selection key handling
+- Native File menu actions for New File, Open, Open Folder, Save, and Save As
 - Keyboard shortcuts for New File, Open, Open Folder, Save, Find, and active-tab close
 - Conflict recovery actions for reloading, closing, or continuing with local edits
 - Save-failure recovery wording and retry / keep-editing actions for non-conflict save errors
@@ -115,6 +117,15 @@ Source Release Readiness smoke on 2026-05-27:
 - Version alignment was confirmed at `0.1.0` across `package.json`, `src-tauri/tauri.conf.json`, and `src-tauri/Cargo.toml`.
 - Manual built-app smoke used `/tmp/hazakura-note-release-smoke-20260527202313`.
 
+Native File Menu UI polish on 2026-05-28:
+
+- Top toolbar file-action buttons and the prototype subtitle were removed.
+- `npm run build:vite` passed.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.
+- `cargo test --manifest-path src-tauri/Cargo.toml` passed with 18 Rust tests.
+- `npm run build` passed and regenerated the local macOS `.app` bundle.
+- The regenerated `.app` launched, and macOS System Events confirmed the native File menu contains New File, Open, Open Folder, Save, and Save As.
+
 Runtime smoke:
 
 - The bundled `.app` opened and displayed the editor and preview panes.
@@ -139,7 +150,7 @@ Runtime smoke:
 
 Text Editor Usability Pack smoke on 2026-05-27:
 
-- Built-app toolbar showed Save As, LF / CRLF line-ending control, and Preview toggle without pushing core controls out of reach.
+- Built-app toolbar showed LF / CRLF line-ending control and Preview toggle without pushing core controls out of reach.
 - Preview toggle hid the preview pane and expanded the editor; toggling it back restored the Markdown preview.
 - Preview image policy was manually exercised in the built app: an external `https://` image rendered as `Image blocked`, while an embedded `data:image/png;base64` image remained an image element.
 - A CRLF `.txt` fixture opened clean with metadata showing `16 B · 9 chars · CRLF · no final newline`.

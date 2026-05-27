@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import EditorPane, {
   type EditorPaneHandle,
   type EditorSelectionInfo,
@@ -34,13 +35,27 @@ const WELCOME_MARKDOWN = `# hazakura-note
 
 安全に開く。静かに書く。差分で確かめる。
 
-左上の New File で作成するか、Open からMarkdownファイルを選んでください。
+メニューバーの File からMarkdownファイルを作成・選択できます。
 
-- 新しいMarkdownファイルを作れます
 - Markdownを編集できます
 - 右側でプレビューできます
 - Cmd+Oで開き、Cmd+Wでタブを閉じ、Cmd+Sで保存できます
 `;
+
+const APP_MENU_ACTION_EVENT = "hazakura-note://menu-action";
+const APP_MENU_ACTIONS = [
+  "new-file",
+  "open-file",
+  "open-folder",
+  "save",
+  "save-as",
+] as const;
+
+type AppMenuAction = (typeof APP_MENU_ACTIONS)[number];
+
+function isAppMenuAction(action: string): action is AppMenuAction {
+  return (APP_MENU_ACTIONS as readonly string[]).includes(action);
+}
 
 const THEME_STORAGE_KEY = "hazakura-note-theme";
 const WORKSPACE_STATE_STORAGE_KEY = "hazakura-note-workspace-state";
@@ -554,6 +569,71 @@ export default function App() {
       setStatus("Save As failed");
     }
   }, [activeTab, refreshWorkspaceTree, tabs, workspaceRootPath]);
+
+  const appMenuActionsRef = useRef({
+    createNewFile,
+    openFile,
+    openWorkspace,
+    saveActiveTab,
+    saveActiveTabAs,
+  });
+
+  useEffect(() => {
+    appMenuActionsRef.current = {
+      createNewFile,
+      openFile,
+      openWorkspace,
+      saveActiveTab,
+      saveActiveTabAs,
+    };
+  }, [createNewFile, openFile, openWorkspace, saveActiveTab, saveActiveTabAs]);
+
+  useEffect(() => {
+    let disposed = false;
+    let unlisten: UnlistenFn | null = null;
+
+    void listen<string>(APP_MENU_ACTION_EVENT, (event) => {
+      if (!isAppMenuAction(event.payload)) {
+        return;
+      }
+
+      const actions = appMenuActionsRef.current;
+
+      switch (event.payload) {
+        case "new-file":
+          void actions.createNewFile();
+          break;
+        case "open-file":
+          void actions.openFile();
+          break;
+        case "open-folder":
+          void actions.openWorkspace();
+          break;
+        case "save":
+          void actions.saveActiveTab();
+          break;
+        case "save-as":
+          void actions.saveActiveTabAs();
+          break;
+      }
+    })
+      .then((cleanup) => {
+        if (disposed) {
+          cleanup();
+          return;
+        }
+
+        unlisten = cleanup;
+      })
+      .catch((err) => {
+        console.warn("Failed to listen for app menu actions", err);
+      });
+
+    return () => {
+      disposed = true;
+      unlisten?.();
+    };
+  }, []);
 
   const convertActiveLineEnding = useCallback(
     (lineEnding: EditableLineEnding) => {
@@ -1287,32 +1367,6 @@ export default function App() {
         <div className="top-bar-left">
           <div className="brand-block">
             <span className="app-name">hazakura-note</span>
-            <span className="app-subtitle">Markdown-safe editor prototype</span>
-          </div>
-          <div className="file-actions-group" role="group" aria-label="File actions">
-            <button type="button" onClick={createNewFile}>
-              New File
-            </button>
-            <button type="button" onClick={openWorkspace}>
-              Open Folder
-            </button>
-            <button type="button" onClick={openFile}>
-              Open
-            </button>
-            <button
-              type="button"
-              onClick={saveActiveTab}
-              disabled={!activeTab || !activeDirty}
-            >
-              Save
-            </button>
-            <button
-              type="button"
-              onClick={() => void saveActiveTabAs()}
-              disabled={!activeTab}
-            >
-              Save As
-            </button>
           </div>
         </div>
         <div className="top-bar-right">
