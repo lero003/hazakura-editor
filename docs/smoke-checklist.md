@@ -50,12 +50,33 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 
 ## Text Metadata And Line Endings
 
-1. Open a LF fixture and confirm the metadata row shows byte count, character count, `LF`, final-newline state, and clean/unsaved state.
-2. Open a CRLF fixture and confirm it opens clean while the metadata row shows `CRLF`.
+1. Open a LF fixture and confirm the status bar shows byte count, character count, `LF`, final-newline state, and clean/unsaved state.
+2. Open a CRLF fixture and confirm it opens clean while the status bar shows `CRLF`.
 3. Change the Line control from CRLF to LF and confirm the tab becomes unsaved.
 4. Save and confirm the tab returns to clean.
 5. Read the file from disk and confirm CRLF bytes were converted to LF bytes.
 6. Repeat LF to CRLF if the changed area is safe to overwrite in a throwaway fixture.
+
+## Workspace Switching
+
+1. Use the `+` button in the workspace header.
+2. Choose a throwaway folder.
+3. Confirm the file tree changes to the selected folder.
+4. Repeat from a different folder and confirm the workspace title and tree update without using the native menu.
+
+## Markdown Preview Sync
+
+1. Open a Markdown file long enough for both editor and preview to scroll.
+2. Turn Preview on.
+3. Scroll the editor downward and confirm the preview follows to the matching approximate position.
+4. Scroll the preview back near the top and confirm the editor returns near the matching approximate position.
+
+## Markdown Input Helpers
+
+1. Select text in the editor and press Cmd+B, Cmd+I, Cmd+E, and Cmd+K in separate throwaway edits.
+2. Confirm the selected text is wrapped as bold, italic, inline code, or link Markdown.
+3. Undo each edit and repeat with the tabs-row helper buttons.
+4. With no selection, confirm bold, italic, and inline code insert paired markers, and link inserts `[text](url)` with editable placeholder text selected.
 
 ## Save As
 
@@ -219,7 +240,7 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 3. Confirm the same long filename clips in the file tree instead of widening the sidebar.
 4. Edit the file, request tab close, and confirm the close dialog wraps the filename while Save, Discard, and Cancel remain visible.
 5. Trigger a save failure or conflict with that file when practical and confirm the message row wraps while recovery buttons remain reachable.
-6. Resize the window to the app minimum width and confirm the top bar, tabs row, find row, editor, preview, and status bar remain usable without controls overlapping.
+6. Resize the window to the app minimum width and confirm the tabs row, find row, editor, preview, and status bar remain usable without controls overlapping.
 
 ## Workspace Restoration
 

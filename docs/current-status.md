@@ -10,25 +10,27 @@ Last reviewed: 2026-05-28
 - A touchable Tauri desktop prototype exists.
 - The prototype creates user-selected text/Markdown files, opens a user-selected folder, shows a lazy bounded file tree, opens multiple files in tabs, edits the active tab with CodeMirror 6, saves through Rust with external-change protection, searches with visible match highlights and keyboard/navigation options, and renders a toggleable sanitized Markdown preview.
 - Existing LF / CRLF line endings are detected when a file is opened and preserved through save.
-- The active tab shows approximate UTF-8 byte count, character count, saved line-ending mode, final-newline state, and clean/unsaved state.
+- The status bar shows approximate UTF-8 byte count, character count, saved line-ending mode, final-newline state, and clean/unsaved state.
 - Line endings can be explicitly converted between LF and CRLF; conversion marks the tab unsaved until saved.
 - Save As can create a new UTF-8 text file with common text extensions such as `.txt`, `.log`, `.json`, `.yaml`, `.toml`, `.csv`, `.css`, and `.html`, while refusing to overwrite an existing file.
 - New File, Open, Open Folder, Save, Save As, and Recent file/folder actions are available from the native File menu instead of occupying the top toolbar.
-- Preview, Wrap, Invisibles, Theme, Font, and Tab display settings now live in the native View menu and Preferences dialog, leaving the top bar mostly informational.
-- The app window title follows the active file and marks unsaved state.
+- Preview, Wrap, Invisibles, Theme, Font, and Tab display settings now live in the native View menu and Preferences dialog, leaving the always-visible editor chrome minimal.
+- The app window title follows the active file and marks unsaved state, so the redundant in-app title header is no longer shown.
+- The workspace header includes a small open-folder action for switching workspace without returning to the native menu.
 - Save writes the editor text without adding or removing a final trailing newline by policy; Rust tests cover LF and CRLF final-newline presence.
 - Markdown preview shows embedded `data:image` PNG/JPEG/GIF/WebP images and blocks external or local image references with an in-preview note.
+- Markdown preview and editor panes use lightweight scroll-position synchronization while preview is visible.
 - Recent workspace, open tabs, active tab, and theme preference are restored after restart.
 - Unsaved dirty tab drafts are stored locally and offered for explicit restoration after restart when the on-disk file still matches the draft's saved fingerprint.
 - Editor display settings for wrap, invisible characters, font size, and tab size are persisted locally and adjustable from Preferences.
 - Theme changes now reconfigure the active CodeMirror editor without recreating it, so the current cursor, selection, and undo/redo session state are not reset by switching Light / Dark / System.
-- The status bar shows cursor line/column and approximate selection character/line counts.
-- The active tab metadata includes a simple file type/mode label derived from the extension.
+- The status bar groups supplemental document details: file type, approximate byte count, character count, line-ending mode, final-newline state, clean/unsaved state, cursor line/column, and approximate selection counts.
 - Active-file search supports case-sensitive, whole-word, and safe regex modes, with invalid regex input reported without throwing.
 - Go to Line jumps the active editor to a requested line.
 - The active tab is rechecked for external on-disk changes when it gains focus through tab switching or app focus/visibility changes, and external-change recovery is surfaced as a focused banner.
 - Find-field Enter / Escape handling and global shortcuts now ignore active IME composition events, so Japanese conversion is not mistaken for search movement, find close, save, open, or tab-close commands.
 - Editor-local keyboard editing keeps Tab inside the editor for indentation, supports Shift+Tab outdent, and preserves Shift+Arrow text selection.
+- Editor-local Markdown helpers wrap or insert bold, italic, inline-code, and link syntax from the tabs row or Cmd+B / Cmd+I / Cmd+E / Cmd+K while focus is inside the editor.
 - Save conflicts now present explicit recovery choices: Reopen from disk, Close without saving, and Keep editing.
 - Non-conflict save failures now state that local edits remain in the editor and offer Try save again / Keep editing actions.
 - Window close requests now stop when any open tab is unsaved and offer Save All, Discard All, or Cancel.
@@ -57,11 +59,12 @@ Last reviewed: 2026-05-28
 - Rust command for bounded direct directory listing inside the selected workspace root
 - Save-conflict detection using a Rust-generated file fingerprint
 - LF / CRLF line-ending detection and save preservation
-- Explicit LF / CRLF conversion control in the tab metadata row
-- Approximate byte count, character count, line-ending mode, and final-newline status in the tab metadata row
+- Explicit LF / CRLF conversion control in the tabs row
+- Approximate byte count, character count, line-ending mode, final-newline status, and clean/unsaved state in the status bar
 - Final-newline presence preservation on save
 - Preview visibility toggle through View / Preferences with `localStorage` persistence
 - Safe embedded-image preview policy for Markdown preview
+- Lightweight editor/preview scroll synchronization while Markdown preview is visible
 - Multiple open file tabs
 - Tab-level unsaved state
 - Save / Discard / Cancel confirmation before closing an unsaved tab
@@ -74,12 +77,13 @@ Last reviewed: 2026-05-28
 - Search options for case-sensitive, whole-word, and regex search with invalid-regex reporting
 - Go to Line control
 - Cursor line/column and approximate selection count in the status bar
-- File type/mode label in the active tab metadata row
+- File type/mode label in the status bar
 - Editor display settings for line wrap, invisible characters, font size, and tab size
 - Unsaved draft recovery prompt after restart
 - External-change metadata recheck on app focus / visibility return and active tab switch
 - IME-safe keyboard handling for find-field Enter / Escape and global shortcuts during active composition
 - Editor-local Tab / Shift+Tab indentation and Shift+Arrow selection key handling
+- Markdown input helpers for bold, italic, inline code, and link syntax
 - Native File menu actions for New File, Open, Open Folder, Save, Save As, and Recent file/folder reopening
 - Native View menu actions for Preview, Wrap, Invisibles, Theme, and Preferences
 - Preferences dialog for display settings that were previously exposed in the top toolbar

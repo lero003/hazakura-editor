@@ -9,6 +9,7 @@ import {
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import EditorPane, {
   type EditorPaneHandle,
+  type MarkdownFormat,
   type EditorSelectionInfo,
 } from "./components/EditorPane";
 import PreviewPane from "./components/PreviewPane";
@@ -166,6 +167,9 @@ export default function App() {
   const closeTabCancelButtonRef = useRef<HTMLButtonElement | null>(null);
   const appCloseCancelButtonRef = useRef<HTMLButtonElement | null>(null);
   const preferencesCloseButtonRef = useRef<HTMLButtonElement | null>(null);
+  const previewPaneRef = useRef<HTMLDivElement | null>(null);
+  const previewScrollFrameRef = useRef<number | null>(null);
+  const scrollSyncSourceRef = useRef<"editor" | "preview" | null>(null);
   const tabsRef = useRef<EditorTab[]>([]);
   const recentFilesRef = useRef<RecentEntry[]>(recentFiles);
   const recentFoldersRef = useRef<RecentEntry[]>(recentFolders);
@@ -219,6 +223,59 @@ export default function App() {
     window.requestAnimationFrame(() => {
       editorPaneRef.current?.focus();
     });
+  }, []);
+
+  const syncPreviewScroll = useCallback((ratio: number) => {
+    if (scrollSyncSourceRef.current === "preview") {
+      return;
+    }
+
+    if (previewScrollFrameRef.current !== null) {
+      window.cancelAnimationFrame(previewScrollFrameRef.current);
+    }
+
+    previewScrollFrameRef.current = window.requestAnimationFrame(() => {
+      previewScrollFrameRef.current = null;
+
+      const previewPane = previewPaneRef.current;
+
+      if (!previewPane) {
+        return;
+      }
+
+      const scrollableHeight = previewPane.scrollHeight - previewPane.clientHeight;
+      scrollSyncSourceRef.current = "editor";
+      previewPane.scrollTop = scrollableHeight <= 0 ? 0 : scrollableHeight * ratio;
+      window.setTimeout(() => {
+        if (scrollSyncSourceRef.current === "editor") {
+          scrollSyncSourceRef.current = null;
+        }
+      }, 0);
+    });
+  }, []);
+
+  const syncEditorScroll = useCallback(() => {
+    if (scrollSyncSourceRef.current === "editor") {
+      return;
+    }
+
+    const previewPane = previewPaneRef.current;
+
+    if (!previewPane) {
+      return;
+    }
+
+    const scrollableHeight = previewPane.scrollHeight - previewPane.clientHeight;
+    const ratio =
+      scrollableHeight <= 0 ? 0 : previewPane.scrollTop / scrollableHeight;
+
+    scrollSyncSourceRef.current = "preview";
+    editorPaneRef.current?.setScrollRatio(ratio);
+    window.setTimeout(() => {
+      if (scrollSyncSourceRef.current === "preview") {
+        scrollSyncSourceRef.current = null;
+      }
+    }, 0);
   }, []);
 
   const cancelPendingTabClose = useCallback(() => {
@@ -754,6 +811,19 @@ export default function App() {
     [activeTab],
   );
 
+  const applyActiveMarkdownFormat = useCallback(
+    (format: MarkdownFormat) => {
+      if (!activeTab) {
+        setStatus("No active tab to format");
+        return;
+      }
+
+      editorPaneRef.current?.applyMarkdownFormat(format);
+      setStatus(markdownFormatStatus(format));
+    },
+    [activeTab],
+  );
+
   const closeTabNow = useCallback(
     (tabId: string) => {
       setTabs((currentTabs) => {
@@ -1122,6 +1192,15 @@ export default function App() {
     recentFoldersRef.current = recentFolders;
   }, [recentFolders]);
 
+  useEffect(
+    () => () => {
+      if (previewScrollFrameRef.current !== null) {
+        window.cancelAnimationFrame(previewScrollFrameRef.current);
+      }
+    },
+    [],
+  );
+
   useEffect(() => {
     writeStoredRecentEntries(RECENT_FILES_STORAGE_KEY, recentFiles);
   }, [recentFiles]);
@@ -1475,6 +1554,46 @@ export default function App() {
         return;
       }
 
+      if (
+        isEditorKeyboardTarget(event.target) &&
+        (event.metaKey || event.ctrlKey) &&
+        event.key.toLowerCase() === "b"
+      ) {
+        event.preventDefault();
+        applyActiveMarkdownFormat("bold");
+        return;
+      }
+
+      if (
+        isEditorKeyboardTarget(event.target) &&
+        (event.metaKey || event.ctrlKey) &&
+        event.key.toLowerCase() === "i"
+      ) {
+        event.preventDefault();
+        applyActiveMarkdownFormat("italic");
+        return;
+      }
+
+      if (
+        isEditorKeyboardTarget(event.target) &&
+        (event.metaKey || event.ctrlKey) &&
+        event.key.toLowerCase() === "e"
+      ) {
+        event.preventDefault();
+        applyActiveMarkdownFormat("code");
+        return;
+      }
+
+      if (
+        isEditorKeyboardTarget(event.target) &&
+        (event.metaKey || event.ctrlKey) &&
+        event.key.toLowerCase() === "k"
+      ) {
+        event.preventDefault();
+        applyActiveMarkdownFormat("link");
+        return;
+      }
+
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
         event.preventDefault();
         void saveActiveTab();
@@ -1529,6 +1648,7 @@ export default function App() {
     };
   }, [
     activeTabId,
+    applyActiveMarkdownFormat,
     cancelPendingAppClose,
     cancelPendingTabClose,
     createNewFile,
@@ -1563,20 +1683,6 @@ export default function App() {
 
   return (
     <main className="app-shell">
-      <header className="top-bar">
-        <div className="top-bar-left">
-          <div className="brand-block">
-            <span className="app-name">hazakura-note</span>
-          </div>
-        </div>
-        <div className="top-bar-right">
-          <span className="top-bar-state">
-            {activeTab ? activeTab.name : "No file open"}
-            {activeDirty ? " *" : ""}
-          </span>
-        </div>
-      </header>
-
       <section className="tabs-row" aria-label="Open files">
         <div className="tab-list" role="tablist" aria-label="Open file tabs">
           {tabs.length === 0 ? (
@@ -1621,23 +1727,62 @@ export default function App() {
         </div>
         <div className="document-meta">
           {activeTab ? (
-            <label className="line-ending-compact">
-              <span>Line</span>
-              <select
-                aria-label="Line endings"
-                value={activeTab.line_ending}
-                onChange={(event) =>
-                  convertActiveLineEnding(
-                    event.target.value as EditableLineEnding,
-                  )
-                }
-              >
-                <option value="lf">LF</option>
-                <option value="crlf">CRLF</option>
-              </select>
-            </label>
+            <>
+              <div className="markdown-assist" aria-label="Markdown helpers">
+                <button
+                  aria-label="Bold"
+                  className="markdown-assist-button strong"
+                  onClick={() => applyActiveMarkdownFormat("bold")}
+                  title="Bold (Command+B)"
+                  type="button"
+                >
+                  B
+                </button>
+                <button
+                  aria-label="Italic"
+                  className="markdown-assist-button italic"
+                  onClick={() => applyActiveMarkdownFormat("italic")}
+                  title="Italic (Command+I)"
+                  type="button"
+                >
+                  I
+                </button>
+                <button
+                  aria-label="Inline code"
+                  className="markdown-assist-button code"
+                  onClick={() => applyActiveMarkdownFormat("code")}
+                  title="Inline code (Command+E)"
+                  type="button"
+                >
+                  `
+                </button>
+                <button
+                  aria-label="Link"
+                  className="markdown-assist-button"
+                  onClick={() => applyActiveMarkdownFormat("link")}
+                  title="Link (Command+K)"
+                  type="button"
+                >
+                  <LinkIcon />
+                </button>
+              </div>
+              <label className="line-ending-compact">
+                <span>Line</span>
+                <select
+                  aria-label="Line endings"
+                  value={activeTab.line_ending}
+                  onChange={(event) =>
+                    convertActiveLineEnding(
+                      event.target.value as EditableLineEnding,
+                    )
+                  }
+                >
+                  <option value="lf">LF</option>
+                  <option value="crlf">CRLF</option>
+                </select>
+              </label>
+            </>
           ) : null}
-          <span className="document-meta-text">{activeDocumentMeta}</span>
         </div>
       </section>
 
@@ -1834,10 +1979,25 @@ export default function App() {
       <section className="workspace">
         <aside className="file-tree-pane" aria-label="Workspace file tree">
           <div className="workspace-header">
-            <span className="workspace-kicker">Workspace</span>
-            <span className="workspace-title" title={workspaceRootPath ?? ""}>
-              {workspaceRootPath ? folderLabelFromPath(workspaceRootPath) : "None"}
-            </span>
+            <div className="workspace-heading">
+              <div className="workspace-labels">
+                <span className="workspace-kicker">Workspace</span>
+                <span className="workspace-title" title={workspaceRootPath ?? ""}>
+                  {workspaceRootPath
+                    ? folderLabelFromPath(workspaceRootPath)
+                    : "None"}
+                </span>
+              </div>
+              <button
+                aria-label="Open workspace folder"
+                className="workspace-open-button"
+                onClick={openWorkspace}
+                title="Open workspace folder"
+                type="button"
+              >
+                <PlusIcon />
+              </button>
+            </div>
           </div>
           {workspaceTree ? (
             <WorkspaceTree
@@ -1866,6 +2026,7 @@ export default function App() {
                 documentKey={documentKey}
                 fontSize={editorSettings.fontSize}
                 onChange={handleEditorChange}
+                onScrollRatioChange={syncPreviewScroll}
                 onSelectionChange={setSelectionInfo}
                 searchMatches={findMatches}
                 showInvisibles={editorSettings.showInvisibles}
@@ -1885,7 +2046,12 @@ export default function App() {
             )}
           </div>
           {previewVisible && activeTab ? (
-            <div className="pane preview-pane" aria-label="Markdown preview">
+            <div
+              className="pane preview-pane"
+              ref={previewPaneRef}
+              aria-label="Markdown preview"
+              onScroll={syncEditorScroll}
+            >
               <PreviewPane source={activeContents} />
             </div>
           ) : null}
@@ -1895,10 +2061,7 @@ export default function App() {
       <footer className="status-bar">
         <span>{status}</span>
         <span>
-          {`${formatSelectionInfo(selectionInfo)} · ${saveStatusLabel(
-            activeTab,
-            activeDirty,
-          )}`}
+          {`${activeDocumentMeta} · ${formatSelectionInfo(selectionInfo)}`}
         </span>
       </footer>
 
@@ -2181,6 +2344,23 @@ function WorkspaceTree({
 }
 
 // SVGアイコンの定義
+function PlusIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M7 2.5V11.5M2.5 7H11.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function LinkIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5.85 8.15C6.65 8.95 7.95 8.95 8.75 8.15L10.65 6.25C11.45 5.45 11.45 4.15 10.65 3.35C9.85 2.55 8.55 2.55 7.75 3.35L7.25 3.85" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+      <path d="M8.15 5.85C7.35 5.05 6.05 5.05 5.25 5.85L3.35 7.75C2.55 8.55 2.55 9.85 3.35 10.65C4.15 11.45 5.45 11.45 6.25 10.65L6.75 10.15" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
 function FolderIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -2758,6 +2938,10 @@ function isImeComposing(event: KeyboardEvent): boolean {
   return event.isComposing || event.key === "Process";
 }
 
+function isEditorKeyboardTarget(target: EventTarget | null): boolean {
+  return target instanceof Element && target.closest(".editor-host") !== null;
+}
+
 function analyzeTextDocument(
   contents: string,
   savedLineEnding?: EditableLineEnding,
@@ -2911,6 +3095,19 @@ function formatLineEndingKind(lineEnding: LineEndingKind): string {
   return "LF";
 }
 
+function markdownFormatStatus(format: MarkdownFormat): string {
+  switch (format) {
+    case "bold":
+      return "Bold markup applied";
+    case "italic":
+      return "Italic markup applied";
+    case "code":
+      return "Inline code markup applied";
+    case "link":
+      return "Link markup inserted";
+  }
+}
+
 function formatBytes(bytes: number): string {
   if (bytes < 1024) {
     return `${bytes} B`;
@@ -3004,28 +3201,4 @@ function suggestedSaveAsPath(path: string): string {
   }
 
   return `${directory}${fileName.slice(0, dotIndex)}-copy${fileName.slice(dotIndex)}`;
-}
-
-function saveStatusLabel(tab: EditorTab | null, dirty: boolean): string {
-  if (!tab) {
-    return "No saved file";
-  }
-
-  if (tab.saveStatus === "saving") {
-    return "Saving";
-  }
-
-  if (tab.saveStatus === "saved") {
-    return "Saved";
-  }
-
-  if (tab.saveStatus === "error") {
-    return "Save error";
-  }
-
-  if (tab.saveStatus === "conflict") {
-    return "External change detected";
-  }
-
-  return dirty ? "Unsaved changes" : "No unsaved changes";
 }

@@ -32,6 +32,7 @@ export type EditorSelectionInfo = {
   selectedCharacters: number;
   selectedLines: number;
 };
+export type MarkdownFormat = "bold" | "italic" | "code" | "link";
 
 type EditorPaneProps = {
   documentKey: string;
@@ -44,12 +45,15 @@ type EditorPaneProps = {
   activeSearchMatchIndex: number;
   searchMatches: SearchMatch[];
   onChange: (nextValue: string) => void;
+  onScrollRatioChange: (ratio: number) => void;
   onSelectionChange: (selection: EditorSelectionInfo) => void;
 };
 
 export type EditorPaneHandle = {
   focus: () => void;
   goToLine: (line: number) => void;
+  applyMarkdownFormat: (format: MarkdownFormat) => void;
+  setScrollRatio: (ratio: number) => void;
 };
 
 const setSearchMatchesEffect =
@@ -134,6 +138,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       value,
       wrapLines,
       onChange,
+      onScrollRatioChange,
       onSelectionChange,
     },
     ref,
@@ -141,6 +146,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   const hostRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
+  const onScrollRatioChangeRef = useRef(onScrollRatioChange);
   const onSelectionChangeRef = useRef(onSelectionChange);
   const themeCompartmentRef = useRef(new Compartment());
   const wrappingCompartmentRef = useRef(new Compartment());
@@ -172,6 +178,28 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         });
         view.focus();
       },
+      applyMarkdownFormat(format) {
+        const view = viewRef.current;
+
+        if (!view) {
+          return;
+        }
+
+        applyMarkdownFormat(view, format);
+        view.focus();
+      },
+      setScrollRatio(ratio) {
+        const view = viewRef.current;
+
+        if (!view) {
+          return;
+        }
+
+        const scroller = view.scrollDOM;
+        const scrollableHeight = scroller.scrollHeight - scroller.clientHeight;
+        scroller.scrollTop =
+          scrollableHeight <= 0 ? 0 : scrollableHeight * clampScrollRatio(ratio);
+      },
     }),
     [],
   );
@@ -179,6 +207,10 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   useEffect(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
+
+  useEffect(() => {
+    onScrollRatioChangeRef.current = onScrollRatioChange;
+  }, [onScrollRatioChange]);
 
   useEffect(() => {
     onSelectionChangeRef.current = onSelectionChange;
@@ -217,10 +249,22 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         }),
       ],
     });
+    const handleScroll = () => {
+      const scroller = view.scrollDOM;
+      const scrollableHeight = scroller.scrollHeight - scroller.clientHeight;
+
+      onScrollRatioChangeRef.current(
+        scrollableHeight <= 0 ? 0 : scroller.scrollTop / scrollableHeight,
+      );
+    };
+
+    view.scrollDOM.addEventListener("scroll", handleScroll, { passive: true });
     viewRef.current = view;
     onSelectionChangeRef.current(readSelectionInfo(view.state));
+    handleScroll();
 
     return () => {
+      view.scrollDOM.removeEventListener("scroll", handleScroll);
       viewRef.current = null;
       view.destroy();
     };
@@ -389,6 +433,79 @@ function outdentSelectedLines(view: EditorView) {
   if (changes.length > 0) {
     view.dispatch({ changes });
   }
+}
+
+function applyMarkdownFormat(view: EditorView, format: MarkdownFormat) {
+  view.dispatch(
+    view.state.changeByRange((range) =>
+      markdownFormatChange(view.state.doc, range.from, range.to, format),
+    ),
+  );
+}
+
+function clampScrollRatio(ratio: number): number {
+  if (!Number.isFinite(ratio)) {
+    return 0;
+  }
+
+  return Math.min(Math.max(ratio, 0), 1);
+}
+
+function markdownFormatChange(
+  doc: Text,
+  from: number,
+  to: number,
+  format: MarkdownFormat,
+) {
+  const selectedText = doc.sliceString(from, to);
+
+  switch (format) {
+    case "bold":
+      return wrapMarkdownSelection(from, to, selectedText, "**", "**");
+    case "italic":
+      return wrapMarkdownSelection(from, to, selectedText, "*", "*");
+    case "code":
+      return wrapMarkdownSelection(from, to, selectedText, "`", "`");
+    case "link":
+      return linkMarkdownSelection(from, to, selectedText);
+  }
+}
+
+function wrapMarkdownSelection(
+  from: number,
+  to: number,
+  selectedText: string,
+  before: string,
+  after: string,
+) {
+  if (from === to) {
+    return {
+      changes: { from, to, insert: `${before}${after}` },
+      range: EditorSelection.cursor(from + before.length),
+    };
+  }
+
+  return {
+    changes: { from, to, insert: `${before}${selectedText}${after}` },
+    range: EditorSelection.range(from + before.length, to + before.length),
+  };
+}
+
+function linkMarkdownSelection(from: number, to: number, selectedText: string) {
+  if (from === to) {
+    return {
+      changes: { from, to, insert: "[text](url)" },
+      range: EditorSelection.range(from + 1, from + 5),
+    };
+  }
+
+  const replacement = `[${selectedText}](url)`;
+  const urlStart = from + selectedText.length + 3;
+
+  return {
+    changes: { from, to, insert: replacement },
+    range: EditorSelection.range(urlStart, urlStart + 3),
+  };
 }
 
 function selectedLineNumbers(state: EditorState) {
