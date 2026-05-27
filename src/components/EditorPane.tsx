@@ -426,7 +426,7 @@ function editorTheme(theme: "light" | "dark", fontSize: number) {
       },
       ".cm-scroller": {
         fontFamily:
-          "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+          "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
       },
       ".cm-content": {
         caretColor: theme === "dark" ? "#7fbfa1" : "#2e5c46",
@@ -448,14 +448,14 @@ function editorTheme(theme: "light" | "dark", fontSize: number) {
         backgroundColor: theme === "dark" ? "rgba(127, 191, 161, 0.08)" : "rgba(46, 92, 70, 0.05)",
       },
       ".cm-selectionLayer .cm-selectionBackground": {
-        backgroundColor: theme === "dark" ? "rgba(127, 191, 161, 0.3)" : "rgba(46, 92, 70, 0.18)",
+        backgroundColor: theme === "dark" ? "#5f8a6f" : "#8fc7a5",
         opacity: "1",
       },
       "&.cm-focused .cm-selectionLayer .cm-selectionBackground": {
-        backgroundColor: theme === "dark" ? "rgba(127, 191, 161, 0.3)" : "rgba(46, 92, 70, 0.18)",
+        backgroundColor: theme === "dark" ? "#5f8a6f" : "#8fc7a5",
       },
       ".cm-content ::selection": {
-        backgroundColor: theme === "dark" ? "rgba(127, 191, 161, 0.3)" : "rgba(46, 92, 70, 0.18)",
+        backgroundColor: theme === "dark" ? "#5f8a6f" : "#8fc7a5",
       },
       ".cm-searchMatch": {
         backgroundColor: theme === "dark" ? "rgba(181, 144, 69, 0.3)" : "rgba(153, 120, 56, 0.2)",
