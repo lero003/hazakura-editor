@@ -115,3 +115,34 @@ Acceptance:
 - directory展開時だけ直下childrenが表示される
 - 1 directoryあたりの上限超過はpartial-listing noteとして表示される
 - 除外ディレクトリを深掘りしない
+
+## Goal 4: Source Release Readiness
+
+Status: Planned
+
+目的: 署名済みアプリ配布ではなく、source-only developer preview として出せるだけの品質・説明・検証証跡を揃える。
+
+このgoalでは、GitHub Releaseやtag作成の直前までを準備する。実際のtag作成、push、GitHub Release公開は、作業完了後にユーザーが明示した場合だけ行う。
+
+### Goal Prompt
+
+```txt
+hazakura-note の Source Release Readiness を完成させる。
+現在の Tauri + React + CodeMirror 6 prototype を、source-only developer preview として公開判断できる状態にする。
+docs/source-release-checklist.md を正本として、READMEのbuild-from-source説明、Known Limits、version alignment、release note準備、manual smoke evidence、quality gatesを揃える。
+package.json、src-tauri/tauri.conf.json、src-tauri/Cargo.toml のversionが意図したsource release versionで一致していることを確認する。
+署名済みmacOSアプリ配布、notarization、installer、自動更新、binary asset publication、Git連携、LSP、terminal、plugin、AI支援には広げない。
+必須のmanual smokeは built app で行い、New File、Open -> Edit -> Save、CRLF / final-newline preservation、external-change conflict、save-failure recovery、dirty close / app close cancellation、search keyboard flow、Japanese IME guard、lazy workspace tree、theme switching session preservation を簡潔に記録する。
+最後に npm run build:vite、cargo fmt --manifest-path src-tauri/Cargo.toml -- --check、cargo test --manifest-path src-tauri/Cargo.toml、npm run build、git diff --check を実行し、docs/current-status.md、README.md、docs/roadmap.md、docs/source-release-checklist.md を必要最小限で更新する。
+tag作成、commit、push、GitHub Release作成はユーザーの明示承認があるまで行わない。
+```
+
+### Acceptance Criteria
+
+- Source-only release boundaryが `README.md` または `docs/source-release-checklist.md` で明確
+- `package.json`、`src-tauri/tauri.conf.json`、`src-tauri/Cargo.toml` のversionが揃っている
+- 必須local gatesが通っている
+- built app manual smoke evidenceが `docs/current-status.md` に残っている
+- Known Limitsがsource release向けに過剰主張していない
+- 署名済み/notarized app配布をしたかのような記述がない
+- tag / push / GitHub Releaseはユーザー承認なしに実行しない

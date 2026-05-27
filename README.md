@@ -53,6 +53,7 @@ Last reviewed: 2026-05-27
 - [Current Status](docs/current-status.md): 現在動く範囲、確認結果、次の一手
 - [Next Goals](docs/next-goals.md): 次フェーズのgoal指示文
 - [Smoke Checklist](docs/smoke-checklist.md): 手動スモーク確認手順
+- [Source Release Checklist](docs/source-release-checklist.md): source-only developer previewの準備境界
 
 ## Run
 

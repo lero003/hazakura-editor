@@ -74,6 +74,14 @@ npm run build
 git diff --check
 ```
 
+Safety Hardening revalidation on 2026-05-27:
+
+- `npm run build:vite` passed.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.
+- `cargo test --manifest-path src-tauri/Cargo.toml` passed with 14 Rust tests, including external-change conflict rejection, binary-looking file rejection, oversized-file rejection, CRLF preservation, and final-newline preservation.
+- `npm run build` passed and regenerated the local macOS `.app` bundle.
+- A fresh manual built-app smoke pass was not performed in this revalidation; reusable Open -> Edit -> Save, conflict, save-failure, sanitize, and file-boundary smoke steps remain in `docs/smoke-checklist.md`.
+
 Runtime smoke:
 
 - The bundled `.app` opened and displayed the editor and preview panes.
@@ -119,8 +127,9 @@ Known verification note:
 1. Run recurring automation from `docs/development-automation.md` to harden one small slice at a time.
 2. Manually smoke app/window close confirmation including Cancel focus, Escape cancellation, editor focus return after cancellation, keyboard shortcuts, New File, CRLF save preservation, final-newline preservation, save-failure recovery, search highlight visibility, Japanese IME composition, theme switching during undo/redo, and long file name / constrained-width layout in the built app before adding new Markdown features.
 3. Manually smoke lazy workspace tree behavior in the built app with a large throwaway folder: root open should complete, directory expansion should load children on demand, excluded folders should stay hidden, and per-folder cap overflow should show a partial-listing note.
-4. Decide whether unsaved draft restoration belongs in the product or should remain intentionally out of scope.
-5. Keep signing, notarization, and installer packaging separate from editor/workspace hardening.
+4. Run the Source Release Readiness goal from `docs/next-goals.md` when preparing a source-only developer preview; use `docs/source-release-checklist.md` as the release boundary and do not tag or publish without explicit approval.
+5. Decide whether unsaved draft restoration belongs in the product or should remain intentionally out of scope.
+6. Keep signing, notarization, and installer packaging separate from source-release and workspace hardening.
 
 ## Avoid
 

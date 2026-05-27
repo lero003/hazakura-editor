@@ -54,7 +54,8 @@ Choose the first useful slice that is both small and verifiable.
 5. Local release readiness:
    - GitHub Actions for existing quality gates
    - app version/about metadata
-   - release candidate checklist
+   - source-only release readiness from `docs/source-release-checklist.md`
+   - release candidate checklist and source release notes
    - packaging docs, without signing or notarization claims
 6. Verified no-op:
    - If no small useful slice is safe, run the relevant checks, update docs only if facts changed, and report no-op clearly.
@@ -104,6 +105,7 @@ Update only the docs that changed truth:
 - `docs/smoke-checklist.md` when manual checks change.
 - `README.md` when user-facing features, limits, or run/build instructions change.
 - `docs/next-goals.md` when a reusable goal prompt changes.
+- `docs/source-release-checklist.md` when source-release gates or boundaries change.
 
 ## Completion Rules
 

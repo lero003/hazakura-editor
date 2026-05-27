@@ -13,7 +13,8 @@ Last reviewed: 2026-05-27
 2. Safety Hardening: 保存、外部変更、バイナリ拒否、大容量警告、Markdown sanitizeを固める
 3. Workspace Basics: タブ、ファイルツリー、テーマ切り替えで複数ファイルを扱えるようにする
 4. Workspace Polish / Quality Hardening: 復元、検索、衝突回復、UI崩れ、テスト、ドキュメントを固める
-5. Distribution Readiness: パッケージング、署名、E2E、README、既知制限、リリース手順を整える
+5. Source Release Readiness: source-only developer previewとして出せる説明、品質ゲート、手動smoke証跡を揃える
+6. Distribution Readiness: パッケージング、署名、E2E、README、既知制限、リリース手順を整える
 
 各段階で「次へ進む条件」を明確にし、前段の未確認リスクを抱えたまま機能を広げない。
 
@@ -92,6 +93,21 @@ Status: Completed on 2026-05-26
 - README、current-status、roadmap、smoke-checklistの現状同期
 
 このフェーズでは、Git連携、LSP、ターミナル、AI支援、プロジェクト全体解析、merge editor、高度なGit diffは入れない。
+
+## v0.3.2: Source Release Readiness
+
+Status: Planned
+
+目的: 署名済みアプリ配布ではなく、source-only developer preview として公開判断できる状態にする。
+
+- `docs/source-release-checklist.md` に従ってsource release境界を確認する
+- `package.json`、`src-tauri/tauri.conf.json`、`src-tauri/Cargo.toml` のversion alignmentを確認する
+- READMEのbuild-from-source手順とKnown Limitsをsource release向けに確認する
+- source release notesを準備する
+- built appでfile safety、workspace tree、search、IME、theme、close確認のmanual smoke evidenceを残す
+- 既存のlocal quality gatesを通す
+
+このフェーズでは、Apple Developer ID署名、notarization、installer、自動更新、binary asset publicationは扱わない。tag作成、push、GitHub Release公開は、ユーザーの明示承認がある場合だけ行う。
 
 ## v0.4: Markdown Workspace
 
