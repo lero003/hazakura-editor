@@ -420,9 +420,14 @@ fn atomic_write(path: &Path, bytes: &[u8]) -> Result<(), String> {
         .ok_or_else(|| "Cannot save a file with an invalid name.".to_string())?;
     let temp_path = parent.join(format!(".{file_name}.hazakura-note.tmp"));
 
+    let mut temp_created = false;
     let write_result = (|| -> Result<(), String> {
-        let mut temp_file =
-            File::create(&temp_path).map_err(|err| format!("Cannot create temp file: {err}"))?;
+        let mut temp_file = OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&temp_path)
+            .map_err(|err| format!("Cannot create temp file: {err}"))?;
+        temp_created = true;
         temp_file
             .write_all(bytes)
             .map_err(|err| format!("Cannot write temp file: {err}"))?;
@@ -433,7 +438,7 @@ fn atomic_write(path: &Path, bytes: &[u8]) -> Result<(), String> {
         fs::rename(&temp_path, path).map_err(|err| format!("Cannot replace saved file: {err}"))
     })();
 
-    if write_result.is_err() {
+    if write_result.is_err() && temp_created {
         let _ = fs::remove_file(&temp_path);
     }
 
@@ -591,6 +596,30 @@ mod tests {
 
         assert!(err.contains("Cannot replace saved file"));
         assert!(!dir.join(".note.md.hazakura-note.tmp").exists());
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn atomic_write_does_not_clobber_existing_temp_file() {
+        let dir = unique_test_dir("atomic_write_existing_temp");
+        fs::create_dir_all(&dir).expect("create test dir");
+        let path = dir.join("note.md");
+        let temp_path = dir.join(".note.md.hazakura-note.tmp");
+        fs::write(&path, "# Old\n").expect("write fixture");
+        fs::write(&temp_path, "# Existing temp\n").expect("write existing temp fixture");
+
+        let err = atomic_write(&path, b"# New\n").expect_err("existing temp should fail safely");
+
+        assert!(err.contains("Cannot create temp file"));
+        assert_eq!(
+            fs::read_to_string(&path).expect("read protected file"),
+            "# Old\n"
+        );
+        assert_eq!(
+            fs::read_to_string(&temp_path).expect("read existing temp file"),
+            "# Existing temp\n"
+        );
 
         let _ = fs::remove_dir_all(dir);
     }

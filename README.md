@@ -43,7 +43,7 @@ Last reviewed: 2026-05-28
 - Theme switching reconfigures the active editor without recreating it, preserving the current editor session state during theme changes
 - Recent workspace, open tabs, and active tab restoration after restart
 - Explicit unsaved draft recovery after restart when the disk file still matches the draft's saved fingerprint
-- Rust-side binary-looking file rejection, large-file warning, editing size limit, and atomic save helper with temporary-file cleanup after failed replace attempts
+- Rust-side binary-looking file rejection, large-file warning, editing size limit, and atomic save helper with temporary-file cleanup after failed replace attempts plus existing-temp-file overwrite protection
 - Existing LF / CRLF line endings are preserved on save
 - Existing final-newline presence is preserved on save; the app does not add or remove a trailing newline by policy
 - Markdown preview blocks external/local image references and allows embedded `data:image` PNG/JPEG/GIF/WebP images

@@ -34,7 +34,7 @@ Last reviewed: 2026-05-28
 - If Save All from the app/window close dialog fails or detects an external change, the close is stopped, the failed tab is selected, editor focus returns, and the existing save-failure or conflict recovery actions remain visible.
 - Cmd+N creates a new file, Cmd+O opens a file, Cmd+Shift+O opens a folder, and Cmd+W closes the active tab through the same dirty-tab confirmation path as the tab close button.
 - Workspace tree loading now reads only direct children for the opened root or expanded directory, keeps heavy and hidden directory exclusions, rejects direct child listing outside the selected workspace root, and reports per-folder cap overflow as a partial listing instead of failing the whole workspace.
-- Atomic save cleanup removes the hidden temporary save file if the final replace step fails.
+- Atomic save cleanup removes the hidden temporary save file if the final replace step fails and refuses to overwrite a pre-existing hidden save temp file.
 - The built macOS app bundle is generated at `src-tauri/target/release/bundle/macos/hazakura-note.app`.
 
 ## Implemented
@@ -87,7 +87,7 @@ Last reviewed: 2026-05-28
 - Binary-looking file rejection
 - 5 MB large-file warning flag
 - 10 MB prototype editing limit
-- Atomic save helper with temporary-file cleanup after failed replace attempts
+- Atomic save helper with temporary-file cleanup after failed replace attempts and existing-temp-file overwrite protection
 - Minimal app icon for Tauri build requirements
 
 ## Verification
@@ -183,6 +183,12 @@ Atomic Save Cleanup Polish checks on 2026-05-28:
 
 - Atomic save now removes its hidden `.filename.hazakura-note.tmp` file if the final replace step fails.
 - Rust tests cover both successful atomic replacement and cleanup after a failed replace attempt.
+- Automated local gates passed after this change; no fresh built-app manual smoke was claimed.
+
+Atomic Save Temp Collision Polish checks on 2026-05-28:
+
+- Atomic save now creates its hidden `.filename.hazakura-note.tmp` file with exclusive creation, so a pre-existing temp file is not overwritten or removed by a failed save attempt.
+- Rust tests cover successful atomic replacement, cleanup after a failed replace attempt, and pre-existing temp-file preservation.
 - Automated local gates passed after this change; no fresh built-app manual smoke was claimed.
 
 Known verification note:
