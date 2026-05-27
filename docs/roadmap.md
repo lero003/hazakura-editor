@@ -83,6 +83,7 @@ Status: Completed on 2026-05-26
 - 末尾改行の有無を保存時に勝手に変更しない契約のRustテスト化
 - non-conflict save failure時の Try save again / Keep editing 回復導線
 - System / Light / Dark の復元と可読性確認
+- Light / Dark / System 切り替え時にactive editorを再生成せず、現在のカーソル・選択・undo/redo session stateを保持
 - Rust側 file I/O / workspace listing / 除外 / バイナリ拒否 / 大容量境界テストの拡充
 - README、current-status、roadmap、smoke-checklistの現状同期
 

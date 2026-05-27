@@ -103,6 +103,8 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 2. Confirm the editor, preview, tabs, file tree, and status bar remain readable.
 3. Restart the app and confirm the selected theme is restored.
 4. With System selected, confirm the app follows the OS-resolved light/dark mode.
+5. Edit an open file, select text or leave the cursor in the edited area, switch theme, and confirm the cursor/selection remains in the active editor.
+6. After a theme switch, press Cmd+Z and confirm the most recent edit is undone instead of losing the active editor's undo history.
 
 ## Long File Names And Constrained Width
 

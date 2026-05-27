@@ -963,7 +963,7 @@ export default function App() {
             <EditorPane
               ref={editorPaneRef}
               activeSearchMatchIndex={activeMatchIndex}
-              documentKey={`${documentKey}:${resolvedTheme}`}
+              documentKey={documentKey}
               onChange={handleEditorChange}
               searchMatches={findMatches}
               theme={resolvedTheme}

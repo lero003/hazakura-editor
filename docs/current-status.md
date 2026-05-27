@@ -12,6 +12,7 @@ Last reviewed: 2026-05-27
 - Existing LF / CRLF line endings are detected when a file is opened and preserved through save.
 - Save writes the editor text without adding or removing a final trailing newline by policy; Rust tests cover LF and CRLF final-newline presence.
 - Recent workspace, open tabs, active tab, and theme preference are restored after restart.
+- Theme changes now reconfigure the active CodeMirror editor without recreating it, so the current cursor, selection, and undo/redo session state are not reset by switching Light / Dark / System.
 - Save conflicts now present explicit recovery choices: Reopen from disk, Close without saving, and Keep editing.
 - Non-conflict save failures now state that local edits remain in the editor and offer Try save again / Keep editing actions.
 - Window close requests now stop when any open tab is unsaved and offer Save All, Discard All, or Cancel.
@@ -37,6 +38,7 @@ Last reviewed: 2026-05-27
 - Save / Discard / Cancel confirmation before closing an unsaved tab
 - System / Light / Dark theme switching
 - Theme selection persistence through `localStorage`
+- Active editor theme reconfiguration without recreating the CodeMirror view
 - Recent workspace restoration through `localStorage`
 - Open tab and active tab restoration through `localStorage`
 - Active-file search with match count, previous/next controls, visible match highlights, active-match selection, Enter / Shift+Enter match navigation, and Escape return-to-editor behavior
@@ -90,19 +92,20 @@ Known verification note:
 - Non-conflict save-failure recovery wording and actions have build coverage and smoke-checklist coverage, but still need a manual built-app smoke pass.
 - Search highlight visibility and keyboard search flow have build coverage and smoke-checklist coverage, but still need a manual built-app smoke pass.
 - Long file name and constrained-width layout guardrails have build coverage and smoke-checklist coverage, but still need a manual built-app smoke pass.
+- Theme switching without resetting the active editor session has build coverage and smoke-checklist coverage, but still needs a manual built-app smoke pass.
 
 ## Risks / Unknowns
 
 - Unsaved text is not restored after restart; only workspace path, tab paths, active tab, and theme preference are restored.
 - Save-conflict recovery is explicit but still simple. There is no merge editor or diff-assisted recovery flow yet.
-- Undo/redo remain CodeMirror defaults and have not received dedicated product-level polish.
+- Undo/redo remain CodeMirror defaults and have not received dedicated product-level controls beyond preserving the active editor session during theme changes.
 - The app is not signed or notarized.
 - The GitHub remote is configured over HTTPS. SSH access previously failed with `Permission denied (publickey)`.
 
 ## Next Actions
 
 1. Run recurring automation from `docs/development-automation.md` to harden one small slice at a time.
-2. Manually smoke app/window close confirmation including Cancel focus and Escape cancellation, keyboard shortcuts, New File, CRLF save preservation, final-newline preservation, save-failure recovery, search highlight visibility, and long file name / constrained-width layout in the built app before adding new Markdown features.
+2. Manually smoke app/window close confirmation including Cancel focus and Escape cancellation, keyboard shortcuts, New File, CRLF save preservation, final-newline preservation, save-failure recovery, search highlight visibility, theme switching during undo/redo, and long file name / constrained-width layout in the built app before adding new Markdown features.
 3. Decide whether unsaved draft restoration belongs in the product or should remain intentionally out of scope.
 4. Keep signing, notarization, and installer packaging separate from editor/workspace hardening.
 

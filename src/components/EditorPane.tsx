@@ -1,6 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { markdown } from "@codemirror/lang-markdown";
-import { StateEffect, StateField } from "@codemirror/state";
+import { Compartment, StateEffect, StateField } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView } from "@codemirror/view";
 import { basicSetup } from "codemirror";
 
@@ -58,6 +58,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   const hostRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
+  const themeCompartmentRef = useRef(new Compartment());
 
   useImperativeHandle(
     ref,
@@ -86,54 +87,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         markdown(),
         searchHighlightField,
         EditorView.lineWrapping,
-        EditorView.theme(
-          {
-            "&": {
-              backgroundColor: theme === "dark" ? "#1d2421" : "#f4f8f5",
-              color: theme === "dark" ? "#e7efe9" : "#202824",
-              height: "100%",
-              fontSize: "14px",
-            },
-            ".cm-scroller": {
-              fontFamily:
-                "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-            },
-            ".cm-content": {
-              caretColor: theme === "dark" ? "#d6e9dd" : "#2f5f49",
-              padding: "18px 0",
-            },
-            ".cm-line": {
-              padding: "0 22px",
-            },
-            ".cm-gutters": {
-              backgroundColor: theme === "dark" ? "#17201c" : "#eef4f0",
-              borderRight:
-                theme === "dark" ? "1px solid #303d37" : "1px solid #d5dfda",
-              color: theme === "dark" ? "#9ba9a1" : "#68786f",
-            },
-            ".cm-activeLine": {
-              backgroundColor: theme === "dark" ? "#243029" : "#eaf2ed",
-            },
-            ".cm-activeLineGutter": {
-              backgroundColor: theme === "dark" ? "#243029" : "#eaf2ed",
-            },
-            ".cm-selectionBackground, &.cm-focused .cm-selectionBackground": {
-              backgroundColor: theme === "dark" ? "#355543" : "#c6ddcf",
-            },
-            ".cm-searchMatch": {
-              backgroundColor: theme === "dark" ? "#5f5a2e" : "#f0df90",
-              borderRadius: "3px",
-            },
-            ".cm-searchMatch-active": {
-              backgroundColor: theme === "dark" ? "#7a6a2f" : "#f5cc52",
-              boxShadow:
-                theme === "dark"
-                  ? "0 0 0 1px #d8bd5b"
-                  : "0 0 0 1px #8b6b16",
-            },
-          },
-          { dark: theme === "dark" },
-        ),
+        themeCompartmentRef.current.of(editorTheme(theme)),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
             onChangeRef.current(update.state.doc.toString());
@@ -147,7 +101,19 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       viewRef.current = null;
       view.destroy();
     };
-  }, [documentKey, theme]);
+  }, [documentKey]);
+
+  useEffect(() => {
+    const view = viewRef.current;
+
+    if (!view) {
+      return;
+    }
+
+    view.dispatch({
+      effects: themeCompartmentRef.current.reconfigure(editorTheme(theme)),
+    });
+  }, [theme]);
 
   useEffect(() => {
     const view = viewRef.current;
@@ -211,6 +177,57 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
 );
 
 export default EditorPane;
+
+function editorTheme(theme: "light" | "dark") {
+  return EditorView.theme(
+    {
+      "&": {
+        backgroundColor: theme === "dark" ? "#1d2421" : "#f4f8f5",
+        color: theme === "dark" ? "#e7efe9" : "#202824",
+        height: "100%",
+        fontSize: "14px",
+      },
+      ".cm-scroller": {
+        fontFamily:
+          "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+      },
+      ".cm-content": {
+        caretColor: theme === "dark" ? "#d6e9dd" : "#2f5f49",
+        padding: "18px 0",
+      },
+      ".cm-line": {
+        padding: "0 22px",
+      },
+      ".cm-gutters": {
+        backgroundColor: theme === "dark" ? "#17201c" : "#eef4f0",
+        borderRight:
+          theme === "dark" ? "1px solid #303d37" : "1px solid #d5dfda",
+        color: theme === "dark" ? "#9ba9a1" : "#68786f",
+      },
+      ".cm-activeLine": {
+        backgroundColor: theme === "dark" ? "#243029" : "#eaf2ed",
+      },
+      ".cm-activeLineGutter": {
+        backgroundColor: theme === "dark" ? "#243029" : "#eaf2ed",
+      },
+      ".cm-selectionBackground, &.cm-focused .cm-selectionBackground": {
+        backgroundColor: theme === "dark" ? "#355543" : "#c6ddcf",
+      },
+      ".cm-searchMatch": {
+        backgroundColor: theme === "dark" ? "#5f5a2e" : "#f0df90",
+        borderRadius: "3px",
+      },
+      ".cm-searchMatch-active": {
+        backgroundColor: theme === "dark" ? "#7a6a2f" : "#f5cc52",
+        boxShadow:
+          theme === "dark"
+            ? "0 0 0 1px #d8bd5b"
+            : "0 0 0 1px #8b6b16",
+      },
+    },
+    { dark: theme === "dark" },
+  );
+}
 
 function buildSearchDecorations(
   matches: readonly DecoratedSearchMatch[],
