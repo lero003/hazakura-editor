@@ -825,8 +825,12 @@ export default function App() {
                     title={tab.path}
                     type="button"
                   >
-                    <span>{tab.name}</span>
-                    {dirty ? <span aria-label="unsaved"> *</span> : null}
+                    <span className="tab-name">{tab.name}</span>
+                    {dirty ? (
+                      <span className="tab-dirty" aria-label="unsaved">
+                        *
+                      </span>
+                    ) : null}
                   </button>
                   <button
                     aria-label={`Close ${tab.name}`}
@@ -1084,7 +1088,7 @@ function TreeEntry({
         title={entry.path}
         type="button"
       >
-        {entry.name}
+        <span className="tree-name">{entry.name}</span>
       </button>
     );
   }
@@ -1099,7 +1103,7 @@ function TreeEntry({
         type="button"
       >
         <span aria-hidden="true">{expanded ? "v" : ">"}</span>
-        <span>{entry.name}</span>
+        <span className="tree-name">{entry.name}</span>
       </button>
       {expanded ? (
         <div className="tree-children">

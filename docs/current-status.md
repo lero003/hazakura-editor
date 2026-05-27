@@ -45,6 +45,7 @@ Last reviewed: 2026-05-27
 - Save-failure recovery wording and retry / keep-editing actions for non-conflict save errors
 - App/window close confirmation for dirty tabs
 - Dirty-tab and app/window close dialogs focus Cancel by default and can be cancelled with Escape
+- Long file name and constrained-width layout guardrails for tabs, the file tree, status/error rows, and close dialogs
 - Binary-looking file rejection
 - 5 MB large-file warning flag
 - 10 MB prototype editing limit
@@ -88,6 +89,7 @@ Known verification note:
 - Dirty-tab and app/window close confirmation, including Cancel focus and Escape cancellation, and the newer keyboard shortcuts have build/test coverage and smoke-checklist coverage, but still need a manual built-app smoke pass.
 - Non-conflict save-failure recovery wording and actions have build coverage and smoke-checklist coverage, but still need a manual built-app smoke pass.
 - Search highlight visibility and keyboard search flow have build coverage and smoke-checklist coverage, but still need a manual built-app smoke pass.
+- Long file name and constrained-width layout guardrails have build coverage and smoke-checklist coverage, but still need a manual built-app smoke pass.
 
 ## Risks / Unknowns
 
@@ -100,7 +102,7 @@ Known verification note:
 ## Next Actions
 
 1. Run recurring automation from `docs/development-automation.md` to harden one small slice at a time.
-2. Manually smoke app/window close confirmation including Cancel focus and Escape cancellation, keyboard shortcuts, New File, CRLF save preservation, final-newline preservation, save-failure recovery, and search highlight visibility in the built app before adding new Markdown features.
+2. Manually smoke app/window close confirmation including Cancel focus and Escape cancellation, keyboard shortcuts, New File, CRLF save preservation, final-newline preservation, save-failure recovery, search highlight visibility, and long file name / constrained-width layout in the built app before adding new Markdown features.
 3. Decide whether unsaved draft restoration belongs in the product or should remain intentionally out of scope.
 4. Keep signing, notarization, and installer packaging separate from editor/workspace hardening.
 

@@ -114,6 +114,7 @@ button:disabled {
 .top-bar {
   border-bottom: 1px solid var(--border);
   justify-content: space-between;
+  min-width: 0;
   padding: 0 16px;
 }
 
@@ -140,6 +141,7 @@ button:disabled {
   flex-wrap: wrap;
   gap: 8px;
   justify-content: flex-end;
+  min-width: 0;
 }
 
 .theme-control {
@@ -198,13 +200,27 @@ button:disabled {
 }
 
 .tab-button {
+  align-items: center;
+  display: flex;
   flex: 1;
   font-size: 13px;
+  gap: 2px;
   overflow: hidden;
   padding: 11px 8px 10px 14px;
   text-align: left;
-  text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.tab-name {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab-dirty {
+  flex: none;
 }
 
 .tab-close {
@@ -221,8 +237,12 @@ button:disabled {
 
 .document-meta {
   color: var(--text-muted);
-  flex: none;
+  flex: 0 1 auto;
   font-size: 12px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .find-row {
@@ -289,6 +309,7 @@ button:disabled {
   background: var(--danger);
   color: #fffafa;
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   justify-content: space-between;
   font-size: 13px;
@@ -309,12 +330,16 @@ button:disabled {
 
 .message-detail {
   opacity: 0.82;
+  overflow-wrap: anywhere;
 }
 
 .message-actions {
   display: flex;
-  flex: none;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
   gap: 8px;
+  justify-content: flex-end;
+  min-width: 0;
 }
 
 .message-actions button {
@@ -374,6 +399,13 @@ button:disabled {
   text-overflow: ellipsis;
   white-space: nowrap;
   width: 100%;
+}
+
+.tree-name {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tree-file {
@@ -484,6 +516,22 @@ button:disabled {
   padding: 0 14px;
 }
 
+.status-bar span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-bar span:first-child {
+  flex: 1;
+  padding-right: 12px;
+}
+
+.status-bar span:last-child {
+  flex: none;
+}
+
 .modal-backdrop {
   align-items: center;
   background: rgba(15, 20, 18, 0.38);
@@ -513,6 +561,7 @@ button:disabled {
   color: var(--text-muted);
   font-size: 14px;
   margin: 0 0 18px;
+  overflow-wrap: anywhere;
 }
 
 .dialog-actions {

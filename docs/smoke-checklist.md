@@ -104,6 +104,15 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 3. Restart the app and confirm the selected theme is restored.
 4. With System selected, confirm the app follows the OS-resolved light/dark mode.
 
+## Long File Names And Constrained Width
+
+1. Open a throwaway folder containing a Markdown file with a long unbroken filename.
+2. Open that file and confirm the tab label clips with the close button still reachable.
+3. Confirm the same long filename clips in the file tree instead of widening the sidebar.
+4. Edit the file, request tab close, and confirm the close dialog wraps the filename while Save, Discard, and Cancel remain visible.
+5. Trigger a save failure or conflict with that file when practical and confirm the message row wraps while recovery buttons remain reachable.
+6. Resize the window to the app minimum width and confirm the toolbar, find row, editor, preview, and status bar remain usable without controls overlapping.
+
 ## Workspace Restoration
 
 1. Open a throwaway folder outside the repo.
