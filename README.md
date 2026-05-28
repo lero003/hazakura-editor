@@ -11,6 +11,12 @@ Last reviewed: 2026-05-29
 
 > 安全に開く。静かに書く。差分で確かめる。
 
+## Preview
+
+![hazakura-note normal mode](docs/images/pre0.2-normal-mode.png)
+
+![hazakura-note Agent Workbench mode](docs/images/pre0.2-agent-mode.png)
+
 ## Current Decision
 
 - Product direction: Markdown-first safe text editor
@@ -118,12 +124,12 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 `npm outdated` and `cargo update --manifest-path src-tauri/Cargo.toml --dry-run` are release-review checks, not automatic update requirements.
 
-Source-only developer preview boundary:
+Developer preview release boundary:
 
-- Current intended source version is `0.1.0` across npm, Tauri, and Cargo metadata.
+- Current intended preview version is `0.2.0-pre.0` across npm, Tauri, and Cargo metadata.
 - Source users build locally with `npm ci` and `npm run build`.
 - The generated local `.app` declares macOS 11.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. It is not Developer ID signed or notarized.
-- Source release notes are prepared in [0.1.0 Source-only Developer Preview](docs/releases/0.1.0.md).
+- The pre0.2 warning-expected DMG preview notes are prepared in [0.2.0-pre.0 Warning-expected DMG Preview](docs/releases/0.2.0-pre.0-warning-expected-dmg-preview.release.md).
 - Tag creation, push, and GitHub Release publication require explicit user approval.
 
 ## Known Limits

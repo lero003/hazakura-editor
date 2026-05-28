@@ -131,6 +131,24 @@ npm run build
 git diff --check
 ```
 
+pre0.2 warning-expected DMG preview on 2026-05-29:
+
+- Version surfaces were aligned to `0.2.0-pre.0` in `package.json`, `package-lock.json`, `src-tauri/tauri.conf.json`, and `src-tauri/Cargo.toml`.
+- Built DMG asset: `hazakura-note_0.2.0-pre.0_aarch64-warning-expected.dmg`.
+- SHA-256: `8061361528c771e2f7864ce379033154e5a214e8747ec401438e9587007afe39`.
+- Screenshot assets were added to README via `docs/images/pre0.2-normal-mode.png` and `docs/images/pre0.2-agent-mode.png`.
+- `npm ci` passed with 0 npm vulnerabilities.
+- `npm run build:vite` passed with the existing Vite chunk-size warning.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.
+- `cargo test --manifest-path src-tauri/Cargo.toml` passed with 69 Rust tests.
+- `npm audit --audit-level=high` passed with 0 vulnerabilities.
+- `cargo audit` completed with the known Tauri/wry transitive warnings for GTK3/gtk-rs, `glib`, `proc-macro-error`, and `unic-*`; no new high or critical macOS release blocker was identified for this warning-expected preview.
+- `npm run build:dmg-preview` passed, including app build, ad-hoc signing, `hdiutil verify`, and basename checksum generation.
+- `cd src-tauri/target/release/bundle/dmg && shasum -c hazakura-note_0.2.0-pre.0_aarch64-warning-expected.dmg.sha256` passed.
+- The DMG mounted read-only; the contained `hazakura-note.app` reported `CFBundleShortVersionString` `0.2.0-pre.0`, bundle identifier `lab.hazakura.note`, and passed `codesign --verify --deep --strict --verbose=2`.
+- The built app launched locally from `src-tauri/target/release/bundle/macos/hazakura-note.app` and was then quit.
+- `spctl -a -vv -t open` rejected the app with `source=Insufficient Context`, which is expected for this ad-hoc signed, not-notarized preview lane.
+
 Agent Workbench Trusted Provider Smoke Readiness on 2026-05-29:
 
 - `docs/smoke-checklist.md` now reflects the compact xterm Agent pane and includes separate codex/opencode result fields for trusted-workspace manual smoke.
@@ -660,11 +678,11 @@ Known verification note:
 
 ## Next Actions
 
-1. For release work, run the P0 gates in `docs/source-release-checklist.md`, including dependency audits and latest-HEAD built-app smoke evidence, before asking for tag approval.
+1. For future source-only release work, run the P0 gates in `docs/source-release-checklist.md`, including dependency audits and latest-HEAD built-app smoke evidence, before asking for tag approval.
 2. For Agent Workbench work, run `docs/smoke-checklist.md` Agent Workbench Trusted Workspace Manual Smoke in a throwaway workspace before further terminal, PTY, or provider-lifecycle changes.
 3. For recurring automation, use the 30-minute micro-polish loop in `docs/development-automation.md`; keep slices narrow and avoid new test code unless it protects a real bug, backend/safety contract, or high-value Agent lifecycle path.
 4. Re-smoke long file name / constrained-width layout before binary distribution readiness.
-5. If publishing the warning-expected DMG preview, get explicit approval for binary asset publication and use `docs/releases/0.1.0-warning-expected-dmg-preview.md` as the release-note addendum.
+5. For follow-up warning-expected DMG previews, keep the release marked as a prerelease and use the current version-specific release note as the GitHub Release body.
 6. Add minimal CI and Dependabot as P1 release hardening when a small verified slice is available.
 7. Add focused UI/E2E coverage for draft restore and external-change focus recheck before treating them as distribution-grade behavior.
 8. Keep signing, notarization, and installer packaging separate from source-release and workspace hardening.
