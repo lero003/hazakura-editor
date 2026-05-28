@@ -3264,6 +3264,57 @@ mod tests {
         provider.cleanup();
     }
 
+    #[cfg(unix)]
+    #[test]
+    fn agent_workbench_real_runtime_pty_applies_terminal_size() {
+        let store = AgentWorkbenchSessionStore::default();
+        let adapter = RealAgentRuntimeAdapter::new(&store);
+        let provider = fake_provider_fixture(
+            "agent_provider_pty_size",
+            AGENT_PROVIDER_CODEX,
+            b"#!/bin/sh\nstty size\nwhile IFS= read line; do\n  [ \"$line\" = 'size' ] && stty size\n  [ \"$line\" = 'exit' ] && exit 0\ndone\n",
+        );
+
+        start_agent_workbench_session_with_store(
+            &store,
+            &adapter,
+            true,
+            true,
+            AGENT_PROVIDER_CODEX.to_string(),
+            provider.workspace_root(),
+            Some(provider.path_var()),
+            Some(123),
+            Some(37),
+        )
+        .expect("start pty fake provider");
+        let initial_state = wait_for_agent_state(&store, |state| {
+            combined_agent_output(state).contains("37 123")
+        });
+        assert!(combined_agent_output(&initial_state).contains("37 123"));
+
+        resize_agent_workbench_terminal_with_store(&store, 132, 42).expect("resize pty");
+        write_agent_workbench_session_input_with_store(&store, "size\nexit\n".to_string())
+            .expect("write pty provider input");
+        let final_state = wait_for_agent_state(&store, |state| {
+            let combined_output = combined_agent_output(state);
+            state
+                .session
+                .as_ref()
+                .is_some_and(|session| session.status == AgentWorkbenchSessionStatus::Exited)
+                && combined_output.contains("42 132")
+        });
+        let combined_output = combined_agent_output(&final_state);
+
+        assert!(combined_output.contains("37 123"));
+        assert!(combined_output.contains("42 132"));
+        assert_eq!(
+            final_state.session.as_ref().unwrap().status,
+            AgentWorkbenchSessionStatus::Exited
+        );
+
+        provider.cleanup();
+    }
+
     #[test]
     fn agent_workbench_provider_lookup_ignores_non_allowlisted_commands() {
         let dir = unique_test_dir("agent_provider_lookup_reject");

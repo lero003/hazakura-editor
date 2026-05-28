@@ -35,7 +35,7 @@ Latest Local Bundle Minimum System Version checks: 2026-05-28 build output confi
 
 Latest Agent Workbench Automated Stabilization checks: 2026-05-28 automated gates passed with fake allowlist providers. No real `codex` / `opencode` manual smoke was claimed.
 
-Latest Agent Workbench xterm Terminal Surface checks: 2026-05-28 automated gates passed after replacing the simple log/input surface with an xterm-based provider terminal, compacting the Agent pane header, and passing xterm rows/columns to the backend PTY. Real `codex` / `opencode` behavior remains trusted-workspace manual smoke.
+Latest Agent Workbench xterm Terminal Surface checks: 2026-05-28 automated gates passed after replacing the simple log/input surface with an xterm-based provider terminal, compacting the Agent pane header, and passing xterm rows/columns to the backend PTY. Rust coverage now verifies real PTY `stty size` at launch and after resize. Real `codex` / `opencode` behavior remains trusted-workspace manual smoke.
 
 ## Build First
 
