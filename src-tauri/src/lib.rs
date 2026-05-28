@@ -2478,6 +2478,72 @@ mod tests {
     }
 
     #[test]
+    fn agent_workbench_start_allows_new_session_after_exit() {
+        let store = AgentWorkbenchSessionStore::default();
+        let adapter = RealAgentRuntimeAdapter::new_piped_for_tests(&store);
+        let provider = fake_provider_fixture(
+            "agent_restart_after_exit",
+            AGENT_PROVIDER_CODEX,
+            b"#!/bin/sh\nprintf 'restart-marker\\n'\nexit 0\n",
+        );
+
+        start_agent_workbench_session_with_store(
+            &store,
+            &adapter,
+            true,
+            true,
+            AGENT_PROVIDER_CODEX.to_string(),
+            provider.workspace_root(),
+            Some(provider.path_var()),
+            None,
+            None,
+        )
+        .expect("start first fake provider");
+        wait_for_agent_state(&store, |state| {
+            state
+                .session
+                .as_ref()
+                .is_some_and(|session| session.status == AgentWorkbenchSessionStatus::Exited)
+        });
+
+        let second_start = start_agent_workbench_session_with_store(
+            &store,
+            &adapter,
+            true,
+            true,
+            AGENT_PROVIDER_CODEX.to_string(),
+            provider.workspace_root(),
+            Some(provider.path_var()),
+            None,
+            None,
+        )
+        .expect("start second fake provider");
+
+        assert_eq!(
+            second_start.session.as_ref().unwrap().status,
+            AgentWorkbenchSessionStatus::Active
+        );
+
+        let final_state = wait_for_agent_state(&store, |state| {
+            let combined_output = combined_agent_output(state);
+            state
+                .session
+                .as_ref()
+                .is_some_and(|session| session.status == AgentWorkbenchSessionStatus::Exited)
+                && combined_output.matches("restart-marker").count() >= 2
+        });
+        let combined_output = combined_agent_output(&final_state);
+
+        assert_eq!(combined_output.matches("restart-marker").count(), 2);
+        assert_eq!(
+            final_state.session.as_ref().unwrap().status,
+            AgentWorkbenchSessionStatus::Exited
+        );
+
+        provider.cleanup();
+    }
+
+    #[test]
     fn agent_workbench_adapter_failure_does_not_create_session() {
         let store = AgentWorkbenchSessionStore::default();
         let adapter = RecordingRuntimeAdapter::failing_start();
