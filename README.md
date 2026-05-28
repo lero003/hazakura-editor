@@ -62,6 +62,7 @@ Last reviewed: 2026-05-28
 - [Product Brief](docs/product-brief.md): 何を作るか、何を作らないか
 - [MVP Scope](docs/mvp-scope.md): 最初に実装する範囲と受け入れ基準
 - [Security Boundary](docs/security-boundary.md): 安全性のために守る制約
+- [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
 - [Roadmap](docs/roadmap.md): 段階的な開発順序
 - [Source Release Checklist](docs/source-release-checklist.md): source-only developer previewの準備境界
 - [DMG Preview Checklist](docs/dmg-preview-checklist.md): 将来のDMG配布previewの準備境界

@@ -24,6 +24,7 @@ const MENU_TOGGLE_INVISIBLES: &str = "toggle-invisibles";
 const MENU_THEME_SYSTEM: &str = "theme-system";
 const MENU_THEME_LIGHT: &str = "theme-light";
 const MENU_THEME_DARK: &str = "theme-dark";
+const MENU_THEME_SAKURA: &str = "theme-sakura";
 const MENU_PREFERENCES: &str = "preferences";
 const MENU_RECENT_FILE_PREFIX: &str = "recent-file-";
 const MENU_RECENT_FOLDER_PREFIX: &str = "recent-folder-";
@@ -733,6 +734,14 @@ fn build_app_menu_with_state<R: tauri::Runtime>(
                         theme_preference == "dark",
                         None::<&str>,
                     )?,
+                    &CheckMenuItem::with_id(
+                        app,
+                        MENU_THEME_SAKURA,
+                        "Sakura",
+                        true,
+                        theme_preference == "sakura",
+                        None::<&str>,
+                    )?,
                 ],
             )?,
             &PredefinedMenuItem::separator(app)?,
@@ -846,6 +855,7 @@ fn emit_app_menu_event<R: tauri::Runtime>(
                 | MENU_THEME_SYSTEM
                 | MENU_THEME_LIGHT
                 | MENU_THEME_DARK
+                | MENU_THEME_SAKURA
                 | MENU_PREFERENCES
         )
     {

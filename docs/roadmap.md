@@ -208,6 +208,7 @@ Before starting broad Markdown helpers, let the recurring automation close small
 ## Later
 
 - Warning-expected DMG preview as a separate release lane from source-only distribution
+- Optional Agent Workbench exploration as a separate lane from Safe Editor Mode, only after `docs/agent-workbench-boundary.md` is satisfied
 - 見出し単位のMarkdown diff
 - frontmatter差分表示
 - 段落単位diff

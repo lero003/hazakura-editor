@@ -11,9 +11,12 @@ Last reviewed: 2026-05-26
 
 プロジェクトを実行するためのアプリではありません。
 
+この境界は、既定の Safe Editor Mode に適用する。
+将来、allowlistされたlocal TUI agent CLIだけを起動する Agent Workbench Mode を検討する場合は、この文書の禁止事項をなし崩しに緩めず、別境界として [Agent Workbench Boundary](agent-workbench-boundary.md) を先に満たす。
+
 ## Forbidden Product Behaviors
 
-アプリ本体に以下の機能を入れない。
+Safe Editor Mode のアプリ本体に以下の機能を入れない。
 
 - 任意コマンド実行
 - ターミナル

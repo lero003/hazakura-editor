@@ -1,5 +1,6 @@
 import {
   type KeyboardEvent as ReactKeyboardEvent,
+  type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
   useCallback,
   useEffect,
@@ -52,10 +53,12 @@ const SCROLL_SYNC_TOLERANCE_PX = 10;
 const DEFAULT_PREVIEW_COLUMN_PERCENT = 42;
 const MIN_PREVIEW_COLUMN_PERCENT = 25;
 const MAX_PREVIEW_COLUMN_PERCENT = 75;
+const DIFF_MAX_LINE_PRODUCT = 1_000_000;
 
 type SaveStatus = "idle" | "saving" | "saved" | "error" | "conflict";
-type ThemePreference = "system" | "light" | "dark";
-type ResolvedTheme = "light" | "dark";
+type BaseTheme = "light" | "dark";
+type ThemePreference = "system" | BaseTheme | "sakura";
+type ResolvedTheme = BaseTheme | "sakura";
 type EditableLineEnding = "lf" | "crlf";
 type LineEndingKind = EditableLineEnding | "mixed" | "none";
 
@@ -122,12 +125,44 @@ type ImagePreviewState = {
   size: number;
 };
 
+type CompareAnchor = {
+  path: string;
+  name: string;
+};
+
+type WorkspaceContextMenuState = CompareAnchor & {
+  x: number;
+  y: number;
+  canCompare: boolean;
+};
+
+type DiffLine = {
+  kind: "equal" | "added" | "removed";
+  leftLine: number | null;
+  rightLine: number | null;
+  text: string;
+};
+
+type CompareViewState = {
+  leftPath: string;
+  leftName: string;
+  rightPath: string;
+  rightName: string;
+  lines: DiffLine[];
+  additions: number;
+  removals: number;
+};
+
 export default function App() {
   const [tabs, setTabs] = useState<EditorTab[]>([]);
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<ImagePreviewState | null>(
     null,
   );
+  const [compareAnchor, setCompareAnchor] = useState<CompareAnchor | null>(null);
+  const [compareView, setCompareView] = useState<CompareViewState | null>(null);
+  const [workspaceContextMenu, setWorkspaceContextMenu] =
+    useState<WorkspaceContextMenuState | null>(null);
   const [imageReturnTabId, setImageReturnTabId] = useState<string | null>(null);
   const [workspaceTree, setWorkspaceTree] =
     useState<WorkspaceTreeEntry | null>(null);
@@ -176,7 +211,7 @@ export default function App() {
   const [recentFolders, setRecentFolders] = useState<RecentEntry[]>(() =>
     readStoredRecentEntries(RECENT_FOLDERS_STORAGE_KEY),
   );
-  const [systemTheme, setSystemTheme] = useState<ResolvedTheme>(() =>
+  const [systemTheme, setSystemTheme] = useState<BaseTheme>(() =>
     readSystemTheme(),
   );
   const findInputRef = useRef<HTMLInputElement | null>(null);
@@ -207,22 +242,28 @@ export default function App() {
   const dirtyTabCount = dirtyTabs.length;
   const resolvedTheme: ResolvedTheme =
     themePreference === "system" ? systemTheme : themePreference;
+  const editorTheme: BaseTheme = resolvedTheme === "dark" ? "dark" : "light";
   const activeContents = activeTab?.contents ?? "";
   const activeDirty = activeTab ? isDirty(activeTab) : false;
   const activeError = activeTab?.error ?? globalError;
   const activeConflict = activeTab?.saveStatus === "conflict";
   const activeSaveError = isSaveFailureError(activeTab);
-  const hasWorkspaceSelection = Boolean(activeTab || selectedImage);
+  const hasWorkspaceSelection = Boolean(activeTab || selectedImage || compareView);
   const activeDocumentStats = useMemo(
     () => analyzeTextDocument(activeContents, activeTab?.line_ending),
     [activeContents, activeTab?.line_ending],
   );
+  const compareDocumentMeta = compareView
+    ? `Diff · ${compareView.additions} added · ${compareView.removals} removed`
+    : null;
   const activeDocumentMeta = activeTab
     ? formatActiveDocumentMeta(activeDocumentStats, activeTab, activeDirty)
     : selectedImage
       ? `Image · ${formatBytes(selectedImage.size)} · ${selectedImage.name}`
-    : "No file open";
-  const activeStatusDetail = activeTab
+      : "No file open";
+  const activeStatusDetail = compareDocumentMeta
+    ? compareDocumentMeta
+    : activeTab
     ? `${activeDocumentMeta} · ${formatSelectionInfo(selectionInfo)}`
     : activeDocumentMeta;
   const documentKey = activeTab?.path ?? selectedImage?.path ?? "welcome";
@@ -245,8 +286,9 @@ export default function App() {
   const discardingWindowCloseRef = useRef(false);
   const modalOpen =
     pendingCloseTab !== null || pendingAppClose || preferencesOpen;
+  const sidePaneVisible = Boolean(compareView || (previewVisible && activeTab));
   const editorPreviewGridStyle =
-    previewVisible && activeTab
+    sidePaneVisible
       ? {
           gridTemplateColumns: `minmax(280px, ${100 - previewColumnPercent}%) 6px minmax(260px, ${previewColumnPercent}%)`,
         }
@@ -461,6 +503,7 @@ export default function App() {
         setActiveTabId(existingTab.id);
         setSelectedImage(null);
         setImageReturnTabId(null);
+        setCompareView(null);
         rememberRecentFile(path);
         setStatus("Tab focused");
         return;
@@ -491,6 +534,7 @@ export default function App() {
         setActiveTabId(path);
         setSelectedImage(null);
         setImageReturnTabId(null);
+        setCompareView(null);
         rememberRecentFile(path);
         setStatus(
           draft
@@ -529,6 +573,7 @@ export default function App() {
             url: image.dataUrl,
             size: image.size,
           });
+          setCompareView(null);
           setStatus("Image preview opened");
         } catch (err) {
           setGlobalError(String(err));
@@ -562,6 +607,7 @@ export default function App() {
         setActiveTabId(existingTab.id);
         setSelectedImage(null);
         setImageReturnTabId(null);
+        setCompareView(null);
         rememberRecentFile(path);
         setStatus("Tab focused");
         return;
@@ -580,6 +626,7 @@ export default function App() {
       setActiveTabId(path);
       setSelectedImage(null);
       setImageReturnTabId(null);
+      setCompareView(null);
       rememberRecentFile(path);
 
       if (workspaceRootPath) {
@@ -629,6 +676,8 @@ export default function App() {
         setWorkspaceRootPath(path);
         setSelectedImage(null);
         setImageReturnTabId(null);
+        setCompareView(null);
+        setCompareAnchor(null);
         rememberRecentFolder(path);
         setStatus("Folder opened");
       } catch (err) {
@@ -657,6 +706,85 @@ export default function App() {
       setStatus("Folder open failed");
     }
   }, [openWorkspacePath]);
+
+  const closeWorkspaceContextMenu = useCallback(() => {
+    setWorkspaceContextMenu(null);
+  }, []);
+
+  const openWorkspaceContextMenu = useCallback(
+    (
+      entry: WorkspaceTreeEntry,
+      event: ReactMouseEvent<HTMLButtonElement>,
+    ) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      setWorkspaceContextMenu({
+        path: entry.path,
+        name: entry.name,
+        x: event.clientX,
+        y: event.clientY,
+        canCompare: !isSupportedImageFile(entry.name),
+      });
+    },
+    [],
+  );
+
+  const setCompareSource = useCallback((file: CompareAnchor) => {
+    setCompareAnchor(file);
+    setWorkspaceContextMenu(null);
+    setStatus(`Compare source set: ${file.name}`);
+  }, []);
+
+  const clearCompareSource = useCallback(() => {
+    setCompareAnchor(null);
+    setWorkspaceContextMenu(null);
+    setStatus("Compare source cleared");
+  }, []);
+
+  const closeCompareView = useCallback(() => {
+    setCompareView(null);
+    setStatus("Compare closed");
+  }, []);
+
+  const compareWorkspaceFiles = useCallback(
+    async (rightFile: CompareAnchor) => {
+      if (!compareAnchor) {
+        setCompareSource(rightFile);
+        return;
+      }
+
+      if (compareAnchor.path === rightFile.path) {
+        clearCompareSource();
+        return;
+      }
+
+      setWorkspaceContextMenu(null);
+      setGlobalError(null);
+      setStatus("Comparing files...");
+
+      try {
+        const [leftDocument, rightDocument] = await Promise.all([
+          openTextFile(compareAnchor.path),
+          openTextFile(rightFile.path),
+        ]);
+        const diff = buildLineDiff(leftDocument.contents, rightDocument.contents);
+
+        setCompareView({
+          leftPath: compareAnchor.path,
+          leftName: compareAnchor.name,
+          rightPath: rightFile.path,
+          rightName: rightFile.name,
+          ...diff,
+        });
+        setStatus("Compare ready");
+      } catch (err) {
+        setGlobalError(String(err));
+        setStatus("Compare failed");
+      }
+    },
+    [clearCompareSource, compareAnchor, setCompareSource],
+  );
 
   const saveTabById = useCallback(
     async (tabId: string): Promise<boolean> => {
@@ -926,6 +1054,9 @@ export default function App() {
           break;
         case "theme-dark":
           setThemePreference("dark");
+          break;
+        case "theme-sakura":
+          setThemePreference("sakura");
           break;
         case "preferences":
           setPreferencesOpen(true);
@@ -1372,6 +1503,31 @@ export default function App() {
   useEffect(() => {
     recentFoldersRef.current = recentFolders;
   }, [recentFolders]);
+
+  useEffect(() => {
+    if (!workspaceContextMenu) {
+      return;
+    }
+
+    const closeMenu = () => setWorkspaceContextMenu(null);
+    const closeMenuFromKeyboard = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeMenu();
+      }
+    };
+
+    window.addEventListener("click", closeMenu);
+    window.addEventListener("scroll", closeMenu, true);
+    window.addEventListener("resize", closeMenu);
+    window.addEventListener("keydown", closeMenuFromKeyboard, true);
+
+    return () => {
+      window.removeEventListener("click", closeMenu);
+      window.removeEventListener("scroll", closeMenu, true);
+      window.removeEventListener("resize", closeMenu);
+      window.removeEventListener("keydown", closeMenuFromKeyboard, true);
+    };
+  }, [workspaceContextMenu]);
 
   useEffect(
     () => () => {
@@ -1881,6 +2037,7 @@ export default function App() {
 
   return (
     <main className="app-shell">
+      {resolvedTheme === "sakura" ? <SakuraPetals /> : null}
       <section className="tabs-row" aria-label="Open files">
         <div className="tab-list" role="tablist" aria-label="Open file tabs">
           {tabs.length === 0 ? (
@@ -2204,8 +2361,10 @@ export default function App() {
           {workspaceTree ? (
             <WorkspaceTree
               activePath={selectedImage?.path ?? activeTab?.path ?? null}
+              compareSourcePath={compareAnchor?.path ?? null}
               entry={workspaceTree}
               onLoadDirectory={loadWorkspaceDirectory}
+              onOpenContextMenu={openWorkspaceContextMenu}
               onOpenFile={openWorkspaceFile}
             />
           ) : (
@@ -2219,7 +2378,7 @@ export default function App() {
         </aside>
         <div
           ref={editorPreviewGridRef}
-          className={`editor-preview-grid${previewVisible && activeTab ? "" : " preview-hidden"}${hasWorkspaceSelection ? "" : " empty-session"}`}
+          className={`editor-preview-grid${sidePaneVisible ? "" : " preview-hidden"}${hasWorkspaceSelection ? "" : " empty-session"}`}
           style={editorPreviewGridStyle}
         >
           <div className="pane editor-pane" aria-label="Editor">
@@ -2235,7 +2394,7 @@ export default function App() {
                 searchMatches={findMatches}
                 showInvisibles={editorSettings.showInvisibles}
                 tabSize={editorSettings.tabSize}
-                theme={resolvedTheme}
+                theme={editorTheme}
                 value={activeContents}
                 wrapLines={editorSettings.wrapLines}
               />
@@ -2251,9 +2410,9 @@ export default function App() {
               />
             )}
           </div>
-          {previewVisible && activeTab ? (
+          {sidePaneVisible ? (
             <div
-              aria-label="Resize editor and preview columns"
+              aria-label="Resize editor and side pane columns"
               aria-orientation="vertical"
               aria-valuemax={MAX_PREVIEW_COLUMN_PERCENT}
               aria-valuemin={MIN_PREVIEW_COLUMN_PERCENT}
@@ -2264,17 +2423,21 @@ export default function App() {
               onPointerMove={handlePreviewResizePointerMove}
               role="separator"
               tabIndex={0}
-              title="Drag to resize editor and preview"
+              title="Drag to resize editor and side pane"
             />
           ) : null}
-          {previewVisible && activeTab ? (
+          {sidePaneVisible ? (
             <div
               className="pane preview-pane"
-              ref={previewPaneRef}
-              aria-label="Markdown preview"
-              onScroll={syncEditorScroll}
+              ref={compareView ? null : previewPaneRef}
+              aria-label={compareView ? "File comparison" : "Markdown preview"}
+              onScroll={compareView ? undefined : syncEditorScroll}
             >
-              <PreviewPane source={activeContents} />
+              {compareView ? (
+                <DiffPane view={compareView} onClose={closeCompareView} />
+              ) : (
+                <PreviewPane source={activeContents} />
+              )}
             </div>
           ) : null}
         </div>
@@ -2479,12 +2642,28 @@ export default function App() {
                     <option value="system">System</option>
                     <option value="light">Light</option>
                     <option value="dark">Dark</option>
+                    <option value="sakura">Sakura</option>
                   </select>
                 </label>
               </section>
             </div>
           </section>
         </div>
+      ) : null}
+
+      {workspaceContextMenu ? (
+        <WorkspaceContextMenu
+          anchor={workspaceContextMenu}
+          compareSource={compareAnchor}
+          onClearCompareSource={clearCompareSource}
+          onClose={closeWorkspaceContextMenu}
+          onCompare={() => void compareWorkspaceFiles(workspaceContextMenu)}
+          onOpen={() => {
+            closeWorkspaceContextMenu();
+            void openWorkspaceFile(workspaceContextMenu.path);
+          }}
+          onSetCompareSource={() => setCompareSource(workspaceContextMenu)}
+        />
       ) : null}
     </main>
   );
@@ -2553,24 +2732,156 @@ function ImagePreviewPane({ image }: { image: ImagePreviewState }) {
   );
 }
 
+function DiffPane({
+  onClose,
+  view,
+}: {
+  onClose: () => void;
+  view: CompareViewState;
+}) {
+  return (
+    <div className="diff-pane">
+      <div className="diff-header">
+        <div className="diff-title">
+          <span>Compare</span>
+          <strong>
+            <span title={view.leftPath}>{view.leftName}</span>
+            <span aria-hidden="true">to</span>
+            <span title={view.rightPath}>{view.rightName}</span>
+          </strong>
+        </div>
+        <div className="diff-summary" aria-label="Diff summary">
+          <span className="diff-added">+{view.additions}</span>
+          <span className="diff-removed">-{view.removals}</span>
+          <button type="button" onClick={onClose}>
+            Close
+          </button>
+        </div>
+      </div>
+      <div className="diff-table" role="table" aria-label="File comparison">
+        {view.lines.length === 0 ? (
+          <div className="diff-empty">No differences</div>
+        ) : (
+          view.lines.map((line, index) => (
+            <div
+              className={`diff-row ${line.kind}`}
+              key={`${line.kind}-${index}-${line.leftLine ?? "x"}-${line.rightLine ?? "x"}`}
+              role="row"
+            >
+              <span className="diff-marker" aria-hidden="true">
+                {line.kind === "added" ? "+" : line.kind === "removed" ? "-" : ""}
+              </span>
+              <span className="diff-line-number">
+                {line.leftLine ?? ""}
+              </span>
+              <span className="diff-line-number">
+                {line.rightLine ?? ""}
+              </span>
+              <code>{line.text || " "}</code>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+function WorkspaceContextMenu({
+  anchor,
+  compareSource,
+  onClearCompareSource,
+  onClose,
+  onCompare,
+  onOpen,
+  onSetCompareSource,
+}: {
+  anchor: WorkspaceContextMenuState;
+  compareSource: CompareAnchor | null;
+  onClearCompareSource: () => void;
+  onClose: () => void;
+  onCompare: () => void;
+  onOpen: () => void;
+  onSetCompareSource: () => void;
+}) {
+  const hasDifferentCompareSource =
+    compareSource !== null && compareSource.path !== anchor.path;
+
+  return (
+    <div
+      className="workspace-context-menu"
+      role="menu"
+      style={{ left: anchor.x, top: anchor.y }}
+      onClick={(event) => event.stopPropagation()}
+      onContextMenu={(event) => event.preventDefault()}
+    >
+      <button type="button" role="menuitem" onClick={onOpen}>
+        Open
+      </button>
+      <button
+        type="button"
+        role="menuitem"
+        disabled={!anchor.canCompare}
+        onClick={onSetCompareSource}
+      >
+        比較元にする
+      </button>
+      <button
+        type="button"
+        role="menuitem"
+        disabled={!anchor.canCompare || !hasDifferentCompareSource}
+        onClick={onCompare}
+      >
+        比較する
+      </button>
+      {compareSource ? (
+        <button type="button" role="menuitem" onClick={onClearCompareSource}>
+          比較元を解除
+        </button>
+      ) : null}
+      <button type="button" role="menuitem" onClick={onClose}>
+        Close menu
+      </button>
+    </div>
+  );
+}
+
+function SakuraPetals() {
+  return (
+    <div className="sakura-petals" aria-hidden="true">
+      {Array.from({ length: 10 }, (_, index) => (
+        <span className="sakura-petal" key={index} />
+      ))}
+    </div>
+  );
+}
+
 function WorkspaceTree({
   activePath,
+  compareSourcePath,
   entry,
   onLoadDirectory,
+  onOpenContextMenu,
   onOpenFile,
 }: {
   activePath: string | null;
+  compareSourcePath: string | null;
   entry: WorkspaceTreeEntry;
   onLoadDirectory: (path: string) => Promise<void>;
+  onOpenContextMenu: (
+    entry: WorkspaceTreeEntry,
+    event: ReactMouseEvent<HTMLButtonElement>,
+  ) => void;
   onOpenFile: (path: string) => void | Promise<void>;
 }) {
   return (
     <div className="workspace-tree">
       <TreeEntry
         activePath={activePath}
+        compareSourcePath={compareSourcePath}
         defaultExpanded
         entry={entry}
         onLoadDirectory={onLoadDirectory}
+        onOpenContextMenu={onOpenContextMenu}
         onOpenFile={onOpenFile}
       />
     </div>
@@ -2662,15 +2973,22 @@ function ChevronIcon({ expanded }: { expanded: boolean }) {
 
 function TreeEntry({
   activePath,
+  compareSourcePath,
   defaultExpanded = false,
   entry,
   onLoadDirectory,
+  onOpenContextMenu,
   onOpenFile,
 }: {
   activePath: string | null;
+  compareSourcePath: string | null;
   defaultExpanded?: boolean;
   entry: WorkspaceTreeEntry;
   onLoadDirectory: (path: string) => Promise<void>;
+  onOpenContextMenu: (
+    entry: WorkspaceTreeEntry,
+    event: ReactMouseEvent<HTMLButtonElement>,
+  ) => void;
   onOpenFile: (path: string) => void | Promise<void>;
 }) {
   const [expanded, setExpanded] = useState(defaultExpanded);
@@ -2682,8 +3000,9 @@ function TreeEntry({
     const isImage = isSupportedImageFile(entry.name);
     return (
       <button
-        className={`tree-file${entry.path === activePath ? " active" : ""}`}
+        className={`tree-file${entry.path === activePath ? " active" : ""}${entry.path === compareSourcePath ? " compare-source" : ""}`}
         onClick={() => void onOpenFile(entry.path)}
+        onContextMenu={(event) => onOpenContextMenu(entry, event)}
         title={entry.path}
         type="button"
       >
@@ -2738,9 +3057,11 @@ function TreeEntry({
           {entry.children.map((child) => (
             <TreeEntry
               activePath={activePath}
+              compareSourcePath={compareSourcePath}
               entry={child}
               key={child.path}
               onLoadDirectory={onLoadDirectory}
+              onOpenContextMenu={onOpenContextMenu}
               onOpenFile={onOpenFile}
             />
           ))}
@@ -2797,7 +3118,12 @@ function isDirty(tab: EditorTab): boolean {
 function readStoredThemePreference(): ThemePreference {
   const value = window.localStorage.getItem(THEME_STORAGE_KEY);
 
-  if (value === "light" || value === "dark" || value === "system") {
+  if (
+    value === "light" ||
+    value === "dark" ||
+    value === "system" ||
+    value === "sakura"
+  ) {
     return value;
   }
 
@@ -3025,7 +3351,7 @@ function writePersistedWorkspaceState(state: PersistedWorkspaceState) {
   window.localStorage.setItem(WORKSPACE_STATE_STORAGE_KEY, JSON.stringify(state));
 }
 
-function readSystemTheme(): ResolvedTheme {
+function readSystemTheme(): BaseTheme {
   return window.matchMedia("(prefers-color-scheme: dark)").matches
     ? "dark"
     : "light";
@@ -3265,6 +3591,109 @@ function normalizeTextLineEndings(
   }
 
   return lfContents.replace(/\n/g, "\r\n");
+}
+
+function buildLineDiff(
+  leftContents: string,
+  rightContents: string,
+): Pick<CompareViewState, "lines" | "additions" | "removals"> {
+  const leftLines = splitDiffLines(leftContents);
+  const rightLines = splitDiffLines(rightContents);
+  const lineProduct = leftLines.length * rightLines.length;
+
+  if (lineProduct > DIFF_MAX_LINE_PRODUCT) {
+    throw new Error(
+      "Compare stopped because these files are too large for the preview diff.",
+    );
+  }
+
+  const table: number[][] = Array.from(
+    { length: leftLines.length + 1 },
+    () => Array(rightLines.length + 1).fill(0),
+  );
+
+  for (let leftIndex = leftLines.length - 1; leftIndex >= 0; leftIndex -= 1) {
+    for (
+      let rightIndex = rightLines.length - 1;
+      rightIndex >= 0;
+      rightIndex -= 1
+    ) {
+      table[leftIndex][rightIndex] =
+        leftLines[leftIndex] === rightLines[rightIndex]
+          ? table[leftIndex + 1][rightIndex + 1] + 1
+          : Math.max(
+              table[leftIndex + 1][rightIndex],
+              table[leftIndex][rightIndex + 1],
+            );
+    }
+  }
+
+  const lines: DiffLine[] = [];
+  let additions = 0;
+  let removals = 0;
+  let leftIndex = 0;
+  let rightIndex = 0;
+
+  while (leftIndex < leftLines.length || rightIndex < rightLines.length) {
+    if (
+      leftIndex < leftLines.length &&
+      rightIndex < rightLines.length &&
+      leftLines[leftIndex] === rightLines[rightIndex]
+    ) {
+      lines.push({
+        kind: "equal",
+        leftLine: leftIndex + 1,
+        rightLine: rightIndex + 1,
+        text: leftLines[leftIndex],
+      });
+      leftIndex += 1;
+      rightIndex += 1;
+      continue;
+    }
+
+    if (
+      rightIndex < rightLines.length &&
+      (leftIndex >= leftLines.length ||
+        table[leftIndex][rightIndex + 1] >= table[leftIndex + 1][rightIndex])
+    ) {
+      lines.push({
+        kind: "added",
+        leftLine: null,
+        rightLine: rightIndex + 1,
+        text: rightLines[rightIndex],
+      });
+      additions += 1;
+      rightIndex += 1;
+      continue;
+    }
+
+    lines.push({
+      kind: "removed",
+      leftLine: leftIndex + 1,
+      rightLine: null,
+      text: leftLines[leftIndex],
+    });
+    removals += 1;
+    leftIndex += 1;
+  }
+
+  return { lines, additions, removals };
+}
+
+function splitDiffLines(contents: string): string[] {
+  const normalizedContents = normalizeTextLineEndings(contents, "lf");
+
+  if (normalizedContents.length === 0) {
+    return [""];
+  }
+
+  const lines = normalizedContents.split("\n");
+
+  if (lines.at(-1) === "") {
+    lines.pop();
+  }
+
+  return lines;
 }
 
 function formatActiveDocumentMeta(

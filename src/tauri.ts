@@ -15,7 +15,7 @@ export type AppMenuState = {
   previewVisible: boolean;
   wrapLines: boolean;
   showInvisibles: boolean;
-  themePreference: "system" | "light" | "dark";
+  themePreference: "system" | "light" | "dark" | "sakura";
   recentFiles: AppMenuRecentItem[];
   recentFolders: AppMenuRecentItem[];
 };
