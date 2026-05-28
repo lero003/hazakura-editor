@@ -131,6 +131,13 @@ npm run build
 git diff --check
 ```
 
+Agent Workbench output state stabilization on 2026-05-29:
+
+- The frontend now applies Agent output snapshots monotonically by output sequence, so an older async state response from input, refresh, stop, or launch handling cannot roll the terminal output state backward.
+- The explicit reset path is still used when Agent Workbench becomes unavailable, preserving the Safe Editor default boundary.
+- `npm run build:vite` passed.
+- `git diff --check` passed.
+
 Agent Workbench xterm Terminal Surface on 2026-05-28:
 
 - The Agent pane now uses an xterm-based terminal surface instead of the previous simple log view and textarea input.

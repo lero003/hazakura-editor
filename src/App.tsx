@@ -363,6 +363,29 @@ export default function App() {
         : null,
     [activeTab, pendingDrafts],
   );
+
+  const applyAgentOutput = useCallback(
+    (
+      nextOutput: AgentWorkbenchOutputChunk[],
+      options: { allowReset?: boolean } = {},
+    ) => {
+      setAgentOutput((currentOutput) => {
+        if (options.allowReset) {
+          return nextOutput;
+        }
+
+        if (nextOutput.length === 0 && currentOutput.length > 0) {
+          return currentOutput;
+        }
+
+        return lastAgentOutputSeq(nextOutput) >=
+          lastAgentOutputSeq(currentOutput)
+          ? nextOutput
+          : currentOutput;
+      });
+    },
+    [],
+  );
   const invalidRegex =
     searchOptions.regex && findQuery.trim().length > 0
       ? !canCompileRegex(findQuery)
@@ -1634,7 +1657,7 @@ export default function App() {
     try {
       const state = await getAgentWorkbenchSessionState();
       setAgentSession(state.session);
-      setAgentOutput(state.output);
+      applyAgentOutput(state.output);
 
       if (state.session?.status === "exited") {
         setAgentLaunchGate((currentGate) => ({
@@ -1659,7 +1682,7 @@ export default function App() {
       });
       setStatus("Agent session state unavailable");
     }
-  }, []);
+  }, [applyAgentOutput]);
 
   const checkAgentLaunchGate = useCallback(async () => {
     if (!workspaceRootPath) {
@@ -1696,7 +1719,7 @@ export default function App() {
           preflight: result.preflight,
         });
         setAgentSession(null);
-        setAgentOutput(result.output);
+        applyAgentOutput(result.output);
         setStatus("Agent provider not found");
         return;
       }
@@ -1708,7 +1731,7 @@ export default function App() {
           preflight: result.preflight,
         });
         setAgentSession(null);
-        setAgentOutput(result.output);
+        applyAgentOutput(result.output);
         setStatus("Agent provider not found");
         return;
       }
@@ -1719,7 +1742,7 @@ export default function App() {
         preflight: result.preflight,
       });
       setAgentSession(result.session);
-      setAgentOutput(result.output);
+      applyAgentOutput(result.output);
       setStatus("Agent session running");
     } catch (err) {
       const message = String(err);
@@ -1749,6 +1772,7 @@ export default function App() {
     agentWorkbenchConsent,
     agentWorkbenchProvider,
     agentTerminalSize,
+    applyAgentOutput,
     refreshAgentSessionState,
     workspaceRootPath,
   ]);
@@ -1760,7 +1784,7 @@ export default function App() {
     try {
       const state = await stopAgentWorkbenchSession();
       setAgentSession(state.session);
-      setAgentOutput(state.output);
+      applyAgentOutput(state.output);
       setAgentLaunchGate((currentGate) => ({
         ...currentGate,
         kind: state.session ? "passed" : currentGate.kind,
@@ -1783,7 +1807,7 @@ export default function App() {
     } finally {
       setAgentStopPending(false);
     }
-  }, []);
+  }, [applyAgentOutput]);
 
   const sendAgentTerminalData = useCallback((data: string) => {
     if (!data || !isActiveAgentSession(agentSession)) {
@@ -1793,7 +1817,7 @@ export default function App() {
     void writeAgentWorkbenchSessionInput(data)
       .then((state) => {
         setAgentSession(state.session);
-        setAgentOutput(state.output);
+        applyAgentOutput(state.output);
       })
       .catch((err) => {
         setAgentLaunchGate({
@@ -1804,7 +1828,7 @@ export default function App() {
         setStatus("Agent input failed");
         void refreshAgentSessionState();
       });
-  }, [agentSession, refreshAgentSessionState]);
+  }, [agentSession, applyAgentOutput, refreshAgentSessionState]);
 
   const resizeAgentTerminal = useCallback((size: AgentTerminalSize) => {
     setAgentTerminalSize((current) => {
@@ -1848,8 +1872,8 @@ export default function App() {
     }
 
     setAgentSession(null);
-    setAgentOutput([]);
-  }, [agentWorkbenchAvailable, refreshAgentSessionState]);
+    applyAgentOutput([], { allowReset: true });
+  }, [agentWorkbenchAvailable, applyAgentOutput, refreshAgentSessionState]);
 
   useEffect(() => {
     if (!agentWorkbenchAvailable || !isActiveAgentSession(agentSession)) {
@@ -3552,6 +3576,10 @@ function AgentTerminalView({
 
 function normalizeTerminalLineEndings(text: string): string {
   return text.replace(/\r?\n/g, "\r\n");
+}
+
+function lastAgentOutputSeq(output: AgentWorkbenchOutputChunk[]): number {
+  return output.at(-1)?.seq ?? 0;
 }
 
 function providerLabel(provider: AgentWorkbenchProvider): string {
