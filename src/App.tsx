@@ -330,7 +330,9 @@ export default function App() {
   const agentWorkbenchAvailable = agentWorkbenchActive && agentWorkbenchConsent;
   const activeAgentSession = isActiveAgentSession(agentSession);
   const effectiveRightPaneMode: RightPaneMode = agentWorkbenchAvailable
-    ? rightPaneMode
+    ? activeTab
+      ? rightPaneMode
+      : "agent"
     : "preview";
   const agentPaneVisible =
     agentWorkbenchAvailable && effectiveRightPaneMode === "agent";
