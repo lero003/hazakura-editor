@@ -13,7 +13,8 @@ Last reviewed: 2026-05-29
 - The status bar shows approximate UTF-8 byte count, character count, saved line-ending mode, final-newline state, and clean/unsaved state.
 - Line endings can be explicitly converted between LF and CRLF; conversion marks the tab unsaved until saved.
 - Save As can create a new UTF-8 text file with common text extensions such as `.txt`, `.log`, `.json`, `.yaml`, `.toml`, `.csv`, `.css`, and `.html`, while refusing to overwrite an existing file.
-- New File, Open, Open Folder, Preferences, Agent Workbench, Save, Save As, and Recent file/folder actions are available from the native File menu instead of occupying the top toolbar.
+- New File, Open, Open Folder, Save, Save As, Close Window, and Recent file/folder actions are available from the native File menu instead of occupying the top toolbar.
+- Preferences and Agent Workbench are available from the native app menu on macOS.
 - Preview, Wrap, Invisibles, and Theme live in the native View menu. Editor/application settings live in Preferences, including an English/Japanese File/View menu language switch.
 - Agent Workbench now opens as its own dialog instead of sharing the Preferences contents. Changing the developer-mode gate stores the requested mode and requires restart before Agent UI or backend launch-command availability changes.
 - When Agent Workbench mode is active for the current app session, the Agent Workbench dialog shows only allowlisted provider choices (`codex` / `opencode`) and requires explicit responsibility-boundary consent before the backend launch gate can pass.
@@ -94,7 +95,8 @@ Last reviewed: 2026-05-29
 - IME-safe keyboard handling for find-field Enter / Escape and global shortcuts during active composition
 - Editor-local Tab / Shift+Tab indentation and Shift+Arrow selection key handling
 - Markdown input helpers for bold, italic, inline code, and link syntax
-- Native File menu actions for New File, Open, Open Folder, Preferences, Agent Workbench, Save, Save As, and Recent file/folder reopening
+- Native File menu actions for New File, Open, Open Folder, Save, Save As, Close Window, and Recent file/folder reopening
+- Native app menu actions for Preferences and Agent Workbench on macOS
 - Native View menu actions for Preview, Wrap, Invisibles, Theme, and fullscreen
 - Preferences dialog for editor/application settings that were previously exposed in the top toolbar, including File/View menu language
 - Separate Agent Workbench dialog for the mode gate, requested mode, provider, consent, and responsibility boundary
@@ -216,8 +218,15 @@ Agent Workbench UI/Menu Separation Polish on 2026-05-29:
 - The Agent pane compact header now emphasizes provider, running state, and workspace path. The verbose gate/status strip is hidden during a normal running session and remains available for idle/checking/rejected states.
 - Preferences now contains editor/application settings only, including an English/Japanese File/View menu language switch.
 - Agent Workbench now opens as a separate dialog for mode gate, provider, session summary, and responsibility-boundary consent.
-- Native Preferences and Agent Workbench entries moved out of the View menu and into the File menu; View now remains focused on preview/display actions.
+- Native Preferences and Agent Workbench entries moved out of the View/File menu path and into the macOS app menu; File now remains focused on document/workspace actions and View remains focused on preview/display actions.
 - No Agent backend capability, provider allowlist, arbitrary shell/command/path UI, auto-apply, auto-commit, Git integration, session restore, or multi-session behavior was added.
+
+Native app menu placement polish on 2026-05-29:
+
+- Preferences and Agent Workbench now live in the macOS app menu rather than File, matching standard macOS placement while keeping File focused on document and workspace actions.
+- Built-app smoke confirmed File exposes file/workspace actions without Preferences or Agent Workbench, and the app-name menu exposes About, Settings, Agent Workbench, Services, Hide, and Quit.
+- `cargo test --manifest-path src-tauri/Cargo.toml` passed with 69 Rust tests.
+- `npm run build` passed and regenerated the local macOS `.app` bundle.
 
 Agent Workbench 30-minute automation guidance on 2026-05-29:
 
@@ -408,7 +417,7 @@ Agent Workbench Provider Discovery Polish on 2026-05-28:
 - Backend preflight now builds an app search path from the app process `PATH`, user bin directories, and common macOS GUI-launch gaps such as Homebrew paths before resolving the allowlisted provider.
 - The same app search path is passed to the launched provider process as `PATH`, so provider scripts using shebangs such as `#!/usr/bin/env node` can resolve their runtime when installed through Homebrew or common user-bin locations.
 - Provider lookup still accepts only allowlisted `codex` / `opencode` names and does not expose arbitrary command lookup.
-- View menu now includes an `Agent Workbench...` entry that opens Preferences, making the mode gate easier to find without adding Agent UI to normal Safe Editor startup.
+- At the time, View menu included an `Agent Workbench...` entry that opened Preferences, making the mode gate easier to find without adding Agent UI to normal Safe Editor startup. This was later superseded by the separate Agent Workbench dialog in the macOS app menu.
 - The provider-not-found UI wording now refers to the app search path instead of implying the user's Terminal `PATH`.
 - `npm run build:vite` passed.
 - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.

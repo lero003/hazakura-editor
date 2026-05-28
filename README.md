@@ -36,7 +36,7 @@ Last reviewed: 2026-05-29
 - Explicit LF / CRLF conversion before save
 - Save As to a new common UTF-8 text file extension, with existing-file overwrite rejection
 - Native File menu entries for New File, Open, Open Folder, Save, Save As, and Recent items
-- Native File menu entries for Preferences and Agent Workbench
+- Native app menu entries for Preferences and Agent Workbench on macOS
 - Native View menu and Preferences dialog for Preview, Wrap, Invisibles, Theme, Font, Tab settings, and menu language
 - Window title reflects the active file and unsaved state
 - Tab-level unsaved state and Save / Discard / Cancel before closing dirty tabs

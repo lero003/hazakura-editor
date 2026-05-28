@@ -8,7 +8,7 @@ use std::process::{Child, Command, Stdio};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{SystemTime, UNIX_EPOCH};
-use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu};
+use tauri::menu::{AboutMetadata, CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri::Emitter;
 
 #[cfg(unix)]
@@ -1686,7 +1686,9 @@ fn build_app_menu_with_state<R: tauri::Runtime>(
                     .map(|state| state.recent_folders.as_slice())
                     .unwrap_or(&[]),
             )?,
+            #[cfg(not(target_os = "macos"))]
             &PredefinedMenuItem::separator(app)?,
+            #[cfg(not(target_os = "macos"))]
             &MenuItem::with_id(
                 app,
                 MENU_PREFERENCES,
@@ -1694,6 +1696,7 @@ fn build_app_menu_with_state<R: tauri::Runtime>(
                 true,
                 Some("CmdOrCtrl+,"),
             )?,
+            #[cfg(not(target_os = "macos"))]
             &MenuItem::with_id(
                 app,
                 MENU_AGENT_WORKBENCH,
@@ -1701,6 +1704,7 @@ fn build_app_menu_with_state<R: tauri::Runtime>(
                 true,
                 None::<&str>,
             )?,
+            #[cfg(not(target_os = "macos"))]
             &PredefinedMenuItem::separator(app)?,
             &MenuItem::with_id(
                 app,
@@ -1802,6 +1806,52 @@ fn build_app_menu_with_state<R: tauri::Runtime>(
 
     #[cfg(target_os = "macos")]
     {
+        let package_info = app.package_info();
+        let config = app.config();
+        let about_metadata = AboutMetadata {
+            name: Some(package_info.name.clone()),
+            version: Some(package_info.version.to_string()),
+            copyright: config.bundle.copyright.clone(),
+            authors: config
+                .bundle
+                .publisher
+                .clone()
+                .map(|publisher| vec![publisher]),
+            ..Default::default()
+        };
+        let app_menu = Submenu::with_items(
+            app,
+            package_info.name.clone(),
+            true,
+            &[
+                &PredefinedMenuItem::about(app, None, Some(about_metadata))?,
+                &PredefinedMenuItem::separator(app)?,
+                &MenuItem::with_id(
+                    app,
+                    MENU_PREFERENCES,
+                    label("Preferences...", "設定..."),
+                    true,
+                    Some("CmdOrCtrl+,"),
+                )?,
+                &MenuItem::with_id(
+                    app,
+                    MENU_AGENT_WORKBENCH,
+                    label("Agent Workbench...", "Agent Workbench..."),
+                    true,
+                    None::<&str>,
+                )?,
+                &PredefinedMenuItem::separator(app)?,
+                &PredefinedMenuItem::services(app, None)?,
+                &PredefinedMenuItem::separator(app)?,
+                &PredefinedMenuItem::hide(app, None)?,
+                &PredefinedMenuItem::hide_others(app, None)?,
+                &PredefinedMenuItem::separator(app)?,
+                &PredefinedMenuItem::quit(app, None)?,
+            ],
+        )?;
+
+        menu.remove_at(0)?;
+        menu.insert(&app_menu, 0)?;
         menu.remove_at(1)?;
         menu.insert(&file_menu, 1)?;
         menu.remove_at(3)?;
