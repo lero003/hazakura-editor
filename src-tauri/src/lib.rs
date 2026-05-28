@@ -2920,6 +2920,7 @@ mod tests {
 
         assert_eq!(final_state.output.len(), AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS);
         assert!(final_state.output.first().unwrap().seq > 1);
+        assert_agent_output_seq_strictly_increases(&final_state.output);
         assert!(combined_output.contains("tail-marker\n"));
         assert!(final_state
             .output
@@ -3039,9 +3040,15 @@ mod tests {
 
         assert_eq!(output.len(), AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS);
         assert_eq!(output.first().unwrap().text, "chunk-3\n");
+        assert_eq!(output.first().unwrap().seq, 4);
+        assert_agent_output_seq_strictly_increases(&output);
         assert_eq!(
             output.last().unwrap().text,
             format!("chunk-{}\n", AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS + 2)
+        );
+        assert_eq!(
+            output.last().unwrap().seq as usize,
+            AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS + 3
         );
     }
 
