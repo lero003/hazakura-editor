@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Recurring automation guidance for quality hardening
 Authority: High
-Last reviewed: 2026-05-28
+Last reviewed: 2026-05-29
 
 ## Purpose
 
@@ -13,15 +13,17 @@ The automation should make the app safer and more comfortable to use in small ve
 
 ## Current Automation Lane
 
-Name: `hazakura-note quality loop`
+Name: `hazakura-note-agent-workbench-micro-stabilization`
 
-Cadence: recurring local development loop, intended for small quality slices.
+Cadence: 30-minute heartbeat loop for non-goal micro-polish work.
 
-Current phase: Source Preview Quality Polish (`docs/roadmap.md` v0.3.5).
+Current phase: Agent Workbench micro-polish and release-readiness hardening.
 
-Primary outcome: one coherent quality-hardening improvement per run, verified, documented, committed, and pushed when checks pass.
+Primary outcome: one coherent improvement per run, verified, documented, committed, and pushed when checks pass. A verified no-op is acceptable when no safe useful slice is found.
 
-The automation should begin from built-app smoke whenever practical. If the smoke finds no actionable issue, a verified no-op is acceptable.
+Each run should fit the 30-minute cadence. If the useful slice is larger than that, narrow it, leave a short next-step note, or stop with a verified no-op instead of stretching the scope.
+
+The automation should not create test code just to produce activity. Add or change tests only when a real regression risk, reproduced bug, backend/safety contract, or high-value smoke gap justifies it.
 
 ## Start Every Run
 
@@ -29,48 +31,55 @@ The automation should begin from built-app smoke whenever practical. If the smok
 2. Run `git status --short --branch`.
 3. Treat existing uncommitted changes as user or previous-run work. Do not revert them. If they are relevant, inspect and close them before starting new work.
 4. Use Hazakura Habitat before substantial implementation, dependency or lockfile work, automation changes, Git/GitHub mutations, release work, or command-selection uncertainty.
-5. Keep the slice small enough to verify in the same run.
+5. Keep the slice small enough to verify in the same run, ideally within 30 minutes.
 
 ## Selection Order
 
 Choose the first useful slice that is both small and verifiable.
 
-1. Smoke-driven source preview polish:
-   - rerun one narrow section of `docs/smoke-checklist.md` in the built app
-   - prefer checks that previously carried risk: save failure recovery, external-change recheck, dirty close, draft restore, Save As, line endings, preview sanitize, workspace image preview, scroll sync, resizable panes, window close, workspace tree, theme switching, search, long file names, and constrained-width layout
-   - fix only the smallest issue found by that smoke
-2. File safety and close/quit behavior:
-   - app/window close confirmation manual-smoke follow-up if the new flow regresses
-   - save failure recovery manual-smoke follow-up if the retry / keep-editing flow regresses
-   - trailing newline preservation manual-smoke follow-up if the Rust-covered behavior regresses
-3. Editor reliability:
-   - Undo/redo smoke and explicit docs
-   - Japanese IME smoke
-   - search highlight visibility manual-smoke follow-up if the new highlights regress
-   - focus movement and keyboard-only operation
-   - long file name and narrow window layout
-4. Workspace scalability:
-   - lazy workspace tree manual-smoke follow-up if root open, directory expansion, exclusions, or partial-listing state regresses
-   - keep `.git`, `node_modules`, `target`, `dist`, and hidden-directory exclusions
-   - use a per-directory entry cap with a visible partial-listing state instead of failing the whole folder open
-   - verify large folders without adding project-wide indexing, Git status inspection, or background analysis
-5. Markdown writing comfort:
-   - heading outline
-   - light Markdown insertion aids
-   - checkbox or link helpers
-   - preview scroll behavior
-6. Local release readiness:
+1. Everyday usability polish:
+   - menu placement, menu language, button labels, dialog wording, compact Agent pane information, right-click file-path handoff, external-change messages, layout fit, and built-app smoke notes
+   - prefer the smallest visible improvement that makes manual use clearer
+2. Safety-boundary regression checks:
+   - Safe Editor default startup
+   - Agent Workbench explicit mode gate and restart boundary
+   - responsibility-boundary consent
+   - allowlisted `codex` / `opencode` providers only
+   - selected workspace root only
+   - one active session
+   - no arbitrary shell, arbitrary command input UI, arbitrary path input UI, session restore, auto-apply, auto-commit, provider-add UI, or Git integration
+3. Stability and responsiveness:
+   - xterm input latency, PTY resize, output refresh, stale snapshot handling, process exit/stop cleanup, provider not found, spawn failure, stdin write failure, and external-change live refresh
+   - prefer fake-provider coverage for hazakura-owned lifecycle behavior and trusted-workspace manual smoke for real `codex` / `opencode` behavior
+4. Markdown-first safe editor quality:
+   - save failure recovery, external-change recheck, dirty close, draft restore, Save As, line endings, preview sanitize, workspace image preview, scroll sync, resizable panes, window close, workspace tree, theme switching, search, long file names, constrained-width layout, Japanese IME, and keyboard focus
+5. Local release readiness:
    - source-only release P0 gates from `docs/source-release-checklist.md`
-   - dependency audit review with `npm audit` and `cargo audit`
+   - dependency audit review with `npm audit` and `cargo audit` only when the run has enough time and risk justification
    - latest-HEAD built-app smoke evidence before tag approval
-   - warning-expected DMG preview planning from `docs/dmg-preview-checklist.md`, only if the user explicitly changes the release lane from source-only to DMG preview
-   - GitHub Actions for existing quality gates
-   - Dependabot for npm, cargo, and GitHub Actions without auto-merge
-   - app version/about metadata
-   - source release notes in `docs/releases/0.1.0.md`
-   - packaging docs, without signing or notarization claims
-7. Verified no-op:
+   - app version/about metadata and source release notes
+   - packaging docs without signing or notarization claims
+   - do not tag, publish, release, or attach a DMG without explicit user approval
+6. Verified no-op:
    - If no small useful slice is safe, run the relevant checks, update docs only if facts changed, and report no-op clearly.
+
+## Test Discipline
+
+Tests are valuable when they protect behavior that is easy to regress and hard to notice manually. They are noise when they only restate an implementation detail that was not changed.
+
+Add or update automated tests when:
+
+- a bug was reproduced and can be fixed with a stable regression test
+- a backend or safety-boundary contract changes
+- an Agent Workbench lifecycle, gate, output/input, stop/exit, or external-change path gains new behavior
+- a fake provider can verify hazakura-owned behavior without depending on real provider internals
+
+Prefer docs or manual smoke notes instead of new tests when:
+
+- the change is UI wording, menu placement, visual density, or checklist language only
+- existing tests already cover the contract being touched
+- the test would duplicate another fake-provider case without covering a new behavior
+- the slice is a verified no-op
 
 ## Boundaries
 
@@ -78,9 +87,10 @@ Do not implement during this automation:
 
 - Git integration
 - LSP
-- terminal
-- AI assistance
+- arbitrary terminal or shell access
+- new AI assistance surfaces outside the existing Agent Workbench boundary
 - arbitrary command execution
+- arbitrary path input UI
 - plugin system
 - project-wide analysis or indexing
 - Apple Developer ID signing or notarization completion
@@ -145,13 +155,15 @@ Advance hazakura-note by one small, verifiable quality-hardening slice.
 
 Start by reading AGENTS.md, README.md, docs/current-status.md, docs/roadmap.md, docs/smoke-checklist.md, docs/development-automation.md, and checking git status --short --branch. Treat existing uncommitted changes as user or previous-run work and do not revert them.
 
-Use docs/development-automation.md as the source of truth. The current lane is Source Preview Quality Polish, with quality hardening as the priority. Prefer built-app smoke first, especially around file safety, close/quit behavior, workspace image preview, scroll sync, resizable panes, editor reliability, workspace scalability, Markdown writing comfort, local release readiness, and verified no-op if no useful small slice is safe. For source-release prep, follow docs/source-release-checklist.md and do not tag or publish without explicit user approval. For DMG preview prep, follow docs/dmg-preview-checklist.md and keep it separate from source-only release approval.
+Use docs/development-automation.md as the source of truth. The current lane is a 30-minute Agent Workbench and safe-editor micro-polish loop. Choose from this priority order: everyday usability polish; safety-boundary regression checks; stability and responsiveness; Markdown-first safe editor quality; local release readiness; verified no-op if no useful small slice is safe.
 
-Do not implement Git integration, LSP, terminal, AI assistance, arbitrary command execution, plugin systems, project-wide analysis/indexing, signing/notarization completion, merge editor, advanced Git diff, or dependency/lockfile changes without explicit user approval.
+Keep Agent Workbench limited to explicit mode gate, restart boundary, responsibility consent, allowlisted codex/opencode providers, one selected workspace root, and one active session. Do not implement Git integration, LSP, arbitrary terminal/shell access, arbitrary command execution, arbitrary path input UI, session restore, auto-apply, auto-commit, provider-add UI, plugin systems, project-wide analysis/indexing, signing/notarization completion, merge editor, advanced Git diff, release/publish/tag flow, or dependency/lockfile changes without explicit user approval.
 
 For substantial implementation, automation changes, Git/GitHub mutation, release work, or command-selection uncertainty, run Hazakura Habitat first and read agent_context.md before continuing. Consult command_policy.md before risky or mutating commands.
 
-Choose exactly one coherent slice. Prefer one narrow built-app smoke section from docs/smoke-checklist.md, fix only the smallest actionable quality issue found, update the relevant docs, and verify it. For code changes run npm run build:vite, cargo fmt --manifest-path src-tauri/Cargo.toml -- --check, cargo test --manifest-path src-tauri/Cargo.toml, npm run build, and git diff --check. For docs-only changes run git diff --check. For UI behavior changes, update or exercise docs/smoke-checklist.md and do not claim manual smoke passed unless it was actually exercised.
+Choose exactly one coherent slice that can fit the 30-minute cadence. Prefer one narrow built-app smoke section from docs/smoke-checklist.md, fix only the smallest actionable quality issue found, update the relevant docs, and verify it. Do not add test code merely to create activity across repeated runs. Add or change tests only for reproduced bugs, backend/safety contracts, Agent lifecycle/gate/output/input/stop/exit/external-change behavior, or high-value fake-provider coverage. Prefer docs or manual smoke notes for UI wording, menu placement, visual density, and verified no-op slices.
+
+For code changes run npm run build:vite, cargo fmt --manifest-path src-tauri/Cargo.toml -- --check, cargo test --manifest-path src-tauri/Cargo.toml, npm run build, and git diff --check. For docs-only changes run git diff --check. For UI behavior changes, update or exercise docs/smoke-checklist.md and do not claim manual smoke passed unless it was actually exercised. For source-release prep, follow docs/source-release-checklist.md and do not tag or publish without explicit user approval. For DMG preview prep, follow docs/dmg-preview-checklist.md and keep it separate from source-only release approval.
 
 If checks pass, stage only related files, commit with a concise message, and push to the configured HTTPS tracking branch. If checks fail, do not commit or push; report the failing command and next fix.
 

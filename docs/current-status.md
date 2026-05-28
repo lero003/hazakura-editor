@@ -183,6 +183,13 @@ Agent Workbench UI/Menu Separation Polish on 2026-05-29:
 - Native Preferences and Agent Workbench entries moved out of the View menu and into the File menu; View now remains focused on preview/display actions.
 - No Agent backend capability, provider allowlist, arbitrary shell/command/path UI, auto-apply, auto-commit, Git integration, session restore, or multi-session behavior was added.
 
+Agent Workbench 30-minute automation guidance on 2026-05-29:
+
+- `docs/development-automation.md` now treats the active non-goal loop as a 30-minute Agent Workbench and safe-editor micro-polish cadence.
+- Selection priority is everyday usability, safety-boundary regression checks, stability/responsiveness, Markdown-first safe-editor quality, local release readiness, then verified no-op.
+- Repeated automation runs should not add test code merely to produce activity. Tests are reserved for reproduced bugs, backend/safety contracts, Agent lifecycle/gate/output/input/stop/exit/external-change behavior, or high-value fake-provider coverage.
+- Release, publish, tag, DMG attachment, dependency/lockfile changes, arbitrary shell/command/path UI, auto-apply, auto-commit, Git integration, provider-add UI, multi-session, and session restore remain out of scope unless explicitly approved.
+
 Agent Workbench output state stabilization on 2026-05-29:
 
 - The frontend now applies Agent output snapshots monotonically by output sequence, so an older async state response from input, refresh, stop, or launch handling cannot roll the terminal output state backward.
@@ -549,7 +556,7 @@ Workspace Image Preview / Quality Automation checks on 2026-05-28:
 - Workspace tree image selection now opens a read-only local PNG/JPEG/GIF/WebP preview in the work area.
 - Image preview reads the selected image through a Rust command constrained to the current workspace root and returns a `data:` URL, avoiding broad asset-protocol filesystem access.
 - Markdown preview image safety remains unchanged: local and external Markdown image references stay blocked, while embedded `data:image` references remain allowed.
-- `docs/development-automation.md` and the saved `hazakura-note-quality-loop` automation now prioritize quality-hardening slices that begin from built-app smoke when practical.
+- `docs/development-automation.md` and the saved `hazakura-note-quality-loop` automation were updated at that time to prioritize quality-hardening slices that begin from built-app smoke when practical.
 - Automated local gates passed after this change; no fresh built-app manual smoke was claimed.
 
 Workspace Image Content Validation checks on 2026-05-28:
@@ -641,7 +648,7 @@ Known verification note:
 
 1. For release work, run the P0 gates in `docs/source-release-checklist.md`, including dependency audits and latest-HEAD built-app smoke evidence, before asking for tag approval.
 2. For Agent Workbench work, run `docs/smoke-checklist.md` Agent Workbench Trusted Workspace Manual Smoke in a throwaway workspace before further terminal, PTY, or provider-lifecycle changes.
-3. For recurring automation, use `docs/development-automation.md` and start from one narrow built-app smoke section when practical.
+3. For recurring automation, use the 30-minute micro-polish loop in `docs/development-automation.md`; keep slices narrow and avoid new test code unless it protects a real bug, backend/safety contract, or high-value Agent lifecycle path.
 4. Re-smoke long file name / constrained-width layout before binary distribution readiness.
 5. If publishing the warning-expected DMG preview, get explicit approval for binary asset publication and use `docs/releases/0.1.0-warning-expected-dmg-preview.md` as the release-note addendum.
 6. Add minimal CI and Dependabot as P1 release hardening when a small verified slice is available.
@@ -650,6 +657,6 @@ Known verification note:
 
 ## Avoid
 
-- Do not add Git operations, terminal integration, LSP, plugin execution, or AI rewrite flows during the next workspace polish slices.
+- Do not add Git operations, arbitrary terminal/shell access, LSP, plugin execution, or AI rewrite flows during the next workspace polish slices.
 - Do not expand workspace persistence into project indexing or background scanning.
 - Do not treat the current build as distribution-ready.
