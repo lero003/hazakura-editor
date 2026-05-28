@@ -1,17 +1,17 @@
 # Agent Workbench Boundary
 
-Status: Draft
-Scope: Optional CLI-agent workbench direction
+Status: Operational
+Scope: Optional CLI-agent workbench boundary
 Authority: Medium
-Last reviewed: 2026-05-28
+Last reviewed: 2026-05-29
 
 ## Purpose
 
-`hazakura-note` may explore an optional Agent Workbench mode while preserving the existing Markdown-first safe editor.
+`hazakura-note` supports an optional Agent Workbench mode while preserving the existing Markdown-first safe editor.
 
 This is not a replacement for Safe Editor Mode. The default product value remains: open selected text files, edit them carefully, and confirm changes without turning the app into an IDE or terminal.
 
-Agent Workbench mode is only acceptable if it is explicit, reversible, and clear about responsibility.
+Agent Workbench mode is acceptable only while it remains explicit, reversible, and clear about responsibility.
 
 ## Product Shape
 
@@ -61,7 +61,7 @@ The precise boundary is:
 - `hazakura-note` can directly launch only allowlisted agent CLIs.
 - What the launched agent CLI can do internally depends on that CLI's own behavior and the user's actions inside it.
 
-Initial allowed launch targets, if implemented:
+Allowed launch targets:
 
 - `codex`
 - `opencode`
@@ -168,20 +168,20 @@ Not in the MVP:
 - Project-wide indexing.
 - Build/test command execution by `hazakura-note`.
 
-## First Implementation Gate
+## Ongoing Change Gate
 
-Before implementation starts, the project should decide:
+Before future changes widen this boundary, the project should decide:
 
-- Mode shape: whether Agent Workbench is a fork, branch, feature build, or future product mode.
-- Runtime gate: where the developer-mode-like setting lives, how restart-required enablement works, and how disabling returns to Safe Editor Mode.
-- Backend gate: how launch commands reject requests when Agent Workbench mode is off, independent of whether the UI is hidden.
-- Build gate: whether Safe Editor Mode can be built without PTY/process-launch code.
-- Provider gate: which provider commands are allowlisted and how their paths are resolved.
-- Consent gate: how the first-run warning is worded and when the user must acknowledge it again.
-- Workspace gate: how the selected workspace root is shown before launch and how untrusted/no-workspace states are handled.
-- Lifecycle gate: how start, stop, app close, crash, and restart cleanup behave.
-- Change-detection gate: how existing external-change detection surfaces files modified by the CLI.
-- Verification gate: which tests or smoke checks prove that arbitrary shell launch is not exposed.
-- Documentation gate: this direction document must be updated before implementation changes widen the trust boundary.
+- Mode shape: whether the change still belongs in optional Agent Workbench mode or should remain out of scope.
+- Runtime gate: whether restart-required enablement, disabling, and Safe Editor fallback remain clear.
+- Backend gate: whether launch commands still reject requests when Agent Workbench mode is off, independent of hidden UI.
+- Build gate: whether Safe Editor Mode can be audited without treating Agent Workbench as the default product.
+- Provider gate: whether provider commands remain allowlisted and path resolution remains non-arbitrary.
+- Consent gate: whether responsibility wording still matches the actual provider capability.
+- Workspace gate: whether the selected workspace root stays visible before launch and untrusted/no-workspace states remain safe.
+- Lifecycle gate: whether start, stop, app close, crash, and restart cleanup remain one-session and no-restore.
+- Change-detection gate: whether files modified by the CLI still surface through external-change/conflict handling.
+- Verification gate: whether tests or smoke checks still prove that arbitrary shell launch is not exposed.
+- Documentation gate: this boundary document must be updated before implementation changes widen the trust boundary.
 
-Until those decisions are made, this document is direction only, not an implemented feature claim.
+This document is the implemented boundary claim for the current Agent Workbench slice. It is not approval for future expansion into a general terminal, agent platform, Git client, auto-apply flow, or release/publish workflow.

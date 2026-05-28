@@ -3,7 +3,7 @@
 Status: Canonical
 Scope: Product direction and non-goals
 Authority: High
-Last reviewed: 2026-05-26
+Last reviewed: 2026-05-29
 
 ## Concept
 
@@ -45,8 +45,8 @@ Safe Editor Mode では、以下を目指さない。
 - パッケージ管理
 - 任意コマンド実行
 
-Optional Agent Workbench Mode を検討する場合も、Safe Editor Mode の置き換えにはしない。
-CLI-agent連携は [Agent Workbench Boundary](agent-workbench-boundary.md) を満たす別レーンとして扱う。
+Optional Agent Workbench Mode は、Safe Editor Mode の置き換えにはしない。
+CLI-agent連携は [Agent Workbench Boundary](agent-workbench-boundary.md) を満たす別 trust boundary として扱い、汎用ターミナル、任意コマンド実行、Gitクライアント、自動適用フローへ広げない。
 
 ## Product Principle
 

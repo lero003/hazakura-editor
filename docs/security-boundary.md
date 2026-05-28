@@ -3,7 +3,7 @@
 Status: Canonical
 Scope: Safety constraints for implementation
 Authority: High
-Last reviewed: 2026-05-26
+Last reviewed: 2026-05-29
 
 ## Core Rule
 
@@ -12,7 +12,7 @@ Last reviewed: 2026-05-26
 プロジェクトを実行するためのアプリではありません。
 
 この境界は、既定の Safe Editor Mode に適用する。
-将来、allowlistされたlocal TUI agent CLIだけを起動する Agent Workbench Mode を検討する場合は、この文書の禁止事項をなし崩しに緩めず、別境界として [Agent Workbench Boundary](agent-workbench-boundary.md) を先に満たす。
+Optional Agent Workbench Mode はこの境界を置き換えない。allowlistされたlocal TUI agent CLIだけを起動する別 trust boundary として [Agent Workbench Boundary](agent-workbench-boundary.md) を満たす必要がある。
 
 ## Forbidden Product Behaviors
 
@@ -63,3 +63,5 @@ AI支援を入れる場合も、常時補完や自動書き換えにはしない
 2. 候補を生成する
 3. Diffで確認する
 4. ユーザーが明示的に適用する
+
+Agent Workbench Mode はこの AI Assistance 方針とは別の任意モードである。`hazakura-note` は汎用 shell prompt や任意コマンド欄を提供せず、直接起動できるのは allowlist された agent CLI だけに限定する。CLI 内部で何ができるかは CLI 側仕様とユーザー操作に依存するため、ユーザー責任と既存の external-change / conflict handling を明示する。
