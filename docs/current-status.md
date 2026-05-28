@@ -134,6 +134,8 @@ git diff --check
 pre0.2 warning-expected DMG preview on 2026-05-29:
 
 - Version surfaces were aligned to `0.2.0-pre.0` in `package.json`, `package-lock.json`, `src-tauri/tauri.conf.json`, and `src-tauri/Cargo.toml`.
+- GitHub prerelease published at `https://github.com/lero003/hazakura-note/releases/tag/v0.2.0-pre.0`.
+- Public release tag `v0.2.0-pre.0` points at commit `5a799be6b0b6f54d913e97883c00f9cca519d9ec`; older public tags were left immutable.
 - Built DMG asset: `hazakura-note_0.2.0-pre.0_aarch64-warning-expected.dmg`.
 - SHA-256: `8061361528c771e2f7864ce379033154e5a214e8747ec401438e9587007afe39`.
 - Screenshot assets were added to README via `docs/images/pre0.2-normal-mode.png` and `docs/images/pre0.2-agent-mode.png`.
@@ -148,6 +150,8 @@ pre0.2 warning-expected DMG preview on 2026-05-29:
 - The DMG mounted read-only; the contained `hazakura-note.app` reported `CFBundleShortVersionString` `0.2.0-pre.0`, bundle identifier `lab.hazakura.note`, and passed `codesign --verify --deep --strict --verbose=2`.
 - The built app launched locally from `src-tauri/target/release/bundle/macos/hazakura-note.app` and was then quit.
 - `spctl -a -vv -t open` rejected the app with `source=Insufficient Context`, which is expected for this ad-hoc signed, not-notarized preview lane.
+- Remote verification downloaded the published GitHub Release assets, confirmed `shasum -c` passed, `hdiutil verify` passed, and the mounted app reported version `0.2.0-pre.0` / bundle identifier `lab.hazakura.note` with `codesign --verify --deep --strict --verbose=2` passing.
+- The release assets are only the DMG and `.sha256`; normal-mode and Agent-mode screenshots are stored in the repository README image paths instead of as release assets.
 
 Agent Workbench Trusted Provider Smoke Readiness on 2026-05-29:
 
