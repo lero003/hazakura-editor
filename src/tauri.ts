@@ -84,7 +84,7 @@ export type AgentRuntimeHandle = {
   status: AgentRuntimeStatus;
 };
 
-export type AgentWorkbenchOutputStream = "stdout" | "stderr" | "input" | "system";
+export type AgentWorkbenchOutputStream = "stdout" | "stderr" | "system";
 
 export type AgentWorkbenchOutputChunk = {
   seq: number;

@@ -77,7 +77,7 @@ Current implementation status:
 - The launch button checks the backend launch preflight. The backend validates mode, consent, provider allowlist, workspace root, and whether the allowlisted provider CLI is discoverable through the app search path.
 - Successful preflight with a found provider goes through a runtime adapter, then starts exactly one allowlisted provider process with `cwd` set to the canonical workspace root.
 - The runtime adapter receives only the allowlisted provider, canonical workspace root, and resolved provider path. It does not receive an arbitrary command string.
-- Provider PTY output is captured and rendered through the Agent pane terminal surface. User keyboard input from that surface is sent only to the running provider process stdin.
+- Provider PTY output is captured and rendered through the Agent pane terminal surface. User keyboard input from that surface is sent only to the running provider process stdin and is not stored as Agent output history.
 - On macOS, the real runtime starts the allowlisted provider behind a minimal PTY so CLIs that require terminal stdin can start. The UI uses xterm for terminal rendering, but it is still scoped to the selected allowlisted provider session.
 - The xterm surface reports its current rows/columns to the backend at launch and on resize so the provider PTY can be sized to the visible terminal area.
 - Output is kept in a bounded in-memory buffer of 500 chunks; older chunks are discarded first.

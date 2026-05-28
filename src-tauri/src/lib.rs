@@ -158,7 +158,6 @@ struct AgentWorkbenchSession {
 enum AgentWorkbenchOutputStream {
     Stdout,
     Stderr,
-    Input,
     System,
 }
 
@@ -1111,13 +1110,6 @@ fn write_agent_workbench_session_input_with_store(
     stdin
         .flush()
         .map_err(|err| format!("Cannot flush provider stdin: {err}"))?;
-
-    append_agent_output(
-        &session_store.output,
-        &session_store.next_output_seq,
-        AgentWorkbenchOutputStream::Input,
-        input,
-    );
 
     drop(runtime);
     get_agent_workbench_session_state_with_store(session_store)
@@ -2679,8 +2671,7 @@ mod tests {
         assert!(state
             .output
             .iter()
-            .any(|chunk| chunk.stream == AgentWorkbenchOutputStream::Input
-                && chunk.text.contains("hello from hazakura")));
+            .all(|chunk| chunk.text != "hello from hazakura\nexit\n"));
 
         let final_state = wait_for_agent_state(&store, |state| {
             let combined_output = combined_agent_output(state);
@@ -2716,7 +2707,7 @@ mod tests {
         assert!(final_state
             .output
             .iter()
-            .any(|chunk| chunk.stream == AgentWorkbenchOutputStream::Input));
+            .all(|chunk| chunk.text != "hello from hazakura\nexit\n"));
         assert!(final_state
             .output
             .iter()

@@ -137,7 +137,7 @@ Agent Workbench xterm Terminal Surface on 2026-05-28:
 - PTY output is passed through to xterm so terminal control sequences are rendered by the terminal emulator instead of printed as raw text.
 - The Agent pane status area was compacted so the terminal surface gets most of the right pane height.
 - xterm fit dimensions are sent to the backend at provider launch and on terminal resize, and the backend applies them to the provider PTY.
-- Terminal data from the xterm surface is sent only to the existing running allowlisted provider session; no arbitrary command input, shell selector, provider-add UI, session restore, auto-apply, auto-commit, or Git integration was added.
+- Terminal data from the xterm surface is sent only to the existing running allowlisted provider session and is not stored as output history, so key-by-key input does not consume the bounded provider-output buffer. No arbitrary command input, shell selector, provider-add UI, session restore, auto-apply, auto-commit, or Git integration was added.
 - The backend gate, allowlisted provider lookup, single-session lifecycle, runtime stop boundary, bounded output buffer, and no-restore behavior are unchanged.
 - `@xterm/xterm` and `@xterm/addon-fit` were added as frontend dependencies.
 - `npm run build:vite` passed.
@@ -257,7 +257,7 @@ Agent Workbench Minimal Real Session Slice on 2026-05-28:
 
 Agent Workbench Real Session Stabilization on 2026-05-28:
 
-- Agent output now auto-scrolls and labels stdout, stderr, input, and system chunks separately in the Agent pane.
+- The earlier simple Agent output view auto-scrolled and labeled stdout, stderr, input, and system chunks separately; the current xterm surface sends input directly to the provider and keeps output history focused on provider/system output.
 - The output buffer is fixed at 500 chunks; when it overflows, older chunks are discarded first.
 - Active sessions keep provider changes disabled and warn if the selected workspace changes while the process remains bound to its launch workspace.
 - Stopped or exited sessions reject new input, and stdin failures return an error without mutating the stored session state.
@@ -288,7 +288,7 @@ Agent Workbench Manual Smoke Readiness on 2026-05-28:
 
 - `docs/smoke-checklist.md` now includes an Agent Workbench Trusted Workspace Manual Smoke section.
 - The checklist keeps real `codex` / `opencode` checks scoped to a trusted throwaway workspace and explicitly avoids provider-internal auto-approval.
-- The manual smoke path covers Safe Editor default visibility, restart-required mode gate, provider/consent setup, provider-not-found behavior, one real session start, input chunk display, stop/exited state, optional external-change observation, close cleanup, and a result record template.
+- The manual smoke path covers Safe Editor default visibility, restart-required mode gate, provider/consent setup, provider-not-found behavior, one real session start, terminal input delivery, stop/exited state, optional external-change observation, close cleanup, and a result record template.
 - No real provider manual smoke is claimed by this documentation update.
 
 Agent Workbench Provider Discovery Polish on 2026-05-28:

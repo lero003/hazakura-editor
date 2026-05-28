@@ -3519,11 +3519,6 @@ function AgentTerminalView({
         continue;
       }
 
-      if (chunk.stream === "input") {
-        lastOutputSeqRef.current = chunk.seq;
-        continue;
-      }
-
       if (chunk.stream === "system") {
         terminal.write(`\r\n${normalizeTerminalLineEndings(chunk.text)}`);
       } else {
