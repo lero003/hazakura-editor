@@ -3,11 +3,11 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-05-28
+Last reviewed: 2026-05-29
 
 `hazakura-note` は、Markdownを中心に安全にテキストを読む・書く・比べるための軽量エディタです。
 
-万能IDEではありません。拡張機能、LSP、ターミナル、Gitクライアント、任意コマンド実行を持たないことで、信頼しきれないプロジェクト内のテキストを静かに扱うことを目的にします。
+万能IDEではありません。拡張機能、LSP、Gitクライアント、汎用ターミナル、任意コマンド実行を持たないことで、信頼しきれないプロジェクト内のテキストを静かに扱うことを目的にします。
 
 > 安全に開く。静かに書く。差分で確かめる。
 
@@ -18,6 +18,7 @@ Last reviewed: 2026-05-28
 - Preferred initial stack: Tauri + CodeMirror 6 + React
 - Repository remote: `https://github.com/lero003/hazakura-note.git`
 - Current prototype: Tauri + React + CodeMirror 6で、Markdownを開く・編集する・保存する・プレビューする・複数タブで扱う最小体験を実装済み
+- Optional mode: Agent Workbench は明示的に有効化した場合だけ使える開発者モード的な境界で、Safe Editor Mode とは別の trust boundary として扱います
 
 ## Current Features
 
@@ -29,7 +30,8 @@ Last reviewed: 2026-05-28
 - Explicit LF / CRLF conversion before save
 - Save As to a new common UTF-8 text file extension, with existing-file overwrite rejection
 - Native File menu entries for New File, Open, Open Folder, Save, Save As, and Recent items
-- Native View menu and Preferences dialog for Preview, Wrap, Invisibles, Theme, Font, and Tab settings
+- Native File menu entries for Preferences and Agent Workbench
+- Native View menu and Preferences dialog for Preview, Wrap, Invisibles, Theme, Font, Tab settings, and menu language
 - Window title reflects the active file and unsaved state
 - Tab-level unsaved state and Save / Discard / Cancel before closing dirty tabs
 - Keyboard shortcuts for New File, Open, Open Folder, Save, Find, and tab close
@@ -56,6 +58,9 @@ Last reviewed: 2026-05-28
 - Failed or conflicted Save All from the app/window close dialog stops the close, selects the failed tab, and returns to the editor with the normal recovery actions visible
 - Discard All from the app/window close dialog clears matching unsaved recovery drafts so intentionally discarded edits are not offered after restart
 - Long file names are clipped or wrapped in tabs, the file tree, status/error rows, and close dialogs so core controls stay reachable
+- App bundle icon uses a centered `🌸` emoji mark on a soft pink rounded base
+- Optional Agent Workbench mode can launch one allowlisted `codex` or `opencode` provider session in the selected workspace after restart-required mode enablement and responsibility-boundary consent
+- Agent Workbench renders provider output in an xterm-based pane, sends user terminal input to the running provider, supports Copy full path / Send full path to Agent from existing workspace file rows, and continues to treat provider-made file edits as ordinary external on-disk changes
 
 ## Project Docs
 
@@ -128,7 +133,9 @@ Source-only developer preview boundary:
 - Workspace image preview is intentionally bounded to local PNG/JPEG/GIF/WebP files up to 20 MB.
 - Save conflicts are recoverable by reopening, closing, or keeping local edits, but there is no merge editor or advanced diff.
 - The app is not signed or notarized with an Apple Developer ID.
-- There is no Git integration, LSP, terminal, AI assistance, plugin system, arbitrary command execution, or project-wide analysis.
+- Agent Workbench is optional and explicit. It does not provide a general shell prompt, arbitrary command input UI, arbitrary path input UI, provider-add UI, multiple sessions, session restore, auto-apply, auto-commit, or Git integration.
+- CLI provider internals are outside hazakura's safety boundary. What happens inside `codex` or `opencode` depends on the provider and the user's choices.
+- Outside Agent Workbench there is no Git integration, LSP, terminal, AI assistance, plugin system, arbitrary command execution, or project-wide analysis.
 - The production bundle currently carries a Vite chunk-size warning from editor/preview dependencies.
 
 ## Draft Source
