@@ -134,8 +134,12 @@ git diff --check
 Agent Workbench output state stabilization on 2026-05-29:
 
 - The frontend now applies Agent output snapshots monotonically by output sequence, so an older async state response from input, refresh, stop, or launch handling cannot roll the terminal output state backward.
+- Rust coverage now verifies Agent output sequence numbers strictly increase and continue across a new provider session after provider exit.
 - The explicit reset path is still used when Agent Workbench becomes unavailable, preserving the Safe Editor default boundary.
 - `npm run build:vite` passed.
+- `cargo test --manifest-path src-tauri/Cargo.toml agent_workbench_start_allows_new_session_after_exit` passed.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.
+- `cargo test --manifest-path src-tauri/Cargo.toml` passed with 66 Rust tests.
 - `git diff --check` passed.
 
 Agent Workbench xterm Terminal Surface on 2026-05-28:

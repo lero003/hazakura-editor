@@ -2499,12 +2499,17 @@ mod tests {
             None,
         )
         .expect("start first fake provider");
-        wait_for_agent_state(&store, |state| {
+        let first_exit_state = wait_for_agent_state(&store, |state| {
             state
                 .session
                 .as_ref()
                 .is_some_and(|session| session.status == AgentWorkbenchSessionStatus::Exited)
         });
+        let first_exit_last_seq = first_exit_state
+            .output
+            .last()
+            .expect("first session output")
+            .seq;
 
         let second_start = start_agent_workbench_session_with_store(
             &store,
@@ -2535,6 +2540,11 @@ mod tests {
         let combined_output = combined_agent_output(&final_state);
 
         assert_eq!(combined_output.matches("restart-marker").count(), 2);
+        assert_agent_output_seq_strictly_increases(&final_state.output);
+        assert!(
+            final_state.output.last().unwrap().seq > first_exit_last_seq,
+            "new session output should continue after the first session output sequence",
+        );
         assert_eq!(
             final_state.session.as_ref().unwrap().status,
             AgentWorkbenchSessionStatus::Exited
@@ -4117,6 +4127,15 @@ mod tests {
             .iter()
             .map(|chunk| chunk.text.as_str())
             .collect::<String>()
+    }
+
+    fn assert_agent_output_seq_strictly_increases(output: &[AgentWorkbenchOutputChunk]) {
+        assert!(
+            output
+                .windows(2)
+                .all(|window| window[0].seq < window[1].seq),
+            "agent output sequence numbers should strictly increase",
+        );
     }
 
     #[cfg(unix)]
