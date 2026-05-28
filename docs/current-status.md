@@ -288,7 +288,7 @@ Workspace Image Preview / Quality Automation checks on 2026-05-28:
 Workspace Image Content Validation checks on 2026-05-28:
 
 - Workspace image preview now requires the selected PNG/JPEG/GIF/WebP extension to match a lightweight file-content signature before returning a `data:` URL.
-- Rust tests cover accepting a supported PNG preview, rejecting paths outside the workspace root, and rejecting a `.png` file whose bytes are not image content.
+- Rust tests cover accepting supported PNG/JPEG/GIF/WebP previews, rejecting paths outside the workspace root, rejecting a `.png` file whose bytes are not image content, and rejecting extension/signature mismatches.
 - Automated local gates passed after this change; no fresh built-app manual smoke was claimed.
 
 Known verification note:

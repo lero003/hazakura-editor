@@ -1319,6 +1319,46 @@ mod tests {
     }
 
     #[test]
+    fn open_workspace_image_accepts_supported_signatures_by_extension() {
+        let dir = unique_test_dir("workspace_image_signatures");
+        fs::create_dir_all(&dir).expect("create test dir");
+
+        let cases = [
+            (
+                "tiny.jpeg",
+                b"\xff\xd8\xff\xe0".as_slice(),
+                "data:image/jpeg;base64,",
+            ),
+            ("tiny.gif", b"GIF89a".as_slice(), "data:image/gif;base64,"),
+            (
+                "tiny.webp",
+                b"RIFF\x04\x00\x00\x00WEBP".as_slice(),
+                "data:image/webp;base64,",
+            ),
+        ];
+
+        for (file_name, bytes, expected_prefix) in cases {
+            let path = dir.join(file_name);
+            fs::write(&path, bytes).expect("write image fixture");
+
+            let image = open_workspace_image(
+                dir.to_string_lossy().to_string(),
+                path.to_string_lossy().to_string(),
+            )
+            .expect("open workspace image");
+
+            assert_eq!(image.name, file_name);
+            assert!(
+                image.data_url.starts_with(expected_prefix),
+                "{}",
+                image.data_url
+            );
+        }
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
     fn open_workspace_image_rejects_paths_outside_root() {
         let root = unique_test_dir("workspace_image_root");
         let outside = unique_test_dir("workspace_image_outside");
@@ -1351,6 +1391,27 @@ mod tests {
             path.to_string_lossy().to_string(),
         )
         .expect_err("non-image bytes should be rejected");
+
+        assert!(
+            err.contains("contents do not match a supported image type"),
+            "{err}"
+        );
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn open_workspace_image_rejects_extension_signature_mismatch() {
+        let dir = unique_test_dir("workspace_image_mismatch");
+        fs::create_dir_all(&dir).expect("create test dir");
+        let path = dir.join("jpeg-bytes.png");
+        fs::write(&path, b"\xff\xd8\xff\xe0").expect("write mismatched image");
+
+        let err = open_workspace_image(
+            dir.to_string_lossy().to_string(),
+            path.to_string_lossy().to_string(),
+        )
+        .expect_err("mismatched extension and signature should be rejected");
 
         assert!(
             err.contains("contents do not match a supported image type"),
