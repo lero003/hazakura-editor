@@ -159,7 +159,7 @@ pre0.2 warning-expected DMG preview on 2026-05-29:
 pre0.2 follow-up warning-expected DMG preview on 2026-05-29:
 
 - Version surfaces were aligned to `0.2.0-pre.1` in `package.json`, `package-lock.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`, and `src-tauri/Cargo.lock`.
-- GitHub prerelease target: `https://github.com/lero003/hazakura-note/releases/tag/v0.2.0-pre.1`.
+- GitHub prerelease published at `https://github.com/lero003/hazakura-note/releases/tag/v0.2.0-pre.1`.
 - Public release tag `v0.2.0-pre.1` is the fresh tag for this follow-up release; older public tags were left immutable.
 - Built DMG asset: `hazakura-note_0.2.0-pre.1_aarch64-warning-expected.dmg`.
 - SHA-256: `812431095aa0a1d8449f1ff06efbe82aab10efdaaf5a0264f0cfc55410fbfce7`.
@@ -174,7 +174,7 @@ pre0.2 follow-up warning-expected DMG preview on 2026-05-29:
 - The DMG mounted read-only; the contained `hazakura-note.app` reported `CFBundleShortVersionString` `0.2.0-pre.1`, bundle identifier `lab.hazakura.note`, and passed `codesign --verify --deep --strict --verbose=2`.
 - A `.json` file opened through the mounted app with macOS open-file handling landed in a normal clean editor tab, and the app was quit after the smoke with no `hazakura-note` process left running.
 - `spctl -a -vv -t open` rejected the app with `source=Insufficient Context`, which is expected for this ad-hoc signed, not-notarized preview lane.
-- Remote verification status: pending publication.
+- Remote verification downloaded the published GitHub Release assets, confirmed `shasum -c` passed, `hdiutil verify` passed, and the mounted app reported version `0.2.0-pre.1` / bundle identifier `lab.hazakura.note` with `codesign --verify --deep --strict --verbose=2` passing.
 
 Agent Workbench Trusted Provider Smoke Readiness on 2026-05-29:
 
