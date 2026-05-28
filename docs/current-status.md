@@ -17,6 +17,7 @@ Last reviewed: 2026-05-28
 - Preview, Wrap, Invisibles, Theme, Font, and Tab display settings now live in the native View menu and Preferences dialog, leaving the always-visible editor chrome minimal.
 - Preferences includes an Agent Workbench developer-mode gate. Changing it stores the requested mode and requires restart before Agent UI or backend launch-command availability changes.
 - When Agent Workbench mode is active for the current app session, Preferences shows only allowlisted provider choices (`codex` / `opencode`) and requires explicit responsibility-boundary consent before the backend launch gate can pass.
+- When Agent Workbench mode is active and consent is acknowledged, the right pane can switch between Preview and a compact Agent pane shell that displays provider/session state above an expanded xterm-based terminal surface. The shell can start one allowlisted provider process in the selected workspace root, render PTY output, send terminal input to it, resize the backend PTY from xterm rows/columns, and stop it through the runtime adapter boundary.
 - The app window title follows the active file and marks unsaved state, so the redundant in-app title header is no longer shown.
 - The workspace header includes a small open-folder action for switching workspace without returning to the native menu.
 - Save writes the editor text without adding or removing a final trailing newline by policy; Rust tests cover LF and CRLF final-newline presence.
@@ -97,7 +98,8 @@ Last reviewed: 2026-05-28
 - Preferences dialog for display settings that were previously exposed in the top toolbar
 - Agent Workbench mode gate in Preferences, with requested mode stored separately from the active app-session mode
 - Agent Workbench provider/consent gate in Preferences, visible only when Agent Workbench is active for the current app session
-- Rust-side Agent Workbench launch gate that rejects disabled mode, unacknowledged consent, non-allowlisted providers, and invalid workspace roots before any future launch path
+- Agent Workbench right-pane shell, visible only after active-session mode and consent gates pass, with compact provider/session state, bounded PTY-backed xterm output/input, PTY resize from xterm rows/columns, and no arbitrary command, shell selector, auto-apply, auto-commit, or Git integration
+- Rust-side Agent Workbench launch preflight, runtime adapter, and in-memory session lifecycle that rejects disabled mode, unacknowledged consent, non-allowlisted providers, invalid workspace roots, provider-not-found starts, adapter failures, stop-adapter failures, and second active sessions before starting an allowlisted provider process
 - Dynamic window title for active file and unsaved state
 - Keyboard shortcuts for New File, Open, Open Folder, Save, Find, active-tab close, and window close
 - Conflict recovery actions for reloading, closing, or continuing with local edits
@@ -129,6 +131,22 @@ npm run build
 git diff --check
 ```
 
+Agent Workbench xterm Terminal Surface on 2026-05-28:
+
+- The Agent pane now uses an xterm-based terminal surface instead of the previous simple log view and textarea input.
+- PTY output is passed through to xterm so terminal control sequences are rendered by the terminal emulator instead of printed as raw text.
+- The Agent pane status area was compacted so the terminal surface gets most of the right pane height.
+- xterm fit dimensions are sent to the backend at provider launch and on terminal resize, and the backend applies them to the provider PTY.
+- Terminal data from the xterm surface is sent only to the existing running allowlisted provider session; no arbitrary command input, shell selector, provider-add UI, session restore, auto-apply, auto-commit, or Git integration was added.
+- The backend gate, allowlisted provider lookup, single-session lifecycle, runtime stop boundary, bounded output buffer, and no-restore behavior are unchanged.
+- `@xterm/xterm` and `@xterm/addon-fit` were added as frontend dependencies.
+- `npm run build:vite` passed.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.
+- `cargo test --manifest-path src-tauri/Cargo.toml` passed with 61 Rust tests, including invalid/no-session/active-session terminal resize coverage.
+- `npm run build` passed and regenerated the local macOS `.app` bundle.
+- Browser smoke at `http://127.0.0.1:1421/` confirmed normal Safe Editor startup loads without Agent Workbench UI visible.
+- Real `codex` / `opencode` behavior still needs trusted-workspace manual smoke because provider-internal behavior is outside hazakura-side automation.
+
 Agent Workbench Mode Gate Foundation on 2026-05-28:
 
 - Preferences now stores requested Agent Workbench mode separately from the app-session active mode, so enable/disable changes require restart before taking effect.
@@ -149,6 +167,149 @@ Agent Workbench Provider/Consent Gate on 2026-05-28:
 - `npm run build:vite` passed.
 - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.
 - `cargo test --manifest-path src-tauri/Cargo.toml` passed with 30 Rust tests, including disabled-mode rejection, unacknowledged-consent rejection, non-allowlisted provider rejection, invalid-workspace rejection, and foundation-build no-launch behavior.
+
+Agent Workbench Pane Shell on 2026-05-28:
+
+- The right pane now exposes Preview / Agent modes only when Agent Workbench is active for the app session and responsibility-boundary consent is acknowledged.
+- The Agent pane shell shows the selected provider, workspace root, consent state, and backend launch-gate state.
+- With no selected workspace root, the Agent pane reports launch unavailable and the gate-check button is disabled.
+- The gate-check button calls the existing backend launch gate; a passed gate still reports launch not implemented instead of starting a CLI. This was later replaced by structured Host Preflight.
+- No arbitrary command input, arbitrary path input, shell selector, PTY, xterm, CLI process launch, multiple sessions, session restore, auto-apply, auto-commit, or Git integration was added.
+- `npm run build:vite` passed.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.
+- `cargo test --manifest-path src-tauri/Cargo.toml` passed with 30 Rust tests.
+- `npm run build` passed and regenerated the local macOS `.app` bundle.
+- Browser smoke at `http://127.0.0.1:1421/` confirmed normal Safe Editor startup loads without an Agent side-pane switch.
+
+Agent Workbench Host Preflight on 2026-05-28:
+
+- `start_agent_workbench_session` now returns structured preflight state instead of starting a CLI process.
+- The preflight validates active-session mode, responsibility-boundary consent, allowlisted provider, and workspace root before checking provider CLI availability.
+- Provider CLI discovery is limited to allowlisted `codex` / `opencode` names on `PATH`; non-allowlisted command names are rejected before lookup.
+- The Agent pane now shows provider availability. Missing provider CLI is reported as provider not found, while found provider CLI reports preflight passed / launch not implemented.
+- No arbitrary command input, arbitrary path input, shell selector, PTY, xterm, CLI process launch, multiple sessions, session restore, auto-apply, auto-commit, or Git integration was added.
+- `npm run build:vite` passed.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.
+- `cargo test --manifest-path src-tauri/Cargo.toml` passed with 36 Rust tests, including command-level rejection for disabled mode, unacknowledged consent, non-allowlisted providers, invalid workspace roots, and allowlist-only provider lookup.
+- `npm run build` passed and regenerated the local macOS `.app` bundle.
+- Browser smoke at `http://127.0.0.1:1421/` confirmed normal Safe Editor startup loads without an Agent side-pane switch or Agent pane.
+- `git diff --check` passed.
+
+Agent Workbench Session Lifecycle Stub on 2026-05-28:
+
+- `start_agent_workbench_session` now creates an in-memory session stub only after preflight passes and the allowlisted provider CLI is found on `PATH`.
+- The session stub records provider, workspace root, provider path, `createdAtMs`, and status. It does not start a CLI process.
+- Provider not found returns no session stub. Active sessions reject a second start until stopped.
+- `stop_agent_workbench_session` marks the current stub stopped without process management, and `get_agent_workbench_session_state` returns the current in-memory stub state or none.
+- Session stubs are not persisted, restored, or treated as process state after restart.
+- The Agent pane now shows session status and exposes Start session stub / Stop session stub controls.
+- No arbitrary command input, arbitrary path input, shell selector, PTY, xterm, CLI process launch, multiple sessions, session restore, auto-apply, auto-commit, or Git integration was added.
+- `npm run build:vite` passed.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.
+- `cargo test --manifest-path src-tauri/Cargo.toml` passed with 40 Rust tests, including session-stub creation, provider-not-found no-session behavior, second-active-session rejection, stop-to-stopped behavior, and fresh-store no-restore behavior.
+- `npm run build` passed and regenerated the local macOS `.app` bundle.
+- Browser smoke at `http://127.0.0.1:1421/` confirmed normal Safe Editor startup loads without Agent switch, Agent pane, or session-stub controls.
+- `git diff --check` passed.
+
+Agent Workbench Runtime Adapter Stub on 2026-05-28:
+
+- Session stub creation now goes through an `AgentRuntimeAdapter` boundary instead of constructing future runtime state directly inside lifecycle code.
+- The default adapter is a stub adapter. It receives only allowlisted provider, canonical workspace root, and resolved provider path, then returns a runtime handle with status `stubbed/not_started`.
+- Runtime stub handles are stored on the session stub but do not include process IDs, stdio handles, PTY handles, or any real CLI process state.
+- Provider-not-found starts do not call the adapter or create a session stub. Adapter failure also creates no session stub. A second active-session start is rejected before calling the adapter again.
+- The Agent pane now shows runtime status when a session stub exists.
+- No arbitrary command input, arbitrary path input, shell selector, PTY, xterm, CLI process launch, multiple sessions, session restore, auto-apply, auto-commit, or Git integration was added.
+- `npm run build:vite` passed.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.
+- `cargo test --manifest-path src-tauri/Cargo.toml` passed with 42 Rust tests, including adapter invocation, canonical workspace/provider path handoff, provider-not-found no-adapter behavior, adapter-failure no-session behavior, no second adapter call while active, and no process-resource fields on runtime handles.
+- `npm run build` passed and regenerated the local macOS `.app` bundle.
+- Browser smoke at `http://127.0.0.1:1421/` confirmed normal Safe Editor startup loads without Agent switch, Agent pane, runtime status, or session-stub controls.
+- `git diff --check` passed.
+
+Agent Workbench Runtime Stop Adapter Stub on 2026-05-28:
+
+- Session stub stopping now goes through the `AgentRuntimeAdapter` stop boundary before the session is marked stopped.
+- The stub stop returns a runtime handle with status `stubbed/stopped` while preserving the same allowlisted provider, canonical workspace root, and resolved provider path.
+- Stop-adapter failure leaves the session active with its previous `stubbed/not_started` runtime handle.
+- Stopping with no session does not call the runtime adapter.
+- No CLI process kill, PTY close, stdio close, arbitrary command input, shell selector, session restore, auto-apply, auto-commit, or Git integration was added.
+- `npm run build:vite` passed.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.
+- `cargo test --manifest-path src-tauri/Cargo.toml` passed with 44 Rust tests, including runtime stop adapter invocation, stop-handle handoff, stopped runtime status, no-session no-adapter behavior, stop-adapter failure preservation, and no process-resource fields on runtime handles.
+- `npm run build` passed and regenerated the local macOS `.app` bundle.
+- Browser smoke at `http://127.0.0.1:1421/` confirmed normal Safe Editor startup loads without Agent switch, Agent pane, runtime status, or session-stub controls.
+- `git diff --check` passed.
+
+Agent Workbench Minimal Real Session Slice on 2026-05-28:
+
+- `start_agent_workbench_session` now uses the runtime adapter to start exactly one allowlisted provider process from the resolved provider path, with `cwd` set to the canonical workspace root.
+- Provider stdout/stderr are captured as bounded output chunks and shown in the Agent pane. The pane can send user input to the active provider stdin and stop the session.
+- `get_agent_workbench_session_state` refreshes exited process state, and stopped/exited sessions are not persisted or restored after restart.
+- The backend still rejects disabled mode, unacknowledged consent, non-allowlisted providers, invalid workspace roots, provider-not-found starts, launch failures, and second active sessions before process launch.
+- No arbitrary command field, arbitrary path field, shell selector, multiple sessions, session restore, auto-apply, auto-commit, Git integration, or prompt auto-submit was added.
+- PTY/xterm integration is still not implemented; the current real-session slice uses process pipes, so full-screen TUI behavior may be limited.
+- `npm run build:vite` passed.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.
+- `cargo test --manifest-path src-tauri/Cargo.toml` passed with 46 Rust tests, including real provider process start, stdout capture, stdin input, stop-through-adapter behavior, no-session no-adapter behavior, stop failure preservation, and no arbitrary command handoff through the launch request.
+- `npm run build` passed and regenerated the local macOS `.app` bundle.
+- Browser smoke at `http://127.0.0.1:1421/` confirmed normal Safe Editor startup loads without Agent switch, Agent pane, runtime status, session controls, or Agent input.
+- `git diff --check` passed.
+
+Agent Workbench Real Session Stabilization on 2026-05-28:
+
+- Agent output now auto-scrolls and labels stdout, stderr, input, and system chunks separately in the Agent pane.
+- The output buffer is fixed at 500 chunks; when it overflows, older chunks are discarded first.
+- Active sessions keep provider changes disabled and warn if the selected workspace changes while the process remains bound to its launch workspace.
+- Stopped or exited sessions reject new input, and stdin failures return an error without mutating the stored session state.
+- Store drop / app close cleanup kills and waits for any running provider process.
+- Existing external-change/conflict handling remains the path for files changed by the launched CLI.
+- No PTY, xterm, full-screen TUI support, arbitrary command field, arbitrary path field, shell selector, multiple sessions, session restore, auto-apply, auto-commit, Git integration, or prompt auto-submit was added.
+- `npm run build:vite` passed.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.
+- `cargo test --manifest-path src-tauri/Cargo.toml` passed with 50 Rust tests, including output pruning, stream distinctions, exited state, stopped-session input rejection, stdin failure preservation, active-session second-start rejection across provider/workspace changes, and drop cleanup.
+- `npm run build` passed and regenerated the local macOS `.app` bundle.
+- Browser smoke at `http://127.0.0.1:1421/` confirmed normal Safe Editor startup loads without Agent switch, Agent pane, runtime status, session controls, Agent input, or output-limit status.
+- `git diff --check` passed.
+
+Agent Workbench Automated Stabilization Harness on 2026-05-28:
+
+- Rust-side Agent Workbench tests now use a reusable fake allowlist provider fixture for process-based lifecycle checks.
+- Fake providers cover large stdout output pruning, stderr capture, immediate provider exit, abnormal provider exit, stdin/write-failure preservation, long-running stop cleanup, and store-drop cleanup without requiring real `codex` / `opencode` automation.
+- The Agent pane output counter now states that the oldest chunks are pruned at the 500-chunk limit, and disabled controls expose minimal state-specific hints.
+- Agent Workbench boundary docs now state that automated stabilization is fake-provider centered; real provider checks remain trusted-workspace manual smoke, not automated approval of provider-internal behavior.
+- No PTY, xterm, full-screen TUI support, real provider internal automation, arbitrary command field, arbitrary path field, shell selector, multiple sessions, session restore, auto-apply, auto-commit, or Git integration was added.
+- `npm run build:vite` passed.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.
+- `cargo test --manifest-path src-tauri/Cargo.toml` passed with 53 Rust tests.
+- `npm run build` passed and regenerated the local macOS `.app` bundle.
+- Browser smoke at `http://127.0.0.1:1421/` confirmed normal Safe Editor startup loads without Agent Workbench, Agent input, or output-limit status. The known Vite-only Tauri menu-listener warning still appeared outside the Tauri runtime.
+
+Agent Workbench Manual Smoke Readiness on 2026-05-28:
+
+- `docs/smoke-checklist.md` now includes an Agent Workbench Trusted Workspace Manual Smoke section.
+- The checklist keeps real `codex` / `opencode` checks scoped to a trusted throwaway workspace and explicitly avoids provider-internal auto-approval.
+- The manual smoke path covers Safe Editor default visibility, restart-required mode gate, provider/consent setup, provider-not-found behavior, one real session start, input chunk display, stop/exited state, optional external-change observation, close cleanup, and a result record template.
+- No real provider manual smoke is claimed by this documentation update.
+
+Agent Workbench Provider Discovery Polish on 2026-05-28:
+
+- Backend preflight now builds an app search path from the app process `PATH`, user bin directories, and common macOS GUI-launch gaps such as Homebrew paths before resolving the allowlisted provider.
+- The same app search path is passed to the launched provider process as `PATH`, so provider scripts using shebangs such as `#!/usr/bin/env node` can resolve their runtime when installed through Homebrew or common user-bin locations.
+- Provider lookup still accepts only allowlisted `codex` / `opencode` names and does not expose arbitrary command lookup.
+- View menu now includes an `Agent Workbench...` entry that opens Preferences, making the mode gate easier to find without adding Agent UI to normal Safe Editor startup.
+- The provider-not-found UI wording now refers to the app search path instead of implying the user's Terminal `PATH`.
+- `npm run build:vite` passed.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.
+- `cargo test --manifest-path src-tauri/Cargo.toml` passed with 56 Rust tests, including provider process `PATH` propagation for `env node` style launchers.
+- `npm run build` passed and regenerated the local macOS `.app` bundle.
+
+Agent Workbench Minimal PTY Runtime on 2026-05-28:
+
+- The real Agent runtime now starts allowlisted providers behind a minimal macOS PTY instead of plain stdin/stdout pipes, so CLIs that require terminal stdin can pass their terminal check.
+- User input still goes only to the active allowlisted provider process. The UI remains a simple output/input surface and does not implement xterm or full-screen TUI rendering.
+- ANSI and terminal control sequences are stripped from displayed provider output so PTY-driven CLIs do not show raw escape codes in the simple Agent pane.
+- Pipe-mode runtime tests remain available for stream-specific fake-provider coverage; the production runtime uses PTY mode.
+- `cargo test --manifest-path src-tauri/Cargo.toml` passed with 58 Rust tests, including a PTY fake-provider check that confirms provider stdin is a terminal, input reaches the provider, and terminal control sequences are stripped from display output.
 
 Pre-release stabilization review intake on 2026-05-28:
 
@@ -395,6 +556,7 @@ Known verification note:
 - The Find Close Polish did not include a fresh built-app manual active-file search pass; use the updated close-button check before treating this path as distribution-grade.
 - The Workspace Image Preview / Quality Automation, content-validation, size-limit coverage, and close-return checks did not include a fresh built-app image-selection smoke pass; use the updated workspace image checklist before treating this path as distribution-grade.
 - The Local Bundle Launch Metadata and Minimum System Version polish verified generated bundle metadata and ad-hoc signing, but the current automation session could not complete `open -n`; repeat built-app launch and native File menu smoke outside this automation environment before treating this path as distribution-grade.
+- Agent Workbench real-provider behavior has automated fake-provider coverage only so far; use the trusted-workspace manual smoke checklist before treating real `codex` / `opencode` sessions as product-grade.
 - Long file name clipping was re-smoked in the workspace tree during Source Preview Quality Polish. A narrower-window pass is still useful before binary distribution readiness.
 
 ## Risks / Unknowns
@@ -409,12 +571,13 @@ Known verification note:
 ## Next Actions
 
 1. For release work, run the P0 gates in `docs/source-release-checklist.md`, including dependency audits and latest-HEAD built-app smoke evidence, before asking for tag approval.
-2. For recurring automation, use `docs/development-automation.md` and start from one narrow built-app smoke section when practical.
-3. Re-smoke long file name / constrained-width layout before binary distribution readiness.
-4. If publishing the warning-expected DMG preview, get explicit approval for binary asset publication and use `docs/releases/0.1.0-warning-expected-dmg-preview.md` as the release-note addendum.
-5. Add minimal CI and Dependabot as P1 release hardening when a small verified slice is available.
-6. Add focused UI/E2E coverage for draft restore and external-change focus recheck before treating them as distribution-grade behavior.
-7. Keep signing, notarization, and installer packaging separate from source-release and workspace hardening.
+2. For Agent Workbench work, run `docs/smoke-checklist.md` Agent Workbench Trusted Workspace Manual Smoke in a throwaway workspace before further terminal, PTY, or provider-lifecycle changes.
+3. For recurring automation, use `docs/development-automation.md` and start from one narrow built-app smoke section when practical.
+4. Re-smoke long file name / constrained-width layout before binary distribution readiness.
+5. If publishing the warning-expected DMG preview, get explicit approval for binary asset publication and use `docs/releases/0.1.0-warning-expected-dmg-preview.md` as the release-note addendum.
+6. Add minimal CI and Dependabot as P1 release hardening when a small verified slice is available.
+7. Add focused UI/E2E coverage for draft restore and external-change focus recheck before treating them as distribution-grade behavior.
+8. Keep signing, notarization, and installer packaging separate from source-release and workspace hardening.
 
 ## Avoid
 

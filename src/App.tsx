@@ -8,6 +8,9 @@ import {
   useRef,
   useState,
 } from "react";
+import { FitAddon } from "@xterm/addon-fit";
+import { Terminal } from "@xterm/xterm";
+import "@xterm/xterm/css/xterm.css";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import EditorPane, {
   type EditorPaneHandle,
@@ -31,9 +34,17 @@ import {
   saveTextFile,
   saveTextFileAs,
   setCurrentWindowTitle,
+  getAgentWorkbenchSessionState,
+  resizeAgentWorkbenchTerminal,
+  startAgentWorkbenchSession,
+  stopAgentWorkbenchSession,
+  writeAgentWorkbenchSessionInput,
   updateAppMenuState,
   type AppMenuRecentItem,
+  type AgentWorkbenchOutputChunk,
+  type AgentWorkbenchPreflight,
   type AgentWorkbenchProvider,
+  type AgentWorkbenchSession,
   type SavedFileState,
   type TextFileDocument,
   type WorkspaceTreeEntry,
@@ -60,6 +71,7 @@ const AGENT_WORKBENCH_PROVIDERS: Array<{
   { id: "codex", label: "Codex CLI" },
   { id: "opencode", label: "OpenCode CLI" },
 ];
+const AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS = 500;
 const MAX_RESTORED_TABS = 12;
 const MAX_STORED_DRAFTS = 20;
 const MAX_RECENT_ITEMS = 8;
@@ -75,6 +87,18 @@ type ThemePreference = "system" | BaseTheme | "sakura";
 type ResolvedTheme = BaseTheme | "sakura";
 type EditableLineEnding = "lf" | "crlf";
 type LineEndingKind = EditableLineEnding | "mixed" | "none";
+type RightPaneMode = "preview" | "agent";
+
+type AgentLaunchGateState = {
+  kind: "idle" | "checking" | "passed" | "rejected";
+  message: string;
+  preflight: AgentWorkbenchPreflight | null;
+};
+
+type AgentTerminalSize = {
+  columns: number;
+  rows: number;
+};
 
 type EditorTab = TextFileDocument & {
   id: string;
@@ -202,6 +226,20 @@ export default function App() {
   );
   const [agentWorkbenchProvider, setAgentWorkbenchProvider] =
     useState<AgentWorkbenchProvider>(() => readStoredAgentWorkbenchProvider());
+  const [rightPaneMode, setRightPaneMode] = useState<RightPaneMode>("preview");
+  const [agentLaunchGate, setAgentLaunchGate] = useState<AgentLaunchGateState>({
+    kind: "idle",
+    message: "Launch gate not checked.",
+    preflight: null,
+  });
+  const [agentSession, setAgentSession] =
+    useState<AgentWorkbenchSession | null>(null);
+  const [agentOutput, setAgentOutput] = useState<AgentWorkbenchOutputChunk[]>(
+    [],
+  );
+  const [agentTerminalSize, setAgentTerminalSize] =
+    useState<AgentTerminalSize | null>(null);
+  const [agentStopPending, setAgentStopPending] = useState(false);
   const [findQuery, setFindQuery] = useState("");
   const [findVisible, setFindVisible] = useState(false);
   const [searchOptions, setSearchOptions] = useState<SearchOptions>({
@@ -275,7 +313,27 @@ export default function App() {
   const activeError = activeTab?.error ?? globalError;
   const activeConflict = activeTab?.saveStatus === "conflict";
   const activeSaveError = isSaveFailureError(activeTab);
-  const hasWorkspaceSelection = Boolean(activeTab || selectedImage || compareView);
+  const agentWorkbenchAvailable = agentWorkbenchActive && agentWorkbenchConsent;
+  const activeAgentSession = isActiveAgentSession(agentSession);
+  const effectiveRightPaneMode: RightPaneMode = agentWorkbenchAvailable
+    ? rightPaneMode
+    : "preview";
+  const agentPaneVisible =
+    agentWorkbenchAvailable && effectiveRightPaneMode === "agent";
+  const previewPaneVisible =
+    effectiveRightPaneMode === "preview" &&
+    ((previewVisible && activeTab !== null) || agentWorkbenchAvailable);
+  const sidePaneMode = compareView
+    ? "compare"
+    : agentPaneVisible
+      ? "agent"
+      : previewPaneVisible
+        ? "preview"
+        : null;
+  const sidePaneVisible = sidePaneMode !== null;
+  const hasWorkspaceSelection = Boolean(
+    activeTab || selectedImage || compareView || agentPaneVisible,
+  );
   const activeDocumentStats = useMemo(
     () => analyzeTextDocument(activeContents, activeTab?.line_ending),
     [activeContents, activeTab?.line_ending],
@@ -313,7 +371,6 @@ export default function App() {
   const discardingWindowCloseRef = useRef(false);
   const modalOpen =
     pendingCloseTab !== null || pendingAppClose || preferencesOpen;
-  const sidePaneVisible = Boolean(compareView || (previewVisible && activeTab));
   const editorPreviewGridStyle =
     sidePaneVisible
       ? {
@@ -1086,6 +1143,7 @@ export default function App() {
           setThemePreference("sakura");
           break;
         case "preferences":
+        case "agent-workbench":
           setPreferencesOpen(true);
           break;
       }
@@ -1537,6 +1595,11 @@ export default function App() {
 
   const updateAgentWorkbenchConsent = useCallback((acknowledged: boolean) => {
     setAgentWorkbenchConsent(acknowledged);
+    setAgentLaunchGate({
+      kind: "idle",
+      message: "Launch gate not checked.",
+      preflight: null,
+    });
     setStatus(
       acknowledged
         ? "Agent Workbench responsibility acknowledged"
@@ -1546,15 +1609,281 @@ export default function App() {
 
   const updateAgentWorkbenchProvider = useCallback(
     (provider: AgentWorkbenchProvider) => {
+      if (activeAgentSession) {
+        setAgentLaunchGate((currentGate) => ({
+          ...currentGate,
+          kind: "rejected",
+          message: "Stop the active Agent session before changing provider.",
+        }));
+        setStatus("Stop Agent session before changing provider");
+        return;
+      }
+
       setAgentWorkbenchProvider(provider);
+      setAgentLaunchGate({
+        kind: "idle",
+        message: "Launch gate not checked.",
+        preflight: null,
+      });
       setStatus(`Agent provider selected: ${provider}`);
     },
-    [],
+    [activeAgentSession],
   );
+
+  const refreshAgentSessionState = useCallback(async () => {
+    try {
+      const state = await getAgentWorkbenchSessionState();
+      setAgentSession(state.session);
+      setAgentOutput(state.output);
+
+      if (state.session?.status === "exited") {
+        setAgentLaunchGate((currentGate) => ({
+          ...currentGate,
+          kind: currentGate.kind === "idle" ? "passed" : currentGate.kind,
+          message: "Agent session exited.",
+        }));
+        setStatus("Agent session exited");
+      } else if (state.session?.status === "stopped") {
+        setAgentLaunchGate((currentGate) => ({
+          ...currentGate,
+          kind: currentGate.kind === "idle" ? "passed" : currentGate.kind,
+          message: "Agent session stopped.",
+        }));
+        setStatus("Agent session stopped");
+      }
+    } catch (err) {
+      setAgentLaunchGate({
+        kind: "rejected",
+        message: String(err),
+        preflight: null,
+      });
+      setStatus("Agent session state unavailable");
+    }
+  }, []);
+
+  const checkAgentLaunchGate = useCallback(async () => {
+    if (!workspaceRootPath) {
+      setAgentLaunchGate({
+        kind: "rejected",
+        message: "Launch unavailable: open a workspace folder first.",
+        preflight: null,
+      });
+      setStatus("Agent launch unavailable");
+      return;
+    }
+
+    setAgentLaunchGate({
+      kind: "checking",
+      message: "Checking Agent Workbench launch gate...",
+      preflight: null,
+    });
+    setStatus("Checking Agent Workbench launch gate...");
+
+    try {
+      const result = await startAgentWorkbenchSession(
+        agentWorkbenchActive,
+        agentWorkbenchConsent,
+        agentWorkbenchProvider,
+        workspaceRootPath,
+        agentTerminalSize?.columns,
+        agentTerminalSize?.rows,
+      );
+
+      if (!result.preflight.providerAvailable) {
+        setAgentLaunchGate({
+          kind: "rejected",
+          message: `Provider not found: ${providerLabel(agentWorkbenchProvider)} was not found in the app search path.`,
+          preflight: result.preflight,
+        });
+        setAgentSession(null);
+        setAgentOutput(result.output);
+        setStatus("Agent provider not found");
+        return;
+      }
+
+      if (!result.session) {
+        setAgentLaunchGate({
+          kind: "rejected",
+          message: "Provider not found; session stub was not created.",
+          preflight: result.preflight,
+        });
+        setAgentSession(null);
+        setAgentOutput(result.output);
+        setStatus("Agent provider not found");
+        return;
+      }
+
+      setAgentLaunchGate({
+        kind: "passed",
+        message: "Agent session running. Only the selected allowlisted CLI was launched.",
+        preflight: result.preflight,
+      });
+      setAgentSession(result.session);
+      setAgentOutput(result.output);
+      setStatus("Agent session running");
+    } catch (err) {
+      const message = String(err);
+
+      if (message.toLowerCase().includes("not implemented")) {
+        setAgentLaunchGate({
+          kind: "passed",
+          message: "Gate passed; launch is not implemented in this build.",
+          preflight: null,
+        });
+        setStatus("Agent launch gate passed");
+        return;
+      }
+
+      setAgentLaunchGate({
+        kind: "rejected",
+        message,
+        preflight: null,
+      });
+      if (message.toLowerCase().includes("already active")) {
+        void refreshAgentSessionState();
+      }
+      setStatus("Agent launch gate rejected");
+    }
+  }, [
+    agentWorkbenchActive,
+    agentWorkbenchConsent,
+    agentWorkbenchProvider,
+    agentTerminalSize,
+    refreshAgentSessionState,
+    workspaceRootPath,
+  ]);
+
+  const stopAgentSession = useCallback(async () => {
+    setAgentStopPending(true);
+    setStatus("Stopping Agent session...");
+
+    try {
+      const state = await stopAgentWorkbenchSession();
+      setAgentSession(state.session);
+      setAgentOutput(state.output);
+      setAgentLaunchGate((currentGate) => ({
+        ...currentGate,
+        kind: state.session ? "passed" : currentGate.kind,
+        message: state.session
+          ? "Agent session stopped."
+          : "No Agent session to stop.",
+      }));
+      setStatus(
+        state.session
+          ? "Agent session stopped"
+          : "No Agent session to stop",
+      );
+    } catch (err) {
+      setAgentLaunchGate({
+        kind: "rejected",
+        message: String(err),
+        preflight: null,
+      });
+      setStatus("Agent session stop failed");
+    } finally {
+      setAgentStopPending(false);
+    }
+  }, []);
+
+  const sendAgentTerminalData = useCallback((data: string) => {
+    if (!data || !isActiveAgentSession(agentSession)) {
+      return;
+    }
+
+    void writeAgentWorkbenchSessionInput(data)
+      .then((state) => {
+        setAgentSession(state.session);
+        setAgentOutput(state.output);
+      })
+      .catch((err) => {
+        setAgentLaunchGate({
+          kind: "rejected",
+          message: String(err),
+          preflight: null,
+        });
+        setStatus("Agent input failed");
+        void refreshAgentSessionState();
+      });
+  }, [agentSession, refreshAgentSessionState]);
+
+  const resizeAgentTerminal = useCallback((size: AgentTerminalSize) => {
+    setAgentTerminalSize((current) => {
+      if (
+        current?.columns === size.columns &&
+        current.rows === size.rows
+      ) {
+        return current;
+      }
+
+      return size;
+    });
+
+    if (!isActiveAgentSession(agentSession)) {
+      return;
+    }
+
+    void resizeAgentWorkbenchTerminal(size.columns, size.rows)
+      .then((state) => {
+        setAgentSession(state.session);
+      })
+      .catch(() => {
+        setStatus("Agent terminal resize failed");
+      });
+  }, [agentSession]);
 
   useEffect(() => {
     tabsRef.current = tabs;
   }, [tabs]);
+
+  useEffect(() => {
+    if (!agentWorkbenchAvailable && rightPaneMode === "agent") {
+      setRightPaneMode("preview");
+    }
+  }, [agentWorkbenchAvailable, rightPaneMode]);
+
+  useEffect(() => {
+    if (agentWorkbenchAvailable) {
+      void refreshAgentSessionState();
+      return;
+    }
+
+    setAgentSession(null);
+    setAgentOutput([]);
+  }, [agentWorkbenchAvailable, refreshAgentSessionState]);
+
+  useEffect(() => {
+    if (!agentWorkbenchAvailable || !isActiveAgentSession(agentSession)) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      void refreshAgentSessionState();
+    }, 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, [agentSession, agentWorkbenchAvailable, refreshAgentSessionState]);
+
+  useEffect(() => {
+    if (activeAgentSession && agentSession?.workspaceRoot !== workspaceRootPath) {
+      setAgentLaunchGate((currentGate) => ({
+        ...currentGate,
+        kind: "rejected",
+        message:
+          "Active Agent session remains bound to its launch workspace. Stop it before starting in another workspace.",
+      }));
+      return;
+    }
+
+    if (activeAgentSession) {
+      return;
+    }
+
+    setAgentLaunchGate({
+      kind: "idle",
+      message: "Launch gate not checked.",
+      preflight: null,
+    });
+  }, [activeAgentSession, agentSession?.workspaceRoot, workspaceRootPath]);
 
   useEffect(() => {
     recentFilesRef.current = recentFiles;
@@ -2510,14 +2839,50 @@ export default function App() {
           {sidePaneVisible ? (
             <div
               className="pane preview-pane"
-              ref={compareView ? null : previewPaneRef}
-              aria-label={compareView ? "File comparison" : "Markdown preview"}
-              onScroll={compareView ? undefined : syncEditorScroll}
+              ref={sidePaneMode === "preview" ? previewPaneRef : null}
+              aria-label={
+                sidePaneMode === "compare"
+                  ? "File comparison"
+                  : sidePaneMode === "agent"
+                    ? "Agent Workbench"
+                    : "Markdown preview"
+              }
+              onScroll={
+                sidePaneMode === "preview" ? syncEditorScroll : undefined
+              }
             >
-              {compareView ? (
+              {agentWorkbenchAvailable && !compareView ? (
+                <RightPaneModeSwitch
+                  mode={effectiveRightPaneMode}
+                  onModeChange={setRightPaneMode}
+                />
+              ) : null}
+              {sidePaneMode === "compare" && compareView ? (
                 <DiffPane view={compareView} onClose={closeCompareView} />
-              ) : (
+              ) : sidePaneMode === "agent" ? (
+                <AgentPaneShell
+                  consentAcknowledged={agentWorkbenchConsent}
+                  gate={agentLaunchGate}
+                  onCheckGate={() => void checkAgentLaunchGate()}
+                  onStopSession={() => void stopAgentSession()}
+                  onTerminalData={sendAgentTerminalData}
+                  onTerminalResize={resizeAgentTerminal}
+                  output={agentOutput}
+                  provider={agentWorkbenchProvider}
+                  session={agentSession}
+                  stopPending={agentStopPending}
+                  workspaceRootPath={workspaceRootPath}
+                />
+              ) : activeTab && previewVisible ? (
                 <PreviewPane source={activeContents} />
+              ) : (
+                <PreviewUnavailablePane
+                  reason={
+                    activeTab
+                      ? "Preview pane is disabled in Preferences."
+                      : "Open a text file to show Markdown preview."
+                  }
+                />
               )}
             </div>
           ) : null}
@@ -2757,6 +3122,7 @@ export default function App() {
                       <span>Provider</span>
                       <select
                         aria-label="Agent Workbench provider"
+                        disabled={activeAgentSession}
                         value={agentWorkbenchProvider}
                         onChange={(event) =>
                           updateAgentWorkbenchProvider(
@@ -2876,6 +3242,380 @@ function ImagePreviewPane({ image }: { image: ImagePreviewState }) {
       </div>
     </div>
   );
+}
+
+function RightPaneModeSwitch({
+  mode,
+  onModeChange,
+}: {
+  mode: RightPaneMode;
+  onModeChange: (mode: RightPaneMode) => void;
+}) {
+  return (
+    <div className="side-pane-tabs" aria-label="Side pane mode">
+      <button
+        aria-pressed={mode === "preview"}
+        className="side-pane-tab"
+        onClick={() => onModeChange("preview")}
+        type="button"
+      >
+        Preview
+      </button>
+      <button
+        aria-pressed={mode === "agent"}
+        className="side-pane-tab"
+        onClick={() => onModeChange("agent")}
+        type="button"
+      >
+        Agent
+      </button>
+    </div>
+  );
+}
+
+function PreviewUnavailablePane({ reason }: { reason: string }) {
+  return (
+    <div className="preview-unavailable" aria-label="Preview unavailable">
+      {reason}
+    </div>
+  );
+}
+
+function AgentPaneShell({
+  consentAcknowledged,
+  gate,
+  onCheckGate,
+  onStopSession,
+  onTerminalData,
+  onTerminalResize,
+  output,
+  provider,
+  session,
+  stopPending,
+  workspaceRootPath,
+}: {
+  consentAcknowledged: boolean;
+  gate: AgentLaunchGateState;
+  onCheckGate: () => void;
+  onStopSession: () => void;
+  onTerminalData: (data: string) => void;
+  onTerminalResize: (size: AgentTerminalSize) => void;
+  output: AgentWorkbenchOutputChunk[];
+  provider: AgentWorkbenchProvider;
+  session: AgentWorkbenchSession | null;
+  stopPending: boolean;
+  workspaceRootPath: string | null;
+}) {
+  const workspaceAvailable = workspaceRootPath !== null;
+  const activeSession = isActiveAgentSession(session);
+  const gateMessage = workspaceAvailable
+    ? gate.message
+    : "Launch unavailable: open a workspace folder first.";
+
+  return (
+    <section className="agent-pane" aria-label="Agent Workbench pane">
+      <div className="agent-compact-header">
+        <div className="agent-compact-title">
+          <strong>{providerLabel(provider)}</strong>
+          <span>{agentSessionStatusLabel(session)}</span>
+        </div>
+        <div className="agent-actions">
+          <button
+            disabled={
+              !workspaceAvailable || gate.kind === "checking" || activeSession
+            }
+            onClick={onCheckGate}
+            title={
+              activeSession
+                ? "One Agent session is already active."
+                : workspaceAvailable
+                  ? undefined
+                  : "Open a workspace folder first."
+            }
+            type="button"
+          >
+            {gate.kind === "checking" ? "Starting..." : "Start"}
+          </button>
+          <button
+            disabled={!activeSession || stopPending}
+            onClick={onStopSession}
+            title={activeSession ? undefined : "No running Agent session."}
+            type="button"
+          >
+            {stopPending ? "Stopping..." : "Stop"}
+          </button>
+        </div>
+      </div>
+      <div className="agent-compact-meta">
+        <span title={gate.preflight?.providerPath ?? undefined}>
+          {workspaceAvailable
+            ? providerAvailabilityLabel(gate)
+            : "Unavailable"}
+        </span>
+        <span>{consentAcknowledged ? "Acknowledged" : "Consent required"}</span>
+        <span>{workspaceAvailable ? launchGateLabel(gate.kind) : "Unavailable"}</span>
+        <span title={session?.runtime.providerPath ?? undefined}>
+          {runtimeStatusLabel(session)}
+        </span>
+        <span title={workspaceRootPath ?? undefined}>
+          {workspaceRootPath ?? "No workspace selected"}
+        </span>
+      </div>
+      <p
+        className={`agent-gate-message ${workspaceAvailable ? gate.kind : "rejected"}`}
+      >
+        {gateMessage}
+      </p>
+      <AgentTerminalView
+        activeSession={activeSession}
+        onData={onTerminalData}
+        onResize={onTerminalResize}
+        output={output}
+      />
+    </section>
+  );
+}
+
+function AgentTerminalView({
+  activeSession,
+  onData,
+  onResize,
+  output,
+}: {
+  activeSession: boolean;
+  onData: (data: string) => void;
+  onResize: (size: AgentTerminalSize) => void;
+  output: AgentWorkbenchOutputChunk[];
+}) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const terminalRef = useRef<Terminal | null>(null);
+  const lastOutputSeqRef = useRef(0);
+  const lastTerminalSizeRef = useRef<AgentTerminalSize | null>(null);
+  const activeSessionRef = useRef(activeSession);
+  const onDataRef = useRef(onData);
+  const onResizeRef = useRef(onResize);
+
+  useEffect(() => {
+    activeSessionRef.current = activeSession;
+  }, [activeSession]);
+
+  useEffect(() => {
+    onDataRef.current = onData;
+  }, [onData]);
+
+  useEffect(() => {
+    onResizeRef.current = onResize;
+  }, [onResize]);
+
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host) {
+      return;
+    }
+
+    const terminal = new Terminal({
+      convertEol: false,
+      cursorBlink: true,
+      fontFamily:
+        '"SFMono-Regular", "Menlo", "Consolas", "Liberation Mono", monospace',
+      fontSize: 13,
+      lineHeight: 1.25,
+      scrollback: 2000,
+      theme: {
+        background: "#101512",
+        black: "#101512",
+        blue: "#8db3ff",
+        brightBlack: "#758176",
+        brightBlue: "#b5ccff",
+        brightCyan: "#9ad8dc",
+        brightGreen: "#a8ddb4",
+        brightMagenta: "#d9b7ee",
+        brightRed: "#ffb5ac",
+        brightWhite: "#f2f5ef",
+        brightYellow: "#eee6a4",
+        cyan: "#80c4c8",
+        cursor: "#e5ece5",
+        foreground: "#dce6dd",
+        green: "#8bc89a",
+        magenta: "#cfa4df",
+        red: "#f29a91",
+        selectionBackground: "#345345",
+        white: "#dce6dd",
+        yellow: "#ddd27f",
+      },
+    });
+    const fitAddon = new FitAddon();
+    terminal.loadAddon(fitAddon);
+    terminal.open(host);
+    const fitAndNotify = () => {
+      fitAddon.fit();
+      const dimensions = fitAddon.proposeDimensions();
+      if (!dimensions) {
+        return;
+      }
+
+      const nextSize = {
+        columns: Math.max(1, Math.min(500, dimensions.cols)),
+        rows: Math.max(1, Math.min(200, dimensions.rows)),
+      };
+      const previousSize = lastTerminalSizeRef.current;
+      if (
+        previousSize?.columns === nextSize.columns &&
+        previousSize.rows === nextSize.rows
+      ) {
+        return;
+      }
+
+      lastTerminalSizeRef.current = nextSize;
+      onResizeRef.current(nextSize);
+    };
+    fitAndNotify();
+
+    const dataDisposable = terminal.onData((data) => {
+      if (activeSessionRef.current) {
+        onDataRef.current(data);
+      }
+    });
+    const resizeObserver = new ResizeObserver(() => {
+      fitAndNotify();
+    });
+    resizeObserver.observe(host);
+
+    terminalRef.current = terminal;
+
+    return () => {
+      resizeObserver.disconnect();
+      dataDisposable.dispose();
+      terminal.dispose();
+      terminalRef.current = null;
+      lastOutputSeqRef.current = 0;
+      lastTerminalSizeRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    const terminal = terminalRef.current;
+    if (!terminal) {
+      return;
+    }
+
+    if (output.length === 0) {
+      terminal.clear();
+      lastOutputSeqRef.current = 0;
+      return;
+    }
+
+    const firstVisibleSeq = output[0]?.seq ?? 0;
+    if (
+      lastOutputSeqRef.current > 0 &&
+      firstVisibleSeq > lastOutputSeqRef.current + 1
+    ) {
+      terminal.clear();
+      lastOutputSeqRef.current = 0;
+    }
+
+    for (const chunk of output) {
+      if (chunk.seq <= lastOutputSeqRef.current) {
+        continue;
+      }
+
+      if (chunk.stream === "input") {
+        lastOutputSeqRef.current = chunk.seq;
+        continue;
+      }
+
+      if (chunk.stream === "system") {
+        terminal.write(`\r\n${normalizeTerminalLineEndings(chunk.text)}`);
+      } else {
+        terminal.write(chunk.text);
+      }
+      lastOutputSeqRef.current = chunk.seq;
+    }
+  }, [output]);
+
+  useEffect(() => {
+    if (activeSession) {
+      terminalRef.current?.focus();
+    }
+  }, [activeSession]);
+
+  return (
+    <div
+      className={`agent-terminal-shell ${activeSession ? "active" : "inactive"}`}
+    >
+      <div className="agent-terminal-meta">
+        Output chunks: {output.length} / {AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS}
+      </div>
+      <div
+        aria-label="Agent terminal"
+        className="agent-terminal-host"
+        ref={hostRef}
+      />
+    </div>
+  );
+}
+
+function normalizeTerminalLineEndings(text: string): string {
+  return text.replace(/\r?\n/g, "\r\n");
+}
+
+function providerLabel(provider: AgentWorkbenchProvider): string {
+  return (
+    AGENT_WORKBENCH_PROVIDERS.find((candidate) => candidate.id === provider)
+      ?.label ?? provider
+  );
+}
+
+function launchGateLabel(kind: AgentLaunchGateState["kind"]): string {
+  switch (kind) {
+    case "checking":
+      return "Checking";
+    case "passed":
+      return "Passed";
+    case "rejected":
+      return "Rejected";
+    case "idle":
+      return "Not checked";
+  }
+}
+
+function providerAvailabilityLabel(gate: AgentLaunchGateState): string {
+  if (!gate.preflight) {
+    return "Not checked";
+  }
+
+  return gate.preflight.providerAvailable ? "Found" : "Provider not found";
+}
+
+function isActiveAgentSession(session: AgentWorkbenchSession | null): boolean {
+  return session?.status === "active";
+}
+
+function agentSessionStatusLabel(session: AgentWorkbenchSession | null): string {
+  if (!session) {
+    return "None";
+  }
+
+  return session.status === "active"
+    ? `Running (${providerLabel(session.provider)})`
+    : session.status === "exited"
+      ? `Exited (${providerLabel(session.provider)})`
+      : `Stopped (${providerLabel(session.provider)})`;
+}
+
+function runtimeStatusLabel(session: AgentWorkbenchSession | null): string {
+  if (!session) {
+    return "None";
+  }
+
+  switch (session.runtime.status) {
+    case "running":
+      return "Running process";
+    case "stopped":
+      return "Stopped";
+    case "exited":
+      return "Exited";
+  }
 }
 
 function DiffPane({

@@ -68,6 +68,27 @@ Initial allowed launch targets, if implemented:
 
 The app must not expose an arbitrary command field.
 
+Current implementation status:
+
+- Agent Workbench is hidden unless the active app session has Agent Workbench enabled and responsibility-boundary consent acknowledged.
+- The right pane can switch between Preview and an Agent pane shell only after that gate is satisfied.
+- The Agent pane shell displays provider, provider availability, workspace root, consent, launch-gate status, session status, runtime status, and an xterm-based terminal surface for the selected provider session.
+- If no workspace root is selected, the Agent pane reports launch unavailable.
+- The launch button checks the backend launch preflight. The backend validates mode, consent, provider allowlist, workspace root, and whether the allowlisted provider CLI is discoverable through the app search path.
+- Successful preflight with a found provider goes through a runtime adapter, then starts exactly one allowlisted provider process with `cwd` set to the canonical workspace root.
+- The runtime adapter receives only the allowlisted provider, canonical workspace root, and resolved provider path. It does not receive an arbitrary command string.
+- Provider PTY output is captured and rendered through the Agent pane terminal surface. User keyboard input from that surface is sent only to the running provider process stdin.
+- On macOS, the real runtime starts the allowlisted provider behind a minimal PTY so CLIs that require terminal stdin can start. The UI uses xterm for terminal rendering, but it is still scoped to the selected allowlisted provider session.
+- The xterm surface reports its current rows/columns to the backend at launch and on resize so the provider PTY can be sized to the visible terminal area.
+- Output is kept in a bounded in-memory buffer of 500 chunks; older chunks are discarded first.
+- Automated stabilization uses temporary fake allowlist providers to exercise hazakura-side lifecycle, output, input, exit, stop, and error handling. Real `codex` / `opencode` checks remain trusted-workspace manual smoke, not automated approval of provider-internal behavior.
+- Missing provider CLI is reported as provider not found; it does not fall through to arbitrary command lookup.
+- While an active session exists, a second session start is rejected. Stopping the session goes through the runtime adapter stop boundary and terminates the provider process.
+- Session state is in-memory only and is not restored after app restart.
+- Full-screen TUI behavior may still need provider-specific manual smoke, but raw terminal control output is no longer rendered as plain text in the Agent pane.
+- No arbitrary command input, arbitrary path input, shell selector, session restore, auto-apply, auto-commit, or Git integration is implemented.
+- Files changed by the launched CLI are still surfaced through the existing external-change/conflict handling path where the Safe Editor already observes on-disk changes.
+
 Requirements:
 
 - User explicitly enables Agent Workbench mode.
@@ -76,6 +97,7 @@ Requirements:
 - The backend launch entry rejects while the active app-session mode is off, even if a caller bypasses hidden UI.
 - Provider selection is limited to `codex` and `opencode` in both UI and backend validation.
 - First-use consent is stored locally and required before the backend launch entry can pass its gate.
+- Provider CLI discovery is limited to the allowlisted provider name after provider validation. The app search path starts from the app process `PATH` and adds common macOS GUI-launch gaps such as Homebrew and user bin directories; it does not accept arbitrary command names.
 - User explicitly starts the session.
 - Exactly one TUI agent session may run at a time.
 - Session starts with `cwd` set to the selected workspace root.
@@ -113,7 +135,7 @@ The app is responsible for:
 
 The first Agent Workbench implementation must not include:
 
-- General-purpose terminal emulator.
+- General-purpose terminal emulator for arbitrary shell commands.
 - Shell prompt.
 - Arbitrary command launcher.
 - VS Code compatible IDE.

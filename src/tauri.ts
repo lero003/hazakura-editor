@@ -65,6 +65,54 @@ export type ImagePreviewDocument = {
 
 export type AgentWorkbenchProvider = "codex" | "opencode";
 
+export type AgentWorkbenchPreflight = {
+  provider: AgentWorkbenchProvider;
+  workspaceRoot: string;
+  providerAvailable: boolean;
+  providerPath: string | null;
+  launchImplemented: boolean;
+};
+
+export type AgentWorkbenchSessionStatus = "active" | "stopped" | "exited";
+
+export type AgentRuntimeStatus = "running" | "stopped" | "exited";
+
+export type AgentRuntimeHandle = {
+  provider: AgentWorkbenchProvider;
+  workspaceRoot: string;
+  providerPath: string;
+  status: AgentRuntimeStatus;
+};
+
+export type AgentWorkbenchOutputStream = "stdout" | "stderr" | "input" | "system";
+
+export type AgentWorkbenchOutputChunk = {
+  seq: number;
+  stream: AgentWorkbenchOutputStream;
+  text: string;
+  receivedAtMs: number;
+};
+
+export type AgentWorkbenchSession = {
+  provider: AgentWorkbenchProvider;
+  workspaceRoot: string;
+  providerPath: string;
+  createdAtMs: number;
+  status: AgentWorkbenchSessionStatus;
+  runtime: AgentRuntimeHandle;
+};
+
+export type AgentWorkbenchSessionStartResult = {
+  preflight: AgentWorkbenchPreflight;
+  session: AgentWorkbenchSession | null;
+  output: AgentWorkbenchOutputChunk[];
+};
+
+export type AgentWorkbenchSessionState = {
+  session: AgentWorkbenchSession | null;
+  output: AgentWorkbenchOutputChunk[];
+};
+
 const TEXT_FILE_EXTENSIONS = [
   "md",
   "markdown",
@@ -241,12 +289,44 @@ export async function startAgentWorkbenchSession(
   consentAcknowledged: boolean,
   provider: AgentWorkbenchProvider,
   workspaceRoot: string,
-): Promise<void> {
-  await invoke("start_agent_workbench_session", {
+  terminalColumns?: number,
+  terminalRows?: number,
+): Promise<AgentWorkbenchSessionStartResult> {
+  return invoke<AgentWorkbenchSessionStartResult>("start_agent_workbench_session", {
     agentWorkbenchEnabled,
     consentAcknowledged,
     provider,
     workspaceRoot,
+    terminalColumns,
+    terminalRows,
+  });
+}
+
+export async function stopAgentWorkbenchSession(): Promise<AgentWorkbenchSessionState> {
+  return invoke<AgentWorkbenchSessionState>("stop_agent_workbench_session");
+}
+
+export async function getAgentWorkbenchSessionState(): Promise<AgentWorkbenchSessionState> {
+  return invoke<AgentWorkbenchSessionState>(
+    "get_agent_workbench_session_state",
+  );
+}
+
+export async function writeAgentWorkbenchSessionInput(
+  input: string,
+): Promise<AgentWorkbenchSessionState> {
+  return invoke<AgentWorkbenchSessionState>("write_agent_workbench_session_input", {
+    input,
+  });
+}
+
+export async function resizeAgentWorkbenchTerminal(
+  columns: number,
+  rows: number,
+): Promise<AgentWorkbenchSessionState> {
+  return invoke<AgentWorkbenchSessionState>("resize_agent_workbench_terminal", {
+    columns,
+    rows,
   });
 }
 

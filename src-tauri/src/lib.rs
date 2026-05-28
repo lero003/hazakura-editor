@@ -1,18 +1,42 @@
 use serde::{Deserialize, Serialize};
+use std::env;
+use std::ffi::{CStr, OsStr, OsString};
 use std::fs::{self, File, OpenOptions};
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
-use std::time::UNIX_EPOCH;
+use std::process::{Child, Command, Stdio};
+use std::sync::{Arc, Mutex};
+use std::thread;
+use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri::Emitter;
+
+#[cfg(unix)]
+use std::os::fd::{AsRawFd, FromRawFd, RawFd};
+#[cfg(unix)]
+use std::os::raw::{c_char, c_ulong};
 
 const LARGE_FILE_WARNING_BYTES: u64 = 5 * 1024 * 1024;
 const MAX_EDITABLE_BYTES: u64 = 10 * 1024 * 1024;
 const MAX_IMAGE_PREVIEW_BYTES: u64 = 20 * 1024 * 1024;
 const BINARY_SNIFF_BYTES: u64 = 8192;
 const MAX_WORKSPACE_ENTRIES: usize = 2000;
+const AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS: usize = 500;
 const AGENT_PROVIDER_CODEX: &str = "codex";
 const AGENT_PROVIDER_OPENCODE: &str = "opencode";
+const AGENT_PROVIDER_GUI_SEARCH_DIRS: &[&str] = &[
+    "/opt/homebrew/bin",
+    "/opt/homebrew/sbin",
+    "/usr/local/bin",
+    "/usr/bin",
+    "/bin",
+    "/usr/sbin",
+    "/sbin",
+];
+#[cfg(target_os = "macos")]
+const O_RDWR_FLAG: i32 = 0x0002;
+#[cfg(target_os = "macos")]
+const O_NOCTTY_FLAG: i32 = 0x00020000;
 const MENU_ACTION_EVENT: &str = "hazakura-note://menu-action";
 const MENU_NEW_FILE: &str = "new-file";
 const MENU_OPEN_FILE: &str = "open-file";
@@ -28,6 +52,7 @@ const MENU_THEME_LIGHT: &str = "theme-light";
 const MENU_THEME_DARK: &str = "theme-dark";
 const MENU_THEME_SAKURA: &str = "theme-sakura";
 const MENU_PREFERENCES: &str = "preferences";
+const MENU_AGENT_WORKBENCH: &str = "agent-workbench";
 const MENU_RECENT_FILE_PREFIX: &str = "recent-file-";
 const MENU_RECENT_FOLDER_PREFIX: &str = "recent-folder-";
 const EXCLUDED_WORKSPACE_DIRS: &[&str] = &[
@@ -80,6 +105,550 @@ struct ImagePreviewDocument {
     name: String,
     data_url: String,
     size: u64,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct AgentWorkbenchPreflight {
+    provider: String,
+    workspace_root: String,
+    provider_available: bool,
+    provider_path: Option<String>,
+    launch_implemented: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+enum AgentRuntimeStatus {
+    Running,
+    Stopped,
+    Exited,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct AgentRuntimeHandle {
+    provider: String,
+    workspace_root: String,
+    provider_path: String,
+    status: AgentRuntimeStatus,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+enum AgentWorkbenchSessionStatus {
+    Active,
+    Stopped,
+    Exited,
+}
+
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct AgentWorkbenchSession {
+    provider: String,
+    workspace_root: String,
+    provider_path: String,
+    created_at_ms: u64,
+    status: AgentWorkbenchSessionStatus,
+    runtime: AgentRuntimeHandle,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+enum AgentWorkbenchOutputStream {
+    Stdout,
+    Stderr,
+    Input,
+    System,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct AgentWorkbenchOutputChunk {
+    seq: u64,
+    stream: AgentWorkbenchOutputStream,
+    text: String,
+    received_at_ms: u64,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct AgentWorkbenchSessionStartResult {
+    preflight: AgentWorkbenchPreflight,
+    session: Option<AgentWorkbenchSession>,
+    output: Vec<AgentWorkbenchOutputChunk>,
+}
+
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct AgentWorkbenchSessionState {
+    session: Option<AgentWorkbenchSession>,
+    output: Vec<AgentWorkbenchOutputChunk>,
+}
+
+struct AgentWorkbenchSessionStore {
+    session: Mutex<Option<AgentWorkbenchSession>>,
+    runtime: Mutex<Option<AgentRuntimeProcess>>,
+    output: Arc<Mutex<Vec<AgentWorkbenchOutputChunk>>>,
+    next_output_seq: Arc<Mutex<u64>>,
+}
+
+impl Default for AgentWorkbenchSessionStore {
+    fn default() -> Self {
+        Self {
+            session: Mutex::new(None),
+            runtime: Mutex::new(None),
+            output: Arc::new(Mutex::new(Vec::new())),
+            next_output_seq: Arc::new(Mutex::new(1)),
+        }
+    }
+}
+
+impl Drop for AgentWorkbenchSessionStore {
+    fn drop(&mut self) {
+        if let Ok(mut runtime) = self.runtime.lock() {
+            if let Some(mut process) = runtime.take() {
+                let _ = process.child.kill();
+                let _ = process.child.wait();
+            }
+        }
+    }
+}
+
+struct AgentRuntimeProcess {
+    child: Child,
+    stdin: Option<Box<dyn Write + Send>>,
+    pty_control: Option<File>,
+}
+
+#[derive(Clone, Copy)]
+struct AgentRuntimeLaunchRequest<'a> {
+    provider: &'a str,
+    workspace_root: &'a str,
+    provider_path: &'a str,
+    path_env: Option<&'a OsStr>,
+    terminal_columns: Option<u16>,
+    terminal_rows: Option<u16>,
+}
+
+trait AgentRuntimeAdapter {
+    fn start(&self, request: AgentRuntimeLaunchRequest<'_>) -> Result<AgentRuntimeHandle, String>;
+    fn stop(&self, handle: &AgentRuntimeHandle) -> Result<AgentRuntimeHandle, String>;
+}
+
+struct RealAgentRuntimeAdapter<'a> {
+    session_store: &'a AgentWorkbenchSessionStore,
+    terminal_mode: AgentRuntimeTerminalMode,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(not(test), allow(dead_code))]
+enum AgentRuntimeTerminalMode {
+    Pipe,
+    Pty,
+}
+
+impl<'a> RealAgentRuntimeAdapter<'a> {
+    fn new(session_store: &'a AgentWorkbenchSessionStore) -> Self {
+        Self {
+            session_store,
+            terminal_mode: AgentRuntimeTerminalMode::Pty,
+        }
+    }
+
+    #[cfg(test)]
+    fn new_piped_for_tests(session_store: &'a AgentWorkbenchSessionStore) -> Self {
+        Self {
+            session_store,
+            terminal_mode: AgentRuntimeTerminalMode::Pipe,
+        }
+    }
+}
+
+impl AgentRuntimeAdapter for RealAgentRuntimeAdapter<'_> {
+    fn start(&self, request: AgentRuntimeLaunchRequest<'_>) -> Result<AgentRuntimeHandle, String> {
+        let mut runtime = self
+            .session_store
+            .runtime
+            .lock()
+            .map_err(|_| "Agent Workbench runtime state is unavailable.".to_string())?;
+
+        if runtime.is_some() {
+            return Err("Agent Workbench runtime is already active.".to_string());
+        }
+
+        append_agent_output(
+            &self.session_store.output,
+            &self.session_store.next_output_seq,
+            AgentWorkbenchOutputStream::System,
+            format!(
+                "Starting {} in {}\n",
+                request.provider, request.workspace_root
+            ),
+        );
+
+        let runtime_process = match self.terminal_mode {
+            AgentRuntimeTerminalMode::Pipe => {
+                start_agent_pipe_process(request, self.session_store)?
+            }
+            AgentRuntimeTerminalMode::Pty => start_agent_pty_process(request, self.session_store)?,
+        };
+
+        *runtime = Some(runtime_process);
+
+        Ok(AgentRuntimeHandle {
+            provider: request.provider.to_string(),
+            workspace_root: request.workspace_root.to_string(),
+            provider_path: request.provider_path.to_string(),
+            status: AgentRuntimeStatus::Running,
+        })
+    }
+
+    fn stop(&self, handle: &AgentRuntimeHandle) -> Result<AgentRuntimeHandle, String> {
+        let mut runtime = self
+            .session_store
+            .runtime
+            .lock()
+            .map_err(|_| "Agent Workbench runtime state is unavailable.".to_string())?;
+
+        if let Some(mut process) = runtime.take() {
+            process.stdin.take();
+            match process
+                .child
+                .try_wait()
+                .map_err(|err| format!("Cannot inspect provider process: {err}"))?
+            {
+                Some(status) => {
+                    append_agent_output(
+                        &self.session_store.output,
+                        &self.session_store.next_output_seq,
+                        AgentWorkbenchOutputStream::System,
+                        format!("Provider process already exited: {status}\n"),
+                    );
+                }
+                None => {
+                    process
+                        .child
+                        .kill()
+                        .map_err(|err| format!("Cannot stop provider process: {err}"))?;
+                    let _ = process.child.wait();
+                    append_agent_output(
+                        &self.session_store.output,
+                        &self.session_store.next_output_seq,
+                        AgentWorkbenchOutputStream::System,
+                        "Provider process stopped by user.\n".to_string(),
+                    );
+                }
+            }
+        }
+
+        Ok(AgentRuntimeHandle {
+            provider: handle.provider.clone(),
+            workspace_root: handle.workspace_root.clone(),
+            provider_path: handle.provider_path.clone(),
+            status: AgentRuntimeStatus::Stopped,
+        })
+    }
+}
+
+fn build_agent_runtime_command(request: AgentRuntimeLaunchRequest<'_>) -> Command {
+    let mut command = Command::new(request.provider_path);
+    command.current_dir(request.workspace_root);
+
+    if let Some(path_env) = request.path_env {
+        command.env("PATH", path_env);
+    }
+
+    command.env("TERM", "xterm-256color");
+    command
+}
+
+fn start_agent_pipe_process(
+    request: AgentRuntimeLaunchRequest<'_>,
+    session_store: &AgentWorkbenchSessionStore,
+) -> Result<AgentRuntimeProcess, String> {
+    let mut command = build_agent_runtime_command(request);
+    command
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+
+    let mut child = command
+        .spawn()
+        .map_err(|err| format!("Cannot start allowlisted provider CLI: {err}"))?;
+
+    let stdin = child
+        .stdin
+        .take()
+        .ok_or_else(|| "Cannot open provider stdin.".to_string())?;
+    let stdout = child
+        .stdout
+        .take()
+        .ok_or_else(|| "Cannot open provider stdout.".to_string())?;
+    let stderr = child
+        .stderr
+        .take()
+        .ok_or_else(|| "Cannot open provider stderr.".to_string())?;
+
+    spawn_agent_output_reader(
+        stdout,
+        AgentWorkbenchOutputStream::Stdout,
+        Arc::clone(&session_store.output),
+        Arc::clone(&session_store.next_output_seq),
+    );
+    spawn_agent_output_reader(
+        stderr,
+        AgentWorkbenchOutputStream::Stderr,
+        Arc::clone(&session_store.output),
+        Arc::clone(&session_store.next_output_seq),
+    );
+
+    Ok(AgentRuntimeProcess {
+        child,
+        stdin: Some(Box::new(stdin)),
+        pty_control: None,
+    })
+}
+
+#[cfg(unix)]
+fn start_agent_pty_process(
+    request: AgentRuntimeLaunchRequest<'_>,
+    session_store: &AgentWorkbenchSessionStore,
+) -> Result<AgentRuntimeProcess, String> {
+    let pty = open_agent_pty()?;
+    if let (Some(columns), Some(rows)) = (request.terminal_columns, request.terminal_rows) {
+        resize_agent_pty(&pty.master, columns, rows)?;
+    }
+    let input = pty
+        .master
+        .try_clone()
+        .map_err(|err| format!("Cannot clone provider PTY input: {err}"))?;
+    let output = pty
+        .master
+        .try_clone()
+        .map_err(|err| format!("Cannot clone provider PTY output: {err}"))?;
+    let pty_control = pty
+        .master
+        .try_clone()
+        .map_err(|err| format!("Cannot clone provider PTY control: {err}"))?;
+    let stdin = pty
+        .slave
+        .try_clone()
+        .map_err(|err| format!("Cannot clone provider PTY stdin: {err}"))?;
+    let stdout = pty
+        .slave
+        .try_clone()
+        .map_err(|err| format!("Cannot clone provider PTY stdout: {err}"))?;
+    let stderr = pty
+        .slave
+        .try_clone()
+        .map_err(|err| format!("Cannot clone provider PTY stderr: {err}"))?;
+
+    let mut command = build_agent_runtime_command(request);
+    command
+        .stdin(Stdio::from(stdin))
+        .stdout(Stdio::from(stdout))
+        .stderr(Stdio::from(stderr));
+
+    let child = command
+        .spawn()
+        .map_err(|err| format!("Cannot start allowlisted provider CLI with PTY: {err}"))?;
+
+    drop(pty.slave);
+    spawn_agent_output_reader(
+        output,
+        AgentWorkbenchOutputStream::Stdout,
+        Arc::clone(&session_store.output),
+        Arc::clone(&session_store.next_output_seq),
+    );
+
+    Ok(AgentRuntimeProcess {
+        child,
+        stdin: Some(Box::new(input)),
+        pty_control: Some(pty_control),
+    })
+}
+
+#[cfg(not(unix))]
+fn start_agent_pty_process(
+    request: AgentRuntimeLaunchRequest<'_>,
+    session_store: &AgentWorkbenchSessionStore,
+) -> Result<AgentRuntimeProcess, String> {
+    start_agent_pipe_process(request, session_store)
+}
+
+#[cfg(unix)]
+struct AgentPty {
+    master: File,
+    slave: File,
+}
+
+#[cfg(unix)]
+fn open_agent_pty() -> Result<AgentPty, String> {
+    let master_fd = unsafe { posix_openpt(O_RDWR_FLAG | O_NOCTTY_FLAG) };
+    if master_fd < 0 {
+        return Err("Cannot open provider PTY master.".to_string());
+    }
+
+    if unsafe { grantpt(master_fd) } != 0 {
+        close_fd(master_fd);
+        return Err("Cannot grant provider PTY.".to_string());
+    }
+
+    if unsafe { unlockpt(master_fd) } != 0 {
+        close_fd(master_fd);
+        return Err("Cannot unlock provider PTY.".to_string());
+    }
+
+    let slave_name = unsafe {
+        let raw_name = ptsname(master_fd);
+        if raw_name.is_null() {
+            close_fd(master_fd);
+            return Err("Cannot resolve provider PTY slave.".to_string());
+        }
+        CStr::from_ptr(raw_name).to_string_lossy().to_string()
+    };
+
+    let slave = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(slave_name)
+        .map_err(|err| {
+            close_fd(master_fd);
+            format!("Cannot open provider PTY slave: {err}")
+        })?;
+    let master = unsafe { File::from_raw_fd(master_fd) };
+
+    Ok(AgentPty { master, slave })
+}
+
+#[cfg(unix)]
+fn close_fd(fd: RawFd) {
+    let _ = unsafe { close(fd) };
+}
+
+#[cfg(all(unix, target_os = "macos"))]
+const TIOCSWINSZ_REQUEST: c_ulong = 0x8008_7467;
+
+#[cfg(all(unix, target_os = "linux"))]
+const TIOCSWINSZ_REQUEST: c_ulong = 0x5414;
+
+#[cfg(all(unix, not(any(target_os = "macos", target_os = "linux"))))]
+const TIOCSWINSZ_REQUEST: c_ulong = 0x5414;
+
+#[cfg(unix)]
+#[repr(C)]
+struct AgentPtyWindowSize {
+    ws_row: u16,
+    ws_col: u16,
+    ws_xpixel: u16,
+    ws_ypixel: u16,
+}
+
+#[cfg(unix)]
+fn resize_agent_pty(pty: &File, columns: u16, rows: u16) -> Result<(), String> {
+    let size = AgentPtyWindowSize {
+        ws_row: rows,
+        ws_col: columns,
+        ws_xpixel: 0,
+        ws_ypixel: 0,
+    };
+    let result = unsafe { ioctl(pty.as_raw_fd(), TIOCSWINSZ_REQUEST, &size) };
+    if result != 0 {
+        return Err(format!(
+            "Cannot resize provider PTY: {}",
+            std::io::Error::last_os_error()
+        ));
+    }
+
+    Ok(())
+}
+
+#[cfg(not(unix))]
+fn resize_agent_pty(_pty: &File, _columns: u16, _rows: u16) -> Result<(), String> {
+    Ok(())
+}
+
+#[cfg(unix)]
+extern "C" {
+    fn posix_openpt(oflag: i32) -> RawFd;
+    fn grantpt(fd: RawFd) -> i32;
+    fn unlockpt(fd: RawFd) -> i32;
+    fn ptsname(fd: RawFd) -> *mut c_char;
+    fn close(fd: RawFd) -> i32;
+    fn ioctl(fd: RawFd, request: c_ulong, ...) -> i32;
+}
+
+fn spawn_agent_output_reader<R>(
+    mut reader: R,
+    stream: AgentWorkbenchOutputStream,
+    output: Arc<Mutex<Vec<AgentWorkbenchOutputChunk>>>,
+    next_output_seq: Arc<Mutex<u64>>,
+) where
+    R: Read + Send + 'static,
+{
+    thread::spawn(move || {
+        let mut buffer = [0_u8; 4096];
+
+        loop {
+            match reader.read(&mut buffer) {
+                Ok(0) => break,
+                Ok(bytes_read) => {
+                    let text = String::from_utf8_lossy(&buffer[..bytes_read]).to_string();
+                    append_agent_output(&output, &next_output_seq, stream.clone(), text);
+                }
+                Err(err) => {
+                    append_agent_output(
+                        &output,
+                        &next_output_seq,
+                        AgentWorkbenchOutputStream::System,
+                        format!("Provider output read failed: {err}\n"),
+                    );
+                    break;
+                }
+            }
+        }
+    });
+}
+
+fn append_agent_output(
+    output: &Arc<Mutex<Vec<AgentWorkbenchOutputChunk>>>,
+    next_output_seq: &Arc<Mutex<u64>>,
+    stream: AgentWorkbenchOutputStream,
+    text: String,
+) {
+    if text.is_empty() {
+        return;
+    }
+
+    let Ok(mut seq) = next_output_seq.lock() else {
+        return;
+    };
+    let chunk = AgentWorkbenchOutputChunk {
+        seq: *seq,
+        stream,
+        text,
+        received_at_ms: current_time_ms(),
+    };
+    *seq += 1;
+
+    if let Ok(mut chunks) = output.lock() {
+        chunks.push(chunk);
+        if chunks.len() > AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS {
+            let overflow = chunks.len() - AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS;
+            chunks.drain(0..overflow);
+        }
+    }
+}
+
+fn snapshot_agent_output(
+    session_store: &AgentWorkbenchSessionStore,
+) -> Result<Vec<AgentWorkbenchOutputChunk>, String> {
+    session_store
+        .output
+        .lock()
+        .map(|chunks| chunks.clone())
+        .map_err(|_| "Agent Workbench output state is unavailable.".to_string())
 }
 
 #[derive(Debug, Deserialize)]
@@ -337,19 +906,329 @@ fn open_workspace_image(root: String, path: String) -> Result<ImagePreviewDocume
 
 #[tauri::command]
 fn start_agent_workbench_session(
+    session_store: tauri::State<'_, AgentWorkbenchSessionStore>,
     agent_workbench_enabled: bool,
     consent_acknowledged: bool,
     provider: String,
     workspace_root: String,
+    terminal_columns: Option<u16>,
+    terminal_rows: Option<u16>,
+) -> Result<AgentWorkbenchSessionStartResult, String> {
+    let path_var = agent_provider_app_search_path();
+    let adapter = RealAgentRuntimeAdapter::new(session_store.inner());
+
+    start_agent_workbench_session_with_store(
+        session_store.inner(),
+        &adapter,
+        agent_workbench_enabled,
+        consent_acknowledged,
+        provider,
+        workspace_root,
+        path_var.as_deref(),
+        terminal_columns,
+        terminal_rows,
+    )
+}
+
+#[tauri::command]
+fn stop_agent_workbench_session(
+    session_store: tauri::State<'_, AgentWorkbenchSessionStore>,
+) -> Result<AgentWorkbenchSessionState, String> {
+    let adapter = RealAgentRuntimeAdapter::new(session_store.inner());
+
+    stop_agent_workbench_session_with_store(session_store.inner(), &adapter)
+}
+
+#[tauri::command]
+fn get_agent_workbench_session_state(
+    session_store: tauri::State<'_, AgentWorkbenchSessionStore>,
+) -> Result<AgentWorkbenchSessionState, String> {
+    get_agent_workbench_session_state_with_store(session_store.inner())
+}
+
+#[tauri::command]
+fn write_agent_workbench_session_input(
+    session_store: tauri::State<'_, AgentWorkbenchSessionStore>,
+    input: String,
+) -> Result<AgentWorkbenchSessionState, String> {
+    write_agent_workbench_session_input_with_store(session_store.inner(), input)
+}
+
+#[tauri::command]
+fn resize_agent_workbench_terminal(
+    session_store: tauri::State<'_, AgentWorkbenchSessionStore>,
+    columns: u16,
+    rows: u16,
+) -> Result<AgentWorkbenchSessionState, String> {
+    resize_agent_workbench_terminal_with_store(session_store.inner(), columns, rows)
+}
+
+fn start_agent_workbench_session_with_store(
+    session_store: &AgentWorkbenchSessionStore,
+    runtime_adapter: &dyn AgentRuntimeAdapter,
+    agent_workbench_enabled: bool,
+    consent_acknowledged: bool,
+    provider: String,
+    workspace_root: String,
+    path_var: Option<&OsStr>,
+    terminal_columns: Option<u16>,
+    terminal_rows: Option<u16>,
+) -> Result<AgentWorkbenchSessionStartResult, String> {
+    refresh_agent_workbench_session_exit(session_store)?;
+
+    let preflight = build_agent_workbench_preflight(
+        agent_workbench_enabled,
+        consent_acknowledged,
+        provider,
+        workspace_root,
+        path_var,
+    )?;
+
+    let Some(provider_path) = preflight.provider_path.clone() else {
+        return Ok(AgentWorkbenchSessionStartResult {
+            preflight,
+            session: None,
+            output: snapshot_agent_output(session_store)?,
+        });
+    };
+
+    let mut current_session = session_store
+        .session
+        .lock()
+        .map_err(|_| "Agent Workbench session state is unavailable.".to_string())?;
+
+    if current_session
+        .as_ref()
+        .is_some_and(|session| session.status == AgentWorkbenchSessionStatus::Active)
+    {
+        return Err("Agent Workbench session is already active.".to_string());
+    }
+
+    let runtime = runtime_adapter.start(AgentRuntimeLaunchRequest {
+        provider: &preflight.provider,
+        workspace_root: &preflight.workspace_root,
+        provider_path: &provider_path,
+        path_env: path_var,
+        terminal_columns,
+        terminal_rows,
+    })?;
+
+    let session = AgentWorkbenchSession {
+        provider: preflight.provider.clone(),
+        workspace_root: preflight.workspace_root.clone(),
+        provider_path,
+        created_at_ms: current_time_ms(),
+        status: AgentWorkbenchSessionStatus::Active,
+        runtime,
+    };
+
+    *current_session = Some(session.clone());
+
+    Ok(AgentWorkbenchSessionStartResult {
+        preflight,
+        session: Some(session),
+        output: snapshot_agent_output(session_store)?,
+    })
+}
+
+fn stop_agent_workbench_session_with_store(
+    session_store: &AgentWorkbenchSessionStore,
+    runtime_adapter: &dyn AgentRuntimeAdapter,
+) -> Result<AgentWorkbenchSessionState, String> {
+    refresh_agent_workbench_session_exit(session_store)?;
+
+    let mut current_session = session_store
+        .session
+        .lock()
+        .map_err(|_| "Agent Workbench session state is unavailable.".to_string())?;
+
+    if let Some(session) = current_session.as_mut() {
+        if session.status == AgentWorkbenchSessionStatus::Active {
+            let stopped_runtime = runtime_adapter.stop(&session.runtime)?;
+            session.runtime = stopped_runtime;
+            session.status = AgentWorkbenchSessionStatus::Stopped;
+        }
+    }
+
+    Ok(AgentWorkbenchSessionState {
+        session: current_session.clone(),
+        output: snapshot_agent_output(session_store)?,
+    })
+}
+
+fn get_agent_workbench_session_state_with_store(
+    session_store: &AgentWorkbenchSessionStore,
+) -> Result<AgentWorkbenchSessionState, String> {
+    refresh_agent_workbench_session_exit(session_store)?;
+
+    let current_session = session_store
+        .session
+        .lock()
+        .map_err(|_| "Agent Workbench session state is unavailable.".to_string())?;
+
+    Ok(AgentWorkbenchSessionState {
+        session: current_session.clone(),
+        output: snapshot_agent_output(session_store)?,
+    })
+}
+
+fn write_agent_workbench_session_input_with_store(
+    session_store: &AgentWorkbenchSessionStore,
+    input: String,
+) -> Result<AgentWorkbenchSessionState, String> {
+    refresh_agent_workbench_session_exit(session_store)?;
+
+    if input.is_empty() {
+        return get_agent_workbench_session_state_with_store(session_store);
+    }
+
+    let session_is_active = session_store
+        .session
+        .lock()
+        .map_err(|_| "Agent Workbench session state is unavailable.".to_string())?
+        .as_ref()
+        .is_some_and(|session| session.status == AgentWorkbenchSessionStatus::Active);
+
+    if !session_is_active {
+        return Err("Agent Workbench session is not active.".to_string());
+    }
+
+    let mut runtime = session_store
+        .runtime
+        .lock()
+        .map_err(|_| "Agent Workbench runtime state is unavailable.".to_string())?;
+    let process = runtime
+        .as_mut()
+        .ok_or_else(|| "Agent Workbench runtime is not active.".to_string())?;
+    let stdin = process
+        .stdin
+        .as_mut()
+        .ok_or_else(|| "Agent Workbench stdin is unavailable.".to_string())?;
+
+    stdin
+        .write_all(input.as_bytes())
+        .map_err(|err| format!("Cannot write to provider stdin: {err}"))?;
+    stdin
+        .flush()
+        .map_err(|err| format!("Cannot flush provider stdin: {err}"))?;
+
+    append_agent_output(
+        &session_store.output,
+        &session_store.next_output_seq,
+        AgentWorkbenchOutputStream::Input,
+        input,
+    );
+
+    drop(runtime);
+    get_agent_workbench_session_state_with_store(session_store)
+}
+
+fn resize_agent_workbench_terminal_with_store(
+    session_store: &AgentWorkbenchSessionStore,
+    columns: u16,
+    rows: u16,
+) -> Result<AgentWorkbenchSessionState, String> {
+    refresh_agent_workbench_session_exit(session_store)?;
+
+    if columns == 0 || rows == 0 {
+        return Err("Agent Workbench terminal size is invalid.".to_string());
+    }
+
+    let session_is_active = session_store
+        .session
+        .lock()
+        .map_err(|_| "Agent Workbench session state is unavailable.".to_string())?
+        .as_ref()
+        .is_some_and(|session| session.status == AgentWorkbenchSessionStatus::Active);
+
+    if session_is_active {
+        let runtime = session_store
+            .runtime
+            .lock()
+            .map_err(|_| "Agent Workbench runtime state is unavailable.".to_string())?;
+        if let Some(process) = runtime.as_ref() {
+            if let Some(pty_control) = process.pty_control.as_ref() {
+                resize_agent_pty(pty_control, columns, rows)?;
+            }
+        }
+    }
+
+    get_agent_workbench_session_state_with_store(session_store)
+}
+
+fn refresh_agent_workbench_session_exit(
+    session_store: &AgentWorkbenchSessionStore,
 ) -> Result<(), String> {
-    validate_agent_workbench_launch(
+    let exit_status = {
+        let mut runtime = session_store
+            .runtime
+            .lock()
+            .map_err(|_| "Agent Workbench runtime state is unavailable.".to_string())?;
+        let Some(process) = runtime.as_mut() else {
+            return Ok(());
+        };
+
+        match process
+            .child
+            .try_wait()
+            .map_err(|err| format!("Cannot inspect provider process: {err}"))?
+        {
+            Some(status) => {
+                runtime.take();
+                Some(status.to_string())
+            }
+            None => None,
+        }
+    };
+
+    if let Some(status) = exit_status {
+        let mut current_session = session_store
+            .session
+            .lock()
+            .map_err(|_| "Agent Workbench session state is unavailable.".to_string())?;
+
+        if let Some(session) = current_session.as_mut() {
+            if session.status == AgentWorkbenchSessionStatus::Active {
+                session.status = AgentWorkbenchSessionStatus::Exited;
+                session.runtime.status = AgentRuntimeStatus::Exited;
+            }
+        }
+
+        append_agent_output(
+            &session_store.output,
+            &session_store.next_output_seq,
+            AgentWorkbenchOutputStream::System,
+            format!("Provider process exited: {status}\n"),
+        );
+    }
+
+    Ok(())
+}
+
+fn build_agent_workbench_preflight(
+    agent_workbench_enabled: bool,
+    consent_acknowledged: bool,
+    provider: String,
+    workspace_root: String,
+    path_var: Option<&OsStr>,
+) -> Result<AgentWorkbenchPreflight, String> {
+    let canonical_workspace = validate_agent_workbench_launch(
         agent_workbench_enabled,
         consent_acknowledged,
         &provider,
         &workspace_root,
     )?;
+    let provider_path = path_var.and_then(|candidate_path| {
+        find_allowlisted_agent_provider_in_path_env(&provider, candidate_path)
+    });
 
-    Err("Agent Workbench launch is not implemented in this foundation build.".to_string())
+    Ok(AgentWorkbenchPreflight {
+        provider,
+        workspace_root: canonical_workspace.to_string_lossy().to_string(),
+        provider_available: provider_path.is_some(),
+        provider_path: provider_path.map(|path| path.to_string_lossy().to_string()),
+        launch_implemented: true,
+    })
 }
 
 fn readable_text_metadata(path: &Path) -> Result<fs::Metadata, String> {
@@ -435,7 +1314,7 @@ fn validate_agent_workbench_launch(
     consent_acknowledged: bool,
     provider: &str,
     workspace_root: &str,
-) -> Result<(), String> {
+) -> Result<PathBuf, String> {
     if !agent_workbench_enabled {
         return Err(
             "Agent Workbench is disabled. Enable it in Preferences and restart before launching an agent."
@@ -452,9 +1331,98 @@ fn validate_agent_workbench_launch(
     }
 
     let workspace_root_path = PathBuf::from(workspace_root);
-    ensure_workspace_root(&workspace_root_path)?;
+    let canonical_workspace = ensure_workspace_root(&workspace_root_path)?;
 
-    Ok(())
+    Ok(canonical_workspace)
+}
+
+fn find_allowlisted_agent_provider_in_path_env(
+    provider: &str,
+    path_var: &OsStr,
+) -> Option<PathBuf> {
+    if !matches!(provider, AGENT_PROVIDER_CODEX | AGENT_PROVIDER_OPENCODE) {
+        return None;
+    }
+
+    env::split_paths(path_var).find_map(|directory| {
+        let candidate = directory.join(provider);
+
+        if is_executable_file(&candidate) {
+            Some(candidate)
+        } else {
+            None
+        }
+    })
+}
+
+fn agent_provider_app_search_path() -> Option<OsString> {
+    build_agent_provider_search_path(
+        env::var_os("PATH").as_deref(),
+        env::var_os("HOME").as_deref(),
+    )
+}
+
+fn build_agent_provider_search_path(
+    path_var: Option<&OsStr>,
+    home_var: Option<&OsStr>,
+) -> Option<OsString> {
+    let mut paths = Vec::new();
+
+    if let Some(path_var) = path_var {
+        for path in env::split_paths(path_var) {
+            push_unique_existing_directory(&mut paths, path);
+        }
+    }
+
+    if let Some(home_var) = home_var {
+        let home = PathBuf::from(home_var);
+        for directory in [".local/bin", ".cargo/bin", ".npm-global/bin", "bin"] {
+            push_unique_existing_directory(&mut paths, home.join(directory));
+        }
+    }
+
+    for directory in AGENT_PROVIDER_GUI_SEARCH_DIRS {
+        push_unique_existing_directory(&mut paths, PathBuf::from(directory));
+    }
+
+    env::join_paths(paths).ok()
+}
+
+fn push_unique_existing_directory(paths: &mut Vec<PathBuf>, path: PathBuf) {
+    if !path.is_dir() || paths.iter().any(|candidate| candidate == &path) {
+        return;
+    }
+
+    paths.push(path);
+}
+
+fn is_executable_file(path: &Path) -> bool {
+    let Ok(metadata) = fs::metadata(path) else {
+        return false;
+    };
+
+    if !metadata.is_file() {
+        return false;
+    }
+
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+
+        metadata.permissions().mode() & 0o111 != 0
+    }
+
+    #[cfg(not(unix))]
+    {
+        true
+    }
+}
+
+fn current_time_ms() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|duration| duration.as_millis().min(u64::MAX as u128) as u64)
+        .unwrap_or(0)
 }
 
 fn build_workspace_directory(path: &Path) -> Result<WorkspaceTreeEntry, String> {
@@ -798,6 +1766,13 @@ fn build_app_menu_with_state<R: tauri::Runtime>(
                 true,
                 Some("CmdOrCtrl+,"),
             )?,
+            &MenuItem::with_id(
+                app,
+                MENU_AGENT_WORKBENCH,
+                "Agent Workbench...",
+                true,
+                None::<&str>,
+            )?,
             &PredefinedMenuItem::separator(app)?,
             &PredefinedMenuItem::fullscreen(app, None)?,
         ],
@@ -903,6 +1878,7 @@ fn emit_app_menu_event<R: tauri::Runtime>(
                 | MENU_THEME_DARK
                 | MENU_THEME_SAKURA
                 | MENU_PREFERENCES
+                | MENU_AGENT_WORKBENCH
         )
     {
         let _ = app.emit(MENU_ACTION_EVENT, action);
@@ -936,7 +1912,9 @@ fn metadata_fingerprint(metadata: &fs::Metadata) -> String {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let builder = tauri::Builder::default().plugin(tauri_plugin_dialog::init());
+    let builder = tauri::Builder::default()
+        .manage(AgentWorkbenchSessionStore::default())
+        .plugin(tauri_plugin_dialog::init());
 
     #[cfg(desktop)]
     let builder = builder
@@ -952,6 +1930,10 @@ pub fn run() {
             list_workspace_tree,
             open_workspace_image,
             start_agent_workbench_session,
+            stop_agent_workbench_session,
+            get_agent_workbench_session_state,
+            write_agent_workbench_session_input,
+            resize_agent_workbench_terminal,
             save_text_file,
             save_text_file_as,
             update_app_menu_state
@@ -963,7 +1945,130 @@ pub fn run() {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::time::{SystemTime, UNIX_EPOCH};
+    use std::ffi::OsString;
+    use std::time::{Duration, SystemTime, UNIX_EPOCH};
+
+    #[derive(Clone, Debug, PartialEq, Eq)]
+    struct RuntimeAdapterCall {
+        provider: String,
+        workspace_root: String,
+        provider_path: String,
+        terminal_columns: Option<u16>,
+        terminal_rows: Option<u16>,
+    }
+
+    struct FakeProviderFixture {
+        dir: PathBuf,
+        command_path: PathBuf,
+        path_env: OsString,
+    }
+
+    impl FakeProviderFixture {
+        fn workspace_root(&self) -> String {
+            self.dir.to_str().expect("workspace path").to_string()
+        }
+
+        fn path_var(&self) -> &OsStr {
+            self.path_env.as_os_str()
+        }
+
+        fn provider_path(&self) -> String {
+            self.command_path.to_string_lossy().to_string()
+        }
+
+        fn cleanup(self) {
+            let _ = fs::remove_dir_all(self.dir);
+        }
+    }
+
+    #[derive(Default)]
+    struct RecordingRuntimeAdapter {
+        start_calls: Mutex<Vec<RuntimeAdapterCall>>,
+        stop_calls: Mutex<Vec<AgentRuntimeHandle>>,
+        fail_start: bool,
+        fail_stop: bool,
+    }
+
+    impl RecordingRuntimeAdapter {
+        fn failing_start() -> Self {
+            Self {
+                start_calls: Mutex::new(Vec::new()),
+                stop_calls: Mutex::new(Vec::new()),
+                fail_start: true,
+                fail_stop: false,
+            }
+        }
+
+        fn failing_stop() -> Self {
+            Self {
+                start_calls: Mutex::new(Vec::new()),
+                stop_calls: Mutex::new(Vec::new()),
+                fail_start: false,
+                fail_stop: true,
+            }
+        }
+
+        fn start_calls(&self) -> Vec<RuntimeAdapterCall> {
+            self.start_calls
+                .lock()
+                .expect("read runtime start calls")
+                .clone()
+        }
+
+        fn stop_calls(&self) -> Vec<AgentRuntimeHandle> {
+            self.stop_calls
+                .lock()
+                .expect("read runtime stop calls")
+                .clone()
+        }
+    }
+
+    impl AgentRuntimeAdapter for RecordingRuntimeAdapter {
+        fn start(
+            &self,
+            request: AgentRuntimeLaunchRequest<'_>,
+        ) -> Result<AgentRuntimeHandle, String> {
+            self.start_calls
+                .lock()
+                .expect("record runtime call")
+                .push(RuntimeAdapterCall {
+                    provider: request.provider.to_string(),
+                    workspace_root: request.workspace_root.to_string(),
+                    provider_path: request.provider_path.to_string(),
+                    terminal_columns: request.terminal_columns,
+                    terminal_rows: request.terminal_rows,
+                });
+
+            if self.fail_start {
+                return Err("runtime adapter failed".to_string());
+            }
+
+            Ok(AgentRuntimeHandle {
+                provider: request.provider.to_string(),
+                workspace_root: request.workspace_root.to_string(),
+                provider_path: request.provider_path.to_string(),
+                status: AgentRuntimeStatus::Running,
+            })
+        }
+
+        fn stop(&self, handle: &AgentRuntimeHandle) -> Result<AgentRuntimeHandle, String> {
+            self.stop_calls
+                .lock()
+                .expect("record runtime stop call")
+                .push(handle.clone());
+
+            if self.fail_stop {
+                return Err("runtime stop adapter failed".to_string());
+            }
+
+            Ok(AgentRuntimeHandle {
+                provider: handle.provider.clone(),
+                workspace_root: handle.workspace_root.clone(),
+                provider_path: handle.provider_path.clone(),
+                status: AgentRuntimeStatus::Stopped,
+            })
+        }
+    }
 
     #[test]
     fn binary_detection_finds_nul_byte() {
@@ -1033,30 +2138,1142 @@ mod tests {
         let dir = unique_test_dir("agent_workspace");
         fs::create_dir_all(&dir).expect("create test dir");
 
-        assert!(validate_agent_workbench_launch(
+        let canonical_workspace = validate_agent_workbench_launch(
             true,
             true,
             AGENT_PROVIDER_CODEX,
-            dir.to_str().unwrap()
+            dir.to_str().unwrap(),
         )
-        .is_ok());
+        .expect("validate workspace root");
+
+        assert_eq!(canonical_workspace, fs::canonicalize(&dir).unwrap());
 
         let _ = fs::remove_dir_all(dir);
     }
 
     #[test]
-    fn agent_workbench_command_stops_before_launch_in_foundation_build() {
+    fn agent_workbench_start_rejects_disabled_mode() {
+        let store = AgentWorkbenchSessionStore::default();
+        let dir = unique_test_dir("agent_command_disabled");
+        fs::create_dir_all(&dir).expect("create test dir");
+        let path_env = env::join_paths([dir.clone()]).expect("join PATH fixture");
+        let adapter = RecordingRuntimeAdapter::default();
+        let error = start_agent_workbench_session_with_store(
+            &store,
+            &adapter,
+            false,
+            true,
+            AGENT_PROVIDER_CODEX.to_string(),
+            dir.to_str().unwrap().to_string(),
+            Some(path_env.as_os_str()),
+            None,
+            None,
+        )
+        .unwrap_err();
+
+        assert!(error.contains("disabled"));
+        assert!(store.session.lock().unwrap().is_none());
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn agent_workbench_start_rejects_unacknowledged_consent() {
+        let store = AgentWorkbenchSessionStore::default();
+        let dir = unique_test_dir("agent_command_consent");
+        fs::create_dir_all(&dir).expect("create test dir");
+        let path_env = env::join_paths([dir.clone()]).expect("join PATH fixture");
+        let adapter = RecordingRuntimeAdapter::default();
+        let error = start_agent_workbench_session_with_store(
+            &store,
+            &adapter,
+            true,
+            false,
+            AGENT_PROVIDER_CODEX.to_string(),
+            dir.to_str().unwrap().to_string(),
+            Some(path_env.as_os_str()),
+            None,
+            None,
+        )
+        .unwrap_err();
+
+        assert!(error.contains("consent"));
+        assert!(store.session.lock().unwrap().is_none());
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn agent_workbench_start_rejects_non_allowlisted_provider() {
+        let store = AgentWorkbenchSessionStore::default();
+        let adapter = RecordingRuntimeAdapter::default();
+        let dir = unique_test_dir("agent_command_provider");
+        fs::create_dir_all(&dir).expect("create test dir");
+        let path_env = env::join_paths([dir.clone()]).expect("join PATH fixture");
+        let error = start_agent_workbench_session_with_store(
+            &store,
+            &adapter,
+            true,
+            true,
+            "zsh".to_string(),
+            dir.to_str().unwrap().to_string(),
+            Some(path_env.as_os_str()),
+            None,
+            None,
+        )
+        .unwrap_err();
+
+        assert!(error.contains("allowlisted"));
+        assert!(store.session.lock().unwrap().is_none());
+        assert!(adapter.start_calls().is_empty());
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn agent_workbench_start_rejects_invalid_workspace_root() {
+        let store = AgentWorkbenchSessionStore::default();
+        let dir = unique_test_dir("agent_command_invalid_workspace");
+        let path_env = env::join_paths([dir.clone()]).expect("join PATH fixture");
+        let adapter = RecordingRuntimeAdapter::default();
+        let error = start_agent_workbench_session_with_store(
+            &store,
+            &adapter,
+            true,
+            true,
+            AGENT_PROVIDER_CODEX.to_string(),
+            dir.to_str().unwrap().to_string(),
+            Some(path_env.as_os_str()),
+            None,
+            None,
+        )
+        .unwrap_err();
+
+        assert!(error.contains("workspace"));
+        assert!(store.session.lock().unwrap().is_none());
+    }
+
+    #[test]
+    fn agent_workbench_start_without_provider_does_not_create_session() {
+        let store = AgentWorkbenchSessionStore::default();
+        let adapter = RecordingRuntimeAdapter::default();
+        let dir = unique_test_dir("agent_command_provider_missing");
+        fs::create_dir_all(&dir).expect("create test dir");
+        let path_env = env::join_paths([dir.clone()]).expect("join PATH fixture");
+        let result = start_agent_workbench_session_with_store(
+            &store,
+            &adapter,
+            true,
+            true,
+            AGENT_PROVIDER_CODEX.to_string(),
+            dir.to_str().unwrap().to_string(),
+            Some(path_env.as_os_str()),
+            None,
+            None,
+        )
+        .expect("preflight missing provider");
+
+        assert!(!result.preflight.provider_available);
+        assert!(result.preflight.provider_path.is_none());
+        assert!(result.session.is_none());
+        assert!(store.session.lock().unwrap().is_none());
+        assert!(adapter.start_calls().is_empty());
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn agent_workbench_start_calls_runtime_adapter_with_resolved_launch_request() {
+        let store = AgentWorkbenchSessionStore::default();
+        let adapter = RecordingRuntimeAdapter::default();
         let dir = unique_test_dir("agent_command");
         fs::create_dir_all(&dir).expect("create test dir");
-        let error = start_agent_workbench_session(
+        let command_path = dir.join(AGENT_PROVIDER_OPENCODE);
+        fs::write(&command_path, b"#!/bin/sh\n").expect("write fake provider");
+        make_executable(&command_path);
+        let path_env = env::join_paths([dir.clone()]).expect("join PATH fixture");
+        let result = start_agent_workbench_session_with_store(
+            &store,
+            &adapter,
             true,
             true,
             AGENT_PROVIDER_OPENCODE.to_string(),
             dir.to_str().unwrap().to_string(),
+            Some(path_env.as_os_str()),
+            None,
+            None,
+        )
+        .expect("start session");
+        let session = result.session.expect("session");
+
+        assert_eq!(result.preflight.provider, AGENT_PROVIDER_OPENCODE);
+        assert!(result.preflight.provider_available);
+        assert!(result.preflight.launch_implemented);
+        assert_eq!(session.provider, AGENT_PROVIDER_OPENCODE);
+        assert_eq!(
+            session.workspace_root,
+            fs::canonicalize(&dir).unwrap().to_string_lossy()
+        );
+        assert_eq!(session.provider_path, command_path.to_string_lossy());
+        assert_eq!(session.status, AgentWorkbenchSessionStatus::Active);
+        assert!(session.created_at_ms > 0);
+        assert_eq!(session.runtime.provider, AGENT_PROVIDER_OPENCODE);
+        assert_eq!(session.runtime.workspace_root, session.workspace_root);
+        assert_eq!(session.runtime.provider_path, session.provider_path);
+        assert_eq!(session.runtime.status, AgentRuntimeStatus::Running);
+        assert_eq!(
+            adapter.start_calls(),
+            vec![RuntimeAdapterCall {
+                provider: AGENT_PROVIDER_OPENCODE.to_string(),
+                workspace_root: fs::canonicalize(&dir)
+                    .unwrap()
+                    .to_string_lossy()
+                    .to_string(),
+                provider_path: command_path.to_string_lossy().to_string(),
+                terminal_columns: None,
+                terminal_rows: None,
+            }]
+        );
+        assert_eq!(
+            store.session.lock().unwrap().as_ref().unwrap().status,
+            AgentWorkbenchSessionStatus::Active
+        );
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn agent_workbench_start_passes_initial_terminal_size_to_runtime_adapter() {
+        let store = AgentWorkbenchSessionStore::default();
+        let adapter = RecordingRuntimeAdapter::default();
+        let dir = unique_test_dir("agent_command_terminal_size");
+        fs::create_dir_all(&dir).expect("create test dir");
+        let command_path = dir.join(AGENT_PROVIDER_CODEX);
+        fs::write(&command_path, b"#!/bin/sh\n").expect("write fake provider");
+        make_executable(&command_path);
+        let path_env = env::join_paths([dir.clone()]).expect("join PATH fixture");
+
+        start_agent_workbench_session_with_store(
+            &store,
+            &adapter,
+            true,
+            true,
+            AGENT_PROVIDER_CODEX.to_string(),
+            dir.to_str().unwrap().to_string(),
+            Some(path_env.as_os_str()),
+            Some(132),
+            Some(38),
+        )
+        .expect("start session");
+
+        let calls = adapter.start_calls();
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].terminal_columns, Some(132));
+        assert_eq!(calls[0].terminal_rows, Some(38));
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn agent_workbench_terminal_resize_rejects_invalid_dimensions() {
+        let store = AgentWorkbenchSessionStore::default();
+
+        let zero_columns = resize_agent_workbench_terminal_with_store(&store, 0, 24).unwrap_err();
+        let zero_rows = resize_agent_workbench_terminal_with_store(&store, 80, 0).unwrap_err();
+
+        assert!(zero_columns.contains("terminal size"));
+        assert!(zero_rows.contains("terminal size"));
+        assert!(store.session.lock().unwrap().is_none());
+    }
+
+    #[test]
+    fn agent_workbench_terminal_resize_without_session_is_noop_state() {
+        let store = AgentWorkbenchSessionStore::default();
+
+        let state =
+            resize_agent_workbench_terminal_with_store(&store, 120, 36).expect("resize no session");
+
+        assert!(state.session.is_none());
+        assert!(state.output.is_empty());
+        assert!(store.runtime.lock().unwrap().is_none());
+    }
+
+    #[test]
+    fn agent_workbench_terminal_resize_preserves_active_session_state() {
+        let store = AgentWorkbenchSessionStore::default();
+        let adapter = RecordingRuntimeAdapter::default();
+        let dir = unique_test_dir("agent_resize_active_session");
+        fs::create_dir_all(&dir).expect("create test dir");
+        let command_path = dir.join(AGENT_PROVIDER_CODEX);
+        fs::write(&command_path, b"#!/bin/sh\n").expect("write fake provider");
+        make_executable(&command_path);
+        let path_env = env::join_paths([dir.clone()]).expect("join PATH fixture");
+
+        start_agent_workbench_session_with_store(
+            &store,
+            &adapter,
+            true,
+            true,
+            AGENT_PROVIDER_CODEX.to_string(),
+            dir.to_str().unwrap().to_string(),
+            Some(path_env.as_os_str()),
+            Some(100),
+            Some(30),
+        )
+        .expect("start session");
+
+        let state =
+            resize_agent_workbench_terminal_with_store(&store, 132, 42).expect("resize terminal");
+
+        let session = state.session.expect("session");
+        assert_eq!(session.status, AgentWorkbenchSessionStatus::Active);
+        assert_eq!(session.runtime.status, AgentRuntimeStatus::Running);
+        assert_eq!(
+            store.session.lock().unwrap().as_ref().unwrap().status,
+            AgentWorkbenchSessionStatus::Active
+        );
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn agent_workbench_start_rejects_second_active_session() {
+        let store = AgentWorkbenchSessionStore::default();
+        let adapter = RecordingRuntimeAdapter::default();
+        let dir = unique_test_dir("agent_command_duplicate");
+        let other_dir = unique_test_dir("agent_command_duplicate_other");
+        fs::create_dir_all(&dir).expect("create test dir");
+        fs::create_dir_all(&other_dir).expect("create other test dir");
+        let command_path = dir.join(AGENT_PROVIDER_CODEX);
+        let other_command_path = other_dir.join(AGENT_PROVIDER_OPENCODE);
+        fs::write(&command_path, b"#!/bin/sh\n").expect("write fake provider");
+        fs::write(&other_command_path, b"#!/bin/sh\n").expect("write other fake provider");
+        make_executable(&command_path);
+        make_executable(&other_command_path);
+        let path_env =
+            env::join_paths([dir.clone(), other_dir.clone()]).expect("join PATH fixture");
+
+        start_agent_workbench_session_with_store(
+            &store,
+            &adapter,
+            true,
+            true,
+            AGENT_PROVIDER_CODEX.to_string(),
+            dir.to_str().unwrap().to_string(),
+            Some(path_env.as_os_str()),
+            None,
+            None,
+        )
+        .expect("first session");
+        let error = start_agent_workbench_session_with_store(
+            &store,
+            &adapter,
+            true,
+            true,
+            AGENT_PROVIDER_OPENCODE.to_string(),
+            other_dir.to_str().unwrap().to_string(),
+            Some(path_env.as_os_str()),
+            None,
+            None,
         )
         .unwrap_err();
 
-        assert!(error.contains("not implemented"));
+        assert!(error.contains("already active"));
+        assert_eq!(adapter.start_calls().len(), 1);
+
+        let _ = fs::remove_dir_all(dir);
+        let _ = fs::remove_dir_all(other_dir);
+    }
+
+    #[test]
+    fn agent_workbench_adapter_failure_does_not_create_session() {
+        let store = AgentWorkbenchSessionStore::default();
+        let adapter = RecordingRuntimeAdapter::failing_start();
+        let dir = unique_test_dir("agent_command_adapter_failure");
+        fs::create_dir_all(&dir).expect("create test dir");
+        let command_path = dir.join(AGENT_PROVIDER_CODEX);
+        fs::write(&command_path, b"#!/bin/sh\n").expect("write fake provider");
+        make_executable(&command_path);
+        let path_env = env::join_paths([dir.clone()]).expect("join PATH fixture");
+        let error = start_agent_workbench_session_with_store(
+            &store,
+            &adapter,
+            true,
+            true,
+            AGENT_PROVIDER_CODEX.to_string(),
+            dir.to_str().unwrap().to_string(),
+            Some(path_env.as_os_str()),
+            None,
+            None,
+        )
+        .unwrap_err();
+
+        assert!(error.contains("runtime adapter failed"));
+        assert_eq!(adapter.start_calls().len(), 1);
+        assert!(store.session.lock().unwrap().is_none());
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn runtime_handle_exposes_no_process_resources() {
+        let handle = AgentRuntimeHandle {
+            provider: AGENT_PROVIDER_CODEX.to_string(),
+            workspace_root: "/tmp/workspace".to_string(),
+            provider_path: "/tmp/bin/codex".to_string(),
+            status: AgentRuntimeStatus::Running,
+        };
+        let stopped_handle = AgentRuntimeHandle {
+            status: AgentRuntimeStatus::Stopped,
+            ..handle.clone()
+        };
+        let exited_handle = AgentRuntimeHandle {
+            status: AgentRuntimeStatus::Exited,
+            ..handle.clone()
+        };
+        let debug = format!("{handle:?}");
+        let stopped_debug = format!("{stopped_handle:?}");
+        let exited_debug = format!("{exited_handle:?}");
+
+        assert_eq!(handle.status, AgentRuntimeStatus::Running);
+        assert_eq!(stopped_handle.status, AgentRuntimeStatus::Stopped);
+        assert_eq!(exited_handle.status, AgentRuntimeStatus::Exited);
+        assert!(!debug.contains("pid"));
+        assert!(!debug.contains("stdio"));
+        assert!(!debug.contains("pty"));
+        assert!(!debug.contains("process"));
+        assert!(!stopped_debug.contains("pid"));
+        assert!(!stopped_debug.contains("stdio"));
+        assert!(!stopped_debug.contains("pty"));
+        assert!(!stopped_debug.contains("process"));
+        assert!(!exited_debug.contains("pid"));
+        assert!(!exited_debug.contains("stdio"));
+        assert!(!exited_debug.contains("pty"));
+        assert!(!exited_debug.contains("process"));
+    }
+
+    #[test]
+    fn agent_workbench_stop_marks_session_stopped_through_runtime_adapter() {
+        let store = AgentWorkbenchSessionStore::default();
+        let adapter = RecordingRuntimeAdapter::default();
+        let dir = unique_test_dir("agent_command_stop");
+        fs::create_dir_all(&dir).expect("create test dir");
+        let command_path = dir.join(AGENT_PROVIDER_CODEX);
+        fs::write(&command_path, b"#!/bin/sh\n").expect("write fake provider");
+        make_executable(&command_path);
+        let path_env = env::join_paths([dir.clone()]).expect("join PATH fixture");
+
+        let started = start_agent_workbench_session_with_store(
+            &store,
+            &adapter,
+            true,
+            true,
+            AGENT_PROVIDER_CODEX.to_string(),
+            dir.to_str().unwrap().to_string(),
+            Some(path_env.as_os_str()),
+            None,
+            None,
+        )
+        .expect("start session");
+        let started_session = started.session.expect("started session");
+        let state =
+            stop_agent_workbench_session_with_store(&store, &adapter).expect("stop session");
+        let session = state.session.expect("stopped session");
+
+        assert_eq!(adapter.stop_calls(), vec![started_session.runtime]);
+        assert_eq!(session.status, AgentWorkbenchSessionStatus::Stopped);
+        assert_eq!(session.runtime.status, AgentRuntimeStatus::Stopped);
+        assert_eq!(session.runtime.provider, AGENT_PROVIDER_CODEX);
+        assert_eq!(session.runtime.workspace_root, session.workspace_root);
+        assert_eq!(session.runtime.provider_path, session.provider_path);
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn agent_workbench_stop_without_session_does_not_call_runtime_adapter() {
+        let store = AgentWorkbenchSessionStore::default();
+        let adapter = RecordingRuntimeAdapter::default();
+
+        let state =
+            stop_agent_workbench_session_with_store(&store, &adapter).expect("stop no session");
+
+        assert!(state.session.is_none());
+        assert!(adapter.stop_calls().is_empty());
+    }
+
+    #[test]
+    fn agent_workbench_stop_adapter_failure_keeps_session_active() {
+        let store = AgentWorkbenchSessionStore::default();
+        let adapter = RecordingRuntimeAdapter::failing_stop();
+        let dir = unique_test_dir("agent_command_stop_failure");
+        fs::create_dir_all(&dir).expect("create test dir");
+        let command_path = dir.join(AGENT_PROVIDER_CODEX);
+        fs::write(&command_path, b"#!/bin/sh\n").expect("write fake provider");
+        make_executable(&command_path);
+        let path_env = env::join_paths([dir.clone()]).expect("join PATH fixture");
+
+        let started = start_agent_workbench_session_with_store(
+            &store,
+            &adapter,
+            true,
+            true,
+            AGENT_PROVIDER_CODEX.to_string(),
+            dir.to_str().unwrap().to_string(),
+            Some(path_env.as_os_str()),
+            None,
+            None,
+        )
+        .expect("start session");
+        let started_session = started.session.expect("started session");
+        let error = stop_agent_workbench_session_with_store(&store, &adapter).unwrap_err();
+        let stored = store
+            .session
+            .lock()
+            .unwrap()
+            .clone()
+            .expect("stored session");
+
+        assert!(error.contains("runtime stop adapter failed"));
+        assert_eq!(adapter.stop_calls(), vec![started_session.runtime]);
+        assert_eq!(stored.status, AgentWorkbenchSessionStatus::Active);
+        assert_eq!(stored.runtime.status, AgentRuntimeStatus::Running);
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn agent_workbench_real_runtime_starts_provider_and_captures_output_and_input() {
+        let store = AgentWorkbenchSessionStore::default();
+        let adapter = RealAgentRuntimeAdapter::new_piped_for_tests(&store);
+        let provider = fake_provider_fixture(
+            "agent_real_runtime_io",
+            AGENT_PROVIDER_CODEX,
+            b"#!/bin/sh\nprintf 'ready\\n'\nprintf 'warn\\n' >&2\nwhile IFS= read line; do\n  printf 'echo:%s\\n' \"$line\"\n  [ \"$line\" = 'exit' ] && exit 0\ndone\n",
+        );
+
+        let started = start_agent_workbench_session_with_store(
+            &store,
+            &adapter,
+            true,
+            true,
+            AGENT_PROVIDER_CODEX.to_string(),
+            provider.workspace_root(),
+            Some(provider.path_var()),
+            None,
+            None,
+        )
+        .expect("start real provider");
+        let session = started.session.expect("running session");
+
+        assert_eq!(session.status, AgentWorkbenchSessionStatus::Active);
+        assert_eq!(session.runtime.status, AgentRuntimeStatus::Running);
+        assert_eq!(session.provider_path, provider.provider_path());
+
+        let state = write_agent_workbench_session_input_with_store(
+            &store,
+            "hello from hazakura\nexit\n".to_string(),
+        )
+        .expect("write provider input");
+
+        assert!(state
+            .output
+            .iter()
+            .any(|chunk| chunk.stream == AgentWorkbenchOutputStream::Input
+                && chunk.text.contains("hello from hazakura")));
+
+        let final_state = wait_for_agent_state(&store, |state| {
+            let combined_output = combined_agent_output(state);
+            combined_output.contains("ready")
+                && combined_output.contains("warn")
+                && combined_output.contains("echo:hello")
+                && state
+                    .session
+                    .as_ref()
+                    .is_some_and(|session| session.status == AgentWorkbenchSessionStatus::Exited)
+        });
+
+        let combined_output = combined_agent_output(&final_state);
+        assert!(combined_output.contains("ready"));
+        assert!(combined_output.contains("warn"));
+        assert!(combined_output.contains("echo:hello from hazakura"));
+        assert_eq!(
+            final_state.session.as_ref().unwrap().status,
+            AgentWorkbenchSessionStatus::Exited
+        );
+        assert_eq!(
+            final_state.session.as_ref().unwrap().runtime.status,
+            AgentRuntimeStatus::Exited
+        );
+        assert!(final_state
+            .output
+            .iter()
+            .any(|chunk| chunk.stream == AgentWorkbenchOutputStream::Stdout));
+        assert!(final_state
+            .output
+            .iter()
+            .any(|chunk| chunk.stream == AgentWorkbenchOutputStream::Stderr));
+        assert!(final_state
+            .output
+            .iter()
+            .any(|chunk| chunk.stream == AgentWorkbenchOutputStream::Input));
+        assert!(final_state
+            .output
+            .iter()
+            .any(|chunk| chunk.stream == AgentWorkbenchOutputStream::System));
+
+        provider.cleanup();
+    }
+
+    #[test]
+    fn agent_workbench_real_runtime_stop_kills_running_provider() {
+        let store = AgentWorkbenchSessionStore::default();
+        let adapter = RealAgentRuntimeAdapter::new_piped_for_tests(&store);
+        let provider = fake_provider_fixture(
+            "agent_real_runtime_stop",
+            AGENT_PROVIDER_OPENCODE,
+            b"#!/bin/sh\nprintf 'waiting\\n'\nwhile :; do read line || true; done\n",
+        );
+
+        start_agent_workbench_session_with_store(
+            &store,
+            &adapter,
+            true,
+            true,
+            AGENT_PROVIDER_OPENCODE.to_string(),
+            provider.workspace_root(),
+            Some(provider.path_var()),
+            None,
+            None,
+        )
+        .expect("start real provider");
+        let state =
+            stop_agent_workbench_session_with_store(&store, &adapter).expect("stop provider");
+        let session = state.session.expect("stopped session");
+
+        assert_eq!(session.status, AgentWorkbenchSessionStatus::Stopped);
+        assert_eq!(session.runtime.status, AgentRuntimeStatus::Stopped);
+        assert!(store.runtime.lock().unwrap().is_none());
+        assert!(state
+            .output
+            .iter()
+            .any(|chunk| chunk.stream == AgentWorkbenchOutputStream::System
+                && chunk.text.contains("stopped")));
+
+        provider.cleanup();
+    }
+
+    #[test]
+    fn agent_workbench_fake_provider_large_stdout_prunes_oldest_output() {
+        let store = AgentWorkbenchSessionStore::default();
+        let adapter = RealAgentRuntimeAdapter::new_piped_for_tests(&store);
+        let provider = fake_provider_fixture(
+            "agent_fake_provider_large_stdout",
+            AGENT_PROVIDER_CODEX,
+            b"#!/bin/sh\ndd if=/dev/zero bs=4096 count=650 2>/dev/null | tr '\\000' 'x'\nprintf '\\ntail-marker\\n'\n",
+        );
+
+        start_agent_workbench_session_with_store(
+            &store,
+            &adapter,
+            true,
+            true,
+            AGENT_PROVIDER_CODEX.to_string(),
+            provider.workspace_root(),
+            Some(provider.path_var()),
+            None,
+            None,
+        )
+        .expect("start fake provider");
+        let final_state = wait_for_agent_state(&store, |state| {
+            let combined_output = combined_agent_output(state);
+            state
+                .session
+                .as_ref()
+                .is_some_and(|session| session.status == AgentWorkbenchSessionStatus::Exited)
+                && combined_output.contains("tail-marker")
+        });
+        let combined_output = combined_agent_output(&final_state);
+
+        assert_eq!(final_state.output.len(), AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS);
+        assert!(final_state.output.first().unwrap().seq > 1);
+        assert!(combined_output.contains("tail-marker\n"));
+        assert!(final_state
+            .output
+            .iter()
+            .any(|chunk| chunk.stream == AgentWorkbenchOutputStream::Stdout));
+
+        provider.cleanup();
+    }
+
+    #[test]
+    fn agent_workbench_fake_provider_immediate_exit_sets_exited_state() {
+        let store = AgentWorkbenchSessionStore::default();
+        let adapter = RealAgentRuntimeAdapter::new_piped_for_tests(&store);
+        let provider = fake_provider_fixture(
+            "agent_fake_provider_immediate_exit",
+            AGENT_PROVIDER_CODEX,
+            b"#!/bin/sh\nexit 0\n",
+        );
+
+        start_agent_workbench_session_with_store(
+            &store,
+            &adapter,
+            true,
+            true,
+            AGENT_PROVIDER_CODEX.to_string(),
+            provider.workspace_root(),
+            Some(provider.path_var()),
+            None,
+            None,
+        )
+        .expect("start fake provider");
+        let final_state = wait_for_agent_state(&store, |state| {
+            state
+                .session
+                .as_ref()
+                .is_some_and(|session| session.status == AgentWorkbenchSessionStatus::Exited)
+        });
+        let session = final_state.session.as_ref().expect("exited session");
+
+        assert_eq!(session.status, AgentWorkbenchSessionStatus::Exited);
+        assert_eq!(session.runtime.status, AgentRuntimeStatus::Exited);
+        assert!(final_state
+            .output
+            .iter()
+            .any(|chunk| chunk.stream == AgentWorkbenchOutputStream::System
+                && chunk.text.contains("Provider process exited")));
+
+        provider.cleanup();
+    }
+
+    #[test]
+    fn agent_workbench_fake_provider_abnormal_exit_records_stderr_and_system_output() {
+        let store = AgentWorkbenchSessionStore::default();
+        let adapter = RealAgentRuntimeAdapter::new_piped_for_tests(&store);
+        let provider = fake_provider_fixture(
+            "agent_fake_provider_abnormal_exit",
+            AGENT_PROVIDER_OPENCODE,
+            b"#!/bin/sh\nprintf 'boom\\n' >&2\nexit 7\n",
+        );
+
+        start_agent_workbench_session_with_store(
+            &store,
+            &adapter,
+            true,
+            true,
+            AGENT_PROVIDER_OPENCODE.to_string(),
+            provider.workspace_root(),
+            Some(provider.path_var()),
+            None,
+            None,
+        )
+        .expect("start fake provider");
+        let final_state = wait_for_agent_state(&store, |state| {
+            let combined_output = combined_agent_output(state);
+            state
+                .session
+                .as_ref()
+                .is_some_and(|session| session.status == AgentWorkbenchSessionStatus::Exited)
+                && combined_output.contains("boom")
+        });
+        let session = final_state.session.as_ref().expect("exited session");
+        let combined_output = combined_agent_output(&final_state);
+
+        assert_eq!(session.status, AgentWorkbenchSessionStatus::Exited);
+        assert_eq!(session.runtime.status, AgentRuntimeStatus::Exited);
+        assert!(final_state
+            .output
+            .iter()
+            .any(|chunk| chunk.stream == AgentWorkbenchOutputStream::Stderr
+                && chunk.text.contains("boom")));
+        assert!(final_state
+            .output
+            .iter()
+            .any(|chunk| chunk.stream == AgentWorkbenchOutputStream::System
+                && chunk.text.contains("Provider process exited")));
+        assert!(
+            combined_output.contains("exit status: 7") || combined_output.contains("exit code")
+        );
+
+        provider.cleanup();
+    }
+
+    #[test]
+    fn agent_workbench_output_chunks_are_bounded_and_pruned_oldest_first() {
+        let store = AgentWorkbenchSessionStore::default();
+
+        for index in 0..(AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS + 3) {
+            append_agent_output(
+                &store.output,
+                &store.next_output_seq,
+                AgentWorkbenchOutputStream::Stdout,
+                format!("chunk-{index}\n"),
+            );
+        }
+
+        let output = snapshot_agent_output(&store).expect("snapshot output");
+
+        assert_eq!(output.len(), AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS);
+        assert_eq!(output.first().unwrap().text, "chunk-3\n");
+        assert_eq!(
+            output.last().unwrap().text,
+            format!("chunk-{}\n", AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS + 2)
+        );
+    }
+
+    #[test]
+    fn agent_workbench_stopped_session_rejects_input_without_changing_state() {
+        let store = AgentWorkbenchSessionStore::default();
+        let adapter = RecordingRuntimeAdapter::default();
+        let dir = unique_test_dir("agent_input_stopped");
+        fs::create_dir_all(&dir).expect("create test dir");
+        let command_path = dir.join(AGENT_PROVIDER_CODEX);
+        fs::write(&command_path, b"#!/bin/sh\n").expect("write fake provider");
+        make_executable(&command_path);
+        let path_env = env::join_paths([dir.clone()]).expect("join PATH fixture");
+
+        start_agent_workbench_session_with_store(
+            &store,
+            &adapter,
+            true,
+            true,
+            AGENT_PROVIDER_CODEX.to_string(),
+            dir.to_str().unwrap().to_string(),
+            Some(path_env.as_os_str()),
+            None,
+            None,
+        )
+        .expect("start session");
+        stop_agent_workbench_session_with_store(&store, &adapter).expect("stop session");
+        let error = write_agent_workbench_session_input_with_store(&store, "hello\n".to_string())
+            .unwrap_err();
+        let state = get_agent_workbench_session_state_with_store(&store).expect("read state");
+
+        assert!(error.contains("not active"));
+        assert_eq!(
+            state.session.as_ref().unwrap().status,
+            AgentWorkbenchSessionStatus::Stopped
+        );
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn agent_workbench_stdin_failure_keeps_session_state() {
+        let store = AgentWorkbenchSessionStore::default();
+        let dir = unique_test_dir("agent_input_failure");
+        fs::create_dir_all(&dir).expect("create test dir");
+        let command_path = dir.join(AGENT_PROVIDER_CODEX);
+        fs::write(
+            &command_path,
+            b"#!/bin/sh\nwhile :; do read line || true; done\n",
+        )
+        .expect("write fake provider");
+        make_executable(&command_path);
+        let child = Command::new(&command_path)
+            .current_dir(&dir)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+            .expect("spawn fake provider");
+        let provider_path = command_path.to_string_lossy().to_string();
+        let workspace_root = fs::canonicalize(&dir)
+            .unwrap()
+            .to_string_lossy()
+            .to_string();
+        let runtime_handle = AgentRuntimeHandle {
+            provider: AGENT_PROVIDER_CODEX.to_string(),
+            workspace_root: workspace_root.clone(),
+            provider_path: provider_path.clone(),
+            status: AgentRuntimeStatus::Running,
+        };
+
+        *store.session.lock().unwrap() = Some(AgentWorkbenchSession {
+            provider: AGENT_PROVIDER_CODEX.to_string(),
+            workspace_root,
+            provider_path,
+            created_at_ms: current_time_ms(),
+            status: AgentWorkbenchSessionStatus::Active,
+            runtime: runtime_handle,
+        });
+        *store.runtime.lock().unwrap() = Some(AgentRuntimeProcess {
+            child,
+            stdin: None,
+            pty_control: None,
+        });
+
+        let error = write_agent_workbench_session_input_with_store(&store, "hello\n".to_string())
+            .unwrap_err();
+        let state = get_agent_workbench_session_state_with_store(&store).expect("read state");
+
+        assert!(error.contains("stdin"));
+        assert_eq!(
+            state.session.as_ref().unwrap().status,
+            AgentWorkbenchSessionStatus::Active
+        );
+        assert!(state.output.is_empty());
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn agent_workbench_store_drop_stops_running_provider() {
+        let dir = unique_test_dir("agent_drop_cleanup");
+        fs::create_dir_all(&dir).expect("create test dir");
+        let command_path = dir.join(AGENT_PROVIDER_CODEX);
+        fs::write(
+            &command_path,
+            b"#!/bin/sh\nwhile :; do read line || true; done\n",
+        )
+        .expect("write fake provider");
+        make_executable(&command_path);
+        let path_env = env::join_paths([dir.clone()]).expect("join PATH fixture");
+        let pid = {
+            let store = AgentWorkbenchSessionStore::default();
+            let adapter = RealAgentRuntimeAdapter::new_piped_for_tests(&store);
+            start_agent_workbench_session_with_store(
+                &store,
+                &adapter,
+                true,
+                true,
+                AGENT_PROVIDER_CODEX.to_string(),
+                dir.to_str().unwrap().to_string(),
+                Some(path_env.as_os_str()),
+                None,
+                None,
+            )
+            .expect("start provider");
+            let process_id = store.runtime.lock().unwrap().as_ref().unwrap().child.id();
+            process_id
+        };
+
+        std::thread::sleep(Duration::from_millis(100));
+
+        assert!(!process_exists(pid));
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn agent_workbench_session_state_is_in_memory_only() {
+        let store = AgentWorkbenchSessionStore::default();
+        let dir = unique_test_dir("agent_command_memory_only");
+        fs::create_dir_all(&dir).expect("create test dir");
+        let command_path = dir.join(AGENT_PROVIDER_CODEX);
+        fs::write(&command_path, b"#!/bin/sh\n").expect("write fake provider");
+        make_executable(&command_path);
+        let path_env = env::join_paths([dir.clone()]).expect("join PATH fixture");
+        let adapter = RecordingRuntimeAdapter::default();
+
+        start_agent_workbench_session_with_store(
+            &store,
+            &adapter,
+            true,
+            true,
+            AGENT_PROVIDER_CODEX.to_string(),
+            dir.to_str().unwrap().to_string(),
+            Some(path_env.as_os_str()),
+            None,
+            None,
+        )
+        .expect("start session");
+        let fresh_store = AgentWorkbenchSessionStore::default();
+        let state = get_agent_workbench_session_state_with_store(&store).expect("read state");
+        let fresh_state =
+            get_agent_workbench_session_state_with_store(&fresh_store).expect("read fresh state");
+
+        assert!(state.session.is_some());
+        assert!(fresh_state.session.is_none());
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn agent_workbench_provider_lookup_finds_allowlisted_executable() {
+        let dir = unique_test_dir("agent_provider_lookup");
+        fs::create_dir_all(&dir).expect("create test dir");
+        let command_path = dir.join(AGENT_PROVIDER_CODEX);
+        fs::write(&command_path, b"#!/bin/sh\n").expect("write fake provider");
+        make_executable(&command_path);
+        let path_env = env::join_paths([dir.clone()]).expect("join PATH fixture");
+        let found = find_allowlisted_agent_provider_in_path_env(AGENT_PROVIDER_CODEX, &path_env)
+            .expect("find fake provider");
+
+        assert_eq!(found, command_path);
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn agent_workbench_app_search_path_adds_home_provider_bins() {
+        let dir = unique_test_dir("agent_provider_app_search_path");
+        let path_dir = dir.join("path-bin");
+        let home_dir = dir.join("home");
+        let home_bin = home_dir.join(".local/bin");
+        fs::create_dir_all(&path_dir).expect("create PATH dir");
+        fs::create_dir_all(&home_bin).expect("create home provider dir");
+
+        let path_env = env::join_paths([path_dir.clone()]).expect("join PATH fixture");
+        let search_path = build_agent_provider_search_path(
+            Some(path_env.as_os_str()),
+            Some(home_dir.as_os_str()),
+        )
+        .expect("build app search path");
+        let paths = env::split_paths(&search_path).collect::<Vec<_>>();
+
+        assert!(paths.contains(&path_dir));
+        assert!(paths.contains(&home_bin));
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn agent_workbench_provider_lookup_uses_app_search_path_home_bins() {
+        let dir = unique_test_dir("agent_provider_app_lookup");
+        let path_dir = dir.join("path-bin");
+        let home_dir = dir.join("home");
+        let home_bin = home_dir.join(".local/bin");
+        fs::create_dir_all(&path_dir).expect("create PATH dir");
+        fs::create_dir_all(&home_bin).expect("create home provider dir");
+        let command_path = home_bin.join(AGENT_PROVIDER_CODEX);
+        fs::write(&command_path, b"#!/bin/sh\n").expect("write fake provider");
+        make_executable(&command_path);
+
+        let path_env = env::join_paths([path_dir]).expect("join PATH fixture");
+        let search_path = build_agent_provider_search_path(
+            Some(path_env.as_os_str()),
+            Some(home_dir.as_os_str()),
+        )
+        .expect("build app search path");
+        let found = find_allowlisted_agent_provider_in_path_env(AGENT_PROVIDER_CODEX, &search_path)
+            .expect("find home fake provider");
+
+        assert_eq!(found, command_path);
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn agent_workbench_real_runtime_passes_app_search_path_to_provider_process() {
+        let store = AgentWorkbenchSessionStore::default();
+        let adapter = RealAgentRuntimeAdapter::new(&store);
+        let dir = unique_test_dir("agent_provider_runtime_path");
+        let path_dir = dir.join("path-bin");
+        let home_dir = dir.join("home");
+        let home_bin = home_dir.join(".local/bin");
+        fs::create_dir_all(&path_dir).expect("create PATH dir");
+        fs::create_dir_all(&home_bin).expect("create home bin");
+
+        let command_path = path_dir.join(AGENT_PROVIDER_CODEX);
+        fs::write(
+            &command_path,
+            b"#!/usr/bin/env node\nconsole.log('provider script should run through node')\n",
+        )
+        .expect("write env-node fake provider");
+        make_executable(&command_path);
+
+        let node_path = home_bin.join("node");
+        fs::write(&node_path, b"#!/bin/sh\nprintf 'node-shim:%s\\n' \"$1\"\n")
+            .expect("write fake node");
+        make_executable(&node_path);
+
+        let path_env = env::join_paths([path_dir]).expect("join PATH fixture");
+        let search_path = build_agent_provider_search_path(
+            Some(path_env.as_os_str()),
+            Some(home_dir.as_os_str()),
+        )
+        .expect("build app search path");
+
+        start_agent_workbench_session_with_store(
+            &store,
+            &adapter,
+            true,
+            true,
+            AGENT_PROVIDER_CODEX.to_string(),
+            dir.to_str().unwrap().to_string(),
+            Some(search_path.as_os_str()),
+            None,
+            None,
+        )
+        .expect("start env-node fake provider");
+        let final_state = wait_for_agent_state(&store, |state| {
+            let combined_output = combined_agent_output(state);
+            state
+                .session
+                .as_ref()
+                .is_some_and(|session| session.status == AgentWorkbenchSessionStatus::Exited)
+                && combined_output.contains("node-shim:")
+        });
+        let combined_output = combined_agent_output(&final_state);
+
+        assert!(combined_output.contains("node-shim:"));
+        assert_eq!(
+            final_state.session.as_ref().unwrap().status,
+            AgentWorkbenchSessionStatus::Exited
+        );
+
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn agent_workbench_real_runtime_pty_gives_provider_terminal_stdin() {
+        let store = AgentWorkbenchSessionStore::default();
+        let adapter = RealAgentRuntimeAdapter::new(&store);
+        let provider = fake_provider_fixture(
+            "agent_provider_pty_stdin",
+            AGENT_PROVIDER_OPENCODE,
+            b"#!/bin/sh\nif [ -t 0 ]; then printf 'stdin-is-tty\\n'; else printf 'stdin-is-not-tty\\n'; fi\nwhile IFS= read line; do\n  printf 'pty-echo:%s\\n' \"$line\"\n  [ \"$line\" = 'exit' ] && exit 0\ndone\n",
+        );
+
+        start_agent_workbench_session_with_store(
+            &store,
+            &adapter,
+            true,
+            true,
+            AGENT_PROVIDER_OPENCODE.to_string(),
+            provider.workspace_root(),
+            Some(provider.path_var()),
+            None,
+            None,
+        )
+        .expect("start pty fake provider");
+        write_agent_workbench_session_input_with_store(&store, "hello pty\nexit\n".to_string())
+            .expect("write pty provider input");
+        let final_state = wait_for_agent_state(&store, |state| {
+            let combined_output = combined_agent_output(state);
+            state
+                .session
+                .as_ref()
+                .is_some_and(|session| session.status == AgentWorkbenchSessionStatus::Exited)
+                && combined_output.contains("stdin-is-tty")
+                && combined_output.contains("pty-echo:hello pty")
+        });
+        let combined_output = combined_agent_output(&final_state);
+
+        assert!(combined_output.contains("stdin-is-tty"));
+        assert!(combined_output.contains("pty-echo:hello pty"));
+        assert_eq!(
+            final_state.session.as_ref().unwrap().status,
+            AgentWorkbenchSessionStatus::Exited
+        );
+
+        provider.cleanup();
+    }
+
+    #[test]
+    fn agent_workbench_provider_lookup_ignores_non_allowlisted_commands() {
+        let dir = unique_test_dir("agent_provider_lookup_reject");
+        fs::create_dir_all(&dir).expect("create test dir");
+        let command_path = dir.join("zsh");
+        fs::write(&command_path, b"#!/bin/sh\n").expect("write fake command");
+        make_executable(&command_path);
+        let path_env = env::join_paths([dir.clone()]).expect("join PATH fixture");
+
+        assert!(find_allowlisted_agent_provider_in_path_env("zsh", &path_env).is_none());
 
         let _ = fs::remove_dir_all(dir);
     }
@@ -1604,5 +3821,77 @@ mod tests {
             .as_nanos();
 
         std::env::temp_dir().join(format!("hazakura-note-{name}-{}-{now}", std::process::id()))
+    }
+
+    fn fake_provider_fixture(name: &str, provider: &str, script: &[u8]) -> FakeProviderFixture {
+        let dir = unique_test_dir(name);
+        fs::create_dir_all(&dir).expect("create fake provider workspace");
+        let command_path = dir.join(provider);
+        fs::write(&command_path, script).expect("write fake provider");
+        make_executable(&command_path);
+        let mut paths = vec![dir.clone()];
+        if let Some(parent_path) = env::var_os("PATH") {
+            paths.extend(env::split_paths(&parent_path));
+        }
+        let path_env = env::join_paths(paths).expect("join fake provider PATH");
+
+        FakeProviderFixture {
+            dir,
+            command_path,
+            path_env,
+        }
+    }
+
+    fn wait_for_agent_state(
+        store: &AgentWorkbenchSessionStore,
+        predicate: impl Fn(&AgentWorkbenchSessionState) -> bool,
+    ) -> AgentWorkbenchSessionState {
+        let mut state =
+            get_agent_workbench_session_state_with_store(store).expect("read agent session state");
+
+        for _ in 0..40 {
+            if predicate(&state) {
+                return state;
+            }
+
+            std::thread::sleep(Duration::from_millis(50));
+            state = get_agent_workbench_session_state_with_store(store)
+                .expect("read agent session state");
+        }
+
+        state
+    }
+
+    fn combined_agent_output(state: &AgentWorkbenchSessionState) -> String {
+        state
+            .output
+            .iter()
+            .map(|chunk| chunk.text.as_str())
+            .collect::<String>()
+    }
+
+    #[cfg(unix)]
+    fn make_executable(path: &Path) {
+        use std::os::unix::fs::PermissionsExt;
+
+        let mut permissions = fs::metadata(path)
+            .expect("read fake command metadata")
+            .permissions();
+        permissions.set_mode(0o755);
+        fs::set_permissions(path, permissions).expect("mark fake command executable");
+    }
+
+    #[cfg(not(unix))]
+    fn make_executable(_path: &Path) {}
+
+    #[cfg(unix)]
+    fn process_exists(pid: u32) -> bool {
+        Command::new("kill")
+            .arg("-0")
+            .arg(pid.to_string())
+            .stderr(Stdio::null())
+            .status()
+            .map(|status| status.success())
+            .unwrap_or(false)
     }
 }

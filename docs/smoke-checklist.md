@@ -33,6 +33,10 @@ Latest Local Bundle Launch Metadata Polish checks: 2026-05-28 build output confi
 
 Latest Local Bundle Minimum System Version checks: 2026-05-28 build output confirmed `LSMinimumSystemVersion => "11.0"`, matching the Rust executable's `minos 11.0`, and valid ad-hoc signing. No fresh built-app manual UI smoke was claimed because `open -n` still returned `kLSNoExecutableErr` in this automation session.
 
+Latest Agent Workbench Automated Stabilization checks: 2026-05-28 automated gates passed with fake allowlist providers. No real `codex` / `opencode` manual smoke was claimed.
+
+Latest Agent Workbench xterm Terminal Surface checks: 2026-05-28 automated gates passed after replacing the simple log/input surface with an xterm-based provider terminal, compacting the Agent pane header, and passing xterm rows/columns to the backend PTY. Real `codex` / `opencode` behavior remains trusted-workspace manual smoke.
+
 ## Build First
 
 ```bash
@@ -123,6 +127,76 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 5. Confirm File > Recent Files can reopen a recently opened file.
 6. Toggle View > Preview, View > Wrap Lines, and View > Show Invisibles and confirm each setting changes the editor or preview.
 7. Open View > Preferences and confirm Font size, Tab size, Theme, Preview, Wrap, and Invisibles persist after restart.
+
+## Agent Workbench Trusted Workspace Manual Smoke
+
+Use this only in a trusted throwaway workspace. Do not use a repository with important uncommitted work. This smoke confirms hazakura-side launch, input, output, stop, and external-change observation; it does not approve or validate real provider-internal behavior.
+
+Setup:
+
+1. Build the app first.
+2. Create a trusted throwaway workspace outside this repo, with one small Markdown file.
+3. Choose one provider to smoke: `codex` or `opencode`.
+4. If the selected provider is not installed or not found by the app search path, record the result as provider-not-found and stop there.
+
+Safe Editor default:
+
+1. Launch hazakura-note normally.
+2. Confirm Safe Editor Mode is active.
+3. Confirm the Agent Workbench pane is not visible before enabling Agent Workbench.
+
+Mode gate:
+
+1. Open View > Preferences.
+2. Turn Agent Workbench on.
+3. Confirm the UI says restart is required before Agent UI or backend launch commands change.
+4. Quit and relaunch the app.
+5. Reopen Preferences and confirm Agent Workbench mode is active for this app session.
+6. Select the provider.
+7. Read the responsibility-boundary list and acknowledge consent.
+
+Launch and session:
+
+1. Open the trusted throwaway workspace folder.
+2. Switch the right pane to Agent.
+3. Confirm the pane shows compact provider/session status and gives most of the right pane height to the xterm terminal surface.
+4. Click Start session.
+5. If the provider is missing, confirm the UI reports provider not found and no session starts.
+6. If the provider is found, confirm one session starts, runtime status becomes active/running, and terminal output mentions the provider start.
+7. While the session is active, confirm provider selection is disabled.
+8. Type only harmless, user-chosen input into the terminal surface. Do not approve provider-internal command execution or file edits unless intentionally testing in the throwaway workspace.
+9. Confirm the provider receives input and terminal control output is rendered by the terminal surface instead of appearing as raw escape text.
+10. Resize the right pane if practical and confirm the provider terminal remains usable.
+11. Click Stop session.
+12. Confirm session/runtime status becomes stopped or exited and terminal output records the stop or exit.
+13. Confirm terminal input no longer reaches the provider after stop.
+
+External-change path, optional:
+
+1. Only inside the throwaway workspace, intentionally allow the provider to edit the small Markdown file.
+2. Return to the file in hazakura-note.
+3. Confirm the existing external-change/conflict handling path observes the on-disk change before overwriting it.
+4. Decide manually whether to keep, reload, discard, or inspect the provider-made change outside hazakura-note.
+
+Close cleanup:
+
+1. Start a provider session in the throwaway workspace.
+2. Quit hazakura-note without using Stop first.
+3. Confirm no session is restored on relaunch.
+4. If practical, confirm the provider process did not remain running.
+
+Record:
+
+- Date:
+- App build path:
+- Workspace path:
+- Provider:
+- Provider found: yes/no
+- Start result:
+- Input result:
+- Stop/quit cleanup result:
+- Optional external-change result:
+- Notes or follow-up:
 
 ## Workspace Tree And Tabs
 
