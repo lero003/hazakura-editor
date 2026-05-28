@@ -14,6 +14,7 @@ The current public line is:
 - `v0.1.0`: source-only developer preview
 - `v0.1.0-warning-expected-dmg-preview`: separate warning-expected DMG preview lane
 - `v0.2.0-pre.0`: pre0.2 warning-expected DMG preview with normal-mode and Agent Workbench screenshots in README
+- `v0.2.0-pre.1`: pre0.2 warning-expected DMG preview with Finder/app-icon text document open support
 
 The old `v0.1` / `v0.3.x` phase map is archived in `docs/roadmap-v0.1-archived.md`.
 
@@ -37,7 +38,7 @@ Optional Agent Workbench Mode is a separate trust boundary. It may host one allo
 
 Goal: make pre0.2 honest, testable on another Mac, and easy to understand from the README and GitHub Release while keeping Safe Editor Mode visually and conceptually primary.
 
-Status: In progress through `v0.2.0-pre.0`.
+Status: In progress through `v0.2.0-pre.1`.
 
 Completion criteria:
 

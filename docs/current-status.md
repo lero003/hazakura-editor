@@ -156,6 +156,26 @@ pre0.2 warning-expected DMG preview on 2026-05-29:
 - Remote verification downloaded the published GitHub Release assets, confirmed `shasum -c` passed, `hdiutil verify` passed, and the mounted app reported version `0.2.0-pre.0` / bundle identifier `lab.hazakura.note` with `codesign --verify --deep --strict --verbose=2` passing.
 - The release assets are only the DMG and `.sha256`; normal-mode and Agent-mode screenshots are stored in the repository README image paths instead of as release assets.
 
+pre0.2 follow-up warning-expected DMG preview on 2026-05-29:
+
+- Version surfaces were aligned to `0.2.0-pre.1` in `package.json`, `package-lock.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`, and `src-tauri/Cargo.lock`.
+- GitHub prerelease target: `https://github.com/lero003/hazakura-note/releases/tag/v0.2.0-pre.1`.
+- Public release tag `v0.2.0-pre.1` is the fresh tag for this follow-up release; older public tags were left immutable.
+- Built DMG asset: `hazakura-note_0.2.0-pre.1_aarch64-warning-expected.dmg`.
+- SHA-256: `812431095aa0a1d8449f1ff06efbe82aab10efdaaf5a0264f0cfc55410fbfce7`.
+- This follow-up adds Finder/app-icon document-open support for common UTF-8 text files, including `.json`, using the same Rust text-open validation as File > Open.
+- `npm run build:vite` passed with the existing Vite chunk-size warning.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.
+- `cargo test --manifest-path src-tauri/Cargo.toml` passed with 70 Rust tests.
+- `npm audit --audit-level=high` passed with 0 vulnerabilities.
+- `cargo audit --file src-tauri/Cargo.lock` completed with the known Tauri/wry transitive warnings for GTK3/gtk-rs, `glib`, `proc-macro-error`, and `unic-*`; no new high or critical macOS release blocker was identified for this warning-expected preview.
+- `npm run build:dmg-preview` passed, including app build, ad-hoc signing, `hdiutil verify`, and basename checksum generation.
+- `cd src-tauri/target/release/bundle/dmg && shasum -c hazakura-note_0.2.0-pre.1_aarch64-warning-expected.dmg.sha256` passed.
+- The DMG mounted read-only; the contained `hazakura-note.app` reported `CFBundleShortVersionString` `0.2.0-pre.1`, bundle identifier `lab.hazakura.note`, and passed `codesign --verify --deep --strict --verbose=2`.
+- A `.json` file opened through the mounted app with macOS open-file handling landed in a normal clean editor tab, and the app was quit after the smoke with no `hazakura-note` process left running.
+- `spctl -a -vv -t open` rejected the app with `source=Insufficient Context`, which is expected for this ad-hoc signed, not-notarized preview lane.
+- Remote verification status: pending publication.
+
 Agent Workbench Trusted Provider Smoke Readiness on 2026-05-29:
 
 - `docs/smoke-checklist.md` now reflects the compact xterm Agent pane and includes separate codex/opencode result fields for trusted-workspace manual smoke.

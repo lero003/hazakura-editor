@@ -154,10 +154,10 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current intended preview version is `0.2.0-pre.0` across npm, Tauri, and Cargo metadata.
+- Current intended preview version is `0.2.0-pre.1` across npm, Tauri, and Cargo metadata.
 - Source users build locally with `npm ci` and `npm run build`.
 - The generated local `.app` declares macOS 11.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. It is not Developer ID signed or notarized.
-- The pre0.2 warning-expected DMG preview notes are prepared in [0.2.0-pre.0 Warning-expected DMG Preview](docs/releases/0.2.0-pre.0-warning-expected-dmg-preview.release.md).
+- The pre0.2 warning-expected DMG preview notes are prepared in [0.2.0-pre.1 Warning-expected DMG Preview](docs/releases/0.2.0-pre.1-warning-expected-dmg-preview.release.md).
 - Tag creation, push, and GitHub Release publication require explicit user approval.
 
 ## Known Limits
