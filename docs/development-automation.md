@@ -34,7 +34,8 @@ Do not decide verified no-op from documentation review alone when app inspection
 3. Treat existing uncommitted changes as user or previous-run work. Do not revert them. If they are relevant, inspect and close them before starting new work.
 4. Use Hazakura Habitat before substantial implementation, dependency or lockfile work, automation changes, Git/GitHub mutations, release work, or command-selection uncertainty.
 5. Inspect the actual app surface when practical, using a built-app smoke or Vite/browser smoke that matches the slice. For no-op runs, prefer at least a quick Safe Editor startup or focused UI surface check.
-6. Keep the slice small enough to verify in the same run, ideally within 30 minutes.
+6. If a smoke opens the built app, quit `hazakura-note` before final reporting. Do not leave a provider session or app process running after an automation pass.
+7. Keep the slice small enough to verify in the same run, ideally within 30 minutes.
 
 ## Selection Order
 
@@ -122,6 +123,8 @@ git diff --check
 
 For UI behavior changes, also update or exercise `docs/smoke-checklist.md`. Use the built app when practical, and do not claim manual smoke passed unless it was actually exercised.
 
+If built-app smoke launches `src-tauri/target/release/bundle/macos/hazakura-note.app`, quit the app before reporting. If Agent Workbench was running, stop the provider session or quit the app and confirm cleanup when practical.
+
 For source-release prep, use `docs/source-release-checklist.md`. Do not claim release readiness until its P0 gates, dependency checks, and latest-HEAD built-app smoke evidence are recorded.
 
 For DMG preview prep, use `docs/dmg-preview-checklist.md`. Do not attach a DMG to a release unless the user explicitly approves changing the release lane from source-only to DMG preview.
@@ -165,7 +168,7 @@ Keep Agent Workbench limited to explicit mode gate, restart boundary, responsibi
 
 For substantial implementation, automation changes, Git/GitHub mutation, release work, or command-selection uncertainty, run Hazakura Habitat first and read agent_context.md before continuing. Consult command_policy.md before risky or mutating commands.
 
-Choose exactly one coherent slice that can fit the 30-minute cadence. Prefer one narrow built-app smoke section from docs/smoke-checklist.md, fix only the smallest actionable quality issue found, update the relevant docs, and verify it. Do not decide verified no-op from documentation review alone when app inspection is practical; before no-op, inspect the current app surface through built-app smoke or Vite/browser smoke, or state why app inspection was skipped. Do not add test code merely to create activity across repeated runs. Add or change tests only for reproduced bugs, backend/safety contracts, Agent lifecycle/gate/output/input/stop/exit/external-change behavior, or high-value fake-provider coverage. Prefer docs or manual smoke notes for UI wording, menu placement, visual density, and verified no-op slices.
+Choose exactly one coherent slice that can fit the 30-minute cadence. Prefer one narrow built-app smoke section from docs/smoke-checklist.md, fix only the smallest actionable quality issue found, update the relevant docs, and verify it. Do not decide verified no-op from documentation review alone when app inspection is practical; before no-op, inspect the current app surface through built-app smoke or Vite/browser smoke, or state why app inspection was skipped. If built-app smoke opens hazakura-note, quit the app before final reporting and do not leave Agent provider sessions running. Do not add test code merely to create activity across repeated runs. Add or change tests only for reproduced bugs, backend/safety contracts, Agent lifecycle/gate/output/input/stop/exit/external-change behavior, or high-value fake-provider coverage. Prefer docs or manual smoke notes for UI wording, menu placement, visual density, and verified no-op slices.
 
 For code changes run npm run build:vite, cargo fmt --manifest-path src-tauri/Cargo.toml -- --check, cargo test --manifest-path src-tauri/Cargo.toml, npm run build, and git diff --check. For docs-only changes run git diff --check. For UI behavior changes, update or exercise docs/smoke-checklist.md and do not claim manual smoke passed unless it was actually exercised. For source-release prep, follow docs/source-release-checklist.md and do not tag or publish without explicit user approval. For DMG preview prep, follow docs/dmg-preview-checklist.md and keep it separate from source-only release approval.
 

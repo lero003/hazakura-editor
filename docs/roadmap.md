@@ -33,9 +33,9 @@ Default Safe Editor Mode must keep these boundaries:
 
 Optional Agent Workbench Mode is a separate trust boundary. It may host one allowlisted local CLI provider session in a selected workspace, but it must remain explicit, consent-gated, and scoped by `docs/agent-workbench-boundary.md`.
 
-## 0.2: Preview Release Stabilization
+## 0.2: Safe Editor Preview Stabilization
 
-Goal: make pre0.2 honest, testable on another Mac, and easy to understand from the README and GitHub Release.
+Goal: make pre0.2 honest, testable on another Mac, and easy to understand from the README and GitHub Release while keeping Safe Editor Mode visually and conceptually primary.
 
 Status: In progress through `v0.2.0-pre.0`.
 
@@ -51,9 +51,9 @@ Completion criteria:
 
 Do not use 0.2 to add broad new features.
 
-## 0.3: Agent Workbench Quality
+## 0.3: Agent Workbench Reliability / Trust Boundary Hardening
 
-Goal: make the existing Agent Workbench preview understandable, bounded, and comfortable enough for trusted-workspace testing.
+Goal: add no broad Agent capability; prove the current boundary is understandable, reversible, and smoke-tested.
 
 Priority work:
 
@@ -63,6 +63,27 @@ Priority work:
 - Evaluate a 30-minute session smoke for output buffer, responsiveness, and memory comfort.
 - Add low-risk context helpers already allowed by the boundary document, such as Copy open tab paths, Copy workspace root, and Copy prompt template.
 - Keep provider-made file edits flowing through the existing external-change and conflict paths.
+
+Acceptance:
+
+- Safe Editor Mode starts with no Agent pane, launcher, or PTY backend available.
+- Backend launch rejects while Agent Workbench mode is off.
+- Restart-required enablement and disablement are manually verified.
+- Provider-not-found, missing-workspace, disabled-mode, and consent-gate paths are verified.
+- At least one real-provider smoke is recorded in a trusted throwaway workspace.
+- Start, input, resize, stop, provider exit, and app-close cleanup are smoke-tested.
+- Provider-made file changes surface only as ordinary external on-disk changes.
+
+This phase must not pass if:
+
+- Safe Editor Mode can spawn any process.
+- Hidden UI is the only protection and backend rejection is missing.
+- Provider selection can be influenced into arbitrary command execution.
+- Arbitrary path input appears.
+- A second Agent session can start.
+- A provider process survives app close.
+- Provider-made file changes bypass external-change or conflict handling.
+- Release notes imply Agent Workbench is equivalent to Safe Editor Mode.
 
 Do not add:
 
@@ -74,7 +95,7 @@ Do not add:
 - auto-commit
 - Git integration
 
-## 0.4: Safe Editor Review And Diff
+## 0.4: Safe Editor Non-Git Diff And Review
 
 Goal: improve review confidence without turning the app into a Git client or IDE.
 
@@ -82,11 +103,12 @@ Candidate work:
 
 - simple file-to-file diff
 - diff from disk versus current editor text
+- compare restart draft or recovery candidates before restoring
 - save-conflict review before choosing Reopen / Close without saving / Keep editing
 - Markdown-focused review aids that do not execute project code
 - search, recovery, and draft-restore polish found during 0.2 / 0.3 smoke
 
-This phase should prefer review and comparison over formatting automation.
+This phase should prefer review and comparison over formatting automation. Diff must compare explicit text inputs or files; it must not become Git status, Git history, staging, commit, or project-wide analysis.
 
 ## 0.5: Release And Maintenance Quality
 
@@ -100,6 +122,7 @@ Candidate work:
 - release checklist tightening for source-only and warning-expected DMG lanes
 - clearer dependency-audit triage for Tauri/wry transitive warnings
 - README and release-note polish based on external tester feedback
+- evaluate whether a Safe Editor-only build variant would make review and distribution easier
 
 Notarization remains a separate future decision. Do not imply production distribution quality until Developer ID signing, hardened runtime review, notarization, stapling, Gatekeeper verification, and installation guidance are actually implemented.
 

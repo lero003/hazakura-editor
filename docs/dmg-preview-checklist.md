@@ -1,11 +1,11 @@
 # DMG Preview Checklist
 
-Status: Planned
-Scope: Future warning-expected DMG preview distribution
+Status: Operational
+Scope: Warning-expected DMG preview distribution
 Authority: Medium
-Last reviewed: 2026-05-28
+Last reviewed: 2026-05-29
 
-This checklist is for a warning-expected binary DMG preview lane only. It does not change the current `0.1.0 source-only developer preview` boundary.
+This checklist is for a warning-expected binary DMG preview lane only. It was used for the `v0.2.0-pre.0` warning-expected DMG preview and remains the current boundary for similar preview releases.
 
 Do not attach the DMG to the source-only GitHub Release. Do not create tags, push commits, publish a GitHub Release, or attach assets without explicit approval.
 
@@ -45,7 +45,8 @@ npm run build:vite
 cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
 cargo test --manifest-path src-tauri/Cargo.toml
 npm run build:dmg-preview
-shasum -c src-tauri/target/release/bundle/dmg/hazakura-note_0.1.0_aarch64-warning-expected.dmg.sha256
+cd src-tauri/target/release/bundle/dmg
+shasum -c hazakura-note_<version>_aarch64-warning-expected.dmg.sha256
 ```
 
 `npm run build:dmg-preview` deliberately uses `hdiutil create` with a plain app-plus-Applications-link layout. Do not use `npm run build -- --bundles app,dmg` for this lane unless the Finder/AppleScript layout path is separately re-verified in the current environment.
