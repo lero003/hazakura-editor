@@ -57,29 +57,26 @@ Last reviewed: 2026-05-28
 - Discard All from the app/window close dialog clears matching unsaved recovery drafts so intentionally discarded edits are not offered after restart
 - Long file names are clipped or wrapped in tabs, the file tree, status/error rows, and close dialogs so core controls stay reachable
 
-## Canonical Docs
+## Project Docs
 
 - [Product Brief](docs/product-brief.md): 何を作るか、何を作らないか
 - [MVP Scope](docs/mvp-scope.md): 最初に実装する範囲と受け入れ基準
 - [Security Boundary](docs/security-boundary.md): 安全性のために守る制約
 - [Roadmap](docs/roadmap.md): 段階的な開発順序
-- [Development Prep](docs/development-prep.md): 開発開始前の準備と最初の一手
-- [Development Automation](docs/development-automation.md): 自動改善ループの優先順位と検証ルール
-- [Current Status](docs/current-status.md): 現在動く範囲、確認結果、次の一手
-- [Next Goals](docs/next-goals.md): 次フェーズのgoal指示文
-- [Smoke Checklist](docs/smoke-checklist.md): 手動スモーク確認手順
 - [Source Release Checklist](docs/source-release-checklist.md): source-only developer previewの準備境界
+- [DMG Preview Checklist](docs/dmg-preview-checklist.md): 将来のDMG配布previewの準備境界
 
 ## Run
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
 Build a local macOS app bundle:
 
 ```bash
+npm ci
 npm run build
 ```
 
@@ -89,22 +86,38 @@ The built app is generated at:
 src-tauri/target/release/bundle/macos/hazakura-note.app
 ```
 
-Quality gates used for local release-readiness checks:
+Build a warning-expected local DMG preview only after that release lane is explicitly approved:
 
 ```bash
+npm ci
+npm run build:dmg-preview
+```
+
+The DMG preview is ad-hoc signed only and is not Developer ID signed or notarized.
+
+Release-readiness gates for the source preview:
+
+```bash
+npm ci
 npm run build:vite
 cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
 cargo test --manifest-path src-tauri/Cargo.toml
 npm run build
 git diff --check
+npm audit
+cargo audit
 ```
+
+Use `npm ci` when evaluating the source preview from the committed lockfile. Use `npm install` only during active dependency updates that intentionally change `package-lock.json`.
+
+`npm outdated` and `cargo update --manifest-path src-tauri/Cargo.toml --dry-run` are release-review checks, not automatic update requirements.
 
 Source-only developer preview boundary:
 
 - Current intended source version is `0.1.0` across npm, Tauri, and Cargo metadata.
-- Source users build locally with `npm install` and `npm run build`.
+- Source users build locally with `npm ci` and `npm run build`.
 - The generated local `.app` declares macOS 11.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. It is not Developer ID signed or notarized.
-- Manual smoke evidence is tracked in [Current Status](docs/current-status.md) and reusable steps live in [Smoke Checklist](docs/smoke-checklist.md).
+- Source release notes are prepared in [0.1.0 Source-only Developer Preview](docs/releases/0.1.0.md).
 - Tag creation, push, and GitHub Release publication require explicit user approval.
 
 ## Known Limits

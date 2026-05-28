@@ -124,6 +124,17 @@ npm run build
 git diff --check
 ```
 
+Pre-release stabilization review intake on 2026-05-28:
+
+- The accepted release boundary is `0.1.0 source-only developer preview`.
+- Binary distribution, Developer ID signing, notarization, installer packaging, and auto-update remain out of scope.
+- README build guidance now treats `npm ci` as the source-preview path; `npm install` is reserved for intentional dependency updates.
+- `docs/source-release-checklist.md` now requires dependency audit checks and latest-HEAD built-app smoke evidence before tag approval.
+- `docs/releases/0.1.0.md` is the release-note draft for GitHub Release copy.
+- `docs/dmg-preview-checklist.md` records DMG distribution as a future, separate preview lane from the source-only release.
+- Docs-only intake verification: `git diff --check` passed.
+- No new latest-HEAD built-app smoke is claimed by this intake itself.
+
 Source Release Readiness smoke on 2026-05-27:
 
 - `npm run build:vite` passed.
@@ -313,6 +324,39 @@ Workspace Image Close Return Polish checks on 2026-05-28:
 - `docs/smoke-checklist.md` now asks the image-preview smoke to confirm Cmd+W returns to the prior text tab.
 - Automated local gates passed after this change. `open -n src-tauri/target/release/bundle/macos/hazakura-note.app` still returned `kLSNoExecutableErr` in this automation session, so no fresh built-app manual smoke was claimed.
 
+Warning-expected DMG preview local check on 2026-05-28:
+
+- Lane: binary DMG preview only; this does not change the source-only developer preview release boundary.
+- This was a local preview artifact check only. No tag, push, GitHub Release publication, or DMG attachment was performed.
+- `npm ci`, `npm run build:vite`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build`, `npm run build:dmg-preview`, `npm audit`, `cargo audit`, and `git diff --check` passed or completed with triaged warnings.
+- `cargo audit` completed with 17 warnings and no pasted vulnerability findings. The warnings are transitive Tauri/wry dependency advisories: unmaintained GTK3/gtk-rs Linux stack crates, `proc-macro-error`, `unic-*` crates through `tauri-utils` / `urlpattern`, and one `glib` unsoundness warning through the Linux GTK/WebKit dependency path. These are not treated as a macOS warning-expected DMG preview blocker, but should remain visible for Linux support and future Tauri dependency update review.
+- `npm run build -- --bundles app,dmg` confirmed Tauri can reach the app bundle step, but the Tauri DMG bundler stalled in Finder/`osascript` layout handling and was stopped before publication. The warning-expected lane now uses `scripts/build-warning-dmg-preview.sh` to avoid that Finder layout dependency.
+- A plain local preview DMG was generated from the freshly built app with `npm run build:dmg-preview`: `src-tauri/target/release/bundle/dmg/hazakura-note_0.1.0_aarch64-warning-expected.dmg`.
+- DMG SHA-256: `68d45b3699e4f3f3c529448bdbdbe6e24bb541586be4e3cbbf2a74d4104a716a`.
+- Checksum file: `src-tauri/target/release/bundle/dmg/hazakura-note_0.1.0_aarch64-warning-expected.dmg.sha256`; `shasum -c` passed.
+- `hdiutil verify src-tauri/target/release/bundle/dmg/hazakura-note_0.1.0_aarch64-warning-expected.dmg` passed.
+- The DMG mounted read-only, contained `hazakura-note.app` and an `Applications` symlink, launched from the mounted volume, showed one window, exposed native File and View menus, and kept File > Save disabled in the no-file state.
+- `codesign --verify --deep --strict --verbose=2 src-tauri/target/release/bundle/macos/hazakura-note.app` passed.
+- `codesign -dv --verbose=4` reported `Signature=adhoc` and `TeamIdentifier=not set`; `spctl --assess --type execute -vv` rejected the app, which matches the warning-expected, not-notarized preview boundary.
+- App version was confirmed from the built bundle as `CFBundleShortVersionString => "0.1.0"` and `CFBundleVersion => "0.1.0"`.
+- Release notes update proposal: `docs/releases/0.1.0-warning-expected-dmg-preview.md`.
+- `scripts/build-warning-dmg-preview.sh` normalizes Apple Silicon artifact naming to `aarch64` so the generated preview filename matches the release-note convention.
+- DeepSeek review feedback was incorporated by switching app bundle staging from `cp -R` to `cp -a` and making the next action explicitly require binary publication approval before DMG attachment.
+- Chika review feedback was incorporated by adding macOS and required-command guards to the DMG preview script, clarifying the aarch64-only artifact identity, and tightening the release-note warning that this is not the source-only release.
+
+Source-only 0.1.0 release gate on 2026-05-28:
+
+- User approved proceeding with the source-only release lane first.
+- Version alignment confirmed at `0.1.0` in `package.json`, `src-tauri/tauri.conf.json`, and `src-tauri/Cargo.toml`.
+- No local `v0.1.0` tag or GitHub Release existed before publication work started.
+- `npm ci`, `npm run build:vite`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build`, `npm audit`, and `git diff --check` passed.
+- `npm run build` regenerated `src-tauri/target/release/bundle/macos/hazakura-note.app`; notarization was skipped because no Apple notarization credentials were configured, which matches the source-only boundary.
+- `codesign --verify --deep --strict --verbose=2 src-tauri/target/release/bundle/macos/hazakura-note.app` passed.
+- Built bundle metadata confirmed `CFBundleIdentifier => "lab.hazakura.note"`, `CFBundleShortVersionString => "0.1.0"`, `CFBundleVersion => "0.1.0"`, and `LSMinimumSystemVersion => "11.0"`.
+- `cargo audit` completed with 17 allowed warnings from transitive Tauri/wry dependencies. These remain dependency-update review items and are not treated as source-only release blockers.
+- Source release notes are in `docs/releases/0.1.0.md`.
+- No DMG asset is approved for this source-only release.
+
 Known verification note:
 
 - Vite reports a production chunk-size warning because CodeMirror and preview libraries are bundled together. This is acceptable for the prototype; revisit before distribution readiness.
@@ -338,12 +382,13 @@ Known verification note:
 
 ## Next Actions
 
-1. Run recurring automation from `docs/development-automation.md` in the Source Preview Quality Polish lane.
-2. Start each automation run from one narrow built-app smoke section in `docs/smoke-checklist.md`, then fix only the smallest actionable issue found.
+1. For release work, run the P0 gates in `docs/source-release-checklist.md`, including dependency audits and latest-HEAD built-app smoke evidence, before asking for tag approval.
+2. For recurring automation, use `docs/development-automation.md` and start from one narrow built-app smoke section when practical.
 3. Re-smoke long file name / constrained-width layout before binary distribution readiness.
-4. Use `docs/source-release-checklist.md` as the source-only release boundary and do not tag or publish without explicit approval.
-5. Add focused UI/E2E coverage for draft restore and external-change focus recheck before treating them as distribution-grade behavior.
-6. Keep signing, notarization, and installer packaging separate from source-release and workspace hardening.
+4. If publishing the warning-expected DMG preview, get explicit approval for binary asset publication and use `docs/releases/0.1.0-warning-expected-dmg-preview.md` as the release-note addendum.
+5. Add minimal CI and Dependabot as P1 release hardening when a small verified slice is available.
+6. Add focused UI/E2E coverage for draft restore and external-change focus recheck before treating them as distribution-grade behavior.
+7. Keep signing, notarization, and installer packaging separate from source-release and workspace hardening.
 
 ## Avoid
 

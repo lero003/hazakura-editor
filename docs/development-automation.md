@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Recurring automation guidance for quality hardening
 Authority: High
-Last reviewed: 2026-05-27
+Last reviewed: 2026-05-28
 
 ## Purpose
 
@@ -60,10 +60,14 @@ Choose the first useful slice that is both small and verifiable.
    - checkbox or link helpers
    - preview scroll behavior
 6. Local release readiness:
+   - source-only release P0 gates from `docs/source-release-checklist.md`
+   - dependency audit review with `npm audit` and `cargo audit`
+   - latest-HEAD built-app smoke evidence before tag approval
+   - warning-expected DMG preview planning from `docs/dmg-preview-checklist.md`, only if the user explicitly changes the release lane from source-only to DMG preview
    - GitHub Actions for existing quality gates
+   - Dependabot for npm, cargo, and GitHub Actions without auto-merge
    - app version/about metadata
-   - source-only release readiness from `docs/source-release-checklist.md`
-   - release candidate checklist and source release notes
+   - source release notes in `docs/releases/0.1.0.md`
    - packaging docs, without signing or notarization claims
 7. Verified no-op:
    - If no small useful slice is safe, run the relevant checks, update docs only if facts changed, and report no-op clearly.
@@ -104,6 +108,10 @@ git diff --check
 
 For UI behavior changes, also update or exercise `docs/smoke-checklist.md`. Use the built app when practical, and do not claim manual smoke passed unless it was actually exercised.
 
+For source-release prep, use `docs/source-release-checklist.md`. Do not claim release readiness until its P0 gates, dependency checks, and latest-HEAD built-app smoke evidence are recorded.
+
+For DMG preview prep, use `docs/dmg-preview-checklist.md`. Do not attach a DMG to a release unless the user explicitly approves changing the release lane from source-only to DMG preview.
+
 ## Documentation Duties
 
 Update only the docs that changed truth:
@@ -137,7 +145,7 @@ Advance hazakura-note by one small, verifiable quality-hardening slice.
 
 Start by reading AGENTS.md, README.md, docs/current-status.md, docs/roadmap.md, docs/smoke-checklist.md, docs/development-automation.md, and checking git status --short --branch. Treat existing uncommitted changes as user or previous-run work and do not revert them.
 
-Use docs/development-automation.md as the source of truth. The current lane is Source Preview Quality Polish, with quality hardening as the priority. Prefer built-app smoke first, especially around file safety, close/quit behavior, workspace image preview, scroll sync, resizable panes, editor reliability, workspace scalability, Markdown writing comfort, local release readiness, and verified no-op if no useful small slice is safe.
+Use docs/development-automation.md as the source of truth. The current lane is Source Preview Quality Polish, with quality hardening as the priority. Prefer built-app smoke first, especially around file safety, close/quit behavior, workspace image preview, scroll sync, resizable panes, editor reliability, workspace scalability, Markdown writing comfort, local release readiness, and verified no-op if no useful small slice is safe. For source-release prep, follow docs/source-release-checklist.md and do not tag or publish without explicit user approval. For DMG preview prep, follow docs/dmg-preview-checklist.md and keep it separate from source-only release approval.
 
 Do not implement Git integration, LSP, terminal, AI assistance, arbitrary command execution, plugin systems, project-wide analysis/indexing, signing/notarization completion, merge editor, advanced Git diff, or dependency/lockfile changes without explicit user approval.
 

@@ -14,7 +14,7 @@ Last reviewed: 2026-05-28
 3. Workspace Basics: タブ、ファイルツリー、テーマ切り替えで複数ファイルを扱えるようにする
 4. Workspace Polish / Quality Hardening: 復元、検索、衝突回復、UI崩れ、テスト、ドキュメントを固める
 5. Source Release Readiness: source-only developer previewとして出せる説明、品質ゲート、手動smoke証跡を揃える
-6. Distribution Readiness: パッケージング、署名、E2E、README、既知制限、リリース手順を整える
+6. Distribution Readiness: DMG preview、パッケージング、署名、E2E、README、既知制限、リリース手順を整える
 
 各段階で「次へ進む条件」を明確にし、前段の未確認リスクを抱えたまま機能を広げない。
 
@@ -109,6 +109,8 @@ Status: Evidence gathered on 2026-05-27; tag approval pending
 - 既存のlocal quality gatesはこのフェーズで実行済み
 
 このフェーズでは、Apple Developer ID署名、notarization、installer、自動更新、binary asset publicationは扱わない。tag作成、push、GitHub Release公開は、ユーザーの明示承認がある場合だけ行う。
+
+DMG配布を行う場合は、source-only developer previewとは別レーンとして扱う。警告前提のad-hoc DMG previewは `docs/dmg-preview-checklist.md` の最小ゲートを通してから検討し、Developer ID署名やnotarizationはさらに別のdistribution readiness作業として扱う。
 
 ## v0.3.3: Text Editor Usability Pack
 
@@ -205,6 +207,7 @@ Before starting broad Markdown helpers, let the recurring automation close small
 
 ## Later
 
+- Warning-expected DMG preview as a separate release lane from source-only distribution
 - 見出し単位のMarkdown diff
 - frontmatter差分表示
 - 段落単位diff
