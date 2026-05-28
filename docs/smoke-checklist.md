@@ -23,6 +23,8 @@ Latest Editor Keyboard Editing Polish checks: 2026-05-28 with Vite browser smoke
 
 Latest Find Close Polish checks: 2026-05-28 automated gates passed after making the Find close button clear the query and highlights like Escape. No fresh built-app manual smoke was claimed.
 
+Latest Local Bundle Launch Metadata Polish checks: 2026-05-28 build output confirmed `LSRequiresCarbon => false`, `CFBundleExecutable => "hazakura-note"`, and valid ad-hoc signing. No fresh built-app manual UI smoke was claimed because `open -n` still returned `kLSNoExecutableErr` in this automation session.
+
 ## Build First
 
 ```bash

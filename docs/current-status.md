@@ -110,7 +110,7 @@ Last reviewed: 2026-05-28
 - 10 MB prototype editing limit
 - Atomic save helper with temporary-file cleanup after failed replace attempts and existing-temp-file overwrite protection
 - Minimal app icon for Tauri build requirements
-- Local macOS `.app` bundle icon resource and ad-hoc signing for build-output validation
+- Local macOS `.app` bundle icon resource, explicit non-Carbon launch metadata, and ad-hoc signing for build-output validation
 
 ## Verification
 
@@ -158,6 +158,14 @@ Local Bundle Signature Polish checks on 2026-05-28:
 - `codesign --verify --deep --strict --verbose=2 src-tauri/target/release/bundle/macos/hazakura-note.app` passed.
 - No Developer ID signing or notarization was added.
 - Later built-app smoke on 2026-05-28 successfully inspected native menus through System Events, so the earlier menu-inspection blocker is no longer current.
+
+Local Bundle Launch Metadata Polish checks on 2026-05-28:
+
+- `src-tauri/Info.plist` now explicitly overrides the generated bundle metadata to set `LSRequiresCarbon` to `false`.
+- `npm run build` passed and regenerated the local macOS `.app` bundle.
+- `plutil -p src-tauri/target/release/bundle/macos/hazakura-note.app/Contents/Info.plist` confirmed `LSRequiresCarbon => false` while preserving `CFBundleExecutable => "hazakura-note"`.
+- `codesign --verify --deep --strict --verbose=2 src-tauri/target/release/bundle/macos/hazakura-note.app` passed.
+- This automation session still could not complete an `open -n` launch smoke; Launch Services returned `kLSNoExecutableErr`, so no fresh manual built-app UI smoke is claimed for this slice.
 
 Runtime smoke:
 
@@ -294,7 +302,7 @@ Known verification note:
 - The UI Brush-up Search Overlay checks used Vite browser smoke only; repeat active-file search in the built app before treating this path as distribution-grade.
 - The Find Close Polish did not include a fresh built-app manual active-file search pass; use the updated close-button check before treating this path as distribution-grade.
 - The Workspace Image Preview / Quality Automation and content-validation checks did not include a fresh built-app image-selection smoke pass; use the updated workspace image checklist before treating this path as distribution-grade.
-- The Local Bundle Signature Polish made the generated bundle pass `codesign --verify` and `open -n` returned success, but the current sandboxed automation session could not inspect the running app menus; repeat built-app launch and native File menu smoke outside the sandbox before treating this path as distribution-grade.
+- The Local Bundle Launch Metadata Polish verified generated bundle metadata and ad-hoc signing, but the current automation session could not complete `open -n`; repeat built-app launch and native File menu smoke outside this automation environment before treating this path as distribution-grade.
 - Long file name clipping was re-smoked in the workspace tree during Source Preview Quality Polish. A narrower-window pass is still useful before binary distribution readiness.
 
 ## Risks / Unknowns
