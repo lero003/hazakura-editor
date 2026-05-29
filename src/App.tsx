@@ -3559,7 +3559,7 @@ function AgentPaneShell({
       <div className="agent-compact-header">
         <div className="agent-compact-title">
           <strong>{providerLabel(provider)}</strong>
-          <span>{agentSessionStateLabel(session)}</span>
+          <span>{agentCompactSessionStateLabel(session)}</span>
         </div>
         <div className="agent-actions">
           <button
@@ -3857,6 +3857,16 @@ function agentSessionStateLabel(session: AgentWorkbenchSession | null): string {
     case "stopped":
       return "Stopped";
   }
+}
+
+function agentCompactSessionStateLabel(
+  session: AgentWorkbenchSession | null,
+): string {
+  if (!session) {
+    return "Idle";
+  }
+
+  return agentSessionStateLabel(session);
 }
 
 function DiffPane({
