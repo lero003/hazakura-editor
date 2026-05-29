@@ -4532,6 +4532,9 @@ function DiffPane({
           title: "ファイル比較",
           to: "と",
           table: "ファイル比較",
+          sourceColumn: "比較元",
+          targetColumn: "比較先",
+          textColumn: "内容",
         }
       : {
           additions: "Added lines",
@@ -4542,6 +4545,9 @@ function DiffPane({
           title: "File comparison",
           to: "to",
           table: "File comparison",
+          sourceColumn: "Source",
+          targetColumn: "Target",
+          textColumn: "Text",
         };
 
   return (
@@ -4568,6 +4574,18 @@ function DiffPane({
         </div>
       </div>
       <div className="diff-table" role="table" aria-label={labels.table}>
+        <div className="diff-row diff-row-header" role="row">
+          <span className="diff-marker" aria-hidden="true" />
+          <span className="diff-line-number" role="columnheader">
+            {labels.sourceColumn}
+          </span>
+          <span className="diff-line-number" role="columnheader">
+            {labels.targetColumn}
+          </span>
+          <span className="diff-text-column" role="columnheader">
+            {labels.textColumn}
+          </span>
+        </div>
         {view.lines.length === 0 ? (
           <div className="diff-empty">{labels.empty}</div>
         ) : (

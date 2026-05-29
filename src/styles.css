@@ -1364,6 +1364,26 @@ button:disabled {
   padding: 0 16px;
 }
 
+.diff-row-header {
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 750;
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+  position: sticky;
+  text-transform: uppercase;
+  top: 0;
+  z-index: 1;
+}
+
+.diff-row-header,
+.diff-row-header .diff-marker,
+.diff-row-header .diff-line-number,
+.diff-row-header .diff-text-column {
+  background: var(--surface-strong);
+}
+
 .diff-row code {
   color: var(--text);
   font: inherit;
@@ -1381,6 +1401,13 @@ button:disabled {
 .diff-line-number {
   text-align: right;
   padding-right: 12px;
+}
+
+.diff-text-column {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .diff-row.added {

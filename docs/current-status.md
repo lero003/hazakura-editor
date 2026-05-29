@@ -37,7 +37,7 @@ Last reviewed: 2026-05-29
 - Active-file search supports case-sensitive, whole-word, and safe regex modes, with invalid regex input reported without throwing.
 - Go to Line jumps the active editor to a requested line.
 - The active tab is rechecked for external on-disk changes when it gains focus through tab switching or app focus/visibility changes. Clean tabs are refreshed from disk automatically, while dirty tabs keep the explicit external-change recovery banner.
-- Existing workspace text files can be explicitly compared from the file-tree context menu. The comparison view uses file/workspace wording rather than Git wording and does not inspect repository state.
+- Existing workspace text files can be explicitly compared from the file-tree context menu. The comparison view uses file/workspace wording rather than Git wording, labels source/target line-number columns, and does not inspect repository state.
 - Find-field Enter / Escape handling and global shortcuts now ignore active IME composition events, so Japanese conversion is not mistaken for search movement, find close, save, open, or tab-close commands.
 - Editor-local keyboard editing keeps Tab inside the editor for indentation, supports Shift+Tab outdent, and preserves Shift+Arrow text selection.
 - Editor-local Markdown helpers wrap or insert bold, italic, inline-code, and link syntax from the tabs row or Cmd+B / Cmd+I / Cmd+E / Cmd+K while focus is inside the editor.
@@ -96,7 +96,7 @@ Last reviewed: 2026-05-29
 - Editor display settings for line wrap, invisible characters, font size, and tab size
 - Unsaved draft recovery prompt after restart
 - External-change metadata recheck on app focus / visibility return and active tab switch
-- Explicit file-to-file text comparison from workspace file rows, with added/removed line counts and non-Git comparison labels
+- Explicit file-to-file text comparison from workspace file rows, with added/removed line counts, source/target column headers, and non-Git comparison labels
 - IME-safe keyboard handling for find-field Enter / Escape and global shortcuts during active composition
 - Editor-local Tab / Shift+Tab indentation and Shift+Arrow selection key handling
 - Markdown input helpers for bold, italic, inline code, and link syntax
