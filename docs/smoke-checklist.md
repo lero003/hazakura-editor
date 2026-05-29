@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Manual prototype checks
 Authority: Medium
-Last reviewed: 2026-05-29
+Last reviewed: 2026-05-30
 
 Use this checklist after changes to file creation, file opening, workspace listing, tabs, saving, preview rendering, theme handling, workspace restoration, search, or save-conflict handling.
 
@@ -75,6 +75,12 @@ Latest Japanese Agent Workbench accessibility copy checks: 2026-05-30 automated 
 
 Latest start panel language alignment checks: 2026-05-30 Vite browser smoke confirmed the English no-file start surface now shows `Start writing quietly` instead of the Japanese heading. The Japanese heading remains `静かに書き始める` through the shared start-surface copy path.
 
+Latest right-pane toggle / encoding polish checks: 2026-05-30 Vite browser smoke confirmed the Safe Editor no-file surface still loads without a side pane. Automated gates passed after moving Preview / Agent controls to the top editor chrome as open/close toggles, adding UTF-8 to document metadata, and reducing redundant Agent session-state updates during active provider polling.
+
+Latest Agent Workbench macOS menu-bar stability check: 2026-05-30 user smoke confirmed macOS File / View menu popovers no longer immediately close while an Agent provider session is running after Agent UI refresh is suspended when the pointer moves into the app header or the app loses focus, then resumed when the terminal is re-engaged. Returning from another app can still require an extra click before terminal input is focused; this appears to be a lower-priority macOS activation/first-click polish item rather than the menu-close regression.
+
+Latest Non-Git diff/review readiness checks: 2026-05-30 automated gates passed after shifting file comparison toward a dedicated GitHub-PR-like split Diff workbench mode, then tightening setup into explicit source and target slots with a Compare button. The slots can be filled by Diff-mode workspace row clicks or side-specific context-menu actions; drag selection is intentionally out of scope for this flow. Active buffer-versus-disk, draft-versus-disk, and conflict local-edits-versus-disk review entry points use the same non-Git comparison surface. No fresh built-app diff/review interaction smoke was claimed.
+
 ## Build First
 
 ```bash
@@ -128,13 +134,28 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 ## File Comparison
 
 1. Open a throwaway folder outside the repo with at least two small text or Markdown files.
-2. Right-click the first file and choose Set as compare source / 比較元にする.
-3. Right-click the second file and choose Compare with source / 比較元と比較.
-4. Confirm the side pane opens a file-comparison view with added/removed line counts.
-5. Confirm the line-number columns are labeled Source / Target or 比較元 / 比較先, with a Text / 内容 column for the changed text.
-6. Confirm the labels say Comparison / File comparison or 比較 / ファイル比較, and do not mention Git status, branch, staging, commit, or repository state.
-7. Right-click an image or obvious non-text file such as `.DS_Store` if present and confirm Set as compare source / Compare with source are disabled while Open and Copy full path remain available.
-8. Close the comparison view and confirm the editor, workspace tree, and active tab remain usable.
+2. Click Diff in the top editor chrome and confirm the center editor area is hidden while a Diff setup workbench fills the main content area.
+3. Click the first comparable file in the left workspace tree and confirm it fills the Compare source / 比較元 slot instead of opening the file.
+4. Click the second comparable file and confirm it fills the Compare target / 比較先 slot.
+5. Click Compare / 比較する and confirm the workbench opens a GitHub-PR-like split Diff view with source line numbers/text on the left and target line numbers/text on the right.
+6. Close the comparison result and confirm Diff mode returns to setup with the source/target selection still understandable.
+7. Right-click comparable files and choose Set as compare source / 比較元にする or Set as compare target / 比較先にする to confirm context-menu side selection still works.
+8. Confirm dragging is not required for the Diff setup flow; click and context-menu selection are the supported paths.
+9. Confirm additions are shown on the right, removals on the left, and changed lines appear aligned when practical.
+10. Confirm the labels say Diff or non-Git file/workspace comparison language, and do not mention Git status, branch, staging, commit, or repository state.
+11. Right-click an image or obvious non-text file such as `.DS_Store` if present and confirm compare actions are disabled while Open and Copy full path remain available.
+12. Toggle Diff off and confirm the editor, workspace tree, and active tab remain usable.
+
+## Change Review
+
+1. Open a small text or Markdown file in a throwaway workspace.
+2. Edit the file without saving and confirm Review changes / 変更を確認 appears in the top editor chrome.
+3. Click Review changes / 変更を確認 and confirm the side pane opens a Change review / 変更確認 view comparing Disk / ディスク to Editor / エディタ.
+4. Confirm the line counts reflect the local edit and no Git status, branch, staging, commit, or repository state appears.
+5. Create a recoverable unsaved draft, relaunch, and confirm the draft banner offers Review changes / 変更を確認 before Restore draft / 下書きを復元.
+6. Click the draft Review changes action and confirm Disk / ディスク is compared to Draft / 下書き before choosing restore or discard.
+7. Trigger an external-change conflict on a dirty tab and confirm the conflict banner offers Review changes / 変更を確認 before Reopen from disk / Close without saving / Keep editing.
+8. Click the conflict Review changes action and confirm Disk / ディスク is compared to Editor / エディタ while the recovery choices remain explicit and no overwrite happens automatically.
 
 ## Markdown Preview Sync
 
@@ -186,10 +207,12 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 6. Toggle View > Preview, View > Wrap Lines, and View > Show Invisibles and confirm each setting changes the editor or preview.
 7. Confirm Preferences and Agent Workbench are not in the File or View menu.
 8. Open hazakura-note > Settings and confirm Font size, Tab size, Theme, Preview, Wrap, Invisibles, and Menu language persist after restart.
-9. Change Menu language to Japanese and confirm the native app/File/Edit/View/Window/Help menu labels, empty start surface, workspace labels and workspace context menu, side-pane tabs, workspace image preview header, common status bar messages, preview unavailable messages, Preferences labels, and Agent Workbench pane/mode-gate copy update.
+9. Change Menu language to Japanese and confirm the native app/File/Edit/View/Window/Help menu labels, empty start surface, workspace labels and workspace context menu, right-pane toggle labels, workspace image preview header, common status bar messages, preview unavailable messages, Preferences labels, and Agent Workbench pane/mode-gate copy update.
 10. Open hazakura-note > Agent Workbench and confirm it shows Agent mode, provider/session summary, and responsibility-boundary controls separately from Preferences.
 11. Toggle Agent Workbench mode and confirm the restart-required state includes an explicit restart button.
 12. Relaunch with Agent Workbench mode active and confirm the top toolbar shows the Agent Mode / エージェントモード badge.
+13. Open a text file and confirm the status metadata includes UTF-8.
+14. Use the Preview, Diff, and Agent controls in the top editor chrome and confirm each button opens and closes its pane/workbench without requiring a tab strip inside the right pane.
 
 ## Agent Workbench Trusted Workspace Manual Smoke
 

@@ -78,7 +78,7 @@ const AGENT_WORKBENCH_PROVIDERS: Array<{
   { id: "opencode", label: "OpenCode CLI" },
 ];
 const AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS = 500;
-const AGENT_WORKBENCH_SESSION_POLL_MS = 100;
+const AGENT_WORKBENCH_SESSION_POLL_MS = 200;
 const EXTERNAL_CHANGE_ACTIVE_POLL_MS = 1000;
 const EXTERNAL_CHANGE_CONFLICT_MESSAGE =
   "The file changed on disk, possibly from another app or Agent provider. Saving is stopped until you choose how to continue.";
@@ -97,7 +97,7 @@ type ThemePreference = "system" | BaseTheme | "sakura" | "yakou" | "shokou";
 type ResolvedTheme = BaseTheme | "sakura" | "yakou" | "shokou";
 type EditableLineEnding = "lf" | "crlf";
 type LineEndingKind = EditableLineEnding | "mixed" | "none";
-type RightPaneMode = "preview" | "agent";
+type RightPaneMode = "preview" | "compare" | "agent";
 type MenuLanguage = "en" | "ja";
 type PreferencesDialogMode = "settings" | "agent";
 
@@ -193,11 +193,26 @@ type DiffLine = {
   text: string;
 };
 
+type DiffSplitCell = {
+  kind: "equal" | "added" | "removed" | "blank";
+  line: number | null;
+  text: string;
+};
+
+type DiffSplitRow = {
+  kind: "equal" | "added" | "removed" | "changed";
+  left: DiffSplitCell;
+  right: DiffSplitCell;
+};
+
 type CompareViewState = {
+  kind: "file" | "changes";
   leftPath: string;
   leftName: string;
+  leftColumnLabel?: string;
   rightPath: string;
   rightName: string;
+  rightColumnLabel?: string;
   lines: DiffLine[];
   additions: number;
   removals: number;
@@ -210,6 +225,7 @@ export default function App() {
     null,
   );
   const [compareAnchor, setCompareAnchor] = useState<CompareAnchor | null>(null);
+  const [compareTarget, setCompareTarget] = useState<CompareAnchor | null>(null);
   const [compareView, setCompareView] = useState<CompareViewState | null>(null);
   const [workspaceContextMenu, setWorkspaceContextMenu] =
     useState<WorkspaceContextMenuState | null>(null);
@@ -306,6 +322,7 @@ export default function App() {
   const previewPaneRef = useRef<HTMLDivElement | null>(null);
   const previewScrollFrameRef = useRef<number | null>(null);
   const scrollSyncSourceRef = useRef<"editor" | "preview" | null>(null);
+  const agentUiSuspendedRef = useRef(false);
   const tabsRef = useRef<EditorTab[]>([]);
   const recentFilesRef = useRef<RecentEntry[]>(recentFiles);
   const recentFoldersRef = useRef<RecentEntry[]>(recentFolders);
@@ -367,6 +384,7 @@ export default function App() {
       ? {
           agentWorkbench: "エージェントワークベンチ",
           agentTab: "エージェント",
+          diffTab: "Diff",
           fileComparison: "ファイル比較",
           imagePreview: "画像プレビュー",
           markdownPreview: "Markdown プレビュー",
@@ -383,6 +401,7 @@ export default function App() {
       : {
           agentWorkbench: "Agent Workbench",
           agentTab: "Agent",
+          diffTab: "Diff",
           fileComparison: "File comparison",
           imagePreview: "Image Preview",
           markdownPreview: "Markdown preview",
@@ -467,6 +486,7 @@ export default function App() {
           draftAvailable: (name: string) => `${name} の未保存下書きがあります。`,
           keepEditing: "編集を続ける",
           reopenFromDisk: "ディスクから再読み込み",
+          reviewChanges: "変更を確認",
           restoreDraft: "下書きを復元",
           saveErrorActions: "保存エラーの操作",
           saveFailure:
@@ -486,6 +506,7 @@ export default function App() {
             `Unsaved draft available for ${name}.`,
           keepEditing: "Keep editing",
           reopenFromDisk: "Reopen from disk",
+          reviewChanges: "Review changes",
           restoreDraft: "Restore draft",
           saveErrorActions: "Save error actions",
           saveFailure: formatSaveFailureMessage(),
@@ -613,17 +634,17 @@ export default function App() {
       ? agentWorkbenchCopy.modeBadgeActive
       : null;
   const activeAgentSession = isActiveAgentSession(agentSession);
-  const effectiveRightPaneMode: RightPaneMode = agentWorkbenchAvailable
-    ? activeTab
-      ? rightPaneMode
-      : "agent"
-    : "preview";
+  const effectiveRightPaneMode: RightPaneMode =
+    agentWorkbenchAvailable && !activeTab && rightPaneMode === "preview"
+      ? "agent"
+      : rightPaneMode;
   const agentPaneVisible =
     agentWorkbenchAvailable && effectiveRightPaneMode === "agent";
   const previewPaneVisible =
     effectiveRightPaneMode === "preview" &&
-    ((previewVisible && activeTab !== null) || agentWorkbenchAvailable);
-  const sidePaneMode = compareView
+    previewVisible &&
+    activeTab !== null;
+  const sidePaneMode = effectiveRightPaneMode === "compare"
     ? "compare"
     : agentPaneVisible
       ? "agent"
@@ -638,10 +659,10 @@ export default function App() {
     () => analyzeTextDocument(activeContents, activeTab?.line_ending),
     [activeContents, activeTab?.line_ending],
   );
-  const compareDocumentMeta = compareView
+  const compareDocumentMeta = sidePaneMode === "compare" && compareView
     ? menuLanguage === "ja"
-      ? `比較 · ${compareView.additions} 追加 · ${compareView.removals} 削除`
-      : `Comparison · ${compareView.additions} added · ${compareView.removals} removed`
+      ? `${compareView.kind === "changes" ? "変更確認" : "比較"} · ${compareView.additions} 追加 · ${compareView.removals} 削除`
+      : `${compareView.kind === "changes" ? "Change review" : "Comparison"} · ${compareView.additions} added · ${compareView.removals} removed`
     : null;
   const activeDocumentMeta = activeTab
     ? formatActiveDocumentMeta(
@@ -687,10 +708,17 @@ export default function App() {
           return currentOutput;
         }
 
-        return lastAgentOutputSeq(nextOutput) >=
-          lastAgentOutputSeq(currentOutput)
-          ? nextOutput
-          : currentOutput;
+        const nextSeq = lastAgentOutputSeq(nextOutput);
+        const currentSeq = lastAgentOutputSeq(currentOutput);
+
+        if (
+          nextSeq === currentSeq &&
+          nextOutput.length === currentOutput.length
+        ) {
+          return currentOutput;
+        }
+
+        return nextSeq > currentSeq ? nextOutput : currentOutput;
       });
     },
     [],
@@ -705,7 +733,7 @@ export default function App() {
   const modalOpen =
     pendingCloseTab !== null || pendingAppClose || preferencesOpen;
   const editorPreviewGridStyle =
-    sidePaneVisible
+    sidePaneVisible && sidePaneMode !== "compare"
       ? {
           gridTemplateColumns: `minmax(280px, ${100 - previewColumnPercent}%) 6px minmax(260px, ${previewColumnPercent}%)`,
         }
@@ -716,6 +744,42 @@ export default function App() {
       editorPaneRef.current?.focus();
     });
   }, []);
+
+  const suspendAgentUiRefresh = useCallback(() => {
+    agentUiSuspendedRef.current = true;
+  }, []);
+
+  const resumeAgentUiRefresh = useCallback(() => {
+    agentUiSuspendedRef.current = false;
+  }, []);
+
+  const togglePreviewPane = useCallback(() => {
+    if (sidePaneMode === "preview") {
+      setPreviewVisible(false);
+      return;
+    }
+
+    setRightPaneMode("preview");
+    setPreviewVisible(true);
+  }, [sidePaneMode]);
+
+  const toggleDiffPane = useCallback(() => {
+    if (sidePaneMode === "compare") {
+      setRightPaneMode("preview");
+      return;
+    }
+
+    setRightPaneMode("compare");
+  }, [sidePaneMode]);
+
+  const toggleAgentPane = useCallback(() => {
+    if (sidePaneMode === "agent") {
+      setRightPaneMode("preview");
+      return;
+    }
+
+    setRightPaneMode("agent");
+  }, [sidePaneMode]);
 
   const syncPreviewScroll = useCallback((ratio: number) => {
     if (scrollSyncSourceRef.current === "preview") {
@@ -1104,6 +1168,7 @@ export default function App() {
         setImageReturnTabId(null);
         setCompareView(null);
         setCompareAnchor(null);
+        setCompareTarget(null);
         rememberRecentFolder(path);
         setStatus("Folder opened");
       } catch (err) {
@@ -1158,7 +1223,12 @@ export default function App() {
 
   const setCompareSource = useCallback((file: CompareAnchor) => {
     setCompareAnchor(file);
+    setCompareView(null);
+    setCompareTarget((currentTarget) =>
+      currentTarget?.path === file.path ? null : currentTarget,
+    );
     setWorkspaceContextMenu(null);
+    setRightPaneMode("compare");
     setStatus(
       menuLanguage === "ja"
         ? `比較元に設定: ${file.name}`
@@ -1166,11 +1236,55 @@ export default function App() {
     );
   }, [menuLanguage]);
 
+  const setCompareTargetFile = useCallback((file: CompareAnchor) => {
+    setCompareTarget(file);
+    setCompareView(null);
+    setWorkspaceContextMenu(null);
+    setRightPaneMode("compare");
+    setStatus(
+      menuLanguage === "ja"
+        ? `比較先に設定: ${file.name}`
+        : `Compare target set: ${file.name}`,
+    );
+  }, [menuLanguage]);
+
+  const selectWorkspaceCompareFile = useCallback(
+    (entry: WorkspaceTreeEntry) => {
+      if (!isComparableTextFile(entry.name)) {
+        setGlobalError(
+          menuLanguage === "ja"
+            ? "このファイルは Diff 比較できるテキスト形式ではありません。"
+            : "This file is not a comparable text document.",
+        );
+        setStatus("Compare failed");
+        return;
+      }
+
+      const file = { path: entry.path, name: entry.name };
+
+      if (!compareAnchor || compareAnchor.path === entry.path) {
+        setCompareSource(file);
+        return;
+      }
+
+      setCompareTargetFile(file);
+    },
+    [compareAnchor, menuLanguage, setCompareSource, setCompareTargetFile],
+  );
+
   const clearCompareSource = useCallback(() => {
     setCompareAnchor(null);
     setWorkspaceContextMenu(null);
     setStatus(
       menuLanguage === "ja" ? "比較元を解除しました" : "Compare source cleared",
+    );
+  }, [menuLanguage]);
+
+  const clearCompareTarget = useCallback(() => {
+    setCompareTarget(null);
+    setWorkspaceContextMenu(null);
+    setStatus(
+      menuLanguage === "ja" ? "比較先を解除しました" : "Compare target cleared",
     );
   }, [menuLanguage]);
 
@@ -1202,14 +1316,87 @@ export default function App() {
     setStatus("Compare closed");
   }, []);
 
+  const reviewTabAgainstDisk = useCallback(
+    async (tab: EditorTab) => {
+      setGlobalError(null);
+      setStatus("Reviewing changes...");
+
+      try {
+        const diskDocument = await openTextFile(tab.path);
+        const diff = buildLineDiff(diskDocument.contents, tab.contents);
+        const diskLabel = menuLanguage === "ja" ? "ディスク" : "Disk";
+        const editorLabel = menuLanguage === "ja" ? "エディタ" : "Editor";
+
+        setCompareView({
+          kind: "changes",
+          leftPath: tab.path,
+          leftName: `${tab.name} (${diskLabel})`,
+          leftColumnLabel: diskLabel,
+          rightPath: tab.path,
+          rightName: `${tab.name} (${editorLabel})`,
+          rightColumnLabel: editorLabel,
+          ...diff,
+        });
+        setStatus("Change review ready");
+      } catch (err) {
+        const message = String(err);
+        setGlobalError(
+          menuLanguage === "ja"
+            ? localizeCompareError(message)
+            : message,
+        );
+        setStatus("Change review failed");
+      }
+    },
+    [menuLanguage],
+  );
+
+  const reviewDraftAgainstDisk = useCallback(
+    async (tab: EditorTab, draft: DraftRecord) => {
+      setGlobalError(null);
+      setStatus("Reviewing changes...");
+
+      try {
+        const diskDocument = await openTextFile(tab.path);
+        const diff = buildLineDiff(diskDocument.contents, draft.contents);
+        const diskLabel = menuLanguage === "ja" ? "ディスク" : "Disk";
+        const draftLabel = menuLanguage === "ja" ? "下書き" : "Draft";
+
+        setCompareView({
+          kind: "changes",
+          leftPath: tab.path,
+          leftName: `${tab.name} (${diskLabel})`,
+          leftColumnLabel: diskLabel,
+          rightPath: tab.path,
+          rightName: `${tab.name} (${draftLabel})`,
+          rightColumnLabel: draftLabel,
+          ...diff,
+        });
+        setStatus("Change review ready");
+      } catch (err) {
+        const message = String(err);
+        setGlobalError(
+          menuLanguage === "ja"
+            ? localizeCompareError(message)
+            : message,
+        );
+        setStatus("Change review failed");
+      }
+    },
+    [menuLanguage],
+  );
+
   const compareWorkspaceFiles = useCallback(
     async (rightFile: CompareAnchor) => {
-      if (!compareAnchor) {
+      const canCompareWithActiveTab =
+        activeTab !== null && activeTab.path !== rightFile.path;
+
+      if (!canCompareWithActiveTab && !compareAnchor) {
         setCompareSource(rightFile);
         return;
       }
 
-      if (compareAnchor.path === rightFile.path) {
+      if (!canCompareWithActiveTab && compareAnchor?.path === rightFile.path) {
         clearCompareSource();
         return;
       }
@@ -1219,19 +1406,50 @@ export default function App() {
       setStatus("Comparing files...");
 
       try {
-        const [leftDocument, rightDocument] = await Promise.all([
-          openTextFile(compareAnchor.path),
-          openTextFile(rightFile.path),
-        ]);
-        const diff = buildLineDiff(leftDocument.contents, rightDocument.contents);
+        const rightDocument = await openTextFile(rightFile.path);
+        const centerLabel = menuLanguage === "ja" ? "中央" : "Center";
+        const rightLabel = menuLanguage === "ja" ? "右" : "Right";
+        const source =
+          compareAnchor && compareAnchor.path !== rightFile.path
+            ? {
+                ...(await openTextFile(compareAnchor.path)),
+                name: compareAnchor.name,
+                path: compareAnchor.path,
+                leftColumnLabel:
+                  menuLanguage === "ja" ? "比較元" : "Source",
+                rightColumnLabel:
+                  menuLanguage === "ja" ? "比較先" : "Target",
+              }
+            : activeTab && activeTab.path !== rightFile.path
+            ? {
+                contents: activeTab.contents,
+                name: activeTab.name,
+                path: activeTab.path,
+                leftColumnLabel: centerLabel,
+                rightColumnLabel: rightLabel,
+              }
+            : {
+                ...(await openTextFile(compareAnchor?.path ?? rightFile.path)),
+                name: compareAnchor?.name ?? rightFile.name,
+                path: compareAnchor?.path ?? rightFile.path,
+                leftColumnLabel:
+                  menuLanguage === "ja" ? "比較元" : "Source",
+                rightColumnLabel:
+                  menuLanguage === "ja" ? "比較先" : "Target",
+              };
+        const diff = buildLineDiff(source.contents, rightDocument.contents);
 
         setCompareView({
-          leftPath: compareAnchor.path,
-          leftName: compareAnchor.name,
+          kind: "file",
+          leftPath: source.path,
+          leftName: source.name,
+          leftColumnLabel: source.leftColumnLabel,
           rightPath: rightFile.path,
           rightName: rightFile.name,
+          rightColumnLabel: source.rightColumnLabel,
           ...diff,
         });
+        setRightPaneMode("compare");
         setStatus("Compare ready");
       } catch (err) {
         const message = String(err);
@@ -1243,8 +1461,32 @@ export default function App() {
         setStatus("Compare failed");
       }
     },
-    [clearCompareSource, compareAnchor, menuLanguage, setCompareSource],
+    [activeTab, clearCompareSource, compareAnchor, menuLanguage, setCompareSource],
   );
+
+  const runSelectedFileCompare = useCallback(() => {
+    if (!compareAnchor || !compareTarget) {
+      setGlobalError(
+        menuLanguage === "ja"
+          ? "比較元と比較先の2つのテキストファイルを選んでください。"
+          : "Choose both a source and target text file before comparing.",
+      );
+      setStatus("Compare failed");
+      return;
+    }
+
+    if (compareAnchor.path === compareTarget.path) {
+      setGlobalError(
+        menuLanguage === "ja"
+          ? "比較元と比較先には別のファイルを選んでください。"
+          : "Choose different files for the source and target.",
+      );
+      setStatus("Compare failed");
+      return;
+    }
+
+    void compareWorkspaceFiles(compareTarget);
+  }, [compareAnchor, compareTarget, compareWorkspaceFiles, menuLanguage]);
 
   const saveTabById = useCallback(
     async (tabId: string): Promise<boolean> => {
@@ -2099,7 +2341,11 @@ export default function App() {
   const refreshAgentSessionState = useCallback(async () => {
     try {
       const state = await getAgentWorkbenchSessionState();
-      setAgentSession(state.session);
+      setAgentSession((currentSession) =>
+        sameAgentWorkbenchSession(currentSession, state.session)
+          ? currentSession
+          : state.session,
+      );
       applyAgentOutput(state.output);
 
       if (state.session?.status === "exited") {
@@ -2338,6 +2584,26 @@ export default function App() {
   }, [tabs]);
 
   useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        resumeAgentUiRefresh();
+      } else {
+        suspendAgentUiRefresh();
+      }
+    };
+
+    window.addEventListener("blur", suspendAgentUiRefresh);
+    window.addEventListener("focus", resumeAgentUiRefresh);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", resumeAgentUiRefresh);
+      window.removeEventListener("blur", suspendAgentUiRefresh);
+    };
+  }, [resumeAgentUiRefresh, suspendAgentUiRefresh]);
+
+  useEffect(() => {
     if (!agentWorkbenchAvailable && rightPaneMode === "agent") {
       setRightPaneMode("preview");
     }
@@ -2359,6 +2625,10 @@ export default function App() {
     }
 
     const intervalId = window.setInterval(() => {
+      if (!document.hasFocus() || agentUiSuspendedRef.current) {
+        return;
+      }
+
       void refreshAgentSessionState();
     }, AGENT_WORKBENCH_SESSION_POLL_MS);
 
@@ -2773,6 +3043,10 @@ export default function App() {
     }
 
     const intervalId = window.setInterval(() => {
+      if (agentUiSuspendedRef.current) {
+        return;
+      }
+
       void checkTabForExternalChange(activeTabId);
     }, EXTERNAL_CHANGE_ACTIVE_POLL_MS);
 
@@ -3016,7 +3290,11 @@ export default function App() {
   return (
     <main className="app-shell">
       {resolvedTheme === "sakura" ? <SakuraPetals /> : null}
-      <section className="tabs-row" aria-label="Open files">
+      <section
+        className="tabs-row"
+        aria-label="Open files"
+        onPointerEnter={suspendAgentUiRefresh}
+      >
         <div className="tab-list" role="tablist" aria-label="Open file tabs">
           {agentWorkbenchModeBadge ? (
             <span
@@ -3072,7 +3350,6 @@ export default function App() {
         </div>
         <div className="document-meta">
           {activeTab ? (
-            <>
               <div
                 className="markdown-assist"
                 aria-label={editorChromeCopy.markdownHelpers}
@@ -3114,6 +3391,28 @@ export default function App() {
                   <LinkIcon />
                 </button>
               </div>
+          ) : null}
+          <RightPaneToggleControls
+            agentAvailable={agentWorkbenchAvailable}
+            agentActive={sidePaneMode === "agent"}
+            copy={sidePaneCopy}
+            diffActive={sidePaneMode === "compare"}
+            diffAvailable
+            onToggleDiff={toggleDiffPane}
+            onToggleAgent={toggleAgentPane}
+            onTogglePreview={togglePreviewPane}
+            previewActive={sidePaneMode === "preview"}
+          />
+          {activeDirty && activeTab ? (
+            <button
+              className="review-changes-button"
+              onClick={() => void reviewTabAgainstDisk(activeTab)}
+              type="button"
+            >
+              {recoveryCopy.reviewChanges}
+            </button>
+          ) : null}
+          {activeTab ? (
               <label className="line-ending-compact">
                 <span>{editorChromeCopy.lineEnding}</span>
                 <select
@@ -3129,7 +3428,6 @@ export default function App() {
                   <option value="crlf">CRLF</option>
                 </select>
               </label>
-            </>
           ) : null}
         </div>
       </section>
@@ -3267,6 +3565,12 @@ export default function App() {
               className="message-actions"
               aria-label={recoveryCopy.draftActions}
             >
+              <button
+                type="button"
+                onClick={() => void reviewDraftAgainstDisk(activeTab, activeDraft)}
+              >
+                {recoveryCopy.reviewChanges}
+              </button>
               <button type="button" onClick={() => restoreDraft(activeDraft)}>
                 {recoveryCopy.restoreDraft}
               </button>
@@ -3300,6 +3604,12 @@ export default function App() {
                 className="message-actions"
                 aria-label={recoveryCopy.conflictActions}
               >
+                <button
+                  type="button"
+                  onClick={() => void reviewTabAgainstDisk(activeTab)}
+                >
+                  {recoveryCopy.reviewChanges}
+                </button>
                 <button
                   type="button"
                   onClick={() => reopenTabFromDisk(activeTab.id)}
@@ -3371,10 +3681,13 @@ export default function App() {
             <WorkspaceTree
               activePath={selectedImage?.path ?? activeTab?.path ?? null}
               compareSourcePath={compareAnchor?.path ?? null}
+              compareTargetPath={compareTarget?.path ?? null}
               entry={workspaceTree}
+              compareSelectionEnabled={sidePaneMode === "compare"}
               onLoadDirectory={loadWorkspaceDirectory}
               onOpenContextMenu={openWorkspaceContextMenu}
               onOpenFile={openWorkspaceFile}
+              onSelectCompareFile={selectWorkspaceCompareFile}
             />
           ) : (
             <div className="workspace-empty">
@@ -3387,7 +3700,7 @@ export default function App() {
         </aside>
         <div
           ref={editorPreviewGridRef}
-          className={`editor-preview-grid${sidePaneVisible ? "" : " preview-hidden"}${hasWorkspaceSelection ? "" : " empty-session"}`}
+          className={`editor-preview-grid${sidePaneVisible ? "" : " preview-hidden"}${hasWorkspaceSelection ? "" : " empty-session"}${sidePaneMode === "compare" ? " diff-workbench" : ""}`}
           style={editorPreviewGridStyle}
         >
           <div className="pane editor-pane" aria-label="Editor">
@@ -3454,18 +3767,20 @@ export default function App() {
                 sidePaneMode === "preview" ? syncEditorScroll : undefined
               }
             >
-              {agentWorkbenchAvailable && !compareView ? (
-                <RightPaneModeSwitch
-                  copy={sidePaneCopy}
-                  mode={effectiveRightPaneMode}
-                  onModeChange={setRightPaneMode}
-                />
-              ) : null}
               {sidePaneMode === "compare" && compareView ? (
                 <DiffPane
                   menuLanguage={menuLanguage}
                   view={compareView}
                   onClose={closeCompareView}
+                />
+              ) : sidePaneMode === "compare" ? (
+                <DiffSetupPane
+                  compareSource={compareAnchor}
+                  compareTarget={compareTarget}
+                  onClearSource={clearCompareSource}
+                  onClearTarget={clearCompareTarget}
+                  onCompare={runSelectedFileCompare}
+                  menuLanguage={menuLanguage}
                 />
               ) : sidePaneMode === "agent" ? (
                 <AgentPaneShell
@@ -3473,6 +3788,8 @@ export default function App() {
                   onCheckGate={() => void checkAgentLaunchGate()}
                   onStopSession={() => void stopAgentSession()}
                   onTerminalData={sendAgentTerminalData}
+                  onTerminalEngage={resumeAgentUiRefresh}
+                  onTerminalRelease={suspendAgentUiRefresh}
                   onTerminalResize={resizeAgentTerminal}
                   output={agentOutput}
                   provider={agentWorkbenchProvider}
@@ -3835,6 +4152,7 @@ export default function App() {
       {workspaceContextMenu ? (
         <WorkspaceContextMenu
           anchor={workspaceContextMenu}
+          activeTabPath={activeTab?.path ?? null}
           canSendToAgent={activeAgentSession}
           compareSource={compareAnchor}
           menuLanguage={menuLanguage}
@@ -3850,6 +4168,7 @@ export default function App() {
             void sendWorkspacePathToAgent(workspaceContextMenu)
           }
           onSetCompareSource={() => setCompareSource(workspaceContextMenu)}
+          onSetCompareTarget={() => setCompareTargetFile(workspaceContextMenu)}
         />
       ) : null}
     </main>
@@ -3936,37 +4255,62 @@ function ImagePreviewPane({
   );
 }
 
-function RightPaneModeSwitch({
+function RightPaneToggleControls({
+  agentActive,
+  agentAvailable,
   copy,
-  mode,
-  onModeChange,
+  diffActive,
+  diffAvailable,
+  onToggleAgent,
+  onToggleDiff,
+  onTogglePreview,
+  previewActive,
 }: {
+  agentActive: boolean;
+  agentAvailable: boolean;
+  diffActive: boolean;
+  diffAvailable: boolean;
   copy: {
     agentTab: string;
+    diffTab: string;
     previewTab: string;
     sidePaneMode: string;
   };
-  mode: RightPaneMode;
-  onModeChange: (mode: RightPaneMode) => void;
+  onToggleAgent: () => void;
+  onToggleDiff: () => void;
+  onTogglePreview: () => void;
+  previewActive: boolean;
 }) {
   return (
-    <div className="side-pane-tabs" aria-label={copy.sidePaneMode}>
+    <div className="right-pane-toggles" aria-label={copy.sidePaneMode}>
       <button
-        aria-pressed={mode === "preview"}
-        className="side-pane-tab"
-        onClick={() => onModeChange("preview")}
+        aria-pressed={previewActive}
+        className="right-pane-toggle"
+        onClick={onTogglePreview}
         type="button"
       >
         {copy.previewTab}
       </button>
-      <button
-        aria-pressed={mode === "agent"}
-        className="side-pane-tab"
-        onClick={() => onModeChange("agent")}
-        type="button"
-      >
-        {copy.agentTab}
-      </button>
+      {diffAvailable ? (
+        <button
+          aria-pressed={diffActive}
+          className="right-pane-toggle"
+          onClick={onToggleDiff}
+          type="button"
+        >
+          {copy.diffTab}
+        </button>
+      ) : null}
+      {agentAvailable ? (
+        <button
+          aria-pressed={agentActive}
+          className="right-pane-toggle"
+          onClick={onToggleAgent}
+          type="button"
+        >
+          {copy.agentTab}
+        </button>
+      ) : null}
     </div>
   );
 }
@@ -3991,6 +4335,8 @@ function AgentPaneShell({
   onCheckGate,
   onStopSession,
   onTerminalData,
+  onTerminalEngage,
+  onTerminalRelease,
   onTerminalResize,
   output,
   provider,
@@ -4003,6 +4349,8 @@ function AgentPaneShell({
   onCheckGate: () => void;
   onStopSession: () => void;
   onTerminalData: (data: string) => void;
+  onTerminalEngage: () => void;
+  onTerminalRelease: () => void;
   onTerminalResize: (size: AgentTerminalSize) => void;
   output: AgentWorkbenchOutputChunk[];
   provider: AgentWorkbenchProvider;
@@ -4112,6 +4460,8 @@ function AgentPaneShell({
         activeSession={activeSession}
         outputLabel={copy.outputChunks}
         onData={onTerminalData}
+        onEngage={onTerminalEngage}
+        onRelease={onTerminalRelease}
         onResize={onTerminalResize}
         output={output}
         placeholder={terminalPlaceholder}
@@ -4125,6 +4475,8 @@ function AgentTerminalView({
   activeSession,
   outputLabel,
   onData,
+  onEngage,
+  onRelease,
   onResize,
   output,
   placeholder,
@@ -4133,6 +4485,8 @@ function AgentTerminalView({
   activeSession: boolean;
   outputLabel: string;
   onData: (data: string) => void;
+  onEngage: () => void;
+  onRelease: () => void;
   onResize: (size: AgentTerminalSize) => void;
   output: AgentWorkbenchOutputChunk[];
   placeholder: string;
@@ -4233,10 +4587,35 @@ function AgentTerminalView({
       fitAndNotify();
     });
     resizeObserver.observe(host);
+    const focusTerminal = () => {
+      onEngage();
+      if (activeSessionRef.current) {
+        terminal.focus();
+      }
+    };
+    const blurTerminal = () => {
+      onRelease();
+      terminal.blur();
+    };
+    const blurTerminalWhenHidden = () => {
+      if (document.visibilityState !== "visible") {
+        blurTerminal();
+      }
+    };
+    host.addEventListener("pointerenter", onEngage);
+    host.addEventListener("pointerdown", focusTerminal);
+    host.addEventListener("mouseleave", blurTerminal);
+    window.addEventListener("blur", blurTerminal);
+    document.addEventListener("visibilitychange", blurTerminalWhenHidden);
 
     terminalRef.current = terminal;
 
     return () => {
+      document.removeEventListener("visibilitychange", blurTerminalWhenHidden);
+      window.removeEventListener("blur", blurTerminal);
+      host.removeEventListener("mouseleave", blurTerminal);
+      host.removeEventListener("pointerdown", focusTerminal);
+      host.removeEventListener("pointerenter", onEngage);
       resizeObserver.disconnect();
       dataDisposable.dispose();
       terminal.dispose();
@@ -4286,8 +4665,8 @@ function AgentTerminalView({
       terminalRef.current.options.disableStdin = !activeSession;
     }
 
-    if (activeSession) {
-      terminalRef.current?.focus();
+    if (!activeSession) {
+      terminalRef.current?.blur();
     }
   }, [activeSession]);
 
@@ -4312,6 +4691,136 @@ function AgentTerminalView({
 
 function normalizeTerminalLineEndings(text: string): string {
   return text.replace(/\r?\n/g, "\r\n");
+}
+
+function DiffSetupPane({
+  compareSource,
+  compareTarget,
+  menuLanguage,
+  onClearSource,
+  onClearTarget,
+  onCompare,
+}: {
+  compareSource: CompareAnchor | null;
+  compareTarget: CompareAnchor | null;
+  menuLanguage: MenuLanguage;
+  onClearSource: () => void;
+  onClearTarget: () => void;
+  onCompare: () => void;
+}) {
+  const labels =
+    menuLanguage === "ja"
+      ? {
+          clear: "解除",
+          compare: "比較する",
+          compareSource: "比較元",
+          compareTarget: "比較先",
+          introText:
+            "ワークスペースから2つのテキストファイルを選んで比較します。",
+          heading: "Diff",
+          sourceHint: "左のファイル一覧をクリックして比較元を選択",
+          targetHint: "次のクリックで比較先を選択",
+          ready:
+            "比較元は解除するまで固定されます。右クリックメニューでも比較元/比較先を明示できます。",
+          sourceUnset: "比較元は未選択です",
+          targetUnset: "比較先は未選択です",
+        }
+      : {
+          clear: "Clear",
+          compare: "Compare",
+          compareSource: "Compare source",
+          compareTarget: "Compare target",
+          introText:
+            "Choose two workspace text files and compare them.",
+          heading: "Diff",
+          sourceHint: "Click a file in the left list to choose the source",
+          targetHint: "The next click chooses the target",
+          ready:
+            "The source stays fixed until cleared. You can also use the context menu to choose either side.",
+          sourceUnset: "No compare source selected",
+          targetUnset: "No compare target selected",
+        };
+  const sourceName = compareSource?.name ?? null;
+  const sourcePath = compareSource?.path ?? null;
+  const targetName = compareTarget?.name ?? null;
+  const targetPath = compareTarget?.path ?? null;
+  const canCompare =
+    compareSource !== null &&
+    compareTarget !== null &&
+    compareSource.path !== compareTarget.path;
+
+  return (
+    <div className="diff-setup-pane">
+      <div className="diff-setup-card">
+        <span>{labels.heading}</span>
+        <strong>{labels.introText}</strong>
+        <div className="diff-slots">
+          <DiffSelectionSlot
+            clearLabel={labels.clear}
+            emptyLabel={labels.sourceUnset}
+            fileName={sourceName}
+            filePath={sourcePath}
+            label={labels.compareSource}
+            onClear={onClearSource}
+            prompt={labels.sourceHint}
+          />
+          <DiffSelectionSlot
+            clearLabel={labels.clear}
+            emptyLabel={labels.targetUnset}
+            fileName={targetName}
+            filePath={targetPath}
+            label={labels.compareTarget}
+            onClear={onClearTarget}
+            prompt={labels.targetHint}
+          />
+        </div>
+        <div className="diff-setup-actions">
+          <button type="button" onClick={onCompare} disabled={!canCompare}>
+            {labels.compare}
+          </button>
+          <p>{labels.ready}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DiffSelectionSlot({
+  clearLabel,
+  emptyLabel,
+  fileName,
+  filePath,
+  label,
+  onClear,
+  prompt,
+}: {
+  clearLabel: string;
+  emptyLabel: string;
+  fileName: string | null;
+  filePath: string | null;
+  label: string;
+  onClear: () => void;
+  prompt: string;
+}) {
+  return (
+    <div
+      className={`diff-selection-slot${fileName ? " filled" : ""}`}
+    >
+      <span>{label}</span>
+      {fileName && filePath ? (
+        <div className="diff-selection-file">
+          <code title={filePath}>{fileName}</code>
+          <small title={filePath}>{filePath}</small>
+          <button type="button" onClick={onClear}>
+            {clearLabel}
+          </button>
+        </div>
+      ) : (
+        <em>{emptyLabel}</em>
+      )}
+      <small>{prompt}</small>
+    </div>
+  );
 }
 
 function startWorkspacePathDrag(
@@ -4449,6 +4958,8 @@ function localizeStatusMessage(
     "Bold markup applied": "太字の Markdown を適用しました",
     "Checking Agent Workbench launch gate...":
       "エージェントワークベンチの起動ゲートを確認中です...",
+    "Change review failed": "変更確認に失敗しました",
+    "Change review ready": "変更確認の準備ができました",
     "Choosing file...": "ファイルを選択中...",
     "Choosing folder...": "フォルダを選択中...",
     "Choosing new file path...": "新規ファイルの保存先を選択中...",
@@ -4501,6 +5012,7 @@ function localizeStatusMessage(
     "Reopen failed": "再読み込みに失敗しました",
     "Reopened from disk": "ディスクから再読み込みしました",
     "Reopening from disk...": "ディスクから再読み込み中...",
+    "Reviewing changes...": "変更を確認中...",
     "Restoring workspace...": "ワークスペースを復元中...",
     "Save As cancelled": "別名保存をキャンセルしました",
     "Save As failed": "別名保存に失敗しました",
@@ -4559,15 +5071,17 @@ function DiffPane({
   onClose: () => void;
   view: CompareViewState;
 }) {
+  const rows = buildSplitDiffRows(view.lines);
   const labels =
     menuLanguage === "ja"
       ? {
           additions: "追加行",
+          changesTitle: "変更確認",
           close: "閉じる",
           empty: "差分はありません",
+          fileTitle: "Diff",
           removed: "削除行",
           summary: "比較の概要",
-          title: "ファイル比較",
           to: "と",
           table: "ファイル比較",
           sourceColumn: "比較元",
@@ -4576,11 +5090,12 @@ function DiffPane({
         }
       : {
           additions: "Added lines",
+          changesTitle: "Change review",
           close: "Close",
           empty: "No differences",
+          fileTitle: "Diff",
           removed: "Removed lines",
           summary: "Comparison summary",
-          title: "File comparison",
           to: "to",
           table: "File comparison",
           sourceColumn: "Source",
@@ -4592,7 +5107,9 @@ function DiffPane({
     <div className="diff-pane">
       <div className="diff-header">
         <div className="diff-title">
-          <span>{labels.title}</span>
+          <span>
+            {view.kind === "changes" ? labels.changesTitle : labels.fileTitle}
+          </span>
           <strong>
             <span title={view.leftPath}>{view.leftName}</span>
             <span aria-hidden="true">{labels.to}</span>
@@ -4612,43 +5129,132 @@ function DiffPane({
         </div>
       </div>
       <div className="diff-table" role="table" aria-label={labels.table}>
-        <div className="diff-row diff-row-header" role="row">
-          <span className="diff-marker" aria-hidden="true" />
-          <span className="diff-line-number" role="columnheader">
-            {labels.sourceColumn}
-          </span>
-          <span className="diff-line-number" role="columnheader">
-            {labels.targetColumn}
-          </span>
+        <div className="diff-split-row diff-row-header" role="row">
+          <span className="diff-line-number" role="columnheader" />
           <span className="diff-text-column" role="columnheader">
-            {labels.textColumn}
+            {view.leftColumnLabel ?? labels.sourceColumn}
+          </span>
+          <span className="diff-line-number" role="columnheader" />
+          <span className="diff-text-column" role="columnheader">
+            {view.rightColumnLabel ?? labels.targetColumn}
           </span>
         </div>
-        {view.lines.length === 0 ? (
+        {rows.length === 0 ? (
           <div className="diff-empty">{labels.empty}</div>
         ) : (
-          view.lines.map((line, index) => (
+          rows.map((row, index) => (
             <div
-              className={`diff-row ${line.kind}`}
-              key={`${line.kind}-${index}-${line.leftLine ?? "x"}-${line.rightLine ?? "x"}`}
+              className={`diff-split-row ${row.kind}`}
+              key={`${row.kind}-${index}-${row.left.line ?? "x"}-${row.right.line ?? "x"}`}
               role="row"
             >
-              <span className="diff-marker" aria-hidden="true">
-                {line.kind === "added" ? "+" : line.kind === "removed" ? "-" : ""}
+              <span className={`diff-line-number ${row.left.kind}`}>
+                {row.left.line ?? ""}
               </span>
-              <span className="diff-line-number">
-                {line.leftLine ?? ""}
+              <code className={`diff-cell ${row.left.kind}`}>
+                {row.left.kind === "removed" ? (
+                  <span className="diff-cell-marker" aria-hidden="true">
+                    -
+                  </span>
+                ) : null}
+                {row.left.text || " "}
+              </code>
+              <span className={`diff-line-number ${row.right.kind}`}>
+                {row.right.line ?? ""}
               </span>
-              <span className="diff-line-number">
-                {line.rightLine ?? ""}
-              </span>
-              <code>{line.text || " "}</code>
+              <code className={`diff-cell ${row.right.kind}`}>
+                {row.right.kind === "added" ? (
+                  <span className="diff-cell-marker" aria-hidden="true">
+                    +
+                  </span>
+                ) : null}
+                {row.right.text || " "}
+              </code>
             </div>
           ))
         )}
       </div>
     </div>
   );
+}
+
+function buildSplitDiffRows(lines: DiffLine[]): DiffSplitRow[] {
+  const rows: DiffSplitRow[] = [];
+  let index = 0;
+
+  while (index < lines.length) {
+    const line = lines[index];
+
+    if (line.kind === "equal") {
+      rows.push({
+        kind: "equal",
+        left: {
+          kind: "equal",
+          line: line.leftLine,
+          text: line.text,
+        },
+        right: {
+          kind: "equal",
+          line: line.rightLine,
+          text: line.text,
+        },
+      });
+      index += 1;
+      continue;
+    }
+
+    const removedLines: DiffLine[] = [];
+    const addedLines: DiffLine[] = [];
+
+    while (index < lines.length && lines[index].kind !== "equal") {
+      if (lines[index].kind === "removed") {
+        removedLines.push(lines[index]);
+      } else {
+        addedLines.push(lines[index]);
+      }
+      index += 1;
+    }
+
+    const rowCount = Math.max(removedLines.length, addedLines.length);
+
+    for (let rowIndex = 0; rowIndex < rowCount; rowIndex += 1) {
+      const removed = removedLines[rowIndex];
+      const added = addedLines[rowIndex];
+
+      rows.push({
+        kind:
+          removed && added
+            ? "changed"
+            : removed
+              ? "removed"
+              : "added",
+        left: removed
+          ? {
+              kind: "removed",
+              line: removed.leftLine,
+              text: removed.text,
+            }
+          : {
+              kind: "blank",
+              line: null,
+              text: "",
+            },
+        right: added
+          ? {
+              kind: "added",
+              line: added.rightLine,
+              text: added.text,
+            }
+          : {
+              kind: "blank",
+              line: null,
+              text: "",
+            },
+      });
+    }
+  }
+
+  return rows;
 }
 
 function localizeCompareError(message: string): string {
@@ -4664,6 +5270,7 @@ function localizeCompareError(message: string): string {
 }
 
 function WorkspaceContextMenu({
+  activeTabPath,
   anchor,
   canSendToAgent,
   compareSource,
@@ -4675,7 +5282,9 @@ function WorkspaceContextMenu({
   onOpen,
   onSendFullPathToAgent,
   onSetCompareSource,
+  onSetCompareTarget,
 }: {
+  activeTabPath: string | null;
   anchor: WorkspaceContextMenuState;
   canSendToAgent: boolean;
   compareSource: CompareAnchor | null;
@@ -4687,10 +5296,13 @@ function WorkspaceContextMenu({
   onOpen: () => void;
   onSendFullPathToAgent: () => void;
   onSetCompareSource: () => void;
+  onSetCompareTarget: () => void;
 }) {
+  const canCompareWithActiveTab =
+    activeTabPath !== null && activeTabPath !== anchor.path;
   const hasDifferentCompareSource =
     compareSource !== null && compareSource.path !== anchor.path;
-  const itemCount = 5 + (canSendToAgent ? 1 : 0) + (compareSource ? 1 : 0);
+  const itemCount = 6 + (canSendToAgent ? 1 : 0) + (compareSource ? 1 : 0);
   const estimatedWidth = 240;
   const estimatedHeight = 12 + itemCount * 34;
   const menuLeft = Math.min(
@@ -4706,22 +5318,26 @@ function WorkspaceContextMenu({
       ? {
           clearCompareSource: "比較元を解除",
           close: "メニューを閉じる",
+          compareActive: "開いているファイルと比較",
           compare: "比較元と比較",
           copyFullPath: "フルパスをコピー",
           menu: "ワークスペース項目の操作",
           open: "開く",
           sendFullPathToAgent: "Agent にフルパスを送る",
           setCompareSource: "比較元にする",
+          setCompareTarget: "比較先にする",
         }
       : {
           clearCompareSource: "Clear compare source",
           close: "Close menu",
+          compareActive: "Compare with open file",
           compare: "Compare with source",
           copyFullPath: "Copy full path",
           menu: "Workspace item actions",
           open: "Open",
           sendFullPathToAgent: "Send full path to Agent",
           setCompareSource: "Set as compare source",
+          setCompareTarget: "Set as compare target",
         };
 
   return (
@@ -4755,10 +5371,25 @@ function WorkspaceContextMenu({
       <button
         type="button"
         role="menuitem"
-        disabled={!anchor.canCompare || !hasDifferentCompareSource}
+        disabled={!anchor.canCompare}
+        onClick={onSetCompareTarget}
+      >
+        {labels.setCompareTarget}
+      </button>
+      <button
+        type="button"
+        role="menuitem"
+        disabled={
+          !anchor.canCompare ||
+          (!canCompareWithActiveTab && !hasDifferentCompareSource)
+        }
         onClick={onCompare}
       >
-        {labels.compare}
+        {hasDifferentCompareSource
+          ? labels.compare
+          : canCompareWithActiveTab
+            ? labels.compareActive
+            : labels.compare}
       </button>
       {compareSource ? (
         <button type="button" role="menuitem" onClick={onClearCompareSource}>
@@ -4785,13 +5416,18 @@ function SakuraPetals() {
 function WorkspaceTree({
   activePath,
   compareSourcePath,
+  compareTargetPath,
+  compareSelectionEnabled,
   entry,
   onLoadDirectory,
   onOpenContextMenu,
   onOpenFile,
+  onSelectCompareFile,
 }: {
   activePath: string | null;
   compareSourcePath: string | null;
+  compareTargetPath: string | null;
+  compareSelectionEnabled: boolean;
   entry: WorkspaceTreeEntry;
   onLoadDirectory: (path: string) => Promise<void>;
   onOpenContextMenu: (
@@ -4799,17 +5435,23 @@ function WorkspaceTree({
     event: ReactMouseEvent<HTMLButtonElement>,
   ) => void;
   onOpenFile: (path: string) => void | Promise<void>;
+  onSelectCompareFile: (entry: WorkspaceTreeEntry) => void;
 }) {
   return (
-    <div className="workspace-tree">
+    <div
+      className={`workspace-tree${compareSelectionEnabled ? " compare-selection" : ""}`}
+    >
       <TreeEntry
         activePath={activePath}
         compareSourcePath={compareSourcePath}
+        compareTargetPath={compareTargetPath}
+        compareSelectionEnabled={compareSelectionEnabled}
         defaultExpanded
         entry={entry}
         onLoadDirectory={onLoadDirectory}
         onOpenContextMenu={onOpenContextMenu}
         onOpenFile={onOpenFile}
+        onSelectCompareFile={onSelectCompareFile}
       />
     </div>
   );
@@ -4901,14 +5543,19 @@ function ChevronIcon({ expanded }: { expanded: boolean }) {
 function TreeEntry({
   activePath,
   compareSourcePath,
+  compareTargetPath,
+  compareSelectionEnabled,
   defaultExpanded = false,
   entry,
   onLoadDirectory,
   onOpenContextMenu,
   onOpenFile,
+  onSelectCompareFile,
 }: {
   activePath: string | null;
   compareSourcePath: string | null;
+  compareTargetPath: string | null;
+  compareSelectionEnabled: boolean;
   defaultExpanded?: boolean;
   entry: WorkspaceTreeEntry;
   onLoadDirectory: (path: string) => Promise<void>;
@@ -4917,6 +5564,7 @@ function TreeEntry({
     event: ReactMouseEvent<HTMLButtonElement>,
   ) => void;
   onOpenFile: (path: string) => void | Promise<void>;
+  onSelectCompareFile: (entry: WorkspaceTreeEntry) => void;
 }) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [loading, setLoading] = useState(false);
@@ -4927,11 +5575,17 @@ function TreeEntry({
     const isImage = isSupportedImageFile(entry.name);
     return (
       <button
-        className={`tree-file${entry.path === activePath ? " active" : ""}${entry.path === compareSourcePath ? " compare-source" : ""}`}
-        draggable
-        onClick={() => void onOpenFile(entry.path)}
+        className={`tree-file${entry.path === activePath ? " active" : ""}${entry.path === compareSourcePath ? " compare-source" : ""}${entry.path === compareTargetPath ? " compare-target" : ""}`}
+        draggable={!compareSelectionEnabled}
+        onClick={() =>
+          compareSelectionEnabled
+            ? onSelectCompareFile(entry)
+            : void onOpenFile(entry.path)
+        }
         onContextMenu={(event) => onOpenContextMenu(entry, event)}
-        onDragStart={(event) => startWorkspacePathDrag(event, entry)}
+        onDragStart={(event) => {
+          startWorkspacePathDrag(event, entry);
+        }}
         title={entry.path}
         type="button"
       >
@@ -4987,11 +5641,14 @@ function TreeEntry({
             <TreeEntry
               activePath={activePath}
               compareSourcePath={compareSourcePath}
+              compareTargetPath={compareTargetPath}
+              compareSelectionEnabled={compareSelectionEnabled}
               entry={child}
               key={child.path}
               onLoadDirectory={onLoadDirectory}
               onOpenContextMenu={onOpenContextMenu}
               onOpenFile={onOpenFile}
+              onSelectCompareFile={onSelectCompareFile}
             />
           ))}
           {entry.children_truncated ? (
@@ -5707,6 +6364,7 @@ function formatDocumentMetaParts(
 ): string[] {
   return [
     formatFileType(fileName, menuLanguage),
+    "UTF-8",
     formatBytes(stats.bytes),
     menuLanguage === "ja"
       ? `${stats.characters.toLocaleString()} 文字`
@@ -5829,6 +6487,28 @@ function formatLineEndingKind(
   }
 
   return "LF";
+}
+
+function sameAgentWorkbenchSession(
+  left: AgentWorkbenchSession | null,
+  right: AgentWorkbenchSession | null,
+): boolean {
+  if (left === right) {
+    return true;
+  }
+
+  if (!left || !right) {
+    return false;
+  }
+
+  return (
+    left.provider === right.provider &&
+    left.workspaceRoot === right.workspaceRoot &&
+    left.providerPath === right.providerPath &&
+    left.createdAtMs === right.createdAtMs &&
+    left.status === right.status &&
+    left.runtime.status === right.runtime.status
+  );
 }
 
 function markdownFormatStatus(format: MarkdownFormat): string {

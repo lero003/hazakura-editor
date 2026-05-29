@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-05-29
+Last reviewed: 2026-05-30
 
 ## Current State
 
@@ -11,7 +11,7 @@ Last reviewed: 2026-05-29
 - Current intended preview release is `v0.2.0` as a warning-expected DMG preview.
 - The prototype creates user-selected text/Markdown files, opens common UTF-8 text documents from File > Open or Finder/app-icon open events, opens a user-selected folder, shows a lazy bounded file tree, opens multiple files in tabs, edits the active tab with CodeMirror 6, saves through Rust with external-change protection, searches with visible match highlights and keyboard/navigation options, renders a toggleable sanitized Markdown preview, and shows selected workspace images in a read-only preview.
 - Existing LF / CRLF line endings are detected when a file is opened and preserved through save.
-- The status bar shows approximate UTF-8 byte count, character count, saved line-ending mode, final-newline state, and clean/unsaved state.
+- The status bar shows file type, UTF-8 encoding, approximate byte count, character count, saved line-ending mode, final-newline state, and clean/unsaved state.
 - Line endings can be explicitly converted between LF and CRLF; conversion marks the tab unsaved until saved.
 - Save As can create a new UTF-8 text file with common text extensions such as `.txt`, `.log`, `.json`, `.yaml`, `.toml`, `.csv`, `.css`, and `.html`, while refusing to overwrite an existing file.
 - New File, Open, Open Folder, Save, Save As, Close Window, and Recent file/folder actions are available from the native File menu instead of occupying the top toolbar.
@@ -20,7 +20,7 @@ Last reviewed: 2026-05-29
 - Agent Workbench now opens as its own dialog instead of sharing the Preferences contents. Changing the developer-mode gate stores the requested mode, shows localized Japanese/English boundary copy, offers an explicit restart button, and requires restart before Agent UI or backend launch-command availability changes.
 - When Agent Workbench mode is active or pending restart, the top toolbar shows an Agent Mode badge so the current trust boundary is visible outside the settings dialog.
 - When Agent Workbench mode is active for the current app session, the Agent Workbench dialog shows only allowlisted provider choices (`codex` / `opencode`) and requires explicit responsibility-boundary consent before the backend launch gate can pass.
-- When Agent Workbench mode is active and consent is acknowledged, the right pane can switch between Preview and a compact Agent pane shell that emphasizes provider, running state, and workspace path above an expanded xterm-based terminal surface. The shell can start one allowlisted provider process in the selected workspace root, render PTY output, send terminal input to it, resize the backend PTY from xterm rows/columns, and stop it through the runtime adapter boundary.
+- The top editor chrome exposes Preview, Diff, and Agent as open/close toggles instead of a tab strip inside the pane. Diff is always available as a dedicated workbench mode; when open, it hides the center editor area and uses the main content width for comparison setup or results. When Agent Workbench mode is active and consent is acknowledged, the compact Agent pane shell emphasizes provider, running state, and workspace path above an expanded xterm-based terminal surface. The shell can start one allowlisted provider process in the selected workspace root, render PTY output, send terminal input to it, resize the backend PTY from xterm rows/columns, and stop it through the runtime adapter boundary.
 - The app window title follows the active file and marks unsaved state, so the redundant in-app title header is no longer shown.
 - The workspace header includes a small open-folder action for switching workspace without returning to the native menu.
 - Save writes the editor text without adding or removing a final trailing newline by policy; Rust tests cover LF and CRLF final-newline presence.
@@ -33,11 +33,11 @@ Last reviewed: 2026-05-29
 - Unsaved dirty tab drafts are stored locally and offered for explicit restoration after restart when the on-disk file still matches the draft's saved fingerprint.
 - Editor display settings for wrap, invisible characters, font size, and tab size are persisted locally and adjustable from Preferences.
 - Theme changes now reconfigure the active CodeMirror editor without recreating it, so the current cursor, selection, and undo/redo session state are not reset by switching System / Light / Dark / Sakura / Yakou / Shokou.
-- The status bar groups supplemental document details: file type, approximate byte count, character count, line-ending mode, final-newline state, clean/unsaved state, cursor line/column, and approximate selection counts.
+- The status bar groups supplemental document details: file type, UTF-8 encoding, approximate byte count, character count, line-ending mode, final-newline state, clean/unsaved state, cursor line/column, and approximate selection counts.
 - Active-file search supports case-sensitive, whole-word, and safe regex modes, with invalid regex input reported without throwing.
 - Go to Line jumps the active editor to a requested line.
 - The active tab is rechecked for external on-disk changes when it gains focus through tab switching or app focus/visibility changes. Clean tabs are refreshed from disk automatically, while dirty tabs keep the explicit external-change recovery banner.
-- Existing workspace text files with common text/document extensions can be explicitly compared from the file-tree context menu. The comparison view uses file/workspace wording rather than Git wording, labels source/target line-number columns, and does not inspect repository state.
+- Existing workspace text files with common text/document extensions can be explicitly compared from the dedicated Diff workbench by setting separate source and target slots, then pressing Compare. In Diff mode, clicking comparable workspace file rows fills the source first and then the target; the file-tree context menu can set either side explicitly. Drag selection is intentionally not part of the Diff setup flow. The GitHub-PR-like split Diff workbench uses file/workspace/change-review wording rather than Git wording and does not inspect repository state. The same non-Git comparison surface can also review the active editor buffer against disk, review a recoverable draft against disk before restoring it, and review local edits against disk during an external-change conflict.
 - Find-field Enter / Escape handling and global shortcuts now ignore active IME composition events, so Japanese conversion is not mistaken for search movement, find close, save, open, or tab-close commands.
 - Editor-local keyboard editing keeps Tab inside the editor for indentation, supports Shift+Tab outdent, and preserves Shift+Arrow text selection.
 - Editor-local Markdown helpers wrap or insert bold, italic, inline-code, and link syntax from the tabs row or Cmd+B / Cmd+I / Cmd+E / Cmd+K while focus is inside the editor.
@@ -96,7 +96,7 @@ Last reviewed: 2026-05-29
 - Editor display settings for line wrap, invisible characters, font size, and tab size
 - Unsaved draft recovery prompt after restart
 - External-change metadata recheck on app focus / visibility return and active tab switch
-- Explicit file-to-file text comparison from common workspace text file rows, with added/removed line counts, source/target column headers, and non-Git comparison labels
+- Explicit center-file-to-right-file text comparison from common workspace text file rows, plus active buffer-versus-disk, draft-versus-disk, and conflict local-edits-versus-disk review, with added/removed line counts and non-Git comparison labels
 - IME-safe keyboard handling for find-field Enter / Escape and global shortcuts during active composition
 - Editor-local Tab / Shift+Tab indentation and Shift+Arrow selection key handling
 - Markdown input helpers for bold, italic, inline code, and link syntax
@@ -222,6 +222,23 @@ Agent Workbench TUI Responsiveness Stabilization on 2026-05-29:
 - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.
 - `cargo test --manifest-path src-tauri/Cargo.toml` passed with 69 Rust tests.
 - `npm run build` passed and regenerated the local macOS `.app` bundle.
+- `git diff --check` passed.
+
+Safe Editor Non-Git Change Review readiness on 2026-05-30:
+
+- Diff now behaves as a dedicated workbench mode rather than only a right-side result pane: the Diff toggle is always present, opening it hides the center editor and shows either setup guidance or a GitHub-PR-like split diff with left/right line numbers and added/removed cells.
+- The context-menu comparison flow prefers the open center file as the comparison source, so a user can open file A, right-click file B, and compare A against B without first setting a separate compare source.
+- The explicit compare-source flow now uses two visible Diff setup slots: click or right-click a workspace text file as the source, choose another as the target, then press Compare. Drag selection is a non-goal for this flow; click selection keeps the source fixed until the user clears it.
+- The comparison pane also has a change-review mode for active editor buffer versus disk, recoverable draft versus disk, and external-change conflict local edits versus disk.
+- Draft and external-change recovery banners now offer Review changes / 変更を確認 before restore, reopen, close-without-saving, or keep-editing choices.
+- The active dirty tab chrome also exposes Review changes / 変更を確認 for current buffer versus disk review.
+- The comparison surface remains file/workspace/change-review oriented and still does not inspect Git status, branches, staging, commits, history, or repository state.
+- `npm run build:vite` passed.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.
+- `cargo test --manifest-path src-tauri/Cargo.toml` passed with 70 Rust tests.
+- `npm run build` passed and regenerated the local macOS `.app` bundle.
+- `npm audit --audit-level=high` passed with 0 vulnerabilities.
+- `cargo audit --file src-tauri/Cargo.lock` completed with the known Tauri/wry transitive warnings for GTK3/gtk-rs, `glib`, `proc-macro-error`, and `unic-*`; no new high or critical blocker was identified in this pass.
 - `git diff --check` passed.
 
 Cherry blossom app icon update on 2026-05-29:
@@ -732,14 +749,14 @@ Known verification note:
 
 - Unsaved draft restore is intentionally explicit and fingerprint-bound. It is a safety net, not an autosave system, and does not merge with changed disk content.
 - Workspace listing is intentionally lazy and not a project index. Very large directories can still be partially listed when a single folder exceeds the per-folder cap.
-- Save-conflict recovery is explicit but still simple. There is no merge editor or diff-assisted recovery flow yet.
+- Save-conflict recovery is explicit and can show a non-Git change review before the user chooses a recovery action, but there is still no merge editor or automatic apply/resolve flow.
 - Undo/redo remain CodeMirror defaults and have not received dedicated product-level controls beyond preserving the active editor session during theme changes.
 - The app is ad-hoc signed for local build validation, but it is not Developer ID signed or notarized.
 - The GitHub remote is configured over HTTPS. SSH access previously failed with `Permission denied (publickey)`.
 
 ## Next Actions
 
-1. For v0.3, implement Safe Editor Non-Git Diff / Review in small slices: current buffer versus disk, explicit file-to-file diff, draft/recovery comparison, and save-conflict review.
+1. For v0.3 release readiness, run built-app smoke for File Comparison and Change Review, then record whether the non-Git comparison/recovery acceptance criteria are met.
 2. For v0.4 planning, keep Markdown Review Navigation focused on current-file outline, heading context, local Markdown link navigation, open-tabs/recent-files navigation, and display polish without strong prediction or auto-rewrite behavior.
 3. For Agent Workbench work, treat further changes as boundary maintenance; run `docs/smoke-checklist.md` Agent Workbench Trusted Workspace Manual Smoke in a throwaway workspace before further terminal, PTY, or provider-lifecycle changes.
 4. For recurring automation, use the 30-minute safe-editor review loop in `docs/development-automation.md`; keep slices narrow and avoid new test code unless it protects a real bug, backend/safety contract, or high-value lifecycle path.

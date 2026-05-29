@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-05-29
+Last reviewed: 2026-05-30
 
 `hazakura-note` は、Markdownを中心に安全にテキストを読む・書く・比べるための軽量エディタです。
 
@@ -60,7 +60,7 @@ Example use case:
 - Folder picker with a lazy, bounded file tree
 - File-tree, Open, and restored files unified into the same tab model
 - Multiple tabs with active-tab editor, preview, size, and save status
-- Active-tab metadata for approximate bytes, character count, LF / CRLF line-ending mode, and final-newline state
+- Active-tab metadata for UTF-8 encoding, approximate bytes, character count, LF / CRLF line-ending mode, and final-newline state
 - Explicit LF / CRLF conversion before save
 - Save As to a new common UTF-8 text file extension, with existing-file overwrite rejection
 - Native File menu entries for New File, Open, Open Folder, Save, Save As, and Recent items
@@ -74,7 +74,7 @@ Example use case:
 - Workspace tree directory expansion loads direct children on demand, keeps heavy / hidden directory exclusions, and shows a partial-listing note instead of failing the whole workspace when one folder exceeds the entry cap
 - In-file search for the active tab, with visible match highlights, active-match selection, and keyboard next / previous / return-to-editor flow
 - Search options for case-sensitive, whole-word, and regex matching with invalid-regex reporting
-- Explicit file-to-file comparison for existing common text documents from the workspace tree, without inspecting Git repository state
+- Explicit non-Git split Diff workbench for comparing workspace text files by choosing separate source/target slots, plus active editor changes versus disk, recoverable drafts, and external-change conflicts, without inspecting Git repository state
 - Go to Line, cursor line/column status, and approximate selected character/line count
 - Editor display settings for line wrap, invisible characters, font size, and tab size, with persisted preference
 - Find-field and global shortcut handling ignores active IME composition so Japanese text conversion is not mistaken for editor commands
@@ -166,7 +166,7 @@ Developer preview release boundary:
 - Unsaved draft restore is explicit and fingerprint-bound; it is not autosave and does not merge with changed disk content.
 - The file tree is a workspace browser, not an index. Very large directories are capped per folder and may show only the first visible entries.
 - Workspace image preview is intentionally bounded to local PNG/JPEG/GIF/WebP files up to 20 MB.
-- Save conflicts are recoverable by reopening, closing, or keeping local edits, and workspace text files can be explicitly compared, but there is no merge editor, advanced diff, or Git status view.
+- Save conflicts are recoverable by reviewing changes, reopening, closing, or keeping local edits, and text comparison remains file/workspace based, but there is no merge editor, advanced diff, or Git status view.
 - The app is not signed or notarized with an Apple Developer ID.
 - Agent Workbench is optional and explicit. It does not provide a general shell prompt, arbitrary command input UI, arbitrary path input UI, provider-add UI, multiple sessions, session restore, auto-apply, auto-commit, or Git integration.
 - CLI provider internals are outside hazakura's safety boundary. What happens inside `codex` or `opencode` depends on the provider and the user's choices.
