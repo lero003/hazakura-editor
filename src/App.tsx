@@ -435,17 +435,17 @@ export default function App() {
           sessionHeading: "セッション",
           boundaryHeading: "責任境界",
           enableAfterRestart: "再起動後に Agent Workbench を有効化",
-          activeSessionMode: "このアプリセッションでは Agent Workbench Mode が有効です。",
-          safeSessionMode: "このアプリセッションでは Safe Editor Mode が有効です。",
+          activeSessionMode: "このアプリセッションでは Agent Workbench モードが有効です。",
+          safeSessionMode: "このアプリセッションでは Safe Editor モードが有効です。",
           restartRequired:
             "Agent UI と backend launch command の有効状態を切り替えるには、hazakura-note の再起動が必要です。",
           restartNow: "今すぐ再起動",
           restarting: "再起動中...",
-          provider: "Provider",
-          session: "Session",
-          workspace: "Workspace",
-          noWorkspace: "Workspace 未選択",
-          providerControl: "Agent Workbench provider",
+          provider: "プロバイダー",
+          session: "セッション",
+          workspace: "ワークスペース",
+          noWorkspace: "ワークスペース未選択",
+          providerControl: "Agent Workbench プロバイダー",
           boundaryItems: [
             "hazakura は汎用 shell prompt を提供しません。",
             "hazakura が直接起動できるのは allowlist 済み agent CLI だけです。",
@@ -455,8 +455,8 @@ export default function App() {
           ],
           consent:
             "Agent Workbench の責任境界を理解しました。",
-          modeBadgeActive: "Agent Mode",
-          modeBadgePending: "Agent Mode: 再起動待ち",
+          modeBadgeActive: "Agent モード",
+          modeBadgePending: "Agent モード: 再起動待ち",
           modeBadgeTitle:
             "Agent Workbench は Safe Editor Mode とは別の trust boundary です。",
         }
@@ -1034,14 +1034,20 @@ export default function App() {
   const setCompareSource = useCallback((file: CompareAnchor) => {
     setCompareAnchor(file);
     setWorkspaceContextMenu(null);
-    setStatus(`Compare source set: ${file.name}`);
-  }, []);
+    setStatus(
+      menuLanguage === "ja"
+        ? `比較元に設定: ${file.name}`
+        : `Compare source set: ${file.name}`,
+    );
+  }, [menuLanguage]);
 
   const clearCompareSource = useCallback(() => {
     setCompareAnchor(null);
     setWorkspaceContextMenu(null);
-    setStatus("Compare source cleared");
-  }, []);
+    setStatus(
+      menuLanguage === "ja" ? "比較元を解除しました" : "Compare source cleared",
+    );
+  }, [menuLanguage]);
 
   const copyWorkspaceFullPath = useCallback(async (file: CompareAnchor) => {
     setWorkspaceContextMenu(null);
@@ -1049,12 +1055,22 @@ export default function App() {
 
     try {
       await writeTextToClipboard(file.path);
-      setStatus(`Copied full path: ${file.name}`);
+      setStatus(
+        menuLanguage === "ja"
+          ? `フルパスをコピー: ${file.name}`
+          : `Copied full path: ${file.name}`,
+      );
     } catch (err) {
-      setGlobalError(`Copy path failed: ${String(err)}`);
-      setStatus("Copy path failed");
+      setGlobalError(
+        menuLanguage === "ja"
+          ? `パスのコピーに失敗しました: ${String(err)}`
+          : `Copy path failed: ${String(err)}`,
+      );
+      setStatus(
+        menuLanguage === "ja" ? "パスのコピーに失敗しました" : "Copy path failed",
+      );
     }
-  }, []);
+  }, [menuLanguage]);
 
   const closeCompareView = useCallback(() => {
     setCompareView(null);
@@ -1974,24 +1990,36 @@ export default function App() {
       setGlobalError(null);
 
       if (!isActiveAgentSession(agentSession)) {
-        setStatus("Running Agent session required");
+        setStatus(
+          menuLanguage === "ja"
+            ? "実行中の Agent セッションが必要です"
+            : "Running Agent session required",
+        );
         return;
       }
 
       try {
         await writeAgentWorkbenchSessionInput(file.path);
-        setStatus(`Sent full path to Agent: ${file.name}`);
+        setStatus(
+          menuLanguage === "ja"
+            ? `Agent にフルパスを送信: ${file.name}`
+            : `Sent full path to Agent: ${file.name}`,
+        );
       } catch (err) {
         setAgentLaunchGate({
           kind: "rejected",
           message: String(err),
           preflight: null,
         });
-        setStatus("Agent path send failed");
+        setStatus(
+          menuLanguage === "ja"
+            ? "Agent へのパス送信に失敗しました"
+            : "Agent path send failed",
+        );
         void refreshAgentSessionState();
       }
     },
-    [agentSession, refreshAgentSessionState],
+    [agentSession, menuLanguage, refreshAgentSessionState],
   );
 
   const checkAgentLaunchGate = useCallback(async () => {
@@ -4302,6 +4330,7 @@ function WorkspaceContextMenu({
           close: "メニューを閉じる",
           compare: "比較する",
           copyFullPath: "フルパスをコピー",
+          menu: "ワークスペース項目の操作",
           open: "開く",
           sendFullPathToAgent: "Agent にフルパスを送る",
           setCompareSource: "比較元にする",
@@ -4311,6 +4340,7 @@ function WorkspaceContextMenu({
           close: "Close menu",
           compare: "Compare",
           copyFullPath: "Copy full path",
+          menu: "Workspace item actions",
           open: "Open",
           sendFullPathToAgent: "Send full path to Agent",
           setCompareSource: "Set as compare source",
@@ -4318,6 +4348,7 @@ function WorkspaceContextMenu({
 
   return (
     <div
+      aria-label={labels.menu}
       className="workspace-context-menu"
       role="menu"
       style={{ left: menuLeft, top: menuTop }}
