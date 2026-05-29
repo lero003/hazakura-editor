@@ -207,6 +207,15 @@ export async function closeCurrentWindow(): Promise<void> {
   await getCurrentWindow().close();
 }
 
+export async function requestAppRestart(): Promise<void> {
+  if (!isTauriRuntime()) {
+    window.location.reload();
+    return;
+  }
+
+  await invoke("request_app_restart");
+}
+
 export async function setCurrentWindowTitle(title: string): Promise<void> {
   if (!isTauriRuntime()) {
     document.title = title;
@@ -318,6 +327,10 @@ export async function stopAgentWorkbenchSession(): Promise<AgentWorkbenchSession
 }
 
 export async function getAgentWorkbenchSessionState(): Promise<AgentWorkbenchSessionState> {
+  if (!isTauriRuntime()) {
+    return { session: null, output: [] };
+  }
+
   return invoke<AgentWorkbenchSessionState>(
     "get_agent_workbench_session_state",
   );

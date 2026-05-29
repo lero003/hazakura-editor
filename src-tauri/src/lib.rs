@@ -1985,6 +1985,12 @@ fn drain_opened_files(store: tauri::State<'_, OpenedFileStore>) -> Result<Vec<St
     Ok(paths.drain(..).collect())
 }
 
+#[tauri::command]
+fn request_app_restart<R: tauri::Runtime>(app: tauri::AppHandle<R>) -> Result<(), String> {
+    app.request_restart();
+    Ok(())
+}
+
 fn metadata_fingerprint(metadata: &fs::Metadata) -> String {
     let modified_ns = metadata
         .modified()
@@ -2022,6 +2028,7 @@ pub fn run() {
             write_agent_workbench_session_input,
             resize_agent_workbench_terminal,
             drain_opened_files,
+            request_app_restart,
             save_text_file,
             save_text_file_as,
             update_app_menu_state

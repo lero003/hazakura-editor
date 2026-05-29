@@ -34,6 +34,7 @@ import {
   pickNewMarkdownFilePath,
   pickSaveAsTextFilePath,
   pickWorkspaceFolder,
+  requestAppRestart,
   saveTextFile,
   saveTextFileAs,
   setCurrentWindowTitle,
@@ -252,6 +253,7 @@ export default function App() {
   const [agentTerminalSize, setAgentTerminalSize] =
     useState<AgentTerminalSize | null>(null);
   const [agentStopPending, setAgentStopPending] = useState(false);
+  const [appRestartPending, setAppRestartPending] = useState(false);
   const [findQuery, setFindQuery] = useState("");
   const [findVisible, setFindVisible] = useState(false);
   const [searchOptions, setSearchOptions] = useState<SearchOptions>({
@@ -329,6 +331,75 @@ export default function App() {
   const activeConflict = activeTab?.saveStatus === "conflict";
   const activeSaveError = isSaveFailureError(activeTab);
   const agentWorkbenchAvailable = agentWorkbenchActive && agentWorkbenchConsent;
+  const agentWorkbenchCopy =
+    menuLanguage === "ja"
+      ? {
+          title: "Agent Workbench",
+          modeHeading: "モード",
+          sessionHeading: "セッション",
+          boundaryHeading: "責任境界",
+          enableAfterRestart: "再起動後に Agent Workbench を有効化",
+          activeSessionMode: "このアプリセッションでは Agent Workbench Mode が有効です。",
+          safeSessionMode: "このアプリセッションでは Safe Editor Mode が有効です。",
+          restartRequired:
+            "Agent UI と backend launch command の有効状態を切り替えるには、hazakura-note の再起動が必要です。",
+          restartNow: "今すぐ再起動",
+          restarting: "再起動中...",
+          provider: "Provider",
+          session: "Session",
+          workspace: "Workspace",
+          noWorkspace: "Workspace 未選択",
+          providerControl: "Agent Workbench provider",
+          boundaryItems: [
+            "hazakura は汎用 shell prompt を提供しません。",
+            "hazakura が直接起動できるのは allowlist 済み agent CLI だけです。",
+            "起動した CLI の挙動は CLI 側仕様とユーザー操作に依存します。",
+            "Agent Workbench は信頼できる workspace でだけ使ってください。",
+            "CLI が作った変更を採用するかはユーザーが判断します。",
+          ],
+          consent:
+            "Agent Workbench の責任境界を理解しました。",
+          modeBadgeActive: "Agent Mode",
+          modeBadgePending: "Agent Mode: 再起動待ち",
+          modeBadgeTitle:
+            "Agent Workbench は Safe Editor Mode とは別の trust boundary です。",
+        }
+      : {
+          title: "Agent Workbench",
+          modeHeading: "Mode",
+          sessionHeading: "Session",
+          boundaryHeading: "Boundary",
+          enableAfterRestart: "Enable Agent Workbench after restart",
+          activeSessionMode: "Agent Workbench mode is active for this app session.",
+          safeSessionMode: "Safe Editor Mode is active for this app session.",
+          restartRequired:
+            "Restart hazakura-note before Agent Workbench UI or backend launch commands change.",
+          restartNow: "Restart now",
+          restarting: "Restarting...",
+          provider: "Provider",
+          session: "Session",
+          workspace: "Workspace",
+          noWorkspace: "No workspace selected",
+          providerControl: "Agent Workbench provider",
+          boundaryItems: [
+            "hazakura does not provide a general-purpose shell prompt.",
+            "hazakura can directly launch only allowlisted agent CLIs.",
+            "The launched CLI behavior depends on the CLI and your actions inside it.",
+            "Use Agent Workbench only in trusted workspaces.",
+            "You review and decide what to do with CLI-made changes.",
+          ],
+          consent:
+            "I understand the Agent Workbench responsibility boundary.",
+          modeBadgeActive: "Agent Mode",
+          modeBadgePending: "Agent Mode: restart pending",
+          modeBadgeTitle:
+            "Agent Workbench is a separate trust boundary from Safe Editor Mode.",
+        };
+  const agentWorkbenchModeBadge = agentWorkbenchRestartRequired
+    ? agentWorkbenchCopy.modeBadgePending
+    : agentWorkbenchActive
+      ? agentWorkbenchCopy.modeBadgeActive
+      : null;
   const activeAgentSession = isActiveAgentSession(agentSession);
   const effectiveRightPaneMode: RightPaneMode = agentWorkbenchAvailable
     ? activeTab
@@ -1694,6 +1765,19 @@ export default function App() {
   const updateAgentWorkbenchPreference = useCallback(
     (enabled: boolean) => {
       setAgentWorkbenchPreference(enabled);
+      if (menuLanguage === "ja") {
+        setStatus(
+          enabled === agentWorkbenchActive
+            ? enabled
+              ? "Agent Workbench は有効です"
+              : "Safe Editor Mode です"
+            : enabled
+              ? "再起動後に Agent Workbench が有効になります"
+              : "再起動後に Agent Workbench が無効になります",
+        );
+        return;
+      }
+
       setStatus(
         enabled === agentWorkbenchActive
           ? enabled
@@ -1704,8 +1788,21 @@ export default function App() {
             : "Agent Workbench will disable after restart",
       );
     },
-    [agentWorkbenchActive],
+    [agentWorkbenchActive, menuLanguage],
   );
+
+  const restartAppForAgentMode = useCallback(async () => {
+    setAppRestartPending(true);
+    setStatus(menuLanguage === "ja" ? "hazakura-note を再起動中..." : "Restarting hazakura-note...");
+
+    try {
+      await requestAppRestart();
+    } catch (err) {
+      setAppRestartPending(false);
+      setGlobalError(`Restart failed: ${String(err)}`);
+      setStatus(menuLanguage === "ja" ? "再起動に失敗しました" : "Restart failed");
+    }
+  }, [menuLanguage]);
 
   const updateAgentWorkbenchConsent = useCallback((acknowledged: boolean) => {
     setAgentWorkbenchConsent(acknowledged);
@@ -2654,6 +2751,14 @@ export default function App() {
       {resolvedTheme === "sakura" ? <SakuraPetals /> : null}
       <section className="tabs-row" aria-label="Open files">
         <div className="tab-list" role="tablist" aria-label="Open file tabs">
+          {agentWorkbenchModeBadge ? (
+            <span
+              className={`agent-mode-badge${agentWorkbenchRestartRequired ? " pending" : ""}`}
+              title={agentWorkbenchCopy.modeBadgeTitle}
+            >
+              {agentWorkbenchModeBadge}
+            </span>
+          ) : null}
           {tabs.length === 0 ? (
             <span className="empty-tabs">No open files</span>
           ) : (
@@ -3057,6 +3162,7 @@ export default function App() {
             >
               {agentWorkbenchAvailable && !compareView ? (
                 <RightPaneModeSwitch
+                  menuLanguage={menuLanguage}
                   mode={effectiveRightPaneMode}
                   onModeChange={setRightPaneMode}
                 />
@@ -3074,6 +3180,7 @@ export default function App() {
                   provider={agentWorkbenchProvider}
                   session={agentSession}
                   stopPending={agentStopPending}
+                  menuLanguage={menuLanguage}
                   workspaceRootPath={workspaceRootPath}
                 />
               ) : activeTab && previewVisible ? (
@@ -3179,7 +3286,7 @@ export default function App() {
             <div className="preferences-header">
               <h2 id="preferences-title">
                 {preferencesDialogMode === "agent"
-                  ? "Agent Workbench"
+                  ? agentWorkbenchCopy.title
                   : "Preferences"}
               </h2>
               <button
@@ -3200,7 +3307,7 @@ export default function App() {
             {preferencesDialogMode === "agent" ? (
               <div className="agent-workbench-settings">
                 <section className="preference-section" aria-label="Agent mode">
-                  <h3>Mode</h3>
+                  <h3>{agentWorkbenchCopy.modeHeading}</h3>
                   <label className="toggle-switch">
                     <input
                       type="checkbox"
@@ -3210,37 +3317,45 @@ export default function App() {
                       }
                     />
                     <span className="slider"></span>
-                    <span>Enable Agent Workbench after restart</span>
+                    <span>{agentWorkbenchCopy.enableAfterRestart}</span>
                   </label>
                   <p className="preference-note">
                     {agentWorkbenchActive
-                      ? "Agent Workbench mode is active for this app session."
-                      : "Safe Editor Mode is active for this app session."}
+                      ? agentWorkbenchCopy.activeSessionMode
+                      : agentWorkbenchCopy.safeSessionMode}
                   </p>
                   {agentWorkbenchRestartRequired ? (
-                    <p className="preference-warning">
-                      Restart hazakura-note before Agent Workbench UI or backend
-                      launch commands change.
-                    </p>
+                    <div className="preference-warning restart-warning">
+                      <span>{agentWorkbenchCopy.restartRequired}</span>
+                      <button
+                        disabled={appRestartPending}
+                        onClick={() => void restartAppForAgentMode()}
+                        type="button"
+                      >
+                        {appRestartPending
+                          ? agentWorkbenchCopy.restarting
+                          : agentWorkbenchCopy.restartNow}
+                      </button>
+                    </div>
                   ) : null}
                 </section>
                 <section className="preference-section" aria-label="Agent session">
-                  <h3>Session</h3>
+                  <h3>{agentWorkbenchCopy.sessionHeading}</h3>
                   <div className="preference-status-grid">
-                    <span>Provider</span>
+                    <span>{agentWorkbenchCopy.provider}</span>
                     <strong>{providerLabel(agentWorkbenchProvider)}</strong>
-                    <span>Session</span>
-                    <strong>{agentSessionStateLabel(agentSession)}</strong>
-                    <span>Workspace</span>
+                    <span>{agentWorkbenchCopy.session}</span>
+                    <strong>{agentSessionStateLabel(agentSession, menuLanguage)}</strong>
+                    <span>{agentWorkbenchCopy.workspace}</span>
                     <strong title={workspaceRootPath ?? undefined}>
-                      {workspaceRootPath ?? "No workspace selected"}
+                      {workspaceRootPath ?? agentWorkbenchCopy.noWorkspace}
                     </strong>
                   </div>
                   {agentWorkbenchActive ? (
                     <label className="field-control">
-                      <span>Provider</span>
+                      <span>{agentWorkbenchCopy.provider}</span>
                       <select
-                        aria-label="Agent Workbench provider"
+                        aria-label={agentWorkbenchCopy.providerControl}
                         disabled={activeAgentSession}
                         value={agentWorkbenchProvider}
                         onChange={(event) =>
@@ -3259,13 +3374,11 @@ export default function App() {
                   ) : null}
                 </section>
                 <section className="preference-section" aria-label="Agent responsibility boundary">
-                  <h3>Boundary</h3>
+                  <h3>{agentWorkbenchCopy.boundaryHeading}</h3>
                   <ul className="agent-consent-list">
-                    <li>hazakura does not provide a general-purpose shell prompt.</li>
-                    <li>hazakura can directly launch only allowlisted agent CLIs.</li>
-                    <li>The launched CLI behavior depends on the CLI and your actions inside it.</li>
-                    <li>Use Agent Workbench only in trusted workspaces.</li>
-                    <li>You review and decide what to do with CLI-made changes.</li>
+                    {agentWorkbenchCopy.boundaryItems.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
                   </ul>
                   <label className="toggle-switch">
                     <input
@@ -3277,7 +3390,7 @@ export default function App() {
                       }
                     />
                     <span className="slider"></span>
-                    <span>I understand the Agent Workbench responsibility boundary.</span>
+                    <span>{agentWorkbenchCopy.consent}</span>
                   </label>
                 </section>
               </div>
@@ -3493,9 +3606,11 @@ function ImagePreviewPane({ image }: { image: ImagePreviewState }) {
 }
 
 function RightPaneModeSwitch({
+  menuLanguage,
   mode,
   onModeChange,
 }: {
+  menuLanguage: MenuLanguage;
   mode: RightPaneMode;
   onModeChange: (mode: RightPaneMode) => void;
 }) {
@@ -3507,7 +3622,7 @@ function RightPaneModeSwitch({
         onClick={() => onModeChange("preview")}
         type="button"
       >
-        Preview
+        {menuLanguage === "ja" ? "プレビュー" : "Preview"}
       </button>
       <button
         aria-pressed={mode === "agent"}
@@ -3531,6 +3646,7 @@ function PreviewUnavailablePane({ reason }: { reason: string }) {
 
 function AgentPaneShell({
   gate,
+  menuLanguage,
   onCheckGate,
   onStopSession,
   onTerminalData,
@@ -3542,6 +3658,7 @@ function AgentPaneShell({
   workspaceRootPath,
 }: {
   gate: AgentLaunchGateState;
+  menuLanguage: MenuLanguage;
   onCheckGate: () => void;
   onStopSession: () => void;
   onTerminalData: (data: string) => void;
@@ -3554,12 +3671,47 @@ function AgentPaneShell({
 }) {
   const workspaceAvailable = workspaceRootPath !== null;
   const activeSession = isActiveAgentSession(session);
+  const copy =
+    menuLanguage === "ja"
+      ? {
+          noWorkspace: "Workspace 未選択",
+          unavailable: "起動できません: 先に workspace folder を開いてください。",
+          placeholderReady:
+            "選択中の Agent provider に接続するには session を開始してください。",
+          placeholderNoWorkspace:
+            "Agent session を開始する前に workspace folder を開いてください。",
+          alreadyActive: "Agent session はすでに実行中です。",
+          openWorkspaceFirst: "先に workspace folder を開いてください。",
+          noRunningSession: "実行中の Agent session はありません。",
+          start: "セッション開始",
+          starting: "開始中...",
+          stop: "セッション停止",
+          stopping: "停止中...",
+          running: "Agent 実行中",
+          inactive: "Agent 停止中",
+        }
+      : {
+          noWorkspace: "No workspace selected",
+          unavailable: "Launch unavailable: open a workspace folder first.",
+          placeholderReady: "Start session to connect the selected Agent provider.",
+          placeholderNoWorkspace:
+            "Open a workspace folder before starting an Agent session.",
+          alreadyActive: "One Agent session is already active.",
+          openWorkspaceFirst: "Open a workspace folder first.",
+          noRunningSession: "No running Agent session.",
+          start: "Start session",
+          starting: "Starting...",
+          stop: "Stop session",
+          stopping: "Stopping...",
+          running: "Agent running",
+          inactive: "Agent inactive",
+        };
   const gateMessage = workspaceAvailable
-    ? gate.message
-    : "Launch unavailable: open a workspace folder first.";
+    ? localizeAgentGateMessage(gate.message, menuLanguage)
+    : copy.unavailable;
   const terminalPlaceholder = workspaceAvailable
-    ? "Start session to connect the selected Agent provider."
-    : "Open a workspace folder before starting an Agent session.";
+    ? copy.placeholderReady
+    : copy.placeholderNoWorkspace;
   const showGateMessage =
     !activeSession || gate.kind === "checking" || gate.kind === "rejected";
 
@@ -3568,7 +3720,7 @@ function AgentPaneShell({
       <div className="agent-compact-header">
         <div className="agent-compact-title">
           <strong>{providerLabel(provider)}</strong>
-          <span>{agentCompactSessionStateLabel(session)}</span>
+          <span>{agentCompactSessionStateLabel(session, menuLanguage)}</span>
         </div>
         <div className="agent-actions">
           <button
@@ -3578,30 +3730,30 @@ function AgentPaneShell({
             onClick={onCheckGate}
             title={
               activeSession
-                ? "One Agent session is already active."
+                ? copy.alreadyActive
                 : workspaceAvailable
                   ? undefined
-                  : "Open a workspace folder first."
+                  : copy.openWorkspaceFirst
             }
             type="button"
           >
-            {gate.kind === "checking" ? "Starting..." : "Start session"}
+            {gate.kind === "checking" ? copy.starting : copy.start}
           </button>
           <button
             disabled={!activeSession || stopPending}
             onClick={onStopSession}
-            title={activeSession ? undefined : "No running Agent session."}
+            title={activeSession ? undefined : copy.noRunningSession}
             type="button"
           >
-            {stopPending ? "Stopping..." : "Stop session"}
+            {stopPending ? copy.stopping : copy.stop}
           </button>
         </div>
       </div>
       <div className="agent-compact-meta">
         <span title={workspaceRootPath ?? undefined}>
-          {workspaceRootPath ?? "No workspace selected"}
+          {workspaceRootPath ?? copy.noWorkspace}
         </span>
-        <span>{activeSession ? "Agent running" : "Agent inactive"}</span>
+        <span>{activeSession ? copy.running : copy.inactive}</span>
       </div>
       {showGateMessage ? (
         <p
@@ -3858,29 +4010,59 @@ function isActiveAgentSession(session: AgentWorkbenchSession | null): boolean {
   return session?.status === "active";
 }
 
-function agentSessionStateLabel(session: AgentWorkbenchSession | null): string {
+function agentSessionStateLabel(
+  session: AgentWorkbenchSession | null,
+  menuLanguage: MenuLanguage = "en",
+): string {
   if (!session) {
-    return "Not running";
+    return menuLanguage === "ja" ? "未実行" : "Not running";
   }
 
   switch (session.status) {
     case "active":
-      return "Running";
+      return menuLanguage === "ja" ? "実行中" : "Running";
     case "exited":
-      return "Exited";
+      return menuLanguage === "ja" ? "終了済み" : "Exited";
     case "stopped":
-      return "Stopped";
+      return menuLanguage === "ja" ? "停止済み" : "Stopped";
   }
 }
 
 function agentCompactSessionStateLabel(
   session: AgentWorkbenchSession | null,
+  menuLanguage: MenuLanguage = "en",
 ): string {
   if (!session) {
-    return "Idle";
+    return menuLanguage === "ja" ? "待機中" : "Idle";
   }
 
-  return agentSessionStateLabel(session);
+  return agentSessionStateLabel(session, menuLanguage);
+}
+
+function localizeAgentGateMessage(
+  message: string,
+  menuLanguage: MenuLanguage,
+): string {
+  if (menuLanguage !== "ja") {
+    return message;
+  }
+
+  switch (message) {
+    case "Launch gate not checked.":
+      return "Launch gate はまだ確認されていません。";
+    case "Checking Agent Workbench launch gate...":
+      return "Agent Workbench launch gate を確認中です...";
+    case "Agent session exited.":
+      return "Agent session は終了しました。";
+    case "Agent session stopped.":
+      return "Agent session は停止しました。";
+    case "Provider not found; no Agent session was started.":
+      return "Provider が見つからないため、Agent session は開始されませんでした。";
+    case "Agent session running in the selected workspace. Only the selected allowlisted CLI was launched.":
+      return "選択中の workspace で Agent session が実行中です。起動されたのは選択された allowlist 済み CLI だけです。";
+    default:
+      return message;
+  }
 }
 
 function DiffPane({

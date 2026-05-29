@@ -446,6 +446,24 @@ button:disabled {
   font-weight: 500;
 }
 
+.agent-mode-badge {
+  background: var(--accent-soft);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  color: var(--accent);
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1;
+  padding: 6px 9px;
+  white-space: nowrap;
+}
+
+.agent-mode-badge.pending {
+  background: rgba(153, 120, 56, 0.14);
+  color: var(--conflict);
+}
+
 .markdown-assist {
   align-items: center;
   display: flex;
@@ -1844,6 +1862,22 @@ button:disabled {
   background: var(--accent-soft);
   color: var(--accent);
   font-weight: 650;
+}
+
+.restart-warning {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.restart-warning span {
+  min-width: 0;
+}
+
+.restart-warning button {
+  flex: 0 0 auto;
+  padding: 6px 10px;
 }
 
 .agent-consent-list {
