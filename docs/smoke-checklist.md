@@ -55,6 +55,8 @@ Latest Japanese editor chrome localization checks: 2026-05-29 built-app smoke co
 
 Latest Japanese recovery banner copy checks: 2026-05-29 automated gates passed after localizing Japanese-mode unsaved draft, external-change conflict, and non-conflict save-error recovery banner copy/actions. No fresh external-change scenario smoke was claimed.
 
+Latest Non-Git file comparison label polish checks: 2026-05-29 built-app Safe Editor surface was inspected before the change, then automated gates passed after replacing visible comparison-view `Diff` / `Compare` wording with file-comparison language. No fresh file-comparison interaction smoke was claimed.
+
 ## Build First
 
 ```bash
@@ -104,6 +106,15 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 2. Choose a throwaway folder.
 3. Confirm the file tree changes to the selected folder.
 4. Repeat from a different folder and confirm the workspace title and tree update without using the native menu.
+
+## File Comparison
+
+1. Open a throwaway folder outside the repo with at least two small text or Markdown files.
+2. Right-click the first file and choose Set as compare source / 比較元にする.
+3. Right-click the second file and choose Compare / 比較する.
+4. Confirm the side pane opens a file-comparison view with added/removed line counts.
+5. Confirm the labels say Comparison / File comparison or 比較 / ファイル比較, and do not mention Git status, branch, staging, commit, or repository state.
+6. Close the comparison view and confirm the editor, workspace tree, and active tab remain usable.
 
 ## Markdown Preview Sync
 

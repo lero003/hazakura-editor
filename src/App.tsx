@@ -629,7 +629,7 @@ export default function App() {
   const compareDocumentMeta = compareView
     ? menuLanguage === "ja"
       ? `比較 · ${compareView.additions} 追加 · ${compareView.removals} 削除`
-      : `Diff · ${compareView.additions} added · ${compareView.removals} removed`
+      : `Comparison · ${compareView.additions} added · ${compareView.removals} removed`
     : null;
   const activeDocumentMeta = activeTab
     ? formatActiveDocumentMeta(
@@ -1222,11 +1222,16 @@ export default function App() {
         });
         setStatus("Compare ready");
       } catch (err) {
-        setGlobalError(String(err));
+        const message = String(err);
+        setGlobalError(
+          menuLanguage === "ja"
+            ? localizeCompareError(message)
+            : message,
+        );
         setStatus("Compare failed");
       }
     },
-    [clearCompareSource, compareAnchor, setCompareSource],
+    [clearCompareSource, compareAnchor, menuLanguage, setCompareSource],
   );
 
   const saveTabById = useCallback(
@@ -3435,7 +3440,11 @@ export default function App() {
                 />
               ) : null}
               {sidePaneMode === "compare" && compareView ? (
-                <DiffPane view={compareView} onClose={closeCompareView} />
+                <DiffPane
+                  menuLanguage={menuLanguage}
+                  view={compareView}
+                  onClose={closeCompareView}
+                />
               ) : sidePaneMode === "agent" ? (
                 <AgentPaneShell
                   gate={agentLaunchGate}
@@ -4504,34 +4513,63 @@ function localizeStatusMessage(
 }
 
 function DiffPane({
+  menuLanguage,
   onClose,
   view,
 }: {
+  menuLanguage: MenuLanguage;
   onClose: () => void;
   view: CompareViewState;
 }) {
+  const labels =
+    menuLanguage === "ja"
+      ? {
+          additions: "追加行",
+          close: "閉じる",
+          empty: "差分はありません",
+          removed: "削除行",
+          summary: "比較の概要",
+          title: "ファイル比較",
+          to: "と",
+          table: "ファイル比較",
+        }
+      : {
+          additions: "Added lines",
+          close: "Close",
+          empty: "No differences",
+          removed: "Removed lines",
+          summary: "Comparison summary",
+          title: "File comparison",
+          to: "to",
+          table: "File comparison",
+        };
+
   return (
     <div className="diff-pane">
       <div className="diff-header">
         <div className="diff-title">
-          <span>Compare</span>
+          <span>{labels.title}</span>
           <strong>
             <span title={view.leftPath}>{view.leftName}</span>
-            <span aria-hidden="true">to</span>
+            <span aria-hidden="true">{labels.to}</span>
             <span title={view.rightPath}>{view.rightName}</span>
           </strong>
         </div>
-        <div className="diff-summary" aria-label="Diff summary">
-          <span className="diff-added">+{view.additions}</span>
-          <span className="diff-removed">-{view.removals}</span>
+        <div className="diff-summary" aria-label={labels.summary}>
+          <span className="diff-added" title={labels.additions}>
+            +{view.additions}
+          </span>
+          <span className="diff-removed" title={labels.removed}>
+            -{view.removals}
+          </span>
           <button type="button" onClick={onClose}>
-            Close
+            {labels.close}
           </button>
         </div>
       </div>
-      <div className="diff-table" role="table" aria-label="File comparison">
+      <div className="diff-table" role="table" aria-label={labels.table}>
         {view.lines.length === 0 ? (
-          <div className="diff-empty">No differences</div>
+          <div className="diff-empty">{labels.empty}</div>
         ) : (
           view.lines.map((line, index) => (
             <div
@@ -4555,6 +4593,18 @@ function DiffPane({
       </div>
     </div>
   );
+}
+
+function localizeCompareError(message: string): string {
+  if (
+    message.includes(
+      "Compare stopped because these files are too large for the comparison preview.",
+    )
+  ) {
+    return "ファイルが大きすぎるため、比較プレビューを停止しました。";
+  }
+
+  return message;
 }
 
 function WorkspaceContextMenu({
@@ -5476,7 +5526,7 @@ function buildLineDiff(
 
   if (lineProduct > DIFF_MAX_LINE_PRODUCT) {
     throw new Error(
-      "Compare stopped because these files are too large for the preview diff.",
+      "Compare stopped because these files are too large for the comparison preview.",
     );
   }
 
