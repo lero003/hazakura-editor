@@ -3543,6 +3543,9 @@ function AgentPaneShell({
   const gateMessage = workspaceAvailable
     ? gate.message
     : "Launch unavailable: open a workspace folder first.";
+  const terminalPlaceholder = workspaceAvailable
+    ? "Start session to connect the selected Agent provider."
+    : "Open a workspace folder before starting an Agent session.";
   const showGateMessage =
     !activeSession || gate.kind === "checking" || gate.kind === "rejected";
 
@@ -3598,6 +3601,7 @@ function AgentPaneShell({
         onData={onTerminalData}
         onResize={onTerminalResize}
         output={output}
+        placeholder={terminalPlaceholder}
       />
     </section>
   );
@@ -3608,11 +3612,13 @@ function AgentTerminalView({
   onData,
   onResize,
   output,
+  placeholder,
 }: {
   activeSession: boolean;
   onData: (data: string) => void;
   onResize: (size: AgentTerminalSize) => void;
   output: AgentWorkbenchOutputChunk[];
+  placeholder: string;
 }) {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const terminalRef = useRef<Terminal | null>(null);
@@ -3775,9 +3781,7 @@ function AgentTerminalView({
         ref={hostRef}
       />
       {showInactivePlaceholder ? (
-        <div className="agent-terminal-placeholder">
-          Start session to connect the selected Agent provider.
-        </div>
+        <div className="agent-terminal-placeholder">{placeholder}</div>
       ) : null}
     </div>
   );
