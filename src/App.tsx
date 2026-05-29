@@ -3801,19 +3801,22 @@ function AgentPaneShell({
   const copy =
     menuLanguage === "ja"
       ? {
-          noWorkspace: "Workspace 未選択",
-          unavailable: "起動できません: 先に workspace folder を開いてください。",
+          noWorkspace: "ワークスペース未選択",
+          unavailable:
+            "起動できません: 先にワークスペースフォルダを開いてください。",
           placeholderReady:
-            "選択中の Agent provider に接続するには session を開始してください。",
+            "選択中の Agent provider に接続するにはセッションを開始してください。",
           placeholderNoWorkspace:
-            "Agent session を開始する前に workspace folder を開いてください。",
-          alreadyActive: "Agent session はすでに実行中です。",
-          openWorkspaceFirst: "先に workspace folder を開いてください。",
-          noRunningSession: "実行中の Agent session はありません。",
+            "Agent セッションを開始する前にワークスペースフォルダを開いてください。",
+          alreadyActive: "Agent セッションはすでに実行中です。",
+          openWorkspaceFirst: "先にワークスペースフォルダを開いてください。",
+          noRunningSession: "実行中の Agent セッションはありません。",
+          outputChunks: "出力チャンク",
           start: "セッション開始",
           starting: "開始中...",
           stop: "セッション停止",
           stopping: "停止中...",
+          terminal: "Agent ターミナル",
           running: "Agent 実行中",
           inactive: "Agent 停止中",
         }
@@ -3826,10 +3829,12 @@ function AgentPaneShell({
           alreadyActive: "One Agent session is already active.",
           openWorkspaceFirst: "Open a workspace folder first.",
           noRunningSession: "No running Agent session.",
+          outputChunks: "Output chunks",
           start: "Start session",
           starting: "Starting...",
           stop: "Stop session",
           stopping: "Stopping...",
+          terminal: "Agent terminal",
           running: "Agent running",
           inactive: "Agent inactive",
         };
@@ -3891,10 +3896,12 @@ function AgentPaneShell({
       ) : null}
       <AgentTerminalView
         activeSession={activeSession}
+        outputLabel={copy.outputChunks}
         onData={onTerminalData}
         onResize={onTerminalResize}
         output={output}
         placeholder={terminalPlaceholder}
+        terminalLabel={copy.terminal}
       />
     </section>
   );
@@ -3902,16 +3909,20 @@ function AgentPaneShell({
 
 function AgentTerminalView({
   activeSession,
+  outputLabel,
   onData,
   onResize,
   output,
   placeholder,
+  terminalLabel,
 }: {
   activeSession: boolean;
+  outputLabel: string;
   onData: (data: string) => void;
   onResize: (size: AgentTerminalSize) => void;
   output: AgentWorkbenchOutputChunk[];
   placeholder: string;
+  terminalLabel: string;
 }) {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const terminalRef = useRef<Terminal | null>(null);
@@ -4071,10 +4082,10 @@ function AgentTerminalView({
       className={`agent-terminal-shell ${activeSession ? "active" : "inactive"}`}
     >
       <div className="agent-terminal-meta">
-        Output chunks: {output.length} / {AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS}
+        {outputLabel}: {output.length} / {AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS}
       </div>
       <div
-        aria-label="Agent terminal"
+        aria-label={terminalLabel}
         className="agent-terminal-host"
         ref={hostRef}
       />
@@ -4176,17 +4187,17 @@ function localizeAgentGateMessage(
 
   switch (message) {
     case "Launch gate not checked.":
-      return "Launch gate はまだ確認されていません。";
+      return "起動ゲートはまだ確認されていません。";
     case "Checking Agent Workbench launch gate...":
-      return "Agent Workbench launch gate を確認中です...";
+      return "Agent Workbench の起動ゲートを確認中です...";
     case "Agent session exited.":
-      return "Agent session は終了しました。";
+      return "Agent セッションは終了しました。";
     case "Agent session stopped.":
-      return "Agent session は停止しました。";
+      return "Agent セッションは停止しました。";
     case "Provider not found; no Agent session was started.":
-      return "Provider が見つからないため、Agent session は開始されませんでした。";
+      return "Provider が見つからないため、Agent セッションは開始されませんでした。";
     case "Agent session running in the selected workspace. Only the selected allowlisted CLI was launched.":
-      return "選択中の workspace で Agent session が実行中です。起動されたのは選択された allowlist 済み CLI だけです。";
+      return "選択中のワークスペースで Agent セッションが実行中です。起動されたのは選択された allowlist 済み CLI だけです。";
     default:
       return message;
   }
