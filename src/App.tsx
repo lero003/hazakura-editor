@@ -2081,14 +2081,16 @@ export default function App() {
   }, [activeDirty, activeTab, selectedImage]);
 
   useEffect(() => {
-    const menuRecentFiles: AppMenuRecentItem[] = recentFiles.map((entry) => ({
-      label: entry.label,
+    const menuRecentFiles: AppMenuRecentItem[] = buildRecentDisplayEntries(
+      recentFiles,
+    ).map((entry) => ({
+      label: entry.displayLabel,
     }));
-    const menuRecentFolders: AppMenuRecentItem[] = recentFolders.map(
-      (entry) => ({
-        label: entry.label,
-      }),
-    );
+    const menuRecentFolders: AppMenuRecentItem[] = buildRecentDisplayEntries(
+      recentFolders,
+    ).map((entry) => ({
+      label: entry.displayLabel,
+    }));
 
     void updateAppMenuState({
       hasActiveTab: Boolean(activeTab),
@@ -3429,6 +3431,8 @@ function StartPanel({
   onOpenRecentFile: (path: string) => void;
   recentFiles: RecentEntry[];
 }) {
+  const visibleRecentFiles = buildRecentDisplayEntries(recentFiles).slice(0, 4);
+
   return (
     <div className="start-panel">
       <div className="start-panel-main">
@@ -3449,14 +3453,14 @@ function StartPanel({
       {recentFiles.length > 0 ? (
         <div className="start-recent" aria-label="Recent files">
           <span>Recent</span>
-          {recentFiles.slice(0, 4).map((entry) => (
+          {visibleRecentFiles.map((entry) => (
             <button
               key={entry.path}
               type="button"
               onClick={() => onOpenRecentFile(entry.path)}
               title={entry.path}
             >
-              {entry.label}
+              {entry.displayLabel}
             </button>
           ))}
         </div>
@@ -4411,6 +4415,30 @@ function writeStoredRecentEntries(storageKey: string, entries: RecentEntry[]) {
   }
 
   window.localStorage.setItem(storageKey, JSON.stringify(normalizedEntries));
+}
+
+function buildRecentDisplayEntries(
+  entries: RecentEntry[],
+): Array<RecentEntry & { displayLabel: string }> {
+  const labelCounts = new Map<string, number>();
+
+  for (const entry of entries) {
+    labelCounts.set(entry.label, (labelCounts.get(entry.label) ?? 0) + 1);
+  }
+
+  return entries.map((entry) => ({
+    ...entry,
+    displayLabel:
+      (labelCounts.get(entry.label) ?? 0) > 1
+        ? `${entry.label} - ${parentFolderName(entry.path)}`
+        : entry.label,
+  }));
+}
+
+function parentFolderName(path: string): string {
+  const parts = path.split(/[\\/]+/).filter(Boolean);
+
+  return parts.length >= 2 ? parts[parts.length - 2] : path;
 }
 
 function upsertRecentEntry(
