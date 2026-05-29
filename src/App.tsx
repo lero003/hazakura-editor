@@ -536,35 +536,35 @@ export default function App() {
   const agentWorkbenchCopy =
     menuLanguage === "ja"
       ? {
-          title: "Agent Workbench",
+          title: "エージェントワークベンチ",
           modeHeading: "モード",
           sessionHeading: "セッション",
           boundaryHeading: "責任境界",
-          enableAfterRestart: "再起動後に Agent Workbench を有効化",
-          activeSessionMode: "このアプリセッションでは Agent Workbench モードが有効です。",
+          enableAfterRestart: "再起動後にエージェントワークベンチを有効化",
+          activeSessionMode: "このアプリセッションではエージェントワークベンチが有効です。",
           safeSessionMode: "このアプリセッションでは Safe Editor モードが有効です。",
           restartRequired:
-            "Agent UI と backend launch command の有効状態を切り替えるには、hazakura-note の再起動が必要です。",
+            "エージェント画面と CLI 起動の有効状態を切り替えるには、hazakura-note の再起動が必要です。",
           restartNow: "今すぐ再起動",
           restarting: "再起動中...",
           provider: "プロバイダー",
           session: "セッション",
           workspace: "ワークスペース",
           noWorkspace: "ワークスペース未選択",
-          providerControl: "Agent Workbench プロバイダー",
+          providerControl: "エージェントワークベンチのプロバイダー",
           boundaryItems: [
             "hazakura は汎用 shell prompt を提供しません。",
-            "hazakura が直接起動できるのは allowlist 済み agent CLI だけです。",
+            "hazakura が直接起動できるのは許可リスト済みの agent CLI だけです。",
             "起動した CLI の挙動は CLI 側仕様とユーザー操作に依存します。",
-            "Agent Workbench は信頼できる workspace でだけ使ってください。",
+            "エージェントワークベンチは信頼できる workspace でだけ使ってください。",
             "CLI が作った変更を採用するかはユーザーが判断します。",
           ],
           consent:
-            "Agent Workbench の責任境界を理解しました。",
+            "エージェントワークベンチの責任境界を理解しました。",
           modeBadgeActive: "エージェントモード",
           modeBadgePending: "エージェントモード: 再起動待ち",
           modeBadgeTitle:
-            "Agent Workbench は Safe Editor Mode とは別の trust boundary です。",
+            "エージェントワークベンチは Safe Editor モードとは別の trust boundary です。",
         }
       : {
           title: "Agent Workbench",

@@ -1709,7 +1709,7 @@ fn build_app_menu_with_state<R: tauri::Runtime>(
             &MenuItem::with_id(
                 app,
                 MENU_AGENT_WORKBENCH,
-                label("Agent Workbench...", "Agent Workbench..."),
+                label("Agent Workbench...", "エージェントワークベンチ..."),
                 true,
                 None::<&str>,
             )?,
@@ -1900,7 +1900,7 @@ fn build_app_menu_with_state<R: tauri::Runtime>(
                 &MenuItem::with_id(
                     app,
                     MENU_AGENT_WORKBENCH,
-                    label("Agent Workbench...", "Agent Workbench..."),
+                    label("Agent Workbench...", "エージェントワークベンチ..."),
                     true,
                     None::<&str>,
                 )?,

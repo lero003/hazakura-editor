@@ -69,6 +69,8 @@ Latest Japanese image preview header copy checks: 2026-05-30 automated gates pas
 
 Latest Japanese Agent mode badge copy checks: 2026-05-30 built-app surface inspection confirmed Japanese mode still showed the top toolbar badge as `Agent モード`; automated gates passed after changing it to `エージェントモード` / `エージェントモード: 再起動待ち`. No Agent provider session was started.
 
+Latest Japanese Agent Workbench mode-gate copy checks: 2026-05-30 built-app surface inspection confirmed Japanese Agent mode was active, the top badge was localized, and the app menu still showed `Agent Workbench...` in Japanese mode. Automated gates passed after smoothing the Japanese Agent Workbench dialog title, mode toggle, restart-required wording, provider control label, responsibility-boundary consent, badge tooltip, and native app-menu Agent Workbench label. No Agent provider session was started.
+
 ## Build First
 
 ```bash
