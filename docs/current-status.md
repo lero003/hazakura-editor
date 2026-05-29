@@ -241,6 +241,15 @@ Safe Editor Non-Git Change Review readiness on 2026-05-30:
 - `cargo audit --file src-tauri/Cargo.lock` completed with the known Tauri/wry transitive warnings for GTK3/gtk-rs, `glib`, `proc-macro-error`, and `unic-*`; no new high or critical blocker was identified in this pass.
 - `git diff --check` passed.
 
+Dependency audit triage on 2026-05-30:
+
+- GitHub Dependabot alert #1 / `GHSA-wrw7-89jp-8q8g` remains open for `glib 0.18.5` in `src-tauri/Cargo.lock`.
+- `npm audit --audit-level=moderate` passed with 0 vulnerabilities.
+- `cargo tree --manifest-path src-tauri/Cargo.toml --target all -i glib` showed `glib` only through the Linux Tauri/wry GTK/WebKit path: `tauri 2.11.2` / `wry 0.55.1` / `gtk 0.18.x`.
+- `cargo tree --manifest-path src-tauri/Cargo.toml --target aarch64-apple-darwin -i glib` and `--target x86_64-apple-darwin -i glib` showed no `glib` dependency path.
+- `cargo update --manifest-path src-tauri/Cargo.toml -p glib --precise 0.20.0 --dry-run` cannot resolve because `gtk 0.18.2` requires `glib ^0.18`; compatible `tauri` / `wry` / `gtk` dry-run updates did not offer a patched path.
+- This is not treated as a v0.3 macOS blocker. Recheck before Linux support, before a Tauri/wry dependency refresh lane, before distribution-readiness dependency sign-off, or sooner if the alert severity increases or a compatible patched upstream path becomes available.
+
 Cherry blossom app icon update on 2026-05-29:
 
 - `src-tauri/icons/icon.png` and `src-tauri/icons/icon.icns` now use a centered `🌸` emoji mark on a soft pink rounded base.
@@ -762,7 +771,7 @@ Known verification note:
 4. For recurring automation, use the 30-minute safe-editor review loop in `docs/development-automation.md`; keep slices narrow and avoid new test code unless it protects a real bug, backend/safety contract, or high-value lifecycle path.
 5. Re-smoke long file name / constrained-width layout before binary distribution readiness.
 6. For follow-up warning-expected DMG previews, keep the release marked as a prerelease and use the current version-specific release note as the GitHub Release body.
-7. Add minimal CI and Dependabot as P1 release hardening when a small verified slice is available.
+7. Add minimal CI and Dependabot as P1 release hardening when a small verified slice is available. Keep the current `glib` Dependabot alert visible as a Linux/Tauri-wry dependency-refresh review item rather than a v0.3 macOS blocker.
 8. Keep signing, notarization, and installer packaging separate from source-release and workspace hardening.
 
 ## Avoid
