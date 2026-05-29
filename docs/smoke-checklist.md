@@ -59,6 +59,8 @@ Latest Non-Git file comparison label polish checks: 2026-05-29 built-app Safe Ed
 
 Latest file comparison column readability checks: 2026-05-29 built-app launch was attempted, but Computer Use could not inspect the window in this run. Automated gates passed after adding source/target/content column headers to the existing file-comparison view. No fresh file-comparison interaction smoke was claimed.
 
+Latest file comparison target gating checks: 2026-05-30 automated gates passed after limiting Set as compare source / Compare actions to common text-document filenames while leaving Open and Copy full path available for other workspace files. No fresh file-comparison interaction smoke was claimed.
+
 ## Build First
 
 ```bash
@@ -117,7 +119,8 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 4. Confirm the side pane opens a file-comparison view with added/removed line counts.
 5. Confirm the line-number columns are labeled Source / Target or 比較元 / 比較先, with a Text / 内容 column for the changed text.
 6. Confirm the labels say Comparison / File comparison or 比較 / ファイル比較, and do not mention Git status, branch, staging, commit, or repository state.
-7. Close the comparison view and confirm the editor, workspace tree, and active tab remain usable.
+7. Right-click an image or obvious non-text file such as `.DS_Store` if present and confirm Set as compare source / Compare are disabled while Open and Copy full path remain available.
+8. Close the comparison view and confirm the editor, workspace tree, and active tab remain usable.
 
 ## Markdown Preview Sync
 

@@ -1138,7 +1138,7 @@ export default function App() {
         name: entry.name,
         x: event.clientX,
         y: event.clientY,
-        canCompare: !isSupportedImageFile(entry.name),
+        canCompare: isComparableTextFile(entry.name),
       });
     },
     [],
@@ -5728,6 +5728,50 @@ function isSupportedImageFile(path: string): boolean {
   const extension = path.split(".").at(-1)?.toLowerCase() ?? "";
 
   return ["png", "jpg", "jpeg", "gif", "webp"].includes(extension);
+}
+
+function isComparableTextFile(path: string): boolean {
+  const lowerName = fileNameFromPath(path).toLowerCase();
+  const extension = lowerName.includes(".")
+    ? lowerName.split(".").at(-1) ?? ""
+    : "";
+
+  if (
+    [
+      "md",
+      "markdown",
+      "mdown",
+      "txt",
+      "text",
+      "log",
+      "json",
+      "jsonl",
+      "yaml",
+      "yml",
+      "toml",
+      "csv",
+      "tsv",
+      "css",
+      "html",
+      "xml",
+      "ini",
+      "conf",
+    ].includes(extension)
+  ) {
+    return true;
+  }
+
+  return [
+    ".editorconfig",
+    ".env",
+    ".gitignore",
+    ".npmrc",
+    "changelog",
+    "license",
+    "makefile",
+    "readme",
+    "todo",
+  ].includes(lowerName);
 }
 
 function formatLineEndingKind(
