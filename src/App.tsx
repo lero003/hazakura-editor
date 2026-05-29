@@ -3621,6 +3621,7 @@ function AgentTerminalView({
   const activeSessionRef = useRef(activeSession);
   const onDataRef = useRef(onData);
   const onResizeRef = useRef(onResize);
+  const showInactivePlaceholder = !activeSession && output.length === 0;
 
   useEffect(() => {
     activeSessionRef.current = activeSession;
@@ -3773,6 +3774,11 @@ function AgentTerminalView({
         className="agent-terminal-host"
         ref={hostRef}
       />
+      {showInactivePlaceholder ? (
+        <div className="agent-terminal-placeholder">
+          Start session to connect the selected Agent provider.
+        </div>
+      ) : null}
     </div>
   );
 }

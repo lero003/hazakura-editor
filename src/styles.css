@@ -1424,6 +1424,7 @@ button:disabled {
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   min-height: 0;
   overflow: hidden;
+  position: relative;
 }
 
 .agent-terminal-shell.inactive {
@@ -1444,6 +1445,19 @@ button:disabled {
   min-width: 0;
   overflow: hidden;
   padding: 8px;
+}
+
+.agent-terminal-placeholder {
+  color: rgba(220, 232, 223, 0.7);
+  font-family:
+    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+  inset: 48px 18px 18px;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  position: absolute;
+  text-align: center;
 }
 
 .agent-terminal-host .xterm {
