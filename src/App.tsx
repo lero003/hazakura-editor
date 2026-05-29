@@ -93,8 +93,8 @@ const DIFF_MAX_LINE_PRODUCT = 1_000_000;
 
 type SaveStatus = "idle" | "saving" | "saved" | "error" | "conflict";
 type BaseTheme = "light" | "dark";
-type ThemePreference = "system" | BaseTheme | "sakura" | "hazakura-nexus" | "yakou" | "shokou";
-type ResolvedTheme = BaseTheme | "sakura" | "hazakura-nexus" | "yakou" | "shokou";
+type ThemePreference = "system" | BaseTheme | "sakura" | "yakou" | "shokou";
+type ResolvedTheme = BaseTheme | "sakura" | "yakou" | "shokou";
 type EditableLineEnding = "lf" | "crlf";
 type LineEndingKind = EditableLineEnding | "mixed" | "none";
 type RightPaneMode = "preview" | "agent";
@@ -403,7 +403,6 @@ export default function App() {
           menuLanguage: "メニュー言語",
           previewPane: "プレビュー表示",
           sakura: "桜",
-          hazakuraNexus: "葉桜ネクサス",
           yakou: "夜光",
           shokou: "曙光",
           settingsTitle: "設定",
@@ -424,7 +423,6 @@ export default function App() {
           menuLanguage: "Menu language",
           previewPane: "Preview pane",
           sakura: "Sakura",
-          hazakuraNexus: "Hazakura Nexus",
           yakou: "Yakou",
           shokou: "Shokou",
           settingsTitle: "Preferences",
@@ -1398,9 +1396,6 @@ export default function App() {
           break;
         case "theme-sakura":
           setThemePreference("sakura");
-          break;
-        case "theme-hazakura-nexus":
-          setThemePreference("hazakura-nexus");
           break;
         case "theme-yakou":
           setThemePreference("yakou");
@@ -2889,7 +2884,6 @@ export default function App() {
   return (
     <main className="app-shell">
       {resolvedTheme === "sakura" ? <SakuraPetals /> : null}
-      {resolvedTheme === "hazakura-nexus" ? <HazakuraPetals /> : null}
       <section className="tabs-row" aria-label="Open files">
         <div className="tab-list" role="tablist" aria-label="Open file tabs">
           {agentWorkbenchModeBadge ? (
@@ -3648,7 +3642,6 @@ export default function App() {
                       <option value="light">{preferencesCopy.light}</option>
                       <option value="dark">{preferencesCopy.dark}</option>
                       <option value="sakura">{preferencesCopy.sakura}</option>
-                      <option value="hazakura-nexus">{preferencesCopy.hazakuraNexus}</option>
                       <option value="yakou">{preferencesCopy.yakou}</option>
                       <option value="shokou">{preferencesCopy.shokou}</option>
                     </select>
@@ -4553,27 +4546,6 @@ function SakuraPetals() {
   );
 }
 
-function HazakuraPetals() {
-  return (
-    <div className="sakura-petals hazakura-petals" aria-hidden="true">
-      {Array.from({ length: 12 }, (_, index) => {
-        const isLeaf = index % 2 === 0;
-        return (
-          <span
-            className={isLeaf ? "hazakura-leaf" : "sakura-petal"}
-            key={index}
-            style={{
-              left: `${8 + index * 8}%`,
-              animationDelay: `-${index * 1.5}s`,
-              animationDuration: `${12 + (index % 3) * 2.5}s`
-            }}
-          />
-        );
-      })}
-    </div>
-  );
-}
-
 function WorkspaceTree({
   activePath,
   compareSourcePath,
@@ -4844,7 +4816,6 @@ function readStoredThemePreference(): ThemePreference {
     value === "dark" ||
     value === "system" ||
     value === "sakura" ||
-    value === "hazakura-nexus" ||
     value === "yakou" ||
     value === "shokou"
   ) {

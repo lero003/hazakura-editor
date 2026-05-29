@@ -31,7 +31,7 @@ Last reviewed: 2026-05-29
 - Recent workspace, open tabs, active tab, and theme preference are restored after restart.
 - Unsaved dirty tab drafts are stored locally and offered for explicit restoration after restart when the on-disk file still matches the draft's saved fingerprint.
 - Editor display settings for wrap, invisible characters, font size, and tab size are persisted locally and adjustable from Preferences.
-- Theme changes now reconfigure the active CodeMirror editor without recreating it, so the current cursor, selection, and undo/redo session state are not reset by switching Light / Dark / System.
+- Theme changes now reconfigure the active CodeMirror editor without recreating it, so the current cursor, selection, and undo/redo session state are not reset by switching System / Light / Dark / Sakura / Yakou / Shokou.
 - The status bar groups supplemental document details: file type, approximate byte count, character count, line-ending mode, final-newline state, clean/unsaved state, cursor line/column, and approximate selection counts.
 - Active-file search supports case-sensitive, whole-word, and safe regex modes, with invalid regex input reported without throwing.
 - Go to Line jumps the active editor to a requested line.
@@ -81,7 +81,7 @@ Last reviewed: 2026-05-29
 - Multiple open file tabs
 - Tab-level unsaved state
 - Save / Discard / Cancel confirmation before closing an unsaved tab
-- System / Light / Dark theme switching
+- System / Light / Dark / Sakura / Yakou / Shokou theme switching
 - Theme selection persistence through `localStorage`
 - Active editor theme reconfiguration without recreating the CodeMirror view
 - Recent workspace restoration through `localStorage`

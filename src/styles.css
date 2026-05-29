@@ -78,30 +78,6 @@
   --shadow-lg: 0 12px 32px rgba(110, 54, 72, 0.16), 0 2px 8px rgba(110, 54, 72, 0.08);
 }
 
-:root[data-theme="hazakura-nexus"] {
-  --bg: linear-gradient(135deg, #e5f5ec 0%, #faedf0 100%);
-  --surface: #f6faf7;
-  --surface-rgb: 246, 250, 247;
-  --surface-strong: #ffffff;
-  --surface-strong-rgb: 255, 255, 255;
-  --surface-muted: #e2ede5;
-  --border: #d7e4db;
-  --border-strong: #b6caba;
-  --text: #162a1d;
-  --text-muted: #4e6a57;
-  --accent: #23804d;
-  --accent-gradient: linear-gradient(135deg, #2b8255 0%, #d87093 100%);
-  --accent-soft: #e3f2ea;
-  --danger: #9e3f43;
-  --conflict: #997838;
-  --status-bg: #162d20;
-  --status-text: #f0faf4;
-
-  --shadow-sm: 0 1px 2px rgba(22, 42, 29, 0.05);
-  --shadow-md: 0 4px 12px rgba(22, 42, 29, 0.08), 0 1px 3px rgba(22, 42, 29, 0.04);
-  --shadow-lg: 0 12px 32px rgba(22, 42, 29, 0.12), 0 2px 8px rgba(22, 42, 29, 0.06);
-}
-
 /* 夜光 / Yakou – Warp-inspired dark gradient theme */
 :root[data-theme="yakou"] {
   --bg: #0d0d12;
@@ -128,30 +104,30 @@
   --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.6), 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
-/* 曙光 / Shokou – Dawn-light counterpart to Yakou */
+/* 曙光 / Shokou – bright blue sky with a warm dawn edge */
 :root[data-theme="shokou"] {
-  --bg: linear-gradient(135deg, #f0edf8 0%, #e8f5f2 100%);
-  --surface: #f9f7ff;
-  --surface-rgb: 249, 247, 255;
+  --bg: linear-gradient(135deg, #eef7ff 0%, #fff4e6 100%);
+  --surface: #f8fbff;
+  --surface-rgb: 248, 251, 255;
   --surface-strong: #ffffff;
   --surface-strong-rgb: 255, 255, 255;
-  --surface-muted: #ece8f5;
-  --border: #ddd6ee;
-  --border-strong: #c4b8de;
-  --text: #1e1a2e;
-  --text-muted: #6b6188;
-  --accent: #6b5ce7;
-  --accent-gradient: linear-gradient(135deg, #7c6ff0 0%, #40bfa0 100%);
-  --accent-soft: #ece6ff;
-  --danger: #c44458;
-  --conflict: #b08a30;
-  --status-bg: #1e1a2e;
-  --status-text: #f0edf8;
+  --surface-muted: #e5f1fb;
+  --border: #d5e5f1;
+  --border-strong: #aec8da;
+  --text: #152638;
+  --text-muted: #526a7d;
+  --accent: #2f78ad;
+  --accent-gradient: linear-gradient(135deg, #2f80c2 0%, #f29f4b 100%);
+  --accent-soft: #e1f0fb;
+  --danger: #b7444a;
+  --conflict: #a26f20;
+  --status-bg: #142a3d;
+  --status-text: #f5fbff;
 
   /* 曙光シャドウ / Shokou Shadows */
-  --shadow-sm: 0 1px 2px rgba(107, 92, 231, 0.06);
-  --shadow-md: 0 4px 12px rgba(107, 92, 231, 0.08), 0 1px 3px rgba(107, 92, 231, 0.04);
-  --shadow-lg: 0 12px 32px rgba(107, 92, 231, 0.12), 0 2px 8px rgba(107, 92, 231, 0.06);
+  --shadow-sm: 0 1px 2px rgba(47, 120, 173, 0.06);
+  --shadow-md: 0 4px 12px rgba(47, 120, 173, 0.08), 0 1px 3px rgba(242, 159, 75, 0.06);
+  --shadow-lg: 0 12px 32px rgba(47, 120, 173, 0.12), 0 2px 8px rgba(242, 159, 75, 0.08);
 }
 
 * {
@@ -294,23 +270,8 @@ button:disabled {
 .sakura-petal:nth-child(9) { left: 92%; animation-delay: -10s; animation-duration: 20s; }
 .sakura-petal:nth-child(10) { left: 4%; animation-delay: -15s; animation-duration: 18s; }
 
-.hazakura-leaf {
-  animation: petalFall 14s linear infinite;
-  background:
-    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.9), transparent 26%),
-    linear-gradient(135deg, rgba(162, 222, 178, 0.86), rgba(43, 130, 85, 0.6));
-  border-radius: 70% 30% 70% 30%;
-  display: block;
-  height: 14px;
-  position: absolute;
-  top: -24px;
-  transform-origin: 50% 80%;
-  width: 9px;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .sakura-petal,
-  .hazakura-leaf {
+  .sakura-petal {
     animation: none;
     display: none;
   }
@@ -382,10 +343,6 @@ button:disabled {
 
 .toggle-switch input:checked + .slider {
   background-color: var(--accent);
-}
-
-:root[data-theme="hazakura-nexus"] .toggle-switch input:checked + .slider {
-  background: var(--accent-gradient);
 }
 
 :root[data-theme="yakou"] .toggle-switch input:checked + .slider {
@@ -468,10 +425,6 @@ button:disabled {
   height: 3px;
   background: transparent;
   transition: all 0.2s ease;
-}
-
-:root[data-theme="hazakura-nexus"] .tab-item.active::before {
-  background: var(--accent-gradient);
 }
 
 :root[data-theme="yakou"] .tab-item.active::before {
@@ -878,11 +831,6 @@ button:disabled {
   backdrop-filter: blur(16px);
 }
 
-:root[data-theme="hazakura-nexus"] .file-tree-pane {
-  background: rgba(226, 237, 229, 0.65);
-  backdrop-filter: blur(16px);
-}
-
 :root[data-theme="yakou"] .file-tree-pane {
   background: rgba(20, 20, 30, 0.75);
   backdrop-filter: blur(16px);
@@ -890,9 +838,9 @@ button:disabled {
 }
 
 :root[data-theme="shokou"] .file-tree-pane {
-  background: rgba(236, 232, 245, 0.65);
+  background: rgba(229, 241, 251, 0.68);
   backdrop-filter: blur(16px);
-  border-right-color: rgba(124, 111, 240, 0.12);
+  border-right-color: rgba(47, 128, 194, 0.14);
 }
 
 .workspace-empty {
@@ -1205,12 +1153,6 @@ button:disabled {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--surface);
-}
-
-:root[data-theme="hazakura-nexus"] .start-actions button:first-child {
-  background: var(--accent-gradient);
-  border: 0;
-  padding: 7px 13px;
 }
 
 :root[data-theme="yakou"] .start-actions button:first-child {
@@ -1939,13 +1881,6 @@ button:disabled {
   font-size: 17px;
 }
 
-:root[data-theme="hazakura-nexus"] .preferences-header h2 {
-  background: var(--accent-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-weight: 800;
-}
-
 :root[data-theme="yakou"] .preferences-header h2 {
   background: var(--accent-gradient);
   -webkit-background-clip: text;
@@ -2145,12 +2080,6 @@ button:disabled {
   opacity: 0.9;
   box-shadow: var(--shadow-md);
   transform: translateY(-1px);
-}
-
-:root[data-theme="hazakura-nexus"] .dialog-actions button:first-child {
-  background: var(--accent-gradient);
-  border: 0;
-  padding: 7px 13px;
 }
 
 :root[data-theme="yakou"] .dialog-actions button:first-child {
