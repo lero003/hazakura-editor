@@ -102,6 +102,58 @@
   --shadow-lg: 0 12px 32px rgba(22, 42, 29, 0.12), 0 2px 8px rgba(22, 42, 29, 0.06);
 }
 
+/* 夜光 / Yakou – Warp-inspired dark gradient theme */
+:root[data-theme="yakou"] {
+  --bg: #0d0d12;
+  --surface: #14141e;
+  --surface-rgb: 20, 20, 30;
+  --surface-strong: #1a1a28;
+  --surface-strong-rgb: 26, 26, 40;
+  --surface-muted: #111118;
+  --border: #24243a;
+  --border-strong: #35355a;
+  --text: #e4e4f0;
+  --text-muted: #8888a8;
+  --accent: #8b7cf8;
+  --accent-gradient: linear-gradient(135deg, #7c6ff0 0%, #40bfa0 100%);
+  --accent-soft: #1e1a38;
+  --danger: #e05468;
+  --conflict: #d4a842;
+  --status-bg: #08080e;
+  --status-text: #e4e4f0;
+
+  /* 夜光シャドウ / Yakou Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.6), 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* 曙光 / Shokou – Dawn-light counterpart to Yakou */
+:root[data-theme="shokou"] {
+  --bg: linear-gradient(135deg, #f0edf8 0%, #e8f5f2 100%);
+  --surface: #f9f7ff;
+  --surface-rgb: 249, 247, 255;
+  --surface-strong: #ffffff;
+  --surface-strong-rgb: 255, 255, 255;
+  --surface-muted: #ece8f5;
+  --border: #ddd6ee;
+  --border-strong: #c4b8de;
+  --text: #1e1a2e;
+  --text-muted: #6b6188;
+  --accent: #6b5ce7;
+  --accent-gradient: linear-gradient(135deg, #7c6ff0 0%, #40bfa0 100%);
+  --accent-soft: #ece6ff;
+  --danger: #c44458;
+  --conflict: #b08a30;
+  --status-bg: #1e1a2e;
+  --status-text: #f0edf8;
+
+  /* 曙光シャドウ / Shokou Shadows */
+  --shadow-sm: 0 1px 2px rgba(107, 92, 231, 0.06);
+  --shadow-md: 0 4px 12px rgba(107, 92, 231, 0.08), 0 1px 3px rgba(107, 92, 231, 0.04);
+  --shadow-lg: 0 12px 32px rgba(107, 92, 231, 0.12), 0 2px 8px rgba(107, 92, 231, 0.06);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -336,6 +388,14 @@ button:disabled {
   background: var(--accent-gradient);
 }
 
+:root[data-theme="yakou"] .toggle-switch input:checked + .slider {
+  background: var(--accent-gradient);
+}
+
+:root[data-theme="shokou"] .toggle-switch input:checked + .slider {
+  background: var(--accent-gradient);
+}
+
 .toggle-switch input:checked + .slider::before {
   transform: translateX(12px);
 }
@@ -411,6 +471,14 @@ button:disabled {
 }
 
 :root[data-theme="hazakura-nexus"] .tab-item.active::before {
+  background: var(--accent-gradient);
+}
+
+:root[data-theme="yakou"] .tab-item.active::before {
+  background: var(--accent-gradient);
+}
+
+:root[data-theme="shokou"] .tab-item.active::before {
   background: var(--accent-gradient);
 }
 
@@ -815,6 +883,18 @@ button:disabled {
   backdrop-filter: blur(16px);
 }
 
+:root[data-theme="yakou"] .file-tree-pane {
+  background: rgba(20, 20, 30, 0.75);
+  backdrop-filter: blur(16px);
+  border-right-color: rgba(124, 111, 240, 0.15);
+}
+
+:root[data-theme="shokou"] .file-tree-pane {
+  background: rgba(236, 232, 245, 0.65);
+  backdrop-filter: blur(16px);
+  border-right-color: rgba(124, 111, 240, 0.12);
+}
+
 .workspace-empty {
   align-items: center;
   justify-content: center;
@@ -1131,6 +1211,19 @@ button:disabled {
   background: var(--accent-gradient);
   border: 0;
   padding: 7px 13px;
+}
+
+:root[data-theme="yakou"] .start-actions button:first-child {
+  background: var(--accent-gradient);
+  border: 0;
+  padding: 7px 13px;
+}
+
+:root[data-theme="shokou"] .start-actions button:first-child {
+  background: var(--accent-gradient);
+  border: 0;
+  padding: 7px 13px;
+  color: #ffffff;
 }
 
 .start-recent {
@@ -1853,6 +1946,20 @@ button:disabled {
   font-weight: 800;
 }
 
+:root[data-theme="yakou"] .preferences-header h2 {
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+}
+
+:root[data-theme="shokou"] .preferences-header h2 {
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+}
+
 .icon-button {
   align-items: center;
   background: transparent;
@@ -2044,6 +2151,19 @@ button:disabled {
   background: var(--accent-gradient);
   border: 0;
   padding: 7px 13px;
+}
+
+:root[data-theme="yakou"] .dialog-actions button:first-child {
+  background: var(--accent-gradient);
+  border: 0;
+  padding: 7px 13px;
+}
+
+:root[data-theme="shokou"] .dialog-actions button:first-child {
+  background: var(--accent-gradient);
+  border: 0;
+  padding: 7px 13px;
+  color: #ffffff;
 }
 
 @media (max-width: 1040px) {
