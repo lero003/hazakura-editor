@@ -13,11 +13,11 @@ The automation should make the app safer and more comfortable to use in small ve
 
 ## Current Automation Lane
 
-Name: `hazakura-note-agent-workbench-micro-stabilization`
+Name: `hazakura-note-safe-editor-review-loop`
 
 Cadence: 30-minute heartbeat loop for non-goal micro-polish work.
 
-Current phase: 0.3-oriented Agent Workbench micro-polish and post-pre0.2 release-readiness hardening.
+Current phase: v0.3 Non-Git Diff / Review preparation, with v0.4 Markdown Review Navigation kept as the next safe-editor direction.
 
 Primary outcome: one coherent improvement per run, verified, documented, committed, and pushed when checks pass. A verified no-op is acceptable when no safe useful slice is found.
 
@@ -42,9 +42,24 @@ Do not decide verified no-op from documentation review alone when app inspection
 Choose the first useful slice that is both small and verifiable.
 
 1. Everyday usability polish:
-   - menu placement, menu language, button labels, dialog wording, compact Agent pane information, right-click file-path handoff, external-change messages, layout fit, and built-app smoke notes
+   - menu placement, menu language, button labels, dialog wording, external-change messages, save-conflict wording, layout fit, and built-app smoke notes
    - prefer the smallest visible improvement that makes manual use clearer
-2. Safety-boundary regression checks:
+2. v0.3 Non-Git Diff / Review preparation:
+   - current buffer versus disk comparison
+   - explicit file-to-file text comparison
+   - draft/recovery candidate comparison
+   - save-conflict review before Reopen / Close without saving / Keep editing
+   - plain text diff labels that avoid Git wording
+   - no repository status, branch, staging, history, apply, commit, push, pull, or merge behavior
+3. v0.4 Markdown Review Navigation preparation:
+   - current-file heading outline
+   - current heading or section context
+   - diff hunk heading context for Markdown files
+   - local Markdown link navigation limited to explicit workspace files
+   - open-tabs and recent-files navigation
+   - readable Markdown preview/review display polish
+   - avoid strong autocomplete, automatic lint fixes, broad formatting rewrites, project-wide indexing, and symbol search
+4. Safety-boundary regression checks:
    - Safe Editor default startup
    - Agent Workbench explicit mode gate and restart boundary
    - responsibility-boundary consent
@@ -52,19 +67,19 @@ Choose the first useful slice that is both small and verifiable.
    - selected workspace root only
    - one active session
    - no arbitrary shell, arbitrary command input UI, arbitrary path input UI, session restore, auto-apply, auto-commit, provider-add UI, or Git integration
-3. Stability and responsiveness:
-   - xterm input latency, PTY resize, output refresh, stale snapshot handling, process exit/stop cleanup, provider not found, spawn failure, stdin write failure, and external-change live refresh
-   - prefer fake-provider coverage for hazakura-owned lifecycle behavior and trusted-workspace manual smoke for real `codex` / `opencode` behavior
-4. Markdown-first safe editor quality:
+5. Stability and responsiveness:
+   - stale snapshot handling, external-change live refresh, save/reopen failure paths, theme switching, search responsiveness, and Agent Workbench lifecycle regressions when touched
+   - prefer fake-provider coverage for hazakura-owned Agent lifecycle behavior and trusted-workspace manual smoke for real `codex` / `opencode` behavior
+6. Markdown-first safe editor quality:
    - save failure recovery, external-change recheck, dirty close, draft restore, Save As, line endings, preview sanitize, workspace image preview, scroll sync, resizable panes, window close, workspace tree, theme switching, search, long file names, constrained-width layout, Japanese IME, and keyboard focus
-5. Local release readiness:
+7. Local release readiness:
    - source-only release P0 gates from `docs/source-release-checklist.md`
    - dependency audit review with `npm audit` and `cargo audit` only when the run has enough time and risk justification
    - latest-HEAD built-app smoke evidence before tag approval
    - app version/about metadata and source release notes
    - packaging docs without signing or notarization claims
    - do not tag, publish, release, or attach a DMG without explicit user approval
-6. Verified no-op:
+8. Verified no-op:
    - If no small useful slice is safe after reading docs and inspecting the app surface when practical, run the relevant checks, update docs only if facts changed, and report no-op clearly.
    - A no-op report should say whether app inspection was performed, or why it was skipped.
 
@@ -98,6 +113,8 @@ Do not implement during this automation:
 - arbitrary path input UI
 - plugin system
 - project-wide analysis or indexing
+- strong predictive autocomplete
+- automatic lint fixes or broad formatting rewrites
 - Apple Developer ID signing or notarization completion
 - merge editor
 - advanced Git diff
@@ -162,9 +179,9 @@ Advance hazakura-note by one small, verifiable quality-hardening slice.
 
 Start by reading AGENTS.md, README.md, docs/current-status.md, docs/roadmap.md, docs/smoke-checklist.md, docs/development-automation.md, and checking git status --short --branch. Treat existing uncommitted changes as user or previous-run work and do not revert them.
 
-Use docs/development-automation.md as the source of truth. The current lane is a 30-minute Agent Workbench and safe-editor micro-polish loop. Choose from this priority order: everyday usability polish; safety-boundary regression checks; stability and responsiveness; Markdown-first safe editor quality; local release readiness; verified no-op if no useful small slice is safe.
+Use docs/development-automation.md as the source of truth. The current lane is a 30-minute safe-editor review loop. Choose from this priority order: everyday usability polish; v0.3 Non-Git Diff / Review preparation; v0.4 Markdown Review Navigation preparation; safety-boundary regression checks; stability and responsiveness; Markdown-first safe editor quality; local release readiness; verified no-op if no useful small slice is safe.
 
-Keep Agent Workbench limited to explicit mode gate, restart boundary, responsibility consent, allowlisted codex/opencode providers, one selected workspace root, and one active session. Do not implement Git integration, LSP, arbitrary terminal/shell access, arbitrary command execution, arbitrary path input UI, session restore, auto-apply, auto-commit, provider-add UI, plugin systems, project-wide analysis/indexing, signing/notarization completion, merge editor, advanced Git diff, release/publish/tag flow, or dependency/lockfile changes without explicit user approval.
+Keep Agent Workbench limited to explicit mode gate, restart boundary, responsibility consent, allowlisted codex/opencode providers, one selected workspace root, and one active session. Keep v0.3 diff work limited to explicit text/file comparison and recovery review; do not inspect or present Git repository state. Do not implement Git integration, LSP, arbitrary terminal/shell access, arbitrary command execution, arbitrary path input UI, session restore, auto-apply, auto-commit, provider-add UI, plugin systems, project-wide analysis/indexing, strong predictive autocomplete, automatic lint fixes, broad formatting rewrites, signing/notarization completion, merge editor, advanced Git diff, release/publish/tag flow, or dependency/lockfile changes without explicit user approval.
 
 For substantial implementation, automation changes, Git/GitHub mutation, release work, or command-selection uncertainty, run Hazakura Habitat first and read agent_context.md before continuing. Consult command_policy.md before risky or mutating commands.
 

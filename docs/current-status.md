@@ -8,6 +8,7 @@ Last reviewed: 2026-05-29
 ## Current State
 
 - A touchable Tauri desktop prototype exists.
+- Current intended preview release is `v0.2.0` as a warning-expected DMG preview.
 - The prototype creates user-selected text/Markdown files, opens common UTF-8 text documents from File > Open or Finder/app-icon open events, opens a user-selected folder, shows a lazy bounded file tree, opens multiple files in tabs, edits the active tab with CodeMirror 6, saves through Rust with external-change protection, searches with visible match highlights and keyboard/navigation options, renders a toggleable sanitized Markdown preview, and shows selected workspace images in a read-only preview.
 - Existing LF / CRLF line endings are detected when a file is opened and preserved through save.
 - The status bar shows approximate UTF-8 byte count, character count, saved line-ending mode, final-newline state, and clean/unsaved state.
@@ -176,6 +177,26 @@ pre0.2 follow-up warning-expected DMG preview on 2026-05-29:
 - A `.json` file opened through the mounted app with macOS open-file handling landed in a normal clean editor tab, and the app was quit after the smoke with no `hazakura-note` process left running.
 - `spctl -a -vv -t open` rejected the app with `source=Insufficient Context`, which is expected for this ad-hoc signed, not-notarized preview lane.
 - Remote verification downloaded the published GitHub Release assets, confirmed `shasum -c` passed, `hdiutil verify` passed, and the mounted app reported version `0.2.0-pre.1` / bundle identifier `lab.hazakura.note` with `codesign --verify --deep --strict --verbose=2` passing.
+
+v0.2 warning-expected DMG preview release preparation on 2026-05-29:
+
+- Version surfaces were aligned to `0.2.0` in `package.json`, `package-lock.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`, and `src-tauri/Cargo.lock`.
+- Release notes were prepared at `docs/releases/0.2.0-warning-expected-dmg-preview.release.md`.
+- Roadmap priority moved `Safe Editor Non-Git Diff And Review` to v0.3 and placed `Markdown Review Navigation` at v0.4.
+- Recurring automation guidance now uses the `hazakura-note-safe-editor-review-loop` lane and prioritizes v0.3 diff/review preparation before Agent Workbench maintenance.
+- Built DMG asset: `hazakura-note_0.2.0_aarch64-warning-expected.dmg`.
+- SHA-256: `6a39cc2e10b2caeed0328f8a217cc98ee40c3de5ff78751a5736a9667964d67d`.
+- `npm ci` passed.
+- `npm run build:vite` passed with the existing Vite chunk-size warning.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.
+- `cargo test --manifest-path src-tauri/Cargo.toml` passed with 70 Rust tests.
+- `npm audit --audit-level=high` passed with 0 vulnerabilities.
+- `cargo audit --file src-tauri/Cargo.lock` completed with the known Tauri/wry transitive warnings for GTK3/gtk-rs, `glib`, `proc-macro-error`, and `unic-*`; no new high or critical macOS release blocker was identified for this warning-expected preview.
+- `npm run build:dmg-preview` passed, including app build, ad-hoc signing, `hdiutil verify`, and basename checksum generation.
+- `cd src-tauri/target/release/bundle/dmg && shasum -c hazakura-note_0.2.0_aarch64-warning-expected.dmg.sha256` passed.
+- The DMG mounted read-only; the contained `hazakura-note.app` reported `CFBundleShortVersionString` `0.2.0`, bundle identifier `lab.hazakura.note`, and passed `codesign --verify --deep --strict --verbose=2`.
+- The built app launched locally from `src-tauri/target/release/bundle/macos/hazakura-note.app` and was then quit with no `hazakura-note` process left running.
+- `spctl -a -vv -t open` rejected the app with `source=Insufficient Context`, which is expected for this ad-hoc signed, not-notarized preview lane.
 
 Agent Workbench Trusted Provider Smoke Readiness on 2026-05-29:
 
@@ -713,13 +734,13 @@ Known verification note:
 
 ## Next Actions
 
-1. For future source-only release work, run the P0 gates in `docs/source-release-checklist.md`, including dependency audits and latest-HEAD built-app smoke evidence, before asking for tag approval.
-2. For Agent Workbench work, run `docs/smoke-checklist.md` Agent Workbench Trusted Workspace Manual Smoke in a throwaway workspace before further terminal, PTY, or provider-lifecycle changes.
-3. For recurring automation, use the 30-minute micro-polish loop in `docs/development-automation.md`; keep slices narrow and avoid new test code unless it protects a real bug, backend/safety contract, or high-value Agent lifecycle path.
-4. Re-smoke long file name / constrained-width layout before binary distribution readiness.
-5. For follow-up warning-expected DMG previews, keep the release marked as a prerelease and use the current version-specific release note as the GitHub Release body.
-6. Add minimal CI and Dependabot as P1 release hardening when a small verified slice is available.
-7. Add focused UI/E2E coverage for draft restore and external-change focus recheck before treating them as distribution-grade behavior.
+1. For v0.3, implement Safe Editor Non-Git Diff / Review in small slices: current buffer versus disk, explicit file-to-file diff, draft/recovery comparison, and save-conflict review.
+2. For v0.4 planning, keep Markdown Review Navigation focused on current-file outline, heading context, local Markdown link navigation, open-tabs/recent-files navigation, and display polish without strong prediction or auto-rewrite behavior.
+3. For Agent Workbench work, treat further changes as boundary maintenance; run `docs/smoke-checklist.md` Agent Workbench Trusted Workspace Manual Smoke in a throwaway workspace before further terminal, PTY, or provider-lifecycle changes.
+4. For recurring automation, use the 30-minute safe-editor review loop in `docs/development-automation.md`; keep slices narrow and avoid new test code unless it protects a real bug, backend/safety contract, or high-value lifecycle path.
+5. Re-smoke long file name / constrained-width layout before binary distribution readiness.
+6. For follow-up warning-expected DMG previews, keep the release marked as a prerelease and use the current version-specific release note as the GitHub Release body.
+7. Add minimal CI and Dependabot as P1 release hardening when a small verified slice is available.
 8. Keep signing, notarization, and installer packaging separate from source-release and workspace hardening.
 
 ## Avoid

@@ -15,6 +15,7 @@ The current public line is:
 - `v0.1.0-warning-expected-dmg-preview`: separate warning-expected DMG preview lane
 - `v0.2.0-pre.0`: pre0.2 warning-expected DMG preview with normal-mode and Agent Workbench screenshots in README
 - `v0.2.0-pre.1`: pre0.2 warning-expected DMG preview with Finder/app-icon text document open support
+- `v0.2.0`: Safe Editor preview warning-expected DMG release with theme/Japanese UI polish and the current Agent Workbench boundary kept optional
 
 The old `v0.1` / `v0.3.x` phase map is archived in `docs/roadmap-v0.1-archived.md`.
 
@@ -38,7 +39,7 @@ Optional Agent Workbench Mode is a separate trust boundary. It may host one allo
 
 Goal: make pre0.2 honest, testable on another Mac, and easy to understand from the README and GitHub Release while keeping Safe Editor Mode visually and conceptually primary.
 
-Status: In progress through `v0.2.0-pre.1`.
+Status: Released as `v0.2.0` warning-expected DMG preview.
 
 Completion criteria:
 
@@ -52,64 +53,58 @@ Completion criteria:
 
 Do not use 0.2 to add broad new features.
 
-## 0.3: Agent Workbench Reliability / Trust Boundary Hardening
+## 0.3: Safe Editor Non-Git Diff And Review
 
-Goal: add no broad Agent capability; prove the current boundary is understandable, reversible, and smoke-tested.
+Goal: complete the core product promise of checking text changes without turning the app into a Git client, merge tool, IDE, or project analyzer.
 
 Priority work:
 
-- Complete and record trusted-workspace manual smoke for real `codex` and `opencode` providers.
-- Add a visible Agent Workbench boundary indicator while the Agent pane is active or running.
-- Recheck provider-not-found, abnormal exit, stop, restart, and long-output behavior from the user-facing pane.
-- Evaluate a 30-minute session smoke for output buffer, responsiveness, and memory comfort.
-- Add low-risk context helpers already allowed by the boundary document, such as Copy open tab paths, Copy workspace root, and Copy prompt template.
-- Keep provider-made file edits flowing through the existing external-change and conflict paths.
+- diff from disk versus current editor text
+- simple explicit file-to-file diff
+- compare restart draft or recovery candidates before restoring
+- save-conflict review before choosing Reopen / Close without saving / Keep editing
+- plain-text comparison output that does not imply Git status, Git history, staging, commit, branch, or repository awareness
+- minimal review UI that makes changed regions readable before richer layouts are attempted
 
 Acceptance:
 
-- Safe Editor Mode starts with no Agent pane, launcher, or PTY backend available.
-- Backend launch rejects while Agent Workbench mode is off.
-- Restart-required enablement and disablement are manually verified.
-- Provider-not-found, missing-workspace, disabled-mode, and consent-gate paths are verified.
-- At least one real-provider smoke is recorded in a trusted throwaway workspace.
-- Start, input, resize, stop, provider exit, and app-close cleanup are smoke-tested.
-- Provider-made file changes surface only as ordinary external on-disk changes.
+- Current buffer versus disk diff is available for a selected text file.
+- Explicit file A versus file B comparison works for safe text inputs.
+- Draft/recovery and save-conflict flows can show the relevant text difference before the user chooses a recovery action.
+- Diff labels use file/workspace language, not Git language.
+- `.git` presence is not inspected or surfaced for this feature.
+- No commit, branch, staging, status, history, patch apply, or repository operation is introduced.
 
 This phase must not pass if:
 
-- Safe Editor Mode can spawn any process.
-- Hidden UI is the only protection and backend rejection is missing.
-- Provider selection can be influenced into arbitrary command execution.
-- Arbitrary path input appears.
-- A second Agent session can start.
-- A provider process survives app close.
-- Provider-made file changes bypass external-change or conflict handling.
-- Release notes imply Agent Workbench is equivalent to Safe Editor Mode.
+- the feature behaves like a Git client
+- the app scans the whole project to infer change state
+- diff output suggests the user can stage, apply, commit, pull, push, or resolve a merge
+- save-conflict recovery can discard local edits without an explicit user choice
 
 Do not add:
 
-- arbitrary shell or command input
-- provider-add UI
-- multiple sessions
-- session restore
-- auto-apply
-- auto-commit
 - Git integration
+- merge editor
+- project-wide index
+- auto-apply
+- auto-format as part of diff
 
-## 0.4: Safe Editor Non-Git Diff And Review
+## 0.4: Markdown Review Navigation
 
-Goal: improve review confidence without turning the app into a Git client or IDE.
+Goal: make Markdown documents easier to read, navigate, and review after the v0.3 diff foundation, while avoiding intrusive prediction or automatic rewriting.
 
 Candidate work:
 
-- simple file-to-file diff
-- diff from disk versus current editor text
-- compare restart draft or recovery candidates before restoring
-- save-conflict review before choosing Reopen / Close without saving / Keep editing
-- Markdown-focused review aids that do not execute project code
-- search, recovery, and draft-restore polish found during 0.2 / 0.3 smoke
+- current-file heading outline with click-to-jump
+- current heading or section context in the editor/review surface
+- diff hunk heading context for Markdown files
+- local Markdown link navigation limited to explicitly selected workspace files
+- open-tabs and recent-files navigator
+- display/readability polish for Markdown preview and review
+- small Markdown editing helpers only when they are predictable, reversible, and not aggressive
 
-This phase should prefer review and comparison over formatting automation. Diff must compare explicit text inputs or files; it must not become Git status, Git history, staging, commit, or project-wide analysis.
+This phase should prefer navigation, visibility, and manual review over prediction. Avoid strong autocomplete, automatic lint fixes, broad formatting rewrites, workspace-wide indexing, or project-level symbol search unless a later boundary review explicitly approves them.
 
 ## 0.5: Release And Maintenance Quality
 
@@ -132,10 +127,10 @@ Notarization remains a separate future decision. Do not imply production distrib
 Possible later work, only after a fresh boundary review:
 
 - Developer ID signed and notarized distribution
-- richer Markdown outline and navigation
 - Markdown lint or manual formatting checks
 - heading-level or paragraph-level Markdown diff
 - carefully scoped Git-adjacent review helpers
+- Agent Workbench reliability hardening and real-provider smoke evidence, kept as boundary maintenance rather than feature expansion
 
 These are not approval to add a general terminal, arbitrary command execution, Git client behavior, plugin execution, auto-apply, auto-commit, or multi-agent orchestration.
 
@@ -145,6 +140,6 @@ Use these when asking for external review:
 
 1. Does 0.2 clearly communicate the current value and preview limits?
 2. Is Safe Editor Mode still visually and conceptually primary?
-3. Does Agent Workbench read as a separate trust boundary rather than the default app mode?
-4. Is 0.3 focused enough on quality and real-provider smoke instead of feature expansion?
-5. Are the 0.4 diff/review ideas useful without making the app a Git client?
+3. Does 0.3 complete the "check with diff" promise without becoming Git-aware?
+4. Does 0.4 improve Markdown review/navigation without over-predicting or auto-rewriting user text?
+5. Does Agent Workbench still read as a separate optional trust boundary rather than the default app mode?
