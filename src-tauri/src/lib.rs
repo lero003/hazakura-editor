@@ -27,6 +27,7 @@ const MAX_WORKSPACE_ENTRIES: usize = 2000;
 const AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS: usize = 500;
 const AGENT_PROVIDER_CODEX: &str = "codex";
 const AGENT_PROVIDER_OPENCODE: &str = "opencode";
+const AGENT_PROVIDER_PI: &str = "pi";
 const AGENT_PROVIDER_GUI_SEARCH_DIRS: &[&str] = &[
     "/opt/homebrew/bin",
     "/opt/homebrew/sbin",
@@ -1397,7 +1398,7 @@ fn validate_agent_workbench_launch(
         return Err("Agent Workbench consent is required before launching an agent.".to_string());
     }
 
-    if !matches!(provider, AGENT_PROVIDER_CODEX | AGENT_PROVIDER_OPENCODE) {
+    if !is_allowlisted_agent_provider(provider) {
         return Err("Agent provider is not allowlisted.".to_string());
     }
 
@@ -1411,7 +1412,7 @@ fn find_allowlisted_agent_provider_in_path_env(
     provider: &str,
     path_var: &OsStr,
 ) -> Option<PathBuf> {
-    if !matches!(provider, AGENT_PROVIDER_CODEX | AGENT_PROVIDER_OPENCODE) {
+    if !is_allowlisted_agent_provider(provider) {
         return None;
     }
 
@@ -1424,6 +1425,13 @@ fn find_allowlisted_agent_provider_in_path_env(
             None
         }
     })
+}
+
+fn is_allowlisted_agent_provider(provider: &str) -> bool {
+    matches!(
+        provider,
+        AGENT_PROVIDER_CODEX | AGENT_PROVIDER_OPENCODE | AGENT_PROVIDER_PI
+    )
 }
 
 fn agent_provider_app_search_path() -> Option<OsString> {
@@ -2409,13 +2417,9 @@ mod tests {
         let dir = unique_test_dir("agent_workspace");
         fs::create_dir_all(&dir).expect("create test dir");
 
-        let canonical_workspace = validate_agent_workbench_launch(
-            true,
-            true,
-            AGENT_PROVIDER_CODEX,
-            dir.to_str().unwrap(),
-        )
-        .expect("validate workspace root");
+        let canonical_workspace =
+            validate_agent_workbench_launch(true, true, AGENT_PROVIDER_PI, dir.to_str().unwrap())
+                .expect("validate workspace root");
 
         assert_eq!(canonical_workspace, fs::canonicalize(&dir).unwrap());
 
@@ -3720,14 +3724,27 @@ mod tests {
     fn agent_workbench_provider_lookup_finds_allowlisted_executable() {
         let dir = unique_test_dir("agent_provider_lookup");
         fs::create_dir_all(&dir).expect("create test dir");
-        let command_path = dir.join(AGENT_PROVIDER_CODEX);
-        fs::write(&command_path, b"#!/bin/sh\n").expect("write fake provider");
-        make_executable(&command_path);
+        for provider in [
+            AGENT_PROVIDER_CODEX,
+            AGENT_PROVIDER_OPENCODE,
+            AGENT_PROVIDER_PI,
+        ] {
+            let command_path = dir.join(provider);
+            fs::write(&command_path, b"#!/bin/sh\n").expect("write fake provider");
+            make_executable(&command_path);
+        }
         let path_env = env::join_paths([dir.clone()]).expect("join PATH fixture");
-        let found = find_allowlisted_agent_provider_in_path_env(AGENT_PROVIDER_CODEX, &path_env)
-            .expect("find fake provider");
 
-        assert_eq!(found, command_path);
+        for provider in [
+            AGENT_PROVIDER_CODEX,
+            AGENT_PROVIDER_OPENCODE,
+            AGENT_PROVIDER_PI,
+        ] {
+            let found = find_allowlisted_agent_provider_in_path_env(provider, &path_env)
+                .expect("find fake provider");
+
+            assert_eq!(found, dir.join(provider));
+        }
 
         let _ = fs::remove_dir_all(dir);
     }
@@ -3968,8 +3985,7 @@ mod tests {
         });
         assert!(combined_agent_output(&ready_state).contains("ready"));
 
-        resize_agent_workbench_terminal_with_store(&store, 120, 33)
-            .expect("resize pty");
+        resize_agent_workbench_terminal_with_store(&store, 120, 33).expect("resize pty");
         let resized_state = wait_for_agent_state(&store, |state| {
             combined_agent_output(state).contains("winch:33 120")
         });

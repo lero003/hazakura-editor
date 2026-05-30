@@ -64,7 +64,7 @@ export type ImagePreviewDocument = {
   size: number;
 };
 
-export type AgentWorkbenchProvider = "codex" | "opencode";
+export type AgentWorkbenchProvider = "codex" | "opencode" | "pi";
 
 export type AgentWorkbenchPreflight = {
   provider: AgentWorkbenchProvider;

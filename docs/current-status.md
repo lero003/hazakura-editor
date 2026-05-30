@@ -20,7 +20,7 @@ Last reviewed: 2026-05-30
 - Preview, Wrap, Invisibles, and Theme live in the native View menu. Editor/application settings live in Preferences, including an English/Japanese native menu language switch; Japanese mode also localizes the empty start surface, workspace shell/context-menu labels, editor helper/search controls, common status bar messages and active-document metadata, draft/external-change/save-error recovery banners, preview unavailable messages, Preferences dialog labels, and Agent Workbench pane/gate/status copy.
 - Agent Workbench now opens as its own dialog instead of sharing the Preferences contents. Changing the developer-mode gate stores the requested mode, shows localized Japanese/English boundary copy, offers an explicit restart button, and requires restart before Agent UI or backend launch-command availability changes.
 - When Agent Workbench mode is active or pending restart, the top toolbar shows an Agent Mode badge so the current trust boundary is visible outside the settings dialog.
-- When Agent Workbench mode is active for the current app session, the Agent Workbench dialog shows only allowlisted provider choices (`codex` / `opencode`) and requires explicit responsibility-boundary consent before the backend launch gate can pass.
+- When Agent Workbench mode is active for the current app session, the Agent Workbench dialog shows only allowlisted provider choices (`codex` / `opencode` / `pi`) and requires explicit responsibility-boundary consent before the backend launch gate can pass.
 - The top editor chrome exposes Preview, Diff, Outline, and Agent as open/close toggles instead of a tab strip inside the pane. Diff is always available as a dedicated workbench mode; when open, it hides the center editor area and uses the main content width for comparison setup or results. Outline is available for the current text tab and lists the current Markdown file's ATX headings with click-to-jump navigation, without project-wide indexing; very large outlines show a visible note when the first 200 headings are shown. The status bar shows the current Markdown position as `§` context when the cursor is under an ATX heading, the Outline pane highlights that current section, and a transient scroll-position HUD shows the approximate current section and line progress while scrolling Markdown files. When Agent Workbench mode is active and consent is acknowledged, the compact Agent pane shell emphasizes provider, running state, and workspace path above an expanded xterm-based terminal surface. The shell can start one allowlisted provider process in the selected workspace root, render PTY output, send terminal input to it, resize the backend PTY from xterm rows/columns, and stop it through the runtime adapter boundary.
 - The app window title follows the active file and marks unsaved state, so the redundant in-app title header is no longer shown.
 - The workspace header includes a small open-folder action for switching workspace without returning to the native menu.
@@ -112,7 +112,7 @@ Last reviewed: 2026-05-30
 - Preferences dialog for editor/application settings that were previously exposed in the top toolbar, including File/View menu language
 - Separate Agent Workbench dialog for the mode gate, requested mode, provider, consent, and responsibility boundary
 - Agent Workbench right-pane shell, visible only after active-session mode and consent gates pass, with compact provider/running/workspace state, bounded PTY-backed xterm output/input, PTY resize from xterm rows/columns, and no arbitrary command, shell selector, auto-apply, auto-commit, or Git integration
-- Rust-side Agent Workbench launch preflight, runtime adapter, and in-memory session lifecycle that rejects disabled mode, unacknowledged consent, non-allowlisted providers, invalid workspace roots, provider-not-found starts, adapter failures, stop-adapter failures, and second active sessions before starting an allowlisted provider process
+- Rust-side Agent Workbench launch preflight, runtime adapter, and in-memory session lifecycle that allows only `codex` / `opencode` / `pi`, rejects disabled mode, unacknowledged consent, non-allowlisted providers, invalid workspace roots, provider-not-found starts, adapter failures, stop-adapter failures, and second active sessions before starting an allowlisted provider process
 - Dynamic window title for active file and unsaved state
 - Keyboard shortcuts for New File, Open, Open Folder, Save, Find, previous/next tab focus, active-tab close, and window close
 - Conflict recovery actions for reloading, closing, or continuing with local edits
@@ -143,6 +143,13 @@ cargo test --manifest-path src-tauri/Cargo.toml
 npm run build
 git diff --check
 ```
+
+v0.5 Pi provider allowlist slice on 2026-05-30:
+
+- Added `pi` to the existing Agent Workbench UI/backend provider allowlist as a local CLI provider only.
+- Rust coverage now confirms `codex`, `opencode`, and `pi` are accepted by allowlisted lookup while non-allowlisted commands remain rejected.
+- `command -v pi` returned no local provider path in the automation environment, so real Pi trusted-workspace smoke remains provider-install dependent and was not claimed.
+- `npm run build:vite`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build`, and `git diff --check` passed.
 
 pre0.2 warning-expected DMG preview on 2026-05-29:
 
@@ -802,7 +809,7 @@ Known verification note:
 - The Find Close Polish did not include a fresh built-app manual active-file search pass; use the updated close-button check before treating this path as distribution-grade.
 - The Workspace Image Preview / Quality Automation, content-validation, size-limit coverage, and close-return checks did not include a fresh built-app image-selection smoke pass; use the updated workspace image checklist before treating this path as distribution-grade.
 - The Local Bundle Launch Metadata and Minimum System Version polish verified generated bundle metadata and ad-hoc signing, but the current automation session could not complete `open -n`; repeat built-app launch and native File menu smoke outside this automation environment before treating this path as distribution-grade.
-- Agent Workbench real-provider behavior has automated fake-provider coverage only so far; use the trusted-workspace manual smoke checklist before treating real `codex` / `opencode` sessions as product-grade.
+- Agent Workbench real-provider behavior has automated fake-provider coverage only so far; use the trusted-workspace manual smoke checklist before treating real `codex` / `opencode` / `pi` sessions as product-grade.
 - Long file name clipping was re-smoked in the workspace tree during Source Preview Quality Polish. A narrower-window pass is still useful before binary distribution readiness.
 
 ## Risks / Unknowns
@@ -816,8 +823,8 @@ Known verification note:
 
 ## Next Actions
 
-1. For v0.5 work, start with Agent Workbench boundary wording for Pi, then add `pi` only as an allowlisted local CLI provider inside the existing gate.
-2. Keep Pi work to CLI provider availability, launch, stop/exit, resize, app-close cleanup, and trusted-workspace smoke. Do not add Pi RPC, Pi SDK, provider-add UI, arbitrary provider config, multi-agent orchestration, auto-apply, auto-commit, a general terminal, or Git client behavior.
+1. For v0.5 work, keep `pi` only as an allowlisted local CLI provider inside the existing Agent Workbench gate.
+2. Continue with Pi provider availability, launch, stop/exit, resize, app-close cleanup, and trusted-workspace smoke. Do not add Pi RPC, Pi SDK, provider-add UI, arbitrary provider config, multi-agent orchestration, auto-apply, auto-commit, a general terminal, or Git client behavior.
 3. Treat v0.4 Markdown Review Navigation and v0.3 Diff / Change Review regressions as patch follow-up only; do not expand them into project-wide indexing, prediction, merge editing, or Git-aware behavior.
 4. For recurring automation, use the 30-minute v0.5 Pi CLI Provider And App Stability loop in `docs/development-automation.md`; keep slices narrow and avoid new test code unless it protects a real bug, backend/safety contract, or high-value lifecycle path.
 5. Re-smoke long file name / constrained-width layout before binary distribution readiness.

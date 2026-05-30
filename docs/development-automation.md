@@ -42,8 +42,7 @@ Do not decide verified no-op from documentation review alone when app inspection
 Choose the first useful slice that is both small and verifiable.
 
 1. v0.5 Pi CLI Provider And App Stability:
-   - update `docs/agent-workbench-boundary.md` before adding Pi provider behavior
-   - add `pi` only as an allowlisted local CLI provider inside the existing Agent Workbench gate
+   - keep `pi` only as an allowlisted local CLI provider inside the existing Agent Workbench gate
    - keep Pi launch behavior inside explicit mode, restart boundary, responsibility consent, selected workspace root, and one active session
    - improve provider availability, launch failure, stop/exit, resize, app-close cleanup, and terminal responsiveness from focused smoke findings
    - run trusted-workspace manual smoke for Pi when the provider exists locally, and record provider-not-found cleanly when it does not
@@ -69,7 +68,7 @@ Choose the first useful slice that is both small and verifiable.
    - Safe Editor default startup
    - Agent Workbench explicit mode gate and restart boundary
    - responsibility-boundary consent
-   - allowlisted `codex` / `opencode` / `pi` providers only, once Pi is explicitly documented and implemented
+   - allowlisted `codex` / `opencode` / `pi` providers only
    - selected workspace root only
    - one active session
    - no arbitrary shell, arbitrary command input UI, arbitrary path input UI, session restore, auto-apply, auto-commit, provider-add UI, or Git integration
@@ -188,9 +187,9 @@ Advance hazakura-note by one small, verifiable quality-hardening slice.
 
 Start by reading AGENTS.md, README.md, docs/current-status.md, docs/roadmap.md, docs/smoke-checklist.md, docs/development-automation.md, and checking git status --short --branch. Treat existing uncommitted changes as user or previous-run work and do not revert them.
 
-Use docs/development-automation.md as the source of truth. The current lane is a 30-minute v0.5 Pi CLI Provider And App Stability loop. Choose from this priority order: update Agent Workbench boundary docs for Pi; add Pi as an allowlisted local CLI provider inside the existing gate; provider availability and launch-failure polish; provider stop/exit/resize/app-close cleanup; trusted-workspace Pi smoke or provider-not-found evidence; stability and responsiveness; v0.4 Markdown Review Navigation patch follow-up; v0.3 Diff / Change Review patch follow-up; everyday usability polish; safety-boundary regression checks; Markdown-first safe editor quality; local preview release hygiene; verified no-op if no useful small slice is safe.
+Use docs/development-automation.md as the source of truth. The current lane is a 30-minute v0.5 Pi CLI Provider And App Stability loop. Choose from this priority order: provider availability and launch-failure polish; provider stop/exit/resize/app-close cleanup; trusted-workspace Pi smoke or provider-not-found evidence; stability and responsiveness; v0.4 Markdown Review Navigation patch follow-up; v0.3 Diff / Change Review patch follow-up; everyday usability polish; safety-boundary regression checks; Markdown-first safe editor quality; local preview release hygiene; verified no-op if no useful small slice is safe.
 
-Keep Agent Workbench limited to explicit mode gate, restart boundary, responsibility consent, allowlisted `codex` / `opencode` / `pi` providers, one selected workspace root, and one active session. Add Pi only as a local CLI provider in the existing provider model after updating the Agent Workbench boundary docs. Keep diff work limited to explicit text/file comparison and recovery review; do not inspect or present Git repository state. Do not implement Git integration, LSP, arbitrary terminal/shell access, arbitrary command execution, arbitrary path input UI, session restore, auto-apply, auto-commit, provider-add UI, plugin systems, project-wide analysis/indexing, strong predictive autocomplete, automatic lint fixes, broad formatting rewrites, signing/notarization completion, merge editor, advanced Git diff, release/publish/tag flow, Pi RPC/SDK work, arbitrary provider configuration, or dependency/lockfile changes without explicit user approval. The current `glib` / `GHSA-wrw7-89jp-8q8g` Dependabot alert is already triaged as a Linux Tauri/wry GTK/WebKit dependency item; revisit it only for Linux support, a Tauri/wry dependency-refresh lane, distribution-readiness sign-off, severity escalation, or a compatible patched upstream path.
+Keep Agent Workbench limited to explicit mode gate, restart boundary, responsibility consent, allowlisted `codex` / `opencode` / `pi` providers, one selected workspace root, and one active session. Keep Pi only as a local CLI provider in the existing provider model. Keep diff work limited to explicit text/file comparison and recovery review; do not inspect or present Git repository state. Do not implement Git integration, LSP, arbitrary terminal/shell access, arbitrary command execution, arbitrary path input UI, session restore, auto-apply, auto-commit, provider-add UI, plugin systems, project-wide analysis/indexing, strong predictive autocomplete, automatic lint fixes, broad formatting rewrites, signing/notarization completion, merge editor, advanced Git diff, release/publish/tag flow, Pi RPC/SDK work, arbitrary provider configuration, or dependency/lockfile changes without explicit user approval. The current `glib` / `GHSA-wrw7-89jp-8q8g` Dependabot alert is already triaged as a Linux Tauri/wry GTK/WebKit dependency item; revisit it only for Linux support, a Tauri/wry dependency-refresh lane, distribution-readiness sign-off, severity escalation, or a compatible patched upstream path.
 
 For substantial implementation, automation changes, Git/GitHub mutation, release work, or command-selection uncertainty, run Hazakura Habitat first and read agent_context.md before continuing. Consult command_policy.md before risky or mutating commands.
 

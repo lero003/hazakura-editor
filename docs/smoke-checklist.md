@@ -103,6 +103,8 @@ Latest Markdown Outline cap note checks: 2026-05-30 automated gates passed after
 
 Latest Markdown Review Navigation UI polish checks: 2026-05-30 automated gates passed after renaming the Japanese Outline toggle to `アウトライン`, changing current-section status copy to `現在位置: § ...`, changing Markdown diff heading context copy to `変更位置: § ...`, and adding a transient Markdown scroll-position HUD. No fresh built-app scroll-HUD smoke was claimed.
 
+Latest Pi provider allowlist checks: 2026-05-30 automated gates passed after adding `pi` to the Agent Workbench UI/backend provider allowlist. Local `command -v pi` returned no provider path in this automation environment, so real Pi trusted-workspace smoke remains provider-install dependent and was not claimed.
+
 ## Build First
 
 ```bash
@@ -266,13 +268,13 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 
 Use this only in a trusted throwaway workspace. Do not use a repository with important uncommitted work. This smoke confirms hazakura-side launch, input, output, stop, and external-change observation; it does not approve or validate real provider-internal behavior.
 
-Run this once per provider when practical. If only one provider is installed, record the other provider as not run or provider-not-found rather than installing or configuring it during the smoke. After the v0.5 Pi provider slice lands, include `pi` in the same smoke matrix and treat provider-not-found as an acceptable result when the Pi CLI is not installed locally.
+Run this once per provider when practical. If only one provider is installed, record the other providers as not run or provider-not-found rather than installing or configuring them during the smoke. Include `pi` in the same smoke matrix and treat provider-not-found as an acceptable result when the Pi CLI is not installed locally.
 
 Setup:
 
 1. Build the app first.
 2. Create a trusted throwaway workspace outside this repo, with one small Markdown file.
-3. Choose one provider to smoke: `codex`, `opencode`, or, after the v0.5 provider slice lands, `pi`.
+3. Choose one provider to smoke: `codex`, `opencode`, or `pi`.
 4. If the selected provider is not installed or not found by the app search path, record the result as provider-not-found and stop there.
 
 Safe Editor default:

@@ -55,7 +55,7 @@ When possible, Safe Editor Mode should be a build-time variant rather than only 
 
 Agent Workbench mode may expose a right pane that starts an allowlisted local TUI coding-agent CLI inside the selected workspace root.
 
-v0.5 may add Pi as another local CLI provider, but only by fitting it into this same provider model. Pi must not be treated as an RPC integration, SDK integration, provider plugin system, arbitrary provider configuration surface, or special pathway around the existing gate.
+v0.5 includes Pi as another local CLI provider, but only by fitting it into this same provider model. Pi must not be treated as an RPC integration, SDK integration, provider plugin system, arbitrary provider configuration surface, or special pathway around the existing gate.
 
 The precise boundary is:
 
@@ -67,9 +67,6 @@ Allowed launch targets:
 
 - `codex`
 - `opencode`
-
-Approved v0.5 allowlist addition, once implementation and verification land:
-
 - `pi`
 
 The app must not expose an arbitrary command field.
@@ -87,8 +84,8 @@ Current implementation status:
 - On macOS, the real runtime starts the allowlisted provider behind a minimal PTY so CLIs that require terminal stdin can start. The UI uses xterm for terminal rendering, but it is still scoped to the selected allowlisted provider session.
 - The xterm surface reports its current rows/columns to the backend at launch and on resize so the provider PTY can be sized to the visible terminal area.
 - Output is kept in a bounded in-memory buffer of 500 chunks; older chunks are discarded first.
-- Automated stabilization uses temporary fake allowlist providers to exercise hazakura-side lifecycle, output, input, exit, stop, and error handling. Real `codex` / `opencode` checks remain trusted-workspace manual smoke, not automated approval of provider-internal behavior.
-- `pi` is the v0.5 provider target, but it is not implemented in the current app until the UI and backend allowlists are updated together and verified.
+- Automated stabilization uses temporary fake allowlist providers to exercise hazakura-side lifecycle, output, input, exit, stop, and error handling. Real `codex` / `opencode` / `pi` checks remain trusted-workspace manual smoke, not automated approval of provider-internal behavior.
+- `pi` is implemented only as another allowlisted local CLI provider in the existing UI and backend validation path; no Pi RPC, SDK, provider-add UI, or arbitrary provider configuration is implemented.
 - Missing provider CLI is reported as provider not found; it does not fall through to arbitrary command lookup.
 - While an active session exists, a second session start is rejected. Stopping the session goes through the runtime adapter stop boundary and terminates the provider process.
 - Session state is in-memory only and is not restored after app restart.
@@ -102,7 +99,7 @@ Requirements:
 - Enabling Agent Workbench mode requires restart before agent UI or backend launch commands become available.
 - The initial mode gate stores the requested mode separately from the active app-session mode.
 - The backend launch entry rejects while the active app-session mode is off, even if a caller bypasses hidden UI.
-- Provider selection is limited to `codex` and `opencode` in both UI and backend validation. The v0.5 Pi slice may widen that allowlist to `codex`, `opencode`, and `pi`, but only in UI and backend validation together.
+- Provider selection is limited to `codex`, `opencode`, and `pi` in both UI and backend validation.
 - First-use consent is stored locally and required before the backend launch entry can pass its gate.
 - Provider CLI discovery is limited to the allowlisted provider name after provider validation. The app search path starts from the app process `PATH` and adds common macOS GUI-launch gaps such as Homebrew and user bin directories; it does not accept arbitrary command names.
 - User explicitly starts the session.

@@ -77,6 +77,7 @@ const AGENT_WORKBENCH_PROVIDERS: Array<{
 }> = [
   { id: "codex", label: "Codex CLI" },
   { id: "opencode", label: "OpenCode CLI" },
+  { id: "pi", label: "Pi CLI" },
 ];
 const AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS = 500;
 const AGENT_WORKBENCH_SESSION_POLL_MS = 200;
@@ -6331,7 +6332,7 @@ function readStoredAgentWorkbenchConsent(): boolean {
 function readStoredAgentWorkbenchProvider(): AgentWorkbenchProvider {
   const value = window.localStorage.getItem(AGENT_WORKBENCH_PROVIDER_STORAGE_KEY);
 
-  return value === "opencode" ? "opencode" : "codex";
+  return value === "opencode" || value === "pi" ? value : "codex";
 }
 
 function readStoredDrafts(): DraftRecord[] {

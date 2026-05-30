@@ -100,7 +100,7 @@ Example use case:
 - Discard All from the app/window close dialog clears matching unsaved recovery drafts so intentionally discarded edits are not offered after restart
 - Long file names are clipped or wrapped in tabs, the file tree, status/error rows, and close dialogs so core controls stay reachable
 - App bundle icon uses a centered `🌸` emoji mark on a soft pink rounded base
-- Optional Agent Workbench mode can launch one allowlisted `codex` or `opencode` provider session in the selected workspace after restart-required mode enablement and responsibility-boundary consent
+- Optional Agent Workbench mode can launch one allowlisted `codex`, `opencode`, or `pi` provider session in the selected workspace after restart-required mode enablement and responsibility-boundary consent
 - Agent Workbench renders the selected allowlisted provider's TUI output in a scoped pane, sends keyboard input only to the running provider process, supports Copy full path / Send full path to Agent from existing workspace file rows, and continues to treat provider-made file edits as ordinary external on-disk changes
 
 ## Project Docs
@@ -175,7 +175,7 @@ Developer preview release boundary:
 - Save conflicts are recoverable by reviewing changes, reopening, closing, or keeping local edits, and text comparison remains file/workspace based, but there is no merge editor, advanced diff, or Git status view.
 - The app is not signed or notarized with an Apple Developer ID.
 - Agent Workbench is optional and explicit. It does not provide a general shell prompt, arbitrary command input UI, arbitrary path input UI, provider-add UI, multiple sessions, session restore, auto-apply, auto-commit, or Git integration.
-- CLI provider internals are outside hazakura's safety boundary. What happens inside `codex` or `opencode` depends on the provider and the user's choices.
+- CLI provider internals are outside hazakura's safety boundary. What happens inside `codex`, `opencode`, or `pi` depends on the provider and the user's choices.
 - Agent Workbench does not expose a shell prompt, arbitrary command field, arbitrary path field, or general terminal.
 - Outside Agent Workbench there is no Git integration, LSP, terminal, AI assistance, plugin system, arbitrary command execution, or project-wide analysis.
 - The production bundle currently carries a Vite chunk-size warning from editor/preview dependencies.
