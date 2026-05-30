@@ -8,7 +8,8 @@ Last reviewed: 2026-05-30
 ## Current State
 
 - A touchable Tauri desktop prototype exists.
-- Current intended preview release is `v0.4.0` as a warning-expected DMG preview.
+- Current public preview release is `v0.4.0` as a warning-expected DMG preview.
+- Current development lane is v0.5 Pi CLI Provider And App Stability.
 - The prototype creates user-selected text/Markdown files, opens common UTF-8 text documents from File > Open or Finder/app-icon open events, opens a user-selected folder, shows a lazy bounded file tree, opens multiple files in tabs, edits the active tab with CodeMirror 6, saves through Rust with external-change protection, searches with visible match highlights and keyboard/navigation options, renders a toggleable sanitized Markdown preview, and shows selected workspace images in a read-only preview.
 - Existing LF / CRLF line endings are detected when a file is opened and preserved through save.
 - The status bar shows file type, UTF-8 encoding, approximate byte count, character count, saved line-ending mode, final-newline state, and clean/unsaved state.
@@ -815,13 +816,13 @@ Known verification note:
 
 ## Next Actions
 
-1. For v0.4 planning, keep Markdown Review Navigation focused on current-file outline, heading context, local Markdown link navigation, open-tabs/recent-files navigation, and display polish without strong prediction or auto-rewrite behavior.
-2. Re-smoke Diff / Change Review in normal daily use after the v0.3 release and treat any regressions as patch candidates rather than expanding the v0.4 scope.
-3. For Agent Workbench work, treat further changes as boundary maintenance; run `docs/smoke-checklist.md` Agent Workbench Trusted Workspace Manual Smoke in a throwaway workspace before further terminal, PTY, or provider-lifecycle changes.
-4. For recurring automation, use the 30-minute v0.4 Markdown Review Navigation loop in `docs/development-automation.md`; keep slices narrow and avoid new test code unless it protects a real bug, backend/safety contract, or high-value lifecycle path.
+1. For v0.5 work, start with Agent Workbench boundary wording for Pi, then add `pi` only as an allowlisted local CLI provider inside the existing gate.
+2. Keep Pi work to CLI provider availability, launch, stop/exit, resize, app-close cleanup, and trusted-workspace smoke. Do not add Pi RPC, Pi SDK, provider-add UI, arbitrary provider config, multi-agent orchestration, auto-apply, auto-commit, a general terminal, or Git client behavior.
+3. Treat v0.4 Markdown Review Navigation and v0.3 Diff / Change Review regressions as patch follow-up only; do not expand them into project-wide indexing, prediction, merge editing, or Git-aware behavior.
+4. For recurring automation, use the 30-minute v0.5 Pi CLI Provider And App Stability loop in `docs/development-automation.md`; keep slices narrow and avoid new test code unless it protects a real bug, backend/safety contract, or high-value lifecycle path.
 5. Re-smoke long file name / constrained-width layout before binary distribution readiness.
 6. For follow-up warning-expected DMG previews, keep the release marked as a prerelease and use the current version-specific release note as the GitHub Release body.
-7. Add minimal CI and Dependabot as P1 release hardening when a small verified slice is available. Keep the current `glib` Dependabot alert visible as a Linux/Tauri-wry dependency-refresh review item rather than a v0.3 macOS blocker.
+7. Add minimal CI and Dependabot as P1 release hardening when a small verified slice is available. Keep the current `glib` Dependabot alert visible as a Linux/Tauri-wry dependency-refresh review item rather than a v0.4 macOS blocker.
 8. Keep signing, notarization, and installer packaging separate from source-release and workspace hardening.
 
 ## Avoid

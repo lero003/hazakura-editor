@@ -15,11 +15,11 @@ The automation should make the app safer and more comfortable to use in small ve
 
 Name: `hazakura-note-safe-editor-review-loop`
 
-Cadence: 30-minute heartbeat loop for non-goal micro-polish work.
+Cadence: 30-minute heartbeat loop for v0.5 slices and non-goal micro-polish work.
 
-Current phase: v0.4 Markdown Review Navigation, after the `v0.3.0` non-Git diff / change-review preview release.
+Current phase: v0.5 Pi CLI Provider And App Stability, after the `v0.4.0` Markdown Review Navigation warning-expected DMG preview release.
 
-Primary outcome: one coherent Markdown review/navigation or safe-editor quality improvement per run, verified, documented, committed, and pushed when checks pass. A verified no-op is acceptable when no safe useful slice is found.
+Primary outcome: one coherent Pi CLI provider, Agent Workbench stability, or safe-editor quality improvement per run, verified, documented, committed, and pushed when checks pass. A verified no-op is acceptable when no safe useful slice is found.
 
 Each run should fit the 30-minute cadence. If the useful slice is larger than that, narrow it, leave a short next-step note, or stop with a verified no-op instead of stretching the scope.
 
@@ -41,7 +41,15 @@ Do not decide verified no-op from documentation review alone when app inspection
 
 Choose the first useful slice that is both small and verifiable.
 
-1. v0.4 Markdown Review Navigation:
+1. v0.5 Pi CLI Provider And App Stability:
+   - update `docs/agent-workbench-boundary.md` before adding Pi provider behavior
+   - add `pi` only as an allowlisted local CLI provider inside the existing Agent Workbench gate
+   - keep Pi launch behavior inside explicit mode, restart boundary, responsibility consent, selected workspace root, and one active session
+   - improve provider availability, launch failure, stop/exit, resize, app-close cleanup, and terminal responsiveness from focused smoke findings
+   - run trusted-workspace manual smoke for Pi when the provider exists locally, and record provider-not-found cleanly when it does not
+   - no Pi RPC, Pi SDK, arbitrary provider configuration, provider-add UI, multi-agent orchestration, auto-apply, auto-commit, general terminal, or Git client behavior
+2. v0.4 Markdown Review Navigation patch follow-up:
+   - treat shipped v0.4 behavior as patch-follow-up only
    - current-file heading outline
    - current heading or section context
    - diff hunk heading context for Markdown files
@@ -49,28 +57,28 @@ Choose the first useful slice that is both small and verifiable.
    - open-tabs and recent-files navigation
    - readable Markdown preview/review display polish
    - avoid strong autocomplete, automatic lint fixes, broad formatting rewrites, project-wide indexing, and symbol search
-2. v0.3 Diff / Change Review patch follow-up:
+3. v0.3 Diff / Change Review patch follow-up:
    - re-smoke file comparison and change-review paths from the released `v0.3.0` surface
    - fix narrow regressions in current buffer versus disk, explicit file-to-file comparison, draft/recovery comparison, or save-conflict review
    - keep labels in file/workspace/change-review language and avoid Git wording
    - no repository status, branch, staging, history, apply, commit, push, pull, or merge behavior
-3. Everyday usability polish:
+4. Everyday usability polish:
    - menu placement, menu language, button labels, dialog wording, external-change messages, save-conflict wording, layout fit, and built-app smoke notes
    - prefer the smallest visible improvement that makes manual use clearer
-4. Safety-boundary regression checks:
+5. Safety-boundary regression checks:
    - Safe Editor default startup
    - Agent Workbench explicit mode gate and restart boundary
    - responsibility-boundary consent
-   - allowlisted `codex` / `opencode` providers only
+   - allowlisted `codex` / `opencode` / `pi` providers only, once Pi is explicitly documented and implemented
    - selected workspace root only
    - one active session
    - no arbitrary shell, arbitrary command input UI, arbitrary path input UI, session restore, auto-apply, auto-commit, provider-add UI, or Git integration
-5. Stability and responsiveness:
+6. Stability and responsiveness:
    - stale snapshot handling, external-change live refresh, save/reopen failure paths, theme switching, search responsiveness, and Agent Workbench lifecycle regressions when touched
-   - prefer fake-provider coverage for hazakura-owned Agent lifecycle behavior and trusted-workspace manual smoke for real `codex` / `opencode` behavior
-6. Markdown-first safe editor quality:
+   - prefer fake-provider coverage for hazakura-owned Agent lifecycle behavior and trusted-workspace manual smoke for real `codex` / `opencode` / `pi` behavior
+7. Markdown-first safe editor quality:
    - save failure recovery, external-change recheck, dirty close, draft restore, Save As, line endings, preview sanitize, workspace image preview, scroll sync, resizable panes, window close, workspace tree, theme switching, search, long file names, constrained-width layout, Japanese IME, and keyboard focus
-7. Local release readiness:
+8. Local release readiness:
    - source-only release P0 gates from `docs/source-release-checklist.md`
    - dependency audit review with `npm audit` and `cargo audit` only when the run has enough time and risk justification
    - treat the open `glib` / `GHSA-wrw7-89jp-8q8g` Dependabot alert as a triaged Linux Tauri/wry GTK/WebKit dependency item unless Linux support, a Tauri/wry dependency-refresh lane, distribution-readiness sign-off, severity escalation, or a compatible patched upstream path makes it actionable
@@ -78,7 +86,7 @@ Choose the first useful slice that is both small and verifiable.
    - app version/about metadata and source release notes
    - packaging docs without signing or notarization claims
    - do not tag, publish, release, or attach a DMG without explicit user approval
-8. Verified no-op:
+9. Verified no-op:
    - If no small useful slice is safe after reading docs and inspecting the app surface when practical, run the relevant checks, update docs only if facts changed, and report no-op clearly.
    - A no-op report should say whether app inspection was performed, or why it was skipped.
 
@@ -114,6 +122,8 @@ Do not implement during this automation:
 - project-wide analysis or indexing
 - strong predictive autocomplete
 - automatic lint fixes or broad formatting rewrites
+- Pi RPC or SDK integration
+- arbitrary provider configuration or provider-add UI
 - Apple Developer ID signing or notarization completion
 - merge editor
 - advanced Git diff
@@ -178,9 +188,9 @@ Advance hazakura-note by one small, verifiable quality-hardening slice.
 
 Start by reading AGENTS.md, README.md, docs/current-status.md, docs/roadmap.md, docs/smoke-checklist.md, docs/development-automation.md, and checking git status --short --branch. Treat existing uncommitted changes as user or previous-run work and do not revert them.
 
-Use docs/development-automation.md as the source of truth. The current lane is a 30-minute v0.4 Markdown Review Navigation loop. Choose from this priority order: current-file heading outline; current heading or section context; diff hunk heading context for Markdown files; local Markdown link navigation limited to explicitly selected workspace files; open-tabs and recent-files navigation; readable Markdown preview/review display polish; v0.3 Diff / Change Review patch follow-up; everyday usability polish; safety-boundary regression checks; stability and responsiveness; Markdown-first safe editor quality; local preview release hygiene; verified no-op if no useful small slice is safe.
+Use docs/development-automation.md as the source of truth. The current lane is a 30-minute v0.5 Pi CLI Provider And App Stability loop. Choose from this priority order: update Agent Workbench boundary docs for Pi; add Pi as an allowlisted local CLI provider inside the existing gate; provider availability and launch-failure polish; provider stop/exit/resize/app-close cleanup; trusted-workspace Pi smoke or provider-not-found evidence; stability and responsiveness; v0.4 Markdown Review Navigation patch follow-up; v0.3 Diff / Change Review patch follow-up; everyday usability polish; safety-boundary regression checks; Markdown-first safe editor quality; local preview release hygiene; verified no-op if no useful small slice is safe.
 
-Keep Agent Workbench limited to explicit mode gate, restart boundary, responsibility consent, allowlisted `codex` / `opencode` providers, one selected workspace root, and one active session. Keep diff work limited to explicit text/file comparison and recovery review; do not inspect or present Git repository state. Do not implement Git integration, LSP, arbitrary terminal/shell access, arbitrary command execution, arbitrary path input UI, session restore, auto-apply, auto-commit, provider-add UI, plugin systems, project-wide analysis/indexing, strong predictive autocomplete, automatic lint fixes, broad formatting rewrites, signing/notarization completion, merge editor, advanced Git diff, release/publish/tag flow, Pi CLI/RPC/SDK work, or dependency/lockfile changes without explicit user approval. The current `glib` / `GHSA-wrw7-89jp-8q8g` Dependabot alert is already triaged as a Linux Tauri/wry GTK/WebKit dependency item; revisit it only for Linux support, a Tauri/wry dependency-refresh lane, distribution-readiness sign-off, severity escalation, or a compatible patched upstream path.
+Keep Agent Workbench limited to explicit mode gate, restart boundary, responsibility consent, allowlisted `codex` / `opencode` / `pi` providers, one selected workspace root, and one active session. Add Pi only as a local CLI provider in the existing provider model after updating the Agent Workbench boundary docs. Keep diff work limited to explicit text/file comparison and recovery review; do not inspect or present Git repository state. Do not implement Git integration, LSP, arbitrary terminal/shell access, arbitrary command execution, arbitrary path input UI, session restore, auto-apply, auto-commit, provider-add UI, plugin systems, project-wide analysis/indexing, strong predictive autocomplete, automatic lint fixes, broad formatting rewrites, signing/notarization completion, merge editor, advanced Git diff, release/publish/tag flow, Pi RPC/SDK work, arbitrary provider configuration, or dependency/lockfile changes without explicit user approval. The current `glib` / `GHSA-wrw7-89jp-8q8g` Dependabot alert is already triaged as a Linux Tauri/wry GTK/WebKit dependency item; revisit it only for Linux support, a Tauri/wry dependency-refresh lane, distribution-readiness sign-off, severity escalation, or a compatible patched upstream path.
 
 For substantial implementation, automation changes, Git/GitHub mutation, release work, or command-selection uncertainty, run Hazakura Habitat first and read agent_context.md before continuing. Consult command_policy.md before risky or mutating commands.
 

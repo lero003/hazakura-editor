@@ -117,6 +117,8 @@ This phase should prefer navigation, visibility, and manual review over predicti
 
 Goal: add Pi as a first-class Agent Workbench CLI provider while improving app stability in small, verifiable slices.
 
+Status: Active development lane after the `v0.4.0` warning-expected DMG preview release.
+
 Candidate work:
 
 - add `pi` as an allowlisted local CLI provider, after updating `docs/agent-workbench-boundary.md`
