@@ -1723,7 +1723,7 @@ button:disabled {
 .outline-pane {
   background: var(--surface-strong);
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
   height: 100%;
   min-width: 0;
 }
@@ -1798,6 +1798,14 @@ button:disabled {
   justify-content: center;
   padding: 32px;
   text-align: center;
+}
+
+.outline-truncated {
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 10px 16px 12px;
 }
 
 .agent-pane {

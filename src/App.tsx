@@ -107,6 +107,10 @@ type MarkdownHeading = {
   line: number;
   text: string;
 };
+type MarkdownOutline = {
+  headings: MarkdownHeading[];
+  truncated: boolean;
+};
 
 type AgentLaunchGateState = {
   kind: "idle" | "checking" | "passed" | "rejected";
@@ -408,6 +412,8 @@ export default function App() {
           imagePreview: "画像プレビュー",
           markdownPreview: "Markdown プレビュー",
           outlineEmpty: "このファイルに Markdown 見出しはありません。",
+          outlineTruncated:
+            "見出しが多いため、最初の200件まで表示しています。",
           outlineTab: "見出し",
           documentOutline: "文書アウトライン",
           openTextFileToPreview:
@@ -428,6 +434,8 @@ export default function App() {
           imagePreview: "Image Preview",
           markdownPreview: "Markdown preview",
           outlineEmpty: "This file has no Markdown headings.",
+          outlineTruncated:
+            "Showing the first 200 headings because this file has more.",
           outlineTab: "Outline",
           documentOutline: "Document outline",
           openTextFileToPreview: "Open a text file to show Markdown preview.",
@@ -685,12 +693,13 @@ export default function App() {
     activeTab || selectedImage || compareView || agentPaneVisible,
   );
   const documentOutline = useMemo(
-    () => (activeTab ? extractMarkdownHeadings(activeContents) : []),
+    () => (activeTab ? extractMarkdownOutline(activeContents) : null),
     [activeContents, activeTab],
   );
+  const documentHeadings = documentOutline?.headings ?? [];
   const currentMarkdownHeading = useMemo(
-    () => findCurrentMarkdownHeading(documentOutline, selectionInfo.line),
-    [documentOutline, selectionInfo.line],
+    () => findCurrentMarkdownHeading(documentHeadings, selectionInfo.line),
+    [documentHeadings, selectionInfo.line],
   );
   const activeDocumentStats = useMemo(
     () => analyzeTextDocument(activeContents, activeTab?.line_ending),
@@ -3952,8 +3961,9 @@ export default function App() {
                 <OutlinePane
                   copy={sidePaneCopy}
                   currentHeadingLine={currentMarkdownHeading?.line ?? null}
-                  headings={documentOutline}
+                  headings={documentHeadings}
                   onSelect={jumpToHeading}
+                  truncated={documentOutline?.truncated ?? false}
                 />
               ) : activeTab && previewVisible ? (
                 <PreviewPane
@@ -4510,14 +4520,17 @@ function OutlinePane({
   currentHeadingLine,
   headings,
   onSelect,
+  truncated,
 }: {
   copy: {
     documentOutline: string;
     outlineEmpty: string;
+    outlineTruncated: string;
   };
   currentHeadingLine: number | null;
   headings: MarkdownHeading[];
   onSelect: (heading: MarkdownHeading) => void;
+  truncated: boolean;
 }) {
   return (
     <div className="outline-pane">
@@ -4525,24 +4538,31 @@ function OutlinePane({
         <span>{copy.documentOutline}</span>
       </div>
       {headings.length > 0 ? (
-        <div className="outline-list">
-          {headings.map((heading) => (
-            <button
-              aria-current={
-                heading.line === currentHeadingLine ? "location" : undefined
-              }
-              className={`outline-item${heading.line === currentHeadingLine ? " current" : ""}`}
-              key={`${heading.line}-${heading.text}`}
-              onClick={() => onSelect(heading)}
-              style={{ paddingLeft: `${10 + (heading.level - 1) * 12}px` }}
-              title={`${heading.line}: ${heading.text}`}
-              type="button"
-            >
-              <span className="outline-line">{heading.line}</span>
-              <span className="outline-text">{heading.text}</span>
-            </button>
-          ))}
-        </div>
+        <>
+          <div className="outline-list">
+            {headings.map((heading) => (
+              <button
+                aria-current={
+                  heading.line === currentHeadingLine ? "location" : undefined
+                }
+                className={`outline-item${heading.line === currentHeadingLine ? " current" : ""}`}
+                key={`${heading.line}-${heading.text}`}
+                onClick={() => onSelect(heading)}
+                style={{ paddingLeft: `${10 + (heading.level - 1) * 12}px` }}
+                title={`${heading.line}: ${heading.text}`}
+                type="button"
+              >
+                <span className="outline-line">{heading.line}</span>
+                <span className="outline-text">{heading.text}</span>
+              </button>
+            ))}
+          </div>
+          {truncated ? (
+            <div className="outline-truncated" role="note">
+              {copy.outlineTruncated}
+            </div>
+          ) : null}
+        </>
       ) : (
         <div className="outline-empty">{copy.outlineEmpty}</div>
       )}
@@ -6446,10 +6466,11 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
   ).filter((element) => element.offsetParent !== null);
 }
 
-function extractMarkdownHeadings(source: string): MarkdownHeading[] {
+function extractMarkdownOutline(source: string): MarkdownOutline {
   const headings: MarkdownHeading[] = [];
   const lines = source.split(/\r\n|\n|\r/);
   let fenceMarker: "`" | "~" | null = null;
+  let truncated = false;
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
@@ -6475,15 +6496,19 @@ function extractMarkdownHeadings(source: string): MarkdownHeading[] {
     const heading = parseMarkdownHeadingLine(line, index + 1);
 
     if (heading) {
-      headings.push(heading);
-    }
-
-    if (headings.length >= MARKDOWN_OUTLINE_MAX_HEADINGS) {
-      break;
+      if (headings.length < MARKDOWN_OUTLINE_MAX_HEADINGS) {
+        headings.push(heading);
+      } else {
+        truncated = true;
+        break;
+      }
     }
   }
 
-  return headings;
+  return {
+    headings,
+    truncated,
+  };
 }
 
 function parseMarkdownHeadingLine(

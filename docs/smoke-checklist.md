@@ -97,6 +97,8 @@ Latest open-tabs keyboard navigation checks: 2026-05-30 automated gates passed a
 
 Latest Markdown preview readability checks: 2026-05-30 automated gates passed after adding review-oriented preview spacing for lists, nested lists, task checkboxes, and horizontal rules. No fresh built-app preview readability smoke was claimed.
 
+Latest Markdown Outline cap note checks: 2026-05-30 automated gates passed after adding a visible note when a current-file Outline is capped at the first 200 headings. No fresh built-app large-outline smoke was claimed.
+
 ## Build First
 
 ```bash
@@ -184,6 +186,7 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 6. Confirm the matching Outline row is highlighted as the cursor moves through sections.
 7. Toggle Outline off and confirm the editor remains active and the tab contents are unchanged.
 8. Open a Markdown file without headings and confirm the Outline pane shows the empty-heading message instead of stale headings from the prior file.
+9. Open or generate a Markdown file with more than 200 headings and confirm the Outline pane shows a visible note that only the first 200 headings are listed.
 
 ## Markdown Preview Sync
 
