@@ -4728,6 +4728,7 @@ function DiffSetupPane({
           targetHint: "次のクリックで比較先を選択",
           ready:
             "比較元は解除するまで固定されます。右クリックメニューでも比較元/比較先を明示できます。",
+          pending: "比較元と比較先を選ぶと比較できます。",
           sourceUnset: "比較元は未選択です",
           targetUnset: "比較先は未選択です",
         }
@@ -4746,6 +4747,7 @@ function DiffSetupPane({
           targetHint: "The next click chooses the target",
           ready:
             "The source stays fixed until cleared. You can also use the context menu to choose either side.",
+          pending: "Compare becomes available after both slots are selected.",
           sourceUnset: "No compare source selected",
           targetUnset: "No compare target selected",
         };
@@ -4764,6 +4766,7 @@ function DiffSetupPane({
   const targetPrompt = workspaceAvailable
     ? labels.targetHint
     : labels.openWorkspaceHint;
+  const actionHint = workspaceAvailable ? labels.ready : labels.pending;
 
   return (
     <div className="diff-setup-pane">
@@ -4797,7 +4800,7 @@ function DiffSetupPane({
           <button type="button" onClick={onCompare} disabled={!canCompare}>
             {labels.compare}
           </button>
-          <p>{labels.ready}</p>
+          <p>{actionHint}</p>
         </div>
       </div>
     </div>
