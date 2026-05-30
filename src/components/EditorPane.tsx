@@ -1,5 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { markdown } from "@codemirror/lang-markdown";
+import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import {
   selectCharLeft,
   selectCharRight,
@@ -22,6 +23,7 @@ import {
   EditorView,
   keymap,
 } from "@codemirror/view";
+import { tags as highlightTags } from "@lezer/highlight";
 import { basicSetup } from "codemirror";
 
 type SearchMatch = { from: number; to: number };
@@ -246,7 +248,10 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
           showInvisibles ? invisibleCharactersField : [],
         ),
         tabSizeCompartmentRef.current.of(EditorState.tabSize.of(tabSize)),
-        themeCompartmentRef.current.of(editorTheme(theme, fontSize)),
+        themeCompartmentRef.current.of([
+          editorTheme(theme, fontSize),
+          syntaxHighlighting(editorMarkdownHighlightStyle(theme)),
+        ]),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
             onChangeRef.current(update.state.doc.toString());
@@ -287,9 +292,10 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     }
 
     view.dispatch({
-      effects: themeCompartmentRef.current.reconfigure(
+      effects: themeCompartmentRef.current.reconfigure([
         editorTheme(theme, fontSize),
-      ),
+        syntaxHighlighting(editorMarkdownHighlightStyle(theme)),
+      ]),
     });
   }, [fontSize, theme]);
 
@@ -614,6 +620,41 @@ function editorTheme(theme: "light" | "dark", fontSize: number) {
     },
     { dark: theme === "dark" },
   );
+}
+
+function editorMarkdownHighlightStyle(theme: "light" | "dark") {
+  const dark = theme === "dark";
+
+  return HighlightStyle.define([
+    {
+      tag: [
+        highlightTags.heading,
+        highlightTags.heading1,
+        highlightTags.heading2,
+        highlightTags.heading3,
+      ],
+      color: dark ? "#d8f7e8" : "#173b2b",
+      fontWeight: "700",
+    },
+    {
+      tag: [highlightTags.strong, highlightTags.emphasis],
+      color: dark ? "#f2f7f4" : "#1d2521",
+    },
+    {
+      tag: [highlightTags.link, highlightTags.url],
+      color: dark ? "#b8e8ff" : "#245d8a",
+      textDecoration: "underline",
+    },
+    {
+      tag: highlightTags.monospace,
+      color: dark ? "#afe9c8" : "#245c40",
+    },
+    {
+      tag: highlightTags.quote,
+      color: dark ? "#c9d9d0" : "#4f6659",
+      fontStyle: "italic",
+    },
+  ]);
 }
 
 function readSelectionInfo(state: EditorState): EditorSelectionInfo {

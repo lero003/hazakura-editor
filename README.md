@@ -17,7 +17,7 @@ Last reviewed: 2026-05-30
 
 ![hazakura-note Agent Workbench mode](docs/images/pre0.2-agent-mode.png)
 
-## 0.3 Preview Summary
+## 0.4 Preview Summary
 
 Use this when you want to:
 
@@ -161,10 +161,10 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current intended preview version is `0.3.0` across npm, Tauri, and Cargo metadata.
+- Current intended preview version is `0.4.0` across npm, Tauri, and Cargo metadata.
 - Source users build locally with `npm ci` and `npm run build`.
 - The generated local `.app` declares macOS 11.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. It is not Developer ID signed or notarized.
-- The v0.3 warning-expected DMG preview notes are prepared in [0.3.0 Warning-expected DMG Preview](docs/releases/0.3.0-warning-expected-dmg-preview.release.md).
+- The v0.4 warning-expected DMG preview notes are prepared in [0.4.0 Warning-expected DMG Preview](docs/releases/0.4.0-warning-expected-dmg-preview.release.md).
 - Tag creation, push, and GitHub Release publication require explicit user approval.
 
 ## Known Limits

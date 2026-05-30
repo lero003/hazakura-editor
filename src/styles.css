@@ -2232,6 +2232,49 @@ button:disabled {
   box-shadow: var(--shadow-sm);
 }
 
+:root[data-theme="dark"] .markdown-preview code,
+:root[data-theme="yakou"] .markdown-preview code {
+  border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent);
+}
+
+:root[data-theme="dark"] .markdown-preview code {
+  background: #20332a;
+  color: #afe9c8;
+}
+
+:root[data-theme="yakou"] .markdown-preview code {
+  background: color-mix(in srgb, #40bfa0 18%, var(--surface-strong));
+  color: #b8f4df;
+}
+
+:root[data-theme="dark"] .markdown-preview blockquote {
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface-strong));
+  color: #d3e3db;
+}
+
+:root[data-theme="yakou"] .markdown-preview blockquote {
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface-strong));
+  color: #d9d9f5;
+}
+
+:root[data-theme="dark"] .markdown-preview a {
+  color: #9fdcc0;
+}
+
+:root[data-theme="yakou"] .markdown-preview a {
+  color: #b8f4df;
+}
+
+:root[data-theme="dark"] .markdown-table-frame th,
+:root[data-theme="yakou"] .markdown-table-frame th {
+  background: color-mix(in srgb, var(--accent) 20%, var(--surface-strong));
+}
+
+:root[data-theme="dark"] .markdown-table-frame tbody tr:nth-child(even) td,
+:root[data-theme="yakou"] .markdown-table-frame tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface-muted));
+}
+
 .blocked-image {
   background: var(--surface-muted);
   border: 1px solid var(--border);

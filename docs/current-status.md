@@ -8,7 +8,7 @@ Last reviewed: 2026-05-30
 ## Current State
 
 - A touchable Tauri desktop prototype exists.
-- Current intended preview release is `v0.3.0` as a warning-expected DMG preview.
+- Current intended preview release is `v0.4.0` as a warning-expected DMG preview.
 - The prototype creates user-selected text/Markdown files, opens common UTF-8 text documents from File > Open or Finder/app-icon open events, opens a user-selected folder, shows a lazy bounded file tree, opens multiple files in tabs, edits the active tab with CodeMirror 6, saves through Rust with external-change protection, searches with visible match highlights and keyboard/navigation options, renders a toggleable sanitized Markdown preview, and shows selected workspace images in a read-only preview.
 - Existing LF / CRLF line endings are detected when a file is opened and preserved through save.
 - The status bar shows file type, UTF-8 encoding, approximate byte count, character count, saved line-ending mode, final-newline state, and clean/unsaved state.
@@ -276,6 +276,26 @@ v0.3 warning-expected DMG preview release preparation on 2026-05-30:
 - Public release tag `v0.3.0` is the fresh tag for this release; older public tags were left immutable.
 - Remote verification downloaded the published GitHub Release assets, confirmed `shasum -c` passed, `hdiutil verify` passed, and the mounted app reported version `0.3.0` / bundle identifier `lab.hazakura.note` with `codesign --verify --deep --strict --verbose=2` passing.
 - Recurring automation guidance moved to the v0.4 Markdown Review Navigation lane while keeping v0.3 Diff / Change Review work as patch follow-up only.
+
+v0.4 warning-expected DMG preview release preparation on 2026-05-30:
+
+- Version surfaces were aligned to `0.4.0` in `package.json`, `package-lock.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`, and `src-tauri/Cargo.lock`.
+- Release notes were prepared at `docs/releases/0.4.0-warning-expected-dmg-preview.release.md`.
+- Built DMG asset: `hazakura-note_0.4.0_aarch64-warning-expected.dmg`.
+- SHA-256: `920b05ca220c5feaa003e69f8362b654f24cee73df63e49cbb7f14f4d0fd73b8`.
+- `npm ci` passed.
+- `npm run build:vite` passed with the known production chunk-size warning.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passed.
+- `cargo test --manifest-path src-tauri/Cargo.toml` passed with 70 Rust tests.
+- `npm audit --audit-level=moderate` passed with 0 vulnerabilities.
+- `cargo audit --file src-tauri/Cargo.lock` completed with the known Tauri/wry transitive warnings for GTK3/gtk-rs, `glib`, `proc-macro-error`, and `unic-*`; no new macOS release blocker was identified in this pass.
+- `npm run build` passed and regenerated the local macOS `.app` bundle.
+- The built app reported `CFBundleShortVersionString` `0.4.0`, `CFBundleVersion` `0.4.0`, bundle identifier `lab.hazakura.note`, passed `codesign --verify --deep --strict --verbose=2`, launched locally from `src-tauri/target/release/bundle/macos/hazakura-note.app`, and was then quit with no `hazakura-note` process left running.
+- `SKIP_BUILD=1 npm run build:dmg-preview` created and verified the warning-expected DMG plus checksum.
+- `cd src-tauri/target/release/bundle/dmg && shasum -c hazakura-note_0.4.0_aarch64-warning-expected.dmg.sha256` passed.
+- The DMG mounted read-only; the contained `hazakura-note.app` reported `CFBundleShortVersionString` `0.4.0`, `CFBundleVersion` `0.4.0`, bundle identifier `lab.hazakura.note`, and passed `codesign --verify --deep --strict --verbose=2`.
+- `spctl -a -vv -t open` rejected the app with `source=Insufficient Context`, which is expected for this ad-hoc signed and not-notarized preview.
+- GitHub prerelease publication and remote asset verification are pending for `v0.4.0`.
 
 Cherry blossom app icon update on 2026-05-29:
 
