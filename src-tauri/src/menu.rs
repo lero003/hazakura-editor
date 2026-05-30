@@ -24,6 +24,7 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
     let wrap_lines = state.map(|state| state.wrap_lines).unwrap_or(true);
     let show_invisibles = state.map(|state| state.show_invisibles).unwrap_or(false);
     let zen_mode = state.map(|state| state.zen_mode).unwrap_or(false);
+    let spellcheck_enabled = state.map(|state| state.spellcheck_enabled).unwrap_or(true);
     let theme_preference = state
         .map(|state| state.theme_preference.as_str())
         .unwrap_or("system");
@@ -177,6 +178,14 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
                 true,
                 zen_mode,
                 Some("CmdOrCtrl+Shift+F"),
+            )?,
+            &CheckMenuItem::with_id(
+                app,
+                MENU_TOGGLE_SPELLCHECK,
+                label("Spell Check", "スペルチェック"),
+                true,
+                spellcheck_enabled,
+                Some("CmdOrCtrl+Option+;"),
             )?,
             &PredefinedMenuItem::separator(app)?,
             &Submenu::with_items(
@@ -436,10 +445,14 @@ pub(crate) fn emit_app_menu_event<R: tauri::Runtime>(
                 | MENU_OPEN_FOLDER
                 | MENU_SAVE
                 | MENU_SAVE_AS
+                | MENU_EXPORT_HTML
+                | MENU_EXPORT_PDF
                 | MENU_CLOSE_WINDOW
                 | MENU_TOGGLE_PREVIEW
                 | MENU_TOGGLE_WRAP
                 | MENU_TOGGLE_INVISIBLES
+                | MENU_TOGGLE_ZEN
+                | MENU_TOGGLE_SPELLCHECK
                 | MENU_THEME_SYSTEM
                 | MENU_THEME_LIGHT
                 | MENU_THEME_DARK
