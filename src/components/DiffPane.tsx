@@ -354,6 +354,3 @@ function formatDiffSectionContext(
     ? `変更位置: § ${leftText ?? rightText}`
     : `Changed in: § ${leftText ?? rightText}`;
 }
-
-
-
