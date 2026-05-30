@@ -1042,7 +1042,7 @@ export default function App() {
         setCompareView(null);
         rememberRecentFile(path);
         setStatus("Tab focused");
-        return;
+        return true;
       }
 
       setStatus("Opening file...");
@@ -1079,9 +1079,11 @@ export default function App() {
             ? "Opened with large-file warning"
             : "Opened safely",
         );
+        return true;
       } catch (err) {
         setGlobalError(String(err));
         setStatus("Open failed");
+        return false;
       }
     },
     [rememberRecentFile, tabs],
@@ -1130,6 +1132,48 @@ export default function App() {
       await openFilePath(path);
     },
     [activeTabId, openFilePath, workspaceRootPath],
+  );
+
+  const openPreviewMarkdownLink = useCallback(
+    async (href: string) => {
+      const targetPath =
+        activeTab && workspaceRootPath
+          ? resolveLocalMarkdownLinkTarget(
+              href,
+              activeTab.path,
+              workspaceRootPath,
+            )
+          : null;
+
+      if (!targetPath) {
+        setStatus(
+          menuLanguage === "ja"
+            ? "workspace 内の相対テキストリンクだけ開けます"
+            : "Only relative workspace text links can be opened",
+        );
+        return;
+      }
+
+      if (!isComparableTextFile(targetPath)) {
+        setStatus(
+          menuLanguage === "ja"
+            ? "リンク先は対応テキストファイルではありません"
+            : "Linked file is not a supported text file",
+        );
+        return;
+      }
+
+      const opened = await openFilePath(targetPath);
+
+      if (opened) {
+        setStatus(
+          menuLanguage === "ja"
+            ? "リンク先ファイルを開きました"
+            : "Linked file opened",
+        );
+      }
+    },
+    [activeTab, menuLanguage, openFilePath, workspaceRootPath],
   );
 
   const createNewFile = useCallback(async () => {
@@ -3872,7 +3916,10 @@ export default function App() {
                   onSelect={jumpToHeading}
                 />
               ) : activeTab && previewVisible ? (
-                <PreviewPane source={activeContents} />
+                <PreviewPane
+                  onOpenLocalLink={openPreviewMarkdownLink}
+                  source={activeContents}
+                />
               ) : (
                 <PreviewUnavailablePane
                   ariaLabel={sidePaneCopy.previewUnavailable}
@@ -6865,6 +6912,103 @@ function isMarkdownDocumentPath(path: string): boolean {
     : "";
 
   return ["md", "markdown", "mdown"].includes(extension);
+}
+
+function resolveLocalMarkdownLinkTarget(
+  href: string,
+  sourcePath: string,
+  workspaceRootPath: string,
+): string | null {
+  const trimmedHref = href.trim();
+
+  if (
+    !trimmedHref ||
+    trimmedHref.startsWith("#") ||
+    trimmedHref.startsWith("//") ||
+    /^[a-z][a-z0-9+.-]*:/i.test(trimmedHref)
+  ) {
+    return null;
+  }
+
+  const hrefWithoutAnchor = trimmedHref.split("#", 1)[0] ?? "";
+  const hrefPath = hrefWithoutAnchor.split("?", 1)[0]?.trim() ?? "";
+
+  if (!hrefPath || hrefPath.startsWith("/")) {
+    return null;
+  }
+
+  let decodedPath: string;
+
+  try {
+    decodedPath = decodeURIComponent(hrefPath);
+  } catch {
+    return null;
+  }
+
+  if (!decodedPath || decodedPath.includes("\0") || decodedPath.startsWith("/")) {
+    return null;
+  }
+
+  const workspaceRoot = normalizeAbsolutePath(workspaceRootPath);
+  const source = normalizeAbsolutePath(sourcePath);
+
+  if (!isPathInsideDirectory(source, workspaceRoot)) {
+    return null;
+  }
+
+  const sourceDirectory = directoryPathFromPath(source);
+  const targetPath = normalizeAbsolutePath(`${sourceDirectory}/${decodedPath}`);
+
+  if (!isPathInsideDirectory(targetPath, workspaceRoot)) {
+    return null;
+  }
+
+  return targetPath;
+}
+
+function normalizeAbsolutePath(path: string): string {
+  const parts: string[] = [];
+  const isAbsolute = path.startsWith("/");
+
+  for (const part of path.split("/")) {
+    if (!part || part === ".") {
+      continue;
+    }
+
+    if (part === "..") {
+      if (parts.length === 0) {
+        return isAbsolute ? "/" : "";
+      }
+
+      parts.pop();
+      continue;
+    }
+
+    parts.push(part);
+  }
+
+  return `${isAbsolute ? "/" : ""}${parts.join("/")}`;
+}
+
+function directoryPathFromPath(path: string): string {
+  const normalized = normalizeAbsolutePath(path);
+  const separatorIndex = normalized.lastIndexOf("/");
+
+  if (separatorIndex <= 0) {
+    return "/";
+  }
+
+  return normalized.slice(0, separatorIndex);
+}
+
+function isPathInsideDirectory(path: string, directoryPath: string): boolean {
+  const normalizedPath = normalizeAbsolutePath(path);
+  const normalizedDirectory = normalizeAbsolutePath(directoryPath);
+
+  return (
+    normalizedPath === normalizedDirectory ||
+    normalizedPath.startsWith(`${normalizedDirectory}/`)
+  );
 }
 
 function formatLineEndingKind(

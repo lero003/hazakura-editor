@@ -91,6 +91,8 @@ Latest Markdown current-section context checks: 2026-05-30 Vite browser smoke co
 
 Latest Markdown diff heading-context checks: 2026-05-30 automated gates passed after adding Markdown heading context rows before changed Diff blocks when the compared Markdown files have an ATX heading available. No fresh built-app file-comparison interaction smoke was claimed.
 
+Latest local Markdown preview link navigation checks: 2026-05-30 automated gates passed after adding preview-click navigation for relative links that resolve to supported text files inside the selected workspace. Absolute paths, external URLs, anchor-only links, and links outside the workspace remain unopened by hazakura. No fresh built-app preview-link interaction smoke was claimed.
+
 ## Build First
 
 ```bash
@@ -186,6 +188,15 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 3. Scroll the editor downward and confirm the preview follows to the matching approximate position without jittering.
 4. Scroll the preview back upward and confirm the editor follows to the matching approximate position without jittering.
 5. Confirm small scroll-position differences are tolerated instead of causing continuous fine adjustment.
+
+## Markdown Preview Link Navigation
+
+1. Open a throwaway workspace with `index.md`, `notes/target.md`, and a non-workspace Markdown file outside the workspace.
+2. In `index.md`, add a relative link such as `[target](notes/target.md)` and turn Preview on.
+3. Click the preview link and confirm `target.md` opens as a normal text tab inside hazakura.
+4. Add a parent-relative link that still stays inside the workspace and confirm it opens.
+5. Add an absolute path, an external URL, an anchor-only link, and a `../` link that leaves the workspace, then confirm hazakura does not open those targets.
+6. Confirm the link behavior does not inspect Git state, does not execute commands, and does not create an arbitrary path input surface.
 
 ## Editor / Preview Split
 

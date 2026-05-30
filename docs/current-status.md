@@ -37,6 +37,7 @@ Last reviewed: 2026-05-30
 - Active-file search supports case-sensitive, whole-word, and safe regex modes, with invalid regex input reported without throwing.
 - Go to Line jumps the active editor to a requested line.
 - The current-file Outline pane lists ATX Markdown headings outside fenced code blocks, jumps the editor to the selected heading line, and highlights the heading that contains the cursor line.
+- Markdown preview opens relative Markdown links only when they resolve to supported text files inside the selected workspace; absolute paths, external URLs, anchor-only links, and links outside the workspace are not opened by hazakura.
 - The active tab is rechecked for external on-disk changes when it gains focus through tab switching or app focus/visibility changes. Clean tabs are refreshed from disk automatically, while dirty tabs keep the explicit external-change recovery banner.
 - Existing workspace text files with common text/document extensions can be explicitly compared from the dedicated Diff workbench by setting separate source and target slots, then pressing Compare. In Diff mode, clicking comparable workspace file rows fills the source first and then the target; the file-tree context menu can set either side explicitly. Drag selection is intentionally not part of the Diff setup flow. The GitHub-PR-like split Diff workbench uses file/workspace/change-review wording rather than Git wording and does not inspect repository state. Markdown file comparisons insert current heading context before changed blocks when an ATX heading is available. The same non-Git comparison surface can also review the active editor buffer against disk, review a recoverable draft against disk before restoring it, and review local edits against disk during an external-change conflict.
 - Find-field Enter / Escape handling and global shortcuts now ignore active IME composition events, so Japanese conversion is not mistaken for search movement, find close, save, open, or tab-close commands.
@@ -94,6 +95,7 @@ Last reviewed: 2026-05-30
 - Go to Line control
 - Current-file Markdown heading outline with click-to-jump navigation and current-section status context
 - Markdown diff heading context before changed blocks
+- Local Markdown preview link navigation for supported text files inside the selected workspace
 - Cursor line/column and approximate selection count in the status bar
 - File type/mode label in the status bar
 - Editor display settings for line wrap, invisible characters, font size, and tab size

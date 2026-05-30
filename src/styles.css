@@ -2051,6 +2051,14 @@ button:disabled {
   margin: 0 0 16px;
 }
 
+.markdown-preview a {
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration-color: color-mix(in srgb, var(--accent), transparent 40%);
+  text-underline-offset: 3px;
+}
+
 .markdown-table-frame {
   background: var(--surface);
   border: 1px solid var(--border);

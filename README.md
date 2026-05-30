@@ -79,6 +79,7 @@ Example use case:
 - Explicit non-Git split Diff workbench for comparing workspace text files by choosing separate source/target slots, plus active editor changes versus disk, recoverable drafts, and external-change conflicts, without inspecting Git repository state
 - Markdown file comparisons show heading context before changed blocks when a nearby ATX heading is available
 - Current-file Markdown heading outline and current-section status context with click-to-jump navigation, without workspace-wide indexing
+- Markdown preview can open relative links to supported text files inside the selected workspace, without opening absolute paths or external URLs
 - Go to Line, cursor line/column status, and approximate selected character/line count
 - Editor display settings for line wrap, invisible characters, font size, and tab size, with persisted preference
 - Find-field and global shortcut handling ignores active IME composition so Japanese text conversion is not mistaken for editor commands
