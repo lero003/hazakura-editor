@@ -1336,6 +1336,7 @@ export default function App() {
       currentTarget?.path === file.path ? null : currentTarget,
     );
     setWorkspaceContextMenu(null);
+    setGlobalError(null);
     setRightPaneMode("compare");
     setStatus(
       menuLanguage === "ja"
@@ -1348,6 +1349,7 @@ export default function App() {
     setCompareTarget(file);
     setCompareView(null);
     setWorkspaceContextMenu(null);
+    setGlobalError(null);
     setRightPaneMode("compare");
     setStatus(
       menuLanguage === "ja"
@@ -1359,12 +1361,12 @@ export default function App() {
   const selectWorkspaceCompareFile = useCallback(
     (entry: WorkspaceTreeEntry) => {
       if (!isComparableTextFile(entry.name)) {
-        setGlobalError(
+        setWorkspaceContextMenu(null);
+        setStatus(
           menuLanguage === "ja"
             ? "このファイルは Diff 比較できるテキスト形式ではありません。"
             : "This file is not a comparable text document.",
         );
-        setStatus("Compare failed");
         return;
       }
 
@@ -6908,6 +6910,14 @@ function formatFileType(fileName: string, menuLanguage: MenuLanguage): string {
       return menuLanguage === "ja" ? "マークアップ" : "Markup";
     case "css":
       return "CSS";
+    case "js":
+    case "jsx":
+    case "mjs":
+    case "cjs":
+      return "JavaScript";
+    case "ts":
+    case "tsx":
+      return "TypeScript";
     case "ini":
     case "conf":
       return menuLanguage === "ja" ? "設定" : "Config";
@@ -6952,6 +6962,12 @@ function isComparableTextFile(path: string): boolean {
       "xml",
       "ini",
       "conf",
+      "js",
+      "jsx",
+      "mjs",
+      "cjs",
+      "ts",
+      "tsx",
     ].includes(extension)
   ) {
     return true;

@@ -135,6 +135,12 @@ const TEXT_FILE_EXTENSIONS = [
   "xml",
   "ini",
   "conf",
+  "js",
+  "jsx",
+  "mjs",
+  "cjs",
+  "ts",
+  "tsx",
 ];
 
 const TEXT_FILE_FILTERS = [
