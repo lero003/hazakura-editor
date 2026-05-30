@@ -264,13 +264,13 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 
 Use this only in a trusted throwaway workspace. Do not use a repository with important uncommitted work. This smoke confirms hazakura-side launch, input, output, stop, and external-change observation; it does not approve or validate real provider-internal behavior.
 
-Run this once per provider when practical. If only one provider is installed, record the other provider as not run or provider-not-found rather than installing or configuring it during the smoke.
+Run this once per provider when practical. If only one provider is installed, record the other provider as not run or provider-not-found rather than installing or configuring it during the smoke. After the v0.5 Pi provider slice lands, include `pi` in the same smoke matrix and treat provider-not-found as an acceptable result when the Pi CLI is not installed locally.
 
 Setup:
 
 1. Build the app first.
 2. Create a trusted throwaway workspace outside this repo, with one small Markdown file.
-3. Choose one provider to smoke: `codex` or `opencode`.
+3. Choose one provider to smoke: `codex`, `opencode`, or, after the v0.5 provider slice lands, `pi`.
 4. If the selected provider is not installed or not found by the app search path, record the result as provider-not-found and stop there.
 
 Safe Editor default:
@@ -345,6 +345,12 @@ Record:
 - OpenCode stop result:
 - OpenCode quit cleanup result:
 - OpenCode optional external-change result:
+- Pi provider found: yes/no/not run
+- Pi launch/start result:
+- Pi input/render result:
+- Pi stop result:
+- Pi quit cleanup result:
+- Pi optional external-change result:
 - Notes or follow-up:
 
 ## Workspace Tree And Tabs

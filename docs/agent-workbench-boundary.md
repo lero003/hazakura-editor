@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Optional CLI-agent workbench boundary
 Authority: Medium
-Last reviewed: 2026-05-29
+Last reviewed: 2026-05-30
 
 ## Purpose
 
@@ -55,6 +55,8 @@ When possible, Safe Editor Mode should be a build-time variant rather than only 
 
 Agent Workbench mode may expose a right pane that starts an allowlisted local TUI coding-agent CLI inside the selected workspace root.
 
+v0.5 may add Pi as another local CLI provider, but only by fitting it into this same provider model. Pi must not be treated as an RPC integration, SDK integration, provider plugin system, arbitrary provider configuration surface, or special pathway around the existing gate.
+
 The precise boundary is:
 
 - `hazakura-note` does not provide a general-purpose shell prompt.
@@ -65,6 +67,10 @@ Allowed launch targets:
 
 - `codex`
 - `opencode`
+
+Approved v0.5 allowlist addition, once implementation and verification land:
+
+- `pi`
 
 The app must not expose an arbitrary command field.
 
@@ -82,6 +88,7 @@ Current implementation status:
 - The xterm surface reports its current rows/columns to the backend at launch and on resize so the provider PTY can be sized to the visible terminal area.
 - Output is kept in a bounded in-memory buffer of 500 chunks; older chunks are discarded first.
 - Automated stabilization uses temporary fake allowlist providers to exercise hazakura-side lifecycle, output, input, exit, stop, and error handling. Real `codex` / `opencode` checks remain trusted-workspace manual smoke, not automated approval of provider-internal behavior.
+- `pi` is the v0.5 provider target, but it is not implemented in the current app until the UI and backend allowlists are updated together and verified.
 - Missing provider CLI is reported as provider not found; it does not fall through to arbitrary command lookup.
 - While an active session exists, a second session start is rejected. Stopping the session goes through the runtime adapter stop boundary and terminates the provider process.
 - Session state is in-memory only and is not restored after app restart.
@@ -95,7 +102,7 @@ Requirements:
 - Enabling Agent Workbench mode requires restart before agent UI or backend launch commands become available.
 - The initial mode gate stores the requested mode separately from the active app-session mode.
 - The backend launch entry rejects while the active app-session mode is off, even if a caller bypasses hidden UI.
-- Provider selection is limited to `codex` and `opencode` in both UI and backend validation.
+- Provider selection is limited to `codex` and `opencode` in both UI and backend validation. The v0.5 Pi slice may widen that allowlist to `codex`, `opencode`, and `pi`, but only in UI and backend validation together.
 - First-use consent is stored locally and required before the backend launch entry can pass its gate.
 - Provider CLI discovery is limited to the allowlisted provider name after provider validation. The app search path starts from the app process `PATH` and adds common macOS GUI-launch gaps such as Homebrew and user bin directories; it does not accept arbitrary command names.
 - User explicitly starts the session.
@@ -133,13 +140,15 @@ The app is responsible for:
 
 ## MVP Non-goals
 
-The first Agent Workbench implementation must not include:
+The Agent Workbench implementation must not include:
 
 - General-purpose terminal emulator for arbitrary shell commands.
 - Shell prompt.
 - Arbitrary command launcher.
+- Arbitrary provider configuration or provider-add UI.
 - VS Code compatible IDE.
 - Built-in AI agent or model orchestration.
+- Pi RPC or SDK integration.
 - Automatic accept, commit, push, publish, or release flow.
 - Multiple agent sessions.
 - Persistent terminal history.
@@ -177,6 +186,7 @@ Before future changes widen this boundary, the project should decide:
 - Backend gate: whether launch commands still reject requests when Agent Workbench mode is off, independent of hidden UI.
 - Build gate: whether Safe Editor Mode can be audited without treating Agent Workbench as the default product.
 - Provider gate: whether provider commands remain allowlisted and path resolution remains non-arbitrary.
+- Pi gate: whether Pi remains only an allowlisted local CLI provider, with no RPC, SDK, arbitrary provider configuration, provider-add UI, or wider provider framework.
 - Consent gate: whether responsibility wording still matches the actual provider capability.
 - Workspace gate: whether the selected workspace root stays visible before launch and untrusted/no-workspace states remain safe.
 - Lifecycle gate: whether start, stop, app close, crash, and restart cleanup remain one-session and no-restore.
