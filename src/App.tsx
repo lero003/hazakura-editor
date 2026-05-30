@@ -26,6 +26,7 @@ import {
   LinkIcon,
   MarkdownFileIcon,
   PlusIcon,
+  TableIcon,
   TextFileIcon,
 } from "./components/Icons";
 import {
@@ -3114,6 +3115,17 @@ export default function App() {
         return;
       }
 
+      if (
+        isEditorKeyboardTarget(event.target) &&
+        (event.metaKey || event.ctrlKey) &&
+        event.shiftKey &&
+        event.key.toLowerCase() === "t"
+      ) {
+        event.preventDefault();
+        editorPaneRef.current?.insertTable(3);
+        return;
+      }
+
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
         event.preventDefault();
         void saveActiveTab();
@@ -3319,6 +3331,15 @@ export default function App() {
                   type="button"
                 >
                   <LinkIcon />
+                </button>
+                <button
+                  aria-label="Insert Table"
+                  className="markdown-assist-button"
+                  onClick={() => editorPaneRef.current?.insertTable(3)}
+                  title={"Insert Table (⌘⇧T)"}
+                  type="button"
+                >
+                  <TableIcon />
                 </button>
               </div>
           ) : null}

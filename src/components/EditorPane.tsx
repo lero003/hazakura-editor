@@ -55,6 +55,7 @@ export type EditorPaneHandle = {
   focus: () => void;
   goToLine: (line: number) => void;
   applyMarkdownFormat: (format: MarkdownFormat) => void;
+  insertTable: (columns: number) => void;
   setScrollRatio: (ratio: number, tolerancePx?: number) => boolean;
 };
 
@@ -188,6 +189,12 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         }
 
         applyMarkdownFormat(view, format);
+        view.focus();
+      },
+      insertTable(columns) {
+        const view = viewRef.current;
+        if (!view) return;
+        insertTableAtCursor(view, columns);
         view.focus();
       },
       setScrollRatio(ratio, tolerancePx = 0) {
@@ -464,6 +471,21 @@ function clampScrollRatio(ratio: number): number {
   }
 
   return Math.min(Math.max(ratio, 0), 1);
+}
+
+function insertTableAtCursor(view: EditorView, columns: number) {
+  const header = "|" + Array.from({ length: columns }, (_, i) => ` Col ${i + 1} `).join("|") + "|";
+  const separator = "|" + Array.from({ length: columns }, () => " --- ").join("|") + "|";
+  const row = "|" + Array.from({ length: columns }, () => "   ").join("|") + "|";
+  const table = `${header}\n${separator}\n${row}\n`;
+
+  view.dispatch({
+    changes: {
+      from: view.state.selection.main.from,
+      to: view.state.selection.main.to,
+      insert: table,
+    },
+  });
 }
 
 function markdownFormatChange(
