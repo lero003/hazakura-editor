@@ -17,7 +17,7 @@ use tauri::{Emitter, Manager};
 #[cfg(unix)]
 use std::os::fd::{AsRawFd, FromRawFd, RawFd};
 #[cfg(unix)]
-use std::os::raw::{c_char, c_ulong};
+use std::os::raw::{c_char, c_int, c_ulong};
 
 const LARGE_FILE_WARNING_BYTES: u64 = 5 * 1024 * 1024;
 const MAX_EDITABLE_BYTES: u64 = 10 * 1024 * 1024;
@@ -57,6 +57,7 @@ const MENU_THEME_DARK: &str = "theme-dark";
 const MENU_THEME_SAKURA: &str = "theme-sakura";
 const MENU_THEME_YAKOU: &str = "theme-yakou";
 const MENU_THEME_SHOKOU: &str = "theme-shokou";
+const MENU_THEME_KOUYOU: &str = "theme-kouyou";
 const MENU_PREFERENCES: &str = "preferences";
 const MENU_AGENT_WORKBENCH: &str = "agent-workbench";
 const MENU_RECENT_FILE_PREFIX: &str = "recent-file-";
@@ -572,6 +573,14 @@ fn resize_agent_pty(pty: &File, columns: u16, rows: u16) -> Result<(), String> {
     Ok(())
 }
 
+#[cfg(unix)]
+const SIGWINCH_SIGNAL: c_int = 28;
+
+#[cfg(unix)]
+fn notify_agent_pty_resized(child: &Child) {
+    let _ = unsafe { kill(child.id() as c_int, SIGWINCH_SIGNAL) };
+}
+
 #[cfg(not(unix))]
 fn resize_agent_pty(_pty: &File, _columns: u16, _rows: u16) -> Result<(), String> {
     Ok(())
@@ -585,6 +594,7 @@ extern "C" {
     fn ptsname(fd: RawFd) -> *mut c_char;
     fn close(fd: RawFd) -> i32;
     fn ioctl(fd: RawFd, request: c_ulong, ...) -> i32;
+    fn kill(pid: c_int, sig: c_int) -> c_int;
 }
 
 fn spawn_agent_output_reader<R>(
@@ -1208,6 +1218,8 @@ fn resize_agent_workbench_terminal_with_store(
         if let Some(process) = runtime.as_ref() {
             if let Some(pty_control) = process.pty_control.as_ref() {
                 resize_agent_pty(pty_control, columns, rows)?;
+                #[cfg(unix)]
+                notify_agent_pty_resized(&process.child);
             }
         }
     }
@@ -1880,6 +1892,14 @@ fn build_app_menu_with_state<R: tauri::Runtime>(
                         theme_preference == "shokou",
                         None::<&str>,
                     )?,
+                    &CheckMenuItem::with_id(
+                        app,
+                        MENU_THEME_KOUYOU,
+                        label("Kouyou", "紅葉"),
+                        true,
+                        theme_preference == "kouyou",
+                        None::<&str>,
+                    )?,
                 ],
             )?,
             &PredefinedMenuItem::separator(app)?,
@@ -2086,6 +2106,7 @@ fn emit_app_menu_event<R: tauri::Runtime>(
                 | MENU_THEME_SAKURA
                 | MENU_THEME_YAKOU
                 | MENU_THEME_SHOKOU
+                | MENU_THEME_KOUYOU
                 | MENU_PREFERENCES
                 | MENU_AGENT_WORKBENCH
         )
@@ -3915,6 +3936,53 @@ mod tests {
             final_state.session.as_ref().unwrap().status,
             AgentWorkbenchSessionStatus::Exited
         );
+
+        provider.cleanup();
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn agent_workbench_real_runtime_pty_resize_notifies_provider() {
+        let store = AgentWorkbenchSessionStore::default();
+        let adapter = RealAgentRuntimeAdapter::new(&store);
+        let provider = fake_provider_fixture(
+            "agent_provider_pty_resize_signal",
+            AGENT_PROVIDER_OPENCODE,
+            b"#!/bin/sh\ntrap 'printf winch:; stty size' WINCH\nprintf 'ready\\n'\nwhile :; do\n  if IFS= read line; then\n    [ \"$line\" = 'exit' ] && exit 0\n  fi\ndone\n",
+        );
+
+        start_agent_workbench_session_with_store(
+            &store,
+            &adapter,
+            true,
+            true,
+            AGENT_PROVIDER_OPENCODE.to_string(),
+            provider.workspace_root(),
+            Some(provider.path_var()),
+            Some(100),
+            Some(30),
+        )
+        .expect("start pty fake provider");
+        let ready_state = wait_for_agent_state(&store, |state| {
+            combined_agent_output(state).contains("ready")
+        });
+        assert!(combined_agent_output(&ready_state).contains("ready"));
+
+        resize_agent_workbench_terminal_with_store(&store, 120, 33)
+            .expect("resize pty");
+        let resized_state = wait_for_agent_state(&store, |state| {
+            combined_agent_output(state).contains("winch:33 120")
+        });
+        assert!(combined_agent_output(&resized_state).contains("winch:33 120"));
+
+        write_agent_workbench_session_input_with_store(&store, "exit\n".to_string())
+            .expect("write pty provider input");
+        wait_for_agent_state(&store, |state| {
+            state
+                .session
+                .as_ref()
+                .is_some_and(|session| session.status == AgentWorkbenchSessionStatus::Exited)
+        });
 
         provider.cleanup();
     }

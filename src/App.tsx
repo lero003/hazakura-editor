@@ -95,8 +95,8 @@ const MARKDOWN_OUTLINE_MAX_HEADINGS = 200;
 
 type SaveStatus = "idle" | "saving" | "saved" | "error" | "conflict";
 type BaseTheme = "light" | "dark";
-type ThemePreference = "system" | BaseTheme | "sakura" | "yakou" | "shokou";
-type ResolvedTheme = BaseTheme | "sakura" | "yakou" | "shokou";
+type ThemePreference = "system" | BaseTheme | "sakura" | "yakou" | "shokou" | "kouyou";
+type ResolvedTheme = BaseTheme | "sakura" | "yakou" | "shokou" | "kouyou";
 type EditableLineEnding = "lf" | "crlf";
 type LineEndingKind = EditableLineEnding | "mixed" | "none";
 type RightPaneMode = "preview" | "compare" | "outline" | "agent";
@@ -574,6 +574,7 @@ export default function App() {
           sakura: "桜",
           yakou: "夜光",
           shokou: "曙光",
+          kouyou: "紅葉",
           settingsTitle: "設定",
           showInvisibles: "不可視文字を表示",
           system: "システム",
@@ -595,6 +596,7 @@ export default function App() {
           sakura: "Sakura",
           yakou: "Yakou",
           shokou: "Shokou",
+          kouyou: "Kouyou",
           settingsTitle: "Preferences",
           showInvisibles: "Show invisibles",
           system: "System",
@@ -1956,6 +1958,9 @@ export default function App() {
           break;
         case "theme-shokou":
           setThemePreference("shokou");
+          break;
+        case "theme-kouyou":
+          setThemePreference("kouyou");
           break;
         case "preferences":
           setPreferencesDialogMode("settings");
@@ -4390,6 +4395,7 @@ export default function App() {
                       <option value="sakura">{preferencesCopy.sakura}</option>
                       <option value="yakou">{preferencesCopy.yakou}</option>
                       <option value="shokou">{preferencesCopy.shokou}</option>
+                      <option value="kouyou">{preferencesCopy.kouyou}</option>
                     </select>
                   </label>
                   <label className="field-control">
@@ -5009,15 +5015,6 @@ function AgentTerminalView({
       terminal.clear();
       lastOutputSeqRef.current = 0;
       return;
-    }
-
-    const firstVisibleSeq = output[0]?.seq ?? 0;
-    if (
-      lastOutputSeqRef.current > 0 &&
-      firstVisibleSeq > lastOutputSeqRef.current + 1
-    ) {
-      terminal.clear();
-      lastOutputSeqRef.current = 0;
     }
 
     for (const chunk of output) {
@@ -6265,7 +6262,8 @@ function readStoredThemePreference(): ThemePreference {
     value === "system" ||
     value === "sakura" ||
     value === "yakou" ||
-    value === "shokou"
+    value === "shokou" ||
+    value === "kouyou"
   ) {
     return value;
   }

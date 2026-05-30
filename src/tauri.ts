@@ -15,7 +15,7 @@ export type AppMenuState = {
   previewVisible: boolean;
   wrapLines: boolean;
   showInvisibles: boolean;
-  themePreference: "system" | "light" | "dark" | "sakura" | "yakou" | "shokou";
+  themePreference: "system" | "light" | "dark" | "sakura" | "yakou" | "shokou" | "kouyou";
   menuLanguage: "en" | "ja";
   recentFiles: AppMenuRecentItem[];
   recentFolders: AppMenuRecentItem[];

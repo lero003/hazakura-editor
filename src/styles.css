@@ -130,6 +130,32 @@
   --shadow-lg: 0 12px 32px rgba(47, 120, 173, 0.12), 0 2px 8px rgba(242, 159, 75, 0.08);
 }
 
+/* 紅葉 / Kouyou – warm autumn tones with moss contrast */
+:root[data-theme="kouyou"] {
+  --bg: linear-gradient(135deg, #f7efe4 0%, #edf2e6 100%);
+  --surface: #fffaf2;
+  --surface-rgb: 255, 250, 242;
+  --surface-strong: #fffdf8;
+  --surface-strong-rgb: 255, 253, 248;
+  --surface-muted: #efe7d7;
+  --border: #dccbad;
+  --border-strong: #bfae8d;
+  --text: #261f18;
+  --text-muted: #665f50;
+  --accent: #a84432;
+  --accent-gradient: linear-gradient(135deg, #a84432 0%, #6f8f4e 100%);
+  --accent-soft: #efdcd2;
+  --danger: #9e3f43;
+  --conflict: #94772e;
+  --status-bg: #1c2118;
+  --status-text: #f8f1e7;
+
+  /* 紅葉シャドウ / Kouyou Shadows */
+  --shadow-sm: 0 1px 2px rgba(67, 72, 41, 0.07);
+  --shadow-md: 0 4px 12px rgba(67, 72, 41, 0.08), 0 1px 3px rgba(168, 68, 50, 0.06);
+  --shadow-lg: 0 12px 32px rgba(67, 72, 41, 0.13), 0 2px 8px rgba(168, 68, 50, 0.08);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -359,6 +385,10 @@ button:disabled {
   background: var(--accent-gradient);
 }
 
+:root[data-theme="kouyou"] .toggle-switch input:checked + .slider {
+  background: var(--accent-gradient);
+}
+
 .toggle-switch input:checked + .slider::before {
   transform: translateX(12px);
 }
@@ -438,6 +468,10 @@ button:disabled {
 }
 
 :root[data-theme="shokou"] .tab-item.active::before {
+  background: var(--accent-gradient);
+}
+
+:root[data-theme="kouyou"] .tab-item.active::before {
   background: var(--accent-gradient);
 }
 
@@ -899,6 +933,12 @@ button:disabled {
   border-right-color: rgba(47, 128, 194, 0.14);
 }
 
+:root[data-theme="kouyou"] .file-tree-pane {
+  background: rgba(237, 242, 230, 0.72);
+  backdrop-filter: blur(16px);
+  border-right-color: rgba(111, 143, 78, 0.16);
+}
+
 .workspace-empty {
   align-items: center;
   justify-content: center;
@@ -1296,6 +1336,13 @@ button:disabled {
 }
 
 :root[data-theme="shokou"] .start-actions button:first-child {
+  background: var(--accent-gradient);
+  border: 0;
+  padding: 7px 13px;
+  color: #ffffff;
+}
+
+:root[data-theme="kouyou"] .start-actions button:first-child {
   background: var(--accent-gradient);
   border: 0;
   padding: 7px 13px;
@@ -2393,6 +2440,13 @@ button:disabled {
   font-weight: 800;
 }
 
+:root[data-theme="kouyou"] .preferences-header h2 {
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+}
+
 .icon-button {
   align-items: center;
   background: transparent;
@@ -2587,6 +2641,13 @@ button:disabled {
 }
 
 :root[data-theme="shokou"] .dialog-actions button:first-child {
+  background: var(--accent-gradient);
+  border: 0;
+  padding: 7px 13px;
+  color: #ffffff;
+}
+
+:root[data-theme="kouyou"] .dialog-actions button:first-child {
   background: var(--accent-gradient);
   border: 0;
   padding: 7px 13px;
