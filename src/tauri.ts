@@ -376,6 +376,16 @@ export async function updateAppMenuState(state: AppMenuState): Promise<void> {
   await invoke("update_app_menu_state", { state });
 }
 
+export async function updateThemeMenuState(
+  themePreference: string,
+): Promise<void> {
+  if (!isTauriRuntime()) {
+    return;
+  }
+
+  await invoke("update_theme_menu_state", { themePreference });
+}
+
 function normalizeSelectedTextFilePath(path: string): string {
   const slashIndex = path.lastIndexOf("/");
   const directory = slashIndex === -1 ? "" : path.slice(0, slashIndex + 1);

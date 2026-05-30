@@ -1,7 +1,7 @@
 use crate::types::*;
 use tauri::menu::{
-    AboutMetadata, CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu, HELP_SUBMENU_ID,
-    WINDOW_SUBMENU_ID,
+    AboutMetadata, CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu,
+    HELP_SUBMENU_ID, WINDOW_SUBMENU_ID,
 };
 use tauri::Emitter;
 
@@ -429,4 +429,51 @@ pub(crate) fn emit_app_menu_event<R: tauri::Runtime>(
     {
         let _ = app.emit(MENU_ACTION_EVENT, action);
     }
+}
+
+
+#[cfg(desktop)]
+pub(crate) fn sync_theme_menu_state<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+    theme_preference: &str,
+) -> Result<(), String> {
+    // Get the app menu and find the Theme submenu items to update checkmarks
+    // without rebuilding the entire menu.
+    let menu = app
+        .menu()
+        .ok_or_else(|| "App menu not available".to_string())?;
+
+    let items = menu.items().map_err(|e| e.to_string())?;
+    for item in &items {
+        if let Some(submenu) = item.as_submenu() {
+            if submenu.id().as_ref() == "View" {
+                let view_items = submenu.items().map_err(|e| e.to_string())?;
+                for view_item in &view_items {
+                    if let Some(theme_submenu) = view_item.as_submenu() {
+                        // Found Theme submenu; update checkmarks
+                        let theme_items = theme_submenu.items().map_err(|e| e.to_string())?;
+                        for theme_item in &theme_items {
+                            if let Some(check_item) = theme_item.as_check_menuitem() {
+                                let checked = match check_item.id().as_ref() {
+                                    MENU_THEME_SYSTEM => theme_preference == "system",
+                                    MENU_THEME_LIGHT => theme_preference == "light",
+                                    MENU_THEME_DARK => theme_preference == "dark",
+                                    MENU_THEME_SAKURA => theme_preference == "sakura",
+                                    MENU_THEME_YAKOU => theme_preference == "yakou",
+                                    MENU_THEME_SHOKOU => theme_preference == "shokou",
+                                    MENU_THEME_KOUYOU => theme_preference == "kouyou",
+                                    _ => false,
+                                };
+                                let _ = check_item.set_checked(checked);
+                            }
+                        }
+                        return Ok(());
+                    }
+                }
+                return Err("Theme submenu not found".to_string());
+            }
+        }
+    }
+
+    Err("View menu not found".to_string())
 }

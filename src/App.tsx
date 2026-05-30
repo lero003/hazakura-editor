@@ -54,6 +54,7 @@ import {
   stopAgentWorkbenchSession,
   writeAgentWorkbenchSessionInput,
   updateAppMenuState,
+  updateThemeMenuState,
   type AppMenuRecentItem,
   type AgentWorkbenchOutputChunk,
   type AgentWorkbenchPreflight,
@@ -2612,6 +2613,13 @@ export default function App() {
     themePreference,
   ]);
 
+  // Update theme checkmarks in the native menu without full rebuild
+  useEffect(() => {
+    void updateThemeMenuState(themePreference).catch((err) => {
+      console.warn("Failed to update theme menu state", err);
+    });
+  }, [themePreference]);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -3679,6 +3687,7 @@ export default function App() {
                   session={agentSession}
                   stopPending={agentStopPending}
                   menuLanguage={menuLanguage}
+                  theme={resolvedTheme}
                   workspaceRootPath={workspaceRootPath}
                 />
               ) : sidePaneMode === "outline" ? (

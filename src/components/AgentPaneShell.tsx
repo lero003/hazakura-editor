@@ -2,6 +2,7 @@ import type {
   AgentLaunchGateState,
   AgentTerminalSize,
   MenuLanguage,
+  ResolvedTheme,
 } from "../types";
 import type {
   AgentWorkbenchOutputChunk,
@@ -29,6 +30,7 @@ export function AgentPaneShell({
   provider,
   session,
   stopPending,
+  theme,
   workspaceRootPath,
 }: {
   gate: AgentLaunchGateState;
@@ -43,6 +45,7 @@ export function AgentPaneShell({
   provider: AgentWorkbenchProvider;
   session: AgentWorkbenchSession | null;
   stopPending: boolean;
+  theme: ResolvedTheme;
   workspaceRootPath: string | null;
 }) {
   const workspaceAvailable = workspaceRootPath !== null;
@@ -161,6 +164,7 @@ export function AgentPaneShell({
         output={output}
         placeholder={terminalPlaceholder}
         terminalLabel={copy.terminal}
+        theme={theme}
       />
     </section>
   );

@@ -656,6 +656,14 @@ fn update_app_menu_state<R: tauri::Runtime>(
 }
 
 #[tauri::command]
+fn update_theme_menu_state<R: tauri::Runtime>(
+    app: tauri::AppHandle<R>,
+    theme_preference: String,
+) -> Result<(), String> {
+    crate::menu::sync_theme_menu_state(&app, &theme_preference)
+}
+
+#[tauri::command]
 fn drain_opened_files(store: tauri::State<'_, OpenedFileStore>) -> Result<Vec<String>, String> {
     let mut paths = store
         .0
@@ -700,7 +708,8 @@ pub fn run() {
             request_app_restart,
             save_text_file,
             save_text_file_as,
-            update_app_menu_state
+            update_app_menu_state,
+            update_theme_menu_state
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

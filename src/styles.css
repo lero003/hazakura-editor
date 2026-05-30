@@ -11,15 +11,23 @@
   --text-muted: #627267;
   --accent: #2e5c46;
   --accent-soft: #e2ede6;
+  --accent-glass: rgba(46, 92, 70, 0.08);
   --danger: #9e3f43;
   --conflict: #997838;
   --status-bg: #1c2420;
   --status-text: #f0f7f3;
+  --selection-bg: rgba(46, 92, 70, 0.15);
+  --scrollbar-thumb: rgba(98, 114, 103, 0.25);
+  --scrollbar-thumb-hover: rgba(98, 114, 103, 0.4);
 
   /* シャドウ / Shadows */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
   --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-accent: 0 4px 16px rgba(46, 92, 70, 0.12);
+
+  /* トランジション / Transition */
+  --theme-transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 
   color: var(--text);
   background: var(--bg);
@@ -29,6 +37,22 @@
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+}
+
+/* スムーズなテーマ切り替え */
+html {
+  transition:
+    background var(--theme-transition),
+    color var(--theme-transition);
+}
+
+html, body, #root, .app-shell,
+.tabs-row, .file-tree-pane, .editor-pane, .preview-pane,
+.status-bar, .modal-backdrop, .close-dialog, .preferences-dialog {
+  transition:
+    background var(--theme-transition),
+    border-color var(--theme-transition),
+    box-shadow var(--theme-transition);
 }
 
 :root[data-theme="dark"] {
@@ -44,15 +68,20 @@
   --text-muted: #8ca094;
   --accent: #7fbfa1;
   --accent-soft: #1d2c25;
+  --accent-glass: rgba(127, 191, 161, 0.1);
   --danger: #b24d52;
   --conflict: #b59045;
   --status-bg: #0a0e0c;
   --status-text: #ecf3ef;
+  --selection-bg: rgba(127, 191, 161, 0.2);
+  --scrollbar-thumb: rgba(140, 160, 148, 0.15);
+  --scrollbar-thumb-hover: rgba(140, 160, 148, 0.3);
 
   /* ダーク用シャドウ / Dark Shadows */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.15);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.15);
   --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.15);
+  --shadow-accent: 0 4px 20px rgba(127, 191, 161, 0.15);
 }
 
 :root[data-theme="sakura"] {
@@ -68,19 +97,24 @@
   --text-muted: #78666d;
   --accent: #9a4057;
   --accent-soft: #f6dce4;
+  --accent-glass: rgba(154, 64, 87, 0.08);
   --danger: #9f3f45;
   --conflict: #8d7040;
   --status-bg: #30242a;
   --status-text: #fff7f5;
+  --selection-bg: rgba(154, 64, 87, 0.12);
+  --scrollbar-thumb: rgba(120, 102, 109, 0.25);
+  --scrollbar-thumb-hover: rgba(120, 102, 109, 0.4);
 
   --shadow-sm: 0 1px 2px rgba(110, 54, 72, 0.08);
   --shadow-md: 0 4px 12px rgba(110, 54, 72, 0.1), 0 1px 3px rgba(110, 54, 72, 0.06);
   --shadow-lg: 0 12px 32px rgba(110, 54, 72, 0.16), 0 2px 8px rgba(110, 54, 72, 0.08);
+  --shadow-accent: 0 4px 20px rgba(154, 64, 87, 0.12);
 }
 
 /* 夜光 / Yakou – Warp-inspired dark gradient theme */
 :root[data-theme="yakou"] {
-  --bg: #0d0d12;
+  --bg: linear-gradient(135deg, #0d0d12 0%, #11101e 50%, #0d0d12 100%);
   --surface: #14141e;
   --surface-rgb: 20, 20, 30;
   --surface-strong: #1a1a28;
@@ -93,15 +127,23 @@
   --accent: #8b7cf8;
   --accent-gradient: linear-gradient(135deg, #7c6ff0 0%, #40bfa0 100%);
   --accent-soft: #1e1a38;
+  --accent-glass: rgba(139, 124, 248, 0.1);
   --danger: #e05468;
   --conflict: #d4a842;
   --status-bg: #08080e;
   --status-text: #e4e4f0;
+  --selection-bg: rgba(139, 124, 248, 0.18);
+  --scrollbar-thumb: rgba(136, 136, 168, 0.15);
+  --scrollbar-thumb-hover: rgba(136, 136, 168, 0.3);
 
-  /* 夜光シャドウ / Yakou Shadows */
+  /* 夜光シャドウ + グロー / Yakou Shadows + Glow */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.6), 0 2px 10px rgba(0, 0, 0, 0.3);
+  --shadow-accent: 0 4px 24px rgba(124, 111, 240, 0.18), 0 1px 4px rgba(64, 191, 160, 0.08);
+
+  /* アンビエントグロー / Ambient Glow */
+  --accent-glow: 0 0 40px rgba(124, 111, 240, 0.06);
 }
 
 /* 曙光 / Shokou – bright blue sky with a warm dawn edge */
@@ -119,15 +161,20 @@
   --accent: #2f78ad;
   --accent-gradient: linear-gradient(135deg, #2f80c2 0%, #f29f4b 100%);
   --accent-soft: #e1f0fb;
+  --accent-glass: rgba(47, 120, 173, 0.08);
   --danger: #b7444a;
   --conflict: #a26f20;
   --status-bg: #142a3d;
   --status-text: #f5fbff;
+  --selection-bg: rgba(47, 120, 173, 0.12);
+  --scrollbar-thumb: rgba(82, 106, 125, 0.2);
+  --scrollbar-thumb-hover: rgba(82, 106, 125, 0.35);
 
-  /* 曙光シャドウ / Shokou Shadows */
   --shadow-sm: 0 1px 2px rgba(47, 120, 173, 0.06);
   --shadow-md: 0 4px 12px rgba(47, 120, 173, 0.08), 0 1px 3px rgba(242, 159, 75, 0.06);
   --shadow-lg: 0 12px 32px rgba(47, 120, 173, 0.12), 0 2px 8px rgba(242, 159, 75, 0.08);
+  --shadow-accent: 0 4px 20px rgba(47, 128, 194, 0.12);
+  --accent-glow: 0 0 32px rgba(242, 159, 75, 0.06);
 }
 
 /* 紅葉 / Kouyou – warm autumn tones with moss contrast */
@@ -145,16 +192,109 @@
   --accent: #a84432;
   --accent-gradient: linear-gradient(135deg, #a84432 0%, #6f8f4e 100%);
   --accent-soft: #efdcd2;
+  --accent-glass: rgba(168, 68, 50, 0.08);
   --danger: #9e3f43;
   --conflict: #94772e;
   --status-bg: #1c2118;
   --status-text: #f8f1e7;
+  --selection-bg: rgba(168, 68, 50, 0.12);
+  --scrollbar-thumb: rgba(102, 95, 80, 0.2);
+  --scrollbar-thumb-hover: rgba(102, 95, 80, 0.35);
 
-  /* 紅葉シャドウ / Kouyou Shadows */
   --shadow-sm: 0 1px 2px rgba(67, 72, 41, 0.07);
   --shadow-md: 0 4px 12px rgba(67, 72, 41, 0.08), 0 1px 3px rgba(168, 68, 50, 0.06);
   --shadow-lg: 0 12px 32px rgba(67, 72, 41, 0.13), 0 2px 8px rgba(168, 68, 50, 0.08);
+  --shadow-accent: 0 4px 20px rgba(168, 68, 50, 0.12);
+  --accent-glow: 0 0 32px rgba(168, 68, 50, 0.04);
 }
+/* ── スクロールバー ── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  transition: background 0.2s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* テキスト選択 */
+::selection {
+  background: var(--selection-bg);
+  color: var(--text);
+}
+
+/* グラデーションアクセント用フォーカスリング */
+:root[data-theme="yakou"] :focus-visible,
+:root[data-theme="shokou"] :focus-visible,
+:root[data-theme="kouyou"] :focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  border-color: transparent;
+  box-shadow:
+    0 0 0 2px var(--surface),
+    0 0 0 4px var(--accent);
+}
+
+:root[data-theme="yakou"] button:focus-visible {
+  box-shadow:
+    0 0 0 2px var(--surface),
+    0 0 0 4px var(--accent);
+}
+
+:root[data-theme="shokou"] .tab-item.active::after,
+:root[data-theme="kouyou"] .tab-item.active::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent-gradient);
+}
+
+/* アンビエントグロー（Yakou / 夜光 用） */
+:root[data-theme="yakou"] .modal-backdrop {
+  background: rgba(8, 8, 14, 0.6);
+}
+
+:root[data-theme="yakou"] .close-dialog,
+:root[data-theme="yakou"] .preferences-dialog {
+  border-color: rgba(139, 124, 248, 0.18);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 40px rgba(124, 111, 240, 0.06);
+}
+
+:root[data-theme="shokou"] .close-dialog,
+:root[data-theme="shokou"] .preferences-dialog {
+  border-color: rgba(242, 159, 75, 0.14);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 32px rgba(242, 159, 75, 0.05);
+}
+
+:root[data-theme="kouyou"] .close-dialog,
+:root[data-theme="kouyou"] .preferences-dialog {
+  border-color: rgba(168, 68, 50, 0.14);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 32px rgba(168, 68, 50, 0.04);
+}
+
 
 * {
   box-sizing: border-box;
@@ -194,12 +334,18 @@ body {
     opacity: 0;
     transform: translate3d(0, -12vh, 0) rotate(0deg);
   }
-  12% {
-    opacity: 0.72;
+  10% {
+    opacity: 0.78;
+  }
+  30% {
+    opacity: 0.6;
+  }
+  75% {
+    opacity: 0.35;
   }
   100% {
     opacity: 0;
-    transform: translate3d(10vw, 112vh, 0) rotate(360deg);
+    transform: translate3d(var(--petal-drift, 10vw), 112vh, 0) rotate(360deg);
   }
 }
 
@@ -278,29 +424,24 @@ button:disabled {
 }
 
 .sakura-petal {
-  animation: petalFall 14s linear infinite;
+  animation: petalFall var(--duration, 14s) linear infinite;
+  animation-delay: var(--delay, 0s);
   background:
     radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.9), transparent 26%),
-    linear-gradient(135deg, rgba(255, 214, 225, 0.86), rgba(214, 116, 139, 0.56));
+    linear-gradient(
+      135deg,
+      hsl(var(--petal-hue, 345), 70%, 88%) 0%,
+      hsl(var(--petal-hue, 345), 60%, 72%) 100%
+    );
   border-radius: 70% 30% 70% 30%;
   display: block;
-  height: 14px;
-  left: 8%;
+  height: var(--petal-h, 14px);
   position: absolute;
   top: -24px;
   transform-origin: 50% 80%;
-  width: 10px;
+  width: var(--petal-w, 10px);
+  will-change: transform, opacity;
 }
-
-.sakura-petal:nth-child(2) { left: 18%; animation-delay: -5s; animation-duration: 17s; }
-.sakura-petal:nth-child(3) { left: 29%; animation-delay: -9s; animation-duration: 13s; }
-.sakura-petal:nth-child(4) { left: 41%; animation-delay: -2s; animation-duration: 16s; }
-.sakura-petal:nth-child(5) { left: 54%; animation-delay: -11s; animation-duration: 18s; }
-.sakura-petal:nth-child(6) { left: 66%; animation-delay: -7s; animation-duration: 15s; }
-.sakura-petal:nth-child(7) { left: 76%; animation-delay: -13s; animation-duration: 19s; }
-.sakura-petal:nth-child(8) { left: 84%; animation-delay: -4s; animation-duration: 14s; }
-.sakura-petal:nth-child(9) { left: 92%; animation-delay: -10s; animation-duration: 20s; }
-.sakura-petal:nth-child(10) { left: 4%; animation-delay: -15s; animation-duration: 18s; }
 
 @media (prefers-reduced-motion: reduce) {
   .sakura-petal {
@@ -699,7 +840,7 @@ button:disabled {
 /* 検索バーのスタイリッシュ化 / Find Panel */
 .find-row {
   position: absolute;
-  top: 110px;
+  top: 56px;
   right: 24px;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -712,10 +853,11 @@ button:disabled {
   align-items: center;
   gap: 12px;
   max-width: calc(100% - 48px);
+  will-change: transform, opacity;
   animation: slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.find-close {
+.find-close {  will-change: transform, opacity;
   background: transparent;
   border: 0;
   box-shadow: none;
@@ -833,16 +975,17 @@ button:disabled {
   width: 380px;
   max-width: calc(100vw - 40px);
   z-index: 99;
+  will-change: transform, opacity;
   animation: slideUpToast 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   background: var(--danger);
-  color: #fffafa;
+  color: var(--surface-strong);
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 16px;
   border-radius: 10px;
   box-shadow: var(--shadow-lg);
-  border-left: 4px solid rgba(255,255,255,0.4);
+  border-left: 4px solid color-mix(in srgb, var(--surface-strong) 40%, transparent);
 }
 
 .conflict-banner {
@@ -876,10 +1019,10 @@ button:disabled {
 }
 
 .message-actions button {
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: color-mix(in srgb, var(--surface-strong) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--surface-strong) 30%, transparent);
   border-radius: 6px;
-  color: #fffafa;
+  color: var(--surface-strong);
   min-width: 0;
   padding: 6px 12px;
   box-shadow: none;
@@ -888,8 +1031,8 @@ button:disabled {
 }
 
 .message-actions button:hover {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: rgba(255, 255, 255, 0.6);
+  background: color-mix(in srgb, var(--surface-strong) 25%, transparent);
+  border-color: color-mix(in srgb, var(--surface-strong) 60%, transparent);
 }
 
 /* ワークスペースとファイルツリー / Workspace & File Explorer */
@@ -998,6 +1141,7 @@ button:disabled {
   border-radius: 6px;
   box-shadow: none;
   color: var(--text-muted);
+  transition: all 0.15s ease;
   display: inline-flex;
   flex: 0 0 auto;
   height: 28px;
@@ -1138,6 +1282,7 @@ button:disabled {
   border-radius: 5px;
   box-shadow: none;
   color: var(--text);
+  transition: background 0.15s ease;
   justify-content: flex-start;
   min-height: 28px;
   min-width: 0;
@@ -1234,7 +1379,7 @@ button:disabled {
   background: color-mix(in srgb, var(--surface-strong) 68%, transparent);
   border: 1px solid color-mix(in srgb, var(--border-strong) 62%, transparent);
   border-radius: 8px;
-  box-shadow: 0 10px 22px color-mix(in srgb, var(--shadow) 14%, transparent);
+  box-shadow: var(--shadow-md);
   color: var(--text);
   display: grid;
   gap: 4px;
@@ -1373,6 +1518,7 @@ button:disabled {
   border-radius: 6px;
   box-shadow: none;
   color: var(--text-muted);
+  transition: all 0.15s ease;
   justify-content: flex-start;
   min-width: 0;
   overflow: hidden;
@@ -1467,7 +1613,12 @@ button:disabled {
   max-width: 820px;
   min-width: 0;
   padding: 24px;
+  transition: border-color 0.2s ease;
   width: min(820px, 100%);
+}
+
+.diff-setup-card:hover {
+  border-color: var(--accent);
 }
 
 .diff-setup-card > span {
@@ -2021,10 +2172,10 @@ button:disabled {
 }
 
 .agent-terminal-shell {
-  background: #111714;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--status-bg);
+  border: 1px solid var(--border);
   border-radius: 6px;
-  color: #dce8df;
+  color: var(--status-text);
   display: flex;
   flex: 1 1 320px;
   flex-direction: column;
@@ -2040,7 +2191,7 @@ button:disabled {
 
 .agent-terminal-meta {
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  color: rgba(220, 232, 223, 0.56);
+  color: color-mix(in srgb, var(--status-text) 56%, transparent);
   flex: 0 0 auto;
   font-size: 12px;
   padding: 8px 10px;
@@ -2055,7 +2206,7 @@ button:disabled {
 }
 
 .agent-terminal-placeholder {
-  color: rgba(220, 232, 223, 0.7);
+  color: color-mix(in srgb, var(--status-text) 70%, transparent);
   cursor: default;
   font-family:
     system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -2367,7 +2518,7 @@ button:disabled {
 /* モーダルダイアログのアニメーション化 / Modals */
 .modal-backdrop {
   align-items: center;
-  background: rgba(15, 23, 20, 0.5);
+  background: color-mix(in srgb, var(--status-bg) 50%, transparent);
   backdrop-filter: blur(12px);
   display: flex;
   inset: 0;
@@ -2387,11 +2538,11 @@ button:disabled {
   max-width: 420px;
   padding: 24px;
   width: min(420px, calc(100vw - 48px));
-  animation: modalShow 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  will-change: transform, opacity;
+  animation: modalShow 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-.preferences-dialog {
-  background: rgba(var(--surface-strong-rgb), 0.85);
+.preferences-dialog {  background: rgba(var(--surface-strong-rgb), 0.85);
   backdrop-filter: blur(20px);
   border: 1px solid var(--border);
   border-radius: 10px;
