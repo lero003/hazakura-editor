@@ -46,6 +46,11 @@ type EditorPaneProps = {
   wrapLines: boolean;
   activeSearchMatchIndex: number;
   searchMatches: SearchMatch[];
+  workspaceRoot?: string;
+  onPasteImage?: (
+    dataBase64: string,
+    fileName: string,
+  ) => Promise<string | null>;
   onChange: (nextValue: string) => void;
   onScrollRatioChange: (ratio: number) => void;
   onSelectionChange: (selection: EditorSelectionInfo) => void;
@@ -142,6 +147,8 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       onChange,
       onScrollRatioChange,
       onSelectionChange,
+      workspaceRoot,
+      onPasteImage,
     },
     ref,
   ) {
@@ -150,6 +157,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   const onChangeRef = useRef(onChange);
   const onScrollRatioChangeRef = useRef(onScrollRatioChange);
   const onSelectionChangeRef = useRef(onSelectionChange);
+  const onPasteImageRef = useRef(onPasteImage);
   const themeCompartmentRef = useRef(new Compartment());
   const wrappingCompartmentRef = useRef(new Compartment());
   const invisiblesCompartmentRef = useRef(new Compartment());
@@ -228,6 +236,10 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   }, [onSelectionChange]);
 
   useEffect(() => {
+    onPasteImageRef.current = onPasteImage;
+  }, [onPasteImage]);
+
+  useEffect(() => {
     if (!hostRef.current) {
       return;
     }
@@ -252,6 +264,57 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
           editorTheme(theme, fontSize),
           syntaxHighlighting(editorMarkdownHighlightStyle(theme)),
         ]),
+        EditorView.domEventHandlers({
+          paste(event, view) {
+            const handler = onPasteImageRef.current;
+            if (!handler) return false;
+
+            const items = event.clipboardData?.items;
+            if (!items) return false;
+
+            let imageItem: DataTransferItem | null = null;
+            let imageType = "";
+            for (let i = 0; i < items.length; i++) {
+              const item = items[i];
+              if (item.type.startsWith("image/")) {
+                imageItem = item;
+                imageType = item.type;
+                break;
+              }
+            }
+            if (!imageItem) return false;
+
+            event.preventDefault();
+
+            const file = imageItem.getAsFile();
+            if (!file) return false;
+
+            const reader = new FileReader();
+            reader.onload = async () => {
+              const base64 = reader.result as string;
+              const commaIndex = base64.indexOf(",");
+              const rawBase64 = commaIndex >= 0 ? base64.slice(commaIndex + 1) : base64;
+              const ext = imageType.split("/")[1] ?? "png";
+              const fileName = `pasted-${Date.now()}.${ext}`;
+
+              try {
+                const relativePath = await handler(rawBase64, fileName);
+                if (!relativePath) return;
+                view.dispatch({
+                  changes: {
+                    from: view.state.selection.main.from,
+                    to: view.state.selection.main.to,
+                    insert: `![](${relativePath})\n`,
+                  },
+                });
+              } catch {
+                // Paste image insertion failed silently
+              }
+            };
+            reader.readAsDataURL(file);
+            return true;
+          },
+        }),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
             onChangeRef.current(update.state.doc.toString());

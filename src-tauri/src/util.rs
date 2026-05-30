@@ -73,6 +73,57 @@ pub(crate) fn encode_base64(bytes: &[u8]) -> String {
     encoded
 }
 
+/// Decode a base64-encoded string into bytes (standard alphabet).
+pub(crate) fn decode_base64(encoded: &str) -> Result<Vec<u8>, String> {
+    const DECODE: [i8; 256] = {
+        let mut table = [-1i8; 256];
+        let alphabet = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        let mut i = 0usize;
+        while i < 64 {
+            table[alphabet[i] as usize] = i as i8;
+            i += 1;
+        }
+        table
+    };
+
+    let cleaned: Vec<u8> = encoded
+        .bytes()
+        .filter(|b| !b.is_ascii_whitespace())
+        .collect();
+    if cleaned.is_empty() {
+        return Ok(Vec::new());
+    }
+    if cleaned.len() % 4 != 0 {
+        return Err("Invalid base64 input length".to_string());
+    }
+
+    let padding = cleaned.iter().rev().take(2).filter(|b| **b == b'=').count();
+    let output_len = cleaned.len() / 4 * 3 - padding;
+    let mut decoded = Vec::with_capacity(output_len);
+
+    for chunk in cleaned.chunks(4) {
+        let a = DECODE.get(chunk[0] as usize).copied().unwrap_or(-1);
+        let b = DECODE.get(chunk[1] as usize).copied().unwrap_or(-1);
+        let c = DECODE.get(chunk[2] as usize).copied().unwrap_or(-1);
+        let d = DECODE.get(chunk[3] as usize).copied().unwrap_or(-1);
+
+        if a < 0 || b < 0 {
+            return Err("Invalid base64 character".to_string());
+        }
+
+        decoded.push(((a as u16) << 2 | (b as u16) >> 4) as u8);
+
+        if c >= 0 {
+            decoded.push(((b as u16 & 0x0f) << 4 | (c as u16) >> 2) as u8);
+        }
+        if d >= 0 {
+            decoded.push(((c as u16 & 0x03) << 6 | d as u16) as u8);
+        }
+    }
+
+    Ok(decoded)
+}
+
 pub(crate) fn ensure_workspace_root(root_path: &Path) -> Result<PathBuf, String> {
     let metadata =
         fs::metadata(root_path).map_err(|err| format!("Cannot read workspace folder: {err}"))?;

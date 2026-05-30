@@ -292,6 +292,18 @@ export async function openWorkspaceImage(
   return invoke<ImagePreviewDocument>("open_workspace_image", { root, path });
 }
 
+export async function savePastedImage(
+  workspaceRoot: string,
+  dataBase64: string,
+  fileName: string,
+): Promise<string> {
+  return invoke<string>("save_pasted_image", {
+    workspaceRoot,
+    dataBase64,
+    fileName,
+  });
+}
+
 export async function saveTextFile(
   path: string,
   contents: string,

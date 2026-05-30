@@ -293,6 +293,63 @@ fn open_workspace_image(root: String, path: String) -> Result<ImagePreviewDocume
     })
 }
 
+/// Save a pasted image from the clipboard (base64) to the workspace assets folder.
+#[tauri::command]
+fn save_pasted_image(
+    workspace_root: String,
+    data_base64: String,
+    file_name: String,
+) -> Result<String, String> {
+    let root = PathBuf::from(&workspace_root);
+    ensure_workspace_root(&root)?;
+
+    // Create assets directory if it doesn't exist
+    let assets_dir = root.join("assets");
+    fs::create_dir_all(&assets_dir)
+        .map_err(|e| format!("Cannot create assets folder: {e}"))?;
+
+    // Sanitize filename: only allow safe characters
+    let safe_name: String = file_name
+        .chars()
+        .filter(|c| c.is_alphanumeric() || *c == '-' || *c == '_' || *c == '.')
+        .collect();
+    if safe_name.is_empty() {
+        return Err("Invalid file name".to_string());
+    }
+
+    // Handle duplicate names by appending a counter
+    let dest = assets_dir.join(&safe_name);
+    let final_path = if dest.exists() {
+        let stem = dest
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("image");
+        let ext = dest.extension().and_then(|e| e.to_str()).unwrap_or("png");
+        let mut counter = 1;
+        loop {
+            let candidate = assets_dir.join(format!("{stem}_{counter}.{ext}"));
+            if !candidate.exists() {
+                break candidate;
+            }
+            counter += 1;
+        }
+    } else {
+        dest
+    };
+
+    let bytes = decode_base64(&data_base64)?;
+    fs::write(&final_path, &bytes)
+        .map_err(|e| format!("Cannot write image file: {e}"))?;
+
+    // Return the relative path (for markdown insertion)
+    let relative = final_path
+        .strip_prefix(&root)
+        .unwrap_or(&final_path)
+        .to_string_lossy()
+        .to_string();
+    Ok(relative)
+}
+
 #[tauri::command]
 fn start_agent_workbench_session(
     session_store: tauri::State<'_, AgentWorkbenchSessionStore>,
@@ -709,7 +766,8 @@ pub fn run() {
             save_text_file,
             save_text_file_as,
             update_app_menu_state,
-            update_theme_menu_state
+            update_theme_menu_state,
+            save_pasted_image
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

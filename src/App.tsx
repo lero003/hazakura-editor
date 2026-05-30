@@ -45,6 +45,7 @@ import {
   pickWorkspaceFolder,
   requestAppRestart,
   revealPathInFileManager,
+  savePastedImage,
   saveTextFile,
   saveTextFileAs,
   setCurrentWindowTitle,
@@ -3653,6 +3654,20 @@ export default function App() {
                   theme={editorTheme}
                   value={activeContents}
                   wrapLines={editorSettings.wrapLines}
+                  workspaceRoot={workspaceRootPath ?? undefined}
+                  onPasteImage={async (dataBase64, fileName) => {
+                    if (!workspaceRootPath) return null;
+                    try {
+                      return await savePastedImage(
+                        workspaceRootPath,
+                        dataBase64,
+                        fileName,
+                      );
+                    } catch (err) {
+                      console.warn("Failed to save pasted image", err);
+                      return null;
+                    }
+                  }}
                 />
                 {scrollHud.visible && scrollHudHeadingContext.current ? (
                   <ScrollPositionHud
