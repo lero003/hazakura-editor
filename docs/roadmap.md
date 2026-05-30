@@ -104,7 +104,7 @@ Candidate work:
 - diff hunk heading context for Markdown files (started)
 - local Markdown link navigation limited to explicitly selected workspace files (started)
 - open-tabs and recent-files navigator (started)
-- display/readability polish for Markdown preview and review
+- display/readability polish for Markdown preview and review (started)
 - small Markdown editing helpers only when they are predictable, reversible, and not aggressive
 
 This phase should prefer navigation, visibility, and manual review over prediction. Avoid strong autocomplete, automatic lint fixes, broad formatting rewrites, workspace-wide indexing, or project-level symbol search unless a later boundary review explicitly approves them.

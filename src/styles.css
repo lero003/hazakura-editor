@@ -2051,6 +2051,38 @@ button:disabled {
   margin: 0 0 16px;
 }
 
+.markdown-preview ul,
+.markdown-preview ol {
+  margin: 0 0 18px;
+  padding-left: 26px;
+}
+
+.markdown-preview li {
+  margin: 5px 0;
+  padding-left: 2px;
+}
+
+.markdown-preview li > p {
+  margin-bottom: 8px;
+}
+
+.markdown-preview li > ul,
+.markdown-preview li > ol {
+  margin-bottom: 8px;
+  margin-top: 6px;
+}
+
+.markdown-preview input[type="checkbox"] {
+  accent-color: var(--accent);
+  margin: 0 8px 0 -20px;
+}
+
+.markdown-preview hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 28px 0;
+}
+
 .markdown-preview a {
   color: var(--accent);
   cursor: pointer;

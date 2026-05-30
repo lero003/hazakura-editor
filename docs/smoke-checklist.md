@@ -95,6 +95,8 @@ Latest local Markdown preview link navigation checks: 2026-05-30 automated gates
 
 Latest open-tabs keyboard navigation checks: 2026-05-30 automated gates passed after adding Cmd+Option+Left / Cmd+Option+Right previous/next tab focus. No fresh built-app multi-tab keyboard smoke was claimed.
 
+Latest Markdown preview readability checks: 2026-05-30 automated gates passed after adding review-oriented preview spacing for lists, nested lists, task checkboxes, and horizontal rules. No fresh built-app preview readability smoke was claimed.
+
 ## Build First
 
 ```bash
@@ -190,6 +192,7 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 3. Scroll the editor downward and confirm the preview follows to the matching approximate position without jittering.
 4. Scroll the preview back upward and confirm the editor follows to the matching approximate position without jittering.
 5. Confirm small scroll-position differences are tolerated instead of causing continuous fine adjustment.
+6. Add paragraphs, nested lists, task checkboxes, a horizontal rule, a blockquote, a code block, and a table, then confirm the preview spacing remains readable without overlapping controls or breaking the bounded table frame.
 
 ## Markdown Preview Link Navigation
 

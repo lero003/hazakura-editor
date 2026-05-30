@@ -25,7 +25,7 @@ Last reviewed: 2026-05-30
 - The workspace header includes a small open-folder action for switching workspace without returning to the native menu.
 - Save writes the editor text without adding or removing a final trailing newline by policy; Rust tests cover LF and CRLF final-newline presence.
 - Markdown preview shows embedded `data:image` PNG/JPEG/GIF/WebP images and blocks external or local image references with an in-preview note.
-- Markdown preview wraps GFM tables in a scrollable table frame with clearer headers, grid lines, row striping, and alignment support.
+- Markdown preview uses readable review-oriented spacing for paragraphs, lists, task checkboxes, horizontal rules, blockquotes, code blocks, and GFM tables; tables stay in a bounded horizontal scroll frame with clearer headers, grid lines, row striping, and alignment support.
 - Selecting a PNG/JPEG/GIF/WebP file up to 20 MB in the workspace tree opens a read-only local image preview in the work area after a lightweight content-signature check, without adding Markdown local-image loading. Closing that image preview returns to the prior text tab when one is still open.
 - Markdown preview and editor panes use lightweight bidirectional scroll synchronization with a small tolerance to avoid jitter while preview is visible.
 - The editor / preview split can be resized with a draggable vertical divider while preview is visible.
@@ -78,7 +78,7 @@ Last reviewed: 2026-05-30
 - Final-newline presence preservation on save
 - Preview visibility toggle through View / Preferences with `localStorage` persistence
 - Safe embedded-image preview policy for Markdown preview
-- GFM table preview styling with a bounded horizontal scroll frame
+- Markdown preview readability styling for lists, task checkboxes, horizontal rules, blockquotes, code blocks, and GFM tables with a bounded horizontal table frame
 - Read-only local workspace image preview for PNG/JPEG/GIF/WebP files up to 20 MB, with extension and content-signature validation
 - Lightweight bidirectional editor/preview scroll synchronization while Markdown preview is visible
 - Resizable editor / preview columns while Markdown preview is visible
