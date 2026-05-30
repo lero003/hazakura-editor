@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Recurring automation guidance for quality hardening
 Authority: High
-Last reviewed: 2026-05-29
+Last reviewed: 2026-05-30
 
 ## Purpose
 
@@ -17,9 +17,9 @@ Name: `hazakura-note-safe-editor-review-loop`
 
 Cadence: 30-minute heartbeat loop for non-goal micro-polish work.
 
-Current phase: v0.3 Non-Git Diff / Review preparation, with v0.4 Markdown Review Navigation kept as the next safe-editor direction.
+Current phase: v0.4 Markdown Review Navigation, after the `v0.3.0` non-Git diff / change-review preview release.
 
-Primary outcome: one coherent improvement per run, verified, documented, committed, and pushed when checks pass. A verified no-op is acceptable when no safe useful slice is found.
+Primary outcome: one coherent Markdown review/navigation or safe-editor quality improvement per run, verified, documented, committed, and pushed when checks pass. A verified no-op is acceptable when no safe useful slice is found.
 
 Each run should fit the 30-minute cadence. If the useful slice is larger than that, narrow it, leave a short next-step note, or stop with a verified no-op instead of stretching the scope.
 
@@ -41,17 +41,7 @@ Do not decide verified no-op from documentation review alone when app inspection
 
 Choose the first useful slice that is both small and verifiable.
 
-1. Everyday usability polish:
-   - menu placement, menu language, button labels, dialog wording, external-change messages, save-conflict wording, layout fit, and built-app smoke notes
-   - prefer the smallest visible improvement that makes manual use clearer
-2. v0.3 Non-Git Diff / Review preparation:
-   - current buffer versus disk comparison
-   - explicit file-to-file text comparison
-   - draft/recovery candidate comparison
-   - save-conflict review before Reopen / Close without saving / Keep editing
-   - plain text diff labels that avoid Git wording
-   - no repository status, branch, staging, history, apply, commit, push, pull, or merge behavior
-3. v0.4 Markdown Review Navigation preparation:
+1. v0.4 Markdown Review Navigation:
    - current-file heading outline
    - current heading or section context
    - diff hunk heading context for Markdown files
@@ -59,6 +49,14 @@ Choose the first useful slice that is both small and verifiable.
    - open-tabs and recent-files navigation
    - readable Markdown preview/review display polish
    - avoid strong autocomplete, automatic lint fixes, broad formatting rewrites, project-wide indexing, and symbol search
+2. v0.3 Diff / Change Review patch follow-up:
+   - re-smoke file comparison and change-review paths from the released `v0.3.0` surface
+   - fix narrow regressions in current buffer versus disk, explicit file-to-file comparison, draft/recovery comparison, or save-conflict review
+   - keep labels in file/workspace/change-review language and avoid Git wording
+   - no repository status, branch, staging, history, apply, commit, push, pull, or merge behavior
+3. Everyday usability polish:
+   - menu placement, menu language, button labels, dialog wording, external-change messages, save-conflict wording, layout fit, and built-app smoke notes
+   - prefer the smallest visible improvement that makes manual use clearer
 4. Safety-boundary regression checks:
    - Safe Editor default startup
    - Agent Workbench explicit mode gate and restart boundary
@@ -180,9 +178,9 @@ Advance hazakura-note by one small, verifiable quality-hardening slice.
 
 Start by reading AGENTS.md, README.md, docs/current-status.md, docs/roadmap.md, docs/smoke-checklist.md, docs/development-automation.md, and checking git status --short --branch. Treat existing uncommitted changes as user or previous-run work and do not revert them.
 
-Use docs/development-automation.md as the source of truth. The current lane is a 30-minute safe-editor and Agent Workbench review loop. Choose from this priority order: v0.5 Pi CLI provider preparation after the Agent Workbench boundary is updated; app stability and responsiveness; everyday usability polish; Agent Workbench safety-boundary regression checks; Markdown-first safe editor quality; local preview release hygiene; verified no-op if no useful small slice is safe.
+Use docs/development-automation.md as the source of truth. The current lane is a 30-minute v0.4 Markdown Review Navigation loop. Choose from this priority order: current-file heading outline; current heading or section context; diff hunk heading context for Markdown files; local Markdown link navigation limited to explicitly selected workspace files; open-tabs and recent-files navigation; readable Markdown preview/review display polish; v0.3 Diff / Change Review patch follow-up; everyday usability polish; safety-boundary regression checks; stability and responsiveness; Markdown-first safe editor quality; local preview release hygiene; verified no-op if no useful small slice is safe.
 
-Keep Agent Workbench limited to explicit mode gate, restart boundary, responsibility consent, allowlisted `codex` / `opencode` providers plus `pi` only after the boundary document is updated, one selected workspace root, and one active session. Keep diff work limited to explicit text/file comparison and recovery review; do not inspect or present Git repository state. Do not implement Git integration, LSP, arbitrary terminal/shell access, arbitrary command execution, arbitrary path input UI, session restore, auto-apply, auto-commit, provider-add UI, plugin systems, project-wide analysis/indexing, strong predictive autocomplete, automatic lint fixes, broad formatting rewrites, signing/notarization completion, merge editor, advanced Git diff, release/publish/tag flow, Pi RPC integration, Pi SDK integration, or dependency/lockfile changes without explicit user approval. The current `glib` / `GHSA-wrw7-89jp-8q8g` Dependabot alert is already triaged as a Linux Tauri/wry GTK/WebKit dependency item; revisit it only for Linux support, a Tauri/wry dependency-refresh lane, distribution-readiness sign-off, severity escalation, or a compatible patched upstream path.
+Keep Agent Workbench limited to explicit mode gate, restart boundary, responsibility consent, allowlisted `codex` / `opencode` providers, one selected workspace root, and one active session. Keep diff work limited to explicit text/file comparison and recovery review; do not inspect or present Git repository state. Do not implement Git integration, LSP, arbitrary terminal/shell access, arbitrary command execution, arbitrary path input UI, session restore, auto-apply, auto-commit, provider-add UI, plugin systems, project-wide analysis/indexing, strong predictive autocomplete, automatic lint fixes, broad formatting rewrites, signing/notarization completion, merge editor, advanced Git diff, release/publish/tag flow, Pi CLI/RPC/SDK work, or dependency/lockfile changes without explicit user approval. The current `glib` / `GHSA-wrw7-89jp-8q8g` Dependabot alert is already triaged as a Linux Tauri/wry GTK/WebKit dependency item; revisit it only for Linux support, a Tauri/wry dependency-refresh lane, distribution-readiness sign-off, severity escalation, or a compatible patched upstream path.
 
 For substantial implementation, automation changes, Git/GitHub mutation, release work, or command-selection uncertainty, run Hazakura Habitat first and read agent_context.md before continuing. Consult command_policy.md before risky or mutating commands.
 

@@ -187,7 +187,7 @@ v0.2 warning-expected DMG preview release on 2026-05-29:
 - GitHub prerelease published at `https://github.com/lero003/hazakura-note/releases/tag/v0.2.0`.
 - Public release tag `v0.2.0` is the fresh tag for this release; older public tags were left immutable.
 - Roadmap priority moved `Safe Editor Non-Git Diff And Review` to v0.3 and placed `Markdown Review Navigation` at v0.4.
-- Recurring automation guidance now uses the `hazakura-note-safe-editor-review-loop` lane and prioritizes v0.3 diff/review preparation before Agent Workbench maintenance.
+- At the v0.2 release, recurring automation guidance used the `hazakura-note-safe-editor-review-loop` lane and prioritized v0.3 diff/review preparation before Agent Workbench maintenance.
 - Built DMG asset: `hazakura-note_0.2.0_aarch64-warning-expected.dmg`.
 - SHA-256: `6a39cc2e10b2caeed0328f8a217cc98ee40c3de5ff78751a5736a9667964d67d`.
 - `npm ci` passed.
@@ -270,6 +270,7 @@ v0.3 warning-expected DMG preview release preparation on 2026-05-30:
 - GitHub prerelease published at `https://github.com/lero003/hazakura-note/releases/tag/v0.3.0`.
 - Public release tag `v0.3.0` is the fresh tag for this release; older public tags were left immutable.
 - Remote verification downloaded the published GitHub Release assets, confirmed `shasum -c` passed, `hdiutil verify` passed, and the mounted app reported version `0.3.0` / bundle identifier `lab.hazakura.note` with `codesign --verify --deep --strict --verbose=2` passing.
+- Recurring automation guidance moved to the v0.4 Markdown Review Navigation lane while keeping v0.3 Diff / Change Review work as patch follow-up only.
 
 Cherry blossom app icon update on 2026-05-29:
 
@@ -789,7 +790,7 @@ Known verification note:
 1. For v0.4 planning, keep Markdown Review Navigation focused on current-file outline, heading context, local Markdown link navigation, open-tabs/recent-files navigation, and display polish without strong prediction or auto-rewrite behavior.
 2. Re-smoke Diff / Change Review in normal daily use after the v0.3 release and treat any regressions as patch candidates rather than expanding the v0.4 scope.
 3. For Agent Workbench work, treat further changes as boundary maintenance; run `docs/smoke-checklist.md` Agent Workbench Trusted Workspace Manual Smoke in a throwaway workspace before further terminal, PTY, or provider-lifecycle changes.
-4. For recurring automation, use the 30-minute safe-editor review loop in `docs/development-automation.md`; keep slices narrow and avoid new test code unless it protects a real bug, backend/safety contract, or high-value lifecycle path.
+4. For recurring automation, use the 30-minute v0.4 Markdown Review Navigation loop in `docs/development-automation.md`; keep slices narrow and avoid new test code unless it protects a real bug, backend/safety contract, or high-value lifecycle path.
 5. Re-smoke long file name / constrained-width layout before binary distribution readiness.
 6. For follow-up warning-expected DMG previews, keep the release marked as a prerelease and use the current version-specific release note as the GitHub Release body.
 7. Add minimal CI and Dependabot as P1 release hardening when a small verified slice is available. Keep the current `glib` Dependabot alert visible as a Linux/Tauri-wry dependency-refresh review item rather than a v0.3 macOS blocker.
