@@ -2976,11 +2976,16 @@ ${bodyHtml}
           }
 
           // Import image files to workspace assets
-          if (imageFiles.length > 0 && workspaceRootPath) {
+          const rootForDrop =
+            workspaceRootPath ??
+            (activeTab?.path
+              ? activeTab.path.replace(/\/[^/]+$/, "")
+              : null);
+          if (imageFiles.length > 0 && rootForDrop) {
             for (const imgPath of imageFiles) {
               try {
                 const relativePath = await importImageFromPath(
-                  workspaceRootPath,
+                  rootForDrop,
                   imgPath,
                 );
                 // Insert markdown at cursor if editor is active
@@ -3891,11 +3896,22 @@ ${bodyHtml}
                   wrapLines={editorSettings.wrapLines}
                   workspaceRoot={workspaceRootPath ?? undefined}
                   onPasteImage={async (dataBase64, fileName) => {
-                    if (!workspaceRootPath) return null;
+                    // Use workspace root, or fall back to active tab's parent dir
+                    const rootForPaste =
+                      workspaceRootPath ??
+                      (activeTab?.path
+                        ? activeTab.path.replace(/\/[^/]+$/, "")
+                        : null);
+                    if (!rootForPaste) {
+                      setStatus(
+                        "Open a folder first to enable image paste",
+                      );
+                      return null;
+                    }
                     setStatus("Saving pasted image...");
                     try {
                       const result = await savePastedImage(
-                        workspaceRootPath,
+                        rootForPaste,
                         dataBase64,
                         fileName,
                       );
