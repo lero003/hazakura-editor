@@ -1488,7 +1488,7 @@ export default function App() {
 
     setStatus("Opening system print dialog...");
 
-    // Try window.print() first. Works on most macOS + Tauri v2 setups.
+    // Try window.print() first.
     let printed = false;
     try {
       window.print();
@@ -1498,12 +1498,14 @@ export default function App() {
       console.warn("window.print() failed:", err);
     }
 
-    if (!printed && isTauriRuntime()) {
-      // Fallback: generate a temporary HTML file and open in system browser.
-      setStatus("Generating print HTML...");
+    if (!printed) {
+      // window.print() is not available in this Tauri v2 + WKWebView.
+      // Generate a standalone HTML file and open it in the system browser,
+      // where the user can print / Save as PDF via the browser's print dialog.
+      setStatus("Opening in browser for printing...");
       try {
         const workspaceRoot = workspaceRootPath;
-        const rendered = renderMarkdown(activeContents_, {
+        const rendered = await renderMarkdown(activeContents_, {
           workspaceRoot: workspaceRoot ?? undefined,
         });
 
