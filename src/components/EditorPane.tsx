@@ -54,6 +54,7 @@ type EditorPaneProps = {
     dataBase64: string,
     fileName: string,
   ) => Promise<string | null>;
+  onSendToAgent?: (text: string) => void;
   onChange: (nextValue: string) => void;
   onScrollRatioChange: (ratio: number) => void;
   onSelectionChange: (selection: EditorSelectionInfo) => void;
@@ -158,6 +159,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       onSelectionChange,
       workspaceRoot,
       onPasteImage,
+      onSendToAgent,
     },
     ref,
   ) {
@@ -167,6 +169,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   const onScrollRatioChangeRef = useRef(onScrollRatioChange);
   const onSelectionChangeRef = useRef(onSelectionChange);
   const onPasteImageRef = useRef(onPasteImage);
+  const onSendToAgentRef = useRef<(text: string) => void>(() => {});
   const themeCompartmentRef = useRef(new Compartment());
   const wrappingCompartmentRef = useRef(new Compartment());
   const invisiblesCompartmentRef = useRef(new Compartment());
@@ -305,6 +308,10 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   }, [onPasteImage]);
 
   useEffect(() => {
+    onSendToAgentRef.current = onSendToAgent ?? (() => {});
+  }, [onSendToAgent]);
+
+  useEffect(() => {
     if (!hostRef.current) {
       return;
     }
@@ -337,6 +344,17 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
           syntaxHighlighting(editorMarkdownHighlightStyle(theme)),
         ]),
         EditorView.domEventHandlers({
+          keydown(event, view) {
+            if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key === "Enter") {
+              const sel = view.state.selection.main;
+              const text = sel.empty ? view.state.sliceDoc(0) : view.state.sliceDoc(sel.from, sel.to);
+              if (text.trim()) {
+                onSendToAgentRef.current(text);
+                return true;
+              }
+            }
+            return false;
+          },
           paste(event, view) {
             const handler = onPasteImageRef.current;
             if (!handler) return false;
