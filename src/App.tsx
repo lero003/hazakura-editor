@@ -12,7 +12,6 @@ import {
 // xterm imports moved to AgentTerminalView component
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
-import { save as saveDialog } from "@tauri-apps/plugin-dialog";
 import EditorPane, {
   type EditorPaneHandle,
   type MarkdownFormat,
@@ -42,7 +41,6 @@ import {
   onCurrentWindowCloseRequested,
   openTextFile,
   openWorkspaceImage,
-  openTempPrintHtml,
   pickMarkdownFile,
   pickNewMarkdownFilePath,
   pickSaveAsTextFilePath,
@@ -85,6 +83,7 @@ import { ScrollPositionHud } from "./components/ScrollPositionHud";
 import { RightPaneToggleControls } from "./components/RightPaneToggleControls";
 import { ImagePreviewPane } from "./components/ImagePreviewPane";
 import { StartPanel } from "./components/StartPanel";
+import { useAppPreferences } from "./hooks/useAppPreferences";
 import {
   agentCompactSessionStateLabel,
   agentSessionStateLabel,
@@ -100,7 +99,7 @@ import {
   parseMarkdownHeadingLine,
   providerLabel,
 } from "./utils";
-import { inlineWorkspaceAssetImages, renderMarkdown } from "./markdown";
+import { useDocumentExport } from "./hooks/useDocumentExport";
 import { OutlinePane } from "./components/OutlinePane";
 import { PreviewUnavailablePane } from "./components/PreviewUnavailablePane";
 import {
@@ -112,17 +111,13 @@ import {
   getAgentWorkbenchCopy,
 } from "./locale";
 import {
-  AGENT_WORKBENCH_CONSENT_STORAGE_KEY,
-  AGENT_WORKBENCH_ENABLED_STORAGE_KEY,
   AGENT_WORKBENCH_PROVIDERS,
-  AGENT_WORKBENCH_PROVIDER_STORAGE_KEY,
   AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS,
   AGENT_WORKBENCH_SESSION_POLL_MS,
   APP_MENU_ACTION_EVENT,
   DEFAULT_PREVIEW_COLUMN_PERCENT,
   DIFF_MAX_LINE_PRODUCT,
   DRAFT_STATE_STORAGE_KEY,
-  EDITOR_SETTINGS_STORAGE_KEY,
   EXTERNAL_CHANGE_ACTIVE_POLL_MS,
   EXTERNAL_CHANGE_CONFLICT_MESSAGE,
   MARKDOWN_OUTLINE_MAX_HEADINGS,
@@ -130,17 +125,13 @@ import {
   MAX_RECENT_ITEMS,
   MAX_RESTORED_TABS,
   MAX_STORED_DRAFTS,
-  MENU_LANGUAGE_STORAGE_KEY,
   MIN_PREVIEW_COLUMN_PERCENT,
-  PREVIEW_VISIBLE_STORAGE_KEY,
   RECENT_FILES_STORAGE_KEY,
   RECENT_FOLDERS_STORAGE_KEY,
   SCROLL_SYNC_TOLERANCE_PX,
-  THEME_STORAGE_KEY,
   WORKSPACE_STATE_STORAGE_KEY,
   type AgentLaunchGateState,
   type AgentTerminalSize,
-  type BaseTheme,
   type CompareAnchor,
   type CompareViewState,
   type DiffDisplayRow,
@@ -148,7 +139,6 @@ import {
   type DiffSplitRow,
   type DraftRecord,
   type EditableLineEnding,
-  type EditorSettings,
   type EditorTab,
   type ImagePreviewState,
   type LineEndingKind,
@@ -159,7 +149,6 @@ import {
   type PersistedWorkspaceState,
   type PreferencesDialogMode,
   type RecentEntry,
-  type ResolvedTheme,
   type RightPaneMode,
   type SaveStatus,
   type SearchOptions,
@@ -197,17 +186,6 @@ export default function App() {
   const [preferencesDialogMode, setPreferencesDialogMode] =
     useState<PreferencesDialogMode | null>(null);
   const [zenMode, setZenMode] = useState(false);
-  const [agentWorkbenchActive] = useState(() =>
-    readStoredAgentWorkbenchEnabled(),
-  );
-  const [agentWorkbenchPreference, setAgentWorkbenchPreference] = useState(
-    () => readStoredAgentWorkbenchEnabled(),
-  );
-  const [agentWorkbenchConsent, setAgentWorkbenchConsent] = useState(() =>
-    readStoredAgentWorkbenchConsent(),
-  );
-  const [agentWorkbenchProvider, setAgentWorkbenchProvider] =
-    useState<AgentWorkbenchProvider>(() => readStoredAgentWorkbenchProvider());
   const [rightPaneMode, setRightPaneMode] = useState<RightPaneMode>("preview");
   const [agentLaunchGate, setAgentLaunchGate] = useState<AgentLaunchGateState>({
     kind: "idle",
@@ -244,29 +222,33 @@ export default function App() {
     visible: false,
   });
   const [pendingDrafts, setPendingDrafts] = useState<DraftRecord[]>([]);
-  const [themePreference, setThemePreference] = useState<ThemePreference>(() =>
-    readStoredThemePreference(),
-  );
-  const [editorSettings, setEditorSettings] = useState<EditorSettings>(() =>
-    readStoredEditorSettings(),
-  );
-  const [previewVisible, setPreviewVisible] = useState(() =>
-    readStoredPreviewVisible(),
-  );
   const [previewColumnPercent, setPreviewColumnPercent] = useState(
     DEFAULT_PREVIEW_COLUMN_PERCENT,
   );
-  const [menuLanguage, setMenuLanguage] = useState<MenuLanguage>(() =>
-    readStoredMenuLanguage(),
-  );
+  const {
+    agentWorkbenchActive,
+    agentWorkbenchConsent,
+    agentWorkbenchPreference,
+    agentWorkbenchProvider,
+    editorSettings,
+    editorTheme,
+    menuLanguage,
+    previewVisible,
+    resolvedTheme,
+    setAgentWorkbenchConsent,
+    setAgentWorkbenchPreference,
+    setAgentWorkbenchProvider,
+    setEditorSettings,
+    setMenuLanguage,
+    setPreviewVisible,
+    setThemePreference,
+    themePreference,
+  } = useAppPreferences();
   const [recentFiles, setRecentFiles] = useState<RecentEntry[]>(() =>
     readStoredRecentEntries(RECENT_FILES_STORAGE_KEY),
   );
   const [recentFolders, setRecentFolders] = useState<RecentEntry[]>(() =>
     readStoredRecentEntries(RECENT_FOLDERS_STORAGE_KEY),
-  );
-  const [systemTheme, setSystemTheme] = useState<BaseTheme>(() =>
-    readSystemTheme(),
   );
   const findInputRef = useRef<HTMLInputElement | null>(null);
   const editorPaneRef = useRef<EditorPaneHandle | null>(null);
@@ -299,10 +281,6 @@ export default function App() {
   const dirtyTabCount = dirtyTabs.length;
   const agentWorkbenchRestartRequired =
     agentWorkbenchPreference !== agentWorkbenchActive;
-  const resolvedTheme: ResolvedTheme =
-    themePreference === "system" ? systemTheme : themePreference;
-  const editorTheme: BaseTheme =
-    resolvedTheme === "dark" || resolvedTheme === "yakou" ? "dark" : "light";
   const activeContents = activeTab?.contents ?? "";
   const activeDirty = activeTab ? isDirty(activeTab) : false;
   const activeError = activeTab?.error ?? globalError;
@@ -1475,145 +1453,13 @@ export default function App() {
     }
   }, []);
 
-  const exportPdf = useCallback(async () => {
-    const activeContents_ = activeContents;
-    const activeTab_ = activeTab;
-    if (!activeContents_ || !activeTab_) {
-      setStatus("No active document to print");
-      return;
-    }
-
-    // Print only the rendered Markdown document, not the editor workspace UI.
-    setStatus("Opening in browser for printing...");
-    try {
-      const workspaceRoot = workspaceRootPath;
-      let rendered = renderMarkdown(activeContents_, {
-        workspaceRoot: workspaceRoot ?? undefined,
-      });
-      if (workspaceRoot) {
-        rendered = await inlineWorkspaceAssetImages(rendered, async (path) => {
-          const image = await openWorkspaceImage(workspaceRoot, path);
-          return image.dataUrl;
-        });
-      }
-
-      const standaloneHtml = `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${escapeHtml(activeTab_.name)}</title>
-<style>
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 14px; line-height: 1.6; padding: 20px; max-width: 800px; margin: 0 auto; color: #1d1d1f; }
-  img { max-width: 100%; height: auto; }
-  pre { background: #f5f5f7; padding: 12px; border-radius: 6px; overflow-x: auto; }
-  code { background: #f5f5f7; padding: 2px 4px; border-radius: 3px; }
-  table { border-collapse: collapse; width: 100%; }
-  th, td { border: 1px solid #d2d2d7; padding: 8px; text-align: left; }
-  th { background: #f5f5f7; }
-</style>
-</head>
-<body>${rendered}<script>window.addEventListener("load", () => window.print());</script></body>
-</html>`;
-
-      if (isTauriRuntime()) {
-        const tempPath = await openTempPrintHtml(
-          standaloneHtml,
-          activeTab_.name.replace(/\.[^.]+$/, "") + ".html",
-        );
-        if (tempPath) {
-          setStatus("Opening in browser for printing...");
-        }
-        setTimeout(() => setStatus(""), 2000);
-        return;
-      }
-
-      const printWindow = window.open("", "_blank");
-      if (!printWindow) {
-        setStatus("Print unavailable");
-        return;
-      }
-      printWindow.document.open();
-      printWindow.document.write(standaloneHtml);
-      printWindow.document.close();
-      setTimeout(() => setStatus(""), 2000);
-    } catch (err) {
-      console.warn("Print failed:", err);
-      setStatus("Print unavailable");
-    }
-  }, [setStatus, activeContents, activeTab, workspaceRootPath]);
-
-  const exportHtml = useCallback(async () => {
-    if (!activeTab || activeContents === undefined) {
-      setStatus("No active document to export");
-      return;
-    }
-
-    try {
-      // Pick save location
-      const destPath = await saveDialog({
-        defaultPath: activeTab.name.replace(/\.[^.]+$/, "") + ".html",
-        filters: [{ name: "HTML", extensions: ["html"] }],
-      });
-      if (!destPath) return;
-
-      // Build standalone HTML with inlined images for export
-      let bodyHtml = renderMarkdown(activeContents, { workspaceRoot: workspaceRootPath });
-      if (workspaceRootPath) {
-        bodyHtml = await inlineWorkspaceAssetImages(bodyHtml, async (path) => {
-          const image = await openWorkspaceImage(workspaceRootPath, path);
-          return image.dataUrl;
-        });
-      }
-
-      // Extract current theme CSS variables for inline styles
-      const root = document.documentElement;
-      const cs = getComputedStyle(root);
-      const cssVars = [
-        "--bg", "--text", "--text-muted", "--accent", "--border",
-        "--surface", "--surface-muted", "--surface-strong",
-        "--font-mono", "--font-ui",
-      ].map((v) => `  ${v}: ${cs.getPropertyValue(v)};`).join("\n");
-
-      const standaloneHtml = `<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${escapeHtml(activeTab.name)}</title>
-<style>
-:root {
-${cssVars}
-}
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-ui, system-ui, sans-serif);
-  line-height: 1.7;
-  max-width: 48rem;
-  margin: 0 auto;
-  padding: 2rem 1.5rem;
-}
-img { max-width: 100%; height: auto; }
-code { font-family: var(--font-mono, monospace); }
-pre { overflow-x: auto; }
-blockquote { border-left: 3px solid var(--accent); margin-left: 0; padding-left: 1rem; }
-table { border-collapse: collapse; width: 100%; }
-th, td { border: 1px solid var(--border); padding: 0.5rem; text-align: left; }
-</style>
-</head>
-<body>
-${bodyHtml}
-</body>
-</html>`;
-
-      await saveTextFileAs(destPath, standaloneHtml, "lf");
-      setStatus(`Exported HTML: ${destPath}`);
-    } catch (err) {
-      setGlobalError(`Export HTML failed: ${String(err)}`);
-      setStatus("Export HTML failed");
-    }
-  }, [activeTab, activeContents, workspaceRootPath]);
+  const { exportHtml, exportPdf } = useDocumentExport({
+    activeContents,
+    activeTab,
+    setGlobalError,
+    setStatus,
+    workspaceRootPath,
+  });
 
   const appMenuActionsRef = useRef({
     createNewFile,
@@ -3302,64 +3148,6 @@ ${bodyHtml}
   }, [dirtyTabCount]);
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleChange = (event: MediaQueryListEvent) => {
-      setSystemTheme(event.matches ? "dark" : "light");
-    };
-
-    mediaQuery.addEventListener("change", handleChange);
-
-    return () => {
-      mediaQuery.removeEventListener("change", handleChange);
-    };
-  }, []);
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = resolvedTheme;
-    document.documentElement.dataset.themePreference = themePreference;
-    window.localStorage.setItem(THEME_STORAGE_KEY, themePreference);
-  }, [resolvedTheme, themePreference]);
-
-  useEffect(() => {
-    window.localStorage.setItem(
-      PREVIEW_VISIBLE_STORAGE_KEY,
-      previewVisible ? "true" : "false",
-    );
-  }, [previewVisible]);
-
-  useEffect(() => {
-    window.localStorage.setItem(
-      EDITOR_SETTINGS_STORAGE_KEY,
-      JSON.stringify(editorSettings),
-    );
-  }, [editorSettings]);
-
-  useEffect(() => {
-    window.localStorage.setItem(MENU_LANGUAGE_STORAGE_KEY, menuLanguage);
-  }, [menuLanguage]);
-
-  useEffect(() => {
-    window.localStorage.setItem(
-      AGENT_WORKBENCH_ENABLED_STORAGE_KEY,
-      agentWorkbenchPreference ? "true" : "false",
-    );
-  }, [agentWorkbenchPreference]);
-
-  useEffect(() => {
-    window.localStorage.setItem(
-      AGENT_WORKBENCH_CONSENT_STORAGE_KEY,
-      agentWorkbenchConsent ? "true" : "false",
-    );
-  }, [agentWorkbenchConsent]);
-
-  useEffect(() => {
-    window.localStorage.setItem(
-      AGENT_WORKBENCH_PROVIDER_STORAGE_KEY,
-      agentWorkbenchProvider,
-    );
-  }, [agentWorkbenchProvider]);
-
-  useEffect(() => {
     if (!activeTabId) {
       return;
     }
@@ -4919,97 +4707,6 @@ function isDirty(tab: EditorTab): boolean {
   );
 }
 
-function readStoredThemePreference(): ThemePreference {
-  const value = window.localStorage.getItem(THEME_STORAGE_KEY);
-
-  if (
-    value === "light" ||
-    value === "dark" ||
-    value === "system" ||
-    value === "sakura" ||
-    value === "yakou" ||
-    value === "shokou" ||
-    value === "kouyou"
-  ) {
-    return value;
-  }
-
-  return "system";
-}
-
-function readStoredMenuLanguage(): MenuLanguage {
-  return window.localStorage.getItem(MENU_LANGUAGE_STORAGE_KEY) === "ja"
-    ? "ja"
-    : "en";
-}
-
-function readStoredPreviewVisible(): boolean {
-  return window.localStorage.getItem(PREVIEW_VISIBLE_STORAGE_KEY) !== "false";
-}
-
-function readStoredEditorSettings(): EditorSettings {
-  const defaults: EditorSettings = {
-    wrapLines: true,
-    showInvisibles: false,
-    fontSize: 14,
-    tabSize: 2,
-    spellcheckEnabled: true,
-    autoBackupEnabled: true,
-  };
-  const value = window.localStorage.getItem(EDITOR_SETTINGS_STORAGE_KEY);
-
-  if (!value) {
-    return defaults;
-  }
-
-  try {
-    const parsed = JSON.parse(value) as Partial<EditorSettings>;
-
-    return {
-      wrapLines:
-        typeof parsed.wrapLines === "boolean"
-          ? parsed.wrapLines
-          : defaults.wrapLines,
-      showInvisibles:
-        typeof parsed.showInvisibles === "boolean"
-          ? parsed.showInvisibles
-          : defaults.showInvisibles,
-      fontSize: clampNumber(parsed.fontSize, 12, 22, defaults.fontSize),
-      tabSize: [2, 4, 8].includes(Number(parsed.tabSize))
-        ? Number(parsed.tabSize)
-        : defaults.tabSize,
-      spellcheckEnabled:
-        typeof parsed.spellcheckEnabled === "boolean"
-          ? parsed.spellcheckEnabled
-          : defaults.spellcheckEnabled,
-      autoBackupEnabled:
-        typeof parsed.autoBackupEnabled === "boolean"
-          ? parsed.autoBackupEnabled
-          : defaults.autoBackupEnabled,
-    };
-  } catch {
-    return defaults;
-  }
-}
-
-function readStoredAgentWorkbenchEnabled(): boolean {
-  return (
-    window.localStorage.getItem(AGENT_WORKBENCH_ENABLED_STORAGE_KEY) === "true"
-  );
-}
-
-function readStoredAgentWorkbenchConsent(): boolean {
-  return (
-    window.localStorage.getItem(AGENT_WORKBENCH_CONSENT_STORAGE_KEY) === "true"
-  );
-}
-
-function readStoredAgentWorkbenchProvider(): AgentWorkbenchProvider {
-  const value = window.localStorage.getItem(AGENT_WORKBENCH_PROVIDER_STORAGE_KEY);
-
-  return value === "opencode" || value === "pi" ? value : "codex";
-}
-
 function readStoredDrafts(): DraftRecord[] {
   const value = window.localStorage.getItem(DRAFT_STATE_STORAGE_KEY);
 
@@ -5190,12 +4887,6 @@ function readPersistedWorkspaceState(): PersistedWorkspaceState | null {
 
 function writePersistedWorkspaceState(state: PersistedWorkspaceState) {
   window.localStorage.setItem(WORKSPACE_STATE_STORAGE_KEY, JSON.stringify(state));
-}
-
-function readSystemTheme(): BaseTheme {
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
 }
 
 function trapFocusInElement(
@@ -6028,12 +5719,4 @@ function suggestedSaveAsPath(path: string): string {
   }
 
   return `${directory}${fileName.slice(0, dotIndex)}-copy${fileName.slice(dotIndex)}`;
-}
-
-function escapeHtml(text: string): string {
-  return text
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
 }

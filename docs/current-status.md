@@ -9,11 +9,11 @@ Last reviewed: 2026-06-01
 
 - A touchable Tauri desktop prototype exists.
 - Current public preview release is `v0.4.0` as a warning-expected DMG preview.
-- Current development lane is v0.6 Foundation Release / daily-drivable safe editor. v0.6 has 9/10 roadmap items implemented; the App.tsx split remains deferred rather than a release blocker.
+- Current development lane is v0.6 Foundation Release / daily-drivable safe editor. v0.6 has 10/10 roadmap items implemented after the App.tsx split MVP.
 - Post-v0.5 planning notes now live under `docs/` as internal, low-authority planning memos. Public/product claims should still be taken from README plus the high-authority docs.
 - Markdown authoring feature readiness is now tracked in `docs/authoring-feature-readiness.md`; do not claim image paste, export, table editing, or Agent authoring beyond the implemented subset until those gaps are closed or explicitly deferred.
 - The prototype creates user-selected text/Markdown files, opens common UTF-8 text documents from File > Open or Finder/app-icon open events, opens a user-selected folder, shows a lazy bounded file tree, opens multiple files in tabs, edits the active tab with CodeMirror 6, saves through Rust with external-change protection, searches with visible match highlights and keyboard/navigation options, renders a toggleable sanitized Markdown preview, and shows selected workspace images in a read-only preview.
-- v0.6 editor-foundation work includes Cmd+P quick open, workspace auto-backups for dirty tabs, Replace one / Replace all, Agent output differential polling, selected text to Agent send, preset Agent prompt chips, tab drag-and-drop reordering, multi-cursor, and rectangular selection. Auto-backup is enabled by default and can be turned off from Preferences > Application.
+- v0.6 editor-foundation work includes App.tsx split MVP, Cmd+P quick open, workspace auto-backups for dirty tabs, Replace one / Replace all, Agent output differential polling, selected text to Agent send, preset Agent prompt chips, tab drag-and-drop reordering, multi-cursor, and rectangular selection. Auto-backup is enabled by default and can be turned off from Preferences > Application.
 - The 2026-06-01 bug-check pass fixed Replace using stale search match state, allowed empty replacement strings, restored visible tab drag state during drag-and-drop, prevented selected-text Agent send from falling through to editor key handling, and hardened auto-backup paths so backups stay under the selected workspace without following backup-directory symlinks.
 - Existing LF / CRLF line endings are detected when a file is opened and preserved through save.
 - The status bar shows file type, UTF-8 encoding, approximate byte count, character count, saved line-ending mode, final-newline state, and clean/unsaved state.
@@ -151,6 +151,7 @@ git diff --check
 
 v0.6 bug-check / planning-doc consolidation on 2026-06-01:
 
+- Split export behavior into `src/hooks/useDocumentExport.ts` and persisted preferences/theme/Agent Workbench settings into `src/hooks/useAppPreferences.ts`, reducing App.tsx from 6039 to 5721 lines without adding Context/zustand or changing the Agent boundary.
 - Fixed Replace one / Replace all so they use the current search matches and allow empty replacement text.
 - Hardened auto-backup path handling on both frontend and Rust command boundaries; backup paths must remain under `.hazakura/backups/` for the selected workspace and must not pass through symlinked backup directories. Rust tests now cover valid backup read/write and rejection of absolute, parent-directory, separator-bearing, and symlinked backup paths.
 - Fixed tab drag-and-drop visual state so the dragged and drop-target tabs render their CSS states during interaction.
