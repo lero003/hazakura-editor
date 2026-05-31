@@ -1616,7 +1616,7 @@ ${bodyHtml}
       setGlobalError(`Export HTML failed: ${String(err)}`);
       setStatus("Export HTML failed");
     }
-  }, [activeTab, activeContents]);
+  }, [activeTab, activeContents, workspaceRootPath]);
 
   const appMenuActionsRef = useRef({
     createNewFile,
@@ -3004,7 +3004,7 @@ ${bodyHtml}
       cancelled = true;
       unlisten?.();
     };
-  }, [openExternalFilePaths, workspaceRootPath]);
+  }, [openExternalFilePaths, workspaceRootPath, activeTab]);
 
   useEffect(() => {
     if (!restoreComplete) {

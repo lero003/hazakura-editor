@@ -17,16 +17,19 @@ Last reviewed: 2026-05-30
 
 ![hazakura-note Agent Workbench mode](docs/images/pre0.2-agent-mode.png)
 
-## 0.4 Preview Summary
+## 0.5 Preview Summary
 
 Use this when you want to:
 
 - open a selected project folder without running it
 - read and edit Markdown or text files
-- preview sanitized Markdown
+- preview sanitized Markdown with local image asset rendering
 - preserve LF / CRLF and final-newline behavior
 - compare text files and review local changes without Git awareness
 - notice save conflicts and external changes before overwriting
+- paste or drag-drop images into `assets/` for inline Markdown references
+- export content as standalone HTML or use Print to PDF
+- optional Agent Workbench with `pi` / `codex` / `opencode` provider sessions
 
 Do not use this as:
 
@@ -40,11 +43,12 @@ Example use case:
 
 1. Open a project folder you do not want to execute.
 2. Read README, docs, or notes through the file tree.
-3. Edit a Markdown or text file.
-4. Preview sanitized Markdown.
+3. Edit a Markdown or text file, with optional image paste / drag-drop.
+4. Preview sanitized Markdown including local asset images.
 5. Compare files or review local changes before deciding what to keep.
-6. Save only after conflict checks.
-7. Use another tool for Git, terminal, build, test, or commit.
+6. Export to HTML or print to PDF.
+7. Save only after conflict checks.
+8. Use another tool for Git, terminal, build, test, or commit.
 
 ## Current Decision
 
@@ -67,10 +71,13 @@ Example use case:
 - Save As to a new common UTF-8 text file extension, with existing-file overwrite rejection
 - Native File menu entries for New File, Open, Open Folder, Save, Save As, and Recent items
 - Native app menu entries for Preferences and Agent Workbench on macOS
-- Native View menu and Preferences dialog for Preview, Wrap, Invisibles, Theme, Font, Tab settings, and menu language
+- Native View menu and Preferences dialog for Preview, Wrap, Invisibles, Theme, Font, Tab settings, menu language, Zen Mode, and spellcheck toggle
+- Zen Mode (Cmd+Shift+F) hides all chrome with centered editor; Escape exits
+- Native macOS spellcheck toggle (Cmd+Option+;)
 - Window title reflects the active file and unsaved state
 - Tab-level unsaved state and Save / Discard / Cancel before closing dirty tabs
-- Keyboard shortcuts for New File, Open, Open Folder, Save, Find, previous/next tab focus, and tab close
+- Keyboard shortcuts for New File, Open, Open Folder, Save, Find, previous/next tab focus, tab close, and table insertion
+- Markdown table insertion via toolbar button or Cmd+Shift+T
 - External-change save conflict detection with Reopen from disk / Close without saving / Keep editing actions
 - Non-conflict save failures keep local edits and show Try save again / Keep editing recovery actions
 - Workspace tree directory expansion loads direct children on demand, keeps heavy / hidden directory exclusions, and shows a partial-listing note instead of failing the whole workspace when one folder exceeds the entry cap
@@ -91,7 +98,12 @@ Example use case:
 - Existing LF / CRLF line endings are preserved on save
 - Existing final-newline presence is preserved on save; the app does not add or remove a trailing newline by policy
 - Markdown preview blocks external/local image references and allows embedded `data:image` PNG/JPEG/GIF/WebP images
+- Markdown preview renders local workspace image assets from `assets/` directory
 - Markdown preview gives lists, task checkboxes, horizontal rules, code blocks, blockquotes, and tables readable review-oriented spacing
+- Clipboard image paste (Cmd+V) saves to `assets/<hash>.<ext>`, inserts `![](assets/...)` Markdown syntax, with hash-based deduplication
+- Image drag-and-drop from Finder imports into `assets/` and inserts Markdown image reference
+- Standalone HTML export via save dialog; local image assets are inlined as data URIs
+- Print to PDF handoff via browser print fallback
 - Workspace image files up to 20 MB can be selected from the file tree and shown as read-only local PNG/JPEG/GIF/WebP previews after a lightweight content-signature check, then closed back to the prior text tab when one is available
 - Window and dirty-tab close requests are stopped when open tabs have unsaved changes, with safe keyboard cancellation, Save / Discard choices, and editor focus restored after cancellation
 - Dirty-tab and app/window close dialogs keep Tab / Shift+Tab focus within the dialog while it is open
@@ -161,10 +173,10 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current intended preview version is `0.4.0` across npm, Tauri, and Cargo metadata.
+- Current intended preview version is `0.5.0` across npm, Tauri, and Cargo metadata.
 - Source users build locally with `npm ci` and `npm run build`.
 - The generated local `.app` declares macOS 11.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. It is not Developer ID signed or notarized.
-- The v0.4 warning-expected DMG preview notes are prepared in [0.4.0 Warning-expected DMG Preview](docs/releases/0.4.0-warning-expected-dmg-preview.release.md).
+- The v0.5 warning-expected DMG preview notes are prepared in [0.5.0 Warning-expected DMG Preview](docs/releases/0.5.0-warning-expected-dmg-preview.release.md).
 - Tag creation, push, and GitHub Release publication require explicit user approval.
 
 ## Known Limits

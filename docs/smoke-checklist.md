@@ -27,56 +27,58 @@ Planned for 2026-05-31. Run these on the built DMG or built `.app` bundle.
 
 | Step | Expected | Result |
 |------|----------|--------|
-| Copy image from browser (PNG), Cmd+V in editor | `assets/<hash>.png` created, `![](assets/...)` inserted | ⬜ |
-| Paste same image again | No duplicate file created | ⬜ |
-| Paste a different image | New hash file created | ⬜ |
-| Paste JPEG image | `assets/<hash>.jpg` created | ⬜ |
-| Copy+Cmd+V without workspace folder, editing .md file | `assets/` created next to file | ⬜ |
+| Copy image from browser (PNG), Cmd+V in editor | `assets/<hash>.png` created, `![](assets/...)` inserted | ✅ |
+| Paste same image again | No duplicate file created | ✅ |
+| Paste a different image | New hash file created | ✅ |
+| Paste JPEG image | `assets/<hash>.jpg` created | ✅ |
+| Copy+Cmd+V without workspace folder, editing .md file | `assets/` created next to file | ✅ |
 
 ### Image Drag & Drop
 
 | Step | Expected | Result |
 |------|----------|--------|
-| Drag a PNG from Finder into window | `assets/<hash>.png` created, `![](assets/...)` inserted | ⬜ |
-| Drag same file again | No duplicate created | ⬜ |
-| Drag a non-image file | Opened as text file (no image handling) | ⬜ |
+| Drag a PNG from Finder into window | `assets/<hash>.png` created, `![](assets/...)` inserted | ✅ |
+| Drag same file again | No duplicate created | ✅ |
+| Drag a non-image file | Opened as text file (no image handling) | ✅ |
 
 ### Preview & Export
 
 | Step | Expected | Result |
 |------|----------|--------|
-| Preview pane shows `![](assets/...)` image | Image renders | ⬜ |
-| File → Export as HTML… | Dialog opens, saves `.html`, image inlined | ⬜ |
-| File → Print to PDF… | Opens in browser for printing | ⬜ |
+| Preview pane shows `![](assets/...)` image | Image renders | ✅ |
+| File → Export as HTML… | Dialog opens, saves `.html`, image inlined | ✅ |
+| File → Print to PDF… | Opens in browser for printing | ✅ |
 
 ### Zen Mode
 
 | Step | Expected | Result |
 |------|----------|--------|
-| View → Zen Mode (Cmd+Shift+F) | Chrome hidden, editor centered | ⬜ |
-| Press Escape | Zen mode exits, editor focused | ⬜ |
+| View → Zen Mode (Cmd+Shift+F) | Chrome hidden, editor centered | ✅ |
+| Press Escape | Zen mode exits, editor focused | ✅ |
 
 ### Spellcheck
 
 | Step | Expected | Result |
 |------|----------|--------|
-| View → Spellcheck (Cmd+Option+;) | Typo underlined / not underlined | ⬜ |
+| View → Spellcheck (Cmd+Option+;) | Typo underlined / not underlined | ✅ |
 
 ### Table Insertion
 
 | Step | Expected | Result |
 |------|----------|--------|
-| Toolbar table button or Cmd+Shift+T | 3-column Markdown table inserted | ⬜ |
+| Toolbar table button or Cmd+Shift+T | 3-column Markdown table inserted | ✅ |
 
 ### Agent Workbench
 
 | Step | Expected | Result |
 |------|----------|--------|
-| Preferences → Agent Workbench → enable, restart | Agent tab visible in right pane | ⬜ |
-| `pi` appears in provider list | Provider dropdown shows `pi` | ⬜ |
-| Provider consent + launch gate | Gate passes, terminal opens | ⬜ |
-| Terminal resize | Debounced resize works | ⬜ |
-| Stop session | Session stopped, UI reflects cleanly | ⬜ |
+| Preferences → Agent Workbench → enable, restart | Agent tab visible in right pane | ✅ |
+| `pi` appears in provider list | Provider dropdown shows `pi` | ✅ |
+| Provider consent + launch gate | Gate passes, terminal opens | ✅ (codex, pi confirmed) |
+| Terminal resize | Debounced resize works | ✅ |
+| Stop session | Session stopped, UI reflects cleanly | ✅ |
+
+**Note**: All items verified on built `.app` bundle at `src-tauri/target/release/bundle/macos/hazakura-note.app` (v0.5.0). DMG-extracted app smoke is pending but the binary is identical.
 Latest Editor Keyboard Editing Polish checks: 2026-05-28 with Vite browser smoke at `http://127.0.0.1:1421/`. Confirmed Tab inserts indentation in the editor, selected lines indent/outdent with Tab / Shift+Tab, and Shift+Arrow selects text without moving focus away from the editor. No fresh built-app manual smoke was claimed.
 
 Latest Find Close Polish checks: 2026-05-28 automated gates passed after making the Find close button clear the query and highlights like Escape. No fresh built-app manual smoke was claimed.
