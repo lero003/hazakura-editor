@@ -161,14 +161,14 @@ v0.6 delivers (✅ = implemented):
 2. **Cmd+P クイックオープン** ✅ — fzf-style file name search + Enter to open.
 3. **自動保存 + バックアップ** — periodic save to `.hazakura/backups/` with Draft restore recovery. Trust foundation. _(pending)_
 4. **Replace (置換)** ✅ — Find bar gets replace input, Replace one / Replace all.
-5. **Agent 差分ポーリング** — `last_seen_seq` incremental output fetching. Eliminates polling lag. _(pending)_
+5. **Agent 差分ポーリング** ✅ — `last_seen_seq` incremental output fetching. Eliminates polling lag.
 6. **選択範囲→Agent 送信** ✅ — select text in editor → Cmd+Shift+Enter sends to terminal stdin.
 7. **プリセットプロンプトボタン** ✅ — [要約] [校正] [翻訳] [コードレビュー] chips above the terminal.
 8. **タブのドラッグ並び替え** ✅ — Drag-and-drop tab reordering.
 9. **Multi-cursor** ✅ — CodeMirror 6 built-in: Alt+click, Cmd+D.
 10. **矩形選択 (Rectangular selection)** ✅ — Alt+Shift+drag.
 
-**v0.6 progress: 7/10 items implemented.**
+**v0.6 progress: 8/10 items implemented.**
 
 Deliberately deferred to v0.7:
 - Global Search (Cmd+Shift+F)
