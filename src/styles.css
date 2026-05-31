@@ -657,6 +657,7 @@ button:disabled {
 /* フローティングカード型タブ / Floating Card Tabs */
 .tab-item {
   align-items: center;
+  cursor: grab;
   display: flex;
   flex: 0 0 auto;
   max-width: 200px;
@@ -667,6 +668,7 @@ button:disabled {
   position: relative;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
+  touch-action: none;
 }
 
 .tab-item.active {
@@ -707,6 +709,7 @@ button:disabled {
 }
 
 .tab-item.dragging {
+  cursor: grabbing;
   opacity: 0.5;
   transform: scale(0.95);
 }

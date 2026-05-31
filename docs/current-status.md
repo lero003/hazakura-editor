@@ -154,7 +154,7 @@ v0.6 bug-check / planning-doc consolidation on 2026-06-01:
 - Fixed Replace one / Replace all so they use the current search matches and allow empty replacement text.
 - Hardened auto-backup path handling on both frontend and Rust command boundaries; backup paths must remain under `.hazakura/backups/` for the selected workspace and must not pass through symlinked backup directories. Rust tests now cover valid backup read/write and rejection of absolute, parent-directory, separator-bearing, and symlinked backup paths.
 - Fixed tab drag-and-drop visual state so the dragged and drop-target tabs render their CSS states during interaction.
-- Added a `dataTransfer` payload during tab drag start so WebView drag/drop proceeds to the drop handler.
+- Reworked tab reordering to use pointer drag over tab positions instead of native HTML drag/drop, avoiding WebView drop-handler inconsistencies.
 - Added an Auto-backup toggle to Preferences > Application, persisted with the existing editor settings.
 - Prevented Cmd+Shift+Enter selected-text Agent send from falling through to editor key handling.
 - Moved post-v0.5 planning material under `docs/`, marked internal/low-authority memos, and folded the v0.8 Markdown toolbar/UI direction into `docs/roadmap.md`.

@@ -1886,35 +1886,138 @@ ${bodyHtml}
 
   const dragTabIdRef = useRef<string | null>(null);
   const dragOverTabIdRef = useRef<string | null>(null);
+  const pointerTabDragRef = useRef<{
+    tabId: string;
+    pointerId: number;
+    startX: number;
+    startY: number;
+    dragging: boolean;
+  } | null>(null);
+  const suppressNextTabClickRef = useRef(false);
   const [draggingTabId, setDraggingTabId] = useState<string | null>(null);
   const [dragOverTabId, setDragOverTabId] = useState<string | null>(null);
 
-  const reorderTabs = useCallback(
-    (targetTabId: string) => {
-      const draggedId = dragTabIdRef.current;
-      if (!draggedId || draggedId === targetTabId) {
-        dragTabIdRef.current = null;
-        setDraggingTabId(null);
-        setDragOverTabId(null);
+  const moveTabNearTarget = useCallback(
+    (draggedId: string, targetTabId: string, insertAfterTarget: boolean) => {
+      if (draggedId === targetTabId) {
         return;
       }
 
       setTabs((currentTabs) => {
-        const draggedIndex = currentTabs.findIndex((t) => t.id === draggedId);
-        const targetIndex = currentTabs.findIndex((t) => t.id === targetTabId);
-        if (draggedIndex < 0 || targetIndex < 0) return currentTabs;
+        const draggedTab = currentTabs.find((tab) => tab.id === draggedId);
+        if (!draggedTab || !currentTabs.some((tab) => tab.id === targetTabId)) {
+          return currentTabs;
+        }
 
-        const next = [...currentTabs];
-        const [moved] = next.splice(draggedIndex, 1);
-        next.splice(targetIndex, 0, moved);
-        return next;
+        const withoutDragged = currentTabs.filter((tab) => tab.id !== draggedId);
+        const targetIndex = withoutDragged.findIndex(
+          (tab) => tab.id === targetTabId,
+        );
+        if (targetIndex < 0) {
+          return currentTabs;
+        }
+
+        const insertIndex = targetIndex + (insertAfterTarget ? 1 : 0);
+        const nextTabs = [...withoutDragged];
+        nextTabs.splice(insertIndex, 0, draggedTab);
+
+        return nextTabs;
       });
-
-      dragTabIdRef.current = null;
-      setDraggingTabId(null);
-      setDragOverTabId(null);
     },
     [],
+  );
+
+  const finishTabPointerDrag = useCallback((target?: EventTarget | null) => {
+    if (target instanceof Element) {
+      try {
+        target.releasePointerCapture(
+          pointerTabDragRef.current?.pointerId ?? -1,
+        );
+      } catch {
+        // Pointer capture may already be released by the WebView.
+      }
+    }
+
+    pointerTabDragRef.current = null;
+    dragTabIdRef.current = null;
+    dragOverTabIdRef.current = null;
+    setDraggingTabId(null);
+    setDragOverTabId(null);
+  }, []);
+
+  const handleTabPointerDown = useCallback(
+    (event: ReactPointerEvent<HTMLDivElement>, tabId: string) => {
+      if (
+        event.button !== 0 ||
+        (event.target instanceof Element &&
+          event.target.closest(".tab-close"))
+      ) {
+        return;
+      }
+
+      pointerTabDragRef.current = {
+        tabId,
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        dragging: false,
+      };
+      dragTabIdRef.current = tabId;
+
+      try {
+        event.currentTarget.setPointerCapture(event.pointerId);
+      } catch {
+        // Pointer capture is best-effort; document hit-testing below still works.
+      }
+    },
+    [],
+  );
+
+  const handleTabPointerMove = useCallback(
+    (event: ReactPointerEvent<HTMLDivElement>) => {
+      const dragState = pointerTabDragRef.current;
+      if (!dragState) {
+        return;
+      }
+
+      const distance = Math.hypot(
+        event.clientX - dragState.startX,
+        event.clientY - dragState.startY,
+      );
+
+      if (!dragState.dragging) {
+        if (distance < 6) {
+          return;
+        }
+
+        dragState.dragging = true;
+        suppressNextTabClickRef.current = true;
+        setDraggingTabId(dragState.tabId);
+      }
+
+      event.preventDefault();
+
+      const targetElement = document
+        .elementFromPoint(event.clientX, event.clientY)
+        ?.closest<HTMLElement>("[data-tab-id]");
+      const targetTabId = targetElement?.dataset.tabId ?? null;
+      dragOverTabIdRef.current = targetTabId;
+      setDragOverTabId(
+        targetTabId && targetTabId !== dragState.tabId ? targetTabId : null,
+      );
+
+      if (!targetElement || !targetTabId || targetTabId === dragState.tabId) {
+        return;
+      }
+
+      const rect = targetElement.getBoundingClientRect();
+      moveTabNearTarget(
+        dragState.tabId,
+        targetTabId,
+        event.clientX > rect.left + rect.width / 2,
+      );
+    },
+    [moveTabNearTarget],
   );
 
   const requestCloseTab = useCallback(
@@ -3577,46 +3680,23 @@ ${bodyHtml}
               return (
                 <div
                   className={`tab-item${tab.id === activeTabId ? " active" : ""}${draggingTabId === tab.id ? " dragging" : ""}${dragOverTabId === tab.id ? " drag-over" : ""}`}
+                  data-tab-id={tab.id}
                   key={tab.id}
                   role="presentation"
-                  draggable="true"
-                  onDragStart={(e) => {
-                    dragTabIdRef.current = tab.id;
-                    setDraggingTabId(tab.id);
-                    e.dataTransfer.effectAllowed = "move";
-                    e.dataTransfer.setData("text/plain", tab.id);
-                  }}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    e.dataTransfer.dropEffect = "move";
-                  }}
-                  onDragEnter={() => {
-                    dragOverTabIdRef.current = tab.id;
-                    setDragOverTabId(tab.id);
-                  }}
-                  onDragLeave={() => {
-                    if (dragOverTabIdRef.current === tab.id) {
-                      dragOverTabIdRef.current = null;
-                      setDragOverTabId(null);
-                    }
-                  }}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    dragOverTabIdRef.current = null;
-                    setDragOverTabId(null);
-                    reorderTabs(tab.id);
-                  }}
-                  onDragEnd={() => {
-                    dragTabIdRef.current = null;
-                    dragOverTabIdRef.current = null;
-                    setDraggingTabId(null);
-                    setDragOverTabId(null);
-                  }}
+                  onPointerDown={(e) => handleTabPointerDown(e, tab.id)}
+                  onPointerMove={handleTabPointerMove}
+                  onPointerUp={(e) => finishTabPointerDrag(e.currentTarget)}
+                  onPointerCancel={(e) => finishTabPointerDrag(e.currentTarget)}
                 >
                   <button
                     aria-selected={tab.id === activeTabId}
                     className="tab-button"
                     onClick={() => {
+                      if (suppressNextTabClickRef.current) {
+                        suppressNextTabClickRef.current = false;
+                        return;
+                      }
+
                       setSelectedImage(null);
                       setImageReturnTabId(null);
                       setActiveTabId(tab.id);
