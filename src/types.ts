@@ -148,6 +148,7 @@ export type EditorSettings = {
   fontSize: number;
   tabSize: number;
   spellcheckEnabled: boolean;
+  autoBackupEnabled: boolean;
 };
 
 export type DraftRecord = {

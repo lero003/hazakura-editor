@@ -1980,7 +1980,11 @@ ${bodyHtml}
 
   // ── Auto-backup: periodically save dirty tabs to .hazakura/backups/ ──
   useEffect(() => {
-    if (!workspaceRootPath || dirtyTabs.length === 0) {
+    if (
+      !editorSettings.autoBackupEnabled ||
+      !workspaceRootPath ||
+      dirtyTabs.length === 0
+    ) {
       return;
     }
 
@@ -2000,7 +2004,7 @@ ${bodyHtml}
     }, 30000); // 30 seconds
 
     return () => window.clearInterval(intervalId);
-  }, [workspaceRootPath, dirtyTabs]);
+  }, [editorSettings.autoBackupEnabled, workspaceRootPath, dirtyTabs]);
 
   const discardAllAndCloseWindow = useCallback(async () => {
     const discardedDraftPaths = dirtyTabs.map((tab) => tab.path);
@@ -3580,6 +3584,7 @@ ${bodyHtml}
                     dragTabIdRef.current = tab.id;
                     setDraggingTabId(tab.id);
                     e.dataTransfer.effectAllowed = "move";
+                    e.dataTransfer.setData("text/plain", tab.id);
                   }}
                   onDragOver={(e) => {
                     e.preventDefault();
@@ -4530,6 +4535,20 @@ ${bodyHtml}
                     <span className="slider"></span>
                     <span>{preferencesCopy.previewPane}</span>
                   </label>
+                  <label className="toggle-switch">
+                    <input
+                      type="checkbox"
+                      checked={editorSettings.autoBackupEnabled}
+                      onChange={(event) =>
+                        setEditorSettings((current) => ({
+                          ...current,
+                          autoBackupEnabled: event.target.checked,
+                        }))
+                      }
+                    />
+                    <span className="slider"></span>
+                    <span>{preferencesCopy.autoBackup}</span>
+                  </label>
                   <label className="field-control">
                     <span>{preferencesCopy.theme}</span>
                     <select
@@ -4844,6 +4863,7 @@ function readStoredEditorSettings(): EditorSettings {
     fontSize: 14,
     tabSize: 2,
     spellcheckEnabled: true,
+    autoBackupEnabled: true,
   };
   const value = window.localStorage.getItem(EDITOR_SETTINGS_STORAGE_KEY);
 
@@ -4871,6 +4891,10 @@ function readStoredEditorSettings(): EditorSettings {
         typeof parsed.spellcheckEnabled === "boolean"
           ? parsed.spellcheckEnabled
           : defaults.spellcheckEnabled,
+      autoBackupEnabled:
+        typeof parsed.autoBackupEnabled === "boolean"
+          ? parsed.autoBackupEnabled
+          : defaults.autoBackupEnabled,
     };
   } catch {
     return defaults;

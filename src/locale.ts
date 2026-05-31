@@ -112,6 +112,7 @@ export type RecoveryCopy = {
 
 export type PreferencesCopy = {
   application: string;
+  autoBackup: string;
   dark: string;
   editor: string;
   editorDisplay: string;
@@ -355,6 +356,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
   return lang === "ja"
     ? {
         application: "アプリケーション",
+        autoBackup: "自動バックアップ",
         dark: "ダーク",
         editor: "エディタ",
         editorDisplay: "エディタ表示",
@@ -377,6 +379,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
       }
     : {
         application: "Application",
+        autoBackup: "Auto-backup",
         dark: "Dark",
         editor: "Editor",
         editorDisplay: "Editor display",
