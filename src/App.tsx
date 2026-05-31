@@ -72,6 +72,7 @@ import {
 } from "./tauri";
 import { DiffPane } from "./components/DiffPane";
 import { AgentPaneShell } from "./components/AgentPaneShell";
+import { QuickOpen } from "./components/QuickOpen";
 import { AgentTerminalView } from "./components/AgentTerminalView";
 import { WorkspaceTree } from "./components/WorkspaceTree";
 import { DiffSetupPane } from "./components/DiffSetupPane";
@@ -178,6 +179,7 @@ export default function App() {
   const [workspaceContextMenu, setWorkspaceContextMenu] =
     useState<WorkspaceContextMenuState | null>(null);
   const [imageReturnTabId, setImageReturnTabId] = useState<string | null>(null);
+  const [quickOpenVisible, setQuickOpenVisible] = useState(false);
   const [workspaceTree, setWorkspaceTree] =
     useState<WorkspaceTreeEntry | null>(null);
   const [workspaceRootPath, setWorkspaceRootPath] = useState<string | null>(
@@ -2672,6 +2674,13 @@ ${bodyHtml}
     tabsRef.current = tabs;
   }, [tabs]);
 
+  const handleQuickOpenKeyDown = useCallback((e: KeyboardEvent) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "p") {
+      e.preventDefault();
+      setQuickOpenVisible((prev) => !prev);
+    }
+  }, []);
+
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
@@ -2684,11 +2693,13 @@ ${bodyHtml}
     window.addEventListener("blur", suspendAgentUiRefresh);
     window.addEventListener("focus", resumeAgentUiRefresh);
     document.addEventListener("visibilitychange", handleVisibilityChange);
+    document.addEventListener("keydown", handleQuickOpenKeyDown);
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("focus", resumeAgentUiRefresh);
       window.removeEventListener("blur", suspendAgentUiRefresh);
+      document.removeEventListener("keydown", handleQuickOpenKeyDown);
     };
   }, [resumeAgentUiRefresh, suspendAgentUiRefresh]);
 
@@ -4245,6 +4256,15 @@ ${bodyHtml}
             </div>
           </section>
         </div>
+      ) : null}
+
+      {quickOpenVisible ? (
+        <QuickOpen
+          tree={workspaceTree}
+          onOpenFile={openWorkspaceFile}
+          onClose={() => setQuickOpenVisible(false)}
+          menuLanguage={menuLanguage}
+        />
       ) : null}
 
       {preferencesOpen ? (
