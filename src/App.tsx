@@ -283,6 +283,7 @@ export default function App() {
   const scrollSyncSourceRef = useRef<"editor" | "preview" | null>(null);
   const agentUiSuspendedRef = useRef(false);
   const tabsRef = useRef<EditorTab[]>([]);
+  const workspaceRootPathRef = useRef<string | null>(workspaceRootPath);
   const recentFilesRef = useRef<RecentEntry[]>(recentFiles);
   const recentFoldersRef = useRef<RecentEntry[]>(recentFolders);
 
@@ -2083,23 +2084,29 @@ ${bodyHtml}
 
   // ── Auto-backup: periodically save dirty tabs to .hazakura/backups/ ──
   useEffect(() => {
-    if (
-      !editorSettings.autoBackupEnabled ||
-      !workspaceRootPath ||
-      dirtyTabs.length === 0
-    ) {
+    if (!editorSettings.autoBackupEnabled) {
       return;
     }
 
     const intervalId = window.setInterval(async () => {
-      for (const tab of dirtyTabs) {
+      const workspaceRoot = workspaceRootPathRef.current;
+      if (!workspaceRoot) {
+        return;
+      }
+
+      const dirtyTabsSnapshot = tabsRef.current.filter(isDirty);
+      if (dirtyTabsSnapshot.length === 0) {
+        return;
+      }
+
+      for (const tab of dirtyTabsSnapshot) {
         try {
-          const relativePath = workspaceRelativePath(tab.path, workspaceRootPath);
+          const relativePath = workspaceRelativePath(tab.path, workspaceRoot);
           if (!relativePath) continue;
 
-          await saveAutoBackup(workspaceRootPath, relativePath, tab.contents);
+          await saveAutoBackup(workspaceRoot, relativePath, tab.contents);
           // Keep only last 30 backups per file
-          void pruneAutoBackups(workspaceRootPath, relativePath, 30);
+          void pruneAutoBackups(workspaceRoot, relativePath, 30);
         } catch {
           // Silently ignore backup failures
         }
@@ -2107,7 +2114,7 @@ ${bodyHtml}
     }, 30000); // 30 seconds
 
     return () => window.clearInterval(intervalId);
-  }, [editorSettings.autoBackupEnabled, workspaceRootPath, dirtyTabs]);
+  }, [editorSettings.autoBackupEnabled]);
 
   const discardAllAndCloseWindow = useCallback(async () => {
     const discardedDraftPaths = dirtyTabs.map((tab) => tab.path);
@@ -2815,6 +2822,10 @@ ${bodyHtml}
   useEffect(() => {
     tabsRef.current = tabs;
   }, [tabs]);
+
+  useEffect(() => {
+    workspaceRootPathRef.current = workspaceRootPath;
+  }, [workspaceRootPath]);
 
   const handleQuickOpenKeyDown = useCallback((e: KeyboardEvent) => {
     if ((e.metaKey || e.ctrlKey) && e.key === "p") {
