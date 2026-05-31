@@ -42,6 +42,7 @@ import {
   onCurrentWindowCloseRequested,
   openTextFile,
   openWorkspaceImage,
+  openTempPrintHtml,
   pickMarkdownFile,
   pickNewMarkdownFilePath,
   pickSaveAsTextFilePath,
@@ -1477,9 +1478,68 @@ export default function App() {
     }
   }, []);
 
-  const exportPdf = useCallback(() => {
-    window.print();
-  }, []);
+  const exportPdf = useCallback(async () => {
+    const activeContents_ = activeContents;
+    const activeTab_ = activeTab;
+    if (!activeContents_ || !activeTab_) {
+      setStatus("No active document to print");
+      return;
+    }
+
+    setStatus("Opening system print dialog...");
+
+    // Try window.print() first. Works on most macOS + Tauri v2 setups.
+    let printed = false;
+    try {
+      window.print();
+      printed = true;
+      setTimeout(() => setStatus(""), 2000);
+    } catch (err) {
+      console.warn("window.print() failed:", err);
+    }
+
+    if (!printed && isTauriRuntime()) {
+      // Fallback: generate a temporary HTML file and open in system browser.
+      setStatus("Generating print HTML...");
+      try {
+        const workspaceRoot = workspaceRootPath;
+        const { renderMarkdown } = await import("./markdown");
+        const rendered = await renderMarkdown(activeContents_, {
+          workspaceRoot: workspaceRoot ?? undefined,
+        });
+
+        const standaloneHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${escapeHtml(activeTab_.name)}</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 14px; line-height: 1.6; padding: 20px; max-width: 800px; margin: 0 auto; color: #1d1d1f; }
+  img { max-width: 100%; height: auto; }
+  pre { background: #f5f5f7; padding: 12px; border-radius: 6px; overflow-x: auto; }
+  code { background: #f5f5f7; padding: 2px 4px; border-radius: 3px; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid #d2d2d7; padding: 8px; text-align: left; }
+  th { background: #f5f5f7; }
+</style>
+</head>
+<body>${rendered}</body>
+</html>`;
+
+        const tempPath = await openTempPrintHtml(
+          standaloneHtml,
+          activeTab_.name.replace(/\.[^.]+$/, "") + ".html",
+        );
+        if (tempPath) {
+          setStatus("Opening in browser for printing...");
+        }
+      } catch (err) {
+        console.warn("Print fallback failed:", err);
+        setStatus("Print unavailable");
+      }
+    }
+  }, [setStatus, activeContents, activeTab, workspaceRootPath]);
 
   const exportHtml = useCallback(async () => {
     if (!activeTab || activeContents === undefined) {
@@ -2950,7 +3010,7 @@ ${bodyHtml}
       cancelled = true;
       unlisten?.();
     };
-  }, [openExternalFilePaths]);
+  }, [openExternalFilePaths, workspaceRootPath]);
 
   useEffect(() => {
     if (!restoreComplete) {

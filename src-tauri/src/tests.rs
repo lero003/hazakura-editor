@@ -2377,6 +2377,86 @@ fn save_pasted_image_rejects_assets_symlink_outside_workspace() {
 }
 
 #[test]
+fn import_image_from_path_writes_supported_image_inside_assets() {
+    let root = unique_test_dir("import_image_root");
+    let source_dir = unique_test_dir("import_image_source");
+    fs::create_dir_all(&root).expect("create root");
+    fs::create_dir_all(&source_dir).expect("create source dir");
+    let source = source_dir.join("Dropped Image!.png");
+    fs::write(
+        &source,
+        decode_base64("iVBORw0KGgo=").expect("decode png header"),
+    )
+    .expect("write source image");
+
+    let relative = import_image_from_path(
+        root.to_string_lossy().to_string(),
+        source.to_string_lossy().to_string(),
+    )
+    .expect("import image");
+
+    assert_eq!(relative, "assets/DroppedImage.png");
+    assert!(root.join("assets/DroppedImage.png").is_file());
+
+    let _ = fs::remove_dir_all(root);
+    let _ = fs::remove_dir_all(source_dir);
+}
+
+#[test]
+fn import_image_from_path_rejects_non_image_bytes() {
+    let root = unique_test_dir("import_non_image_root");
+    let source_dir = unique_test_dir("import_non_image_source");
+    fs::create_dir_all(&root).expect("create root");
+    fs::create_dir_all(&source_dir).expect("create source dir");
+    let source = source_dir.join("not-image.png");
+    fs::write(&source, b"not an image").expect("write source file");
+
+    let error = import_image_from_path(
+        root.to_string_lossy().to_string(),
+        source.to_string_lossy().to_string(),
+    )
+    .expect_err("non-image import should be rejected");
+
+    assert!(error.contains("supported image type"), "{error}");
+
+    let _ = fs::remove_dir_all(root);
+    let _ = fs::remove_dir_all(source_dir);
+}
+
+#[cfg(unix)]
+#[test]
+fn import_image_from_path_rejects_assets_symlink_outside_workspace() {
+    use std::os::unix::fs::symlink;
+
+    let root = unique_test_dir("import_symlink_root");
+    let outside = unique_test_dir("import_symlink_outside");
+    let source_dir = unique_test_dir("import_symlink_source");
+    fs::create_dir_all(&root).expect("create root");
+    fs::create_dir_all(&outside).expect("create outside");
+    fs::create_dir_all(&source_dir).expect("create source dir");
+    symlink(&outside, root.join("assets")).expect("create assets symlink");
+    let source = source_dir.join("pasted.png");
+    fs::write(
+        &source,
+        decode_base64("iVBORw0KGgo=").expect("decode png header"),
+    )
+    .expect("write source image");
+
+    let error = import_image_from_path(
+        root.to_string_lossy().to_string(),
+        source.to_string_lossy().to_string(),
+    )
+    .expect_err("assets symlink should be rejected");
+
+    assert!(error.contains("outside the workspace root"), "{error}");
+    assert!(!outside.join("pasted.png").exists());
+
+    let _ = fs::remove_dir_all(root);
+    let _ = fs::remove_dir_all(outside);
+    let _ = fs::remove_dir_all(source_dir);
+}
+
+#[test]
 fn workspace_tree_rejects_file_root() {
     let dir = unique_test_dir("workspace_file_root");
     fs::create_dir_all(&dir).expect("create test dir");

@@ -1,5 +1,6 @@
 import DOMPurify from "dompurify";
 import { marked } from "marked";
+import { convertFileSrc } from "@tauri-apps/api/core";
 
 marked.use({
   gfm: true,
@@ -11,7 +12,10 @@ export function renderMarkdown(
   options?: { workspaceRoot?: string | null },
 ): string {
   const rawHtml = marked.parse(source, { async: false }) as string;
-  const imageBoundedHtml = applyImagePreviewPolicy(rawHtml, options?.workspaceRoot ?? null);
+  const imageBoundedHtml = applyImagePreviewPolicy(
+    rawHtml,
+    options?.workspaceRoot ?? null,
+  );
   const tableBoundedHtml = applyTablePreviewPolicy(imageBoundedHtml);
 
   return DOMPurify.sanitize(tableBoundedHtml, {
@@ -38,18 +42,9 @@ function applyImagePreviewPolicy(
       continue;
     }
 
-    // Allow workspace-relative assets/ images; convert to asset:// URL
-    if (workspaceRoot && src.startsWith("assets/")) {
-      const absolutePath = workspaceRoot.replace(/\/+$/, "") + "/" + src;
-      image.setAttribute("src", `asset://localhost/${absolutePath}`);
-      image.removeAttribute("srcset");
-      image.setAttribute("loading", "lazy");
-      image.setAttribute("decoding", "async");
-      continue;
-    }
-
-    // Also allow explicit asset:// URLs (for already-resolved paths)
-    if (src.startsWith("asset://") || src.startsWith("http://asset.localhost/")) {
+    const assetUrl = workspaceAssetImageUrl(src, workspaceRoot);
+    if (assetUrl) {
+      image.setAttribute("src", assetUrl);
       image.removeAttribute("srcset");
       image.setAttribute("loading", "lazy");
       image.setAttribute("decoding", "async");
@@ -91,4 +86,39 @@ function applyTablePreviewPolicy(html: string): string {
 
 function isAllowedEmbeddedImageSource(src: string): boolean {
   return /^data:image\/(?:png|jpe?g|gif|webp);base64,[a-z0-9+/=\s]+$/i.test(src);
+}
+
+function workspaceAssetImageUrl(
+  src: string,
+  workspaceRoot: string | null,
+): string | null {
+  if (!workspaceRoot) {
+    return null;
+  }
+
+  let decodedSrc: string;
+  try {
+    decodedSrc = decodeURIComponent(src);
+  } catch {
+    return null;
+  }
+
+  const match = /^assets\/([A-Za-z0-9_-][A-Za-z0-9._-]*\.(?:png|jpe?g|gif|webp))$/i.exec(
+    decodedSrc,
+  );
+  if (!match) {
+    return null;
+  }
+
+  const absolutePath = `${workspaceRoot.replace(/\/+$/, "")}/assets/${match[1]}`;
+
+  if (
+    typeof window !== "undefined" &&
+    (window as { __TAURI_INTERNALS__?: { convertFileSrc?: unknown } })
+      .__TAURI_INTERNALS__?.convertFileSrc
+  ) {
+    return convertFileSrc(absolutePath);
+  }
+
+  return `asset://localhost/${encodeURIComponent(absolutePath)}`;
 }

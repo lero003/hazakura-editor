@@ -114,6 +114,63 @@ fn reveal_path_in_file_manager(path: String) -> Result<(), String> {
     }
 }
 
+/// Open a temporary HTML file in the default browser for printing.
+#[tauri::command]
+fn open_temp_print_html(html_content: String, file_name: String) -> Result<String, String> {
+    use std::io::Write;
+
+    let temp_dir = std::env::temp_dir().join("hazakura-note-print");
+    fs::create_dir_all(&temp_dir)
+        .map_err(|err| format!("Cannot create print temp dir: {err}"))?;
+
+    let file_path = temp_dir.join(&file_name);
+    let mut file = fs::File::create(&file_path)
+        .map_err(|err| format!("Cannot create print temp file: {err}"))?;
+    file.write_all(html_content.as_bytes())
+        .map_err(|err| format!("Cannot write print temp file: {err}"))?;
+
+    // Open in default browser
+    #[cfg(target_os = "macos")]
+    {
+        let status = Command::new("/usr/bin/open")
+            .arg(&file_path)
+            .status()
+            .map_err(|err| format!("Cannot open file in browser: {err}"))?;
+
+        if !status.success() {
+            return Err(format!("Open failed with status {status}."));
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        let status = Command::new("cmd")
+            .args(["/C", "start", ""])
+            .arg(&file_path)
+            .status()
+            .map_err(|err| format!("Cannot open file in browser: {err}"))?;
+
+        if !status.success() {
+            return Err(format!("Open failed with status {status}."));
+        }
+    }
+
+    #[cfg(all(not(target_os = "macos"), not(target_os = "windows")))]
+    {
+        let status = Command::new("xdg-open")
+            .arg(&file_path)
+            .status()
+            .map_err(|err| format!("Cannot open file in browser: {err}"))?;
+
+        if !status.success() {
+            return Err(format!("Open failed with status {status}."));
+        }
+    }
+
+    let path_str = file_path.to_string_lossy().to_string();
+    Ok(path_str)
+}
+
 #[tauri::command]
 fn create_text_file(path: String) -> Result<TextFileDocument, String> {
     let path_buf = PathBuf::from(&path);
@@ -360,16 +417,12 @@ fn save_pasted_image(
 
 /// Import an image from an arbitrary file path into the workspace assets folder.
 #[tauri::command]
-fn import_image_from_path(
-    workspace_root: String,
-    source_path: String,
-) -> Result<String, String> {
+fn import_image_from_path(workspace_root: String, source_path: String) -> Result<String, String> {
     let root = PathBuf::from(&workspace_root);
     let canonical_root = ensure_workspace_root(&root)?;
 
     let src = PathBuf::from(&source_path);
-    let metadata = fs::metadata(&src)
-        .map_err(|e| format!("Cannot read source file: {e}"))?;
+    let metadata = fs::metadata(&src).map_err(|e| format!("Cannot read source file: {e}"))?;
     if !metadata.is_file() {
         return Err("Source path is not a file".to_string());
     }
@@ -396,32 +449,32 @@ fn import_image_from_path(
     }
 
     let assets_dir = canonical_root.join("assets");
-    fs::create_dir_all(&assets_dir)
-        .map_err(|e| format!("Cannot create assets folder: {e}"))?;
+    fs::create_dir_all(&assets_dir).map_err(|e| format!("Cannot create assets folder: {e}"))?;
+    let canonical_assets =
+        fs::canonicalize(&assets_dir).map_err(|e| format!("Cannot verify assets folder: {e}"))?;
 
-    let stem = src
-        .file_stem()
-        .and_then(|s| s.to_str())
-        .unwrap_or("image");
+    if !canonical_assets.starts_with(&canonical_root) {
+        return Err("Assets folder is outside the workspace root.".to_string());
+    }
+
+    let stem = src.file_stem().and_then(|s| s.to_str()).unwrap_or("image");
     let safe_name = format!("{stem}.{ext}");
     let safe_name: String = safe_name
         .chars()
         .filter(|c| c.is_alphanumeric() || *c == '-' || *c == '_' || *c == '.')
         .collect();
+    let safe_name = safe_name.trim_matches('.').to_string();
     if safe_name.is_empty() {
         return Err("Invalid file name".to_string());
     }
 
     // Handle duplicate names by appending a counter
-    let dest = assets_dir.join(&safe_name);
+    let dest = canonical_assets.join(&safe_name);
     let final_path = if dest.exists() {
-        let stem = dest
-            .file_stem()
-            .and_then(|s| s.to_str())
-            .unwrap_or("image");
+        let stem = dest.file_stem().and_then(|s| s.to_str()).unwrap_or("image");
         let mut counter = 1;
         loop {
-            let candidate = assets_dir.join(format!("{stem}_{counter}.{ext}"));
+            let candidate = canonical_assets.join(format!("{stem}_{counter}.{ext}"));
             if !candidate.exists() {
                 break candidate;
             }
@@ -431,8 +484,7 @@ fn import_image_from_path(
         dest
     };
 
-    fs::write(&final_path, &bytes)
-        .map_err(|e| format!("Cannot write image file: {e}"))?;
+    fs::write(&final_path, &bytes).map_err(|e| format!("Cannot write image file: {e}"))?;
 
     let relative = final_path
         .strip_prefix(&canonical_root)
@@ -861,6 +913,7 @@ pub fn run() {
             update_theme_menu_state,
             save_pasted_image,
             import_image_from_path,
+            open_temp_print_html,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

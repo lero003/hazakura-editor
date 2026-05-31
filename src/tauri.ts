@@ -316,6 +316,16 @@ export async function importImageFromPath(
   });
 }
 
+export async function openTempPrintHtml(
+  htmlContent: string,
+  fileName: string,
+): Promise<string> {
+  return invoke<string>("open_temp_print_html", {
+    htmlContent,
+    fileName,
+  });
+}
+
 export async function saveTextFile(
   path: string,
   contents: string,
