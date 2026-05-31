@@ -2660,6 +2660,14 @@ ${bodyHtml}
     [sendAgentTerminalData],
   );
 
+  const handleSendSelectionToAgent = useCallback(
+    (text: string) => {
+      if (!text.trim()) return;
+      sendAgentTerminalData(text.trim() + "\n");
+    },
+    [sendAgentTerminalData],
+  );
+
   useEffect(() => {
     tabsRef.current = tabs;
   }, [tabs]);
@@ -4002,6 +4010,7 @@ ${bodyHtml}
                   value={activeContents}
                   wrapLines={editorSettings.wrapLines}
                   workspaceRoot={workspaceRootPath ?? undefined}
+                  onSendToAgent={handleSendSelectionToAgent}
                   onPasteImage={async (dataBase64, fileName) => {
                     // Use workspace root, or fall back to active tab's parent dir
                     const rootForPaste =
