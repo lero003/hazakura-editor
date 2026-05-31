@@ -277,7 +277,6 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         const view = viewRef.current;
         if (!view || searchMatches.length === 0) return;
 
-        // Replace in reverse order to preserve positions
         const changes = searchMatches.map((match) => ({
           from: match.from,
           to: match.to,
@@ -288,7 +287,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         view.focus();
       },
     }),
-    [],
+    [activeSearchMatchIndex, searchMatches],
   );
 
   useEffect(() => {
@@ -349,6 +348,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
               const sel = view.state.selection.main;
               const text = sel.empty ? view.state.sliceDoc(0) : view.state.sliceDoc(sel.from, sel.to);
               if (text.trim()) {
+                event.preventDefault();
                 onSendToAgentRef.current(text);
                 return true;
               }

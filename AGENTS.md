@@ -10,7 +10,7 @@
 - 実装範囲をMVPに寄せる
 - 任意コード実行、Git操作、LSP、ターミナル、拡張機能の追加へ広げない
 - セキュリティ境界に関わる変更は `docs/security-boundary.md` を先に確認する
-- ドキュメント判断は `README.md` と `docs/` 配下を優先し、`markdown-safe-editor-plan.md` は発想の原本として扱う
+- ドキュメント判断は `README.md` と `docs/` 配下を優先し、`docs/markdown-safe-editor-plan.md` は発想の原本として扱う
 - テストまたは確認コマンドを実行してから完了報告する
 
 ## Reporting

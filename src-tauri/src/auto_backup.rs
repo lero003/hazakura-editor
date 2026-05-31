@@ -1,7 +1,8 @@
 use crate::types::*;
 use crate::util::*;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::io::ErrorKind;
+use std::path::{Component, Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 /// Save an auto-backup of a file to `.hazakura/backups/<relative-path>/<timestamp>_<filename>`.
@@ -11,12 +12,10 @@ pub(crate) fn save_auto_backup(
     relative_file_path: &str,
     content: &str,
 ) -> Result<String, String> {
-    let root = PathBuf::from(workspace_root);
-    ensure_workspace_root(&root)?;
-
-    let backup_dir = root.join(".hazakura").join("backups").join(relative_file_path);
+    let backup_dir = backup_dir_for(workspace_root, relative_file_path)?;
     fs::create_dir_all(&backup_dir)
         .map_err(|err| format!("Cannot create backup directory: {err}"))?;
+    ensure_path_stays_inside_workspace(workspace_root, &backup_dir)?;
 
     let timestamp = current_timestamp_for_filename();
     let file_name = Path::new(relative_file_path)
@@ -36,8 +35,7 @@ pub(crate) fn list_auto_backups(
     workspace_root: &str,
     relative_file_path: &str,
 ) -> Result<Vec<AutoBackupEntry>, String> {
-    let root = PathBuf::from(workspace_root);
-    let backup_dir = root.join(".hazakura").join("backups").join(relative_file_path);
+    let backup_dir = backup_dir_for(workspace_root, relative_file_path)?;
 
     if !backup_dir.is_dir() {
         return Ok(Vec::new());
@@ -71,8 +69,17 @@ pub(crate) fn list_auto_backups(
 }
 
 /// Read the content of a backup file.
-pub(crate) fn read_auto_backup(path: &str) -> Result<String, String> {
-    fs::read_to_string(path).map_err(|err| format!("Cannot read backup: {err}"))
+pub(crate) fn read_auto_backup(
+    workspace_root: &str,
+    relative_file_path: &str,
+    backup_name: &str,
+) -> Result<String, String> {
+    let backup_dir = backup_dir_for(workspace_root, relative_file_path)?;
+    let backup_file_name = safe_backup_file_name(backup_name)?;
+    let backup_path = backup_dir.join(backup_file_name);
+    reject_symlink(&backup_path)?;
+
+    fs::read_to_string(backup_path).map_err(|err| format!("Cannot read backup: {err}"))
 }
 
 /// Delete old backups, keeping only the `keep_count` most recent.
@@ -82,8 +89,7 @@ pub(crate) fn prune_auto_backups(
     relative_file_path: &str,
     keep_count: usize,
 ) -> Result<usize, String> {
-    let root = PathBuf::from(workspace_root);
-    let backup_dir = root.join(".hazakura").join("backups").join(relative_file_path);
+    let backup_dir = backup_dir_for(workspace_root, relative_file_path)?;
 
     if !backup_dir.is_dir() {
         return Ok(0);
@@ -94,14 +100,24 @@ pub(crate) fn prune_auto_backups(
         .filter_map(|entry| {
             let entry = entry.ok()?;
             let path = entry.path();
-            if path.is_file() { Some(path) } else { None }
+            if path.is_file() {
+                Some(path)
+            } else {
+                None
+            }
         })
         .collect();
 
     // Sort by modified time descending (newest first)
     files.sort_by(|a, b| {
-        let a_m = fs::metadata(a).ok().and_then(|m| modified_ms(&m)).unwrap_or(0);
-        let b_m = fs::metadata(b).ok().and_then(|m| modified_ms(&m)).unwrap_or(0);
+        let a_m = fs::metadata(a)
+            .ok()
+            .and_then(|m| modified_ms(&m))
+            .unwrap_or(0);
+        let b_m = fs::metadata(b)
+            .ok()
+            .and_then(|m| modified_ms(&m))
+            .unwrap_or(0);
         b_m.cmp(&a_m)
     });
 
@@ -113,6 +129,103 @@ pub(crate) fn prune_auto_backups(
     }
 
     Ok(deleted)
+}
+
+fn backup_dir_for(workspace_root: &str, relative_file_path: &str) -> Result<PathBuf, String> {
+    let root = PathBuf::from(workspace_root);
+    let canonical_root = ensure_workspace_root(&root)?;
+    let safe_relative = safe_relative_file_path(relative_file_path)?;
+    let backup_relative = Path::new(".hazakura").join("backups").join(&safe_relative);
+    reject_existing_symlink_components(&canonical_root, &backup_relative)?;
+
+    Ok(canonical_root
+        .join(".hazakura")
+        .join("backups")
+        .join(safe_relative))
+}
+
+fn safe_relative_file_path(relative_file_path: &str) -> Result<PathBuf, String> {
+    let path = Path::new(relative_file_path);
+
+    if relative_file_path.trim().is_empty() {
+        return Err("Backup path is empty.".to_string());
+    }
+
+    let mut safe_path = PathBuf::new();
+    for component in path.components() {
+        match component {
+            Component::Normal(part) => safe_path.push(part),
+            _ => return Err("Backup path must stay inside the workspace.".to_string()),
+        }
+    }
+
+    if safe_path.as_os_str().is_empty() {
+        return Err("Backup path is empty.".to_string());
+    }
+
+    Ok(safe_path)
+}
+
+fn safe_backup_file_name(backup_name: &str) -> Result<&str, String> {
+    let path = Path::new(backup_name);
+
+    if backup_name.trim().is_empty()
+        || path.components().count() != 1
+        || !matches!(path.components().next(), Some(Component::Normal(_)))
+    {
+        return Err("Backup file name must not contain path separators.".to_string());
+    }
+
+    Ok(backup_name)
+}
+
+fn reject_existing_symlink_components(
+    canonical_root: &Path,
+    relative_path: &Path,
+) -> Result<(), String> {
+    let mut current = canonical_root.to_path_buf();
+
+    for component in relative_path.components() {
+        let Component::Normal(part) = component else {
+            return Err("Backup path must stay inside the workspace.".to_string());
+        };
+
+        current.push(part);
+        match fs::symlink_metadata(&current) {
+            Ok(metadata) => {
+                if metadata.file_type().is_symlink() {
+                    return Err("Backup path must not contain symlinks.".to_string());
+                }
+            }
+            Err(err) if err.kind() == ErrorKind::NotFound => return Ok(()),
+            Err(err) => return Err(format!("Cannot inspect backup path: {err}")),
+        }
+    }
+
+    Ok(())
+}
+
+fn reject_symlink(path: &Path) -> Result<(), String> {
+    match fs::symlink_metadata(path) {
+        Ok(metadata) if metadata.file_type().is_symlink() => {
+            Err("Backup path must not contain symlinks.".to_string())
+        }
+        Ok(_) => Ok(()),
+        Err(err) if err.kind() == ErrorKind::NotFound => Ok(()),
+        Err(err) => Err(format!("Cannot inspect backup path: {err}")),
+    }
+}
+
+fn ensure_path_stays_inside_workspace(workspace_root: &str, path: &Path) -> Result<(), String> {
+    let canonical_root = ensure_workspace_root(&PathBuf::from(workspace_root))?;
+    let canonical_path =
+        fs::canonicalize(path).map_err(|err| format!("Cannot verify backup path: {err}"))?;
+
+    if !canonical_path.starts_with(&canonical_root) {
+        return Err("Backup path must stay inside the workspace.".to_string());
+    }
+
+    Ok(())
 }
 
 fn current_timestamp_for_filename() -> String {
@@ -171,14 +284,7 @@ fn timestamp_components(secs: u64) -> (u64, u64, u64, u64, u64, u64) {
         d -= md;
     }
 
-    (
-        y as u64,
-        (month + 1) as u64,
-        (d + 1) as u64,
-        hour,
-        min,
-        sec,
-    )
+    (y as u64, (month + 1) as u64, (d + 1) as u64, hour, min, sec)
 }
 
 fn is_leap_year(y: i64) -> bool {

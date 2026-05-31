@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current release sequence and planning boundaries
 Authority: Medium
-Last reviewed: 2026-05-31 (v0.6 scope redefined; 6/10 items implemented)
+Last reviewed: 2026-06-01 (post-v0.5 planning memo folded in; v0.6 bug-check pass)
 
 ## Current Position
 
@@ -205,7 +205,8 @@ Candidate work:
 
 - プレビュースクロール同期: scroll preview to match editor position
 - Markdown スニペット展開: auto-complete blockquote, list, heading
-- Markdown ツールバー拡充: heading / bold / italic / list / code block buttons
+- Markdown ツールバー拡充: heading / bold / italic / strikethrough / list / code block buttons
+- Markdown UI 再配置: move document-mutating controls such as line-ending conversion out of the current preview/control row and place authoring tools in a dedicated Markdown toolbar row.
 - フォーカスモード / タイプライターモード: highlight only the current line
 - 書き出し品質向上: CSS polish for HTML export
 - ピン留め / お気に入り: quick-access pinned files
@@ -239,4 +240,4 @@ Use these when asking for external review:
 5. Does 0.5 add Pi as a bounded CLI provider without making Agent Workbench feel like the default app mode?
 6. Does 0.6 deliver a daily-drivable safe editor — Cmd+P, auto-save, Replace, App.tsx split — before adding more Agent features?
 7. Does 0.7 add workspace power (Global Search, command palette, Rename) without scope creep?
-8. Does 0.8 refine the writing experience without becoming a full IDE?
+8. Does 0.8 refine Markdown authoring controls without mixing preview toggles, document mutation, and workspace/IDE behavior?

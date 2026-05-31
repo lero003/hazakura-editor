@@ -1886,12 +1886,16 @@ ${bodyHtml}
 
   const dragTabIdRef = useRef<string | null>(null);
   const dragOverTabIdRef = useRef<string | null>(null);
+  const [draggingTabId, setDraggingTabId] = useState<string | null>(null);
+  const [dragOverTabId, setDragOverTabId] = useState<string | null>(null);
 
   const reorderTabs = useCallback(
     (targetTabId: string) => {
       const draggedId = dragTabIdRef.current;
       if (!draggedId || draggedId === targetTabId) {
         dragTabIdRef.current = null;
+        setDraggingTabId(null);
+        setDragOverTabId(null);
         return;
       }
 
@@ -1907,6 +1911,8 @@ ${bodyHtml}
       });
 
       dragTabIdRef.current = null;
+      setDraggingTabId(null);
+      setDragOverTabId(null);
     },
     [],
   );
@@ -1981,10 +1987,9 @@ ${bodyHtml}
     const intervalId = window.setInterval(async () => {
       for (const tab of dirtyTabs) {
         try {
-          // Make relative path from workspace root
-          const relativePath = tab.path.startsWith(workspaceRootPath)
-            ? tab.path.slice(workspaceRootPath.length + 1)
-            : tab.path;
+          const relativePath = workspaceRelativePath(tab.path, workspaceRootPath);
+          if (!relativePath) continue;
+
           await saveAutoBackup(workspaceRootPath, relativePath, tab.contents);
           // Keep only last 30 backups per file
           void pruneAutoBackups(workspaceRootPath, relativePath, 30);
@@ -2298,7 +2303,6 @@ ${bodyHtml}
 
   const replaceOne = useCallback(() => {
     const replacement = replaceQuery;
-    if (!replacement) return;
     const replaced = editorPaneRef.current?.replaceCurrent(replacement);
     if (replaced) {
       showNextMatch();
@@ -2307,7 +2311,6 @@ ${bodyHtml}
 
   const replaceAll = useCallback(() => {
     const replacement = replaceQuery;
-    if (!replacement) return;
     editorPaneRef.current?.replaceAll(replacement);
   }, [replaceQuery]);
 
@@ -3569,12 +3572,13 @@ ${bodyHtml}
 
               return (
                 <div
-                  className={`tab-item${tab.id === activeTabId ? " active" : ""}${dragTabIdRef.current === tab.id ? " dragging" : ""}${dragOverTabIdRef.current === tab.id ? " drag-over" : ""}`}
+                  className={`tab-item${tab.id === activeTabId ? " active" : ""}${draggingTabId === tab.id ? " dragging" : ""}${dragOverTabId === tab.id ? " drag-over" : ""}`}
                   key={tab.id}
                   role="presentation"
                   draggable="true"
                   onDragStart={(e) => {
                     dragTabIdRef.current = tab.id;
+                    setDraggingTabId(tab.id);
                     e.dataTransfer.effectAllowed = "move";
                   }}
                   onDragOver={(e) => {
@@ -3583,20 +3587,25 @@ ${bodyHtml}
                   }}
                   onDragEnter={() => {
                     dragOverTabIdRef.current = tab.id;
+                    setDragOverTabId(tab.id);
                   }}
                   onDragLeave={() => {
                     if (dragOverTabIdRef.current === tab.id) {
                       dragOverTabIdRef.current = null;
+                      setDragOverTabId(null);
                     }
                   }}
                   onDrop={(e) => {
                     e.preventDefault();
                     dragOverTabIdRef.current = null;
+                    setDragOverTabId(null);
                     reorderTabs(tab.id);
                   }}
                   onDragEnd={() => {
                     dragTabIdRef.current = null;
                     dragOverTabIdRef.current = null;
+                    setDraggingTabId(null);
+                    setDragOverTabId(null);
                   }}
                 >
                   <button
@@ -3867,14 +3876,14 @@ ${bodyHtml}
             <button
               type="button"
               onClick={replaceOne}
-              disabled={findMatches.length === 0 || !replaceQuery}
+              disabled={findMatches.length === 0}
             >
               {editorChromeCopy.replaceOne}
             </button>
             <button
               type="button"
               onClick={replaceAll}
-              disabled={findMatches.length === 0 || !replaceQuery}
+              disabled={findMatches.length === 0}
             >
               {editorChromeCopy.replaceAll}
             </button>
@@ -5732,6 +5741,21 @@ function isPathInsideDirectory(path: string, directoryPath: string): boolean {
     normalizedPath === normalizedDirectory ||
     normalizedPath.startsWith(`${normalizedDirectory}/`)
   );
+}
+
+function workspaceRelativePath(path: string, workspaceRootPath: string): string | null {
+  const normalizedPath = normalizeAbsolutePath(path);
+  const normalizedWorkspaceRoot = normalizeAbsolutePath(workspaceRootPath);
+
+  if (!isPathInsideDirectory(normalizedPath, normalizedWorkspaceRoot)) {
+    return null;
+  }
+
+  if (normalizedPath === normalizedWorkspaceRoot) {
+    return null;
+  }
+
+  return normalizedPath.slice(normalizedWorkspaceRoot.length + 1);
 }
 
 function formatLineEndingKind(

@@ -381,8 +381,16 @@ export async function listAutoBackups(
   });
 }
 
-export async function readAutoBackup(path: string): Promise<string> {
-  return invoke<string>("read_auto_backup", { path });
+export async function readAutoBackup(
+  workspaceRoot: string,
+  relativeFilePath: string,
+  backupName: string,
+): Promise<string> {
+  return invoke<string>("read_auto_backup", {
+    workspaceRoot,
+    relativeFilePath,
+    backupName,
+  });
 }
 
 export async function pruneAutoBackups(

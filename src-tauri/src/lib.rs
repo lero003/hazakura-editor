@@ -298,8 +298,12 @@ fn list_auto_backups(
 }
 
 #[tauri::command]
-fn read_auto_backup(path: String) -> Result<String, String> {
-    auto_backup::read_auto_backup(&path)
+fn read_auto_backup(
+    workspace_root: String,
+    relative_file_path: String,
+    backup_name: String,
+) -> Result<String, String> {
+    auto_backup::read_auto_backup(&workspace_root, &relative_file_path, &backup_name)
 }
 
 #[tauri::command]
@@ -398,9 +402,7 @@ fn save_pasted_image(
 
     // Validate image type from bytes only (magic bytes check)
     let ext = image_ext_from_bytes(&bytes)
-        .ok_or_else(|| {
-            "Unsupported image type.".to_string()
-        })?
+        .ok_or_else(|| "Unsupported image type.".to_string())?
         .to_string();
 
     // Compute content hash for deduplication (deterministic FNV-1a)
@@ -413,10 +415,9 @@ fn save_pasted_image(
 
     // Create assets directory
     let assets_dir = canonical_root.join("assets");
-    fs::create_dir_all(&assets_dir)
-        .map_err(|e| format!("Cannot create assets folder: {e}"))?;
-    let canonical_assets = fs::canonicalize(&assets_dir)
-        .map_err(|e| format!("Cannot verify assets folder: {e}"))?;
+    fs::create_dir_all(&assets_dir).map_err(|e| format!("Cannot create assets folder: {e}"))?;
+    let canonical_assets =
+        fs::canonicalize(&assets_dir).map_err(|e| format!("Cannot verify assets folder: {e}"))?;
 
     if !canonical_assets.starts_with(&canonical_root) {
         return Err("Assets folder is outside the workspace root.".to_string());
@@ -471,9 +472,7 @@ fn import_image_from_path(workspace_root: String, source_path: String) -> Result
 
     // Detect format from magic bytes only (for security)
     let ext = image_ext_from_bytes(&bytes)
-        .ok_or_else(|| {
-            "Unsupported image type.".to_string()
-        })?
+        .ok_or_else(|| "Unsupported image type.".to_string())?
         .to_string();
 
     // Compute content hash for deduplication (deterministic FNV-1a)
@@ -485,8 +484,7 @@ fn import_image_from_path(workspace_root: String, source_path: String) -> Result
     let safe_name = format!("{hash_hex}.{ext}");
 
     let assets_dir = canonical_root.join("assets");
-    fs::create_dir_all(&assets_dir)
-        .map_err(|e| format!("Cannot create assets folder: {e}"))?;
+    fs::create_dir_all(&assets_dir).map_err(|e| format!("Cannot create assets folder: {e}"))?;
     let canonical_assets =
         fs::canonicalize(&assets_dir).map_err(|e| format!("Cannot verify assets folder: {e}"))?;
 
