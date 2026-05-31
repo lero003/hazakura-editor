@@ -13,6 +13,7 @@ pub(crate) mod agent;
 use crate::agent::*;
 pub(crate) mod menu;
 use crate::menu::*;
+pub(crate) mod auto_backup;
 
 #[cfg(test)]
 pub(crate) mod tests;
@@ -277,6 +278,37 @@ fn save_text_file_as(
     write_new_file(&path_buf, normalized_contents.as_bytes())?;
 
     open_text_file(path)
+}
+
+#[tauri::command]
+fn save_auto_backup(
+    workspace_root: String,
+    relative_file_path: String,
+    content: String,
+) -> Result<String, String> {
+    auto_backup::save_auto_backup(&workspace_root, &relative_file_path, &content)
+}
+
+#[tauri::command]
+fn list_auto_backups(
+    workspace_root: String,
+    relative_file_path: String,
+) -> Result<Vec<AutoBackupEntry>, String> {
+    auto_backup::list_auto_backups(&workspace_root, &relative_file_path)
+}
+
+#[tauri::command]
+fn read_auto_backup(path: String) -> Result<String, String> {
+    auto_backup::read_auto_backup(&path)
+}
+
+#[tauri::command]
+fn prune_auto_backups(
+    workspace_root: String,
+    relative_file_path: String,
+    keep_count: usize,
+) -> Result<usize, String> {
+    auto_backup::prune_auto_backups(&workspace_root, &relative_file_path, keep_count)
 }
 
 #[tauri::command]
@@ -926,6 +958,10 @@ pub fn run() {
             save_pasted_image,
             import_image_from_path,
             open_temp_print_html,
+            save_auto_backup,
+            list_auto_backups,
+            read_auto_backup,
+            prune_auto_backups,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

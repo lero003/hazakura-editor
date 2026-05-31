@@ -98,6 +98,15 @@ pub(crate) struct FileMetadataState {
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
+pub(crate) struct AutoBackupEntry {
+    pub(crate) path: String,
+    pub(crate) name: String,
+    pub(crate) modified_at_ms: u64,
+    pub(crate) size: u64,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub(crate) struct ImagePreviewDocument {
     pub(crate) path: String,
     pub(crate) name: String,
