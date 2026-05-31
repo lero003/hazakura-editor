@@ -52,6 +52,8 @@ import {
   savePastedImage,
   saveTextFile,
   saveTextFileAs,
+  saveAutoBackup,
+  pruneAutoBackups,
   setCurrentWindowTitle,
   getAgentWorkbenchSessionState,
   isTauriRuntime,
@@ -1969,6 +1971,31 @@ ${bodyHtml}
     allowWindowCloseRef.current = true;
     await closeCurrentWindow();
   }, [dirtyTabs, focusEditorSoon, saveTabById]);
+
+  // ── Auto-backup: periodically save dirty tabs to .hazakura/backups/ ──
+  useEffect(() => {
+    if (!workspaceRootPath || dirtyTabs.length === 0) {
+      return;
+    }
+
+    const intervalId = window.setInterval(async () => {
+      for (const tab of dirtyTabs) {
+        try {
+          // Make relative path from workspace root
+          const relativePath = tab.path.startsWith(workspaceRootPath)
+            ? tab.path.slice(workspaceRootPath.length + 1)
+            : tab.path;
+          await saveAutoBackup(workspaceRootPath, relativePath, tab.contents);
+          // Keep only last 30 backups per file
+          void pruneAutoBackups(workspaceRootPath, relativePath, 30);
+        } catch {
+          // Silently ignore backup failures
+        }
+      }
+    }, 30000); // 30 seconds
+
+    return () => window.clearInterval(intervalId);
+  }, [workspaceRootPath, dirtyTabs]);
 
   const discardAllAndCloseWindow = useCallback(async () => {
     const discardedDraftPaths = dirtyTabs.map((tab) => tab.path);
