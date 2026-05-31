@@ -32,6 +32,7 @@ export function AgentPaneShell({
   stopPending,
   theme,
   workspaceRootPath,
+  onPresetPrompt,
 }: {
   gate: AgentLaunchGateState;
   menuLanguage: MenuLanguage;
@@ -41,6 +42,7 @@ export function AgentPaneShell({
   onTerminalEngage: () => void;
   onTerminalRelease: () => void;
   onTerminalResize: (size: AgentTerminalSize) => void;
+  onPresetPrompt: (prompt: string) => void;
   output: AgentWorkbenchOutputChunk[];
   provider: AgentWorkbenchProvider;
   session: AgentWorkbenchSession | null;
@@ -68,6 +70,12 @@ export function AgentPaneShell({
           starting: "開始中...",
           stop: "セッション停止",
           stopping: "停止中...",
+          presets: {
+            summarize: "要約",
+            proofread: "校正",
+            translate: "翻訳",
+            review: "コードレビュー",
+          },
           terminal: "Agent ターミナル",
           running: "Agent は実行中",
           inactive: "Agent は停止中",
@@ -88,6 +96,12 @@ export function AgentPaneShell({
           starting: "Starting...",
           stop: "Stop session",
           stopping: "Stopping...",
+          presets: {
+            summarize: "Summarize",
+            proofread: "Proofread",
+            translate: "Translate",
+            review: "Code review",
+          },
           terminal: "Agent terminal",
           running: "Agent running",
           inactive: "Agent inactive",
@@ -153,6 +167,26 @@ export function AgentPaneShell({
         >
           {gateMessage}
         </p>
+      ) : null}
+      {activeSession ? (
+        <div className="agent-presets" aria-label="Preset prompts">
+          <button type="button" className="preset-chip"
+            onClick={() => onPresetPrompt(copy.presets.summarize)}>
+            {copy.presets.summarize}
+          </button>
+          <button type="button" className="preset-chip"
+            onClick={() => onPresetPrompt(copy.presets.proofread)}>
+            {copy.presets.proofread}
+          </button>
+          <button type="button" className="preset-chip"
+            onClick={() => onPresetPrompt(copy.presets.translate)}>
+            {copy.presets.translate}
+          </button>
+          <button type="button" className="preset-chip"
+            onClick={() => onPresetPrompt(copy.presets.review)}>
+            {copy.presets.review}
+          </button>
+        </div>
       ) : null}
       <AgentTerminalView
         activeSession={activeSession}

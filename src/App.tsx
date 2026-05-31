@@ -2648,6 +2648,18 @@ ${bodyHtml}
       });
   }, [agentSession]);
 
+  const handlePresetPrompt = useCallback(
+    (preset: string) => {
+      const selection = editorPaneRef.current?.getSelectionText() ?? "";
+      const context = selection.trim()
+        ? `\n\n---\n${selection}`
+        : "";
+      const message = `${preset}${context}\n`;
+      sendAgentTerminalData(message);
+    },
+    [sendAgentTerminalData],
+  );
+
   useEffect(() => {
     tabsRef.current = tabs;
   }, [tabs]);
@@ -4102,6 +4114,7 @@ ${bodyHtml}
                   onTerminalEngage={resumeAgentUiRefresh}
                   onTerminalRelease={suspendAgentUiRefresh}
                   onTerminalResize={resizeAgentTerminal}
+                  onPresetPrompt={handlePresetPrompt}
                   output={agentOutput}
                   provider={agentWorkbenchProvider}
                   session={agentSession}

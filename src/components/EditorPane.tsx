@@ -68,6 +68,7 @@ export type EditorPaneHandle = {
   setScrollRatio: (ratio: number, tolerancePx?: number) => boolean;
   replaceCurrent: (replacement: string) => boolean;
   replaceAll: (replacement: string) => void;
+  getSelectionText: () => string;
 };
 
 const setSearchMatchesEffect =
@@ -244,6 +245,14 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
 
         scroller.scrollTop = nextScrollTop;
         return true;
+      },
+      getSelectionText() {
+        const view = viewRef.current;
+        if (!view) return "";
+        const sel = view.state.selection.main;
+        return sel.empty
+          ? view.state.sliceDoc(0)  // full content if no selection
+          : view.state.sliceDoc(sel.from, sel.to);
       },
       replaceCurrent(replacement) {
         const view = viewRef.current;
