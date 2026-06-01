@@ -51,6 +51,7 @@ type UseAppKeyboardFocusEffectsOptions = {
   onRequestWindowClose: () => unknown;
   onSaveActiveTab: () => unknown;
   onSaveActiveTabAs: () => unknown;
+  onToggleReviewDesk: () => void;
   pendingAppClose: boolean;
   pendingCloseTabOpen: boolean;
   preferencesCloseButtonRef: RefValue<{ focus: () => void }>;
@@ -97,6 +98,7 @@ export function useAppKeyboardFocusEffects({
   onRequestWindowClose,
   onSaveActiveTab,
   onSaveActiveTabAs,
+  onToggleReviewDesk,
   pendingAppClose,
   pendingCloseTabOpen,
   preferencesCloseButtonRef,
@@ -155,6 +157,7 @@ export function useAppKeyboardFocusEffects({
     onRequestWindowClose,
     onSaveActiveTab,
     onSaveActiveTabAs,
+    onToggleReviewDesk,
     selectedImageOpen,
     setEditorSettings,
     setFindVisible,

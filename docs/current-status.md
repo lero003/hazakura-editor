@@ -11,7 +11,8 @@ Last reviewed: 2026-06-01
 - Current public preview release is `v0.6.0` as a warning-expected DMG preview.
 - Current development lane is v0.7 Hazakura Review Desk Preview. Start with the read-only Review Desk Readiness Gate before adding Review Desk features.
 - v0.6 has 10/10 roadmap items implemented after the App.tsx split MVP, was published as a warning-expected DMG prerelease, and should remain immutable.
-- Latest v0.6 refactor slice grouped tab navigation and pointer reordering wiring in `src/hooks/useTabBarController.ts`; `src/App.tsx` is now 867 lines. Further refactor work should be justified by the v0.7 readiness gate or a concrete Review Desk implementation risk.
+- Latest v0.7 visible shell slice landed the Review Desk open/close state hook, the Cmd+Shift+R toggle, and a visible empty-state shell on the `chore/v0.7-review-desk-visible-shell` branch (R-4). No AI candidate / apply / decision log yet; that is the next slice. App.tsx remains a pure composition file (`src/App.tsx` is now 851 lines; the v0.6 `867` baseline shrank by 16 lines because the new `useReviewDeskState` + `useReviewDeskController` slice absorbs the toggle and reset wiring).
+- Latest v0.6 refactor slice grouped tab navigation and pointer reordering wiring in `src/hooks/useTabBarController.ts`; `src/App.tsx` was 867 lines. Further refactor work should be justified by the v0.7 readiness gate or a concrete Review Desk implementation risk.
 - External-agent implementation plus Codex review is now an explicit workflow in `docs/external-agent-review-workflow.md`: external agents may implement one approved slice, while Codex reviews findings-first before acceptance unless the user asks for review-and-fix.
 - Post-v0.5 planning notes now live under `docs/` as internal, low-authority planning memos. Public/product claims should still be taken from README plus the high-authority docs.
 - Markdown authoring feature readiness is now tracked in `docs/authoring-feature-readiness.md`; do not claim image paste, export, table editing, or Agent authoring beyond the implemented subset until those gaps are closed or explicitly deferred.
@@ -152,6 +153,15 @@ npm run build:vite
 npm run build
 git diff --check
 ```
+
+v0.7 Review Desk visible shell slice on 2026-06-01:
+
+- Added `src/hooks/useReviewDeskState.ts` (R-4 skeleton: `reviewDeskMode`, `pendingReviewCase`, `resetReviewDesk`) and `src/hooks/useReviewDeskController.ts` (`openReviewDesk`, `closeReviewDesk`, `toggleReviewDesk`).
+- Wired the no-op `Cmd+Shift+R` reservation from B-3 to the new `onToggleReviewDesk` handler in `src/hooks/useGlobalKeyboardShortcuts.ts`; IME composition and modal-open still bail out at the top of the handler.
+- Replaced the B-1 `<ReviewSurface>` placeholder with a visible empty-state shell: header + close button + a future slot for the B-2 `CompareCase`. CSS is added to `src/styles.css`; no existing class was renamed.
+- New `ReviewDeskCopy` / `getReviewDeskCopy` / `ReviewDeskMode` add English / Japanese copy for the new surface without touching `useLocalizedAppCopy`'s existing copy groups.
+- `App.tsx` is now 851 lines (the v0.6 `867` baseline shrank by 16). No existing compare / review / tab / workspace behavior path was changed; the only added App.tsx wiring is two hook calls and the `onToggleReviewDesk` plumbing.
+- `npm run typecheck`, `npm run build:vite`, `git diff --check`, `cargo test --manifest-path src-tauri/Cargo.toml` (85 tests passed; no Rust changes), and `npm run build` (full Tauri bundle regenerated) all passed for this slice. Built-app `Cmd+Shift+R` toggle smoke was not claimed in this automation environment (osascript keystroke dispatch was not permitted); the smoke row is recorded in `docs/smoke-checklist.md` for the user to run.
 
 v0.6 bug-check / planning-doc consolidation on 2026-06-01:
 

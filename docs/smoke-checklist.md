@@ -165,6 +165,23 @@ Latest Markdown Review Navigation UI polish checks: 2026-05-30 automated gates p
 
 Latest Pi provider allowlist checks: 2026-05-30 automated gates passed after adding `pi` to the Agent Workbench UI/backend provider allowlist. Local `command -v pi` returned no provider path in this automation environment, so real Pi trusted-workspace smoke remains provider-install dependent and was not claimed.
 
+Latest Review Desk visible shell checks: 2026-06-01 automated gates (`npm run typecheck`, `npm run build:vite`, `git diff --check`) passed after adding the visible Review Desk shell, the `Cmd+Shift+R` toggle, and the `useReviewDeskState` / `useReviewDeskController` skeleton. No fresh built-app toggle smoke was claimed in this session.
+
+## Review Desk Visible Shell
+
+Run on the built app from `src-tauri/target/release/bundle/macos/hazakura editor.app` after `npm run build`, or on the Vite dev server.
+
+1. Launch the app and confirm the normal workspace / editor area renders as before.
+2. Open one or more throwaway Markdown files and confirm tabs, preview, outline, diff, and agent toggles in the top editor chrome still work.
+3. Press `Cmd+Shift+R` (or `Ctrl+Shift+R` on non-mac) and confirm the editor area is replaced by a Review Desk surface with the title `Review Desk`, an English / Japanese localized empty-state card, and a future-slot note.
+4. Confirm the regular workspace (file tree, tabs, editor, side pane) is not visible while Review Desk is open, and the status bar still shows underneath.
+5. Press `Cmd+Shift+R` again and confirm Review Desk closes and the normal workspace returns to the same tab state.
+6. Click the Review Desk close button (top right) and confirm the same return-to-workspace behavior.
+7. Open a Preferences or Quick Open dialog, focus the dialog, press `Cmd+Shift+R`, and confirm the dialog stays open and the global shortcut does not toggle Review Desk (existing modal-open bail out).
+8. Focus a Japanese IME in any text field, press `Cmd+Shift+R` during composition, and confirm the WebView does not toggle Review Desk (existing IME composing bail out).
+9. Confirm the existing compare / review path still works: open Diff in the top editor chrome, pick a source and target file, run Compare, close the comparison, and return to the editor. Review Desk is not involved in this flow.
+10. Confirm the AI candidate / apply flow is not yet reachable: there is no candidate button, no decision log area, and no persistent storage under `.hazakura/reviews/`.
+
 ## Build First
 
 ```bash

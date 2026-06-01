@@ -34,6 +34,7 @@ type UseGlobalKeyboardShortcutsOptions = {
   onRequestWindowClose: () => unknown;
   onSaveActiveTab: () => unknown;
   onSaveActiveTabAs: () => unknown;
+  onToggleReviewDesk: () => void;
   selectedImageOpen: boolean;
   setEditorSettings: Dispatch<SetStateAction<EditorSettings>>;
   setFindVisible: Dispatch<SetStateAction<boolean>>;
@@ -62,6 +63,7 @@ export function useGlobalKeyboardShortcuts({
   onRequestWindowClose,
   onSaveActiveTab,
   onSaveActiveTabAs,
+  onToggleReviewDesk,
   selectedImageOpen,
   setEditorSettings,
   setFindVisible,
@@ -125,9 +127,13 @@ export function useGlobalKeyboardShortcuts({
       }
 
       if (isCommandShiftShortcut(event, "r")) {
-        // Reserved for the Review Desk entry point. See
-        // docs/reviews/v0.7-review-desk-design-decisions.md (B-3).
+        // Review Desk entry point. Cmd+Shift+R toggles the v0.7
+        // review surface that replaces the editor area. IME
+        // composition and modal open are already bailed out at the
+        // top of this handler. See
+        // docs/reviews/v0.7-review-desk-design-decisions.md (B-3, R-4).
         event.preventDefault();
+        onToggleReviewDesk();
         return;
       }
 
@@ -264,6 +270,7 @@ export function useGlobalKeyboardShortcuts({
     onRequestWindowClose,
     onSaveActiveTab,
     onSaveActiveTabAs,
+    onToggleReviewDesk,
     selectedImageOpen,
     setEditorSettings,
     setFindVisible,

@@ -31,6 +31,8 @@ import { useWorkspaceShellState } from "./hooks/useWorkspaceShellState";
 import { useEditorSelectionState } from "./hooks/useEditorSelectionState";
 import { useAppDialogState } from "./hooks/useAppDialogState";
 import { useAppViewState } from "./hooks/useAppViewState";
+import { useReviewDeskState } from "./hooks/useReviewDeskState";
+import { useReviewDeskController } from "./hooks/useReviewDeskController";
 import { useDraftRecoveryState } from "./hooks/useDraftRecoveryState";
 import { useAppFeedbackState } from "./hooks/useAppFeedbackState";
 import { useEditorTabsState } from "./hooks/useEditorTabsState";
@@ -61,8 +63,16 @@ export default function App() {
     setPendingCloseTabId,
     setPreferencesDialogMode,
   } = useAppDialogState();
-  const { rightPaneMode, setRightPaneMode, setZenMode, zenMode, reviewSurface } =
+  const { rightPaneMode, setRightPaneMode, setReviewSurface, setZenMode, zenMode, reviewSurface } =
     useAppViewState();
+  const {
+    reviewDeskMode,
+    resetReviewDesk,
+  } = useReviewDeskState();
+  const { toggleReviewDesk, closeReviewDesk } = useReviewDeskController({
+    resetReviewDesk,
+    setReviewSurface,
+  });
   const { pendingDrafts, setPendingDrafts } = useDraftRecoveryState();
   const { globalError, setGlobalError, setStatus, status } =
     useAppFeedbackState();
@@ -199,6 +209,7 @@ export default function App() {
     editorChromeCopy,
     preferencesCopy,
     recoveryCopy,
+    reviewDeskCopy,
     safeEditorCopy,
     sidePaneCopy,
   } = useLocalizedAppCopy({
@@ -628,6 +639,7 @@ export default function App() {
       onRequestWindowClose: requestWindowClose,
       onSaveActiveTab: saveActiveTab,
       onSaveActiveTabAs: saveActiveTabAs,
+      onToggleReviewDesk: toggleReviewDesk,
       pendingAppClose,
       pendingCloseTabOpen,
       preferencesCloseButtonRef,
@@ -734,6 +746,7 @@ export default function App() {
     menuLanguage,
     onApplyMarkdownFormat: applyActiveMarkdownFormat,
     onCheckAgentGate: requestAgentLaunchGateCheck,
+    onCloseReviewDesk: closeReviewDesk,
     onCloseTab: requestCloseTab,
     onConvertLineEnding: convertActiveLineEnding,
     onFinishTabPointerDrag: finishTabPointerDrag,
@@ -778,6 +791,8 @@ export default function App() {
     replaceQuery,
     resolvedTheme,
     restartAppForAgentMode,
+    reviewDeskCopy,
+    reviewDeskMode,
     reviewDraftAgainstDisk: requestReviewDraftAgainstDisk,
     reviewSurface,
     reviewTabAgainstDisk: requestReviewTabAgainstDisk,

@@ -160,6 +160,16 @@ export type AgentWorkbenchCopy = {
   modeBadgeTitle: string;
 };
 
+export type ReviewDeskCopy = {
+  close: string;
+  closeTitle: string;
+  emptyBody: string;
+  emptyIntro: string;
+  futureSlotHint: string;
+  surfaceLabel: string;
+  title: string;
+};
+
 // ── Accessors ──
 
 export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
@@ -472,5 +482,33 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
         modeBadgePending: "Agent Mode: restart pending",
         modeBadgeTitle:
           "Agent Workbench is a separate trust boundary from Safe Editor Mode.",
+      };
+}
+
+export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
+  return lang === "ja"
+    ? {
+        close: "閉じる",
+        closeTitle: "Review Desk を閉じる",
+        emptyBody:
+          "AI 候補、ファイル比較、変更確認、下書き復元などの review ケースは、まだここに届きません。",
+        emptyIntro:
+          "Review Desk は、エディタ領域を置き換える独立した review サーフェスです。",
+        futureSlotHint:
+          "ここに B-2 で導入した CompareCase（ファイル比較・変更確認・AI 候補）を表示する領域を後続スライスで接続します。",
+        surfaceLabel: "Review Desk",
+        title: "Review Desk",
+      }
+    : {
+        close: "Close",
+        closeTitle: "Close Review Desk",
+        emptyBody:
+          "AI candidates, file comparisons, change reviews, and draft restores do not arrive here yet.",
+        emptyIntro:
+          "Review Desk is a dedicated review surface that replaces the editor area.",
+        futureSlotHint:
+          "A later slice will mount the B-2 CompareCase view (file comparison, change review, or AI candidate) in this region.",
+        surfaceLabel: "Review Desk",
+        title: "Review Desk",
       };
 }

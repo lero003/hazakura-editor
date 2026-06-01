@@ -82,6 +82,12 @@ export type RightPaneMode = "preview" | "compare" | "outline" | "agent";
 // (B-1) and docs/reviews/v0.7-readiness-gate.md (R-1).
 export type ReviewSurface = "review" | null;
 
+// Review Desk internal surface mode. Today only the empty state is
+// reachable; future slices will add the AI candidate / change review
+// / draft review / conflict review modes through the same enum. See
+// docs/reviews/v0.7-review-desk-design-decisions.md (R-4).
+export type ReviewDeskMode = "empty";
+
 export type MenuLanguage = "en" | "ja";
 
 export type PreferencesDialogMode = "settings" | "agent";

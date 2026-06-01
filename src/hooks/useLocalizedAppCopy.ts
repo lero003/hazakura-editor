@@ -4,6 +4,7 @@ import {
   getEditorChromeCopy,
   getPreferencesCopy,
   getRecoveryCopy,
+  getReviewDeskCopy,
   getSafeEditorCopy,
   getSidePaneCopy,
 } from "../locale";
@@ -37,6 +38,7 @@ export function useLocalizedAppCopy({
       editorChromeCopy: getEditorChromeCopy(menuLanguage),
       preferencesCopy: getPreferencesCopy(menuLanguage),
       recoveryCopy: getRecoveryCopy(menuLanguage),
+      reviewDeskCopy: getReviewDeskCopy(menuLanguage),
       safeEditorCopy: getSafeEditorCopy(menuLanguage),
       sidePaneCopy: getSidePaneCopy(menuLanguage),
     };
