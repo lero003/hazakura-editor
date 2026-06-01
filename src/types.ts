@@ -76,6 +76,12 @@ export type LineEndingKind = EditableLineEnding | "mixed" | "none";
 
 export type RightPaneMode = "preview" | "compare" | "outline" | "agent";
 
+// Review Desk is a top-level review surface that intentionally replaces
+// the editor area when open, separate from RightPaneMode which lives
+// next to the editor. See docs/reviews/v0.7-review-desk-design-decisions.md
+// (B-1) and docs/reviews/v0.7-readiness-gate.md (R-1).
+export type ReviewSurface = "review" | null;
+
 export type MenuLanguage = "en" | "ja";
 
 export type PreferencesDialogMode = "settings" | "agent";

@@ -61,7 +61,7 @@ export default function App() {
     setPendingCloseTabId,
     setPreferencesDialogMode,
   } = useAppDialogState();
-  const { rightPaneMode, setRightPaneMode, setZenMode, zenMode } =
+  const { rightPaneMode, setRightPaneMode, setZenMode, zenMode, reviewSurface } =
     useAppViewState();
   const { pendingDrafts, setPendingDrafts } = useDraftRecoveryState();
   const { globalError, setGlobalError, setStatus, status } =
@@ -772,9 +772,10 @@ export default function App() {
     replaceOne,
     replaceQuery,
     resolvedTheme,
-    reviewDraftAgainstDisk: requestReviewDraftAgainstDisk,
-    reviewTabAgainstDisk: requestReviewTabAgainstDisk,
     restartAppForAgentMode,
+    reviewDraftAgainstDisk: requestReviewDraftAgainstDisk,
+    reviewSurface,
+    reviewTabAgainstDisk: requestReviewTabAgainstDisk,
     restoreDraft,
     revealWorkspacePath,
     runSelectedFileCompare,
