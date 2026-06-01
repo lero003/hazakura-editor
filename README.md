@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-06-01
+Last reviewed: 2026-06-02
 
 `hazakura editor` は、Markdownを中心に安全にテキストを読む・書く・比べるための軽量エディタです。
 
@@ -21,7 +21,7 @@ Last reviewed: 2026-06-01
 
 ![hazakura editor Agent Workbench mode](docs/images/pre0.2-agent-mode.png)
 
-## 0.6 Preview Summary
+## 0.7 Preview Summary
 
 Use this when you want to:
 
@@ -30,6 +30,7 @@ Use this when you want to:
 - preview sanitized Markdown with local image asset rendering
 - preserve LF / CRLF and final-newline behavior
 - compare text files and review local changes without Git awareness
+- review pasted candidate text in Review Desk, compare it against the active buffer, and explicitly apply it without auto-saving
 - notice save conflicts and external changes before overwriting
 - paste or drag-drop images into `assets/` for inline Markdown references
 - export content as standalone HTML or use Print to PDF
@@ -49,9 +50,9 @@ Example use case:
 2. Read README, docs, or notes through the file tree.
 3. Edit a Markdown or text file, with optional image paste / drag-drop.
 4. Preview sanitized Markdown including local asset images.
-5. Compare files or review local changes before deciding what to keep.
-6. Export to HTML or print to PDF.
-7. Save only after conflict checks.
+5. Compare files, review local changes, or use Review Desk to check candidate text before deciding what to keep.
+6. Apply reviewed candidate text only by explicit action, then save only when you are ready.
+7. Export to HTML or print to PDF.
 8. Use another tool for Git, terminal, build, test, or commit.
 
 ## Current Decision
@@ -87,6 +88,8 @@ Example use case:
 - In-file search for the active tab, with visible match highlights, active-match selection, and keyboard next / previous / return-to-editor flow
 - Search options for case-sensitive, whole-word, and regex matching with invalid-regex reporting
 - Explicit non-Git split Diff workbench for comparing workspace text files by choosing separate source/target slots, plus active editor changes versus disk, recoverable drafts, and external-change conflicts, without inspecting Git repository state
+- Review Desk MVP for manual candidate review: visible entry button, View menu item, shortcut/slash entry points, candidate paste area, explicit compare, explicit apply-to-buffer, and stale-candidate guards for tab switches, buffer edits, candidate edits, and failed comparisons
+- Slash menu commands for opening Review Desk and inserting a Markdown shortcut list, with keyboard execution via Enter or Tab
 - Markdown file comparisons show heading context before changed blocks when a nearby ATX heading is available
 - Current-file Markdown outline and current-position context with click-to-jump navigation, transient scroll position HUD, and a visible cap note for very large outlines, without workspace-wide indexing
 - Markdown preview can open relative links to supported text files inside the selected workspace, without opening absolute paths or external URLs
@@ -177,10 +180,10 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current intended preview version is `0.6.0` across npm, Tauri, and Cargo metadata.
+- Current release-candidate version is `0.7.0` across npm, Tauri, and Cargo metadata.
 - Source users build locally with `npm ci` and `npm run build`.
 - The generated local `.app` declares macOS 11.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. It is not Developer ID signed or notarized.
-- The v0.6 warning-expected DMG preview is published as a prerelease at [v0.6.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.6.0), with notes in [0.6.0 Warning-expected DMG Preview](docs/releases/0.6.0-warning-expected-dmg-preview.release.md).
+- The latest published warning-expected DMG preview remains [v0.6.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.6.0) until the v0.7.0 tag and GitHub Release are explicitly created. The v0.7 release-note draft is [0.7.0 Warning-expected DMG Preview](docs/releases/0.7.0-warning-expected-dmg-preview.release.md).
 - Future tag creation, push, and GitHub Release publication require explicit user approval.
 
 ## Known Limits
@@ -189,6 +192,7 @@ Developer preview release boundary:
 - The file tree is a workspace browser, not an index. Very large directories are capped per folder and may show only the first visible entries.
 - Workspace image preview is intentionally bounded to local PNG/JPEG/GIF/WebP files up to 20 MB.
 - Save conflicts are recoverable by reviewing changes, reopening, closing, or keeping local edits, and text comparison remains file/workspace based, but there is no merge editor, advanced diff, or Git status view.
+- Review Desk candidate review is manual and explicit. It does not persist review logs, save candidate documents automatically, auto-apply Agent output, or replace Git/merge workflows.
 - The app is not signed or notarized with an Apple Developer ID.
 - Agent Workbench is optional and explicit. It does not provide a general shell prompt, arbitrary command input UI, arbitrary path input UI, provider-add UI, multiple sessions, session restore, auto-apply, auto-commit, or Git integration.
 - CLI provider internals are outside hazakura's safety boundary. What happens inside `codex`, `opencode`, or `pi` depends on the provider and the user's choices.

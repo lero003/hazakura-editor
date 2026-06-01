@@ -71,6 +71,7 @@ export function useCompareExecution({
           caseKey,
           ...diff,
         });
+        setRightPaneMode("compare");
         setStatus("Change review ready");
       } catch (err) {
         const message = String(err);
@@ -80,7 +81,14 @@ export function useCompareExecution({
         setStatus("Change review failed");
       }
     },
-    [menuLanguage, setCompareCaseEntry, setCompareView, setGlobalError, setStatus],
+    [
+      menuLanguage,
+      setCompareCaseEntry,
+      setCompareView,
+      setGlobalError,
+      setRightPaneMode,
+      setStatus,
+    ],
   );
 
   const reviewDraftAgainstDisk = useCallback(
@@ -109,6 +117,7 @@ export function useCompareExecution({
           caseKey,
           ...diff,
         });
+        setRightPaneMode("compare");
         setStatus("Change review ready");
       } catch (err) {
         const message = String(err);
@@ -118,7 +127,14 @@ export function useCompareExecution({
         setStatus("Change review failed");
       }
     },
-    [menuLanguage, setCompareCaseEntry, setCompareView, setGlobalError, setStatus],
+    [
+      menuLanguage,
+      setCompareCaseEntry,
+      setCompareView,
+      setGlobalError,
+      setRightPaneMode,
+      setStatus,
+    ],
   );
 
   const requestReviewTabAgainstDisk = useCallback(
