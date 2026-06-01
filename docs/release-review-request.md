@@ -51,6 +51,7 @@ Keep the product boundary intact:
 | `npm run build` | Passed; Vite chunk-size warning remains expected |
 | `npm audit --json` | Passed: 0 vulnerabilities |
 | `cargo audit --file src-tauri/Cargo.lock --json` | Passed: 0 vulnerabilities; informational warnings remain for transitive GTK3/unic/proc-macro-error/glib crates |
+| GitHub Dependabot alert #1 | Open: `GHSA-wrw7-89jp-8q8g` / `glib 0.18.5` in `src-tauri/Cargo.lock`; matches the known RustSec informational `glib::VariantStrIter` warning and is not treated as a macOS warning-expected preview blocker |
 | `codesign --verify --deep --strict --verbose=2 "src-tauri/target/release/bundle/macos/hazakura editor.app"` | Passed |
 | Built app bundle version inspection | Reports `0.6.0` / `lab.hazakura.note` / `hazakura editor` / `hazakura-editor` |
 | `SKIP_BUILD=1 npm run build:dmg-preview` | Passed; generated `hazakura-editor_0.6.0_aarch64-warning-expected.dmg` |
@@ -63,7 +64,7 @@ Keep the product boundary intact:
 ## Known Pre-Release Gaps
 
 1. Remote GitHub Release verification is not applicable yet because no v0.6 tag or assets exist.
-2. GitHub reported 1 moderate Dependabot alert after the source push, while local `npm audit` and `cargo audit` found 0 vulnerabilities. Inspect the GitHub alert before tagging so the release decision records whether it is stale, informational, or actionable.
+2. GitHub Dependabot alert #1 remains open for `GHSA-wrw7-89jp-8q8g` / `glib 0.18.5`. This is a known transitive Tauri/wry GTK3-stack warning rather than a v0.6 macOS warning-expected preview blocker, but it should stay visible for future dependency-refresh review.
 
 ## Reviewer Focus
 
@@ -76,10 +77,9 @@ Keep the product boundary intact:
 
 1. Stop v0.6 refactoring here unless a release-blocking bug appears.
 2. Review the pushed v0.6 refactor, rename, and release-prep commit.
-3. Inspect the GitHub Dependabot alert and record the release decision.
-4. Publish as a prerelease only after approval, then remote-download and verify the uploaded assets.
+3. Publish as a prerelease only after approval, then remote-download and verify the uploaded assets.
 
 ## Current Recommendation
 
 Proceed to v0.6 release preparation, but do not tag or publish yet.
-The local code gates, dependency audits, warning-expected DMG generation, checksum verification, mounted-app metadata check, codesign check, expected Gatekeeper rejection, and focused UI smoke now pass. Remaining work is source-branch review, GitHub alert triage, release approval, publication, and remote asset verification.
+The local code gates, dependency audits, GitHub alert triage, warning-expected DMG generation, checksum verification, mounted-app metadata check, codesign check, expected Gatekeeper rejection, and focused UI smoke now pass. Remaining work is source-branch review, release approval, publication, and remote asset verification.
