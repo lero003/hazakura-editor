@@ -168,6 +168,8 @@ Latest Review Desk shortcut-close reset polish checks: 2026-06-01 automated gate
 
 Latest Review Desk stale candidate preview safety checks: 2026-06-01 code inspection found that a failed manual candidate comparison could leave the previous successful preview and Apply candidate action available. The failure path now clears the stale preview while preserving the candidate textarea for retry. Vite browser smoke was blocked by the local browser policy for `http://127.0.0.1:1420/`; Tauri dev launch succeeded, but Computer Use access to `hazakura editor` was denied, so no manual UI smoke is claimed for this row.
 
+Latest Review Desk candidate edit safety checks: 2026-06-01 code inspection found that editing the manual candidate textarea after a successful Compare left the old preview and Apply candidate action available. The input-change path now clears the preview, error, and Apply action so the edited candidate must be compared again before applying. Vite browser smoke was attempted, but `http://127.0.0.1:1420/` was blocked by the local browser policy; no manual UI smoke is claimed for this row.
+
 ## Review Desk Manual Candidate Review
 
 Run on the built app from `src-tauri/target/release/bundle/macos/hazakura editor.app` after `npm run build`, or on the Vite dev server. The Review Desk manual candidate MVP adds a paste area, diff preview, and explicit apply-to-buffer action inside the existing Review Desk surface; it does not move the right-pane compare route and it does not save files automatically.

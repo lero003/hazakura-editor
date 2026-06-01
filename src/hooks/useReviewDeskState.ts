@@ -40,6 +40,9 @@ export function useReviewDeskState() {
 
   const setCandidateInputText = useCallback((value: string) => {
     setCandidateInputTextState(value);
+    setCandidateCompareCaseState(null);
+    setCandidateCompareViewState(null);
+    setCandidateErrorMessageState(null);
   }, []);
 
   const setCandidateCompare = useCallback(
