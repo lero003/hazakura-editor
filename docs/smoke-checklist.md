@@ -164,6 +164,8 @@ Latest Review Desk manual candidate MVP checks: 2026-06-01 automated gates (`npm
 
 Latest Review Desk manual candidate apply checks: 2026-06-01 automated gates (`npm run typecheck`, `npm run build:vite`, `git diff --check`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build`) passed after adding Apply candidate. No fresh built-app manual apply smoke was claimed in this run because an existing hazakura editor process was already active; use the checklist below to verify the UI path.
 
+Latest Review Desk shortcut-close reset polish checks: 2026-06-01 automated gates passed after aligning the `Cmd+Shift+R` / `Ctrl+Shift+R` close path with the close-button reset behavior for manual candidate input, diff preview, and error state. No fresh built-app manual shortcut smoke was claimed in this run.
+
 ## Review Desk Manual Candidate Review
 
 Run on the built app from `src-tauri/target/release/bundle/macos/hazakura editor.app` after `npm run build`, or on the Vite dev server. The Review Desk manual candidate MVP adds a paste area, diff preview, and explicit apply-to-buffer action inside the existing Review Desk surface; it does not move the right-pane compare route and it does not save files automatically.
@@ -178,11 +180,12 @@ Run on the built app from `src-tauri/target/release/bundle/macos/hazakura editor
 8. Save the active tab and confirm the normal save flow persists the applied candidate text.
 9. Edit the candidate textarea again, press Compare again, and confirm the diff preview updates to the new content.
 10. Press Clear and confirm the textarea and the diff preview are both reset to the empty state.
-11. Close the Review Desk with the close button, reopen it with `Cmd+Shift+R`, and confirm the previous candidate input and diff are gone (reset path).
-12. With Review Desk open and no editor tab active, confirm the textarea, Compare, and Apply candidate are disabled and a "No editor tab is open to compare" note is visible.
-13. Confirm the right-pane compare route is unchanged: open Diff in the top editor chrome, pick a source and target file, run Compare, and confirm the right pane shows the existing file comparison view (not the candidate preview).
-14. Confirm the existing buffer-vs-disk / draft-vs-disk review paths still work through the right pane and do not leak into the Review Desk surface.
-15. Confirm the Japanese / English menu language switch in Preferences still localizes the new Review Desk copy (input label, hint, placeholder, Compare / Apply candidate / Clear, empty heading, preview title).
+11. Close the Review Desk with the close button, reopen it with `Cmd+Shift+R`, and confirm the previous candidate input and diff are gone (close-button reset path).
+12. Re-enter a candidate, run Compare, close Review Desk with `Cmd+Shift+R` / `Ctrl+Shift+R`, reopen it, and confirm the candidate input, diff preview, and error state are gone (shortcut reset path).
+13. With Review Desk open and no editor tab active, confirm the textarea, Compare, and Apply candidate are disabled and a "No editor tab is open to compare" note is visible.
+14. Confirm the right-pane compare route is unchanged: open Diff in the top editor chrome, pick a source and target file, run Compare, and confirm the right pane shows the existing file comparison view (not the candidate preview).
+15. Confirm the existing buffer-vs-disk / draft-vs-disk review paths still work through the right pane and do not leak into the Review Desk surface.
+16. Confirm the Japanese / English menu language switch in Preferences still localizes the new Review Desk copy (input label, hint, placeholder, Compare / Apply candidate / Clear, empty heading, preview title).
 
 
 ## Review Desk Visible Shell

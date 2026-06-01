@@ -9,11 +9,13 @@ import type { ReviewSurface } from "../types";
 // docs/reviews/v0.7-review-desk-design-decisions.md (R-4) and
 // docs/reviews/v0.7-readiness-gate.md (R-1).
 type UseReviewDeskControllerOptions = {
+  reviewSurface: ReviewSurface;
   resetReviewDesk: () => void;
   setReviewSurface: Dispatch<SetStateAction<ReviewSurface>>;
 };
 
 export function useReviewDeskController({
+  reviewSurface,
   resetReviewDesk,
   setReviewSurface,
 }: UseReviewDeskControllerOptions) {
@@ -27,8 +29,14 @@ export function useReviewDeskController({
   }, [resetReviewDesk, setReviewSurface]);
 
   const toggleReviewDesk = useCallback(() => {
-    setReviewSurface((current) => (current === null ? "review" : null));
-  }, [setReviewSurface]);
+    if (reviewSurface === null) {
+      setReviewSurface("review");
+      return;
+    }
+
+    resetReviewDesk();
+    setReviewSurface(null);
+  }, [resetReviewDesk, reviewSurface, setReviewSurface]);
 
   return {
     closeReviewDesk,

@@ -85,6 +85,7 @@ export default function App() {
     setCandidateInputText,
   } = useReviewDeskState();
   const { toggleReviewDesk, closeReviewDesk } = useReviewDeskController({
+    reviewSurface,
     resetReviewDesk,
     setReviewSurface,
   });
