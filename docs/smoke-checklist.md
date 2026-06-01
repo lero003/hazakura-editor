@@ -675,6 +675,17 @@ Binary-looking files, files above the prototype editing limit, line-ending prese
 cargo test --manifest-path src-tauri/Cargo.toml
 ```
 
+## Review Desk Reservation Smoke
+
+The `Cmd+Shift+R` (mac) / `Ctrl+Shift+R` (non-mac) shortcut is reserved
+for the future Review Desk entry point. The reservation ships as a
+no-op handler in `useGlobalKeyboardShortcuts.ts` that calls
+`event.preventDefault()` so the WebView does not reload.
+
+| Action | Expected | Pass |
+| --- | --- | --- |
+| Press `Cmd+Shift+R` while a tab is open | WebView does not reload, no review surface opens yet, no status bar change | ☐ |
+
 ## Final Local Gates
 
 Before committing a release-readiness or quality-hardening slice, run:

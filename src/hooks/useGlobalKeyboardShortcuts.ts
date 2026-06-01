@@ -124,6 +124,13 @@ export function useGlobalKeyboardShortcuts({
         return;
       }
 
+      if (isCommandShiftShortcut(event, "r")) {
+        // Reserved for the Review Desk entry point. See
+        // docs/reviews/v0.7-review-desk-design-decisions.md (B-3).
+        event.preventDefault();
+        return;
+      }
+
       if (isCommandShiftShortcut(event, "w")) {
         event.preventDefault();
         void onRequestWindowClose();
