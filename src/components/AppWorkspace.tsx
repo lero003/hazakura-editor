@@ -10,7 +10,7 @@ import { EditorMainPane } from "./EditorMainPane";
 import { PaneResizer } from "./PaneResizer";
 import { SidePane } from "./SidePane";
 import { WorkspaceSidebar } from "./WorkspaceSidebar";
-import type { SafeEditorCopy, SidePaneCopy } from "../locale";
+import type { SafeEditorCopy, SidePaneCopy, SlashMenuCopy } from "../locale";
 import type {
   AgentWorkbenchOutputChunk,
   AgentWorkbenchProvider,
@@ -110,6 +110,8 @@ type AppWorkspaceProps = {
   selectWorkspaceCompareFile: (entry: WorkspaceTreeEntry) => void;
   setSelectionInfo: (selection: EditorSelectionInfo) => void;
   sidePaneCopy: SidePaneCopy;
+  slashCommands: import("../types/slash").SlashCommand[];
+  slashMenuCopy: SlashMenuCopy;
   sidePaneMode: RightPaneMode | null;
   sidePaneVisible: boolean;
   syncEditorScroll: () => void;
@@ -183,6 +185,8 @@ export function AppWorkspace({
   selectWorkspaceCompareFile,
   setSelectionInfo,
   sidePaneCopy,
+  slashCommands,
+  slashMenuCopy,
   sidePaneMode,
   sidePaneVisible,
   syncEditorScroll,
@@ -245,6 +249,8 @@ export function AppWorkspace({
           scrollHudVisible={scrollHudVisible}
           searchMatches={findMatches}
           selectedImage={selectedImage}
+          slashCommands={slashCommands}
+          slashMenuCopy={slashMenuCopy}
           workspaceRootPath={workspaceRootPath}
         />
         {sidePaneVisible ? (

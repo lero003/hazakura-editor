@@ -8,7 +8,6 @@ import type {
   SidePaneCopy,
 } from "../locale";
 import type {
-  EditableLineEnding,
   EditorTab,
   RightPaneMode,
 } from "../types";
@@ -27,9 +26,7 @@ type AppTopChromeProps = {
   emptyTabsLabel: string;
   onApplyMarkdownFormat: (format: MarkdownFormat) => void;
   onCloseTab: (tabId: string) => void;
-  onConvertLineEnding: (lineEnding: EditableLineEnding) => void;
   onFinishTabPointerDrag: (target?: EventTarget | null) => void;
-  onInsertTable: () => void;
   onPointerEnter: () => void;
   onReviewChanges: (tab: EditorTab) => void;
   onSelectTab: (tabId: string) => void;
@@ -63,9 +60,7 @@ export function AppTopChrome({
   emptyTabsLabel,
   onApplyMarkdownFormat,
   onCloseTab,
-  onConvertLineEnding,
   onFinishTabPointerDrag,
-  onInsertTable,
   onPointerEnter,
   onReviewChanges,
   onSelectTab,
@@ -104,11 +99,9 @@ export function AppTopChrome({
         activeTab={activeTab}
         agentAvailable={agentAvailable}
         agentPaneActive={sidePaneMode === "agent"}
-        copy={editorChromeCopy}
         diffPaneActive={sidePaneMode === "compare"}
+        markdownQuickActionsCopy={editorChromeCopy}
         onApplyMarkdownFormat={onApplyMarkdownFormat}
-        onConvertLineEnding={onConvertLineEnding}
-        onInsertTable={onInsertTable}
         onReviewChanges={onReviewChanges}
         onToggleAgent={onToggleAgent}
         onToggleDiff={onToggleDiff}

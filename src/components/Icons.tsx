@@ -70,6 +70,45 @@ export function ImageFileIcon() {
   );
 }
 
+export function PreviewIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M1.5 8C2.5 5 5 3 8 3C11 3 13.5 5 14.5 8C13.5 11 11 13 8 13C5 13 2.5 11 1.5 8Z" stroke="currentColor" strokeWidth="1.3"/>
+      <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.3"/>
+    </svg>
+  );
+}
+
+export function DiffIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="3" width="5" height="10" rx="0.8" stroke="currentColor" strokeWidth="1.2"/>
+      <rect x="9" y="3" width="5" height="10" rx="0.8" stroke="currentColor" strokeWidth="1.2"/>
+      <path d="M3 6H6M3 8H6M3 10H5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
+      <path d="M10 6H13M10 8H13M10 10H12" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+export function OutlineIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2.5 4H13.5M2.5 8H13.5M2.5 12H10.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+      <circle cx="1.7" cy="4" r="0.7" fill="currentColor"/>
+      <circle cx="1.7" cy="8" r="0.7" fill="currentColor"/>
+      <circle cx="1.7" cy="12" r="0.7" fill="currentColor"/>
+    </svg>
+  );
+}
+
+export function AgentIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 1.5L9.5 5.5L13.5 6.5L10.5 9.5L11.5 13.5L8 11.5L4.5 13.5L5.5 9.5L2.5 6.5L6.5 5.5Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
 export function ChevronIcon({ expanded }: { expanded: boolean }) {
   return (
     <svg

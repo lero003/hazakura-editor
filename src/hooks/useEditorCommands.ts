@@ -3,28 +3,47 @@ import {
   type RefObject,
   type SetStateAction,
   useCallback,
+  useMemo,
 } from "react";
 import type {
   EditorPaneHandle,
   MarkdownFormat,
 } from "../components/EditorPane";
-import type { EditableLineEnding, EditorTab, MarkdownHeading } from "../types";
+import type {
+  DraftRecord,
+  EditableLineEnding,
+  EditorTab,
+  MarkdownHeading,
+} from "../types";
+import type { SlashCommand } from "../types/slash";
 import { normalizeTextLineEndings } from "../utils";
 import { formatLineEndingKind } from "./useDocumentStatus";
 import { markdownFormatStatus } from "../statusMessages";
 
 type UseEditorCommandsOptions = {
+  activeDraft: DraftRecord | null;
   activeTab: EditorTab | null;
   activeTabId: string | null;
+  agentWorkbenchActive: boolean;
   editorPaneRef: RefObject<EditorPaneHandle | null>;
+  handleSendSelectionToAgent: (text: string) => void;
+  menuLanguage: "ja" | "en";
+  requestReviewDraftAgainstDisk: (tab: EditorTab, draft: DraftRecord) => void;
+  requestReviewTabAgainstDisk: (tab: EditorTab) => void;
   setStatus: (message: string) => void;
   setTabs: Dispatch<SetStateAction<EditorTab[]>>;
 };
 
 export function useEditorCommands({
+  activeDraft,
   activeTab,
   activeTabId,
+  agentWorkbenchActive,
   editorPaneRef,
+  handleSendSelectionToAgent,
+  menuLanguage,
+  requestReviewDraftAgainstDisk,
+  requestReviewTabAgainstDisk,
   setStatus,
   setTabs,
 }: UseEditorCommandsOptions) {
@@ -112,6 +131,154 @@ export function useEditorCommands({
     [activeTab, editorPaneRef, setStatus],
   );
 
+  const slashCommands = useMemo<SlashCommand[]>(() => {
+    const ja = menuLanguage === "ja";
+    const commands: SlashCommand[] = [
+      {
+        category: "markdown",
+        hint: "h1, #",
+        id: "heading-1",
+        insertText: "# ",
+        label: ja ? "見出し 1" : "Heading 1",
+        searchKeys: ["h1", "heading-1", "heading 1", "#", "見出し1", "見出し 1"],
+      },
+      {
+        category: "markdown",
+        hint: "h2, ##",
+        id: "heading-2",
+        insertText: "## ",
+        label: ja ? "見出し 2" : "Heading 2",
+        searchKeys: ["h2", "heading-2", "heading 2", "##", "見出し2", "見出し 2"],
+      },
+      {
+        category: "markdown",
+        hint: "h3, ###",
+        id: "heading-3",
+        insertText: "### ",
+        label: ja ? "見出し 3" : "Heading 3",
+        searchKeys: ["h3", "heading-3", "heading 3", "###", "見出し3", "見出し 3"],
+      },
+      {
+        category: "markdown",
+        hint: "ul, -",
+        id: "bullet-list",
+        insertText: "- ",
+        label: ja ? "箇条書き" : "Bullet list",
+        searchKeys: ["ul", "bullet", "list", "-", "箇条書き", "リスト"],
+      },
+      {
+        category: "markdown",
+        hint: "ol, 1.",
+        id: "numbered-list",
+        insertText: "1. ",
+        label: ja ? "番号付きリスト" : "Numbered list",
+        searchKeys: ["ol", "numbered", "1.", "番号", "番号付き"],
+      },
+      {
+        category: "markdown",
+        hint: "task, [ ]",
+        id: "task-list",
+        insertText: "- [ ] ",
+        label: ja ? "タスクリスト" : "Task list",
+        searchKeys: ["task", "todo", "[]", "[ ]", "タスク", "チェック"],
+      },
+      {
+        category: "markdown",
+        hint: ">",
+        id: "quote",
+        insertText: "> ",
+        label: ja ? "引用" : "Quote",
+        searchKeys: ["quote", "blockquote", ">", "引用"],
+      },
+      {
+        category: "markdown",
+        hint: "```",
+        id: "code-block",
+        insertText: "```\n\n```\n",
+        label: ja ? "コードブロック" : "Code block",
+        searchKeys: ["code", "codeblock", "fence", "```", "コード"],
+      },
+      {
+        category: "markdown",
+        hint: "---",
+        id: "divider",
+        insertText: "\n---\n",
+        label: ja ? "区切り線" : "Divider",
+        searchKeys: ["divider", "hr", "horizontal rule", "---", "区切り"],
+      },
+      {
+        category: "markdown",
+        hint: "tbl",
+        id: "table",
+        insertText: "| Col 1 | Col 2 | Col 3 |\n| --- | --- | --- |\n|     |     |     |\n",
+        label: ja ? "テーブル" : "Table",
+        searchKeys: ["table", "tbl", "テーブル", "表"],
+      },
+      {
+        category: "review",
+        hint: "review, diff",
+        id: "review-changes",
+        label: ja ? "変更を確認 (ディスク)" : "Review changes vs disk",
+        searchKeys: ["review", "review-changes", "diff", "変更", "確認"],
+        action: () => {
+          if (!activeTab) {
+            setStatus(ja ? "比較対象のタブがありません" : "No active tab to review");
+            return;
+          }
+          requestReviewTabAgainstDisk(activeTab);
+        },
+      },
+    ];
+
+    if (activeTab && activeDraft) {
+      commands.push({
+        category: "review",
+        hint: "draft",
+        id: "review-draft",
+        label: ja ? "下書きをレビュー" : "Review unsaved draft",
+        searchKeys: ["draft", "review-draft", "下書き", "復元"],
+        action: () => {
+          if (!activeTab || !activeDraft) return;
+          requestReviewDraftAgainstDisk(activeTab, activeDraft);
+        },
+      });
+    }
+
+    if (agentWorkbenchActive) {
+      commands.push({
+        category: "agent",
+        hint: "agent, send",
+        id: "send-to-agent",
+        label: ja ? "選択範囲を Agent に送信" : "Send selection to Agent",
+        searchKeys: ["agent", "send", "send-to-agent", "エージェント", "送信"],
+        action: () => {
+          const text = editorPaneRef.current?.getSelectionText() ?? "";
+          if (!text.trim()) {
+            setStatus(
+              ja
+                ? "Agent に送るテキストを選択してください"
+                : "Select text to send to the Agent",
+            );
+            return;
+          }
+          handleSendSelectionToAgent(text);
+        },
+      });
+    }
+
+    return commands;
+  }, [
+    activeDraft,
+    activeTab,
+    agentWorkbenchActive,
+    editorPaneRef,
+    handleSendSelectionToAgent,
+    menuLanguage,
+    requestReviewDraftAgainstDisk,
+    requestReviewTabAgainstDisk,
+    setStatus,
+  ]);
+
   return {
     applyActiveMarkdownFormat,
     convertActiveLineEnding,
@@ -119,5 +286,6 @@ export function useEditorCommands({
     insertMarkdownAtCursor,
     insertTable,
     jumpToHeading,
+    slashCommands,
   };
 }

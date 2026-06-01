@@ -9,13 +9,13 @@ import type {
 } from "../types";
 import type { ReviewDeskCopy } from "../locale";
 import type { ReviewDeskMode } from "../types";
+import { AmbientBackground } from "./AmbientBackground";
 import { AppDocumentFeedback } from "./AppDocumentFeedback";
 import { AppOverlays } from "./AppOverlays";
 import { AppStatusBar } from "./AppStatusBar";
 import { AppTopChrome } from "./AppTopChrome";
 import { AppWorkspace } from "./AppWorkspace";
 import { ReviewSurface } from "./ReviewSurface";
-import { SakuraPetals } from "./SakuraPetals";
 
 export type AppShellProps = ComponentProps<typeof AppTopChrome> &
   ComponentProps<typeof AppDocumentFeedback> &
@@ -49,9 +49,10 @@ export type AppShellProps = ComponentProps<typeof AppTopChrome> &
   };
 
 export function AppShell(props: AppShellProps) {
+  const ambientMode = isAmbientMode(props.resolvedTheme) ? props.resolvedTheme : null;
   return (
     <main className={`app-shell${props.zenMode ? " zen-mode" : ""}`}>
-      {props.resolvedTheme === "sakura" ? <SakuraPetals /> : null}
+      {ambientMode ? <AmbientBackground mode={ambientMode} /> : null}
       <AppTopChrome {...props} />
       <AppDocumentFeedback {...props} />
       {props.reviewSurface !== null ? (
@@ -77,4 +78,10 @@ export function AppShell(props: AppShellProps) {
       <AppOverlays {...props} />
     </main>
   );
+}
+
+type AmbientMode = "sakura" | "yakou" | "shokou" | "kouyou";
+
+function isAmbientMode(theme: ResolvedTheme): theme is AmbientMode {
+  return theme === "sakura" || theme === "yakou" || theme === "shokou" || theme === "kouyou";
 }

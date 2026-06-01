@@ -6,7 +6,7 @@ import EditorPane, {
 import { ImagePreviewPane } from "./ImagePreviewPane";
 import { ScrollPositionHud } from "./ScrollPositionHud";
 import { StartPanel } from "./StartPanel";
-import type { SafeEditorCopy } from "../locale";
+import type { SafeEditorCopy, SlashMenuCopy } from "../locale";
 import type {
   BaseTheme,
   EditorSettings,
@@ -17,6 +17,7 @@ import type {
   RecentEntry,
   TextMatch,
 } from "../types";
+import type { SlashCommand } from "../types/slash";
 
 type EditorMainPaneProps = {
   activeContents: string;
@@ -48,6 +49,8 @@ type EditorMainPaneProps = {
   scrollHudVisible: boolean;
   searchMatches: TextMatch[];
   selectedImage: ImagePreviewState | null;
+  slashCommands: readonly SlashCommand[];
+  slashMenuCopy: SlashMenuCopy;
   workspaceRootPath: string | null;
 };
 
@@ -78,6 +81,8 @@ export function EditorMainPane({
   scrollHudVisible,
   searchMatches,
   selectedImage,
+  slashCommands,
+  slashMenuCopy,
   workspaceRootPath,
 }: EditorMainPaneProps) {
   return (
@@ -94,6 +99,8 @@ export function EditorMainPane({
             onSelectionChange={onSelectionChange}
             searchMatches={searchMatches}
             showInvisibles={editorSettings.showInvisibles}
+            slashCommands={slashCommands}
+            slashMenuCopy={slashMenuCopy}
             spellcheckEnabled={editorSettings.spellcheckEnabled}
             tabSize={editorSettings.tabSize}
             theme={editorTheme}

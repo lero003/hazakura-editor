@@ -39,19 +39,23 @@ export type SafeEditorCopy = {
 };
 
 export type SidePaneCopy = {
-  agentWorkbench: string;
   agentTab: string;
+  agentTabTitle: string;
+  agentWorkbench: string;
   diffTab: string;
+  diffTabTitle: string;
   fileComparison: string;
   imagePreview: string;
   markdownPreview: string;
   outlineEmpty: string;
-  outlineTruncated: string;
   outlineTab: string;
+  outlineTabTitle: string;
+  outlineTruncated: string;
   documentOutline: string;
   openTextFileToPreview: string;
   previewDisabled: string;
   previewTab: string;
+  previewTabTitle: string;
   previewUnavailable: string;
   resizeColumns: string;
   resizeColumnsTitle: string;
@@ -108,6 +112,16 @@ export type RecoveryCopy = {
   saveFailure: string;
   savedLocally: (timestamp: number) => string;
   trySaveAgain: string;
+};
+
+export type SlashMenuCopy = {
+  agentBadge: string;
+  categoryAgent: string;
+  categoryMarkdown: string;
+  categoryReview: string;
+  empty: string;
+  markdownBadge: string;
+  reviewBadge: string;
 };
 
 export type PreferencesCopy = {
@@ -225,45 +239,75 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
 export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
   return lang === "ja"
     ? {
-        agentWorkbench: "エージェントワークベンチ",
         agentTab: "エージェント",
+        agentTabTitle: "エージェントペインを表示",
+        agentWorkbench: "エージェントワークベンチ",
         diffTab: "Diff",
+        diffTabTitle: "差分ペインを表示",
         fileComparison: "ファイル比較",
         imagePreview: "画像プレビュー",
         markdownPreview: "Markdown プレビュー",
         outlineEmpty: "このファイルに Markdown 見出しはありません。",
-        outlineTruncated: "見出しが多いため、最初の200件まで表示しています。",
         outlineTab: "アウトライン",
+        outlineTabTitle: "アウトラインを表示",
+        outlineTruncated: "見出しが多いため、最初の200件まで表示しています。",
         documentOutline: "文書アウトライン",
         openTextFileToPreview:
           "Markdown プレビューを表示するにはテキストファイルを開いてください。",
         previewDisabled: "プレビューは設定で無効です。",
         previewTab: "プレビュー",
+        previewTabTitle: "プレビューペインを表示",
         previewUnavailable: "プレビューを表示できません",
-        resizeColumns: "エディタとサイドペインの幅を変更",
+        resizeColumns: "エディタとサイドペインの幅を変更",
         resizeColumnsTitle:
-          "ドラッグしてエディタとサイドペインの幅を変更",
+          "ドラッグしてエディタとサイドペインの幅を変更",
         sidePaneMode: "サイドペイン表示",
       }
     : {
-        agentWorkbench: "Agent Workbench",
         agentTab: "Agent",
+        agentTabTitle: "Show agent pane",
+        agentWorkbench: "Agent Workbench",
         diffTab: "Diff",
+        diffTabTitle: "Show diff pane",
         fileComparison: "File comparison",
         imagePreview: "Image Preview",
         markdownPreview: "Markdown preview",
         outlineEmpty: "This file has no Markdown headings.",
+        outlineTab: "Outline",
+        outlineTabTitle: "Show outline pane",
         outlineTruncated:
           "Showing the first 200 headings because this file has more.",
-        outlineTab: "Outline",
         documentOutline: "Document outline",
         openTextFileToPreview: "Open a text file to show Markdown preview.",
         previewDisabled: "Preview pane is disabled in Preferences.",
         previewTab: "Preview",
+        previewTabTitle: "Show preview pane",
         previewUnavailable: "Preview unavailable",
         resizeColumns: "Resize editor and side pane columns",
         resizeColumnsTitle: "Drag to resize editor and side pane",
         sidePaneMode: "Side pane mode",
+      };
+}
+
+export function getSlashMenuCopy(lang: MenuLanguage): SlashMenuCopy {
+  return lang === "ja"
+    ? {
+        agentBadge: "Agent",
+        categoryAgent: "エージェントコマンド",
+        categoryMarkdown: "Markdown ブロック",
+        categoryReview: "レビューデスク",
+        empty: "一致するスラッシュコマンドがありません",
+        markdownBadge: "Md",
+        reviewBadge: "Rv",
+      }
+    : {
+        agentBadge: "Agent",
+        categoryAgent: "Agent commands",
+        categoryMarkdown: "Markdown blocks",
+        categoryReview: "Review Desk",
+        empty: "No matching slash command",
+        markdownBadge: "Md",
+        reviewBadge: "Rv",
       };
 }
 

@@ -27,6 +27,9 @@ import {
 } from "@codemirror/view";
 import { tags as highlightTags } from "@lezer/highlight";
 import { basicSetup } from "codemirror";
+import { SlashMenu, type SlashMenuCopy } from "./SlashMenu";
+import { useSlashMenu } from "../hooks/useSlashMenu";
+import type { SlashCommand } from "../types/slash";
 
 type SearchMatch = { from: number; to: number };
 type DecoratedSearchMatch = SearchMatch & { active: boolean };
@@ -49,6 +52,8 @@ type EditorPaneProps = {
   wrapLines: boolean;
   activeSearchMatchIndex: number;
   searchMatches: SearchMatch[];
+  slashCommands: readonly SlashCommand[];
+  slashMenuCopy: SlashMenuCopy;
   workspaceRoot?: string;
   onPasteImage?: (
     dataBase64: string,
@@ -149,6 +154,8 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       fontSize,
       searchMatches,
       showInvisibles,
+      slashCommands,
+      slashMenuCopy,
       spellcheckEnabled,
       tabSize,
       theme,
@@ -163,7 +170,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     },
     ref,
   ) {
-  const hostRef = useRef<HTMLDivElement | null>(null);
+  const editorMountRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
   const onScrollRatioChangeRef = useRef(onScrollRatioChange);
@@ -311,13 +318,13 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   }, [onSendToAgent]);
 
   useEffect(() => {
-    if (!hostRef.current) {
+    if (!editorMountRef.current) {
       return;
     }
 
     const view = new EditorView({
       doc: value,
-      parent: hostRef.current,
+      parent: editorMountRef.current,
       extensions: [
         basicSetup,
         rectangularSelection(),
@@ -567,7 +574,33 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     });
   }, [activeSearchMatchIndex, searchMatches]);
 
-  return <div className="editor-host" ref={hostRef} />;
+  const {
+    activeIndex: slashActiveIndex,
+    closeMenu: closeSlashMenu,
+    commands: slashFiltered,
+    runCommand: runSlashCommand,
+    setActiveIndex: setSlashActiveIndex,
+    state: slashState,
+  } = useSlashMenu({
+    commands: slashCommands,
+    enabled: true,
+    viewRef,
+  });
+
+  return (
+    <div className="editor-host">
+      <div className="editor-mount" ref={editorMountRef} />
+      <SlashMenu
+        activeIndex={slashActiveIndex}
+        copy={slashMenuCopy}
+        filteredCommands={slashFiltered}
+        onClose={closeSlashMenu}
+        onSetActiveIndex={setSlashActiveIndex}
+        onRun={runSlashCommand}
+        state={slashState}
+      />
+    </div>
+  );
   },
 );
 

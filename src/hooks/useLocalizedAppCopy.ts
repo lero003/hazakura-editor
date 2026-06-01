@@ -7,6 +7,7 @@ import {
   getReviewDeskCopy,
   getSafeEditorCopy,
   getSidePaneCopy,
+  getSlashMenuCopy,
 } from "../locale";
 import type { MenuLanguage } from "../types";
 
@@ -41,6 +42,7 @@ export function useLocalizedAppCopy({
       reviewDeskCopy: getReviewDeskCopy(menuLanguage),
       safeEditorCopy: getSafeEditorCopy(menuLanguage),
       sidePaneCopy: getSidePaneCopy(menuLanguage),
+      slashMenuCopy: getSlashMenuCopy(menuLanguage),
     };
   }, [agentWorkbenchActive, agentWorkbenchPreference, menuLanguage]);
 }

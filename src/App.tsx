@@ -22,6 +22,7 @@ import { useImagePreview } from "./hooks/useImagePreview";
 import { useWorkspaceContextMenu } from "./hooks/useWorkspaceContextMenu";
 import { useQuickOpenState } from "./hooks/useQuickOpenState";
 import { useEditorCommands } from "./hooks/useEditorCommands";
+import { useSaveAffirmation } from "./hooks/useSaveAffirmation";
 import { useTabBarController } from "./hooks/useTabBarController";
 import { useLocalizedAppCopy } from "./hooks/useLocalizedAppCopy";
 import { useAppDialogRefs } from "./hooks/useAppDialogRefs";
@@ -84,6 +85,8 @@ export default function App() {
   const { pendingDrafts, setPendingDrafts } = useDraftRecoveryState();
   const { globalError, setGlobalError, setStatus, status } =
     useAppFeedbackState();
+  const { affirmation: saveAffirmation, lastAffirmedAt: saveAffirmationKey } =
+    useSaveAffirmation(status);
   const { activeTabId, setActiveTabId, setTabs, tabs } = useEditorTabsState();
   const { selectionInfo, setSelectionInfo } = useEditorSelectionState();
   const {
@@ -196,20 +199,6 @@ export default function App() {
     quickOpenVisible,
     toggleQuickOpen,
   } = useQuickOpenState();
-  const {
-    applyActiveMarkdownFormat,
-    convertActiveLineEnding,
-    handleEditorChange,
-    insertMarkdownAtCursor,
-    insertTable,
-    jumpToHeading,
-  } = useEditorCommands({
-    activeTab,
-    activeTabId,
-    editorPaneRef,
-    setStatus,
-    setTabs,
-  });
   const applyManualCandidateToActiveTab = useCallback(
     (candidateText: string) => {
       if (!activeTab) {
@@ -244,6 +233,7 @@ export default function App() {
     reviewDeskCopy,
     safeEditorCopy,
     sidePaneCopy,
+    slashMenuCopy,
   } = useLocalizedAppCopy({
     agentWorkbenchActive,
     agentWorkbenchPreference,
@@ -588,6 +578,28 @@ export default function App() {
     workspaceRootPath,
   });
 
+  const {
+    applyActiveMarkdownFormat,
+    convertActiveLineEnding,
+    handleEditorChange,
+    insertMarkdownAtCursor,
+    insertTable,
+    jumpToHeading,
+    slashCommands,
+  } = useEditorCommands({
+    activeDraft,
+    activeTab,
+    activeTabId,
+    agentWorkbenchActive,
+    editorPaneRef,
+    handleSendSelectionToAgent,
+    menuLanguage,
+    requestReviewDraftAgainstDisk,
+    requestReviewTabAgainstDisk,
+    setStatus,
+    setTabs,
+  });
+
   useAppRuntimeEffects({
     activity: {
       onResumeAgentUiRefresh: resumeAgentUiRefresh,
@@ -780,6 +792,8 @@ export default function App() {
     invalidRegex,
     jumpToHeading,
     keepEditingAfterConflict,
+    lineEndingAriaLabel: editorChromeCopy.lineEndings,
+    lineEndingLabel: editorChromeCopy.lineEnding,
     loadWorkspaceDirectory,
     menuLanguage,
     onApplyMarkdownFormat: applyActiveMarkdownFormat,
@@ -789,7 +803,6 @@ export default function App() {
     onCloseTab: requestCloseTab,
     onConvertLineEnding: convertActiveLineEnding,
     onFinishTabPointerDrag: finishTabPointerDrag,
-    onInsertTable: insertTable,
     onPointerEnter: suspendAgentUiRefresh,
     onResizeAgentTerminal: resizeAgentTerminal,
     onResumeAgentUiRefresh: resumeAgentUiRefresh,
@@ -826,6 +839,8 @@ export default function App() {
     recoveryCopy,
     reopenTabFromDisk,
     replaceAll,
+    saveAffirmation,
+    saveAffirmationKey,
     replaceOne,
     replaceQuery,
     resolvedTheme,
@@ -869,6 +884,8 @@ export default function App() {
     showNextMatch,
     showPreviousMatch,
     sidePaneCopy,
+    slashCommands,
+    slashMenuCopy,
     sidePaneMode,
     sidePaneVisible,
     status,
