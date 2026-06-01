@@ -9,8 +9,10 @@ Last reviewed: 2026-06-01
 
 - A touchable Tauri desktop prototype exists.
 - Current public preview release is `v0.6.0` as a warning-expected DMG preview.
-- Current development lane is v0.6 Foundation Release / daily-drivable safe editor. v0.6 has 10/10 roadmap items implemented after the App.tsx split MVP.
-- Latest v0.6 refactor slice grouped tab navigation and pointer reordering wiring in `src/hooks/useTabBarController.ts`; `src/App.tsx` is now 867 lines. Refactor work should pause here unless a release-blocking bug appears; next work is v0.6 release preparation.
+- Current development lane is v0.7 Hazakura Review Desk Preview. Start with the read-only Review Desk Readiness Gate before adding Review Desk features.
+- v0.6 has 10/10 roadmap items implemented after the App.tsx split MVP, was published as a warning-expected DMG prerelease, and should remain immutable.
+- Latest v0.6 refactor slice grouped tab navigation and pointer reordering wiring in `src/hooks/useTabBarController.ts`; `src/App.tsx` is now 867 lines. Further refactor work should be justified by the v0.7 readiness gate or a concrete Review Desk implementation risk.
+- External-agent implementation plus Codex review is now an explicit workflow in `docs/external-agent-review-workflow.md`: external agents may implement one approved slice, while Codex reviews findings-first before acceptance unless the user asks for review-and-fix.
 - Post-v0.5 planning notes now live under `docs/` as internal, low-authority planning memos. Public/product claims should still be taken from README plus the high-authority docs.
 - Markdown authoring feature readiness is now tracked in `docs/authoring-feature-readiness.md`; do not claim image paste, export, table editing, or Agent authoring beyond the implemented subset until those gaps are closed or explicitly deferred.
 - The prototype creates user-selected text/Markdown files, opens common UTF-8 text documents from File > Open or Finder/app-icon open events, opens a user-selected folder, shows a lazy bounded file tree, opens multiple files in tabs, edits the active tab with CodeMirror 6, saves through Rust with external-change protection, searches with visible match highlights and keyboard/navigation options, renders a toggleable sanitized Markdown preview, and shows selected workspace images in a read-only preview.
@@ -928,17 +930,17 @@ Known verification note:
 
 ## Next Actions
 
-1. For v0.5 work, keep `pi` only as an allowlisted local CLI provider inside the existing Agent Workbench gate.
-2. Continue with Pi provider availability, launch, stop/exit, resize, app-close cleanup, and trusted-workspace smoke. Do not add Pi RPC, Pi SDK, provider-add UI, arbitrary provider config, multi-agent orchestration, auto-apply, auto-commit, a general terminal, or Git client behavior.
-3. Treat v0.4 Markdown Review Navigation and v0.3 Diff / Change Review regressions as patch follow-up only; do not expand them into project-wide indexing, prediction, merge editing, or Git-aware behavior.
-4. For recurring automation, use the 30-minute v0.5 Pi CLI Provider And App Stability loop in `docs/development-automation.md`; keep slices narrow and avoid new test code unless it protects a real bug, backend/safety contract, or high-value lifecycle path.
-5. Re-smoke long file name / constrained-width layout before binary distribution readiness.
-6. For follow-up warning-expected DMG previews, keep the release marked as a prerelease and use the current version-specific release note as the GitHub Release body.
-7. Add minimal CI and Dependabot as P1 release hardening when a small verified slice is available. Keep the current `glib` Dependabot alert visible as a Linux/Tauri-wry dependency-refresh review item rather than a v0.4 macOS blocker.
-8. Keep signing, notarization, and installer packaging separate from source-release and workspace hardening.
+1. The v0.7 Review Desk Readiness Gate ran on 2026-06-01 in read-only mode. Findings are recorded in `docs/reviews/v0.7-readiness-gate.md` and classified as Fix now (F-1, F-2), Before v0.7 implementation (B-1 to B-4), v0.8+ (V-1 to V-3), Fold back together (T-1 to T-3), and Review Desk structural risk (R-1 to R-4). No code changed during the gate.
+2. For external-agent implementation, use `docs/external-agent-review-workflow.md`; Codex should review the diff before the slice is accepted and should not patch unless asked for review-and-fix.
+3. Start v0.7 implementation with the smallest Review Desk foundation slice: Diff / Review UI common shell, Review Desk entry point, bounded Global Search, Command Palette for existing safe actions, or Settings consolidation. Resolve the B-1 / B-2 / B-3 design questions from the gate first.
+4. Keep Agent Workbench explicit, allowlisted, one-session, no-restore, and no-auto-apply. Do not add Pi RPC, Pi SDK, provider-add UI, arbitrary provider config, multi-agent orchestration, a general terminal, or Git client behavior.
+5. Treat v0.4 Markdown Review Navigation and v0.3 Diff / Change Review regressions as patch follow-up only; do not expand them into project-wide indexing, prediction, merge editing, or Git-aware behavior.
+6. Re-smoke long file name / constrained-width layout before binary distribution readiness.
+7. For follow-up warning-expected DMG previews, keep the release marked as a prerelease and use the current version-specific release note as the GitHub Release body.
+8. Keep signing, notarization, updater, and installer packaging separate until the Apple Developer distribution lane is explicitly opened.
 
 ## Avoid
 
-- Do not add Git operations, arbitrary terminal/shell access, LSP, plugin execution, or AI rewrite flows during the next workspace polish slices.
+- Do not add Git operations, arbitrary terminal/shell access, LSP, plugin execution, or AI rewrite/apply flows during the next Review Desk slices.
 - Do not expand workspace persistence into project indexing or background scanning.
 - Do not treat the current build as distribution-ready.
