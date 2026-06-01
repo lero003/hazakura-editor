@@ -3,13 +3,13 @@
 Status: Operational
 Scope: Current release sequence and planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-01 (post-v0.5 planning memo folded in; v0.6 bug-check pass)
+Last reviewed: 2026-06-01 (v0.7 Review Desk direction and external-agent review workflow)
 
 ## Current Position
 
 `hazakura-note` is no longer in the early `v0.1` planning sequence.
 
-> **Planned rename**: `hazakura-note` → **`hazakura editor`** at v0.6 release. The name change signals the product identity as a text editor first (evoking the classic サクラエディタ heritage), rather than a note-taking app. All docs, package names, and release assets will be updated at that boundary.
+> **Renamed at v0.6**: `hazakura-note` became **`hazakura editor`** at the v0.6 release. The name change signals the product identity as a text editor first (evoking the classic サクラエディタ heritage), rather than a note-taking app.
 
 The current public line is:
 
@@ -20,6 +20,8 @@ The current public line is:
 - `v0.2.0`: Safe Editor preview warning-expected DMG release with theme/Japanese UI polish and the current Agent Workbench boundary kept optional
 - `v0.3.0`: Safe Editor non-Git diff / change-review warning-expected DMG release
 - `v0.4.0`: Markdown Review Navigation warning-expected DMG release
+- `v0.5.0`: Pi CLI Provider, Image Assets, and Authoring Stability warning-expected DMG release
+- `v0.6.0`: Foundation Release / Daily-Drivable Safe Editor warning-expected DMG release under the `hazakura editor` identity
 
 The old `v0.1` / `v0.3.x` phase map is archived in `docs/roadmap-v0.1-archived.md`.
 
@@ -121,7 +123,7 @@ This phase should prefer navigation, visibility, and manual review over predicti
 
 Goal: add Pi as a first-class Agent Workbench CLI provider while improving app stability in small, verifiable slices.
 
-Status: Active development lane after the `v0.4.0` warning-expected DMG preview release.
+Status: Released as `v0.5.0` warning-expected DMG preview.
 
 Pre-release gate:
 
@@ -231,46 +233,85 @@ v0.6 delivers (✅ = implemented):
 
 Release checkpoint: v0.6.0 is published as a warning-expected DMG prerelease at `https://github.com/lero003/hazakura-editor/releases/tag/v0.6.0`. Version surfaces are aligned to `0.6.0`, local app/release naming uses `hazakura editor` / `hazakura-editor`, the GitHub repository moved to `lero003/hazakura-editor`, dependency audits report 0 local vulnerabilities, focused built-app smoke passed for save/export, compare/diff, tab reorder, auto-backup, Replace, and Quick Open, and remote verification passed for the published DMG/checksum assets. Keep v0.6.0 immutable; future work should continue on `main`.
 
-Deliberately deferred to v0.7:
+Deliberately moved beyond v0.6:
 - Global Search (Cmd+Shift+F)
 - コマンドパレット (Cmd+Shift+P)
-- ツリー Rename / Delete
-- セッションログ保存
-- ファイルコンテキスト自動添付
-- Alt text 編集UI
+- Settings consolidation
+- Diff / Review UI consolidation
+- Review Desk entry surface
 - **文字コード表示 + 別名保存で文字コード変更**: status bar encoding display + Save As dialog with encoding dropdown (UTF-8/Shift-JIS/EUC-JP). Rust `encoding_rs` conversion.
+- Frontmatter display
+- KaTeX beta
+- Alt text 編集UI
 - ペイン切替ショートカット
 
 Do not use this phase to add SDK integration, background sessions, session restore, provider plugins, arbitrary command execution, automated approval of provider actions, zustand/Context architecture changes, Pi RPC, theme editor, KaTeX, Mermaid, tab split, or external file rename tracking.
 
-## 0.7: Workspace Power Release
+## 0.7: Hazakura Review Desk Preview
 
-Goal: make the workspace experience powerful enough that users never need to leave the app for file/search operations.
+Goal: turn the existing non-Git diff and recovery review surfaces into the foundation of a Markdown-first Review Desk, while keeping Safe Editor Mode primary and Agent Workbench as a separate trust boundary.
+
+Before feature implementation starts, run a **Review Desk Readiness Gate**:
+
+- inventory responsibilities still left in `src/App.tsx`
+- review whether existing hooks and small components are split at useful feature boundaries rather than scattered by implementation detail
+- check Diff / Review / Tabs / FileTree / Agent Workbench / Preferences boundaries
+- identify whether tiny `tsx` / `ts` files should be grouped by feature
+- inspect Rust `src-tauri/src/lib.rs` for module split candidates
+- classify findings as: fix now, fix before v0.7 implementation, v0.8+, fold back together, and Review Desk structural risk
+
+The readiness gate is read-only unless the user explicitly asks for a follow-up cleanup slice.
+
+Priority work after the gate:
+
+1. Diff / Review UI common shell for existing compare cases
+2. Review Desk entry point that can host current editor-vs-disk, external-change, draft, and file-to-file comparisons without Git vocabulary
+3. Global Search (Cmd+Shift+F) as bounded workspace grep, not indexing
+4. Command Palette (Cmd+Shift+P) for app actions that already exist
+5. Settings consolidation so Review Desk, editor, and Agent Workbench preferences are not scattered
+6. Frontmatter display for Markdown review context
+7. KaTeX beta only if it stays preview/export-safe and does not widen command execution
+8. Encoding display / Save As encoding selection if it can be kept inside the existing safe text-open/save boundary
+
+External-agent workflow:
+
+- Let an implementation agent take one small v0.7 slice at a time.
+- Codex should review the resulting diff before the slice is treated as accepted.
+- Review focus: boundary regressions, hidden Git/terminal/command behavior, unsafe file/path handling, missing tests or smoke evidence, and docs claims that exceed implementation.
+
+Do not use this phase to add Git integration, LSP, plugin system, theme editor, project-wide indexing, arbitrary file management, Tree Rename / Delete, session log persistence, Agent auto-apply, or Agent session restore.
+
+## 0.8: Product Preview
+
+Goal: make Hazakura's distinctive Review Desk experience visible: AI or external text suggestions are compared first, then accepted explicitly by the user.
 
 Candidate work:
 
-- Global Search (Cmd+Shift+F): workspace-wide grep via Rust
-- コマンドパレット (Cmd+Shift+P): fuzzy-accessible all actions
-- ツリー Rename / Delete: in-app file management
-- セッションログ保存: save Agent chat as .md
-- ファイルコンテキスト自動添付: auto-attach active file path to Agent messages
-- Alt text 編集UI: improve image paste completeness
+- AI候補 -> Diff -> 明示的適用 MVP, starting with selected-range proofreading
+- Review Desk UI formalization
+- official icon, About surface, and first-run orientation
+- pinned / recent / starred files if they support review flow
+- Print-ready HTML export polish before native PDF export
+- Markdown toolbar and writing-experience polish where it supports review
+- optional temporary review history only if it does not require a heavy storage policy
 
-Do not use this phase to add Git integration, LSP, plugin system, theme editor, or project-wide indexing.
+Do not require persistent review logs for the MVP. `.hazakura/reviews/` or app-managed review history needs a separate storage-policy decision.
 
-## 0.8: Writing Experience Release
+## 0.9: Distribution Quality
 
-Goal: refine the Markdown editing experience beyond basic functionality.
+Goal: prepare for paid or wider external distribution after Apple Developer registration is available.
 
 Candidate work:
 
-- プレビュースクロール同期: scroll preview to match editor position
-- Markdown スニペット展開: auto-complete blockquote, list, heading
-- Markdown ツールバー拡充: heading / bold / italic / strikethrough / list / code block buttons
-- Markdown UI 再配置: move document-mutating controls such as line-ending conversion out of the current preview/control row and place authoring tools in a dedicated Markdown toolbar row.
-- フォーカスモード / タイプライターモード: highlight only the current line
-- 書き出し品質向上: CSS polish for HTML export
-- ピン留め / お気に入り: quick-access pinned files
+- Developer ID signing
+- notarization
+- automatic updater
+- privacy policy
+- landing page
+- Homebrew Cask evaluation
+- crash / log policy
+
+Do not move signing, notarization, or updater work earlier unless the user explicitly opens that distribution lane.
 
 ## Future
 
@@ -280,13 +321,14 @@ Possible later work, only after a fresh boundary review:
 - Markdown lint or manual formatting checks
 - heading-level or paragraph-level Markdown diff
 - Pi RPC integration, only after CLI mode improvements prove insufficient
-- KaTeX 数式レンダリング
 - Mermaid 図レンダリング
 - テーマ自動切替（macOS appearance sync）
 - タブ分割編集
-- Homebrew Cask 対応
 - GitHub Actions .dmg 自動ビルド
-- アップデート通知
+- Tree Rename / Delete after a fresh destructive-file-operation review
+- session log persistence after storage policy is settled
+- native PDF export beta
+- iCloud sync, shared review, and Obsidian / Notion import
 
 These are not approval to add a general terminal, arbitrary command execution, Git client behavior, plugin execution, auto-apply, auto-commit, or multi-agent orchestration.
 
@@ -300,5 +342,7 @@ Use these when asking for external review:
 4. Does 0.4 improve Markdown review/navigation without over-predicting or auto-rewriting user text?
 5. Does 0.5 add Pi as a bounded CLI provider without making Agent Workbench feel like the default app mode?
 6. Does 0.6 deliver a daily-drivable safe editor — Cmd+P, auto-save, Replace, App.tsx split — before adding more Agent features?
-7. Does 0.7 add workspace power (Global Search, command palette, Rename) without scope creep?
-8. Does 0.8 refine Markdown authoring controls without mixing preview toggles, document mutation, and workspace/IDE behavior?
+7. Does 0.7 create a Review Desk foundation before adding AI candidate application?
+8. Does the external-agent/Codex-review workflow catch boundary regressions before accepting implementation slices?
+9. Does 0.8 make AI候補 -> Diff -> 明示的適用 visible without auto-apply or hidden provider control?
+10. Are signing, notarization, updater, and paid-distribution tasks kept out of the preview lane until the Apple Developer path is opened?

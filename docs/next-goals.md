@@ -3,7 +3,93 @@
 Status: Operational
 Scope: Ready-to-use goal prompts and phase boundaries
 Authority: High
-Last reviewed: 2026-05-31
+Last reviewed: 2026-06-01
+
+## Ready Goal: v0.7 Review Desk Readiness Gate
+
+Status: Ready
+
+目的: v0.7 の Review Desk 実装に入る前に、既存の App.tsx split、hooks/components、Diff / Review / Agent Workbench / Preferences / Tabs / FileTree、Rust `lib.rs` の責務境界を READ ONLY で確認し、先に片付けるべき構造リスクを分類する。
+
+正本: `docs/roadmap.md` と `docs/external-agent-review-workflow.md`
+
+### Goal Prompt
+
+```txt
+Run the v0.7 Review Desk Readiness Gate for hazakura editor.
+
+Start by reading AGENTS.md, README.md, docs/current-status.md, docs/roadmap.md, docs/development-automation.md, docs/external-agent-review-workflow.md, docs/security-boundary.md, and docs/agent-workbench-boundary.md. Check git status --short --branch and do not revert user changes.
+
+This is READ ONLY unless the user explicitly asks for a cleanup patch. Inspect the current App.tsx, hooks, components, Diff/Review surfaces, Agent Workbench boundaries, Preferences, Tabs, FileTree, and src-tauri/src/lib.rs. Do not implement Review Desk features.
+
+Report findings in five groups: now, before v0.7 implementation, v0.8+, fold back together, and Review Desk structural risk. Include concrete file references. Keep Safe Editor Mode primary and Agent Workbench as a separate explicit trust boundary.
+
+For docs-only notes run git diff --check if docs are changed. If no files are changed, report that this was a read-only review.
+```
+
+### Acceptance Criteria
+
+- 実装に入らず、構造と境界を棚卸しする
+- App.tsx に残る責務を具体的に分類する
+- 分割済み hooks/components が feature 境界として妥当か確認する
+- tiny files の戻し候補は、読みやすさが上がる場合だけ提案する
+- Rust `lib.rs` の module 分割候補を提案する
+- Review Desk 実装前に直すべきものと、後回しでよいものを分ける
+
+### Non-goals
+
+- Review Desk UI の実装
+- AI候補 -> Diff -> 明示的適用
+- Git integration, LSP, terminal, plugin, project-wide indexing
+- Agent auto-apply, auto-commit, session restore, provider-add UI
+- signing, notarization, updater, paid-distribution work
+
+## Ready Workflow: External Agent Implementation / Codex Review
+
+Status: Ready
+
+目的: 外部エージェントが小さな実装スライスを担当し、Codex が受け入れ前レビューを行う。
+
+正本: `docs/external-agent-review-workflow.md`
+
+### External Agent Prompt
+
+```txt
+Implement one approved hazakura editor slice, then leave it ready for Codex review.
+
+Start by reading AGENTS.md, README.md, docs/current-status.md, docs/roadmap.md, docs/development-automation.md, docs/external-agent-review-workflow.md, and any boundary doc touched by the slice. Check git status --short --branch and preserve existing user changes.
+
+Choose exactly one approved slice. Keep Safe Editor Mode primary. Keep Agent Workbench explicit, allowlisted, one-session, no-restore, and no-auto-apply. Do not add Git integration, LSP, arbitrary terminal/shell access, arbitrary command execution, provider-add UI, plugin systems, project-wide indexing, Tree Rename/Delete, persistent review/session logs, signing/notarization, updater work, or dependency/lockfile changes without explicit user approval.
+
+Run the required checks from docs/development-automation.md. For UI behavior, update or exercise docs/smoke-checklist.md. Final report: selected slice, changed files, verification, skipped checks, residual risks, and what Codex should review first.
+```
+
+### Codex Review Prompt
+
+```txt
+Review the external agent's hazakura editor implementation diff.
+
+Start by reading AGENTS.md, README.md, docs/current-status.md, docs/roadmap.md, docs/development-automation.md, docs/external-agent-review-workflow.md, and the external agent summary. Inspect git status --short --branch and the diff. Do not revert user changes.
+
+Use a code-review stance: findings first, ordered by severity, with file/line references. Focus on approved-slice mismatch, Safe Editor boundary regressions, Agent Workbench boundary regressions, unsafe file/path behavior, hidden Git/terminal/command behavior, missing tests or smoke, and docs claims that exceed implementation.
+
+Run focused verification when practical. Do not patch findings unless the user explicitly asks for review-and-fix. If no blocking issues are found, say so clearly and name residual test or smoke gaps.
+```
+
+### Acceptance Criteria
+
+- 外部エージェントは1スライスだけ実装する
+- Codex はレビュー担当として findings-first で返す
+- Codex は明示されない限り勝手に修正へ進まない
+- 受け入れ条件は、未解決の blocking finding がないこと、必要な検証があること、docs claims が実装を超えないこと
+
+### Non-goals
+
+- 2エージェントで同じ実装を並行して書く
+- レビュー中の広範囲リファクタ
+- Git client / merge tool 化
+- Agent output の直接本文反映
+- review/session log 永続化
 
 ## Ready Goal: Markdown Authoring Feature Completion
 
@@ -48,11 +134,11 @@ Final report: selected slice, what is now honestly implemented, what remains def
 - WYSIWYG table editor in one broad change
 - Agent auto-apply, auto-commit, general terminal, provider plugins, or Git integration
 
-## Current Recurring Automation: v0.5 Pi CLI Provider And App Stability
+## Current Recurring Automation: v0.7 Review Desk Preview
 
-Status: Active guidance after the `v0.4.0` warning-expected DMG preview release
+Status: Active guidance after the `v0.6.0` warning-expected DMG preview release
 
-目的: Agent Workbench に Pi CLI provider を既存の安全境界内で追加しつつ、実利用で見える安定性・終了処理・provider lifecycle の粗さを小さく直す。
+目的: Review Desk の土台を、外部エージェント実装と Codex レビューを組み合わせながら、小さく検証可能に進める。
 
 正本: `docs/development-automation.md`
 
@@ -63,13 +149,13 @@ Use the reusable automation prompt in `docs/development-automation.md`.
 ### Acceptance Criteria
 
 - 1回のrunで1つの coherent slice だけを選ぶ
-- Pi を扱う前に `docs/agent-workbench-boundary.md` の境界を更新する
-- Pi は既存の Agent Workbench gate 内の allowlisted local CLI provider としてだけ扱う
-- explicit mode、restart boundary、responsibility consent、selected workspace root、one active session を維持する
-- provider availability、launch failure、stop/exit、resize、app-close cleanup、trusted-workspace smoke のいずれかを小さく進める
+- 最初に v0.7 Review Desk Readiness Gate を通す
+- 外部エージェント実装の場合は `docs/external-agent-review-workflow.md` を使う
+- Diff / Review UI 共通化、Review Desk入口、bounded Global Search、Command Palette、Settings統合のいずれかを小さく進める
+- Agent Workbench は explicit mode、restart boundary、responsibility consent、selected workspace root、one active session を維持する
 - code変更では既存の品質ゲートを通す
 - UI挙動を変えた場合は smoke checklist を更新または実施する
-- 検証が通った場合だけ、関連差分をcommit/pushする
+- Codexレビューで blocking finding がない場合だけ受け入れる
 
 ### Non-goals
 
@@ -78,6 +164,7 @@ Use the reusable automation prompt in `docs/development-automation.md`.
 - arbitrary terminal/shell access or arbitrary command execution
 - multiple sessions, session restore, auto-apply, auto-commit, or Git integration
 - project-wide indexing, plugin system, LSP, release/publish/tag flow, signing/notarization completion
+- Tree Rename/Delete, persistent review/session logs, native PDF export
 
 ## Goal 2: Safety Hardening
 

@@ -1,10 +1,10 @@
 # hazakura-note 開発メモ
 
-Status: Internal planning memo
+Status: Internal planning memo; superseded for v0.7 planning
 Scope: Post-v0.5 product direction notes
 Authority: Low; use `docs/roadmap.md` and `docs/current-status.md` for implementation decisions
 
-> 最終更新: 2026-05-31（v0.6 実装開始: 9/10 items 完了）
+> 最終更新: 2026-06-01（v0.7 の正本は `docs/roadmap.md` の Hazakura Review Desk Preview。本文中の Workspace Power / v0.7 候補は履歴メモとして扱う）
 
 ---
 

@@ -1,5 +1,6 @@
 import type { RecentEntry } from "../types";
 import { buildRecentDisplayEntries } from "../utils";
+import hazakuraMark from "../assets/hazakura-mark.png";
 
 export interface StartPanelCopy {
   newFile: string;
@@ -30,7 +31,10 @@ export function StartPanel({
   return (
     <div className="start-panel">
       <div className="start-panel-main">
-        <span className="start-kicker">hazakura-note</span>
+        <div className="start-brand">
+          <img className="start-logo" src={hazakuraMark} alt="" />
+          <span className="start-kicker">hazakura editor</span>
+        </div>
         <h1>{copy.startHeading}</h1>
         <div className="start-actions" aria-label={copy.startActions}>
           <button type="button" onClick={() => void onOpenFile()}>
