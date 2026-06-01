@@ -222,7 +222,7 @@ npm run build
 Open the built app:
 
 ```bash
-open -n src-tauri/target/release/bundle/macos/hazakura-note.app
+open -n "src-tauri/target/release/bundle/macos/hazakura editor.app"
 ```
 
 ## Markdown Image Paste And Drop

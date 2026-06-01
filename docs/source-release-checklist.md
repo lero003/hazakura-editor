@@ -88,7 +88,7 @@ Treat `dompurify` and `marked` as preview-boundary dependencies because Markdown
 
 Use the latest built app from the current release HEAD and record concise evidence in `docs/current-status.md` before tagging:
 
-- Launch with `open -n src-tauri/target/release/bundle/macos/hazakura-note.app`.
+- Launch with `open -n "src-tauri/target/release/bundle/macos/hazakura editor.app"`.
 - Confirm native File menu and View menu are present.
 - Confirm Save and Save As are disabled in the no-file state.
 - Confirm dirty-tab close Cancel / Save / Discard behavior.

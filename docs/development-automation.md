@@ -204,7 +204,7 @@ git diff --check
 
 For UI behavior changes, also update or exercise `docs/smoke-checklist.md`. Use the built app when practical, and do not claim manual smoke passed unless it was actually exercised.
 
-If built-app smoke launches `src-tauri/target/release/bundle/macos/hazakura-note.app`, quit the app before reporting. If Agent Workbench was running, stop the provider session or quit the app and confirm cleanup when practical.
+If built-app smoke launches `src-tauri/target/release/bundle/macos/hazakura editor.app`, quit the app before reporting. If Agent Workbench was running, stop the provider session or quit the app and confirm cleanup when practical.
 
 For source-release prep, use `docs/source-release-checklist.md`. Do not claim release readiness until its P0 gates, dependency checks, and latest-HEAD built-app smoke evidence are recorded.
 
