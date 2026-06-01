@@ -76,7 +76,7 @@ export function AppCloseDialog({
         <h2 id="close-app-title">Unsaved changes</h2>
         <p id="close-app-description">
           {formatDirtyTabCount(dirtyTabCount)} must be saved or discarded before
-          closing hazakura-note.
+          closing hazakura editor.
         </p>
         <div className="dialog-actions">
           <button type="button" onClick={onSaveAll}>

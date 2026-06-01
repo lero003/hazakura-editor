@@ -75,8 +75,8 @@ export function useAgentWorkbenchPreferenceActions({
     setAppRestartPending(true);
     setStatus(
       menuLanguage === "ja"
-        ? "hazakura-note を再起動中..."
-        : "Restarting hazakura-note...",
+        ? "hazakura editor を再起動中..."
+        : "Restarting hazakura editor...",
     );
 
     try {

@@ -18,10 +18,10 @@ export function useWindowTitle({
 }: UseWindowTitleOptions) {
   useEffect(() => {
     const title = selectedImage
-      ? `${selectedImage.name} - hazakura-note`
+      ? `${selectedImage.name} - hazakura editor`
       : activeTab
-      ? `${activeTab.name}${activeDirty ? " *" : ""} - hazakura-note`
-      : "hazakura-note";
+      ? `${activeTab.name}${activeDirty ? " *" : ""} - hazakura editor`
+      : "hazakura editor";
 
     void setCurrentWindowTitle(title).catch((err) => {
       console.warn("Failed to update window title", err);

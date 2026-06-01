@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="src/assets/hazakura-mark.png" alt="hazakura editor logo" width="128">
+</p>
+
 # hazakura editor
 
 Status: Operational
@@ -111,7 +115,7 @@ Example use case:
 - Failed or conflicted Save All from the app/window close dialog stops the close, selects the failed tab, and returns to the editor with the normal recovery actions visible
 - Discard All from the app/window close dialog clears matching unsaved recovery drafts so intentionally discarded edits are not offered after restart
 - Long file names are clipped or wrapped in tabs, the file tree, status/error rows, and close dialogs so core controls stay reachable
-- App bundle icon uses a centered `🌸` emoji mark on a soft pink rounded base
+- App bundle icon and start screen use the hazakura editor flower-and-leaf logo
 - Optional Agent Workbench mode can launch one allowlisted `codex`, `opencode`, or `pi` provider session in the selected workspace after restart-required mode enablement and responsibility-boundary consent
 - Agent Workbench renders the selected allowlisted provider's TUI output in a scoped pane, sends keyboard input only to the running provider process, supports Copy full path / Send full path to Agent from existing workspace file rows, and continues to treat provider-made file edits as ordinary external on-disk changes
 
