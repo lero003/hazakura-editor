@@ -102,6 +102,13 @@ export function SidePane({
   const compareCase = compareView
     ? getCompareCaseByKey(compareView.caseKey) ?? null
     : null;
+  // The right-pane compare route only handles file / changes cases.
+  // The manual candidate case is owned by the Review Desk
+  // (useReviewDeskState) and never registered with
+  // useCompareState, but narrow defensively in case a future
+  // slice accidentally adds a candidate case to the right pane.
+  const rightPaneCompareCase =
+    compareCase && compareCase.kind !== "candidate" ? compareCase : null;
 
   return (
     <div
@@ -110,10 +117,10 @@ export function SidePane({
       aria-label={sidePaneAriaLabel(sidePaneMode, copy)}
       onScroll={sidePaneMode === "preview" ? onPreviewScroll : undefined}
     >
-      {sidePaneMode === "compare" && compareView && compareCase ? (
+      {sidePaneMode === "compare" && compareView && rightPaneCompareCase ? (
         <DiffPane
           menuLanguage={menuLanguage}
-          compareCase={compareCase}
+          compareCase={rightPaneCompareCase}
           view={compareView}
           onClose={onCloseCompareView}
         />

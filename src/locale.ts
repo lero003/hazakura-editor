@@ -161,6 +161,21 @@ export type AgentWorkbenchCopy = {
 };
 
 export type ReviewDeskCopy = {
+  candidateClearButton: string;
+  candidateClearButtonTitle: string;
+  candidateColumnLeft: string;
+  candidateColumnRight: string;
+  candidateCompareButton: string;
+  candidateCompareButtonTitle: string;
+  candidateCompareDisabledHint: string;
+  candidateEmptyHeading: string;
+  candidateEmptyHint: string;
+  candidateInputHint: string;
+  candidateInputLabel: string;
+  candidateInputPlaceholder: string;
+  candidatePreviewEmpty: string;
+  candidatePreviewTitle: string;
+  candidateSourceManual: string;
   close: string;
   closeTitle: string;
   emptyBody: string;
@@ -428,7 +443,7 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
         safeSessionMode:
           "このアプリセッションでは Safe Editor モードが有効です。",
         restartRequired:
-          "エージェント画面と CLI 起動の有効状態を切り替えるには、hazakura-note の再起動が必要です。",
+          "エージェント画面と CLI 起動の有効状態を切り替えるには、hazakura editor の再起動が必要です。",
         restartNow: "今すぐ再起動",
         restarting: "再起動中...",
         provider: "プロバイダー",
@@ -462,7 +477,7 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
           "Agent Workbench mode is active for this app session.",
         safeSessionMode: "Safe Editor Mode is active for this app session.",
         restartRequired:
-          "Restart hazakura-note before Agent Workbench UI or backend launch commands change.",
+          "Restart hazakura editor before Agent Workbench UI or backend launch commands change.",
         restartNow: "Restart now",
         restarting: "Restarting...",
         provider: "Provider",
@@ -488,6 +503,26 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
 export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
   return lang === "ja"
     ? {
+        candidateClearButton: "クリア",
+        candidateClearButtonTitle: "候補入力とプレビューを消去",
+        candidateColumnLeft: "現在のバッファ",
+        candidateColumnRight: "手動候補",
+        candidateCompareButton: "比較",
+        candidateCompareButtonTitle: "現在のバッファと手動候補を比較",
+        candidateCompareDisabledHint:
+          "比較するには、エディタでテキストファイルを開き、候補テキストを入力してください。",
+        candidateEmptyHeading: "比較できるエディタタブがありません",
+        candidateEmptyHint:
+          "Review Desk の手動候補レビューは、エディタでテキストを開いているときだけ使えます。",
+        candidateInputHint:
+          "比較したい候補テキスト（AI 出力、レビューメモ、別バージョンなど）をここに貼り付けます。",
+        candidateInputLabel: "手動候補テキスト",
+        candidateInputPlaceholder:
+          "ここに候補テキストを貼り付けてください…",
+        candidatePreviewEmpty:
+          "比較ボタンを押すと、現在のバッファと手動候補の差分プレビューがここに表示されます。",
+        candidatePreviewTitle: "手動候補プレビュー",
+        candidateSourceManual: "手動貼り付け",
         close: "閉じる",
         closeTitle: "Review Desk を閉じる",
         emptyBody:
@@ -500,6 +535,26 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
         title: "Review Desk",
       }
     : {
+        candidateClearButton: "Clear",
+        candidateClearButtonTitle: "Discard candidate input and preview",
+        candidateColumnLeft: "Current buffer",
+        candidateColumnRight: "Manual candidate",
+        candidateCompareButton: "Compare",
+        candidateCompareButtonTitle:
+          "Compare the current buffer with the manual candidate",
+        candidateCompareDisabledHint:
+          "Open a text file in the editor and paste a candidate to enable Compare.",
+        candidateEmptyHeading: "No editor tab is open to compare",
+        candidateEmptyHint:
+          "The Review Desk manual candidate review is only available while a text file is open in the editor.",
+        candidateInputHint:
+          "Paste a candidate snapshot (AI output, review notes, an alternate draft) to compare against the current buffer.",
+        candidateInputLabel: "Manual candidate text",
+        candidateInputPlaceholder: "Paste candidate text here…",
+        candidatePreviewEmpty:
+          "Press Compare to render a diff preview of the current buffer and the manual candidate here.",
+        candidatePreviewTitle: "Manual candidate preview",
+        candidateSourceManual: "Manual paste",
         close: "Close",
         closeTitle: "Close Review Desk",
         emptyBody:

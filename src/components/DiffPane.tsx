@@ -2,13 +2,20 @@ import type { CompareCase, CompareViewState, MenuLanguage } from "../types";
 import { ChangeReviewView } from "./ChangeReviewView";
 import { FileCompareView } from "./FileCompareView";
 
+// Right-pane compare router. The candidate preview lives in the
+// Review Surface and is rendered through DiffBody directly; this
+// router is intentionally restricted to file / changes cases so the
+// right-pane route never silently tries to render a manual
+// candidate.
+type RightPaneCompareCase = Extract<CompareCase, { kind: "file" | "changes" }>;
+
 export function DiffPane({
   compareCase,
   menuLanguage,
   onClose,
   view,
 }: {
-  compareCase: CompareCase;
+  compareCase: RightPaneCompareCase;
   menuLanguage: MenuLanguage;
   onClose: () => void;
   view: CompareViewState;

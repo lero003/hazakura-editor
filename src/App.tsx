@@ -66,8 +66,15 @@ export default function App() {
   const { rightPaneMode, setRightPaneMode, setReviewSurface, setZenMode, zenMode, reviewSurface } =
     useAppViewState();
   const {
-    reviewDeskMode,
+    candidateCompareCase,
+    candidateCompareView,
+    candidateErrorMessage,
+    candidateInputText,
+    clearCandidate,
     resetReviewDesk,
+    reviewDeskMode,
+    runCandidateCompare,
+    setCandidateInputText,
   } = useReviewDeskState();
   const { toggleReviewDesk, closeReviewDesk } = useReviewDeskController({
     resetReviewDesk,
@@ -679,6 +686,11 @@ export default function App() {
     agentWorkbenchPreference,
     agentWorkbenchProvider,
     agentWorkbenchRestartRequired,
+    candidateCompareCase,
+    candidateCompareView,
+    candidateErrorMessage,
+    candidateInputText,
+    clearCandidate,
     agentModeBadge: agentWorkbenchModeBadge,
     agentModeBadgePending: agentWorkbenchRestartRequired,
     agentModeBadgeTitle: agentWorkbenchCopy.modeBadgeTitle,
@@ -798,8 +810,10 @@ export default function App() {
     reviewTabAgainstDisk: requestReviewTabAgainstDisk,
     restoreDraft,
     revealWorkspacePath,
+    runCandidateCompare,
     runSelectedFileCompare,
     safeEditorCopy,
+    setCandidateInputText,
     saveAllAndCloseWindow,
     saveAndClosePendingTab,
     saveTabById,

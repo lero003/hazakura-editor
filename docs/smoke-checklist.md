@@ -165,7 +165,27 @@ Latest Markdown Review Navigation UI polish checks: 2026-05-30 automated gates p
 
 Latest Pi provider allowlist checks: 2026-05-30 automated gates passed after adding `pi` to the Agent Workbench UI/backend provider allowlist. Local `command -v pi` returned no provider path in this automation environment, so real Pi trusted-workspace smoke remains provider-install dependent and was not claimed.
 
-Latest Review Desk visible shell checks: 2026-06-01 automated gates (`npm run typecheck`, `npm run build:vite`, `git diff --check`) passed after adding the visible Review Desk shell, the `Cmd+Shift+R` toggle, and the `useReviewDeskState` / `useReviewDeskController` skeleton. No fresh built-app toggle smoke was claimed in this session.
+Latest Review Desk visible shell checks: 2026-06-01 automated gates (`npm run typecheck`, `npm run build:vite`, `git diff --check`) passed after adding the visible Review Desk shell, the `Cmd+Shift+R` toggle, and the `useReviewDeskState` / `useReviewDeskController` skeleton. Built-app smoke confirmed Review Desk opens, closes, and returns to the existing workspace surface.
+
+Latest Review Desk manual candidate MVP checks: 2026-06-01 automated gates (`npm run typecheck`, `npm run build:vite`, `git diff --check`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build`) passed after adding the manual candidate paste area, the `kind: "candidate"` `CompareCase` branch, the `runCandidateCompare` hook, the localized candidate copy, and the new `.review-surface-candidate-*` CSS rules. Built-app smoke confirmed manual candidate paste, Compare diff preview, Clear, and Close.
+
+## Review Desk Manual Candidate Review
+
+Run on the built app from `src-tauri/target/release/bundle/macos/hazakura editor.app` after `npm run build`, or on the Vite dev server. The Review Desk manual candidate MVP adds a paste area + diff preview inside the existing Review Desk surface; it does not move the right-pane compare route.
+
+1. Launch the app and confirm the normal workspace renders as before.
+2. Open a throwaway Markdown file with at least a few lines so there is a buffer to compare.
+3. Press `Cmd+Shift+R` (or `Ctrl+Shift+R` on non-mac) and confirm the Review Desk surface opens with the existing empty-state card plus a new "Manual candidate text" paste area (label, hint, textarea, Compare, Clear).
+4. Confirm the Compare button is disabled while the textarea is empty and enabled after a non-empty paste.
+5. Paste a short candidate snapshot (e.g. a slightly edited copy of the buffer) and press Compare. Confirm a diff preview appears with the active buffer as the left column and the candidate as the right column, with added / removed line counts visible.
+6. Edit the candidate textarea, press Compare again, and confirm the diff preview updates to the new content.
+7. Press Clear and confirm the textarea and the diff preview are both reset to the empty state.
+8. Close the Review Desk with the close button, reopen it with `Cmd+Shift+R`, and confirm the previous candidate input and diff are gone (reset path).
+9. With Review Desk open and no editor tab active, confirm the textarea is disabled and a "No editor tab is open to compare" note is visible.
+10. Confirm the right-pane compare route is unchanged: open Diff in the top editor chrome, pick a source and target file, run Compare, and confirm the right pane shows the existing file comparison view (not the candidate preview).
+11. Confirm the existing buffer-vs-disk / draft-vs-disk review paths still work through the right pane and do not leak into the Review Desk surface.
+12. Confirm the Japanese / English menu language switch in Preferences still localizes the new Review Desk copy (input label, hint, placeholder, Compare / Clear, empty heading, preview title).
+
 
 ## Review Desk Visible Shell
 

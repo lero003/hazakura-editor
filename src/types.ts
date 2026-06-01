@@ -250,6 +250,18 @@ export type CompareCase = {
   documentLabel: string;
   leftColumnLabel: string;
   rightColumnLabel: string;
+} | {
+  // Manual candidate paste review: the right column is a
+  // user-typed candidate snapshot, never a path on disk. The
+  // left column is the active buffer. See R-4 manual candidate
+  // MVP in docs/reviews/v0.7-review-desk-design-decisions.md.
+  kind: "candidate";
+  key: string;
+  documentPath: string;
+  documentLabel: string;
+  leftColumnLabel: string;
+  rightColumnLabel: string;
+  candidateSourceLabel: string;
 };
 
 export type CompareViewState = {

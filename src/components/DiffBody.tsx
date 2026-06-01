@@ -234,6 +234,11 @@ function getCaseSidePaths(compareCase: CompareCase): {
         left: compareCase.documentPath,
         right: compareCase.documentPath,
       };
+    case "candidate":
+      return {
+        left: compareCase.documentPath,
+        right: compareCase.documentPath,
+      };
   }
 }
 
