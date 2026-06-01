@@ -2405,6 +2405,36 @@ fn save_pasted_image_writes_supported_image_inside_assets() {
 }
 
 #[test]
+fn save_pasted_image_reuses_existing_hash_asset_for_duplicate_paste() {
+    let dir = unique_test_dir("pasted_image_duplicate");
+    fs::create_dir_all(&dir).expect("create test dir");
+
+    let first = save_pasted_image(
+        dir.to_string_lossy().to_string(),
+        "iVBORw0KGgo=".to_string(),
+        "first-name.png".to_string(),
+    )
+    .expect("save first pasted image");
+    let second = save_pasted_image(
+        dir.to_string_lossy().to_string(),
+        "iVBORw0KGgo=".to_string(),
+        "second-name.png".to_string(),
+    )
+    .expect("save duplicate pasted image");
+
+    assert_eq!(first, second);
+
+    let asset_files = fs::read_dir(dir.join("assets"))
+        .expect("read assets dir")
+        .filter_map(Result::ok)
+        .filter(|entry| entry.path().is_file())
+        .count();
+    assert_eq!(asset_files, 1);
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
 fn save_pasted_image_rejects_non_image_bytes() {
     let dir = unique_test_dir("pasted_non_image");
     fs::create_dir_all(&dir).expect("create test dir");

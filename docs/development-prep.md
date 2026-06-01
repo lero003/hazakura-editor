@@ -10,7 +10,7 @@ Last reviewed: 2026-05-26
 GitHub remote:
 
 ```txt
-https://github.com/lero003/hazakura-note.git
+https://github.com/lero003/hazakura-editor.git
 ```
 
 このディレクトリは、2026-05-26時点で `main` ブランチのGitリポジトリとして初期化済み。

@@ -34,10 +34,11 @@ case "$machine_arch" in
     arch="$machine_arch"
     ;;
 esac
-product_name="hazakura-note"
+product_name="hazakura editor"
+artifact_name="hazakura-editor"
 app_path="src-tauri/target/release/bundle/macos/${product_name}.app"
 dmg_dir="src-tauri/target/release/bundle/dmg"
-dmg_path="${dmg_dir}/${product_name}_${version}_${arch}-warning-expected.dmg"
+dmg_path="${dmg_dir}/${artifact_name}_${version}_${arch}-warning-expected.dmg"
 checksum_path="${dmg_path}.sha256"
 
 if [[ "${SKIP_BUILD:-0}" != "1" ]]; then
@@ -51,7 +52,7 @@ if [[ ! -d "$app_path" ]]; then
 fi
 
 mkdir -p "$dmg_dir"
-staging_root="$(mktemp -d "${dmg_dir}/${product_name}-dmg-root.XXXXXX")"
+staging_root="$(mktemp -d "${dmg_dir}/${artifact_name}-dmg-root.XXXXXX")"
 cleanup() {
   rm -rf "$staging_root"
 }

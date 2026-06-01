@@ -1,11 +1,11 @@
-# hazakura-note
+# hazakura editor
 
 Status: Operational
 Scope: Project entry point
 Authority: High
 Last reviewed: 2026-05-30
 
-`hazakura-note` は、Markdownを中心に安全にテキストを読む・書く・比べるための軽量エディタです。
+`hazakura editor` は、Markdownを中心に安全にテキストを読む・書く・比べるための軽量エディタです。
 
 万能IDEではありません。拡張機能、LSP、Gitクライアント、汎用ターミナル、任意コマンド実行を持たないことで、信頼しきれないプロジェクト内のテキストを静かに扱うことを目的にします。
 
@@ -13,11 +13,11 @@ Last reviewed: 2026-05-30
 
 ## Preview
 
-![hazakura-note normal mode](docs/images/pre0.2-normal-mode.png)
+![hazakura editor normal mode](docs/images/pre0.2-normal-mode.png)
 
-![hazakura-note Agent Workbench mode](docs/images/pre0.2-agent-mode.png)
+![hazakura editor Agent Workbench mode](docs/images/pre0.2-agent-mode.png)
 
-## 0.5 Preview Summary
+## 0.6 Preview Summary
 
 Use this when you want to:
 
@@ -55,7 +55,7 @@ Example use case:
 - Product direction: Markdown-first safe text editor
 - Primary platform direction: Desktop app
 - Preferred initial stack: Tauri + CodeMirror 6 + React
-- Repository remote: `https://github.com/lero003/hazakura-note.git`
+- Repository remote: `https://github.com/lero003/hazakura-editor.git`.
 - Current prototype: Tauri + React + CodeMirror 6で、Markdownを開く・編集する・保存する・プレビューする・複数タブで扱う最小体験を実装済み
 - Optional mode: Agent Workbench は明示的に有効化した場合だけ使える開発者モード的な境界で、Safe Editor Mode とは別の trust boundary として扱います
 
@@ -142,7 +142,7 @@ npm run build
 The built app is generated at:
 
 ```txt
-src-tauri/target/release/bundle/macos/hazakura-note.app
+src-tauri/target/release/bundle/macos/hazakura editor.app
 ```
 
 Build a warning-expected local DMG preview only after that release lane is explicitly approved:
@@ -173,10 +173,10 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current intended preview version is `0.5.0` across npm, Tauri, and Cargo metadata.
+- Current intended preview version is `0.6.0` across npm, Tauri, and Cargo metadata.
 - Source users build locally with `npm ci` and `npm run build`.
 - The generated local `.app` declares macOS 11.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. It is not Developer ID signed or notarized.
-- The v0.5 warning-expected DMG preview notes are prepared in [0.5.0 Warning-expected DMG Preview](docs/releases/0.5.0-warning-expected-dmg-preview.release.md).
+- The v0.6 warning-expected DMG preview notes are drafted in [0.6.0 Warning-expected DMG Preview](docs/releases/0.6.0-warning-expected-dmg-preview.release.md); remote verification must still be filled after publication.
 - Tag creation, push, and GitHub Release publication require explicit user approval.
 
 ## Known Limits

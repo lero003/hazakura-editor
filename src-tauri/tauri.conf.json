@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "hazakura-note",
-  "version": "0.5.0",
+  "productName": "hazakura editor",
+  "version": "0.6.0",
   "identifier": "lab.hazakura.note",
   "build": {
     "beforeDevCommand": "npm run dev:vite",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "hazakura-note",
+        "title": "hazakura editor",
         "width": 1280,
         "height": 820,
         "minWidth": 960,

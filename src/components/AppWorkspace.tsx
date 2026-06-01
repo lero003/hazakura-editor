@@ -1,0 +1,300 @@
+import type {
+  CSSProperties,
+  KeyboardEvent as ReactKeyboardEvent,
+  MouseEvent as ReactMouseEvent,
+  PointerEvent as ReactPointerEvent,
+  RefObject,
+} from "react";
+import type { EditorPaneHandle, EditorSelectionInfo } from "./EditorPane";
+import { EditorMainPane } from "./EditorMainPane";
+import { PaneResizer } from "./PaneResizer";
+import { SidePane } from "./SidePane";
+import { WorkspaceSidebar } from "./WorkspaceSidebar";
+import type { SafeEditorCopy, SidePaneCopy } from "../locale";
+import type {
+  AgentWorkbenchOutputChunk,
+  AgentWorkbenchProvider,
+  AgentWorkbenchSession,
+  WorkspaceTreeEntry,
+} from "../tauri";
+import type {
+  AgentLaunchGateState,
+  AgentTerminalSize,
+  BaseTheme,
+  CompareAnchor,
+  CompareViewState,
+  EditorSettings,
+  EditorTab,
+  ImagePreviewState,
+  MarkdownHeading,
+  MarkdownHeadingContext,
+  MenuLanguage,
+  RecentEntry,
+  ResolvedTheme,
+  RightPaneMode,
+  TextMatch,
+} from "../types";
+import {
+  MAX_PREVIEW_COLUMN_PERCENT,
+  MIN_PREVIEW_COLUMN_PERCENT,
+} from "../types";
+
+type AppWorkspaceProps = {
+  activeContents: string;
+  activeDocumentLineCount: number;
+  activeMatchIndex: number;
+  activeTab: EditorTab | null;
+  agentLaunchGate: AgentLaunchGateState;
+  agentOutput: AgentWorkbenchOutputChunk[];
+  agentSession: AgentWorkbenchSession | null;
+  agentStopPending: boolean;
+  agentWorkbenchProvider: AgentWorkbenchProvider;
+  clearCompareSource: () => void;
+  clearCompareTarget: () => void;
+  closeCompareView: () => void;
+  compareAnchor: CompareAnchor | null;
+  compareTarget: CompareAnchor | null;
+  compareView: CompareViewState | null;
+  createNewFile: () => unknown;
+  currentHeadingLine: number | null;
+  documentHeadings: MarkdownHeading[];
+  documentKey: string;
+  editorPaneRef: RefObject<EditorPaneHandle | null>;
+  editorPreviewGridRef: RefObject<HTMLDivElement | null>;
+  editorPreviewGridStyle: CSSProperties | undefined;
+  editorSettings: EditorSettings;
+  editorTheme: BaseTheme;
+  findMatches: TextMatch[];
+  handleEditorChange: (nextValue: string) => void;
+  handlePasteImage: (
+    dataBase64: string,
+    fileName: string,
+  ) => Promise<string | null>;
+  handlePresetPrompt: (prompt: string) => void;
+  handlePreviewResizeKeyDown: (
+    event: ReactKeyboardEvent<HTMLDivElement>,
+  ) => void;
+  handlePreviewResizePointerDown: (
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) => void;
+  handlePreviewResizePointerMove: (
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) => void;
+  handleSendSelectionToAgent: (text: string) => void;
+  hasWorkspaceSelection: boolean;
+  jumpToHeading: (heading: MarkdownHeading) => void;
+  loadWorkspaceDirectory: (path: string) => Promise<void>;
+  menuLanguage: MenuLanguage;
+  openFile: () => unknown;
+  openFilePath: (path: string) => unknown;
+  openPreviewMarkdownLink: (path: string) => void | Promise<void>;
+  openWorkspace: () => unknown;
+  openWorkspaceContextMenu: (
+    entry: WorkspaceTreeEntry,
+    event: ReactMouseEvent<HTMLButtonElement>,
+  ) => void;
+  openWorkspaceFile: (path: string) => unknown;
+  previewColumnPercent: number;
+  previewPaneRef: RefObject<HTMLDivElement | null>;
+  previewVisible: boolean;
+  recentFiles: RecentEntry[];
+  resolvedTheme: ResolvedTheme;
+  runSelectedFileCompare: () => void;
+  safeEditorCopy: SafeEditorCopy;
+  scrollHudContext: MarkdownHeadingContext;
+  scrollHudLine: number;
+  scrollHudVisible: boolean;
+  selectedImage: ImagePreviewState | null;
+  selectWorkspaceCompareFile: (entry: WorkspaceTreeEntry) => void;
+  setSelectionInfo: (selection: EditorSelectionInfo) => void;
+  sidePaneCopy: SidePaneCopy;
+  sidePaneMode: RightPaneMode | null;
+  sidePaneVisible: boolean;
+  syncEditorScroll: () => void;
+  syncPreviewScroll: (ratio: number) => void;
+  onCheckAgentGate: () => void;
+  onResumeAgentUiRefresh: () => void;
+  onResizeAgentTerminal: (size: AgentTerminalSize) => void;
+  onSendAgentTerminalData: (data: string) => void;
+  onStopAgentSession: () => void;
+  onSuspendAgentUiRefresh: () => void;
+  outlineTruncated: boolean;
+  workspaceRootPath: string | null;
+  workspaceTree: WorkspaceTreeEntry | null;
+};
+
+export function AppWorkspace({
+  activeContents,
+  activeDocumentLineCount,
+  activeMatchIndex,
+  activeTab,
+  agentLaunchGate,
+  agentOutput,
+  agentSession,
+  agentStopPending,
+  agentWorkbenchProvider,
+  clearCompareSource,
+  clearCompareTarget,
+  closeCompareView,
+  compareAnchor,
+  compareTarget,
+  compareView,
+  createNewFile,
+  currentHeadingLine,
+  documentHeadings,
+  documentKey,
+  editorPaneRef,
+  editorPreviewGridRef,
+  editorPreviewGridStyle,
+  editorSettings,
+  editorTheme,
+  findMatches,
+  handleEditorChange,
+  handlePasteImage,
+  handlePresetPrompt,
+  handlePreviewResizeKeyDown,
+  handlePreviewResizePointerDown,
+  handlePreviewResizePointerMove,
+  handleSendSelectionToAgent,
+  hasWorkspaceSelection,
+  jumpToHeading,
+  loadWorkspaceDirectory,
+  menuLanguage,
+  openFile,
+  openFilePath,
+  openPreviewMarkdownLink,
+  openWorkspace,
+  openWorkspaceContextMenu,
+  openWorkspaceFile,
+  previewColumnPercent,
+  previewPaneRef,
+  previewVisible,
+  recentFiles,
+  resolvedTheme,
+  runSelectedFileCompare,
+  safeEditorCopy,
+  scrollHudContext,
+  scrollHudLine,
+  scrollHudVisible,
+  selectedImage,
+  selectWorkspaceCompareFile,
+  setSelectionInfo,
+  sidePaneCopy,
+  sidePaneMode,
+  sidePaneVisible,
+  syncEditorScroll,
+  syncPreviewScroll,
+  onCheckAgentGate,
+  onResumeAgentUiRefresh,
+  onResizeAgentTerminal,
+  onSendAgentTerminalData,
+  onStopAgentSession,
+  onSuspendAgentUiRefresh,
+  outlineTruncated,
+  workspaceRootPath,
+  workspaceTree,
+}: AppWorkspaceProps) {
+  return (
+    <section className="workspace">
+      <WorkspaceSidebar
+        activePath={selectedImage?.path ?? activeTab?.path ?? null}
+        compareSelectionEnabled={sidePaneMode === "compare"}
+        compareSourcePath={compareAnchor?.path ?? null}
+        compareTargetPath={compareTarget?.path ?? null}
+        copy={safeEditorCopy}
+        onLoadDirectory={loadWorkspaceDirectory}
+        onOpenContextMenu={openWorkspaceContextMenu}
+        onOpenFile={(path) => void openWorkspaceFile(path)}
+        onOpenWorkspace={() => void openWorkspace()}
+        onSelectCompareFile={selectWorkspaceCompareFile}
+        workspaceRootPath={workspaceRootPath}
+        workspaceTree={workspaceTree}
+      />
+      <div
+        ref={editorPreviewGridRef}
+        className={`editor-preview-grid${sidePaneVisible ? "" : " preview-hidden"}${hasWorkspaceSelection ? "" : " empty-session"}${sidePaneMode === "compare" ? " diff-workbench" : ""}`}
+        style={editorPreviewGridStyle}
+      >
+        <EditorMainPane
+          activeContents={activeContents}
+          activeDocumentLineCount={activeDocumentLineCount}
+          activeSearchMatchIndex={activeMatchIndex}
+          activeTab={activeTab}
+          copy={safeEditorCopy}
+          documentKey={documentKey}
+          editorPaneRef={editorPaneRef}
+          editorSettings={editorSettings}
+          editorTheme={editorTheme}
+          imagePreviewTitle={sidePaneCopy.imagePreview}
+          menuLanguage={menuLanguage}
+          onChange={handleEditorChange}
+          onNewFile={() => void createNewFile()}
+          onOpenFile={() => void openFile()}
+          onOpenFolder={() => void openWorkspace()}
+          onOpenRecentFile={(path) => void openFilePath(path)}
+          onPasteImage={handlePasteImage}
+          onScrollRatioChange={syncPreviewScroll}
+          onSelectionChange={setSelectionInfo}
+          onSendToAgent={handleSendSelectionToAgent}
+          recentFiles={recentFiles}
+          scrollHudContext={scrollHudContext}
+          scrollHudLine={scrollHudLine}
+          scrollHudVisible={scrollHudVisible}
+          searchMatches={findMatches}
+          selectedImage={selectedImage}
+          workspaceRootPath={workspaceRootPath}
+        />
+        {sidePaneVisible ? (
+          <PaneResizer
+            label={sidePaneCopy.resizeColumns}
+            max={MAX_PREVIEW_COLUMN_PERCENT}
+            min={MIN_PREVIEW_COLUMN_PERCENT}
+            onKeyDown={handlePreviewResizeKeyDown}
+            onPointerDown={handlePreviewResizePointerDown}
+            onPointerMove={handlePreviewResizePointerMove}
+            title={sidePaneCopy.resizeColumnsTitle}
+            value={previewColumnPercent}
+          />
+        ) : null}
+        {sidePaneMode ? (
+          <SidePane
+            activeContents={activeContents}
+            activeTab={activeTab}
+            agentGate={agentLaunchGate}
+            agentOutput={agentOutput}
+            agentProvider={agentWorkbenchProvider}
+            agentSession={agentSession}
+            agentStopPending={agentStopPending}
+            compareSource={compareAnchor}
+            compareTarget={compareTarget}
+            compareView={compareView}
+            copy={sidePaneCopy}
+            currentHeadingLine={currentHeadingLine}
+            documentHeadings={documentHeadings}
+            menuLanguage={menuLanguage}
+            onCheckAgentGate={onCheckAgentGate}
+            onClearCompareSource={clearCompareSource}
+            onClearCompareTarget={clearCompareTarget}
+            onCloseCompareView={closeCompareView}
+            onOpenPreviewLocalLink={openPreviewMarkdownLink}
+            onPresetPrompt={handlePresetPrompt}
+            onPreviewScroll={syncEditorScroll}
+            onRunSelectedFileCompare={runSelectedFileCompare}
+            onSelectHeading={jumpToHeading}
+            onStopAgentSession={onStopAgentSession}
+            onTerminalData={onSendAgentTerminalData}
+            onTerminalEngage={onResumeAgentUiRefresh}
+            onTerminalRelease={onSuspendAgentUiRefresh}
+            onTerminalResize={onResizeAgentTerminal}
+            outlineTruncated={outlineTruncated}
+            previewPaneRef={previewPaneRef}
+            previewVisible={previewVisible}
+            sidePaneMode={sidePaneMode}
+            theme={resolvedTheme}
+            workspaceRootPath={workspaceRootPath}
+          />
+        ) : null}
+      </div>
+    </section>
+  );
+}

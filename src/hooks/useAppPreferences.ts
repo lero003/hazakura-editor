@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { AgentWorkbenchProvider } from "../tauri";
+import { clampNumber } from "../utils";
 import {
   AGENT_WORKBENCH_CONSENT_STORAGE_KEY,
   AGENT_WORKBENCH_ENABLED_STORAGE_KEY,
@@ -222,19 +223,4 @@ function readSystemTheme(): BaseTheme {
   return window.matchMedia("(prefers-color-scheme: dark)").matches
     ? "dark"
     : "light";
-}
-
-function clampNumber(
-  value: unknown,
-  min: number,
-  max: number,
-  fallback: number,
-): number {
-  const numberValue = Number(value);
-
-  if (!Number.isFinite(numberValue)) {
-    return fallback;
-  }
-
-  return Math.min(Math.max(Math.trunc(numberValue), min), max);
 }

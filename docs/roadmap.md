@@ -157,7 +157,57 @@ The rename to `hazakura editor` also signals kinship with the classic サクラ�
 
 v0.6 delivers (✅ = implemented):
 
-1. **App.tsx 分割** ✅ — extracted `useAppPreferences` and `useDocumentExport` into custom hooks. No zustand/Context. Agent Workbench extraction remains optional follow-up because that boundary is more coupled and higher risk.
+1. **App.tsx 分割** ✅ — extracted preferences, document export, auto-backup scheduling, document save/export/backup controller hook, document export and backup integration hook, Quick Open visibility, active editor commands including Insert Table, editor tabs state hook, editor selection state hook, app feedback state hook, dialog state hook, view mode state hook, draft recovery state hook, document safety action controller hook, file opening/new-file behavior, workspace/file opening controller hook, tab/window close flow, recovery actions, compare controller hook, compare setup actions, compare execution/review callbacks, compare state hook, tab bar controller hook, tab navigation, workspace shell state hook, workspace runtime effects hook, workspace restore, workspace opening, workspace tree loading, Go to Line state/key handling, image preview state/open-close handling, editor tab and active-draft derived state, active document identity/presence hook, active document surface hook, side pane controller hook, side pane visibility, resizing, and toggles, preview scroll sync, Agent output buffering, Agent UI refresh suspension, opened files listener, window drag-drop listener, app menu action listener, native menu action bundle ref hook, native menu integration hook, app shell/menu/title/theme/workspace persistence sync hook, keyboard/focus effects hook, app runtime effects controller hook, dialog/window-close ref and dialog open-state hook, app editor ref hook, app activity listeners, window close confirmation, workspace context-menu state and dismissal, latest-value refs for App handlers/state and auto-backup state, preview cleanup, Agent output sequence cursor, active-tab external-change checks, Agent Workbench runtime state hook, active Agent session derivation, Agent Workbench session sync, Agent Workbench session lifecycle/UI callbacks, draft persistence, tab reordering, workspace tree replacement, workspace state persistence, clipboard writing, recent entries state/persistence, window title sync, native app menu state sync, theme menu state sync, localized app copy hook, editor tab utility helpers, numeric clamp helper reuse, status message localization, keyboard/IME and global shortcut guards, global keyboard shortcuts, Agent session comparison helpers, document status calculation, Markdown outline calculation, Markdown local-link resolution, localStorage persistence helpers, modal focus-trap helper, dialog initial focus, modal keyboard guard, Find/Replace state and match-count hook, Find/Replace match calculation, Find match index sync, Find/Replace actions, Find/Replace controller hook, diff calculation, top tab/document chrome shell, the tab bar view, document metadata controls, Find/Replace and recovery message shell, recovery message banners, workspace shell, workspace sidebar, editor main pane, pane resizer, right side pane, dirty-close dialogs, status bar shell, status bar, Preferences dialog shell, normal settings pane, Agent Workbench settings pane, and the Find/Replace bar view into focused hooks/components. No zustand/Context. Agent Workbench extraction remains optional follow-up because that boundary is more coupled and higher risk.
+   - Follow-up slice: compare execution/review actions now live in `src/hooks/useCompareExecution.ts`; compare setup remains in `src/hooks/useCompareSetupActions.ts`.
+   - Follow-up slice: save/save-as actions now live in `src/hooks/useSaveActions.ts`.
+   - Follow-up slice: external-change action handling now lives in `src/hooks/useExternalChangeActions.ts`.
+   - Follow-up slice: editor content-change, Markdown insert, and heading-jump actions now live in `src/hooks/useEditorCommands.ts`.
+   - Follow-up slice: window/dialog actions now live in `src/hooks/useWindowDialogActions.ts`.
+   - Follow-up slice: pasted-image save handling now lives in `src/hooks/usePastedImageAction.ts`.
+   - Follow-up slice: Agent Workbench Preferences action handlers now live in `src/hooks/useAgentWorkbenchPreferenceActions.ts`.
+   - Follow-up slice: Agent terminal interaction handlers now live in `src/hooks/useAgentTerminalActions.ts`.
+   - Follow-up slice: Agent Workbench session lifecycle actions and UI callbacks now live in `src/hooks/useAgentWorkbenchSessionActions.ts`.
+   - Follow-up slice: dirty-close dialogs, Quick Open, Preferences, and workspace context-menu overlay rendering now live in `src/components/AppOverlays.tsx`.
+   - Follow-up slice: main workspace shell rendering now lives in `src/components/AppWorkspace.tsx`.
+   - Follow-up slice: top tab/document chrome shell rendering now lives in `src/components/AppTopChrome.tsx`.
+   - Follow-up slice: Find/Replace and recovery message shell rendering now lives in `src/components/AppDocumentFeedback.tsx`.
+   - Follow-up slice: native menu action bundle refs now live in `src/hooks/useAppMenuActionsRef.ts`.
+   - Follow-up slice: native menu action refs/listener wiring now lives in `src/hooks/useAppMenuIntegration.ts`.
+   - Follow-up slice: document export actions and auto-backup scheduling now route through `src/hooks/useDocumentPersistence.ts`.
+   - Follow-up slice: workspace tree loading, workspace opening, and file opening now route through `src/hooks/useWorkspaceFileOpening.ts`.
+   - Follow-up slice: tab close, recovery, and external-change actions now route through `src/hooks/useDocumentSafetyActions.ts`.
+   - Follow-up slice: compare setup and execution actions now route through `src/hooks/useCompareController.ts`.
+   - Follow-up slice: save/save-as, export, and auto-backup wiring now route through `src/hooks/useDocumentIoController.ts`.
+   - Follow-up slice: tab navigation and pointer reordering wiring now route through `src/hooks/useTabBarController.ts`.
+   - Follow-up slice: localized app copy and Agent mode badge derivation now live in `src/hooks/useLocalizedAppCopy.ts`.
+   - Follow-up slice: status bar localization and Agent label rendering now lives in `src/components/AppStatusBar.tsx`.
+   - Follow-up slice: dialog/window-close refs and modal-open derivation now live in `src/hooks/useAppDialogRefs.ts`.
+   - Follow-up slice: Find/Replace panel state and match derivation now live in `src/hooks/useFindReplaceState.ts`.
+   - Follow-up slice: editor/find/preview/tabs refs now live in `src/hooks/useAppEditorRefs.ts`.
+   - Follow-up slice: compare view state now lives in `src/hooks/useCompareState.ts`.
+   - Follow-up slice: workspace shell state now lives in `src/hooks/useWorkspaceShellState.ts`.
+   - Follow-up slice: editor selection state now lives in `src/hooks/useEditorSelectionState.ts`.
+   - Follow-up slice: dialog state now lives in `src/hooks/useAppDialogState.ts`.
+   - Follow-up slice: view mode state now lives in `src/hooks/useAppViewState.ts`.
+   - Follow-up slice: draft recovery state now lives in `src/hooks/useDraftRecoveryState.ts`.
+   - Follow-up slice: app feedback state now lives in `src/hooks/useAppFeedbackState.ts`.
+   - Follow-up slice: editor tabs state now lives in `src/hooks/useEditorTabsState.ts`.
+   - Follow-up slice: Agent Workbench runtime state now lives in `src/hooks/useAgentWorkbenchRuntimeState.ts`.
+   - Follow-up slice: active Agent session derivation now lives in `src/hooks/useAgentWorkbenchRuntimeState.ts`.
+   - Follow-up slice: active document identity derivation now lives in `src/hooks/useActiveDocumentIdentity.ts`.
+   - Follow-up slice: pending close-tab dialog open-state derivation now lives in `src/hooks/useAppDialogRefs.ts`.
+   - Follow-up slice: active document presence derivation now lives in `src/hooks/useActiveDocumentIdentity.ts`.
+   - Follow-up slice: active document surface derivation now lives in `src/hooks/useActiveDocumentSurface.ts`.
+   - Follow-up slice: side pane state/resize/toggle orchestration now lives in `src/hooks/useSidePaneController.ts`.
+   - Follow-up slice: app shell/menu/title/theme/workspace persistence sync now lives in `src/hooks/useAppShellSync.ts`.
+   - Follow-up slice: workspace restore/opened-files/drag-drop/context-menu effects now live in `src/hooks/useWorkspaceRuntimeEffects.ts`.
+   - Follow-up slice: keyboard/focus effects now live in `src/hooks/useAppKeyboardFocusEffects.ts`.
+   - Follow-up slice: Find/Replace state/actions/index sync now live in `src/hooks/useFindReplaceController.ts`.
+   - Follow-up slice: app activity/session/shell/workspace/keyboard effects now route through `src/hooks/useAppRuntimeEffects.ts`.
+   - Follow-up slice: Find/Replace match-count derivation now lives in `src/hooks/useFindReplaceState.ts`.
+   - Follow-up slice: Insert Table command handling now lives in `src/hooks/useEditorCommands.ts`.
+   - Follow-up slice: Compare review UI callbacks now live in `src/hooks/useCompareExecution.ts`.
+   - Bug-check slice: duplicate pasted-image saves are regression-tested to reuse the existing hash-named `assets/<hash>.png`.
 2. **Cmd+P クイックオープン** ✅ — fzf-style file name search + Enter to open.
 3. **自動保存 + バックアップ** ✅ — periodic save to `.hazakura/backups/` with Draft restore recovery. Trust foundation.
 4. **Replace (置換)** ✅ — Find bar gets replace input, Replace one / Replace all.
@@ -169,6 +219,8 @@ v0.6 delivers (✅ = implemented):
 10. **矩形選択 (Rectangular selection)** ✅ — Alt+Shift+drag.
 
 **v0.6 progress: 10/10 items implemented.**
+
+Release-prep checkpoint: stop additional v0.6 refactor work here unless a release-blocking bug appears. Version surfaces are aligned to `0.6.0`, local app/release naming now uses `hazakura editor` / `hazakura-editor`, the GitHub repository moved to `lero003/hazakura-editor`, the warning-expected DMG preview builds and verifies locally, and focused built-app smoke passed for save/export, compare/diff, tab reorder, auto-backup, Replace, and Quick Open. Before tagging, review the pushed source branch and perform release approval.
 
 Deliberately deferred to v0.7:
 - Global Search (Cmd+Shift+F)

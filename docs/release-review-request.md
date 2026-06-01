@@ -1,91 +1,82 @@
-# Release Review Request — v0.5.0
+# Release Review Request - v0.6.0 preparation
 
-この文書は hazakura-note v0.5.0 のリリース判定を依頼するための外部レビューブリーフです。
-以下を確認し、リリース可否の判断をお願いします。
+この文書は hazakura-note v0.6.0 のリリース準備に入るための外部レビューブリーフです。
+まだタグ作成・公開は行っていません。ローカルの warning-expected DMG 候補は生成・検証済みです。
 
 ---
 
-## プロジェクト / リリース対象
+## Project / Release Target
 
-| 項目 | 値 |
+| Item | Value |
 |---|---|
-| プロジェクト | hazakura-note — Markdown-safe editor with optional Agent Workbench |
-| 現在の公開バージョン | v0.4.0 (2026-05-30) |
-| 候補バージョン | **v0.5.0** |
-| 現在のブランチ | `main` (origin/main より 31 commit ahead) |
-| ワークツリー | clean |
-| 最新版からの追補コミット | 31 commits (v0.4.0..HEAD) |
+| Project | hazakura editor (renamed from hazakura-note for v0.6 release prep) |
+| Current documented public preview | v0.4.0 warning-expected DMG preview |
+| Current version surfaces | `0.6.0` in npm, Tauri, and Cargo metadata |
+| Candidate version | **v0.6.0** |
+| Current branch | `main`; push target is `https://github.com/lero003/hazakura-editor.git` |
+| Worktree expectation | Clean after the v0.6 refactor/release-prep commit is staged and pushed |
 
-## リリース意図
+## Release Intent
 
-v0.5 のテーマは **Pi CLI Provider + App Stability**。
-Pi を Agent Workbench の allowlisted CLI provider として追加し、
-v0.4 Markdown Review Navigation で出し切れなかった polish 機能を仕上げて
-warning-expected DMG preview として配布する。
+v0.6 is the **Foundation Release / Daily-Drivable Safe Editor** checkpoint.
+The purpose is not to add another broad feature wave; it is to stop the large
+App.tsx refactor at a useful boundary, verify the implemented v0.6 behavior,
+and prepare the warning-expected DMG preview lane.
 
-- 画像ペースト（assets/ 保存 → プレビュー/エクスポート表示）
-- 画像ドラッグ＆ドロップ（assets/ 取込）
-- 重複画像のハッシュベース自動統合
-- HTML / Print to PDF エクスポート
-- Zen Mode、Spellcheck Toggle、Table Insertion
-- Agent Workbench ターミナル安定化（resize debounce）
+Keep the product boundary intact:
 
-## 今回実装されたもの
+- Safe Editor remains primary.
+- Agent Workbench remains optional and explicitly gated.
+- No Context/zustand migration, UI refresh, Agent Workbench rewrite, or v0.7 feature work belongs in this release prep.
 
-- **Pi CLI Provider の allowlist 追加**: Agent Workbench のプロバイダー選択肢に `pi` を追加。既存の codex/opencode と同様の起動ゲート・同意・単一セッション制約を維持
-- **Image paste**: Cmd+V でクリップボード画像 → `assets/<hash>.png` → `![](assets/xxx)` 挿入。ワークスペースなしでもファイルの親ディレクトリに assets/ を作成
-- **Image drag & drop**: 画像ファイルをウィンドウにドロップ → assets/ に取込 → `![](assets/xxx)` 挿入
-- **Hash-based dedup**: 同じ画像を複数回ペーストしても1ファイルしか増えない（FNV-1a ハッシュ + 存在チェック）
-- **Image preview**: assets/ 内の画像がプレビューに表示され、HTML エクスポートにも data:URI で埋め込まれる
-- **HTML export**: Save As ダイアログ → スタンドアロン HTML ファイル書き出し（テーマCSS反映、画像インライン可）
-- **Print to PDF**: `window.print()` → フォールバックでブラウザで開いて印刷
-- **Zen Mode**: Cmd+Shift+F で全UI非表示、Escape で解除、エディタが中央寄せ
-- **Spellcheck toggle**: Cmd+Option+; でネイティブスペルチェック ON/OFF
-- **Table insertion**: ツールバーボタン / Cmd+Shift+T で3列Markdownテーブル挿入
-- **Agent Workbench**: ターミナルリサイズ debounce (100ms)、終了状態の視覚スタイル
+## Implemented Scope To Review
 
-## 検証結果
+- App.tsx responsibility split into focused hooks and shell components.
+- Cmd+P Quick Open.
+- Workspace auto-backups for dirty tabs, with Preferences > Application ON/OFF.
+- Replace one / Replace all fixes, including empty replacement text.
+- Agent output differential polling and selected-text send behavior.
+- Preset Agent prompt chips.
+- Pointer-based tab drag/reorder behavior.
+- Multi-cursor and rectangular selection support.
+- Markdown/image/export stability work carried forward from v0.5 follow-up.
 
-| チェック項目 | 結果 |
+## Local Checks Run In This Prep Pass
+
+| Check | Result |
 |---|---|
-| `npm run typecheck` (TypeScript) | ✅ Passed |
-| `npm run build:vite` | ✅ Passed (chunk size 警告は既存) |
-| `npm run build` (tauri build) | ✅ Passed (release + ad-hoc signed .app) |
-| `cargo test` (78 tests) | ✅ All passed |
-| `cargo fmt -- --check` | ✅ (直近実行) |
-| `git diff --check` | ✅ Clean |
-| 既存の DMG リリース手順 | 「appファイルビルド」まで確認済み |
+| `npm run typecheck` | Passed |
+| `git diff --check` | Passed |
+| `cargo test --manifest-path src-tauri/Cargo.toml` | Passed: 82 tests |
+| `npm run build` | Passed; Vite chunk-size warning remains expected |
+| `codesign --verify --deep --strict --verbose=2 "src-tauri/target/release/bundle/macos/hazakura editor.app"` | Passed |
+| Built app bundle version inspection | Reports `0.6.0` / `lab.hazakura.note` / `hazakura editor` / `hazakura-editor` |
+| `SKIP_BUILD=1 npm run build:dmg-preview` | Passed; generated `hazakura-editor_0.6.0_aarch64-warning-expected.dmg` |
+| `shasum -c hazakura-editor_0.6.0_aarch64-warning-expected.dmg.sha256` | Passed |
+| Mounted DMG app metadata and codesign | Passed |
+| `spctl -a -vv -t open "src-tauri/target/release/bundle/macos/hazakura editor.app"` | Rejected with `source=Insufficient Context`, expected for warning-expected preview |
+| Built-app focused UI smoke via Computer Use | Passed for launch, temp-file open/save, Export as HTML, split Diff comparison, tab drag reorder, previous/next tab focus, Replace all, Cmd+P Quick Open overlay, Preferences > Application auto-backup ON/OFF, and a real auto-backup write under `.hazakura/backups/` |
+| Browser smoke | Not run: in-app Browser returned `Browser is not available: iab` in this session |
 
-## リリース前の既知ギャップ
+## Known Pre-Release Gaps
 
-1. **Print to PDF は `window.print()` 非対応のためブラウザフォールバック**
-   - Tauri v2 + WKWebView の制約。ブラウザで開いたあと Cmd+P → PDF保存になる
-2. **DMG ビルド未実施**（`npm run build:dmg-preview` が必要）
-3. **リリースノート未作成**（テンプレートは `docs/releases/` にある）
-4. **バージョン未 bump**（現状すべて `0.4.0`）
+1. Remote GitHub Release verification is not applicable yet because no v0.6 tag or assets exist.
+2. The GitHub repository has moved to `lero003/hazakura-editor`; verify the pushed source branch before tagging.
 
-## リスク / レビューフォーカス
+## Reviewer Focus
 
-- **画像ペーストの CSP 安全性**: `asset://localhost/` + `https://asset.localhost` のみ許可。任意のローカルファイル読み込みは不可
-- **コードサイズ**: `index.js` 1.3MB (417KB gzip)。増加傾向。動的インポート分割は未着手
-- **署名・公証**: Ad-hoc signing のみ。Gatekeeper 警告が出ることを前提とした warning-expected リリース
-- **ドキュメント: authoring-feature-readiness.md は更新済み**だが、smoke-checklist.md は今回の新機能に対応していない
-- **旧リリースタグ**: すべて immutable。v0.5.0 は新規タグ
+- Is the App.tsx refactor now a good enough v0.6 boundary, or should any remaining extraction be deferred to v0.7+?
+- Are the v0.6 claims in README/current-status/roadmap narrower than the actual implementation?
+- Confirm that the v0.6 release should use `hazakura editor` as the app-facing product name and `hazakura-editor` as the release artifact basename.
+- Is the App.tsx split, name alignment, and focused built-app smoke evidence enough to approve tagging after commit review?
 
-## レビュアーへの質問
+## Recommended Next Steps
 
-1. **このバージョンに命名されている `v0.5` のスコープ（Pi CLI provider + App Stability）に対して、今回の追加機能群は適切か？** それとも `v0.6` にずらすべきか？
-2. **画像ペースト + 重複検出の実装は「release claim」に十分な完成度か？** （alt text入力UIの不在、smoke未実施をどう評価するか）
-3. **DMG ビルド + バージョン bump + リリースノート作成の完了をもって「リリース可」とするか？**
-4. **今回のリリースで解決しないまま次のマイルストーンに送る課題は何か？**
+1. Stop v0.6 refactoring here unless a release-blocking bug appears.
+2. Review the pushed v0.6 refactor, rename, and release-prep commit.
+3. Publish as a prerelease only after approval, then remote-download and verify the uploaded assets.
 
-## 現時点の推奨
+## Current Recommendation
 
-**条件付きリリース可**。以下の完了を条件として推奨します：
-
-1. `package.json` / `Cargo.toml` / `tauri.conf.json` のバージョンを `0.5.0` に統一
-2. `docs/releases/0.5.0-warning-expected-dmg-preview.release.md` を作成
-3. `npm run build:dmg-preview` で DMG + SHA-256 checksum 生成
-4. GitHub Release (prerelease) に DMG アップロード
-
-上記が完了すれば、warning-expected DMG preview として公開可能な状態です。
+Proceed to v0.6 release preparation, but do not tag or publish yet.
+The local code gates, warning-expected DMG generation, checksum verification, mounted-app metadata check, codesign check, expected Gatekeeper rejection, and focused UI smoke now pass. Remaining work is source-branch review, release approval, publication, and remote asset verification.

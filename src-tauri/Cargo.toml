@@ -1,6 +1,6 @@
 [package]
-name = "hazakura-note"
-version = "0.5.0"
+name = "hazakura-editor"
+version = "0.6.0"
 description = "Markdown-safe editor prototype"
 authors = ["Hazakura Lab"]
 edition = "2021"
