@@ -4,6 +4,7 @@ import type {
   EditorSelectionInfo,
 } from "../components/EditorPane";
 import type {
+  CompareCase,
   CompareViewState,
   EditorTab,
   ImagePreviewState,
@@ -20,6 +21,7 @@ type UseActiveDocumentSurfaceOptions = {
   activeTab: EditorTab | null;
   compareView: CompareViewState | null;
   editorPaneRef: RefObject<EditorPaneHandle | null>;
+  getCompareCaseByKey: (caseKey: string) => CompareCase | undefined;
   hasActiveDocument: boolean;
   menuLanguage: MenuLanguage;
   noFileOpenText: string;
@@ -35,6 +37,7 @@ export function useActiveDocumentSurface({
   activeTab,
   compareView,
   editorPaneRef,
+  getCompareCaseByKey,
   hasActiveDocument,
   menuLanguage,
   noFileOpenText,
@@ -49,6 +52,9 @@ export function useActiveDocumentSurface({
       hasActiveDocument,
       selectionLine: selectionInfo.line,
     });
+  const compareCase = compareView
+    ? getCompareCaseByKey(compareView.caseKey) ?? null
+    : null;
   const {
     documentMeta,
     lineCount: activeDocumentLineCount,
@@ -57,6 +63,7 @@ export function useActiveDocumentSurface({
     activeContents,
     activeDirty,
     activeTab,
+    compareCase,
     compareView,
     currentMarkdownHeading,
     menuLanguage,

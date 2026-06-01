@@ -4,6 +4,7 @@ import type {
   AgentLaunchGateState,
   AgentTerminalSize,
   CompareAnchor,
+  CompareCase,
   CompareViewState,
   EditorTab,
   MarkdownHeading,
@@ -37,6 +38,7 @@ type SidePaneProps = {
   copy: SidePaneCopy;
   currentHeadingLine: number | null;
   documentHeadings: MarkdownHeading[];
+  getCompareCaseByKey: (caseKey: string) => CompareCase | undefined;
   menuLanguage: MenuLanguage;
   onCheckAgentGate: () => void;
   onClearCompareSource: () => void;
@@ -74,6 +76,7 @@ export function SidePane({
   copy,
   currentHeadingLine,
   documentHeadings,
+  getCompareCaseByKey,
   menuLanguage,
   onCheckAgentGate,
   onClearCompareSource,
@@ -96,6 +99,10 @@ export function SidePane({
   theme,
   workspaceRootPath,
 }: SidePaneProps) {
+  const compareCase = compareView
+    ? getCompareCaseByKey(compareView.caseKey) ?? null
+    : null;
+
   return (
     <div
       className="pane preview-pane"
@@ -103,9 +110,10 @@ export function SidePane({
       aria-label={sidePaneAriaLabel(sidePaneMode, copy)}
       onScroll={sidePaneMode === "preview" ? onPreviewScroll : undefined}
     >
-      {sidePaneMode === "compare" && compareView ? (
+      {sidePaneMode === "compare" && compareView && compareCase ? (
         <DiffPane
           menuLanguage={menuLanguage}
+          compareCase={compareCase}
           view={compareView}
           onClose={onCloseCompareView}
         />

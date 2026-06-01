@@ -8,6 +8,7 @@ import { openTextFile } from "../tauri";
 import { localizeCompareError } from "../utils";
 import type {
   CompareAnchor,
+  CompareCase,
   CompareViewState,
   DraftRecord,
   EditorTab,
@@ -22,6 +23,7 @@ type UseCompareExecutionOptions = {
   compareAnchor: CompareAnchor | null;
   compareTarget: CompareAnchor | null;
   menuLanguage: MenuLanguage;
+  setCompareCaseEntry: (entry: CompareCase) => void;
   setCompareSource: (file: CompareAnchor) => void;
   setCompareView: Dispatch<SetStateAction<CompareViewState | null>>;
   setGlobalError: Dispatch<SetStateAction<string | null>>;
@@ -36,6 +38,7 @@ export function useCompareExecution({
   compareAnchor,
   compareTarget,
   menuLanguage,
+  setCompareCaseEntry,
   setCompareSource,
   setCompareView,
   setGlobalError,
@@ -52,15 +55,20 @@ export function useCompareExecution({
         const diff = buildLineDiff(diskDocument.contents, tab.contents);
         const diskLabel = menuLanguage === "ja" ? "ディスク" : "Disk";
         const editorLabel = menuLanguage === "ja" ? "エディタ" : "Editor";
-
-        setCompareView({
+        const caseKey = crypto.randomUUID();
+        const compareCase: CompareCase = {
           kind: "changes",
-          leftPath: tab.path,
-          leftName: `${tab.name} (${diskLabel})`,
+          key: caseKey,
+          scope: "buffer-vs-disk",
+          documentPath: tab.path,
+          documentLabel: tab.name,
           leftColumnLabel: diskLabel,
-          rightPath: tab.path,
-          rightName: `${tab.name} (${editorLabel})`,
           rightColumnLabel: editorLabel,
+        };
+
+        setCompareCaseEntry(compareCase);
+        setCompareView({
+          caseKey,
           ...diff,
         });
         setStatus("Change review ready");
@@ -72,7 +80,7 @@ export function useCompareExecution({
         setStatus("Change review failed");
       }
     },
-    [menuLanguage, setCompareView, setGlobalError, setStatus],
+    [menuLanguage, setCompareCaseEntry, setCompareView, setGlobalError, setStatus],
   );
 
   const reviewDraftAgainstDisk = useCallback(
@@ -85,15 +93,20 @@ export function useCompareExecution({
         const diff = buildLineDiff(diskDocument.contents, draft.contents);
         const diskLabel = menuLanguage === "ja" ? "ディスク" : "Disk";
         const draftLabel = menuLanguage === "ja" ? "下書き" : "Draft";
-
-        setCompareView({
+        const caseKey = crypto.randomUUID();
+        const compareCase: CompareCase = {
           kind: "changes",
-          leftPath: tab.path,
-          leftName: `${tab.name} (${diskLabel})`,
+          key: caseKey,
+          scope: "draft-vs-disk",
+          documentPath: tab.path,
+          documentLabel: tab.name,
           leftColumnLabel: diskLabel,
-          rightPath: tab.path,
-          rightName: `${tab.name} (${draftLabel})`,
           rightColumnLabel: draftLabel,
+        };
+
+        setCompareCaseEntry(compareCase);
+        setCompareView({
+          caseKey,
           ...diff,
         });
         setStatus("Change review ready");
@@ -105,7 +118,7 @@ export function useCompareExecution({
         setStatus("Change review failed");
       }
     },
-    [menuLanguage, setCompareView, setGlobalError, setStatus],
+    [menuLanguage, setCompareCaseEntry, setCompareView, setGlobalError, setStatus],
   );
 
   const requestReviewTabAgainstDisk = useCallback(
@@ -174,15 +187,27 @@ export function useCompareExecution({
                   menuLanguage === "ja" ? "比較先" : "Target",
               };
         const diff = buildLineDiff(source.contents, rightDocument.contents);
-
-        setCompareView({
+        const caseKey = crypto.randomUUID();
+        const compareCase: CompareCase = {
           kind: "file",
+          key: caseKey,
           leftPath: source.path,
-          leftName: source.name,
-          leftColumnLabel: source.leftColumnLabel,
           rightPath: rightFile.path,
-          rightName: rightFile.name,
-          rightColumnLabel: source.rightColumnLabel,
+          anchor: {
+            path: source.path,
+            name: source.name,
+            label: source.leftColumnLabel,
+          },
+          target: {
+            path: rightFile.path,
+            name: rightFile.name,
+            label: source.rightColumnLabel,
+          },
+        };
+
+        setCompareCaseEntry(compareCase);
+        setCompareView({
+          caseKey,
           ...diff,
         });
         setRightPaneMode("compare");
@@ -201,6 +226,7 @@ export function useCompareExecution({
       closeWorkspaceContextMenu,
       compareAnchor,
       menuLanguage,
+      setCompareCaseEntry,
       setCompareSource,
       setCompareView,
       setGlobalError,

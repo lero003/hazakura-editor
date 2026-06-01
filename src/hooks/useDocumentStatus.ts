@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import type {
+  CompareCase,
   CompareViewState,
   EditableLineEnding,
   EditorTab,
@@ -23,6 +24,7 @@ type UseDocumentStatusParams = {
   activeContents: string;
   activeDirty: boolean;
   activeTab: EditorTab | null;
+  compareCase: CompareCase | null;
   compareView: CompareViewState | null;
   currentMarkdownHeading: MarkdownHeading | null;
   menuLanguage: MenuLanguage;
@@ -36,6 +38,7 @@ export function useDocumentStatus({
   activeContents,
   activeDirty,
   activeTab,
+  compareCase,
   compareView,
   currentMarkdownHeading,
   menuLanguage,
@@ -54,8 +57,8 @@ export function useDocumentStatus({
   );
   const compareMeta = sidePaneMode === "compare" && compareView
     ? menuLanguage === "ja"
-      ? `${compareView.kind === "changes" ? "変更確認" : "比較"} · ${compareView.additions} 追加 · ${compareView.removals} 削除`
-      : `${compareView.kind === "changes" ? "Change review" : "Comparison"} · ${compareView.additions} added · ${compareView.removals} removed`
+      ? `${compareCase?.kind === "changes" ? "変更確認" : "比較"} · ${compareView.additions} 追加 · ${compareView.removals} 削除`
+      : `${compareCase?.kind === "changes" ? "Change review" : "Comparison"} · ${compareView.additions} added · ${compareView.removals} removed`
     : null;
   const documentMeta = activeTab
     ? formatActiveDocumentMeta(stats, activeTab, activeDirty, menuLanguage)

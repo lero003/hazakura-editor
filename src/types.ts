@@ -229,14 +229,25 @@ export type DiffDisplayRow =
       row: DiffSplitRow;
     };
 
-export type CompareViewState = {
-  kind: "file" | "changes";
+export type CompareCase = {
+  kind: "file";
+  key: string;
   leftPath: string;
-  leftName: string;
-  leftColumnLabel?: string;
   rightPath: string;
-  rightName: string;
-  rightColumnLabel?: string;
+  anchor: { path: string; name: string; label: string };
+  target: { path: string; name: string; label: string };
+} | {
+  kind: "changes";
+  key: string;
+  scope: "buffer-vs-disk" | "draft-vs-disk" | "conflict-vs-disk";
+  documentPath: string;
+  documentLabel: string;
+  leftColumnLabel: string;
+  rightColumnLabel: string;
+};
+
+export type CompareViewState = {
+  caseKey: string;
   lines: DiffLine[];
   additions: number;
   removals: number;

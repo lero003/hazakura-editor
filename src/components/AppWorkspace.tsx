@@ -22,6 +22,7 @@ import type {
   AgentTerminalSize,
   BaseTheme,
   CompareAnchor,
+  CompareCase,
   CompareViewState,
   EditorSettings,
   EditorTab,
@@ -65,6 +66,7 @@ type AppWorkspaceProps = {
   editorSettings: EditorSettings;
   editorTheme: BaseTheme;
   findMatches: TextMatch[];
+  getCompareCaseByKey: (caseKey: string) => CompareCase | undefined;
   handleEditorChange: (nextValue: string) => void;
   handlePasteImage: (
     dataBase64: string,
@@ -149,6 +151,7 @@ export function AppWorkspace({
   editorSettings,
   editorTheme,
   findMatches,
+  getCompareCaseByKey,
   handleEditorChange,
   handlePasteImage,
   handlePresetPrompt,
@@ -269,6 +272,7 @@ export function AppWorkspace({
             compareTarget={compareTarget}
             compareView={compareView}
             copy={sidePaneCopy}
+            getCompareCaseByKey={getCompareCaseByKey}
             currentHeadingLine={currentHeadingLine}
             documentHeadings={documentHeadings}
             menuLanguage={menuLanguage}
