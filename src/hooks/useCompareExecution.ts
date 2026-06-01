@@ -28,6 +28,7 @@ type UseCompareExecutionOptions = {
   setCompareView: Dispatch<SetStateAction<CompareViewState | null>>;
   setGlobalError: Dispatch<SetStateAction<string | null>>;
   setRightPaneMode: Dispatch<SetStateAction<RightPaneMode>>;
+  setSidePaneOpen: Dispatch<SetStateAction<boolean>>;
   setStatus: Dispatch<SetStateAction<string>>;
 };
 
@@ -43,6 +44,7 @@ export function useCompareExecution({
   setCompareView,
   setGlobalError,
   setRightPaneMode,
+  setSidePaneOpen,
   setStatus,
 }: UseCompareExecutionOptions) {
   const reviewTabAgainstDisk = useCallback(
@@ -72,6 +74,7 @@ export function useCompareExecution({
           ...diff,
         });
         setRightPaneMode("compare");
+        setSidePaneOpen(true);
         setStatus("Change review ready");
       } catch (err) {
         const message = String(err);
@@ -87,6 +90,7 @@ export function useCompareExecution({
       setCompareView,
       setGlobalError,
       setRightPaneMode,
+      setSidePaneOpen,
       setStatus,
     ],
   );
@@ -118,6 +122,7 @@ export function useCompareExecution({
           ...diff,
         });
         setRightPaneMode("compare");
+        setSidePaneOpen(true);
         setStatus("Change review ready");
       } catch (err) {
         const message = String(err);
@@ -133,6 +138,7 @@ export function useCompareExecution({
       setCompareView,
       setGlobalError,
       setRightPaneMode,
+      setSidePaneOpen,
       setStatus,
     ],
   );

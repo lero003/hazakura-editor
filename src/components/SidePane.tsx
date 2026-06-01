@@ -43,7 +43,7 @@ type SidePaneProps = {
   onCheckAgentGate: () => void;
   onClearCompareSource: () => void;
   onClearCompareTarget: () => void;
-  onCloseCompareView: () => void;
+  onCloseCompareView: (options?: { returnToEditor?: boolean }) => void;
   onOpenPreviewLocalLink: (path: string) => void | Promise<void>;
   onPresetPrompt: (prompt: string) => void;
   onPreviewScroll: () => void;
@@ -122,7 +122,11 @@ export function SidePane({
           menuLanguage={menuLanguage}
           compareCase={rightPaneCompareCase}
           view={compareView}
-          onClose={onCloseCompareView}
+          onClose={() =>
+            onCloseCompareView({
+              returnToEditor: rightPaneCompareCase.kind === "changes",
+            })
+          }
         />
       ) : sidePaneMode === "compare" ? (
         <DiffSetupPane

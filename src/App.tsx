@@ -455,6 +455,7 @@ export default function App() {
     setCompareView,
     setGlobalError,
     setRightPaneMode,
+    setSidePaneOpen,
     setStatus,
   });
 

@@ -316,14 +316,20 @@ Do not use v0.8 to add Git integration, merge editing, project-wide indexing, ar
 
 Goal: make the product feel coherent enough for broader preview feedback before the v1.0 distribution lane. This is still a preview-quality lane, not a signed/notarized release promise.
 
+Focus this lane on the refactoring and quality-stabilization work that should wait until the v0.8 UX direction has settled. Prefer changes that reduce release risk, improve startup/responsiveness, simplify large surfaces, and make smoke evidence repeatable. Do not use this lane as a feature-expansion catch-all.
+
 Candidate work:
 
+- production bundle chunk-splitting for heavy editor / preview / Agent Workbench dependencies, including a before/after build-size and startup-smoke note
+- post-v0.8 component and hook boundary review for Review Desk, Diff, Agent Workbench, Markdown preview, and editor chrome
+- focused performance and memory smoke for large Markdown files, Review Desk comparisons, image preview, and Agent Workbench open/close
+- dependency and release-note freshness review, including known Vite chunk-size and cargo-audit warning posture
+- smoke checklist consolidation so release candidates have one repeatable source-preview and built-app pass
 - official icon, About surface, and first-run orientation if not finished in v0.8
 - Frontmatter display for Markdown review context
 - KaTeX beta only if it stays preview/export-safe and does not widen command execution
 - encoding display / Save As encoding selection if it can be kept inside the existing safe text-open/save boundary
 - keybinding customization and line bookmarks if they support the lightweight editor identity
-- dependency and release-note freshness review
 - privacy policy
 - landing page
 - Homebrew Cask evaluation

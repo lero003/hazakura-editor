@@ -52,7 +52,7 @@ type AppWorkspaceProps = {
   agentWorkbenchProvider: AgentWorkbenchProvider;
   clearCompareSource: () => void;
   clearCompareTarget: () => void;
-  closeCompareView: () => void;
+  closeCompareView: (options?: { returnToEditor?: boolean }) => void;
   compareAnchor: CompareAnchor | null;
   compareTarget: CompareAnchor | null;
   compareView: CompareViewState | null;

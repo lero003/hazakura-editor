@@ -189,10 +189,13 @@ export function useCompareSetupActions({
     [closeWorkspaceContextMenu, menuLanguage, setGlobalError, setStatus],
   );
 
-  const closeCompareView = useCallback(() => {
+  const closeCompareView = useCallback((options?: { returnToEditor?: boolean }) => {
     setCompareView(null);
+    if (options?.returnToEditor) {
+      setRightPaneMode("preview");
+    }
     setStatus("Compare closed");
-  }, [setCompareView, setStatus]);
+  }, [setCompareView, setRightPaneMode, setStatus]);
 
   return {
     clearCompareSource,

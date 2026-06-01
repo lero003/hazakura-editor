@@ -198,7 +198,7 @@ Developer preview release boundary:
 - CLI provider internals are outside hazakura's safety boundary. What happens inside `codex`, `opencode`, or `pi` depends on the provider and the user's choices.
 - Agent Workbench does not expose a shell prompt, arbitrary command field, arbitrary path field, or general terminal.
 - Outside Agent Workbench there is no Git integration, LSP, terminal, AI assistance, plugin system, arbitrary command execution, or project-wide analysis.
-- The production bundle currently carries a Vite chunk-size warning from editor/preview dependencies.
+- The production bundle currently carries a Vite chunk-size warning from editor/preview dependencies; planned chunk-splitting belongs to the v0.9 product-preview hardening lane.
 
 ## Draft Source
 
