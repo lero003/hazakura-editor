@@ -10,6 +10,7 @@ Last reviewed: 2026-06-01
 - A touchable Tauri desktop prototype exists.
 - Current public preview release is `v0.6.0` as a warning-expected DMG preview.
 - Current development lane is v0.7 Hazakura Review Desk Preview. Start with the read-only Review Desk Readiness Gate before adding Review Desk features.
+- Current automation emphasis is temporarily quality-check / bug-polish mode: prefer stale or failing quality gates, narrow smoke gaps, reproduced bugs, safety-boundary checks, and small safe-editor polish before starting new Review Desk feature expansion.
 - v0.6 has 10/10 roadmap items implemented after the App.tsx split MVP, was published as a warning-expected DMG prerelease, and should remain immutable.
 - Latest v0.7 visible shell slice landed the Review Desk open/close state hook, the Cmd+Shift+R toggle, and a visible empty-state shell on the `chore/v0.7-review-desk-visible-shell` branch (R-4). No AI candidate / apply / decision log yet; that is the next slice. App.tsx remains a pure composition file (`src/App.tsx` is now 851 lines; the v0.6 `867` baseline shrank by 16 lines because the new `useReviewDeskState` + `useReviewDeskController` slice absorbs the toggle and reset wiring).
 - Latest v0.7 manual candidate MVP slice added the manual candidate paste area + diff preview on the `chore/v0.7-review-desk-manual-candidate` branch (R-4 next). `CompareCase` gained `kind: "candidate"`; `useReviewDeskState` now owns the input text, diff view, and error; `ReviewSurface` reuses `DiffBody` for the preview. The right-pane compare route, the `DiffPane` / `FileCompareView` / `ChangeReviewView` shape, the existing review / diff / tab / workspace flows, and the `compareSource` / `compareTarget` slots are all unchanged. Apply / dismiss log and persistent `.hazakura/reviews/` storage remain deferred (R-3).
@@ -955,13 +956,14 @@ Known verification note:
 
 1. The v0.7 Review Desk Readiness Gate ran on 2026-06-01 in read-only mode. Findings are recorded in `docs/reviews/v0.7-readiness-gate.md` and classified as Fix now (F-1, F-2), Before v0.7 implementation (B-1 to B-4), v0.8+ (V-1 to V-3), Fold back together (T-1 to T-3), and Review Desk structural risk (R-1 to R-4). No code changed during the gate.
 2. The B-1, B-2, and B-3 design decisions from the gate landed on 2026-06-01 as a docs-only slice in `docs/reviews/v0.7-review-desk-design-decisions.md`. B-1 introduces a top-level `ReviewSurface` state (separate from `RightPaneMode`). B-2 refactors `CompareViewState` into a `CompareCase` discriminated union plus a slimmer view state. B-3 reserves `Cmd+Shift+R` for the Review Desk entry point as a no-op handler. No code changed in this slice; the next step is the F-1 implementation slice.
-3. For external-agent implementation, use `docs/external-agent-review-workflow.md`; Codex should review the diff before the slice is accepted and should not patch unless asked for review-and-fix.
-4. Start v0.7 implementation with the smallest Review Desk foundation slice: Diff / Review UI common shell, Review Desk entry point, bounded Global Search, Command Palette for existing safe actions, or Settings consolidation. The first v0.7 implementation slice after this decision doc is F-1 alone (split `useAgentWorkbenchSessionActions` into lifecycle and launch-gate halves), not the F-1 + T-1 combination.
-5. Keep Agent Workbench explicit, allowlisted, one-session, no-restore, and no-auto-apply. Do not add Pi RPC, Pi SDK, provider-add UI, arbitrary provider config, multi-agent orchestration, a general terminal, or Git client behavior.
-6. Treat v0.4 Markdown Review Navigation and v0.3 Diff / Change Review regressions as patch follow-up only; do not expand them into project-wide indexing, prediction, merge editing, or Git-aware behavior.
-7. Re-smoke long file name / constrained-width layout before binary distribution readiness.
-8. For follow-up warning-expected DMG previews, keep the release marked as a prerelease and use the current version-specific release note as the GitHub Release body.
-9. Keep signing, notarization, updater, and installer packaging separate until the Apple Developer distribution lane is explicitly opened.
+3. For the next short automation window, route recurring work through the quality-check / bug-polish lane in `docs/development-automation.md`: one narrow quality gate, smoke gap, reproduced bug, safety-boundary check, documentation drift fix, or verified no-op per run.
+4. For external-agent implementation, use `docs/external-agent-review-workflow.md`; Codex should review the diff before the slice is accepted and should not patch unless asked for review-and-fix.
+5. Resume v0.7 implementation with the smallest Review Desk foundation slice only when the temporary quality lane is quiet or the user asks to return to feature work. Candidate feature slices remain Diff / Review UI common shell, Review Desk entry point, bounded Global Search, Command Palette for existing safe actions, or Settings consolidation.
+6. Keep Agent Workbench explicit, allowlisted, one-session, no-restore, and no-auto-apply. Do not add Pi RPC, Pi SDK, provider-add UI, arbitrary provider config, multi-agent orchestration, a general terminal, or Git client behavior.
+7. Treat v0.4 Markdown Review Navigation and v0.3 Diff / Change Review regressions as patch follow-up only; do not expand them into project-wide indexing, prediction, merge editing, or Git-aware behavior.
+8. Re-smoke long file name / constrained-width layout before binary distribution readiness.
+9. For follow-up warning-expected DMG previews, keep the release marked as a prerelease and use the current version-specific release note as the GitHub Release body.
+10. Keep signing, notarization, updater, and installer packaging separate until the Apple Developer distribution lane is explicitly opened.
 
 ## Avoid
 

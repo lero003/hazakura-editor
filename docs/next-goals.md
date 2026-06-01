@@ -134,11 +134,11 @@ Final report: selected slice, what is now honestly implemented, what remains def
 - WYSIWYG table editor in one broad change
 - Agent auto-apply, auto-commit, general terminal, provider plugins, or Git integration
 
-## Current Recurring Automation: v0.7 Review Desk Preview
+## Current Recurring Automation: Temporary Quality Check / Bug Polish Loop
 
-Status: Active guidance after the `v0.6.0` warning-expected DMG preview release
+Status: Active temporary guidance while quality-check automation is requested
 
-目的: Review Desk の土台を、外部エージェント実装と Codex レビューを組み合わせながら、小さく検証可能に進める。
+目的: 新機能を急がず、品質ゲート、実機/ブラウザ smoke、再現できるバグ、安全境界、Markdown-first editor の手触りを小さく検証・修正する。
 
 正本: `docs/development-automation.md`
 
@@ -149,16 +149,17 @@ Use the reusable automation prompt in `docs/development-automation.md`.
 ### Acceptance Criteria
 
 - 1回のrunで1つの coherent slice だけを選ぶ
-- 最初に v0.7 Review Desk Readiness Gate を通す
-- 外部エージェント実装の場合は `docs/external-agent-review-workflow.md` を使う
-- Diff / Review UI 共通化、Review Desk入口、bounded Global Search、Command Palette、Settings統合のいずれかを小さく進める
+- 品質ゲート、smoke checklist、再現できるバグ、recent Review Desk / Diff / authoring smoke gap、安全境界、Markdown-first editor quality の順に見る
+- 新しい Review Desk feature expansion は、既存挙動のバグ修正や smoke gap でない限り後回しにする
+- 外部エージェント実装のレビューが必要な場合は `docs/external-agent-review-workflow.md` を使う
 - Agent Workbench は explicit mode、restart boundary、responsibility consent、selected workspace root、one active session を維持する
 - code変更では既存の品質ゲートを通す
 - UI挙動を変えた場合は smoke checklist を更新または実施する
-- Codexレビューで blocking finding がない場合だけ受け入れる
+- no-op の場合も、可能なら app surface を見てから verified no-op として報告する
 
 ### Non-goals
 
+- 新機能を増やすためだけの Review Desk 実装
 - Pi RPC / SDK integration
 - arbitrary provider configuration or provider-add UI
 - arbitrary terminal/shell access or arbitrary command execution

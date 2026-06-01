@@ -15,15 +15,17 @@ When implementation is delegated to an external agent and Codex is asked to revi
 
 ## Current Automation Lane
 
-Name: `hazakura-note-safe-editor-review-loop`
+Name: `hazakura-note-quality-loop`
 
-Cadence: 30-minute heartbeat loop for v0.7 readiness, Review Desk foundation, and review-driven quality work.
+Cadence: temporary hourly quality-check loop while the project is in bug and polish mode.
 
-Current phase: v0.7 Hazakura Review Desk Preview, after the `v0.6.0` Foundation Release warning-expected DMG preview.
+Current phase: v0.7 Hazakura Review Desk Preview remains the roadmap lane, but recurring automation should temporarily prefer quality checks, reproduced bugs, smoke gaps, and small safe-editor polish before starting new Review Desk feature expansion.
 
-Primary outcome: one coherent Review Desk readiness, Review Desk foundation, external-agent review, or safe-editor quality slice per run, verified and documented. A verified no-op is acceptable when no safe useful slice is found.
+Primary outcome: one coherent quality-check, bug-fix, smoke-coverage, or safe-editor polish slice per run, verified and documented. A verified no-op is acceptable when no safe useful slice is found.
 
-Each run should fit the 30-minute cadence. If the useful slice is larger than that, narrow it, leave a short next-step note, or stop with a verified no-op instead of stretching the scope.
+Each run should fit the temporary hourly cadence. If the useful slice is larger than that, narrow it, leave a short next-step note, or stop with a verified no-op instead of stretching the scope.
+
+Return to the normal v0.7 Review Desk feature lane when the user asks for it, or after repeated quality runs find no concrete small bug, smoke gap, or documentation drift worth closing.
 
 The automation should not create test code just to produce activity. Add or change tests only when a real regression risk, reproduced bug, backend/safety contract, or high-value smoke gap justifies it.
 
@@ -62,19 +64,25 @@ Review focus:
 
 Choose the first useful slice that is both small and verifiable.
 
-0. v0.7 Review Desk Readiness Gate:
+0. Temporary quality-check / bug-polish lane:
+   - run the relevant quality gates when evidence is stale or a recent slice needs confirmation
+   - inspect a narrow app surface from `docs/smoke-checklist.md` when practical
+   - fix one reproduced bug or visible quality issue from current implemented behavior
+   - update smoke notes or status docs only when behavior, evidence, or automation guidance changed
+   - treat new Review Desk feature expansion as lower priority during this temporary lane unless the work fixes an existing Review Desk bug or smoke gap
+1. v0.7 Review Desk Readiness Gate:
    - perform read-only structure review before new Review Desk implementation
    - inventory `src/App.tsx` responsibilities still left after the v0.6 split
    - check whether hooks/components should be grouped by Diff / Review / Tabs / FileTree / Agent Workbench / Preferences boundaries
    - identify tiny files that make the code harder to navigate, but do not merge them without a concrete readability win
    - inspect Rust `src-tauri/src/lib.rs` for module split candidates
    - output findings as: fix now, fix before v0.7 implementation, v0.8+, fold back together, and Review Desk structural risk
-1. External-agent implementation review:
+2. External-agent implementation review:
    - use `docs/external-agent-review-workflow.md`
    - review the diff before accepting the slice
    - prefer findings and verification over additional implementation
    - only patch findings if the user explicitly asks for review-and-fix
-2. v0.7 Review Desk foundation:
+3. v0.7 Review Desk foundation:
    - common Diff / Review shell for existing non-Git compare cases
    - Review Desk entry surface for editor-vs-disk, external-change, draft, and file-to-file comparisons
    - bounded workspace grep for Global Search, without background indexing
@@ -82,20 +90,20 @@ Choose the first useful slice that is both small and verifiable.
    - settings consolidation without blurring Safe Editor Mode and Agent Workbench
    - Frontmatter display and KaTeX beta only inside preview/export-safe boundaries
    - encoding display / Save As encoding only if it preserves current save-conflict, line-ending, and final-newline behavior
-3. Markdown authoring feature readiness:
+4. Markdown authoring feature readiness:
    - use `docs/authoring-feature-readiness.md` as the source of truth for image paste, export, Zen, spellcheck, table, and Agent authoring gaps
    - prefer safe workspace-relative `assets/...` preview/export rendering before adding more image UX
    - treat image drag-and-drop into `assets/` as separate from the existing file-open drag/drop behavior
    - keep PDF export described as Print to PDF unless a real PDF pipeline is explicitly approved
    - keep current table behavior described as Insert table until row/column/alignment editing exists
    - do not claim Agent authoring actions until selected text, candidate output, diff review, and explicit apply are designed inside the safe boundary
-4. Agent Workbench patch follow-up:
+5. Agent Workbench patch follow-up:
    - keep `pi` only as an allowlisted local CLI provider inside the existing Agent Workbench gate
    - keep Pi launch behavior inside explicit mode, restart boundary, responsibility consent, selected workspace root, and one active session
    - improve provider availability, launch failure, stop/exit, resize, app-close cleanup, and terminal responsiveness from focused smoke findings
    - run trusted-workspace manual smoke for Pi when the provider exists locally, and record provider-not-found cleanly when it does not
    - no Pi RPC, Pi SDK, arbitrary provider configuration, provider-add UI, multi-agent orchestration, auto-apply, auto-commit, general terminal, or Git client behavior
-5. v0.4 Markdown Review Navigation patch follow-up:
+6. v0.4 Markdown Review Navigation patch follow-up:
    - treat shipped v0.4 behavior as patch-follow-up only
    - current-file heading outline
    - current heading or section context
@@ -104,15 +112,15 @@ Choose the first useful slice that is both small and verifiable.
    - open-tabs and recent-files navigation
    - readable Markdown preview/review display polish
    - avoid strong autocomplete, automatic lint fixes, broad formatting rewrites, project-wide indexing, and symbol search
-6. v0.3 Diff / Change Review patch follow-up:
+7. v0.3 Diff / Change Review patch follow-up:
    - re-smoke file comparison and change-review paths from the released `v0.3.0` surface
    - fix narrow regressions in current buffer versus disk, explicit file-to-file comparison, draft/recovery comparison, or save-conflict review
    - keep labels in file/workspace/change-review language and avoid Git wording
    - no repository status, branch, staging, history, apply, commit, push, pull, or merge behavior
-7. Everyday usability polish:
+8. Everyday usability polish:
    - menu placement, menu language, button labels, dialog wording, external-change messages, save-conflict wording, layout fit, and built-app smoke notes
    - prefer the smallest visible improvement that makes manual use clearer
-8. Safety-boundary regression checks:
+9. Safety-boundary regression checks:
    - Safe Editor default startup
    - Agent Workbench explicit mode gate and restart boundary
    - responsibility-boundary consent
@@ -120,12 +128,12 @@ Choose the first useful slice that is both small and verifiable.
    - selected workspace root only
    - one active session
    - no arbitrary shell, arbitrary command input UI, arbitrary path input UI, session restore, auto-apply, auto-commit, provider-add UI, or Git integration
-9. Stability and responsiveness:
+10. Stability and responsiveness:
    - stale snapshot handling, external-change live refresh, save/reopen failure paths, theme switching, search responsiveness, and Agent Workbench lifecycle regressions when touched
    - prefer fake-provider coverage for hazakura-owned Agent lifecycle behavior and trusted-workspace manual smoke for real `codex` / `opencode` / `pi` behavior
-10. Markdown-first safe editor quality:
+11. Markdown-first safe editor quality:
    - save failure recovery, external-change recheck, dirty close, draft restore, Save As, line endings, preview sanitize, workspace image preview, scroll sync, resizable panes, window close, workspace tree, theme switching, search, long file names, constrained-width layout, Japanese IME, and keyboard focus
-11. Local release readiness:
+12. Local release readiness:
    - source-only release P0 gates from `docs/source-release-checklist.md`
    - dependency audit review with `npm audit` and `cargo audit` only when the run has enough time and risk justification
    - treat the open `glib` / `GHSA-wrw7-89jp-8q8g` Dependabot alert as a triaged Linux Tauri/wry GTK/WebKit dependency item unless Linux support, a Tauri/wry dependency-refresh lane, distribution-readiness sign-off, severity escalation, or a compatible patched upstream path makes it actionable
@@ -133,7 +141,7 @@ Choose the first useful slice that is both small and verifiable.
    - app version/about metadata and source release notes
    - packaging docs without signing or notarization claims
    - do not tag, publish, release, or attach a DMG without explicit user approval
-12. Verified no-op:
+13. Verified no-op:
    - If no small useful slice is safe after reading docs and inspecting the app surface when practical, run the relevant checks, update docs only if facts changed, and report no-op clearly.
    - A no-op report should say whether app inspection was performed, or why it was skipped.
 
@@ -232,17 +240,17 @@ If checks fail:
 ## Reusable Automation Prompt
 
 ```txt
-Advance hazakura-note by one small, verifiable v0.7 Review Desk or quality-hardening slice.
+Advance hazakura-note by one small, verifiable quality-check, bug-fix, or safe-editor polish slice.
 
 Start by reading AGENTS.md, README.md, docs/current-status.md, docs/roadmap.md, docs/smoke-checklist.md, docs/external-agent-review-workflow.md, docs/development-automation.md, and checking git status --short --branch. Treat existing uncommitted changes as user or previous-run work and do not revert them.
 
-Use docs/development-automation.md as the source of truth. The current lane is v0.7 Hazakura Review Desk Preview. Choose from this priority order: read-only Review Desk readiness gate; external-agent implementation review; common Diff / Review shell; Review Desk entry surface; bounded Global Search; command palette for existing safe actions; settings consolidation; Frontmatter display; KaTeX beta; encoding display / Save As encoding; Markdown authoring readiness; Agent Workbench patch follow-up; safety-boundary regression checks; verified no-op if no useful small slice is safe.
+Use docs/development-automation.md as the source of truth. The roadmap lane is still v0.7 Hazakura Review Desk Preview, but this temporary automation mode prioritizes quality checks and bug polish over new feature expansion. Choose from this priority order: stale or failing quality gates; one narrow app smoke surface from docs/smoke-checklist.md; one reproduced bug in implemented behavior; recent Review Desk / Diff / authoring smoke gaps; safety-boundary regression checks; Markdown-first editor quality; documentation drift caused by changed behavior or evidence; verified no-op if no useful small slice is safe.
 
-Keep Agent Workbench limited to explicit mode gate, restart boundary, responsibility consent, allowlisted `codex` / `opencode` / `pi` providers, one selected workspace root, and one active session. Keep Pi only as a local CLI provider in the existing provider model. Keep Review Desk work limited to explicit text/file comparison, candidate review, and recovery review; do not inspect or present Git repository state. Do not implement Git integration, LSP, arbitrary terminal/shell access, arbitrary command execution, arbitrary path input UI, session restore, auto-apply, auto-commit, provider-add UI, plugin systems, project-wide indexing, strong predictive autocomplete, automatic lint fixes, broad formatting rewrites, signing/notarization completion, merge editor, advanced Git diff, release/publish/tag flow, Pi RPC/SDK work, arbitrary provider configuration, Tree Rename/Delete, persistent review/session logs, or dependency/lockfile changes without explicit user approval. The current `glib` / `GHSA-wrw7-89jp-8q8g` Dependabot alert is already triaged as a Linux Tauri/wry GTK/WebKit dependency item; revisit it only for Linux support, a Tauri/wry dependency-refresh lane, distribution-readiness sign-off, severity escalation, or a compatible patched upstream path.
+Keep Agent Workbench limited to explicit mode gate, restart boundary, responsibility consent, allowlisted `codex` / `opencode` / `pi` providers, one selected workspace root, and one active session. Keep Pi only as a local CLI provider in the existing provider model. Keep Review Desk work limited to existing explicit text/file comparison, candidate review, candidate apply-to-buffer, and recovery review behavior unless the user explicitly asks to resume feature work. Do not inspect or present Git repository state. Do not implement Git integration, LSP, arbitrary terminal/shell access, arbitrary command execution, arbitrary path input UI, session restore, auto-apply, auto-commit, provider-add UI, plugin systems, project-wide indexing, strong predictive autocomplete, automatic lint fixes, broad formatting rewrites, signing/notarization completion, merge editor, advanced Git diff, release/publish/tag flow, Pi RPC/SDK work, arbitrary provider configuration, Tree Rename/Delete, persistent review/session logs, or dependency/lockfile changes without explicit user approval. The current `glib` / `GHSA-wrw7-89jp-8q8g` Dependabot alert is already triaged as a Linux Tauri/wry GTK/WebKit dependency item; revisit it only for Linux support, a Tauri/wry dependency-refresh lane, distribution-readiness sign-off, severity escalation, or a compatible patched upstream path.
 
 For substantial implementation, automation changes, Git/GitHub mutation, release work, or command-selection uncertainty, run Hazakura Habitat first and read agent_context.md before continuing. Consult command_policy.md before risky or mutating commands.
 
-Choose exactly one coherent slice that can fit the 30-minute cadence. In external-agent review mode, review the existing diff first and do not implement unrelated fixes unless the user asks for review-and-fix. Prefer one narrow built-app smoke section from docs/smoke-checklist.md when UI behavior changed, fix only the smallest actionable quality issue found, update the relevant docs, and verify it. Do not decide verified no-op from documentation review alone when app inspection is practical; before no-op, inspect the current app surface through built-app smoke or Vite/browser smoke, or state why app inspection was skipped. If built-app smoke opens hazakura-note, quit the app before final reporting and do not leave Agent provider sessions running. Do not add test code merely to create activity across repeated runs. Add or change tests only for reproduced bugs, backend/safety contracts, Agent lifecycle/gate/output/input/stop/exit/external-change behavior, Review Desk candidate/apply safety, or high-value fake-provider coverage. Prefer docs or manual smoke notes for UI wording, menu placement, visual density, and verified no-op slices.
+Choose exactly one coherent slice that can fit the temporary hourly cadence. In external-agent review mode, review the existing diff first and do not implement unrelated fixes unless the user asks for review-and-fix. Prefer one narrow built-app smoke section from docs/smoke-checklist.md when UI behavior changed, fix only the smallest actionable quality issue found, update the relevant docs, and verify it. Do not decide verified no-op from documentation review alone when app inspection is practical; before no-op, inspect the current app surface through built-app smoke or Vite/browser smoke, or state why app inspection was skipped. If built-app smoke opens hazakura-note, quit the app before final reporting and do not leave Agent provider sessions running. Do not add test code merely to create activity across repeated runs. Add or change tests only for reproduced bugs, backend/safety contracts, Agent lifecycle/gate/output/input/stop/exit/external-change behavior, Review Desk candidate/apply safety, or high-value fake-provider coverage. Prefer docs or manual smoke notes for UI wording, menu placement, visual density, and verified no-op slices.
 
 For code changes run npm run build:vite, cargo fmt --manifest-path src-tauri/Cargo.toml -- --check, cargo test --manifest-path src-tauri/Cargo.toml, npm run build, and git diff --check. For docs-only changes run git diff --check. For UI behavior changes, update or exercise docs/smoke-checklist.md and do not claim manual smoke passed unless it was actually exercised. For source-release prep, follow docs/source-release-checklist.md and do not tag or publish without explicit user approval. For DMG preview prep, follow docs/dmg-preview-checklist.md and keep it separate from source-only release approval.
 
