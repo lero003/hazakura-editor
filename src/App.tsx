@@ -1,10 +1,4 @@
 // xterm imports moved to AgentTerminalView component
-import { SakuraPetals } from "./components/SakuraPetals";
-import { AppOverlays } from "./components/AppOverlays";
-import { AppWorkspace } from "./components/AppWorkspace";
-import { AppTopChrome } from "./components/AppTopChrome";
-import { AppDocumentFeedback } from "./components/AppDocumentFeedback";
-import { AppStatusBar } from "./components/AppStatusBar";
 import { useAppPreferences } from "./hooks/useAppPreferences";
 import { useRecentEntries } from "./hooks/useRecentEntries";
 import { useAppMenuIntegration } from "./hooks/useAppMenuIntegration";
@@ -43,6 +37,7 @@ import { useEditorTabsState } from "./hooks/useEditorTabsState";
 import { useAgentWorkbenchRuntimeState } from "./hooks/useAgentWorkbenchRuntimeState";
 import { useActiveDocumentIdentity } from "./hooks/useActiveDocumentIdentity";
 import { useActiveDocumentSurface } from "./hooks/useActiveDocumentSurface";
+import { AppShell, type AppShellProps } from "./components/AppShell";
 
 export default function App() {
   const {
@@ -645,223 +640,185 @@ export default function App() {
     },
   });
 
-  return (
-    <main className={`app-shell${zenMode ? " zen-mode" : ""}`}>
-      {resolvedTheme === "sakura" ? <SakuraPetals /> : null}
-      <AppTopChrome
-        activeDirty={activeDirty}
-        activeTab={activeTab}
-        activeTabId={activeTabId}
-        agentAvailable={agentWorkbenchAvailable}
-        agentModeBadge={agentWorkbenchModeBadge}
-        agentModeBadgePending={agentWorkbenchRestartRequired}
-        agentModeBadgeTitle={agentWorkbenchCopy.modeBadgeTitle}
-        draggingTabId={draggingTabId}
-        dragOverTabId={dragOverTabId}
-        editorChromeCopy={editorChromeCopy}
-        emptyTabsLabel={safeEditorCopy.emptyTabs}
-        onApplyMarkdownFormat={applyActiveMarkdownFormat}
-        onCloseTab={requestCloseTab}
-        onConvertLineEnding={convertActiveLineEnding}
-        onFinishTabPointerDrag={finishTabPointerDrag}
-        onInsertTable={insertTable}
-        onPointerEnter={suspendAgentUiRefresh}
-        onReviewChanges={requestReviewTabAgainstDisk}
-        onSelectTab={selectTabFromBar}
-        onTabPointerDown={handleTabPointerDown}
-        onTabPointerMove={handleTabPointerMove}
-        onToggleAgent={toggleAgentPane}
-        onToggleDiff={toggleDiffPane}
-        onToggleOutline={toggleOutlinePane}
-        onTogglePreview={togglePreviewPane}
-        recoveryCopy={recoveryCopy}
-        shouldSuppressTabClick={shouldSuppressTabClick}
-        sidePaneCopy={sidePaneCopy}
-        sidePaneMode={sidePaneMode}
-        tabs={tabs}
-      />
+  const shellProps: AppShellProps = {
+    activeAgentSession,
+    activeConflict,
+    activeContents,
+    activeDirty,
+    activeDocumentLineCount,
+    activeDraft,
+    activeError,
+    activeMatchIndex,
+    activeSaveError,
+    activeTab,
+    activeTabId,
+    agentAvailable: agentWorkbenchAvailable,
+    agentLaunchGate,
+    agentOutput,
+    agentSession,
+    agentStopPending,
+    agentWorkbenchActive,
+    agentWorkbenchConsent,
+    agentWorkbenchCopy,
+    agentWorkbenchPreference,
+    agentWorkbenchProvider,
+    agentWorkbenchRestartRequired,
+    agentModeBadge: agentWorkbenchModeBadge,
+    agentModeBadgePending: agentWorkbenchRestartRequired,
+    agentModeBadgeTitle: agentWorkbenchCopy.modeBadgeTitle,
+    appCloseCancelButtonRef,
+    appCloseDialogRef,
+    appRestartPending,
+    cancelPendingAppClose,
+    cancelPendingTabClose,
+    clearCompareSource,
+    clearCompareTarget,
+    clearSaveError,
+    closeCompareView,
+    closeFindAndFocusEditor,
+    closePreferencesFromKeyboard,
+    closeQuickOpen,
+    closeTabCancelButtonRef,
+    closeTabDialogRef,
+    closeTabNow,
+    closeWorkspaceContextMenu,
+    compareAnchor,
+    compareTarget,
+    compareView,
+    compareWorkspaceFiles,
+    copyWorkspaceFullPath,
+    createNewFile,
+    currentHeadingLine: currentMarkdownHeading?.line ?? null,
+    detail: activeStatusDetail,
+    dirtyTabCount,
+    discardAllAndCloseWindow,
+    discardDraft,
+    documentHeadings,
+    documentKey,
+    draggingTabId,
+    dragOverTabId,
+    editorChromeCopy,
+    editorPaneRef,
+    editorPreviewGridRef,
+    editorPreviewGridStyle,
+    editorSettings,
+    editorTheme,
+    emptyTabsLabel: safeEditorCopy.emptyTabs,
+    findInputRef,
+    findMatchCount,
+    findMatches,
+    findQuery,
+    findVisible,
+    goToLine,
+    goToLineValue,
+    handleEditorChange,
+    handleFindKeyDown,
+    handleGoToLineKeyDown,
+    handlePasteImage,
+    handlePresetPrompt,
+    handlePreviewResizeKeyDown,
+    handlePreviewResizePointerDown,
+    handlePreviewResizePointerMove,
+    handleReplaceKeyDown,
+    handleSendSelectionToAgent,
+    hasWorkspaceSelection,
+    invalidRegex,
+    jumpToHeading,
+    keepEditingAfterConflict,
+    loadWorkspaceDirectory,
+    menuLanguage,
+    onApplyMarkdownFormat: applyActiveMarkdownFormat,
+    onCheckAgentGate: requestAgentLaunchGateCheck,
+    onCloseTab: requestCloseTab,
+    onConvertLineEnding: convertActiveLineEnding,
+    onFinishTabPointerDrag: finishTabPointerDrag,
+    onInsertTable: insertTable,
+    onPointerEnter: suspendAgentUiRefresh,
+    onResizeAgentTerminal: resizeAgentTerminal,
+    onResumeAgentUiRefresh: resumeAgentUiRefresh,
+    onReviewChanges: requestReviewTabAgainstDisk,
+    onSelectTab: selectTabFromBar,
+    onSendAgentTerminalData: sendAgentTerminalData,
+    onStopAgentSession: requestAgentSessionStop,
+    onSuspendAgentUiRefresh: suspendAgentUiRefresh,
+    onTabPointerDown: handleTabPointerDown,
+    onTabPointerMove: handleTabPointerMove,
+    onToggleAgent: toggleAgentPane,
+    onToggleDiff: toggleDiffPane,
+    onToggleOutline: toggleOutlinePane,
+    onTogglePreview: togglePreviewPane,
+    openFile,
+    openFilePath,
+    openPreviewMarkdownLink,
+    openWorkspace,
+    openWorkspaceContextMenu,
+    openWorkspaceFile,
+    outlineTruncated: documentOutline?.truncated ?? false,
+    pendingAppClose,
+    pendingCloseTab,
+    preferencesCloseButtonRef,
+    preferencesCopy,
+    preferencesDialogMode,
+    preferencesDialogRef,
+    preferencesOpen,
+    previewColumnPercent,
+    previewPaneRef,
+    previewVisible,
+    quickOpenVisible,
+    recentFiles,
+    recoveryCopy,
+    reopenTabFromDisk,
+    replaceAll,
+    replaceOne,
+    replaceQuery,
+    resolvedTheme,
+    reviewDraftAgainstDisk: requestReviewDraftAgainstDisk,
+    reviewTabAgainstDisk: requestReviewTabAgainstDisk,
+    restartAppForAgentMode,
+    restoreDraft,
+    revealWorkspacePath,
+    runSelectedFileCompare,
+    safeEditorCopy,
+    saveAllAndCloseWindow,
+    saveAndClosePendingTab,
+    saveTabById,
+    scrollHudContext,
+    scrollHudLine,
+    scrollHudVisible,
+    searchOptions,
+    selectWorkspaceCompareFile,
+    selectedImage,
+    sendWorkspacePathToAgent,
+    setAgentWorkbenchConsent: updateAgentWorkbenchConsent,
+    setAgentWorkbenchPreference: updateAgentWorkbenchPreference,
+    setAgentWorkbenchProvider: updateAgentWorkbenchProvider,
+    setCompareSource,
+    setCompareTargetFile,
+    setEditorSettings,
+    setFindQuery,
+    setGoToLineValue,
+    setMenuLanguage,
+    setPreviewVisible,
+    setReplaceQuery,
+    setSearchOptions,
+    setSelectionInfo,
+    setThemePreference,
+    shouldSuppressTabClick,
+    showNextMatch,
+    showPreviousMatch,
+    sidePaneCopy,
+    sidePaneMode,
+    sidePaneVisible,
+    status,
+    syncEditorScroll,
+    syncPreviewScroll,
+    tabs,
+    themePreference,
+    workspaceContextMenu,
+    workspaceRootPath,
+    workspaceTree,
+    zenMode,
+  };
 
-      <AppDocumentFeedback
-        activeConflict={activeConflict}
-        activeDraft={activeDraft}
-        activeError={activeError}
-        activeMatchIndex={activeMatchIndex}
-        activeSaveError={activeSaveError}
-        activeTab={activeTab}
-        clearSaveError={clearSaveError}
-        closeFindAndFocusEditor={closeFindAndFocusEditor}
-        closeTabNow={closeTabNow}
-        discardDraft={discardDraft}
-        editorChromeCopy={editorChromeCopy}
-        findInputRef={findInputRef}
-        findMatchCount={findMatchCount}
-        findQuery={findQuery}
-        findVisible={findVisible}
-        goToLine={goToLine}
-        goToLineValue={goToLineValue}
-        handleFindKeyDown={handleFindKeyDown}
-        handleGoToLineKeyDown={handleGoToLineKeyDown}
-        handleReplaceKeyDown={handleReplaceKeyDown}
-        invalidRegex={invalidRegex}
-        keepEditingAfterConflict={keepEditingAfterConflict}
-        recoveryCopy={recoveryCopy}
-        reopenTabFromDisk={reopenTabFromDisk}
-        replaceAll={replaceAll}
-        replaceOne={replaceOne}
-        replaceQuery={replaceQuery}
-        restoreDraft={restoreDraft}
-        reviewDraftAgainstDisk={requestReviewDraftAgainstDisk}
-        reviewTabAgainstDisk={requestReviewTabAgainstDisk}
-        saveTabById={saveTabById}
-        searchOptions={searchOptions}
-        setFindQuery={setFindQuery}
-        setGoToLineValue={setGoToLineValue}
-        setReplaceQuery={setReplaceQuery}
-        setSearchOptions={setSearchOptions}
-        showNextMatch={showNextMatch}
-        showPreviousMatch={showPreviousMatch}
-      />
-
-      <AppWorkspace
-        activeContents={activeContents}
-        activeDocumentLineCount={activeDocumentLineCount}
-        activeMatchIndex={activeMatchIndex}
-        activeTab={activeTab}
-        agentLaunchGate={agentLaunchGate}
-        agentOutput={agentOutput}
-        agentSession={agentSession}
-        agentStopPending={agentStopPending}
-        agentWorkbenchProvider={agentWorkbenchProvider}
-        clearCompareSource={clearCompareSource}
-        clearCompareTarget={clearCompareTarget}
-        closeCompareView={closeCompareView}
-        compareAnchor={compareAnchor}
-        compareTarget={compareTarget}
-        compareView={compareView}
-        createNewFile={createNewFile}
-        currentHeadingLine={currentMarkdownHeading?.line ?? null}
-        documentHeadings={documentHeadings}
-        documentKey={documentKey}
-        editorPaneRef={editorPaneRef}
-        editorPreviewGridRef={editorPreviewGridRef}
-        editorPreviewGridStyle={editorPreviewGridStyle}
-        editorSettings={editorSettings}
-        editorTheme={editorTheme}
-        findMatches={findMatches}
-        handleEditorChange={handleEditorChange}
-        handlePasteImage={handlePasteImage}
-        handlePresetPrompt={handlePresetPrompt}
-        handlePreviewResizeKeyDown={handlePreviewResizeKeyDown}
-        handlePreviewResizePointerDown={handlePreviewResizePointerDown}
-        handlePreviewResizePointerMove={handlePreviewResizePointerMove}
-        handleSendSelectionToAgent={handleSendSelectionToAgent}
-        hasWorkspaceSelection={hasWorkspaceSelection}
-        jumpToHeading={jumpToHeading}
-        loadWorkspaceDirectory={loadWorkspaceDirectory}
-        menuLanguage={menuLanguage}
-        onCheckAgentGate={requestAgentLaunchGateCheck}
-        onResizeAgentTerminal={resizeAgentTerminal}
-        onResumeAgentUiRefresh={resumeAgentUiRefresh}
-        onSendAgentTerminalData={sendAgentTerminalData}
-        onStopAgentSession={requestAgentSessionStop}
-        onSuspendAgentUiRefresh={suspendAgentUiRefresh}
-        openFile={openFile}
-        openFilePath={openFilePath}
-        openPreviewMarkdownLink={openPreviewMarkdownLink}
-        openWorkspace={openWorkspace}
-        openWorkspaceContextMenu={openWorkspaceContextMenu}
-        openWorkspaceFile={openWorkspaceFile}
-        outlineTruncated={documentOutline?.truncated ?? false}
-        previewColumnPercent={previewColumnPercent}
-        previewPaneRef={previewPaneRef}
-        previewVisible={previewVisible}
-        recentFiles={recentFiles}
-        resolvedTheme={resolvedTheme}
-        runSelectedFileCompare={runSelectedFileCompare}
-        safeEditorCopy={safeEditorCopy}
-        scrollHudContext={scrollHudContext}
-        scrollHudLine={scrollHudLine}
-        scrollHudVisible={scrollHudVisible}
-        selectedImage={selectedImage}
-        selectWorkspaceCompareFile={selectWorkspaceCompareFile}
-        setSelectionInfo={setSelectionInfo}
-        sidePaneCopy={sidePaneCopy}
-        sidePaneMode={sidePaneMode}
-        sidePaneVisible={sidePaneVisible}
-        syncEditorScroll={syncEditorScroll}
-        syncPreviewScroll={syncPreviewScroll}
-        workspaceRootPath={workspaceRootPath}
-        workspaceTree={workspaceTree}
-      />
-
-      <AppStatusBar
-        activeAgentSession={activeAgentSession}
-        agentWorkbenchActive={agentWorkbenchActive}
-        agentWorkbenchProvider={agentWorkbenchProvider}
-        detail={activeStatusDetail}
-        menuLanguage={menuLanguage}
-        status={status}
-      />
-
-      <AppOverlays
-        activeAgentSession={activeAgentSession}
-        activeTab={activeTab}
-        agentSession={agentSession}
-        agentWorkbenchActive={agentWorkbenchActive}
-        agentWorkbenchConsent={agentWorkbenchConsent}
-        agentWorkbenchCopy={agentWorkbenchCopy}
-        agentWorkbenchPreference={agentWorkbenchPreference}
-        agentWorkbenchProvider={agentWorkbenchProvider}
-        agentWorkbenchRestartRequired={agentWorkbenchRestartRequired}
-        appCloseCancelButtonRef={appCloseCancelButtonRef}
-        appCloseDialogRef={appCloseDialogRef}
-        appRestartPending={appRestartPending}
-        cancelPendingAppClose={cancelPendingAppClose}
-        cancelPendingTabClose={cancelPendingTabClose}
-        clearCompareSource={clearCompareSource}
-        closePreferencesFromKeyboard={closePreferencesFromKeyboard}
-        closeQuickOpen={closeQuickOpen}
-        closeTabCancelButtonRef={closeTabCancelButtonRef}
-        closeTabDialogRef={closeTabDialogRef}
-        closeTabNow={closeTabNow}
-        closeWorkspaceContextMenu={closeWorkspaceContextMenu}
-        compareAnchor={compareAnchor}
-        compareWorkspaceFiles={compareWorkspaceFiles}
-        copyWorkspaceFullPath={copyWorkspaceFullPath}
-        dirtyTabCount={dirtyTabCount}
-        discardAllAndCloseWindow={discardAllAndCloseWindow}
-        editorSettings={editorSettings}
-        menuLanguage={menuLanguage}
-        openWorkspaceFile={openWorkspaceFile}
-        pendingAppClose={pendingAppClose}
-        pendingCloseTab={pendingCloseTab}
-        preferencesCloseButtonRef={preferencesCloseButtonRef}
-        preferencesCopy={preferencesCopy}
-        preferencesDialogMode={preferencesDialogMode}
-        preferencesDialogRef={preferencesDialogRef}
-        preferencesOpen={preferencesOpen}
-        previewVisible={previewVisible}
-        quickOpenVisible={quickOpenVisible}
-        recoveryCopy={recoveryCopy}
-        revealWorkspacePath={revealWorkspacePath}
-        restartAppForAgentMode={restartAppForAgentMode}
-        saveAllAndCloseWindow={saveAllAndCloseWindow}
-        saveAndClosePendingTab={saveAndClosePendingTab}
-        sendWorkspacePathToAgent={sendWorkspacePathToAgent}
-        setAgentWorkbenchConsent={updateAgentWorkbenchConsent}
-        setAgentWorkbenchPreference={updateAgentWorkbenchPreference}
-        setAgentWorkbenchProvider={updateAgentWorkbenchProvider}
-        setCompareSource={setCompareSource}
-        setCompareTargetFile={setCompareTargetFile}
-        setEditorSettings={setEditorSettings}
-        setMenuLanguage={setMenuLanguage}
-        setPreviewVisible={setPreviewVisible}
-        setThemePreference={setThemePreference}
-        themePreference={themePreference}
-        workspaceContextMenu={workspaceContextMenu}
-        workspaceRootPath={workspaceRootPath}
-        workspaceTree={workspaceTree}
-      />
-    </main>
-  );
+  return <AppShell {...shellProps} />;
 }
