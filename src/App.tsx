@@ -1,4 +1,5 @@
 // xterm imports moved to AgentTerminalView component
+import { useCallback } from "react";
 import { useAppPreferences } from "./hooks/useAppPreferences";
 import { useRecentEntries } from "./hooks/useRecentEntries";
 import { useAppMenuIntegration } from "./hooks/useAppMenuIntegration";
@@ -209,6 +210,30 @@ export default function App() {
     setStatus,
     setTabs,
   });
+  const applyManualCandidateToActiveTab = useCallback(
+    (candidateText: string) => {
+      if (!activeTab) {
+        setStatus("Manual candidate apply failed");
+        return;
+      }
+
+      setTabs((currentTabs) =>
+        currentTabs.map((tab) =>
+          tab.id === activeTab.id
+            ? {
+                ...tab,
+                contents: candidateText,
+                saveStatus: "idle",
+                error: null,
+              }
+            : tab,
+        ),
+      );
+      clearCandidate();
+      setStatus("Manual candidate applied");
+    },
+    [activeTab, clearCandidate, setStatus, setTabs],
+  );
   const {
     agentWorkbenchCopy,
     agentWorkbenchModeBadge,
@@ -758,6 +783,7 @@ export default function App() {
     loadWorkspaceDirectory,
     menuLanguage,
     onApplyMarkdownFormat: applyActiveMarkdownFormat,
+    onApplyManualCandidate: applyManualCandidateToActiveTab,
     onCheckAgentGate: requestAgentLaunchGateCheck,
     onCloseReviewDesk: closeReviewDesk,
     onCloseTab: requestCloseTab,

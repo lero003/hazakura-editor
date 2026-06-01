@@ -3440,6 +3440,27 @@ button:disabled {
   color: var(--removed-text, var(--text));
 }
 
+.review-surface-candidate-apply {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  color: var(--status-text);
+  cursor: pointer;
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+}
+
+.review-surface-candidate-apply:hover:not(:disabled) {
+  filter: brightness(0.96);
+}
+
+.review-surface-candidate-apply:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .review-surface-candidate-table {
   display: flex;
   flex: 1 1 auto;

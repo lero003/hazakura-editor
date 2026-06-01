@@ -39,6 +39,8 @@ export function localizeStatusMessage(
     "Compare failed": "比較に失敗しました",
     "Compare ready": "比較の準備ができました",
     "Comparing files...": "ファイルを比較中...",
+    "Manual candidate applied": "手動候補を適用しました",
+    "Manual candidate apply failed": "手動候補の適用に失敗しました",
     "Creating file...": "ファイルを作成中...",
     "Draft discarded": "下書きを破棄しました",
     "Draft restored": "下書きを復元しました",

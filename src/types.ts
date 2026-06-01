@@ -262,6 +262,7 @@ export type CompareCase = {
   leftColumnLabel: string;
   rightColumnLabel: string;
   candidateSourceLabel: string;
+  candidateText: string;
 };
 
 export type CompareViewState = {

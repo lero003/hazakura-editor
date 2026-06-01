@@ -16,6 +16,7 @@ type ReviewSurfaceProps = {
   candidateInputText: string;
   clearCandidate: () => void;
   menuLanguage: MenuLanguage;
+  onApplyCandidate: (candidateText: string) => void;
   onClose: () => void;
   reviewDeskCopy: ReviewDeskCopy;
   reviewDeskMode: ReviewDeskMode;
@@ -35,8 +36,9 @@ type ReviewSurfaceProps = {
 // when the parent surfaces `reviewSurface !== null`. Renders the
 // manual candidate paste area plus a diff preview of the active
 // buffer against the candidate text using the B-2 CompareCase /
-// CompareViewState + DiffBody pipeline. The apply / dismiss log and
-// the persistent decision log are intentionally out of scope; see
+// CompareViewState + DiffBody pipeline. Apply is explicit and only
+// updates the current tab buffer; the persistent dismiss / decision
+// log remains out of scope. See
 // docs/reviews/v0.7-review-desk-design-decisions.md (B-1, B-2, R-3,
 // R-4) and docs/reviews/v0.7-readiness-gate.md (R-1, R-2).
 export function ReviewSurface({
@@ -47,6 +49,7 @@ export function ReviewSurface({
   candidateInputText,
   clearCandidate,
   menuLanguage,
+  onApplyCandidate,
   onClose,
   reviewDeskCopy,
   reviewDeskMode,
@@ -87,6 +90,7 @@ export function ReviewSurface({
           clearCandidate={clearCandidate}
           copy={reviewDeskCopy}
           menuLanguage={menuLanguage}
+          onApplyCandidate={onApplyCandidate}
           runCandidateCompare={runCandidateCompare}
           setCandidateInputText={setCandidateInputText}
         />
@@ -114,6 +118,7 @@ type ReviewSurfaceCandidateSectionProps = {
   clearCandidate: () => void;
   copy: ReviewDeskCopy;
   menuLanguage: MenuLanguage;
+  onApplyCandidate: (candidateText: string) => void;
   runCandidateCompare: (params: {
     bufferContents: string;
     documentPath: string;
@@ -135,6 +140,7 @@ function ReviewSurfaceCandidateSection({
   clearCandidate,
   copy,
   menuLanguage,
+  onApplyCandidate,
   runCandidateCompare,
   setCandidateInputText,
 }: ReviewSurfaceCandidateSectionProps) {
@@ -226,7 +232,9 @@ function ReviewSurfaceCandidateSection({
         candidateCompareCase={candidateCompareCase}
         candidateCompareView={candidateCompareView}
         copy={copy}
+        hasActiveTab={hasActiveTab}
         menuLanguage={menuLanguage}
+        onApplyCandidate={onApplyCandidate}
       />
     </div>
   );
@@ -251,19 +259,32 @@ type ReviewSurfaceCandidatePreviewProps = {
   candidateCompareCase: CompareCase | null;
   candidateCompareView: CompareViewState | null;
   copy: ReviewDeskCopy;
+  hasActiveTab: boolean;
   menuLanguage: MenuLanguage;
+  onApplyCandidate: (candidateText: string) => void;
 };
 
 function ReviewSurfaceCandidatePreview({
   candidateCompareCase,
   candidateCompareView,
   copy,
+  hasActiveTab,
   menuLanguage,
+  onApplyCandidate,
 }: ReviewSurfaceCandidatePreviewProps) {
   const hasPreview =
     candidateCompareCase !== null &&
     candidateCompareView !== null &&
     candidateCompareCase.kind === "candidate";
+  const canApply = hasActiveTab && hasPreview;
+
+  const handleApply = () => {
+    if (!canApply || candidateCompareCase?.kind !== "candidate") {
+      return;
+    }
+
+    onApplyCandidate(candidateCompareCase.candidateText);
+  };
 
   return (
     <div
@@ -289,6 +310,19 @@ function ReviewSurfaceCandidatePreview({
             </span>
           </div>
         ) : null}
+        <button
+          type="button"
+          className="review-surface-candidate-apply"
+          onClick={handleApply}
+          disabled={!canApply}
+          title={
+            canApply
+              ? copy.candidateApplyButtonTitle
+              : copy.candidateApplyDisabledHint
+          }
+        >
+          {copy.candidateApplyButton}
+        </button>
       </div>
       {hasPreview && candidateCompareCase && candidateCompareView ? (
         <div

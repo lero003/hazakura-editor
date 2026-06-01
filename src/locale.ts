@@ -161,6 +161,9 @@ export type AgentWorkbenchCopy = {
 };
 
 export type ReviewDeskCopy = {
+  candidateApplyButton: string;
+  candidateApplyButtonTitle: string;
+  candidateApplyDisabledHint: string;
   candidateClearButton: string;
   candidateClearButtonTitle: string;
   candidateColumnLeft: string;
@@ -503,6 +506,11 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
 export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
   return lang === "ja"
     ? {
+        candidateApplyButton: "候補を適用",
+        candidateApplyButtonTitle:
+          "手動候補を現在のタブのバッファへ適用",
+        candidateApplyDisabledHint:
+          "適用するには、エディタタブと候補プレビューが必要です。",
         candidateClearButton: "クリア",
         candidateClearButtonTitle: "候補入力とプレビューを消去",
         candidateColumnLeft: "現在のバッファ",
@@ -535,6 +543,11 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
         title: "Review Desk",
       }
     : {
+        candidateApplyButton: "Apply candidate",
+        candidateApplyButtonTitle:
+          "Apply the manual candidate to the current tab buffer",
+        candidateApplyDisabledHint:
+          "Open an editor tab and render a candidate preview to enable Apply.",
         candidateClearButton: "Clear",
         candidateClearButtonTitle: "Discard candidate input and preview",
         candidateColumnLeft: "Current buffer",

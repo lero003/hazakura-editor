@@ -29,6 +29,7 @@ export type AppShellProps = ComponentProps<typeof AppTopChrome> &
     candidateInputText: string;
     clearCandidate: () => void;
     menuLanguage: MenuLanguage;
+    onApplyManualCandidate: (candidateText: string) => void;
     onCloseReviewDesk: () => void;
     resolvedTheme: ResolvedTheme;
     reviewDeskCopy: ReviewDeskCopy;
@@ -62,6 +63,7 @@ export function AppShell(props: AppShellProps) {
           candidateInputText={props.candidateInputText}
           clearCandidate={props.clearCandidate}
           menuLanguage={props.menuLanguage}
+          onApplyCandidate={props.onApplyManualCandidate}
           onClose={props.onCloseReviewDesk}
           reviewDeskCopy={props.reviewDeskCopy}
           reviewDeskMode={props.reviewDeskMode}

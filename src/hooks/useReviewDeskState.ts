@@ -9,8 +9,8 @@ import { buildLineDiff } from "../diff";
 // docs/reviews/v0.7-readiness-gate.md recommended: a single owner
 // for the manual candidate input, the diff preview, and the future
 // case list / decision log so App.tsx does not grow again. Today
-// the candidate / diff-preview slots are wired and the apply /
-// dismiss log stays deferred; see
+// the candidate / diff-preview slots and manual apply reset path are
+// wired; the persistent dismiss / decision log stays deferred. See
 // docs/reviews/v0.7-review-desk-design-decisions.md (R-4).
 export function useReviewDeskState() {
   const [reviewDeskMode, setReviewDeskMode] =
@@ -77,6 +77,7 @@ export function useReviewDeskState() {
           leftColumnLabel: params.leftColumnLabel,
           rightColumnLabel: params.rightColumnLabel,
           candidateSourceLabel: params.candidateSourceLabel,
+          candidateText: params.candidateText,
         };
         setCandidateCompareCaseState(compareCase);
         setCandidateCompareViewState({
