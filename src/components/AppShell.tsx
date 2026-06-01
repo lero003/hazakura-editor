@@ -31,7 +31,10 @@ export type AppShellProps = ComponentProps<typeof AppTopChrome> &
     candidateInputText: string;
     clearCandidate: () => void;
     menuLanguage: MenuLanguage;
-    onApplyManualCandidate: (candidateText: string) => void;
+    onApplyManualCandidate: (
+      candidateText: string,
+      documentTabId: string,
+    ) => void;
     onCloseReviewDesk: () => void;
     resolvedTheme: ResolvedTheme;
     reviewDeskCopy: ReviewDeskCopy;
@@ -39,6 +42,7 @@ export type AppShellProps = ComponentProps<typeof AppTopChrome> &
     reviewSurface: ReviewSurfaceKind;
     runCandidateCompare: (params: {
       bufferContents: string;
+      documentTabId: string;
       documentPath: string;
       documentLabel: string;
       leftColumnLabel: string;

@@ -62,6 +62,7 @@ export function useReviewDeskState() {
   const runCandidateCompare = useCallback(
     (params: {
       bufferContents: string;
+      documentTabId: string;
       documentPath: string;
       documentLabel: string;
       leftColumnLabel: string;
@@ -76,6 +77,7 @@ export function useReviewDeskState() {
         const compareCase: CompareCase = {
           kind: "candidate",
           key: crypto.randomUUID(),
+          documentTabId: params.documentTabId,
           documentPath: params.documentPath,
           documentLabel: params.documentLabel,
           leftColumnLabel: params.leftColumnLabel,

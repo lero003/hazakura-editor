@@ -259,6 +259,7 @@ export type CompareCase = {
   // MVP in docs/reviews/v0.7-review-desk-design-decisions.md.
   kind: "candidate";
   key: string;
+  documentTabId: string;
   documentPath: string;
   documentLabel: string;
   leftColumnLabel: string;

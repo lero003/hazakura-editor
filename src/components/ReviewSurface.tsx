@@ -16,12 +16,13 @@ type ReviewSurfaceProps = {
   candidateInputText: string;
   clearCandidate: () => void;
   menuLanguage: MenuLanguage;
-  onApplyCandidate: (candidateText: string) => void;
+  onApplyCandidate: (candidateText: string, documentTabId: string) => void;
   onClose: () => void;
   reviewDeskCopy: ReviewDeskCopy;
   reviewDeskMode: ReviewDeskMode;
   runCandidateCompare: (params: {
     bufferContents: string;
+    documentTabId: string;
     documentPath: string;
     documentLabel: string;
     leftColumnLabel: string;
@@ -118,9 +119,10 @@ type ReviewSurfaceCandidateSectionProps = {
   clearCandidate: () => void;
   copy: ReviewDeskCopy;
   menuLanguage: MenuLanguage;
-  onApplyCandidate: (candidateText: string) => void;
+  onApplyCandidate: (candidateText: string, documentTabId: string) => void;
   runCandidateCompare: (params: {
     bufferContents: string;
+    documentTabId: string;
     documentPath: string;
     documentLabel: string;
     leftColumnLabel: string;
@@ -157,6 +159,7 @@ function ReviewSurfaceCandidateSection({
     }
     runCandidateCompare({
       bufferContents: activeTab.contents,
+      documentTabId: activeTab.id,
       documentPath: activeTab.path,
       documentLabel: activeTab.name,
       leftColumnLabel: copy.candidateColumnLeft,
@@ -232,7 +235,7 @@ function ReviewSurfaceCandidateSection({
         candidateCompareCase={candidateCompareCase}
         candidateCompareView={candidateCompareView}
         copy={copy}
-        hasActiveTab={hasActiveTab}
+        activeTab={activeTab}
         menuLanguage={menuLanguage}
         onApplyCandidate={onApplyCandidate}
       />
@@ -256,34 +259,38 @@ function localizeCandidateError(
 }
 
 type ReviewSurfaceCandidatePreviewProps = {
+  activeTab: EditorTab | null;
   candidateCompareCase: CompareCase | null;
   candidateCompareView: CompareViewState | null;
   copy: ReviewDeskCopy;
-  hasActiveTab: boolean;
   menuLanguage: MenuLanguage;
-  onApplyCandidate: (candidateText: string) => void;
+  onApplyCandidate: (candidateText: string, documentTabId: string) => void;
 };
 
 function ReviewSurfaceCandidatePreview({
+  activeTab,
   candidateCompareCase,
   candidateCompareView,
   copy,
-  hasActiveTab,
   menuLanguage,
   onApplyCandidate,
 }: ReviewSurfaceCandidatePreviewProps) {
   const hasPreview =
     candidateCompareCase !== null &&
     candidateCompareView !== null &&
-    candidateCompareCase.kind === "candidate";
-  const canApply = hasActiveTab && hasPreview;
+    candidateCompareCase.kind === "candidate" &&
+    activeTab?.id === candidateCompareCase.documentTabId;
+  const canApply = activeTab !== null && hasPreview;
 
   const handleApply = () => {
     if (!canApply || candidateCompareCase?.kind !== "candidate") {
       return;
     }
 
-    onApplyCandidate(candidateCompareCase.candidateText);
+    onApplyCandidate(
+      candidateCompareCase.candidateText,
+      candidateCompareCase.documentTabId,
+    );
   };
 
   return (
