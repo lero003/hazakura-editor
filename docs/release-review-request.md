@@ -1,7 +1,7 @@
 # Release Review Request - v0.6.0 preparation
 
-この文書は hazakura-note v0.6.0 のリリース準備に入るための外部レビューブリーフです。
-まだタグ作成・公開は行っていません。ローカルの warning-expected DMG 候補は生成・検証済みです。
+この文書は hazakura-note v0.6.0 のリリース準備と公開結果を記録するための外部レビューブリーフです。
+タグ作成・GitHub Release 公開・リモート asset 検証は完了しています。
 
 ---
 
@@ -10,11 +10,11 @@
 | Item | Value |
 |---|---|
 | Project | hazakura editor (renamed from hazakura-note for v0.6 release prep) |
-| Current documented public preview | v0.4.0 warning-expected DMG preview |
+| Current documented public preview | v0.6.0 warning-expected DMG preview |
 | Current version surfaces | `0.6.0` in npm, Tauri, and Cargo metadata |
 | Candidate version | **v0.6.0** |
 | Current branch | `main`; push target is `https://github.com/lero003/hazakura-editor.git` |
-| Worktree expectation | Clean after the v0.6 refactor/release-prep commit is staged and pushed |
+| Release URL | https://github.com/lero003/hazakura-editor/releases/tag/v0.6.0 |
 
 ## Release Intent
 
@@ -60,11 +60,11 @@ Keep the product boundary intact:
 | `spctl -a -vv -t open "src-tauri/target/release/bundle/macos/hazakura editor.app"` | Rejected with `source=Insufficient Context`, expected for warning-expected preview |
 | Built-app focused UI smoke via Computer Use | Passed for launch, temp-file open/save, Export as HTML, split Diff comparison, tab drag reorder, previous/next tab focus, Replace all, Cmd+P Quick Open overlay, Preferences > Application auto-backup ON/OFF, and a real auto-backup write under `.hazakura/backups/` |
 | Browser smoke | Not run: in-app Browser returned `Browser is not available: iab` in this session |
+| Remote GitHub Release verification | Passed: downloaded published assets, `shasum -c` passed, `hdiutil verify` passed, mounted app metadata matched `0.6.0` / `lab.hazakura.note` / `hazakura editor` / `hazakura-editor`, and codesign verification passed |
 
 ## Known Pre-Release Gaps
 
-1. Remote GitHub Release verification is not applicable yet because no v0.6 tag or assets exist.
-2. GitHub Dependabot alert #1 remains open for `GHSA-wrw7-89jp-8q8g` / `glib 0.18.5`. This is a known transitive Tauri/wry GTK3-stack warning rather than a v0.6 macOS warning-expected preview blocker, but it should stay visible for future dependency-refresh review.
+1. GitHub Dependabot alert #1 remains open for `GHSA-wrw7-89jp-8q8g` / `glib 0.18.5`. This is a known transitive Tauri/wry GTK3-stack warning rather than a v0.6 macOS warning-expected preview blocker, but it should stay visible for future dependency-refresh review.
 
 ## Reviewer Focus
 
@@ -75,11 +75,10 @@ Keep the product boundary intact:
 
 ## Recommended Next Steps
 
-1. Stop v0.6 refactoring here unless a release-blocking bug appears.
-2. Review the pushed v0.6 refactor, rename, and release-prep commit.
-3. Publish as a prerelease only after approval, then remote-download and verify the uploaded assets.
+1. Keep `v0.6.0` immutable.
+2. Continue future work on `main` toward the next documented phase.
 
 ## Current Recommendation
 
-Proceed to v0.6 release publication as a warning-expected prerelease.
-The local code gates, dependency audits, GitHub alert triage, warning-expected DMG generation, checksum verification, mounted-app metadata check, codesign check, expected Gatekeeper rejection, and focused UI smoke now pass. Remaining work is publication and remote asset verification.
+v0.6.0 is released as a warning-expected prerelease.
+The local code gates, dependency audits, GitHub alert triage, warning-expected DMG generation, checksum verification, mounted-app metadata check, codesign check, expected Gatekeeper rejection, focused UI smoke, publication, and remote asset verification pass.

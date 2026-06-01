@@ -8,7 +8,7 @@ Last reviewed: 2026-06-01
 ## Current State
 
 - A touchable Tauri desktop prototype exists.
-- Current public preview release is `v0.4.0` as a warning-expected DMG preview.
+- Current public preview release is `v0.6.0` as a warning-expected DMG preview.
 - Current development lane is v0.6 Foundation Release / daily-drivable safe editor. v0.6 has 10/10 roadmap items implemented after the App.tsx split MVP.
 - Latest v0.6 refactor slice grouped tab navigation and pointer reordering wiring in `src/hooks/useTabBarController.ts`; `src/App.tsx` is now 867 lines. Refactor work should pause here unless a release-blocking bug appears; next work is v0.6 release preparation.
 - Post-v0.5 planning notes now live under `docs/` as internal, low-authority planning memos. Public/product claims should still be taken from README plus the high-authority docs.
@@ -209,7 +209,7 @@ v0.6 bug-check / planning-doc consolidation on 2026-06-01:
 - Local v0.6 release-prep gates passed after the rename/version bump: `npm run typecheck`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build`, `SKIP_BUILD=1 npm run build:dmg-preview`, `shasum -c`, app bundle metadata inspection, mounted-DMG app metadata inspection, and `codesign --verify --deep --strict --verbose=2`.
 - Post-push dependency audit on 2026-06-01 passed with `npm audit --json` reporting 0 vulnerabilities and `cargo audit --file src-tauri/Cargo.lock --json` reporting 0 vulnerabilities. GitHub Dependabot alert #1 is open for `GHSA-wrw7-89jp-8q8g` / `glib 0.18.5` in `src-tauri/Cargo.lock`; this matches the known RustSec informational `glib::VariantStrIter` unsoundness warning from the transitive Tauri/wry GTK3 stack and is not treated as a macOS warning-expected preview blocker. The alert should remain visible for future Tauri dependency-refresh review.
 - `spctl -a -vv -t open "src-tauri/target/release/bundle/macos/hazakura editor.app"` rejected the app with `source=Insufficient Context`, which is expected for this ad-hoc signed, not-notarized preview.
-- v0.6.0 release publication has been approved; GitHub Release publication and remote asset verification are the remaining release actions. The GitHub repository has moved to `lero003/hazakura-editor`, and local `origin` points at `https://github.com/lero003/hazakura-editor.git`.
+- GitHub prerelease `v0.6.0` was published at `https://github.com/lero003/hazakura-editor/releases/tag/v0.6.0`; older public tags remain immutable. Remote verification downloaded the published GitHub Release assets, confirmed `shasum -c` passed, `hdiutil verify` passed, and the mounted app reported version `0.6.0` / bundle identifier `lab.hazakura.note` / product name `hazakura editor` / executable `hazakura-editor` with `codesign --verify --deep --strict --verbose=2` passing.
 - Added a Rust regression test that saving the same pasted image twice returns the same `assets/<hash>.png` path and leaves one asset file.
 - Fixed Replace one / Replace all so they use the current search matches and allow empty replacement text.
 - Hardened auto-backup path handling on both frontend and Rust command boundaries; backup paths must remain under `.hazakura/backups/` for the selected workspace and must not pass through symlinked backup directories. Rust tests now cover valid backup read/write and rejection of absolute, parent-directory, separator-bearing, and symlinked backup paths.

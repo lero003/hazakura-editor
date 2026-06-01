@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-05-30
+Last reviewed: 2026-06-01
 
 `hazakura editor` は、Markdownを中心に安全にテキストを読む・書く・比べるための軽量エディタです。
 
@@ -176,8 +176,8 @@ Developer preview release boundary:
 - Current intended preview version is `0.6.0` across npm, Tauri, and Cargo metadata.
 - Source users build locally with `npm ci` and `npm run build`.
 - The generated local `.app` declares macOS 11.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. It is not Developer ID signed or notarized.
-- The v0.6 warning-expected DMG preview notes are drafted in [0.6.0 Warning-expected DMG Preview](docs/releases/0.6.0-warning-expected-dmg-preview.release.md); remote verification must still be filled after publication.
-- Tag creation, push, and GitHub Release publication require explicit user approval.
+- The v0.6 warning-expected DMG preview is published as a prerelease at [v0.6.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.6.0), with notes in [0.6.0 Warning-expected DMG Preview](docs/releases/0.6.0-warning-expected-dmg-preview.release.md).
+- Future tag creation, push, and GitHub Release publication require explicit user approval.
 
 ## Known Limits
 

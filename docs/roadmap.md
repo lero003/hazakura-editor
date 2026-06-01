@@ -229,7 +229,7 @@ v0.6 delivers (✅ = implemented):
 
 **v0.6 progress: 10/10 items implemented.**
 
-Release-prep checkpoint: stop additional v0.6 refactor work here unless a release-blocking bug appears. Version surfaces are aligned to `0.6.0`, local app/release naming now uses `hazakura editor` / `hazakura-editor`, the GitHub repository moved to `lero003/hazakura-editor`, the warning-expected DMG preview builds and verifies locally, dependency audits report 0 local vulnerabilities, and focused built-app smoke passed for save/export, compare/diff, tab reorder, auto-backup, Replace, and Quick Open. Before tagging, review the pushed source branch, inspect the GitHub moderate Dependabot alert reported after push, and perform release approval.
+Release checkpoint: v0.6.0 is published as a warning-expected DMG prerelease at `https://github.com/lero003/hazakura-editor/releases/tag/v0.6.0`. Version surfaces are aligned to `0.6.0`, local app/release naming uses `hazakura editor` / `hazakura-editor`, the GitHub repository moved to `lero003/hazakura-editor`, dependency audits report 0 local vulnerabilities, focused built-app smoke passed for save/export, compare/diff, tab reorder, auto-backup, Replace, and Quick Open, and remote verification passed for the published DMG/checksum assets. Keep v0.6.0 immutable; future work should continue on `main`.
 
 Deliberately deferred to v0.7:
 - Global Search (Cmd+Shift+F)
