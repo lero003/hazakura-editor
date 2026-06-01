@@ -12,6 +12,7 @@ type UseTabNavigationOptions = {
   clearImagePreview: () => void;
   focusEditorSoon: () => void;
   imageReturnTabId: string | null;
+  onShowDocumentSurface?: () => void;
   setActiveTabId: Dispatch<SetStateAction<string | null>>;
   setStatus: (message: string) => void;
   tabs: EditorTab[];
@@ -22,6 +23,7 @@ export function useTabNavigation({
   clearImagePreview,
   focusEditorSoon,
   imageReturnTabId,
+  onShowDocumentSurface,
   setActiveTabId,
   setStatus,
   tabs,
@@ -45,6 +47,7 @@ export function useTabNavigation({
       }
 
       clearImagePreview();
+      onShowDocumentSurface?.();
       setActiveTabId(nextTab.id);
       setStatus(
         direction === "next" ? "Next tab focused" : "Previous tab focused",
@@ -56,6 +59,7 @@ export function useTabNavigation({
       clearImagePreview,
       focusEditorSoon,
       imageReturnTabId,
+      onShowDocumentSurface,
       setActiveTabId,
       setStatus,
       tabs,
@@ -65,9 +69,10 @@ export function useTabNavigation({
   const selectTabFromBar = useCallback(
     (tabId: string) => {
       clearImagePreview();
+      onShowDocumentSurface?.();
       setActiveTabId(tabId);
     },
-    [clearImagePreview, setActiveTabId],
+    [clearImagePreview, onShowDocumentSurface, setActiveTabId],
   );
 
   return {

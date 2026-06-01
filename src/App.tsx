@@ -391,6 +391,7 @@ export default function App() {
     clearImagePreview,
     focusEditorSoon,
     imageReturnTabId,
+    onShowDocumentSurface: () => setReviewSurface(null),
     setActiveTabId,
     setTabs,
     setStatus,
