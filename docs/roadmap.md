@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current release sequence and planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-01 (v0.7 Review Desk direction and external-agent review workflow)
+Last reviewed: 2026-06-02 (v0.7 release-prep scope and v0.8 UX lane)
 
 ## Current Position
 
@@ -247,49 +247,62 @@ Deliberately moved beyond v0.6:
 
 Do not use this phase to add SDK integration, background sessions, session restore, provider plugins, arbitrary command execution, automated approval of provider actions, zustand/Context architecture changes, Pi RPC, theme editor, KaTeX, Mermaid, tab split, or external file rename tracking.
 
-## 0.7: Hazakura Review Desk Preview
+## 0.7: Hazakura Review Desk MVP And Release Prep
 
-Goal: turn the existing non-Git diff and recovery review surfaces into the foundation of a Markdown-first Review Desk, while keeping Safe Editor Mode primary and Agent Workbench as a separate trust boundary.
+Goal: ship a small, honest Review Desk MVP on top of the existing non-Git diff and recovery review foundation, while using the release-prep window to tighten structure, smoke coverage, and documentation. Keep Safe Editor Mode primary and Agent Workbench as a separate trust boundary.
 
-Before feature implementation starts, run a **Review Desk Readiness Gate**:
+Status: release-prep lane. Do not expand v0.7 into the full Review Desk UX vision unless a blocking MVP bug requires a small correction.
 
-- inventory responsibilities still left in `src/App.tsx`
-- review whether existing hooks and small components are split at useful feature boundaries rather than scattered by implementation detail
-- check Diff / Review / Tabs / FileTree / Agent Workbench / Preferences boundaries
-- identify whether tiny `tsx` / `ts` files should be grouped by feature
-- inspect Rust `src-tauri/src/lib.rs` for module split candidates
-- classify findings as: fix now, fix before v0.7 implementation, v0.8+, fold back together, and Review Desk structural risk
+Delivered or in-flight foundation:
 
-The readiness gate is read-only unless the user explicitly asks for a follow-up cleanup slice.
+- Read-only Review Desk Readiness Gate completed and recorded in `docs/reviews/v0.7-readiness-gate.md`.
+- Design decisions for the initial Review Desk state, compare-case shape, and shortcut reservation are recorded in `docs/reviews/v0.7-review-desk-design-decisions.md`.
+- Visible Review Desk entry, manual candidate comparison, candidate apply-to-buffer safety checks, and slash/menu discoverability are the intended MVP surface.
+- Refactor work should be limited to changes that reduce concrete Review Desk release risk or make the release gates easier to trust.
 
-Priority work after the gate:
+v0.7 release-prep priorities:
 
-1. Diff / Review UI common shell for existing compare cases
-2. Review Desk entry point that can host current editor-vs-disk, external-change, draft, and file-to-file comparisons without Git vocabulary
-3. Global Search (Cmd+Shift+F) as bounded workspace grep, not indexing
-4. Command Palette (Cmd+Shift+P) for app actions that already exist
-5. Settings consolidation so Review Desk, editor, and Agent Workbench preferences are not scattered
-6. Frontmatter display for Markdown review context
-7. KaTeX beta only if it stays preview/export-safe and does not widen command execution
-8. Encoding display / Save As encoding selection if it can be kept inside the existing safe text-open/save boundary
+1. Audit the current Review Desk / Slash / Diff diff and close only blocking UX or safety bugs.
+2. Keep manual candidate review explicit: compare first, show changed amount and target, then apply only by user action.
+3. Confirm the Review Desk entry paths are discoverable from visible UI, native menu, shortcut, and slash command.
+4. Run the source-preview quality gates and latest-HEAD built-app smoke for Safe Editor basics plus the Review Desk MVP path.
+5. Update version surfaces and release notes only after the release lane is explicitly approved.
+6. Avoid new feature expansion once the MVP smoke is acceptable.
+
+Do not use v0.7 to add Global Search, Command Palette, editable two-column Review Desk, detached Agent windows, Frontmatter, KaTeX, encoding conversion, Git integration, LSP, plugin system, theme editor, project-wide indexing, arbitrary file management, Tree Rename / Delete, session log persistence, Agent auto-apply, or Agent session restore.
 
 External-agent workflow:
 
-- Let an implementation agent take one small v0.7 slice at a time.
+- Let an implementation agent take one small v0.7 release-prep slice at a time.
 - Codex should review the resulting diff before the slice is treated as accepted.
 - Review focus: boundary regressions, hidden Git/terminal/command behavior, unsafe file/path handling, missing tests or smoke evidence, and docs claims that exceed implementation.
 
-Do not use this phase to add Git integration, LSP, plugin system, theme editor, project-wide indexing, arbitrary file management, Tree Rename / Delete, session log persistence, Agent auto-apply, or Agent session restore.
+## 0.8: Review Desk UX And Editing Workbench
 
-## 0.8: Product Preview
+Goal: make the Review Desk feel like a usable editing workbench: compare the current text against a candidate, edit that candidate comfortably, understand the change size, and apply only by explicit user choice.
 
-Goal: make Hazakura's distinctive Review Desk experience visible: AI or external text suggestions are compared first, then accepted explicitly by the user.
+Review Desk design direction:
+
+- Treat Review Desk as an editable comparison workbench, not only as a passive AI-candidate inbox.
+- The left side represents the current buffer or a selected source file. A source file view should be read-only while it is being used as the comparison base.
+- The right side represents the comparison candidate and should be directly editable. For file-backed flows, model this as a temporary candidate document rather than modifying the source in place before explicit user action.
+- Before any candidate replaces the editor buffer or a file, show the target and change amount clearly.
+- Live diff refresh while editing the candidate is desirable, but it is not required for the first slice if an explicit Compare action keeps the flow clearer and safer.
+- Applying the right side back to the active buffer is useful for manual candidate review, but the flow should stay explicit and reversible. File overwrite / Save As behavior for candidate documents needs a separate save-policy decision before implementation.
+- Agent output should enter this workbench as candidate text for review. Do not route Agent output directly into the editor body, and do not add Agent auto-apply.
+- Agent Workbench may work better as a separate window or detached surface in a later design pass. Keep it as a separate trust boundary from Safe Editor and Review Desk unless a fresh boundary review approves a narrower integration.
 
 Candidate work:
 
-- AI候補 -> Diff -> 明示的適用 MVP, starting with selected-range proofreading
-- Review Desk UI formalization
-- official icon, About surface, and first-run orientation
+- editable two-column Review Desk workbench
+- clearer left/right labels, target summaries, and changed-line counts before apply/save
+- optional live diff refresh while editing the candidate, if performance and focus behavior stay calm
+- candidate temporary-document policy, including explicit overwrite versus Save As decisions
+- command palette for existing safe app actions only
+- bounded Global Search (Cmd+Shift+F) as workspace grep, not background indexing
+- settings consolidation so Review Desk, editor, and Agent Workbench preferences are not scattered
+- detached or separate-window Agent Workbench experiment, only if the trust boundary stays explicit
+- Review Desk UI formalization and first-run orientation
 - pinned / recent / starred files if they support review flow
 - Print-ready HTML export polish before native PDF export
 - Markdown toolbar and writing-experience polish where it supports review
@@ -297,19 +310,39 @@ Candidate work:
 
 Do not require persistent review logs for the MVP. `.hazakura/reviews/` or app-managed review history needs a separate storage-policy decision.
 
-## 0.9: Distribution Quality
+Do not use v0.8 to add Git integration, merge editing, project-wide indexing, arbitrary command execution, Agent auto-apply, Agent auto-commit, or signing/notarization work.
 
-Goal: prepare for paid or wider external distribution after Apple Developer registration is available.
+## 0.9: Product Preview Hardening
+
+Goal: make the product feel coherent enough for broader preview feedback before the v1.0 distribution lane. This is still a preview-quality lane, not a signed/notarized release promise.
 
 Candidate work:
 
-- Developer ID signing
-- notarization
-- automatic updater
+- official icon, About surface, and first-run orientation if not finished in v0.8
+- Frontmatter display for Markdown review context
+- KaTeX beta only if it stays preview/export-safe and does not widen command execution
+- encoding display / Save As encoding selection if it can be kept inside the existing safe text-open/save boundary
+- keybinding customization and line bookmarks if they support the lightweight editor identity
+- dependency and release-note freshness review
 - privacy policy
 - landing page
 - Homebrew Cask evaluation
 - crash / log policy
+
+Do not add Developer ID signing, notarization, installer packaging, or automatic updater work in v0.9 unless the user explicitly reopens the distribution lane earlier.
+
+## 1.0: Distribution Quality
+
+Goal: prepare for paid or wider external distribution after Apple Developer registration and product-scope sign-off are available.
+
+Candidate work:
+
+- Developer ID signing
+- hardened runtime review
+- notarization and stapling
+- installer or DMG distribution policy
+- automatic updater
+- distribution-grade Gatekeeper verification
 
 Do not move signing, notarization, or updater work earlier unless the user explicitly opens that distribution lane.
 
@@ -317,7 +350,6 @@ Do not move signing, notarization, or updater work earlier unless the user expli
 
 Possible later work, only after a fresh boundary review:
 
-- Developer ID signed and notarized distribution
 - Markdown lint or manual formatting checks
 - heading-level or paragraph-level Markdown diff
 - Pi RPC integration, only after CLI mode improvements prove insufficient
@@ -342,7 +374,7 @@ Use these when asking for external review:
 4. Does 0.4 improve Markdown review/navigation without over-predicting or auto-rewriting user text?
 5. Does 0.5 add Pi as a bounded CLI provider without making Agent Workbench feel like the default app mode?
 6. Does 0.6 deliver a daily-drivable safe editor — Cmd+P, auto-save, Replace, App.tsx split — before adding more Agent features?
-7. Does 0.7 create a Review Desk foundation before adding AI candidate application?
+7. Does 0.7 ship a small Review Desk MVP and release-prep pass without expanding into the v0.8 UX vision?
 8. Does the external-agent/Codex-review workflow catch boundary regressions before accepting implementation slices?
-9. Does 0.8 make AI候補 -> Diff -> 明示的適用 visible without auto-apply or hidden provider control?
-10. Are signing, notarization, updater, and paid-distribution tasks kept out of the preview lane until the Apple Developer path is opened?
+9. Does 0.8 make editable candidate comparison comfortable without auto-apply or hidden provider control?
+10. Are signing, notarization, updater, and paid-distribution tasks kept out of the preview lane until v1.0 or an explicit distribution-lane approval?

@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { WorkspaceTreeEntry } from "../tauri";
+import type { MenuLanguage } from "../types";
 
 type QuickOpenProps = {
   tree: WorkspaceTreeEntry | null;
   onOpenFile: (path: string) => void;
   onClose: () => void;
-  menuLanguage: "ja" | "en";
+  menuLanguage: MenuLanguage;
 };
 
 type FlatFile = {
@@ -144,9 +145,9 @@ export function QuickOpen({
   if (!tree) return null;
 
   const placeholder =
-    menuLanguage === "ja" ? "ファイル名を入力..." : "Type a file name...";
+    menuLanguage !== "en" ? "ファイル名を入力..." : "Type a file name...";
   const emptyMsg =
-    menuLanguage === "ja"
+    menuLanguage !== "en"
       ? "一致するファイルがありません"
       : "No matching files";
 

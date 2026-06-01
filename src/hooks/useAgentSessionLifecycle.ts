@@ -100,7 +100,7 @@ export function useAgentSessionLifecycle({
 
       if (!isActiveAgentSession(agentSession)) {
         setStatus(
-          menuLanguage === "ja"
+          menuLanguage !== "en"
             ? "実行中の Agent セッションが必要です"
             : "Running Agent session required",
         );
@@ -110,7 +110,7 @@ export function useAgentSessionLifecycle({
       try {
         await writeAgentWorkbenchSessionInput(file.path);
         setStatus(
-          menuLanguage === "ja"
+          menuLanguage !== "en"
             ? `Agent にフルパスを送信: ${file.name}`
             : `Sent full path to Agent: ${file.name}`,
         );
@@ -121,7 +121,7 @@ export function useAgentSessionLifecycle({
           preflight: null,
         });
         setStatus(
-          menuLanguage === "ja"
+          menuLanguage !== "en"
             ? "Agent へのパス送信に失敗しました"
             : "Agent path send failed",
         );

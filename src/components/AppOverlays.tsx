@@ -156,6 +156,7 @@ export function AppOverlays({
         <DirtyTabCloseDialog
           cancelButtonRef={closeTabCancelButtonRef}
           dialogRef={closeTabDialogRef}
+          menuLanguage={menuLanguage}
           onCancel={cancelPendingTabClose}
           onDiscard={() => closeTabNow(pendingCloseTab.id)}
           onSave={saveAndClosePendingTab}
@@ -168,6 +169,7 @@ export function AppOverlays({
           cancelButtonRef={appCloseCancelButtonRef}
           dialogRef={appCloseDialogRef}
           dirtyTabCount={dirtyTabCount}
+          menuLanguage={menuLanguage}
           onCancel={cancelPendingAppClose}
           onDiscardAll={discardAllAndCloseWindow}
           onSaveAll={saveAllAndCloseWindow}

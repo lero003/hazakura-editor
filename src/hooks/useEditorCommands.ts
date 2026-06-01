@@ -14,6 +14,7 @@ import type {
   EditableLineEnding,
   EditorTab,
   MarkdownHeading,
+  MenuLanguage,
 } from "../types";
 import type { SlashCommand } from "../types/slash";
 import { normalizeTextLineEndings } from "../utils";
@@ -27,7 +28,8 @@ type UseEditorCommandsOptions = {
   agentWorkbenchActive: boolean;
   editorPaneRef: RefObject<EditorPaneHandle | null>;
   handleSendSelectionToAgent: (text: string) => void;
-  menuLanguage: "ja" | "en";
+  menuLanguage: MenuLanguage;
+  openReviewDesk: () => void;
   requestReviewDraftAgainstDisk: (tab: EditorTab, draft: DraftRecord) => void;
   requestReviewTabAgainstDisk: (tab: EditorTab) => void;
   setStatus: (message: string) => void;
@@ -42,6 +44,7 @@ export function useEditorCommands({
   editorPaneRef,
   handleSendSelectionToAgent,
   menuLanguage,
+  openReviewDesk,
   requestReviewDraftAgainstDisk,
   requestReviewTabAgainstDisk,
   setStatus,
@@ -132,7 +135,7 @@ export function useEditorCommands({
   );
 
   const slashCommands = useMemo<SlashCommand[]>(() => {
-    const ja = menuLanguage === "ja";
+    const ja = menuLanguage !== "en";
     const commands: SlashCommand[] = [
       {
         category: "markdown",
@@ -215,6 +218,42 @@ export function useEditorCommands({
         searchKeys: ["table", "tbl", "テーブル", "表"],
       },
       {
+        category: "shortcut",
+        hint: ja ? "shortcut" : "shortcuts",
+        id: "shortcut-list",
+        insertText: ja
+          ? "## ショートカット\n\n- Cmd+Shift+R: Review Desk を開く\n- Cmd+Shift+T: テーブルを挿入\n- Cmd+B / Cmd+I / Cmd+E / Cmd+K: 太字 / 斜体 / インラインコード / リンク\n- Cmd+F: 検索\n- Cmd+P: クイックオープン\n"
+          : "## Shortcuts\n\n- Cmd+Shift+R: Open Review Desk\n- Cmd+Shift+T: Insert table\n- Cmd+B / Cmd+I / Cmd+E / Cmd+K: Bold / Italic / Inline code / Link\n- Cmd+F: Find\n- Cmd+P: Quick Open\n",
+        label: ja ? "ショートカット一覧" : "Shortcut list",
+        searchKeys: [
+          "shortcut",
+          "shortcuts",
+          "keybindings",
+          "help",
+          "ショートカット",
+          "キー",
+          "ヘルプ",
+        ],
+      },
+      {
+        category: "review",
+        hint: "Cmd+Shift+R",
+        id: "open-review-desk",
+        label: ja ? "Review Desk を開く" : "Open Review Desk",
+        searchKeys: [
+          "review",
+          "review-desk",
+          "desk",
+          "cmd-shift-r",
+          "候補",
+          "レビュー",
+        ],
+        action: () => {
+          openReviewDesk();
+          setStatus(ja ? "Review Desk を開きました" : "Review Desk opened");
+        },
+      },
+      {
         category: "review",
         hint: "review, diff",
         id: "review-changes",
@@ -274,6 +313,7 @@ export function useEditorCommands({
     editorPaneRef,
     handleSendSelectionToAgent,
     menuLanguage,
+    openReviewDesk,
     requestReviewDraftAgainstDisk,
     requestReviewTabAgainstDisk,
     setStatus,

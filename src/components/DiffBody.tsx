@@ -80,7 +80,7 @@ export function DiffBody({
 }
 
 function emptyLabel(menuLanguage: MenuLanguage): string {
-  return menuLanguage === "ja" ? "差分はありません" : "No differences";
+  return menuLanguage !== "en" ? "差分はありません" : "No differences";
 }
 
 function buildSplitDiffRows(lines: DiffLine[]): DiffSplitRow[] {
@@ -310,12 +310,12 @@ function formatDiffSectionContext(
   const rightText = rightHeading?.text ?? null;
 
   if (leftText && rightText && leftText !== rightText) {
-    return menuLanguage === "ja"
+    return menuLanguage !== "en"
       ? `変更位置: 比較元 § ${leftText} / 比較先 § ${rightText}`
       : `Changed in: source § ${leftText} / target § ${rightText}`;
   }
 
-  return menuLanguage === "ja"
+  return menuLanguage !== "en"
     ? `変更位置: § ${leftText ?? rightText}`
     : `Changed in: § ${leftText ?? rightText}`;
 }

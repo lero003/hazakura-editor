@@ -90,6 +90,16 @@ export function DiffIcon() {
   );
 }
 
+export function ReviewDeskIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="2.5" width="12" height="11" rx="1.4" stroke="currentColor" strokeWidth="1.2"/>
+      <path d="M4.5 5.25H9.5M4.5 8H11.5M4.5 10.75H8" stroke="currentColor" strokeWidth="1.15" strokeLinecap="round"/>
+      <path d="M11.25 4.75L12.25 5.75L14 4" stroke="currentColor" strokeWidth="1.15" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
 export function OutlineIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">

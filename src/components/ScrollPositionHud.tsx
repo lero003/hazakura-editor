@@ -15,7 +15,7 @@ export function ScrollPositionHud({
   const progress =
     totalLines <= 1 ? 0 : Math.round(((line - 1) / (totalLines - 1)) * 100);
   const meta =
-    menuLanguage === "ja"
+    menuLanguage !== "en"
       ? `${line.toLocaleString()} / ${totalLines.toLocaleString()} 行 · ${progress}%`
       : `${line.toLocaleString()} / ${totalLines.toLocaleString()} lines · ${progress}%`;
 

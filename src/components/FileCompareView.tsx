@@ -19,10 +19,10 @@ export function FileCompareView({
   view: CompareViewState;
 }) {
   const labels =
-    menuLanguage === "ja"
+    menuLanguage !== "en"
       ? {
           additions: "追加行",
-          close: "閉じる",
+          close: "比較結果を閉じる",
           fileTitle: "Diff",
           removed: "削除行",
           summary: "比較の概要",
@@ -31,7 +31,7 @@ export function FileCompareView({
         }
       : {
           additions: "Added lines",
-          close: "Close",
+          close: "Close comparison result",
           fileTitle: "Diff",
           removed: "Removed lines",
           summary: "Comparison summary",

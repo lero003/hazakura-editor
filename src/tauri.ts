@@ -3,6 +3,8 @@ import { confirm, open, save as saveDialog } from "@tauri-apps/plugin-dialog";
 import {
   getCurrentWindow,
   type CloseRequestedEvent,
+  type Color,
+  type Theme,
 } from "@tauri-apps/api/window";
 
 export type AppMenuRecentItem = {
@@ -23,7 +25,7 @@ export type AppMenuState = {
     | "yakou"
     | "shokou"
     | "kouyou";
-  menuLanguage: "en" | "ja";
+  menuLanguage: "en" | "ja" | "kana";
   recentFiles: AppMenuRecentItem[];
   recentFolders: AppMenuRecentItem[];
 };
@@ -237,6 +239,24 @@ export async function setCurrentWindowTitle(title: string): Promise<void> {
   }
 
   await getCurrentWindow().setTitle(title);
+}
+
+export async function setCurrentWindowTheme(theme: Theme): Promise<void> {
+  if (!isTauriRuntime()) {
+    return;
+  }
+
+  await getCurrentWindow().setTheme(theme);
+}
+
+export async function setCurrentWindowBackgroundColor(
+  color: Color,
+): Promise<void> {
+  if (!isTauriRuntime()) {
+    return;
+  }
+
+  await getCurrentWindow().setBackgroundColor(color);
 }
 
 export async function onCurrentWindowCloseRequested(

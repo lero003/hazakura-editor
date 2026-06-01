@@ -163,13 +163,13 @@ export function useSlashMenu({
       if (!view) {
         return;
       }
-      if (command.category === "markdown") {
+      if ("insertText" in command) {
         const match = findSlashMatch(view);
         if (!match) {
           return;
         }
         view.dispatch({
-          changes: { from: match.from, insert: command.insertText },
+          changes: { from: match.from, to: match.to, insert: command.insertText },
           selection: {
             anchor: match.from + command.insertText.length,
           },
@@ -245,8 +245,12 @@ export function useSlashMenu({
     };
     const onKeyDown = (event: KeyboardEvent) => {
       if (state.visible) {
-        if (event.key === "ArrowDown") {
+        const consumeEvent = () => {
           event.preventDefault();
+          event.stopImmediatePropagation();
+        };
+        if (event.key === "ArrowDown") {
+          consumeEvent();
           setActiveIndex((index) =>
             Math.min(
               index + 1,
@@ -256,21 +260,24 @@ export function useSlashMenu({
           return;
         }
         if (event.key === "ArrowUp") {
-          event.preventDefault();
+          consumeEvent();
           setActiveIndex((index) => Math.max(index - 1, 0));
           return;
         }
-        if (event.key === "Enter") {
+        if (
+          event.key === "Enter" ||
+          (event.key === "Tab" && !event.shiftKey)
+        ) {
           const command =
             filteredCommandsRef.current[activeIndexRef.current] ?? null;
+          consumeEvent();
           if (command) {
-            event.preventDefault();
             runCommand(command);
           }
           return;
         }
         if (event.key === "Escape") {
-          event.preventDefault();
+          consumeEvent();
           closeMenu();
           return;
         }
@@ -283,13 +290,13 @@ export function useSlashMenu({
     dom.addEventListener("compositionend", onCompositionEnd);
     dom.addEventListener("input", onSelectionChange);
     dom.addEventListener("keyup", onSelectionChange);
-    dom.addEventListener("keydown", onKeyDown);
+    dom.addEventListener("keydown", onKeyDown, true);
     return () => {
       dom.removeEventListener("compositionstart", onCompositionStart);
       dom.removeEventListener("compositionend", onCompositionEnd);
       dom.removeEventListener("input", onSelectionChange);
       dom.removeEventListener("keyup", onSelectionChange);
-      dom.removeEventListener("keydown", onKeyDown);
+      dom.removeEventListener("keydown", onKeyDown, true);
     };
   }, [closeMenu, enabled, runCommand, state.visible, viewRef]);
 

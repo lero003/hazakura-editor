@@ -53,8 +53,8 @@ export function useCompareExecution({
       try {
         const diskDocument = await openTextFile(tab.path);
         const diff = buildLineDiff(diskDocument.contents, tab.contents);
-        const diskLabel = menuLanguage === "ja" ? "ディスク" : "Disk";
-        const editorLabel = menuLanguage === "ja" ? "エディタ" : "Editor";
+        const diskLabel = menuLanguage !== "en" ? "ディスク" : "Disk";
+        const editorLabel = menuLanguage !== "en" ? "エディタ" : "Editor";
         const caseKey = crypto.randomUUID();
         const compareCase: CompareCase = {
           kind: "changes",
@@ -75,7 +75,7 @@ export function useCompareExecution({
       } catch (err) {
         const message = String(err);
         setGlobalError(
-          menuLanguage === "ja" ? localizeCompareError(message) : message,
+          menuLanguage !== "en" ? localizeCompareError(message) : message,
         );
         setStatus("Change review failed");
       }
@@ -91,8 +91,8 @@ export function useCompareExecution({
       try {
         const diskDocument = await openTextFile(tab.path);
         const diff = buildLineDiff(diskDocument.contents, draft.contents);
-        const diskLabel = menuLanguage === "ja" ? "ディスク" : "Disk";
-        const draftLabel = menuLanguage === "ja" ? "下書き" : "Draft";
+        const diskLabel = menuLanguage !== "en" ? "ディスク" : "Disk";
+        const draftLabel = menuLanguage !== "en" ? "下書き" : "Draft";
         const caseKey = crypto.randomUUID();
         const compareCase: CompareCase = {
           kind: "changes",
@@ -113,7 +113,7 @@ export function useCompareExecution({
       } catch (err) {
         const message = String(err);
         setGlobalError(
-          menuLanguage === "ja" ? localizeCompareError(message) : message,
+          menuLanguage !== "en" ? localizeCompareError(message) : message,
         );
         setStatus("Change review failed");
       }
@@ -156,8 +156,8 @@ export function useCompareExecution({
 
       try {
         const rightDocument = await openTextFile(rightFile.path);
-        const centerLabel = menuLanguage === "ja" ? "中央" : "Center";
-        const rightLabel = menuLanguage === "ja" ? "右" : "Right";
+        const centerLabel = menuLanguage !== "en" ? "中央" : "Center";
+        const rightLabel = menuLanguage !== "en" ? "右" : "Right";
         const source =
           compareAnchor && compareAnchor.path !== rightFile.path
             ? {
@@ -165,9 +165,9 @@ export function useCompareExecution({
                 name: compareAnchor.name,
                 path: compareAnchor.path,
                 leftColumnLabel:
-                  menuLanguage === "ja" ? "比較元" : "Source",
+                  menuLanguage !== "en" ? "比較元" : "Source",
                 rightColumnLabel:
-                  menuLanguage === "ja" ? "比較先" : "Target",
+                  menuLanguage !== "en" ? "比較先" : "Target",
               }
             : activeTab && activeTab.path !== rightFile.path
             ? {
@@ -182,9 +182,9 @@ export function useCompareExecution({
                 name: compareAnchor?.name ?? rightFile.name,
                 path: compareAnchor?.path ?? rightFile.path,
                 leftColumnLabel:
-                  menuLanguage === "ja" ? "比較元" : "Source",
+                  menuLanguage !== "en" ? "比較元" : "Source",
                 rightColumnLabel:
-                  menuLanguage === "ja" ? "比較先" : "Target",
+                  menuLanguage !== "en" ? "比較先" : "Target",
               };
         const diff = buildLineDiff(source.contents, rightDocument.contents);
         const caseKey = crypto.randomUUID();
@@ -215,7 +215,7 @@ export function useCompareExecution({
       } catch (err) {
         const message = String(err);
         setGlobalError(
-          menuLanguage === "ja" ? localizeCompareError(message) : message,
+          menuLanguage !== "en" ? localizeCompareError(message) : message,
         );
         setStatus("Compare failed");
       }
@@ -238,7 +238,7 @@ export function useCompareExecution({
   const runSelectedFileCompare = useCallback(() => {
     if (!compareAnchor || !compareTarget) {
       setGlobalError(
-        menuLanguage === "ja"
+        menuLanguage !== "en"
           ? "比較元と比較先の2つのテキストファイルを選んでください。"
           : "Choose both a source and target text file before comparing.",
       );
@@ -248,7 +248,7 @@ export function useCompareExecution({
 
     if (compareAnchor.path === compareTarget.path) {
       setGlobalError(
-        menuLanguage === "ja"
+        menuLanguage !== "en"
           ? "比較元と比較先には別のファイルを選んでください。"
           : "Choose different files for the source and target.",
       );

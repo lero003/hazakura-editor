@@ -403,6 +403,44 @@ html, body, #root, .app-shell,
   background: var(--accent-gradient);
 }
 
+:root[data-theme="yakou"] .tabs-row {
+  background: rgba(20, 20, 30, 0.88);
+  border-bottom-color: rgba(139, 124, 248, 0.16);
+  color: var(--text);
+}
+
+:root[data-theme="shokou"] .tabs-row {
+  background: rgba(229, 241, 251, 0.72);
+  border-bottom-color: rgba(47, 128, 194, 0.16);
+  color: var(--text);
+}
+
+:root[data-theme="yakou"] .empty-tabs,
+:root[data-theme="yakou"] .document-meta,
+:root[data-theme="yakou"] .tab-button {
+  color: #b8b8d4;
+}
+
+:root[data-theme="shokou"] .empty-tabs,
+:root[data-theme="shokou"] .document-meta,
+:root[data-theme="shokou"] .tab-button {
+  color: #435f73;
+}
+
+:root[data-theme="yakou"] .tab-item.active .tab-button,
+:root[data-theme="shokou"] .tab-item.active .tab-button {
+  color: var(--text);
+}
+
+:root[data-theme="yakou"] .start-kicker,
+:root[data-theme="shokou"] .start-kicker {
+  background: var(--accent-gradient);
+  background-clip: text;
+  color: var(--accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 /* アンビエントグロー（Yakou / 夜光 用） */
 :root[data-theme="yakou"] .modal-backdrop {
   background: rgba(8, 8, 14, 0.6);
@@ -3974,6 +4012,11 @@ button:disabled {
 .slash-menu-badge-review {
   background: rgba(153, 120, 56, 0.16);
   color: var(--conflict);
+}
+
+.slash-menu-badge-shortcut {
+  background: color-mix(in srgb, var(--info) 18%, transparent);
+  color: var(--info);
 }
 
 .slash-menu-badge-agent {

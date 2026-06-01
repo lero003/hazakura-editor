@@ -1,4 +1,4 @@
-export type SlashCommandCategory = "markdown" | "review" | "agent";
+export type SlashCommandCategory = "markdown" | "review" | "shortcut" | "agent";
 
 export type SlashMenuState = {
   visible: boolean;
@@ -14,7 +14,7 @@ export type SlashExecuteContext = {
 };
 
 export type SlashMarkdownCommand = {
-  category: "markdown";
+  category: "markdown" | "shortcut";
   hint: string;
   id: string;
   insertText: string;

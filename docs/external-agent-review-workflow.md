@@ -76,17 +76,16 @@ If there are no blocking findings, say so clearly and name any residual test or 
 
 Codex should patch issues only when the user asks for a follow-up fix, or when the review request explicitly includes "review and fix". Otherwise, Codex remains reviewer, not co-implementer.
 
-## v0.7 Review Desk Review Focus
+## v0.7 Release-Prep Review Focus
 
-For `v0.7: Hazakura Review Desk Preview`, review these risks especially:
+For `v0.7: Hazakura Review Desk MVP and release prep`, review these risks especially:
 
 - Diff / Review UI becoming Git-shaped through labels such as stage, commit, branch, merge, checkout, or apply patch.
-- Workspace grep becoming project-wide indexing or background analysis.
-- Command palette exposing unsafe operations that were not already available through the app.
-- Settings consolidation blurring Safe Editor Mode and Agent Workbench.
-- Frontmatter or KaTeX preview widening external content loading or command execution.
-- Encoding conversion corrupting line endings, final-newline behavior, or save-conflict protections.
-- AI candidate work bypassing Review Desk and modifying editor text directly.
+- Review Desk entry points, Slash commands, or native menu actions opening the wrong surface or leaving stray editor input.
+- Manual candidate review applying stale candidate text after tab switches, buffer edits, failed comparisons, or explicit close/reset.
+- Release-prep docs claiming v0.8 UX work such as editable two-column Review Desk, detached Agent windows, Global Search, Command Palette, Frontmatter, KaTeX, or encoding conversion as v0.7 behavior.
+- Agent candidate work bypassing Review Desk and modifying editor text directly.
+- Any release, version, tag, publish, signing, notarization, updater, or dependency/lockfile change without explicit user approval.
 
 ## Acceptance
 

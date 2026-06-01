@@ -5,7 +5,7 @@ export function localizeStatusMessage(
   message: string,
   menuLanguage: MenuLanguage,
 ): string {
-  if (menuLanguage !== "ja") {
+  if (menuLanguage === "en") {
     return message;
   }
 
@@ -35,7 +35,7 @@ export function localizeStatusMessage(
     "Close needs confirmation": "閉じる前に確認が必要です",
     "Close stopped": "閉じる操作を停止しました",
     "Closing window...": "ウィンドウを閉じています...",
-    "Compare closed": "比較を閉じました",
+    "Compare closed": "比較結果を閉じました",
     "Compare failed": "比較に失敗しました",
     "Compare ready": "比較の準備ができました",
     "Comparing files...": "ファイルを比較中...",

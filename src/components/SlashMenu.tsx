@@ -6,9 +6,11 @@ export interface SlashMenuCopy {
   categoryAgent: string;
   categoryMarkdown: string;
   categoryReview: string;
+  categoryShortcut: string;
   empty: string;
   markdownBadge: string;
   reviewBadge: string;
+  shortcutBadge: string;
 }
 
 type SlashMenuProps = {
@@ -25,12 +27,14 @@ const CATEGORY_LABEL: Record<SlashCommand["category"], keyof SlashMenuCopy> = {
   agent: "categoryAgent",
   markdown: "categoryMarkdown",
   review: "categoryReview",
+  shortcut: "categoryShortcut",
 };
 
 const BADGE_LABEL: Record<SlashCommand["category"], keyof SlashMenuCopy> = {
   agent: "agentBadge",
   markdown: "markdownBadge",
   review: "reviewBadge",
+  shortcut: "shortcutBadge",
 };
 
 function prefersReducedMotion(): boolean {

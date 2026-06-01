@@ -3,43 +3,44 @@
 Status: Operational
 Scope: Ready-to-use goal prompts and phase boundaries
 Authority: High
-Last reviewed: 2026-06-01
+Last reviewed: 2026-06-02
 
-## Ready Goal: v0.7 Review Desk Readiness Gate
+## Ready Goal: v0.7 Review Desk MVP Release Prep
 
 Status: Ready
 
-目的: v0.7 の Review Desk 実装に入る前に、既存の App.tsx split、hooks/components、Diff / Review / Agent Workbench / Preferences / Tabs / FileTree、Rust `lib.rs` の責務境界を READ ONLY で確認し、先に片付けるべき構造リスクを分類する。
+目的: v0.7 を Review Desk MVP として出せる状態へ締める。新しい UX 拡張ではなく、現在の Review Desk / Slash / Diff 実装差分を監査し、MVP バグ、smoke gap、docs drift、release-note/version-prep だけを小さく片付ける。
 
-正本: `docs/roadmap.md` と `docs/external-agent-review-workflow.md`
+正本: `docs/roadmap.md`, `docs/current-status.md`, `docs/development-automation.md`, `docs/source-release-checklist.md`
 
 ### Goal Prompt
 
 ```txt
-Run the v0.7 Review Desk Readiness Gate for hazakura editor.
+Advance hazakura editor toward v0.7 Review Desk MVP release readiness.
 
-Start by reading AGENTS.md, README.md, docs/current-status.md, docs/roadmap.md, docs/development-automation.md, docs/external-agent-review-workflow.md, docs/security-boundary.md, and docs/agent-workbench-boundary.md. Check git status --short --branch and do not revert user changes.
+Start by reading AGENTS.md, README.md, docs/current-status.md, docs/roadmap.md, docs/smoke-checklist.md, docs/development-automation.md, docs/source-release-checklist.md, docs/external-agent-review-workflow.md, and any boundary doc touched by the slice. Check git status --short --branch and do not revert user changes.
 
-This is READ ONLY unless the user explicitly asks for a cleanup patch. Inspect the current App.tsx, hooks, components, Diff/Review surfaces, Agent Workbench boundaries, Preferences, Tabs, FileTree, and src-tauri/src/lib.rs. Do not implement Review Desk features.
+Choose exactly one small release-prep slice: audit current Review Desk / Slash / Diff changes, fix one reproduced MVP bug, exercise one latest-HEAD built-app smoke gap, update release-prep docs, or prepare release notes/version-surface checks after explicit release-lane approval. Keep v0.7 limited to the current MVP. Move editable two-column Review Desk, detached Agent windows, Global Search, Command Palette, settings consolidation, Frontmatter, KaTeX, and encoding conversion to v0.8+ unless the user explicitly reopens feature work.
 
-Report findings in five groups: now, before v0.7 implementation, v0.8+, fold back together, and Review Desk structural risk. Include concrete file references. Keep Safe Editor Mode primary and Agent Workbench as a separate explicit trust boundary.
+Keep Safe Editor Mode primary and Agent Workbench as a separate explicit trust boundary. Do not add Git integration, LSP, arbitrary terminal/shell access, arbitrary command execution, provider-add UI, plugin systems, project-wide indexing, Tree Rename/Delete, persistent review/session logs, signing/notarization, updater work, release/publish/tag flow, or dependency/lockfile changes without explicit user approval.
 
-For docs-only notes run git diff --check if docs are changed. If no files are changed, report that this was a read-only review.
+For code changes run the checks from docs/development-automation.md. For docs-only changes run git diff --check. If app smoke is launched, quit the app before reporting. Final report: selected slice, changed files, verification, skipped checks, residual risk, and the next release-prep action.
 ```
 
 ### Acceptance Criteria
 
-- 実装に入らず、構造と境界を棚卸しする
-- App.tsx に残る責務を具体的に分類する
-- 分割済み hooks/components が feature 境界として妥当か確認する
-- tiny files の戻し候補は、読みやすさが上がる場合だけ提案する
-- Rust `lib.rs` の module 分割候補を提案する
-- Review Desk 実装前に直すべきものと、後回しでよいものを分ける
+- v0.7 MVP を出すための1スライスだけを扱う
+- Review Desk / Slash / Diff の現在実装を広げず、blocking bug や smoke gap を優先する
+- latest-HEAD built-app smoke または品質ゲートの証拠を残す
+- release note / version bump / tag / publish は明示承認まで実行しない
+- docs claims が実装を超えない
 
 ### Non-goals
 
-- Review Desk UI の実装
-- AI候補 -> Diff -> 明示的適用
+- v0.8 の editable two-column Review Desk UX
+- detached Agent window
+- Global Search / Command Palette / Settings consolidation
+- Frontmatter / KaTeX / encoding conversion
 - Git integration, LSP, terminal, plugin, project-wide indexing
 - Agent auto-apply, auto-commit, session restore, provider-add UI
 - signing, notarization, updater, paid-distribution work

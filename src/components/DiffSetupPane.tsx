@@ -19,7 +19,7 @@ export function DiffSetupPane({
   workspaceRootPath: string | null;
 }) {
   const labels =
-    menuLanguage === "ja"
+    menuLanguage !== "en"
       ? {
           clear: "解除",
           compare: "比較する",
@@ -31,11 +31,19 @@ export function DiffSetupPane({
           noWorkspace:
             "ワークスペースを開くと、左のファイル一覧から比較元と比較先を選べます。",
           openWorkspaceHint: "先にワークスペースフォルダを開いてください",
-          sourceHint: "左のファイル一覧をクリックして比較元を選択",
-          targetHint: "次のクリックで比較先を選択",
+          sourceHint: "1つ目のファイルを左の一覧から選ぶと比較元になります",
+          sourceSelectedHint: "比較元を変更する場合は解除して選び直します",
+          targetHint: "2つ目のファイルを左の一覧から選ぶと比較先になります",
+          targetSelectedHint: "比較先を変更する場合は解除して選び直します",
           ready:
-            "比較元は解除するまで固定されます。右クリックメニューでも比較元/比較先を明示できます。",
-          pending: "比較元と比較先を選ぶと比較できます。",
+            "準備完了です。比較するボタンで結果を表示します。",
+          sourcePending: "まず左のファイル一覧から比較元を選んでください。",
+          targetPending:
+            "次に左のファイル一覧から比較先を選んでください。",
+          noWorkspacePending:
+            "ワークスペースを開くとファイル比較を始められます。",
+          sameFilePending:
+            "比較元と比較先には別のファイルを選んでください。",
           sourceUnset: "比較元は未選択です",
           targetUnset: "比較先は未選択です",
         }
@@ -50,11 +58,17 @@ export function DiffSetupPane({
           noWorkspace:
             "Open a workspace folder to choose the source and target from the left file list.",
           openWorkspaceHint: "Open a workspace folder first",
-          sourceHint: "Click a file in the left list to choose the source",
-          targetHint: "The next click chooses the target",
+          sourceHint: "Choose the first file from the left list as the source",
+          sourceSelectedHint: "Clear the source to choose a different file",
+          targetHint: "Choose the second file from the left list as the target",
+          targetSelectedHint: "Clear the target to choose a different file",
           ready:
-            "The source stays fixed until cleared. You can also use the context menu to choose either side.",
-          pending: "Compare becomes available after both slots are selected.",
+            "Ready. Use Compare to show the result.",
+          sourcePending: "Choose a compare source from the left file list first.",
+          targetPending: "Next, choose a compare target from the left file list.",
+          noWorkspacePending:
+            "Open a workspace folder to start comparing files.",
+          sameFilePending: "Choose two different files to compare.",
           sourceUnset: "No compare source selected",
           targetUnset: "No compare target selected",
         };
@@ -67,13 +81,25 @@ export function DiffSetupPane({
     compareSource !== null &&
     compareTarget !== null &&
     compareSource.path !== compareTarget.path;
-  const sourcePrompt = workspaceAvailable
-    ? labels.sourceHint
-    : labels.openWorkspaceHint;
-  const targetPrompt = workspaceAvailable
-    ? labels.targetHint
-    : labels.openWorkspaceHint;
-  const actionHint = workspaceAvailable ? labels.ready : labels.pending;
+  const sourcePrompt = !workspaceAvailable
+    ? labels.openWorkspaceHint
+    : compareSource
+      ? labels.sourceSelectedHint
+      : labels.sourceHint;
+  const targetPrompt = !workspaceAvailable
+    ? labels.openWorkspaceHint
+    : compareTarget
+      ? labels.targetSelectedHint
+      : labels.targetHint;
+  const actionHint = !workspaceAvailable
+    ? labels.noWorkspacePending
+    : compareSource === null
+      ? labels.sourcePending
+      : compareTarget === null
+        ? labels.targetPending
+        : compareSource.path === compareTarget.path
+          ? labels.sameFilePending
+          : labels.ready;
 
   return (
     <div className="diff-setup-pane">

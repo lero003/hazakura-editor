@@ -87,7 +87,11 @@ export type ReviewSurface = "review" | null;
 // docs/reviews/v0.7-review-desk-design-decisions.md (R-4).
 export type ReviewDeskMode = "empty";
 
-export type MenuLanguage = "en" | "ja";
+export type MenuLanguage = "en" | "ja" | "kana";
+
+export function isJapaneseMenuLanguage(language: MenuLanguage): boolean {
+  return language === "ja" || language === "kana";
+}
 
 export type PreferencesDialogMode = "settings" | "agent";
 

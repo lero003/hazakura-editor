@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
-import type { AgentWorkbenchProvider } from "../tauri";
+import {
+  setCurrentWindowBackgroundColor,
+  setCurrentWindowTheme,
+  type AgentWorkbenchProvider,
+} from "../tauri";
 import type { AmbientIntensity } from "../types";
 import { clampNumber } from "../utils";
 import {
@@ -50,6 +54,22 @@ export function useAppPreferences() {
     document.documentElement.dataset.themePreference = themePreference;
     window.localStorage.setItem(THEME_STORAGE_KEY, themePreference);
   }, [resolvedTheme, themePreference]);
+
+  useEffect(() => {
+    const windowTheme: BaseTheme =
+      themePreference === "dark" || themePreference === "yakou"
+        ? "dark"
+        : "light";
+
+    void setCurrentWindowTheme(windowTheme).catch((err) => {
+      console.warn("Failed to update window theme", err);
+    });
+    void setCurrentWindowBackgroundColor(
+      windowBackgroundColorForTheme(themePreference),
+    ).catch((err) => {
+      console.warn("Failed to update window background color", err);
+    });
+  }, [themePreference]);
 
   useEffect(() => {
     window.localStorage.setItem(
@@ -128,10 +148,28 @@ function readStoredThemePreference(): ThemePreference {
   return readSystemTheme();
 }
 
+function windowBackgroundColorForTheme(theme: ThemePreference): string {
+  switch (theme) {
+    case "dark":
+      return "#0f1412";
+    case "sakura":
+      return "#f8f1f3";
+    case "yakou":
+      return "#0d0d12";
+    case "shokou":
+      return "#eef7ff";
+    case "kouyou":
+      return "#f7efe4";
+    case "light":
+    default:
+      return "#f3f6f4";
+  }
+}
+
 function readStoredMenuLanguage(): MenuLanguage {
-  return window.localStorage.getItem(MENU_LANGUAGE_STORAGE_KEY) === "ja"
-    ? "ja"
-    : "en";
+  const value = window.localStorage.getItem(MENU_LANGUAGE_STORAGE_KEY);
+
+  return value === "ja" || value === "kana" ? value : "en";
 }
 
 function readStoredPreviewVisible(): boolean {

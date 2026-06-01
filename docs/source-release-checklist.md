@@ -1,11 +1,11 @@
 # Source Release Checklist
 
-Status: Pre-release stabilization review accepted; release approval pending
+Status: Operational release-prep checklist
 Scope: Source-only release readiness
 Authority: High
-Last reviewed: 2026-05-28
+Last reviewed: 2026-06-02
 
-This checklist is for a source-only developer preview release of `hazakura-note`.
+This checklist is for a source-only developer preview release of `hazakura editor` / `hazakura-note`.
 
 Source-only means publishing the repository state, tag, source archive, release notes, and build instructions. It does not mean distributing a signed or notarized macOS app.
 
@@ -118,7 +118,8 @@ Use the latest built app from the current release HEAD and record concise eviden
 
 Before tagging:
 
-- Confirm `package.json`, `src-tauri/tauri.conf.json`, and `src-tauri/Cargo.toml` carry the intended version. Current checked version: `0.4.0` in all three files.
+- Confirm `package.json`, `src-tauri/tauri.conf.json`, and `src-tauri/Cargo.toml` carry the intended version for the release candidate. Do not rely on an older checklist snapshot for the version value.
+- For v0.7 release prep, keep package/version bumps out of ordinary quality slices until the release lane is explicitly approved.
 - Add or update the version-specific file under `docs/releases/` for the intended source preview.
 - State clearly that users build from source with `npm ci` and `npm run build`. This is present in `README.md`.
 - State clearly that the built local app is ad-hoc signed only and is not Developer ID signed or notarized. This is present in `README.md` Known Limits.

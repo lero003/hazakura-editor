@@ -158,7 +158,7 @@ export function useFileOpening({
 
       if (!targetPath) {
         setStatus(
-          menuLanguage === "ja"
+          menuLanguage !== "en"
             ? "workspace 内の相対テキストリンクだけ開けます"
             : "Only relative workspace text links can be opened",
         );
@@ -167,7 +167,7 @@ export function useFileOpening({
 
       if (!isComparableTextFile(targetPath)) {
         setStatus(
-          menuLanguage === "ja"
+          menuLanguage !== "en"
             ? "リンク先は対応テキストファイルではありません"
             : "Linked file is not a supported text file",
         );
@@ -178,7 +178,7 @@ export function useFileOpening({
 
       if (opened) {
         setStatus(
-          menuLanguage === "ja"
+          menuLanguage !== "en"
             ? "リンク先ファイルを開きました"
             : "Linked file opened",
         );

@@ -40,7 +40,7 @@ export function useAgentWorkbenchPreferenceActions({
   const updateAgentWorkbenchPreference = useCallback(
     (enabled: boolean) => {
       setAgentWorkbenchPreference(enabled);
-      if (menuLanguage === "ja") {
+      if (menuLanguage !== "en") {
         setStatus(
           enabled === agentWorkbenchActive
             ? enabled
@@ -74,7 +74,7 @@ export function useAgentWorkbenchPreferenceActions({
   const restartAppForAgentMode = useCallback(async () => {
     setAppRestartPending(true);
     setStatus(
-      menuLanguage === "ja"
+      menuLanguage !== "en"
         ? "hazakura editor を再起動中..."
         : "Restarting hazakura editor...",
     );
@@ -84,7 +84,7 @@ export function useAgentWorkbenchPreferenceActions({
     } catch (err) {
       setAppRestartPending(false);
       setGlobalError(`Restart failed: ${String(err)}`);
-      setStatus(menuLanguage === "ja" ? "再起動に失敗しました" : "Restart failed");
+      setStatus(menuLanguage !== "en" ? "再起動に失敗しました" : "Restart failed");
     }
   }, [menuLanguage, setAppRestartPending, setGlobalError, setStatus]);
 
@@ -97,7 +97,7 @@ export function useAgentWorkbenchPreferenceActions({
         preflight: null,
       });
       setStatus(
-        menuLanguage === "ja"
+        menuLanguage !== "en"
           ? acknowledged
             ? "エージェントワークベンチの責任境界を確認しました"
             : "エージェントワークベンチの同意を解除しました"

@@ -47,32 +47,32 @@ export function WorkspaceContextMenu({
     Math.max(8, window.innerHeight - estimatedHeight),
   );
   const labels =
-    menuLanguage === "ja"
+    menuLanguage !== "en"
       ? {
           clearCompareSource: "比較元を解除",
           close: "メニューを閉じる",
           compareActive: "開いているファイルと比較",
-          compare: "比較元と比較",
+          compare: "選択中の比較元と比較",
           copyFullPath: "フルパスをコピー",
           menu: "ワークスペース項目の操作",
           open: "開く",
           revealInFinder: "Finderで表示",
           sendFullPathToAgent: "Agent にフルパスを送る",
-          setCompareSource: "比較元にする",
-          setCompareTarget: "比較先にする",
+          setCompareSource: "比較元に設定",
+          setCompareTarget: "比較先に設定",
         }
       : {
           clearCompareSource: "Clear compare source",
           close: "Close menu",
           compareActive: "Compare with open file",
-          compare: "Compare with source",
+          compare: "Compare with selected source",
           copyFullPath: "Copy full path",
           menu: "Workspace item actions",
           open: "Open",
           revealInFinder: "Show in Finder",
           sendFullPathToAgent: "Send full path to Agent",
-          setCompareSource: "Set as compare source",
-          setCompareTarget: "Set as compare target",
+          setCompareSource: "Set compare source",
+          setCompareTarget: "Set compare target",
         };
 
   return (

@@ -177,6 +177,7 @@ export function SettingsPreferencesPane({
           >
             <option value="en">English</option>
             <option value="ja">日本語</option>
+            <option value="kana">かなふみ</option>
           </select>
         </label>
       </section>

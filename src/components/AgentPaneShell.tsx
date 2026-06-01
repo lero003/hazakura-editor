@@ -53,7 +53,7 @@ export function AgentPaneShell({
   const workspaceAvailable = workspaceRootPath !== null;
   const activeSession = isActiveAgentSession(session);
   const copy =
-    menuLanguage === "ja"
+    menuLanguage !== "en"
       ? {
           noWorkspace: "ワークスペース未選択",
           unavailable:

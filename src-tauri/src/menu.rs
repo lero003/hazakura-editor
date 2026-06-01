@@ -27,11 +27,17 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
     let theme_preference = state
         .map(|state| state.theme_preference.as_str())
         .unwrap_or("dark");
+    let menu_language = state
+        .map(|state| state.menu_language.as_str())
+        .unwrap_or("en");
+    let menu_is_kana = menu_language == "kana";
     let menu_is_japanese = state
-        .map(|state| state.menu_language.as_str() == "ja")
+        .map(|state| matches!(state.menu_language.as_str(), "ja" | "kana"))
         .unwrap_or(false);
     let label = |english: &'static str, japanese: &'static str| {
-        if menu_is_japanese {
+        if menu_is_kana {
+            kana_menu_label(japanese).unwrap_or(japanese)
+        } else if menu_is_japanese {
             japanese
         } else {
             english
@@ -154,6 +160,13 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
                 preview_visible,
                 Some("CmdOrCtrl+Option+P"),
             )?,
+            &MenuItem::with_id(
+                app,
+                MENU_TOGGLE_REVIEW_DESK,
+                label("Review Desk", "レビューデスク"),
+                true,
+                None::<&str>,
+            )?,
             &CheckMenuItem::with_id(
                 app,
                 MENU_TOGGLE_WRAP,
@@ -184,52 +197,46 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
                 label("Theme", "テーマ"),
                 true,
                 &[
-                    &CheckMenuItem::with_id(
+                    &MenuItem::with_id(
                         app,
                         MENU_THEME_LIGHT,
-                        label("Light", "ライト"),
+                        selected_theme_label(label("Light", "ライト"), theme_preference == "light"),
                         true,
-                        theme_preference == "light",
                         None::<&str>,
                     )?,
-                    &CheckMenuItem::with_id(
+                    &MenuItem::with_id(
                         app,
                         MENU_THEME_DARK,
-                        label("Dark", "ダーク"),
+                        selected_theme_label(label("Dark", "ダーク"), theme_preference == "dark"),
                         true,
-                        theme_preference == "dark",
                         None::<&str>,
                     )?,
-                    &CheckMenuItem::with_id(
+                    &MenuItem::with_id(
                         app,
                         MENU_THEME_SAKURA,
-                        "Sakura",
+                        selected_theme_label(label("Sakura", "桜"), theme_preference == "sakura"),
                         true,
-                        theme_preference == "sakura",
                         None::<&str>,
                     )?,
-                    &CheckMenuItem::with_id(
+                    &MenuItem::with_id(
                         app,
                         MENU_THEME_YAKOU,
-                        label("Yakou", "夜光"),
+                        selected_theme_label(label("Yakou", "夜光"), theme_preference == "yakou"),
                         true,
-                        theme_preference == "yakou",
                         None::<&str>,
                     )?,
-                    &CheckMenuItem::with_id(
+                    &MenuItem::with_id(
                         app,
                         MENU_THEME_SHOKOU,
-                        label("Shokou", "曙光"),
+                        selected_theme_label(label("Shokou", "曙光"), theme_preference == "shokou"),
                         true,
-                        theme_preference == "shokou",
                         None::<&str>,
                     )?,
-                    &CheckMenuItem::with_id(
+                    &MenuItem::with_id(
                         app,
                         MENU_THEME_KOUYOU,
-                        label("Kouyou", "紅葉"),
+                        selected_theme_label(label("Kouyou", "紅葉"), theme_preference == "kouyou"),
                         true,
-                        theme_preference == "kouyou",
                         None::<&str>,
                     )?,
                 ],
@@ -374,6 +381,74 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
 }
 
 #[cfg(desktop)]
+fn selected_theme_label(label: &str, selected: bool) -> String {
+    if selected {
+        format!("● {label}")
+    } else {
+        format!("  {label}")
+    }
+}
+
+#[cfg(desktop)]
+fn kana_menu_label(japanese: &'static str) -> Option<&'static str> {
+    Some(match japanese {
+        "ファイル" => "ふみ",
+        "新規ファイル" => "あらたなるふみ",
+        "開く..." => "ひらく...",
+        "フォルダを開く..." => "ところをひらく...",
+        "最近使ったファイル" => "このごろのふみ",
+        "最近使った項目はありません" => "このごろのものなし",
+        "最近使ったフォルダ" => "このごろのところ",
+        "設定..." => "おこのみ...",
+        "エージェントワークベンチ..." => "えーじぇんとのつくゑ...",
+        "保存" => "たくはふ",
+        "別名で保存..." => "なをかへてたくはふ...",
+        "HTMLとして書き出す…" => "HTML としてしるしだす…",
+        "PDFに印刷…" => "PDF にうつす…",
+        "ウィンドウを閉じる" => "まどをとぢる",
+        "表示" => "ながめ",
+        "プレビュー" => "したみ",
+        "レビューデスク" => "れびゅーのつくゑ",
+        "行を折り返す" => "くだりををる",
+        "不可視文字を表示" => "みえぬもじをあらはす",
+        "スペルチェック" => "つづりみ",
+        "テーマ" => "いろあひ",
+        "ライト" => "ひかり",
+        "ダーク" => "やみ",
+        "桜" => "さくら",
+        "夜光" => "よるひかり",
+        "曙光" => "あけぼのひかり",
+        "紅葉" => "もみぢ",
+        "フルスクリーンにする" => "まどをみちみちにす",
+        "編集" => "てならひ",
+        "取り消す" => "かへす",
+        "やり直す" => "またなす",
+        "カット" => "きる",
+        "コピー" => "うつす",
+        "ペースト" => "はる",
+        "すべて選択" => "みなえらぶ",
+        "ウィンドウ" => "まど",
+        "しまう" => "しまふ",
+        "拡大/縮小" => "おほきく/ちひさく",
+        "ヘルプ" => "たすけ",
+        "hazakura editor について" => "hazakura editor のこと",
+        "サービス" => "つかへ",
+        "hazakura editor を隠す" => "hazakura editor をかくす",
+        "ほかを隠す" => "ほかをかくす",
+        "hazakura editor を終了" => "hazakura editor ををはる",
+        _ => return None,
+    })
+}
+
+#[cfg(desktop)]
+fn strip_theme_marker(label: &str) -> &str {
+    label
+        .strip_prefix("● ")
+        .or_else(|| label.strip_prefix("  "))
+        .unwrap_or(label)
+}
+
+#[cfg(desktop)]
 pub(crate) fn recent_submenu<R: tauri::Runtime>(
     app: &tauri::AppHandle<R>,
     title: &str,
@@ -436,6 +511,7 @@ pub(crate) fn emit_app_menu_event<R: tauri::Runtime>(
                 | MENU_EXPORT_PDF
                 | MENU_CLOSE_WINDOW
                 | MENU_TOGGLE_PREVIEW
+                | MENU_TOGGLE_REVIEW_DESK
                 | MENU_TOGGLE_WRAP
                 | MENU_TOGGLE_INVISIBLES
                 | MENU_TOGGLE_SPELLCHECK
@@ -471,42 +547,50 @@ pub(crate) fn sync_theme_menu_state<R: tauri::Runtime>(
     app: &tauri::AppHandle<R>,
     theme_preference: &str,
 ) -> Result<(), String> {
-    // Update every theme item explicitly; native check menu items are not a
-    // radio group, so only checking the selected item can leave stale marks.
+    // The theme submenu uses normal menu items with a radio-style marker
+    // because native check menu items read as independent ON/OFF toggles.
     let menu = app
         .menu()
         .ok_or_else(|| "App menu not available".to_string())?;
 
-    let items = menu.items().map_err(|e| e.to_string())?;
-    for item in &items {
-        if let Some(submenu) = item.as_submenu() {
-            if submenu.id().as_ref() == "View" {
-                let view_items = submenu.items().map_err(|e| e.to_string())?;
-                for view_item in &view_items {
-                    if let Some(theme_submenu) = view_item.as_submenu() {
-                        // Found Theme submenu; update checkmarks
-                        let theme_items = theme_submenu.items().map_err(|e| e.to_string())?;
-                        for theme_item in &theme_items {
-                            if let Some(check_item) = theme_item.as_check_menuitem() {
-                                let checked = match check_item.id().as_ref() {
-                                    MENU_THEME_LIGHT => theme_preference == "light",
-                                    MENU_THEME_DARK => theme_preference == "dark",
-                                    MENU_THEME_SAKURA => theme_preference == "sakura",
-                                    MENU_THEME_YAKOU => theme_preference == "yakou",
-                                    MENU_THEME_SHOKOU => theme_preference == "shokou",
-                                    MENU_THEME_KOUYOU => theme_preference == "kouyou",
-                                    _ => false,
-                                };
-                                let _ = check_item.set_checked(checked);
-                            }
-                        }
+    for top_item in menu.items().map_err(|e| e.to_string())? {
+        if let Some(top_submenu) = top_item.as_submenu() {
+            for child_item in top_submenu.items().map_err(|e| e.to_string())? {
+                if let Some(theme_submenu) = child_item.as_submenu() {
+                    if sync_theme_submenu_items(theme_submenu, theme_preference)? {
                         return Ok(());
                     }
                 }
-                return Err("Theme submenu not found".to_string());
             }
         }
     }
 
-    Err("View menu not found".to_string())
+    Err("Theme submenu not found".to_string())
+}
+
+#[cfg(desktop)]
+fn sync_theme_submenu_items<R: tauri::Runtime>(
+    submenu: &Submenu<R>,
+    theme_preference: &str,
+) -> Result<bool, String> {
+    let mut found_theme_item = false;
+
+    for theme_item in submenu.items().map_err(|e| e.to_string())? {
+        if let Some(menu_item) = theme_item.as_menuitem() {
+            let id = menu_item.id().as_ref();
+            if let Some(preference) = theme_preference_for_menu_action(id) {
+                found_theme_item = true;
+                let current_label = menu_item.text().map_err(|e| e.to_string())?;
+                let selected = preference == theme_preference;
+                menu_item
+                    .set_text(selected_theme_label(
+                        strip_theme_marker(&current_label),
+                        selected,
+                    ))
+                    .map_err(|e| e.to_string())?;
+            }
+        }
+    }
+
+    Ok(found_theme_item)
 }

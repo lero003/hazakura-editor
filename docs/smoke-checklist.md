@@ -174,13 +174,15 @@ Latest Review Desk candidate tab-switch safety checks: 2026-06-02 code inspectio
 
 Latest Review Desk active-buffer edit safety checks: 2026-06-02 code inspection found that editing the active tab after a successful manual-candidate Compare left the old preview and Apply candidate action available for the older buffer snapshot. The preview now records the compared buffer text, Apply candidate is enabled only while the active tab still matches that snapshot, and the apply handler rejects stale buffer contents. Use the checklist below for fresh manual UI confirmation.
 
+Latest Review Desk discoverability and Slash menu keyboard polish checks: 2026-06-02 automated gates passed after adding the visible top-chrome Review Desk entry, View menu entry, `/` Review Desk command, `/` shortcut-list command, and capture-phase Slash menu `Enter` / `Tab` execution path. Built-app smoke confirmed the top-chrome Review Desk button opens/closes the surface, `/shortcut` + Enter inserts the shortcut list without leaving the slash query behind, and `/review` + Enter opens Review Desk without inserting a stray newline.
+
 ## Review Desk Manual Candidate Review
 
 Run on the built app from `src-tauri/target/release/bundle/macos/hazakura editor.app` after `npm run build`, or on the Vite dev server. The Review Desk manual candidate MVP adds a paste area, diff preview, and explicit apply-to-buffer action inside the existing Review Desk surface; it does not move the right-pane compare route and it does not save files automatically.
 
 1. Launch the app and confirm the normal workspace renders as before.
 2. Open a throwaway Markdown file with at least a few lines so there is a buffer to compare.
-3. Press `Cmd+Shift+R` (or `Ctrl+Shift+R` on non-mac) and confirm the Review Desk surface opens with the existing empty-state card plus a new "Manual candidate text" paste area (label, hint, textarea, Compare, Clear).
+3. Open Review Desk from the visible top-chrome `Review Desk` button, then close and reopen it with `Cmd+Shift+R` (or `Ctrl+Shift+R` on non-mac). Confirm the Review Desk surface opens with the existing empty-state card plus a new "Manual candidate text" paste area (label, hint, textarea, Compare, Clear).
 4. Confirm the Compare button is disabled while the textarea is empty and enabled after a non-empty paste.
 5. Paste a short candidate snapshot (e.g. a slightly edited copy of the buffer) and press Compare. Confirm a diff preview appears with the active buffer as the left column and the candidate as the right column, with added / removed line counts visible.
 6. Confirm Apply candidate is enabled only after the candidate preview exists, then press Apply candidate. Confirm the editor buffer is replaced by the candidate text, Review Desk remains open, the candidate textarea / preview / error are cleared, and the status bar reports success.
@@ -196,6 +198,8 @@ Run on the built app from `src-tauri/target/release/bundle/macos/hazakura editor
 16. Confirm the right-pane compare route is unchanged: open Diff in the top editor chrome, pick a source and target file, run Compare, and confirm the right pane shows the existing file comparison view (not the candidate preview).
 17. Confirm the existing buffer-vs-disk / draft-vs-disk review paths still work through the right pane and do not leak into the Review Desk surface.
 18. Confirm the Japanese / English menu language switch in Preferences still localizes the new Review Desk copy (input label, hint, placeholder, Compare / Apply candidate / Clear, empty heading, preview title).
+19. In the editor, type `/review`, use `ArrowUp` / `ArrowDown` if needed, press `Enter`, and confirm the Review Desk opens without inserting a stray newline.
+20. In the editor, type `/shortcut`, press `Enter` or `Tab`, and confirm a Markdown shortcut list is inserted into the buffer.
 
 
 ## Review Desk Visible Shell
@@ -204,10 +208,10 @@ Run on the built app from `src-tauri/target/release/bundle/macos/hazakura editor
 
 1. Launch the app and confirm the normal workspace / editor area renders as before.
 2. Open one or more throwaway Markdown files and confirm tabs, preview, outline, diff, and agent toggles in the top editor chrome still work.
-3. Press `Cmd+Shift+R` (or `Ctrl+Shift+R` on non-mac) and confirm the editor area is replaced by a Review Desk surface with the title `Review Desk`, an English / Japanese localized empty-state card, and a future-slot note.
+3. Click the visible top-chrome `Review Desk` button and confirm the editor area is replaced by a Review Desk surface with the title `Review Desk`, an English / Japanese localized empty-state card, and current manual-candidate guidance.
 4. Confirm the regular workspace (file tree, tabs, editor, side pane) is not visible while Review Desk is open, and the status bar still shows underneath.
 5. Press `Cmd+Shift+R` again and confirm Review Desk closes and the normal workspace returns to the same tab state.
-6. Click the Review Desk close button (top right) and confirm the same return-to-workspace behavior.
+6. Open Review Desk from View > Review Desk, then click the Review Desk close button (top right) and confirm the same return-to-workspace behavior.
 7. Open a Preferences or Quick Open dialog, focus the dialog, press `Cmd+Shift+R`, and confirm the dialog stays open and the global shortcut does not toggle Review Desk (existing modal-open bail out).
 8. Focus a Japanese IME in any text field, press `Cmd+Shift+R` during composition, and confirm the WebView does not toggle Review Desk (existing IME composing bail out).
 9. Confirm the existing compare / review path still works: open Diff in the top editor chrome, pick a source and target file, run Compare, close the comparison, and return to the editor. Review Desk is not involved in this flow.

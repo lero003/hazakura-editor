@@ -56,14 +56,14 @@ export function useDocumentStatus({
     [activeContents, activeTab?.line_ending],
   );
   const compareMeta = sidePaneMode === "compare" && compareView
-    ? menuLanguage === "ja"
+    ? menuLanguage !== "en"
       ? `${compareCase?.kind === "changes" ? "変更確認" : "比較"} · ${compareView.additions} 追加 · ${compareView.removals} 削除`
       : `${compareCase?.kind === "changes" ? "Change review" : "Comparison"} · ${compareView.additions} added · ${compareView.removals} removed`
     : null;
   const documentMeta = activeTab
     ? formatActiveDocumentMeta(stats, activeTab, activeDirty, menuLanguage)
     : selectedImage
-      ? menuLanguage === "ja"
+      ? menuLanguage !== "en"
         ? `画像 · ${formatBytes(selectedImage.size)} · ${selectedImage.name}`
         : `Image · ${formatBytes(selectedImage.size)} · ${selectedImage.name}`
       : noFileOpenText;
@@ -160,15 +160,15 @@ function formatActiveDocumentMeta(
   return [
     ...formatDocumentMetaParts(stats, tab.name, menuLanguage),
     tab.large_file_warning
-      ? menuLanguage === "ja"
+      ? menuLanguage !== "en"
         ? "大きなファイル"
         : "large file"
       : null,
     dirty
-      ? menuLanguage === "ja"
+      ? menuLanguage !== "en"
         ? "未保存"
         : "unsaved"
-      : menuLanguage === "ja"
+      : menuLanguage !== "en"
         ? "保存済み"
         : "clean",
   ]
@@ -185,15 +185,15 @@ function formatDocumentMetaParts(
     formatFileType(fileName, menuLanguage),
     "UTF-8",
     formatBytes(stats.bytes),
-    menuLanguage === "ja"
+    menuLanguage !== "en"
       ? `${stats.characters.toLocaleString()} 文字`
       : `${stats.characters.toLocaleString()} chars`,
     formatLineEndingKind(stats.lineEnding, menuLanguage),
     stats.hasFinalNewline
-      ? menuLanguage === "ja"
+      ? menuLanguage !== "en"
         ? "末尾改行あり"
         : "final newline"
-      : menuLanguage === "ja"
+      : menuLanguage !== "en"
         ? "末尾改行なし"
         : "no final newline",
   ];
@@ -221,10 +221,10 @@ function formatFileType(fileName: string, menuLanguage: MenuLanguage): string {
       return "TOML";
     case "csv":
     case "tsv":
-      return menuLanguage === "ja" ? "区切りテキスト" : "Delimited text";
+      return menuLanguage !== "en" ? "区切りテキスト" : "Delimited text";
     case "html":
     case "xml":
-      return menuLanguage === "ja" ? "マークアップ" : "Markup";
+      return menuLanguage !== "en" ? "マークアップ" : "Markup";
     case "css":
       return "CSS";
     case "js":
@@ -237,11 +237,11 @@ function formatFileType(fileName: string, menuLanguage: MenuLanguage): string {
       return "TypeScript";
     case "ini":
     case "conf":
-      return menuLanguage === "ja" ? "設定" : "Config";
+      return menuLanguage !== "en" ? "設定" : "Config";
     default:
       return extension
         ? extension.toUpperCase()
-        : menuLanguage === "ja"
+        : menuLanguage !== "en"
           ? "プレーンテキスト"
           : "Plain text";
   }
@@ -265,12 +265,12 @@ function formatSelectionInfo(
 ): string {
   const selectionText =
     selection.selectedCharacters > 0
-      ? menuLanguage === "ja"
+      ? menuLanguage !== "en"
         ? ` · ${selection.selectedCharacters.toLocaleString()} 文字選択 / ${selection.selectedLines.toLocaleString()} 行`
         : ` · ${selection.selectedCharacters.toLocaleString()} selected / ${selection.selectedLines.toLocaleString()} lines`
       : "";
 
-  return menuLanguage === "ja"
+  return menuLanguage !== "en"
     ? `${selection.line.toLocaleString()} 行, ${selection.column.toLocaleString()} 列${selectionText}`
     : `Ln ${selection.line.toLocaleString()}, Col ${selection.column.toLocaleString()}${selectionText}`;
 }
@@ -285,7 +285,7 @@ function formatActiveEditorStatusDetail(
 
   if (currentHeading) {
     parts.push(
-      menuLanguage === "ja"
+      menuLanguage !== "en"
         ? `現在位置: § ${currentHeading.text}`
         : `Position: § ${currentHeading.text}`,
     );
@@ -303,11 +303,11 @@ export function formatLineEndingKind(
   }
 
   if (lineEnding === "mixed") {
-    return menuLanguage === "ja" ? "混在" : "Mixed";
+    return menuLanguage !== "en" ? "混在" : "Mixed";
   }
 
   if (lineEnding === "none") {
-    return menuLanguage === "ja" ? "改行なし" : "No line endings";
+    return menuLanguage !== "en" ? "改行なし" : "No line endings";
   }
 
   return "LF";

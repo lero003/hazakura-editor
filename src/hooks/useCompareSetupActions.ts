@@ -47,7 +47,7 @@ export function useCompareSetupActions({
       setGlobalError(null);
       setRightPaneMode("compare");
       setStatus(
-        menuLanguage === "ja"
+        menuLanguage !== "en"
           ? `比較元に設定: ${file.name}`
           : `Compare source set: ${file.name}`,
       );
@@ -72,7 +72,7 @@ export function useCompareSetupActions({
       setGlobalError(null);
       setRightPaneMode("compare");
       setStatus(
-        menuLanguage === "ja"
+        menuLanguage !== "en"
           ? `比較先に設定: ${file.name}`
           : `Compare target set: ${file.name}`,
       );
@@ -93,7 +93,7 @@ export function useCompareSetupActions({
       if (!isComparableTextFile(entry.name)) {
         closeWorkspaceContextMenu();
         setStatus(
-          menuLanguage === "ja"
+          menuLanguage !== "en"
             ? "このファイルは Diff 比較できるテキスト形式ではありません。"
             : "This file is not a comparable text document.",
         );
@@ -123,7 +123,7 @@ export function useCompareSetupActions({
     setCompareAnchor(null);
     closeWorkspaceContextMenu();
     setStatus(
-      menuLanguage === "ja" ? "比較元を解除しました" : "Compare source cleared",
+      menuLanguage !== "en" ? "比較元を解除しました" : "Compare source cleared",
     );
   }, [closeWorkspaceContextMenu, menuLanguage, setCompareAnchor, setStatus]);
 
@@ -131,7 +131,7 @@ export function useCompareSetupActions({
     setCompareTarget(null);
     closeWorkspaceContextMenu();
     setStatus(
-      menuLanguage === "ja" ? "比較先を解除しました" : "Compare target cleared",
+      menuLanguage !== "en" ? "比較先を解除しました" : "Compare target cleared",
     );
   }, [closeWorkspaceContextMenu, menuLanguage, setCompareTarget, setStatus]);
 
@@ -143,18 +143,18 @@ export function useCompareSetupActions({
       try {
         await writeTextToClipboard(file.path);
         setStatus(
-          menuLanguage === "ja"
+          menuLanguage !== "en"
             ? `フルパスをコピー: ${file.name}`
             : `Copied full path: ${file.name}`,
         );
       } catch (err) {
         setGlobalError(
-          menuLanguage === "ja"
+          menuLanguage !== "en"
             ? `パスのコピーに失敗しました: ${String(err)}`
             : `Copy path failed: ${String(err)}`,
         );
         setStatus(
-          menuLanguage === "ja" ? "パスのコピーに失敗しました" : "Copy path failed",
+          menuLanguage !== "en" ? "パスのコピーに失敗しました" : "Copy path failed",
         );
       }
     },
@@ -169,18 +169,18 @@ export function useCompareSetupActions({
       try {
         await revealPathInFileManager(file.path);
         setStatus(
-          menuLanguage === "ja"
+          menuLanguage !== "en"
             ? `Finderで表示: ${file.name}`
             : `Shown in Finder: ${file.name}`,
         );
       } catch (err) {
         setGlobalError(
-          menuLanguage === "ja"
+          menuLanguage !== "en"
             ? `Finderで表示できませんでした: ${String(err)}`
             : `Show in Finder failed: ${String(err)}`,
         );
         setStatus(
-          menuLanguage === "ja"
+          menuLanguage !== "en"
             ? "Finderで表示できませんでした"
             : "Show in Finder failed",
         );

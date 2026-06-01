@@ -223,16 +223,16 @@ export function agentSessionStateLabel(
   menuLanguage: MenuLanguage = "en",
 ): string {
   if (!session) {
-    return menuLanguage === "ja" ? "未実行" : "Not running";
+    return menuLanguage !== "en" ? "未実行" : "Not running";
   }
 
   switch (session.status) {
     case "active":
-      return menuLanguage === "ja" ? "実行中" : "Running";
+      return menuLanguage !== "en" ? "実行中" : "Running";
     case "exited":
-      return menuLanguage === "ja" ? "終了済み" : "Exited";
+      return menuLanguage !== "en" ? "終了済み" : "Exited";
     case "stopped":
-      return menuLanguage === "ja" ? "停止済み" : "Stopped";
+      return menuLanguage !== "en" ? "停止済み" : "Stopped";
   }
 }
 
@@ -241,7 +241,7 @@ export function agentCompactSessionStateLabel(
   menuLanguage: MenuLanguage = "en",
 ): string {
   if (!session) {
-    return menuLanguage === "ja" ? "待機中" : "Idle";
+    return menuLanguage !== "en" ? "待機中" : "Idle";
   }
 
   return agentSessionStateLabel(session, menuLanguage);
@@ -251,7 +251,7 @@ export function localizeAgentGateMessage(
   message: string,
   menuLanguage: MenuLanguage,
 ): string {
-  if (menuLanguage !== "ja") {
+  if (menuLanguage === "en") {
     return message;
   }
 

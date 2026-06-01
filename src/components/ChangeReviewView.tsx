@@ -19,7 +19,7 @@ export function ChangeReviewView({
   view: CompareViewState;
 }) {
   const labels =
-    menuLanguage === "ja"
+    menuLanguage !== "en"
       ? {
           additions: "追加行",
           changesTitle: "変更確認",

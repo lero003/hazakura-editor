@@ -1,5 +1,5 @@
 import type { RefObject } from "react";
-import type { EditorTab } from "../types";
+import type { EditorTab, MenuLanguage } from "../types";
 
 type DirtyTabCloseDialogProps = {
   cancelButtonRef: RefObject<HTMLButtonElement | null>;
@@ -8,12 +8,14 @@ type DirtyTabCloseDialogProps = {
   onDiscard: () => void;
   onSave: () => void;
   tab: EditorTab;
+  menuLanguage: MenuLanguage;
 };
 
 type AppCloseDialogProps = {
   cancelButtonRef: RefObject<HTMLButtonElement | null>;
   dialogRef: RefObject<HTMLElement | null>;
   dirtyTabCount: number;
+  menuLanguage: MenuLanguage;
   onCancel: () => void;
   onDiscardAll: () => void;
   onSaveAll: () => void;
@@ -26,7 +28,10 @@ export function DirtyTabCloseDialog({
   onDiscard,
   onSave,
   tab,
+  menuLanguage,
 }: DirtyTabCloseDialogProps) {
+  const copy = getCloseDialogCopy(menuLanguage);
+
   return (
     <div className="modal-backdrop" role="presentation">
       <section
@@ -37,17 +42,17 @@ export function DirtyTabCloseDialog({
         ref={dialogRef}
         role="dialog"
       >
-        <h2 id="close-tab-title">Unsaved changes</h2>
-        <p id="close-tab-description">{tab.name} has unsaved changes.</p>
+        <h2 id="close-tab-title">{copy.title}</h2>
+        <p id="close-tab-description">{copy.tabDescription(tab.name)}</p>
         <div className="dialog-actions">
           <button type="button" onClick={onSave}>
-            Save
+            {copy.save}
           </button>
           <button type="button" onClick={onDiscard}>
-            Discard
+            {copy.discard}
           </button>
           <button type="button" ref={cancelButtonRef} onClick={onCancel}>
-            Cancel
+            {copy.cancel}
           </button>
         </div>
       </section>
@@ -59,10 +64,13 @@ export function AppCloseDialog({
   cancelButtonRef,
   dialogRef,
   dirtyTabCount,
+  menuLanguage,
   onCancel,
   onDiscardAll,
   onSaveAll,
 }: AppCloseDialogProps) {
+  const copy = getCloseDialogCopy(menuLanguage);
+
   return (
     <div className="modal-backdrop" role="presentation">
       <section
@@ -73,20 +81,19 @@ export function AppCloseDialog({
         ref={dialogRef}
         role="dialog"
       >
-        <h2 id="close-app-title">Unsaved changes</h2>
+        <h2 id="close-app-title">{copy.title}</h2>
         <p id="close-app-description">
-          {formatDirtyTabCount(dirtyTabCount)} must be saved or discarded before
-          closing hazakura editor.
+          {copy.appDescription(dirtyTabCount)}
         </p>
         <div className="dialog-actions">
           <button type="button" onClick={onSaveAll}>
-            Save All
+            {copy.saveAll}
           </button>
           <button type="button" onClick={onDiscardAll}>
-            Discard All
+            {copy.discardAll}
           </button>
           <button type="button" ref={cancelButtonRef} onClick={onCancel}>
-            Cancel
+            {copy.cancel}
           </button>
         </div>
       </section>
@@ -94,6 +101,37 @@ export function AppCloseDialog({
   );
 }
 
-function formatDirtyTabCount(count: number): string {
+function getCloseDialogCopy(lang: MenuLanguage) {
+  return lang !== "en"
+    ? {
+        appDescription: (count: number) =>
+          `${formatDirtyTabCount(count, lang)}を、hazakura editor を閉じる前に保存または破棄してください。`,
+        cancel: "キャンセル",
+        discard: "破棄",
+        discardAll: "すべて破棄",
+        save: "保存",
+        saveAll: "すべて保存",
+        tabDescription: (name: string) =>
+          `${name} に未保存の変更があります。`,
+        title: "未保存の変更",
+      }
+    : {
+        appDescription: (count: number) =>
+          `${formatDirtyTabCount(count, lang)} must be saved or discarded before closing hazakura editor.`,
+        cancel: "Cancel",
+        discard: "Discard",
+        discardAll: "Discard All",
+        save: "Save",
+        saveAll: "Save All",
+        tabDescription: (name: string) => `${name} has unsaved changes.`,
+        title: "Unsaved changes",
+      };
+}
+
+function formatDirtyTabCount(count: number, lang: MenuLanguage): string {
+  if (lang !== "en") {
+    return `未保存タブ ${count} 件`;
+  }
+
   return count === 1 ? "1 unsaved tab" : `${count} unsaved tabs`;
 }

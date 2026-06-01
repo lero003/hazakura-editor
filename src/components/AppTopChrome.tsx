@@ -5,6 +5,7 @@ import { TabBar } from "./TabBar";
 import type {
   EditorChromeCopy,
   RecoveryCopy,
+  ReviewDeskCopy,
   SidePaneCopy,
 } from "../locale";
 import type {
@@ -39,7 +40,10 @@ type AppTopChromeProps = {
   onToggleDiff: () => void;
   onToggleOutline: () => void;
   onTogglePreview: () => void;
+  onToggleReviewDesk: () => void;
   recoveryCopy: RecoveryCopy;
+  reviewDeskActive: boolean;
+  reviewDeskCopy: ReviewDeskCopy;
   shouldSuppressTabClick: () => boolean;
   sidePaneCopy: SidePaneCopy;
   sidePaneMode: RightPaneMode | null;
@@ -70,7 +74,10 @@ export function AppTopChrome({
   onToggleDiff,
   onToggleOutline,
   onTogglePreview,
+  onToggleReviewDesk,
   recoveryCopy,
+  reviewDeskActive,
+  reviewDeskCopy,
   shouldSuppressTabClick,
   sidePaneCopy,
   sidePaneMode,
@@ -107,9 +114,12 @@ export function AppTopChrome({
         onToggleDiff={onToggleDiff}
         onToggleOutline={onToggleOutline}
         onTogglePreview={onTogglePreview}
+        onToggleReviewDesk={onToggleReviewDesk}
         outlinePaneActive={sidePaneMode === "outline"}
         previewPaneActive={sidePaneMode === "preview"}
         recoveryReviewChangesLabel={recoveryCopy.reviewChanges}
+        reviewDeskActive={reviewDeskActive}
+        reviewDeskCopy={reviewDeskCopy}
         sidePaneCopy={sidePaneCopy}
       />
     </TabBar>

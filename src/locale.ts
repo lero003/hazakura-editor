@@ -1,4 +1,4 @@
-import type { MenuLanguage } from "./types";
+import { isJapaneseMenuLanguage, type MenuLanguage } from "./types";
 import { EXTERNAL_CHANGE_CONFLICT_MESSAGE } from "./types";
 
 // ── Helpers ──
@@ -19,6 +19,10 @@ function formatSaveFailureMessage(): string {
     "Save failed. Your edits are still in the editor. " +
     "Fix the file or folder issue, then try saving again."
   );
+}
+
+function isKanaStyle(lang: MenuLanguage): boolean {
+  return lang === "kana";
 }
 
 // ── Copy Types ──
@@ -119,9 +123,11 @@ export type SlashMenuCopy = {
   categoryAgent: string;
   categoryMarkdown: string;
   categoryReview: string;
+  categoryShortcut: string;
   empty: string;
   markdownBadge: string;
   reviewBadge: string;
+  shortcutBadge: string;
 };
 
 export type PreferencesCopy = {
@@ -202,6 +208,8 @@ export type ReviewDeskCopy = {
   closeTitle: string;
   emptyBody: string;
   emptyIntro: string;
+  entryButton: string;
+  entryButtonTitle: string;
   futureSlotHint: string;
   surfaceLabel: string;
   title: string;
@@ -210,7 +218,24 @@ export type ReviewDeskCopy = {
 // ── Accessors ──
 
 export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
-  return lang === "ja"
+  if (isKanaStyle(lang)) {
+    return {
+      emptyTabs: "ふみなし",
+      newFile: "あたらしきふみ",
+      noFileOpen: "ふみなし",
+      noFolderOpen: "ふぉるだなし",
+      openFile: "ふみをひらく",
+      openFolder: "ふぉるだをひらく",
+      openWorkspaceFolder: "ところをひらく",
+      recentFiles: "このごろのふみ",
+      startHeading: "しづかにかきはじめる",
+      startActions: "はじめのわざ",
+      workspace: "ところ",
+      workspaceFileTree: "ところのふみならび",
+    };
+  }
+
+  return isJapaneseMenuLanguage(lang)
     ? {
         emptyTabs: "ファイル未選択",
         newFile: "新規ファイル",
@@ -242,12 +267,39 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
 }
 
 export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
-  return lang === "ja"
+  if (isKanaStyle(lang)) {
+    return {
+      agentTab: "えーじぇんと",
+      agentTabTitle: "えーじぇんとのまどをひらく",
+      agentWorkbench: "えーじぇんとのつくゑ",
+      diffTab: "ちがひ",
+      diffTabTitle: "ちがひのまどをひらく",
+      fileComparison: "ふみくらべ",
+      imagePreview: "ゑのしたみ",
+      markdownPreview: "Markdown したみ",
+      outlineEmpty: "このふみに Markdown のみだしはありません。",
+      outlineTab: "みだし",
+      outlineTabTitle: "みだしをしめす",
+      outlineTruncated: "みだしがおほいため、はじめの200件までしめします。",
+      documentOutline: "ふみのみだし",
+      openTextFileToPreview:
+        "Markdown したみをしめすには、てきすとのふみをひらいてください。",
+      previewDisabled: "したみのまどは、おこのみにて無効です。",
+      previewTab: "したみ",
+      previewTabTitle: "したみのまどをしめす",
+      previewUnavailable: "したみをしめせません",
+      resizeColumns: "えでぃたとよこのまどのはばをかへる",
+      resizeColumnsTitle: "ひきて、えでぃたとよこのまどのはばをかへます",
+      sidePaneMode: "よこのまど",
+    };
+  }
+
+  return isJapaneseMenuLanguage(lang)
     ? {
         agentTab: "エージェント",
         agentTabTitle: "エージェントペインを表示",
         agentWorkbench: "エージェントワークベンチ",
-        diffTab: "Diff",
+        diffTab: "差分",
         diffTabTitle: "差分ペインを表示",
         fileComparison: "ファイル比較",
         imagePreview: "画像プレビュー",
@@ -295,29 +347,83 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
 }
 
 export function getSlashMenuCopy(lang: MenuLanguage): SlashMenuCopy {
-  return lang === "ja"
+  if (isKanaStyle(lang)) {
+    return {
+      agentBadge: "Agent",
+      categoryAgent: "えーじぇんとのわざ",
+      categoryMarkdown: "Markdown のかたまり",
+      categoryReview: "れびゅーのつくゑ",
+      categoryShortcut: "ちかみち",
+      empty: "あふすらっしゅこまんどはありません",
+      markdownBadge: "Md",
+      reviewBadge: "みる",
+      shortcutBadge: "Key",
+    };
+  }
+
+  return isJapaneseMenuLanguage(lang)
     ? {
         agentBadge: "Agent",
         categoryAgent: "エージェントコマンド",
         categoryMarkdown: "Markdown ブロック",
         categoryReview: "レビューデスク",
+        categoryShortcut: "ショートカット",
         empty: "一致するスラッシュコマンドがありません",
         markdownBadge: "Md",
-        reviewBadge: "Rv",
+        reviewBadge: "確認",
+        shortcutBadge: "Key",
       }
     : {
         agentBadge: "Agent",
         categoryAgent: "Agent commands",
         categoryMarkdown: "Markdown blocks",
         categoryReview: "Review Desk",
+        categoryShortcut: "Shortcuts",
         empty: "No matching slash command",
         markdownBadge: "Md",
         reviewBadge: "Rv",
+        shortcutBadge: "Key",
       };
 }
 
 export function getEditorChromeCopy(lang: MenuLanguage): EditorChromeCopy {
-  return lang === "ja"
+  if (isKanaStyle(lang)) {
+    return {
+      caseSensitive: "おほもじ",
+      closeSearch: "さがしをとぢる",
+      find: "さがす",
+      findInActiveFile: "いまのふみをさがす",
+      findOptions: "さがしのおこのみ",
+      go: "ゆく",
+      goToLine: "くだりへゆく",
+      inlineCode: "こーど",
+      inlineCodeTitle: "こーど (Command+E)",
+      invalidRegex: "正規表現がただしくありません",
+      italic: "ななめ",
+      italicTitle: "ななめ (Command+I)",
+      line: "くだり",
+      lineEnding: "かへり",
+      lineEndings: "かへりのしるし",
+      link: "つなぎ",
+      linkTitle: "つなぎ (Command+K)",
+      markdownHelpers: "Markdown たすけ",
+      next: "つぎへ",
+      noMatches: "あたりなし",
+      noSearch: "さがしなし",
+      previous: "まへへ",
+      regex: "正規表現",
+      replace: "おきかへ",
+      replacePlaceholder: "おきかへるもじ",
+      replaceOne: "おきかへ",
+      replaceAll: "すべておきかへ",
+      searchActiveFile: "いまのふみをさがす",
+      strong: "ふとじ",
+      strongTitle: "ふとじ (Command+B)",
+      word: "ことば",
+    };
+  }
+
+  return isJapaneseMenuLanguage(lang)
     ? {
         caseSensitive: "大文字",
         closeSearch: "検索を閉じる",
@@ -387,7 +493,7 @@ export function getEditorChromeCopy(lang: MenuLanguage): EditorChromeCopy {
 }
 
 export function getRecoveryCopy(lang: MenuLanguage): RecoveryCopy {
-  return lang === "ja"
+  return isJapaneseMenuLanguage(lang)
     ? {
         closeWithoutSaving: "保存せず閉じる",
         conflictActions: "外部変更の操作",
@@ -430,7 +536,38 @@ export function getRecoveryCopy(lang: MenuLanguage): RecoveryCopy {
 }
 
 export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
-  return lang === "ja"
+  if (isKanaStyle(lang)) {
+    return {
+      application: "あぷり",
+      autoBackup: "うつしのこし",
+      dark: "やみ",
+      editor: "えでぃた",
+      editorDisplay: "えでぃたのながめ",
+      fontSize: "もじのおおきさ",
+      fontSizeControl: "えでぃたのもじのおおきさ",
+      light: "ひかり",
+      closeDialog: "といをとぢる",
+      menuLanguage: "ことば",
+      previewPane: "したみのまど",
+      sakura: "さくら",
+      yakou: "よるひかり",
+      shokou: "あけぼのひかり",
+      kouyou: "もみぢ",
+      settingsTitle: "おこのみ",
+      showInvisibles: "みえぬもじをしめす",
+      tabSize: "たぶのはば",
+      theme: "いろあひ",
+      wrapLines: "くだりををる",
+      ambientIntensity: "うつろひ",
+      ambientIntensityOff: "なし",
+      ambientIntensitySubtle: "ほのか",
+      ambientIntensityNormal: "つね",
+      ambientIntensityDramatic: "はなやか",
+      ambientIntensityHint: "きせつのいろあひにてはたらきます。",
+    };
+  }
+
+  return isJapaneseMenuLanguage(lang)
     ? {
         application: "アプリケーション",
         autoBackup: "自動バックアップ",
@@ -490,7 +627,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
 }
 
 export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
-  return lang === "ja"
+  return isJapaneseMenuLanguage(lang)
     ? {
         title: "エージェントワークベンチ",
         modeHeading: "モード",
@@ -563,7 +700,47 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
 }
 
 export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
-  return lang === "ja"
+  if (isKanaStyle(lang)) {
+    return {
+      candidateApplyButton: "うつす",
+      candidateApplyButtonTitle: "手動候補をいまのたぶへうつす",
+      candidateApplyDisabledHint:
+        "うつすには、えでぃたたぶと候補のしたみが必要です。",
+      candidateClearButton: "けす",
+      candidateClearButtonTitle: "候補入力としたみをけす",
+      candidateColumnLeft: "いまのふみ",
+      candidateColumnRight: "候補",
+      candidateCompareButton: "くらべる",
+      candidateCompareButtonTitle: "いまのふみと候補をくらべる",
+      candidateCompareDisabledHint:
+        "くらべるには、えでぃたでてきすとをひらき、候補を入れてください。",
+      candidateEmptyHeading: "くらべるふみがありません",
+      candidateEmptyHint:
+        "れびゅーのつくゑは、えでぃたでてきすとをひらいているときだけ使えます。",
+      candidateInputHint:
+        "くらべたい候補てきすとをここへ貼り付けます。",
+      candidateInputLabel: "候補てきすと",
+      candidateInputPlaceholder: "ここへ候補てきすとを貼り付けてください…",
+      candidatePreviewEmpty:
+        "くらべるを押すと、いまのふみと候補のちがひをここにしめします。",
+      candidatePreviewTitle: "候補のしたみ",
+      candidateSourceManual: "手で貼り付け",
+      close: "とぢる",
+      closeTitle: "れびゅーのつくゑをとぢる",
+      emptyBody:
+        "いまは候補てきすとを貼り付け、ひらいているえでぃた内容とくらべられます。",
+      emptyIntro:
+        "れびゅーのつくゑは、候補てきすとを保存前にたしかめるところです。",
+      entryButton: "れびゅー",
+      entryButtonTitle: "れびゅーのつくゑをひらく (Cmd+Shift+R)",
+      futureSlotHint:
+        "AI 候補などの前に、まず手動候補を明示的にくらべます。",
+      surfaceLabel: "れびゅーのつくゑ",
+      title: "れびゅーのつくゑ",
+    };
+  }
+
+  return isJapaneseMenuLanguage(lang)
     ? {
         candidateApplyButton: "候補を適用",
         candidateApplyButtonTitle:
@@ -580,7 +757,7 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
           "比較するには、エディタでテキストファイルを開き、候補テキストを入力してください。",
         candidateEmptyHeading: "比較できるエディタタブがありません",
         candidateEmptyHint:
-          "Review Desk の手動候補レビューは、エディタでテキストを開いているときだけ使えます。",
+          "レビューデスクの手動候補レビューは、エディタでテキストを開いているときだけ使えます。",
         candidateInputHint:
           "比較したい候補テキスト（AI 出力、レビューメモ、別バージョンなど）をここに貼り付けます。",
         candidateInputLabel: "手動候補テキスト",
@@ -591,15 +768,17 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
         candidatePreviewTitle: "手動候補プレビュー",
         candidateSourceManual: "手動貼り付け",
         close: "閉じる",
-        closeTitle: "Review Desk を閉じる",
+        closeTitle: "レビューデスクを閉じる",
         emptyBody:
-          "AI 候補、ファイル比較、変更確認、下書き復元などの review ケースは、まだここに届きません。",
+          "現在は手動候補テキストを貼り付けて、開いているエディタ内容と比較できます。ファイル比較やディスクとの差分確認は、引き続き差分 / 変更確認の既存ルートから使います。",
         emptyIntro:
-          "Review Desk は、エディタ領域を置き換える独立した review サーフェスです。",
+          "レビューデスクは、候補テキストを保存前に確認してからバッファへ適用するためのレビュー画面です。",
+        entryButton: "レビューデスク",
+        entryButtonTitle: "レビューデスクを開く (Cmd+Shift+R)",
         futureSlotHint:
-          "ここに B-2 で導入した CompareCase（ファイル比較・変更確認・AI 候補）を表示する領域を後続スライスで接続します。",
-        surfaceLabel: "Review Desk",
-        title: "Review Desk",
+          "AI 候補や他のレビュー経路を扱う前に、まず手動貼り付け候補を明示的に比較・適用します。",
+        surfaceLabel: "レビューデスク",
+        title: "レビューデスク",
       }
     : {
         candidateApplyButton: "Apply candidate",
@@ -630,11 +809,13 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
         close: "Close",
         closeTitle: "Close Review Desk",
         emptyBody:
-          "AI candidates, file comparisons, change reviews, and draft restores do not arrive here yet.",
+          "For now, paste manual candidate text here to compare it with the open editor buffer. File comparisons and disk-change reviews still use the existing Diff / Review changes routes.",
         emptyIntro:
-          "Review Desk is a dedicated review surface that replaces the editor area.",
+          "Review Desk is a review surface for checking candidate text before applying it to the buffer.",
+        entryButton: "Review Desk",
+        entryButtonTitle: "Open Review Desk (Cmd+Shift+R)",
         futureSlotHint:
-          "A later slice will mount the B-2 CompareCase view (file comparison, change review, or AI candidate) in this region.",
+          "Manual pasted candidates are explicit first; AI candidates and other review routes can connect later without bypassing review.",
         surfaceLabel: "Review Desk",
         title: "Review Desk",
       };

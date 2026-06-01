@@ -259,7 +259,7 @@ function localizeCandidateError(
     rawMessage.includes("too large for the comparison preview") ||
     rawMessage.includes("comparison preview")
   ) {
-    return menuLanguage === "ja"
+    return menuLanguage !== "en"
       ? "現在のバッファと手動候補の差分が大きすぎるため、比較できません。"
       : "The buffer and candidate combination is too large to diff.";
   }

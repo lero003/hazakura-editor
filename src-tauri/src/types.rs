@@ -52,6 +52,7 @@ pub(crate) const MENU_CLOSE_WINDOW: &str = "close-window";
 pub(crate) const MENU_EXPORT_HTML: &str = "export-html";
 pub(crate) const MENU_EXPORT_PDF: &str = "export-pdf";
 pub(crate) const MENU_TOGGLE_PREVIEW: &str = "toggle-preview";
+pub(crate) const MENU_TOGGLE_REVIEW_DESK: &str = "toggle-review-desk";
 pub(crate) const MENU_TOGGLE_WRAP: &str = "toggle-wrap";
 pub(crate) const MENU_TOGGLE_INVISIBLES: &str = "toggle-invisibles";
 pub(crate) const MENU_TOGGLE_SPELLCHECK: &str = "toggle-spellcheck";
@@ -271,6 +272,7 @@ pub(crate) enum WorkspaceEntryKind {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub(crate) struct AppMenuState {
     pub(crate) has_active_tab: bool,
     pub(crate) active_dirty: bool,
