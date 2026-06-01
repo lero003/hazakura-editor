@@ -54,7 +54,8 @@ export function useReviewDeskState() {
   // buffer and the candidate input. Returns ok / error so the
   // caller can localize the error message using the active menu
   // language. Does not clear the existing candidate input on
-  // failure so the user can edit and retry.
+  // failure so the user can edit and retry. A failed compare clears
+  // any stale preview so Apply cannot target an older candidate.
   const runCandidateCompare = useCallback(
     (params: {
       bufferContents: string;
@@ -87,6 +88,8 @@ export function useReviewDeskState() {
         return { ok: true };
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
+        setCandidateCompareCaseState(null);
+        setCandidateCompareViewState(null);
         setCandidateErrorMessageState(message);
         return { ok: false, error: message };
       }
