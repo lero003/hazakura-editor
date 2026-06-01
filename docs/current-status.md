@@ -217,6 +217,7 @@ v0.6 bug-check / planning-doc consolidation on 2026-06-01:
 - Reworked tab reordering to use pointer drag over tab positions instead of native HTML drag/drop, avoiding WebView drop-handler inconsistencies.
 - Added an Auto-backup toggle to Preferences > Application, persisted with the existing editor settings.
 - Fixed auto-backup scheduling so the 30-second interval is not restarted on every edit; each tick reads the latest open tabs and workspace path before saving dirty tabs.
+- Extended Agent provider discovery to include common toolchain manager directories and MacPorts, and now returns the exact effective searched paths in the provider-not-found preflight result.
 - Prevented Cmd+Shift+Enter selected-text Agent send from falling through to editor key handling.
 - Moved post-v0.5 planning material under `docs/`, marked internal/low-authority memos, and folded the v0.8 Markdown toolbar/UI direction into `docs/roadmap.md`.
 - `npm run typecheck`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build:vite`, `npm run build`, and `git diff --check` passed. Vite still emits the existing large chunk warning during build.

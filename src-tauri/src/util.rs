@@ -217,7 +217,7 @@ pub(crate) fn build_agent_provider_search_path(
 
     if let Some(home_var) = home_var {
         let home = PathBuf::from(home_var);
-        for directory in [".local/bin", ".cargo/bin", ".npm-global/bin", "bin"] {
+        for directory in AGENT_PROVIDER_HOME_BIN_DIRS {
             push_unique_existing_directory(&mut paths, home.join(directory));
         }
     }
@@ -227,6 +227,53 @@ pub(crate) fn build_agent_provider_search_path(
     }
 
     env::join_paths(paths).ok()
+}
+
+#[cfg(test)]
+pub(crate) fn build_agent_provider_search_path_dirs(
+    path_var: Option<&OsStr>,
+    home_var: Option<&OsStr>,
+) -> Vec<String> {
+    let mut paths = Vec::new();
+
+    if let Some(path_var) = path_var {
+        for path in env::split_paths(path_var) {
+            push_unique_existing_directory(&mut paths, path);
+        }
+    }
+
+    if let Some(home_var) = home_var {
+        let home = PathBuf::from(home_var);
+        for directory in AGENT_PROVIDER_HOME_BIN_DIRS {
+            push_unique_existing_directory(&mut paths, home.join(directory));
+        }
+    }
+
+    for directory in AGENT_PROVIDER_GUI_SEARCH_DIRS {
+        push_unique_existing_directory(&mut paths, PathBuf::from(directory));
+    }
+
+    paths
+        .into_iter()
+        .map(|path| path.to_string_lossy().to_string())
+        .collect()
+}
+
+pub(crate) fn agent_provider_search_path_dirs_from_path_env(
+    path_var: Option<&OsStr>,
+) -> Vec<String> {
+    let mut paths = Vec::new();
+
+    if let Some(path_var) = path_var {
+        for path in env::split_paths(path_var) {
+            push_unique_existing_directory(&mut paths, path);
+        }
+    }
+
+    paths
+        .into_iter()
+        .map(|path| path.to_string_lossy().to_string())
+        .collect()
 }
 
 pub(crate) fn push_unique_existing_directory(paths: &mut Vec<PathBuf>, path: PathBuf) {

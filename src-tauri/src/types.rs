@@ -17,11 +17,25 @@ pub(crate) const AGENT_PROVIDER_PI: &str = "pi";
 pub(crate) const AGENT_PROVIDER_GUI_SEARCH_DIRS: &[&str] = &[
     "/opt/homebrew/bin",
     "/opt/homebrew/sbin",
+    "/opt/local/bin",
+    "/opt/local/sbin",
     "/usr/local/bin",
     "/usr/bin",
     "/bin",
     "/usr/sbin",
     "/sbin",
+];
+pub(crate) const AGENT_PROVIDER_HOME_BIN_DIRS: &[&str] = &[
+    ".local/bin",
+    ".cargo/bin",
+    ".npm-global/bin",
+    "bin",
+    ".bun/bin",
+    ".deno/bin",
+    ".volta/bin",
+    "go/bin",
+    ".local/share/pnpm",
+    ".asdf/shims",
 ];
 #[cfg(target_os = "macos")]
 pub(crate) const O_RDWR_FLAG: i32 = 0x0002;
@@ -122,6 +136,7 @@ pub(crate) struct AgentWorkbenchPreflight {
     pub(crate) provider_available: bool,
     pub(crate) provider_path: Option<String>,
     pub(crate) launch_implemented: bool,
+    pub(crate) searched_paths: Vec<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]

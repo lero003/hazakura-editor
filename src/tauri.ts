@@ -74,6 +74,7 @@ export type AgentWorkbenchPreflight = {
   providerAvailable: boolean;
   providerPath: string | null;
   launchImplemented: boolean;
+  searchedPaths: string[];
 };
 
 export type AgentWorkbenchSessionStatus = "active" | "stopped" | "exited";

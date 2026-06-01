@@ -329,6 +329,10 @@ fn agent_workbench_start_without_provider_does_not_create_session() {
 
     assert!(!result.preflight.provider_available);
     assert!(result.preflight.provider_path.is_none());
+    assert_eq!(
+        result.preflight.searched_paths,
+        vec![dir.to_string_lossy().to_string()]
+    );
     assert!(result.session.is_none());
     assert!(store.session.lock().unwrap().is_none());
     assert!(adapter.start_calls().is_empty());
@@ -1539,6 +1543,82 @@ fn agent_workbench_app_search_path_adds_home_provider_bins() {
 
     assert!(paths.contains(&path_dir));
     assert!(paths.contains(&home_bin));
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn agent_workbench_app_search_path_includes_toolchain_manager_bins() {
+    let dir = unique_test_dir("agent_provider_toolchain_bins");
+    let home_dir = dir.join("home");
+    for relative in [
+        ".local/bin",
+        ".cargo/bin",
+        ".npm-global/bin",
+        "bin",
+        ".bun/bin",
+        ".deno/bin",
+        ".volta/bin",
+        "go/bin",
+        ".local/share/pnpm",
+        ".asdf/shims",
+    ] {
+        fs::create_dir_all(home_dir.join(relative)).expect("create toolchain bin dir");
+    }
+
+    let search_dirs = build_agent_provider_search_path_dirs(None, Some(home_dir.as_os_str()));
+
+    for relative in [
+        ".local/bin",
+        ".cargo/bin",
+        ".npm-global/bin",
+        "bin",
+        ".bun/bin",
+        ".deno/bin",
+        ".volta/bin",
+        "go/bin",
+        ".local/share/pnpm",
+        ".asdf/shims",
+    ] {
+        let expected = home_dir.join(relative).to_string_lossy().to_string();
+        assert!(
+            search_dirs.iter().any(|entry| entry == &expected),
+            "expected {expected} in {search_dirs:?}"
+        );
+    }
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn agent_workbench_gui_search_dirs_includes_macports_and_homebrew() {
+    assert!(AGENT_PROVIDER_GUI_SEARCH_DIRS.contains(&"/opt/homebrew/bin"));
+    assert!(AGENT_PROVIDER_GUI_SEARCH_DIRS.contains(&"/opt/homebrew/sbin"));
+    assert!(AGENT_PROVIDER_GUI_SEARCH_DIRS.contains(&"/opt/local/bin"));
+    assert!(AGENT_PROVIDER_GUI_SEARCH_DIRS.contains(&"/opt/local/sbin"));
+    assert!(AGENT_PROVIDER_GUI_SEARCH_DIRS.contains(&"/usr/local/bin"));
+    assert!(AGENT_PROVIDER_GUI_SEARCH_DIRS.contains(&"/usr/bin"));
+    assert!(AGENT_PROVIDER_GUI_SEARCH_DIRS.contains(&"/bin"));
+    assert!(AGENT_PROVIDER_GUI_SEARCH_DIRS.contains(&"/usr/sbin"));
+    assert!(AGENT_PROVIDER_GUI_SEARCH_DIRS.contains(&"/sbin"));
+}
+
+#[test]
+fn agent_workbench_provider_lookup_finds_toolchain_manager_bin() {
+    let dir = unique_test_dir("agent_provider_toolchain_lookup");
+    let home_dir = dir.join("home");
+    let bun_bin = home_dir.join(".bun/bin");
+    fs::create_dir_all(&bun_bin).expect("create bun bin dir");
+    let command_path = bun_bin.join(AGENT_PROVIDER_PI);
+    fs::write(&command_path, b"#!/bin/sh\n").expect("write fake pi");
+    make_executable(&command_path);
+
+    let search_path =
+        build_agent_provider_search_path(None, Some(home_dir.as_os_str())).expect("search path");
+    let found = find_allowlisted_agent_provider_in_path_env(AGENT_PROVIDER_PI, &search_path)
+        .expect("find pi in bun bin");
+
+    assert_eq!(found, command_path);
 
     let _ = fs::remove_dir_all(dir);
 }

@@ -184,9 +184,12 @@ export function useAgentWorkbenchSessionActions({
       );
 
       if (!result.preflight.providerAvailable) {
+        const searchedList = result.preflight.searchedPaths.length
+          ? result.preflight.searchedPaths.map((entry) => `  - ${entry}`).join("\n")
+          : "  - (none)";
         setAgentLaunchGate({
           kind: "rejected",
-          message: `Provider not found: ${providerLabel(agentWorkbenchProvider)} was not found in the app search path, including common Homebrew and user bin locations.`,
+          message: `Provider not found: ${providerLabel(agentWorkbenchProvider)} was not found in the app search path, including Homebrew, MacPorts, /usr/local/bin, and common toolchain manager locations (bun, deno, volta, asdf, pnpm, cargo, go).\n\nSearched paths:\n${searchedList}`,
           preflight: result.preflight,
         });
         setAgentSession(null);

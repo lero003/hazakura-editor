@@ -143,6 +143,15 @@ Candidate work:
 - improve app stability and responsiveness found during normal editor and Agent Workbench smoke
 - keep Safe Editor Mode visually and conceptually primary while the provider list grows
 
+Delivered after `v0.4.0`:
+
+- Extended the GUI app search path used by `find_allowlisted_agent_provider_in_path_env` and `build_agent_provider_search_path` to cover toolchain manager install locations the previous list missed. New home-relative entries: `~/.bun/bin`, `~/.deno/bin`, `~/.volta/bin`, `~/go/bin`, `~/.local/share/pnpm`, `~/.asdf/shims`. New absolute entries: `/opt/local/bin`, `/opt/local/sbin` (MacPorts). `AgentWorkbenchPreflight` now also returns the resolved `searchedPaths` so a "Provider not found" launch gate can show the user exactly which directories were tried.
+- Rust tests added: `agent_workbench_app_search_path_includes_toolchain_manager_bins`, `agent_workbench_gui_search_dirs_includes_macports_and_homebrew`, and `agent_workbench_provider_lookup_finds_toolchain_manager_bin`.
+
+Deliberately deferred:
+
+- **User-specified provider path override** (Agent Workbench Preferences field for the absolute path to a provider binary, bypassing the auto search). This is a Plan C follow-up: useful when the user installs a provider into a non-standard location the auto search cannot cover, but it expands the trust surface and needs an explicit "exists + executable + allowlist name matches" validation before it is added. Tracked for a later v0.7+ slice; not in the v0.6 daily-drivable scope.
+
 Do not use this phase to add Pi SDK integration, RPC integration, arbitrary provider configuration, multi-agent orchestration, auto-apply, auto-commit, a general terminal, or a Git client.
 
 ## 0.6: Foundation Release — Daily-Drivable Safe Editor

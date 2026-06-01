@@ -847,6 +847,7 @@ fn build_agent_workbench_preflight(
     let provider_path = path_var.and_then(|candidate_path| {
         find_allowlisted_agent_provider_in_path_env(&provider, candidate_path)
     });
+    let searched_paths = agent_provider_search_path_dirs_from_path_env(path_var);
 
     Ok(AgentWorkbenchPreflight {
         provider,
@@ -854,6 +855,7 @@ fn build_agent_workbench_preflight(
         provider_available: provider_path.is_some(),
         provider_path: provider_path.map(|path| path.to_string_lossy().to_string()),
         launch_implemented: true,
+        searched_paths,
     })
 }
 
