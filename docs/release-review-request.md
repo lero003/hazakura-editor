@@ -81,5 +81,5 @@ Keep the product boundary intact:
 
 ## Current Recommendation
 
-Proceed to v0.6 release preparation, but do not tag or publish yet.
-The local code gates, dependency audits, GitHub alert triage, warning-expected DMG generation, checksum verification, mounted-app metadata check, codesign check, expected Gatekeeper rejection, and focused UI smoke now pass. Remaining work is source-branch review, release approval, publication, and remote asset verification.
+Proceed to v0.6 release publication as a warning-expected prerelease.
+The local code gates, dependency audits, GitHub alert triage, warning-expected DMG generation, checksum verification, mounted-app metadata check, codesign check, expected Gatekeeper rejection, and focused UI smoke now pass. Remaining work is publication and remote asset verification.
