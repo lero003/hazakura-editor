@@ -79,17 +79,29 @@ export function TabBar({
                 onPointerCancel={(event) =>
                   onFinishTabPointerDrag(event.currentTarget)
                 }
+                onClick={(event) => {
+                  // The tab-select click is handled on the tab
+                  // item rather than the inner button so it still
+                  // fires when the Tauri WKWebView retargets the
+                  // click event to the captured <div> after
+                  // pointerdown. The close button stops propagation
+                  // via its own onClick + the .tab-close class
+                  // guard in handleTabPointerDown.
+                  if (
+                    event.target instanceof Element &&
+                    event.target.closest(".tab-close")
+                  ) {
+                    return;
+                  }
+                  if (shouldSuppressTabClick()) {
+                    return;
+                  }
+                  onSelectTab(tab.id);
+                }}
               >
                 <button
                   aria-selected={tab.id === activeTabId}
                   className="tab-button"
-                  onClick={() => {
-                    if (shouldSuppressTabClick()) {
-                      return;
-                    }
-
-                    onSelectTab(tab.id);
-                  }}
                   role="tab"
                   title={tab.path}
                   type="button"
