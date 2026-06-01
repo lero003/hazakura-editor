@@ -65,8 +65,14 @@ export default function App() {
     setPendingCloseTabId,
     setPreferencesDialogMode,
   } = useAppDialogState();
-  const { rightPaneMode, setRightPaneMode, setReviewSurface, setZenMode, zenMode, reviewSurface } =
-    useAppViewState();
+  const {
+    rightPaneMode,
+    setRightPaneMode,
+    setReviewSurface,
+    setSidePaneOpen,
+    sidePaneOpen,
+    reviewSurface,
+  } = useAppViewState();
   const {
     candidateCompareCase,
     candidateCompareView,
@@ -265,6 +271,8 @@ export default function App() {
     selectedImage,
     setPreviewVisible,
     setRightPaneMode,
+    setSidePaneOpen,
+    sidePaneOpen,
   });
   const {
     activeDocumentLineCount,
@@ -482,7 +490,6 @@ export default function App() {
       setPreferencesDialogMode,
       setPreviewVisible,
       setThemePreference,
-      setZenMode,
     },
   });
 
@@ -634,7 +641,6 @@ export default function App() {
       tabs,
       themePreference,
       workspaceRootPath,
-      zenMode,
     },
     workspaceRuntime: {
       activeTabPath,
@@ -696,8 +702,6 @@ export default function App() {
       setPreferencesDialogMode,
       setPreviewVisible,
       setStatus,
-      setZenMode,
-      zenMode,
     },
   });
 
@@ -711,6 +715,7 @@ export default function App() {
     activeError,
     activeMatchIndex,
     activeSaveError,
+    ambientIntensity: editorSettings.ambientIntensity,
     activeTab,
     activeTabId,
     agentAvailable: agentWorkbenchAvailable,
@@ -896,7 +901,6 @@ export default function App() {
     workspaceContextMenu,
     workspaceRootPath,
     workspaceTree,
-    zenMode,
   };
 
   return <AppShell {...shellProps} />;

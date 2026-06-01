@@ -63,8 +63,6 @@ type UseAppKeyboardFocusEffectsOptions = {
   setPreferencesDialogMode: Dispatch<SetStateAction<PreferencesDialogMode | null>>;
   setPreviewVisible: Dispatch<SetStateAction<boolean>>;
   setStatus: Dispatch<SetStateAction<string>>;
-  setZenMode: Dispatch<SetStateAction<boolean>>;
-  zenMode: boolean;
 };
 
 export function useAppKeyboardFocusEffects({
@@ -110,8 +108,6 @@ export function useAppKeyboardFocusEffects({
   setPreferencesDialogMode,
   setPreviewVisible,
   setStatus,
-  setZenMode,
-  zenMode,
 }: UseAppKeyboardFocusEffectsOptions) {
   useWindowCloseConfirmation({
     allowWindowCloseRef,
@@ -164,8 +160,6 @@ export function useAppKeyboardFocusEffects({
     setPreferencesDialogMode,
     setPreviewVisible,
     setStatus,
-    setZenMode,
-    zenMode,
   });
 
   useDialogInitialFocus({

@@ -15,7 +15,6 @@ export type AppMenuState = {
   previewVisible: boolean;
   wrapLines: boolean;
   showInvisibles: boolean;
-  zenMode: boolean;
   spellcheckEnabled: boolean;
   themePreference: "system" | "light" | "dark" | "sakura" | "yakou" | "shokou" | "kouyou";
   menuLanguage: "en" | "ja";

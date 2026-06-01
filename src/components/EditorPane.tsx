@@ -347,7 +347,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         ),
         themeCompartmentRef.current.of([
           editorTheme(theme, fontSize),
-          syntaxHighlighting(editorMarkdownHighlightStyle(theme)),
+          syntaxHighlighting(editorMarkdownHighlightStyle()),
         ]),
         EditorView.domEventHandlers({
           keydown(event, view) {
@@ -454,7 +454,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     view.dispatch({
       effects: themeCompartmentRef.current.reconfigure([
         editorTheme(theme, fontSize),
-        syntaxHighlighting(editorMarkdownHighlightStyle(theme)),
+        syntaxHighlighting(editorMarkdownHighlightStyle()),
       ]),
     });
   }, [fontSize, theme]);
@@ -768,8 +768,8 @@ function editorTheme(theme: "light" | "dark", fontSize: number) {
   return EditorView.theme(
     {
       "&": {
-        backgroundColor: theme === "dark" ? "#151b18" : "#ffffff",
-        color: theme === "dark" ? "#ecf3ef" : "#1d2521",
+        backgroundColor: "var(--cm-bg)",
+        color: "var(--cm-fg)",
         height: "100%",
         fontSize: `${safeFontSize}px`,
       },
@@ -778,70 +778,59 @@ function editorTheme(theme: "light" | "dark", fontSize: number) {
           "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
       },
       ".cm-content": {
-        caretColor: theme === "dark" ? "#7fbfa1" : "#2e5c46",
+        caretColor: "var(--cm-caret)",
         padding: "18px 0",
       },
       ".cm-line": {
         padding: "0 22px",
       },
       ".cm-gutters": {
-        backgroundColor: theme === "dark" ? "#111714" : "#e9f0eb",
-        borderRight:
-          theme === "dark" ? "1px solid #232c28" : "1px solid #e0e6e2",
-        color: theme === "dark" ? "#8ca094" : "#627267",
+        backgroundColor: "var(--cm-gutter-bg)",
+        borderRight: "1px solid var(--cm-gutter-border)",
+        color: "var(--cm-gutter-fg)",
       },
       ".cm-activeLine": {
-        backgroundColor: theme === "dark" ? "rgba(127, 191, 161, 0.08)" : "rgba(46, 92, 70, 0.05)",
+        backgroundColor: "var(--cm-active-line-bg)",
       },
       ".cm-activeLineGutter": {
-        backgroundColor: theme === "dark" ? "rgba(127, 191, 161, 0.08)" : "rgba(46, 92, 70, 0.05)",
+        backgroundColor: "var(--cm-active-gutter-bg)",
       },
       ".cm-selectionLayer .cm-selectionBackground": {
-        backgroundColor: theme === "dark" ? "#5f8a6f" : "#8fc7a5",
+        backgroundColor: "var(--cm-selection-bg)",
         opacity: "1",
       },
       "&.cm-focused .cm-selectionLayer .cm-selectionBackground": {
-        backgroundColor: theme === "dark" ? "#5f8a6f" : "#8fc7a5",
+        backgroundColor: "var(--cm-selection-bg)",
       },
       ".cm-content ::selection": {
-        backgroundColor: theme === "dark" ? "#5f8a6f" : "#8fc7a5",
+        backgroundColor: "var(--cm-selection-bg)",
       },
       ".cm-searchMatch": {
-        backgroundColor: theme === "dark" ? "rgba(181, 144, 69, 0.3)" : "rgba(153, 120, 56, 0.2)",
+        backgroundColor: "var(--cm-search-match-bg)",
         borderRadius: "3px",
       },
       ".cm-searchMatch-active": {
-        backgroundColor: theme === "dark" ? "rgba(181, 144, 69, 0.7)" : "rgba(153, 120, 56, 0.5)",
-        boxShadow:
-          theme === "dark"
-            ? "0 0 0 1px #b59045"
-            : "0 0 0 1px #997838",
+        backgroundColor: "var(--cm-search-match-active-bg)",
+        boxShadow: "var(--cm-search-match-active-shadow)",
       },
       ".cm-invisible-space": {
-        backgroundImage:
-          theme === "dark"
-            ? "radial-gradient(circle, #75847b 1px, transparent 1px)"
-            : "radial-gradient(circle, #7a8a81 1px, transparent 1px)",
+        backgroundImage: "var(--cm-invisible-space)",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
       },
       ".cm-invisible-tab": {
-        backgroundColor:
-          theme === "dark" ? "rgba(127, 191, 161, 0.12)" : "rgba(46, 92, 70, 0.12)",
+        backgroundColor: "var(--cm-invisible-tab)",
         borderRadius: "3px",
       },
       ".cm-trailing-space": {
-        backgroundColor:
-          theme === "dark" ? "rgba(178, 77, 82, 0.3)" : "rgba(158, 63, 67, 0.2)",
+        backgroundColor: "var(--cm-trailing-space)",
       },
     },
     { dark: theme === "dark" },
   );
 }
 
-function editorMarkdownHighlightStyle(theme: "light" | "dark") {
-  const dark = theme === "dark";
-
+function editorMarkdownHighlightStyle() {
   return HighlightStyle.define([
     {
       tag: [
@@ -850,25 +839,25 @@ function editorMarkdownHighlightStyle(theme: "light" | "dark") {
         highlightTags.heading2,
         highlightTags.heading3,
       ],
-      color: dark ? "#d8f7e8" : "#173b2b",
+      color: "var(--cm-mark-heading)",
       fontWeight: "700",
     },
     {
       tag: [highlightTags.strong, highlightTags.emphasis],
-      color: dark ? "#f2f7f4" : "#1d2521",
+      color: "var(--cm-mark-strong)",
     },
     {
       tag: [highlightTags.link, highlightTags.url],
-      color: dark ? "#b8e8ff" : "#245d8a",
+      color: "var(--cm-mark-link)",
       textDecoration: "underline",
     },
     {
       tag: highlightTags.monospace,
-      color: dark ? "#afe9c8" : "#245c40",
+      color: "var(--cm-mark-monospace)",
     },
     {
       tag: highlightTags.quote,
-      color: dark ? "#c9d9d0" : "#4f6659",
+      color: "var(--cm-mark-quote)",
       fontStyle: "italic",
     },
   ]);

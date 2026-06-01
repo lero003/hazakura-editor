@@ -20,7 +20,6 @@ type UseAppMenuStateSyncOptions = {
   recentFiles: RecentEntry[];
   recentFolders: RecentEntry[];
   themePreference: ThemePreference;
-  zenMode: boolean;
 };
 
 export function useAppMenuStateSync({
@@ -32,7 +31,6 @@ export function useAppMenuStateSync({
   recentFiles,
   recentFolders,
   themePreference,
-  zenMode,
 }: UseAppMenuStateSyncOptions) {
   useEffect(() => {
     const menuRecentFiles: AppMenuRecentItem[] = buildRecentDisplayEntries(
@@ -52,7 +50,6 @@ export function useAppMenuStateSync({
       previewVisible,
       wrapLines: editorSettings.wrapLines,
       showInvisibles: editorSettings.showInvisibles,
-      zenMode,
       spellcheckEnabled: editorSettings.spellcheckEnabled,
       themePreference,
       menuLanguage,
@@ -72,6 +69,5 @@ export function useAppMenuStateSync({
     recentFiles,
     recentFolders,
     themePreference,
-    zenMode,
   ]);
 }

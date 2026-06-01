@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { AgentWorkbenchProvider } from "../tauri";
+import type { AmbientIntensity } from "../types";
 import { clampNumber } from "../utils";
 import {
   AGENT_WORKBENCH_CONSENT_STORAGE_KEY,
@@ -164,6 +165,7 @@ function readStoredEditorSettings(): EditorSettings {
     tabSize: 2,
     spellcheckEnabled: true,
     autoBackupEnabled: true,
+    ambientIntensity: "normal",
   };
   const value = window.localStorage.getItem(EDITOR_SETTINGS_STORAGE_KEY);
 
@@ -195,10 +197,22 @@ function readStoredEditorSettings(): EditorSettings {
         typeof parsed.autoBackupEnabled === "boolean"
           ? parsed.autoBackupEnabled
           : defaults.autoBackupEnabled,
+      ambientIntensity: isAmbientIntensity(parsed.ambientIntensity)
+        ? parsed.ambientIntensity
+        : defaults.ambientIntensity,
     };
   } catch {
     return defaults;
   }
+}
+
+function isAmbientIntensity(value: unknown): value is AmbientIntensity {
+  return (
+    value === "off" ||
+    value === "subtle" ||
+    value === "normal" ||
+    value === "dramatic"
+  );
 }
 
 function readStoredAgentWorkbenchEnabled(): boolean {

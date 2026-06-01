@@ -32,7 +32,6 @@ type UseAppShellSyncOptions = {
   tabs: EditorTab[];
   themePreference: ThemePreference;
   workspaceRootPath: string | null;
-  zenMode: boolean;
 };
 
 export function useAppShellSync({
@@ -50,7 +49,6 @@ export function useAppShellSync({
   tabs,
   themePreference,
   workspaceRootPath,
-  zenMode,
 }: UseAppShellSyncOptions) {
   useWindowTitle({
     activeDirty,
@@ -67,7 +65,6 @@ export function useAppShellSync({
     recentFiles,
     recentFolders,
     themePreference,
-    zenMode,
   });
 
   useThemeMenuStateSync(themePreference);

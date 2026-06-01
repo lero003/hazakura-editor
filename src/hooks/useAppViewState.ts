@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { ReviewSurface, RightPaneMode } from "../types";
 
 export function useAppViewState() {
-  const [zenMode, setZenMode] = useState(false);
+  const [sidePaneOpen, setSidePaneOpen] = useState(true);
   const [rightPaneMode, setRightPaneMode] =
     useState<RightPaneMode>("preview");
   const [reviewSurface, setReviewSurface] = useState<ReviewSurface>(null);
@@ -12,7 +12,7 @@ export function useAppViewState() {
     rightPaneMode,
     setReviewSurface,
     setRightPaneMode,
-    setZenMode,
-    zenMode,
+    setSidePaneOpen,
+    sidePaneOpen,
   };
 }

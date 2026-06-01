@@ -41,8 +41,6 @@ type UseGlobalKeyboardShortcutsOptions = {
   setPreferencesDialogMode: Dispatch<SetStateAction<PreferencesDialogMode | null>>;
   setPreviewVisible: Dispatch<SetStateAction<boolean>>;
   setStatus: Dispatch<SetStateAction<string>>;
-  setZenMode: Dispatch<SetStateAction<boolean>>;
-  zenMode: boolean;
 };
 
 export function useGlobalKeyboardShortcuts({
@@ -70,8 +68,6 @@ export function useGlobalKeyboardShortcuts({
   setPreferencesDialogMode,
   setPreviewVisible,
   setStatus,
-  setZenMode,
-  zenMode,
 }: UseGlobalKeyboardShortcutsOptions) {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -86,13 +82,6 @@ export function useGlobalKeyboardShortcuts({
       if (event.key === "Escape" && findVisible) {
         event.preventDefault();
         onCloseFindAndFocusEditor();
-        return;
-      }
-
-      if (event.key === "Escape" && zenMode) {
-        event.preventDefault();
-        setZenMode(false);
-        onFocusEditorSoon();
         return;
       }
 
@@ -277,7 +266,5 @@ export function useGlobalKeyboardShortcuts({
     setPreferencesDialogMode,
     setPreviewVisible,
     setStatus,
-    setZenMode,
-    zenMode,
   ]);
 }

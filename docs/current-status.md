@@ -269,7 +269,7 @@ Markdown Authoring Feature Readiness audit on 2026-05-31:
 - Clipboard image paste has a backend save path and editor insertion path; duplicate pasted-image saves reuse the existing hash-named asset, and `assets/...` references are now allowed for Markdown preview/export, but still need release-facing smoke coverage with actual pasted images.
 - Drag-and-drop currently opens supported text files through the app-level file-open path; it does not ingest dropped images into `assets/` or insert Markdown image syntax.
 - HTML export and Print to PDF menu entries exist, and workspace asset images are inlined for standalone output. HTML export is not yet preview-identical, and PDF remains a system print flow rather than an app-owned PDF file pipeline.
-- Zen mode and WebView spellcheck toggles exist but need release-facing smoke coverage before being claimed.
+- Seasonal ambient effects now have an adjustable intensity preference, and WebView spellcheck still needs release-facing smoke coverage before stronger platform claims.
 - Table support is currently fixed 3-column Markdown insertion plus preview table styling, not WYSIWYG-style row/column/alignment editing.
 - Agent Workbench can send file paths to a running allowlisted provider, but selection-range summarize/proofread/translate actions and candidate-to-diff apply flow are not implemented.
 - `docs/authoring-feature-readiness.md`, `docs/next-goals.md`, `docs/roadmap.md`, and `docs/development-automation.md` now identify the next safe slices without adding new product behavior.

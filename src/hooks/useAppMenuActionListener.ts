@@ -36,7 +36,6 @@ type UseAppMenuActionListenerOptions = {
   >;
   setPreviewVisible: Dispatch<SetStateAction<boolean>>;
   setThemePreference: Dispatch<SetStateAction<ThemePreference>>;
-  setZenMode: Dispatch<SetStateAction<boolean>>;
 };
 
 export function useAppMenuActionListener({
@@ -48,7 +47,6 @@ export function useAppMenuActionListener({
   setPreferencesDialogMode,
   setPreviewVisible,
   setThemePreference,
-  setZenMode,
 }: UseAppMenuActionListenerOptions) {
   useEffect(() => {
     if (!isTauriRuntime()) {
@@ -124,9 +122,6 @@ export function useAppMenuActionListener({
             showInvisibles: !current.showInvisibles,
           }));
           break;
-        case "toggle-zen":
-          setZenMode((current) => !current);
-          break;
         case "toggle-spellcheck":
           setEditorSettings((current) => ({
             ...current,
@@ -187,6 +182,5 @@ export function useAppMenuActionListener({
     setPreferencesDialogMode,
     setPreviewVisible,
     setThemePreference,
-    setZenMode,
   ]);
 }

@@ -1,5 +1,6 @@
 import type { ComponentProps } from "react";
 import type {
+  AmbientIntensity,
   CompareCase,
   CompareViewState,
   EditorTab,
@@ -23,6 +24,7 @@ export type AppShellProps = ComponentProps<typeof AppTopChrome> &
   ComponentProps<typeof AppStatusBar> &
   ComponentProps<typeof AppOverlays> & {
     activeTab: EditorTab | null;
+    ambientIntensity: AmbientIntensity;
     candidateCompareCase: CompareCase | null;
     candidateCompareView: CompareViewState | null;
     candidateErrorMessage: string | null;
@@ -45,14 +47,18 @@ export type AppShellProps = ComponentProps<typeof AppTopChrome> &
       candidateText: string;
     }) => { ok: true } | { ok: false; error: string };
     setCandidateInputText: (value: string) => void;
-    zenMode: boolean;
   };
 
 export function AppShell(props: AppShellProps) {
   const ambientMode = isAmbientMode(props.resolvedTheme) ? props.resolvedTheme : null;
   return (
-    <main className={`app-shell${props.zenMode ? " zen-mode" : ""}`}>
-      {ambientMode ? <AmbientBackground mode={ambientMode} /> : null}
+    <main className="app-shell">
+      {ambientMode ? (
+        <AmbientBackground
+          intensity={props.ambientIntensity}
+          mode={ambientMode}
+        />
+      ) : null}
       <AppTopChrome {...props} />
       <AppDocumentFeedback {...props} />
       {props.reviewSurface !== null ? (

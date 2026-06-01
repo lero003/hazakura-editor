@@ -49,13 +49,6 @@ Planned for 2026-05-31. Run these on the built DMG or built `.app` bundle.
 | File → Export as HTML… | Dialog opens, saves `.html`, image inlined | ✅ |
 | File → Print to PDF… | Opens in browser for printing | ✅ |
 
-### Zen Mode
-
-| Step | Expected | Result |
-|------|----------|--------|
-| View → Zen Mode (Cmd+Shift+F) | Chrome hidden, editor centered | ✅ |
-| Press Escape | Zen mode exits, editor focused | ✅ |
-
 ### Spellcheck
 
 | Step | Expected | Result |
@@ -243,15 +236,14 @@ open -n src-tauri/target/release/bundle/macos/hazakura-note.app
 7. Use File > Export as PDF and confirm the system Print dialog appears.
 8. Save as PDF from the print dialog if practical, then confirm the output reflects the rendered Markdown and does not claim a separate app-owned PDF pipeline.
 
-## Zen And Spellcheck
+## Ambient And Spellcheck
 
 1. Open a Markdown file and focus the editor.
-2. Use View > Zen Mode or Cmd+Shift+F.
-3. Confirm tabs, workspace tree, side pane, status bar, and start panel are hidden while the editor remains usable.
-4. Press Escape and confirm Zen Mode exits, focus returns predictably, and the View menu check state is correct.
-5. Use View > Spell Check or Cmd+Option+; to toggle spellcheck.
-6. Type a clearly misspelled English word and confirm the WebView spellcheck behavior follows the toggle as far as the platform exposes it.
-7. Confirm no macOS `NSSpellChecker` suggestion UI is claimed unless it has been implemented separately.
+2. Switch between Sakura / Yakou / Shokou / Kouyou themes and confirm the editor, side pane, and ambient background stay readable.
+3. Change Preferences > Ambient effects through Off / Subtle / Normal / Dramatic and confirm reduced-motion still hides particles.
+4. Use View > Spell Check or Cmd+Option+; to toggle spellcheck.
+5. Type a clearly misspelled English word and confirm the WebView spellcheck behavior follows the toggle as far as the platform exposes it.
+6. Confirm no macOS `NSSpellChecker` suggestion UI is claimed unless it has been implemented separately.
 
 ## Table Insert
 

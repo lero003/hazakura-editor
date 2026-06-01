@@ -13,6 +13,7 @@ type UseSidePaneStateOptions = {
   previewVisible: boolean;
   rightPaneMode: RightPaneMode;
   selectedImage: ImagePreviewState | null;
+  sidePaneOpen: boolean;
 };
 
 export function useSidePaneState({
@@ -23,6 +24,7 @@ export function useSidePaneState({
   previewVisible,
   rightPaneMode,
   selectedImage,
+  sidePaneOpen,
 }: UseSidePaneStateOptions) {
   const agentWorkbenchAvailable =
     agentWorkbenchActive && agentWorkbenchConsent;
@@ -30,24 +32,20 @@ export function useSidePaneState({
     agentWorkbenchAvailable && !activeTab && rightPaneMode === "preview"
       ? "agent"
       : rightPaneMode;
-  const agentPaneVisible =
-    agentWorkbenchAvailable && effectiveRightPaneMode === "agent";
-  const outlinePaneVisible =
-    effectiveRightPaneMode === "outline" && activeTab !== null;
-  const previewPaneVisible =
-    effectiveRightPaneMode === "preview" &&
-    previewVisible &&
-    activeTab !== null;
-  const sidePaneMode: RightPaneMode | null =
-    effectiveRightPaneMode === "compare"
+  const sidePaneMode: RightPaneMode | null = sidePaneOpen
+    ? effectiveRightPaneMode === "compare"
       ? "compare"
-      : agentPaneVisible
+      : effectiveRightPaneMode === "agent"
         ? "agent"
-        : outlinePaneVisible
+        : effectiveRightPaneMode === "outline"
           ? "outline"
-          : previewPaneVisible
+          : effectiveRightPaneMode === "preview" && previewVisible
             ? "preview"
-            : null;
+            : null
+    : null;
+  const agentPaneVisible = sidePaneMode === "agent";
+  const outlinePaneVisible = sidePaneMode === "outline" && activeTab !== null;
+  const previewPaneVisible = sidePaneMode === "preview" && activeTab !== null;
   const sidePaneVisible = sidePaneMode !== null;
   const hasWorkspaceSelection = Boolean(
     activeTab || selectedImage || compareView || agentPaneVisible,

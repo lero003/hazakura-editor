@@ -18,6 +18,15 @@ type SettingsPreferencesPaneProps = {
   themePreference: ThemePreference;
 };
 
+type AmbientIntensity = "off" | "subtle" | "normal" | "dramatic";
+
+const AMBIENT_OPTIONS: { value: AmbientIntensity; label: keyof PreferencesCopy }[] = [
+  { value: "off", label: "ambientIntensityOff" },
+  { value: "subtle", label: "ambientIntensitySubtle" },
+  { value: "normal", label: "ambientIntensityNormal" },
+  { value: "dramatic", label: "ambientIntensityDramatic" },
+];
+
 export function SettingsPreferencesPane({
   copy,
   editorSettings,
@@ -136,6 +145,25 @@ export function SettingsPreferencesPane({
             <option value="yakou">{copy.yakou}</option>
             <option value="shokou">{copy.shokou}</option>
             <option value="kouyou">{copy.kouyou}</option>
+          </select>
+        </label>
+        <label className="field-control">
+          <span>{copy.ambientIntensity}</span>
+          <select
+            aria-label={copy.ambientIntensity}
+            value={editorSettings.ambientIntensity}
+            onChange={(event) =>
+              onEditorSettingsChange((current) => ({
+                ...current,
+                ambientIntensity: event.target.value as AmbientIntensity,
+              }))
+            }
+          >
+            {AMBIENT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {copy[opt.label]}
+              </option>
+            ))}
           </select>
         </label>
         <label className="field-control">

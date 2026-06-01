@@ -20,6 +20,28 @@
   --scrollbar-thumb: rgba(98, 114, 103, 0.25);
   --scrollbar-thumb-hover: rgba(98, 114, 103, 0.4);
 
+  /* CodeMirror エディタ配色 / CodeMirror Editor Colors */
+  --cm-bg: #ffffff;
+  --cm-fg: #1d2521;
+  --cm-caret: #2e5c46;
+  --cm-gutter-bg: #e9f0eb;
+  --cm-gutter-border: #e0e6e2;
+  --cm-gutter-fg: #627267;
+  --cm-active-line-bg: rgba(46, 92, 70, 0.05);
+  --cm-active-gutter-bg: rgba(46, 92, 70, 0.05);
+  --cm-selection-bg: #8fc7a5;
+  --cm-search-match-bg: rgba(153, 120, 56, 0.2);
+  --cm-search-match-active-bg: rgba(153, 120, 56, 0.5);
+  --cm-search-match-active-shadow: 0 0 0 1px #997838;
+  --cm-invisible-space: radial-gradient(circle, #7a8a81 1px, transparent 1px);
+  --cm-invisible-tab: rgba(46, 92, 70, 0.12);
+  --cm-trailing-space: rgba(158, 63, 67, 0.2);
+  --cm-mark-heading: #173b2b;
+  --cm-mark-strong: #1d2521;
+  --cm-mark-link: #245d8a;
+  --cm-mark-monospace: #245c40;
+  --cm-mark-quote: #4f6659;
+
   /* シャドウ / Shadows */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
@@ -81,6 +103,28 @@ html, body, #root, .app-shell,
   --scrollbar-thumb: rgba(140, 160, 148, 0.15);
   --scrollbar-thumb-hover: rgba(140, 160, 148, 0.3);
 
+  /* CodeMirror ダーク用配色 / CodeMirror Dark Colors */
+  --cm-bg: #151b18;
+  --cm-fg: #ecf3ef;
+  --cm-caret: #7fbfa1;
+  --cm-gutter-bg: #111714;
+  --cm-gutter-border: #232c28;
+  --cm-gutter-fg: #8ca094;
+  --cm-active-line-bg: rgba(127, 191, 161, 0.08);
+  --cm-active-gutter-bg: rgba(127, 191, 161, 0.08);
+  --cm-selection-bg: #5f8a6f;
+  --cm-search-match-bg: rgba(181, 144, 69, 0.3);
+  --cm-search-match-active-bg: rgba(181, 144, 69, 0.7);
+  --cm-search-match-active-shadow: 0 0 0 1px #b59045;
+  --cm-invisible-space: radial-gradient(circle, #75847b 1px, transparent 1px);
+  --cm-invisible-tab: rgba(127, 191, 161, 0.12);
+  --cm-trailing-space: rgba(178, 77, 82, 0.3);
+  --cm-mark-heading: #d8f7e8;
+  --cm-mark-strong: #f2f7f4;
+  --cm-mark-link: #b8e8ff;
+  --cm-mark-monospace: #afe9c8;
+  --cm-mark-quote: #c9d9d0;
+
   /* ダーク用シャドウ / Dark Shadows */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.15);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.15);
@@ -110,6 +154,28 @@ html, body, #root, .app-shell,
   --scrollbar-thumb: rgba(120, 102, 109, 0.25);
   --scrollbar-thumb-hover: rgba(120, 102, 109, 0.4);
 
+  /* CodeMirror 桜用配色 / CodeMirror Sakura Colors */
+  --cm-bg: #fffafa;
+  --cm-fg: #2b2528;
+  --cm-caret: #9a4057;
+  --cm-gutter-bg: #f4e7eb;
+  --cm-gutter-border: #ead5db;
+  --cm-gutter-fg: #78666d;
+  --cm-active-line-bg: rgba(154, 64, 87, 0.05);
+  --cm-active-gutter-bg: rgba(154, 64, 87, 0.05);
+  --cm-selection-bg: #d7aeb9;
+  --cm-search-match-bg: rgba(141, 112, 64, 0.22);
+  --cm-search-match-active-bg: rgba(141, 112, 64, 0.55);
+  --cm-search-match-active-shadow: 0 0 0 1px #8d7040;
+  --cm-invisible-space: radial-gradient(circle, #a89098 1px, transparent 1px);
+  --cm-invisible-tab: rgba(154, 64, 87, 0.12);
+  --cm-trailing-space: rgba(159, 63, 69, 0.22);
+  --cm-mark-heading: #6b1d2f;
+  --cm-mark-strong: #2b2528;
+  --cm-mark-link: #8b3a4a;
+  --cm-mark-monospace: #6b1d2f;
+  --cm-mark-quote: #78666d;
+
   --shadow-sm: 0 1px 2px rgba(110, 54, 72, 0.08);
   --shadow-md: 0 4px 12px rgba(110, 54, 72, 0.1), 0 1px 3px rgba(110, 54, 72, 0.06);
   --shadow-lg: 0 12px 32px rgba(110, 54, 72, 0.16), 0 2px 8px rgba(110, 54, 72, 0.08);
@@ -138,6 +204,28 @@ html, body, #root, .app-shell,
   --status-bg: #08080e;
   --status-text: #e4e4f0;
   --selection-bg: rgba(139, 124, 248, 0.18);
+
+  /* CodeMirror 夜光用配色 / CodeMirror Yakou Colors */
+  --cm-bg: #14141e;
+  --cm-fg: #e4e4f0;
+  --cm-caret: #8b7cf8;
+  --cm-gutter-bg: #111118;
+  --cm-gutter-border: #24243a;
+  --cm-gutter-fg: #8888a8;
+  --cm-active-line-bg: rgba(139, 124, 248, 0.08);
+  --cm-active-gutter-bg: rgba(139, 124, 248, 0.08);
+  --cm-selection-bg: #5d4fc4;
+  --cm-search-match-bg: rgba(212, 168, 66, 0.32);
+  --cm-search-match-active-bg: rgba(212, 168, 66, 0.7);
+  --cm-search-match-active-shadow: 0 0 0 1px #d4a842;
+  --cm-invisible-space: radial-gradient(circle, #6e6e8a 1px, transparent 1px);
+  --cm-invisible-tab: rgba(139, 124, 248, 0.12);
+  --cm-trailing-space: rgba(224, 84, 104, 0.3);
+  --cm-mark-heading: #c4b5fd;
+  --cm-mark-strong: #f0f0fa;
+  --cm-mark-link: #93c5fd;
+  --cm-mark-monospace: #c4b5fd;
+  --cm-mark-quote: #a5b4fc;
   --scrollbar-thumb: rgba(136, 136, 168, 0.15);
   --scrollbar-thumb-hover: rgba(136, 136, 168, 0.3);
 
@@ -175,6 +263,28 @@ html, body, #root, .app-shell,
   --scrollbar-thumb: rgba(82, 106, 125, 0.2);
   --scrollbar-thumb-hover: rgba(82, 106, 125, 0.35);
 
+  /* CodeMirror 曙光用配色 / CodeMirror Shokou Colors */
+  --cm-bg: #f8fbff;
+  --cm-fg: #152638;
+  --cm-caret: #2f78ad;
+  --cm-gutter-bg: #e5f1fb;
+  --cm-gutter-border: #d5e5f1;
+  --cm-gutter-fg: #526a7d;
+  --cm-active-line-bg: rgba(47, 120, 173, 0.05);
+  --cm-active-gutter-bg: rgba(47, 120, 173, 0.05);
+  --cm-selection-bg: #aec8da;
+  --cm-search-match-bg: rgba(162, 111, 32, 0.22);
+  --cm-search-match-active-bg: rgba(162, 111, 32, 0.55);
+  --cm-search-match-active-shadow: 0 0 0 1px #a26f20;
+  --cm-invisible-space: radial-gradient(circle, #6c8aa0 1px, transparent 1px);
+  --cm-invisible-tab: rgba(47, 120, 173, 0.12);
+  --cm-trailing-space: rgba(183, 68, 74, 0.22);
+  --cm-mark-heading: #1c5b87;
+  --cm-mark-strong: #152638;
+  --cm-mark-link: #1c5b87;
+  --cm-mark-monospace: #1c5b87;
+  --cm-mark-quote: #526a7d;
+
   --shadow-sm: 0 1px 2px rgba(47, 120, 173, 0.06);
   --shadow-md: 0 4px 12px rgba(47, 120, 173, 0.08), 0 1px 3px rgba(242, 159, 75, 0.06);
   --shadow-lg: 0 12px 32px rgba(47, 120, 173, 0.12), 0 2px 8px rgba(242, 159, 75, 0.08);
@@ -205,6 +315,28 @@ html, body, #root, .app-shell,
   --selection-bg: rgba(168, 68, 50, 0.12);
   --scrollbar-thumb: rgba(102, 95, 80, 0.2);
   --scrollbar-thumb-hover: rgba(102, 95, 80, 0.35);
+
+  /* CodeMirror 紅葉用配色 / CodeMirror Kouyou Colors */
+  --cm-bg: #fffaf2;
+  --cm-fg: #261f18;
+  --cm-caret: #a84432;
+  --cm-gutter-bg: #efe7d7;
+  --cm-gutter-border: #dccbad;
+  --cm-gutter-fg: #665f50;
+  --cm-active-line-bg: rgba(168, 68, 50, 0.05);
+  --cm-active-gutter-bg: rgba(168, 68, 50, 0.05);
+  --cm-selection-bg: #dccbad;
+  --cm-search-match-bg: rgba(148, 119, 46, 0.22);
+  --cm-search-match-active-bg: rgba(148, 119, 46, 0.55);
+  --cm-search-match-active-shadow: 0 0 0 1px #94772e;
+  --cm-invisible-space: radial-gradient(circle, #998a72 1px, transparent 1px);
+  --cm-invisible-tab: rgba(168, 68, 50, 0.12);
+  --cm-trailing-space: rgba(158, 63, 67, 0.22);
+  --cm-mark-heading: #6f2a1d;
+  --cm-mark-strong: #261f18;
+  --cm-mark-link: #a84432;
+  --cm-mark-monospace: #6f2a1d;
+  --cm-mark-quote: #665f50;
 
   --shadow-sm: 0 1px 2px rgba(67, 72, 41, 0.07);
   --shadow-md: 0 4px 12px rgba(67, 72, 41, 0.08), 0 1px 3px rgba(168, 68, 50, 0.06);
@@ -478,33 +610,6 @@ button:disabled {
   height: 100vh;
   background: var(--bg);
   position: relative;
-}
-
-.app-shell.zen-mode {
-  grid-template-rows: 0fr 0fr 1fr 0fr;
-  transition: grid-template-rows 0.35s var(--ease-standard);
-}
-
-.app-shell.zen-mode .workspace {
-  grid-template-columns: 0px minmax(0, 1fr);
-}
-
-.app-shell.zen-mode .tabs-row,
-.app-shell.zen-mode .file-tree-pane,
-.app-shell.zen-mode .preview-pane,
-.app-shell.zen-mode .right-pane,
-.app-shell.zen-mode .status-bar,
-.app-shell.zen-mode .start-panel,
-.app-shell.zen-mode .workspace-context-menu,
-.app-shell.zen-mode .pane-resizer {
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s ease;
-}
-
-.app-shell.zen-mode .pane.editor-pane {
-  max-width: 48rem;
-  margin: 0 auto;
 }
 
 

@@ -23,7 +23,6 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
     let preview_visible = state.map(|state| state.preview_visible).unwrap_or(true);
     let wrap_lines = state.map(|state| state.wrap_lines).unwrap_or(true);
     let show_invisibles = state.map(|state| state.show_invisibles).unwrap_or(false);
-    let zen_mode = state.map(|state| state.zen_mode).unwrap_or(false);
     let spellcheck_enabled = state.map(|state| state.spellcheck_enabled).unwrap_or(true);
     let theme_preference = state
         .map(|state| state.theme_preference.as_str())
@@ -170,14 +169,6 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
                 true,
                 show_invisibles,
                 Some("CmdOrCtrl+Option+I"),
-            )?,
-            &CheckMenuItem::with_id(
-                app,
-                MENU_TOGGLE_ZEN,
-                label("Zen Mode", "Zenモード"),
-                true,
-                zen_mode,
-                Some("CmdOrCtrl+Shift+F"),
             )?,
             &CheckMenuItem::with_id(
                 app,
@@ -451,7 +442,6 @@ pub(crate) fn emit_app_menu_event<R: tauri::Runtime>(
                 | MENU_TOGGLE_PREVIEW
                 | MENU_TOGGLE_WRAP
                 | MENU_TOGGLE_INVISIBLES
-                | MENU_TOGGLE_ZEN
                 | MENU_TOGGLE_SPELLCHECK
                 | MENU_THEME_SYSTEM
                 | MENU_THEME_LIGHT

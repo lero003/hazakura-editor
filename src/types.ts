@@ -161,7 +161,10 @@ export type EditorSettings = {
   tabSize: number;
   spellcheckEnabled: boolean;
   autoBackupEnabled: boolean;
+  ambientIntensity: AmbientIntensity;
 };
+
+export type AmbientIntensity = "off" | "subtle" | "normal" | "dramatic";
 
 export type DraftRecord = {
   path: string;

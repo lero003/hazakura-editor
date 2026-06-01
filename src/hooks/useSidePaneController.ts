@@ -19,6 +19,8 @@ type UseSidePaneControllerOptions = {
   selectedImage: ImagePreviewState | null;
   setPreviewVisible: Dispatch<SetStateAction<boolean>>;
   setRightPaneMode: Dispatch<SetStateAction<RightPaneMode>>;
+  setSidePaneOpen: Dispatch<SetStateAction<boolean>>;
+  sidePaneOpen: boolean;
 };
 
 export function useSidePaneController({
@@ -31,6 +33,8 @@ export function useSidePaneController({
   selectedImage,
   setPreviewVisible,
   setRightPaneMode,
+  setSidePaneOpen,
+  sidePaneOpen,
 }: UseSidePaneControllerOptions) {
   const {
     agentPaneVisible,
@@ -46,6 +50,7 @@ export function useSidePaneController({
     previewVisible,
     rightPaneMode,
     selectedImage,
+    sidePaneOpen,
   });
   const {
     editorPreviewGridRef,
@@ -67,7 +72,9 @@ export function useSidePaneController({
     activeTab,
     setPreviewVisible,
     setRightPaneMode,
+    setSidePaneOpen,
     sidePaneMode,
+    sidePaneOpen,
   });
 
   return {

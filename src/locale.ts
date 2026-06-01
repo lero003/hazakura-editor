@@ -125,6 +125,11 @@ export type SlashMenuCopy = {
 };
 
 export type PreferencesCopy = {
+  ambientIntensity: string;
+  ambientIntensityOff: string;
+  ambientIntensitySubtle: string;
+  ambientIntensityNormal: string;
+  ambientIntensityDramatic: string;
   application: string;
   autoBackup: string;
   dark: string;
@@ -429,13 +434,13 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
     ? {
         application: "アプリケーション",
         autoBackup: "自動バックアップ",
-        dark: "ダーク",
-        editor: "エディタ",
-        editorDisplay: "エディタ表示",
-        fontSize: "フォントサイズ",
-        fontSizeControl: "エディタのフォントサイズ",
+        dark: "ダーク",
+        editor: "エディタ",
+        editorDisplay: "エディタ表示",
+        fontSize: "フォントサイズ",
+        fontSizeControl: "エディタのフォントサイズ",
         light: "ライト",
-        closeDialog: "ダイアログ゙を閉じる",
+        closeDialog: "ダイアログ゙を閉じる",
         menuLanguage: "メニュー言語",
         previewPane: "プレビュー表示",
         sakura: "桜",
@@ -445,9 +450,14 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         settingsTitle: "設定",
         showInvisibles: "不可視文字を表示",
         system: "システム",
-        tabSize: "タブ幅",
+        tabSize: "タブ幅",
         theme: "テーマ",
         wrapLines: "行を折り返す",
+        ambientIntensity: "アンビエント演出",
+        ambientIntensityOff: "オフ",
+        ambientIntensitySubtle: "控えめ",
+        ambientIntensityNormal: "標準",
+        ambientIntensityDramatic: "派手",
       }
     : {
         application: "Application",
@@ -471,6 +481,11 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         tabSize: "Tab size",
         theme: "Theme",
         wrapLines: "Wrap lines",
+        ambientIntensity: "Ambient effects",
+        ambientIntensityOff: "Off",
+        ambientIntensitySubtle: "Subtle",
+        ambientIntensityNormal: "Normal",
+        ambientIntensityDramatic: "Dramatic",
       };
 }
 
