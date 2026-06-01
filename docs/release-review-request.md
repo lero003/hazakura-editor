@@ -47,7 +47,7 @@ Keep the product boundary intact:
 |---|---|
 | `npm run typecheck` | Passed |
 | `git diff --check` | Passed |
-| `cargo test --manifest-path src-tauri/Cargo.toml` | Passed: 82 tests |
+| `cargo test --manifest-path src-tauri/Cargo.toml` | Passed: 85 tests |
 | `npm run build` | Passed; Vite chunk-size warning remains expected |
 | `npm audit --json` | Passed: 0 vulnerabilities |
 | `cargo audit --file src-tauri/Cargo.lock --json` | Passed: 0 vulnerabilities; informational warnings remain for transitive GTK3/unic/proc-macro-error/glib crates |
