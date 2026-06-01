@@ -16,7 +16,11 @@ type ReviewSurfaceProps = {
   candidateInputText: string;
   clearCandidate: () => void;
   menuLanguage: MenuLanguage;
-  onApplyCandidate: (candidateText: string, documentTabId: string) => void;
+  onApplyCandidate: (
+    candidateText: string,
+    documentTabId: string,
+    documentContents: string,
+  ) => void;
   onClose: () => void;
   reviewDeskCopy: ReviewDeskCopy;
   reviewDeskMode: ReviewDeskMode;
@@ -119,7 +123,11 @@ type ReviewSurfaceCandidateSectionProps = {
   clearCandidate: () => void;
   copy: ReviewDeskCopy;
   menuLanguage: MenuLanguage;
-  onApplyCandidate: (candidateText: string, documentTabId: string) => void;
+  onApplyCandidate: (
+    candidateText: string,
+    documentTabId: string,
+    documentContents: string,
+  ) => void;
   runCandidateCompare: (params: {
     bufferContents: string;
     documentTabId: string;
@@ -264,7 +272,11 @@ type ReviewSurfaceCandidatePreviewProps = {
   candidateCompareView: CompareViewState | null;
   copy: ReviewDeskCopy;
   menuLanguage: MenuLanguage;
-  onApplyCandidate: (candidateText: string, documentTabId: string) => void;
+  onApplyCandidate: (
+    candidateText: string,
+    documentTabId: string,
+    documentContents: string,
+  ) => void;
 };
 
 function ReviewSurfaceCandidatePreview({
@@ -279,7 +291,8 @@ function ReviewSurfaceCandidatePreview({
     candidateCompareCase !== null &&
     candidateCompareView !== null &&
     candidateCompareCase.kind === "candidate" &&
-    activeTab?.id === candidateCompareCase.documentTabId;
+    activeTab?.id === candidateCompareCase.documentTabId &&
+    activeTab.contents === candidateCompareCase.documentContents;
   const canApply = activeTab !== null && hasPreview;
 
   const handleApply = () => {
@@ -290,6 +303,7 @@ function ReviewSurfaceCandidatePreview({
     onApplyCandidate(
       candidateCompareCase.candidateText,
       candidateCompareCase.documentTabId,
+      candidateCompareCase.documentContents,
     );
   };
 

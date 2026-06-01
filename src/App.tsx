@@ -207,8 +207,16 @@ export default function App() {
     toggleQuickOpen,
   } = useQuickOpenState();
   const applyManualCandidateToActiveTab = useCallback(
-    (candidateText: string, documentTabId: string) => {
-      if (!activeTab || activeTab.id !== documentTabId) {
+    (
+      candidateText: string,
+      documentTabId: string,
+      documentContents: string,
+    ) => {
+      if (
+        !activeTab ||
+        activeTab.id !== documentTabId ||
+        activeTab.contents !== documentContents
+      ) {
         setStatus("Manual candidate apply failed");
         return;
       }

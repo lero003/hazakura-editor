@@ -260,6 +260,7 @@ export type CompareCase = {
   kind: "candidate";
   key: string;
   documentTabId: string;
+  documentContents: string;
   documentPath: string;
   documentLabel: string;
   leftColumnLabel: string;

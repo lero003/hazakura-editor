@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-01
+Last reviewed: 2026-06-02
 
 ## Current State
 
@@ -25,6 +25,7 @@ Last reviewed: 2026-06-01
 - The 2026-06-01 Review Desk candidate safety pass fixed failed manual-candidate comparisons so a stale successful preview is cleared before the error is shown, keeping Apply candidate disabled until the user produces a fresh preview.
 - The 2026-06-01 Review Desk candidate edit safety pass clears the manual-candidate preview, error, and Apply candidate action as soon as the textarea changes after a compare, so edited candidate text must be reviewed again before it can be applied.
 - The 2026-06-02 Review Desk candidate tab-switch safety pass binds a manual-candidate preview to the tab it was compared against. If the active tab changes before Apply candidate, the old preview is no longer treated as applicable and the apply handler rejects the stale tab id.
+- The 2026-06-02 Review Desk active-buffer edit safety pass binds a manual-candidate preview to the exact buffer text compared. If the active tab contents change after Compare, Apply candidate is disabled until the candidate is compared again, and the apply handler rejects the stale buffer snapshot.
 - The 2026-06-01 built-app smoke launched `hazakura editor`, opened temporary Markdown files, reordered open tabs with drag-and-drop, moved focus with previous/next tab shortcuts, verified Save, Export as HTML, split Diff comparison, Replace all, Cmd+P Quick Open, toggled Preferences > Application > Auto-backup off/on, and confirmed a dirty workspace-local file produced a `.hazakura/backups/` entry containing the unsaved text. Browser smoke was unavailable in this session.
 - Existing LF / CRLF line endings are detected when a file is opened and preserved through save.
 - The status bar shows file type, UTF-8 encoding, approximate byte count, character count, saved line-ending mode, final-newline state, and clean/unsaved state.

@@ -34,6 +34,7 @@ export type AppShellProps = ComponentProps<typeof AppTopChrome> &
     onApplyManualCandidate: (
       candidateText: string,
       documentTabId: string,
+      documentContents: string,
     ) => void;
     onCloseReviewDesk: () => void;
     resolvedTheme: ResolvedTheme;

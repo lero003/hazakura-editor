@@ -78,6 +78,7 @@ export function useReviewDeskState() {
           kind: "candidate",
           key: crypto.randomUUID(),
           documentTabId: params.documentTabId,
+          documentContents: params.bufferContents,
           documentPath: params.documentPath,
           documentLabel: params.documentLabel,
           leftColumnLabel: params.leftColumnLabel,
