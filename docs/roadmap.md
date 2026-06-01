@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current release sequence and planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-02 (v0.7 release-prep scope and v0.8 UX lane)
+Last reviewed: 2026-06-02 (v0.7 published and v0.8 UX lane)
 
 ## Current Position
 
@@ -22,6 +22,7 @@ The current public line is:
 - `v0.4.0`: Markdown Review Navigation warning-expected DMG release
 - `v0.5.0`: Pi CLI Provider, Image Assets, and Authoring Stability warning-expected DMG release
 - `v0.6.0`: Foundation Release / Daily-Drivable Safe Editor warning-expected DMG release under the `hazakura editor` identity
+- `v0.7.0`: Review Desk MVP warning-expected DMG release with manual candidate review, slash command polish, and existing Change Review routing fixes
 
 The old `v0.1` / `v0.3.x` phase map is archived in `docs/roadmap-v0.1-archived.md`.
 

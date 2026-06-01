@@ -1,7 +1,7 @@
 # Development Automation
 
 Status: Operational
-Scope: Recurring automation guidance for v0.7 release-prep hardening
+Scope: Recurring automation guidance for post-v0.7 quality triage
 Authority: High
 Last reviewed: 2026-06-02
 
@@ -17,15 +17,15 @@ When implementation is delegated to an external agent and Codex is asked to revi
 
 Name: `hazakura-note-quality-loop`
 
-Cadence: temporary hourly release-prep hardening loop while v0.7 is being prepared.
+Cadence: temporary hourly post-release quality loop after the v0.7 warning-expected preview.
 
-Current phase: v0.7 Hazakura Review Desk MVP and release prep. Recurring automation should prefer quality gates, latest-HEAD built-app smoke, reproduced Review Desk / Slash / Diff MVP bugs, safety-boundary checks, and documentation drift over new feature expansion.
+Current phase: post-v0.7 triage and v0.8 UX planning. Recurring automation should prefer quality gates, latest-HEAD built-app smoke, reproduced Review Desk / Slash / Diff bugs, safety-boundary checks, documentation drift, and v0.8 planning alignment over new feature expansion.
 
-Primary outcome: one coherent release-prep quality-check, bug-fix, smoke-coverage, or documentation-alignment slice per run, verified and documented. A verified no-op is acceptable when no safe useful slice is found.
+Primary outcome: one coherent post-release quality-check, bug-fix, smoke-coverage, or documentation-alignment slice per run, verified and documented. A verified no-op is acceptable when no safe useful slice is found.
 
 Each run should fit the temporary hourly cadence. If the useful slice is larger than that, narrow it, leave a short next-step note, or stop with a verified no-op instead of stretching the scope.
 
-Move to the v0.8 Review Desk UX lane only after v0.7 release readiness is accepted or the user explicitly reopens feature work.
+Move broader Review Desk UX implementation into the v0.8 lane only after the user explicitly resumes feature work.
 
 The automation should not create test code just to produce activity. Add or change tests only when a real regression risk, reproduced bug, backend/safety contract, or high-value smoke gap justifies it.
 
@@ -64,12 +64,12 @@ Review focus:
 
 Choose the first useful slice that is both small and verifiable.
 
-0. v0.7 release-prep hardening lane:
+0. post-v0.7 quality triage lane:
    - run the relevant quality gates when evidence is stale or a recent slice needs confirmation
    - inspect the latest built app against one v0.7 MVP surface from `docs/smoke-checklist.md` when practical
    - fix one reproduced bug or visible quality issue from current implemented Review Desk / Slash / Diff behavior
    - update smoke notes or status docs only when behavior, evidence, or automation guidance changed
-   - treat v0.8 UX expansion as out of scope unless the user explicitly reopens feature work
+   - treat v0.8 UX implementation as out of scope unless the user explicitly reopens feature work
 1. v0.7 Review Desk Readiness Gate:
    - perform read-only structure review before new Review Desk implementation
    - inventory `src/App.tsx` responsibilities still left after the v0.6 split
@@ -237,11 +237,11 @@ If checks fail:
 ## Reusable Automation Prompt
 
 ```txt
-Advance hazakura-note toward v0.7 release readiness by one small, verifiable quality-check, bug-fix, smoke-coverage, or documentation-alignment slice.
+Advance hazakura-note after the v0.7 warning-expected preview by one small, verifiable quality-check, bug-fix, smoke-coverage, or documentation-alignment slice.
 
 Start by reading AGENTS.md, README.md, docs/current-status.md, docs/roadmap.md, docs/smoke-checklist.md, docs/external-agent-review-workflow.md, docs/development-automation.md, and checking git status --short --branch. Treat existing uncommitted changes as user or previous-run work and do not revert them.
 
-Use docs/development-automation.md as the source of truth. The roadmap lane is now v0.7 Hazakura Review Desk MVP and release prep, and v0.8 owns the broader Review Desk UX workbench direction. Choose from this priority order: stale or failing quality gates; latest-HEAD built-app smoke gaps; one reproduced bug in implemented Review Desk / Slash / Diff MVP behavior; safety-boundary regression checks; Markdown-first editor quality; release-prep documentation drift; verified no-op if no useful small slice is safe.
+Use docs/development-automation.md as the source of truth. The roadmap lane is now post-v0.7 triage and v0.8 Review Desk UX planning. Choose from this priority order: stale or failing quality gates; latest-HEAD built-app smoke gaps; one reproduced bug in implemented Review Desk / Slash / Diff behavior; safety-boundary regression checks; Markdown-first editor quality; post-release documentation drift; verified no-op if no useful small slice is safe.
 
 Keep Agent Workbench limited to explicit mode gate, restart boundary, responsibility consent, allowlisted `codex` / `opencode` / `pi` providers, one selected workspace root, and one active session. Keep Pi only as a local CLI provider in the existing provider model. Keep Review Desk work limited to existing explicit text/file comparison, candidate review, candidate apply-to-buffer, and recovery review behavior unless the user explicitly asks to resume feature work. Do not inspect or present Git repository state. Do not implement Git integration, LSP, arbitrary terminal/shell access, arbitrary command execution, arbitrary path input UI, session restore, auto-apply, auto-commit, provider-add UI, plugin systems, project-wide indexing, strong predictive autocomplete, automatic lint fixes, broad formatting rewrites, signing/notarization completion, merge editor, advanced Git diff, release/publish/tag flow, Pi RPC/SDK work, arbitrary provider configuration, Tree Rename/Delete, persistent review/session logs, editable two-column Review Desk, detached Agent windows, Global Search, Command Palette, Frontmatter, KaTeX, encoding conversion, or dependency/lockfile changes without explicit user approval. The current `glib` / `GHSA-wrw7-89jp-8q8g` Dependabot alert is already triaged as a Linux Tauri/wry GTK/WebKit dependency item; revisit it only for Linux support, a Tauri/wry dependency-refresh lane, distribution-readiness sign-off, severity escalation, or a compatible patched upstream path.
 
@@ -249,7 +249,7 @@ For substantial implementation, automation changes, Git/GitHub mutation, release
 
 Choose exactly one coherent slice that can fit the temporary hourly cadence. In external-agent review mode, review the existing diff first and do not implement unrelated fixes unless the user asks for review-and-fix. Prefer one narrow built-app smoke section from docs/smoke-checklist.md when UI behavior changed, fix only the smallest actionable quality issue found, update the relevant docs, and verify it. Do not decide verified no-op from documentation review alone when app inspection is practical; before no-op, inspect the current app surface through built-app smoke or Vite/browser smoke, or state why app inspection was skipped. If built-app smoke opens hazakura-note, quit the app before final reporting and do not leave Agent provider sessions running. Do not add test code merely to create activity across repeated runs. Add or change tests only for reproduced bugs, backend/safety contracts, Agent lifecycle/gate/output/input/stop/exit/external-change behavior, Review Desk candidate/apply safety, or high-value fake-provider coverage. Prefer docs or manual smoke notes for UI wording, menu placement, visual density, and verified no-op slices.
 
-For code changes run npm run build:vite, cargo fmt --manifest-path src-tauri/Cargo.toml -- --check, cargo test --manifest-path src-tauri/Cargo.toml, npm run build, and git diff --check. For docs-only changes run git diff --check. For UI behavior changes, update or exercise docs/smoke-checklist.md and do not claim manual smoke passed unless it was actually exercised. For source-release prep, follow docs/source-release-checklist.md and do not tag or publish without explicit user approval. For DMG preview prep, follow docs/dmg-preview-checklist.md and keep it separate from source-only release approval.
+For code changes run npm run build:vite, cargo fmt --manifest-path src-tauri/Cargo.toml -- --check, cargo test --manifest-path src-tauri/Cargo.toml, npm run build, and git diff --check. For docs-only changes run git diff --check. For UI behavior changes, update or exercise docs/smoke-checklist.md and do not claim manual smoke passed unless it was actually exercised. For source-release prep, follow docs/source-release-checklist.md and do not tag or publish without explicit user approval. For DMG preview prep, follow docs/dmg-preview-checklist.md and keep it separate from source-only release approval. Keep the published v0.7.0 tag immutable; use a patch-release lane for release-critical fixes.
 
 If checks pass, stage only related files, commit with a concise message, and push to the configured HTTPS tracking branch. If checks fail, do not commit or push; report the failing command and next fix.
 
