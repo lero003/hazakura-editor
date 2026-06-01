@@ -93,7 +93,7 @@ Example use case:
 - Go to Line, cursor line/column status, and approximate selected character/line count
 - Editor display settings for line wrap, invisible characters, font size, and tab size, with persisted preference
 - Find-field and global shortcut handling ignores active IME composition so Japanese text conversion is not mistaken for editor commands
-- System / Light / Dark / Sakura / Yakou / Shokou theme switching with persisted selection
+- Light / Dark / Sakura / Yakou / Shokou / Kouyou theme switching with persisted selection
 - Theme switching reconfigures the active editor without recreating it, preserving the current editor session state during theme changes
 - Recent workspace, open tabs, and active tab restoration after restart
 - Explicit unsaved draft recovery after restart when the disk file still matches the draft's saved fingerprint

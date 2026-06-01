@@ -16,7 +16,13 @@ export type AppMenuState = {
   wrapLines: boolean;
   showInvisibles: boolean;
   spellcheckEnabled: boolean;
-  themePreference: "system" | "light" | "dark" | "sakura" | "yakou" | "shokou" | "kouyou";
+  themePreference:
+    | "light"
+    | "dark"
+    | "sakura"
+    | "yakou"
+    | "shokou"
+    | "kouyou";
   menuLanguage: "en" | "ja";
   recentFiles: AppMenuRecentItem[];
   recentFolders: AppMenuRecentItem[];

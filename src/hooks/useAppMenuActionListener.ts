@@ -128,9 +128,6 @@ export function useAppMenuActionListener({
             spellcheckEnabled: !current.spellcheckEnabled,
           }));
           break;
-        case "theme-system":
-          setThemePreference("system");
-          break;
         case "theme-light":
           setThemePreference("light");
           break;

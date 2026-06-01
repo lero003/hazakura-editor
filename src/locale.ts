@@ -130,6 +130,7 @@ export type PreferencesCopy = {
   ambientIntensitySubtle: string;
   ambientIntensityNormal: string;
   ambientIntensityDramatic: string;
+  ambientIntensityHint: string;
   application: string;
   autoBackup: string;
   dark: string;
@@ -147,7 +148,6 @@ export type PreferencesCopy = {
   kouyou: string;
   settingsTitle: string;
   showInvisibles: string;
-  system: string;
   tabSize: string;
   theme: string;
   wrapLines: string;
@@ -449,7 +449,6 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         kouyou: "紅葉",
         settingsTitle: "設定",
         showInvisibles: "不可視文字を表示",
-        system: "システム",
         tabSize: "タブ幅",
         theme: "テーマ",
         wrapLines: "行を折り返す",
@@ -458,6 +457,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         ambientIntensitySubtle: "控えめ",
         ambientIntensityNormal: "標準",
         ambientIntensityDramatic: "派手",
+        ambientIntensityHint: "季節テーマで有効です。",
       }
     : {
         application: "Application",
@@ -477,7 +477,6 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         kouyou: "Kouyou",
         settingsTitle: "Preferences",
         showInvisibles: "Show invisibles",
-        system: "System",
         tabSize: "Tab size",
         theme: "Theme",
         wrapLines: "Wrap lines",
@@ -486,6 +485,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         ambientIntensitySubtle: "Subtle",
         ambientIntensityNormal: "Normal",
         ambientIntensityDramatic: "Dramatic",
+        ambientIntensityHint: "Applies to seasonal themes.",
       };
 }
 

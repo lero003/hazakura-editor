@@ -26,7 +26,7 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
     let spellcheck_enabled = state.map(|state| state.spellcheck_enabled).unwrap_or(true);
     let theme_preference = state
         .map(|state| state.theme_preference.as_str())
-        .unwrap_or("system");
+        .unwrap_or("dark");
     let menu_is_japanese = state
         .map(|state| state.menu_language.as_str() == "ja")
         .unwrap_or(false);
@@ -184,14 +184,6 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
                 label("Theme", "テーマ"),
                 true,
                 &[
-                    &CheckMenuItem::with_id(
-                        app,
-                        MENU_THEME_SYSTEM,
-                        label("System", "システム"),
-                        true,
-                        theme_preference == "system",
-                        None::<&str>,
-                    )?,
                     &CheckMenuItem::with_id(
                         app,
                         MENU_THEME_LIGHT,
@@ -427,6 +419,10 @@ pub(crate) fn emit_app_menu_event<R: tauri::Runtime>(
 ) {
     let action = event.id().as_ref();
 
+    if let Some(theme_preference) = theme_preference_for_menu_action(action) {
+        let _ = sync_theme_menu_state(app, theme_preference);
+    }
+
     if action.starts_with(MENU_RECENT_FILE_PREFIX)
         || action.starts_with(MENU_RECENT_FOLDER_PREFIX)
         || matches!(
@@ -443,7 +439,6 @@ pub(crate) fn emit_app_menu_event<R: tauri::Runtime>(
                 | MENU_TOGGLE_WRAP
                 | MENU_TOGGLE_INVISIBLES
                 | MENU_TOGGLE_SPELLCHECK
-                | MENU_THEME_SYSTEM
                 | MENU_THEME_LIGHT
                 | MENU_THEME_DARK
                 | MENU_THEME_SAKURA
@@ -459,12 +454,25 @@ pub(crate) fn emit_app_menu_event<R: tauri::Runtime>(
 }
 
 #[cfg(desktop)]
+fn theme_preference_for_menu_action(action: &str) -> Option<&'static str> {
+    match action {
+        MENU_THEME_LIGHT => Some("light"),
+        MENU_THEME_DARK => Some("dark"),
+        MENU_THEME_SAKURA => Some("sakura"),
+        MENU_THEME_YAKOU => Some("yakou"),
+        MENU_THEME_SHOKOU => Some("shokou"),
+        MENU_THEME_KOUYOU => Some("kouyou"),
+        _ => None,
+    }
+}
+
+#[cfg(desktop)]
 pub(crate) fn sync_theme_menu_state<R: tauri::Runtime>(
     app: &tauri::AppHandle<R>,
     theme_preference: &str,
 ) -> Result<(), String> {
-    // Get the app menu and find the Theme submenu items to update checkmarks
-    // without rebuilding the entire menu.
+    // Update every theme item explicitly; native check menu items are not a
+    // radio group, so only checking the selected item can leave stale marks.
     let menu = app
         .menu()
         .ok_or_else(|| "App menu not available".to_string())?;
@@ -481,7 +489,6 @@ pub(crate) fn sync_theme_menu_state<R: tauri::Runtime>(
                         for theme_item in &theme_items {
                             if let Some(check_item) = theme_item.as_check_menuitem() {
                                 let checked = match check_item.id().as_ref() {
-                                    MENU_THEME_SYSTEM => theme_preference == "system",
                                     MENU_THEME_LIGHT => theme_preference == "light",
                                     MENU_THEME_DARK => theme_preference == "dark",
                                     MENU_THEME_SAKURA => theme_preference == "sakura",

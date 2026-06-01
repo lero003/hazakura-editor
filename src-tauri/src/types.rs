@@ -55,7 +55,6 @@ pub(crate) const MENU_TOGGLE_PREVIEW: &str = "toggle-preview";
 pub(crate) const MENU_TOGGLE_WRAP: &str = "toggle-wrap";
 pub(crate) const MENU_TOGGLE_INVISIBLES: &str = "toggle-invisibles";
 pub(crate) const MENU_TOGGLE_SPELLCHECK: &str = "toggle-spellcheck";
-pub(crate) const MENU_THEME_SYSTEM: &str = "theme-system";
 pub(crate) const MENU_THEME_LIGHT: &str = "theme-light";
 pub(crate) const MENU_THEME_DARK: &str = "theme-dark";
 pub(crate) const MENU_THEME_SAKURA: &str = "theme-sakura";

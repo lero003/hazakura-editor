@@ -56,7 +56,6 @@ export type SaveStatus = "idle" | "saving" | "saved" | "error" | "conflict";
 export type BaseTheme = "light" | "dark";
 
 export type ThemePreference =
-  | "system"
   | BaseTheme
   | "sakura"
   | "yakou"

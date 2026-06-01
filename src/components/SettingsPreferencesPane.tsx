@@ -138,7 +138,6 @@ export function SettingsPreferencesPane({
               onThemePreferenceChange(event.target.value as ThemePreference)
             }
           >
-            <option value="system">{copy.system}</option>
             <option value="light">{copy.light}</option>
             <option value="dark">{copy.dark}</option>
             <option value="sakura">{copy.sakura}</option>
@@ -165,6 +164,7 @@ export function SettingsPreferencesPane({
               </option>
             ))}
           </select>
+          <span className="field-hint">{copy.ambientIntensityHint}</span>
         </label>
         <label className="field-control">
           <span>{copy.menuLanguage}</span>

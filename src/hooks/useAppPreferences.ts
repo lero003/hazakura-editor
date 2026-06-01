@@ -13,7 +13,6 @@ import {
   type BaseTheme,
   type EditorSettings,
   type MenuLanguage,
-  type ResolvedTheme,
   type ThemePreference,
 } from "../types";
 
@@ -30,9 +29,6 @@ export function useAppPreferences() {
   const [menuLanguage, setMenuLanguage] = useState<MenuLanguage>(() =>
     readStoredMenuLanguage(),
   );
-  const [systemTheme, setSystemTheme] = useState<BaseTheme>(() =>
-    readSystemTheme(),
-  );
   const [agentWorkbenchActive] = useState(() =>
     readStoredAgentWorkbenchEnabled(),
   );
@@ -45,23 +41,9 @@ export function useAppPreferences() {
   const [agentWorkbenchProvider, setAgentWorkbenchProvider] =
     useState<AgentWorkbenchProvider>(() => readStoredAgentWorkbenchProvider());
 
-  const resolvedTheme: ResolvedTheme =
-    themePreference === "system" ? systemTheme : themePreference;
+  const resolvedTheme = themePreference;
   const editorTheme: BaseTheme =
     resolvedTheme === "dark" || resolvedTheme === "yakou" ? "dark" : "light";
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleChange = (event: MediaQueryListEvent) => {
-      setSystemTheme(event.matches ? "dark" : "light");
-    };
-
-    mediaQuery.addEventListener("change", handleChange);
-
-    return () => {
-      mediaQuery.removeEventListener("change", handleChange);
-    };
-  }, []);
 
   useEffect(() => {
     document.documentElement.dataset.theme = resolvedTheme;
@@ -135,7 +117,6 @@ function readStoredThemePreference(): ThemePreference {
   if (
     value === "light" ||
     value === "dark" ||
-    value === "system" ||
     value === "sakura" ||
     value === "yakou" ||
     value === "shokou" ||
@@ -144,7 +125,7 @@ function readStoredThemePreference(): ThemePreference {
     return value;
   }
 
-  return "system";
+  return readSystemTheme();
 }
 
 function readStoredMenuLanguage(): MenuLanguage {
