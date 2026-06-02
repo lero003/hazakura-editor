@@ -494,15 +494,27 @@ export async function updateAppMenuState(state: AppMenuState): Promise<void> {
   await invoke("update_app_menu_state", { state });
 }
 
-export async function openAgentWindow(): Promise<void> {
+export async function openAgentWindow(theme?: string): Promise<void> {
   if (!isTauriRuntime()) {
     return;
   }
 
   try {
-    await invoke("open_agent_window");
+    await invoke("open_agent_window", { theme: theme ?? null });
   } catch (err) {
     console.warn("Failed to open Agent window", err);
+  }
+}
+
+export async function setAgentWindowTheme(theme: string): Promise<void> {
+  if (!isTauriRuntime()) {
+    return;
+  }
+
+  try {
+    await invoke("set_agent_window_theme", { theme });
+  } catch (err) {
+    console.warn("Failed to set Agent window theme", err);
   }
 }
 

@@ -4,7 +4,8 @@ use std::fs::{self, OpenOptions};
 use std::path::PathBuf;
 use std::process::Command;
 use std::sync::atomic::Ordering;
-use tauri::{Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
+use tauri::window::Color;
+use tauri::{Emitter, Manager, Theme, TitleBarStyle, WebviewUrl, WebviewWindowBuilder};
 
 pub(crate) mod types;
 use crate::types::*;
@@ -37,10 +38,13 @@ pub(crate) mod tests;
 // These helpers add the missing server-side caller-window check
 // (defense in depth on top of the capability split). Sensitive
 // commands — anything that touches the filesystem, the workspace,
-// menu state, theme state, app lifecycle, or the launch surface —
-// must come from the `main` window. The four Agent session commands
-// may additionally be called from the `agent` window. All other
-// window labels are rejected. See docs/assist-surface-strategy.md and
+// menu state, app lifecycle, or the launch surface — must come
+// from the `main` window. The four Agent session commands plus
+// `set_agent_window_theme` (so the main window can push theme
+// changes to the agent window and the agent window can sync its
+// own title-bar / background on mount) may additionally be called
+// from the `agent` window. All other window labels are rejected.
+// See docs/assist-surface-strategy.md and
 // docs/agent-workbench-boundary.md.
 
 pub(crate) const MAIN_WINDOW_LABEL: &str = "main";
@@ -71,6 +75,37 @@ fn ensure_label_is_main_or_agent(label: &str) -> Result<(), String> {
         return Err(format!("Command is not allowed from window '{label}'."));
     }
     Ok(())
+}
+
+// Map the in-app theme preference (the same string the main window
+// stores under THEME_STORAGE_KEY) to the agent window's initial
+// `background_color`. The agent window uses a `Transparent` title bar
+// (set in `open_agent_window`'s builder) so the OS chrome shows this
+// color through; matching the main window's per-theme `backgroundColor`
+// keeps the two surfaces visually consistent. Hex values mirror
+// `windowBackgroundColorForTheme` in `src/hooks/useAppPreferences.ts`
+// and the new `set_agent_window_theme` command.
+fn agent_window_background_color(theme: &str) -> Color {
+    match theme {
+        "dark" => Color(0x0f, 0x14, 0x12, 0xff),
+        "sakura" => Color(0xf8, 0xf1, 0xf3, 0xff),
+        "yakou" => Color(0x0d, 0x0d, 0x12, 0xff),
+        "shokou" => Color(0xee, 0xf7, 0xff, 0xff),
+        "kouyou" => Color(0xf7, 0xef, 0xe4, 0xff),
+        "light" => Color(0xf3, 0xf6, 0xf4, 0xff),
+        _ => Color(0x0f, 0x14, 0x12, 0xff),
+    }
+}
+
+// Map the in-app theme preference to the agent window's OS chrome
+// `Theme` (controls whether the title-bar / traffic-lights paint
+// light or dark). Matches the `BaseTheme` derivation in
+// `useAppPreferences.ts`: `dark` / `yakou` → Dark, everything else → Light.
+fn agent_window_os_theme(theme: &str) -> Theme {
+    match theme {
+        "dark" | "yakou" => Theme::Dark,
+        _ => Theme::Light,
+    }
 }
 
 #[tauri::command]
@@ -1186,6 +1221,7 @@ fn open_agent_window<R: tauri::Runtime>(
     window: tauri::WebviewWindow<R>,
     app: tauri::AppHandle<R>,
     session_store: tauri::State<'_, AgentWorkbenchSessionStore>,
+    theme: Option<String>,
 ) -> Result<(), String> {
     ensure_main_window(&window)?;
     if !session_store.agent_workbench_active.load(Ordering::SeqCst) {
@@ -1201,18 +1237,77 @@ fn open_agent_window<R: tauri::Runtime>(
         );
     }
 
+    let theme = theme.unwrap_or_else(|| "dark".to_string());
+
     if let Some(existing) = app.get_webview_window("agent") {
+        // Window already open — refocus, then push the current theme so
+        // the existing agent window catches up if the user changed
+        // themes between launches.
         let _ = existing.set_focus();
+        let bg = agent_window_background_color(&theme);
+        let _ = existing.set_background_color(Some(bg));
+        let _ = existing.set_theme(Some(agent_window_os_theme(&theme)));
         return Ok(());
     }
 
+    // Transparent title bar + a per-theme `background_color` so the OS
+    // chrome (title bar / traffic lights) shows the same dark or light
+    // surface as the main window's chrome, matching the main window's
+    // tauri.conf.json pattern. The per-theme color is taken from the
+    // `theme` argument (the main window passes its current
+    // `THEME_STORAGE_KEY` value), so the initial paint is already
+    // correct — no flash of the wrong-color title bar.
     WebviewWindowBuilder::new(&app, "agent", WebviewUrl::App("agent.html".into()))
         .title("hazakura agent")
+        .title_bar_style(TitleBarStyle::Transparent)
+        .background_color(agent_window_background_color(&theme))
+        .theme(Some(agent_window_os_theme(&theme)))
         .inner_size(800.0, 600.0)
         .min_inner_size(640.0, 480.0)
         .center()
         .build()
         .map_err(|err| format!("Cannot open Agent window: {err}"))?;
+
+    Ok(())
+}
+
+// Push the current theme to the already-open agent window (no-op if
+// the window is not open). Called from two places:
+//
+//   1. The main window, when the user changes the theme via
+//      Preferences — so the agent window's title-bar / traffic-lights
+//      paint and the OS chrome behind the Transparent title bar
+//      follow the new theme in real time.
+//   2. The agent window itself, on mount and on the cross-window
+//      `storage` event from the main window — so the agent window
+//      picks up the main window's current theme preference, even if
+//      it was changed before the agent window was opened.
+//
+// Gated on `main | agent` because both windows legitimately need to
+// invoke it. The Rust side does all the per-window work via
+// `app.get_webview_window("agent")`, so no JS-side core window
+// permissions are required on the agent-window capability — the
+// auto-allowlist for custom commands in capability-listed windows
+// covers the IPC.
+#[cfg(desktop)]
+#[tauri::command]
+fn set_agent_window_theme<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    app: tauri::AppHandle<R>,
+    theme: String,
+) -> Result<(), String> {
+    ensure_label_is_main_or_agent(window.label())?;
+    let bg = agent_window_background_color(&theme);
+    let os_theme = agent_window_os_theme(&theme);
+
+    if let Some(agent_window) = app.get_webview_window(AGENT_WINDOW_LABEL) {
+        agent_window
+            .set_background_color(Some(bg))
+            .map_err(|err| format!("Cannot update agent window background color: {err}"))?;
+        agent_window
+            .set_theme(Some(os_theme))
+            .map_err(|err| format!("Cannot update agent window OS theme: {err}"))?;
+    }
 
     Ok(())
 }
@@ -1283,6 +1378,7 @@ pub fn run() {
             update_app_menu_state,
             update_theme_menu_state,
             open_agent_window,
+            set_agent_window_theme,
             save_pasted_image,
             import_image_from_path,
             open_temp_print_html,

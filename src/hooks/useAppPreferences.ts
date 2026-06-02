@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
-import { setCurrentWindowBackgroundColor, setCurrentWindowTheme } from "../tauri";
+import {
+  setAgentWindowTheme,
+  setCurrentWindowBackgroundColor,
+  setCurrentWindowTheme,
+} from "../tauri";
 import type { AmbientIntensity } from "../types";
 import { clampNumber } from "../utils";
 import {
@@ -50,6 +54,14 @@ export function useAppPreferences() {
       windowBackgroundColorForTheme(themePreference),
     ).catch((err) => {
       console.warn("Failed to update window background color", err);
+    });
+    // Push the new theme to the agent window (if it is open). The
+    // custom Tauri command is a no-op when the agent window is not
+    // open, so the fire-and-forget is safe on first launch. The next
+    // time the user opens the agent window, the menu action reads
+    // the current `themePreference` and passes it through to Rust.
+    void setAgentWindowTheme(themePreference).catch((err) => {
+      console.warn("Failed to update Agent window theme", err);
     });
   }, [themePreference]);
 

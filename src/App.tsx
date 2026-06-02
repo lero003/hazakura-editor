@@ -490,7 +490,7 @@ export default function App() {
       exportHtml,
       exportPdf,
       openAgentWindow: () => {
-        void openAgentWindow();
+        void openAgentWindow(themePreference);
       },
       openFile,
       openWorkspace,

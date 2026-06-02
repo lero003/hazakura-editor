@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FitAddon } from "@xterm/addon-fit";
 import { Terminal } from "@xterm/xterm";
 import "@xterm/xterm/css/xterm.css";
@@ -201,6 +201,20 @@ export function AgentTerminalView({
   const resizeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const showInactivePlaceholder = !activeSession && output.length === 0;
 
+  // Tick a `now` clock inside the terminal view so the meta row can
+  // show "last output 3s ago" without coupling the caller to a
+  // re-render. Only re-renders the meta line; xterm output is not
+  // touched on this tick.
+  const [now, setNow] = useState<number>(() => Date.now());
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
   useEffect(() => {
     activeSessionRef.current = activeSession;
   }, [activeSession]);
@@ -362,12 +376,59 @@ export function AgentTerminalView({
     }
   }, [activeSession]);
 
+  const lastOutputAt = useMemo(() => {
+    if (output.length === 0) {
+      return null;
+    }
+    return output[output.length - 1]?.receivedAtMs ?? null;
+  }, [output]);
+
+  const lastOutputLabel = useMemo(() => {
+    if (lastOutputAt === null) {
+      return "—";
+    }
+    const seconds = Math.max(0, Math.floor((now - lastOutputAt) / 1000));
+    if (seconds < 5) {
+      return "just now";
+    }
+    if (seconds < 60) {
+      return `${seconds}s ago`;
+    }
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) {
+      return `${minutes}m ${seconds % 60}s ago`;
+    }
+    const hours = Math.floor(minutes / 60);
+    return `${hours}h ${minutes % 60}m ago`;
+  }, [lastOutputAt, now]);
+
   return (
     <div
       className={`agent-terminal-shell ${activeSession ? "active" : "inactive"}`}
     >
       <div className="agent-terminal-meta">
-        {outputLabel}: {output.length} / {AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS}
+        <span className="agent-terminal-meta-cell">
+          {outputLabel}: {output.length} / {AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS}
+        </span>
+        <span className="agent-terminal-meta-sep" aria-hidden="true">
+          ·
+        </span>
+        <span className="agent-terminal-meta-cell">
+          <span className="agent-terminal-meta-key">last</span>
+          <span className="agent-terminal-meta-val">{lastOutputLabel}</span>
+        </span>
+        <span className="agent-terminal-meta-sep" aria-hidden="true">
+          ·
+        </span>
+        <span
+          className="agent-terminal-meta-cell"
+          data-input={activeSession ? "ready" : "disabled"}
+        >
+          <span className="agent-terminal-meta-key">input</span>
+          <span className="agent-terminal-meta-val">
+            {activeSession ? "ready" : "disabled"}
+          </span>
+        </span>
       </div>
       <div
         aria-label={terminalLabel}
