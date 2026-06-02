@@ -152,12 +152,15 @@ pub(crate) fn open_agent_window<R: tauri::Runtime>(
         .background_color(agent_window_background_color(&theme))
         .theme(Some(agent_window_os_theme(&theme)))
         // Narrow tool-window size (Photoshop / IDE panel proportions),
-        // not a browser-popup size. The 380 × 520 floor is just enough
-        // to keep the four-row chrome (header / info / terminal /
-        // footer) readable; the xterm fit-addon will reflow to the new
-        // columns on the first ResizeObserver tick after open.
-        .inner_size(440.0, 760.0)
-        .min_inner_size(380.0, 520.0)
+        // not a browser-popup size. The 420 × 560 floor is just enough
+        // to keep the four-row chrome (header / 2×2 info grid /
+        // terminal / footer) readable; the xterm fit-addon will reflow
+        // to the new columns on the first ResizeObserver tick after
+        // open. The 480 × 800 default is wider than the prior 440 ×
+        // 760 so the info row fits a 2×2 grid without truncating
+        // "INPUT disabled" / the state pill / the footer status.
+        .inner_size(480.0, 800.0)
+        .min_inner_size(420.0, 560.0)
         .center()
         .build()
         .map_err(|err| format!("Cannot open Agent window: {err}"))?;

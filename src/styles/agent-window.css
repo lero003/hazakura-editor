@@ -150,16 +150,18 @@
   }
 }
 
-/* ── Info row (monospace dense info) ── */
+/* ── Info row (monospace dense info, 2×2 grid) ── */
 
 .agent-window-info {
   align-items: stretch;
   background: var(--surface-muted);
   border-bottom: 1px solid var(--border);
-  display: flex;
+  display: grid;
   flex: 0 0 auto;
   font-size: 11px;
-  gap: 0;
+  gap: 0 0;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
   padding: 0 12px;
 }
 
@@ -169,27 +171,23 @@
   display: inline-flex;
   flex: 0 0 auto;
   gap: 7px;
-  max-width: 10rem;
   min-width: 0;
   overflow: hidden;
-  padding: 6px 12px;
+  padding: 5px 10px;
   white-space: nowrap;
 }
 
-.agent-window-info-cell:first-child {
-  padding-left: 0;
-}
-
-.agent-window-info-cell:last-child {
+.agent-window-info-cell:nth-child(2n) {
   border-right: 0;
   padding-right: 0;
 }
 
-.agent-window-info-cell:last-of-type {
-  flex: 1 1 auto;
-  justify-content: flex-end;
-  min-width: 0;
-  padding-right: 0;
+.agent-window-info-cell:nth-child(2n+1) {
+  padding-left: 0;
+}
+
+.agent-window-info-cell:nth-last-child(-n+2) {
+  border-bottom: 0;
 }
 
 .agent-window-info-key {
@@ -324,8 +322,12 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 11px;
   min-width: 0;
-  overflow: hidden;
-  text-align: right;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  text-align: left;
+  /* Multi-line wrap is preferred over horizontal scroll: status
+   * messages are short enough that two lines never overflow the
+   * footer height, and reading the message from the start (left-
+   * aligned) is more legible than the truncated tail of a long
+   * right-aligned message. */
+  white-space: normal;
+  word-break: break-word;
 }
