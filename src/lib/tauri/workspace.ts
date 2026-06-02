@@ -1,0 +1,56 @@
+import { invoke } from "@tauri-apps/api/core";
+import type { ImagePreviewDocument } from "./files";
+
+export type WorkspaceTreeEntry = {
+  name: string;
+  path: string;
+  kind: "directory" | "file";
+  children: WorkspaceTreeEntry[];
+  children_loaded: boolean;
+  children_truncated: boolean;
+};
+
+export async function listWorkspaceTree(
+  root: string,
+): Promise<WorkspaceTreeEntry> {
+  return invoke<WorkspaceTreeEntry>("list_workspace_tree", { root });
+}
+
+export async function listWorkspaceDirectory(
+  root: string,
+  directory: string,
+): Promise<WorkspaceTreeEntry> {
+  return invoke<WorkspaceTreeEntry>("list_workspace_directory", {
+    root,
+    directory,
+  });
+}
+
+export async function openWorkspaceImage(
+  root: string,
+  path: string,
+): Promise<ImagePreviewDocument> {
+  return invoke<ImagePreviewDocument>("open_workspace_image", { root, path });
+}
+
+export async function savePastedImage(
+  workspaceRoot: string,
+  dataBase64: string,
+  fileName: string,
+): Promise<string> {
+  return invoke<string>("save_pasted_image", {
+    workspaceRoot,
+    dataBase64,
+    fileName,
+  });
+}
+
+export async function importImageFromPath(
+  workspaceRoot: string,
+  sourcePath: string,
+): Promise<string> {
+  return invoke<string>("import_image_from_path", {
+    workspaceRoot,
+    sourcePath,
+  });
+}
