@@ -14,7 +14,20 @@ export function useAppActivityListeners({
 }: UseAppActivityListenersOptions) {
   useEffect(() => {
     const handleQuickOpenKeyDown = (event: KeyboardEvent) => {
-      if (isCommandKeyPressed(event) && event.key === "p") {
+      // The `!event.shiftKey` guard is required so that
+      // `Cmd+Shift+P` (Command Palette) does not also fire
+      // Quick Open from this bubble-phase handler. The capture-
+      // phase `useGlobalKeyboardShortcuts` already preventDefaults
+      // the palette shortcut, but document-level handlers still
+      // see the same event, and `event.defaultPrevented` would
+      // be the wrong gate here because Cmd+P (Quick Open) is a
+      // distinct shortcut that should still work when neither
+      // the global handler nor any modal cares about it.
+      if (
+        isCommandKeyPressed(event) &&
+        !event.shiftKey &&
+        event.key === "p"
+      ) {
         event.preventDefault();
         onToggleQuickOpen();
       }

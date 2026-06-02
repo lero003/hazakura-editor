@@ -82,8 +82,14 @@
   color: var(--surface);
 }
 
+/* The non-active hover state uses --surface-muted (defined in every
+   theme) so there is real visual feedback on mouse-over instead of
+   falling through to the undefined --surface-hover token and looking
+   identical to the rest state. In practice `onMouseEnter` promotes
+   the same item to active on the next render, so this guard mostly
+   covers the 1-frame gap between pointer-enter and React re-render. */
 .command-palette-item:hover:not(.active) {
-  background: var(--surface-hover);
+  background: var(--surface-muted);
 }
 
 .command-palette-label {
@@ -101,9 +107,13 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
+/* Active-state category uses the full --surface color (no opacity)
+   so the 10.5px uppercase chip stays readable on accent backgrounds
+   that have lower contrast against the surface — the prior 0.75
+   opacity pushed the effective text toward the accent and made it
+   harder to read, especially on light-on-dark themes like Yakou. */
 .command-palette-item.active .command-palette-category {
   color: var(--surface);
-  opacity: 0.75;
 }
 
 .command-palette-shortcut {
@@ -121,5 +131,4 @@
   background: color-mix(in srgb, var(--surface) 25%, transparent);
   border-color: color-mix(in srgb, var(--surface) 30%, transparent);
   color: var(--surface);
-  opacity: 0.85;
 }
