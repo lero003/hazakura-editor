@@ -10,6 +10,7 @@ import {
 import {
   EditorView,
   keymap,
+  placeholder as editorPlaceholder,
 } from "@codemirror/view";
 import { tags as highlightTags } from "@lezer/highlight";
 import { basicSetup } from "codemirror";
@@ -26,6 +27,8 @@ type CandidateEditorProps = {
   placeholder: string;
   readOnly: boolean;
   ariaLabel: string;
+  labelledById?: string;
+  describedById?: string;
   onChange: (nextValue: string) => void;
 };
 
@@ -41,8 +44,10 @@ type CandidateEditorProps = {
 // docs/current-status.md.
 export function CandidateEditor({
   ariaLabel,
+  describedById,
   documentKey,
   fontSize,
+  labelledById,
   placeholder,
   readOnly,
   spellcheckEnabled,
@@ -78,7 +83,7 @@ export function CandidateEditor({
         Prec.highest(keymap.of([indentWithTab])),
         markdown(),
         readOnlyCompartmentRef.current.of(
-          EditorState.readOnly.of(readOnly),
+          candidateEditorReadOnlyExtensions(readOnly),
         ),
         themeCompartmentRef.current.of([
           candidateEditorTheme(theme, fontSize),
@@ -91,9 +96,13 @@ export function CandidateEditor({
           EditorState.tabSize.of(tabSize),
         ),
         spellCompartmentRef.current.of(
-          EditorView.contentAttributes.of({
-            "data-placeholder": placeholder,
-            spellcheck: spellcheckEnabled ? "true" : "false",
+          candidateEditorContentExtensions({
+            ariaLabel,
+            describedById,
+            labelledById,
+            placeholder,
+            readOnly,
+            spellcheckEnabled,
           }),
         ),
         EditorView.updateListener.of((update) => {
@@ -147,20 +156,31 @@ export function CandidateEditor({
     if (!view) return;
     view.dispatch({
       effects: spellCompartmentRef.current.reconfigure(
-        EditorView.contentAttributes.of({
-          "data-placeholder": placeholder,
-          spellcheck: spellcheckEnabled ? "true" : "false",
+        candidateEditorContentExtensions({
+          ariaLabel,
+          describedById,
+          labelledById,
+          placeholder,
+          readOnly,
+          spellcheckEnabled,
         }),
       ),
     });
-  }, [placeholder, spellcheckEnabled]);
+  }, [
+    ariaLabel,
+    describedById,
+    labelledById,
+    placeholder,
+    readOnly,
+    spellcheckEnabled,
+  ]);
 
   useEffect(() => {
     const view = viewRef.current;
     if (!view) return;
     view.dispatch({
       effects: readOnlyCompartmentRef.current.reconfigure(
-        EditorState.readOnly.of(readOnly),
+        candidateEditorReadOnlyExtensions(readOnly),
       ),
     });
   }, [readOnly]);
@@ -180,10 +200,7 @@ export function CandidateEditor({
   }, [value]);
 
   return (
-    <div
-      className="review-surface-candidate-editor"
-      aria-label={ariaLabel}
-    >
+    <div className="review-surface-candidate-editor">
       <div
         id="review-surface-candidate-editor-mount"
         className="editor-mount"
@@ -191,6 +208,49 @@ export function CandidateEditor({
       />
     </div>
   );
+}
+
+function candidateEditorContentExtensions({
+  ariaLabel,
+  describedById,
+  labelledById,
+  placeholder,
+  readOnly,
+  spellcheckEnabled,
+}: {
+  ariaLabel: string;
+  describedById?: string;
+  labelledById?: string;
+  placeholder: string;
+  readOnly: boolean;
+  spellcheckEnabled: boolean;
+}) {
+  const attributes: Record<string, string> = {
+    "aria-readonly": readOnly ? "true" : "false",
+    spellcheck: spellcheckEnabled ? "true" : "false",
+  };
+
+  if (labelledById) {
+    attributes["aria-labelledby"] = labelledById;
+  } else {
+    attributes["aria-label"] = ariaLabel;
+  }
+
+  if (describedById) {
+    attributes["aria-describedby"] = describedById;
+  }
+
+  return [
+    editorPlaceholder(placeholder),
+    EditorView.contentAttributes.of(attributes),
+  ];
+}
+
+function candidateEditorReadOnlyExtensions(readOnly: boolean) {
+  return [
+    EditorState.readOnly.of(readOnly),
+    EditorView.editable.of(!readOnly),
+  ];
 }
 
 function candidateEditorTheme(theme: BaseTheme, fontSize: number) {

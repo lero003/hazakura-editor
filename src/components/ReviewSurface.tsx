@@ -173,6 +173,8 @@ function ReviewSurfaceCandidateSection({
     candidateInputText.length > 0 ||
     candidateCompareCase !== null ||
     candidateErrorMessage !== null;
+  const candidateLabelId = "review-surface-candidate-editor-label";
+  const candidateHintId = "review-surface-candidate-editor-hint";
 
   const handleCompare = () => {
     if (!activeTab) {
@@ -194,18 +196,20 @@ function ReviewSurfaceCandidateSection({
     <div className="review-surface-candidate">
       <div className="review-surface-candidate-input">
         <label
+          id={candidateLabelId}
           className="review-surface-candidate-label"
-          htmlFor="review-surface-candidate-editor-mount"
         >
           {copy.candidateInputLabel}
         </label>
-        <p className="review-surface-candidate-hint">
+        <p id={candidateHintId} className="review-surface-candidate-hint">
           {copy.candidateInputHint}
         </p>
         <CandidateEditor
           ariaLabel={copy.candidateInputLabel}
+          describedById={candidateHintId}
           documentKey="review-desk-candidate"
           fontSize={editorSettings.fontSize}
+          labelledById={candidateLabelId}
           placeholder={copy.candidateInputPlaceholder}
           readOnly={!hasActiveTab}
           spellcheckEnabled={editorSettings.spellcheckEnabled}

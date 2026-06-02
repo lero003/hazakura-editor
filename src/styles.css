@@ -3722,13 +3722,12 @@ button:disabled {
   outline: none;
 }
 
-.review-surface-candidate-editor .cm-content[data-placeholder]:empty::before {
+.review-surface-candidate-editor .cm-placeholder {
   color: var(--text-muted);
-  content: attr(data-placeholder);
-  pointer-events: none;
 }
 
-.review-surface-candidate-editor .cm-editor[contenteditable="false"] {
+.review-surface-candidate-editor .cm-content[contenteditable="false"] {
+  cursor: default;
   opacity: 0.7;
 }
 
