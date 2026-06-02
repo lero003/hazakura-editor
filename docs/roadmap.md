@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current release sequence and planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-02 (v0.7 published, v0.8 Assist Surface separation / Claude Code CLI readiness lane, and v0.10+ Apple Local Assist direction)
+Last reviewed: 2026-06-03 (v0.7 published, v0.8 Assist Surface separation / Claude Code CLI readiness lane, v0.10+ Apple Local Assist direction, and post-v0.8 feature-folder refactor lane — `lib/tauri.ts` / `lib/locale.ts` / `tests.rs` / agent_workbench state machine / CodeMirror theme / format helpers)
 
 ## Current Position
 

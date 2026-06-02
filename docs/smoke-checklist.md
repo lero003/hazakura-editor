@@ -3,11 +3,13 @@
 Status: Operational
 Scope: Manual prototype checks
 Authority: Medium
-Last reviewed: 2026-06-02
+Last reviewed: 2026-06-03
 
 Use this checklist after changes to file creation, file opening, workspace listing, tabs, saving, preview rendering, theme handling, workspace restoration, search, or save-conflict handling.
 
 Latest v0.7 publication pass: 2026-06-02 gates passed for `npm ci`, `npm run typecheck`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build:vite`, `npm run build`, `npm audit`, `cargo audit --file src-tauri/Cargo.lock`, `npm run build:dmg-preview`, `git diff --check`, local checksum verification, local `hdiutil verify`, built-app and mounted-app metadata checks, and `codesign --verify --deep --strict --verbose=2`. Remote release verification downloaded the published v0.7.0 assets, confirmed `shasum -c`, `hdiutil verify`, mounted app metadata, and codesign verification. The Vite chunk warning and ad-hoc/not-notarized warning remain expected preview limitations.
+
+Latest post-v0.8 feature-folder refactor lane: 2026-06-03 (5 slices, 6 commits, no behavior change). Per-slice automated gates passed — `npm run typecheck`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml` (122 tests, 0 failed, 0 ignored), `npm run build:vite`, `npm run build` (full Tauri bundle, signed with `-`, notarization skipped as expected), `git diff --check`. The refactor covers `lib/tauri.ts` / `lib/locale.ts` per-feature split, `src-tauri/src/tests.rs` per-module split, Agent Workbench session state machine separation, shared CodeMirror highlight extraction, and the `format` helpers + `open_text_file` preflight dedupe. Re-smoke on the built app per the existing rows below (file open / save / encoding chip / auto-backup / Find-Replace / review desk / detached agent window / per-theme title bar / show-in-main-pane reverse link) to confirm the refactor changed nothing user-visible.
 
 Latest Change Review routing checks: 2026-06-02 user smoke found that the top-right `変更を確認` dirty-buffer button reported readiness but did not reveal the comparison. Automated gates passed after routing successful buffer-vs-disk and draft-vs-disk reviews to the existing right-pane Diff surface: `npm run typecheck`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build`, and `git diff --check`. Re-smoke on the built app by editing a saved Markdown file, pressing `変更を確認`, confirming the right-pane `変更確認` view appears, pressing Close and confirming the editor/preview surface returns instead of the Diff setup screen, then pressing `変更を確認` again and confirming the review pane reopens.
 
