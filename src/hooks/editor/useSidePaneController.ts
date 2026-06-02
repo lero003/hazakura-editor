@@ -11,8 +11,6 @@ import { useSidePaneToggles } from "./useSidePaneToggles";
 
 type UseSidePaneControllerOptions = {
   activeTab: EditorTab | null;
-  agentWorkbenchActive: boolean;
-  agentWorkbenchConsent: boolean;
   compareView: CompareViewState | null;
   previewVisible: boolean;
   rightPaneMode: RightPaneMode;
@@ -25,8 +23,6 @@ type UseSidePaneControllerOptions = {
 
 export function useSidePaneController({
   activeTab,
-  agentWorkbenchActive,
-  agentWorkbenchConsent,
   compareView,
   previewVisible,
   rightPaneMode,
@@ -37,15 +33,11 @@ export function useSidePaneController({
   sidePaneOpen,
 }: UseSidePaneControllerOptions) {
   const {
-    agentPaneVisible,
-    agentWorkbenchAvailable,
     hasWorkspaceSelection,
     sidePaneMode,
     sidePaneVisible,
   } = useSidePaneState({
     activeTab,
-    agentWorkbenchActive,
-    agentWorkbenchConsent,
     compareView,
     previewVisible,
     rightPaneMode,
@@ -64,7 +56,6 @@ export function useSidePaneController({
     sidePaneVisible,
   });
   const {
-    toggleAgentPane,
     toggleDiffPane,
     toggleOutlinePane,
     togglePreviewPane,
@@ -78,8 +69,6 @@ export function useSidePaneController({
   });
 
   return {
-    agentPaneVisible,
-    agentWorkbenchAvailable,
     editorPreviewGridRef,
     editorPreviewGridStyle,
     handlePreviewResizeKeyDown,
@@ -89,7 +78,6 @@ export function useSidePaneController({
     previewColumnPercent,
     sidePaneMode,
     sidePaneVisible,
-    toggleAgentPane,
     toggleDiffPane,
     toggleOutlinePane,
     togglePreviewPane,

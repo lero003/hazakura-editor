@@ -6,9 +6,6 @@ import type { EditorTab } from "../../types";
 
 type TabBarProps = {
   activeTabId: string | null;
-  agentModeBadge: string | null;
-  agentModeBadgePending: boolean;
-  agentModeBadgeTitle: string;
   children: ReactNode;
   draggingTabId: string | null;
   dragOverTabId: string | null;
@@ -28,9 +25,6 @@ type TabBarProps = {
 
 export function TabBar({
   activeTabId,
-  agentModeBadge,
-  agentModeBadgePending,
-  agentModeBadgeTitle,
   children,
   draggingTabId,
   dragOverTabId,
@@ -51,14 +45,6 @@ export function TabBar({
       onPointerEnter={onPointerEnter}
     >
       <div className="tab-list" role="tablist" aria-label="Open file tabs">
-        {agentModeBadge ? (
-          <span
-            className={`agent-mode-badge${agentModeBadgePending ? " pending" : ""}`}
-            title={agentModeBadgeTitle}
-          >
-            {agentModeBadge}
-          </span>
-        ) : null}
         {tabs.length === 0 ? (
           <span className="empty-tabs">{emptyTabsLabel}</span>
         ) : (

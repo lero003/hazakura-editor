@@ -85,7 +85,7 @@ export type LineEndingKind = EditableLineEnding | "mixed" | "none";
 // encoding selector chip).
 export type TextEncoding = "utf-8" | "utf-8-bom" | "shift-jis" | "euc-jp";
 
-export type RightPaneMode = "preview" | "compare" | "outline" | "agent";
+export type RightPaneMode = "preview" | "compare" | "outline";
 
 // Review Desk is a top-level review surface that intentionally replaces
 // the editor area when open, separate from RightPaneMode which lives
@@ -133,9 +133,12 @@ export type MarkdownHeadingContext = {
 export const MENU_OPEN_AGENT_WINDOW = "open-agent-window";
 
 // Mirror of the Rust OPEN_MAIN_AGENT_PANE_EVENT constant. The detached
-// Agent window emits this when the user clicks the footer's "Show in
-// main pane" affordance, and the main window's useMainAgentPaneFocus
-// hook listens for it to flip the right pane to Agent mode. See
+// Agent window can emit this when the user clicks the footer's
+// "Show in main pane" affordance. As of the v0.8+ slice the right
+// pane no longer hosts the Agent (the detached window is the only
+// surface), so the main window no longer listens for this event;
+// the constant is kept for compatibility with the agent window's
+// reverse-link button, which the v0.8+ slice removes. See
 // src-tauri/src/types.rs and docs/assist-surface-strategy.md.
 export const OPEN_MAIN_AGENT_PANE_EVENT =
   "hazakura-note://open-main-agent-pane";

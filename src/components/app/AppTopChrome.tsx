@@ -14,10 +14,6 @@ type AppTopChromeProps = {
   activeDirty: boolean;
   activeTab: EditorTab | null;
   activeTabId: string | null;
-  agentAvailable: boolean;
-  agentModeBadge: string | null;
-  agentModeBadgePending: boolean;
-  agentModeBadgeTitle: string;
   draggingTabId: string | null;
   dragOverTabId: string | null;
   emptyTabsLabel: string;
@@ -31,7 +27,6 @@ type AppTopChromeProps = {
     tabId: string,
   ) => void;
   onTabPointerMove: (event: ReactPointerEvent<HTMLDivElement>) => void;
-  onToggleAgent: () => void;
   onToggleDiff: () => void;
   onToggleOutline: () => void;
   onTogglePreview: () => void;
@@ -46,10 +41,6 @@ export function AppTopChrome({
   activeDirty,
   activeTab,
   activeTabId,
-  agentAvailable,
-  agentModeBadge,
-  agentModeBadgePending,
-  agentModeBadgeTitle,
   draggingTabId,
   dragOverTabId,
   emptyTabsLabel,
@@ -60,7 +51,6 @@ export function AppTopChrome({
   onSelectTab,
   onTabPointerDown,
   onTabPointerMove,
-  onToggleAgent,
   onToggleDiff,
   onToggleOutline,
   onTogglePreview,
@@ -73,9 +63,6 @@ export function AppTopChrome({
   return (
     <TabBar
       activeTabId={activeTabId}
-      agentModeBadge={agentModeBadge}
-      agentModeBadgePending={agentModeBadgePending}
-      agentModeBadgeTitle={agentModeBadgeTitle}
       draggingTabId={draggingTabId}
       dragOverTabId={dragOverTabId}
       emptyTabsLabel={emptyTabsLabel}
@@ -91,11 +78,8 @@ export function AppTopChrome({
       <DocumentMetaBar
         activeDirty={activeDirty}
         activeTab={activeTab}
-        agentAvailable={agentAvailable}
-        agentPaneActive={sidePaneMode === "agent"}
         diffPaneActive={sidePaneMode === "compare"}
         onReviewChanges={onReviewChanges}
-        onToggleAgent={onToggleAgent}
         onToggleDiff={onToggleDiff}
         onToggleOutline={onToggleOutline}
         onTogglePreview={onTogglePreview}

@@ -271,11 +271,6 @@ export function AppWorkspace({
           <SidePane
             activeContents={activeContents}
             activeTab={activeTab}
-            agentGate={agentLaunchGate}
-            agentOutput={agentOutput}
-            agentProvider={agentWorkbenchProvider}
-            agentSession={agentSession}
-            agentStopPending={agentStopPending}
             compareSource={compareAnchor}
             compareTarget={compareTarget}
             compareView={compareView}
@@ -284,26 +279,17 @@ export function AppWorkspace({
             currentHeadingLine={currentHeadingLine}
             documentHeadings={documentHeadings}
             menuLanguage={menuLanguage}
-            onCheckAgentGate={onCheckAgentGate}
-            onOpenAgentWindow={onOpenAgentWindow}
             onClearCompareSource={clearCompareSource}
             onClearCompareTarget={clearCompareTarget}
             onCloseCompareView={closeCompareView}
             onOpenPreviewLocalLink={openPreviewMarkdownLink}
-            onPresetPrompt={handlePresetPrompt}
             onPreviewScroll={syncEditorScroll}
             onRunSelectedFileCompare={runSelectedFileCompare}
             onSelectHeading={jumpToHeading}
-            onStopAgentSession={onStopAgentSession}
-            onTerminalData={onSendAgentTerminalData}
-            onTerminalEngage={onResumeAgentUiRefresh}
-            onTerminalRelease={onSuspendAgentUiRefresh}
-            onTerminalResize={onResizeAgentTerminal}
             outlineTruncated={outlineTruncated}
             previewPaneRef={previewPaneRef}
             previewVisible={previewVisible}
             sidePaneMode={sidePaneMode}
-            theme={resolvedTheme}
             workspaceRootPath={workspaceRootPath}
           />
         ) : null}

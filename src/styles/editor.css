@@ -56,24 +56,6 @@
   font-weight: 500;
 }
 
-.agent-mode-badge {
-  background: var(--accent-soft);
-  border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  color: var(--accent);
-  flex: 0 0 auto;
-  font-size: 11px;
-  font-weight: 750;
-  line-height: 1;
-  padding: 6px 9px;
-  white-space: nowrap;
-}
-
-.agent-mode-badge.pending {
-  background: rgba(153, 120, 56, 0.14);
-  color: var(--conflict);
-}
-
 .chrome-section {
   align-items: center;
   display: flex;

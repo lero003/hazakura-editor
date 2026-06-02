@@ -43,9 +43,6 @@ export type SafeEditorCopy = {
 };
 
 export type SidePaneCopy = {
-  agentTab: string;
-  agentTabTitle: string;
-  agentWorkbench: string;
   diffTab: string;
   diffTabTitle: string;
   fileComparison: string;
@@ -275,9 +272,6 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
 export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
   if (isKanaStyle(lang)) {
     return {
-      agentTab: "えーじぇんと",
-      agentTabTitle: "えーじぇんとのまどをひらく",
-      agentWorkbench: "えーじぇんとのつくゑ",
       diffTab: "ちがひ",
       diffTabTitle: "ちがひのまどをひらく",
       fileComparison: "ふみくらべ",
@@ -302,9 +296,6 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
 
   return isJapaneseMenuLanguage(lang)
     ? {
-        agentTab: "エージェント",
-        agentTabTitle: "エージェントペインを表示",
-        agentWorkbench: "エージェントワークベンチ",
         diffTab: "差分",
         diffTabTitle: "差分ペインを表示",
         fileComparison: "ファイル比較",
@@ -327,9 +318,6 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         sidePaneMode: "サイドペイン表示",
       }
     : {
-        agentTab: "Agent",
-        agentTabTitle: "Show agent pane",
-        agentWorkbench: "Agent Workbench",
         diffTab: "Diff",
         diffTabTitle: "Show diff pane",
         fileComparison: "File comparison",

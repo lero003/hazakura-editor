@@ -63,7 +63,6 @@ import { useSidePaneController } from "../editor/useSidePaneController";
 import { useFindReplaceController } from "../find/useFindReplaceController";
 import { useAppMenuIntegration } from "./useAppMenuIntegration";
 import { useAppRuntimeEffects } from "./useAppRuntimeEffects";
-import { useMainAgentPaneFocus } from "./useMainAgentPaneFocus";
 
 export function useAppShellController() {
   // section: agent runtime state
@@ -163,6 +162,7 @@ export function useAppShellController() {
   // section: agent workbench preferences
   const {
     agentWorkbenchActive,
+    agentWorkbenchAvailable,
     agentWorkbenchConsent,
     agentWorkbenchPreference,
     agentWorkbenchProvider,
@@ -272,7 +272,6 @@ export function useAppShellController() {
   // section: localized app copy
   const {
     agentWorkbenchCopy,
-    agentWorkbenchModeBadge,
     agentWorkbenchRestartRequired,
     editorChromeCopy,
     preferencesCopy,
@@ -289,8 +288,6 @@ export function useAppShellController() {
 
   // section: side pane controller
   const {
-    agentPaneVisible,
-    agentWorkbenchAvailable,
     editorPreviewGridRef,
     editorPreviewGridStyle,
     handlePreviewResizeKeyDown,
@@ -300,14 +297,11 @@ export function useAppShellController() {
     previewColumnPercent,
     sidePaneMode,
     sidePaneVisible,
-    toggleAgentPane,
     toggleDiffPane,
     toggleOutlinePane,
     togglePreviewPane,
   } = useSidePaneController({
     activeTab,
-    agentWorkbenchActive,
-    agentWorkbenchConsent,
     compareView,
     previewVisible,
     rightPaneMode,
@@ -696,10 +690,8 @@ export function useAppShellController() {
       agentWorkbenchAvailable,
       onRefreshAgentSessionState: refreshAgentSessionState,
       onResetAgentOutput: resetAgentOutput,
-      rightPaneMode,
       setAgentLaunchGate,
       setAgentSession,
-      setRightPaneMode,
       workspaceRootPath,
     },
     appShellSync: {
@@ -783,9 +775,6 @@ export function useAppShellController() {
     },
   });
 
-  // section: main agent pane focus (side effect)
-  useMainAgentPaneFocus({ onOpen: toggleAgentPane });
-
   // section: manual candidate apply helper
   const applyManualCandidateToActiveTab = useCallback(
     (
@@ -833,7 +822,6 @@ export function useAppShellController() {
     ambientIntensity: editorSettings.ambientIntensity,
     activeTab,
     activeTabId,
-    agentAvailable: agentWorkbenchAvailable,
     agentLaunchGate,
     agentOutput,
     agentSession,
@@ -849,9 +837,6 @@ export function useAppShellController() {
     candidateErrorMessage,
     candidateInputText,
     clearCandidate,
-    agentModeBadge: agentWorkbenchModeBadge,
-    agentModeBadgePending: agentWorkbenchRestartRequired,
-    agentModeBadgeTitle: agentWorkbenchCopy.modeBadgeTitle,
     appCloseCancelButtonRef,
     appCloseDialogRef,
     appRestartPending,
@@ -938,7 +923,6 @@ export function useAppShellController() {
     onSuspendAgentUiRefresh: suspendAgentUiRefresh,
     onTabPointerDown: handleTabPointerDown,
     onTabPointerMove: handleTabPointerMove,
-    onToggleAgent: toggleAgentPane,
     onToggleDiff: toggleDiffPane,
     onToggleOutline: toggleOutlinePane,
     onTogglePreview: togglePreviewPane,

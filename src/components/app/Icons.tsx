@@ -102,14 +102,6 @@ export function OutlineIcon() {
   );
 }
 
-export function AgentIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M8 1.5L9.5 5.5L13.5 6.5L10.5 9.5L11.5 13.5L8 11.5L4.5 13.5L5.5 9.5L2.5 6.5L6.5 5.5Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
-    </svg>
-  );
-}
-
 export function ChevronIcon({ expanded }: { expanded: boolean }) {
   return (
     <svg

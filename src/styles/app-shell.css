@@ -25,13 +25,6 @@
   animation: bgDrift 25s ease-in-out infinite;
 }
 
-/* スペシャルテーマ: アクセント要素のグローパルス / Special Theme: Glow Pulse */
-:root[data-theme="yakou"] .agent-mode-badge:not(.pending),
-:root[data-theme="shokou"] .agent-mode-badge:not(.pending) {
-  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 30%, transparent);
-  animation: accentPulse 3s ease-in-out infinite;
-}
-
 /* スペシャルテーマ: ステータスバーの装飾 / Status Bar Accent */
 :root[data-theme="yakou"] .status-bar {
   border-top: 1px solid color-mix(in srgb, var(--accent) 12%, transparent);

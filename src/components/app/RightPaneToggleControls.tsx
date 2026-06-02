@@ -1,13 +1,10 @@
 import {
-  AgentIcon,
   DiffIcon,
   OutlineIcon,
   PreviewIcon,
 } from "./Icons";
 
 export interface RightPaneToggleCopy {
-  agentTab: string;
-  agentTabTitle: string;
   diffTab: string;
   diffTabTitle: string;
   outlineTab: string;
@@ -52,12 +49,9 @@ function PaneToggle({
 }
 
 export function RightPaneToggleControls({
-  agentActive,
-  agentAvailable,
   copy,
   diffActive,
   diffAvailable,
-  onToggleAgent,
   onToggleDiff,
   onToggleOutline,
   onTogglePreview,
@@ -65,12 +59,9 @@ export function RightPaneToggleControls({
   outlineAvailable,
   previewActive,
 }: {
-  agentActive: boolean;
-  agentAvailable: boolean;
   copy: RightPaneToggleCopy;
   diffActive: boolean;
   diffAvailable: boolean;
-  onToggleAgent: () => void;
   onToggleDiff: () => void;
   onToggleOutline: () => void;
   onTogglePreview: () => void;
@@ -104,15 +95,6 @@ export function RightPaneToggleControls({
         onClick={onToggleOutline}
         title={copy.outlineTabTitle}
       />
-      {agentAvailable ? (
-        <PaneToggle
-          active={agentActive}
-          caption={copy.agentTab}
-          icon={<AgentIcon />}
-          onClick={onToggleAgent}
-          title={copy.agentTabTitle}
-        />
-      ) : null}
     </div>
   );
 }

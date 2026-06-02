@@ -54,6 +54,7 @@ export function useAgentWorkbenchPreferences() {
 
   return {
     agentWorkbenchActive,
+    agentWorkbenchAvailable: agentWorkbenchActive && agentWorkbenchConsent,
     agentWorkbenchConsent,
     agentWorkbenchPreference,
     agentWorkbenchProvider,

@@ -55,17 +55,7 @@ export function useSidePaneToggles({
     setSidePaneOpen(true);
   }, [activeTab, setRightPaneMode, setSidePaneOpen, sidePaneMode, sidePaneOpen]);
 
-  const toggleAgentPane = useCallback(() => {
-    if (sidePaneOpen && sidePaneMode === "agent") {
-      setSidePaneOpen(false);
-      return;
-    }
-    setRightPaneMode("agent");
-    setSidePaneOpen(true);
-  }, [setRightPaneMode, setSidePaneOpen, sidePaneMode, sidePaneOpen]);
-
   return {
-    toggleAgentPane,
     toggleDiffPane,
     toggleOutlinePane,
     togglePreviewPane,

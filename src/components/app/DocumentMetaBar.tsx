@@ -7,11 +7,8 @@ import type { EditorTab } from "../../types";
 type DocumentMetaBarProps = {
   activeDirty: boolean;
   activeTab: EditorTab | null;
-  agentAvailable: boolean;
-  agentPaneActive: boolean;
   diffPaneActive: boolean;
   onReviewChanges: (tab: EditorTab) => void;
-  onToggleAgent: () => void;
   onToggleDiff: () => void;
   onToggleOutline: () => void;
   onTogglePreview: () => void;
@@ -24,11 +21,8 @@ type DocumentMetaBarProps = {
 export function DocumentMetaBar({
   activeDirty,
   activeTab,
-  agentAvailable,
-  agentPaneActive,
   diffPaneActive,
   onReviewChanges,
-  onToggleAgent,
   onToggleDiff,
   onToggleOutline,
   onTogglePreview,
@@ -43,12 +37,9 @@ export function DocumentMetaBar({
     <div className="document-meta">
       <section className="chrome-section" aria-label={sidePaneCopy.sidePaneMode}>
         <RightPaneToggleControls
-          agentActive={agentPaneActive}
-          agentAvailable={agentAvailable}
           copy={sidePaneCopy}
           diffActive={diffPaneActive}
           diffAvailable
-          onToggleAgent={onToggleAgent}
           onToggleDiff={onToggleDiff}
           onToggleOutline={onToggleOutline}
           onTogglePreview={onTogglePreview}
