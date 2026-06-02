@@ -1,0 +1,161 @@
+/* === app-shell.css === */
+/* スペシャルテーマ用パルスグロー / Pulse Glow for Special Themes */
+@keyframes accentPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+@keyframes bgDrift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* 夜光: 背景グラデーションアニメーション / Yakou: Animated BG */
+:root[data-theme="yakou"] .app-shell {
+  background: linear-gradient(135deg, #0d0d12 0%, #11101e 50%, #0d0d12 100%);
+  background-size: 200% 200%;
+  animation: bgDrift 20s ease-in-out infinite;
+}
+
+/* 曙光: ゆっくりと変化する曙のグラデーション / Shokou: Slow Dawn Shift */
+:root[data-theme="shokou"] .app-shell {
+  background: linear-gradient(135deg, #eef7ff 0%, #fff4e6 50%, #fdf0e0 100%);
+  background-size: 200% 200%;
+  animation: bgDrift 25s ease-in-out infinite;
+}
+
+/* 紅葉: 秋の風合いアニメーション / Kouyou: Autumn Drift */
+:root[data-theme="kouyou"] .app-shell {
+  background: linear-gradient(135deg, #f7efe4 0%, #edf2e6 50%, #f5ece0 100%);
+  background-size: 200% 200%;
+  animation: bgDrift 22s ease-in-out infinite;
+}
+
+/* スペシャルテーマ: アクセント要素のグローパルス / Special Theme: Glow Pulse */
+:root[data-theme="yakou"] .agent-mode-badge:not(.pending),
+:root[data-theme="shokou"] .agent-mode-badge:not(.pending),
+:root[data-theme="kouyou"] .agent-mode-badge:not(.pending) {
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 30%, transparent);
+  animation: accentPulse 3s ease-in-out infinite;
+}
+
+/* スペシャルテーマ: ステータスバーの装飾 / Status Bar Accent */
+:root[data-theme="yakou"] .status-bar {
+  border-top: 1px solid rgba(139, 124, 248, 0.12);
+}
+
+:root[data-theme="shokou"] .status-bar {
+  border-top: 1px solid rgba(242, 159, 75, 0.12);
+}
+
+:root[data-theme="kouyou"] .status-bar {
+  border-top: 1px solid rgba(168, 68, 50, 0.12);
+}
+.ambient {
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: fixed;
+  z-index: 2;
+}
+
+.ambient-particle {
+  display: block;
+  position: absolute;
+  will-change: transform, opacity;
+}
+
+.ambient-sakura .ambient-particle {
+  animation: petalFall var(--ambient-duration, 14s) linear infinite;
+  animation-delay: var(--ambient-delay, 0s);
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.9), transparent 26%),
+    linear-gradient(
+      135deg,
+      hsl(var(--ambient-hue, 345), 70%, 88%) 0%,
+      hsl(var(--ambient-hue, 345), 60%, 72%) 100%
+    );
+  border-radius: 70% 30% 70% 30%;
+  height: var(--ambient-h, 14px);
+  top: -24px;
+  transform-origin: 50% 80%;
+  width: var(--ambient-w, 10px);
+}
+
+.ambient-yakou .ambient-particle {
+  animation: starRise var(--ambient-duration, 18s) ease-in-out infinite;
+  animation-delay: var(--ambient-delay, 0s);
+  background:
+    radial-gradient(
+      circle,
+      hsl(var(--ambient-hue, 210), 90%, 92%) 0%,
+      hsl(var(--ambient-hue, 210), 80%, 75%) 60%,
+      transparent 100%
+    );
+  border-radius: 50%;
+  bottom: -8px;
+  box-shadow: 0 0 6px 1px hsl(var(--ambient-hue, 210), 80%, 80%, 0.55);
+  height: var(--ambient-h, 2.5px);
+  width: var(--ambient-w, 2.5px);
+}
+
+.ambient-shokou .ambient-particle {
+  animation: heatDrift var(--ambient-duration, 14s) ease-in-out infinite;
+  animation-delay: var(--ambient-delay, 0s);
+  background: radial-gradient(
+    circle,
+    hsl(var(--ambient-hue, 45), 95%, 88%) 0%,
+    hsl(var(--ambient-hue, 45), 80%, 70%) 60%,
+    transparent 100%
+  );
+  border-radius: 50%;
+  bottom: -8px;
+  box-shadow: 0 0 8px 1px hsl(var(--ambient-hue, 45), 90%, 80%, 0.4);
+  height: var(--ambient-h, 3px);
+  width: var(--ambient-w, 3px);
+}
+
+.ambient-kouyou .ambient-particle {
+  animation: leafFall var(--ambient-duration, 16s) linear infinite;
+  animation-delay: var(--ambient-delay, 0s);
+  background:
+    linear-gradient(
+      135deg,
+      hsl(var(--ambient-hue, 22), 80%, 62%) 0%,
+      hsl(var(--ambient-hue, 22), 70%, 48%) 100%
+    );
+  border-radius: 60% 40% 60% 40%;
+  height: var(--ambient-h, 11px);
+  top: -24px;
+  transform-origin: 50% 80%;
+  width: var(--ambient-w, 8px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient-particle {
+    animation: none;
+    display: none;
+  }
+}
+
+.tabs-row,
+.find-row,
+.status-bar {
+  align-items: center;
+  display: flex;
+}
+
+.toggle-control {
+  align-items: center;
+  color: var(--text-muted);
+  display: flex;
+  font-size: 12px;
+  gap: 6px;
+  font-weight: 500;
+}
+
+.toggle-control input {
+  margin: 0;
+}
+

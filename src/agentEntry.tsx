@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
-import { AgentWindowApp } from "./components/AgentWindowApp";
-import "./styles.css";
+import { AgentWindowApp } from "./components/agent/AgentWindowApp";
+import "./styles/index.css";
 
 const container = document.getElementById("root");
 if (!container) {

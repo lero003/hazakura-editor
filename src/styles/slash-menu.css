@@ -1,0 +1,132 @@
+/* === slash-menu.css === */
+/* ── Slash Menu (/) ── */
+@keyframes slashMenuEnter {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes slashMenuItemFlash {
+  0% { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+  100% { background: var(--accent-soft); }
+}
+
+.slash-menu {
+  animation: slashMenuEnter 0.14s var(--ease-emphasized) forwards;
+  max-height: 320px;
+  min-width: 240px;
+  z-index: 220;
+}
+
+.slash-menu.reduced-motion {
+  animation: none;
+}
+
+.slash-menu-inner {
+  background: var(--surface-strong);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  max-height: inherit;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.slash-menu-empty {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 12px 14px;
+  white-space: nowrap;
+}
+
+.slash-menu-item {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  box-shadow: none;
+  color: var(--text);
+  display: grid;
+  font-weight: 500;
+  gap: 8px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  min-width: 0;
+  padding: 7px 9px 7px 7px;
+  text-align: left;
+  transition: background 0.12s var(--ease-standard);
+  width: 100%;
+}
+
+.slash-menu-item:hover {
+  background: var(--accent-soft);
+}
+
+.slash-menu-item.active {
+  background: var(--accent-soft);
+  animation: slashMenuItemFlash 0.14s var(--ease-standard);
+}
+
+.slash-menu.reduced-motion .slash-menu-item.active {
+  animation: none;
+}
+
+.slash-menu-badge {
+  align-items: center;
+  border-radius: 5px;
+  display: inline-flex;
+  font-size: 10px;
+  font-weight: 700;
+  height: 18px;
+  justify-content: center;
+  letter-spacing: 0.04em;
+  min-width: 26px;
+  padding: 0 5px;
+}
+
+.slash-menu-badge-markdown {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent);
+}
+
+.slash-menu-badge-review {
+  background: rgba(153, 120, 56, 0.16);
+  color: var(--conflict);
+}
+
+.slash-menu-badge-shortcut {
+  background: color-mix(in srgb, var(--info) 18%, transparent);
+  color: var(--info);
+}
+
+.slash-menu-badge-agent {
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
+  color: var(--accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+:root[data-theme="yakou"] .slash-menu-badge-agent,
+:root[data-theme="shokou"] .slash-menu-badge-agent,
+:root[data-theme="kouyou"] .slash-menu-badge-agent {
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+}
+
+.slash-menu-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.slash-menu-hint {
+  color: var(--text-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
