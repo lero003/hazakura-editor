@@ -271,6 +271,7 @@ export type CompareCase = {
   rightColumnLabel: string;
   candidateSourceLabel: string;
   candidateText: string;
+  comparedAt: number;
 };
 
 export type CompareViewState = {

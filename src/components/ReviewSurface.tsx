@@ -266,6 +266,7 @@ function ReviewSurfaceCandidateSection({
         activeTab={activeTab}
         menuLanguage={menuLanguage}
         onApplyCandidate={onApplyCandidate}
+        onReCompare={handleCompare}
       />
     </div>
   );
@@ -297,6 +298,7 @@ type ReviewSurfaceCandidatePreviewProps = {
     documentTabId: string,
     documentContents: string,
   ) => void;
+  onReCompare: () => void;
 };
 
 function ReviewSurfaceCandidatePreview({
@@ -306,6 +308,7 @@ function ReviewSurfaceCandidatePreview({
   copy,
   menuLanguage,
   onApplyCandidate,
+  onReCompare,
 }: ReviewSurfaceCandidatePreviewProps) {
   const hasPreview =
     candidateCompareCase !== null &&
@@ -313,7 +316,9 @@ function ReviewSurfaceCandidatePreview({
     candidateCompareCase.kind === "candidate" &&
     activeTab?.id === candidateCompareCase.documentTabId &&
     activeTab.contents === candidateCompareCase.documentContents;
-  const canApply = activeTab !== null && hasPreview;
+  const staleness = computeCandidateStaleness(candidateCompareCase, activeTab);
+  const isStale = staleness.kind !== "fresh";
+  const canApply = hasPreview && !isStale;
 
   const handleApply = () => {
     if (!canApply || candidateCompareCase?.kind !== "candidate") {
@@ -365,9 +370,31 @@ function ReviewSurfaceCandidatePreview({
           {copy.candidateApplyButton}
         </button>
       </div>
+      {hasPreview && candidateCompareCase ? (
+        <ReviewSurfaceCandidatePreviewMeta
+          compareCase={candidateCompareCase}
+          copy={copy}
+        />
+      ) : null}
+      {hasPreview && candidateCompareCase ? (
+        <p className="review-surface-candidate-apply-note">
+          {copy.candidateApplyWillMarkUnsaved}
+        </p>
+      ) : null}
+      {hasPreview && candidateCompareCase && isStale ? (
+        <ReviewSurfaceCandidateStaleBanner
+          staleness={staleness}
+          compareCase={candidateCompareCase}
+          copy={copy}
+          onReCompare={onReCompare}
+        />
+      ) : null}
       {hasPreview && candidateCompareCase && candidateCompareView ? (
         <div
-          className="review-surface-candidate-table"
+          className={
+            "review-surface-candidate-table" +
+            (isStale ? " is-stale" : "")
+          }
           role="table"
           aria-label={copy.candidatePreviewTitle}
         >
@@ -397,4 +424,145 @@ function ReviewSurfaceCandidatePreview({
       )}
     </div>
   );
+}
+
+type ReviewSurfaceCandidatePreviewMetaProps = {
+  compareCase: CompareCase;
+  copy: ReviewDeskCopy;
+};
+
+function ReviewSurfaceCandidatePreviewMeta({
+  compareCase,
+  copy,
+}: ReviewSurfaceCandidatePreviewMetaProps) {
+  if (compareCase.kind !== "candidate") {
+    return null;
+  }
+  const bufferLines = countTextLines(compareCase.documentContents);
+  const bufferChars = compareCase.documentContents.length;
+  const candidateLines = countTextLines(compareCase.candidateText);
+  const candidateChars = compareCase.candidateText.length;
+  return (
+    <dl className="review-surface-candidate-preview-meta">
+      <div className="review-surface-candidate-preview-meta-cell">
+        <dt>{copy.candidatePreviewTargetLabel}</dt>
+        <dd title={compareCase.documentPath}>
+          {compareCase.documentLabel}
+        </dd>
+      </div>
+      <div className="review-surface-candidate-preview-meta-cell">
+        <dt>{copy.candidatePreviewBufferAtCompareLabel}</dt>
+        <dd>
+          {copy.candidatePreviewBufferAtCompareText(bufferLines, bufferChars)}
+        </dd>
+      </div>
+      <div className="review-surface-candidate-preview-meta-cell">
+        <dt>{copy.candidatePreviewCandidateSizeLabel}</dt>
+        <dd>
+          {copy.candidatePreviewCandidateSizeText(
+            candidateLines,
+            candidateChars,
+          )}
+        </dd>
+      </div>
+      <div className="review-surface-candidate-preview-meta-cell">
+        <dt>{copy.candidatePreviewComparedAtLabel}</dt>
+        <dd>{formatCompareTimestamp(compareCase.comparedAt)}</dd>
+      </div>
+    </dl>
+  );
+}
+
+type CandidateStaleness =
+  | { kind: "fresh" }
+  | { kind: "no-active-tab" }
+  | { kind: "tab-switched"; activeTabLabel: string | null }
+  | { kind: "buffer-edited" };
+
+function computeCandidateStaleness(
+  compareCase: CompareCase | null,
+  activeTab: EditorTab | null,
+): CandidateStaleness {
+  if (compareCase === null || compareCase.kind !== "candidate") {
+    return { kind: "fresh" };
+  }
+  if (activeTab === null) {
+    return { kind: "no-active-tab" };
+  }
+  if (activeTab.id !== compareCase.documentTabId) {
+    return { kind: "tab-switched", activeTabLabel: activeTab.name };
+  }
+  if (activeTab.contents !== compareCase.documentContents) {
+    return { kind: "buffer-edited" };
+  }
+  return { kind: "fresh" };
+}
+
+type ReviewSurfaceCandidateStaleBannerProps = {
+  compareCase: CompareCase;
+  staleness: CandidateStaleness;
+  copy: ReviewDeskCopy;
+  onReCompare: () => void;
+};
+
+function ReviewSurfaceCandidateStaleBanner({
+  compareCase,
+  staleness,
+  copy,
+  onReCompare,
+}: ReviewSurfaceCandidateStaleBannerProps) {
+  if (staleness.kind === "fresh") {
+    return null;
+  }
+  const reason = (() => {
+    if (staleness.kind === "no-active-tab") {
+      return copy.candidateStaleReasonNoActiveTab;
+    }
+    if (staleness.kind === "buffer-edited") {
+      return copy.candidateStaleReasonBufferEdited;
+    }
+    return copy.candidateStaleReasonTabSwitched(staleness.activeTabLabel);
+  })();
+  const targetFileName =
+    compareCase.kind === "candidate" ? compareCase.documentLabel : "";
+  return (
+    <div
+      className="review-surface-candidate-stale"
+      role="status"
+      aria-live="polite"
+    >
+      <div className="review-surface-candidate-stale-text">
+        <strong>{copy.candidateStaleHeading}</strong>
+        <span>{reason}</span>
+        {targetFileName.length > 0 ? (
+          <span className="review-surface-candidate-stale-target">
+            {copy.candidatePreviewTargetLabel}: {targetFileName}
+          </span>
+        ) : null}
+      </div>
+      <button
+        type="button"
+        className="review-surface-candidate-stale-action"
+        onClick={onReCompare}
+        title={copy.candidateStaleActionReCompare}
+      >
+        {copy.candidateStaleActionReCompare}
+      </button>
+    </div>
+  );
+}
+
+function formatCompareTimestamp(timestamp: number): string {
+  const date = new Date(timestamp);
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const seconds = String(date.getSeconds()).padStart(2, "0");
+  return `${hours}:${minutes}:${seconds}`;
+}
+
+function countTextLines(text: string): number {
+  if (text.length === 0) {
+    return 0;
+  }
+  return text.split("\n").length;
 }

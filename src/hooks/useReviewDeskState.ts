@@ -85,6 +85,7 @@ export function useReviewDeskState() {
           rightColumnLabel: params.rightColumnLabel,
           candidateSourceLabel: params.candidateSourceLabel,
           candidateText: params.candidateText,
+          comparedAt: Date.now(),
         };
         setCandidateCompareCaseState(compareCase);
         setCandidateCompareViewState({

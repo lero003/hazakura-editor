@@ -189,6 +189,7 @@ export type ReviewDeskCopy = {
   candidateApplyButton: string;
   candidateApplyButtonTitle: string;
   candidateApplyDisabledHint: string;
+  candidateApplyWillMarkUnsaved: string;
   candidateClearButton: string;
   candidateClearButtonTitle: string;
   candidateColumnLeft: string;
@@ -201,9 +202,20 @@ export type ReviewDeskCopy = {
   candidateInputHint: string;
   candidateInputLabel: string;
   candidateInputPlaceholder: string;
+  candidatePreviewBufferAtCompareLabel: string;
+  candidatePreviewBufferAtCompareText: (lines: number, chars: number) => string;
+  candidatePreviewCandidateSizeLabel: string;
+  candidatePreviewCandidateSizeText: (lines: number, chars: number) => string;
+  candidatePreviewComparedAtLabel: string;
   candidatePreviewEmpty: string;
+  candidatePreviewTargetLabel: string;
   candidatePreviewTitle: string;
   candidateSourceManual: string;
+  candidateStaleActionReCompare: string;
+  candidateStaleHeading: string;
+  candidateStaleReasonBufferEdited: string;
+  candidateStaleReasonNoActiveTab: string;
+  candidateStaleReasonTabSwitched: (label: string | null) => string;
   close: string;
   closeTitle: string;
   emptyBody: string;
@@ -706,6 +718,8 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
       candidateApplyButtonTitle: "手動候補をいまのたぶへうつす",
       candidateApplyDisabledHint:
         "うつすには、えでぃたたぶと候補のしたみが必要です。",
+      candidateApplyWillMarkUnsaved:
+        "うつすと、いまのふみが候補におきかえられ、ほぞんするまでは未保存です。",
       candidateClearButton: "けす",
       candidateClearButtonTitle: "候補入力としたみをけす",
       candidateColumnLeft: "いまのふみ",
@@ -721,10 +735,28 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
         "くらべたい候補てきすとをここへ貼り付けます。",
       candidateInputLabel: "候補てきすと",
       candidateInputPlaceholder: "ここへ候補てきすとを貼り付けてください…",
+      candidatePreviewBufferAtCompareLabel: "くらべたときのふみ",
+      candidatePreviewBufferAtCompareText: (lines, chars) =>
+        `${lines} くだり / ${chars} もじ`,
+      candidatePreviewCandidateSizeLabel: "候補のおおきさ",
+      candidatePreviewCandidateSizeText: (lines, chars) =>
+        `${lines} くだり / ${chars} もじ`,
+      candidatePreviewComparedAtLabel: "くらべたじこく",
       candidatePreviewEmpty:
         "くらべるを押すと、いまのふみと候補のちがひをここにしめします。",
+      candidatePreviewTargetLabel: "あたらしいふみ",
       candidatePreviewTitle: "候補のしたみ",
       candidateSourceManual: "手で貼り付け",
+      candidateStaleActionReCompare: "もういちどくらべる",
+      candidateStaleHeading: "したみがふるくなっています",
+      candidateStaleReasonBufferEdited:
+        "くらべたあと、いまのふみがかきかえられたため、したみが今とあっていません。",
+      candidateStaleReasonNoActiveTab:
+        "くらべたふみがとぢられたため、したみはもうつかえません。",
+      candidateStaleReasonTabSwitched: (label) =>
+        label !== null
+          ? `「${label}」とはちがうふみがひらいているため、くらべたふみに もどしてから、もういちどくらべてください。`
+          : "別のふみがひらいているため、くらべたふみに もどしてから、もういちどくらべてください。",
       close: "とぢる",
       closeTitle: "れびゅーのつくゑをとぢる",
       emptyBody:
@@ -747,6 +779,8 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
           "手動候補を現在のタブのバッファへ適用",
         candidateApplyDisabledHint:
           "適用するには、エディタタブと候補プレビューが必要です。",
+        candidateApplyWillMarkUnsaved:
+          "適用すると現在のバッファが置き換えられ、保存するまで未保存です。",
         candidateClearButton: "クリア",
         candidateClearButtonTitle: "候補入力とプレビューを消去",
         candidateColumnLeft: "現在のバッファ",
@@ -763,10 +797,28 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
         candidateInputLabel: "手動候補テキスト",
         candidateInputPlaceholder:
           "ここに候補テキストを貼り付けてください…",
+        candidatePreviewBufferAtCompareLabel: "比較時点のバッファ",
+        candidatePreviewBufferAtCompareText: (lines, chars) =>
+          `${lines} 行 / ${chars} 文字`,
+        candidatePreviewCandidateSizeLabel: "候補サイズ",
+        candidatePreviewCandidateSizeText: (lines, chars) =>
+          `${lines} 行 / ${chars} 文字`,
+        candidatePreviewComparedAtLabel: "比較時刻",
         candidatePreviewEmpty:
           "比較ボタンを押すと、現在のバッファと手動候補の差分プレビューがここに表示されます。",
+        candidatePreviewTargetLabel: "保存先",
         candidatePreviewTitle: "手動候補プレビュー",
         candidateSourceManual: "手動貼り付け",
+        candidateStaleActionReCompare: "再比較",
+        candidateStaleHeading: "プレビューが古くなっています",
+        candidateStaleReasonBufferEdited:
+          "比較後にバッファが編集されたため、プレビューが現在の状態と一致していません。",
+        candidateStaleReasonNoActiveTab:
+          "比較したタブが閉じられたため、プレビューはもう使えません。",
+        candidateStaleReasonTabSwitched: (label) =>
+          label !== null
+            ? `「${label}」以外のタブが開かれているため、比較したタブへ戻してから再比較してください。`
+            : "別のタブが開かれているため、比較したタブへ戻してから再比較してください。",
         close: "閉じる",
         closeTitle: "レビューデスクを閉じる",
         emptyBody:
@@ -786,6 +838,8 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
           "Apply the manual candidate to the current tab buffer",
         candidateApplyDisabledHint:
           "Open an editor tab and render a candidate preview to enable Apply.",
+        candidateApplyWillMarkUnsaved:
+          "Apply replaces the current buffer; the file remains unsaved until you save it.",
         candidateClearButton: "Clear",
         candidateClearButtonTitle: "Discard candidate input and preview",
         candidateColumnLeft: "Current buffer",
@@ -802,10 +856,28 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
           "Paste a candidate snapshot (AI output, review notes, an alternate draft) to compare against the current buffer.",
         candidateInputLabel: "Manual candidate text",
         candidateInputPlaceholder: "Paste candidate text here…",
+        candidatePreviewBufferAtCompareLabel: "Buffer at compare",
+        candidatePreviewBufferAtCompareText: (lines, chars) =>
+          `${lines} lines / ${chars} chars`,
+        candidatePreviewCandidateSizeLabel: "Candidate size",
+        candidatePreviewCandidateSizeText: (lines, chars) =>
+          `${lines} lines / ${chars} chars`,
+        candidatePreviewComparedAtLabel: "Compared at",
         candidatePreviewEmpty:
           "Press Compare to render a diff preview of the current buffer and the manual candidate here.",
+        candidatePreviewTargetLabel: "Target",
         candidatePreviewTitle: "Manual candidate preview",
         candidateSourceManual: "Manual paste",
+        candidateStaleActionReCompare: "Re-run Compare",
+        candidateStaleHeading: "Preview is out of date",
+        candidateStaleReasonBufferEdited:
+          "The buffer was edited after Compare, so the preview no longer matches the current state.",
+        candidateStaleReasonNoActiveTab:
+          "The compared tab is no longer open, so the preview can no longer be applied.",
+        candidateStaleReasonTabSwitched: (label) =>
+          label !== null
+            ? `A different tab "${label}" is active. Return to the compared tab and re-run Compare to refresh the preview.`
+            : "A different tab is active. Return to the compared tab and re-run Compare to refresh the preview.",
         close: "Close",
         closeTitle: "Close Review Desk",
         emptyBody:

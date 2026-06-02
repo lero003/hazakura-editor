@@ -3926,6 +3926,108 @@ button:disabled {
   text-align: center;
 }
 
+.review-surface-candidate-preview-meta {
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  font-size: 12px;
+  gap: 4px 16px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  margin: 0;
+  padding: 8px 12px;
+}
+
+.review-surface-candidate-preview-meta-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.review-surface-candidate-preview-meta-cell dt {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.review-surface-candidate-preview-meta-cell dd {
+  color: var(--text);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.review-surface-candidate-apply-note {
+  color: var(--text-muted);
+  font-size: 11px;
+  margin: 0;
+  padding: 6px 12px 0;
+}
+
+.review-surface-candidate-stale {
+  align-items: center;
+  background: var(--surface-strong);
+  border-bottom: 1px solid var(--border);
+  border-left: 3px solid var(--warning-border, var(--accent));
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  justify-content: space-between;
+  padding: 8px 12px;
+}
+
+.review-surface-candidate-stale-text {
+  display: flex;
+  flex: 1 1 240px;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.review-surface-candidate-stale-text strong {
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.review-surface-candidate-stale-text span {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.review-surface-candidate-stale-target {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-style: italic;
+}
+
+.review-surface-candidate-stale-action {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  color: var(--text);
+  cursor: pointer;
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+}
+
+.review-surface-candidate-stale-action:hover {
+  background: var(--surface-strong);
+  border-color: var(--accent, var(--border-strong));
+}
+
+.review-surface-candidate-table.is-stale {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
 @media (max-width: 900px) {
   .review-surface-candidate {
     grid-template-columns: minmax(0, 1fr);
