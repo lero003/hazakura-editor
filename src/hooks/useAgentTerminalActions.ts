@@ -19,6 +19,19 @@ import {
   reportAgentLaunchGateError,
 } from "../agentWorkbench";
 
+// `useAgentTerminalActions` owns the Agent Workbench terminal I/O
+// action handlers: write user input to the active session, resize
+// the PTY, send a preset prompt, and forward the active editor
+// selection. It does NOT own the active session, the terminal size,
+// the launch gate, or the output buffer; all of those are read from
+// and written to setters passed in from App.tsx (see
+// `useAgentWorkbenchRuntimeState`). A terminal resize failure is
+// status-only by design (a PTY resize failure during an already-
+// passed active session is a transport concern, not a launch-gate
+// rejection), so it does not flow through
+// `reportAgentLaunchGateError`. See docs/assist-surface-strategy.md
+// and docs/agent-workbench-boundary.md.
+
 type UseAgentTerminalActionsOptions = {
   agentSession: AgentWorkbenchSession | null;
   editorPaneRef: RefObject<EditorPaneHandle | null>;

@@ -12,6 +12,20 @@ import type {
   MenuLanguage,
 } from "../types";
 
+// `useAgentWorkbenchPreferenceActions` owns the Agent Workbench
+// preference-level action handlers: toggling the mode preference
+// (with the restart-required caveat that drives the Agent Workbench
+// trust boundary), requesting the app restart, recording/clearing
+// the responsibility-boundary consent, and changing the allowlisted
+// provider. It does NOT own the preference state, the launch gate,
+// the app-restart-pending flag, or the global error; all of those
+// are read from and written to setters passed in from App.tsx (see
+// `useAgentWorkbenchPreferences`, `useAgentWorkbenchRuntimeState`).
+// The provider-change guard intentionally spreads the current gate
+// (so the existing preflight is preserved) and is not a fit for
+// `reportAgentLaunchGateError`. See docs/assist-surface-strategy.md
+// and docs/agent-workbench-boundary.md.
+
 type UseAgentWorkbenchPreferenceActionsOptions = {
   activeAgentSession: boolean;
   agentWorkbenchActive: boolean;

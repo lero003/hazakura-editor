@@ -15,7 +15,17 @@ import {
 } from "../types";
 import { providerLabel, reportAgentLaunchGateError } from "../agentWorkbench";
 
-type UseAgentLaunchGateOptions = {
+// `useAgentLaunchGate` owns the one-shot Agent Workbench launch flow:
+// preflight + `startAgentWorkbenchSession` invoke + launch-gate status
+// transitions (`idle` → `checking` → `passed` / `rejected`). It does
+// NOT own Agent Workbench state, the active session, the terminal
+// size, or the output buffer; all of those are read from and written
+// to setters passed in from App.tsx (see
+// `useAgentWorkbenchRuntimeState` and `useAgentOutputBuffer`).
+// See docs/assist-surface-strategy.md and
+// docs/agent-workbench-boundary.md.
+
+export type UseAgentLaunchGateOptions = {
   agentTerminalSize: AgentTerminalSize | null;
   agentWorkbenchActive: boolean;
   agentWorkbenchConsent: boolean;

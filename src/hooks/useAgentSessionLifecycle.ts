@@ -23,7 +23,18 @@ import {
 } from "../agentWorkbench";
 import { useAgentOutputSeqCursor } from "./useAgentOutputSeqCursor";
 
-type UseAgentSessionLifecycleOptions = {
+// `useAgentSessionLifecycle` owns the per-session action handlers for
+// the active Agent Workbench session: differential session-state
+// refresh, stop, and writing a workspace file path to the session as
+// user input. It uses an internal `useAgentOutputSeqCursor` to keep
+// the session-state poll incremental. It does NOT own the session
+// state, the terminal size, or the output buffer; all of those are
+// read from and written to setters passed in from App.tsx (see
+// `useAgentWorkbenchRuntimeState` and `useAgentOutputBuffer`).
+// See docs/assist-surface-strategy.md and
+// docs/agent-workbench-boundary.md.
+
+export type UseAgentSessionLifecycleOptions = {
   agentSession: AgentWorkbenchSession | null;
   applyAgentOutput: (output: AgentWorkbenchOutputChunk[]) => void;
   closeWorkspaceContextMenu: () => void;

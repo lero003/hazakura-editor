@@ -10,6 +10,20 @@ import {
 } from "../types";
 import { isActiveAgentSession } from "../agentWorkbench";
 
+// `useAgentWorkbenchSessionSync` owns the Agent Workbench
+// background-sync effects: (a) demote the right pane to `preview`
+// when the Agent Workbench is unavailable, (b) reset the session
+// and output buffer when availability changes, (c) poll the
+// session state on the `AGENT_WORKBENCH_SESSION_POLL_MS` cadence
+// while the active session is alive and the document is focused
+// (and the UI refresh suspension ref is not set), and (d) keep the
+// launch gate in sync with workspace-root binding for the active
+// session. It returns nothing; all state and side effects are
+// handled through the setters and refs passed in from App.tsx (see
+// `useAgentWorkbenchRuntimeState`, `useAgentOutputBuffer`, and
+// `useAgentUiRefreshGate`). See docs/assist-surface-strategy.md and
+// docs/agent-workbench-boundary.md.
+
 type RefValue<T> = {
   current: T;
 };
