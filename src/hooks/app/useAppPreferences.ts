@@ -4,6 +4,7 @@ import {
   setCurrentWindowBackgroundColor,
   setCurrentWindowTheme,
 } from "../../lib/tauri";
+import themeBackgroundColorJson from "../../lib/theme-palette.json";
 import type { AmbientIntensity } from "../../types";
 import { clampNumber } from "../../lib/utils";
 import {
@@ -114,19 +115,10 @@ function readStoredThemePreference(): ThemePreference {
 }
 
 function windowBackgroundColorForTheme(theme: ThemePreference): string {
-  switch (theme) {
-    case "dark":
-      return "#0e1311";
-    case "sakura":
-      return "#fdf3f4";
-    case "yakou":
-      return "#0c0c14";
-    case "shokou":
-      return "#edf4fc";
-    case "light":
-    default:
-      return "#f3f6f4";
-  }
+  return (
+    themeBackgroundColorJson[theme] ??
+    themeBackgroundColorJson.dark
+  );
 }
 
 function readStoredMenuLanguage(): MenuLanguage {

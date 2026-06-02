@@ -3,6 +3,7 @@ use crate::security::window_guard::*;
 use crate::types::*;
 
 use std::sync::atomic::Ordering;
+use std::sync::OnceLock;
 use tauri::window::Color;
 use tauri::Emitter;
 use tauri::Manager;
@@ -10,23 +11,57 @@ use tauri::Theme;
 use tauri::TitleBarStyle;
 use tauri::WebviewUrl;
 use tauri::WebviewWindowBuilder;
-// Map the in-app theme preference (the same string the main window
-// stores under THEME_STORAGE_KEY) to the agent window's initial
-// `background_color`. The agent window uses a `Transparent` title bar
-// (set in `open_agent_window`'s builder) so the OS chrome shows this
-// color through; matching the main window's per-theme `backgroundColor`
-// keeps the two surfaces visually consistent. Hex values mirror
-// `windowBackgroundColorForTheme` in `src/hooks/useAppPreferences.ts`
-// and the new `set_agent_window_theme` command.
+
+// Single source of truth for the per-theme OS window background color.
+// Mirrors `windowBackgroundColorForTheme` in
+// `src/hooks/app/useAppPreferences.ts` (both import the same JSON).
+// The hex values are the initial-paint colors used for the agent
+// window's Tauri `background_color` and the main window's
+// `setCurrentWindowBackgroundColor` IPC. For themes whose CSS
+// `--bg` is a gradient (yakou / shokou), this is the gradient's
+// start color, picked to keep the title-bar / chrome visually
+// close to the actual surface during the pre-CSS paint.
+const THEME_BACKGROUND_COLORS_JSON: &str = include_str!("../../../src/lib/theme-palette.json");
+
+#[derive(serde::Deserialize)]
+struct ThemeBackgroundColors {
+    dark: String,
+    light: String,
+    sakura: String,
+    shokou: String,
+    yakou: String,
+}
+
+fn theme_background_colors() -> &'static ThemeBackgroundColors {
+    static CACHE: OnceLock<ThemeBackgroundColors> = OnceLock::new();
+    CACHE.get_or_init(|| {
+        serde_json::from_str(THEME_BACKGROUND_COLORS_JSON)
+            .expect("src/lib/theme-palette.json must be a valid theme background color map")
+    })
+}
+
+fn parse_hex_color(hex: &str) -> Color {
+    let trimmed = hex.trim_start_matches('#');
+    let r = u8::from_str_radix(&trimmed[0..2], 16)
+        .expect("theme background color must be a 6-digit hex string");
+    let g = u8::from_str_radix(&trimmed[2..4], 16)
+        .expect("theme background color must be a 6-digit hex string");
+    let b = u8::from_str_radix(&trimmed[4..6], 16)
+        .expect("theme background color must be a 6-digit hex string");
+    Color(r, g, b, 0xff)
+}
+
 pub(crate) fn agent_window_background_color(theme: &str) -> Color {
-    match theme {
-        "dark" => Color(0x0e, 0x13, 0x11, 0xff),
-        "sakura" => Color(0xfd, 0xf3, 0xf4, 0xff),
-        "yakou" => Color(0x0c, 0x0c, 0x14, 0xff),
-        "shokou" => Color(0xed, 0xf4, 0xfc, 0xff),
-        "light" => Color(0xf3, 0xf6, 0xf4, 0xff),
-        _ => Color(0x0e, 0x13, 0x11, 0xff),
-    }
+    let palette = theme_background_colors();
+    let hex = match theme {
+        "dark" => &palette.dark,
+        "sakura" => &palette.sakura,
+        "yakou" => &palette.yakou,
+        "shokou" => &palette.shokou,
+        "light" => &palette.light,
+        _ => &palette.dark,
+    };
+    parse_hex_color(hex)
 }
 
 // Map the in-app theme preference to the agent window's OS chrome
