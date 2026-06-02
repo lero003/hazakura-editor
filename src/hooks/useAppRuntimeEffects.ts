@@ -1,8 +1,8 @@
-import { useAgentWorkbenchSessionSync } from "./useAgentWorkbenchSessionSync";
+import { useAgentWorkbenchSessionSync } from "./agent/useAgentWorkbenchSessionSync";
 import { useAppActivityListeners } from "./useAppActivityListeners";
 import { useAppKeyboardFocusEffects } from "./useAppKeyboardFocusEffects";
 import { useAppShellSync } from "./useAppShellSync";
-import { useWorkspaceRuntimeEffects } from "./useWorkspaceRuntimeEffects";
+import { useWorkspaceRuntimeEffects } from "./workspace/useWorkspaceRuntimeEffects";
 
 type UseAppRuntimeEffectsOptions = {
   activity: Parameters<typeof useAppActivityListeners>[0];

@@ -8,10 +8,10 @@ import type {
   ThemePreference,
 } from "../types";
 import { useAppMenuStateSync } from "./useAppMenuStateSync";
-import { useDraftPersistence } from "./useDraftPersistence";
+import { useDraftPersistence } from "./document/useDraftPersistence";
 import { useThemeMenuStateSync } from "./useThemeMenuStateSync";
 import { useWindowTitle } from "./useWindowTitle";
-import { useWorkspaceStatePersistence } from "./useWorkspaceStatePersistence";
+import { useWorkspaceStatePersistence } from "./workspace/useWorkspaceStatePersistence";
 
 type RefValue<T> = {
   current: T;

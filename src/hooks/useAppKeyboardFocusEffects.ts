@@ -5,7 +5,7 @@ import type {
   PreferencesDialogMode,
 } from "../types";
 import { useDialogInitialFocus } from "./useDialogInitialFocus";
-import { useExternalChangeChecks } from "./useExternalChangeChecks";
+import { useExternalChangeChecks } from "./document/useExternalChangeChecks";
 import { useGlobalKeyboardShortcuts } from "./useGlobalKeyboardShortcuts";
 import { useModalKeyboardGuard } from "./useModalKeyboardGuard";
 import { useWindowCloseConfirmation } from "./useWindowCloseConfirmation";

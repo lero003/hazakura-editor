@@ -18,7 +18,7 @@ import type {
 } from "../types";
 import type { SlashCommand } from "../types/slash";
 import { normalizeTextLineEndings } from "../utils";
-import { formatLineEndingKind } from "./useDocumentStatus";
+import { formatLineEndingKind } from "./document/useDocumentStatus";
 import { markdownFormatStatus } from "../statusMessages";
 
 type UseEditorCommandsOptions = {

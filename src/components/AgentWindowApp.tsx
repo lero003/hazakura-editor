@@ -20,8 +20,8 @@ import {
   providerLabel,
   sameAgentWorkbenchSession,
 } from "../agentWorkbench";
-import { useAgentOutputBuffer } from "../hooks/useAgentOutputBuffer";
-import { useAgentOutputSeqCursor } from "../hooks/useAgentOutputSeqCursor";
+import { useAgentOutputBuffer } from "../hooks/agent/useAgentOutputBuffer";
+import { useAgentOutputSeqCursor } from "../hooks/agent/useAgentOutputSeqCursor";
 import { AgentTerminalView } from "./AgentTerminalView";
 
 // `AgentWindowApp` is the root of the detached `hazakura agent`

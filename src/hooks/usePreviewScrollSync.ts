@@ -2,7 +2,7 @@ import { type RefObject, useCallback, useRef, useState } from "react";
 import {
   clampScrollRatio,
   useMarkdownHeadingContext,
-} from "./useDocumentOutline";
+} from "./document/useDocumentOutline";
 import { usePreviewCleanup } from "./usePreviewCleanup";
 import {
   SCROLL_SYNC_TOLERANCE_PX,
