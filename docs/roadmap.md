@@ -321,14 +321,32 @@ Do not require persistent review logs for the MVP. `.hazakura/reviews/` or app-m
 
 Do not use v0.8 to add Git integration, merge editing, project-wide indexing, arbitrary command execution, Agent auto-apply, Agent auto-commit, Foundation Models-backed behavior, Claude-specific permission/MCP/argument UI, provider-add UI, or signing/notarization work.
 
-## 0.9: Product Preview Hardening
+## 0.9: Product Preview Hardening / Calm Markdown Workspace
 
 Goal: make the product feel coherent enough for broader preview feedback before the v0.10 Apple Local Assist experiment and the v1.0 outward-preview lane. This is still a preview-quality lane, not a signed/notarized release promise.
 
-Focus this lane on the refactoring and quality-stabilization work that should wait until the v0.8 UX direction has settled. Prefer changes that reduce release risk, improve startup/responsiveness, simplify large surfaces, and make smoke evidence repeatable. Do not use this lane as a feature-expansion catch-all.
+Focus this lane on the refactoring, quality-stabilization, and daily-workspace usability work that should wait until the v0.8 UX direction has settled. Prefer changes that reduce release risk, improve startup/responsiveness, simplify large surfaces, and make the app feel worth opening for ordinary Markdown writing. Do not use this lane as a feature-expansion catch-all.
+
+Writing experience direction:
+
+- Move toward a calm Markdown workspace: quieter chrome, better reading rhythm, and a writing feel inspired by Typora / Notion, while keeping Markdown source as the canonical document model.
+- Do not turn the editor into Notion. Block databases, collaboration, embeds-as-apps, arbitrary rich document objects, and workspace knowledge-base behavior are out of scope.
+- Do not promise a full Typora-style editing model in v0.9. Inline / WYSIWYG Markdown editing, block-level document transforms, and source/preview fusion belong to a later editing-model decision if the product still needs them.
+- Preserve Markdown syntax when copying. If visual rendering becomes calmer than raw Markdown, provide an explicit Copy as Markdown path or make normal copy keep Markdown tags for supported headings, code, links, tables, and image references.
+- Keep Preview, Diff, Review Desk, export, and copy behavior aligned so the document reads calmly but still round-trips as Markdown.
+
+Workspace/file-tree direction:
+
+- Add bounded workspace file operations only where they support daily editing: New File, New Folder, Rename, and workspace-internal Move via drag/drop.
+- Keep all file-tree operations inside the selected workspace root. No arbitrary path field, no move outside the workspace, no Git status coupling, and no project-wide analysis.
+- Preserve open-tab safety: renames and moves must update open tab paths when safe, warn on dirty tabs or external changes, and avoid silently discarding recovery state.
+- Treat overwrite, symlink, case-only rename, and cross-directory move conflicts as explicit review points, not silent operations.
+- Defer Delete unless it goes through a fresh destructive-file-operation review. If Delete enters v0.9, prefer Move to Trash over permanent deletion and keep it separate from the first New/Rename/Move slice.
 
 Candidate work:
 
+- Calm Markdown Workspace polish: quieter editor chrome, focus/Zen writing improvements, readable editor/preview spacing, and Markdown-first copy/export behavior
+- bounded file-tree operations: New File, New Folder, Rename, and workspace-internal drag/drop Move with tab-path tracking and conflict prompts
 - production bundle chunk-splitting for heavy editor / preview / Agent Workbench dependencies, including a before/after build-size and startup-smoke note
 - post-v0.8 component and hook boundary review for Review Desk, Diff, Agent Workbench, Markdown preview, and editor chrome
 - focused performance and memory smoke for large Markdown files, Review Desk comparisons, image preview, and Agent Workbench open/close
@@ -345,7 +363,7 @@ Candidate work:
 - Assist Surface boundary hardening: prove that Safe Editor can remain usable without assist code paths, and that any detached Agent Workbench surface still obeys the existing allowlist, consent, one-session, no-restore, and no-auto-apply gates
 - Assist Surface boundary hardening only; do not run Apple Local Assist / Foundation Models product work before the v0.10 lane
 
-Do not add Developer ID signing, notarization, installer packaging, or automatic updater work in v0.9 unless the user explicitly reopens the distribution lane earlier.
+Do not add Developer ID signing, notarization, installer packaging, automatic updater work, block database behavior, collaboration, broad WYSIWYG editing-model rewrites, permanent Delete, Git-aware file operations, or external-path file management in v0.9 unless the user explicitly reopens that lane.
 
 ## 0.10: Apple Local Assist Experiment
 
@@ -417,7 +435,7 @@ Possible later work, only after a fresh boundary review:
 - テーマ自動切替（macOS appearance sync）
 - タブ分割編集
 - GitHub Actions .dmg 自動ビルド
-- Tree Rename / Delete after a fresh destructive-file-operation review
+- permanent Delete, multi-select file operations, and external-path file management after a fresh destructive-file-operation review
 - session log persistence after storage policy is settled
 - native PDF export beta
 - iCloud sync, shared review, and Obsidian / Notion import
@@ -438,6 +456,7 @@ Use these when asking for external review:
 7. Does 0.7 ship a small Review Desk MVP and release-prep pass without expanding into the larger Review Desk workbench vision?
 8. Does the external-agent/Codex-review workflow catch boundary regressions before accepting implementation slices?
 9. Does 0.8 separate Assist Surface concerns and improve daily Safe Editor use without pretending Review Desk is a mature workbench?
-10. Are signing, notarization, updater, and paid-distribution tasks kept out of the preview lane until v1.x or an explicit distribution-lane approval?
-11. Does the Assist Surface strategy preserve a clean v0.10+ path to Apple Local Assist without turning Safe Editor into a generic AI platform?
-12. If Claude Code CLI is added, does it remain just another allowlisted external CLI provider rather than replacing the trust boundary or adding provider-specific control surfaces?
+10. Does 0.9 improve calm Markdown writing and bounded workspace file operations without turning the app into Notion, a Git client, or a full WYSIWYG document editor?
+11. Are signing, notarization, updater, and paid-distribution tasks kept out of the preview lane until v1.x or an explicit distribution-lane approval?
+12. Does the Assist Surface strategy preserve a clean v0.10+ path to Apple Local Assist without turning Safe Editor into a generic AI platform?
+13. If Claude Code CLI is added, does it remain just another allowlisted external CLI provider rather than replacing the trust boundary or adding provider-specific control surfaces?
