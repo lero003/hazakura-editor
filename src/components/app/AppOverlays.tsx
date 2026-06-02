@@ -23,8 +23,10 @@ import type {
   ThemePreference,
   WorkspaceContextMenuState,
 } from "../../types";
+import type { Command } from "../../hooks/commandPalette/useCommandPalette";
 import { agentSessionStateLabel, providerLabel } from "../../features/agent/agentWorkbench";
 import { QuickOpen } from "../editor/QuickOpen";
+import { CommandPalette } from "../commandPalette/CommandPalette";
 import { WorkspaceContextMenu } from "../workspace/WorkspaceContextMenu";
 import { AppCloseDialog, DirtyTabCloseDialog } from "./CloseDialogs";
 import { PreferencesDialog } from "./PreferencesDialog";
@@ -53,13 +55,20 @@ type AppOverlaysProps = {
   closeTabDialogRef: RefObject<HTMLElement | null>;
   closeTabNow: (tabId: string) => void;
   closeWorkspaceContextMenu: () => void;
+  commandPaletteVisible: boolean;
+  commandPaletteActiveIndex: number;
+  commandPaletteQuery: string;
+  closeCommandPalette: () => void;
   compareAnchor: CompareAnchor | null;
   compareWorkspaceFiles: (file: CompareAnchor) => void | Promise<void>;
   copyWorkspaceFullPath: (file: CompareAnchor) => void | Promise<void>;
   dirtyTabCount: number;
   discardAllAndCloseWindow: () => void;
   editorSettings: EditorSettings;
+  filteredCommands: Command[];
   menuLanguage: MenuLanguage;
+  onOpenCommandPalette: () => void;
+  onRunCommand: (command: Command) => void;
   openWorkspaceFile: (path: string) => void | Promise<void>;
   pendingAppClose: boolean;
   pendingCloseTab: EditorTab | null;
@@ -81,6 +90,8 @@ type AppOverlaysProps = {
   setAgentWorkbenchProvider: (provider: AgentWorkbenchProvider) => void;
   setCompareSource: (file: CompareAnchor) => void;
   setCompareTargetFile: (file: CompareAnchor) => void;
+  setCommandPaletteActiveIndex: (index: number) => void;
+  setCommandPaletteQuery: (query: string) => void;
   setEditorSettings: Dispatch<SetStateAction<EditorSettings>>;
   setMenuLanguage: (language: MenuLanguage) => void;
   setPreviewVisible: (visible: boolean) => void;
@@ -113,13 +124,20 @@ export function AppOverlays({
   closeTabDialogRef,
   closeTabNow,
   closeWorkspaceContextMenu,
+  commandPaletteActiveIndex,
+  commandPaletteQuery,
+  commandPaletteVisible,
+  closeCommandPalette,
   compareAnchor,
   compareWorkspaceFiles,
   copyWorkspaceFullPath,
   dirtyTabCount,
   discardAllAndCloseWindow,
   editorSettings,
+  filteredCommands,
   menuLanguage,
+  onOpenCommandPalette,
+  onRunCommand,
   openWorkspaceFile,
   pendingAppClose,
   pendingCloseTab,
@@ -141,6 +159,8 @@ export function AppOverlays({
   setAgentWorkbenchProvider,
   setCompareSource,
   setCompareTargetFile,
+  setCommandPaletteActiveIndex,
+  setCommandPaletteQuery,
   setEditorSettings,
   setMenuLanguage,
   setPreviewVisible,
@@ -182,6 +202,18 @@ export function AppOverlays({
           onOpenFile={openWorkspaceFile}
           onClose={closeQuickOpen}
           menuLanguage={menuLanguage}
+        />
+      ) : null}
+
+      {commandPaletteVisible ? (
+        <CommandPalette
+          activeIndex={commandPaletteActiveIndex}
+          commands={filteredCommands}
+          query={commandPaletteQuery}
+          onClose={closeCommandPalette}
+          onRun={onRunCommand}
+          onSetActiveIndex={setCommandPaletteActiveIndex}
+          onSetQuery={setCommandPaletteQuery}
         />
       ) : null}
 

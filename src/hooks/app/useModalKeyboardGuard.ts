@@ -9,9 +9,11 @@ type RefValue<T> = {
 type UseModalKeyboardGuardOptions = {
   appCloseDialogRef: RefValue<HTMLElement>;
   closeTabDialogRef: RefValue<HTMLElement>;
+  commandPaletteVisible: boolean;
   modalOpen: boolean;
   onCancelAppClose: () => void;
   onCancelTabClose: () => void;
+  onCloseCommandPalette: () => void;
   onClosePreferences: () => void;
   pendingAppClose: boolean;
   pendingCloseTabOpen: boolean;
@@ -22,9 +24,11 @@ type UseModalKeyboardGuardOptions = {
 export function useModalKeyboardGuard({
   appCloseDialogRef,
   closeTabDialogRef,
+  commandPaletteVisible,
   modalOpen,
   onCancelAppClose,
   onCancelTabClose,
+  onCloseCommandPalette,
   onClosePreferences,
   pendingAppClose,
   pendingCloseTabOpen,
@@ -44,7 +48,12 @@ export function useModalKeyboardGuard({
       if (event.key === "Escape") {
         event.preventDefault();
 
-        if (pendingCloseTabOpen) {
+        // The command palette is the most-recent / topmost modal
+        // surface in the v0.8 daily-editor layer; it should close
+        // before any other modal priority is checked.
+        if (commandPaletteVisible) {
+          onCloseCommandPalette();
+        } else if (pendingCloseTabOpen) {
           onCancelTabClose();
         } else if (pendingAppClose) {
           onCancelAppClose();
@@ -73,9 +82,11 @@ export function useModalKeyboardGuard({
   }, [
     appCloseDialogRef,
     closeTabDialogRef,
+    commandPaletteVisible,
     modalOpen,
     onCancelAppClose,
     onCancelTabClose,
+    onCloseCommandPalette,
     onClosePreferences,
     pendingAppClose,
     pendingCloseTabOpen,

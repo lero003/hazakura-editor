@@ -28,6 +28,7 @@ type UseGlobalKeyboardShortcutsOptions = {
   onCreateNewFile: () => unknown;
   onFocusAdjacentTab: (direction: TabFocusDirection) => void;
   onFocusEditorSoon: () => void;
+  onOpenCommandPalette: () => void;
   onOpenFile: () => unknown;
   onOpenWorkspace: () => unknown;
   onRequestCloseTab: (tabId: string) => void;
@@ -55,6 +56,7 @@ export function useGlobalKeyboardShortcuts({
   onCreateNewFile,
   onFocusAdjacentTab,
   onFocusEditorSoon,
+  onOpenCommandPalette,
   onOpenFile,
   onOpenWorkspace,
   onRequestCloseTab,
@@ -88,6 +90,19 @@ export function useGlobalKeyboardShortcuts({
       if (isCommandShortcut(event, ",")) {
         event.preventDefault();
         setPreferencesDialogMode("settings");
+        return;
+      }
+
+      if (isCommandShiftShortcut(event, "p")) {
+        // Command palette launcher. Gated on `!modalOpen` (already
+        // checked at the top of the handler) so the palette is
+        // never opened on top of a confirmation dialog, preferences
+        // dialog, or the dirty-tab / app-close prompts. While the
+        // palette is open the `commandPaletteVisible` flag is
+        // included in `modalOpen` and the rest of the shortcuts
+        // are no-ops; the palette handles its own keyboard input.
+        event.preventDefault();
+        onOpenCommandPalette();
         return;
       }
 
@@ -253,6 +268,7 @@ export function useGlobalKeyboardShortcuts({
     onCreateNewFile,
     onFocusAdjacentTab,
     onFocusEditorSoon,
+    onOpenCommandPalette,
     onOpenFile,
     onOpenWorkspace,
     onRequestCloseTab,

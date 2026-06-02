@@ -29,6 +29,7 @@ type UseAppKeyboardFocusEffectsOptions = {
   appCloseDialogRef: RefValue<HTMLElement>;
   closeTabCancelButtonRef: RefValue<{ focus: () => void }>;
   closeTabDialogRef: RefValue<HTMLElement>;
+  commandPaletteVisible: boolean;
   dirtyTabCount: number;
   editorPaneRef: RefValue<EditorPaneHandle>;
   findInputRef: RefValue<HTMLInputElement>;
@@ -38,6 +39,7 @@ type UseAppKeyboardFocusEffectsOptions = {
   onCancelAppClose: () => void;
   onCancelTabClose: () => void;
   onCheckTabForExternalChange: (tabId: string) => unknown;
+  onCloseCommandPalette: () => void;
   onCloseFindAndFocusEditor: () => void;
   onClosePreferences: () => void;
   onCloseSelectedImagePreview: () => void;
@@ -45,6 +47,7 @@ type UseAppKeyboardFocusEffectsOptions = {
   onFocusAdjacentTab: (direction: TabFocusDirection) => void;
   onFocusEditorSoon: () => void;
   onNeedsWindowCloseConfirmation: () => void;
+  onOpenCommandPalette: () => void;
   onOpenFile: () => unknown;
   onOpenWorkspace: () => unknown;
   onRequestCloseTab: (tabId: string) => void;
@@ -74,6 +77,7 @@ export function useAppKeyboardFocusEffects({
   appCloseDialogRef,
   closeTabCancelButtonRef,
   closeTabDialogRef,
+  commandPaletteVisible,
   dirtyTabCount,
   editorPaneRef,
   findInputRef,
@@ -83,6 +87,7 @@ export function useAppKeyboardFocusEffects({
   onCancelAppClose,
   onCancelTabClose,
   onCheckTabForExternalChange,
+  onCloseCommandPalette,
   onCloseFindAndFocusEditor,
   onClosePreferences,
   onCloseSelectedImagePreview,
@@ -90,6 +95,7 @@ export function useAppKeyboardFocusEffects({
   onFocusAdjacentTab,
   onFocusEditorSoon,
   onNeedsWindowCloseConfirmation,
+  onOpenCommandPalette,
   onOpenFile,
   onOpenWorkspace,
   onRequestCloseTab,
@@ -109,6 +115,16 @@ export function useAppKeyboardFocusEffects({
   setPreviewVisible,
   setStatus,
 }: UseAppKeyboardFocusEffectsOptions) {
+  // The command palette is a modal-shaped surface: it captures
+  // global input while open, so any other shortcut should be
+  // ignored. Combine the palette-visible flag with the existing
+  // `modalOpen` (preferences / dirty-tab / app-close dialogs) so
+  // the global shortcut handler bails out and the modal Esc / Tab
+  // guard fires. The individual flags are still threaded through
+  // so the guard can prioritise palette > close-tab > app-close
+  // > preferences when multiple are open.
+  const anyModalOpen = modalOpen || commandPaletteVisible;
+
   useWindowCloseConfirmation({
     allowWindowCloseRef,
     dirtyTabCount,
@@ -125,9 +141,11 @@ export function useAppKeyboardFocusEffects({
   useModalKeyboardGuard({
     appCloseDialogRef,
     closeTabDialogRef,
-    modalOpen,
+    commandPaletteVisible,
+    modalOpen: anyModalOpen,
     onCancelAppClose,
     onCancelTabClose,
+    onCloseCommandPalette,
     onClosePreferences,
     pendingAppClose,
     pendingCloseTabOpen,
@@ -140,13 +158,14 @@ export function useAppKeyboardFocusEffects({
     editorPaneRef,
     findInputRef,
     findVisible,
-    modalOpen,
+    modalOpen: anyModalOpen,
     onApplyMarkdownFormat,
     onCloseFindAndFocusEditor,
     onCloseSelectedImagePreview,
     onCreateNewFile,
     onFocusAdjacentTab,
     onFocusEditorSoon,
+    onOpenCommandPalette,
     onOpenFile,
     onOpenWorkspace,
     onRequestCloseTab,
