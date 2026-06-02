@@ -8,7 +8,7 @@ import {
 import type {
   EditorPaneHandle,
   MarkdownFormat,
-} from "../../components/EditorPane";
+} from "../../components/editor/EditorPane";
 import type {
   DraftRecord,
   EditableLineEnding,

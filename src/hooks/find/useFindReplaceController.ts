@@ -1,5 +1,5 @@
 import type { Dispatch, RefObject, SetStateAction } from "react";
-import type { EditorPaneHandle } from "../../components/EditorPane";
+import type { EditorPaneHandle } from "../../components/editor/EditorPane";
 import { useFindMatchIndexSync } from "./useFindMatchIndexSync";
 import { useFindReplaceActions } from "./useFindReplaceActions";
 import { useFindReplaceState } from "./useFindReplaceState";

@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import type { EditorPaneHandle } from "../../components/EditorPane";
+import type { EditorPaneHandle } from "../../components/editor/EditorPane";
 import type { EditorTab } from "../../types";
 import { useLatestValueRef } from "./useLatestValueRef";
 

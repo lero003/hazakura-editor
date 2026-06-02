@@ -4,7 +4,7 @@ import {
   type SetStateAction,
   useCallback,
 } from "react";
-import type { EditorPaneHandle } from "../../components/EditorPane";
+import type { EditorPaneHandle } from "../../components/editor/EditorPane";
 import {
   resizeAgentWorkbenchTerminal,
   writeAgentWorkbenchSessionInput,

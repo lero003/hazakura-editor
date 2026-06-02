@@ -2,7 +2,7 @@ import type { RefObject } from "react";
 import type {
   EditorPaneHandle,
   EditorSelectionInfo,
-} from "../../components/EditorPane";
+} from "../../components/editor/EditorPane";
 import type {
   CompareCase,
   CompareViewState,

@@ -4,7 +4,7 @@ import {
   type SetStateAction,
   useCallback,
 } from "react";
-import type { EditorPaneHandle } from "../../components/EditorPane";
+import type { EditorPaneHandle } from "../../components/editor/EditorPane";
 import { closeCurrentWindow } from "../../tauri";
 import type { PreferencesDialogMode } from "../../types";
 

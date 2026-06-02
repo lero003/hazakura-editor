@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
-import type { EditorPaneHandle, MarkdownFormat } from "../../components/EditorPane";
+import type { EditorPaneHandle, MarkdownFormat } from "../../components/editor/EditorPane";
 import type {
   EditorSettings,
   PreferencesDialogMode,

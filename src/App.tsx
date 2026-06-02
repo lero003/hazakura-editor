@@ -44,7 +44,7 @@ import { useEditorTabsState } from "./hooks/editor/useEditorTabsState";
 import { useAgentWorkbenchRuntimeState } from "./hooks/agent/useAgentWorkbenchRuntimeState";
 import { useActiveDocumentIdentity } from "./hooks/document/useActiveDocumentIdentity";
 import { useActiveDocumentSurface } from "./hooks/document/useActiveDocumentSurface";
-import { AppShell, type AppShellProps } from "./components/AppShell";
+import { AppShell, type AppShellProps } from "./components/app/AppShell";
 
 export default function App() {
   const {

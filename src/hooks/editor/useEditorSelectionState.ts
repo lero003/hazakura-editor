@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { EditorSelectionInfo } from "../../components/EditorPane";
+import type { EditorSelectionInfo } from "../../components/editor/EditorPane";
 
 export function useEditorSelectionState() {
   const [selectionInfo, setSelectionInfo] = useState<EditorSelectionInfo>({
