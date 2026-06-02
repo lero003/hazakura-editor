@@ -38,7 +38,14 @@ pub(crate) fn start_agent_workbench_session_with_label(
     terminal_columns: Option<u16>,
     terminal_rows: Option<u16>,
 ) -> Result<AgentWorkbenchSessionStartResult, String> {
-    ensure_label_is_main(label)?;
+    // The detached Agent window is now the only Agent surface
+    // (v0.8+ slice), and it owns the Start flow via
+    // useAgentLaunchGate. Gate widens from main-only to
+    // main|agent so the agent window can call this command
+    // directly. The session itself is process-singleton — the
+    // Rust session store serializes concurrent starts — so the
+    // widened gate does not introduce a race.
+    ensure_label_is_main_or_agent(label)?;
     let path_var = agent_provider_app_search_path();
     let adapter = RealAgentRuntimeAdapter::new(session_store);
 

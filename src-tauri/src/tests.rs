@@ -3169,25 +3169,34 @@ fn agent_resize_rejects_zero_dimensions_from_any_label() {
 }
 
 #[test]
-fn agent_start_rejects_agent_window_label() {
+fn agent_start_allows_agent_window_label() {
+    // As of the v0.8+ slice the detached agent window is the only
+    // Agent surface; the right pane is gone. The agent window
+    // owns the Start flow via useAgentLaunchGate, so the gate
+    // widens from main-only to main|agent. The session itself is
+    // process-singleton — the Rust session store serializes
+    // concurrent starts — so the widened gate does not introduce
+    // a race. A non-allowlisted provider is what the body rejects
+    // here, proving the label gate cleared first.
     let store = AgentWorkbenchSessionStore::default();
     let dir = unique_test_dir("start_agent_label");
     fs::create_dir_all(&dir).expect("create test dir");
 
-    // The agent window must NOT be allowed to start a session —
-    // the launch-gate + provider-selection flow stays main-only.
     let err = start_agent_workbench_session_with_label(
         AGENT_WINDOW_LABEL,
         &store,
         true,
         true,
-        AGENT_PROVIDER_CODEX.to_string(),
+        "zsh".to_string(),
         dir.to_string_lossy().to_string(),
         None,
         None,
     )
-    .expect_err("start_agent_workbench_session must reject the agent window");
-    assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
+    .expect_err("non-allowlisted provider must be rejected by the body");
+    assert!(
+        err.contains("allowlisted"),
+        "expected the body to run for the agent window, got gate error: {err}"
+    );
     assert!(store.session.lock().unwrap().is_none());
 
     let _ = fs::remove_dir_all(dir);
