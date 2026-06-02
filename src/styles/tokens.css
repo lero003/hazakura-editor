@@ -1,0 +1,67 @@
+/* === tokens.css === */
+:root {
+  --bg: #f3f6f4;
+  --surface: #ffffff;
+  --surface-rgb: 255, 255, 255;
+  --surface-strong: #ffffff;
+  --surface-strong-rgb: 255, 255, 255;
+  --surface-muted: #e9f0eb;
+  --border: #e0e6e2;
+  --border-strong: #c2cfc7;
+  --text: #1d2521;
+  --text-muted: #627267;
+  --accent: #2e5c46;
+  --accent-soft: #e2ede6;
+  --accent-glass: rgba(46, 92, 70, 0.08);
+  --danger: #9e3f43;
+  --conflict: #997838;
+  --status-bg: #1c2420;
+  --status-text: #f0f7f3;
+  --selection-bg: rgba(46, 92, 70, 0.15);
+  --scrollbar-thumb: rgba(98, 114, 103, 0.25);
+  --scrollbar-thumb-hover: rgba(98, 114, 103, 0.4);
+
+  /* CodeMirror エディタ配色 / CodeMirror Editor Colors */
+  --cm-bg: #ffffff;
+  --cm-fg: #1d2521;
+  --cm-caret: #2e5c46;
+  --cm-gutter-bg: #e9f0eb;
+  --cm-gutter-border: #e0e6e2;
+  --cm-gutter-fg: #627267;
+  --cm-active-line-bg: rgba(46, 92, 70, 0.05);
+  --cm-active-gutter-bg: rgba(46, 92, 70, 0.05);
+  --cm-selection-bg: #8fc7a5;
+  --cm-search-match-bg: rgba(153, 120, 56, 0.2);
+  --cm-search-match-active-bg: rgba(153, 120, 56, 0.5);
+  --cm-search-match-active-shadow: 0 0 0 1px #997838;
+  --cm-invisible-space: radial-gradient(circle, #7a8a81 1px, transparent 1px);
+  --cm-invisible-tab: rgba(46, 92, 70, 0.12);
+  --cm-trailing-space: rgba(158, 63, 67, 0.2);
+  --cm-mark-heading: #173b2b;
+  --cm-mark-strong: #1d2521;
+  --cm-mark-link: #245d8a;
+  --cm-mark-monospace: #245c40;
+  --cm-mark-quote: #4f6659;
+
+  /* シャドウ / Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-accent: 0 4px 16px rgba(46, 92, 70, 0.12);
+
+  /* トランジション / Transition */
+  /* easing tokens: standard / emphasized / spring */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --theme-transition: 0.35s var(--ease-standard);
+
+  color: var(--text);
+  background: var(--bg);
+  font-family:
+    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}

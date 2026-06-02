@@ -1,0 +1,39 @@
+/* === status.css === */
+/* ステータスバー: エージェントモードインジケーター / Agent Mode Status */
+.status-agent-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 650;
+  padding: 0 10px;
+  margin: 0 4px;
+  color: color-mix(in srgb, var(--status-text) 80%, transparent);
+  flex: 0 0 auto;
+}
+
+.status-agent-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--accent) 50%, transparent);
+  animation: agentPulse 2s ease-in-out infinite;
+}
+
+@keyframes agentPulse {
+  0%, 100% { opacity: 0.6; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+:root[data-theme="yakou"] .status-agent-dot {
+  background: var(--accent-gradient);
+  box-shadow: 0 0 8px rgba(124, 111, 240, 0.4);
+}
+:root[data-theme="shokou"] .status-agent-dot {
+  box-shadow: 0 0 8px rgba(242, 159, 75, 0.4);
+}
+:root[data-theme="kouyou"] .status-agent-dot {
+  box-shadow: 0 0 8px rgba(168, 68, 50, 0.4);
+}
+

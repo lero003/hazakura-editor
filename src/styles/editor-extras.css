@@ -1,0 +1,15 @@
+/* === editor-extras.css === */
+/* When placeholder is shown, the host div collapses */
+.agent-terminal-shell:has(.agent-terminal-placeholder) .agent-terminal-host {
+  display: none;
+}
+
+.agent-terminal-host .xterm {
+  height: 100%;
+}
+
+.agent-terminal-host .xterm-viewport,
+.agent-terminal-host .xterm-screen {
+  background: transparent !important;
+}
+

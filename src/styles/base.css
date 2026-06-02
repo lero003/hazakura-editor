@@ -1,0 +1,145 @@
+/* === base.css === */
+/* ── スクロールバー ── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  transition: background 0.2s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* テキスト選択 */
+::selection {
+  background: var(--selection-bg);
+  color: var(--text);
+}
+
+/* グラデーションアクセント用フォーカスリング */
+:root[data-theme="yakou"] :focus-visible,
+:root[data-theme="shokou"] :focus-visible,
+:root[data-theme="kouyou"] :focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  border-color: transparent;
+  box-shadow:
+    0 0 0 2px var(--surface),
+    0 0 0 4px var(--accent);
+}
+
+:root[data-theme="yakou"] button:focus-visible {
+  box-shadow:
+    0 0 0 2px var(--surface),
+    0 0 0 4px var(--accent);
+}
+
+:root[data-theme="shokou"] .tab-item.active::after,
+:root[data-theme="kouyou"] .tab-item.active::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent-gradient);
+}
+
+:root[data-theme="yakou"] .tabs-row {
+  background: rgba(20, 20, 30, 0.88);
+  border-bottom-color: rgba(139, 124, 248, 0.16);
+  color: var(--text);
+}
+
+:root[data-theme="shokou"] .tabs-row {
+  background: rgba(229, 241, 251, 0.72);
+  border-bottom-color: rgba(47, 128, 194, 0.16);
+  color: var(--text);
+}
+
+:root[data-theme="yakou"] .empty-tabs,
+:root[data-theme="yakou"] .document-meta,
+:root[data-theme="yakou"] .tab-button {
+  color: #b8b8d4;
+}
+
+:root[data-theme="shokou"] .empty-tabs,
+:root[data-theme="shokou"] .document-meta,
+:root[data-theme="shokou"] .tab-button {
+  color: #435f73;
+}
+
+:root[data-theme="yakou"] .tab-item.active .tab-button,
+:root[data-theme="shokou"] .tab-item.active .tab-button {
+  color: var(--text);
+}
+
+:root[data-theme="yakou"] .start-kicker,
+:root[data-theme="shokou"] .start-kicker {
+  background: var(--accent-gradient);
+  background-clip: text;
+  color: var(--accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* アンビエントグロー（Yakou / 夜光 用） */
+:root[data-theme="yakou"] .modal-backdrop {
+  background: rgba(8, 8, 14, 0.6);
+}
+
+:root[data-theme="yakou"] .close-dialog,
+:root[data-theme="yakou"] .preferences-dialog {
+  border-color: rgba(139, 124, 248, 0.18);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 40px rgba(124, 111, 240, 0.06);
+}
+
+:root[data-theme="shokou"] .close-dialog,
+:root[data-theme="shokou"] .preferences-dialog {
+  border-color: rgba(242, 159, 75, 0.14);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 32px rgba(242, 159, 75, 0.05);
+}
+
+:root[data-theme="kouyou"] .close-dialog,
+:root[data-theme="kouyou"] .preferences-dialog {
+  border-color: rgba(168, 68, 50, 0.14);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 32px rgba(168, 68, 50, 0.04);
+}
+
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
+  width: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+

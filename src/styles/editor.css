@@ -1,0 +1,234 @@
+/* === editor.css === */
+/* 丸いドットの未保存マーク */
+.tab-dirty-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--accent);
+  flex-shrink: 0;
+  margin-left: 2px;
+}
+
+.tab-close {
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  box-shadow: none;
+  color: var(--text-muted);
+  flex: 0 0 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 4px;
+  border-radius: 50%;
+  opacity: 0.72;
+  transform: scale(0.9);
+  transition: all 0.15s var(--ease-standard);
+  width: 26px;
+}
+
+.tab-item:hover .tab-close,
+.tab-item.active .tab-close {
+  opacity: 0.86;
+  transform: scale(1);
+}
+
+.tab-close:hover {
+  opacity: 1 !important;
+  background: var(--surface-strong);
+  border-color: var(--accent);
+  color: var(--danger);
+}
+
+:root[data-theme="dark"] .tab-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.document-meta {
+  align-items: center;
+  color: var(--text-muted);
+  display: flex;
+  flex: 0 1 auto;
+  font-size: 11.5px;
+  gap: 8px;
+  min-width: 0;
+  max-width: 70vw;
+  font-weight: 500;
+}
+
+.agent-mode-badge {
+  background: var(--accent-soft);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  color: var(--accent);
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1;
+  padding: 6px 9px;
+  white-space: nowrap;
+}
+
+.agent-mode-badge.pending {
+  background: rgba(153, 120, 56, 0.14);
+  color: var(--conflict);
+}
+
+.chrome-section {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.chrome-section-right {
+  margin-left: auto;
+}
+
+.chrome-divider {
+  align-self: stretch;
+  background: var(--border);
+  flex: 0 0 1px;
+  margin: 4px 0;
+  opacity: 0.7;
+  width: 1px;
+}
+
+.markdown-quick-actions {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  gap: 2px;
+}
+
+.markdown-quick-action {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  box-shadow: none;
+  color: var(--text-muted);
+  display: inline-flex;
+  font-size: 12.5px;
+  font-weight: 700;
+  height: 28px;
+  justify-content: center;
+  min-width: 28px;
+  padding: 0;
+  position: relative;
+  transition: all 0.15s var(--ease-standard);
+}
+
+.markdown-quick-action:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.markdown-quick-action.italic {
+  font-style: italic;
+}
+
+.markdown-quick-action:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.pane-toggles {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  gap: 2px;
+}
+
+.pane-toggle {
+  align-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  box-shadow: none;
+  color: var(--text-muted);
+  display: inline-flex;
+  font-size: 11.5px;
+  font-weight: 600;
+  gap: 5px;
+  height: 28px;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0 8px;
+  transition: all 0.15s var(--ease-standard);
+  white-space: nowrap;
+}
+
+.pane-toggle:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.pane-toggle.active {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 28%, transparent);
+  color: var(--accent);
+}
+
+.pane-toggle:disabled {
+  color: var(--text-muted);
+  cursor: default;
+  opacity: 0.4;
+}
+
+.pane-toggle:disabled:hover {
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.pane-toggle-icon {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 auto;
+  line-height: 0;
+}
+
+.pane-toggle-caption {
+  flex: 0 0 auto;
+  letter-spacing: 0.01em;
+}
+
+.review-changes-button {
+  align-items: center;
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent);
+  border-radius: 6px;
+  box-shadow: none;
+  color: var(--accent);
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 11.5px;
+  font-weight: 700;
+  gap: 6px;
+  min-height: 28px;
+  padding: 3px 10px;
+  white-space: nowrap;
+  transition: all 0.2s var(--ease-standard);
+}
+
+.review-changes-button:hover {
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface));
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.review-changes-dot {
+  animation: reviewDotPulse 1.8s var(--ease-standard) infinite;
+  background: var(--accent);
+  border-radius: 50%;
+  display: inline-block;
+  flex: 0 0 auto;
+  height: 6px;
+  width: 6px;
+}
+
+@keyframes reviewDotPulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.25); }
+}
+

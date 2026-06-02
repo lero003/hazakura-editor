@@ -1,0 +1,204 @@
+/* === controls.css === */
+/* トグルスイッチのモダン化 / Toggle Switch */
+.toggle-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.toggle-switch .slider {
+  position: relative;
+  display: inline-block;
+  width: 28px;
+  height: 16px;
+  background-color: var(--border-strong);
+  border-radius: 8px;
+  transition: background-color 0.2s var(--ease-standard);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.toggle-switch .slider::before {
+  position: absolute;
+  content: "";
+  height: 12px;
+  width: 12px;
+  left: 2px;
+  bottom: 2px;
+  background-color: var(--surface-strong);
+  border-radius: 50%;
+  transition: transform 0.2s var(--ease-standard);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.toggle-switch input:checked + .slider {
+  background-color: var(--accent);
+}
+
+:root[data-theme="yakou"] .toggle-switch input:checked + .slider {
+  background: var(--accent-gradient);
+}
+
+:root[data-theme="shokou"] .toggle-switch input:checked + .slider {
+  background: var(--accent-gradient);
+}
+
+:root[data-theme="kouyou"] .toggle-switch input:checked + .slider {
+  background: var(--accent-gradient);
+}
+
+.toggle-switch input:checked + .slider::before {
+  transform: translateX(12px);
+}
+
+.toggle-switch input:focus-visible + .slider {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.tabs-row {
+  background: var(--surface-muted);
+  border-bottom: 1px solid var(--border);
+  gap: 16px;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 0 16px 0 6px;
+  height: 44px;
+}
+
+.tab-list {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  overflow-x: auto;
+  gap: 4px;
+}
+
+.tab-list::-webkit-scrollbar {
+  display: none;
+}
+
+.empty-tabs {
+  align-items: center;
+  color: var(--text-muted);
+  display: flex;
+  font-size: 13px;
+  padding-left: 12px;
+  font-weight: 500;
+}
+
+/* フローティングカード型タブ / Floating Card Tabs */
+.tab-item {
+  align-items: center;
+  cursor: grab;
+  display: flex;
+  flex: 0 0 auto;
+  max-width: 200px;
+  min-width: 120px;
+  height: 34px;
+  border-radius: 6px;
+  margin: 0 2px;
+  position: relative;
+  transition: all 0.2s var(--ease-standard);
+  overflow: hidden;
+  touch-action: none;
+}
+
+.tab-item.active {
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+}
+
+.tab-item.active::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+:root[data-theme="yakou"] .tab-item.active::before {
+  background: var(--accent-gradient);
+}
+
+:root[data-theme="shokou"] .tab-item.active::before {
+  background: var(--accent-gradient);
+}
+
+:root[data-theme="kouyou"] .tab-item.active::before {
+  background: var(--accent-gradient);
+}
+
+.tab-item:not(.active):hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+:root[data-theme="dark"] .tab-item:not(.active):hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tab-item.dragging {
+  cursor: grabbing;
+  opacity: 0.5;
+  transform: scale(0.95);
+}
+
+.tab-item.drag-over {
+  border-left: 2px solid var(--accent);
+}
+
+.tab-button,
+.tab-close {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  min-width: 0;
+  box-shadow: none;
+}
+
+.tab-button {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  font-size: 12.5px;
+  gap: 6px;
+  overflow: hidden;
+  padding: 0 8px 0 12px;
+  height: 100%;
+  text-align: left;
+  white-space: nowrap;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.tab-item.active .tab-button {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.tab-name {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+

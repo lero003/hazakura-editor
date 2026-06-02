@@ -1,0 +1,39 @@
+/* === save-affirmation.css === */
+/* ── Save Affirmation ✓ ── */
+@keyframes saveAffirmationPop {
+  0% { opacity: 0; transform: scale(0.4); }
+  35% { opacity: 1; transform: scale(1.18); }
+  60% { transform: scale(0.95); }
+  100% { opacity: 0.85; transform: scale(1); }
+}
+
+@keyframes saveAffirmationFade {
+  0%, 75% { opacity: 0.85; }
+  100% { opacity: 0; }
+}
+
+.save-affirmation {
+  animation:
+    saveAffirmationPop 0.32s var(--ease-spring) forwards,
+    saveAffirmationFade 1.4s var(--ease-emphasized) forwards;
+  background: rgba(143, 199, 165, 0.22);
+  border-radius: 50%;
+  color: #8fc7a5;
+  display: inline-flex;
+  font-size: 10.5px;
+  font-weight: 700;
+  height: 16px;
+  margin-right: 6px;
+  width: 16px;
+  align-items: center;
+  justify-content: center;
+  vertical-align: -2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .save-affirmation {
+    animation: none;
+    opacity: 0.85;
+  }
+}
+
