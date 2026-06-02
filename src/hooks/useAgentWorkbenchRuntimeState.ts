@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { AgentWorkbenchSession } from "../tauri";
 import type { AgentLaunchGateState, AgentTerminalSize } from "../types";
-import { isActiveAgentSession } from "../utils";
+import { isActiveAgentSession } from "../agentWorkbench";
 
 export function useAgentWorkbenchRuntimeState() {
   const [agentLaunchGate, setAgentLaunchGate] =

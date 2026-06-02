@@ -1,7 +1,4 @@
 import type { RecentEntry } from "./types";
-import { AGENT_WORKBENCH_PROVIDERS } from "./types";
-import type { AgentWorkbenchProvider, AgentWorkbenchSession } from "./tauri";
-import type { MenuLanguage } from "./types";
 import type { EditableLineEnding, MarkdownHeading } from "./types";
 
 // ── Recent Entries ──
@@ -117,7 +114,7 @@ export function isPathInsideDirectory(
   );
 }
 
-// ── Number Helpers ──
+// ── Image Extension Helpers ──
 
 export function isSupportedImageFile(path: string): boolean {
   const extension = path.split(".").at(-1)?.toLowerCase() ?? "";
@@ -203,84 +200,7 @@ export function localizeCompareError(message: string): string {
   return message;
 }
 
-// ── Agent Helpers ──
-
-export function providerLabel(provider: AgentWorkbenchProvider): string {
-  return (
-    AGENT_WORKBENCH_PROVIDERS.find((candidate) => candidate.id === provider)
-      ?.label ?? provider
-  );
-}
-
-export function isActiveAgentSession(
-  session: AgentWorkbenchSession | null,
-): boolean {
-  return session?.status === "active";
-}
-
-export function agentSessionStateLabel(
-  session: AgentWorkbenchSession | null,
-  menuLanguage: MenuLanguage = "en",
-): string {
-  if (!session) {
-    return menuLanguage !== "en" ? "未実行" : "Not running";
-  }
-
-  switch (session.status) {
-    case "active":
-      return menuLanguage !== "en" ? "実行中" : "Running";
-    case "exited":
-      return menuLanguage !== "en" ? "終了済み" : "Exited";
-    case "stopped":
-      return menuLanguage !== "en" ? "停止済み" : "Stopped";
-  }
-}
-
-export function agentCompactSessionStateLabel(
-  session: AgentWorkbenchSession | null,
-  menuLanguage: MenuLanguage = "en",
-): string {
-  if (!session) {
-    return menuLanguage !== "en" ? "待機中" : "Idle";
-  }
-
-  return agentSessionStateLabel(session, menuLanguage);
-}
-
-export function localizeAgentGateMessage(
-  message: string,
-  menuLanguage: MenuLanguage,
-): string {
-  if (menuLanguage === "en") {
-    return message;
-  }
-
-  switch (message) {
-    case "Launch gate not checked.":
-      return "起動ゲートはまだ確認されていません。";
-    case "Checking Agent Workbench launch gate...":
-      return "エージェントワークベンチの起動ゲートを確認中です...";
-    case "Agent session exited.":
-      return "Agent セッションは終了しました。";
-    case "Agent session stopped.":
-      return "Agent セッションは停止しました。";
-    case "Provider not found; no Agent session was started.":
-      return "プロバイダーが見つからないため、Agent セッションは開始されませんでした。";
-    case "Agent session running in the selected workspace. Only the selected allowlisted CLI was launched.":
-      return "選択中のワークスペースで Agent セッションが実行中です。起動されたのは選択された allowlist 済み CLI だけです。";
-    default:
-      if (message.startsWith("Provider not found: ")) {
-        return message
-          .replace("Provider not found:", "プロバイダーが見つかりません:")
-          .replace(
-            " was not found in the app search path, including common Homebrew and user bin locations.",
-            " はアプリの検索パス（一般的な Homebrew と user bin を含む）で見つかりませんでした。",
-          );
-      }
-
-      return message;
-  }
-}
+// ── Number Helpers ──
 
 export function clampNumber(
   value: unknown,

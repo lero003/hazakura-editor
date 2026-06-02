@@ -8,7 +8,7 @@ import {
   type AgentLaunchGateState,
   type RightPaneMode,
 } from "../types";
-import { isActiveAgentSession } from "../utils";
+import { isActiveAgentSession } from "../agentWorkbench";
 
 type RefValue<T> = {
   current: T;

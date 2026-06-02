@@ -13,7 +13,7 @@ import {
   type AgentLaunchGateState,
   type AgentTerminalSize,
 } from "../types";
-import { providerLabel } from "../utils";
+import { providerLabel, reportAgentLaunchGateError } from "../agentWorkbench";
 
 type UseAgentLaunchGateOptions = {
   agentTerminalSize: AgentTerminalSize | null;
@@ -72,26 +72,28 @@ export function useAgentLaunchGate({
         const searchedList = result.preflight.searchedPaths.length
           ? result.preflight.searchedPaths.map((entry) => `  - ${entry}`).join("\n")
           : "  - (none)";
-        setAgentLaunchGate({
-          kind: "rejected",
-          message: `Provider not found: ${providerLabel(agentWorkbenchProvider)} was not found in the app search path, including Homebrew, MacPorts, /usr/local/bin, and common toolchain manager locations (bun, deno, volta, asdf, pnpm, cargo, go).\n\nSearched paths:\n${searchedList}`,
-          preflight: result.preflight,
-        });
+        reportAgentLaunchGateError(
+          setAgentLaunchGate,
+          setStatus,
+          "Agent provider not found",
+          `Provider not found: ${providerLabel(agentWorkbenchProvider)} was not found in the app search path, including Homebrew, MacPorts, /usr/local/bin, and common toolchain manager locations (bun, deno, volta, asdf, pnpm, cargo, go).\n\nSearched paths:\n${searchedList}`,
+          result.preflight,
+        );
         setAgentSession(null);
         applyAgentOutput(result.output);
-        setStatus("Agent provider not found");
         return;
       }
 
       if (!result.session) {
-        setAgentLaunchGate({
-          kind: "rejected",
-          message: "Provider not found; no Agent session was started.",
-          preflight: result.preflight,
-        });
+        reportAgentLaunchGateError(
+          setAgentLaunchGate,
+          setStatus,
+          "Agent provider not found",
+          "Provider not found; no Agent session was started.",
+          result.preflight,
+        );
         setAgentSession(null);
         applyAgentOutput(result.output);
-        setStatus("Agent provider not found");
         return;
       }
 
@@ -116,15 +118,15 @@ export function useAgentLaunchGate({
         return;
       }
 
-      setAgentLaunchGate({
-        kind: "rejected",
-        message: `Agent launch rejected: ${message}`,
-        preflight: null,
-      });
+      reportAgentLaunchGateError(
+        setAgentLaunchGate,
+        setStatus,
+        "Agent launch rejected",
+        `Agent launch rejected: ${message}`,
+      );
       if (message.toLowerCase().includes("already active")) {
         void refreshAgentSessionState();
       }
-      setStatus("Agent launch rejected");
     }
   }, [
     agentTerminalSize,
