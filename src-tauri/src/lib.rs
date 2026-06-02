@@ -8,6 +8,7 @@ pub(crate) mod commands {
     pub(crate) mod files;
     pub(crate) mod images;
     pub(crate) mod workspace;
+    pub(crate) mod workspace_broadcast;
 }
 pub(crate) mod agent;
 pub(crate) mod auto_backup;
@@ -52,6 +53,8 @@ use crate::commands::images::*;
 #[allow(unused_imports)]
 use crate::commands::workspace::*;
 #[allow(unused_imports)]
+use crate::commands::workspace_broadcast::*;
+#[allow(unused_imports)]
 use crate::menu::*;
 #[allow(unused_imports)]
 use crate::security::window_guard::*;
@@ -65,6 +68,7 @@ pub fn run() {
     let builder = tauri::Builder::default()
         .manage(AgentWorkbenchSessionStore::default())
         .manage(OpenedFileStore::default())
+        .manage(commands::workspace_broadcast::MainWorkspaceCache::default())
         .plugin(tauri_plugin_dialog::init());
 
     #[cfg(desktop)]
@@ -95,6 +99,8 @@ pub fn run() {
             open_agent_window,
             set_agent_window_theme,
             open_main_agent_pane,
+            get_main_active_workspace,
+            set_main_active_workspace,
             save_pasted_image,
             import_image_from_path,
             open_temp_print_html,

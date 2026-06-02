@@ -6,6 +6,7 @@ import {
 import {
   listWorkspaceTree,
   pickWorkspaceFolder,
+  setMainActiveWorkspace,
   type WorkspaceTreeEntry,
 } from "../../lib/tauri";
 import type { CompareAnchor, CompareViewState } from "../../types";
@@ -42,6 +43,14 @@ export function useWorkspaceOpening({
         const tree = await listWorkspaceTree(path);
         setWorkspaceTree(tree);
         setWorkspaceRootPath(path);
+        // Push the active workspace to the Rust-side cache so the
+        // detached Agent window can read it via
+        // getMainActiveWorkspace + MAIN_WORKSPACE_CHANGED_EVENT.
+        // Fire-and-forget — the agent window's "no workspace — open
+        // one in the main window" guard is a friendly affordance,
+        // not a hard correctness gate, and a transient cache
+        // failure must not block the user's folder-open action.
+        void setMainActiveWorkspace(path);
         clearImagePreview();
         setCompareView(null);
         setCompareAnchor(null);

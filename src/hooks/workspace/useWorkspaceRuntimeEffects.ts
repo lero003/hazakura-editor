@@ -1,5 +1,5 @@
-import type { Dispatch, SetStateAction } from "react";
-import type { WorkspaceTreeEntry } from "../../lib/tauri";
+import { useEffect, type Dispatch, type SetStateAction } from "react";
+import { setMainActiveWorkspace, type WorkspaceTreeEntry } from "../../lib/tauri";
 import type { DraftRecord, EditorTab } from "../../types";
 import { useOpenedFilesListener } from "../app/useOpenedFilesListener";
 import { useWindowDragDrop } from "../app/useWindowDragDrop";
@@ -71,4 +71,18 @@ export function useWorkspaceRuntimeEffects({
     onStatus: setStatus,
     workspaceRootPath,
   });
+
+  // Mirror the active workspace path into the Rust-side
+  // MainWorkspaceCache so the detached Agent window's
+  // getMainActiveWorkspace + MAIN_WORKSPACE_CHANGED_EVENT listener
+  // stay in sync with the main window's open / close / restore
+  // cycle. Fire-and-forget — the agent window's "no workspace —
+  // open one in the main window" guard is a friendly affordance,
+  // not a hard correctness gate, and a transient cache failure
+  // must not block the user's main-window flow. The Rust side
+  // dedupes the emit against the cached value, so this effect
+  // does not churn the agent window on every render.
+  useEffect(() => {
+    void setMainActiveWorkspace(workspaceRootPath);
+  }, [workspaceRootPath]);
 }

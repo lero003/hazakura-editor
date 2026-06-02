@@ -529,6 +529,41 @@ export async function openMainAgentPane(): Promise<void> {
   }
 }
 
+// Cross-window workspace bridge: the main window writes the active
+// workspace path on open / close via setMainActiveWorkspace, and the
+// detached agent window reads it on mount via getMainActiveWorkspace.
+// The agent window also subscribes to MAIN_WORKSPACE_CHANGED_EVENT
+// (see src/hooks/agent/useMainWindowWorkspace.ts) so live open /
+// close in the main window pushes into the agent window within the
+// event round-trip — no polling needed.
+export async function getMainActiveWorkspace(): Promise<string | null> {
+  if (!isTauriRuntime()) {
+    return null;
+  }
+
+  try {
+    const result = await invoke<string | null>("get_main_active_workspace");
+    return result ?? null;
+  } catch (err) {
+    console.warn("Failed to read main active workspace", err);
+    return null;
+  }
+}
+
+export async function setMainActiveWorkspace(
+  workspace: string | null,
+): Promise<void> {
+  if (!isTauriRuntime()) {
+    return;
+  }
+
+  try {
+    await invoke("set_main_active_workspace", { workspace });
+  } catch (err) {
+    console.warn("Failed to set main active workspace", err);
+  }
+}
+
 export async function setAgentWindowTheme(theme: string): Promise<void> {
   if (!isTauriRuntime()) {
     return;

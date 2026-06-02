@@ -143,6 +143,14 @@ export const MENU_OPEN_AGENT_WINDOW = "open-agent-window";
 export const OPEN_MAIN_AGENT_PANE_EVENT =
   "hazakura-note://open-main-agent-pane";
 
+// Mirror of the Rust MAIN_WORKSPACE_CHANGED_EVENT constant. The main
+// window emits this when the active workspace opens / closes; the
+// detached Agent window subscribes to learn the active workspace
+// path without depending on the main window being alive. See
+// src-tauri/src/types.rs and docs/assist-surface-strategy.md.
+export const MAIN_WORKSPACE_CHANGED_EVENT =
+  "hazakura-note://main-workspace-changed";
+
 export type AgentLaunchGateState = {
   kind: "idle" | "checking" | "passed" | "rejected";
   message: string;
