@@ -5,6 +5,8 @@ import {
 } from "./Icons";
 
 export interface RightPaneToggleCopy {
+  agentWindow: string;
+  agentWindowTitle: string;
   diffTab: string;
   diffTabTitle: string;
   outlineTab: string;

@@ -19,6 +19,7 @@ type AppTopChromeProps = {
   emptyTabsLabel: string;
   onCloseTab: (tabId: string) => void;
   onFinishTabPointerDrag: (target?: EventTarget | null) => void;
+  onOpenAgentWindow: () => void;
   onPointerEnter: () => void;
   onReviewChanges: (tab: EditorTab) => void;
   onSelectTab: (tabId: string) => void;
@@ -46,6 +47,7 @@ export function AppTopChrome({
   emptyTabsLabel,
   onCloseTab,
   onFinishTabPointerDrag,
+  onOpenAgentWindow,
   onPointerEnter,
   onReviewChanges,
   onSelectTab,
@@ -79,6 +81,7 @@ export function AppTopChrome({
         activeDirty={activeDirty}
         activeTab={activeTab}
         diffPaneActive={sidePaneMode === "compare"}
+        onOpenAgentWindow={onOpenAgentWindow}
         onReviewChanges={onReviewChanges}
         onToggleDiff={onToggleDiff}
         onToggleOutline={onToggleOutline}

@@ -322,13 +322,15 @@ export function AgentWindowApp() {
       });
   }, []);
 
-  const handleTerminalEngage = useCallback(() => {
-    setStatus("Agent terminal focused");
-  }, []);
+  // Engage / release used to overwrite the footer status with
+  // "Agent terminal focused/blurred" on every pointer enter /
+  // leave, which made the status bar unusable while the terminal
+  // surface was being touched. The status now only updates on
+  // real outcomes (start / stop / input / resize / error) — the
+  // host element is the source of truth for focus state.
+  const handleTerminalEngage = useCallback(() => {}, []);
 
-  const handleTerminalRelease = useCallback(() => {
-    setStatus("Agent terminal blurred");
-  }, []);
+  const handleTerminalRelease = useCallback(() => {}, []);
 
   const activeSession = isActiveAgentSession(agentSession);
   const sessionState = agentSession?.status ?? "none";

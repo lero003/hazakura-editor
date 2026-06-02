@@ -13,7 +13,15 @@ import {
   type SlashMenuState,
 } from "../../types/slash";
 
-const SLASH_TRIGGER_REGEX = /^\/([^\s/]*)$/;
+// The `/` must be at a word boundary — at the start of the
+// buffer, or preceded by whitespace. The lookbehind `(?<!\S)`
+// matches both: `^` is implicit at the start of the string, and
+// `\S` is "any non-whitespace" so a whitespace char or buffer
+// start satisfies the lookbehind. This lets the user type `/`
+// at any point in a line (after a space, after punctuation,
+// etc.) and still get the menu, but avoids interrupting URIs
+// like `https://example.com` where the `/` sits inside a token.
+const SLASH_TRIGGER_REGEX = /(?<!\S)\/([^\s/]*)$/;
 
 type UseSlashMenuOptions = {
   commands: readonly SlashCommand[];
@@ -46,9 +54,6 @@ function findSlashMatch(
   }
   const query = match[1] ?? "";
   const slashStart = head - 1 - query.length;
-  if (slashStart !== line.from) {
-    return null;
-  }
   return { from: slashStart, query, to: head };
 }
 
