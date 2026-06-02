@@ -61,6 +61,28 @@ html, body, #root, .app-shell,
   --cm-mark-monospace: #afe9c8;
   --cm-mark-quote: #c9d9d0;
 
+  /* xterm 用配色 / xterm Dark Colors */
+  --xterm-bg: #0a0e0c;
+  --xterm-fg: #dce6dd;
+  --xterm-cursor: #87cba8;
+  --xterm-selection-bg: #345345;
+  --xterm-black: #101512;
+  --xterm-red: #e89691;
+  --xterm-green: #8bc89a;
+  --xterm-yellow: #ddd27f;
+  --xterm-blue: #8db3ff;
+  --xterm-magenta: #cfa4df;
+  --xterm-cyan: #80c4c8;
+  --xterm-white: #dce6dd;
+  --xterm-bright-black: #758176;
+  --xterm-bright-red: #ffb5ac;
+  --xterm-bright-green: #a8ddb4;
+  --xterm-bright-yellow: #eee6a4;
+  --xterm-bright-blue: #b5ccff;
+  --xterm-bright-magenta: #d9b7ee;
+  --xterm-bright-cyan: #9ad8dc;
+  --xterm-bright-white: #f2f5ef;
+
   /* ダーク用シャドウ / Dark Shadows */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.18);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.28), 0 1px 3px rgba(0, 0, 0, 0.18);
@@ -113,6 +135,28 @@ html, body, #root, .app-shell,
   --cm-mark-monospace: #751e34;
   --cm-mark-quote: #806878;
 
+  /* xterm 用配色 / xterm Sakura Colors */
+  --xterm-bg: #32242a;
+  --xterm-fg: #f0e6e8;
+  --xterm-cursor: #a8415f;
+  --xterm-selection-bg: rgba(168, 65, 95, 0.25);
+  --xterm-black: #322830;
+  --xterm-red: #d68288;
+  --xterm-green: #a3c495;
+  --xterm-yellow: #c9ab60;
+  --xterm-blue: #b89fd6;
+  --xterm-magenta: #d9a9c0;
+  --xterm-cyan: #c4a2b2;
+  --xterm-white: #ead4d9;
+  --xterm-bright-black: #806878;
+  --xterm-bright-red: #f2aab0;
+  --xterm-bright-green: #c9dbba;
+  --xterm-bright-yellow: #ead3a0;
+  --xterm-bright-blue: #d4beee;
+  --xterm-bright-magenta: #eac2d5;
+  --xterm-bright-cyan: #ddbcc9;
+  --xterm-bright-white: #fff7f5;
+
   --shadow-sm: 0 1px 2px rgba(110, 54, 72, 0.08);
   --shadow-md: 0 4px 12px rgba(110, 54, 72, 0.1), 0 1px 3px rgba(110, 54, 72, 0.06);
   --shadow-lg: 0 12px 32px rgba(110, 54, 72, 0.16), 0 2px 8px rgba(110, 54, 72, 0.08);
@@ -164,6 +208,29 @@ html, body, #root, .app-shell,
   --cm-mark-link: #93c5fd;
   --cm-mark-monospace: #c4b5fd;
   --cm-mark-quote: #a5b4fc;
+
+  /* xterm 用配色 / xterm Yakou Colors */
+  --xterm-bg: #08080e;
+  --xterm-fg: #d4d4e8;
+  --xterm-cursor: #9888ff;
+  --xterm-selection-bg: rgba(152, 136, 255, 0.2);
+  --xterm-black: #18182a;
+  --xterm-red: #e87c88;
+  --xterm-green: #7fc8a0;
+  --xterm-yellow: #cfb86c;
+  --xterm-blue: #9db3ff;
+  --xterm-magenta: #c8a0e0;
+  --xterm-cyan: #72c8c2;
+  --xterm-white: #40406a;
+  --xterm-bright-black: #8e8eb0;
+  --xterm-bright-red: #ffaab4;
+  --xterm-bright-green: #a8e0bc;
+  --xterm-bright-yellow: #eee6a4;
+  --xterm-bright-blue: #c4cfff;
+  --xterm-bright-magenta: #e2bdfc;
+  --xterm-bright-cyan: #94e6da;
+  --xterm-bright-white: #e4e4f0;
+
   --scrollbar-thumb: rgba(142, 142, 176, 0.15);
   --scrollbar-thumb-hover: rgba(142, 142, 176, 0.3);
 
@@ -224,9 +291,56 @@ html, body, #root, .app-shell,
   --cm-mark-monospace: #205b87;
   --cm-mark-quote: #5b7589;
 
+  /* xterm 用配色 / xterm Shokou Colors */
+  --xterm-bg: #1a3552;
+  --xterm-fg: #dce8f0;
+  --xterm-cursor: #3a82b8;
+  --xterm-selection-bg: rgba(58, 130, 184, 0.2);
+  --xterm-black: #1f3a5c;
+  --xterm-red: #cc686e;
+  --xterm-green: #5ea878;
+  --xterm-yellow: #c8a842;
+  --xterm-blue: #6ba8d8;
+  --xterm-magenta: #a88ac4;
+  --xterm-cyan: #60b0c0;
+  --xterm-white: #b0cce0;
+  --xterm-bright-black: #5b7589;
+  --xterm-bright-red: #e8888e;
+  --xterm-bright-green: #8dcea0;
+  --xterm-bright-yellow: #e8d082;
+  --xterm-bright-blue: #90c4ee;
+  --xterm-bright-magenta: #c8b0d8;
+  --xterm-bright-cyan: #9ad8dc;
+  --xterm-bright-white: #f5fbff;
+
   --shadow-sm: 0 1px 2px rgba(58, 130, 184, 0.06);
   --shadow-md: 0 4px 12px rgba(58, 130, 184, 0.08), 0 1px 3px rgba(245, 168, 90, 0.06);
   --shadow-lg: 0 12px 32px rgba(58, 130, 184, 0.12), 0 2px 8px rgba(245, 168, 90, 0.08);
   --shadow-accent: 0 4px 20px rgba(58, 130, 184, 0.12);
   --accent-glow: 0 0 32px rgba(245, 168, 90, 0.06);
+}
+
+/* ライト / Light – neutral fallback. Only defines the xterm palette
+   (the main UI uses system-light defaults via no explicit overrides). */
+:root[data-theme="light"] {
+  --xterm-bg: #f3f6f4;
+  --xterm-fg: #1d2521;
+  --xterm-cursor: #2e5c46;
+  --xterm-selection-bg: rgba(46, 92, 70, 0.15);
+  --xterm-black: #1d2521;
+  --xterm-red: #9e3f43;
+  --xterm-green: #3f8a5e;
+  --xterm-yellow: #8f7a2f;
+  --xterm-blue: #2f78ad;
+  --xterm-magenta: #905fa8;
+  --xterm-cyan: #47999e;
+  --xterm-white: #e0e6e2;
+  --xterm-bright-black: #627267;
+  --xterm-bright-red: #c05a5e;
+  --xterm-bright-green: #4faf74;
+  --xterm-bright-yellow: #b8a04a;
+  --xterm-bright-blue: #4a92c8;
+  --xterm-bright-magenta: #b595cc;
+  --xterm-bright-cyan: #5fbfc4;
+  --xterm-bright-white: #ecf3ef;
 }

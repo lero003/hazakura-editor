@@ -33,118 +33,38 @@ interface XtermTheme {
   yellow: string;
 }
 
-const XTERM_THEMES: Record<string, XtermTheme> = {
-  light: {
-    background: "#f3f6f4",
-    black: "#1d2521",
-    blue: "#2f78ad",
-    brightBlack: "#627267",
-    brightBlue: "#4a92c8",
-    brightCyan: "#5fbfc4",
-    brightGreen: "#4faf74",
-    brightMagenta: "#b595cc",
-    brightRed: "#c05a5e",
-    brightWhite: "#ecf3ef",
-    brightYellow: "#b8a04a",
-    cyan: "#47999e",
-    cursor: "#2e5c46",
-    foreground: "#1d2521",
-    green: "#3f8a5e",
-    magenta: "#905fa8",
-    red: "#9e3f43",
-    selectionBackground: "rgba(46, 92, 70, 0.15)",
-    white: "#e0e6e2",
-    yellow: "#8f7a2f",
-  },
-  dark: {
-    background: "#0a0e0c",
-    black: "#101512",
-    blue: "#8db3ff",
-    brightBlack: "#758176",
-    brightBlue: "#b5ccff",
-    brightCyan: "#9ad8dc",
-    brightGreen: "#a8ddb4",
-    brightMagenta: "#d9b7ee",
-    brightRed: "#ffb5ac",
-    brightWhite: "#f2f5ef",
-    brightYellow: "#eee6a4",
-    cyan: "#80c4c8",
-    cursor: "#87cba8",
-    foreground: "#dce6dd",
-    green: "#8bc89a",
-    magenta: "#cfa4df",
-    red: "#e89691",
-    selectionBackground: "#345345",
-    white: "#dce6dd",
-    yellow: "#ddd27f",
-  },
-  sakura: {
-    background: "#32242a",
-    black: "#322830",
-    blue: "#b89fd6",
-    brightBlack: "#806878",
-    brightBlue: "#d4beee",
-    brightCyan: "#ddbcc9",
-    brightGreen: "#c9dbba",
-    brightMagenta: "#eac2d5",
-    brightRed: "#f2aab0",
-    brightWhite: "#fff7f5",
-    brightYellow: "#ead3a0",
-    cyan: "#c4a2b2",
-    cursor: "#a8415f",
-    foreground: "#f0e6e8",
-    green: "#a3c495",
-    magenta: "#d9a9c0",
-    red: "#d68288",
-    selectionBackground: "rgba(168, 65, 95, 0.25)",
-    white: "#ead4d9",
-    yellow: "#c9ab60",
-  },
-  yakou: {
-    background: "#08080e",
-    black: "#18182a",
-    blue: "#9db3ff",
-    brightBlack: "#8e8eb0",
-    brightBlue: "#c4cfff",
-    brightCyan: "#94e6da",
-    brightGreen: "#a8e0bc",
-    brightMagenta: "#e2bdfc",
-    brightRed: "#ffaab4",
-    brightWhite: "#e4e4f0",
-    brightYellow: "#eee6a4",
-    cyan: "#72c8c2",
-    cursor: "#9888ff",
-    foreground: "#d4d4e8",
-    green: "#7fc8a0",
-    magenta: "#c8a0e0",
-    red: "#e87c88",
-    selectionBackground: "rgba(152, 136, 255, 0.2)",
-    white: "#40406a",
-    yellow: "#cfb86c",
-  },
-  shokou: {
-    background: "#1a3552",
-    black: "#1f3a5c",
-    blue: "#6ba8d8",
-    brightBlack: "#5b7589",
-    brightBlue: "#90c4ee",
-    brightCyan: "#9ad8dc",
-    brightGreen: "#8dcea0",
-    brightMagenta: "#c8b0d8",
-    brightRed: "#e8888e",
-    brightWhite: "#f5fbff",
-    brightYellow: "#e8d082",
-    cyan: "#60b0c0",
-    cursor: "#3a82b8",
-    foreground: "#dce8f0",
-    green: "#5ea878",
-    magenta: "#a88ac4",
-    red: "#cc686e",
-    selectionBackground: "rgba(58, 130, 184, 0.2)",
-    white: "#b0cce0",
-    yellow: "#c8a842",
-  },
-};
+// xterm theme is read from CSS custom properties on the active
+// `:root[data-theme="..."]` block in `src/styles/themes.css`. Each
+// theme defines 20 `--xterm-*` tokens (bg, fg, cursor, selection-bg,
+// 8 normal + 8 bright ANSI colors). The `theme` prop is used as the
+// effect's dependency so this re-runs when the user switches theme;
+// the actual palette comes from the cascade, not a JS-side map.
+function readXtermTheme(): XtermTheme {
+  const style = getComputedStyle(document.documentElement);
+  const v = (name: string) => style.getPropertyValue(name).trim();
+  return {
+    background: v("--xterm-bg"),
+    black: v("--xterm-black"),
+    blue: v("--xterm-blue"),
+    brightBlack: v("--xterm-bright-black"),
+    brightBlue: v("--xterm-bright-blue"),
+    brightCyan: v("--xterm-bright-cyan"),
+    brightGreen: v("--xterm-bright-green"),
+    brightMagenta: v("--xterm-bright-magenta"),
+    brightRed: v("--xterm-bright-red"),
+    brightWhite: v("--xterm-bright-white"),
+    brightYellow: v("--xterm-bright-yellow"),
+    cyan: v("--xterm-cyan"),
+    cursor: v("--xterm-cursor"),
+    foreground: v("--xterm-fg"),
+    green: v("--xterm-green"),
+    magenta: v("--xterm-magenta"),
+    red: v("--xterm-red"),
+    selectionBackground: v("--xterm-selection-bg"),
+    white: v("--xterm-white"),
+    yellow: v("--xterm-yellow"),
+  };
+}
 
 export function AgentTerminalView({
   activeSession,
@@ -220,7 +140,7 @@ export function AgentTerminalView({
       fontSize: 13,
       lineHeight: 1.25,
       scrollback: 2000,
-      theme: XTERM_THEMES[theme] ?? XTERM_THEMES.dark,
+      theme: readXtermTheme(),
     });
 
     const fitAddon = new FitAddon();
@@ -312,7 +232,7 @@ export function AgentTerminalView({
   useEffect(() => {
     const terminal = terminalRef.current;
     if (!terminal) return;
-    const xtermTheme = XTERM_THEMES[theme] ?? XTERM_THEMES.dark;
+    const xtermTheme = readXtermTheme();
     terminal.options.theme = xtermTheme;
     // Force a repaint for the cursor color if active
     terminal.refresh(0, terminal.rows - 1);
