@@ -68,6 +68,8 @@ It may launch only allowlisted local CLI providers. The current boundary remains
 - no Git client behavior
 - no auto-apply, auto-commit, auto-push, or auto-publish
 
+Claude Code CLI can be evaluated in v0.8 as an additional `external-cli` provider candidate, but only through this same boundary. Treat it as provider readiness, not as a replacement for Agent Workbench or as approval for Claude-specific permission controls, MCP configuration, arbitrary arguments, Git integration, or provider-add UI.
+
 Moving Agent Workbench into a detached window or separate surface does not weaken these requirements.
 
 ## Apple Local Assist

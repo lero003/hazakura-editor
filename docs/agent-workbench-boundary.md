@@ -57,6 +57,8 @@ Agent Workbench mode may expose a right pane that starts an allowlisted local TU
 
 v0.5 includes Pi as another local CLI provider, but only by fitting it into this same provider model. Pi must not be treated as an RPC integration, SDK integration, provider plugin system, arbitrary provider configuration surface, or special pathway around the existing gate.
 
+v0.8 may evaluate Claude Code CLI as an additional local CLI provider candidate. That evaluation must add `claude` through the same allowlist, launch gate, selected-workspace, one-session, provider-not-found, and trusted-workspace smoke paths. It must not replace the boundary with Claude-specific permission UI, MCP configuration, arbitrary arguments, Git integration, provider-add UI, or auto-apply.
+
 The precise boundary is:
 
 - `hazakura-note` does not provide a general-purpose shell prompt.
@@ -68,6 +70,10 @@ Allowed launch targets:
 - `codex`
 - `opencode`
 - `pi`
+
+Candidate future launch target, not implemented until a dedicated v0.8 readiness slice lands:
+
+- `claude`
 
 The app must not expose an arbitrary command field.
 

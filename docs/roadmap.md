@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current release sequence and planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-02 (v0.7 published, v0.8 Assist Surface separation lane, and v1.1+ Apple Local Assist direction)
+Last reviewed: 2026-06-02 (v0.7 published, v0.8 Assist Surface separation / Claude Code CLI readiness lane, and v1.1+ Apple Local Assist direction)
 
 ## Current Position
 
@@ -296,6 +296,7 @@ Assist Surface design direction:
 
 - Separate assist/agent surfaces from Safe Editor presentation and state so Safe Editor remains useful when assist features are disabled, unavailable, or removed from a build.
 - Keep External Agent Workbench as its own explicit trust boundary: allowlisted providers, responsibility consent, selected workspace root, one active session, no restore, no provider-add UI, and no auto-apply.
+- Treat Claude Code CLI as a candidate external CLI provider to add, not as a replacement for the current provider set. It should enter through the same allowlist / launch gate / trusted-workspace smoke path as `codex`, `opencode`, and `pi`.
 - Use v0.8 to clarify shared request / candidate / review logic that a future v1.1+ Apple Local Assist helper could reuse, without implementing Foundation Models behavior yet.
 - Any Apple Foundation Models path in v1.1+ should start as selected-text or document-excerpt assistance that returns candidate text to Review Desk or Diff for explicit review.
 - Agent Workbench may work better as a separate window or detachable surface in a later design pass. Any separation must follow `docs/assist-surface-strategy.md` and preserve the existing trust boundary.
@@ -304,6 +305,7 @@ Candidate work:
 
 - demote Review Desk from persistent top-chrome placement while preserving shortcut / View menu / slash access
 - Assist Surface / Agent Workbench presentation separation, limited to surface boundaries and state ownership
+- Claude Code CLI allowlist readiness: add `claude` as a candidate local CLI provider only after checking the UI/backend allowlist, provider-not-found flow, trusted-workspace smoke checklist, and docs claim boundaries; do not make it the default provider in the first slice
 - shared candidate-review request shape for future assist output, limited to selected text / active document excerpt inputs
 - clearer separation between Safe Editor state, Agent Workbench state, and Review Desk candidate state
 - daily-editor polish that makes the app worth opening before assist features arrive: search/replace quality, file navigation, save/recovery clarity, preview/diff readability, and keyboard comfort
@@ -317,7 +319,7 @@ Candidate work:
 
 Do not require persistent review logs for the MVP. `.hazakura/reviews/` or app-managed review history needs a separate storage-policy decision.
 
-Do not use v0.8 to add Git integration, merge editing, project-wide indexing, arbitrary command execution, Agent auto-apply, Agent auto-commit, Foundation Models-backed behavior, or signing/notarization work.
+Do not use v0.8 to add Git integration, merge editing, project-wide indexing, arbitrary command execution, Agent auto-apply, Agent auto-commit, Foundation Models-backed behavior, Claude-specific permission/MCP/argument UI, provider-add UI, or signing/notarization work.
 
 ## 0.9: Product Preview Hardening
 
@@ -411,3 +413,4 @@ Use these when asking for external review:
 9. Does 0.8 separate Assist Surface concerns and improve daily Safe Editor use without pretending Review Desk is a mature workbench?
 10. Are signing, notarization, updater, and paid-distribution tasks kept out of the preview lane until v1.0 or an explicit distribution-lane approval?
 11. Does the Assist Surface strategy preserve a clean v1.1+ path to Apple Local Assist without turning Safe Editor into a generic AI platform?
+12. If Claude Code CLI is added, does it remain just another allowlisted external CLI provider rather than replacing the trust boundary or adding provider-specific control surfaces?
