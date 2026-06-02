@@ -23,7 +23,7 @@ import type {
   ThemePreference,
   WorkspaceContextMenuState,
 } from "../types";
-import { agentSessionStateLabel, providerLabel } from "../utils";
+import { agentSessionStateLabel, providerLabel } from "../agentWorkbench";
 import { QuickOpen } from "./QuickOpen";
 import { WorkspaceContextMenu } from "./WorkspaceContextMenu";
 import { AppCloseDialog, DirtyTabCloseDialog } from "./CloseDialogs";

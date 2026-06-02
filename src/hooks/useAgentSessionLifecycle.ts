@@ -11,15 +11,16 @@ import {
   type AgentWorkbenchSession,
 } from "../tauri";
 import {
-  lastAgentOutputSeq,
-  sameAgentWorkbenchSession,
-} from "../agentSession";
-import {
   type AgentLaunchGateState,
   type CompareAnchor,
   type MenuLanguage,
 } from "../types";
-import { isActiveAgentSession } from "../utils";
+import {
+  isActiveAgentSession,
+  lastAgentOutputSeq,
+  reportAgentLaunchGateError,
+  sameAgentWorkbenchSession,
+} from "../agentWorkbench";
 import { useAgentOutputSeqCursor } from "./useAgentOutputSeqCursor";
 
 type UseAgentSessionLifecycleOptions = {
@@ -77,12 +78,12 @@ export function useAgentSessionLifecycle({
         setStatus("Agent session stopped");
       }
     } catch (err) {
-      setAgentLaunchGate({
-        kind: "rejected",
-        message: String(err),
-        preflight: null,
-      });
-      setStatus("Agent session state unavailable");
+      reportAgentLaunchGateError(
+        setAgentLaunchGate,
+        setStatus,
+        "Agent session state unavailable",
+        err,
+      );
     }
   }, [
     applyAgentOutput,
@@ -115,15 +116,13 @@ export function useAgentSessionLifecycle({
             : `Sent full path to Agent: ${file.name}`,
         );
       } catch (err) {
-        setAgentLaunchGate({
-          kind: "rejected",
-          message: String(err),
-          preflight: null,
-        });
-        setStatus(
+        reportAgentLaunchGateError(
+          setAgentLaunchGate,
+          setStatus,
           menuLanguage !== "en"
             ? "Agent へのパス送信に失敗しました"
             : "Agent path send failed",
+          err,
         );
         void refreshAgentSessionState();
       }
@@ -160,12 +159,12 @@ export function useAgentSessionLifecycle({
           : "No Agent session to stop",
       );
     } catch (err) {
-      setAgentLaunchGate({
-        kind: "rejected",
-        message: String(err),
-        preflight: null,
-      });
-      setStatus("Agent session stop failed");
+      reportAgentLaunchGateError(
+        setAgentLaunchGate,
+        setStatus,
+        "Agent session stop failed",
+        err,
+      );
     } finally {
       setAgentStopPending(false);
     }

@@ -3,7 +3,7 @@ import type { EditableLineEnding, EditorTab } from "../types";
 import type { AgentWorkbenchProvider } from "../tauri";
 import type { MenuLanguage } from "../types";
 import { localizeStatusMessage } from "../statusMessages";
-import { providerLabel } from "../utils";
+import { providerLabel } from "../agentWorkbench";
 
 type AppStatusBarProps = {
   activeAgentSession: boolean;

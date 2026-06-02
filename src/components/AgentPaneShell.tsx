@@ -14,7 +14,7 @@ import {
   isActiveAgentSession,
   localizeAgentGateMessage,
   providerLabel,
-} from "../utils";
+} from "../agentWorkbench";
 import { AgentTerminalView } from "./AgentTerminalView";
 
 export function AgentPaneShell({

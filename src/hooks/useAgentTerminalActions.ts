@@ -14,7 +14,10 @@ import type {
   AgentLaunchGateState,
   AgentTerminalSize,
 } from "../types";
-import { isActiveAgentSession } from "../utils";
+import {
+  isActiveAgentSession,
+  reportAgentLaunchGateError,
+} from "../agentWorkbench";
 
 type UseAgentTerminalActionsOptions = {
   agentSession: AgentWorkbenchSession | null;
@@ -47,12 +50,12 @@ export function useAgentTerminalActions({
           void onRefreshAgentSessionState();
         })
         .catch((err) => {
-          setAgentLaunchGate({
-            kind: "rejected",
-            message: String(err),
-            preflight: null,
-          });
-          setStatus("Agent input failed");
+          reportAgentLaunchGateError(
+            setAgentLaunchGate,
+            setStatus,
+            "Agent input failed",
+            err,
+          );
           void onRefreshAgentSessionState();
         });
     },
@@ -85,8 +88,13 @@ export function useAgentTerminalActions({
         .then((state) => {
           setAgentSession(state.session);
         })
-        .catch(() => {
-          setStatus("Agent terminal resize failed");
+        .catch((err) => {
+          reportAgentLaunchGateError(
+            setAgentLaunchGate,
+            setStatus,
+            "Agent terminal resize failed",
+            err,
+          );
         });
     },
     [
