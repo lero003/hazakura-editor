@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current release sequence and planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-02 (v0.7 published, v0.8 UX lane, and Assist Surface strategy)
+Last reviewed: 2026-06-02 (v0.7 published, v0.8 Assist Surface separation lane, and v1.1+ Apple Local Assist direction)
 
 ## Current Position
 
@@ -280,40 +280,44 @@ External-agent workflow:
 - Codex should review the resulting diff before the slice is treated as accepted.
 - Review focus: boundary regressions, hidden Git/terminal/command behavior, unsafe file/path handling, missing tests or smoke evidence, and docs claims that exceed implementation.
 
-## 0.8: Review Desk UX And Editing Workbench
+## 0.8: Assist Surface Separation And Daily Editor Polish
 
-Goal: make the Review Desk feel like a usable editing workbench: compare the current text against a candidate, edit that candidate comfortably, understand the change size, and apply only by explicit user choice.
+Goal: keep the Safe Editor pleasant for daily writing and review while preparing the assist/agent surface for future v1.1+ Apple Local Assist adoption. v0.8 is not an assist-platform release; it should separate surfaces and logic so optional assist behavior can later produce reviewed candidates without becoming the default editor experience.
 
-Review Desk design direction:
+Review Desk direction:
 
-- Treat Review Desk as an editable comparison workbench, not only as a passive AI-candidate inbox.
-- The left side represents the current buffer or a selected source file. A source file view should be read-only while it is being used as the comparison base.
-- The right side represents the comparison candidate and should be directly editable. For file-backed flows, model this as a temporary candidate document rather than modifying the source in place before explicit user action.
-- Before any candidate replaces the editor buffer or a file, show the target and change amount clearly.
-- Live diff refresh while editing the candidate is desirable, but it is not required for the first slice if an explicit Compare action keeps the flow clearer and safer.
-- Applying the right side back to the active buffer is useful for manual candidate review, but the flow should stay explicit and reversible. File overwrite / Save As behavior for candidate documents needs a separate save-policy decision before implementation.
-- Agent output should enter this workbench as candidate text for review. Do not route Agent output directly into the editor body, and do not add Agent auto-apply.
-- Agent Workbench may work better as a separate window or detached surface in a later design pass. Keep it as a separate trust boundary from Safe Editor and Review Desk unless a fresh boundary review approves a narrower integration.
+- Treat Review Desk as a small safety receiver for candidate text, not as the main workbench. Its durable job is to compare Apple Local Assist / Agent / pasted candidate output against the active buffer before the user explicitly applies it.
+- Keep the current Review Desk safety model: explicit Compare, explicit Apply, no auto-save, no auto-apply, stale-preview guards, and no persistent review logs by default.
+- Reduce Review Desk's default visual prominence. Keep shortcut, View menu, and slash entry points, but do not make Review Desk a primary top-chrome control unless user testing proves it belongs there.
+- Do not pursue editable two-column workbench, live diff refresh, candidate temporary-document policy, or review history until the assist boundary and daily-editor basics are more settled.
+- Agent output may enter Review Desk as candidate text for review, and Apple Local Assist output may do the same in v1.1+ after Foundation Models work begins. Do not route generated output directly into the editor body, and do not add Agent auto-apply.
+
+Assist Surface design direction:
+
+- Separate assist/agent surfaces from Safe Editor presentation and state so Safe Editor remains useful when assist features are disabled, unavailable, or removed from a build.
+- Keep External Agent Workbench as its own explicit trust boundary: allowlisted providers, responsibility consent, selected workspace root, one active session, no restore, no provider-add UI, and no auto-apply.
+- Use v0.8 to clarify shared request / candidate / review logic that a future v1.1+ Apple Local Assist helper could reuse, without implementing Foundation Models behavior yet.
+- Any Apple Foundation Models path in v1.1+ should start as selected-text or document-excerpt assistance that returns candidate text to Review Desk or Diff for explicit review.
+- Agent Workbench may work better as a separate window or detachable surface in a later design pass. Any separation must follow `docs/assist-surface-strategy.md` and preserve the existing trust boundary.
 
 Candidate work:
 
-- editable two-column Review Desk workbench
-- clearer left/right labels, target summaries, and changed-line counts before apply/save
-- optional live diff refresh while editing the candidate, if performance and focus behavior stay calm
-- candidate temporary-document policy, including explicit overwrite versus Save As decisions
+- demote Review Desk from persistent top-chrome placement while preserving shortcut / View menu / slash access
+- Assist Surface / Agent Workbench presentation separation, limited to surface boundaries and state ownership
+- shared candidate-review request shape for future assist output, limited to selected text / active document excerpt inputs
+- clearer separation between Safe Editor state, Agent Workbench state, and Review Desk candidate state
+- daily-editor polish that makes the app worth opening before assist features arrive: search/replace quality, file navigation, save/recovery clarity, preview/diff readability, and keyboard comfort
 - command palette for existing safe app actions only
 - bounded Global Search (Cmd+Shift+F) as workspace grep, not background indexing
-- settings consolidation so Review Desk, editor, and Agent Workbench preferences are not scattered
+- settings consolidation so editor and Agent Workbench preferences are not scattered
 - detached or separate-window Agent Workbench experiment, only if the trust boundary stays explicit and follows `docs/assist-surface-strategy.md`
-- Review Desk UI formalization and first-run orientation
 - pinned / recent / starred files if they support review flow
 - Print-ready HTML export polish before native PDF export
 - Markdown toolbar and writing-experience polish where it supports review
-- optional temporary review history only if it does not require a heavy storage policy
 
 Do not require persistent review logs for the MVP. `.hazakura/reviews/` or app-managed review history needs a separate storage-policy decision.
 
-Do not use v0.8 to add Git integration, merge editing, project-wide indexing, arbitrary command execution, Agent auto-apply, Agent auto-commit, or signing/notarization work.
+Do not use v0.8 to add Git integration, merge editing, project-wide indexing, arbitrary command execution, Agent auto-apply, Agent auto-commit, Foundation Models-backed behavior, or signing/notarization work.
 
 ## 0.9: Product Preview Hardening
 
@@ -338,7 +342,7 @@ Candidate work:
 - Homebrew Cask evaluation
 - crash / log policy
 - Assist Surface boundary hardening: prove that Safe Editor can remain usable without assist code paths, and that any detached Agent Workbench surface still obeys the existing allowlist, consent, one-session, no-restore, and no-auto-apply gates
-- Apple Local Assist feasibility spike, limited to availability detection and selected-text/document-candidate flows; do not ship Foundation Models-based behavior until Review Desk/Diff review and fallback behavior are designed
+- Assist Surface boundary hardening only; do not run Apple Local Assist / Foundation Models product work before the v1.1+ lane
 
 Do not add Developer ID signing, notarization, installer packaging, or automatic updater work in v0.9 unless the user explicitly reopens the distribution lane earlier.
 
@@ -355,9 +359,23 @@ Candidate work:
 - automatic updater
 - distribution-grade Gatekeeper verification
 - build-time distribution variants for Safe Editor only, official-site developer builds, and possible Apple Local Assist enabled builds, if the Assist Surface boundary has been reviewed
-- Apple Local Assist product decision: decide whether Foundation Models-based document assistance belongs in v1.0, stays post-v1.0, or remains experimental because of availability, review, or distribution constraints
+- Apple Local Assist product decision: keep Foundation Models-based document assistance out of v1.0 unless the user explicitly opens an earlier experimental lane; the default target for real candidate-review usefulness is v1.1+
 
 Do not move signing, notarization, or updater work earlier unless the user explicitly opens that distribution lane.
+
+## 1.1+: Apple Local Assist Candidate Review
+
+Goal: make Review Desk useful as an explicit review step for Apple Foundation Models / Apple Local Assist candidate output, after Safe Editor, Assist Surface separation, and distribution basics are stable.
+
+Candidate work:
+
+- Foundation Models availability detection and fallback messaging
+- selected-text and document-excerpt request flow into a narrow macOS Apple Local Assist helper
+- structured candidate output that routes through Review Desk or Diff before any user-visible apply
+- Review Desk polish only where generated candidate review proves it is needed
+- no background workspace indexing, network-backed fallback, command execution, auto-rewrite, auto-apply, or agent-style tool use
+
+Do not treat this as a general chat, coding-agent, or provider-platform lane.
 
 ## Future
 
@@ -388,8 +406,8 @@ Use these when asking for external review:
 4. Does 0.4 improve Markdown review/navigation without over-predicting or auto-rewriting user text?
 5. Does 0.5 add Pi as a bounded CLI provider without making Agent Workbench feel like the default app mode?
 6. Does 0.6 deliver a daily-drivable safe editor — Cmd+P, auto-save, Replace, App.tsx split — before adding more Agent features?
-7. Does 0.7 ship a small Review Desk MVP and release-prep pass without expanding into the v0.8 UX vision?
+7. Does 0.7 ship a small Review Desk MVP and release-prep pass without expanding into the larger Review Desk workbench vision?
 8. Does the external-agent/Codex-review workflow catch boundary regressions before accepting implementation slices?
-9. Does 0.8 make editable candidate comparison comfortable without auto-apply or hidden provider control?
+9. Does 0.8 separate Assist Surface concerns and improve daily Safe Editor use without pretending Review Desk is a mature workbench?
 10. Are signing, notarization, updater, and paid-distribution tasks kept out of the preview lane until v1.0 or an explicit distribution-lane approval?
-11. Does the Assist Surface strategy preserve a clean path to Apple Local Assist without turning Safe Editor into a generic AI platform?
+11. Does the Assist Surface strategy preserve a clean v1.1+ path to Apple Local Assist without turning Safe Editor into a generic AI platform?

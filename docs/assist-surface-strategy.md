@@ -72,7 +72,7 @@ Moving Agent Workbench into a detached window or separate surface does not weake
 
 ## Apple Local Assist
 
-Apple Local Assist is a possible future replacement or alternative for some assist workflows after v0.9 or v1.0.
+Apple Local Assist is a possible future replacement or alternative for some assist workflows in v1.1 or later.
 
 Apple documents the Foundation Models framework as access to the on-device language model that powers Apple Intelligence, with support for text understanding and generation tasks such as summarization, extraction, classification, and refinement. Apple also documents that availability must be checked at runtime because it depends on Apple Intelligence support, user settings, and model readiness.
 
@@ -129,15 +129,16 @@ Future distribution may use build-time variants rather than runtime settings alo
 
 Build-time separation is preferred for distribution trust because it is easier to explain and audit than hiding risky features behind settings.
 
-## v0.8 To v1.0 Path
+## v0.8 To v1.1 Path
 
 v0.8 should not try to complete an assist platform.
 
 Recommended sequence:
 
-1. Keep v0.8 focused on Review Desk UX and, if approved, a detached Agent Workbench experiment that preserves the current boundary.
-2. Use v0.9 to harden the surface boundaries and run an Apple Local Assist feasibility spike only if the Safe Editor and Review Desk flows are stable.
-3. Consider Apple Local Assist in v1.0 or later only after distribution requirements, availability handling, and explicit-review flows are designed.
+1. Keep v0.8 focused on Safe Editor daily-use polish plus Assist Surface separation: reduce Review Desk to a low-prominence candidate-review receiver, clarify Agent Workbench surface/state boundaries, and keep generated output reviewable through Review Desk or Diff.
+2. Use v0.9 and v1.0 to harden preview/distribution quality and prove Safe Editor remains coherent without assist behavior.
+3. Treat Review Desk's full product usefulness as v1.1+ work, after Apple Local Assist / Foundation Models can generate selected-text or document-excerpt candidates that need explicit review.
+4. Consider Apple Local Assist only after distribution requirements, availability handling, and explicit-review flows are designed.
 
 ## Non-Goals
 

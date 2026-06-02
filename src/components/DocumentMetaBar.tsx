@@ -6,9 +6,7 @@ import {
   RightPaneToggleControls,
   type RightPaneToggleCopy,
 } from "./RightPaneToggleControls";
-import { ReviewDeskIcon } from "./Icons";
 import type { EditorTab } from "../types";
-import type { ReviewDeskCopy } from "../locale";
 
 type DocumentMetaBarProps = {
   activeDirty: boolean;
@@ -23,12 +21,9 @@ type DocumentMetaBarProps = {
   onToggleDiff: () => void;
   onToggleOutline: () => void;
   onTogglePreview: () => void;
-  onToggleReviewDesk: () => void;
   outlinePaneActive: boolean;
   previewPaneActive: boolean;
   recoveryReviewChangesLabel: string;
-  reviewDeskActive: boolean;
-  reviewDeskCopy: ReviewDeskCopy;
   sidePaneCopy: RightPaneToggleCopy;
 };
 
@@ -45,12 +40,9 @@ export function DocumentMetaBar({
   onToggleDiff,
   onToggleOutline,
   onTogglePreview,
-  onToggleReviewDesk,
   outlinePaneActive,
   previewPaneActive,
   recoveryReviewChangesLabel,
-  reviewDeskActive,
-  reviewDeskCopy,
   sidePaneCopy,
 }: DocumentMetaBarProps) {
   const showMarkdownSection = activeTab !== null;
@@ -70,20 +62,6 @@ export function DocumentMetaBar({
         </>
       ) : null}
       <section className="chrome-section" aria-label={sidePaneCopy.sidePaneMode}>
-        <button
-          aria-pressed={reviewDeskActive}
-          className={`pane-toggle${reviewDeskActive ? " active" : ""}`}
-          onClick={onToggleReviewDesk}
-          title={reviewDeskCopy.entryButtonTitle}
-          type="button"
-        >
-          <span className="pane-toggle-icon" aria-hidden="true">
-            <ReviewDeskIcon />
-          </span>
-          <span className="pane-toggle-caption">
-            {reviewDeskCopy.entryButton}
-          </span>
-        </button>
         <RightPaneToggleControls
           agentActive={agentPaneActive}
           agentAvailable={agentAvailable}

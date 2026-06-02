@@ -88,7 +88,7 @@ Example use case:
 - In-file search for the active tab, with visible match highlights, active-match selection, and keyboard next / previous / return-to-editor flow
 - Search options for case-sensitive, whole-word, and regex matching with invalid-regex reporting
 - Explicit non-Git split Diff workbench for comparing workspace text files by choosing separate source/target slots, plus active editor changes versus disk, recoverable drafts, and external-change conflicts, without inspecting Git repository state
-- Review Desk MVP for manual candidate review: visible entry button, View menu item, shortcut/slash entry points, candidate paste area, explicit compare, explicit apply-to-buffer, and stale-candidate guards for tab switches, buffer edits, candidate edits, and failed comparisons
+- Review Desk MVP for manual candidate review: View menu item, shortcut/slash entry points, candidate paste area, explicit compare, explicit apply-to-buffer, and stale-candidate guards for tab switches, buffer edits, candidate edits, and failed comparisons
 - Slash menu commands for opening Review Desk and inserting a Markdown shortcut list, with keyboard execution via Enter or Tab
 - Markdown file comparisons show heading context before changed blocks when a nearby ATX heading is available
 - Current-file Markdown outline and current-position context with click-to-jump navigation, transient scroll position HUD, and a visible cap note for very large outlines, without workspace-wide indexing
