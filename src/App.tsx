@@ -1,6 +1,7 @@
 // xterm imports moved to AgentTerminalView component
 import { useCallback } from "react";
 import { useAppPreferences } from "./hooks/useAppPreferences";
+import { useAgentWorkbenchPreferences } from "./hooks/useAgentWorkbenchPreferences";
 import { useRecentEntries } from "./hooks/useRecentEntries";
 import { useAppMenuIntegration } from "./hooks/useAppMenuIntegration";
 import { useWindowDialogActions } from "./hooks/useWindowDialogActions";
@@ -119,14 +120,16 @@ export default function App() {
     agentWorkbenchConsent,
     agentWorkbenchPreference,
     agentWorkbenchProvider,
+    setAgentWorkbenchConsent,
+    setAgentWorkbenchPreference,
+    setAgentWorkbenchProvider,
+  } = useAgentWorkbenchPreferences();
+  const {
     editorSettings,
     editorTheme,
     menuLanguage,
     previewVisible,
     resolvedTheme,
-    setAgentWorkbenchConsent,
-    setAgentWorkbenchPreference,
-    setAgentWorkbenchProvider,
     setEditorSettings,
     setMenuLanguage,
     setPreviewVisible,

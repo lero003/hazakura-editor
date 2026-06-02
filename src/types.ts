@@ -4,7 +4,7 @@ import type {
   TextFileDocument,
 } from "./tauri";
 
-// ── Storage Keys ──
+// ── Storage Keys (Safe Editor) ──
 
 export const THEME_STORAGE_KEY = "hazakura-note-theme";
 export const WORKSPACE_STATE_STORAGE_KEY = "hazakura-note-workspace-state";
@@ -14,6 +14,10 @@ export const MENU_LANGUAGE_STORAGE_KEY = "hazakura-note-menu-language";
 export const DRAFT_STATE_STORAGE_KEY = "hazakura-note-unsaved-drafts";
 export const RECENT_FILES_STORAGE_KEY = "hazakura-note-recent-files";
 export const RECENT_FOLDERS_STORAGE_KEY = "hazakura-note-recent-folders";
+
+// ── Storage Keys (Assist Surface: Agent Workbench) ──
+// See docs/assist-surface-strategy.md and docs/agent-workbench-boundary.md.
+
 export const AGENT_WORKBENCH_ENABLED_STORAGE_KEY =
   "hazakura-note-agent-workbench-enabled";
 export const AGENT_WORKBENCH_CONSENT_STORAGE_KEY =

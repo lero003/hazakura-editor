@@ -1,15 +1,8 @@
 import { useEffect, useState } from "react";
-import {
-  setCurrentWindowBackgroundColor,
-  setCurrentWindowTheme,
-  type AgentWorkbenchProvider,
-} from "../tauri";
+import { setCurrentWindowBackgroundColor, setCurrentWindowTheme } from "../tauri";
 import type { AmbientIntensity } from "../types";
 import { clampNumber } from "../utils";
 import {
-  AGENT_WORKBENCH_CONSENT_STORAGE_KEY,
-  AGENT_WORKBENCH_ENABLED_STORAGE_KEY,
-  AGENT_WORKBENCH_PROVIDER_STORAGE_KEY,
   EDITOR_SETTINGS_STORAGE_KEY,
   MENU_LANGUAGE_STORAGE_KEY,
   PREVIEW_VISIBLE_STORAGE_KEY,
@@ -33,17 +26,6 @@ export function useAppPreferences() {
   const [menuLanguage, setMenuLanguage] = useState<MenuLanguage>(() =>
     readStoredMenuLanguage(),
   );
-  const [agentWorkbenchActive] = useState(() =>
-    readStoredAgentWorkbenchEnabled(),
-  );
-  const [agentWorkbenchPreference, setAgentWorkbenchPreference] = useState(() =>
-    readStoredAgentWorkbenchEnabled(),
-  );
-  const [agentWorkbenchConsent, setAgentWorkbenchConsent] = useState(() =>
-    readStoredAgentWorkbenchConsent(),
-  );
-  const [agentWorkbenchProvider, setAgentWorkbenchProvider] =
-    useState<AgentWorkbenchProvider>(() => readStoredAgentWorkbenchProvider());
 
   const resolvedTheme = themePreference;
   const editorTheme: BaseTheme =
@@ -89,40 +71,12 @@ export function useAppPreferences() {
     window.localStorage.setItem(MENU_LANGUAGE_STORAGE_KEY, menuLanguage);
   }, [menuLanguage]);
 
-  useEffect(() => {
-    window.localStorage.setItem(
-      AGENT_WORKBENCH_ENABLED_STORAGE_KEY,
-      agentWorkbenchPreference ? "true" : "false",
-    );
-  }, [agentWorkbenchPreference]);
-
-  useEffect(() => {
-    window.localStorage.setItem(
-      AGENT_WORKBENCH_CONSENT_STORAGE_KEY,
-      agentWorkbenchConsent ? "true" : "false",
-    );
-  }, [agentWorkbenchConsent]);
-
-  useEffect(() => {
-    window.localStorage.setItem(
-      AGENT_WORKBENCH_PROVIDER_STORAGE_KEY,
-      agentWorkbenchProvider,
-    );
-  }, [agentWorkbenchProvider]);
-
   return {
-    agentWorkbenchActive,
-    agentWorkbenchConsent,
-    agentWorkbenchPreference,
-    agentWorkbenchProvider,
     editorSettings,
     editorTheme,
     menuLanguage,
     previewVisible,
     resolvedTheme,
-    setAgentWorkbenchConsent,
-    setAgentWorkbenchPreference,
-    setAgentWorkbenchProvider,
     setEditorSettings,
     setMenuLanguage,
     setPreviewVisible,
@@ -232,24 +186,6 @@ function isAmbientIntensity(value: unknown): value is AmbientIntensity {
     value === "normal" ||
     value === "dramatic"
   );
-}
-
-function readStoredAgentWorkbenchEnabled(): boolean {
-  return (
-    window.localStorage.getItem(AGENT_WORKBENCH_ENABLED_STORAGE_KEY) === "true"
-  );
-}
-
-function readStoredAgentWorkbenchConsent(): boolean {
-  return (
-    window.localStorage.getItem(AGENT_WORKBENCH_CONSENT_STORAGE_KEY) === "true"
-  );
-}
-
-function readStoredAgentWorkbenchProvider(): AgentWorkbenchProvider {
-  const value = window.localStorage.getItem(AGENT_WORKBENCH_PROVIDER_STORAGE_KEY);
-
-  return value === "opencode" || value === "pi" ? value : "codex";
 }
 
 function readSystemTheme(): BaseTheme {
