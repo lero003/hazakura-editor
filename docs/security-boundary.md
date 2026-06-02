@@ -3,7 +3,7 @@
 Status: Canonical
 Scope: Safety constraints for implementation
 Authority: High
-Last reviewed: 2026-05-29
+Last reviewed: 2026-06-02
 
 ## Core Rule
 
@@ -65,3 +65,5 @@ AI支援を入れる場合も、常時補完や自動書き換えにはしない
 4. ユーザーが明示的に適用する
 
 Agent Workbench Mode はこの AI Assistance 方針とは別の任意モードである。`hazakura-note` は汎用 shell prompt や任意コマンド欄を提供せず、直接起動できるのは allowlist された agent CLI だけに限定する。CLI 内部で何ができるかは CLI 側仕様とユーザー操作に依存するため、ユーザー責任と既存の external-change / conflict handling を明示する。
+
+Future Apple Local Assist or Foundation Models-based assistance must stay closer to the AI Assistance rule than to Agent Workbench. It may generate document candidates only after an explicit user action, and those candidates must go through Review Desk, Diff, or another explicit review/apply step before changing editor content. The first Apple Local Assist implementation must not expose tool-calling side effects, background workspace indexing, generic chat, command execution, local HTTP fallback, provider plugins, or automatic file application without a fresh boundary review.

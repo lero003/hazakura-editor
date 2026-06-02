@@ -3,7 +3,7 @@
 Status: Canonical
 Scope: Product direction and non-goals
 Authority: High
-Last reviewed: 2026-05-29
+Last reviewed: 2026-06-02
 
 ## Concept
 
@@ -47,6 +47,14 @@ Safe Editor Mode では、以下を目指さない。
 
 Optional Agent Workbench Mode は、Safe Editor Mode の置き換えにはしない。
 CLI-agent連携は [Agent Workbench Boundary](agent-workbench-boundary.md) を満たす別 trust boundary として扱い、汎用ターミナル、任意コマンド実行、Gitクライアント、自動適用フローへ広げない。
+
+## Assist Direction
+
+将来のAI支援は、Safe Editor本体に混ぜ込まず、明示的に開く補助面として扱う。
+
+[Assist Surface Strategy](assist-surface-strategy.md) は、既存のExternal Agent Workbenchを分離可能な境界に置き、v0.9またはv1.0以降でApple Foundation ModelsベースのApple Local Assistへ切り替え・併存できるようにするための設計方針である。
+
+ただし、これは汎用AI platform、provider plugin、任意コマンド実行、agent自動適用への承認ではない。Apple Local Assistを入れる場合も、まずは選択範囲や文書断片から候補を生成し、Review DeskまたはDiffで確認してからユーザーが明示的に適用する形に限定する。
 
 ## Product Principle
 

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current release sequence and planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-02 (v0.7 published and v0.8 UX lane)
+Last reviewed: 2026-06-02 (v0.7 published, v0.8 UX lane, and Assist Surface strategy)
 
 ## Current Position
 
@@ -43,6 +43,8 @@ Default Safe Editor Mode must keep these boundaries:
 - no auto-apply or auto-commit behavior
 
 Optional Agent Workbench Mode is a separate trust boundary. It may host one allowlisted local CLI provider session in a selected workspace, but it must remain explicit, consent-gated, and scoped by `docs/agent-workbench-boundary.md`.
+
+Future assist work is tracked by `docs/assist-surface-strategy.md`. The design goal is to keep assist features detachable from the Safe Editor so the product can later switch some workflows from External Agent Workbench to Apple Local Assist / Foundation Models-based document help without turning `hazakura editor` into a general AI platform.
 
 ## 0.2: Safe Editor Preview Stabilization
 
@@ -302,7 +304,7 @@ Candidate work:
 - command palette for existing safe app actions only
 - bounded Global Search (Cmd+Shift+F) as workspace grep, not background indexing
 - settings consolidation so Review Desk, editor, and Agent Workbench preferences are not scattered
-- detached or separate-window Agent Workbench experiment, only if the trust boundary stays explicit
+- detached or separate-window Agent Workbench experiment, only if the trust boundary stays explicit and follows `docs/assist-surface-strategy.md`
 - Review Desk UI formalization and first-run orientation
 - pinned / recent / starred files if they support review flow
 - Print-ready HTML export polish before native PDF export
@@ -335,6 +337,8 @@ Candidate work:
 - landing page
 - Homebrew Cask evaluation
 - crash / log policy
+- Assist Surface boundary hardening: prove that Safe Editor can remain usable without assist code paths, and that any detached Agent Workbench surface still obeys the existing allowlist, consent, one-session, no-restore, and no-auto-apply gates
+- Apple Local Assist feasibility spike, limited to availability detection and selected-text/document-candidate flows; do not ship Foundation Models-based behavior until Review Desk/Diff review and fallback behavior are designed
 
 Do not add Developer ID signing, notarization, installer packaging, or automatic updater work in v0.9 unless the user explicitly reopens the distribution lane earlier.
 
@@ -350,6 +354,8 @@ Candidate work:
 - installer or DMG distribution policy
 - automatic updater
 - distribution-grade Gatekeeper verification
+- build-time distribution variants for Safe Editor only, official-site developer builds, and possible Apple Local Assist enabled builds, if the Assist Surface boundary has been reviewed
+- Apple Local Assist product decision: decide whether Foundation Models-based document assistance belongs in v1.0, stays post-v1.0, or remains experimental because of availability, review, or distribution constraints
 
 Do not move signing, notarization, or updater work earlier unless the user explicitly opens that distribution lane.
 
@@ -368,6 +374,7 @@ Possible later work, only after a fresh boundary review:
 - session log persistence after storage policy is settled
 - native PDF export beta
 - iCloud sync, shared review, and Obsidian / Notion import
+- future OS assist integrations only if they fit `docs/assist-surface-strategy.md` and do not add arbitrary command execution, broad workspace indexing, or agent auto-apply
 
 These are not approval to add a general terminal, arbitrary command execution, Git client behavior, plugin execution, auto-apply, auto-commit, or multi-agent orchestration.
 
@@ -385,3 +392,4 @@ Use these when asking for external review:
 8. Does the external-agent/Codex-review workflow catch boundary regressions before accepting implementation slices?
 9. Does 0.8 make editable candidate comparison comfortable without auto-apply or hidden provider control?
 10. Are signing, notarization, updater, and paid-distribution tasks kept out of the preview lane until v1.0 or an explicit distribution-lane approval?
+11. Does the Assist Surface strategy preserve a clean path to Apple Local Assist without turning Safe Editor into a generic AI platform?
