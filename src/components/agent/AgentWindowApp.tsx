@@ -84,7 +84,9 @@ function readStoredAgentWorkbenchConsent(): boolean {
 
 function readStoredAgentWorkbenchProvider(): AgentWorkbenchProvider {
   const value = window.localStorage.getItem(AGENT_WORKBENCH_PROVIDER_STORAGE_KEY);
-  return value === "opencode" || value === "pi" ? value : "codex";
+  return value === "opencode" || value === "pi" || value === "claude"
+    ? value
+    : "codex";
 }
 
 function formatElapsed(fromMs: number, nowMs: number): string {
@@ -480,6 +482,7 @@ export function AgentWindowApp() {
                 <option value="codex">{providerLabel("codex")}</option>
                 <option value="opencode">{providerLabel("opencode")}</option>
                 <option value="pi">{providerLabel("pi")}</option>
+                <option value="claude">{providerLabel("claude")}</option>
               </select>
             </label>
             <button

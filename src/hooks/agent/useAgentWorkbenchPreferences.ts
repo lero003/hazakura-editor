@@ -79,5 +79,7 @@ function readStoredAgentWorkbenchConsent(): boolean {
 function readStoredAgentWorkbenchProvider(): AgentWorkbenchProvider {
   const value = window.localStorage.getItem(AGENT_WORKBENCH_PROVIDER_STORAGE_KEY);
 
-  return value === "opencode" || value === "pi" ? value : "codex";
+  return value === "opencode" || value === "pi" || value === "claude"
+    ? value
+    : "codex";
 }

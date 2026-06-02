@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { isTauriRuntime } from "./_runtime";
 
-export type AgentWorkbenchProvider = "codex" | "opencode" | "pi";
+export type AgentWorkbenchProvider = "codex" | "opencode" | "pi" | "claude";
 
 export type AgentWorkbenchPreflight = {
   provider: AgentWorkbenchProvider;

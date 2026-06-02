@@ -1364,6 +1364,7 @@ fn agent_workbench_provider_lookup_finds_allowlisted_executable() {
         AGENT_PROVIDER_CODEX,
         AGENT_PROVIDER_OPENCODE,
         AGENT_PROVIDER_PI,
+        AGENT_PROVIDER_CLAUDE,
     ] {
         let command_path = dir.join(provider);
         fs::write(&command_path, b"#!/bin/sh\n").expect("write fake provider");
@@ -1375,6 +1376,7 @@ fn agent_workbench_provider_lookup_finds_allowlisted_executable() {
         AGENT_PROVIDER_CODEX,
         AGENT_PROVIDER_OPENCODE,
         AGENT_PROVIDER_PI,
+        AGENT_PROVIDER_CLAUDE,
     ] {
         let found = find_allowlisted_agent_provider_in_path_env(provider, &path_env)
             .expect("find fake provider");

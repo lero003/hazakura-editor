@@ -51,6 +51,7 @@ export const AGENT_WORKBENCH_PROVIDERS: Array<{
   { id: "codex", label: "Codex CLI" },
   { id: "opencode", label: "OpenCode CLI" },
   { id: "pi", label: "Pi CLI" },
+  { id: "claude", label: "Claude Code CLI" },
 ];
 
 // ── Core Types ──

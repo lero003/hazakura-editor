@@ -15,6 +15,7 @@ pub(crate) const AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS: usize = 500;
 pub(crate) const AGENT_PROVIDER_CODEX: &str = "codex";
 pub(crate) const AGENT_PROVIDER_OPENCODE: &str = "opencode";
 pub(crate) const AGENT_PROVIDER_PI: &str = "pi";
+pub(crate) const AGENT_PROVIDER_CLAUDE: &str = "claude";
 pub(crate) const AGENT_PROVIDER_GUI_SEARCH_DIRS: &[&str] = &[
     "/opt/homebrew/bin",
     "/opt/homebrew/sbin",

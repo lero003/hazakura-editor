@@ -193,6 +193,7 @@ pub(crate) fn is_allowlisted_agent_provider(provider: &str) -> bool {
         crate::types::AGENT_PROVIDER_CODEX
             | crate::types::AGENT_PROVIDER_OPENCODE
             | crate::types::AGENT_PROVIDER_PI
+            | crate::types::AGENT_PROVIDER_CLAUDE
     )
 }
 
