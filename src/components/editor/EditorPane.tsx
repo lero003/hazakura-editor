@@ -589,6 +589,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   } = useSlashMenu({
     commands: slashCommands,
     enabled: true,
+    viewKey: documentKey,
     viewRef,
   });
 

@@ -26,6 +26,16 @@ const SLASH_TRIGGER_REGEX = /(?<!\S)\/([^\s/]*)$/;
 type UseSlashMenuOptions = {
   commands: readonly SlashCommand[];
   enabled: boolean;
+  // Stable identity for the current EditorView. The view is held in
+  // a ref so imperative callers can reach it, but the listener
+  // effect below needs to re-run when the view is destroyed and
+  // replaced on document switch — refs don't change identity, so we
+  // take an explicit key (e.g. `documentKey`) that does. Without this
+  // the listeners stay bound to the previous view's `contentDOM`,
+  // which is detached from the document after the switch and so no
+  // longer receives events: typing `/` in the new file would not
+  // open the slash menu.
+  viewKey: string;
   viewRef: RefObject<EditorView | null>;
 };
 
@@ -115,6 +125,7 @@ function readCursorRect(view: EditorView, head: number) {
 export function useSlashMenu({
   commands,
   enabled,
+  viewKey,
   viewRef,
 }: UseSlashMenuOptions): UseSlashMenuResult {
   const [state, setState] = useState<SlashMenuState>(HIDDEN_SLASH_STATE);
@@ -303,7 +314,7 @@ export function useSlashMenu({
       dom.removeEventListener("keyup", onSelectionChange);
       dom.removeEventListener("keydown", onKeyDown, true);
     };
-  }, [closeMenu, enabled, runCommand, state.visible, viewRef]);
+  }, [closeMenu, enabled, runCommand, state.visible, viewKey, viewRef]);
 
   return {
     activeIndex,

@@ -1,8 +1,9 @@
 /* === editor-extras.css === */
-/* When placeholder is shown, the host div collapses */
-.agent-terminal-shell:has(.agent-terminal-placeholder) .agent-terminal-host {
-  display: none;
-}
+/* The agent terminal host stays in layout flow at all times: the
+ * agent window overlays `.agent-terminal-placeholder` on top with
+ * `position: absolute; inset: 0` (see `agent-window.css`). Hiding
+ * the host with `display: none` would leave xterm at 0×0 on first
+ * mount, which broke the first session-start geometry. */
 
 .agent-terminal-host .xterm {
   height: 100%;

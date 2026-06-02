@@ -18,16 +18,74 @@
   color: var(--text);
   display: grid;
   font-family: var(--app-font-family, system-ui, -apple-system, sans-serif);
-  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  /* Five rows so the terminal row keeps the flexible 1fr regardless
+   * of whether the Start panel is currently rendered:
+   *   header / info / start (optional) / terminal (1fr) / footer.
+   * When `.agent-window-start` is not mounted the third auto row
+   * simply collapses to 0; the terminal still owns the remaining
+   * height. A four-row template `auto auto 1fr auto` would hand the
+   * flexible row to the Start panel when present and shrink the
+   * terminal to its content height, which is what produced the
+   * empty-area / pushed-down-meta layout. */
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
   height: 100vh;
 }
 
 .agent-window-shell .agent-terminal-shell {
+  background: var(--xterm-bg, var(--bg));
   border-left: 0;
   border-radius: 0;
   border-right: 0;
+  display: flex;
+  flex-direction: column;
   min-height: 0;
+  overflow: hidden;
+  position: relative;
   width: 100%;
+}
+
+.agent-window-shell .agent-terminal-host {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  padding: 8px;
+}
+
+/* `.agent-terminal-stage` wraps the xterm host so the inactive
+ * placeholder can be overlaid absolutely without covering the meta
+ * row. The stage owns `position: relative` (the placeholder's
+ * containing block) and gives the host a flex column to grow
+ * inside. */
+.agent-window-shell .agent-terminal-stage {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
+}
+
+.agent-window-shell .agent-terminal-placeholder {
+  /* Opaque background so the underlying xterm canvas is fully
+   * covered while the placeholder is shown. We render the
+   * placeholder absolutely on top of `.agent-terminal-host` (rather
+   * than hiding the host) so that xterm always initialises with
+   * measurable dimensions — the previous `display: none` toggle
+   * left xterm at 0×0 on first mount and the first session-start
+   * inherited that broken geometry. */
+  background: var(--bg);
+  color: var(--text-muted);
+  cursor: default;
+  display: grid;
+  font-family: var(--app-font-family, system-ui, -apple-system, sans-serif);
+  font-size: 13px;
+  inset: 0;
+  padding: 24px;
+  place-items: center;
+  pointer-events: none;
+  position: absolute;
+  text-align: center;
+  user-select: none;
 }
 
 .agent-terminal-meta {

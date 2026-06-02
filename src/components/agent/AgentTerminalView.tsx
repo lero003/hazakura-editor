@@ -91,6 +91,7 @@ export function AgentTerminalView({
 }) {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const terminalRef = useRef<Terminal | null>(null);
+  const fitAndNotifyRef = useRef<() => void>(() => {});
   const lastOutputSeqRef = useRef(0);
   const lastTerminalSizeRef = useRef<AgentTerminalSize | null>(null);
   const activeSessionRef = useRef(activeSession);
@@ -145,6 +146,20 @@ export function AgentTerminalView({
       if (!dimensions) {
         return;
       }
+      // `proposeDimensions` can hand back NaN cols/rows while the host
+      // hasn't been measured yet (zero height before the first layout
+      // pass, the start panel toggling the grid mid-mount). NaN survives
+      // the `Math.max(1, Math.min(500, x))` clamp and JSON-serialises as
+      // `null`, which trips the Rust `u16` deserialiser with the
+      // "invalid type: null, expected u16" footer error. Bail out
+      // instead — the ResizeObserver will refire once the host has a
+      // real size.
+      if (
+        !Number.isFinite(dimensions.cols) ||
+        !Number.isFinite(dimensions.rows)
+      ) {
+        return;
+      }
 
       const nextSize = {
         columns: Math.max(1, Math.min(500, dimensions.cols)),
@@ -168,6 +183,7 @@ export function AgentTerminalView({
         100,
       );
     };
+    fitAndNotifyRef.current = fitAndNotify;
     fitAndNotify();
 
     const dataDisposable = terminal.onData((data) => {
@@ -231,6 +247,27 @@ export function AgentTerminalView({
     terminal.refresh(0, terminal.rows - 1);
   }, [theme]);
 
+  // The host is `display: none` while the inactive placeholder is
+  // shown (editor-extras.css `:has(.agent-terminal-placeholder)`),
+  // which means xterm initialises against a 0×0 box. ResizeObserver
+  // does not reliably fire on the `display: none` → `display: block`
+  // transition, so the first session start ends up with a stale
+  // (zero) terminal geometry until a manual window resize. Trigger
+  // a refit on the next animation frame whenever the host becomes
+  // visible — when an active session begins OR previously-captured
+  // output keeps the host visible after a stop.
+  useEffect(() => {
+    if (showInactivePlaceholder) {
+      return;
+    }
+    const rafId = requestAnimationFrame(() => {
+      fitAndNotifyRef.current();
+    });
+    return () => {
+      cancelAnimationFrame(rafId);
+    };
+  }, [showInactivePlaceholder]);
+
   useEffect(() => {
     const terminal = terminalRef.current;
     if (!terminal) {
@@ -276,14 +313,16 @@ export function AgentTerminalView({
           {outputLabel}: {output.length} / {AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS}
         </span>
       </div>
-      <div
-        aria-label={terminalLabel}
-        className="agent-terminal-host"
-        ref={hostRef}
-      />
-      {showInactivePlaceholder ? (
-        <div className="agent-terminal-placeholder">{placeholder}</div>
-      ) : null}
+      <div className="agent-terminal-stage">
+        <div
+          aria-label={terminalLabel}
+          className="agent-terminal-host"
+          ref={hostRef}
+        />
+        {showInactivePlaceholder ? (
+          <div className="agent-terminal-placeholder">{placeholder}</div>
+        ) : null}
+      </div>
     </div>
   );
 }

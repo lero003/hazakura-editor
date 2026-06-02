@@ -132,6 +132,13 @@ export function AgentWindowApp() {
     useState<AgentTerminalSize | null>(null);
   const [theme, setTheme] = useState<ThemePreference>(readInitialTheme);
   const [now, setNow] = useState<number>(() => Date.now());
+  // When the session goes inactive (stopped / exited), freeze the
+  // reference timestamp used for the "started Xs ago" and "last
+  // output Xs ago" labels at the moment of transition, so the meta
+  // row stops ticking after the user stops the session. Cleared
+  // back to `null` when a new active session starts so the next
+  // run reads the live `now` again.
+  const [stoppedNowMs, setStoppedNowMs] = useState<number | null>(null);
   const [status, setStatus] = useState<string>("Detached Agent window");
   const [stopping, setStopping] = useState<boolean>(false);
   const [agentWorkbenchActive] = useState<boolean>(readStoredAgentWorkbenchEnabled);
@@ -271,8 +278,27 @@ export function AgentWindowApp() {
   }, [selectedProvider]);
 
   const handleStartSession = useCallback(() => {
+    // Stop → restart with the same provider is a "resume": keep the
+    // captured output so the user can scroll back into the previous
+    // session's tail. Switching providers (e.g. codex → pi) is not a
+    // resume — the previous session's chunks are unrelated to the new
+    // provider's stream and the `pi` provider in particular would
+    // continue appending to the stale buffer. Clear only in that case.
+    const previousProvider = agentSession?.provider;
+    if (
+      agentSession !== null &&
+      previousProvider !== undefined &&
+      previousProvider !== selectedProvider
+    ) {
+      resetAgentOutput([]);
+    }
     requestAgentLaunchGateCheck();
-  }, [requestAgentLaunchGateCheck]);
+  }, [
+    agentSession,
+    requestAgentLaunchGateCheck,
+    resetAgentOutput,
+    selectedProvider,
+  ]);
 
   const handleStopSession = useCallback(async () => {
     setStopping(true);
@@ -334,6 +360,27 @@ export function AgentWindowApp() {
 
   const activeSession = isActiveAgentSession(agentSession);
   const sessionState = agentSession?.status ?? "none";
+
+  // Snapshot the freeze timestamp when the session transitions to
+  // inactive (and there is something to freeze: a real session that
+  // just stopped/exited), and clear it whenever the session is
+  // active again. The empty initial state (`agentSession === null`
+  // before any session has run) leaves `stoppedNowMs` at `null` so
+  // the placeholder "—" labels keep their dash.
+  useEffect(() => {
+    if (activeSession) {
+      if (stoppedNowMs !== null) {
+        setStoppedNowMs(null);
+      }
+      return;
+    }
+    if (agentSession !== null && stoppedNowMs === null) {
+      setStoppedNowMs(Date.now());
+    }
+  }, [activeSession, agentSession, stoppedNowMs]);
+
+  const referenceNow = activeSession ? now : (stoppedNowMs ?? now);
+
   const lastOutputAt = useMemo(() => {
     if (agentOutput.length === 0) {
       return null;
@@ -343,10 +390,10 @@ export function AgentWindowApp() {
 
   const workspaceLabel = agentSession?.workspaceRoot ?? "no workspace";
   const startedLabel = agentSession
-    ? formatElapsed(agentSession.createdAtMs, now)
+    ? formatElapsed(agentSession.createdAtMs, referenceNow)
     : "—";
   const lastOutputLabel =
-    lastOutputAt !== null ? formatElapsed(lastOutputAt, now) : "—";
+    lastOutputAt !== null ? formatElapsed(lastOutputAt, referenceNow) : "—";
   const stateLabel = statePillLabel(sessionState, activeSession);
   const inputStateLabel = activeSession ? "ready" : "disabled";
 
