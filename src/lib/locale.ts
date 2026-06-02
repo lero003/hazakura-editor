@@ -247,7 +247,7 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
         noFolderOpen: "フォルダ未選択",
         openFile: "ファイルを開く",
         openFolder: "フォルダを開く",
-        openWorkspaceFolder: "ワークスペースフォルダを開く",
+        openWorkspaceFolder: "ワークスペースフォルダを開く",
         recentFiles: "最近使ったファイル",
         startHeading: "静かに書き始める",
         startActions: "開始操作",
@@ -429,12 +429,12 @@ export function getEditorChromeCopy(lang: MenuLanguage): EditorChromeCopy {
         findOptions: "検索オプション",
         go: "移動",
         goToLine: "指定行へ移動",
-        inlineCode: "インラインコード",
-        inlineCodeTitle: "インラインコード (Command+E)",
+        inlineCode: "インラインコード",
+        inlineCodeTitle: "インラインコード (Command+E)",
         invalidRegex: "正規表現が無効です",
         line: "行",
         lineEnding: "改行",
-        lineEndings: "改行コード",
+        lineEndings: "改行コード",
         next: "次へ",
         noMatches: "一致なし",
         noSearch: "検索なし",
@@ -492,7 +492,7 @@ export function getRecoveryCopy(lang: MenuLanguage): RecoveryCopy {
         restoreDraft: "下書きを復元",
         saveErrorActions: "保存エラーの操作",
         saveFailure:
-          "保存に失敗しました。編集内容はエディタ内に残っています。ファイルやフォルダの問題を確認してから、もう一度保存してください。",
+          "保存に失敗しました。編集内容はエディタ内に残っています。ファイルやフォルダの問題を確認してから、もう一度保存してください。",
         savedLocally: (timestamp: number) =>
           `ローカル保存: ${formatTimestamp(timestamp)}`,
         trySaveAgain: "もう一度保存",
@@ -610,8 +610,8 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
   return isJapaneseMenuLanguage(lang)
     ? {
         title: "エージェントワークベンチ",
-        modeHeading: "モード",
-        modeSectionLabel: "エージェントモード",
+        modeHeading: "モード",
+        modeSectionLabel: "エージェントモード",
         sessionHeading: "セッション",
         sessionSectionLabel: "エージェントセッション",
         boundaryHeading: "責任境界",
@@ -620,16 +620,16 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
         activeSessionMode:
           "このアプリセッションではエージェントワークベンチが有効です。",
         safeSessionMode:
-          "このアプリセッションでは Safe Editor モードが有効です。",
+          "このアプリセッションでは Safe Editor モードが有効です。",
         restartRequired:
           "エージェント画面と CLI 起動の有効状態を切り替えるには、hazakura editor の再起動が必要です。",
-        restartNow: "今すぐ再起動",
+        restartNow: "今すぐ再起動",
         restarting: "再起動中...",
-        provider: "プロバイダー",
+        provider: "プロバイダー",
         session: "セッション",
         workspace: "ワークスペース",
         noWorkspace: "ワークスペース未選択",
-        providerControl: "エージェントワークベンチのプロバイダー",
+        providerControl: "エージェントワークベンチのプロバイダー",
         boundaryItems: [
           "hazakura は汎用 shell prompt を提供しません。",
           "hazakura が直接起動できるのは許可リスト済みの agent CLI だけです。",
@@ -638,10 +638,10 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
           "CLI が作った変更を採用するかはユーザーが判断します。",
         ],
         consent: "エージェントワークベンチの責任境界を理解しました。",
-        modeBadgeActive: "エージェントモード",
-        modeBadgePending: "エージェントモード: 再起動待ち",
+        modeBadgeActive: "エージェントモード",
+        modeBadgePending: "エージェントモード: 再起動待ち",
         modeBadgeTitle:
-          "エージェントワークベンチは Safe Editor モードとは別の trust boundary です。",
+          "エージェントワークベンチは Safe Editor モードとは別の trust boundary です。",
       }
     : {
         title: "Agent Workbench",
