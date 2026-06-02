@@ -8,12 +8,12 @@ import {
   type AgentWorkbenchOutputChunk,
   type AgentWorkbenchProvider,
   type AgentWorkbenchSession,
-} from "../../tauri";
+} from "../../lib/tauri";
 import {
   type AgentLaunchGateState,
   type AgentTerminalSize,
 } from "../../types";
-import { providerLabel, reportAgentLaunchGateError } from "../../agentWorkbench";
+import { providerLabel, reportAgentLaunchGateError } from "../../features/agent/agentWorkbench";
 
 // `useAgentLaunchGate` owns the one-shot Agent Workbench launch flow:
 // preflight + `startAgentWorkbenchSession` invoke + launch-gate status

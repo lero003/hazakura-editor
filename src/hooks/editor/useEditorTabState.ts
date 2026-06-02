@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { isDirty, isSaveFailureError } from "../../editorTabs";
+import { isDirty, isSaveFailureError } from "../../features/editor/editorTabs";
 import type { DraftRecord, EditorTab } from "../../types";
 
 type UseEditorTabStateOptions = {

@@ -17,9 +17,9 @@ import type {
   MenuLanguage,
 } from "../../types";
 import type { SlashCommand } from "../../types/slash";
-import { normalizeTextLineEndings } from "../../utils";
+import { normalizeTextLineEndings } from "../../lib/utils";
 import { formatLineEndingKind } from "../document/useDocumentStatus";
-import { markdownFormatStatus } from "../../statusMessages";
+import { markdownFormatStatus } from "../../lib/statusMessages";
 
 type UseEditorCommandsOptions = {
   activeDraft: DraftRecord | null;

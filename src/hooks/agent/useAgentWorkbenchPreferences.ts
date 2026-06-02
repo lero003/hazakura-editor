@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { AgentWorkbenchProvider } from "../../tauri";
+import type { AgentWorkbenchProvider } from "../../lib/tauri";
 import {
   AGENT_WORKBENCH_CONSENT_STORAGE_KEY,
   AGENT_WORKBENCH_ENABLED_STORAGE_KEY,

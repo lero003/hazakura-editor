@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { pruneAutoBackups, saveAutoBackup } from "../../tauri";
+import { pruneAutoBackups, saveAutoBackup } from "../../lib/tauri";
 import type { EditorTab } from "../../types";
 import { useLatestValueRef } from "../app/useLatestValueRef";
 

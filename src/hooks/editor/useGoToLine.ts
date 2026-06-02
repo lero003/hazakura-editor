@@ -4,7 +4,7 @@ import {
   useCallback,
   useState,
 } from "react";
-import { isImeComposing } from "../../keyboard";
+import { isImeComposing } from "../../lib/keyboard";
 
 type EditorLineTarget = {
   goToLine: (line: number) => void;

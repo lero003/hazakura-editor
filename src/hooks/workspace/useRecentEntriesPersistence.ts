@@ -3,7 +3,7 @@ import type { RecentEntry } from "../../types";
 import {
   writeStoredRecentFiles,
   writeStoredRecentFolders,
-} from "../../storage";
+} from "../../lib/storage";
 
 type UseRecentEntriesPersistenceOptions = {
   recentFiles: RecentEntry[];

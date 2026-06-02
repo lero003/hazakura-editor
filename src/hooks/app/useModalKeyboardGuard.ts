@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { trapFocusInElement } from "../../focusTrap";
-import { isImeComposing } from "../../keyboard";
+import { trapFocusInElement } from "../../lib/focusTrap";
+import { isImeComposing } from "../../lib/keyboard";
 
 type RefValue<T> = {
   current: T | null;

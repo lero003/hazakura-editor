@@ -4,7 +4,7 @@ import {
   drainOpenedFiles,
   isTauriRuntime,
   OPENED_FILES_EVENT,
-} from "../../tauri";
+} from "../../lib/tauri";
 
 type UseOpenedFilesListenerOptions = {
   enabled: boolean;

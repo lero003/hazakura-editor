@@ -1,5 +1,5 @@
-import { isJapaneseMenuLanguage, type MenuLanguage } from "./types";
-import { EXTERNAL_CHANGE_CONFLICT_MESSAGE } from "./types";
+import { isJapaneseMenuLanguage, type MenuLanguage } from "../types";
+import { EXTERNAL_CHANGE_CONFLICT_MESSAGE } from "../types";
 
 // ── Helpers ──
 

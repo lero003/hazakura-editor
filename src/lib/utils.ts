@@ -1,5 +1,5 @@
-import type { RecentEntry } from "./types";
-import type { EditableLineEnding, MarkdownHeading } from "./types";
+import type { RecentEntry } from "../types";
+import type { EditableLineEnding, MarkdownHeading } from "../types";
 
 // ── Recent Entries ──
 

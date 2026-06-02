@@ -6,7 +6,7 @@ import EditorPane, {
 import { ImagePreviewPane } from "./preview/ImagePreviewPane";
 import { ScrollPositionHud } from "./ScrollPositionHud";
 import { StartPanel } from "../workspace/StartPanel";
-import type { SafeEditorCopy, SlashMenuCopy } from "../../locale";
+import type { SafeEditorCopy, SlashMenuCopy } from "../../lib/locale";
 import type {
   BaseTheme,
   EditorSettings,

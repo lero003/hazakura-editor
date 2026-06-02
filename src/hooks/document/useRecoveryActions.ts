@@ -3,9 +3,9 @@ import {
   type SetStateAction,
   useCallback,
 } from "react";
-import { openTextFile } from "../../tauri";
-import { createEditorTab } from "../../editorTabs";
-import { removeStoredDraft } from "../../storage";
+import { openTextFile } from "../../lib/tauri";
+import { createEditorTab } from "../../features/editor/editorTabs";
+import { removeStoredDraft } from "../../lib/storage";
 import type { DraftRecord, EditorTab } from "../../types";
 
 type UseRecoveryActionsOptions = {

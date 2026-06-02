@@ -7,7 +7,7 @@ import {
   stopAgentWorkbenchSession,
   writeAgentWorkbenchSessionInput,
   type AgentWorkbenchSession,
-} from "../../tauri";
+} from "../../lib/tauri";
 import {
   AGENT_WORKBENCH_SESSION_POLL_MS,
   THEME_STORAGE_KEY,
@@ -19,7 +19,7 @@ import {
   lastAgentOutputSeq,
   providerLabel,
   sameAgentWorkbenchSession,
-} from "../../agentWorkbench";
+} from "../../features/agent/agentWorkbench";
 import { useAgentOutputBuffer } from "../../hooks/agent/useAgentOutputBuffer";
 import { useAgentOutputSeqCursor } from "../../hooks/agent/useAgentOutputSeqCursor";
 import { AgentTerminalView } from "./AgentTerminalView";

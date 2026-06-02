@@ -4,12 +4,12 @@ import {
   openTextFile,
   type TextFileDocument,
   type WorkspaceTreeEntry,
-} from "../../tauri";
-import { createEditorTab } from "../../editorTabs";
+} from "../../lib/tauri";
+import { createEditorTab } from "../../features/editor/editorTabs";
 import {
   readPersistedWorkspaceState,
   readStoredDrafts,
-} from "../../storage";
+} from "../../lib/storage";
 import {
   MAX_RESTORED_TABS,
   type DraftRecord,

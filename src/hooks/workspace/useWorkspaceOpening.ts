@@ -7,7 +7,7 @@ import {
   listWorkspaceTree,
   pickWorkspaceFolder,
   type WorkspaceTreeEntry,
-} from "../../tauri";
+} from "../../lib/tauri";
 import type { CompareAnchor, CompareViewState } from "../../types";
 
 type UseWorkspaceOpeningOptions = {

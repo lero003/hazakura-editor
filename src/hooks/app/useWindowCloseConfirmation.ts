@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { onCurrentWindowCloseRequested } from "../../tauri";
+import { onCurrentWindowCloseRequested } from "../../lib/tauri";
 
 type RefValue<T> = {
   current: T;

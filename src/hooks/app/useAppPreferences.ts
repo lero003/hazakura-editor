@@ -3,9 +3,9 @@ import {
   setAgentWindowTheme,
   setCurrentWindowBackgroundColor,
   setCurrentWindowTheme,
-} from "../../tauri";
+} from "../../lib/tauri";
 import type { AmbientIntensity } from "../../types";
-import { clampNumber } from "../../utils";
+import { clampNumber } from "../../lib/utils";
 import {
   EDITOR_SETTINGS_STORAGE_KEY,
   MENU_LANGUAGE_STORAGE_KEY,

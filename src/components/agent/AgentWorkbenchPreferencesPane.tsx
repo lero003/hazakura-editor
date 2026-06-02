@@ -1,5 +1,5 @@
-import type { AgentWorkbenchCopy } from "../../locale";
-import type { AgentWorkbenchProvider } from "../../tauri";
+import type { AgentWorkbenchCopy } from "../../lib/locale";
+import type { AgentWorkbenchProvider } from "../../lib/tauri";
 import { AGENT_WORKBENCH_PROVIDERS } from "../../types";
 
 type AgentWorkbenchPreferencesPaneProps = {

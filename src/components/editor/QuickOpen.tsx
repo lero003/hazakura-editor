@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { WorkspaceTreeEntry } from "../../tauri";
+import type { WorkspaceTreeEntry } from "../../lib/tauri";
 import type { MenuLanguage } from "../../types";
 
 type QuickOpenProps = {

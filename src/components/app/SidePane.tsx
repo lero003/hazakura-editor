@@ -1,5 +1,5 @@
 import type { RefObject } from "react";
-import type { SidePaneCopy } from "../../locale";
+import type { SidePaneCopy } from "../../lib/locale";
 import type {
   AgentLaunchGateState,
   AgentTerminalSize,
@@ -16,7 +16,7 @@ import type {
   AgentWorkbenchOutputChunk,
   AgentWorkbenchProvider,
   AgentWorkbenchSession,
-} from "../../tauri";
+} from "../../lib/tauri";
 import { AgentPaneShell } from "../agent/AgentPaneShell";
 import { DiffPane } from "../diff/DiffPane";
 import { DiffSetupPane } from "../diff/DiffSetupPane";

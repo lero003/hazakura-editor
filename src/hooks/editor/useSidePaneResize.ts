@@ -13,7 +13,7 @@ import {
   MIN_PREVIEW_COLUMN_PERCENT,
   type RightPaneMode,
 } from "../../types";
-import { clampNumber } from "../../utils";
+import { clampNumber } from "../../lib/utils";
 
 type UseSidePaneResizeOptions = {
   sidePaneMode: RightPaneMode | null;

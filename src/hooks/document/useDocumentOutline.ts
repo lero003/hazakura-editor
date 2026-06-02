@@ -8,7 +8,7 @@ import {
 import {
   findCurrentMarkdownHeading,
   parseMarkdownHeadingLine,
-} from "../../utils";
+} from "../../lib/utils";
 
 type UseDocumentOutlineOptions = {
   activeContents: string;

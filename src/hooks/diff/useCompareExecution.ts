@@ -3,9 +3,9 @@ import {
   type SetStateAction,
   useCallback,
 } from "react";
-import { buildLineDiff } from "../../diff";
-import { openTextFile } from "../../tauri";
-import { localizeCompareError } from "../../utils";
+import { buildLineDiff } from "../../features/diff/diff";
+import { openTextFile } from "../../lib/tauri";
+import { localizeCompareError } from "../../lib/utils";
 import type {
   CompareAnchor,
   CompareCase,

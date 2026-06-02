@@ -3,8 +3,8 @@ import {
   type SetStateAction,
   useCallback,
 } from "react";
-import { getFileMetadata, openTextFile } from "../../tauri";
-import { createEditorTab, isDirty } from "../../editorTabs";
+import { getFileMetadata, openTextFile } from "../../lib/tauri";
+import { createEditorTab, isDirty } from "../../features/editor/editorTabs";
 import {
   EXTERNAL_CHANGE_CONFLICT_MESSAGE,
   type EditorTab,

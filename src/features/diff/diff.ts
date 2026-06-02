@@ -2,8 +2,8 @@ import {
   DIFF_MAX_LINE_PRODUCT,
   type CompareViewState,
   type DiffLine,
-} from "./types";
-import { normalizeTextLineEndings } from "./utils";
+} from "../../types";
+import { normalizeTextLineEndings } from "../../lib/utils";
 
 export function buildLineDiff(
   leftContents: string,

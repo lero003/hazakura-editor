@@ -3,8 +3,8 @@ import {
   type MouseEvent as ReactMouseEvent,
   useState,
 } from "react";
-import type { WorkspaceTreeEntry } from "../../tauri";
-import { isSupportedImageFile } from "../../utils";
+import type { WorkspaceTreeEntry } from "../../lib/tauri";
+import { isSupportedImageFile } from "../../lib/utils";
 import {
   ChevronIcon,
   FolderIcon,

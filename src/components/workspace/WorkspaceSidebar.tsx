@@ -1,6 +1,6 @@
 import type { MouseEvent as ReactMouseEvent } from "react";
-import type { WorkspaceTreeEntry } from "../../tauri";
-import type { SafeEditorCopy } from "../../locale";
+import type { WorkspaceTreeEntry } from "../../lib/tauri";
+import type { SafeEditorCopy } from "../../lib/locale";
 import { PlusIcon } from "../app/Icons";
 import { WorkspaceTree } from "./WorkspaceTree";
 

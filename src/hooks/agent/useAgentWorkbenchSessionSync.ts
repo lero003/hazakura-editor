@@ -2,13 +2,13 @@ import { useEffect, type Dispatch, type SetStateAction } from "react";
 import type {
   AgentWorkbenchOutputChunk,
   AgentWorkbenchSession,
-} from "../../tauri";
+} from "../../lib/tauri";
 import {
   AGENT_WORKBENCH_SESSION_POLL_MS,
   type AgentLaunchGateState,
   type RightPaneMode,
 } from "../../types";
-import { isActiveAgentSession } from "../../agentWorkbench";
+import { isActiveAgentSession } from "../../features/agent/agentWorkbench";
 
 // `useAgentWorkbenchSessionSync` owns the Agent Workbench
 // background-sync effects: (a) demote the right pane to `preview`

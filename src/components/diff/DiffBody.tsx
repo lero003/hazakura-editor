@@ -11,7 +11,7 @@ import {
   findCurrentMarkdownHeading,
   isMarkdownDocumentPath,
   parseMarkdownHeadingLine,
-} from "../../utils";
+} from "../../lib/utils";
 
 export function DiffBody({
   compareCase,

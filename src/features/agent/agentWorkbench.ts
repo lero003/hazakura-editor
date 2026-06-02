@@ -7,12 +7,12 @@ import type {
   AgentWorkbenchPreflight,
   AgentWorkbenchProvider,
   AgentWorkbenchSession,
-} from "./tauri";
+} from "../../lib/tauri";
 import {
   type AgentLaunchGateState,
   AGENT_WORKBENCH_PROVIDERS,
   type MenuLanguage,
-} from "./types";
+} from "../../types";
 
 // Agent Workbench stateless helpers live in this file so that the
 // Safe Editor utility layer (`utils.ts`) does not carry Assist

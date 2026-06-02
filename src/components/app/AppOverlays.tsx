@@ -7,12 +7,12 @@ import type {
   AgentWorkbenchCopy,
   PreferencesCopy,
   RecoveryCopy,
-} from "../../locale";
+} from "../../lib/locale";
 import type {
   AgentWorkbenchProvider,
   AgentWorkbenchSession,
   WorkspaceTreeEntry,
-} from "../../tauri";
+} from "../../lib/tauri";
 import type {
   CompareAnchor,
   DraftRecord,
@@ -23,7 +23,7 @@ import type {
   ThemePreference,
   WorkspaceContextMenuState,
 } from "../../types";
-import { agentSessionStateLabel, providerLabel } from "../../agentWorkbench";
+import { agentSessionStateLabel, providerLabel } from "../../features/agent/agentWorkbench";
 import { QuickOpen } from "../editor/QuickOpen";
 import { WorkspaceContextMenu } from "../workspace/WorkspaceContextMenu";
 import { AppCloseDialog, DirtyTabCloseDialog } from "./CloseDialogs";

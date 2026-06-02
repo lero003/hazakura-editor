@@ -11,7 +11,7 @@ import type {
   RightPaneMode,
   TextDocumentStats,
 } from "../../types";
-import { normalizeTextLineEndings } from "../../utils";
+import { normalizeTextLineEndings } from "../../lib/utils";
 
 type SelectionInfo = {
   column: number;

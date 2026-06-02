@@ -1,9 +1,9 @@
 import { StatusBar } from "./StatusBar";
 import type { EditableLineEnding, EditorTab } from "../../types";
-import type { AgentWorkbenchProvider } from "../../tauri";
+import type { AgentWorkbenchProvider } from "../../lib/tauri";
 import type { MenuLanguage } from "../../types";
-import { localizeStatusMessage } from "../../statusMessages";
-import { providerLabel } from "../../agentWorkbench";
+import { localizeStatusMessage } from "../../lib/statusMessages";
+import { providerLabel } from "../../features/agent/agentWorkbench";
 
 type AppStatusBarProps = {
   activeAgentSession: boolean;

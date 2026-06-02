@@ -7,7 +7,7 @@ import {
   isCommandShortcut,
   isEditorKeyboardTarget,
   isImeComposing,
-} from "../../keyboard";
+} from "../../lib/keyboard";
 import type { EditorSettings, PreferencesDialogMode } from "../../types";
 
 type RefValue<T> = {

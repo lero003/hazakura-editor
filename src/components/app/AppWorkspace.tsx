@@ -10,13 +10,13 @@ import { EditorMainPane } from "../editor/EditorMainPane";
 import { PaneResizer } from "../editor/PaneResizer";
 import { SidePane } from "./SidePane";
 import { WorkspaceSidebar } from "../workspace/WorkspaceSidebar";
-import type { SafeEditorCopy, SidePaneCopy, SlashMenuCopy } from "../../locale";
+import type { SafeEditorCopy, SidePaneCopy, SlashMenuCopy } from "../../lib/locale";
 import type {
   AgentWorkbenchOutputChunk,
   AgentWorkbenchProvider,
   AgentWorkbenchSession,
   WorkspaceTreeEntry,
-} from "../../tauri";
+} from "../../lib/tauri";
 import type {
   AgentLaunchGateState,
   AgentTerminalSize,

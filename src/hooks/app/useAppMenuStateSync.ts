@@ -1,12 +1,12 @@
 import { useEffect } from "react";
-import { updateAppMenuState, type AppMenuRecentItem } from "../../tauri";
+import { updateAppMenuState, type AppMenuRecentItem } from "../../lib/tauri";
 import type {
   EditorSettings,
   MenuLanguage,
   RecentEntry,
   ThemePreference,
 } from "../../types";
-import { buildRecentDisplayEntries } from "../../utils";
+import { buildRecentDisplayEntries } from "../../lib/utils";
 
 type UseAppMenuStateSyncOptions = {
   activeDirty: boolean;

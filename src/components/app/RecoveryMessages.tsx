@@ -1,4 +1,4 @@
-import type { RecoveryCopy } from "../../locale";
+import type { RecoveryCopy } from "../../lib/locale";
 import type { DraftRecord, EditorTab } from "../../types";
 
 type RecoveryMessagesProps = {

@@ -4,7 +4,7 @@ import {
   useCallback,
   useState,
 } from "react";
-import { openWorkspaceImage } from "../../tauri";
+import { openWorkspaceImage } from "../../lib/tauri";
 import type { CompareViewState, EditorTab, ImagePreviewState } from "../../types";
 
 type UseImagePreviewOptions = {

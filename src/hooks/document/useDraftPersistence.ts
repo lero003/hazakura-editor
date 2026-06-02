@@ -3,9 +3,9 @@ import {
   draftRecordFromTab,
   upsertDraftRecord,
   writeStoredDrafts,
-} from "../../storage";
+} from "../../lib/storage";
 import type { DraftRecord, EditorTab } from "../../types";
-import { isDirty } from "../../editorTabs";
+import { isDirty } from "../../features/editor/editorTabs";
 
 type RefValue<T> = {
   current: T;

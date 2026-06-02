@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { setCurrentWindowTitle } from "../../tauri";
+import { setCurrentWindowTitle } from "../../lib/tauri";
 
 type TitledDocument = {
   name: string;

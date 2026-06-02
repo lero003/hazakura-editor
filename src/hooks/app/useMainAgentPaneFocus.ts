@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
-import { isTauriRuntime } from "../../tauri";
+import { isTauriRuntime } from "../../lib/tauri";
 import { OPEN_MAIN_AGENT_PANE_EVENT } from "../../types";
 
 // Reverse-link listener: the detached Agent window fires

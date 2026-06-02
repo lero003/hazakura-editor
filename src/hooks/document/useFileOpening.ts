@@ -8,15 +8,15 @@ import {
   openTextFile,
   pickMarkdownFile,
   pickNewMarkdownFilePath,
-} from "../../tauri";
-import { createEditorTab } from "../../editorTabs";
-import { readStoredDrafts, upsertDraftRecord } from "../../storage";
-import { isComparableTextFile } from "../../diff";
-import { resolveLocalMarkdownLinkTarget } from "../../markdownLinks";
+} from "../../lib/tauri";
+import { createEditorTab } from "../../features/editor/editorTabs";
+import { readStoredDrafts, upsertDraftRecord } from "../../lib/storage";
+import { isComparableTextFile } from "../../features/diff/diff";
+import { resolveLocalMarkdownLinkTarget } from "../../features/editor/markdownLinks";
 import {
   isSupportedImageFile,
   suggestedNewFilePath,
-} from "../../utils";
+} from "../../lib/utils";
 import type {
   CompareViewState,
   DraftRecord,

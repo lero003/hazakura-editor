@@ -1,7 +1,7 @@
 import { type Dispatch, type SetStateAction, useCallback } from "react";
-import { listWorkspaceDirectory, listWorkspaceTree } from "../../tauri";
-import type { WorkspaceTreeEntry } from "../../tauri";
-import { replaceWorkspaceTreeEntry } from "../../workspaceTree";
+import { listWorkspaceDirectory, listWorkspaceTree } from "../../lib/tauri";
+import type { WorkspaceTreeEntry } from "../../lib/tauri";
+import { replaceWorkspaceTreeEntry } from "../../features/workspace/workspaceTree";
 
 type UseWorkspaceTreeLoaderOptions = {
   onError: (message: string | null) => void;

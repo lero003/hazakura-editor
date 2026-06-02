@@ -1,6 +1,6 @@
-import type { TextFileDocument } from "./tauri";
-import type { EditorTab } from "./types";
-import { normalizeTextLineEndings } from "./utils";
+import type { TextFileDocument } from "../../lib/tauri";
+import type { EditorTab } from "../../types";
+import { normalizeTextLineEndings } from "../../lib/utils";
 
 export function createEditorTab(file: TextFileDocument): EditorTab {
   const editorContents = normalizeTextLineEndings(file.contents, "lf");

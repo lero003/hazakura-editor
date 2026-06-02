@@ -5,7 +5,7 @@ import {
   useCallback,
 } from "react";
 import type { EditorPaneHandle } from "../../components/editor/EditorPane";
-import { closeCurrentWindow } from "../../tauri";
+import { closeCurrentWindow } from "../../lib/tauri";
 import type { PreferencesDialogMode } from "../../types";
 
 type UseWindowDialogActionsOptions = {

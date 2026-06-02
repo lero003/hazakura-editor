@@ -1,5 +1,5 @@
-import type { MarkdownFormat } from "./components/editor/EditorPane";
-import type { MenuLanguage } from "./types";
+import type { MarkdownFormat } from "../components/editor/EditorPane";
+import type { MenuLanguage } from "../types";
 
 export function localizeStatusMessage(
   message: string,

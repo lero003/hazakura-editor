@@ -3,9 +3,9 @@ import {
   readStoredRecentFiles,
   readStoredRecentFolders,
   upsertRecentEntry,
-} from "../../storage";
+} from "../../lib/storage";
 import type { RecentEntry } from "../../types";
-import { fileNameFromPath, folderLabelFromPath } from "../../utils";
+import { fileNameFromPath, folderLabelFromPath } from "../../lib/utils";
 import { useLatestValueRef } from "../app/useLatestValueRef";
 import { useRecentEntriesPersistence } from "./useRecentEntriesPersistence";
 

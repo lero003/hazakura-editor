@@ -6,7 +6,7 @@ import type {
   EditorChromeCopy,
   RecoveryCopy,
   SidePaneCopy,
-} from "../../locale";
+} from "../../lib/locale";
 import type {
   EditorTab,
   RightPaneMode,

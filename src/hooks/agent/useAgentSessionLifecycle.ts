@@ -9,7 +9,7 @@ import {
   writeAgentWorkbenchSessionInput,
   type AgentWorkbenchOutputChunk,
   type AgentWorkbenchSession,
-} from "../../tauri";
+} from "../../lib/tauri";
 import {
   type AgentLaunchGateState,
   type CompareAnchor,
@@ -20,7 +20,7 @@ import {
   lastAgentOutputSeq,
   reportAgentLaunchGateError,
   sameAgentWorkbenchSession,
-} from "../../agentWorkbench";
+} from "../../features/agent/agentWorkbench";
 import { useAgentOutputSeqCursor } from "./useAgentOutputSeqCursor";
 
 // `useAgentSessionLifecycle` owns the per-session action handlers for

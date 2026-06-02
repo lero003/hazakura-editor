@@ -8,10 +8,10 @@ import {
   saveTextFile,
   saveTextFileAs,
   type SavedFileState,
-} from "../../tauri";
-import { createEditorTab, isDirty } from "../../editorTabs";
-import { removeStoredDraft } from "../../storage";
-import { suggestedSaveAsPath } from "../../utils";
+} from "../../lib/tauri";
+import { createEditorTab, isDirty } from "../../features/editor/editorTabs";
+import { removeStoredDraft } from "../../lib/storage";
+import { suggestedSaveAsPath } from "../../lib/utils";
 import type { EditorTab } from "../../types";
 
 type UseSaveActionsOptions = {

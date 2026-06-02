@@ -1,4 +1,4 @@
-import type { WorkspaceTreeEntry } from "./tauri";
+import type { WorkspaceTreeEntry } from "../../lib/tauri";
 
 export function replaceWorkspaceTreeEntry(
   tree: WorkspaceTreeEntry,

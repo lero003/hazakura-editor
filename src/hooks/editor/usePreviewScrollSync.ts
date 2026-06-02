@@ -9,7 +9,7 @@ import {
   type EditorTab,
   type MarkdownHeading,
 } from "../../types";
-import { isMarkdownDocumentPath } from "../../utils";
+import { isMarkdownDocumentPath } from "../../lib/utils";
 
 type EditorScrollTarget = {
   setScrollRatio: (ratio: number, tolerancePx: number) => boolean;

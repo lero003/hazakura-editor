@@ -3,9 +3,9 @@ import {
   type SetStateAction,
   useCallback,
 } from "react";
-import { revealPathInFileManager, type WorkspaceTreeEntry } from "../../tauri";
-import { isComparableTextFile } from "../../diff";
-import { writeTextToClipboard } from "../../clipboard";
+import { revealPathInFileManager, type WorkspaceTreeEntry } from "../../lib/tauri";
+import { isComparableTextFile } from "../../features/diff/diff";
+import { writeTextToClipboard } from "../../lib/clipboard";
 import type {
   CompareAnchor,
   CompareViewState,

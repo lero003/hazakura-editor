@@ -20,7 +20,7 @@
 // dependency wiring stay in one place.
 
 import { useCallback } from "react";
-import { openAgentWindow } from "../../tauri";
+import { openAgentWindow } from "../../lib/tauri";
 import { useAgentWorkbenchRuntimeState } from "../agent/useAgentWorkbenchRuntimeState";
 import { useAgentWorkbenchPreferences } from "../agent/useAgentWorkbenchPreferences";
 import { useAgentUiRefreshGate } from "../agent/useAgentUiRefreshGate";

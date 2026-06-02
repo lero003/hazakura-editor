@@ -6,8 +6,8 @@ import {
 import type {
   WorkspaceContextMenuState,
 } from "../../types";
-import type { WorkspaceTreeEntry } from "../../tauri";
-import { isComparableTextFile } from "../../diff";
+import type { WorkspaceTreeEntry } from "../../lib/tauri";
+import { isComparableTextFile } from "../../features/diff/diff";
 
 export function useWorkspaceContextMenu() {
   const [workspaceContextMenu, setWorkspaceContextMenu] =

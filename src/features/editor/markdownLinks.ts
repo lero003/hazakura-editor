@@ -2,7 +2,7 @@ import {
   directoryPathFromPath,
   isPathInsideDirectory,
   normalizeAbsolutePath,
-} from "./utils";
+} from "../../lib/utils";
 
 export function resolveLocalMarkdownLinkTarget(
   href: string,

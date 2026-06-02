@@ -1,5 +1,5 @@
 import type { RecentEntry } from "../../types";
-import { buildRecentDisplayEntries } from "../../utils";
+import { buildRecentDisplayEntries } from "../../lib/utils";
 import hazakuraMark from "../../assets/hazakura-mark.png";
 
 export interface StartPanelCopy {

@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { savePastedImage } from "../../tauri";
+import { savePastedImage } from "../../lib/tauri";
 
 type UsePastedImageActionOptions = {
   activeTabPath: string | null;

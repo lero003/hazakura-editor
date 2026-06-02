@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { updateThemeMenuState } from "../../tauri";
+import { updateThemeMenuState } from "../../lib/tauri";
 import type { ThemePreference } from "../../types";
 
 export function useThemeMenuStateSync(themePreference: ThemePreference) {

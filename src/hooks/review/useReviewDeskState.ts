@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import type { CompareCase, CompareViewState, ReviewDeskMode } from "../../types";
-import { buildLineDiff } from "../../diff";
+import { buildLineDiff } from "../../features/diff/diff";
 
 // useReviewDeskState owns the v0.7 Review Desk state slots that
 // reach beyond the B-1 `ReviewSurface` open/close flag (which lives

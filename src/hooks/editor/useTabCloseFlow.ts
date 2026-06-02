@@ -3,15 +3,15 @@ import {
   type SetStateAction,
   useCallback,
 } from "react";
-import { closeCurrentWindow } from "../../tauri";
-import { isDirty } from "../../editorTabs";
+import { closeCurrentWindow } from "../../lib/tauri";
+import { isDirty } from "../../features/editor/editorTabs";
 import {
   draftRecordFromTab,
   readStoredDrafts,
   removeStoredDrafts,
   upsertDraftRecord,
   writeStoredDrafts,
-} from "../../storage";
+} from "../../lib/storage";
 import type { DraftRecord, EditorTab } from "../../types";
 
 type RefValue<T> = {

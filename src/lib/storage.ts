@@ -9,7 +9,7 @@ import {
   type EditorTab,
   type PersistedWorkspaceState,
   type RecentEntry,
-} from "./types";
+} from "../types";
 
 export function readStoredDrafts(): DraftRecord[] {
   const value = window.localStorage.getItem(DRAFT_STATE_STORAGE_KEY);

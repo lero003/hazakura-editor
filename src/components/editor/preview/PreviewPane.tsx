@@ -1,6 +1,6 @@
 import { type MouseEvent, useEffect, useMemo, useState } from "react";
-import { inlineWorkspaceAssetImages, renderMarkdown } from "../../../markdown";
-import { openWorkspaceImage } from "../../../tauri";
+import { inlineWorkspaceAssetImages, renderMarkdown } from "../../../features/editor/markdown";
+import { openWorkspaceImage } from "../../../lib/tauri";
 
 type PreviewPaneProps = {
   onOpenLocalLink?: (href: string) => void;

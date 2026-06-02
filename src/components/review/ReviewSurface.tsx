@@ -7,7 +7,7 @@ import type {
   MenuLanguage,
   ReviewDeskMode,
 } from "../../types";
-import type { ReviewDeskCopy } from "../../locale";
+import type { ReviewDeskCopy } from "../../lib/locale";
 import { CandidateEditor } from "../editor/CandidateEditor";
 import { DiffBody } from "../diff/DiffBody";
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
-import type { AgentWorkbenchSession } from "../../tauri";
+import type { AgentWorkbenchSession } from "../../lib/tauri";
 import type { AgentLaunchGateState, AgentTerminalSize } from "../../types";
-import { isActiveAgentSession } from "../../agentWorkbench";
+import { isActiveAgentSession } from "../../features/agent/agentWorkbench";
 
 // Agent Workbench runtime state lives in this hook so that App.tsx
 // does not carry Assist Surface state. The fields are launch gate,

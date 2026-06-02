@@ -8,13 +8,13 @@ import type {
   AgentWorkbenchOutputChunk,
   AgentWorkbenchProvider,
   AgentWorkbenchSession,
-} from "../../tauri";
+} from "../../lib/tauri";
 import {
   agentCompactSessionStateLabel,
   isActiveAgentSession,
   localizeAgentGateMessage,
   providerLabel,
-} from "../../agentWorkbench";
+} from "../../features/agent/agentWorkbench";
 import { AgentTerminalView } from "./AgentTerminalView";
 
 export function AgentPaneShell({

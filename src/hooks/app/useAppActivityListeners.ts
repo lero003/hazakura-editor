@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { isCommandKeyPressed } from "../../keyboard";
+import { isCommandKeyPressed } from "../../lib/keyboard";
 
 type UseAppActivityListenersOptions = {
   onResumeAgentUiRefresh: () => void;

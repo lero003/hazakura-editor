@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { writePersistedWorkspaceState } from "../../storage";
+import { writePersistedWorkspaceState } from "../../lib/storage";
 import type { EditorTab } from "../../types";
 
 type UseWorkspaceStatePersistenceOptions = {

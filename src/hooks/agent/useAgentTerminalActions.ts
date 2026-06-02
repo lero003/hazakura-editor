@@ -9,7 +9,7 @@ import {
   resizeAgentWorkbenchTerminal,
   writeAgentWorkbenchSessionInput,
   type AgentWorkbenchSession,
-} from "../../tauri";
+} from "../../lib/tauri";
 import type {
   AgentLaunchGateState,
   AgentTerminalSize,
@@ -17,7 +17,7 @@ import type {
 import {
   isActiveAgentSession,
   reportAgentLaunchGateError,
-} from "../../agentWorkbench";
+} from "../../features/agent/agentWorkbench";
 
 // `useAgentTerminalActions` owns the Agent Workbench terminal I/O
 // action handlers: write user input to the active session, resize

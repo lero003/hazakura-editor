@@ -8,7 +8,7 @@ import {
   getSafeEditorCopy,
   getSidePaneCopy,
   getSlashMenuCopy,
-} from "../../locale";
+} from "../../lib/locale";
 import type { MenuLanguage } from "../../types";
 
 type UseLocalizedAppCopyOptions = {

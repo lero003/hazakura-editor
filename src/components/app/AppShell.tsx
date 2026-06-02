@@ -8,7 +8,7 @@ import type {
   ResolvedTheme,
   ReviewSurface as ReviewSurfaceKind,
 } from "../../types";
-import type { ReviewDeskCopy } from "../../locale";
+import type { ReviewDeskCopy } from "../../lib/locale";
 import type { ReviewDeskMode } from "../../types";
 import { AmbientBackground } from "./AmbientBackground";
 import { AppDocumentFeedback } from "./AppDocumentFeedback";

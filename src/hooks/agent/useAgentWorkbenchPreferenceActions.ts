@@ -6,7 +6,7 @@ import {
 import {
   requestAppRestart,
   type AgentWorkbenchProvider,
-} from "../../tauri";
+} from "../../lib/tauri";
 import type {
   AgentLaunchGateState,
   MenuLanguage,

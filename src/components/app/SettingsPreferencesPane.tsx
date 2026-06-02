@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
-import type { PreferencesCopy } from "../../locale";
+import type { PreferencesCopy } from "../../lib/locale";
 import type {
   EditorSettings,
   MenuLanguage,

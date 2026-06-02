@@ -6,7 +6,7 @@ import {
   type SetStateAction,
 } from "react";
 import type { EditorPaneHandle } from "../../components/editor/EditorPane";
-import { isImeComposing } from "../../keyboard";
+import { isImeComposing } from "../../lib/keyboard";
 
 type UseFindReplaceActionsOptions = {
   editorPaneRef: RefObject<EditorPaneHandle | null>;

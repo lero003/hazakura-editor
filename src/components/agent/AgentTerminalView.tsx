@@ -3,7 +3,7 @@ import { FitAddon } from "@xterm/addon-fit";
 import { Terminal } from "@xterm/xterm";
 import "@xterm/xterm/css/xterm.css";
 import type { AgentTerminalSize } from "../../types";
-import type { AgentWorkbenchOutputChunk } from "../../tauri";
+import type { AgentWorkbenchOutputChunk } from "../../lib/tauri";
 import { AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS } from "../../types";
 
 function normalizeTerminalLineEndings(text: string): string {

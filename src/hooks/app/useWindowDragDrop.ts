@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import type { UnlistenFn } from "@tauri-apps/api/event";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
-import { importImageFromPath, isTauriRuntime } from "../../tauri";
+import { importImageFromPath, isTauriRuntime } from "../../lib/tauri";
 
 type UseWindowDragDropOptions = {
   activeTabPath: string | null;

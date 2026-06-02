@@ -1,12 +1,12 @@
 import { useCallback } from "react";
 import { save as saveDialog } from "@tauri-apps/plugin-dialog";
-import { inlineWorkspaceAssetImages, renderMarkdown } from "../../markdown";
+import { inlineWorkspaceAssetImages, renderMarkdown } from "../../features/editor/markdown";
 import {
   isTauriRuntime,
   openTempPrintHtml,
   openWorkspaceImage,
   saveTextFileAs,
-} from "../../tauri";
+} from "../../lib/tauri";
 import type { EditorTab } from "../../types";
 
 type UseDocumentExportOptions = {
