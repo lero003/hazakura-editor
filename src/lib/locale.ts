@@ -77,8 +77,6 @@ export type EditorChromeCopy = {
   inlineCode: string;
   inlineCodeTitle: string;
   invalidRegex: string;
-  italic: string;
-  italicTitle: string;
   line: string;
   lineEnding: string;
   lineEndings: string;
@@ -95,8 +93,6 @@ export type EditorChromeCopy = {
   replaceOne: string;
   replaceAll: string;
   searchActiveFile: string;
-  strong: string;
-  strongTitle: string;
   word: string;
 };
 
@@ -410,8 +406,6 @@ export function getEditorChromeCopy(lang: MenuLanguage): EditorChromeCopy {
       inlineCode: "こーど",
       inlineCodeTitle: "こーど (Command+E)",
       invalidRegex: "正規表現がただしくありません",
-      italic: "ななめ",
-      italicTitle: "ななめ (Command+I)",
       line: "くだり",
       lineEnding: "かへり",
       lineEndings: "かへりのしるし",
@@ -428,8 +422,6 @@ export function getEditorChromeCopy(lang: MenuLanguage): EditorChromeCopy {
       replaceOne: "おきかへ",
       replaceAll: "すべておきかへ",
       searchActiveFile: "いまのふみをさがす",
-      strong: "ふとじ",
-      strongTitle: "ふとじ (Command+B)",
       word: "ことば",
     };
   }
@@ -446,8 +438,6 @@ export function getEditorChromeCopy(lang: MenuLanguage): EditorChromeCopy {
         inlineCode: "インラインコード",
         inlineCodeTitle: "インラインコード (Command+E)",
         invalidRegex: "正規表現が無効です",
-        italic: "斜体",
-        italicTitle: "斜体 (Command+I)",
         line: "行",
         lineEnding: "改行",
         lineEndings: "改行コード",
@@ -464,8 +454,6 @@ export function getEditorChromeCopy(lang: MenuLanguage): EditorChromeCopy {
         replaceOne: "置換",
         replaceAll: "すべて置換",
         searchActiveFile: "アクティブファイルを検索",
-        strong: "太字",
-        strongTitle: "太字 (Command+B)",
         word: "単語",
       }
     : {
@@ -479,8 +467,6 @@ export function getEditorChromeCopy(lang: MenuLanguage): EditorChromeCopy {
         inlineCode: "Inline code",
         inlineCodeTitle: "Inline code (Command+E)",
         invalidRegex: "Invalid regex",
-        italic: "Italic",
-        italicTitle: "Italic (Command+I)",
         line: "Line",
         lineEnding: "Line",
         lineEndings: "Line endings",
@@ -497,8 +483,6 @@ export function getEditorChromeCopy(lang: MenuLanguage): EditorChromeCopy {
         replaceOne: "Replace",
         replaceAll: "Replace all",
         searchActiveFile: "Search active file",
-        strong: "Bold",
-        strongTitle: "Bold (Command+B)",
         word: "Word",
       };
 }

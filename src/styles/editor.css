@@ -124,10 +124,6 @@
   color: var(--text);
 }
 
-.markdown-quick-action.italic {
-  font-style: italic;
-}
-
 .markdown-quick-action:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
