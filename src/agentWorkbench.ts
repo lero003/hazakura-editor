@@ -136,10 +136,12 @@ export function localizeAgentGateMessage(
 // `reportAgentLaunchGateError` consolidates the repeated pattern of
 // setting `agentLaunchGate` to `kind: "rejected"` with the error
 // message and a status-bar label. Agent Workbench lifecycle / gate /
-// input / resize / stop / refresh catch sites all use it so the
-// "rejected gate + status label" pair stays in sync. Callers that
-// also need to reset the session, drop the output buffer, or refresh
-// the session state should do that work after calling this helper.
+// input / stop / refresh catch sites all use it so the "rejected
+// gate + status label" pair stays in sync. Resize failures are
+// status-only by design (they do not flip the launch gate), so they
+// stay outside this helper. Callers that also need to reset the
+// session, drop the output buffer, or refresh the session state
+// should do that work after calling this helper.
 
 export function reportAgentLaunchGateError(
   setAgentLaunchGate: Dispatch<SetStateAction<AgentLaunchGateState>>,
