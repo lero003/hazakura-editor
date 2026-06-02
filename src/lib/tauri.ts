@@ -6,6 +6,11 @@ import {
   type Color,
   type Theme,
 } from "@tauri-apps/api/window";
+import type {
+  EditableLineEnding,
+  MenuLanguage,
+  ThemePreference,
+} from "../types";
 
 export type AppMenuRecentItem = {
   label: string;
@@ -18,13 +23,8 @@ export type AppMenuState = {
   wrapLines: boolean;
   showInvisibles: boolean;
   spellcheckEnabled: boolean;
-  themePreference:
-    | "light"
-    | "dark"
-    | "sakura"
-    | "yakou"
-    | "shokou";
-  menuLanguage: "en" | "ja" | "kana";
+  themePreference: ThemePreference;
+  menuLanguage: MenuLanguage;
   recentFiles: AppMenuRecentItem[];
   recentFolders: AppMenuRecentItem[];
   agentWorkbenchActive: boolean;
@@ -35,7 +35,7 @@ export type TextFileDocument = {
   path: string;
   name: string;
   contents: string;
-  line_ending: "lf" | "crlf";
+  line_ending: EditableLineEnding;
   size: number;
   modified_ms: number | null;
   fingerprint: string;
@@ -44,7 +44,7 @@ export type TextFileDocument = {
 
 export type SavedFileState = {
   path: string;
-  line_ending: "lf" | "crlf";
+  line_ending: EditableLineEnding;
   size: number;
   modified_ms: number | null;
   fingerprint: string;
@@ -357,7 +357,7 @@ export async function saveTextFile(
   path: string,
   contents: string,
   expectedFingerprint: string,
-  lineEnding: "lf" | "crlf",
+  lineEnding: EditableLineEnding,
 ): Promise<SavedFileState> {
   return invoke<SavedFileState>("save_text_file", {
     path,
@@ -370,7 +370,7 @@ export async function saveTextFile(
 export async function saveTextFileAs(
   path: string,
   contents: string,
-  lineEnding: "lf" | "crlf",
+  lineEnding: EditableLineEnding,
 ): Promise<TextFileDocument> {
   return invoke<TextFileDocument>("save_text_file_as", {
     path,

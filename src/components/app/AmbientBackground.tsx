@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import type { AmbientIntensity } from "../../types";
 
-type AmbientMode = "sakura" | "yakou" | "shokou";
+export type AmbientMode = "sakura" | "yakou" | "shokou";
 
 type AmbientItem = {
   delay: number;

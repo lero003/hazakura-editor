@@ -10,7 +10,7 @@ import type {
 } from "../../types";
 import type { ReviewDeskCopy } from "../../lib/locale";
 import type { ReviewDeskMode } from "../../types";
-import { AmbientBackground } from "./AmbientBackground";
+import { AmbientBackground, type AmbientMode } from "./AmbientBackground";
 import { AppDocumentFeedback } from "./AppDocumentFeedback";
 import { AppOverlays } from "./AppOverlays";
 import { AppStatusBar } from "./AppStatusBar";
@@ -92,8 +92,6 @@ export function AppShell(props: AppShellProps) {
     </main>
   );
 }
-
-type AmbientMode = "sakura" | "yakou" | "shokou";
 
 function isAmbientMode(theme: ResolvedTheme): theme is AmbientMode {
   return theme === "sakura" || theme === "yakou" || theme === "shokou";
