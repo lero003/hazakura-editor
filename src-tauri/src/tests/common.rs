@@ -16,7 +16,6 @@ use std::time::{SystemTime, UNIX_EPOCH};
 // Re-export the std types the test modules reference directly
 // (Path::new, Stdio::piped, Duration::from_millis, etc.) so the
 // per-feature modules can keep `use super::*;` working.
-pub(crate) use std::fs::File;
 pub(crate) use std::path::Path;
 pub(crate) use std::process::Stdio;
 pub(crate) use std::time::Duration;
