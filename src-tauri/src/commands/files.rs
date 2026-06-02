@@ -20,19 +20,7 @@ pub(crate) fn open_text_file_with_label(
 ) -> Result<TextFileDocument, String> {
     ensure_label_is_main(label)?;
     let path_buf = PathBuf::from(&path);
-    let metadata = fs::metadata(&path_buf).map_err(|err| format!("Cannot read file: {err}"))?;
-
-    if !metadata.is_file() {
-        return Err("Selected path is not a file.".to_string());
-    }
-
-    if metadata.len() > MAX_EDITABLE_BYTES {
-        return Err("File is larger than the prototype editing limit of 10 MB.".to_string());
-    }
-
-    if looks_binary(&path_buf)? {
-        return Err("Binary-looking files are not opened by this editor.".to_string());
-    }
+    let metadata = readable_text_metadata(&path_buf)?;
 
     let bytes = fs::read(&path_buf).map_err(|err| format!("Cannot read file: {err}"))?;
     let line_ending = detect_line_ending(&bytes);
