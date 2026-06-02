@@ -3116,3 +3116,122 @@ fn agent_input_rejects_unknown_label() {
     .expect_err("write_agent_workbench_session_input must reject unknown labels");
     assert!(err.contains(UNKNOWN_WINDOW_LABEL), "{err}");
 }
+
+#[test]
+fn agent_resize_allows_main_and_agent_labels() {
+    let store = AgentWorkbenchSessionStore::default();
+
+    // Neither call has an active session, but both must clear the
+    // gate so the xterm fit addon in the detached Agent window can
+    // call resize_agent_workbench_terminal freely.
+    let from_main = resize_agent_workbench_terminal_with_label(MAIN_WINDOW_LABEL, &store, 80, 24)
+        .expect("main must be allowed to resize the terminal");
+    assert!(from_main.session.is_none());
+
+    let from_agent =
+        resize_agent_workbench_terminal_with_label(AGENT_WINDOW_LABEL, &store, 100, 30)
+            .expect("agent must be allowed to resize the terminal");
+    assert!(from_agent.session.is_none());
+}
+
+#[test]
+fn agent_resize_rejects_unknown_label() {
+    let store = AgentWorkbenchSessionStore::default();
+
+    let err = resize_agent_workbench_terminal_with_label(UNKNOWN_WINDOW_LABEL, &store, 80, 24)
+        .expect_err("resize_agent_workbench_terminal must reject unknown labels");
+    assert!(err.contains(UNKNOWN_WINDOW_LABEL), "{err}");
+}
+
+#[test]
+fn agent_resize_rejects_zero_dimensions_from_any_label() {
+    // The body must still validate dimensions after the label gate
+    // passes — pin the order: gate first, then dimension check.
+    let store = AgentWorkbenchSessionStore::default();
+
+    for label in [MAIN_WINDOW_LABEL, AGENT_WINDOW_LABEL] {
+        let err = resize_agent_workbench_terminal_with_label(label, &store, 0, 24)
+            .expect_err("zero columns must be rejected by the body, not the gate");
+        assert!(
+            err.contains("terminal size"),
+            "expected the body to run for {label}, got gate error: {err}"
+        );
+    }
+}
+
+#[test]
+fn agent_start_rejects_agent_window_label() {
+    let store = AgentWorkbenchSessionStore::default();
+    let dir = unique_test_dir("start_agent_label");
+    fs::create_dir_all(&dir).expect("create test dir");
+
+    // The agent window must NOT be allowed to start a session —
+    // the launch-gate + provider-selection flow stays main-only.
+    let err = start_agent_workbench_session_with_label(
+        AGENT_WINDOW_LABEL,
+        &store,
+        true,
+        true,
+        AGENT_PROVIDER_CODEX.to_string(),
+        dir.to_string_lossy().to_string(),
+        None,
+        None,
+    )
+    .expect_err("start_agent_workbench_session must reject the agent window");
+    assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
+    assert!(store.session.lock().unwrap().is_none());
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn agent_start_rejects_unknown_label() {
+    let store = AgentWorkbenchSessionStore::default();
+    let dir = unique_test_dir("start_unknown_label");
+    fs::create_dir_all(&dir).expect("create test dir");
+
+    let err = start_agent_workbench_session_with_label(
+        UNKNOWN_WINDOW_LABEL,
+        &store,
+        true,
+        true,
+        AGENT_PROVIDER_CODEX.to_string(),
+        dir.to_string_lossy().to_string(),
+        None,
+        None,
+    )
+    .expect_err("start_agent_workbench_session must reject unknown labels");
+    assert!(err.contains(UNKNOWN_WINDOW_LABEL), "{err}");
+    assert!(store.session.lock().unwrap().is_none());
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn agent_start_allows_main_label() {
+    // Pin the positive case: the main window still drives the
+    // launch flow, and a non-allowlisted provider is what the body
+    // rejects (proving the label gate cleared first).
+    let store = AgentWorkbenchSessionStore::default();
+    let dir = unique_test_dir("start_main_label");
+    fs::create_dir_all(&dir).expect("create test dir");
+
+    let err = start_agent_workbench_session_with_label(
+        MAIN_WINDOW_LABEL,
+        &store,
+        true,
+        true,
+        "zsh".to_string(),
+        dir.to_string_lossy().to_string(),
+        None,
+        None,
+    )
+    .expect_err("non-allowlisted provider must be rejected by the body");
+    assert!(
+        err.contains("allowlisted"),
+        "expected the body to run for main, got gate error: {err}"
+    );
+    assert!(store.session.lock().unwrap().is_none());
+
+    let _ = fs::remove_dir_all(dir);
+}

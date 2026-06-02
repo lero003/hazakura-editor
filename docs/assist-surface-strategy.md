@@ -74,7 +74,7 @@ Moving Agent Workbench into a detached window or separate surface does not weake
 
 ## Apple Local Assist
 
-Apple Local Assist is a possible future replacement or alternative for some assist workflows in v1.1 or later.
+Apple Local Assist is a possible future replacement or alternative for some assist workflows in v0.10 or later.
 
 Apple documents the Foundation Models framework as access to the on-device language model that powers Apple Intelligence, with support for text understanding and generation tasks such as summarization, extraction, classification, and refinement. Apple also documents that availability must be checked at runtime because it depends on Apple Intelligence support, user settings, and model readiness.
 
@@ -131,16 +131,17 @@ Future distribution may use build-time variants rather than runtime settings alo
 
 Build-time separation is preferred for distribution trust because it is easier to explain and audit than hiding risky features behind settings.
 
-## v0.8 To v1.1 Path
+## v0.8 To v0.11 Path
 
 v0.8 should not try to complete an assist platform.
 
 Recommended sequence:
 
 1. Keep v0.8 focused on Safe Editor daily-use polish plus Assist Surface separation: reduce Review Desk to a low-prominence candidate-review receiver, clarify Agent Workbench surface/state boundaries, and keep generated output reviewable through Review Desk or Diff.
-2. Use v0.9 and v1.0 to harden preview/distribution quality and prove Safe Editor remains coherent without assist behavior.
-3. Treat Review Desk's full product usefulness as v1.1+ work, after Apple Local Assist / Foundation Models can generate selected-text or document-excerpt candidates that need explicit review.
-4. Consider Apple Local Assist only after distribution requirements, availability handling, and explicit-review flows are designed.
+2. Use v0.9 to harden product-preview quality and prove Safe Editor remains coherent without assist behavior.
+3. Use v0.10 only for a narrow Apple Local Assist experiment: availability detection, selected-text or document-excerpt requests, candidate output, and safe disablement when unavailable.
+4. Treat Review Desk's full product usefulness as v0.11+ work, after Apple Local Assist / Foundation Models can generate selected-text or document-excerpt candidates that need explicit review.
+5. Keep v1.0 for outward product-preview polish and messaging unless the user explicitly opens a distribution lane earlier.
 
 ## Non-Goals
 

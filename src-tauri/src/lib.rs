@@ -23,10 +23,12 @@ pub(crate) mod tests;
 // windows, menus) by window label, but custom `#[tauri::command]`
 // functions are auto-allowlisted for any window listed in a
 // capability file. The detached Agent window is listed in
-// `capabilities/agent-window.json` so it can call the three Agent
+// `capabilities/agent-window.json` so it can call the four Agent
 // session commands it needs (`get_agent_workbench_session_state`,
-// `stop_agent_workbench_session`, `write_agent_workbench_session_input`),
-// but that also lets it call every other custom command — file I/O,
+// `stop_agent_workbench_session`, `write_agent_workbench_session_input`,
+// `resize_agent_workbench_terminal` — the PTY resize that the xterm
+// fit addon drives from the detached window's ResizeObserver), but
+// that also lets it call every other custom command — file I/O,
 // workspace tree, save, menu state, app restart, etc. The
 // `core:default` permission set expands to event / menu / window /
 // webview defaults, which lets the agent webview emit global menu
@@ -36,10 +38,10 @@ pub(crate) mod tests;
 // (defense in depth on top of the capability split). Sensitive
 // commands — anything that touches the filesystem, the workspace,
 // menu state, theme state, app lifecycle, or the launch surface —
-// must come from the `main` window. The three Agent session
-// commands may additionally be called from the `agent` window. All
-// other window labels are rejected. See
-// docs/assist-surface-strategy.md and docs/agent-workbench-boundary.md.
+// must come from the `main` window. The four Agent session commands
+// may additionally be called from the `agent` window. All other
+// window labels are rejected. See docs/assist-surface-strategy.md and
+// docs/agent-workbench-boundary.md.
 
 pub(crate) const MAIN_WINDOW_LABEL: &str = "main";
 pub(crate) const AGENT_WINDOW_LABEL: &str = "agent";
@@ -719,12 +721,34 @@ fn start_agent_workbench_session<R: tauri::Runtime>(
     terminal_columns: Option<u16>,
     terminal_rows: Option<u16>,
 ) -> Result<AgentWorkbenchSessionStartResult, String> {
-    ensure_main_window(&window)?;
+    start_agent_workbench_session_with_label(
+        window.label(),
+        session_store.inner(),
+        agent_workbench_enabled,
+        consent_acknowledged,
+        provider,
+        workspace_root,
+        terminal_columns,
+        terminal_rows,
+    )
+}
+
+fn start_agent_workbench_session_with_label(
+    label: &str,
+    session_store: &AgentWorkbenchSessionStore,
+    agent_workbench_enabled: bool,
+    consent_acknowledged: bool,
+    provider: String,
+    workspace_root: String,
+    terminal_columns: Option<u16>,
+    terminal_rows: Option<u16>,
+) -> Result<AgentWorkbenchSessionStartResult, String> {
+    ensure_label_is_main(label)?;
     let path_var = agent_provider_app_search_path();
-    let adapter = RealAgentRuntimeAdapter::new(session_store.inner());
+    let adapter = RealAgentRuntimeAdapter::new(session_store);
 
     start_agent_workbench_session_with_store(
-        session_store.inner(),
+        session_store,
         &adapter,
         agent_workbench_enabled,
         consent_acknowledged,
@@ -804,8 +828,17 @@ fn resize_agent_workbench_terminal<R: tauri::Runtime>(
     columns: u16,
     rows: u16,
 ) -> Result<AgentWorkbenchSessionState, String> {
-    ensure_main_window(&window)?;
-    resize_agent_workbench_terminal_with_store(session_store.inner(), columns, rows)
+    resize_agent_workbench_terminal_with_label(window.label(), session_store.inner(), columns, rows)
+}
+
+fn resize_agent_workbench_terminal_with_label(
+    label: &str,
+    session_store: &AgentWorkbenchSessionStore,
+    columns: u16,
+    rows: u16,
+) -> Result<AgentWorkbenchSessionState, String> {
+    ensure_label_is_main_or_agent(label)?;
+    resize_agent_workbench_terminal_with_store(session_store, columns, rows)
 }
 
 fn start_agent_workbench_session_with_store(

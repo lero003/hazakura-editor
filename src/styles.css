@@ -4205,29 +4205,38 @@ button:disabled {
 
 /* ── Detached Agent Window (v0.8+ spike) ──
  * The hazakura agent window is a thin UI mirror of the Agent
- * Workbench session state. It does not own the session, does not
- * run xterm, and does not host the launch-gate check. The styles
- * below are intentionally minimal — readable plain-text scrollback
- * plus two buttons. See docs/assist-surface-strategy.md and
+ * Workbench session state. It does not own the session and does
+ * not host the launch-gate check. The body reuses the right-pane
+ * xterm surface (`.agent-terminal-host`) and only contributes its
+ * own shell / header / status / launch-gate echo / stop button /
+ * status bar. See docs/assist-surface-strategy.md and
  * docs/agent-workbench-boundary.md.
  */
 
 .agent-window-shell {
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
   height: 100vh;
   background: var(--bg);
   color: var(--text);
   font-family: var(--app-font-family, system-ui, -apple-system, sans-serif);
+  padding: 12px;
+  gap: 10px;
+}
+
+.agent-window-shell .agent-terminal-shell {
+  min-height: 0;
+  width: 100%;
 }
 
 .agent-window-header {
   align-items: center;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
+  border-radius: 6px;
   display: flex;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: 10px 14px;
 }
 
 .agent-window-title {
@@ -4278,10 +4287,11 @@ button:disabled {
   align-items: center;
   background: var(--surface-muted);
   border-bottom: 1px solid var(--border);
+  border-radius: 6px;
   display: flex;
   font-size: 11px;
   gap: 8px;
-  padding: 6px 16px;
+  padding: 6px 14px;
 }
 
 .agent-window-launch-gate-label {
@@ -4296,90 +4306,28 @@ button:disabled {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
-.agent-window-output {
-  background: var(--surface-strong);
-  border-bottom: 1px solid var(--border);
-  color: var(--text);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 12px;
-  line-height: 1.5;
-  margin: 0;
-  overflow: auto;
-  padding: 12px 16px;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.agent-window-output:empty::before {
-  color: var(--text-muted);
-  content: "No session output yet.";
-}
-
-.agent-window-controls {
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  display: grid;
-  gap: 6px;
-  padding: 12px 16px;
-}
-
-.agent-window-input-label {
-  color: var(--text-muted);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.agent-window-input {
-  background: var(--surface-strong);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 12px;
-  line-height: 1.45;
-  padding: 8px 10px;
-  resize: vertical;
-}
-
-.agent-window-input:focus-visible {
-  border-color: var(--accent);
-  outline: none;
-}
-
-.agent-window-input:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
 .agent-window-actions {
+  align-items: center;
+  background: var(--surface);
+  border-radius: 6px;
+  border: 1px solid var(--border);
   display: flex;
   gap: 8px;
   justify-content: flex-end;
-}
-
-.agent-window-send,
-.agent-window-stop {
-  border: 1px solid var(--border-strong);
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 6px 14px;
-  cursor: pointer;
-}
-
-.agent-window-send {
-  background: var(--accent);
-  color: var(--surface-strong);
+  padding: 8px 12px;
 }
 
 .agent-window-stop {
   background: var(--surface-strong);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
   color: var(--danger);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
 }
 
-.agent-window-send:disabled,
 .agent-window-stop:disabled {
   cursor: not-allowed;
   opacity: 0.5;
@@ -4387,9 +4335,9 @@ button:disabled {
 
 .agent-window-statusbar {
   background: var(--surface-muted);
-  border-top: 1px solid var(--border);
+  border-radius: 6px;
   color: var(--text-muted);
   font-size: 11px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  padding: 4px 16px;
+  padding: 4px 14px;
 }

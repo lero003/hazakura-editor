@@ -1,14 +1,15 @@
 import React, { useCallback, useEffect, useState } from "react";
 import {
   getAgentWorkbenchSessionState,
+  resizeAgentWorkbenchTerminal,
   stopAgentWorkbenchSession,
   writeAgentWorkbenchSessionInput,
-  type AgentWorkbenchOutputChunk,
   type AgentWorkbenchSession,
 } from "../tauri";
 import {
   AGENT_WORKBENCH_SESSION_POLL_MS,
   type AgentLaunchGateState,
+  type AgentTerminalSize,
 } from "../types";
 import {
   isActiveAgentSession,
@@ -18,17 +19,24 @@ import {
 } from "../agentWorkbench";
 import { useAgentOutputBuffer } from "../hooks/useAgentOutputBuffer";
 import { useAgentOutputSeqCursor } from "../hooks/useAgentOutputSeqCursor";
+import { AgentTerminalView } from "./AgentTerminalView";
 
 // `AgentWindowApp` is the root of the detached `hazakura agent`
 // window — a thin UI mirror of the Agent Workbench session state
 // owned by Rust (the main window's right-pane Agent path remains
 // the authoritative UI). It polls the session state at the same
 // 200 ms cadence as the main window, owns a bounded output mirror
-// via `useAgentOutputBuffer`, and exposes two actions only: stop
-// the active session, and write a line of input. It does NOT
-// trigger the launch-gate check, change providers, toggle
-// consent, resize the PTY, render xterm, or persist window
-// position. See docs/assist-surface-strategy.md and
+// via `useAgentOutputBuffer`, and renders the output through
+// `AgentTerminalView` (xterm + addon-fit + ResizeObserver) so the
+// detached window can drive a real PTY — input is captured by
+// xterm's `onData` and forwarded to
+// `writeAgentWorkbenchSessionInput`, and PTY size changes from
+// the fit addon are forwarded to `resizeAgentWorkbenchTerminal`.
+// It does NOT trigger the launch-gate check, change providers,
+// toggle consent, persist window position, or start a second
+// session. The only command the agent window can issue besides
+// the xterm I/O is `stopAgentWorkbenchSession`, exposed as an
+// explicit button. See docs/assist-surface-strategy.md and
 // docs/agent-workbench-boundary.md.
 
 export function AgentWindowApp() {
@@ -37,12 +45,10 @@ export function AgentWindowApp() {
   );
   const [agentLaunchGate] = useState<AgentLaunchGateState>({
     kind: "idle",
-    message: "Detached Agent window (read + stop + send input only).",
+    message: "Detached Agent window (terminal + stop only).",
     preflight: null,
   });
   const [status, setStatus] = useState<string>("Detached Agent window");
-  const [input, setInput] = useState<string>("");
-  const [sending, setSending] = useState<boolean>(false);
   const [stopping, setStopping] = useState<boolean>(false);
 
   const { agentOutput, applyAgentOutput, resetAgentOutput } =
@@ -106,45 +112,46 @@ export function AgentWindowApp() {
     }
   }, [applyAgentOutput]);
 
-  const handleSendInput = useCallback(async () => {
-    const trimmed = input.replace(/\r\n/g, "\n");
-    if (!trimmed) {
-      return;
-    }
-    if (!isActiveAgentSession(agentSession)) {
-      setStatus("Agent session is not active");
-      return;
-    }
-
-    setSending(true);
-    setStatus("Sending input to Agent...");
-
-    try {
-      await writeAgentWorkbenchSessionInput(trimmed.endsWith("\n") ? trimmed : `${trimmed}\n`);
-      setInput("");
-      setStatus("Sent input to Agent");
-    } catch (err) {
-      setStatus(`Agent input failed: ${String(err)}`);
-    } finally {
-      setSending(false);
-    }
-  }, [agentSession, input]);
-
-  const handleInputKeyDown = useCallback(
-    (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
-        event.preventDefault();
-        void handleSendInput();
+  const handleTerminalData = useCallback(
+    (data: string) => {
+      if (!data) {
+        return;
+      }
+      if (!isActiveAgentSession(agentSession)) {
         return;
       }
 
-      if (event.key === "Enter" && !event.shiftKey) {
-        event.preventDefault();
-        void handleSendInput();
-      }
+      void writeAgentWorkbenchSessionInput(data)
+        .then(() => {
+          // xterm has already echoed the keystroke; no client-side
+          // state to update. The next poll picks up provider output.
+        })
+        .catch((err) => {
+          setStatus(`Agent input failed: ${String(err)}`);
+        });
     },
-    [handleSendInput],
+    [agentSession],
   );
+
+  const handleTerminalResize = useCallback((size: AgentTerminalSize) => {
+    void resizeAgentWorkbenchTerminal(size.columns, size.rows)
+      .then((state) => {
+        setAgentSession(state.session);
+      })
+      .catch((err) => {
+        setStatus(`Agent terminal resize failed: ${String(err)}`);
+      });
+  }, []);
+
+  const handleTerminalEngage = useCallback(() => {
+    setStatus("Agent terminal focused");
+  }, []);
+
+  const handleTerminalRelease = useCallback(() => {
+    setStatus("Agent terminal blurred");
+  }, []);
+
+  const activeSession = isActiveAgentSession(agentSession);
 
   return (
     <div className="agent-window-shell" data-session-state={agentSession?.status ?? "none"}>
@@ -165,42 +172,32 @@ export function AgentWindowApp() {
         <span className="agent-window-launch-gate-value">{agentLaunchGate.kind}</span>
       </section>
 
-      <pre className="agent-window-output" aria-label="Agent session output">
-        {formatOutputForDisplay(agentOutput)}
-      </pre>
+      <AgentTerminalView
+        activeSession={activeSession}
+        outputLabel="Output chunks"
+        onData={handleTerminalData}
+        onEngage={handleTerminalEngage}
+        onRelease={handleTerminalRelease}
+        onResize={handleTerminalResize}
+        output={agentOutput}
+        placeholder={
+          activeSession
+            ? "Agent is starting..."
+            : "No Agent session. Start one from the main window to use this terminal."
+        }
+        terminalLabel="Detached Agent terminal"
+        theme="dark"
+      />
 
       <section className="agent-window-controls">
-        <label className="agent-window-input-label" htmlFor="agent-window-input">
-          Send to Agent
-        </label>
-        <textarea
-          id="agent-window-input"
-          className="agent-window-input"
-          value={input}
-          onChange={(event) => setInput(event.target.value)}
-          onKeyDown={handleInputKeyDown}
-          rows={4}
-          placeholder="Type a message and press Enter (Cmd/Ctrl+Enter for newline-free send)"
-          disabled={!isActiveAgentSession(agentSession) || sending}
-        />
         <div className="agent-window-actions">
-          <button
-            type="button"
-            className="agent-window-send"
-            onClick={() => {
-              void handleSendInput();
-            }}
-            disabled={!isActiveAgentSession(agentSession) || sending || input.trim().length === 0}
-          >
-            {sending ? "Sending..." : "Send"}
-          </button>
           <button
             type="button"
             className="agent-window-stop"
             onClick={() => {
               void handleStopSession();
             }}
-            disabled={!isActiveAgentSession(agentSession) || stopping}
+            disabled={!activeSession || stopping}
           >
             {stopping ? "Stopping..." : "Stop session"}
           </button>
@@ -212,16 +209,4 @@ export function AgentWindowApp() {
       </footer>
     </div>
   );
-}
-
-function formatOutputForDisplay(chunks: AgentWorkbenchOutputChunk[]): string {
-  return chunks
-    .map((chunk) => stripAnsi(chunk.text))
-    .join("");
-}
-
-function stripAnsi(text: string): string {
-  // Plain-text rendering for the spike — drop ANSI escape sequences.
-  // A future slice can layer xterm on top of the same buffer.
-  return text.replace(/\x1b\[[0-9;]*[A-Za-z]/g, "");
 }

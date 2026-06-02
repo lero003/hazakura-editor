@@ -9,11 +9,11 @@ Scope: Project entry point
 Authority: High
 Last reviewed: 2026-06-02
 
-`hazakura editor` は、Markdownを中心に安全にテキストを読む・書く・比べるための軽量エディタです。
+`hazakura editor` は、AI時代のメモ帳です。Markdownを中心に、安全にテキストを読む・書く・比べるための軽量なローカル作業場を目指します。
 
 万能IDEではありません。拡張機能、LSP、Gitクライアント、汎用ターミナル、任意コマンド実行を持たないことで、信頼しきれないプロジェクト内のテキストを静かに扱うことを目的にします。
 
-> 安全に開く。静かに書く。差分で確かめる。
+> メモ帳より賢く、IDEより静か。
 
 ## Preview
 
