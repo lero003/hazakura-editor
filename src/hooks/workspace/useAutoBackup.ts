@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { pruneAutoBackups, saveAutoBackup } from "../../tauri";
 import type { EditorTab } from "../../types";
-import { useLatestValueRef } from "../useLatestValueRef";
+import { useLatestValueRef } from "../app/useLatestValueRef";
 
 const AUTO_BACKUP_INTERVAL_MS = 30000;
 const MAX_AUTO_BACKUPS_PER_FILE = 30;

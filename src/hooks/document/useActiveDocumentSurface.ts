@@ -13,7 +13,7 @@ import type {
 } from "../../types";
 import { useDocumentOutline } from "./useDocumentOutline";
 import { useDocumentStatus } from "./useDocumentStatus";
-import { usePreviewScrollSync } from "../usePreviewScrollSync";
+import { usePreviewScrollSync } from "../editor/usePreviewScrollSync";
 
 type UseActiveDocumentSurfaceOptions = {
   activeContents: string;

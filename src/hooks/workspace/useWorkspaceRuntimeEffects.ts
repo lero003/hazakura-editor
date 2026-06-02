@@ -1,8 +1,8 @@
 import type { Dispatch, SetStateAction } from "react";
 import type { WorkspaceTreeEntry } from "../../tauri";
 import type { DraftRecord, EditorTab } from "../../types";
-import { useOpenedFilesListener } from "../useOpenedFilesListener";
-import { useWindowDragDrop } from "../useWindowDragDrop";
+import { useOpenedFilesListener } from "../app/useOpenedFilesListener";
+import { useWindowDragDrop } from "../app/useWindowDragDrop";
 import { useWorkspaceContextMenuDismissal } from "./useWorkspaceContextMenuDismissal";
 import { useWorkspaceRestore } from "./useWorkspaceRestore";
 

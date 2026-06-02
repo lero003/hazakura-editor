@@ -6,7 +6,7 @@ import {
 } from "../../storage";
 import type { RecentEntry } from "../../types";
 import { fileNameFromPath, folderLabelFromPath } from "../../utils";
-import { useLatestValueRef } from "../useLatestValueRef";
+import { useLatestValueRef } from "../app/useLatestValueRef";
 import { useRecentEntriesPersistence } from "./useRecentEntriesPersistence";
 
 export function useRecentEntries() {

@@ -28,7 +28,7 @@ import {
 import { tags as highlightTags } from "@lezer/highlight";
 import { basicSetup } from "codemirror";
 import { SlashMenu, type SlashMenuCopy } from "./SlashMenu";
-import { useSlashMenu } from "../hooks/useSlashMenu";
+import { useSlashMenu } from "../hooks/editor/useSlashMenu";
 import type { SlashCommand } from "../types/slash";
 
 type SearchMatch = { from: number; to: number };

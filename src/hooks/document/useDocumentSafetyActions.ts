@@ -1,6 +1,6 @@
 import { useExternalChangeActions } from "./useExternalChangeActions";
 import { useRecoveryActions } from "./useRecoveryActions";
-import { useTabCloseFlow } from "../useTabCloseFlow";
+import { useTabCloseFlow } from "../editor/useTabCloseFlow";
 
 type UseDocumentSafetyActionsOptions = Parameters<typeof useTabCloseFlow>[0] &
   Parameters<typeof useRecoveryActions>[0] &
