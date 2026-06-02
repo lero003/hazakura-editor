@@ -75,6 +75,16 @@ export type EditableLineEnding = "lf" | "crlf";
 
 export type LineEndingKind = EditableLineEnding | "mixed" | "none";
 
+// Text encoding is the byte-level encoding of the file on disk. The
+// editor currently supports a narrow set: UTF-8 (the default for new
+// files), UTF-8 with a leading BOM, Windows Shift-JIS, and EUC-JP. The
+// in-memory buffer is always a JS string (UTF-16 internally), so the
+// encoding is only meaningful at read / save time. See
+// src-tauri/src/util.rs (detect_text_encoding, encode_text,
+// decode_text_bytes) and src/components/app/StatusBar.tsx (the
+// encoding selector chip).
+export type TextEncoding = "utf-8" | "utf-8-bom" | "shift-jis" | "euc-jp";
+
 export type RightPaneMode = "preview" | "compare" | "outline" | "agent";
 
 // Review Desk is a top-level review surface that intentionally replaces
@@ -148,6 +158,7 @@ export type EditorTab = TextFileDocument & {
   contents: string;
   lastSavedContents: string;
   lastSavedLineEnding: EditableLineEnding;
+  lastSavedEncoding: TextEncoding;
   ignoredExternalFingerprint: string | null;
   externalFingerprint: string | null;
   saveStatus: SaveStatus;

@@ -660,6 +660,7 @@ export function useAppShellController() {
   // section: editor commands
   const {
     applyActiveMarkdownFormat,
+    convertActiveEncoding,
     convertActiveLineEnding,
     handleEditorChange,
     insertMarkdownAtCursor,
@@ -889,6 +890,8 @@ export function useAppShellController() {
     editorSettings,
     editorTheme,
     emptyTabsLabel: safeEditorCopy.emptyTabs,
+    encodingAriaLabel: editorChromeCopy.encodings,
+    encodingLabel: editorChromeCopy.encoding,
     findInputRef,
     findMatchCount,
     findMatches,
@@ -922,6 +925,7 @@ export function useAppShellController() {
     },
     onCloseReviewDesk: closeReviewDesk,
     onCloseTab: requestCloseTab,
+    onConvertEncoding: convertActiveEncoding,
     onConvertLineEnding: convertActiveLineEnding,
     onFinishTabPointerDrag: finishTabPointerDrag,
     onPointerEnter: suspendAgentUiRefresh,

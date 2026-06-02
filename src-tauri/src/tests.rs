@@ -2070,6 +2070,7 @@ fn save_rejects_external_change_before_write() {
         "# Editor change\n".to_string(),
         opened_fingerprint,
         "lf".to_string(),
+        "utf-8".to_string(),
     );
 
     assert!(result
@@ -2101,6 +2102,7 @@ fn save_preserves_crlf_line_endings() {
         "# Changed\n\nBody\n".to_string(),
         document.fingerprint,
         document.line_ending,
+        "utf-8".to_string(),
     )
     .expect("save crlf document");
 
@@ -2138,6 +2140,7 @@ fn save_preserves_lf_trailing_newline_presence() {
         "# Changed\n\nBody\n".to_string(),
         with_newline_document.fingerprint,
         with_newline_document.line_ending,
+        "utf-8".to_string(),
     )
     .expect("save lf document with final newline");
     save_text_file_with_label(
@@ -2146,6 +2149,7 @@ fn save_preserves_lf_trailing_newline_presence() {
         "# Changed\n\nBody".to_string(),
         without_newline_document.fingerprint,
         without_newline_document.line_ending,
+        "utf-8".to_string(),
     )
     .expect("save lf document without final newline");
 
@@ -2179,6 +2183,7 @@ fn save_preserves_crlf_without_trailing_newline() {
         "# Changed\n\nBody".to_string(),
         document.fingerprint,
         document.line_ending,
+        "utf-8".to_string(),
     )
     .expect("save crlf document without final newline");
 
@@ -2201,6 +2206,7 @@ fn save_text_file_as_creates_new_text_extension_with_requested_line_endings() {
         path.to_string_lossy().to_string(),
         "First\nSecond\n".to_string(),
         "crlf".to_string(),
+        "utf-8".to_string(),
     )
     .expect("save as text file");
 
@@ -2226,6 +2232,7 @@ fn save_text_file_as_rejects_existing_file() {
         path.to_string_lossy().to_string(),
         "Overwrite attempt\n".to_string(),
         "lf".to_string(),
+        "utf-8".to_string(),
     )
     .expect_err("save as should not overwrite existing file");
 
@@ -2874,6 +2881,7 @@ fn save_text_file_rejects_agent_window_label() {
         "# Tampered\n".to_string(),
         opened_fingerprint,
         "lf".to_string(),
+        "utf-8".to_string(),
     )
     .expect_err("save_text_file must reject the agent window");
     assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
@@ -2896,6 +2904,7 @@ fn save_text_file_as_rejects_agent_window_label() {
         path.to_string_lossy().to_string(),
         "Body\n".to_string(),
         "lf".to_string(),
+        "utf-8".to_string(),
     )
     .expect_err("save_text_file_as must reject the agent window");
     assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
@@ -3287,4 +3296,49 @@ fn agent_window_background_color_falls_back_to_dark_for_unknown_theme() {
     // matching the previous hand-written match arm.
     let fallback = agent_window_background_color("definitely-not-a-theme");
     assert_eq!(fallback, tauri::window::Color(0x0e, 0x13, 0x11, 0xff));
+}
+
+// ── Text encoding (UTF-8 / UTF-8 BOM / Shift-JIS / EUC-JP) ──
+//
+// The supported encodings round-trip through detect_text_encoding and
+// encode_text. These tests pin the contract: a string written via
+// encode_text re-detects to the same label, and detection on the
+// leading 3 bytes 0xEF 0xBB 0xBF identifies the BOM form before any
+// codec work.
+
+#[test]
+fn detect_text_encoding_returns_utf_8_for_ascii() {
+    let detected = detect_text_encoding(b"hello world");
+    assert_eq!(detected, "utf-8");
+}
+
+#[test]
+fn detect_text_encoding_returns_utf_8_bom_when_bom_present() {
+    let mut bytes = vec![0xEF, 0xBB, 0xBF];
+    bytes.extend_from_slice("hello".as_bytes());
+    let detected = detect_text_encoding(&bytes);
+    assert_eq!(detected, "utf-8-bom");
+}
+
+#[test]
+fn encode_text_round_trips_shift_jis() {
+    let original = "これはテストです。";
+    let encoded = encode_text(original, "shift-jis").expect("encode shift-jis");
+    let detected = detect_text_encoding(&encoded);
+    assert_eq!(detected, "shift-jis");
+    // Decode back and confirm round-trip equality.
+    let (decoded, _, malformed) = encoding_rs::SHIFT_JIS.decode(&encoded);
+    assert!(!malformed, "encoded shift-jis must decode losslessly");
+    assert_eq!(decoded, original);
+}
+
+#[test]
+fn encode_text_round_trips_euc_jp() {
+    let original = "これはテストです。";
+    let encoded = encode_text(original, "euc-jp").expect("encode euc-jp");
+    let detected = detect_text_encoding(&encoded);
+    assert_eq!(detected, "euc-jp");
+    let (decoded, _, malformed) = encoding_rs::EUC_JP.decode(&encoded);
+    assert!(!malformed, "encoded euc-jp must decode losslessly");
+    assert_eq!(decoded, original);
 }

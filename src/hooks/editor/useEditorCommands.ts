@@ -15,6 +15,7 @@ import type {
   EditorTab,
   MarkdownHeading,
   MenuLanguage,
+  TextEncoding,
 } from "../../types";
 import type { SlashCommand } from "../../types/slash";
 import { normalizeTextLineEndings } from "../../lib/utils";
@@ -131,6 +132,35 @@ export function useEditorCommands({
         ),
       );
       setStatus(`Line endings set to ${formatLineEndingKind(lineEnding)}`);
+    },
+    [activeTab, setStatus, setTabs],
+  );
+
+  const convertActiveEncoding = useCallback(
+    (encoding: TextEncoding) => {
+      if (!activeTab) {
+        setStatus("No active tab to convert");
+        return;
+      }
+
+      // Encoding conversion mirrors the line-ending selector: the
+      // in-memory buffer stays a plain JS string, and the tab's
+      // `encoding` field is flipped to drive the save-time
+      // re-encoding in src-tauri/src/util.rs (encode_text). The
+      // actual byte rewrite happens on the next save.
+      setTabs((currentTabs) =>
+        currentTabs.map((tab) =>
+          tab.id === activeTab.id
+            ? {
+                ...tab,
+                encoding,
+                saveStatus: "idle",
+                error: null,
+              }
+            : tab,
+        ),
+      );
+      setStatus(`Encoding set to ${encoding}`);
     },
     [activeTab, setStatus, setTabs],
   );
@@ -423,6 +453,7 @@ export function useEditorCommands({
 
   return {
     applyActiveMarkdownFormat,
+    convertActiveEncoding,
     convertActiveLineEnding,
     handleEditorChange,
     insertMarkdownAtCursor,

@@ -36,8 +36,8 @@ pub(crate) fn open_text_file_with_label(
 
     let bytes = fs::read(&path_buf).map_err(|err| format!("Cannot read file: {err}"))?;
     let line_ending = detect_line_ending(&bytes);
-    let contents = String::from_utf8(bytes)
-        .map_err(|err| format!("File is not readable as UTF-8 text: {err}"))?;
+    let encoding = detect_text_encoding(&bytes).to_string();
+    let contents = decode_text_bytes(&bytes, &encoding)?.into_owned();
     let name = path_buf
         .file_name()
         .and_then(|name| name.to_str())
@@ -49,6 +49,7 @@ pub(crate) fn open_text_file_with_label(
         name,
         contents,
         line_ending,
+        encoding,
         size: metadata.len(),
         modified_ms: modified_ms(&metadata),
         fingerprint: metadata_fingerprint(&metadata),
@@ -200,6 +201,7 @@ pub(crate) fn save_text_file<R: tauri::Runtime>(
     contents: String,
     expected_fingerprint: String,
     line_ending: String,
+    encoding: String,
 ) -> Result<SavedFileState, String> {
     save_text_file_with_label(
         window.label(),
@@ -207,6 +209,7 @@ pub(crate) fn save_text_file<R: tauri::Runtime>(
         contents,
         expected_fingerprint,
         line_ending,
+        encoding,
     )
 }
 
@@ -216,6 +219,7 @@ pub(crate) fn save_text_file_with_label(
     contents: String,
     expected_fingerprint: String,
     line_ending: String,
+    encoding: String,
 ) -> Result<SavedFileState, String> {
     ensure_label_is_main(label)?;
     let path_buf = PathBuf::from(&path);
@@ -229,7 +233,8 @@ pub(crate) fn save_text_file_with_label(
     }
 
     let normalized_contents = normalize_line_endings(&contents, &line_ending);
-    atomic_write(&path_buf, normalized_contents.as_bytes())?;
+    let encoded_bytes = encode_text(&normalized_contents, &encoding)?;
+    atomic_write(&path_buf, &encoded_bytes)?;
 
     let metadata =
         fs::metadata(&path_buf).map_err(|err| format!("Cannot verify saved file: {err}"))?;
@@ -237,6 +242,7 @@ pub(crate) fn save_text_file_with_label(
     Ok(SavedFileState {
         path,
         line_ending: line_ending_for_save(&line_ending).to_string(),
+        encoding: encoding_for_save(&encoding).to_string(),
         size: metadata.len(),
         modified_ms: modified_ms(&metadata),
         fingerprint: metadata_fingerprint(&metadata),
@@ -249,8 +255,9 @@ pub(crate) fn save_text_file_as<R: tauri::Runtime>(
     path: String,
     contents: String,
     line_ending: String,
+    encoding: String,
 ) -> Result<TextFileDocument, String> {
-    save_text_file_as_with_label(window.label(), path, contents, line_ending)
+    save_text_file_as_with_label(window.label(), path, contents, line_ending, encoding)
 }
 
 pub(crate) fn save_text_file_as_with_label(
@@ -258,6 +265,7 @@ pub(crate) fn save_text_file_as_with_label(
     path: String,
     contents: String,
     line_ending: String,
+    encoding: String,
 ) -> Result<TextFileDocument, String> {
     ensure_label_is_main(label)?;
     let path_buf = PathBuf::from(&path);
@@ -280,7 +288,8 @@ pub(crate) fn save_text_file_as_with_label(
         .ok_or_else(|| "Cannot save a file with an invalid name.".to_string())?;
 
     let normalized_contents = normalize_line_endings(&contents, &line_ending);
-    write_new_file(&path_buf, normalized_contents.as_bytes())?;
+    let encoded_bytes = encode_text(&normalized_contents, &encoding)?;
+    write_new_file(&path_buf, &encoded_bytes)?;
 
     open_text_file_with_label(label, path)
 }

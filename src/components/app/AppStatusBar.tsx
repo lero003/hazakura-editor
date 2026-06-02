@@ -1,5 +1,5 @@
 import { StatusBar } from "./StatusBar";
-import type { EditableLineEnding, EditorTab } from "../../types";
+import type { EditableLineEnding, EditorTab, TextEncoding } from "../../types";
 import type { AgentWorkbenchProvider } from "../../lib/tauri";
 import type { MenuLanguage } from "../../types";
 import { localizeStatusMessage } from "../../lib/statusMessages";
@@ -11,9 +11,12 @@ type AppStatusBarProps = {
   agentWorkbenchActive: boolean;
   agentWorkbenchProvider: AgentWorkbenchProvider;
   detail: string;
+  encodingAriaLabel: string;
+  encodingLabel: string;
   lineEndingAriaLabel: string;
   lineEndingLabel: string;
   menuLanguage: MenuLanguage;
+  onConvertEncoding: (encoding: TextEncoding) => void;
   onConvertLineEnding: (lineEnding: EditableLineEnding) => void;
   saveAffirmation: boolean;
   saveAffirmationKey: number | null;
@@ -26,9 +29,12 @@ export function AppStatusBar({
   agentWorkbenchActive,
   agentWorkbenchProvider,
   detail,
+  encodingAriaLabel,
+  encodingLabel,
   lineEndingAriaLabel,
   lineEndingLabel,
   menuLanguage,
+  onConvertEncoding,
   onConvertLineEnding,
   saveAffirmation,
   saveAffirmationKey,
@@ -43,8 +49,11 @@ export function AppStatusBar({
           : null
       }
       detail={detail}
+      encodingAriaLabel={encodingAriaLabel}
+      encodingLabel={encodingLabel}
       lineEndingAriaLabel={lineEndingAriaLabel}
       lineEndingLabel={lineEndingLabel}
+      onConvertEncoding={onConvertEncoding}
       onConvertLineEnding={onConvertLineEnding}
       saveAffirmation={saveAffirmation}
       saveAffirmationKey={saveAffirmationKey}

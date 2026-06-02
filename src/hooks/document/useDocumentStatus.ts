@@ -10,6 +10,7 @@ import type {
   MenuLanguage,
   RightPaneMode,
   TextDocumentStats,
+  TextEncoding,
 } from "../../types";
 import { normalizeTextLineEndings } from "../../lib/utils";
 
@@ -158,7 +159,7 @@ function formatActiveDocumentMeta(
   menuLanguage: MenuLanguage,
 ): string {
   return [
-    ...formatDocumentMetaParts(stats, tab.name, menuLanguage),
+    ...formatDocumentMetaParts(stats, tab.name, tab.encoding, menuLanguage),
     tab.large_file_warning
       ? menuLanguage !== "en"
         ? "大きなファイル"
@@ -179,11 +180,12 @@ function formatActiveDocumentMeta(
 function formatDocumentMetaParts(
   stats: TextDocumentStats,
   fileName: string,
+  encoding: TextEncoding,
   menuLanguage: MenuLanguage,
 ): string[] {
   return [
     formatFileType(fileName, menuLanguage),
-    "UTF-8",
+    formatTextEncoding(encoding, menuLanguage),
     formatBytes(stats.bytes),
     menuLanguage !== "en"
       ? `${stats.characters.toLocaleString()} 文字`
@@ -197,6 +199,34 @@ function formatDocumentMetaParts(
         ? "末尾改行なし"
         : "no final newline",
   ];
+}
+
+function formatTextEncoding(
+  encoding: TextEncoding,
+  menuLanguage: MenuLanguage,
+): string {
+  if (menuLanguage === "en") {
+    switch (encoding) {
+      case "utf-8":
+        return "UTF-8";
+      case "utf-8-bom":
+        return "UTF-8 BOM";
+      case "shift-jis":
+        return "Shift-JIS";
+      case "euc-jp":
+        return "EUC-JP";
+    }
+  }
+  switch (encoding) {
+    case "utf-8":
+      return "UTF-8";
+    case "utf-8-bom":
+      return "UTF-8 BOM";
+    case "shift-jis":
+      return "シフトJIS";
+    case "euc-jp":
+      return "EUC-JP";
+  }
 }
 
 function formatFileType(fileName: string, menuLanguage: MenuLanguage): string {

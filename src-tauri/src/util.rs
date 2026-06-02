@@ -448,6 +448,125 @@ pub(crate) fn line_ending_for_save(requested_line_ending: &str) -> &'static str 
     }
 }
 
+// `text_encoding` is a small set of helpers for the editor's encoding
+// selector. The supported set is intentionally narrow: UTF-8 (no
+// BOM), UTF-8 with BOM, Windows Shift-JIS, and EUC-JP. UTF-8 is the
+// default for new files; the other labels are recognized on read and
+// offered in the StatusBar selector. The on-disk round-trip is the
+// contract — `detect_text_encoding` and `encode_text` are inverses for
+// every supported label.
+
+const UTF8_BOM: [u8; 3] = [0xEF, 0xBB, 0xBF];
+
+pub(crate) fn detect_text_encoding(bytes: &[u8]) -> &'static str {
+    if bytes.starts_with(&UTF8_BOM) {
+        return "utf-8-bom";
+    }
+
+    let (_, _, utf8_malformed) = encoding_rs::UTF_8.decode(bytes);
+    if !utf8_malformed {
+        return "utf-8";
+    }
+
+    let (_, _, shift_jis_malformed) = encoding_rs::SHIFT_JIS.decode(bytes);
+    if !shift_jis_malformed {
+        return "shift-jis";
+    }
+
+    let (_, _, euc_jp_malformed) = encoding_rs::EUC_JP.decode(bytes);
+    if !euc_jp_malformed {
+        return "euc-jp";
+    }
+
+    // Fall back to UTF-8 even when it's lossy so the caller can show
+    // a meaningful error rather than a panic. The caller checks the
+    // declared label and rejects anything we couldn't decode cleanly.
+    "utf-8"
+}
+
+pub(crate) fn encode_text(contents: &str, encoding: &str) -> Result<Vec<u8>, String> {
+    match encoding_for_save(encoding) {
+        "utf-8" => Ok(contents.as_bytes().to_vec()),
+        "utf-8-bom" => {
+            let mut out = UTF8_BOM.to_vec();
+            out.extend_from_slice(contents.as_bytes());
+            Ok(out)
+        }
+        "shift-jis" => {
+            let (bytes, _, unmappable) = encoding_rs::SHIFT_JIS.encode(contents);
+            if unmappable {
+                return Err(
+                    "Some characters cannot be encoded as Shift-JIS. Switch the encoding to UTF-8 before saving."
+                        .to_string(),
+                );
+            }
+            Ok(bytes.into_owned())
+        }
+        "euc-jp" => {
+            let (bytes, _, unmappable) = encoding_rs::EUC_JP.encode(contents);
+            if unmappable {
+                return Err(
+                    "Some characters cannot be encoded as EUC-JP. Switch the encoding to UTF-8 before saving."
+                        .to_string(),
+                );
+            }
+            Ok(bytes.into_owned())
+        }
+        other => Err(format!("Unsupported text encoding: {other}")),
+    }
+}
+
+pub(crate) fn encoding_for_save(requested_encoding: &str) -> &'static str {
+    match requested_encoding {
+        "utf-8-bom" => "utf-8-bom",
+        "shift-jis" => "shift-jis",
+        "euc-jp" => "euc-jp",
+        // "utf-8" and any unknown / future label collapse to the UTF-8
+        // literal so the storage key is always one of the four
+        // supported values.
+        _ => "utf-8",
+    }
+}
+
+// `decode_text_bytes` decodes the raw bytes using the encoding that
+// `detect_text_encoding` already validated. The caller is expected to
+// detect first, then decode with the same label. The labels "utf-8"
+// and "utf-8-bom" use the UTF-8 codec; "shift-jis" / "euc-jp" use
+// their respective codecs. The decode is required to be lossless —
+// any malformed / unmappable sequences are returned as an error so
+// the file open path surfaces a clean message instead of silently
+// injecting U+FFFD.
+//
+// For "utf-8-bom", the leading 3-byte BOM is stripped from the input
+// before decoding so the in-memory string never contains U+FEFF. The
+// BOM is re-prepended on save by `encode_text` based on the encoding
+// label, which keeps the in-memory buffer clean and the on-disk
+// bytes correct in a single round-trip.
+pub(crate) fn decode_text_bytes<'a>(
+    bytes: &'a [u8],
+    encoding: &str,
+) -> Result<std::borrow::Cow<'a, str>, String> {
+    let label = encoding_for_save(encoding);
+    let (codec, label_for_error) = match label {
+        "utf-8" | "utf-8-bom" => (encoding_rs::UTF_8, "UTF-8"),
+        "shift-jis" => (encoding_rs::SHIFT_JIS, "Shift-JIS"),
+        "euc-jp" => (encoding_rs::EUC_JP, "EUC-JP"),
+        _ => {
+            return Err(format!("Unsupported text encoding: {label}"));
+        }
+    };
+    let body: &[u8] = if label == "utf-8-bom" && bytes.starts_with(&UTF8_BOM) {
+        &bytes[UTF8_BOM.len()..]
+    } else {
+        bytes
+    };
+    let (decoded, malformed) = codec.decode_without_bom_handling(body);
+    if malformed {
+        return Err(format!("File is not readable as {label_for_error} text."));
+    }
+    Ok(decoded)
+}
+
 pub(crate) fn atomic_write(path: &Path, bytes: &[u8]) -> Result<(), String> {
     let parent = path
         .parent()

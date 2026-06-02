@@ -62,6 +62,7 @@ export function useSaveActions({
           tab.contents,
           tab.fingerprint,
           tab.line_ending,
+          tab.encoding,
         );
 
         setTabs((currentTabs) =>
@@ -70,12 +71,14 @@ export function useSaveActions({
               ? {
                   ...candidate,
                   line_ending: saved.line_ending,
+                  encoding: saved.encoding,
                   size: saved.size,
                   modified_ms: saved.modified_ms,
                   fingerprint: saved.fingerprint,
                   large_file_warning: saved.size >= 5 * 1024 * 1024,
                   lastSavedContents: tab.contents,
                   lastSavedLineEnding: saved.line_ending,
+                  lastSavedEncoding: saved.encoding,
                   ignoredExternalFingerprint: null,
                   externalFingerprint: null,
                   saveStatus: "saved",
@@ -151,6 +154,7 @@ export function useSaveActions({
         path,
         activeTab.contents,
         activeTab.line_ending,
+        activeTab.encoding,
       );
       const nextTab = createEditorTab(savedFile);
 

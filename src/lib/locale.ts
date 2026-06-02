@@ -69,6 +69,8 @@ export type SidePaneCopy = {
 export type EditorChromeCopy = {
   caseSensitive: string;
   closeSearch: string;
+  encoding: string;
+  encodings: string;
   find: string;
   findInActiveFile: string;
   findOptions: string;
@@ -395,6 +397,8 @@ export function getEditorChromeCopy(lang: MenuLanguage): EditorChromeCopy {
     return {
       caseSensitive: "おほもじ",
       closeSearch: "さがしをとぢる",
+      encoding: "ふみのかきかた",
+      encodings: "ふみのかきかた",
       find: "さがす",
       findInActiveFile: "いまのふみをさがす",
       findOptions: "さがしのおこのみ",
@@ -424,6 +428,8 @@ export function getEditorChromeCopy(lang: MenuLanguage): EditorChromeCopy {
     ? {
         caseSensitive: "大文字",
         closeSearch: "検索を閉じる",
+        encoding: "文字コード",
+        encodings: "文字コード",
         find: "検索",
         findInActiveFile: "アクティブファイル内を検索",
         findOptions: "検索オプション",
@@ -450,6 +456,8 @@ export function getEditorChromeCopy(lang: MenuLanguage): EditorChromeCopy {
     : {
         caseSensitive: "Case",
         closeSearch: "Close search",
+        encoding: "Encoding",
+        encodings: "Encodings",
         find: "Find",
         findInActiveFile: "Find in active file",
         findOptions: "Find options",

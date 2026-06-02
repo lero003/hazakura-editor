@@ -87,6 +87,7 @@ pub(crate) struct TextFileDocument {
     pub(crate) name: String,
     pub(crate) contents: String,
     pub(crate) line_ending: String,
+    pub(crate) encoding: String,
     pub(crate) size: u64,
     pub(crate) modified_ms: Option<u64>,
     pub(crate) fingerprint: String,
@@ -97,6 +98,7 @@ pub(crate) struct TextFileDocument {
 pub(crate) struct SavedFileState {
     pub(crate) path: String,
     pub(crate) line_ending: String,
+    pub(crate) encoding: String,
     pub(crate) size: u64,
     pub(crate) modified_ms: Option<u64>,
     pub(crate) fingerprint: String,

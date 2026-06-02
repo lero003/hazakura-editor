@@ -160,7 +160,7 @@ ${bodyHtml}
 </body>
 </html>`;
 
-      await saveTextFileAs(destPath, standaloneHtml, "lf");
+      await saveTextFileAs(destPath, standaloneHtml, "lf", "utf-8");
       setStatus(`Exported HTML: ${destPath}`);
     } catch (err) {
       setGlobalError(`Export HTML failed: ${String(err)}`);

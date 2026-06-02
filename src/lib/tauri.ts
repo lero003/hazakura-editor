@@ -9,6 +9,7 @@ import {
 import type {
   EditableLineEnding,
   MenuLanguage,
+  TextEncoding,
   ThemePreference,
 } from "../types";
 
@@ -36,6 +37,7 @@ export type TextFileDocument = {
   name: string;
   contents: string;
   line_ending: EditableLineEnding;
+  encoding: TextEncoding;
   size: number;
   modified_ms: number | null;
   fingerprint: string;
@@ -45,6 +47,7 @@ export type TextFileDocument = {
 export type SavedFileState = {
   path: string;
   line_ending: EditableLineEnding;
+  encoding: TextEncoding;
   size: number;
   modified_ms: number | null;
   fingerprint: string;
@@ -358,12 +361,14 @@ export async function saveTextFile(
   contents: string,
   expectedFingerprint: string,
   lineEnding: EditableLineEnding,
+  encoding: TextEncoding,
 ): Promise<SavedFileState> {
   return invoke<SavedFileState>("save_text_file", {
     path,
     contents,
     expectedFingerprint,
     lineEnding,
+    encoding,
   });
 }
 
@@ -371,11 +376,13 @@ export async function saveTextFileAs(
   path: string,
   contents: string,
   lineEnding: EditableLineEnding,
+  encoding: TextEncoding,
 ): Promise<TextFileDocument> {
   return invoke<TextFileDocument>("save_text_file_as", {
     path,
     contents,
     lineEnding,
+    encoding,
   });
 }
 

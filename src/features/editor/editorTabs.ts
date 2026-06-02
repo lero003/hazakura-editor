@@ -11,6 +11,7 @@ export function createEditorTab(file: TextFileDocument): EditorTab {
     contents: editorContents,
     lastSavedContents: editorContents,
     lastSavedLineEnding: file.line_ending,
+    lastSavedEncoding: file.encoding,
     ignoredExternalFingerprint: null,
     externalFingerprint: null,
     saveStatus: "idle",
@@ -21,7 +22,8 @@ export function createEditorTab(file: TextFileDocument): EditorTab {
 export function isDirty(tab: EditorTab): boolean {
   return (
     tab.contents !== tab.lastSavedContents ||
-    tab.line_ending !== tab.lastSavedLineEnding
+    tab.line_ending !== tab.lastSavedLineEnding ||
+    tab.encoding !== tab.lastSavedEncoding
   );
 }
 
