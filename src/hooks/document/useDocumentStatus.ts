@@ -13,6 +13,7 @@ import type {
   TextEncoding,
 } from "../../types";
 import { normalizeTextLineEndings } from "../../lib/utils";
+import { formatLineEndingKind, formatTextEncoding } from "../../lib/format";
 
 type SelectionInfo = {
   column: number;
@@ -201,34 +202,6 @@ function formatDocumentMetaParts(
   ];
 }
 
-function formatTextEncoding(
-  encoding: TextEncoding,
-  menuLanguage: MenuLanguage,
-): string {
-  if (menuLanguage === "en") {
-    switch (encoding) {
-      case "utf-8":
-        return "UTF-8";
-      case "utf-8-bom":
-        return "UTF-8 BOM";
-      case "shift-jis":
-        return "Shift-JIS";
-      case "euc-jp":
-        return "EUC-JP";
-    }
-  }
-  switch (encoding) {
-    case "utf-8":
-      return "UTF-8";
-    case "utf-8-bom":
-      return "UTF-8 BOM";
-    case "shift-jis":
-      return "シフトJIS";
-    case "euc-jp":
-      return "EUC-JP";
-  }
-}
-
 function formatFileType(fileName: string, menuLanguage: MenuLanguage): string {
   const extension = fileName.split(".").at(-1)?.toLowerCase() ?? "";
 
@@ -322,23 +295,4 @@ function formatActiveEditorStatusDetail(
   }
 
   return parts.join(" · ");
-}
-
-export function formatLineEndingKind(
-  lineEnding: LineEndingKind,
-  menuLanguage: MenuLanguage = "en",
-): string {
-  if (lineEnding === "crlf") {
-    return "CRLF";
-  }
-
-  if (lineEnding === "mixed") {
-    return menuLanguage !== "en" ? "混在" : "Mixed";
-  }
-
-  if (lineEnding === "none") {
-    return menuLanguage !== "en" ? "改行なし" : "No line endings";
-  }
-
-  return "LF";
 }

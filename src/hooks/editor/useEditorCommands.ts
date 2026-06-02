@@ -19,7 +19,7 @@ import type {
 } from "../../types";
 import type { SlashCommand } from "../../types/slash";
 import { normalizeTextLineEndings } from "../../lib/utils";
-import { formatLineEndingKind } from "../document/useDocumentStatus";
+import { formatLineEndingKind } from "../../lib/format";
 import { markdownFormatStatus } from "../../lib/statusMessages";
 
 function pad2(n: number): string {
