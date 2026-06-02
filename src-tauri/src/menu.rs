@@ -246,13 +246,6 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
                         true,
                         None::<&str>,
                     )?,
-                    &MenuItem::with_id(
-                        app,
-                        MENU_THEME_KOUYOU,
-                        selected_theme_label(label("Kouyou", "紅葉"), theme_preference == "kouyou"),
-                        true,
-                        None::<&str>,
-                    )?,
                 ],
             )?,
             &PredefinedMenuItem::separator(app)?,
@@ -433,7 +426,6 @@ fn kana_menu_label(japanese: &'static str) -> Option<&'static str> {
         "桜" => "さくら",
         "夜光" => "よるひかり",
         "曙光" => "あけぼのひかり",
-        "紅葉" => "もみぢ",
         "フルスクリーンにする" => "まどをみちみちにす",
         "編集" => "てならひ",
         "取り消す" => "かへす",
@@ -535,7 +527,6 @@ pub(crate) fn emit_app_menu_event<R: tauri::Runtime>(
                 | MENU_THEME_SAKURA
                 | MENU_THEME_YAKOU
                 | MENU_THEME_SHOKOU
-                | MENU_THEME_KOUYOU
                 | MENU_PREFERENCES
                 | MENU_AGENT_WORKBENCH
                 | MENU_OPEN_AGENT_WINDOW
@@ -553,7 +544,6 @@ fn theme_preference_for_menu_action(action: &str) -> Option<&'static str> {
         MENU_THEME_SAKURA => Some("sakura"),
         MENU_THEME_YAKOU => Some("yakou"),
         MENU_THEME_SHOKOU => Some("shokou"),
-        MENU_THEME_KOUYOU => Some("kouyou"),
         _ => None,
     }
 }

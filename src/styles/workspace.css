@@ -31,19 +31,13 @@
 :root[data-theme="yakou"] .file-tree-pane {
   background: rgba(20, 20, 30, 0.75);
   backdrop-filter: blur(16px);
-  border-right-color: rgba(124, 111, 240, 0.15);
+  border-right-color: rgba(138, 125, 244, 0.15);
 }
 
 :root[data-theme="shokou"] .file-tree-pane {
-  background: rgba(229, 241, 251, 0.68);
+  background: rgba(237, 244, 252, 0.68);
   backdrop-filter: blur(16px);
-  border-right-color: rgba(47, 128, 194, 0.14);
-}
-
-:root[data-theme="kouyou"] .file-tree-pane {
-  background: rgba(237, 242, 230, 0.72);
-  backdrop-filter: blur(16px);
-  border-right-color: rgba(111, 143, 78, 0.16);
+  border-right-color: rgba(58, 130, 184, 0.14);
 }
 
 .workspace-empty {
@@ -471,13 +465,6 @@
 }
 
 :root[data-theme="shokou"] .start-actions button:first-child {
-  background: var(--accent-gradient);
-  border: 0;
-  padding: 7px 13px;
-  color: #ffffff;
-}
-
-:root[data-theme="kouyou"] .start-actions button:first-child {
   background: var(--accent-gradient);
   border: 0;
   padding: 7px 13px;

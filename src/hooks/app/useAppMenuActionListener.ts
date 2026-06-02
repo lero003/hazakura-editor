@@ -149,9 +149,6 @@ export function useAppMenuActionListener({
         case "theme-shokou":
           setThemePreference("shokou");
           break;
-        case "theme-kouyou":
-          setThemePreference("kouyou");
-          break;
         case "preferences":
           setPreferencesDialogMode("settings");
           break;

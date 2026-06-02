@@ -28,12 +28,9 @@
 
 :root[data-theme="yakou"] .status-agent-dot {
   background: var(--accent-gradient);
-  box-shadow: 0 0 8px rgba(124, 111, 240, 0.4);
+  box-shadow: 0 0 8px rgba(138, 125, 244, 0.4);
 }
 :root[data-theme="shokou"] .status-agent-dot {
-  box-shadow: 0 0 8px rgba(242, 159, 75, 0.4);
-}
-:root[data-theme="kouyou"] .status-agent-dot {
-  box-shadow: 0 0 8px rgba(168, 68, 50, 0.4);
+  box-shadow: 0 0 8px rgba(245, 168, 90, 0.4);
 }
 

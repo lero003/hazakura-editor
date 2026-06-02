@@ -23,8 +23,7 @@ export type AppMenuState = {
     | "dark"
     | "sakura"
     | "yakou"
-    | "shokou"
-    | "kouyou";
+    | "shokou";
   menuLanguage: "en" | "ja" | "kana";
   recentFiles: AppMenuRecentItem[];
   recentFolders: AppMenuRecentItem[];

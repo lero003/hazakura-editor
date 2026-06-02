@@ -143,7 +143,6 @@ export function SettingsPreferencesPane({
             <option value="sakura">{copy.sakura}</option>
             <option value="yakou">{copy.yakou}</option>
             <option value="shokou">{copy.shokou}</option>
-            <option value="kouyou">{copy.kouyou}</option>
           </select>
         </label>
         <label className="field-control">

@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import type { AmbientIntensity } from "../../types";
 
-type AmbientMode = "sakura" | "yakou" | "shokou" | "kouyou";
+type AmbientMode = "sakura" | "yakou" | "shokou";
 
 type AmbientItem = {
   delay: number;
@@ -19,7 +19,6 @@ type AmbientBackgroundProps = {
 };
 
 const COUNT_BY_MODE: Record<AmbientMode, number> = {
-  kouyou: 24,
   sakura: 28,
   shokou: 22,
   yakou: 32,
@@ -89,16 +88,6 @@ function generateItems(
           index,
           left: ((seed * 1.618 + index * 7) % 100),
           size: Math.max(0.8, (2 + (seed % 5) * 0.8) * sizeScale),
-        };
-      case "kouyou":
-        return {
-          delay: -((seed * 2.7 + index * 1.5) % 22),
-          drift: ((seed * 0.6 + index * 3.7) % 16) - 8,
-          duration: (16 + (seed % 7) * 1.6) * durationScale,
-          hue: 18 + (seed % 28) - 6,
-          index,
-          left: ((seed * 1.618 + index * 7) % 100),
-          size: (7 + (seed % 6) * 1.4) * sizeScale,
         };
     }
   });

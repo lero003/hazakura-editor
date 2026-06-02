@@ -93,8 +93,8 @@ export function AppShell(props: AppShellProps) {
   );
 }
 
-type AmbientMode = "sakura" | "yakou" | "shokou" | "kouyou";
+type AmbientMode = "sakura" | "yakou" | "shokou";
 
 function isAmbientMode(theme: ResolvedTheme): theme is AmbientMode {
-  return theme === "sakura" || theme === "yakou" || theme === "shokou" || theme === "kouyou";
+  return theme === "sakura" || theme === "yakou" || theme === "shokou";
 }

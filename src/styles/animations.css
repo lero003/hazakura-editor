@@ -75,26 +75,6 @@
   }
 }
 
-@keyframes leafFall {
-  0% {
-    opacity: 0;
-    transform: translate3d(0, -12vh, 0) rotate(0deg);
-  }
-  10% {
-    opacity: 0.85;
-  }
-  30% {
-    opacity: 0.7;
-  }
-  75% {
-    opacity: 0.4;
-  }
-  100% {
-    opacity: 0;
-    transform: translate3d(var(--ambient-drift, 12vw), 112vh, 0) rotate(540deg);
-  }
-}
-
 /* コントロール要素の洗練 / Control Styles */
 button,
 select,

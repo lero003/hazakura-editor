@@ -269,7 +269,7 @@ open -n "src-tauri/target/release/bundle/macos/hazakura editor.app"
 ## Ambient And Spellcheck
 
 1. Open a Markdown file and focus the editor.
-2. Switch between Sakura / Yakou / Shokou / Kouyou themes and confirm the editor, side pane, and ambient background stay readable.
+2. Switch between Sakura / Yakou / Shokou themes and confirm the editor, side pane, and ambient background stay readable.
 3. Change Preferences > Ambient effects through Off / Subtle / Normal / Dramatic and confirm reduced-motion still hides particles.
 4. Use View > Spell Check or Cmd+Option+; to toggle spellcheck.
 5. Type a clearly misspelled English word and confirm the WebView spellcheck behavior follows the toggle as far as the platform exposes it.
@@ -669,7 +669,7 @@ Record:
 
 ## Theme Switching
 
-1. Switch between Light, Dark, Sakura, Yakou, Shokou, and Kouyou.
+1. Switch between Light, Dark, Sakura, Yakou, and Shokou.
 2. Confirm the editor, preview, tabs, file tree, and status bar remain readable.
 3. Restart the app and confirm the selected theme is restored.
 4. Confirm View > Theme shows only one checkmark after each switch.

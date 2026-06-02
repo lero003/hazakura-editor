@@ -55,10 +55,6 @@
   background: var(--accent-gradient);
 }
 
-:root[data-theme="kouyou"] .toggle-switch input:checked + .slider {
-  background: var(--accent-gradient);
-}
-
 .toggle-switch input:checked + .slider::before {
   transform: translateX(12px);
 }
@@ -140,10 +136,6 @@
 }
 
 :root[data-theme="shokou"] .tab-item.active::before {
-  background: var(--accent-gradient);
-}
-
-:root[data-theme="kouyou"] .tab-item.active::before {
   background: var(--accent-gradient);
 }
 

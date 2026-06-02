@@ -105,8 +105,7 @@ function readStoredThemePreference(): ThemePreference {
     value === "dark" ||
     value === "sakura" ||
     value === "yakou" ||
-    value === "shokou" ||
-    value === "kouyou"
+    value === "shokou"
   ) {
     return value;
   }
@@ -117,15 +116,13 @@ function readStoredThemePreference(): ThemePreference {
 function windowBackgroundColorForTheme(theme: ThemePreference): string {
   switch (theme) {
     case "dark":
-      return "#0f1412";
+      return "#0e1311";
     case "sakura":
-      return "#f8f1f3";
+      return "#fdf3f4";
     case "yakou":
-      return "#0d0d12";
+      return "#0c0c14";
     case "shokou":
-      return "#eef7ff";
-    case "kouyou":
-      return "#f7efe4";
+      return "#edf4fc";
     case "light":
     default:
       return "#f3f6f4";

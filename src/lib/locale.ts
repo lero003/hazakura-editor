@@ -151,7 +151,6 @@ export type PreferencesCopy = {
   sakura: string;
   yakou: string;
   shokou: string;
-  kouyou: string;
   settingsTitle: string;
   showInvisibles: string;
   tabSize: string;
@@ -564,7 +563,6 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
       sakura: "さくら",
       yakou: "よるひかり",
       shokou: "あけぼのひかり",
-      kouyou: "もみぢ",
       settingsTitle: "おこのみ",
       showInvisibles: "みえぬもじをしめす",
       tabSize: "たぶのはば",
@@ -595,7 +593,6 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         sakura: "桜",
         yakou: "夜光",
         shokou: "曙光",
-        kouyou: "紅葉",
         settingsTitle: "設定",
         showInvisibles: "不可視文字を表示",
         tabSize: "タブ幅",
@@ -623,7 +620,6 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         sakura: "Sakura",
         yakou: "Yakou",
         shokou: "Shokou",
-        kouyou: "Kouyou",
         settingsTitle: "Preferences",
         showInvisibles: "Show invisibles",
         tabSize: "Tab size",

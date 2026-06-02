@@ -75,13 +75,6 @@
   font-weight: 800;
 }
 
-:root[data-theme="kouyou"] .preferences-header h2 {
-  background: var(--accent-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-weight: 800;
-}
-
 .icon-button {
   align-items: center;
   background: transparent;
@@ -282,13 +275,6 @@
 }
 
 :root[data-theme="shokou"] .dialog-actions button:first-child {
-  background: var(--accent-gradient);
-  border: 0;
-  padding: 7px 13px;
-  color: #ffffff;
-}
-
-:root[data-theme="kouyou"] .dialog-actions button:first-child {
   background: var(--accent-gradient);
   border: 0;
   padding: 7px 13px;
