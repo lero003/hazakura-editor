@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import { indentWithTab } from "@codemirror/commands";
 import { markdown } from "@codemirror/lang-markdown";
-import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import {
   Compartment,
   EditorState,
@@ -12,8 +11,8 @@ import {
   keymap,
   placeholder as editorPlaceholder,
 } from "@codemirror/view";
-import { tags as highlightTags } from "@lezer/highlight";
 import { basicSetup } from "codemirror";
+import { markdownSyntaxHighlighting } from "../../features/editor/codeMirrorTheme";
 import type { BaseTheme } from "../../types";
 
 type CandidateEditorProps = {
@@ -87,7 +86,7 @@ export function CandidateEditor({
         ),
         themeCompartmentRef.current.of([
           candidateEditorTheme(theme, fontSize),
-          syntaxHighlighting(candidateEditorHighlightStyle()),
+          markdownSyntaxHighlighting(),
         ]),
         wrapCompartmentRef.current.of(
           wrapLines ? EditorView.lineWrapping : [],
@@ -126,7 +125,7 @@ export function CandidateEditor({
     view.dispatch({
       effects: themeCompartmentRef.current.reconfigure([
         candidateEditorTheme(theme, fontSize),
-        syntaxHighlighting(candidateEditorHighlightStyle()),
+        markdownSyntaxHighlighting(),
       ]),
     });
   }, [fontSize, theme]);
@@ -301,37 +300,4 @@ function candidateEditorTheme(theme: BaseTheme, fontSize: number) {
     },
     { dark: theme === "dark" },
   );
-}
-
-function candidateEditorHighlightStyle() {
-  return HighlightStyle.define([
-    {
-      tag: [
-        highlightTags.heading,
-        highlightTags.heading1,
-        highlightTags.heading2,
-        highlightTags.heading3,
-      ],
-      color: "var(--cm-mark-heading)",
-      fontWeight: "700",
-    },
-    {
-      tag: [highlightTags.strong, highlightTags.emphasis],
-      color: "var(--cm-mark-strong)",
-    },
-    {
-      tag: [highlightTags.link, highlightTags.url],
-      color: "var(--cm-mark-link)",
-      textDecoration: "underline",
-    },
-    {
-      tag: highlightTags.monospace,
-      color: "var(--cm-mark-monospace)",
-    },
-    {
-      tag: highlightTags.quote,
-      color: "var(--cm-mark-quote)",
-      fontStyle: "italic",
-    },
-  ]);
 }

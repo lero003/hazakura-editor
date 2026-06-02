@@ -1,6 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { markdown } from "@codemirror/lang-markdown";
-import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import {
   selectCharLeft,
   selectCharRight,
@@ -25,10 +24,10 @@ import {
   rectangularSelection,
   crosshairCursor,
 } from "@codemirror/view";
-import { tags as highlightTags } from "@lezer/highlight";
 import { basicSetup } from "codemirror";
 import { SlashMenu, type SlashMenuCopy } from "./SlashMenu";
 import { useSlashMenu } from "../../hooks/editor/useSlashMenu";
+import { markdownSyntaxHighlighting } from "../../features/editor/codeMirrorTheme";
 import type { SlashCommand } from "../../types/slash";
 
 type SearchMatch = { from: number; to: number };
@@ -353,7 +352,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         ),
         themeCompartmentRef.current.of([
           editorTheme(theme, fontSize),
-          syntaxHighlighting(editorMarkdownHighlightStyle()),
+          markdownSyntaxHighlighting(),
         ]),
         EditorView.domEventHandlers({
           keydown(event, view) {
@@ -460,7 +459,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     view.dispatch({
       effects: themeCompartmentRef.current.reconfigure([
         editorTheme(theme, fontSize),
-        syntaxHighlighting(editorMarkdownHighlightStyle()),
+        markdownSyntaxHighlighting(),
       ]),
     });
   }, [fontSize, theme]);
@@ -855,39 +854,6 @@ function editorTheme(theme: "light" | "dark", fontSize: number) {
     },
     { dark: theme === "dark" },
   );
-}
-
-function editorMarkdownHighlightStyle() {
-  return HighlightStyle.define([
-    {
-      tag: [
-        highlightTags.heading,
-        highlightTags.heading1,
-        highlightTags.heading2,
-        highlightTags.heading3,
-      ],
-      color: "var(--cm-mark-heading)",
-      fontWeight: "700",
-    },
-    {
-      tag: [highlightTags.strong, highlightTags.emphasis],
-      color: "var(--cm-mark-strong)",
-    },
-    {
-      tag: [highlightTags.link, highlightTags.url],
-      color: "var(--cm-mark-link)",
-      textDecoration: "underline",
-    },
-    {
-      tag: highlightTags.monospace,
-      color: "var(--cm-mark-monospace)",
-    },
-    {
-      tag: highlightTags.quote,
-      color: "var(--cm-mark-quote)",
-      fontStyle: "italic",
-    },
-  ]);
 }
 
 function readSelectionInfo(state: EditorState): EditorSelectionInfo {
