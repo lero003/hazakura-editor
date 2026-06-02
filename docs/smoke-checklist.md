@@ -180,30 +180,33 @@ Latest Review Desk active-buffer edit safety checks: 2026-06-02 code inspection 
 
 Latest Review Desk discoverability and Slash menu keyboard polish checks: 2026-06-02 automated gates passed after adding the visible top-chrome Review Desk entry, View menu entry, `/` Review Desk command, `/` shortcut-list command, and capture-phase Slash menu `Enter` / `Tab` execution path. Built-app smoke confirmed the top-chrome Review Desk button opens/closes the surface, `/shortcut` + Enter inserts the shortcut list without leaving the slash query behind, and `/review` + Enter opens Review Desk without inserting a stray newline.
 
+Latest Review Desk candidate editor foundation checks: 2026-06-02 automated gates (`npm run typecheck`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build:vite`, `npm run build`, `git diff --check`) passed after replacing the manual-candidate `<textarea>` with a new self-contained `src/components/CandidateEditor.tsx` (CodeMirror 6 + `basicSetup` + `markdown()` language + `indentWithTab` keymap) so the candidate side now renders Markdown syntax highlighting, line numbers, Tab/Shift+Tab indentation, the active editor's theme/fontSize/tabSize/wrapLines, and spellcheck state. Compare / Apply remain explicit buttons, the existing candidate edit / tab / buffer safety guards in `useReviewDeskState` are unchanged, and the right-pane compare route is untouched. Built-app smoke of the manual candidate review path is pending in this automation environment (`open -n` returned the local `kLSNoExecutableErr` blocker and the in-app browser policy refused `http://127.0.0.1:1420/`); use the checklist below to confirm.
+
 ## Review Desk Manual Candidate Review
 
-Run on the built app from `src-tauri/target/release/bundle/macos/hazakura editor.app` after `npm run build`, or on the Vite dev server. The Review Desk manual candidate MVP adds a paste area, diff preview, and explicit apply-to-buffer action inside the existing Review Desk surface; it does not move the right-pane compare route and it does not save files automatically.
+Run on the built app from `src-tauri/target/release/bundle/macos/hazakura editor.app` after `npm run build`, or on the Vite dev server. The Review Desk manual candidate MVP adds a paste area, diff preview, and explicit apply-to-buffer action inside the existing Review Desk surface; it does not move the right-pane compare route and it does not save files automatically. The v0.8 foundation slice promotes the manual-candidate input from a plain `<textarea>` to a Markdown-aware CodeMirror editor, but keeps Compare / Apply explicit and keeps every safety guard from the v0.7 MVP.
 
 1. Launch the app and confirm the normal workspace renders as before.
 2. Open a throwaway Markdown file with at least a few lines so there is a buffer to compare.
-3. Open Review Desk from the visible top-chrome `Review Desk` button, then close and reopen it with `Cmd+Shift+R` (or `Ctrl+Shift+R` on non-mac). Confirm the Review Desk surface opens with the existing empty-state card plus a new "Manual candidate text" paste area (label, hint, textarea, Compare, Clear).
-4. Confirm the Compare button is disabled while the textarea is empty and enabled after a non-empty paste.
-5. Paste a short candidate snapshot (e.g. a slightly edited copy of the buffer) and press Compare. Confirm a diff preview appears with the active buffer as the left column and the candidate as the right column, with added / removed line counts visible.
-6. Confirm Apply candidate is enabled only after the candidate preview exists, then press Apply candidate. Confirm the editor buffer is replaced by the candidate text, Review Desk remains open, the candidate textarea / preview / error are cleared, and the status bar reports success.
+3. Open Review Desk from the visible top-chrome `Review Desk` button, then close and reopen it with `Cmd+Shift+R` (or `Ctrl+Shift+R` on non-mac). Confirm the Review Desk surface opens with the existing empty-state card plus a new "Manual candidate text" input slot (label, hint, Markdown-aware editor with line numbers, Compare, Clear).
+4. Confirm the Compare button is disabled while the editor is empty and enabled after a non-empty paste or edit.
+5. Paste a short Markdown candidate snapshot (e.g. a slightly edited copy of the buffer, with a few headings, code spans, and a list) into the editor and press Compare. Confirm a diff preview appears with the active buffer as the left column and the candidate as the right column, with added / removed line counts visible, and that the editor side shows Markdown syntax highlighting for headings, strong/emphasis, links, inline code, and blockquotes.
+6. Confirm Apply candidate is enabled only after the candidate preview exists, then press Apply candidate. Confirm the editor buffer is replaced by the candidate text, Review Desk remains open, the candidate editor / preview / error are cleared, and the status bar reports success.
 7. Confirm the file was not saved automatically: the active tab is dirty after Apply, and the on-disk file remains unchanged until Save.
 8. Save the active tab and confirm the normal save flow persists the applied candidate text.
-9. Edit the candidate textarea again, press Compare again, and confirm the diff preview updates to the new content.
+9. Edit the candidate editor again (e.g. add a heading, indent a list, or paste more Markdown) and press Compare again to confirm the diff preview updates to the new content and the syntax highlighting re-renders.
 10. After a successful Compare, switch to another open tab from the top tab bar and confirm the old preview is no longer applicable and Apply candidate is disabled until Compare is run again for the active tab.
 11. After a successful Compare, edit the active editor buffer directly and confirm the old preview is no longer applicable and Apply candidate is disabled until Compare is run again for the current buffer.
-12. Press Clear and confirm the textarea and the diff preview are both reset to the empty state.
+12. Press Clear and confirm the candidate editor and the diff preview are both reset to the empty state.
 13. Close the Review Desk with the close button, reopen it with `Cmd+Shift+R`, and confirm the previous candidate input and diff are gone (close-button reset path).
 14. Re-enter a candidate, run Compare, close Review Desk with `Cmd+Shift+R` / `Ctrl+Shift+R`, reopen it, and confirm the candidate input, diff preview, and error state are gone (shortcut reset path).
-15. With Review Desk open and no editor tab active, confirm the textarea, Compare, and Apply candidate are disabled and a "No editor tab is open to compare" note is visible.
-16. Confirm the right-pane compare route is unchanged: open Diff in the top editor chrome, pick a source and target file, run Compare, and confirm the right pane shows the existing file comparison view (not the candidate preview).
-17. Confirm the existing buffer-vs-disk / draft-vs-disk review paths still work through the right pane and do not leak into the Review Desk surface.
-18. Confirm the Japanese / English menu language switch in Preferences still localizes the new Review Desk copy (input label, hint, placeholder, Compare / Apply candidate / Clear, empty heading, preview title).
-19. In the editor, type `/review`, use `ArrowUp` / `ArrowDown` if needed, press `Enter`, and confirm the Review Desk opens without inserting a stray newline.
-20. In the editor, type `/shortcut`, press `Enter` or `Tab`, and confirm a Markdown shortcut list is inserted into the buffer.
+15. With Review Desk open and no editor tab active, confirm the candidate editor becomes read-only, Compare and Apply candidate are disabled, and a "No editor tab is open to compare" note is visible.
+16. Confirm Tab / Shift+Tab in the candidate editor still indent and outdent the line / selection without leaving the editor, and that Cmd+Shift+Enter does not send anything to an Agent session from inside the candidate editor.
+17. Confirm the right-pane compare route is unchanged: open Diff in the top editor chrome, pick a source and target file, run Compare, and confirm the right pane shows the existing file comparison view (not the candidate preview).
+18. Confirm the existing buffer-vs-disk / draft-vs-disk review paths still work through the right pane and do not leak into the Review Desk surface.
+19. Confirm the Japanese / English menu language switch in Preferences still localizes the new Review Desk copy (input label, hint, placeholder, Compare / Apply candidate / Clear, empty heading, preview title).
+20. In the editor, type `/review`, use `ArrowUp` / `ArrowDown` if needed, press `Enter`, and confirm the Review Desk opens without inserting a stray newline.
+21. In the editor, type `/shortcut`, press `Enter` or `Tab`, and confirm a Markdown shortcut list is inserted into the buffer.
 
 
 ## Review Desk Visible Shell

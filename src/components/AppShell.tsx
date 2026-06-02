@@ -74,6 +74,8 @@ export function AppShell(props: AppShellProps) {
           candidateErrorMessage={props.candidateErrorMessage}
           candidateInputText={props.candidateInputText}
           clearCandidate={props.clearCandidate}
+          editorSettings={props.editorSettings}
+          editorTheme={props.editorTheme}
           menuLanguage={props.menuLanguage}
           onApplyCandidate={props.onApplyManualCandidate}
           onClose={props.onCloseReviewDesk}

@@ -3693,28 +3693,43 @@ button:disabled {
   margin: 0;
 }
 
-.review-surface-candidate-textarea {
+.review-surface-candidate-editor {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 6px;
-  color: var(--text);
-  font-family: var(--font-mono, ui-monospace, monospace);
-  font-size: 12px;
-  line-height: 1.5;
-  min-height: 180px;
-  padding: 8px 10px;
-  resize: vertical;
+  display: flex;
+  min-height: 240px;
+  overflow: hidden;
 }
 
-.review-surface-candidate-textarea:focus-visible {
+.review-surface-candidate-editor:focus-within {
   border-color: var(--accent, var(--border-strong));
+}
+
+.review-surface-candidate-editor .editor-mount {
+  flex: 1 1 auto;
+  height: 240px;
+  max-height: 360px;
+  min-height: 0;
+  overflow: auto;
+}
+
+.review-surface-candidate-editor .cm-editor {
+  height: 100%;
+}
+
+.review-surface-candidate-editor .cm-editor.cm-focused {
   outline: none;
 }
 
-.review-surface-candidate-textarea:disabled {
-  background: var(--surface-muted, var(--surface));
+.review-surface-candidate-editor .cm-content[data-placeholder]:empty::before {
   color: var(--text-muted);
-  cursor: not-allowed;
+  content: attr(data-placeholder);
+  pointer-events: none;
+}
+
+.review-surface-candidate-editor .cm-editor[contenteditable="false"] {
+  opacity: 0.7;
 }
 
 .review-surface-candidate-empty {

@@ -1,11 +1,14 @@
 import type {
+  BaseTheme,
   CompareCase,
   CompareViewState,
+  EditorSettings,
   EditorTab,
   MenuLanguage,
   ReviewDeskMode,
 } from "../types";
 import type { ReviewDeskCopy } from "../locale";
+import { CandidateEditor } from "./CandidateEditor";
 import { DiffBody } from "./DiffBody";
 
 type ReviewSurfaceProps = {
@@ -15,6 +18,8 @@ type ReviewSurfaceProps = {
   candidateErrorMessage: string | null;
   candidateInputText: string;
   clearCandidate: () => void;
+  editorSettings: EditorSettings;
+  editorTheme: BaseTheme;
   menuLanguage: MenuLanguage;
   onApplyCandidate: (
     candidateText: string,
@@ -53,6 +58,8 @@ export function ReviewSurface({
   candidateErrorMessage,
   candidateInputText,
   clearCandidate,
+  editorSettings,
+  editorTheme,
   menuLanguage,
   onApplyCandidate,
   onClose,
@@ -94,6 +101,8 @@ export function ReviewSurface({
           candidateInputText={candidateInputText}
           clearCandidate={clearCandidate}
           copy={reviewDeskCopy}
+          editorSettings={editorSettings}
+          editorTheme={editorTheme}
           menuLanguage={menuLanguage}
           onApplyCandidate={onApplyCandidate}
           runCandidateCompare={runCandidateCompare}
@@ -122,6 +131,8 @@ type ReviewSurfaceCandidateSectionProps = {
   candidateInputText: string;
   clearCandidate: () => void;
   copy: ReviewDeskCopy;
+  editorSettings: EditorSettings;
+  editorTheme: BaseTheme;
   menuLanguage: MenuLanguage;
   onApplyCandidate: (
     candidateText: string,
@@ -149,6 +160,8 @@ function ReviewSurfaceCandidateSection({
   candidateInputText,
   clearCandidate,
   copy,
+  editorSettings,
+  editorTheme,
   menuLanguage,
   onApplyCandidate,
   runCandidateCompare,
@@ -182,22 +195,25 @@ function ReviewSurfaceCandidateSection({
       <div className="review-surface-candidate-input">
         <label
           className="review-surface-candidate-label"
-          htmlFor="review-surface-candidate-textarea"
+          htmlFor="review-surface-candidate-editor-mount"
         >
           {copy.candidateInputLabel}
         </label>
         <p className="review-surface-candidate-hint">
           {copy.candidateInputHint}
         </p>
-        <textarea
-          id="review-surface-candidate-textarea"
-          className="review-surface-candidate-textarea"
-          value={candidateInputText}
-          onChange={(event) => setCandidateInputText(event.target.value)}
+        <CandidateEditor
+          ariaLabel={copy.candidateInputLabel}
+          documentKey="review-desk-candidate"
+          fontSize={editorSettings.fontSize}
           placeholder={copy.candidateInputPlaceholder}
-          spellCheck={false}
-          rows={10}
-          disabled={!hasActiveTab}
+          readOnly={!hasActiveTab}
+          spellcheckEnabled={editorSettings.spellcheckEnabled}
+          tabSize={editorSettings.tabSize}
+          theme={editorTheme}
+          value={candidateInputText}
+          wrapLines={editorSettings.wrapLines}
+          onChange={setCandidateInputText}
         />
         {!hasActiveTab ? (
           <p className="review-surface-candidate-empty" role="note">
