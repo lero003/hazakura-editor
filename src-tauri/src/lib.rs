@@ -42,9 +42,12 @@ pub(crate) mod tests;
 // from the `main` window. The four Agent session commands plus
 // `set_agent_window_theme` (so the main window can push theme
 // changes to the agent window and the agent window can sync its
-// own title-bar / background on mount) may additionally be called
-// from the `agent` window. All other window labels are rejected.
-// See docs/assist-surface-strategy.md and
+// own title-bar / background on mount) and `open_main_agent_pane`
+// (so the detached agent window's "Show in main pane" footer link
+// can ask the main window to focus itself and switch the right
+// pane to Agent) may additionally be called from the `agent`
+// window. All other window labels are rejected. See
+// docs/assist-surface-strategy.md and
 // docs/agent-workbench-boundary.md.
 
 pub(crate) const MAIN_WINDOW_LABEL: &str = "main";
@@ -1262,8 +1265,13 @@ fn open_agent_window<R: tauri::Runtime>(
         .title_bar_style(TitleBarStyle::Transparent)
         .background_color(agent_window_background_color(&theme))
         .theme(Some(agent_window_os_theme(&theme)))
-        .inner_size(800.0, 600.0)
-        .min_inner_size(640.0, 480.0)
+        // Narrow tool-window size (Photoshop / IDE panel proportions),
+        // not a browser-popup size. The 380 × 520 floor is just enough
+        // to keep the four-row chrome (header / info / terminal /
+        // footer) readable; the xterm fit-addon will reflow to the new
+        // columns on the first ResizeObserver tick after open.
+        .inner_size(440.0, 760.0)
+        .min_inner_size(380.0, 520.0)
         .center()
         .build()
         .map_err(|err| format!("Cannot open Agent window: {err}"))?;
@@ -1310,6 +1318,40 @@ fn set_agent_window_theme<R: tauri::Runtime>(
     }
 
     Ok(())
+}
+
+// Focus the main window and ask it to switch the right pane to
+// Agent mode. Called from the detached agent window's "Show in
+// main pane" footer link (and theoretically from the main window
+// itself, where it's a no-op-ish "ensure main is focused + emit
+// the event"). Gated on `main | agent` so the agent window can
+// invoke it without going through the menu, and so the main
+// window can self-trigger if it ever needs to. The targeted
+// `emit_to(MAIN, ...)` keeps the signal off the agent window's
+// own listener, so the agent window never re-triggers itself.
+#[cfg(desktop)]
+#[tauri::command]
+fn open_main_agent_pane<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    app: tauri::AppHandle<R>,
+) -> Result<(), String> {
+    ensure_label_is_main_or_agent(window.label())?;
+    if let Some(main_window) = app.get_webview_window(MAIN_WINDOW_LABEL) {
+        let _ = main_window.set_focus();
+    }
+    let _ = app.emit_to(MAIN_WINDOW_LABEL, OPEN_MAIN_AGENT_PANE_EVENT, ());
+    Ok(())
+}
+
+// Label-only check used by the `open_main_agent_pane` test suite.
+// The `app.emit_to` and `app.get_webview_window` calls in the body
+// need a real `AppHandle`; the gate is the only piece worth pinning
+// in unit tests, mirroring the `*_with_label` shim pattern used by
+// the other boundary tests.
+#[cfg(desktop)]
+#[cfg_attr(not(test), allow(dead_code))]
+fn open_main_agent_pane_with_label(label: &str) -> Result<(), String> {
+    ensure_label_is_main_or_agent(label)
 }
 
 #[tauri::command]
@@ -1379,6 +1421,7 @@ pub fn run() {
             update_theme_menu_state,
             open_agent_window,
             set_agent_window_theme,
+            open_main_agent_pane,
             save_pasted_image,
             import_image_from_path,
             open_temp_print_html,

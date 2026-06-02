@@ -41,6 +41,7 @@ type SidePaneProps = {
   getCompareCaseByKey: (caseKey: string) => CompareCase | undefined;
   menuLanguage: MenuLanguage;
   onCheckAgentGate: () => void;
+  onOpenAgentWindow: () => void;
   onClearCompareSource: () => void;
   onClearCompareTarget: () => void;
   onCloseCompareView: (options?: { returnToEditor?: boolean }) => void;
@@ -79,6 +80,7 @@ export function SidePane({
   getCompareCaseByKey,
   menuLanguage,
   onCheckAgentGate,
+  onOpenAgentWindow,
   onClearCompareSource,
   onClearCompareTarget,
   onCloseCompareView,
@@ -142,6 +144,7 @@ export function SidePane({
         <AgentPaneShell
           gate={agentGate}
           onCheckGate={onCheckAgentGate}
+          onOpenAgentWindow={onOpenAgentWindow}
           onStopSession={onStopAgentSession}
           onTerminalData={onTerminalData}
           onTerminalEngage={onTerminalEngage}

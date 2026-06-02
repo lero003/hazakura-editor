@@ -14,6 +14,7 @@ import { useDocumentSafetyActions } from "./hooks/useDocumentSafetyActions";
 import { useEditorTabState } from "./hooks/useEditorTabState";
 import { useSidePaneController } from "./hooks/useSidePaneController";
 import { useAppRuntimeEffects } from "./hooks/useAppRuntimeEffects";
+import { useMainAgentPaneFocus } from "./hooks/useMainAgentPaneFocus";
 import { useAgentOutputBuffer } from "./hooks/useAgentOutputBuffer";
 import { useAgentUiRefreshGate } from "./hooks/useAgentUiRefreshGate";
 import { useWorkspaceFileOpening } from "./hooks/useWorkspaceFileOpening";
@@ -726,6 +727,17 @@ export default function App() {
     },
   });
 
+  // Reverse link from the detached Agent window: when the user clicks
+  // "Show in main pane" in the detached window's footer, the Rust
+  // command emits OPEN_MAIN_AGENT_PANE_EVENT to the main window. We
+  // flip the right pane to Agent mode (and open the side pane if it
+  // was closed) by reusing the right-pane toggle. The right pane
+  // remains a valid fallback surface — this is just a navigation
+  // affordance, not a policy change. See
+  // docs/assist-surface-strategy.md and the open_main_agent_pane
+  // command in src-tauri/src/lib.rs (main|agent gate).
+  useMainAgentPaneFocus({ onOpen: toggleAgentPane });
+
   const shellProps: AppShellProps = {
     activeAgentSession,
     activeConflict,
@@ -825,6 +837,9 @@ export default function App() {
     onApplyMarkdownFormat: applyActiveMarkdownFormat,
     onApplyManualCandidate: applyManualCandidateToActiveTab,
     onCheckAgentGate: requestAgentLaunchGateCheck,
+    onOpenAgentWindow: () => {
+      void openAgentWindow(themePreference);
+    },
     onCloseReviewDesk: closeReviewDesk,
     onCloseTab: requestCloseTab,
     onConvertLineEnding: convertActiveLineEnding,

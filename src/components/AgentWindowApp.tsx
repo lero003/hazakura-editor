@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   getAgentWorkbenchSessionState,
+  openMainAgentPane,
   resizeAgentWorkbenchTerminal,
   setAgentWindowTheme,
   stopAgentWorkbenchSession,
@@ -355,6 +356,23 @@ export function AgentWindowApp() {
         >
           <span className="agent-window-stop-dot" aria-hidden="true" />
           {stopping ? "Stopping..." : "Stop session"}
+        </button>
+        <button
+          type="button"
+          className="agent-window-show-in-main"
+          // Reverse-link affordance: ask the main window to flip its
+          // right pane to Agent mode and bring the main window to
+          // the front. Always enabled (this is a navigation, not a
+          // session action) — clicking before a session is active
+          // just shows the right pane in its idle state. See
+          // open_main_agent_pane in src-tauri/src/lib.rs and the
+          // main|agent capability description.
+          onClick={() => {
+            void openMainAgentPane();
+          }}
+          title="Open the Agent pane in the main window"
+        >
+          Show in main pane
         </button>
         <span className="agent-window-statusbar" role="status">
           {status}

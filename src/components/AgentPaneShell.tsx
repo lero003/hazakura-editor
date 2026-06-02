@@ -21,6 +21,7 @@ export function AgentPaneShell({
   gate,
   menuLanguage,
   onCheckGate,
+  onOpenAgentWindow,
   onStopSession,
   onTerminalData,
   onTerminalEngage,
@@ -37,6 +38,7 @@ export function AgentPaneShell({
   gate: AgentLaunchGateState;
   menuLanguage: MenuLanguage;
   onCheckGate: () => void;
+  onOpenAgentWindow: () => void;
   onStopSession: () => void;
   onTerminalData: (data: string) => void;
   onTerminalEngage: () => void;
@@ -79,6 +81,9 @@ export function AgentPaneShell({
           terminal: "Agent ターミナル",
           running: "Agent は実行中",
           inactive: "Agent は停止中",
+          dedicatedWindowPrompt: "専用の Agent ウィンドウは",
+          dedicatedWindowCta: "表示 → Agent ウィンドウを開く",
+          dedicatedWindowSuffix: "から。",
         }
       : {
           noWorkspace: "No workspace selected",
@@ -105,6 +110,13 @@ export function AgentPaneShell({
           terminal: "Agent terminal",
           running: "Agent running",
           inactive: "Agent inactive",
+          // Demotion banner: the right pane is a fallback / verification
+          // surface. The detached Agent window is the primary route per
+          // the v0.8+ slice. See docs/assist-surface-strategy.md and
+          // the banner's CSS in styles.css (.agent-pane-demotion).
+          dedicatedWindowPrompt: "For the dedicated Agent Window,",
+          dedicatedWindowCta: "use View → Open Agent Window",
+          dedicatedWindowSuffix: ".",
         };
   const gateMessage = workspaceAvailable
     ? localizeAgentGateMessage(gate.message, menuLanguage)
@@ -117,6 +129,17 @@ export function AgentPaneShell({
 
   return (
     <section className={`agent-pane${!activeSession ? " session-stopped" : ""}`} aria-label="Agent Workbench pane">
+      <div className="agent-pane-demotion" role="note">
+        <span>{copy.dedicatedWindowPrompt} </span>
+        <button
+          className="agent-pane-demotion-cta"
+          onClick={onOpenAgentWindow}
+          type="button"
+        >
+          {copy.dedicatedWindowCta}
+        </button>
+        <span>{copy.dedicatedWindowSuffix}</span>
+      </div>
       <div className="agent-compact-header">
         <div className="agent-compact-title">
           <strong>{providerLabel(provider)}</strong>

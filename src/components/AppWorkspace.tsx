@@ -117,6 +117,7 @@ type AppWorkspaceProps = {
   syncEditorScroll: () => void;
   syncPreviewScroll: (ratio: number) => void;
   onCheckAgentGate: () => void;
+  onOpenAgentWindow: () => void;
   onResumeAgentUiRefresh: () => void;
   onResizeAgentTerminal: (size: AgentTerminalSize) => void;
   onSendAgentTerminalData: (data: string) => void;
@@ -192,6 +193,7 @@ export function AppWorkspace({
   syncEditorScroll,
   syncPreviewScroll,
   onCheckAgentGate,
+  onOpenAgentWindow,
   onResumeAgentUiRefresh,
   onResizeAgentTerminal,
   onSendAgentTerminalData,
@@ -283,6 +285,7 @@ export function AppWorkspace({
             documentHeadings={documentHeadings}
             menuLanguage={menuLanguage}
             onCheckAgentGate={onCheckAgentGate}
+            onOpenAgentWindow={onOpenAgentWindow}
             onClearCompareSource={clearCompareSource}
             onClearCompareTarget={clearCompareTarget}
             onCloseCompareView={closeCompareView}

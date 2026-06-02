@@ -44,6 +44,7 @@ pub(crate) const O_RDWR_FLAG: i32 = 0x0002;
 pub(crate) const O_NOCTTY_FLAG: i32 = 0x00020000;
 pub(crate) const MENU_ACTION_EVENT: &str = "hazakura-note://menu-action";
 pub(crate) const OPENED_FILES_EVENT: &str = "hazakura-note://opened-files";
+pub(crate) const OPEN_MAIN_AGENT_PANE_EVENT: &str = "hazakura-note://open-main-agent-pane";
 pub(crate) const MENU_NEW_FILE: &str = "new-file";
 pub(crate) const MENU_OPEN_FILE: &str = "open-file";
 pub(crate) const MENU_OPEN_FOLDER: &str = "open-folder";

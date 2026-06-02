@@ -506,6 +506,23 @@ export async function openAgentWindow(theme?: string): Promise<void> {
   }
 }
 
+// Reverse link from the detached Agent window's "Show in main pane"
+// footer button. The Rust side gates this to the main|agent labels and
+// emits OPEN_MAIN_AGENT_PANE_EVENT to the main window; the main
+// window's useMainAgentPaneFocus hook flips the right pane to Agent.
+// We only need to fire the invoke; the response payload is empty.
+export async function openMainAgentPane(): Promise<void> {
+  if (!isTauriRuntime()) {
+    return;
+  }
+
+  try {
+    await invoke("open_main_agent_pane");
+  } catch (err) {
+    console.warn("Failed to open main Agent pane", err);
+  }
+}
+
 export async function setAgentWindowTheme(theme: string): Promise<void> {
   if (!isTauriRuntime()) {
     return;

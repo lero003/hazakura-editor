@@ -2528,6 +2528,51 @@ button:disabled {
   transition: opacity 0.2s ease;
 }
 
+/* Demotion banner: the right-pane Agent is now a fallback / verification
+ * surface per the v0.8+ slice. The detached Agent window is the primary
+ * route. This row sits at the top of the right pane and shows a small
+ * inline link to View → Open Agent Window, which opens the detached
+ * window. The right-pane Agent remains fully functional — the banner
+ * is informational, not a blocker. See
+ * docs/assist-surface-strategy.md and AgentPaneShell.tsx. */
+.agent-pane-demotion {
+  align-items: baseline;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-muted);
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  font-size: 11.5px;
+  gap: 2px;
+  line-height: 1.4;
+  padding: 6px 10px;
+}
+
+.agent-pane-demotion-cta {
+  background: transparent;
+  border: 0;
+  color: var(--accent);
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent) 50%, transparent);
+  text-underline-offset: 2px;
+}
+
+.agent-pane-demotion-cta:hover {
+  color: color-mix(in srgb, var(--accent) 88%, var(--text));
+  text-decoration-color: var(--accent);
+}
+
+.agent-pane-demotion-cta:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  outline-offset: 1px;
+  border-radius: 2px;
+}
+
 .agent-pane.session-stopped .agent-terminal-shell {
   border-color: var(--border);
 }
@@ -4329,6 +4374,10 @@ button:disabled {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 11px;
   font-weight: 500;
+  max-width: 9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .agent-window-state {
@@ -4416,7 +4465,7 @@ button:disabled {
   display: inline-flex;
   flex: 0 0 auto;
   gap: 7px;
-  max-width: 18rem;
+  max-width: 10rem;
   min-width: 0;
   overflow: hidden;
   padding: 6px 12px;
@@ -4527,6 +4576,42 @@ button:disabled {
 
 .agent-window-stop:disabled .agent-window-stop-dot {
   background: var(--text-muted);
+}
+
+/* Reverse-link affordance: clicking this asks the main window to
+ * flip its right pane to Agent mode and bring the main window to
+ * the front. Always enabled (this is a navigation, not a session
+ * action). See the open_main_agent_pane command in
+ * src-tauri/src/lib.rs and the useMainAgentPaneFocus hook in
+ * src/hooks/useMainAgentPaneFocus.ts. */
+.agent-window-show-in-main {
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-family: var(--app-font-family, system-ui, -apple-system, sans-serif);
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 4px 10px;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.agent-window-show-in-main:hover {
+  background: var(--surface-strong);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.agent-window-show-in-main:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  outline-offset: 1px;
 }
 
 .agent-window-statusbar {

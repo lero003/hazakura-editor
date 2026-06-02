@@ -3235,3 +3235,29 @@ fn agent_start_allows_main_label() {
 
     let _ = fs::remove_dir_all(dir);
 }
+
+#[test]
+fn open_main_agent_pane_allows_main_and_agent_labels() {
+    // The "Show in main pane" reverse link in the detached agent
+    // window's footer must be able to call this command directly
+    // (without going through the menu). The main window also needs
+    // to be able to call it (where it's effectively a no-op for the
+    // focus + emit). Both must clear the gate.
+    open_main_agent_pane_with_label(MAIN_WINDOW_LABEL)
+        .expect("main must be allowed to ask the main window to open its agent pane");
+    open_main_agent_pane_with_label(AGENT_WINDOW_LABEL)
+        .expect("agent must be allowed to ask the main window to open its agent pane");
+}
+
+#[test]
+fn open_main_agent_pane_rejects_unknown_label() {
+    // Pin the negative case: anything that is not `main` or `agent`
+    // gets the standard "not allowed from window" error. This is
+    // the second layer of defense on top of the empty
+    // `agent-window.json` permissions array — a future script in
+    // some other webview must not be able to flip the main window's
+    // right pane to Agent mode out from under the user.
+    let err = open_main_agent_pane_with_label(UNKNOWN_WINDOW_LABEL)
+        .expect_err("open_main_agent_pane must reject unknown labels");
+    assert!(err.contains(UNKNOWN_WINDOW_LABEL), "{err}");
+}

@@ -124,6 +124,14 @@ export type MarkdownHeadingContext = {
 // src-tauri/src/types.rs and docs/assist-surface-strategy.md.
 export const MENU_OPEN_AGENT_WINDOW = "open-agent-window";
 
+// Mirror of the Rust OPEN_MAIN_AGENT_PANE_EVENT constant. The detached
+// Agent window emits this when the user clicks the footer's "Show in
+// main pane" affordance, and the main window's useMainAgentPaneFocus
+// hook listens for it to flip the right pane to Agent mode. See
+// src-tauri/src/types.rs and docs/assist-surface-strategy.md.
+export const OPEN_MAIN_AGENT_PANE_EVENT =
+  "hazakura-note://open-main-agent-pane";
+
 export type AgentLaunchGateState = {
   kind: "idle" | "checking" | "passed" | "rejected";
   message: string;
