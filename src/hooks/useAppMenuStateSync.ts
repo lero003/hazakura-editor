@@ -11,6 +11,8 @@ import { buildRecentDisplayEntries } from "../utils";
 type UseAppMenuStateSyncOptions = {
   activeDirty: boolean;
   activeTab: unknown | null;
+  agentWorkbenchActive: boolean;
+  agentWorkbenchConsent: boolean;
   editorSettings: Pick<
     EditorSettings,
     "showInvisibles" | "spellcheckEnabled" | "wrapLines"
@@ -25,6 +27,8 @@ type UseAppMenuStateSyncOptions = {
 export function useAppMenuStateSync({
   activeDirty,
   activeTab,
+  agentWorkbenchActive,
+  agentWorkbenchConsent,
   editorSettings,
   menuLanguage,
   previewVisible,
@@ -55,12 +59,16 @@ export function useAppMenuStateSync({
       menuLanguage,
       recentFiles: menuRecentFiles,
       recentFolders: menuRecentFolders,
+      agentWorkbenchActive,
+      agentWorkbenchConsent,
     }).catch((err) => {
       console.warn("Failed to update app menu state", err);
     });
   }, [
     activeDirty,
     activeTab,
+    agentWorkbenchActive,
+    agentWorkbenchConsent,
     editorSettings.showInvisibles,
     editorSettings.spellcheckEnabled,
     editorSettings.wrapLines,

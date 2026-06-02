@@ -120,6 +120,10 @@ export type MarkdownHeadingContext = {
 
 // ── Agent Types ──
 
+// Mirror of the Rust MENU_OPEN_AGENT_WINDOW constant. See
+// src-tauri/src/types.rs and docs/assist-surface-strategy.md.
+export const MENU_OPEN_AGENT_WINDOW = "open-agent-window";
+
 export type AgentLaunchGateState = {
   kind: "idle" | "checking" | "passed" | "rejected";
   message: string;

@@ -1,5 +1,6 @@
 // xterm imports moved to AgentTerminalView component
 import { useCallback } from "react";
+import { openAgentWindow } from "./tauri";
 import { useAppPreferences } from "./hooks/useAppPreferences";
 import { useAgentWorkbenchPreferences } from "./hooks/useAgentWorkbenchPreferences";
 import { useRecentEntries } from "./hooks/useRecentEntries";
@@ -488,6 +489,9 @@ export default function App() {
       createNewFile,
       exportHtml,
       exportPdf,
+      openAgentWindow: () => {
+        void openAgentWindow();
+      },
       openFile,
       openWorkspace,
       openWorkspacePath,
@@ -644,6 +648,8 @@ export default function App() {
     appShellSync: {
       activeDirty,
       activeTab,
+      agentWorkbenchActive,
+      agentWorkbenchConsent,
       discardingWindowCloseRef,
       editorSettings,
       menuLanguage,

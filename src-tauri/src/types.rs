@@ -3,6 +3,7 @@ use std::ffi::OsStr;
 use std::fs::File;
 use std::io::Write;
 use std::process::Child;
+use std::sync::atomic::AtomicBool;
 use std::sync::{Arc, Mutex};
 
 pub(crate) const LARGE_FILE_WARNING_BYTES: u64 = 5 * 1024 * 1024;
@@ -64,6 +65,7 @@ pub(crate) const MENU_THEME_SHOKOU: &str = "theme-shokou";
 pub(crate) const MENU_THEME_KOUYOU: &str = "theme-kouyou";
 pub(crate) const MENU_PREFERENCES: &str = "preferences";
 pub(crate) const MENU_AGENT_WORKBENCH: &str = "agent-workbench";
+pub(crate) const MENU_OPEN_AGENT_WINDOW: &str = "open-agent-window";
 pub(crate) const MENU_RECENT_FILE_PREFIX: &str = "recent-file-";
 pub(crate) const MENU_RECENT_FOLDER_PREFIX: &str = "recent-folder-";
 pub(crate) const EXCLUDED_WORKSPACE_DIRS: &[&str] = &[
@@ -211,6 +213,8 @@ pub(crate) struct AgentWorkbenchSessionStore {
     pub(crate) runtime: Mutex<Option<AgentRuntimeProcess>>,
     pub(crate) output: Arc<Mutex<Vec<AgentWorkbenchOutputChunk>>>,
     pub(crate) next_output_seq: Arc<Mutex<u64>>,
+    pub(crate) agent_workbench_active: Arc<AtomicBool>,
+    pub(crate) agent_workbench_consent: Arc<AtomicBool>,
 }
 
 #[derive(Default)]
@@ -223,6 +227,8 @@ impl Default for AgentWorkbenchSessionStore {
             runtime: Mutex::new(None),
             output: Arc::new(Mutex::new(Vec::new())),
             next_output_seq: Arc::new(Mutex::new(1)),
+            agent_workbench_active: Arc::new(AtomicBool::new(false)),
+            agent_workbench_consent: Arc::new(AtomicBool::new(false)),
         }
     }
 }
@@ -284,6 +290,8 @@ pub(crate) struct AppMenuState {
     pub(crate) menu_language: String,
     pub(crate) recent_files: Vec<AppMenuRecentItem>,
     pub(crate) recent_folders: Vec<AppMenuRecentItem>,
+    pub(crate) agent_workbench_active: bool,
+    pub(crate) agent_workbench_consent: bool,
 }
 
 #[derive(Debug, Deserialize, Serialize)]

@@ -28,6 +28,8 @@ export type AppMenuState = {
   menuLanguage: "en" | "ja" | "kana";
   recentFiles: AppMenuRecentItem[];
   recentFolders: AppMenuRecentItem[];
+  agentWorkbenchActive: boolean;
+  agentWorkbenchConsent: boolean;
 };
 
 export type TextFileDocument = {
@@ -490,6 +492,18 @@ export async function updateAppMenuState(state: AppMenuState): Promise<void> {
   }
 
   await invoke("update_app_menu_state", { state });
+}
+
+export async function openAgentWindow(): Promise<void> {
+  if (!isTauriRuntime()) {
+    return;
+  }
+
+  try {
+    await invoke("open_agent_window");
+  } catch (err) {
+    console.warn("Failed to open Agent window", err);
+  }
 }
 
 export async function updateThemeMenuState(

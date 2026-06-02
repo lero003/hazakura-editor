@@ -4202,3 +4202,194 @@ button:disabled {
     opacity: 0.85;
   }
 }
+
+/* ── Detached Agent Window (v0.8+ spike) ──
+ * The hazakura agent window is a thin UI mirror of the Agent
+ * Workbench session state. It does not own the session, does not
+ * run xterm, and does not host the launch-gate check. The styles
+ * below are intentionally minimal — readable plain-text scrollback
+ * plus two buttons. See docs/assist-surface-strategy.md and
+ * docs/agent-workbench-boundary.md.
+ */
+
+.agent-window-shell {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--app-font-family, system-ui, -apple-system, sans-serif);
+}
+
+.agent-window-header {
+  align-items: center;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 16px;
+}
+
+.agent-window-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  margin: 0;
+}
+
+.agent-window-meta {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.agent-window-provider {
+  color: var(--text-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.agent-window-status {
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  text-transform: uppercase;
+}
+
+.agent-window-status[data-state="active"] {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.agent-window-status[data-state="stopped"],
+.agent-window-status[data-state="exited"] {
+  background: rgba(178, 77, 82, 0.16);
+  color: var(--danger);
+}
+
+.agent-window-status[data-state="none"] {
+  background: var(--surface-muted);
+  color: var(--text-muted);
+}
+
+.agent-window-launch-gate {
+  align-items: center;
+  background: var(--surface-muted);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  font-size: 11px;
+  gap: 8px;
+  padding: 6px 16px;
+}
+
+.agent-window-launch-gate-label {
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.agent-window-launch-gate-value {
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.agent-window-output {
+  background: var(--surface-strong);
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0;
+  overflow: auto;
+  padding: 12px 16px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.agent-window-output:empty::before {
+  color: var(--text-muted);
+  content: "No session output yet.";
+}
+
+.agent-window-controls {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: grid;
+  gap: 6px;
+  padding: 12px 16px;
+}
+
+.agent-window-input-label {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.agent-window-input {
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.agent-window-input:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.agent-window-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.agent-window-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.agent-window-send,
+.agent-window-stop {
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.agent-window-send {
+  background: var(--accent);
+  color: var(--surface-strong);
+}
+
+.agent-window-stop {
+  background: var(--surface-strong);
+  color: var(--danger);
+}
+
+.agent-window-send:disabled,
+.agent-window-stop:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.agent-window-statusbar {
+  background: var(--surface-muted);
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  padding: 4px 16px;
+}

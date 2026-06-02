@@ -1871,7 +1871,7 @@ fn open_text_file_rejects_binary_looking_file() {
     let path = dir.join("sample.md");
     fs::write(&path, b"# Title\n\0binary tail").expect("write binary fixture");
 
-    let err = open_text_file(path.to_string_lossy().to_string())
+    let err = open_text_file_with_label(MAIN_WINDOW_LABEL, path.to_string_lossy().to_string())
         .expect_err("binary-looking markdown should fail");
 
     assert!(err.contains("Binary-looking"));
@@ -1886,7 +1886,8 @@ fn open_text_file_opens_utf8_json() {
     let path = dir.join("settings.json");
     fs::write(&path, "{\n  \"enabled\": true\n}\n").expect("write json fixture");
 
-    let document = open_text_file(path.to_string_lossy().to_string()).expect("open json text file");
+    let document = open_text_file_with_label(MAIN_WINDOW_LABEL, path.to_string_lossy().to_string())
+        .expect("open json text file");
 
     assert_eq!(document.name, "settings.json");
     assert!(document.contents.contains("\"enabled\": true"));
@@ -1900,7 +1901,8 @@ fn create_text_file_creates_empty_markdown_file() {
     let path = dir.join("fresh.md");
 
     let document =
-        create_text_file(path.to_string_lossy().to_string()).expect("create markdown file");
+        create_text_file_with_label(MAIN_WINDOW_LABEL, path.to_string_lossy().to_string())
+            .expect("create markdown file");
 
     assert_eq!(document.name, "fresh.md");
     assert_eq!(document.contents, "");
@@ -1918,7 +1920,7 @@ fn create_text_file_rejects_existing_file() {
     let path = dir.join("existing.md");
     fs::write(&path, "# Existing\n").expect("write fixture");
 
-    let err = create_text_file(path.to_string_lossy().to_string())
+    let err = create_text_file_with_label(MAIN_WINDOW_LABEL, path.to_string_lossy().to_string())
         .expect_err("existing file should not be overwritten");
 
     assert!(err.contains("already exists"));
@@ -2062,7 +2064,8 @@ fn save_rejects_external_change_before_write() {
 
     fs::write(&path, "# External change\n\nDo not overwrite.\n").expect("simulate external change");
 
-    let result = save_text_file(
+    let result = save_text_file_with_label(
+        MAIN_WINDOW_LABEL,
         path.to_string_lossy().to_string(),
         "# Editor change\n".to_string(),
         opened_fingerprint,
@@ -2087,11 +2090,13 @@ fn save_preserves_crlf_line_endings() {
     let path = dir.join("note.md");
     fs::write(&path, b"# Title\r\n\r\nBody\r\n").expect("write crlf fixture");
 
-    let document = open_text_file(path.to_string_lossy().to_string()).expect("open crlf fixture");
+    let document = open_text_file_with_label(MAIN_WINDOW_LABEL, path.to_string_lossy().to_string())
+        .expect("open crlf fixture");
 
     assert_eq!(document.line_ending, "crlf");
 
-    save_text_file(
+    save_text_file_with_label(
+        MAIN_WINDOW_LABEL,
         path.to_string_lossy().to_string(),
         "# Changed\n\nBody\n".to_string(),
         document.fingerprint,
@@ -2116,20 +2121,27 @@ fn save_preserves_lf_trailing_newline_presence() {
     fs::write(&with_newline_path, b"# Title\n\nBody\n").expect("write lf fixture");
     fs::write(&without_newline_path, b"# Title\n\nBody").expect("write lf fixture");
 
-    let with_newline_document = open_text_file(with_newline_path.to_string_lossy().to_string())
-        .expect("open lf fixture with final newline");
-    let without_newline_document =
-        open_text_file(without_newline_path.to_string_lossy().to_string())
-            .expect("open lf fixture without final newline");
+    let with_newline_document = open_text_file_with_label(
+        MAIN_WINDOW_LABEL,
+        with_newline_path.to_string_lossy().to_string(),
+    )
+    .expect("open lf fixture with final newline");
+    let without_newline_document = open_text_file_with_label(
+        MAIN_WINDOW_LABEL,
+        without_newline_path.to_string_lossy().to_string(),
+    )
+    .expect("open lf fixture without final newline");
 
-    save_text_file(
+    save_text_file_with_label(
+        MAIN_WINDOW_LABEL,
         with_newline_path.to_string_lossy().to_string(),
         "# Changed\n\nBody\n".to_string(),
         with_newline_document.fingerprint,
         with_newline_document.line_ending,
     )
     .expect("save lf document with final newline");
-    save_text_file(
+    save_text_file_with_label(
+        MAIN_WINDOW_LABEL,
         without_newline_path.to_string_lossy().to_string(),
         "# Changed\n\nBody".to_string(),
         without_newline_document.fingerprint,
@@ -2156,11 +2168,13 @@ fn save_preserves_crlf_without_trailing_newline() {
     let path = dir.join("note.md");
     fs::write(&path, b"# Title\r\n\r\nBody").expect("write crlf fixture");
 
-    let document = open_text_file(path.to_string_lossy().to_string()).expect("open crlf fixture");
+    let document = open_text_file_with_label(MAIN_WINDOW_LABEL, path.to_string_lossy().to_string())
+        .expect("open crlf fixture");
 
     assert_eq!(document.line_ending, "crlf");
 
-    save_text_file(
+    save_text_file_with_label(
+        MAIN_WINDOW_LABEL,
         path.to_string_lossy().to_string(),
         "# Changed\n\nBody".to_string(),
         document.fingerprint,
@@ -2182,7 +2196,8 @@ fn save_text_file_as_creates_new_text_extension_with_requested_line_endings() {
     fs::create_dir_all(&dir).expect("create test dir");
     let path = dir.join("note.log");
 
-    let document = save_text_file_as(
+    let document = save_text_file_as_with_label(
+        MAIN_WINDOW_LABEL,
         path.to_string_lossy().to_string(),
         "First\nSecond\n".to_string(),
         "crlf".to_string(),
@@ -2206,7 +2221,8 @@ fn save_text_file_as_rejects_existing_file() {
     let path = dir.join("existing.txt");
     fs::write(&path, "Keep me\n").expect("write fixture");
 
-    let err = save_text_file_as(
+    let err = save_text_file_as_with_label(
+        MAIN_WINDOW_LABEL,
         path.to_string_lossy().to_string(),
         "Overwrite attempt\n".to_string(),
         "lf".to_string(),
@@ -2249,7 +2265,8 @@ fn workspace_tree_skips_heavy_and_hidden_directories() {
     fs::write(dir.join("notes/today.md"), "# Today\n").expect("write note");
     fs::write(dir.join("README.md"), "# Readme\n").expect("write readme");
 
-    let tree = list_workspace_tree(dir.to_string_lossy().to_string()).expect("list workspace");
+    let tree = list_workspace_tree_with_label(MAIN_WINDOW_LABEL, dir.to_string_lossy().to_string())
+        .expect("list workspace");
     let names = tree
         .children
         .iter()
@@ -2273,9 +2290,12 @@ fn workspace_tree_skips_heavy_and_hidden_directories() {
     assert!(!notes.children_loaded);
     assert!(notes.children.is_empty());
 
-    let notes_tree =
-        list_workspace_directory(dir.to_string_lossy().to_string(), notes.path.to_string())
-            .expect("list notes dir");
+    let notes_tree = list_workspace_directory_with_label(
+        MAIN_WINDOW_LABEL,
+        dir.to_string_lossy().to_string(),
+        notes.path.to_string(),
+    )
+    .expect("list notes dir");
     assert_eq!(notes_tree.children[0].name, "today.md");
     assert!(notes_tree.children_loaded);
 
@@ -2291,7 +2311,8 @@ fn workspace_tree_uses_per_directory_cap_without_failing_root() {
         fs::write(dir.join(format!("{index:04}.md")), "# Note\n").expect("write note");
     }
 
-    let tree = list_workspace_tree(dir.to_string_lossy().to_string()).expect("list workspace");
+    let tree = list_workspace_tree_with_label(MAIN_WINDOW_LABEL, dir.to_string_lossy().to_string())
+        .expect("list workspace");
 
     assert_eq!(tree.children.len(), MAX_WORKSPACE_ENTRIES);
     assert!(tree.children_truncated);
@@ -2306,7 +2327,8 @@ fn workspace_directory_rejects_paths_outside_root() {
     fs::create_dir_all(&root).expect("create root dir");
     fs::create_dir_all(&outside).expect("create outside dir");
 
-    let err = list_workspace_directory(
+    let err = list_workspace_directory_with_label(
+        MAIN_WINDOW_LABEL,
         root.to_string_lossy().to_string(),
         outside.to_string_lossy().to_string(),
     )
@@ -2325,7 +2347,8 @@ fn open_workspace_image_returns_data_url_for_supported_image() {
     let path = dir.join("tiny.png");
     fs::write(&path, b"\x89PNG\r\n\x1a\n").expect("write png fixture");
 
-    let image = open_workspace_image(
+    let image = open_workspace_image_with_label(
+        MAIN_WINDOW_LABEL,
         dir.to_string_lossy().to_string(),
         path.to_string_lossy().to_string(),
     )
@@ -2360,7 +2383,8 @@ fn open_workspace_image_accepts_supported_signatures_by_extension() {
         let path = dir.join(file_name);
         fs::write(&path, bytes).expect("write image fixture");
 
-        let image = open_workspace_image(
+        let image = open_workspace_image_with_label(
+            MAIN_WINDOW_LABEL,
             dir.to_string_lossy().to_string(),
             path.to_string_lossy().to_string(),
         )
@@ -2386,7 +2410,8 @@ fn open_workspace_image_rejects_paths_outside_root() {
     let outside_image = outside.join("outside.jpg");
     fs::write(&outside_image, b"fake jpg").expect("write outside image");
 
-    let err = open_workspace_image(
+    let err = open_workspace_image_with_label(
+        MAIN_WINDOW_LABEL,
         root.to_string_lossy().to_string(),
         outside_image.to_string_lossy().to_string(),
     )
@@ -2405,7 +2430,8 @@ fn open_workspace_image_rejects_supported_extension_with_non_image_bytes() {
     let path = dir.join("not-an-image.png");
     fs::write(&path, b"# Not an image\n").expect("write fake image");
 
-    let err = open_workspace_image(
+    let err = open_workspace_image_with_label(
+        MAIN_WINDOW_LABEL,
         dir.to_string_lossy().to_string(),
         path.to_string_lossy().to_string(),
     )
@@ -2426,7 +2452,8 @@ fn open_workspace_image_rejects_extension_signature_mismatch() {
     let path = dir.join("jpeg-bytes.png");
     fs::write(&path, b"\xff\xd8\xff\xe0").expect("write mismatched image");
 
-    let err = open_workspace_image(
+    let err = open_workspace_image_with_label(
+        MAIN_WINDOW_LABEL,
         dir.to_string_lossy().to_string(),
         path.to_string_lossy().to_string(),
     )
@@ -2449,7 +2476,8 @@ fn open_workspace_image_rejects_oversized_image_before_preview() {
     file.set_len(MAX_IMAGE_PREVIEW_BYTES + 1)
         .expect("resize oversized image fixture");
 
-    let err = open_workspace_image(
+    let err = open_workspace_image_with_label(
+        MAIN_WINDOW_LABEL,
         dir.to_string_lossy().to_string(),
         path.to_string_lossy().to_string(),
     )
@@ -2465,7 +2493,8 @@ fn save_pasted_image_writes_supported_image_inside_assets() {
     let dir = unique_test_dir("pasted_image");
     fs::create_dir_all(&dir).expect("create test dir");
 
-    let relative = save_pasted_image(
+    let relative = save_pasted_image_with_label(
+        MAIN_WINDOW_LABEL,
         dir.to_string_lossy().to_string(),
         "iVBORw0KGgo=".to_string(),
         "../pasted.png".to_string(),
@@ -2489,13 +2518,15 @@ fn save_pasted_image_reuses_existing_hash_asset_for_duplicate_paste() {
     let dir = unique_test_dir("pasted_image_duplicate");
     fs::create_dir_all(&dir).expect("create test dir");
 
-    let first = save_pasted_image(
+    let first = save_pasted_image_with_label(
+        MAIN_WINDOW_LABEL,
         dir.to_string_lossy().to_string(),
         "iVBORw0KGgo=".to_string(),
         "first-name.png".to_string(),
     )
     .expect("save first pasted image");
-    let second = save_pasted_image(
+    let second = save_pasted_image_with_label(
+        MAIN_WINDOW_LABEL,
         dir.to_string_lossy().to_string(),
         "iVBORw0KGgo=".to_string(),
         "second-name.png".to_string(),
@@ -2519,7 +2550,8 @@ fn save_pasted_image_rejects_non_image_bytes() {
     let dir = unique_test_dir("pasted_non_image");
     fs::create_dir_all(&dir).expect("create test dir");
 
-    let error = save_pasted_image(
+    let error = save_pasted_image_with_label(
+        MAIN_WINDOW_LABEL,
         dir.to_string_lossy().to_string(),
         "SGVsbG8=".to_string(),
         "pasted.png".to_string(),
@@ -2542,7 +2574,8 @@ fn save_pasted_image_rejects_assets_symlink_outside_workspace() {
     fs::create_dir_all(&outside).expect("create outside");
     symlink(&outside, root.join("assets")).expect("create assets symlink");
 
-    let error = save_pasted_image(
+    let error = save_pasted_image_with_label(
+        MAIN_WINDOW_LABEL,
         root.to_string_lossy().to_string(),
         "iVBORw0KGgo=".to_string(),
         "pasted.png".to_string(),
@@ -2569,7 +2602,8 @@ fn import_image_from_path_writes_supported_image_inside_assets() {
     )
     .expect("write source image");
 
-    let relative = import_image_from_path(
+    let relative = import_image_from_path_with_label(
+        MAIN_WINDOW_LABEL,
         root.to_string_lossy().to_string(),
         source.to_string_lossy().to_string(),
     )
@@ -2596,7 +2630,8 @@ fn import_image_from_path_rejects_non_image_bytes() {
     let source = source_dir.join("not-image.png");
     fs::write(&source, b"not an image").expect("write source file");
 
-    let error = import_image_from_path(
+    let error = import_image_from_path_with_label(
+        MAIN_WINDOW_LABEL,
         root.to_string_lossy().to_string(),
         source.to_string_lossy().to_string(),
     )
@@ -2627,7 +2662,8 @@ fn import_image_from_path_rejects_assets_symlink_outside_workspace() {
     )
     .expect("write source image");
 
-    let error = import_image_from_path(
+    let error = import_image_from_path_with_label(
+        MAIN_WINDOW_LABEL,
         root.to_string_lossy().to_string(),
         source.to_string_lossy().to_string(),
     )
@@ -2648,8 +2684,8 @@ fn workspace_tree_rejects_file_root() {
     let path = dir.join("note.md");
     fs::write(&path, "# Not a folder\n").expect("write file");
 
-    let err =
-        list_workspace_tree(path.to_string_lossy().to_string()).expect_err("file root should fail");
+    let err = list_workspace_tree_with_label(MAIN_WINDOW_LABEL, path.to_string_lossy().to_string())
+        .expect_err("file root should fail");
 
     assert!(err.contains("not a folder"));
 
@@ -2744,4 +2780,339 @@ fn process_exists(pid: u32) -> bool {
         .status()
         .map(|status| status.success())
         .unwrap_or(false)
+}
+
+// --- Window-label gate (security boundary) ---------------------------------
+//
+// The detached Agent window is a separate Tauri webview with its own
+// capability file. Custom `#[tauri::command]` functions are
+// auto-allowlisted for any window listed in *any* capability file, so
+// the agent window could in principle invoke every project command
+// unless we gate by `window.label()` on the server side. These tests
+// pin the gate so the boundary cannot drift silently.
+
+const UNKNOWN_WINDOW_LABEL: &str = "unknown-window";
+
+fn unique_label_path(label: &str) -> PathBuf {
+    unique_test_dir(&format!("label_gate_{label}"))
+}
+
+#[test]
+fn label_gate_helpers_reject_unknown_label() {
+    let err = ensure_label_is_main(UNKNOWN_WINDOW_LABEL).expect_err("unknown label must fail");
+    assert!(err.contains(UNKNOWN_WINDOW_LABEL));
+
+    let err =
+        ensure_label_is_main_or_agent(UNKNOWN_WINDOW_LABEL).expect_err("unknown label must fail");
+    assert!(err.contains(UNKNOWN_WINDOW_LABEL));
+}
+
+#[test]
+fn label_gate_helpers_accept_known_labels() {
+    ensure_label_is_main(MAIN_WINDOW_LABEL).expect("main must be allowed");
+    ensure_label_is_main_or_agent(MAIN_WINDOW_LABEL).expect("main must be allowed");
+    ensure_label_is_main_or_agent(AGENT_WINDOW_LABEL).expect("agent must be allowed");
+}
+
+#[test]
+fn open_text_file_rejects_agent_window_label() {
+    let dir = unique_label_path("open_text_file_agent");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("note.md");
+    fs::write(&path, "# Hi\n").expect("write fixture");
+
+    let err = open_text_file_with_label(AGENT_WINDOW_LABEL, path.to_string_lossy().to_string())
+        .expect_err("open_text_file must reject the agent window");
+    assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn open_text_file_rejects_unknown_window_label() {
+    let dir = unique_label_path("open_text_file_unknown");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("note.md");
+    fs::write(&path, "# Hi\n").expect("write fixture");
+
+    let err = open_text_file_with_label(UNKNOWN_WINDOW_LABEL, path.to_string_lossy().to_string())
+        .expect_err("open_text_file must reject unknown labels");
+    assert!(err.contains(UNKNOWN_WINDOW_LABEL), "{err}");
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn create_text_file_rejects_agent_window_label() {
+    let dir = unique_label_path("create_text_file_agent");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("fresh.md");
+
+    let err = create_text_file_with_label(AGENT_WINDOW_LABEL, path.to_string_lossy().to_string())
+        .expect_err("create_text_file must reject the agent window");
+    assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
+    assert!(
+        !path.exists(),
+        "no file should be created on a rejected gate"
+    );
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn save_text_file_rejects_agent_window_label() {
+    let dir = unique_label_path("save_text_file_agent");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("note.md");
+    fs::write(&path, "# Original\n").expect("write fixture");
+    let opened_metadata = fs::metadata(&path).expect("read opened metadata");
+    let opened_fingerprint = metadata_fingerprint(&opened_metadata);
+
+    let err = save_text_file_with_label(
+        AGENT_WINDOW_LABEL,
+        path.to_string_lossy().to_string(),
+        "# Tampered\n".to_string(),
+        opened_fingerprint,
+        "lf".to_string(),
+    )
+    .expect_err("save_text_file must reject the agent window");
+    assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
+    assert_eq!(
+        fs::read_to_string(&path).expect("read protected file"),
+        "# Original\n"
+    );
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn save_text_file_as_rejects_agent_window_label() {
+    let dir = unique_label_path("save_text_file_as_agent");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("note.log");
+
+    let err = save_text_file_as_with_label(
+        AGENT_WINDOW_LABEL,
+        path.to_string_lossy().to_string(),
+        "Body\n".to_string(),
+        "lf".to_string(),
+    )
+    .expect_err("save_text_file_as must reject the agent window");
+    assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
+    assert!(
+        !path.exists(),
+        "no file should be created on a rejected gate"
+    );
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn get_file_metadata_rejects_agent_window_label() {
+    let dir = unique_label_path("get_file_metadata_agent");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("note.md");
+    fs::write(&path, "# Hi\n").expect("write fixture");
+
+    let err = get_file_metadata_with_label(AGENT_WINDOW_LABEL, path.to_string_lossy().to_string())
+        .expect_err("get_file_metadata must reject the agent window");
+    assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn list_workspace_tree_rejects_agent_window_label() {
+    let dir = unique_label_path("list_workspace_tree_agent");
+    fs::create_dir_all(&dir).expect("create test dir");
+
+    let err = list_workspace_tree_with_label(AGENT_WINDOW_LABEL, dir.to_string_lossy().to_string())
+        .expect_err("list_workspace_tree must reject the agent window");
+    assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn list_workspace_directory_rejects_agent_window_label() {
+    let dir = unique_label_path("list_workspace_directory_agent");
+    fs::create_dir_all(&dir).expect("create test dir");
+
+    let err = list_workspace_directory_with_label(
+        AGENT_WINDOW_LABEL,
+        dir.to_string_lossy().to_string(),
+        dir.to_string_lossy().to_string(),
+    )
+    .expect_err("list_workspace_directory must reject the agent window");
+    assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn open_workspace_image_rejects_agent_window_label() {
+    let dir = unique_label_path("open_workspace_image_agent");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("tiny.png");
+    fs::write(&path, b"\x89PNG\r\n\x1a\n").expect("write png fixture");
+
+    let err = open_workspace_image_with_label(
+        AGENT_WINDOW_LABEL,
+        dir.to_string_lossy().to_string(),
+        path.to_string_lossy().to_string(),
+    )
+    .expect_err("open_workspace_image must reject the agent window");
+    assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn save_pasted_image_rejects_agent_window_label() {
+    let dir = unique_label_path("save_pasted_image_agent");
+    fs::create_dir_all(&dir).expect("create test dir");
+
+    let err = save_pasted_image_with_label(
+        AGENT_WINDOW_LABEL,
+        dir.to_string_lossy().to_string(),
+        "iVBORw0KGgo=".to_string(),
+        "pasted.png".to_string(),
+    )
+    .expect_err("save_pasted_image must reject the agent window");
+    assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
+    assert!(
+        !dir.join("assets").exists(),
+        "no assets folder should be created on a rejected gate"
+    );
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn import_image_from_path_rejects_agent_window_label() {
+    let root = unique_label_path("import_image_agent");
+    let source_dir = unique_label_path("import_image_source_agent");
+    fs::create_dir_all(&root).expect("create root");
+    fs::create_dir_all(&source_dir).expect("create source dir");
+    let source = source_dir.join("dropped.png");
+    fs::write(
+        &source,
+        decode_base64("iVBORw0KGgo=").expect("decode png header"),
+    )
+    .expect("write source image");
+
+    let err = import_image_from_path_with_label(
+        AGENT_WINDOW_LABEL,
+        root.to_string_lossy().to_string(),
+        source.to_string_lossy().to_string(),
+    )
+    .expect_err("import_image_from_path must reject the agent window");
+    assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
+    assert!(
+        !root.join("assets").exists(),
+        "no assets folder should be created on a rejected gate"
+    );
+
+    let _ = fs::remove_dir_all(root);
+    let _ = fs::remove_dir_all(source_dir);
+}
+
+#[test]
+fn reveal_path_in_file_manager_rejects_agent_window_label() {
+    let dir = unique_label_path("reveal_agent");
+    fs::create_dir_all(&dir).expect("create test dir");
+
+    let err = reveal_path_in_file_manager_with_label(
+        AGENT_WINDOW_LABEL,
+        dir.to_string_lossy().to_string(),
+    )
+    .expect_err("reveal_path_in_file_manager must reject the agent window");
+    assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn open_temp_print_html_rejects_agent_window_label() {
+    let err = open_temp_print_html_with_label(
+        AGENT_WINDOW_LABEL,
+        "<html></html>".to_string(),
+        "label-gate-agent.html".to_string(),
+    )
+    .expect_err("open_temp_print_html must reject the agent window");
+    assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
+}
+
+#[test]
+fn agent_session_state_allows_main_and_agent_labels() {
+    let store = AgentWorkbenchSessionStore::default();
+
+    let from_main = get_agent_workbench_session_state_with_label(MAIN_WINDOW_LABEL, &store, None)
+        .expect("main must be allowed to read session state");
+    assert!(from_main.session.is_none());
+
+    let from_agent = get_agent_workbench_session_state_with_label(AGENT_WINDOW_LABEL, &store, None)
+        .expect("agent must be allowed to read session state");
+    assert!(from_agent.session.is_none());
+}
+
+#[test]
+fn agent_session_state_rejects_unknown_label() {
+    let store = AgentWorkbenchSessionStore::default();
+
+    let err = get_agent_workbench_session_state_with_label(UNKNOWN_WINDOW_LABEL, &store, None)
+        .expect_err("get_agent_workbench_session_state must reject unknown labels");
+    assert!(err.contains(UNKNOWN_WINDOW_LABEL), "{err}");
+}
+
+#[test]
+fn agent_stop_allows_main_and_agent_labels() {
+    let store = AgentWorkbenchSessionStore::default();
+
+    // Neither call starts a session, but both must clear the gate.
+    stop_agent_workbench_session_with_label(MAIN_WINDOW_LABEL, &store)
+        .expect("main must be allowed to stop the session");
+    stop_agent_workbench_session_with_label(AGENT_WINDOW_LABEL, &store)
+        .expect("agent must be allowed to stop the session");
+}
+
+#[test]
+fn agent_stop_rejects_unknown_label() {
+    let store = AgentWorkbenchSessionStore::default();
+
+    let err = stop_agent_workbench_session_with_label(UNKNOWN_WINDOW_LABEL, &store)
+        .expect_err("stop_agent_workbench_session must reject unknown labels");
+    assert!(err.contains(UNKNOWN_WINDOW_LABEL), "{err}");
+}
+
+#[test]
+fn agent_input_allows_main_and_agent_labels() {
+    let store = AgentWorkbenchSessionStore::default();
+
+    // No active session, so the body returns the "not active" error —
+    // but the label gate must pass for both labels first.
+    for label in [MAIN_WINDOW_LABEL, AGENT_WINDOW_LABEL] {
+        let err =
+            write_agent_workbench_session_input_with_label(label, &store, "hello\n".to_string())
+                .expect_err(
+                    "input with no active session should be rejected by the body, not the gate",
+                );
+        assert!(
+            err.contains("not active"),
+            "expected the body to run for {label}, got gate error: {err}"
+        );
+    }
+}
+
+#[test]
+fn agent_input_rejects_unknown_label() {
+    let store = AgentWorkbenchSessionStore::default();
+
+    let err = write_agent_workbench_session_input_with_label(
+        UNKNOWN_WINDOW_LABEL,
+        &store,
+        "hello\n".to_string(),
+    )
+    .expect_err("write_agent_workbench_session_input must reject unknown labels");
+    assert!(err.contains(UNKNOWN_WINDOW_LABEL), "{err}");
 }

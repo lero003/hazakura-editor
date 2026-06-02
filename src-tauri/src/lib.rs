@@ -3,7 +3,8 @@ use std::ffi::OsStr;
 use std::fs::{self, OpenOptions};
 use std::path::PathBuf;
 use std::process::Command;
-use tauri::{Emitter, Manager};
+use std::sync::atomic::Ordering;
+use tauri::{Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
 
 pub(crate) mod types;
 use crate::types::*;
@@ -18,8 +19,68 @@ pub(crate) mod auto_backup;
 #[cfg(test)]
 pub(crate) mod tests;
 
+// The Tauri capability model gates plugins / core APIs (events,
+// windows, menus) by window label, but custom `#[tauri::command]`
+// functions are auto-allowlisted for any window listed in a
+// capability file. The detached Agent window is listed in
+// `capabilities/agent-window.json` so it can call the three Agent
+// session commands it needs (`get_agent_workbench_session_state`,
+// `stop_agent_workbench_session`, `write_agent_workbench_session_input`),
+// but that also lets it call every other custom command — file I/O,
+// workspace tree, save, menu state, app restart, etc. The
+// `core:default` permission set expands to event / menu / window /
+// webview defaults, which lets the agent webview emit global menu
+// events that the main window's `useAppMenuActionListener` trusts.
+//
+// These helpers add the missing server-side caller-window check
+// (defense in depth on top of the capability split). Sensitive
+// commands — anything that touches the filesystem, the workspace,
+// menu state, theme state, app lifecycle, or the launch surface —
+// must come from the `main` window. The three Agent session
+// commands may additionally be called from the `agent` window. All
+// other window labels are rejected. See
+// docs/assist-surface-strategy.md and docs/agent-workbench-boundary.md.
+
+pub(crate) const MAIN_WINDOW_LABEL: &str = "main";
+pub(crate) const AGENT_WINDOW_LABEL: &str = "agent";
+
+fn ensure_main_window<R: tauri::Runtime>(window: &tauri::WebviewWindow<R>) -> Result<(), String> {
+    if window.label() != MAIN_WINDOW_LABEL {
+        return Err(format!(
+            "Command is not allowed from window '{}'.",
+            window.label()
+        ));
+    }
+    Ok(())
+}
+
+// Label-only check used by the `*_with_label` bodies. Mirrors the
+// `*_window` helpers above but takes a `&str` so unit tests can call
+// the bodies without a Tauri `WebviewWindow` instance.
+fn ensure_label_is_main(label: &str) -> Result<(), String> {
+    if label != MAIN_WINDOW_LABEL {
+        return Err(format!("Command is not allowed from window '{label}'."));
+    }
+    Ok(())
+}
+
+fn ensure_label_is_main_or_agent(label: &str) -> Result<(), String> {
+    if label != MAIN_WINDOW_LABEL && label != AGENT_WINDOW_LABEL {
+        return Err(format!("Command is not allowed from window '{label}'."));
+    }
+    Ok(())
+}
+
 #[tauri::command]
-fn open_text_file(path: String) -> Result<TextFileDocument, String> {
+fn open_text_file<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    path: String,
+) -> Result<TextFileDocument, String> {
+    open_text_file_with_label(window.label(), path)
+}
+
+fn open_text_file_with_label(label: &str, path: String) -> Result<TextFileDocument, String> {
+    ensure_label_is_main(label)?;
     let path_buf = PathBuf::from(&path);
     let metadata = fs::metadata(&path_buf).map_err(|err| format!("Cannot read file: {err}"))?;
 
@@ -58,7 +119,15 @@ fn open_text_file(path: String) -> Result<TextFileDocument, String> {
 }
 
 #[tauri::command]
-fn reveal_path_in_file_manager(path: String) -> Result<(), String> {
+fn reveal_path_in_file_manager<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    path: String,
+) -> Result<(), String> {
+    reveal_path_in_file_manager_with_label(window.label(), path)
+}
+
+fn reveal_path_in_file_manager_with_label(label: &str, path: String) -> Result<(), String> {
+    ensure_label_is_main(label)?;
     let path_buf = PathBuf::from(&path);
 
     fs::metadata(&path_buf).map_err(|err| format!("Cannot reveal path: {err}"))?;
@@ -117,7 +186,20 @@ fn reveal_path_in_file_manager(path: String) -> Result<(), String> {
 
 /// Open a temporary HTML file in the default browser for printing.
 #[tauri::command]
-fn open_temp_print_html(html_content: String, file_name: String) -> Result<String, String> {
+fn open_temp_print_html<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    html_content: String,
+    file_name: String,
+) -> Result<String, String> {
+    open_temp_print_html_with_label(window.label(), html_content, file_name)
+}
+
+fn open_temp_print_html_with_label(
+    label: &str,
+    html_content: String,
+    file_name: String,
+) -> Result<String, String> {
+    ensure_label_is_main(label)?;
     use std::io::Write;
 
     let temp_dir = std::env::temp_dir().join("hazakura-note-print");
@@ -172,7 +254,15 @@ fn open_temp_print_html(html_content: String, file_name: String) -> Result<Strin
 }
 
 #[tauri::command]
-fn create_text_file(path: String) -> Result<TextFileDocument, String> {
+fn create_text_file<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    path: String,
+) -> Result<TextFileDocument, String> {
+    create_text_file_with_label(window.label(), path)
+}
+
+fn create_text_file_with_label(label: &str, path: String) -> Result<TextFileDocument, String> {
+    ensure_label_is_main(label)?;
     let path_buf = PathBuf::from(&path);
 
     if path_buf.exists() {
@@ -200,11 +290,19 @@ fn create_text_file(path: String) -> Result<TextFileDocument, String> {
     file.sync_all()
         .map_err(|err| format!("Cannot sync created file: {err}"))?;
 
-    open_text_file(path)
+    open_text_file_with_label(label, path)
 }
 
 #[tauri::command]
-fn get_file_metadata(path: String) -> Result<FileMetadataState, String> {
+fn get_file_metadata<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    path: String,
+) -> Result<FileMetadataState, String> {
+    get_file_metadata_with_label(window.label(), path)
+}
+
+fn get_file_metadata_with_label(label: &str, path: String) -> Result<FileMetadataState, String> {
+    ensure_label_is_main(label)?;
     let path_buf = PathBuf::from(&path);
     let metadata = readable_text_metadata(&path_buf)?;
 
@@ -218,12 +316,30 @@ fn get_file_metadata(path: String) -> Result<FileMetadataState, String> {
 }
 
 #[tauri::command]
-fn save_text_file(
+fn save_text_file<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
     path: String,
     contents: String,
     expected_fingerprint: String,
     line_ending: String,
 ) -> Result<SavedFileState, String> {
+    save_text_file_with_label(
+        window.label(),
+        path,
+        contents,
+        expected_fingerprint,
+        line_ending,
+    )
+}
+
+fn save_text_file_with_label(
+    label: &str,
+    path: String,
+    contents: String,
+    expected_fingerprint: String,
+    line_ending: String,
+) -> Result<SavedFileState, String> {
+    ensure_label_is_main(label)?;
     let path_buf = PathBuf::from(&path);
     let metadata = readable_text_metadata(&path_buf)?;
 
@@ -250,11 +366,22 @@ fn save_text_file(
 }
 
 #[tauri::command]
-fn save_text_file_as(
+fn save_text_file_as<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
     path: String,
     contents: String,
     line_ending: String,
 ) -> Result<TextFileDocument, String> {
+    save_text_file_as_with_label(window.label(), path, contents, line_ending)
+}
+
+fn save_text_file_as_with_label(
+    label: &str,
+    path: String,
+    contents: String,
+    line_ending: String,
+) -> Result<TextFileDocument, String> {
+    ensure_label_is_main(label)?;
     let path_buf = PathBuf::from(&path);
 
     if path_buf.exists() {
@@ -277,46 +404,62 @@ fn save_text_file_as(
     let normalized_contents = normalize_line_endings(&contents, &line_ending);
     write_new_file(&path_buf, normalized_contents.as_bytes())?;
 
-    open_text_file(path)
+    open_text_file_with_label(label, path)
 }
 
 #[tauri::command]
-fn save_auto_backup(
+fn save_auto_backup<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
     workspace_root: String,
     relative_file_path: String,
     content: String,
 ) -> Result<String, String> {
+    ensure_main_window(&window)?;
     auto_backup::save_auto_backup(&workspace_root, &relative_file_path, &content)
 }
 
 #[tauri::command]
-fn list_auto_backups(
+fn list_auto_backups<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
     workspace_root: String,
     relative_file_path: String,
 ) -> Result<Vec<AutoBackupEntry>, String> {
+    ensure_main_window(&window)?;
     auto_backup::list_auto_backups(&workspace_root, &relative_file_path)
 }
 
 #[tauri::command]
-fn read_auto_backup(
+fn read_auto_backup<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
     workspace_root: String,
     relative_file_path: String,
     backup_name: String,
 ) -> Result<String, String> {
+    ensure_main_window(&window)?;
     auto_backup::read_auto_backup(&workspace_root, &relative_file_path, &backup_name)
 }
 
 #[tauri::command]
-fn prune_auto_backups(
+fn prune_auto_backups<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
     workspace_root: String,
     relative_file_path: String,
     keep_count: usize,
 ) -> Result<usize, String> {
+    ensure_main_window(&window)?;
     auto_backup::prune_auto_backups(&workspace_root, &relative_file_path, keep_count)
 }
 
 #[tauri::command]
-fn list_workspace_tree(root: String) -> Result<WorkspaceTreeEntry, String> {
+fn list_workspace_tree<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    root: String,
+) -> Result<WorkspaceTreeEntry, String> {
+    list_workspace_tree_with_label(window.label(), root)
+}
+
+fn list_workspace_tree_with_label(label: &str, root: String) -> Result<WorkspaceTreeEntry, String> {
+    ensure_label_is_main(label)?;
     let root_path = PathBuf::from(&root);
     ensure_workspace_root(&root_path)?;
 
@@ -324,7 +467,20 @@ fn list_workspace_tree(root: String) -> Result<WorkspaceTreeEntry, String> {
 }
 
 #[tauri::command]
-fn list_workspace_directory(root: String, directory: String) -> Result<WorkspaceTreeEntry, String> {
+fn list_workspace_directory<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    root: String,
+    directory: String,
+) -> Result<WorkspaceTreeEntry, String> {
+    list_workspace_directory_with_label(window.label(), root, directory)
+}
+
+fn list_workspace_directory_with_label(
+    label: &str,
+    root: String,
+    directory: String,
+) -> Result<WorkspaceTreeEntry, String> {
+    ensure_label_is_main(label)?;
     let root_path = PathBuf::from(&root);
     let directory_path = PathBuf::from(&directory);
     let canonical_root = ensure_workspace_root(&root_path)?;
@@ -346,7 +502,20 @@ fn list_workspace_directory(root: String, directory: String) -> Result<Workspace
 }
 
 #[tauri::command]
-fn open_workspace_image(root: String, path: String) -> Result<ImagePreviewDocument, String> {
+fn open_workspace_image<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    root: String,
+    path: String,
+) -> Result<ImagePreviewDocument, String> {
+    open_workspace_image_with_label(window.label(), root, path)
+}
+
+fn open_workspace_image_with_label(
+    label: &str,
+    root: String,
+    path: String,
+) -> Result<ImagePreviewDocument, String> {
+    ensure_label_is_main(label)?;
     let root_path = PathBuf::from(&root);
     let image_path = PathBuf::from(&path);
     let canonical_root = ensure_workspace_root(&root_path)?;
@@ -387,11 +556,22 @@ fn open_workspace_image(root: String, path: String) -> Result<ImagePreviewDocume
 
 /// Save a pasted image from the clipboard (base64) to the workspace assets folder.
 #[tauri::command]
-fn save_pasted_image(
+fn save_pasted_image<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
     workspace_root: String,
     data_base64: String,
     file_name: String,
 ) -> Result<String, String> {
+    save_pasted_image_with_label(window.label(), workspace_root, data_base64, file_name)
+}
+
+fn save_pasted_image_with_label(
+    label: &str,
+    workspace_root: String,
+    data_base64: String,
+    file_name: String,
+) -> Result<String, String> {
+    ensure_label_is_main(label)?;
     // Keep the parameter for Tauri command compatibility (frontend sends it)
     let _ = &file_name;
     let root = PathBuf::from(&workspace_root);
@@ -452,7 +632,20 @@ fn save_pasted_image(
 /// Uses content hash for deduplication: importing the same image twice
 /// returns the existing path without creating a duplicate.
 #[tauri::command]
-fn import_image_from_path(workspace_root: String, source_path: String) -> Result<String, String> {
+fn import_image_from_path<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    workspace_root: String,
+    source_path: String,
+) -> Result<String, String> {
+    import_image_from_path_with_label(window.label(), workspace_root, source_path)
+}
+
+fn import_image_from_path_with_label(
+    label: &str,
+    workspace_root: String,
+    source_path: String,
+) -> Result<String, String> {
+    ensure_label_is_main(label)?;
     let root = PathBuf::from(&workspace_root);
     let canonical_root = ensure_workspace_root(&root)?;
 
@@ -516,7 +709,8 @@ fn import_image_from_path(workspace_root: String, source_path: String) -> Result
 }
 
 #[tauri::command]
-fn start_agent_workbench_session(
+fn start_agent_workbench_session<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
     session_store: tauri::State<'_, AgentWorkbenchSessionStore>,
     agent_workbench_enabled: bool,
     consent_acknowledged: bool,
@@ -525,6 +719,7 @@ fn start_agent_workbench_session(
     terminal_columns: Option<u16>,
     terminal_rows: Option<u16>,
 ) -> Result<AgentWorkbenchSessionStartResult, String> {
+    ensure_main_window(&window)?;
     let path_var = agent_provider_app_search_path();
     let adapter = RealAgentRuntimeAdapter::new(session_store.inner());
 
@@ -542,39 +737,74 @@ fn start_agent_workbench_session(
 }
 
 #[tauri::command]
-fn stop_agent_workbench_session(
+fn stop_agent_workbench_session<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
     session_store: tauri::State<'_, AgentWorkbenchSessionStore>,
 ) -> Result<AgentWorkbenchSessionState, String> {
-    let adapter = RealAgentRuntimeAdapter::new(session_store.inner());
+    stop_agent_workbench_session_with_label(window.label(), session_store.inner())
+}
 
-    stop_agent_workbench_session_with_store(session_store.inner(), &adapter)
+fn stop_agent_workbench_session_with_label(
+    label: &str,
+    session_store: &AgentWorkbenchSessionStore,
+) -> Result<AgentWorkbenchSessionState, String> {
+    ensure_label_is_main_or_agent(label)?;
+    let adapter = RealAgentRuntimeAdapter::new(session_store);
+
+    stop_agent_workbench_session_with_store(session_store, &adapter)
 }
 
 #[tauri::command]
-fn get_agent_workbench_session_state(
+fn get_agent_workbench_session_state<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
     session_store: tauri::State<'_, AgentWorkbenchSessionStore>,
     last_seen_seq: Option<u64>,
 ) -> Result<AgentWorkbenchSessionState, String> {
+    get_agent_workbench_session_state_with_label(
+        window.label(),
+        session_store.inner(),
+        last_seen_seq,
+    )
+}
+
+fn get_agent_workbench_session_state_with_label(
+    label: &str,
+    session_store: &AgentWorkbenchSessionStore,
+    last_seen_seq: Option<u64>,
+) -> Result<AgentWorkbenchSessionState, String> {
+    ensure_label_is_main_or_agent(label)?;
     match last_seen_seq {
-        Some(seq) => get_agent_workbench_session_state_since_with_store(session_store.inner(), seq),
-        None => get_agent_workbench_session_state_with_store(session_store.inner()),
+        Some(seq) => get_agent_workbench_session_state_since_with_store(session_store, seq),
+        None => get_agent_workbench_session_state_with_store(session_store),
     }
 }
 
 #[tauri::command]
-fn write_agent_workbench_session_input(
+fn write_agent_workbench_session_input<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
     session_store: tauri::State<'_, AgentWorkbenchSessionStore>,
     input: String,
 ) -> Result<(), String> {
-    write_agent_workbench_session_input_with_store(session_store.inner(), input)
+    write_agent_workbench_session_input_with_label(window.label(), session_store.inner(), input)
+}
+
+fn write_agent_workbench_session_input_with_label(
+    label: &str,
+    session_store: &AgentWorkbenchSessionStore,
+    input: String,
+) -> Result<(), String> {
+    ensure_label_is_main_or_agent(label)?;
+    write_agent_workbench_session_input_with_store(session_store, input)
 }
 
 #[tauri::command]
-fn resize_agent_workbench_terminal(
+fn resize_agent_workbench_terminal<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
     session_store: tauri::State<'_, AgentWorkbenchSessionStore>,
     columns: u16,
     rows: u16,
 ) -> Result<AgentWorkbenchSessionState, String> {
+    ensure_main_window(&window)?;
     resize_agent_workbench_terminal_with_store(session_store.inner(), columns, rows)
 }
 
@@ -889,9 +1119,26 @@ fn validate_agent_workbench_launch(
 #[cfg(desktop)]
 #[tauri::command]
 fn update_app_menu_state<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
     app: tauri::AppHandle<R>,
     state: AppMenuState,
+    session_store: tauri::State<'_, AgentWorkbenchSessionStore>,
 ) -> Result<(), String> {
+    ensure_main_window(&window)?;
+    // Mirror the Agent Workbench active + consent flags into the
+    // process-singleton session store. The Rust `open_agent_window`
+    // command reads these flags to gate the detached Agent Window
+    // server-side (defense in depth — the menu item is also gated
+    // client-side, but a direct IPC call must not be able to spawn
+    // the agent window when Agent Workbench is disabled or consent
+    // is missing).
+    session_store
+        .agent_workbench_active
+        .store(state.agent_workbench_active, Ordering::SeqCst);
+    session_store
+        .agent_workbench_consent
+        .store(state.agent_workbench_consent, Ordering::SeqCst);
+
     let menu = build_app_menu_with_state(&app, Some(&state))
         .map_err(|err| format!("Cannot build app menu: {err}"))?;
     app.set_menu(menu)
@@ -900,16 +1147,59 @@ fn update_app_menu_state<R: tauri::Runtime>(
     Ok(())
 }
 
+#[cfg(desktop)]
+#[tauri::command]
+fn open_agent_window<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    app: tauri::AppHandle<R>,
+    session_store: tauri::State<'_, AgentWorkbenchSessionStore>,
+) -> Result<(), String> {
+    ensure_main_window(&window)?;
+    if !session_store.agent_workbench_active.load(Ordering::SeqCst) {
+        return Err(
+            "Agent Workbench is not active. Enable it in Preferences and restart before opening the Agent window."
+                .to_string(),
+        );
+    }
+
+    if !session_store.agent_workbench_consent.load(Ordering::SeqCst) {
+        return Err(
+            "Agent Workbench consent is required before opening the Agent window.".to_string(),
+        );
+    }
+
+    if let Some(existing) = app.get_webview_window("agent") {
+        let _ = existing.set_focus();
+        return Ok(());
+    }
+
+    WebviewWindowBuilder::new(&app, "agent", WebviewUrl::App("agent.html".into()))
+        .title("hazakura agent")
+        .inner_size(800.0, 600.0)
+        .min_inner_size(640.0, 480.0)
+        .center()
+        .build()
+        .map_err(|err| format!("Cannot open Agent window: {err}"))?;
+
+    Ok(())
+}
+
 #[tauri::command]
 fn update_theme_menu_state<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
     app: tauri::AppHandle<R>,
     theme_preference: String,
 ) -> Result<(), String> {
+    ensure_main_window(&window)?;
     crate::menu::sync_theme_menu_state(&app, &theme_preference)
 }
 
 #[tauri::command]
-fn drain_opened_files(store: tauri::State<'_, OpenedFileStore>) -> Result<Vec<String>, String> {
+fn drain_opened_files<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    store: tauri::State<'_, OpenedFileStore>,
+) -> Result<Vec<String>, String> {
+    ensure_main_window(&window)?;
     let mut paths = store
         .0
         .lock()
@@ -918,7 +1208,11 @@ fn drain_opened_files(store: tauri::State<'_, OpenedFileStore>) -> Result<Vec<St
 }
 
 #[tauri::command]
-fn request_app_restart<R: tauri::Runtime>(app: tauri::AppHandle<R>) -> Result<(), String> {
+fn request_app_restart<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    app: tauri::AppHandle<R>,
+) -> Result<(), String> {
+    ensure_main_window(&window)?;
     app.request_restart();
     Ok(())
 }
@@ -955,6 +1249,7 @@ pub fn run() {
             save_text_file_as,
             update_app_menu_state,
             update_theme_menu_state,
+            open_agent_window,
             save_pasted_image,
             import_image_from_path,
             open_temp_print_html,

@@ -20,6 +20,8 @@ type RefValue<T> = {
 type UseAppShellSyncOptions = {
   activeDirty: boolean;
   activeTab: EditorTab | null;
+  agentWorkbenchActive: boolean;
+  agentWorkbenchConsent: boolean;
   discardingWindowCloseRef: RefValue<boolean>;
   editorSettings: EditorSettings;
   menuLanguage: MenuLanguage;
@@ -37,6 +39,8 @@ type UseAppShellSyncOptions = {
 export function useAppShellSync({
   activeDirty,
   activeTab,
+  agentWorkbenchActive,
+  agentWorkbenchConsent,
   discardingWindowCloseRef,
   editorSettings,
   menuLanguage,
@@ -59,6 +63,8 @@ export function useAppShellSync({
   useAppMenuStateSync({
     activeDirty,
     activeTab,
+    agentWorkbenchActive,
+    agentWorkbenchConsent,
     editorSettings,
     menuLanguage,
     previewVisible,

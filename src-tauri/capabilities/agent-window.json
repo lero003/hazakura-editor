@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "agent-window",
+  "description": "Truly minimal capability for the detached hazakura agent window. Scoped to the agent window label only and grants no core/plugin permissions, so the child webview cannot emit events, manipulate windows or webviews, or touch the menu / tray / dialog subsystems. The agent window can still call the project's custom IPC commands because custom `#[tauri::command]` functions are auto-allowlisted for any window listed in a capability file; the server-side caller-window check in `src-tauri/src/lib.rs` (ensure_main_window / ensure_main_or_agent_window) is the second layer that restricts the agent window to the three Agent session commands it needs (get_agent_workbench_session_state, stop_agent_workbench_session, write_agent_workbench_session_input). The main window's capability is unchanged.",
+  "windows": ["agent"],
+  "permissions": []
+}

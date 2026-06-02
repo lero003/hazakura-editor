@@ -3,6 +3,7 @@ import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { isTauriRuntime } from "../tauri";
 import {
   APP_MENU_ACTION_EVENT,
+  MENU_OPEN_AGENT_WINDOW,
   type EditorSettings,
   type PreferencesDialogMode,
   type RecentEntry,
@@ -13,6 +14,7 @@ export type AppMenuActionHandlers = {
   createNewFile: () => void | Promise<unknown>;
   exportHtml: () => void | Promise<unknown>;
   exportPdf: () => void | Promise<unknown>;
+  openAgentWindow: () => void | Promise<unknown>;
   openFile: () => void | Promise<unknown>;
   openWorkspace: () => void | Promise<unknown>;
   openWorkspacePath: (path: string) => void | Promise<unknown>;
@@ -155,6 +157,9 @@ export function useAppMenuActionListener({
           break;
         case "agent-workbench":
           setPreferencesDialogMode("agent");
+          break;
+        case MENU_OPEN_AGENT_WINDOW:
+          void actions.openAgentWindow();
           break;
       }
     })

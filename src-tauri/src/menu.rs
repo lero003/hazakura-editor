@@ -24,6 +24,13 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
     let wrap_lines = state.map(|state| state.wrap_lines).unwrap_or(true);
     let show_invisibles = state.map(|state| state.show_invisibles).unwrap_or(false);
     let spellcheck_enabled = state.map(|state| state.spellcheck_enabled).unwrap_or(true);
+    let agent_workbench_active = state
+        .map(|state| state.agent_workbench_active)
+        .unwrap_or(false);
+    let agent_workbench_consent = state
+        .map(|state| state.agent_workbench_consent)
+        .unwrap_or(false);
+    let agent_window_enabled = agent_workbench_active && agent_workbench_consent;
     let theme_preference = state
         .map(|state| state.theme_preference.as_str())
         .unwrap_or("dark");
@@ -165,6 +172,13 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
                 MENU_TOGGLE_REVIEW_DESK,
                 label("Review Desk", "レビューデスク"),
                 true,
+                None::<&str>,
+            )?,
+            &MenuItem::with_id(
+                app,
+                MENU_OPEN_AGENT_WINDOW,
+                label("Open Agent Window", "Agent ウィンドウを開く"),
+                agent_window_enabled,
                 None::<&str>,
             )?,
             &CheckMenuItem::with_id(
@@ -409,6 +423,7 @@ fn kana_menu_label(japanese: &'static str) -> Option<&'static str> {
         "表示" => "ながめ",
         "プレビュー" => "したみ",
         "レビューデスク" => "れびゅーのつくゑ",
+        "Agent ウィンドウを開く" => "えーじぇんとまどをひらく",
         "行を折り返す" => "くだりををる",
         "不可視文字を表示" => "みえぬもじをあらはす",
         "スペルチェック" => "つづりみ",
@@ -523,6 +538,7 @@ pub(crate) fn emit_app_menu_event<R: tauri::Runtime>(
                 | MENU_THEME_KOUYOU
                 | MENU_PREFERENCES
                 | MENU_AGENT_WORKBENCH
+                | MENU_OPEN_AGENT_WINDOW
         )
     {
         let _ = app.emit(MENU_ACTION_EVENT, action);
