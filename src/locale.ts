@@ -755,8 +755,8 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
         "くらべたふみがとぢられたため、したみはもうつかえません。",
       candidateStaleReasonTabSwitched: (label) =>
         label !== null
-          ? `「${label}」とはちがうふみがひらいているため、くらべたふみに もどしてから、もういちどくらべてください。`
-          : "別のふみがひらいているため、くらべたふみに もどしてから、もういちどくらべてください。",
+          ? `いまは「${label}」がひらいています。いまのふみで、もういちどくらべてください。`
+          : "別のふみがひらいています。いまのふみで、もういちどくらべてください。",
       close: "とぢる",
       closeTitle: "れびゅーのつくゑをとぢる",
       emptyBody:
@@ -817,8 +817,8 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
           "比較したタブが閉じられたため、プレビューはもう使えません。",
         candidateStaleReasonTabSwitched: (label) =>
           label !== null
-            ? `「${label}」以外のタブが開かれているため、比較したタブへ戻してから再比較してください。`
-            : "別のタブが開かれているため、比較したタブへ戻してから再比較してください。",
+            ? `現在は「${label}」が開かれています。現在のタブに対して再比較してください。`
+            : "別のタブが開かれています。現在のタブに対して再比較してください。",
         close: "閉じる",
         closeTitle: "レビューデスクを閉じる",
         emptyBody:
@@ -876,8 +876,8 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
           "The compared tab is no longer open, so the preview can no longer be applied.",
         candidateStaleReasonTabSwitched: (label) =>
           label !== null
-            ? `A different tab "${label}" is active. Return to the compared tab and re-run Compare to refresh the preview.`
-            : "A different tab is active. Return to the compared tab and re-run Compare to refresh the preview.",
+            ? `The active tab is now "${label}". Re-run Compare to refresh the preview for the active tab.`
+            : "A different tab is active. Re-run Compare to refresh the preview for the active tab.",
         close: "Close",
         closeTitle: "Close Review Desk",
         emptyBody:

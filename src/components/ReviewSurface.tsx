@@ -310,15 +310,13 @@ function ReviewSurfaceCandidatePreview({
   onApplyCandidate,
   onReCompare,
 }: ReviewSurfaceCandidatePreviewProps) {
-  const hasPreview =
+  const hasRenderedPreview =
     candidateCompareCase !== null &&
     candidateCompareView !== null &&
-    candidateCompareCase.kind === "candidate" &&
-    activeTab?.id === candidateCompareCase.documentTabId &&
-    activeTab.contents === candidateCompareCase.documentContents;
+    candidateCompareCase.kind === "candidate";
   const staleness = computeCandidateStaleness(candidateCompareCase, activeTab);
   const isStale = staleness.kind !== "fresh";
-  const canApply = hasPreview && !isStale;
+  const canApply = hasRenderedPreview && !isStale;
 
   const handleApply = () => {
     if (!canApply || candidateCompareCase?.kind !== "candidate") {
@@ -343,7 +341,7 @@ function ReviewSurfaceCandidatePreview({
           <span className="review-surface-eyebrow">{copy.surfaceLabel}</span>
           <strong>{copy.candidatePreviewTitle}</strong>
         </div>
-        {hasPreview && candidateCompareView ? (
+        {hasRenderedPreview && candidateCompareView ? (
           <div
             className="review-surface-candidate-summary"
             aria-label={copy.candidatePreviewTitle}
@@ -370,18 +368,18 @@ function ReviewSurfaceCandidatePreview({
           {copy.candidateApplyButton}
         </button>
       </div>
-      {hasPreview && candidateCompareCase ? (
+      {hasRenderedPreview && candidateCompareCase ? (
         <ReviewSurfaceCandidatePreviewMeta
           compareCase={candidateCompareCase}
           copy={copy}
         />
       ) : null}
-      {hasPreview && candidateCompareCase ? (
+      {hasRenderedPreview && candidateCompareCase ? (
         <p className="review-surface-candidate-apply-note">
           {copy.candidateApplyWillMarkUnsaved}
         </p>
       ) : null}
-      {hasPreview && candidateCompareCase && isStale ? (
+      {hasRenderedPreview && candidateCompareCase && isStale ? (
         <ReviewSurfaceCandidateStaleBanner
           staleness={staleness}
           compareCase={candidateCompareCase}
@@ -389,7 +387,7 @@ function ReviewSurfaceCandidatePreview({
           onReCompare={onReCompare}
         />
       ) : null}
-      {hasPreview && candidateCompareCase && candidateCompareView ? (
+      {hasRenderedPreview && candidateCompareCase && candidateCompareView ? (
         <div
           className={
             "review-surface-candidate-table" +
@@ -543,6 +541,7 @@ function ReviewSurfaceCandidateStaleBanner({
       <button
         type="button"
         className="review-surface-candidate-stale-action"
+        disabled={staleness.kind === "no-active-tab"}
         onClick={onReCompare}
         title={copy.candidateStaleActionReCompare}
       >
