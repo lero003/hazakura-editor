@@ -8,9 +8,15 @@ import {
 
 // Agent Workbench preferences live in this hook so that the
 // Safe Editor preferences layer (`useAppPreferences`) does not
-// carry Assist Surface state. See
-// docs/assist-surface-strategy.md and
-// docs/agent-workbench-boundary.md.
+// carry Assist Surface state. Two booleans come back from this
+// hook and they are NOT redundant:
+//   - `agentWorkbenchActive` is the *currently-running* state,
+//     read-only here and frozen at app start from localStorage.
+//   - `agentWorkbenchPreference` is the *user-desired* setting,
+//     settable, and only takes effect after an app restart (the
+//     restart-required mode change is part of the Agent Workbench
+//     trust boundary). See docs/assist-surface-strategy.md and
+//     docs/agent-workbench-boundary.md.
 
 export function useAgentWorkbenchPreferences() {
   const [agentWorkbenchActive] = useState(() =>
