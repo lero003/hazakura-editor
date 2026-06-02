@@ -88,13 +88,8 @@ export function useAgentTerminalActions({
         .then((state) => {
           setAgentSession(state.session);
         })
-        .catch((err) => {
-          reportAgentLaunchGateError(
-            setAgentLaunchGate,
-            setStatus,
-            "Agent terminal resize failed",
-            err,
-          );
+        .catch(() => {
+          setStatus("Agent terminal resize failed");
         });
     },
     [
