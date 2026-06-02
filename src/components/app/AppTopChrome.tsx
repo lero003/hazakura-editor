@@ -1,9 +1,7 @@
 import type { PointerEvent as ReactPointerEvent } from "react";
-import type { MarkdownFormat } from "../editor/EditorPane";
 import { DocumentMetaBar } from "./DocumentMetaBar";
 import { TabBar } from "../editor/TabBar";
 import type {
-  EditorChromeCopy,
   RecoveryCopy,
   SidePaneCopy,
 } from "../../lib/locale";
@@ -22,9 +20,7 @@ type AppTopChromeProps = {
   agentModeBadgeTitle: string;
   draggingTabId: string | null;
   dragOverTabId: string | null;
-  editorChromeCopy: EditorChromeCopy;
   emptyTabsLabel: string;
-  onApplyMarkdownFormat: (format: MarkdownFormat) => void;
   onCloseTab: (tabId: string) => void;
   onFinishTabPointerDrag: (target?: EventTarget | null) => void;
   onPointerEnter: () => void;
@@ -56,9 +52,7 @@ export function AppTopChrome({
   agentModeBadgeTitle,
   draggingTabId,
   dragOverTabId,
-  editorChromeCopy,
   emptyTabsLabel,
-  onApplyMarkdownFormat,
   onCloseTab,
   onFinishTabPointerDrag,
   onPointerEnter,
@@ -100,8 +94,6 @@ export function AppTopChrome({
         agentAvailable={agentAvailable}
         agentPaneActive={sidePaneMode === "agent"}
         diffPaneActive={sidePaneMode === "compare"}
-        markdownQuickActionsCopy={editorChromeCopy}
-        onApplyMarkdownFormat={onApplyMarkdownFormat}
         onReviewChanges={onReviewChanges}
         onToggleAgent={onToggleAgent}
         onToggleDiff={onToggleDiff}

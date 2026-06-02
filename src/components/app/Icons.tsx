@@ -6,15 +6,6 @@ export function PlusIcon() {
   );
 }
 
-export function LinkIcon() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M5.85 8.15C6.65 8.95 7.95 8.95 8.75 8.15L10.65 6.25C11.45 5.45 11.45 4.15 10.65 3.35C9.85 2.55 8.55 2.55 7.75 3.35L7.25 3.85" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-      <path d="M8.15 5.85C7.35 5.05 6.05 5.05 5.25 5.85L3.35 7.75C2.55 8.55 2.55 9.85 3.35 10.65C4.15 11.45 5.45 11.45 6.25 10.65L6.75 10.15" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-    </svg>
-  );
-}
-
 export function TableIcon() {
   return (
     <svg width="13" height="13" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">

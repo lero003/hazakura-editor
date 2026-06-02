@@ -1,8 +1,4 @@
 import {
-  MarkdownQuickActions,
-  type MarkdownQuickActionsCopy,
-} from "../editor/MarkdownQuickActions";
-import {
   RightPaneToggleControls,
   type RightPaneToggleCopy,
 } from "./RightPaneToggleControls";
@@ -14,8 +10,6 @@ type DocumentMetaBarProps = {
   agentAvailable: boolean;
   agentPaneActive: boolean;
   diffPaneActive: boolean;
-  markdownQuickActionsCopy: MarkdownQuickActionsCopy;
-  onApplyMarkdownFormat: (format: "bold" | "italic" | "code" | "link") => void;
   onReviewChanges: (tab: EditorTab) => void;
   onToggleAgent: () => void;
   onToggleDiff: () => void;
@@ -33,8 +27,6 @@ export function DocumentMetaBar({
   agentAvailable,
   agentPaneActive,
   diffPaneActive,
-  markdownQuickActionsCopy,
-  onApplyMarkdownFormat,
   onReviewChanges,
   onToggleAgent,
   onToggleDiff,
@@ -45,22 +37,10 @@ export function DocumentMetaBar({
   recoveryReviewChangesLabel,
   sidePaneCopy,
 }: DocumentMetaBarProps) {
-  const showMarkdownSection = activeTab !== null;
   const showDocumentSection = activeTab !== null;
 
   return (
     <div className="document-meta">
-      {showMarkdownSection ? (
-        <>
-          <section className="chrome-section" aria-label={markdownQuickActionsCopy.markdownHelpers}>
-            <MarkdownQuickActions
-              copy={markdownQuickActionsCopy}
-              onApplyMarkdownFormat={onApplyMarkdownFormat}
-            />
-          </section>
-          <span className="chrome-divider" aria-hidden="true" />
-        </>
-      ) : null}
       <section className="chrome-section" aria-label={sidePaneCopy.sidePaneMode}>
         <RightPaneToggleControls
           agentActive={agentPaneActive}

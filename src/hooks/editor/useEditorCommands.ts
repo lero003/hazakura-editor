@@ -21,6 +21,20 @@ import { normalizeTextLineEndings } from "../../lib/utils";
 import { formatLineEndingKind } from "../document/useDocumentStatus";
 import { markdownFormatStatus } from "../../lib/statusMessages";
 
+function pad2(n: number): string {
+  return n.toString().padStart(2, "0");
+}
+
+function formatTodayIsoDate(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
+}
+
+function formatNowTime(): string {
+  const now = new Date();
+  return `${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
+}
+
 type UseEditorCommandsOptions = {
   activeDraft: DraftRecord | null;
   activeTab: EditorTab | null;
@@ -218,6 +232,92 @@ export function useEditorCommands({
         searchKeys: ["table", "tbl", "テーブル", "表"],
       },
       {
+        category: "markdown",
+        hint: "Cmd+K",
+        id: "link",
+        label: ja ? "リンク" : "Link",
+        searchKeys: ["link", "url", "href", "リンク", "つなぎ"],
+        action: () => {
+          applyActiveMarkdownFormat("link");
+        },
+      },
+      {
+        category: "markdown",
+        hint: "![]()",
+        id: "image",
+        label: ja ? "画像" : "Image",
+        searchKeys: ["image", "img", "picture", "画像", "イメージ"],
+        action: () => {
+          applyActiveMarkdownFormat("image");
+        },
+      },
+      {
+        category: "markdown",
+        hint: "Cmd+B",
+        id: "bold",
+        label: ja ? "太字" : "Bold",
+        searchKeys: ["bold", "strong", "**", "太字", "ふとじ"],
+        action: () => {
+          applyActiveMarkdownFormat("bold");
+        },
+      },
+      {
+        category: "markdown",
+        hint: "Cmd+I",
+        id: "italic",
+        label: ja ? "斜体" : "Italic",
+        searchKeys: ["italic", "emphasis", "*", "斜体", "ななめ"],
+        action: () => {
+          applyActiveMarkdownFormat("italic");
+        },
+      },
+      {
+        category: "markdown",
+        hint: "Cmd+E",
+        id: "inline-code",
+        label: ja ? "インラインコード" : "Inline code",
+        searchKeys: ["code", "inline-code", "inline", "`", "コード"],
+        action: () => {
+          applyActiveMarkdownFormat("code");
+        },
+      },
+      {
+        category: "markdown",
+        hint: "~~",
+        id: "strikethrough",
+        label: ja ? "打ち消し線" : "Strikethrough",
+        searchKeys: [
+          "strikethrough",
+          "strike",
+          "~~",
+          "打ち消し",
+          "とりけし",
+        ],
+        action: () => {
+          applyActiveMarkdownFormat("strikethrough");
+        },
+      },
+      {
+        category: "markdown",
+        hint: "YYYY-MM-DD",
+        id: "today-date",
+        label: ja ? "今日の日付" : "Today's date",
+        searchKeys: ["date", "today", "now", "日付", "今日"],
+        action: () => {
+          insertMarkdownAtCursor(formatTodayIsoDate());
+        },
+      },
+      {
+        category: "markdown",
+        hint: "HH:MM",
+        id: "now-time",
+        label: ja ? "現在時刻" : "Now timestamp",
+        searchKeys: ["time", "now", "timestamp", "時刻", "時間"],
+        action: () => {
+          insertMarkdownAtCursor(formatNowTime());
+        },
+      },
+      {
         category: "shortcut",
         hint: ja ? "shortcut" : "shortcuts",
         id: "shortcut-list",
@@ -310,8 +410,10 @@ export function useEditorCommands({
     activeDraft,
     activeTab,
     agentWorkbenchActive,
+    applyActiveMarkdownFormat,
     editorPaneRef,
     handleSendSelectionToAgent,
+    insertMarkdownAtCursor,
     menuLanguage,
     openReviewDesk,
     requestReviewDraftAgainstDisk,

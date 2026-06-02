@@ -916,7 +916,6 @@ export function useAppShellController() {
     loadWorkspaceDirectory,
     menuLanguage,
     onApplyManualCandidate: applyManualCandidateToActiveTab,
-    onApplyMarkdownFormat: applyActiveMarkdownFormat,
     onCheckAgentGate: requestAgentLaunchGateCheck,
     onOpenAgentWindow: () => {
       void openAgentWindow(themePreference);

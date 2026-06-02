@@ -39,7 +39,13 @@ export type EditorSelectionInfo = {
   selectedCharacters: number;
   selectedLines: number;
 };
-export type MarkdownFormat = "bold" | "italic" | "code" | "link";
+export type MarkdownFormat =
+  | "bold"
+  | "italic"
+  | "code"
+  | "link"
+  | "strikethrough"
+  | "image";
 
 type EditorPaneProps = {
   documentKey: string;
@@ -698,8 +704,12 @@ function markdownFormatChange(
       return wrapMarkdownSelection(from, to, selectedText, "*", "*");
     case "code":
       return wrapMarkdownSelection(from, to, selectedText, "`", "`");
+    case "strikethrough":
+      return wrapMarkdownSelection(from, to, selectedText, "~~", "~~");
     case "link":
       return linkMarkdownSelection(from, to, selectedText);
+    case "image":
+      return imageMarkdownSelection(from, to, selectedText);
   }
 }
 
@@ -733,6 +743,23 @@ function linkMarkdownSelection(from: number, to: number, selectedText: string) {
 
   const replacement = `[${selectedText}](url)`;
   const urlStart = from + selectedText.length + 3;
+
+  return {
+    changes: { from, to, insert: replacement },
+    range: EditorSelection.range(urlStart, urlStart + 3),
+  };
+}
+
+function imageMarkdownSelection(from: number, to: number, selectedText: string) {
+  if (from === to) {
+    return {
+      changes: { from, to, insert: "![alt](url)" },
+      range: EditorSelection.range(from + 2, from + 5),
+    };
+  }
+
+  const replacement = `![${selectedText}](url)`;
+  const urlStart = from + selectedText.length + 4;
 
   return {
     changes: { from, to, insert: replacement },

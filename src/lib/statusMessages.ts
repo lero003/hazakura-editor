@@ -52,6 +52,7 @@ export function localizeStatusMessage(
     "Folder open cancelled": "フォルダを開く操作をキャンセルしました",
     "Folder open failed": "フォルダを開けませんでした",
     "Folder opened": "フォルダを開きました",
+    "Image markup inserted": "画像の Markdown を挿入しました",
     "Image preview closed": "画像プレビューを閉じました",
     "Image preview failed": "画像プレビューに失敗しました",
     "Image preview opened": "画像プレビューを開きました",
@@ -95,6 +96,7 @@ export function localizeStatusMessage(
     "Stop Agent session before changing provider":
       "プロバイダー変更前に Agent セッションを停止してください",
     "Stopping Agent session...": "Agent セッションを停止中...",
+    "Strikethrough markup applied": "打ち消し線の Markdown を適用しました",
     "Tab closed": "タブを閉じました",
     "Tab focused": "タブにフォーカスしました",
     "Workspace restore skipped": "ワークスペース復元をスキップしました",
@@ -158,7 +160,11 @@ export function markdownFormatStatus(format: MarkdownFormat): string {
       return "Italic markup applied";
     case "code":
       return "Inline code markup applied";
+    case "strikethrough":
+      return "Strikethrough markup applied";
     case "link":
       return "Link markup inserted";
+    case "image":
+      return "Image markup inserted";
   }
 }

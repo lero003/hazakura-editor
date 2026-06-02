@@ -24,7 +24,7 @@ export type SlashMarkdownCommand = {
 
 export type SlashActionCommand = {
   action: () => void;
-  category: "review" | "agent";
+  category: "markdown" | "review" | "agent";
   hint: string;
   id: string;
   label: string;

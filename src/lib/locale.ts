@@ -80,9 +80,6 @@ export type EditorChromeCopy = {
   line: string;
   lineEnding: string;
   lineEndings: string;
-  link: string;
-  linkTitle: string;
-  markdownHelpers: string;
   next: string;
   noMatches: string;
   noSearch: string;
@@ -409,9 +406,6 @@ export function getEditorChromeCopy(lang: MenuLanguage): EditorChromeCopy {
       line: "くだり",
       lineEnding: "かへり",
       lineEndings: "かへりのしるし",
-      link: "つなぎ",
-      linkTitle: "つなぎ (Command+K)",
-      markdownHelpers: "Markdown たすけ",
       next: "つぎへ",
       noMatches: "あたりなし",
       noSearch: "さがしなし",
@@ -441,9 +435,6 @@ export function getEditorChromeCopy(lang: MenuLanguage): EditorChromeCopy {
         line: "行",
         lineEnding: "改行",
         lineEndings: "改行コード",
-        link: "リンク",
-        linkTitle: "リンク (Command+K)",
-        markdownHelpers: "Markdown 補助",
         next: "次へ",
         noMatches: "一致なし",
         noSearch: "検索なし",
@@ -470,9 +461,6 @@ export function getEditorChromeCopy(lang: MenuLanguage): EditorChromeCopy {
         line: "Line",
         lineEnding: "Line",
         lineEndings: "Line endings",
-        link: "Link",
-        linkTitle: "Link (Command+K)",
-        markdownHelpers: "Markdown helpers",
         next: "Next",
         noMatches: "No matches",
         noSearch: "No search",
