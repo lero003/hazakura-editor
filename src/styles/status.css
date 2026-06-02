@@ -28,9 +28,9 @@
 
 :root[data-theme="yakou"] .status-agent-dot {
   background: var(--accent-gradient);
-  box-shadow: 0 0 8px rgba(138, 125, 244, 0.4);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent-secondary) 40%, transparent);
 }
 :root[data-theme="shokou"] .status-agent-dot {
-  box-shadow: 0 0 8px rgba(245, 168, 90, 0.4);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent-secondary) 40%, transparent);
 }
 

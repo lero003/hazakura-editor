@@ -34,11 +34,11 @@
 
 /* スペシャルテーマ: ステータスバーの装飾 / Status Bar Accent */
 :root[data-theme="yakou"] .status-bar {
-  border-top: 1px solid rgba(152, 136, 255, 0.12);
+  border-top: 1px solid color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 :root[data-theme="shokou"] .status-bar {
-  border-top: 1px solid rgba(245, 168, 90, 0.12);
+  border-top: 1px solid color-mix(in srgb, var(--accent-secondary) 12%, transparent);
 }
 
 .ambient {

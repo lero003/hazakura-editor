@@ -31,13 +31,13 @@
 :root[data-theme="yakou"] .file-tree-pane {
   background: rgba(20, 20, 30, 0.75);
   backdrop-filter: blur(16px);
-  border-right-color: rgba(138, 125, 244, 0.15);
+  border-right-color: color-mix(in srgb, var(--accent-secondary) 15%, transparent);
 }
 
 :root[data-theme="shokou"] .file-tree-pane {
   background: rgba(237, 244, 252, 0.68);
   backdrop-filter: blur(16px);
-  border-right-color: rgba(58, 130, 184, 0.14);
+  border-right-color: color-mix(in srgb, var(--accent) 14%, transparent);
 }
 
 .workspace-empty {

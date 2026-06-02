@@ -58,13 +58,13 @@
 
 :root[data-theme="yakou"] .tabs-row {
   background: rgba(20, 20, 30, 0.88);
-  border-bottom-color: rgba(152, 136, 255, 0.16);
+  border-bottom-color: color-mix(in srgb, var(--accent) 16%, transparent);
   color: var(--text);
 }
 
 :root[data-theme="shokou"] .tabs-row {
   background: rgba(237, 244, 252, 0.72);
-  border-bottom-color: rgba(58, 130, 184, 0.16);
+  border-bottom-color: color-mix(in srgb, var(--accent) 16%, transparent);
   color: var(--text);
 }
 
@@ -101,18 +101,18 @@
 
 :root[data-theme="yakou"] .close-dialog,
 :root[data-theme="yakou"] .preferences-dialog {
-  border-color: rgba(152, 136, 255, 0.18);
+  border-color: color-mix(in srgb, var(--accent) 18%, transparent);
   box-shadow:
     var(--shadow-lg),
-    0 0 40px rgba(138, 125, 244, 0.06);
+    0 0 40px color-mix(in srgb, var(--accent-secondary) 6%, transparent);
 }
 
 :root[data-theme="shokou"] .close-dialog,
 :root[data-theme="shokou"] .preferences-dialog {
-  border-color: rgba(245, 168, 90, 0.14);
+  border-color: color-mix(in srgb, var(--accent-secondary) 14%, transparent);
   box-shadow:
     var(--shadow-lg),
-    0 0 32px rgba(245, 168, 90, 0.05);
+    0 0 32px color-mix(in srgb, var(--accent-secondary) 5%, transparent);
 }
 
 

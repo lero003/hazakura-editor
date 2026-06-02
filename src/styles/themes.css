@@ -133,7 +133,8 @@ html, body, #root, .app-shell,
   --text: #e4e4f0;
   --text-muted: #8e8eb0;
   --accent: #9888ff;
-  --accent-gradient: linear-gradient(135deg, #8a7df4 0%, #4ccdb0 100%);
+  --accent-secondary: #8a7df4;
+  --accent-gradient: linear-gradient(135deg, var(--accent-secondary) 0%, #4ccdb0 100%);
   --accent-soft: #1e1a38;
   --accent-glass: rgba(152, 136, 255, 0.1);
   --danger: #e26070;
@@ -189,7 +190,8 @@ html, body, #root, .app-shell,
   --text: #1f3a5c;
   --text-muted: #5b7589;
   --accent: #3a82b8;
-  --accent-gradient: linear-gradient(135deg, #3a82b8 0%, #f5a85a 100%);
+  --accent-secondary: #f5a85a;
+  --accent-gradient: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
   --accent-soft: #dceaf6;
   --accent-glass: rgba(58, 130, 184, 0.08);
   --danger: #c66b6e;
