@@ -59,8 +59,36 @@ export function useWorkspaceTreeLoader({
     [onError, onStatus, setWorkspaceTree, workspaceRootPath],
   );
 
+  // Reload a single parent after a workspace file op (create,
+  // rename, move) without re-listing the whole tree. Preserves
+  // expansion state for every other folder.
+  const reloadWorkspaceParent = useCallback(
+    async (directoryPath: string) => {
+      if (!workspaceRootPath) {
+        return;
+      }
+
+      try {
+        const directory = await listWorkspaceDirectory(
+          workspaceRootPath,
+          directoryPath,
+        );
+        setWorkspaceTree((currentTree) =>
+          currentTree
+            ? replaceWorkspaceTreeEntry(currentTree, directory)
+            : currentTree,
+        );
+      } catch (err) {
+        onError(String(err));
+        throw err;
+      }
+    },
+    [onError, setWorkspaceTree, workspaceRootPath],
+  );
+
   return {
     loadWorkspaceDirectory,
     refreshWorkspaceTree,
+    reloadWorkspaceParent,
   };
 }

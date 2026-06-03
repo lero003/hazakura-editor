@@ -269,6 +269,7 @@ export function useAppShellController() {
     agentWorkbenchCopy,
     agentWorkbenchRestartRequired,
     editorChromeCopy,
+    fileOpsCopy,
     preferencesCopy,
     recoveryCopy,
     reviewDeskCopy,
@@ -363,6 +364,8 @@ export function useAppShellController() {
 
   // section: workspace file opening
   const {
+    createFile,
+    createFolder,
     createNewFile,
     loadWorkspaceDirectory,
     openExternalFilePaths,
@@ -884,6 +887,8 @@ export function useAppShellController() {
     compareView,
     compareWorkspaceFiles,
     copyWorkspaceFullPath,
+    createFile,
+    createFolder,
     createNewFile,
     currentHeadingLine: currentMarkdownHeading?.line ?? null,
     detail: activeStatusDetail,
@@ -901,6 +906,7 @@ export function useAppShellController() {
     editorSettings,
     editorTheme,
     emptyTabsLabel: safeEditorCopy.emptyTabs,
+    fileOpsCopy,
     encodingAriaLabel: editorChromeCopy.encodings,
     encodingLabel: editorChromeCopy.encoding,
     findInputRef,

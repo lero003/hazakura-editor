@@ -37,6 +37,7 @@ import { AppCloseDialog, DirtyTabCloseDialog } from "./CloseDialogs";
 import { PreferencesDialog } from "./PreferencesDialog";
 import { SettingsPreferencesPane } from "./SettingsPreferencesPane";
 import { AgentWorkbenchPreferencesPane } from "../agent/AgentWorkbenchPreferencesPane";
+import type { WorkspaceFileOpsCopy } from "../../lib/locale/workspaceFileOps";
 
 type AppOverlaysProps = {
   activeAgentSession: boolean;
@@ -79,9 +80,12 @@ type AppOverlaysProps = {
   compareAnchor: CompareAnchor | null;
   compareWorkspaceFiles: (file: CompareAnchor) => void | Promise<void>;
   copyWorkspaceFullPath: (file: CompareAnchor) => void | Promise<void>;
+  createFile: (parentPath: string) => Promise<void> | void;
+  createFolder: (parentPath: string) => Promise<void> | void;
   dirtyTabCount: number;
   discardAllAndCloseWindow: () => void;
   editorSettings: EditorSettings;
+  fileOpsCopy: WorkspaceFileOpsCopy;
   filteredCommands: Command[];
   menuLanguage: MenuLanguage;
   onOpenCommandPalette: () => void;
@@ -160,9 +164,12 @@ export function AppOverlays({
   compareAnchor,
   compareWorkspaceFiles,
   copyWorkspaceFullPath,
+  createFile,
+  createFolder,
   dirtyTabCount,
   discardAllAndCloseWindow,
   editorSettings,
+  fileOpsCopy,
   filteredCommands,
   menuLanguage,
   onOpenCommandPalette,
@@ -316,10 +323,21 @@ export function AppOverlays({
           activeTabPath={activeTab?.path ?? null}
           canSendToAgent={activeAgentSession}
           compareSource={compareAnchor}
+          fileOpsCopy={fileOpsCopy}
           menuLanguage={menuLanguage}
           onClearCompareSource={clearCompareSource}
           onClose={closeWorkspaceContextMenu}
           onCompare={() => void compareWorkspaceFiles(workspaceContextMenu)}
+          onCreateFileHere={() => {
+            const parent = workspaceContextMenu.path;
+            closeWorkspaceContextMenu();
+            void createFile(parent);
+          }}
+          onCreateFolderHere={() => {
+            const parent = workspaceContextMenu.path;
+            closeWorkspaceContextMenu();
+            void createFolder(parent);
+          }}
           onOpen={() => {
             closeWorkspaceContextMenu();
             void openWorkspaceFile(workspaceContextMenu.path);

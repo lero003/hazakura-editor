@@ -1,18 +1,22 @@
 import type { CompareAnchor, MenuLanguage, WorkspaceContextMenuEntryKind, WorkspaceContextMenuState } from "../../types";
 import { isJapaneseMenuLanguage } from "../../types";
 import { isKanaStyle } from "../../lib/locale/_helpers";
+import type { WorkspaceFileOpsCopy } from "../../lib/locale/workspaceFileOps";
 
 export function WorkspaceContextMenu({
   activeTabPath,
   anchor,
   canSendToAgent,
   compareSource,
+  fileOpsCopy,
   kind = "file",
   menuLanguage,
   onClearCompareSource,
   onClose,
   onCompare,
   onCopyFullPath,
+  onCreateFileHere,
+  onCreateFolderHere,
   onOpen,
   onRevealInFinder,
   onSendFullPathToAgent,
@@ -23,12 +27,15 @@ export function WorkspaceContextMenu({
   anchor: WorkspaceContextMenuState;
   canSendToAgent: boolean;
   compareSource: CompareAnchor | null;
+  fileOpsCopy: WorkspaceFileOpsCopy;
   kind?: WorkspaceContextMenuEntryKind;
   menuLanguage: MenuLanguage;
   onClearCompareSource: () => void;
   onClose: () => void;
   onCompare: () => void;
   onCopyFullPath: () => void;
+  onCreateFileHere: () => void;
+  onCreateFolderHere: () => void;
   onOpen: () => void;
   onRevealInFinder: () => void;
   onSendFullPathToAgent: () => void;
@@ -39,7 +46,12 @@ export function WorkspaceContextMenu({
     activeTabPath !== null && activeTabPath !== anchor.path;
   const hasDifferentCompareSource =
     compareSource !== null && compareSource.path !== anchor.path;
-  const itemCount = 7 + (canSendToAgent ? 1 : 0) + (compareSource ? 1 : 0);
+  const canCreateHere = kind === "directory" || kind === "root";
+  const itemCount =
+    7 +
+    (canSendToAgent ? 1 : 0) +
+    (compareSource ? 1 : 0) +
+    (canCreateHere ? 2 : 0);
   const estimatedWidth = 240;
   const estimatedHeight = 12 + itemCount * 34;
   const menuLeft = Math.min(
@@ -101,6 +113,16 @@ export function WorkspaceContextMenu({
       onClick={(event) => event.stopPropagation()}
       onContextMenu={(event) => event.preventDefault()}
     >
+      {canCreateHere ? (
+        <>
+          <button type="button" role="menuitem" onClick={onCreateFileHere}>
+            {fileOpsCopy.newFileHere}
+          </button>
+          <button type="button" role="menuitem" onClick={onCreateFolderHere}>
+            {fileOpsCopy.newFolderHere}
+          </button>
+        </>
+      ) : null}
       <button type="button" role="menuitem" onClick={onOpen}>
         {labels.open}
       </button>

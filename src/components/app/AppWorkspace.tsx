@@ -56,6 +56,8 @@ type AppWorkspaceProps = {
   compareAnchor: CompareAnchor | null;
   compareTarget: CompareAnchor | null;
   compareView: CompareViewState | null;
+  createFile: (parentPath: string) => Promise<void> | void;
+  createFolder: (parentPath: string) => Promise<void> | void;
   createNewFile: () => unknown;
   currentHeadingLine: number | null;
   documentHeadings: MarkdownHeading[];
@@ -65,6 +67,7 @@ type AppWorkspaceProps = {
   editorPreviewGridStyle: CSSProperties | undefined;
   editorSettings: EditorSettings;
   editorTheme: BaseTheme;
+  fileOpsCopy: import("../../lib/locale").WorkspaceFileOpsCopy;
   findMatches: TextMatch[];
   getCompareCaseByKey: (caseKey: string) => CompareCase | undefined;
   handleEditorChange: (nextValue: string) => void;
@@ -148,6 +151,8 @@ export function AppWorkspace({
   compareAnchor,
   compareTarget,
   compareView,
+  createFile,
+  createFolder,
   createNewFile,
   currentHeadingLine,
   documentHeadings,
@@ -157,6 +162,7 @@ export function AppWorkspace({
   editorPreviewGridStyle,
   editorSettings,
   editorTheme,
+  fileOpsCopy,
   findMatches,
   getCompareCaseByKey,
   handleEditorChange,
@@ -218,6 +224,17 @@ export function AppWorkspace({
         compareSourcePath={compareAnchor?.path ?? null}
         compareTargetPath={compareTarget?.path ?? null}
         copy={safeEditorCopy}
+        fileOpsCopy={fileOpsCopy}
+        onCreateFile={() => {
+          if (workspaceRootPath) {
+            void createFile(workspaceRootPath);
+          }
+        }}
+        onCreateFolder={() => {
+          if (workspaceRootPath) {
+            void createFolder(workspaceRootPath);
+          }
+        }}
         onLoadDirectory={loadWorkspaceDirectory}
         onOpenContextMenu={openWorkspaceContextMenu}
         onOpenRootContextMenu={openRootWorkspaceContextMenu}

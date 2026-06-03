@@ -11,3 +11,4 @@ export * from "./reviewDesk";
 export * from "./safeEditor";
 export * from "./sidePane";
 export * from "./slashMenu";
+export * from "./workspaceFileOps";

@@ -8,6 +8,7 @@ import {
   getSafeEditorCopy,
   getSidePaneCopy,
   getSlashMenuCopy,
+  getWorkspaceFileOpsCopy,
 } from "../../lib/locale";
 import type { MenuLanguage } from "../../types";
 
@@ -43,6 +44,7 @@ export function useLocalizedAppCopy({
       safeEditorCopy: getSafeEditorCopy(menuLanguage),
       sidePaneCopy: getSidePaneCopy(menuLanguage),
       slashMenuCopy: getSlashMenuCopy(menuLanguage),
+      fileOpsCopy: getWorkspaceFileOpsCopy(menuLanguage),
     };
   }, [agentWorkbenchActive, agentWorkbenchPreference, menuLanguage]);
 }
