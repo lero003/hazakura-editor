@@ -1,0 +1,89 @@
+import { isJapaneseMenuLanguage, type MenuLanguage } from "../../types";
+import { isKanaStyle } from "./_helpers";
+
+// Strings for the v0.9 bounded workspace file ops lane (New
+// File / New Folder from the sidebar header and folder right-
+// click, Rename via the inline tree editor, Move via drag/drop,
+// and the dirty / external-change warn dialog that fires before
+// a rename if the open tab is dirty or the file was modified
+// outside the app). All entries are localized in three styles
+// (kana / Japanese menu / English) so the new chrome and dialog
+// match the existing 3-way split.
+
+export type WorkspaceFileOpsCopy = {
+  sidebarNewButton: string;
+  newFileRoot: string;
+  newFolderRoot: string;
+  newFileHere: string;
+  newFolderHere: string;
+  rename: string;
+  renameDialogTitle: string;
+  renameDirtyWarning: string;
+  renameExternalChangeWarning: string;
+  renameConfirm: string;
+  renameCancel: string;
+  moveOverwriteError: string;
+  moveError: string;
+};
+
+export function getWorkspaceFileOpsCopy(
+  lang: MenuLanguage,
+): WorkspaceFileOpsCopy {
+  if (isKanaStyle(lang)) {
+    return {
+      sidebarNewButton: "あたらしく",
+      newFileRoot: "あたらしきふみ",
+      newFolderRoot: "あたらしきふぉるだ",
+      newFileHere: "このふぉるだに あたらしきふみ",
+      newFolderHere: "このふぉるだに あたらしきふぉるだ",
+      rename: "なまえを かえる",
+      renameDialogTitle: "なまえを かえる",
+      renameDirtyWarning:
+        "このふみには ほぞんしていない へんこうが あります。なまえを かえますか？",
+      renameExternalChangeWarning:
+        "このふみは アプリのそとで へんこうされた ようです。なまえを かえますか？",
+      renameConfirm: "かえる",
+      renameCancel: "やめる",
+      moveOverwriteError: "いどうさきに おなじなまえの ふみまたは ふぉるだが あります。",
+      moveError: "ふみの いどうに しっぱいしました。",
+    };
+  }
+
+  return isJapaneseMenuLanguage(lang)
+    ? {
+        sidebarNewButton: "新規",
+        newFileRoot: "新規ファイル",
+        newFolderRoot: "新規フォルダ",
+        newFileHere: "このフォルダに新規ファイル",
+        newFolderHere: "このフォルダに新規フォルダ",
+        rename: "名前を変更",
+        renameDialogTitle: "名前を変更",
+        renameDirtyWarning:
+          "このファイルには未保存の変更があります。名前を変更しますか？",
+        renameExternalChangeWarning:
+          "このファイルはアプリ外で変更されたようです。名前を変更しますか？",
+        renameConfirm: "変更する",
+        renameCancel: "キャンセル",
+        moveOverwriteError:
+          "移動先に同じ名前のファイルまたはフォルダがあります。",
+        moveError: "ファイルの移動に失敗しました。",
+      }
+    : {
+        sidebarNewButton: "New",
+        newFileRoot: "New File",
+        newFolderRoot: "New Folder",
+        newFileHere: "New File Here",
+        newFolderHere: "New Folder Here",
+        rename: "Rename",
+        renameDialogTitle: "Rename",
+        renameDirtyWarning:
+          "This file has unsaved changes. Rename anyway?",
+        renameExternalChangeWarning:
+          "This file was modified outside the app. Rename anyway?",
+        renameConfirm: "Rename",
+        renameCancel: "Cancel",
+        moveOverwriteError:
+          "A file or folder with the same name already exists at the destination.",
+        moveError: "Could not move the file.",
+      };
+}

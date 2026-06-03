@@ -89,3 +89,26 @@ export async function searchWorkspaceFiles(
     query,
   });
 }
+
+export async function createTextFolder(
+  path: string,
+  workspaceRoot: string,
+): Promise<void> {
+  await invoke<void>("create_text_folder", { path, workspaceRoot });
+}
+
+export async function renameWorkspaceEntry(
+  src: string,
+  dst: string,
+  workspaceRoot: string,
+): Promise<void> {
+  await invoke<void>("rename_workspace_entry", { src, dst, workspaceRoot });
+}
+
+export async function moveWorkspaceEntry(
+  src: string,
+  dst: string,
+  workspaceRoot: string,
+): Promise<void> {
+  await invoke<void>("move_workspace_entry", { src, dst, workspaceRoot });
+}
