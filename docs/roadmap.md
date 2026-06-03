@@ -23,7 +23,7 @@ The current public line is:
 - `v0.5.0`: Pi CLI Provider, Image Assets, and Authoring Stability warning-expected DMG release
 - `v0.6.0`: Foundation Release / Daily-Drivable Safe Editor warning-expected DMG release under the `hazakura editor` identity
 - `v0.7.0`: Review Desk MVP warning-expected DMG release with manual candidate review, slash command polish, and existing Change Review routing fixes
-- `v0.8.0`: Assist Surface separation and daily-editor polish warning-expected DMG release candidate; publication in progress during the 2026-06-03 release lane
+- `v0.8.0`: Assist Surface separation and daily-editor polish warning-expected DMG release
 
 The old `v0.1` / `v0.3.x` phase map is archived in `docs/roadmap-v0.1-archived.md`.
 
@@ -283,7 +283,7 @@ External-agent workflow:
 
 ## 0.8: Assist Surface Separation And Daily Editor Polish
 
-Status: release-prep lane on 2026-06-03 (Claude Code CLI allowlist landed via 97f4249, with the same launch gate / trusted-workspace smoke path as `codex` / `opencode` / `pi`; the v0.8 release-readiness pass also fixed the bounded Global Search no-match scan cap and aligned version surfaces to `0.8.0`). No v0.8 candidate-work items remain open. v0.8 publication is in progress; the previous public line is `v0.7.0` warning-expected DMG. The assist/agent surface separation it set up is the foundation for v0.10+ Apple Local Assist.
+Status: released on 2026-06-03 as the `v0.8.0` warning-expected DMG preview (Claude Code CLI allowlist landed via 97f4249, with the same launch gate / trusted-workspace smoke path as `codex` / `opencode` / `pi`; the v0.8 release-readiness pass also fixed the bounded Global Search no-match scan cap and aligned version surfaces to `0.8.0`). No v0.8 candidate-work items remain open. The assist/agent surface separation it set up is the foundation for v0.10+ Apple Local Assist.
 
 Goal: keep the Safe Editor pleasant for daily writing and review while preparing the assist/agent surface for future v0.10+ Apple Local Assist adoption. v0.8 is not an assist-platform release; it should separate surfaces and logic so optional assist behavior can later produce reviewed candidates without becoming the default editor experience.
 
