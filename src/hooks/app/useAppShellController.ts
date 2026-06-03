@@ -21,10 +21,6 @@
 
 import { useCallback, useMemo } from "react";
 import { openAgentWindow } from "../../lib/tauri";
-import { useAgentWorkbenchRuntimeState } from "../agent/useAgentWorkbenchRuntimeState";
-import { useAgentWorkbenchPreferences } from "../agent/useAgentWorkbenchPreferences";
-import { useAgentUiRefreshGate } from "../agent/useAgentUiRefreshGate";
-import { useAgentOutputBuffer } from "../agent/useAgentOutputBuffer";
 import { useAgentWorkbenchSessionActions } from "../agent/useAgentWorkbenchSessionActions";
 import { useAgentTerminalActions } from "../agent/useAgentTerminalActions";
 import { useAgentWorkbenchPreferenceActions } from "../agent/useAgentWorkbenchPreferenceActions";
@@ -33,7 +29,6 @@ import {
   useGlobalSearch,
   type GlobalSearchRow,
 } from "../globalSearch/useGlobalSearch";
-import { useCompareState } from "../diff/useCompareState";
 import { useCompareController } from "../diff/useCompareController";
 import { useDocumentSafetyActions } from "../document/useDocumentSafetyActions";
 import { useDocumentIoController } from "../document/useDocumentIoController";
@@ -42,24 +37,12 @@ import { useEditorTabState } from "../editor/useEditorTabState";
 import { useImagePreview } from "../editor/useImagePreview";
 import { useActiveDocumentIdentity } from "../document/useActiveDocumentIdentity";
 import { useActiveDocumentSurface } from "../document/useActiveDocumentSurface";
-import { useSaveAffirmation } from "../document/useSaveAffirmation";
-import { useDraftRecoveryState } from "../document/useDraftRecoveryState";
-import { useEditorTabsState } from "../editor/useEditorTabsState";
-import { useEditorSelectionState } from "../editor/useEditorSelectionState";
 import { useEditorCommands } from "../editor/useEditorCommands";
 import { useTabBarController } from "../editor/useTabBarController";
 import { useGoToLine } from "../editor/useGoToLine";
-import { useReviewDeskState } from "../review/useReviewDeskState";
 import { useReviewDeskController } from "../review/useReviewDeskController";
-import { useWorkspaceShellState } from "../workspace/useWorkspaceShellState";
-import { useRecentEntries } from "../workspace/useRecentEntries";
-import { useWorkspaceContextMenu } from "../workspace/useWorkspaceContextMenu";
-import { useQuickOpenState } from "../workspace/useQuickOpenState";
 import { useWorkspaceFileOpening } from "../workspace/useWorkspaceFileOpening";
-import { useAppPreferences } from "./useAppPreferences";
-import { useAppViewState } from "./useAppViewState";
-import { useAppDialogState } from "./useAppDialogState";
-import { useAppFeedbackState } from "./useAppFeedbackState";
+import { useAppShellFoundation } from "./useAppShellFoundation";
 import { useAppEditorRefs } from "./useAppEditorRefs";
 import { useAppDialogRefs } from "./useAppDialogRefs";
 import { useWindowDialogActions } from "./useWindowDialogActions";
@@ -70,6 +53,9 @@ import { useAppMenuIntegration } from "./useAppMenuIntegration";
 import { useAppRuntimeEffects } from "./useAppRuntimeEffects";
 
 export function useAppShellController() {
+  // section: state pool (orchestrator extracts dep-free leaf hooks)
+  const foundation = useAppShellFoundation();
+
   // section: agent runtime state
   const {
     activeAgentSession,
@@ -83,7 +69,7 @@ export function useAppShellController() {
     setAgentStopPending,
     setAgentTerminalSize,
     setAppRestartPending,
-  } = useAgentWorkbenchRuntimeState();
+  } = foundation;
 
   // section: chrome dialog state
   const {
@@ -93,7 +79,7 @@ export function useAppShellController() {
     setPendingAppClose,
     setPendingCloseTabId,
     setPreferencesDialogMode,
-  } = useAppDialogState();
+  } = foundation;
 
   // section: chrome view state
   const {
@@ -103,7 +89,7 @@ export function useAppShellController() {
     setSidePaneOpen,
     sidePaneOpen,
     reviewSurface,
-  } = useAppViewState();
+  } = foundation;
 
   // section: review desk state
   const {
@@ -116,7 +102,7 @@ export function useAppShellController() {
     reviewDeskMode,
     runCandidateCompare,
     setCandidateInputText,
-  } = useReviewDeskState();
+  } = foundation;
 
   // section: review desk controller (depends on review state + chrome view state)
   const { toggleReviewDesk, closeReviewDesk } = useReviewDeskController({
@@ -126,21 +112,21 @@ export function useAppShellController() {
   });
 
   // section: draft recovery
-  const { pendingDrafts, setPendingDrafts } = useDraftRecoveryState();
+  const { pendingDrafts, setPendingDrafts } = foundation;
 
   // section: chrome feedback
-  const { globalError, setGlobalError, setStatus, status } =
-    useAppFeedbackState();
+  const { globalError, setGlobalError, setStatus, status } = foundation;
 
-  // section: save affirmation (depends on status)
-  const { affirmation: saveAffirmation, lastAffirmedAt: saveAffirmationKey } =
-    useSaveAffirmation(status);
+  // section: save affirmation (depends on status; foundation re-exposes
+  // useSaveAffirmation's `affirmation` / `lastAffirmedAt` as the
+  // orchestrator's `saveAffirmation` / `saveAffirmationKey` field names)
+  const { saveAffirmation, saveAffirmationKey } = foundation;
 
   // section: editor tabs
-  const { activeTabId, setActiveTabId, setTabs, tabs } = useEditorTabsState();
+  const { activeTabId, setActiveTabId, setTabs, tabs } = foundation;
 
   // section: editor selection
-  const { selectionInfo, setSelectionInfo } = useEditorSelectionState();
+  const { selectionInfo, setSelectionInfo } = foundation;
 
   // section: diff state
   const {
@@ -152,7 +138,7 @@ export function useAppShellController() {
     setCompareCaseEntry,
     setCompareTarget,
     setCompareView,
-  } = useCompareState();
+  } = foundation;
 
   // section: workspace shell state
   const {
@@ -162,7 +148,7 @@ export function useAppShellController() {
     setWorkspaceTree,
     workspaceRootPath,
     workspaceTree,
-  } = useWorkspaceShellState();
+  } = foundation;
 
   // section: agent workbench preferences
   const {
@@ -174,7 +160,7 @@ export function useAppShellController() {
     setAgentWorkbenchConsent,
     setAgentWorkbenchPreference,
     setAgentWorkbenchProvider,
-  } = useAgentWorkbenchPreferences();
+  } = foundation;
 
   // section: app preferences
   const {
@@ -188,7 +174,7 @@ export function useAppShellController() {
     setPreviewVisible,
     setThemePreference,
     themePreference,
-  } = useAppPreferences();
+  } = foundation;
 
   // section: editor refs (depends on tabs)
   const {
@@ -208,14 +194,14 @@ export function useAppShellController() {
     rememberRecentFile,
     rememberRecentFolder,
     unpinRecentFile,
-  } = useRecentEntries();
+  } = foundation;
 
   // section: agent UI refresh gate
   const {
     agentUiSuspendedRef,
     resumeAgentUiRefresh,
     suspendAgentUiRefresh,
-  } = useAgentUiRefreshGate();
+  } = foundation;
 
   // section: editor tab state
   const {
@@ -270,11 +256,11 @@ export function useAppShellController() {
     closeWorkspaceContextMenu,
     openWorkspaceContextMenu,
     workspaceContextMenu,
-  } = useWorkspaceContextMenu();
+  } = foundation;
 
   // section: quick open
   const { closeQuickOpen, quickOpenVisible, toggleQuickOpen } =
-    useQuickOpenState();
+    foundation;
 
   // section: localized app copy
   const {
@@ -387,8 +373,7 @@ export function useAppShellController() {
   });
 
   // section: agent output buffer
-  const { agentOutput, applyAgentOutput, resetAgentOutput } =
-    useAgentOutputBuffer();
+  const { agentOutput, applyAgentOutput, resetAgentOutput } = foundation;
 
   // section: workspace file opening
   const {
