@@ -492,10 +492,10 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
 
     view.dispatch({
       effects: invisiblesCompartmentRef.current.reconfigure(
-        showInvisibles ? invisibleCharactersField : [],
+        showInvisibles && !lModeEnabled ? invisibleCharactersField : [],
       ),
     });
-  }, [showInvisibles]);
+  }, [showInvisibles, lModeEnabled]);
 
   useEffect(() => {
     const view = viewRef.current;

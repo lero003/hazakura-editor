@@ -53,12 +53,53 @@
    The CodeMirror .cm-content is the editor body. Constrain its
    width, give the lines more room to breathe, and let headings
    and blockquotes find their own rhythm. */
+:root[data-l-mode="on"] .cm-editor,
+:root[data-l-mode="on"] .cm-editor.cm-focused {
+  background: transparent;
+  outline: none;
+  border: none;
+}
+
+:root[data-l-mode="on"] .cm-gutters {
+  display: none;
+}
+
+:root[data-l-mode="on"] .cm-activeLine,
+:root[data-l-mode="on"] .cm-activeLineGutter {
+  background-color: transparent;
+}
+
+:root[data-l-mode="on"] .cm-content ::selection,
+:root[data-l-mode="on"] .cm-selectionLayer .cm-selectionBackground {
+  background-color: rgba(160, 180, 180, 0.22);
+}
+
+/* Webkit scrollbar — thin, quiet. */
+:root[data-l-mode="on"] .cm-scroller::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+:root[data-l-mode="on"] .cm-scroller::-webkit-scrollbar-track {
+  background: transparent;
+}
+:root[data-l-mode="on"] .cm-scroller::-webkit-scrollbar-thumb {
+  background: rgba(127, 127, 127, 0.2);
+  border-radius: 4px;
+}
+:root[data-l-mode="on"] .cm-scroller::-webkit-scrollbar-thumb:hover {
+  background: rgba(127, 127, 127, 0.4);
+}
+
 :root[data-l-mode="on"] .cm-content {
   max-width: 72ch;
   margin: 0 auto;
   font-size: 16px;
   line-height: 1.7;
-  padding: 4rem 0 10rem;
+  padding: 6rem 0 12rem;
+}
+
+:root[data-l-mode="on"] .cm-line {
+  padding: 0;
 }
 
 :root[data-l-mode="on"] .cm-line {
