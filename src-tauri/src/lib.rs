@@ -88,6 +88,8 @@ pub fn run() {
             get_file_metadata,
             list_workspace_directory,
             list_workspace_tree,
+            rename_workspace_entry,
+            move_workspace_entry,
             open_workspace_image,
             search_workspace_files,
             start_agent_workbench_session,

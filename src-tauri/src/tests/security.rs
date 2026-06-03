@@ -506,3 +506,50 @@ fn open_main_agent_pane_rejects_unknown_label() {
         .expect_err("open_main_agent_pane must reject unknown labels");
     assert!(err.contains(UNKNOWN_WINDOW_LABEL), "{err}");
 }
+
+#[test]
+fn rename_workspace_entry_rejects_agent_window_label() {
+    let root = unique_label_path("rename_workspace_entry_agent");
+    fs::create_dir_all(&root).expect("create root");
+    let src = root.join("old.md");
+    fs::write(&src, "# old\n").expect("write src");
+    let dst = root.join("new.md");
+
+    let err = rename_workspace_entry_with_label(
+        AGENT_WINDOW_LABEL,
+        &src.to_string_lossy(),
+        &dst.to_string_lossy(),
+        &root.to_string_lossy(),
+    )
+    .expect_err("rename_workspace_entry must reject the agent window");
+    assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
+    assert!(src.exists());
+    assert!(!dst.exists());
+
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+fn move_workspace_entry_rejects_agent_window_label() {
+    let root = unique_label_path("move_workspace_entry_agent");
+    let source_dir = root.join("source");
+    let dest_dir = root.join("dest");
+    fs::create_dir_all(&root).expect("create root");
+    fs::create_dir_all(&source_dir).expect("create source");
+    fs::create_dir_all(&dest_dir).expect("create dest");
+    let src = source_dir.join("note.md");
+    fs::write(&src, "# note\n").expect("write src");
+
+    let err = move_workspace_entry_with_label(
+        AGENT_WINDOW_LABEL,
+        &src.to_string_lossy(),
+        &(dest_dir.join("note.md").to_string_lossy()),
+        &root.to_string_lossy(),
+    )
+    .expect_err("move_workspace_entry must reject the agent window");
+    assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
+    assert!(src.exists());
+    assert!(!dest_dir.join("note.md").exists());
+
+    let _ = fs::remove_dir_all(root);
+}

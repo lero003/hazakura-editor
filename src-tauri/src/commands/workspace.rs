@@ -57,3 +57,50 @@ pub(crate) fn list_workspace_directory_with_label(
 
     build_workspace_directory(&directory_path)
 }
+
+#[tauri::command]
+pub(crate) fn rename_workspace_entry<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    src: String,
+    dst: String,
+    workspace_root: String,
+) -> Result<(), String> {
+    rename_workspace_entry_with_label(window.label(), &src, &dst, &workspace_root)
+}
+
+pub(crate) fn rename_workspace_entry_with_label(
+    label: &str,
+    src: &str,
+    dst: &str,
+    workspace_root: &str,
+) -> Result<(), String> {
+    ensure_label_is_main(label)?;
+    let root_path = PathBuf::from(workspace_root);
+    crate::util::rename_workspace_entry_util(&PathBuf::from(src), &PathBuf::from(dst), &root_path)
+}
+
+#[tauri::command]
+pub(crate) fn move_workspace_entry<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    src: String,
+    dst: String,
+    workspace_root: String,
+) -> Result<(), String> {
+    move_workspace_entry_with_label(window.label(), &src, &dst, &workspace_root)
+}
+
+pub(crate) fn move_workspace_entry_with_label(
+    label: &str,
+    src: &str,
+    dst: &str,
+    workspace_root: &str,
+) -> Result<(), String> {
+    ensure_label_is_main(label)?;
+    let dst_path = PathBuf::from(dst);
+    if let Some(parent) = dst_path.parent() {
+        if !parent.as_os_str().is_empty() && !parent.is_dir() {
+            return Err("Destination parent is not a folder.".to_string());
+        }
+    }
+    rename_workspace_entry_with_label(label, src, dst, workspace_root)
+}

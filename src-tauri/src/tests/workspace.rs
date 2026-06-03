@@ -442,3 +442,189 @@ fn workspace_tree_rejects_file_root() {
 
     let _ = fs::remove_dir_all(dir);
 }
+
+#[test]
+fn rename_workspace_entry_renames_file_in_same_directory() {
+    let root = unique_test_dir("rename_same_dir");
+    fs::create_dir_all(&root).expect("create root");
+    let src = root.join("old.md");
+    let dst = root.join("new.md");
+    fs::write(&src, "# old\n").expect("write src");
+
+    rename_workspace_entry_with_label(
+        MAIN_WINDOW_LABEL,
+        &src.to_string_lossy(),
+        &dst.to_string_lossy(),
+        &root.to_string_lossy(),
+    )
+    .expect("rename within dir");
+
+    assert!(!src.exists());
+    assert!(dst.exists());
+    assert_eq!(fs::read_to_string(&dst).expect("read renamed"), "# old\n");
+
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+fn rename_workspace_entry_handles_case_only_rename() {
+    let root = unique_test_dir("rename_case_only");
+    fs::create_dir_all(&root).expect("create root");
+    let src = root.join("README.md");
+    let dst = root.join("readme.md");
+    fs::write(&src, "# readme\n").expect("write src");
+
+    rename_workspace_entry_with_label(
+        MAIN_WINDOW_LABEL,
+        &src.to_string_lossy(),
+        &dst.to_string_lossy(),
+        &root.to_string_lossy(),
+    )
+    .expect("case-only rename should succeed on APFS");
+
+    // On case-insensitive filesystems the src and dst paths
+    // resolve to the same file; verify via the canonicalized
+    // destination instead of relying on existence.
+    let canonical_dst = fs::canonicalize(&dst).expect("canonicalize dst");
+    assert_eq!(
+        fs::read_to_string(&canonical_dst).expect("read renamed file"),
+        "# readme\n"
+    );
+
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+fn rename_workspace_entry_rejects_existing_destination() {
+    let root = unique_test_dir("rename_existing_dst");
+    fs::create_dir_all(&root).expect("create root");
+    let src = root.join("a.md");
+    let dst = root.join("b.md");
+    fs::write(&src, "# a\n").expect("write src");
+    fs::write(&dst, "# b\n").expect("write dst");
+
+    let err = rename_workspace_entry_with_label(
+        MAIN_WINDOW_LABEL,
+        &src.to_string_lossy(),
+        &dst.to_string_lossy(),
+        &root.to_string_lossy(),
+    )
+    .expect_err("existing target should be rejected");
+
+    assert!(err.contains("already exists"), "{err}");
+    assert!(src.exists());
+    assert!(dst.exists());
+    assert_eq!(fs::read_to_string(&dst).expect("read protected"), "# b\n");
+
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+fn rename_workspace_entry_renames_directory() {
+    let root = unique_test_dir("rename_directory");
+    fs::create_dir_all(&root).expect("create root");
+    let src = root.join("old-folder");
+    fs::create_dir_all(&src).expect("create src folder");
+    fs::write(src.join("inside.md"), "# inside\n").expect("write inside");
+    let dst = root.join("new-folder");
+
+    rename_workspace_entry_with_label(
+        MAIN_WINDOW_LABEL,
+        &src.to_string_lossy(),
+        &dst.to_string_lossy(),
+        &root.to_string_lossy(),
+    )
+    .expect("rename directory");
+
+    assert!(!src.exists());
+    assert!(dst.is_dir());
+    assert!(dst.join("inside.md").exists());
+
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+fn move_workspace_entry_moves_file_across_directories() {
+    let root = unique_test_dir("move_across_dirs");
+    let source_dir = root.join("source");
+    let dest_dir = root.join("dest");
+    fs::create_dir_all(&root).expect("create root");
+    fs::create_dir_all(&source_dir).expect("create source");
+    fs::create_dir_all(&dest_dir).expect("create dest");
+    let src = source_dir.join("note.md");
+    let dst = dest_dir.join("note.md");
+    fs::write(&src, "# note\n").expect("write src");
+
+    move_workspace_entry_with_label(
+        MAIN_WINDOW_LABEL,
+        &src.to_string_lossy(),
+        &dst.to_string_lossy(),
+        &root.to_string_lossy(),
+    )
+    .expect("move across directories");
+
+    assert!(!src.exists());
+    assert!(dst.exists());
+    assert_eq!(fs::read_to_string(&dst).expect("read moved"), "# note\n");
+
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+fn move_workspace_entry_rejects_existing_destination() {
+    let root = unique_test_dir("move_existing_dst");
+    let source_dir = root.join("source");
+    let dest_dir = root.join("dest");
+    fs::create_dir_all(&root).expect("create root");
+    fs::create_dir_all(&source_dir).expect("create source");
+    fs::create_dir_all(&dest_dir).expect("create dest");
+    let src = source_dir.join("note.md");
+    let colliding = dest_dir.join("note.md");
+    fs::write(&src, "# source\n").expect("write src");
+    fs::write(&colliding, "# existing\n").expect("write colliding");
+
+    let err = move_workspace_entry_with_label(
+        MAIN_WINDOW_LABEL,
+        &src.to_string_lossy(),
+        &colliding.to_string_lossy(),
+        &root.to_string_lossy(),
+    )
+    .expect_err("move onto existing target should fail");
+
+    assert!(err.contains("already exists"), "{err}");
+    assert!(src.exists());
+    assert!(colliding.exists());
+    assert_eq!(
+        fs::read_to_string(&colliding).expect("read protected"),
+        "# existing\n"
+    );
+
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+fn move_workspace_entry_rejects_missing_destination_parent() {
+    let root = unique_test_dir("move_missing_parent");
+    let source_dir = root.join("source");
+    fs::create_dir_all(&root).expect("create root");
+    fs::create_dir_all(&source_dir).expect("create source");
+    let src = source_dir.join("note.md");
+    fs::write(&src, "# note\n").expect("write src");
+    let dst = root.join("does/not/exist/note.md");
+
+    let err = move_workspace_entry_with_label(
+        MAIN_WINDOW_LABEL,
+        &src.to_string_lossy(),
+        &dst.to_string_lossy(),
+        &root.to_string_lossy(),
+    )
+    .expect_err("missing destination parent should fail");
+
+    assert!(
+        err.contains("not a folder") || err.contains("Cannot rename"),
+        "{err}"
+    );
+    assert!(src.exists());
+
+    let _ = fs::remove_dir_all(root);
+}

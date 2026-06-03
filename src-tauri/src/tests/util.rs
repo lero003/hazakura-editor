@@ -84,6 +84,33 @@ fn rename_util_moves_within_same_directory() {
 }
 
 #[test]
+fn rename_util_allows_case_only_rename() {
+    let dir = unique_test_dir("rename_util_case_only");
+    fs::create_dir_all(&dir).expect("create dir");
+    let src = dir.join("README.md");
+    let dst = dir.join("readme.md");
+    fs::write(&src, "# readme\n").expect("write src");
+
+    rename_workspace_entry_util(&src, &dst, &dir)
+        .expect("case-only rename should succeed even when dst.exists() returns true");
+
+    // On case-insensitive filesystems (APFS) `src.exists()` keeps
+    // returning true after a case-only rename because the two
+    // paths resolve to the same file. Verify the on-disk content
+    // and the dst readable instead of relying on existence.
+    assert_eq!(
+        fs::read_to_string(&dst).expect("read renamed file"),
+        "# readme\n"
+    );
+    assert_eq!(
+        fs::read_to_string(&src).expect("read src path after rename"),
+        "# readme\n"
+    );
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
 fn rename_util_rejects_existing_destination() {
     let dir = unique_test_dir("rename_util_existing_dst");
     fs::create_dir_all(&dir).expect("create dir");

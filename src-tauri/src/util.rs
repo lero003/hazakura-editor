@@ -215,8 +215,10 @@ pub(crate) fn ensure_path_inside_workspace_root(
 /// directories) a workspace entry. Both endpoints must live
 /// inside `root`; the destination must not already exist; the
 /// source must not be a symlink whose canonical target escapes
-/// the root. Reuses `fs::rename` for atomicity and cross-
-/// directory moves.
+/// the root. Case-only renames on case-insensitive volumes
+/// (e.g. APFS) are allowed because the destination and source
+/// canonicalize to the same path. Reuses `fs::rename` for
+/// atomicity and cross-directory moves.
 pub(crate) fn rename_workspace_entry_util(
     src: &Path,
     dst: &Path,
@@ -226,12 +228,40 @@ pub(crate) fn rename_workspace_entry_util(
         return Err("Source path does not exist.".to_string());
     }
 
-    if dst.exists() {
-        return Err("A file or folder already exists at the destination.".to_string());
-    }
-
     let _ = ensure_path_inside_workspace_root(src, root)?;
     let _ = ensure_path_inside_workspace_root(dst, root)?;
+
+    let src_canon =
+        fs::canonicalize(src).map_err(|err| format!("Cannot resolve source path: {err}"))?;
+    // `dst.exists()` is true on case-insensitive filesystems
+    // (e.g. APFS) for case-only renames where the destination
+    // is the same file as the source. Canonicalize the
+    // destination when it exists so the on-disk case form is
+    // comparable with `src_canon`; otherwise just construct the
+    // would-be path from the canonicalized parent.
+    let dst_canon = if dst.exists() {
+        fs::canonicalize(dst).map_err(|err| format!("Cannot resolve destination path: {err}"))?
+    } else if let Some(parent) = dst.parent() {
+        if parent.as_os_str().is_empty() {
+            src_canon.with_file_name(
+                dst.file_name()
+                    .ok_or_else(|| "Destination has no file name.".to_string())?,
+            )
+        } else {
+            let parent_canon = fs::canonicalize(parent)
+                .map_err(|err| format!("Cannot resolve destination parent: {err}"))?;
+            let name = dst
+                .file_name()
+                .ok_or_else(|| "Destination has no file name.".to_string())?;
+            parent_canon.join(name)
+        }
+    } else {
+        return Err("Destination has no parent directory.".to_string());
+    };
+
+    if dst_canon.exists() && dst_canon != src_canon {
+        return Err("A file or folder already exists at the destination.".to_string());
+    }
 
     fs::rename(src, dst).map_err(|err| format!("Cannot rename entry: {err}"))
 }
