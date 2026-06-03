@@ -2,8 +2,9 @@
 
 ## Current State
 
-- `useAppShellController` v0.9 split lane is **complete** (10 commits, 8 refactor slices + 1 docs, ahead of `origin/main` but not yet pushed).
+- `useAppShellController` v0.9 split lane is **complete and pushed** (11 commits on `main`, 8 refactor slices + 2 docs commits + 1 handoff commit; `5c1d1a9..2b5bd56`).
 - Orchestrator is 1052 lines (down from 1473, 29% reduction); leaf-hook call surface is fronted by 9 single-purpose composers under `src/hooks/`.
+- **Return shape verified byte-identical to v0.8.0**: 216 keys in baseline (`5c1d1a9`) vs 216 keys in `HEAD`, 0 removed, 0 added. v0.9 is a pure refactor.
 - Vitest 65/10 files; `cargo test` 134; all gates clean at the last slice.
 - The 4 user-facing refactor surfaces (find/replace, go-to-line, command palette, global search, Agent Workbench actions, menu integration) were not smoke-tested in the automation environment — the user should confirm parity with v0.8.0 before declaring v0.9 ready.
 
@@ -50,7 +51,6 @@ No test of the orchestrator itself was added (would require jsdom + matchMedia +
 
 ## Next Actions
 
-- **Push the 10 commits** to `origin/main` when the user confirms. The branch is `main`; `git push` will publish all 8 refactor + 1 doc commits in chronological order.
 - **Built-app smoke** the 4 user-facing surfaces against the v0.8.0 baseline before declaring v0.9 done.
 - **Decide on release labeling** — v0.9.0 refactor-only, or fold into a v0.9 candidate-work release.
 - **Mark the v0.9 split lane done in `docs/roadmap.md`** if the roadmap tracks it (it does not currently mention the split lane; it lists "v0.9 candidate work" features instead).
