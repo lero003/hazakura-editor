@@ -32,6 +32,15 @@ export function FolderOpenIcon() {
   );
 }
 
+export function OpenFolderIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2 4.5C2 3.94772 2.44772 3.5 3 3.5H6.5L8 5H13C13.5523 5 14 5.44772 14 6V11.5C14 12.0523 13.5523 12.5 13 12.5H3C2.44772 12.5 2 12.0523 2 11.5V4.5Z" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinejoin="round"/>
+      <path d="M5 9L8 6.5L11 9M8 6.5V12" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
 export function MarkdownFileIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">

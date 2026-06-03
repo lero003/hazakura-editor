@@ -7,7 +7,7 @@ import {
 } from "react";
 import type { WorkspaceTreeEntry } from "../../lib/tauri";
 import type { SafeEditorCopy, WorkspaceFileOpsCopy } from "../../lib/locale";
-import { PlusIcon } from "../app/Icons";
+import { OpenFolderIcon, PlusIcon } from "../app/Icons";
 import { WorkspaceTree } from "./WorkspaceTree";
 
 const INTERNAL_MOVE_MIME = "application/x-hazakura-workspace-move";
@@ -192,7 +192,7 @@ export function WorkspaceSidebar({
               title={copy.openWorkspaceFolder}
               type="button"
             >
-              <PlusIcon />
+              <OpenFolderIcon />
             </button>
           </div>
         </div>
