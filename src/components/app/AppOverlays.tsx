@@ -37,6 +37,7 @@ import { AppCloseDialog, DirtyTabCloseDialog } from "./CloseDialogs";
 import { PreferencesDialog } from "./PreferencesDialog";
 import { SettingsPreferencesPane } from "./SettingsPreferencesPane";
 import { AgentWorkbenchPreferencesPane } from "../agent/AgentWorkbenchPreferencesPane";
+import { RenameWarnDialog, type RenameWarningKind } from "./RenameWarnDialog";
 import type { WorkspaceFileOpsCopy } from "../../lib/locale/workspaceFileOps";
 
 type AppOverlaysProps = {
@@ -80,6 +81,8 @@ type AppOverlaysProps = {
   compareAnchor: CompareAnchor | null;
   compareWorkspaceFiles: (file: CompareAnchor) => void | Promise<void>;
   copyWorkspaceFullPath: (file: CompareAnchor) => void | Promise<void>;
+  cancelPendingRename: () => void;
+  confirmPendingRename: () => void;
   createFile: (parentPath: string) => Promise<void> | void;
   createFolder: (parentPath: string) => Promise<void> | void;
   dirtyTabCount: number;
@@ -93,6 +96,7 @@ type AppOverlaysProps = {
   openWorkspaceFile: (path: string) => void | Promise<void>;
   pendingAppClose: boolean;
   pendingCloseTab: EditorTab | null;
+  pendingRenameWarning: RenameWarningKind | null;
   preferencesCloseButtonRef: RefObject<HTMLButtonElement | null>;
   preferencesCopy: PreferencesCopy;
   preferencesDialogMode: PreferencesDialogMode | null;
@@ -102,6 +106,8 @@ type AppOverlaysProps = {
   quickOpenVisible: boolean;
   recoveryCopy: RecoveryCopy;
   revealWorkspacePath: (file: CompareAnchor) => void | Promise<void>;
+  renameWorkspacePath: (srcPath: string, newName: string) => void;
+  requestRename: (path: string) => void;
   restartAppForAgentMode: () => void | Promise<void>;
   saveAllAndCloseWindow: () => void;
   saveAndClosePendingTab: () => void;
@@ -186,6 +192,8 @@ export function AppOverlays({
   quickOpenVisible,
   recoveryCopy,
   revealWorkspacePath,
+  renameWorkspacePath,
+  requestRename,
   restartAppForAgentMode,
   saveAllAndCloseWindow,
   saveAndClosePendingTab,
@@ -205,6 +213,9 @@ export function AppOverlays({
   workspaceContextMenu,
   workspaceRootPath,
   workspaceTree,
+  cancelPendingRename,
+  confirmPendingRename,
+  pendingRenameWarning,
 }: AppOverlaysProps) {
   return (
     <>
@@ -229,6 +240,15 @@ export function AppOverlays({
           onCancel={cancelPendingAppClose}
           onDiscardAll={discardAllAndCloseWindow}
           onSaveAll={saveAllAndCloseWindow}
+        />
+      ) : null}
+
+      {pendingRenameWarning ? (
+        <RenameWarnDialog
+          copy={fileOpsCopy}
+          onCancel={cancelPendingRename}
+          onConfirm={() => void confirmPendingRename()}
+          warningKind={pendingRenameWarning}
         />
       ) : null}
 
@@ -343,6 +363,15 @@ export function AppOverlays({
             void openWorkspaceFile(workspaceContextMenu.path);
           }}
           onCopyFullPath={() => void copyWorkspaceFullPath(workspaceContextMenu)}
+          onRename={() => {
+            const path = workspaceContextMenu.path;
+            closeWorkspaceContextMenu();
+            // Start the inline rename. The commit is wired through
+            // `renameWorkspacePath` which lives in AppWorkspace's
+            // tree prop chain. AppOverlays fires the request side
+            // here and the tree owns the actual input lifecycle.
+            requestRename(path);
+          }}
           onRevealInFinder={() => void revealWorkspacePath(workspaceContextMenu)}
           onSendFullPathToAgent={() =>
             void sendWorkspacePathToAgent(workspaceContextMenu)

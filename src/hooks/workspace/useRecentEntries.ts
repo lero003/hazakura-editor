@@ -60,6 +60,8 @@ export function useRecentEntries() {
     recentFoldersRef,
     rememberRecentFile,
     rememberRecentFolder,
+    setRecentFiles,
+    setRecentFolders,
     unpinRecentFile,
   };
 }

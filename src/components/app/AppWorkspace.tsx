@@ -90,6 +90,9 @@ type AppWorkspaceProps = {
   jumpToHeading: (heading: MarkdownHeading) => void;
   loadWorkspaceDirectory: (path: string) => Promise<void>;
   menuLanguage: MenuLanguage;
+  onSubmitRename: (srcPath: string, newName: string) => void;
+  requestRename: (path: string) => void;
+  renamingPath: string | null;
   openFile: () => unknown;
   openFilePath: (path: string) => unknown;
   openPreviewMarkdownLink: (path: string) => void | Promise<void>;
@@ -176,6 +179,9 @@ export function AppWorkspace({
   jumpToHeading,
   loadWorkspaceDirectory,
   menuLanguage,
+  onSubmitRename,
+  requestRename,
+  renamingPath,
   openFile,
   openFilePath,
   openPreviewMarkdownLink,
@@ -241,6 +247,9 @@ export function AppWorkspace({
         onOpenFile={(path) => void openWorkspaceFile(path)}
         onOpenWorkspace={() => void openWorkspace()}
         onSelectCompareFile={selectWorkspaceCompareFile}
+        onSubmitRename={onSubmitRename}
+        renamingPath={renamingPath}
+        requestRename={requestRename}
         workspaceRootPath={workspaceRootPath}
         workspaceTree={workspaceTree}
       />

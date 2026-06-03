@@ -1,6 +1,9 @@
 import {
   type DragEvent as ReactDragEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
+  useEffect,
+  useRef,
   useState,
 } from "react";
 import type { WorkspaceTreeEntry } from "../../lib/tauri";
@@ -33,10 +36,13 @@ function TreeEntry({
   compareSelectionEnabled,
   defaultExpanded = false,
   entry,
+  renamingPath,
+  onClearRenaming,
   onLoadDirectory,
   onOpenContextMenu,
   onOpenFile,
   onSelectCompareFile,
+  onSubmitRename,
 }: {
   activePath: string | null;
   compareSourcePath: string | null;
@@ -44,6 +50,8 @@ function TreeEntry({
   compareSelectionEnabled: boolean;
   defaultExpanded?: boolean;
   entry: WorkspaceTreeEntry;
+  renamingPath: string | null;
+  onClearRenaming: () => void;
   onLoadDirectory: (path: string) => Promise<void>;
   onOpenContextMenu: (
     entry: WorkspaceTreeEntry,
@@ -52,9 +60,28 @@ function TreeEntry({
   ) => void;
   onOpenFile: (path: string) => void | Promise<void>;
   onSelectCompareFile: (entry: WorkspaceTreeEntry) => void;
+  onSubmitRename: (srcPath: string, newName: string) => void;
 }) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [loading, setLoading] = useState(false);
+  const [renameDraft, setRenameDraft] = useState<string | null>(null);
+  const isRenaming = renamingPath === entry.path;
+  const renameInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (isRenaming) {
+      setRenameDraft(entry.name);
+      // focus + select the next tick (after the input renders)
+      const handle = window.setTimeout(() => {
+        renameInputRef.current?.focus();
+        renameInputRef.current?.select();
+      }, 0);
+      return () => window.clearTimeout(handle);
+    }
+    setRenameDraft(null);
+    return undefined;
+  }, [entry.name, isRenaming]);
+
   const isDirectory = entry.kind === "directory";
 
   if (!isDirectory) {
@@ -85,7 +112,17 @@ function TreeEntry({
         ) : (
           <TextFileIcon />
         )}
-        <span className="tree-name">{entry.name}</span>
+        {isRenaming ? (
+          <RenameInput
+            draft={renameDraft}
+            inputRef={renameInputRef}
+            onChange={setRenameDraft}
+            onCancel={onClearRenaming}
+            onCommit={(value) => onSubmitRename(entry.path, value)}
+          />
+        ) : (
+          <span className="tree-name">{entry.name}</span>
+        )}
       </button>
     );
   }
@@ -122,7 +159,17 @@ function TreeEntry({
       >
         <ChevronIcon expanded={expanded} />
         {expanded ? <FolderOpenIcon /> : <FolderIcon />}
-        <span className="tree-name">{entry.name}</span>
+        {isRenaming ? (
+          <RenameInput
+            draft={renameDraft}
+            inputRef={renameInputRef}
+            onChange={setRenameDraft}
+            onCancel={onClearRenaming}
+            onCommit={(value) => onSubmitRename(entry.path, value)}
+          />
+        ) : (
+          <span className="tree-name">{entry.name}</span>
+        )}
         {loading ? <span className="tree-meta">Loading...</span> : null}
       </button>
       {expanded ? (
@@ -135,10 +182,13 @@ function TreeEntry({
               compareSelectionEnabled={compareSelectionEnabled}
               entry={child}
               key={child.path}
+              renamingPath={renamingPath}
+              onClearRenaming={onClearRenaming}
               onLoadDirectory={onLoadDirectory}
               onOpenContextMenu={onOpenContextMenu}
               onOpenFile={onOpenFile}
               onSelectCompareFile={onSelectCompareFile}
+              onSubmitRename={onSubmitRename}
             />
           ))}
           {entry.children_truncated ? (
@@ -152,6 +202,61 @@ function TreeEntry({
   );
 }
 
+function RenameInput({
+  draft,
+  inputRef,
+  onCancel,
+  onChange,
+  onCommit,
+}: {
+  draft: string | null;
+  inputRef: React.RefObject<HTMLInputElement | null>;
+  onCancel: () => void;
+  onChange: (value: string) => void;
+  onCommit: (value: string) => void;
+}) {
+  const handleKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      const value = (draft ?? "").trim();
+      if (!value) {
+        onCancel();
+        return;
+      }
+      onCommit(value);
+      return;
+    }
+    if (event.key === "Escape") {
+      event.preventDefault();
+      onCancel();
+      return;
+    }
+    // Stop propagation so the keyboard shortcut handlers (e.g.
+    // Cmd+N, Cmd+O) don't fire while the user is typing.
+    event.stopPropagation();
+  };
+
+  // Clicking inside the input would normally bubble up to the
+  // parent <button> and trigger its onClick — prevent that.
+  const handleClick = (event: ReactMouseEvent<HTMLInputElement>) => {
+    event.stopPropagation();
+  };
+
+  return (
+    <input
+      autoComplete="off"
+      className="tree-rename-input"
+      onChange={(event) => onChange(event.target.value)}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      ref={inputRef}
+      spellCheck={false}
+      type="text"
+      value={draft ?? ""}
+    />
+  );
+}
+
 export function WorkspaceTree({
   activePath,
   compareSourcePath,
@@ -162,6 +267,9 @@ export function WorkspaceTree({
   onOpenContextMenu,
   onOpenFile,
   onSelectCompareFile,
+  onSubmitRename,
+  renamingPath,
+  requestRename,
 }: {
   activePath: string | null;
   compareSourcePath: string | null;
@@ -176,7 +284,13 @@ export function WorkspaceTree({
   ) => void;
   onOpenFile: (path: string) => void | Promise<void>;
   onSelectCompareFile: (entry: WorkspaceTreeEntry) => void;
+  onSubmitRename: (srcPath: string, newName: string) => void;
+  renamingPath: string | null;
+  requestRename: (path: string) => void;
 }) {
+  // The renaming path is owned here, not by the controller, so the
+  // input is local to the tree. The controller only sees the
+  // committed `onSubmitRename`.
   return (
     <div
       className={`workspace-tree${compareSelectionEnabled ? " compare-selection" : ""}`}
@@ -188,10 +302,13 @@ export function WorkspaceTree({
         compareSelectionEnabled={compareSelectionEnabled}
         defaultExpanded
         entry={entry}
+        renamingPath={renamingPath}
+        onClearRenaming={() => requestRename("")}
         onLoadDirectory={onLoadDirectory}
         onOpenContextMenu={onOpenContextMenu}
         onOpenFile={onOpenFile}
         onSelectCompareFile={onSelectCompareFile}
+        onSubmitRename={onSubmitRename}
       />
     </div>
   );

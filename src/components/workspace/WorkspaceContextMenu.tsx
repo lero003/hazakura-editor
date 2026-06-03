@@ -18,6 +18,7 @@ export function WorkspaceContextMenu({
   onCreateFileHere,
   onCreateFolderHere,
   onOpen,
+  onRename,
   onRevealInFinder,
   onSendFullPathToAgent,
   onSetCompareSource,
@@ -37,6 +38,7 @@ export function WorkspaceContextMenu({
   onCreateFileHere: () => void;
   onCreateFolderHere: () => void;
   onOpen: () => void;
+  onRename: () => void;
   onRevealInFinder: () => void;
   onSendFullPathToAgent: () => void;
   onSetCompareSource: () => void;
@@ -47,11 +49,13 @@ export function WorkspaceContextMenu({
   const hasDifferentCompareSource =
     compareSource !== null && compareSource.path !== anchor.path;
   const canCreateHere = kind === "directory" || kind === "root";
+  const canRename = kind === "file" || kind === "directory";
   const itemCount =
     7 +
     (canSendToAgent ? 1 : 0) +
     (compareSource ? 1 : 0) +
-    (canCreateHere ? 2 : 0);
+    (canCreateHere ? 2 : 0) +
+    (canRename ? 1 : 0);
   const estimatedWidth = 240;
   const estimatedHeight = 12 + itemCount * 34;
   const menuLeft = Math.min(
@@ -171,6 +175,11 @@ export function WorkspaceContextMenu({
       {compareSource ? (
         <button type="button" role="menuitem" onClick={onClearCompareSource}>
           {labels.clearCompareSource}
+        </button>
+      ) : null}
+      {canRename ? (
+        <button type="button" role="menuitem" onClick={onRename}>
+          {fileOpsCopy.rename}
         </button>
       ) : null}
       <button type="button" role="menuitem" onClick={onClose}>

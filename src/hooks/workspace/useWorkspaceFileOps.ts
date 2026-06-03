@@ -2,38 +2,57 @@ import {
   type Dispatch,
   type SetStateAction,
   useCallback,
+  useState,
 } from "react";
 import {
   createTextFile,
   createTextFolder,
   listWorkspaceDirectory,
+  renameWorkspaceEntry,
 } from "../../lib/tauri";
 import type { TextFileDocument, WorkspaceTreeEntry } from "../../lib/tauri";
 import { createEditorTab } from "../../features/editor/editorTabs";
 import { fileNameFromPath, parentFolderName } from "../../lib/utils";
-import type { CompareViewState, EditorTab } from "../../types";
+import { isDirty } from "../../features/editor/editorTabs";
+import { useEditorTabsPathRekey } from "../editor/useEditorTabsPathRekey";
+import type {
+  CompareAnchor,
+  CompareViewState,
+  DraftRecord,
+  EditorTab,
+  RecentEntry,
+} from "../../types";
+import type { RenameWarningKind } from "../../components/app/RenameWarnDialog";
 
 type UseWorkspaceFileOpsOptions = {
   clearImagePreview: () => void;
   reloadWorkspaceParent: (parentPath: string) => Promise<void>;
   rememberRecentFile: (path: string) => void;
   setActiveTabId: Dispatch<SetStateAction<string | null>>;
+  setCompareAnchor: Dispatch<SetStateAction<CompareAnchor | null>>;
+  setCompareTarget: Dispatch<SetStateAction<CompareAnchor | null>>;
   setCompareView: Dispatch<SetStateAction<CompareViewState | null>>;
   setGlobalError: Dispatch<SetStateAction<string | null>>;
+  setPendingDrafts: Dispatch<SetStateAction<DraftRecord[]>>;
+  setRecentFiles: Dispatch<SetStateAction<RecentEntry[]>>;
   setStatus: Dispatch<SetStateAction<string>>;
   setTabs: Dispatch<SetStateAction<EditorTab[]>>;
   tabs: EditorTab[];
   workspaceRootPath: string | null;
 };
 
+type PendingRename = {
+  srcPath: string;
+  newPath: string;
+  newName: string;
+  parentPath: string;
+  warningKind: RenameWarningKind;
+};
+
 const DEFAULT_FILE_BASENAME = "untitled";
 const DEFAULT_FILE_EXTENSION = ".md";
 const DEFAULT_FOLDER_NAME = "untitled-folder";
 
-// Find a sibling name not present in `existingNames`. Tries
-// `<base>`, `<base>-2`, `<base>-3`, ... and returns null if the
-// workspace tree has not been loaded yet (caller treats null as
-// "defer the uniqueness check, let the backend reject on race").
 function nextAvailableName(
   base: string,
   suffix: string,
@@ -59,13 +78,32 @@ export function useWorkspaceFileOps({
   reloadWorkspaceParent,
   rememberRecentFile,
   setActiveTabId,
+  setCompareAnchor,
+  setCompareTarget,
   setCompareView,
   setGlobalError,
+  setPendingDrafts,
+  setRecentFiles,
   setStatus,
   setTabs,
   tabs,
   workspaceRootPath,
 }: UseWorkspaceFileOpsOptions) {
+  const [pendingRename, setPendingRename] = useState<PendingRename | null>(
+    null,
+  );
+  const [renamingPath, setRenamingPath] = useState<string | null>(null);
+
+  const { rekeyPath } = useEditorTabsPathRekey({
+    setActiveTabId,
+    setCompareAnchor,
+    setCompareTarget,
+    setCompareView,
+    setPendingDrafts,
+    setRecentFiles,
+    setTabs,
+  });
+
   const collectExistingNames = useCallback(
     async (parentPath: string): Promise<Set<string> | null> => {
       if (!workspaceRootPath) {
@@ -120,9 +158,6 @@ export function useWorkspaceFileOps({
         setCompareView(null);
         rememberRecentFile(fullPath);
 
-        // Refresh the parent so the new file is visible in the
-        // tree, including if the parent was previously collapsed
-        // — the splice widens it.
         try {
           await reloadWorkspaceParent(parentPath);
         } catch {
@@ -196,9 +231,6 @@ export function useWorkspaceFileOps({
     ],
   );
 
-  // Used as a stable opener after a successful createFile when the
-  // tab may already exist (race): just focus it. Mirrors the lookup
-  // in useFileOpening.createNewFile.
   const focusIfAlreadyOpen = useCallback(
     (path: string): boolean => {
       const existing = tabs.find((tab) => tab.path === path);
@@ -214,9 +246,121 @@ export function useWorkspaceFileOps({
     [clearImagePreview, rememberRecentFile, setActiveTabId, setCompareView, tabs],
   );
 
+  // Internal: actually perform the rename (after any warn dialog
+  // resolves). Splice the parent so the tree reflects the new
+  // name, fan out all editor state via rekeyPath, and clear the
+  // tree's inline rename input.
+  const performRename = useCallback(
+    async (srcPath: string, newPath: string, parentPath: string) => {
+      if (!workspaceRootPath) {
+        setStatus("No workspace open");
+        return;
+      }
+
+      setGlobalError(null);
+      setStatus("Renaming...");
+
+      try {
+        await renameWorkspaceEntry(srcPath, newPath, workspaceRootPath);
+        rekeyPath(srcPath, newPath);
+        setRenamingPath(null);
+        try {
+          await reloadWorkspaceParent(parentPath);
+        } catch {
+          setStatus("Renamed; folder refresh failed");
+          return;
+        }
+        setStatus(`Renamed to ${fileNameFromPath(newPath)}`);
+      } catch (err) {
+        setGlobalError(String(err));
+        setStatus("Rename failed");
+      }
+    },
+    [
+      rekeyPath,
+      reloadWorkspaceParent,
+      setGlobalError,
+      setStatus,
+      workspaceRootPath,
+    ],
+  );
+
+  // Detect whether a rename needs a warn dialog. The two warning
+  // cases are: (1) the open tab is dirty — the user may want to
+  // save first; (2) the file was modified outside the app, signaled
+  // by saveStatus === "conflict" (set by useExternalChangeActions).
+  // External warning wins if both apply — the user has more to
+  // lose from an unseen external change than from a dirty buffer.
+  const detectRenameWarning = useCallback(
+    (srcPath: string): RenameWarningKind | null => {
+      const tab = tabs.find((candidate) => candidate.path === srcPath);
+      if (!tab) return null;
+      if (tab.saveStatus === "conflict") {
+        return "external";
+      }
+      if (isDirty(tab)) {
+        return "dirty";
+      }
+      return null;
+    },
+    [tabs],
+  );
+
+  // Public entry: called from the inline tree rename. `newName` is
+  // the user-typed name (no path). If a warn is needed, sets
+  // pendingRename and returns; otherwise performs the rename.
+  const renameWorkspacePath = useCallback(
+    async (srcPath: string, newName: string) => {
+      const trimmed = newName.trim();
+      if (!trimmed) {
+        setStatus("Rename cancelled");
+        return;
+      }
+      const slashIndex = srcPath.lastIndexOf("/");
+      const parentPath = slashIndex === -1 ? "" : srcPath.slice(0, slashIndex);
+      const newPath = `${parentPath}/${trimmed}`;
+      if (newPath === srcPath) {
+        setStatus("Rename cancelled");
+        return;
+      }
+      const warningKind = detectRenameWarning(srcPath);
+      if (warningKind) {
+        setPendingRename({
+          srcPath,
+          newPath,
+          newName: trimmed,
+          parentPath,
+          warningKind,
+        });
+        return;
+      }
+      await performRename(srcPath, newPath, parentPath);
+    },
+    [detectRenameWarning, performRename, setStatus],
+  );
+
+  const confirmPendingRename = useCallback(async () => {
+    const pending = pendingRename;
+    if (!pending) return;
+    setPendingRename(null);
+    await performRename(pending.srcPath, pending.newPath, pending.parentPath);
+  }, [pendingRename, performRename]);
+
+  const cancelPendingRename = useCallback(() => {
+    setPendingRename(null);
+    setStatus("Rename cancelled");
+  }, [setStatus]);
+
   return {
     createFile,
     createFolder,
     focusIfAlreadyOpen,
+    pendingRename,
+    pendingRenameWarning: pendingRename?.warningKind ?? null,
+    renameWorkspacePath,
+    requestRename: setRenamingPath,
+    renamingPath,
+    confirmPendingRename,
+    cancelPendingRename,
   };
 }

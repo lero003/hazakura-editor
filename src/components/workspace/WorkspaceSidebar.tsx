@@ -23,6 +23,9 @@ type WorkspaceSidebarProps = {
   onOpenFile: (path: string) => void | Promise<void>;
   onOpenWorkspace: () => void;
   onSelectCompareFile: (entry: WorkspaceTreeEntry) => void;
+  onSubmitRename: (srcPath: string, newName: string) => void;
+  requestRename: (path: string) => void;
+  renamingPath: string | null;
   workspaceRootPath: string | null;
   workspaceTree: WorkspaceTreeEntry | null;
 };
@@ -42,6 +45,9 @@ export function WorkspaceSidebar({
   onOpenFile,
   onOpenWorkspace,
   onSelectCompareFile,
+  onSubmitRename,
+  requestRename,
+  renamingPath,
   workspaceRootPath,
   workspaceTree,
 }: WorkspaceSidebarProps) {
@@ -145,6 +151,9 @@ export function WorkspaceSidebar({
           onOpenContextMenu={onOpenContextMenu}
           onOpenFile={onOpenFile}
           onSelectCompareFile={onSelectCompareFile}
+          onSubmitRename={onSubmitRename}
+          renamingPath={renamingPath}
+          requestRename={requestRename}
         />
       ) : (
         <div className="workspace-empty">
