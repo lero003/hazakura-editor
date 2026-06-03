@@ -138,6 +138,23 @@ export function computeLModeDecorations(state: EditorState): DecorationSet {
           pushLineClass(lineClasses, line, "cm-lmode-list");
         }
       }
+      if (name === "FencedCode") {
+        const fromLine = state.doc.lineAt(node.from).number;
+        const toLine = state.doc.lineAt(node.to).number;
+        for (let line = fromLine; line <= toLine; line++) {
+          pushLineClass(lineClasses, line, "cm-lmode-fenced-code");
+        }
+        pushLineClass(
+          lineClasses,
+          fromLine,
+          "cm-lmode-fenced-code-start",
+        );
+        pushLineClass(
+          lineClasses,
+          toLine,
+          "cm-lmode-fenced-code-end",
+        );
+      }
 
       if (!MARKER_NODE_NAMES.has(name)) {
         return true;

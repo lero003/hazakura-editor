@@ -139,6 +139,33 @@
 :root[data-l-mode="on"] .tok-monospace {
   font-size: 0.9em;
   opacity: 0.95;
+  background: rgba(127, 127, 127, 0.12);
+  padding: 0.05em 0.3em;
+  border-radius: 3px;
+  font-family: var(--lmode-code-font-family);
+}
+
+/* Fenced code blocks — a unified code-card unit. Each line
+   inside a FencedCode gets `cm-lmode-fenced-code`; the first
+   and last lines additionally get `-start` / `-end` so the
+   block can carry its own rounded corners and padding. */
+:root[data-l-mode="on"] .cm-lmode-fenced-code {
+  background: rgba(127, 127, 127, 0.08);
+  padding: 0.4em 0;
+  font-family: var(--lmode-code-font-family);
+  color: rgba(0, 0, 0, 0.75);
+}
+
+:root[data-l-mode="on"] .cm-lmode-fenced-code-start {
+  padding-top: 0.8em;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+:root[data-l-mode="on"] .cm-lmode-fenced-code-end {
+  padding-bottom: 0.8em;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
 }
 
 /* Heading rhythm — H1 breathes the most, H2-6 share a tighter feel. */
