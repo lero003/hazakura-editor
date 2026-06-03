@@ -63,6 +63,7 @@ function TreeEntry({
   onSelectCompareFile,
   onSubmitRename,
   renamingPath,
+  requestRename,
   onClearRenaming,
 }: {
   activePath: string | null;
@@ -72,6 +73,7 @@ function TreeEntry({
   defaultExpanded?: boolean;
   entry: WorkspaceTreeEntry;
   renamingPath: string | null;
+  requestRename: (path: string) => void;
   onClearRenaming: () => void;
   onLoadDirectory: (path: string) => Promise<void>;
   onMoveEntry: (srcPath: string, dstParentPath: string) => void;
@@ -107,21 +109,48 @@ function TreeEntry({
 
   const isDirectory = entry.kind === "directory";
 
+  // Defer a single click by a short window so a double click can
+  // cancel the open and enter rename instead. Without this, the
+  // browser fires two `click` events before `dblclick`, so a
+  // double-click on a file would open it AND enter rename.
+  const singleClickTimeoutRef = useRef<number | null>(null);
+  const cancelPendingSingleClick = () => {
+    if (singleClickTimeoutRef.current !== null) {
+      window.clearTimeout(singleClickTimeoutRef.current);
+      singleClickTimeoutRef.current = null;
+    }
+  };
+  useEffect(() => {
+    return () => cancelPendingSingleClick();
+  }, []);
+
   if (!isDirectory) {
     const isMarkdown =
       entry.name.toLowerCase().endsWith(".md") ||
       entry.name.toLowerCase().endsWith(".markdown");
     const isImage = isSupportedImageFile(entry.name);
+    const handleFileClick = () => {
+      cancelPendingSingleClick();
+      singleClickTimeoutRef.current = window.setTimeout(() => {
+        singleClickTimeoutRef.current = null;
+        if (compareSelectionEnabled) {
+          onSelectCompareFile(entry);
+        } else {
+          void onOpenFile(entry.path);
+        }
+      }, 250);
+    };
+    const handleFileDoubleClick = () => {
+      cancelPendingSingleClick();
+      requestRename(entry.path);
+    };
     return (
       <button
         className={`tree-file${entry.path === activePath ? " active" : ""}${entry.path === compareSourcePath ? " compare-source" : ""}${entry.path === compareTargetPath ? " compare-target" : ""}`}
         draggable={!compareSelectionEnabled}
-        onClick={() =>
-          compareSelectionEnabled
-            ? onSelectCompareFile(entry)
-            : void onOpenFile(entry.path)
-        }
+        onClick={handleFileClick}
         onContextMenu={(event) => onOpenContextMenu(entry, event, "file")}
+        onDoubleClick={handleFileDoubleClick}
         onDragStart={(event) => {
           startWorkspacePathDrag(event, entry);
         }}
@@ -167,6 +196,19 @@ function TreeEntry({
     }
 
     setExpanded(true);
+  };
+
+  const handleDirectoryClick = () => {
+    cancelPendingSingleClick();
+    singleClickTimeoutRef.current = window.setTimeout(() => {
+      singleClickTimeoutRef.current = null;
+      void toggleDirectory();
+    }, 250);
+  };
+
+  const handleDirectoryDoubleClick = () => {
+    cancelPendingSingleClick();
+    requestRename(entry.path);
   };
 
   const handleDragOver = (event: ReactDragEvent<HTMLButtonElement>) => {
@@ -218,8 +260,9 @@ function TreeEntry({
         aria-expanded={expanded}
         className={`tree-directory-button${isDragOver ? " drag-over" : ""}`}
         disabled={loading}
-        onClick={() => void toggleDirectory()}
+        onClick={handleDirectoryClick}
         onContextMenu={(event) => onOpenContextMenu(entry, event, "directory")}
+        onDoubleClick={handleDirectoryDoubleClick}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
@@ -259,6 +302,7 @@ function TreeEntry({
               onSelectCompareFile={onSelectCompareFile}
               onSubmitRename={onSubmitRename}
               renamingPath={renamingPath}
+              requestRename={requestRename}
               onClearRenaming={onClearRenaming}
             />
           ))}
@@ -390,6 +434,7 @@ export function WorkspaceTree({
         onSelectCompareFile={onSelectCompareFile}
         onSubmitRename={onSubmitRename}
         renamingPath={renamingPath}
+        requestRename={requestRename}
         onClearRenaming={() => requestRename("")}
       />
     </div>
