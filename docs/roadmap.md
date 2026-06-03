@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current release sequence and planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-03 (v0.7 published, v0.8 Assist Surface separation / Claude Code CLI readiness lane, v0.10+ Apple Local Assist direction, and post-v0.8 feature-folder refactor lane — `lib/tauri.ts` / `lib/locale.ts` / `tests.rs` / agent_workbench state machine / CodeMirror theme / format helpers)
+Last reviewed: 2026-06-03 (v0.7 published, v0.8 Assist Surface separation / Claude Code CLI readiness lane / TS hook unit-test layer bring-up, v0.10+ Apple Local Assist direction, and post-v0.8 feature-folder refactor lane — `lib/tauri.ts` / `lib/locale.ts` / `tests.rs` / agent_workbench state machine / CodeMirror theme / format helpers)
 
 ## Current Position
 
@@ -282,6 +282,8 @@ External-agent workflow:
 
 ## 0.8: Assist Surface Separation And Daily Editor Polish
 
+Status: candidate work landed 2026-06-03 (Claude Code CLI allowlist landed via 97f4249, with the same launch gate / trusted-workspace smoke path as `codex` / `opencode` / `pi`). No v0.8 candidate-work items remain open. v0.8 was not tagged / published; the v0.7 line (`v0.7.0` warning-expected DMG) is the most recent published release. The assist/agent surface separation it set up is the foundation for v0.10+ Apple Local Assist.
+
 Goal: keep the Safe Editor pleasant for daily writing and review while preparing the assist/agent surface for future v0.10+ Apple Local Assist adoption. v0.8 is not an assist-platform release; it should separate surfaces and logic so optional assist behavior can later produce reviewed candidates without becoming the default editor experience.
 
 Review Desk direction:
@@ -305,7 +307,7 @@ Candidate work:
 
 - demote Review Desk from persistent top-chrome placement while preserving shortcut / View menu / slash access (landed)
 - Assist Surface / Agent Workbench presentation separation, limited to surface boundaries and state ownership (landed via the detached Agent Window workstream and preferences extract)
-- Claude Code CLI allowlist readiness: add `claude` as a candidate local CLI provider only after checking the UI/backend allowlist, provider-not-found flow, trusted-workspace smoke checklist, and docs claim boundaries; do not make it the default provider in the first slice (landed as docs / verification only — `claude` is not yet on the implemented allowlist)
+- Claude Code CLI allowlist readiness: add `claude` as a candidate local CLI provider only after checking the UI/backend allowlist, provider-not-found flow, trusted-workspace smoke checklist, and docs claim boundaries; do not make it the default provider in the first slice (landed via 97f4249 — `claude` is on the implemented allowlist with the same launch gate / trusted-workspace smoke path as `codex` / `opencode` / `pi`)
 - shared candidate-review request shape for future assist output, limited to selected text / active document excerpt inputs
 - clearer separation between Safe Editor state, Agent Workbench state, and Review Desk candidate state (landed via the Agent Workbench preferences extract + boundary-docstring slices)
 - daily-editor polish that makes the app worth opening before assist features arrive: search/replace quality, file navigation, save/recovery clarity, preview/diff readability, and keyboard comfort
@@ -360,6 +362,8 @@ Candidate work:
 - privacy policy
 - first-pass product messaging for the "AI-age notepad / Safe Review Editor" positioning
 - crash / log policy
+- TS hook unit-test layer bring-up: extend the Vitest 4 + jsdom 29 + @testing-library/react 16 foundation (current 6 hook tests / 56 tests / 6 files covering find / diff / document / agent, ~430ms cold start) to the remaining pure-logic hooks, alongside the existing 134-test Rust `cargo test` layer. Future Tauri-touching hooks should stub the small Tauri surface they need at the call site; the Rust runtime stays covered by `cargo test --manifest-path src-tauri/Cargo.toml`. The remaining low-risk target from the 2026-06-03 bring-up is `useTabReorder` (DOM-stubbing required for `document.elementFromPoint` / `setPointerCapture` / `getBoundingClientRect`; the reorder callback itself is pure).
+- `useAppShellController` 1473-line split: deferred v0.8 refactor. With the TS hook test layer now in place, the split can land alongside tests in the same slice — break the orchestrator into per-feature sub-hooks (editor shell, workspace shell, agent shell, document surface, dialog refs, app shell sync, etc.) without behavior change, mirroring the post-v0.8 `lib/tauri.ts` / `lib/locale.ts` per-feature-area split.
 - Assist Surface boundary hardening: prove that Safe Editor can remain usable without assist code paths, and that any detached Agent Workbench surface still obeys the existing allowlist, consent, one-session, no-restore, and no-auto-apply gates
 - Assist Surface boundary hardening only; do not run Apple Local Assist / Foundation Models product work before the v0.10 lane
 
