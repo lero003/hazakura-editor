@@ -289,15 +289,22 @@ function RenameInput({
   onChange: (value: string) => void;
   onCommit: (value: string) => void;
 }) {
+  // Blur commits a non-empty trimmed name, otherwise cancels.
+  // Without this, clicking elsewhere keeps the input focused
+  // and the row never returns to its non-editing state.
+  const commitOrCancel = () => {
+    const value = (draft ?? "").trim();
+    if (!value) {
+      onCancel();
+      return;
+    }
+    onCommit(value);
+  };
+
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       event.preventDefault();
-      const value = (draft ?? "").trim();
-      if (!value) {
-        onCancel();
-        return;
-      }
-      onCommit(value);
+      commitOrCancel();
       return;
     }
     if (event.key === "Escape") {
@@ -320,6 +327,7 @@ function RenameInput({
     <input
       autoComplete="off"
       className="tree-rename-input"
+      onBlur={commitOrCancel}
       onChange={(event) => onChange(event.target.value)}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
