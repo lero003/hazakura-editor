@@ -1,5 +1,10 @@
+import { useEffect, useState } from "react";
 import type { AgentWorkbenchCopy } from "../../lib/locale";
-import type { AgentWorkbenchProvider } from "../../lib/tauri";
+import type {
+  AgentProviderAvailability,
+  AgentWorkbenchProvider,
+} from "../../lib/tauri";
+import { listAgentProviderAvailability } from "../../lib/tauri";
 import { AGENT_WORKBENCH_PROVIDERS } from "../../types";
 
 type AgentWorkbenchPreferencesPaneProps = {
@@ -37,6 +42,37 @@ export function AgentWorkbenchPreferencesPane({
   sessionLabel,
   workspaceRootPath,
 }: AgentWorkbenchPreferencesPaneProps) {
+  // Fetch the live allowlisted-provider availability on mount so the
+  // dropdown can append the "(not installed)" suffix and disable
+  // the option before the user reaches the start path. The fetch is
+  // cheap and idempotent; we intentionally do not cache across
+  // renders.
+  const [providerAvailability, setProviderAvailability] = useState<
+    AgentProviderAvailability[]
+  >([]);
+  useEffect(() => {
+    let disposed = false;
+    void listAgentProviderAvailability()
+      .then((snapshot) => {
+        if (!disposed) {
+          setProviderAvailability(snapshot);
+        }
+      })
+      .catch((err) => {
+        console.warn("Failed to read Agent provider availability", err);
+      });
+    return () => {
+      disposed = true;
+    };
+  }, []);
+
+  const availabilityByProvider = new Map(
+    providerAvailability.map((entry) => [entry.provider, entry]),
+  );
+  const currentAvailability = availabilityByProvider.get(provider);
+  const currentProviderUnavailable =
+    currentAvailability !== undefined && !currentAvailability.available;
+
   return (
     <div className="agent-workbench-settings">
       <section aria-label={copy.modeSectionLabel} className="preference-section">
@@ -78,23 +114,39 @@ export function AgentWorkbenchPreferencesPane({
           </strong>
         </div>
         {active ? (
-          <label className="field-control">
-            <span>{copy.provider}</span>
-            <select
-              aria-label={copy.providerControl}
-              disabled={activeSession}
-              value={provider}
-              onChange={(event) =>
-                onProviderChange(event.target.value as AgentWorkbenchProvider)
-              }
-            >
-              {AGENT_WORKBENCH_PROVIDERS.map((providerOption) => (
-                <option key={providerOption.id} value={providerOption.id}>
-                  {providerOption.label}
-                </option>
-              ))}
-            </select>
-          </label>
+          <>
+            <label className="field-control">
+              <span>{copy.provider}</span>
+              <select
+                aria-label={copy.providerControl}
+                disabled={activeSession}
+                value={provider}
+                onChange={(event) =>
+                  onProviderChange(event.target.value as AgentWorkbenchProvider)
+                }
+              >
+                {AGENT_WORKBENCH_PROVIDERS.map((providerOption) => {
+                  const entry = availabilityByProvider.get(providerOption.id);
+                  const available = entry?.available ?? true;
+                  return (
+                    <option
+                      key={providerOption.id}
+                      disabled={!available}
+                      value={providerOption.id}
+                    >
+                      {providerOption.label}
+                      {entry && !entry.available
+                        ? ` ${copy.providerNotInstalled}`
+                        : ""}
+                    </option>
+                  );
+                })}
+              </select>
+            </label>
+            {currentProviderUnavailable ? (
+              <p className="preference-note">{copy.providerUnavailableHint}</p>
+            ) : null}
+          </>
         ) : null}
       </section>
       <section
