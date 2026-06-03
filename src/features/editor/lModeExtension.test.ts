@@ -83,29 +83,100 @@ describe("computeLModeDecorations", () => {
     expect(ranges.length).toBeGreaterThanOrEqual(6);
   });
 
-  it("does NOT hide markers on the active line", () => {
-    // The cursor is on the heading line. The heading's markers
-    // (the `#` and the `**`s) are revealed, so the count of
-    // hidden ranges on that line is strictly less than the
-    // all-hidden baseline.
+  it("does NOT hide markers on the active block (block-level reveal)", () => {
+    // The cursor sits inside a top-level block. Every marker
+    // inside that block is revealed — Typora-feel. The marker
+    // count below the all-hidden baseline confirms the reveal
+    // is working without naming the exact ranges (the syntax
+    // tree can rearrange internal node names across Lezer
+    // releases; the structural assertion is what matters).
     const source = "# Hello **world**\n> quoted line\n";
     const docLength = source.length;
 
-    // Cursor on the heading line (line 1).
-    const onHeading = collectRanges(
+    // Cursor in the heading (line 1). The whole heading is
+    // the active block: every marker in the heading is
+    // revealed. The blockquote's QuoteMark stays hidden.
+    const inHeading = collectRanges(
       computeLModeDecorations(makeState(source, 0)),
       docLength,
     );
 
-    // All-hidden baseline (cursor past EOF).
+    // Cursor in the blockquote (line 2). The whole blockquote
+    // is the active block: its QuoteMark is revealed. The
+    // heading markers stay hidden.
+    const inBlockquote = collectRanges(
+      computeLModeDecorations(
+        makeState(source, "# Hello **world**\n".length),
+      ),
+      docLength,
+    );
+
+    // Cursor past EOF (line 3, an empty trailing line). There
+    // is no active block — every marker in the doc is hidden.
     const allHidden = collectRanges(
       computeLModeDecorations(makeState(source, docLength)),
       docLength,
     );
 
-    // The reveal must be strictly smaller than the all-hidden
-    // baseline — the markers on the heading line are unhidden.
-    expect(onHeading.length).toBeLessThan(allHidden.length);
+    // Both reveals must be strictly smaller than the
+    // all-hidden baseline.
+    expect(inHeading.length).toBeLessThan(allHidden.length);
+    expect(inBlockquote.length).toBeLessThan(allHidden.length);
+  });
+
+  it("reveals every `>` of a multi-line blockquote when the cursor is inside it", () => {
+    // Typora-feel staple: a blockquote is a single visual
+    // unit. When the cursor enters the blockquote, every
+    // `>` on every line of the blockquote becomes visible.
+    const source = "# H\n\n> quote line 1\n> quote line 2\n";
+    const docLength = source.length;
+    const bqLine1 = source.indexOf("> quote line 1");
+    const bqLine2 = source.indexOf("> quote line 2");
+
+    // The two QuoteMarks are at known positions. With the
+    // cursor on line 3 of the blockquote, both must NOT be
+    // hidden (the active block is the whole blockquote).
+    const onBqLine1 = computeLModeDecorations(makeState(source, bqLine1));
+    const onBqLine2 = computeLModeDecorations(makeState(source, bqLine2));
+    expect(bqHiddenOn(onBqLine1, bqLine1, bqLine2)).toBe(0);
+    expect(bqHiddenOn(onBqLine2, bqLine1, bqLine2)).toBe(0);
+
+    // And with the cursor on the heading, both QuoteMarks
+    // ARE hidden (the active block is the heading, not the
+    // blockquote).
+    const onHeading = computeLModeDecorations(makeState(source, 0));
+    expect(bqHiddenOn(onHeading, bqLine1, bqLine2)).toBe(2);
+
+    // Sanity: the all-hidden baseline hides both.
+    const allHidden = computeLModeDecorations(
+      makeState(source, docLength),
+    );
+    expect(bqHiddenOn(allHidden, bqLine1, bqLine2)).toBe(2);
+  });
+
+  it("reveals only the active list item's marker (not the sibling's)", () => {
+    // A list is a sequence of items, each with its own
+    // marker. The cursor in one item must reveal only that
+    // item's `-` — NOT the `-` of the other item.
+    const source = "- a\n- b\n";
+    const docLength = source.length;
+    const item1Dash = 0; // first `-` is at position 0
+    const item2Dash = source.indexOf("- b"); // second `-`
+
+    // Cursor in item 1: item 1's marker is revealed, item 2's
+    // is hidden. So exactly 1 of the 2 ListMarks is hidden.
+    const onItem1 = computeLModeDecorations(makeState(source, 1));
+    expect(listMarkHiddenCount(onItem1, item1Dash, item2Dash)).toBe(1);
+
+    // Cursor in item 2: symmetric.
+    const onItem2 = computeLModeDecorations(makeState(source, item2Dash));
+    expect(listMarkHiddenCount(onItem2, item1Dash, item2Dash)).toBe(1);
+
+    // All-hidden baseline: both markers are hidden.
+    const allHidden = computeLModeDecorations(
+      makeState(source, docLength),
+    );
+    expect(listMarkHiddenCount(allHidden, item1Dash, item2Dash)).toBe(2);
   });
 
   it("hides every documented marker type", () => {
@@ -208,3 +279,33 @@ describe("computeLModeDecorations", () => {
     expect(coveringReplaces).toEqual([{ from: imageStart, to: imageEnd }]);
   });
 });
+
+// Count how many of the two `>` positions of a multi-line
+// blockquote are hidden in the given decoration set. The two
+// positions correspond to the two `>` markers; a hidden
+// marker is a non-line, non-zero-width range that starts at
+// the marker position.
+function bqHiddenOn(set: DecorationSet, p1: number, p2: number): number {
+  let count = 0;
+  set.between(0, Number.MAX_SAFE_INTEGER, (from, to) => {
+    if (to > from && (from === p1 || from === p2)) {
+      count += 1;
+    }
+  });
+  return count;
+}
+
+// Same shape for the two `-` markers of a two-item list.
+function listMarkHiddenCount(
+  set: DecorationSet,
+  p1: number,
+  p2: number,
+): number {
+  let count = 0;
+  set.between(0, Number.MAX_SAFE_INTEGER, (from, to) => {
+    if (to > from && (from === p1 || from === p2)) {
+      count += 1;
+    }
+  });
+  return count;
+}
