@@ -2,7 +2,7 @@
 
 ## Current State
 
-- v0.9.0 is in release-candidate preparation. It folds together えるモード / L Mode, Agent provider availability polish, bounded workspace file-tree operations, and structure/test hardening.
+- v0.9.0 is published as a warning-expected DMG preview at `https://github.com/lero003/hazakura-editor/releases/tag/v0.9.0`. It folds together えるモード / L Mode, Agent provider availability polish, bounded workspace file-tree operations, structure/test hardening, and the release-gate Trash implementation change from Finder AppleEvents to the macOS NSFileManager Trash API.
 - えるモード is now implemented as an experimental presentation layer. Markdown source remains truth; normal mode, Preview, Diff, Review Desk, export, and copy behavior must keep round-tripping as Markdown.
 - v0.9 workspace file ops are implemented, but workspace-internal drag/drop Move remains user-reported unreliable in built-app use. Treat D&D Move as experimental; New File, New Folder, Rename, and Move to Trash are the dependable v0.9 file-management promises.
 - Three new Tauri commands: `create_text_folder` (file-shim style), `rename_workspace_entry`, `move_workspace_entry`. All gated to `main` and use the new `ensure_path_inside_workspace_root` + `rename_workspace_entry_util` helpers in `src-tauri/src/util.rs` for workspace-root containment, overwrite rejection, case-only rename, and symlink-escape rejection.
@@ -72,12 +72,11 @@ The 3 new Rust commands have unit tests at the per-module level (`tests/files.rs
 - **Descendant rekey** (renaming a folder while descendants are open in tabs) is documented as out of scope; the `useEditorTabsPathRekey` helper only rewrites the exact path match. The user can save-and-close descendants before renaming, but a follow-up should extend the rekey to `startsWith(oldPath + "/")` if user feedback calls for it.
 - **Auto-backup path rekey is a known stale-entry**; not user-visible today, but a hygiene follow-up.
 - **`create_text_file` / `save_text_file_as` workspace-root containment gap** is real (they currently rely on the native dialog to constrain the path) and is a deliberate follow-up.
-- **Release notes and version surfaces are being prepared for v0.9.0** in `docs/releases/0.9.0-warning-expected-dmg-preview.release.md`, package metadata, Cargo metadata, Tauri config, README, roadmap, current-status, and automation docs.
+- **Release notes and version surfaces were published for v0.9.0** in `docs/releases/0.9.0-warning-expected-dmg-preview.release.md`, package metadata, Cargo metadata, Tauri config, README, roadmap, current-status, and automation docs.
 
 ## Next Actions
 
-- **Finish v0.9.0 local release gates**, generate the warning-expected DMG, update the checksum in the release note, then publish only if all required checks pass.
-- **After publication**, re-download remote assets, verify checksum / DMG / mounted app metadata / codesign, then update status docs from release-candidate wording to published wording.
+- **Post-release triage** user feedback for L Mode, Agent provider availability, Move to Trash, and drag/drop Move reliability.
 - **Plan a workspace-hygiene follow-up lane** for: `create_text_file` / `save_text_file_as` containment retrofit, auto-backup path rekey on rename, descendant rekey in `useEditorTabsPathRekey`, expanded-folders persistence, and drag/drop Move reliability.
 - **Consider additional TS hook unit-test bring-up** — `useTabReorder` remains the next safe low-risk target (pointer-event surface needs `document.elementFromPoint` / `setPointerCapture` / `getBoundingClientRect` stubbed but the reorder callback itself is pure). The `useWorkspaceFileOps` hook is now also a candidate for a deeper test (would need a Tauri IPC stub and a deep tree stub).
 

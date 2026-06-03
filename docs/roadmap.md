@@ -24,7 +24,7 @@ The current public line is:
 - `v0.6.0`: Foundation Release / Daily-Drivable Safe Editor warning-expected DMG release under the `hazakura editor` identity
 - `v0.7.0`: Review Desk MVP warning-expected DMG release with manual candidate review, slash command polish, and existing Change Review routing fixes
 - `v0.8.0`: Assist Surface separation and daily-editor polish warning-expected DMG release
-- `v0.9.0`: L Mode experiment and product-preview hardening warning-expected DMG release candidate
+- `v0.9.0`: L Mode experiment and product-preview hardening warning-expected DMG release
 
 The old `v0.1` / `v0.3.x` phase map is archived in `docs/roadmap-v0.1-archived.md`.
 
@@ -329,7 +329,7 @@ Do not use v0.8 to add Git integration, merge editing, project-wide indexing, ar
 
 Goal: make the app coherent enough for broader preview feedback before the v0.10 Apple Local Assist experiment and the v1.0 outward-preview lane. This remains a preview-quality lane, not a signed/notarized distribution promise.
 
-Status: release candidate preparation in progress. The implementation includes えるモード, provider-availability polish, bounded workspace file-tree operations, and structure/test hardening; publication still depends on local release gates, DMG verification, tag/release creation, and remote asset re-verification.
+Status: released on 2026-06-04 as a warning-expected DMG preview. Local gates, DMG verification, tag/release creation, and remote asset re-verification passed. Workspace-internal drag/drop Move remains experimental; New File, New Folder, Rename, and Move to Trash are the dependable v0.9 file-management promises.
 
 v0.9 has two jobs:
 
