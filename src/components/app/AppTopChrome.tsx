@@ -18,6 +18,7 @@ type AppTopChromeProps = {
   draggingTabId: string | null;
   dragOverTabId: string | null;
   emptyTabsLabel: string;
+  lModeEnabled: boolean;
   onCloseTab: (tabId: string) => void;
   onFinishTabPointerDrag: (target?: EventTarget | null) => void;
   onOpenAgentWindow: () => void;
@@ -51,6 +52,7 @@ export function AppTopChrome({
   draggingTabId,
   dragOverTabId,
   emptyTabsLabel,
+  lModeEnabled,
   onCloseTab,
   onFinishTabPointerDrag,
   onOpenAgentWindow,
@@ -90,6 +92,7 @@ export function AppTopChrome({
         activeTab={activeTab}
         agentWorkbenchAvailable={agentWorkbenchAvailable}
         diffPaneActive={sidePaneMode === "compare"}
+        lModeEnabled={lModeEnabled}
         onOpenAgentWindow={onOpenAgentWindow}
         onReviewChanges={onReviewChanges}
         onToggleDiff={onToggleDiff}

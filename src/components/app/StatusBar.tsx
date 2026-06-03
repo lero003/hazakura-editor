@@ -53,8 +53,9 @@ export function StatusBar({
           {agentLabel}
         </span>
       ) : null}
+      <span className="status-bar-segment status-bar-detail">{detail}</span>
       {activeTab ? (
-        <>
+        <span className="status-bar-format-group">
           <label className="status-bar-segment status-bar-format-chip">
             <span className="status-bar-format-label">{lineEndingLabel}</span>
             <select
@@ -85,10 +86,8 @@ export function StatusBar({
               <option value="euc-jp">EUC-JP</option>
             </select>
           </label>
-        </>
+        </span>
       ) : null}
-      <span className="status-bar-segment status-bar-spacer" aria-hidden="true" />
-      <span className="status-bar-segment status-bar-detail">{detail}</span>
     </footer>
   );
 }

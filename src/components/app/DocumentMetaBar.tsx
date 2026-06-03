@@ -10,6 +10,7 @@ type DocumentMetaBarProps = {
   activeTab: EditorTab | null;
   agentWorkbenchAvailable: boolean;
   diffPaneActive: boolean;
+  lModeEnabled: boolean;
   onOpenAgentWindow: () => void;
   onReviewChanges: (tab: EditorTab) => void;
   onToggleDiff: () => void;
@@ -26,6 +27,7 @@ export function DocumentMetaBar({
   activeTab,
   agentWorkbenchAvailable,
   diffPaneActive,
+  lModeEnabled,
   onOpenAgentWindow,
   onReviewChanges,
   onToggleDiff,
@@ -36,8 +38,8 @@ export function DocumentMetaBar({
   recoveryReviewChangesLabel,
   sidePaneCopy,
 }: DocumentMetaBarProps) {
-  const showDocumentSection = activeTab !== null;
-  const showAgentSection = agentWorkbenchAvailable;
+  const showDocumentSection = activeTab !== null && !lModeEnabled;
+  const showAgentSection = agentWorkbenchAvailable && !lModeEnabled;
 
   return (
     <div className="document-meta">

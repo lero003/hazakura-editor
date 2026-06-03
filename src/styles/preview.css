@@ -293,9 +293,14 @@
   white-space: nowrap;
 }
 
-.status-bar-spacer {
-  flex: 1 1 auto;
-  pointer-events: none;
+.status-bar-format-group {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 clamp(232px, 30vw, 292px);
+  gap: 4px;
+  justify-content: flex-end;
+  margin-left: 4px;
+  min-width: 0;
 }
 
 .status-bar-format-chip {
@@ -352,4 +357,3 @@
 .status-bar-format-select:hover {
   color: color-mix(in srgb, var(--status-text) 100%, var(--accent) 10%);
 }
-
