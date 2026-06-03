@@ -38,8 +38,8 @@ import { useImagePreview } from "../editor/useImagePreview";
 import { useActiveDocumentIdentity } from "../document/useActiveDocumentIdentity";
 import { useActiveDocumentSurface } from "../document/useActiveDocumentSurface";
 import { useEditorCommands } from "../editor/useEditorCommands";
+import { useEditorFindController } from "../editor/useEditorFindController";
 import { useTabBarController } from "../editor/useTabBarController";
-import { useGoToLine } from "../editor/useGoToLine";
 import { useReviewDeskController } from "../review/useReviewDeskController";
 import { useWorkspaceFileOpening } from "../workspace/useWorkspaceFileOpening";
 import { useAppShellFoundation } from "./useAppShellFoundation";
@@ -47,7 +47,6 @@ import { useAppShellRefs } from "./useAppShellRefs";
 import { useWindowDialogActions } from "./useWindowDialogActions";
 import { useLocalizedAppCopy } from "./useLocalizedAppCopy";
 import { useSidePaneController } from "../editor/useSidePaneController";
-import { useFindReplaceController } from "../find/useFindReplaceController";
 import { useAppMenuIntegration } from "./useAppMenuIntegration";
 import { useAppRuntimeEffects } from "./useAppRuntimeEffects";
 
@@ -348,7 +347,7 @@ export function useAppShellController() {
     sidePaneMode,
   });
 
-  // section: find / replace
+  // section: find / replace + go to line
   const {
     activeMatchIndex,
     closeFindAndFocusEditor,
@@ -369,22 +368,15 @@ export function useAppShellController() {
     setSearchOptions,
     showNextMatch,
     showPreviousMatch,
-  } = useFindReplaceController({
-    documentKey,
-    editorPaneRef,
-    setStatus,
-    source: activeContents,
-  });
-
-  // section: go to line
-  const {
     goToLine,
     goToLineValue,
     handleGoToLineKeyDown,
     setGoToLineValue,
-  } = useGoToLine({
+  } = useEditorFindController({
+    documentKey,
     editorPaneRef,
-    onStatus: setStatus,
+    setStatus,
+    source: activeContents,
   });
 
   // section: agent output buffer
