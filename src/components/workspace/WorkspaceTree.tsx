@@ -219,6 +219,7 @@ function TreeEntry({
       return;
     }
     event.preventDefault();
+    event.stopPropagation();
     event.dataTransfer.dropEffect = "move";
   };
 
@@ -227,6 +228,7 @@ function TreeEntry({
       return;
     }
     event.preventDefault();
+    event.stopPropagation();
     const srcPath = readInternalMovePayload(event);
     if (!srcPath || srcPath === entry.path) {
       return;

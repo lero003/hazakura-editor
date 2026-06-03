@@ -21,7 +21,7 @@ Last reviewed: 2026-06-03
 
 ![hazakura editor Agent Workbench mode](docs/images/pre0.2-agent-mode.png)
 
-## 0.8 Preview Summary
+## 0.9 Preview Summary
 
 Use this when you want to:
 
@@ -37,6 +37,8 @@ Use this when you want to:
 - use a command palette for existing safe app actions
 - run bounded workspace text search without background indexing
 - pin frequently opened files on the start panel
+- use えるモード / L Mode as an experimental one-pane writing surface that keeps Markdown source as truth
+- create new workspace files and folders, rename workspace entries, and move entries to Trash from bounded in-app file-tree actions
 - optional detached Agent Window with `codex` / `opencode` / `pi` / `claude` provider sessions
 
 Do not use this as:
@@ -185,10 +187,10 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current preview version is `0.8.0` across npm, Tauri, and Cargo metadata.
+- Current preview version is `0.9.0` across npm, Tauri, and Cargo metadata.
 - Source users build locally with `npm ci` and `npm run build`.
 - The generated local `.app` declares macOS 11.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. It is not Developer ID signed or notarized.
-- The latest warning-expected DMG preview is [v0.8.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.8.0), with notes in [0.8.0 Warning-expected DMG Preview](docs/releases/0.8.0-warning-expected-dmg-preview.release.md).
+- The latest warning-expected DMG preview is [v0.9.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.9.0), with notes in [0.9.0 Warning-expected DMG Preview](docs/releases/0.9.0-warning-expected-dmg-preview.release.md).
 - Future tag creation, push, and GitHub Release publication still require explicit user approval.
 
 ## Known Limits
@@ -203,7 +205,8 @@ Developer preview release boundary:
 - CLI provider internals are outside hazakura's safety boundary. What happens inside `codex`, `opencode`, `pi`, or `claude` depends on the provider and the user's choices.
 - Agent Workbench does not expose a shell prompt, arbitrary command field, arbitrary path field, or general terminal.
 - Outside Agent Workbench there is no Git integration, LSP, terminal, AI assistance, plugin system, arbitrary command execution, or project-wide analysis.
-- The production bundle currently carries a Vite chunk-size warning from editor/preview dependencies; planned chunk-splitting belongs to the v0.9 product-preview hardening lane.
+- Workspace-internal drag/drop Move exists as an experimental file-tree affordance, but it is not the recommended release workflow yet; use New File, New Folder, Rename, and Move to Trash as the dependable bounded workspace operations.
+- The production bundle currently carries a Vite chunk-size warning from editor/preview dependencies; planned chunk-splitting belongs to a future product-preview hardening lane.
 
 ## Draft Source
 

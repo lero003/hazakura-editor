@@ -24,6 +24,7 @@ The current public line is:
 - `v0.6.0`: Foundation Release / Daily-Drivable Safe Editor warning-expected DMG release under the `hazakura editor` identity
 - `v0.7.0`: Review Desk MVP warning-expected DMG release with manual candidate review, slash command polish, and existing Change Review routing fixes
 - `v0.8.0`: Assist Surface separation and daily-editor polish warning-expected DMG release
+- `v0.9.0`: L Mode experiment and product-preview hardening warning-expected DMG release candidate
 
 The old `v0.1` / `v0.3.x` phase map is archived in `docs/roadmap-v0.1-archived.md`.
 
@@ -328,6 +329,8 @@ Do not use v0.8 to add Git integration, merge editing, project-wide indexing, ar
 
 Goal: make the app coherent enough for broader preview feedback before the v0.10 Apple Local Assist experiment and the v1.0 outward-preview lane. This remains a preview-quality lane, not a signed/notarized distribution promise.
 
+Status: release candidate preparation in progress. The implementation includes えるモード, provider-availability polish, bounded workspace file-tree operations, and structure/test hardening; publication still depends on local release gates, DMG verification, tag/release creation, and remote asset re-verification.
+
 v0.9 has two jobs:
 
 1. **えるモード experiment**: prove whether a quiet one-pane reading-writing mode makes Markdown prose feel better to reread and continue writing.
@@ -369,6 +372,7 @@ Non-scope:
 ### Preview Hardening Direction
 
 - Add bounded workspace file operations only where they support daily editing: New File, New Folder, Rename, and workspace-internal Move via drag/drop.
+- Treat drag/drop Move as an experimental affordance until built-app smoke proves it reliable; do not make it the primary release promise.
 - Keep file operations inside the selected workspace root. No arbitrary path field, move outside the workspace, Git status coupling, or project-wide analysis.
 - Preserve open-tab safety: renames and moves must update open tab paths when safe, warn on dirty tabs or external changes, and avoid silently discarding recovery state.
 - Treat overwrite, symlink, case-only rename, and cross-directory move conflicts as explicit review points, not silent operations.

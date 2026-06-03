@@ -135,27 +135,31 @@ pub(crate) fn move_workspace_entry_to_trash_with_label(
     move_to_finder_trash(&src_path)
 }
 
-// macOS-only: hand the path to Finder via osascript so the
-// entry lands in the user's Dock Trash and can be restored
-// the same way as any other Finder delete. The path is
-// canonicalized above so a malicious payload can't smuggle a
-// shell metacharacter into the AppleScript string literal —
-// we still escape `"` and `\` defensively.
+// macOS-only: use NSFileManager through JavaScript for
+// Automation's ObjC bridge so the entry lands in the user's
+// Trash without waiting on Finder AppleEvents, which can time
+// out in release automation.
 fn move_to_finder_trash(path: &std::path::Path) -> Result<(), String> {
     let path_str = path.to_string_lossy().to_string();
-    let escaped = path_str.replace('\\', "\\\\").replace('"', "\\\"");
+    let escaped = serde_json::to_string(&path_str)
+        .map_err(|err| format!("Cannot encode workspace entry path for Trash: {err}"))?;
     let script = format!(
-        "tell application \"Finder\" to delete POSIX file \"{}\"",
+        "ObjC.import('Foundation');\
+         const url = $.NSURL.fileURLWithPath({});\
+         const ok = $.NSFileManager.defaultManager.trashItemAtURLResultingItemURLError(url, null, null);\
+         if (!ok) throw new Error('NSFileManager refused to trash entry');",
         escaped
     );
     let output = std::process::Command::new("osascript")
+        .arg("-l")
+        .arg("JavaScript")
         .arg("-e")
         .arg(&script)
         .output()
-        .map_err(|err| format!("Cannot invoke Finder to trash entry: {err}"))?;
+        .map_err(|err| format!("Cannot invoke macOS Trash API: {err}"))?;
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
-        return Err(format!("Finder refused to trash entry: {}", stderr.trim()));
+        return Err(format!("macOS Trash API refused entry: {}", stderr.trim()));
     }
     Ok(())
 }

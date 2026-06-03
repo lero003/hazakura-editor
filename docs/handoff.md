@@ -2,8 +2,9 @@
 
 ## Current State
 
-- Roadmap docs now frame the remaining v0.9 writing-experience work as **えるモード**. The planning source is `docs/l-mode-plan.md`; it is an experimental one-pane reading-writing mode, not implemented behavior.
-- v0.9 workspace file ops lane is **complete and unpushed** (7 commits on `main`, 1 Rust + 6 TS slices, `de7c07d..765d5e1`).
+- v0.9.0 is in release-candidate preparation. It folds together えるモード / L Mode, Agent provider availability polish, bounded workspace file-tree operations, and structure/test hardening.
+- えるモード is now implemented as an experimental presentation layer. Markdown source remains truth; normal mode, Preview, Diff, Review Desk, export, and copy behavior must keep round-tripping as Markdown.
+- v0.9 workspace file ops are implemented, but workspace-internal drag/drop Move remains user-reported unreliable in built-app use. Treat D&D Move as experimental; New File, New Folder, Rename, and Move to Trash are the dependable v0.9 file-management promises.
 - Three new Tauri commands: `create_text_folder` (file-shim style), `rename_workspace_entry`, `move_workspace_entry`. All gated to `main` and use the new `ensure_path_inside_workspace_root` + `rename_workspace_entry_util` helpers in `src-tauri/src/util.rs` for workspace-root containment, overwrite rejection, case-only rename, and symlink-escape rejection.
 - Frontend surface: sidebar `+` button (root) and folder right-click (parent = anchor) → New File / New Folder; right-click file/folder → inline Rename (Enter commits, Esc / empty cancels) with a `RenameWarnDialog` for dirty or external-change tabs (external wins when both apply); drag-to-move with `application/x-hazakura-workspace-move` disambiguated from the existing `application/x-hazakura-workspace-path` export-to-Finder drag. Folder self/descendant drop is rejected with a friendly pre-flight error.
 - Tab path fan-out is centralized in `src/hooks/editor/useEditorTabsPathRekey.ts` — `tabs`, `activeTabId`, `pendingDrafts`, `recentFiles`, and `compareAnchor` / `compareTarget` / `compareView` are all rewritten in one place; both rename and move reuse the helper. Descendant rekey (renaming a folder while descendants are open) is documented as a deferred follow-up.
@@ -66,25 +67,23 @@ The 3 new Rust commands have unit tests at the per-module level (`tests/files.rs
 
 ## Risks / Unknowns
 
-- **Built-app smoke of the new file ops surface was not run** in this automation environment (`open -n` / in-app browser policy blockers). The user should confirm: sidebar `+` popover creates at root; folder right-click creates inside the folder; rename inline input commits on Enter, cancels on Esc / empty; dirty and external-change tabs both surface the warn dialog (external wins when both apply); drag a file from the tree onto a different folder moves it (and the open tab's path is rekeyed); drag back to the workspace root works; dropping a folder onto itself or a descendant surfaces the friendly error.
+- **Built-app smoke of workspace file operations is partially unresolved**: New File, New Folder, Rename, and Move to Trash are the dependable v0.9 operations, but workspace-internal drag/drop Move remains user-reported unreliable and should not be used as the primary release promise.
 - **APFS case-insensitive quirk** is handled in Rust (`fs::canonicalize` resolves the on-disk case form when `dst.exists()` is true), but the per-platform behavior on case-only renames was not exercised by a built-app smoke in this lane — Rust unit tests pin the Unix path.
 - **Descendant rekey** (renaming a folder while descendants are open in tabs) is documented as out of scope; the `useEditorTabsPathRekey` helper only rewrites the exact path match. The user can save-and-close descendants before renaming, but a follow-up should extend the rekey to `startsWith(oldPath + "/")` if user feedback calls for it.
 - **Auto-backup path rekey is a known stale-entry**; not user-visible today, but a hygiene follow-up.
 - **`create_text_file` / `save_text_file_as` workspace-root containment gap** is real (they currently rely on the native dialog to constrain the path) and is a deliberate follow-up.
-- **No release notes / version bump / changelog** were drafted for the v0.9 file ops lane; the next agent should decide whether to call this a v0.9.0 release or fold it into a v0.9 candidate-work release alongside the micro-improvements lane.
+- **Release notes and version surfaces are being prepared for v0.9.0** in `docs/releases/0.9.0-warning-expected-dmg-preview.release.md`, package metadata, Cargo metadata, Tauri config, README, roadmap, current-status, and automation docs.
 
 ## Next Actions
 
-- **Built-app smoke** the new file ops surface (see Risks for the checklist) before declaring v0.9 done.
-- **If implementing えるモード**, start from `docs/l-mode-plan.md` and keep the first slice to one-pane layout / CodeMirror display decoration / immediate return to normal mode.
-- **Push 7 unpushed commits** (`de7c07d..765d5e1`) to `origin/main` — the durable no-push rule means the user must explicitly authorize `git push origin main`. The 4 prior commits (`de7c07d`, `c00f950`, `7f1b304`, `062a82d`) plus the 3 user-facing slices (`92d0885`, `5de9136`, `765d5e1`) are all local.
-- **Decide on release labeling** — v0.9.0 refactor-only (the split lane), v0.9.1 micro-improvements-only (the Agent Workbench lane), v0.9.2 file-ops-only (this lane), or fold the three lanes into a single v0.9.0 release.
-- **Plan a workspace-hygiene follow-up lane** for: delete (move-to-trash), `create_text_file` / `save_text_file_as` containment retrofit, auto-backup path rekey on rename, descendant rekey in `useEditorTabsPathRekey`, expanded-folders persistence.
+- **Finish v0.9.0 local release gates**, generate the warning-expected DMG, update the checksum in the release note, then publish only if all required checks pass.
+- **After publication**, re-download remote assets, verify checksum / DMG / mounted app metadata / codesign, then update status docs from release-candidate wording to published wording.
+- **Plan a workspace-hygiene follow-up lane** for: `create_text_file` / `save_text_file_as` containment retrofit, auto-backup path rekey on rename, descendant rekey in `useEditorTabsPathRekey`, expanded-folders persistence, and drag/drop Move reliability.
 - **Consider additional TS hook unit-test bring-up** — `useTabReorder` remains the next safe low-risk target (pointer-event surface needs `document.elementFromPoint` / `setPointerCapture` / `getBoundingClientRect` stubbed but the reorder callback itself is pure). The `useWorkspaceFileOps` hook is now also a candidate for a deeper test (would need a Tauri IPC stub and a deep tree stub).
 
 ## Avoid
 
-- **Do not push without explicit user confirmation** — the durable no-push rule applies to all 7 commits.
+- **Do not push outside an explicit release or publication lane**. The current user request opens that lane only if release gates pass.
 - **Do not amend prior commits** to add a `Co-Authored-By` trailer — the no-trailer memory rule is in effect.
 - **Do not add Delete / Git integration / LSP / plugins / project-wide indexing / arbitrary command execution / Agent auto-apply / signing / Foundation Models / provider-add UI** — the v0.8+ scope exclusions memory rule is in effect.
 - **Do not make えるモード a full WYSIWYG, AI, or auto-formatting mode** — it should hide or reveal Markdown markers through display behavior while preserving the source text.

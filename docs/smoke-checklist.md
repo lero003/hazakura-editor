@@ -3,9 +3,11 @@
 Status: Operational
 Scope: Manual prototype checks
 Authority: Medium
-Last reviewed: 2026-06-03
+Last reviewed: 2026-06-04
 
 Use this checklist after changes to file creation, file opening, workspace listing, tabs, saving, preview rendering, theme handling, workspace restoration, search, or save-conflict handling.
+
+Latest v0.9.0 release-candidate focus: confirm `Cmd+Shift+L` L Mode entry/exit, Markdown source preservation, workspace `+` create actions, folder context-menu create actions, inline Rename, Move to Trash confirmation, Agent provider availability states, and Safe Editor boundary absence of Git UI, arbitrary command/path fields, or auto-apply behavior. Workspace-internal drag/drop Move remains user-reported unreliable and should be treated as experimental until built-app smoke proves it dependable.
 
 Latest v0.7 publication pass: 2026-06-02 gates passed for `npm ci`, `npm run typecheck`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build:vite`, `npm run build`, `npm audit`, `cargo audit --file src-tauri/Cargo.lock`, `npm run build:dmg-preview`, `git diff --check`, local checksum verification, local `hdiutil verify`, built-app and mounted-app metadata checks, and `codesign --verify --deep --strict --verbose=2`. Remote release verification downloaded the published v0.7.0 assets, confirmed `shasum -c`, `hdiutil verify`, mounted app metadata, and codesign verification. The Vite chunk warning and ad-hoc/not-notarized warning remain expected preview limitations.
 
