@@ -9,6 +9,7 @@ import {
   createTextFolder,
   listWorkspaceDirectory,
   moveWorkspaceEntry,
+  moveWorkspaceEntryToTrash,
   renameWorkspaceEntry,
 } from "../../lib/tauri";
 import type { TextFileDocument, WorkspaceTreeEntry } from "../../lib/tauri";
@@ -48,6 +49,15 @@ type PendingRename = {
   newName: string;
   parentPath: string;
   warningKind: RenameWarningKind;
+};
+
+type PendingTrash = {
+  srcPath: string;
+  parentPath: string;
+  // The basename drives the dialog copy so the user sees the
+  // exact name they're about to discard.
+  name: string;
+  isDirectory: boolean;
 };
 
 const DEFAULT_FILE_BASENAME = "untitled";
@@ -93,6 +103,7 @@ export function useWorkspaceFileOps({
   const [pendingRename, setPendingRename] = useState<PendingRename | null>(
     null,
   );
+  const [pendingTrash, setPendingTrash] = useState<PendingTrash | null>(null);
   const [renamingPath, setRenamingPath] = useState<string | null>(null);
 
   const { rekeyPath } = useEditorTabsPathRekey({
@@ -420,6 +431,89 @@ export function useWorkspaceFileOps({
     ],
   );
 
+  // Move-to-trash: a two-step flow so the user always confirms
+  // before the file disappears. `requestTrashWorkspacePath`
+  // stashes the trashed entry into `pendingTrash` and surfaces
+  // the confirm dialog; `confirmPendingTrash` actually invokes
+  // the Tauri command, fans the path out, and reloads the
+  // parent.
+  const requestTrashWorkspacePath = useCallback(
+    (srcPath: string, name: string, isDirectory: boolean) => {
+      const slashIndex = srcPath.lastIndexOf("/");
+      const parentPath =
+        slashIndex === -1 ? "" : srcPath.slice(0, slashIndex);
+      setPendingTrash({ srcPath, parentPath, name, isDirectory });
+    },
+    [],
+  );
+
+  const cancelPendingTrash = useCallback(() => {
+    setPendingTrash(null);
+  }, []);
+
+  const confirmPendingTrash = useCallback(async () => {
+    const pending = pendingTrash;
+    if (!pending || !workspaceRootPath) {
+      setPendingTrash(null);
+      return;
+    }
+    setPendingTrash(null);
+    setGlobalError(null);
+    setStatus("Moving to Trash...");
+
+    try {
+      await moveWorkspaceEntryToTrash(pending.srcPath, workspaceRootPath);
+      // The trashed path is gone, so the editor fan-out closes
+      // the affected tab / draft / recent / compare slot. This
+      // is the same set of stores that `rekeyPath` rewrites
+      // for rename, but for trash the right answer is to drop
+      // the entry entirely instead of remapping to a new path.
+      const trashedPath = pending.srcPath;
+      setTabs((currentTabs) => currentTabs.filter((tab) => tab.id !== trashedPath));
+      setActiveTabId((current) => (current === trashedPath ? null : current));
+      setPendingDrafts((currentDrafts) =>
+        currentDrafts.filter((draft) => draft.path !== trashedPath),
+      );
+      setRecentFiles((currentEntries) =>
+        currentEntries.filter((entry) => entry.path !== trashedPath),
+      );
+      setCompareAnchor((current) =>
+        current && current.path === trashedPath ? null : current,
+      );
+      setCompareTarget((current) =>
+        current && current.path === trashedPath ? null : current,
+      );
+      setCompareView((current) => {
+        if (!current) return current;
+        if (!current.caseKey.includes(trashedPath)) return current;
+        return null;
+      });
+      try {
+        await reloadWorkspaceParent(pending.parentPath);
+      } catch {
+        setStatus("Trashed; folder refresh failed");
+        return;
+      }
+      setStatus(`Moved ${pending.name} to Trash`);
+    } catch (err) {
+      setGlobalError(String(err));
+      setStatus("Move to Trash failed");
+    }
+  }, [
+    pendingTrash,
+    reloadWorkspaceParent,
+    setActiveTabId,
+    setCompareAnchor,
+    setCompareTarget,
+    setCompareView,
+    setGlobalError,
+    setPendingDrafts,
+    setRecentFiles,
+    setStatus,
+    setTabs,
+    workspaceRootPath,
+  ]);
+
   return {
     createFile,
     createFolder,
@@ -432,5 +526,9 @@ export function useWorkspaceFileOps({
     renamingPath,
     confirmPendingRename,
     cancelPendingRename,
+    pendingTrash,
+    requestTrashWorkspacePath,
+    confirmPendingTrash,
+    cancelPendingTrash,
   };
 }

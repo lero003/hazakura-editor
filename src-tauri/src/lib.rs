@@ -90,6 +90,7 @@ pub fn run() {
             list_workspace_tree,
             rename_workspace_entry,
             move_workspace_entry,
+            move_workspace_entry_to_trash,
             open_workspace_image,
             search_workspace_files,
             start_agent_workbench_session,

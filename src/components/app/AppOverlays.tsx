@@ -40,6 +40,7 @@ import { PreferencesDialog } from "./PreferencesDialog";
 import { SettingsPreferencesPane } from "./SettingsPreferencesPane";
 import { AgentWorkbenchPreferencesPane } from "../agent/AgentWorkbenchPreferencesPane";
 import { RenameWarnDialog, type RenameWarningKind } from "./RenameWarnDialog";
+import { MoveToTrashConfirmDialog } from "./MoveToTrashConfirmDialog";
 import type { WorkspaceFileOpsCopy } from "../../lib/locale/workspaceFileOps";
 
 type AppOverlaysProps = {
@@ -86,6 +87,8 @@ type AppOverlaysProps = {
   copyWorkspaceFullPath: (file: CompareAnchor) => void | Promise<void>;
   cancelPendingRename: () => void;
   confirmPendingRename: () => void;
+  cancelPendingTrash: () => void;
+  confirmPendingTrash: () => void;
   createFile: (parentPath: string) => Promise<void> | void;
   createFolder: (parentPath: string) => Promise<void> | void;
   dirtyTabCount: number;
@@ -100,6 +103,11 @@ type AppOverlaysProps = {
   pendingAppClose: boolean;
   pendingCloseTab: EditorTab | null;
   pendingRenameWarning: RenameWarningKind | null;
+  pendingTrash: {
+    srcPath: string;
+    name: string;
+    isDirectory: boolean;
+  } | null;
   preferencesCloseButtonRef: RefObject<HTMLButtonElement | null>;
   preferencesCopy: PreferencesCopy;
   preferencesDialogMode: PreferencesDialogMode | null;
@@ -111,6 +119,11 @@ type AppOverlaysProps = {
   revealWorkspacePath: (file: CompareAnchor) => void | Promise<void>;
   renameWorkspacePath: (srcPath: string, newName: string) => void;
   requestRename: (path: string) => void;
+  requestTrashWorkspacePath: (
+    path: string,
+    name: string,
+    isDirectory: boolean,
+  ) => void;
   restartAppForAgentMode: () => void | Promise<void>;
   saveAllAndCloseWindow: () => void;
   saveAndClosePendingTab: () => void;
@@ -199,6 +212,7 @@ export function AppOverlays({
   revealWorkspacePath,
   renameWorkspacePath,
   requestRename,
+  requestTrashWorkspacePath,
   restartAppForAgentMode,
   saveAllAndCloseWindow,
   saveAndClosePendingTab,
@@ -221,7 +235,10 @@ export function AppOverlays({
   workspaceTree,
   cancelPendingRename,
   confirmPendingRename,
+  cancelPendingTrash,
+  confirmPendingTrash,
   pendingRenameWarning,
+  pendingTrash,
 }: AppOverlaysProps) {
   return (
     <>
@@ -255,6 +272,17 @@ export function AppOverlays({
           onCancel={cancelPendingRename}
           onConfirm={() => void confirmPendingRename()}
           warningKind={pendingRenameWarning}
+        />
+      ) : null}
+
+      {pendingTrash ? (
+        <MoveToTrashConfirmDialog
+          copy={fileOpsCopy}
+          isDirectory={pendingTrash.isDirectory}
+          menuLanguage={menuLanguage}
+          name={pendingTrash.name}
+          onCancel={cancelPendingTrash}
+          onConfirm={() => void confirmPendingTrash()}
         />
       ) : null}
 
@@ -384,6 +412,12 @@ export function AppOverlays({
           }
           onSetCompareSource={() => setCompareSource(workspaceContextMenu)}
           onSetCompareTarget={() => setCompareTargetFile(workspaceContextMenu)}
+          onMoveToTrash={() => {
+            const path = workspaceContextMenu.path;
+            const isDirectory = workspaceContextMenu.kind === "directory";
+            closeWorkspaceContextMenu();
+            requestTrashWorkspacePath(path, workspaceContextMenu.name, isDirectory);
+          }}
         />
       ) : null}
 

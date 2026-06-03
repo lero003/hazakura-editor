@@ -41,6 +41,15 @@ export function OpenFolderIcon() {
   );
 }
 
+export function TrashIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 4.5H13M6.5 4.5V3.5C6.5 2.94772 6.94772 2.5 7.5 2.5H8.5C9.05228 2.5 9.5 2.94772 9.5 3.5V4.5M4.5 4.5L5 12.5C5 13.0523 5.44772 13.5 6 13.5H10C10.5523 13.5 11 13.0523 11 12.5L11.5 4.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M7 7V11M9 7V11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
 export function MarkdownFileIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">

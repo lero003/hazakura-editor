@@ -7,7 +7,7 @@ import {
 } from "react";
 import type { WorkspaceTreeEntry } from "../../lib/tauri";
 import type { SafeEditorCopy, WorkspaceFileOpsCopy } from "../../lib/locale";
-import { OpenFolderIcon, PlusIcon } from "../app/Icons";
+import { OpenFolderIcon, PlusIcon, TrashIcon } from "../app/Icons";
 import { WorkspaceTree } from "./WorkspaceTree";
 
 const INTERNAL_MOVE_MIME = "application/x-hazakura-workspace-move";
@@ -23,6 +23,7 @@ type WorkspaceSidebarProps = {
   onCreateFolder: () => void;
   onLoadDirectory: (path: string) => Promise<void>;
   onMoveEntry: (srcPath: string, dstParentPath: string) => void;
+  onMoveToTrash: (path: string, name: string, isDirectory: boolean) => void;
   onOpenContextMenu: (
     entry: WorkspaceTreeEntry,
     event: ReactMouseEvent<HTMLButtonElement>,
@@ -50,6 +51,7 @@ export function WorkspaceSidebar({
   onCreateFolder,
   onLoadDirectory,
   onMoveEntry,
+  onMoveToTrash,
   onOpenContextMenu,
   onOpenRootContextMenu,
   onOpenFile,
@@ -97,6 +99,21 @@ export function WorkspaceSidebar({
   const handleNewFolder = () => {
     setNewMenuOpen(false);
     onCreateFolder();
+  };
+
+  // The footer trash button uses the active tab's path as the
+  // trashed entry. If the active file isn't loaded into the
+  // tree (collapsed ancestor), the trash button is disabled
+  // because we can't reliably know its display name + kind.
+  const activeEntry = findEntryByPath(workspaceTree, activePath);
+  const canTrashActive = activeEntry !== null;
+  const handleTrashActive = () => {
+    if (!activeEntry) return;
+    onMoveToTrash(
+      activeEntry.path,
+      activeEntry.name,
+      activeEntry.kind === "directory",
+    );
   };
 
   const handleRootDragOver = (event: ReactDragEvent<HTMLDivElement>) => {
@@ -221,6 +238,25 @@ export function WorkspaceSidebar({
           </button>
         </div>
       )}
+      {workspaceTree ? (
+        <div className="workspace-footer">
+          <button
+            aria-label={fileOpsCopy.sidebarTrashButton}
+            className="workspace-trash-button"
+            disabled={!canTrashActive}
+            onClick={handleTrashActive}
+            title={
+              canTrashActive
+                ? fileOpsCopy.sidebarTrashButton
+                : copy.noFolderOpen
+            }
+            type="button"
+          >
+            <TrashIcon />
+            <span>{fileOpsCopy.moveToTrash}</span>
+          </button>
+        </div>
+      ) : null}
     </aside>
   );
 }
@@ -232,4 +268,23 @@ function folderLabelFromPath(path: string): string {
     slashIndex === -1 ? normalizedPath : normalizedPath.slice(slashIndex + 1);
 
   return folderName || normalizedPath || path;
+}
+
+// Recursively walk the workspace tree (only the loaded subset)
+// to find the entry whose `path` matches. Used to look up the
+// focused entry for the sidebar trash button — when the user
+// has an open tab whose file is loaded in the tree (root +
+// ancestors expanded), the trash button uses that file's name
+// and `kind` in the confirm dialog.
+function findEntryByPath(
+  entry: WorkspaceTreeEntry | null,
+  path: string | null,
+): WorkspaceTreeEntry | null {
+  if (!entry || !path) return null;
+  if (entry.path === path) return entry;
+  for (const child of entry.children) {
+    const found = findEntryByPath(child, path);
+    if (found) return found;
+  }
+  return null;
 }

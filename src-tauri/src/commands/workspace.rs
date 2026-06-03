@@ -104,3 +104,58 @@ pub(crate) fn move_workspace_entry_with_label(
     }
     rename_workspace_entry_with_label(label, src, dst, workspace_root)
 }
+
+#[tauri::command]
+pub(crate) fn move_workspace_entry_to_trash<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    path: String,
+    workspace_root: String,
+) -> Result<(), String> {
+    move_workspace_entry_to_trash_with_label(window.label(), &path, &workspace_root)
+}
+
+pub(crate) fn move_workspace_entry_to_trash_with_label(
+    label: &str,
+    path: &str,
+    workspace_root: &str,
+) -> Result<(), String> {
+    ensure_label_is_main(label)?;
+    let root_path = PathBuf::from(workspace_root);
+    let src_path = PathBuf::from(path);
+    // Reject if `path` is not inside the canonical workspace
+    // root — uses the same containment helper as create/rename/
+    // move so a malicious IPC payload can't trash arbitrary
+    // system paths.
+    crate::util::ensure_path_inside_workspace_root(&src_path, &root_path)?;
+    let metadata =
+        fs::metadata(&src_path).map_err(|err| format!("Cannot read workspace entry: {err}"))?;
+    if !metadata.is_file() && !metadata.is_dir() {
+        return Err("Selected workspace entry cannot be trashed.".to_string());
+    }
+    move_to_finder_trash(&src_path)
+}
+
+// macOS-only: hand the path to Finder via osascript so the
+// entry lands in the user's Dock Trash and can be restored
+// the same way as any other Finder delete. The path is
+// canonicalized above so a malicious payload can't smuggle a
+// shell metacharacter into the AppleScript string literal —
+// we still escape `"` and `\` defensively.
+fn move_to_finder_trash(path: &std::path::Path) -> Result<(), String> {
+    let path_str = path.to_string_lossy().to_string();
+    let escaped = path_str.replace('\\', "\\\\").replace('"', "\\\"");
+    let script = format!(
+        "tell application \"Finder\" to delete POSIX file \"{}\"",
+        escaped
+    );
+    let output = std::process::Command::new("osascript")
+        .arg("-e")
+        .arg(&script)
+        .output()
+        .map_err(|err| format!("Cannot invoke Finder to trash entry: {err}"))?;
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+        return Err(format!("Finder refused to trash entry: {}", stderr.trim()));
+    }
+    Ok(())
+}

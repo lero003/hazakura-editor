@@ -628,3 +628,97 @@ fn move_workspace_entry_rejects_missing_destination_parent() {
 
     let _ = fs::remove_dir_all(root);
 }
+
+#[test]
+fn move_workspace_entry_to_trash_rejects_agent_window_label() {
+    let root = unique_test_dir("trash_label");
+    fs::create_dir_all(&root).expect("create root");
+    let src = root.join("note.md");
+    fs::write(&src, "# note\n").expect("write src");
+
+    let err = move_workspace_entry_to_trash_with_label(
+        AGENT_WINDOW_LABEL,
+        &src.to_string_lossy(),
+        &root.to_string_lossy(),
+    )
+    .expect_err("agent window must not be allowed to trash");
+
+    assert!(
+        err.contains("main window") || err.contains("label") || err.contains("not allowed"),
+        "{err}"
+    );
+    assert!(src.exists());
+
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+fn move_workspace_entry_to_trash_rejects_outside_workspace_root() {
+    let workspace_root = unique_test_dir("trash_outside_root");
+    let outside = unique_test_dir("trash_outside");
+    fs::create_dir_all(&workspace_root).expect("create root");
+    fs::create_dir_all(&outside).expect("create outside");
+    let src = outside.join("note.md");
+    fs::write(&src, "# note\n").expect("write src");
+
+    let err = move_workspace_entry_to_trash_with_label(
+        MAIN_WINDOW_LABEL,
+        &src.to_string_lossy(),
+        &workspace_root.to_string_lossy(),
+    )
+    .expect_err("outside-root path must be rejected");
+
+    assert!(err.contains("outside"), "{err}");
+    assert!(src.exists());
+
+    let _ = fs::remove_dir_all(workspace_root);
+    let _ = fs::remove_dir_all(outside);
+}
+
+#[test]
+fn move_workspace_entry_to_trash_rejects_missing_path() {
+    let root = unique_test_dir("trash_missing");
+    fs::create_dir_all(&root).expect("create root");
+    let missing = root.join("does-not-exist.md");
+
+    let err = move_workspace_entry_to_trash_with_label(
+        MAIN_WINDOW_LABEL,
+        &missing.to_string_lossy(),
+        &root.to_string_lossy(),
+    )
+    .expect_err("missing path must be rejected");
+
+    assert!(
+        err.contains("Cannot read") || err.contains("cannot be trashed"),
+        "{err}"
+    );
+
+    let _ = fs::remove_dir_all(root);
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn move_workspace_entry_to_trash_removes_file_on_macos() {
+    // macOS-only happy path: hand a real file to Finder via
+    // osascript and assert it disappears from the workspace
+    // root. Skipped on non-macOS because the backend relies on
+    // the Finder trash path.
+    let root = unique_test_dir("trash_happy");
+    fs::create_dir_all(&root).expect("create root");
+    let src = root.join("note.md");
+    fs::write(&src, "# note\n").expect("write src");
+
+    move_workspace_entry_to_trash_with_label(
+        MAIN_WINDOW_LABEL,
+        &src.to_string_lossy(),
+        &root.to_string_lossy(),
+    )
+    .expect("finder trash should accept a workspace file");
+
+    assert!(
+        !src.exists(),
+        "trashed file should be gone from the workspace"
+    );
+
+    let _ = fs::remove_dir_all(root);
+}

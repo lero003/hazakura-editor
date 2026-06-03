@@ -112,3 +112,10 @@ export async function moveWorkspaceEntry(
 ): Promise<void> {
   await invoke<void>("move_workspace_entry", { src, dst, workspaceRoot });
 }
+
+export async function moveWorkspaceEntryToTrash(
+  path: string,
+  workspaceRoot: string,
+): Promise<void> {
+  await invoke<void>("move_workspace_entry_to_trash", { path, workspaceRoot });
+}

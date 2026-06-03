@@ -24,6 +24,12 @@ export type WorkspaceFileOpsCopy = {
   renameCancel: string;
   moveOverwriteError: string;
   moveError: string;
+  moveToTrash: string;
+  moveToTrashTitle: string;
+  moveToTrashConfirm: string;
+  moveToTrashCancel: string;
+  moveToTrashError: string;
+  sidebarTrashButton: string;
 };
 
 export function getWorkspaceFileOpsCopy(
@@ -46,6 +52,12 @@ export function getWorkspaceFileOpsCopy(
       renameCancel: "やめる",
       moveOverwriteError: "いどうさきに おなじなまえの ふみまたは ふぉるだが あります。",
       moveError: "ふみの いどうに しっぱいしました。",
+      moveToTrash: "ごみばこに すてる",
+      moveToTrashTitle: "ごみばこに すてる",
+      moveToTrashConfirm: "すてる",
+      moveToTrashCancel: "やめる",
+      moveToTrashError: "ごみばこへの すてかたに しっぱいしました。",
+      sidebarTrashButton: "ごみばこ",
     };
   }
 
@@ -67,6 +79,12 @@ export function getWorkspaceFileOpsCopy(
         moveOverwriteError:
           "移動先に同じ名前のファイルまたはフォルダがあります。",
         moveError: "ファイルの移動に失敗しました。",
+        moveToTrash: "ゴミ箱へ",
+        moveToTrashTitle: "ゴミ箱へ移動",
+        moveToTrashConfirm: "ゴミ箱へ",
+        moveToTrashCancel: "キャンセル",
+        moveToTrashError: "ゴミ箱への移動に失敗しました。",
+        sidebarTrashButton: "ゴミ箱",
       }
     : {
         sidebarNewButton: "New",
@@ -85,5 +103,11 @@ export function getWorkspaceFileOpsCopy(
         moveOverwriteError:
           "A file or folder with the same name already exists at the destination.",
         moveError: "Could not move the file.",
+        moveToTrash: "Move to Trash",
+        moveToTrashTitle: "Move to Trash",
+        moveToTrashConfirm: "Move to Trash",
+        moveToTrashCancel: "Cancel",
+        moveToTrashError: "Could not move the entry to the Trash.",
+        sidebarTrashButton: "Trash",
       };
 }

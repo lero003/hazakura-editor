@@ -17,6 +17,7 @@ export function WorkspaceContextMenu({
   onCopyFullPath,
   onCreateFileHere,
   onCreateFolderHere,
+  onMoveToTrash,
   onOpen,
   onRename,
   onRevealInFinder,
@@ -37,6 +38,7 @@ export function WorkspaceContextMenu({
   onCopyFullPath: () => void;
   onCreateFileHere: () => void;
   onCreateFolderHere: () => void;
+  onMoveToTrash: () => void;
   onOpen: () => void;
   onRename: () => void;
   onRevealInFinder: () => void;
@@ -50,12 +52,18 @@ export function WorkspaceContextMenu({
     compareSource !== null && compareSource.path !== anchor.path;
   const canCreateHere = kind === "directory" || kind === "root";
   const canRename = kind === "file" || kind === "directory";
+  // Trash is allowed for any tree entry — the workspace root
+  // (kind === "root") is excluded because the root is the
+  // security anchor for the workspace tree and trashing it
+  // would orphan every other entry.
+  const canTrash = kind === "file" || kind === "directory";
   const itemCount =
     7 +
     (canSendToAgent ? 1 : 0) +
     (compareSource ? 1 : 0) +
     (canCreateHere ? 2 : 0) +
-    (canRename ? 1 : 0);
+    (canRename ? 1 : 0) +
+    (canTrash ? 1 : 0);
   const estimatedWidth = 240;
   const estimatedHeight = 12 + itemCount * 34;
   const menuLeft = Math.min(
@@ -180,6 +188,11 @@ export function WorkspaceContextMenu({
       {canRename ? (
         <button type="button" role="menuitem" onClick={onRename}>
           {fileOpsCopy.rename}
+        </button>
+      ) : null}
+      {canTrash ? (
+        <button type="button" role="menuitem" onClick={onMoveToTrash}>
+          {fileOpsCopy.moveToTrash}
         </button>
       ) : null}
       <button type="button" role="menuitem" onClick={onClose}>
