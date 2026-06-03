@@ -168,6 +168,74 @@ pub(crate) fn ensure_workspace_root(root_path: &Path) -> Result<PathBuf, String>
     fs::canonicalize(root_path).map_err(|err| format!("Cannot read workspace folder: {err}"))
 }
 
+/// Resolve `path` and confirm it lives inside the canonicalized
+/// workspace root. If `path` does not yet exist (e.g. a new folder
+/// being created), the parent is canonicalized instead and the
+/// resulting child path is returned. Rejects symlinks whose
+/// canonical target escapes the root.
+pub(crate) fn ensure_path_inside_workspace_root(
+    path: &Path,
+    root: &Path,
+) -> Result<PathBuf, String> {
+    let canonical_root = ensure_workspace_root(root)?;
+
+    let (canonical_base, is_existing) = if path.exists() {
+        (
+            fs::canonicalize(path).map_err(|err| format!("Cannot resolve path: {err}"))?,
+            true,
+        )
+    } else {
+        let parent = path
+            .parent()
+            .ok_or_else(|| "Path has no parent directory.".to_string())?;
+        if !parent.is_dir() {
+            return Err("Selected parent is not a folder.".to_string());
+        }
+        (
+            fs::canonicalize(parent).map_err(|err| format!("Cannot resolve path: {err}"))?,
+            false,
+        )
+    };
+
+    if !canonical_base.starts_with(&canonical_root) {
+        return Err("Path is outside the workspace root.".to_string());
+    }
+
+    if is_existing {
+        Ok(canonical_base)
+    } else {
+        let name = path
+            .file_name()
+            .ok_or_else(|| "Path has no file name.".to_string())?;
+        Ok(canonical_base.join(name))
+    }
+}
+
+/// Rename (or move, when `src` and `dst` are in different
+/// directories) a workspace entry. Both endpoints must live
+/// inside `root`; the destination must not already exist; the
+/// source must not be a symlink whose canonical target escapes
+/// the root. Reuses `fs::rename` for atomicity and cross-
+/// directory moves.
+pub(crate) fn rename_workspace_entry_util(
+    src: &Path,
+    dst: &Path,
+    root: &Path,
+) -> Result<(), String> {
+    if !src.exists() {
+        return Err("Source path does not exist.".to_string());
+    }
+
+    if dst.exists() {
+        return Err("A file or folder already exists at the destination.".to_string());
+    }
+
+    let _ = ensure_path_inside_workspace_root(src, root)?;
+    let _ = ensure_path_inside_workspace_root(dst, root)?;
+
+    fs::rename(src, dst).map_err(|err| format!("Cannot rename entry: {err}"))
+}
+
 pub(crate) fn find_allowlisted_agent_provider_in_path_env(
     provider: &str,
     path_var: &OsStr,

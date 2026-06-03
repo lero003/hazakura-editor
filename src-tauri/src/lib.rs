@@ -84,6 +84,7 @@ pub fn run() {
             open_text_file,
             reveal_path_in_file_manager,
             create_text_file,
+            create_text_folder,
             get_file_metadata,
             list_workspace_directory,
             list_workspace_tree,

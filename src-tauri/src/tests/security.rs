@@ -73,6 +73,27 @@ fn create_text_file_rejects_agent_window_label() {
 }
 
 #[test]
+fn create_text_folder_rejects_agent_window_label() {
+    let dir = unique_label_path("create_text_folder_agent");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("new-folder");
+
+    let err = create_text_folder_with_label(
+        AGENT_WINDOW_LABEL,
+        &path.to_string_lossy(),
+        &dir.to_string_lossy(),
+    )
+    .expect_err("create_text_folder must reject the agent window");
+    assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
+    assert!(
+        !path.exists(),
+        "no folder should be created on a rejected gate"
+    );
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
 fn save_text_file_rejects_agent_window_label() {
     let dir = unique_label_path("save_text_file_agent");
     fs::create_dir_all(&dir).expect("create test dir");

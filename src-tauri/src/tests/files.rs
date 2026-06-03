@@ -75,6 +75,66 @@ fn create_text_file_rejects_existing_file() {
 }
 
 #[test]
+fn create_text_folder_creates_empty_folder_inside_workspace_root() {
+    let root = unique_test_dir("create_folder_root");
+    fs::create_dir_all(&root).expect("create root");
+    let path = root.join("new-folder");
+
+    create_text_folder_with_label(
+        MAIN_WINDOW_LABEL,
+        &path.to_string_lossy(),
+        &root.to_string_lossy(),
+    )
+    .expect("create empty folder");
+
+    assert!(path.exists());
+    assert!(path.is_dir());
+
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+fn create_text_folder_rejects_existing_folder() {
+    let root = unique_test_dir("create_folder_existing");
+    fs::create_dir_all(&root).expect("create root");
+    let path = root.join("already-here");
+    fs::create_dir_all(&path).expect("create pre-existing folder");
+
+    let err = create_text_folder_with_label(
+        MAIN_WINDOW_LABEL,
+        &path.to_string_lossy(),
+        &root.to_string_lossy(),
+    )
+    .expect_err("existing folder should not be overwritten");
+
+    assert!(err.contains("already exists"), "{err}");
+
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+fn create_text_folder_rejects_path_outside_workspace_root() {
+    let root = unique_test_dir("create_folder_outside_root");
+    let outside = unique_test_dir("create_folder_outside_target");
+    fs::create_dir_all(&root).expect("create root");
+    fs::create_dir_all(&outside).expect("create outside");
+    let path = outside.join("escape-me");
+
+    let err = create_text_folder_with_label(
+        MAIN_WINDOW_LABEL,
+        &path.to_string_lossy(),
+        &root.to_string_lossy(),
+    )
+    .expect_err("path outside workspace root should be rejected");
+
+    assert!(err.contains("outside the workspace root"), "{err}");
+    assert!(!path.exists());
+
+    let _ = fs::remove_dir_all(root);
+    let _ = fs::remove_dir_all(outside);
+}
+
+#[test]
 fn atomic_write_replaces_text_file() {
     let dir = unique_test_dir("atomic_write");
     fs::create_dir_all(&dir).expect("create test dir");

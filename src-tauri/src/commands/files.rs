@@ -158,6 +158,39 @@ pub(crate) fn create_text_file_with_label(
 }
 
 #[tauri::command]
+pub(crate) fn create_text_folder<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    path: String,
+    workspace_root: String,
+) -> Result<(), String> {
+    create_text_folder_with_label(window.label(), &path, &workspace_root)
+}
+
+pub(crate) fn create_text_folder_with_label(
+    label: &str,
+    path: &str,
+    workspace_root: &str,
+) -> Result<(), String> {
+    ensure_label_is_main(label)?;
+    let path_buf = PathBuf::from(path);
+    let root_buf = PathBuf::from(workspace_root);
+
+    if path_buf.exists() {
+        return Err("A folder already exists at the selected path.".to_string());
+    }
+
+    path_buf
+        .file_name()
+        .and_then(|name| name.to_str())
+        .ok_or_else(|| "Cannot create a folder with an invalid name.".to_string())?;
+
+    let _ = ensure_path_inside_workspace_root(&path_buf, &root_buf)?;
+
+    fs::create_dir(&path_buf).map_err(|err| format!("Cannot create folder: {err}"))?;
+    Ok(())
+}
+
+#[tauri::command]
 pub(crate) fn get_file_metadata<R: tauri::Runtime>(
     window: tauri::WebviewWindow<R>,
     path: String,
