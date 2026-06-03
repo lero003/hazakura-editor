@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { isImeComposing } from "../../lib/keyboard";
 import { useLatestValueRef } from "../../hooks/app/useLatestValueRef";
 import type { Command } from "../../hooks/commandPalette/useCommandPalette";
 
@@ -41,6 +42,15 @@ export function CommandPalette({
   }, [activeIndex]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    // Mirror the find / global-search rule: Japanese / kana
+    // composition emits Enter / Escape / Arrow keys while the
+    // IME is still composing, and we must let those pass through
+    // to the IME instead of moving the active row, running the
+    // command, or closing the modal.
+    if (isImeComposing(event.nativeEvent)) {
+      return;
+    }
+
     if (event.key === "ArrowDown") {
       event.preventDefault();
       onSetActiveIndex(

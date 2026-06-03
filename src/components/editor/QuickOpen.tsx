@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { isImeComposing } from "../../lib/keyboard";
 import type { WorkspaceTreeEntry } from "../../lib/tauri";
 import type { MenuLanguage } from "../../types";
 
@@ -112,6 +113,14 @@ export function QuickOpen({
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
+      // Same rule as `useFindReplaceActions` and the other modal
+      // inputs: let IME composition have Enter / Escape / Arrow
+      // keys so Japanese conversion is not mistaken for a list
+      // move, a file open, or a modal close.
+      if (isImeComposing(e.nativeEvent)) {
+        return;
+      }
+
       switch (e.key) {
         case "ArrowDown":
           e.preventDefault();
@@ -145,11 +154,17 @@ export function QuickOpen({
   if (!tree) return null;
 
   const placeholder =
-    menuLanguage !== "en" ? "ファイル名を入力..." : "Type a file name...";
+    menuLanguage === "kana"
+      ? "ふみのなまえを..."
+      : menuLanguage === "ja"
+        ? "ファイル名を入力..."
+        : "Type a file name...";
   const emptyMsg =
-    menuLanguage !== "en"
-      ? "一致するファイルがありません"
-      : "No matching files";
+    menuLanguage === "kana"
+      ? "ぴったりのふみはありません"
+      : menuLanguage === "ja"
+        ? "一致するファイルがありません"
+        : "No matching files";
 
   return (
     <div className="quick-open-overlay" onPointerDown={onClose}>
