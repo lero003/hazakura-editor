@@ -28,6 +28,7 @@ import type {
   EditorPaneHandle,
   MarkdownFormat,
 } from "../../components/editor/EditorPane";
+import type { LModeCopy } from "../../lib/locale";
 import type {
   EditorSettings,
   EditorTab,
@@ -64,6 +65,7 @@ type UseCommandPaletteControllerActions = {
   >;
   setPreviewVisible: Dispatch<SetStateAction<boolean>>;
   toggleDiffPane: () => void;
+  toggleLMode: () => void;
   toggleOutlinePane: () => void;
   toggleQuickOpen: () => void;
   toggleReviewDesk: () => void;
@@ -74,6 +76,7 @@ type UseCommandPaletteControllerOptions = {
   activeTab: EditorTab | null;
   activeTabId: string | null;
   editorPaneRef: RefObject<EditorPaneHandle | null>;
+  lModeCopy: LModeCopy;
   setStatus: Dispatch<SetStateAction<string>>;
   themePreference: ThemePreference;
   workspaceRootPath: string | null;
@@ -84,6 +87,7 @@ export function useCommandPaletteController({
   activeTab,
   activeTabId,
   editorPaneRef,
+  lModeCopy,
   setStatus,
   themePreference,
   workspaceRootPath,
@@ -347,6 +351,16 @@ export function useCommandPaletteController({
         shortcut: "⌥⌘←",
       },
       {
+        category: "View",
+        id: "view.toggleLMode",
+        keywords: ["l", "mode", "focus", "zen", "える", "エル", "reading"],
+        label: lModeCopy.paletteCommand,
+        run: () => {
+          actions.toggleLMode();
+        },
+        shortcut: "⇧⌘L",
+      },
+      {
         category: "Review",
         id: "review.open",
         keywords: ["review", "diff", "compare"],
@@ -411,6 +425,7 @@ export function useCommandPaletteController({
       activeTab,
       activeTabId,
       editorPaneRef,
+      lModeCopy,
       themePreference,
     ],
   );

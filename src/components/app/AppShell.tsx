@@ -3,12 +3,13 @@ import type {
   AmbientIntensity,
   CompareCase,
   CompareViewState,
+  EditorSettings,
   EditorTab,
   MenuLanguage,
   ResolvedTheme,
   ReviewSurface as ReviewSurfaceKind,
 } from "../../types";
-import type { ReviewDeskCopy } from "../../lib/locale";
+import type { LModeCopy, ReviewDeskCopy } from "../../lib/locale";
 import type { ReviewDeskMode } from "../../types";
 import { AmbientBackground, type AmbientMode } from "./AmbientBackground";
 import { AppDocumentFeedback } from "./AppDocumentFeedback";
@@ -16,6 +17,7 @@ import { AppOverlays } from "./AppOverlays";
 import { AppStatusBar } from "./AppStatusBar";
 import { AppTopChrome } from "./AppTopChrome";
 import { AppWorkspace } from "./AppWorkspace";
+import { LModeExitPill } from "./LModeExitPill";
 import { ReviewSurface } from "../review/ReviewSurface";
 
 export type AppShellProps = ComponentProps<typeof AppTopChrome> &
@@ -30,6 +32,9 @@ export type AppShellProps = ComponentProps<typeof AppTopChrome> &
     candidateErrorMessage: string | null;
     candidateInputText: string;
     clearCandidate: () => void;
+    editorSettings: EditorSettings;
+    lModeCopy: LModeCopy;
+    lModeEnabled: boolean;
     menuLanguage: MenuLanguage;
     onApplyManualCandidate: (
       candidateText: string,
@@ -37,6 +42,7 @@ export type AppShellProps = ComponentProps<typeof AppTopChrome> &
       documentContents: string,
     ) => void;
     onCloseReviewDesk: () => void;
+    onToggleLMode: () => void;
     resolvedTheme: ResolvedTheme;
     reviewDeskCopy: ReviewDeskCopy;
     reviewDeskMode: ReviewDeskMode;
@@ -89,6 +95,12 @@ export function AppShell(props: AppShellProps) {
       )}
       <AppStatusBar {...props} />
       <AppOverlays {...props} />
+      {props.lModeEnabled ? (
+        <LModeExitPill
+          copy={props.lModeCopy}
+          onExit={props.onToggleLMode}
+        />
+      ) : null}
     </main>
   );
 }

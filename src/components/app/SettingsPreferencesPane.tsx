@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
-import type { PreferencesCopy } from "../../lib/locale";
+import type { LModeCopy, PreferencesCopy } from "../../lib/locale";
 import type {
   EditorSettings,
   MenuLanguage,
@@ -9,6 +9,7 @@ import type {
 type SettingsPreferencesPaneProps = {
   copy: PreferencesCopy;
   editorSettings: EditorSettings;
+  lModeCopy: LModeCopy;
   menuLanguage: MenuLanguage;
   onEditorSettingsChange: Dispatch<SetStateAction<EditorSettings>>;
   onMenuLanguageChange: (language: MenuLanguage) => void;
@@ -30,6 +31,7 @@ const AMBIENT_OPTIONS: { value: AmbientIntensity; label: keyof PreferencesCopy }
 export function SettingsPreferencesPane({
   copy,
   editorSettings,
+  lModeCopy,
   menuLanguage,
   onEditorSettingsChange,
   onMenuLanguageChange,
@@ -178,6 +180,21 @@ export function SettingsPreferencesPane({
             <option value="ja">日本語</option>
             <option value="kana">かなふみ</option>
           </select>
+        </label>
+        <label className="toggle-switch">
+          <input
+            type="checkbox"
+            checked={editorSettings.lModeEnabled}
+            onChange={(event) =>
+              onEditorSettingsChange((current) => ({
+                ...current,
+                lModeEnabled: event.target.checked,
+              }))
+            }
+          />
+          <span className="slider"></span>
+          <span>{lModeCopy.preferenceLabel}</span>
+          <span className="field-hint">{lModeCopy.preferenceHint}</span>
         </label>
       </section>
     </div>

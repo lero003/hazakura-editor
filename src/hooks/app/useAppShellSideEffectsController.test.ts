@@ -58,6 +58,7 @@ describe("useAppShellSideEffectsController", () => {
             spellcheckEnabled: true,
             autoBackupEnabled: true,
             ambientIntensity: "subtle",
+            lModeEnabled: false,
           },
           menuLanguage: "en",
           pendingDrafts: [],

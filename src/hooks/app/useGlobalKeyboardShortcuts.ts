@@ -158,6 +158,20 @@ export function useGlobalKeyboardShortcuts({
         return;
       }
 
+      if (isCommandShiftShortcut(event, "l")) {
+        // L Mode (えるモード) toggle. Cmd+Shift+L was free in the
+        // existing map. Sits next to the Review Desk shortcut on
+        // the keyboard so the muscle memory groups the two
+        // "switch context" gestures. IME composition and modal
+        // open are already bailed out at the top of this handler.
+        event.preventDefault();
+        setEditorSettings((current) => ({
+          ...current,
+          lModeEnabled: !current.lModeEnabled,
+        }));
+        return;
+      }
+
       if (isCommandShiftShortcut(event, "w")) {
         event.preventDefault();
         void onRequestWindowClose();

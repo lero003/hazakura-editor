@@ -19,7 +19,7 @@
 // function lets the React hook order stay obvious and the
 // dependency wiring stay in one place.
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { openAgentWindow } from "../../lib/tauri";
 import { useAgentWorkbenchController } from "../agent/useAgentWorkbenchController";
 import { useCommandPaletteController } from "../commandPalette/useCommandPaletteController";
@@ -275,6 +275,7 @@ export function useAppShellController() {
     agentWorkbenchRestartRequired,
     editorChromeCopy,
     fileOpsCopy,
+    lModeCopy,
     preferencesCopy,
     recoveryCopy,
     reviewDeskCopy,
@@ -533,6 +534,31 @@ export function useAppShellController() {
     [pinRecentFile, recentFiles, unpinRecentFile],
   );
 
+  // L Mode (えるモード) toggle. Wraps a simple
+  // setEditorSettings flip so the command palette and the
+  // Cmd+Shift+L shortcut can share one code path.
+  const toggleLMode = useCallback(() => {
+    setEditorSettings((current) => ({
+      ...current,
+      lModeEnabled: !current.lModeEnabled,
+    }));
+  }, [setEditorSettings]);
+
+  // When L Mode turns on, force the side pane and the Review
+  // Desk closed. The CSS hides the toggles in L Mode so the user
+  // cannot re-open them from chrome alone; this effect keeps the
+  // state consistent so the next time the user toggles L Mode off,
+  // the workspace is in a clean (collapsed) state.
+  useEffect(() => {
+    if (!editorSettings.lModeEnabled) {
+      return;
+    }
+    setSidePaneOpen(false);
+    if (reviewSurface !== null) {
+      closeReviewDesk();
+    }
+  }, [closeReviewDesk, editorSettings.lModeEnabled, reviewSurface, setSidePaneOpen]);
+
   // section: document safety actions
   const {
     checkTabForExternalChange,
@@ -675,6 +701,7 @@ export function useAppShellController() {
       setPreferencesDialogMode,
       setPreviewVisible,
       toggleDiffPane,
+      toggleLMode,
       toggleOutlinePane,
       toggleQuickOpen,
       toggleReviewDesk,
@@ -682,6 +709,7 @@ export function useAppShellController() {
     activeTab,
     activeTabId,
     editorPaneRef,
+    lModeCopy,
     setStatus,
     themePreference,
     workspaceRootPath,
@@ -928,6 +956,8 @@ export function useAppShellController() {
     editorPreviewGridStyle,
     editorSettings,
     editorTheme,
+    lModeCopy,
+    lModeEnabled: editorSettings.lModeEnabled,
     emptyTabsLabel: safeEditorCopy.emptyTabs,
     fileOpsCopy,
     encodingAriaLabel: editorChromeCopy.encodings,
@@ -991,6 +1021,7 @@ export function useAppShellController() {
     onTabPointerDown: handleTabPointerDown,
     onTabPointerMove: handleTabPointerMove,
     onToggleDiff: toggleDiffPane,
+    onToggleLMode: toggleLMode,
     onToggleOutline: toggleOutlinePane,
     onTogglePreview: togglePreviewPane,
     onCloseGlobalSearch: closeGlobalSearch,

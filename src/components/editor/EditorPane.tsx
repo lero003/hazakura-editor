@@ -28,6 +28,7 @@ import { basicSetup } from "codemirror";
 import { SlashMenu, type SlashMenuCopy } from "./SlashMenu";
 import { useSlashMenu } from "../../hooks/editor/useSlashMenu";
 import { markdownSyntaxHighlighting } from "../../features/editor/codeMirrorTheme";
+import { lModeExtension } from "../../features/editor/lModeExtension";
 import type { SlashCommand } from "../../types/slash";
 
 type SearchMatch = { from: number; to: number };
@@ -55,6 +56,7 @@ type EditorPaneProps = {
   spellcheckEnabled: boolean;
   tabSize: number;
   wrapLines: boolean;
+  lModeEnabled: boolean;
   activeSearchMatchIndex: number;
   searchMatches: SearchMatch[];
   slashCommands: readonly SlashCommand[];
@@ -157,6 +159,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       activeSearchMatchIndex,
       documentKey,
       fontSize,
+      lModeEnabled,
       searchMatches,
       showInvisibles,
       slashCommands,
@@ -187,6 +190,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   const invisiblesCompartmentRef = useRef(new Compartment());
   const tabSizeCompartmentRef = useRef(new Compartment());
   const spellcheckCompartmentRef = useRef(new Compartment());
+  const lModeCompartmentRef = useRef(new Compartment());
 
   useImperativeHandle(
     ref,
@@ -354,6 +358,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
           editorTheme(theme, fontSize),
           markdownSyntaxHighlighting(),
         ]),
+        lModeCompartmentRef.current.of(lModeExtension(lModeEnabled)),
         EditorView.domEventHandlers({
           keydown(event, view) {
             if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key === "Enter") {
@@ -521,6 +526,20 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       ),
     });
   }, [spellcheckEnabled]);
+
+  useEffect(() => {
+    const view = viewRef.current;
+
+    if (!view) {
+      return;
+    }
+
+    view.dispatch({
+      effects: lModeCompartmentRef.current.reconfigure(
+        lModeExtension(lModeEnabled),
+      ),
+    });
+  }, [lModeEnabled]);
 
   useEffect(() => {
     const view = viewRef.current;

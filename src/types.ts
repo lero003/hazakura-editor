@@ -202,6 +202,10 @@ export type EditorSettings = {
   spellcheckEnabled: boolean;
   autoBackupEnabled: boolean;
   ambientIntensity: AmbientIntensity;
+  // Experimental one-pane reading-writing mode. Hides workspace
+  // chrome, suppresses Markdown markers in inactive lines, and
+  // applies page-like typography. Source text is never modified.
+  lModeEnabled: boolean;
 };
 
 export type AmbientIntensity = "off" | "subtle" | "normal" | "dramatic";

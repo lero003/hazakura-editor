@@ -1,0 +1,186 @@
+/* === lMode.css === */
+/* えるモード / L Mode — display-only experiment.
+   All rules are gated on :root[data-l-mode="on"] so toggling the
+   setting off fully restores the normal workspace chrome. */
+
+/* --- 1. Hide workspace chrome --- */
+:root[data-l-mode="on"] .file-tree-pane {
+  display: none;
+}
+
+:root[data-l-mode="on"] .workspace {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Side pane (outline / diff) is hidden in L Mode. The
+   useAppShellController force-closes it on toggle-on, and the
+   editor-preview-grid collapses to a single column. CSS is the
+   authoritative visual control here. */
+:root[data-l-mode="on"] .preview-pane,
+:root[data-l-mode="on"] .pane-toggles,
+:root[data-l-mode="on"] .review-surface,
+:root[data-l-mode="on"] .diff-pane {
+  display: none;
+}
+
+:root[data-l-mode="on"] .editor-preview-grid {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+/* --- 2. Minimize tab + status bars (do not hide — keep the
+   "which document am I in" anchor visible) --- */
+:root[data-l-mode="on"] .tabs-row {
+  opacity: 0.55;
+  font-size: 11px;
+  transition: opacity 120ms ease;
+}
+
+:root[data-l-mode="on"] .tabs-row:hover {
+  opacity: 0.9;
+}
+
+:root[data-l-mode="on"] .status-bar {
+  opacity: 0.5;
+  font-size: 11px;
+  transition: opacity 120ms ease;
+}
+
+:root[data-l-mode="on"] .status-bar:hover {
+  opacity: 0.85;
+}
+
+/* --- 3. Page-like typography ---
+   The CodeMirror .cm-content is the editor body. Constrain its
+   width, give the lines more room to breathe, and let headings
+   and blockquotes find their own rhythm. */
+:root[data-l-mode="on"] .cm-content {
+  max-width: 72ch;
+  margin: 0 auto;
+  font-size: 16px;
+  line-height: 1.7;
+  padding: 4rem 0 10rem;
+}
+
+:root[data-l-mode="on"] .cm-line {
+  font-family: inherit;
+}
+
+:root[data-l-mode="on"] .cm-line:not(:first-child) {
+  margin-top: 0.5em;
+}
+
+/* Code (inline + fenced) stays monospace. */
+:root[data-l-mode="on"] .tok-monospace,
+:root[data-l-mode="on"] pre.cm-line {
+  font-family: var(--lmode-code-font-family);
+  text-align: start;
+}
+
+/* Inline code + monospace — slightly smaller, easier to read
+   as inline emphasis without dominating the line. */
+:root[data-l-mode="on"] .tok-monospace {
+  font-size: 0.9em;
+  opacity: 0.95;
+}
+
+/* Heading rhythm — H1 breathes the most, H2-6 share a tighter feel. */
+:root[data-l-mode="on"] .tok-heading1,
+:root[data-l-mode="on"] .tok-heading2,
+:root[data-l-mode="on"] .tok-heading3,
+:root[data-l-mode="on"] .tok-heading4,
+:root[data-l-mode="on"] .tok-heading5,
+:root[data-l-mode="on"] .tok-heading6 {
+  font-weight: 600;
+  margin-top: 1.6em;
+  margin-bottom: 0.4em;
+}
+
+:root[data-l-mode="on"] .tok-heading1 { font-size: 1.6em; margin-top: 2.4em; }
+:root[data-l-mode="on"] .tok-heading2 { font-size: 1.35em; }
+:root[data-l-mode="on"] .tok-heading3 { font-size: 1.15em; }
+
+/* Blockquote — quieter, italic, with a thin left border. */
+:root[data-l-mode="on"] .tok-quote {
+  opacity: 0.85;
+  font-style: italic;
+  border-left: 3px solid currentColor;
+  padding-left: 1em;
+  margin: 1em 0;
+}
+
+/* --- 4. Visual block styles for headings, blockquotes, lists.
+   The cm-lmode-heading-N, cm-lmode-blockquote, and cm-lmode-list
+   classes are added by the L Mode extension's Decoration.line
+   entries (one per heading / blockquote / list line). They
+   carry the line-level rhythm that the inline `tok-*` selectors
+   cannot express (margins on a line are block-level). */
+:root[data-l-mode="on"] .cm-lmode-heading-1,
+:root[data-l-mode="on"] .cm-lmode-heading-2,
+:root[data-l-mode="on"] .cm-lmode-heading-3,
+:root[data-l-mode="on"] .cm-lmode-heading-4,
+:root[data-l-mode="on"] .cm-lmode-heading-5,
+:root[data-l-mode="on"] .cm-lmode-heading-6 {
+  margin-top: 1.6em;
+  margin-bottom: 0.4em;
+}
+
+:root[data-l-mode="on"] .cm-lmode-heading-1 { margin-top: 2.4em; }
+:root[data-l-mode="on"] .cm-lmode-heading-2 { margin-top: 2em; }
+:root[data-l-mode="on"] .cm-lmode-heading-3 { margin-top: 1.8em; }
+
+/* Blockquote — a thin left rule on the line, with the line
+   itself dimmed slightly so the blockquote reads as a quiet
+   aside. The .tok-quote selector above handles the inline
+   italic + opacity; this rule layers the line-level structure
+   on top. */
+:root[data-l-mode="on"] .cm-lmode-blockquote {
+  opacity: 0.82;
+  border-left: 3px solid rgba(127, 127, 127, 0.35);
+  padding-left: 1em;
+  margin: 0.6em 0;
+}
+
+/* List lines are recognized by the extension (so the
+   `-` / `*` / `1.` marker can be hidden) but the visual
+   structure is left to the default CodeMirror list
+   indentation. This selector is a hook for future tweaks. */
+:root[data-l-mode="on"] .cm-lmode-list {
+  /* baseline; no overrides in the foundation */
+}
+
+/* Hide the L Mode marker. The actual class is added by the
+   CodeMirror extension; this rule is the rendering target. */
+:root[data-l-mode="on"] .cm-lmode-hidden {
+  display: none;
+}
+
+/* --- 5. Exit pill --- */
+.l-mode-exit-pill {
+  position: fixed;
+  top: 12px;
+  right: 16px;
+  z-index: 100;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(127, 127, 127, 0.18);
+  color: inherit;
+  border: 1px solid rgba(127, 127, 127, 0.25);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  opacity: 0.4;
+  transition: opacity 120ms ease;
+  cursor: pointer;
+}
+
+.l-mode-exit-pill:hover,
+.l-mode-exit-pill:focus-visible {
+  opacity: 1;
+}
+
+/* The pill is rendered unconditionally in the AppShell so
+   React doesn't have to coordinate visibility with the
+   data-l-mode attribute. CSS hides it whenever L Mode is
+   off. */
+:root:not([data-l-mode="on"]) .l-mode-exit-pill {
+  display: none;
+}

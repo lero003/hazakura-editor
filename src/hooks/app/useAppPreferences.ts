@@ -43,6 +43,12 @@ export function useAppPreferences() {
   }, [resolvedTheme, themePreference]);
 
   useEffect(() => {
+    document.documentElement.dataset.lMode = editorSettings.lModeEnabled
+      ? "on"
+      : "off";
+  }, [editorSettings.lModeEnabled]);
+
+  useEffect(() => {
     const windowTheme: BaseTheme =
       themePreference === "dark" || themePreference === "yakou"
         ? "dark"
@@ -140,6 +146,7 @@ function readStoredEditorSettings(): EditorSettings {
     spellcheckEnabled: true,
     autoBackupEnabled: true,
     ambientIntensity: "normal",
+    lModeEnabled: false,
   };
   const value = window.localStorage.getItem(EDITOR_SETTINGS_STORAGE_KEY);
 
@@ -174,6 +181,10 @@ function readStoredEditorSettings(): EditorSettings {
       ambientIntensity: isAmbientIntensity(parsed.ambientIntensity)
         ? parsed.ambientIntensity
         : defaults.ambientIntensity,
+      lModeEnabled:
+        typeof parsed.lModeEnabled === "boolean"
+          ? parsed.lModeEnabled
+          : defaults.lModeEnabled,
     };
   } catch {
     return defaults;

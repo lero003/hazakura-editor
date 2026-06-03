@@ -5,6 +5,7 @@ import type {
 } from "react";
 import type {
   AgentWorkbenchCopy,
+  LModeCopy,
   PreferencesCopy,
   RecoveryCopy,
 } from "../../lib/locale";
@@ -116,6 +117,7 @@ type AppOverlaysProps = {
   previewVisible: boolean;
   quickOpenVisible: boolean;
   recoveryCopy: RecoveryCopy;
+  lModeCopy: LModeCopy;
   revealWorkspacePath: (file: CompareAnchor) => void | Promise<void>;
   renameWorkspacePath: (srcPath: string, newName: string) => void;
   requestRename: (path: string) => void;
@@ -209,6 +211,7 @@ export function AppOverlays({
   previewVisible,
   quickOpenVisible,
   recoveryCopy,
+  lModeCopy,
   revealWorkspacePath,
   renameWorkspacePath,
   requestRename,
@@ -359,6 +362,7 @@ export function AppOverlays({
             <SettingsPreferencesPane
               copy={preferencesCopy}
               editorSettings={editorSettings}
+              lModeCopy={lModeCopy}
               menuLanguage={menuLanguage}
               onEditorSettingsChange={setEditorSettings}
               onMenuLanguageChange={setMenuLanguage}

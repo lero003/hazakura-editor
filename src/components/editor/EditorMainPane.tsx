@@ -98,6 +98,7 @@ export function EditorMainPane({
             activeSearchMatchIndex={activeSearchMatchIndex}
             documentKey={documentKey}
             fontSize={editorSettings.fontSize}
+            lModeEnabled={editorSettings.lModeEnabled}
             onChange={onChange}
             onScrollRatioChange={onScrollRatioChange}
             onSelectionChange={onSelectionChange}

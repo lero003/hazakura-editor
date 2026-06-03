@@ -5,6 +5,7 @@
 // surface moves area by area.
 export * from "./agentWorkbench";
 export * from "./editorChrome";
+export * from "./lMode";
 export * from "./preferences";
 export * from "./recovery";
 export * from "./reviewDesk";
