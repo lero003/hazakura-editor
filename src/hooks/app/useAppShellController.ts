@@ -32,8 +32,7 @@ import {
 import { useCompareController } from "../diff/useCompareController";
 import { useDocumentSafetyActions } from "../document/useDocumentSafetyActions";
 import { useDocumentIoController } from "../document/useDocumentIoController";
-import { usePastedImageAction } from "../document/usePastedImageAction";
-import { useEditorTabState } from "../editor/useEditorTabState";
+import { useDocumentCoreController } from "../document/useDocumentCoreController";
 import { useImagePreview } from "../editor/useImagePreview";
 import { useActiveDocumentIdentity } from "../document/useActiveDocumentIdentity";
 import { useActiveDocumentSurface } from "../document/useActiveDocumentSurface";
@@ -193,7 +192,7 @@ export function useAppShellController() {
     suspendAgentUiRefresh,
   } = foundation;
 
-  // section: editor tab state
+  // section: document core (editor tab state + pasted image)
   const {
     activeConflict,
     activeContents,
@@ -204,13 +203,16 @@ export function useAppShellController() {
     activeTab,
     dirtyTabCount,
     dirtyTabs,
+    handlePasteImage,
     pendingCloseTab,
-  } = useEditorTabState({
+  } = useDocumentCoreController({
     activeTabId,
     globalError,
     pendingCloseTabId,
     pendingDrafts,
+    setStatus,
     tabs,
+    workspaceRootPath,
   });
 
   // section: refs (editor + dialog; depends on tabs + editor tab state)
@@ -650,13 +652,6 @@ export function useAppShellController() {
     setAgentSession,
     setAgentTerminalSize,
     setStatus,
-  });
-
-  // section: pasted image action
-  const { handlePasteImage } = usePastedImageAction({
-    activeTabPath,
-    setStatus,
-    workspaceRootPath,
   });
 
   // section: editor commands
