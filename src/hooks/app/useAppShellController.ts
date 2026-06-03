@@ -21,9 +21,7 @@
 
 import { useCallback, useMemo } from "react";
 import { openAgentWindow } from "../../lib/tauri";
-import { useAgentWorkbenchSessionActions } from "../agent/useAgentWorkbenchSessionActions";
-import { useAgentTerminalActions } from "../agent/useAgentTerminalActions";
-import { useAgentWorkbenchPreferenceActions } from "../agent/useAgentWorkbenchPreferenceActions";
+import { useAgentWorkbenchController } from "../agent/useAgentWorkbenchController";
 import { useCommandPalette, type Command } from "../commandPalette/useCommandPalette";
 import {
   useGlobalSearch,
@@ -579,32 +577,22 @@ export function useAppShellController() {
     tabsRef,
   });
 
-  // section: agent preference actions
+  // section: agent workbench (preference + session + terminal actions)
   const {
-    restartAppForAgentMode,
-    updateAgentWorkbenchConsent,
-    updateAgentWorkbenchPreference,
-    updateAgentWorkbenchProvider,
-  } = useAgentWorkbenchPreferenceActions({
-    activeAgentSession,
-    agentWorkbenchActive,
-    menuLanguage,
-    setAgentLaunchGate,
-    setAgentWorkbenchConsent,
-    setAgentWorkbenchPreference,
-    setAgentWorkbenchProvider,
-    setAppRestartPending,
-    setGlobalError,
-    setStatus,
-  });
-
-  // section: agent session actions
-  const {
+    handlePresetPrompt,
+    handleSendSelectionToAgent,
     refreshAgentSessionState,
     requestAgentLaunchGateCheck,
     requestAgentSessionStop,
+    resizeAgentTerminal,
+    restartAppForAgentMode,
+    sendAgentTerminalData,
     sendWorkspacePathToAgent,
-  } = useAgentWorkbenchSessionActions({
+    updateAgentWorkbenchConsent,
+    updateAgentWorkbenchPreference,
+    updateAgentWorkbenchProvider,
+  } = useAgentWorkbenchController({
+    activeAgentSession,
     agentSession,
     agentTerminalSize,
     agentWorkbenchActive,
@@ -612,29 +600,19 @@ export function useAppShellController() {
     agentWorkbenchProvider,
     applyAgentOutput,
     closeWorkspaceContextMenu,
+    editorPaneRef,
     menuLanguage,
     setAgentLaunchGate,
     setAgentSession,
     setAgentStopPending,
+    setAgentTerminalSize,
+    setAgentWorkbenchConsent,
+    setAgentWorkbenchPreference,
+    setAgentWorkbenchProvider,
+    setAppRestartPending,
     setGlobalError,
     setStatus,
     workspaceRootPath,
-  });
-
-  // section: agent terminal actions
-  const {
-    handlePresetPrompt,
-    handleSendSelectionToAgent,
-    resizeAgentTerminal,
-    sendAgentTerminalData,
-  } = useAgentTerminalActions({
-    agentSession,
-    editorPaneRef,
-    onRefreshAgentSessionState: refreshAgentSessionState,
-    setAgentLaunchGate,
-    setAgentSession,
-    setAgentTerminalSize,
-    setStatus,
   });
 
   // section: editor commands
