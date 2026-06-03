@@ -22,11 +22,7 @@
 import { useCallback, useMemo } from "react";
 import { openAgentWindow } from "../../lib/tauri";
 import { useAgentWorkbenchController } from "../agent/useAgentWorkbenchController";
-import { useCommandPalette, type Command } from "../commandPalette/useCommandPalette";
-import {
-  useGlobalSearch,
-  type GlobalSearchRow,
-} from "../globalSearch/useGlobalSearch";
+import { useCommandPaletteController } from "../commandPalette/useCommandPaletteController";
 import { useCompareController } from "../diff/useCompareController";
 import { useDocumentSafetyActions } from "../document/useDocumentSafetyActions";
 import { useDocumentIoController } from "../document/useDocumentIoController";
@@ -640,378 +636,43 @@ export function useAppShellController() {
     setTabs,
   });
 
-  // section: command palette
-  //
-  // The palette is a thin launcher over the existing safe editor /
-  // agent / file actions — every entry is a real handler already
-  // section: global search
-  //
-  // The hook owns the search modal state, the debounced query,
-  // and the (file, match) row list. Selecting a row delegates
-  // to `openWorkspaceFile` for the file-open path and then asks
-  // the editor to jump to the matching line. The `goToLine`
-  // call is wrapped in a short `setTimeout` because
-  // `openWorkspaceFile` is async and the editor pane re-mounts
-  // on a fresh tab; the existing outline-jump path uses the
-  // same trick. We call `editorPaneRef.current?.goToLine` directly
-  // (the `goToLine` returned by `useGoToLine` reads the
-  // go-to-line dialog's text input and is not what we want here).
-  const handleOpenSearchMatch = useCallback(
-    (row: GlobalSearchRow) => {
-      void openWorkspaceFile(row.file.path).then(() => {
-        setTimeout(() => {
-          editorPaneRef.current?.goToLine(row.match.line);
-        }, 50);
-        setStatus(`Opened ${row.file.relativePath}:${row.match.line}`);
-      });
-    },
-    [editorPaneRef, openWorkspaceFile, setStatus],
-  );
-
+  // section: command palette + global search
   const {
-    activeIndex: globalSearchActiveIndex,
+    closeCommandPalette,
     closeGlobalSearch,
+    commandPaletteActiveIndex,
+    commandPaletteQuery,
+    commandPaletteVisible,
+    filteredCommands,
+    globalSearchActiveIndex,
+    globalSearchError,
+    globalSearchQuery,
+    globalSearchRows,
+    globalSearchSummary,
+    globalSearching,
     globalSearchVisible,
+    openCommandPalette,
     openGlobalSearch,
-    query: globalSearchQuery,
-    rows: globalSearchRows,
-    searchError: globalSearchError,
-    searching: globalSearching,
-    setActiveIndex: setGlobalSearchActiveIndex,
-    setQuery: setGlobalSearchQuery,
-    summary: globalSearchSummary,
-  } = useGlobalSearch({
-    workspaceRoot: workspaceRootPath,
-    onOpenMatch: handleOpenSearchMatch,
-  });
-
-  // wired into the controller. `useCommandPalette` keeps the
-  // latest commands array in a ref so the filtered memo does not
-  // have to depend on it, and exposes a tiny state machine
-  // (visible / query / active index) for the modal. Cmd+Shift+P
-  // and the modal Esc handler (via useModalKeyboardGuard) drive
-  // `openCommandPalette` and `closeCommandPalette`.
-  const commandCommands = useMemo<Command[]>(
-    () => [
-      {
-        category: "File",
-        id: "file.new",
-        keywords: ["create", "new", "tab"],
-        label: "New File",
-        run: () => {
-          void createNewFile();
-        },
-        shortcut: "⌘N",
-      },
-      {
-        category: "File",
-        id: "file.open",
-        keywords: ["open", "file", "load"],
-        label: "Open File…",
-        run: () => {
-          void openFile();
-        },
-        shortcut: "⌘O",
-      },
-      {
-        category: "File",
-        id: "file.openWorkspace",
-        keywords: ["workspace", "folder", "directory", "open"],
-        label: "Open Workspace…",
-        run: () => {
-          void openWorkspace();
-        },
-        shortcut: "⇧⌘O",
-      },
-      {
-        category: "File",
-        id: "file.quickOpen",
-        keywords: ["quick", "open", "file", "search"],
-        label: "Quick Open File",
-        run: () => {
-          toggleQuickOpen();
-        },
-        shortcut: "⌘P",
-      },
-      {
-        category: "File",
-        id: "file.save",
-        keywords: ["save", "write"],
-        label: "Save",
-        run: () => {
-          void saveActiveTab();
-        },
-        shortcut: "⌘S",
-      },
-      {
-        category: "File",
-        id: "file.saveAs",
-        keywords: ["save", "as", "duplicate"],
-        label: "Save As…",
-        run: () => {
-          void saveActiveTabAs();
-        },
-        shortcut: "⇧⌘S",
-      },
-      {
-        category: "File",
-        id: "file.closeTab",
-        keywords: ["close", "tab"],
-        label: "Close Tab",
-        run: () => {
-          if (activeTabId) {
-            requestCloseTab(activeTabId);
-          }
-        },
-        shortcut: "⌘W",
-      },
-      {
-        category: "File",
-        id: "file.closeWindow",
-        keywords: ["close", "window", "quit"],
-        label: "Close Window",
-        run: () => {
-          void requestWindowClose();
-        },
-        shortcut: "⇧⌘W",
-      },
-      {
-        category: "File",
-        id: "file.exportHtml",
-        keywords: ["export", "html"],
-        label: "Export HTML…",
-        run: () => {
-          void exportHtml();
-        },
-      },
-      {
-        category: "File",
-        id: "file.exportPdf",
-        keywords: ["export", "pdf"],
-        label: "Export PDF…",
-        run: () => {
-          void exportPdf();
-        },
-      },
-      {
-        category: "Edit",
-        id: "edit.find",
-        keywords: ["find", "search", "match"],
-        label: "Find…",
-        run: () => {
-          setFindVisible(true);
-        },
-        shortcut: "⌘F",
-      },
-      {
-        category: "Edit",
-        id: "edit.findInFiles",
-        keywords: ["find", "search", "files", "workspace", "grep"],
-        label: "Find in Files…",
-        run: () => {
-          openGlobalSearch();
-        },
-        shortcut: "⇧⌘F",
-      },
-      {
-        category: "Edit",
-        id: "edit.bold",
-        keywords: ["bold", "strong", "format", "markdown"],
-        label: "Apply Bold",
-        run: () => {
-          applyActiveMarkdownFormat("bold");
-        },
-        shortcut: "⌘B",
-      },
-      {
-        category: "Edit",
-        id: "edit.italic",
-        keywords: ["italic", "emphasis", "format", "markdown"],
-        label: "Apply Italic",
-        run: () => {
-          applyActiveMarkdownFormat("italic");
-        },
-        shortcut: "⌘I",
-      },
-      {
-        category: "Edit",
-        id: "edit.code",
-        keywords: ["code", "inline", "format", "markdown"],
-        label: "Apply Inline Code",
-        run: () => {
-          applyActiveMarkdownFormat("code");
-        },
-        shortcut: "⌘E",
-      },
-      {
-        category: "Edit",
-        id: "edit.link",
-        keywords: ["link", "url", "format", "markdown"],
-        label: "Apply Link",
-        run: () => {
-          applyActiveMarkdownFormat("link");
-        },
-        shortcut: "⌘K",
-      },
-      {
-        category: "Edit",
-        id: "edit.insertTable",
-        keywords: ["table", "insert", "grid"],
-        label: "Insert Table",
-        run: () => {
-          insertTable();
-        },
-        shortcut: "⇧⌘T",
-      },
-      {
-        category: "View",
-        id: "view.preview",
-        keywords: ["preview", "view", "render"],
-        label: "Toggle Preview Pane",
-        run: () => {
-          setPreviewVisible((current) => !current);
-        },
-        shortcut: "⌥⌘P",
-      },
-      {
-        category: "View",
-        id: "view.wrap",
-        keywords: ["wrap", "word", "line"],
-        label: "Toggle Word Wrap",
-        run: () => {
-          setEditorSettings((current) => ({
-            ...current,
-            wrapLines: !current.wrapLines,
-          }));
-        },
-        shortcut: "⌥⌘W",
-      },
-      {
-        category: "View",
-        id: "view.invisibles",
-        keywords: ["invisible", "whitespace", "characters"],
-        label: "Toggle Invisible Characters",
-        run: () => {
-          setEditorSettings((current) => ({
-            ...current,
-            showInvisibles: !current.showInvisibles,
-          }));
-        },
-        shortcut: "⌥⌘I",
-      },
-      {
-        category: "View",
-        id: "view.outline",
-        keywords: ["outline", "headings", "navigation"],
-        label: "Toggle Outline Pane",
-        run: () => {
-          toggleOutlinePane();
-        },
-      },
-      {
-        category: "View",
-        id: "view.diff",
-        keywords: ["diff", "compare"],
-        label: "Toggle Diff Pane",
-        run: () => {
-          toggleDiffPane();
-        },
-      },
-      {
-        category: "View",
-        id: "view.nextTab",
-        keywords: ["tab", "next", "focus"],
-        label: "Focus Next Tab",
-        run: () => {
-          focusAdjacentTab("next");
-        },
-        shortcut: "⌥⌘→",
-      },
-      {
-        category: "View",
-        id: "view.prevTab",
-        keywords: ["tab", "previous", "focus"],
-        label: "Focus Previous Tab",
-        run: () => {
-          focusAdjacentTab("previous");
-        },
-        shortcut: "⌥⌘←",
-      },
-      {
-        category: "Review",
-        id: "review.open",
-        keywords: ["review", "diff", "compare"],
-        label: "Open Review Desk",
-        run: () => {
-          toggleReviewDesk();
-        },
-        shortcut: "⇧⌘R",
-      },
-      {
-        category: "Review",
-        id: "review.tabAgainstDisk",
-        keywords: ["review", "diff", "disk"],
-        label: "Review Tab Against Disk",
-        run: () => {
-          if (activeTab) {
-            requestReviewTabAgainstDisk(activeTab);
-          }
-        },
-      },
-      {
-        category: "Agent",
-        id: "agent.open",
-        keywords: ["agent", "claude", "codex", "opencode", "pi", "workbench"],
-        label: "Open Agent Window",
-        run: () => {
-          void openAgentWindow(themePreference);
-        },
-      },
-      {
-        category: "Agent",
-        id: "agent.sendSelection",
-        keywords: ["agent", "send", "selection"],
-        label: "Send Selection to Agent",
-        run: () => {
-          const text = editorPaneRef.current?.getSelectionText() ?? "";
-          handleSendSelectionToAgent(text);
-        },
-      },
-      {
-        category: "Agent",
-        id: "agent.preferences",
-        keywords: ["agent", "preferences", "settings", "workbench"],
-        label: "Agent Workbench Preferences…",
-        run: () => {
-          setPreferencesDialogMode("agent");
-        },
-      },
-      {
-        category: "Settings",
-        id: "settings.open",
-        keywords: ["settings", "preferences"],
-        label: "Settings…",
-        run: () => {
-          setPreferencesDialogMode("settings");
-        },
-        shortcut: "⌘,",
-      },
-    ],
-    [
-      activeTab,
-      activeTabId,
+    runCommand,
+    setCommandPaletteActiveIndex,
+    setCommandPaletteQuery,
+    setGlobalSearchActiveIndex,
+    setGlobalSearchQuery,
+  } = useCommandPaletteController({
+    actions: {
       applyActiveMarkdownFormat,
       createNewFile,
-      editorPaneRef,
       exportHtml,
       exportPdf,
       focusAdjacentTab,
       handleSendSelectionToAgent,
       insertTable,
-      openAgentWindow,
+      openAgentWindow: (theme) => {
+        void openAgentWindow(theme);
+      },
       openFile,
-      openGlobalSearch,
       openWorkspace,
+      openWorkspaceFile,
       requestCloseTab,
       requestReviewTabAgainstDisk,
       requestWindowClose,
@@ -1021,24 +682,18 @@ export function useAppShellController() {
       setFindVisible,
       setPreferencesDialogMode,
       setPreviewVisible,
-      themePreference,
       toggleDiffPane,
       toggleOutlinePane,
       toggleQuickOpen,
       toggleReviewDesk,
-    ],
-  );
-  const {
-    activeIndex: commandPaletteActiveIndex,
-    closeCommandPalette,
-    commandPaletteVisible,
-    filteredCommands,
-    openCommandPalette,
-    query: commandPaletteQuery,
-    runCommand,
-    setActiveIndex: setCommandPaletteActiveIndex,
-    setQuery: setCommandPaletteQuery,
-  } = useCommandPalette({ commands: commandCommands });
+    },
+    activeTab,
+    activeTabId,
+    editorPaneRef,
+    setStatus,
+    themePreference,
+    workspaceRootPath,
+  });
 
   // section: app runtime effects (side effect)
   useAppRuntimeEffects({
@@ -1312,7 +967,7 @@ export function useAppShellController() {
     onTogglePreview: togglePreviewPane,
     onCloseGlobalSearch: closeGlobalSearch,
     onOpenGlobalSearch: openGlobalSearch,
-    onRunGlobalSearchMatch: handleOpenSearchMatch,
+    onRunGlobalSearchMatch: openGlobalSearch,
     onSetGlobalSearchActiveIndex: setGlobalSearchActiveIndex,
     onSetGlobalSearchQuery: setGlobalSearchQuery,
     openFile,
