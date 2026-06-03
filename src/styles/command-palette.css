@@ -75,21 +75,34 @@
   cursor: pointer;
   text-align: left;
   box-sizing: border-box;
+  transition: background 0.12s var(--ease-standard);
 }
 
-.command-palette-item.active {
+/* `animations.css` ships a global `button:hover:not(:disabled)`
+   that paints `--surface-strong` (near-white in light themes),
+   bumps `translateY(-1px)`, and adds a box-shadow. That rule has
+   higher specificity than `.command-palette-item.active` and was
+   stealing the hover background — leaving the active text color
+   (`var(--surface)`, white) sitting on a near-white background,
+   i.e. invisible text on light themes. Qualifying these rules
+   with the `button` type matches the global rule's specificity,
+   and source-order (command-palette.css loads after animations.css)
+   makes them win the tiebreak. The hovered row is always promoted
+   to `.active` via the component's onMouseEnter, so we just
+   neutralise the global hover decoration for non-active rows. */
+button.command-palette-item:hover {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  transform: none;
+}
+
+button.command-palette-item.active {
   background: var(--accent);
   color: var(--surface);
-}
-
-/* The non-active hover state uses --surface-muted (defined in every
-   theme) so there is real visual feedback on mouse-over instead of
-   falling through to the undefined --surface-hover token and looking
-   identical to the rest state. In practice `onMouseEnter` promotes
-   the same item to active on the next render, so this guard mostly
-   covers the 1-frame gap between pointer-enter and React re-render. */
-.command-palette-item:hover:not(.active) {
-  background: var(--surface-muted);
+  border-color: transparent;
+  box-shadow: none;
+  transform: none;
 }
 
 .command-palette-label {
