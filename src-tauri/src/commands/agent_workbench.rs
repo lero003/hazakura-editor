@@ -150,3 +150,26 @@ pub(crate) fn resize_agent_workbench_terminal_with_label(
     ensure_label_is_main_or_agent(label)?;
     resize_agent_workbench_terminal_with_store(session_store, columns, rows)
 }
+
+// `list_agent_provider_availability` is a read-only provider
+// probe: it walks the same search path the start-session
+// preflight uses and returns a flat availability snapshot for
+// the dropdown. It deliberately does NOT take the session store
+// or the runtime adapter — no session state is read or written.
+// Gated to main|agent so the detached Agent window can fetch
+// from its own mount, matching the other session commands.
+#[tauri::command]
+pub(crate) fn list_agent_provider_availability<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+) -> Result<Vec<AgentProviderAvailability>, String> {
+    list_agent_provider_availability_with_label(window.label())
+}
+
+pub(crate) fn list_agent_provider_availability_with_label(
+    label: &str,
+) -> Result<Vec<AgentProviderAvailability>, String> {
+    ensure_label_is_main_or_agent(label)?;
+    Ok(list_agent_provider_availability_with_store(
+        agent_provider_app_search_path().as_deref(),
+    ))
+}

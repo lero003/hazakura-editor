@@ -720,6 +720,35 @@ pub(crate) fn build_agent_workbench_preflight(
     })
 }
 
+// `list_agent_provider_availability_with_store` resolves each
+// allowlisted Agent provider against the same search path the
+// start-session preflight uses, returning a flat per-provider
+// snapshot. The TS side surfaces it in the provider dropdown so
+// the user can see which CLIs are installed before pressing
+// Start. Takes the resolved `path_var` (rather than reading
+// `env::var_os("PATH")` itself) so the shim is testable in
+// isolation — the `*_with_label` shim calls
+// `agent_provider_app_search_path()` and passes the result.
+pub(crate) fn list_agent_provider_availability_with_store(
+    path_var: Option<&OsStr>,
+) -> Vec<AgentProviderAvailability> {
+    AGENT_ALLOWLISTED_PROVIDERS
+        .iter()
+        .map(|provider| {
+            let resolved = path_var
+                .and_then(|candidate_path| {
+                    find_allowlisted_agent_provider_in_path_env(provider, candidate_path)
+                })
+                .map(|path| path.to_string_lossy().to_string());
+            AgentProviderAvailability {
+                provider: (*provider).to_string(),
+                available: resolved.is_some(),
+                path: resolved.unwrap_or_default(),
+            }
+        })
+        .collect()
+}
+
 pub(crate) fn validate_agent_workbench_launch(
     agent_workbench_enabled: bool,
     consent_acknowledged: bool,

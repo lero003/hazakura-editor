@@ -94,6 +94,7 @@ pub fn run() {
             get_agent_workbench_session_state,
             write_agent_workbench_session_input,
             resize_agent_workbench_terminal,
+            list_agent_provider_availability,
             drain_opened_files,
             request_app_restart,
             save_text_file,

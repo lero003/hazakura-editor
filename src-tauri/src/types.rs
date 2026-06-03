@@ -26,6 +26,12 @@ pub(crate) const AGENT_PROVIDER_CODEX: &str = "codex";
 pub(crate) const AGENT_PROVIDER_OPENCODE: &str = "opencode";
 pub(crate) const AGENT_PROVIDER_PI: &str = "pi";
 pub(crate) const AGENT_PROVIDER_CLAUDE: &str = "claude";
+pub(crate) const AGENT_ALLOWLISTED_PROVIDERS: &[&str] = &[
+    AGENT_PROVIDER_CODEX,
+    AGENT_PROVIDER_OPENCODE,
+    AGENT_PROVIDER_PI,
+    AGENT_PROVIDER_CLAUDE,
+];
 pub(crate) const AGENT_PROVIDER_GUI_SEARCH_DIRS: &[&str] = &[
     "/opt/homebrew/bin",
     "/opt/homebrew/sbin",
@@ -152,6 +158,14 @@ pub(crate) struct AgentWorkbenchPreflight {
     pub(crate) provider_path: Option<String>,
     pub(crate) launch_implemented: bool,
     pub(crate) searched_paths: Vec<String>,
+}
+
+#[derive(Debug, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct AgentProviderAvailability {
+    pub(crate) provider: String,
+    pub(crate) available: bool,
+    pub(crate) path: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]

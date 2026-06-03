@@ -1724,3 +1724,50 @@ fn agent_workbench_provider_lookup_ignores_non_allowlisted_commands() {
 
     let _ = fs::remove_dir_all(dir);
 }
+
+#[test]
+fn agent_provider_availability_marks_only_installed_provider_available() {
+    // Build a path env that only contains `codex`; `opencode`,
+    // `pi`, and `claude` are intentionally absent.
+    let dir = unique_test_dir("agent_provider_availability");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let codex_path = dir.join(AGENT_PROVIDER_CODEX);
+    fs::write(&codex_path, b"#!/bin/sh\n").expect("write fake codex");
+    make_executable(&codex_path);
+    let path_env = env::join_paths([dir.clone()]).expect("join PATH fixture");
+
+    let snapshot = list_agent_provider_availability_with_store(Some(path_env.as_os_str()));
+
+    let by_provider: std::collections::HashMap<&str, &AgentProviderAvailability> = snapshot
+        .iter()
+        .map(|entry| (entry.provider.as_str(), entry))
+        .collect();
+
+    assert_eq!(snapshot.len(), AGENT_ALLOWLISTED_PROVIDERS.len());
+    for provider in AGENT_ALLOWLISTED_PROVIDERS {
+        assert!(
+            by_provider.contains_key(*provider),
+            "snapshot should include {provider}"
+        );
+    }
+    let codex = by_provider[AGENT_PROVIDER_CODEX];
+    assert!(codex.available, "codex should be available");
+    assert_eq!(codex.path, codex_path.to_string_lossy());
+    for missing in [
+        AGENT_PROVIDER_OPENCODE,
+        AGENT_PROVIDER_PI,
+        AGENT_PROVIDER_CLAUDE,
+    ] {
+        let entry = by_provider[missing];
+        assert!(
+            !entry.available,
+            "{missing} should NOT be available (fixture omitted it)"
+        );
+        assert!(
+            entry.path.is_empty(),
+            "{missing} should have empty path when missing"
+        );
+    }
+
+    let _ = fs::remove_dir_all(dir);
+}
