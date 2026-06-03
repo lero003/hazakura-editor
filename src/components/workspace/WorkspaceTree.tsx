@@ -48,6 +48,7 @@ function TreeEntry({
   onOpenContextMenu: (
     entry: WorkspaceTreeEntry,
     event: ReactMouseEvent<HTMLButtonElement>,
+    kind: "file" | "directory" | "root",
   ) => void;
   onOpenFile: (path: string) => void | Promise<void>;
   onSelectCompareFile: (entry: WorkspaceTreeEntry) => void;
@@ -70,7 +71,7 @@ function TreeEntry({
             ? onSelectCompareFile(entry)
             : void onOpenFile(entry.path)
         }
-        onContextMenu={(event) => onOpenContextMenu(entry, event)}
+        onContextMenu={(event) => onOpenContextMenu(entry, event, "file")}
         onDragStart={(event) => {
           startWorkspacePathDrag(event, entry);
         }}
@@ -115,6 +116,7 @@ function TreeEntry({
         className="tree-directory-button"
         disabled={loading}
         onClick={() => void toggleDirectory()}
+        onContextMenu={(event) => onOpenContextMenu(entry, event, "directory")}
         title={entry.path}
         type="button"
       >
@@ -170,6 +172,7 @@ export function WorkspaceTree({
   onOpenContextMenu: (
     entry: WorkspaceTreeEntry,
     event: ReactMouseEvent<HTMLButtonElement>,
+    kind: "file" | "directory" | "root",
   ) => void;
   onOpenFile: (path: string) => void | Promise<void>;
   onSelectCompareFile: (entry: WorkspaceTreeEntry) => void;

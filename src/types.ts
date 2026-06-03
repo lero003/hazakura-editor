@@ -249,10 +249,13 @@ export type CompareAnchor = {
   name: string;
 };
 
+export type WorkspaceContextMenuEntryKind = "file" | "directory" | "root";
+
 export type WorkspaceContextMenuState = CompareAnchor & {
   x: number;
   y: number;
   canCompare: boolean;
+  kind: WorkspaceContextMenuEntryKind;
 };
 
 export type DiffLine = {

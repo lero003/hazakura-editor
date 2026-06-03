@@ -94,7 +94,9 @@ type AppWorkspaceProps = {
   openWorkspaceContextMenu: (
     entry: WorkspaceTreeEntry,
     event: ReactMouseEvent<HTMLButtonElement>,
+    kind: "file" | "directory" | "root",
   ) => void;
+  openRootWorkspaceContextMenu: (event: ReactMouseEvent<HTMLDivElement>) => void;
   openWorkspaceFile: (path: string) => unknown;
   previewColumnPercent: number;
   previewPaneRef: RefObject<HTMLDivElement | null>;
@@ -173,6 +175,7 @@ export function AppWorkspace({
   openPreviewMarkdownLink,
   openWorkspace,
   openWorkspaceContextMenu,
+  openRootWorkspaceContextMenu,
   openWorkspaceFile,
   previewColumnPercent,
   previewPaneRef,
@@ -217,6 +220,7 @@ export function AppWorkspace({
         copy={safeEditorCopy}
         onLoadDirectory={loadWorkspaceDirectory}
         onOpenContextMenu={openWorkspaceContextMenu}
+        onOpenRootContextMenu={openRootWorkspaceContextMenu}
         onOpenFile={(path) => void openWorkspaceFile(path)}
         onOpenWorkspace={() => void openWorkspace()}
         onSelectCompareFile={selectWorkspaceCompareFile}

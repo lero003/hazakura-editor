@@ -255,6 +255,7 @@ export function useAppShellController() {
   // section: workspace context menu
   const {
     closeWorkspaceContextMenu,
+    openRootWorkspaceContextMenu,
     openWorkspaceContextMenu,
     workspaceContextMenu,
   } = foundation;
@@ -969,6 +970,7 @@ export function useAppShellController() {
     openFile,
     openFilePath,
     openPreviewMarkdownLink,
+    openRootWorkspaceContextMenu,
     openWorkspace,
     openWorkspaceContextMenu,
     openWorkspaceFile,

@@ -1,4 +1,4 @@
-import type { CompareAnchor, MenuLanguage, WorkspaceContextMenuState } from "../../types";
+import type { CompareAnchor, MenuLanguage, WorkspaceContextMenuEntryKind, WorkspaceContextMenuState } from "../../types";
 import { isJapaneseMenuLanguage } from "../../types";
 import { isKanaStyle } from "../../lib/locale/_helpers";
 
@@ -7,6 +7,7 @@ export function WorkspaceContextMenu({
   anchor,
   canSendToAgent,
   compareSource,
+  kind = "file",
   menuLanguage,
   onClearCompareSource,
   onClose,
@@ -22,6 +23,7 @@ export function WorkspaceContextMenu({
   anchor: WorkspaceContextMenuState;
   canSendToAgent: boolean;
   compareSource: CompareAnchor | null;
+  kind?: WorkspaceContextMenuEntryKind;
   menuLanguage: MenuLanguage;
   onClearCompareSource: () => void;
   onClose: () => void;

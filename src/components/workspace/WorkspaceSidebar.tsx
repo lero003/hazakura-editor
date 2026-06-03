@@ -14,7 +14,9 @@ type WorkspaceSidebarProps = {
   onOpenContextMenu: (
     entry: WorkspaceTreeEntry,
     event: ReactMouseEvent<HTMLButtonElement>,
+    kind: "file" | "directory" | "root",
   ) => void;
+  onOpenRootContextMenu: (event: ReactMouseEvent<HTMLDivElement>) => void;
   onOpenFile: (path: string) => void | Promise<void>;
   onOpenWorkspace: () => void;
   onSelectCompareFile: (entry: WorkspaceTreeEntry) => void;
@@ -30,6 +32,7 @@ export function WorkspaceSidebar({
   copy,
   onLoadDirectory,
   onOpenContextMenu,
+  onOpenRootContextMenu,
   onOpenFile,
   onOpenWorkspace,
   onSelectCompareFile,
@@ -38,7 +41,10 @@ export function WorkspaceSidebar({
 }: WorkspaceSidebarProps) {
   return (
     <aside className="file-tree-pane" aria-label={copy.workspaceFileTree}>
-      <div className="workspace-header">
+      <div
+        className="workspace-header"
+        onContextMenu={onOpenRootContextMenu}
+      >
         <div className="workspace-heading">
           <div className="workspace-labels">
             <span className="workspace-kicker">{copy.workspace}</span>

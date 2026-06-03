@@ -49,7 +49,9 @@ export function useAppShellFoundation() {
   const agentUiGate = useAgentUiRefreshGate();
   const reviewDesk = useReviewDeskState();
   const quickOpen = useQuickOpenState();
-  const workspaceContextMenu = useWorkspaceContextMenu();
+  const workspaceContextMenu = useWorkspaceContextMenu({
+    workspaceRootPath: workspaceShell.workspaceRootPath,
+  });
 
   const { affirmation, lastAffirmedAt } = useSaveAffirmation(
     feedbackState.status,
