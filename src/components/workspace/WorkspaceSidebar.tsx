@@ -64,7 +64,6 @@ export function WorkspaceSidebar({
   workspaceTree,
 }: WorkspaceSidebarProps) {
   const [newMenuOpen, setNewMenuOpen] = useState(false);
-  const [isRootDragOver, setIsRootDragOver] = useState(false);
   const newMenuRef = useRef<HTMLDivElement | null>(null);
 
   // Dismiss the popover on outside click / Esc. Mirrors the
@@ -128,29 +127,12 @@ export function WorkspaceSidebar({
     event.dataTransfer.dropEffect = "move";
   };
 
-  const handleRootDragEnter = (event: ReactDragEvent<HTMLDivElement>) => {
-    if (!workspaceRootPath) return;
-    if (!Array.from(event.dataTransfer.types).includes(INTERNAL_MOVE_MIME)) {
-      return;
-    }
-    event.preventDefault();
-    setIsRootDragOver(true);
-  };
-
-  const handleRootDragLeave = (event: ReactDragEvent<HTMLDivElement>) => {
-    if (event.currentTarget.contains(event.relatedTarget as Node | null)) {
-      return;
-    }
-    setIsRootDragOver(false);
-  };
-
   const handleRootDrop = (event: ReactDragEvent<HTMLDivElement>) => {
     if (!workspaceRootPath) return;
     if (!Array.from(event.dataTransfer.types).includes(INTERNAL_MOVE_MIME)) {
       return;
     }
     event.preventDefault();
-    setIsRootDragOver(false);
     const srcPath = event.dataTransfer.getData(INTERNAL_MOVE_MIME);
     if (!srcPath || srcPath === workspaceRootPath) {
       return;
@@ -161,10 +143,8 @@ export function WorkspaceSidebar({
   return (
     <aside className="file-tree-pane" aria-label={copy.workspaceFileTree}>
       <div
-        className={`workspace-header${isRootDragOver ? " drag-over" : ""}`}
+        className="workspace-header"
         onContextMenu={onOpenRootContextMenu}
-        onDragEnter={handleRootDragEnter}
-        onDragLeave={handleRootDragLeave}
         onDragOver={handleRootDragOver}
         onDrop={handleRootDrop}
       >
@@ -253,7 +233,6 @@ export function WorkspaceSidebar({
             type="button"
           >
             <TrashIcon />
-            <span>{fileOpsCopy.moveToTrash}</span>
           </button>
         </div>
       ) : null}

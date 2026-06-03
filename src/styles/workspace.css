@@ -9,8 +9,10 @@
 .file-tree-pane {
   background: var(--surface-muted);
   border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
 }
 
 :root[data-theme="dark"] .file-tree-pane {
@@ -45,24 +47,20 @@
   justify-content: center;
   color: var(--text-muted);
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   font-size: 13px;
   gap: 12px;
+  min-height: 0;
   padding: 32px 16px;
   text-align: center;
-  height: 100%;
 }
 
 .workspace-header {
   border-bottom: 1px solid var(--border);
+  flex: 0 0 auto;
   min-width: 0;
   padding: 10px 12px;
-  transition: background 0.15s ease, box-shadow 0.15s ease;
-}
-
-.workspace-header.drag-over {
-  background: var(--accent-soft);
-  box-shadow: inset 0 -2px 0 var(--accent);
 }
 
 .workspace-heading {
@@ -194,7 +192,10 @@
 }
 
 .workspace-tree {
+  flex: 1 1 auto;
   font-size: 13px;
+  min-height: 0;
+  overflow: auto;
   padding: 12px 8px 24px;
 }
 
@@ -225,13 +226,6 @@
 .tree-directory-button:hover,
 .tree-file:hover {
   background: rgba(0, 0, 0, 0.03);
-  color: var(--text);
-}
-
-.tree-directory-button.drag-over,
-.tree-file.drag-over {
-  background: var(--accent-soft);
-  box-shadow: inset 0 0 0 1px var(--accent);
   color: var(--text);
 }
 
@@ -1232,8 +1226,7 @@
   display: flex;
   flex: 1 1 auto;
   font: inherit;
-  gap: 8px;
-  justify-content: flex-start;
+  justify-content: center;
   min-height: 32px;
   padding: 4px 10px;
   transition: background 0.15s ease, border-color 0.15s ease;

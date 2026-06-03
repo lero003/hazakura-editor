@@ -89,7 +89,6 @@ function TreeEntry({
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [loading, setLoading] = useState(false);
   const [renameDraft, setRenameDraft] = useState<string | null>(null);
-  const [isDragOver, setIsDragOver] = useState(false);
   const isRenaming = renamingPath === entry.path;
   const renameInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -211,42 +210,23 @@ function TreeEntry({
     requestRename(entry.path);
   };
 
-  const handleDragOver = (event: ReactDragEvent<HTMLButtonElement>) => {
+  // Drop-only — no hover visual. The browser still requires
+  // preventDefault() on dragover for the drop event to fire.
+  // The directory self-check happens in handleDrop because the
+  // HTML5 spec only exposes dataTransfer.getData() on `drop`.
+  const handleDragOver = (event: ReactDragEvent<HTMLDivElement>) => {
     if (!isInternalMoveDrag(event)) {
       return;
     }
-    // The HTML5 spec only exposes dataTransfer.getData() on `drop`
-    // events; during dragover/dragenter the payload is protected
-    // and returns the empty string. The directory self-check has
-    // to happen in handleDrop instead — opting in to the drop
-    // here is enough to make the browser fire a drop event.
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
   };
 
-  const handleDragEnter = (event: ReactDragEvent<HTMLButtonElement>) => {
+  const handleDrop = (event: ReactDragEvent<HTMLDivElement>) => {
     if (!isInternalMoveDrag(event)) {
       return;
     }
     event.preventDefault();
-    setIsDragOver(true);
-  };
-
-  const handleDragLeave = (event: ReactDragEvent<HTMLButtonElement>) => {
-    // Only clear on leave that escapes the row — nested children
-    // fire dragleave as the cursor crosses their borders.
-    if (event.currentTarget.contains(event.relatedTarget as Node | null)) {
-      return;
-    }
-    setIsDragOver(false);
-  };
-
-  const handleDrop = (event: ReactDragEvent<HTMLButtonElement>) => {
-    if (!isInternalMoveDrag(event)) {
-      return;
-    }
-    event.preventDefault();
-    setIsDragOver(false);
     const srcPath = readInternalMovePayload(event);
     if (!srcPath || srcPath === entry.path) {
       return;
@@ -255,18 +235,18 @@ function TreeEntry({
   };
 
   return (
-    <div className="tree-directory">
+    <div
+      className="tree-directory"
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
       <button
         aria-expanded={expanded}
-        className={`tree-directory-button${isDragOver ? " drag-over" : ""}`}
+        className="tree-directory-button"
         disabled={loading}
         onClick={handleDirectoryClick}
         onContextMenu={(event) => onOpenContextMenu(entry, event, "directory")}
         onDoubleClick={handleDirectoryDoubleClick}
-        onDragEnter={handleDragEnter}
-        onDragLeave={handleDragLeave}
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
         title={entry.path}
         type="button"
       >
@@ -330,22 +310,23 @@ function RenameInput({
   onChange: (value: string) => void;
   onCommit: (value: string) => void;
 }) {
-  // Blur commits a non-empty trimmed name, otherwise cancels.
-  // Without this, clicking elsewhere keeps the input focused
-  // and the row never returns to its non-editing state.
-  const commitOrCancel = () => {
-    const value = (draft ?? "").trim();
-    if (!value) {
-      onCancel();
-      return;
-    }
-    onCommit(value);
+  // Blur cancels so clicking outside the input always exits
+  // rename mode immediately, even if the user did not type
+  // anything (the input shouldn't stay focused on an unedited
+  // name). Enter is the only path that commits.
+  const handleBlur = () => {
+    onCancel();
   };
 
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       event.preventDefault();
-      commitOrCancel();
+      const value = (draft ?? "").trim();
+      if (!value) {
+        onCancel();
+        return;
+      }
+      onCommit(value);
       return;
     }
     if (event.key === "Escape") {
@@ -368,7 +349,7 @@ function RenameInput({
     <input
       autoComplete="off"
       className="tree-rename-input"
-      onBlur={commitOrCancel}
+      onBlur={handleBlur}
       onChange={(event) => onChange(event.target.value)}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
