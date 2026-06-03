@@ -1178,3 +1178,40 @@
   transition: opacity 0.2s ease;
 }
 
+.tab-context-menu {
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  min-width: 172px;
+  padding: 6px;
+  position: fixed;
+  width: min(200px, calc(100vw - 16px));
+  z-index: 120;
+}
+
+.tab-context-menu button {
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
+  box-shadow: none;
+  color: var(--text);
+  transition: background 0.15s ease;
+  justify-content: flex-start;
+  min-height: 28px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 5px 8px;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tab-context-menu button:hover:not(:disabled),
+.tab-context-menu button:focus-visible {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+

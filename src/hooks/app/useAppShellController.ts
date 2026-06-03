@@ -256,9 +256,12 @@ export function useAppShellController() {
 
   // section: workspace context menu
   const {
+    closeTabContextMenu,
     closeWorkspaceContextMenu,
     openRootWorkspaceContextMenu,
+    openTabContextMenu,
     openWorkspaceContextMenu,
+    tabContextMenu,
     workspaceContextMenu,
   } = foundation;
 
@@ -886,6 +889,7 @@ export function useAppShellController() {
     closePreferencesFromKeyboard,
     closeQuickOpen,
     closeTabCancelButtonRef,
+    closeTabContextMenu,
     closeTabDialogRef,
     closeTabNow,
     closeWorkspaceContextMenu,
@@ -979,6 +983,7 @@ export function useAppShellController() {
     onSubmitRename: renameWorkspacePath,
     onStopAgentSession: requestAgentSessionStop,
     onSuspendAgentUiRefresh: suspendAgentUiRefresh,
+    onTabContextMenu: openTabContextMenu,
     onTabPointerDown: handleTabPointerDown,
     onTabPointerMove: handleTabPointerMove,
     onToggleDiff: toggleDiffPane,
@@ -993,6 +998,7 @@ export function useAppShellController() {
     openFilePath,
     openPreviewMarkdownLink,
     openRootWorkspaceContextMenu,
+    openTabContextMenu,
     openWorkspace,
     openWorkspaceContextMenu,
     openWorkspaceFile,
@@ -1072,6 +1078,7 @@ export function useAppShellController() {
     status,
     syncEditorScroll,
     syncPreviewScroll,
+    tabContextMenu,
     tabs,
     themePreference,
     workspaceContextMenu,

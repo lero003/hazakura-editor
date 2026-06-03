@@ -24,6 +24,10 @@ type AppTopChromeProps = {
   onPointerEnter: () => void;
   onReviewChanges: (tab: EditorTab) => void;
   onSelectTab: (tabId: string) => void;
+  onTabContextMenu: (
+    path: string,
+    event: import("react").MouseEvent<HTMLDivElement>,
+  ) => void;
   onTabPointerDown: (
     event: ReactPointerEvent<HTMLDivElement>,
     tabId: string,
@@ -53,6 +57,7 @@ export function AppTopChrome({
   onPointerEnter,
   onReviewChanges,
   onSelectTab,
+  onTabContextMenu,
   onTabPointerDown,
   onTabPointerMove,
   onToggleDiff,
@@ -74,6 +79,7 @@ export function AppTopChrome({
       onFinishTabPointerDrag={onFinishTabPointerDrag}
       onPointerEnter={onPointerEnter}
       onSelectTab={onSelectTab}
+      onTabContextMenu={onTabContextMenu}
       onTabPointerDown={onTabPointerDown}
       onTabPointerMove={onTabPointerMove}
       shouldSuppressTabClick={shouldSuppressTabClick}

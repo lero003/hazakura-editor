@@ -1,4 +1,5 @@
 import type {
+  MouseEvent as ReactMouseEvent,
   PointerEvent as ReactPointerEvent,
   ReactNode,
 } from "react";
@@ -14,6 +15,10 @@ type TabBarProps = {
   onFinishTabPointerDrag: (target?: EventTarget | null) => void;
   onPointerEnter: () => void;
   onSelectTab: (tabId: string) => void;
+  onTabContextMenu: (
+    path: string,
+    event: ReactMouseEvent<HTMLDivElement>,
+  ) => void;
   onTabPointerDown: (
     event: ReactPointerEvent<HTMLDivElement>,
     tabId: string,
@@ -33,6 +38,7 @@ export function TabBar({
   onFinishTabPointerDrag,
   onPointerEnter,
   onSelectTab,
+  onTabContextMenu,
   onTabPointerDown,
   onTabPointerMove,
   shouldSuppressTabClick,
@@ -57,6 +63,7 @@ export function TabBar({
                 data-tab-id={tab.id}
                 key={tab.id}
                 role="presentation"
+                onContextMenu={(event) => onTabContextMenu(tab.path, event)}
                 onPointerDown={(event) => onTabPointerDown(event, tab.id)}
                 onPointerMove={onTabPointerMove}
                 onPointerUp={(event) =>

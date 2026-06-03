@@ -23,6 +23,7 @@ import type {
   ThemePreference,
   WorkspaceContextMenuState,
 } from "../../types";
+import type { TabContextMenuState } from "../editor/TabContextMenu";
 import type { Command } from "../../hooks/commandPalette/useCommandPalette";
 import type {
   GlobalSearchRow,
@@ -32,6 +33,7 @@ import { agentSessionStateLabel, providerLabel } from "../../features/agent/agen
 import { QuickOpen } from "../editor/QuickOpen";
 import { CommandPalette } from "../commandPalette/CommandPalette";
 import { GlobalSearch } from "../globalSearch/GlobalSearch";
+import { TabContextMenu } from "../editor/TabContextMenu";
 import { WorkspaceContextMenu } from "../workspace/WorkspaceContextMenu";
 import { AppCloseDialog, DirtyTabCloseDialog } from "./CloseDialogs";
 import { PreferencesDialog } from "./PreferencesDialog";
@@ -59,6 +61,7 @@ type AppOverlaysProps = {
   closePreferencesFromKeyboard: () => void;
   closeQuickOpen: () => void;
   closeTabCancelButtonRef: RefObject<HTMLButtonElement | null>;
+  closeTabContextMenu: () => void;
   closeTabDialogRef: RefObject<HTMLElement | null>;
   closeTabNow: (tabId: string) => void;
   closeWorkspaceContextMenu: () => void;
@@ -123,6 +126,7 @@ type AppOverlaysProps = {
   setMenuLanguage: (language: MenuLanguage) => void;
   setPreviewVisible: (visible: boolean) => void;
   setThemePreference: (theme: ThemePreference) => void;
+  tabContextMenu: TabContextMenuState | null;
   themePreference: ThemePreference;
   workspaceContextMenu: WorkspaceContextMenuState | null;
   workspaceRootPath: string | null;
@@ -148,6 +152,7 @@ export function AppOverlays({
   closePreferencesFromKeyboard,
   closeQuickOpen,
   closeTabCancelButtonRef,
+  closeTabContextMenu,
   closeTabDialogRef,
   closeTabNow,
   closeWorkspaceContextMenu,
@@ -209,6 +214,7 @@ export function AppOverlays({
   setMenuLanguage,
   setPreviewVisible,
   setThemePreference,
+  tabContextMenu,
   themePreference,
   workspaceContextMenu,
   workspaceRootPath,
@@ -378,6 +384,23 @@ export function AppOverlays({
           }
           onSetCompareSource={() => setCompareSource(workspaceContextMenu)}
           onSetCompareTarget={() => setCompareTargetFile(workspaceContextMenu)}
+        />
+      ) : null}
+
+      {tabContextMenu ? (
+        <TabContextMenu
+          anchor={tabContextMenu}
+          menuLanguage={menuLanguage}
+          onClose={closeTabContextMenu}
+          onRename={() => {
+            const path = tabContextMenu.path;
+            closeTabContextMenu();
+            // Same rename lifecycle as the workspace context
+            // menu: AppOverlays fires `requestRename` and the
+            // tree owns the input. The tree will re-render the
+            // matching file row into the rename input state.
+            requestRename(path);
+          }}
         />
       ) : null}
     </>

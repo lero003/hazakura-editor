@@ -22,6 +22,7 @@ import { useDraftRecoveryState } from "../document/useDraftRecoveryState";
 import { useSaveAffirmation } from "../document/useSaveAffirmation";
 import { useEditorSelectionState } from "../editor/useEditorSelectionState";
 import { useEditorTabsState } from "../editor/useEditorTabsState";
+import { useTabContextMenu } from "../editor/useTabContextMenu";
 import { useReviewDeskState } from "../review/useReviewDeskState";
 import { useQuickOpenState } from "../workspace/useQuickOpenState";
 import { useRecentEntries } from "../workspace/useRecentEntries";
@@ -52,6 +53,7 @@ export function useAppShellFoundation() {
   const workspaceContextMenu = useWorkspaceContextMenu({
     workspaceRootPath: workspaceShell.workspaceRootPath,
   });
+  const tabContextMenu = useTabContextMenu();
 
   const { affirmation, lastAffirmedAt } = useSaveAffirmation(
     feedbackState.status,
@@ -75,6 +77,7 @@ export function useAppShellFoundation() {
     ...reviewDesk,
     ...quickOpen,
     ...workspaceContextMenu,
+    ...tabContextMenu,
     saveAffirmation: affirmation,
     saveAffirmationKey: lastAffirmedAt,
   };
