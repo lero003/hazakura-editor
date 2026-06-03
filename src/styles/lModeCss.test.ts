@@ -9,10 +9,21 @@ const lModeCss = readFileSync(
 );
 
 describe("lMode.css", () => {
-  it("keeps the CodeMirror scroller as the L Mode scroll surface", () => {
-    expect(lModeCss).toMatch(
-      /:root\[data-l-mode="on"\] \.cm-scroller\s*{[^}]*overflow-y:\s*auto/s,
-    );
+  it("keeps the CodeMirror scroller geometry close to its default", () => {
+    const scrollerRule =
+      lModeCss.match(
+        /:root\[data-l-mode="on"\] \.cm-scroller\s*{(?<body>[^}]*)}/s,
+      )?.groups?.body ?? "";
+
+    expect(scrollerRule).toMatch(/overflow-y:\s*auto/);
+    expect(scrollerRule).not.toMatch(/overflow-x:\s*hidden/);
+    expect(scrollerRule).not.toMatch(/padding:/);
+  });
+
+  it("does not restyle CodeMirror's measured line boxes with margins", () => {
+    expect(lModeCss).not.toMatch(/\.cm-line[^{]*{[^}]*margin/s);
+    expect(lModeCss).not.toMatch(/\.cm-lmode-heading-[^{]*{[^}]*margin/s);
+    expect(lModeCss).not.toMatch(/\.cm-lmode-blockquote\s*{[^}]*margin/s);
   });
 
   it("does not hide Markdown markers with display none", () => {

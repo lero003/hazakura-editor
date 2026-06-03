@@ -114,10 +114,9 @@
 
 :root[data-l-mode="on"] .cm-scroller {
   height: 100%;
-  overflow-x: hidden;
+  overflow-x: auto;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 72px 0 112px;
 }
 
 :root[data-l-mode="on"] .cm-gutters {
@@ -159,8 +158,8 @@
   font-family: var(--lmode-prose-font-family);
   font-size: 16.5px;
   line-height: 1.72;
-  min-height: calc(100% - 184px);
-  padding: 34px clamp(22px, 4vw, 48px) 76px;
+  min-height: 100%;
+  padding: 106px clamp(22px, 4vw, 48px) 148px;
   text-align: start;
   hyphens: auto;
   background:
@@ -196,10 +195,6 @@
 :root[data-l-mode="on"] .cm-lmode-fenced-code-start,
 :root[data-l-mode="on"] .cm-lmode-fenced-code-end {
   text-align: start;
-}
-
-:root[data-l-mode="on"] .cm-line:not(:first-child) {
-  margin-top: 0.42em;
 }
 
 /* Code (inline + fenced) stays monospace. */
@@ -254,11 +249,9 @@
 :root[data-l-mode="on"] .tok-heading6 {
   font-weight: 700;
   line-height: 1.35;
-  margin-top: 1.55em;
-  margin-bottom: 0.4em;
 }
 
-:root[data-l-mode="on"] .tok-heading1 { font-size: 1.58em; margin-top: 2.1em; }
+:root[data-l-mode="on"] .tok-heading1 { font-size: 1.58em; }
 :root[data-l-mode="on"] .tok-heading2 { font-size: 1.28em; }
 :root[data-l-mode="on"] .tok-heading3 { font-size: 1.08em; }
 
@@ -268,38 +261,37 @@
   font-style: italic;
   border-left: 3px solid currentColor;
   padding-left: 1em;
-  margin: 1em 0;
 }
 
 /* --- 4. Visual block styles for headings, blockquotes, lists.
    The cm-lmode-heading-N, cm-lmode-blockquote, and cm-lmode-list
    classes are added by the L Mode extension's Decoration.line
-   entries (one per heading / blockquote / list line). They
-   carry the line-level rhythm that the inline `tok-*` selectors
-   cannot express (margins on a line are block-level). */
+   entries (one per heading / blockquote / list line). Keep
+   these rules margin-free so CodeMirror's cursor and scroll
+   measurement stays reliable. */
 :root[data-l-mode="on"] .cm-lmode-heading-1,
 :root[data-l-mode="on"] .cm-lmode-heading-2,
 :root[data-l-mode="on"] .cm-lmode-heading-3,
 :root[data-l-mode="on"] .cm-lmode-heading-4,
 :root[data-l-mode="on"] .cm-lmode-heading-5,
 :root[data-l-mode="on"] .cm-lmode-heading-6 {
-  margin-top: 1.6em;
-  margin-bottom: 0.4em;
+  padding-top: 0.9em;
+  padding-bottom: 0.18em;
 }
 
 :root[data-l-mode="on"] .cm-lmode-heading-1 {
   border-bottom: 2px solid var(--border);
-  margin-top: 2.1em;
-  padding-bottom: 0.38em;
+  padding-top: 1.35em;
+  padding-bottom: 0.34em;
 }
 
 :root[data-l-mode="on"] .cm-lmode-heading-2 {
   border-bottom: 1px solid var(--border);
-  margin-top: 1.8em;
+  padding-top: 1.08em;
   padding-bottom: 0.24em;
 }
 
-:root[data-l-mode="on"] .cm-lmode-heading-3 { margin-top: 1.45em; }
+:root[data-l-mode="on"] .cm-lmode-heading-3 { padding-top: 0.9em; }
 
 /* Blockquote — a thin left rule on the line, with the line
    itself dimmed slightly so the blockquote reads as a quiet
@@ -313,7 +305,6 @@
   color: var(--text-muted);
   opacity: 1;
   padding: 0.35em 1.2em;
-  margin: 0.55em 0;
 }
 
 /* List lines keep a quiet visual bullet even when the Markdown

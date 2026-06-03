@@ -11,6 +11,7 @@ import {
   EditorSelection,
   EditorState,
   Prec,
+  type Extension,
   type Range,
   StateEffect,
   StateField,
@@ -343,7 +344,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         markdown(),
         searchHighlightField,
         wrappingCompartmentRef.current.of(
-          wrapLines ? EditorView.lineWrapping : [],
+          getEditorWrappingExtensions(wrapLines, lModeEnabled),
         ),
         invisiblesCompartmentRef.current.of(
           showInvisibles ? invisibleCharactersField : [],
@@ -483,10 +484,10 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
 
     view.dispatch({
       effects: wrappingCompartmentRef.current.reconfigure(
-        wrapLines ? EditorView.lineWrapping : [],
+        getEditorWrappingExtensions(wrapLines, lModeEnabled),
       ),
     });
-  }, [wrapLines]);
+  }, [wrapLines, lModeEnabled]);
 
   useEffect(() => {
     const view = viewRef.current;
@@ -882,6 +883,13 @@ function editorTheme(theme: "light" | "dark", fontSize: number) {
     },
     { dark: theme === "dark" },
   );
+}
+
+export function getEditorWrappingExtensions(
+  wrapLines: boolean,
+  lModeEnabled: boolean,
+): Extension[] {
+  return wrapLines || lModeEnabled ? [EditorView.lineWrapping] : [];
 }
 
 function readSelectionInfo(state: EditorState): EditorSelectionInfo {
