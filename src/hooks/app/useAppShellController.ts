@@ -372,6 +372,7 @@ export function useAppShellController() {
     createFolder,
     createNewFile,
     loadWorkspaceDirectory,
+    moveWorkspacePath,
     openExternalFilePaths,
     openFile,
     openFilePath,
@@ -1010,6 +1011,9 @@ export function useAppShellController() {
     recentFiles,
     pinnedFiles,
     onTogglePinRecentFile: handleTogglePinRecentFile,
+    onMoveEntry: (srcPath: string, dstParentPath: string) => {
+      void moveWorkspacePath(srcPath, dstParentPath);
+    },
     recoveryCopy,
     reopenTabFromDisk,
     replaceAll,

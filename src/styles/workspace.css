@@ -57,6 +57,12 @@
   border-bottom: 1px solid var(--border);
   min-width: 0;
   padding: 10px 12px;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.workspace-header.drag-over {
+  background: var(--accent-soft);
+  box-shadow: inset 0 -2px 0 var(--accent);
 }
 
 .workspace-heading {
@@ -219,6 +225,13 @@
 .tree-directory-button:hover,
 .tree-file:hover {
   background: rgba(0, 0, 0, 0.03);
+  color: var(--text);
+}
+
+.tree-directory-button.drag-over,
+.tree-file.drag-over {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent);
   color: var(--text);
 }
 

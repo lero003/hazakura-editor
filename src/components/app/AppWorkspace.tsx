@@ -90,6 +90,7 @@ type AppWorkspaceProps = {
   jumpToHeading: (heading: MarkdownHeading) => void;
   loadWorkspaceDirectory: (path: string) => Promise<void>;
   menuLanguage: MenuLanguage;
+  onMoveEntry: (srcPath: string, dstParentPath: string) => void;
   onSubmitRename: (srcPath: string, newName: string) => void;
   requestRename: (path: string) => void;
   renamingPath: string | null;
@@ -179,6 +180,7 @@ export function AppWorkspace({
   jumpToHeading,
   loadWorkspaceDirectory,
   menuLanguage,
+  onMoveEntry,
   onSubmitRename,
   requestRename,
   renamingPath,
@@ -242,6 +244,7 @@ export function AppWorkspace({
           }
         }}
         onLoadDirectory={loadWorkspaceDirectory}
+        onMoveEntry={onMoveEntry}
         onOpenContextMenu={openWorkspaceContextMenu}
         onOpenRootContextMenu={openRootWorkspaceContextMenu}
         onOpenFile={(path) => void openWorkspaceFile(path)}

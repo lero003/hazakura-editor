@@ -17,16 +17,36 @@ import {
   TextFileIcon,
 } from "../app/Icons";
 
+// The export-to-Finder drag uses `application/x-hazakura-workspace-path`
+// (also exposed as text/plain so other apps accept the drop). The
+// internal move drag uses `application/x-hazakura-workspace-move`
+// — a distinct MIME key so the tree's own drop targets can
+// recognize an in-app move without colliding with the export
+// effect. `effectAllowed = "copyMove"` lets the OS treat external
+// drops as a copy while in-app drops act on the same payload.
+const INTERNAL_MOVE_MIME = "application/x-hazakura-workspace-move";
+
 function startWorkspacePathDrag(
   event: ReactDragEvent<HTMLButtonElement>,
   entry: WorkspaceTreeEntry,
 ) {
-  event.dataTransfer.effectAllowed = "copy";
+  event.dataTransfer.effectAllowed = "copyMove";
   event.dataTransfer.setData("text/plain", entry.path);
   event.dataTransfer.setData(
     "application/x-hazakura-workspace-path",
     entry.path,
   );
+  event.dataTransfer.setData(INTERNAL_MOVE_MIME, entry.path);
+}
+
+function readInternalMovePayload(
+  event: ReactDragEvent<HTMLElement>,
+): string | null {
+  return event.dataTransfer.getData(INTERNAL_MOVE_MIME) || null;
+}
+
+function isInternalMoveDrag(event: ReactDragEvent<HTMLElement>): boolean {
+  return Array.from(event.dataTransfer.types).includes(INTERNAL_MOVE_MIME);
 }
 
 function TreeEntry({
@@ -36,13 +56,14 @@ function TreeEntry({
   compareSelectionEnabled,
   defaultExpanded = false,
   entry,
-  renamingPath,
-  onClearRenaming,
   onLoadDirectory,
+  onMoveEntry,
   onOpenContextMenu,
   onOpenFile,
   onSelectCompareFile,
   onSubmitRename,
+  renamingPath,
+  onClearRenaming,
 }: {
   activePath: string | null;
   compareSourcePath: string | null;
@@ -53,6 +74,7 @@ function TreeEntry({
   renamingPath: string | null;
   onClearRenaming: () => void;
   onLoadDirectory: (path: string) => Promise<void>;
+  onMoveEntry: (srcPath: string, dstParentPath: string) => void;
   onOpenContextMenu: (
     entry: WorkspaceTreeEntry,
     event: ReactMouseEvent<HTMLButtonElement>,
@@ -65,6 +87,7 @@ function TreeEntry({
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [loading, setLoading] = useState(false);
   const [renameDraft, setRenameDraft] = useState<string | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
   const isRenaming = renamingPath === entry.path;
   const renameInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -146,14 +169,64 @@ function TreeEntry({
     setExpanded(true);
   };
 
+  const handleDragOver = (event: ReactDragEvent<HTMLButtonElement>) => {
+    if (!isInternalMoveDrag(event)) {
+      return;
+    }
+    const srcPath = readInternalMovePayload(event);
+    if (!srcPath || srcPath === entry.path) {
+      return;
+    }
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDragEnter = (event: ReactDragEvent<HTMLButtonElement>) => {
+    if (!isInternalMoveDrag(event)) {
+      return;
+    }
+    const srcPath = readInternalMovePayload(event);
+    if (!srcPath || srcPath === entry.path) {
+      return;
+    }
+    event.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (event: ReactDragEvent<HTMLButtonElement>) => {
+    // Only clear on leave that escapes the row — nested children
+    // fire dragleave as the cursor crosses their borders.
+    if (event.currentTarget.contains(event.relatedTarget as Node | null)) {
+      return;
+    }
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (event: ReactDragEvent<HTMLButtonElement>) => {
+    if (!isInternalMoveDrag(event)) {
+      return;
+    }
+    event.preventDefault();
+    setIsDragOver(false);
+    const srcPath = readInternalMovePayload(event);
+    if (!srcPath || srcPath === entry.path) {
+      return;
+    }
+    onMoveEntry(srcPath, entry.path);
+  };
+
   return (
     <div className="tree-directory">
       <button
         aria-expanded={expanded}
-        className="tree-directory-button"
+        className={`tree-directory-button${isDragOver ? " drag-over" : ""}`}
         disabled={loading}
         onClick={() => void toggleDirectory()}
         onContextMenu={(event) => onOpenContextMenu(entry, event, "directory")}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
         title={entry.path}
         type="button"
       >
@@ -182,13 +255,14 @@ function TreeEntry({
               compareSelectionEnabled={compareSelectionEnabled}
               entry={child}
               key={child.path}
-              renamingPath={renamingPath}
-              onClearRenaming={onClearRenaming}
               onLoadDirectory={onLoadDirectory}
+              onMoveEntry={onMoveEntry}
               onOpenContextMenu={onOpenContextMenu}
               onOpenFile={onOpenFile}
               onSelectCompareFile={onSelectCompareFile}
               onSubmitRename={onSubmitRename}
+              renamingPath={renamingPath}
+              onClearRenaming={onClearRenaming}
             />
           ))}
           {entry.children_truncated ? (
@@ -264,6 +338,7 @@ export function WorkspaceTree({
   compareSelectionEnabled,
   entry,
   onLoadDirectory,
+  onMoveEntry,
   onOpenContextMenu,
   onOpenFile,
   onSelectCompareFile,
@@ -277,6 +352,7 @@ export function WorkspaceTree({
   compareSelectionEnabled: boolean;
   entry: WorkspaceTreeEntry;
   onLoadDirectory: (path: string) => Promise<void>;
+  onMoveEntry: (srcPath: string, dstParentPath: string) => void;
   onOpenContextMenu: (
     entry: WorkspaceTreeEntry,
     event: ReactMouseEvent<HTMLButtonElement>,
@@ -302,13 +378,14 @@ export function WorkspaceTree({
         compareSelectionEnabled={compareSelectionEnabled}
         defaultExpanded
         entry={entry}
-        renamingPath={renamingPath}
-        onClearRenaming={() => requestRename("")}
         onLoadDirectory={onLoadDirectory}
+        onMoveEntry={onMoveEntry}
         onOpenContextMenu={onOpenContextMenu}
         onOpenFile={onOpenFile}
         onSelectCompareFile={onSelectCompareFile}
         onSubmitRename={onSubmitRename}
+        renamingPath={renamingPath}
+        onClearRenaming={() => requestRename("")}
       />
     </div>
   );

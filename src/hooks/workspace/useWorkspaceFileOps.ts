@@ -8,6 +8,7 @@ import {
   createTextFile,
   createTextFolder,
   listWorkspaceDirectory,
+  moveWorkspaceEntry,
   renameWorkspaceEntry,
 } from "../../lib/tauri";
 import type { TextFileDocument, WorkspaceTreeEntry } from "../../lib/tauri";
@@ -351,10 +352,79 @@ export function useWorkspaceFileOps({
     setStatus("Rename cancelled");
   }, [setStatus]);
 
+  // Drag-to-move: drop a workspace entry on a folder (or the
+  // workspace root) and we move the source into the destination
+  // directory. The drop's `dstParentPath` is the directory the
+  // user dropped onto. We compute the new path, call the Tauri
+  // command, fan out the tab path, and refresh both parents.
+  const moveWorkspacePath = useCallback(
+    async (srcPath: string, dstParentPath: string) => {
+      if (!workspaceRootPath) {
+        setStatus("No workspace open");
+        return;
+      }
+
+      const slashIndex = srcPath.lastIndexOf("/");
+      const name = slashIndex === -1 ? srcPath : srcPath.slice(slashIndex + 1);
+      const newPath = `${dstParentPath}/${name}`;
+
+      if (newPath === srcPath) {
+        setStatus("Move cancelled");
+        return;
+      }
+
+      // Reject dropping a folder onto one of its descendants —
+      // the backend would also reject (it'd move a directory
+      // inside itself), but a friendly message saves a round trip.
+      if (
+        dstParentPath === srcPath ||
+        dstParentPath.startsWith(`${srcPath}/`)
+      ) {
+        setGlobalError("Cannot move a folder into itself.");
+        setStatus("Move failed");
+        return;
+      }
+
+      const srcParent =
+        slashIndex === -1 ? "" : srcPath.slice(0, slashIndex);
+
+      setGlobalError(null);
+      setStatus("Moving...");
+
+      try {
+        await moveWorkspaceEntry(srcPath, newPath, workspaceRootPath);
+        rekeyPath(srcPath, newPath);
+        // Refresh both parents (source + destination) so the
+        // move is visible from both sides of the tree.
+        try {
+          await Promise.all([
+            srcParent ? reloadWorkspaceParent(srcParent) : Promise.resolve(),
+            reloadWorkspaceParent(dstParentPath),
+          ]);
+        } catch {
+          setStatus("Moved; folder refresh failed");
+          return;
+        }
+        setStatus(`Moved to ${dstParentPath}`);
+      } catch (err) {
+        setGlobalError(String(err));
+        setStatus("Move failed");
+      }
+    },
+    [
+      reloadWorkspaceParent,
+      rekeyPath,
+      setGlobalError,
+      setStatus,
+      workspaceRootPath,
+    ],
+  );
+
   return {
     createFile,
     createFolder,
     focusIfAlreadyOpen,
+    moveWorkspacePath,
     pendingRename,
     pendingRenameWarning: pendingRename?.warningKind ?? null,
     renameWorkspacePath,

@@ -1,8 +1,16 @@
-import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
+import {
+  type DragEvent as ReactDragEvent,
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+} from "react";
 import type { WorkspaceTreeEntry } from "../../lib/tauri";
 import type { SafeEditorCopy, WorkspaceFileOpsCopy } from "../../lib/locale";
 import { PlusIcon } from "../app/Icons";
 import { WorkspaceTree } from "./WorkspaceTree";
+
+const INTERNAL_MOVE_MIME = "application/x-hazakura-workspace-move";
 
 type WorkspaceSidebarProps = {
   activePath: string | null;
@@ -14,6 +22,7 @@ type WorkspaceSidebarProps = {
   onCreateFile: () => void;
   onCreateFolder: () => void;
   onLoadDirectory: (path: string) => Promise<void>;
+  onMoveEntry: (srcPath: string, dstParentPath: string) => void;
   onOpenContextMenu: (
     entry: WorkspaceTreeEntry,
     event: ReactMouseEvent<HTMLButtonElement>,
@@ -40,6 +49,7 @@ export function WorkspaceSidebar({
   onCreateFile,
   onCreateFolder,
   onLoadDirectory,
+  onMoveEntry,
   onOpenContextMenu,
   onOpenRootContextMenu,
   onOpenFile,
@@ -52,6 +62,7 @@ export function WorkspaceSidebar({
   workspaceTree,
 }: WorkspaceSidebarProps) {
   const [newMenuOpen, setNewMenuOpen] = useState(false);
+  const [isRootDragOver, setIsRootDragOver] = useState(false);
   const newMenuRef = useRef<HTMLDivElement | null>(null);
 
   // Dismiss the popover on outside click / Esc. Mirrors the
@@ -88,11 +99,62 @@ export function WorkspaceSidebar({
     onCreateFolder();
   };
 
+  const handleRootDragOver = (event: ReactDragEvent<HTMLDivElement>) => {
+    if (!workspaceRootPath) return;
+    if (!Array.from(event.dataTransfer.types).includes(INTERNAL_MOVE_MIME)) {
+      return;
+    }
+    const srcPath = event.dataTransfer.getData(INTERNAL_MOVE_MIME);
+    if (!srcPath || srcPath === workspaceRootPath) {
+      return;
+    }
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  };
+
+  const handleRootDragEnter = (event: ReactDragEvent<HTMLDivElement>) => {
+    if (!workspaceRootPath) return;
+    if (!Array.from(event.dataTransfer.types).includes(INTERNAL_MOVE_MIME)) {
+      return;
+    }
+    const srcPath = event.dataTransfer.getData(INTERNAL_MOVE_MIME);
+    if (!srcPath || srcPath === workspaceRootPath) {
+      return;
+    }
+    event.preventDefault();
+    setIsRootDragOver(true);
+  };
+
+  const handleRootDragLeave = (event: ReactDragEvent<HTMLDivElement>) => {
+    if (event.currentTarget.contains(event.relatedTarget as Node | null)) {
+      return;
+    }
+    setIsRootDragOver(false);
+  };
+
+  const handleRootDrop = (event: ReactDragEvent<HTMLDivElement>) => {
+    if (!workspaceRootPath) return;
+    if (!Array.from(event.dataTransfer.types).includes(INTERNAL_MOVE_MIME)) {
+      return;
+    }
+    event.preventDefault();
+    setIsRootDragOver(false);
+    const srcPath = event.dataTransfer.getData(INTERNAL_MOVE_MIME);
+    if (!srcPath || srcPath === workspaceRootPath) {
+      return;
+    }
+    onMoveEntry(srcPath, workspaceRootPath);
+  };
+
   return (
     <aside className="file-tree-pane" aria-label={copy.workspaceFileTree}>
       <div
-        className="workspace-header"
+        className={`workspace-header${isRootDragOver ? " drag-over" : ""}`}
         onContextMenu={onOpenRootContextMenu}
+        onDragEnter={handleRootDragEnter}
+        onDragLeave={handleRootDragLeave}
+        onDragOver={handleRootDragOver}
+        onDrop={handleRootDrop}
       >
         <div className="workspace-heading">
           <div className="workspace-labels">
@@ -148,6 +210,7 @@ export function WorkspaceSidebar({
           entry={workspaceTree}
           compareSelectionEnabled={compareSelectionEnabled}
           onLoadDirectory={onLoadDirectory}
+          onMoveEntry={onMoveEntry}
           onOpenContextMenu={onOpenContextMenu}
           onOpenFile={onOpenFile}
           onSelectCompareFile={onSelectCompareFile}
