@@ -104,10 +104,9 @@ export function WorkspaceSidebar({
     if (!Array.from(event.dataTransfer.types).includes(INTERNAL_MOVE_MIME)) {
       return;
     }
-    const srcPath = event.dataTransfer.getData(INTERNAL_MOVE_MIME);
-    if (!srcPath || srcPath === workspaceRootPath) {
-      return;
-    }
+    // dragover cannot read the payload (the HTML5 spec only
+    // exposes dataTransfer.getData() on `drop`); the workspace-
+    // root self-check is enforced in handleRootDrop.
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
   };
@@ -115,10 +114,6 @@ export function WorkspaceSidebar({
   const handleRootDragEnter = (event: ReactDragEvent<HTMLDivElement>) => {
     if (!workspaceRootPath) return;
     if (!Array.from(event.dataTransfer.types).includes(INTERNAL_MOVE_MIME)) {
-      return;
-    }
-    const srcPath = event.dataTransfer.getData(INTERNAL_MOVE_MIME);
-    if (!srcPath || srcPath === workspaceRootPath) {
       return;
     }
     event.preventDefault();

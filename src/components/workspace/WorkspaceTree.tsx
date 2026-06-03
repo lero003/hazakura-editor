@@ -173,20 +173,17 @@ function TreeEntry({
     if (!isInternalMoveDrag(event)) {
       return;
     }
-    const srcPath = readInternalMovePayload(event);
-    if (!srcPath || srcPath === entry.path) {
-      return;
-    }
+    // The HTML5 spec only exposes dataTransfer.getData() on `drop`
+    // events; during dragover/dragenter the payload is protected
+    // and returns the empty string. The directory self-check has
+    // to happen in handleDrop instead — opting in to the drop
+    // here is enough to make the browser fire a drop event.
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
   };
 
   const handleDragEnter = (event: ReactDragEvent<HTMLButtonElement>) => {
     if (!isInternalMoveDrag(event)) {
-      return;
-    }
-    const srcPath = readInternalMovePayload(event);
-    if (!srcPath || srcPath === entry.path) {
       return;
     }
     event.preventDefault();
