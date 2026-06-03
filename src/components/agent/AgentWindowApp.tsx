@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   getAgentWorkbenchSessionState,
+  listAgentProviderAvailability,
   resizeAgentWorkbenchTerminal,
   setAgentWindowTheme,
   stopAgentWorkbenchSession,
   writeAgentWorkbenchSessionInput,
+  type AgentProviderAvailability,
   type AgentWorkbenchProvider,
   type AgentWorkbenchSession,
 } from "../../lib/tauri";
@@ -147,6 +149,34 @@ export function AgentWindowApp() {
   const [agentWorkbenchConsent] = useState<boolean>(readStoredAgentWorkbenchConsent);
   const [selectedProvider, setSelectedProvider] =
     useState<AgentWorkbenchProvider>(readStoredAgentWorkbenchProvider);
+  // Fetch the allowlisted-provider availability snapshot on mount so
+  // the Start panel can append the "(not installed)" suffix and
+  // disable the Start button when the selected CLI is missing. The
+  // fetch is cheap and idempotent; we intentionally do not cache.
+  const [providerAvailability, setProviderAvailability] = useState<
+    AgentProviderAvailability[]
+  >([]);
+  useEffect(() => {
+    let disposed = false;
+    void listAgentProviderAvailability()
+      .then((snapshot) => {
+        if (!disposed) {
+          setProviderAvailability(snapshot);
+        }
+      })
+      .catch((err) => {
+        console.warn("Failed to read Agent provider availability", err);
+      });
+    return () => {
+      disposed = true;
+    };
+  }, []);
+  const availabilityByProvider = useMemo(
+    () => new Map(providerAvailability.map((entry) => [entry.provider, entry])),
+    [providerAvailability],
+  );
+  const selectedProviderUnavailable =
+    availabilityByProvider.get(selectedProvider)?.available === false;
   const activeWorkspaceRoot = useMainWindowWorkspace();
 
   const { agentOutput, applyAgentOutput, resetAgentOutput } =
@@ -408,7 +438,8 @@ export function AgentWindowApp() {
       startPanelBlockedByGate ||
       agentLaunchGate.kind === "checking" ||
       !agentWorkbenchActive ||
-      !agentWorkbenchConsent);
+      !agentWorkbenchConsent ||
+      selectedProviderUnavailable);
 
   return (
     <div
@@ -479,10 +510,27 @@ export function AgentWindowApp() {
                   setSelectedProvider(event.target.value as AgentWorkbenchProvider)
                 }
               >
-                <option value="codex">{providerLabel("codex")}</option>
-                <option value="opencode">{providerLabel("opencode")}</option>
-                <option value="pi">{providerLabel("pi")}</option>
-                <option value="claude">{providerLabel("claude")}</option>
+                {(
+                  [
+                    "codex",
+                    "opencode",
+                    "pi",
+                    "claude",
+                  ] satisfies AgentWorkbenchProvider[]
+                ).map((providerOption) => {
+                  const entry = availabilityByProvider.get(providerOption);
+                  const available = entry?.available ?? true;
+                  return (
+                    <option
+                      key={providerOption}
+                      disabled={!available}
+                      value={providerOption}
+                    >
+                      {providerLabel(providerOption)}
+                      {entry && !entry.available ? " (not installed)" : ""}
+                    </option>
+                  );
+                })}
               </select>
             </label>
             <button
@@ -495,9 +543,11 @@ export function AgentWindowApp() {
               title={
                 startPanelUnavailable
                   ? "Open a workspace in the main window to start an Agent session."
-                  : startPanelBlockedByGate
-                    ? agentLaunchGate.message
-                    : "Start Agent session"
+                  : selectedProviderUnavailable
+                    ? "Selected provider is not installed in the app search path."
+                    : startPanelBlockedByGate
+                      ? agentLaunchGate.message
+                      : "Start Agent session"
               }
             >
               {agentLaunchGate.kind === "checking"
@@ -508,6 +558,10 @@ export function AgentWindowApp() {
           {startPanelUnavailable ? (
             <span className="agent-window-start-hint">
               Open a workspace in the main window to start an Agent session.
+            </span>
+          ) : selectedProviderUnavailable ? (
+            <span className="agent-window-start-hint">
+              Selected provider is not installed in the app search path. Pick an installed CLI.
             </span>
           ) : !agentWorkbenchActive ? (
             <span className="agent-window-start-hint">
