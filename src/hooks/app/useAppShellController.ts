@@ -43,8 +43,7 @@ import { useGoToLine } from "../editor/useGoToLine";
 import { useReviewDeskController } from "../review/useReviewDeskController";
 import { useWorkspaceFileOpening } from "../workspace/useWorkspaceFileOpening";
 import { useAppShellFoundation } from "./useAppShellFoundation";
-import { useAppEditorRefs } from "./useAppEditorRefs";
-import { useAppDialogRefs } from "./useAppDialogRefs";
+import { useAppShellRefs } from "./useAppShellRefs";
 import { useWindowDialogActions } from "./useWindowDialogActions";
 import { useLocalizedAppCopy } from "./useLocalizedAppCopy";
 import { useSidePaneController } from "../editor/useSidePaneController";
@@ -176,14 +175,6 @@ export function useAppShellController() {
     themePreference,
   } = foundation;
 
-  // section: editor refs (depends on tabs)
-  const {
-    editorPaneRef,
-    findInputRef,
-    previewPaneRef,
-    tabsRef,
-  } = useAppEditorRefs(tabs);
-
   // section: recent entries
   const {
     pinRecentFile,
@@ -220,6 +211,30 @@ export function useAppShellController() {
     globalError,
     pendingCloseTabId,
     pendingDrafts,
+    tabs,
+  });
+
+  // section: refs (editor + dialog; depends on tabs + editor tab state)
+  const {
+    editorPaneRef,
+    findInputRef,
+    previewPaneRef,
+    tabsRef,
+    allowWindowCloseRef,
+    appCloseCancelButtonRef,
+    appCloseDialogRef,
+    closeTabCancelButtonRef,
+    closeTabDialogRef,
+    discardingWindowCloseRef,
+    modalOpen,
+    pendingCloseTabOpen,
+    preferencesCloseButtonRef,
+    preferencesDialogRef,
+    preferencesOpen,
+  } = useAppShellRefs({
+    pendingAppClose,
+    pendingCloseTab,
+    preferencesDialogMode,
     tabs,
   });
 
@@ -406,25 +421,6 @@ export function useAppShellController() {
     setWorkspaceTree,
     tabs,
     workspaceRootPath,
-  });
-
-  // section: dialog refs
-  const {
-    allowWindowCloseRef,
-    appCloseCancelButtonRef,
-    appCloseDialogRef,
-    closeTabCancelButtonRef,
-    closeTabDialogRef,
-    discardingWindowCloseRef,
-    modalOpen,
-    pendingCloseTabOpen,
-    preferencesCloseButtonRef,
-    preferencesDialogRef,
-    preferencesOpen,
-  } = useAppDialogRefs({
-    pendingAppClose,
-    pendingCloseTab,
-    preferencesDialogMode,
   });
 
   // section: window dialog actions
