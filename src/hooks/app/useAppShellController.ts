@@ -33,8 +33,7 @@ import { useCompareController } from "../diff/useCompareController";
 import { useDocumentSafetyActions } from "../document/useDocumentSafetyActions";
 import { useDocumentIoController } from "../document/useDocumentIoController";
 import { useDocumentCoreController } from "../document/useDocumentCoreController";
-import { useImagePreview } from "../editor/useImagePreview";
-import { useActiveDocumentIdentity } from "../document/useActiveDocumentIdentity";
+import { useDocumentPreviewController } from "../document/useDocumentPreviewController";
 import { useActiveDocumentSurface } from "../document/useActiveDocumentSurface";
 import { useEditorCommands } from "../editor/useEditorCommands";
 import { useEditorFindController } from "../editor/useEditorFindController";
@@ -239,14 +238,19 @@ export function useAppShellController() {
     tabs,
   });
 
-  // section: image preview
+  // section: document preview (image preview + document identity)
   const {
+    activeTabPath,
     clearImagePreview,
     closeSelectedImagePreview,
+    documentKey,
+    hasActiveDocument,
     imageReturnTabId,
     openImagePreview,
     selectedImage,
-  } = useImagePreview({
+    selectedImageOpen,
+  } = useDocumentPreviewController({
+    activeTab,
     activeTabId,
     onError: setGlobalError,
     onStatus: setStatus,
@@ -254,17 +258,6 @@ export function useAppShellController() {
     setCompareView,
     tabs,
     workspaceRootPath,
-  });
-
-  // section: document identity
-  const {
-    activeTabPath,
-    documentKey,
-    hasActiveDocument,
-    selectedImageOpen,
-  } = useActiveDocumentIdentity({
-    activeTab,
-    selectedImage,
   });
 
   // section: workspace context menu
