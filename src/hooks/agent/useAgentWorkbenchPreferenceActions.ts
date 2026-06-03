@@ -11,6 +11,8 @@ import type {
   AgentLaunchGateState,
   MenuLanguage,
 } from "../../types";
+import { isJapaneseMenuLanguage } from "../../types";
+import { isKanaStyle } from "../../lib/locale/_helpers";
 
 // `useAgentWorkbenchPreferenceActions` owns the Agent Workbench
 // preference-level action handlers: toggling the mode preference
@@ -54,28 +56,20 @@ export function useAgentWorkbenchPreferenceActions({
   const updateAgentWorkbenchPreference = useCallback(
     (enabled: boolean) => {
       setAgentWorkbenchPreference(enabled);
-      if (menuLanguage !== "en") {
+      const matchesCurrent = enabled === agentWorkbenchActive;
+      if (matchesCurrent) {
         setStatus(
-          enabled === agentWorkbenchActive
-            ? enabled
-              ? "エージェントワークベンチは有効です"
-              : "Safe Editor モードです"
-            : enabled
-              ? "再起動後にエージェントワークベンチが有効になります"
-              : "再起動後にエージェントワークベンチが無効になります",
+          enabled
+            ? agentWorkbenchActiveMessage(menuLanguage)
+            : safeEditorModeMessage(menuLanguage),
         );
-        return;
+      } else {
+        setStatus(
+          enabled
+            ? agentWorkbenchWillEnableMessage(menuLanguage)
+            : agentWorkbenchWillDisableMessage(menuLanguage),
+        );
       }
-
-      setStatus(
-        enabled === agentWorkbenchActive
-          ? enabled
-            ? "Agent Workbench active"
-            : "Agent Workbench disabled"
-          : enabled
-            ? "Agent Workbench will enable after restart"
-            : "Agent Workbench will disable after restart",
-      );
     },
     [
       agentWorkbenchActive,
@@ -87,18 +81,14 @@ export function useAgentWorkbenchPreferenceActions({
 
   const restartAppForAgentMode = useCallback(async () => {
     setAppRestartPending(true);
-    setStatus(
-      menuLanguage !== "en"
-        ? "hazakura editor を再起動中..."
-        : "Restarting hazakura editor...",
-    );
+    setStatus(restartingAppMessage(menuLanguage));
 
     try {
       await requestAppRestart();
     } catch (err) {
       setAppRestartPending(false);
       setGlobalError(`Restart failed: ${String(err)}`);
-      setStatus(menuLanguage !== "en" ? "再起動に失敗しました" : "Restart failed");
+      setStatus(restartFailedMessage(menuLanguage));
     }
   }, [menuLanguage, setAppRestartPending, setGlobalError, setStatus]);
 
@@ -111,13 +101,9 @@ export function useAgentWorkbenchPreferenceActions({
         preflight: null,
       });
       setStatus(
-        menuLanguage !== "en"
-          ? acknowledged
-            ? "エージェントワークベンチの責任境界を確認しました"
-            : "エージェントワークベンチの同意を解除しました"
-          : acknowledged
-            ? "Agent Workbench responsibility acknowledged"
-            : "Agent Workbench consent cleared",
+        acknowledged
+          ? agentConsentAcknowledgedMessage(menuLanguage)
+          : agentConsentClearedMessage(menuLanguage),
       );
     },
     [
@@ -162,4 +148,90 @@ export function useAgentWorkbenchPreferenceActions({
     updateAgentWorkbenchPreference,
     updateAgentWorkbenchProvider,
   };
+}
+
+function agentWorkbenchActiveMessage(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) {
+    return "えーじぇんと わーくべんちは ゆうこうです";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "エージェントワークベンチは有効です";
+  }
+  return "Agent Workbench active";
+}
+
+function safeEditorModeMessage(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) {
+    return "Safe Editor もーどです";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "Safe Editor モードです";
+  }
+  return "Agent Workbench disabled";
+}
+
+function agentWorkbenchWillEnableMessage(
+  menuLanguage: MenuLanguage,
+): string {
+  if (isKanaStyle(menuLanguage)) {
+    return "さいきどうごに えーじぇんと わーくべんちが ゆうこうに なります";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "再起動後にエージェントワークベンチが有効になります";
+  }
+  return "Agent Workbench will enable after restart";
+}
+
+function agentWorkbenchWillDisableMessage(
+  menuLanguage: MenuLanguage,
+): string {
+  if (isKanaStyle(menuLanguage)) {
+    return "さいきどうごに えーじぇんと わーくべんちが むこうに なります";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "再起動後にエージェントワークベンチが無効になります";
+  }
+  return "Agent Workbench will disable after restart";
+}
+
+function restartingAppMessage(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) {
+    return "hazakura editor を さいきどう ちゅう...";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "hazakura editor を再起動中...";
+  }
+  return "Restarting hazakura editor...";
+}
+
+function restartFailedMessage(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) {
+    return "さいきどうに しっぱいしました";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "再起動に失敗しました";
+  }
+  return "Restart failed";
+}
+
+function agentConsentAcknowledgedMessage(
+  menuLanguage: MenuLanguage,
+): string {
+  if (isKanaStyle(menuLanguage)) {
+    return "えーじぇんと わーくべんちの せきにん きょうかいを かくにん しました";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "エージェントワークベンチの責任境界を確認しました";
+  }
+  return "Agent Workbench responsibility acknowledged";
+}
+
+function agentConsentClearedMessage(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) {
+    return "えーじぇんと わーくべんちの どういを とく しました";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "エージェントワークベンチの同意を解除しました";
+  }
+  return "Agent Workbench consent cleared";
 }

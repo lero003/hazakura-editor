@@ -11,8 +11,10 @@ import type {
 import {
   type AgentLaunchGateState,
   AGENT_WORKBENCH_PROVIDERS,
+  isJapaneseMenuLanguage,
   type MenuLanguage,
 } from "../../types";
+import { isKanaStyle } from "../../lib/locale/_helpers";
 
 // Agent Workbench stateless helpers live in this file so that the
 // Safe Editor utility layer (`utils.ts`) does not carry Assist
@@ -72,16 +74,16 @@ export function agentSessionStateLabel(
   menuLanguage: MenuLanguage = "en",
 ): string {
   if (!session) {
-    return menuLanguage !== "en" ? "未実行" : "Not running";
+    return localizeSessionState("notRunning", menuLanguage);
   }
 
   switch (session.status) {
     case "active":
-      return menuLanguage !== "en" ? "実行中" : "Running";
+      return localizeSessionState("running", menuLanguage);
     case "exited":
-      return menuLanguage !== "en" ? "終了済み" : "Exited";
+      return localizeSessionState("exited", menuLanguage);
     case "stopped":
-      return menuLanguage !== "en" ? "停止済み" : "Stopped";
+      return localizeSessionState("stopped", menuLanguage);
   }
 }
 
@@ -90,18 +92,96 @@ export function agentCompactSessionStateLabel(
   menuLanguage: MenuLanguage = "en",
 ): string {
   if (!session) {
-    return menuLanguage !== "en" ? "待機中" : "Idle";
+    return localizeSessionState("idle", menuLanguage);
   }
 
   return agentSessionStateLabel(session, menuLanguage);
+}
+
+type SessionStateKey = "notRunning" | "running" | "exited" | "stopped" | "idle";
+
+function localizeSessionState(
+  key: SessionStateKey,
+  menuLanguage: MenuLanguage,
+): string {
+  if (isKanaStyle(menuLanguage)) {
+    switch (key) {
+      case "notRunning":
+        return "うごかじ";
+      case "running":
+        return "うごきや";
+      case "exited":
+        return "おはり";
+      case "stopped":
+        return "とまり";
+      case "idle":
+        return "まてりや";
+    }
+  }
+
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    switch (key) {
+      case "notRunning":
+        return "未実行";
+      case "running":
+        return "実行中";
+      case "exited":
+        return "終了済み";
+      case "stopped":
+        return "停止済み";
+      case "idle":
+        return "待機中";
+    }
+  }
+
+  switch (key) {
+    case "notRunning":
+      return "Not running";
+    case "running":
+      return "Running";
+    case "exited":
+      return "Exited";
+    case "stopped":
+      return "Stopped";
+    case "idle":
+      return "Idle";
+  }
 }
 
 export function localizeAgentGateMessage(
   message: string,
   menuLanguage: MenuLanguage,
 ): string {
-  if (menuLanguage === "en") {
+  if (!isJapaneseMenuLanguage(menuLanguage) && !isKanaStyle(menuLanguage)) {
     return message;
+  }
+
+  if (isKanaStyle(menuLanguage)) {
+    switch (message) {
+      case "Launch gate not checked.":
+        return "きどうげーとは まだ かくにん されていません。";
+      case "Checking Agent Workbench launch gate...":
+        return "えーじぇんと わーくべんちの きどうげーとを かくにんちゅう...";
+      case "Agent session exited.":
+        return "Agent せっしょんは 終わり ました。";
+      case "Agent session stopped.":
+        return "Agent せっしょんは ていし しました。";
+      case "Provider not found; no Agent session was started.":
+        return "ぷろばいだーが みつからないため、Agent せっしょんは かいし されませんでした。";
+      case "Agent session running in the selected workspace. Only the selected allowlisted CLI was launched.":
+        return "せんたくちゅうの わーくすぺーすで Agent せっしょんが じっこうちゅう。きどうされたのは せんたくされた ゆるされた CLI だけです。";
+      default:
+        if (message.startsWith("Provider not found: ")) {
+          return message
+            .replace("Provider not found:", "ぷろばいだーが みつかりません:")
+            .replace(
+              " was not found in the app search path, including common Homebrew and user bin locations.",
+              " はあぷりの けんさくぱす（いっぱんな Homebrew と user bin を ふくむ）で みつかりませんでした。",
+            );
+        }
+
+        return message;
+    }
   }
 
   switch (message) {

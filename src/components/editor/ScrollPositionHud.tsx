@@ -1,5 +1,6 @@
-import type { MarkdownHeadingContext } from "../../types";
-import type { MenuLanguage } from "../../types";
+import type { MarkdownHeadingContext, MenuLanguage } from "../../types";
+import { isJapaneseMenuLanguage } from "../../types";
+import { isKanaStyle } from "../../lib/locale/_helpers";
 
 export function ScrollPositionHud({
   context,
@@ -14,10 +15,12 @@ export function ScrollPositionHud({
 }) {
   const progress =
     totalLines <= 1 ? 0 : Math.round(((line - 1) / (totalLines - 1)) * 100);
-  const meta =
-    menuLanguage !== "en"
-      ? `${line.toLocaleString()} / ${totalLines.toLocaleString()} 行 · ${progress}%`
-      : `${line.toLocaleString()} / ${totalLines.toLocaleString()} lines · ${progress}%`;
+  const lineUnit = isKanaStyle(menuLanguage)
+    ? "ぎょう"
+    : isJapaneseMenuLanguage(menuLanguage)
+      ? "行"
+      : "lines";
+  const meta = `${line.toLocaleString()} / ${totalLines.toLocaleString()} ${lineUnit} · ${progress}%`;
 
   return (
     <div className="scroll-position-hud" aria-hidden="true">

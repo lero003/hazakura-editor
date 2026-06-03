@@ -1,4 +1,6 @@
 import type { CompareAnchor, MenuLanguage, WorkspaceContextMenuState } from "../../types";
+import { isJapaneseMenuLanguage } from "../../types";
+import { isKanaStyle } from "../../lib/locale/_helpers";
 
 export function WorkspaceContextMenu({
   activeTabPath,
@@ -46,8 +48,21 @@ export function WorkspaceContextMenu({
     Math.max(anchor.y, 8),
     Math.max(8, window.innerHeight - estimatedHeight),
   );
-  const labels =
-    menuLanguage !== "en"
+  const labels = isKanaStyle(menuLanguage)
+    ? {
+        clearCompareSource: "くらべもとを とく",
+        close: "めにゅーを とぢる",
+        compareActive: "ひらいてゐる ふみと くらべる",
+        compare: "せんたくちゅうの くらべもとと くらべる",
+        copyFullPath: "ふるぱすを こぴー",
+        menu: "ふぉるだ こうもくの さばき",
+        open: "ひらく",
+        revealInFinder: "ファインダーで ひらく",
+        sendFullPathToAgent: "Agent に ふるぱすを おくる",
+        setCompareSource: "くらべもとに せってい",
+        setCompareTarget: "くらべさきに せってい",
+      }
+    : isJapaneseMenuLanguage(menuLanguage)
       ? {
           clearCompareSource: "比較元を解除",
           close: "メニューを閉じる",

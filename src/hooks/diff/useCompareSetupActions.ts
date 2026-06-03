@@ -12,6 +12,8 @@ import type {
   MenuLanguage,
   RightPaneMode,
 } from "../../types";
+import { isJapaneseMenuLanguage } from "../../types";
+import { isKanaStyle } from "../../lib/locale/_helpers";
 
 type UseCompareSetupActionsOptions = {
   closeWorkspaceContextMenu: () => void;
@@ -46,11 +48,7 @@ export function useCompareSetupActions({
       closeWorkspaceContextMenu();
       setGlobalError(null);
       setRightPaneMode("compare");
-      setStatus(
-        menuLanguage !== "en"
-          ? `比較元に設定: ${file.name}`
-          : `Compare source set: ${file.name}`,
-      );
+      setStatus(compareSourceSetMessage(menuLanguage, file.name));
     },
     [
       closeWorkspaceContextMenu,
@@ -71,11 +69,7 @@ export function useCompareSetupActions({
       closeWorkspaceContextMenu();
       setGlobalError(null);
       setRightPaneMode("compare");
-      setStatus(
-        menuLanguage !== "en"
-          ? `比較先に設定: ${file.name}`
-          : `Compare target set: ${file.name}`,
-      );
+      setStatus(compareTargetSetMessage(menuLanguage, file.name));
     },
     [
       closeWorkspaceContextMenu,
@@ -92,11 +86,7 @@ export function useCompareSetupActions({
     (entry: WorkspaceTreeEntry) => {
       if (!isComparableTextFile(entry.name)) {
         closeWorkspaceContextMenu();
-        setStatus(
-          menuLanguage !== "en"
-            ? "このファイルは Diff 比較できるテキスト形式ではありません。"
-            : "This file is not a comparable text document.",
-        );
+        setStatus(nonComparableFileMessage(menuLanguage));
         return;
       }
 
@@ -122,17 +112,13 @@ export function useCompareSetupActions({
   const clearCompareSource = useCallback(() => {
     setCompareAnchor(null);
     closeWorkspaceContextMenu();
-    setStatus(
-      menuLanguage !== "en" ? "比較元を解除しました" : "Compare source cleared",
-    );
+    setStatus(compareSourceClearedMessage(menuLanguage));
   }, [closeWorkspaceContextMenu, menuLanguage, setCompareAnchor, setStatus]);
 
   const clearCompareTarget = useCallback(() => {
     setCompareTarget(null);
     closeWorkspaceContextMenu();
-    setStatus(
-      menuLanguage !== "en" ? "比較先を解除しました" : "Compare target cleared",
-    );
+    setStatus(compareTargetClearedMessage(menuLanguage));
   }, [closeWorkspaceContextMenu, menuLanguage, setCompareTarget, setStatus]);
 
   const copyWorkspaceFullPath = useCallback(
@@ -142,20 +128,11 @@ export function useCompareSetupActions({
 
       try {
         await writeTextToClipboard(file.path);
-        setStatus(
-          menuLanguage !== "en"
-            ? `フルパスをコピー: ${file.name}`
-            : `Copied full path: ${file.name}`,
-        );
+        setStatus(copiedFullPathMessage(menuLanguage, file.name));
       } catch (err) {
-        setGlobalError(
-          menuLanguage !== "en"
-            ? `パスのコピーに失敗しました: ${String(err)}`
-            : `Copy path failed: ${String(err)}`,
-        );
-        setStatus(
-          menuLanguage !== "en" ? "パスのコピーに失敗しました" : "Copy path failed",
-        );
+        const errText = String(err);
+        setGlobalError(copyPathFailedDetailMessage(menuLanguage, errText));
+        setStatus(copyPathFailedMessage(menuLanguage));
       }
     },
     [closeWorkspaceContextMenu, menuLanguage, setGlobalError, setStatus],
@@ -168,22 +145,11 @@ export function useCompareSetupActions({
 
       try {
         await revealPathInFileManager(file.path);
-        setStatus(
-          menuLanguage !== "en"
-            ? `Finderで表示: ${file.name}`
-            : `Shown in Finder: ${file.name}`,
-        );
+        setStatus(shownInFinderMessage(menuLanguage, file.name));
       } catch (err) {
-        setGlobalError(
-          menuLanguage !== "en"
-            ? `Finderで表示できませんでした: ${String(err)}`
-            : `Show in Finder failed: ${String(err)}`,
-        );
-        setStatus(
-          menuLanguage !== "en"
-            ? "Finderで表示できませんでした"
-            : "Show in Finder failed",
-        );
+        const errText = String(err);
+        setGlobalError(showInFinderFailedDetailMessage(menuLanguage, errText));
+        setStatus(showInFinderFailedMessage(menuLanguage));
       }
     },
     [closeWorkspaceContextMenu, menuLanguage, setGlobalError, setStatus],
@@ -207,4 +173,132 @@ export function useCompareSetupActions({
     setCompareSource,
     setCompareTargetFile,
   };
+}
+
+function compareSourceSetMessage(
+  menuLanguage: MenuLanguage,
+  fileName: string,
+): string {
+  if (isKanaStyle(menuLanguage)) {
+    return `くらべもとに せってい: ${fileName}`;
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return `比較元に設定: ${fileName}`;
+  }
+  return `Compare source set: ${fileName}`;
+}
+
+function compareTargetSetMessage(
+  menuLanguage: MenuLanguage,
+  fileName: string,
+): string {
+  if (isKanaStyle(menuLanguage)) {
+    return `くらべさきに せってい: ${fileName}`;
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return `比較先に設定: ${fileName}`;
+  }
+  return `Compare target set: ${fileName}`;
+}
+
+function nonComparableFileMessage(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) {
+    return "この ふみは Diff くらべできる もじふみ では ありません。";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "このファイルは Diff 比較できるテキスト形式ではありません。";
+  }
+  return "This file is not a comparable text document.";
+}
+
+function compareSourceClearedMessage(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) {
+    return "くらべもとを とくしました";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "比較元を解除しました";
+  }
+  return "Compare source cleared";
+}
+
+function compareTargetClearedMessage(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) {
+    return "くらべさきを とくしました";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "比較先を解除しました";
+  }
+  return "Compare target cleared";
+}
+
+function copiedFullPathMessage(
+  menuLanguage: MenuLanguage,
+  fileName: string,
+): string {
+  if (isKanaStyle(menuLanguage)) {
+    return `ふるぱすを こぴー: ${fileName}`;
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return `フルパスをコピー: ${fileName}`;
+  }
+  return `Copied full path: ${fileName}`;
+}
+
+function copyPathFailedMessage(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) {
+    return "ぱすの こぴーに しっぱいしました";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "パスのコピーに失敗しました";
+  }
+  return "Copy path failed";
+}
+
+function copyPathFailedDetailMessage(
+  menuLanguage: MenuLanguage,
+  detail: string,
+): string {
+  if (isKanaStyle(menuLanguage)) {
+    return `ぱすの こぴーに しっぱいしました: ${detail}`;
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return `パスのコピーに失敗しました: ${detail}`;
+  }
+  return `Copy path failed: ${detail}`;
+}
+
+function shownInFinderMessage(
+  menuLanguage: MenuLanguage,
+  fileName: string,
+): string {
+  if (isKanaStyle(menuLanguage)) {
+    return `ファインダーで ひょうじ: ${fileName}`;
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return `Finderで表示: ${fileName}`;
+  }
+  return `Shown in Finder: ${fileName}`;
+}
+
+function showInFinderFailedMessage(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) {
+    return "ファインダーで ひょうじ できませんでした";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "Finderで表示できませんでした";
+  }
+  return "Show in Finder failed";
+}
+
+function showInFinderFailedDetailMessage(
+  menuLanguage: MenuLanguage,
+  detail: string,
+): string {
+  if (isKanaStyle(menuLanguage)) {
+    return `ファインダーで ひょうじ できませんでした: ${detail}`;
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return `Finderで表示できませんでした: ${detail}`;
+  }
+  return `Show in Finder failed: ${detail}`;
 }

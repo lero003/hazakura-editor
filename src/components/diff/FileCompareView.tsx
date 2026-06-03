@@ -3,6 +3,8 @@ import type {
   CompareViewState,
   MenuLanguage,
 } from "../../types";
+import { isJapaneseMenuLanguage } from "../../types";
+import { isKanaStyle } from "../../lib/locale/_helpers";
 import { DiffBody } from "./DiffBody";
 
 type FileCompareCase = Extract<CompareCase, { kind: "file" }>;
@@ -18,8 +20,17 @@ export function FileCompareView({
   onClose: () => void;
   view: CompareViewState;
 }) {
-  const labels =
-    menuLanguage !== "en"
+  const labels = isKanaStyle(menuLanguage)
+    ? {
+        additions: "ついかぎょう",
+        close: "くらべけっかを とぢる",
+        fileTitle: "Diff",
+        removed: "さくじょぎょう",
+        summary: "くらべの がいよう",
+        to: "と",
+        table: "ふみ くらべ",
+      }
+    : isJapaneseMenuLanguage(menuLanguage)
       ? {
           additions: "追加行",
           close: "比較結果を閉じる",

@@ -1,5 +1,7 @@
-import type { RecentEntry } from "../types";
+import type { RecentEntry, MenuLanguage } from "../types";
 import type { EditableLineEnding, MarkdownHeading } from "../types";
+import { isJapaneseMenuLanguage } from "../types";
+import { isKanaStyle } from "./locale/_helpers";
 
 // ── Recent Entries ──
 
@@ -188,15 +190,24 @@ export function findCurrentMarkdownHeading(
   return currentHeading;
 }
 
-export function localizeCompareError(message: string): string {
-  if (
-    message.includes(
-      "Compare stopped because these files are too large for the comparison preview.",
-    )
-  ) {
-    return "ファイルが大きすぎるため、比較プレビューを停止しました。";
+export function localizeCompareError(
+  message: string,
+  menuLanguage: MenuLanguage = "en",
+): string {
+  const matched = message.includes(
+    "Compare stopped because these files are too large for the comparison preview.",
+  );
+
+  if (!matched) {
+    return message;
   }
 
+  if (isKanaStyle(menuLanguage)) {
+    return "ふみが おおきすぎるため、くらべ ぷれびゅーを ていし しました。";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "ファイルが大きすぎるため、比較プレビューを停止しました。";
+  }
   return message;
 }
 

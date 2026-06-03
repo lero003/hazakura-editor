@@ -7,6 +7,8 @@ import type {
   MenuLanguage,
   ReviewDeskMode,
 } from "../../types";
+import { isJapaneseMenuLanguage } from "../../types";
+import { isKanaStyle } from "../../lib/locale/_helpers";
 import type { ReviewDeskCopy } from "../../lib/locale";
 import { CandidateEditor } from "../editor/CandidateEditor";
 import { DiffBody } from "../diff/DiffBody";
@@ -280,9 +282,13 @@ function localizeCandidateError(
     rawMessage.includes("too large for the comparison preview") ||
     rawMessage.includes("comparison preview")
   ) {
-    return menuLanguage !== "en"
-      ? "現在のバッファと手動候補の差分が大きすぎるため、比較できません。"
-      : "The buffer and candidate combination is too large to diff.";
+    if (isKanaStyle(menuLanguage)) {
+      return "くらべるには おおきすぎます";
+    }
+    if (isJapaneseMenuLanguage(menuLanguage)) {
+      return "現在のバッファと手動候補の差分が大きすぎるため、比較できません。";
+    }
+    return "The buffer and candidate combination is too large to diff.";
   }
   return rawMessage;
 }

@@ -1,4 +1,6 @@
 import type { CompareAnchor, MenuLanguage } from "../../types";
+import { isJapaneseMenuLanguage } from "../../types";
+import { isKanaStyle } from "../../lib/locale/_helpers";
 import { DiffSelectionSlot } from "./DiffSelectionSlot";
 
 export function DiffSetupPane({
@@ -18,8 +20,35 @@ export function DiffSetupPane({
   onCompare: () => void;
   workspaceRootPath: string | null;
 }) {
-  const labels =
-    menuLanguage !== "en"
+  const labels = isKanaStyle(menuLanguage)
+    ? {
+        clear: "とく",
+        compare: "くらべる",
+        compareSource: "くらべもと",
+        compareTarget: "くらべさき",
+        introText: "ふたつの ふみを えらんで くらべます。",
+        heading: "Diff",
+        noWorkspace:
+          "ふぉるだを ひらくと ひだりの いちれつから くらべもとと くらべさきを えらべます。",
+        openWorkspaceHint: "まず ふぉるだを ひらいて ください",
+        sourceHint:
+          "ひとつめの ふみを ひだりから えらぶと くらべもとに なります",
+        sourceSelectedHint:
+          "くらべもとを かへるには とくして えらびなおします",
+        targetHint:
+          "ふたつめの ふみを ひだりから えらぶと くらべさきに なります",
+        targetSelectedHint:
+          "くらべさきを かへるには とくして えらびなおします",
+        ready: "じゅんび できました。くらべる ほたんで けっかを ひょうじします。",
+        sourcePending: "まず ひだりから くらべもとを えらんで ください。",
+        targetPending: "つぎに ひだりから くらべさきを えらんで ください。",
+        noWorkspacePending: "ふぉるだを ひらくと ふみ くらべを はじめられます。",
+        sameFilePending:
+          "くらべもとと くらべさきには べつの ふみを えらんで ください。",
+        sourceUnset: "くらべもとは みせんたくです",
+        targetUnset: "くらべさきは みせんたくです",
+      }
+    : isJapaneseMenuLanguage(menuLanguage)
       ? {
           clear: "解除",
           compare: "比較する",

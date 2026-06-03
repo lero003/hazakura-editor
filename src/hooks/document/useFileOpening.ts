@@ -23,6 +23,8 @@ import type {
   EditorTab,
   MenuLanguage,
 } from "../../types";
+import { isJapaneseMenuLanguage } from "../../types";
+import { isKanaStyle } from "../../lib/locale/_helpers";
 
 type UseFileOpeningOptions = {
   activeTab: EditorTab | null;
@@ -157,31 +159,19 @@ export function useFileOpening({
           : null;
 
       if (!targetPath) {
-        setStatus(
-          menuLanguage !== "en"
-            ? "workspace 内の相対テキストリンクだけ開けます"
-            : "Only relative workspace text links can be opened",
-        );
+        setStatus(workspaceRelativeLinkOnlyMessage(menuLanguage));
         return;
       }
 
       if (!isComparableTextFile(targetPath)) {
-        setStatus(
-          menuLanguage !== "en"
-            ? "リンク先は対応テキストファイルではありません"
-            : "Linked file is not a supported text file",
-        );
+        setStatus(unsupportedLinkedFileMessage(menuLanguage));
         return;
       }
 
       const opened = await openFilePath(targetPath);
 
       if (opened) {
-        setStatus(
-          menuLanguage !== "en"
-            ? "リンク先ファイルを開きました"
-            : "Linked file opened",
-        );
+        setStatus(linkedFileOpenedMessage(menuLanguage));
       }
     },
     [activeTab, menuLanguage, openFilePath, setStatus, workspaceRootPath],
@@ -282,4 +272,34 @@ export function useFileOpening({
     openPreviewMarkdownLink,
     openWorkspaceFile,
   };
+}
+
+function workspaceRelativeLinkOnlyMessage(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) {
+    return "workspace ないの そうたい もじりんくだけ ひらけます";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "workspace 内の相対テキストリンクだけ開けます";
+  }
+  return "Only relative workspace text links can be opened";
+}
+
+function unsupportedLinkedFileMessage(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) {
+    return "りんくさきは たいおう もじふみ では ありません";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "リンク先は対応テキストファイルではありません";
+  }
+  return "Linked file is not a supported text file";
+}
+
+function linkedFileOpenedMessage(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) {
+    return "りんくさき ふみを ひらきました";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "リンク先ファイルを開きました";
+  }
+  return "Linked file opened";
 }

@@ -15,6 +15,8 @@ import type {
   MenuLanguage,
   RightPaneMode,
 } from "../../types";
+import { isJapaneseMenuLanguage } from "../../types";
+import { isKanaStyle } from "../../lib/locale/_helpers";
 
 type UseCompareExecutionOptions = {
   activeTab: EditorTab | null;
@@ -55,8 +57,8 @@ export function useCompareExecution({
       try {
         const diskDocument = await openTextFile(tab.path);
         const diff = buildLineDiff(diskDocument.contents, tab.contents);
-        const diskLabel = menuLanguage !== "en" ? "ディスク" : "Disk";
-        const editorLabel = menuLanguage !== "en" ? "エディタ" : "Editor";
+        const diskLabel = compareColumnLabel(menuLanguage, "disk");
+        const editorLabel = compareColumnLabel(menuLanguage, "editor");
         const caseKey = crypto.randomUUID();
         const compareCase: CompareCase = {
           kind: "changes",
@@ -79,7 +81,7 @@ export function useCompareExecution({
       } catch (err) {
         const message = String(err);
         setGlobalError(
-          menuLanguage !== "en" ? localizeCompareError(message) : message,
+          menuLanguage !== "en" ? localizeCompareError(message, menuLanguage) : message,
         );
         setStatus("Change review failed");
       }
@@ -103,8 +105,8 @@ export function useCompareExecution({
       try {
         const diskDocument = await openTextFile(tab.path);
         const diff = buildLineDiff(diskDocument.contents, draft.contents);
-        const diskLabel = menuLanguage !== "en" ? "ディスク" : "Disk";
-        const draftLabel = menuLanguage !== "en" ? "下書き" : "Draft";
+        const diskLabel = compareColumnLabel(menuLanguage, "disk");
+        const draftLabel = compareColumnLabel(menuLanguage, "draft");
         const caseKey = crypto.randomUUID();
         const compareCase: CompareCase = {
           kind: "changes",
@@ -127,7 +129,7 @@ export function useCompareExecution({
       } catch (err) {
         const message = String(err);
         setGlobalError(
-          menuLanguage !== "en" ? localizeCompareError(message) : message,
+          menuLanguage !== "en" ? localizeCompareError(message, menuLanguage) : message,
         );
         setStatus("Change review failed");
       }
@@ -178,18 +180,18 @@ export function useCompareExecution({
 
       try {
         const rightDocument = await openTextFile(rightFile.path);
-        const centerLabel = menuLanguage !== "en" ? "中央" : "Center";
-        const rightLabel = menuLanguage !== "en" ? "右" : "Right";
+        const centerLabel = compareColumnLabel(menuLanguage, "center");
+        const rightLabel = compareColumnLabel(menuLanguage, "right");
+        const sourceLabel = compareColumnLabel(menuLanguage, "source");
+        const targetLabel = compareColumnLabel(menuLanguage, "target");
         const source =
           compareAnchor && compareAnchor.path !== rightFile.path
             ? {
                 ...(await openTextFile(compareAnchor.path)),
                 name: compareAnchor.name,
                 path: compareAnchor.path,
-                leftColumnLabel:
-                  menuLanguage !== "en" ? "比較元" : "Source",
-                rightColumnLabel:
-                  menuLanguage !== "en" ? "比較先" : "Target",
+                leftColumnLabel: sourceLabel,
+                rightColumnLabel: targetLabel,
               }
             : activeTab && activeTab.path !== rightFile.path
             ? {
@@ -203,10 +205,8 @@ export function useCompareExecution({
                 ...(await openTextFile(compareAnchor?.path ?? rightFile.path)),
                 name: compareAnchor?.name ?? rightFile.name,
                 path: compareAnchor?.path ?? rightFile.path,
-                leftColumnLabel:
-                  menuLanguage !== "en" ? "比較元" : "Source",
-                rightColumnLabel:
-                  menuLanguage !== "en" ? "比較先" : "Target",
+                leftColumnLabel: sourceLabel,
+                rightColumnLabel: targetLabel,
               };
         const diff = buildLineDiff(source.contents, rightDocument.contents);
         const caseKey = crypto.randomUUID();
@@ -237,7 +237,7 @@ export function useCompareExecution({
       } catch (err) {
         const message = String(err);
         setGlobalError(
-          menuLanguage !== "en" ? localizeCompareError(message) : message,
+          menuLanguage !== "en" ? localizeCompareError(message, menuLanguage) : message,
         );
         setStatus("Compare failed");
       }
@@ -259,21 +259,13 @@ export function useCompareExecution({
 
   const runSelectedFileCompare = useCallback(() => {
     if (!compareAnchor || !compareTarget) {
-      setGlobalError(
-        menuLanguage !== "en"
-          ? "比較元と比較先の2つのテキストファイルを選んでください。"
-          : "Choose both a source and target text file before comparing.",
-      );
+      setGlobalError(compareMissingSelectionMessage(menuLanguage));
       setStatus("Compare failed");
       return;
     }
 
     if (compareAnchor.path === compareTarget.path) {
-      setGlobalError(
-        menuLanguage !== "en"
-          ? "比較元と比較先には別のファイルを選んでください。"
-          : "Choose different files for the source and target.",
-      );
+      setGlobalError(compareSameFileMessage(menuLanguage));
       setStatus("Compare failed");
       return;
     }
@@ -294,4 +286,84 @@ export function useCompareExecution({
     requestReviewTabAgainstDisk,
     runSelectedFileCompare,
   };
+}
+
+type CompareColumnKey = "disk" | "editor" | "draft" | "center" | "right" | "source" | "target";
+
+function compareColumnLabel(
+  menuLanguage: MenuLanguage,
+  key: CompareColumnKey,
+): string {
+  if (isKanaStyle(menuLanguage)) {
+    switch (key) {
+      case "disk":
+        return "でぃすく";
+      case "editor":
+        return "えでぃた";
+      case "draft":
+        return "したがき";
+      case "center":
+        return "まんなか";
+      case "right":
+        return "みぎ";
+      case "source":
+        return "くらべもと";
+      case "target":
+        return "くらべさき";
+    }
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    switch (key) {
+      case "disk":
+        return "ディスク";
+      case "editor":
+        return "エディタ";
+      case "draft":
+        return "下書き";
+      case "center":
+        return "中央";
+      case "right":
+        return "右";
+      case "source":
+        return "比較元";
+      case "target":
+        return "比較先";
+    }
+  }
+  switch (key) {
+    case "disk":
+      return "Disk";
+    case "editor":
+      return "Editor";
+    case "draft":
+      return "Draft";
+    case "center":
+      return "Center";
+    case "right":
+      return "Right";
+    case "source":
+      return "Source";
+    case "target":
+      return "Target";
+  }
+}
+
+function compareMissingSelectionMessage(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) {
+    return "くらべもとと くらべさき ふたつの ふみを えらんで ください。";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "比較元と比較先の2つのテキストファイルを選んでください。";
+  }
+  return "Choose both a source and target text file before comparing.";
+}
+
+function compareSameFileMessage(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) {
+    return "くらべもとと くらべさきには べつの ふみを えらんで ください。";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "比較元と比較先には別のファイルを選んでください。";
+  }
+  return "Choose different files for the source and target.";
 }

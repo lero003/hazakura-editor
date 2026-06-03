@@ -13,8 +13,10 @@ import {
 import {
   type AgentLaunchGateState,
   type CompareAnchor,
+  isJapaneseMenuLanguage,
   type MenuLanguage,
 } from "../../types";
+import { isKanaStyle } from "../../lib/locale/_helpers";
 import {
   isActiveAgentSession,
   lastAgentOutputSeq,
@@ -111,28 +113,18 @@ export function useAgentSessionLifecycle({
       setGlobalError(null);
 
       if (!isActiveAgentSession(agentSession)) {
-        setStatus(
-          menuLanguage !== "en"
-            ? "実行中の Agent セッションが必要です"
-            : "Running Agent session required",
-        );
+        setStatus(runningAgentRequiredMessage(menuLanguage));
         return;
       }
 
       try {
         await writeAgentWorkbenchSessionInput(file.path);
-        setStatus(
-          menuLanguage !== "en"
-            ? `Agent にフルパスを送信: ${file.name}`
-            : `Sent full path to Agent: ${file.name}`,
-        );
+        setStatus(sentFullPathToAgentMessage(menuLanguage, file.name));
       } catch (err) {
         reportAgentLaunchGateError(
           setAgentLaunchGate,
           setStatus,
-          menuLanguage !== "en"
-            ? "Agent へのパス送信に失敗しました"
-            : "Agent path send failed",
+          agentPathSendFailedMessage(menuLanguage),
           err,
         );
         void refreshAgentSessionState();
@@ -196,4 +188,37 @@ export function useAgentSessionLifecycle({
     requestAgentSessionStop,
     sendWorkspacePathToAgent,
   };
+}
+
+function runningAgentRequiredMessage(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) {
+    return "うごいてゐる Agent せっしょんが ひつようです";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "実行中の Agent セッションが必要です";
+  }
+  return "Running Agent session required";
+}
+
+function sentFullPathToAgentMessage(
+  menuLanguage: MenuLanguage,
+  fileName: string,
+): string {
+  if (isKanaStyle(menuLanguage)) {
+    return `Agent に ふるぱすを おくりました: ${fileName}`;
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return `Agent にフルパスを送信: ${fileName}`;
+  }
+  return `Sent full path to Agent: ${fileName}`;
+}
+
+function agentPathSendFailedMessage(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) {
+    return "Agent への ぱす おくりに しっぱいしました";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "Agent へのパス送信に失敗しました";
+  }
+  return "Agent path send failed";
 }

@@ -1,5 +1,7 @@
 import type { RefObject } from "react";
 import type { EditorTab, MenuLanguage } from "../../types";
+import { isJapaneseMenuLanguage } from "../../types";
+import { isKanaStyle } from "../../lib/locale/_helpers";
 
 type DirtyTabCloseDialogProps = {
   cancelButtonRef: RefObject<HTMLButtonElement | null>;
@@ -102,34 +104,52 @@ export function AppCloseDialog({
 }
 
 function getCloseDialogCopy(lang: MenuLanguage) {
-  return lang !== "en"
-    ? {
-        appDescription: (count: number) =>
-          `${formatDirtyTabCount(count, lang)}を、hazakura editor を閉じる前に保存または破棄してください。`,
-        cancel: "キャンセル",
-        discard: "破棄",
-        discardAll: "すべて破棄",
-        save: "保存",
-        saveAll: "すべて保存",
-        tabDescription: (name: string) =>
-          `${name} に未保存の変更があります。`,
-        title: "未保存の変更",
-      }
-    : {
-        appDescription: (count: number) =>
-          `${formatDirtyTabCount(count, lang)} must be saved or discarded before closing hazakura editor.`,
-        cancel: "Cancel",
-        discard: "Discard",
-        discardAll: "Discard All",
-        save: "Save",
-        saveAll: "Save All",
-        tabDescription: (name: string) => `${name} has unsaved changes.`,
-        title: "Unsaved changes",
-      };
+  if (isKanaStyle(lang)) {
+    return {
+      appDescription: (count: number) =>
+        `${formatDirtyTabCount(count, lang)}を、hazakura editor を とぢる まえに ほぞん または はき して ください。`,
+      cancel: "きゃんせる",
+      discard: "はき",
+      discardAll: "すべて はき",
+      save: "ほぞん",
+      saveAll: "すべて ほぞん",
+      tabDescription: (name: string) =>
+        `${name} に みほぞんの へんこうが あります。`,
+      title: "みほぞんの へんこう",
+    };
+  }
+  if (isJapaneseMenuLanguage(lang)) {
+    return {
+      appDescription: (count: number) =>
+        `${formatDirtyTabCount(count, lang)}を、hazakura editor を閉じる前に保存または破棄してください。`,
+      cancel: "キャンセル",
+      discard: "破棄",
+      discardAll: "すべて破棄",
+      save: "保存",
+      saveAll: "すべて保存",
+      tabDescription: (name: string) =>
+        `${name} に未保存の変更があります。`,
+      title: "未保存の変更",
+    };
+  }
+  return {
+    appDescription: (count: number) =>
+      `${formatDirtyTabCount(count, lang)} must be saved or discarded before closing hazakura editor.`,
+    cancel: "Cancel",
+    discard: "Discard",
+    discardAll: "Discard All",
+    save: "Save",
+    saveAll: "Save All",
+    tabDescription: (name: string) => `${name} has unsaved changes.`,
+    title: "Unsaved changes",
+  };
 }
 
 function formatDirtyTabCount(count: number, lang: MenuLanguage): string {
-  if (lang !== "en") {
+  if (isKanaStyle(lang)) {
+    return `みほぞん たぶ ${count} けん`;
+  }
+  if (isJapaneseMenuLanguage(lang)) {
     return `未保存タブ ${count} 件`;
   }
 

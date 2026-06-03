@@ -3,6 +3,8 @@ import type {
   CompareViewState,
   MenuLanguage,
 } from "../../types";
+import { isJapaneseMenuLanguage } from "../../types";
+import { isKanaStyle } from "../../lib/locale/_helpers";
 import { DiffBody } from "../diff/DiffBody";
 
 type ChangeReviewCase = Extract<CompareCase, { kind: "changes" }>;
@@ -18,8 +20,17 @@ export function ChangeReviewView({
   onClose: () => void;
   view: CompareViewState;
 }) {
-  const labels =
-    menuLanguage !== "en"
+  const labels = isKanaStyle(menuLanguage)
+    ? {
+        additions: "ついかぎょう",
+        changesTitle: "へんこう かくにん",
+        close: "とぢる",
+        removed: "さくじょぎょう",
+        summary: "くらべの がいよう",
+        to: "と",
+        table: "へんこう かくにん",
+      }
+    : isJapaneseMenuLanguage(menuLanguage)
       ? {
           additions: "追加行",
           changesTitle: "変更確認",

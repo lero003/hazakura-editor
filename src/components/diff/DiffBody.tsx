@@ -7,6 +7,8 @@ import type {
   MarkdownHeading,
   MenuLanguage,
 } from "../../types";
+import { isJapaneseMenuLanguage } from "../../types";
+import { isKanaStyle } from "../../lib/locale/_helpers";
 import {
   findCurrentMarkdownHeading,
   isMarkdownDocumentPath,
@@ -80,7 +82,13 @@ export function DiffBody({
 }
 
 function emptyLabel(menuLanguage: MenuLanguage): string {
-  return menuLanguage !== "en" ? "差分はありません" : "No differences";
+  if (isKanaStyle(menuLanguage)) {
+    return "ちがひ ありません";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "差分はありません";
+  }
+  return "No differences";
 }
 
 function buildSplitDiffRows(lines: DiffLine[]): DiffSplitRow[] {
@@ -310,12 +318,38 @@ function formatDiffSectionContext(
   const rightText = rightHeading?.text ?? null;
 
   if (leftText && rightText && leftText !== rightText) {
-    return menuLanguage !== "en"
-      ? `変更位置: 比較元 § ${leftText} / 比較先 § ${rightText}`
-      : `Changed in: source § ${leftText} / target § ${rightText}`;
+    return `${diffChangedInPrefix(menuLanguage)} ${diffSourceLabel(menuLanguage)} § ${leftText} / ${diffTargetLabel(menuLanguage)} § ${rightText}`;
   }
 
-  return menuLanguage !== "en"
-    ? `変更位置: § ${leftText ?? rightText}`
-    : `Changed in: § ${leftText ?? rightText}`;
+  return `${diffChangedInPrefix(menuLanguage)} § ${leftText ?? rightText}`;
+}
+
+function diffChangedInPrefix(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) {
+    return "かはりみち:";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "変更位置:";
+  }
+  return "Changed in:";
+}
+
+function diffSourceLabel(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) {
+    return "くらべもと";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "比較元";
+  }
+  return "source";
+}
+
+function diffTargetLabel(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) {
+    return "くらべさき";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "比較先";
+  }
+  return "target";
 }

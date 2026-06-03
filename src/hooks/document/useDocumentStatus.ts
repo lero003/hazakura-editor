@@ -12,6 +12,8 @@ import type {
   TextDocumentStats,
   TextEncoding,
 } from "../../types";
+import { isJapaneseMenuLanguage } from "../../types";
+import { isKanaStyle } from "../../lib/locale/_helpers";
 import { normalizeTextLineEndings } from "../../lib/utils";
 import { formatLineEndingKind, formatTextEncoding } from "../../lib/format";
 
@@ -58,16 +60,16 @@ export function useDocumentStatus({
     [activeContents, activeTab?.line_ending],
   );
   const compareMeta = sidePaneMode === "compare" && compareView
-    ? menuLanguage !== "en"
-      ? `${compareCase?.kind === "changes" ? "変更確認" : "比較"} · ${compareView.additions} 追加 · ${compareView.removals} 削除`
-      : `${compareCase?.kind === "changes" ? "Change review" : "Comparison"} · ${compareView.additions} added · ${compareView.removals} removed`
+    ? isKanaStyle(menuLanguage)
+      ? `${compareCase?.kind === "changes" ? "へんこう かくにん" : "くらべ"} · ${compareView.additions} ついか · ${compareView.removals} さくじょ`
+      : isJapaneseMenuLanguage(menuLanguage)
+        ? `${compareCase?.kind === "changes" ? "変更確認" : "比較"} · ${compareView.additions} 追加 · ${compareView.removals} 削除`
+        : `${compareCase?.kind === "changes" ? "Change review" : "Comparison"} · ${compareView.additions} added · ${compareView.removals} removed`
     : null;
   const documentMeta = activeTab
     ? formatActiveDocumentMeta(stats, activeTab, activeDirty, menuLanguage)
     : selectedImage
-      ? menuLanguage !== "en"
-        ? `画像 · ${formatBytes(selectedImage.size)} · ${selectedImage.name}`
-        : `Image · ${formatBytes(selectedImage.size)} · ${selectedImage.name}`
+      ? `${localizeImageLabel(menuLanguage)} · ${formatBytes(selectedImage.size)} · ${selectedImage.name}`
       : noFileOpenText;
   const statusDetail = compareMeta
     ? compareMeta
@@ -162,17 +164,11 @@ function formatActiveDocumentMeta(
   return [
     ...formatDocumentMetaParts(stats, tab.name, tab.encoding, menuLanguage),
     tab.large_file_warning
-      ? menuLanguage !== "en"
-        ? "大きなファイル"
-        : "large file"
+      ? localizeLargeFileLabel(menuLanguage)
       : null,
     dirty
-      ? menuLanguage !== "en"
-        ? "未保存"
-        : "unsaved"
-      : menuLanguage !== "en"
-        ? "保存済み"
-        : "clean",
+      ? localizeUnsavedLabel(menuLanguage)
+      : localizeCleanLabel(menuLanguage),
   ]
     .filter((part): part is string => Boolean(part))
     .join(" · ");
@@ -188,17 +184,11 @@ function formatDocumentMetaParts(
     formatFileType(fileName, menuLanguage),
     formatTextEncoding(encoding, menuLanguage),
     formatBytes(stats.bytes),
-    menuLanguage !== "en"
-      ? `${stats.characters.toLocaleString()} 文字`
-      : `${stats.characters.toLocaleString()} chars`,
+    localizeCharactersCountLabel(menuLanguage, stats.characters),
     formatLineEndingKind(stats.lineEnding, menuLanguage),
     stats.hasFinalNewline
-      ? menuLanguage !== "en"
-        ? "末尾改行あり"
-        : "final newline"
-      : menuLanguage !== "en"
-        ? "末尾改行なし"
-        : "no final newline",
+      ? localizeFinalNewlineLabel(menuLanguage)
+      : localizeNoFinalNewlineLabel(menuLanguage),
   ];
 }
 
@@ -224,10 +214,18 @@ function formatFileType(fileName: string, menuLanguage: MenuLanguage): string {
       return "TOML";
     case "csv":
     case "tsv":
-      return menuLanguage !== "en" ? "区切りテキスト" : "Delimited text";
+      return isKanaStyle(menuLanguage)
+        ? "くぎり もじ"
+        : isJapaneseMenuLanguage(menuLanguage)
+          ? "区切りテキスト"
+          : "Delimited text";
     case "html":
     case "xml":
-      return menuLanguage !== "en" ? "マークアップ" : "Markup";
+      return isKanaStyle(menuLanguage)
+        ? "まーくあっぷ"
+        : isJapaneseMenuLanguage(menuLanguage)
+          ? "マークアップ"
+          : "Markup";
     case "css":
       return "CSS";
     case "js":
@@ -240,13 +238,19 @@ function formatFileType(fileName: string, menuLanguage: MenuLanguage): string {
       return "TypeScript";
     case "ini":
     case "conf":
-      return menuLanguage !== "en" ? "設定" : "Config";
+      return isKanaStyle(menuLanguage)
+        ? "せってい"
+        : isJapaneseMenuLanguage(menuLanguage)
+          ? "設定"
+          : "Config";
     default:
       return extension
         ? extension.toUpperCase()
-        : menuLanguage !== "en"
-          ? "プレーンテキスト"
-          : "Plain text";
+        : isKanaStyle(menuLanguage)
+          ? "ぷれいん もじ"
+          : isJapaneseMenuLanguage(menuLanguage)
+            ? "プレーンテキスト"
+            : "Plain text";
   }
 }
 
@@ -268,14 +272,20 @@ function formatSelectionInfo(
 ): string {
   const selectionText =
     selection.selectedCharacters > 0
-      ? menuLanguage !== "en"
-        ? ` · ${selection.selectedCharacters.toLocaleString()} 文字選択 / ${selection.selectedLines.toLocaleString()} 行`
-        : ` · ${selection.selectedCharacters.toLocaleString()} selected / ${selection.selectedLines.toLocaleString()} lines`
+      ? isKanaStyle(menuLanguage)
+        ? ` · ${selection.selectedCharacters.toLocaleString()} もじ せんたく / ${selection.selectedLines.toLocaleString()} ぎょう`
+        : isJapaneseMenuLanguage(menuLanguage)
+          ? ` · ${selection.selectedCharacters.toLocaleString()} 文字選択 / ${selection.selectedLines.toLocaleString()} 行`
+          : ` · ${selection.selectedCharacters.toLocaleString()} selected / ${selection.selectedLines.toLocaleString()} lines`
       : "";
 
-  return menuLanguage !== "en"
-    ? `${selection.line.toLocaleString()} 行, ${selection.column.toLocaleString()} 列${selectionText}`
-    : `Ln ${selection.line.toLocaleString()}, Col ${selection.column.toLocaleString()}${selectionText}`;
+  if (isKanaStyle(menuLanguage)) {
+    return `${selection.line.toLocaleString()} ぎょう, ${selection.column.toLocaleString()} れつ${selectionText}`;
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return `${selection.line.toLocaleString()} 行, ${selection.column.toLocaleString()} 列${selectionText}`;
+  }
+  return `Ln ${selection.line.toLocaleString()}, Col ${selection.column.toLocaleString()}${selectionText}`;
 }
 
 function formatActiveEditorStatusDetail(
@@ -288,11 +298,58 @@ function formatActiveEditorStatusDetail(
 
   if (currentHeading) {
     parts.push(
-      menuLanguage !== "en"
-        ? `現在位置: § ${currentHeading.text}`
-        : `Position: § ${currentHeading.text}`,
+      isKanaStyle(menuLanguage)
+        ? `げんざいいち: § ${currentHeading.text}`
+        : isJapaneseMenuLanguage(menuLanguage)
+          ? `現在位置: § ${currentHeading.text}`
+          : `Position: § ${currentHeading.text}`,
     );
   }
 
   return parts.join(" · ");
+}
+
+function localizeImageLabel(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) return "がぞう";
+  if (isJapaneseMenuLanguage(menuLanguage)) return "画像";
+  return "Image";
+}
+
+function localizeLargeFileLabel(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) return "おおきな ふみ";
+  if (isJapaneseMenuLanguage(menuLanguage)) return "大きなファイル";
+  return "large file";
+}
+
+function localizeUnsavedLabel(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) return "みほぞん";
+  if (isJapaneseMenuLanguage(menuLanguage)) return "未保存";
+  return "unsaved";
+}
+
+function localizeCleanLabel(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) return "ほぞんずみ";
+  if (isJapaneseMenuLanguage(menuLanguage)) return "保存済み";
+  return "clean";
+}
+
+function localizeCharactersCountLabel(
+  menuLanguage: MenuLanguage,
+  count: number,
+): string {
+  if (isKanaStyle(menuLanguage)) return `${count.toLocaleString()} もじ`;
+  if (isJapaneseMenuLanguage(menuLanguage)) return `${count.toLocaleString()} 文字`;
+  return `${count.toLocaleString()} chars`;
+}
+
+function localizeFinalNewlineLabel(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) return "びょう かいぎょう あり";
+  if (isJapaneseMenuLanguage(menuLanguage)) return "末尾改行あり";
+  return "final newline";
+}
+
+function localizeNoFinalNewlineLabel(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) return "びょう かいぎょう なし";
+  if (isJapaneseMenuLanguage(menuLanguage)) return "末尾改行なし";
+  return "no final newline";
 }

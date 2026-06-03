@@ -4,6 +4,8 @@
 // no React or Tauri dependencies, so they live outside the
 // per-feature hooks.
 import type { LineEndingKind, MenuLanguage, TextEncoding } from "../types";
+import { isJapaneseMenuLanguage } from "../types";
+import { isKanaStyle } from "./locale/_helpers";
 
 export function formatLineEndingKind(
   lineEnding: LineEndingKind,
@@ -14,11 +16,15 @@ export function formatLineEndingKind(
   }
 
   if (lineEnding === "mixed") {
-    return menuLanguage !== "en" ? "混在" : "Mixed";
+    if (isKanaStyle(menuLanguage)) return "こんざい";
+    if (isJapaneseMenuLanguage(menuLanguage)) return "混在";
+    return "Mixed";
   }
 
   if (lineEnding === "none") {
-    return menuLanguage !== "en" ? "改行なし" : "No line endings";
+    if (isKanaStyle(menuLanguage)) return "かいぎょう なし";
+    if (isJapaneseMenuLanguage(menuLanguage)) return "改行なし";
+    return "No line endings";
   }
 
   return "LF";
