@@ -1,10 +1,6 @@
-import { useEffect, useState } from "react";
 import type { AgentWorkbenchCopy } from "../../lib/locale";
-import type {
-  AgentProviderAvailability,
-  AgentWorkbenchProvider,
-} from "../../lib/tauri";
-import { listAgentProviderAvailability } from "../../lib/tauri";
+import type { AgentWorkbenchProvider } from "../../lib/tauri";
+import { useAgentProviderAvailability } from "../../hooks/agent/useAgentProviderAvailability";
 import { AGENT_WORKBENCH_PROVIDERS } from "../../types";
 
 type AgentWorkbenchPreferencesPaneProps = {
@@ -42,33 +38,7 @@ export function AgentWorkbenchPreferencesPane({
   sessionLabel,
   workspaceRootPath,
 }: AgentWorkbenchPreferencesPaneProps) {
-  // Fetch the live allowlisted-provider availability on mount so the
-  // dropdown can append the "(not installed)" suffix and disable
-  // the option before the user reaches the start path. The fetch is
-  // cheap and idempotent; we intentionally do not cache across
-  // renders.
-  const [providerAvailability, setProviderAvailability] = useState<
-    AgentProviderAvailability[]
-  >([]);
-  useEffect(() => {
-    let disposed = false;
-    void listAgentProviderAvailability()
-      .then((snapshot) => {
-        if (!disposed) {
-          setProviderAvailability(snapshot);
-        }
-      })
-      .catch((err) => {
-        console.warn("Failed to read Agent provider availability", err);
-      });
-    return () => {
-      disposed = true;
-    };
-  }, []);
-
-  const availabilityByProvider = new Map(
-    providerAvailability.map((entry) => [entry.provider, entry]),
-  );
+  const { availabilityByProvider } = useAgentProviderAvailability();
   const currentAvailability = availabilityByProvider.get(provider);
   const currentProviderUnavailable =
     currentAvailability !== undefined && !currentAvailability.available;

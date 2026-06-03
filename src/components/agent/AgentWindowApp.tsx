@@ -1,15 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   getAgentWorkbenchSessionState,
-  listAgentProviderAvailability,
   resizeAgentWorkbenchTerminal,
   setAgentWindowTheme,
   stopAgentWorkbenchSession,
   writeAgentWorkbenchSessionInput,
-  type AgentProviderAvailability,
   type AgentWorkbenchProvider,
   type AgentWorkbenchSession,
 } from "../../lib/tauri";
+import { useAgentProviderAvailability } from "../../hooks/agent/useAgentProviderAvailability";
 import {
   AGENT_WORKBENCH_CONSENT_STORAGE_KEY,
   AGENT_WORKBENCH_ENABLED_STORAGE_KEY,
@@ -149,32 +148,7 @@ export function AgentWindowApp() {
   const [agentWorkbenchConsent] = useState<boolean>(readStoredAgentWorkbenchConsent);
   const [selectedProvider, setSelectedProvider] =
     useState<AgentWorkbenchProvider>(readStoredAgentWorkbenchProvider);
-  // Fetch the allowlisted-provider availability snapshot on mount so
-  // the Start panel can append the "(not installed)" suffix and
-  // disable the Start button when the selected CLI is missing. The
-  // fetch is cheap and idempotent; we intentionally do not cache.
-  const [providerAvailability, setProviderAvailability] = useState<
-    AgentProviderAvailability[]
-  >([]);
-  useEffect(() => {
-    let disposed = false;
-    void listAgentProviderAvailability()
-      .then((snapshot) => {
-        if (!disposed) {
-          setProviderAvailability(snapshot);
-        }
-      })
-      .catch((err) => {
-        console.warn("Failed to read Agent provider availability", err);
-      });
-    return () => {
-      disposed = true;
-    };
-  }, []);
-  const availabilityByProvider = useMemo(
-    () => new Map(providerAvailability.map((entry) => [entry.provider, entry])),
-    [providerAvailability],
-  );
+  const { availabilityByProvider } = useAgentProviderAvailability();
   const selectedProviderUnavailable =
     availabilityByProvider.get(selectedProvider)?.available === false;
   const activeWorkspaceRoot = useMainWindowWorkspace();
