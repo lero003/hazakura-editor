@@ -27,6 +27,32 @@
   grid-template-columns: minmax(0, 1fr) !important;
 }
 
+:root[data-l-mode="on"] .editor-host::before {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface) 42%, transparent),
+      color-mix(in srgb, var(--surface) 16%, transparent)
+    );
+  border-left: 1px solid color-mix(in srgb, var(--border) 42%, transparent);
+  border-right: 1px solid color-mix(in srgb, var(--border) 30%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--surface) 18%, transparent),
+    var(--shadow-lg);
+  content: "";
+  inset: 72px auto 72px 50%;
+  pointer-events: none;
+  position: absolute;
+  transform: translateX(-50%);
+  width: min(760px, calc(100% - 64px));
+  z-index: 0;
+}
+
+:root[data-l-mode="on"] .editor-mount {
+  position: relative;
+  z-index: 1;
+}
+
 /* --- 2. Float chrome out of attention ---
    Tabs and status stay reachable, but they no longer read as
    normal bars. They are quiet floating hints that appear only
@@ -158,21 +184,9 @@
   font-family: var(--lmode-prose-font-family);
   font-size: 16.5px;
   line-height: 1.72;
-  min-height: 100%;
   padding: 106px clamp(22px, 4vw, 48px) 148px;
   text-align: start;
   hyphens: auto;
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--surface) 42%, transparent),
-      color-mix(in srgb, var(--surface) 16%, transparent)
-    );
-  border-left: 1px solid color-mix(in srgb, var(--border) 42%, transparent);
-  border-right: 1px solid color-mix(in srgb, var(--border) 30%, transparent);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--surface) 18%, transparent),
-    var(--shadow-lg);
 }
 
 :root[data-l-mode="on"] .cm-line {

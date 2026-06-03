@@ -26,6 +26,21 @@ describe("lMode.css", () => {
     expect(lModeCss).not.toMatch(/\.cm-lmode-blockquote\s*{[^}]*margin/s);
   });
 
+  it("keeps the paper surface outside the editable content DOM", () => {
+    const contentRule =
+      lModeCss.match(
+        /:root\[data-l-mode="on"\] \.cm-content\s*{(?<body>[^}]*)}/s,
+      )?.groups?.body ?? "";
+
+    expect(contentRule).not.toMatch(/background:/);
+    expect(contentRule).not.toMatch(/box-shadow:/);
+    expect(contentRule).not.toMatch(/border-(left|right):/);
+    expect(contentRule).not.toMatch(/min-height:/);
+    expect(lModeCss).toMatch(
+      /:root\[data-l-mode="on"\] \.editor-host::before/,
+    );
+  });
+
   it("does not hide Markdown markers with display none", () => {
     const hiddenMarkerRule =
       lModeCss.match(
