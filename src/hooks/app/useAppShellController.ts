@@ -34,7 +34,7 @@ import { useDocumentSafetyActions } from "../document/useDocumentSafetyActions";
 import { useDocumentIoController } from "../document/useDocumentIoController";
 import { useDocumentCoreController } from "../document/useDocumentCoreController";
 import { useDocumentPreviewController } from "../document/useDocumentPreviewController";
-import { useActiveDocumentSurface } from "../document/useActiveDocumentSurface";
+import { useEditorSurfaceController } from "../document/useEditorSurfaceController";
 import { useEditorCommands } from "../editor/useEditorCommands";
 import { useEditorFindController } from "../editor/useEditorFindController";
 import { useTabBarController } from "../editor/useTabBarController";
@@ -44,7 +44,6 @@ import { useAppShellFoundation } from "./useAppShellFoundation";
 import { useAppShellRefs } from "./useAppShellRefs";
 import { useWindowDialogActions } from "./useWindowDialogActions";
 import { useLocalizedAppCopy } from "./useLocalizedAppCopy";
-import { useSidePaneController } from "../editor/useSidePaneController";
 import { useAppMenuIntegration } from "./useAppMenuIntegration";
 import { useAppRuntimeEffects } from "./useAppRuntimeEffects";
 
@@ -288,8 +287,13 @@ export function useAppShellController() {
     menuLanguage,
   });
 
-  // section: side pane controller
+  // section: editor surface (side pane + active document surface)
   const {
+    activeDocumentLineCount,
+    activeStatusDetail,
+    currentMarkdownHeading,
+    documentHeadings,
+    documentOutline,
     editorPreviewGridRef,
     editorPreviewGridStyle,
     handlePreviewResizeKeyDown,
@@ -297,36 +301,17 @@ export function useAppShellController() {
     handlePreviewResizePointerMove,
     hasWorkspaceSelection,
     previewColumnPercent,
-    sidePaneMode,
-    sidePaneVisible,
-    toggleDiffPane,
-    toggleOutlinePane,
-    togglePreviewPane,
-  } = useSidePaneController({
-    activeTab,
-    compareView,
-    previewVisible,
-    rightPaneMode,
-    selectedImage,
-    setPreviewVisible,
-    setRightPaneMode,
-    setSidePaneOpen,
-    sidePaneOpen,
-  });
-
-  // section: active document surface
-  const {
-    activeDocumentLineCount,
-    activeStatusDetail,
-    currentMarkdownHeading,
-    documentHeadings,
-    documentOutline,
     scrollHudContext,
     scrollHudLine,
     scrollHudVisible,
+    sidePaneMode,
+    sidePaneVisible,
     syncEditorScroll,
     syncPreviewScroll,
-  } = useActiveDocumentSurface({
+    toggleDiffPane,
+    toggleOutlinePane,
+    togglePreviewPane,
+  } = useEditorSurfaceController({
     activeContents,
     activeDirty,
     activeTab,
@@ -337,9 +322,14 @@ export function useAppShellController() {
     menuLanguage,
     noFileOpenText: safeEditorCopy.noFileOpen,
     previewPaneRef,
+    previewVisible,
+    rightPaneMode,
     selectedImage,
     selectionInfo,
-    sidePaneMode,
+    setPreviewVisible,
+    setRightPaneMode,
+    setSidePaneOpen,
+    sidePaneOpen,
   });
 
   // section: find / replace + go to line
