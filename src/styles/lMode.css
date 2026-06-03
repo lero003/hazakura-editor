@@ -93,17 +93,34 @@
 :root[data-l-mode="on"] .cm-content {
   max-width: 72ch;
   margin: 0 auto;
-  font-size: 16px;
-  line-height: 1.7;
+  font-family: var(--lmode-prose-font-family);
+  font-size: 17px;
+  line-height: 1.8;
   padding: 6rem 0 12rem;
+  text-align: justify;
+  hyphens: auto;
 }
 
 :root[data-l-mode="on"] .cm-line {
   padding: 0;
+  font-family: inherit;
 }
 
-:root[data-l-mode="on"] .cm-line {
-  font-family: inherit;
+/* Headings, code, blockquote, and list lines opt out of
+   justification so the prose body justifies but structural
+   lines don't get pushed around. */
+:root[data-l-mode="on"] .cm-lmode-heading-1,
+:root[data-l-mode="on"] .cm-lmode-heading-2,
+:root[data-l-mode="on"] .cm-lmode-heading-3,
+:root[data-l-mode="on"] .cm-lmode-heading-4,
+:root[data-l-mode="on"] .cm-lmode-heading-5,
+:root[data-l-mode="on"] .cm-lmode-heading-6,
+:root[data-l-mode="on"] .cm-lmode-blockquote,
+:root[data-l-mode="on"] .cm-lmode-list,
+:root[data-l-mode="on"] .cm-lmode-fenced-code,
+:root[data-l-mode="on"] .cm-lmode-fenced-code-start,
+:root[data-l-mode="on"] .cm-lmode-fenced-code-end {
+  text-align: start;
 }
 
 :root[data-l-mode="on"] .cm-line:not(:first-child) {

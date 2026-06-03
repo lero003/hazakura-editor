@@ -43,6 +43,16 @@
   --cm-mark-monospace: #245c40;
   --cm-mark-quote: #4f6659;
 
+  /* L Mode prose font. Sans-serif default; themes can override
+     to a serif stack without further L Mode code changes. */
+  --lmode-prose-font-family:
+    "Inter",
+    "Hiragino Sans",
+    "Yu Gothic UI",
+    system-ui,
+    -apple-system,
+    sans-serif;
+
   /* L Mode monospace stack. Used in the foundation lane for
      the prose body (typography was later moved to a separate
      sans-serif variable). Kept for the code chips and fenced
