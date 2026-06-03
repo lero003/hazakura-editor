@@ -1,19 +1,22 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import type { AgentProviderAvailability } from "../../lib/tauri";
 
 // Mock the Tauri runtime bridge so the hook does not actually
 // touch IPC. The mock is hoisted via vi.mock at module scope so
-// the import in the hook picks it up.
-const listAgentProviderAvailability = vi.fn();
+// the import in the hook picks it up. The Mock type parameter
+// keeps `mockResolvedValue` and `mockImplementation` properly typed
+// so the Promise resolver inside the test body is also typed.
+const listAgentProviderAvailability: Mock<
+  () => Promise<AgentProviderAvailability[]>
+> = vi.fn();
 vi.mock("../../lib/tauri", async () => {
   const actual = await vi.importActual<typeof import("../../lib/tauri")>(
     "../../lib/tauri",
   );
   return {
     ...actual,
-    listAgentProviderAvailability: (...args: unknown[]) =>
-      listAgentProviderAvailability(...args),
+    listAgentProviderAvailability: () => listAgentProviderAvailability(),
   };
 });
 
@@ -36,8 +39,16 @@ describe("useAgentProviderAvailability", () => {
   });
 
   it("starts with an empty snapshot before the fetch resolves", () => {
-    let resolveFetch: ((value: AgentProviderAvailability[]) => void) | null =
-      null;
+    // Capture the Promise resolver so we can drain the pending
+    // fetch at the end of the test. The closure-based assignment
+    // defeats TypeScript's control-flow narrowing on the post-call
+    // site, so a noop initializer (matched to the real resolver
+    // signature) keeps the `let` callable without an `as` cast.
+    let resolveFetch: (
+      value:
+        | AgentProviderAvailability[]
+        | PromiseLike<AgentProviderAvailability[]>,
+    ) => void = () => {};
     listAgentProviderAvailability.mockImplementation(
       () =>
         new Promise<AgentProviderAvailability[]>((resolve) => {
@@ -52,7 +63,7 @@ describe("useAgentProviderAvailability", () => {
 
     // Drain the pending promise so it does not leak into the next
     // test.
-    resolveFetch?.([]);
+    resolveFetch([]);
   });
 
   it("populates availability and the lookup map once the fetch resolves", async () => {
