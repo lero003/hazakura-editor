@@ -145,4 +145,66 @@ describe("computeLModeDecorations", () => {
     // top of that, so we keep this as a lower bound.)
     expect(ranges.length).toBeGreaterThanOrEqual(10);
   });
+
+  it("replaces Image nodes with the L Mode image widget (doc text untouched)", () => {
+    // The cornerstone invariant for the image lane: the saved
+    // file is byte-identical in L Mode and normal mode. The
+    // `![alt](url)` source is visually replaced by the widget,
+    // not mutated, so the doc length and the doc text are both
+    // exactly preserved.
+    const source = "Before ![alt](https://example.com/foo.png) after\n";
+    const state = makeState(source, source.length);
+    const originalText = state.doc.toString();
+    const originalLength = state.doc.length;
+
+    // No workspace context — http(s) URLs resolve directly.
+    const set = computeLModeDecorations(state, {
+      workspaceRoot: null,
+      documentPath: null,
+    });
+
+    // 1) The doc itself is unchanged.
+    expect(state.doc.toString()).toBe(originalText);
+    expect(state.doc.length).toBe(originalLength);
+
+    // 2) The Image range is fully covered by a replace
+    // decoration. The `![alt](url)` source is `from..to` of
+    // the Image node; the replacement range must equal that
+    // exactly, and it must not extend past the node.
+    const imageStart = source.indexOf("![alt]");
+    const imageEnd = source.indexOf(")", imageStart) + 1;
+    const coveringReplaces: Array<{ from: number; to: number }> = [];
+    set.between(imageStart, imageEnd, (from, to) => {
+      coveringReplaces.push({ from, to });
+    });
+    expect(coveringReplaces).toEqual([{ from: imageStart, to: imageEnd }]);
+  });
+
+  it("replaces workspace-relative images with a placeholder when unresolved", () => {
+    // A workspace-relative path is classified as "workspace".
+    // Until the async Rust call resolves, the widget's
+    // resolvedSrc is undefined and the placeholder (alt text)
+    // is what gets rendered. The cornerstone invariant still
+    // holds: the doc is not mutated.
+    const source = "![figure](./assets/foo.png)\n";
+    const state = makeState(source, source.length);
+    const originalText = state.doc.toString();
+
+    const set = computeLModeDecorations(state, {
+      workspaceRoot: "/ws",
+      documentPath: "/ws/notes/today.md",
+    });
+
+    expect(state.doc.toString()).toBe(originalText);
+
+    // The full `![figure](./assets/foo.png)` range must be
+    // covered by a replace decoration.
+    const imageStart = source.indexOf("![");
+    const imageEnd = source.indexOf(")", imageStart) + 1;
+    const coveringReplaces: Array<{ from: number; to: number }> = [];
+    set.between(imageStart, imageEnd, (from, to) => {
+      coveringReplaces.push({ from, to });
+    });
+    expect(coveringReplaces).toEqual([{ from: imageStart, to: imageEnd }]);
+  });
 });

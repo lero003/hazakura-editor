@@ -239,6 +239,38 @@
   display: none;
 }
 
+/* --- 4b. Inline image rendering ---
+   The L Mode image widget replaces `![alt](url)` source with
+   a single line-level image. The widget itself is a
+   `<span class="cm-lmode-image">` whose inner is either an
+   `<img>` (when the URL is resolved) or a `.cm-lmode-image-
+   placeholder` span showing the alt text (while a workspace
+   image is loading, or for paths that are outside the
+   workspace and will never resolve). */
+:root[data-l-mode="on"] .cm-lmode-image {
+  display: inline-block;
+  margin: 0.4em 0;
+  line-height: 0;
+}
+
+:root[data-l-mode="on"] .cm-lmode-image img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+:root[data-l-mode="on"] .cm-lmode-image-placeholder {
+  display: inline-block;
+  padding: 0.4em 0.8em;
+  background: rgba(127, 127, 127, 0.12);
+  color: rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-style: italic;
+  line-height: 1.4;
+}
+
 /* --- 5. Exit pill --- */
 .l-mode-exit-pill {
   position: fixed;

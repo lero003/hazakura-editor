@@ -5,18 +5,20 @@
 // `-`, backticks, link brackets, etc.) in *inactive* lines
 // so the document reads closer to prose. The active line is
 // always revealed so the user can still see what they are
-// editing.
+// editing. In v0.9+ it also replaces `Image` nodes with the
+// L Mode image widget (see `lModeImageWidget.ts`).
 //
 // CRITICAL INVARIANT — saved file is byte-identical in L Mode
-// and normal mode. The extension only adds `Decoration.mark`
-// and `Decoration.line` ranges; the underlying document text
-// is never modified. The test in
+// and normal mode. The extension only adds `Decoration.mark`,
+// `Decoration.line`, and `Decoration.replace` ranges; the
+// underlying document text is never modified. The test in
 // `lModeExtension.test.ts` enforces this end-to-end.
 
 import {
   Compartment,
   EditorState,
   type Extension,
+  Facet,
   type Range,
   StateField,
 } from "@codemirror/state";
@@ -26,8 +28,35 @@ import {
   EditorView,
 } from "@codemirror/view";
 import { syntaxTree } from "@codemirror/language";
+import {
+  classifyImageUrl,
+  ensureWorkspaceImageResolved,
+  LModeImageWidget,
+  lModeImageResolverPlugin,
+  peekResolvedImage,
+  refreshImagesEffect,
+} from "./lModeImageWidget";
+import type { SyntaxNode } from "@lezer/common";
 
 export const lModeCompartment = new Compartment();
+
+// Context the L Mode extension needs from the surrounding app
+// to resolve workspace-relative image URLs. Provided as a
+// Facet (not a Compartment) because the values change with
+// document switches and we want React to drive the update
+// without rebuilding the editor.
+//
+// `workspaceRoot` and `documentPath` are both nullable: when
+// no workspace is open, image URLs fall back to the alt-text
+// placeholder (no file read is attempted).
+export type LModeContext = {
+  workspaceRoot: string | null;
+  documentPath: string | null;
+};
+
+export const lModeContextFacet = Facet.define<LModeContext, LModeContext>({
+  combine: (values) => values[values.length - 1] ?? { workspaceRoot: null, documentPath: null },
+});
 
 const hiddenMarker = Decoration.mark({ class: "cm-lmode-hidden" });
 
@@ -63,8 +92,11 @@ const MARKER_NODE_NAMES = new Set<string>([
   "CodeInfo",
 ]);
 
-function buildLModeDecorations(state: EditorState): DecorationSet {
-  return computeLModeDecorations(state);
+function buildLModeDecorations(
+  state: EditorState,
+  context: LModeContext,
+): DecorationSet {
+  return computeLModeDecorations(state, context);
 }
 
 /**
@@ -74,7 +106,10 @@ function buildLModeDecorations(state: EditorState): DecorationSet {
  * file is byte-identical in L Mode and normal mode") can be
  * asserted without spinning up a full EditorView.
  */
-export function computeLModeDecorations(state: EditorState): DecorationSet {
+export function computeLModeDecorations(
+  state: EditorState,
+  context: LModeContext = { workspaceRoot: null, documentPath: null },
+): DecorationSet {
   const decorations: Range<Decoration>[] = [];
   const tree = syntaxTree(state);
 
@@ -156,6 +191,53 @@ export function computeLModeDecorations(state: EditorState): DecorationSet {
         );
       }
 
+      // Image — replace the source text visually with the
+      // L Mode image widget. The widget handles cursor
+      // navigation (`ignoreEvent: false`) and is byte-identical
+      // to the source under the hood. We do NOT descend into
+      // the Image's children (LinkMark / URL): once we've
+      // decided to replace the whole node, the markers inside
+      // it are no longer relevant.
+      if (name === "Image") {
+        const imageNode = node.node;
+        const alt = getImageAlt(imageNode, state);
+        const rawUrl = getImageUrl(imageNode, state);
+        if (rawUrl) {
+          const classified = classifyImageUrl(
+            rawUrl,
+            context.documentPath,
+            context.workspaceRoot,
+          );
+          let resolvedSrc: string | null | undefined;
+          if (classified.kind === "http" || classified.kind === "data") {
+            resolvedSrc = classified.value;
+          } else if (classified.kind === "workspace") {
+            const cached = peekResolvedImage(
+              context.workspaceRoot as string,
+              classified.value,
+            );
+            if (cached !== undefined) {
+              resolvedSrc = cached;
+            } else {
+              resolvedSrc = undefined;
+              ensureWorkspaceImageResolved(
+                context.workspaceRoot as string,
+                classified.value,
+              );
+            }
+          } else {
+            // Outside the workspace — placeholder forever, no read.
+            resolvedSrc = null;
+          }
+          decorations.push(
+            Decoration.replace({
+              widget: new LModeImageWidget(rawUrl, resolvedSrc, alt),
+            }).range(node.from, node.to),
+          );
+        }
+        return false;
+      }
+
       if (!MARKER_NODE_NAMES.has(name)) {
         return true;
       }
@@ -217,26 +299,103 @@ function pushLineClass(
 
 const lModeField = StateField.define<DecorationSet>({
   create(state) {
-    return buildLModeDecorations(state);
+    return buildLModeDecorations(state, readContext(state));
   },
   update(decorations, transaction) {
-    // Recompute on every doc change or selection change —
-    // selection changes are the active-line reveal. When the
-    // user moves the cursor into a new line, the markers on
-    // the new line are unhidden on the same paint frame.
-    if (transaction.docChanged || transaction.selection !== undefined) {
-      return buildLModeDecorations(transaction.state);
+    // Recompute when the doc changes, when the selection
+    // changes (so the active-line reveal follows the cursor),
+    // when the L Mode context facet changes (different
+    // workspace / document path), or when an async image
+    // resolution lands (refreshImagesEffect).
+    const contextChanged =
+      transaction.startState.facet(lModeContextFacet) !==
+      transaction.state.facet(lModeContextFacet);
+    const refreshFired = transaction.effects.some(
+      (e) => e.is(refreshImagesEffect),
+    );
+    if (
+      transaction.docChanged ||
+      transaction.selection !== undefined ||
+      contextChanged ||
+      refreshFired
+    ) {
+      return buildLModeDecorations(transaction.state, readContext(transaction.state));
     }
     return decorations.map(transaction.changes);
   },
   provide: (field) => EditorView.decorations.from(field),
 });
 
-export function lModeExtension(active: boolean): Extension {
+function readContext(state: EditorState): LModeContext {
+  return state.facet(lModeContextFacet);
+}
+
+export function lModeExtension(
+  active: boolean,
+  context: LModeContext,
+): Extension {
   // The Compartment is exported so EditorPane can reconfigure
   // the active state from a single place without rebuilding
   // the entire extension list. When `active` is false, the
   // field is removed from the state entirely; no decorations
   // are computed.
-  return lModeCompartment.of(active ? [lModeField] : []);
+  //
+  // The image resolver ViewPlugin captures the live EditorView
+  // for async image resolution dispatches. It is only
+  // constructed when L Mode is on, so toggling L Mode off
+  // also drops the plugin.
+  return lModeCompartment.of(
+    active
+      ? [lModeField, lModeContextFacet.of(context), lModeImageResolverPlugin()]
+      : [lModeContextFacet.of(context)],
+  );
+}
+
+// --- Image node helpers ---
+
+// Walk an Image node's children looking for the alt text and
+// the URL. The Markdown GFM Image structure is:
+//
+//   Image
+//     LinkMark ("[")
+//     LinkLabel / alt text
+//     LinkMark ("]")
+//     URL
+//
+// The alt text is whatever sits between the two LinkMark nodes
+// at the top of the Image, and the URL is the URL child node.
+function getImageAlt(imageNode: SyntaxNode, state: EditorState): string {
+  let child = imageNode.firstChild;
+  let altStart = -1;
+  let altEnd = -1;
+  let openBrackets = 0;
+  while (child) {
+    if (child.name === "LinkMark") {
+      if (openBrackets === 0) {
+        altStart = child.to;
+      } else {
+        altEnd = child.from;
+        break;
+      }
+      openBrackets += 1;
+    }
+    child = child.nextSibling;
+  }
+  if (altStart === -1 || altEnd === -1) return "";
+  return state.doc.sliceString(altStart, altEnd);
+}
+
+function getImageUrl(imageNode: SyntaxNode, state: EditorState): string | null {
+  let child = imageNode.firstChild;
+  while (child) {
+    if (child.name === "URL") {
+      // The URL node covers the `(url)` form; the actual URL
+      // is the inside. The leading "(" and trailing ")" are
+      // separate characters in the source.
+      const inner = state.doc.sliceString(child.from, child.to);
+      return inner.replace(/^\(|\)$/g, "");
+    }
+    child = child.nextSibling;
+  }
+  return null;
 }

@@ -358,7 +358,12 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
           editorTheme(theme, fontSize),
           markdownSyntaxHighlighting(),
         ]),
-        lModeCompartmentRef.current.of(lModeExtension(lModeEnabled)),
+        lModeCompartmentRef.current.of(
+          lModeExtension(lModeEnabled, {
+            workspaceRoot: workspaceRoot ?? null,
+            documentPath: documentKey,
+          }),
+        ),
         EditorView.domEventHandlers({
           keydown(event, view) {
             if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key === "Enter") {
@@ -536,10 +541,13 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
 
     view.dispatch({
       effects: lModeCompartmentRef.current.reconfigure(
-        lModeExtension(lModeEnabled),
+        lModeExtension(lModeEnabled, {
+          workspaceRoot: workspaceRoot ?? null,
+          documentPath: documentKey,
+        }),
       ),
     });
-  }, [lModeEnabled]);
+  }, [lModeEnabled, workspaceRoot, documentKey]);
 
   useEffect(() => {
     const view = viewRef.current;
