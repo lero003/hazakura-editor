@@ -9,6 +9,26 @@ const lModeCss = readFileSync(
 );
 
 describe("lMode.css", () => {
+  it("keeps the L Mode editor height chain explicit", () => {
+    for (const selector of [
+      ".workspace",
+      ".editor-preview-grid",
+      ".editor-pane",
+    ]) {
+      const escapedSelector = selector.replace(".", "\\.");
+      const rule =
+        lModeCss.match(
+          new RegExp(
+            `:root\\[data-l-mode="on"\\] ${escapedSelector}\\s*{(?<body>[^}]*)}`,
+            "s",
+          ),
+        )?.groups?.body ?? "";
+
+      expect(rule).toMatch(/height:\s*100%/);
+      expect(rule).toMatch(/min-height:\s*0/);
+    }
+  });
+
   it("keeps the CodeMirror scroller geometry close to its default", () => {
     const scrollerRule =
       lModeCss.match(

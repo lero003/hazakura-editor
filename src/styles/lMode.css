@@ -10,6 +10,8 @@
 
 :root[data-l-mode="on"] .workspace {
   grid-template-columns: minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
 }
 
 /* Side pane (outline / diff) is hidden in L Mode. The
@@ -25,6 +27,13 @@
 
 :root[data-l-mode="on"] .editor-preview-grid {
   grid-template-columns: minmax(0, 1fr) !important;
+  height: 100%;
+  min-height: 0;
+}
+
+:root[data-l-mode="on"] .editor-pane {
+  height: 100%;
+  min-height: 0;
 }
 
 :root[data-l-mode="on"] .editor-host::before {
