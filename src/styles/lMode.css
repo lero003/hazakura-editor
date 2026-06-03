@@ -112,6 +112,14 @@
   border: none;
 }
 
+:root[data-l-mode="on"] .cm-scroller {
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 72px 0 112px;
+}
+
 :root[data-l-mode="on"] .cm-gutters {
   display: none;
 }
@@ -146,12 +154,13 @@
 }
 
 :root[data-l-mode="on"] .cm-content {
-  max-width: 68ch;
+  max-width: min(760px, calc(100% - 64px));
   margin: 0 auto;
   font-family: var(--lmode-prose-font-family);
-  font-size: 18px;
-  line-height: 1.86;
-  padding: 8rem clamp(18px, 3vw, 42px) 12rem;
+  font-size: 16.5px;
+  line-height: 1.72;
+  min-height: calc(100% - 184px);
+  padding: 34px clamp(22px, 4vw, 48px) 76px;
   text-align: start;
   hyphens: auto;
   background:
@@ -168,7 +177,7 @@
 }
 
 :root[data-l-mode="on"] .cm-line {
-  padding: 0 0.15em;
+  padding: 0 0.25em;
   font-family: inherit;
 }
 
@@ -190,7 +199,7 @@
 }
 
 :root[data-l-mode="on"] .cm-line:not(:first-child) {
-  margin-top: 0.58em;
+  margin-top: 0.42em;
 }
 
 /* Code (inline + fenced) stays monospace. */
@@ -205,9 +214,10 @@
 :root[data-l-mode="on"] .tok-monospace {
   font-size: 0.9em;
   opacity: 0.95;
-  background: rgba(127, 127, 127, 0.12);
-  padding: 0.05em 0.3em;
-  border-radius: 3px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  padding: 0.08em 0.32em;
+  border-radius: 4px;
   font-family: var(--lmode-code-font-family);
 }
 
@@ -216,10 +226,11 @@
    and last lines additionally get `-start` / `-end` so the
    block can carry its own rounded corners and padding. */
 :root[data-l-mode="on"] .cm-lmode-fenced-code {
-  background: rgba(127, 127, 127, 0.08);
-  padding: 0.4em 0;
+  background: var(--status-bg);
+  box-shadow: var(--shadow-md);
+  color: var(--status-text);
+  padding: 0.45em 1em;
   font-family: var(--lmode-code-font-family);
-  color: rgba(0, 0, 0, 0.75);
 }
 
 :root[data-l-mode="on"] .cm-lmode-fenced-code-start {
@@ -241,14 +252,15 @@
 :root[data-l-mode="on"] .tok-heading4,
 :root[data-l-mode="on"] .tok-heading5,
 :root[data-l-mode="on"] .tok-heading6 {
-  font-weight: 600;
-  margin-top: 1.6em;
+  font-weight: 700;
+  line-height: 1.35;
+  margin-top: 1.55em;
   margin-bottom: 0.4em;
 }
 
-:root[data-l-mode="on"] .tok-heading1 { font-size: 1.6em; margin-top: 2.4em; }
-:root[data-l-mode="on"] .tok-heading2 { font-size: 1.35em; }
-:root[data-l-mode="on"] .tok-heading3 { font-size: 1.15em; }
+:root[data-l-mode="on"] .tok-heading1 { font-size: 1.58em; margin-top: 2.1em; }
+:root[data-l-mode="on"] .tok-heading2 { font-size: 1.28em; }
+:root[data-l-mode="on"] .tok-heading3 { font-size: 1.08em; }
 
 /* Blockquote — quieter, italic, with a thin left border. */
 :root[data-l-mode="on"] .tok-quote {
@@ -275,9 +287,19 @@
   margin-bottom: 0.4em;
 }
 
-:root[data-l-mode="on"] .cm-lmode-heading-1 { margin-top: 2.4em; }
-:root[data-l-mode="on"] .cm-lmode-heading-2 { margin-top: 2em; }
-:root[data-l-mode="on"] .cm-lmode-heading-3 { margin-top: 1.8em; }
+:root[data-l-mode="on"] .cm-lmode-heading-1 {
+  border-bottom: 2px solid var(--border);
+  margin-top: 2.1em;
+  padding-bottom: 0.38em;
+}
+
+:root[data-l-mode="on"] .cm-lmode-heading-2 {
+  border-bottom: 1px solid var(--border);
+  margin-top: 1.8em;
+  padding-bottom: 0.24em;
+}
+
+:root[data-l-mode="on"] .cm-lmode-heading-3 { margin-top: 1.45em; }
 
 /* Blockquote — a thin left rule on the line, with the line
    itself dimmed slightly so the blockquote reads as a quiet
@@ -285,24 +307,42 @@
    italic + opacity; this rule layers the line-level structure
    on top. */
 :root[data-l-mode="on"] .cm-lmode-blockquote {
-  opacity: 0.82;
-  border-left: 3px solid rgba(127, 127, 127, 0.35);
-  padding-left: 1em;
-  margin: 0.6em 0;
+  background: var(--accent-soft);
+  border-left: 4px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  color: var(--text-muted);
+  opacity: 1;
+  padding: 0.35em 1.2em;
+  margin: 0.55em 0;
 }
 
-/* List lines are recognized by the extension (so the
-   `-` / `*` / `1.` marker can be hidden) but the visual
-   structure is left to the default CodeMirror list
-   indentation. This selector is a hook for future tweaks. */
+/* List lines keep a quiet visual bullet even when the Markdown
+   marker is suppressed, so lists remain readable in the same
+   way Preview gives them structure. */
 :root[data-l-mode="on"] .cm-lmode-list {
-  /* baseline; no overrides in the foundation */
+  padding-left: 1.35em;
+  position: relative;
+}
+
+:root[data-l-mode="on"] .cm-lmode-list::before {
+  color: var(--text-muted);
+  content: "•";
+  left: 0.35em;
+  opacity: 0.78;
+  position: absolute;
 }
 
 /* Hide the L Mode marker. The actual class is added by the
    CodeMirror extension; this rule is the rendering target. */
 :root[data-l-mode="on"] .cm-lmode-hidden {
-  display: none;
+  color: transparent;
+  display: inline-block;
+  font-size: 0;
+  inline-size: 0;
+  max-inline-size: 0;
+  overflow: hidden;
+  user-select: none;
+  white-space: pre;
 }
 
 /* --- 4b. Inline image rendering ---

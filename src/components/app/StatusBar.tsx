@@ -12,6 +12,7 @@ type StatusBarProps = {
   encodingLabel: string;
   lineEndingAriaLabel: string;
   lineEndingLabel: string;
+  lModeEnabled: boolean;
   onConvertEncoding: (encoding: TextEncoding) => void;
   onConvertLineEnding: (lineEnding: EditableLineEnding) => void;
   saveAffirmation: boolean;
@@ -27,6 +28,7 @@ export function StatusBar({
   encodingLabel,
   lineEndingAriaLabel,
   lineEndingLabel,
+  lModeEnabled,
   onConvertEncoding,
   onConvertLineEnding,
   saveAffirmation,
@@ -54,7 +56,7 @@ export function StatusBar({
         </span>
       ) : null}
       <span className="status-bar-segment status-bar-detail">{detail}</span>
-      {activeTab ? (
+      {activeTab && !lModeEnabled ? (
         <span className="status-bar-format-group">
           <label className="status-bar-segment status-bar-format-chip">
             <span className="status-bar-format-label">{lineEndingLabel}</span>

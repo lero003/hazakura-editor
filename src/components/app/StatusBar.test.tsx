@@ -36,6 +36,7 @@ describe("StatusBar", () => {
         encodingLabel="Encoding"
         lineEndingAriaLabel="Line endings"
         lineEndingLabel="Line endings"
+        lModeEnabled={false}
         onConvertEncoding={vi.fn()}
         onConvertLineEnding={vi.fn()}
         saveAffirmation={false}
@@ -51,5 +52,28 @@ describe("StatusBar", () => {
     expect(statusBar?.lastElementChild).toBe(formatGroup);
     expect(formatGroup?.previousElementSibling).toBe(detail);
     expect(formatGroup?.querySelectorAll("select")).toHaveLength(2);
+  });
+
+  it("removes focusable format controls in L Mode", () => {
+    const { container } = render(
+      <StatusBar
+        activeTab={activeTab}
+        agentLabel={null}
+        detail="Markdown / UTF-8 / 10 bytes"
+        encodingAriaLabel="Encoding"
+        encodingLabel="Encoding"
+        lineEndingAriaLabel="Line endings"
+        lineEndingLabel="Line endings"
+        lModeEnabled={true}
+        onConvertEncoding={vi.fn()}
+        onConvertLineEnding={vi.fn()}
+        saveAffirmation={false}
+        saveAffirmationKey={null}
+        statusText="Ready"
+      />,
+    );
+
+    expect(container.querySelector(".status-bar-format-group")).toBeNull();
+    expect(container.querySelectorAll("select")).toHaveLength(0);
   });
 });

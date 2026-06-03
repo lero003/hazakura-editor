@@ -15,6 +15,7 @@ type AppStatusBarProps = {
   encodingLabel: string;
   lineEndingAriaLabel: string;
   lineEndingLabel: string;
+  lModeEnabled: boolean;
   menuLanguage: MenuLanguage;
   onConvertEncoding: (encoding: TextEncoding) => void;
   onConvertLineEnding: (lineEnding: EditableLineEnding) => void;
@@ -33,6 +34,7 @@ export function AppStatusBar({
   encodingLabel,
   lineEndingAriaLabel,
   lineEndingLabel,
+  lModeEnabled,
   menuLanguage,
   onConvertEncoding,
   onConvertLineEnding,
@@ -44,7 +46,7 @@ export function AppStatusBar({
     <StatusBar
       activeTab={activeTab}
       agentLabel={
-        agentWorkbenchActive && activeAgentSession
+        !lModeEnabled && agentWorkbenchActive && activeAgentSession
           ? providerLabel(agentWorkbenchProvider)
           : null
       }
@@ -53,6 +55,7 @@ export function AppStatusBar({
       encodingLabel={encodingLabel}
       lineEndingAriaLabel={lineEndingAriaLabel}
       lineEndingLabel={lineEndingLabel}
+      lModeEnabled={lModeEnabled}
       onConvertEncoding={onConvertEncoding}
       onConvertLineEnding={onConvertLineEnding}
       saveAffirmation={saveAffirmation}
