@@ -38,8 +38,7 @@ import { useAppShellFoundation } from "./useAppShellFoundation";
 import { useAppShellRefs } from "./useAppShellRefs";
 import { useWindowDialogActions } from "./useWindowDialogActions";
 import { useLocalizedAppCopy } from "./useLocalizedAppCopy";
-import { useAppMenuIntegration } from "./useAppMenuIntegration";
-import { useAppRuntimeEffects } from "./useAppRuntimeEffects";
+import { useAppShellSideEffectsController } from "./useAppShellSideEffectsController";
 
 export function useAppShellController() {
   // section: state pool (orchestrator extracts dep-free leaf hooks)
@@ -513,34 +512,6 @@ export function useAppShellController() {
     [pinRecentFile, recentFiles, unpinRecentFile],
   );
 
-  // section: app menu integration (side effect)
-  useAppMenuIntegration({
-    actions: {
-      createNewFile,
-      exportHtml,
-      exportPdf,
-      openAgentWindow: () => {
-        void openAgentWindow(themePreference);
-      },
-      openFile,
-      openWorkspace,
-      openWorkspacePath,
-      requestWindowClose,
-      saveActiveTab,
-      saveActiveTabAs,
-      toggleReviewDesk,
-    },
-    listener: {
-      onOpenRecentFile: openFilePath,
-      recentFilesRef,
-      recentFoldersRef,
-      setEditorSettings,
-      setPreferencesDialogMode,
-      setPreviewVisible,
-      setThemePreference,
-    },
-  });
-
   // section: document safety actions
   const {
     checkTabForExternalChange,
@@ -695,8 +666,32 @@ export function useAppShellController() {
     workspaceRootPath,
   });
 
-  // section: app runtime effects (side effect)
-  useAppRuntimeEffects({
+  // section: app side effects (menu integration + runtime effects)
+  useAppShellSideEffectsController({
+    actions: {
+      createNewFile,
+      exportHtml,
+      exportPdf,
+      openAgentWindow: () => {
+        void openAgentWindow(themePreference);
+      },
+      openFile,
+      openWorkspace,
+      openWorkspacePath,
+      requestWindowClose,
+      saveActiveTab,
+      saveActiveTabAs,
+      toggleReviewDesk,
+    },
+    listener: {
+      onOpenRecentFile: openFilePath,
+      recentFilesRef,
+      recentFoldersRef,
+      setEditorSettings,
+      setPreferencesDialogMode,
+      setPreviewVisible,
+      setThemePreference,
+    },
     activity: {
       onResumeAgentUiRefresh: resumeAgentUiRefresh,
       onSuspendAgentUiRefresh: suspendAgentUiRefresh,
