@@ -19,6 +19,8 @@ export type AgentWorkbenchCopy = {
   workspace: string;
   noWorkspace: string;
   providerControl: string;
+  providerNotInstalled: string;
+  providerUnavailableHint: string;
   boundaryItems: string[];
   consent: string;
   modeBadgeActive: string;
@@ -50,6 +52,9 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
         workspace: "ワークスペース",
         noWorkspace: "ワークスペース未選択",
         providerControl: "エージェントワークベンチのプロバイダー",
+        providerNotInstalled: "（未インストール）",
+        providerUnavailableHint:
+          "選択中のプロバイダーはアプリの検索パスに見つかりません。インストール済みの CLI を選ぶか、未インストールのものは選択解除してください。",
         boundaryItems: [
           "hazakura は汎用 shell prompt を提供しません。",
           "hazakura が直接起動できるのは許可リスト済みの agent CLI だけです。",
@@ -84,6 +89,9 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
         workspace: "Workspace",
         noWorkspace: "No workspace selected",
         providerControl: "Agent Workbench provider",
+        providerNotInstalled: "(not installed)",
+        providerUnavailableHint:
+          "The selected provider is not installed in the app search path. Pick an installed CLI, or remove the unselected ones before starting a session.",
         boundaryItems: [
           "hazakura does not provide a general-purpose shell prompt.",
           "hazakura can directly launch only allowlisted agent CLIs.",

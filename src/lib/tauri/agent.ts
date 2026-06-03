@@ -12,6 +12,12 @@ export type AgentWorkbenchPreflight = {
   searchedPaths: string[];
 };
 
+export type AgentProviderAvailability = {
+  provider: AgentWorkbenchProvider;
+  available: boolean;
+  path: string;
+};
+
 export type AgentWorkbenchSessionStatus = "active" | "stopped" | "exited";
 
 export type AgentRuntimeStatus = "running" | "stopped" | "exited";
@@ -84,6 +90,24 @@ export async function getAgentWorkbenchSessionState(
   return invoke<AgentWorkbenchSessionState>(
     "get_agent_workbench_session_state",
     lastSeenSeq !== undefined ? { lastSeenSeq } : undefined,
+  );
+}
+
+// `listAgentProviderAvailability` is the read-only probe counterpart
+// to `startAgentWorkbenchSession`'s preflight. It returns a flat
+// availability snapshot for every allowlisted provider so the
+// preferences pane and the detached Agent window can render
+// "(not installed)" markers and disable the Start button BEFORE the
+// user reaches the start path.
+export async function listAgentProviderAvailability(): Promise<
+  AgentProviderAvailability[]
+> {
+  if (!isTauriRuntime()) {
+    return [];
+  }
+
+  return invoke<AgentProviderAvailability[]>(
+    "list_agent_provider_availability",
   );
 }
 
