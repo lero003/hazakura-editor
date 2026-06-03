@@ -27,26 +27,70 @@
   grid-template-columns: minmax(0, 1fr) !important;
 }
 
-/* --- 2. Minimize tab + status bars (do not hide — keep the
-   "which document am I in" anchor visible) --- */
+/* --- 2. Float chrome out of attention ---
+   Tabs and status stay reachable, but they no longer read as
+   normal bars. They are quiet floating hints that appear only
+   when the user intentionally looks near them. */
 :root[data-l-mode="on"] .tabs-row {
-  opacity: 0.55;
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  width: min(640px, calc(100vw - 220px));
+  min-height: 36px;
+  border: 1px solid color-mix(in srgb, var(--border) 62%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 74%, transparent);
+  backdrop-filter: blur(18px) saturate(1.05);
+  box-shadow: var(--shadow-md);
+  opacity: 0.08;
   font-size: 11px;
-  transition: opacity 120ms ease;
+  transform: translateX(-50%);
+  transition: opacity 160ms ease, transform 160ms ease;
+  z-index: 90;
 }
 
-:root[data-l-mode="on"] .tabs-row:hover {
-  opacity: 0.9;
+:root[data-l-mode="on"] .tabs-row:hover,
+:root[data-l-mode="on"] .tabs-row:focus-within {
+  opacity: 0.92;
+  transform: translateX(-50%) translateY(2px);
+}
+
+:root[data-l-mode="on"] .tab-item {
+  background: transparent;
+  border-color: transparent;
 }
 
 :root[data-l-mode="on"] .status-bar {
-  opacity: 0.5;
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  width: min(520px, calc(100vw - 36px));
+  min-height: 32px;
+  border: 1px solid color-mix(in srgb, var(--border) 52%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 68%, transparent);
+  backdrop-filter: blur(18px) saturate(1.05);
+  box-shadow: var(--shadow-md);
+  opacity: 0.06;
   font-size: 11px;
-  transition: opacity 120ms ease;
+  padding: 0 12px;
+  transition: opacity 160ms ease, transform 160ms ease;
+  transform: translateY(4px);
+  z-index: 90;
 }
 
-:root[data-l-mode="on"] .status-bar:hover {
-  opacity: 0.85;
+:root[data-l-mode="on"] .status-bar:hover,
+:root[data-l-mode="on"] .status-bar:focus-within {
+  opacity: 0.88;
+  transform: translateY(0);
+}
+
+:root[data-l-mode="on"] .status-bar-detail {
+  max-width: 24ch;
+}
+
+:root[data-l-mode="on"] .status-bar-format-group {
+  flex-basis: 232px;
 }
 
 /* --- 3. Page-like typography ---
@@ -55,7 +99,15 @@
    and blockquotes find their own rhythm. */
 :root[data-l-mode="on"] .cm-editor,
 :root[data-l-mode="on"] .cm-editor.cm-focused {
-  background: transparent;
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0,
+      color-mix(in srgb, var(--accent) 7%, transparent) 22%,
+      color-mix(in srgb, var(--surface) 24%, transparent) 50%,
+      color-mix(in srgb, var(--accent-secondary) 7%, transparent) 78%,
+      transparent 100%
+    );
   outline: none;
   border: none;
 }
@@ -66,7 +118,10 @@
 
 :root[data-l-mode="on"] .cm-activeLine,
 :root[data-l-mode="on"] .cm-activeLineGutter {
-  background-color: transparent;
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  box-shadow:
+    -18px 0 0 color-mix(in srgb, var(--accent) 7%, transparent),
+    18px 0 0 color-mix(in srgb, var(--accent) 7%, transparent);
 }
 
 :root[data-l-mode="on"] .cm-content ::selection,
@@ -91,18 +146,29 @@
 }
 
 :root[data-l-mode="on"] .cm-content {
-  max-width: 72ch;
+  max-width: 68ch;
   margin: 0 auto;
   font-family: var(--lmode-prose-font-family);
-  font-size: 17px;
-  line-height: 1.8;
-  padding: 6rem 0 12rem;
-  text-align: justify;
+  font-size: 18px;
+  line-height: 1.86;
+  padding: 8rem clamp(18px, 3vw, 42px) 12rem;
+  text-align: start;
   hyphens: auto;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface) 42%, transparent),
+      color-mix(in srgb, var(--surface) 16%, transparent)
+    );
+  border-left: 1px solid color-mix(in srgb, var(--border) 42%, transparent);
+  border-right: 1px solid color-mix(in srgb, var(--border) 30%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--surface) 18%, transparent),
+    var(--shadow-lg);
 }
 
 :root[data-l-mode="on"] .cm-line {
-  padding: 0;
+  padding: 0 0.15em;
   font-family: inherit;
 }
 
@@ -124,7 +190,7 @@
 }
 
 :root[data-l-mode="on"] .cm-line:not(:first-child) {
-  margin-top: 0.5em;
+  margin-top: 0.58em;
 }
 
 /* Code (inline + fenced) stays monospace. */

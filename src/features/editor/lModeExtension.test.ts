@@ -83,27 +83,23 @@ describe("computeLModeDecorations", () => {
     expect(ranges.length).toBeGreaterThanOrEqual(6);
   });
 
-  it("does NOT hide markers on the active block (block-level reveal)", () => {
-    // The cursor sits inside a top-level block. Every marker
-    // inside that block is revealed — Typora-feel. The marker
-    // count below the all-hidden baseline confirms the reveal
-    // is working without naming the exact ranges (the syntax
-    // tree can rearrange internal node names across Lezer
-    // releases; the structural assertion is what matters).
+  it("does NOT hide markers on the active line", () => {
+    // The cursor reveals Markdown source only on the active
+    // line. This keeps L Mode visually quiet while preserving
+    // editability where the user is currently working.
     const source = "# Hello **world**\n> quoted line\n";
     const docLength = source.length;
 
-    // Cursor in the heading (line 1). The whole heading is
-    // the active block: every marker in the heading is
-    // revealed. The blockquote's QuoteMark stays hidden.
+    // Cursor in the heading (line 1). The heading line's
+    // markers are revealed. The blockquote's QuoteMark stays
+    // hidden.
     const inHeading = collectRanges(
       computeLModeDecorations(makeState(source, 0)),
       docLength,
     );
 
-    // Cursor in the blockquote (line 2). The whole blockquote
-    // is the active block: its QuoteMark is revealed. The
-    // heading markers stay hidden.
+    // Cursor in the blockquote (line 2). That line's QuoteMark
+    // is revealed. The heading markers stay hidden.
     const inBlockquote = collectRanges(
       computeLModeDecorations(
         makeState(source, "# Hello **world**\n".length),
@@ -112,7 +108,8 @@ describe("computeLModeDecorations", () => {
     );
 
     // Cursor past EOF (line 3, an empty trailing line). There
-    // is no active block — every marker in the doc is hidden.
+    // are no markers on the active line, so every marker in the
+    // doc is hidden.
     const allHidden = collectRanges(
       computeLModeDecorations(makeState(source, docLength)),
       docLength,
@@ -124,26 +121,25 @@ describe("computeLModeDecorations", () => {
     expect(inBlockquote.length).toBeLessThan(allHidden.length);
   });
 
-  it("reveals every `>` of a multi-line blockquote when the cursor is inside it", () => {
-    // Typora-feel staple: a blockquote is a single visual
-    // unit. When the cursor enters the blockquote, every
-    // `>` on every line of the blockquote becomes visible.
+  it("reveals only the active line's `>` in a multi-line blockquote", () => {
+    // L Mode keeps Markdown visible only where the cursor is.
+    // A multi-line blockquote remains quiet except for the
+    // selected editing line.
     const source = "# H\n\n> quote line 1\n> quote line 2\n";
     const docLength = source.length;
     const bqLine1 = source.indexOf("> quote line 1");
     const bqLine2 = source.indexOf("> quote line 2");
 
     // The two QuoteMarks are at known positions. With the
-    // cursor on line 3 of the blockquote, both must NOT be
-    // hidden (the active block is the whole blockquote).
+    // cursor on line 3 of the blockquote, only that line's
+    // marker is revealed.
     const onBqLine1 = computeLModeDecorations(makeState(source, bqLine1));
     const onBqLine2 = computeLModeDecorations(makeState(source, bqLine2));
-    expect(bqHiddenOn(onBqLine1, bqLine1, bqLine2)).toBe(0);
-    expect(bqHiddenOn(onBqLine2, bqLine1, bqLine2)).toBe(0);
+    expect(bqHiddenOn(onBqLine1, bqLine1, bqLine2)).toBe(1);
+    expect(bqHiddenOn(onBqLine2, bqLine1, bqLine2)).toBe(1);
 
-    // And with the cursor on the heading, both QuoteMarks
-    // ARE hidden (the active block is the heading, not the
-    // blockquote).
+    // And with the cursor on the heading, both QuoteMarks are
+    // hidden because neither blockquote line is active.
     const onHeading = computeLModeDecorations(makeState(source, 0));
     expect(bqHiddenOn(onHeading, bqLine1, bqLine2)).toBe(2);
 

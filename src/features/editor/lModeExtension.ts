@@ -113,14 +113,10 @@ export function computeLModeDecorations(
   const decorations: Range<Decoration>[] = [];
   const tree = syntaxTree(state);
 
-  // The active block is the smallest Markdown block whose
-  // range contains the main selection. Markers whose range
-  // is fully inside the active block are revealed; markers
-  // outside it stay hidden. This is the Typora-feel: a
-  // blockquote is a single visual unit, a list item is its
-  // own unit, and moving the cursor between units reshuffles
-  // the reveal in one frame.
-  const activeBlock = findActiveBlockRange(state, tree);
+  // Reveal Markdown markers only on the active selection
+  // line(s). Everything outside the user's current editing
+  // line stays visually quiet.
+  const activeLineRanges = getActiveLineRanges(state);
 
   // Block-level decoration targets. These are attached to the
   // line containing the block (not to the marker range) so the
@@ -245,14 +241,11 @@ export function computeLModeDecorations(
         return true;
       }
 
-      // Hide the marker, but only if its range is NOT inside
-      // the active block. A block is a single visual unit; the
-      // user can see and edit any marker inside it.
-      if (
-        activeBlock &&
-        node.from >= activeBlock.from &&
-        node.to <= activeBlock.to
-      ) {
+      // Hide the marker, but only if its range is NOT on an
+      // active selection line. The user can see and edit source
+      // syntax where they are working, while surrounding prose
+      // remains calmer.
+      if (isRangeInsideAnyLine(node.from, node.to, activeLineRanges)) {
         return false;
       }
 
@@ -357,76 +350,29 @@ export function lModeExtension(
   );
 }
 
-// --- Active block detection ---
+// --- Active line detection ---
 
-// Node names that count as "blocks" for active-reveal purposes.
-// A block is the unit of Typora-feel reveal: when the cursor
-// enters a block, every marker inside that block is shown.
-//
-// `BulletList` and `OrderedList` are intentionally NOT in the
-// set. A list is a sequence of `ListItem`s, each of which is
-// its own block; the user expects only the active item's
-// marker to be revealed, not the whole list.
-const BLOCK_NODE_NAMES = new Set<string>([
-  "ATXHeading1",
-  "ATXHeading2",
-  "ATXHeading3",
-  "ATXHeading4",
-  "ATXHeading5",
-  "ATXHeading6",
-  "Paragraph",
-  "Blockquote",
-  "ListItem",
-  "FencedCode",
-  "CodeBlock",
-  "HorizontalRule",
-]);
-
-// Find the smallest block whose range contains the main
-// selection. The smallest such block is the Typora-feel
-// active unit — a list item is smaller than its containing
-// list, a Paragraph inside a Blockquote is part of the
-// Blockquote (the Blockquote is the unit).
-//
-// Implementation: resolve the syntax node at the selection
-// head, then walk up the parent chain to the outermost
-// block. Walking to the outermost (rather than the smallest)
-// matches the Blockquote-is-one-unit intuition; for
-// list items, each ListItem is its own block, so the
-// outermost block IS the active item.
-function findActiveBlockRange(
-  state: EditorState,
-  tree: ReturnType<typeof syntaxTree>,
-): { from: number; to: number } | null {
-  const head = state.selection.main.head;
-  // `side = 1` prefers the start-side node at boundaries
-  // (e.g. cursor at position 0 lands inside the document,
-  // not before it). For most edits the cursor is strictly
-  // inside a node anyway; this only matters at the edges.
-  let node = tree.resolve(head, 1);
-  // The Document is always an ancestor but is not a block;
-  // skip it. If we run out of ancestors before finding a
-  // block, give up (no active block → no reveal).
-  while (node && node.name === "Document") {
-    node = node.parent as typeof node;
-  }
-  // Walk up to the outermost block: a block whose parent is
-  // not a block. This makes a Blockquote one unit (its
-  // children are Paragraphs, which are blocks, but the
-  // Blockquote is the outermost); a ListItem is one unit
-  // (its parent is BulletList/OrderedList, which is NOT a
-  // block, so the ListItem IS the outermost).
-  let outermost: { from: number; to: number } | null = null;
-  let cursor: typeof node | null = node;
-  while (cursor) {
-    if (BLOCK_NODE_NAMES.has(cursor.name)) {
-      outermost = { from: cursor.from, to: cursor.to };
+function getActiveLineRanges(state: EditorState): Array<{ from: number; to: number }> {
+  const ranges: Array<{ from: number; to: number }> = [];
+  for (const selection of state.selection.ranges) {
+    const from = Math.min(selection.from, selection.to);
+    const to = Math.max(selection.from, selection.to);
+    const fromLine = state.doc.lineAt(from);
+    const toLine = state.doc.lineAt(to);
+    for (let lineNumber = fromLine.number; lineNumber <= toLine.number; lineNumber++) {
+      const line = state.doc.line(lineNumber);
+      ranges.push({ from: line.from, to: line.to });
     }
-    cursor = cursor.parent as typeof node;
-    // Don't walk past Document.
-    if (cursor && cursor.name === "Document") break;
   }
-  return outermost;
+  return ranges;
+}
+
+function isRangeInsideAnyLine(
+  from: number,
+  to: number,
+  lines: Array<{ from: number; to: number }>,
+): boolean {
+  return lines.some((line) => from >= line.from && to <= line.to);
 }
 
 // --- Image node helpers ---
