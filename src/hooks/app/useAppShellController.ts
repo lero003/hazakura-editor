@@ -847,6 +847,7 @@ export function useAppShellController() {
     agentSession,
     agentStopPending,
     agentWorkbenchActive,
+    agentWorkbenchAvailable,
     agentWorkbenchConsent,
     agentWorkbenchCopy,
     agentWorkbenchPreference,

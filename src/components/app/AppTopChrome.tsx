@@ -14,6 +14,7 @@ type AppTopChromeProps = {
   activeDirty: boolean;
   activeTab: EditorTab | null;
   activeTabId: string | null;
+  agentWorkbenchAvailable: boolean;
   draggingTabId: string | null;
   dragOverTabId: string | null;
   emptyTabsLabel: string;
@@ -42,6 +43,7 @@ export function AppTopChrome({
   activeDirty,
   activeTab,
   activeTabId,
+  agentWorkbenchAvailable,
   draggingTabId,
   dragOverTabId,
   emptyTabsLabel,
@@ -80,6 +82,7 @@ export function AppTopChrome({
       <DocumentMetaBar
         activeDirty={activeDirty}
         activeTab={activeTab}
+        agentWorkbenchAvailable={agentWorkbenchAvailable}
         diffPaneActive={sidePaneMode === "compare"}
         onOpenAgentWindow={onOpenAgentWindow}
         onReviewChanges={onReviewChanges}

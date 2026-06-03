@@ -8,6 +8,7 @@ import type { EditorTab } from "../../types";
 type DocumentMetaBarProps = {
   activeDirty: boolean;
   activeTab: EditorTab | null;
+  agentWorkbenchAvailable: boolean;
   diffPaneActive: boolean;
   onOpenAgentWindow: () => void;
   onReviewChanges: (tab: EditorTab) => void;
@@ -23,6 +24,7 @@ type DocumentMetaBarProps = {
 export function DocumentMetaBar({
   activeDirty,
   activeTab,
+  agentWorkbenchAvailable,
   diffPaneActive,
   onOpenAgentWindow,
   onReviewChanges,
@@ -35,6 +37,7 @@ export function DocumentMetaBar({
   sidePaneCopy,
 }: DocumentMetaBarProps) {
   const showDocumentSection = activeTab !== null;
+  const showAgentSection = agentWorkbenchAvailable;
 
   return (
     <div className="document-meta">
@@ -68,21 +71,28 @@ export function DocumentMetaBar({
           </section>
         </>
       ) : null}
-      <span className="chrome-divider" aria-hidden="true" />
-      <section className="chrome-section chrome-section-right" aria-label={sidePaneCopy.agentWindowTitle}>
-        <button
-          aria-label={sidePaneCopy.agentWindowTitle}
-          className="open-agent-window-button"
-          onClick={onOpenAgentWindow}
-          title={sidePaneCopy.agentWindowTitle}
-          type="button"
-        >
-          <span className="open-agent-window-icon" aria-hidden="true">
-            <AgentWindowIcon />
-          </span>
-          <span className="open-agent-window-caption">{sidePaneCopy.agentWindow}</span>
-        </button>
-      </section>
+      {showAgentSection ? (
+        <>
+          <span className="chrome-divider" aria-hidden="true" />
+          <section
+            className="chrome-section chrome-section-right"
+            aria-label={sidePaneCopy.agentWindowTitle}
+          >
+            <button
+              aria-label={sidePaneCopy.agentWindowTitle}
+              className="open-agent-window-button"
+              onClick={onOpenAgentWindow}
+              title={sidePaneCopy.agentWindowTitle}
+              type="button"
+            >
+              <span className="open-agent-window-icon" aria-hidden="true">
+                <AgentWindowIcon />
+              </span>
+              <span className="open-agent-window-caption">{sidePaneCopy.agentWindow}</span>
+            </button>
+          </section>
+        </>
+      ) : null}
     </div>
   );
 }
