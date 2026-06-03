@@ -99,6 +99,8 @@ type AppWorkspaceProps = {
   previewColumnPercent: number;
   previewPaneRef: RefObject<HTMLDivElement | null>;
   previewVisible: boolean;
+  onTogglePinRecentFile: (path: string) => void;
+  pinnedFiles: RecentEntry[];
   recentFiles: RecentEntry[];
   resolvedTheme: ResolvedTheme;
   runSelectedFileCompare: () => void;
@@ -175,6 +177,8 @@ export function AppWorkspace({
   previewColumnPercent,
   previewPaneRef,
   previewVisible,
+  onTogglePinRecentFile,
+  pinnedFiles,
   recentFiles,
   resolvedTheme,
   runSelectedFileCompare,
@@ -245,6 +249,8 @@ export function AppWorkspace({
           onScrollRatioChange={syncPreviewScroll}
           onSelectionChange={setSelectionInfo}
           onSendToAgent={handleSendSelectionToAgent}
+          onTogglePinRecentFile={onTogglePinRecentFile}
+          pinnedFiles={pinnedFiles}
           recentFiles={recentFiles}
           scrollHudContext={scrollHudContext}
           scrollHudLine={scrollHudLine}

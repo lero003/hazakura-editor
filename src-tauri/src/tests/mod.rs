@@ -16,6 +16,7 @@ mod backup;
 mod common;
 mod encoding;
 mod files;
+mod search;
 mod security;
 mod util;
 mod workspace;

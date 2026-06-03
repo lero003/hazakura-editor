@@ -105,10 +105,46 @@ export function upsertRecentEntry(
   path: string,
   label: string,
 ): RecentEntry[] {
+  // Preserve an existing pin across the upsert. Re-opening a
+  // pinned file should not silently unpin it; the user has to
+  // explicitly unpin to make it fall back to the recency list.
+  const existing = entries.find((entry) => entry.path === path);
+
   return [
-    { path, label, openedAt: Date.now() },
+    {
+      path,
+      label,
+      openedAt: Date.now(),
+      pinnedAt: existing?.pinnedAt ?? null,
+    },
     ...entries.filter((entry) => entry.path !== path),
   ].slice(0, MAX_RECENT_ITEMS);
+}
+
+// `pinRecentEntry` sets the `pinnedAt` field on the entry that
+// matches `path`. If no entry exists yet, the caller is expected
+// to have already inserted one through `upsertRecentEntry` so
+// the path can flow through the standard open path. The hook
+// callers do exactly that: pin / unpin only fire for entries
+// the user has already opened.
+export function pinRecentEntry(
+  entries: RecentEntry[],
+  path: string,
+): RecentEntry[] {
+  return entries.map((entry) =>
+    entry.path === path
+      ? { ...entry, pinnedAt: entry.pinnedAt ?? Date.now() }
+      : entry,
+  );
+}
+
+export function unpinRecentEntry(
+  entries: RecentEntry[],
+  path: string,
+): RecentEntry[] {
+  return entries.map((entry) =>
+    entry.path === path ? { ...entry, pinnedAt: null } : entry,
+  );
 }
 
 export function readPersistedWorkspaceState(): PersistedWorkspaceState | null {
@@ -157,7 +193,8 @@ function readStoredRecentEntries(storageKey: string): RecentEntry[] {
 
     return parsed
       .filter(isRecentEntry)
-      .sort((a, b) => b.openedAt - a.openedAt)
+      .map(normalizeRecentEntry)
+      .sort(recentEntryOrder)
       .slice(0, MAX_RECENT_ITEMS);
   } catch {
     return [];
@@ -166,7 +203,8 @@ function readStoredRecentEntries(storageKey: string): RecentEntry[] {
 
 function writeStoredRecentEntries(storageKey: string, entries: RecentEntry[]) {
   const normalizedEntries = entries
-    .sort((a, b) => b.openedAt - a.openedAt)
+    .map(normalizeRecentEntry)
+    .sort(recentEntryOrder)
     .slice(0, MAX_RECENT_ITEMS);
 
   if (normalizedEntries.length === 0) {
@@ -175,6 +213,34 @@ function writeStoredRecentEntries(storageKey: string, entries: RecentEntry[]) {
   }
 
   window.localStorage.setItem(storageKey, JSON.stringify(normalizedEntries));
+}
+
+// `normalizeRecentEntry` back-fills the `pinnedAt` field for
+// entries written by an older build that did not know about
+// the field. The read filter already enforces the shape, so
+// the cast is safe at this point.
+function normalizeRecentEntry(value: RecentEntry): RecentEntry {
+  if (value.pinnedAt === null || typeof value.pinnedAt === "number") {
+    return value;
+  }
+
+  return { ...value, pinnedAt: null };
+}
+
+// `recentEntryOrder` is the sort key the start panel uses to
+// surface pinned entries above recents and break ties on
+// recency. Pinned entries are sorted by `pinnedAt` (most
+// recently pinned first); unpinned entries fall through to
+// `openedAt`.
+function recentEntryOrder(left: RecentEntry, right: RecentEntry): number {
+  const leftPinned = left.pinnedAt ?? 0;
+  const rightPinned = right.pinnedAt ?? 0;
+
+  if (leftPinned !== rightPinned) {
+    return rightPinned - leftPinned;
+  }
+
+  return right.openedAt - left.openedAt;
 }
 
 function isRecentEntry(value: unknown): value is RecentEntry {

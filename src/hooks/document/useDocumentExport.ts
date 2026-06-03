@@ -49,13 +49,110 @@ export function useDocumentExport({
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escapeHtml(activeTab.name)}</title>
 <style>
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 14px; line-height: 1.6; padding: 20px; max-width: 800px; margin: 0 auto; color: #1d1d1f; }
+  /* Screen preview — used while the user reviews the layout in
+     the browser before hitting the print dialog. Mirrors the
+     editor's body type stack so the on-screen view feels
+     familiar; the @media print block below tightens everything
+     up for paper. */
+  :root {
+    --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    --text: #1d1d1f;
+    --text-muted: #6e6e73;
+    --accent: #b3416a;
+    --border: #d2d2d7;
+    --code-bg: #f5f5f7;
+  }
+  body {
+    background: #ffffff;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0 auto;
+    max-width: 720px;
+    padding: 32px 24px;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    line-height: 1.25;
+    margin-top: 1.6em;
+    margin-bottom: 0.5em;
+  }
+  h1 { font-size: 1.8em; border-bottom: 1px solid var(--border); padding-bottom: 0.25em; }
+  h2 { font-size: 1.4em; }
+  h3 { font-size: 1.2em; }
+  p { margin: 0 0 1em; }
+  a { color: var(--accent); text-decoration: none; }
   img { max-width: 100%; height: auto; }
-  pre { background: #f5f5f7; padding: 12px; border-radius: 6px; overflow-x: auto; }
-  code { background: #f5f5f7; padding: 2px 4px; border-radius: 3px; }
-  table { border-collapse: collapse; width: 100%; }
-  th, td { border: 1px solid #d2d2d7; padding: 8px; text-align: left; }
-  th { background: #f5f5f7; }
+  pre {
+    background: var(--code-bg);
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.5;
+    overflow-x: auto;
+    padding: 12px 14px;
+  }
+  code {
+    background: var(--code-bg);
+    border-radius: 3px;
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    padding: 1px 5px;
+  }
+  pre code { background: transparent; padding: 0; }
+  blockquote {
+    border-left: 3px solid var(--accent);
+    color: var(--text-muted);
+    margin: 1em 0;
+    padding: 0.25em 1em;
+  }
+  table {
+    border-collapse: collapse;
+    margin: 1em 0;
+    width: 100%;
+  }
+  th, td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; }
+  th { background: var(--code-bg); }
+  hr { border: 0; border-top: 1px solid var(--border); margin: 2em 0; }
+  ul, ol { padding-left: 1.5em; }
+  li + li { margin-top: 0.25em; }
+
+  /* Print stylesheet — switch to serif body, tighten type, hide
+     backgrounds that look muddy on paper, and let tables /
+     pre blocks flow across page breaks without splitting a
+     single row. The @page margins are conservative defaults
+     (browser / OS print dialog lets the user override). */
+  @media print {
+    @page { margin: 18mm 16mm; }
+    body {
+      background: #ffffff;
+      color: #000000;
+      font-family: "Iowan Old Style", "Charter", Georgia, "Times New Roman", serif;
+      font-size: 11pt;
+      line-height: 1.45;
+      max-width: none;
+      padding: 0;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      page-break-after: avoid;
+    }
+    h1 { font-size: 18pt; }
+    h2 { font-size: 14pt; }
+    h3 { font-size: 12pt; }
+    pre, blockquote, table, img { page-break-inside: avoid; }
+    pre, code {
+      background: transparent;
+      border: 0;
+    }
+    pre {
+      border-left: 2px solid #999999;
+      padding-left: 8px;
+    }
+    a { color: inherit; text-decoration: underline; }
+    a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 0.85em; color: #555555; }
+  }
 </style>
 </head>
 <body>${rendered}<script>window.addEventListener("load", () => window.print());</script></body>
@@ -129,7 +226,7 @@ export function useDocumentExport({
         .join("\n");
 
       const standaloneHtml = `<!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -147,12 +244,49 @@ body {
   margin: 0 auto;
   padding: 2rem 1.5rem;
 }
+h1, h2, h3, h4, h5, h6 { line-height: 1.25; }
+h1 { border-bottom: 1px solid var(--border); padding-bottom: 0.25em; }
 img { max-width: 100%; height: auto; }
 code { font-family: var(--font-mono, monospace); }
-pre { overflow-x: auto; }
+pre {
+  background: var(--surface-muted);
+  border-radius: 6px;
+  overflow-x: auto;
+  padding: 0.75em 1em;
+}
+pre code { background: transparent; padding: 0; }
 blockquote { border-left: 3px solid var(--accent); margin-left: 0; padding-left: 1rem; }
 table { border-collapse: collapse; width: 100%; }
 th, td { border: 1px solid var(--border); padding: 0.5rem; text-align: left; }
+th { background: var(--surface-muted); }
+a { color: var(--accent); }
+hr { border: 0; border-top: 1px solid var(--border); }
+
+/* Mirror the in-app print polish so users who print the saved
+   HTML file later get the same tightened layout. The screen
+   block above is unchanged so the file still looks right in a
+   browser. */
+@media print {
+  @page { margin: 18mm 16mm; }
+  body {
+    background: #ffffff;
+    color: #000000;
+    font-family: "Iowan Old Style", "Charter", Georgia, "Times New Roman", serif;
+    font-size: 11pt;
+    line-height: 1.45;
+    max-width: none;
+    padding: 0;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    page-break-after: avoid;
+  }
+  pre, blockquote, table, img { page-break-inside: avoid; }
+  pre, th { background: transparent; }
+  pre { border-left: 2px solid #999999; padding-left: 8px; }
+  a { color: inherit; text-decoration: underline; }
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 0.85em; color: #555555; }
+}
 </style>
 </head>
 <body>

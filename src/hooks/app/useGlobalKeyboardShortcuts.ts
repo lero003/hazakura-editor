@@ -21,6 +21,7 @@ type UseGlobalKeyboardShortcutsOptions = {
   editorPaneRef: RefValue<EditorPaneHandle>;
   findInputRef: RefValue<HTMLInputElement>;
   findVisible: boolean;
+  globalSearchVisible: boolean;
   modalOpen: boolean;
   onApplyMarkdownFormat: (format: MarkdownFormat) => void;
   onCloseFindAndFocusEditor: () => void;
@@ -30,6 +31,7 @@ type UseGlobalKeyboardShortcutsOptions = {
   onFocusEditorSoon: () => void;
   onOpenCommandPalette: () => void;
   onOpenFile: () => unknown;
+  onOpenGlobalSearch: () => void;
   onOpenWorkspace: () => unknown;
   onRequestCloseTab: (tabId: string) => void;
   onRequestWindowClose: () => unknown;
@@ -49,6 +51,7 @@ export function useGlobalKeyboardShortcuts({
   editorPaneRef,
   findInputRef,
   findVisible,
+  globalSearchVisible,
   modalOpen,
   onApplyMarkdownFormat,
   onCloseFindAndFocusEditor,
@@ -58,6 +61,7 @@ export function useGlobalKeyboardShortcuts({
   onFocusEditorSoon,
   onOpenCommandPalette,
   onOpenFile,
+  onOpenGlobalSearch,
   onOpenWorkspace,
   onRequestCloseTab,
   onRequestWindowClose,
@@ -103,6 +107,19 @@ export function useGlobalKeyboardShortcuts({
         // are no-ops; the palette handles its own keyboard input.
         event.preventDefault();
         onOpenCommandPalette();
+        return;
+      }
+
+      if (isCommandShiftShortcut(event, "f")) {
+        // Find-in-Files launcher. Sits next to the palette
+        // shortcut on the keyboard (Cmd+Shift+F) so the muscle
+        // memory mirrors the standard editor / IDE mapping. The
+        // `globalSearchVisible` flag is folded into `modalOpen`
+        // below, so the modal Esc / Tab guard already handles
+        // priority and the rest of the shortcuts are no-ops while
+        // the search modal is open.
+        event.preventDefault();
+        onOpenGlobalSearch();
         return;
       }
 
@@ -261,6 +278,7 @@ export function useGlobalKeyboardShortcuts({
     editorPaneRef,
     findInputRef,
     findVisible,
+    globalSearchVisible,
     modalOpen,
     onApplyMarkdownFormat,
     onCloseFindAndFocusEditor,
@@ -270,6 +288,7 @@ export function useGlobalKeyboardShortcuts({
     onFocusEditorSoon,
     onOpenCommandPalette,
     onOpenFile,
+    onOpenGlobalSearch,
     onOpenWorkspace,
     onRequestCloseTab,
     onRequestWindowClose,

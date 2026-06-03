@@ -34,6 +34,7 @@ type UseAppKeyboardFocusEffectsOptions = {
   editorPaneRef: RefValue<EditorPaneHandle>;
   findInputRef: RefValue<HTMLInputElement>;
   findVisible: boolean;
+  globalSearchVisible: boolean;
   modalOpen: boolean;
   onApplyMarkdownFormat: (format: MarkdownFormat) => void;
   onCancelAppClose: () => void;
@@ -41,6 +42,7 @@ type UseAppKeyboardFocusEffectsOptions = {
   onCheckTabForExternalChange: (tabId: string) => unknown;
   onCloseCommandPalette: () => void;
   onCloseFindAndFocusEditor: () => void;
+  onCloseGlobalSearch: () => void;
   onClosePreferences: () => void;
   onCloseSelectedImagePreview: () => void;
   onCreateNewFile: () => unknown;
@@ -49,6 +51,7 @@ type UseAppKeyboardFocusEffectsOptions = {
   onNeedsWindowCloseConfirmation: () => void;
   onOpenCommandPalette: () => void;
   onOpenFile: () => unknown;
+  onOpenGlobalSearch: () => void;
   onOpenWorkspace: () => unknown;
   onRequestCloseTab: (tabId: string) => void;
   onRequestWindowClose: () => unknown;
@@ -82,6 +85,7 @@ export function useAppKeyboardFocusEffects({
   editorPaneRef,
   findInputRef,
   findVisible,
+  globalSearchVisible,
   modalOpen,
   onApplyMarkdownFormat,
   onCancelAppClose,
@@ -89,6 +93,7 @@ export function useAppKeyboardFocusEffects({
   onCheckTabForExternalChange,
   onCloseCommandPalette,
   onCloseFindAndFocusEditor,
+  onCloseGlobalSearch,
   onClosePreferences,
   onCloseSelectedImagePreview,
   onCreateNewFile,
@@ -97,6 +102,7 @@ export function useAppKeyboardFocusEffects({
   onNeedsWindowCloseConfirmation,
   onOpenCommandPalette,
   onOpenFile,
+  onOpenGlobalSearch,
   onOpenWorkspace,
   onRequestCloseTab,
   onRequestWindowClose,
@@ -115,15 +121,16 @@ export function useAppKeyboardFocusEffects({
   setPreviewVisible,
   setStatus,
 }: UseAppKeyboardFocusEffectsOptions) {
-  // The command palette is a modal-shaped surface: it captures
-  // global input while open, so any other shortcut should be
-  // ignored. Combine the palette-visible flag with the existing
-  // `modalOpen` (preferences / dirty-tab / app-close dialogs) so
-  // the global shortcut handler bails out and the modal Esc / Tab
-  // guard fires. The individual flags are still threaded through
-  // so the guard can prioritise palette > close-tab > app-close
-  // > preferences when multiple are open.
-  const anyModalOpen = modalOpen || commandPaletteVisible;
+  // The command palette and global search are modal-shaped
+  // surfaces: each captures global input while open, so any
+  // other shortcut should be ignored. Combine the visible flags
+  // with the existing `modalOpen` (preferences / dirty-tab /
+  // app-close dialogs) so the global shortcut handler bails
+  // out and the modal Esc / Tab guard fires. The individual
+  // flags are still threaded through so the guard can
+  // prioritise palette > search > close-tab > app-close >
+  // preferences when multiple are open.
+  const anyModalOpen = modalOpen || commandPaletteVisible || globalSearchVisible;
 
   useWindowCloseConfirmation({
     allowWindowCloseRef,
@@ -142,10 +149,12 @@ export function useAppKeyboardFocusEffects({
     appCloseDialogRef,
     closeTabDialogRef,
     commandPaletteVisible,
+    globalSearchVisible,
     modalOpen: anyModalOpen,
     onCancelAppClose,
     onCancelTabClose,
     onCloseCommandPalette,
+    onCloseGlobalSearch,
     onClosePreferences,
     pendingAppClose,
     pendingCloseTabOpen,
@@ -158,6 +167,7 @@ export function useAppKeyboardFocusEffects({
     editorPaneRef,
     findInputRef,
     findVisible,
+    globalSearchVisible,
     modalOpen: anyModalOpen,
     onApplyMarkdownFormat,
     onCloseFindAndFocusEditor,
@@ -167,6 +177,7 @@ export function useAppKeyboardFocusEffects({
     onFocusEditorSoon,
     onOpenCommandPalette,
     onOpenFile,
+    onOpenGlobalSearch,
     onOpenWorkspace,
     onRequestCloseTab,
     onRequestWindowClose,

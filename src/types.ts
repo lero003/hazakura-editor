@@ -218,6 +218,14 @@ export type RecentEntry = {
   path: string;
   label: string;
   openedAt: number;
+  // `pinnedAt` is a non-null timestamp when the user has pinned
+  // this entry to the top of the start panel. Pinned entries
+  // are not subject to the FIFO recency cap so a daily note
+  // the user returns to often can sit at the top indefinitely.
+  // `null` is the default for entries that have never been
+  // pinned and for entries written by an older build that did
+  // not know about the field.
+  pinnedAt: number | null;
 };
 
 export type TextDocumentStats = {

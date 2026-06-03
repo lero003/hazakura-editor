@@ -7,6 +7,7 @@ pub(crate) mod commands {
     pub(crate) mod export;
     pub(crate) mod files;
     pub(crate) mod images;
+    pub(crate) mod search;
     pub(crate) mod workspace;
     pub(crate) mod workspace_broadcast;
 }
@@ -51,6 +52,8 @@ use crate::commands::files::*;
 #[allow(unused_imports)]
 use crate::commands::images::*;
 #[allow(unused_imports)]
+use crate::commands::search::*;
+#[allow(unused_imports)]
 use crate::commands::workspace::*;
 #[allow(unused_imports)]
 use crate::commands::workspace_broadcast::*;
@@ -85,6 +88,7 @@ pub fn run() {
             list_workspace_directory,
             list_workspace_tree,
             open_workspace_image,
+            search_workspace_files,
             start_agent_workbench_session,
             stop_agent_workbench_session,
             get_agent_workbench_session_state,

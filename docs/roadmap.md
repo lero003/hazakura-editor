@@ -303,18 +303,18 @@ Assist Surface design direction:
 
 Candidate work:
 
-- demote Review Desk from persistent top-chrome placement while preserving shortcut / View menu / slash access
-- Assist Surface / Agent Workbench presentation separation, limited to surface boundaries and state ownership
-- Claude Code CLI allowlist readiness: add `claude` as a candidate local CLI provider only after checking the UI/backend allowlist, provider-not-found flow, trusted-workspace smoke checklist, and docs claim boundaries; do not make it the default provider in the first slice
+- demote Review Desk from persistent top-chrome placement while preserving shortcut / View menu / slash access (landed)
+- Assist Surface / Agent Workbench presentation separation, limited to surface boundaries and state ownership (landed via the detached Agent Window workstream and preferences extract)
+- Claude Code CLI allowlist readiness: add `claude` as a candidate local CLI provider only after checking the UI/backend allowlist, provider-not-found flow, trusted-workspace smoke checklist, and docs claim boundaries; do not make it the default provider in the first slice (landed as docs / verification only — `claude` is not yet on the implemented allowlist)
 - shared candidate-review request shape for future assist output, limited to selected text / active document excerpt inputs
-- clearer separation between Safe Editor state, Agent Workbench state, and Review Desk candidate state
+- clearer separation between Safe Editor state, Agent Workbench state, and Review Desk candidate state (landed via the Agent Workbench preferences extract + boundary-docstring slices)
 - daily-editor polish that makes the app worth opening before assist features arrive: search/replace quality, file navigation, save/recovery clarity, preview/diff readability, and keyboard comfort
-- command palette for existing safe app actions only
-- bounded Global Search (Cmd+Shift+F) as workspace grep, not background indexing
-- settings consolidation so editor and Agent Workbench preferences are not scattered
-- detached or separate-window Agent Workbench experiment, only if the trust boundary stays explicit and follows `docs/assist-surface-strategy.md`
-- pinned / recent / starred files if they support review flow
-- Print-ready HTML export polish before native PDF export
+- command palette for existing safe app actions only (landed 2026-06-03)
+- bounded Global Search (Cmd+Shift+F) as workspace grep, not background indexing (landed 2026-06-03)
+- settings consolidation so editor and Agent Workbench preferences are not scattered (verified clean — Agent Workbench is already in its own pane, editor / application sections in Preferences are already grouped)
+- detached or separate-window Agent Workbench experiment, only if the trust boundary stays explicit and follows `docs/assist-surface-strategy.md` (landed; detached Agent Window is now the primary route)
+- pinned / recent / starred files if they support review flow (landed 2026-06-03 as pinned start-panel files; `RecentEntry.pinnedAt` + star toggle, two-group start panel)
+- Print-ready HTML export polish before native PDF export (landed 2026-06-03; print stylesheet with serif body, `@page` margins, page-break hints, mirrored across `exportPdf` and `exportHtml`)
 - Markdown toolbar and writing-experience polish where it supports review
 
 Do not require persistent review logs for the MVP. `.hazakura/reviews/` or app-managed review history needs a separate storage-policy decision.

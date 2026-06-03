@@ -10,10 +10,12 @@ type UseModalKeyboardGuardOptions = {
   appCloseDialogRef: RefValue<HTMLElement>;
   closeTabDialogRef: RefValue<HTMLElement>;
   commandPaletteVisible: boolean;
+  globalSearchVisible: boolean;
   modalOpen: boolean;
   onCancelAppClose: () => void;
   onCancelTabClose: () => void;
   onCloseCommandPalette: () => void;
+  onCloseGlobalSearch: () => void;
   onClosePreferences: () => void;
   pendingAppClose: boolean;
   pendingCloseTabOpen: boolean;
@@ -25,10 +27,12 @@ export function useModalKeyboardGuard({
   appCloseDialogRef,
   closeTabDialogRef,
   commandPaletteVisible,
+  globalSearchVisible,
   modalOpen,
   onCancelAppClose,
   onCancelTabClose,
   onCloseCommandPalette,
+  onCloseGlobalSearch,
   onClosePreferences,
   pendingAppClose,
   pendingCloseTabOpen,
@@ -48,11 +52,16 @@ export function useModalKeyboardGuard({
       if (event.key === "Escape") {
         event.preventDefault();
 
-        // The command palette is the most-recent / topmost modal
-        // surface in the v0.8 daily-editor layer; it should close
-        // before any other modal priority is checked.
+        // The command palette and global search are the
+        // most-recent / topmost modal surfaces in the v0.8
+        // daily-editor layer; they should close before any
+        // other modal priority is checked. The palette is
+        // checked first so a user that opened palette over
+        // search can close them one at a time with Esc.
         if (commandPaletteVisible) {
           onCloseCommandPalette();
+        } else if (globalSearchVisible) {
+          onCloseGlobalSearch();
         } else if (pendingCloseTabOpen) {
           onCancelTabClose();
         } else if (pendingAppClose) {
@@ -83,10 +92,12 @@ export function useModalKeyboardGuard({
     appCloseDialogRef,
     closeTabDialogRef,
     commandPaletteVisible,
+    globalSearchVisible,
     modalOpen,
     onCancelAppClose,
     onCancelTabClose,
     onCloseCommandPalette,
+    onCloseGlobalSearch,
     onClosePreferences,
     pendingAppClose,
     pendingCloseTabOpen,

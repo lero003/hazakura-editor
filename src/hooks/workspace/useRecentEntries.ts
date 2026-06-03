@@ -1,7 +1,9 @@
 import { useCallback, useState } from "react";
 import {
+  pinRecentEntry,
   readStoredRecentFiles,
   readStoredRecentFolders,
+  unpinRecentEntry,
   upsertRecentEntry,
 } from "../../lib/storage";
 import type { RecentEntry } from "../../types";
@@ -36,12 +38,28 @@ export function useRecentEntries() {
     );
   }, []);
 
+  // `pinRecentFile` and `unpinRecentFile` are the v0.8 daily-
+  // editor affordance: a user can pin a file from the start
+  // panel to keep it on top regardless of recency. Pinned
+  // entries still count against the recents cap because the
+  // cap is a UI memory aid, not a hard quota; in practice
+  // users pin one or two daily-driver notes.
+  const pinRecentFile = useCallback((path: string) => {
+    setRecentFiles((currentEntries) => pinRecentEntry(currentEntries, path));
+  }, []);
+
+  const unpinRecentFile = useCallback((path: string) => {
+    setRecentFiles((currentEntries) => unpinRecentEntry(currentEntries, path));
+  }, []);
+
   return {
+    pinRecentFile,
     recentFiles,
     recentFilesRef,
     recentFolders,
     recentFoldersRef,
     rememberRecentFile,
     rememberRecentFolder,
+    unpinRecentFile,
   };
 }

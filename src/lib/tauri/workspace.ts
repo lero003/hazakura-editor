@@ -54,3 +54,38 @@ export async function importImageFromPath(
     sourcePath,
   });
 }
+
+// `WorkspaceSearchMatch` and `WorkspaceSearchFileResult` mirror
+// the Rust types in `src-tauri/src/commands/search.rs`. The
+// front-end never inspects `path` directly — it only needs
+// `relativePath` for display and the original `path` to feed
+// `openWorkspaceFile` once the user picks a row.
+export type WorkspaceSearchMatch = {
+  line: number;
+  column: number;
+  text: string;
+};
+
+export type WorkspaceSearchFileResult = {
+  path: string;
+  relativePath: string;
+  matches: WorkspaceSearchMatch[];
+  truncated: boolean;
+};
+
+export type WorkspaceSearchResult = {
+  files: WorkspaceSearchFileResult[];
+  totalMatches: number;
+  totalFilesScanned: number;
+  truncated: boolean;
+};
+
+export async function searchWorkspaceFiles(
+  root: string,
+  query: string,
+): Promise<WorkspaceSearchResult> {
+  return invoke<WorkspaceSearchResult>("search_workspace_files", {
+    root,
+    query,
+  });
+}

@@ -11,6 +11,16 @@ pub(crate) const MAX_EDITABLE_BYTES: u64 = 10 * 1024 * 1024;
 pub(crate) const MAX_IMAGE_PREVIEW_BYTES: u64 = 20 * 1024 * 1024;
 pub(crate) const BINARY_SNIFF_BYTES: u64 = 8192;
 pub(crate) const MAX_WORKSPACE_ENTRIES: usize = 2000;
+// Bounded workspace search caps. These keep `search_workspace_files`
+// responsive on a prototype machine: a 500-file ceiling is enough to
+// cover daily-editor workspaces (notes, drafts, scratch) without
+// ever spinning on a large monorepo. The per-file and total-match
+// caps surface a "truncated" flag to the front-end so the modal can
+// hint that the user should narrow the query.
+pub(crate) const MAX_WORKSPACE_SEARCH_FILES: usize = 500;
+pub(crate) const MAX_WORKSPACE_SEARCH_MATCHES_PER_FILE: usize = 10;
+pub(crate) const MAX_WORKSPACE_SEARCH_TOTAL_MATCHES: usize = 200;
+pub(crate) const MAX_WORKSPACE_SEARCH_LINE_BYTES: usize = 4096;
 pub(crate) const AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS: usize = 500;
 pub(crate) const AGENT_PROVIDER_CODEX: &str = "codex";
 pub(crate) const AGENT_PROVIDER_OPENCODE: &str = "opencode";
@@ -279,6 +289,37 @@ pub(crate) struct WorkspaceTreeEntry {
 pub(crate) enum WorkspaceEntryKind {
     Directory,
     File,
+}
+
+// `WorkspaceSearchMatch` is a single line-level hit inside a file.
+// `line` is 1-based; `column` is 1-based; `text` is the trimmed line
+// contents (capped) so the front-end can show context without having
+// to re-read the file. Matches are intentionally narrow: just enough
+// to render the row and jump to it.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct WorkspaceSearchMatch {
+    pub(crate) line: usize,
+    pub(crate) column: usize,
+    pub(crate) text: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct WorkspaceSearchFileResult {
+    pub(crate) path: String,
+    pub(crate) relative_path: String,
+    pub(crate) matches: Vec<WorkspaceSearchMatch>,
+    pub(crate) truncated: bool,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct WorkspaceSearchResult {
+    pub(crate) files: Vec<WorkspaceSearchFileResult>,
+    pub(crate) total_matches: usize,
+    pub(crate) total_files_scanned: usize,
+    pub(crate) truncated: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

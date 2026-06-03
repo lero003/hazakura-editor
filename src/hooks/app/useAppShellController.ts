@@ -29,6 +29,10 @@ import { useAgentWorkbenchSessionActions } from "../agent/useAgentWorkbenchSessi
 import { useAgentTerminalActions } from "../agent/useAgentTerminalActions";
 import { useAgentWorkbenchPreferenceActions } from "../agent/useAgentWorkbenchPreferenceActions";
 import { useCommandPalette, type Command } from "../commandPalette/useCommandPalette";
+import {
+  useGlobalSearch,
+  type GlobalSearchRow,
+} from "../globalSearch/useGlobalSearch";
 import { useCompareState } from "../diff/useCompareState";
 import { useCompareController } from "../diff/useCompareController";
 import { useDocumentSafetyActions } from "../document/useDocumentSafetyActions";
@@ -196,12 +200,14 @@ export function useAppShellController() {
 
   // section: recent entries
   const {
+    pinRecentFile,
     recentFiles,
     recentFilesRef,
     recentFolders,
     recentFoldersRef,
     rememberRecentFile,
     rememberRecentFolder,
+    unpinRecentFile,
   } = useRecentEntries();
 
   // section: agent UI refresh gate
@@ -527,6 +533,34 @@ export function useAppShellController() {
     workspaceRootPath,
   });
 
+  // section: pinned file toggle
+  //
+  // The start panel surfaces pinned files above recents. The
+  // toggle flips the pin state in place — a quick affordance
+  // for the daily-driver case where the same note is opened
+  // every session. The toggle callback is a no-op if the file
+  // is already in the requested state, so re-clicking the pin
+  // star on a pinned file un-pins it.
+  const pinnedFiles = useMemo(
+    () => recentFiles.filter((entry) => entry.pinnedAt !== null),
+    [recentFiles],
+  );
+
+  const handleTogglePinRecentFile = useCallback(
+    (path: string) => {
+      const entry = recentFiles.find((candidate) => candidate.path === path);
+      if (!entry) {
+        return;
+      }
+      if (entry.pinnedAt === null) {
+        pinRecentFile(path);
+      } else {
+        unpinRecentFile(path);
+      }
+    },
+    [pinRecentFile, recentFiles, unpinRecentFile],
+  );
+
   // section: app menu integration (side effect)
   useAppMenuIntegration({
     actions: {
@@ -681,6 +715,47 @@ export function useAppShellController() {
   //
   // The palette is a thin launcher over the existing safe editor /
   // agent / file actions — every entry is a real handler already
+  // section: global search
+  //
+  // The hook owns the search modal state, the debounced query,
+  // and the (file, match) row list. Selecting a row delegates
+  // to `openWorkspaceFile` for the file-open path and then asks
+  // the editor to jump to the matching line. The `goToLine`
+  // call is wrapped in a short `setTimeout` because
+  // `openWorkspaceFile` is async and the editor pane re-mounts
+  // on a fresh tab; the existing outline-jump path uses the
+  // same trick. We call `editorPaneRef.current?.goToLine` directly
+  // (the `goToLine` returned by `useGoToLine` reads the
+  // go-to-line dialog's text input and is not what we want here).
+  const handleOpenSearchMatch = useCallback(
+    (row: GlobalSearchRow) => {
+      void openWorkspaceFile(row.file.path).then(() => {
+        setTimeout(() => {
+          editorPaneRef.current?.goToLine(row.match.line);
+        }, 50);
+        setStatus(`Opened ${row.file.relativePath}:${row.match.line}`);
+      });
+    },
+    [editorPaneRef, openWorkspaceFile, setStatus],
+  );
+
+  const {
+    activeIndex: globalSearchActiveIndex,
+    closeGlobalSearch,
+    globalSearchVisible,
+    openGlobalSearch,
+    query: globalSearchQuery,
+    rows: globalSearchRows,
+    searchError: globalSearchError,
+    searching: globalSearching,
+    setActiveIndex: setGlobalSearchActiveIndex,
+    setQuery: setGlobalSearchQuery,
+    summary: globalSearchSummary,
+  } = useGlobalSearch({
+    workspaceRoot: workspaceRootPath,
+    onOpenMatch: handleOpenSearchMatch,
+  });
+
   // wired into the controller. `useCommandPalette` keeps the
   // latest commands array in a ref so the filtered memo does not
   // have to depend on it, and exposes a tiny state machine
@@ -798,6 +873,16 @@ export function useAppShellController() {
           setFindVisible(true);
         },
         shortcut: "⌘F",
+      },
+      {
+        category: "Edit",
+        id: "edit.findInFiles",
+        keywords: ["find", "search", "files", "workspace", "grep"],
+        label: "Find in Files…",
+        run: () => {
+          openGlobalSearch();
+        },
+        shortcut: "⇧⌘F",
       },
       {
         category: "Edit",
@@ -996,6 +1081,7 @@ export function useAppShellController() {
       insertTable,
       openAgentWindow,
       openFile,
+      openGlobalSearch,
       openWorkspace,
       requestCloseTab,
       requestReviewTabAgainstDisk,
@@ -1092,6 +1178,7 @@ export function useAppShellController() {
       editorPaneRef,
       findInputRef,
       findVisible,
+      globalSearchVisible,
       modalOpen,
       onApplyMarkdownFormat: applyActiveMarkdownFormat,
       onCancelAppClose: cancelPendingAppClose,
@@ -1099,6 +1186,7 @@ export function useAppShellController() {
       onCheckTabForExternalChange: checkTabForExternalChange,
       onCloseCommandPalette: closeCommandPalette,
       onCloseFindAndFocusEditor: closeFindAndFocusEditor,
+      onCloseGlobalSearch: closeGlobalSearch,
       onClosePreferences: closePreferencesFromKeyboard,
       onCloseSelectedImagePreview: closeSelectedImagePreview,
       onCreateNewFile: createNewFile,
@@ -1107,6 +1195,7 @@ export function useAppShellController() {
       onNeedsWindowCloseConfirmation: requestAppCloseConfirmation,
       onOpenCommandPalette: openCommandPalette,
       onOpenFile: openFile,
+      onOpenGlobalSearch: openGlobalSearch,
       onOpenWorkspace: openWorkspace,
       onRequestCloseTab: requestCloseTab,
       onRequestWindowClose: requestWindowClose,
@@ -1242,6 +1331,13 @@ export function useAppShellController() {
     getCompareCaseByKey,
     goToLine,
     goToLineValue,
+    globalSearchActiveIndex,
+    globalSearchError: globalSearchError,
+    globalSearchQuery,
+    globalSearchRows,
+    globalSearchSummary,
+    globalSearching,
+    globalSearchVisible,
     handleEditorChange,
     handleFindKeyDown,
     handleGoToLineKeyDown,
@@ -1285,6 +1381,11 @@ export function useAppShellController() {
     onToggleDiff: toggleDiffPane,
     onToggleOutline: toggleOutlinePane,
     onTogglePreview: togglePreviewPane,
+    onCloseGlobalSearch: closeGlobalSearch,
+    onOpenGlobalSearch: openGlobalSearch,
+    onRunGlobalSearchMatch: handleOpenSearchMatch,
+    onSetGlobalSearchActiveIndex: setGlobalSearchActiveIndex,
+    onSetGlobalSearchQuery: setGlobalSearchQuery,
     openFile,
     openFilePath,
     openPreviewMarkdownLink,
@@ -1304,6 +1405,8 @@ export function useAppShellController() {
     previewVisible,
     quickOpenVisible,
     recentFiles,
+    pinnedFiles,
+    onTogglePinRecentFile: handleTogglePinRecentFile,
     recoveryCopy,
     reopenTabFromDisk,
     replaceAll,

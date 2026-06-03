@@ -43,6 +43,8 @@ type EditorMainPaneProps = {
   onScrollRatioChange: (ratio: number) => void;
   onSelectionChange: (selection: EditorSelectionInfo) => void;
   onSendToAgent: (text: string) => void;
+  onTogglePinRecentFile: (path: string) => void;
+  pinnedFiles: RecentEntry[];
   recentFiles: RecentEntry[];
   scrollHudContext: MarkdownHeadingContext;
   scrollHudLine: number;
@@ -75,6 +77,8 @@ export function EditorMainPane({
   onScrollRatioChange,
   onSelectionChange,
   onSendToAgent,
+  onTogglePinRecentFile,
+  pinnedFiles,
   recentFiles,
   scrollHudContext,
   scrollHudLine,
@@ -127,8 +131,10 @@ export function EditorMainPane({
           onNewFile={onNewFile}
           onOpenFile={onOpenFile}
           onOpenFolder={onOpenFolder}
-          recentFiles={recentFiles}
           onOpenRecentFile={onOpenRecentFile}
+          onTogglePinRecentFile={onTogglePinRecentFile}
+          pinnedFiles={pinnedFiles}
+          recentFiles={recentFiles}
         />
       )}
     </div>

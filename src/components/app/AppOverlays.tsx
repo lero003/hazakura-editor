@@ -24,9 +24,14 @@ import type {
   WorkspaceContextMenuState,
 } from "../../types";
 import type { Command } from "../../hooks/commandPalette/useCommandPalette";
+import type {
+  GlobalSearchRow,
+  GlobalSearchSummary,
+} from "../../hooks/globalSearch/useGlobalSearch";
 import { agentSessionStateLabel, providerLabel } from "../../features/agent/agentWorkbench";
 import { QuickOpen } from "../editor/QuickOpen";
 import { CommandPalette } from "../commandPalette/CommandPalette";
+import { GlobalSearch } from "../globalSearch/GlobalSearch";
 import { WorkspaceContextMenu } from "../workspace/WorkspaceContextMenu";
 import { AppCloseDialog, DirtyTabCloseDialog } from "./CloseDialogs";
 import { PreferencesDialog } from "./PreferencesDialog";
@@ -59,6 +64,18 @@ type AppOverlaysProps = {
   commandPaletteActiveIndex: number;
   commandPaletteQuery: string;
   closeCommandPalette: () => void;
+  globalSearchVisible: boolean;
+  globalSearchActiveIndex: number;
+  globalSearchQuery: string;
+  globalSearchRows: GlobalSearchRow[];
+  globalSearchError: string | null;
+  globalSearching: boolean;
+  globalSearchSummary: GlobalSearchSummary | null;
+  onCloseGlobalSearch: () => void;
+  onOpenGlobalSearch: () => void;
+  onRunGlobalSearchMatch: (row: GlobalSearchRow) => void;
+  onSetGlobalSearchActiveIndex: (index: number) => void;
+  onSetGlobalSearchQuery: (query: string) => void;
   compareAnchor: CompareAnchor | null;
   compareWorkspaceFiles: (file: CompareAnchor) => void | Promise<void>;
   copyWorkspaceFullPath: (file: CompareAnchor) => void | Promise<void>;
@@ -128,6 +145,18 @@ export function AppOverlays({
   commandPaletteQuery,
   commandPaletteVisible,
   closeCommandPalette,
+  globalSearchVisible,
+  globalSearchActiveIndex,
+  globalSearchQuery,
+  globalSearchRows,
+  globalSearchError,
+  globalSearching,
+  globalSearchSummary,
+  onCloseGlobalSearch,
+  onOpenGlobalSearch,
+  onRunGlobalSearchMatch,
+  onSetGlobalSearchActiveIndex,
+  onSetGlobalSearchQuery,
   compareAnchor,
   compareWorkspaceFiles,
   copyWorkspaceFullPath,
@@ -214,6 +243,23 @@ export function AppOverlays({
           onRun={onRunCommand}
           onSetActiveIndex={setCommandPaletteActiveIndex}
           onSetQuery={setCommandPaletteQuery}
+        />
+      ) : null}
+
+      {globalSearchVisible ? (
+        <GlobalSearch
+          activeIndex={globalSearchActiveIndex}
+          menuLanguage={menuLanguage}
+          onClose={onCloseGlobalSearch}
+          onRun={onRunGlobalSearchMatch}
+          onSetActiveIndex={onSetGlobalSearchActiveIndex}
+          onSetQuery={onSetGlobalSearchQuery}
+          query={globalSearchQuery}
+          rows={globalSearchRows}
+          searchError={globalSearchError}
+          searching={globalSearching}
+          summary={globalSearchSummary}
+          workspaceOpen={workspaceRootPath !== null}
         />
       ) : null}
 

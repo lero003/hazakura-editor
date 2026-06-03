@@ -9,6 +9,9 @@ export type SafeEditorCopy = {
   openFile: string;
   openFolder: string;
   openWorkspaceFolder: string;
+  pinnedFiles: string;
+  pinFile: string;
+  unpinFile: string;
   recentFiles: string;
   startHeading: string;
   startActions: string;
@@ -26,6 +29,9 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
       openFile: "ふみをひらく",
       openFolder: "ふぉるだをひらく",
       openWorkspaceFolder: "ところをひらく",
+      pinnedFiles: "いつもこのふみ",
+      pinFile: "いつもこのふみにする",
+      unpinFile: "いつもこのふみをやめる",
       recentFiles: "このごろのふみ",
       startHeading: "しづかにかきはじめる",
       startActions: "はじめのわざ",
@@ -43,6 +49,9 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
         openFile: "ファイルを開く",
         openFolder: "フォルダを開く",
         openWorkspaceFolder: "ワークスペースフォルダを開く",
+        pinnedFiles: "ピン留めのファイル",
+        pinFile: "ピン留めする",
+        unpinFile: "ピン留めを外す",
         recentFiles: "最近使ったファイル",
         startHeading: "静かに書き始める",
         startActions: "開始操作",
@@ -57,6 +66,9 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
         openFile: "Open File",
         openFolder: "Open Folder",
         openWorkspaceFolder: "Open workspace folder",
+        pinnedFiles: "Pinned files",
+        pinFile: "Pin file",
+        unpinFile: "Unpin file",
         recentFiles: "Recent files",
         startHeading: "Start writing quietly",
         startActions: "Start actions",
