@@ -217,7 +217,7 @@ fn search_caps_files_visited_and_marks_truncation() {
     fs::create_dir_all(&dir).expect("create test dir");
     let file_count = MAX_WORKSPACE_SEARCH_FILES + 5;
     for index in 0..file_count {
-        fs::write(dir.join(format!("note-{index:04}.md")), "hazakura\n").expect("write note");
+        fs::write(dir.join(format!("note-{index:04}.md")), "ordinary note\n").expect("write note");
     }
 
     let result = search_workspace_files_with_label(
@@ -228,8 +228,8 @@ fn search_caps_files_visited_and_marks_truncation() {
     .expect("search workspace");
 
     assert!(result.truncated);
-    assert!(result.files.len() <= MAX_WORKSPACE_SEARCH_FILES);
-    assert!(result.total_files_scanned <= file_count);
+    assert_eq!(result.files.len(), 0);
+    assert_eq!(result.total_files_scanned, MAX_WORKSPACE_SEARCH_FILES);
 
     let _ = fs::remove_dir_all(dir);
 }

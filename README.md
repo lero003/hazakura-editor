@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-06-02
+Last reviewed: 2026-06-03
 
 `hazakura editor` は、AI時代のメモ帳です。Markdownを中心に、安全にテキストを読む・書く・比べるための軽量なローカル作業場を目指します。
 
@@ -21,7 +21,7 @@ Last reviewed: 2026-06-02
 
 ![hazakura editor Agent Workbench mode](docs/images/pre0.2-agent-mode.png)
 
-## 0.7 Preview Summary
+## 0.8 Preview Summary
 
 Use this when you want to:
 
@@ -34,7 +34,10 @@ Use this when you want to:
 - notice save conflicts and external changes before overwriting
 - paste or drag-drop images into `assets/` for inline Markdown references
 - export content as standalone HTML or use Print to PDF
-- optional Agent Workbench with `pi` / `codex` / `opencode` provider sessions
+- use a command palette for existing safe app actions
+- run bounded workspace text search without background indexing
+- pin frequently opened files on the start panel
+- optional detached Agent Window with `codex` / `opencode` / `pi` / `claude` provider sessions
 
 Do not use this as:
 
@@ -118,7 +121,7 @@ Example use case:
 - Discard All from the app/window close dialog clears matching unsaved recovery drafts so intentionally discarded edits are not offered after restart
 - Long file names are clipped or wrapped in tabs, the file tree, status/error rows, and close dialogs so core controls stay reachable
 - App bundle icon and start screen use the hazakura editor flower-and-leaf logo
-- Optional Agent Workbench mode can launch one allowlisted `codex`, `opencode`, or `pi` provider session in the selected workspace after restart-required mode enablement and responsibility-boundary consent
+- Optional Agent Workbench mode can launch one allowlisted `codex`, `opencode`, `pi`, or `claude` provider session in the selected workspace after restart-required mode enablement and responsibility-boundary consent
 - Agent Workbench renders the selected allowlisted provider's TUI output in a scoped pane, sends keyboard input only to the running provider process, supports Copy full path / Send full path to Agent from existing workspace file rows, and continues to treat provider-made file edits as ordinary external on-disk changes
 
 ## Project Docs
@@ -181,10 +184,10 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current published preview version is `0.7.0` across npm, Tauri, and Cargo metadata.
+- Current preview version is `0.8.0` across npm, Tauri, and Cargo metadata.
 - Source users build locally with `npm ci` and `npm run build`.
 - The generated local `.app` declares macOS 11.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. It is not Developer ID signed or notarized.
-- The latest published warning-expected DMG preview is [v0.7.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.7.0), with notes in [0.7.0 Warning-expected DMG Preview](docs/releases/0.7.0-warning-expected-dmg-preview.release.md).
+- The latest warning-expected DMG preview is [v0.8.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.8.0), with notes in [0.8.0 Warning-expected DMG Preview](docs/releases/0.8.0-warning-expected-dmg-preview.release.md).
 - Future tag creation, push, and GitHub Release publication still require explicit user approval.
 
 ## Known Limits
@@ -196,7 +199,7 @@ Developer preview release boundary:
 - Review Desk candidate review is manual and explicit. It does not persist review logs, save candidate documents automatically, auto-apply Agent output, or replace Git/merge workflows.
 - The app is not signed or notarized with an Apple Developer ID.
 - Agent Workbench is optional and explicit. It does not provide a general shell prompt, arbitrary command input UI, arbitrary path input UI, provider-add UI, multiple sessions, session restore, auto-apply, auto-commit, or Git integration.
-- CLI provider internals are outside hazakura's safety boundary. What happens inside `codex`, `opencode`, or `pi` depends on the provider and the user's choices.
+- CLI provider internals are outside hazakura's safety boundary. What happens inside `codex`, `opencode`, `pi`, or `claude` depends on the provider and the user's choices.
 - Agent Workbench does not expose a shell prompt, arbitrary command field, arbitrary path field, or general terminal.
 - Outside Agent Workbench there is no Git integration, LSP, terminal, AI assistance, plugin system, arbitrary command execution, or project-wide analysis.
 - The production bundle currently carries a Vite chunk-size warning from editor/preview dependencies; planned chunk-splitting belongs to the v0.9 product-preview hardening lane.

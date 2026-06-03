@@ -71,7 +71,7 @@ pub(crate) fn search_workspace_files_with_label(
     let mut stack: Vec<PathBuf> = vec![canonical_root.clone()];
 
     while let Some(directory) = stack.pop() {
-        if files.len() >= MAX_WORKSPACE_SEARCH_FILES || truncated {
+        if total_files_scanned >= MAX_WORKSPACE_SEARCH_FILES || truncated {
             truncated = true;
             break;
         }
@@ -95,7 +95,7 @@ pub(crate) fn search_workspace_files_with_label(
         collected.sort_by(|left, right| left.0.cmp(&right.0));
 
         for (child_path, file_type) in collected {
-            if files.len() >= MAX_WORKSPACE_SEARCH_FILES {
+            if total_files_scanned >= MAX_WORKSPACE_SEARCH_FILES {
                 truncated = true;
                 break;
             }

@@ -23,6 +23,7 @@ The current public line is:
 - `v0.5.0`: Pi CLI Provider, Image Assets, and Authoring Stability warning-expected DMG release
 - `v0.6.0`: Foundation Release / Daily-Drivable Safe Editor warning-expected DMG release under the `hazakura editor` identity
 - `v0.7.0`: Review Desk MVP warning-expected DMG release with manual candidate review, slash command polish, and existing Change Review routing fixes
+- `v0.8.0`: Assist Surface separation and daily-editor polish warning-expected DMG release candidate; publication in progress during the 2026-06-03 release lane
 
 The old `v0.1` / `v0.3.x` phase map is archived in `docs/roadmap-v0.1-archived.md`.
 
@@ -282,7 +283,7 @@ External-agent workflow:
 
 ## 0.8: Assist Surface Separation And Daily Editor Polish
 
-Status: candidate work landed 2026-06-03 (Claude Code CLI allowlist landed via 97f4249, with the same launch gate / trusted-workspace smoke path as `codex` / `opencode` / `pi`). No v0.8 candidate-work items remain open. v0.8 was not tagged / published; the v0.7 line (`v0.7.0` warning-expected DMG) is the most recent published release. The assist/agent surface separation it set up is the foundation for v0.10+ Apple Local Assist.
+Status: release-prep lane on 2026-06-03 (Claude Code CLI allowlist landed via 97f4249, with the same launch gate / trusted-workspace smoke path as `codex` / `opencode` / `pi`; the v0.8 release-readiness pass also fixed the bounded Global Search no-match scan cap and aligned version surfaces to `0.8.0`). No v0.8 candidate-work items remain open. v0.8 publication is in progress; the previous public line is `v0.7.0` warning-expected DMG. The assist/agent surface separation it set up is the foundation for v0.10+ Apple Local Assist.
 
 Goal: keep the Safe Editor pleasant for daily writing and review while preparing the assist/agent surface for future v0.10+ Apple Local Assist adoption. v0.8 is not an assist-platform release; it should separate surfaces and logic so optional assist behavior can later produce reviewed candidates without becoming the default editor experience.
 
@@ -298,7 +299,7 @@ Assist Surface design direction:
 
 - Separate assist/agent surfaces from Safe Editor presentation and state so Safe Editor remains useful when assist features are disabled, unavailable, or removed from a build.
 - Keep External Agent Workbench as its own explicit trust boundary: allowlisted providers, responsibility consent, selected workspace root, one active session, no restore, no provider-add UI, and no auto-apply.
-- Treat Claude Code CLI as a candidate external CLI provider to add, not as a replacement for the current provider set. It should enter through the same allowlist / launch gate / trusted-workspace smoke path as `codex`, `opencode`, and `pi`.
+- Treat Claude Code CLI as another external CLI provider in the current allowlist, not as a replacement for the existing provider set. It enters through the same allowlist / launch gate / trusted-workspace smoke path as `codex`, `opencode`, and `pi`.
 - Use v0.8 to clarify shared request / candidate / review logic that a future v0.10+ Apple Local Assist helper could reuse, without implementing Foundation Models behavior yet.
 - Any Apple Foundation Models path in v0.10+ should start as selected-text or document-excerpt assistance that returns candidate text to Review Desk or Diff for explicit review.
 - Agent Workbench may work better as a separate window or detachable surface in a later design pass. Any separation must follow `docs/assist-surface-strategy.md` and preserve the existing trust boundary.
@@ -307,7 +308,7 @@ Candidate work:
 
 - demote Review Desk from persistent top-chrome placement while preserving shortcut / View menu / slash access (landed)
 - Assist Surface / Agent Workbench presentation separation, limited to surface boundaries and state ownership (landed via the detached Agent Window workstream and preferences extract)
-- Claude Code CLI allowlist readiness: add `claude` as a candidate local CLI provider only after checking the UI/backend allowlist, provider-not-found flow, trusted-workspace smoke checklist, and docs claim boundaries; do not make it the default provider in the first slice (landed via 97f4249 — `claude` is on the implemented allowlist with the same launch gate / trusted-workspace smoke path as `codex` / `opencode` / `pi`)
+- Claude Code CLI allowlist readiness: `claude` is implemented as another local CLI provider after checking the UI/backend allowlist, provider-not-found flow, trusted-workspace smoke checklist, and docs claim boundaries; it is not the default provider (landed via 97f4249 — `claude` is on the implemented allowlist with the same launch gate / trusted-workspace smoke path as `codex` / `opencode` / `pi`)
 - shared candidate-review request shape for future assist output, limited to selected text / active document excerpt inputs
 - clearer separation between Safe Editor state, Agent Workbench state, and Review Desk candidate state (landed via the Agent Workbench preferences extract + boundary-docstring slices)
 - daily-editor polish that makes the app worth opening before assist features arrive: search/replace quality, file navigation, save/recovery clarity, preview/diff readability, and keyboard comfort
