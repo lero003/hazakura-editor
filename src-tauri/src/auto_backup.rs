@@ -133,6 +133,57 @@ fn backup_dir_for(workspace_root: &str, relative_file_path: &str) -> Result<Path
         .join(safe_relative))
 }
 
+/// Move an existing backup directory from the old relative path
+/// to the new one, keeping the captured `.{ts}_{name}.bak` files
+/// attached to the new path. No-op if the source backup dir is
+/// missing (freshly created or already cleaned up) or if source
+/// and destination resolve to the same path. Refuses to clobber
+/// a backup dir that already exists at the destination.
+///
+/// The function is intentionally single-file: folder descendants
+/// are handled by the caller (folder rekey fans out to every
+/// descendant's backup dir).
+pub(crate) fn rekey_auto_backup_dir(
+    workspace_root: &str,
+    old_relative_file_path: &str,
+    new_relative_file_path: &str,
+) -> Result<(), String> {
+    let old_dir = backup_dir_for(workspace_root, old_relative_file_path)?;
+    if !old_dir.is_dir() {
+        return Ok(());
+    }
+
+    let new_dir = backup_dir_for(workspace_root, new_relative_file_path)?;
+    if new_dir == old_dir {
+        return Ok(());
+    }
+    if new_dir.exists() {
+        return Err("Backup directory already exists at the new path.".to_string());
+    }
+
+    if let Some(parent) = new_dir.parent() {
+        fs::create_dir_all(parent).map_err(|err| format!("Cannot prepare backup parent: {err}"))?;
+    }
+
+    fs::rename(&old_dir, &new_dir).map_err(|err| format!("Cannot rekey backup dir: {err}"))
+}
+
+/// Remove the backup directory for a relative file path. No-op
+/// if the backup dir is missing. Refuses to follow a symlinked
+/// backup dir off the workspace; callers should treat the
+/// "symlink" case as "no backup to remove" since `save` would
+/// also have rejected the symlinked tree.
+pub(crate) fn remove_auto_backup_dir(
+    workspace_root: &str,
+    relative_file_path: &str,
+) -> Result<(), String> {
+    let dir = backup_dir_for(workspace_root, relative_file_path)?;
+    if !dir.is_dir() {
+        return Ok(());
+    }
+    fs::remove_dir_all(&dir).map_err(|err| format!("Cannot remove backup dir: {err}"))
+}
+
 fn safe_relative_file_path(relative_file_path: &str) -> Result<PathBuf, String> {
     let path = Path::new(relative_file_path);
 

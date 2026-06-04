@@ -132,7 +132,35 @@ pub(crate) fn move_workspace_entry_to_trash_with_label(
     if !metadata.is_file() && !metadata.is_dir() {
         return Err("Selected workspace entry cannot be trashed.".to_string());
     }
-    move_to_finder_trash(&src_path)
+    let was_file = metadata.is_file();
+    // Capture the canonical path before trashing so the
+    // post-trash backup-dir cleanup can compute the relative
+    // path from the canonical workspace root.
+    let src_canon = if was_file {
+        fs::canonicalize(&src_path).ok()
+    } else {
+        None
+    };
+    let canonical_root = if was_file {
+        crate::util::ensure_workspace_root(&root_path).ok()
+    } else {
+        None
+    };
+    move_to_finder_trash(&src_path)?;
+
+    // For a single-file trash, drop the auto-backup dir so the
+    // entry doesn't linger in `.hazakura/backups/` after the
+    // file is gone. Folder descendants are out of scope here;
+    // the folder rekey lane would walk the whole subtree.
+    if was_file {
+        if let (Some(root), Some(canon)) = (canonical_root, src_canon) {
+            if let Ok(rel) = canon.strip_prefix(&root) {
+                crate::auto_backup::remove_auto_backup_dir(workspace_root, &rel.to_string_lossy())?;
+            }
+        }
+    }
+
+    Ok(())
 }
 
 // macOS-only: use NSFileManager through JavaScript for

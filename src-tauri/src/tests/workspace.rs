@@ -467,6 +467,107 @@ fn rename_workspace_entry_renames_file_in_same_directory() {
 }
 
 #[test]
+fn rename_workspace_entry_rekeys_auto_backup_dir() {
+    let root = unique_test_dir("rename_rekey_backup");
+    fs::create_dir_all(&root).expect("create root");
+    let src = root.join("old.md");
+    let dst = root.join("new.md");
+    fs::write(&src, "# old\n").expect("write src");
+
+    crate::auto_backup::save_auto_backup(&root.to_string_lossy(), "old.md", "# v1\n")
+        .expect("save backup before rename");
+    let old_backup_dir = root.join(".hazakura").join("backups").join("old.md");
+    assert!(old_backup_dir.is_dir());
+
+    rename_workspace_entry_with_label(
+        MAIN_WINDOW_LABEL,
+        &src.to_string_lossy(),
+        &dst.to_string_lossy(),
+        &root.to_string_lossy(),
+    )
+    .expect("rename should rekey backup dir");
+
+    assert!(!old_backup_dir.exists(), "old backup dir should be gone");
+    let new_backup_dir = root.join(".hazakura").join("backups").join("new.md");
+    assert!(
+        new_backup_dir.is_dir(),
+        "new backup dir should follow rename"
+    );
+    let entries = crate::auto_backup::list_auto_backups(&root.to_string_lossy(), "new.md")
+        .expect("list after rekey");
+    assert_eq!(entries.len(), 1, "backup should follow the rename");
+
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+fn move_workspace_entry_rekeys_auto_backup_dir() {
+    let root = unique_test_dir("move_rekey_backup");
+    let source_dir = root.join("notes");
+    let dest_dir = root.join("archive");
+    fs::create_dir_all(&source_dir).expect("create source");
+    fs::create_dir_all(&dest_dir).expect("create dest");
+    let src = source_dir.join("today.md");
+    let dst = dest_dir.join("today.md");
+    fs::write(&src, "# today\n").expect("write src");
+
+    crate::auto_backup::save_auto_backup(&root.to_string_lossy(), "notes/today.md", "# v1\n")
+        .expect("save backup before move");
+
+    let old_backup_dir = root
+        .join(".hazakura")
+        .join("backups")
+        .join("notes")
+        .join("today.md");
+    assert!(old_backup_dir.is_dir());
+
+    move_workspace_entry_with_label(
+        MAIN_WINDOW_LABEL,
+        &src.to_string_lossy(),
+        &dst.to_string_lossy(),
+        &root.to_string_lossy(),
+    )
+    .expect("move should rekey backup dir");
+
+    assert!(!old_backup_dir.exists(), "old backup dir should be gone");
+    let new_backup_dir = root
+        .join(".hazakura")
+        .join("backups")
+        .join("archive")
+        .join("today.md");
+    assert!(new_backup_dir.is_dir(), "new backup dir should follow move");
+
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+fn move_workspace_entry_to_trash_clears_auto_backup_dir() {
+    let root = unique_test_dir("trash_clear_backup");
+    fs::create_dir_all(&root).expect("create root");
+    let path = root.join("doomed.md");
+    fs::write(&path, "# doomed\n").expect("write doomed");
+
+    crate::auto_backup::save_auto_backup(&root.to_string_lossy(), "doomed.md", "# v1\n")
+        .expect("save backup before trash");
+    let backup_dir = root.join(".hazakura").join("backups").join("doomed.md");
+    assert!(backup_dir.is_dir());
+
+    move_workspace_entry_to_trash_with_label(
+        MAIN_WINDOW_LABEL,
+        &path.to_string_lossy(),
+        &root.to_string_lossy(),
+    )
+    .expect("trash should clear backup dir");
+
+    assert!(
+        !backup_dir.exists(),
+        "backup dir should be cleared after trash"
+    );
+
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
 fn rename_workspace_entry_handles_case_only_rename() {
     let root = unique_test_dir("rename_case_only");
     fs::create_dir_all(&root).expect("create root");

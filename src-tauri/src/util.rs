@@ -228,6 +228,7 @@ pub(crate) fn rename_workspace_entry_util(
         return Err("Source path does not exist.".to_string());
     }
 
+    let canonical_root = ensure_workspace_root(root)?;
     let _ = ensure_path_inside_workspace_root(src, root)?;
     let _ = ensure_path_inside_workspace_root(dst, root)?;
 
@@ -263,7 +264,31 @@ pub(crate) fn rename_workspace_entry_util(
         return Err("A file or folder already exists at the destination.".to_string());
     }
 
-    fs::rename(src, dst).map_err(|err| format!("Cannot rename entry: {err}"))
+    let src_was_file = src_canon.is_file();
+
+    fs::rename(src, dst).map_err(|err| format!("Cannot rename entry: {err}"))?;
+
+    // Rekey the auto-backup dir for a single-file rename or
+    // move. Folder descendants are out of scope here; the
+    // folder rekey lane fans out to every descendant's backup
+    // dir separately. Any error here is surfaced to the caller
+    // — the file has already moved, so the failure mode is a
+    // stale backup dir that the retention prune will clean
+    // up over time, not a lost user file.
+    if src_was_file {
+        if let (Ok(old_rel), Ok(new_rel)) = (
+            src_canon.strip_prefix(&canonical_root),
+            dst_canon.strip_prefix(&canonical_root),
+        ) {
+            crate::auto_backup::rekey_auto_backup_dir(
+                &root.to_string_lossy(),
+                &old_rel.to_string_lossy(),
+                &new_rel.to_string_lossy(),
+            )?;
+        }
+    }
+
+    Ok(())
 }
 
 pub(crate) fn find_allowlisted_agent_provider_in_path_env(

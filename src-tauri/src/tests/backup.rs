@@ -121,3 +121,120 @@ fn auto_backup_prune_returns_zero_when_backup_dir_is_missing() {
 
     let _ = fs::remove_dir_all(dir);
 }
+
+#[test]
+fn auto_backup_rekey_moves_backup_dir_to_new_path() {
+    let dir = unique_test_dir("auto_backup_rekey");
+    fs::create_dir_all(&dir).expect("create test dir");
+
+    // Each backup filename embeds a seconds-resolution
+    // timestamp, so back-to-back writes need >1s between them
+    // for the filenames (and therefore the files) to differ.
+    auto_backup::save_auto_backup(&dir.to_string_lossy(), "notes/today.md", "# v1\n")
+        .expect("save backup");
+    std::thread::sleep(Duration::from_millis(1100));
+    auto_backup::save_auto_backup(&dir.to_string_lossy(), "notes/today.md", "# v2\n")
+        .expect("save second backup");
+
+    let old_dir = dir
+        .join(".hazakura")
+        .join("backups")
+        .join("notes")
+        .join("today.md");
+    assert!(old_dir.is_dir(), "old backup dir should exist before rekey");
+
+    auto_backup::rekey_auto_backup_dir(
+        &dir.to_string_lossy(),
+        "notes/today.md",
+        "notes/yesterday.md",
+    )
+    .expect("rekey backup dir");
+
+    assert!(
+        !old_dir.exists(),
+        "old backup dir should be gone after rekey"
+    );
+    let new_dir = dir
+        .join(".hazakura")
+        .join("backups")
+        .join("notes")
+        .join("yesterday.md");
+    assert!(new_dir.is_dir(), "new backup dir should exist after rekey");
+
+    let entries = auto_backup::list_auto_backups(&dir.to_string_lossy(), "notes/yesterday.md")
+        .expect("list after rekey");
+    assert_eq!(entries.len(), 2, "all backups should follow the rekey");
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn auto_backup_rekey_is_noop_when_source_backup_missing() {
+    let dir = unique_test_dir("auto_backup_rekey_missing");
+    fs::create_dir_all(&dir).expect("create test dir");
+
+    auto_backup::rekey_auto_backup_dir(
+        &dir.to_string_lossy(),
+        "missing/note.md",
+        "missing/renamed.md",
+    )
+    .expect("rekey with missing source should be a no-op");
+
+    let new_dir = dir
+        .join(".hazakura")
+        .join("backups")
+        .join("missing")
+        .join("renamed.md");
+    assert!(
+        !new_dir.exists(),
+        "no new backup dir should be created when source is missing"
+    );
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn auto_backup_rekey_refuses_to_clobber_existing_destination_backup() {
+    let dir = unique_test_dir("auto_backup_rekey_clobber");
+    fs::create_dir_all(&dir).expect("create test dir");
+
+    auto_backup::save_auto_backup(&dir.to_string_lossy(), "a/note.md", "# a\n").expect("save a");
+    std::thread::sleep(Duration::from_millis(1100));
+    auto_backup::save_auto_backup(&dir.to_string_lossy(), "b/note.md", "# b\n").expect("save b");
+
+    let err = auto_backup::rekey_auto_backup_dir(&dir.to_string_lossy(), "a/note.md", "b/note.md")
+        .expect_err("rekey into an occupied backup dir should be rejected");
+
+    assert!(err.contains("already exists"), "{err}");
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn auto_backup_remove_clears_backup_dir() {
+    let dir = unique_test_dir("auto_backup_remove");
+    fs::create_dir_all(&dir).expect("create test dir");
+
+    auto_backup::save_auto_backup(&dir.to_string_lossy(), "note.md", "# v1\n")
+        .expect("save backup");
+    let backup_dir = dir.join(".hazakura").join("backups").join("note.md");
+    assert!(backup_dir.is_dir());
+
+    auto_backup::remove_auto_backup_dir(&dir.to_string_lossy(), "note.md")
+        .expect("remove backup dir");
+
+    assert!(!backup_dir.exists());
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn auto_backup_remove_is_noop_when_missing() {
+    let dir = unique_test_dir("auto_backup_remove_missing");
+    fs::create_dir_all(&dir).expect("create test dir");
+
+    auto_backup::remove_auto_backup_dir(&dir.to_string_lossy(), "never/created.md")
+        .expect("remove on missing should be a no-op");
+
+    let _ = fs::remove_dir_all(dir);
+}
