@@ -11,6 +11,7 @@ const lModeCss = readFileSync(
 describe("lMode.css", () => {
   it("keeps the L Mode editor height chain explicit", () => {
     for (const selector of [
+      ".app-shell",
       ".workspace",
       ".editor-preview-grid",
       ".editor-pane",
@@ -24,7 +25,11 @@ describe("lMode.css", () => {
           ),
         )?.groups?.body ?? "";
 
-      expect(rule).toMatch(/height:\s*100%/);
+      if (selector === ".app-shell") {
+        expect(rule).toMatch(/grid-template-rows:\s*minmax\(0,\s*1fr\)/);
+      } else {
+        expect(rule).toMatch(/height:\s*100%/);
+      }
       expect(rule).toMatch(/min-height:\s*0/);
     }
   });
@@ -37,7 +42,23 @@ describe("lMode.css", () => {
 
     expect(scrollerRule).toMatch(/overflow-y:\s*auto/);
     expect(scrollerRule).not.toMatch(/overflow-x:\s*hidden/);
+    expect(scrollerRule).not.toMatch(/height:/);
     expect(scrollerRule).not.toMatch(/padding:/);
+  });
+
+  it("keeps secondary status details out of the quiet default view", () => {
+    const detailRule =
+      lModeCss.match(
+        /:root\[data-l-mode="on"\] \.status-bar-detail\s*{(?<body>[^}]*)}/s,
+      )?.groups?.body ?? "";
+
+    expect(detailRule).toMatch(/display:\s*none/);
+    expect(lModeCss).toMatch(
+      /:root\[data-l-mode="on"\] \.status-bar:hover \.status-bar-detail/,
+    );
+    expect(lModeCss).toMatch(
+      /:root\[data-l-mode="on"\] \.status-bar:focus-within \.status-bar-detail/,
+    );
   });
 
   it("does not restyle CodeMirror's measured line boxes with margins", () => {

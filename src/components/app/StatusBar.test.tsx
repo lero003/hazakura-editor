@@ -52,6 +52,7 @@ describe("StatusBar", () => {
     expect(statusBar?.lastElementChild).toBe(formatGroup);
     expect(formatGroup?.previousElementSibling).toBe(detail);
     expect(formatGroup?.querySelectorAll("select")).toHaveLength(2);
+    expect(detail?.getAttribute("title")).toBe("Markdown / UTF-8 / 10 bytes");
   });
 
   it("removes focusable format controls in L Mode", () => {

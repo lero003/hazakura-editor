@@ -55,7 +55,9 @@ export function StatusBar({
           {agentLabel}
         </span>
       ) : null}
-      <span className="status-bar-segment status-bar-detail">{detail}</span>
+      <span className="status-bar-segment status-bar-detail" title={detail}>
+        {detail}
+      </span>
       {activeTab && !lModeEnabled ? (
         <span className="status-bar-format-group">
           <label className="status-bar-segment status-bar-format-chip">

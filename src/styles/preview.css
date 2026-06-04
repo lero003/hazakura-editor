@@ -263,8 +263,10 @@
   color: var(--status-text);
   display: flex;
   font-size: 12px;
-  gap: 8px;
-  padding: 0 16px;
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0 10px;
   z-index: 10;
   font-weight: 500;
 }
@@ -279,14 +281,14 @@
 .status-bar-status {
   flex: 1 1 auto;
   overflow: hidden;
+  padding-right: 6px;
   text-overflow: ellipsis;
   white-space: nowrap;
-  padding-right: 12px;
 }
 
 .status-bar-detail {
   flex: 0 1 auto;
-  max-width: 50%;
+  max-width: min(36ch, 34vw);
   opacity: 0.85;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -296,10 +298,10 @@
 .status-bar-format-group {
   align-items: center;
   display: inline-flex;
-  flex: 0 0 clamp(232px, 30vw, 292px);
-  gap: 4px;
+  flex: 0 1 clamp(196px, 28vw, 264px);
+  gap: 3px;
   justify-content: flex-end;
-  margin-left: 4px;
+  margin-left: 0;
   min-width: 0;
 }
 
@@ -312,10 +314,10 @@
   display: inline-flex;
   font-size: 11px;
   font-weight: 600;
-  gap: 6px;
+  gap: 4px;
   height: 22px;
-  margin: 0 2px;
-  padding: 0 4px 0 8px;
+  margin: 0 1px;
+  padding: 0 4px 0 6px;
   transition: all 0.15s var(--ease-standard);
 }
 
@@ -356,4 +358,29 @@
 
 .status-bar-format-select:hover {
   color: color-mix(in srgb, var(--status-text) 100%, var(--accent) 10%);
+}
+
+@media (max-width: 720px) {
+  .status-bar {
+    gap: 4px;
+    padding: 0 8px;
+  }
+
+  .status-bar-detail {
+    display: none;
+  }
+
+  .status-bar-format-group {
+    flex-basis: auto;
+    flex-shrink: 0;
+    gap: 2px;
+  }
+
+  .status-bar-format-label {
+    display: none;
+  }
+
+  .status-bar-format-chip {
+    padding: 0 4px;
+  }
 }

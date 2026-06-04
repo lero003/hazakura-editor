@@ -36,6 +36,14 @@ export function RecoveryMessages({
   onReviewTabAgainstDisk,
   onTrySaveAgain,
 }: RecoveryMessagesProps) {
+  const hasMessage =
+    (activeDraft !== null && activeTab !== null) ||
+    activeError !== null;
+
+  if (!hasMessage) {
+    return null;
+  }
+
   return (
     <div className="message-row">
       {activeDraft && activeTab ? (
