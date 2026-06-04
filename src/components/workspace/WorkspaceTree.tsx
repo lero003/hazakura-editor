@@ -369,6 +369,7 @@ export function WorkspaceTree({
   compareTargetPath,
   compareSelectionEnabled,
   entry,
+  onClearCompareSelection,
   onLoadDirectory,
   onMoveEntry,
   onOpenContextMenu,
@@ -383,6 +384,7 @@ export function WorkspaceTree({
   compareTargetPath: string | null;
   compareSelectionEnabled: boolean;
   entry: WorkspaceTreeEntry;
+  onClearCompareSelection: () => void;
   onLoadDirectory: (path: string) => Promise<void>;
   onMoveEntry: (srcPath: string, dstParentPath: string) => void;
   onOpenContextMenu: (
@@ -399,9 +401,36 @@ export function WorkspaceTree({
   // The renaming path is owned here, not by the controller, so the
   // input is local to the tree. The controller only sees the
   // committed `onSubmitRename`.
+  const hasCompareSelection =
+    compareSourcePath !== null || compareTargetPath !== null;
   return (
     <div
       className={`workspace-tree${compareSelectionEnabled ? " compare-selection" : ""}`}
+      // Click on the empty area inside the tree (the padding
+      // below the last entry, or any margin not occupied by a
+      // row) clears the compare selection. Without this, a
+      // compare-mode session that picked a source and a target
+      // has no way to reset short of re-picking both files —
+      // a third click in the tree just overwrites the target
+      // silently.
+      onClick={(event) => {
+        if (event.target === event.currentTarget) {
+          if (hasCompareSelection) {
+            onClearCompareSelection();
+          }
+        }
+      }}
+      onKeyDown={(event: ReactKeyboardEvent<HTMLDivElement>) => {
+        // Escape clears the compare selection, matching the
+        // click-on-empty-space behavior above. Only when the
+        // user is NOT editing a name — Escape is also the
+        // cancel key for the rename input, and that handler
+        // runs first because the input is the event target.
+        if (event.key === "Escape" && hasCompareSelection && renamingPath === null) {
+          event.preventDefault();
+          onClearCompareSelection();
+        }
+      }}
     >
       <TreeEntry
         activePath={activePath}

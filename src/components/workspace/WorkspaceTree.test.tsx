@@ -55,6 +55,7 @@ function renderTree(onMoveEntry = vi.fn()) {
       compareSourcePath={null}
       compareTargetPath={null}
       entry={makeTree()}
+      onClearCompareSelection={vi.fn()}
       onLoadDirectory={vi.fn(async () => undefined)}
       onMoveEntry={onMoveEntry}
       onOpenContextMenu={vi.fn()}

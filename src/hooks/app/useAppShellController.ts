@@ -683,7 +683,28 @@ export function useAppShellController() {
     if (reviewSurface !== null) {
       closeReviewDesk();
     }
-  }, [closeReviewDesk, editorSettings.lModeEnabled, reviewSurface, setSidePaneOpen]);
+    // Compare selection is invisible in L Mode (the workspace
+    // tree and the compare panel are both hidden), but the
+    // source/target anchors persist in state. If we leave them
+    // set, the user re-entering normal mode finds the slots
+    // pre-filled with files they no longer remember choosing.
+    // Clear both slots on entry so the user starts fresh.
+    if (compareAnchor !== null) {
+      clearCompareSource();
+    }
+    if (compareTarget !== null) {
+      clearCompareTarget();
+    }
+  }, [
+    clearCompareSource,
+    clearCompareTarget,
+    closeReviewDesk,
+    compareAnchor,
+    compareTarget,
+    editorSettings.lModeEnabled,
+    reviewSurface,
+    setSidePaneOpen,
+  ]);
 
   // section: document safety actions
   const {

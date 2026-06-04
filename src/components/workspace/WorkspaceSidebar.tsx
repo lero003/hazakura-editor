@@ -32,6 +32,7 @@ type WorkspaceSidebarProps = {
   onOpenRootContextMenu: (event: ReactMouseEvent<HTMLDivElement>) => void;
   onOpenFile: (path: string) => void | Promise<void>;
   onOpenWorkspace: () => void;
+  onClearCompareSelection: () => void;
   onSelectCompareFile: (entry: WorkspaceTreeEntry) => void;
   onSubmitRename: (srcPath: string, newName: string) => void;
   requestRename: (path: string) => void;
@@ -56,6 +57,7 @@ export function WorkspaceSidebar({
   onOpenRootContextMenu,
   onOpenFile,
   onOpenWorkspace,
+  onClearCompareSelection,
   onSelectCompareFile,
   onSubmitRename,
   requestRename,
@@ -201,6 +203,7 @@ export function WorkspaceSidebar({
           compareTargetPath={compareTargetPath}
           entry={workspaceTree}
           compareSelectionEnabled={compareSelectionEnabled}
+          onClearCompareSelection={onClearCompareSelection}
           onLoadDirectory={onLoadDirectory}
           onMoveEntry={onMoveEntry}
           onOpenContextMenu={onOpenContextMenu}

@@ -254,6 +254,10 @@ export function AppWorkspace({
         onOpenRootContextMenu={openRootWorkspaceContextMenu}
         onOpenFile={(path) => void openWorkspaceFile(path)}
         onOpenWorkspace={() => void openWorkspace()}
+        onClearCompareSelection={() => {
+          clearCompareSource();
+          clearCompareTarget();
+        }}
         onSelectCompareFile={selectWorkspaceCompareFile}
         onSubmitRename={onSubmitRename}
         renamingPath={renamingPath}
