@@ -15,7 +15,7 @@ The goal is not to make two agents race. The goal is to separate implementation 
 
 External implementation agent:
 
-- chooses one explicitly approved slice from `docs/roadmap.md`, `docs/next-goals.md`, or a user prompt
+- chooses one explicitly approved slice from `docs/roadmap.md`, `docs/development-automation.md`, or a user prompt
 - implements only that slice
 - preserves Safe Editor Mode as primary
 - keeps Agent Workbench behind its existing explicit trust boundary

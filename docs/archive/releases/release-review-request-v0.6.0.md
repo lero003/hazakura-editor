@@ -1,5 +1,10 @@
 # Release Review Request - v0.6.0 preparation
 
+Status: Archive
+Scope: Historical v0.6.0 external release-review brief and publication evidence
+Authority: Low
+Last reviewed: 2026-06-04
+
 この文書は hazakura-note v0.6.0 のリリース準備と公開結果を記録するための外部レビューブリーフです。
 タグ作成・GitHub Release 公開・リモート asset 検証は完了しています。
 

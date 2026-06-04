@@ -1,9 +1,11 @@
 # Development Prep
 
-Status: Operational
-Scope: Setup and first implementation steps
-Authority: Medium
-Last reviewed: 2026-05-26
+Status: Archive
+Scope: Historical setup and first implementation steps
+Authority: Low
+Last reviewed: 2026-06-04
+
+Archive note: current setup, release, and automation guidance lives in `README.md`, `docs/README.md`, `docs/current-status.md`, and `docs/development-automation.md`.
 
 ## Repository
 

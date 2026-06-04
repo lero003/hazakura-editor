@@ -6,12 +6,12 @@ import { buildLineDiff } from "../../features/diff/diff";
 // reach beyond the B-1 `ReviewSurface` open/close flag (which lives
 // in useAppViewState alongside rightPaneMode per B-1). The shape is
 // the skeleton the readiness gate finding R-4 in
-// docs/reviews/v0.7-readiness-gate.md recommended: a single owner
+// docs/archive/reviews/v0.7-readiness-gate.md recommended: a single owner
 // for the manual candidate input, the diff preview, and the future
 // case list / decision log so App.tsx does not grow again. Today
 // the candidate / diff-preview slots and manual apply reset path are
 // wired; the persistent dismiss / decision log stays deferred. See
-// docs/reviews/v0.7-review-desk-design-decisions.md (R-4).
+// docs/archive/reviews/v0.7-review-desk-design-decisions.md (R-4).
 export function useReviewDeskState() {
   const [reviewDeskMode, setReviewDeskMode] =
     useState<ReviewDeskMode>("empty");

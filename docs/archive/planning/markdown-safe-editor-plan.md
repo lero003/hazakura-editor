@@ -1,9 +1,9 @@
 # Markdown中心のシンプル・セーフテキストエディタ企画案
 
-Status: Draft
+Status: Archive
 Scope: Initial product idea and feature inventory
 Authority: Low
-Last reviewed: 2026-05-26
+Last reviewed: 2026-06-04
 
 Note: 開発時の判断は `README.md` と `docs/` 配下の文書を優先する。この文書は発想の原本として残す。
 

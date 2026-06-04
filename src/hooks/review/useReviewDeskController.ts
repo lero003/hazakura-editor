@@ -6,8 +6,8 @@ import type { ReviewSurface } from "../../types";
 // today the only user-visible action is the Cmd+Shift+R toggle and
 // the close button on the visible shell. The action surface will
 // grow when the AI candidate slice lands. See
-// docs/reviews/v0.7-review-desk-design-decisions.md (R-4) and
-// docs/reviews/v0.7-readiness-gate.md (R-1).
+// docs/archive/reviews/v0.7-review-desk-design-decisions.md (R-4) and
+// docs/archive/reviews/v0.7-readiness-gate.md (R-1).
 type UseReviewDeskControllerOptions = {
   reviewSurface: ReviewSurface;
   resetReviewDesk: () => void;

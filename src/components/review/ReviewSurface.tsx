@@ -51,8 +51,8 @@ type ReviewSurfaceProps = {
 // CompareViewState + DiffBody pipeline. Apply is explicit and only
 // updates the current tab buffer; the persistent dismiss / decision
 // log remains out of scope. See
-// docs/reviews/v0.7-review-desk-design-decisions.md (B-1, B-2, R-3,
-// R-4) and docs/reviews/v0.7-readiness-gate.md (R-1, R-2).
+// docs/archive/reviews/v0.7-review-desk-design-decisions.md (B-1, B-2, R-3,
+// R-4) and docs/archive/reviews/v0.7-readiness-gate.md (R-1, R-2).
 export function ReviewSurface({
   activeTab,
   candidateCompareCase,

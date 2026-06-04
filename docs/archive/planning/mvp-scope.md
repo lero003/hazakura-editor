@@ -1,9 +1,11 @@
 # MVP Scope
 
-Status: Canonical
-Scope: First implementation boundary
-Authority: High
-Last reviewed: 2026-05-26
+Status: Archive
+Scope: Historical first implementation boundary
+Authority: Low
+Last reviewed: 2026-06-04
+
+Archive note: the initial MVP has shipped. Use `README.md`, `docs/current-status.md`, and `docs/roadmap.md` for current scope.
 
 ## Goal
 

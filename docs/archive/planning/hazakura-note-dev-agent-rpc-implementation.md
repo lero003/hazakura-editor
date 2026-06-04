@@ -1,9 +1,9 @@
 # hazakura-note Dev Agent Mode: RPC 実装メモ
 
-Status: Internal design memo
+Status: Archive
 Scope: Future Agent Workbench / RPC exploration
 Authority: Low; current release planning is controlled by `docs/roadmap.md` and `docs/agent-workbench-boundary.md`
-Last reviewed: 2026-06-01
+Last reviewed: 2026-06-04
 
 Note: This is not a public promise or an active implementation plan. As of the v0.6 planning pass, CLI mode hardening remains the preferred path, and Structured RPC stays deferred until CLI mode proves insufficient.
 

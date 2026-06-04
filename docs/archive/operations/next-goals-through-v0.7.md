@@ -1,9 +1,11 @@
 # Next Goals
 
-Status: Operational
-Scope: Ready-to-use goal prompts and phase boundaries
-Authority: High
-Last reviewed: 2026-06-03
+Status: Archive
+Scope: Superseded ready-to-use goal prompts and phase boundaries through v0.7
+Authority: Low
+Last reviewed: 2026-06-04
+
+Archive note: current automation and release-candidate triage guidance lives in `docs/development-automation.md`.
 
 ## Ready Goal: v0.7 Review Desk MVP Release Prep
 

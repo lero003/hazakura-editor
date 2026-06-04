@@ -128,8 +128,8 @@ Example use case:
 
 ## Project Docs
 
+- [Documentation Index](docs/README.md): current docs and archive map
 - [Product Brief](docs/product-brief.md): 何を作るか、何を作らないか
-- [MVP Scope](docs/mvp-scope.md): 最初に実装する範囲と受け入れ基準
 - [Security Boundary](docs/security-boundary.md): 安全性のために守る制約
 - [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
 - [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Apple Local Assist / Foundation Models planning
@@ -207,7 +207,3 @@ Developer preview release boundary:
 - Outside Agent Workbench there is no Git integration, LSP, terminal, AI assistance, plugin system, arbitrary command execution, or project-wide analysis.
 - Workspace-internal drag/drop Move exists as an experimental file-tree affordance, but it is not the recommended release workflow yet; use New File, New Folder, Rename, and Move to Trash as the dependable bounded workspace operations.
 - The production bundle currently carries a Vite chunk-size warning from editor/preview dependencies; planned chunk-splitting belongs to a future product-preview hardening lane.
-
-## Draft Source
-
-- [Original Plan](markdown-safe-editor-plan.md): 初期企画案。発想の原本であり、実装判断の正本ではありません。
