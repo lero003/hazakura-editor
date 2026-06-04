@@ -85,6 +85,98 @@
   --cm-mark-quote: #6b5e4a;
 }
 
+/* --- 0b. Night variant — for dark-base menu themes ---
+   When the menu theme is dark or yakou, L Mode shifts from
+   paper-warm cream to a warm dark surface. The trigger is
+   the existing `data-theme` attribute, not a new L Mode
+   setting — flipping the menu theme flips the writing
+   surface with it.
+
+   Design principles for the night palette:
+   - Deep warm dark, never pure black. Pure black on LCD
+     causes halation against bright text and reads as harsh.
+     #1a1612 sits where aged leather sits.
+   - Warm low-saturation text, never pure white. The cream
+     candle-light tone (#ddd2bd) is gentle on the eyes after
+     dark and matches the warm paper feel of the day variant.
+   - Warm amber accent, never bright. #d4a574 is the kind of
+     muted gold you can stare at for an evening without
+     your eyes complaining.
+   - Lower contrast overall. Night writing should feel like
+     reading by lamplight, not under a desk lamp.
+   - Shadows get darker (since the surface is already dark,
+     a slightly darker shadow still gives a faint "lift" to
+     the floating chrome — tabs-row, status bar). They stay
+     subtle because the goal is quiet, not lifted. */
+:root[data-l-mode="on"][data-theme="dark"],
+:root[data-l-mode="on"][data-theme="yakou"] {
+  /* Surfaces — deep warm dark */
+  --bg: #1a1612;
+  --surface: #221d18;
+  --surface-rgb: 34, 29, 24;
+  --surface-strong: #28221c;
+  --surface-strong-rgb: 40, 34, 28;
+  --surface-muted: #15110d;
+
+  /* Borders — subtle warm dark */
+  --border: #2e2820;
+  --border-strong: #44392c;
+
+  /* Text — warm candle light */
+  --text: #ddd2bd;
+  --text-muted: #9a8d77;
+
+  /* Accent — warm amber, low saturation */
+  --accent: #d4a574;
+  --accent-soft: #2a2018;
+  --accent-glass: rgba(212, 165, 116, 0.08);
+  --accent-contrast: #1a1612;
+  --selection-bg: rgba(212, 165, 116, 0.18);
+
+  /* Scrollbar — warm muted tint */
+  --scrollbar-thumb: rgba(154, 141, 119, 0.2);
+  --scrollbar-thumb-hover: rgba(154, 141, 119, 0.35);
+
+  /* Shadows — darker so the floating chrome still lifts
+     faintly off the dark surface. The values mirror the
+     dark theme's shadow scale; on a dark surface these
+     register as a quiet "depression" rather than a glow. */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.3);
+
+  /* CodeMirror editor chrome — same warm dark palette. The
+     comment block on the day variant explains why these are
+     overridden at the token level; the same reasoning applies
+     here (the menu theme's --cm-* values would otherwise
+     leak into the writing surface). */
+  --cm-bg: var(--bg);
+  --cm-fg: var(--text);
+  --cm-caret: var(--accent);
+  --cm-gutter-bg: var(--bg);
+  --cm-gutter-border: var(--border);
+  --cm-gutter-fg: var(--text-muted);
+  --cm-active-line-bg: transparent;
+  --cm-active-gutter-bg: transparent;
+  --cm-selection-bg: color-mix(in srgb, var(--accent) 28%, transparent);
+  --cm-search-match-bg: color-mix(in srgb, var(--accent) 20%, transparent);
+  --cm-search-match-active-bg: color-mix(in srgb, var(--accent) 40%, transparent);
+  --cm-search-match-active-shadow: 0 0 0 1px var(--accent);
+  --cm-invisible-space: radial-gradient(circle, color-mix(in srgb, var(--text-muted) 60%, transparent) 1px, transparent 1px);
+  --cm-invisible-tab: color-mix(in srgb, var(--accent) 12%, transparent);
+  --cm-trailing-space: color-mix(in srgb, #c66b6e 25%, transparent);
+
+  /* CodeMirror syntax highlight marks — warm versions that
+     read on a dark surface without being shouty. Heading is
+     the warmest light, link and code are muted amber, quote
+     is the muted text color. */
+  --cm-mark-heading: #e8d4b0;
+  --cm-mark-strong: var(--text);
+  --cm-mark-link: var(--accent);
+  --cm-mark-monospace: #c0a886;
+  --cm-mark-quote: var(--text-muted);
+}
+
 /* --- 1. Hide workspace chrome --- */
 :root[data-l-mode="on"] .app-shell {
   grid-template-rows: minmax(0, 1fr);
