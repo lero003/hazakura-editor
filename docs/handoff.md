@@ -25,15 +25,16 @@
 
 ## Verification
 
-- `git diff --check` passed.
-- Trailing-whitespace scan over `README.md` and `docs/**/*.md` found no issues.
-- Current-doc old-reference scan passed after excluding `docs/archive/**`.
-- Current-doc local Markdown link check passed, with intentional smoke-check example paths excluded.
+- Release gates passed before publication: `npm ci`, `npm run typecheck`, `npm test`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build:vite`, `npm run build`, `npm audit`, `cargo audit --file src-tauri/Cargo.lock`, and `npm run build:dmg-preview`.
+- Local artifact verification passed: checksum, `hdiutil verify`, built and mounted app metadata, and `codesign --verify --deep --strict --verbose=2`.
+- `spctl -a -vv -t open` rejected the ad-hoc signed app with `source=Insufficient Context`, as expected for this warning-expected preview.
+- Remote GitHub Release assets were re-downloaded into a fresh temp directory and passed checksum, `hdiutil verify`, mounted-app metadata, and codesign verification.
+- Docs checks passed: `git diff --check`, current-doc old-reference scan, and current-doc local Markdown link check.
 
 ## Risks / Unknowns
 
-- No code or app behavior changed in the docs cleanup.
-- Latest v0.10 release gates were rerun before publication.
+- The `v0.10.0` tag points at the release-prep commit; `main` has a later post-publication docs-sync commit.
+- GitHub reported one moderate vulnerability notice during push; `npm audit` still reported 0 vulnerabilities locally.
 - `docs/releases/` still contains historical release-note evidence; this is intentional because release verification can depend on it.
 
 ## Next Actions
