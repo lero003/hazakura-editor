@@ -29,9 +29,34 @@
   color: var(--text);
 }
 
-/* グラデーションアクセント用フォーカスリング */
-:root[data-theme="yakou"] :focus-visible,
-:root[data-theme="shokou"] :focus-visible {
+/* グラデーションアクセント用フォーカスリング
+   Scope to actual focusable controls so the ring does not
+   bleed onto the CodeMirror `.cm-content` prose surface. A
+   universal `:focus-visible` selector catches `.cm-content`
+   when the editor is focused, and because `.cm-content` is
+   the tall vertically-overflowing prose body, only the left
+   and right edges of the 4px ring register — reading as two
+   vertical "ruled lines" flanking the document. Limiting the
+   selector to interactive controls keeps the focus ring on
+   the elements that need an affordance. */
+:root[data-theme="yakou"] :is(
+    button,
+    [role="button"],
+    input,
+    select,
+    textarea,
+    a,
+    [tabindex]
+  ):focus-visible,
+:root[data-theme="shokou"] :is(
+    button,
+    [role="button"],
+    input,
+    select,
+    textarea,
+    a,
+    [tabindex]
+  ):focus-visible {
   outline: 2px solid transparent;
   outline-offset: 2px;
   border-color: transparent;
