@@ -32,6 +32,10 @@ describe("getLModeCopy", () => {
         "paletteCommand",
         "preferenceHint",
         "preferenceLabel",
+        "statusBarReviewChangesLabel",
+        "statusBarReviewChangesTitle",
+        "statusBarWorkspaceLabel",
+        "statusBarWorkspaceTitle",
         "typewriterPreferenceHint",
         "typewriterPreferenceLabel",
       ]);

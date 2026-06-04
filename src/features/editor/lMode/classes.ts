@@ -86,6 +86,16 @@ export const LModeClasses = {
   exitPill: "l-mode-exit-pill",
   exitPillMonogram: "l-mode-exit-pill-monogram",
   exitPillLabel: "l-mode-exit-pill-label",
+
+  // Escape hatches surfaced in the L Mode status bar pill.
+  // They live behind the same `data-l-mode="on"` gate as the
+  // pill itself, but the buttons are text-links rather than
+  // icon buttons — the goal is "quiet, optional, visible only
+  // on hover," not "another chrome row." They are listed here
+  // so the CSS drift test can verify each one has a rule.
+  statusLink: "l-mode-status-link",
+  statusLinkGroup: "l-mode-status-link-group",
+  statusLinkDivider: "l-mode-status-link-divider",
 } as const;
 
 export type LModeClassName = (typeof LModeClasses)[keyof typeof LModeClasses];

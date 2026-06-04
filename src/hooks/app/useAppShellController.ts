@@ -651,6 +651,25 @@ export function useAppShellController() {
     }));
   }, [setEditorSettings]);
 
+  // Escape hatches surfaced inside the L Mode status bar pill.
+  // The pill is the only chrome the user sees in L Mode, so
+  // any "I want to leave L Mode and do X" affordance has to
+  // live there. Both handlers exit L Mode first (the diff
+  // pane and the workspace tree are hidden in L Mode, so the
+  // user has no other way to reach them); the review-changes
+  // one then opens the diff against disk. The workspace one
+  // is just an exit — the file tree / side pane are revealed
+  // by the same toggle, and the user can pick up from there.
+  const reviewChangesFromLMode = useCallback(() => {
+    toggleLMode();
+    if (activeTab) {
+      requestReviewTabAgainstDisk(activeTab);
+    }
+  }, [activeTab, requestReviewTabAgainstDisk, toggleLMode]);
+  const exitLModeToWorkspace = useCallback(() => {
+    toggleLMode();
+  }, [toggleLMode]);
+
   // When L Mode turns on, force the side pane and the Review
   // Desk closed. The CSS hides the toggles in L Mode so the user
   // cannot re-open them from chrome alone; this effect keeps the
@@ -1117,6 +1136,7 @@ export function useAppShellController() {
     onCloseTab: requestCloseTab,
     onConvertEncoding: convertActiveEncoding,
     onConvertLineEnding: convertActiveLineEnding,
+    onExitLModeToWorkspace: exitLModeToWorkspace,
     onFinishTabPointerDrag: finishTabPointerDrag,
     onOpenCommandPalette: openCommandPalette,
     onRunCommand: runCommand,
@@ -1124,6 +1144,7 @@ export function useAppShellController() {
     onResizeAgentTerminal: resizeAgentTerminal,
     onResumeAgentUiRefresh: resumeAgentUiRefresh,
     onReviewChanges: requestReviewTabAgainstDisk,
+    onReviewChangesFromLMode: reviewChangesFromLMode,
     onSelectTab: selectTabFromBar,
     onSendAgentTerminalData: sendAgentTerminalData,
     onSubmitRename: renameWorkspacePath,

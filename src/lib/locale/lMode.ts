@@ -9,6 +9,10 @@ export type LModeCopy = {
   paletteCommand: string;
   exitPillLabel: string;
   exitPillTitle: string;
+  statusBarReviewChangesLabel: string;
+  statusBarWorkspaceLabel: string;
+  statusBarReviewChangesTitle: string;
+  statusBarWorkspaceTitle: string;
 };
 
 export function getLModeCopy(lang: MenuLanguage): LModeCopy {
@@ -22,6 +26,10 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
       paletteCommand: "えるモードきりかえ",
       exitPillLabel: "えるもーどしゅうりょう",
       exitPillTitle: "えるもーどをとじる",
+      statusBarReviewChangesLabel: "へんこうを かくにん",
+      statusBarWorkspaceLabel: "わーくすぺーすへ",
+      statusBarReviewChangesTitle: "えるもーどをとじて ディスクとの さぶんを ひらく",
+      statusBarWorkspaceTitle: "えるもーどをとじて わーくすぺーすに もどる",
     };
   }
 
@@ -35,6 +43,10 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
         paletteCommand: "えるモード切替",
         exitPillLabel: "えるモード終了",
         exitPillTitle: "えるモードを閉じる",
+        statusBarReviewChangesLabel: "変更を確認",
+        statusBarWorkspaceLabel: "ワークスペースへ",
+        statusBarReviewChangesTitle: "えるモードを閉じてディスクとの差分を開く",
+        statusBarWorkspaceTitle: "えるモードを閉じてワークスペースに戻る",
       }
     : {
         preferenceLabel: "L Mode",
@@ -45,5 +57,9 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
         paletteCommand: "Toggle L Mode",
         exitPillLabel: "Exit L Mode",
         exitPillTitle: "Close L Mode",
+        statusBarReviewChangesLabel: "Review changes",
+        statusBarWorkspaceLabel: "Open workspace",
+        statusBarReviewChangesTitle: "Exit L Mode and open the diff against disk",
+        statusBarWorkspaceTitle: "Exit L Mode and return to the workspace",
       };
 }

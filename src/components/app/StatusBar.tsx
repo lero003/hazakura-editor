@@ -3,6 +3,8 @@ import type {
   EditorTab,
   TextEncoding,
 } from "../../types";
+import type { LModeCopy } from "../../lib/locale";
+import { LModeClasses } from "../../features/editor/lMode";
 
 type StatusBarProps = {
   activeTab: EditorTab | null;
@@ -12,9 +14,13 @@ type StatusBarProps = {
   encodingLabel: string;
   lineEndingAriaLabel: string;
   lineEndingLabel: string;
+  lModeCopy: LModeCopy | null;
   lModeEnabled: boolean;
   onConvertEncoding: (encoding: TextEncoding) => void;
   onConvertLineEnding: (lineEnding: EditableLineEnding) => void;
+  onExitLModeToWorkspace: () => void;
+  onReviewChangesFromLMode: () => void;
+  reviewChangesAvailable: boolean;
   saveAffirmation: boolean;
   saveAffirmationKey: number | null;
   statusText: string;
@@ -28,13 +34,46 @@ export function StatusBar({
   encodingLabel,
   lineEndingAriaLabel,
   lineEndingLabel,
+  lModeCopy,
   lModeEnabled,
   onConvertEncoding,
   onConvertLineEnding,
+  onExitLModeToWorkspace,
+  onReviewChangesFromLMode,
+  reviewChangesAvailable,
   saveAffirmation,
   saveAffirmationKey,
   statusText,
 }: StatusBarProps) {
+  const lModeStatusLinks = lModeEnabled && lModeCopy ? (
+    <span className={LModeClasses.statusLinkGroup}>
+      {reviewChangesAvailable ? (
+        <>
+          <button
+            className={LModeClasses.statusLink}
+            onClick={onReviewChangesFromLMode}
+            title={lModeCopy.statusBarReviewChangesTitle}
+            type="button"
+          >
+            {lModeCopy.statusBarReviewChangesLabel}
+          </button>
+          <span
+            aria-hidden="true"
+            className={LModeClasses.statusLinkDivider}
+          />
+        </>
+      ) : null}
+      <button
+        className={LModeClasses.statusLink}
+        onClick={onExitLModeToWorkspace}
+        title={lModeCopy.statusBarWorkspaceTitle}
+        type="button"
+      >
+        {lModeCopy.statusBarWorkspaceLabel}
+      </button>
+    </span>
+  ) : null;
+
   return (
     <footer className="status-bar">
       <span className="status-bar-segment status-bar-status">
@@ -58,6 +97,7 @@ export function StatusBar({
       <span className="status-bar-segment status-bar-detail" title={detail}>
         {detail}
       </span>
+      {lModeStatusLinks}
       {activeTab && !lModeEnabled ? (
         <span className="status-bar-format-group">
           <label className="status-bar-segment status-bar-format-chip">

@@ -310,6 +310,59 @@
   display: none;
 }
 
+/* --- 2b. Status bar escape hatches ---
+   The pill is the only chrome the user sees in L Mode, so the
+   few "I want to leave L Mode and do X" affordances live
+   inside it as small text-links rather than as a new chrome
+   row. The links stay dim until the user hovers the pill —
+   the L Mode default is 6% opacity, the hover / focus-within
+   state lifts them to ~88% — and they read as paper-warm ink
+   in the cream theme / warm amber in the night theme. The
+   divider is a thin vertical rule that gives the group a
+   quiet separator from the status text without introducing
+   a hard border around the pill. */
+:root[data-l-mode="on"] .l-mode-status-link-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  margin: 0 0.4em 0 0.6em;
+  padding: 0;
+  border-left: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
+  height: 14px;
+}
+
+:root[data-l-mode="on"] .l-mode-status-link {
+  appearance: none;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  font-size: 11px;
+  line-height: 1;
+  color: color-mix(in srgb, var(--accent) 70%, var(--text-muted));
+  text-decoration: none;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  transition: color 120ms ease, text-decoration-color 120ms ease;
+}
+
+:root[data-l-mode="on"] .l-mode-status-link:hover,
+:root[data-l-mode="on"] .l-mode-status-link:focus-visible {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent) 60%, transparent);
+  text-underline-offset: 2px;
+  outline: none;
+}
+
+:root[data-l-mode="on"] .l-mode-status-link-divider {
+  display: inline-block;
+  width: 1px;
+  height: 10px;
+  background: color-mix(in srgb, var(--border) 55%, transparent);
+}
+
 /* --- 3. Page-like typography (magazine feel) ---
    The CodeMirror .cm-content is the editor body. Constrain its
    width, give the lines more room to breathe, and let headings
