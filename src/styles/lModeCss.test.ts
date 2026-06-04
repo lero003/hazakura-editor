@@ -107,24 +107,53 @@ describe("lMode.css", () => {
     );
   });
 
-  it("keeps the paper surface outside the editable content DOM", () => {
-    const paperRule =
+  it("treats the editor background as a flat page, not a framed panel", () => {
+    // v0.11+ design direction: L Mode is a sheet of paper on
+    // a quiet desk, not a screen panel. The previous shape —
+    // a centered `.editor-host::before` rectangle with border
+    // and shadow that stretched edge-to-edge vertically —
+    // read as "screen with a window," and gradients on
+    // `.cm-editor` added to the "screen" feel. The current
+    // shape is a flat warm cream surface (no panel, no
+    // gradient, no border, no shadow), with the prose
+    // centered by the `.cm-content` max-width + margin auto.
+    const editorRule =
       lModeCss.match(
-        /:root\[data-l-mode="on"\] \.editor-host::before\s*{(?<body>[^}]*)}/s,
+        /:root\[data-l-mode="on"\] (?:[^{]*\.)?cm-editor\s*[,{][^{]*\{(?<body>[^}]*)}/s,
       )?.groups?.body ?? "";
     const contentRule =
       lModeCss.match(
         /:root\[data-l-mode="on"\] \.cm-content\s*{(?<body>[^}]*)}/s,
       )?.groups?.body ?? "";
 
+    // No framed "paper" panel. Catches a regression where
+    // the .editor-host::before rectangle comes back.
+    expect(lModeCss).not.toMatch(
+      /:root\[data-l-mode="on"\] \.editor-host::before/,
+    );
+
+    // The editor background is a single flat color, not a
+    // gradient stack. (color-mix is fine, but the rule body
+    // must not declare `background:` with a `linear-gradient`
+    // / `radial-gradient` body — that's the "screen panel"
+    // pattern.) Comments inside the rule body are stripped
+    // first so prose like "no radial / linear gradients"
+    // doesn't trigger a false positive.
+    const editorRuleStripped = stripCssComments(editorRule);
+    expect(editorRuleStripped).not.toMatch(/gradient/);
+    // The body of `.cm-editor` is a single flat `background:`
+    // declaration pointing at one of the surface tokens.
+    expect(editorRule).toMatch(
+      /background:\s*var\(--(?:bg|surface)\)/,
+    );
+
+    // The prose container stays clean — no border, no
+    // shadow, no min-height that would push the body to
+    // fill the screen.
     expect(contentRule).not.toMatch(/background:/);
     expect(contentRule).not.toMatch(/box-shadow:/);
     expect(contentRule).not.toMatch(/border-(left|right):/);
     expect(contentRule).not.toMatch(/min-height:/);
-    expect(lModeCss).toMatch(
-      /:root\[data-l-mode="on"\] \.editor-host::before/,
-    );
-    expect(paperRule).toMatch(/inset:\s*0 auto 0 50%/);
   });
 
   it("does not hide Markdown markers with display none", () => {
