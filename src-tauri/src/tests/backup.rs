@@ -66,3 +66,58 @@ fn auto_backup_rejects_symlinked_backup_directory() {
     let _ = fs::remove_dir_all(dir);
     let _ = fs::remove_dir_all(outside);
 }
+
+#[test]
+fn auto_backup_prune_keeps_only_recent_files() {
+    let dir = unique_test_dir("auto_backup_prune");
+    fs::create_dir_all(&dir).expect("create test dir");
+
+    // Write 5 backups. Each backup filename embeds a
+    // seconds-resolution timestamp, so we need >1s between
+    // writes for the filenames (and therefore the files) to
+    // differ. 1.1s is enough on every supported platform.
+    for index in 0..5 {
+        auto_backup::save_auto_backup(
+            &dir.to_string_lossy(),
+            "note.md",
+            format!("# v{index}\n").as_str(),
+        )
+        .expect("save backup");
+        std::thread::sleep(Duration::from_millis(1100));
+    }
+
+    let backup_dir = dir.join(".hazakura").join("backups").join("note.md");
+
+    let deleted = auto_backup::prune_auto_backups(&dir.to_string_lossy(), "note.md", 2)
+        .expect("prune backups");
+
+    assert_eq!(deleted, 3, "prune should keep the 2 newest of 5");
+    let remaining: Vec<PathBuf> = fs::read_dir(&backup_dir)
+        .expect("read backup dir after prune")
+        .filter_map(|entry| {
+            let entry = entry.ok()?;
+            let path = entry.path();
+            if path.is_file() {
+                Some(path)
+            } else {
+                None
+            }
+        })
+        .collect();
+    assert_eq!(remaining.len(), 2, "prune should leave 2 files behind");
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn auto_backup_prune_returns_zero_when_backup_dir_is_missing() {
+    let dir = unique_test_dir("auto_backup_prune_empty");
+    fs::create_dir_all(&dir).expect("create test dir");
+
+    let deleted = auto_backup::prune_auto_backups(&dir.to_string_lossy(), "missing/note.md", 5)
+        .expect("prune empty dir should be a no-op");
+
+    assert_eq!(deleted, 0);
+
+    let _ = fs::remove_dir_all(dir);
+}

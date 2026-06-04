@@ -36,36 +36,25 @@ pub(crate) fn list_auto_backups(
     relative_file_path: &str,
 ) -> Result<Vec<AutoBackupEntry>, String> {
     let backup_dir = backup_dir_for(workspace_root, relative_file_path)?;
+    let files = collect_backup_files_sorted(&backup_dir)?;
 
-    if !backup_dir.is_dir() {
-        return Ok(Vec::new());
-    }
-
-    let mut entries: Vec<AutoBackupEntry> = fs::read_dir(&backup_dir)
-        .map_err(|err| format!("Cannot list backups: {err}"))?
-        .filter_map(|entry| {
-            let entry = entry.ok()?;
-            let path = entry.path();
-            if !path.is_file() {
-                return None;
-            }
+    Ok(files
+        .into_iter()
+        .filter_map(|(path, modified_at_ms)| {
             let metadata = fs::metadata(&path).ok()?;
-            let name = entry.file_name().to_string_lossy().to_string();
-            let modified_at_ms = modified_ms(&metadata)?;
-            let size = metadata.len();
+            let name = path
+                .file_name()
+                .and_then(|name| name.to_str())
+                .unwrap_or("unnamed")
+                .to_string();
             Some(AutoBackupEntry {
                 path: path.to_string_lossy().to_string(),
                 name,
                 modified_at_ms,
-                size,
+                size: metadata.len(),
             })
         })
-        .collect();
-
-    // Sort by modified time descending (newest first)
-    entries.sort_by(|a, b| b.modified_at_ms.cmp(&a.modified_at_ms));
-
-    Ok(entries)
+        .collect())
 }
 
 /// Read the content of a backup file.
@@ -90,45 +79,45 @@ pub(crate) fn prune_auto_backups(
     keep_count: usize,
 ) -> Result<usize, String> {
     let backup_dir = backup_dir_for(workspace_root, relative_file_path)?;
-
-    if !backup_dir.is_dir() {
-        return Ok(0);
-    }
-
-    let mut files: Vec<PathBuf> = fs::read_dir(&backup_dir)
-        .map_err(|err| format!("Cannot list backups: {err}"))?
-        .filter_map(|entry| {
-            let entry = entry.ok()?;
-            let path = entry.path();
-            if path.is_file() {
-                Some(path)
-            } else {
-                None
-            }
-        })
-        .collect();
-
-    // Sort by modified time descending (newest first)
-    files.sort_by(|a, b| {
-        let a_m = fs::metadata(a)
-            .ok()
-            .and_then(|m| modified_ms(&m))
-            .unwrap_or(0);
-        let b_m = fs::metadata(b)
-            .ok()
-            .and_then(|m| modified_ms(&m))
-            .unwrap_or(0);
-        b_m.cmp(&a_m)
-    });
+    let files = collect_backup_files_sorted(&backup_dir)?;
 
     let mut deleted = 0;
-    for file in files.iter().skip(keep_count) {
-        if fs::remove_file(file).is_ok() {
+    for (path, _) in files.iter().skip(keep_count) {
+        if fs::remove_file(path).is_ok() {
             deleted += 1;
         }
     }
 
     Ok(deleted)
+}
+
+// Walk a backup directory and return each regular file as
+// (path, modified_ms), sorted by modified time descending. A
+// missing or non-directory backup dir is reported as an empty
+// list so callers don't have to special-case it. Pulling the
+// metadata from the `read_dir` entry (rather than a second
+// `fs::metadata` syscall per file) keeps both the list and
+// prune paths on a single stat-per-file budget.
+fn collect_backup_files_sorted(backup_dir: &Path) -> Result<Vec<(PathBuf, u64)>, String> {
+    if !backup_dir.is_dir() {
+        return Ok(Vec::new());
+    }
+
+    let mut files: Vec<(PathBuf, u64)> = fs::read_dir(backup_dir)
+        .map_err(|err| format!("Cannot list backups: {err}"))?
+        .filter_map(|entry| {
+            let entry = entry.ok()?;
+            let metadata = entry.metadata().ok()?;
+            if !metadata.is_file() {
+                return None;
+            }
+            let modified_at_ms = modified_ms(&metadata).unwrap_or(0);
+            Some((entry.path(), modified_at_ms))
+        })
+        .collect();
+
+    files.sort_by(|a, b| b.1.cmp(&a.1));
+    Ok(files)
 }
 
 fn backup_dir_for(workspace_root: &str, relative_file_path: &str) -> Result<PathBuf, String> {
