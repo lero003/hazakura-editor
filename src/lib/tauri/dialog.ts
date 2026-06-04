@@ -33,6 +33,28 @@ export const TEXT_FILE_EXTENSIONS = [
   "tsx",
 ];
 
+// Per-extension filter entries for the save dialog. The native
+// macOS / Windows save dialog renders this as a dropdown the
+// user can pick from, and the OS will append the picked
+// filter's extension to the typed name automatically. Without
+// these entries, every save lands on `.md` because the
+// "Markdown" group is listed first in `TEXT_FILE_FILTERS`.
+//
+// The user's "things the editor can open as text" list: html,
+// css, txt, js, json, yml. The rest of `TEXT_FILE_EXTENSIONS`
+// is still covered by the "Text" group so the dialog can
+// still produce `.ts`, `.toml`, etc. when the user wants.
+const SAVE_AS_TEXT_FILE_FILTERS: { name: string; extensions: string[] }[] = [
+  { name: "Markdown", extensions: ["md", "markdown", "mdown"] },
+  { name: "HTML", extensions: ["html", "htm"] },
+  { name: "CSS", extensions: ["css"] },
+  { name: "JavaScript", extensions: ["js", "jsx", "mjs", "cjs", "ts", "tsx"] },
+  { name: "JSON", extensions: ["json", "jsonl"] },
+  { name: "YAML", extensions: ["yaml", "yml"] },
+  { name: "Text", extensions: ["txt", "text", "log", "toml", "ini", "conf"] },
+  { name: "Data", extensions: ["csv", "tsv", "xml"] },
+];
+
 const TEXT_FILE_FILTERS = [
   {
     name: "Markdown",
@@ -59,7 +81,7 @@ export async function pickNewMarkdownFilePath(
 ): Promise<string | null> {
   const selected = await saveDialog({
     defaultPath: defaultPath ?? "untitled.md",
-    filters: TEXT_FILE_FILTERS,
+    filters: SAVE_AS_TEXT_FILE_FILTERS,
   });
 
   return typeof selected === "string"
@@ -72,7 +94,7 @@ export async function pickSaveAsTextFilePath(
 ): Promise<string | null> {
   const selected = await saveDialog({
     defaultPath: defaultPath ?? "untitled-copy.md",
-    filters: TEXT_FILE_FILTERS,
+    filters: SAVE_AS_TEXT_FILE_FILTERS,
   });
 
   return typeof selected === "string"
