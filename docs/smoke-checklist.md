@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-06-04 (active-smoke refactor)
+Last reviewed: 2026-06-04 (v0.11: auto-backup restore UI, export CSS parity, L Mode Typora-feel rendering)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Review Desk, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -25,6 +25,20 @@ Run these before treating v0.10 as ready to publish:
 10. Confirm code blocks remain readable.
 11. Confirm floating chrome/status text is theme-aware and readable.
 12. Confirm normal mode, Preview, Diff, Review Desk, export, and copy behavior still use Markdown source, not rendered preview content.
+
+## L Mode v0.11 (Typora-feel rendering)
+
+Run when the L Mode extension, the GFM parser base, or the lMode stylesheet changes:
+
+1. Enter L Mode with `Cmd+Shift+L` and confirm `*italic*` shows as italic text (no visible `*`); `**bold**` shows bold; `~~struck~~` shows with a strikethrough.
+2. Confirm `[text](url)` shows as the link text only, in the accent color, with no visible brackets or URL.
+3. Confirm a GFM table renders with a bold header row, body rows, a thin border, and muted pipe separators; the `| --- | --- |` delimiter row is not visible.
+4. Confirm `---` on its own line shows as a horizontal divider line (not as raw `---` text).
+5. Confirm `- [ ]` and `- [x]` list items show as checkbox glyphs (☐ / ☑) instead of the raw marker text.
+6. Click a task-list checkbox and confirm the underlying `[ ]` / `[x]` toggles, the doc is now dirty, and the displayed glyph flips.
+7. Confirm lines that are NOT under the cursor are dimmed (soft focus); the active line stands out at full opacity. The fade transitions smoothly as the cursor moves.
+8. Confirm markers (`#`, `*`, `>`, `-`, etc.) are still revealed on the active line for editing context, and hidden elsewhere.
+9. Confirm toggling L Mode off restores the normal editor (markers visible, no dimming, no inline rendering) and the saved file is byte-identical to the L Mode state.
 
 ## Safe Editor Core
 
@@ -60,8 +74,8 @@ Run when Markdown preview, image assets, export, or authoring helpers change:
 1. Confirm sanitized Markdown preview renders headings, lists, tables, code blocks, blockquotes, task checkboxes, and local workspace asset images.
 2. Confirm external image URLs and unsafe local image paths are blocked.
 3. Paste or drag-drop an image and confirm `assets/<hash>.<ext>` is created and Markdown image syntax is inserted.
-4. Export HTML and confirm local image assets are inlined when expected.
-5. Use Print to PDF handoff and confirm the print-ready layout is readable.
+4. Export HTML and confirm local image assets are inlined and the saved file uses the same preview CSS as the live preview pane (`.markdown-preview` rules, no theme-specific overrides inlined).
+5. Use Print to PDF handoff and confirm the print-ready layout matches what Export HTML produces (serif body, page-break controls, no theme colors leaking into print).
 6. Insert a Markdown table and confirm the app does not imply row/column table editing beyond the implemented helper.
 
 ## Review Desk
@@ -76,6 +90,18 @@ Run when Review Desk or candidate comparison changes:
 6. Confirm active-tab switches, active-buffer edits, and compared-tab close make the preview stale and disable Apply.
 7. Press Apply candidate and confirm the buffer changes, the file remains unsaved, and Save is still explicit.
 8. Confirm close button and shortcut close both reset candidate input, preview, stale banner, and errors.
+
+## Auto-Backup Restore
+
+Run when auto-backup storage, the restore picker, or backup-vs-buffer comparison changes:
+
+1. Open a throwaway workspace and edit a file until at least one auto-backup is written.
+2. Open the picker via the command palette (`Restore from Auto-Backup…`).
+3. Confirm the picker lists backups newest-first with timestamp and size, scoped to the active file.
+4. Select an entry and confirm Review Desk opens with a backup-vs-buffer diff (the live buffer is compared against the selected backup).
+5. Press "Restore this backup" and confirm the buffer is replaced with the backup contents, the tab is marked dirty, and Review Desk closes.
+6. Press `Esc` or the close button and confirm the picker closes without touching the buffer.
+7. Confirm entries that resolve outside the workspace are refused (not loaded, not listed).
 
 ## Agent Workbench
 
