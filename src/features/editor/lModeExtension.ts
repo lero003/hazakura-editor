@@ -111,7 +111,7 @@ export function computeLModeDecorations(
   state: EditorState,
   context: LModeContext = { workspaceRoot: null, documentPath: null },
 ): DecorationSet {
-  const decorations: Range<Decoration>[] = [];
+  const contentDecorations: Range<Decoration>[] = [];
   const tree = syntaxTree(state);
 
   // Reveal Markdown markers only on the active selection
@@ -233,7 +233,7 @@ export function computeLModeDecorations(
             // Outside the workspace — placeholder forever, no read.
             resolvedSrc = null;
           }
-          decorations.push(
+          contentDecorations.push(
             Decoration.replace({
               widget: new LModeImageWidget(rawUrl, resolvedSrc, alt),
             }).range(node.from, node.to),
@@ -250,12 +250,24 @@ export function computeLModeDecorations(
       // hover reveal are purely CSS concerns via
       // `.cm-lmode-source-line`, so style changes cannot change
       // which marker ranges exist.
-      decorations.push(hiddenMarker.range(node.from, node.to));
+      contentDecorations.push(hiddenMarker.range(node.from, node.to));
       // Do not descend into marker children (markers are leaves).
       return false;
     },
   });
 
+  const lineDecorations = buildLineDecorations(state, lineClasses);
+  return Decoration.set(
+    sortDecorations([...lineDecorations, ...contentDecorations]),
+    true,
+  );
+}
+
+function buildLineDecorations(
+  state: EditorState,
+  lineClasses: Map<number, string[]>,
+): Range<Decoration>[] {
+  const decorations: Range<Decoration>[] = [];
   for (const [line, classes] of lineClasses) {
     const lineInfo = state.doc.line(line);
     const lineStart = lineInfo.from;
@@ -264,12 +276,17 @@ export function computeLModeDecorations(
       Decoration.line({ class: className }).range(lineStart, lineStart),
     );
   }
+  return decorations;
+}
 
+function sortDecorations(
+  decorations: Range<Decoration>[],
+): Range<Decoration>[] {
   // Stable sort: range decorations must be in increasing `from`
-  // order for CodeMirror to apply them without warnings.
-  decorations.sort((a, b) => a.from - b.from);
-
-  return Decoration.set(decorations, true);
+  // order for CodeMirror to apply them without warnings. Callers
+  // pass line decorations first, so stable same-position ordering
+  // keeps line classes attached before inline marker marks.
+  return decorations.sort((a, b) => a.from - b.from);
 }
 
 function pushHeadingClass(

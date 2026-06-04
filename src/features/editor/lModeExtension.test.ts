@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { EditorState } from "@codemirror/state";
 import { markdown } from "@codemirror/lang-markdown";
-import type { DecorationSet } from "@codemirror/view";
-import { computeLModeDecorations } from "./lModeExtension";
+import { EditorView, type DecorationSet } from "@codemirror/view";
+import { computeLModeDecorations, lModeExtension } from "./lModeExtension";
 
 // Build an EditorState with the markdown grammar so the syntax
 // tree is populated, and a selection on the line the test wants
@@ -267,6 +267,39 @@ describe("computeLModeDecorations", () => {
     });
     expect(coveringReplaces).toEqual([{ from: imageStart, to: imageEnd }]);
   });
+
+  it("renders source markers on the active EditorView line only", () => {
+    const source = "# Active\n## Quiet\n";
+    const quietLineStart = source.indexOf("Quiet");
+    const parent = document.createElement("div");
+    document.body.append(parent);
+
+    const view = new EditorView({
+      parent,
+      state: EditorState.create({
+        doc: source,
+        extensions: [
+          markdown(),
+          lModeExtension(true, { workspaceRoot: null, documentPath: null }),
+        ],
+        selection: { anchor: source.indexOf("Active") },
+      }),
+    });
+
+    expect(activeLineText(parent)).toContain("Active");
+    expect(activeMarkerCount(parent)).toBeGreaterThanOrEqual(1);
+
+    view.dispatch({ selection: { anchor: quietLineStart } });
+
+    expect(activeLineText(parent)).toContain("Quiet");
+    expect(activeMarkerCount(parent)).toBeGreaterThanOrEqual(1);
+    expect(parent.querySelectorAll(".cm-lmode-hidden").length).toBeGreaterThanOrEqual(
+      2,
+    );
+
+    view.destroy();
+    parent.remove();
+  });
 });
 
 // Count how many of the two `>` positions of a multi-line
@@ -322,4 +355,16 @@ function hasLineClass(
     }
   });
   return found;
+}
+
+function activeLineText(parent: HTMLElement): string {
+  return parent.querySelector(".cm-lmode-source-line")?.textContent ?? "";
+}
+
+function activeMarkerCount(parent: HTMLElement): number {
+  return (
+    parent
+      .querySelector(".cm-lmode-source-line")
+      ?.querySelectorAll(".cm-lmode-hidden").length ?? 0
+  );
 }
