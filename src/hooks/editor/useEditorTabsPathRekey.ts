@@ -7,11 +7,12 @@
 // the old path; doing it once here keeps the rename and move code
 // paths from drifting.
 //
-// Descendant rekey (renaming a folder while one of its descendants
-// is open as a tab) is intentionally out of scope for the v0.9
-// slice: rename of a file is single-entry, and move of a folder
-// is not exposed yet. When folder move is added, this helper
-// grows a `prefixRemap` mode that walks every store.
+// `rekeyPath` handles single-entry path swaps (file rename, file
+// move). `rekeyPathPrefix` walks every store and remaps any path
+// that lives under `oldPrefix` to its counterpart under
+// `newPrefix`, so renaming or moving a folder keeps the
+// descendants' tabs / drafts / recents / compare anchors
+// consistent instead of pointing them at the old folder.
 import {
   type Dispatch,
   type SetStateAction,
@@ -113,7 +114,91 @@ export function useEditorTabsPathRekey({
     ],
   );
 
-  return { rekeyPath };
+  const rekeyPathPrefix = useCallback(
+    (oldPrefix: string, newPrefix: string) => {
+      // Match `<oldPrefix>/<rest>`. Anchoring on the trailing
+      // slash avoids accidentally rewriting sibling paths that
+      // happen to share a prefix string but not a folder
+      // boundary (e.g. `notes-old` when the prefix is `notes`).
+      const oldPrefixWithSlash = `${oldPrefix}/`;
+      const remap = (path: string) =>
+        path.startsWith(oldPrefixWithSlash)
+          ? newPrefix + path.slice(oldPrefix.length)
+          : path;
+      const remappedName = (path: string) => fileNameFromPath(path);
+
+      setTabs((currentTabs) =>
+        currentTabs.map((tab) => {
+          if (!tab.id.startsWith(oldPrefixWithSlash)) {
+            return tab;
+          }
+          const newPath = remap(tab.path);
+          return {
+            ...tab,
+            id: newPath,
+            path: newPath,
+            name: remappedName(newPath),
+          };
+        }),
+      );
+
+      setActiveTabId((current) =>
+        current && current.startsWith(oldPrefixWithSlash)
+          ? remap(current)
+          : current,
+      );
+
+      setPendingDrafts((currentDrafts) =>
+        currentDrafts.map((draft) => {
+          if (!draft.path.startsWith(oldPrefixWithSlash)) {
+            return draft;
+          }
+          return { ...draft, path: remap(draft.path) };
+        }),
+      );
+
+      setRecentFiles((currentEntries) =>
+        currentEntries.map((entry) => {
+          if (!entry.path.startsWith(oldPrefixWithSlash)) {
+            return entry;
+          }
+          const newPath = remap(entry.path);
+          return { ...entry, path: newPath, label: remappedName(newPath) };
+        }),
+      );
+
+      setCompareAnchor((current) => {
+        if (!current || !current.path.startsWith(oldPrefixWithSlash)) {
+          return current;
+        }
+        const newPath = remap(current.path);
+        return { ...current, path: newPath, name: remappedName(newPath) };
+      });
+      setCompareTarget((current) => {
+        if (!current || !current.path.startsWith(oldPrefixWithSlash)) {
+          return current;
+        }
+        const newPath = remap(current.path);
+        return { ...current, path: newPath, name: remappedName(newPath) };
+      });
+      setCompareView((current) => {
+        if (!current) return current;
+        if (!caseKeyMentionsPath(current.caseKey, oldPrefix)) return current;
+        return null;
+      });
+    },
+    [
+      setActiveTabId,
+      setCompareAnchor,
+      setCompareTarget,
+      setCompareView,
+      setPendingDrafts,
+      setRecentFiles,
+      setTabs,
+    ],
+  );
+
+  return { rekeyPath, rekeyPathPrefix };
 }
 
 // Best-effort: matches a path as a substring inside a caseKey.

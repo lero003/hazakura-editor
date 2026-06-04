@@ -116,7 +116,7 @@ fn collect_backup_files_sorted(backup_dir: &Path) -> Result<Vec<(PathBuf, u64)>,
         })
         .collect();
 
-    files.sort_by(|a, b| b.1.cmp(&a.1));
+    files.sort_by_key(|entry| std::cmp::Reverse(entry.1));
     Ok(files)
 }
 
@@ -182,6 +182,51 @@ pub(crate) fn remove_auto_backup_dir(
         return Ok(());
     }
     fs::remove_dir_all(&dir).map_err(|err| format!("Cannot remove backup dir: {err}"))
+}
+
+/// Walk every backup directory under
+/// `<workspace>/.hazakura/backups/<old_prefix>/` and rekey it
+/// to its counterpart under `<workspace>/.hazakura/backups/<new_prefix>/`.
+/// No-op if the source backup tree is missing or empty. Used by
+/// folder rename / move so every descendant's backup dir
+/// follows the new folder location. The empty source dir is
+/// cleaned up after the fan-out so the workspace's
+/// `.hazakura/backups/` tree mirrors the actual workspace.
+pub(crate) fn rekey_auto_backup_tree(
+    workspace_root: &str,
+    old_prefix: &str,
+    new_prefix: &str,
+) -> Result<(), String> {
+    let old_root = backup_dir_for(workspace_root, old_prefix)?;
+    if !old_root.is_dir() {
+        return Ok(());
+    }
+
+    let entries: Vec<PathBuf> = fs::read_dir(&old_root)
+        .map_err(|err| format!("Cannot list backup tree root: {err}"))?
+        .filter_map(|entry| {
+            let entry = entry.ok()?;
+            let path = entry.path();
+            if path.is_dir() {
+                Some(path)
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    for entry_dir in entries {
+        let name = entry_dir
+            .file_name()
+            .and_then(|name| name.to_str())
+            .ok_or_else(|| "Backup tree entry has an invalid name.".to_string())?;
+        let old_relative = format!("{old_prefix}/{name}");
+        let new_relative = format!("{new_prefix}/{name}");
+        rekey_auto_backup_dir(workspace_root, &old_relative, &new_relative)?;
+    }
+
+    let _ = fs::remove_dir(&old_root);
+    Ok(())
 }
 
 fn safe_relative_file_path(relative_file_path: &str) -> Result<PathBuf, String> {

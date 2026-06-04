@@ -265,25 +265,42 @@ pub(crate) fn rename_workspace_entry_util(
     }
 
     let src_was_file = src_canon.is_file();
+    let src_was_dir = src_canon.is_dir();
 
     fs::rename(src, dst).map_err(|err| format!("Cannot rename entry: {err}"))?;
 
-    // Rekey the auto-backup dir for a single-file rename or
-    // move. Folder descendants are out of scope here; the
-    // folder rekey lane fans out to every descendant's backup
-    // dir separately. Any error here is surfaced to the caller
-    // — the file has already moved, so the failure mode is a
-    // stale backup dir that the retention prune will clean
-    // up over time, not a lost user file.
-    if src_was_file {
-        if let (Ok(old_rel), Ok(new_rel)) = (
+    // Rekey the auto-backup dir(s) so the captured
+    // `.{ts}_{name}.bak` files follow the rename. Single-file
+    // rekey only moves the one file's backup dir; folder
+    // rekey fans out to every descendant so the backup tree
+    // mirrors the new workspace layout. Any error here is
+    // surfaced to the caller — the file or folder has already
+    // moved, so the failure mode is a stale backup dir that
+    // the retention prune will clean up over time, not a
+    // lost user file.
+    let relative_paths = if src_was_file || src_was_dir {
+        match (
             src_canon.strip_prefix(&canonical_root),
             dst_canon.strip_prefix(&canonical_root),
         ) {
-            crate::auto_backup::rekey_auto_backup_dir(
+            (Ok(old_rel), Ok(new_rel)) => Some((
+                old_rel.to_string_lossy().into_owned(),
+                new_rel.to_string_lossy().into_owned(),
+            )),
+            _ => None,
+        }
+    } else {
+        None
+    };
+
+    if let Some((old_rel, new_rel)) = relative_paths {
+        if src_was_file {
+            crate::auto_backup::rekey_auto_backup_dir(&root.to_string_lossy(), &old_rel, &new_rel)?;
+        } else if src_was_dir {
+            crate::auto_backup::rekey_auto_backup_tree(
                 &root.to_string_lossy(),
-                &old_rel.to_string_lossy(),
-                &new_rel.to_string_lossy(),
+                &old_rel,
+                &new_rel,
             )?;
         }
     }

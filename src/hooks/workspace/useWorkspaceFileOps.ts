@@ -106,7 +106,7 @@ export function useWorkspaceFileOps({
   const [pendingTrash, setPendingTrash] = useState<PendingTrash | null>(null);
   const [renamingPath, setRenamingPath] = useState<string | null>(null);
 
-  const { rekeyPath } = useEditorTabsPathRekey({
+  const { rekeyPath, rekeyPathPrefix } = useEditorTabsPathRekey({
     setActiveTabId,
     setCompareAnchor,
     setCompareTarget,
@@ -277,7 +277,14 @@ export function useWorkspaceFileOps({
 
       try {
         await renameWorkspaceEntry(srcPath, newPath, workspaceRootPath);
+        // File-level rekey is a no-op when the entry was a
+        // folder (no tab/draft/recent has the folder path
+        // itself), and the prefix rekey is a no-op when the
+        // entry was a single file (no descendant paths
+        // survived the file rename). Call both so folder
+        // descendants follow the rename into the new folder.
         rekeyPath(srcPath, newPath);
+        rekeyPathPrefix(srcPath, newPath);
         setRenamingPath(null);
         try {
           await reloadWorkspaceParent(parentPath);
@@ -293,6 +300,7 @@ export function useWorkspaceFileOps({
     },
     [
       rekeyPath,
+      rekeyPathPrefix,
       reloadWorkspaceParent,
       setGlobalError,
       setStatus,
@@ -408,6 +416,7 @@ export function useWorkspaceFileOps({
       try {
         await moveWorkspaceEntry(srcPath, newPath, workspaceRootPath);
         rekeyPath(srcPath, newPath);
+        rekeyPathPrefix(srcPath, newPath);
         // Refresh both parents (source + destination) so the
         // move is visible from both sides of the tree.
         try {
@@ -428,6 +437,7 @@ export function useWorkspaceFileOps({
     [
       reloadWorkspaceParent,
       rekeyPath,
+      rekeyPathPrefix,
       setGlobalError,
       setStatus,
       workspaceRootPath,

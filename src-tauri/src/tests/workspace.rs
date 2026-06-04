@@ -568,6 +568,53 @@ fn move_workspace_entry_to_trash_clears_auto_backup_dir() {
 }
 
 #[test]
+fn rename_workspace_entry_rekeys_descendant_auto_backup_tree() {
+    let root = unique_test_dir("rename_folder_rekey_backup");
+    fs::create_dir_all(&root).expect("create root");
+    let src_folder = root.join("notes");
+    fs::create_dir_all(&src_folder).expect("create notes folder");
+    let dst_folder = root.join("archive");
+    fs::write(src_folder.join("today.md"), "# today\n").expect("write today");
+    fs::write(src_folder.join("tomorrow.md"), "# tomorrow\n").expect("write tomorrow");
+
+    crate::auto_backup::save_auto_backup(&root.to_string_lossy(), "notes/today.md", "# v1\n")
+        .expect("save today backup");
+    crate::auto_backup::save_auto_backup(&root.to_string_lossy(), "notes/tomorrow.md", "# v1\n")
+        .expect("save tomorrow backup");
+
+    rename_workspace_entry_with_label(
+        MAIN_WINDOW_LABEL,
+        &src_folder.to_string_lossy(),
+        &dst_folder.to_string_lossy(),
+        &root.to_string_lossy(),
+    )
+    .expect("rename folder should rekey descendant backup tree");
+
+    let old_tree_root = root.join(".hazakura").join("backups").join("notes");
+    assert!(
+        !old_tree_root.exists(),
+        "old backup tree root should be gone after folder rename"
+    );
+    let new_today = root
+        .join(".hazakura")
+        .join("backups")
+        .join("archive")
+        .join("today.md");
+    let new_tomorrow = root
+        .join(".hazakura")
+        .join("backups")
+        .join("archive")
+        .join("tomorrow.md");
+    assert!(new_today.is_dir(), "today backup should follow the folder");
+    assert!(
+        new_tomorrow.is_dir(),
+        "tomorrow backup should follow the folder"
+    );
+
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
 fn rename_workspace_entry_handles_case_only_rename() {
     let root = unique_test_dir("rename_case_only");
     fs::create_dir_all(&root).expect("create root");

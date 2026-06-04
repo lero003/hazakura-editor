@@ -238,3 +238,50 @@ fn auto_backup_remove_is_noop_when_missing() {
 
     let _ = fs::remove_dir_all(dir);
 }
+
+#[test]
+fn auto_backup_tree_rekey_moves_every_descendant() {
+    let dir = unique_test_dir("auto_backup_tree_rekey");
+    fs::create_dir_all(&dir).expect("create test dir");
+
+    auto_backup::save_auto_backup(&dir.to_string_lossy(), "notes/today.md", "# today\n")
+        .expect("save today");
+    auto_backup::save_auto_backup(&dir.to_string_lossy(), "notes/tomorrow.md", "# tomorrow\n")
+        .expect("save tomorrow");
+
+    let old_notes_root = dir.join(".hazakura").join("backups").join("notes");
+    assert!(old_notes_root.is_dir());
+
+    auto_backup::rekey_auto_backup_tree(&dir.to_string_lossy(), "notes", "archive")
+        .expect("rekey backup tree");
+
+    let new_archive_root = dir.join(".hazakura").join("backups").join("archive");
+    assert!(new_archive_root.is_dir());
+    assert!(
+        !old_notes_root.exists(),
+        "old backup root should be cleaned up after tree rekey"
+    );
+
+    let today = auto_backup::list_auto_backups(&dir.to_string_lossy(), "archive/today.md")
+        .expect("list archive/today");
+    let tomorrow = auto_backup::list_auto_backups(&dir.to_string_lossy(), "archive/tomorrow.md")
+        .expect("list archive/tomorrow");
+    assert_eq!(today.len(), 1);
+    assert_eq!(tomorrow.len(), 1);
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn auto_backup_tree_rekey_is_noop_when_source_tree_missing() {
+    let dir = unique_test_dir("auto_backup_tree_rekey_missing");
+    fs::create_dir_all(&dir).expect("create test dir");
+
+    auto_backup::rekey_auto_backup_tree(&dir.to_string_lossy(), "missing", "renamed")
+        .expect("rekey on missing tree should be a no-op");
+
+    let new_root = dir.join(".hazakura").join("backups").join("renamed");
+    assert!(!new_root.exists());
+
+    let _ = fs::remove_dir_all(dir);
+}

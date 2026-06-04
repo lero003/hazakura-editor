@@ -182,6 +182,161 @@ describe("useEditorTabsPathRekey", () => {
     expect(update(referenced)).toBe(null);
     expect(update(null)).toBe(null);
   });
+
+  it("returns a rekeyPathPrefix helper", () => {
+    const { result } = renderHook(() => useEditorTabsPathRekey(makeOptions()));
+    expect(result.current).toHaveProperty("rekeyPathPrefix");
+  });
+
+  it("rewrites descendant tab id/path/name on prefix rekey", () => {
+    const setTabs = vi.fn();
+    const { result } = renderHook(() =>
+      useEditorTabsPathRekey(makeOptions({ setTabs })),
+    );
+
+    act(() => {
+      result.current.rekeyPathPrefix("/root/notes", "/root/archive");
+    });
+
+    const inside = makeTab("/root/notes/today.md", "today.md");
+    const outside = makeTab("/root/other/today.md", "today.md");
+    const sibling = makeTab("/root/notes-old/today.md", "today.md");
+    const update = setTabs.mock.calls[0][0] as (
+      current: EditorTab[],
+    ) => EditorTab[];
+
+    const next = update([inside, outside, sibling]);
+
+    expect(next[0]).toMatchObject({
+      id: "/root/archive/today.md",
+      path: "/root/archive/today.md",
+      name: "today.md",
+    });
+    // Outside the renamed folder stays put.
+    expect(next[1]).toBe(outside);
+    // `notes-old` shares a string prefix with `notes` but is a
+    // different folder; the trailing-slash anchor must skip it.
+    expect(next[2]).toBe(sibling);
+  });
+
+  it("rewrites activeTabId only when it lives under the rekeyed folder", () => {
+    const setActiveTabId = vi.fn();
+    const { result } = renderHook(() =>
+      useEditorTabsPathRekey(makeOptions({ setActiveTabId })),
+    );
+
+    act(() => {
+      result.current.rekeyPathPrefix("/root/notes", "/root/archive");
+    });
+
+    const update = setActiveTabId.mock.calls[0][0] as (
+      current: string | null,
+    ) => string | null;
+    expect(update("/root/notes/today.md")).toBe("/root/archive/today.md");
+    expect(update("/root/other/today.md")).toBe("/root/other/today.md");
+    expect(update("/root/notes-old/today.md")).toBe("/root/notes-old/today.md");
+    expect(update(null)).toBe(null);
+  });
+
+  it("rewrites descendant drafts and recents on prefix rekey", () => {
+    const setPendingDrafts = vi.fn();
+    const setRecentFiles = vi.fn();
+    const { result } = renderHook(() =>
+      useEditorTabsPathRekey(
+        makeOptions({ setPendingDrafts, setRecentFiles }),
+      ),
+    );
+
+    act(() => {
+      result.current.rekeyPathPrefix("/root/notes", "/root/archive");
+    });
+
+    const draftUpdate = setPendingDrafts.mock.calls[0][0] as (
+      current: DraftRecord[],
+    ) => DraftRecord[];
+    const draftNext = draftUpdate([
+      { path: "/root/notes/today.md", contents: "x", line_ending: "lf", savedFingerprint: "fp", updatedAt: 0 },
+      { path: "/root/other/today.md", contents: "y", line_ending: "lf", savedFingerprint: "fp", updatedAt: 0 },
+    ]);
+    expect(draftNext[0].path).toBe("/root/archive/today.md");
+    expect(draftNext[1].path).toBe("/root/other/today.md");
+
+    const recentUpdate = setRecentFiles.mock.calls[0][0] as (
+      current: RecentEntry[],
+    ) => RecentEntry[];
+    const recentNext = recentUpdate([
+      { path: "/root/notes/today.md", label: "today.md", openedAt: 0, pinnedAt: null },
+      { path: "/root/notes-old/today.md", label: "today.md", openedAt: 0, pinnedAt: null },
+    ]);
+    expect(recentNext[0].path).toBe("/root/archive/today.md");
+    expect(recentNext[0].label).toBe("today.md");
+    // Sibling-prefix match must not be rewritten.
+    expect(recentNext[1].path).toBe("/root/notes-old/today.md");
+  });
+
+  it("rewrites compare anchor/target only for descendants of the rekeyed folder", () => {
+    const setCompareAnchor = vi.fn();
+    const setCompareTarget = vi.fn();
+    const { result } = renderHook(() =>
+      useEditorTabsPathRekey(
+        makeOptions({ setCompareAnchor, setCompareTarget }),
+      ),
+    );
+
+    act(() => {
+      result.current.rekeyPathPrefix("/root/notes", "/root/archive");
+    });
+
+    const anchorUpdate = setCompareAnchor.mock.calls[0][0] as (
+      current: CompareAnchor | null,
+    ) => CompareAnchor | null;
+    expect(
+      anchorUpdate({ path: "/root/notes/today.md", name: "today.md" }),
+    ).toEqual({ path: "/root/archive/today.md", name: "today.md" });
+    expect(
+      anchorUpdate({ path: "/root/other/today.md", name: "today.md" }),
+    ).toEqual({ path: "/root/other/today.md", name: "today.md" });
+    expect(anchorUpdate(null)).toBe(null);
+
+    const targetUpdate = setCompareTarget.mock.calls[0][0] as (
+      current: CompareAnchor | null,
+    ) => CompareAnchor | null;
+    expect(
+      targetUpdate({ path: "/root/notes/today.md", name: "today.md" }),
+    ).toEqual({ path: "/root/archive/today.md", name: "today.md" });
+  });
+
+  it("clears compareView when its caseKey references the rekeyed folder", () => {
+    const setCompareView = vi.fn();
+    const { result } = renderHook(() =>
+      useEditorTabsPathRekey(makeOptions({ setCompareView })),
+    );
+
+    act(() => {
+      result.current.rekeyPathPrefix("/root/notes", "/root/archive");
+    });
+
+    const update = setCompareView.mock.calls[0][0] as (
+      current: CompareViewState | null,
+    ) => CompareViewState | null;
+    expect(
+      update({
+        caseKey: "file:/root/notes/today.md::/root/other.md",
+        lines: [],
+        additions: 0,
+        removals: 0,
+      }),
+    ).toBe(null);
+    expect(
+      update({
+        caseKey: "file:/root/other.md::/root/different.md",
+        lines: [],
+        additions: 0,
+        removals: 0,
+      }),
+    ).toMatchObject({ caseKey: "file:/root/other.md::/root/different.md" });
+    expect(update(null)).toBe(null);
+  });
 });
 
 // `setTabs` was already consumed by the rekey invocation; the
