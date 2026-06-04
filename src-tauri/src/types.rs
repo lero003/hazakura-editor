@@ -73,6 +73,7 @@ pub(crate) const MENU_EXPORT_HTML: &str = "export-html";
 pub(crate) const MENU_EXPORT_PDF: &str = "export-pdf";
 pub(crate) const MENU_TOGGLE_PREVIEW: &str = "toggle-preview";
 pub(crate) const MENU_TOGGLE_REVIEW_DESK: &str = "toggle-review-desk";
+pub(crate) const MENU_TOGGLE_L_MODE: &str = "toggle-l-mode";
 pub(crate) const MENU_TOGGLE_WRAP: &str = "toggle-wrap";
 pub(crate) const MENU_TOGGLE_INVISIBLES: &str = "toggle-invisibles";
 pub(crate) const MENU_TOGGLE_SPELLCHECK: &str = "toggle-spellcheck";
@@ -345,6 +346,7 @@ pub(crate) struct AppMenuState {
     pub(crate) wrap_lines: bool,
     pub(crate) show_invisibles: bool,
     pub(crate) spellcheck_enabled: bool,
+    pub(crate) l_mode_enabled: bool,
     pub(crate) theme_preference: String,
     pub(crate) menu_language: String,
     pub(crate) recent_files: Vec<AppMenuRecentItem>,

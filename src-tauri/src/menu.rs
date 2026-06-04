@@ -24,6 +24,7 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
     let wrap_lines = state.map(|state| state.wrap_lines).unwrap_or(true);
     let show_invisibles = state.map(|state| state.show_invisibles).unwrap_or(false);
     let spellcheck_enabled = state.map(|state| state.spellcheck_enabled).unwrap_or(true);
+    let l_mode_enabled = state.map(|state| state.l_mode_enabled).unwrap_or(false);
     let agent_workbench_active = state
         .map(|state| state.agent_workbench_active)
         .unwrap_or(false);
@@ -180,6 +181,15 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
                 label("Open Agent Window", "Agent ウィンドウを開く"),
                 agent_window_enabled,
                 None::<&str>,
+            )?,
+            &PredefinedMenuItem::separator(app)?,
+            &CheckMenuItem::with_id(
+                app,
+                MENU_TOGGLE_L_MODE,
+                label("L Mode", "えるモード"),
+                true,
+                l_mode_enabled,
+                Some("CmdOrCtrl+Shift+L"),
             )?,
             &CheckMenuItem::with_id(
                 app,
@@ -416,6 +426,7 @@ fn kana_menu_label(japanese: &'static str) -> Option<&'static str> {
         "表示" => "ながめ",
         "プレビュー" => "したみ",
         "レビューデスク" => "れびゅーのつくゑ",
+        "えるモード" => "えるもーど",
         "Agent ウィンドウを開く" => "えーじぇんとまどをひらく",
         "行を折り返す" => "くだりををる",
         "不可視文字を表示" => "みえぬもじをあらはす",
@@ -519,6 +530,7 @@ pub(crate) fn emit_app_menu_event<R: tauri::Runtime>(
                 | MENU_CLOSE_WINDOW
                 | MENU_TOGGLE_PREVIEW
                 | MENU_TOGGLE_REVIEW_DESK
+                | MENU_TOGGLE_L_MODE
                 | MENU_TOGGLE_WRAP
                 | MENU_TOGGLE_INVISIBLES
                 | MENU_TOGGLE_SPELLCHECK

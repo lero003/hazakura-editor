@@ -13,6 +13,7 @@ export type AppMenuState = {
   wrapLines: boolean;
   showInvisibles: boolean;
   spellcheckEnabled: boolean;
+  lModeEnabled: boolean;
   themePreference: ThemePreference;
   menuLanguage: MenuLanguage;
   recentFiles: AppMenuRecentItem[];

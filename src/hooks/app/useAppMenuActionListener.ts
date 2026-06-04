@@ -134,6 +134,12 @@ export function useAppMenuActionListener({
             spellcheckEnabled: !current.spellcheckEnabled,
           }));
           break;
+        case "toggle-l-mode":
+          setEditorSettings((current) => ({
+            ...current,
+            lModeEnabled: !current.lModeEnabled,
+          }));
+          break;
         case "theme-light":
           setThemePreference("light");
           break;

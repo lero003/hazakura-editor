@@ -15,7 +15,7 @@ type UseAppMenuStateSyncOptions = {
   agentWorkbenchConsent: boolean;
   editorSettings: Pick<
     EditorSettings,
-    "showInvisibles" | "spellcheckEnabled" | "wrapLines"
+    "lModeEnabled" | "showInvisibles" | "spellcheckEnabled" | "wrapLines"
   >;
   menuLanguage: MenuLanguage;
   previewVisible: boolean;
@@ -55,6 +55,7 @@ export function useAppMenuStateSync({
       wrapLines: editorSettings.wrapLines,
       showInvisibles: editorSettings.showInvisibles,
       spellcheckEnabled: editorSettings.spellcheckEnabled,
+      lModeEnabled: editorSettings.lModeEnabled,
       themePreference,
       menuLanguage,
       recentFiles: menuRecentFiles,
@@ -69,6 +70,7 @@ export function useAppMenuStateSync({
     activeTab,
     agentWorkbenchActive,
     agentWorkbenchConsent,
+    editorSettings.lModeEnabled,
     editorSettings.showInvisibles,
     editorSettings.spellcheckEnabled,
     editorSettings.wrapLines,
