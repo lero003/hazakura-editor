@@ -117,10 +117,16 @@ describe("lMode.css", () => {
     expect(hiddenMarkerRule).not.toMatch(/display:\s*none/);
   });
 
-  it("reveals hidden Markdown markers when the user hovers a line", () => {
+  it("reveals hidden Markdown markers on the active or hovered line", () => {
+    expect(lModeCss).toMatch(
+      /:root\[data-l-mode="on"\] \.cm-lmode-source-line \.cm-lmode-hidden/,
+    );
+    expect(lModeCss).toMatch(
+      /:root\[data-l-mode="on"\] \.cm-line:hover \.cm-lmode-hidden/,
+    );
     const hoverMarkerRule =
       lModeCss.match(
-        /:root\[data-l-mode="on"\] \.cm-line:hover \.cm-lmode-hidden\s*{(?<body>[^}]*)}/s,
+        /:root\[data-l-mode="on"\] \.cm-lmode-source-line \.cm-lmode-hidden,\s*:root\[data-l-mode="on"\] \.cm-line:hover \.cm-lmode-hidden\s*{(?<body>[^}]*)}/s,
       )?.groups?.body ?? "";
 
     expect(hoverMarkerRule).toMatch(/font-size:\s*inherit/);

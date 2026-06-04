@@ -83,42 +83,31 @@ describe("computeLModeDecorations", () => {
     expect(ranges.length).toBeGreaterThanOrEqual(6);
   });
 
-  it("does NOT hide markers on the active line", () => {
-    // The cursor reveals Markdown source only on the active
-    // line. This keeps L Mode visually quiet while preserving
-    // editability where the user is currently working.
+  it("keeps marker ranges stable and marks the active line for CSS reveal", () => {
+    // The extension always emits the same hidden marker ranges.
+    // CSS decides whether the active line reveals those markers
+    // through the `cm-lmode-source-line` line decoration.
     const source = "# Hello **world**\n> quoted line\n";
     const docLength = source.length;
+    const blockquoteLineStart = "# Hello **world**\n".length;
 
-    // Cursor in the heading (line 1). The heading line's
-    // markers are revealed. The blockquote's QuoteMark stays
-    // hidden.
-    const inHeading = collectRanges(
-      computeLModeDecorations(makeState(source, 0)),
-      docLength,
+    const onHeading = computeLModeDecorations(makeState(source, 0));
+    const onBlockquote = computeLModeDecorations(
+      makeState(source, blockquoteLineStart),
+    );
+    const allHidden = computeLModeDecorations(makeState(source, docLength));
+
+    expect(hiddenMarkerRangeCount(onHeading)).toBe(
+      hiddenMarkerRangeCount(allHidden),
+    );
+    expect(hiddenMarkerRangeCount(onBlockquote)).toBe(
+      hiddenMarkerRangeCount(allHidden),
     );
 
-    // Cursor in the blockquote (line 2). That line's QuoteMark
-    // is revealed. The heading markers stay hidden.
-    const inBlockquote = collectRanges(
-      computeLModeDecorations(
-        makeState(source, "# Hello **world**\n".length),
-      ),
-      docLength,
-    );
-
-    // Cursor past EOF (line 3, an empty trailing line). There
-    // are no markers on the active line, so every marker in the
-    // doc is hidden.
-    const allHidden = collectRanges(
-      computeLModeDecorations(makeState(source, docLength)),
-      docLength,
-    );
-
-    // Both reveals must be strictly smaller than the
-    // all-hidden baseline.
-    expect(inHeading.length).toBeLessThan(allHidden.length);
-    expect(inBlockquote.length).toBeLessThan(allHidden.length);
+    expect(hasLineClass(onHeading, 0, "cm-lmode-source-line")).toBe(true);
+    expect(
+      hasLineClass(onBlockquote, blockquoteLineStart, "cm-lmode-source-line"),
+    ).toBe(true);
   });
 
   it("reveals only the active line's `>` in a multi-line blockquote", () => {
@@ -130,13 +119,15 @@ describe("computeLModeDecorations", () => {
     const bqLine1 = source.indexOf("> quote line 1");
     const bqLine2 = source.indexOf("> quote line 2");
 
-    // The two QuoteMarks are at known positions. With the
-    // cursor on line 3 of the blockquote, only that line's
-    // marker is revealed.
+    // The two QuoteMarks are at known positions. Hidden marker
+    // ranges remain stable; active-line reveal is expressed as
+    // a separate line class for CSS.
     const onBqLine1 = computeLModeDecorations(makeState(source, bqLine1));
     const onBqLine2 = computeLModeDecorations(makeState(source, bqLine2));
-    expect(bqHiddenOn(onBqLine1, bqLine1, bqLine2)).toBe(1);
-    expect(bqHiddenOn(onBqLine2, bqLine1, bqLine2)).toBe(1);
+    expect(bqHiddenOn(onBqLine1, bqLine1, bqLine2)).toBe(2);
+    expect(bqHiddenOn(onBqLine2, bqLine1, bqLine2)).toBe(2);
+    expect(hasLineClass(onBqLine1, bqLine1, "cm-lmode-source-line")).toBe(true);
+    expect(hasLineClass(onBqLine2, bqLine2, "cm-lmode-source-line")).toBe(true);
 
     // And with the cursor on the heading, both QuoteMarks are
     // hidden because neither blockquote line is active.
@@ -159,14 +150,16 @@ describe("computeLModeDecorations", () => {
     const item1Dash = 0; // first `-` is at position 0
     const item2Dash = source.indexOf("- b"); // second `-`
 
-    // Cursor in item 1: item 1's marker is revealed, item 2's
-    // is hidden. So exactly 1 of the 2 ListMarks is hidden.
+    // Cursor in item 1: both markers still get stable hidden
+    // ranges, while item 1's line gets the CSS reveal class.
     const onItem1 = computeLModeDecorations(makeState(source, 1));
-    expect(listMarkHiddenCount(onItem1, item1Dash, item2Dash)).toBe(1);
+    expect(listMarkHiddenCount(onItem1, item1Dash, item2Dash)).toBe(2);
+    expect(hasLineClass(onItem1, item1Dash, "cm-lmode-source-line")).toBe(true);
 
     // Cursor in item 2: symmetric.
     const onItem2 = computeLModeDecorations(makeState(source, item2Dash));
-    expect(listMarkHiddenCount(onItem2, item1Dash, item2Dash)).toBe(1);
+    expect(listMarkHiddenCount(onItem2, item1Dash, item2Dash)).toBe(2);
+    expect(hasLineClass(onItem2, item2Dash, "cm-lmode-source-line")).toBe(true);
 
     // All-hidden baseline: both markers are hidden.
     const allHidden = computeLModeDecorations(
@@ -304,4 +297,29 @@ function listMarkHiddenCount(
     }
   });
   return count;
+}
+
+function hiddenMarkerRangeCount(set: DecorationSet): number {
+  let count = 0;
+  set.between(0, Number.MAX_SAFE_INTEGER, (from, to) => {
+    if (to > from) {
+      count += 1;
+    }
+  });
+  return count;
+}
+
+function hasLineClass(
+  set: DecorationSet,
+  position: number,
+  className: string,
+): boolean {
+  let found = false;
+  set.between(position, position, (from, to, value) => {
+    const spec = value.spec as { class?: string } | undefined;
+    if (from === position && to === position && spec?.class?.includes(className)) {
+      found = true;
+    }
+  });
+  return found;
 }

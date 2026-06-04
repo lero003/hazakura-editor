@@ -1,12 +1,12 @@
 // L Mode (えるモード) — Markdown marker suppression extension.
 //
 // This is the v0.9 display-only decoration engine for L Mode.
-// It hides Markdown marker characters (`#`, `*`, `_`, `>`,
-// `-`, backticks, link brackets, etc.) in *inactive* lines
-// so the document reads closer to prose. The active line is
-// always revealed so the user can still see what they are
-// editing. In v0.9+ it also replaces `Image` nodes with the
-// L Mode image widget (see `lModeImageWidget.ts`).
+// It marks Markdown marker characters (`#`, `*`, `_`, `>`,
+// `-`, backticks, link brackets, etc.) as visually hidden so
+// the document reads closer to prose. Active and hovered lines
+// receive a CSS reveal path so the user can still see what
+// they are editing. In v0.9+ it also replaces `Image` nodes
+// with the L Mode image widget (see `lModeImageWidget.ts`).
 //
 // CRITICAL INVARIANT — saved file is byte-identical in L Mode
 // and normal mode. The extension only adds `Decoration.mark`,
@@ -59,6 +59,7 @@ export const lModeContextFacet = Facet.define<LModeContext, LModeContext>({
 });
 
 const hiddenMarker = Decoration.mark({ class: "cm-lmode-hidden" });
+const sourceLineClass = "cm-lmode-source-line";
 
 // Marker node names to hide. Each entry is a Lezer node name
 // from @lezer/markdown (or its GFM extension) that represents
@@ -123,6 +124,10 @@ export function computeLModeDecorations(
   // whole line picks up the L Mode rhythm. Built up as a
   // line-number → class map.
   const lineClasses = new Map<number, string[]>();
+
+  for (const line of activeLineRanges) {
+    pushLineClass(lineClasses, line.number, sourceLineClass);
+  }
 
   tree.iterate({
     enter(node) {
@@ -241,14 +246,10 @@ export function computeLModeDecorations(
         return true;
       }
 
-      // Hide the marker, but only if its range is NOT on an
-      // active selection line. The user can see and edit source
-      // syntax where they are working, while surrounding prose
-      // remains calmer.
-      if (isRangeInsideAnyLine(node.from, node.to, activeLineRanges)) {
-        return false;
-      }
-
+      // Always mark source syntax as hidden. Active-line and
+      // hover reveal are purely CSS concerns via
+      // `.cm-lmode-source-line`, so style changes cannot change
+      // which marker ranges exist.
       decorations.push(hiddenMarker.range(node.from, node.to));
       // Do not descend into marker children (markers are leaves).
       return false;
@@ -352,8 +353,10 @@ export function lModeExtension(
 
 // --- Active line detection ---
 
-function getActiveLineRanges(state: EditorState): Array<{ from: number; to: number }> {
-  const ranges: Array<{ from: number; to: number }> = [];
+function getActiveLineRanges(
+  state: EditorState,
+): Array<{ number: number; from: number; to: number }> {
+  const ranges: Array<{ number: number; from: number; to: number }> = [];
   for (const selection of state.selection.ranges) {
     const from = Math.min(selection.from, selection.to);
     const to = Math.max(selection.from, selection.to);
@@ -361,18 +364,10 @@ function getActiveLineRanges(state: EditorState): Array<{ from: number; to: numb
     const toLine = state.doc.lineAt(to);
     for (let lineNumber = fromLine.number; lineNumber <= toLine.number; lineNumber++) {
       const line = state.doc.line(lineNumber);
-      ranges.push({ from: line.from, to: line.to });
+      ranges.push({ number: line.number, from: line.from, to: line.to });
     }
   }
   return ranges;
-}
-
-function isRangeInsideAnyLine(
-  from: number,
-  to: number,
-  lines: Array<{ from: number; to: number }>,
-): boolean {
-  return lines.some((line) => from >= line.from && to <= line.to);
 }
 
 // --- Image node helpers ---
