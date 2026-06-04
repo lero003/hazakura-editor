@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-05 (v0.11.0 L Mode release candidate)
+Last reviewed: 2026-06-05 (v0.11.0 published)
 
 ## Current Position
 
@@ -11,11 +11,10 @@ Last reviewed: 2026-06-05 (v0.11.0 L Mode release candidate)
 
 Current release state:
 
-- Latest published preview: `v0.10.0` warning-expected DMG preview.
-- Current release-candidate version: `v0.11.0`.
+- Latest published preview: `v0.11.0` warning-expected DMG preview.
+- Current package/app version: `0.11.0`.
 - v0.11.0 theme: **L Mode WYSIWYG-tier Polish**.
-- Active release lane: verify and prepare v0.11.0 warning-expected DMG preview. Tag creation and GitHub Release publication require explicit user approval.
-- Next planning lane after that: v0.12 Assist Planning / Apple Local Assist Exploration.
+- Active lane: post-v0.11 follow-up and v0.12 Assist Planning / Apple Local Assist Exploration.
 
 Historical phase details and old milestone text are archived in `docs/archive/roadmaps/roadmap-through-v0.10-doc-refactor.md` and `docs/archive/roadmaps/roadmap-v0.1-archived.md`.
 
@@ -58,7 +57,7 @@ Publication result:
 - Release notes clearly state ad-hoc signing, no Developer ID signing, no notarization, and expected Gatekeeper warnings.
 - GitHub Release assets were re-downloaded and verified from a fresh temp directory after publication.
 
-## Active Release Lane: v0.11 L Mode WYSIWYG-tier Polish
+## Published Lane: v0.11 L Mode WYSIWYG-tier Polish
 
 Goal: ship えるモード / L Mode as a custom WYSIWYG-tier writing surface while keeping Markdown source canonical and editing inside CodeMirror.
 
@@ -81,12 +80,12 @@ Out of scope:
 - Apple Local Assist implementation (this lane stays separate).
 - New Agent Workbench capability.
 
-Publication readiness:
+Publication result:
 
 - Version surfaces are aligned to `0.11.0`.
-- Release body draft: `docs/releases/0.11.0-warning-expected-dmg-preview.release.md`.
+- Release body: `docs/releases/0.11.0-warning-expected-dmg-preview.release.md`.
 - Local gates, launch smoke, focused L Mode / auto-backup restore manual smoke, DMG checksum/image checks, mounted-app metadata, and local codesign checks passed on 2026-06-05.
-- Publication approval and remote verification remain pending.
+- GitHub Release `v0.11.0` was published as a warning-expected DMG prerelease, and remote assets were re-downloaded and verified from a fresh temp directory after publication.
 
 ## Next Lane: v0.12 Assist Planning / Apple Local Assist Exploration
 

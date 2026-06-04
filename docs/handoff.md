@@ -2,10 +2,9 @@
 
 ## Current State
 
-- `hazakura editor` published `v0.10.0` as a warning-expected DMG preview, framed as **L Mode Alpha Preview**.
-- Version surfaces are aligned at `0.11.0`; `v0.11.0` is the current release candidate.
-- Prepared release body: `docs/releases/0.11.0-warning-expected-dmg-preview.release.md`.
-- Latest published release body: `docs/releases/0.10.0-warning-expected-dmg-preview.release.md`.
+- `hazakura editor` published `v0.11.0` as a warning-expected DMG preview, framed as **L Mode WYSIWYG-tier Polish**.
+- Version surfaces are aligned at `0.11.0`.
+- Latest published release body: `docs/releases/0.11.0-warning-expected-dmg-preview.release.md`.
 - Current status source: `docs/current-status.md`.
 
 ## Recent Changes
@@ -20,6 +19,7 @@
 - `v0.11.0` release preparation updated version surfaces, current docs, roadmap, smoke checklist, release notes index, and README to separate the prepared candidate from the published `v0.10.0` release.
 - Review found and fixed auto-backup restore safety issues: applying a backup after switching tabs now targets the compared document path, not the currently active unrelated tab; selecting a backup from L Mode exits L Mode so the Compare pane is visible before Apply.
 - L Mode escape hatches were moved out of the status bar into a separate action rail. `変更を確認` now exits L Mode and defers the disk-vs-editor diff request to the next tick so the Compare pane is visible instead of leaving only status/top-chrome state behind.
+- `v0.11.0` was tagged and published, with DMG assets re-downloaded and verified after publication.
 
 ## Decisions
 
@@ -42,16 +42,14 @@
 
 ## Risks / Unknowns
 
-- The `v0.10.0` tag points at the release-prep commit; `main` has a later post-publication docs-sync commit.
-- `v0.11.0` is not tagged or published yet. Do not create the tag or GitHub Release without explicit user approval.
+- The `v0.10.0` and `v0.11.0` tags point at release-prep commits; `main` may have later post-publication docs-sync commits.
 - Direct mouse-wheel automation remains unreliable for WebView smoke because macOS accessibility does not expose a dependable scroll action here; treat real trackpad/mouse-wheel coverage as user-operated manual smoke.
 - GitHub reported one moderate vulnerability notice during push; `npm audit` still reported 0 vulnerabilities locally.
 - `docs/releases/` still contains historical release-note evidence; this is intentional because release verification can depend on it.
 
 ## Next Actions
 
-- Before any publication decision, re-check the latest local gates if code changes again; otherwise use the v0.11.0 release note as the current local evidence packet.
-- If publishing v0.11.0 is approved, build the warning-expected DMG, verify checksum/image/app metadata/codesign locally, create/push the tag and release, then re-download GitHub Release assets into a fresh temp directory and verify again.
+- Before any future publication decision, re-check the latest local gates if code changes again; otherwise use the current release note as the evidence packet.
 - For post-v0.11 assist work, keep assist behavior detachable and route candidate output through Review Desk or Diff.
 - If doing more docs cleanup, prefer tightening release-note structure, not resurrecting archived planning docs.
 

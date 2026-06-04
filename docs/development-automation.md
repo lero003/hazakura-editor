@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-06-05 (v0.11.0 release-candidate preparation)
+Last reviewed: 2026-06-05 (post-v0.11.0 publication)
 
 ## Purpose
 
@@ -17,7 +17,7 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: v0.11.0 L Mode WYSIWYG-tier release-candidate verification.
+Phase: post-v0.11.0 quality follow-up and v0.12 assist-planning readiness.
 
 Prefer work in this order:
 
@@ -25,7 +25,7 @@ Prefer work in this order:
 2. Latest-HEAD built-app smoke gaps for L Mode, auto-backup restore, export, and Safe Editor boundaries.
 3. One reproduced bug in implemented L Mode, auto-backup restore, workspace file operations, Agent provider availability, Review Desk, Diff, or Safe Editor behavior.
 4. Safety-boundary regression checks.
-5. v0.11.0 release docs/version drift.
+5. Post-release docs/version drift.
 6. Markdown-first editor quality or daily-use polish.
 7. Documentation drift.
 8. Verified no-op after inspection when no useful small slice is safe.

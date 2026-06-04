@@ -3,19 +3,20 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-05 (v0.11.0 release candidate prepared)
+Last reviewed: 2026-06-05 (v0.11.0 published)
 
 ## Current State
 
 - `hazakura editor` is a touchable Tauri desktop app for Markdown-first safe text editing.
-- Current published preview is `v0.10.0` at `https://github.com/lero003/hazakura-editor/releases/tag/v0.10.0`.
-- Current release-candidate version is `0.11.0` across npm, Tauri, Cargo, and Cargo.lock metadata.
-- v0.11.0 is the **L Mode WYSIWYG-tier Polish** candidate: it keeps Markdown source canonical while rendering inline emphasis, strong, strike, links, inline code, task checkboxes, horizontal rules, tables, blockquotes, code blocks, ordered/bullet lists, and images as a document-like writing surface through CodeMirror display decoration.
-- The v0.11.0 candidate also includes auto-backup restore through an explicit backup-vs-buffer diff/apply flow, hash-based pasted-image deduplication, export CSS parity with Preview, workspace path rekey hardening, common text-extension save filters, and a native View menu L Mode toggle.
+- Current published preview is `v0.11.0` at `https://github.com/lero003/hazakura-editor/releases/tag/v0.11.0`.
+- Current package/app version is `0.11.0` across npm, Tauri, Cargo, and Cargo.lock metadata.
+- v0.11.0 is the **L Mode WYSIWYG-tier Polish** preview: it keeps Markdown source canonical while rendering inline emphasis, strong, strike, links, inline code, task checkboxes, horizontal rules, tables, blockquotes, code blocks, ordered/bullet lists, and images as a document-like writing surface through CodeMirror display decoration.
+- v0.11.0 also includes auto-backup restore through an explicit backup-vs-buffer diff/apply flow, hash-based pasted-image deduplication, export CSS parity with Preview, workspace path rekey hardening, common text-extension save filters, and a native View menu L Mode toggle.
 - Local v0.10.0 gates and warning-expected DMG preview generation passed on 2026-06-04. DMG SHA-256: `a3dcbb5a2580639ae70060d1fe85d81ed298e33ffcfa7fe0498686faffadec05`.
 - GitHub Release assets were re-downloaded into a fresh temp directory after publication and passed checksum, `hdiutil verify`, mounted-app metadata, and `codesign --verify --deep --strict --verbose=2`.
 - v0.11.0 local release gates and warning-expected DMG preview verification passed on 2026-06-05. DMG SHA-256: `09194d22ed6a61164fbf72b7a1b17301e530bca289f42a104d3bb6c4305767e8`.
-- v0.11.0 focused manual smoke for L Mode entry/source preservation, View menu L Mode toggling, long-document keyboard and user-operated trackpad/mouse-wheel scrolling, action-rail workspace/diff escape hatches, typewriter preference visibility, Export HTML, Print to PDF handoff, and auto-backup restore apply/save behavior passed on 2026-06-05. Publication approval and remote asset verification remain pending. Do not tag or publish until explicit user approval is complete.
+- v0.11.0 focused manual smoke for L Mode entry/source preservation, View menu L Mode toggling, long-document keyboard and user-operated trackpad/mouse-wheel scrolling, action-rail workspace/diff escape hatches, typewriter preference visibility, Export HTML, Print to PDF handoff, and auto-backup restore apply/save behavior passed on 2026-06-05.
+- v0.11.0 GitHub Release assets were re-downloaded into a fresh temp directory after publication and passed checksum, `hdiutil verify`, mounted-app metadata, and `codesign --verify --deep --strict --verbose=2`.
 - Older public tags remain immutable.
 
 ## Current Product Boundary
@@ -40,7 +41,7 @@ Use these documents for release evidence and future release decisions:
 
 The published v0.10.0 release is a warning-expected DMG preview. It is ad-hoc signed, not Developer ID signed, not notarized, and expected to produce Gatekeeper warnings.
 
-The prepared v0.11.0 release body is a warning-expected DMG preview draft with local verification evidence, including focused built-app manual smoke for L Mode, action-rail escape hatches, export/print, and auto-backup restore. Publication and remote asset verification remain pending explicit approval.
+The published v0.11.0 release is a warning-expected DMG preview. It is ad-hoc signed, not Developer ID signed, not notarized, and expected to produce Gatekeeper warnings. Local and remote verification passed after publication.
 
 For future releases, re-check local artifact evidence and, after publication, re-download GitHub Release assets into a fresh temp directory and verify checksum, `hdiutil verify`, mounted app metadata, and `codesign --verify --deep --strict --verbose=2`.
 
@@ -59,6 +60,6 @@ Historical detailed status logs through 2026-06-04 were archived to `docs/archiv
 ## Next Safe Actions
 
 1. If continuing quality work, use `docs/development-automation.md` and keep to one small verified slice.
-2. If preparing v0.11.0 publication, use `docs/releases/0.11.0-warning-expected-dmg-preview.release.md`, `docs/source-release-checklist.md`, and `docs/dmg-preview-checklist.md`; do not tag or publish without explicit approval.
-3. If planning assist work after v0.11.0, use `docs/assist-surface-strategy.md` and keep assist output detachable from Safe Editor.
+2. If planning assist work after v0.11.0, use `docs/assist-surface-strategy.md` and keep assist output detachable from Safe Editor.
+3. If preparing a future release, use `docs/source-release-checklist.md`, `docs/dmg-preview-checklist.md`, and the version-specific release note; do not tag or publish without explicit approval.
 4. If changing product behavior, use `docs/product-brief.md`, `docs/security-boundary.md`, and the touched boundary doc before implementation.
