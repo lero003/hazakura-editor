@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-06-04 (active-automation refactor)
+Last reviewed: 2026-06-04 (post-v0.10 publication)
 
 ## Purpose
 
@@ -17,7 +17,7 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: v0.10 L Mode alpha release-candidate triage.
+Phase: post-v0.10 L Mode alpha follow-up and v0.11 assist-planning triage.
 
 Prefer work in this order:
 

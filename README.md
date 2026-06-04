@@ -187,11 +187,11 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current release-candidate version is `0.10.0` across npm, Tauri, and Cargo metadata.
+- Current published preview version is `0.10.0` across npm, Tauri, and Cargo metadata.
 - Source users build locally with `npm ci` and `npm run build`.
 - The generated local `.app` declares macOS 11.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. It is not Developer ID signed or notarized.
-- The latest published warning-expected DMG preview is [v0.9.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.9.0). The prepared v0.10.0 release notes live in [0.10.0 Warning-expected DMG Preview](docs/releases/0.10.0-warning-expected-dmg-preview.release.md).
-- Future tag creation and GitHub Release publication still require explicit user approval.
+- The latest published warning-expected DMG preview is [v0.10.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.10.0). The v0.10.0 release notes live in [0.10.0 Warning-expected DMG Preview](docs/releases/0.10.0-warning-expected-dmg-preview.release.md).
+- Future tag creation and GitHub Release publication for later versions still require explicit user approval.
 
 ## Known Limits
 

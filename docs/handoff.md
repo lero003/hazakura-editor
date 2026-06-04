@@ -2,8 +2,8 @@
 
 ## Current State
 
-- `hazakura editor` is preparing `v0.10.0` as a warning-expected DMG preview release candidate, framed as **L Mode Alpha Preview**.
-- Version surfaces are aligned at `0.10.0`; tag creation and GitHub Release publication still require explicit user approval.
+- `hazakura editor` published `v0.10.0` as a warning-expected DMG preview, framed as **L Mode Alpha Preview**.
+- Version surfaces remain aligned at `0.10.0`; no next release candidate is open yet.
 - Current release body: `docs/releases/0.10.0-warning-expected-dmg-preview.release.md`.
 - Current status source: `docs/current-status.md`.
 
@@ -14,6 +14,7 @@
 - Historical detailed status was archived at `docs/archive/status/current-status-through-2026-06-04.md`.
 - Old setup notes, initial MVP/planning docs, superseded goal prompts, v0.6 release review brief, and the unpublished v0.1 DMG proposal moved under `docs/archive/`.
 - New indexes were added at `docs/README.md`, `docs/archive/README.md`, and `docs/releases/README.md`.
+- `v0.10.0` was tagged and published, with DMG assets re-downloaded and verified after publication.
 
 ## Decisions
 
@@ -32,12 +33,12 @@
 ## Risks / Unknowns
 
 - No code or app behavior changed in the docs cleanup.
-- Full release gates were not rerun for this docs-only cleanup.
+- Latest v0.10 release gates were rerun before publication.
 - `docs/releases/` still contains historical release-note evidence; this is intentional because release verification can depend on it.
 
 ## Next Actions
 
-- If releasing v0.10.0, use `hazakura-note-release-candidate`, rerun the release verification loop, and publish only after explicit approval.
+- For v0.11 planning, keep assist behavior detachable and route candidate output through Review Desk or Diff.
 - If doing more docs cleanup, prefer tightening release-note structure, not resurrecting archived planning docs.
 
 ## Avoid

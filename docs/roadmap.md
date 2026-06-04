@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-04 (active-roadmap refactor)
+Last reviewed: 2026-06-04 (v0.10.0 published)
 
 ## Current Position
 
@@ -11,10 +11,10 @@ Last reviewed: 2026-06-04 (active-roadmap refactor)
 
 Current release state:
 
-- Latest published preview: `v0.9.0` warning-expected DMG preview.
-- Current release candidate: `v0.10.0` warning-expected DMG preview.
+- Latest published preview: `v0.10.0` warning-expected DMG preview.
 - v0.10.0 theme: **L Mode Alpha Preview**.
-- Tag creation, GitHub Release publication, and asset upload remain pending explicit user approval.
+- No active release candidate is open yet after v0.10.0 publication.
+- Next planning lane: v0.11 Assist Planning / Apple Local Assist Exploration.
 
 Historical phase details and old milestone text are archived in `docs/archive/roadmaps/roadmap-through-v0.10-doc-refactor.md` and `docs/archive/roadmaps/roadmap-v0.1-archived.md`.
 
@@ -29,7 +29,7 @@ These boundaries stay active across roadmap changes:
 - Review Desk is manual candidate review: compare explicitly, apply explicitly, save explicitly.
 - Workspace file operations stay bounded to the selected workspace and must not become a full file manager.
 
-## Active Lane: v0.10 L Mode Alpha Preview
+## Published Lane: v0.10 L Mode Alpha Preview
 
 Goal: ship a credible alpha of えるモード / L Mode without changing the saved Markdown model.
 
@@ -48,12 +48,12 @@ Out of scope:
 - New Agent Workbench capability.
 - Git, terminal, LSP, plugin, or broad workspace-analysis behavior.
 
-Exit criteria:
+Publication result:
 
-- Local release gates pass.
-- The warning-expected DMG preview is verified locally.
+- Local release gates passed.
+- The warning-expected DMG preview was verified locally.
 - Release notes clearly state ad-hoc signing, no Developer ID signing, no notarization, and expected Gatekeeper warnings.
-- If published, GitHub Release assets are re-downloaded and verified from a fresh temp directory.
+- GitHub Release assets were re-downloaded and verified from a fresh temp directory after publication.
 
 ## Next Lane: v0.11 Assist Planning / Apple Local Assist Exploration
 
@@ -75,7 +75,7 @@ Rules:
 Use these current docs rather than old roadmap bodies:
 
 - `docs/authoring-feature-readiness.md` for incomplete authoring/export claims.
-- `docs/l-mode-plan.md` for L Mode details while v0.10 is active.
+- `docs/l-mode-plan.md` for L Mode background and follow-up polish.
 - `docs/agent-workbench-boundary.md` for Agent Workbench constraints.
 - `docs/development-automation.md` for small quality-loop work.
 
@@ -87,4 +87,4 @@ Current preview releases are warning-expected DMG previews unless the user opens
 - Warning-expected DMG rules: `docs/dmg-preview-checklist.md`
 - Release-note evidence: `docs/releases/`
 
-Developer ID signing, notarization, updater work, installer packaging, and stable distribution are future distribution-lane work, not part of v0.10 unless explicitly approved.
+Developer ID signing, notarization, updater work, installer packaging, and stable distribution are future distribution-lane work.

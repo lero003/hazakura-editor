@@ -3,16 +3,16 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-04 (v0.10.0 release-candidate docs cleanup)
+Last reviewed: 2026-06-04 (v0.10.0 published)
 
 ## Current State
 
 - `hazakura editor` is a touchable Tauri desktop app for Markdown-first safe text editing.
-- Current published preview is `v0.9.0` at `https://github.com/lero003/hazakura-editor/releases/tag/v0.9.0`.
-- Current release-candidate version is `0.10.0` across npm, Tauri, Cargo, and Cargo.lock metadata.
-- v0.10.0 is intended as the **L Mode Alpha Preview**: a follow-up to v0.9.0 that keeps Markdown source canonical while polishing L Mode scroll/focus behavior, source-marker suppression/reveal, reference-link marker handling, code-block readability, floating chrome, and theme-aware status display.
+- Current published preview is `v0.10.0` at `https://github.com/lero003/hazakura-editor/releases/tag/v0.10.0`.
+- Current package/app version is `0.10.0` across npm, Tauri, Cargo, and Cargo.lock metadata.
+- v0.10.0 is the **L Mode Alpha Preview**: a follow-up to v0.9.0 that keeps Markdown source canonical while polishing L Mode scroll/focus behavior, source-marker suppression/reveal, reference-link marker handling, code-block readability, floating chrome, and theme-aware status display.
 - Local v0.10.0 gates and warning-expected DMG preview generation passed on 2026-06-04. DMG SHA-256: `a3dcbb5a2580639ae70060d1fe85d81ed298e33ffcfa7fe0498686faffadec05`.
-- Tag creation and GitHub Release publication remain pending explicit user approval.
+- GitHub Release assets were re-downloaded into a fresh temp directory after publication and passed checksum, `hdiutil verify`, mounted-app metadata, and `codesign --verify --deep --strict --verbose=2`.
 - Older public tags remain immutable.
 
 ## Current Product Boundary
@@ -26,7 +26,7 @@ Last reviewed: 2026-06-04 (v0.10.0 release-candidate docs cleanup)
 
 ## Release Readiness
 
-Use these documents for the current release decision:
+Use these documents for release evidence and future release decisions:
 
 - `docs/releases/0.10.0-warning-expected-dmg-preview.release.md`
 - `docs/source-release-checklist.md`
@@ -34,9 +34,9 @@ Use these documents for the current release decision:
 - `docs/smoke-checklist.md`
 - `docs/development-automation.md`
 
-The v0.10.0 release lane is a warning-expected DMG preview. It is ad-hoc signed, not Developer ID signed, not notarized, and expected to produce Gatekeeper warnings.
+The published v0.10.0 release is a warning-expected DMG preview. It is ad-hoc signed, not Developer ID signed, not notarized, and expected to produce Gatekeeper warnings.
 
-Before publishing, re-check the local artifact evidence and, after publication, re-download GitHub Release assets into a fresh temp directory and verify checksum, `hdiutil verify`, mounted app metadata, and `codesign --verify --deep --strict --verbose=2`.
+For future releases, re-check local artifact evidence and, after publication, re-download GitHub Release assets into a fresh temp directory and verify checksum, `hdiutil verify`, mounted app metadata, and `codesign --verify --deep --strict --verbose=2`.
 
 ## Active Planning Sources
 
@@ -52,6 +52,6 @@ Historical detailed status logs through 2026-06-04 were archived to `docs/archiv
 
 ## Next Safe Actions
 
-1. If releasing v0.10.0, use `hazakura-note-release-candidate` and complete the tag / GitHub Release / remote verification loop only after explicit approval.
-2. If continuing quality work, use `docs/development-automation.md` and keep to one small verified slice.
+1. If continuing quality work, use `docs/development-automation.md` and keep to one small verified slice.
+2. If planning v0.11 assist work, use `docs/assist-surface-strategy.md` and keep assist output detachable from Safe Editor.
 3. If changing product behavior, use `docs/product-brief.md`, `docs/security-boundary.md`, and the touched boundary doc before implementation.
