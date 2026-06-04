@@ -50,8 +50,14 @@ export async function openTextFile(path: string): Promise<TextFileDocument> {
   return invoke<TextFileDocument>("open_text_file", { path });
 }
 
-export async function createTextFile(path: string): Promise<TextFileDocument> {
-  return invoke<TextFileDocument>("create_text_file", { path });
+export async function createTextFile(
+  path: string,
+  workspaceRoot: string | null,
+): Promise<TextFileDocument> {
+  return invoke<TextFileDocument>("create_text_file", {
+    path,
+    workspaceRoot,
+  });
 }
 
 export async function getFileMetadata(path: string): Promise<FileMetadataState> {
@@ -79,12 +85,14 @@ export async function saveTextFileAs(
   contents: string,
   lineEnding: EditableLineEnding,
   encoding: TextEncoding,
+  workspaceRoot: string | null,
 ): Promise<TextFileDocument> {
   return invoke<TextFileDocument>("save_text_file_as", {
     path,
     contents,
     lineEnding,
     encoding,
+    workspaceRoot,
   });
 }
 

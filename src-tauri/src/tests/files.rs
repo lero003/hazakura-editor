@@ -43,7 +43,7 @@ fn create_text_file_creates_empty_markdown_file() {
     let path = dir.join("fresh.md");
 
     let document =
-        create_text_file_with_label(MAIN_WINDOW_LABEL, path.to_string_lossy().to_string())
+        create_text_file_with_label(MAIN_WINDOW_LABEL, path.to_string_lossy().to_string(), None)
             .expect("create markdown file");
 
     assert_eq!(document.name, "fresh.md");
@@ -62,8 +62,9 @@ fn create_text_file_rejects_existing_file() {
     let path = dir.join("existing.md");
     fs::write(&path, "# Existing\n").expect("write fixture");
 
-    let err = create_text_file_with_label(MAIN_WINDOW_LABEL, path.to_string_lossy().to_string())
-        .expect_err("existing file should not be overwritten");
+    let err =
+        create_text_file_with_label(MAIN_WINDOW_LABEL, path.to_string_lossy().to_string(), None)
+            .expect_err("existing file should not be overwritten");
 
     assert!(err.contains("already exists"));
     assert_eq!(
@@ -132,6 +133,63 @@ fn create_text_folder_rejects_path_outside_workspace_root() {
 
     let _ = fs::remove_dir_all(root);
     let _ = fs::remove_dir_all(outside);
+}
+
+#[test]
+fn create_text_file_rejects_path_outside_workspace_root() {
+    let root = unique_test_dir("create_file_outside_root");
+    let outside = unique_test_dir("create_file_outside_target");
+    fs::create_dir_all(&root).expect("create root");
+    fs::create_dir_all(&outside).expect("create outside");
+    let path = outside.join("escape-me.md");
+
+    let err = create_text_file_with_label(
+        MAIN_WINDOW_LABEL,
+        path.to_string_lossy().to_string(),
+        Some(root.to_string_lossy().to_string()),
+    )
+    .expect_err("path outside workspace root should be rejected");
+
+    assert!(err.contains("outside the workspace root"), "{err}");
+    assert!(!path.exists());
+
+    let _ = fs::remove_dir_all(root);
+    let _ = fs::remove_dir_all(outside);
+}
+
+#[test]
+fn create_text_file_allows_path_inside_workspace_root() {
+    let root = unique_test_dir("create_file_inside_root");
+    fs::create_dir_all(&root).expect("create root");
+    let path = root.join("inside.md");
+
+    let document = create_text_file_with_label(
+        MAIN_WINDOW_LABEL,
+        path.to_string_lossy().to_string(),
+        Some(root.to_string_lossy().to_string()),
+    )
+    .expect("path inside workspace root should be allowed");
+
+    assert_eq!(document.name, "inside.md");
+    assert!(path.exists());
+
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+fn create_text_file_skips_workspace_check_when_root_is_none() {
+    let dir = unique_test_dir("create_file_no_root_constraint");
+    fs::create_dir_all(&dir).expect("create dir");
+    let path = dir.join("anywhere.md");
+
+    let document =
+        create_text_file_with_label(MAIN_WINDOW_LABEL, path.to_string_lossy().to_string(), None)
+            .expect("no workspace constraint should be honored");
+
+    assert_eq!(document.name, "anywhere.md");
+    assert!(path.exists());
+
+    let _ = fs::remove_dir_all(dir);
 }
 
 #[test]
@@ -345,6 +403,7 @@ fn save_text_file_as_creates_new_text_extension_with_requested_line_endings() {
         "First\nSecond\n".to_string(),
         "crlf".to_string(),
         "utf-8".to_string(),
+        None,
     )
     .expect("save as text file");
 
@@ -371,6 +430,7 @@ fn save_text_file_as_rejects_existing_file() {
         "Overwrite attempt\n".to_string(),
         "lf".to_string(),
         "utf-8".to_string(),
+        None,
     )
     .expect_err("save as should not overwrite existing file");
 
@@ -381,6 +441,53 @@ fn save_text_file_as_rejects_existing_file() {
     );
 
     let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn save_text_file_as_rejects_path_outside_workspace_root() {
+    let root = unique_test_dir("save_as_outside_root");
+    let outside = unique_test_dir("save_as_outside_target");
+    fs::create_dir_all(&root).expect("create root");
+    fs::create_dir_all(&outside).expect("create outside");
+    let path = outside.join("escape-as.html");
+
+    let err = save_text_file_as_with_label(
+        MAIN_WINDOW_LABEL,
+        path.to_string_lossy().to_string(),
+        "<p>html</p>\n".to_string(),
+        "lf".to_string(),
+        "utf-8".to_string(),
+        Some(root.to_string_lossy().to_string()),
+    )
+    .expect_err("save-as outside workspace root should be rejected");
+
+    assert!(err.contains("outside the workspace root"), "{err}");
+    assert!(!path.exists());
+
+    let _ = fs::remove_dir_all(root);
+    let _ = fs::remove_dir_all(outside);
+}
+
+#[test]
+fn save_text_file_as_allows_path_inside_workspace_root() {
+    let root = unique_test_dir("save_as_inside_root");
+    fs::create_dir_all(&root).expect("create root");
+    let path = root.join("export.html");
+
+    let document = save_text_file_as_with_label(
+        MAIN_WINDOW_LABEL,
+        path.to_string_lossy().to_string(),
+        "<p>html</p>\n".to_string(),
+        "lf".to_string(),
+        "utf-8".to_string(),
+        Some(root.to_string_lossy().to_string()),
+    )
+    .expect("save-as inside workspace root should be allowed");
+
+    assert_eq!(document.name, "export.html");
+    assert!(path.exists());
+
+    let _ = fs::remove_dir_all(root);
 }
 
 #[test]

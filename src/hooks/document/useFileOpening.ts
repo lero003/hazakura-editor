@@ -204,7 +204,7 @@ export function useFileOpening({
 
       setStatus("Creating file...");
 
-      const file = await createTextFile(path);
+      const file = await createTextFile(path, workspaceRootPath);
       const nextTab = createEditorTab(file);
 
       setTabs((currentTabs) =>

@@ -155,6 +155,7 @@ export function useSaveActions({
         activeTab.contents,
         activeTab.line_ending,
         activeTab.encoding,
+        workspaceRootPath,
       );
       const nextTab = createEditorTab(savedFile);
 

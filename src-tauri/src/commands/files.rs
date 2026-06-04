@@ -118,16 +118,22 @@ pub(crate) fn reveal_path_in_file_manager_with_label(
 pub(crate) fn create_text_file<R: tauri::Runtime>(
     window: tauri::WebviewWindow<R>,
     path: String,
+    workspace_root: Option<String>,
 ) -> Result<TextFileDocument, String> {
-    create_text_file_with_label(window.label(), path)
+    create_text_file_with_label(window.label(), path, workspace_root)
 }
 
 pub(crate) fn create_text_file_with_label(
     label: &str,
     path: String,
+    workspace_root: Option<String>,
 ) -> Result<TextFileDocument, String> {
     ensure_label_is_main(label)?;
     let path_buf = PathBuf::from(&path);
+
+    if let Some(root) = workspace_root.as_deref() {
+        let _ = ensure_path_inside_workspace_root(&path_buf, &PathBuf::from(root))?;
+    }
 
     if path_buf.exists() {
         return Err("A file already exists at the selected path.".to_string());
@@ -277,8 +283,16 @@ pub(crate) fn save_text_file_as<R: tauri::Runtime>(
     contents: String,
     line_ending: String,
     encoding: String,
+    workspace_root: Option<String>,
 ) -> Result<TextFileDocument, String> {
-    save_text_file_as_with_label(window.label(), path, contents, line_ending, encoding)
+    save_text_file_as_with_label(
+        window.label(),
+        path,
+        contents,
+        line_ending,
+        encoding,
+        workspace_root,
+    )
 }
 
 pub(crate) fn save_text_file_as_with_label(
@@ -287,9 +301,14 @@ pub(crate) fn save_text_file_as_with_label(
     contents: String,
     line_ending: String,
     encoding: String,
+    workspace_root: Option<String>,
 ) -> Result<TextFileDocument, String> {
     ensure_label_is_main(label)?;
     let path_buf = PathBuf::from(&path);
+
+    if let Some(root) = workspace_root.as_deref() {
+        let _ = ensure_path_inside_workspace_root(&path_buf, &PathBuf::from(root))?;
+    }
 
     if path_buf.exists() {
         return Err("A file already exists at the selected path.".to_string());

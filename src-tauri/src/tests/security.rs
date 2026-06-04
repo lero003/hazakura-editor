@@ -61,8 +61,9 @@ fn create_text_file_rejects_agent_window_label() {
     fs::create_dir_all(&dir).expect("create test dir");
     let path = dir.join("fresh.md");
 
-    let err = create_text_file_with_label(AGENT_WINDOW_LABEL, path.to_string_lossy().to_string())
-        .expect_err("create_text_file must reject the agent window");
+    let err =
+        create_text_file_with_label(AGENT_WINDOW_LABEL, path.to_string_lossy().to_string(), None)
+            .expect_err("create_text_file must reject the agent window");
     assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
     assert!(
         !path.exists(),
@@ -132,6 +133,7 @@ fn save_text_file_as_rejects_agent_window_label() {
         "Body\n".to_string(),
         "lf".to_string(),
         "utf-8".to_string(),
+        None,
     )
     .expect_err("save_text_file_as must reject the agent window");
     assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");

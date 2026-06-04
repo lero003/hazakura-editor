@@ -157,7 +157,10 @@ export function useWorkspaceFileOps({
         // path already exists, so a race with another tab / agent
         // process is caught here even though the uniqueness check
         // above is best-effort.
-        const file: TextFileDocument = await createTextFile(fullPath);
+        const file: TextFileDocument = await createTextFile(
+          fullPath,
+          workspaceRootPath,
+        );
         const nextTab = createEditorTab(file);
 
         setTabs((currentTabs) =>
