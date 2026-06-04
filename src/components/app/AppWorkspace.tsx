@@ -10,7 +10,12 @@ import { EditorMainPane } from "../editor/EditorMainPane";
 import { PaneResizer } from "../editor/PaneResizer";
 import { SidePane } from "./SidePane";
 import { WorkspaceSidebar } from "../workspace/WorkspaceSidebar";
-import type { SafeEditorCopy, SidePaneCopy, SlashMenuCopy } from "../../lib/locale";
+import type {
+  LModeCopy,
+  SafeEditorCopy,
+  SidePaneCopy,
+  SlashMenuCopy,
+} from "../../lib/locale";
 import type {
   AgentWorkbenchOutputChunk,
   AgentWorkbenchProvider,
@@ -88,8 +93,9 @@ type AppWorkspaceProps = {
   handleSendSelectionToAgent: (text: string) => void;
   hasWorkspaceSelection: boolean;
   jumpToHeading: (heading: MarkdownHeading) => void;
-  onApplyBackup?: (backupContents: string) => void;
+  onApplyBackup?: (documentPath: string, backupContents: string) => void;
   loadWorkspaceDirectory: (path: string) => Promise<void>;
+  lModeCopy: LModeCopy;
   menuLanguage: MenuLanguage;
   onMoveEntry: (srcPath: string, dstParentPath: string) => void;
   onMoveToTrash: (path: string, name: string, isDirectory: boolean) => void;
@@ -181,6 +187,7 @@ export function AppWorkspace({
   hasWorkspaceSelection,
   jumpToHeading,
   loadWorkspaceDirectory,
+  lModeCopy,
   onApplyBackup,
   menuLanguage,
   onMoveEntry,
@@ -281,6 +288,7 @@ export function AppWorkspace({
           editorSettings={editorSettings}
           editorTheme={editorTheme}
           imagePreviewTitle={sidePaneCopy.imagePreview}
+          lModeCopy={lModeCopy}
           menuLanguage={menuLanguage}
           onChange={handleEditorChange}
           onNewFile={() => void createNewFile()}

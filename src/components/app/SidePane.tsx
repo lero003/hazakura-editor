@@ -34,7 +34,7 @@ type SidePaneProps = {
   menuLanguage: MenuLanguage;
   onClearCompareSource: () => void;
   onClearCompareTarget: () => void;
-  onApplyBackup?: (backupContents: string) => void;
+  onApplyBackup?: (documentPath: string, backupContents: string) => void;
   onCloseCompareView: (options?: { returnToEditor?: boolean }) => void;
   onOpenPreviewLocalLink: (path: string) => void | Promise<void>;
   onPreviewScroll: () => void;
@@ -123,6 +123,7 @@ export function SidePane({
       ) : activeTab && previewVisible ? (
         <Suspense fallback={null}>
           <PreviewPane
+            documentPath={activeTab.path}
             onOpenLocalLink={onOpenPreviewLocalLink}
             source={activeContents}
             workspaceRoot={

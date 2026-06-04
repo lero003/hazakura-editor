@@ -538,6 +538,12 @@ export function useAppShellController() {
           { workspaceRoot: workspaceRootPath, filePath: activeTab.path },
           entry.name,
         );
+        if (editorSettings.lModeEnabled) {
+          setEditorSettings((current) => ({
+            ...current,
+            lModeEnabled: false,
+          }));
+        }
         await requestReviewBackupAgainstBuffer(
           activeTab,
           entry.name,
@@ -552,30 +558,36 @@ export function useAppShellController() {
       activeTab,
       autoBackupRestore,
       closeRestoreBackupDialog,
+      editorSettings.lModeEnabled,
       requestReviewBackupAgainstBuffer,
+      setEditorSettings,
       setGlobalError,
       setStatus,
       workspaceRootPath,
     ],
   );
 
-  // Apply a previously-selected backup to the active tab. The
+  // Apply a previously-selected backup to its original target tab. The
   // `compareCase` comes from the diff view's state (the
   // `backupApplyAction` payload is set when the case is built,
   // not when the apply button is clicked), so the right-pane
   // view is the source of truth for "which backup am I
-  // applying". The buffer is marked dirty so the user still
-  // has to save to persist; this avoids a silent disk write
-  // when the user just wanted to peek at a backup.
+  // applying". We use the compare case's document path rather
+  // than the current active tab so a tab switch between review
+  // and Apply cannot write the backup into the wrong document.
+  // The buffer is marked dirty so the user still has to save to
+  // persist; this avoids a silent disk write when the user just
+  // wanted to peek at a backup.
   const applyBackupToActiveTab = useCallback(
-    (backupContents: string) => {
-      if (!activeTab) {
+    (documentPath: string, backupContents: string) => {
+      const targetTab = tabs.find((tab) => tab.path === documentPath);
+      if (!targetTab) {
         setStatus("Backup apply failed");
         return;
       }
       setTabs((currentTabs) =>
         currentTabs.map((tab) =>
-          tab.id === activeTab.id
+          tab.path === documentPath
             ? {
                 ...tab,
                 contents: backupContents,
@@ -585,10 +597,11 @@ export function useAppShellController() {
             : tab,
         ),
       );
+      setActiveTabId(targetTab.id);
       closeCompareView();
       setStatus("Backup applied — save to keep changes");
     },
-    [activeTab, closeCompareView, setStatus, setTabs],
+    [closeCompareView, setActiveTabId, setStatus, setTabs, tabs],
   );
 
   // section: document IO controller
@@ -651,24 +664,27 @@ export function useAppShellController() {
     }));
   }, [setEditorSettings]);
 
-  // Escape hatches surfaced inside the L Mode status bar pill.
-  // The pill is the only chrome the user sees in L Mode, so
-  // any "I want to leave L Mode and do X" affordance has to
-  // live there. Both handlers exit L Mode first (the diff
-  // pane and the workspace tree are hidden in L Mode, so the
-  // user has no other way to reach them); the review-changes
-  // one then opens the diff against disk. The workspace one
-  // is just an exit — the file tree / side pane are revealed
-  // by the same toggle, and the user can pick up from there.
+  const exitLMode = useCallback(() => {
+    setEditorSettings((current) => ({
+      ...current,
+      lModeEnabled: false,
+    }));
+  }, [setEditorSettings]);
+
+  // Escape hatches surfaced in the L Mode action rail. Both
+  // handlers exit L Mode first because the diff pane and the
+  // workspace tree are hidden while L Mode is active.
   const reviewChangesFromLMode = useCallback(() => {
-    toggleLMode();
+    exitLMode();
     if (activeTab) {
-      requestReviewTabAgainstDisk(activeTab);
+      window.setTimeout(() => {
+        requestReviewTabAgainstDisk(activeTab);
+      }, 0);
     }
-  }, [activeTab, requestReviewTabAgainstDisk, toggleLMode]);
+  }, [activeTab, exitLMode, requestReviewTabAgainstDisk]);
   const exitLModeToWorkspace = useCallback(() => {
-    toggleLMode();
-  }, [toggleLMode]);
+    exitLMode();
+  }, [exitLMode]);
 
   // When L Mode turns on, force the side pane and the Review
   // Desk closed. The CSS hides the toggles in L Mode so the user

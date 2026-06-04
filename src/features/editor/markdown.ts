@@ -6,18 +6,19 @@ marked.use({
   breaks: false,
 });
 
-const WORKSPACE_ASSET_PATH_ATTR = "data-hazakura-asset-path";
+const WORKSPACE_IMAGE_PATH_ATTR = "data-hazakura-image-path";
 const TRANSPARENT_IMAGE_SRC =
   "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
 
 export function renderMarkdown(
   source: string,
-  options?: { workspaceRoot?: string | null },
+  options?: { documentPath?: string | null; workspaceRoot?: string | null },
 ): string {
   const rawHtml = marked.parse(source, { async: false }) as string;
   const imageBoundedHtml = applyImagePreviewPolicy(
     rawHtml,
     options?.workspaceRoot ?? null,
+    options?.documentPath ?? null,
   );
   const tableBoundedHtml = applyTablePreviewPolicy(imageBoundedHtml);
 
@@ -34,7 +35,7 @@ export async function inlineWorkspaceAssetImages(
   html: string,
   loadImageDataUrl: (absolutePath: string) => Promise<string>,
 ): Promise<string> {
-  if (!html.includes(WORKSPACE_ASSET_PATH_ATTR)) {
+  if (!html.includes(WORKSPACE_IMAGE_PATH_ATTR)) {
     return html;
   }
 
@@ -42,9 +43,9 @@ export async function inlineWorkspaceAssetImages(
   template.innerHTML = html;
 
   for (const image of Array.from(
-    template.content.querySelectorAll(`img[${WORKSPACE_ASSET_PATH_ATTR}]`),
+    template.content.querySelectorAll(`img[${WORKSPACE_IMAGE_PATH_ATTR}]`),
   )) {
-    const path = image.getAttribute(WORKSPACE_ASSET_PATH_ATTR);
+    const path = image.getAttribute(WORKSPACE_IMAGE_PATH_ATTR);
     if (!path) {
       continue;
     }
@@ -52,7 +53,7 @@ export async function inlineWorkspaceAssetImages(
     try {
       const dataUrl = await loadImageDataUrl(path);
       image.setAttribute("src", dataUrl);
-      image.removeAttribute(WORKSPACE_ASSET_PATH_ATTR);
+      image.removeAttribute(WORKSPACE_IMAGE_PATH_ATTR);
     } catch {
       image.replaceWith(blockedImageMessage(image.getAttribute("alt")?.trim()));
     }
@@ -64,6 +65,7 @@ export async function inlineWorkspaceAssetImages(
 function applyImagePreviewPolicy(
   html: string,
   workspaceRoot: string | null,
+  documentPath: string | null,
 ): string {
   const template = document.createElement("template");
   template.innerHTML = html;
@@ -78,10 +80,10 @@ function applyImagePreviewPolicy(
       continue;
     }
 
-    const assetPath = workspaceAssetImagePath(src, workspaceRoot);
-    if (assetPath) {
+    const imagePath = workspaceImagePath(src, workspaceRoot, documentPath);
+    if (imagePath) {
       image.setAttribute("src", TRANSPARENT_IMAGE_SRC);
-      image.setAttribute(WORKSPACE_ASSET_PATH_ATTR, assetPath);
+      image.setAttribute(WORKSPACE_IMAGE_PATH_ATTR, imagePath);
       image.removeAttribute("srcset");
       image.setAttribute("loading", "lazy");
       image.setAttribute("decoding", "async");
@@ -128,9 +130,10 @@ function isAllowedEmbeddedImageSource(src: string): boolean {
   return /^data:image\/(?:png|jpe?g|gif|webp);base64,[a-z0-9+/=\s]+$/i.test(src);
 }
 
-function workspaceAssetImagePath(
+function workspaceImagePath(
   src: string,
   workspaceRoot: string | null,
+  documentPath: string | null,
 ): string | null {
   if (!workspaceRoot) {
     return null;
@@ -143,20 +146,90 @@ function workspaceAssetImagePath(
     return null;
   }
 
-  const match = /^(?:\.\/|\/)?assets\//i.exec(decodedSrc);
-  if (!match) {
-    return null;
-  }
-
-  const relativePath = decodedSrc.slice(match[0].length);
   if (
-    !relativePath ||
-    relativePath.startsWith(".") ||
-    relativePath.includes("..") ||
-    relativePath.includes("\\")
+    !decodedSrc ||
+    decodedSrc.includes("\\") ||
+    decodedSrc.includes("?") ||
+    decodedSrc.includes("#") ||
+    /^[a-z][a-z0-9+.-]*:/i.test(decodedSrc)
   ) {
     return null;
   }
 
-  return `${workspaceRoot.replace(/\/+$/, "")}/assets/${relativePath}`;
+  const normalizedRoot = normalizeWorkspaceRoot(workspaceRoot);
+  const resolved = isAbsolutePosix(decodedSrc)
+    ? normalizePosix(decodedSrc)
+    : resolvePosix(documentBaseDir(documentPath, normalizedRoot), decodedSrc);
+
+  if (
+    resolved === normalizedRoot ||
+    resolved.startsWith(normalizedRoot + "/")
+  ) {
+    return resolved;
+  }
+
+  return null;
+}
+
+function normalizeWorkspaceRoot(root: string): string {
+  const withoutTrailingSlash = root.replace(/\/+$/, "");
+  return withoutTrailingSlash || "/";
+}
+
+function documentBaseDir(
+  documentPath: string | null,
+  normalizedRoot: string,
+): string {
+  if (
+    documentPath &&
+    (documentPath === normalizedRoot ||
+      documentPath.startsWith(normalizedRoot + "/"))
+  ) {
+    return dirnamePosix(documentPath);
+  }
+  return normalizedRoot;
+}
+
+function isAbsolutePosix(path: string): boolean {
+  return path.startsWith("/");
+}
+
+function dirnamePosix(path: string): string {
+  const normalized = normalizePosix(path);
+  if (normalized === "/") {
+    return "/";
+  }
+
+  const index = normalized.lastIndexOf("/");
+  if (index <= 0) {
+    return "/";
+  }
+  return normalized.slice(0, index);
+}
+
+function resolvePosix(baseDir: string, relativePath: string): string {
+  return normalizePosix(`${baseDir}/${relativePath}`);
+}
+
+function normalizePosix(path: string): string {
+  const absolute = path.startsWith("/");
+  const segments: string[] = [];
+
+  for (const segment of path.split("/")) {
+    if (!segment || segment === ".") {
+      continue;
+    }
+    if (segment === "..") {
+      if (segments.length > 0 && segments[segments.length - 1] !== "..") {
+        segments.pop();
+      } else if (!absolute) {
+        segments.push(segment);
+      }
+      continue;
+    }
+    segments.push(segment);
+  }
+
+  const normalized = segments.join("/");
+  return absolute ? `/${normalized}` : normalized;
 }

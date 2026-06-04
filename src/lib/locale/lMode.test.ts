@@ -27,8 +27,12 @@ describe("getLModeCopy", () => {
     for (const lang of ["en", "ja", "kana"] as const) {
       const copy = getLModeCopy(lang);
       expect(Object.keys(copy).sort()).toEqual([
+        "actionRailLabel",
+        "emptyPlaceholderHint",
+        "emptyPlaceholderText",
         "exitPillLabel",
         "exitPillTitle",
+        "featureDescription",
         "paletteCommand",
         "preferenceHint",
         "preferenceLabel",
@@ -50,5 +54,11 @@ describe("getLModeCopy", () => {
     expect(getLModeCopy("kana").typewriterPreferenceLabel).toBe(
       "たいぷらいたーもーど",
     );
+  });
+
+  it("returns localized empty placeholder text", () => {
+    expect(getLModeCopy("en").emptyPlaceholderText).toBe("Start writing…");
+    expect(getLModeCopy("ja").emptyPlaceholderText).toBe("書き始める…");
+    expect(getLModeCopy("kana").emptyPlaceholderText).toBe("かきはじめる…");
   });
 });

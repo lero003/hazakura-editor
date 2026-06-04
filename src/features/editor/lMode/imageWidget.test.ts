@@ -93,6 +93,19 @@ describe("classifyImageUrl", () => {
     });
   });
 
+  it("resolves README image paths against the document directory", () => {
+    expect(
+      classifyImageUrl(
+        "docs/images/v0.11-l-mode.png",
+        "/ws/README.md",
+        "/ws",
+      ),
+    ).toEqual({
+      kind: "workspace",
+      value: "/ws/docs/images/v0.11-l-mode.png",
+    });
+  });
+
   it("normalizes .. segments and rejects escapes from the workspace", () => {
     // `..` is collapsed. From /ws/notes, ../assets → /ws/assets
     // (still under the workspace → workspace).

@@ -1,9 +1,9 @@
 # L Mode Plan
 
 Status: Active
-Scope: Writing surface for v0.11+ L Mode polish (originated in v0.9 alpha)
+Scope: Writing surface for v0.11 L Mode polish (originated in v0.9 alpha)
 Authority: Medium
-Last reviewed: 2026-06-04
+Last reviewed: 2026-06-05
 
 ## Summary
 

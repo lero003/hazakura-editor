@@ -3,15 +3,15 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-06-04 (v0.11: auto-backup restore UI, export CSS parity, L Mode Typora-feel rendering)
+Last reviewed: 2026-06-05 (v0.11.0 release-candidate smoke focus)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Review Desk, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
 Historical smoke logs and old per-release notes are archived in `docs/archive/operations/smoke-checklist-through-v0.10-doc-refactor.md`.
 
-## v0.10 Release-Candidate Focus
+## v0.11 Release-Candidate Focus
 
-Run these before treating v0.10 as ready to publish:
+Run these before treating v0.11.0 as ready to publish:
 
 1. Launch the latest built app from `src-tauri/target/release/bundle/macos/hazakura editor.app`.
 2. Confirm default Safe Editor startup has no Git UI, general terminal, arbitrary command/path field, provider-add UI, auto-apply, or auto-commit behavior.
@@ -22,9 +22,10 @@ Run these before treating v0.10 as ready to publish:
 7. Confirm keyboard navigation can focus/edit line-level positions in long wrapped paragraphs.
 8. Confirm inactive Markdown markers are suppressed and active/hovered markers reveal enough source context to edit safely.
 9. Confirm reference-style link markers do not visually break reading/editing.
-10. Confirm code blocks remain readable.
+10. Confirm code blocks, tables, blockquotes, task checkboxes, HR, ordered/bullet lists, and images remain readable as display-only L Mode rendering.
 11. Confirm floating chrome/status text is theme-aware and readable.
-12. Confirm normal mode, Preview, Diff, Review Desk, export, and copy behavior still use Markdown source, not rendered preview content.
+12. Confirm auto-backup restore opens backup-vs-buffer review, applies only to the compared document, marks the tab dirty, and does not save automatically.
+13. Confirm normal mode, Preview, Diff, Review Desk, export, and copy behavior still use Markdown source, not rendered preview content.
 
 ## L Mode v0.11+ (WYSIWYG-tier writing surface)
 
@@ -75,8 +76,9 @@ Run when the L Mode extension, the GFM parser base, the lMode stylesheet, the pr
 ### Typewriter mode (optional setting)
 
 28. In the Preferences dialog, the "Typewriter mode" toggle appears as a sub-option under the L Mode toggle, indented and dimmed when L Mode is off.
-29. With typewriter mode ON, the active line stays vertically centered in the viewport as the cursor moves. The scroller's `scroll-behavior: smooth` makes the recenter feel like a soft drift, not a snap. With it OFF, the editor uses the normal top-anchored flow.
-30. Toggle the setting from the Preferences dialog and confirm the change takes effect without restarting the app.
+29. With typewriter mode ON, the active line stays vertically centered in the viewport as the cursor moves or typing advances the collapsed caret. The scroller's `scroll-behavior: smooth` makes the recenter feel like a soft drift, not a snap. With it OFF, the editor uses the normal top-anchored flow.
+30. With typewriter mode ON, make a range selection with Shift+Arrow and confirm the viewport does not jump just because a selection range is active.
+31. Toggle the setting from the Preferences dialog and confirm the change takes effect without restarting the app.
 
 ## Safe Editor Core
 
@@ -109,10 +111,10 @@ Run when the file tree or workspace commands change:
 
 Run when Markdown preview, image assets, export, or authoring helpers change:
 
-1. Confirm sanitized Markdown preview renders headings, lists, tables, code blocks, blockquotes, task checkboxes, and local workspace asset images.
+1. Confirm sanitized Markdown preview renders headings, lists, tables, code blocks, blockquotes, task checkboxes, and local workspace-relative images such as `assets/...` and `docs/images/...`.
 2. Confirm external image URLs and unsafe local image paths are blocked.
 3. Paste or drag-drop an image and confirm `assets/<hash>.<ext>` is created and Markdown image syntax is inserted.
-4. Export HTML and confirm local image assets are inlined and the saved file uses the same preview CSS as the live preview pane (`.markdown-preview` rules, no theme-specific overrides inlined).
+4. Export HTML and confirm local workspace images are inlined and the saved file uses the same preview CSS as the live preview pane (`.markdown-preview` rules, no theme-specific overrides inlined).
 5. Use Print to PDF handoff and confirm the print-ready layout matches what Export HTML produces (serif body, page-break controls, no theme colors leaking into print).
 6. Insert a Markdown table and confirm the app does not imply row/column table editing beyond the implemented helper.
 
@@ -136,10 +138,11 @@ Run when auto-backup storage, the restore picker, or backup-vs-buffer comparison
 1. Open a throwaway workspace and edit a file until at least one auto-backup is written.
 2. Open the picker via the command palette (`Restore from Auto-Backup…`).
 3. Confirm the picker lists backups newest-first with timestamp and size, scoped to the active file.
-4. Select an entry and confirm Review Desk opens with a backup-vs-buffer diff (the live buffer is compared against the selected backup).
-5. Press "Restore this backup" and confirm the buffer is replaced with the backup contents, the tab is marked dirty, and Review Desk closes.
-6. Press `Esc` or the close button and confirm the picker closes without touching the buffer.
-7. Confirm entries that resolve outside the workspace are refused (not loaded, not listed).
+4. Select an entry and confirm the Compare pane opens with a backup-vs-buffer diff (the live buffer is compared against the selected backup).
+5. Press "Restore this backup" and confirm the buffer is replaced with the backup contents, the tab is marked dirty, the Compare pane closes, and Save is still explicit.
+6. Before pressing "Restore this backup", switch to another open tab; confirm the backup still applies to the compared document path, not the currently active unrelated tab.
+7. Press `Esc` or the close button and confirm the picker closes without touching the buffer.
+8. Confirm entries that resolve outside the workspace are refused (not loaded, not listed).
 
 ## Agent Workbench
 

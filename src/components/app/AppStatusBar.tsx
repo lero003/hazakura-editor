@@ -2,7 +2,6 @@ import { StatusBar } from "./StatusBar";
 import type { EditableLineEnding, EditorTab, TextEncoding } from "../../types";
 import type { AgentWorkbenchProvider } from "../../lib/tauri";
 import type { MenuLanguage } from "../../types";
-import type { LModeCopy } from "../../lib/locale";
 import { localizeStatusMessage } from "../../lib/statusMessages";
 import { providerLabel } from "../../features/agent/agentWorkbench";
 
@@ -17,13 +16,10 @@ type AppStatusBarProps = {
   encodingLabel: string;
   lineEndingAriaLabel: string;
   lineEndingLabel: string;
-  lModeCopy: LModeCopy;
   lModeEnabled: boolean;
   menuLanguage: MenuLanguage;
   onConvertEncoding: (encoding: TextEncoding) => void;
   onConvertLineEnding: (lineEnding: EditableLineEnding) => void;
-  onExitLModeToWorkspace: () => void;
-  onReviewChangesFromLMode: () => void;
   saveAffirmation: boolean;
   saveAffirmationKey: number | null;
   status: string;
@@ -40,13 +36,10 @@ export function AppStatusBar({
   encodingLabel,
   lineEndingAriaLabel,
   lineEndingLabel,
-  lModeCopy,
   lModeEnabled,
   menuLanguage,
   onConvertEncoding,
   onConvertLineEnding,
-  onExitLModeToWorkspace,
-  onReviewChangesFromLMode,
   saveAffirmation,
   saveAffirmationKey,
   status,
@@ -64,13 +57,9 @@ export function AppStatusBar({
       encodingLabel={encodingLabel}
       lineEndingAriaLabel={lineEndingAriaLabel}
       lineEndingLabel={lineEndingLabel}
-      lModeCopy={lModeEnabled ? lModeCopy : null}
       lModeEnabled={lModeEnabled}
       onConvertEncoding={onConvertEncoding}
       onConvertLineEnding={onConvertLineEnding}
-      onExitLModeToWorkspace={onExitLModeToWorkspace}
-      onReviewChangesFromLMode={onReviewChangesFromLMode}
-      reviewChangesAvailable={activeDirty}
       saveAffirmation={saveAffirmation}
       saveAffirmationKey={saveAffirmationKey}
       statusText={localizeStatusMessage(status, menuLanguage)}

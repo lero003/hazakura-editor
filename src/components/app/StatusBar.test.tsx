@@ -36,13 +36,9 @@ describe("StatusBar", () => {
         encodingLabel="Encoding"
         lineEndingAriaLabel="Line endings"
         lineEndingLabel="Line endings"
-        lModeCopy={null}
         lModeEnabled={false}
         onConvertEncoding={vi.fn()}
         onConvertLineEnding={vi.fn()}
-        onExitLModeToWorkspace={vi.fn()}
-        onReviewChangesFromLMode={vi.fn()}
-        reviewChangesAvailable={false}
         saveAffirmation={false}
         saveAffirmationKey={null}
         statusText="Ready"
@@ -69,13 +65,9 @@ describe("StatusBar", () => {
         encodingLabel="Encoding"
         lineEndingAriaLabel="Line endings"
         lineEndingLabel="Line endings"
-        lModeCopy={null}
         lModeEnabled={true}
         onConvertEncoding={vi.fn()}
         onConvertLineEnding={vi.fn()}
-        onExitLModeToWorkspace={vi.fn()}
-        onReviewChangesFromLMode={vi.fn()}
-        reviewChangesAvailable={false}
         saveAffirmation={false}
         saveAffirmationKey={null}
         statusText="Ready"
@@ -83,6 +75,7 @@ describe("StatusBar", () => {
     );
 
     expect(container.querySelector(".status-bar-format-group")).toBeNull();
+    expect(container.querySelector(".l-mode-action-rail")).toBeNull();
     expect(container.querySelectorAll("select")).toHaveLength(0);
   });
 });

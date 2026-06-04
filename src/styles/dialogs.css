@@ -162,6 +162,44 @@
   min-height: 32px;
 }
 
+/* L Mode — main feature. Wrap its two toggles in a quiet, paper-like
+   card so it reads as "this is the headline setting" rather than
+   another checkbox. Pairs with the L Mode design intent (lMode
+   should feel like writing in a library, not a tech tool). */
+.preference-feature {
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+  padding: 12px 14px;
+}
+
+.preference-feature-lede {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+}
+
+.preference-feature-label {
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.preference-feature-description {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-style: italic;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
 .preference-note,
 .preference-warning {
   border-radius: 6px;

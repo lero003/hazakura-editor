@@ -1,8 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { EditorState } from "@codemirror/state";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import { EditorView, type DecorationSet } from "@codemirror/view";
 import {
+  __test__ as lModeExtensionInternals,
   computeLModeDecorations,
   lModeExtension,
 } from "./extension";
@@ -582,6 +583,101 @@ describe("v0.11 task toggle click", () => {
     parent.remove();
   });
 });
+
+describe("v0.11 typewriter mode", () => {
+  it("requests a measured recenter for the collapsed caret after typing", async () => {
+    const source = "Line 1\nLine 2\n";
+    const parent = document.createElement("div");
+    document.body.append(parent);
+
+    const view = new EditorView({
+      parent,
+      state: EditorState.create({
+        doc: source,
+        extensions: [
+          markdown({ base: markdownLanguage }),
+          lModeExtension(
+            true,
+            { workspaceRoot: null, documentPath: null },
+            { typewriterMode: true },
+          ),
+        ],
+        selection: { anchor: source.length },
+      }),
+    });
+    const measureSpy = vi.spyOn(view, "requestMeasure");
+
+    view.dispatch({
+      changes: { from: source.length, insert: "x" },
+      selection: { anchor: source.length + 1 },
+    });
+    await nextAnimationFrame();
+
+    expect(measureSpy.mock.calls.some((call) => call.length > 0)).toBe(true);
+
+    view.destroy();
+    parent.remove();
+  });
+
+  it("does not request a measured recenter while a range selection is active", async () => {
+    const parent = document.createElement("div");
+    document.body.append(parent);
+
+    const view = new EditorView({
+      parent,
+      state: EditorState.create({
+        doc: "Line 1\nLine 2\n",
+        extensions: [
+          markdown({ base: markdownLanguage }),
+          lModeExtension(
+            true,
+            { workspaceRoot: null, documentPath: null },
+            { typewriterMode: true },
+          ),
+        ],
+      }),
+    });
+    const measureSpy = vi.spyOn(view, "requestMeasure");
+
+    view.dispatch({ selection: { anchor: 0, head: 6 } });
+    await nextAnimationFrame();
+
+    expect(measureSpy.mock.calls.some((call) => call.length > 0)).toBe(false);
+
+    view.destroy();
+    parent.remove();
+  });
+
+  it("computes the scrollTop that places the caret in the viewport center", () => {
+    expect(
+      lModeExtensionInternals.computeTypewriterScrollTop({
+        caretBottom: 540,
+        caretTop: 520,
+        currentScrollTop: 1000,
+        scrollerHeight: 400,
+        scrollerTop: 100,
+      }),
+    ).toBe(1230);
+  });
+
+  it("does not compute a target for a zero-height scroller", () => {
+    expect(
+      lModeExtensionInternals.computeTypewriterScrollTop({
+        caretBottom: 540,
+        caretTop: 520,
+        currentScrollTop: 1000,
+        scrollerHeight: 0,
+        scrollerTop: 100,
+      }),
+    ).toBeNull();
+  });
+});
+
+function nextAnimationFrame(): Promise<void> {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => resolve());
+  });
+}
 
 // Count how many of the two `>` positions of a multi-line
 // blockquote are hidden in the given decoration set. The two

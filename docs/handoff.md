@@ -3,8 +3,9 @@
 ## Current State
 
 - `hazakura editor` published `v0.10.0` as a warning-expected DMG preview, framed as **L Mode Alpha Preview**.
-- Version surfaces remain aligned at `0.10.0`; no next release candidate is open yet.
-- Current release body: `docs/releases/0.10.0-warning-expected-dmg-preview.release.md`.
+- Version surfaces are aligned at `0.11.0`; `v0.11.0` is the current release candidate.
+- Prepared release body: `docs/releases/0.11.0-warning-expected-dmg-preview.release.md`.
+- Latest published release body: `docs/releases/0.10.0-warning-expected-dmg-preview.release.md`.
 - Current status source: `docs/current-status.md`.
 
 ## Recent Changes
@@ -16,6 +17,9 @@
 - New indexes were added at `docs/README.md`, `docs/archive/README.md`, and `docs/releases/README.md`.
 - `v0.10.0` was tagged and published, with DMG assets re-downloaded and verified after publication.
 - L Mode direction reframed for v0.11+: the visual target is now a WYSIWYG-tier writing surface that goes beyond dedicated WYSIWYG editors like Typora. `docs/l-mode-plan.md`, `docs/roadmap.md`, `docs/current-status.md`, the smoke checklist, and the L Mode memory entry all reflect the new direction. Implementation discipline (Markdown source = truth, CodeMirror decoration, no Preview DOM editing) is unchanged.
+- `v0.11.0` release preparation updated version surfaces, current docs, roadmap, smoke checklist, release notes index, and README to separate the prepared candidate from the published `v0.10.0` release.
+- Review found and fixed auto-backup restore safety issues: applying a backup after switching tabs now targets the compared document path, not the currently active unrelated tab; selecting a backup from L Mode exits L Mode so the Compare pane is visible before Apply.
+- L Mode escape hatches were moved out of the status bar into a separate action rail. `変更を確認` now exits L Mode and defers the disk-vs-editor diff request to the next tick so the Compare pane is visible instead of leaving only status/top-chrome state behind.
 
 ## Decisions
 
@@ -31,17 +35,24 @@
 - `spctl -a -vv -t open` rejected the ad-hoc signed app with `source=Insufficient Context`, as expected for this warning-expected preview.
 - Remote GitHub Release assets were re-downloaded into a fresh temp directory and passed checksum, `hdiutil verify`, mounted-app metadata, and codesign verification.
 - Docs checks passed: `git diff --check`, current-doc old-reference scan, and current-doc local Markdown link check.
+- v0.11.0 local verification passed: `npm run typecheck`, `npm test` (188 tests), `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml` (178 tests), `npm run build:vite`, `npm run build`, `git diff --check`, `npm audit` (0 vulnerabilities), `cargo audit --file src-tauri/Cargo.lock` (exit 0 with existing allowed warnings), `npm run build:dmg-preview`, checksum/DMG verification, built + mounted app metadata, built + mounted app codesign, expected `spctl` rejection, and built-app launch smoke.
+- Focused v0.11.0 built-app manual smoke passed on 2026-06-05: `Cmd+Shift+L` and View menu `えるモード` entered L Mode on mixed Markdown documents without changing the saved source; long-document keyboard and user-operated trackpad/mouse-wheel scrolling worked in L Mode; the L Mode action rail exposed separate workspace and diff buttons; `変更を確認` opened the right-pane disk-vs-editor diff for a dirty buffer; Preferences exposed and toggled Typewriter mode; Export HTML wrote a standalone UTF-8 file with Preview CSS parity and inlined workspace images; Print to PDF generated the print HTML and opened Safari's print dialog; auto-backup restore listed a scoped backup, opened backup-vs-buffer Compare from L Mode, applied the backup to the compared `smoke.md` after switching to `other.md`, marked `smoke.md` dirty without auto-saving, and saved only `smoke.md` when explicitly requested.
+- Post-screenshot focused fix on 2026-06-05: README-style `docs/images/...` local images now resolve in Markdown preview/export/print through `open_workspace_image` instead of being limited to `assets/...`; L Mode already used the same workspace-relative boundary and now has explicit README-image regression coverage. Focused verification passed: `npm test -- src/features/editor/markdown.test.ts src/features/editor/lMode/imageWidget.test.ts`, `npm run typecheck`, `cargo test --manifest-path src-tauri/Cargo.toml open_workspace_image`, `npm run build:vite`, `npm run build`, plus built-app README Preview and L Mode smoke showing both README screenshots as images rather than blocked placeholders.
+- Typewriter follow-up on 2026-06-05: the previous implementation could fail to visibly center because it dispatched `EditorView.scrollIntoView` during the same update cycle as CodeMirror's own selection visibility scroll. L Mode typewriter now schedules the recenter one animation frame later, measures the settled caret coordinates, writes directly to `view.scrollDOM.scrollTo`, recenters on document changes or selection changes only when the selection is a collapsed caret, and skips range selections. The empty L Mode placeholder is now localized through `LModeCopy`. Verification passed: `npm test -- src/features/editor/lMode/extension.test.ts`, `npm test` (188 tests), `npm run typecheck`, `npm run build:vite`, `git diff --check`, a real browser CodeMirror fixture loaded from Vite (`line 90` centered within `0.31px`), `npm run build:dmg-preview`, `shasum -c hazakura-editor_0.11.0_aarch64-warning-expected.dmg.sha256`, and `hdiutil verify hazakura-editor_0.11.0_aarch64-warning-expected.dmg`. Latest local DMG SHA-256: `09194d22ed6a61164fbf72b7a1b17301e530bca289f42a104d3bb6c4305767e8`.
 
 ## Risks / Unknowns
 
 - The `v0.10.0` tag points at the release-prep commit; `main` has a later post-publication docs-sync commit.
+- `v0.11.0` is not tagged or published yet. Do not create the tag or GitHub Release without explicit user approval.
+- Direct mouse-wheel automation remains unreliable for WebView smoke because macOS accessibility does not expose a dependable scroll action here; treat real trackpad/mouse-wheel coverage as user-operated manual smoke.
 - GitHub reported one moderate vulnerability notice during push; `npm audit` still reported 0 vulnerabilities locally.
 - `docs/releases/` still contains historical release-note evidence; this is intentional because release verification can depend on it.
 
 ## Next Actions
 
-- For v0.11+ L Mode polish, push the WYSIWYG-tier visual target (magazine-feel typography, layout stability, distinctive block treatments) and keep the implementation discipline intact. Toggling L Mode off remains the way to see the source.
-- For v0.11+ assist work, keep assist behavior detachable and route candidate output through Review Desk or Diff.
+- Before any publication decision, re-check the latest local gates if code changes again; otherwise use the v0.11.0 release note as the current local evidence packet.
+- If publishing v0.11.0 is approved, build the warning-expected DMG, verify checksum/image/app metadata/codesign locally, create/push the tag and release, then re-download GitHub Release assets into a fresh temp directory and verify again.
+- For post-v0.11 assist work, keep assist behavior detachable and route candidate output through Review Desk or Diff.
 - If doing more docs cleanup, prefer tightening release-note structure, not resurrecting archived planning docs.
 
 ## Avoid

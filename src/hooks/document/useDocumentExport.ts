@@ -42,6 +42,7 @@ export function useDocumentExport({
       const { renderMarkdown, inlineWorkspaceAssetImages } =
         await loadMarkdownRenderer();
       let rendered = renderMarkdown(activeContents, {
+        documentPath: activeTab.path,
         workspaceRoot: workspaceRootPath ?? undefined,
       });
       if (workspaceRootPath) {
@@ -169,6 +170,7 @@ ${rendered}
       const { renderMarkdown, inlineWorkspaceAssetImages } =
         await loadMarkdownRenderer();
       let bodyHtml = renderMarkdown(activeContents, {
+        documentPath: activeTab.path,
         workspaceRoot: workspaceRootPath,
       });
       if (workspaceRootPath) {

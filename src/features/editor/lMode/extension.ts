@@ -155,27 +155,124 @@ export function lModeExtension(
 //
 // Keeps the active line vertically centered in the viewport
 // as the cursor moves. The plugin is constructed only when
-// the user has typewriter mode on, and the scroller's
-// `scroll-behavior: smooth` (set in CSS) makes the recenter
-// feel like a soft focus drift rather than a snap.
+// the user has typewriter mode on. It writes directly to the
+// CodeMirror scroll DOM instead of dispatching a nested
+// `scrollIntoView` transaction; that keeps the behavior
+// observable for caret moves that are already technically
+// visible but should still drift back to the center.
 //
-// We deliberately do NOT recenter on every doc change — only
-// on selection changes. A typing burst (each character is a
-// doc change) would otherwise produce a stream of micro-
-// scrolls; selection moves happen at a human pace.
+// The recenter is delayed by one animation frame. CodeMirror
+// also performs its own "keep selection visible" scroll during
+// the same update cycle, and measuring too early can center
+// against that intermediate scroll position rather than the
+// settled viewport.
+//
+// Recenter on document changes too, because normal typing can
+// advance the caret without a separate `selectionSet` signal.
+// Range selections are deliberately ignored so Shift+Arrow and
+// drag-select do not shove the viewport around.
 function lModeTypewriterPlugin() {
-  return ViewPlugin.define((view) => ({
-    update(update) {
-      if (update.selectionSet) {
-        const { from, to } = update.state.selection.main;
-        const head = from === to ? from : Math.max(from, to);
-        view.dispatch({
-          effects: EditorView.scrollIntoView(head, { y: "center" }),
-        });
+  return ViewPlugin.define((view) => {
+    const win = view.dom.ownerDocument.defaultView ?? window;
+    let frame: number | null = null;
+
+    function scheduleRecenter() {
+      if (frame !== null) {
+        win.cancelAnimationFrame(frame);
       }
-    },
-  }));
+      frame = win.requestAnimationFrame(() => {
+        frame = null;
+        requestTypewriterRecenter(view);
+      });
+    }
+
+    return {
+      update(update) {
+        if (!update.docChanged && !update.selectionSet) {
+          return;
+        }
+
+        const selection = update.state.selection.main;
+        if (!selection.empty) {
+          return;
+        }
+
+        scheduleRecenter();
+      },
+      destroy() {
+        if (frame !== null) {
+          win.cancelAnimationFrame(frame);
+        }
+      },
+    };
+  });
 }
+
+function requestTypewriterRecenter(view: EditorView) {
+  view.requestMeasure({
+    read(view) {
+      const selection = view.state.selection.main;
+      if (!selection.empty) {
+        return null;
+      }
+
+      const caret = view.coordsAtPos(selection.head);
+      if (!caret) {
+        return null;
+      }
+
+      const scroller = view.scrollDOM;
+      return computeTypewriterScrollTop({
+        caretBottom: caret.bottom,
+        caretTop: caret.top,
+        currentScrollTop: scroller.scrollTop,
+        scrollerHeight: scroller.clientHeight,
+        scrollerTop: scroller.getBoundingClientRect().top,
+      });
+    },
+    write(nextScrollTop, view) {
+      if (nextScrollTop === null) {
+        return;
+      }
+
+      view.scrollDOM.scrollTo({
+        top: nextScrollTop,
+        behavior: "smooth",
+      });
+    },
+  });
+}
+
+type TypewriterScrollGeometry = {
+  caretBottom: number;
+  caretTop: number;
+  currentScrollTop: number;
+  scrollerHeight: number;
+  scrollerTop: number;
+};
+
+function computeTypewriterScrollTop({
+  caretBottom,
+  caretTop,
+  currentScrollTop,
+  scrollerHeight,
+  scrollerTop,
+}: TypewriterScrollGeometry): number | null {
+  if (scrollerHeight <= 0) {
+    return null;
+  }
+
+  const caretCenter = (caretTop + caretBottom) / 2;
+  const viewportCenterOffset = scrollerHeight / 2;
+  return Math.max(
+    0,
+    currentScrollTop + caretCenter - scrollerTop - viewportCenterOffset,
+  );
+}
+
+export const __test__ = {
+  computeTypewriterScrollTop,
+};
 
 /**
  * Build the L Mode decoration set for the given editor state.

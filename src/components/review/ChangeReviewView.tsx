@@ -12,7 +12,7 @@ type ChangeReviewCase = Extract<CompareCase, { kind: "changes" }>;
 type ChangeReviewViewProps = {
   compareCase: ChangeReviewCase;
   menuLanguage: MenuLanguage;
-  onApplyBackup?: (backupContents: string) => void;
+  onApplyBackup?: (documentPath: string, backupContents: string) => void;
   onClose: () => void;
   view: CompareViewState;
 };
@@ -93,7 +93,10 @@ export function ChangeReviewView({
               type="button"
               onClick={() => {
                 if (compareCase.backupApplyAction && onApplyBackup) {
-                  onApplyBackup(compareCase.backupApplyAction.backupContents);
+                  onApplyBackup(
+                    compareCase.documentPath,
+                    compareCase.backupApplyAction.backupContents,
+                  );
                 }
               }}
             >

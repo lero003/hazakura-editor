@@ -181,43 +181,53 @@ export function SettingsPreferencesPane({
             <option value="kana">かなふみ</option>
           </select>
         </label>
-        <label className="toggle-switch">
-          <input
-            type="checkbox"
-            checked={editorSettings.lModeEnabled}
-            onChange={(event) =>
-              onEditorSettingsChange((current) => ({
-                ...current,
-                lModeEnabled: event.target.checked,
-              }))
-            }
-          />
-          <span className="slider"></span>
-          <span>{lModeCopy.preferenceLabel}</span>
-          <span className="field-hint">{lModeCopy.preferenceHint}</span>
-        </label>
-        <label
-          className={`toggle-switch toggle-switch-nested${
-            editorSettings.lModeEnabled ? "" : " toggle-switch-disabled"
-          }`}
-        >
-          <input
-            type="checkbox"
-            disabled={!editorSettings.lModeEnabled}
-            checked={editorSettings.lModeTypewriter}
-            onChange={(event) =>
-              onEditorSettingsChange((current) => ({
-                ...current,
-                lModeTypewriter: event.target.checked,
-              }))
-            }
-          />
-          <span className="slider"></span>
-          <span>{lModeCopy.typewriterPreferenceLabel}</span>
-          <span className="field-hint">
-            {lModeCopy.typewriterPreferenceHint}
-          </span>
-        </label>
+        <div className="preference-feature">
+          <p className="preference-feature-lede">
+            <span className="preference-feature-label">
+              {lModeCopy.preferenceLabel}
+            </span>
+            <span className="preference-feature-description">
+              {lModeCopy.featureDescription}
+            </span>
+          </p>
+          <label className="toggle-switch">
+            <input
+              type="checkbox"
+              checked={editorSettings.lModeEnabled}
+              onChange={(event) =>
+                onEditorSettingsChange((current) => ({
+                  ...current,
+                  lModeEnabled: event.target.checked,
+                }))
+              }
+            />
+            <span className="slider"></span>
+            <span>{lModeCopy.preferenceLabel}</span>
+            <span className="field-hint">{lModeCopy.preferenceHint}</span>
+          </label>
+          <label
+            className={`toggle-switch toggle-switch-nested${
+              editorSettings.lModeEnabled ? "" : " toggle-switch-disabled"
+            }`}
+          >
+            <input
+              type="checkbox"
+              disabled={!editorSettings.lModeEnabled}
+              checked={editorSettings.lModeTypewriter}
+              onChange={(event) =>
+                onEditorSettingsChange((current) => ({
+                  ...current,
+                  lModeTypewriter: event.target.checked,
+                }))
+              }
+            />
+            <span className="slider"></span>
+            <span>{lModeCopy.typewriterPreferenceLabel}</span>
+            <span className="field-hint">
+              {lModeCopy.typewriterPreferenceHint}
+            </span>
+          </label>
+        </div>
       </section>
     </div>
   );

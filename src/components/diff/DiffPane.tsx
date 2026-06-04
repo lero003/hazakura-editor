@@ -12,7 +12,7 @@ type RightPaneCompareCase = Extract<CompareCase, { kind: "file" | "changes" }>;
 type DiffPaneProps = {
   compareCase: RightPaneCompareCase;
   menuLanguage: MenuLanguage;
-  onApplyBackup?: (backupContents: string) => void;
+  onApplyBackup?: (documentPath: string, backupContents: string) => void;
   onClose: () => void;
   view: CompareViewState;
 };

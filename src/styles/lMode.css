@@ -310,57 +310,74 @@
   display: none;
 }
 
-/* --- 2b. Status bar escape hatches ---
-   The pill is the only chrome the user sees in L Mode, so the
-   few "I want to leave L Mode and do X" affordances live
-   inside it as small text-links rather than as a new chrome
-   row. The links stay dim until the user hovers the pill —
-   the L Mode default is 6% opacity, the hover / focus-within
-   state lifts them to ~88% — and they read as paper-warm ink
-   in the cream theme / warm amber in the night theme. The
-   divider is a thin vertical rule that gives the group a
-   quiet separator from the status text without introducing
-   a hard border around the pill. */
-:root[data-l-mode="on"] .l-mode-status-link-group {
+/* --- 2b. L Mode action rail ---
+   Review / workspace escape hatches are commands, not status
+   text. Keep them visually separate from the quiet status pill
+   while preserving the same low-opacity, hover-revealed chrome
+   language as the exit affordance. */
+:root[data-l-mode="on"] .l-mode-action-rail {
+  position: fixed;
+  top: 58px;
+  right: 18px;
+  z-index: 99;
   display: inline-flex;
   align-items: center;
-  gap: 0.4em;
-  margin: 0 0.4em 0 0.6em;
-  padding: 0;
-  border-left: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
-  height: 14px;
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid color-mix(in srgb, var(--border) 42%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 64%, transparent);
+  backdrop-filter: blur(14px) saturate(1.05);
+  box-shadow: var(--shadow-sm);
+  opacity: 0.16;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease,
+    border-color 180ms ease;
+  transform: translateY(-2px);
 }
 
-:root[data-l-mode="on"] .l-mode-status-link {
+:root[data-l-mode="on"] .l-mode-action-rail:hover,
+:root[data-l-mode="on"] .l-mode-action-rail:focus-within {
+  opacity: 1;
+  transform: translateY(0);
+  border-color: color-mix(in srgb, var(--accent) 32%, var(--border));
+}
+
+:root[data-l-mode="on"] .l-mode-action-button {
   appearance: none;
-  background: transparent;
-  border: none;
-  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 28px;
+  padding: 0 10px;
   margin: 0;
-  font: inherit;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: color-mix(in srgb, var(--text) 78%, transparent);
+  font-family: var(--lmode-ui-font-family);
   font-size: 11px;
   line-height: 1;
-  color: color-mix(in srgb, var(--accent) 70%, var(--text-muted));
-  text-decoration: none;
+  letter-spacing: 0;
   cursor: pointer;
-  letter-spacing: 0.01em;
-  transition: color 120ms ease, text-decoration-color 120ms ease;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
 }
 
-:root[data-l-mode="on"] .l-mode-status-link:hover,
-:root[data-l-mode="on"] .l-mode-status-link:focus-visible {
+:root[data-l-mode="on"] .l-mode-action-button:hover,
+:root[data-l-mode="on"] .l-mode-action-button:focus-visible {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 26%, transparent);
   color: var(--accent);
-  text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--accent) 60%, transparent);
-  text-underline-offset: 2px;
   outline: none;
 }
 
-:root[data-l-mode="on"] .l-mode-status-link-divider {
-  display: inline-block;
-  width: 1px;
-  height: 10px;
-  background: color-mix(in srgb, var(--border) 55%, transparent);
+:root[data-l-mode="on"] .l-mode-action-button:active {
+  transform: translateY(1px);
 }
 
 /* --- 3. Page-like typography (magazine feel) ---
@@ -1127,5 +1144,9 @@
    data-l-mode attribute. CSS hides it whenever L Mode is
    off. */
 :root:not([data-l-mode="on"]) .l-mode-exit-pill {
+  display: none;
+}
+
+:root:not([data-l-mode="on"]) .l-mode-action-rail {
   display: none;
 }

@@ -6,7 +6,7 @@ import EditorPane, {
 import { ImagePreviewPane } from "./preview/ImagePreviewPane";
 import { ScrollPositionHud } from "./ScrollPositionHud";
 import { StartPanel } from "../workspace/StartPanel";
-import type { SafeEditorCopy, SlashMenuCopy } from "../../lib/locale";
+import type { LModeCopy, SafeEditorCopy, SlashMenuCopy } from "../../lib/locale";
 import type {
   BaseTheme,
   EditorSettings,
@@ -30,6 +30,7 @@ type EditorMainPaneProps = {
   editorSettings: EditorSettings;
   editorTheme: BaseTheme;
   imagePreviewTitle: string;
+  lModeCopy: LModeCopy;
   menuLanguage: MenuLanguage;
   onChange: (nextValue: string) => void;
   onNewFile: () => void | Promise<void>;
@@ -67,6 +68,7 @@ export function EditorMainPane({
   editorSettings,
   editorTheme,
   imagePreviewTitle,
+  lModeCopy,
   menuLanguage,
   onChange,
   onNewFile,
@@ -99,6 +101,7 @@ export function EditorMainPane({
             documentKey={documentKey}
             fontSize={editorSettings.fontSize}
             lModeEnabled={editorSettings.lModeEnabled}
+            lModeCopy={lModeCopy}
             lModeTypewriter={editorSettings.lModeTypewriter}
             onChange={onChange}
             onScrollRatioChange={onScrollRatioChange}

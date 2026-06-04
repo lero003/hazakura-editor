@@ -4,12 +4,27 @@
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 4px 8px;
   cursor: pointer;
   user-select: none;
   font-size: 12px;
   color: var(--text-muted);
   font-weight: 500;
+}
+
+.toggle-switch > span:not(.slider):not(.field-hint) {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.toggle-switch .field-hint {
+  flex: 0 0 calc(100% - 36px);
+  margin: 0 0 0 36px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--text-muted);
 }
 
 .toggle-switch input {

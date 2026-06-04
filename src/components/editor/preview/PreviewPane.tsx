@@ -3,19 +3,21 @@ import { inlineWorkspaceAssetImages, renderMarkdown } from "../../../features/ed
 import { openWorkspaceImage } from "../../../lib/tauri";
 
 type PreviewPaneProps = {
+  documentPath?: string | null;
   onOpenLocalLink?: (href: string) => void;
   source: string;
   workspaceRoot?: string | null;
 };
 
 export default function PreviewPane({
+  documentPath,
   onOpenLocalLink,
   source,
   workspaceRoot,
 }: PreviewPaneProps) {
   const renderedHtml = useMemo(
-    () => renderMarkdown(source, { workspaceRoot }),
-    [source, workspaceRoot],
+    () => renderMarkdown(source, { documentPath, workspaceRoot }),
+    [documentPath, source, workspaceRoot],
   );
   const [html, setHtml] = useState(renderedHtml);
 

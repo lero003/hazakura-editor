@@ -30,6 +30,7 @@ import { SlashMenu, type SlashMenuCopy } from "./SlashMenu";
 import { useSlashMenu } from "../../hooks/editor/useSlashMenu";
 import { markdownSyntaxHighlighting } from "../../features/editor/codeMirrorTheme";
 import { lModeExtension, LModeClasses } from "../../features/editor/lMode";
+import type { LModeCopy } from "../../lib/locale";
 import type { SlashCommand } from "../../types/slash";
 
 type SearchMatch = { from: number; to: number };
@@ -58,6 +59,7 @@ type EditorPaneProps = {
   tabSize: number;
   wrapLines: boolean;
   lModeEnabled: boolean;
+  lModeCopy: LModeCopy;
   lModeTypewriter?: boolean;
   activeSearchMatchIndex: number;
   searchMatches: SearchMatch[];
@@ -162,6 +164,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       documentKey,
       fontSize,
       lModeEnabled,
+      lModeCopy,
       lModeTypewriter = false,
       searchMatches,
       showInvisibles,
@@ -645,10 +648,10 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         <div className={LModeClasses.emptyPlaceholder} aria-hidden="true">
           <div className={LModeClasses.emptyPlaceholderMark}>L</div>
           <div className={LModeClasses.emptyPlaceholderText}>
-            書き始める…
+            {lModeCopy.emptyPlaceholderText}
           </div>
           <div className={LModeClasses.emptyPlaceholderHint}>
-            Cmd+Shift+L で通常モードへ戻ります
+            {lModeCopy.emptyPlaceholderHint}
           </div>
         </div>
       ) : null}

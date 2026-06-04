@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-04 (v0.10.0 published; L Mode v0.11 polish in flight)
+Last reviewed: 2026-06-05 (v0.11.0 L Mode release candidate)
 
 ## Current Position
 
@@ -12,10 +12,10 @@ Last reviewed: 2026-06-04 (v0.10.0 published; L Mode v0.11 polish in flight)
 Current release state:
 
 - Latest published preview: `v0.10.0` warning-expected DMG preview.
-- v0.10.0 theme: **L Mode Alpha Preview**.
-- No active release candidate is open yet after v0.10.0 publication.
-- Active design lane: **v0.11 L Mode WYSIWYG-tier polish** (magazine-feel typography, layout stability, deeper block / inline rendering).
-- Next planning lane after that: v0.11+ Assist Planning / Apple Local Assist Exploration.
+- Current release-candidate version: `v0.11.0`.
+- v0.11.0 theme: **L Mode WYSIWYG-tier Polish**.
+- Active release lane: verify and prepare v0.11.0 warning-expected DMG preview. Tag creation and GitHub Release publication require explicit user approval.
+- Next planning lane after that: v0.12 Assist Planning / Apple Local Assist Exploration.
 
 Historical phase details and old milestone text are archived in `docs/archive/roadmaps/roadmap-through-v0.10-doc-refactor.md` and `docs/archive/roadmaps/roadmap-v0.1-archived.md`.
 
@@ -58,9 +58,9 @@ Publication result:
 - Release notes clearly state ad-hoc signing, no Developer ID signing, no notarization, and expected Gatekeeper warnings.
 - GitHub Release assets were re-downloaded and verified from a fresh temp directory after publication.
 
-## Active Design Lane: v0.11 L Mode WYSIWYG-tier Polish
+## Active Release Lane: v0.11 L Mode WYSIWYG-tier Polish
 
-Goal: push えるモード / L Mode from a credible alpha toward a custom writing-app feel that goes beyond dedicated WYSIWYG editors like Typora.
+Goal: ship えるモード / L Mode as a custom WYSIWYG-tier writing surface while keeping Markdown source canonical and editing inside CodeMirror.
 
 In scope:
 
@@ -68,8 +68,10 @@ In scope:
 - Block element treatments: pull-quote blockquote, soft code block, table with bold header row, task checkbox glyphs, HR as a divider.
 - Inline rendering: emphasis / strong / strike / link rendered as the document (no visible markers).
 - Layout stability: no horizontal shift when the cursor moves; soft focus dimming without reflow.
-- Theme handling kept simple (light / dark base) — magazine style is the differentiator, not per-theme variation.
-- Documentation refresh: `docs/l-mode-plan.md`, smoke checklist, and current status reflect the WYSIWYG-tier direction.
+- L Mode action-rail escape hatches and View menu toggle.
+- Auto-backup restore through explicit backup-vs-buffer diff/apply, without auto-save.
+- Export CSS parity with Preview, hash-based pasted-image deduplication, and path rekey hardening needed to keep the authoring surface credible.
+- Release docs, version-surface checks, warning-expected DMG preview verification, and remote verification after publication.
 
 Out of scope:
 
@@ -79,7 +81,14 @@ Out of scope:
 - Apple Local Assist implementation (this lane stays separate).
 - New Agent Workbench capability.
 
-## Next Lane: v0.11+ Assist Planning / Apple Local Assist Exploration
+Publication readiness:
+
+- Version surfaces are aligned to `0.11.0`.
+- Release body draft: `docs/releases/0.11.0-warning-expected-dmg-preview.release.md`.
+- Local gates, launch smoke, focused L Mode / auto-backup restore manual smoke, DMG checksum/image checks, mounted-app metadata, and local codesign checks passed on 2026-06-05.
+- Publication approval and remote verification remain pending.
+
+## Next Lane: v0.12 Assist Planning / Apple Local Assist Exploration
 
 Goal: decide whether Apple Local Assist / Foundation Models-based document help belongs in the product, without turning Safe Editor into a general AI platform.
 

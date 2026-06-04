@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-06-04
+Last reviewed: 2026-06-05
 
 `hazakura editor` は、AI時代のメモ帳です。Markdownを中心に、安全にテキストを読む・書く・比べるための軽量なローカル作業場を目指します。
 
@@ -17,11 +17,13 @@ Last reviewed: 2026-06-04
 
 ## Preview
 
-![hazakura editor normal mode](docs/images/pre0.2-normal-mode.png)
+![hazakura editor L Mode writing surface](docs/images/v0.11-l-mode.png)
 
-![hazakura editor Agent Workbench mode](docs/images/pre0.2-agent-mode.png)
+![hazakura editor Safe Editor with Markdown preview](docs/images/v0.11-safe-editor-preview.png)
 
-## 0.10 Alpha Preview Summary
+![hazakura editor diff comparison](docs/images/v0.11-diff-compare.png)
+
+## 0.11 Release Candidate Summary
 
 Use this when you want to:
 
@@ -38,6 +40,7 @@ Use this when you want to:
 - run bounded workspace text search without background indexing
 - pin frequently opened files on the start panel
 - use えるモード / L Mode as a WYSIWYG-tier one-pane writing surface with magazine-feel typography, where Markdown source remains the truth
+- review and explicitly apply auto-backup snapshots to the active document buffer without auto-saving
 - create new workspace files and folders, rename workspace entries, and move entries to Trash from bounded in-app file-tree actions
 - optional detached Agent Window with `codex` / `opencode` / `pi` / `claude` provider sessions
 
@@ -87,6 +90,7 @@ Example use case:
 - Tab-level unsaved state and Save / Discard / Cancel before closing dirty tabs
 - Keyboard shortcuts for New File, Open, Open Folder, Save, Find, previous/next tab focus, tab close, and table insertion
 - Markdown table insertion via toolbar button or Cmd+Shift+T
+- Auto-backup restore picker for the active workspace file, with backup-vs-buffer comparison and explicit apply-to-buffer action before Save
 - External-change save conflict detection with Reopen from disk / Close without saving / Keep editing actions
 - Non-conflict save failures keep local edits and show Try save again / Keep editing recovery actions
 - Workspace tree directory expansion loads direct children on demand, keeps heavy / hidden directory exclusions, and shows a partial-listing note instead of failing the whole workspace when one folder exceeds the entry cap
@@ -108,12 +112,12 @@ Example use case:
 - Rust-side binary-looking file rejection, large-file warning, editing size limit, and atomic save helper with temporary-file cleanup after failed replace attempts plus existing-temp-file overwrite protection
 - Existing LF / CRLF line endings are preserved on save
 - Existing final-newline presence is preserved on save; the app does not add or remove a trailing newline by policy
-- Markdown preview blocks external/local image references and allows embedded `data:image` PNG/JPEG/GIF/WebP images
-- Markdown preview renders local workspace image assets from `assets/` directory
+- Markdown preview blocks external/out-of-workspace image references and allows embedded `data:image` PNG/JPEG/GIF/WebP images
+- Markdown preview renders local workspace-relative images, including generated `assets/...` references and README-style `docs/images/...` screenshots, through the existing workspace-image validation path
 - Markdown preview gives lists, task checkboxes, horizontal rules, code blocks, blockquotes, and tables readable review-oriented spacing
 - Clipboard image paste (Cmd+V) saves to `assets/<hash>.<ext>`, inserts `![](assets/...)` Markdown syntax, with hash-based deduplication
 - Image drag-and-drop from Finder imports into `assets/` and inserts Markdown image reference
-- Standalone HTML export via save dialog; local image assets are inlined as data URIs
+- Standalone HTML export via save dialog; local workspace images are inlined as data URIs
 - Print to PDF handoff via browser print fallback
 - Workspace image files up to 20 MB can be selected from the file tree and shown as read-only local PNG/JPEG/GIF/WebP previews after a lightweight content-signature check, then closed back to the prior text tab when one is available
 - Window and dirty-tab close requests are stopped when open tabs have unsaved changes, with safe keyboard cancellation, Save / Discard choices, and editor focus restored after cancellation
@@ -134,7 +138,7 @@ Example use case:
 - [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
 - [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Apple Local Assist / Foundation Models planning
 - [Roadmap](docs/roadmap.md): 段階的な開発順序
-- [L Mode Plan](docs/l-mode-plan.md): えるモードの企画メモ (v0.9 alpha → v0.11+ WYSIWYG-tier polish)
+- [L Mode Plan](docs/l-mode-plan.md): えるモードの企画メモ (v0.9 alpha → v0.11 WYSIWYG-tier polish)
 - [External Agent Review Workflow](docs/external-agent-review-workflow.md): external implementation agent + Codex review workflow
 - [Source Release Checklist](docs/source-release-checklist.md): source-only developer previewの準備境界
 - [DMG Preview Checklist](docs/dmg-preview-checklist.md): warning-expected DMG preview laneの準備・検証境界
@@ -187,11 +191,11 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current published preview version is `0.10.0` across npm, Tauri, and Cargo metadata.
+- Current release-candidate version is `0.11.0` across npm, Tauri, and Cargo metadata.
 - Source users build locally with `npm ci` and `npm run build`.
 - The generated local `.app` declares macOS 11.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. It is not Developer ID signed or notarized.
 - The latest published warning-expected DMG preview is [v0.10.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.10.0). The v0.10.0 release notes live in [0.10.0 Warning-expected DMG Preview](docs/releases/0.10.0-warning-expected-dmg-preview.release.md).
-- Future tag creation and GitHub Release publication for later versions still require explicit user approval.
+- The prepared v0.11.0 release body is [0.11.0 Warning-expected DMG Preview](docs/releases/0.11.0-warning-expected-dmg-preview.release.md). Tag creation and GitHub Release publication still require explicit user approval.
 
 ## Known Limits
 
