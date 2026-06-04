@@ -441,6 +441,132 @@
   line-height: 1.4;
 }
 
+/* --- 4c. Typora-feel inline + block rendering ---
+   The v0.11 work moves L Mode from "marker-hidden, otherwise
+   raw" toward "renders like a finalized document." Inline
+   emphasis / strong / strikethrough / link are applied to the
+   underlying prose text via class marks; tables get line-level
+   borders; `---` becomes a divider; task lists become
+   checkboxes that toggle on click. The text the user is
+   reading is still the same Markdown source — these are
+   display-only classes and widgets. */
+
+/* Inline emphasis. The parent `.cm-lmode-emphasis` span
+   covers the `*...*` range, so the visible text is the
+   italic body and the `*` markers (also styled by
+   `.cm-lmode-hidden`) stay out of the way. */
+:root[data-l-mode="on"] .cm-lmode-emphasis {
+  font-style: italic;
+}
+
+/* Strong emphasis. `**...**` becomes bold prose. */
+:root[data-l-mode="on"] .cm-lmode-strong {
+  font-weight: 700;
+}
+
+/* Strikethrough. `~~...~~` becomes a struck-through span. */
+:root[data-l-mode="on"] .cm-lmode-strike {
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--text-muted) 80%, transparent);
+  text-decoration-thickness: 1px;
+}
+
+/* Link. The whole `[text](url)` range gets the class; the
+   URL part is already hidden by the marker path, so what
+   the user sees is the link text. Hover lifts an underline
+   so the link affordance stays discoverable without
+   dominating the prose. */
+:root[data-l-mode="on"] .cm-lmode-link {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  transition: border-color 140ms ease, color 140ms ease;
+}
+
+:root[data-l-mode="on"] .cm-lmode-link:hover {
+  border-bottom-color: var(--accent);
+}
+
+/* Tables — header + body rows + muted pipes. The `---`
+   delimiter row is collapsed by the TableDelimiter widget
+   so it does not contribute visual weight. */
+:root[data-l-mode="on"] .cm-lmode-table-header {
+  border-bottom: 1px solid color-mix(in srgb, var(--text) 32%, var(--border));
+  font-weight: 600;
+  padding-top: 0.6em;
+  padding-bottom: 0.32em;
+}
+
+:root[data-l-mode="on"] .cm-lmode-table-row {
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 68%, transparent);
+  padding-top: 0.32em;
+  padding-bottom: 0.32em;
+}
+
+:root[data-l-mode="on"] .cm-lmode-pipe {
+  color: color-mix(in srgb, var(--text-muted) 56%, transparent);
+  padding: 0 0.18em;
+  user-select: none;
+}
+
+/* The collapsed TableDelimiter widget — sits at line-height
+   so the next row picks up the right top spacing. */
+:root[data-l-mode="on"] .cm-lmode-table-delimiter {
+  display: inline-block;
+  font-size: 0;
+  line-height: 0.4;
+  width: 0;
+}
+
+/* Horizontal rule — a thin divider line, full width of the
+   editor content area. The widget is a `<div>` so it can
+   carry its own border without inheriting inline `display`. */
+:root[data-l-mode="on"] .cm-lmode-hr {
+  border-top: 1px solid color-mix(in srgb, var(--text-muted) 38%, var(--border));
+  margin: 1.1em 0;
+  height: 0;
+  width: 100%;
+}
+
+/* Task list checkboxes. The widget is a single inline `<span>`
+   that contains a glyph (☑ / ☐) and the click handler
+   dispatches the buffer toggle. */
+:root[data-l-mode="on"] .cm-lmode-task {
+  display: inline-block;
+  margin-right: 0.45em;
+  cursor: pointer;
+  font-size: 0.95em;
+  line-height: 1;
+  vertical-align: baseline;
+  user-select: none;
+  transition: transform 120ms ease, color 120ms ease;
+}
+
+:root[data-l-mode="on"] .cm-lmode-task-unchecked {
+  color: color-mix(in srgb, var(--text-muted) 78%, var(--text));
+}
+
+:root[data-l-mode="on"] .cm-lmode-task-checked {
+  color: var(--accent);
+}
+
+:root[data-l-mode="on"] .cm-lmode-task:hover {
+  transform: scale(1.12);
+}
+
+/* Soft focus — non-active lines get a slightly lower
+   opacity so the cursor's line stands out. The active line
+   is explicitly NOT dimmed; CSS keeps the active line at
+   1.0 by not having the dim class on it. Transition makes
+   the fade smooth as the cursor moves. */
+:root[data-l-mode="on"] .cm-line {
+  transition: opacity 200ms ease;
+}
+
+:root[data-l-mode="on"] .cm-lmode-dimmed {
+  opacity: 0.85;
+}
+
 /* --- 5. Exit pill --- */
 .l-mode-exit-pill {
   position: fixed;

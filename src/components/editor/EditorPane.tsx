@@ -1,5 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
-import { markdown } from "@codemirror/lang-markdown";
+import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import {
   selectCharLeft,
   selectCharRight,
@@ -341,7 +341,14 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         crosshairCursor(),
         editorKeyboardShortcuts,
         editorTabIndentation,
-        markdown(),
+        // Use the GFM-flavored `markdownLanguage` as the base
+        // parser so syntax-tree nodes like `Table`,
+        // `TableDelimiter`, `Task`, `TaskMarker`, and
+        // `Strikethrough` are emitted. The default `markdown()`
+        // base is strict CommonMark and skips them, which would
+        // silently neutralize the v0.11 Typora-feel decorations
+        // for tables, task lists, and strikethrough.
+        markdown({ base: markdownLanguage }),
         searchHighlightField,
         wrappingCompartmentRef.current.of(
           getEditorWrappingExtensions(wrapLines, lModeEnabled),

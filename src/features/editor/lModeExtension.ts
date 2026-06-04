@@ -26,6 +26,7 @@ import {
   Decoration,
   type DecorationSet,
   EditorView,
+  WidgetType,
 } from "@codemirror/view";
 import { syntaxTree } from "@codemirror/language";
 import {
@@ -36,6 +37,10 @@ import {
   peekResolvedImage,
   refreshImagesEffect,
 } from "./lModeImageWidget";
+import {
+  LModeTaskWidget,
+  lModeTaskClickPlugin,
+} from "./lModeTaskWidget";
 import type { SyntaxNode } from "@lezer/common";
 
 export const lModeCompartment = new Compartment();
@@ -60,6 +65,20 @@ export const lModeContextFacet = Facet.define<LModeContext, LModeContext>({
 
 const hiddenMarker = Decoration.mark({ class: "cm-lmode-hidden" });
 const sourceLineClass = "cm-lmode-source-line";
+const dimmedLineClass = "cm-lmode-dimmed";
+
+// Inline rendering marks. Applied to the parent node range of
+// the construct (Emphasis / StrongEmphasis / Strikethrough /
+// Link). The marker children inside the range are still hidden
+// by the existing `MARKER_NODE_NAMES` path, so the visible
+// portion of the range is just the prose text, and the parent
+// class drives its visual style (italic / bold / line-through /
+// link color).
+const emphasisClassMark = Decoration.mark({ class: "cm-lmode-emphasis" });
+const strongClassMark = Decoration.mark({ class: "cm-lmode-strong" });
+const strikeClassMark = Decoration.mark({ class: "cm-lmode-strike" });
+const linkClassMark = Decoration.mark({ class: "cm-lmode-link" });
+const pipeClassMark = Decoration.mark({ class: "cm-lmode-pipe" });
 
 // Marker node names to hide. Each entry is a Lezer node name
 // from @lezer/markdown (or its GFM extension) that represents
@@ -129,6 +148,20 @@ export function computeLModeDecorations(
 
   for (const line of activeLineRanges) {
     pushLineClass(lineClasses, line.number, sourceLineClass);
+  }
+
+  // Soft focus: every line that is NOT part of the active
+  // selection gets `cm-lmode-dimmed`. The CSS rule lowers its
+  // opacity so the cursor's line(s) stand out without us having
+  // to track the cursor in a special way. The active-line
+  // reveal is still expressed by `sourceLineClass` on top of
+  // the dim (CSS sets opacity: 1 for active lines), so the
+  // two signals compose cleanly.
+  const activeLineNumbers = new Set(activeLineRanges.map((l) => l.number));
+  for (let lineNumber = 1; lineNumber <= state.doc.lines; lineNumber++) {
+    if (!activeLineNumbers.has(lineNumber)) {
+      pushLineClass(lineClasses, lineNumber, dimmedLineClass);
+    }
   }
 
   tree.iterate({
@@ -244,6 +277,94 @@ export function computeLModeDecorations(
         return false;
       }
 
+      // HorizontalRule — replace the `---` / `***` / `___`
+      // source with a thin-line widget. The widget carries the
+      // visual divider; the underlying doc text is untouched.
+      if (name === "HorizontalRule") {
+        contentDecorations.push(
+          Decoration.replace({
+            widget: new LModeHorizontalRuleWidget(),
+          }).range(node.from, node.to),
+        );
+        return false;
+      }
+
+      // Task list — the `Task` node is the whole list-item
+      // line. The 3-char `TaskMarker` child is what we replace
+      // with the checkbox widget; the rest of the line is
+      // normal text the user types. We return true so the
+      // iterator descends and visits the TaskMarker, where
+      // the widget replacement is emitted.
+      if (name === "Task") {
+        return true;
+      }
+      if (name === "TaskMarker") {
+        const markerText = state.doc.sliceString(node.from, node.to);
+        const checked = markerText === "[x]";
+        contentDecorations.push(
+          Decoration.replace({
+            widget: new LModeTaskWidget(node.from, node.to, checked),
+          }).range(node.from, node.to),
+        );
+        return false;
+      }
+
+      // Tables — the delimiter row (`| --- | --- |`) is
+      // visual noise once the line borders do the same job, so
+      // we collapse it to an empty widget and let the next
+      // line sit immediately under the header. TableHeader and
+      // TableRow get line classes; we also walk each line to
+      // mark every `|` with a muted class so the cell
+      // separators read as quiet vertical rules instead of
+      // raw source characters.
+      if (name === "TableDelimiter") {
+        contentDecorations.push(
+          Decoration.replace({ widget: new LModeTableDelimiterWidget() }).range(
+            node.from,
+            node.to,
+          ),
+        );
+        return false;
+      }
+      if (name === "TableHeader") {
+        const fromLine = state.doc.lineAt(node.from).number;
+        pushLineClass(lineClasses, fromLine, "cm-lmode-table-header");
+        addPipeMarks(state, state.doc.line(fromLine), contentDecorations);
+        return true;
+      }
+      if (name === "TableRow") {
+        const fromLine = state.doc.lineAt(node.from).number;
+        pushLineClass(lineClasses, fromLine, "cm-lmode-table-row");
+        addPipeMarks(state, state.doc.line(fromLine), contentDecorations);
+        return true;
+      }
+
+      // Inline emphasis / strong / strikethrough — apply a
+      // class mark to the parent node range. The marker
+      // children inside the range are still hidden by the
+      // `MARKER_NODE_NAMES` path below, so the visible
+      // portion is just the prose text picking up the
+      // visual style (italic / bold / line-through).
+      if (name === "Emphasis") {
+        contentDecorations.push(emphasisClassMark.range(node.from, node.to));
+        return true;
+      }
+      if (name === "StrongEmphasis") {
+        contentDecorations.push(strongClassMark.range(node.from, node.to));
+        return true;
+      }
+      if (name === "Strikethrough") {
+        contentDecorations.push(strikeClassMark.range(node.from, node.to));
+        return true;
+      }
+      // Link — the parent class mark styles the visible link
+      // text. The LinkMark / URL children are hidden as before,
+      // so the user sees a single styled `link text` span.
+      if (name === "Link") {
+        contentDecorations.push(linkClassMark.range(node.from, node.to));
+        return true;
+      }
+
       if (!MARKER_NODE_NAMES.has(name)) {
         return true;
       }
@@ -316,6 +437,54 @@ function pushLineClass(
   map.set(line, [className]);
 }
 
+// Mark every `|` in the given line with the muted `cm-lmode-pipe`
+// class. The `|` characters in a Markdown table line are the
+// cell separators; making them muted and slightly recessed
+// gives the table line a typographic feel that matches the
+// rest of L Mode's body text. In a typical table line the
+// pipes are the visual structure, not part of the cell text.
+function addPipeMarks(
+  state: EditorState,
+  line: { from: number; to: number },
+  decorations: Range<Decoration>[],
+): void {
+  const text = state.doc.sliceString(line.from, line.to);
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === "|") {
+      decorations.push(pipeClassMark.range(line.from + i, line.from + i + 1));
+    }
+  }
+}
+
+// Widget for `---` / `***` / `___` HorizontalRule nodes.
+// The widget renders a single thin divider line; the
+// underlying source text is not modified. The line keeps its
+// own height (driven by the editor's line-height) so the
+// rule sits with comfortable whitespace above and below.
+// Exported for tests that verify the right widget is
+// attached to the right range.
+export class LModeHorizontalRuleWidget extends WidgetType {
+  toDOM(): HTMLElement {
+    const el = document.createElement("div");
+    el.className = "cm-lmode-hr";
+    el.setAttribute("aria-hidden", "true");
+    return el;
+  }
+}
+
+// Widget for the `| --- | --- |` TableDelimiter row. We
+// collapse it to a near-zero-height empty node so the line
+// contributes only the spacing the next line needs, without
+// showing the delimiter source. Exported for tests.
+export class LModeTableDelimiterWidget extends WidgetType {
+  toDOM(): HTMLElement {
+    const el = document.createElement("span");
+    el.className = "cm-lmode-table-delimiter";
+    el.setAttribute("aria-hidden", "true");
+    return el;
+  }
+}
+
 const lModeField = StateField.define<DecorationSet>({
   create(state) {
     return buildLModeDecorations(state, readContext(state));
@@ -365,7 +534,12 @@ export function lModeExtension(
   // also drops the plugin.
   return lModeCompartment.of(
     active
-      ? [lModeField, lModeContextFacet.of(context), lModeImageResolverPlugin()]
+      ? [
+          lModeField,
+          lModeContextFacet.of(context),
+          lModeImageResolverPlugin(),
+          lModeTaskClickPlugin(),
+        ]
       : [lModeContextFacet.of(context)],
   );
 }

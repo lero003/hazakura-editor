@@ -1,8 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { EditorState } from "@codemirror/state";
-import { markdown } from "@codemirror/lang-markdown";
+import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import { EditorView, type DecorationSet } from "@codemirror/view";
-import { computeLModeDecorations, lModeExtension } from "./lModeExtension";
+import {
+  computeLModeDecorations,
+  lModeExtension,
+  LModeHorizontalRuleWidget,
+  LModeTableDelimiterWidget,
+} from "./lModeExtension";
+import { LModeTaskWidget } from "./lModeTaskWidget";
 
 // Build an EditorState with the markdown grammar so the syntax
 // tree is populated, and a selection on the line the test wants
@@ -11,7 +17,13 @@ import { computeLModeDecorations, lModeExtension } from "./lModeExtension";
 function makeState(doc: string, head: number): EditorState {
   return EditorState.create({
     doc,
-    extensions: [markdown()],
+    // Use the GFM base parser to match the production editor
+    // (see EditorPane). The default `markdown()` base is
+    // strict CommonMark and would not emit `Strikethrough`,
+    // `Table`, `TableDelimiter`, `Task`, or `TaskMarker`
+    // nodes — making the v0.11 tests for those decorations
+    // vacuous.
+    extensions: [markdown({ base: markdownLanguage })],
     selection: { anchor: head },
   });
 }
@@ -243,12 +255,18 @@ describe("computeLModeDecorations", () => {
     // 2) The Image range is fully covered by a replace
     // decoration. The `![alt](url)` source is `from..to` of
     // the Image node; the replacement range must equal that
-    // exactly, and it must not extend past the node.
+    // exactly, and it must not extend past the node. We
+    // filter to non-zero-width ranges so that any line-level
+    // decoration sitting at the line start (e.g. the soft
+    // focus `cm-lmode-dimmed` line class) does not show up
+    // here — those are a separate concern.
     const imageStart = source.indexOf("![alt]");
     const imageEnd = source.indexOf(")", imageStart) + 1;
     const coveringReplaces: Array<{ from: number; to: number }> = [];
     set.between(imageStart, imageEnd, (from, to) => {
-      coveringReplaces.push({ from, to });
+      if (to > from) {
+        coveringReplaces.push({ from, to });
+      }
     });
     expect(coveringReplaces).toEqual([{ from: imageStart, to: imageEnd }]);
   });
@@ -271,12 +289,18 @@ describe("computeLModeDecorations", () => {
     expect(state.doc.toString()).toBe(originalText);
 
     // The full `![figure](./assets/foo.png)` range must be
-    // covered by a replace decoration.
+    // covered by a replace decoration. Filter to non-zero
+    // ranges so any line-level decoration (the soft-focus
+    // dim class) on this first line does not show up in the
+    // cover list — line classes are not the thing under
+    // test here.
     const imageStart = source.indexOf("![");
     const imageEnd = source.indexOf(")", imageStart) + 1;
     const coveringReplaces: Array<{ from: number; to: number }> = [];
     set.between(imageStart, imageEnd, (from, to) => {
-      coveringReplaces.push({ from, to });
+      if (to > from) {
+        coveringReplaces.push({ from, to });
+      }
     });
     expect(coveringReplaces).toEqual([{ from: imageStart, to: imageEnd }]);
   });
@@ -292,7 +316,7 @@ describe("computeLModeDecorations", () => {
       state: EditorState.create({
         doc: source,
         extensions: [
-          markdown(),
+          markdown({ base: markdownLanguage }),
           lModeExtension(true, { workspaceRoot: null, documentPath: null }),
         ],
         selection: { anchor: source.indexOf("Active") },
@@ -309,6 +333,217 @@ describe("computeLModeDecorations", () => {
     expect(parent.querySelectorAll(".cm-lmode-hidden").length).toBeGreaterThanOrEqual(
       2,
     );
+
+    view.destroy();
+    parent.remove();
+  });
+});
+
+// --- v0.11 Typora-feel decorations ---
+//
+// These cover the new inline and block rendering targets
+// that move L Mode from "marker-hidden source" toward a
+// document-like display. The cornerstone invariant (the
+// source text is never mutated) is checked per-case by
+// re-reading `state.doc.toString()`.
+
+describe("v0.11 Typora-feel rendering", () => {
+  it("applies the emphasis class to the *italic* range", () => {
+    const source = "*italic* and **strong**\n";
+    const italicStart = source.indexOf("*italic*");
+    const italicEnd = italicStart + "*italic*".length;
+    const state = makeState(source, source.length);
+    const set = computeLModeDecorations(state);
+
+    expect(state.doc.toString()).toBe(source);
+    expect(hasClassMark(set, italicStart, italicEnd, "cm-lmode-emphasis")).toBe(
+      true,
+    );
+  });
+
+  it("applies the strong class to the **bold** range", () => {
+    const source = "*italic* and **strong**\n";
+    const boldStart = source.indexOf("**strong**");
+    const boldEnd = boldStart + "**strong**".length;
+    const state = makeState(source, source.length);
+    const set = computeLModeDecorations(state);
+
+    expect(state.doc.toString()).toBe(source);
+    expect(hasClassMark(set, boldStart, boldEnd, "cm-lmode-strong")).toBe(
+      true,
+    );
+  });
+
+  it("applies the strike class to the ~~struck~~ range", () => {
+    const source = "~~struck~~\n";
+    const strikeStart = source.indexOf("~~struck~~");
+    const strikeEnd = strikeStart + "~~struck~~".length;
+    const state = makeState(source, source.length);
+    const set = computeLModeDecorations(state);
+
+    expect(state.doc.toString()).toBe(source);
+    expect(hasClassMark(set, strikeStart, strikeEnd, "cm-lmode-strike")).toBe(
+      true,
+    );
+  });
+
+  it("applies the link class to the [text](url) range and hides the URL", () => {
+    const source = "see [docs](https://example.com) here\n";
+    // The `markdown` GFM parser emits `[`/`]`/`(`/`)` as
+    // LinkMark nodes; the URL node covers only the text
+    // *inside* the parens. The Link node covers the whole
+    // `[docs](https://example.com)` range.
+    const linkStart = source.indexOf("[docs]");
+    const linkEnd = source.indexOf(")", linkStart) + 1;
+    const urlStart = source.indexOf("(") + 1;
+    const urlEnd = source.indexOf(")");
+    const state = makeState(source, source.length);
+    const set = computeLModeDecorations(state);
+
+    expect(state.doc.toString()).toBe(source);
+    expect(hasClassMark(set, linkStart, linkEnd, "cm-lmode-link")).toBe(true);
+    // The URL portion should still be hidden by the existing
+    // marker path — the link class mark does not replace
+    // that, it composes with it.
+    expect(hasClassMark(set, urlStart, urlEnd, "cm-lmode-hidden")).toBe(true);
+  });
+
+  it("replaces the HorizontalRule source with the HR widget", () => {
+    const source = "before\n\n---\n\nafter\n";
+    const hrStart = source.indexOf("---");
+    const hrEnd = hrStart + 3;
+    const state = makeState(source, source.length);
+    const set = computeLModeDecorations(state);
+
+    expect(state.doc.toString()).toBe(source);
+    expect(
+      hasReplaceWithWidget(set, hrStart, hrEnd, LModeHorizontalRuleWidget),
+    ).toBe(true);
+  });
+
+  it("replaces the TaskMarker with a checkbox widget (doc text untouched)", () => {
+    const source = "- [ ] todo\n- [x] done\n";
+    const uncheckedStart = source.indexOf("[ ]");
+    const uncheckedEnd = uncheckedStart + 3;
+    const checkedStart = source.indexOf("[x]");
+    const checkedEnd = checkedStart + 3;
+    const state = makeState(source, source.length);
+    const set = computeLModeDecorations(state);
+
+    expect(state.doc.toString()).toBe(source);
+    expect(
+      hasReplaceWithWidget(set, uncheckedStart, uncheckedEnd, LModeTaskWidget),
+    ).toBe(true);
+    expect(
+      hasReplaceWithWidget(set, checkedStart, checkedEnd, LModeTaskWidget),
+    ).toBe(true);
+  });
+
+  it("replaces the TableDelimiter row with the delimiter widget", () => {
+    const source = "| col1 | col2 |\n| --- | --- |\n| a | b |\n";
+    const delimStart = source.indexOf("| --- | --- |");
+    const delimEnd = delimStart + "| --- | --- |".length;
+    const state = makeState(source, source.length);
+    const set = computeLModeDecorations(state);
+
+    expect(state.doc.toString()).toBe(source);
+    expect(
+      hasReplaceWithWidget(
+        set,
+        delimStart,
+        delimEnd,
+        LModeTableDelimiterWidget,
+      ),
+    ).toBe(true);
+  });
+
+  it("applies table line classes and mutes the pipe separators", () => {
+    const source = "| col1 | col2 |\n| --- | --- |\n| a | b |\n";
+    const headerLineStart = 0;
+    const bodyLineStart = source.indexOf("| a | b |");
+    const headerPipe = source.indexOf("|", 1); // first pipe after `| col1`
+    const bodyPipe = source.indexOf("|", bodyLineStart + 1);
+
+    const state = makeState(source, source.length);
+    const set = computeLModeDecorations(state);
+
+    expect(state.doc.toString()).toBe(source);
+    expect(
+      hasLineClass(set, headerLineStart, "cm-lmode-table-header"),
+    ).toBe(true);
+    expect(
+      hasLineClass(set, bodyLineStart, "cm-lmode-table-row"),
+    ).toBe(true);
+    expect(hasClassMark(set, headerPipe, headerPipe + 1, "cm-lmode-pipe")).toBe(
+      true,
+    );
+    expect(hasClassMark(set, bodyPipe, bodyPipe + 1, "cm-lmode-pipe")).toBe(
+      true,
+    );
+  });
+
+  it("dims every line that is not the active selection line", () => {
+    // Three lines; the cursor lives on the second. The other
+    // two should pick up `cm-lmode-dimmed`. The active line
+    // picks up `cm-lmode-source-line` instead.
+    const source = "alpha\nbeta\ngamma\n";
+    const betaStart = source.indexOf("beta");
+    const state = makeState(source, betaStart);
+    const set = computeLModeDecorations(state);
+
+    const alphaStart = 0;
+    const gammaStart = source.indexOf("gamma");
+
+    expect(hasLineClass(set, alphaStart, "cm-lmode-dimmed")).toBe(true);
+    expect(hasLineClass(set, gammaStart, "cm-lmode-dimmed")).toBe(true);
+    // The active line carries the source-line class (the
+    // reveal hook) and is NOT dimmed — its class list does
+    // not include `cm-lmode-dimmed`.
+    expect(hasLineClass(set, betaStart, "cm-lmode-source-line")).toBe(true);
+  });
+});
+
+// --- v0.11 Task toggle click handler ---
+//
+// The click handler lives in the view plugin; the test
+// builds a real EditorView so we can dispatch a click on the
+// widget DOM and observe the buffer change.
+
+describe("v0.11 task toggle click", () => {
+  it("toggles [ ] to [x] and back when the checkbox is clicked", () => {
+    const source = "- [ ] todo\n";
+    const parent = document.createElement("div");
+    document.body.append(parent);
+
+    const view = new EditorView({
+      parent,
+      state: EditorState.create({
+        doc: source,
+        extensions: [
+          markdown({ base: markdownLanguage }),
+          lModeExtension(true, { workspaceRoot: null, documentPath: null }),
+        ],
+        selection: { anchor: source.length },
+      }),
+    });
+
+    // Find the rendered checkbox widget in the DOM. The
+    // L Mode extension replaces the 3-char TaskMarker
+    // range with a `cm-lmode-task` span.
+    const taskEl = parent.querySelector<HTMLElement>(".cm-lmode-task");
+    expect(taskEl).not.toBeNull();
+    expect(taskEl?.classList.contains("cm-lmode-task-unchecked")).toBe(true);
+
+    // Click — the handler toggles the buffer.
+    taskEl?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    expect(view.state.doc.toString()).toBe("- [x] todo\n");
+    const after = parent.querySelector<HTMLElement>(".cm-lmode-task");
+    expect(after?.classList.contains("cm-lmode-task-checked")).toBe(true);
+
+    // Click again — toggles back.
+    after?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(view.state.doc.toString()).toBe("- [ ] todo\n");
 
     view.destroy();
     parent.remove();
@@ -394,4 +629,53 @@ function activeMarkerCount(parent: HTMLElement): number {
       .querySelector(".cm-lmode-source-line")
       ?.querySelectorAll(".cm-lmode-hidden").length ?? 0
   );
+}
+
+// Does a range `[from, to)` carry a Decoration.mark with the
+// given class? The class mark is wrapped in the mark spec, so
+// we read the spec's `class` field. Returns true if a mark
+// covering exactly the range exists with the class in its
+// `class` string.
+function hasClassMark(
+  set: DecorationSet,
+  expectedFrom: number,
+  expectedTo: number,
+  className: string,
+): boolean {
+  let found = false;
+  set.between(expectedFrom, expectedTo, (from, to, value) => {
+    const spec = value.spec as { class?: string } | undefined;
+    if (
+      from === expectedFrom &&
+      to === expectedTo &&
+      spec?.class?.includes(className)
+    ) {
+      found = true;
+    }
+  });
+  return found;
+}
+
+// Does the range `[from, to)` carry a Decoration.replace with
+// a widget of the given constructor? Returns true if a replace
+// covering exactly the range exists and its widget is an
+// instance of the given class.
+function hasReplaceWithWidget(
+  set: DecorationSet,
+  expectedFrom: number,
+  expectedTo: number,
+  ctor: new (...args: never[]) => unknown,
+): boolean {
+  let found = false;
+  set.between(expectedFrom, expectedTo, (from, to, value) => {
+    const spec = value.spec as { widget?: unknown } | undefined;
+    if (
+      from === expectedFrom &&
+      to === expectedTo &&
+      spec?.widget instanceof ctor
+    ) {
+      found = true;
+    }
+  });
+  return found;
 }
