@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-04 (v0.10.0 published)
+Last reviewed: 2026-06-04 (v0.10.0 published; L Mode v0.11 polish in flight)
 
 ## Current State
 
@@ -11,6 +11,7 @@ Last reviewed: 2026-06-04 (v0.10.0 published)
 - Current published preview is `v0.10.0` at `https://github.com/lero003/hazakura-editor/releases/tag/v0.10.0`.
 - Current package/app version is `0.10.0` across npm, Tauri, Cargo, and Cargo.lock metadata.
 - v0.10.0 is the **L Mode Alpha Preview**: a follow-up to v0.9.0 that keeps Markdown source canonical while polishing L Mode scroll/focus behavior, source-marker suppression/reveal, reference-link marker handling, code-block readability, floating chrome, and theme-aware status display.
+- Active v0.11 design work: **L Mode WYSIWYG-tier polish** — magazine-feel typography (strong heading jump rate, distinctive H1/H2/H3, serif body, generous line-height), block-element treatments (pull-quote, soft code, table with bold header, task checkboxes, HR), inline rendering (emphasis / strong / strike / link as the document), and layout stability (no horizontal shift on cursor move). The source model stays Markdown; the visual target moves from "presentation layer" to "custom writing-app feel that goes beyond dedicated WYSIWYG editors." See `docs/l-mode-plan.md` for the updated direction.
 - Local v0.10.0 gates and warning-expected DMG preview generation passed on 2026-06-04. DMG SHA-256: `a3dcbb5a2580639ae70060d1fe85d81ed298e33ffcfa7fe0498686faffadec05`.
 - GitHub Release assets were re-downloaded into a fresh temp directory after publication and passed checksum, `hdiutil verify`, mounted-app metadata, and `codesign --verify --deep --strict --verbose=2`.
 - Older public tags remain immutable.

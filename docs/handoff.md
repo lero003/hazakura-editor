@@ -15,6 +15,7 @@
 - Old setup notes, initial MVP/planning docs, superseded goal prompts, v0.6 release review brief, and the unpublished v0.1 DMG proposal moved under `docs/archive/`.
 - New indexes were added at `docs/README.md`, `docs/archive/README.md`, and `docs/releases/README.md`.
 - `v0.10.0` was tagged and published, with DMG assets re-downloaded and verified after publication.
+- L Mode direction reframed for v0.11+: the visual target is now a WYSIWYG-tier writing surface that goes beyond dedicated WYSIWYG editors like Typora. `docs/l-mode-plan.md`, `docs/roadmap.md`, `docs/current-status.md`, the smoke checklist, and the L Mode memory entry all reflect the new direction. Implementation discipline (Markdown source = truth, CodeMirror decoration, no Preview DOM editing) is unchanged.
 
 ## Decisions
 
@@ -39,7 +40,8 @@
 
 ## Next Actions
 
-- For v0.11 planning, keep assist behavior detachable and route candidate output through Review Desk or Diff.
+- For v0.11+ L Mode polish, push the WYSIWYG-tier visual target (magazine-feel typography, layout stability, distinctive block treatments) and keep the implementation discipline intact. Toggling L Mode off remains the way to see the source.
+- For v0.11+ assist work, keep assist behavior detachable and route candidate output through Review Desk or Diff.
 - If doing more docs cleanup, prefer tightening release-note structure, not resurrecting archived planning docs.
 
 ## Avoid

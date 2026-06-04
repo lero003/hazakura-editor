@@ -37,7 +37,7 @@ Use this when you want to:
 - use a command palette for existing safe app actions
 - run bounded workspace text search without background indexing
 - pin frequently opened files on the start panel
-- use えるモード / L Mode as an alpha one-pane writing surface that keeps Markdown source as truth
+- use えるモード / L Mode as a WYSIWYG-tier one-pane writing surface with magazine-feel typography, where Markdown source remains the truth
 - create new workspace files and folders, rename workspace entries, and move entries to Trash from bounded in-app file-tree actions
 - optional detached Agent Window with `codex` / `opencode` / `pi` / `claude` provider sessions
 
@@ -134,7 +134,7 @@ Example use case:
 - [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
 - [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Apple Local Assist / Foundation Models planning
 - [Roadmap](docs/roadmap.md): 段階的な開発順序
-- [L Mode Plan](docs/l-mode-plan.md): v0.9/v0.10 えるモードの企画メモ
+- [L Mode Plan](docs/l-mode-plan.md): えるモードの企画メモ (v0.9 alpha → v0.11+ WYSIWYG-tier polish)
 - [External Agent Review Workflow](docs/external-agent-review-workflow.md): external implementation agent + Codex review workflow
 - [Source Release Checklist](docs/source-release-checklist.md): source-only developer previewの準備境界
 - [DMG Preview Checklist](docs/dmg-preview-checklist.md): warning-expected DMG preview laneの準備・検証境界
