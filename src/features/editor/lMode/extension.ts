@@ -7,8 +7,6 @@
 // are in `./imageWidget.ts` and `./taskWidget.ts`. This file
 // holds:
 //
-//   - The `Compartment` so `EditorPane` can reconfigure the
-//     active state without rebuilding the editor.
 //   - The `LModeContext` type and `lModeContextFacet` so the
 //     rest of the app can hand the L Mode extension
 //     workspace-relative image paths.
@@ -22,9 +20,20 @@
 // and normal mode. The extension only adds `Decoration.mark`,
 // `Decoration.line`, and `Decoration.replace` ranges; the
 // underlying document text is never modified.
+//
+// History note: an earlier version of this file wrapped the
+// returned extensions in a module-level `Compartment` so
+// `EditorPane` could reconfigure the active state without
+// rebuilding the editor. `EditorPane` already owns its own
+// `Compartment` instance (one per editor mount), and wrapping
+// the extensions in a second compartment created a
+// double-wrap that, combined with a `documentKey` reconfigure
+// effect, left the StateField in a stuck "configured but
+// not registered" state on the first L Mode toggle after a
+// workspace file load. The inner compartment is gone; the
+// outer one in `EditorPane` is the single source of truth.
 
 import {
-  Compartment,
   EditorState,
   type Extension,
   Facet,
@@ -46,8 +55,6 @@ import {
   computeLineClasses,
   getActiveLineRanges,
 } from "./lineDecorations";
-
-export const lModeCompartment = new Compartment();
 
 /**
  * Context the L Mode extension needs from the surrounding app
@@ -133,17 +140,15 @@ export function lModeExtension(
   // EditorView for async image resolution dispatches. It is
   // only constructed when L Mode is on, so toggling L Mode
   // off also drops the plugin.
-  return lModeCompartment.of(
-    active
-      ? [
-          lModeField,
-          lModeContextFacet.of(context),
-          lModeImageResolverPlugin(),
-          lModeTaskClickPlugin(),
-          options.typewriterMode ? lModeTypewriterPlugin() : [],
-        ]
-      : [lModeContextFacet.of(context)],
-  );
+  return active
+    ? [
+        lModeField,
+        lModeContextFacet.of(context),
+        lModeImageResolverPlugin(),
+        lModeTaskClickPlugin(),
+        options.typewriterMode ? lModeTypewriterPlugin() : [],
+      ]
+    : [lModeContextFacet.of(context)];
 }
 
 // --- Typewriter mode ---
