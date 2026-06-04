@@ -42,6 +42,9 @@ import { SettingsPreferencesPane } from "./SettingsPreferencesPane";
 import { AgentWorkbenchPreferencesPane } from "../agent/AgentWorkbenchPreferencesPane";
 import { RenameWarnDialog, type RenameWarningKind } from "./RenameWarnDialog";
 import { MoveToTrashConfirmDialog } from "./MoveToTrashConfirmDialog";
+import { RestoreFromBackupDialog } from "../backup/RestoreFromBackupDialog";
+import type { AutoBackupEntry } from "../../lib/tauri/autoBackup";
+import type { AutoBackupRestoreCopy } from "../../lib/locale/autoBackup";
 import type { WorkspaceFileOpsCopy } from "../../lib/locale/workspaceFileOps";
 
 type AppOverlaysProps = {
@@ -57,6 +60,10 @@ type AppOverlaysProps = {
   appCloseCancelButtonRef: RefObject<HTMLButtonElement | null>;
   appCloseDialogRef: RefObject<HTMLElement | null>;
   appRestartPending: boolean;
+  autoBackupRestoreCopy: AutoBackupRestoreCopy;
+  autoBackupRestoreEntries: AutoBackupEntry[];
+  autoBackupRestoreError: string | null;
+  autoBackupRestoreLoading: boolean;
   cancelPendingAppClose: () => void;
   cancelPendingTabClose: () => void;
   clearCompareSource: () => void;
@@ -104,6 +111,8 @@ type AppOverlaysProps = {
   pendingAppClose: boolean;
   pendingCloseTab: EditorTab | null;
   pendingRenameWarning: RenameWarningKind | null;
+  onCloseRestoreBackupDialog: () => void;
+  onSelectAutoBackupEntry: (entry: AutoBackupEntry) => void | Promise<void>;
   pendingTrash: {
     srcPath: string;
     name: string;
@@ -118,6 +127,7 @@ type AppOverlaysProps = {
   quickOpenVisible: boolean;
   recoveryCopy: RecoveryCopy;
   lModeCopy: LModeCopy;
+  restoreBackupDialogOpen: boolean;
   revealWorkspacePath: (file: CompareAnchor) => void | Promise<void>;
   renameWorkspacePath: (srcPath: string, newName: string) => void;
   requestRename: (path: string) => void;
@@ -161,6 +171,10 @@ export function AppOverlays({
   appCloseCancelButtonRef,
   appCloseDialogRef,
   appRestartPending,
+  autoBackupRestoreCopy,
+  autoBackupRestoreEntries,
+  autoBackupRestoreError,
+  autoBackupRestoreLoading,
   cancelPendingAppClose,
   cancelPendingTabClose,
   clearCompareSource,
@@ -204,6 +218,8 @@ export function AppOverlays({
   pendingAppClose,
   pendingCloseTab,
   preferencesCloseButtonRef,
+  onCloseRestoreBackupDialog,
+  onSelectAutoBackupEntry,
   preferencesCopy,
   preferencesDialogMode,
   preferencesDialogRef,
@@ -212,6 +228,7 @@ export function AppOverlays({
   quickOpenVisible,
   recoveryCopy,
   lModeCopy,
+  restoreBackupDialogOpen,
   revealWorkspacePath,
   renameWorkspacePath,
   requestRename,
@@ -373,6 +390,18 @@ export function AppOverlays({
             />
           )}
         </PreferencesDialog>
+      ) : null}
+
+      {restoreBackupDialogOpen && activeTab ? (
+        <RestoreFromBackupDialog
+          copy={autoBackupRestoreCopy}
+          entries={autoBackupRestoreEntries}
+          error={autoBackupRestoreError}
+          fileLabel={activeTab.name}
+          loading={autoBackupRestoreLoading}
+          onClose={onCloseRestoreBackupDialog}
+          onSelect={(entry) => void onSelectAutoBackupEntry(entry)}
+        />
       ) : null}
 
       {workspaceContextMenu ? (

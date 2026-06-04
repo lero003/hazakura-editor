@@ -9,22 +9,27 @@ import { DiffBody } from "../diff/DiffBody";
 
 type ChangeReviewCase = Extract<CompareCase, { kind: "changes" }>;
 
+type ChangeReviewViewProps = {
+  compareCase: ChangeReviewCase;
+  menuLanguage: MenuLanguage;
+  onApplyBackup?: (backupContents: string) => void;
+  onClose: () => void;
+  view: CompareViewState;
+};
+
 export function ChangeReviewView({
   compareCase,
   menuLanguage,
+  onApplyBackup,
   onClose,
   view,
-}: {
-  compareCase: ChangeReviewCase;
-  menuLanguage: MenuLanguage;
-  onClose: () => void;
-  view: CompareViewState;
-}) {
+}: ChangeReviewViewProps) {
   const labels = isKanaStyle(menuLanguage)
     ? {
         additions: "ついかぎょう",
         changesTitle: "へんこう かくにん",
         close: "とぢる",
+        applyBackup: "この ばっくあっぷに もどす",
         removed: "さくじょぎょう",
         summary: "くらべの がいよう",
         to: "と",
@@ -35,6 +40,7 @@ export function ChangeReviewView({
           additions: "追加行",
           changesTitle: "変更確認",
           close: "閉じる",
+          applyBackup: "このバックアップを復元",
           removed: "削除行",
           summary: "比較の概要",
           to: "と",
@@ -44,11 +50,21 @@ export function ChangeReviewView({
           additions: "Added lines",
           changesTitle: "Change review",
           close: "Close",
+          applyBackup: "Restore this backup",
           removed: "Removed lines",
           summary: "Comparison summary",
           to: "to",
           table: "Change review",
         };
+
+  // The apply button is only meaningful for the auto-backup
+  // restore scope — disk / draft / conflict diffs are read-only.
+  // Showing it unconditionally would tempt the user to think
+  // any diff is reversible with one click, which is false.
+  const showApplyBackup =
+    compareCase.scope === "backup-vs-buffer" &&
+    compareCase.backupApplyAction !== undefined &&
+    onApplyBackup !== undefined;
 
   return (
     <div className="diff-pane">
@@ -72,6 +88,18 @@ export function ChangeReviewView({
           <span className="diff-removed" title={labels.removed}>
             -{view.removals}
           </span>
+          {showApplyBackup ? (
+            <button
+              type="button"
+              onClick={() => {
+                if (compareCase.backupApplyAction && onApplyBackup) {
+                  onApplyBackup(compareCase.backupApplyAction.backupContents);
+                }
+              }}
+            >
+              {labels.applyBackup}
+            </button>
+          ) : null}
           <button type="button" onClick={onClose}>
             {labels.close}
           </button>

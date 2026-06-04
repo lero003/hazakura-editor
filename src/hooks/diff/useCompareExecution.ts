@@ -159,6 +159,70 @@ export function useCompareExecution({
     [reviewDraftAgainstDisk],
   );
 
+  const reviewBackupAgainstBuffer = useCallback(
+    async (
+      tab: EditorTab,
+      backupName: string,
+      backupContents: string,
+    ) => {
+      setGlobalError(null);
+      setStatus("Reviewing backup...");
+
+      try {
+        // The backup snapshot is the left column ("what the
+        // backup says") and the live editor buffer is the right
+        // column ("what you have now"). With this orientation the
+        // added / removed counts in the diff header read as the
+        // size of the change the user is about to apply.
+        const diff = buildLineDiff(backupContents, tab.contents);
+        const backupLabel = compareColumnLabel(menuLanguage, "backup");
+        const bufferLabel = compareColumnLabel(menuLanguage, "buffer");
+        const caseKey = crypto.randomUUID();
+        const compareCase: CompareCase = {
+          kind: "changes",
+          key: caseKey,
+          scope: "backup-vs-buffer",
+          documentPath: tab.path,
+          documentLabel: tab.name,
+          leftColumnLabel: backupLabel,
+          rightColumnLabel: bufferLabel,
+          backupApplyAction: { backupName, backupContents },
+        };
+
+        setCompareCaseEntry(compareCase);
+        setCompareView({
+          caseKey,
+          ...diff,
+        });
+        setRightPaneMode("compare");
+        setSidePaneOpen(true);
+        setStatus("Backup review ready");
+      } catch (err) {
+        const message = String(err);
+        setGlobalError(
+          menuLanguage !== "en" ? localizeCompareError(message, menuLanguage) : message,
+        );
+        setStatus("Backup review failed");
+      }
+    },
+    [
+      menuLanguage,
+      setCompareCaseEntry,
+      setCompareView,
+      setGlobalError,
+      setRightPaneMode,
+      setSidePaneOpen,
+      setStatus,
+    ],
+  );
+
+  const requestReviewBackupAgainstBuffer = useCallback(
+    (tab: EditorTab, backupName: string, backupContents: string) => {
+      void reviewBackupAgainstBuffer(tab, backupName, backupContents);
+    },
+    [reviewBackupAgainstBuffer],
+  );
+
   const compareWorkspaceFiles = useCallback(
     async (rightFile: CompareAnchor) => {
       const canCompareWithActiveTab =
@@ -282,13 +346,23 @@ export function useCompareExecution({
 
   return {
     compareWorkspaceFiles,
+    requestReviewBackupAgainstBuffer,
     requestReviewDraftAgainstDisk,
     requestReviewTabAgainstDisk,
     runSelectedFileCompare,
   };
 }
 
-type CompareColumnKey = "disk" | "editor" | "draft" | "center" | "right" | "source" | "target";
+type CompareColumnKey =
+  | "disk"
+  | "editor"
+  | "draft"
+  | "buffer"
+  | "backup"
+  | "center"
+  | "right"
+  | "source"
+  | "target";
 
 function compareColumnLabel(
   menuLanguage: MenuLanguage,
@@ -302,6 +376,10 @@ function compareColumnLabel(
         return "えでぃた";
       case "draft":
         return "したがき";
+      case "buffer":
+        return "えでぃた";
+      case "backup":
+        return "ばっくあっぷ";
       case "center":
         return "まんなか";
       case "right":
@@ -320,6 +398,10 @@ function compareColumnLabel(
         return "エディタ";
       case "draft":
         return "下書き";
+      case "buffer":
+        return "エディタ";
+      case "backup":
+        return "バックアップ";
       case "center":
         return "中央";
       case "right":
@@ -337,6 +419,10 @@ function compareColumnLabel(
       return "Editor";
     case "draft":
       return "Draft";
+    case "buffer":
+      return "Editor";
+    case "backup":
+      return "Backup";
     case "center":
       return "Center";
     case "right":

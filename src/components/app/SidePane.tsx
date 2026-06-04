@@ -34,6 +34,7 @@ type SidePaneProps = {
   menuLanguage: MenuLanguage;
   onClearCompareSource: () => void;
   onClearCompareTarget: () => void;
+  onApplyBackup?: (backupContents: string) => void;
   onCloseCompareView: (options?: { returnToEditor?: boolean }) => void;
   onOpenPreviewLocalLink: (path: string) => void | Promise<void>;
   onPreviewScroll: () => void;
@@ -59,6 +60,7 @@ export function SidePane({
   menuLanguage,
   onClearCompareSource,
   onClearCompareTarget,
+  onApplyBackup,
   onCloseCompareView,
   onOpenPreviewLocalLink,
   onPreviewScroll,
@@ -92,6 +94,7 @@ export function SidePane({
         <DiffPane
           menuLanguage={menuLanguage}
           compareCase={rightPaneCompareCase}
+          onApplyBackup={onApplyBackup}
           view={compareView}
           onClose={() =>
             onCloseCompareView({

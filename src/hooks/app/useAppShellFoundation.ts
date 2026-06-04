@@ -24,6 +24,7 @@ import { useEditorSelectionState } from "../editor/useEditorSelectionState";
 import { useEditorTabsState } from "../editor/useEditorTabsState";
 import { useTabContextMenu } from "../editor/useTabContextMenu";
 import { useReviewDeskState } from "../review/useReviewDeskState";
+import { useAutoBackupRestoreDialogState } from "../workspace/useAutoBackupRestoreDialogState";
 import { useQuickOpenState } from "../workspace/useQuickOpenState";
 import { useRecentEntries } from "../workspace/useRecentEntries";
 import { useWorkspaceContextMenu } from "../workspace/useWorkspaceContextMenu";
@@ -50,6 +51,7 @@ export function useAppShellFoundation() {
   const agentUiGate = useAgentUiRefreshGate();
   const reviewDesk = useReviewDeskState();
   const quickOpen = useQuickOpenState();
+  const autoBackupRestoreDialog = useAutoBackupRestoreDialogState();
   const workspaceContextMenu = useWorkspaceContextMenu({
     workspaceRootPath: workspaceShell.workspaceRootPath,
   });
@@ -76,6 +78,7 @@ export function useAppShellFoundation() {
     ...agentUiGate,
     ...reviewDesk,
     ...quickOpen,
+    ...autoBackupRestoreDialog,
     ...workspaceContextMenu,
     ...tabContextMenu,
     saveAffirmation: affirmation,

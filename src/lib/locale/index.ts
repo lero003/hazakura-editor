@@ -4,6 +4,7 @@
 // `from "../../lib/locale"` import sites keep working while the
 // surface moves area by area.
 export * from "./agentWorkbench";
+export * from "./autoBackup";
 export * from "./editorChrome";
 export * from "./lMode";
 export * from "./preferences";

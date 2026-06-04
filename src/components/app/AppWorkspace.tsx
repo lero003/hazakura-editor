@@ -88,6 +88,7 @@ type AppWorkspaceProps = {
   handleSendSelectionToAgent: (text: string) => void;
   hasWorkspaceSelection: boolean;
   jumpToHeading: (heading: MarkdownHeading) => void;
+  onApplyBackup?: (backupContents: string) => void;
   loadWorkspaceDirectory: (path: string) => Promise<void>;
   menuLanguage: MenuLanguage;
   onMoveEntry: (srcPath: string, dstParentPath: string) => void;
@@ -180,6 +181,7 @@ export function AppWorkspace({
   hasWorkspaceSelection,
   jumpToHeading,
   loadWorkspaceDirectory,
+  onApplyBackup,
   menuLanguage,
   onMoveEntry,
   onMoveToTrash,
@@ -323,6 +325,7 @@ export function AppWorkspace({
             menuLanguage={menuLanguage}
             onClearCompareSource={clearCompareSource}
             onClearCompareTarget={clearCompareTarget}
+            onApplyBackup={onApplyBackup}
             onCloseCompareView={closeCompareView}
             onOpenPreviewLocalLink={openPreviewMarkdownLink}
             onPreviewScroll={syncEditorScroll}

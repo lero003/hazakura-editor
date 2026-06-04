@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import {
   getAgentWorkbenchCopy,
+  getAutoBackupRestoreCopy,
   getEditorChromeCopy,
   getLModeCopy,
   getPreferencesCopy,
@@ -38,6 +39,7 @@ export function useLocalizedAppCopy({
       agentWorkbenchCopy,
       agentWorkbenchModeBadge,
       agentWorkbenchRestartRequired,
+      autoBackupRestoreCopy: getAutoBackupRestoreCopy(menuLanguage),
       editorChromeCopy: getEditorChromeCopy(menuLanguage),
       lModeCopy: getLModeCopy(menuLanguage),
       preferencesCopy: getPreferencesCopy(menuLanguage),

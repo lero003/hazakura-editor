@@ -9,17 +9,21 @@ import { FileCompareView } from "./FileCompareView";
 // candidate.
 type RightPaneCompareCase = Extract<CompareCase, { kind: "file" | "changes" }>;
 
+type DiffPaneProps = {
+  compareCase: RightPaneCompareCase;
+  menuLanguage: MenuLanguage;
+  onApplyBackup?: (backupContents: string) => void;
+  onClose: () => void;
+  view: CompareViewState;
+};
+
 export function DiffPane({
   compareCase,
   menuLanguage,
+  onApplyBackup,
   onClose,
   view,
-}: {
-  compareCase: RightPaneCompareCase;
-  menuLanguage: MenuLanguage;
-  onClose: () => void;
-  view: CompareViewState;
-}) {
+}: DiffPaneProps) {
   if (compareCase.kind === "file") {
     return (
       <FileCompareView
@@ -35,6 +39,7 @@ export function DiffPane({
     <ChangeReviewView
       compareCase={compareCase}
       menuLanguage={menuLanguage}
+      onApplyBackup={onApplyBackup}
       onClose={onClose}
       view={view}
     />

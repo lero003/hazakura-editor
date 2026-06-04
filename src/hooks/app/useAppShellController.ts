@@ -39,6 +39,7 @@ import { useAppShellRefs } from "./useAppShellRefs";
 import { useWindowDialogActions } from "./useWindowDialogActions";
 import { useLocalizedAppCopy } from "./useLocalizedAppCopy";
 import { useAppShellSideEffectsController } from "./useAppShellSideEffectsController";
+import { useAutoBackupRestore } from "../workspace/useAutoBackupRestore";
 
 export function useAppShellController() {
   // section: state pool (orchestrator extracts dep-free leaf hooks)
@@ -137,6 +138,14 @@ export function useAppShellController() {
     workspaceRootPath,
     workspaceTree,
   } = foundation;
+
+  // section: auto-backup restore dialog state (visibility) + load hook
+  const {
+    closeRestoreBackupDialog,
+    openRestoreBackupDialog,
+    restoreBackupDialogOpen,
+  } = foundation;
+  const autoBackupRestore = useAutoBackupRestore();
 
   // section: agent workbench preferences
   const {
@@ -273,6 +282,7 @@ export function useAppShellController() {
   const {
     agentWorkbenchCopy,
     agentWorkbenchRestartRequired,
+    autoBackupRestoreCopy,
     editorChromeCopy,
     fileOpsCopy,
     lModeCopy,
@@ -461,6 +471,7 @@ export function useAppShellController() {
     closeCompareView,
     compareWorkspaceFiles,
     copyWorkspaceFullPath,
+    requestReviewBackupAgainstBuffer,
     requestReviewDraftAgainstDisk,
     requestReviewTabAgainstDisk,
     revealWorkspacePath,
@@ -483,6 +494,102 @@ export function useAppShellController() {
     setSidePaneOpen,
     setStatus,
   });
+
+  // section: auto-backup restore flow
+  //
+  // Open the picker dialog and load the active tab's backup
+  // list in one step. The list reload is best-effort: if it
+  // fails the dialog still opens (with an error message) so
+  // the user can at least dismiss it. Declared after
+  // `useCompareController` so `requestReviewBackupAgainstBuffer`
+  // and `closeCompareView` are in scope; the command palette
+  // wiring below uses this reference.
+  const requestRestoreFromBackup = useCallback(() => {
+    if (!activeTab || !workspaceRootPath) {
+      setStatus("Open a file in a workspace to restore a backup");
+      return;
+    }
+    openRestoreBackupDialog();
+    void autoBackupRestore.loadBackups({
+      workspaceRoot: workspaceRootPath,
+      filePath: activeTab.path,
+    });
+  }, [
+    activeTab,
+    autoBackupRestore,
+    openRestoreBackupDialog,
+    setStatus,
+    workspaceRootPath,
+  ]);
+
+  // User picked a backup entry. Read its content, then open
+  // the right-pane comparison (`backup-vs-buffer`). The diff
+  // is what shows the user exactly what would change before
+  // they commit — the apply step is a second, explicit click
+  // inside the compare view.
+  const selectAutoBackupEntry = useCallback(
+    async (entry: { name: string; path: string }) => {
+      if (!activeTab || !workspaceRootPath) {
+        return;
+      }
+      closeRestoreBackupDialog();
+      try {
+        const contents = await autoBackupRestore.readBackup(
+          { workspaceRoot: workspaceRootPath, filePath: activeTab.path },
+          entry.name,
+        );
+        await requestReviewBackupAgainstBuffer(
+          activeTab,
+          entry.name,
+          contents,
+        );
+      } catch (err) {
+        setGlobalError(`Restore from backup failed: ${String(err)}`);
+        setStatus("Restore from backup failed");
+      }
+    },
+    [
+      activeTab,
+      autoBackupRestore,
+      closeRestoreBackupDialog,
+      requestReviewBackupAgainstBuffer,
+      setGlobalError,
+      setStatus,
+      workspaceRootPath,
+    ],
+  );
+
+  // Apply a previously-selected backup to the active tab. The
+  // `compareCase` comes from the diff view's state (the
+  // `backupApplyAction` payload is set when the case is built,
+  // not when the apply button is clicked), so the right-pane
+  // view is the source of truth for "which backup am I
+  // applying". The buffer is marked dirty so the user still
+  // has to save to persist; this avoids a silent disk write
+  // when the user just wanted to peek at a backup.
+  const applyBackupToActiveTab = useCallback(
+    (backupContents: string) => {
+      if (!activeTab) {
+        setStatus("Backup apply failed");
+        return;
+      }
+      setTabs((currentTabs) =>
+        currentTabs.map((tab) =>
+          tab.id === activeTab.id
+            ? {
+                ...tab,
+                contents: backupContents,
+                saveStatus: "idle",
+                error: null,
+              }
+            : tab,
+        ),
+      );
+      closeCompareView();
+      setStatus("Backup applied — save to keep changes");
+    },
+    [activeTab, closeCompareView, setStatus, setTabs],
+  );
 
   // section: document IO controller
   const {
@@ -692,6 +799,7 @@ export function useAppShellController() {
       openWorkspace,
       openWorkspaceFile,
       requestCloseTab,
+      requestRestoreFromBackup,
       requestReviewTabAgainstDisk,
       requestWindowClose,
       saveActiveTab,
@@ -902,6 +1010,10 @@ export function useAppShellController() {
     agentWorkbenchPreference,
     agentWorkbenchProvider,
     agentWorkbenchRestartRequired,
+    autoBackupRestoreCopy,
+    autoBackupRestoreEntries: autoBackupRestore.backups,
+    autoBackupRestoreError: autoBackupRestore.error,
+    autoBackupRestoreLoading: autoBackupRestore.loading,
     candidateCompareCase,
     candidateCompareView,
     candidateErrorMessage,
@@ -1052,6 +1164,7 @@ export function useAppShellController() {
     recentFiles,
     pinnedFiles,
     onTogglePinRecentFile: handleTogglePinRecentFile,
+    restoreBackupDialogOpen,
     onMoveEntry: (srcPath: string, dstParentPath: string) => {
       void moveWorkspacePath(srcPath, dstParentPath);
     },
@@ -1094,6 +1207,9 @@ export function useAppShellController() {
     setAgentWorkbenchConsent: updateAgentWorkbenchConsent,
     setAgentWorkbenchPreference: updateAgentWorkbenchPreference,
     setAgentWorkbenchProvider: updateAgentWorkbenchProvider,
+    onApplyBackup: applyBackupToActiveTab,
+    onCloseRestoreBackupDialog: closeRestoreBackupDialog,
+    onSelectAutoBackupEntry: selectAutoBackupEntry,
     setCompareSource,
     setCompareTargetFile,
     setCommandPaletteActiveIndex,

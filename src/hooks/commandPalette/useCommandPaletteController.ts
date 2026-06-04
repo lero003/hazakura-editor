@@ -54,6 +54,7 @@ type UseCommandPaletteControllerActions = {
   openWorkspace: () => Promise<void>;
   openWorkspaceFile: (path: string) => Promise<void>;
   requestCloseTab: (id: string) => void;
+  requestRestoreFromBackup: () => void;
   requestReviewTabAgainstDisk: (tab: EditorTab) => void;
   requestWindowClose: () => void;
   saveActiveTab: () => Promise<void>;
@@ -204,6 +205,15 @@ export function useCommandPaletteController({
         label: "Export PDF…",
         run: () => {
           void actions.exportPdf();
+        },
+      },
+      {
+        category: "File",
+        id: "file.restoreBackup",
+        keywords: ["restore", "backup", "auto", "snapshot", "recover"],
+        label: "Restore from Auto-Backup…",
+        run: () => {
+          actions.requestRestoreFromBackup();
         },
       },
       {

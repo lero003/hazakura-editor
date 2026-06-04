@@ -303,11 +303,24 @@ export type CompareCase = {
 } | {
   kind: "changes";
   key: string;
-  scope: "buffer-vs-disk" | "draft-vs-disk" | "conflict-vs-disk";
+  scope:
+    | "buffer-vs-disk"
+    | "draft-vs-disk"
+    | "conflict-vs-disk"
+    | "backup-vs-buffer";
   documentPath: string;
   documentLabel: string;
   leftColumnLabel: string;
   rightColumnLabel: string;
+  // `backupApplyAction` is set only for the auto-backup restore
+  // scope; the right-pane view renders a single apply button that
+  // re-writes the active tab contents to the backup snapshot. Other
+  // scopes (disk / draft / conflict) are read-only diffs and leave
+  // the field unset.
+  backupApplyAction?: {
+    backupName: string;
+    backupContents: string;
+  };
 } | {
   // Manual candidate paste review: the right column is a
   // user-typed candidate snapshot, never a path on disk. The
