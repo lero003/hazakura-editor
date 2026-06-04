@@ -46,20 +46,20 @@
   background:
     linear-gradient(
       180deg,
-      color-mix(in srgb, var(--surface) 42%, transparent),
-      color-mix(in srgb, var(--surface) 16%, transparent)
+      color-mix(in srgb, var(--surface) 24%, transparent),
+      color-mix(in srgb, var(--surface) 12%, transparent)
     );
-  border-left: 1px solid color-mix(in srgb, var(--border) 42%, transparent);
-  border-right: 1px solid color-mix(in srgb, var(--border) 30%, transparent);
+  border-left: 1px solid color-mix(in srgb, var(--border) 26%, transparent);
+  border-right: 1px solid color-mix(in srgb, var(--border) 18%, transparent);
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--surface) 18%, transparent),
-    var(--shadow-lg);
+    inset 0 1px 0 color-mix(in srgb, var(--surface) 28%, transparent),
+    0 28px 70px color-mix(in srgb, var(--text) 8%, transparent);
   content: "";
-  inset: 72px auto 72px 50%;
+  inset: 0 auto 0 50%;
   pointer-events: none;
   position: absolute;
   transform: translateX(-50%);
-  width: min(760px, calc(100% - 64px));
+  width: min(820px, calc(100% - 48px));
   z-index: 0;
 }
 
@@ -369,6 +369,14 @@
   overflow: hidden;
   user-select: none;
   white-space: pre;
+}
+
+:root[data-l-mode="on"] .cm-line:hover .cm-lmode-hidden {
+  color: color-mix(in srgb, var(--text-muted) 72%, transparent);
+  font-size: inherit;
+  inline-size: auto;
+  max-inline-size: none;
+  opacity: 0.78;
 }
 
 /* --- 4b. Inline image rendering ---

@@ -93,7 +93,7 @@ export function AppDocumentFeedback({
   showPreviousMatch,
 }: AppDocumentFeedbackProps) {
   return (
-    <>
+    <div className="document-feedback-row">
       {findVisible ? (
         <FindReplaceBar
           activeMatchIndex={activeMatchIndex}
@@ -138,6 +138,6 @@ export function AppDocumentFeedback({
         onReviewTabAgainstDisk={reviewTabAgainstDisk}
         onTrySaveAgain={(tabId) => void saveTabById(tabId)}
       />
-    </>
+    </div>
   );
 }

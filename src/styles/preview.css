@@ -264,8 +264,9 @@
   display: flex;
   font-size: 12px;
   gap: 6px;
+  min-height: 28px;
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
   padding: 0 10px;
   z-index: 10;
   font-weight: 500;
@@ -298,7 +299,7 @@
 .status-bar-format-group {
   align-items: center;
   display: inline-flex;
-  flex: 0 1 clamp(196px, 28vw, 264px);
+  flex: 0 1 clamp(176px, 26vw, 252px);
   gap: 3px;
   justify-content: flex-end;
   margin-left: 0;
@@ -360,14 +361,16 @@
   color: color-mix(in srgb, var(--status-text) 100%, var(--accent) 10%);
 }
 
+@media (max-width: 860px) {
+  .status-bar-detail {
+    display: none;
+  }
+}
+
 @media (max-width: 720px) {
   .status-bar {
     gap: 4px;
     padding: 0 8px;
-  }
-
-  .status-bar-detail {
-    display: none;
   }
 
   .status-bar-format-group {

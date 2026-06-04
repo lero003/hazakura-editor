@@ -9,6 +9,13 @@ const lModeCss = readFileSync(
 );
 
 describe("lMode.css", () => {
+  it("keeps CSS blocks balanced so later L Mode rules still apply", () => {
+    const openBraces = (lModeCss.match(/{/g) ?? []).length;
+    const closeBraces = (lModeCss.match(/}/g) ?? []).length;
+
+    expect(openBraces).toBe(closeBraces);
+  });
+
   it("keeps the L Mode editor height chain explicit", () => {
     for (const selector of [
       ".app-shell",
@@ -68,6 +75,10 @@ describe("lMode.css", () => {
   });
 
   it("keeps the paper surface outside the editable content DOM", () => {
+    const paperRule =
+      lModeCss.match(
+        /:root\[data-l-mode="on"\] \.editor-host::before\s*{(?<body>[^}]*)}/s,
+      )?.groups?.body ?? "";
     const contentRule =
       lModeCss.match(
         /:root\[data-l-mode="on"\] \.cm-content\s*{(?<body>[^}]*)}/s,
@@ -80,6 +91,7 @@ describe("lMode.css", () => {
     expect(lModeCss).toMatch(
       /:root\[data-l-mode="on"\] \.editor-host::before/,
     );
+    expect(paperRule).toMatch(/inset:\s*0 auto 0 50%/);
   });
 
   it("does not hide Markdown markers with display none", () => {
@@ -89,5 +101,16 @@ describe("lMode.css", () => {
       )?.groups?.body ?? "";
 
     expect(hiddenMarkerRule).not.toMatch(/display:\s*none/);
+  });
+
+  it("reveals hidden Markdown markers when the user hovers a line", () => {
+    const hoverMarkerRule =
+      lModeCss.match(
+        /:root\[data-l-mode="on"\] \.cm-line:hover \.cm-lmode-hidden\s*{(?<body>[^}]*)}/s,
+      )?.groups?.body ?? "";
+
+    expect(hoverMarkerRule).toMatch(/font-size:\s*inherit/);
+    expect(hoverMarkerRule).toMatch(/inline-size:\s*auto/);
+    expect(hoverMarkerRule).toMatch(/max-inline-size:\s*none/);
   });
 });
