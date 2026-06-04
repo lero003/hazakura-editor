@@ -74,6 +74,20 @@ describe("lMode.css", () => {
     expect(lModeCss).not.toMatch(/\.cm-lmode-blockquote\s*{[^}]*margin/s);
   });
 
+  it("keeps fenced code readable without borrowing status bar colors", () => {
+    const fencedCodeRule =
+      lModeCss.match(
+        /:root\[data-l-mode="on"\] \.cm-lmode-fenced-code\s*{(?<body>[^}]*)}/s,
+      )?.groups?.body ?? "";
+
+    expect(fencedCodeRule).not.toMatch(/var\(--status-bg\)/);
+    expect(fencedCodeRule).not.toMatch(/var\(--status-text\)/);
+    expect(fencedCodeRule).toMatch(/color:\s*var\(--text\)/);
+    expect(lModeCss).toMatch(
+      /:root\[data-l-mode="on"\] \.cm-lmode-fenced-code span:not\(\.cm-lmode-hidden\)/,
+    );
+  });
+
   it("keeps the paper surface outside the editable content DOM", () => {
     const paperRule =
       lModeCss.match(

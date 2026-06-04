@@ -172,10 +172,10 @@
 
 :root[data-l-mode="on"] .cm-activeLine,
 :root[data-l-mode="on"] .cm-activeLineGutter {
-  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
   box-shadow:
-    -18px 0 0 color-mix(in srgb, var(--accent) 7%, transparent),
-    18px 0 0 color-mix(in srgb, var(--accent) 7%, transparent);
+    -18px 0 0 color-mix(in srgb, var(--accent) 4%, transparent),
+    18px 0 0 color-mix(in srgb, var(--accent) 4%, transparent);
 }
 
 :root[data-l-mode="on"] .cm-content ::selection,
@@ -256,20 +256,30 @@
    and last lines additionally get `-start` / `-end` so the
    block can carry its own rounded corners and padding. */
 :root[data-l-mode="on"] .cm-lmode-fenced-code {
-  background: var(--status-bg);
-  box-shadow: var(--shadow-md);
-  color: var(--status-text);
-  padding: 0.45em 1em;
+  background: color-mix(in srgb, var(--surface-muted) 78%, var(--bg));
+  border-left: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  border-right: 1px solid color-mix(in srgb, var(--border) 56%, transparent);
+  color: var(--text);
   font-family: var(--lmode-code-font-family);
+  font-size: 0.92em;
+  line-height: 1.58;
+  padding: 0.24em 1.05em;
+}
+
+:root[data-l-mode="on"] .cm-lmode-fenced-code span:not(.cm-lmode-hidden) {
+  background: transparent;
+  color: inherit;
 }
 
 :root[data-l-mode="on"] .cm-lmode-fenced-code-start {
+  border-top: 1px solid color-mix(in srgb, var(--border) 64%, transparent);
   padding-top: 0.8em;
   border-top-left-radius: 6px;
   border-top-right-radius: 6px;
 }
 
 :root[data-l-mode="on"] .cm-lmode-fenced-code-end {
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 54%, transparent);
   padding-bottom: 0.8em;
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
@@ -284,6 +294,7 @@
 :root[data-l-mode="on"] .tok-heading6 {
   font-weight: 700;
   line-height: 1.35;
+  color: color-mix(in srgb, var(--text) 88%, var(--accent));
 }
 
 :root[data-l-mode="on"] .tok-heading1 { font-size: 1.58em; }
@@ -315,13 +326,13 @@
 }
 
 :root[data-l-mode="on"] .cm-lmode-heading-1 {
-  border-bottom: 2px solid var(--border);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 36%, var(--border));
   padding-top: 1.35em;
   padding-bottom: 0.34em;
 }
 
 :root[data-l-mode="on"] .cm-lmode-heading-2 {
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
   padding-top: 1.08em;
   padding-bottom: 0.24em;
 }
@@ -334,12 +345,12 @@
    italic + opacity; this rule layers the line-level structure
    on top. */
 :root[data-l-mode="on"] .cm-lmode-blockquote {
-  background: var(--accent-soft);
-  border-left: 4px solid var(--accent);
-  border-radius: 0 8px 8px 0;
-  color: var(--text-muted);
+  background: color-mix(in srgb, var(--accent-soft) 64%, transparent);
+  border-left: 3px solid color-mix(in srgb, var(--accent) 68%, transparent);
+  border-radius: 0 6px 6px 0;
+  color: color-mix(in srgb, var(--text) 78%, var(--text-muted));
   opacity: 1;
-  padding: 0.35em 1.2em;
+  padding: 0.28em 1em;
 }
 
 /* List lines keep a quiet visual bullet even when the Markdown
@@ -356,6 +367,10 @@
   left: 0.35em;
   opacity: 0.78;
   position: absolute;
+}
+
+:root[data-l-mode="on"] .cm-lmode-list:hover::before {
+  opacity: 0.18;
 }
 
 /* Hide the L Mode marker. The actual class is added by the
