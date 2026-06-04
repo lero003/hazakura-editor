@@ -1,4 +1,4 @@
-import type { RefObject } from "react";
+import { lazy, Suspense, type RefObject } from "react";
 import type { SidePaneCopy } from "../../lib/locale";
 import type {
   CompareAnchor,
@@ -12,8 +12,14 @@ import type {
 import { DiffPane } from "../diff/DiffPane";
 import { DiffSetupPane } from "../diff/DiffSetupPane";
 import { OutlinePane } from "../editor/OutlinePane";
-import PreviewPane from "../editor/preview/PreviewPane";
 import { PreviewUnavailablePane } from "../editor/preview/PreviewUnavailablePane";
+
+// PreviewPane pulls in marked + DOMPurify, which together add
+// ~150 kB gzipped to the main bundle. The preview is off by
+// default, so defer the chunk until the user opens the preview
+// pane and let the empty pane (already wrapped in `.preview-pane`
+// styling) act as the loading frame.
+const PreviewPane = lazy(() => import("../editor/preview/PreviewPane"));
 
 type SidePaneProps = {
   activeContents: string;
@@ -112,14 +118,16 @@ export function SidePane({
           truncated={outlineTruncated}
         />
       ) : activeTab && previewVisible ? (
-        <PreviewPane
-          onOpenLocalLink={onOpenPreviewLocalLink}
-          source={activeContents}
-          workspaceRoot={
-            workspaceRootPath ??
-            (activeTab.path ? activeTab.path.replace(/\/[^/]+$/, "") : null)
-          }
-        />
+        <Suspense fallback={null}>
+          <PreviewPane
+            onOpenLocalLink={onOpenPreviewLocalLink}
+            source={activeContents}
+            workspaceRoot={
+              workspaceRootPath ??
+              (activeTab.path ? activeTab.path.replace(/\/[^/]+$/, "") : null)
+            }
+          />
+        </Suspense>
       ) : (
         <PreviewUnavailablePane
           ariaLabel={copy.previewUnavailable}
