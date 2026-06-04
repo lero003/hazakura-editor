@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-06-03
+Last reviewed: 2026-06-04
 
 `hazakura editor` は、AI時代のメモ帳です。Markdownを中心に、安全にテキストを読む・書く・比べるための軽量なローカル作業場を目指します。
 
@@ -21,7 +21,7 @@ Last reviewed: 2026-06-03
 
 ![hazakura editor Agent Workbench mode](docs/images/pre0.2-agent-mode.png)
 
-## 0.9 Preview Summary
+## 0.10 Alpha Preview Summary
 
 Use this when you want to:
 
@@ -37,7 +37,7 @@ Use this when you want to:
 - use a command palette for existing safe app actions
 - run bounded workspace text search without background indexing
 - pin frequently opened files on the start panel
-- use えるモード / L Mode as an experimental one-pane writing surface that keeps Markdown source as truth
+- use えるモード / L Mode as an alpha one-pane writing surface that keeps Markdown source as truth
 - create new workspace files and folders, rename workspace entries, and move entries to Trash from bounded in-app file-tree actions
 - optional detached Agent Window with `codex` / `opencode` / `pi` / `claude` provider sessions
 
@@ -134,7 +134,7 @@ Example use case:
 - [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
 - [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Apple Local Assist / Foundation Models planning
 - [Roadmap](docs/roadmap.md): 段階的な開発順序
-- [L Mode Plan](docs/l-mode-plan.md): v0.9 えるモードの企画メモ
+- [L Mode Plan](docs/l-mode-plan.md): v0.9/v0.10 えるモードの企画メモ
 - [External Agent Review Workflow](docs/external-agent-review-workflow.md): external implementation agent + Codex review workflow
 - [Source Release Checklist](docs/source-release-checklist.md): source-only developer previewの準備境界
 - [DMG Preview Checklist](docs/dmg-preview-checklist.md): warning-expected DMG preview laneの準備・検証境界
@@ -187,11 +187,11 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current preview version is `0.9.0` across npm, Tauri, and Cargo metadata.
+- Current release-candidate version is `0.10.0` across npm, Tauri, and Cargo metadata.
 - Source users build locally with `npm ci` and `npm run build`.
 - The generated local `.app` declares macOS 11.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. It is not Developer ID signed or notarized.
-- The latest warning-expected DMG preview is [v0.9.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.9.0), with notes in [0.9.0 Warning-expected DMG Preview](docs/releases/0.9.0-warning-expected-dmg-preview.release.md).
-- Future tag creation, push, and GitHub Release publication still require explicit user approval.
+- The latest published warning-expected DMG preview is [v0.9.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.9.0). The prepared v0.10.0 release notes live in [0.10.0 Warning-expected DMG Preview](docs/releases/0.10.0-warning-expected-dmg-preview.release.md).
+- Future tag creation and GitHub Release publication still require explicit user approval.
 
 ## Known Limits
 

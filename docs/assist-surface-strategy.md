@@ -74,7 +74,7 @@ Moving Agent Workbench into a detached window or separate surface does not weake
 
 ## Apple Local Assist
 
-Apple Local Assist is a possible future replacement or alternative for some assist workflows in v0.10 or later.
+Apple Local Assist is a possible future replacement or alternative for some assist workflows in v0.11 or later.
 
 Apple documents the Foundation Models framework as access to the on-device language model that powers Apple Intelligence, with support for text understanding and generation tasks such as summarization, extraction, classification, and refinement. Apple also documents that availability must be checked at runtime because it depends on Apple Intelligence support, user settings, and model readiness.
 
@@ -139,8 +139,9 @@ Recommended sequence:
 
 1. Keep v0.8 focused on Safe Editor daily-use polish plus Assist Surface separation: reduce Review Desk to a low-prominence candidate-review receiver, clarify Agent Workbench surface/state boundaries, and keep generated output reviewable through Review Desk or Diff.
 2. Use v0.9 to harden product-preview quality and prove Safe Editor remains coherent without assist behavior.
-3. Use v0.10 only for a narrow Apple Local Assist experiment: availability detection, selected-text or document-excerpt requests, candidate output, and safe disablement when unavailable.
-4. Treat Review Desk's full product usefulness as v0.11+ work, after Apple Local Assist / Foundation Models can generate selected-text or document-excerpt candidates that need explicit review.
+3. Use v0.10 for L Mode alpha stabilization and release-readiness polish, without adding Apple Local Assist behavior.
+4. Use v0.11 only for a narrow Apple Local Assist experiment: availability detection, selected-text or document-excerpt requests, candidate output, and safe disablement when unavailable.
+5. Treat Review Desk's full product usefulness as v0.12+ work, after Apple Local Assist / Foundation Models can generate selected-text or document-excerpt candidates that need explicit review.
 5. Keep v1.0 for outward product-preview polish and messaging unless the user explicitly opens a distribution lane earlier.
 
 ## Non-Goals

@@ -2,6 +2,8 @@
 
 ## Current State
 
+- v0.10.0 is prepared as a warning-expected DMG preview release candidate, but it has not been tagged or published. It reframes the current line as **L Mode Alpha Preview** rather than the previously planned Apple Local Assist experiment. Version surfaces are aligned across npm, Tauri, Cargo, and Cargo.lock; release notes are in `docs/releases/0.10.0-warning-expected-dmg-preview.release.md`.
+- Local v0.10.0 release gates and DMG preview generation passed on 2026-06-04. DMG: `src-tauri/target/release/bundle/dmg/hazakura-editor_0.10.0_aarch64-warning-expected.dmg`; SHA-256: `7b2c26978a77999227e7d377d55ada4d01547adc0d2f66abe393b4d79de20605`.
 - v0.9.0 is published as a warning-expected DMG preview at `https://github.com/lero003/hazakura-editor/releases/tag/v0.9.0`. It folds together えるモード / L Mode, Agent provider availability polish, bounded workspace file-tree operations, structure/test hardening, and the release-gate Trash implementation change from Finder AppleEvents to the macOS NSFileManager Trash API.
 - えるモード is now implemented as an experimental presentation layer. Markdown source remains truth; normal mode, Preview, Diff, Review Desk, export, and copy behavior must keep round-tripping as Markdown.
 - v0.9 workspace file ops are implemented, but workspace-internal drag/drop Move remains user-reported unreliable in built-app use. Treat D&D Move as experimental; New File, New Folder, Rename, and Move to Trash are the dependable v0.9 file-management promises.
@@ -41,6 +43,8 @@
 
 ## Decisions
 
+- **v0.10.0 is L Mode Alpha Preview.** Apple Local Assist / Foundation Models moved to v0.11+; Review Desk candidate-review usefulness moved to v0.12+ after the assist experiment can generate candidates. Do not describe v0.10 as Apple Local Assist.
+- **Do not tag or publish v0.10.0 yet.** The release lane is open, and local gates passed, but Git tag creation and GitHub Release publication still require explicit user approval.
 - **えるモード is presentation layer only.** Markdown source remains truth; normal mode, Preview, Diff, Review Desk, export, and copy behavior must keep round-tripping as Markdown. Do not turn it into WYSIWYG editing, Preview DOM editing, AI autocomplete, or automatic candidate application.
 - **Workspace-root containment from day 1** for the 3 new commands. The existing `create_text_file` and `save_text_file_as` rely on the native dialog to constrain the path; that gap is real but not actively exploitable and is deliberately deferred to a separate security-hygiene slice (out of scope here, listed in the `next run can pick from` bullet).
 - **Folder self-move rejected pre-flight** in `moveWorkspacePath` (frontend), so a friendly error surfaces before the backend round-trip. The backend would also reject (would move a directory inside itself), but the user sees the message immediately.
@@ -54,6 +58,23 @@
 ## Tests
 
 All gates ran at the last slice and were clean:
+- `npm run typecheck`
+- `npm test` — 142 tests, 0 failed
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`
+- `cargo test --manifest-path src-tauri/Cargo.toml` — 160 tests, 0 failed
+- `npm run build:vite`
+- `npm run build`
+- `npm audit` — 0 vulnerabilities
+- `cargo audit --file src-tauri/Cargo.lock` — exit 0 with already-allowed Tauri/Linux GTK and `unic` warnings
+- `npm run build:dmg-preview`
+- `shasum -c hazakura-editor_0.10.0_aarch64-warning-expected.dmg.sha256`
+- `hdiutil verify hazakura-editor_0.10.0_aarch64-warning-expected.dmg`
+- built-app and mounted-app metadata checks for version `0.10.0`, bundle identifier `lab.hazakura.note`, product name `hazakura editor`, and executable `hazakura-editor`
+- `codesign --verify --deep --strict --verbose=2` on built and mounted apps
+- `spctl -a -vv -t open` rejected with `source=Insufficient Context`, expected for warning-expected preview
+- `git diff --check`
+
+Prior v0.9 workspace-file-op gates:
 - `npm run typecheck`
 - `npm test` — 88 tests, 0 failed
 - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`
@@ -73,9 +94,11 @@ The 3 new Rust commands have unit tests at the per-module level (`tests/files.rs
 - **Auto-backup path rekey is a known stale-entry**; not user-visible today, but a hygiene follow-up.
 - **`create_text_file` / `save_text_file_as` workspace-root containment gap** is real (they currently rely on the native dialog to constrain the path) and is a deliberate follow-up.
 - **Release notes and version surfaces were published for v0.9.0** in `docs/releases/0.9.0-warning-expected-dmg-preview.release.md`, package metadata, Cargo metadata, Tauri config, README, roadmap, current-status, and automation docs.
+- **v0.10.0 remote verification is not done** because the GitHub Release has not been created. After explicit approval, publish `v0.10.0`, download remote assets, verify checksum/DMG, check mounted-app metadata, and run `codesign`.
 
 ## Next Actions
 
+- **If the user approves publication**, create and push tag `v0.10.0`, publish the warning-expected DMG preview assets, re-download from GitHub, verify checksum/DMG/mounted app metadata/codesign, then update README/current-status/roadmap/release notes from release-candidate wording to published wording.
 - **Post-release triage** user feedback for L Mode, Agent provider availability, Move to Trash, and drag/drop Move reliability.
 - **Plan a workspace-hygiene follow-up lane** for: `create_text_file` / `save_text_file_as` containment retrofit, auto-backup path rekey on rename, descendant rekey in `useEditorTabsPathRekey`, expanded-folders persistence, and drag/drop Move reliability.
 - **Consider additional TS hook unit-test bring-up** — `useTabReorder` remains the next safe low-risk target (pointer-event surface needs `document.elementFromPoint` / `setPointerCapture` / `getBoundingClientRect` stubbed but the reorder callback itself is pure). The `useWorkspaceFileOps` hook is now also a candidate for a deeper test (would need a Tauri IPC stub and a deep tree stub).
@@ -83,6 +106,7 @@ The 3 new Rust commands have unit tests at the per-module level (`tests/files.rs
 ## Avoid
 
 - **Do not push outside an explicit release or publication lane**. The current user request opens that lane only if release gates pass.
+- **Do not call v0.10.0 published until the tag, GitHub Release, asset upload, and remote verification have actually succeeded.**
 - **Do not amend prior commits** to add a `Co-Authored-By` trailer — the no-trailer memory rule is in effect.
 - **Do not add Delete / Git integration / LSP / plugins / project-wide indexing / arbitrary command execution / Agent auto-apply / signing / Foundation Models / provider-add UI** — the v0.8+ scope exclusions memory rule is in effect.
 - **Do not make えるモード a full WYSIWYG, AI, or auto-formatting mode** — it should hide or reveal Markdown markers through display behavior while preserving the source text.

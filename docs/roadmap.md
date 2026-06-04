@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current release sequence and planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-03 (readability cleanup; v0.9 えるモード planning moved to `docs/l-mode-plan.md`)
+Last reviewed: 2026-06-04 (v0.10 L Mode alpha release-candidate framing)
 
 ## Current Position
 
@@ -25,6 +25,7 @@ The current public line is:
 - `v0.7.0`: Review Desk MVP warning-expected DMG release with manual candidate review, slash command polish, and existing Change Review routing fixes
 - `v0.8.0`: Assist Surface separation and daily-editor polish warning-expected DMG release
 - `v0.9.0`: L Mode experiment and product-preview hardening warning-expected DMG release
+- `v0.10.0`: L Mode alpha preview release candidate; tag and GitHub Release pending explicit approval
 
 The old `v0.1` / `v0.3.x` phase map is archived in `docs/roadmap-v0.1-archived.md`.
 
@@ -284,9 +285,9 @@ External-agent workflow:
 
 ## 0.8: Assist Surface Separation And Daily Editor Polish
 
-Status: released on 2026-06-03 as the `v0.8.0` warning-expected DMG preview (Claude Code CLI allowlist landed via 97f4249, with the same launch gate / trusted-workspace smoke path as `codex` / `opencode` / `pi`; the v0.8 release-readiness pass also fixed the bounded Global Search no-match scan cap and aligned version surfaces to `0.8.0`). No v0.8 candidate-work items remain open. The assist/agent surface separation it set up is the foundation for v0.10+ Apple Local Assist.
+Status: released on 2026-06-03 as the `v0.8.0` warning-expected DMG preview (Claude Code CLI allowlist landed via 97f4249, with the same launch gate / trusted-workspace smoke path as `codex` / `opencode` / `pi`; the v0.8 release-readiness pass also fixed the bounded Global Search no-match scan cap and aligned version surfaces to `0.8.0`). No v0.8 candidate-work items remain open. The assist/agent surface separation it set up is the foundation for later Apple Local Assist work.
 
-Goal: keep the Safe Editor pleasant for daily writing and review while preparing the assist/agent surface for future v0.10+ Apple Local Assist adoption. v0.8 is not an assist-platform release; it should separate surfaces and logic so optional assist behavior can later produce reviewed candidates without becoming the default editor experience.
+Goal: keep the Safe Editor pleasant for daily writing and review while preparing the assist/agent surface for future Apple Local Assist adoption. v0.8 is not an assist-platform release; it should separate surfaces and logic so optional assist behavior can later produce reviewed candidates without becoming the default editor experience.
 
 Review Desk direction:
 
@@ -294,15 +295,15 @@ Review Desk direction:
 - Keep the current Review Desk safety model: explicit Compare, explicit Apply, no auto-save, no auto-apply, stale-preview guards, and no persistent review logs by default.
 - Reduce Review Desk's default visual prominence. Keep shortcut, View menu, and slash entry points, but do not make Review Desk a primary top-chrome control unless user testing proves it belongs there.
 - Do not pursue editable two-column workbench, live diff refresh, candidate temporary-document policy, or review history until the assist boundary and daily-editor basics are more settled.
-- Agent output may enter Review Desk as candidate text for review, and Apple Local Assist output may do the same in v0.10+ after Foundation Models work begins. Do not route generated output directly into the editor body, and do not add Agent auto-apply.
+- Agent output may enter Review Desk as candidate text for review, and Apple Local Assist output may do the same in v0.11+ after Foundation Models work begins. Do not route generated output directly into the editor body, and do not add Agent auto-apply.
 
 Assist Surface design direction:
 
 - Separate assist/agent surfaces from Safe Editor presentation and state so Safe Editor remains useful when assist features are disabled, unavailable, or removed from a build.
 - Keep External Agent Workbench as its own explicit trust boundary: allowlisted providers, responsibility consent, selected workspace root, one active session, no restore, no provider-add UI, and no auto-apply.
 - Treat Claude Code CLI as another external CLI provider in the current allowlist, not as a replacement for the existing provider set. It enters through the same allowlist / launch gate / trusted-workspace smoke path as `codex`, `opencode`, and `pi`.
-- Use v0.8 to clarify shared request / candidate / review logic that a future v0.10+ Apple Local Assist helper could reuse, without implementing Foundation Models behavior yet.
-- Any Apple Foundation Models path in v0.10+ should start as selected-text or document-excerpt assistance that returns candidate text to Review Desk or Diff for explicit review.
+- Use v0.8 to clarify shared request / candidate / review logic that a future v0.11+ Apple Local Assist helper could reuse, without implementing Foundation Models behavior yet.
+- Any Apple Foundation Models path in v0.11+ should start as selected-text or document-excerpt assistance that returns candidate text to Review Desk or Diff for explicit review.
 - Agent Workbench may work better as a separate window or detachable surface in a later design pass. Any separation must follow `docs/assist-surface-strategy.md` and preserve the existing trust boundary.
 
 Candidate work:
@@ -327,7 +328,7 @@ Do not use v0.8 to add Git integration, merge editing, project-wide indexing, ar
 
 ## 0.9: Product Preview Hardening / えるモード
 
-Goal: make the app coherent enough for broader preview feedback before the v0.10 Apple Local Assist experiment and the v1.0 outward-preview lane. This remains a preview-quality lane, not a signed/notarized distribution promise.
+Goal: make the app coherent enough for broader preview feedback before the L Mode alpha lane, later Apple Local Assist experiment, and v1.0 outward-preview lane. This remains a preview-quality lane, not a signed/notarized distribution promise.
 
 Status: released on 2026-06-04 as a warning-expected DMG preview. Local gates, DMG verification, tag/release creation, and remote asset re-verification passed. Workspace-internal drag/drop Move remains experimental; New File, New Folder, Rename, and Move to Trash are the dependable v0.9 file-management promises.
 
@@ -379,11 +380,28 @@ Non-scope:
 - Defer Delete unless it goes through a fresh destructive-file-operation review. If Delete enters v0.9, prefer Move to Trash and keep it separate from the first New/Rename/Move slice.
 - Continue structure and smoke hardening where it reduces release risk: focused hook/component splits, large-file smoke, Review Desk comparison smoke, image preview smoke, dependency freshness, release-note freshness, and smoke-checklist consolidation.
 - Extend the TS hook test layer only where a real pure-logic regression risk exists. Do not add tests just to create activity.
-- Keep Assist Surface work to boundary hardening only. Do not run Apple Local Assist / Foundation Models product work before the v0.10 lane.
+- Keep Assist Surface work to boundary hardening only. Do not run Apple Local Assist / Foundation Models product work before the later Apple Local Assist lane.
 
 Do not add Developer ID signing, notarization, installer packaging, automatic updater work, block database behavior, collaboration, broad WYSIWYG rewrites, permanent Delete, Git-aware file operations, external-path file management, or Apple Local Assist behavior in v0.9 unless the user explicitly reopens that lane.
 
-## 0.10: Apple Local Assist Experiment
+## 0.10: L Mode Alpha Preview
+
+Goal: turn the v0.9 えるモード experiment into an alpha-quality preview release without changing the Markdown-first source model or widening the AI/Agent boundary.
+
+Status: release-candidate prep opened on 2026-06-04. Version surfaces are being aligned to `0.10.0`; tag creation and GitHub Release publication still require explicit user approval.
+
+Candidate work:
+
+- stabilize L Mode scroll and keyboard focus behavior in long Markdown documents
+- keep inactive Markdown source markers quiet while revealing the active or hovered editing line
+- keep reference-style links, inline emphasis, headings, lists, blockquotes, and code fences readable without source-marker artifacts leaking into normal prose
+- keep floating tabs/status chrome quiet, theme-aware, and non-blocking
+- document L Mode as an alpha presentation layer, not WYSIWYG editing, Preview DOM editing, AI assistance, or automatic formatting
+- keep all v0.9 Safe Editor, Review Desk, and Agent Workbench trust boundaries unchanged
+
+Do not use v0.10 to add Apple Local Assist / Foundation Models behavior, generic chat, automatic candidate generation, auto-apply, Git integration, LSP, broad indexing, signing/notarization, or a general terminal.
+
+## 0.11: Apple Local Assist Experiment
 
 Goal: prove whether Apple Foundation Models / Apple Local Assist can generate useful document candidates without turning `hazakura editor` into an AI agent, chat app, or IDE.
 
@@ -396,11 +414,11 @@ Candidate work:
 - no network-backed fallback when Apple Local Assist is unavailable
 - no background workspace indexing, generic chat, command execution, tool calling, auto-rewrite, auto-apply, or agent-style provider behavior
 
-Do not treat v0.10 as a general AI surface. The experiment passes only if unavailable environments remain safe and boring.
+Do not treat this as a general AI surface. The experiment passes only if unavailable environments remain safe and boring.
 
-## 0.11: Apple Local Assist Candidate Review
+## 0.12: Apple Local Assist Candidate Review
 
-Goal: make Review Desk useful as an explicit review step for Apple Foundation Models / Apple Local Assist candidate output, after the v0.10 experiment proves the candidate source is worth keeping.
+Goal: make Review Desk useful as an explicit review step for Apple Foundation Models / Apple Local Assist candidate output, after the Apple Local Assist experiment proves the candidate source is worth keeping.
 
 Candidate work:
 
@@ -476,5 +494,5 @@ Use these when asking for external review:
 9. Does 0.8 separate Assist Surface concerns and improve daily Safe Editor use without pretending Review Desk is a mature workbench?
 10. Does 0.9 prove えるモード as a safe presentation-layer writing experiment and improve bounded workspace file operations without turning the app into Notion, a Git client, or a full WYSIWYG document editor?
 11. Are signing, notarization, updater, and paid-distribution tasks kept out of the preview lane until v1.x or an explicit distribution-lane approval?
-12. Does the Assist Surface strategy preserve a clean v0.10+ path to Apple Local Assist without turning Safe Editor into a generic AI platform?
+12. Does the Assist Surface strategy preserve a clean v0.11+ path to Apple Local Assist without turning Safe Editor into a generic AI platform?
 13. If Claude Code CLI is added, does it remain just another allowlisted external CLI provider rather than replacing the trust boundary or adding provider-specific control surfaces?
