@@ -5,10 +5,9 @@ import { EditorView, type DecorationSet } from "@codemirror/view";
 import {
   computeLModeDecorations,
   lModeExtension,
-  LModeHorizontalRuleWidget,
-  LModeTableDelimiterWidget,
-} from "./lModeExtension";
-import { LModeTaskWidget } from "./lModeTaskWidget";
+} from "./extension";
+import { LModeHorizontalRuleWidget, LModeTableDelimiterWidget } from "./widgets";
+import { LModeTaskWidget } from "./taskWidget";
 
 // Build an EditorState with the markdown grammar so the syntax
 // tree is populated, and a selection on the line the test wants
@@ -501,6 +500,40 @@ describe("v0.11 Typora-feel rendering", () => {
     // not include `cm-lmode-dimmed`.
     expect(hasLineClass(set, betaStart, "cm-lmode-source-line")).toBe(true);
   });
+
+  it("attaches the data-l-chip attribute to structural lines (heading, blockquote, fenced code)", () => {
+    // The chip labels live in the TS catalog
+    // (`LModeChipLabels`) and the CSS renders them via
+    // `content: attr(data-l-chip)`. This test pins the
+    // attribute on each structural line type so a typo in
+    // the catalog or a dropped attribute in the line-
+    // decoration code fails loudly here, not visually.
+    const source =
+      "# H1 line\n" +
+      "## H2 line\n" +
+      "> quote line\n" +
+      "```js\n" +
+      "code\n" +
+      "```\n";
+    const state = makeState(source, source.length);
+    const set = computeLModeDecorations(state);
+
+    const h1Start = 0;
+    const h2Start = source.indexOf("## ");
+    const bqStart = source.indexOf("> ");
+    const fenceStart = source.indexOf("```js");
+    const fenceEnd = source.lastIndexOf("```");
+
+    expect(lineChip(set, h1Start)).toBe("H1");
+    expect(lineChip(set, h2Start)).toBe("H2");
+    expect(lineChip(set, bqStart)).toBe(">");
+    expect(lineChip(set, fenceStart)).toBe("```");
+    expect(lineChip(set, fenceEnd)).toBe("```");
+
+    // A non-structural line carries no chip.
+    const codeLine = source.indexOf("code");
+    expect(lineChip(set, codeLine)).toBeUndefined();
+  });
 });
 
 // --- v0.11 Task toggle click handler ---
@@ -612,11 +645,29 @@ function hasLineClass(
   let found = false;
   set.between(position, position, (from, to, value) => {
     const spec = value.spec as { class?: string } | undefined;
-    if (from === position && to === position && spec?.class?.includes(className)) {
+    if (
+      from === position &&
+      to === position &&
+      classesContainToken(spec?.class, className)
+    ) {
       found = true;
     }
   });
   return found;
+}
+
+// Does the spec's `class` string contain `className` as a
+// whole token? Using `includes` (substring match) would let
+// `cm-lmode-list` silently match `cm-lmode-list-bullet` —
+// this helper tokenizes the class string first, then checks
+// for the exact token. The same pattern applies to DOM
+// className strings.
+function classesContainToken(
+  classString: string | undefined,
+  className: string,
+): boolean {
+  if (!classString) return false;
+  return classString.split(/\s+/).includes(className);
 }
 
 function activeLineText(parent: HTMLElement): string {
@@ -648,7 +699,7 @@ function hasClassMark(
     if (
       from === expectedFrom &&
       to === expectedTo &&
-      spec?.class?.includes(className)
+      classesContainToken(spec?.class, className)
     ) {
       found = true;
     }
@@ -678,4 +729,26 @@ function hasReplaceWithWidget(
     }
   });
   return found;
+}
+
+// Read the `data-l-chip` attribute (if any) on the line
+// decoration that starts at `position`. Returns `undefined`
+// when the line has no chip attribute. The position is the
+// zero-width line-start point, which is where
+// `Decoration.line` ranges are attached.
+function lineChip(
+  set: DecorationSet,
+  position: number,
+): string | undefined {
+  let chip: string | undefined;
+  set.between(position, position, (from, to, value) => {
+    if (from !== position || to !== position) return;
+    const spec = value.spec as
+      | { attributes?: Record<string, string> }
+      | undefined;
+    if (spec?.attributes && typeof spec.attributes["data-l-chip"] === "string") {
+      chip = spec.attributes["data-l-chip"];
+    }
+  });
+  return chip;
 }

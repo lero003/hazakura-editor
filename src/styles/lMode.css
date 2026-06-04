@@ -1,7 +1,14 @@
 /* === lMode.css === */
-/* えるモード / L Mode — display-only experiment.
-   All rules are gated on :root[data-l-mode="on"] so toggling the
-   setting off fully restores the normal workspace chrome. */
+/* えるモード / L Mode — the WYSIWYG-tier writing surface of
+   `hazakura editor`. All rules are gated on
+   :root[data-l-mode="on"] so toggling the setting off fully
+   restores the normal workspace chrome.
+
+   v0.11+ direction: editorial typography, strong heading
+   hierarchy, magazine-feel block elements, and a layout that
+   stays stable as the cursor moves. The source model is
+   Markdown and the editing surface is CodeMirror — only the
+   rendering aspires to a custom writing-app feel. */
 
 /* --- 1. Hide workspace chrome --- */
 :root[data-l-mode="on"] .app-shell {
@@ -150,19 +157,29 @@
   display: none;
 }
 
-/* --- 3. Page-like typography ---
+/* --- 3. Page-like typography (magazine feel) ---
    The CodeMirror .cm-content is the editor body. Constrain its
    width, give the lines more room to breathe, and let headings
-   and blockquotes find their own rhythm. */
+   and blockquotes find their own rhythm. The look aspires to
+   an editorial writing surface, not a code editor. */
 :root[data-l-mode="on"] .cm-editor,
 :root[data-l-mode="on"] .cm-editor.cm-focused {
   background:
+    /* Subtle "paper" warmth — a very low-opacity radial
+       gradient at the top center, hinting at desk light
+       falling on a page. Stays out of the way of text but
+       keeps the surface from feeling like a flat UI panel. */
+    radial-gradient(
+      ellipse 90% 60% at 50% 0%,
+      color-mix(in srgb, var(--accent) 4%, transparent) 0%,
+      transparent 65%
+    ),
     linear-gradient(
       90deg,
       transparent 0,
-      color-mix(in srgb, var(--accent) 7%, transparent) 22%,
-      color-mix(in srgb, var(--surface) 24%, transparent) 50%,
-      color-mix(in srgb, var(--accent-secondary) 7%, transparent) 78%,
+      color-mix(in srgb, var(--accent) 3%, transparent) 24%,
+      color-mix(in srgb, var(--surface) 12%, transparent) 50%,
+      color-mix(in srgb, var(--accent-secondary) 3%, transparent) 76%,
       transparent 100%
     );
   outline: none;
@@ -173,6 +190,7 @@
   overflow-x: auto;
   overflow-y: auto;
   overscroll-behavior: contain;
+  scroll-behavior: smooth;
 }
 
 :root[data-l-mode="on"] .cm-gutters {
@@ -181,46 +199,72 @@
 
 :root[data-l-mode="on"] .cm-activeLine,
 :root[data-l-mode="on"] .cm-activeLineGutter {
-  background: color-mix(in srgb, var(--accent) 4%, transparent);
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
   box-shadow:
-    -18px 0 0 color-mix(in srgb, var(--accent) 4%, transparent),
-    18px 0 0 color-mix(in srgb, var(--accent) 4%, transparent);
+    -28px 0 0 color-mix(in srgb, var(--accent) 6%, transparent),
+    28px 0 0 color-mix(in srgb, var(--accent) 6%, transparent);
+  transition: background 200ms ease, box-shadow 200ms ease;
 }
 
 :root[data-l-mode="on"] .cm-content ::selection,
 :root[data-l-mode="on"] .cm-selectionLayer .cm-selectionBackground {
-  background-color: rgba(160, 180, 180, 0.22);
+  background-color: color-mix(in srgb, var(--accent) 26%, transparent);
 }
 
-/* Webkit scrollbar — thin, quiet. */
+/* Webkit scrollbar — hidden by default, revealed on hover
+   or while scrolling. iA Writer and Bear use the same trick
+   to keep the writing surface visually quiet. */
 :root[data-l-mode="on"] .cm-scroller::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 :root[data-l-mode="on"] .cm-scroller::-webkit-scrollbar-track {
   background: transparent;
 }
 :root[data-l-mode="on"] .cm-scroller::-webkit-scrollbar-thumb {
-  background: rgba(127, 127, 127, 0.2);
-  border-radius: 4px;
+  background: rgba(127, 127, 127, 0.0);
+  border-radius: 5px;
+  transition: background 200ms ease;
+}
+:root[data-l-mode="on"] .cm-scroller:hover::-webkit-scrollbar-thumb,
+:root[data-l-mode="on"] .cm-scroller.is-scrolling::-webkit-scrollbar-thumb {
+  background: rgba(127, 127, 127, 0.32);
 }
 :root[data-l-mode="on"] .cm-scroller::-webkit-scrollbar-thumb:hover {
-  background: rgba(127, 127, 127, 0.4);
+  background: rgba(127, 127, 127, 0.5);
+}
+
+/* Firefox — opt into the same auto-hide via scrollbar-width
+   and a transparent thumb color that becomes visible on
+   hover via scrollbar-color. */
+:root[data-l-mode="on"] .cm-scroller {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+:root[data-l-mode="on"] .cm-scroller:hover {
+  scrollbar-color: rgba(127, 127, 127, 0.4) transparent;
 }
 
 :root[data-l-mode="on"] .cm-content {
-  max-width: min(760px, calc(100% - 64px));
+  max-width: min(720px, calc(100% - 64px));
   margin: 0 auto;
   font-family: var(--lmode-prose-font-family);
-  font-size: 16.5px;
-  line-height: 1.72;
-  padding: 106px clamp(22px, 4vw, 48px) 148px;
+  font-size: 15px;
+  line-height: 1.78;
+  letter-spacing: 0.005em;
+  /* Left/right padding is widened vs. v0.10 so the active-line
+     structural tag chips ("H1", "H2", ">", " ``` ", etc.) have
+     room to sit in the left margin without crowding the prose. */
+  padding: 104px clamp(40px, 5vw, 60px) 156px;
   text-align: start;
   hyphens: auto;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 :root[data-l-mode="on"] .cm-line {
-  padding: 0 0.25em;
+  padding: 0 0.1em;
   font-family: inherit;
 }
 
@@ -248,31 +292,38 @@
   text-align: start;
 }
 
-/* Inline code + monospace — slightly smaller, easier to read
-   as inline emphasis without dominating the line. */
+/* Inline code — a typographic cue, not a code chip. The
+   monospace face and a thin accent underline say "this is
+   code" without painting a heavy background rectangle that
+   would read as "code in a code editor." The user is
+   supposed to see prose with a few code-shaped words in it. */
 :root[data-l-mode="on"] .tok-monospace {
-  font-size: 0.9em;
-  opacity: 0.95;
-  background: var(--accent-soft);
-  color: var(--accent);
-  padding: 0.08em 0.32em;
-  border-radius: 4px;
-  font-family: var(--lmode-code-font-family);
+  font-size: 0.88em;
+  font-style: normal;
+  font-weight: 500;
+  background: transparent;
+  color: color-mix(in srgb, var(--text) 88%, var(--accent));
+  padding: 0 0.1em;
+  border-radius: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 36%, transparent);
+  letter-spacing: 0;
 }
 
-/* Fenced code blocks — a unified code-card unit. Each line
-   inside a FencedCode gets `cm-lmode-fenced-code`; the first
-   and last lines additionally get `-start` / `-end` so the
-   block can carry its own rounded corners and padding. */
+/* Fenced code blocks — a quiet inset, not a heavy card.
+   Left rule only, generous breathing, slightly muted
+   background. The block reads as "a sample of code in the
+   prose," not "a code panel." */
 :root[data-l-mode="on"] .cm-lmode-fenced-code {
-  background: color-mix(in srgb, var(--surface-muted) 78%, var(--bg));
-  border-left: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
-  border-right: 1px solid color-mix(in srgb, var(--border) 56%, transparent);
+  background: color-mix(in srgb, var(--surface-muted) 32%, var(--bg));
+  border-left: 2px solid color-mix(in srgb, var(--accent) 44%, transparent);
+  border-right: none;
   color: var(--text);
   font-family: var(--lmode-code-font-family);
   font-size: 0.92em;
-  line-height: 1.58;
-  padding: 0.24em 1.05em;
+  line-height: 1.62;
+  padding: 0.18em 0.4em 0.18em 2.6em;
+  position: relative;
+  counter-increment: lmode-codeline;
 }
 
 :root[data-l-mode="on"] .cm-lmode-fenced-code span:not(.cm-lmode-hidden) {
@@ -281,109 +332,211 @@
 }
 
 :root[data-l-mode="on"] .cm-lmode-fenced-code-start {
-  border-top: 1px solid color-mix(in srgb, var(--border) 64%, transparent);
-  padding-top: 0.8em;
-  border-top-left-radius: 6px;
-  border-top-right-radius: 6px;
+  padding-top: 0.7em;
+  /* Reset the per-block line counter at the first line of
+     the fenced code block. Each subsequent line in the
+     same block inherits the counter from the previous
+     sibling, so the numbers stay continuous. */
+  counter-reset: lmode-codeline 0;
 }
 
 :root[data-l-mode="on"] .cm-lmode-fenced-code-end {
-  border-bottom: 1px solid color-mix(in srgb, var(--border) 54%, transparent);
-  padding-bottom: 0.8em;
-  border-bottom-left-radius: 6px;
-  border-bottom-right-radius: 6px;
+  padding-bottom: 0.7em;
 }
 
-/* Heading rhythm — H1 breathes the most, H2-6 share a tighter feel. */
-:root[data-l-mode="on"] .tok-heading1,
-:root[data-l-mode="on"] .tok-heading2,
-:root[data-l-mode="on"] .tok-heading3,
-:root[data-l-mode="on"] .tok-heading4,
-:root[data-l-mode="on"] .tok-heading5,
-:root[data-l-mode="on"] .tok-heading6 {
-  font-weight: 700;
-  line-height: 1.35;
-  color: color-mix(in srgb, var(--text) 88%, var(--accent));
+/* Subtle line numbers on the left edge of each code line.
+   The number is rendered via a CSS `::before` on every line
+   carrying the fenced-code class; the counter-increment on
+   the class makes the numbers sequential within a block.
+   The `position: relative` on the line lets the absolute
+   number sit at the start without participating in flow. */
+:root[data-l-mode="on"] .cm-lmode-fenced-code::before {
+  content: counter(lmode-codeline);
+  position: absolute;
+  left: 0.4em;
+  top: 0.18em;
+  width: 1.6em;
+  text-align: right;
+  font-family: var(--lmode-code-font-family);
+  font-size: 0.78em;
+  font-weight: 400;
+  color: color-mix(in srgb, var(--text-muted) 60%, transparent);
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+  pointer-events: none;
 }
 
-:root[data-l-mode="on"] .tok-heading1 { font-size: 1.58em; }
-:root[data-l-mode="on"] .tok-heading2 { font-size: 1.28em; }
-:root[data-l-mode="on"] .tok-heading3 { font-size: 1.08em; }
-
-/* Blockquote — quieter, italic, with a thin left border. */
-:root[data-l-mode="on"] .tok-quote {
-  opacity: 0.85;
-  font-style: italic;
-  border-left: 3px solid currentColor;
-  padding-left: 1em;
-}
-
-/* --- 4. Visual block styles for headings, blockquotes, lists.
-   The cm-lmode-heading-N, cm-lmode-blockquote, and cm-lmode-list
-   classes are added by the L Mode extension's Decoration.line
-   entries (one per heading / blockquote / list line). Keep
-   these rules margin-free so CodeMirror's cursor and scroll
-   measurement stays reliable. */
-:root[data-l-mode="on"] .cm-lmode-heading-1,
-:root[data-l-mode="on"] .cm-lmode-heading-2,
-:root[data-l-mode="on"] .cm-lmode-heading-3,
-:root[data-l-mode="on"] .cm-lmode-heading-4,
-:root[data-l-mode="on"] .cm-lmode-heading-5,
-:root[data-l-mode="on"] .cm-lmode-heading-6 {
-  padding-top: 0.9em;
-  padding-bottom: 0.18em;
-}
-
+/* Heading rhythm — strong jump rate, editorial treatments.
+   The FIRST H1 is the document's title: large, centered, with
+   a thin rule below. Subsequent H1s are treated like H2s
+   (left-aligned, smaller, with their own rule) — multi-section
+   documents almost never have multiple H1s, and when they do
+   the later ones read more like section titles than titles.
+   H2 is the section heading. H3 is the subsection. H4-6
+   progressively shrink into the body voice. */
 :root[data-l-mode="on"] .cm-lmode-heading-1 {
-  border-bottom: 1px solid color-mix(in srgb, var(--accent) 36%, var(--border));
-  padding-top: 1.35em;
+  font-family: var(--lmode-prose-font-family);
+  font-size: 1.7em;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.014em;
+  text-align: start;
+  color: var(--text);
+  padding-top: 1.25em;
   padding-bottom: 0.34em;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 84%, transparent);
+  text-wrap: balance;
+}
+
+:root[data-l-mode="on"] .cm-lmode-heading-1-first {
+  font-size: 2.5em;
+  font-weight: 800;
+  letter-spacing: -0.024em;
+  line-height: 1.16;
+  text-align: center;
+  padding-top: 0.5em;
+  padding-bottom: 0.6em;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 32%, var(--border));
+  color: var(--text);
+  text-wrap: balance;
 }
 
 :root[data-l-mode="on"] .cm-lmode-heading-2 {
-  border-bottom: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
-  padding-top: 1.08em;
-  padding-bottom: 0.24em;
+  font-family: var(--lmode-prose-font-family);
+  font-size: 1.65em;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.012em;
+  text-align: start;
+  color: var(--text);
+  padding-top: 1.2em;
+  padding-bottom: 0.32em;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 84%, transparent);
+  text-wrap: balance;
 }
 
-:root[data-l-mode="on"] .cm-lmode-heading-3 { padding-top: 0.9em; }
+:root[data-l-mode="on"] .cm-lmode-heading-3 {
+  font-family: var(--lmode-prose-font-family);
+  font-size: 1.3em;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+  text-align: start;
+  color: color-mix(in srgb, var(--text) 94%, var(--accent));
+  padding-top: 1em;
+  padding-bottom: 0.18em;
+}
 
-/* Blockquote — a thin left rule on the line, with the line
-   itself dimmed slightly so the blockquote reads as a quiet
-   aside. The .tok-quote selector above handles the inline
-   italic + opacity; this rule layers the line-level structure
-   on top. */
+:root[data-l-mode="on"] .cm-lmode-heading-4 {
+  font-family: var(--lmode-prose-font-family);
+  font-size: 1.1em;
+  font-weight: 600;
+  font-style: italic;
+  line-height: 1.35;
+  text-align: start;
+  color: color-mix(in srgb, var(--text) 82%, var(--text-muted));
+  padding-top: 0.85em;
+  padding-bottom: 0.12em;
+}
+
+:root[data-l-mode="on"] .cm-lmode-heading-5 {
+  font-family: var(--lmode-prose-font-family);
+  font-size: 0.92em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  line-height: 1.4;
+  text-align: start;
+  color: var(--text-muted);
+  padding-top: 0.75em;
+}
+
+:root[data-l-mode="on"] .cm-lmode-heading-6 {
+  font-family: var(--lmode-prose-font-family);
+  font-size: 0.82em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  line-height: 1.4;
+  text-align: start;
+  color: var(--text-muted);
+  opacity: 0.85;
+  padding-top: 0.65em;
+}
+
+/* Blockquote — a pull-quote. No background fill, generous
+   whitespace, a thin left rule, slightly larger and italic.
+   The quote reads as a featured excerpt, not a citation
+   inset. */
 :root[data-l-mode="on"] .cm-lmode-blockquote {
-  background: color-mix(in srgb, var(--accent-soft) 64%, transparent);
-  border-left: 3px solid color-mix(in srgb, var(--accent) 68%, transparent);
-  border-radius: 0 6px 6px 0;
+  background: transparent;
+  border-left: 3px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  border-radius: 0;
   color: color-mix(in srgb, var(--text) 78%, var(--text-muted));
+  font-style: italic;
+  font-size: 1.02em;
+  line-height: 1.72;
   opacity: 1;
-  padding: 0.28em 1em;
+  padding: 0.35em 1.25em;
+  text-wrap: balance;
 }
 
-/* List lines keep a quiet visual bullet even when the Markdown
-   marker is suppressed, so lists remain readable in the same
-   way Preview gives them structure. */
+/* --- 4. List lines + hidden marker rendering --- */
+
+/* Shared list-line shape. The padding-left reserves space
+   for the marker column; the column width covers both a
+   bullet glyph and a 2-digit ordered number. */
 :root[data-l-mode="on"] .cm-lmode-list {
-  padding-left: 1.35em;
+  padding-left: 2em;
   position: relative;
 }
 
-:root[data-l-mode="on"] .cm-lmode-list::before {
+/* Bullet list — a single quiet dot. */
+:root[data-l-mode="on"] .cm-lmode-list-bullet::before {
   color: var(--text-muted);
   content: "•";
-  left: 0.35em;
-  opacity: 0.78;
+  left: 0.55em;
   position: absolute;
+  font-size: 1.1em;
+  line-height: inherit;
+  font-family: var(--lmode-prose-font-family);
+  opacity: 0.72;
 }
 
-:root[data-l-mode="on"] .cm-lmode-list:hover::before {
-  opacity: 0.18;
+/* Ordered list — counter-based numbering. Each list resets
+   the counter on its first line (via the `-start` class),
+   so multiple ordered lists in a document each get their
+   own 1, 2, 3 sequence. The marker is right-aligned in a
+   fixed-width column and uses `tabular-nums` so multi-digit
+   numbers don't shift the line. */
+:root[data-l-mode="on"] .cm-lmode-list-ordered {
+  counter-increment: lmode-ordered;
 }
 
-/* Hide the L Mode marker. The actual class is added by the
-   CodeMirror extension; this rule is the rendering target. */
+:root[data-l-mode="on"] .cm-lmode-list-ordered-start {
+  counter-reset: lmode-ordered 0;
+}
+
+:root[data-l-mode="on"] .cm-lmode-list-ordered::before {
+  content: counter(lmode-ordered) ".";
+  left: 0.25em;
+  width: 1.6em;
+  text-align: right;
+  color: color-mix(in srgb, var(--text-muted) 70%, var(--text));
+  position: absolute;
+  font-size: 0.88em;
+  line-height: inherit;
+  font-family: var(--lmode-prose-font-family);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  opacity: 0.88;
+}
+
+/* Hide the L Mode marker. The class is added by the
+   CodeMirror extension. Markers are visually absent on every
+   line — active, hovered, or otherwise — so the layout is
+   stable as the cursor moves. Toggling L Mode off restores
+   the source text. */
 :root[data-l-mode="on"] .cm-lmode-hidden {
   background: transparent;
   color: transparent;
@@ -398,58 +551,70 @@
   white-space: pre;
 }
 
-:root[data-l-mode="on"] .cm-lmode-source-line .cm-lmode-hidden,
-:root[data-l-mode="on"] .cm-line:hover .cm-lmode-hidden {
-  background: transparent;
-  color: color-mix(in srgb, var(--text-muted) 72%, transparent);
-  font-size: inherit;
-  inline-size: auto;
-  max-inline-size: none;
-  opacity: 0.78;
-  text-decoration: none;
-}
-
-/* --- 4b. Inline image rendering ---
+/* --- 4b. Image rendering — magazine style ---
    The L Mode image widget replaces `![alt](url)` source with
-   a single line-level image. The widget itself is a
-   `<span class="cm-lmode-image">` whose inner is either an
-   `<img>` (when the URL is resolved) or a `.cm-lmode-image-
-   placeholder` span showing the alt text (while a workspace
-   image is loading, or for paths that are outside the
-   workspace and will never resolve). */
+   a centered figure. When the alt text is non-empty, the
+   alt doubles as a small italic caption below the image —
+   the same source the user wrote in Markdown, never
+   invented. A resolved image renders as a soft-shadowed
+   `<img>`; an unresolved workspace image (or an out-of-
+   workspace path) renders a quiet placeholder instead. */
 :root[data-l-mode="on"] .cm-lmode-image {
-  display: inline-block;
-  margin: 0.4em 0;
+  display: block;
+  margin: 1.4em auto;
+  padding: 0;
+  text-align: center;
   line-height: 0;
+  max-width: 100%;
 }
 
 :root[data-l-mode="on"] .cm-lmode-image img {
-  display: block;
-  max-width: 100%;
+  display: inline-block;
+  max-width: min(100%, 720px);
   height: auto;
-  border-radius: 4px;
+  border-radius: 6px;
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--text) 6%, transparent),
+    0 8px 24px color-mix(in srgb, var(--text) 10%, transparent);
+}
+
+:root[data-l-mode="on"] .cm-lmode-image-caption {
+  display: block;
+  margin: 0.6em auto 0;
+  padding: 0 1em;
+  max-width: min(100%, 640px);
+  font-family: var(--lmode-prose-font-family);
+  font-size: 0.86em;
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.5;
+  color: color-mix(in srgb, var(--text-muted) 78%, var(--text));
+  text-align: center;
 }
 
 :root[data-l-mode="on"] .cm-lmode-image-placeholder {
   display: inline-block;
-  padding: 0.4em 0.8em;
-  background: rgba(127, 127, 127, 0.12);
-  color: rgba(0, 0, 0, 0.5);
-  border-radius: 4px;
+  padding: 0.6em 1em;
+  background: color-mix(in srgb, var(--surface-muted) 50%, var(--bg));
+  border: 1px dashed color-mix(in srgb, var(--border) 70%, transparent);
+  border-radius: 6px;
+  color: color-mix(in srgb, var(--text-muted) 80%, var(--text));
+  font-family: var(--lmode-prose-font-family);
   font-size: 0.9em;
   font-style: italic;
   line-height: 1.4;
 }
 
-/* --- 4c. Typora-feel inline + block rendering ---
-   The v0.11 work moves L Mode from "marker-hidden, otherwise
-   raw" toward "renders like a finalized document." Inline
-   emphasis / strong / strikethrough / link are applied to the
-   underlying prose text via class marks; tables get line-level
+/* --- 4c. WYSIWYG-tier inline + block rendering ---
+   The v0.11+ work moves L Mode from "marker-hidden source"
+   toward a custom writing-app feel. Inline emphasis / strong
+   / strikethrough / link are applied to the underlying
+   prose text via class marks; tables get line-level
    borders; `---` becomes a divider; task lists become
    checkboxes that toggle on click. The text the user is
    reading is still the same Markdown source — these are
-   display-only classes and widgets. */
+   display-only classes and widgets, never edits to the
+   document or the Preview DOM. */
 
 /* Inline emphasis. The parent `.cm-lmode-emphasis` span
    covers the `*...*` range, so the visible text is the
@@ -554,40 +719,208 @@
   transform: scale(1.12);
 }
 
-/* Soft focus — non-active lines get a slightly lower
-   opacity so the cursor's line stands out. The active line
-   is explicitly NOT dimmed; CSS keeps the active line at
-   1.0 by not having the dim class on it. Transition makes
-   the fade smooth as the cursor moves. */
+/* Soft focus — non-active lines recede. The dim is a
+   composition of three subtle shifts: a small opacity drop,
+   a slight desaturation of the text color, and a quiet
+   letter-spacing tighten. Together they feel like the line
+   is "there but quieter," not "half-faded" — closer to how
+   a reader's eye would de-emphasize a paragraph they're
+   not currently reading. The active line keeps its full
+   treatment by not carrying the dim class. The transition
+   makes the fade smooth as the cursor moves. */
 :root[data-l-mode="on"] .cm-line {
-  transition: opacity 200ms ease;
+  transition:
+    opacity 220ms ease,
+    color 220ms ease,
+    filter 220ms ease;
 }
 
 :root[data-l-mode="on"] .cm-lmode-dimmed {
-  opacity: 0.85;
+  color: color-mix(in srgb, var(--text) 86%, var(--text-muted));
+  filter: saturate(0.78);
+  opacity: 0.78;
 }
 
-/* --- 5. Exit pill --- */
+/* --- 4c-bis. Active-line tag reveal (no layout shift) ---
+   When the cursor lands on a heading, blockquote, or fenced
+   code line, a small UI chip appears in the LEFT MARGIN of
+   the line showing what kind of structural block the user
+   is on ("H2", "H3", ">", " ``` ", etc). The chip is added
+   via a `::before` pseudo-element, absolutely positioned
+   against the line, so it does not participate in the
+   line's content flow — moving the cursor onto or off a
+   heading does not reflow any text. The chip is invisible
+   on non-active lines (the `.cm-lmode-source-line` class is
+   only on the cursor's line and the lines spanned by a
+   multi-line selection). The Markdown markers themselves
+   stay hidden everywhere — the chip is a separate affordance,
+   not a re-show of the source text.
+
+   The chip label itself is a `data-l-chip` attribute set by
+   the L Mode extension (see `lMode/classes.ts`'s
+   `LModeChipLabels`), so the strings live in the TS catalog
+   and are drift-checked — no `content: "H1"` / `content: "H2"`
+   string literals in CSS. The `content: attr(data-l-chip)`
+   below is the only place the label crosses from data into
+   rendered output. */
+:root[data-l-mode="on"] .cm-line.cm-lmode-source-line {
+  position: relative;
+}
+
+:root[data-l-mode="on"] .cm-line.cm-lmode-source-line::before {
+  content: attr(data-l-chip);
+  position: absolute;
+  top: 0;
+  left: -2em;
+  display: inline-block;
+  min-width: 1.4em;
+  padding: 0 0.34em;
+  font-family: var(--lmode-code-font-family);
+  font-size: 0.7em;
+  font-weight: 500;
+  font-style: normal;
+  line-height: 1.7;
+  text-align: center;
+  text-transform: none;
+  letter-spacing: 0;
+  color: color-mix(in srgb, var(--text-muted) 78%, var(--accent));
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+  border-radius: 4px;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+  font-feature-settings: normal;
+}
+
+/* Per-chip positioning overrides. The label is provided by
+   the `data-l-chip` attribute set in TS, so these rules only
+   adjust layout for chips whose shape differs from the
+   default (e.g. the `>` chip is narrower, so it sits closer
+   to the line and uses a tighter min-width). */
+:root[data-l-mode="on"] .cm-line.cm-lmode-source-line.cm-lmode-blockquote::before {
+  left: -1.3em;
+  min-width: 0.9em;
+  padding: 0 0.18em;
+}
+
+/* --- 4d. Empty document placeholder ---
+   When the document is effectively empty (no non-whitespace
+   characters), a soft "Start writing..." invitation sits in
+   the center of the editor body. The mark is the same "L"
+   monogram used in the exit pill, scaled up and dimmed; the
+   hint text uses the UI font so the placeholder feels
+   distinctly chrome, not part of the prose. */
+:root[data-l-mode="on"] .l-mode-empty-placeholder {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  pointer-events: none;
+  user-select: none;
+  text-align: center;
+  z-index: 0;
+}
+
+:root[data-l-mode="on"] .l-mode-empty-placeholder-mark {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  font-family: var(--lmode-prose-font-family);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 1;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+:root[data-l-mode="on"] .l-mode-empty-placeholder-text {
+  font-family: var(--lmode-prose-font-family);
+  font-size: 15px;
+  font-weight: 500;
+  color: color-mix(in srgb, var(--text) 80%, var(--text-muted));
+  letter-spacing: 0.01em;
+}
+
+:root[data-l-mode="on"] .l-mode-empty-placeholder-hint {
+  font-family: var(--lmode-ui-font-family);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--text-muted) 75%, transparent);
+}
+
+/* --- 5. Exit pill + L Mode badge ---
+   The exit affordance is rendered as a small monogram pill
+   in the top-right. "L" inside a ring, with the mode label
+   next to it. The whole thing fades to a low opacity by
+   default and lifts on hover, so the chrome stays
+   discoverable without dominating the writing surface. */
 .l-mode-exit-pill {
   position: fixed;
-  top: 12px;
-  right: 16px;
+  top: 14px;
+  right: 18px;
   z-index: 100;
-  padding: 6px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 6px 6px;
   border-radius: 999px;
-  background: rgba(127, 127, 127, 0.18);
-  color: inherit;
-  border: 1px solid rgba(127, 127, 127, 0.25);
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  opacity: 0.4;
-  transition: opacity 120ms ease;
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  color: var(--text);
+  border: 1px solid color-mix(in srgb, var(--border) 48%, transparent);
+  backdrop-filter: blur(14px) saturate(1.05);
+  box-shadow: var(--shadow-sm);
+  font-family: var(--lmode-ui-font-family);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.32;
+  transition:
+    opacity 200ms ease,
+    transform 200ms ease,
+    border-color 200ms ease;
   cursor: pointer;
 }
 
 .l-mode-exit-pill:hover,
 .l-mode-exit-pill:focus-visible {
   opacity: 1;
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent) 36%, var(--border));
+}
+
+.l-mode-exit-pill-monogram {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-contrast, var(--bg));
+  font-family: var(--lmode-prose-font-family);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1;
+}
+
+.l-mode-exit-pill-label {
+  display: inline-block;
+  line-height: 1;
+  padding-right: 4px;
 }
 
 /* The pill is rendered unconditionally in the AppShell so

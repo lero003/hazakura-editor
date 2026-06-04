@@ -24,6 +24,7 @@
 
 import { ViewPlugin, type EditorView, WidgetType } from "@codemirror/view";
 import type { Extension } from "@codemirror/state";
+import { LModeClasses } from "./classes";
 
 const CHECKED_GLYPH = "☑";
 const UNCHECKED_GLYPH = "☐";
@@ -48,8 +49,8 @@ export class LModeTaskWidget extends WidgetType {
   toDOM(): HTMLElement {
     const span = document.createElement("span");
     span.className = this.checked
-      ? "cm-lmode-task cm-lmode-task-checked"
-      : "cm-lmode-task cm-lmode-task-unchecked";
+      ? `${LModeClasses.task} ${LModeClasses.taskChecked}`
+      : `${LModeClasses.task} ${LModeClasses.taskUnchecked}`;
     span.dataset.lmodeTaskFrom = String(this.from);
     span.dataset.lmodeTaskTo = String(this.to);
     span.textContent = this.checked ? CHECKED_GLYPH : UNCHECKED_GLYPH;
@@ -80,7 +81,7 @@ const lModeTaskClickViewPlugin = ViewPlugin.fromClass(
       click(event, view) {
         const target = event.target;
         if (!(target instanceof Element)) return;
-        const taskEl = target.closest(".cm-lmode-task");
+        const taskEl = target.closest(`.${LModeClasses.task}`);
         if (!taskEl) return;
         const from = Number(taskEl.getAttribute("data-lmode-task-from"));
         const to = Number(taskEl.getAttribute("data-lmode-task-to"));

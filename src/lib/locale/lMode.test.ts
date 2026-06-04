@@ -32,7 +32,19 @@ describe("getLModeCopy", () => {
         "paletteCommand",
         "preferenceHint",
         "preferenceLabel",
+        "typewriterPreferenceHint",
+        "typewriterPreferenceLabel",
       ]);
     }
+  });
+
+  it("returns the typewriter preference label and hint for each language", () => {
+    expect(getLModeCopy("en").typewriterPreferenceLabel).toBe("Typewriter mode");
+    expect(getLModeCopy("ja").typewriterPreferenceLabel).toBe(
+      "タイプライターモード",
+    );
+    expect(getLModeCopy("kana").typewriterPreferenceLabel).toBe(
+      "たいぷらいたーもーど",
+    );
   });
 });

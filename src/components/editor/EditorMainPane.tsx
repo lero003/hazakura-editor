@@ -99,6 +99,7 @@ export function EditorMainPane({
             documentKey={documentKey}
             fontSize={editorSettings.fontSize}
             lModeEnabled={editorSettings.lModeEnabled}
+            lModeTypewriter={editorSettings.lModeTypewriter}
             onChange={onChange}
             onScrollRatioChange={onScrollRatioChange}
             onSelectionChange={onSelectionChange}

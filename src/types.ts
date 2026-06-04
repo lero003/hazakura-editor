@@ -206,6 +206,11 @@ export type EditorSettings = {
   // chrome, suppresses Markdown markers in inactive lines, and
   // applies page-like typography. Source text is never modified.
   lModeEnabled: boolean;
+  // Typewriter mode: when on, the active line is kept vertically
+  // centered as the cursor moves. Off by default — many writers
+  // find it disorienting, and the default top-anchored flow is
+  // what most editors do.
+  lModeTypewriter: boolean;
 };
 
 export type AmbientIntensity = "off" | "subtle" | "normal" | "dramatic";

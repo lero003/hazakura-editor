@@ -14,7 +14,10 @@ describe("LModeExitPill", () => {
 
     const button = screen.getByRole("button", { name: "Close L Mode" });
     expect(button).toBeTruthy();
-    expect(button.textContent).toBe("Exit L Mode");
+    // The pill renders a monogram + label; the label is the
+    // single piece of translated copy, the monogram is the
+    // fixed "L" mark.
+    expect(button.textContent).toBe("LExit L Mode");
     expect(button.getAttribute("title")).toBe("Close L Mode");
   });
 
@@ -33,6 +36,6 @@ describe("LModeExitPill", () => {
     );
 
     const button = screen.getByRole("button", { name: "えるモードを閉じる" });
-    expect(button.textContent).toBe("えるモード終了");
+    expect(button.textContent).toBe("Lえるモード終了");
   });
 });

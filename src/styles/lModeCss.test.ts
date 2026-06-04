@@ -2,11 +2,20 @@
 
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { LModeClasses, LModeChipLabels } from "../features/editor/lMode/classes";
 
 const lModeCss = readFileSync(
   `${process.cwd()}/src/styles/lMode.css`,
   "utf8",
 );
+
+// Strip block comments from a CSS string so test assertions
+// don't accidentally match prose inside /* ... */. Block
+// comments cannot be nested in CSS, so a single non-greedy
+// pass is enough.
+function stripCssComments(css: string): string {
+  return css.replace(/\/\*[\s\S]*?\*\//g, "");
+}
 
 describe("lMode.css", () => {
   it("keeps CSS blocks balanced so later L Mode rules still apply", () => {
@@ -129,20 +138,96 @@ describe("lMode.css", () => {
     expect(hiddenMarkerRule).toMatch(/background:\s*transparent/);
   });
 
-  it("reveals hidden Markdown markers on the active or hovered line", () => {
-    expect(lModeCss).toMatch(
-      /:root\[data-l-mode="on"\] \.cm-lmode-source-line \.cm-lmode-hidden/,
+  it("keeps hidden Markdown markers hidden on every line (layout stability)", () => {
+    // v0.11+ direction: L Mode is a WYSIWYG-tier writing
+    // surface. The document should read like a document, and
+    // the layout must not shift as the cursor moves. The
+    // active-line and hover-reveal path that briefly
+    // re-showed the Markdown markers is gone — toggling L
+    // Mode off is the way to see the source.
+    expect(lModeCss).not.toMatch(
+      /\.cm-lmode-source-line \.cm-lmode-hidden/,
     );
-    expect(lModeCss).toMatch(
-      /:root\[data-l-mode="on"\] \.cm-line:hover \.cm-lmode-hidden/,
+    expect(lModeCss).not.toMatch(
+      /\.cm-line:hover \.cm-lmode-hidden/,
     );
-    const hoverMarkerRule =
-      lModeCss.match(
-        /:root\[data-l-mode="on"\] \.cm-lmode-source-line \.cm-lmode-hidden,\s*:root\[data-l-mode="on"\] \.cm-line:hover \.cm-lmode-hidden\s*{(?<body>[^}]*)}/s,
-      )?.groups?.body ?? "";
+  });
 
-    expect(hoverMarkerRule).toMatch(/font-size:\s*inherit/);
-    expect(hoverMarkerRule).toMatch(/inline-size:\s*auto/);
-    expect(hoverMarkerRule).toMatch(/max-inline-size:\s*none/);
+  // --- Catalog ↔ CSS drift ---
+  //
+  // The L Mode class catalog (`lMode/classes.ts`) is the
+  // single source of truth: extension code, widgets, the React
+  // chrome components, and this CSS file all reference the
+  // same constants. A drift between the catalog and the CSS
+  // (e.g. a class renamed in one place, or a CSS rule added
+  // without a catalog entry) would silently break styling.
+  // These assertions catch that drift at test time.
+  it("includes a CSS rule for every L Mode class in the catalog", () => {
+    for (const cls of Object.values(LModeClasses)) {
+      // Look for the class as a CSS selector (a `.` followed
+      // by the class name). The `\b` boundary makes sure
+      // `cm-lmode-link` does not silently match
+      // `cm-lmode-link-...`.
+      const pattern = new RegExp(
+        `\\.${cls.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&")}\\b`,
+      );
+      expect(lModeCss, `L Mode class ${cls} not found in lMode.css`).toMatch(
+        pattern,
+      );
+    }
+  });
+
+  it("does not define a cm-lmode-* or l-mode-* class that the catalog does not know about", () => {
+    // Reverse check: the CSS file does not invent its own
+    // L Mode classes. Catches typos in CSS or forgotten
+    // catalog entries.
+    const selectorClass = /\.(cm-lmode-[a-z0-9-]+|l-mode-[a-z0-9-]+)/g;
+    const cssClasses = new Set<string>();
+    for (const match of lModeCss.matchAll(selectorClass)) {
+      cssClasses.add(match[1]);
+    }
+    const catalogClasses = new Set<string>(Object.values(LModeClasses));
+    for (const cssCls of cssClasses) {
+      expect(
+        catalogClasses.has(cssCls),
+        `${cssCls} is in lMode.css but not in LModeClasses`,
+      ).toBe(true);
+    }
+  });
+
+  it("renders chip labels from the data-l-chip attribute, not from per-chip content rules", () => {
+    // v0.11+ refactor: chip labels live in the TS catalog
+    // (`LModeChipLabels`) and the line-decoration code
+    // attaches a `data-l-chip` attribute to the line. The
+    // CSS uses `content: attr(data-l-chip)` to render the
+    // label. This guards against regressions where a
+    // per-chip `content: "H1"` etc. gets re-introduced
+    // (typos in CSS would no longer be caught by TS).
+    const css = stripCssComments(lModeCss);
+    expect(css).toMatch(/content:\s*attr\(data-l-chip\)/);
+    for (const label of Object.values(LModeChipLabels)) {
+      // No `content: "H1"` (or "H2" .. "```", ">") literal
+      // in CSS — those strings are owned by the catalog.
+      const literal = new RegExp(
+        `content:\\s*["']${label.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&")}["']`,
+      );
+      expect(
+        css,
+        `chip label ${label} is hardcoded in CSS as a content literal`,
+      ).not.toMatch(literal);
+    }
+  });
+
+  it("keeps the chip attribute name in sync between the catalog and the CSS", () => {
+    // The attribute name `data-l-chip` is shared between the
+    // extension code (`buildLineDecorations` in
+    // `lMode/contentDecorations.ts`) and the CSS rule. A
+    // rename in one place must be matched in the other.
+    expect(lModeCss).toMatch(/attr\(data-l-chip\)/);
+    // The orchestrator's extension code reads from the same
+    // literal — this is the only string the two layers share.
+    // If you find yourself wanting to extract it into the
+    // catalog, do so as a single constant shared by both,
+    // not by introducing a second source of truth.
   });
 });

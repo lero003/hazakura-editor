@@ -26,19 +26,57 @@ Run these before treating v0.10 as ready to publish:
 11. Confirm floating chrome/status text is theme-aware and readable.
 12. Confirm normal mode, Preview, Diff, Review Desk, export, and copy behavior still use Markdown source, not rendered preview content.
 
-## L Mode v0.11 (Typora-feel rendering)
+## L Mode v0.11+ (WYSIWYG-tier writing surface)
 
-Run when the L Mode extension, the GFM parser base, or the lMode stylesheet changes:
+Run when the L Mode extension, the GFM parser base, the lMode stylesheet, the prose font tokens, or the empty-placeholder / typewriter / image-widget code changes.
+
+### Inline rendering
 
 1. Enter L Mode with `Cmd+Shift+L` and confirm `*italic*` shows as italic text (no visible `*`); `**bold**` shows bold; `~~struck~~` shows with a strikethrough.
 2. Confirm `[text](url)` shows as the link text only, in the accent color, with no visible brackets or URL.
-3. Confirm a GFM table renders with a bold header row, body rows, a thin border, and muted pipe separators; the `| --- | --- |` delimiter row is not visible.
-4. Confirm `---` on its own line shows as a horizontal divider line (not as raw `---` text).
-5. Confirm `- [ ]` and `- [x]` list items show as checkbox glyphs (☐ / ☑) instead of the raw marker text.
-6. Click a task-list checkbox and confirm the underlying `[ ]` / `[x]` toggles, the doc is now dirty, and the displayed glyph flips.
-7. Confirm lines that are NOT under the cursor are dimmed (soft focus); the active line stands out at full opacity. The fade transitions smoothly as the cursor moves.
-8. Confirm markers (`#`, `*`, `>`, `-`, etc.) are still revealed on the active line for editing context, and hidden elsewhere.
-9. Confirm toggling L Mode off restores the normal editor (markers visible, no dimming, no inline rendering) and the saved file is byte-identical to the L Mode state.
+3. Confirm inline code reads as prose with a thin accent underline, not as a colored code chip on a heavy background.
+
+### Block rendering
+
+4. Confirm a GFM table renders with a bold header row, body rows, a thin border, and muted pipe separators; the `| --- | --- |` delimiter row is not visible.
+5. Confirm `---` on its own line shows as a horizontal divider line (not as raw `---` text).
+6. Confirm `- [ ]` and `- [x]` list items show as checkbox glyphs (☐ / ☑) instead of the raw marker text.
+7. Click a task-list checkbox and confirm the underlying `[ ]` / `[x]` toggles, the doc is now dirty, and the displayed glyph flips.
+8. Confirm fenced code blocks render as a quiet inset (left rule, muted background, generous breathing) with subtle line numbers down the gutter.
+9. Confirm blockquotes render as a pull-quote (italic, slightly larger, thin left rule, no background fill).
+10. Confirm `- item` bullet lists show a quiet `•` and `1. item` ordered lists show `1.` / `2.` / `3.` re-numbered per list (not the source numbers), with `tabular-nums` so the column doesn't shift.
+11. Confirm `![alt](url)` images render as a centered figure with a soft drop shadow; when the alt text is non-empty, an italic caption appears below the image. Unresolved / out-of-workspace images render a quiet dashed placeholder instead.
+
+### Magazine-feel typography
+
+12. Confirm the prose body uses the serif stack (New York / Hiragino Mincho / Yu Mincho / Georgia), not the previous sans-serif default.
+13. Confirm the FIRST H1 of a document is centered, large, and carries its own bottom rule. Subsequent H1s render in the section-heading voice (left-aligned, smaller) so multi-section documents don't read as a series of titles.
+14. Confirm H2 is a clear section break, H3 a subsection, H4-6 progressively smaller. H1 and H2 carry a thin bottom rule; the prose body sits at full opacity between them.
+15. Confirm the body has comfortable line-height (≈ 1.78) at 15px body size, reading-width is constrained to a centered column no wider than ~720px, and the soft "paper" gradient is visible at the top of the editor.
+16. Confirm the body absolute font size feels quiet enough to read for long stretches (a v0.11+ reduction from the earlier 17px; jump rate between body and headings is preserved).
+
+### Layout stability
+
+17. Confirm the document layout does NOT shift horizontally as the cursor moves between lines. Markdown markers stay hidden on every line; toggling L Mode off is the only way to see the source.
+18. Confirm lines that are NOT under the cursor are softly dimmed (opacity, color shift, light desaturation); the active line stands out at full opacity. The fade transitions smoothly as the cursor moves.
+19. Confirm the scrollbar is hidden by default and revealed only on hover or while scrolling.
+20. Confirm an effectively empty document shows a centered "L" mark + "書き始める…" / "Start writing…" placeholder instead of an empty area.
+21. Confirm toggling L Mode off restores the normal editor (markers visible, no dimming, no inline rendering) and the saved file is byte-identical to the L Mode state.
+
+### Active-line structural tag reveal (no layout shift)
+
+22. With the cursor on a heading line, a small chip ("H1" / "H2" / "H3" / "H4" / "H5" / "H6") appears in the LEFT MARGIN of the line. The chip is muted, monospaced, and reads as chrome rather than as a body character.
+23. Move the cursor between an H1, an H2, and a paragraph; the heading chip follows the cursor and the prose text DOES NOT shift horizontally (the chip is absolutely positioned in the margin, not part of the line's content flow).
+24. With the cursor on a blockquote line, a ">" chip appears in the left margin of every blockquote line spanned by the selection.
+25. With the cursor on the FIRST or LAST line of a fenced code block, a "```" chip appears in the left margin (the intermediate lines of the block stay quiet).
+26. The chip is invisible on dimmed (non-active) lines — only the active line and lines spanned by a multi-line selection show chips.
+27. On a viewport at the minimum comfortable width, the chip remains fully inside the editor's visible area (no clipping at the left edge).
+
+### Typewriter mode (optional setting)
+
+28. In the Preferences dialog, the "Typewriter mode" toggle appears as a sub-option under the L Mode toggle, indented and dimmed when L Mode is off.
+29. With typewriter mode ON, the active line stays vertically centered in the viewport as the cursor moves. The scroller's `scroll-behavior: smooth` makes the recenter feel like a soft drift, not a snap. With it OFF, the editor uses the normal top-anchored flow.
+30. Toggle the setting from the Preferences dialog and confirm the change takes effect without restarting the app.
 
 ## Safe Editor Core
 

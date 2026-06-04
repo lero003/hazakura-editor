@@ -1,15 +1,15 @@
 # L Mode Plan
 
-Status: Planning
-Scope: Experimental one-pane reading-writing mode for v0.9
+Status: Active
+Scope: Writing surface for v0.11+ L Mode polish (originated in v0.9 alpha)
 Authority: Medium
-Last reviewed: 2026-06-03
+Last reviewed: 2026-06-04
 
 ## Summary
 
-**えるモード** is an experimental one-pane reading-writing mode for `hazakura editor`.
+**えるモード** is the WYSIWYG-tier writing surface of `hazakura editor`. It aims for a custom writing-app feel that goes beyond dedicated WYSIWYG editors like Typora — a magazine-feel, document-centered space where the visual is the document and editing happens without conscious effort.
 
-It hides surrounding UI such as the file tree, tabs, status details, Agent Surface, and Review Desk as much as practical, then brings the document body forward. The goal is not to make Markdown look decorative. The goal is to let novels, essays, notes, philosophical fragments, and narrative text be written while they are read.
+It hides surrounding UI such as the file tree, tabs, status details, Agent Surface, and Review Desk as much as practical, then brings the document body forward. The goal is to let novels, essays, notes, philosophical fragments, and narrative text be written while they are read.
 
 Short description:
 
@@ -24,20 +24,22 @@ Alternative English label: **L Mode**.
 - Normal mode: edit and review Markdown safely.
 - Review Desk: compare candidate text and diffs explicitly.
 - Agent Window: handle external AI at a clear distance.
-- えるモード: move closer to the document body and write as if reading.
+- えるモード: a WYSIWYG-tier writing surface whose source model is Markdown.
 
 えるモード is not an AI generation mode and not an automatic editing mode. AI, Diff, and Review Desk can be used by returning to the normal surfaces when needed.
 
 ## Core Principle
 
-Markdown source remains the truth.
+Markdown source remains the truth. The writing surface is WYSIWYG-tier.
 
 ```txt
 Markdown source is truth.
-えるモード is presentation layer.
+えるモード renders as the document.
 ```
 
-The saved file is the same Markdown text used by normal mode. Hiding Markdown markers is a display concern only. えるモード must not perform automatic conversion, automatic formatting, automatic application, or irreversible Markdown-to-HTML transformation.
+The saved file is the same Markdown text used by normal mode. The WYSIWYG-feel rendering is a display concern only — CodeMirror decoration on top of the existing Markdown parser, never direct Preview DOM editing, never `contenteditable`, never irreversible Markdown→HTML transformation.
+
+The visual target is a custom WYSIWYG writing app: editorial typography, strong heading hierarchy, magazine-feel block elements, inline emphasis / strong / strike / link that read as the document, layout that does not shift when the cursor moves. The user writes without consciously editing.
 
 ## Experience Target
 
@@ -98,19 +100,18 @@ Markers must become available around the active line, active block, selection, o
 
 ## Non-Scope
 
-Do not include these in the initial experiment:
+The visual writing surface can grow ambitious, but the source model stays Markdown and editing stays inside CodeMirror. Do not include:
 
-- full WYSIWYG editing
-- direct editing of Preview DOM
+- direct editing of Preview DOM or `contenteditable` substitution
 - irreversible Markdown-to-HTML conversion
-- visual table editing
+- structural visual table editing (row/column add/remove, alignment)
 - full Mermaid or math editing
 - image layout editing
 - AI autocomplete
 - automatic AI candidate application
 - save-time auto-formatting
 
-えるモード is a display and focus experiment, not a full writing-app replacement.
+The WYSIWYG-tier aspiration is purely about rendering quality — the user keeps editing through the cursor in the Markdown source, and the saved file is exactly the same Markdown text used by normal mode.
 
 ## Success Conditions
 
@@ -136,16 +137,16 @@ If these problems dominate, close the experiment or reduce it to a conventional 
 
 ## Implementation Notes
 
-Prefer CodeMirror-side display decoration over editing the Preview DOM.
+Implementation is CodeMirror display decoration on top of the existing Markdown parser. The WYSIWYG-tier look comes from how the decoration is styled, not from any structural change to the editor.
 
 - Keep Markdown text as the only source of truth.
-- Use display decoration to hide Markdown markers.
-- Restore markers in the active editing context.
+- Use display decoration (`mark`, `line`, `replace`, `widget`) to render emphasis, strong, strike, link, tables, task checkboxes, HRs, and other block / inline elements as the document.
+- Style headings with strong jump rates and editorial treatments (centered H1, distinctive H2/H3, etc.).
+- Keep layout stable: do not reveal Markdown markers on the active line if it would shift the line horizontally; let the visual stay as the document.
+- Restore markers only where editing context demands them (e.g. selection inspection in command palette, Review Desk diff).
 - Do not affect normal mode, Preview, Diff, Review Desk, or export semantics.
-- Gate the experiment behind a setting or feature flag so it can be disabled.
+- Theme handling can stay simple (light / dark base) — magazine style is the primary differentiator, not per-theme variation.
 
 ## Summary Statement
 
-えるモード is not a Typora clone.
-
-It is a quiet place inside `hazakura editor` for moving closer to the text while keeping the safe Markdown foundation underneath.
+えるモード is the WYSIWYG-tier writing surface of `hazakura editor` — a custom writing-app feel that goes beyond Typora, while the source model stays Markdown and the editing surface stays CodeMirror.

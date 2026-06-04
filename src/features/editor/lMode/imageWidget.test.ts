@@ -3,7 +3,7 @@ import {
   classifyImageUrl,
   LModeImageWidget,
   __test__ as widgetInternals,
-} from "./lModeImageWidget";
+} from "./imageWidget";
 
 describe("classifyImageUrl", () => {
   it("returns http for http(s) URLs", () => {

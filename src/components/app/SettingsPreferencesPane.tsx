@@ -196,6 +196,28 @@ export function SettingsPreferencesPane({
           <span>{lModeCopy.preferenceLabel}</span>
           <span className="field-hint">{lModeCopy.preferenceHint}</span>
         </label>
+        <label
+          className={`toggle-switch toggle-switch-nested${
+            editorSettings.lModeEnabled ? "" : " toggle-switch-disabled"
+          }`}
+        >
+          <input
+            type="checkbox"
+            disabled={!editorSettings.lModeEnabled}
+            checked={editorSettings.lModeTypewriter}
+            onChange={(event) =>
+              onEditorSettingsChange((current) => ({
+                ...current,
+                lModeTypewriter: event.target.checked,
+              }))
+            }
+          />
+          <span className="slider"></span>
+          <span>{lModeCopy.typewriterPreferenceLabel}</span>
+          <span className="field-hint">
+            {lModeCopy.typewriterPreferenceHint}
+          </span>
+        </label>
       </section>
     </div>
   );

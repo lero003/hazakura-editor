@@ -43,22 +43,43 @@
   --cm-mark-monospace: #245c40;
   --cm-mark-quote: #4f6659;
 
-  /* L Mode prose font. Sans-serif default; themes can override
-     to a serif stack without further L Mode code changes. */
+  /* L Mode prose font. A serif-first stack so the body reads
+     like editorial prose — magazines and long-form writing
+     apps default to a serif face for the running text.
+     Latin: New York (macOS system serif) → Georgia → Times.
+     Japanese: Hiragino Mincho → Yu Mincho → MS Mincho.
+     The `system-ui` fallback is intentionally not used in
+     this stack; if no serif is available, the cascade falls
+     through to the UA serif default so the document never
+     silently renders in sans. */
   --lmode-prose-font-family:
+    "New York",
+    "Hiragino Mincho ProN",
+    "Yu Mincho",
+    "YuMincho",
+    "Hiragino Serif",
+    Georgia,
+    "Times New Roman",
+    "Songti SC",
+    serif;
+
+  /* L Mode UI sans-serif. Used for the floating chrome (tab
+     bar, status pill, command palette headers) where the
+     prose face would feel too formal. */
+  --lmode-ui-font-family:
+    -apple-system,
     "Inter",
     "Hiragino Sans",
     "Yu Gothic UI",
     system-ui,
-    -apple-system,
     sans-serif;
 
-  /* L Mode monospace stack. Used in the foundation lane for
-     the prose body (typography was later moved to a separate
-     sans-serif variable). Kept for the code chips and fenced
-     code blocks. */
+  /* L Mode monospace stack. Inline code and fenced code
+     blocks render in this face. JetBrains Mono and SF Mono
+     are the primary candidates on macOS. */
   --lmode-code-font-family:
     ui-monospace,
+    "JetBrains Mono",
     SFMono-Regular,
     "SF Mono",
     Menlo,

@@ -29,7 +29,7 @@ import { basicSetup } from "codemirror";
 import { SlashMenu, type SlashMenuCopy } from "./SlashMenu";
 import { useSlashMenu } from "../../hooks/editor/useSlashMenu";
 import { markdownSyntaxHighlighting } from "../../features/editor/codeMirrorTheme";
-import { lModeExtension } from "../../features/editor/lModeExtension";
+import { lModeExtension, LModeClasses } from "../../features/editor/lMode";
 import type { SlashCommand } from "../../types/slash";
 
 type SearchMatch = { from: number; to: number };
@@ -58,6 +58,7 @@ type EditorPaneProps = {
   tabSize: number;
   wrapLines: boolean;
   lModeEnabled: boolean;
+  lModeTypewriter?: boolean;
   activeSearchMatchIndex: number;
   searchMatches: SearchMatch[];
   slashCommands: readonly SlashCommand[];
@@ -161,6 +162,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       documentKey,
       fontSize,
       lModeEnabled,
+      lModeTypewriter = false,
       searchMatches,
       showInvisibles,
       slashCommands,
@@ -367,10 +369,14 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
           markdownSyntaxHighlighting(),
         ]),
         lModeCompartmentRef.current.of(
-          lModeExtension(lModeEnabled, {
-            workspaceRoot: workspaceRoot ?? null,
-            documentPath: documentKey,
-          }),
+          lModeExtension(
+            lModeEnabled,
+            {
+              workspaceRoot: workspaceRoot ?? null,
+              documentPath: documentKey,
+            },
+            { typewriterMode: lModeTypewriter },
+          ),
         ),
         EditorView.domEventHandlers({
           keydown(event, view) {
@@ -549,13 +555,17 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
 
     view.dispatch({
       effects: lModeCompartmentRef.current.reconfigure(
-        lModeExtension(lModeEnabled, {
-          workspaceRoot: workspaceRoot ?? null,
-          documentPath: documentKey,
-        }),
+        lModeExtension(
+          lModeEnabled,
+          {
+            workspaceRoot: workspaceRoot ?? null,
+            documentPath: documentKey,
+          },
+          { typewriterMode: lModeTypewriter },
+        ),
       ),
     });
-  }, [lModeEnabled, workspaceRoot, documentKey]);
+  }, [lModeEnabled, lModeTypewriter, workspaceRoot, documentKey]);
 
   useEffect(() => {
     const view = viewRef.current;
@@ -631,6 +641,17 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   return (
     <div className="editor-host">
       <div className="editor-mount" ref={editorMountRef} />
+      {lModeEnabled && isEffectivelyEmpty(value) ? (
+        <div className={LModeClasses.emptyPlaceholder} aria-hidden="true">
+          <div className={LModeClasses.emptyPlaceholderMark}>L</div>
+          <div className={LModeClasses.emptyPlaceholderText}>
+            書き始める…
+          </div>
+          <div className={LModeClasses.emptyPlaceholderHint}>
+            Cmd+Shift+L で通常モードへ戻ります
+          </div>
+        </div>
+      ) : null}
       <SlashMenu
         activeIndex={slashActiveIndex}
         copy={slashMenuCopy}
@@ -897,6 +918,16 @@ export function getEditorWrappingExtensions(
   lModeEnabled: boolean,
 ): Extension[] {
   return wrapLines || lModeEnabled ? [EditorView.lineWrapping] : [];
+}
+
+// "Effectively empty" for the L Mode placeholder means the
+// document has no user content — just whitespace, a single
+// newline, or completely empty. We don't want the placeholder
+// to flash on and off as the user types their first character,
+// so the threshold is generous: any non-whitespace character
+// suppresses it.
+function isEffectivelyEmpty(value: string): boolean {
+  return value.trim().length === 0;
 }
 
 function readSelectionInfo(state: EditorState): EditorSelectionInfo {

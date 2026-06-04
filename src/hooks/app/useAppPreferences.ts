@@ -7,6 +7,7 @@ import {
 import themeBackgroundColorJson from "../../lib/theme-palette.json";
 import type { AmbientIntensity } from "../../types";
 import { clampNumber } from "../../lib/utils";
+import { LMODE_SETTINGS_DEFAULTS, parseLModeSettings } from "../../features/editor/lMode/settings";
 import {
   EDITOR_SETTINGS_STORAGE_KEY,
   MENU_LANGUAGE_STORAGE_KEY,
@@ -146,7 +147,10 @@ function readStoredEditorSettings(): EditorSettings {
     spellcheckEnabled: true,
     autoBackupEnabled: true,
     ambientIntensity: "normal",
-    lModeEnabled: false,
+    // L Mode defaults are spread in below — keeping the
+    // defaults in one place (lMode/settings.ts) so adding a
+    // new L Mode toggle is a one-file change.
+    ...LMODE_SETTINGS_DEFAULTS,
   };
   const value = window.localStorage.getItem(EDITOR_SETTINGS_STORAGE_KEY);
 
@@ -181,10 +185,7 @@ function readStoredEditorSettings(): EditorSettings {
       ambientIntensity: isAmbientIntensity(parsed.ambientIntensity)
         ? parsed.ambientIntensity
         : defaults.ambientIntensity,
-      lModeEnabled:
-        typeof parsed.lModeEnabled === "boolean"
-          ? parsed.lModeEnabled
-          : defaults.lModeEnabled,
+      ...parseLModeSettings(parsed),
     };
   } catch {
     return defaults;

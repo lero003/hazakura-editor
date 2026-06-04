@@ -64,6 +64,24 @@
   outline-offset: 2px;
 }
 
+/* Nested toggle — visual indent so a setting that depends on
+   another setting (e.g. L Mode → Typewriter Mode) reads as
+   "sub-option of the row above" without drawing a heavy
+   border or label. */
+.toggle-switch-nested {
+  margin-left: 28px;
+  opacity: 0.86;
+}
+
+.toggle-switch-disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.toggle-switch-disabled input {
+  cursor: not-allowed;
+}
+
 .tabs-row {
   background: var(--surface-muted);
   border-bottom: 1px solid var(--border);
