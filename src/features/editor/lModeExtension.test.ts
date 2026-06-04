@@ -188,6 +188,8 @@ describe("computeLModeDecorations", () => {
       "1. one\n" +
       // StrikethroughMark + LinkMark + URL
       "~~struck~~ and [link](https://example.com)\n" +
+      // LinkLabel (reference-style link suffix)
+      "[OpenCode][2]\n" +
       // TaskMarker (GFM task list)
       "- [ ] todo\n" +
       "- [x] done\n" +
@@ -200,10 +202,21 @@ describe("computeLModeDecorations", () => {
     const ranges = collectRanges(computeLModeDecorations(state), state.doc.length);
 
     // Each marker type contributes at least one hidden range
-    // — the test fixture covers all 10 types, so the count
-    // must be at least 10. (The line-decorations add more on
+    // — the test fixture covers all 11 types, so the count
+    // must be at least 11. (The line-decorations add more on
     // top of that, so we keep this as a lower bound.)
-    expect(ranges.length).toBeGreaterThanOrEqual(10);
+    expect(ranges.length).toBeGreaterThanOrEqual(11);
+  });
+
+  it("hides reference-style link labels while preserving link text", () => {
+    const source = "([OpenCode][2])\n";
+    const refLabelStart = source.indexOf("[2]");
+    const refLabelEnd = refLabelStart + "[2]".length;
+    const state = makeState(source, source.length);
+    const set = computeLModeDecorations(state);
+
+    expect(hasHiddenRange(set, refLabelStart, refLabelEnd)).toBe(true);
+    expect(state.doc.toString()).toBe(source);
   });
 
   it("replaces Image nodes with the L Mode image widget (doc text untouched)", () => {
@@ -340,6 +353,20 @@ function hiddenMarkerRangeCount(set: DecorationSet): number {
     }
   });
   return count;
+}
+
+function hasHiddenRange(
+  set: DecorationSet,
+  expectedFrom: number,
+  expectedTo: number,
+): boolean {
+  let found = false;
+  set.between(expectedFrom, expectedTo, (from, to) => {
+    if (from === expectedFrom && to === expectedTo) {
+      found = true;
+    }
+  });
+  return found;
 }
 
 function hasLineClass(

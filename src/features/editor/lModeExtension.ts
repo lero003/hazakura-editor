@@ -77,6 +77,7 @@ const sourceLineClass = "cm-lmode-source-line";
 //                    list item
 //   LinkMark       — the `[` and `]` of a link / image
 //   URL            — the `(...)` of a link / image URL
+//   LinkLabel      — the `[ref]` suffix of a reference link
 //   StrikethroughMark — the `~~` of a GFM strikethrough
 //   TaskMarker     — the `[ ]` / `[x]` of a GFM task list
 //   CodeInfo       — the language spec after the opening fence
@@ -88,6 +89,7 @@ const MARKER_NODE_NAMES = new Set<string>([
   "ListMark",
   "LinkMark",
   "URL",
+  "LinkLabel",
   "StrikethroughMark",
   "TaskMarker",
   "CodeInfo",

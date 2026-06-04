@@ -113,9 +113,11 @@
   background: color-mix(in srgb, var(--surface) 68%, transparent);
   backdrop-filter: blur(18px) saturate(1.05);
   box-shadow: var(--shadow-md);
+  color: color-mix(in srgb, var(--text-muted) 82%, transparent);
   opacity: 0.06;
   font-size: 11px;
   padding: 0 10px;
+  text-shadow: none;
   transition: opacity 160ms ease, transform 160ms ease;
   transform: translateY(4px);
   z-index: 90;
@@ -123,8 +125,15 @@
 
 :root[data-l-mode="on"] .status-bar:hover,
 :root[data-l-mode="on"] .status-bar:focus-within {
+  color: var(--text);
   opacity: 0.88;
   transform: translateY(0);
+}
+
+:root[data-l-mode="on"] .status-bar-status,
+:root[data-l-mode="on"] .status-bar-detail,
+:root[data-l-mode="on"] .status-agent-indicator {
+  color: inherit;
 }
 
 :root[data-l-mode="on"] .status-bar-detail {
@@ -376,23 +385,28 @@
 /* Hide the L Mode marker. The actual class is added by the
    CodeMirror extension; this rule is the rendering target. */
 :root[data-l-mode="on"] .cm-lmode-hidden {
+  background: transparent;
   color: transparent;
   display: inline-block;
   font-size: 0;
   inline-size: 0;
   max-inline-size: 0;
   overflow: hidden;
+  text-decoration: none;
   user-select: none;
+  vertical-align: baseline;
   white-space: pre;
 }
 
 :root[data-l-mode="on"] .cm-lmode-source-line .cm-lmode-hidden,
 :root[data-l-mode="on"] .cm-line:hover .cm-lmode-hidden {
+  background: transparent;
   color: color-mix(in srgb, var(--text-muted) 72%, transparent);
   font-size: inherit;
   inline-size: auto;
   max-inline-size: none;
   opacity: 0.78;
+  text-decoration: none;
 }
 
 /* --- 4b. Inline image rendering ---

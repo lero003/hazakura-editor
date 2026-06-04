@@ -54,11 +54,21 @@ describe("lMode.css", () => {
   });
 
   it("keeps secondary status details out of the quiet default view", () => {
+    const statusRule =
+      lModeCss.match(
+        /:root\[data-l-mode="on"\] \.status-bar\s*{(?<body>[^}]*)}/s,
+      )?.groups?.body ?? "";
     const detailRule =
       lModeCss.match(
         /:root\[data-l-mode="on"\] \.status-bar-detail\s*{(?<body>[^}]*)}/s,
       )?.groups?.body ?? "";
 
+    expect(statusRule).toMatch(/color:\s*color-mix\(in srgb,\s*var\(--text-muted\)/);
+    expect(statusRule).not.toMatch(/var\(--status-text\)/);
+    expect(statusRule).not.toMatch(/var\(--status-bg\)/);
+    expect(lModeCss).toMatch(
+      /:root\[data-l-mode="on"\] \.status-agent-indicator/,
+    );
     expect(detailRule).toMatch(/display:\s*none/);
     expect(lModeCss).toMatch(
       /:root\[data-l-mode="on"\] \.status-bar:hover \.status-bar-detail/,
@@ -115,6 +125,8 @@ describe("lMode.css", () => {
       )?.groups?.body ?? "";
 
     expect(hiddenMarkerRule).not.toMatch(/display:\s*none/);
+    expect(hiddenMarkerRule).toMatch(/text-decoration:\s*none/);
+    expect(hiddenMarkerRule).toMatch(/background:\s*transparent/);
   });
 
   it("reveals hidden Markdown markers on the active or hovered line", () => {
