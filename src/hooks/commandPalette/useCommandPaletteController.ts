@@ -279,8 +279,15 @@ export function useCommandPaletteController({
       {
         category: "Edit",
         id: "edit.insertTable",
-        keywords: ["table", "insert", "grid"],
-        label: "Insert Table",
+        keywords: ["table", "insert", "grid", "3", "columns"],
+        // The current insertTable only emits a fixed 3-column
+        // skeleton. The label names the column count so the user
+        // does not assume a full WYSIWYG editor is behind the
+        // command; row / column / alignment editing is not
+        // implemented yet (see docs/authoring-feature-readiness.md).
+        label: "Insert 3-Column Table",
+        description:
+          "Insert a 3-column Markdown table skeleton. Edit cells manually — no row, column, or alignment commands yet.",
         run: () => {
           actions.insertTable();
         },

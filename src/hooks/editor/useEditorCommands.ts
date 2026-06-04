@@ -98,7 +98,8 @@ export function useEditorCommands({
 
   const insertTable = useCallback(() => {
     editorPaneRef.current?.insertTable(3);
-  }, [editorPaneRef]);
+    setStatus("Inserted 3-column table — edit cells manually");
+  }, [editorPaneRef, setStatus]);
 
   const jumpToHeading = useCallback(
     (heading: MarkdownHeading) => {
