@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-06 (App Store publication roadmap)
+Last reviewed: 2026-06-06 (v0.12.0 source / local-app tag)
 
 ## Current Position
 
@@ -12,9 +12,10 @@ Last reviewed: 2026-06-06 (App Store publication roadmap)
 Current release state:
 
 - Latest published preview: `v0.11.0` warning-expected DMG preview.
-- Current package/app version: `0.11.0`.
-- v0.11.0 theme: **L Mode WYSIWYG-tier Polish**.
-- Active lane: post-v0.11 follow-up and v0.12 Apple Local Assist / distribution planning.
+- Latest source / local-app tag: `v0.12.0`.
+- Current package/app version: `0.12.0`.
+- v0.12.0 theme: **Apple Local Assist Alpha**.
+- Active lane: post-v0.12 App Brush-up and distribution-readiness planning.
 
 Historical phase details and old milestone text are archived in `docs/archive/roadmaps/roadmap-through-v0.10-doc-refactor.md` and `docs/archive/roadmaps/roadmap-v0.1-archived.md`.
 
@@ -87,9 +88,9 @@ Publication result:
 - Local gates, launch smoke, focused L Mode / auto-backup restore manual smoke, DMG checksum/image checks, mounted-app metadata, and local codesign checks passed on 2026-06-05.
 - GitHub Release `v0.11.0` was published as a warning-expected DMG prerelease, and remote assets were re-downloaded and verified from a fresh temp directory after publication.
 
-## Next Lane: v0.12 Apple Local Assist Planning
+## Tagged Lane: v0.12 Apple Local Assist Alpha
 
-Goal: decide whether Apple Local Assist / Foundation Models-based document help belongs in the product, without turning Safe Editor into a general AI platform.
+Goal: ship Apple Local Assist / Foundation Models-based document help as an alpha source / local-app checkpoint, without turning Safe Editor into a general AI platform.
 
 Current planning source:
 
@@ -116,14 +117,14 @@ Likely phase shape:
 - `v0.15`: Store Review Prep, including metadata, screenshots, privacy / acceptable-use wording, review notes, and final TestFlight smoke.
 - `v1.0`: App Store Candidate / Review if the App Store build can omit External Agent Workbench cleanly and Apple Local Assist remains document-assist only.
 
-v0.12 in-flight state (no release, no App Store submission):
+v0.12 tag state (source / local-app tag only):
 
-- Apple Local Assist has moved to a live local preview on `main`, backed by a bundled Swift helper when Apple Foundation Models is available on the current Mac.
+- Apple Local Assist has moved to a live local preview, backed by a bundled Swift helper when Apple Foundation Models is available on the current Mac.
 - The feature remains alpha / experimental, unavailable-safe, no-network-fallback, no-auto-save, and bounded to explicit AI edit transactions.
 - Safe Editor behavior does not depend on Apple Local Assist availability.
 - No App Store sandbox / TestFlight packaging change has been made.
 - No Developer ID signing / notarization lane has been completed for the bundled helper.
-- No release tag, GitHub Release, or App Store submission exists for this live helper state.
+- `v0.12.0` is a source / local-app tag. No GitHub Release, DMG asset, or App Store submission exists for this live helper state.
 
 The next implementation work should prioritize built-app smoke, prompt quality, unavailable / disabled states, and distribution readiness. Do not broaden Apple Local Assist into network fallback, generic chat, tool calling, workspace indexing, or external-agent replacement.
 

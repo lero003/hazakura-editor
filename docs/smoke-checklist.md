@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-06-05 (v0.11.0 release-candidate smoke focus)
+Last reviewed: 2026-06-06 (v0.12.0 Apple Local Assist source / local-app tag)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Review Desk, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -166,7 +166,7 @@ Run when `src/lib/tauri/appleAssist.ts`, `src-tauri/src/commands/apple_assist.rs
 2. Confirm `npm run build` bundles `Contents/MacOS/hazakura-apple-assist-helper` and signs it with the local app bundle.
 3. Confirm the Settings / Agent Workbench Preferences surface does not list Apple Local Assist as a CLI agent provider — it is a separate Assist Surface provider class.
 4. Confirm no menu entry, status bar item, autosave path, or background timer runs Apple Local Assist generation without an explicit user request.
-5. In the built app, select `Apple Assist`, restart if prompted, open the companion from normal editor, issue a rough request, and confirm the buffer becomes dirty without auto-saving.
+5. In the built app, select `Apple Local Assist (Experimental)`, restart if prompted, open the companion from normal editor, issue a rough request, and confirm the buffer becomes dirty without auto-saving.
 6. Repeat item 5 in L Mode. Confirm the compact AI-change affordance appears and `差分を開く` / `差分を閉じる` works.
 7. Confirm Agent Window and Apple Assist Window still replace rather than coexist as the primary external companion.
 8. (Supervisor regression, optional) Build the fixture helper with `npm run build:apple-assist-helper:fixture` and run `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE=binaries/hazakura-apple-assist-helper-aarch64-apple-darwin cargo test apple_assist_supervisor --manifest-path src-tauri/Cargo.toml`.

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-06-05 (post-v0.11.0 publication)
+Last reviewed: 2026-06-06 (post-v0.12.0 source / local-app tag)
 
 ## Purpose
 
@@ -17,7 +17,7 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: post-v0.11.0 quality follow-up and v0.12 Apple Local Assist / distribution-planning readiness.
+Phase: post-v0.12.0 App Brush-up and Apple Local Assist / distribution-readiness planning.
 
 Prefer work in this order:
 
@@ -26,7 +26,7 @@ Prefer work in this order:
 3. One reproduced bug in implemented L Mode, auto-backup restore, workspace file operations, Agent provider availability, Review Desk, Diff, or Safe Editor behavior.
 4. Safety-boundary regression checks.
 5. Post-release docs/version drift.
-6. Apple Local Assist and App Store / developer-build distribution planning drift.
+6. Apple Local Assist quality, unavailable-state, and App Store / developer-build distribution planning drift.
 7. Markdown-first editor quality or daily-use polish.
 8. Documentation drift.
 9. Verified no-op after inspection when no useful small slice is safe.
@@ -56,7 +56,7 @@ Do not implement or imply:
 - Strong predictive autocomplete or broad automatic formatting.
 - Signing, notarization, updater, or installer completion without an explicit distribution lane.
 - Dependency or lockfile changes without explicit approval.
-- Apple Local Assist gate-flip (Tauri command surface calling supervisor, `bundle.externalBin` / `minimumSystemVersion` / signing / entitlements changes, command palette visible-condition change, or `Available` return) without explicit user approval. The next Apple Local Assist slices — bundled helper path / `externalBin` approval, Swift live probe, Rust command surface gate-flip, UI 4-state disclosure — each require explicit user approval before code is changed. See `docs/apple-local-assist-helper-path-design.md` for the gate-flip entry point and pre-flight checklist.
+- Apple Local Assist distribution-lane changes (`minimumSystemVersion`, App Store/TestFlight settings, signing, entitlements, sandbox assumptions, notarization, helper packaging shape, or network fallback) without explicit user approval. The live local helper is already on `main`; future work should harden quality, unavailable states, and distribution evidence without broadening the trust boundary.
 
 Keep Agent Workbench explicit, allowlisted, one-session, no-restore, and no-auto-apply. Keep Review Desk low-prominence and manual unless the user explicitly resumes feature work.
 

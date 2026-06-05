@@ -3,8 +3,10 @@
 ## Current State
 
 - `hazakura editor` published `v0.11.0` as a warning-expected DMG preview, framed as **L Mode WYSIWYG-tier Polish**.
-- Version surfaces are aligned at `0.11.0`.
+- `hazakura editor` now has a `v0.12.0` source / local-app tag, framed as **Apple Local Assist Alpha**.
+- Version surfaces are aligned at `0.12.0`.
 - Latest published release body: `docs/releases/0.11.0-warning-expected-dmg-preview.release.md`.
+- Latest source / local-app tag notes: `docs/releases/0.12.0-source-tag.release.md`.
 - Current status source: `docs/current-status.md`.
 
 ## Recent Changes
@@ -22,6 +24,7 @@
 - `v0.11.0` was tagged and published, with DMG assets re-downloaded and verified after publication.
 - Apple Local Assist live local preview landed after v0.11.0: Preferences expose the outside companion slot as restart-applied `Apple Local Assist (Experimental)` / `CLI Agent` / `Off`, the normal top-chrome companion button switches between Apple Local Assist and Agent according to the active setting for the current app launch, and the built app bundles a Swift helper through `bundle.externalBin`. CLI Agent keeps the existing Agent Workbench restart / consent / allowlisted provider boundary. Apple Local Assist calls Apple Foundation Models only when locally available, edits the unsaved buffer through AI edit transactions, and keeps Diff / Discard review available before explicit save.
 - Apple Local Assist user-facing positioning was tightened on 2026-06-06: treat it as an alpha / experimental lightweight on-device text-assistance surface, not the main AI feature and not a replacement for External Agent Workbench, external AI agents, future local LLM runtimes, code review, multi-file understanding, long-document restructuring, autonomous agent work, or advanced reasoning.
+- `v0.12.0` release preparation aligned npm, Tauri, Cargo, and lockfile version surfaces; added source / local-app release notes; and kept the latest downloadable DMG preview at `v0.11.0`.
 
 ## Decisions
 
@@ -46,10 +49,11 @@
 - Apple Local Assist UX direction follow-up on 2026-06-05: `docs/apple-local-assist-writing-companion-plan.md` now records the product pivot. Future Apple Local Assist work should prioritize an external Writing Companion / Assist Window that replaces the Agent Window slot, works with L Mode, accepts rough writing requests, and can update the unsaved editor buffer only through explicit AI edit transactions with Diff / change-history review and no auto-save. Existing selected-text command-palette slices are foundation plumbing, not the final UX.
 - Apple Local Assist companion-slot settings verification on 2026-06-06 passed: `npm run typecheck`, `npm run test` (45 files / 251 tests), `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml` (228 tests), `npm run build:vite`, `npm run build`, and `git diff --check`. `npm run build` produced `/Users/keisetsu/Projects/hazakura-note/src-tauri/target/release/bundle/macos/hazakura editor.app`; Vite chunk-size warning and notarization skip remain expected for the local build.
 - Apple Local Assist live helper verification on 2026-06-06 passed: `npm run build:apple-assist-helper:live` returned availability `available`; `HAZAKURA_APPLE_ASSIST_LIVE_SMOKE_GENERATE=1 npm run build:apple-assist-helper:live` returned a live `candidate` from `apple:foundation-models:system-default`; `npm run build` bundled and signed `Contents/MacOS/hazakura-apple-assist-helper`; direct bundle-helper smoke returned availability and candidate envelopes. The helper strips outer Markdown code fences from model responses before returning candidates.
+- v0.12.0 source / local-app tag verification on 2026-06-06 passed: `npm ci`, `npm run typecheck`, `npm run test` (46 files / 255 tests), `npm run build:vite`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml` (233 tests), `npm run build:apple-assist-helper:live`, `npm run build`, `git diff --check`, `npm audit` (0 vulnerabilities), `cargo audit --file src-tauri/Cargo.lock` (exit 0 with 17 existing allowed warnings), built-app metadata (`0.12.0`, `lab.hazakura.note`, `hazakura editor`, `hazakura-editor`), built-app codesign, expected `spctl` rejection (`source=Insufficient Context`), and built-app launch smoke. `npm outdated` showed only `@types/react` patch availability (`19.2.16` -> `19.2.17`); `cargo update --manifest-path src-tauri/Cargo.toml --dry-run` showed compatible patch updates but did not modify the lockfile.
 
 ## Risks / Unknowns
 
-- The `v0.10.0` and `v0.11.0` tags point at release-prep commits; `main` may have later post-publication docs-sync commits.
+- The `v0.10.0`, `v0.11.0`, and `v0.12.0` tags point at release-prep commits; `main` may have later post-publication docs-sync commits.
 - Direct mouse-wheel automation remains unreliable for WebView smoke because macOS accessibility does not expose a dependable scroll action here; treat real trackpad/mouse-wheel coverage as user-operated manual smoke.
 - GitHub reported one moderate vulnerability notice during push; `npm audit` still reported 0 vulnerabilities locally.
 - `docs/releases/` still contains historical release-note evidence; this is intentional because release verification can depend on it.
@@ -57,7 +61,7 @@
 ## Next Actions
 
 - Before any future publication decision, re-check the latest local gates if code changes again; otherwise use the current release note as the evidence packet.
-- For post-v0.11 assist work, start from `docs/apple-local-assist-writing-companion-plan.md`. Keep Apple Local Assist detachable, prioritize L Mode / rough writing requests, and use AI edit transactions rather than hidden or irreversible applies.
+- For post-v0.12 assist work, start from `docs/apple-local-assist-writing-companion-plan.md`. Keep Apple Local Assist detachable, prioritize L Mode / rough writing requests, and use AI edit transactions rather than hidden or irreversible applies.
 - For Apple Local Assist or App Store distribution planning, start from `docs/apple-local-assist-distribution-plan.md` and keep App Store build decisions separate from the existing developer / warning-expected DMG preview lane.
 - Distribution planning now defaults to two binary lanes only: App Store build (`Safe Editor` + `Apple Local Assist`, no Agent Workbench) and Developer / GitHub build (same base plus Agent Workbench). Treat an official website as routing/explanation, not a third official free build, unless the user explicitly reopens that cost.
 - `docs/roadmap.md` now has an internal App Store Publication Roadmap covering app brush-up, official distribution prep, store review prep, and review/post-review work.

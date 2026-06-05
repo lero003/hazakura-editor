@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-06-05
+Last reviewed: 2026-06-06
 
 `hazakura editor` は、AI時代のメモ帳です。Markdownを中心に、安全にテキストを読む・書く・比べるための軽量なローカル作業場を目指します。
 
@@ -23,7 +23,7 @@ Last reviewed: 2026-06-05
 
 ![hazakura editor diff comparison](docs/images/v0.11-diff-compare.png)
 
-## 0.11 Preview Summary
+## 0.12 Source / Local App Summary
 
 Use this when you want to:
 
@@ -193,7 +193,8 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version is `0.11.0` across npm, Tauri, and Cargo metadata.
+- Current package/app version is `0.12.0` across npm, Tauri, Cargo, and lockfile metadata.
+- The current source / local-app tag is `v0.12.0`; its release-note evidence lives in [0.12.0 Source / Local App Tag](docs/releases/0.12.0-source-tag.release.md).
 - Source users build locally with `npm ci` and `npm run build`.
 - The generated local `.app` declares macOS 11.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. Apple Local Assist's bundled helper requires macOS 26+ and local Apple Intelligence availability to return live candidates. The app is not Developer ID signed or notarized.
 - The latest published warning-expected DMG preview is [v0.11.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.11.0). The v0.11.0 release notes live in [0.11.0 Warning-expected DMG Preview](docs/releases/0.11.0-warning-expected-dmg-preview.release.md).

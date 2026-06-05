@@ -8,8 +8,9 @@ Last reviewed: 2026-06-06
 ## Current State
 
 - `hazakura editor` is a touchable Tauri desktop app for Markdown-first safe text editing.
-- Current published preview is `v0.11.0` at `https://github.com/lero003/hazakura-editor/releases/tag/v0.11.0`.
-- Current package/app version is `0.11.0` across npm, Tauri, Cargo, and Cargo.lock metadata.
+- Current source / local-app tag is `v0.12.0`.
+- Current package/app version is `0.12.0` across npm, Tauri, Cargo, and lockfile metadata.
+- Current published downloadable preview remains `v0.11.0` at `https://github.com/lero003/hazakura-editor/releases/tag/v0.11.0`.
 - v0.11.0 is the **L Mode WYSIWYG-tier Polish** preview: it keeps Markdown source canonical while rendering inline emphasis, strong, strike, links, inline code, task checkboxes, horizontal rules, tables, blockquotes, code blocks, ordered/bullet lists, and images as a document-like writing surface through CodeMirror display decoration.
 - v0.11.0 also includes auto-backup restore through an explicit backup-vs-buffer diff/apply flow, hash-based pasted-image deduplication, export CSS parity with Preview, workspace path rekey hardening, common text-extension save filters, and a native View menu L Mode toggle.
 - Local v0.10.0 gates and warning-expected DMG preview generation passed on 2026-06-04. DMG SHA-256: `a3dcbb5a2580639ae70060d1fe85d81ed298e33ffcfa7fe0498686faffadec05`.
@@ -17,6 +18,8 @@ Last reviewed: 2026-06-06
 - v0.11.0 local release gates and warning-expected DMG preview verification passed on 2026-06-05. DMG SHA-256: `09194d22ed6a61164fbf72b7a1b17301e530bca289f42a104d3bb6c4305767e8`.
 - v0.11.0 focused manual smoke for L Mode entry/source preservation, View menu L Mode toggling, long-document keyboard and user-operated trackpad/mouse-wheel scrolling, action-rail workspace/diff escape hatches, typewriter preference visibility, Export HTML, Print to PDF handoff, and auto-backup restore apply/save behavior passed on 2026-06-05.
 - v0.11.0 GitHub Release assets were re-downloaded into a fresh temp directory after publication and passed checksum, `hdiutil verify`, mounted-app metadata, and `codesign --verify --deep --strict --verbose=2`.
+- v0.12.0 is the **Apple Local Assist Alpha** source / local-app tag: it adds a live local Apple Local Assist preview, Assist Surface settings, AI edit transactions, and compact diff/discard review, without publishing a DMG asset or changing the App Store/TestFlight lane.
+- v0.12.0 local source / local-app gates passed on 2026-06-06: `npm ci`, `npm run typecheck`, `npm run test` (255 tests), `npm run build:vite`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml` (233 tests), `npm run build:apple-assist-helper:live`, `npm run build`, `git diff --check`, `npm audit`, `cargo audit --file src-tauri/Cargo.lock`, built-app metadata, codesign, expected `spctl` rejection, and built-app launch smoke.
 - Older public tags remain immutable.
 
 ## Current Product Boundary
@@ -34,6 +37,7 @@ Use these documents for release evidence and future release decisions:
 
 - `docs/releases/0.10.0-warning-expected-dmg-preview.release.md`
 - `docs/releases/0.11.0-warning-expected-dmg-preview.release.md`
+- `docs/releases/0.12.0-source-tag.release.md`
 - `docs/source-release-checklist.md`
 - `docs/dmg-preview-checklist.md`
 - `docs/smoke-checklist.md`
@@ -42,6 +46,8 @@ Use these documents for release evidence and future release decisions:
 The published v0.10.0 release is a warning-expected DMG preview. It is ad-hoc signed, not Developer ID signed, not notarized, and expected to produce Gatekeeper warnings.
 
 The published v0.11.0 release is a warning-expected DMG preview. It is ad-hoc signed, not Developer ID signed, not notarized, and expected to produce Gatekeeper warnings. Local and remote verification passed after publication.
+
+The v0.12.0 tag is a source / local-app checkpoint. It is not a signed, notarized, App Store, TestFlight, or warning-expected DMG publication.
 
 For future releases, re-check local artifact evidence and, after publication, re-download GitHub Release assets into a fresh temp directory and verify checksum, `hdiutil verify`, mounted app metadata, and `codesign --verify --deep --strict --verbose=2`.
 
@@ -60,9 +66,9 @@ For future releases, re-check local artifact evidence and, after publication, re
 
 Historical detailed status logs through 2026-06-04 were archived to `docs/archive/status/current-status-through-2026-06-04.md`.
 
-## v0.12 Apple Local Assist work-in-progress
+## v0.12.0 Apple Local Assist source / local-app tag
 
-Apple Local Assist has moved from fixture-only companion mock to a live local preview on `main`. `npm run build` now builds a release Swift helper without `FIXTURE_MODE`, bundles it through `tauri.conf.json` `bundle.externalBin`, and the production Rust command surface calls the helper supervisor through the main-window / Apple Local Assist-window scoped boundary: availability probe is allowed from `main | apple-assist`, while candidate generation remains `main` only. The helper uses `SystemLanguageModel.default.availability` for probe and `LanguageModelSession.respond` for bounded candidate generation when Apple Foundation Models is available on the current Mac.
+Apple Local Assist has moved from fixture-only companion mock to a live local preview. `npm run build` builds a release Swift helper without `FIXTURE_MODE`, bundles it through `tauri.conf.json` `bundle.externalBin`, and the production Rust command surface calls the helper supervisor through the main-window / Apple Local Assist-window scoped boundary: availability probe is allowed from `main | apple-assist`, while candidate generation remains `main` only. The helper uses `SystemLanguageModel.default.availability` for probe and `LanguageModelSession.respond` for bounded candidate generation when Apple Foundation Models is available on the current Mac.
 
 The product direction remains an external Apple Local Assist Writing Companion, not a command-palette-first selected-text tool and not the main AI feature. It is an **alpha / experimental** lightweight text-assistance surface for short summaries, rephrasing, heading / tag ideas, light cleanup, and bounded writing help. It works from normal editor and L Mode, accepts rough requests, replaces rather than coexists with the Agent Window slot, edits the unsaved buffer through explicit AI edit transactions, and exposes a compact Diff / Discard escape hatch. The preferences dialog treats the outside companion slot as a restart-applied Assist Surface choice (`Apple Local Assist (Experimental)` / `CLI Agent` / `Off`), and the top chrome companion button switches between Apple Local Assist and Agent according to the active setting for the current app launch.
 
@@ -70,15 +76,15 @@ Current limits: live generation depends on macOS 26+ Apple Foundation Models ava
 
 ## Next Apple Local Assist hardening
 
-1. Smoke the built app end-to-end with the companion window in normal editor and L Mode, including unavailable/disabled system states when practical.
-2. Decide whether `minimumSystemVersion` should remain editor-wide `11.0` or move to a split / release-lane policy for Apple Local Assist builds.
-3. Improve rough-request prompt shaping and response cleanup based on real lightweight writing examples, while avoiding claims that Apple Local Assist can replace external agents or advanced review tools.
+1. Improve rough-request prompt shaping and response cleanup based on real lightweight writing examples, while avoiding claims that Apple Local Assist can replace external agents or advanced review tools.
+2. Expand unavailable/disabled/unsupported-language smoke for Apple Local Assist without blocking Safe Editor.
+3. Decide whether `minimumSystemVersion` should remain editor-wide `11.0` or move to a split / release-lane policy for Apple Local Assist builds.
 4. Review App Store sandbox, signing, hardened runtime, and notarization behavior for the bundled helper before any distribution-lane change.
 5. Keep the release plan to two binary lanes by default: App Store build (`Safe Editor` + `Apple Local Assist`) and Developer / GitHub build (same base plus `Agent Workbench`). Treat an official website as a pointer to those lanes, not a third build.
 
 ## Next Safe Actions
 
 1. If continuing quality work, use `docs/development-automation.md` and keep to one small verified slice.
-2. If planning assist work after v0.11.0, use `docs/assist-surface-strategy.md`, `docs/apple-local-assist-distribution-plan.md`, and `docs/apple-local-assist-writing-companion-plan.md`; keep Apple Local Assist as an external Writing Companion and require AI edit transactions for direct buffer edits.
+2. If planning assist work after v0.12.0, use `docs/assist-surface-strategy.md`, `docs/apple-local-assist-distribution-plan.md`, and `docs/apple-local-assist-writing-companion-plan.md`; keep Apple Local Assist as an external Writing Companion and require AI edit transactions for direct buffer edits.
 3. If preparing a future release, use `docs/source-release-checklist.md`, `docs/dmg-preview-checklist.md`, and the version-specific release note; do not tag or publish without explicit approval.
 4. If changing product behavior, use `docs/product-brief.md`, `docs/security-boundary.md`, and the touched boundary doc before implementation.
