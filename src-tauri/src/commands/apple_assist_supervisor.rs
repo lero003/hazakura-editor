@@ -198,9 +198,14 @@ impl AppleAssistHelperStore {
                 ));
             }
         }
-        // Production: no externalBin / no minimumSystemVersion bump
-        // yet, so the supervisor cannot resolve a real binary.
-        Err("Apple Assist helper is not configured for this build.".to_string())
+        // Production: defer to the production resolver skeleton
+        // (`resolve_bundled_helper_path`). As of slice 17 that
+        // function returns `Err("...not configured...")` to keep
+        // gate-default-hidden; the gate-flip approval slice will
+        // wire `current_exe().parent() / bundled_helper_filename()`
+        // there. See `docs/apple-local-assist-helper-path-design.md`
+        // for the resolved-path design.
+        resolve_bundled_helper_path()
     }
 
     /// The timeout that the current call should use. Production
@@ -614,4 +619,83 @@ pub(crate) fn store_without_helper() -> AppleAssistHelperStore {
         timeout_override: None,
         consecutive_failures_for_test: AtomicU32::new(0),
     }
+}
+
+// -- Production helper-path resolver skeleton (slice 17) -------
+//
+// The three functions below pin the production helper-path
+// resolver shape so that the gate-flip approval slice has a
+// single, named place to wire in `current_exe().parent()` lookup.
+//
+// All three are `pub(crate)` so the integration test module can
+// reach them and lock down:
+//   - the host triple format the supervisor expects
+//   - the bundled-helper filename the production path will look
+//     for (Tauri sidecar convention)
+//   - the not-configured behavior in slice 17 (gate-default-hidden
+//     is still in force; `bundle.externalBin` is not yet approved)
+//
+// Crucially, `resolve_bundled_helper_path` must NOT read any
+// environment variable. If it did, a future gate-flip could be
+// tricked into spawning an arbitrary binary just because the
+// shell happened to export a path-shaped variable. The
+// not-configured error is the only safe return in slice 17.
+//
+// In the production lib build these symbols are unused (the
+// live command surface does not call supervisor). The module-
+// level `#![allow(dead_code)]` keeps the lib build warning-free.
+
+/// The Rust target triple this binary was built for. Used by
+/// `bundled_helper_filename` to construct the production
+/// sidecar filename (`hazakura-apple-assist-helper-<triple>`).
+///
+/// Returns one of the macOS Tauri sidecar triples
+/// (`aarch64-apple-darwin` / `x86_64-apple-darwin`) on supported
+/// hosts, or `"unknown-target"` on anything else. The latter is
+/// purely a placeholder — Apple Local Assist is macOS-only and
+/// will not spawn a helper on an unknown host. The supervisor
+/// will return not-configured from `resolve_bundled_helper_path`
+/// regardless of what this function returns.
+pub(crate) fn rust_target_triple() -> &'static str {
+    match (std::env::consts::ARCH, std::env::consts::OS) {
+        ("aarch64", "macos") => "aarch64-apple-darwin",
+        ("x86_64", "macos") => "x86_64-apple-darwin",
+        _ => "unknown-target",
+    }
+}
+
+/// The bundled helper filename the production resolver will look
+/// for next to the running executable (Tauri sidecar convention).
+/// Format: `hazakura-apple-assist-helper-<rust-target-triple>`.
+///
+/// Mirrors the DEST naming in
+/// `scripts/build-apple-assist-helper-fixture.sh` so the same
+/// filename works in fixture build, test fixture, and packaged
+/// build paths.
+pub(crate) fn bundled_helper_filename() -> String {
+    format!("hazakura-apple-assist-helper-{}", rust_target_triple())
+}
+
+/// Production helper-path resolution skeleton.
+///
+/// The full implementation (gate-flip approval slice) will look
+/// in `current_exe().parent() / bundled_helper_filename()` and
+/// return `Ok(<path>)` only if the file exists. For now (slice 17,
+/// gate-default-hidden) this returns
+/// `Err("Apple Assist helper is not configured for this build.")`
+/// so the supervisor can never spawn a helper in production.
+///
+/// **slice 17 invariants** (locked down by tests in slice 18):
+///
+/// - Must NOT read any environment variable.
+/// - Must NOT consult `tauri.conf.json` / `bundle.externalBin` /
+///   any Tauri runtime state.
+/// - Must NOT return `Ok` for any path the supervisor would then
+///   try to spawn. The only safe return is the not-configured
+///   `Err` until the gate-flip approval slice replaces this body.
+///
+/// These invariants keep "将来 externalBin を承認したとき" 以外
+/// の経路で helper が spawn される余地を 0 にする。
+pub(crate) fn resolve_bundled_helper_path() -> Result<std::path::PathBuf, String> {
+    Err("Apple Assist helper is not configured for this build.".to_string())
 }

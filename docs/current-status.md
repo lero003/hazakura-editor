@@ -61,7 +61,16 @@ Historical detailed status logs through 2026-06-04 were archived to `docs/archiv
 
 ## v0.12 Apple Local Assist work-in-progress
 
-Type, hook, and locale plumbing for Apple Local Assist is landed behind an availability gate that defaults to `unsupported` — the command palette does NOT expose the Apple Assist entries unless `probe_apple_assist_availability` returns `available`. The Rust commands are stubs (no Foundation Models binding) and the Swift helper builds in `FIXTURE_MODE` only. `tauri.conf.json`, `bundle.externalBin`, `minimumSystemVersion`, code-signing entitlements, and distribution lanes are unchanged. Nothing is released. See `docs/apple-local-assist-v0.12-design-review.md` for the slice-by-slice record and remaining unknowns (App Store sandbox + Foundation Models acceptable-use checks, live Foundation Models binding, OS-minimum decision per lane).
+Type, hook, and locale plumbing for Apple Local Assist is landed behind an availability gate that defaults to `unsupported` — the command palette does NOT expose the Apple Assist entries unless `probe_apple_assist_availability` returns `available`. The Rust commands are stubs (no Foundation Models binding) and the Swift helper builds in `FIXTURE_MODE` only. The Rust supervisor (helper spawn / lifecycle / watchdog / cooldown / protocol-violation detection) is implemented (slice 8-14) but the Tauri command surface does NOT call it — `AppleAssistHelperStore` is registered via `tauri::Builder::manage` but production `helper_path()` still returns `Err("Apple Assist helper is not configured for this build.")`. A production helper-path resolver skeleton (slice 17, `rust_target_triple` / `bundled_helper_filename` / `resolve_bundled_helper_path`) and 27 integration tests are in place; the resolver still returns the not-configured error and never reads the environment, preserving gate-default-hidden. `tauri.conf.json`, `bundle.externalBin`, `minimumSystemVersion`, code-signing entitlements, and distribution lanes are unchanged. Nothing is released. See `docs/apple-local-assist-v0.12-design-review.md` for the slice-by-slice record and remaining unknowns (App Store sandbox + Foundation Models acceptable-use checks, live Foundation Models binding, OS-minimum decision per lane).
+
+## Next gate-flip prerequisites (in order)
+
+The next Apple Local Assist slices require **explicit user approval at each step** — the "gate-default-hidden" contract is not relaxed by code alone. The order is:
+
+1. **bundled helper path / externalBin 承認** — `tauri.conf.json` の `bundle.externalBin` に `binaries/hazakura-apple-assist-helper-<triple>` を追加し、`minimumSystemVersion` の bump を決める。`docs/apple-local-assist-helper-path-design.md` の pre-flight checklist (signing / notarization / App Store sandbox / hardened runtime) を満たす。production `helper_path()` の body を `current_exe().parent() / bundled_helper_filename()` の探索に差し替える。
+2. **Swift live probe** — `src-helpers/apple-assist/Sources/.../AvailabilityProbe.swift` の `LanguageModelSession` 接続を実装。release build が `apple:foundation:*` 形の `modelId` で `Available` を返すようになる。
+3. **Rust command surface gate-flip** — `probe_apple_assist_availability_with_platform` の body を `probe_availability_via_helper` 経由に切替。`generate_apple_assist_candidate_with_stub` を残すかどうかは別スライスで判断。
+4. **UI 4 状態 disclosure** — `useAppleAssistAvailability` / `useAppleAssistCandidate` の error envelope 種別 (guardrail / validation / deferred / throttled) を `src/lib/locale/appleAssist.ts` の 4 状態 mapping に反映。command palette の可視条件 (現状 hidden) を見直す。
 
 ## Next Safe Actions
 

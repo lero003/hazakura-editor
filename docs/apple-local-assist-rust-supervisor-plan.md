@@ -1,21 +1,23 @@
 # Apple Local Assist — Rust Supervisor 設計メモ
 
-Status: Implemented (slice 8-12, v0.12.0 still gate-default-hidden)
+Status: Implemented (slice 8-14, v0.12.0 still gate-default-hidden)
 Scope: `src-tauri/src/commands/apple_assist_supervisor.rs` の helper sidecar 呼び出し層 (spawn / lifecycle / JSON 通信 / timeout / error mapping / fixture integration test)
 Authority: Medium
 Last reviewed: 2026-06-05
 
 ## 目的
 
-`docs/apple-local-assist-live-helper-plan.md` で整理した live mode 設計のうち、**Rust 側 supervisor** の設計判断をまとめる。Slices 8-12 で実装済み: helper の spawn / lifecycle / JSON line 通信 / watchdog timeout / failure 集計 / cooldown / `WireEnvelope::Error` pass-through / protocol-violation 検出。Swift 側の `LanguageModelSession` 接続 (live mode 本体) は未着手。`tauri.conf.json` / `bundle.externalBin` / `minimumSystemVersion` / signing / entitlements は触らない。
+`docs/apple-local-assist-live-helper-plan.md` で整理した live mode 設計のうち、**Rust 側 supervisor** の設計判断をまとめる。Slices 8-14 で実装済み: helper の spawn / lifecycle / JSON line 通信 / watchdog timeout / failure 集計 / cooldown / `WireEnvelope::Error` pass-through / protocol-violation 検出。Swift 側の `LanguageModelSession` 接続 (live mode 本体) は未着手。`tauri.conf.json` / `bundle.externalBin` / `minimumSystemVersion` / signing / entitlements は触らない。
 
-## 現状 (slice 12 時点)
+> **用語注意**: 「supervisor 実装済み」 = helper spawn / lifecycle / JSON 通信 / timeout / cooldown / protocol-violation 検出が、Rust crate としてコードとテストで揃っているという意味。Foundation Models **live binding** は Swift 側で `LanguageModelSession` を呼ぶスライスで別建てで乗せるもので、本メモの範囲外 (未着手)。`tauri.conf.json` の `bundle.externalBin` も未設定なので、production `helper_path()` は `Err` を返し続け、command surface は supervisor を呼ばない。**「live binding 実装済み」 と読める表現は意図的に避けている**。
+
+## 現状 (slice 14 時点)
 
 ### 構成
 
-- `src-tauri/src/commands/apple_assist.rs` — Tauri command surface (slice 1-6 のまま)。`probe_apple_assist_availability_with_label` / `generate_apple_assist_candidate_with_label` は gate-default-hidden の in-process stub を呼ぶ (macOS → `Unavailable { reason }`、non-macOS → `Unsupported`)。**`Available` は絶対に返さない**。`probe_apple_assist_availability_with_platform` / `generate_apple_assist_candidate_with_stub` のコメントに「slice 9 で supervisor 経由の probe に切替」とあるが、本 slice 12 時点では未着手 (gate-default-hidden 契約が優先)。
-- `src-tauri/src/commands/apple_assist_supervisor.rs` — slice 8-12 で実装した supervisor 本体。`#![allow(dead_code)]` をモジュール先頭に置き、production の lib build が unused symbol で警告を出さないようにしてある (Tauri command surface から未到達のため)。
-- `src-tauri/src/tests/apple_assist_supervisor.rs` — 20 ケースの integration test。fixture binary (slice 5 `scripts/build-apple-assist-helper-fixture.sh`) と、timeout / protocol-violation 用の小さな一時 shell script を組み合わせて supervisor を end-to-end で検証する。
+- `src-tauri/src/commands/apple_assist.rs` — Tauri command surface (slice 1-6 のまま)。`probe_apple_assist_availability_with_label` / `generate_apple_assist_candidate_with_label` は gate-default-hidden の in-process stub を呼ぶ (macOS → `Unavailable { reason }`、non-macOS → `Unsupported`)。**`Available` は絶対に返さない**。`probe_apple_assist_availability_with_platform` / `generate_apple_assist_candidate_with_stub` のコメントに「slice 9 で supervisor 経由の probe に切替」とあるが、本 slice 14 時点でも未着手 (gate-default-hidden 契約が優先)。
+- `src-tauri/src/commands/apple_assist_supervisor.rs` — slice 8-14 で実装した supervisor 本体。`#![allow(dead_code)]` をモジュール先頭に置き、production の lib build が unused symbol で警告を出さないようにしてある (Tauri command surface から未到達のため)。
+- `src-tauri/src/tests/apple_assist_supervisor.rs` — 27 ケースの integration test。fixture binary (slice 5 `scripts/build-apple-assist-helper-fixture.sh`) と、timeout / protocol-violation 用の小さな一時 shell script を組み合わせて supervisor を end-to-end で検証する。slice 18 で production helper-path resolver skeleton (triple / filename / not-configured) のテスト 6 ケースを追加。
 - `src-helpers/apple-assist/` — SwiftPM executable。`.debug` が `-DFIXTURE_MODE` (probe → `available`、generate → `【要約案】\n...` 等の prefix)、`.release` は live mode スタブ (probe → `unsupported`、generate → `deferred` error envelope)。Foundation Models への live binding は未接続。
 - `scripts/build-apple-assist-helper-fixture.sh` — `binaries/hazakura-apple-assist-helper-<triple>` に `.debug` build を作って JSON-over-stdio smoke を実行。テストはこのバイナリを spawn する。
 
@@ -165,7 +167,7 @@ camelCase の `selectedText` / `documentContext` が Swift 側と一致する。
 
 ### 8. fixture helper integration test 方針 (実装済み)
 
-`src-tauri/src/tests/apple_assist_supervisor.rs` の 20 ケース。fixture binary (`scripts/build-apple-assist-helper-fixture.sh` で build) と、timeout / protocol-violation 用の小さな一時 shell script を `std::env::temp_dir()` に書き出して使う。
+`src-tauri/src/tests/apple_assist_supervisor.rs` の 27 ケース。fixture binary (`scripts/build-apple-assist-helper-fixture.sh` で build) と、timeout / protocol-violation 用の小さな一時 shell script を `std::env::temp_dir()` に書き出して使う。
 
 **テストヘルパー**:
 - `fixture_helper_path_or_skip()` → `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE` env var を読む。未設定なら `cargo test` の前提条件として skip。
@@ -174,7 +176,7 @@ camelCase の `selectedText` / `documentContext` が Swift 側と一致する。
 - `store_with_helper_path_override(...)` → `cfg(test)` の `store_with_helper_path` 経由で fixture / script の path を注入。
 - `with_timeout_override(200ms)` → 15s ではなく 200ms で timeout 経路を即時検証。
 
-**テストケース (実装済み 20 個)**:
+**テストケース (実装済み 27 個)**:
 
 | ケース | 検証内容 |
 |---|---|
@@ -198,6 +200,7 @@ camelCase の `selectedText` / `documentContext` が Swift 側と一致する。
 | `supervisor_generate_treats_availability_envelope_as_protocol_violation` | generate に対して `WireEnvelope::Availability` を返す script → `Err`、reset_locked、consecutive_failures = 1 |
 | `supervisor_treats_malformed_json_response_as_failure` | helper が `not-json-at-all` を返す → `Err`、reset_locked、consecutive_failures = 1 |
 | `supervisor_treats_eof_response_as_failure` | helper が stdin を read して即 `exit 0` → `Err("...closed the response stream...")`、reset_locked、consecutive_failures = 1 |
+| `supervisor_fast_success_does_not_wait_full_timeout_duration` | fixture + 500ms override → probe は `timeout / 2` 以内で完了 (success path が timeout duration をリークしない watch-dog 修正の回帰防止) |
 
 **fixture 切り替え**: テストは `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE` env var 経由で fixture binary の path を渡す。production の `helper_path()` は env var を一切読まない (test-only override slot のみが env を参照)。
 
@@ -212,7 +215,7 @@ camelCase の `selectedText` / `documentContext` が Swift 側と一致する。
 
 production で supervisor 経路が呼ばれるようになるのは、`probe_apple_assist_availability_with_platform` の body を `probe_availability_via_helper` に切り替えるスライス。これは gate-default-hidden 契約を解除する gate-flip スライスなので、明示承認が必要。
 
-## 実装 plan (参考 — slice 8-12 で全項目完了)
+## 実装 plan (参考 — slice 8-14 で全項目完了)
 
 | 順番 | 内容 | 状態 |
 |---|---|---|
@@ -243,11 +246,12 @@ production で supervisor 経路が呼ばれるようになるのは、`probe_ap
 ## 参照
 
 - `docs/apple-local-assist-live-helper-plan.md` — live mode 設計の Swift 側 / 共通事項
+- `docs/apple-local-assist-helper-path-design.md` — bundled helper path 設計 (slice 16) / production 経路の差替先
 - `docs/apple-local-assist-distribution-plan.md` — "Official Information Confirmed" / 全体方針
 - `docs/apple-local-assist-v0.12-design-review.md` — 設計選択 / gate 契約
 - `src-tauri/src/commands/apple_assist.rs` — Tauri command surface (slice 1-6 stub)
-- `src-tauri/src/commands/apple_assist_supervisor.rs` — 実装済み supervisor 本体 (slice 8-12)
-- `src-tauri/src/tests/apple_assist_supervisor.rs` — 20 ケースの integration test
+- `src-tauri/src/commands/apple_assist_supervisor.rs` — 実装済み supervisor 本体 (slice 8-14、resolver skeleton は slice 17)
+- `src-tauri/src/tests/apple_assist_supervisor.rs` — 27 ケースの integration test
 - `src-tauri/src/security/window_guard.rs` — `ensure_label_is_main` の gate ヘルパ
 - `src-helpers/apple-assist/Sources/HazakuraAppleAssist/*.swift` — Swift 側 (fixture / live)
 - `scripts/build-apple-assist-helper-fixture.sh` — fixture build script

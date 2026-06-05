@@ -56,6 +56,7 @@ Do not implement or imply:
 - Strong predictive autocomplete or broad automatic formatting.
 - Signing, notarization, updater, or installer completion without an explicit distribution lane.
 - Dependency or lockfile changes without explicit approval.
+- Apple Local Assist gate-flip (Tauri command surface calling supervisor, `bundle.externalBin` / `minimumSystemVersion` / signing / entitlements changes, command palette visible-condition change, or `Available` return) without explicit user approval. The next Apple Local Assist slices — bundled helper path / `externalBin` approval, Swift live probe, Rust command surface gate-flip, UI 4-state disclosure — each require explicit user approval before code is changed. See `docs/apple-local-assist-helper-path-design.md` for the gate-flip entry point and pre-flight checklist.
 
 Keep Agent Workbench explicit, allowlisted, one-session, no-restore, and no-auto-apply. Keep Review Desk low-prominence and manual unless the user explicitly resumes feature work.
 

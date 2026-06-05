@@ -34,9 +34,9 @@
 // skips the shared re-exports.
 
 use crate::commands::apple_assist_supervisor::{
-    generate_candidate_via_helper, probe_availability_via_helper, store_with_helper_path,
-    store_without_helper, AppleAssistHelperStore, HelperAvailability, HelperCandidate,
-    WireEnvelope,
+    bundled_helper_filename, generate_candidate_via_helper, probe_availability_via_helper,
+    resolve_bundled_helper_path, rust_target_triple, store_with_helper_path, store_without_helper,
+    AppleAssistHelperStore, HelperAvailability, HelperCandidate, WireEnvelope,
 };
 
 // ----------------------------------------------------------------
@@ -631,4 +631,200 @@ fn supervisor_treats_eof_response_as_failure() {
         "EOF response must increment the failure counter",
     );
     std::fs::remove_file(&script).ok();
+}
+
+// ----------------------------------------------------------------
+// Production helper-path resolver tests (slice 18).
+// ----------------------------------------------------------------
+//
+// These tests pin the production resolver skeleton added in
+// slice 17. The slice 17 implementation returns
+// `Err("...not configured...")` unconditionally so the
+// gate-default-hidden contract is preserved while
+// `bundle.externalBin` is still unapproved. The gate-flip slice
+// will replace the body of `resolve_bundled_helper_path` with a
+// `current_exe().parent()` lookup; these tests lock down:
+//
+//   - the host triple the supervisor expects
+//   - the bundled-helper filename format (Tauri sidecar convention)
+//   - the not-configured behavior (gate-default-hidden)
+//   - the invariant that the production resolver does NOT read
+//     any environment variable, even when shape-suspicious vars
+//     are set
+//
+// `supervisor_store_default_ignores_fixture_env_var` (above)
+// already pins the same invariant for `helper_path()`'s
+// `Default::default()`-driven call into the store. The new tests
+// below pin it for the free function `resolve_bundled_helper_path`
+// directly, so a future refactor that wires the production
+// resolver into `helper_path()` cannot accidentally reintroduce
+// env-var reads.
+
+#[test]
+fn resolver_rust_target_triple_matches_host() {
+    // The supervisor's host triple is a derived constant for now:
+    // the actual binary we run on must report one of the
+    // macOS Tauri sidecar triples, or "unknown-target" on an
+    // unsupported host. The CI on this project is
+    // `aarch64-apple-darwin` / `x86_64-apple-darwin`. Locking the
+    // format down here lets us notice if `std::env::consts` ever
+    // changes shape (it would not, but a future test that asserts
+    // a specific value would catch it).
+    let triple = rust_target_triple();
+    assert!(
+        triple == "aarch64-apple-darwin"
+            || triple == "x86_64-apple-darwin"
+            || triple == "unknown-target",
+        "rust_target_triple() must report a known Tauri sidecar triple, got: {triple}"
+    );
+    // The function returns a `&'static str`, so the slice can
+    // never panic and the lifetime is always valid for the
+    // duration of the call.
+    let _: &'static str = triple;
+}
+
+#[test]
+fn resolver_bundled_helper_filename_uses_sidecar_convention() {
+    // The production resolver will look for
+    // `hazakura-apple-assist-helper-<triple>` next to the running
+    // executable. Mirror `scripts/build-apple-assist-helper-fixture.sh`'s
+    // DEST naming so the same filename works in fixture build,
+    // test fixture, and packaged build paths.
+    let filename = bundled_helper_filename();
+    assert!(
+        filename.starts_with("hazakura-apple-assist-helper-"),
+        "filename must use the sidecar convention, got: {filename}"
+    );
+    let suffix = filename
+        .strip_prefix("hazakura-apple-assist-helper-")
+        .expect("prefix stripped");
+    assert!(
+        suffix == "aarch64-apple-darwin"
+            || suffix == "x86_64-apple-darwin"
+            || suffix == "unknown-target",
+        "filename suffix must be a known Tauri sidecar triple, got: {filename}"
+    );
+    // The filename must never be empty and must never contain a
+    // path separator: it is meant to be joined with
+    // `current_exe().parent()`, not used as an absolute path.
+    assert!(!filename.is_empty(), "filename must not be empty");
+    assert!(
+        !filename.contains('/') && !filename.contains('\\'),
+        "filename must not contain a path separator, got: {filename}"
+    );
+}
+
+#[test]
+fn resolver_resolve_bundled_helper_path_returns_not_configured() {
+    // slice 17 invariant: the production resolver must return
+    // `Err("...not configured...")` until the gate-flip approval
+    // slice replaces the body with a `current_exe().parent()`
+    // lookup. Lock the exact substring down so the supervisor's
+    // existing error-mapping and the UI's "not configured"
+    // branching continue to match.
+    let err =
+        resolve_bundled_helper_path().expect_err("slice 17 production resolver must return Err");
+    assert!(
+        err.contains("not configured"),
+        "production resolver must report not-configured, got: {err}"
+    );
+    // And it must never claim the helper is "available": that
+    // string is reserved for the post-gate-flip envelope path.
+    assert!(
+        !err.to_ascii_lowercase().contains("available"),
+        "production resolver must never report available, got: {err}"
+    );
+}
+
+#[test]
+fn resolver_production_path_ignores_fixture_env_var() {
+    // Symmetric to `supervisor_store_default_ignores_fixture_env_var`
+    // above, but pinned against the free function
+    // `resolve_bundled_helper_path` directly. The slice 17
+    // invariant: this function must NOT read any env var, even
+    // if a future contributor sets a path-shaped one in CI.
+    //
+    // SAFETY: env-var manipulation is single-process and does
+    // not race (cargo test is the documented usage of
+    // std::env::set_var / remove_var).
+    let prev = std::env::var_os("HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE");
+    unsafe {
+        std::env::set_var("HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE", "/usr/bin/true");
+    }
+    let err = resolve_bundled_helper_path()
+        .expect_err("resolve_bundled_helper_path must ignore the env var");
+    assert!(
+        err.contains("not configured"),
+        "resolve_bundled_helper_path must not honor HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE, got: {err}"
+    );
+    if let Some(value) = prev {
+        unsafe {
+            std::env::set_var("HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE", value);
+        }
+    } else {
+        unsafe {
+            std::env::remove_var("HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE");
+        }
+    }
+}
+
+#[test]
+fn resolver_helper_path_still_reports_not_configured_for_default_store() {
+    // Regression for the slice 17 refactor: `helper_path()` now
+    // delegates to `resolve_bundled_helper_path()` instead of
+    // returning the not-configured error inline. The default
+    // store's `helper_path()` must still return the same
+    // not-configured error so the existing
+    // `supervisor_store_default_constructs_cleanly` /
+    // `supervisor_probe_without_helper_returns_err_quickly` /
+    // `supervisor_generate_without_helper_returns_err_quickly`
+    // tests stay green and the UI's "not configured" branching
+    // continues to work.
+    let store = AppleAssistHelperStore::default();
+    let err = store
+        .helper_path()
+        .expect_err("default store must still report not-configured");
+    assert!(
+        err.contains("not configured"),
+        "default store's helper_path() must still report not-configured, got: {err}"
+    );
+    // And `probe` / `generate` against a default store must
+    // still bail out before spawning anything.
+    let err = probe_availability_via_helper(&store).expect_err("probe must error on default store");
+    assert!(
+        err.contains("not configured"),
+        "probe against default store must still report not-configured, got: {err}"
+    );
+    let err = generate_candidate_via_helper(&store, "summarize", "body", None)
+        .expect_err("generate must error on default store");
+    assert!(
+        err.contains("not configured"),
+        "generate against default store must still report not-configured, got: {err}"
+    );
+}
+
+#[test]
+fn resolver_test_only_helper_path_override_still_works() {
+    // Regression for the slice 17 refactor: the `cfg(test)`
+    // override slot (`store_with_helper_path`) is what
+    // `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE`-driven tests rely
+    // on. The refactor only changed the production branch; the
+    // `#[cfg(test)]` early-return must still resolve to the
+    // injected fixture path (or, when the path is missing, the
+    // "missing file" error that
+    // `supervisor_store_with_missing_helper_path_reports_missing_file`
+    // already pins).
+    let bogus = std::env::temp_dir().join("hazakura-no-such-helper-binary");
+    let store = store_with_helper_path(bogus.clone());
+    let err = store
+        .helper_path()
+        .expect_err("missing-fixture path must still error");
+    assert!(
+        err.contains("missing"),
+        "missing fixture path must still report missing, got: {err}"
+    );
+    assert!(
+        err.contains(&bogus.display().to_string()),
+        "missing fixture error must still include the path, got: {err}"
+    );
 }
