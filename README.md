@@ -137,6 +137,7 @@ Example use case:
 - [Security Boundary](docs/security-boundary.md): 安全性のために守る制約
 - [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
 - [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Apple Local Assist / Foundation Models planning
+- [Apple Local Assist Writing Companion Plan](docs/apple-local-assist-writing-companion-plan.md): post-v0.11 Apple Local Assist UX direction
 - [Roadmap](docs/roadmap.md): 段階的な開発順序
 - [L Mode Plan](docs/l-mode-plan.md): えるモードの企画メモ (v0.9 alpha → v0.11 WYSIWYG-tier polish)
 - [External Agent Review Workflow](docs/external-agent-review-workflow.md): external implementation agent + Codex review workflow

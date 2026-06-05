@@ -4,6 +4,7 @@ import { isTauriRuntime } from "../../lib/tauri";
 import {
   APP_MENU_ACTION_EVENT,
   MENU_OPEN_AGENT_WINDOW,
+  MENU_OPEN_APPLE_ASSIST_WINDOW,
   type EditorSettings,
   type PreferencesDialogMode,
   type RecentEntry,
@@ -15,6 +16,7 @@ export type AppMenuActionHandlers = {
   exportHtml: () => void | Promise<unknown>;
   exportPdf: () => void | Promise<unknown>;
   openAgentWindow: () => void | Promise<unknown>;
+  openAppleAssistWindow: () => void | Promise<unknown>;
   openFile: () => void | Promise<unknown>;
   openWorkspace: () => void | Promise<unknown>;
   openWorkspacePath: (path: string) => void | Promise<unknown>;
@@ -163,6 +165,9 @@ export function useAppMenuActionListener({
           break;
         case MENU_OPEN_AGENT_WINDOW:
           void actions.openAgentWindow();
+          break;
+        case MENU_OPEN_APPLE_ASSIST_WINDOW:
+          void actions.openAppleAssistWindow();
           break;
       }
     })

@@ -139,6 +139,16 @@ pub(crate) fn open_agent_window<R: tauri::Runtime>(
         return Ok(());
     }
 
+    // Companion-slot mutual exclusion: the Apple Assist window
+    // occupies the same outside-companion slot as the Agent window
+    // (see `docs/apple-local-assist-writing-companion-plan.md`).
+    // Closing the Apple Assist window here keeps the two surfaces
+    // from coexisting as competing main companions; the main window
+    // is the only ever-present surface.
+    if let Some(apple_assist) = app.get_webview_window(APPLE_ASSIST_WINDOW_LABEL) {
+        let _ = apple_assist.close();
+    }
+
     // Transparent title bar + a per-theme `background_color` so the OS
     // chrome (title bar / traffic lights) shows the same dark or light
     // surface as the main window's chrome, matching the main window's
@@ -222,6 +232,113 @@ pub(crate) fn update_theme_menu_state<R: tauri::Runtime>(
 ) -> Result<(), String> {
     ensure_main_window(&window)?;
     crate::menu::sync_theme_menu_state(&app, &theme_preference)
+}
+
+#[tauri::command]
+pub(crate) fn open_apple_assist_window<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    app: tauri::AppHandle<R>,
+    theme: Option<String>,
+) -> Result<(), String> {
+    // v0.12+ Apple Local Assist Writing Companion mock (slice 2).
+    // The Apple Assist window is a separate outside-companion slot
+    // that replaces the Agent window in the same UX surface
+    // (see `docs/apple-local-assist-writing-companion-plan.md`).
+    // Unlike the Agent window it is NOT gated on
+    // `agent_workbench_active` / `agent_workbench_consent`: Apple
+    // Local Assist is a different trust boundary (Writing
+    // Companion, not Code Agent). Only the main window may spawn
+    // it, matching the Agent window's gate.
+    ensure_main_window(&window)?;
+
+    let theme = theme.unwrap_or_else(|| "dark".to_string());
+
+    if let Some(existing) = app.get_webview_window(APPLE_ASSIST_WINDOW_LABEL) {
+        // Window already open — refocus, then push the current
+        // theme so the existing window catches up if the user
+        // changed themes between launches. Mirrors the Agent
+        // window's "refocus + resync" path.
+        let _ = existing.set_focus();
+        let bg = agent_window_background_color(&theme);
+        let _ = existing.set_background_color(Some(bg));
+        let _ = existing.set_theme(Some(agent_window_os_theme(&theme)));
+        return Ok(());
+    }
+
+    // Companion-slot mutual exclusion: the Apple Assist window
+    // and the Agent window share the same outside-companion slot
+    // and should not coexist as competing main companions.
+    // Closing the Agent window here keeps the two surfaces
+    // mutually exclusive.
+    if let Some(agent) = app.get_webview_window(AGENT_WINDOW_LABEL) {
+        let _ = agent.close();
+    }
+
+    WebviewWindowBuilder::new(
+        &app,
+        APPLE_ASSIST_WINDOW_LABEL,
+        WebviewUrl::App("apple-assist.html".into()),
+    )
+    .title("hazakura apple assist")
+    .title_bar_style(TitleBarStyle::Transparent)
+    .background_color(agent_window_background_color(&theme))
+    .theme(Some(agent_window_os_theme(&theme)))
+    // Same panel proportions as the Agent window so the two
+    // surfaces feel like interchangeable companion slots. The
+    // mock is intentionally a small form for rough requests; the
+    // actual body editing happens in the main window.
+    .inner_size(480.0, 800.0)
+    .min_inner_size(420.0, 560.0)
+    .center()
+    .build()
+    .map_err(|err| format!("Cannot open Apple Assist window: {err}"))?;
+
+    Ok(())
+}
+
+#[tauri::command]
+pub(crate) fn set_apple_assist_window_theme<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    app: tauri::AppHandle<R>,
+    theme: String,
+) -> Result<(), String> {
+    // The Apple Assist window may legitimately update its own
+    // background color / OS theme (e.g. when the user toggles
+    // themes from the main window). Both labels are allowed so
+    // the main window can also push a theme update, mirroring
+    // the `set_agent_window_theme` pattern.
+    ensure_label_is_main_or_apple_assist(window.label())?;
+    let bg = agent_window_background_color(&theme);
+    let os_theme = agent_window_os_theme(&theme);
+
+    if let Some(apple_assist) = app.get_webview_window(APPLE_ASSIST_WINDOW_LABEL) {
+        apple_assist
+            .set_background_color(Some(bg))
+            .map_err(|err| format!("Cannot update Apple Assist window background color: {err}"))?;
+        apple_assist
+            .set_theme(Some(os_theme))
+            .map_err(|err| format!("Cannot update Apple Assist window OS theme: {err}"))?;
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
+pub(crate) fn request_apply_ai_edit_transaction<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    app: tauri::AppHandle<R>,
+    payload: serde_json::Value,
+) -> Result<(), String> {
+    ensure_apple_assist_window(&window)?;
+    app.emit_to(MAIN_WINDOW_LABEL, APPLY_AI_EDIT_TRANSACTION_EVENT, payload)
+        .map_err(|err| format!("Cannot request Apple Assist edit: {err}"))?;
+    Ok(())
+}
+
+#[cfg(desktop)]
+#[cfg_attr(not(test), allow(dead_code))]
+pub(crate) fn request_apply_ai_edit_transaction_with_label(label: &str) -> Result<(), String> {
+    ensure_label_is_apple_assist(label)
 }
 
 #[tauri::command]

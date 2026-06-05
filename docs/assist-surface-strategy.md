@@ -39,7 +39,7 @@ optional, explicitly opened helper surface
 
 This is an architectural direction, not approval to add a provider plugin system.
 
-For the post-v0.11 distribution plan, use [Apple Local Assist And Distribution Plan](apple-local-assist-distribution-plan.md) as the detailed planning memo.
+For the post-v0.11 distribution plan, use [Apple Local Assist And Distribution Plan](apple-local-assist-distribution-plan.md) as the detailed planning memo. For the user-facing Apple Local Assist experience, use [Apple Local Assist Writing Companion Plan](apple-local-assist-writing-companion-plan.md).
 
 ## Provider Shape
 
@@ -85,13 +85,19 @@ References:
 - [Foundation Models](https://developer.apple.com/documentation/foundationmodels/)
 - [Generating content and performing tasks with Foundation Models](https://developer.apple.com/documentation/foundationmodels/generating-content-and-performing-tasks-with-foundation-models)
 
-For `hazakura editor`, Apple Local Assist should start as document assistance, not as an agent:
+For `hazakura editor`, Apple Local Assist should start as a document-writing companion, not as an agent. The strongest product shape is an external Assist Window that uses the same broad "outside companion" slot as Agent Workbench, while keeping a different UI and trust boundary. The app should normally show either Apple Local Assist or External Agent Workbench, not both side by side.
 
-- summarize selected Markdown or the active document section
-- extract headings, TODOs, review points, or frontmatter candidates
-- explain a selected diff or candidate change
-- shorten, rephrase, or proofread selected text
-- generate candidate text that goes through Review Desk or explicit diff review before apply
+The companion should work naturally with L Mode and accept rough writing requests:
+
+- "整えて" / "自然にして" / "校正して"
+- "続きを書いて"
+- "この段落を短くして"
+- "この章を直して"
+- "変更点を説明して"
+
+The request target should stay bounded: selected text when present, otherwise the current paragraph / block / section, and only with explicit user choice a larger document excerpt.
+
+Apple Local Assist may update the unsaved editor buffer directly **only** as an AI edit transaction: explicit user request, before/after record, source label, no auto-save, and a path to Diff / change history. Review Desk remains a detailed inspection layer, not the primary Apple Local Assist surface.
 
 Apple Local Assist must not start as:
 
@@ -112,13 +118,13 @@ A possible shape:
 
 ```txt
 hazakura editor
-  -> structured request for selected text / current document excerpt
+  -> structured request for selected text / current writing context
 hazakura-apple-assist-helper
   -> Foundation Models framework
 hazakura editor
-  <- structured candidate output
-Review Desk / Diff
-  -> user explicitly applies or discards
+  <- structured candidate output / edit proposal
+AI edit transaction
+  -> unsaved buffer change, Diff / history remains available
 ```
 
 The helper must receive only the text needed for the selected task. It should not receive broad workspace context by default.
@@ -138,12 +144,12 @@ Build-time separation is preferred for distribution trust because it is easier t
 
 ## Post-v0.11 Path
 
-v0.11 shipped L Mode WYSIWYG-tier polish without adding Apple Local Assist. The next assist lane should stay narrow and prepare distribution decisions at the same time.
+v0.11 shipped L Mode WYSIWYG-tier polish without adding Apple Local Assist. The next assist lane should stay narrow, but it should test the Writing Companion experience rather than treating selected-text command-palette entries as the final UX.
 
 Recommended sequence:
 
-1. Use v0.12 for Apple Local Assist planning and prototype: availability detection, selected-text summarize / rephrase, candidate output, unavailable-state UI, and Review Desk / Diff handoff.
-2. Use v0.13 for Assist Preview only after v0.12 is stable: add extract / proofread / explain-diff if prompt quality and review UX are strong enough.
+1. Use v0.12 for Apple Local Assist planning and prototype: availability detection, fixture-backed Writing Companion mock, rough writing requests, AI edit transaction, unavailable-state UI, and Diff / history escape hatches.
+2. Use v0.13 for Assist Preview only after v0.12 is stable: add live Foundation Models binding and broader proofreading / continuation flows if prompt quality and review UX are strong enough.
 3. Use v0.14 for Distribution Hardening: App Store build separation, sandbox / entitlement checks, TestFlight packaging, and App Review notes.
 4. Use v1.0 as the App Store Candidate if the App Store build can omit External Agent Workbench cleanly and Apple Local Assist remains document-assist only.
 
@@ -158,7 +164,7 @@ This strategy is not approval for:
 - multiple agent sessions
 - broad workspace indexing
 - background assist tasks
-- direct agent output application
+- hidden or irreversible AI output application
 - Git, terminal, LSP, debugger, package manager, or build integration
 
 If a future proposal needs any of those behaviors, it must receive a fresh product and security boundary review before implementation.

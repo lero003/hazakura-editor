@@ -58,6 +58,7 @@ type UseCommandPaletteControllerActions = {
     selectedText: string,
   ) => void;
   openAgentWindow: (themePreference: ThemePreference) => void;
+  openAppleAssistWindow: (themePreference: ThemePreference) => void;
   openFile: () => Promise<void>;
   openWorkspace: () => Promise<void>;
   openWorkspaceFile: (path: string) => Promise<void>;
@@ -417,6 +418,22 @@ export function useCommandPaletteController({
         label: "Open Agent Window",
         run: () => {
           void actions.openAgentWindow(themePreference);
+        },
+      },
+      {
+        category: "Writing Companion",
+        id: "apple-assist.openWindow",
+        keywords: [
+          "apple",
+          "assist",
+          "writing",
+          "companion",
+          "foundation",
+          "models",
+        ],
+        label: "Open Apple Assist Window",
+        run: () => {
+          void actions.openAppleAssistWindow(themePreference);
         },
       },
       {

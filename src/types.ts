@@ -133,6 +133,66 @@ export type MarkdownHeadingContext = {
 // src-tauri/src/types.rs and docs/assist-surface-strategy.md.
 export const MENU_OPEN_AGENT_WINDOW = "open-agent-window";
 
+// Mirror of the Rust MENU_OPEN_APPLE_ASSIST_WINDOW constant. See
+// src-tauri/src/types.rs and docs/apple-local-assist-writing-companion-plan.md.
+// The Apple Assist window is the v0.12+ Writing Companion mock and
+// lives in the same outside-companion slot as the Agent window.
+export const MENU_OPEN_APPLE_ASSIST_WINDOW = "open-apple-assist-window";
+
+// Mirror of the Rust APPLY_AI_EDIT_TRANSACTION_EVENT /
+// REQUEST_AI_EDIT_TARGET_EVENT / AI_EDIT_TARGET_RESULT_EVENT
+// constants. The Apple Assist window emits
+// `APPLY_AI_EDIT_TRANSACTION_EVENT` to ask the main window to
+// apply an AI edit transaction; the main window answers the
+// `REQUEST_AI_EDIT_TARGET_EVENT` round-trip with a bounded
+// target via `AI_EDIT_TARGET_RESULT_EVENT`. See
+// src-tauri/src/types.rs and
+// docs/apple-local-assist-writing-companion-plan.md.
+export const APPLY_AI_EDIT_TRANSACTION_EVENT =
+  "hazakura-note://apply-ai-edit-transaction";
+export const REQUEST_AI_EDIT_TARGET_EVENT =
+  "hazakura-note://request-ai-edit-target";
+export const AI_EDIT_TARGET_RESULT_EVENT =
+  "hazakura-note://ai-edit-target-result";
+
+// Mirror of the Rust MAIN_APPLE_ASSIST_TARGET_CHANGED_EVENT
+// constant. The main window broadcasts this whenever the
+// inferred Apple Assist target moves (selection change,
+// cursor move, document switch); the detached Apple Assist
+// window subscribes to keep its target panel live.
+export const MAIN_APPLE_ASSIST_TARGET_CHANGED_EVENT =
+  "hazakura-note://main-apple-assist-target-changed";
+
+// Bounded AI edit target snapshot. Mirrors the Rust
+// `AppleAssistTargetSnapshot` in
+// `src-tauri/src/commands/apple_assist_target.rs`. The main
+// window infers the target from the CodeMirror state via
+// `inferAppleAssistTarget` and pushes it here on every
+// selection / cursor change.
+export type AppleAssistTargetKind =
+  | "selection"
+  | "paragraph"
+  | "block"
+  | "section"
+  | "document";
+
+export type AppleAssistTargetSnapshot = {
+  kind: AppleAssistTargetKind;
+  start: number;
+  end: number;
+  text: string;
+  label: string;
+  activeDocumentPath: string | null;
+  activeDocumentName: string | null;
+  capturedAtMs: number;
+};
+
+export type AppleAssistApplyEvent = {
+  request: string;
+  requestedAtMs: number;
+  target: AppleAssistTargetSnapshot | null;
+};
+
 // Mirror of the Rust OPEN_MAIN_AGENT_PANE_EVENT constant. The detached
 // Agent window can emit this when the user clicks the footer's
 // "Show in main pane" affordance. As of the v0.8+ slice the right
@@ -312,7 +372,17 @@ export type CompareCase = {
     | "buffer-vs-disk"
     | "draft-vs-disk"
     | "conflict-vs-disk"
-    | "backup-vs-buffer";
+    | "backup-vs-buffer"
+    // v0.12+ Apple Local Assist Writing Companion (slice 5).
+    // The escape hatch renders an inline diff of a pending
+    // AI edit transaction (`before` -> `after`) using the
+    // existing `DiffBody` pipeline; the synthetic case
+    // scopes the right column to the AI-suggested text and
+    // leaves `backupApplyAction` unset because AI edits
+    // are reverted through a separate `Discard` button on
+    // the `AppleAssistReviewBar`, not through the
+    // right-pane apply-backup flow.
+    | "ai-edit-vs-buffer";
   documentPath: string;
   documentLabel: string;
   leftColumnLabel: string;

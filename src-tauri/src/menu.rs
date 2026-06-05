@@ -182,6 +182,13 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
                 agent_window_enabled,
                 None::<&str>,
             )?,
+            &MenuItem::with_id(
+                app,
+                MENU_OPEN_APPLE_ASSIST_WINDOW,
+                label("Open Apple Assist Window", "Apple Assist ウィンドウを開く"),
+                true,
+                None::<&str>,
+            )?,
             &PredefinedMenuItem::separator(app)?,
             &CheckMenuItem::with_id(
                 app,
@@ -542,6 +549,7 @@ pub(crate) fn emit_app_menu_event<R: tauri::Runtime>(
                 | MENU_PREFERENCES
                 | MENU_AGENT_WORKBENCH
                 | MENU_OPEN_AGENT_WINDOW
+                | MENU_OPEN_APPLE_ASSIST_WINDOW
         )
     {
         let _ = app.emit(MENU_ACTION_EVENT, action);

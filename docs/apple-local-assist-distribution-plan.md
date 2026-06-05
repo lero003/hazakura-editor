@@ -17,6 +17,8 @@ The first 5 slices of the Apple Local Assist work-stream are landed. Code, not p
 
 - **Gate-default-hidden contract** — the Rust probe returns `Unavailable { reason: "Foundation Models binding is not yet implemented in this build." }` on macOS and `Unsupported` elsewhere in v0.12. It must never return `Available` until a future slice lands a real Foundation Models binding; the React side hides the command palette entries whenever the probe is not `Available`, and the stub generate response carries `modelId: "stub:v0.12"` so a future regression is easy to spot.
 
+These landed slices are now treated as foundation plumbing. They do not define the final Apple Local Assist UX. The current product direction is the external Writing Companion / Assist Window in [Apple Local Assist Writing Companion Plan](apple-local-assist-writing-companion-plan.md): useful in L Mode, tolerant of rough writing requests, and able to make explicit unsaved AI edit transactions with Diff / history review.
+
 What is **not** done yet, and is gated on explicit approval:
 
 - `tauri.conf.json` is unchanged — no `bundle.externalBin`, no `minimumSystemVersion` bump
@@ -51,7 +53,7 @@ The Foundation Models framework acceptable-use page is a single short "Prohibite
 
 - 5 operation (`summarize` / `rephrase` / `extract` / `proofread` / `explain_diff`) はすべて選択範囲ベース・ユーザー所有文書に対する編集補助であり、Apple の "framework が研究製品 / 教科書 / 商用出版物を生成する" カテゴリに直接かかる経路は設計上ない。操作 UI に「教科書 chapter を一括で生成する」「学術論文ドラフトを 0 から起こさせる」ボタンを置く予定はない。
 - ただし `proofread` / `rephrase` は入力次第で規制領域 (medical / legal / financial) や academic / courseware 寄りの使われ方に流れうる。これは operation 単体の判定で線引きするのではなく、feature 全体としての防御線 (下記) で押さえる方針。
-- 採用可能性が高いのは、以下 4 条件がすべて揃った v0.12 の形: **(1) 選択範囲ベース・bounded 入力** (`MAX_SELECTED_CHARS=4000` / `MAX_CONTEXT_CHARS=8000` で caller 側 cap)、**(2) ユーザー所有の Markdown / テキスト文書**、**(3) framework の拒否を尊重** (Refusal が出てきたらそのまま Review Desk で見せる、無音リトライしない、instructions フィールドを user 編集させない)、**(4) auto-apply なし** + **in-app disclosure あり**。このセットが崩れたら gate を閉じる。
+- 採用可能性が高いのは、以下 4 条件がすべて揃った v0.12+ の形: **(1) 現在の執筆文脈に対する bounded 入力** (`MAX_SELECTED_CHARS=4000` / `MAX_CONTEXT_CHARS=8000` で caller 側 cap)、**(2) ユーザー所有の Markdown / テキスト文書**、**(3) framework の拒否を尊重** (Refusal が出てきたらそのまま review surface で見せる、無音リトライしない、instructions フィールドを user 編集させない)、**(4) AI edit transaction + no auto-save + in-app disclosure**。このセットが崩れたら gate を閉じる。
 - framework 内の安全機能を strip / override / 隠す経路は作らない (system prompt editor / jailbreak template / 無音 retry などは non-goal)。
 - **In-app disclosure**: App Store 提出前に、feature が Apple Intelligence / Foundation Models framework を使っており、Apple の acceptable-use rules の対象であり、output の利用責任はユーザーにある旨の短い注記を UI に出す。これは App Review 5.1.1(Privacy) / 5.1.2(i) (third-party AI disclosure) の両方の supporting になる。
 
@@ -80,8 +82,8 @@ The Guidelines text does not contain a clause specifically targeting on-device L
   - `Tool` protocol — model-driven tool calling; **we will not use this in v0.12** (out of scope per `assist-surface-strategy.md`).
   - `streamResponse` / `PartiallyGenerated` types — for token-by-token streaming of structured output.
 - **Availability**: "a two case enum that's either available or unavailable. If it's unavailable, you also receive a reason so you can adjust your UI accordingly." Our Rust-side 4-state model (`available` / `unavailable { reason }` / `disabled` / `unsupported`) maps to this naturally: Apple gives us `(available | unavailable(reason))` at the framework level, and `disabled` / `unsupported` are the user/OS states we layer on top.
-- **Errors to handle**: "guardrail violation, unsupported language, or context window exceeded." Our Rust stub should map these to candidate errors that surface as "Apple Assist returned an error" in Review Desk — never to an auto-apply / silent retry.
-- **Security guidance**: "Instructions should come from you, the developer, while prompts can come from the user. This is because the model is trained to obey instructions over prompts. This helps protect against prompt injection attacks, but is by no means bullet proof. As a general rule, instructions are mostly static, and it's best not to interpolate untrusted user input into the instructions." *Reading for us:* the Swift helper's `instructions` parameter is the only place untrusted user content enters the model; the per-call `prompt` is bounded by `MAX_SELECTED_CHARS = 4000` and `MAX_CONTEXT_CHARS = 8000` (already in the Rust contract). The helper must not let the user *edit* `instructions`. The Review Desk handoff remains the trust boundary.
+- **Errors to handle**: "guardrail violation, unsupported language, or context window exceeded." Our Rust stub should map these to candidate errors that surface as "Apple Assist returned an error" in the companion / review surface — never to hidden application, auto-save, or silent retry.
+- **Security guidance**: "Instructions should come from you, the developer, while prompts can come from the user. This is because the model is trained to obey instructions over prompts. This helps protect against prompt injection attacks, but is by no means bullet proof. As a general rule, instructions are mostly static, and it's best not to interpolate untrusted user input into the instructions." *Reading for us:* the Swift helper's `instructions` parameter is the only place untrusted user content enters the model; the per-call `prompt` is bounded by `MAX_SELECTED_CHARS = 4000` and `MAX_CONTEXT_CHARS = 8000` (already in the Rust contract). The helper must not let the user *edit* `instructions`. The AI edit transaction / review surface remains the trust boundary.
 
 ### Items still TBD (cannot confirm against the cited pages alone)
 
@@ -116,27 +118,29 @@ The user-facing shape can still feel unified:
 Assist Surface
 =
 none
-or Apple Local document assist
+or Apple Local Writing Companion
 or External Agent Workbench
 ```
 
 But the trust boundaries stay different:
 
 - **Safe Editor** remains the default text editor.
-- **Apple Local Assist** is document help only: selected text or a document excerpt in, candidate text out.
+- **Apple Local Assist** is document-writing help only: current writing context in, candidate text or an AI edit transaction out.
 - **External Agent Workbench** remains the separate CLI-agent trust boundary.
 
 Implementation may reuse Agent Workbench patterns such as active-vs-preference state, restart-required changes, availability probes, and explicit consent. It must not describe Apple Local Assist as a CLI agent, tool-calling automation layer, shell, provider plugin, or automatic edit system.
 
 ## Initial Apple Local Assist Scope
 
-v0.12 should start with the smallest useful document-assist surface:
+v0.12 should start with the smallest useful Writing Companion mock:
 
-- summarize selected text or the current section
-- rephrase selected text
-- optionally extract TODOs / headings / review points after the first two flows are stable
+- external Assist Window that replaces, rather than coexists with, the Agent Window slot
+- rough writing requests such as "整えて", "続きを書いて", "自然にして", "校正して", and "この章を直して"
+- bounded target inference from selection, current paragraph / block, or current section
+- fixture-backed direct unsaved buffer edit through an AI edit transaction
+- visible route to Diff / change history before saving
 
-Every output must flow through Review Desk, Diff, or an equivalent explicit review/apply step before the document changes.
+Every AI-written buffer change must be explicit, unsaved, recorded, reviewable, and reversible. The older command-palette selected-text summarize / rephrase entries remain useful as plumbing and tests, but they are not the final product experience.
 
 The first implementation must not include:
 
@@ -148,7 +152,7 @@ The first implementation must not include:
 - local HTTP fallback
 - external LLM fallback
 - provider-add UI
-- automatic file application
+- hidden or irreversible file application
 - automatic save
 
 ## Availability And Runtime Rules
@@ -159,7 +163,7 @@ Apple Local Assist must:
 
 - check model availability before showing or enabling actions
 - explain unavailable states without blocking Safe Editor
-- send only the selected text or bounded document excerpt needed for the requested task
+- send only the selected text, current writing block / section, or bounded document excerpt needed for the requested task
 - cap input size before invoking the helper
 - serialize requests or reject concurrent requests if the model/session cannot safely handle them
 - expose no network-backed fallback in the App Store build
@@ -170,13 +174,13 @@ The current candidate shape is a narrow macOS helper boundary:
 
 ```txt
 hazakura editor
-  -> structured Apple Local Assist request
+  -> structured Apple Local Assist request for current writing context
 bundled Swift helper
   -> Foundation Models framework
 hazakura editor
-  <- structured candidate response
-Review Desk / Diff
-  -> explicit apply or discard
+  <- structured candidate response / edit proposal
+AI edit transaction
+  -> unsaved buffer change, Diff / history remains available
 ```
 
 This keeps macOS-only model code away from the cross-platform editor core and makes the data boundary inspectable.
@@ -240,21 +244,23 @@ Rules:
 
 ## Release Sequence
 
-### v0.12: Apple Local Assist Planning And Prototype
+### v0.12: Apple Local Assist Writing Companion Prototype
 
 Target:
 
 - availability probe
-- selected-text summarize
-- selected-text rephrase
-- Review Desk / Diff handoff
+- external Writing Companion mock that replaces the Agent Window slot
+- rough writing requests against current editor context
+- AI edit transaction for explicit unsaved buffer changes
+- Diff / change-history escape hatch
 - unavailable-state UI
 - clear App Store build separation decision
 
 Exit criteria:
 
 - no Safe Editor behavior depends on Apple Local availability
-- generated text never applies without explicit review
+- generated text never saves automatically and never applies as a hidden or irreversible change
+- AI edits are attributable to Apple Local Assist and inspectable before save
 - App Store build exclusions are documented and testable
 - Foundation Models acceptable-use and availability notes are reflected in release docs
 
@@ -262,8 +268,8 @@ Exit criteria:
 
 Target:
 
-- add extract / proofread / explain-diff only if v0.12 is stable
-- polish prompts and candidate labels
+- add live Foundation Models binding only if the v0.12 mock experience is stable
+- polish rough-request handling, proofreading, continuation, and diff/history labels
 - verify App Store build can omit External Agent Workbench cleanly
 
 ### v0.14: Distribution Hardening
@@ -291,13 +297,14 @@ Before App Store submission, prepare concise review notes that explain:
 - the app is a Markdown/text editor
 - Apple Local Assist is optional and on-device
 - the app checks availability at runtime
-- generated text is shown as a candidate and requires explicit user review/apply
+- generated text only changes the unsaved editor buffer after explicit user action, records an AI edit transaction, and remains reviewable before save
 - the App Store build does not include External Agent Workbench or arbitrary command execution
 - file access is user-selected and workspace-bounded
 
 ## References
 
 - [Assist Surface Strategy](assist-surface-strategy.md)
+- [Apple Local Assist Writing Companion Plan](apple-local-assist-writing-companion-plan.md)
 - [Security Boundary](security-boundary.md)
 - [Agent Workbench Boundary](agent-workbench-boundary.md)
 - [Foundation Models](https://developer.apple.com/documentation/FoundationModels/)

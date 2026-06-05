@@ -11,6 +11,7 @@ describe("useAppShellSideEffectsController", () => {
           exportHtml: vi.fn(),
           exportPdf: vi.fn(),
           openAgentWindow: vi.fn(),
+          openAppleAssistWindow: vi.fn(),
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
           openWorkspacePath: vi.fn(),

@@ -28,6 +28,17 @@ import type { ReviewDeskCopy } from "../../lib/locale";
 // the command palette entry while a request is in flight, and
 // an `error` slot for the call site to surface a localized
 // message via the existing `setStatus` channel.
+//
+// v0.12+ direction (post-slice-18): the Apple Local Assist UX
+// is moving from "selected-text command palette helper" to an
+// external Writing Companion that updates the unsaved editor
+// buffer through an AI edit transaction. See
+// `docs/apple-local-assist-writing-companion-plan.md`. The
+// command-palette + Review-Desk handoff wired up here is
+// retained as foundation plumbing, but the new Writing
+// Companion mock does NOT route through this hook — it talks
+// to the main window via a Tauri event and records an AI edit
+// transaction through the dedicated store (slice 4+).
 
 export type AppleAssistTarget = {
   id: string;

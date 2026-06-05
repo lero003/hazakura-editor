@@ -95,20 +95,23 @@ Current planning source:
 
 - `docs/assist-surface-strategy.md`
 - `docs/apple-local-assist-distribution-plan.md`
+- `docs/apple-local-assist-writing-companion-plan.md`
 - `docs/apple-local-assist-v0.12-design-review.md`
 
 Rules:
 
 - Keep assist features detachable from Safe Editor.
-- Prefer selected text or document-fragment suggestions.
-- Route candidate output through Review Desk or Diff before applying.
+- Treat Apple Local Assist as an external Writing Companion / Assist Window, not as a CLI-agent provider.
+- Agent Window and Apple Local Assist should normally replace each other in the outside companion slot, not appear together.
+- Make the experience work with L Mode and rough writing requests, not only precise selected-text operations.
+- AI may update the unsaved editor buffer only as an explicit AI edit transaction with Diff / change-history review and no auto-save.
 - Do not add arbitrary command execution, broad workspace indexing, provider plugins, auto-apply, or agent orchestration.
 - Separate App Store build decisions from the existing developer / warning-expected DMG preview lane.
 
 Likely phase shape:
 
-- `v0.12`: Apple Local Assist availability probe and selected-text summarize / rephrase prototype.
-- `v0.13`: Assist Preview, adding extract / proofread / explain-diff only if v0.12 is stable.
+- `v0.12`: Apple Local Assist Writing Companion mock, availability plumbing, rough requests, L Mode smoke, and AI edit transaction.
+- `v0.13`: Assist Preview, adding live Foundation Models binding and broader proofreading / continuation only if v0.12 is stable.
 - `v0.14`: Distribution Hardening, including App Store build separation, sandbox / entitlement checks, TestFlight packaging, and App Review notes.
 - `v1.0`: App Store Candidate if the App Store build can omit External Agent Workbench cleanly.
 
@@ -119,6 +122,8 @@ v0.12 in-flight slice progress (no release, no distribution-config change):
 - Slice 3 — `useAppleAssistCandidate` hands generated text to the existing Review Desk `runCandidateCompare` (no auto-apply).
 - Slice 4 — Two command palette entries gated on availability (`Summarize selection`, `Rephrase selection`).
 - Slice 5 — `src-helpers/apple-assist/` SwiftPM helper builds in `FIXTURE_MODE`; `npm run build:apple-assist-helper:fixture` writes `binaries/hazakura-apple-assist-helper-<rust-triple>` and smoke-tests the JSON-over-stdio wire protocol. Live Foundation Models binding is stubbed (`unsupported` / `deferred`) pending an Apple-Silicon end-to-end check, and `tauri.conf.json` has not been changed.
+
+These slices are now foundation plumbing. The next implementation request should review this work against the Writing Companion direction before adding more selected-text command-palette behavior.
 
 ## Continuing Backlog
 

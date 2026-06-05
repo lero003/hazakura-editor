@@ -15,6 +15,23 @@ export type LModeCopy = {
   statusBarWorkspaceLabel: string;
   statusBarReviewChangesTitle: string;
   statusBarWorkspaceTitle: string;
+  statusBarAppleAssistLabel: string;
+  statusBarAppleAssistTitle: string;
+  // v0.12+ Apple Local Assist Writing Companion (slice 5).
+  // The escape-hatch bar shows a one-line summary of a
+  // pending AI edit and offers Discard / Close actions.
+  // Labels live on `LModeCopy` because the bar's chrome
+  // borrows the L Mode palette and tone; reusing the
+  // shape avoids creating a new locale module for a
+  // single component.
+  appleAssistReviewBarLabel: string;
+  appleAssistReviewBarTitle: string;
+  appleAssistReviewBarOpenDiffLabel: string;
+  appleAssistReviewBarDiscardLabel: string;
+  appleAssistReviewBarDiscardTitle: string;
+  appleAssistReviewBarCloseLabel: string;
+  appleAssistReviewBarCloseTitle: string;
+  appleAssistReviewBarEmptyDiffLabel: string;
   emptyPlaceholderText: string;
   emptyPlaceholderHint: string;
 };
@@ -36,6 +53,16 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
       statusBarWorkspaceLabel: "わーくすぺーすへ",
       statusBarReviewChangesTitle: "えるもーどをとじて ディスクとの さぶんを ひらく",
       statusBarWorkspaceTitle: "えるもーどをとじて わーくすぺーすに もどる",
+      statusBarAppleAssistLabel: "Apple Assist",
+      statusBarAppleAssistTitle: "Apple Assist の ウィンドウを ひらく",
+      appleAssistReviewBarLabel: "Apple Assist が ほんぶんを へんこうしました",
+      appleAssistReviewBarTitle: "さぶんを かくにんするか とりけすか えらんでください",
+      appleAssistReviewBarOpenDiffLabel: "さぶんを ひらく",
+      appleAssistReviewBarDiscardLabel: "とりけす",
+      appleAssistReviewBarDiscardTitle: "へんこうを もとに もどして とりけします",
+      appleAssistReviewBarCloseLabel: "とぢる",
+      appleAssistReviewBarCloseTitle: "へんこうは のこして とりけしたちに しない",
+      appleAssistReviewBarEmptyDiffLabel: "さぶんが ありません",
       emptyPlaceholderText: "かきはじめる…",
       emptyPlaceholderHint: "Cmd+Shift+L で いつもの もーどへ もどります",
     };
@@ -57,6 +84,16 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
         statusBarWorkspaceLabel: "ワークスペースへ",
         statusBarReviewChangesTitle: "えるモードを閉じてディスクとの差分を開く",
         statusBarWorkspaceTitle: "えるモードを閉じてワークスペースに戻る",
+        statusBarAppleAssistLabel: "Apple Assist",
+        statusBarAppleAssistTitle: "Apple Assist ウィンドウを開く",
+        appleAssistReviewBarLabel: "Apple Assist が本文を変更しました",
+        appleAssistReviewBarTitle: "差分を確認するか取り消すか選んでください",
+        appleAssistReviewBarOpenDiffLabel: "差分を開く",
+        appleAssistReviewBarDiscardLabel: "取り消す",
+        appleAssistReviewBarDiscardTitle: "変更を元に戻して取り消します",
+        appleAssistReviewBarCloseLabel: "閉じる",
+        appleAssistReviewBarCloseTitle: "変更は残してこの通知を閉じます",
+        appleAssistReviewBarEmptyDiffLabel: "差分がありません",
         emptyPlaceholderText: "書き始める…",
         emptyPlaceholderHint: "Cmd+Shift+L で通常モードへ戻ります",
       }
@@ -75,6 +112,16 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
         statusBarWorkspaceLabel: "Open workspace",
         statusBarReviewChangesTitle: "Exit L Mode and open the diff against disk",
         statusBarWorkspaceTitle: "Exit L Mode and return to the workspace",
+        statusBarAppleAssistLabel: "Apple Assist",
+        statusBarAppleAssistTitle: "Open the Apple Assist writing companion window",
+        appleAssistReviewBarLabel: "Apple Assist changed your text",
+        appleAssistReviewBarTitle: "Review or discard the pending AI edit",
+        appleAssistReviewBarOpenDiffLabel: "Open diff",
+        appleAssistReviewBarDiscardLabel: "Discard",
+        appleAssistReviewBarDiscardTitle: "Revert the buffer and clear the review",
+        appleAssistReviewBarCloseLabel: "Close",
+        appleAssistReviewBarCloseTitle: "Keep the edit and dismiss the review",
+        appleAssistReviewBarEmptyDiffLabel: "No diff to show",
         emptyPlaceholderText: "Start writing…",
         emptyPlaceholderHint: "Press Cmd+Shift+L to return to normal mode",
       };

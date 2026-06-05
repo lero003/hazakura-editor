@@ -52,6 +52,7 @@ For future releases, re-check local artifact evidence and, after publication, re
 - `docs/roadmap.md`: current release sequence and future phase boundaries.
 - `docs/l-mode-plan.md`: v0.11 L Mode WYSIWYG-tier planning memo.
 - `docs/apple-local-assist-distribution-plan.md`: v0.12+ Apple Local Assist and App Store / developer-build release-lane planning memo.
+- `docs/apple-local-assist-writing-companion-plan.md`: Apple Local Assist Writing Companion / external Assist Window UX direction.
 - `docs/apple-local-assist-v0.12-design-review.md`: v0.12 implementation slice design + Slice 5 feasibility findings.
 - `docs/agent-workbench-boundary.md`: implemented Agent Workbench trust boundary.
 - `docs/assist-surface-strategy.md`: future assist-surface direction.
@@ -61,7 +62,9 @@ Historical detailed status logs through 2026-06-04 were archived to `docs/archiv
 
 ## v0.12 Apple Local Assist work-in-progress
 
-Type, hook, and locale plumbing for Apple Local Assist is landed behind an availability gate that defaults to `unsupported` — the command palette does NOT expose the Apple Assist entries unless `probe_apple_assist_availability` returns `available`. The Rust commands are stubs (no Foundation Models binding) and the Swift helper builds in `FIXTURE_MODE` only. The Rust supervisor (helper spawn / lifecycle / watchdog / cooldown / protocol-violation detection) is implemented (slice 8-14) but the Tauri command surface does NOT call it — `AppleAssistHelperStore` is registered via `tauri::Builder::manage` but production `helper_path()` still returns `Err("Apple Assist helper is not configured for this build.")`. A production helper-path resolver skeleton (slice 17, `rust_target_triple` / `bundled_helper_filename` / `resolve_bundled_helper_path`) and 27 integration tests are in place; the resolver still returns the not-configured error and never reads the environment, preserving gate-default-hidden. `tauri.conf.json`, `bundle.externalBin`, `minimumSystemVersion`, code-signing entitlements, and distribution lanes are unchanged. Nothing is released. See `docs/apple-local-assist-v0.12-design-review.md` for the slice-by-slice record and remaining unknowns (App Store sandbox + Foundation Models acceptable-use checks, live Foundation Models binding, OS-minimum decision per lane).
+Type, hook, locale, helper fixture, and supervisor plumbing for Apple Local Assist is landed behind an availability gate that defaults to `unsupported` / `unavailable` — the command palette does NOT expose the Apple Assist entries unless `probe_apple_assist_availability` returns `available`. The Rust commands are stubs (no Foundation Models binding) and the Swift helper builds in `FIXTURE_MODE` only. The Rust supervisor (helper spawn / lifecycle / watchdog / cooldown / protocol-violation detection) is implemented (slice 8-18) but the Tauri command surface does NOT call it — `AppleAssistHelperStore` is registered via `tauri::Builder::manage` but production `helper_path()` still returns `Err("Apple Assist helper is not configured for this build.")`. A production helper-path resolver skeleton (`rust_target_triple` / `bundled_helper_filename` / `resolve_bundled_helper_path`) and 27 integration tests are in place; the resolver still returns the not-configured error and never reads the environment, preserving gate-default-hidden. `tauri.conf.json`, `bundle.externalBin`, `minimumSystemVersion`, code-signing entitlements, and distribution lanes are unchanged. Nothing is released.
+
+The product direction has shifted from "selected-text command-palette helper" to an external Apple Local Assist Writing Companion. Future work should review the landed plumbing against `docs/apple-local-assist-writing-companion-plan.md`: Apple Local Assist should work with L Mode, accept rough writing requests, replace rather than coexist with the Agent Window slot, and edit the unsaved buffer only through explicit AI edit transactions with Diff / change-history review and no auto-save.
 
 ## Next gate-flip prerequisites (in order)
 
@@ -75,6 +78,6 @@ The next Apple Local Assist slices require **explicit user approval at each step
 ## Next Safe Actions
 
 1. If continuing quality work, use `docs/development-automation.md` and keep to one small verified slice.
-2. If planning assist work after v0.11.0, use `docs/assist-surface-strategy.md` and `docs/apple-local-assist-distribution-plan.md`; keep assist output detachable from Safe Editor and route candidates through Review Desk / Diff.
+2. If planning assist work after v0.11.0, use `docs/assist-surface-strategy.md`, `docs/apple-local-assist-distribution-plan.md`, and `docs/apple-local-assist-writing-companion-plan.md`; keep Apple Local Assist as an external Writing Companion and require AI edit transactions for direct buffer edits.
 3. If preparing a future release, use `docs/source-release-checklist.md`, `docs/dmg-preview-checklist.md`, and the version-specific release note; do not tag or publish without explicit approval.
 4. If changing product behavior, use `docs/product-brief.md`, `docs/security-boundary.md`, and the touched boundary doc before implementation.

@@ -1,0 +1,146 @@
+/* === apple-assist-window.css === */
+/* ── Detached Apple Assist Window (v0.12+ mock, slice 2) ──
+ * Tool-window-style chrome for the hazakura apple assist
+ * window: a five-row layout (header / presets / form / status
+ * / footer) that reads as a purpose-built functional surface,
+ * not a generic web popup. Mirrors the detached Agent
+ * window's restrained palette — 1px borders, no shadows, no
+ * gradients. See
+ * docs/apple-local-assist-writing-companion-plan.md and
+ * docs/assist-surface-strategy.md.
+ */
+
+.apple-assist-window-shell {
+  background: var(--bg);
+  color: var(--text);
+  display: grid;
+  font-family: var(--app-font-family, system-ui, -apple-system, sans-serif);
+  /* Five rows: header / presets / form (1fr) / status / footer.
+   * The form row owns the remaining height so the textarea can
+   * grow with the window. */
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  height: 100vh;
+  padding: 16px;
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+.apple-assist-window-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-bottom: 1px solid var(--border, rgba(127, 127, 127, 0.25));
+  padding-bottom: 12px;
+}
+
+.apple-assist-window-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.apple-assist-window-subtitle {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.apple-assist-window-doc {
+  font-size: 12px;
+  opacity: 0.85;
+  margin-top: 4px;
+}
+
+.apple-assist-window-target {
+  font-size: 12px;
+  opacity: 0.95;
+  margin-top: 2px;
+  font-weight: 500;
+}
+
+.apple-assist-window-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.apple-assist-preset {
+  background: var(--bg-elev, rgba(127, 127, 127, 0.08));
+  border: 1px solid var(--border, rgba(127, 127, 127, 0.25));
+  border-radius: 6px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 6px 10px;
+}
+
+.apple-assist-preset:hover {
+  background: var(--bg-elev-hover, rgba(127, 127, 127, 0.16));
+}
+
+.apple-assist-preset:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.apple-assist-window-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.apple-assist-window-label {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.apple-assist-window-textarea {
+  background: var(--bg-input, var(--bg));
+  border: 1px solid var(--border, rgba(127, 127, 127, 0.25));
+  border-radius: 6px;
+  color: var(--text);
+  flex: 1;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  min-height: 0;
+  padding: 8px;
+  resize: none;
+}
+
+.apple-assist-window-apply {
+  align-self: flex-end;
+  background: var(--accent, rgba(127, 127, 127, 0.16));
+  border: 1px solid var(--border, rgba(127, 127, 127, 0.25));
+  border-radius: 6px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 6px 14px;
+}
+
+.apple-assist-window-apply:hover:not(:disabled) {
+  background: var(--accent-hover, rgba(127, 127, 127, 0.24));
+}
+
+.apple-assist-window-apply:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.apple-assist-window-footer {
+  border-top: 1px solid var(--border, rgba(127, 127, 127, 0.25));
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.apple-assist-window-status {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.apple-assist-window-error {
+  color: var(--error, #c0392b);
+  font-size: 12px;
+}

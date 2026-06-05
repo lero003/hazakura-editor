@@ -137,6 +137,43 @@ export function AgentWindowIcon() {
   );
 }
 
+export function SparklesIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Apple Assist / Writing Companion icon — a small star
+       * with two off-axis sparkles. Restrained line weight
+       * matching the L Mode action rail's other icons. */}
+      <path
+        d="M5 2L5.7 4.3L8 5L5.7 5.7L5 8L4.3 5.7L2 5L4.3 4.3L5 2Z"
+        fill="currentColor"
+        stroke="currentColor"
+        strokeWidth="0.6"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M11 9L11.4 10.1L12.5 10.5L11.4 10.9L11 12L10.6 10.9L9.5 10.5L10.6 10.1L11 9Z"
+        fill="currentColor"
+        stroke="currentColor"
+        strokeWidth="0.4"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12.5 3L12.7 3.6L13.3 3.8L12.7 4L12.5 4.6L12.3 4L11.7 3.8L12.3 3.6L12.5 3Z"
+        fill="currentColor"
+        stroke="currentColor"
+        strokeWidth="0.3"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function ChevronIcon({ expanded }: { expanded: boolean }) {
   return (
     <svg

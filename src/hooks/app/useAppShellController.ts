@@ -20,7 +20,7 @@
 // dependency wiring stay in one place.
 
 import { useCallback, useEffect, useMemo } from "react";
-import { openAgentWindow } from "../../lib/tauri";
+import { openAgentWindow, openAppleAssistWindow } from "../../lib/tauri";
 import { useAgentWorkbenchController } from "../agent/useAgentWorkbenchController";
 import { useAppleAssistAvailability } from "../agent/useAppleAssistAvailability";
 import { useAppleAssistCandidate } from "../review/useAppleAssistCandidate";
@@ -31,6 +31,8 @@ import { useDocumentIoController } from "../document/useDocumentIoController";
 import { useDocumentCoreController } from "../document/useDocumentCoreController";
 import { useDocumentPreviewController } from "../document/useDocumentPreviewController";
 import { useEditorSurfaceController } from "../document/useEditorSurfaceController";
+import { useAppleAssistTargetSync } from "../editor/useAppleAssistTargetSync";
+import { useAppleAssistApplyHandler } from "../editor/useAppleAssistApplyHandler";
 import { useEditorCommands } from "../editor/useEditorCommands";
 import { useEditorFindController } from "../editor/useEditorFindController";
 import { useTabBarController } from "../editor/useTabBarController";
@@ -380,6 +382,63 @@ export function useAppShellController() {
 
   // section: agent output buffer
   const { agentOutput, applyAgentOutput, resetAgentOutput } = foundation;
+
+  // v0.12+ Apple Local Assist Writing Companion (slice 3).
+  // Keep the Rust-side `MainAppleAssistTargetCache` fresh on
+  // every selection / cursor change. The hook is a no-op
+  // outside the Tauri runtime (it short-circuits the
+  // `setMainAppleAssistTarget` invoke), so it is safe to
+  // call unconditionally.
+  useAppleAssistTargetSync({
+    editorPaneRef,
+    activeTab: activeTab
+      ? {
+          id: activeTab.id,
+          name: activeTab.name,
+          path: activeTab.path,
+        }
+      : null,
+    selectionInfo,
+  });
+
+  // v0.12+ Apple Local Assist Writing Companion (slice 4).
+  // Main-window listener for `APPLY_AI_EDIT_TRANSACTION_EVENT`.
+  // The detached Apple Assist window fires this when the user
+  // clicks Apply; the hook runs the fixture transform, mutates
+  // the active tab's unsaved buffer, and records the
+  // transaction in the session-local store so the slice 5
+  // escape hatch can surface a "review / discard" affordance.
+  //
+  // The hook is purely side-effect: the only output it produces
+  // is the tab mutation (via the `setActiveTabContents` callback
+  // that updates the active tab's `contents` + `saveStatus` in
+  // one shot) and a status message routed through `setStatus`.
+  useAppleAssistApplyHandler({
+    activeTab: activeTab
+      ? {
+          id: activeTab.id,
+          name: activeTab.name,
+          path: activeTab.path,
+          contents: activeTab.contents,
+        }
+      : null,
+    setActiveTabContents: (next: string) => {
+      if (!activeTab) return;
+      setTabs((currentTabs) =>
+        currentTabs.map((tab) =>
+          tab.id === activeTab.id
+            ? {
+                ...tab,
+                contents: next,
+                saveStatus: "idle",
+                error: null,
+              }
+            : tab,
+        ),
+      );
+    },
+    setStatus,
+  });
 
   // section: workspace file opening
   const {
@@ -907,6 +966,9 @@ export function useAppShellController() {
       openAgentWindow: (theme) => {
         void openAgentWindow(theme);
       },
+      openAppleAssistWindow: (theme) => {
+        void openAppleAssistWindow(theme);
+      },
       openFile,
       openWorkspace,
       openWorkspaceFile,
@@ -945,6 +1007,9 @@ export function useAppShellController() {
       exportPdf,
       openAgentWindow: () => {
         void openAgentWindow(themePreference);
+      },
+      openAppleAssistWindow: () => {
+        void openAppleAssistWindow(themePreference);
       },
       openFile,
       openWorkspace,
@@ -1100,6 +1165,39 @@ export function useAppShellController() {
     [activeTab, clearCandidate, setStatus, setTabs],
   );
 
+  // v0.12+ Apple Local Assist Writing Companion (slice 5).
+  // The escape hatch's Discard button reverts the affected
+  // tab's contents to the transaction's full-buffer snapshot
+  // and clears the transaction via the store. The tab
+  // mutation goes through the same `setTabs` path the
+  // apply handler uses so save status / error are
+  // consistent regardless of which direction the buffer
+  // was edited.
+  const discardAppleAssistEdit = useCallback(
+    (tabId: string, beforeBuffer: string) => {
+      const targetTab = tabs.find((tab) => tab.id === tabId);
+      if (!targetTab) {
+        setStatus("Apple Assist discard failed");
+        return;
+      }
+      setTabs((currentTabs) =>
+        currentTabs.map((tab) =>
+          tab.id === tabId
+            ? {
+                ...tab,
+                contents: beforeBuffer,
+                saveStatus: "idle",
+                error: null,
+              }
+            : tab,
+        ),
+      );
+      setActiveTabId(tabId);
+      setStatus("Apple Assist edit discarded");
+    },
+    [setActiveTabId, setStatus, setTabs, tabs],
+  );
+
   return {
     activeAgentSession,
     activeConflict,
@@ -1224,6 +1322,7 @@ export function useAppShellController() {
     menuLanguage,
     onApplyManualCandidate: applyManualCandidateToActiveTab,
     onCheckAgentGate: requestAgentLaunchGateCheck,
+    onDiscardAppleAssistEdit: discardAppleAssistEdit,
     onOpenAgentWindow: () => {
       void openAgentWindow(themePreference);
     },
@@ -1233,6 +1332,20 @@ export function useAppShellController() {
     onConvertLineEnding: convertActiveLineEnding,
     onExitLModeToWorkspace: exitLModeToWorkspace,
     onFinishTabPointerDrag: finishTabPointerDrag,
+    onOpenAppleAssistFromLMode: () => {
+      // v0.12+ Apple Local Assist Writing Companion mock
+      // (slice 3). The L Mode action rail's Apple Assist
+      // button calls the same `openAppleAssistWindow`
+      // helper the View menu / command palette use, so
+      // companion-slot mutual exclusion is enforced
+      // server-side by the Rust command, not by the call
+      // site. `exitLModeToWorkspace` is intentionally NOT
+      // called: opening the Apple Assist window is a side
+      // surface, not a workspace exit, and the user can
+      // return to L Mode by closing the Apple Assist
+      // window.
+      void openAppleAssistWindow(themePreference);
+    },
     onOpenCommandPalette: openCommandPalette,
     onRunCommand: runCommand,
     onPointerEnter: suspendAgentUiRefresh,

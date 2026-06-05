@@ -6,6 +6,7 @@ pub(crate) mod commands {
     pub(crate) mod app_window;
     pub(crate) mod apple_assist;
     pub(crate) mod apple_assist_supervisor;
+    pub(crate) mod apple_assist_target;
     pub(crate) mod export;
     pub(crate) mod files;
     pub(crate) mod images;
@@ -52,6 +53,8 @@ use crate::commands::apple_assist::*;
 #[allow(unused_imports)]
 use crate::commands::apple_assist_supervisor::*;
 #[allow(unused_imports)]
+use crate::commands::apple_assist_target::*;
+#[allow(unused_imports)]
 use crate::commands::export::*;
 #[allow(unused_imports)]
 use crate::commands::files::*;
@@ -79,6 +82,7 @@ pub fn run() {
         .manage(AppleAssistHelperStore::default())
         .manage(OpenedFileStore::default())
         .manage(commands::workspace_broadcast::MainWorkspaceCache::default())
+        .manage(commands::apple_assist_target::MainAppleAssistTargetCache::default())
         .plugin(tauri_plugin_dialog::init());
 
     #[cfg(desktop)]
@@ -116,9 +120,14 @@ pub fn run() {
             update_theme_menu_state,
             open_agent_window,
             set_agent_window_theme,
+            open_apple_assist_window,
+            set_apple_assist_window_theme,
+            request_apply_ai_edit_transaction,
             open_main_agent_pane,
             get_main_active_workspace,
             set_main_active_workspace,
+            get_main_apple_assist_target,
+            set_main_apple_assist_target,
             save_pasted_image,
             import_image_from_path,
             open_temp_print_html,

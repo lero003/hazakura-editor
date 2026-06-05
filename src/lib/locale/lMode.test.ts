@@ -28,6 +28,14 @@ describe("getLModeCopy", () => {
       const copy = getLModeCopy(lang);
       expect(Object.keys(copy).sort()).toEqual([
         "actionRailLabel",
+        "appleAssistReviewBarCloseLabel",
+        "appleAssistReviewBarCloseTitle",
+        "appleAssistReviewBarDiscardLabel",
+        "appleAssistReviewBarDiscardTitle",
+        "appleAssistReviewBarEmptyDiffLabel",
+        "appleAssistReviewBarLabel",
+        "appleAssistReviewBarOpenDiffLabel",
+        "appleAssistReviewBarTitle",
         "emptyPlaceholderHint",
         "emptyPlaceholderText",
         "exitPillLabel",
@@ -36,6 +44,8 @@ describe("getLModeCopy", () => {
         "paletteCommand",
         "preferenceHint",
         "preferenceLabel",
+        "statusBarAppleAssistLabel",
+        "statusBarAppleAssistTitle",
         "statusBarReviewChangesLabel",
         "statusBarReviewChangesTitle",
         "statusBarWorkspaceLabel",

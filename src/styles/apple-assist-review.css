@@ -1,0 +1,182 @@
+/* === apple-assist-review.css === */
+/* v0.12+ Apple Local Assist Writing Companion (slice 5).
+   Diff / change review escape hatch. The bar is rendered
+   unconditionally in the AppShell and only surfaces when
+   the `useAiEditTransaction` hook reports a pending
+   review for the active tab — so the styles are written
+   to work in both L Mode and the normal workspace. The
+   chrome borrows the L Mode floating-rail language
+   (translucent surface, accent on hover, blur backdrop)
+   so the bar reads as a context-sensitive escape hatch
+   whether the user applied the AI edit from L Mode or
+   from the View menu / command palette. */
+
+/* The bar sits above the status bar at the bottom of the
+   shell. Width is bounded so the inline diff (when
+   expanded) doesn't push the editor into a cramped
+   layout on wide monitors. */
+.apple-assist-review-bar {
+  position: fixed;
+  right: 18px;
+  bottom: 64px;
+  z-index: 95;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: min(720px, calc(100vw - 36px));
+  max-height: min(60vh, 540px);
+  padding: 8px 10px 8px 12px;
+  border: 1px solid color-mix(in srgb, var(--border) 56%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  backdrop-filter: blur(18px) saturate(1.05);
+  box-shadow: var(--shadow-md);
+  color: var(--text);
+  font-family: var(--lmode-ui-font-family, inherit);
+  font-size: 12px;
+  line-height: 1.4;
+  overflow: hidden;
+}
+
+.apple-assist-review-bar-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.apple-assist-review-bar-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent);
+}
+
+.apple-assist-review-bar-message {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--text) 90%, var(--text-muted));
+}
+
+.apple-assist-review-bar-request {
+  color: var(--text-muted);
+  margin-left: 2px;
+}
+
+.apple-assist-review-bar-counts {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+}
+
+.apple-assist-review-bar-count {
+  display: inline-block;
+  min-width: 1.4em;
+  padding: 0 4px;
+  border-radius: 4px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.apple-assist-review-bar-count.added {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent);
+}
+
+.apple-assist-review-bar-count.removed {
+  background: color-mix(in srgb, #b85056 14%, transparent);
+  color: color-mix(in srgb, #b85056 80%, var(--text));
+}
+
+.apple-assist-review-bar-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.apple-assist-review-bar-button {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 26px;
+  padding: 0 10px;
+  margin: 0;
+  border: 1px solid color-mix(in srgb, var(--border) 64%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-strong, var(--surface)) 76%, transparent);
+  color: color-mix(in srgb, var(--text) 88%, var(--text-muted));
+  font: inherit;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
+}
+
+.apple-assist-review-bar-button:hover,
+.apple-assist-review-bar-button:focus-visible {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 36%, var(--border));
+  color: var(--accent);
+  outline: none;
+}
+
+.apple-assist-review-bar-button:active {
+  transform: translateY(1px);
+}
+
+.apple-assist-review-bar-button.danger:hover,
+.apple-assist-review-bar-button.danger:focus-visible {
+  background: color-mix(in srgb, #b85056 14%, transparent);
+  border-color: color-mix(in srgb, #b85056 38%, var(--border));
+  color: color-mix(in srgb, #b85056 80%, var(--text));
+}
+
+.apple-assist-review-bar-button.close {
+  min-width: 26px;
+  padding: 0;
+  font-size: 16px;
+  line-height: 1;
+  font-weight: 400;
+}
+
+.apple-assist-review-bar-diff {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  border-top: 1px solid color-mix(in srgb, var(--border) 48%, transparent);
+  padding-top: 6px;
+}
+
+.apple-assist-review-bar-empty {
+  border-top: 1px solid color-mix(in srgb, var(--border) 48%, transparent);
+  padding: 8px 4px 2px;
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 11px;
+}
+
+/* In L Mode, lift the bar a bit higher so it doesn't
+   collide with the floating status pill at the bottom-
+   right. The L Mode status pill is positioned at
+   `bottom: 18px`, so the bar shifts up by ~46px. */
+:root[data-l-mode="on"] .apple-assist-review-bar {
+  bottom: 64px;
+}

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-06-04
+Last reviewed: 2026-06-05
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
@@ -29,6 +29,7 @@ This directory separates current guidance from historical material. Use current 
 
 - `l-mode-plan.md`: L Mode / えるモード planning memo.
 - `apple-local-assist-distribution-plan.md`: Apple Local Assist / App Store distribution planning memo.
+- `apple-local-assist-writing-companion-plan.md`: Apple Local Assist Writing Companion / external Assist Window UX direction.
 - `apple-local-assist-v0.12-design-review.md`: Apple Local Assist v0.12 スライス 1〜6 の設計選択・ゲート・残課題レビュー記録。
 - `apple-local-assist-live-helper-plan.md`: `src-helpers/apple-assist/` fixture mode / live mode 分離と live mode 実装前の設計メモ。
 - `apple-local-assist-rust-supervisor-plan.md`: helper sidecar を呼ぶ Rust supervisor 層の設計メモ。

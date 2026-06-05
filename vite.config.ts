@@ -15,6 +15,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, "index.html"),
         agent: resolve(__dirname, "agent.html"),
+        "apple-assist": resolve(__dirname, "apple-assist.html"),
       },
     },
   },

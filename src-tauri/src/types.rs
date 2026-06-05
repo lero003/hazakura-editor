@@ -62,6 +62,36 @@ pub(crate) const O_NOCTTY_FLAG: i32 = 0x00020000;
 pub(crate) const MENU_ACTION_EVENT: &str = "hazakura-note://menu-action";
 pub(crate) const OPENED_FILES_EVENT: &str = "hazakura-note://opened-files";
 pub(crate) const OPEN_MAIN_AGENT_PANE_EVENT: &str = "hazakura-note://open-main-agent-pane";
+// v0.12+ Apple Local Assist Writing Companion mock (slice 2+).
+// Companion slot: the Apple Assist window and the Agent window
+// normally replace each other. The Apple Assist window emits
+// `APPLY_AI_EDIT_TRANSACTION_EVENT` to ask the main window to
+// apply an AI edit transaction. The main window answers the
+// `REQUEST_AI_EDIT_TARGET_EVENT` round-trip with a bounded
+// target (selection / paragraph / block / section).
+//
+// The Rust constants are the source of truth for the event
+// names; the TS mirror in `src/types.ts` re-states them so
+// the webviews can `emit()` / `listen()` on them. The Rust
+// commands consume these in slice 3+ when the main window's
+// `APPLY_AI_EDIT_TRANSACTION_EVENT` listener is wired up —
+// keep the `dead_code` allow until then.
+#[allow(dead_code)]
+pub(crate) const APPLY_AI_EDIT_TRANSACTION_EVENT: &str =
+    "hazakura-note://apply-ai-edit-transaction";
+#[allow(dead_code)]
+pub(crate) const REQUEST_AI_EDIT_TARGET_EVENT: &str = "hazakura-note://request-ai-edit-target";
+#[allow(dead_code)]
+pub(crate) const AI_EDIT_TARGET_RESULT_EVENT: &str = "hazakura-note://ai-edit-target-result";
+// `MAIN_APPLE_ASSIST_TARGET_CHANGED_EVENT` is broadcast by the
+// main window whenever the inferred Apple Assist target moves
+// (selection change, cursor move, document switch). The
+// detached Apple Assist window subscribes to keep its
+// "active target" panel live without polling. See
+// `commands/apple_assist_target.rs` and
+// `docs/apple-local-assist-writing-companion-plan.md`.
+pub(crate) const MAIN_APPLE_ASSIST_TARGET_CHANGED_EVENT: &str =
+    "hazakura-note://main-apple-assist-target-changed";
 pub(crate) const MAIN_WORKSPACE_CHANGED_EVENT: &str = "hazakura-note://main-workspace-changed";
 pub(crate) const MENU_NEW_FILE: &str = "new-file";
 pub(crate) const MENU_OPEN_FILE: &str = "open-file";
@@ -85,6 +115,7 @@ pub(crate) const MENU_THEME_SHOKOU: &str = "theme-shokou";
 pub(crate) const MENU_PREFERENCES: &str = "preferences";
 pub(crate) const MENU_AGENT_WORKBENCH: &str = "agent-workbench";
 pub(crate) const MENU_OPEN_AGENT_WINDOW: &str = "open-agent-window";
+pub(crate) const MENU_OPEN_APPLE_ASSIST_WINDOW: &str = "open-apple-assist-window";
 pub(crate) const MENU_RECENT_FILE_PREFIX: &str = "recent-file-";
 pub(crate) const MENU_RECENT_FOLDER_PREFIX: &str = "recent-folder-";
 pub(crate) const EXCLUDED_WORKSPACE_DIRS: &[&str] = &[

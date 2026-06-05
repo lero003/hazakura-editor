@@ -19,6 +19,7 @@ import { AppTopChrome } from "./AppTopChrome";
 import { AppWorkspace } from "./AppWorkspace";
 import { LModeActionRail } from "./LModeActionRail";
 import { LModeExitPill } from "./LModeExitPill";
+import { AppleAssistReviewBar } from "./AppleAssistReviewBar";
 import { ReviewSurface } from "../review/ReviewSurface";
 
 export type AppShellProps = ComponentProps<typeof AppTopChrome> &
@@ -43,7 +44,9 @@ export type AppShellProps = ComponentProps<typeof AppTopChrome> &
       documentContents: string,
     ) => void;
     onCloseReviewDesk: () => void;
+    onDiscardAppleAssistEdit: (tabId: string, before: string) => void;
     onExitLModeToWorkspace: () => void;
+    onOpenAppleAssistFromLMode: () => void;
     onReviewChangesFromLMode: () => void;
     onToggleLMode: () => void;
     resolvedTheme: ResolvedTheme;
@@ -98,6 +101,12 @@ export function AppShell(props: AppShellProps) {
       )}
       <AppStatusBar {...props} />
       <AppOverlays {...props} />
+      <AppleAssistReviewBar
+        activeTabId={props.activeTabId}
+        copy={props.lModeCopy}
+        menuLanguage={props.menuLanguage}
+        onDiscard={props.onDiscardAppleAssistEdit}
+      />
       {props.lModeEnabled ? (
         <>
           <LModeExitPill
@@ -107,6 +116,7 @@ export function AppShell(props: AppShellProps) {
           <LModeActionRail
             copy={props.lModeCopy}
             onExitToWorkspace={props.onExitLModeToWorkspace}
+            onOpenAppleAssistWindow={props.onOpenAppleAssistFromLMode}
             onReviewChanges={props.onReviewChangesFromLMode}
             reviewChangesAvailable={props.activeDirty}
           />

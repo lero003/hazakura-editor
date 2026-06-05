@@ -1,17 +1,17 @@
 # Apple Local Assist — Live Helper 設計メモ
 
-Status: Implemented (slice 8-14, Foundation Models live binding のみ未着手)
+Status: Implemented (slice 8-18, Foundation Models live binding のみ未着手)
 Scope: `src-helpers/apple-assist/` の fixture mode / live mode 分離方針と、live mode が乗ったときに必要な request / response / availability mapping
 Authority: Medium
 Last reviewed: 2026-06-05
 
 ## 目的
 
-`docs/apple-local-assist-distribution-plan.md` の "Official Information Confirmed" セクションで整理した Apple 公式情報をもとに、`src-helpers/apple-assist/` の live mode を実装する前に決めておく設計判断をまとめる。Slice 8-14 で supervisor 側 (spawn / lifecycle / timeout / protocol-violation detection) は実装済み。Swift 側の `LanguageModelSession` 接続 (live mode 本体) は未実装で、本メモはその着地条件を pin する。`tauri.conf.json` / `bundle.externalBin` / `minimumSystemVersion` / signing / entitlements は触らない。
+`docs/apple-local-assist-distribution-plan.md` の "Official Information Confirmed" セクションで整理した Apple 公式情報をもとに、`src-helpers/apple-assist/` の live mode を実装する前に決めておく設計判断をまとめる。Slice 8-18 で supervisor 側 (spawn / lifecycle / timeout / protocol-violation detection / production helper-path resolver skeleton) は実装済み。Swift 側の `LanguageModelSession` 接続 (live mode 本体) は未実装で、本メモはその着地条件を pin する。`tauri.conf.json` / `bundle.externalBin` / `minimumSystemVersion` / signing / entitlements は触らない。
 
-> **用語注意**: 「supervisor 実装済み」 = Rust crate 側で helper の spawn / lifecycle / timeout / cooldown / protocol-violation 検出と integration test 21 ケースが揃っているという意味。Foundation Models **live binding** (`LanguageModelSession` 呼び出し) は Swift 側で別スライスに乗せる未着手のもの。本メモ中で "live binding 実装済み" と読める表現は意図的に避けている。production `helper_path()` は依然として `Err` を返し、command surface は supervisor を呼ばない (gate-default-hidden 維持)。
+> **用語注意**: 「supervisor 実装済み」 = Rust crate 側で helper の spawn / lifecycle / timeout / cooldown / protocol-violation 検出、production helper-path resolver skeleton、integration test 27 ケースが揃っているという意味。Foundation Models **live binding** (`LanguageModelSession` 呼び出し) は Swift 側で別スライスに乗せる未着手のもの。本メモ中で "live binding 実装済み" と読める表現は意図的に避けている。production `helper_path()` は依然として `Err` を返し、command surface は supervisor を呼ばない (gate-default-hidden 維持)。
 
-## 現状 (slice 14 時点)
+## 現状 (slice 18 時点)
 
 `src-helpers/apple-assist/` は SwiftPM executable target (`HazakuraAppleAssist`)。`Package.swift` の `.debug` configuration が `-DFIXTURE_MODE` を立て、それ以外 (`release` 等) は live mode のスタブになっている。
 
@@ -21,7 +21,7 @@ Last reviewed: 2026-06-05
   - `generate_candidate` → `{"kind":"candidate","value":{"operation":"<op>","candidateText":"【<op-prefix>】\n<text>","modelId":"fixture:helper-v0.12","latencyMs":0}}`
 - **live mode (現状)**: Foundation Models binding 未接続のため、`probe_availability` は `unsupported`、`generate_candidate` は `deferred` error envelope を返す。Slice 13+ で `LanguageModelSession` 経路を乗せる。
 - **Rust 側 stub (slice 1-6 の Tauri command surface)**: macOS で `Unavailable { reason: "Foundation Models binding is not yet implemented in this build." }`、non-macOS で `Unsupported` を返す。**`Available` は絶対に返さない** (gate-default-hidden 契約)。これは live mode が着地したスライスで初めて `Available` を返し始める。
-- **Rust 側 supervisor (slice 8-14)**: 実装済み。`binaries/hazakura-apple-assist-helper-<triple>` を spawn して JSON line 通信 + 15s watchdog + 5 連続失敗で 5 分 cooldown + protocol violation (Candidate-on-probe / Availability-on-generate / malformed / EOF) を reset+count。`WireEnvelope::Error` (guardrail / validation / deferred / throttled) は pass-through で cooldown 集計に入れない。詳細: `docs/apple-local-assist-rust-supervisor-plan.md`。v0.12.0 では Tauri command surface から supervisor 経路を呼んでいない (gate-default-hidden 維持)。
+- **Rust 側 supervisor (slice 8-18)**: 実装済み。`binaries/hazakura-apple-assist-helper-<triple>` を spawn して JSON line 通信 + 15s watchdog + 5 連続失敗で 5 分 cooldown + protocol violation (Candidate-on-probe / Availability-on-generate / malformed / EOF) を reset+count。`WireEnvelope::Error` (guardrail / validation / deferred / throttled) は pass-through で cooldown 集計に入れない。production helper-path resolver skeleton も wired だが、gate-default-hidden 維持のため production `helper_path()` は not-configured を返す。詳細: `docs/apple-local-assist-rust-supervisor-plan.md`。v0.12.0 では Tauri command surface から supervisor 経路を呼んでいない (gate-default-hidden 維持)。
 
 ## 設計判断
 
@@ -133,7 +133,7 @@ Apple 公式 "These errors might include guardrail violation, unsupported langua
 
 ### 6. 起動と lifecycle
 
-**実装済みの helper 起動 (slice 8-14)**:
+**実装済みの helper 起動 (slice 8-18)**:
 
 Rust 側 supervisor は案 B (long-lived helper) で実装済み。Swift 側の launch 経路は slice 5 のまま:
 
@@ -193,6 +193,7 @@ Rust 側 supervisor は案 B (long-lived helper) で実装済み。Swift 側の 
 - `bash scripts/build-apple-assist-helper-fixture.sh` で fixture build + JSON-over-stdio smoke (probe→available, summarize→【要約案】\n...)
 - 既存の `cargo test apple_assist` で Rust 側 stub の shape を固定
 - 既存の `useAppleAssistCandidate.test.ts` で stub candidate → runCandidateCompare の handoff を固定
+- Writing Companion 方向では、この handoff は基盤確認であり最終 UX ではない。直接 buffer edit を入れる場合は `docs/apple-local-assist-writing-companion-plan.md` の AI edit transaction 条件を満たす。
 
 **Live mode (将来スライス)**:
 
@@ -250,10 +251,10 @@ Rust 側 supervisor は案 B (long-lived helper) で実装済み。Swift 側の 
 
 - `docs/apple-local-assist-distribution-plan.md` — "Official Information Confirmed" セクション
 - `docs/apple-local-assist-v0.12-design-review.md` — "残った不確実性" / 設計選択
-- `docs/apple-local-assist-rust-supervisor-plan.md` — 実装済み Rust supervisor の詳細 (slice 8-14)
+- `docs/apple-local-assist-rust-supervisor-plan.md` — 実装済み Rust supervisor の詳細 (slice 8-18)
 - `docs/apple-local-assist-helper-path-design.md` — bundled helper path 設計 (slice 16)
 - `src-helpers/apple-assist/Sources/HazakuraAppleAssist/*.swift` — 現状の fixture / live コード
 - `src-tauri/src/commands/apple_assist.rs` — Tauri command surface (slice 1-6 stub)
-- `src-tauri/src/commands/apple_assist_supervisor.rs` — 実装済み supervisor (slice 8-14)
+- `src-tauri/src/commands/apple_assist_supervisor.rs` — 実装済み supervisor (slice 8-18)
 - `src-tauri/src/tests/apple_assist_supervisor.rs` — 27 ケースの integration test
 - `scripts/build-apple-assist-helper-fixture.sh` — fixture build script

@@ -18,6 +18,10 @@ fn label_gate_helpers_reject_unknown_label() {
     let err =
         ensure_label_is_main_or_agent(UNKNOWN_WINDOW_LABEL).expect_err("unknown label must fail");
     assert!(err.contains(UNKNOWN_WINDOW_LABEL));
+
+    let err = ensure_label_is_main_or_apple_assist(UNKNOWN_WINDOW_LABEL)
+        .expect_err("unknown label must fail");
+    assert!(err.contains(UNKNOWN_WINDOW_LABEL));
 }
 
 #[test]
@@ -25,6 +29,104 @@ fn label_gate_helpers_accept_known_labels() {
     ensure_label_is_main(MAIN_WINDOW_LABEL).expect("main must be allowed");
     ensure_label_is_main_or_agent(MAIN_WINDOW_LABEL).expect("main must be allowed");
     ensure_label_is_main_or_agent(AGENT_WINDOW_LABEL).expect("agent must be allowed");
+    ensure_label_is_main_or_apple_assist(MAIN_WINDOW_LABEL)
+        .expect("main must be allowed for apple-assist gate");
+    ensure_label_is_main_or_apple_assist(APPLE_ASSIST_WINDOW_LABEL)
+        .expect("apple-assist must be allowed for apple-assist gate");
+    ensure_label_is_apple_assist(APPLE_ASSIST_WINDOW_LABEL)
+        .expect("apple-assist must be allowed for apple-assist-only gate");
+}
+
+#[test]
+fn label_gate_apple_assist_rejects_agent_label() {
+    // The Apple Assist window and the Agent window are mutually
+    // exclusive companion slots, but their label gates are
+    // independent: a Tauri command guarded by
+    // `ensure_label_is_main_or_apple_assist` must NOT accept
+    // the `agent` label, and vice versa. The companion-slot
+    // mutual exclusion is enforced server-side by the window
+    // open commands (closing the other window before opening
+    // the new one), not by relaxing the per-command gates.
+    let err = ensure_label_is_main_or_apple_assist(AGENT_WINDOW_LABEL)
+        .expect_err("agent label must be rejected by the apple-assist gate");
+    assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
+
+    let err = ensure_label_is_main_or_agent(APPLE_ASSIST_WINDOW_LABEL)
+        .expect_err("apple-assist label must be rejected by the agent gate");
+    assert!(err.contains(APPLE_ASSIST_WINDOW_LABEL), "{err}");
+
+    let err = ensure_label_is_apple_assist(MAIN_WINDOW_LABEL)
+        .expect_err("main label must be rejected by the apple-assist-only gate");
+    assert!(err.contains(MAIN_WINDOW_LABEL), "{err}");
+
+    let err = ensure_label_is_apple_assist(AGENT_WINDOW_LABEL)
+        .expect_err("agent label must be rejected by the apple-assist-only gate");
+    assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
+}
+
+#[test]
+fn request_apply_ai_edit_transaction_accepts_apple_assist_only() {
+    request_apply_ai_edit_transaction_with_label(APPLE_ASSIST_WINDOW_LABEL)
+        .expect("apple-assist must be allowed to request AI edit apply");
+
+    let err = request_apply_ai_edit_transaction_with_label(MAIN_WINDOW_LABEL)
+        .expect_err("main must not request Apple Assist apply through this command");
+    assert!(err.contains(MAIN_WINDOW_LABEL), "{err}");
+
+    let err = request_apply_ai_edit_transaction_with_label(AGENT_WINDOW_LABEL)
+        .expect_err("agent must not request Apple Assist apply");
+    assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
+
+    let err = request_apply_ai_edit_transaction_with_label(UNKNOWN_WINDOW_LABEL)
+        .expect_err("unknown window must not request Apple Assist apply");
+    assert!(err.contains(UNKNOWN_WINDOW_LABEL), "{err}");
+}
+
+#[test]
+fn get_main_apple_assist_target_allows_main_and_apple_assist_labels() {
+    // The detached Apple Assist window is the primary caller
+    // of `get_main_apple_assist_target`; the main window may
+    // also call it for self-consistency. Both must clear the
+    // gate. The label-only shim pins the gate without needing
+    // a real `WebviewWindow` instance.
+    get_main_apple_assist_target_with_label(MAIN_WINDOW_LABEL)
+        .expect("main must be allowed to read the apple-assist target");
+    get_main_apple_assist_target_with_label(APPLE_ASSIST_WINDOW_LABEL)
+        .expect("apple-assist must be allowed to read the target");
+}
+
+#[test]
+fn get_main_apple_assist_target_rejects_agent_and_unknown_labels() {
+    let err = get_main_apple_assist_target_with_label(AGENT_WINDOW_LABEL)
+        .expect_err("agent must be rejected by the apple-assist-target gate");
+    assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
+
+    let err = get_main_apple_assist_target_with_label(UNKNOWN_WINDOW_LABEL)
+        .expect_err("unknown must be rejected by the apple-assist-target gate");
+    assert!(err.contains(UNKNOWN_WINDOW_LABEL), "{err}");
+}
+
+#[test]
+fn set_main_apple_assist_target_rejects_non_main_labels() {
+    // Only the main window may push the target snapshot.
+    // The Apple Assist window reads the cache via
+    // `get_main_apple_assist_target` and listens for the
+    // change event; it must NOT be able to push a target
+    // back into the cache.
+    set_main_apple_assist_target_with_label(MAIN_WINDOW_LABEL)
+        .expect("main must be allowed to push the apple-assist target");
+
+    let err = set_main_apple_assist_target_with_label(APPLE_ASSIST_WINDOW_LABEL)
+        .expect_err("apple-assist must be rejected by the set-target gate");
+    assert!(err.contains(APPLE_ASSIST_WINDOW_LABEL), "{err}");
+
+    let err = set_main_apple_assist_target_with_label(AGENT_WINDOW_LABEL)
+        .expect_err("agent must be rejected by the set-target gate");
+    assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
+
+    let err = set_main_apple_assist_target_with_label(UNKNOWN_WINDOW_LABEL)
+        .expect_err("unknown must be rejected by the set-target gate");
+    assert!(err.contains(UNKNOWN_WINDOW_LABEL), "{err}");
 }
 
 #[test]

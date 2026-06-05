@@ -86,6 +86,16 @@ export type EditorPaneHandle = {
   replaceCurrent: (replacement: string) => boolean;
   replaceAll: (replacement: string) => void;
   getSelectionText: () => string;
+  // v0.12+ Apple Local Assist Writing Companion (slice 3).
+  // Returns the active document text plus the selection range
+  // as character offsets into that text. The Apple Assist
+  // target sync hook uses this to feed
+  // `inferAppleAssistTarget` on every selection / cursor
+  // change without going through the React selection state
+  // (which only carries `line` / `column` / character
+  // count, not the document text). Returns `null` when the
+  // editor view is not mounted.
+  getActiveDocument: () => { text: string; from: number; to: number } | null;
 };
 
 const setSearchMatchesEffect =
@@ -278,6 +288,16 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         return sel.empty
           ? view.state.sliceDoc(0)  // full content if no selection
           : view.state.sliceDoc(sel.from, sel.to);
+      },
+      getActiveDocument() {
+        const view = viewRef.current;
+        if (!view) return null;
+        const sel = view.state.selection.main;
+        return {
+          text: view.state.doc.toString(),
+          from: sel.from,
+          to: sel.to,
+        };
       },
       replaceCurrent(replacement) {
         const view = viewRef.current;

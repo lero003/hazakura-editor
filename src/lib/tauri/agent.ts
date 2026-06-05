@@ -204,3 +204,88 @@ export async function setAgentWindowTheme(theme: string): Promise<void> {
     console.warn("Failed to set Agent window theme", err);
   }
 }
+
+// v0.12+ Apple Local Assist Writing Companion mock (slice 2+).
+// `openAppleAssistWindow` asks Rust to spawn the detached
+// `apple-assist` webview. The Apple Assist window is the
+// outside-companion slot that replaces the Agent window (see
+// `docs/apple-local-assist-writing-companion-plan.md`). The
+// Rust side enforces companion-slot mutual exclusion: opening
+// the Apple Assist window closes the Agent window if it is
+// open, and vice versa. The mock is a small form for rough
+// requests; the actual body editing happens in the main
+// window via the AI edit transaction channel.
+export async function openAppleAssistWindow(theme?: string): Promise<void> {
+  if (!isTauriRuntime()) {
+    return;
+  }
+
+  try {
+    await invoke("open_apple_assist_window", { theme: theme ?? null });
+  } catch (err) {
+    console.warn("Failed to open Apple Assist window", err);
+  }
+}
+
+export async function setAppleAssistWindowTheme(theme: string): Promise<void> {
+  if (!isTauriRuntime()) {
+    return;
+  }
+
+  try {
+    await invoke("set_apple_assist_window_theme", { theme });
+  } catch (err) {
+    console.warn("Failed to set Apple Assist window theme", err);
+  }
+}
+
+export async function requestApplyAiEditTransaction(
+  payload: import("../../types").AppleAssistApplyEvent,
+): Promise<void> {
+  if (!isTauriRuntime()) {
+    throw new Error("Tauri runtime is not available.");
+  }
+
+  await invoke("request_apply_ai_edit_transaction", { payload });
+}
+
+// v0.12+ Apple Local Assist Writing Companion (slice 3+).
+// `getMainAppleAssistTarget` reads the latest inferred
+// target snapshot from the Rust-side cache. The main window
+// keeps this cache fresh on every selection / cursor
+// change via `setMainAppleAssistTarget`; the Apple Assist
+// window can pull the value lazily on Apply or subscribe
+// to `MAIN_APPLE_ASSIST_TARGET_CHANGED_EVENT` for live
+// updates. See
+// `src/features/editor/aiEditTarget.ts` and
+// `docs/apple-local-assist-writing-companion-plan.md`.
+export async function getMainAppleAssistTarget(): Promise<
+  import("../../types").AppleAssistTargetSnapshot | null
+> {
+  if (!isTauriRuntime()) {
+    return null;
+  }
+
+  try {
+    return await invoke<import("../../types").AppleAssistTargetSnapshot | null>(
+      "get_main_apple_assist_target",
+    );
+  } catch (err) {
+    console.warn("Failed to read main apple assist target", err);
+    return null;
+  }
+}
+
+export async function setMainAppleAssistTarget(
+  target: import("../../types").AppleAssistTargetSnapshot,
+): Promise<void> {
+  if (!isTauriRuntime()) {
+    return;
+  }
+
+  try {
+    await invoke("set_main_apple_assist_target", { target });
+  } catch (err) {
+    console.warn("Failed to push main apple assist target", err);
+  }
+}

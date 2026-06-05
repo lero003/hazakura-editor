@@ -14,8 +14,8 @@ Rust supervisor は v0.12.0 の時点で `binaries/hazakura-apple-assist-helper-
 - **expected helper filename**: `hazakura-apple-assist-helper-<rust-target-triple>` (例: `hazakura-apple-assist-helper-aarch64-apple-darwin`)。`scripts/build-apple-assist-helper-fixture.sh` の DEST 命名と一致させる (Tauri sidecar convention)。
 - **app bundle 内配置**: Tauri 2 の `bundle.externalBin` 承認後は、macOS app bundle の `Contents/MacOS/` 直下に helper がコピーされる。Tauri は sidecar を `Contents/MacOS/<name>-<triple>` として配置し、production runtime は `std::env::current_exe()` の親ディレクトリを起点に `<name>-<triple>` を探す形が standard。Rust 側は `current_exe().parent()` 配下を探索する resolver を `helper_path()` 内に持つ。
 - **dev / test / packaged build の違い**:
-  - **dev** (`npm run tauri dev`): `tauri.conf.json` の `bundle.externalBin` が未設定なので、Tauri は helper を `Contents/MacOS/` にコピーしない。fixture binary は手動で `binaries/hazakura-apple-assist-helper-<triple>` に置いて `cargo test` から `store_with_helper_path` で注入する経路しか動かない (現状の slice 8-14 と同一)。dev で supervisor 経路を end-to-end で試したい場合も `store_with_helper_path` を使う (production `Default` は env var を読まないため、明示的なテスト fixture 注入が必要)。
-  - **test** (`cargo test --manifest-path src-tauri/Cargo.toml`): `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE` env var で fixture binary path を渡し、`store_with_helper_path` 経由で supervisor に注入。production `Default` は env var を読まない (slice 14 までの回帰テストで固定)。
+  - **dev** (`npm run tauri dev`): `tauri.conf.json` の `bundle.externalBin` が未設定なので、Tauri は helper を `Contents/MacOS/` にコピーしない。fixture binary は手動で `binaries/hazakura-apple-assist-helper-<triple>` に置いて `cargo test` から `store_with_helper_path` で注入する経路しか動かない (現状の slice 8-18 と同一)。dev で supervisor 経路を end-to-end で試したい場合も `store_with_helper_path` を使う (production `Default` は env var を読まないため、明示的なテスト fixture 注入が必要)。
+  - **test** (`cargo test --manifest-path src-tauri/Cargo.toml`): `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE` env var で fixture binary path を渡し、`store_with_helper_path` 経由で supervisor に注入。production `Default` は env var を読まない (slice 14+ の回帰テストで固定)。
   - **packaged build** (DMG preview / App Store build / developer build): `bundle.externalBin` が `tauri.conf.json` に追加され、Tauri が `Contents/MacOS/hazakura-apple-assist-helper-<triple>` を app bundle に同梱する。production `helper_path()` が `current_exe().parent()` 配下の該当 filename を探す。これが gate-flip 後の正式経路。
 - **missing helper 時の error message**: 現状の `Err("Apple Assist helper is not configured for this build.")` を `Err("Apple Assist helper binary 'hazakura-apple-assist-helper-<triple>' was not found next to the running executable: <full-path>.")` のように "どこを探して、見つからなかった" を含む形に拡張する。packaged build で `externalBin` を間違って外した / build artifact が壊れた / 別 OS のバイナリを誤って同梱した、を運用時にデバッグしやすくする。
 - **App Store sandbox / signing / notarization に入る前の確認項目**: 末尾の "Pre-flight checklist" を参照。
@@ -63,7 +63,7 @@ Rust supervisor は v0.12.0 の時点で `binaries/hazakura-apple-assist-helper-
 | packaged build (developer build) | developer-signed 配布 | 同上 | 同上 | n/a |
 | packaged build (App Store) | Mac App Store 提出 | 同上 + 公証 / signing | 同上 | n/a |
 
-**現状 (slice 14 まで)**: dev / test / packaged build のいずれも production `helper_path()` は `Err` を返す。supervisor が Tauri command body から呼ばれるのは gate-flip スライスで、そのときは packaged build の経路だけ production 経路として動く想定。dev / test では `store_with_helper_path` 経由 (test fixture) または明示的な fixture 配置 (dev) を継続する。
+**現状 (slice 18 まで)**: dev / test / packaged build のいずれも production `helper_path()` は `Err` を返す。supervisor が Tauri command body から呼ばれるのは gate-flip スライスで、そのときは packaged build の経路だけ production 経路として動く想定。dev / test では `store_with_helper_path` 経由 (test fixture) または明示的な fixture 配置 (dev) を継続する。
 
 ## Missing helper 時の error message 設計
 
@@ -99,7 +99,7 @@ gate-flip 承認 (順序 14 相当) → `tauri.conf.json` の `bundle.externalBi
 
 ## 参照
 
-- `docs/apple-local-assist-rust-supervisor-plan.md` — supervisor 実装本体 (slice 8-14)
+- `docs/apple-local-assist-rust-supervisor-plan.md` — supervisor 実装本体 (slice 8-18)
 - `docs/apple-local-assist-live-helper-plan.md` — live mode 設計 / Swift 側
 - `docs/apple-local-assist-distribution-plan.md` — "Official Information Confirmed" / 全体方針
 - `docs/apple-local-assist-v0.12-design-review.md` — gate-default-hidden 契約
