@@ -38,8 +38,8 @@
 use serde::{Deserialize, Serialize};
 use std::io::{BufRead, BufReader, Write};
 use std::process::{Child, ChildStdin, ChildStdout, Command, Stdio};
-use std::sync::atomic::{AtomicU32, Ordering};
-use std::sync::Mutex;
+use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+use std::sync::{Arc, Condvar, Mutex};
 use std::time::Duration;
 
 /// Maximum number of consecutive helper failures before the
@@ -52,11 +52,9 @@ const COOLDOWN_DURATION: Duration = Duration::from_secs(300);
 /// Per-request timeout. The Swift helper in fixture mode returns
 /// in <100ms; live mode will be a few seconds. 15s gives plenty
 /// of headroom while still surfacing a stuck helper quickly.
-/// Enforced by a future slice that adds a worker-thread channel
-/// around `read_line`; the `std::process::ChildStdout::read_line`
-/// path used today does not enforce it. Kept as a const so the
-/// budget is one place to change.
-#[allow(dead_code)]
+/// Enforced by a watchdog thread that kills the helper child if
+/// `read_line` is still blocked after this duration; the kill is
+/// what unblocks the read.
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(15);
 
 /// The store is held by Tauri via `tauri::Builder::manage(...)`.
@@ -77,10 +75,27 @@ pub(crate) struct AppleAssistHelperStore {
     // for the resolved-path plan.
     #[cfg(test)]
     helper_path_override: Option<std::path::PathBuf>,
+    // Test-only timeout override. Production code always uses
+    // `REQUEST_TIMEOUT`. Tests that need to exercise the timeout
+    // path without waiting 15s set this to a small duration via
+    // `with_timeout_override`. Gated to `cfg(test)` so the
+    // production lib build cannot accidentally shorten the
+    // timeout.
+    #[cfg(test)]
+    timeout_override: Option<Duration>,
+    // Test-only handle to the current failure counter. Used by
+    // protocol-violation regression tests to assert that a
+    // `WireEnvelope` mismatch counted as a failure.
+    #[cfg(test)]
+    consecutive_failures_for_test: AtomicU32,
 }
 
 struct AppleAssistHelperInner {
-    child: Child,
+    // Wrapped in Arc<Mutex<>> so the watchdog thread can kill
+    // the child on timeout while the main thread holds the
+    // outer `inner` mutex. Without this, the main thread's
+    // blocking `read_line` would have no way to be unblocked.
+    child: Arc<Mutex<Child>>,
     stdin: ChildStdin,
     stdout: BufReader<ChildStdout>,
 }
@@ -93,6 +108,10 @@ impl Default for AppleAssistHelperStore {
             cooldown_started_at: Mutex::new(None),
             #[cfg(test)]
             helper_path_override: None,
+            #[cfg(test)]
+            timeout_override: None,
+            #[cfg(test)]
+            consecutive_failures_for_test: AtomicU32::new(0),
         }
     }
 }
@@ -100,15 +119,59 @@ impl Default for AppleAssistHelperStore {
 impl Drop for AppleAssistHelperStore {
     fn drop(&mut self) {
         if let Ok(mut guard) = self.inner.lock() {
-            if let Some(mut inner) = guard.take() {
-                let _ = inner.child.kill();
-                let _ = inner.child.wait();
+            if let Some(inner) = guard.take() {
+                Self::kill_child(&inner.child);
             }
         }
     }
 }
 
 impl AppleAssistHelperStore {
+    /// Kill the child process via the shared `Arc<Mutex<Child>>`
+    /// and reap it. Best-effort: kill/wait errors are swallowed
+    /// because the caller is already on the failure path.
+    fn kill_child(child: &Arc<Mutex<Child>>) {
+        if let Ok(mut child) = child.lock() {
+            let _ = child.kill();
+            let _ = child.wait();
+        }
+    }
+
+    /// Test-only accessor for the current consecutive-failure
+    /// count. Mirrors what `record_failure` / `record_success`
+    /// maintain in `consecutive_failures`, but is a separate
+    /// atomic so tests do not have to race the supervisor's own
+    /// atomic loads. They are updated together inside
+    /// `record_failure` / `record_success`.
+    #[cfg(test)]
+    pub(crate) fn consecutive_failures_for_test(&self) -> u32 {
+        self.consecutive_failures_for_test.load(Ordering::SeqCst)
+    }
+
+    /// Test-only builder: set a custom request timeout for this
+    /// store. Used by timeout regression tests so they do not
+    /// have to wait 15s for the production `REQUEST_TIMEOUT`.
+    /// Gated to `cfg(test)` so the production lib build cannot
+    /// accidentally shorten the timeout.
+    #[cfg(test)]
+    pub(crate) fn with_timeout_override(mut self, timeout: Duration) -> Self {
+        self.timeout_override = Some(timeout);
+        self
+    }
+
+    /// Test-only accessor: returns `true` if the store currently
+    /// has a spawned helper child. Used by timeout regression
+    /// tests to assert that the watchdog killed the child and
+    /// the inner slot is `None` (so the next call respawns).
+    /// Gated to `cfg(test)`.
+    #[cfg(test)]
+    pub(crate) fn inner_is_empty(&self) -> bool {
+        match self.inner.lock() {
+            Ok(guard) => guard.is_none(),
+            Err(_) => true,
+        }
+    }
+
     /// Returns the path the supervisor will spawn, or an error
     /// if no helper is available.
     ///
@@ -140,10 +203,22 @@ impl AppleAssistHelperStore {
         Err("Apple Assist helper is not configured for this build.".to_string())
     }
 
+    /// The timeout that the current call should use. Production
+    /// always uses `REQUEST_TIMEOUT`. Tests that build a store
+    /// via `with_timeout_override` get their value.
+    fn effective_timeout(&self) -> Duration {
+        #[cfg(test)]
+        {
+            if let Some(t) = self.timeout_override {
+                return t;
+            }
+        }
+        REQUEST_TIMEOUT
+    }
+
     fn reset_locked(&self, inner_slot: &mut Option<AppleAssistHelperInner>) {
-        if let Some(mut inner) = inner_slot.take() {
-            let _ = inner.child.kill();
-            let _ = inner.child.wait();
+        if let Some(inner) = inner_slot.take() {
+            Self::kill_child(&inner.child);
         }
     }
 
@@ -184,6 +259,7 @@ impl AppleAssistHelperStore {
                 }
             });
         }
+        let child = Arc::new(Mutex::new(child));
         *inner_slot = Some(AppleAssistHelperInner {
             child,
             stdin,
@@ -193,13 +269,10 @@ impl AppleAssistHelperStore {
     }
 
     fn round_trip_locked(
-        inner_slot: &mut Option<AppleAssistHelperInner>,
+        inner: &mut AppleAssistHelperInner,
         request: &WireRequest<'_>,
+        timeout: Duration,
     ) -> Result<WireEnvelope, String> {
-        let inner = inner_slot
-            .as_mut()
-            .ok_or_else(|| "Apple Assist helper is not running.".to_string())?;
-
         let serialized = serde_json::to_string(request)
             .map_err(|e| format!("Failed to serialize helper request: {e}"))?;
         inner
@@ -215,14 +288,74 @@ impl AppleAssistHelperStore {
             .flush()
             .map_err(|e| format!("Failed to flush helper stdin: {e}"))?;
 
+        // Spawn a watchdog that will kill the child if the main
+        // thread is still blocked on `read_line` after `timeout`.
+        // The kill is what unblocks `read_line` — closing the
+        // child's stdout pipe causes the read to return Err or
+        // Ok(0) depending on the platform.
+        //
+        // Coordination: the main thread sets `done = true` and
+        // notifies the Condvar after read_line returns. The
+        // watchdog wakes up, sees the flag, and exits without
+        // killing. The `timed_out` atomic distinguishes "killed by
+        // watchdog" (timeout) from "child exited on its own" (EOF
+        // / IO error).
+        let done_pair = Arc::new((Mutex::new(false), Condvar::new()));
+        let done_pair_w = done_pair.clone();
+        let child_arc = inner.child.clone();
+        let timed_out = Arc::new(AtomicBool::new(false));
+        let timed_out_w = timed_out.clone();
+
+        let watchdog = std::thread::Builder::new()
+            .name("apple-assist-supervisor-watchdog".to_string())
+            .spawn(move || {
+                let (lock, cvar) = &*done_pair_w;
+                let mut done = lock.lock().expect("watchdog lock");
+                let (next_done, _) = cvar
+                    .wait_timeout(done, timeout)
+                    .expect("watchdog wait_timeout");
+                done = next_done;
+                if !*done {
+                    timed_out_w.store(true, Ordering::SeqCst);
+                    Self::kill_child(&child_arc);
+                }
+            })
+            .map_err(|e| format!("Failed to spawn watchdog thread: {e}"))?;
+
         let mut line = String::new();
-        inner
-            .stdout
-            .read_line(&mut line)
-            .map_err(|e| format!("Failed to read helper response: {e}"))?;
+        let read_result = inner.stdout.read_line(&mut line);
+
+        // Signal the watchdog that read_line returned. The
+        // watchdog will exit without killing if it had not
+        // already fired.
+        {
+            let (lock, cvar) = &*done_pair;
+            let mut done = lock.lock().expect("watchdog signal lock");
+            *done = true;
+            cvar.notify_all();
+        }
+        // Join the watchdog so it does not outlive this call.
+        // If the watchdog already fired and is in the middle of
+        // `kill_child`, the join waits for that to complete —
+        // which is what we want, so the child is fully reaped
+        // before we return.
+        let _ = watchdog.join();
+
+        if timed_out.load(Ordering::SeqCst) {
+            return Err(format!(
+                "Apple Assist helper timed out after {}s",
+                timeout.as_secs()
+            ));
+        }
+
         if line.is_empty() {
             return Err("Apple Assist helper closed the response stream.".to_string());
         }
+
+        if let Err(e) = read_result {
+            return Err(format!("Failed to read helper response: {e}"));
+        }
+
         serde_json::from_str(&line)
             .map_err(|e| format!("Failed to parse helper response: {e} (raw: {line:?})"))
     }
@@ -240,6 +373,11 @@ impl AppleAssistHelperStore {
 
     fn record_failure(&self) {
         let count = self.consecutive_failures.fetch_add(1, Ordering::SeqCst) + 1;
+        #[cfg(test)]
+        {
+            self.consecutive_failures_for_test
+                .store(count, Ordering::SeqCst);
+        }
         if count == CONSECUTIVE_FAILURE_LIMIT {
             if let Ok(mut started_at) = self.cooldown_started_at.lock() {
                 *started_at = Some(std::time::Instant::now());
@@ -251,6 +389,11 @@ impl AppleAssistHelperStore {
         self.consecutive_failures.store(0, Ordering::SeqCst);
         if let Ok(mut started_at) = self.cooldown_started_at.lock() {
             *started_at = None;
+        }
+        #[cfg(test)]
+        {
+            self.consecutive_failures_for_test
+                .store(0, Ordering::SeqCst);
         }
     }
 }
@@ -340,8 +483,12 @@ pub(crate) fn probe_availability_via_helper(
         store.spawn_locked(&mut guard)?;
     }
 
-    let result =
-        AppleAssistHelperStore::round_trip_locked(&mut guard, &WireRequest::ProbeAvailability);
+    let timeout = store.effective_timeout();
+    let result = AppleAssistHelperStore::round_trip_locked(
+        guard.as_mut().expect("just spawned"),
+        &WireRequest::ProbeAvailability,
+        timeout,
+    );
 
     match &result {
         Ok(WireEnvelope::Availability(_)) => store.record_success(),
@@ -390,13 +537,15 @@ pub(crate) fn generate_candidate_via_helper(
         store.spawn_locked(&mut guard)?;
     }
 
+    let timeout = store.effective_timeout();
     let result = AppleAssistHelperStore::round_trip_locked(
-        &mut guard,
+        guard.as_mut().expect("just spawned"),
         &WireRequest::GenerateCandidate {
             operation,
             selected_text,
             document_context,
         },
+        timeout,
     );
 
     match &result {
@@ -435,6 +584,8 @@ pub(crate) fn store_with_helper_path(path: std::path::PathBuf) -> AppleAssistHel
         consecutive_failures: AtomicU32::new(0),
         cooldown_started_at: Mutex::new(None),
         helper_path_override: Some(path),
+        timeout_override: None,
+        consecutive_failures_for_test: AtomicU32::new(0),
     }
 }
 
@@ -449,5 +600,7 @@ pub(crate) fn store_without_helper() -> AppleAssistHelperStore {
         consecutive_failures: AtomicU32::new(0),
         cooldown_started_at: Mutex::new(None),
         helper_path_override: None,
+        timeout_override: None,
+        consecutive_failures_for_test: AtomicU32::new(0),
     }
 }

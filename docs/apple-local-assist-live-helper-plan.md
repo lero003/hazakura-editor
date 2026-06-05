@@ -1,24 +1,25 @@
 # Apple Local Assist — Live Helper 設計メモ
 
-Status: Planning (post-slice-7)
-Scope: v0.12+ `src-helpers/apple-assist/` の fixture mode / live mode 分離方針と、live mode が乗ったときに必要な request / response / availability mapping
+Status: Implemented (slice 8-12, Foundation Models live binding のみ未着手)
+Scope: `src-helpers/apple-assist/` の fixture mode / live mode 分離方針と、live mode が乗ったときに必要な request / response / availability mapping
 Authority: Medium
 Last reviewed: 2026-06-05
 
 ## 目的
 
-`docs/apple-local-assist-distribution-plan.md` の "Official Information Confirmed" セクションで整理した Apple 公式情報をもとに、`src-helpers/apple-assist/` の live mode を実装する前に決めておく設計判断をまとめる。本スライスでは実装しない。`tauri.conf.json` / `bundle.externalBin` / `minimumSystemVersion` / signing / entitlements は触らない。
+`docs/apple-local-assist-distribution-plan.md` の "Official Information Confirmed" セクションで整理した Apple 公式情報をもとに、`src-helpers/apple-assist/` の live mode を実装する前に決めておく設計判断をまとめる。Slice 8-12 で supervisor 側 (spawn / lifecycle / timeout / protocol-violation detection) は実装済み。Swift 側の `LanguageModelSession` 接続 (live mode 本体) は未実装で、本メモはその着地条件を pin する。`tauri.conf.json` / `bundle.externalBin` / `minimumSystemVersion` / signing / entitlements は触らない。
 
-## 現状 (slice 5〜6 時点)
+## 現状 (slice 12 時点)
 
 `src-helpers/apple-assist/` は SwiftPM executable target (`HazakuraAppleAssist`)。`Package.swift` の `.debug` configuration が `-DFIXTURE_MODE` を立て、それ以外 (`release` 等) は live mode のスタブになっている。
 
-- **Wire protocol**: JSON-over-stdio。1 リクエスト 1 JSON ライン。`{"action": "probe_availability"}` または `{"action": "generate_candidate", "operation": ..., "selectedText": ..., "documentContext": ...}`。レスポンスは `{"kind": "availability"|"candidate"|"error", "value": ...}` envelope。
-- **FIXTURE_MODE の挙動**:
+- **Wire protocol** (実装済み、live 経路でも lockstep): JSON-over-stdio。1 リクエスト 1 JSON ライン。`{"action": "probe_availability"}` または `{"action": "generate_candidate", "operation": ..., "selectedText": ..., "documentContext": ...}`。レスポンスは `{"kind": "availability"|"candidate"|"error", "value": ...}` envelope。Rust 側 `serde` タグ (`tag = "kind", content = "value"`) と Swift 側 `JSONEncoder` 出力 (`kind` / `value`) が lock している。
+- **FIXTURE_MODE の挙動** (実装済み):
   - `probe_availability` → `{"kind":"availability","value":{"kind":"available","reason":null}}` (常に available を返す)
   - `generate_candidate` → `{"kind":"candidate","value":{"operation":"<op>","candidateText":"【<op-prefix>】\n<text>","modelId":"fixture:helper-v0.12","latencyMs":0}}`
-- **live mode (現状)**: Foundation Models binding 未接続のため、`probe_availability` は `unsupported`、`generate_candidate` は `deferred` error envelope を返す。
-- **Rust 側 stub (slice 1〜6)**: macOS で `Unavailable { reason: "Foundation Models binding is not yet implemented in this build." }`、non-macOS で `Unsupported` を返す。**`Available` は絶対に返さない** (gate-default-hidden 契約)。これは live mode が着地したスライスで初めて `Available` を返し始める。
+- **live mode (現状)**: Foundation Models binding 未接続のため、`probe_availability` は `unsupported`、`generate_candidate` は `deferred` error envelope を返す。Slice 13+ で `LanguageModelSession` 経路を乗せる。
+- **Rust 側 stub (slice 1-6 の Tauri command surface)**: macOS で `Unavailable { reason: "Foundation Models binding is not yet implemented in this build." }`、non-macOS で `Unsupported` を返す。**`Available` は絶対に返さない** (gate-default-hidden 契約)。これは live mode が着地したスライスで初めて `Available` を返し始める。
+- **Rust 側 supervisor (slice 8-12)**: 実装済み。`binaries/hazakura-apple-assist-helper-<triple>` を spawn して JSON line 通信 + 15s watchdog + 5 連続失敗で 5 分 cooldown + protocol violation (Candidate-on-probe / Availability-on-generate / malformed / EOF) を reset+count。`WireEnvelope::Error` (guardrail / validation / deferred / throttled) は pass-through で cooldown 集計に入れない。詳細: `docs/apple-local-assist-rust-supervisor-plan.md`。v0.12.0 では Tauri command surface から supervisor 経路を呼んでいない (gate-default-hidden 維持)。
 
 ## 設計判断
 
@@ -130,50 +131,58 @@ Apple 公式 "These errors might include guardrail violation, unsupported langua
 
 ### 6. 起動と lifecycle
 
-**現状の helper 起動 (slice 5 時点)**:
+**実装済みの helper 起動 (slice 8-12)**:
 
-- Rust 側は `Command::new("binaries/hazakura-apple-assist-helper-<triple>")` を spawn
+Rust 側 supervisor は案 B (long-lived helper) で実装済み。Swift 側の launch 経路は slice 5 のまま:
+
+- Rust 側は `Command::new("binaries/hazakura-apple-assist-helper-<triple>")` を spawn (live mode 経路が `tauri::Builder::manage` されるとき)
 - 起動トリガーは最初の `probe_apple_assist_availability` または `generate_apple_assist_candidate` 呼び出し
-- helper の終了は Tauri コマンドが完了したら即座 (1 リクエスト 1 spawn) — これが現在の stub の挙動
+- helper は long-lived: 同じ child を `AppleAssistHelperStore` の `Mutex<Option<Inner>>` に保持し、2 回目以降のリクエストは再 spawn せず stdin/stdout を使い回す
+- 失敗 (EOF / IO error / timeout / spawn 失敗 / 未知 kind / parse 失敗) で `inner` を `None` に戻し、次回呼び出しで再 spawn
+- 連続 5 回失敗で 5 分 cooldown。cooldown 中の probe / generate は即時 `Err` を返し、helper には触らない
+- 成功すると `consecutive_failures = 0` + `cooldown_started_at = None` にリセット
+- Tauri app 終了 → `AppleAssistHelperStore::drop` で `kill_child(&inner.child)` (kill_on_drop 相当)
+- stderr は別 thread で `BufReader::read_line` ループを回して drain する (helper 側のパイプ詰まり防止)
 
-**live mode での変更候補**:
-
-- 案 A: 1 リクエスト 1 spawn のまま。Foundation Models 起動コスト (~ 数百 ms) があるたびに毎回払う
-- 案 B: helper を long-lived にする。Tauri 側で `OnceCell<Child>` か `Arc<Mutex<Child>>` で保持。コマンド完了後も stdin を閉じずに次回呼び出し時に再利用
-- 案 C: Tauri 起動時に helper を warm-up spawn し、ずっと keep-alive
-
-**推奨**: 案 B。理由:
+**案 A → 案 B への変更理由 (slice 8 で確定)**:
 
 - Foundation Models のロードは初回が大きく (~数百 ms)、2 回目以降は session 再利用で速い
-- helper の stdin を keep-alive しても `isResponding` で concurrency gate すれば競合しない
-- 案 C は App Store sandbox での常駐プロセス扱いが論点 (Guideline 2.4.2 "no unrelated background processes" に近くなる)
-- 案 A は UX が悪い (候補生成ごとに 500ms 余計にかかる)
+- helper の stdin を keep-alive しても `isResponding` で concurrency gate すれば競合しない (live mode 側で将来 Swift 側に concurrency gate を入れる余地)
+- 案 C (warm-up spawn) は App Store sandbox での常駐プロセス扱いが論点 (Guideline 2.4.2 "no unrelated background processes" に近くなる) ので採用しない
 
-**実装メモ (案 B の場合)**:
+**timeout (slice 11 で実装)**:
 
-- Rust 側に `AppleAssistHelperStore` を持つ (Tauri の `.manage(...)` で State に注入)
-- `probe` と `generate` 両方の command で `State<AppleAssistHelperStore>` を受け取る
-- 内部に `Mutex<Option<Child>>` を持つ。初回は `None` → spawn。2 回目以降は `Some(child)` を再利用
-- 書き込みは stdin の 1 ライン。読み取りは stdout の 1 ラインを `BufReader::read_line` で受ける
-- timeout は `child.wait_timeout(Duration::from_secs(N))` で設ける (N は要決定、候補生成は長くて数秒)
-- stderr は読み捨て (ログは別途ファイルに書く)
-- EOF / exit / timeout で `None` に戻し、次回 spawn する
-- kill-on-drop: Tauri の State 破棄時に helper も kill する
+- `const REQUEST_TIMEOUT: Duration = Duration::from_secs(15)` (fixture 動作は <100ms、live mode で数秒かかる想定に headroom)
+- `round_trip_locked` 内で別 thread ("apple-assist-supervisor-watchdog") を `std::thread::Builder` で spawn し、`Condvar::wait_timeout` で 15s 待つ
+- タイムアウト時に `Arc<AtomicBool>` に `timed_out = true` を立て、`Arc<Mutex<Child>>` 経由で child を kill する (kill が `read_line` を unblock する)
+- main thread は `read_line` 復帰後に `done = true` + `cvar.notify_all()` → `watchdog.join()`
+- タイムアウト時 `Err(format!("Apple Assist helper timed out after {}s", timeout.as_secs()))` を返し、`consecutive_failures` を +1 して 5 回到達で cooldown 入り
+
+**stderr handling**:
+
+- supervisor 側で別 thread に `BufReader::read_line` ループを回して drain する (現状の実装)
+- 本番ログファイル (`~/Library/Logs/hazakura-editor/apple-assist-helper.log`) へのルーティングは slice 9 以降の別スライスで要実装
 
 ### 7. Concurrency policy
 
-- Tauri の command handler は async (tokio runtime 上で動く)
-- helper への書き込みは `Mutex<Option<Child>>` で直列化
+- supervisor は同期 API。`#[tauri::command] -> *_with_label` shim から呼ばれる前提
+- helper への書き込みは `Mutex<Option<AppleAssistHelperInner>>` で直列化
+- watchdog thread だけが outer mutex を bypass する (`Arc<Mutex<Child>>` 経由)
 - 1 ユーザーが複数タブで同時に "Apple Assist" を起動しても、helper 側で直列化される
-- 候補生成に 5 秒かかった場合、2 番目の呼び出しは 5 秒待つ (timeout で諦める設定)
-- 案: 2 番目を即時失敗させる (Busy) → Rust 側で "Apple Assist is busy" を出して再試行はユーザーに任せる。これも要決定
+- 候補生成に 15s 近くかかった場合、2 番目の呼び出しは timeout を待ってから自分の round trip に入る
+- busy 即時失敗 (案 A) は未実装。`is_in_flight: AtomicBool` を store に足して即時 `Err("Apple Assist is busy.")` を返す拡張で済む。Foundation Models live 経路で「待ち」が UX 的に許容できるか、本番で観察してから判断
 
-### 8. Failure state / retry
+### 8. Failure state / retry (実装済み)
 
-- helper プロセスが落ちた / 応答がない / 不正な JSON を返した → Rust 側は `None` に戻して次回 spawn し直す
-- 連続失敗 N 回で 1 度は打ち切る (N は要決定、5 回程度?)
-- 打ち切ったあとの probe は `Unavailable { reason: "Apple Assist is currently unavailable. Try again later." }` を返す
-- 打ち切り状態は一定時間 (例: 5 分) 後に自動解除
+- `consecutive_failures: AtomicU32` (SeqCst) と `cooldown_started_at: Mutex<Option<Instant>>` を `AppleAssistHelperStore` が持つ
+- 失敗の種類ごとの扱い:
+  - **process-level failure** (EOF / IO error / timeout / spawn 失敗 / 未知 kind / parse 失敗 / 期待外の envelope 種) → `reset_locked` + `record_failure`
+  - **WireEnvelope::Error** (helper 自身が guardrail / validation / deferred / throttled を返した) → pass-through unchanged, no count, no reset
+- 連続 5 回失敗で cooldown 状態に遷移 (`cooldown_started_at` を打刻)
+- cooldown 中: probe / generate は即時 `Err("Apple Assist is currently unavailable. Try again in a moment.")` を返し、helper には触らない
+- 5 分経過 → `cooldown_started_at.elapsed() >= 300s` で cooldown 解除。次の 1 回の試行で再カウントされる (連続 5 回失敗で再 cooldown に入る可能性はある)
+- 1 回でも成功したら `consecutive_failures = 0` + `cooldown_started_at = None` にリセット
+- 5 回失敗で再 cooldown に入ることを、テスト (`supervisor_does_not_count_helper_error_envelopes_as_failures`) で pin している
 
 ### 9. テスト方針
 
@@ -206,24 +215,30 @@ Apple 公式 "These errors might include guardrail violation, unsupported langua
 
 ## 実装 plan
 
-| 順番 | 内容 | 影響範囲 |
-|---|---|---|
-| 1 | `IntentAllowlist.swift` の live mode 実装 (operation → instruction 文字列マッピング) | Swift |
-| 2 | `AvailabilityProbe.swift` の live mode 実装 (4 状態 mapping) | Swift |
-| 3 | `GenerateCandidate.swift` の live mode 実装 (LanguageModelSession) | Swift |
-| 4 | `Package.swift` の `linkerFlags` 設定 (FoundationModels framework 自動 link 確認) | SwiftPM |
-| 5 | `scripts/build-apple-assist-helper-fixture.sh` に `release` build ターゲットを追加 (明示承認後) | script |
-| 6 | Rust 側 `AppleAssistHelperStore` 導入 (案 B) | Rust |
-| 7 | `useAppleAssistAvailability` の error handling を `Unavailable { reason: "..." }` 形に拡張 (probe 失敗時 detail を表示) | TS |
-| 8 | `useAppleAssistCandidate` の error handling を error envelope kind ごとに分類 | TS |
-| 9 | `docs/smoke-checklist.md` の Apple Local Assist セクションに live mode 項目追加 | doc |
+| 順番 | 内容 | 影響範囲 | 状態 |
+|---|---|---|---|
+| 1 | `IntentAllowlist.swift` の live mode 実装 (operation → instruction 文字列マッピング) | Swift | pending (gate-flip) |
+| 2 | `AvailabilityProbe.swift` の live mode 実装 (4 状態 mapping) | Swift | pending (gate-flip) |
+| 3 | `GenerateCandidate.swift` の live mode 実装 (LanguageModelSession) | Swift | pending (gate-flip) |
+| 4 | `Package.swift` の `linkerFlags` 設定 (FoundationModels framework 自動 link 確認) | SwiftPM | pending (gate-flip) |
+| 5 | `scripts/build-apple-assist-helper-fixture.sh` に `release` build ターゲットを追加 (明示承認後) | script | pending (明示承認) |
+| 6 | Rust 側 `AppleAssistHelperStore` 導入 (案 B) | Rust | done slice 8 |
+| 7 | supervisor に `REQUEST_TIMEOUT = 15s` watchdog を追加 | Rust | done slice 11 |
+| 8 | supervisor に consecutive_failures / cooldown_started_at / protocol-violation detection を追加 | Rust | done slice 9 / 12 |
+| 9 | `src-tauri/src/tests/apple_assist_supervisor.rs` 20 ケース (fixture + timeout script + protocol-violation script) | Rust test | done slice 9-12 |
+| 10 | supervisor / live helper plan の docs sync | doc | done slice 13 |
+| 11 | `tauri::Builder::manage(AppleAssistHelperStore::default())` を `lib.rs` に追加 | Rust | pending (gate-flip スライス) |
+| 12 | `probe_apple_assist_availability_with_platform` を `probe_availability_via_helper` 経由に切替 (gate-default-hidden 解除) | Rust | pending (gate-flip スライス、明示承認待ち) |
+| 13 | `useAppleAssistAvailability` の error handling を `Unavailable { reason: "..." }` 形に拡張 (probe 失敗時 detail を表示) | TS | pending (gate-flip) |
+| 14 | `useAppleAssistCandidate` の error handling を error envelope kind ごとに分類 | TS | pending (gate-flip) |
+| 15 | `docs/smoke-checklist.md` の Apple Local Assist セクションに live mode 項目追加 | doc | pending (gate-flip) |
 
 ## Open questions (明示承認待ち)
 
-- **案 B (long-lived helper) vs 案 A (1 request 1 spawn)**: UX 要件で判断。案 B は helper 起動コストを 1 回目だけにできるが、`isResponding` ベースの concurrency gate の挙動を本番で観察してから確定
-- **2 番目の同時呼び出しの扱い**: busy 即時失敗 vs 待ち
-- **timeout 値**: 候補生成が LLM 次第なので 5 秒 / 10 秒 / 30 秒のどれを既定にするか
-- **連続失敗の上限とクールダウン**: 5 回 / 5 分、等の数値
+- **gate-flip の閾値と手順**: Foundation Models live binding (順序 1-4) と supervisor 経路の wire 化 (11 のみ) をどのスライスで行うか
+- **`busy` 即時失敗 (案 A) を導入するか**: 現状は 2 番目の呼び出しが 1 番目の完了を待つ。Foundation Models live 経路で「待ち」が UX 的に許容できるか、本番で観察してから判断
+- **timeout 値 15s の妥当性**: live mode で 15s を超える候補生成 (長文 proofread など) があれば上げる
+- **cooldown 5 分 / 5 連続失敗の妥当性**: live mode で運用してから再評価
 - **in-process 移行**: 今回 sidecar 継続を決めたが、App Store sandbox での sidecar spawn が想定外の挙動をした場合は再評価
 - **streaming vs single-shot**: `streamResponse` の UX メリット (候補が段階的に表示される) と実装コスト (Rust 側で partial をどう Review Desk に渡すか) のトレードオフ
 
@@ -231,6 +246,9 @@ Apple 公式 "These errors might include guardrail violation, unsupported langua
 
 - `docs/apple-local-assist-distribution-plan.md` — "Official Information Confirmed" セクション
 - `docs/apple-local-assist-v0.12-design-review.md` — "残った不確実性" / 設計選択
+- `docs/apple-local-assist-rust-supervisor-plan.md` — 実装済み Rust supervisor の詳細 (slice 8-12)
 - `src-helpers/apple-assist/Sources/HazakuraAppleAssist/*.swift` — 現状の fixture / live コード
-- `src-tauri/src/commands/apple_assist.rs` — Rust 側 stub 実装
+- `src-tauri/src/commands/apple_assist.rs` — Tauri command surface (slice 1-6 stub)
+- `src-tauri/src/commands/apple_assist_supervisor.rs` — 実装済み supervisor (slice 8-12)
+- `src-tauri/src/tests/apple_assist_supervisor.rs` — 20 ケースの integration test
 - `scripts/build-apple-assist-helper-fixture.sh` — fixture build script

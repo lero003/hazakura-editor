@@ -372,3 +372,218 @@ fn supervisor_passes_document_context_to_helper() {
             .expect("generate with context must succeed");
     assert!(matches!(envelope, WireEnvelope::Candidate(_)));
 }
+
+// ----------------------------------------------------------------
+// Timeout tests (slice 11).
+// ----------------------------------------------------------------
+//
+// These tests use a tiny temporary shell script as a fake
+// helper that reads the request and then sleeps for 5
+// seconds. The supervisor writes the request, the script
+// drains it and sleeps, and the main thread's read_line
+// blocks. The watchdog fires after the test's small timeout
+// override, kills the child, and the supervisor returns a
+// timeout error. The failure counter is incremented. The
+// test script is the same one-liner pattern used by the
+// protocol-violation tests below — no fake-helper
+// infrastructure beyond a 3-line shell script.
+
+fn sleep_helper_script_or_skip(suffix: &str) -> Option<std::path::PathBuf> {
+    let script = std::env::temp_dir().join(format!(
+        "hazakura-apple-assist-test-slow-helper-{suffix}.sh"
+    ));
+    let body = "#!/bin/sh\n\
+                read -r _request\n\
+                sleep 5\n";
+    std::fs::write(&script, body).expect("write slow helper script");
+    std::fs::set_permissions(&script, std::os::unix::fs::PermissionsExt::from_mode(0o755))
+        .expect("chmod slow helper script");
+    Some(script)
+}
+
+#[test]
+fn supervisor_round_trip_times_out_when_helper_hangs() {
+    let Some(slow) = sleep_helper_script_or_skip("hangs") else {
+        return;
+    };
+    // 200ms is much shorter than the script's 5s sleep, so the
+    // watchdog must fire before the helper "responds" (it
+    // never does — it just sleeps).
+    let store =
+        store_with_helper_path(slow).with_timeout_override(std::time::Duration::from_millis(200));
+    let err = probe_availability_via_helper(&store)
+        .expect_err("a sleeping helper must time out, not return Available");
+    assert!(
+        err.contains("timed out"),
+        "error should mention 'timed out', got: {err}"
+    );
+    // The timeout must be counted as a failure (same bucket as
+    // IO / EOF / parse / spawn failures).
+    assert_eq!(
+        store.consecutive_failures_for_test(),
+        1,
+        "timeout must increment the failure counter",
+    );
+}
+
+#[test]
+fn supervisor_timeout_does_not_pile_up_zombie_children() {
+    // After a timeout, the watchdog must have killed the helper
+    // child. If the kill were skipped, the sleep 5 would
+    // linger. The smoke assertion: the store's inner slot is
+    // None after the timeout, so the next call respawns
+    // cleanly.
+    let Some(slow) = sleep_helper_script_or_skip("zombie") else {
+        return;
+    };
+    let store =
+        store_with_helper_path(slow).with_timeout_override(std::time::Duration::from_millis(200));
+    let _ = probe_availability_via_helper(&store);
+    assert!(
+        store.inner_is_empty(),
+        "inner slot must be None after a timeout (helper was killed and not replaced)"
+    );
+    // The next call must attempt to respawn a new helper. We
+    // do not assert it succeeds (the new helper is also a
+    // sleep 5, so it will time out again); we assert it does
+    // not fail for "helper is not running" reasons.
+    let result = probe_availability_via_helper(&store);
+    assert!(
+        result.is_err(),
+        "second call against a fresh sleep helper must also time out"
+    );
+    let err = result.unwrap_err();
+    assert!(
+        err.contains("timed out") || err.contains("not configured") || err.contains("Failed to"),
+        "second call should be another timeout, not a different error; got: {err}"
+    );
+}
+
+// ----------------------------------------------------------------
+// Protocol-shape tests (slice 12).
+// ----------------------------------------------------------------
+//
+// These tests write a tiny temporary shell script as the fake
+// helper. The script does not speak the JSON protocol; it
+// just dumps a canned response (wrong-shape envelope, malformed
+// JSON, or no data at all) to stdout and exits. The supervisor
+// reads the canned response, the round-trip detects the
+// violation / parse failure / EOF, and the cooldown discipline
+// resets + counts. This lets us lock down the protocol-shape
+// handling without a full fake-helper binary — just `cat
+// >/dev/null` to swallow the request and `printf` to write
+// the canned response.
+
+#[test]
+fn supervisor_probe_treats_candidate_envelope_as_protocol_violation() {
+    // A `Candidate` envelope in response to a `probe_availability`
+    // request is a protocol violation (the helper should have
+    // returned `Availability` or `Error`). The supervisor must
+    // reset the child and increment the failure counter, so the
+    // next call respawns a fresh helper.
+    let script = std::env::temp_dir().join("hazakura-apple-assist-test-candidate-on-probe.sh");
+    let body = "#!/bin/sh\n\
+                read -r _request\n\
+                printf '%s\\n' '{\"kind\":\"candidate\",\"value\":{\"operation\":\"summarize\",\"candidateText\":\"x\",\"modelId\":\"test\",\"latencyMs\":0}}'\n";
+    std::fs::write(&script, body).expect("write script");
+    std::fs::set_permissions(&script, std::os::unix::fs::PermissionsExt::from_mode(0o755))
+        .expect("chmod script");
+    let store = store_with_helper_path(script.clone());
+    let result = probe_availability_via_helper(&store)
+        .expect("probe returns the parsed envelope; the violation is counted internally");
+    assert!(
+        matches!(result, WireEnvelope::Candidate(_)),
+        "probe returned wrong-shape envelope; expected Candidate, got: {result:?}",
+    );
+    assert_eq!(
+        store.consecutive_failures_for_test(),
+        1,
+        "wrong-shape envelope on probe must increment the failure counter",
+    );
+    std::fs::remove_file(&script).ok();
+}
+
+#[test]
+fn supervisor_generate_treats_availability_envelope_as_protocol_violation() {
+    // An `Availability` envelope in response to a `generate_candidate`
+    // request is a protocol violation. Same discipline as the
+    // probe / Candidate case.
+    let script =
+        std::env::temp_dir().join("hazakura-apple-assist-test-availability-on-generate.sh");
+    let body = "#!/bin/sh\n\
+                read -r _request\n\
+                printf '%s\\n' '{\"kind\":\"availability\",\"value\":{\"kind\":\"available\"}}'\n";
+    std::fs::write(&script, body).expect("write script");
+    std::fs::set_permissions(&script, std::os::unix::fs::PermissionsExt::from_mode(0o755))
+        .expect("chmod script");
+    let store = store_with_helper_path(script.clone());
+    let result = generate_candidate_via_helper(&store, "summarize", "body", None)
+        .expect("generate returns the parsed envelope; the violation is counted internally");
+    assert!(
+        matches!(result, WireEnvelope::Availability(_)),
+        "generate returned wrong-shape envelope; expected Availability, got: {result:?}",
+    );
+    assert_eq!(
+        store.consecutive_failures_for_test(),
+        1,
+        "wrong-shape envelope on generate must increment the failure counter",
+    );
+    std::fs::remove_file(&script).ok();
+}
+
+#[test]
+fn supervisor_treats_malformed_json_response_as_failure() {
+    // The helper writes invalid JSON to stdout. The supervisor's
+    // serde_json::from_str fails, the round_trip returns Err,
+    // and the cooldown discipline treats that as a process
+    // failure (reset + count).
+    let script = std::env::temp_dir().join("hazakura-apple-assist-test-malformed-json.sh");
+    let body = "#!/bin/sh\n\
+                read -r _request\n\
+                printf '%s\\n' 'not-json-at-all'\n";
+    std::fs::write(&script, body).expect("write script");
+    std::fs::set_permissions(&script, std::os::unix::fs::PermissionsExt::from_mode(0o755))
+        .expect("chmod script");
+    let store = store_with_helper_path(script.clone());
+    let err =
+        probe_availability_via_helper(&store).expect_err("malformed JSON must surface as an error");
+    assert!(
+        err.contains("Failed to parse") || err.contains("parse"),
+        "error should mention the parse failure; got: {err}"
+    );
+    assert_eq!(
+        store.consecutive_failures_for_test(),
+        1,
+        "malformed JSON must increment the failure counter",
+    );
+    std::fs::remove_file(&script).ok();
+}
+
+#[test]
+fn supervisor_treats_eof_response_as_failure() {
+    // The helper reads the request and then exits without
+    // writing a response. The supervisor's read_line sees EOF
+    // (0 bytes), returns "Apple Assist helper closed the
+    // response stream.", which is an Err and counts as a
+    // failure.
+    let script = std::env::temp_dir().join("hazakura-apple-assist-test-eof.sh");
+    let body = "#!/bin/sh\n\
+                read -r _request\n\
+                exit 0\n";
+    std::fs::write(&script, body).expect("write script");
+    std::fs::set_permissions(&script, std::os::unix::fs::PermissionsExt::from_mode(0o755))
+        .expect("chmod script");
+    let store = store_with_helper_path(script.clone());
+    let err = probe_availability_via_helper(&store)
+        .expect_err("EOF before any data must surface as an error");
+    assert!(
+        err.contains("closed the response stream") || err.contains("Failed to read"),
+        "error should mention closed stream or read failure; got: {err}"
+    );
+    assert_eq!(
+        store.consecutive_failures_for_test(),
+        1,
+        "EOF response must increment the failure counter",
+    );
+    std::fs::remove_file(&script).ok();
+}

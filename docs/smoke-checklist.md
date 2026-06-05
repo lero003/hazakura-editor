@@ -160,7 +160,7 @@ Run when Agent Workbench, provider availability, terminal sizing, or Agent Windo
 
 ## Apple Local Assist (v0.12 in-progress, gate-default-hidden)
 
-Run when `src/lib/tauri/appleAssist.ts`, `src-tauri/src/commands/apple_assist.rs`, `useAppleAssistAvailability`, `useAppleAssistCandidate`, `src/lib/locale/appleAssist.ts`, or the Apple Assist command palette entries change. **No release lane includes a live Foundation Models binding yet.**
+Run when `src/lib/tauri/appleAssist.ts`, `src-tauri/src/commands/apple_assist.rs`, `src-tauri/src/commands/apple_assist_supervisor.rs`, `useAppleAssistAvailability`, `useAppleAssistCandidate`, `src/lib/locale/appleAssist.ts`, or the Apple Assist command palette entries change. **No release lane includes a live Foundation Models binding yet.**
 
 1. Confirm the default app launch does NOT show any `Apple Assist:` entry in the command palette (the probe defaults to `unsupported` and the production Rust stub does not advertise `available`).
 2. Confirm the Settings / Agent Workbench Preferences surface does not list Apple Local Assist as a CLI agent provider — it is a separate Assist Surface provider class.
@@ -168,6 +168,8 @@ Run when `src/lib/tauri/appleAssist.ts`, `src-tauri/src/commands/apple_assist.rs
 4. (Helper feasibility check, optional) Build the fixture helper with `npm run build:apple-assist-helper:fixture` and confirm: a binary is written to `binaries/hazakura-apple-assist-helper-aarch64-apple-darwin`; the smoke test prints `ok`; the helper exits 0 on stdin EOF.
 5. (Helper feasibility check, optional) Run the helper manually and feed `{"action":"probe_availability"}` on stdin; confirm the response is `{"kind":"availability","value":{"kind":"available","reason":null}}`. Feed `{"action":"generate_candidate","operation":"summarize","selectedText":"hello"}` and confirm the candidate text begins with `【要約案】`.
 6. Confirm `tauri.conf.json` still has `bundle.macOS.minimumSystemVersion` at the v0.11 value and does NOT yet declare `bundle.externalBin` for the helper (this is gated on explicit approval).
+7. (Supervisor regression, optional) Build the fixture helper (item 4) and run `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE=binaries/hazakura-apple-assist-helper-aarch64-apple-darwin cargo test apple_assist_supervisor --manifest-path src-tauri/Cargo.toml`; confirm all 20 cases pass (probe, generate, reuse, mixed sequence, timeout, protocol-violation, malformed, EOF).
+8. (Supervisor regression, optional) Confirm `cargo test --manifest-path src-tauri/Cargo.toml` passes with no `apple_assist_supervisor` cases skipped (means the fixture env var is set; unset env var must also be a clean skip, not a failure).
 
 ## Release Packaging
 
