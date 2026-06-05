@@ -2,16 +2,18 @@ import {
   RightPaneToggleControls,
   type RightPaneToggleCopy,
 } from "./RightPaneToggleControls";
-import { AgentWindowIcon } from "./Icons";
-import type { EditorTab } from "../../types";
+import { AgentWindowIcon, SparklesIcon } from "./Icons";
+import type { AssistSurfacePreference, EditorTab } from "../../types";
 
 type DocumentMetaBarProps = {
   activeDirty: boolean;
   activeTab: EditorTab | null;
   agentWorkbenchAvailable: boolean;
+  assistSurfaceActive: AssistSurfacePreference;
   diffPaneActive: boolean;
   lModeEnabled: boolean;
   onOpenAgentWindow: () => void;
+  onOpenAppleAssistWindow: () => void;
   onReviewChanges: (tab: EditorTab) => void;
   onToggleDiff: () => void;
   onToggleOutline: () => void;
@@ -26,9 +28,11 @@ export function DocumentMetaBar({
   activeDirty,
   activeTab,
   agentWorkbenchAvailable,
+  assistSurfaceActive,
   diffPaneActive,
   lModeEnabled,
   onOpenAgentWindow,
+  onOpenAppleAssistWindow,
   onReviewChanges,
   onToggleDiff,
   onToggleOutline,
@@ -39,7 +43,24 @@ export function DocumentMetaBar({
   sidePaneCopy,
 }: DocumentMetaBarProps) {
   const showDocumentSection = activeTab !== null && !lModeEnabled;
-  const showAgentSection = agentWorkbenchAvailable && !lModeEnabled;
+  const showCompanionSection =
+    !lModeEnabled &&
+    (assistSurfaceActive === "apple-local" ||
+      (assistSurfaceActive === "external-cli" && agentWorkbenchAvailable));
+  const companionCopy =
+    assistSurfaceActive === "apple-local"
+      ? {
+          icon: <SparklesIcon />,
+          label: sidePaneCopy.appleAssistWindow,
+          title: sidePaneCopy.appleAssistWindowTitle,
+          onClick: onOpenAppleAssistWindow,
+        }
+      : {
+          icon: <AgentWindowIcon />,
+          label: sidePaneCopy.agentWindow,
+          title: sidePaneCopy.agentWindowTitle,
+          onClick: onOpenAgentWindow,
+        };
 
   return (
     <div className="document-meta">
@@ -73,24 +94,26 @@ export function DocumentMetaBar({
           </section>
         </>
       ) : null}
-      {showAgentSection ? (
+      {showCompanionSection ? (
         <>
           <span className="chrome-divider" aria-hidden="true" />
           <section
             className="chrome-section chrome-section-right"
-            aria-label={sidePaneCopy.agentWindowTitle}
+            aria-label={companionCopy.title}
           >
             <button
-              aria-label={sidePaneCopy.agentWindowTitle}
+              aria-label={companionCopy.title}
               className="open-agent-window-button"
-              onClick={onOpenAgentWindow}
-              title={sidePaneCopy.agentWindowTitle}
+              onClick={companionCopy.onClick}
+              title={companionCopy.title}
               type="button"
             >
               <span className="open-agent-window-icon" aria-hidden="true">
-                <AgentWindowIcon />
+                {companionCopy.icon}
               </span>
-              <span className="open-agent-window-caption">{sidePaneCopy.agentWindow}</span>
+              <span className="open-agent-window-caption">
+                {companionCopy.label}
+              </span>
             </button>
           </section>
         </>

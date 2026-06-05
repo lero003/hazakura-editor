@@ -253,15 +253,58 @@ pub(crate) fn open_apple_assist_window<R: tauri::Runtime>(
 
     let theme = theme.unwrap_or_else(|| "dark".to_string());
 
+    show_or_create_apple_assist_window(&app, &theme)
+}
+
+#[tauri::command]
+pub(crate) fn toggle_apple_assist_window<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    app: tauri::AppHandle<R>,
+    theme: Option<String>,
+) -> Result<(), String> {
+    // Main-window chrome uses Apple Assist as a visible companion
+    // slot toggle. Menu / command-palette "open" actions still
+    // call `open_apple_assist_window` so they keep the predictable
+    // "open or focus" behavior.
+    ensure_main_window(&window)?;
+
+    if let Some(existing) = app.get_webview_window(APPLE_ASSIST_WINDOW_LABEL) {
+        if existing.is_visible().unwrap_or(false) {
+            existing
+                .hide()
+                .map_err(|err| format!("Cannot hide Apple Assist window: {err}"))?;
+            return Ok(());
+        }
+    }
+
+    let theme = theme.unwrap_or_else(|| "dark".to_string());
+    show_or_create_apple_assist_window(&app, &theme)
+}
+
+// Label-only check used by the Apple Assist toggle boundary tests.
+// The actual hide/show path needs a real Tauri window, but the
+// trust boundary is worth pinning with the same shim pattern used
+// by the other window commands.
+#[cfg(desktop)]
+#[cfg_attr(not(test), allow(dead_code))]
+pub(crate) fn toggle_apple_assist_window_with_label(label: &str) -> Result<(), String> {
+    ensure_label_is_main(label)
+}
+
+fn show_or_create_apple_assist_window<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+    theme: &str,
+) -> Result<(), String> {
     if let Some(existing) = app.get_webview_window(APPLE_ASSIST_WINDOW_LABEL) {
         // Window already open — refocus, then push the current
         // theme so the existing window catches up if the user
         // changed themes between launches. Mirrors the Agent
         // window's "refocus + resync" path.
+        let _ = existing.show();
         let _ = existing.set_focus();
-        let bg = agent_window_background_color(&theme);
+        let bg = agent_window_background_color(theme);
         let _ = existing.set_background_color(Some(bg));
-        let _ = existing.set_theme(Some(agent_window_os_theme(&theme)));
+        let _ = existing.set_theme(Some(agent_window_os_theme(theme)));
         return Ok(());
     }
 
@@ -275,14 +318,14 @@ pub(crate) fn open_apple_assist_window<R: tauri::Runtime>(
     }
 
     WebviewWindowBuilder::new(
-        &app,
+        app,
         APPLE_ASSIST_WINDOW_LABEL,
         WebviewUrl::App("apple-assist.html".into()),
     )
     .title("hazakura apple assist")
     .title_bar_style(TitleBarStyle::Transparent)
-    .background_color(agent_window_background_color(&theme))
-    .theme(Some(agent_window_os_theme(&theme)))
+    .background_color(agent_window_background_color(theme))
+    .theme(Some(agent_window_os_theme(theme)))
     // Same panel proportions as the Agent window so the two
     // surfaces feel like interchangeable companion slots. The
     // mock is intentionally a small form for rough requests; the

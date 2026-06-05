@@ -612,6 +612,20 @@ fn open_main_agent_pane_rejects_unknown_label() {
 }
 
 #[test]
+fn toggle_apple_assist_window_accepts_main_window_only() {
+    toggle_apple_assist_window_with_label(MAIN_WINDOW_LABEL)
+        .expect("main must be allowed to toggle the Apple Assist window");
+
+    let agent_err = toggle_apple_assist_window_with_label(AGENT_WINDOW_LABEL)
+        .expect_err("agent must not be allowed to toggle the Apple Assist window");
+    assert!(agent_err.contains(AGENT_WINDOW_LABEL), "{agent_err}");
+
+    let unknown_err = toggle_apple_assist_window_with_label(UNKNOWN_WINDOW_LABEL)
+        .expect_err("unknown labels must not be allowed to toggle the Apple Assist window");
+    assert!(unknown_err.contains(UNKNOWN_WINDOW_LABEL), "{unknown_err}");
+}
+
+#[test]
 fn rename_workspace_entry_rejects_agent_window_label() {
     let root = unique_label_path("rename_workspace_entry_agent");
     fs::create_dir_all(&root).expect("create root");

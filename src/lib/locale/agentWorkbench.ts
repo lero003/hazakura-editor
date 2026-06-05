@@ -2,6 +2,20 @@ import { isJapaneseMenuLanguage, type MenuLanguage } from "../../types";
 
 export type AgentWorkbenchCopy = {
   title: string;
+  surfaceHeading: string;
+  surfaceSectionLabel: string;
+  assistSurfaceControl: string;
+  assistSurfaceNone: string;
+  assistSurfaceApple: string;
+  assistSurfaceExternalCli: string;
+  assistSurfaceRestartRequired: string;
+  appleHeading: string;
+  appleSectionLabel: string;
+  appleFixtureStatus: string;
+  appleLiveStatus: string;
+  appleUnavailablePrefix: string;
+  appleUnsupportedStatus: string;
+  appleNotes: string[];
   modeHeading: string;
   modeSectionLabel: string;
   sessionHeading: string;
@@ -31,7 +45,30 @@ export type AgentWorkbenchCopy = {
 export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
   return isJapaneseMenuLanguage(lang)
     ? {
-        title: "エージェントワークベンチ",
+        title: "アシスト設定",
+        surfaceHeading: "アシストの種類",
+        surfaceSectionLabel: "外部アシストの種類",
+        assistSurfaceControl: "外部アシスト",
+        assistSurfaceNone: "使わない",
+        assistSurfaceApple: "Apple Assist",
+        assistSurfaceExternalCli: "CLI Agent",
+        assistSurfaceRestartRequired:
+          "アシストの種類は再起動後に切り替わります。",
+        appleHeading: "Apple Assist",
+        appleSectionLabel: "Apple Assist の状態と注意事項",
+        appleFixtureStatus:
+          "現在のビルドは fixture/mock です。実際の Apple Foundation Models はまだ呼び出しません。",
+        appleLiveStatus:
+          "この Mac では Apple Local Assist を利用できます。",
+        appleUnavailablePrefix:
+          "この Mac では Apple Local Assist をまだ利用できません: ",
+        appleUnsupportedStatus:
+          "この環境では Apple Local Assist はサポートされていません。",
+        appleNotes: [
+          "Apple Assist は文書の執筆補助であり、CLI Agent や汎用チャットではありません。",
+          "本文への変更は未保存の AI edit transaction として記録し、差分で確認できます。",
+          "自動保存、背景での書き換え、ワークスペース全体の解析は行いません。",
+        ],
         modeHeading: "モード",
         modeSectionLabel: "エージェントモード",
         sessionHeading: "セッション",
@@ -69,7 +106,29 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
           "エージェントワークベンチは Safe Editor モードとは別の trust boundary です。",
       }
     : {
-        title: "Agent Workbench",
+        title: "Assist Surface",
+        surfaceHeading: "Assist type",
+        surfaceSectionLabel: "External assist type",
+        assistSurfaceControl: "External assist",
+        assistSurfaceNone: "Off",
+        assistSurfaceApple: "Apple Assist",
+        assistSurfaceExternalCli: "CLI Agent",
+        assistSurfaceRestartRequired:
+          "The assist type changes after restarting hazakura editor.",
+        appleHeading: "Apple Assist",
+        appleSectionLabel: "Apple Assist status and notes",
+        appleFixtureStatus:
+          "This build is running fixture/mock mode. It does not call Apple Foundation Models yet.",
+        appleLiveStatus: "Apple Local Assist is available on this Mac.",
+        appleUnavailablePrefix:
+          "Apple Local Assist is not available yet on this Mac: ",
+        appleUnsupportedStatus:
+          "Apple Local Assist is not supported in this environment.",
+        appleNotes: [
+          "Apple Assist is document-writing help, not a CLI agent or general chat surface.",
+          "Text changes are recorded as unsaved AI edit transactions and remain reviewable through diff.",
+          "No auto-save, background rewriting, or broad workspace analysis is performed.",
+        ],
         modeHeading: "Mode",
         modeSectionLabel: "Agent mode",
         sessionHeading: "Session",

@@ -110,7 +110,7 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
             &MenuItem::with_id(
                 app,
                 MENU_AGENT_WORKBENCH,
-                label("Agent Workbench...", "エージェントワークベンチ..."),
+                label("Assist Surface...", "アシスト設定..."),
                 true,
                 None::<&str>,
             )?,
@@ -341,7 +341,7 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
                 &MenuItem::with_id(
                     app,
                     MENU_AGENT_WORKBENCH,
-                    label("Agent Workbench...", "エージェントワークベンチ..."),
+                    label("Assist Surface...", "アシスト設定..."),
                     true,
                     None::<&str>,
                 )?,
@@ -424,7 +424,7 @@ fn kana_menu_label(japanese: &'static str) -> Option<&'static str> {
         "最近使った項目はありません" => "このごろのものなし",
         "最近使ったフォルダ" => "このごろのところ",
         "設定..." => "おこのみ...",
-        "エージェントワークベンチ..." => "えーじぇんとのつくゑ...",
+        "アシスト設定..." => "あしすとのせってい...",
         "保存" => "たくはふ",
         "別名で保存..." => "なをかへてたくはふ...",
         "HTMLとして書き出す…" => "HTML としてしるしだす…",

@@ -24,6 +24,8 @@ export const AGENT_WORKBENCH_CONSENT_STORAGE_KEY =
   "hazakura-note-agent-workbench-consent";
 export const AGENT_WORKBENCH_PROVIDER_STORAGE_KEY =
   "hazakura-note-agent-workbench-provider";
+export const ASSIST_SURFACE_PREFERENCE_STORAGE_KEY =
+  "hazakura-note-assist-surface";
 
 // ── App Constants ──
 
@@ -107,6 +109,11 @@ export function isJapaneseMenuLanguage(language: MenuLanguage): boolean {
 }
 
 export type PreferencesDialogMode = "settings" | "agent";
+
+export type AssistSurfacePreference =
+  | "none"
+  | "apple-local"
+  | "external-cli";
 
 // ── Document Types ──
 

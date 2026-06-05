@@ -29,6 +29,7 @@ import type {
 import type {
   AgentLaunchGateState,
   AgentTerminalSize,
+  AssistSurfacePreference,
   MenuLanguage,
 } from "../../types";
 import { useAgentTerminalActions } from "./useAgentTerminalActions";
@@ -39,6 +40,7 @@ type UseAgentWorkbenchControllerOptions = {
   activeAgentSession: boolean;
   agentSession: AgentWorkbenchSession | null;
   agentTerminalSize: AgentTerminalSize | null;
+  assistSurfaceActive: AssistSurfacePreference;
   agentWorkbenchActive: boolean;
   agentWorkbenchConsent: boolean;
   agentWorkbenchProvider: AgentWorkbenchProvider;
@@ -53,6 +55,7 @@ type UseAgentWorkbenchControllerOptions = {
   setAgentWorkbenchConsent: Dispatch<SetStateAction<boolean>>;
   setAgentWorkbenchPreference: Dispatch<SetStateAction<boolean>>;
   setAgentWorkbenchProvider: Dispatch<SetStateAction<AgentWorkbenchProvider>>;
+  setAssistSurfacePreference: Dispatch<SetStateAction<AssistSurfacePreference>>;
   setAppRestartPending: Dispatch<SetStateAction<boolean>>;
   setGlobalError: Dispatch<SetStateAction<string | null>>;
   setStatus: Dispatch<SetStateAction<string>>;
@@ -63,6 +66,7 @@ export function useAgentWorkbenchController({
   activeAgentSession,
   agentSession,
   agentTerminalSize,
+  assistSurfaceActive,
   agentWorkbenchActive,
   agentWorkbenchConsent,
   agentWorkbenchProvider,
@@ -77,6 +81,7 @@ export function useAgentWorkbenchController({
   setAgentWorkbenchConsent,
   setAgentWorkbenchPreference,
   setAgentWorkbenchProvider,
+  setAssistSurfacePreference,
   setAppRestartPending,
   setGlobalError,
   setStatus,
@@ -84,12 +89,14 @@ export function useAgentWorkbenchController({
 }: UseAgentWorkbenchControllerOptions) {
   const preference = useAgentWorkbenchPreferenceActions({
     activeAgentSession,
+    assistSurfaceActive,
     agentWorkbenchActive,
     menuLanguage,
     setAgentLaunchGate,
     setAgentWorkbenchConsent,
     setAgentWorkbenchPreference,
     setAgentWorkbenchProvider,
+    setAssistSurfacePreference,
     setAppRestartPending,
     setGlobalError,
     setStatus,

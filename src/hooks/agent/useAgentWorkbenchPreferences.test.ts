@@ -4,6 +4,7 @@ import {
   AGENT_WORKBENCH_CONSENT_STORAGE_KEY,
   AGENT_WORKBENCH_ENABLED_STORAGE_KEY,
   AGENT_WORKBENCH_PROVIDER_STORAGE_KEY,
+  ASSIST_SURFACE_PREFERENCE_STORAGE_KEY,
 } from "../../types";
 import { useAgentWorkbenchPreferences } from "./useAgentWorkbenchPreferences";
 
@@ -24,6 +25,8 @@ describe("useAgentWorkbenchPreferences", () => {
     expect(result.current.agentWorkbenchConsent).toBe(false);
     expect(result.current.agentWorkbenchProvider).toBe("codex");
     expect(result.current.agentWorkbenchAvailable).toBe(false);
+    expect(result.current.assistSurfaceActive).toBe("apple-local");
+    expect(result.current.assistSurfacePreference).toBe("apple-local");
   });
 
   it("reads enabled / consent / provider from localStorage on mount", () => {
@@ -38,6 +41,8 @@ describe("useAgentWorkbenchPreferences", () => {
     expect(result.current.agentWorkbenchConsent).toBe(true);
     expect(result.current.agentWorkbenchProvider).toBe("pi");
     expect(result.current.agentWorkbenchAvailable).toBe(true);
+    expect(result.current.assistSurfaceActive).toBe("external-cli");
+    expect(result.current.assistSurfacePreference).toBe("external-cli");
   });
 
   it("treats agentWorkbenchActive as frozen at mount even after preference flips", () => {
@@ -55,13 +60,14 @@ describe("useAgentWorkbenchPreferences", () => {
     expect(result.current.agentWorkbenchActive).toBe(false);
   });
 
-  it("persists preference / consent / provider changes to localStorage", () => {
+  it("persists preference / consent / provider / assist surface changes to localStorage", () => {
     const { result } = renderHook(() => useAgentWorkbenchPreferences());
 
     act(() => {
       result.current.setAgentWorkbenchPreference(true);
       result.current.setAgentWorkbenchConsent(true);
       result.current.setAgentWorkbenchProvider("opencode");
+      result.current.setAssistSurfacePreference("none");
     });
 
     expect(
@@ -73,6 +79,21 @@ describe("useAgentWorkbenchPreferences", () => {
     expect(
       window.localStorage.getItem(AGENT_WORKBENCH_PROVIDER_STORAGE_KEY),
     ).toBe("opencode");
+    expect(
+      window.localStorage.getItem(ASSIST_SURFACE_PREFERENCE_STORAGE_KEY),
+    ).toBe("none");
+  });
+
+  it("reads explicit assist surface preference from localStorage", () => {
+    window.localStorage.setItem(
+      ASSIST_SURFACE_PREFERENCE_STORAGE_KEY,
+      "external-cli",
+    );
+
+    const { result } = renderHook(() => useAgentWorkbenchPreferences());
+
+    expect(result.current.assistSurfacePreference).toBe("external-cli");
+    expect(result.current.assistSurfaceActive).toBe("external-cli");
   });
 
   it("accepts the allowlisted providers (codex / opencode / pi / claude)", () => {

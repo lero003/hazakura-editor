@@ -9,6 +9,7 @@ import {
 } from "../../lib/tauri";
 import type {
   AgentLaunchGateState,
+  AssistSurfacePreference,
   MenuLanguage,
 } from "../../types";
 import { isJapaneseMenuLanguage } from "../../types";
@@ -30,12 +31,14 @@ import { isKanaStyle } from "../../lib/locale/_helpers";
 
 type UseAgentWorkbenchPreferenceActionsOptions = {
   activeAgentSession: boolean;
+  assistSurfaceActive: AssistSurfacePreference;
   agentWorkbenchActive: boolean;
   menuLanguage: MenuLanguage;
   setAgentLaunchGate: Dispatch<SetStateAction<AgentLaunchGateState>>;
   setAgentWorkbenchConsent: Dispatch<SetStateAction<boolean>>;
   setAgentWorkbenchPreference: Dispatch<SetStateAction<boolean>>;
   setAgentWorkbenchProvider: Dispatch<SetStateAction<AgentWorkbenchProvider>>;
+  setAssistSurfacePreference: Dispatch<SetStateAction<AssistSurfacePreference>>;
   setAppRestartPending: Dispatch<SetStateAction<boolean>>;
   setGlobalError: Dispatch<SetStateAction<string | null>>;
   setStatus: Dispatch<SetStateAction<string>>;
@@ -43,19 +46,61 @@ type UseAgentWorkbenchPreferenceActionsOptions = {
 
 export function useAgentWorkbenchPreferenceActions({
   activeAgentSession,
+  assistSurfaceActive,
   agentWorkbenchActive,
   menuLanguage,
   setAgentLaunchGate,
   setAgentWorkbenchConsent,
   setAgentWorkbenchPreference,
   setAgentWorkbenchProvider,
+  setAssistSurfacePreference,
   setAppRestartPending,
   setGlobalError,
   setStatus,
 }: UseAgentWorkbenchPreferenceActionsOptions) {
+  const updateAssistSurfacePreference = useCallback(
+    (surface: AssistSurfacePreference) => {
+      if (activeAgentSession && surface !== "external-cli") {
+        setAgentLaunchGate((currentGate) => ({
+          ...currentGate,
+          kind: "rejected",
+          message:
+            "Stop the active Agent session before changing the assist surface.",
+        }));
+        setStatus("Stop Agent session before changing assist surface");
+        return;
+      }
+
+      setAssistSurfacePreference(surface);
+      setAgentWorkbenchPreference(surface === "external-cli");
+      setAgentLaunchGate({
+        kind: "idle",
+        message: "Launch gate not checked.",
+        preflight: null,
+      });
+      setStatus(
+        assistSurfaceSelectedMessage(
+          menuLanguage,
+          surface,
+          surface === assistSurfaceActive,
+        ),
+      );
+    },
+    [
+      activeAgentSession,
+      assistSurfaceActive,
+      menuLanguage,
+      setAgentLaunchGate,
+      setAgentWorkbenchPreference,
+      setAssistSurfacePreference,
+      setStatus,
+    ],
+  );
+
   const updateAgentWorkbenchPreference = useCallback(
     (enabled: boolean) => {
       setAgentWorkbenchPreference(enabled);
+      setAssistSurfacePreference(enabled ? "external-cli" : "none");
       const matchesCurrent = enabled === agentWorkbenchActive;
       if (matchesCurrent) {
         setStatus(
@@ -75,6 +120,7 @@ export function useAgentWorkbenchPreferenceActions({
       agentWorkbenchActive,
       menuLanguage,
       setAgentWorkbenchPreference,
+      setAssistSurfacePreference,
       setStatus,
     ],
   );
@@ -144,10 +190,52 @@ export function useAgentWorkbenchPreferenceActions({
 
   return {
     restartAppForAgentMode,
+    updateAssistSurfacePreference,
     updateAgentWorkbenchConsent,
     updateAgentWorkbenchPreference,
     updateAgentWorkbenchProvider,
   };
+}
+
+function assistSurfaceSelectedMessage(
+  menuLanguage: MenuLanguage,
+  surface: AssistSurfacePreference,
+  active: boolean,
+): string {
+  if (isKanaStyle(menuLanguage)) {
+    if (active) {
+      return "この あしすとの せっていは ゆうこうです";
+    }
+    if (surface === "apple-local") {
+      return "さいきどうごに Apple Assist を つかひます";
+    }
+    if (surface === "external-cli") {
+      return "さいきどうごに CLI Agent を つかひます";
+    }
+    return "さいきどうごに そとの あしすとを つかひません";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    if (active) {
+      return "このアシスト設定は現在有効です";
+    }
+    if (surface === "apple-local") {
+      return "再起動後に Apple Assist を使います";
+    }
+    if (surface === "external-cli") {
+      return "再起動後に CLI Agent を使います";
+    }
+    return "再起動後に外部アシストを使いません";
+  }
+  if (active) {
+    return "Assist surface already active";
+  }
+  if (surface === "apple-local") {
+    return "Apple Assist will be used after restart";
+  }
+  if (surface === "external-cli") {
+    return "CLI Agent will be used after restart";
+  }
+  return "Assist surface will be off after restart";
 }
 
 function agentWorkbenchActiveMessage(menuLanguage: MenuLanguage): string {

@@ -99,6 +99,8 @@ The first external Writing Companion mock is now implemented on `main`:
 
 - the detached Apple Assist window opens from the shared external companion slot
 - Agent Window and Apple Assist Window replace rather than coexist with each other
+- Preferences now expose the shared outside companion slot as a restart-applied `Apple Assist` / `CLI Agent` / `Off` choice, with CLI Agent retaining the existing Agent Workbench restart / consent / provider boundary
+- the normal top-chrome companion button switches between Apple Assist and Agent according to the active setting for the current app launch
 - L Mode can open the companion without leaving the focused writing surface
 - rough requests apply deterministic fixture edits to the unsaved editor buffer
 - each fixture edit records an AI edit transaction and exposes a compact Diff / Discard affordance

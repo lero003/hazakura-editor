@@ -12,15 +12,13 @@ type LModeActionRailProps = {
 
 // v0.12+ Apple Local Assist Writing Companion mock (slice 3).
 // The L Mode action rail gains a third button — "Apple
-// Assist" — that opens the detached Writing Companion window
-// without leaving L Mode. L Mode is the canonical
+// Assist" — that toggles the detached Writing Companion
+// window without leaving L Mode. L Mode is the canonical
 // "writing-time" surface, so the Apple Assist shortcut belongs
 // here. The companion-slot mutual exclusion (closing the
 // Agent window when opening Apple Assist, and vice versa) is
-// enforced server-side by `open_apple_assist_window` /
-// `open_agent_window` — the button just calls the same
-// `openAppleAssistWindow(themePreference)` helper the
-// command palette and the View menu use.
+// enforced server-side by `toggle_apple_assist_window` /
+// `open_agent_window`.
 export function LModeActionRail({
   copy,
   onExitToWorkspace,

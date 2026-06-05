@@ -4,6 +4,8 @@ import { isKanaStyle } from "./_helpers";
 export type SidePaneCopy = {
   agentWindow: string;
   agentWindowTitle: string;
+  appleAssistWindow: string;
+  appleAssistWindowTitle: string;
   diffTab: string;
   diffTabTitle: string;
   fileComparison: string;
@@ -29,6 +31,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
     return {
       agentWindow: "Agent",
       agentWindowTitle: "Agent まどをひらく",
+      appleAssistWindow: "Apple Assist",
+      appleAssistWindowTitle: "Apple Assist まどを ひらく / かくす",
       diffTab: "ちがひ",
       diffTabTitle: "ちがひのまどをひらく",
       fileComparison: "ふみくらべ",
@@ -55,6 +59,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
     ? {
         agentWindow: "Agent",
         agentWindowTitle: "Agent ウィンドウを開く",
+        appleAssistWindow: "Apple Assist",
+        appleAssistWindowTitle: "Apple Assist ウィンドウを表示 / 非表示",
         diffTab: "差分",
         diffTabTitle: "差分ペインを表示",
         fileComparison: "ファイル比較",
@@ -79,6 +85,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
     : {
         agentWindow: "Agent",
         agentWindowTitle: "Open Agent window",
+        appleAssistWindow: "Apple Assist",
+        appleAssistWindowTitle: "Show or hide Apple Assist window",
         diffTab: "Diff",
         diffTabTitle: "Show diff pane",
         fileComparison: "File comparison",

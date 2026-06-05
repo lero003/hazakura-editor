@@ -9,6 +9,7 @@ describe("useAgentWorkbenchController", () => {
         activeAgentSession: false,
         agentSession: null,
         agentTerminalSize: null,
+        assistSurfaceActive: "apple-local",
         agentWorkbenchActive: false,
         agentWorkbenchConsent: false,
         agentWorkbenchProvider: "claude",
@@ -23,6 +24,7 @@ describe("useAgentWorkbenchController", () => {
         setAgentWorkbenchConsent: vi.fn(),
         setAgentWorkbenchPreference: vi.fn(),
         setAgentWorkbenchProvider: vi.fn(),
+        setAssistSurfacePreference: vi.fn(),
         setAppRestartPending: vi.fn(),
         setGlobalError: vi.fn(),
         setStatus: vi.fn(),
@@ -30,8 +32,9 @@ describe("useAgentWorkbenchController", () => {
       }),
     );
 
-    // preference actions (4)
+    // preference actions (5)
     expect(result.current).toHaveProperty("restartAppForAgentMode");
+    expect(result.current).toHaveProperty("updateAssistSurfacePreference");
     expect(result.current).toHaveProperty("updateAgentWorkbenchConsent");
     expect(result.current).toHaveProperty("updateAgentWorkbenchPreference");
     expect(result.current).toHaveProperty("updateAgentWorkbenchProvider");

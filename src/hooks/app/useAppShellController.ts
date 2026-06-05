@@ -20,7 +20,11 @@
 // dependency wiring stay in one place.
 
 import { useCallback, useEffect, useMemo } from "react";
-import { openAgentWindow, openAppleAssistWindow } from "../../lib/tauri";
+import {
+  openAgentWindow,
+  openAppleAssistWindow,
+  toggleAppleAssistWindow,
+} from "../../lib/tauri";
 import { useAgentWorkbenchController } from "../agent/useAgentWorkbenchController";
 import { useAppleAssistAvailability } from "../agent/useAppleAssistAvailability";
 import { useAppleAssistCandidate } from "../review/useAppleAssistCandidate";
@@ -158,9 +162,12 @@ export function useAppShellController() {
     agentWorkbenchConsent,
     agentWorkbenchPreference,
     agentWorkbenchProvider,
+    assistSurfaceActive,
+    assistSurfacePreference,
     setAgentWorkbenchConsent,
     setAgentWorkbenchPreference,
     setAgentWorkbenchProvider,
+    setAssistSurfacePreference,
   } = foundation;
 
   // section: app preferences
@@ -830,10 +837,12 @@ export function useAppShellController() {
     updateAgentWorkbenchConsent,
     updateAgentWorkbenchPreference,
     updateAgentWorkbenchProvider,
+    updateAssistSurfacePreference,
   } = useAgentWorkbenchController({
     activeAgentSession,
     agentSession,
     agentTerminalSize,
+    assistSurfaceActive,
     agentWorkbenchActive,
     agentWorkbenchConsent,
     agentWorkbenchProvider,
@@ -848,6 +857,7 @@ export function useAppShellController() {
     setAgentWorkbenchConsent,
     setAgentWorkbenchPreference,
     setAgentWorkbenchProvider,
+    setAssistSurfacePreference,
     setAppRestartPending,
     setGlobalError,
     setStatus,
@@ -1222,6 +1232,9 @@ export function useAppShellController() {
     agentWorkbenchPreference,
     agentWorkbenchProvider,
     agentWorkbenchRestartRequired,
+    appleAssistAvailability,
+    assistSurfaceActive,
+    assistSurfacePreference,
     autoBackupRestoreCopy,
     autoBackupRestoreEntries: autoBackupRestore.backups,
     autoBackupRestoreError: autoBackupRestore.error,
@@ -1326,6 +1339,9 @@ export function useAppShellController() {
     onOpenAgentWindow: () => {
       void openAgentWindow(themePreference);
     },
+    onOpenAppleAssistWindow: () => {
+      void toggleAppleAssistWindow(themePreference);
+    },
     onCloseReviewDesk: closeReviewDesk,
     onCloseTab: requestCloseTab,
     onConvertEncoding: convertActiveEncoding,
@@ -1335,16 +1351,12 @@ export function useAppShellController() {
     onOpenAppleAssistFromLMode: () => {
       // v0.12+ Apple Local Assist Writing Companion mock
       // (slice 3). The L Mode action rail's Apple Assist
-      // button calls the same `openAppleAssistWindow`
-      // helper the View menu / command palette use, so
-      // companion-slot mutual exclusion is enforced
-      // server-side by the Rust command, not by the call
-      // site. `exitLModeToWorkspace` is intentionally NOT
-      // called: opening the Apple Assist window is a side
-      // surface, not a workspace exit, and the user can
-      // return to L Mode by closing the Apple Assist
-      // window.
-      void openAppleAssistWindow(themePreference);
+      // button calls the visible companion-slot toggle used
+      // by the main chrome. `exitLModeToWorkspace` is
+      // intentionally NOT called: showing / hiding the Apple
+      // Assist window is a side-surface action, not a
+      // workspace exit.
+      void toggleAppleAssistWindow(themePreference);
     },
     onOpenCommandPalette: openCommandPalette,
     onRunCommand: runCommand,
@@ -1436,6 +1448,7 @@ export function useAppShellController() {
     setAgentWorkbenchConsent: updateAgentWorkbenchConsent,
     setAgentWorkbenchPreference: updateAgentWorkbenchPreference,
     setAgentWorkbenchProvider: updateAgentWorkbenchProvider,
+    setAssistSurfacePreference: updateAssistSurfacePreference,
     onApplyBackup: applyBackupToActiveTab,
     onCloseRestoreBackupDialog: closeRestoreBackupDialog,
     onSelectAutoBackupEntry: selectAutoBackupEntry,

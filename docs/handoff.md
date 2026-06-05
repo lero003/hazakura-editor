@@ -20,6 +20,7 @@
 - Review found and fixed auto-backup restore safety issues: applying a backup after switching tabs now targets the compared document path, not the currently active unrelated tab; selecting a backup from L Mode exits L Mode so the Compare pane is visible before Apply.
 - L Mode escape hatches were moved out of the status bar into a separate action rail. `変更を確認` now exits L Mode and defers the disk-vs-editor diff request to the next tick so the Compare pane is visible instead of leaving only status/top-chrome state behind.
 - `v0.11.0` was tagged and published, with DMG assets re-downloaded and verified after publication.
+- Apple Local Assist companion-slot settings landed after v0.11.0: Preferences now expose the outside companion slot as restart-applied `Apple Assist` / `CLI Agent` / `Off`, and the normal top-chrome companion button switches between Apple Assist and Agent according to the active setting for the current app launch. CLI Agent keeps the existing Agent Workbench restart / consent / allowlisted provider boundary; Apple Assist remains fixture/mock only and does not call Foundation Models.
 
 ## Decisions
 
@@ -42,6 +43,7 @@
 - Apple Local Assist planning follow-up on 2026-06-05: `docs/apple-local-assist-distribution-plan.md` now records the v0.12+ direction. Apple Local Assist is framed as an Assist Surface provider class for document help, not as a CLI-agent provider or Safe Editor widening. The plan separates App Store build (Safe Editor + L Mode + Review Desk / Diff + Apple Local Assist, no External Agent Workbench) from developer builds that may keep External Agent Workbench.
 - Apple Local Assist v0.12 supervisor follow-up on 2026-06-05: Rust supervisor (helper spawn / lifecycle / JSON line 通信 / 15s watchdog / cooldown / protocol-violation detection) is implemented and the integration test loop runs 27 cases (slice 8-18, including 6 new production helper-path resolver tests). The Tauri command surface still does NOT call the supervisor — `AppleAssistHelperStore` is registered via `tauri::Builder::manage(AppleAssistHelperStore::default())` but production `helper_path()` returns `Err("Apple Assist helper is not configured for this build.")`, keeping gate-default-hidden. A production helper-path resolver skeleton (`rust_target_triple` / `bundled_helper_filename` / `resolve_bundled_helper_path`) is wired in; the resolver still returns the not-configured error and never reads the environment. The bundled-helper-path design is in `docs/apple-local-assist-helper-path-design.md` and pinpoints the gate-flip entry point. The next Apple Local Assist slices — bundled helper path / `externalBin` approval, Swift live probe, Rust command surface gate-flip, UI 4-state disclosure — each require explicit user approval.
 - Apple Local Assist UX direction follow-up on 2026-06-05: `docs/apple-local-assist-writing-companion-plan.md` now records the product pivot. Future Apple Local Assist work should prioritize an external Writing Companion / Assist Window that replaces the Agent Window slot, works with L Mode, accepts rough writing requests, and can update the unsaved editor buffer only through explicit AI edit transactions with Diff / change-history review and no auto-save. Existing selected-text command-palette slices are foundation plumbing, not the final UX.
+- Apple Local Assist companion-slot settings verification on 2026-06-06 passed: `npm run typecheck`, `npm run test` (45 files / 251 tests), `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml` (228 tests), `npm run build:vite`, `npm run build`, and `git diff --check`. `npm run build` produced `/Users/keisetsu/Projects/hazakura-note/src-tauri/target/release/bundle/macos/hazakura editor.app`; Vite chunk-size warning and notarization skip remain expected for the local build.
 
 ## Risks / Unknowns
 
@@ -61,6 +63,7 @@
   3. Rust command surface gate-flip — switch `probe_apple_assist_availability_with_platform` to `probe_availability_via_helper`.
   4. UI 4-state disclosure — `useAppleAssistAvailability` / `useAppleAssistCandidate` against the 4-state mapping in `src/lib/locale/appleAssist.ts`.
 - If doing more docs cleanup, prefer tightening release-note structure, not resurrecting archived planning docs.
+- After the companion-slot settings slice, the next useful implementation is still the live Apple gate sequence above; do not confuse the new `Apple Assist` setting with a live Foundation Models call.
 
 ## Avoid
 

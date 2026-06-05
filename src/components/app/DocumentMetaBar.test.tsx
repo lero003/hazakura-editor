@@ -9,6 +9,8 @@ afterEach(cleanup);
 const sidePaneCopy: RightPaneToggleCopy = {
   agentWindow: "Agent",
   agentWindowTitle: "Open Agent Window",
+  appleAssistWindow: "Apple Assist",
+  appleAssistWindowTitle: "Open Apple Assist Window",
   diffTab: "Diff",
   diffTabTitle: "Open Diff",
   outlineTab: "Outline",
@@ -38,15 +40,21 @@ const activeTab: EditorTab = {
   size: 10,
 };
 
-function renderMeta(lModeEnabled: boolean) {
+function renderMeta(
+  lModeEnabled: boolean,
+  assistSurfacePreference: "apple-local" | "external-cli" | "none" =
+    "external-cli",
+) {
   render(
     <DocumentMetaBar
       activeDirty
       activeTab={activeTab}
       agentWorkbenchAvailable
+      assistSurfaceActive={assistSurfacePreference}
       diffPaneActive={false}
       lModeEnabled={lModeEnabled}
       onOpenAgentWindow={vi.fn()}
+      onOpenAppleAssistWindow={vi.fn()}
       onReviewChanges={vi.fn()}
       onToggleDiff={vi.fn()}
       onToggleOutline={vi.fn()}
@@ -64,8 +72,9 @@ describe("DocumentMetaBar", () => {
     renderMeta(true);
 
     expect(screen.queryByRole("button", { name: "変更を確認" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Open Agent Window" })).toBeNull();
     expect(
-      screen.queryByRole("button", { name: "Open Agent Window" }),
+      screen.queryByRole("button", { name: "Open Apple Assist Window" }),
     ).toBeNull();
   });
 
@@ -74,5 +83,23 @@ describe("DocumentMetaBar", () => {
 
     expect(screen.getByRole("button", { name: "変更を確認" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Open Agent Window" })).toBeTruthy();
+  });
+
+  it("switches the companion button to Apple Assist", () => {
+    renderMeta(false, "apple-local");
+
+    expect(
+      screen.getByRole("button", { name: "Open Apple Assist Window" }),
+    ).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Open Agent Window" })).toBeNull();
+  });
+
+  it("hides the companion button when assist surface is off", () => {
+    renderMeta(false, "none");
+
+    expect(screen.queryByRole("button", { name: "Open Agent Window" })).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Open Apple Assist Window" }),
+    ).toBeNull();
   });
 });

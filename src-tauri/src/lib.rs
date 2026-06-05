@@ -121,6 +121,7 @@ pub fn run() {
             open_agent_window,
             set_agent_window_theme,
             open_apple_assist_window,
+            toggle_apple_assist_window,
             set_apple_assist_window_theme,
             request_apply_ai_edit_transaction,
             open_main_agent_pane,

@@ -83,7 +83,7 @@ Example use case:
 - Explicit LF / CRLF conversion before save
 - Save As to a new common UTF-8 text file extension, with existing-file overwrite rejection
 - Native File menu entries for New File, Open, Open Folder, Save, Save As, and Recent items
-- Native app menu entries for Preferences and Agent Workbench on macOS
+- Native app menu entries for Preferences and Assist Surface settings on macOS
 - Native View menu and Preferences dialog for Preview, Wrap, Invisibles, Theme, Font, Tab settings, menu language, ambient effects, and spellcheck toggle
 - Native macOS spellcheck toggle (Cmd+Option+;)
 - Window title reflects the active file and unsaved state
@@ -129,6 +129,7 @@ Example use case:
 - App bundle icon and start screen use the hazakura editor flower-and-leaf logo
 - Optional Agent Workbench mode can launch one allowlisted `codex`, `opencode`, `pi`, or `claude` provider session in the selected workspace after restart-required mode enablement and responsibility-boundary consent
 - Agent Workbench renders the selected allowlisted provider's TUI output in a scoped pane, sends keyboard input only to the running provider process, supports Copy full path / Send full path to Agent from existing workspace file rows, and continues to treat provider-made file edits as ordinary external on-disk changes
+- Assist Surface settings can switch the outside companion slot between Apple Assist, CLI Agent, and Off after restart. Apple Assist is currently a fixture/mock Writing Companion that can edit the unsaved buffer through AI edit transactions and diff review; it does not call Apple Foundation Models yet.
 
 ## Project Docs
 
@@ -206,6 +207,7 @@ Developer preview release boundary:
 - Review Desk candidate review is manual and explicit. It does not persist review logs, save candidate documents automatically, auto-apply Agent output, or replace Git/merge workflows.
 - The app is not signed or notarized with an Apple Developer ID.
 - Agent Workbench is optional and explicit. It does not provide a general shell prompt, arbitrary command input UI, arbitrary path input UI, provider-add UI, multiple sessions, session restore, auto-apply, auto-commit, or Git integration.
+- Apple Assist is fixture/mock only in the current source state. There is no live Foundation Models binding, no `bundle.externalBin` gate flip, and no App Store/TestFlight distribution change yet.
 - CLI provider internals are outside hazakura's safety boundary. What happens inside `codex`, `opencode`, `pi`, or `claude` depends on the provider and the user's choices.
 - Agent Workbench does not expose a shell prompt, arbitrary command field, arbitrary path field, or general terminal.
 - Outside Agent Workbench there is no Git integration, LSP, terminal, AI assistance, plugin system, arbitrary command execution, or project-wide analysis.

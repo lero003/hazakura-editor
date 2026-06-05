@@ -4,6 +4,8 @@ import {
   AGENT_WORKBENCH_CONSENT_STORAGE_KEY,
   AGENT_WORKBENCH_ENABLED_STORAGE_KEY,
   AGENT_WORKBENCH_PROVIDER_STORAGE_KEY,
+  ASSIST_SURFACE_PREFERENCE_STORAGE_KEY,
+  type AssistSurfacePreference,
 } from "../../types";
 
 // Agent Workbench preferences live in this hook so that the
@@ -30,6 +32,11 @@ export function useAgentWorkbenchPreferences() {
   );
   const [agentWorkbenchProvider, setAgentWorkbenchProvider] =
     useState<AgentWorkbenchProvider>(() => readStoredAgentWorkbenchProvider());
+  const [assistSurfaceActive] = useState<AssistSurfacePreference>(() =>
+    readStoredAssistSurfacePreference(),
+  );
+  const [assistSurfacePreference, setAssistSurfacePreference] =
+    useState<AssistSurfacePreference>(() => readStoredAssistSurfacePreference());
 
   useEffect(() => {
     window.localStorage.setItem(
@@ -52,15 +59,25 @@ export function useAgentWorkbenchPreferences() {
     );
   }, [agentWorkbenchProvider]);
 
+  useEffect(() => {
+    window.localStorage.setItem(
+      ASSIST_SURFACE_PREFERENCE_STORAGE_KEY,
+      assistSurfacePreference,
+    );
+  }, [assistSurfacePreference]);
+
   return {
     agentWorkbenchActive,
     agentWorkbenchAvailable: agentWorkbenchActive && agentWorkbenchConsent,
     agentWorkbenchConsent,
     agentWorkbenchPreference,
     agentWorkbenchProvider,
+    assistSurfaceActive,
+    assistSurfacePreference,
     setAgentWorkbenchConsent,
     setAgentWorkbenchPreference,
     setAgentWorkbenchProvider,
+    setAssistSurfacePreference,
   };
 }
 
@@ -82,4 +99,18 @@ function readStoredAgentWorkbenchProvider(): AgentWorkbenchProvider {
   return value === "opencode" || value === "pi" || value === "claude"
     ? value
     : "codex";
+}
+
+function readStoredAssistSurfacePreference(): AssistSurfacePreference {
+  const value = window.localStorage.getItem(
+    ASSIST_SURFACE_PREFERENCE_STORAGE_KEY,
+  );
+  if (value === "none" || value === "apple-local" || value === "external-cli") {
+    return value;
+  }
+
+  // Backward compatibility for users who already enabled the old
+  // Agent Workbench preference before the shared companion-slot
+  // setting existed.
+  return readStoredAgentWorkbenchEnabled() ? "external-cli" : "apple-local";
 }

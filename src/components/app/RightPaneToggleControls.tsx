@@ -7,6 +7,8 @@ import {
 export interface RightPaneToggleCopy {
   agentWindow: string;
   agentWindowTitle: string;
+  appleAssistWindow: string;
+  appleAssistWindowTitle: string;
   diffTab: string;
   diffTabTitle: string;
   outlineTab: string;

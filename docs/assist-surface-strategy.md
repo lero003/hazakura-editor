@@ -53,6 +53,8 @@ Initial conceptual provider classes:
 
 Do not add `local-http`, MCP, arbitrary executable paths, provider-add UI, or generic tool/plugin registration without a fresh boundary review.
 
+Implementation note (v0.12 work-in-progress): the Preferences dialog now exposes this as a restart-applied shared outside companion-slot choice (`Apple Assist` / `CLI Agent` / `Off`). Selecting `CLI Agent` continues to use the existing Agent Workbench restart-required mode gate, consent, and allowlisted provider selection. Selecting `Apple Assist` switches the normal companion button to the Apple Assist window after restart and shows fixture/live availability disclosure; it does not enable CLI launch and does not by itself flip the live Foundation Models helper gate.
+
 ## External Agent Workbench
 
 External Agent Workbench remains a separate trust boundary governed by [Agent Workbench Boundary](agent-workbench-boundary.md).

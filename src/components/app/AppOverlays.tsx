@@ -12,9 +12,11 @@ import type {
 import type {
   AgentWorkbenchProvider,
   AgentWorkbenchSession,
+  AppleAssistAvailability,
   WorkspaceTreeEntry,
 } from "../../lib/tauri";
 import type {
+  AssistSurfacePreference,
   CompareAnchor,
   DraftRecord,
   EditorSettings,
@@ -57,6 +59,9 @@ type AppOverlaysProps = {
   agentWorkbenchPreference: boolean;
   agentWorkbenchProvider: AgentWorkbenchProvider;
   agentWorkbenchRestartRequired: boolean;
+  appleAssistAvailability: AppleAssistAvailability;
+  assistSurfaceActive: AssistSurfacePreference;
+  assistSurfacePreference: AssistSurfacePreference;
   appCloseCancelButtonRef: RefObject<HTMLButtonElement | null>;
   appCloseDialogRef: RefObject<HTMLElement | null>;
   appRestartPending: boolean;
@@ -143,6 +148,7 @@ type AppOverlaysProps = {
   setAgentWorkbenchConsent: (acknowledged: boolean) => void;
   setAgentWorkbenchPreference: (enabled: boolean) => void;
   setAgentWorkbenchProvider: (provider: AgentWorkbenchProvider) => void;
+  setAssistSurfacePreference: (surface: AssistSurfacePreference) => void;
   setCompareSource: (file: CompareAnchor) => void;
   setCompareTargetFile: (file: CompareAnchor) => void;
   setCommandPaletteActiveIndex: (index: number) => void;
@@ -168,6 +174,9 @@ export function AppOverlays({
   agentWorkbenchPreference,
   agentWorkbenchProvider,
   agentWorkbenchRestartRequired,
+  appleAssistAvailability,
+  assistSurfaceActive,
+  assistSurfacePreference,
   appCloseCancelButtonRef,
   appCloseDialogRef,
   appRestartPending,
@@ -240,6 +249,7 @@ export function AppOverlays({
   setAgentWorkbenchConsent,
   setAgentWorkbenchPreference,
   setAgentWorkbenchProvider,
+  setAssistSurfacePreference,
   setCompareSource,
   setCompareTargetFile,
   setCommandPaletteActiveIndex,
@@ -361,6 +371,9 @@ export function AppOverlays({
             <AgentWorkbenchPreferencesPane
               active={agentWorkbenchActive}
               activeSession={activeAgentSession}
+              appleAssistAvailability={appleAssistAvailability}
+              assistSurfaceActive={assistSurfaceActive}
+              assistSurfacePreference={assistSurfacePreference}
               consent={agentWorkbenchConsent}
               copy={agentWorkbenchCopy}
               modePreference={agentWorkbenchPreference}
@@ -368,6 +381,7 @@ export function AppOverlays({
               onModePreferenceChange={setAgentWorkbenchPreference}
               onProviderChange={setAgentWorkbenchProvider}
               onRestart={() => void restartAppForAgentMode()}
+              onAssistSurfacePreferenceChange={setAssistSurfacePreference}
               provider={agentWorkbenchProvider}
               providerLabel={providerLabel(agentWorkbenchProvider)}
               restartPending={appRestartPending}

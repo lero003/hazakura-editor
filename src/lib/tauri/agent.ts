@@ -227,6 +227,22 @@ export async function openAppleAssistWindow(theme?: string): Promise<void> {
   }
 }
 
+// Main-window chrome uses Apple Assist as a visible companion-slot
+// toggle: press once to show, press again to hide. Keep this separate
+// from `openAppleAssistWindow` so menu / command-palette "open"
+// actions remain open-or-focus.
+export async function toggleAppleAssistWindow(theme?: string): Promise<void> {
+  if (!isTauriRuntime()) {
+    return;
+  }
+
+  try {
+    await invoke("toggle_apple_assist_window", { theme: theme ?? null });
+  } catch (err) {
+    console.warn("Failed to toggle Apple Assist window", err);
+  }
+}
+
 export async function setAppleAssistWindowTheme(theme: string): Promise<void> {
   if (!isTauriRuntime()) {
     return;

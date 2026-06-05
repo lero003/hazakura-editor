@@ -8,6 +8,7 @@ import type {
 import type {
   EditorTab,
   RightPaneMode,
+  AssistSurfacePreference,
 } from "../../types";
 
 type AppTopChromeProps = {
@@ -15,6 +16,7 @@ type AppTopChromeProps = {
   activeTab: EditorTab | null;
   activeTabId: string | null;
   agentWorkbenchAvailable: boolean;
+  assistSurfaceActive: AssistSurfacePreference;
   draggingTabId: string | null;
   dragOverTabId: string | null;
   emptyTabsLabel: string;
@@ -22,6 +24,7 @@ type AppTopChromeProps = {
   onCloseTab: (tabId: string) => void;
   onFinishTabPointerDrag: (target?: EventTarget | null) => void;
   onOpenAgentWindow: () => void;
+  onOpenAppleAssistWindow: () => void;
   onPointerEnter: () => void;
   onReviewChanges: (tab: EditorTab) => void;
   onSelectTab: (tabId: string) => void;
@@ -49,6 +52,7 @@ export function AppTopChrome({
   activeTab,
   activeTabId,
   agentWorkbenchAvailable,
+  assistSurfaceActive,
   draggingTabId,
   dragOverTabId,
   emptyTabsLabel,
@@ -56,6 +60,7 @@ export function AppTopChrome({
   onCloseTab,
   onFinishTabPointerDrag,
   onOpenAgentWindow,
+  onOpenAppleAssistWindow,
   onPointerEnter,
   onReviewChanges,
   onSelectTab,
@@ -91,9 +96,11 @@ export function AppTopChrome({
         activeDirty={activeDirty}
         activeTab={activeTab}
         agentWorkbenchAvailable={agentWorkbenchAvailable}
+        assistSurfaceActive={assistSurfaceActive}
         diffPaneActive={sidePaneMode === "compare"}
         lModeEnabled={lModeEnabled}
         onOpenAgentWindow={onOpenAgentWindow}
+        onOpenAppleAssistWindow={onOpenAppleAssistWindow}
         onReviewChanges={onReviewChanges}
         onToggleDiff={onToggleDiff}
         onToggleOutline={onToggleOutline}
