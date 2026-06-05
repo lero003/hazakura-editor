@@ -2,6 +2,8 @@ node_modules/
 dist/
 src-tauri/target/
 src-tauri/gen/
+src-helpers/apple-assist/.build/
+binaries/
 *.log
 .DS_Store
 habitat-report/

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { act, renderHook } from "@testing-library/react";
 import { useCommandPaletteController } from "./useCommandPaletteController";
+import { getAppleAssistCopy } from "../../lib/locale";
 
 describe("useCommandPaletteController", () => {
   it("returns the command palette + global search surface", () => {
@@ -14,6 +15,7 @@ describe("useCommandPaletteController", () => {
           focusAdjacentTab: vi.fn(),
           handleSendSelectionToAgent: vi.fn(),
           insertTable: vi.fn(),
+          invokeAppleAssist: vi.fn(),
           openAgentWindow: vi.fn(),
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
@@ -36,6 +38,8 @@ describe("useCommandPaletteController", () => {
         },
         activeTab: null,
         activeTabId: null,
+        appleAssistAvailability: { kind: "unsupported" },
+        appleAssistCopy: getAppleAssistCopy("en"),
         editorPaneRef: { current: null },
         lModeCopy: {
           preferenceLabel: "L Mode",
@@ -101,6 +105,7 @@ describe("useCommandPaletteController", () => {
           focusAdjacentTab: vi.fn(),
           handleSendSelectionToAgent: vi.fn(),
           insertTable: vi.fn(),
+          invokeAppleAssist: vi.fn(),
           openAgentWindow: vi.fn(),
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
@@ -123,6 +128,8 @@ describe("useCommandPaletteController", () => {
         },
         activeTab: null,
         activeTabId: null,
+        appleAssistAvailability: { kind: "unsupported" },
+        appleAssistCopy: getAppleAssistCopy("ja"),
         editorPaneRef: { current: null },
         lModeCopy: {
           preferenceLabel: "えるモード",
@@ -159,5 +166,178 @@ describe("useCommandPaletteController", () => {
     expect(lModeCommand?.category).toBe("View");
     expect(lModeCommand?.label).toBe("えるモード切替");
     expect(lModeCommand?.shortcut).toBe("⇧⌘L");
+  });
+
+  it("hides Apple Assist commands when availability is not `available`", () => {
+    const { result } = renderHook(() =>
+      useCommandPaletteController({
+        actions: {
+          applyActiveMarkdownFormat: vi.fn(),
+          createNewFile: vi.fn(),
+          exportHtml: vi.fn(),
+          exportPdf: vi.fn(),
+          focusAdjacentTab: vi.fn(),
+          handleSendSelectionToAgent: vi.fn(),
+          insertTable: vi.fn(),
+          invokeAppleAssist: vi.fn(),
+          openAgentWindow: vi.fn(),
+          openFile: vi.fn(),
+          openWorkspace: vi.fn(),
+          openWorkspaceFile: vi.fn(),
+          requestCloseTab: vi.fn(),
+          requestRestoreFromBackup: vi.fn(),
+          requestReviewTabAgainstDisk: vi.fn(),
+          requestWindowClose: vi.fn(),
+          saveActiveTab: vi.fn(),
+          saveActiveTabAs: vi.fn(),
+          setEditorSettings: vi.fn(),
+          setFindVisible: vi.fn(),
+          setPreferencesDialogMode: vi.fn(),
+          setPreviewVisible: vi.fn(),
+          toggleDiffPane: vi.fn(),
+          toggleLMode: vi.fn(),
+          toggleOutlinePane: vi.fn(),
+          toggleQuickOpen: vi.fn(),
+          toggleReviewDesk: vi.fn(),
+        },
+        activeTab: null,
+        activeTabId: null,
+        appleAssistAvailability: { kind: "unsupported" },
+        appleAssistCopy: getAppleAssistCopy("en"),
+        editorPaneRef: { current: null },
+        lModeCopy: {
+          preferenceLabel: "L Mode",
+          preferenceHint: "Hide the workspace chrome for focused reading.",
+          featureDescription: "A quieter place to write.",
+          typewriterPreferenceLabel: "Typewriter mode",
+          typewriterPreferenceHint:
+            "Keep the active line near the vertical center of the viewport as you type.",
+          paletteCommand: "Toggle L Mode",
+          exitPillLabel: "Exit L Mode",
+          exitPillTitle: "Close L Mode",
+          actionRailLabel: "L Mode actions",
+          statusBarReviewChangesLabel: "Review changes",
+          statusBarWorkspaceLabel: "Open workspace",
+          statusBarReviewChangesTitle:
+            "Exit L Mode and open the diff against disk",
+          statusBarWorkspaceTitle:
+            "Exit L Mode and return to the workspace",
+          emptyPlaceholderText: "Start writing…",
+          emptyPlaceholderHint:
+            "Press Cmd+Shift+L to return to normal mode",
+        },
+        setStatus: vi.fn(),
+        themePreference: "light",
+        workspaceRootPath: null,
+      }),
+    );
+
+    act(() => {
+      result.current.openCommandPalette();
+    });
+
+    const summarize = result.current.filteredCommands.find(
+      (command) => command.id === "appleAssist.summarize",
+    );
+    const rephrase = result.current.filteredCommands.find(
+      (command) => command.id === "appleAssist.rephrase",
+    );
+    expect(summarize).toBeUndefined();
+    expect(rephrase).toBeUndefined();
+  });
+
+  it("exposes Apple Assist commands when availability is `available`", () => {
+    const invokeAppleAssist = vi.fn();
+    const { result } = renderHook(() =>
+      useCommandPaletteController({
+        actions: {
+          applyActiveMarkdownFormat: vi.fn(),
+          createNewFile: vi.fn(),
+          exportHtml: vi.fn(),
+          exportPdf: vi.fn(),
+          focusAdjacentTab: vi.fn(),
+          handleSendSelectionToAgent: vi.fn(),
+          insertTable: vi.fn(),
+          invokeAppleAssist,
+          openAgentWindow: vi.fn(),
+          openFile: vi.fn(),
+          openWorkspace: vi.fn(),
+          openWorkspaceFile: vi.fn(),
+          requestCloseTab: vi.fn(),
+          requestRestoreFromBackup: vi.fn(),
+          requestReviewTabAgainstDisk: vi.fn(),
+          requestWindowClose: vi.fn(),
+          saveActiveTab: vi.fn(),
+          saveActiveTabAs: vi.fn(),
+          setEditorSettings: vi.fn(),
+          setFindVisible: vi.fn(),
+          setPreferencesDialogMode: vi.fn(),
+          setPreviewVisible: vi.fn(),
+          toggleDiffPane: vi.fn(),
+          toggleLMode: vi.fn(),
+          toggleOutlinePane: vi.fn(),
+          toggleQuickOpen: vi.fn(),
+          toggleReviewDesk: vi.fn(),
+        },
+        activeTab: null,
+        activeTabId: null,
+        appleAssistAvailability: { kind: "available" },
+        appleAssistCopy: getAppleAssistCopy("en"),
+        editorPaneRef: {
+          current: {
+            getSelectionText: () => "hello",
+          } as unknown as Parameters<
+            typeof useCommandPaletteController
+          >[0]["editorPaneRef"]["current"],
+        },
+        lModeCopy: {
+          preferenceLabel: "L Mode",
+          preferenceHint: "Hide the workspace chrome for focused reading.",
+          featureDescription: "A quieter place to write.",
+          typewriterPreferenceLabel: "Typewriter mode",
+          typewriterPreferenceHint:
+            "Keep the active line near the vertical center of the viewport as you type.",
+          paletteCommand: "Toggle L Mode",
+          exitPillLabel: "Exit L Mode",
+          exitPillTitle: "Close L Mode",
+          actionRailLabel: "L Mode actions",
+          statusBarReviewChangesLabel: "Review changes",
+          statusBarWorkspaceLabel: "Open workspace",
+          statusBarReviewChangesTitle:
+            "Exit L Mode and open the diff against disk",
+          statusBarWorkspaceTitle:
+            "Exit L Mode and return to the workspace",
+          emptyPlaceholderText: "Start writing…",
+          emptyPlaceholderHint:
+            "Press Cmd+Shift+L to return to normal mode",
+        },
+        setStatus: vi.fn(),
+        themePreference: "light",
+        workspaceRootPath: null,
+      }),
+    );
+
+    act(() => {
+      result.current.openCommandPalette();
+    });
+
+    const summarize = result.current.filteredCommands.find(
+      (command) => command.id === "appleAssist.summarize",
+    );
+    const rephrase = result.current.filteredCommands.find(
+      (command) => command.id === "appleAssist.rephrase",
+    );
+    expect(summarize).toBeDefined();
+    expect(summarize?.category).toBe("Apple Assist");
+    expect(summarize?.label).toBe("Summarize selection");
+    expect(rephrase).toBeDefined();
+    expect(rephrase?.label).toBe("Rephrase selection");
+
+    // Running the command should pass the editor's current
+    // selection text to `invokeAppleAssist`.
+    act(() => {
+      summarize?.run();
+    });
+    expect(invokeAppleAssist).toHaveBeenCalledWith("summarize", "hello");
   });
 });

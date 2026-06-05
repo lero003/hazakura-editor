@@ -51,15 +51,21 @@ For future releases, re-check local artifact evidence and, after publication, re
 - `docs/product-brief.md`: durable product direction and non-goals.
 - `docs/roadmap.md`: current release sequence and future phase boundaries.
 - `docs/l-mode-plan.md`: v0.11 L Mode WYSIWYG-tier planning memo.
+- `docs/apple-local-assist-distribution-plan.md`: v0.12+ Apple Local Assist and App Store / developer-build release-lane planning memo.
+- `docs/apple-local-assist-v0.12-design-review.md`: v0.12 implementation slice design + Slice 5 feasibility findings.
 - `docs/agent-workbench-boundary.md`: implemented Agent Workbench trust boundary.
 - `docs/assist-surface-strategy.md`: future assist-surface direction.
 - `docs/authoring-feature-readiness.md`: incomplete authoring/export claims that should not be overstated.
 
 Historical detailed status logs through 2026-06-04 were archived to `docs/archive/status/current-status-through-2026-06-04.md`.
 
+## v0.12 Apple Local Assist work-in-progress
+
+Type, hook, and locale plumbing for Apple Local Assist is landed behind an availability gate that defaults to `unsupported` — the command palette does NOT expose the Apple Assist entries unless `probe_apple_assist_availability` returns `available`. The Rust commands are stubs (no Foundation Models binding) and the Swift helper builds in `FIXTURE_MODE` only. `tauri.conf.json`, `bundle.externalBin`, `minimumSystemVersion`, code-signing entitlements, and distribution lanes are unchanged. Nothing is released. See `docs/apple-local-assist-v0.12-design-review.md` for the slice-by-slice record and remaining unknowns (App Store sandbox + Foundation Models acceptable-use checks, live Foundation Models binding, OS-minimum decision per lane).
+
 ## Next Safe Actions
 
 1. If continuing quality work, use `docs/development-automation.md` and keep to one small verified slice.
-2. If planning assist work after v0.11.0, use `docs/assist-surface-strategy.md` and keep assist output detachable from Safe Editor.
+2. If planning assist work after v0.11.0, use `docs/assist-surface-strategy.md` and `docs/apple-local-assist-distribution-plan.md`; keep assist output detachable from Safe Editor and route candidates through Review Desk / Diff.
 3. If preparing a future release, use `docs/source-release-checklist.md`, `docs/dmg-preview-checklist.md`, and the version-specific release note; do not tag or publish without explicit approval.
 4. If changing product behavior, use `docs/product-brief.md`, `docs/security-boundary.md`, and the touched boundary doc before implementation.

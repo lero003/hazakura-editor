@@ -158,6 +158,17 @@ Run when Agent Workbench, provider availability, terminal sizing, or Agent Windo
 8. Stop the session and confirm UI state cleans up.
 9. Confirm provider-made file edits surface as ordinary external on-disk changes in Safe Editor.
 
+## Apple Local Assist (v0.12 in-progress, gate-default-hidden)
+
+Run when `src/lib/tauri/appleAssist.ts`, `src-tauri/src/commands/apple_assist.rs`, `useAppleAssistAvailability`, `useAppleAssistCandidate`, `src/lib/locale/appleAssist.ts`, or the Apple Assist command palette entries change. **No release lane includes a live Foundation Models binding yet.**
+
+1. Confirm the default app launch does NOT show any `Apple Assist:` entry in the command palette (the probe defaults to `unsupported` and the production Rust stub does not advertise `available`).
+2. Confirm the Settings / Agent Workbench Preferences surface does not list Apple Local Assist as a CLI agent provider — it is a separate Assist Surface provider class.
+3. Confirm no menu entry, status bar item, or autosave path runs Apple Local Assist text generation without an explicit command palette invocation.
+4. (Helper feasibility check, optional) Build the fixture helper with `npm run build:apple-assist-helper:fixture` and confirm: a binary is written to `binaries/hazakura-apple-assist-helper-aarch64-apple-darwin`; the smoke test prints `ok`; the helper exits 0 on stdin EOF.
+5. (Helper feasibility check, optional) Run the helper manually and feed `{"action":"probe_availability"}` on stdin; confirm the response is `{"kind":"availability","value":{"kind":"available","reason":null}}`. Feed `{"action":"generate_candidate","operation":"summarize","selectedText":"hello"}` and confirm the candidate text begins with `【要約案】`.
+6. Confirm `tauri.conf.json` still has `bundle.macOS.minimumSystemVersion` at the v0.11 value and does NOT yet declare `bundle.externalBin` for the helper (this is gated on explicit approval).
+
 ## Release Packaging
 
 Run when preparing a warning-expected DMG preview:

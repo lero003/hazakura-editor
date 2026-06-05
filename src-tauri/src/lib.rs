@@ -4,6 +4,7 @@ pub(crate) mod security {
 pub(crate) mod commands {
     pub(crate) mod agent_workbench;
     pub(crate) mod app_window;
+    pub(crate) mod apple_assist;
     pub(crate) mod export;
     pub(crate) mod files;
     pub(crate) mod images;
@@ -45,6 +46,8 @@ use crate::agent::*;
 use crate::commands::agent_workbench::*;
 #[allow(unused_imports)]
 use crate::commands::app_window::*;
+#[allow(unused_imports)]
+use crate::commands::apple_assist::*;
 #[allow(unused_imports)]
 use crate::commands::export::*;
 #[allow(unused_imports)]
@@ -99,6 +102,8 @@ pub fn run() {
             write_agent_workbench_session_input,
             resize_agent_workbench_terminal,
             list_agent_provider_availability,
+            probe_apple_assist_availability,
+            generate_apple_assist_candidate,
             drain_opened_files,
             request_app_restart,
             save_text_file,

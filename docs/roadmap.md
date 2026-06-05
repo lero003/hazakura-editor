@@ -14,7 +14,7 @@ Current release state:
 - Latest published preview: `v0.11.0` warning-expected DMG preview.
 - Current package/app version: `0.11.0`.
 - v0.11.0 theme: **L Mode WYSIWYG-tier Polish**.
-- Active lane: post-v0.11 follow-up and v0.12 Assist Planning / Apple Local Assist Exploration.
+- Active lane: post-v0.11 follow-up and v0.12 Apple Local Assist / distribution planning.
 
 Historical phase details and old milestone text are archived in `docs/archive/roadmaps/roadmap-through-v0.10-doc-refactor.md` and `docs/archive/roadmaps/roadmap-v0.1-archived.md`.
 
@@ -87,13 +87,15 @@ Publication result:
 - Local gates, launch smoke, focused L Mode / auto-backup restore manual smoke, DMG checksum/image checks, mounted-app metadata, and local codesign checks passed on 2026-06-05.
 - GitHub Release `v0.11.0` was published as a warning-expected DMG prerelease, and remote assets were re-downloaded and verified from a fresh temp directory after publication.
 
-## Next Lane: v0.12 Assist Planning / Apple Local Assist Exploration
+## Next Lane: v0.12 Apple Local Assist Planning
 
 Goal: decide whether Apple Local Assist / Foundation Models-based document help belongs in the product, without turning Safe Editor into a general AI platform.
 
 Current planning source:
 
 - `docs/assist-surface-strategy.md`
+- `docs/apple-local-assist-distribution-plan.md`
+- `docs/apple-local-assist-v0.12-design-review.md`
 
 Rules:
 
@@ -101,6 +103,22 @@ Rules:
 - Prefer selected text or document-fragment suggestions.
 - Route candidate output through Review Desk or Diff before applying.
 - Do not add arbitrary command execution, broad workspace indexing, provider plugins, auto-apply, or agent orchestration.
+- Separate App Store build decisions from the existing developer / warning-expected DMG preview lane.
+
+Likely phase shape:
+
+- `v0.12`: Apple Local Assist availability probe and selected-text summarize / rephrase prototype.
+- `v0.13`: Assist Preview, adding extract / proofread / explain-diff only if v0.12 is stable.
+- `v0.14`: Distribution Hardening, including App Store build separation, sandbox / entitlement checks, TestFlight packaging, and App Review notes.
+- `v1.0`: App Store Candidate if the App Store build can omit External Agent Workbench cleanly.
+
+v0.12 in-flight slice progress (no release, no distribution-config change):
+
+- Slice 1 — `src/lib/tauri/appleAssist.ts` + `src-tauri/src/commands/apple_assist.rs` define types, gates, and stubs.
+- Slice 2 — `useAppleAssistAvailability` hook + per-mount probe + 3-language locale.
+- Slice 3 — `useAppleAssistCandidate` hands generated text to the existing Review Desk `runCandidateCompare` (no auto-apply).
+- Slice 4 — Two command palette entries gated on availability (`Summarize selection`, `Rephrase selection`).
+- Slice 5 — `src-helpers/apple-assist/` SwiftPM helper builds in `FIXTURE_MODE`; `npm run build:apple-assist-helper:fixture` writes `binaries/hazakura-apple-assist-helper-<rust-triple>` and smoke-tests the JSON-over-stdio wire protocol. Live Foundation Models binding is stubbed (`unsupported` / `deferred`) pending an Apple-Silicon end-to-end check, and `tauri.conf.json` has not been changed.
 
 ## Continuing Backlog
 
@@ -108,6 +126,7 @@ Use these current docs rather than old roadmap bodies:
 
 - `docs/authoring-feature-readiness.md` for incomplete authoring/export claims.
 - `docs/l-mode-plan.md` for L Mode background and follow-up polish.
+- `docs/apple-local-assist-distribution-plan.md` for Apple Local Assist and App Store / developer-build release lanes.
 - `docs/agent-workbench-boundary.md` for Agent Workbench constraints.
 - `docs/development-automation.md` for small quality-loop work.
 

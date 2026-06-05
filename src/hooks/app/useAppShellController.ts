@@ -22,6 +22,8 @@
 import { useCallback, useEffect, useMemo } from "react";
 import { openAgentWindow } from "../../lib/tauri";
 import { useAgentWorkbenchController } from "../agent/useAgentWorkbenchController";
+import { useAppleAssistAvailability } from "../agent/useAppleAssistAvailability";
+import { useAppleAssistCandidate } from "../review/useAppleAssistCandidate";
 import { useCommandPaletteController } from "../commandPalette/useCommandPaletteController";
 import { useCompareController } from "../diff/useCompareController";
 import { useDocumentSafetyActions } from "../document/useDocumentSafetyActions";
@@ -282,6 +284,7 @@ export function useAppShellController() {
   const {
     agentWorkbenchCopy,
     agentWorkbenchRestartRequired,
+    appleAssistCopy,
     autoBackupRestoreCopy,
     editorChromeCopy,
     fileOpsCopy,
@@ -818,6 +821,58 @@ export function useAppShellController() {
   });
 
   // section: command palette + global search
+  const { availability: appleAssistAvailability } =
+    useAppleAssistAvailability();
+
+  // The Apple Assist target is a 4-field projection of the
+  // active tab. We don't pass the whole tab so the hook stays
+  // decoupled from the editor's full state surface.
+  const appleAssistTarget = useMemo(
+    () =>
+      activeTab
+        ? {
+            id: activeTab.id,
+            name: activeTab.name,
+            path: activeTab.path,
+            contents: activeTab.contents,
+          }
+        : null,
+    [activeTab],
+  );
+
+  const {
+    error: appleAssistError,
+    generateAndCompare: generateAppleAssistAndCompare,
+    clearError: clearAppleAssistError,
+  } = useAppleAssistCandidate({
+    activeTab: appleAssistTarget,
+    copy: reviewDeskCopy,
+    runCandidateCompare,
+  });
+
+  // `invokeAppleAssist` is the command-palette entrypoint. It
+  // delegates to the hook and surfaces any error through the
+  // existing `setStatus` channel — no auto-apply, no toast, no
+  // new UI surface.
+  const invokeAppleAssist = useCallback(
+    (operation: "summarize" | "rephrase" | "extract" | "proofread" | "explain_diff", selectedText: string) => {
+      void generateAppleAssistAndCompare(operation, selectedText).then(
+        (result) => {
+          if (result.ok) {
+            return;
+          }
+          setStatus(result.error);
+        },
+      );
+    },
+    [generateAppleAssistAndCompare, setStatus],
+  );
+
+  // Suppress unused-var warnings; these are wired up at the
+  // UI layer in a follow-up slice.
+  void appleAssistError;
+  void clearAppleAssistError;
+
   const {
     closeCommandPalette,
     closeGlobalSearch,
@@ -848,6 +903,7 @@ export function useAppShellController() {
       focusAdjacentTab,
       handleSendSelectionToAgent,
       insertTable,
+      invokeAppleAssist,
       openAgentWindow: (theme) => {
         void openAgentWindow(theme);
       },
@@ -872,6 +928,8 @@ export function useAppShellController() {
     },
     activeTab,
     activeTabId,
+    appleAssistAvailability,
+    appleAssistCopy,
     editorPaneRef,
     lModeCopy,
     setStatus,

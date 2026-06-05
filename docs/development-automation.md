@@ -17,7 +17,7 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: post-v0.11.0 quality follow-up and v0.12 assist-planning readiness.
+Phase: post-v0.11.0 quality follow-up and v0.12 Apple Local Assist / distribution-planning readiness.
 
 Prefer work in this order:
 
@@ -26,13 +26,15 @@ Prefer work in this order:
 3. One reproduced bug in implemented L Mode, auto-backup restore, workspace file operations, Agent provider availability, Review Desk, Diff, or Safe Editor behavior.
 4. Safety-boundary regression checks.
 5. Post-release docs/version drift.
-6. Markdown-first editor quality or daily-use polish.
-7. Documentation drift.
-8. Verified no-op after inspection when no useful small slice is safe.
+6. Apple Local Assist and App Store / developer-build distribution planning drift.
+7. Markdown-first editor quality or daily-use polish.
+8. Documentation drift.
+9. Verified no-op after inspection when no useful small slice is safe.
 
 ## Start Every Run
 
 1. Read `AGENTS.md`, `README.md`, `docs/README.md`, `docs/current-status.md`, `docs/roadmap.md`, `docs/smoke-checklist.md`, and this document.
+   If the run touches Apple Local Assist, App Store distribution, or assist-provider shape, also read `docs/assist-surface-strategy.md`, `docs/apple-local-assist-distribution-plan.md`, `docs/security-boundary.md`, and `docs/agent-workbench-boundary.md`.
 2. Run `git status --short --branch`.
 3. Treat existing uncommitted changes as user or previous-agent work. Do not revert them.
 4. Use Hazakura Habitat before substantial implementation, automation changes, dependency or lockfile work, release work, Git/GitHub mutation, or command-selection uncertainty.
@@ -80,6 +82,14 @@ cargo test --manifest-path src-tauri/Cargo.toml
 npm run build
 git diff --check
 ```
+
+For changes that touch `src-helpers/apple-assist/`, also run:
+
+```bash
+npm run build:apple-assist-helper:fixture
+```
+
+This builds the Swift helper in fixture mode and runs the JSON-over-stdio smoke test. It does NOT exercise the live Foundation Models binding (that path is stubbed). It does NOT modify `tauri.conf.json`, `binaries/` is gitignored, and the script does NOT publish or sign anything.
 
 For docs-only changes, run:
 

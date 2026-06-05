@@ -27,6 +27,7 @@ export type ReviewDeskCopy = {
   candidatePreviewTargetLabel: string;
   candidatePreviewTitle: string;
   candidateSourceManual: string;
+  candidateSourceAppleAssist: string;
   candidateStaleActionReCompare: string;
   candidateStaleHeading: string;
   candidateStaleReasonBufferEdited: string;
@@ -79,6 +80,7 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
       candidatePreviewTargetLabel: "あたらしいふみ",
       candidatePreviewTitle: "候補のしたみ",
       candidateSourceManual: "手で貼り付け",
+      candidateSourceAppleAssist: "あっぷる あしす と (この Mac のみ)",
       candidateStaleActionReCompare: "もういちどくらべる",
       candidateStaleHeading: "したみがふるくなっています",
       candidateStaleReasonBufferEdited:
@@ -141,6 +143,7 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
         candidatePreviewTargetLabel: "保存先",
         candidatePreviewTitle: "手動候補プレビュー",
         candidateSourceManual: "手動貼り付け",
+      candidateSourceAppleAssist: "Apple Local Assist (この Mac のみ)",
         candidateStaleActionReCompare: "再比較",
         candidateStaleHeading: "プレビューが古くなっています",
         candidateStaleReasonBufferEdited:
@@ -200,6 +203,7 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
         candidatePreviewTargetLabel: "Target",
         candidatePreviewTitle: "Manual candidate preview",
         candidateSourceManual: "Manual paste",
+      candidateSourceAppleAssist: "Apple Local Assist (on-device)",
         candidateStaleActionReCompare: "Re-run Compare",
         candidateStaleHeading: "Preview is out of date",
         candidateStaleReasonBufferEdited:

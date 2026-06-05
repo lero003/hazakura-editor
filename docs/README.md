@@ -14,7 +14,7 @@ This directory separates current guidance from historical material. Use current 
 - `agent-workbench-boundary.md`: optional CLI-agent workbench trust boundary.
 - `assist-surface-strategy.md`: future assist-surface direction.
 - `roadmap.md`: active release sequence and phase boundaries.
-- `current-status.md`: current implementation and release-candidate state.
+- `current-status.md`: current implementation and release state.
 
 ## Current Operational Docs
 
@@ -28,6 +28,7 @@ This directory separates current guidance from historical material. Use current 
 ## Current Planning Backlogs
 
 - `l-mode-plan.md`: L Mode / えるモード planning memo.
+- `apple-local-assist-distribution-plan.md`: Apple Local Assist / App Store distribution planning memo.
 - `authoring-feature-readiness.md`: incomplete authoring/export/Agent-adjacent feature claims.
 
 ## Historical And Archive Areas

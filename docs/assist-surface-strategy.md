@@ -3,7 +3,7 @@
 Status: Planning
 Scope: Future assist and agent surface direction
 Authority: Medium
-Last reviewed: 2026-06-02
+Last reviewed: 2026-06-05
 
 ## Purpose
 
@@ -39,6 +39,8 @@ optional, explicitly opened helper surface
 
 This is an architectural direction, not approval to add a provider plugin system.
 
+For the post-v0.11 distribution plan, use [Apple Local Assist And Distribution Plan](apple-local-assist-distribution-plan.md) as the detailed planning memo.
+
 ## Provider Shape
 
 Use provider separation to keep responsibilities clear, but do not expose arbitrary provider configuration to users.
@@ -68,13 +70,13 @@ It may launch only allowlisted local CLI providers. The current boundary remains
 - no Git client behavior
 - no auto-apply, auto-commit, auto-push, or auto-publish
 
-Claude Code CLI can be evaluated in v0.8 as an additional `external-cli` provider candidate, but only through this same boundary. Treat it as provider readiness, not as a replacement for Agent Workbench or as approval for Claude-specific permission controls, MCP configuration, arbitrary arguments, Git integration, or provider-add UI.
+Claude Code CLI is implemented as an additional `external-cli` provider, but only through this same boundary. Treat it as provider availability, not as a replacement for Agent Workbench or as approval for Claude-specific permission controls, MCP configuration, arbitrary arguments, Git integration, provider-add UI, or auto-apply.
 
 Moving Agent Workbench into a detached window or separate surface does not weaken these requirements.
 
 ## Apple Local Assist
 
-Apple Local Assist is a possible future replacement or alternative for some assist workflows in v0.11 or later.
+Apple Local Assist is a possible future replacement or alternative for some assist workflows after v0.11.
 
 Apple documents the Foundation Models framework as access to the on-device language model that powers Apple Intelligence, with support for text understanding and generation tasks such as summarization, extraction, classification, and refinement. Apple also documents that availability must be checked at runtime because it depends on Apple Intelligence support, user settings, and model readiness.
 
@@ -104,7 +106,7 @@ Apple Local Assist must not start as:
 
 ## Implementation Boundary
 
-If Apple Local Assist is implemented, prefer a narrow macOS helper or sidecar boundary instead of mixing macOS-only model code into the cross-platform editor core.
+If Apple Local Assist is implemented, prefer a narrow macOS helper, sidecar, or similarly inspectable Swift boundary instead of mixing macOS-only model code into the cross-platform editor core.
 
 A possible shape:
 
@@ -121,28 +123,29 @@ Review Desk / Diff
 
 The helper must receive only the text needed for the selected task. It should not receive broad workspace context by default.
 
+Apple Local Assist may reuse Agent Workbench implementation patterns such as availability probes, active-vs-preference state, restart-required preference changes, and explicit consent. It must not inherit Agent Workbench's CLI trust boundary or become a tool-calling agent. In user-facing docs, describe it as an Assist Surface provider class rather than a CLI-agent provider.
+
 ## Store And Distribution Variants
 
 Future distribution may use build-time variants rather than runtime settings alone:
 
 - Safe Editor build: no External Agent Workbench code path.
+- App Store build: Safe Editor, L Mode, Review Desk / Diff, and Apple Local Assist when available; no External Agent Workbench, no CLI launch, no arbitrary process execution, no provider-add UI, and no custom updater.
 - Official-site developer build: may include External Agent Workbench if the boundary remains explicit.
 - Apple Local Assist build: may include macOS-only document helpers when availability and review requirements are understood.
 
 Build-time separation is preferred for distribution trust because it is easier to explain and audit than hiding risky features behind settings.
 
-## v0.8 To v0.11 Path
+## Post-v0.11 Path
 
-v0.8 should not try to complete an assist platform.
+v0.11 shipped L Mode WYSIWYG-tier polish without adding Apple Local Assist. The next assist lane should stay narrow and prepare distribution decisions at the same time.
 
 Recommended sequence:
 
-1. Keep v0.8 focused on Safe Editor daily-use polish plus Assist Surface separation: reduce Review Desk to a low-prominence candidate-review receiver, clarify Agent Workbench surface/state boundaries, and keep generated output reviewable through Review Desk or Diff.
-2. Use v0.9 to harden product-preview quality and prove Safe Editor remains coherent without assist behavior.
-3. Use v0.10 for L Mode alpha stabilization and release-readiness polish, without adding Apple Local Assist behavior.
-4. Use v0.11 only for a narrow Apple Local Assist experiment: availability detection, selected-text or document-excerpt requests, candidate output, and safe disablement when unavailable.
-5. Treat Review Desk's full product usefulness as v0.12+ work, after Apple Local Assist / Foundation Models can generate selected-text or document-excerpt candidates that need explicit review.
-5. Keep v1.0 for outward product-preview polish and messaging unless the user explicitly opens a distribution lane earlier.
+1. Use v0.12 for Apple Local Assist planning and prototype: availability detection, selected-text summarize / rephrase, candidate output, unavailable-state UI, and Review Desk / Diff handoff.
+2. Use v0.13 for Assist Preview only after v0.12 is stable: add extract / proofread / explain-diff if prompt quality and review UX are strong enough.
+3. Use v0.14 for Distribution Hardening: App Store build separation, sandbox / entitlement checks, TestFlight packaging, and App Review notes.
+4. Use v1.0 as the App Store Candidate if the App Store build can omit External Agent Workbench cleanly and Apple Local Assist remains document-assist only.
 
 ## Non-Goals
 
