@@ -1,18 +1,18 @@
 import { confirm, open, save as saveDialog } from "@tauri-apps/plugin-dialog";
 
-// Extension allowlist shared by the file / "save as" pickers
-// and the file-system `commands/files.rs` validation. The
-// `.md` filter gets its own entry for the file picker so the
-// dialog labels the common case, but the second "Text" filter
-// covers every supported text extension for users who want the
-// full list.
+// Save-dialog extension helpers. Opening text files is intentionally
+// not extension-gated; Rust validates the selected file by size,
+// binary-looking bytes, and text decoding.
 export const TEXT_FILE_EXTENSIONS = [
   "md",
   "markdown",
   "mdown",
+  "mdx",
   "txt",
   "text",
   "log",
+  "rst",
+  "adoc",
   "json",
   "jsonl",
   "yaml",
@@ -25,12 +25,39 @@ export const TEXT_FILE_EXTENSIONS = [
   "xml",
   "ini",
   "conf",
+  "env",
+  "gitignore",
+  "gitattributes",
+  "editorconfig",
   "js",
   "jsx",
   "mjs",
   "cjs",
   "ts",
   "tsx",
+  "mts",
+  "cts",
+  "py",
+  "rb",
+  "go",
+  "rs",
+  "swift",
+  "kt",
+  "kts",
+  "java",
+  "c",
+  "h",
+  "cpp",
+  "hpp",
+  "cs",
+  "sh",
+  "bash",
+  "zsh",
+  "fish",
+  "ps1",
+  "sql",
+  "graphql",
+  "gql",
 ];
 
 // Per-extension filter entries for the save dialog. The native
@@ -38,30 +65,22 @@ export const TEXT_FILE_EXTENSIONS = [
 // user can pick from, and the OS will append the picked
 // filter's extension to the typed name automatically. Without
 // these entries, every save lands on `.md` because the
-// "Markdown" group is listed first in `TEXT_FILE_FILTERS`.
-//
-// The user's "things the editor can open as text" list: html,
-// css, txt, js, json, yml. The rest of `TEXT_FILE_EXTENSIONS`
-// is still covered by the "Text" group so the dialog can
-// still produce `.ts`, `.toml`, etc. when the user wants.
+// Markdown group is listed first.
 const SAVE_AS_TEXT_FILE_FILTERS: { name: string; extensions: string[] }[] = [
-  { name: "Markdown", extensions: ["md", "markdown", "mdown"] },
+  { name: "Markdown", extensions: ["md", "markdown", "mdown", "mdx"] },
+  { name: "Plain Text", extensions: ["txt", "text", "log"] },
   { name: "HTML", extensions: ["html", "htm"] },
   { name: "CSS", extensions: ["css"] },
-  { name: "JavaScript", extensions: ["js", "jsx", "mjs", "cjs", "ts", "tsx"] },
+  {
+    name: "JavaScript / TypeScript",
+    extensions: ["js", "jsx", "mjs", "cjs", "ts", "tsx", "mts", "cts"],
+  },
   { name: "JSON", extensions: ["json", "jsonl"] },
   { name: "YAML", extensions: ["yaml", "yml"] },
-  { name: "Text", extensions: ["txt", "text", "log", "toml", "ini", "conf"] },
+  { name: "Config", extensions: ["toml", "ini", "conf", "env"] },
   { name: "Data", extensions: ["csv", "tsv", "xml"] },
-];
-
-const TEXT_FILE_FILTERS = [
   {
-    name: "Markdown",
-    extensions: ["md", "markdown", "mdown"],
-  },
-  {
-    name: "Text",
+    name: "Source / Text",
     extensions: TEXT_FILE_EXTENSIONS,
   },
 ];
@@ -70,7 +89,6 @@ export async function pickMarkdownFile(): Promise<string | null> {
   const selected = await open({
     multiple: false,
     directory: false,
-    filters: TEXT_FILE_FILTERS,
   });
 
   return typeof selected === "string" ? selected : null;

@@ -3,6 +3,8 @@ import type { UnlistenFn } from "@tauri-apps/api/event";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { importImageFromPath, isTauriRuntime } from "../../lib/tauri";
 
+const IMAGE_FILE_PATTERN = /\.(png|jpe?g|gif|webp)$/i;
+
 type UseWindowDragDropOptions = {
   activeTabPath: string | null;
   onInsertMarkdown: (markdown: string) => void;
@@ -10,6 +12,16 @@ type UseWindowDragDropOptions = {
   onStatus: (message: string) => void;
   workspaceRootPath: string | null;
 };
+
+export function splitDroppedPaths(paths: string[]): {
+  imageFiles: string[];
+  textFiles: string[];
+} {
+  const imageFiles = paths.filter((path) => IMAGE_FILE_PATTERN.test(path));
+  const textFiles = paths.filter((path) => !IMAGE_FILE_PATTERN.test(path));
+
+  return { imageFiles, textFiles };
+}
 
 export function useWindowDragDrop({
   activeTabPath,
@@ -38,25 +50,7 @@ export function useWindowDragDrop({
           return;
         }
 
-        const textFiles = payload.paths.filter(
-          (path: string) =>
-            path.endsWith(".md") ||
-            path.endsWith(".markdown") ||
-            path.endsWith(".txt") ||
-            path.endsWith(".json") ||
-            path.endsWith(".yaml") ||
-            path.endsWith(".yml") ||
-            path.endsWith(".toml") ||
-            path.endsWith(".csv") ||
-            path.endsWith(".css") ||
-            path.endsWith(".html") ||
-            path.endsWith(".log") ||
-            path.endsWith(".ini") ||
-            path.endsWith(".conf"),
-        );
-        const imageFiles = payload.paths.filter((path: string) =>
-          /\.(png|jpe?g|gif|webp)$/i.test(path),
-        );
+        const { imageFiles, textFiles } = splitDroppedPaths(payload.paths);
 
         if (textFiles.length === 1) {
           await onOpenTextFiles(textFiles);

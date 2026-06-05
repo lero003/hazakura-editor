@@ -37,6 +37,32 @@ fn open_text_file_opens_utf8_json() {
 }
 
 #[test]
+fn open_text_file_opens_source_and_extensionless_text() {
+    let dir = unique_test_dir("open_source_and_extensionless_text");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let source_path = dir.join("app.ts");
+    let extensionless_path = dir.join("Makefile");
+    fs::write(&source_path, "export const answer: number = 42;\n").expect("write source");
+    fs::write(&extensionless_path, "build:\n\tnpm run build\n").expect("write extensionless");
+
+    let source_document =
+        open_text_file_with_label(MAIN_WINDOW_LABEL, source_path.to_string_lossy().to_string())
+            .expect("open TypeScript text file");
+    let extensionless_document = open_text_file_with_label(
+        MAIN_WINDOW_LABEL,
+        extensionless_path.to_string_lossy().to_string(),
+    )
+    .expect("open extensionless text file");
+
+    assert_eq!(source_document.name, "app.ts");
+    assert!(source_document.contents.contains("answer"));
+    assert_eq!(extensionless_document.name, "Makefile");
+    assert!(extensionless_document.contents.contains("npm run build"));
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
 fn create_text_file_creates_empty_markdown_file() {
     let dir = unique_test_dir("create_text_file");
     fs::create_dir_all(&dir).expect("create test dir");
