@@ -25,6 +25,96 @@ What is **not** done yet, and is gated on explicit approval:
 - No App Store sandbox or TestFlight changes
 - No release tag, no GitHub Release, no App Store submission
 
+## Official Information Confirmed (2026-06-05, slice 7)
+
+The following facts are taken from Apple 公式 information only. Each bullet cites the source URL. These are the conditions that v0.12+ implementation must respect; the spec/doc text below is reproduced verbatim where possible. Non-official speculation is deliberately excluded — anything we could not confirm against the cited pages is marked "TBD (verify with Xcode documentation viewer before implementation)."
+
+### Platform & runtime requirements (from `apple.com/apple-intelligence/`)
+
+- **Apple Intelligence-capable hardware**: iPhone 15 Pro / Pro Max and newer; iPad Pro / Air (M1+), iPad mini (A17 Pro); MacBook Air / Pro / iMac / Mac mini (M1+), Mac Studio (M1 Max+); Apple Vision Pro (M2+).
+- **OS**: macOS 26 (Tahoe), iOS 26, iPadOS 26, visionOS 26. Apple Intelligence ページ上の visionOS 例: "Apple Intelligence requires Apple Vision Pro running visionOS 26."
+- **Siri / device language** must be set to one of the supported languages: "Chinese (Simplified), Chinese (Traditional), English (Australia, Canada, India, Singapore, UK, U.S.), French (Canada, France), German, Italian, Japanese, Korean, and Spanish (Mexico, Spain)." Plus the page's caveat: "Some features may not be available in all languages or regions."
+- **On-device only**: "Apple Intelligence is designed to protect your privacy at every step. It's integrated into the core of your iPhone, iPad, and Mac through on-device processing." For more complex requests Apple uses **Private Cloud Compute** ("Your data is never stored", "Used only for your requests", "Verifiable privacy promise"). The marketing page does not say "no network fallback" — only that the on-device path is the default.
+- **Foundation Models framework access**: "any app can tap into the on-device models that power Apple Intelligence. Apps built with it work offline and it's all at no cost per request."
+
+### Acceptable use (from `developer.apple.com/apple-intelligence/acceptable-use-requirements-for-the-foundation-models-framework/`)
+
+The page is a single short "Prohibited uses" section with the framing "You may not use, prompt, or expose the Foundation Models framework, including the model accessed by the framework, or encourage or enable others to do so, in a manner that:" followed by 19 enumerated items. Verbatim (in the order Apple lists them):
+
+1. "Violates the law, regulations, or other legal requirements"
+2. "Promotes or enables violence for any reason"
+3. "Generates content that is defamatory or mean-spirited"
+4. "Generates content containing, representing, or otherwise involving pornography or overtly sexual material"
+5. "Promotes or enables child sexual exploitation or abuse"
+6. "Promotes or enables self harm"
+7. "Engages in any kind of fraud, deception, or tortious activity"
+8. "Engages in regulated healthcare, legal, or financial services"
+9. "Engages in employment-related services, assessments of the risk of an individual committing a criminal offense, or for official use in connection with law enforcement or criminal justice"
+10. "Engages in social scoring or predictive polling"
+11. "Classifies individuals based on biometric data to infer sensitive attributes"
+12. "Seeks to compromise or gain unauthorized access to networks or systems of third parties"
+13. "Encourages illegal or reckless use of weapons and dangerous objects"
+14. "Infringes or violates the intellectual property, publicity, or privacy rights of another (including Apple)"
+15. "Shows Apple or its products in a false or derogatory light"
+16. "Circumvents any safety policies, guardrails, or restrictions integrated into the Foundation Models framework or accompanying technologies"
+17. "Generates, reverse engineers, summarizes, translates or otherwise reproduces the Foundation Models framework training data"
+18. "Generates citations to or otherwise identifies the Foundation Models framework training data"
+19. "Generates scholarly and academic research products, journals, textbooks, trade books, or courseware"
+
+**Practical reading for a Markdown editor with `summarize` / `rephrase` / `extract` / `proofread` / `explain_diff`:**
+
+- Items 17 and 18 are restricted to the **framework's training data**, not to user-supplied documents. "Summarize my Markdown note" / "Extract action items from my meeting notes" is summarization of *user content*, not training-data reproduction, and is fine.
+- Item 19 ("courseware") is the one with real bite. A "write me an essay on photosynthesis" or "generate a textbook chapter on linear algebra" button would clearly generate courseware. Helping a user rewrite *their own* draft, summarize *their own* notes, proofread, or explain the diff between two of *their own* revisions is the user producing their own work with an editor — it is not the framework "generating" a research product.
+- Item 3 ("defamatory or mean-spirited") means we should not ship tone-shifting controls like "make this nastier" or "roast this."
+- Item 16 means we must not strip / override / hide the framework's built-in refusals. No raw system prompt editor, no jailbreak templates, no silent retries past refusals.
+- Items 1, 7, 8, 14 are general product guardrails. The editor should make clear that the user is responsible for the legality of the text they bring in.
+- **Recommended in-app disclosure** (we should add this before any App Store build): a short note that the feature uses Apple Intelligence / the Foundation Models framework, is subject to Apple's acceptable-use rules, and that the user is responsible for not using outputs to violate them.
+
+### App Review constraints (from `developer.apple.com/app-store/review/guidelines/`)
+
+The Guidelines text does not contain a clause specifically targeting on-device LLMs or the Foundation Models framework. The clauses that touch an Apple-Local-Assist-style feature:
+
+- **5.1.2(i)** (Data Use and Sharing): "You must clearly disclose where personal data will be shared with third parties, **including with third-party AI**, and obtain explicit permission before doing so." This is the only clause in the actual guideline text that names "AI." It is a privacy/disclosure requirement. *Reading for us:* on-device Foundation Models does not transmit user data to Apple or a third party by default, so this clause is satisfied without a per-prompt consent dialog as long as our privacy policy says so.
+- **2.5.2** (no downloaded/executed code): "Apps should be self-contained in their bundles, and may not read or write data outside the designated container area, nor may they download, install, or execute code which introduces or changes features or functionality of the app." *Reading for us:* an Apple-Local-Assist feature that uses the on-device model in-process does not download or execute new code. Fine.
+- **2.4.2** (no unrelated background processes): the precedent is "cryptocurrency mining" is not allowed. *Reading for us:* the helper sidecar would only spawn on a user-initiated command-palette invocation, not in the background. This matches the spec. A live binding must not background-poll the model.
+- **2.4.5(i)** (Mac App Store sandbox): "They must be appropriately sandboxed, and follow [macOS File System Documentation]." *Reading for us:* the macOS App Store build of `hazakura editor` is already sandboxed. The helper sidecar runs inside the sandbox; spawning a bundled `binaries/...` helper from the Tauri host process is allowed under the existing sandbox as long as it stays inside the bundle container. **TBD (verify):** whether the App Store sandbox requires any specific entitlement for the sidecar spawn path.
+- **5.1.1 (Privacy)**: full privacy framework (privacy policy URL, consent, data minimization, no covert profiling). *Reading for us:* the in-app disclosure recommended above also satisfies the privacy-policy component. We do not log the prompt or the candidate, do not sync them to a server, do not share them with a third party.
+- **4.7 (Mini apps / chatbots)**: 4.7.2 says "Your app may not extend or expose native platform APIs or technologies to the software without prior permission from Apple." *Reading for us:* we are not embedding a third-party chatbot or mini-app runtime; the editor itself calls the Foundation Models framework. Fine.
+- **No new entitlement is enumerated** for Foundation Models in the current Guidelines text. If Apple's posture changes between now and the App Store submission, we may need to file an entitlement request.
+
+### Framework API surface (from `developer.apple.com/videos/play/wwdc2025/286/`)
+
+- The on-device model is "a large language model with 3 billion parameters, each quantized to 2 bits" — "several orders of magnitude bigger than any other models that are part of the operating system."
+- "The model can only run on Apple Intelligence-enabled devices in supported regions." (This matches the Apple Intelligence page's device list above.)
+- "All of this runs on-device, so all data going into and out of the model stays private. That also means it can run offline! And it's built into the operating system, so it won't increase your app size."
+- "Optimized for use cases like summarization, extraction, classification, and many more. It's not designed for world knowledge or advanced reasoning, which are tasks you might typically use server-scale LLMs for." (Reading for us: our 5-operation scope — `summarize` / `rephrase` / `extract` / `proofread` / `explain_diff` — is exactly the on-device sweet spot.)
+- **Key types**:
+  - `SystemLanguageModel.useCase` (e.g. `.contentTagging`) for specialized adapters.
+  - `LanguageModelSession` — stateful, retains context, `isResponding` for concurrent-prompt gating, `transcript` to inspect prior turns.
+  - `@Generable` and `@Guide` macros — guided generation with constrained decoding; "the model will never produce invalid tool names or arguments" because "tool calling is built on guided generation."
+  - `Tool` protocol — model-driven tool calling; **we will not use this in v0.12** (out of scope per `assist-surface-strategy.md`).
+  - `streamResponse` / `PartiallyGenerated` types — for token-by-token streaming of structured output.
+- **Availability**: "a two case enum that's either available or unavailable. If it's unavailable, you also receive a reason so you can adjust your UI accordingly." Our Rust-side 4-state model (`available` / `unavailable { reason }` / `disabled` / `unsupported`) maps to this naturally: Apple gives us `(available | unavailable(reason))` at the framework level, and `disabled` / `unsupported` are the user/OS states we layer on top.
+- **Errors to handle**: "guardrail violation, unsupported language, or context window exceeded." Our Rust stub should map these to candidate errors that surface as "Apple Assist returned an error" in Review Desk — never to an auto-apply / silent retry.
+- **Security guidance**: "Instructions should come from you, the developer, while prompts can come from the user. This is because the model is trained to obey instructions over prompts. This helps protect against prompt injection attacks, but is by no means bullet proof. As a general rule, instructions are mostly static, and it's best not to interpolate untrusted user input into the instructions." *Reading for us:* the Swift helper's `instructions` parameter is the only place untrusted user content enters the model; the per-call `prompt` is bounded by `MAX_SELECTED_CHARS = 4000` and `MAX_CONTEXT_CHARS = 8000` (already in the Rust contract). The helper must not let the user *edit* `instructions`. The Review Desk handoff remains the trust boundary.
+
+### Items still TBD (cannot confirm against the cited pages alone)
+
+- **Exact `@available(macOS, introduced: 26.0, *)` annotation on `SystemLanguageModel`** — the reference page did not render via WebFetch. Must be re-verified against the Xcode documentation viewer before any live binding is written.
+- **App Store sandbox behavior of spawning a bundled `binaries/...` sidecar** — not directly addressed by the App Review Guidelines. Apple's developer forums / a TSFI / a pre-submission inquiry is the right path; we should not rely on inference.
+- **`minimumSystemVersion` policy** — the marketing page does not state a per-platform minimum. The reference page (when renderable) will give the `@available` annotation. Until then, `tauri.conf.json` stays at `11.0` (the v0.11.0 value) and a follow-up slice decides whether the App Store build or only a "developer with Apple Local Assist" build flavor raises it to `26.0`.
+- **Code signing / notarization of the helper** — the App Review Guidelines do not address `externalBin` directly. macOS Developer ID signing + notarization rules (separate from App Review) cover this, and the existing v0.10/v0.11 warning-expected DMG lane gives us a working precedent.
+- **Foundation Models acceptable-use on non-Apple-Intelligence devices** — the acceptable-use page applies whenever the framework is invoked. If we ever call the framework on a device that does *not* satisfy the device list above, the framework should refuse. We will not paper over that refusal.
+
+### Sources cited in this section
+
+- <https://www.apple.com/apple-intelligence/>
+- <https://developer.apple.com/apple-intelligence/acceptable-use-requirements-for-the-foundation-models-framework/>
+- <https://developer.apple.com/app-store/review/guidelines/>
+- <https://developer.apple.com/videos/play/wwdc2025/286/>
+
+Anything beyond what these four pages say is **not** in the record above.
+
 ## Purpose
 
 This memo turns the rough v0.12 Apple Local Assist idea into a release and architecture direction.

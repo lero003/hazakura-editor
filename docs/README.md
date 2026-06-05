@@ -29,6 +29,10 @@ This directory separates current guidance from historical material. Use current 
 
 - `l-mode-plan.md`: L Mode / えるモード planning memo.
 - `apple-local-assist-distribution-plan.md`: Apple Local Assist / App Store distribution planning memo.
+- `apple-local-assist-v0.12-design-review.md`: Apple Local Assist v0.12 スライス 1〜6 の設計選択・ゲート・残課題レビュー記録。
+- `apple-local-assist-live-helper-plan.md`: `src-helpers/apple-assist/` fixture mode / live mode 分離と live mode 実装前の設計メモ。
+- `apple-local-assist-rust-supervisor-plan.md`: helper sidecar を呼ぶ Rust supervisor 層の設計メモ。
+- `apple-local-assist-ui-unavailable-state-plan.md`: 4 状態 (`available` / `unavailable` / `disabled` / `unsupported`) の UI 提示方針と v0.12.x での移行計画。
 - `authoring-feature-readiness.md`: incomplete authoring/export/Agent-adjacent feature claims.
 
 ## Historical And Archive Areas

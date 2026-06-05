@@ -3,7 +3,7 @@
 Status: Review record (post-slice-6)
 Scope: v0.12 Apple Local Assist スライス 1〜6 (型・境界 / probe / Review Desk handoff / UI entry / Swift helper feasibility / docs sync) の設計選択・ゲート・残課題レビュー
 Authority: Medium
-Last reviewed: 2026-06-05 (post-slice-6 implementation, post-P1/P2 boundary fixes)
+Last reviewed: 2026-06-05 (post-slice-6 implementation, post-P1/P2 boundary fixes, post-slice-7 official info confirmation)
 
 ## 目的
 
@@ -169,7 +169,7 @@ export type AppleAssistAvailability =
 
 ## 残った不確実性 (v0.12.0 リリース前)
 
-スライス 1〜6 で解消済みの項目 + 残った項目を分けて記録する。
+スライス 1〜6 で解消済みの項目 + 残った項目を分けて記録する。Slice 7 (2026-06-05) で `docs/apple-local-assist-distribution-plan.md` の "Official Information Confirmed" セクションに Apple 公式情報を整理したため、本セクションの未解消項目も一部状態更新した。
 
 ### 解消済み (着地時 2026-06-05)
 
@@ -177,14 +177,16 @@ export type AppleAssistAvailability =
 - **probe のキャッシュ戦略** — `useAppleAssistAvailability` をマウント時 1 回呼ぶ形に固定 (`useAgentProviderAvailability` と同じパターン)
 - **Locale** — `src/lib/locale/appleAssist.ts` 3 言語、`candidateSourceAppleAssist` も `src/lib/locale/reviewDesk.ts` に 3 言語追加済み
 - **手動 candidate との競合** — `useAppleAssistCandidate` が `runCandidateCompare` 経由で投入するので、既存の `setCandidateInputText` stale ガードがそのまま機能する
+- **Apple 公式の acceptable use / App Store 制約の確認** — `docs/apple-local-assist-distribution-plan.md` の "Official Information Confirmed" セクションにまとめる。設計上 danger zone と判明したのは "courseware" (item 19) と "tone-shifting" (item 3) と "framework safety circumvention" (item 16) の 3 点。いずれも本スライスの 5 operations (`summarize` / `rephrase` / `extract` / `proofread` / `explain_diff`、全操作が "transform the user's own text") には触らない
 
 ### 未解消 (v0.12.0 リリース前に対応すべきもの)
 
-- **App Store build と Foundation Models の許容範囲** — Apple の `acceptable-use-requirements-for-the-foundation-models-framework/` を未確認。App Store sandbox 内から `LanguageModelSession` を呼べるかは別途検証 (下の "Slice 5 で残った不確実性" と重複)
-- **Live mode (Foundation Models 実バインド)** — 現状 Rust 側 stub は `Unavailable { reason }` を返す。`if #available(macOS 26.0, *)` で `LanguageModelSession` を開き、readiness を 4 状態に map する仕事が残る。これが乗ったスライスで `Available` が初めて返る
-- **sidecar spawn と App Store sandbox** — `Command::new("binaries/...")` を Tauri 配布アプリ内で実行すると、sandbox 設定 / `LSEnvironment` / `embedded.provisionprofile` 等の調整が必要かもしれない
-- **`minimumSystemVersion` の扱い** — 現在の `tauri.conf.json` は `11.0`。Foundation Models 実バインドを有効化する build flavor では 26.0 に上げる必要があるが、すべての lane で一律上げるかは別レビュー
-- **Helper の signing / notarization** — `externalBin` を追加すると helper も notarize 対象。DMG warning preview に影響しないかは要確認
+- **Live mode (Foundation Models 実バインド)** — Slice 7 で framework 公式 API は確認 (SystemLanguageModel / LanguageModelSession / @Generable / isResponding)。Rust 側 stub は引き続き `Unavailable { reason }` を返す。`if #available(macOS 26.0, *)` で `LanguageModelSession` を開くところ、4 状態の `availability` mapping、Foundation Models の `unavailable(let reason)` を本プロジェクトの `Unavailable { reason }` に翻訳するところが残る。これが乗ったスライスで `Available` が初めて返る
+- **sidecar spawn と App Store sandbox** — `Command::new("binaries/...")` を Tauri 配布アプリ内で実行する経路が、macOS App Store の sandbox (Guideline 2.4.5(i)) と Private Cloud Compute fallback (Apple Intelligence overview) の両方で動くか。現時点では Helper なしでも `LanguageModelSession` を in-process で呼べるはず (App プロセスが Foundation Models framework を直接 import する経路) — slice 8 で「sidecar 経由」 vs 「in-process リンク」のどちらが App Store 的に素直か整理する
+- **`minimumSystemVersion` の扱い** — 現在の `tauri.conf.json` は `11.0`。Apple 公式ページの device list は M1+ Mac 系なので、レガシー Mac を切り落とすことになる。Slice 8 で「App Store build は 26.0 に上げる / Developer build は 11.0 のまま」のように lane 分離できるか設計する
+- **Helper の signing / notarization** — Slice 7 では Helper 経路を採らない方向が見えてきた (上記 sidecar 議論)。Helper 経路を採らない場合、`externalBin` も `signing / notarization` も当面は触らない。Helper 採否の最終判断は Slice 8
+- **`@available(macOS 26.0, *)` の正確な annotation** — reference ページが WebFetch で本文取得できなかったので、Xcode ドキュメントビューアで実装直前に再確認する
+- **In-app disclosure 文言 (item 19 / item 1 / item 14 対策)** — Foundation Models を使う旨と acceptable use への同意を App Store build に組み込む文言を Slice 10 で設計する (Preferences への追加は方針未定)
 
 ## 想定リスク
 
