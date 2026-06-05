@@ -311,10 +311,21 @@ impl AppleAssistHelperStore {
             .spawn(move || {
                 let (lock, cvar) = &*done_pair_w;
                 let mut done = lock.lock().expect("watchdog lock");
-                let (next_done, _) = cvar
-                    .wait_timeout(done, timeout)
-                    .expect("watchdog wait_timeout");
-                done = next_done;
+                // Re-check the predicate after acquiring the lock:
+                // if the main thread already set `done = true` and
+                // called `notify_all` before we got scheduled, the
+                // success path is finished and we can exit without
+                // entering `wait_timeout` at all. This is the
+                // textbook "wait with predicate" pattern and also
+                // dodges a lost-wakeup window between the time the
+                // main thread sets `done` and the time this thread
+                // would otherwise enter the wait.
+                if !*done {
+                    let (next_done, _) = cvar
+                        .wait_timeout(done, timeout)
+                        .expect("watchdog wait_timeout");
+                    done = next_done;
+                }
                 if !*done {
                     timed_out_w.store(true, Ordering::SeqCst);
                     Self::kill_child(&child_arc);

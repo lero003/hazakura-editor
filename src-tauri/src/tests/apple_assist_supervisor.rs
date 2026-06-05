@@ -426,6 +426,51 @@ fn supervisor_round_trip_times_out_when_helper_hangs() {
     );
 }
 
+// Pin the watchdog success path: a fast helper response must NOT
+// cause `round_trip_locked` to wait the full `timeout` duration.
+// The watchdog thread re-checks the `done` predicate after
+// acquiring its lock and skips `wait_timeout` entirely if the
+// main thread has already signaled completion. This test uses a
+// 500ms timeout override and asserts the elapsed wall time is
+// well under 500ms — if the success path leaked the timeout
+// duration, this would fail intermittently or deterministically
+// depending on the leak's magnitude.
+#[test]
+fn supervisor_fast_success_does_not_wait_full_timeout_duration() {
+    let Some(fixture) = fixture_path_or_skip() else {
+        return;
+    };
+    let timeout = std::time::Duration::from_millis(500);
+    let store = store_with_helper_path(fixture).with_timeout_override(timeout);
+    let start = std::time::Instant::now();
+    let envelope = probe_availability_via_helper(&store)
+        .expect("fixture helper must return Availability, not error");
+    let elapsed = start.elapsed();
+    // Hard upper bound: if the round trip leaked the timeout
+    // duration, this would be >= 500ms with the kill_child
+    // overhead. 250ms gives a generous margin for slow CI while
+    // still failing on a true leak. The fixture binary is
+    // <100ms in practice; the watchdog thread must not add to
+    // that.
+    assert!(
+        elapsed < timeout / 2,
+        "fast success path took {elapsed:?}, expected well under timeout {timeout:?}"
+    );
+    assert!(
+        matches!(
+            envelope,
+            WireEnvelope::Availability(HelperAvailability { .. })
+        ),
+        "expected Availability envelope, got {envelope:?}"
+    );
+    // And the success must have reset the failure counter.
+    assert_eq!(
+        store.consecutive_failures_for_test(),
+        0,
+        "fast success must not increment the failure counter"
+    );
+}
+
 #[test]
 fn supervisor_timeout_does_not_pile_up_zombie_children() {
     // After a timeout, the watchdog must have killed the helper

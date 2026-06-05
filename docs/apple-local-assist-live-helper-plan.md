@@ -135,7 +135,7 @@ Apple 公式 "These errors might include guardrail violation, unsupported langua
 
 Rust 側 supervisor は案 B (long-lived helper) で実装済み。Swift 側の launch 経路は slice 5 のまま:
 
-- Rust 側は `Command::new("binaries/hazakura-apple-assist-helper-<triple>")` を spawn (live mode 経路が `tauri::Builder::manage` されるとき)
+- Rust 側は `Command::new("binaries/hazakura-apple-assist-helper-<triple>")` を spawn (`AppleAssistHelperStore` は v0.12.0 で `tauri::Builder::manage` 登録済みだが、production `Default::default()` は helper を解決できず、command surface も supervisor を呼ばないため gate-default-hidden 維持)
 - 起動トリガーは最初の `probe_apple_assist_availability` または `generate_apple_assist_candidate` 呼び出し
 - helper は long-lived: 同じ child を `AppleAssistHelperStore` の `Mutex<Option<Inner>>` に保持し、2 回目以降のリクエストは再 spawn せず stdin/stdout を使い回す
 - 失敗 (EOF / IO error / timeout / spawn 失敗 / 未知 kind / parse 失敗) で `inner` を `None` に戻し、次回呼び出しで再 spawn
@@ -227,11 +227,13 @@ Rust 側 supervisor は案 B (long-lived helper) で実装済み。Swift 側の 
 | 8 | supervisor に consecutive_failures / cooldown_started_at / protocol-violation detection を追加 | Rust | done slice 9 / 12 |
 | 9 | `src-tauri/src/tests/apple_assist_supervisor.rs` 20 ケース (fixture + timeout script + protocol-violation script) | Rust test | done slice 9-12 |
 | 10 | supervisor / live helper plan の docs sync | doc | done slice 13 |
-| 11 | `tauri::Builder::manage(AppleAssistHelperStore::default())` を `lib.rs` に追加 | Rust | pending (gate-flip スライス) |
-| 12 | `probe_apple_assist_availability_with_platform` を `probe_availability_via_helper` 経由に切替 (gate-default-hidden 解除) | Rust | pending (gate-flip スライス、明示承認待ち) |
-| 13 | `useAppleAssistAvailability` の error handling を `Unavailable { reason: "..." }` 形に拡張 (probe 失敗時 detail を表示) | TS | pending (gate-flip) |
-| 14 | `useAppleAssistCandidate` の error handling を error envelope kind ごとに分類 | TS | pending (gate-flip) |
-| 15 | `docs/smoke-checklist.md` の Apple Local Assist セクションに live mode 項目追加 | doc | pending (gate-flip) |
+| 11 | watchdog に "wait with predicate" 修正 (success path が timeout duration を待たない) | Rust | done slice 14 |
+| 12 | success-path elapsed regression test (`timeout / 2` 以内で完了) | Rust test | done slice 14 |
+| 13 | `tauri::Builder::manage(AppleAssistHelperStore::default())` を `lib.rs` に追加 | Rust | done v0.12.0 (登録済み、command surface は未到達) |
+| 14 | `probe_apple_assist_availability_with_platform` を `probe_availability_via_helper` 経由に切替 (gate-default-hidden 解除) | Rust | pending (gate-flip スライス、明示承認待ち) |
+| 15 | `useAppleAssistAvailability` の error handling を `Unavailable { reason: "..." }` 形に拡張 (probe 失敗時 detail を表示) | TS | pending (gate-flip) |
+| 16 | `useAppleAssistCandidate` の error handling を error envelope kind ごとに分類 | TS | pending (gate-flip) |
+| 17 | `docs/smoke-checklist.md` の Apple Local Assist セクションに live mode 項目追加 | doc | pending (gate-flip) |
 
 ## Open questions (明示承認待ち)
 

@@ -23,7 +23,10 @@ Last reviewed: 2026-06-05
 
 v0.12.0 の Tauri command surface は supervisor を **呼んでいない**。これは "gate-default-hidden" 契約 (design review section 10) の本体。supervisor 側だけが完成していても、command body は依然として `Unavailable { reason }` を返すので、UI 側 (command palette) は Apple Local Assist 項目を出さない。
 
-`tauri::Builder::manage(AppleAssistHelperStore::default())` の登録も **行っていない** (登録すると未使用状態で warning になるため)。`store_with_helper_path` / `store_without_helper` が `cfg(test)` だけで、production の `Default::default()` は environment を一切読まない。これにより「将来 `*_FIXTURE` env var を立てると勝手に helper が spawn される」事故を構造的に防ぐ。
+`AppleAssistHelperStore` は `tauri::Builder::manage(AppleAssistHelperStore::default())` で **登録済み** (`src-tauri/src/lib.rs` 参照)。登録しておいても無害な理由:
+- `Default::default()` は environment を一切読まない。env-var ベースの override は `store_with_helper_path` / `store_without_helper` という `cfg(test)` 専用 API のみで、production の `Default::default()` 経路には存在しない。これにより「将来 `*_FIXTURE` env var を立てると勝手に helper が spawn される」事故を構造的に防ぐ。
+- `helper_path()` は production 経路では常に `Err("Apple Assist helper is not configured for this build.")` を返す。store を `manage` した瞬間に何か spawn される事故は起きない (`spawn_locked` はこの `Err` をそのまま伝搬する)。
+- supervisor 経路を Tauri command body から呼び出すのは gate-flip スライスで、明示承認が必要。それまでは store は Tauri 状態として存在するが誰も触らない。
 
 ## 実装済み supervisor の設計
 
@@ -223,12 +226,14 @@ production で supervisor 経路が呼ばれるようになるのは、`probe_ap
 | 8 | `round_trip_locked` に `REQUEST_TIMEOUT = 15s` watchdog を追加 (`Condvar::wait_timeout` + `Arc<Mutex<Child>>` + `Arc<AtomicBool>`) | done slice 11 |
 | 9 | `timeout_override` を `cfg(test)` で追加、timeout regression test 2 ケース | done slice 11 |
 | 10 | supervisor / live helper plan の docs sync | done slice 13 |
-| 11 | `tauri::Builder::manage(AppleAssistHelperStore::default())` を `lib.rs` に追加 | pending (gate-flip スライス) |
-| 12 | `probe_apple_assist_availability_with_platform` を `probe_availability_via_helper` 経由に切替 (gate-default-hidden 解除) | pending (gate-flip スライス、明示承認待ち) |
+| 11 | `tauri::Builder::manage(AppleAssistHelperStore::default())` を `lib.rs` に追加 | done v0.12.0 (登録済み、command surface は未到達) |
+| 12 | watchdog に "wait with predicate" 修正 (success path が timeout duration を待たない) | done slice 14 |
+| 13 | success-path elapsed regression test (`timeout / 2` 以内で完了) | done slice 14 |
+| 14 | `probe_apple_assist_availability_with_platform` を `probe_availability_via_helper` 経由に切替 (gate-default-hidden 解除) | pending (gate-flip スライス、明示承認待ち) |
 
 ## Open questions (明示承認待ち)
 
-- **gate-flip の閾値と手順**: 11, 12 をどのスライスで行うか。Foundation Models live binding が先か、supervisor 経路の wire 化 (11 のみ) が先か
+- **gate-flip の閾値と手順**: 順序 14 をどのスライスで行うか。Foundation Models live binding が先か、`probe_apple_assist_availability_with_platform` の body 切替 (14) が先か。順序 11 (`Builder::manage`) は v0.12.0 で **既に登録済み** — Tauri 状態として存在するが command surface から未到達なので gate-default-hidden は維持される
 - **`busy` 即時失敗 (案 A) を導入するか**: 現状は 2 番目の呼び出しが 1 番目の完了を待つ。Foundation Models live 経路で「待ち」が UX 的に許容できるか、本番で観察してから判断
 - **stderr のルーティング**: 本番で `~/Library/Logs/hazakura-editor/apple-assist-helper.log` に書くか、stdout に forward するか (現状は drain のみ)
 - **timeout 値 15s の妥当性**: live mode で 15s を超える候補生成 (長文 proofread など) があれば上げる
