@@ -45,13 +45,14 @@ fn apple_assist_generate_rejects_unknown_window_label() {
 }
 
 #[test]
-fn apple_assist_probe_accepts_main_window_only() {
+fn apple_assist_probe_accepts_main_and_apple_assist_windows() {
     // Apple Local Assist must NOT inherit the Agent Workbench
-    // CLI trust boundary — the IPC is main-only. The probe is
-    // allowed from the main window so the command palette can
-    // gate the entries on the real Foundation Models state.
+    // CLI trust boundary. The read-only probe is allowed from
+    // main and the detached Apple Assist companion so both
+    // surfaces can gate on the real Foundation Models state.
     let store = store_without_helper();
     assert!(probe_apple_assist_availability_with_label("main", &store).is_err());
+    assert!(probe_apple_assist_availability_with_label("apple-assist", &store).is_err());
 }
 
 #[test]

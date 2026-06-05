@@ -36,12 +36,14 @@ const CONSECUTIVE_FAILURE_LIMIT: u32 = 5;
 /// How long the cooldown lasts once the failure limit is hit.
 const COOLDOWN_DURATION: Duration = Duration::from_secs(300);
 /// Per-request timeout. The Swift helper in fixture mode returns
-/// in <100ms; live mode will be a few seconds. 15s gives plenty
-/// of headroom while still surfacing a stuck helper quickly.
+/// in <100ms; live Foundation Models may take tens of seconds on
+/// first use while Apple Intelligence warms the local model. 360s
+/// keeps the UX bounded while avoiding false timeouts during that
+/// initial warm-up path in this alpha feature.
 /// Enforced by a watchdog thread that kills the helper child if
 /// `read_line` is still blocked after this duration; the kill is
 /// what unblocks the read.
-const REQUEST_TIMEOUT: Duration = Duration::from_secs(15);
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(360);
 
 /// The store is held by Tauri via `tauri::Builder::manage(...)`.
 pub(crate) struct AppleAssistHelperStore {
@@ -131,7 +133,7 @@ impl AppleAssistHelperStore {
 
     /// Test-only builder: set a custom request timeout for this
     /// store. Used by timeout regression tests so they do not
-    /// have to wait 15s for the production `REQUEST_TIMEOUT`.
+    /// have to wait 360s for the production `REQUEST_TIMEOUT`.
     /// Gated to `cfg(test)` so the production lib build cannot
     /// accidentally shorten the timeout.
     #[cfg(test)]

@@ -157,6 +157,8 @@ export const MENU_OPEN_APPLE_ASSIST_WINDOW = "open-apple-assist-window";
 // docs/apple-local-assist-writing-companion-plan.md.
 export const APPLY_AI_EDIT_TRANSACTION_EVENT =
   "hazakura-note://apply-ai-edit-transaction";
+export const APPLE_ASSIST_APPLY_STATUS_EVENT =
+  "hazakura-note://apple-assist-apply-status";
 export const REQUEST_AI_EDIT_TARGET_EVENT =
   "hazakura-note://request-ai-edit-target";
 export const AI_EDIT_TARGET_RESULT_EVENT =
@@ -198,6 +200,13 @@ export type AppleAssistApplyEvent = {
   request: string;
   requestedAtMs: number;
   target: AppleAssistTargetSnapshot | null;
+};
+
+export type AppleAssistApplyStatusEvent = {
+  phase: "started" | "completed" | "failed";
+  message: string;
+  request: string;
+  emittedAtMs: number;
 };
 
 // Mirror of the Rust OPEN_MAIN_AGENT_PANE_EVENT constant. The detached

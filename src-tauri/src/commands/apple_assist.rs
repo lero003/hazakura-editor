@@ -9,14 +9,16 @@
 //   2. Generate a candidate text for a single selected-text
 //      operation (generate_apple_assist_candidate).
 //
-// Both are gated to the main window only. The
-// `*_with_label` shim pattern mirrors `commands::agent_workbench`
-// for testability, but the gate helper is
-// `ensure_label_is_main` (not `..._or_agent`) — the agent
-// window must not be able to invoke Apple Local Assist. v0.12
-// uses the bundled Swift helper supervisor for live Foundation
-// Models availability and candidate generation. The Rust-only
-// stub remains only as a pure test fixture.
+// Candidate generation is gated to the main window only. The
+// read-only availability probe is also allowed from the detached
+// Apple Assist window so the companion can disable itself when
+// Foundation Models is unavailable. The `*_with_label` shim
+// pattern mirrors `commands::agent_workbench` for testability,
+// but neither command uses `..._or_agent` — the agent window must
+// not be able to invoke Apple Local Assist. v0.12 uses the
+// bundled Swift helper supervisor for live Foundation Models
+// availability and candidate generation. The Rust-only stub
+// remains only as a pure test fixture.
 //
 // See docs/apple-local-assist-distribution-plan.md and
 // docs/apple-local-assist-v0.12-design-review.md.
@@ -120,7 +122,7 @@ pub(crate) fn probe_apple_assist_availability_with_label(
     label: &str,
     helper_store: &AppleAssistHelperStore,
 ) -> Result<AppleAssistAvailability, String> {
-    ensure_label_is_main(label)?;
+    ensure_label_is_main_or_apple_assist(label)?;
     probe_apple_assist_availability_with_helper(helper_store)
 }
 

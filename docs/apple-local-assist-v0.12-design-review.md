@@ -115,9 +115,11 @@ export type AppleAssistAvailability =
 - Apply は手動経路 (UI 上の Apply ボタン)。auto-apply なし
 - 保存は明示 Save のみ (auto-save なし)
 
-### 9. IPC は main window のみ
+### 9. IPC は main window / Apple Assist window に限定
 
-- `probe_apple_assist_availability_with_label` / `generate_apple_assist_candidate_with_label` の gate は `ensure_label_is_main` を使う。`..._or_agent` は使わない
+- `probe_apple_assist_availability_with_label` の gate は `ensure_label_is_main_or_apple_assist` を使う。読み取り専用の availability probe は、Apple Assist window 自身が unavailable / disabled / unsupported state を表示するために必要
+- `generate_apple_assist_candidate_with_label` の gate は `ensure_label_is_main` を使う。本文 context を渡す candidate generation は main window 側に限定する
+- どちらも `..._or_agent` は使わない
 - Agent Workbench の CLI trust boundary を継承しない。`agent` ラベルの窓から Apple Assist IPC を呼ぼうとすると即時 `Command is not allowed from window 'agent'.` で拒否される
 - これは strategy doc の「Agent Workbench の CLI trust boundary を継承しない」と一致する
 

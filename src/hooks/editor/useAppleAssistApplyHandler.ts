@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import { emitTo, listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { buildLineDiff } from "../../features/diff/diff";
 import {
   aiEditTransactionStore,
@@ -13,7 +13,9 @@ import {
 } from "../../lib/tauri/appleAssist";
 import {
   APPLY_AI_EDIT_TRANSACTION_EVENT,
+  APPLE_ASSIST_APPLY_STATUS_EVENT,
   type AppleAssistApplyEvent,
+  type AppleAssistApplyStatusEvent,
   type AppleAssistTargetSnapshot,
   type CompareViewState,
 } from "../../types";
@@ -104,18 +106,24 @@ export function useAppleAssistApplyHandler({
   async function applyAppleAssistRequest(payload: AppleAssistApplyEvent): Promise<void> {
     const tab = activeTabRef.current;
     if (!tab) {
-      setStatusRef.current?.("Apple Assist apply ignored: no active tab.");
+      const message = "Apple Assist apply ignored: no active tab.";
+      setStatusRef.current?.(message);
+      void emitAppleAssistApplyStatus("failed", message, payload.request);
       return;
     }
 
     const targetCheck = readTargetTextForGeneration(payload.target, tab);
     if (!targetCheck.ok) {
-      setStatusRef.current?.(`Apple Assist apply failed: ${targetCheck.error}`);
+      const message = `Apple Assist apply failed: ${targetCheck.error}`;
+      setStatusRef.current?.(message);
+      void emitAppleAssistApplyStatus("failed", message, payload.request);
       return;
     }
 
     try {
-      setStatusRef.current?.("Apple Assist is generating a change...");
+      const startMessage = "Apple Assist is generating a change...";
+      setStatusRef.current?.(startMessage);
+      void emitAppleAssistApplyStatus("started", startMessage, payload.request);
       const response = await generateAppleAssistCandidate({
         operation: inferAppleAssistOperation(payload.request),
         selectedText: targetCheck.before,
@@ -125,7 +133,9 @@ export function useAppleAssistApplyHandler({
 
       const latestTab = activeTabRef.current;
       if (!latestTab) {
-        setStatusRef.current?.("Apple Assist apply ignored: no active tab.");
+        const message = "Apple Assist apply ignored: no active tab.";
+        setStatusRef.current?.(message);
+        void emitAppleAssistApplyStatus("failed", message, payload.request);
         return;
       }
       const result = applyAiEditTransaction({
@@ -138,7 +148,9 @@ export function useAppleAssistApplyHandler({
         afterText: response.candidateText,
       });
       if (!result.ok) {
-        setStatusRef.current?.(`Apple Assist apply failed: ${result.error}`);
+        const message = `Apple Assist apply failed: ${result.error}`;
+        setStatusRef.current?.(message);
+        void emitAppleAssistApplyStatus("failed", message, payload.request);
         return;
       }
 
@@ -165,13 +177,32 @@ export function useAppleAssistApplyHandler({
       };
       aiEditTransactionStore.record(stored);
       setActiveTabContentsRef.current(result.nextBuffer);
-      setStatusRef.current?.(
-        `Apple Assist applied: ${result.transaction.request} (${result.transaction.target.kind})`,
-      );
+      const successMessage = `Apple Assist applied: ${result.transaction.request} (${result.transaction.target.kind})`;
+      setStatusRef.current?.(successMessage);
+      void emitAppleAssistApplyStatus("completed", successMessage, payload.request);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      setStatusRef.current?.(`Apple Assist generation failed: ${message}`);
+      const errorMessage = `Apple Assist generation failed: ${message}`;
+      setStatusRef.current?.(errorMessage);
+      void emitAppleAssistApplyStatus("failed", errorMessage, payload.request);
     }
+  }
+}
+
+async function emitAppleAssistApplyStatus(
+  phase: AppleAssistApplyStatusEvent["phase"],
+  message: string,
+  request: string,
+): Promise<void> {
+  try {
+    await emitTo("apple-assist", APPLE_ASSIST_APPLY_STATUS_EVENT, {
+      phase,
+      message,
+      request,
+      emittedAtMs: Date.now(),
+    } satisfies AppleAssistApplyStatusEvent);
+  } catch (err) {
+    console.warn("Failed to emit Apple Assist apply status", err);
   }
 }
 

@@ -161,6 +161,31 @@
   opacity: 0.85;
 }
 
+.apple-assist-window-progress {
+  align-items: center;
+  color: var(--text-muted, var(--text));
+  display: inline-flex;
+  font-size: 12px;
+  gap: 7px;
+  opacity: 0.9;
+}
+
+.apple-assist-window-spinner {
+  animation: apple-assist-spin 0.9s linear infinite;
+  border: 2px solid var(--border, rgba(127, 127, 127, 0.25));
+  border-top-color: var(--accent, currentColor);
+  border-radius: 50%;
+  display: inline-block;
+  height: 12px;
+  width: 12px;
+}
+
+@keyframes apple-assist-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .apple-assist-window-error {
   color: var(--error, #c0392b);
   font-size: 12px;
