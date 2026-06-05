@@ -13,6 +13,7 @@ use super::*;
 mod agent_workbench;
 mod app_window;
 mod apple_assist;
+mod apple_assist_supervisor;
 mod backup;
 mod common;
 mod encoding;

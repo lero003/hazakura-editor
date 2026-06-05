@@ -5,6 +5,7 @@ pub(crate) mod commands {
     pub(crate) mod agent_workbench;
     pub(crate) mod app_window;
     pub(crate) mod apple_assist;
+    pub(crate) mod apple_assist_supervisor;
     pub(crate) mod export;
     pub(crate) mod files;
     pub(crate) mod images;
@@ -49,6 +50,8 @@ use crate::commands::app_window::*;
 #[allow(unused_imports)]
 use crate::commands::apple_assist::*;
 #[allow(unused_imports)]
+use crate::commands::apple_assist_supervisor::*;
+#[allow(unused_imports)]
 use crate::commands::export::*;
 #[allow(unused_imports)]
 use crate::commands::files::*;
@@ -73,6 +76,7 @@ use crate::util::*;
 pub fn run() {
     let builder = tauri::Builder::default()
         .manage(AgentWorkbenchSessionStore::default())
+        .manage(AppleAssistHelperStore::default())
         .manage(OpenedFileStore::default())
         .manage(commands::workspace_broadcast::MainWorkspaceCache::default())
         .plugin(tauri_plugin_dialog::init());
