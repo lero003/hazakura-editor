@@ -1,36 +1,34 @@
 # Apple Local Assist — Bundled Helper Path 設計メモ
 
-Status: Draft (slice 16, supervisor skeleton wired in slice 17)
-Scope: `src-tauri/src/commands/apple_assist_supervisor.rs` の `helper_path()` が、production で将来どの bundled helper path を見るべきかの設計。`tauri.conf.json` / `bundle.externalBin` / `minimumSystemVersion` / signing / entitlements は未承認のため、まだ production で spawn 可能にはしない。
+Status: Implemented on main (live helper gate flipped)
+Scope: `src-tauri/src/commands/apple_assist_supervisor.rs` の `helper_path()` が production で bundled helper path を解決する現行設計。`bundle.externalBin` は追加済み。`minimumSystemVersion` / signing / entitlements / App Store sandbox は distribution-lane hardening として未決。
 Authority: Medium
-Last reviewed: 2026-06-05
+Last reviewed: 2026-06-06
 
 ## 目的
 
-Rust supervisor は v0.12.0 の時点で `binaries/hazakura-apple-assist-helper-<rust-triple>` を spawn する設計で止まっている。これは "fixture build を `binaries/` に置いて `cargo test` から spawn する" 経路としては成立するが、Tauri の `bundle.externalBin` 承認前夜の production 経路としては何も決まっていない。本メモは **gate-flip に入った瞬間に差し替える helper path の形** を pin し、sandbox / signing / notarization に進む前に確認すべき項目を列挙する。production の `helper_path()` は **本スライス (slice 16-17) ではまだ `Err` を返し続ける** ことが gate-default-hidden 契約の本体。
+Rust supervisor は `binaries/hazakura-apple-assist-helper-<rust-triple>` を build artifact として扱い、Tauri packaged build では `bundle.externalBin` により app bundle の `Contents/MacOS/` に helper を同梱する。現行 production `helper_path()` は `current_exe().parent()` 配下を探索し、Tauri が配置する base name (`hazakura-apple-assist-helper`) と triple suffix name の両方を許容する。
 
-## 結論 (slice 16)
+## 結論
 
-- **expected helper filename**: `hazakura-apple-assist-helper-<rust-target-triple>` (例: `hazakura-apple-assist-helper-aarch64-apple-darwin`)。`scripts/build-apple-assist-helper-fixture.sh` の DEST 命名と一致させる (Tauri sidecar convention)。
-- **app bundle 内配置**: Tauri 2 の `bundle.externalBin` 承認後は、macOS app bundle の `Contents/MacOS/` 直下に helper がコピーされる。Tauri は sidecar を `Contents/MacOS/<name>-<triple>` として配置し、production runtime は `std::env::current_exe()` の親ディレクトリを起点に `<name>-<triple>` を探す形が standard。Rust 側は `current_exe().parent()` 配下を探索する resolver を `helper_path()` 内に持つ。
+- **build artifact filename**: `binaries/hazakura-apple-assist-helper-<rust-target-triple>` (例: `hazakura-apple-assist-helper-aarch64-apple-darwin`)。fixture/live の build scripts はこの形へ出力する。
+- **app bundle 内配置**: Tauri 2 packaged build では `Contents/MacOS/hazakura-apple-assist-helper` として配置されることを `npm run build` で確認済み。Rust resolver は base name と triple suffix name の両方を探索する。
 - **dev / test / packaged build の違い**:
-  - **dev** (`npm run tauri dev`): `tauri.conf.json` の `bundle.externalBin` が未設定なので、Tauri は helper を `Contents/MacOS/` にコピーしない。fixture binary は手動で `binaries/hazakura-apple-assist-helper-<triple>` に置いて `cargo test` から `store_with_helper_path` で注入する経路しか動かない (現状の slice 8-18 と同一)。dev で supervisor 経路を end-to-end で試したい場合も `store_with_helper_path` を使う (production `Default` は env var を読まないため、明示的なテスト fixture 注入が必要)。
+  - **dev** (`npm run tauri dev`): `beforeDevCommand` は Vite のみ。production resolver は実行中バイナリ隣接 helper を探すため、dev で live helper を使うには helper を dev 実行バイナリの隣へ明示配置する必要がある。production `Default` は env var を読まない。
   - **test** (`cargo test --manifest-path src-tauri/Cargo.toml`): `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE` env var で fixture binary path を渡し、`store_with_helper_path` 経由で supervisor に注入。production `Default` は env var を読まない (slice 14+ の回帰テストで固定)。
-  - **packaged build** (DMG preview / App Store build / developer build): `bundle.externalBin` が `tauri.conf.json` に追加され、Tauri が `Contents/MacOS/hazakura-apple-assist-helper-<triple>` を app bundle に同梱する。production `helper_path()` が `current_exe().parent()` 配下の該当 filename を探す。これが gate-flip 後の正式経路。
-- **missing helper 時の error message**: 現状の `Err("Apple Assist helper is not configured for this build.")` を `Err("Apple Assist helper binary 'hazakura-apple-assist-helper-<triple>' was not found next to the running executable: <full-path>.")` のように "どこを探して、見つからなかった" を含む形に拡張する。packaged build で `externalBin` を間違って外した / build artifact が壊れた / 別 OS のバイナリを誤って同梱した、を運用時にデバッグしやすくする。
-- **App Store sandbox / signing / notarization に入る前の確認項目**: 末尾の "Pre-flight checklist" を参照。
+  - **packaged build** (DMG preview / App Store build / developer build): `bundle.externalBin` が `tauri.conf.json` に追加済み。`npm run build` は live helper を build し、Tauri が `Contents/MacOS/hazakura-apple-assist-helper` として同梱・署名する。
+- **missing helper 時の error message**: 現行 resolver は "Apple Assist helper is not configured for this build. Looked in <dir>." を返す。packaged build で `externalBin` を間違って外した / build artifact が壊れた場合は、この reason が UI に出る。
+- **App Store sandbox / signing / notarization に入る前の確認項目**: 末尾の checklist は未完了。distribution lane へ進む前に別途確認する。
 
 ## 想定する production `helper_path()` の形
 
-`slice 17` で supervisor.rs に追加する skeleton は次の流れ:
+現行 resolver は次の流れ:
 
 ```rust
-// production resolver skeleton (slice 17, NOT yet wired into spawn)
 // 1. `rust_target_triple()` で host triple を返す (aarch64-apple-darwin / x86_64-apple-darwin)
 // 2. `bundled_helper_filename()` で `hazakura-apple-assist-helper-<triple>` を返す
-// 3. `resolve_bundled_helper_path()` は production で `current_exe().parent()` 配下を探索
-//    - ただし slice 17 時点では `Err("Apple Assist helper is not configured for this build.")` を返す
-//    - gate-flip 承認スライスで実探索に差し替える
+// 3. `bundled_helper_base_filename()` で `hazakura-apple-assist-helper` を返す
+// 4. `resolve_bundled_helper_path()` は `current_exe().parent()` 配下で base/triple の両方を探索
 //
 // 呼び出し順:
 //   helper_path() {
@@ -39,13 +37,13 @@ Rust supervisor は v0.12.0 の時点で `binaries/hazakura-apple-assist-helper-
 //   }
 ```
 
-`resolve_bundled_helper_path()` の最終形 (gate-flip スライスで実装):
+`resolve_bundled_helper_path()` の現行形:
 
 1. `std::env::current_exe()` で実行中バイナリのパスを取得。
 2. `.parent()` を base にする (macOS app bundle の `Contents/MacOS/<main-binary>` から 1 つ上)。
-3. base に `bundled_helper_filename()` を連結 → `candidate: PathBuf`。
-4. `candidate.exists() && candidate.is_file()` なら `Ok(candidate)`。
-5. 見つからなければ `Err(format!("Apple Assist helper binary '{}' was not found next to the running executable: {}.", filename, candidate.display()))`。
+3. base に `bundled_helper_filename()` と `bundled_helper_base_filename()` を連結。
+4. いずれかが存在すれば `Ok(candidate)`。
+5. 見つからなければ "not configured" reason を返す。
 
 `current_exe()` 起点にする理由:
 
@@ -57,22 +55,21 @@ Rust supervisor は v0.12.0 の時点で `binaries/hazakura-apple-assist-helper-
 
 | 経路 | 用途 | helper の居場所 | production `helper_path()` の挙動 | テストの注入経路 |
 |---|---|---|---|---|
-| dev (`npm run tauri dev`) | 開発者の iteration | `binaries/hazakura-apple-assist-helper-<triple>` (fixture build の置き場) | `Err("not configured")` (gate-default-hidden 維持) | `store_with_helper_path` で明示注入 |
+| dev (`npm run tauri dev`) | 開発者の iteration | helper は自動配置されない | 実行バイナリ隣に helper がなければ `Err("not configured")` | `store_with_helper_path` で明示注入 |
 | test (`cargo test`) | supervisor の integration test | `std::env::temp_dir()` の一時 shell script + `binaries/hazakura-apple-assist-helper-<triple>` (env var 経由) | `Err("not configured")` | `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE` env var + `store_with_helper_path` |
-| packaged build (DMG preview) | ローカル動作確認 (ad-hoc signed) | Tauri が `Contents/MacOS/hazakura-apple-assist-helper-<triple>` に同梱 (gate-flip 承認後) | `Ok(current_exe().parent() / filename)` (gate-flip 承認後) | n/a (production 経路) |
+| packaged build (DMG preview) | ローカル動作確認 (ad-hoc signed) | Tauri が `Contents/MacOS/hazakura-apple-assist-helper` に同梱 | `Ok(current_exe().parent() / filename)` | n/a (production 経路) |
 | packaged build (developer build) | developer-signed 配布 | 同上 | 同上 | n/a |
 | packaged build (App Store) | Mac App Store 提出 | 同上 + 公証 / signing | 同上 | n/a |
 
-**現状 (slice 18 まで)**: dev / test / packaged build のいずれも production `helper_path()` は `Err` を返す。supervisor が Tauri command body から呼ばれるのは gate-flip スライスで、そのときは packaged build の経路だけ production 経路として動く想定。dev / test では `store_with_helper_path` 経由 (test fixture) または明示的な fixture 配置 (dev) を継続する。
+**現状**: packaged build は production helper path を使う。dev / test は helper 自動配置を前提にしない。
 
 ## Missing helper 時の error message 設計
 
 production 経路で helper が見つからなかった場合の error メッセージは次の形にする:
 
-- **gate-flip 後の production 経路 (resolve_bundled_helper_path)**: `Err("Apple Assist helper binary 'hazakura-apple-assist-helper-<triple>' was not found next to the running executable: <absolute-path>. (If you are running a development build, build the helper fixture with 'npm run build:apple-assist-helper:fixture' and place it next to the running binary; packaged builds should ship the helper via tauri.conf.json bundle.externalBin.)")`
-  - 長くなるが、`current_exe().parent()` の絶対パス、探した filename、dev / packaged それぞれの復旧ヒントを含める。
-  - Rust 側の `spawn_locked` → `format!("Failed to spawn Apple Assist helper: {e}")` に連結されるが、helper 自体が missing なら spawn 前にこの `Err` で return する。
-- **現状 (gate-default-hidden 維持)**: `Err("Apple Assist helper is not configured for this build.")` (現状のまま。slice 17 で `resolve_bundled_helper_path` が not-configured を返すように構造を整理するだけで、メッセージは変えない)。
+- **現行 production 経路 (resolve_bundled_helper_path)**: `Err("Apple Assist helper is not configured for this build. Looked in <dir>.")`
+  - `current_exe().parent()` の絶対パスを含める。
+  - Rust 側の `spawn_locked` は helper 自体が missing なら spawn 前にこの `Err` で return する。
 
 error メッセージの安定性:
 
@@ -83,7 +80,7 @@ error メッセージの安定性:
 
 gate-flip 承認 (順序 14 相当) → `tauri.conf.json` の `bundle.externalBin` 追加 → App Store sandbox での sidecar spawn 検証、と進む前に確認すべき項目。**これらは本スライス (16) では着手せず、gate-flip 承認が降りたスライスのチェックリストとして残す。**
 
-- [ ] `tauri.conf.json` の `bundle.externalBin` に `binaries/hazakura-apple-assist-helper-<triple>` を含める (明示承認が必要)
+- [x] `tauri.conf.json` の `bundle.externalBin` に `../binaries/hazakura-apple-assist-helper` を含める
 - [ ] `minimumSystemVersion` の bump: Foundation Models は macOS 26+ SDK 必須なので、必要なら bump する (明示承認が必要)
 - [ ] helper の Developer ID signing: ad-hoc ではなく Developer ID Application 証明書で署名
 - [ ] helper の notarization: `notarytool` で `developer-id` profile に submit、公証完了まで release lane を block
@@ -93,7 +90,7 @@ gate-flip 承認 (順序 14 相当) → `tauri.conf.json` の `bundle.externalBi
 - [ ] Foundation Models framework への dynamic link 確認 (`otool -L <helper>` で `FoundationModels.framework` が link されていること)
 - [ ] swift `Package.swift` の `linkerFlags` 設定 (SwiftPM executable target は framework を自動 link する想定だが、`-rpath` / `@rpath/FoundationModels.framework` の path 確認)
 - [ ] App Store guideline 2.4.2 (no unrelated background processes) と 2.4.5(i) (sandbox + private APIs) への適合確認
-- [ ] `commands/apple_assist_supervisor.rs` の `#![allow(dead_code)]` を gate-flip 後に外し、production lib build で unused symbol warning が出ないことを確認
+- [ ] `commands/apple_assist_supervisor.rs` の `#![allow(dead_code)]` を不要にできるか確認
 - [ ] `store_with_helper_path` / `store_without_helper` の `cfg(test)` gate が gate-flip 後も production 経路に混入しないことを再確認
 - [ ] `cargo test apple_assist_supervisor` が packaged build の `current_exe().parent()` 配下の helper に対しても CI で再現できるよう、fixture env var の skip 動作を維持
 

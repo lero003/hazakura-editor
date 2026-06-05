@@ -57,7 +57,7 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
         appleHeading: "Apple Assist",
         appleSectionLabel: "Apple Assist の状態と注意事項",
         appleFixtureStatus:
-          "現在のビルドは fixture/mock です。実際の Apple Foundation Models はまだ呼び出しません。",
+          "Apple Local Assist は現在利用できません。",
         appleLiveStatus:
           "この Mac では Apple Local Assist を利用できます。",
         appleUnavailablePrefix:
@@ -118,7 +118,7 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
         appleHeading: "Apple Assist",
         appleSectionLabel: "Apple Assist status and notes",
         appleFixtureStatus:
-          "This build is running fixture/mock mode. It does not call Apple Foundation Models yet.",
+          "Apple Local Assist is not currently available.",
         appleLiveStatus: "Apple Local Assist is available on this Mac.",
         appleUnavailablePrefix:
           "Apple Local Assist is not available yet on this Mac: ",

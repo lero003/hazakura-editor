@@ -1,4 +1,7 @@
 import Foundation
+#if !FIXTURE_MODE
+import FoundationModels
+#endif
 
 // `AvailabilityProbe` answers the "can we call Foundation Models
 // right now?" question. In fixture mode it always answers
@@ -7,31 +10,63 @@ import Foundation
 // exercised without an Apple Silicon Mac with Apple Intelligence
 // enabled.
 //
-// Live mode is intentionally a stub at this slice (Slice 5
-// feasibility spike). The real binding will:
-//   1. Check `if #available(macOS 26.0, *)` to gate the call.
-//   2. Open a `LanguageModelSession` and check its readiness.
-//   3. Map the readiness state onto our 4-state enum:
-//      * model loaded + warmed up → `available`
-//      * Apple Intelligence disabled in System Settings → `disabled`
-//      * macOS older than 26 / Foundation Models missing → `unsupported`
-//      * model still downloading / device busy → `unavailable` with reason
-// The current implementation returns `unsupported` from the
-// live path so an accidental shipping of a partial helper does
-// NOT advertise `available` and trigger the UI commands.
+// Live mode maps `SystemLanguageModel.default.availability`
+// onto the four-state Rust/React availability model.
 
 enum AvailabilityProbe {
     static func probe() -> AppleAssistAvailabilityResponse {
         #if FIXTURE_MODE
         return AppleAssistAvailabilityResponse(kind: "available", reason: nil)
         #else
-        // TODO(slice-5+): real Foundation Models availability check.
-        // Until then, claim `unsupported` so the React layer hides
-        // the command palette entries; this is the safe default.
+        if #available(macOS 26.0, *) {
+            let model = SystemLanguageModel.default
+            guard model.supportsLocale() else {
+                return AppleAssistAvailabilityResponse(
+                    kind: "unsupported",
+                    reason: "Apple Foundation Models does not support the current app language or locale for generation yet: \(Locale.current.identifier)"
+                )
+            }
+            switch model.availability {
+            case .available:
+                return AppleAssistAvailabilityResponse(kind: "available", reason: nil)
+            case .unavailable(let reason):
+                return unavailableResponse(for: reason)
+            }
+        }
         return AppleAssistAvailabilityResponse(
             kind: "unsupported",
-            reason: nil
+            reason: "Foundation Models requires macOS 26 or later."
         )
         #endif
     }
+
+    #if !FIXTURE_MODE
+    @available(macOS 26.0, *)
+    private static func unavailableResponse(
+        for reason: SystemLanguageModel.Availability.UnavailableReason
+    ) -> AppleAssistAvailabilityResponse {
+        switch reason {
+        case .appleIntelligenceNotEnabled:
+            return AppleAssistAvailabilityResponse(
+                kind: "disabled",
+                reason: "Apple Intelligence is not enabled on this Mac."
+            )
+        case .deviceNotEligible:
+            return AppleAssistAvailabilityResponse(
+                kind: "unsupported",
+                reason: "This Mac is not eligible for Apple Intelligence."
+            )
+        case .modelNotReady:
+            return AppleAssistAvailabilityResponse(
+                kind: "unavailable",
+                reason: "The Apple Intelligence model is not ready yet."
+            )
+        @unknown default:
+            return AppleAssistAvailabilityResponse(
+                kind: "unavailable",
+                reason: "Foundation Models is unavailable for an unknown reason."
+            )
+        }
+    }
+    #endif
 }

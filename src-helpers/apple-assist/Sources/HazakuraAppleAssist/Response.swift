@@ -30,5 +30,5 @@ struct AppleAssistAvailabilityResponse: Codable {
 // caller; it returns a JSON envelope.
 struct AppleAssistErrorEnvelope: Codable {
     let error: String
-    let kind: String  // "deferred" | "validation" | "internal"
+    let kind: String  // "deferred" | "validation" | "unavailable" | "guardrail" | "throttled" | "internal"
 }

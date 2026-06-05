@@ -139,6 +139,13 @@ Use these current docs rather than old roadmap bodies:
 
 Current preview releases are warning-expected DMG previews unless the user opens a different lane.
 
+The intended stable distribution shape is two public binary lanes:
+
+- App Store build: Safe Editor + L Mode + Review Desk / Diff + Apple Local Assist, without External Agent Workbench or CLI launch.
+- Developer / GitHub build: the same base plus optional Agent Workbench for allowlisted local CLI providers.
+
+An official site may explain the product and route users to those lanes, but should not create a separate official free binary by default.
+
 - Source-preview release rules: `docs/source-release-checklist.md`
 - Warning-expected DMG rules: `docs/dmg-preview-checklist.md`
 - Release-note evidence: `docs/releases/`

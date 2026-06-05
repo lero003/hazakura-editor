@@ -6,7 +6,7 @@
   "build": {
     "beforeDevCommand": "npm run dev:vite",
     "devUrl": "http://127.0.0.1:1420",
-    "beforeBuildCommand": "npm run build:vite",
+    "beforeBuildCommand": "npm run build:apple-assist-helper:live && npm run build:vite",
     "frontendDist": "../dist"
   },
   "app": {
@@ -30,6 +30,7 @@
     "active": true,
     "targets": "app",
     "icon": ["icons/icon.icns"],
+    "externalBin": ["../binaries/hazakura-apple-assist-helper"],
     "fileAssociations": [
       {
         "name": "Markdown files",

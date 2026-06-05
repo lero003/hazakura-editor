@@ -1,29 +1,14 @@
 // Apple Local Assist — Rust supervisor.
 //
 // This is the v0.12.1+ scaffolding for calling the Swift helper
-// sidecar at `binaries/hazakura-apple-assist-helper-<rust-triple>`.
+// sidecar bundled by Tauri's `bundle.externalBin`.
 // The supervisor owns the helper process lifecycle, the
 // JSON-over-stdio wire protocol, and the failure / retry state.
 //
-// v0.12.0 wiring note (CRITICAL — gate-default-hidden):
-// The supervisor is REACHABLE from tests, but the Tauri command
-// surface in `commands::apple_assist` still calls the in-process
-// stub `probe_apple_assist_availability_with_platform` /
-// `generate_apple_assist_candidate_with_stub`. These return
-// `Unavailable { reason }` on macOS and `Unsupported` on other
-// platforms; they never return `Available`. This preserves the
-// "gate-default-hidden" contract documented in
-// `docs/apple-local-assist-v0.12-design-review.md` section 10
-// while a future slice wires the supervisor into the command
-// body.
-//
-// Because the supervisor is intentionally unused in the live
-// command surface, every symbol below would trip `dead_code` in
-// the lib build. The integration tests in
-// `src-tauri/src/tests/apple_assist_supervisor.rs` are the only
-// callers today; `#![allow(dead_code)]` keeps the lib build
-// warning-free until a future slice wires this into the live
-// command body.
+// The Tauri command surface calls this supervisor from the main
+// window only. The helper may still answer disabled /
+// unavailable / unsupported depending on the local Apple
+// Intelligence state.
 //
 // The shape mirrors the `AgentWorkbenchSessionStore` pattern in
 // `crate::types` and `crate::agent`: a `Default` store with a
@@ -37,6 +22,7 @@
 
 use serde::{Deserialize, Serialize};
 use std::io::{BufRead, BufReader, Write};
+use std::path::{Path, PathBuf};
 use std::process::{Child, ChildStdin, ChildStdout, Command, Stdio};
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::{Arc, Condvar, Mutex};
@@ -58,18 +44,13 @@ const COOLDOWN_DURATION: Duration = Duration::from_secs(300);
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(15);
 
 /// The store is held by Tauri via `tauri::Builder::manage(...)`.
-/// In v0.12.0 it is registered but the command surface does not
-/// use it; in v0.12.1+ it will be threaded through the Tauri
-/// commands.
 pub(crate) struct AppleAssistHelperStore {
     inner: Mutex<Option<AppleAssistHelperInner>>,
     consecutive_failures: AtomicU32,
     cooldown_started_at: Mutex<Option<std::time::Instant>>,
     // Test-only override slot. Production `Default` never reads
-    // the environment, so a process spawned via
-    // `.manage(AppleAssistHelperStore::default())` can only
-    // resolve the helper through a future bundled-helper
-    // resolution path (TBD once externalBin lands). Tests use
+    // the environment. It resolves only the bundled helper next
+    // to the app executable. Tests use
     // `store_with_helper_path` (cfg(test)) to inject the fixture
     // binary instead. See `apple-local-assist-rust-supervisor-plan.md`
     // for the resolved-path plan.
@@ -178,13 +159,9 @@ impl AppleAssistHelperStore {
     /// In test runs, `store_with_helper_path` (cfg(test) only)
     /// injects the fixture binary built by
     /// `scripts/build-apple-assist-helper-fixture.sh`. In
-    /// production, this helper is not yet wired to a real binary
-    /// (slice 5 fixture path is dev-only), so callers fall back
-    /// to the in-process stub. Crucially, `Default::default()`
-    /// does **not** read any environment variable, so a future
-    /// gate-flip cannot be tricked into spawning an arbitrary
-    /// binary just because the shell happened to export a
-    /// `*_FIXTURE` env var.
+    /// production, `Default::default()` never reads any
+    /// environment variable and resolves only the bundled helper
+    /// path next to the running app executable.
     pub(crate) fn helper_path(&self) -> Result<std::path::PathBuf, String> {
         #[cfg(test)]
         {
@@ -433,6 +410,8 @@ enum WireRequest<'a> {
         selected_text: &'a str,
         #[serde(skip_serializing_if = "Option::is_none")]
         document_context: Option<&'a str>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        instruction: Option<&'a str>,
     },
 }
 
@@ -469,14 +448,6 @@ pub(crate) struct HelperError {
 
 /// Probe Foundation Models availability via the helper sidecar.
 /// The store handles spawn / reuse / reset / failure counting.
-///
-/// In v0.12.0 this function exists and is tested, but the Tauri
-/// command surface in `commands::apple_assist` does NOT call it.
-/// The command surface still returns the gate-default-hidden
-/// `Unavailable { reason }` to keep the UI hidden until live mode
-/// is wired. Slice 9 design note: the body in
-/// `probe_apple_assist_availability_with_platform` flips to call
-/// this in a future slice, gated on the helper being available.
 ///
 /// Cooldown discipline: only IO / EOF / parse / timeout / spawn
 /// failures and unexpected-envelope-shape responses count toward
@@ -543,6 +514,7 @@ pub(crate) fn generate_candidate_via_helper(
     operation: &str,
     selected_text: &str,
     document_context: Option<&str>,
+    instruction: Option<&str>,
 ) -> Result<WireEnvelope, String> {
     if store.is_in_cooldown() {
         return Err("Apple Assist is currently unavailable. Try again in a moment.".to_string());
@@ -560,6 +532,7 @@ pub(crate) fn generate_candidate_via_helper(
             operation,
             selected_text,
             document_context,
+            instruction,
         },
         timeout,
     );
@@ -621,29 +594,19 @@ pub(crate) fn store_without_helper() -> AppleAssistHelperStore {
     }
 }
 
-// -- Production helper-path resolver skeleton (slice 17) -------
+// -- Production helper-path resolver ---------------------------
 //
-// The three functions below pin the production helper-path
-// resolver shape so that the gate-flip approval slice has a
-// single, named place to wire in `current_exe().parent()` lookup.
-//
-// All three are `pub(crate)` so the integration test module can
-// reach them and lock down:
+// The functions below pin the production helper-path resolver.
+// All are `pub(crate)` so the integration test module can reach
+// them and lock down:
 //   - the host triple format the supervisor expects
 //   - the bundled-helper filename the production path will look
 //     for (Tauri sidecar convention)
-//   - the not-configured behavior in slice 17 (gate-default-hidden
-//     is still in force; `bundle.externalBin` is not yet approved)
 //
 // Crucially, `resolve_bundled_helper_path` must NOT read any
-// environment variable. If it did, a future gate-flip could be
-// tricked into spawning an arbitrary binary just because the
-// shell happened to export a path-shaped variable. The
-// not-configured error is the only safe return in slice 17.
-//
-// In the production lib build these symbols are unused (the
-// live command surface does not call supervisor). The module-
-// level `#![allow(dead_code)]` keeps the lib build warning-free.
+// environment variable. If it did, a user shell could trick the
+// gate-flipped build into spawning an arbitrary binary just
+// because a path-shaped variable happened to be exported.
 
 /// The Rust target triple this binary was built for. Used by
 /// `bundled_helper_filename` to construct the production
@@ -664,8 +627,8 @@ pub(crate) fn rust_target_triple() -> &'static str {
     }
 }
 
-/// The bundled helper filename the production resolver will look
-/// for next to the running executable (Tauri sidecar convention).
+/// The bundled helper filename the production resolver may look
+/// for next to the running executable.
 /// Format: `hazakura-apple-assist-helper-<rust-target-triple>`.
 ///
 /// Mirrors the DEST naming in
@@ -676,26 +639,36 @@ pub(crate) fn bundled_helper_filename() -> String {
     format!("hazakura-apple-assist-helper-{}", rust_target_triple())
 }
 
-/// Production helper-path resolution skeleton.
-///
-/// The full implementation (gate-flip approval slice) will look
-/// in `current_exe().parent() / bundled_helper_filename()` and
-/// return `Ok(<path>)` only if the file exists. For now (slice 17,
-/// gate-default-hidden) this returns
-/// `Err("Apple Assist helper is not configured for this build.")`
-/// so the supervisor can never spawn a helper in production.
-///
-/// **slice 17 invariants** (locked down by tests in slice 18):
-///
-/// - Must NOT read any environment variable.
-/// - Must NOT consult `tauri.conf.json` / `bundle.externalBin` /
-///   any Tauri runtime state.
-/// - Must NOT return `Ok` for any path the supervisor would then
-///   try to spawn. The only safe return is the not-configured
-///   `Err` until the gate-flip approval slice replaces this body.
-///
-/// These invariants keep "将来 externalBin を承認したとき" 以外
-/// の経路で helper が spawn される余地を 0 にする。
+pub(crate) fn bundled_helper_base_filename() -> &'static str {
+    "hazakura-apple-assist-helper"
+}
+
+pub(crate) fn resolve_bundled_helper_path_from_dir(dir: &Path) -> Result<PathBuf, String> {
+    let candidates = [
+        dir.join(bundled_helper_filename()),
+        dir.join(bundled_helper_base_filename()),
+    ];
+    for candidate in candidates {
+        if candidate.exists() {
+            return Ok(candidate);
+        }
+    }
+    Err(format!(
+        "Apple Assist helper is not configured for this build. Looked in {}.",
+        dir.display()
+    ))
+}
+
+/// Production helper-path resolution. Tauri sidecars are placed
+/// next to the running executable in packaged builds. Depending
+/// on the Tauri sidecar normalization path, the file may keep
+/// the Rust target triple suffix or be exposed as the base name,
+/// so both are accepted.
 pub(crate) fn resolve_bundled_helper_path() -> Result<std::path::PathBuf, String> {
-    Err("Apple Assist helper is not configured for this build.".to_string())
+    let exe = std::env::current_exe()
+        .map_err(|e| format!("Failed to resolve current executable path: {e}"))?;
+    let dir = exe
+        .parent()
+        .ok_or_else(|| format!("Current executable path has no parent: {}", exe.display()))?;
+    resolve_bundled_helper_path_from_dir(dir)
 }

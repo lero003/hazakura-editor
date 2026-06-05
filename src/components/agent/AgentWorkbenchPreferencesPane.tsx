@@ -238,10 +238,10 @@ function appleAssistAvailabilityLabel(
     return copy.appleLiveStatus;
   }
   if (availability.kind === "unavailable") {
-    return `${copy.appleFixtureStatus} ${copy.appleUnavailablePrefix}${availability.reason}`;
+    return `${copy.appleUnavailablePrefix}${availability.reason}`;
   }
   if (availability.kind === "disabled") {
     return copy.appleFixtureStatus;
   }
-  return `${copy.appleFixtureStatus} ${copy.appleUnsupportedStatus}`;
+  return copy.appleUnsupportedStatus;
 }

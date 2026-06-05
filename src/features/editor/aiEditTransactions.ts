@@ -7,7 +7,7 @@ import type { CompareViewState } from "../../types";
 // An `AiEditTransaction` is the durable record of one
 // "AI wrote to the unsaved buffer" event. The Apple Assist
 // window fires `APPLY_AI_EDIT_TRANSACTION_EVENT`; the main
-// window's listener applies a fixture transform, mutates
+// window's listener asks Apple Assist for a bounded replacement, mutates
 // the unsaved buffer in place, and records a transaction
 // here. The escape hatch (slice 5) reads `latest` to
 // render the "Open Diff" / "Discard" affordances.
@@ -43,6 +43,7 @@ export type ApplyAiEditTransactionInput = {
   request: string;
   target: AppleAssistTargetSnapshot | null;
   buffer: string;
+  afterText?: string;
 };
 
 export type ApplyAiEditTransactionResult =
@@ -128,7 +129,13 @@ export function applyAiEditTransaction(
     };
   }
 
-  const after = applyFixtureTransform(input.request, before);
+  const after = input.afterText ?? applyFixtureTransform(input.request, before);
+  if (after === before) {
+    return {
+      ok: false,
+      error: "Apple Assist returned no changes for the selected target.",
+    };
+  }
   const nextBuffer =
     input.buffer.slice(0, target.start) +
     after +

@@ -3,29 +3,24 @@
 Status: Planning
 Scope: v0.12+ Apple Local Assist direction and App Store / developer-build release lanes
 Authority: Medium
-Last reviewed: 2026-06-05
+Last reviewed: 2026-06-06
 
 ## Implementation Snapshot (v0.12, in-progress)
 
-The first 5 slices of the Apple Local Assist work-stream are landed. Code, not policy:
+Apple Local Assist has moved from fixture-only plumbing to a live local preview on `main`. Code state, not release policy:
 
-- **Types and boundary** — `src/lib/tauri/appleAssist.ts` + `src-tauri/src/commands/apple_assist.rs` define the 4-state availability enum, the 5-operation request shape, `MAX_SELECTED_CHARS=4000`, `MAX_CONTEXT_CHARS=8000` (char-count, not byte-count), and the `*_with_label` shim gated by `ensure_label_is_main` (main window only; the agent window is explicitly rejected, even though `ensure_label_is_main_or_agent` exists). Stub implementations only; no Foundation Models binding.
-- **Availability probe** — `useAppleAssistAvailability` defaults to `unsupported`, calls `probe_apple_assist_availability` on mount, maps IPC failure to `unavailable` with a reason. The probe is cached per mount.
-- **Review Desk handoff** — `useAppleAssistCandidate.generateAndCompare(operation, selectedText)` calls `generateAppleAssistCandidate` and hands the response to the existing `runCandidateCompare` with `candidateSourceLabel: copy.candidateSourceAppleAssist`. **No auto-apply.** The candidate flows through the same explicit-apply UX as the manual paste flow.
-- **UI entry** — Two command palette entries (`Summarize selection`, `Rephrase selection`) gated on availability. Hidden when the probe is not `available`. Sit under a new `Apple Assist` command category that is locale-aware (`あっぷる あしす と` in kana, `Apple Assist` otherwise).
-- **Swift helper feasibility (fixture mode)** — `src-helpers/apple-assist/` is a SwiftPM executable. `npm run build:apple-assist-helper:fixture` compiles it and writes `binaries/hazakura-apple-assist-helper-<rust-triple>`. The fixture build (no FoundationModels import) returns canned candidate JSON whose prefix matches the Rust stub (`【要約案】`, `【書き換え案】`). Smoke test in the build script asserts both envelopes.
+- **Types and boundary** — `src/lib/tauri/appleAssist.ts` + `src-tauri/src/commands/apple_assist.rs` define the availability enum, request limits, and window-label gates. Apple Assist stays main-window / Apple Assist-window scoped and is not a CLI-agent provider.
+- **Bundled helper** — `npm run build` builds a release Swift helper, bundles it through `tauri.conf.json` `bundle.externalBin`, and signs it with the local app bundle.
+- **Live binding** — the helper uses `SystemLanguageModel.default.availability` for probe and `LanguageModelSession.respond` for bounded candidate generation when Apple Foundation Models is available on the current Mac.
+- **Writing Companion UX** — the current product direction is the external Writing Companion / Assist Window in [Apple Local Assist Writing Companion Plan](apple-local-assist-writing-companion-plan.md): useful in normal editor and L Mode, tolerant of rough writing requests, and able to make explicit unsaved AI edit transactions with Diff / history review.
+- **Safe Editor fallback** — live generation depends on macOS 26+ Apple Foundation Models availability and local Apple Intelligence state. Safe Editor remains usable when Apple Assist is unavailable or unsupported.
 
-- **Gate-default-hidden contract** — the Rust probe returns `Unavailable { reason: "Foundation Models binding is not yet implemented in this build." }` on macOS and `Unsupported` elsewhere in v0.12. It must never return `Available` until a future slice lands a real Foundation Models binding; the React side hides the command palette entries whenever the probe is not `Available`, and the stub generate response carries `modelId: "stub:v0.12"` so a future regression is easy to spot.
+What is **not** done yet:
 
-These landed slices are now treated as foundation plumbing. They do not define the final Apple Local Assist UX. The current product direction is the external Writing Companion / Assist Window in [Apple Local Assist Writing Companion Plan](apple-local-assist-writing-companion-plan.md): useful in L Mode, tolerant of rough writing requests, and able to make explicit unsaved AI edit transactions with Diff / history review.
-
-What is **not** done yet, and is gated on explicit approval:
-
-- `tauri.conf.json` is unchanged — no `bundle.externalBin`, no `minimumSystemVersion` bump
-- `bundle_identifier` and code-signing entitlements are untouched
-- No live (non-fixture) Foundation Models binding; `live mode` falls back to `unsupported` / `deferred`
-- No App Store sandbox or TestFlight changes
-- No release tag, no GitHub Release, no App Store submission
+- no App Store sandbox or TestFlight packaging change
+- no Developer ID signing / notarization lane for the bundled helper
+- no `minimumSystemVersion` bump; the editor-wide value remains `11.0`
+- no release tag, no GitHub Release, no App Store submission for this live helper state
 
 ## Official Information Confirmed (2026-06-05, slice 7)
 
@@ -196,6 +191,13 @@ Do not raise the minimum OS for every distribution lane merely to support Apple 
 
 ## Distribution Lanes
 
+Long-term public distribution should converge on **two binary lanes only**:
+
+1. **App Store Build** for ordinary users.
+2. **Developer / GitHub Build** for users who intentionally want the External Agent Workbench boundary.
+
+An official website, if created, should act as a download / explanation hub that links to the App Store and GitHub Release assets. It should not introduce a third "official free build" unless there is a fresh reason to own the extra signing, notarization, checksum, update, support, and messaging burden.
+
 ### App Store Build
 
 Goal: a clean, sandboxed, reviewable build for ordinary users.
@@ -222,19 +224,24 @@ This build should be prepared through TestFlight before App Store submission.
 
 ### Developer Build
 
-Goal: preserve the current developer-oriented preview lane.
+Goal: preserve the developer-oriented GitHub lane.
 
 May include:
 
+- Safe Editor
+- L Mode
+- Review Desk / Diff
+- Apple Local Assist when available
 - External Agent Workbench
 - allowlisted local CLI providers
-- warning-expected DMG previews until the Developer ID lane is complete
 
-Future Developer ID signing and notarization can make this build easier to share outside the App Store, but it should remain distinct from the App Store build if it includes CLI-agent behavior.
+This lane should move toward Developer ID signing and notarization before being described as broadly shareable outside the App Store. It must remain distinct from the App Store build while it includes CLI-agent behavior.
 
 ### Warning-Expected DMG Preview
 
-Goal: continue short preview releases while distribution quality is still moving.
+Goal: continue short GitHub preview releases while distribution quality is still moving.
+
+This is a temporary packaging state inside the Developer / GitHub lane, not a third public product lane.
 
 Rules:
 
@@ -280,7 +287,8 @@ Target:
 - build variant automation
 - TestFlight packaging
 - App Review notes draft
-- separate Developer ID / notarization plan for non-App-Store builds
+- Developer / GitHub build signing and notarization plan
+- official website/download-page wording, if needed, as links to the two binary lanes
 
 ### v1.0: App Store Candidate
 

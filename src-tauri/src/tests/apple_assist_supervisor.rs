@@ -131,8 +131,8 @@ fn supervisor_probe_without_helper_returns_err_quickly() {
 #[test]
 fn supervisor_generate_without_helper_returns_err_quickly() {
     let store = store_without_helper();
-    let err =
-        generate_candidate_via_helper(&store, "summarize", "body", None).expect_err("must error");
+    let err = generate_candidate_via_helper(&store, "summarize", "body", None, None)
+        .expect_err("must error");
     assert!(err.contains("not configured"), "got: {err}");
 }
 
@@ -184,7 +184,7 @@ fn supervisor_generate_summarize_via_fixture_returns_prefixed_candidate() {
         return;
     };
     let store = store_with_helper_path(path);
-    let envelope = generate_candidate_via_helper(&store, "summarize", "body", None)
+    let envelope = generate_candidate_via_helper(&store, "summarize", "body", None, None)
         .expect("fixture generate must succeed");
     match envelope {
         WireEnvelope::Candidate(HelperCandidate {
@@ -218,7 +218,7 @@ fn supervisor_generate_rephrase_via_fixture_returns_prefixed_candidate() {
         return;
     };
     let store = store_with_helper_path(path);
-    let envelope = generate_candidate_via_helper(&store, "rephrase", "hello", None)
+    let envelope = generate_candidate_via_helper(&store, "rephrase", "hello", None, None)
         .expect("fixture generate must succeed");
     match envelope {
         WireEnvelope::Candidate(HelperCandidate {
@@ -246,7 +246,7 @@ fn supervisor_generate_deferred_operation_via_fixture_returns_error_envelope() {
     // `extract` / `proofread` / `explain_diff` are well-formed
     // operations but deferred in v0.12. The helper must return
     // an error envelope (kind = "deferred"), not a candidate.
-    let envelope = generate_candidate_via_helper(&store, "extract", "body", None);
+    let envelope = generate_candidate_via_helper(&store, "extract", "body", None, None);
     match envelope {
         Ok(WireEnvelope::Error(err)) => {
             assert_eq!(
@@ -279,7 +279,7 @@ fn supervisor_does_not_count_helper_error_envelopes_as_failures() {
     // call would enter cooldown and the post-loop probe would
     // return the cooldown error.
     for i in 0..6 {
-        let envelope = generate_candidate_via_helper(&store, "extract", "body", None)
+        let envelope = generate_candidate_via_helper(&store, "extract", "body", None, None)
             .unwrap_or_else(|e| panic!("deferred call #{i} must pass through, got err: {e}"));
         match envelope {
             WireEnvelope::Error(err) => {
@@ -342,7 +342,7 @@ fn supervisor_handles_mixed_request_types_in_sequence() {
         WireEnvelope::Availability(_)
     ));
     assert!(matches!(
-        generate_candidate_via_helper(&store, "summarize", "body 1", None).expect("gen 1"),
+        generate_candidate_via_helper(&store, "summarize", "body 1", None, None).expect("gen 1"),
         WireEnvelope::Candidate(_)
     ));
     assert!(matches!(
@@ -350,7 +350,7 @@ fn supervisor_handles_mixed_request_types_in_sequence() {
         WireEnvelope::Availability(_)
     ));
     assert!(matches!(
-        generate_candidate_via_helper(&store, "rephrase", "body 2", None).expect("gen 2"),
+        generate_candidate_via_helper(&store, "rephrase", "body 2", None, None).expect("gen 2"),
         WireEnvelope::Candidate(_)
     ));
 }
@@ -367,9 +367,14 @@ fn supervisor_passes_document_context_to_helper() {
     // that passing a Some(_) does not break the round-trip; if
     // serde silently emitted a malformed JSON key, the Swift
     // decoder would fail and the round-trip would error.
-    let envelope =
-        generate_candidate_via_helper(&store, "summarize", "body", Some("surrounding paragraph"))
-            .expect("generate with context must succeed");
+    let envelope = generate_candidate_via_helper(
+        &store,
+        "summarize",
+        "body",
+        Some("surrounding paragraph"),
+        None,
+    )
+    .expect("generate with context must succeed");
     assert!(matches!(envelope, WireEnvelope::Candidate(_)));
 }
 
@@ -562,7 +567,7 @@ fn supervisor_generate_treats_availability_envelope_as_protocol_violation() {
     std::fs::set_permissions(&script, std::os::unix::fs::PermissionsExt::from_mode(0o755))
         .expect("chmod script");
     let store = store_with_helper_path(script.clone());
-    let result = generate_candidate_via_helper(&store, "summarize", "body", None)
+    let result = generate_candidate_via_helper(&store, "summarize", "body", None, None)
         .expect("generate returns the parsed envelope; the violation is counted internally");
     assert!(
         matches!(result, WireEnvelope::Availability(_)),
@@ -795,7 +800,7 @@ fn resolver_helper_path_still_reports_not_configured_for_default_store() {
         err.contains("not configured"),
         "probe against default store must still report not-configured, got: {err}"
     );
-    let err = generate_candidate_via_helper(&store, "summarize", "body", None)
+    let err = generate_candidate_via_helper(&store, "summarize", "body", None, None)
         .expect_err("generate must error on default store");
     assert!(
         err.contains("not configured"),

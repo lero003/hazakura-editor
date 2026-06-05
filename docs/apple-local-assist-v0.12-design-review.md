@@ -5,6 +5,8 @@ Scope: v0.12 Apple Local Assist スライス 1〜6 (型・境界 / probe / Revie
 Authority: Medium
 Last reviewed: 2026-06-05 (post-slice-6 implementation, post-P1/P2 boundary fixes, post-slice-7 official info confirmation)
 
+Current-state note (2026-06-06): this is now a historical review record. The live helper gate has since been flipped on `main` via `bundle.externalBin`, Swift `LanguageModelSession`, and Rust supervisor command routing. Use `docs/current-status.md`, `docs/apple-local-assist-writing-companion-plan.md`, and `docs/apple-local-assist-helper-path-design.md` for current implementation state.
+
 ## 目的
 
 `docs/apple-local-assist-distribution-plan.md` の方針が現在のコード構造に対して実装可能か、Agent Workbench / Review Desk の既存構造との整合を確認した上で、v0.12 のスライス 1〜6 が安全に着地した最小変更点と、その間に残った不確実性をまとめる。本メモは v0.12.0 リリースまでの間 "Snapshot + Review record" として参照される。新しいスライスを始める前に読み返して、設計判断の根拠を残す用途を想定。
@@ -119,9 +121,9 @@ export type AppleAssistAvailability =
 - Agent Workbench の CLI trust boundary を継承しない。`agent` ラベルの窓から Apple Assist IPC を呼ぼうとすると即時 `Command is not allowed from window 'agent'.` で拒否される
 - これは strategy doc の「Agent Workbench の CLI trust boundary を継承しない」と一致する
 
-### 10. probe は "gate-default-hidden" 契約
+### 10. historical: probe は "gate-default-hidden" 契約
 
-- v0.12 の Rust probe は macOS で `Unavailable { reason: "Foundation Models binding is not yet implemented in this build." }` を返し、non-macOS で `Unsupported` を返す。`Available` は **絶対に返さない**
+- Historical slice-6 state: v0.12 の Rust probe は macOS で `Unavailable { reason: "Foundation Models binding is not yet implemented in this build." }` を返し、non-macOS で `Unsupported` を返す。`Available` は **絶対に返さない**
 - ライブ Foundation Models バインドが乗った将来のスライスで、この probe だけが `Available` を返し始める (そのとき React 側の `useAppleAssistAvailability` がコマンドパレット項目を露出する)
 - `generate_apple_assist_candidate_with_stub` のレスポンスは `modelId: "stub:v0.12"` を持ち続ける。Foundation Models 実バインドに切り替わったとき、この modelId が消えるので、テスト / 将来 telemetry でスタブ漏れを検出できる
 

@@ -137,12 +137,12 @@ Apple Local Assist may reuse Agent Workbench implementation patterns such as ava
 
 Future distribution may use build-time variants rather than runtime settings alone:
 
-- Safe Editor build: no External Agent Workbench code path.
 - App Store build: Safe Editor, L Mode, Review Desk / Diff, and Apple Local Assist when available; no External Agent Workbench, no CLI launch, no arbitrary process execution, no provider-add UI, and no custom updater.
-- Official-site developer build: may include External Agent Workbench if the boundary remains explicit.
-- Apple Local Assist build: may include macOS-only document helpers when availability and review requirements are understood.
+- Developer / GitHub build: App Store feature set plus External Agent Workbench when the boundary remains explicit; this lane may carry warning-expected DMG previews until Developer ID signing and notarization are ready.
 
 Build-time separation is preferred for distribution trust because it is easier to explain and audit than hiding risky features behind settings.
+
+Do not create a separate "official free build" by default. An official website can explain the product and route users to the App Store build or GitHub developer build without owning a third binary lane.
 
 ## Post-v0.11 Path
 

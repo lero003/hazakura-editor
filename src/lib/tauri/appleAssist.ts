@@ -15,7 +15,7 @@ export type AppleAssistOperation =
   | "proofread"
   | "explain_diff";
 
-// v0.12 implements summarize + rephrase. The other three are
+// v0.12 implements summarize + rephrase + proofread. The other two are
 // defined in the enum so the surface is shaped, but the Rust
 // side rejects them as "deferred" — see
 // commands::apple_assist::validate_request. v0.12.x / v0.13
@@ -23,6 +23,7 @@ export type AppleAssistOperation =
 export const APPLE_ASSIST_V0_12_OPERATIONS: ReadonlyArray<AppleAssistOperation> = [
   "summarize",
   "rephrase",
+  "proofread",
 ];
 
 // All five operations, in display order, for UI enumeration and
@@ -39,6 +40,7 @@ export const APPLE_ASSIST_ALL_OPERATIONS: ReadonlyArray<AppleAssistOperation> = 
 
 export const APPLE_ASSIST_MAX_SELECTED_CHARS = 4000;
 export const APPLE_ASSIST_MAX_CONTEXT_CHARS = 8000;
+export const APPLE_ASSIST_MAX_INSTRUCTION_CHARS = 1000;
 
 export type AppleAssistRequest = {
   operation: AppleAssistOperation;
@@ -51,6 +53,9 @@ export type AppleAssistRequest = {
   // shaped and a future intent (e.g. explain_diff) can pick it
   // up without an API break.
   documentContext?: string;
+  // Optional rough user request from the Writing Companion
+  // window. Capped by the Rust side.
+  instruction?: string;
 };
 
 export type AppleAssistResponse = {
@@ -59,9 +64,8 @@ export type AppleAssistResponse = {
   // is expected to feed this into the Review Desk's
   // runCandidateCompare with a fresh candidateSourceLabel.
   candidateText: string;
-  // Opaque model identifier. v0.12 stub returns "stub:v0.12";
-  // a future Foundation Models binding will return something
-  // like "apple-foundation-models:<version>".
+  // Opaque model identifier. Fixture builds return "fixture:*";
+  // live builds return an Apple Foundation Models identifier.
   modelId: string;
   // Latency in milliseconds, useful for status display and
   // future rate limiting. v0.12 stub returns 0.

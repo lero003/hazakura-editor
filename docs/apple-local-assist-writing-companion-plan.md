@@ -1,6 +1,6 @@
 # Apple Local Assist — Writing Companion Plan
 
-Status: Active mock implementation
+Status: Active live-preview implementation
 Scope: v0.12+ Apple Local Assist user experience direction
 Authority: Medium
 Last reviewed: 2026-06-06
@@ -87,7 +87,7 @@ Do not force every Apple Local Assist action to start inside Review Desk. The co
 
 Existing v0.12 slices are still useful foundation work:
 
-- availability types and gate-default-hidden behavior
+- availability types and live/unavailable/disabled/unsupported disclosure
 - main-window-only IPC boundary
 - helper fixture / supervisor / watchdog / cooldown
 - locale and command-palette plumbing
@@ -95,21 +95,21 @@ Existing v0.12 slices are still useful foundation work:
 
 However, the command-palette selected-text entries should be treated as early plumbing, not the final product shape.
 
-The first external Writing Companion mock is now implemented on `main`:
+The first external Writing Companion is now implemented on `main`:
 
 - the detached Apple Assist window opens from the shared external companion slot
 - Agent Window and Apple Assist Window replace rather than coexist with each other
 - Preferences now expose the shared outside companion slot as a restart-applied `Apple Assist` / `CLI Agent` / `Off` choice, with CLI Agent retaining the existing Agent Workbench restart / consent / provider boundary
 - the normal top-chrome companion button switches between Apple Assist and Agent according to the active setting for the current app launch
 - L Mode can open the companion without leaving the focused writing surface
-- rough requests apply deterministic fixture edits to the unsaved editor buffer
-- each fixture edit records an AI edit transaction and exposes a compact Diff / Discard affordance
+- rough requests call the bundled Apple Assist helper when Apple Foundation Models is locally available
+- each generated edit records an AI edit transaction and exposes a compact Diff / Discard affordance
 
-This mock does **not** call Apple Foundation Models. It intentionally uses deterministic fixture output (for example `【AI編集メモ】`) so the writing-companion interaction, target inference, unsaved-buffer mutation, and diff escape hatch can be smoke-tested before any live helper gate is flipped.
+The fixture helper remains available for supervisor regression tests, but the production build path now uses the live helper. Live generation depends on macOS 26+ Apple Foundation Models availability, local Apple Intelligence state, and a Foundation Models-supported current app locale; when unavailable, Apple Assist must disclose the unavailable/disabled/unsupported state rather than falling back to a network model or hidden fixture output.
 
 ## First Mock Slice
 
-Before flipping any live Foundation Models gate, build a touchable mock that proves the experience:
+Completed: before flipping the live Foundation Models gate, the project built a touchable mock that proved the experience:
 
 1. Add an external Apple Local Assist companion slot that replaces, rather than coexists with, the Agent Window slot.
 2. Support fixture-only rough requests against the current editor context.
@@ -117,29 +117,25 @@ Before flipping any live Foundation Models gate, build a touchable mock that pro
 4. Show a compact "AI changed this" affordance with a path to Diff / change history.
 5. Smoke in L Mode and normal editor mode.
 
-The mock may use deterministic fixture output. It does not need live Foundation Models.
+The deterministic fixture path is now test/support infrastructure, not the production Writing Companion path.
 
 ## Live Foundation Models Gate
 
-There is no user-facing procedure that makes the current mock call Apple Foundation Models. Live Apple AI requires the separate helper gate sequence from `docs/current-status.md`:
+Completed on `main`: `npm run build` builds and bundles the live helper, and the Rust command surface calls it through the supervisor. The remaining live-preview hardening is:
 
-1. approve and wire the bundled helper path / `bundle.externalBin`
-2. implement the Swift `LanguageModelSession` live probe in `src-helpers/apple-assist/`
-3. flip the Rust command surface from stubs to the helper supervisor
-4. expose honest UI states for unsupported / unavailable / fixture / live responses
-
-Until those gates land, Apple Assist should disclose fixture mode in the companion window and docs.
+1. built-app smoke in normal editor and L Mode
+2. prompt / response cleanup using real writing examples
+3. unavailable / disabled / unsupported state smoke
+4. App Store sandbox / signing / notarization review before any distribution-lane change
 
 ## Non-Goals
 
 This plan is not approval for:
 
-- live Foundation Models gate flip
-- `tauri.conf.json` `bundle.externalBin`
-- minimum macOS version changes
-- App Store submission changes
 - network-backed LLM fallback
 - provider-add UI
+- minimum macOS version changes
+- App Store submission changes
 - tool calling
 - shell / Git / LSP / package-manager integration
 - auto-save

@@ -7,10 +7,9 @@
 #   * non-Apple-Silicon contributors can build
 #   * CI uses on macOS runners without Apple Intelligence
 #
-# Live mode (no -DFIXTURE_MODE) is a separate concern that
-# Slice 5+ will validate against a real Apple Silicon Mac with
-# Apple Intelligence enabled. Until then, fixture mode is the
-# only end-to-end-tested helper build.
+# Live mode (no -DFIXTURE_MODE) is built by
+# scripts/build-apple-assist-helper-live.sh. Fixture mode remains
+# the deterministic helper flavor for supervisor regression tests.
 
 set -euo pipefail
 

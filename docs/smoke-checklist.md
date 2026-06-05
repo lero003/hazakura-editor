@@ -158,18 +158,18 @@ Run when Agent Workbench, provider availability, terminal sizing, or Agent Windo
 8. Stop the session and confirm UI state cleans up.
 9. Confirm provider-made file edits surface as ordinary external on-disk changes in Safe Editor.
 
-## Apple Local Assist (v0.12 in-progress, gate-default-hidden)
+## Apple Local Assist (v0.12 live local preview)
 
-Run when `src/lib/tauri/appleAssist.ts`, `src-tauri/src/commands/apple_assist.rs`, `src-tauri/src/commands/apple_assist_supervisor.rs`, `useAppleAssistAvailability`, `useAppleAssistCandidate`, `src/lib/locale/appleAssist.ts`, or the Apple Assist command palette entries change. **No release lane includes a live Foundation Models binding yet.**
+Run when `src/lib/tauri/appleAssist.ts`, `src-tauri/src/commands/apple_assist.rs`, `src-tauri/src/commands/apple_assist_supervisor.rs`, `src-helpers/apple-assist/`, `useAppleAssistAvailability`, `useAppleAssistCandidate`, `src/lib/locale/appleAssist.ts`, or the Apple Assist companion / command palette entries change.
 
-1. Confirm the default app launch does NOT show any `Apple Assist:` entry in the command palette (the probe defaults to `unsupported` and the production Rust stub does not advertise `available`).
-2. Confirm the Settings / Agent Workbench Preferences surface does not list Apple Local Assist as a CLI agent provider — it is a separate Assist Surface provider class.
-3. Confirm no menu entry, status bar item, or autosave path runs Apple Local Assist text generation without an explicit command palette invocation.
-4. (Helper feasibility check, optional) Build the fixture helper with `npm run build:apple-assist-helper:fixture` and confirm: a binary is written to `binaries/hazakura-apple-assist-helper-aarch64-apple-darwin`; the smoke test prints `ok`; the helper exits 0 on stdin EOF.
-5. (Helper feasibility check, optional) Run the helper manually and feed `{"action":"probe_availability"}` on stdin; confirm the response is `{"kind":"availability","value":{"kind":"available","reason":null}}`. Feed `{"action":"generate_candidate","operation":"summarize","selectedText":"hello"}` and confirm the candidate text begins with `【要約案】`.
-6. Confirm `tauri.conf.json` still has `bundle.macOS.minimumSystemVersion` at the v0.11 value and does NOT yet declare `bundle.externalBin` for the helper (this is gated on explicit approval).
-7. (Supervisor regression, optional) Build the fixture helper (item 4) and run `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE=binaries/hazakura-apple-assist-helper-aarch64-apple-darwin cargo test apple_assist_supervisor --manifest-path src-tauri/Cargo.toml`; confirm all 27 cases pass (probe, generate, reuse, mixed sequence, timeout, protocol-violation, malformed, EOF, success-path elapsed, resolver skeleton).
-8. (Supervisor regression, optional) Confirm `cargo test --manifest-path src-tauri/Cargo.toml` passes with no `apple_assist_supervisor` cases skipped (means the fixture env var is set; unset env var must also be a clean skip, not a failure).
+1. Build the live helper with `npm run build:apple-assist-helper:live`; confirm the probe smoke returns an availability envelope. On a Mac where Apple Foundation Models is available and `SystemLanguageModel.default.supportsLocale()` is true, optionally run `HAZAKURA_APPLE_ASSIST_LIVE_SMOKE_GENERATE=1 npm run build:apple-assist-helper:live` and confirm a candidate or honest error envelope.
+2. Confirm `npm run build` bundles `Contents/MacOS/hazakura-apple-assist-helper` and signs it with the local app bundle.
+3. Confirm the Settings / Agent Workbench Preferences surface does not list Apple Local Assist as a CLI agent provider — it is a separate Assist Surface provider class.
+4. Confirm no menu entry, status bar item, autosave path, or background timer runs Apple Local Assist generation without an explicit user request.
+5. In the built app, select `Apple Assist`, restart if prompted, open the companion from normal editor, issue a rough request, and confirm the buffer becomes dirty without auto-saving.
+6. Repeat item 5 in L Mode. Confirm the compact AI-change affordance appears and `差分を開く` / `差分を閉じる` works.
+7. Confirm Agent Window and Apple Assist Window still replace rather than coexist as the primary external companion.
+8. (Supervisor regression, optional) Build the fixture helper with `npm run build:apple-assist-helper:fixture` and run `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE=binaries/hazakura-apple-assist-helper-aarch64-apple-darwin cargo test apple_assist_supervisor --manifest-path src-tauri/Cargo.toml`.
 
 ## Release Packaging
 

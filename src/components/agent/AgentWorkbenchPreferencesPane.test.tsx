@@ -46,7 +46,7 @@ describe("AgentWorkbenchPreferencesPane", () => {
     expect(
       screen.getByRole("heading", { name: "Apple Assist" }),
     ).toBeTruthy();
-    expect(screen.getByText(/fixture\/mock mode/)).toBeTruthy();
+    expect(screen.getByText(/Apple Local Assist is not available yet/)).toBeTruthy();
     expect(
       screen.queryByLabelText("Agent Workbench provider"),
     ).toBeNull();
@@ -68,7 +68,7 @@ describe("AgentWorkbenchPreferencesPane", () => {
         "I understand the Agent Workbench responsibility boundary.",
       ),
     ).toBeTruthy();
-    expect(screen.queryByText(/fixture\/mock mode/)).toBeNull();
+    expect(screen.queryByText(/Apple Local Assist is not available yet/)).toBeNull();
   });
 
   it("emits assist surface preference changes from the selector", () => {

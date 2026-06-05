@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit",
     "build": "tauri build",
     "build:apple-assist-helper:fixture": "bash scripts/build-apple-assist-helper-fixture.sh",
+    "build:apple-assist-helper:live": "bash scripts/build-apple-assist-helper-live.sh",
     "build:dmg-preview": "bash scripts/build-warning-dmg-preview.sh",
     "build:vite": "tsc --noEmit && vite build",
     "preview": "vite preview --host 127.0.0.1",

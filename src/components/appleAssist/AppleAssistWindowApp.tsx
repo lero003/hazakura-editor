@@ -5,6 +5,8 @@ import {
   requestApplyAiEditTransaction,
   setAppleAssistWindowTheme,
 } from "../../lib/tauri";
+import { useAppleAssistAvailability } from "../../hooks/agent/useAppleAssistAvailability";
+import type { AppleAssistAvailability } from "../../lib/tauri/appleAssist";
 import {
   MAIN_APPLE_ASSIST_TARGET_CHANGED_EVENT,
   THEME_STORAGE_KEY,
@@ -13,15 +15,13 @@ import {
   type ThemePreference,
 } from "../../types";
 
-// v0.12+ Apple Local Assist Writing Companion mock (slice 2).
+// v0.12+ Apple Local Assist Writing Companion.
 // `AppleAssistWindowApp` is the root of the detached
 // `hazakura apple assist` window — the outside-companion slot
 // that replaces the Agent window in the same UX surface
 // (see `docs/apple-local-assist-writing-companion-plan.md`).
 //
-// The mock intentionally does NOT bind to live Apple Foundation Models
-// (foundation-models-framework is not yet wired). The user
-// types a rough request ("整えて" / "自然にして" / "続きを書いて" /
+// The user types a rough request ("整えて" / "自然にして" / "続きを書いて" /
 // "校正して" / "この章を直して") into a textarea, picks the
 // active tab from the main window's broadcast, and clicks
 // "Apply" to emit `APPLY_AI_EDIT_TRANSACTION_EVENT` to the main
@@ -29,7 +29,8 @@ import {
 //   - inferring the bounded target (selection → paragraph →
 //     block → section) via `REQUEST_AI_EDIT_TARGET_EVENT` round
 //     trip (slice 3),
-//   - applying a fixture transform to the unsaved buffer and
+//   - asking the bundled helper for a bounded replacement and
+//     applying it to the unsaved buffer,
 //     recording an AI edit transaction (slice 4),
 //   - showing the change in the Diff / change-review escape
 //     hatch (slice 5).
@@ -73,11 +74,13 @@ export function AppleAssistWindowApp() {
   const [theme, setTheme] = useState<ThemePreference>(readInitialTheme);
   const [roughRequest, setRoughRequest] = useState<string>("");
   const [status, setStatus] = useState<string>(
-    "Fixture mode: live Apple AI is not connected in this build.",
+    "Ready. Changes are generated in the main editor and kept unsaved.",
   );
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<boolean>(false);
   const [target, setTarget] = useState<AppleAssistTargetSnapshot | null>(null);
+  const { availability, available } = useAppleAssistAvailability();
+  const availabilityMessage = renderAvailabilityMessage(availability);
 
   // Apply theme to the Apple Assist window's document so the
   // CSS variable surface matches the main window. Mirrors the
@@ -168,6 +171,10 @@ export function AppleAssistWindowApp() {
       );
       return;
     }
+    if (!available) {
+      setError(availabilityMessage);
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -184,14 +191,14 @@ export function AppleAssistWindowApp() {
         target: latestTarget,
       };
       await requestApplyAiEditTransaction(payload);
-      setStatus(`Applied fixture edit for: ${request}`);
+      setStatus(`Sent rough request: ${request}`);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       setError(message);
     } finally {
       setBusy(false);
     }
-  }, [roughRequest, target]);
+  }, [available, availabilityMessage, roughRequest, target]);
 
   const onPickPreset = useCallback((prompt: string) => {
     setRoughRequest(prompt);
@@ -204,11 +211,12 @@ export function AppleAssistWindowApp() {
         <div className="apple-assist-window-title">Apple Assist</div>
         <div className="apple-assist-window-subtitle">
           Writing Companion
-          <span className="apple-assist-window-mode">Fixture mock</span>
+          <span className="apple-assist-window-mode">Local</span>
         </div>
         <div className="apple-assist-window-disclosure">
-          This preview edits with deterministic fixture output. It does not
-          call Apple Foundation Models yet.
+          {available
+            ? "Uses Apple Foundation Models when available on this Mac."
+            : availabilityMessage}
         </div>
         <div className="apple-assist-window-doc">
           {target?.activeDocumentName
@@ -227,7 +235,7 @@ export function AppleAssistWindowApp() {
             type="button"
             className="apple-assist-preset"
             onClick={() => onPickPreset(preset.prompt)}
-            disabled={busy}
+            disabled={busy || !available}
           >
             {preset.label}
           </button>
@@ -251,13 +259,13 @@ export function AppleAssistWindowApp() {
           }}
           rows={6}
           placeholder="整えて / 自然にして / 続きを書いて / 校正して / この章を直して"
-          disabled={busy}
+          disabled={busy || !available}
         />
         <button
           type="button"
           className="apple-assist-window-apply"
           onClick={() => void applyRoughRequest()}
-          disabled={busy || roughRequest.trim().length === 0}
+          disabled={busy || !available || roughRequest.trim().length === 0}
         >
           {busy ? "Sending…" : "Apply"}
         </button>
@@ -273,6 +281,19 @@ export function AppleAssistWindowApp() {
       </footer>
     </div>
   );
+}
+
+function renderAvailabilityMessage(availability: AppleAssistAvailability): string {
+  if (availability.kind === "available") {
+    return "Apple Assist is available.";
+  }
+  if (availability.kind === "unavailable") {
+    return `Apple Assist is not available for the current app language or runtime: ${availability.reason}`;
+  }
+  if (availability.kind === "disabled") {
+    return "Apple Assist is disabled in this app session.";
+  }
+  return "Apple Assist is not available for the current app language or runtime.";
 }
 
 function isTauriEventAvailable(): boolean {

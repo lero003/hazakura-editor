@@ -51,6 +51,7 @@ struct IncomingRequest: Decodable {
     let operation: String?
     let selectedText: String?
     let documentContext: String?
+    let instruction: String?
 }
 
 func emit(_ envelope: WireEnvelope) {
@@ -68,7 +69,7 @@ func emit(_ envelope: WireEnvelope) {
     fflush(stdout)
 }
 
-func dispatch(_ raw: String) {
+func dispatch(_ raw: String) async {
     guard let data = raw.data(using: .utf8) else {
         emit(.error(
             AppleAssistErrorEnvelope(
@@ -108,9 +109,10 @@ func dispatch(_ raw: String) {
         let req = AppleAssistRequest(
             operation: operation,
             selectedText: selectedText,
-            documentContext: request.documentContext
+            documentContext: request.documentContext,
+            instruction: request.instruction
         )
-        switch GenerateCandidate.run(req) {
+        switch await GenerateCandidate.run(req) {
         case .ok(let response):
             emit(.candidate(response))
         case .error(let envelope):
@@ -127,5 +129,5 @@ func dispatch(_ raw: String) {
 }
 
 while let line = readLine(strippingNewline: true) {
-    dispatch(line)
+    await dispatch(line)
 }

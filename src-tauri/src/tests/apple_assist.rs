@@ -12,18 +12,23 @@
 // that.
 
 use crate::commands::apple_assist::*;
+use crate::commands::apple_assist_supervisor::{
+    store_without_helper, HelperAvailability, HelperCandidate,
+};
 
 fn request_with(operation: AppleAssistOperation, text: &str) -> AppleAssistRequest {
     AppleAssistRequest {
         operation,
         selected_text: text.to_string(),
         document_context: None,
+        instruction: None,
     }
 }
 
 #[test]
 fn apple_assist_probe_rejects_unknown_window_label() {
-    let error = probe_apple_assist_availability_with_label("settings").unwrap_err();
+    let store = store_without_helper();
+    let error = probe_apple_assist_availability_with_label("settings", &store).unwrap_err();
     assert!(
         error.contains("settings"),
         "error must mention the bad label: {error}"
@@ -32,8 +37,10 @@ fn apple_assist_probe_rejects_unknown_window_label() {
 
 #[test]
 fn apple_assist_generate_rejects_unknown_window_label() {
+    let store = store_without_helper();
     let request = request_with(AppleAssistOperation::Summarize, "hello");
-    let error = generate_apple_assist_candidate_with_label("settings", request).unwrap_err();
+    let error =
+        generate_apple_assist_candidate_with_label("settings", &store, request).unwrap_err();
     assert!(error.contains("settings"));
 }
 
@@ -43,7 +50,8 @@ fn apple_assist_probe_accepts_main_window_only() {
     // CLI trust boundary — the IPC is main-only. The probe is
     // allowed from the main window so the command palette can
     // gate the entries on the real Foundation Models state.
-    assert!(probe_apple_assist_availability_with_label("main").is_ok());
+    let store = store_without_helper();
+    assert!(probe_apple_assist_availability_with_label("main", &store).is_err());
 }
 
 #[test]
@@ -52,7 +60,8 @@ fn apple_assist_probe_rejects_agent_window() {
     // boundary. It must not be able to invoke Apple Local
     // Assist, even on a future build that has the live
     // Foundation Models binding wired.
-    let error = probe_apple_assist_availability_with_label("agent").unwrap_err();
+    let store = store_without_helper();
+    let error = probe_apple_assist_availability_with_label("agent", &store).unwrap_err();
     assert!(
         error.contains("agent"),
         "error must mention the bad label: {error}"
@@ -61,14 +70,20 @@ fn apple_assist_probe_rejects_agent_window() {
 
 #[test]
 fn apple_assist_generate_accepts_main_window_only() {
+    let store = store_without_helper();
     let request = request_with(AppleAssistOperation::Summarize, "hello");
-    assert!(generate_apple_assist_candidate_with_label("main", request).is_ok());
+    let error = generate_apple_assist_candidate_with_label("main", &store, request).unwrap_err();
+    assert!(
+        error.contains("not configured"),
+        "main-window generate should pass the label gate and then fail on missing helper, got: {error}"
+    );
 }
 
 #[test]
 fn apple_assist_generate_rejects_agent_window() {
+    let store = store_without_helper();
     let request = request_with(AppleAssistOperation::Summarize, "hello");
-    let error = generate_apple_assist_candidate_with_label("agent", request).unwrap_err();
+    let error = generate_apple_assist_candidate_with_label("agent", &store, request).unwrap_err();
     assert!(
         error.contains("agent"),
         "error must mention the bad label: {error}"
@@ -79,7 +94,6 @@ fn apple_assist_generate_rejects_agent_window() {
 fn apple_assist_validate_rejects_deferred_operations() {
     let cases = [
         AppleAssistOperation::Extract,
-        AppleAssistOperation::Proofread,
         AppleAssistOperation::ExplainDiff,
     ];
     for op in cases {
@@ -96,6 +110,7 @@ fn apple_assist_validate_rejects_deferred_operations() {
 fn apple_assist_validate_accepts_v0_12_operations() {
     assert!(validate_request(&request_with(AppleAssistOperation::Summarize, "hello")).is_ok());
     assert!(validate_request(&request_with(AppleAssistOperation::Rephrase, "hello")).is_ok());
+    assert!(validate_request(&request_with(AppleAssistOperation::Proofread, "hello")).is_ok());
 }
 
 #[test]
@@ -136,10 +151,48 @@ fn apple_assist_validate_rejects_oversized_document_context() {
 }
 
 #[test]
+fn apple_assist_validate_rejects_oversized_instruction() {
+    let mut request = request_with(AppleAssistOperation::Rephrase, "ok");
+    request.instruction = Some("x".repeat(APPLE_ASSIST_MAX_INSTRUCTION_CHARS + 1));
+    let error = validate_request(&request).unwrap_err();
+    assert!(error.contains("instruction"));
+}
+
+#[test]
 fn apple_assist_validate_accepts_missing_document_context() {
     let mut request = request_with(AppleAssistOperation::Summarize, "ok");
     request.document_context = None;
     assert!(validate_request(&request).is_ok());
+}
+
+#[test]
+fn apple_assist_request_deserializes_frontend_camel_case_payload() {
+    let request: AppleAssistRequest = serde_json::from_value(serde_json::json!({
+        "operation": "rephrase",
+        "selectedText": "body",
+        "documentContext": "surrounding",
+        "instruction": "整えて"
+    }))
+    .expect("frontend camelCase payload should deserialize");
+
+    assert_eq!(request.operation, AppleAssistOperation::Rephrase);
+    assert_eq!(request.selected_text, "body");
+    assert_eq!(request.document_context.as_deref(), Some("surrounding"));
+    assert_eq!(request.instruction.as_deref(), Some("整えて"));
+}
+
+#[test]
+fn apple_assist_response_serializes_frontend_camel_case_payload() {
+    let response = AppleAssistResponse {
+        operation: AppleAssistOperation::Rephrase,
+        candidate_text: "better body".to_string(),
+        model_id: "apple:foundation-models:system-default".to_string(),
+        latency_ms: 42,
+    };
+    let value = serde_json::to_value(response).expect("response should serialize");
+    assert_eq!(value["candidateText"], "better body");
+    assert_eq!(value["modelId"], "apple:foundation-models:system-default");
+    assert_eq!(value["latencyMs"], 42);
 }
 
 #[test]
@@ -179,42 +232,51 @@ fn apple_assist_stub_does_not_call_foundation_models() {
 }
 
 #[test]
-fn apple_assist_probe_platform_reflects_target_os() {
-    // v0.12 is intentionally "gate-default-hidden" until the live
-    // Foundation Models binding is wired. On macOS the probe must
-    // NOT report Available (that would surface the command palette
-    // entries on real hardware and let stub candidates flow as if
-    // real). On other platforms the binding does not exist at all.
-    let availability = probe_apple_assist_availability_with_platform();
-    #[cfg(target_os = "macos")]
-    match &availability {
-        AppleAssistAvailability::Unavailable { reason } => {
-            assert!(
-                reason.contains("Foundation Models"),
-                "macOS reason must mention Foundation Models, got: {reason}"
-            );
+fn apple_assist_maps_helper_availability() {
+    assert_eq!(
+        map_helper_availability(HelperAvailability {
+            kind: "available".to_string(),
+            reason: None,
+        }),
+        AppleAssistAvailability::Available
+    );
+    assert_eq!(
+        map_helper_availability(HelperAvailability {
+            kind: "disabled".to_string(),
+            reason: Some("off".to_string()),
+        }),
+        AppleAssistAvailability::Disabled
+    );
+    assert_eq!(
+        map_helper_availability(HelperAvailability {
+            kind: "unsupported".to_string(),
+            reason: Some("old mac".to_string()),
+        }),
+        AppleAssistAvailability::Unsupported
+    );
+    assert_eq!(
+        map_helper_availability(HelperAvailability {
+            kind: "unavailable".to_string(),
+            reason: Some("not ready".to_string()),
+        }),
+        AppleAssistAvailability::Unavailable {
+            reason: "not ready".to_string()
         }
-        other => panic!("macOS probe must be Unavailable, got: {other:?}"),
-    }
-    #[cfg(not(target_os = "macos"))]
-    assert_eq!(availability, AppleAssistAvailability::Unsupported);
+    );
 }
 
 #[test]
-fn apple_assist_probe_is_not_available_in_v0_12() {
-    // Belt-and-braces: the v0.12 contract is "probe never returns
-    // Available". When a future slice lands the live Foundation
-    // Models binding, this test is the one that must flip to
-    // assert availability against the real Foundation Models
-    // state. Until then, the probe must say Unavailable or
-    // Unsupported so the React side keeps the command palette
-    // entries hidden.
-    let availability = probe_apple_assist_availability_with_platform();
-    assert_ne!(
-        availability,
-        AppleAssistAvailability::Available,
-        "v0.12 probe must never report Available"
-    );
+fn apple_assist_maps_helper_candidate() {
+    let response = map_helper_candidate(HelperCandidate {
+        operation: "proofread".to_string(),
+        candidate_text: "fixed".to_string(),
+        model_id: "apple:foundation-models:system-default".to_string(),
+        latency_ms: 42,
+    })
+    .expect("candidate should map");
+    assert_eq!(response.operation, AppleAssistOperation::Proofread);
+    assert_eq!(response.candidate_text, "fixed");
+    assert_eq!(response.latency_ms, 42);
 }
 
 #[test]
@@ -226,7 +288,7 @@ fn apple_assist_operation_allowlist_is_explicit() {
     // silently shipping.
     assert!(AppleAssistOperation::Summarize.is_implemented_in_v0_12());
     assert!(AppleAssistOperation::Rephrase.is_implemented_in_v0_12());
+    assert!(AppleAssistOperation::Proofread.is_implemented_in_v0_12());
     assert!(!AppleAssistOperation::Extract.is_implemented_in_v0_12());
-    assert!(!AppleAssistOperation::Proofread.is_implemented_in_v0_12());
     assert!(!AppleAssistOperation::ExplainDiff.is_implemented_in_v0_12());
 }

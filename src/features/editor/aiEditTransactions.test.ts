@@ -144,6 +144,39 @@ describe("applyAiEditTransaction", () => {
     expect(result.transaction.tabId).toBe("t1");
   });
 
+  it("uses generated after text when supplied", () => {
+    const buffer = "alpha\nbeta\ngamma";
+    const result = applyAiEditTransaction({
+      tabId: "t1",
+      tabName: "note.md",
+      tabPath: "/tmp/note.md",
+      request: "自然にして",
+      target: target(6, 10, "beta"),
+      buffer,
+      afterText: "better beta",
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.nextBuffer).toBe("alpha\nbetter beta\ngamma");
+    expect(result.transaction.after).toBe("better beta");
+  });
+
+  it("rejects generated after text when it is unchanged", () => {
+    const buffer = "alpha\nbeta\ngamma";
+    const result = applyAiEditTransaction({
+      tabId: "t1",
+      tabName: "note.md",
+      tabPath: "/tmp/note.md",
+      request: "自然にして",
+      target: target(6, 10, "beta"),
+      buffer,
+      afterText: "beta",
+    });
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toContain("no changes");
+  });
+
   it("keeps the prefix and suffix of the buffer untouched", () => {
     const buffer = "## Top\n\nfirst\n\nsecond\n\nthird\n";
     const start = buffer.indexOf("second");
