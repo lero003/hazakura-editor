@@ -27,7 +27,7 @@ What is **not** done yet, and is gated on explicit approval:
 
 ## Official Information Confirmed (2026-06-05, slice 7)
 
-The following facts are taken from Apple 公式 information only. Each bullet cites the source URL. These are the conditions that v0.12+ implementation must respect; the spec/doc text below is reproduced verbatim where possible. Non-official speculation is deliberately excluded — anything we could not confirm against the cited pages is marked "TBD (verify with Xcode documentation viewer before implementation)."
+The following facts are taken from Apple 公式 information only. Each subsection cites the source URL. These are the conditions that v0.12+ implementation must respect; the verbatim quotes we DO use are short (a sentence or two) and are reproduced because they pin down a contract we have to satisfy. Long verbatim lists of Apple's enumerated rules (e.g. the 19-item acceptable-use list) are deliberately summarized into themes so this memo does not rot when Apple updates the underlying page. Non-official speculation is excluded — anything we could not confirm against the cited pages is marked "TBD (verify with Xcode documentation viewer before implementation)."
 
 ### Platform & runtime requirements (from `apple.com/apple-intelligence/`)
 
@@ -39,36 +39,21 @@ The following facts are taken from Apple 公式 information only. Each bullet ci
 
 ### Acceptable use (from `developer.apple.com/apple-intelligence/acceptable-use-requirements-for-the-foundation-models-framework/`)
 
-The page is a single short "Prohibited uses" section with the framing "You may not use, prompt, or expose the Foundation Models framework, including the model accessed by the framework, or encourage or enable others to do so, in a manner that:" followed by 19 enumerated items. Verbatim (in the order Apple lists them):
+The Foundation Models framework acceptable-use page is a single short "Prohibited uses" section. It is a developer-facing list of categories the framework must not be used to produce. The full and current list lives on Apple's page (link below); we do not reproduce the enumerated items verbatim here so this memo does not rot when Apple updates them. The page's structure is a framing sentence ("You may not use, prompt, or expose the Foundation Models framework … in a manner that:") followed by roughly twenty enumerated categories, which group into a few big themes:
 
-1. "Violates the law, regulations, or other legal requirements"
-2. "Promotes or enables violence for any reason"
-3. "Generates content that is defamatory or mean-spirited"
-4. "Generates content containing, representing, or otherwise involving pornography or overtly sexual material"
-5. "Promotes or enables child sexual exploitation or abuse"
-6. "Promotes or enables self harm"
-7. "Engages in any kind of fraud, deception, or tortious activity"
-8. "Engages in regulated healthcare, legal, or financial services"
-9. "Engages in employment-related services, assessments of the risk of an individual committing a criminal offense, or for official use in connection with law enforcement or criminal justice"
-10. "Engages in social scoring or predictive polling"
-11. "Classifies individuals based on biometric data to infer sensitive attributes"
-12. "Seeks to compromise or gain unauthorized access to networks or systems of third parties"
-13. "Encourages illegal or reckless use of weapons and dangerous objects"
-14. "Infringes or violates the intellectual property, publicity, or privacy rights of another (including Apple)"
-15. "Shows Apple or its products in a false or derogatory light"
-16. "Circumvents any safety policies, guardrails, or restrictions integrated into the Foundation Models framework or accompanying technologies"
-17. "Generates, reverse engineers, summarizes, translates or otherwise reproduces the Foundation Models framework training data"
-18. "Generates citations to or otherwise identifies the Foundation Models framework training data"
-19. "Generates scholarly and academic research products, journals, textbooks, trade books, or courseware"
+- **Illicit / harmful content** — violence, self-harm, child safety, fraud, defamation, pornography, weapons.
+- **Regulated domains** — healthcare, legal, financial, employment, law-enforcement, social scoring, biometrics-inferring attributes.
+- **Security / rights / misrepresentation** — unauthorized network/system access, IP / publicity / privacy infringement (including Apple's), false or derogatory portrayal of Apple or its products.
+- **Framework integrity** — circumventing the framework's safety policies, guardrails, or restrictions; reproducing or citing the framework's training data; generating scholarly / academic / courseware / trade-book products.
+- **General** — illegal activity.
 
-**Practical reading for a Markdown editor with `summarize` / `rephrase` / `extract` / `proofread` / `explain_diff`:**
+**Hazakura の実装判断 (v0.12):**
 
-- Items 17 and 18 are restricted to the **framework's training data**, not to user-supplied documents. "Summarize my Markdown note" / "Extract action items from my meeting notes" is summarization of *user content*, not training-data reproduction, and is fine.
-- Item 19 ("courseware") is the one with real bite. A "write me an essay on photosynthesis" or "generate a textbook chapter on linear algebra" button would clearly generate courseware. Helping a user rewrite *their own* draft, summarize *their own* notes, proofread, or explain the diff between two of *their own* revisions is the user producing their own work with an editor — it is not the framework "generating" a research product.
-- Item 3 ("defamatory or mean-spirited") means we should not ship tone-shifting controls like "make this nastier" or "roast this."
-- Item 16 means we must not strip / override / hide the framework's built-in refusals. No raw system prompt editor, no jailbreak templates, no silent retries past refusals.
-- Items 1, 7, 8, 14 are general product guardrails. The editor should make clear that the user is responsible for the legality of the text they bring in.
-- **Recommended in-app disclosure** (we should add this before any App Store build): a short note that the feature uses Apple Intelligence / the Foundation Models framework, is subject to Apple's acceptable-use rules, and that the user is responsible for not using outputs to violate them.
+- 5 operation (`summarize` / `rephrase` / `extract` / `proofread` / `explain_diff`) はすべて選択範囲ベース・ユーザー所有文書に対する編集補助であり、Apple の "framework が研究製品 / 教科書 / 商用出版物を生成する" カテゴリに直接かかる経路は設計上ない。操作 UI に「教科書 chapter を一括で生成する」「学術論文ドラフトを 0 から起こさせる」ボタンを置く予定はない。
+- ただし `proofread` / `rephrase` は入力次第で規制領域 (medical / legal / financial) や academic / courseware 寄りの使われ方に流れうる。これは operation 単体の判定で線引きするのではなく、feature 全体としての防御線 (下記) で押さえる方針。
+- 採用可能性が高いのは、以下 4 条件がすべて揃った v0.12 の形: **(1) 選択範囲ベース・bounded 入力** (`MAX_SELECTED_CHARS=4000` / `MAX_CONTEXT_CHARS=8000` で caller 側 cap)、**(2) ユーザー所有の Markdown / テキスト文書**、**(3) framework の拒否を尊重** (Refusal が出てきたらそのまま Review Desk で見せる、無音リトライしない、instructions フィールドを user 編集させない)、**(4) auto-apply なし** + **in-app disclosure あり**。このセットが崩れたら gate を閉じる。
+- framework 内の安全機能を strip / override / 隠す経路は作らない (system prompt editor / jailbreak template / 無音 retry などは non-goal)。
+- **In-app disclosure**: App Store 提出前に、feature が Apple Intelligence / Foundation Models framework を使っており、Apple の acceptable-use rules の対象であり、output の利用責任はユーザーにある旨の短い注記を UI に出す。これは App Review 5.1.1(Privacy) / 5.1.2(i) (third-party AI disclosure) の両方の supporting になる。
 
 ### App Review constraints (from `developer.apple.com/app-store/review/guidelines/`)
 

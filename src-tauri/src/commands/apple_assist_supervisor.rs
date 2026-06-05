@@ -67,9 +67,15 @@ pub(crate) struct AppleAssistHelperStore {
     inner: Mutex<Option<AppleAssistHelperInner>>,
     consecutive_failures: AtomicU32,
     cooldown_started_at: Mutex<Option<std::time::Instant>>,
-    // The path the supervisor spawns. Held here so tests can
-    // override it via the `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE`
-    // env var without changing the API.
+    // Test-only override slot. Production `Default` never reads
+    // the environment, so a process spawned via
+    // `.manage(AppleAssistHelperStore::default())` can only
+    // resolve the helper through a future bundled-helper
+    // resolution path (TBD once externalBin lands). Tests use
+    // `store_with_helper_path` (cfg(test)) to inject the fixture
+    // binary instead. See `apple-local-assist-rust-supervisor-plan.md`
+    // for the resolved-path plan.
+    #[cfg(test)]
     helper_path_override: Option<std::path::PathBuf>,
 }
 
@@ -81,13 +87,12 @@ struct AppleAssistHelperInner {
 
 impl Default for AppleAssistHelperStore {
     fn default() -> Self {
-        let helper_path_override =
-            std::env::var_os("HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE").map(std::path::PathBuf::from);
         Self {
             inner: Mutex::new(None),
             consecutive_failures: AtomicU32::new(0),
             cooldown_started_at: Mutex::new(None),
-            helper_path_override,
+            #[cfg(test)]
+            helper_path_override: None,
         }
     }
 }
@@ -105,22 +110,30 @@ impl Drop for AppleAssistHelperStore {
 
 impl AppleAssistHelperStore {
     /// Returns the path the supervisor will spawn, or an error
-    /// if no helper is available. In test runs, the
-    /// `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE` env var points at
-    /// the fixture binary built by
+    /// if no helper is available.
+    ///
+    /// In test runs, `store_with_helper_path` (cfg(test) only)
+    /// injects the fixture binary built by
     /// `scripts/build-apple-assist-helper-fixture.sh`. In
     /// production, this helper is not yet wired to a real binary
     /// (slice 5 fixture path is dev-only), so callers fall back
-    /// to the in-process stub.
+    /// to the in-process stub. Crucially, `Default::default()`
+    /// does **not** read any environment variable, so a future
+    /// gate-flip cannot be tricked into spawning an arbitrary
+    /// binary just because the shell happened to export a
+    /// `*_FIXTURE` env var.
     pub(crate) fn helper_path(&self) -> Result<std::path::PathBuf, String> {
-        if let Some(path) = &self.helper_path_override {
-            if path.exists() {
-                return Ok(path.clone());
+        #[cfg(test)]
+        {
+            if let Some(path) = &self.helper_path_override {
+                if path.exists() {
+                    return Ok(path.clone());
+                }
+                return Err(format!(
+                    "Apple Assist helper fixture path points at a missing file: {}",
+                    path.display()
+                ));
             }
-            return Err(format!(
-                "HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE points at a missing file: {}",
-                path.display()
-            ));
         }
         // Production: no externalBin / no minimumSystemVersion bump
         // yet, so the supervisor cannot resolve a real binary.
@@ -305,6 +318,16 @@ pub(crate) struct HelperError {
 /// is wired. Slice 9 design note: the body in
 /// `probe_apple_assist_availability_with_platform` flips to call
 /// this in a future slice, gated on the helper being available.
+///
+/// Cooldown discipline: only IO / EOF / parse / timeout / spawn
+/// failures and unexpected-envelope-shape responses count toward
+/// the failure budget. A `WireEnvelope::Error` from the helper
+/// is the helper working correctly and refusing (guardrail,
+/// validation, deferred, rate-limited) — it is passed through
+/// unchanged and does NOT reset the child or count toward
+/// cooldown. Treating those as process failures would mean
+/// "5 honest refusals in a row kill the helper," which is the
+/// opposite of what a refusal-budget is for.
 pub(crate) fn probe_availability_via_helper(
     store: &AppleAssistHelperStore,
 ) -> Result<WireEnvelope, String> {
@@ -321,7 +344,18 @@ pub(crate) fn probe_availability_via_helper(
         AppleAssistHelperStore::round_trip_locked(&mut guard, &WireRequest::ProbeAvailability);
 
     match &result {
-        Ok(_) => store.record_success(),
+        Ok(WireEnvelope::Availability(_)) => store.record_success(),
+        // The helper is alive and refused the probe (e.g.
+        // framework compiled out). Pass it through; do not
+        // count, do not reset.
+        Ok(WireEnvelope::Error(_)) => {}
+        // A Candidate envelope in response to a probe is a
+        // protocol violation from the helper side. Reset and
+        // count so the next call respawns.
+        Ok(WireEnvelope::Candidate(_)) => {
+            store.reset_locked(&mut guard);
+            store.record_failure();
+        }
         Err(_) => {
             store.reset_locked(&mut guard);
             store.record_failure();
@@ -335,6 +369,12 @@ pub(crate) fn probe_availability_via_helper(
 /// the raw envelope; the caller maps it to
 /// `crate::commands::apple_assist::AppleAssistResponse` or
 /// `Result::Err`.
+///
+/// Cooldown discipline: see `probe_availability_via_helper`.
+/// A `WireEnvelope::Error` from the helper — guardrail,
+/// validation, deferred, rate-limited — is the helper doing
+/// its job and refusing. It passes through unchanged; the
+/// child stays alive and the failure counter does not move.
 pub(crate) fn generate_candidate_via_helper(
     store: &AppleAssistHelperStore,
     operation: &str,
@@ -360,10 +400,20 @@ pub(crate) fn generate_candidate_via_helper(
     );
 
     match &result {
-        Ok(envelope) if matches!(envelope, WireEnvelope::Candidate(_)) => {
-            store.record_success();
+        Ok(WireEnvelope::Candidate(_)) => store.record_success(),
+        // Helper refused (guardrail / validation / deferred /
+        // rate-limited). Pass through; do not count, do not
+        // reset. Otherwise "5 deferred attempts in a row"
+        // would terminate a perfectly healthy helper.
+        Ok(WireEnvelope::Error(_)) => {}
+        // An Availability envelope in response to a generate
+        // is a protocol violation from the helper side. Reset
+        // and count so the next call respawns.
+        Ok(WireEnvelope::Availability(_)) => {
+            store.reset_locked(&mut guard);
+            store.record_failure();
         }
-        _ => {
+        Err(_) => {
             store.reset_locked(&mut guard);
             store.record_failure();
         }
@@ -374,8 +424,11 @@ pub(crate) fn generate_candidate_via_helper(
 // -- Drop helper for testability -------------------------------
 
 /// Test-only helper: build a store with a custom helper path.
-/// Production code uses `Default::default()` which reads the
-/// env var; tests use this to inject the fixture binary.
+/// Production code uses `Default::default()` (which never reads
+/// the environment); tests use this to inject the fixture
+/// binary. Gated to `cfg(test)` so the production lib build
+/// cannot accidentally call this.
+#[cfg(test)]
 pub(crate) fn store_with_helper_path(path: std::path::PathBuf) -> AppleAssistHelperStore {
     AppleAssistHelperStore {
         inner: Mutex::new(None),
@@ -387,7 +440,9 @@ pub(crate) fn store_with_helper_path(path: std::path::PathBuf) -> AppleAssistHel
 
 /// Test-only helper: build a store with no helper available.
 /// Used to assert that probe returns the right "not configured"
-/// error in v0.12.0 production builds.
+/// error in v0.12.0 production builds. Gated to `cfg(test)` so
+/// the production lib build cannot accidentally call this.
+#[cfg(test)]
 pub(crate) fn store_without_helper() -> AppleAssistHelperStore {
     AppleAssistHelperStore {
         inner: Mutex::new(None),

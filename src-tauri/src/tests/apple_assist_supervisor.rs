@@ -12,15 +12,20 @@
 // These tests verify two things:
 //
 //   1. Pure store behavior with no helper binary — store
-//      construction, the "not configured" error from `helper_path()`,
-//      `Drop` semantics. These run on every machine.
+//      construction (the production `Default` must NOT read any
+//      environment variable), the "not configured" error from
+//      `helper_path()`, `Drop` semantics. These run on every
+//      machine.
 //
 //   2. End-to-end JSON round-trip via the fixture helper built by
-//      `scripts/build-apple-assist-helper-fixture.sh`. These are
-//      guarded on the `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE` env
-//      var being set to the fixture binary path. They skip
-//      cleanly when not set, so CI without the fixture stays
-//      green.
+//      `scripts/build-apple-assist-helper-fixture.sh`. The
+//      fixture binary path is injected via
+//      `store_with_helper_path`, which is `cfg(test)`-gated; the
+//      tests consult `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE` only
+//      to decide whether the fixture binary is available and
+//      skip cleanly when not set, so CI without the fixture
+//      stays green. The env var is never read by production
+//      code, only by these tests as a skip-guard.
 
 // The other per-feature test modules pull `use super::*;` for
 // the shared fixtures and re-exported std types. This module
@@ -39,31 +44,52 @@ use crate::commands::apple_assist_supervisor::{
 // ----------------------------------------------------------------
 
 #[test]
-fn supervisor_store_default_constructs_without_env_var() {
-    // SAFETY: the default constructor reads the env var at
-    // construction time. Remove it first so the test does not
-    // accidentally pick up a fixture path leaked from the shell.
-    // SAFETY-justification: tests in this binary do not race on
-    // env vars (cargo test is single-process; std::env::set_var
-    // / remove_var is the documented way to manipulate the
-    // current process's environment).
-    let prev = std::env::var_os("HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE");
-    // SAFETY: see comment above.
-    unsafe {
-        std::env::remove_var("HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE");
-    }
+fn supervisor_store_default_constructs_cleanly() {
+    // `Default::default()` does not read the environment (the
+    // env-var-based override is test-only via
+    // `store_with_helper_path`). The default store must report
+    // "not configured" when `helper_path()` is consulted.
     let store = AppleAssistHelperStore::default();
     let err = store
         .helper_path()
-        .expect_err("default store without env var must report not-configured");
+        .expect_err("default store must report not-configured");
     assert!(
         err.contains("not configured"),
         "error should mention 'not configured', got: {err}"
     );
-    // SAFETY: see comment above.
+}
+
+#[test]
+fn supervisor_store_default_ignores_fixture_env_var() {
+    // Regression: the production `Default::default()` must NOT
+    // honor `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE`. If it did,
+    // any environment that happened to export a path would let
+    // a future gate-flip spawn an arbitrary binary as the
+    // helper. The override is test-only via
+    // `store_with_helper_path`.
+    //
+    // SAFETY: env-var manipulation in tests is single-process
+    // and does not race (cargo test is the documented usage of
+    // std::env::set_var / remove_var).
+    let prev = std::env::var_os("HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE");
+    unsafe {
+        std::env::set_var("HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE", "/usr/bin/true");
+    }
+    let store = AppleAssistHelperStore::default();
+    let err = store
+        .helper_path()
+        .expect_err("default store must ignore the env var");
+    assert!(
+        err.contains("not configured"),
+        "default store must not honor HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE, got: {err}"
+    );
     if let Some(value) = prev {
         unsafe {
             std::env::set_var("HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE", value);
+        }
+    } else {
+        unsafe {
+            std::env::remove_var("HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE");
         }
     }
 }
@@ -230,6 +256,50 @@ fn supervisor_generate_deferred_operation_via_fixture_returns_error_envelope() {
         }
         other => panic!("deferred operation should return Ok(WireEnvelope::Error), got: {other:?}"),
     }
+}
+
+#[test]
+fn supervisor_does_not_count_helper_error_envelopes_as_failures() {
+    // Regression: `WireEnvelope::Error` from the helper is the
+    // helper working correctly and refusing (guardrail /
+    // validation / deferred / rate-limited). It must pass
+    // through to the caller unchanged. It must NOT reset the
+    // child and must NOT increment the failure counter. If it
+    // did, a user exploring the deferred operations (`extract`,
+    // `proofread`, `explain_diff`) would trip the 5-strike
+    // cooldown for the session, which is the opposite of what
+    // a refusal budget is for.
+    let Some(path) = fixture_path_or_skip() else {
+        eprintln!("skip: HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE not set");
+        return;
+    };
+    let store = store_with_helper_path(path);
+    // 6 is two more than `CONSECUTIVE_FAILURE_LIMIT`. If the
+    // helper-error envelope were counted as a failure, the 6th
+    // call would enter cooldown and the post-loop probe would
+    // return the cooldown error.
+    for i in 0..6 {
+        let envelope = generate_candidate_via_helper(&store, "extract", "body", None)
+            .unwrap_or_else(|e| panic!("deferred call #{i} must pass through, got err: {e}"));
+        match envelope {
+            WireEnvelope::Error(err) => {
+                assert_eq!(
+                    err.kind, "deferred",
+                    "deferred call #{i} must return kind 'deferred', got: {err:?}"
+                );
+            }
+            other => panic!("deferred call #{i} expected Error envelope, got: {other:?}"),
+        }
+    }
+    // Sanity probe: the helper must still be alive and the
+    // failure counter must still be at zero. If either were
+    // tripped, the probe returns the cooldown error.
+    let envelope = probe_availability_via_helper(&store)
+        .expect("post-loop probe must succeed (no cooldown should have been entered)");
+    assert!(
+        matches!(envelope, WireEnvelope::Availability(_)),
+        "post-loop probe must return Availability; got: {envelope:?}"
+    );
 }
 
 #[test]
