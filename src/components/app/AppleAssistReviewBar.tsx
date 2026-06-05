@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { LModeCopy } from "../../lib/locale";
 import { useAiEditTransaction } from "../../hooks/editor/useAiEditTransaction";
 import { DiffBody } from "../diff/DiffBody";
@@ -29,6 +29,7 @@ import { SparklesIcon } from "./Icons";
 type AppleAssistReviewBarProps = {
   activeTabId: string | null;
   copy: LModeCopy;
+  diffInitiallyOpen?: boolean;
   menuLanguage: MenuLanguage;
   onDiscard: (tabId: string, beforeBuffer: string) => void;
 };
@@ -36,11 +37,16 @@ type AppleAssistReviewBarProps = {
 export function AppleAssistReviewBar({
   activeTabId,
   copy,
+  diffInitiallyOpen = true,
   menuLanguage,
   onDiscard,
 }: AppleAssistReviewBarProps) {
   const { latest, clearLatest } = useAiEditTransaction(activeTabId);
-  const [showDiff, setShowDiff] = useState(false);
+  const [showDiff, setShowDiff] = useState(diffInitiallyOpen);
+
+  useEffect(() => {
+    setShowDiff(Boolean(latest?.diff) && diffInitiallyOpen);
+  }, [diffInitiallyOpen, latest?.id, latest?.diff]);
 
   const handleOpenDiff = useCallback(() => {
     setShowDiff((current) => !current);
@@ -122,7 +128,9 @@ export function AppleAssistReviewBar({
               onClick={handleOpenDiff}
               type="button"
             >
-              {copy.appleAssistReviewBarOpenDiffLabel}
+              {showDiff
+                ? copy.appleAssistReviewBarCloseDiffLabel
+                : copy.appleAssistReviewBarOpenDiffLabel}
             </button>
           ) : null}
           <button

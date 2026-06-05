@@ -19,7 +19,7 @@ import {
 // that replaces the Agent window in the same UX surface
 // (see `docs/apple-local-assist-writing-companion-plan.md`).
 //
-// The mock intentionally does NOT bind to live Foundation Models
+// The mock intentionally does NOT bind to live Apple Foundation Models
 // (foundation-models-framework is not yet wired). The user
 // types a rough request ("整えて" / "自然にして" / "続きを書いて" /
 // "校正して" / "この章を直して") into a textarea, picks the
@@ -72,7 +72,9 @@ function readInitialTheme(): ThemePreference {
 export function AppleAssistWindowApp() {
   const [theme, setTheme] = useState<ThemePreference>(readInitialTheme);
   const [roughRequest, setRoughRequest] = useState<string>("");
-  const [status, setStatus] = useState<string>("Ready.");
+  const [status, setStatus] = useState<string>(
+    "Fixture mode: live Apple AI is not connected in this build.",
+  );
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<boolean>(false);
   const [target, setTarget] = useState<AppleAssistTargetSnapshot | null>(null);
@@ -182,7 +184,7 @@ export function AppleAssistWindowApp() {
         target: latestTarget,
       };
       await requestApplyAiEditTransaction(payload);
-      setStatus(`Sent rough request: ${request}`);
+      setStatus(`Applied fixture edit for: ${request}`);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       setError(message);
@@ -201,7 +203,12 @@ export function AppleAssistWindowApp() {
       <header className="apple-assist-window-header">
         <div className="apple-assist-window-title">Apple Assist</div>
         <div className="apple-assist-window-subtitle">
-          Writing Companion (mock)
+          Writing Companion
+          <span className="apple-assist-window-mode">Fixture mock</span>
+        </div>
+        <div className="apple-assist-window-disclosure">
+          This preview edits with deterministic fixture output. It does not
+          call Apple Foundation Models yet.
         </div>
         <div className="apple-assist-window-doc">
           {target?.activeDocumentName

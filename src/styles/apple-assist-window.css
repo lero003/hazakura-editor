@@ -39,8 +39,29 @@
 }
 
 .apple-assist-window-subtitle {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
   font-size: 12px;
   opacity: 0.7;
+}
+
+.apple-assist-window-mode {
+  border: 1px solid var(--border, rgba(127, 127, 127, 0.25));
+  border-radius: 999px;
+  font-size: 11px;
+  line-height: 1;
+  padding: 3px 7px;
+}
+
+.apple-assist-window-disclosure {
+  color: var(--text-muted, var(--text));
+  font-size: 12px;
+  line-height: 1.45;
+  margin-top: 2px;
+  max-width: 38rem;
+  opacity: 0.82;
 }
 
 .apple-assist-window-doc {

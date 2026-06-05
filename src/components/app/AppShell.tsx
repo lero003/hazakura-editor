@@ -104,6 +104,7 @@ export function AppShell(props: AppShellProps) {
       <AppleAssistReviewBar
         activeTabId={props.activeTabId}
         copy={props.lModeCopy}
+        diffInitiallyOpen={props.editorSettings.appleAssistDiffInitiallyOpen}
         menuLanguage={props.menuLanguage}
         onDiscard={props.onDiscardAppleAssistEdit}
       />

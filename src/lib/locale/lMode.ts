@@ -27,6 +27,7 @@ export type LModeCopy = {
   appleAssistReviewBarLabel: string;
   appleAssistReviewBarTitle: string;
   appleAssistReviewBarOpenDiffLabel: string;
+  appleAssistReviewBarCloseDiffLabel: string;
   appleAssistReviewBarDiscardLabel: string;
   appleAssistReviewBarDiscardTitle: string;
   appleAssistReviewBarCloseLabel: string;
@@ -58,6 +59,7 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
       appleAssistReviewBarLabel: "Apple Assist が ほんぶんを へんこうしました",
       appleAssistReviewBarTitle: "さぶんを かくにんするか とりけすか えらんでください",
       appleAssistReviewBarOpenDiffLabel: "さぶんを ひらく",
+      appleAssistReviewBarCloseDiffLabel: "さぶんを とぢる",
       appleAssistReviewBarDiscardLabel: "とりけす",
       appleAssistReviewBarDiscardTitle: "へんこうを もとに もどして とりけします",
       appleAssistReviewBarCloseLabel: "とぢる",
@@ -89,6 +91,7 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
         appleAssistReviewBarLabel: "Apple Assist が本文を変更しました",
         appleAssistReviewBarTitle: "差分を確認するか取り消すか選んでください",
         appleAssistReviewBarOpenDiffLabel: "差分を開く",
+        appleAssistReviewBarCloseDiffLabel: "差分を閉じる",
         appleAssistReviewBarDiscardLabel: "取り消す",
         appleAssistReviewBarDiscardTitle: "変更を元に戻して取り消します",
         appleAssistReviewBarCloseLabel: "閉じる",
@@ -117,6 +120,7 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
         appleAssistReviewBarLabel: "Apple Assist changed your text",
         appleAssistReviewBarTitle: "Review or discard the pending AI edit",
         appleAssistReviewBarOpenDiffLabel: "Open diff",
+        appleAssistReviewBarCloseDiffLabel: "Close diff",
         appleAssistReviewBarDiscardLabel: "Discard",
         appleAssistReviewBarDiscardTitle: "Revert the buffer and clear the review",
         appleAssistReviewBarCloseLabel: "Close",

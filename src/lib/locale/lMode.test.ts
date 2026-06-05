@@ -28,6 +28,7 @@ describe("getLModeCopy", () => {
       const copy = getLModeCopy(lang);
       expect(Object.keys(copy).sort()).toEqual([
         "actionRailLabel",
+        "appleAssistReviewBarCloseDiffLabel",
         "appleAssistReviewBarCloseLabel",
         "appleAssistReviewBarCloseTitle",
         "appleAssistReviewBarDiscardLabel",

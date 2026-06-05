@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-05 (v0.11.0 published)
+Last reviewed: 2026-06-06
 
 ## Current State
 
@@ -62,9 +62,9 @@ Historical detailed status logs through 2026-06-04 were archived to `docs/archiv
 
 ## v0.12 Apple Local Assist work-in-progress
 
-Type, hook, locale, helper fixture, and supervisor plumbing for Apple Local Assist is landed behind an availability gate that defaults to `unsupported` / `unavailable` — the command palette does NOT expose the Apple Assist entries unless `probe_apple_assist_availability` returns `available`. The Rust commands are stubs (no Foundation Models binding) and the Swift helper builds in `FIXTURE_MODE` only. The Rust supervisor (helper spawn / lifecycle / watchdog / cooldown / protocol-violation detection) is implemented (slice 8-18) but the Tauri command surface does NOT call it — `AppleAssistHelperStore` is registered via `tauri::Builder::manage` but production `helper_path()` still returns `Err("Apple Assist helper is not configured for this build.")`. A production helper-path resolver skeleton (`rust_target_triple` / `bundled_helper_filename` / `resolve_bundled_helper_path`) and 27 integration tests are in place; the resolver still returns the not-configured error and never reads the environment, preserving gate-default-hidden. `tauri.conf.json`, `bundle.externalBin`, `minimumSystemVersion`, code-signing entitlements, and distribution lanes are unchanged. Nothing is released.
+Type, hook, locale, helper fixture, and supervisor plumbing for Apple Local Assist is landed behind an availability gate that defaults to `unsupported` / `unavailable` — the command palette does NOT expose the old Apple Assist entries unless `probe_apple_assist_availability` returns `available`. The Rust commands are stubs (no Foundation Models binding) and the Swift helper builds in `FIXTURE_MODE` only. The Rust supervisor (helper spawn / lifecycle / watchdog / cooldown / protocol-violation detection) is implemented (slice 8-18) but the Tauri command surface does NOT call it — `AppleAssistHelperStore` is registered via `tauri::Builder::manage` but production `helper_path()` still returns `Err("Apple Assist helper is not configured for this build.")`. A production helper-path resolver skeleton (`rust_target_triple` / `bundled_helper_filename` / `resolve_bundled_helper_path`) and 27 integration tests are in place; the resolver still returns the not-configured error and never reads the environment, preserving gate-default-hidden. `tauri.conf.json`, `bundle.externalBin`, `minimumSystemVersion`, code-signing entitlements, and distribution lanes are unchanged. Nothing is released.
 
-The product direction has shifted from "selected-text command-palette helper" to an external Apple Local Assist Writing Companion. Future work should review the landed plumbing against `docs/apple-local-assist-writing-companion-plan.md`: Apple Local Assist should work with L Mode, accept rough writing requests, replace rather than coexist with the Agent Window slot, and edit the unsaved buffer only through explicit AI edit transactions with Diff / change-history review and no auto-save.
+The product direction has shifted from "selected-text command-palette helper" to an external Apple Local Assist Writing Companion. The first companion-window mock is landed on `main`: it works from normal editor and L Mode, accepts rough requests, replaces rather than coexists with the Agent Window slot, edits the unsaved buffer through explicit AI edit transactions, and exposes a compact Diff / Discard escape hatch. This is fixture-only: it produces deterministic placeholder edits such as `【AI編集メモ】` and does **not** call Apple Foundation Models.
 
 ## Next gate-flip prerequisites (in order)
 

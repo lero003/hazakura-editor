@@ -131,6 +131,24 @@ export function SettingsPreferencesPane({
           <span className="slider"></span>
           <span>{copy.autoBackup}</span>
         </label>
+        <label className="toggle-switch">
+          <input
+            type="checkbox"
+            checked={editorSettings.appleAssistDiffInitiallyOpen}
+            onChange={(event) => {
+              const appleAssistDiffInitiallyOpen = event.currentTarget.checked;
+              onEditorSettingsChange((current) => ({
+                ...current,
+                appleAssistDiffInitiallyOpen,
+              }));
+            }}
+          />
+          <span className="slider"></span>
+          <span>{copy.appleAssistDiffInitiallyOpen}</span>
+          <span className="field-hint">
+            {copy.appleAssistDiffInitiallyOpenHint}
+          </span>
+        </label>
         <label className="field-control">
           <span>{copy.theme}</span>
           <select

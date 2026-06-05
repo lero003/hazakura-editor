@@ -1,9 +1,9 @@
 # Apple Local Assist — Writing Companion Plan
 
-Status: Planning
+Status: Active mock implementation
 Scope: v0.12+ Apple Local Assist user experience direction
 Authority: Medium
-Last reviewed: 2026-06-05
+Last reviewed: 2026-06-06
 
 ## Purpose
 
@@ -95,6 +95,16 @@ Existing v0.12 slices are still useful foundation work:
 
 However, the command-palette selected-text entries should be treated as early plumbing, not the final product shape.
 
+The first external Writing Companion mock is now implemented on `main`:
+
+- the detached Apple Assist window opens from the shared external companion slot
+- Agent Window and Apple Assist Window replace rather than coexist with each other
+- L Mode can open the companion without leaving the focused writing surface
+- rough requests apply deterministic fixture edits to the unsaved editor buffer
+- each fixture edit records an AI edit transaction and exposes a compact Diff / Discard affordance
+
+This mock does **not** call Apple Foundation Models. It intentionally uses deterministic fixture output (for example `【AI編集メモ】`) so the writing-companion interaction, target inference, unsaved-buffer mutation, and diff escape hatch can be smoke-tested before any live helper gate is flipped.
+
 ## First Mock Slice
 
 Before flipping any live Foundation Models gate, build a touchable mock that proves the experience:
@@ -106,6 +116,17 @@ Before flipping any live Foundation Models gate, build a touchable mock that pro
 5. Smoke in L Mode and normal editor mode.
 
 The mock may use deterministic fixture output. It does not need live Foundation Models.
+
+## Live Foundation Models Gate
+
+There is no user-facing procedure that makes the current mock call Apple Foundation Models. Live Apple AI requires the separate helper gate sequence from `docs/current-status.md`:
+
+1. approve and wire the bundled helper path / `bundle.externalBin`
+2. implement the Swift `LanguageModelSession` live probe in `src-helpers/apple-assist/`
+3. flip the Rust command surface from stubs to the helper supervisor
+4. expose honest UI states for unsupported / unavailable / fixture / live responses
+
+Until those gates land, Apple Assist should disclose fixture mode in the companion window and docs.
 
 ## Non-Goals
 

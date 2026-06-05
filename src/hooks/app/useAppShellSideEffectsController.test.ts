@@ -59,6 +59,7 @@ describe("useAppShellSideEffectsController", () => {
             spellcheckEnabled: true,
             autoBackupEnabled: true,
             ambientIntensity: "subtle",
+            appleAssistDiffInitiallyOpen: true,
             lModeEnabled: false,
             lModeTypewriter: false,
           },

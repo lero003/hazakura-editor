@@ -271,6 +271,10 @@ export type EditorSettings = {
   // find it disorienting, and the default top-anchored flow is
   // what most editors do.
   lModeTypewriter: boolean;
+  // When Apple Assist changes the buffer, open the compact inline
+  // diff by default so the edit is immediately visible. Users can
+  // turn this off when the bar feels too large for their workflow.
+  appleAssistDiffInitiallyOpen: boolean;
 };
 
 export type AmbientIntensity = "off" | "subtle" | "normal" | "dramatic";

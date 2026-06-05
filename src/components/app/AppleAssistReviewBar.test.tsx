@@ -140,6 +140,7 @@ describe("AppleAssistReviewBar", () => {
       <AppleAssistReviewBar
         activeTabId="tabA"
         copy={getLModeCopy("en")}
+        diffInitiallyOpen={false}
         menuLanguage="en"
         onDiscard={vi.fn()}
       />,
@@ -153,12 +154,61 @@ describe("AppleAssistReviewBar", () => {
     expect(screen.getByText("After")).toBeTruthy();
   });
 
+  it("opens the inline diff preview by default for a new AI edit", () => {
+    recordPending("tabA", "整えて");
+    render(
+      <AppleAssistReviewBar
+        activeTabId="tabA"
+        copy={getLModeCopy("en")}
+        menuLanguage="en"
+        onDiscard={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("Before")).toBeTruthy();
+    expect(screen.getByText("After")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Close diff" })).toBeTruthy();
+  });
+
+  it("can start with the inline diff preview closed by preference", () => {
+    recordPending("tabA", "整えて");
+    render(
+      <AppleAssistReviewBar
+        activeTabId="tabA"
+        copy={getLModeCopy("en")}
+        diffInitiallyOpen={false}
+        menuLanguage="en"
+        onDiscard={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByText("Before")).toBeNull();
+    expect(screen.getByRole("button", { name: "Open diff" })).toBeTruthy();
+  });
+
+  it("changes the diff toggle label when the inline diff is open", () => {
+    recordPending("tabA", "整えて");
+    render(
+      <AppleAssistReviewBar
+        activeTabId="tabA"
+        copy={getLModeCopy("en")}
+        menuLanguage="en"
+        onDiscard={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Close diff" }));
+    expect(screen.queryByText("Before")).toBeNull();
+    expect(screen.getByRole("button", { name: "Open diff" })).toBeTruthy();
+  });
+
   it("uses localized labels in Japanese", () => {
     recordPending("tabA", "整えて");
     render(
       <AppleAssistReviewBar
         activeTabId="tabA"
         copy={getLModeCopy("ja")}
+        diffInitiallyOpen={false}
         menuLanguage="ja"
         onDiscard={vi.fn()}
       />,

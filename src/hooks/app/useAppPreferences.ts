@@ -147,6 +147,7 @@ function readStoredEditorSettings(): EditorSettings {
     spellcheckEnabled: true,
     autoBackupEnabled: true,
     ambientIntensity: "normal",
+    appleAssistDiffInitiallyOpen: true,
     // L Mode defaults are spread in below — keeping the
     // defaults in one place (lMode/settings.ts) so adding a
     // new L Mode toggle is a one-file change.
@@ -185,6 +186,10 @@ function readStoredEditorSettings(): EditorSettings {
       ambientIntensity: isAmbientIntensity(parsed.ambientIntensity)
         ? parsed.ambientIntensity
         : defaults.ambientIntensity,
+      appleAssistDiffInitiallyOpen:
+        typeof parsed.appleAssistDiffInitiallyOpen === "boolean"
+          ? parsed.appleAssistDiffInitiallyOpen
+          : defaults.appleAssistDiffInitiallyOpen,
       ...parseLModeSettings(parsed),
     };
   } catch {
