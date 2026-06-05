@@ -299,7 +299,7 @@ export function AppleAssistWindowApp() {
   return (
     <div className="apple-assist-window-shell" data-testid="apple-assist-shell">
       <header className="apple-assist-window-header">
-        <div className="apple-assist-window-title">Apple Assist</div>
+        <div className="apple-assist-window-title">Apple Local Assist</div>
         <div className="apple-assist-window-subtitle">
           {copy.subtitle}
           <span className="apple-assist-window-mode">{copy.modeLabel}</span>
@@ -475,20 +475,20 @@ function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowCopy {
   if (lang === "kana") {
     return {
       activeDocument: (name) => `いまのふみ: ${name}`,
-      appliedStatus: (request) => `Apple Assist が かへました: ${request}`,
+      appliedStatus: (request) => `Apple Local Assist が かへました: ${request}`,
       applyButton: "つかう",
       availableDisclosure:
-        "この Mac の Apple Foundation Models を つかひます。",
-      disabledStatus: "Apple Assist は このせっしょんで むこうです。",
+        "Apple Intelligence が つかへるときだけ、かるい ぶんしょうほじょをします。",
+      disabledStatus: "Apple Local Assist は このせっしょんで むこうです。",
       emptyRequestError: "おねがひを かいてください。",
       generatingButton: "つくっています...",
-      generatingChange: "Apple Assist が かきかへを つくっています...",
+      generatingChange: "Apple Local Assist が かきかへを つくっています...",
       generatingInMain: (request) => `ほんぶんで つくっています: ${request}`,
       localRuntimeUnavailable: (reason) =>
-        `Apple Assist は いま つかへません: ${reason}`,
+        `Apple Local Assist は いま つかへません: ${reason}`,
       longRunningStatus:
-        "Apple Assist が まだ かんがへています。まってもよいし、ほんぶんがはの じょうたいを みてもよいです。",
-      modeLabel: "ろーかる",
+        "Apple Local Assist が まだ かんがへています。まってもよいし、ほんぶんがはの じょうたいを みてもよいです。",
+      modeLabel: "Alpha",
       noActiveDocument: "ひらいている ふみが まだ みつかりません。",
       noTarget: "たいしょうが ありません。",
       placeholder: "整えて / 自然にして / 続きを書いて / 校正して / この章を直して",
@@ -503,7 +503,7 @@ function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowCopy {
       readyStatus: "じゅんびできました。かへたところは ほぞんせず、ほんぶんに のこします。",
       roughRequestLabel: "おねがひ",
       sendingRequest: "ほんぶんがはへ おねがひを おくっています...",
-      subtitle: "かくための あしすと",
+      subtitle: "かるい ぶんしょうほじょ",
       targetBlock: (chars) => `ぶろっくに つかふ (${chars} もじ)`,
       targetDocument: (chars) => `ふみぜんたいに つかふ (${chars} もじ)`,
       targetLabel: (label) => `${label} に つかふ`,
@@ -511,9 +511,9 @@ function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowCopy {
       targetSection: (chars) => `しょうに つかふ (${chars} もじ)`,
       targetSelection: (chars) => `えらんだところに つかふ (${chars} もじ)`,
       tauriUnavailableError:
-        "Apple Assist window が Tauri runtime のそとで うごいています。",
+        "Apple Local Assist window が Tauri runtime のそとで うごいています。",
       unsupportedStatus:
-        "Apple Assist は いまの ことば または うごくばしょでは つかへません。",
+        "Apple Local Assist は いまの ことば または うごくばしょでは つかへません。",
       workingLocally: "この Mac で さぎょうちゅう",
     };
   }
@@ -521,20 +521,20 @@ function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowCopy {
   if (lang === "ja") {
     return {
       activeDocument: (name) => `対象: ${name}`,
-      appliedStatus: (request) => `Apple Assist が本文を変更しました: ${request}`,
+      appliedStatus: (request) => `Apple Local Assist が本文を変更しました: ${request}`,
       applyButton: "適用",
       availableDisclosure:
-        "この Mac の Apple Foundation Models を使います。",
-      disabledStatus: "Apple Assist はこのセッションでは無効です。",
+        "Apple Intelligence 対応環境で、軽いオンデバイス文章補助を行います。",
+      disabledStatus: "Apple Local Assist はこのセッションでは無効です。",
       emptyRequestError: "依頼文を入力してください。",
       generatingButton: "生成中...",
-      generatingChange: "Apple Assist が変更案を生成しています...",
+      generatingChange: "Apple Local Assist が変更案を生成しています...",
       generatingInMain: (request) => `本文側で生成中: ${request}`,
       localRuntimeUnavailable: (reason) =>
-        `Apple Assist は現在使えません: ${reason}`,
+        `Apple Local Assist は現在使えません: ${reason}`,
       longRunningStatus:
-        "Apple Assist の応答に時間がかかっています。待つか、メインエディタ側の状態を確認してください。",
-      modeLabel: "ローカル",
+        "Apple Local Assist の応答に時間がかかっています。待つか、メインエディタ側の状態を確認してください。",
+      modeLabel: "Alpha",
       noActiveDocument: "対象の文書がまだ見つかりません。",
       noTarget: "対象がありません。",
       placeholder: "整えて / 自然にして / 続きを書いて / 校正して / この章を直して",
@@ -550,7 +550,7 @@ function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowCopy {
         "準備できました。変更はメインエディタの未保存バッファに反映されます。",
       roughRequestLabel: "依頼文",
       sendingRequest: "メインエディタへ依頼を送信しています...",
-      subtitle: "執筆コンパニオン",
+      subtitle: "軽い文章補助",
       targetBlock: (chars) => `ブロックに適用 (${chars} 文字)`,
       targetDocument: (chars) => `文書全体に適用 (${chars} 文字)`,
       targetLabel: (label) => `${label} に適用`,
@@ -558,29 +558,29 @@ function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowCopy {
       targetSection: (chars) => `章に適用 (${chars} 文字)`,
       targetSelection: (chars) => `選択範囲に適用 (${chars} 文字)`,
       tauriUnavailableError:
-        "Apple Assist window が Tauri runtime の外で動作しています。",
+        "Apple Local Assist window が Tauri runtime の外で動作しています。",
       unsupportedStatus:
-        "Apple Assist は現在のアプリ言語または実行環境では使えません。",
+        "Apple Local Assist は現在のアプリ言語または実行環境では使えません。",
       workingLocally: "この Mac で処理中",
     };
   }
 
   return {
     activeDocument: (name) => `Active: ${name}`,
-    appliedStatus: (request) => `Apple Assist applied: ${request}`,
+    appliedStatus: (request) => `Apple Local Assist applied: ${request}`,
     applyButton: "Apply",
     availableDisclosure:
-      "Uses Apple Foundation Models when available on this Mac.",
-    disabledStatus: "Apple Assist is disabled in this app session.",
+      "Experimental lightweight on-device text assistance when Apple intelligence features are available.",
+    disabledStatus: "Apple Local Assist is disabled in this app session.",
     emptyRequestError: "Type a rough request first.",
     generatingButton: "Generating...",
-    generatingChange: "Apple Assist is generating a change...",
+    generatingChange: "Apple Local Assist is generating a change...",
     generatingInMain: (request) => `Generating in the main editor: ${request}`,
     localRuntimeUnavailable: (reason) =>
-      `Apple Assist is not available for the current app language or runtime: ${reason}`,
+      `Apple Local Assist is not available for the current app language or runtime: ${reason}`,
     longRunningStatus:
-      "Apple Assist is still taking a long time. You can try again or check the main editor status.",
-    modeLabel: "Local",
+      "Apple Local Assist is still taking a long time. You can try again or check the main editor status.",
+    modeLabel: "Alpha",
     noActiveDocument: "No active document detected yet.",
     noTarget: "No active target.",
     placeholder:
@@ -601,7 +601,7 @@ function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowCopy {
       "Ready. Changes are generated in the main editor and kept unsaved.",
     roughRequestLabel: "Rough request",
     sendingRequest: "Sending request to the main editor...",
-    subtitle: "Writing Companion",
+    subtitle: "Lightweight writing help",
     targetBlock: (chars) => `Apply to code block (${chars} chars)`,
     targetDocument: (chars) => `Apply to whole document (${chars} chars)`,
     targetLabel: (label) => `Apply to ${label}`,
@@ -609,9 +609,9 @@ function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowCopy {
     targetSection: (chars) => `Apply to section (${chars} chars)`,
     targetSelection: (chars) => `Apply to selection (${chars} chars)`,
     tauriUnavailableError:
-      "Apple Assist window is running outside the Tauri runtime; cannot reach the main window.",
+      "Apple Local Assist window is running outside the Tauri runtime; cannot reach the main window.",
     unsupportedStatus:
-      "Apple Assist is not available for the current app language or runtime.",
+      "Apple Local Assist is not available for the current app language or runtime.",
     workingLocally: "Working locally",
   };
 }

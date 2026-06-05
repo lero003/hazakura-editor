@@ -100,7 +100,13 @@ export function AgentWorkbenchPreferencesPane({
           aria-label={copy.appleSectionLabel}
           className="preference-section"
         >
-          <h3>{copy.appleHeading}</h3>
+          <div className="preference-section-title-row">
+            <h3>{copy.appleHeading}</h3>
+            <span className="preference-alpha-badge">
+              {copy.appleExperimentalLabel}
+            </span>
+          </div>
+          <p className="preference-note">{copy.appleDescription}</p>
           <p className="preference-note">
             {appleAssistAvailabilityLabel(copy, appleAssistAvailability)}
           </p>

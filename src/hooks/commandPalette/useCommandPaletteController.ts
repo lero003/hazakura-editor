@@ -425,13 +425,14 @@ export function useCommandPaletteController({
         id: "apple-assist.openWindow",
         keywords: [
           "apple",
+          "local",
           "assist",
           "writing",
           "companion",
           "foundation",
           "models",
         ],
-        label: "Open Apple Assist Window",
+        label: "Open Apple Local Assist Window",
         run: () => {
           void actions.openAppleAssistWindow(themePreference);
         },

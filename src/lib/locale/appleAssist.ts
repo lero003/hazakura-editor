@@ -27,7 +27,7 @@ export function getAppleAssistCopy(lang: MenuLanguage): AppleAssistCopy {
   if (isKanaStyle(lang)) {
     return {
       featureName: "あっぷる ろーかる あしす と (この Mac のみ)",
-      commandCategory: "あっぷる あしす と",
+      commandCategory: "あっぷる ろーかる あしす と",
       summarizeLabel: "せんたくはんいを ようやく",
       summarizeHint:
         "あっぷる の この Mac の きのうで えらんだ ぶんしょうを ようやく します。りびゅー ですく を とおして くわしく みてから つかいます。",
@@ -46,7 +46,7 @@ export function getAppleAssistCopy(lang: MenuLanguage): AppleAssistCopy {
   return isJapaneseMenuLanguage(lang)
     ? {
         featureName: "Apple Local Assist (この Mac のみ)",
-        commandCategory: "Apple Assist",
+        commandCategory: "Apple Local Assist",
         summarizeLabel: "選択範囲を要約",
         summarizeHint:
           "Apple のオンデバイス機能で、選択した文章を要約します。出力は必ず Review Desk 経由で明示的に適用してください。",
@@ -63,7 +63,7 @@ export function getAppleAssistCopy(lang: MenuLanguage): AppleAssistCopy {
       }
     : {
         featureName: "Apple Local Assist (on-device)",
-        commandCategory: "Apple Assist",
+        commandCategory: "Apple Local Assist",
         summarizeLabel: "Summarize selection",
         summarizeHint:
           "Generate a summary of the selected text using Apple's on-device model. Output is never auto-applied; you must review and apply it explicitly via Review Desk.",

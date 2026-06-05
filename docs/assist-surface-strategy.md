@@ -48,12 +48,12 @@ Use provider separation to keep responsibilities clear, but do not expose arbitr
 Initial conceptual provider classes:
 
 - `external-cli`: existing Agent Workbench provider family for allowlisted local CLI agents.
-- `apple-local`: future macOS-only document-assist provider using Apple's on-device model when available.
+- `apple-local`: macOS-only experimental document-assist provider using Apple's on-device model when available.
 - `none`: Safe Editor default with no assist provider active.
 
 Do not add `local-http`, MCP, arbitrary executable paths, provider-add UI, or generic tool/plugin registration without a fresh boundary review.
 
-Implementation note (v0.12 work-in-progress): the Preferences dialog now exposes this as a restart-applied shared outside companion-slot choice (`Apple Assist` / `CLI Agent` / `Off`). Selecting `CLI Agent` continues to use the existing Agent Workbench restart-required mode gate, consent, and allowlisted provider selection. Selecting `Apple Assist` switches the normal companion button to the Apple Assist window after restart and shows fixture/live availability disclosure; it does not enable CLI launch and does not by itself flip the live Foundation Models helper gate.
+Implementation note (v0.12 work-in-progress): the Preferences dialog now exposes this as a restart-applied shared outside companion-slot choice (`Apple Local Assist (Experimental)` / `CLI Agent` / `Off`). Selecting `CLI Agent` continues to use the existing Agent Workbench restart-required mode gate, consent, and allowlisted provider selection. Selecting `Apple Local Assist` switches the normal companion button to the Apple Local Assist window after restart and shows alpha / availability disclosure; it does not enable CLI launch, provider selection, or Agent Workbench consent.
 
 ## External Agent Workbench
 
@@ -78,7 +78,7 @@ Moving Agent Workbench into a detached window or separate surface does not weake
 
 ## Apple Local Assist
 
-Apple Local Assist is a possible future replacement or alternative for some assist workflows after v0.11.
+Apple Local Assist is an **alpha / experimental** local writing-help surface. It is a possible replacement or alternative for some lightweight text-assist workflows after v0.11, but it is not the main AI feature and not a replacement for external agents or future local LLM runtimes.
 
 Apple documents the Foundation Models framework as access to the on-device language model that powers Apple Intelligence, with support for text understanding and generation tasks such as summarization, extraction, classification, and refinement. Apple also documents that availability must be checked at runtime because it depends on Apple Intelligence support, user settings, and model readiness.
 
@@ -89,6 +89,11 @@ References:
 
 For `hazakura editor`, Apple Local Assist should start as a document-writing companion, not as an agent. The strongest product shape is an external Assist Window that uses the same broad "outside companion" slot as Agent Workbench, while keeping a different UI and trust boundary. The app should normally show either Apple Local Assist or External Agent Workbench, not both side by side.
 
+Short user-facing distinction:
+
+- **Apple Local Assist**: experimental on-device text help for selected text or the current writing context; useful for short summaries, rephrasing, heading / tag ideas, light cleanup, and small direct edits that remain unsaved and diff-reviewable.
+- **External Agent Workbench**: explicit CLI-agent boundary for allowlisted external tools such as Codex / OpenCode / pi / Claude Code in a selected workspace; useful for agent-led development work, but outside the default Safe Editor trust boundary.
+
 The companion should work naturally with L Mode and accept rough writing requests:
 
 - "整えて" / "自然にして" / "校正して"
@@ -98,6 +103,8 @@ The companion should work naturally with L Mode and accept rough writing request
 - "変更点を説明して"
 
 The request target should stay bounded: selected text when present, otherwise the current paragraph / block / section, and only with explicit user choice a larger document excerpt.
+
+Because the current Apple model path is small and availability-gated, product claims should stay modest. Apple Local Assist is not intended for code review, multi-file understanding, long-document restructuring, autonomous agent work, broad design judgment, or advanced reasoning.
 
 Apple Local Assist may update the unsaved editor buffer directly **only** as an AI edit transaction: explicit user request, before/after record, source label, no auto-save, and a path to Diff / change history. Review Desk remains a detailed inspection layer, not the primary Apple Local Assist surface.
 

@@ -35,7 +35,7 @@ const baseProps = {
 afterEach(cleanup);
 
 describe("AgentWorkbenchPreferencesPane", () => {
-  it("shows Apple Assist notes when Apple Local Assist is selected", () => {
+  it("shows Apple Local Assist notes when selected", () => {
     render(
       <AgentWorkbenchPreferencesPane
         {...baseProps}
@@ -44,7 +44,11 @@ describe("AgentWorkbenchPreferencesPane", () => {
     );
 
     expect(
-      screen.getByRole("heading", { name: "Apple Assist" }),
+      screen.getByRole("heading", { name: "Apple Local Assist" }),
+    ).toBeTruthy();
+    expect(screen.getByText("Alpha / Experimental")).toBeTruthy();
+    expect(
+      screen.getByText(/experimental on-device writing help/i),
     ).toBeTruthy();
     expect(screen.getByText(/Apple Local Assist is not available yet/)).toBeTruthy();
     expect(

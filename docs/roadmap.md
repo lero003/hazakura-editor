@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-05 (v0.11.0 published)
+Last reviewed: 2026-06-06 (App Store publication roadmap)
 
 ## Current Position
 
@@ -110,20 +110,66 @@ Rules:
 
 Likely phase shape:
 
-- `v0.12`: Apple Local Assist Writing Companion mock, availability plumbing, rough requests, L Mode smoke, and AI edit transaction.
-- `v0.13`: Assist Preview, adding live Foundation Models binding and broader proofreading / continuation only if v0.12 is stable.
-- `v0.14`: Distribution Hardening, including App Store build separation, sandbox / entitlement checks, TestFlight packaging, and App Review notes.
-- `v1.0`: App Store Candidate if the App Store build can omit External Agent Workbench cleanly.
+- `v0.12`: Apple Local Assist live local preview, availability plumbing, rough requests, L Mode smoke, AI edit transaction, and alpha / experimental labeling.
+- `v0.13`: App Brush-up, including real Japanese writing examples, prompt quality, unavailable-state handling, app polish, and release-claim tightening.
+- `v0.14`: Distribution Prep, including App Store build separation, sandbox / entitlement checks, signing / certificate preparation, TestFlight packaging, and Developer / GitHub notarization planning.
+- `v0.15`: Store Review Prep, including metadata, screenshots, privacy / acceptable-use wording, review notes, and final TestFlight smoke.
+- `v1.0`: App Store Candidate / Review if the App Store build can omit External Agent Workbench cleanly and Apple Local Assist remains document-assist only.
 
-v0.12 in-flight slice progress (no release, no distribution-config change):
+v0.12 in-flight state (no release, no App Store submission):
 
-- Slice 1 — `src/lib/tauri/appleAssist.ts` + `src-tauri/src/commands/apple_assist.rs` define types, gates, and stubs.
-- Slice 2 — `useAppleAssistAvailability` hook + per-mount probe + 3-language locale.
-- Slice 3 — `useAppleAssistCandidate` hands generated text to the existing Review Desk `runCandidateCompare` (no auto-apply).
-- Slice 4 — Two command palette entries gated on availability (`Summarize selection`, `Rephrase selection`).
-- Slice 5 — `src-helpers/apple-assist/` SwiftPM helper builds in `FIXTURE_MODE`; `npm run build:apple-assist-helper:fixture` writes `binaries/hazakura-apple-assist-helper-<rust-triple>` and smoke-tests the JSON-over-stdio wire protocol. Live Foundation Models binding is stubbed (`unsupported` / `deferred`) pending an Apple-Silicon end-to-end check, and `tauri.conf.json` has not been changed.
+- Apple Local Assist has moved to a live local preview on `main`, backed by a bundled Swift helper when Apple Foundation Models is available on the current Mac.
+- The feature remains alpha / experimental, unavailable-safe, no-network-fallback, no-auto-save, and bounded to explicit AI edit transactions.
+- Safe Editor behavior does not depend on Apple Local Assist availability.
+- No App Store sandbox / TestFlight packaging change has been made.
+- No Developer ID signing / notarization lane has been completed for the bundled helper.
+- No release tag, GitHub Release, or App Store submission exists for this live helper state.
 
-These slices are now foundation plumbing. The next implementation request should review this work against the Writing Companion direction before adding more selected-text command-palette behavior.
+The next implementation work should prioritize built-app smoke, prompt quality, unavailable / disabled states, and distribution readiness. Do not broaden Apple Local Assist into network fallback, generic chat, tool calling, workspace indexing, or external-agent replacement.
+
+## App Store Publication Roadmap
+
+This is an internal roadmap for moving from the current Apple Local Assist preview to App Store review. It is not user-facing release copy.
+
+### 1. App Brush-up
+
+Goal: make the App Store build feel stable enough for ordinary Markdown writing.
+
+- Smoke the built app with normal editor, L Mode, Diff / Review Desk, export / print, and Apple Local Assist.
+- Polish Apple Local Assist with real lightweight Japanese writing examples: short summaries, rephrasing, heading / tag ideas, light cleanup, and short explanations.
+- Verify unavailable, disabled, unsupported-language, and unsupported-device states without blocking Safe Editor.
+- Keep every AI-written change explicit, unsaved, diff-reviewable, and discardable.
+- Fix only high-confidence daily-use polish; do not add major new feature surfaces before review prep.
+
+### 2. Official Distribution Prep
+
+Goal: prepare the two binary lanes without creating a third official free build.
+
+- App Store build: remove / omit External Agent Workbench and all CLI launch paths from the reviewable build.
+- Developer / GitHub build: keep Agent Workbench separate and plan Developer ID signing / notarization for broader outside-App-Store sharing.
+- Prepare Apple Developer account, bundle identifiers, signing certificates, provisioning profiles, app sandbox entitlements, hardened runtime, and helper signing assumptions.
+- Decide whether `minimumSystemVersion` stays editor-wide `11.0` with Apple Local Assist availability-gated, or whether a separate App Store build policy is needed.
+- Confirm the bundled Apple Local Assist helper works under the App Store sandbox or replace the helper shape before submission.
+
+### 3. Store Review Prep
+
+Goal: assemble a clean App Store review package.
+
+- Create the App Store Connect app record, metadata, screenshots, icon, category, age rating, support URL, privacy policy URL, and release notes.
+- Prepare concise review notes: Markdown/text editor, user-selected file access, Apple Local Assist is optional/on-device/availability-gated, AI edits are explicit and unsaved, and the App Store build has no Agent Workbench or arbitrary command execution.
+- Add in-app disclosure for Apple Local Assist acceptable-use / output-responsibility expectations.
+- Run TestFlight packaging and internal smoke before App Review submission.
+- Align `README.md`, `docs/current-status.md`, release notes, and smoke checklist with the exact submitted build.
+
+### 4. Review And Post-review
+
+Goal: handle App Review without disturbing the Developer / GitHub lane.
+
+- Submit the App Store build and track review feedback separately from developer-preview work.
+- If review requests changes, patch only the App Store build surface or documentation needed for review unless a true product bug is found.
+- After approval, update public docs from future-tense to published-state wording and keep historical preview release notes intact.
+- Keep Developer / GitHub builds distinct; do not imply Agent Workbench is part of the App Store build.
+- Record any review constraints that should become durable roadmap or boundary rules.
 
 ## Continuing Backlog
 

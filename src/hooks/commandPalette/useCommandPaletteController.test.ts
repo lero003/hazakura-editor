@@ -55,11 +55,11 @@ describe("useCommandPaletteController", () => {
           actionRailLabel: "L Mode actions",
           statusBarReviewChangesLabel: "Review changes",
           statusBarWorkspaceLabel: "Open workspace",
-          statusBarAppleAssistLabel: "Apple Assist",
-          statusBarAppleAssistTitle: "Open the Apple Assist window",
+          statusBarAppleAssistLabel: "Apple Local Assist",
+          statusBarAppleAssistTitle: "Open the Apple Local Assist window",
           statusBarReviewChangesTitle: "Exit L Mode and open the diff against disk",
           statusBarWorkspaceTitle: "Exit L Mode and return to the workspace",
-          appleAssistReviewBarLabel: "Apple Assist changed your text",
+          appleAssistReviewBarLabel: "Apple Local Assist changed your text",
           appleAssistReviewBarTitle: "Review or discard the pending AI edit",
           appleAssistReviewBarOpenDiffLabel: "Open diff",
           appleAssistReviewBarCloseDiffLabel: "Close diff",
@@ -157,11 +157,11 @@ describe("useCommandPaletteController", () => {
           actionRailLabel: "えるモードの導線",
           statusBarReviewChangesLabel: "変更を確認",
           statusBarWorkspaceLabel: "ワークスペースへ",
-          statusBarAppleAssistLabel: "Apple Assist",
-          statusBarAppleAssistTitle: "Apple Assist ウィンドウを開く",
+          statusBarAppleAssistLabel: "Apple Local Assist",
+          statusBarAppleAssistTitle: "Apple Local Assist ウィンドウを開く",
           statusBarReviewChangesTitle: "えるモードを閉じてディスクとの差分を開く",
           statusBarWorkspaceTitle: "えるモードを閉じてワークスペースに戻る",
-          appleAssistReviewBarLabel: "Apple Assist が本文を変更しました",
+          appleAssistReviewBarLabel: "Apple Local Assist が本文を変更しました",
           appleAssistReviewBarTitle: "差分を確認するか取り消すか選んでください",
           appleAssistReviewBarOpenDiffLabel: "差分を開く",
           appleAssistReviewBarCloseDiffLabel: "差分を閉じる",
@@ -192,7 +192,7 @@ describe("useCommandPaletteController", () => {
     expect(lModeCommand?.shortcut).toBe("⇧⌘L");
   });
 
-  it("hides Apple Assist commands when availability is not `available`", () => {
+  it("hides Apple Local Assist commands when availability is not `available`", () => {
     const { result } = renderHook(() =>
       useCommandPaletteController({
         actions: {
@@ -243,13 +243,13 @@ describe("useCommandPaletteController", () => {
           actionRailLabel: "L Mode actions",
           statusBarReviewChangesLabel: "Review changes",
           statusBarWorkspaceLabel: "Open workspace",
-          statusBarAppleAssistLabel: "Apple Assist",
-          statusBarAppleAssistTitle: "Open the Apple Assist window",
+          statusBarAppleAssistLabel: "Apple Local Assist",
+          statusBarAppleAssistTitle: "Open the Apple Local Assist window",
           statusBarReviewChangesTitle:
             "Exit L Mode and open the diff against disk",
           statusBarWorkspaceTitle:
             "Exit L Mode and return to the workspace",
-          appleAssistReviewBarLabel: "Apple Assist changed your text",
+          appleAssistReviewBarLabel: "Apple Local Assist changed your text",
           appleAssistReviewBarTitle: "Review or discard the pending AI edit",
           appleAssistReviewBarOpenDiffLabel: "Open diff",
           appleAssistReviewBarCloseDiffLabel: "Close diff",
@@ -282,7 +282,7 @@ describe("useCommandPaletteController", () => {
     expect(rephrase).toBeUndefined();
   });
 
-  it("exposes Apple Assist commands when availability is `available`", () => {
+  it("exposes Apple Local Assist commands when availability is `available`", () => {
     const invokeAppleAssist = vi.fn();
     const { result } = renderHook(() =>
       useCommandPaletteController({
@@ -340,13 +340,13 @@ describe("useCommandPaletteController", () => {
           actionRailLabel: "L Mode actions",
           statusBarReviewChangesLabel: "Review changes",
           statusBarWorkspaceLabel: "Open workspace",
-          statusBarAppleAssistLabel: "Apple Assist",
-          statusBarAppleAssistTitle: "Open the Apple Assist window",
+          statusBarAppleAssistLabel: "Apple Local Assist",
+          statusBarAppleAssistTitle: "Open the Apple Local Assist window",
           statusBarReviewChangesTitle:
             "Exit L Mode and open the diff against disk",
           statusBarWorkspaceTitle:
             "Exit L Mode and return to the workspace",
-          appleAssistReviewBarLabel: "Apple Assist changed your text",
+          appleAssistReviewBarLabel: "Apple Local Assist changed your text",
           appleAssistReviewBarTitle: "Review or discard the pending AI edit",
           appleAssistReviewBarOpenDiffLabel: "Open diff",
           appleAssistReviewBarCloseDiffLabel: "Close diff",
@@ -376,7 +376,7 @@ describe("useCommandPaletteController", () => {
       (command) => command.id === "appleAssist.rephrase",
     );
     expect(summarize).toBeDefined();
-    expect(summarize?.category).toBe("Apple Assist");
+    expect(summarize?.category).toBe("Apple Local Assist");
     expect(summarize?.label).toBe("Summarize selection");
     expect(rephrase).toBeDefined();
     expect(rephrase?.label).toBe("Rephrase selection");

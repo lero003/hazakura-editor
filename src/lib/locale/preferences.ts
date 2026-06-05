@@ -35,9 +35,9 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
   if (isKanaStyle(lang)) {
     return {
       application: "あぷり",
-      appleAssistDiffInitiallyOpen: "Apple Assist の さぶんを ひらく",
+      appleAssistDiffInitiallyOpen: "Apple Local Assist の さぶんを ひらく",
       appleAssistDiffInitiallyOpenHint:
-        "Apple Assist が ほんぶんを かへたら さぶんを すぐ みせます。",
+        "Apple Local Assist が ほんぶんを かへたら さぶんを すぐ みせます。",
       autoBackup: "うつしのこし",
       dark: "やみ",
       editor: "えでぃた",
@@ -68,9 +68,9 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
   return isJapaneseMenuLanguage(lang)
     ? {
         application: "アプリケーション",
-        appleAssistDiffInitiallyOpen: "Apple Assist の差分を自動で開く",
+        appleAssistDiffInitiallyOpen: "Apple Local Assist の差分を自動で開く",
         appleAssistDiffInitiallyOpenHint:
-          "Apple Assist が本文を変更したとき、確認用の小さな差分を最初から表示します。",
+          "Apple Local Assist が本文を変更したとき、確認用の小さな差分を最初から表示します。",
         autoBackup: "自動バックアップ",
         dark: "ダーク",
         editor: "エディタ",
@@ -98,9 +98,9 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
       }
     : {
         application: "Application",
-        appleAssistDiffInitiallyOpen: "Open Apple Assist diff automatically",
+        appleAssistDiffInitiallyOpen: "Open Apple Local Assist diff automatically",
         appleAssistDiffInitiallyOpenHint:
-          "Show the compact diff immediately after Apple Assist changes the text.",
+          "Show the compact diff immediately after Apple Local Assist changes the text.",
         autoBackup: "Auto-backup",
         dark: "Dark",
         editor: "Editor",

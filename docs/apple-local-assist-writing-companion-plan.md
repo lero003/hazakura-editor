@@ -22,7 +22,7 @@ It is conceptually close to the detached Agent Window because it lives outside t
 
 not both at the same time. Treat this as a single external companion slot with different provider classes.
 
-Apple Local Assist is still document assistance, not a CLI agent. It must not become command execution, tool calling, provider plugins, broad workspace indexing, or a general chat product.
+Apple Local Assist is still document assistance, not a CLI agent. It is also an **alpha / experimental** lightweight text-assistance surface, not the main AI feature and not a replacement for External Agent Workbench, external AI agents, or future local LLM runtimes. It must not become command execution, tool calling, provider plugins, broad workspace indexing, or a general chat product.
 
 ## Experience Target
 
@@ -40,6 +40,8 @@ The target experience is:
 6. The user can inspect what changed through Diff / change history, then save explicitly.
 
 The product should be forgiving of vague instructions. Many writers cannot or will not describe the exact operation they want. The UI should make rough intent usable rather than requiring the user to know whether they need "summarize", "rephrase", "proofread", or "extract".
+
+The alpha scope is intentionally modest. Favor short summaries, rephrasing, heading ideas, tag / title suggestions, light cleanup, and short explanations. Do not present Apple Local Assist as suitable for code review, multi-file understanding, long-document restructuring, autonomous agent work, advanced reasoning, or expert design judgment.
 
 ## L Mode Priority
 
@@ -97,15 +99,15 @@ However, the command-palette selected-text entries should be treated as early pl
 
 The first external Writing Companion is now implemented on `main`:
 
-- the detached Apple Assist window opens from the shared external companion slot
-- Agent Window and Apple Assist Window replace rather than coexist with each other
-- Preferences now expose the shared outside companion slot as a restart-applied `Apple Assist` / `CLI Agent` / `Off` choice, with CLI Agent retaining the existing Agent Workbench restart / consent / provider boundary
-- the normal top-chrome companion button switches between Apple Assist and Agent according to the active setting for the current app launch
+- the detached Apple Local Assist window opens from the shared external companion slot
+- Agent Window and Apple Local Assist Window replace rather than coexist with each other
+- Preferences now expose the shared outside companion slot as a restart-applied `Apple Local Assist (Experimental)` / `CLI Agent` / `Off` choice, with CLI Agent retaining the existing Agent Workbench restart / consent / provider boundary
+- the normal top-chrome companion button switches between Apple Local Assist and Agent according to the active setting for the current app launch
 - L Mode can open the companion without leaving the focused writing surface
-- rough requests call the bundled Apple Assist helper when Apple Foundation Models is locally available
+- rough requests call the bundled Apple Local Assist helper when Apple Foundation Models is locally available
 - each generated edit records an AI edit transaction and exposes a compact Diff / Discard affordance
 
-The fixture helper remains available for supervisor regression tests, but the production build path now uses the live helper. Live generation depends on macOS 26+ Apple Foundation Models availability, local Apple Intelligence state, and a Foundation Models-supported current app locale; when unavailable, Apple Assist must disclose the unavailable/disabled/unsupported state rather than falling back to a network model or hidden fixture output.
+The fixture helper remains available for supervisor regression tests, but the production build path now uses the live helper. Live generation depends on macOS 26+ Apple Foundation Models availability, local Apple Intelligence state, and a Foundation Models-supported current app locale; when unavailable, Apple Local Assist must disclose the unavailable/disabled/unsupported state rather than falling back to a network model or hidden fixture output.
 
 ## First Mock Slice
 

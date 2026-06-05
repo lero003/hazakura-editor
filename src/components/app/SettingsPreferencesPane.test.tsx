@@ -23,7 +23,7 @@ function editorSettings(
 }
 
 describe("SettingsPreferencesPane", () => {
-  it("updates the Apple Assist diff default-open preference", () => {
+  it("updates the Apple Local Assist diff default-open preference", () => {
     const onEditorSettingsChange = vi.fn();
     render(
       <SettingsPreferencesPane
@@ -42,7 +42,7 @@ describe("SettingsPreferencesPane", () => {
 
     fireEvent.click(
       screen.getByRole("checkbox", {
-        name: /Open Apple Assist diff automatically/,
+        name: /Open Apple Local Assist diff automatically/,
       }),
     );
 

@@ -9,8 +9,8 @@ afterEach(cleanup);
 const sidePaneCopy: RightPaneToggleCopy = {
   agentWindow: "Agent",
   agentWindowTitle: "Open Agent Window",
-  appleAssistWindow: "Apple Assist",
-  appleAssistWindowTitle: "Open Apple Assist Window",
+  appleAssistWindow: "Apple Local Assist",
+  appleAssistWindowTitle: "Open Apple Local Assist Window",
   diffTab: "Diff",
   diffTabTitle: "Open Diff",
   outlineTab: "Outline",
@@ -74,7 +74,7 @@ describe("DocumentMetaBar", () => {
     expect(screen.queryByRole("button", { name: "変更を確認" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Open Agent Window" })).toBeNull();
     expect(
-      screen.queryByRole("button", { name: "Open Apple Assist Window" }),
+      screen.queryByRole("button", { name: "Open Apple Local Assist Window" }),
     ).toBeNull();
   });
 
@@ -85,11 +85,11 @@ describe("DocumentMetaBar", () => {
     expect(screen.getByRole("button", { name: "Open Agent Window" })).toBeTruthy();
   });
 
-  it("switches the companion button to Apple Assist", () => {
+  it("switches the companion button to Apple Local Assist", () => {
     renderMeta(false, "apple-local");
 
     expect(
-      screen.getByRole("button", { name: "Open Apple Assist Window" }),
+      screen.getByRole("button", { name: "Open Apple Local Assist Window" }),
     ).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Open Agent Window" })).toBeNull();
   });
@@ -99,7 +99,7 @@ describe("DocumentMetaBar", () => {
 
     expect(screen.queryByRole("button", { name: "Open Agent Window" })).toBeNull();
     expect(
-      screen.queryByRole("button", { name: "Open Apple Assist Window" }),
+      screen.queryByRole("button", { name: "Open Apple Local Assist Window" }),
     ).toBeNull();
   });
 });

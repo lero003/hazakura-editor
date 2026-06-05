@@ -200,6 +200,25 @@
   line-height: 1.4;
 }
 
+.preference-section-title-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.preference-alpha-badge {
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+  border-radius: 999px;
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 750;
+  line-height: 1;
+  padding: 4px 8px;
+  text-transform: uppercase;
+}
+
 .preference-note,
 .preference-warning {
   border-radius: 6px;
@@ -424,4 +443,3 @@
   font-size: 11px;
   flex-shrink: 0;
 }
-

@@ -79,7 +79,7 @@ describe("AppleAssistReviewBar", () => {
     );
 
     expect(
-      screen.getByText(/Apple Assist changed your text/),
+      screen.getByText(/Apple Local Assist changed your text/),
     ).toBeTruthy();
     expect(screen.getByText(/整えて \(paragraph\)/)).toBeTruthy();
     expect(screen.getByText("+1")).toBeTruthy();
@@ -130,7 +130,7 @@ describe("AppleAssistReviewBar", () => {
     fireEvent.click(screen.getByRole("button", { name: "Close" }));
     expect(onDiscard).not.toHaveBeenCalled();
     expect(
-      screen.queryByText(/Apple Assist changed your text/),
+      screen.queryByText(/Apple Local Assist changed your text/),
     ).toBeNull();
   });
 
@@ -215,7 +215,7 @@ describe("AppleAssistReviewBar", () => {
     );
 
     expect(
-      screen.getByText(/Apple Assist が本文を変更しました/),
+      screen.getByText(/Apple Local Assist が本文を変更しました/),
     ).toBeTruthy();
     expect(screen.getByRole("button", { name: "差分を開く" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "取り消す" })).toBeTruthy();

@@ -1187,7 +1187,7 @@ export function useAppShellController() {
     (tabId: string, beforeBuffer: string) => {
       const targetTab = tabs.find((tab) => tab.id === tabId);
       if (!targetTab) {
-        setStatus("Apple Assist discard failed");
+        setStatus("Apple Local Assist discard failed");
         return;
       }
       setTabs((currentTabs) =>
@@ -1203,7 +1203,7 @@ export function useAppShellController() {
         ),
       );
       setActiveTabId(tabId);
-      setStatus("Apple Assist edit discarded");
+      setStatus("Apple Local Assist edit discarded");
     },
     [setActiveTabId, setStatus, setTabs, tabs],
   );

@@ -106,7 +106,7 @@ export function useAppleAssistApplyHandler({
   async function applyAppleAssistRequest(payload: AppleAssistApplyEvent): Promise<void> {
     const tab = activeTabRef.current;
     if (!tab) {
-      const message = "Apple Assist apply ignored: no active tab.";
+      const message = "Apple Local Assist apply ignored: no active tab.";
       setStatusRef.current?.(message);
       void emitAppleAssistApplyStatus("failed", message, payload.request);
       return;
@@ -114,14 +114,14 @@ export function useAppleAssistApplyHandler({
 
     const targetCheck = readTargetTextForGeneration(payload.target, tab);
     if (!targetCheck.ok) {
-      const message = `Apple Assist apply failed: ${targetCheck.error}`;
+      const message = `Apple Local Assist apply failed: ${targetCheck.error}`;
       setStatusRef.current?.(message);
       void emitAppleAssistApplyStatus("failed", message, payload.request);
       return;
     }
 
     try {
-      const startMessage = "Apple Assist is generating a change...";
+      const startMessage = "Apple Local Assist is generating a change...";
       setStatusRef.current?.(startMessage);
       void emitAppleAssistApplyStatus("started", startMessage, payload.request);
       const response = await generateAppleAssistCandidate({
@@ -133,7 +133,7 @@ export function useAppleAssistApplyHandler({
 
       const latestTab = activeTabRef.current;
       if (!latestTab) {
-        const message = "Apple Assist apply ignored: no active tab.";
+        const message = "Apple Local Assist apply ignored: no active tab.";
         setStatusRef.current?.(message);
         void emitAppleAssistApplyStatus("failed", message, payload.request);
         return;
@@ -148,7 +148,7 @@ export function useAppleAssistApplyHandler({
         afterText: response.candidateText,
       });
       if (!result.ok) {
-        const message = `Apple Assist apply failed: ${result.error}`;
+        const message = `Apple Local Assist apply failed: ${result.error}`;
         setStatusRef.current?.(message);
         void emitAppleAssistApplyStatus("failed", message, payload.request);
         return;
@@ -177,12 +177,12 @@ export function useAppleAssistApplyHandler({
       };
       aiEditTransactionStore.record(stored);
       setActiveTabContentsRef.current(result.nextBuffer);
-      const successMessage = `Apple Assist applied: ${result.transaction.request} (${result.transaction.target.kind})`;
+      const successMessage = `Apple Local Assist applied: ${result.transaction.request} (${result.transaction.target.kind})`;
       setStatusRef.current?.(successMessage);
       void emitAppleAssistApplyStatus("completed", successMessage, payload.request);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      const errorMessage = `Apple Assist generation failed: ${message}`;
+      const errorMessage = `Apple Local Assist generation failed: ${message}`;
       setStatusRef.current?.(errorMessage);
       void emitAppleAssistApplyStatus("failed", errorMessage, payload.request);
     }
@@ -202,7 +202,7 @@ async function emitAppleAssistApplyStatus(
       emittedAtMs: Date.now(),
     } satisfies AppleAssistApplyStatusEvent);
   } catch (err) {
-    console.warn("Failed to emit Apple Assist apply status", err);
+    console.warn("Failed to emit Apple Local Assist apply status", err);
   }
 }
 
@@ -224,26 +224,26 @@ function readTargetTextForGeneration(
   if (!target) {
     return {
       ok: false,
-      error: "No Apple Assist target snapshot was supplied with the request.",
+      error: "No Apple Local Assist target snapshot was supplied with the request.",
     };
   }
   if (target.start < 0 || target.end < target.start) {
-    return { ok: false, error: "Apple Assist target range is invalid." };
+    return { ok: false, error: "Apple Local Assist target range is invalid." };
   }
   if (target.end > tab.contents.length) {
     return {
       ok: false,
-      error: "Apple Assist target range is out of bounds for the active buffer.",
+      error: "Apple Local Assist target range is out of bounds for the active buffer.",
     };
   }
   if (target.activeDocumentPath !== tab.path) {
-    return { ok: false, error: "Apple Assist target is stale for the active document." };
+    return { ok: false, error: "Apple Local Assist target is stale for the active document." };
   }
   const before = tab.contents.slice(target.start, target.end);
   if (before !== target.text) {
     return {
       ok: false,
-      error: "Apple Assist target text no longer matches the active buffer.",
+      error: "Apple Local Assist target text no longer matches the active buffer.",
     };
   }
   return { ok: true, before };

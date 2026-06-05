@@ -5,7 +5,7 @@ describe("getAppleAssistCopy", () => {
   it("returns English strings when language is en", () => {
     const copy = getAppleAssistCopy("en");
     expect(copy.featureName).toBe("Apple Local Assist (on-device)");
-    expect(copy.commandCategory).toBe("Apple Assist");
+    expect(copy.commandCategory).toBe("Apple Local Assist");
     expect(copy.summarizeLabel).toBe("Summarize selection");
     expect(copy.rephraseLabel).toBe("Rephrase selection");
   });
@@ -13,7 +13,7 @@ describe("getAppleAssistCopy", () => {
   it("returns Japanese strings when language is ja", () => {
     const copy = getAppleAssistCopy("ja");
     expect(copy.featureName).toBe("Apple Local Assist (この Mac のみ)");
-    expect(copy.commandCategory).toBe("Apple Assist");
+    expect(copy.commandCategory).toBe("Apple Local Assist");
     expect(copy.summarizeLabel).toBe("選択範囲を要約");
     expect(copy.rephraseLabel).toBe("選択範囲を言い換え");
   });
@@ -21,7 +21,7 @@ describe("getAppleAssistCopy", () => {
   it("returns kana strings when language is kana", () => {
     const copy = getAppleAssistCopy("kana");
     expect(copy.featureName).toBe("あっぷる ろーかる あしす と (この Mac のみ)");
-    expect(copy.commandCategory).toBe("あっぷる あしす と");
+    expect(copy.commandCategory).toBe("あっぷる ろーかる あしす と");
     expect(copy.summarizeLabel).toBe("せんたくはんいを ようやく");
     expect(copy.rephraseLabel).toBe("せんたくはんいを かきかえ");
   });

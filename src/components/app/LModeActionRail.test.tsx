@@ -6,7 +6,7 @@ import { getLModeCopy } from "../../lib/locale/lMode";
 afterEach(cleanup);
 
 describe("LModeActionRail", () => {
-  it("renders the workspace and Apple Assist actions without review changes when clean", () => {
+  it("renders the workspace and Apple Local Assist actions without review changes when clean", () => {
     render(
       <LModeActionRail
         copy={getLModeCopy("en")}
@@ -19,11 +19,11 @@ describe("LModeActionRail", () => {
 
     expect(screen.getByLabelText("L Mode actions")).toBeTruthy();
     expect(screen.getByRole("button", { name: /Open workspace/ })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Apple Assist/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Apple Local Assist/ })).toBeTruthy();
     expect(screen.queryByRole("button", { name: /Review changes/ })).toBeNull();
   });
 
-  it("invokes review, workspace, and Apple Assist actions", () => {
+  it("invokes review, workspace, and Apple Local Assist actions", () => {
     const onExitToWorkspace = vi.fn();
     const onOpenAppleAssistWindow = vi.fn();
     const onReviewChanges = vi.fn();
@@ -38,7 +38,7 @@ describe("LModeActionRail", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: /Review changes/ }));
-    fireEvent.click(screen.getByRole("button", { name: /Apple Assist/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Apple Local Assist/ }));
     fireEvent.click(screen.getByRole("button", { name: /Open workspace/ }));
 
     expect(onReviewChanges).toHaveBeenCalledTimes(1);

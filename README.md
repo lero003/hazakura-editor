@@ -129,7 +129,7 @@ Example use case:
 - App bundle icon and start screen use the hazakura editor flower-and-leaf logo
 - Optional Agent Workbench mode can launch one allowlisted `codex`, `opencode`, `pi`, or `claude` provider session in the selected workspace after restart-required mode enablement and responsibility-boundary consent
 - Agent Workbench renders the selected allowlisted provider's TUI output in a scoped pane, sends keyboard input only to the running provider process, supports Copy full path / Send full path to Agent from existing workspace file rows, and continues to treat provider-made file edits as ordinary external on-disk changes
-- Assist Surface settings can switch the outside companion slot between Apple Assist, CLI Agent, and Off after restart. Apple Assist is a local Writing Companion that can call Apple Foundation Models on supported Macs, edit the unsaved buffer through AI edit transactions, and keep changes reviewable through diff before explicit save.
+- Assist Surface settings can switch the outside companion slot between Apple Local Assist, CLI Agent, and Off after restart. Apple Local Assist is an experimental alpha surface for lightweight on-device text help on supported Macs: short summaries, rephrasing, heading/tag ideas, light cleanup, and explicit unsaved AI edit transactions that remain reviewable through diff before save.
 
 ## Project Docs
 
@@ -195,7 +195,7 @@ Developer preview release boundary:
 
 - Current package/app version is `0.11.0` across npm, Tauri, and Cargo metadata.
 - Source users build locally with `npm ci` and `npm run build`.
-- The generated local `.app` declares macOS 11.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. Apple Assist's bundled helper requires macOS 26+ and local Apple Intelligence availability to return live candidates. The app is not Developer ID signed or notarized.
+- The generated local `.app` declares macOS 11.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. Apple Local Assist's bundled helper requires macOS 26+ and local Apple Intelligence availability to return live candidates. The app is not Developer ID signed or notarized.
 - The latest published warning-expected DMG preview is [v0.11.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.11.0). The v0.11.0 release notes live in [0.11.0 Warning-expected DMG Preview](docs/releases/0.11.0-warning-expected-dmg-preview.release.md).
 
 ## Known Limits
@@ -207,7 +207,9 @@ Developer preview release boundary:
 - Review Desk candidate review is manual and explicit. It does not persist review logs, save candidate documents automatically, auto-apply Agent output, or replace Git/merge workflows.
 - The app is not signed or notarized with an Apple Developer ID.
 - Agent Workbench is optional and explicit. It does not provide a general shell prompt, arbitrary command input UI, arbitrary path input UI, provider-add UI, multiple sessions, session restore, auto-apply, auto-commit, or Git integration.
-- Apple Assist is a local preview surface. Live generation depends on Apple Foundation Models availability on the current Mac; there is no network fallback, App Store/TestFlight distribution change, background rewriting, or auto-save.
+- Apple Local Assist is an experimental alpha surface, not the main AI feature. Live generation depends on Apple Foundation Models availability on the current Mac; output quality may vary, and the feature may change or be removed.
+- Apple Local Assist is intended for lightweight text assistance only. It is not a replacement for External Agent Workbench, external AI agents, local LLM runtimes, code review, multi-file understanding, long-document restructuring, autonomous agent work, or advanced reasoning.
+- Apple Local Assist has no network fallback, App Store/TestFlight distribution change, background rewriting, auto-save, tool calling, or workspace-wide indexing.
 - CLI provider internals are outside hazakura's safety boundary. What happens inside `codex`, `opencode`, `pi`, or `claude` depends on the provider and the user's choices.
 - Agent Workbench does not expose a shell prompt, arbitrary command field, arbitrary path field, or general terminal.
 - Outside Agent Workbench there is no Git integration, LSP, terminal, AI assistance, plugin system, arbitrary command execution, or project-wide analysis.
