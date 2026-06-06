@@ -739,10 +739,10 @@
 :root[data-l-mode="on"] .scroll-position-hud {
   top: 50%;
   right: auto;
-  left: 50%;
-  max-width: min(420px, calc(100vw - 140px));
+  left: min(calc(50% + 390px), calc(100vw - 252px));
+  width: min(224px, calc(100vw - 56px));
   opacity: 0.82;
-  transform: translate(-50%, -50%);
+  transform: translateY(-50%);
 }
 
 /* --- 3. Page-like typography (magazine feel) ---

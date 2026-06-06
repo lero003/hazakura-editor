@@ -93,16 +93,19 @@ describe("lMode.css", () => {
     );
   });
 
-  it("moves the scroll position HUD away from the top-right L Mode controls", () => {
+  it("moves the scroll position HUD to the right side at mid-height in L Mode", () => {
     const hudRule =
       lModeCss.match(
         /:root\[data-l-mode="on"\] \.scroll-position-hud\s*{(?<body>[^}]*)}/s,
       )?.groups?.body ?? "";
 
     expect(hudRule).toMatch(/top:\s*50%/);
-    expect(hudRule).toMatch(/left:\s*50%/);
     expect(hudRule).toMatch(/right:\s*auto/);
-    expect(hudRule).toMatch(/transform:\s*translate\(-50%,\s*-50%\)/);
+    expect(hudRule).toMatch(
+      /left:\s*min\(calc\(50% \+ 390px\),\s*calc\(100vw - 252px\)\)/,
+    );
+    expect(hudRule).toMatch(/width:\s*min\(224px,\s*calc\(100vw - 56px\)\)/);
+    expect(hudRule).toMatch(/transform:\s*translateY\(-50%\)/);
   });
 
   it("does not restyle CodeMirror's measured line boxes with margins", () => {
