@@ -56,6 +56,7 @@ export function useActiveDocumentSurface({
     ? getCompareCaseByKey(compareView.caseKey) ?? null
     : null;
   const {
+    dirtyLabel: activeDirtyLabel,
     lineCount: activeDocumentLineCount,
     statusDetail: activeStatusDetail,
   } = useDocumentStatus({
@@ -86,6 +87,7 @@ export function useActiveDocumentSurface({
   });
 
   return {
+    activeDirtyLabel,
     activeDocumentLineCount,
     activeStatusDetail,
     currentMarkdownHeading,

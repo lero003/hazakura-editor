@@ -66,24 +66,25 @@ export function useDocumentStatus({
         ? `${compareCase?.kind === "changes" ? "変更確認" : "比較"} · ${compareView.additions} 追加 · ${compareView.removals} 削除`
         : `${compareCase?.kind === "changes" ? "Change review" : "Comparison"} · ${compareView.additions} added · ${compareView.removals} removed`
     : null;
-  const documentMeta = activeTab
+  const documentMetaParts = activeTab
     ? formatActiveDocumentMeta(stats, activeTab, activeDirty, menuLanguage)
     : selectedImage
-      ? `${localizeImageLabel(menuLanguage)} · ${formatBytes(selectedImage.size)} · ${selectedImage.name}`
-      : noFileOpenText;
+      ? { meta: `${localizeImageLabel(menuLanguage)} · ${formatBytes(selectedImage.size)} · ${selectedImage.name}`, dirtyLabel: "" }
+      : { meta: noFileOpenText, dirtyLabel: "" };
   const statusDetail = compareMeta
     ? compareMeta
     : activeTab
       ? formatActiveEditorStatusDetail(
-          documentMeta,
+          documentMetaParts.meta,
           selectionInfo,
           currentMarkdownHeading,
           menuLanguage,
         )
-      : documentMeta;
+      : documentMetaParts.meta;
 
   return {
-    documentMeta,
+    documentMeta: documentMetaParts.meta,
+    dirtyLabel: documentMetaParts.dirtyLabel,
     lineCount,
     stats,
     statusDetail,
@@ -160,18 +161,19 @@ function formatActiveDocumentMeta(
   tab: EditorTab,
   dirty: boolean,
   menuLanguage: MenuLanguage,
-): string {
-  return [
+): { meta: string; dirtyLabel: string } {
+  const meta = [
     ...formatDocumentMetaParts(stats, tab.name, tab.encoding, menuLanguage),
     tab.large_file_warning
       ? localizeLargeFileLabel(menuLanguage)
       : null,
-    dirty
-      ? localizeUnsavedLabel(menuLanguage)
-      : localizeCleanLabel(menuLanguage),
   ]
     .filter((part): part is string => Boolean(part))
     .join(" · ");
+  const dirtyLabel = dirty
+    ? localizeUnsavedLabel(menuLanguage)
+    : "";
+  return { meta, dirtyLabel };
 }
 
 function formatDocumentMetaParts(
@@ -325,12 +327,6 @@ function localizeUnsavedLabel(menuLanguage: MenuLanguage): string {
   if (isKanaStyle(menuLanguage)) return "みほぞん";
   if (isJapaneseMenuLanguage(menuLanguage)) return "未保存";
   return "unsaved";
-}
-
-function localizeCleanLabel(menuLanguage: MenuLanguage): string {
-  if (isKanaStyle(menuLanguage)) return "ほぞんずみ";
-  if (isJapaneseMenuLanguage(menuLanguage)) return "保存済み";
-  return "clean";
 }
 
 function localizeCharactersCountLabel(

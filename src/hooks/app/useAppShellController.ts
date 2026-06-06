@@ -312,6 +312,7 @@ export function useAppShellController() {
 
   // section: editor surface (side pane + active document surface)
   const {
+    activeDirtyLabel,
     activeDocumentLineCount,
     activeStatusDetail,
     currentMarkdownHeading,
@@ -1277,6 +1278,7 @@ export function useAppShellController() {
     createNewFile,
     currentHeadingLine: currentMarkdownHeading?.line ?? null,
     detail: activeStatusDetail,
+    dirtyLabel: activeDirtyLabel,
     dirtyTabCount,
     discardAllAndCloseWindow,
     discardDraft,

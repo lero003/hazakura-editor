@@ -12,6 +12,7 @@ type AppStatusBarProps = {
   agentWorkbenchActive: boolean;
   agentWorkbenchProvider: AgentWorkbenchProvider;
   detail: string;
+  dirtyLabel: string;
   encodingAriaLabel: string;
   encodingLabel: string;
   lineEndingAriaLabel: string;
@@ -32,6 +33,7 @@ export function AppStatusBar({
   agentWorkbenchActive,
   agentWorkbenchProvider,
   detail,
+  dirtyLabel,
   encodingAriaLabel,
   encodingLabel,
   lineEndingAriaLabel,
@@ -53,6 +55,7 @@ export function AppStatusBar({
           : null
       }
       detail={detail}
+      dirtyLabel={dirtyLabel}
       encodingAriaLabel={encodingAriaLabel}
       encodingLabel={encodingLabel}
       lineEndingAriaLabel={lineEndingAriaLabel}

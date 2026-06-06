@@ -34,3 +34,22 @@
   box-shadow: 0 0 8px color-mix(in srgb, var(--accent-secondary) 40%, transparent);
 }
 
+/* 未保存インジケータのピル表示 / Unsaved indicator pill
+   status-bar-status の末尾に並ぶ小さな pill。差分表示側の
+   +N / -N バッジと視覚言語を揃える(--accent-soft 背景 +
+   --accent 文字 + 4px radius)。L モードでは status-bar 自体が
+   opacity 0.06 で覆われるので、pill もまとめて薄くなる。 */
+.status-bar-unsaved-pill {
+  background: var(--accent-soft);
+  border-radius: var(--radius-sm);
+  color: var(--accent);
+  flex: 0 0 auto;
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1;
+  margin-left: 6px;
+  padding: 2px 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+

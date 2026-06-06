@@ -8,6 +8,7 @@ type StatusBarProps = {
   activeTab: EditorTab | null;
   agentLabel: string | null;
   detail: string;
+  dirtyLabel: string;
   encodingAriaLabel: string;
   encodingLabel: string;
   lineEndingAriaLabel: string;
@@ -24,6 +25,7 @@ export function StatusBar({
   activeTab,
   agentLabel,
   detail,
+  dirtyLabel,
   encodingAriaLabel,
   encodingLabel,
   lineEndingAriaLabel,
@@ -48,6 +50,15 @@ export function StatusBar({
           </span>
         ) : null}
         {statusText}
+        {dirtyLabel ? (
+          <span
+            className="status-bar-unsaved-pill"
+            aria-label={dirtyLabel}
+            title={dirtyLabel}
+          >
+            {dirtyLabel}
+          </span>
+        ) : null}
       </span>
       {agentLabel ? (
         <span className="status-bar-segment status-agent-indicator" title="Agent mode active">

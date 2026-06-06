@@ -32,6 +32,7 @@ describe("StatusBar", () => {
         activeTab={activeTab}
         agentLabel={null}
         detail="Markdown / UTF-8 / 10 bytes"
+        dirtyLabel=""
         encodingAriaLabel="Encoding"
         encodingLabel="Encoding"
         lineEndingAriaLabel="Line endings"
@@ -61,6 +62,7 @@ describe("StatusBar", () => {
         activeTab={activeTab}
         agentLabel={null}
         detail="Markdown / UTF-8 / 10 bytes"
+        dirtyLabel=""
         encodingAriaLabel="Encoding"
         encodingLabel="Encoding"
         lineEndingAriaLabel="Line endings"
@@ -77,5 +79,50 @@ describe("StatusBar", () => {
     expect(container.querySelector(".status-bar-format-group")).toBeNull();
     expect(container.querySelector(".l-mode-action-rail")).toBeNull();
     expect(container.querySelectorAll("select")).toHaveLength(0);
+  });
+
+  it("renders the unsaved pill when dirtyLabel is provided", () => {
+    const { container, rerender } = render(
+      <StatusBar
+        activeTab={activeTab}
+        agentLabel={null}
+        detail="Markdown / UTF-8 / 10 bytes"
+        dirtyLabel=""
+        encodingAriaLabel="Encoding"
+        encodingLabel="Encoding"
+        lineEndingAriaLabel="Line endings"
+        lineEndingLabel="Line endings"
+        lModeEnabled={false}
+        onConvertEncoding={vi.fn()}
+        onConvertLineEnding={vi.fn()}
+        saveAffirmation={false}
+        saveAffirmationKey={null}
+        statusText="Ready"
+      />,
+    );
+
+    expect(container.querySelector(".status-bar-unsaved-pill")).toBeNull();
+
+    rerender(
+      <StatusBar
+        activeTab={activeTab}
+        agentLabel={null}
+        detail="Markdown / UTF-8 / 10 bytes"
+        dirtyLabel="未保存"
+        encodingAriaLabel="Encoding"
+        encodingLabel="Encoding"
+        lineEndingAriaLabel="Line endings"
+        lineEndingLabel="Line endings"
+        lModeEnabled={false}
+        onConvertEncoding={vi.fn()}
+        onConvertLineEnding={vi.fn()}
+        saveAffirmation={false}
+        saveAffirmationKey={null}
+        statusText="Ready"
+      />,
+    );
+
+    const pill = container.querySelector(".status-bar-unsaved-pill");
+    expect(pill?.textContent).toBe("未保存");
   });
 });
