@@ -1324,6 +1324,23 @@
   transform: scale(1.12);
 }
 
+/* Keyboard focus treatment. The task widget carries
+   `tabindex="0"` so a keyboard-only user can reach it,
+   and `role="checkbox"` with `aria-checked` for screen
+   readers. `:focus-visible` keeps the focus ring off
+   mouse clicks (where the widget's own hover transform
+   already signals interactivity) while showing it on
+   keyboard tab. The ring is a single accent line at the
+   widget's own baseline — the same quiet shape as the
+   active-line marker so the two affordances feel
+   related. */
+:root[data-l-mode="on"] .cm-lmode-task:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--accent) 60%, transparent);
+  border-radius: 3px;
+}
+
 /* Soft focus — non-active lines recede. The dim is a
    composition of three subtle shifts: a small opacity drop,
    a slight desaturation of the text color, and a quiet

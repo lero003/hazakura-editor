@@ -134,9 +134,9 @@ Use these notes as a v0.14 work queue. Each item should stay a small, verifiable
    - Remaining work: actual screenshot / DOM geometry smoke for headings, blockquotes, fenced code chips, long Japanese headings, and the L Mode action rail is still pending a built-app run.
 
 4. **Task widget accessibility**
-   - Current risk: the task checkbox widget has `role="checkbox"` and `aria-checked`, but the keyboard and focus-visible path is not yet a first-class interaction.
-   - Preferred slice: add keyboard toggle support for Enter / Space only on the task widget, with visible focus treatment and normal Markdown source changes.
-   - Verification: widget/unit test for `[ ]` <-> `[x]`, source-preservation assertion, and keyboard smoke.
+   - Initial v0.14 slice landed: the task widget now carries `tabindex="0"` and a `keydown` handler that toggles `[ ]` ↔ `[x]` on Enter / Space. The stylesheet adds a `:focus-visible` accent ring (inset 1px, accent color) that shows on keyboard tab but stays out of mouse hover (which already has its own `transform: scale(1.12)`). Unrelated keys no-op, and keydown on a non-task target does not misroute into the toggle.
+   - Verification: 5 unit tests pin tabindex presence, Enter toggle, Space toggle, unrelated-key no-op, and non-task target no-op. Source preservation is asserted on every dispatch.
+   - Failure conditions reduced: editing uncertainty, accessibility mismatch.
    - Failure conditions reduced: editing uncertainty, accessibility mismatch.
 
 5. **Print and export boundary**

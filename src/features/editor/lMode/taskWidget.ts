@@ -56,6 +56,13 @@ export class LModeTaskWidget extends WidgetType {
     span.textContent = this.checked ? CHECKED_GLYPH : UNCHECKED_GLYPH;
     span.setAttribute("role", "checkbox");
     span.setAttribute("aria-checked", this.checked ? "true" : "false");
+    // `tabindex="0"` puts the widget into the keyboard tab
+    // order so a keyboard-only user can reach the checkbox
+    // without the mouse. The `keydown` handler in
+    // `lModeTaskClickPlugin` then toggles the marker on
+    // Enter / Space — the standard a11y interaction for a
+    // `role="checkbox"` element.
+    span.setAttribute("tabindex", "0");
     return span;
   }
 
@@ -99,6 +106,34 @@ const lModeTaskClickViewPlugin = ViewPlugin.fromClass(
         // event, so it does NOT also place the cursor at the
         // click position. The user just wanted to toggle, not
         // to move the caret.
+        return true;
+      },
+      keydown(event, view) {
+        // Standard `role="checkbox"` keyboard interaction:
+        // Enter and Space toggle the marker. The widget is
+        // keyboard-reachable thanks to `tabindex="0"` on
+        // `toDOM`, so a keyboard-only user can land focus on
+        // the checkbox and toggle it without the mouse.
+        if (event.key !== "Enter" && event.key !== " ") {
+          return;
+        }
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const taskEl = target.closest(`.${LModeClasses.task}`);
+        if (!taskEl) return;
+        const from = Number(taskEl.getAttribute("data-lmode-task-from"));
+        const to = Number(taskEl.getAttribute("data-lmode-task-to"));
+        if (Number.isNaN(from) || Number.isNaN(to)) return;
+
+        const text = view.state.doc.sliceString(from, to);
+        const next = text === "[ ]" ? "[x]" : text === "[x]" ? "[ ]" : null;
+        if (!next) return;
+
+        // Prevent the default Space scroll and Enter code
+        // completion paths so the toggle is the only thing
+        // that happens.
+        event.preventDefault();
+        view.dispatch({ changes: { from, to, insert: next } });
         return true;
       },
     },

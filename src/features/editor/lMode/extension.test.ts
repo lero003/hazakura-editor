@@ -602,6 +602,104 @@ describe("v0.11 task toggle click", () => {
   });
 });
 
+// --- v0.14 task widget keyboard + focus ---
+//
+// The v0.11 task widget has `role="checkbox"` and
+// `aria-checked` for screen readers, and a click handler
+// toggles the marker. A keyboard-only user could not
+// reach or operate it. The v0.14 slice adds `tabindex="0"`
+// to the widget and a `keydown` handler that toggles on
+// Enter / Space, with a `:focus-visible` accent ring in
+// the stylesheet.
+
+describe("v0.14 task widget keyboard", () => {
+  function setupTaskView(source: string) {
+    const parent = document.createElement("div");
+    document.body.append(parent);
+    const view = new EditorView({
+      parent,
+      state: EditorState.create({
+        doc: source,
+        extensions: [
+          markdown({ base: markdownLanguage }),
+          lModeExtension(true, { workspaceRoot: null, documentPath: null }),
+        ],
+        selection: { anchor: source.length },
+      }),
+    });
+    return { parent, view };
+  }
+
+  it("puts the task widget into the keyboard tab order", () => {
+    const source = "- [ ] todo\n";
+    const { parent, view } = setupTaskView(source);
+    const taskEl = parent.querySelector<HTMLElement>(".cm-lmode-task");
+    expect(taskEl?.getAttribute("tabindex")).toBe("0");
+    view.destroy();
+    parent.remove();
+  });
+
+  it("toggles [ ] to [x] when Enter is pressed on the focused widget", () => {
+    const source = "- [ ] todo\n";
+    const { parent, view } = setupTaskView(source);
+    const taskEl = parent.querySelector<HTMLElement>(".cm-lmode-task");
+    expect(taskEl).not.toBeNull();
+    taskEl?.focus();
+    taskEl?.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+    );
+
+    expect(view.state.doc.toString()).toBe("- [x] todo\n");
+    view.destroy();
+    parent.remove();
+  });
+
+  it("toggles [x] to [ ] when Space is pressed on the focused widget", () => {
+    const source = "- [x] done\n";
+    const { parent, view } = setupTaskView(source);
+    const taskEl = parent.querySelector<HTMLElement>(".cm-lmode-task");
+    expect(taskEl).not.toBeNull();
+    taskEl?.focus();
+    taskEl?.dispatchEvent(
+      new KeyboardEvent("keydown", { key: " ", bubbles: true }),
+    );
+
+    expect(view.state.doc.toString()).toBe("- [ ] done\n");
+    view.destroy();
+    parent.remove();
+  });
+
+  it("does not toggle on unrelated keys", () => {
+    const source = "- [ ] todo\n";
+    const { parent, view } = setupTaskView(source);
+    const taskEl = parent.querySelector<HTMLElement>(".cm-lmode-task");
+    taskEl?.focus();
+    taskEl?.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "a", bubbles: true }),
+    );
+
+    expect(view.state.doc.toString()).toBe(source);
+    view.destroy();
+    parent.remove();
+  });
+
+  it("does not toggle when the keydown lands outside the task widget", () => {
+    // A keydown fired on the editor's text content (not on
+    // the widget) must not be misrouted into the task
+    // toggle. The handler should no-op for non-task targets.
+    const source = "- [ ] todo\n";
+    const { parent, view } = setupTaskView(source);
+    const lineEl = parent.querySelector<HTMLElement>(".cm-line");
+    lineEl?.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+    );
+
+    expect(view.state.doc.toString()).toBe(source);
+    view.destroy();
+    parent.remove();
+  });
+});
+
 describe("v0.11 typewriter mode", () => {
   it("requests a measured recenter for the collapsed caret after typing", async () => {
     const source = "Line 1\nLine 2\n";
