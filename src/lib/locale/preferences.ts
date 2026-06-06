@@ -1,4 +1,8 @@
-import { isJapaneseMenuLanguage, type MenuLanguage } from "../../types";
+import {
+  isJapaneseMenuLanguage,
+  type MenuLanguage,
+  type ThemePreference,
+} from "../../types";
 import { isKanaStyle } from "./_helpers";
 
 export type PreferencesCopy = {
@@ -28,6 +32,7 @@ export type PreferencesCopy = {
   showInvisibles: string;
   tabSize: string;
   theme: string;
+  themeHint: (theme: ThemePreference) => string;
   wrapLines: string;
 };
 
@@ -62,6 +67,21 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
       ambientIntensityNormal: "つね",
       ambientIntensityDramatic: "はなやか",
       ambientIntensityHint: "きせつのいろあひにてはたらきます。",
+      themeHint: (theme) => {
+        if (theme === "light") {
+          return "ひるま や いんさつ むけの あかるい きほん いろあひ。";
+        }
+        if (theme === "dark") {
+          return "よるや ひくい しど むけの おちついた きほん いろあひ。";
+        }
+        if (theme === "sakura") {
+          return "はるらしい あわい さくらいろ の きせつ いろあひ。";
+        }
+        if (theme === "yakou") {
+          return "よるの よさめ の あたたかい いろの きせつ いろあひ。";
+        }
+        return "あけがた の そら を 思わせる あけぼのいろ の きせつ いろあひ。";
+      },
     };
   }
 
@@ -95,6 +115,21 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         ambientIntensityNormal: "標準",
         ambientIntensityDramatic: "派手",
         ambientIntensityHint: "季節テーマで有効です。",
+        themeHint: (theme) => {
+          if (theme === "light") {
+            return "日中や印刷向けの明るい基本テーマ。";
+          }
+          if (theme === "dark") {
+            return "夜間や低照度向けの落ち着いた基本テーマ。";
+          }
+          if (theme === "sakura") {
+            return "春らしい淡い桜色のアンビエントテーマ。";
+          }
+          if (theme === "yakou") {
+            return "夜長向けの深めの暖色アンビエントテーマ。";
+          }
+          return "明け方向けの曙色アンビエントテーマ。";
+        },
       }
     : {
         application: "Application",
@@ -125,5 +160,20 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         ambientIntensityNormal: "Normal",
         ambientIntensityDramatic: "Dramatic",
         ambientIntensityHint: "Applies to seasonal themes.",
+        themeHint: (theme) => {
+          if (theme === "light") {
+            return "Bright, neutral base theme for daytime and print.";
+          }
+          if (theme === "dark") {
+            return "Calm, low-light base theme for nighttime use.";
+          }
+          if (theme === "sakura") {
+            return "Soft cherry-blossom seasonal ambient theme.";
+          }
+          if (theme === "yakou") {
+            return "Deeper warm seasonal theme for late evenings.";
+          }
+          return "Dawn-pastel seasonal theme for early mornings.";
+        },
       };
 }

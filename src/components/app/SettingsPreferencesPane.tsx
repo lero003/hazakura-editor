@@ -21,7 +21,16 @@ type SettingsPreferencesPaneProps = {
 
 type AmbientIntensity = "off" | "subtle" | "normal" | "dramatic";
 
-const AMBIENT_OPTIONS: { value: AmbientIntensity; label: keyof PreferencesCopy }[] = [
+type AmbientOptionLabel =
+  | "ambientIntensityOff"
+  | "ambientIntensitySubtle"
+  | "ambientIntensityNormal"
+  | "ambientIntensityDramatic";
+
+const AMBIENT_OPTIONS: {
+  value: AmbientIntensity;
+  label: AmbientOptionLabel;
+}[] = [
   { value: "off", label: "ambientIntensityOff" },
   { value: "subtle", label: "ambientIntensitySubtle" },
   { value: "normal", label: "ambientIntensityNormal" },
@@ -158,11 +167,21 @@ export function SettingsPreferencesPane({
               onThemePreferenceChange(event.target.value as ThemePreference)
             }
           >
-            <option value="light">{copy.light}</option>
-            <option value="dark">{copy.dark}</option>
-            <option value="sakura">{copy.sakura}</option>
-            <option value="yakou">{copy.yakou}</option>
-            <option value="shokou">{copy.shokou}</option>
+            <option value="light" title={copy.themeHint("light")}>
+              {copy.light}
+            </option>
+            <option value="dark" title={copy.themeHint("dark")}>
+              {copy.dark}
+            </option>
+            <option value="sakura" title={copy.themeHint("sakura")}>
+              {copy.sakura}
+            </option>
+            <option value="yakou" title={copy.themeHint("yakou")}>
+              {copy.yakou}
+            </option>
+            <option value="shokou" title={copy.themeHint("shokou")}>
+              {copy.shokou}
+            </option>
           </select>
         </label>
         <label className="field-control">
