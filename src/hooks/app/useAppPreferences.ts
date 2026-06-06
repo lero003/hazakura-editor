@@ -4,6 +4,7 @@ import {
   setCurrentWindowBackgroundColor,
   setCurrentWindowTheme,
 } from "../../lib/tauri";
+import { isExternalCliAssistSurfaceAllowed } from "../../lib/distributionLane";
 import themeBackgroundColorJson from "../../lib/theme-palette.json";
 import type { AmbientIntensity } from "../../types";
 import { clampNumber } from "../../lib/utils";
@@ -63,14 +64,14 @@ export function useAppPreferences() {
     ).catch((err) => {
       console.warn("Failed to update window background color", err);
     });
-    // Push the new theme to the agent window (if it is open). The
-    // custom Tauri command is a no-op when the agent window is not
-    // open, so the fire-and-forget is safe on first launch. The next
-    // time the user opens the agent window, the menu action reads
-    // the current `themePreference` and passes it through to Rust.
-    void setAgentWindowTheme(themePreference).catch((err) => {
-      console.warn("Failed to update Agent window theme", err);
-    });
+    if (isExternalCliAssistSurfaceAllowed()) {
+      // Push the new theme to the agent window (if it is open).
+      // App Store lane omits the Agent Workbench surface, so it
+      // also skips this Agent-only IPC.
+      void setAgentWindowTheme(themePreference).catch((err) => {
+        console.warn("Failed to update Agent window theme", err);
+      });
+    }
   }, [themePreference]);
 
   useEffect(() => {

@@ -33,6 +33,7 @@ import type {
   AppleAssistAvailability,
   AppleAssistOperation,
 } from "../../lib/tauri";
+import { isExternalCliAssistSurfaceAllowed } from "../../lib/distributionLane";
 import type {
   EditorSettings,
   EditorTab,
@@ -106,6 +107,7 @@ export function useCommandPaletteController({
   themePreference,
   workspaceRootPath,
 }: UseCommandPaletteControllerOptions) {
+  const externalCliAllowed = isExternalCliAssistSurfaceAllowed();
   const handleOpenSearchMatch = useCallback(
     (row: GlobalSearchRow) => {
       void actions.openWorkspaceFile(row.file.path).then(() => {
@@ -411,15 +413,26 @@ export function useCommandPaletteController({
           }
         },
       },
-      {
-        category: "Agent",
-        id: "agent.open",
-        keywords: ["agent", "claude", "codex", "opencode", "pi", "workbench"],
-        label: "Open Agent Window",
-        run: () => {
-          void actions.openAgentWindow(themePreference);
-        },
-      },
+      ...(externalCliAllowed
+        ? [
+            {
+              category: "Agent",
+              id: "agent.open",
+              keywords: [
+                "agent",
+                "claude",
+                "codex",
+                "opencode",
+                "pi",
+                "workbench",
+              ],
+              label: "Open Agent Window",
+              run: () => {
+                void actions.openAgentWindow(themePreference);
+              },
+            },
+          ]
+        : []),
       {
         category: "Writing Companion",
         id: "apple-assist.openWindow",
@@ -437,21 +450,29 @@ export function useCommandPaletteController({
           void actions.openAppleAssistWindow(themePreference);
         },
       },
+      ...(externalCliAllowed
+        ? [
+            {
+              category: "Agent",
+              id: "agent.sendSelection",
+              keywords: ["agent", "send", "selection"],
+              label: "Send Selection to Agent",
+              run: () => {
+                const text = editorPaneRef.current?.getSelectionText() ?? "";
+                actions.handleSendSelectionToAgent(text);
+              },
+            },
+          ]
+        : []),
       {
-        category: "Agent",
-        id: "agent.sendSelection",
-        keywords: ["agent", "send", "selection"],
-        label: "Send Selection to Agent",
-        run: () => {
-          const text = editorPaneRef.current?.getSelectionText() ?? "";
-          actions.handleSendSelectionToAgent(text);
-        },
-      },
-      {
-        category: "Agent",
+        category: externalCliAllowed ? "Agent" : "Settings",
         id: "agent.preferences",
-        keywords: ["agent", "preferences", "settings", "workbench"],
-        label: "Agent Workbench Preferences…",
+        keywords: externalCliAllowed
+          ? ["agent", "preferences", "settings", "workbench"]
+          : ["assist", "apple", "local", "preferences", "settings"],
+        label: externalCliAllowed
+          ? "Agent Workbench Preferences…"
+          : "Assist Settings…",
         run: () => {
           actions.setPreferencesDialogMode("agent");
         },
@@ -518,6 +539,7 @@ export function useCommandPaletteController({
       appleAssistAvailability,
       appleAssistCopy,
       editorPaneRef,
+      externalCliAllowed,
       lModeCopy,
       themePreference,
     ],

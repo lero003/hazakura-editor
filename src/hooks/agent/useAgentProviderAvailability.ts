@@ -17,12 +17,18 @@ export type UseAgentProviderAvailabilityResult = {
   availabilityByProvider: Map<string, AgentProviderAvailability>;
 };
 
-export function useAgentProviderAvailability(): UseAgentProviderAvailabilityResult {
+export function useAgentProviderAvailability(
+  enabled = true,
+): UseAgentProviderAvailabilityResult {
   const [availability, setAvailability] = useState<AgentProviderAvailability[]>(
     [],
   );
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     let disposed = false;
     void listAgentProviderAvailability()
       .then((snapshot) => {
@@ -36,7 +42,7 @@ export function useAgentProviderAvailability(): UseAgentProviderAvailabilityResu
     return () => {
       disposed = true;
     };
-  }, []);
+  }, [enabled]);
 
   const availabilityByProvider = useMemo(
     () => new Map(availability.map((entry) => [entry.provider, entry])),

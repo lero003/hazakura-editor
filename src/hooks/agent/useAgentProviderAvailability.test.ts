@@ -99,4 +99,12 @@ describe("useAgentProviderAvailability", () => {
     expect(result.current.availability).toEqual([]);
     expect(result.current.availabilityByProvider.size).toBe(0);
   });
+
+  it("does not fetch provider availability when disabled", () => {
+    const { result } = renderHook(() => useAgentProviderAvailability(false));
+
+    expect(listAgentProviderAvailability).not.toHaveBeenCalled();
+    expect(result.current.availability).toEqual([]);
+    expect(result.current.availabilityByProvider.size).toBe(0);
+  });
 });

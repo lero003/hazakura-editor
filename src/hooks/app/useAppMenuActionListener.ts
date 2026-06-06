@@ -1,6 +1,7 @@
 import { useEffect, type Dispatch, type SetStateAction } from "react";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { isTauriRuntime } from "../../lib/tauri";
+import { isExternalCliAssistSurfaceAllowed } from "../../lib/distributionLane";
 import {
   APP_MENU_ACTION_EVENT,
   MENU_OPEN_AGENT_WINDOW,
@@ -64,6 +65,7 @@ export function useAppMenuActionListener({
     void listen<string>(APP_MENU_ACTION_EVENT, (event) => {
       const actions = actionsRef.current;
       const action = event.payload;
+      const externalCliAllowed = isExternalCliAssistSurfaceAllowed();
 
       if (action.startsWith("recent-file-")) {
         const index = Number(action.slice("recent-file-".length));
@@ -164,7 +166,9 @@ export function useAppMenuActionListener({
           setPreferencesDialogMode("agent");
           break;
         case MENU_OPEN_AGENT_WINDOW:
-          void actions.openAgentWindow();
+          if (externalCliAllowed) {
+            void actions.openAgentWindow();
+          }
           break;
         case MENU_OPEN_APPLE_ASSIST_WINDOW:
           void actions.openAppleAssistWindow();

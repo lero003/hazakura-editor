@@ -2,6 +2,10 @@ import { resolve } from "node:path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
+const appStoreLane =
+  process.env.VITE_HAZAKURA_DISTRIBUTION_LANE === "app-store" ||
+  process.env.HAZAKURA_DISTRIBUTION_LANE === "app-store";
+
 export default defineConfig({
   plugins: [react()],
   clearScreen: false,
@@ -14,8 +18,10 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, "index.html"),
-        agent: resolve(__dirname, "agent.html"),
         "apple-assist": resolve(__dirname, "apple-assist.html"),
+        ...(appStoreLane
+          ? {}
+          : { agent: resolve(__dirname, "agent.html") }),
       },
     },
   },

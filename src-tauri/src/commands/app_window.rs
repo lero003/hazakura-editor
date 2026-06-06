@@ -187,6 +187,7 @@ pub(crate) fn set_agent_window_theme<R: tauri::Runtime>(
     theme: String,
 ) -> Result<(), String> {
     ensure_label_is_main_or_agent(window.label())?;
+    ensure_agent_workbench_allowed_by_distribution()?;
     let bg = agent_window_background_color(&theme);
     let os_theme = agent_window_os_theme(&theme);
 
@@ -208,6 +209,7 @@ pub(crate) fn open_main_agent_pane<R: tauri::Runtime>(
     app: tauri::AppHandle<R>,
 ) -> Result<(), String> {
     ensure_label_is_main_or_agent(window.label())?;
+    ensure_agent_workbench_allowed_by_distribution()?;
     if let Some(main_window) = app.get_webview_window(MAIN_WINDOW_LABEL) {
         let _ = main_window.set_focus();
     }
@@ -223,7 +225,27 @@ pub(crate) fn open_main_agent_pane<R: tauri::Runtime>(
 #[cfg(desktop)]
 #[cfg_attr(not(test), allow(dead_code))]
 pub(crate) fn open_main_agent_pane_with_label(label: &str) -> Result<(), String> {
-    ensure_label_is_main_or_agent(label)
+    open_main_agent_pane_with_label_for_lane(label, Some(distribution_lane()))
+}
+
+#[cfg(desktop)]
+#[cfg_attr(not(test), allow(dead_code))]
+pub(crate) fn open_main_agent_pane_with_label_for_lane(
+    label: &str,
+    lane: Option<&str>,
+) -> Result<(), String> {
+    ensure_label_is_main_or_agent(label)?;
+    ensure_agent_workbench_allowed_for_lane(lane)
+}
+
+#[cfg(desktop)]
+#[cfg_attr(not(test), allow(dead_code))]
+pub(crate) fn set_agent_window_theme_with_label_for_lane(
+    label: &str,
+    lane: Option<&str>,
+) -> Result<(), String> {
+    ensure_label_is_main_or_agent(label)?;
+    ensure_agent_workbench_allowed_for_lane(lane)
 }
 
 #[tauri::command]

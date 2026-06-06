@@ -1,7 +1,11 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, renderHook } from "@testing-library/react";
 import { useCommandPaletteController } from "./useCommandPaletteController";
 import { getAppleAssistCopy } from "../../lib/locale";
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
 
 describe("useCommandPaletteController", () => {
   it("returns the command palette + global search surface", () => {
@@ -387,5 +391,107 @@ describe("useCommandPaletteController", () => {
       summarize?.run();
     });
     expect(invokeAppleAssist).toHaveBeenCalledWith("summarize", "hello");
+  });
+
+  it("hides Agent commands in the App Store distribution lane", () => {
+    vi.stubEnv("VITE_HAZAKURA_DISTRIBUTION_LANE", "app-store");
+
+    const { result } = renderHook(() =>
+      useCommandPaletteController({
+        actions: {
+          applyActiveMarkdownFormat: vi.fn(),
+          createNewFile: vi.fn(),
+          exportHtml: vi.fn(),
+          exportPdf: vi.fn(),
+          focusAdjacentTab: vi.fn(),
+          handleSendSelectionToAgent: vi.fn(),
+          insertTable: vi.fn(),
+          invokeAppleAssist: vi.fn(),
+          openAgentWindow: vi.fn(),
+          openAppleAssistWindow: vi.fn(),
+          openFile: vi.fn(),
+          openWorkspace: vi.fn(),
+          openWorkspaceFile: vi.fn(),
+          requestCloseTab: vi.fn(),
+          requestRestoreFromBackup: vi.fn(),
+          requestReviewTabAgainstDisk: vi.fn(),
+          requestWindowClose: vi.fn(),
+          saveActiveTab: vi.fn(),
+          saveActiveTabAs: vi.fn(),
+          setEditorSettings: vi.fn(),
+          setFindVisible: vi.fn(),
+          setPreferencesDialogMode: vi.fn(),
+          setPreviewVisible: vi.fn(),
+          toggleDiffPane: vi.fn(),
+          toggleLMode: vi.fn(),
+          toggleOutlinePane: vi.fn(),
+          toggleQuickOpen: vi.fn(),
+          toggleReviewDesk: vi.fn(),
+        },
+        activeTab: null,
+        activeTabId: null,
+        appleAssistAvailability: { kind: "available" },
+        appleAssistCopy: getAppleAssistCopy("en"),
+        editorPaneRef: { current: null },
+        lModeCopy: {
+          preferenceLabel: "L Mode",
+          preferenceHint: "Hide the workspace chrome for focused reading.",
+          featureDescription: "A quieter place to write.",
+          typewriterPreferenceLabel: "Typewriter mode",
+          typewriterPreferenceHint:
+            "Keep the active line near the vertical center of the viewport as you type.",
+          paletteCommand: "Toggle L Mode",
+          exitPillLabel: "Exit L Mode",
+          exitPillTitle: "Close L Mode",
+          actionRailLabel: "L Mode actions",
+          statusBarReviewChangesLabel: "Review changes",
+          statusBarWorkspaceLabel: "Open workspace",
+          statusBarAppleAssistLabel: "Apple Local Assist",
+          statusBarAppleAssistTitle: "Open the Apple Local Assist window",
+          statusBarReviewChangesTitle:
+            "Exit L Mode and open the diff against disk",
+          statusBarWorkspaceTitle:
+            "Exit L Mode and return to the workspace",
+          appleAssistReviewBarLabel: "Apple Local Assist changed your text",
+          appleAssistReviewBarTitle: "Review or discard the pending AI edit",
+          appleAssistReviewBarOpenDiffLabel: "Open diff",
+          appleAssistReviewBarCloseDiffLabel: "Close diff",
+          appleAssistReviewBarDiscardLabel: "Discard",
+          appleAssistReviewBarDiscardTitle: "Revert the buffer and clear the review",
+          appleAssistReviewBarCloseLabel: "Close",
+          appleAssistReviewBarCloseTitle: "Keep the edit and dismiss the review",
+          appleAssistReviewBarEmptyDiffLabel: "No diff to show",
+          emptyPlaceholderText: "Start writing…",
+          emptyPlaceholderHint:
+            "Press Cmd+Shift+L to return to normal mode",
+        },
+        setStatus: vi.fn(),
+        themePreference: "light",
+        workspaceRootPath: null,
+      }),
+    );
+
+    act(() => {
+      result.current.openCommandPalette();
+    });
+
+    expect(
+      result.current.filteredCommands.find((command) => command.id === "agent.open"),
+    ).toBeUndefined();
+    expect(
+      result.current.filteredCommands.find(
+        (command) => command.id === "agent.sendSelection",
+      ),
+    ).toBeUndefined();
+    const appleAssistWindowCommand = result.current.filteredCommands.find(
+      (command) => command.id === "apple-assist.openWindow",
+    );
+    expect(appleAssistWindowCommand?.label).toBe(
+      "Open Apple Local Assist Window",
+    );
+    const assistSettingsCommand = result.current.filteredCommands.find(
+      (command) => command.id === "agent.preferences",
+    );
+    expect(assistSettingsCommand?.label).toBe("Assist Settings…");
   });
 });

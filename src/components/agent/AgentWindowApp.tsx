@@ -9,6 +9,7 @@ import {
   type AgentWorkbenchSession,
 } from "../../lib/tauri";
 import { useAgentProviderAvailability } from "../../hooks/agent/useAgentProviderAvailability";
+import { isExternalCliAssistSurfaceAllowed } from "../../lib/distributionLane";
 import {
   AGENT_WORKBENCH_CONSENT_STORAGE_KEY,
   AGENT_WORKBENCH_ENABLED_STORAGE_KEY,
@@ -148,7 +149,9 @@ export function AgentWindowApp() {
   const [agentWorkbenchConsent] = useState<boolean>(readStoredAgentWorkbenchConsent);
   const [selectedProvider, setSelectedProvider] =
     useState<AgentWorkbenchProvider>(readStoredAgentWorkbenchProvider);
-  const { availabilityByProvider } = useAgentProviderAvailability();
+  const externalCliAllowed = isExternalCliAssistSurfaceAllowed();
+  const { availabilityByProvider } =
+    useAgentProviderAvailability(externalCliAllowed);
   const selectedProviderUnavailable =
     availabilityByProvider.get(selectedProvider)?.available === false;
   const activeWorkspaceRoot = useMainWindowWorkspace();
@@ -167,10 +170,12 @@ export function AgentWindowApp() {
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     document.documentElement.dataset.themePreference = theme;
-    void setAgentWindowTheme(theme).catch((err) => {
-      console.warn("Failed to update Agent window OS theme", err);
-    });
-  }, [theme]);
+    if (externalCliAllowed) {
+      void setAgentWindowTheme(theme).catch((err) => {
+        console.warn("Failed to update Agent window OS theme", err);
+      });
+    }
+  }, [externalCliAllowed, theme]);
 
   useEffect(() => {
     const handler = (event: StorageEvent) => {

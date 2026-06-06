@@ -47,10 +47,40 @@ fn agent_workbench_distribution_gate_rejects_app_store_lane() {
 }
 
 #[test]
+fn app_store_distribution_lane_detection_is_case_insensitive() {
+    assert!(is_app_store_distribution_lane_for_lane(Some("app-store")));
+    assert!(is_app_store_distribution_lane_for_lane(Some("App-Store")));
+    assert!(!is_app_store_distribution_lane_for_lane(Some("developer")));
+    assert!(!is_app_store_distribution_lane_for_lane(None));
+}
+
+#[test]
 fn agent_workbench_distribution_gate_allows_developer_lane() {
     ensure_agent_workbench_allowed_for_lane(None).expect("default lane must allow Agent Workbench");
     ensure_agent_workbench_allowed_for_lane(Some("developer"))
         .expect("developer lane must allow Agent Workbench");
+}
+
+#[test]
+fn app_store_distribution_lane_rejects_agent_window_reverse_link() {
+    open_main_agent_pane_with_label_for_lane(MAIN_WINDOW_LABEL, Some("developer"))
+        .expect("developer lane may route the Agent reverse-link");
+
+    let err = open_main_agent_pane_with_label_for_lane(MAIN_WINDOW_LABEL, Some("app-store"))
+        .expect_err("App Store lane must reject Agent reverse-link IPC");
+    assert!(err.contains("Agent Workbench"), "{err}");
+    assert!(err.contains("App Store"), "{err}");
+}
+
+#[test]
+fn app_store_distribution_lane_rejects_agent_window_theme_ipc() {
+    set_agent_window_theme_with_label_for_lane(MAIN_WINDOW_LABEL, Some("developer"))
+        .expect("developer lane may update the Agent window theme");
+
+    let err = set_agent_window_theme_with_label_for_lane(MAIN_WINDOW_LABEL, Some("app-store"))
+        .expect_err("App Store lane must reject Agent window theme IPC");
+    assert!(err.contains("Agent Workbench"), "{err}");
+    assert!(err.contains("App Store"), "{err}");
 }
 
 #[test]

@@ -77,7 +77,7 @@ Current limits: live generation depends on macOS 26+ Apple Foundation Models ava
 ## Next Apple Local Assist hardening
 
 1. Continue the v0.13 Distribution Probe from `docs/v0.13-distribution-probe.md`: App Store build separation, sandbox entitlement draft, helper sidecar sandbox proof, and App Review notes draft.
-2. Treat the current App Store build-lane gate as initial only: frontend preferences hide / normalize External Agent Workbench under the `app-store` lane and Rust rejects Agent Workbench IPC, but bundle-shape omission is still pending.
+2. Treat the current App Store build-lane gate as stronger but still not final: frontend preferences hide / normalize External Agent Workbench under the `app-store` lane, native menu and Command Palette omit Agent window/send-selection entries, Agent-only IPC is skipped or rejected, and the App Store Vite build omits `agent.html`. Full dependency/capability-profile pruning is still pending.
 3. Treat sandbox readiness as promising but not final: draft sandbox entitlement files exist, ad-hoc sandbox signing verifies, and the real sandboxed `hazakura-editor` parent can spawn the inherited-sandbox Apple Local Assist helper and receive an availability envelope. Actual Apple Developer / App Store signing and upload validation still need proof before any App Store claim.
 4. Keep Apple Local Assist quality polish secondary until the App Store lane shape is proven.
 5. Decide whether `minimumSystemVersion` should remain editor-wide `11.0` or move to a split / release-lane policy for Apple Local Assist builds.

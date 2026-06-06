@@ -1,7 +1,8 @@
+use crate::distribution::*;
 use crate::types::*;
 use tauri::menu::{
-    AboutMetadata, CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu, HELP_SUBMENU_ID,
-    WINDOW_SUBMENU_ID,
+    AboutMetadata, CheckMenuItem, IsMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu,
+    HELP_SUBMENU_ID, WINDOW_SUBMENU_ID,
 };
 use tauri::Emitter;
 
@@ -25,13 +26,15 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
     let show_invisibles = state.map(|state| state.show_invisibles).unwrap_or(false);
     let spellcheck_enabled = state.map(|state| state.spellcheck_enabled).unwrap_or(true);
     let l_mode_enabled = state.map(|state| state.l_mode_enabled).unwrap_or(false);
+    let agent_workbench_allowed = agent_workbench_allowed_by_distribution();
     let agent_workbench_active = state
         .map(|state| state.agent_workbench_active)
         .unwrap_or(false);
     let agent_workbench_consent = state
         .map(|state| state.agent_workbench_consent)
         .unwrap_or(false);
-    let agent_window_enabled = agent_workbench_active && agent_workbench_consent;
+    let agent_window_enabled =
+        agent_workbench_allowed && agent_workbench_active && agent_workbench_consent;
     let theme_preference = state
         .map(|state| state.theme_preference.as_str())
         .unwrap_or("dark");
@@ -155,123 +158,138 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
             )?,
         ],
     )?;
-    let view_menu = Submenu::with_items(
+    let view_preview = CheckMenuItem::with_id(
         app,
-        label("View", "表示"),
+        MENU_TOGGLE_PREVIEW,
+        label("Preview", "プレビュー"),
+        true,
+        preview_visible,
+        Some("CmdOrCtrl+Option+P"),
+    )?;
+    let view_review_desk = MenuItem::with_id(
+        app,
+        MENU_TOGGLE_REVIEW_DESK,
+        label("Review Desk", "レビューデスク"),
+        true,
+        None::<&str>,
+    )?;
+    let view_agent_window = MenuItem::with_id(
+        app,
+        MENU_OPEN_AGENT_WINDOW,
+        label("Open Agent Window", "Agent ウィンドウを開く"),
+        agent_window_enabled,
+        None::<&str>,
+    )?;
+    let view_apple_assist_window = MenuItem::with_id(
+        app,
+        MENU_OPEN_APPLE_ASSIST_WINDOW,
+        label("Open Apple Assist Window", "Apple Assist ウィンドウを開く"),
+        true,
+        None::<&str>,
+    )?;
+    let view_separator_after_companion = PredefinedMenuItem::separator(app)?;
+    let view_l_mode = CheckMenuItem::with_id(
+        app,
+        MENU_TOGGLE_L_MODE,
+        label("L Mode", "えるモード"),
+        true,
+        l_mode_enabled,
+        Some("CmdOrCtrl+Shift+L"),
+    )?;
+    let view_wrap = CheckMenuItem::with_id(
+        app,
+        MENU_TOGGLE_WRAP,
+        label("Wrap Lines", "行を折り返す"),
+        true,
+        wrap_lines,
+        Some("CmdOrCtrl+Option+W"),
+    )?;
+    let view_invisibles = CheckMenuItem::with_id(
+        app,
+        MENU_TOGGLE_INVISIBLES,
+        label("Show Invisibles", "不可視文字を表示"),
+        true,
+        show_invisibles,
+        Some("CmdOrCtrl+Option+I"),
+    )?;
+    let view_spellcheck = CheckMenuItem::with_id(
+        app,
+        MENU_TOGGLE_SPELLCHECK,
+        label("Spell Check", "スペルチェック"),
+        true,
+        spellcheck_enabled,
+        Some("CmdOrCtrl+Option+;"),
+    )?;
+    let view_separator_before_theme = PredefinedMenuItem::separator(app)?;
+    let theme_light = MenuItem::with_id(
+        app,
+        MENU_THEME_LIGHT,
+        selected_theme_label(label("Light", "ライト"), theme_preference == "light"),
+        true,
+        None::<&str>,
+    )?;
+    let theme_dark = MenuItem::with_id(
+        app,
+        MENU_THEME_DARK,
+        selected_theme_label(label("Dark", "ダーク"), theme_preference == "dark"),
+        true,
+        None::<&str>,
+    )?;
+    let theme_sakura = MenuItem::with_id(
+        app,
+        MENU_THEME_SAKURA,
+        selected_theme_label(label("Sakura", "桜"), theme_preference == "sakura"),
+        true,
+        None::<&str>,
+    )?;
+    let theme_yakou = MenuItem::with_id(
+        app,
+        MENU_THEME_YAKOU,
+        selected_theme_label(label("Yakou", "夜光"), theme_preference == "yakou"),
+        true,
+        None::<&str>,
+    )?;
+    let theme_shokou = MenuItem::with_id(
+        app,
+        MENU_THEME_SHOKOU,
+        selected_theme_label(label("Shokou", "曙光"), theme_preference == "shokou"),
+        true,
+        None::<&str>,
+    )?;
+    let theme_menu = Submenu::with_items(
+        app,
+        label("Theme", "テーマ"),
         true,
         &[
-            &CheckMenuItem::with_id(
-                app,
-                MENU_TOGGLE_PREVIEW,
-                label("Preview", "プレビュー"),
-                true,
-                preview_visible,
-                Some("CmdOrCtrl+Option+P"),
-            )?,
-            &MenuItem::with_id(
-                app,
-                MENU_TOGGLE_REVIEW_DESK,
-                label("Review Desk", "レビューデスク"),
-                true,
-                None::<&str>,
-            )?,
-            &MenuItem::with_id(
-                app,
-                MENU_OPEN_AGENT_WINDOW,
-                label("Open Agent Window", "Agent ウィンドウを開く"),
-                agent_window_enabled,
-                None::<&str>,
-            )?,
-            &MenuItem::with_id(
-                app,
-                MENU_OPEN_APPLE_ASSIST_WINDOW,
-                label("Open Apple Assist Window", "Apple Assist ウィンドウを開く"),
-                true,
-                None::<&str>,
-            )?,
-            &PredefinedMenuItem::separator(app)?,
-            &CheckMenuItem::with_id(
-                app,
-                MENU_TOGGLE_L_MODE,
-                label("L Mode", "えるモード"),
-                true,
-                l_mode_enabled,
-                Some("CmdOrCtrl+Shift+L"),
-            )?,
-            &CheckMenuItem::with_id(
-                app,
-                MENU_TOGGLE_WRAP,
-                label("Wrap Lines", "行を折り返す"),
-                true,
-                wrap_lines,
-                Some("CmdOrCtrl+Option+W"),
-            )?,
-            &CheckMenuItem::with_id(
-                app,
-                MENU_TOGGLE_INVISIBLES,
-                label("Show Invisibles", "不可視文字を表示"),
-                true,
-                show_invisibles,
-                Some("CmdOrCtrl+Option+I"),
-            )?,
-            &CheckMenuItem::with_id(
-                app,
-                MENU_TOGGLE_SPELLCHECK,
-                label("Spell Check", "スペルチェック"),
-                true,
-                spellcheck_enabled,
-                Some("CmdOrCtrl+Option+;"),
-            )?,
-            &PredefinedMenuItem::separator(app)?,
-            &Submenu::with_items(
-                app,
-                label("Theme", "テーマ"),
-                true,
-                &[
-                    &MenuItem::with_id(
-                        app,
-                        MENU_THEME_LIGHT,
-                        selected_theme_label(label("Light", "ライト"), theme_preference == "light"),
-                        true,
-                        None::<&str>,
-                    )?,
-                    &MenuItem::with_id(
-                        app,
-                        MENU_THEME_DARK,
-                        selected_theme_label(label("Dark", "ダーク"), theme_preference == "dark"),
-                        true,
-                        None::<&str>,
-                    )?,
-                    &MenuItem::with_id(
-                        app,
-                        MENU_THEME_SAKURA,
-                        selected_theme_label(label("Sakura", "桜"), theme_preference == "sakura"),
-                        true,
-                        None::<&str>,
-                    )?,
-                    &MenuItem::with_id(
-                        app,
-                        MENU_THEME_YAKOU,
-                        selected_theme_label(label("Yakou", "夜光"), theme_preference == "yakou"),
-                        true,
-                        None::<&str>,
-                    )?,
-                    &MenuItem::with_id(
-                        app,
-                        MENU_THEME_SHOKOU,
-                        selected_theme_label(label("Shokou", "曙光"), theme_preference == "shokou"),
-                        true,
-                        None::<&str>,
-                    )?,
-                ],
-            )?,
-            &PredefinedMenuItem::separator(app)?,
-            &PredefinedMenuItem::fullscreen(
-                app,
-                Some(label("Enter Full Screen", "フルスクリーンにする")),
-            )?,
+            &theme_light,
+            &theme_dark,
+            &theme_sakura,
+            &theme_yakou,
+            &theme_shokou,
         ],
     )?;
+    let view_separator_before_fullscreen = PredefinedMenuItem::separator(app)?;
+    let view_fullscreen = PredefinedMenuItem::fullscreen(
+        app,
+        Some(label("Enter Full Screen", "フルスクリーンにする")),
+    )?;
+    let mut view_items: Vec<&dyn IsMenuItem<R>> = vec![&view_preview, &view_review_desk];
+    if agent_workbench_allowed {
+        view_items.push(&view_agent_window);
+    }
+    view_items.extend([
+        &view_apple_assist_window as &dyn IsMenuItem<R>,
+        &view_separator_after_companion,
+        &view_l_mode,
+        &view_wrap,
+        &view_invisibles,
+        &view_spellcheck,
+        &view_separator_before_theme,
+        &theme_menu,
+        &view_separator_before_fullscreen,
+        &view_fullscreen,
+    ]);
+    let view_menu = Submenu::with_items(app, label("View", "表示"), true, &view_items)?;
     let edit_menu = Submenu::with_items(
         app,
         label("Edit", "編集"),

@@ -53,8 +53,9 @@ export function AgentWorkbenchPreferencesPane({
   sessionLabel,
   workspaceRootPath,
 }: AgentWorkbenchPreferencesPaneProps) {
-  const { availabilityByProvider } = useAgentProviderAvailability();
   const externalCliAllowed = isExternalCliAssistSurfaceAllowed();
+  const { availabilityByProvider } =
+    useAgentProviderAvailability(externalCliAllowed);
   const currentAvailability = availabilityByProvider.get(provider);
   const currentProviderUnavailable =
     currentAvailability !== undefined && !currentAvailability.available;
