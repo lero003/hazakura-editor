@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { localizeStatusMessage } from "./statusMessages";
 
-// v0.15 theme IPC status feedback.
+// v0.15 IPC status feedback.
 //
-// `useAppPreferences` now routes the two reliable theme
-// IPC failures (window theme, window background color)
-// through the existing status bar via
+// `useAppPreferences` and `useWindowTitle` route reliable
+// IPC failures (window theme, window background color,
+// window title) through the existing status bar via
 // `localizeStatusMessage`. The Agent window theme IPC is
 // deliberately NOT covered: `setAgentWindowTheme` swallows
 // the IPC error internally and resolves with `void`, so a
@@ -22,10 +22,10 @@ import { localizeStatusMessage } from "./statusMessages";
 //     effect,
 //   - the English path is unchanged (the raw English key is
 //     returned for `en`),
-//   - the two keys stay distinct so future copy edits do
+//   - the keys stay distinct so future copy edits do
 //     not collapse them.
 
-describe("localizeStatusMessage: theme IPC failure keys (v0.15)", () => {
+describe("localizeStatusMessage: window IPC failure keys (v0.15)", () => {
   it("localizes the window theme failure to Japanese", () => {
     expect(localizeStatusMessage("Failed to update window theme", "ja"))
       .toBe("ウィンドウのテーマ更新に失敗しました");
@@ -40,6 +40,11 @@ describe("localizeStatusMessage: theme IPC failure keys (v0.15)", () => {
     ).toBe("ウィンドウの背景色更新に失敗しました");
   });
 
+  it("localizes the window title failure to Japanese", () => {
+    expect(localizeStatusMessage("Failed to update window title", "ja"))
+      .toBe("ウィンドウのタイトル更新に失敗しました");
+  });
+
   it("mentions the failure noun (失敗) so the user sees the action did not take effect", () => {
     expect(localizeStatusMessage("Failed to update window theme", "ja"))
       .toMatch(/失敗/);
@@ -49,6 +54,8 @@ describe("localizeStatusMessage: theme IPC failure keys (v0.15)", () => {
         "ja",
       ),
     ).toMatch(/失敗/);
+    expect(localizeStatusMessage("Failed to update window title", "ja"))
+      .toMatch(/失敗/);
   });
 
   it("returns the raw English key when menu language is English", () => {
@@ -60,14 +67,17 @@ describe("localizeStatusMessage: theme IPC failure keys (v0.15)", () => {
         "en",
       ),
     ).toBe("Failed to update window background color");
+    expect(localizeStatusMessage("Failed to update window title", "en"))
+      .toBe("Failed to update window title");
   });
 
-  it("returns distinct Japanese messages for the two keys (no copy collapse)", () => {
+  it("returns distinct Japanese messages for the three keys (no copy collapse)", () => {
     const a = localizeStatusMessage("Failed to update window theme", "ja");
     const b = localizeStatusMessage(
       "Failed to update window background color",
       "ja",
     );
-    expect(new Set([a, b]).size).toBe(2);
+    const c = localizeStatusMessage("Failed to update window title", "ja");
+    expect(new Set([a, b, c]).size).toBe(3);
   });
 });

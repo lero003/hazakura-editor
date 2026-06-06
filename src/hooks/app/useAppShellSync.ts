@@ -25,6 +25,7 @@ type UseAppShellSyncOptions = {
   discardingWindowCloseRef: RefValue<boolean>;
   editorSettings: EditorSettings;
   menuLanguage: MenuLanguage;
+  onStatus?: (message: string) => void;
   pendingDrafts: DraftRecord[];
   previewVisible: boolean;
   recentFiles: RecentEntry[];
@@ -44,6 +45,7 @@ export function useAppShellSync({
   discardingWindowCloseRef,
   editorSettings,
   menuLanguage,
+  onStatus,
   pendingDrafts,
   previewVisible,
   recentFiles,
@@ -58,6 +60,7 @@ export function useAppShellSync({
     activeDirty,
     activeTab,
     selectedImage,
+    onStatus,
   });
 
   useAppMenuStateSync({

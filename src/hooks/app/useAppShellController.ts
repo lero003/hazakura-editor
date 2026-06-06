@@ -1060,6 +1060,7 @@ export function useAppShellController() {
       discardingWindowCloseRef,
       editorSettings,
       menuLanguage,
+      onStatus: setStatus,
       pendingDrafts,
       previewVisible,
       recentFiles,
