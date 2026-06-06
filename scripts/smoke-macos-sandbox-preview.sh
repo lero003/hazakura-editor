@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Build/copy the current macOS app, apply draft App Store sandbox
-# entitlements with ad-hoc signing, and probe the bundled Apple
-# Local Assist helper. This is a diagnostic preview only; it does
-# not create an App Store, TestFlight, Developer ID, or notarized
-# artifact.
+# entitlements with ad-hoc signing, and prove the Apple Local Assist
+# helper can answer an availability probe when spawned by a sandboxed
+# parent from inside an app bundle. This is a diagnostic preview only;
+# it does not create an App Store, TestFlight, Developer ID, or
+# notarized artifact.
 
 set -euo pipefail
 
@@ -14,6 +15,8 @@ HELPER_ENTITLEMENTS="$REPO_ROOT/src-tauri/entitlements/app-store-helper.plist"
 TMP_ROOT="$(mktemp -d)"
 APP="$TMP_ROOT/hazakura editor.app"
 HELPER="$APP/Contents/MacOS/hazakura-apple-assist-helper"
+LAUNCHER_APP="$TMP_ROOT/SandboxLauncher.app"
+LAUNCHER_HELPER="$LAUNCHER_APP/Contents/MacOS/hazakura-apple-assist-helper"
 
 cleanup() {
     rm -rf "$TMP_ROOT"
@@ -68,27 +71,96 @@ echo "== helper entitlements =="
 codesign -d --entitlements :- "$HELPER" 2>/dev/null
 
 echo
-echo "== helper probe under sandbox entitlements =="
-set +e
-PROBE_OUTPUT="$(printf '%s\n' '{"action":"probe_availability"}' | "$HELPER" 2>"$TMP_ROOT/helper-stderr.txt")"
-PROBE_STATUS=$?
-set -e
+echo "== build sandbox parent-spawn probe launcher =="
+cat > "$TMP_ROOT/SandboxLauncher.swift" <<'SWIFT'
+import Foundation
 
-if [ "$PROBE_STATUS" -ne 0 ] || ! grep -q '"kind":"availability"' <<<"$PROBE_OUTPUT"; then
-    echo "helper probe failed under sandbox entitlements" >&2
-    echo "status: $PROBE_STATUS" >&2
-    echo "stdout: $PROBE_OUTPUT" >&2
-    echo "stderr: $(cat "$TMP_ROOT/helper-stderr.txt")" >&2
+let helperURL = Bundle.main.executableURL!
+    .deletingLastPathComponent()
+    .appendingPathComponent("hazakura-apple-assist-helper")
+let process = Process()
+process.executableURL = helperURL
 
-    # CrashReporter can write the report shortly after the process exits.
-    sleep 1
-    LATEST_REPORT="$(ls -t "$HOME"/Library/Logs/DiagnosticReports/*hazakura-apple-assist-helper*.ips 2>/dev/null | head -1 || true)"
-    if [ -n "$LATEST_REPORT" ]; then
-        echo "latest crash report: $LATEST_REPORT" >&2
-        grep -m 1 '"asiSignatures"' "$LATEST_REPORT" >&2 || true
-    fi
-    exit 1
-fi
+let input = Pipe()
+let output = Pipe()
+let error = Pipe()
+process.standardInput = input
+process.standardOutput = output
+process.standardError = error
 
-echo "probe: $PROBE_OUTPUT"
+try process.run()
+input.fileHandleForWriting.write(Data("{\"action\":\"probe_availability\"}\n".utf8))
+try input.fileHandleForWriting.close()
+process.waitUntilExit()
+
+let stdout = String(
+    data: output.fileHandleForReading.readDataToEndOfFile(),
+    encoding: .utf8
+) ?? ""
+let stderr = String(
+    data: error.fileHandleForReading.readDataToEndOfFile(),
+    encoding: .utf8
+) ?? ""
+
+print("helper: \(helperURL.path)")
+print("child_status: \(process.terminationStatus)")
+print("child_stdout: \(stdout.trimmingCharacters(in: .whitespacesAndNewlines))")
+print("child_stderr: \(stderr.trimmingCharacters(in: .whitespacesAndNewlines))")
+
+if process.terminationStatus == 0 && stdout.contains("\"kind\":\"availability\"") {
+    exit(0)
+}
+exit(1)
+SWIFT
+
+xcrun swiftc "$TMP_ROOT/SandboxLauncher.swift" -o "$TMP_ROOT/SandboxLauncher"
+mkdir -p "$LAUNCHER_APP/Contents/MacOS"
+cp "$TMP_ROOT/SandboxLauncher" "$LAUNCHER_APP/Contents/MacOS/SandboxLauncher"
+cp "$APP_SRC/Contents/MacOS/hazakura-apple-assist-helper" "$LAUNCHER_HELPER"
+cat > "$LAUNCHER_APP/Contents/Info.plist" <<'PLIST'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleExecutable</key>
+  <string>SandboxLauncher</string>
+  <key>CFBundleIdentifier</key>
+  <string>lab.hazakura.note.sandbox-launcher</string>
+  <key>CFBundleName</key>
+  <string>SandboxLauncher</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>CFBundleShortVersionString</key>
+  <string>0</string>
+  <key>CFBundleVersion</key>
+  <string>0</string>
+</dict>
+</plist>
+PLIST
+
+echo "==> sign sandbox parent-spawn probe launcher"
+codesign \
+    --force \
+    --sign - \
+    --identifier lab.hazakura.note.apple-assist-helper \
+    --options runtime \
+    --entitlements "$HELPER_ENTITLEMENTS" \
+    "$LAUNCHER_HELPER"
+codesign \
+    --force \
+    --sign - \
+    --identifier lab.hazakura.note.sandbox-launcher \
+    --options runtime \
+    "$LAUNCHER_APP/Contents/MacOS/SandboxLauncher"
+codesign \
+    --force \
+    --sign - \
+    --options runtime \
+    --entitlements "$APP_ENTITLEMENTS" \
+    "$LAUNCHER_APP"
+codesign --verify --deep --strict --verbose=2 "$LAUNCHER_APP"
+
+echo
+echo "== helper probe from sandboxed parent =="
+"$LAUNCHER_APP/Contents/MacOS/SandboxLauncher"
 echo "ok"
