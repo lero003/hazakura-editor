@@ -107,6 +107,65 @@ Future L Mode changes should add or reuse fixtures that cover both display and e
 
 It is acceptable for this track to be larger than the usual tiny polish slice, but each implementation PR / commit should still isolate one verifiable behavior cluster.
 
+## v0.14 Review Notes: 60 To 80 Point Ramp
+
+A later implementation review judged the current L Mode direction as strong but not yet dependable enough for daily writing. The most credible "60 -> 80" path is not a broader WYSIWYG model. It is to reduce unnecessary decoration churn, protect IME / caret behavior, and add narrow visual regression checks around the existing CodeMirror-decoration design.
+
+Use these notes as a v0.14 work queue. Each item should stay a small, verifiable slice.
+
+### First Slices
+
+1. **Decoration recompute trigger**
+   - Initial v0.14 slice landed: the L Mode `StateField` now derives selection changes by structurally comparing `transaction.startState.selection` with `transaction.newSelection`, so explicit moves and mapped caret movement are covered while same-selection re-dispatches stay cheap.
+   - Remaining work: split active-line line classes from content decorations only if measurement proves the current field still recalculates too much.
+   - Verification direction: keep tests for selection-only updates, mapped caret movement, same-selection no-ops, image refresh, and document-context effects.
+   - Failure conditions reduced: cursor uncertainty, IME instability, implementation cost from broad recomputation.
+
+2. **Typewriter and IME stability**
+   - Current risk: Typewriter recentering on `docChanged` / `selectionSet` may fight Japanese composition or move the candidate window.
+   - Preferred slice: avoid recentering while the editor is composing, then recenter once after composition ends if the caret remains collapsed.
+   - Verification: focused plugin test plus built-app or browser smoke with Japanese IME when practical.
+   - Failure conditions reduced: IME instability, layout jumps, visual anxiety.
+
+3. **Visual-overlap fixture**
+   - Current risk: the margin chip (`data-l-chip`) and page padding depend on available width, so narrow windows may clip or overlap the chip.
+   - Preferred slice: add a fixture / CSS drift check for 375, 480, 720, and 1024 px widths before changing chip geometry.
+   - Verification: screenshot or DOM geometry smoke for headings, blockquotes, fenced code chips, long Japanese headings, and the L Mode action rail.
+   - Failure conditions reduced: cursor / source context confusion, controls overlapping document text.
+
+4. **Task widget accessibility**
+   - Current risk: the task checkbox widget has `role="checkbox"` and `aria-checked`, but the keyboard and focus-visible path is not yet a first-class interaction.
+   - Preferred slice: add keyboard toggle support for Enter / Space only on the task widget, with visible focus treatment and normal Markdown source changes.
+   - Verification: widget/unit test for `[ ]` <-> `[x]`, source-preservation assertion, and keyboard smoke.
+   - Failure conditions reduced: editing uncertainty, accessibility mismatch.
+
+5. **Print and export boundary**
+   - Current risk: editor-side L Mode CSS has no dedicated print rule, so chips, dimming, widgets, or floating chrome may leak into Print to PDF.
+   - Preferred slice: add a modest `@media print` rule for L Mode editor output or document why print uses the existing export / preview pipeline instead.
+   - Verification: Print to PDF handoff smoke and source-preservation check.
+   - Failure conditions reduced: Preview / export consistency breaks, visual beauty creating user anxiety.
+
+### Measure Before Refactoring
+
+Do not start v0.14 by splitting the whole CSS file or building a complex line-diff decoration cache. First collect a small performance baseline:
+
+- L Mode off vs on.
+- Selection movement vs typing.
+- A mixed Markdown fixture and one large prose fixture.
+- p95 update-to-paint timing where practical.
+
+If the recompute-trigger fix removes the visible problem, keep the implementation simple. If long documents still lag, then consider a line-range cache for content decorations using CodeMirror change ranges.
+
+### Defer Unless Evidence Demands It
+
+- Full `lMode.css` decomposition into token / chrome / editor-decoration files.
+- Sakura / Shokou-specific L Mode palettes beyond the intentional day / night writing surface.
+- Broad `userEvent` annotation cleanup across all editor dispatch paths.
+- Replacing hidden marker spans with widgets everywhere.
+- Structural table editing, alternate document models, or save-time formatting.
+
+These are not bad ideas. They are simply larger than the next safe move.
+
 ## Experience Target
 
 When entering えるモード, the screen should become document-centered:

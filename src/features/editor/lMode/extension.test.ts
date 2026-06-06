@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { EditorState } from "@codemirror/state";
+import { EditorState, StateEffect } from "@codemirror/state";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import { EditorView, type DecorationSet } from "@codemirror/view";
 import {
@@ -695,6 +695,185 @@ function nextAnimationFrame(): Promise<void> {
   return new Promise((resolve) => {
     requestAnimationFrame(() => resolve());
   });
+}
+
+// --- v0.14 recompute trigger ---
+//
+// The v0.11 trigger check used
+// `transaction.selection !== undefined` as a stand-in for
+// "selection changed". That misses selection moves that come
+// from `changes` mapping (text edits that advance the caret
+// through a single change description) and over-triggers on
+// selection re-dispatches that keep the same anchor. The
+// v0.14 trigger compares `startState.selection` to
+// `newSelection` with `EditorSelection.eq`, which catches
+// both mapped and explicit moves while leaving true no-ops
+// alone.
+//
+// Each test below pins one observable consequence of the
+// trigger: the active line reveal either follows the cursor
+// (when it should) or stays put (when nothing changed). The
+// StateField is opaque to the test, so we drive a real
+// EditorView and read the line position that carries the
+// `cm-lmode-source-line` class.
+
+describe("v0.14 recompute trigger", () => {
+  // A standalone no-op effect for the "effect-only
+  // transaction" test. It is intentionally not
+  // `refreshImagesEffect` — the L Mode recompute should
+  // *also* be a no-op when an unrelated effect lands.
+  const noopEffect = StateEffect.define<null>();
+
+  it("classifies a same-selection re-dispatch as unchanged", () => {
+    const state = EditorState.create({
+      doc: "line one\nline two\n",
+      selection: { anchor: "line one\n".length },
+    });
+
+    const transaction = state.update({
+      selection: { anchor: "line one\n".length },
+    });
+
+    expect(lModeExtensionInternals.didSelectionChange(transaction)).toBe(false);
+  });
+
+  it("follows the caret when text deletion moves the selection across lines through mapping", () => {
+    // The v0.11 trigger checked `tr.selection !== undefined`
+    // and only re-derived on docChanged plus explicit
+    // selection. A deletion that moves the caret onto a new
+    // line through CodeMirror's `changes` mapping
+    // (`tr.selection === undefined`, but
+    // `tr.newSelection !== tr.startState.selection`) was
+    // already covered by `docChanged`, so this case happens
+    // to pass. The v0.14 trigger keeps the same observable
+    // behavior AND adds a structural check that will
+    // continue to fire even if a future refactor narrows the
+    // docChanged path. Pin the line-shift expectation here
+    // so the trigger change cannot silently regress it.
+    const source = "alpha\nbeta\ngamma\n";
+    const gammaStart = source.indexOf("gamma");
+    const parent = document.createElement("div");
+    document.body.append(parent);
+
+    const view = new EditorView({
+      parent,
+      state: EditorState.create({
+        doc: source,
+        extensions: [
+          markdown({ base: markdownLanguage }),
+          lModeExtension(true, { workspaceRoot: null, documentPath: null }),
+        ],
+        selection: { anchor: gammaStart },
+      }),
+    });
+
+    // Baseline: cursor on line 3 ("gamma").
+    expect(activeLineStart(view, parent)).toBe(gammaStart);
+
+    // Delete the first line without setting a selection.
+    // The caret sits at the start of line 3, strictly
+    // after the deletion range. CodeMirror's mapping shifts
+    // the caret by the deletion's length (6 characters)
+    // onto position 5, which is now the start of the
+    // (renamed) line 2 ("gamma"). The active line reveal
+    // must follow.
+    view.dispatch({
+      changes: { from: 0, to: "alpha\n".length },
+    });
+    expect(view.state.doc.toString()).toBe("beta\ngamma\n");
+    expect(activeLineStart(view, parent)).toBe("beta\n".length);
+
+    view.destroy();
+    parent.remove();
+  });
+
+  it("does not shift the active line on a no-op effect-only transaction", () => {
+    // A transaction that carries an effect but neither
+    // changes the document nor sets a new selection must
+    // not move the active line. The v0.11 trigger would
+    // have done nothing here too (`tr.selection ===
+    // undefined`), but the v0.14 trigger keeps the same
+    // observable behavior — and stays defensive against
+    // future trigger changes.
+    const source = "line one\nline two\n";
+    const parent = document.createElement("div");
+    document.body.append(parent);
+
+    const view = new EditorView({
+      parent,
+      state: EditorState.create({
+        doc: source,
+        extensions: [
+          markdown({ base: markdownLanguage }),
+          lModeExtension(true, { workspaceRoot: null, documentPath: null }),
+        ],
+        selection: { anchor: source.indexOf("line two") },
+      }),
+    });
+
+    const initial = activeLineStart(view, parent);
+    expect(initial).toBe(source.indexOf("line two"));
+
+    // Dispatch an unrelated effect. The cursor must stay
+    // on line 2.
+    view.dispatch({ effects: noopEffect.of(null) });
+
+    expect(activeLineStart(view, parent)).toBe(initial);
+
+    view.destroy();
+    parent.remove();
+  });
+
+  it("does not shift the active line when the same selection is re-dispatched", () => {
+    // The v0.11 trigger checked `tr.selection !== undefined`
+    // and would have re-derivated the field on any
+    // selection re-dispatch, even when the anchor was
+    // unchanged. The v0.14 trigger compares the start
+    // state's selection to the new selection with
+    // `EditorSelection.eq`, so a same-anchor re-dispatch
+    // is a no-op.
+    const source = "line one\nline two\nline three\n";
+    const lineTwoStart = source.indexOf("line two");
+    const parent = document.createElement("div");
+    document.body.append(parent);
+
+    const view = new EditorView({
+      parent,
+      state: EditorState.create({
+        doc: source,
+        extensions: [
+          markdown({ base: markdownLanguage }),
+          lModeExtension(true, { workspaceRoot: null, documentPath: null }),
+        ],
+        selection: { anchor: lineTwoStart },
+      }),
+    });
+
+    const initial = activeLineStart(view, parent);
+    expect(initial).toBe(lineTwoStart);
+
+    // Re-dispatch the same anchor as a fresh selection.
+    view.dispatch({ selection: { anchor: lineTwoStart } });
+
+    expect(activeLineStart(view, parent)).toBe(initial);
+
+    view.destroy();
+    parent.remove();
+  });
+});
+
+// Read the document position at the start of the line that
+// carries the `cm-lmode-source-line` class. Returns -1 when
+// no line carries the class (which would mean the
+// recompute-trigger slice is not even producing the active
+// line mark, regardless of the trigger logic). The position
+// is read through `EditorView.posAtDOM`, which is the
+// supported way to map a DOM node back to a doc offset in
+// CodeMirror 6.
+function activeLineStart(view: EditorView, parent: HTMLElement): number {
+  const lineEl = parent.querySelector(".cm-lmode-source-line");
+  if (!lineEl) return -1;
+  return view.posAtDOM(lineEl);
 }
 
 // Count how many of the two `>` positions of a multi-line

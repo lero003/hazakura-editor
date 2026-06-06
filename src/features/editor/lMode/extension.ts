@@ -38,6 +38,7 @@ import {
   type Extension,
   Facet,
   StateField,
+  type Transaction,
 } from "@codemirror/state";
 import {
   Decoration,
@@ -107,9 +108,10 @@ const lModeField = StateField.define<DecorationSet>({
     const refreshFired = transaction.effects.some((e) =>
       e.is(refreshImagesEffect),
     );
+    const selectionChanged = didSelectionChange(transaction);
     if (
       transaction.docChanged ||
-      transaction.selection !== undefined ||
+      selectionChanged ||
       contextChanged ||
       refreshFired
     ) {
@@ -270,8 +272,18 @@ function computeTypewriterScrollTop({
   );
 }
 
+function didSelectionChange(transaction: Transaction): boolean {
+  // `tr.selection` only tells us whether the transaction
+  // explicitly set a selection. `tr.newSelection` is always
+  // the mapped result, so a structural compare against the
+  // start state catches both explicit moves and mapped caret
+  // movement while keeping same-selection re-dispatches cheap.
+  return !transaction.startState.selection.eq(transaction.newSelection);
+}
+
 export const __test__ = {
   computeTypewriterScrollTop,
+  didSelectionChange,
 };
 
 /**

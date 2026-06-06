@@ -94,8 +94,9 @@ Current limits: live generation depends on macOS 26+ Apple Foundation Models ava
 2. Prioritize rendering fidelity for headings, inline marks, links, lists, tasks, dividers, Setext underlines, blockquotes, code blocks, tables, images, Japanese prose, and mixed symbols.
 3. Prioritize editing fidelity for caret movement, IME composition, active-line decorations, hidden markers, Backspace / Delete, list continuation, selection, and Markdown-source copy behavior.
 4. Add regression fixtures for mixed Markdown and CSS drift before widening the visual illusion.
-5. Keep Markdown source canonical; do not introduce Preview DOM editing, `contenteditable`, HTML as the saved model, or hidden save-time rewriting.
-6. Keep App Store / Developer lane proof on the roadmap, but do not let it displace the next L Mode writing-surface pass unless release packaging forces the issue.
+5. The first recompute-trigger cleanup slice has landed; continue from the `v0.14 Review Notes: 60 To 80 Point Ramp` section in `docs/l-mode-plan.md` with Typewriter / IME stability, visual-overlap fixtures, task-widget accessibility, print / export boundary checks, or a small performance baseline before deeper refactors.
+6. Keep Markdown source canonical; do not introduce Preview DOM editing, `contenteditable`, HTML as the saved model, or hidden save-time rewriting.
+7. Keep App Store / Developer lane proof on the roadmap, but do not let it displace the next L Mode writing-surface pass unless release packaging forces the issue.
 
 ## Next Safe Actions
 

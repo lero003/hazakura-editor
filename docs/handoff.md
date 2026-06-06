@@ -35,6 +35,8 @@
 - L Mode action rail is now a compact vertical icon rail without native button tooltips. L Mode also keeps list bullets / ordered numbers visible when the cursor is on the active list line, and renders Setext-style `---` / `===` underline markers as the same divider widget so typing on the line before a divider does not make the visual boundary disappear.
 - L Mode planning now treats WYSIWYG accuracy as a serious product-polish track, not a light focus-mode follow-up. `docs/l-mode-plan.md` is the source for the source-preserving WYSIWYG Accuracy Ramp: rendering fidelity, editing stability, IME/caret/list/link/table behavior, visual-overlap checks, and regression fixtures while keeping Markdown source canonical.
 - `v0.13.0` release preparation aligned npm, Tauri, Cargo, and lockfile version surfaces; added source / local-app release notes; kept the latest downloadable DMG preview at `v0.11.0`; and moved the next major implementation lane to `v0.14` L Mode WYSIWYG Accuracy Ramp.
+- Post-v0.13 external review notes for L Mode were folded into `docs/l-mode-plan.md` under `v0.14 Review Notes: 60 To 80 Point Ramp`. The preferred first slices are decoration recompute-trigger cleanup, Typewriter / IME stability, narrow-width visual-overlap fixtures, task-widget accessibility, and print / export boundary checks.
+- The first v0.14 L Mode recompute-trigger cleanup slice landed after review: selection changes are now derived from `startState.selection` vs `newSelection`, with tests covering mapped caret movement and same-selection no-op dispatches.
 
 ## Decisions
 
@@ -66,6 +68,7 @@
 - L Mode / normal edit top-chrome and dark diff-contrast verification passed: `npm run typecheck`, focused Vitest for `DocumentMetaBar` / `AppTopChrome` and CSS drift checks, full `npm run test` (50 files / 276 tests), `npm run build:vite`, and `git diff --check`.
 - L Mode input/chrome follow-up verification passed: focused Vitest for `lMode/extension`, `lModeCss`, and `LModeActionRail`; full `npm run test` (50 files / 279 tests); `npm run typecheck`; `npm run build:vite`; and `git diff --check`.
 - v0.13.0 source / local-app tag verification on 2026-06-06 passed: `npm ci`, `npm run typecheck`, `npm run test`, `npm run build:vite`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build`, `npm run smoke:macos-sandbox-preview`, `git diff --check`, `npm audit`, `cargo audit --file src-tauri/Cargo.lock`, built-app metadata (`0.13.0`, `lab.hazakura.note`, `hazakura editor`, `hazakura-editor`), built-app codesign, and expected `spctl` insufficient-context rejection.
+- v0.14 L Mode recompute-trigger cleanup verification passed: `npm test -- src/features/editor/lMode/extension.test.ts` (30 tests), `npm test -- src/features/editor/lMode/` (49 tests), `npm run typecheck`, `npm run build:vite`, and `git diff --check`. Vite chunk-size warning remains existing / expected.
 
 ## Risks / Unknowns
 
@@ -87,6 +90,7 @@
 - For the next Apple Local Assist slices, focus on built-app smoke, rough-request prompt quality, unavailable/disabled state handling, and distribution hardening. Do not re-run the old gate-default-hidden sequence; `bundle.externalBin`, live Swift probe/generate, and Rust command-surface helper routing are already on `main`.
 - If doing more docs cleanup, prefer tightening release-note structure, not resurrecting archived planning docs.
 - For L Mode polish, start from `docs/l-mode-plan.md` and prioritize source-preserving WYSIWYG accuracy before adding new surfaces: rendering fidelity, editing stability, IME/caret/list/link/table behavior, and visual-overlap regression checks.
+- The first v0.14 L Mode implementation slice is now complete; before larger CSS splitting or decoration-cache work, either collect the small performance baseline from `docs/l-mode-plan.md` or move to Typewriter / IME stability.
 - For Apple Local Assist, the next useful implementation is UX hardening from real lightweight writing examples plus App Store/distribution review; do not broaden Apple Local Assist into network fallback, generic chat, tool calling, workspace indexing, or external-agent replacement.
 
 ## Avoid
