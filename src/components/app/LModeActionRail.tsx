@@ -162,6 +162,7 @@ export function LModeActionRail({
           aria-label={copy.statusBarAppleAssistLabel}
           className={LModeClasses.actionButton}
           onClick={onOpenAppleAssistWindow}
+          title={copy.actionRailAppleAssistTooltip}
           type="button"
         >
           <SparklesIcon />
@@ -174,6 +175,7 @@ export function LModeActionRail({
           aria-pressed={typewriterModeEnabled}
           className={LModeClasses.actionButton}
           onClick={onToggleTypewriterMode}
+          title={copy.actionRailTypewriterTooltip}
           type="button"
         >
           <TypewriterIcon />
@@ -186,6 +188,7 @@ export function LModeActionRail({
             aria-label={copy.statusBarReviewChangesLabel}
             className={LModeClasses.actionButton}
             onClick={() => void handleReviewChanges()}
+            title={copy.actionRailReviewChangesTooltip}
             type="button"
           >
             <DiffIcon />

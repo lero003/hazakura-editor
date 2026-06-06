@@ -113,12 +113,55 @@ describe("LModeActionRail", () => {
 
     const button = screen.getByRole("button", { name: /Typewriter mode/ });
     expect(button.getAttribute("aria-pressed")).toBe("true");
-    expect(button.getAttribute("title")).toBeNull();
+    expect(button.getAttribute("title")).toBe(
+      getLModeCopy("en").actionRailTypewriterTooltip,
+    );
     expect(screen.getByText("Type")).toBeTruthy();
 
     fireEvent.click(button);
 
     expect(onToggleTypewriterMode).toHaveBeenCalledTimes(1);
+  });
+
+  it("surfaces a non-empty tooltip on every action rail button", () => {
+    const copy = getLModeCopy("en");
+    render(
+      <LModeActionRail
+        activeDirty={true}
+        activeDocumentPath="/workspace/note.md"
+        copy={copy}
+        dirtyLabel="Unsaved"
+        menuLanguage="en"
+        onOpenAppleAssistWindow={vi.fn()}
+        onReviewChanges={vi.fn()}
+        onToggleTypewriterMode={vi.fn()}
+        reviewChangesAvailable={true}
+        typewriterModeEnabled={false}
+        workspaceSidebarProps={workspaceSidebarProps()}
+      />,
+    );
+
+    const appleAssist = screen.getByRole("button", {
+      name: /Apple Local Assist/,
+    });
+    expect(appleAssist.getAttribute("title")).toBe(
+      copy.actionRailAppleAssistTooltip,
+    );
+    expect(appleAssist.getAttribute("title")).toMatch(/\S/);
+
+    const typewriter = screen.getByRole("button", {
+      name: /Typewriter mode/,
+    });
+    expect(typewriter.getAttribute("title")).toBe(
+      copy.actionRailTypewriterTooltip,
+    );
+    expect(typewriter.getAttribute("title")).toMatch(/\S/);
+
+    const review = screen.getByRole("button", { name: /Review changes/ });
+    expect(review.getAttribute("title")).toBe(
+      copy.actionRailReviewChangesTooltip,
+    );
+    expect(review.getAttribute("title")).toMatch(/\S/);
   });
 
   it("opens the local change review sheet and invokes Apple Local Assist", async () => {

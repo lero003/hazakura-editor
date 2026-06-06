@@ -19,6 +19,9 @@ export type LModeCopy = {
   actionRailAppleAssistShortLabel: string;
   actionRailTypewriterShortLabel: string;
   actionRailReviewChangesShortLabel: string;
+  actionRailAppleAssistTooltip: string;
+  actionRailTypewriterTooltip: string;
+  actionRailReviewChangesTooltip: string;
   statusBarAppleAssistTitle: string;
   workspaceToggleLabel: string;
   workspaceToggleTitle: string;
@@ -70,6 +73,12 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
       actionRailAppleAssistShortLabel: "Assist",
       actionRailTypewriterShortLabel: "たいぷ",
       actionRailReviewChangesShortLabel: "さぶん",
+      actionRailAppleAssistTooltip:
+        "Apple Local Assist の うぃんどう を ひらく (えるもーどから でずに)",
+      actionRailTypewriterTooltip:
+        "そくせん ちゅうおう を オン / オフ に きりかへ",
+      actionRailReviewChangesTooltip:
+        "えるもーどのまま ディスクとの さぶん を ひらく",
       statusBarAppleAssistTitle: "Apple Local Assist の ウィンドウを ひらく / かくす",
       workspaceToggleLabel: "わーくすぺーすを ひらく",
       workspaceToggleTitle: "えるもーどのまま ファイルツリーを ひらく / とぢる",
@@ -114,6 +123,12 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
         actionRailAppleAssistShortLabel: "Assist",
         actionRailTypewriterShortLabel: "タイプ",
         actionRailReviewChangesShortLabel: "確認",
+        actionRailAppleAssistTooltip:
+          "Apple Local Assist ウィンドウを開く（えるモードから出ずに）",
+        actionRailTypewriterTooltip:
+          "タイプライターモードをオン / オフに切り替え（カーソル行を縦中央付近に保つ）",
+        actionRailReviewChangesTooltip:
+          "えるモードのまま、ディスクとの差分を開く",
         statusBarAppleAssistTitle: "Apple Local Assist ウィンドウを表示 / 非表示",
         workspaceToggleLabel: "ワークスペースを開く",
         workspaceToggleTitle: "えるモードのままファイルツリーを表示 / 非表示",
@@ -155,6 +170,12 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
         actionRailAppleAssistShortLabel: "Assist",
         actionRailTypewriterShortLabel: "Type",
         actionRailReviewChangesShortLabel: "Diff",
+        actionRailAppleAssistTooltip:
+          "Open the Apple Local Assist writing companion without leaving L Mode",
+        actionRailTypewriterTooltip:
+          "Toggle typewriter mode on or off (keeps the active line near the vertical center)",
+        actionRailReviewChangesTooltip:
+          "Open the disk-vs-editor diff without leaving L Mode",
         statusBarAppleAssistTitle:
           "Show or hide the Apple Local Assist writing companion window",
         workspaceToggleLabel: "Open workspace",
