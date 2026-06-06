@@ -46,10 +46,12 @@ const REQUIRED_KEYS: ReadonlyArray<keyof AppleAssistWindowCopy> = [
   "presets",
   "presetsLabel",
   "readyStatus",
+  "refreshDocumentButton",
   "roughRequestLabel",
   "selectionTooLongError",
   "sendingRequest",
   "subtitle",
+  "targetReadFailed",
   "targetStaleError",
   "tauriUnavailableError",
   "targetBlock",
@@ -90,6 +92,8 @@ describe("getAppleAssistWindowCopy", () => {
         expect(copy.targetDocument(123)).toMatch(/\S/);
         expect(copy.targetLabel("H2 見出し")).toMatch(/\S/);
         expect(copy.unknownError("raw detail")).toMatch(/\S/);
+        expect(copy.refreshDocumentButton).toMatch(/\S/);
+        expect(copy.targetReadFailed).toMatch(/\S/);
       });
 
       it("exposes the same preset ids in every language", () => {
@@ -117,6 +121,24 @@ describe("getAppleAssistWindowCopy", () => {
     const en = getAppleAssistWindowCopy("en").applyButton;
     const ja = getAppleAssistWindowCopy("ja").applyButton;
     const kana = getAppleAssistWindowCopy("kana").applyButton;
+    expect(new Set([en, ja, kana]).size).toBe(3);
+  });
+
+  it("uses different refreshDocumentButton labels per language (no en bleed-through)", () => {
+    const en = getAppleAssistWindowCopy("en").refreshDocumentButton;
+    const ja = getAppleAssistWindowCopy("ja").refreshDocumentButton;
+    const kana = getAppleAssistWindowCopy("kana").refreshDocumentButton;
+    expect(new Set([en, ja, kana]).size).toBe(3);
+    // The English copy must not accidentally leak into the
+    // Japanese / kana refresh button label.
+    expect(ja).not.toMatch(/^Refresh document$/);
+    expect(kana).not.toMatch(/^Refresh document$/);
+  });
+
+  it("uses different targetReadFailed messages per language (no en bleed-through)", () => {
+    const en = getAppleAssistWindowCopy("en").targetReadFailed;
+    const ja = getAppleAssistWindowCopy("ja").targetReadFailed;
+    const kana = getAppleAssistWindowCopy("kana").targetReadFailed;
     expect(new Set([en, ja, kana]).size).toBe(3);
   });
 

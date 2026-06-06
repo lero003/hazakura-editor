@@ -220,6 +220,9 @@ export function AppleAssistWindowApp() {
       })
       .catch((err) => {
         console.warn("Failed to read initial apple assist target", err);
+        if (!disposed) {
+          setError(copy.targetReadFailed);
+        }
       });
 
     void listen<AppleAssistTargetSnapshot | null>(
@@ -240,6 +243,9 @@ export function AppleAssistWindowApp() {
       })
       .catch((err) => {
         console.warn("Failed to listen for target changes", err);
+        if (!disposed) {
+          setError(copy.targetReadFailed);
+        }
       });
 
     return () => {
@@ -304,6 +310,26 @@ export function AppleAssistWindowApp() {
     setError(null);
   }, []);
 
+  // Manual re-pull of the active target from the main window.
+  // The cached snapshot may have gone stale (cursor moved,
+  // tab closed, focus left the editor). The user-facing
+  // affordance for this lives in the header as the
+  // "Refresh document" button so the recovery is obvious
+  // without reopening the window.
+  const refreshTarget = useCallback(async () => {
+    if (!isTauriEventAvailable()) {
+      return;
+    }
+    try {
+      const next = await getMainAppleAssistTarget();
+      setTarget(next);
+      setError(null);
+    } catch (err) {
+      console.warn("Failed to refresh apple assist target", err);
+      setError(copy.targetReadFailed);
+    }
+  }, [copy]);
+
   return (
     <div className="apple-assist-window-shell" data-testid="apple-assist-shell">
       <header className="apple-assist-window-header">
@@ -325,6 +351,16 @@ export function AppleAssistWindowApp() {
         <div className="apple-assist-window-target" data-testid="apple-assist-target">
           {renderTargetSummary(target, copy)}
         </div>
+        <button
+          type="button"
+          className="apple-assist-window-refresh"
+          onClick={() => void refreshTarget()}
+          disabled={busy || !isTauriEventAvailable()}
+          aria-label={copy.refreshDocumentButton}
+          data-testid="apple-assist-refresh"
+        >
+          {copy.refreshDocumentButton}
+        </button>
       </header>
 
       <section className="apple-assist-window-presets" aria-label={copy.presetsLabel}>
@@ -415,10 +451,12 @@ export type AppleAssistWindowCopy = {
   presets: AppleAssistWindowPreset[];
   presetsLabel: string;
   readyStatus: string;
+  refreshDocumentButton: string;
   roughRequestLabel: string;
   selectionTooLongError: string;
   sendingRequest: string;
   subtitle: string;
+  targetReadFailed: string;
   targetStaleError: string;
   tauriUnavailableError: string;
   targetBlock: (chars: number) => string;
@@ -572,6 +610,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       presetsLabel: "ざっくり おねがひの ぷりせっと",
       readyStatus:
         "じゅんび できました。めいん えでぃた で たいしょう を えらび、おねがひ を かいて つかう を クリック。かへり は ほぞんせず ばっふぁ に はいります。",
+      refreshDocumentButton: "ぶんしょ を さいしゅとく",
       roughRequestLabel: "おねがひ",
       selectionTooLongError:
         "えらんだ ところが ながすぎ ます（さいだい 4000 もじ）。あっぷる ふぁうんでーしょん もでるず の こんできすと まど に おさまらないため、もう すこし ちいさく えらんで ください。",
@@ -579,6 +618,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       subtitle: "けいりょう な おんではばいす ぶんしょう ほじょ",
       targetStaleError:
         "たいしょう が ふるく なって います。あっぷる あしす と うぃんどう を ひらきなおすか、めいん えでぃた で たいしょう を えらびなおして ください。",
+      targetReadFailed:
+        "たいしょう の さいしゅとく に しっぱい しました。めいん えでぃた の じょうたい を かくにん して から、もう いちど ぶんしょ を さいしゅとく して ください。",
       tauriUnavailableError:
         "あっぷる ろーかる あしす と うぃんどう が Tauri runtime の そとで うごいています。めいん えでぃた に とどけません。.app ばんどる から あぷり を さいきどうして ください。",
       targetBlock: (chars) => `こーど ぶろっく (${chars} もじ)`,
@@ -639,6 +680,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       presetsLabel: "ざっくり依頼のプリセット",
       readyStatus:
         "準備完了。メインエディタで対象を選び、依頼文を入力して「適用」をクリック。変更はメインエディタの未保存バッファに反映されます。",
+      refreshDocumentButton: "文書を再取得",
       roughRequestLabel: "依頼文",
       selectionTooLongError:
         "選択範囲が大きすぎます（最大 4000 文字）。Apple Foundation Models のコンテキスト窓に収まらないため、もう少し小さく選択してください。",
@@ -646,6 +688,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       subtitle: "軽量なオンデバイス文章補助",
       targetStaleError:
         "対象が古くなっています。Apple Assist ウィンドウを開き直すか、メインエディタで対象を選び直してください。",
+      targetReadFailed:
+        "対象の再取得に失敗しました。メインエディタの状態を確認してから、もう一度文書を再取得してください。",
       tauriUnavailableError:
         "Apple Local Assist ウィンドウが Tauri runtime の外で動作しており、メインエディタに到達できません。.app バンドルからアプリを再起動し、ウィンドウを Tauri 子プロセスとして起動してください。",
       targetBlock: (chars) => `コードブロック (${chars} 文字)`,
@@ -709,6 +753,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     presetsLabel: "Rough request presets",
     readyStatus:
       "Ready. Pick a target in the main editor, type a rough request, and click Apply. The change lands in the main editor's unsaved buffer.",
+    refreshDocumentButton: "Refresh document",
     roughRequestLabel: "Rough request",
     selectionTooLongError:
       "Selection is too long (max 4000 characters). Apple Foundation Models has a bounded context window; pick a smaller selection, or split the change into multiple requests.",
@@ -716,6 +761,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     subtitle: "Lightweight on-device writing help",
     targetStaleError:
       "The active target has changed since the request was prepared. Re-open the Apple Assist window, or pick a new target in the main editor.",
+    targetReadFailed:
+      "Could not re-read the active target from the main editor. Verify the main editor state, then click Refresh document again.",
     tauriUnavailableError:
       "Apple Local Assist window is running outside the Tauri runtime; it cannot reach the main editor. Restart the app from the .app bundle so the window launches as a Tauri child process.",
     targetBlock: (chars) => `Code block (${chars} chars)`,
