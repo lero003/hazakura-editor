@@ -3,7 +3,7 @@
 Status: Active
 Scope: Writing surface for v0.11 L Mode polish (originated in v0.9 alpha)
 Authority: Medium
-Last reviewed: 2026-06-05
+Last reviewed: 2026-06-06
 
 ## Summary
 
@@ -26,7 +26,9 @@ Alternative English label: **L Mode**.
 - Agent Window: handle external AI at a clear distance.
 - えるモード: a WYSIWYG-tier writing surface whose source model is Markdown.
 
-えるモード is not an AI generation mode and not an automatic editing mode. AI, Diff, and Review Desk can be used by returning to the normal surfaces when needed.
+えるモード should become a first-class writing surface, not just an optional visual mode. Normal mode remains the safety foundation, but routine writing should not require leaving えるモード for every small action.
+
+えるモード is not an AI generation mode and not an automatic editing mode. AI, Diff, and Review Desk can be used through explicit, lightweight review surfaces when needed.
 
 ## Core Principle
 
@@ -55,6 +57,14 @@ When entering えるモード, the screen should become document-centered:
 - suppress Markdown markers where safe
 - reveal the Markdown source around the active cursor, selection, or hover
 - keep a quiet exit route back to normal mode
+
+The core interaction should stay loose and low-pressure:
+
+- show unsaved state only as a subtle signal, not as a dominant save button or warning
+- keep file switching available through the existing mode / tab behavior
+- keep save behavior available without making save the main visible control
+- show AI edit differences as a compact, closable review sheet rather than forcing the full Review Desk surface
+- keep the file tree hidden by default, with a translucent top-left icon that opens a temporary drawer or overlay when needed
 
 The intended feel is not "editing code that happens to be prose." It is "looking at a work or note, then continuing it."
 
@@ -97,6 +107,22 @@ Markers must become available around the active line, active block, selection, o
 - Provide a keyboard shortcut for toggling.
 - Keep a quiet visible exit affordance.
 - Ensure display problems cannot mutate the Markdown file.
+
+### 5. Lightweight L Mode Chrome
+
+- Use a faint unsaved indicator to imply "not saved yet" without interrupting writing.
+- Avoid a prominent Save button unless a failure, conflict, or close request requires explicit action.
+- Use a translucent file-tree icon near the top-left edge as the default workspace affordance.
+- Open the file tree as a temporary drawer or overlay that feels native to えるモード and can be dismissed quickly.
+- When a file is chosen from the temporary tree, return focus to the document.
+- Keep the tree bounded to the selected workspace and avoid turning it into a full file manager.
+
+### 6. Compact AI Change Review
+
+- When Apple Local Assist changes the buffer from えるモード, show a compact diff / discard review surface inside or adjacent to えるモード.
+- The review surface should be closable so the user can return to writing immediately.
+- The surface should make the AI-originated change explicit, unsaved, reviewable, and discardable.
+- Do not promote this into the persistent Manual Review Desk entry point.
 
 ## Non-Scope
 
