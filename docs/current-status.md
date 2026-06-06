@@ -82,7 +82,7 @@ Current limits: live generation depends on macOS 26+ Apple Foundation Models ava
 4. Keep Apple Local Assist quality polish secondary until the App Store lane shape is proven.
 5. Decide whether `minimumSystemVersion` should remain editor-wide `11.0` or move to a split / release-lane policy for Apple Local Assist builds.
 6. Review App Store sandbox, signing, hardened runtime, and notarization behavior for the bundled helper before any distribution-lane change.
-7. Keep the release plan to two binary lanes by default: App Store build (`Safe Editor` + `Apple Local Assist`) and Developer / GitHub build (same base plus `Agent Workbench`). `npm run build:macos-lanes` now leaves the App Store preview at `hazakura editor.app` and copies the Developer / GitHub lane to `hazakura editor Dev.app`; the warning-expected GitHub DMG preview packages the Dev bundle. Treat an official website as a pointer to those lanes, not a third build.
+7. Keep the release plan to two binary lanes by default: App Store build (`Safe Editor` + `Apple Local Assist`) and Developer / GitHub build (same base plus `Agent Workbench`). `npm run build:macos-lanes` now leaves the App Store preview at `hazakura editor.app`, re-identifies the Developer / GitHub lane as `hazakura editor Dev.app` with bundle identifier `lab.hazakura.note.dev`, and re-signs it; the warning-expected GitHub DMG preview packages the Dev bundle. Treat an official website as a pointer to those lanes, not a third build.
 
 ## Next Safe Actions
 
