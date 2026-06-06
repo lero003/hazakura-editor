@@ -288,15 +288,29 @@ function readTargetTextForGeneration(
 //
 // This helper instead centers the context on the target:
 //   - pre slice: up to `preChars` characters before
-//     `start`, snapped forward to the start of the line
-//     containing `start` (so the pre slice is a complete
-//     prefix of the target's line, not a mid-line cut).
+//     `start`, with the slice's END boundary (which would
+//     otherwise be `start`) shrunk to the start of the
+//     line containing `start`. This keeps the model from
+//     seeing a half-cut Markdown block on the pre side
+//     (a code fence without its closing fence, a heading
+//     without its body) WITHOUT erasing the lines between
+//     the naive `preStart` and the target's line — those
+//     are exactly the lines the model needs to see for a
+//     context-aware rewrite.
 //   - target: the user's selected text (returned as part
 //     of the slice, not the caller's responsibility here).
 //   - post slice: up to `postChars` characters after
-//     `end`, snapped backward to the end of the line
-//     containing `end` (so the post slice is a complete
-//     suffix of the target's line).
+//     `end`, with the slice's START boundary (which would
+//     otherwise be `end`) extended to the end of the line
+//     containing `end`. Same rationale: the lines between
+//     the target's line and the naive `postEnd` must stay
+//     in the context.
+//
+// An earlier version of this helper instead snapped the
+// pre START forward to the target's line start and the
+// post END back to the target's line end, which erased
+// the lines the model actually needs. The current shape
+// preserves them.
 //
 // The total length is capped at `maxChars`. When the
 // snapped slice would exceed the cap, the helper shrinks
@@ -324,43 +338,67 @@ export function buildSurroundingDocumentContext(
   let preStart = Math.max(0, start - preChars);
   let postEnd = Math.min(buffer.length, end + postChars);
 
-  // Snap the pre boundary FORWARD to the start of the line
-  // containing `start`. This keeps the model from seeing
-  // a half-cut Markdown block on the pre side (a code
-  // fence delimiter without its closing fence, a heading
-  // without its body, etc.). The snap only moves the
-  // boundary closer to the target, so it can only
-  // shorten — never widen — the pre slice.
+  // Snap the pre slice's END boundary (which would
+  // otherwise be `start`) forward to the start of the
+  // line containing `start`. The pre slice's START stays
+  // at the naive `preStart`, so any heading or paragraph
+  // that fits inside the pre window is preserved. Only
+  // the end moves to a line boundary, so the model never
+  // sees a half-cut line.
+  //
+  // The snap only fires when the target's line start is
+  // still inside the pre window — when the preChars
+  // window is short enough that `startLineStart` is
+  // before `preStart` (e.g. a target whose line starts
+  // before the naive preChars window), the snap would
+  // push `preEnd` past `preStart` and produce a negative
+  // pre slice. Skipping the snap in that case keeps the
+  // pre slice non-empty and respects the caller's
+  // preChars budget.
   const startLineStart = buffer.lastIndexOf("\n", start - 1) + 1;
-  if (startLineStart > preStart) {
-    preStart = startLineStart;
+  let preEnd = start;
+  if (preEnd > startLineStart && startLineStart >= preStart) {
+    preEnd = startLineStart;
   }
 
-  // Snap the post boundary BACKWARD to the end of the
-  // line containing `end`. Same rationale, opposite
-  // direction. The snap only shortens the post slice.
+  // Snap the post slice's START boundary (which would
+  // otherwise be `end`) forward to the end of the line
+  // containing `end`. The post slice's END stays at the
+  // naive `postEnd`, so any paragraph that fits inside
+  // the post window is preserved. Only the start moves
+  // to a line boundary, mirroring the pre-side snap.
+  //
+  // The snap only fires when the line end actually fits
+  // inside the post window — when the line end is past
+  // the naive `postEnd` (e.g. the file has no trailing
+  // newline and the postChars window is short), the
+  // snap would push `postStart` past `postEnd` and
+  // produce a negative post slice. Skipping the snap in
+  // that case keeps the post slice non-empty and
+  // respects the caller's postChars budget.
   const endLineEnd = (() => {
     const idx = buffer.indexOf("\n", end);
-    return idx === -1 ? buffer.length : idx;
+    return idx === -1 ? buffer.length : idx + 1;
   })();
-  if (endLineEnd < postEnd) {
-    postEnd = endLineEnd;
+  let postStart = end;
+  if (postStart < endLineEnd && endLineEnd <= postEnd) {
+    postStart = endLineEnd;
   }
 
   // Cap the total length. The pre slice shrinks first
-  // (it is closer to the snap-forward boundary and the
-  // target itself is sacred), then the post slice.
+  // (it is closer to the snap boundary and the target
+  // itself is sacred), then the post slice.
+  const preLength = preEnd - preStart;
+  const postLength = postEnd - postStart;
   const targetLength = end - start;
-  const total = start - preStart + targetLength + (postEnd - end);
+  const total = preLength + targetLength + postLength;
   if (total > maxChars) {
     const over = total - maxChars;
-    const preAvailable = start - preStart;
-    const preShrink = Math.min(preAvailable, over);
+    const preShrink = Math.min(preLength, over);
     preStart += preShrink;
     const remaining = over - preShrink;
     if (remaining > 0) {
-      const postAvailable = postEnd - end;
-      const postShrink = Math.min(postAvailable, remaining);
+      const postShrink = Math.min(postLength, remaining);
       postEnd -= postShrink;
     }
   }

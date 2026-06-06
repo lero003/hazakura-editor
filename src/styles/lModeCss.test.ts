@@ -99,6 +99,25 @@ describe("lMode.css", () => {
     );
   });
 
+  it("lets the L Mode change review sheet shrink below 720px without horizontal scrolling", () => {
+    // The shared workspace `.diff-split-row` carries
+    // `min-width: 720px` so a normal-mode side-by-side
+    // comparison has a comfortable floor. That same floor
+    // turns into a horizontal scrollbar inside the L Mode
+    // floating review sheet as soon as the sheet's content
+    // area drops below 720px, which happens on most windows
+    // once the 36px sheet padding and chrome are subtracted.
+    // The L Mode sheet must override that floor so the diff
+    // cells — which already wrap on their own thanks to
+    // `white-space: pre-wrap; overflow-wrap: anywhere;` —
+    // are allowed to shrink with the sheet.
+    const reviewRowRule =
+      lModeCss.match(
+        /:root\[data-l-mode="on"\] \.l-mode-change-review-diff \.diff-split-row\s*{(?<body>[^}]*)}/s,
+      )?.groups?.body ?? "";
+    expect(reviewRowRule).toMatch(/min-width:\s*0/);
+  });
+
   it("moves the scroll position HUD to the right side at mid-height in L Mode", () => {
     const hudRule =
       lModeCss.match(

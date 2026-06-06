@@ -704,6 +704,24 @@
   line-height: 1.42;
 }
 
+/* Override the screen-side `min-width: 720px` on
+   `.diff-split-row` for the L Mode floating review sheet.
+   The shared workspace diff intentionally keeps that
+   floor so the side-by-side comparison has a comfortable
+   minimum width on a normal-mode compare surface. The
+   L Mode sheet is a narrower floating window (760px on
+   most screens, 36px padding) and Apple Local Assist
+   candidates are often single long lines, so a 720px
+   floor forces a horizontal scrollbar as soon as the
+   sheet's content area drops below 720px. The cells
+   already carry `white-space: pre-wrap; overflow-wrap:
+   anywhere;` from the screen-side diff rules, so
+   individual long lines wrap inside the cell — they
+   just need the grid container to be allowed to shrink. */
+:root[data-l-mode="on"] .l-mode-change-review-diff .diff-split-row {
+  min-width: 0;
+}
+
 :root[data-l-mode="on"] .l-mode-change-review-diff .diff-row-header {
   font-size: 9.5px;
   letter-spacing: 0;
