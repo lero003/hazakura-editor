@@ -218,6 +218,9 @@ export function SettingsPreferencesPane({
             <option value="ja">日本語</option>
             <option value="kana">かなふみ</option>
           </select>
+          <span className="field-hint" data-testid="menu-language-hint">
+            {copy.menuLanguageHint}
+          </span>
         </label>
         <div className="preference-feature">
           <p className="preference-feature-lede">
