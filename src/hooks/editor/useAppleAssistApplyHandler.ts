@@ -20,6 +20,20 @@ import {
   type CompareViewState,
 } from "../../types";
 
+// Per-request window for the surrounding document context
+// that Apple Local Assist sees. `preChars` is taken before
+// `start`, `postChars` after `end`, both snap to a line
+// boundary inside `buildSurroundingDocumentContext` to keep
+// the model from seeing a half-cut Markdown block. The
+// total length is capped at `APPLE_ASSIST_MAX_CONTEXT_CHARS`
+// (8000 chars). Together they mean the model sees the
+// target plus the most relevant adjacent text instead of
+// a fixed 8000-char slice of the document head, which was
+// the previous behavior and produced off-target rewrites
+// for selections in the second half of a document.
+export const APPLE_ASSIST_CONTEXT_PRE_CHARS = 2000;
+export const APPLE_ASSIST_CONTEXT_POST_CHARS = 2000;
+
 // v0.12+ Apple Local Assist Writing Companion (slice 4).
 // `useAppleAssistApplyHandler` is the main window's
 // listener for the `APPLY_AI_EDIT_TRANSACTION_EVENT` that
@@ -112,13 +126,20 @@ export function useAppleAssistApplyHandler({
       return;
     }
 
-    const targetCheck = readTargetTextForGeneration(payload.target, tab);
+    const target = payload.target;
+    const targetCheck = readTargetTextForGeneration(target, tab);
     if (!targetCheck.ok) {
       const message = `Apple Local Assist apply failed: ${targetCheck.error}`;
       setStatusRef.current?.(message);
       void emitAppleAssistApplyStatus("failed", message, payload.request);
       return;
     }
+    // After the `ok: true` check, `targetCheck.target` is
+    // the validated, non-null snapshot. Re-bind it under a
+    // narrower name so the rest of the function can use
+    // `target.start` / `target.end` without further null
+    // checks.
+    const targetSnapshot = targetCheck.target;
 
     try {
       const startMessage = "Apple Local Assist is generating a change...";
@@ -127,7 +148,14 @@ export function useAppleAssistApplyHandler({
       const response = await generateAppleAssistCandidate({
         operation: inferAppleAssistOperation(payload.request),
         selectedText: targetCheck.before,
-        documentContext: tab.contents.slice(0, APPLE_ASSIST_MAX_CONTEXT_CHARS),
+        documentContext: buildSurroundingDocumentContext(
+          tab.contents,
+          targetSnapshot.start,
+          targetSnapshot.end,
+          APPLE_ASSIST_CONTEXT_PRE_CHARS,
+          APPLE_ASSIST_CONTEXT_POST_CHARS,
+          APPLE_ASSIST_MAX_CONTEXT_CHARS,
+        ),
         instruction: payload.request,
       });
 
@@ -220,7 +248,7 @@ function inferAppleAssistOperation(request: string): AppleAssistOperation {
 function readTargetTextForGeneration(
   target: AppleAssistTargetSnapshot | null,
   tab: ActiveTab,
-): { ok: true; before: string } | { ok: false; error: string } {
+): { ok: true; target: AppleAssistTargetSnapshot; before: string } | { ok: false; error: string } {
   if (!target) {
     return {
       ok: false,
@@ -246,5 +274,96 @@ function readTargetTextForGeneration(
       error: "Apple Local Assist target text no longer matches the active buffer.",
     };
   }
-  return { ok: true, before };
+  return { ok: true, target, before };
+}
+
+// Build the bounded document context that Apple Local
+// Assist sees for one request. The earlier behavior took
+// the first `maxChars` of the document, so a selection in
+// the second half of a long document received a context
+// that did not include the section the user was actually
+// editing — the model would then produce off-target
+// rewrites because the visible "document" was a
+// disconnected prefix.
+//
+// This helper instead centers the context on the target:
+//   - pre slice: up to `preChars` characters before
+//     `start`, snapped forward to the start of the line
+//     containing `start` (so the pre slice is a complete
+//     prefix of the target's line, not a mid-line cut).
+//   - target: the user's selected text (returned as part
+//     of the slice, not the caller's responsibility here).
+//   - post slice: up to `postChars` characters after
+//     `end`, snapped backward to the end of the line
+//     containing `end` (so the post slice is a complete
+//     suffix of the target's line).
+//
+// The total length is capped at `maxChars`. When the
+// snapped slice would exceed the cap, the helper shrinks
+// the pre slice first, then the post slice. The target
+// itself is never shrunk — the model always sees the
+// full user selection.
+//
+// Snaps only move the boundaries CLOSER to the target,
+// never further away, so the helper never returns more
+// characters than the caller asked for in either
+// direction. The cap is the upper bound; preChars /
+// postChars are the per-direction upper bounds.
+export function buildSurroundingDocumentContext(
+  buffer: string,
+  start: number,
+  end: number,
+  preChars: number,
+  postChars: number,
+  maxChars: number,
+): string {
+  // Naive pre / post slices. Clamp to the document bounds
+  // so the helper is safe against out-of-range target
+  // ranges (the caller has already validated, but defense
+  // in depth is cheap here).
+  let preStart = Math.max(0, start - preChars);
+  let postEnd = Math.min(buffer.length, end + postChars);
+
+  // Snap the pre boundary FORWARD to the start of the line
+  // containing `start`. This keeps the model from seeing
+  // a half-cut Markdown block on the pre side (a code
+  // fence delimiter without its closing fence, a heading
+  // without its body, etc.). The snap only moves the
+  // boundary closer to the target, so it can only
+  // shorten — never widen — the pre slice.
+  const startLineStart = buffer.lastIndexOf("\n", start - 1) + 1;
+  if (startLineStart > preStart) {
+    preStart = startLineStart;
+  }
+
+  // Snap the post boundary BACKWARD to the end of the
+  // line containing `end`. Same rationale, opposite
+  // direction. The snap only shortens the post slice.
+  const endLineEnd = (() => {
+    const idx = buffer.indexOf("\n", end);
+    return idx === -1 ? buffer.length : idx;
+  })();
+  if (endLineEnd < postEnd) {
+    postEnd = endLineEnd;
+  }
+
+  // Cap the total length. The pre slice shrinks first
+  // (it is closer to the snap-forward boundary and the
+  // target itself is sacred), then the post slice.
+  const targetLength = end - start;
+  const total = start - preStart + targetLength + (postEnd - end);
+  if (total > maxChars) {
+    const over = total - maxChars;
+    const preAvailable = start - preStart;
+    const preShrink = Math.min(preAvailable, over);
+    preStart += preShrink;
+    const remaining = over - preShrink;
+    if (remaining > 0) {
+      const postAvailable = postEnd - end;
+      const postShrink = Math.min(postAvailable, remaining);
+      postEnd -= postShrink;
+    }
+  }
+
+  return buffer.slice(preStart, postEnd);
 }
