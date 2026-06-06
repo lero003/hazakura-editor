@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-06-07 (post-v0.14.0 source / local-app tag)
+Last reviewed: 2026-06-07 (v0.15 User-Test Quality Polish framing)
 
 ## Purpose
 
@@ -17,19 +17,21 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: post-v0.14.0 Apple Local Assist quality and release-prep continuation.
+Phase: v0.15 User-Test Quality Polish.
 
 Prefer work in this order:
 
 1. Stale or failing quality gates.
-2. Latest-HEAD built-app smoke gaps for Apple Local Assist, L Mode, auto-backup restore, export, and Safe Editor boundaries.
-3. Apple Local Assist quality, unavailable-state, unsupported-language, and App Store / developer-build distribution planning drift.
-4. Safety-boundary regression checks.
-5. Post-release docs/version drift.
-6. Markdown-first editor quality or daily-use polish.
-7. One reproduced bug in implemented L Mode WYSIWYG behavior, especially caret, IME, hidden markers, lists, dividers, links, tables, visual overlap, or a measured performance baseline.
-8. Documentation drift.
-9. Verified no-op after inspection when no useful small slice is safe.
+2. Latest-HEAD built-app smoke gaps for Apple Local Assist, L Mode, auto-backup restore, export, theme/settings, and Safe Editor boundaries.
+3. One concrete user-test friction point from Apple Local Assist, L Mode, theme, settings, status / error copy, export, or file/recovery workflows.
+4. Apple Local Assist rough-request quality, unavailable-state, unsupported-language, stale-target recovery, and App Store / developer-build distribution planning drift.
+5. Theme/settings polish with persistence, native menu sync, window-theme sync, and restart-required copy checks.
+6. Safety-boundary regression checks.
+7. Post-release docs/version drift.
+8. One reproduced bug in implemented L Mode WYSIWYG behavior, especially caret, IME, hidden markers, lists, dividers, links, tables, visual overlap, or a measured performance baseline.
+9. Focused refactor only when it directly supports a verified user-facing polish fix; do not split a large file for architecture aesthetics alone.
+10. Documentation drift.
+11. Verified no-op after inspection when no useful small slice is safe.
 
 ## Start Every Run
 
@@ -38,7 +40,7 @@ Prefer work in this order:
 2. Run `git status --short --branch`.
 3. Treat existing uncommitted changes as user or previous-agent work. Do not revert them.
 4. Use Hazakura Habitat before substantial implementation, automation changes, dependency or lockfile work, release work, Git/GitHub mutation, or command-selection uncertainty.
-5. Choose exactly one coherent slice that can be verified in the same run.
+5. Choose exactly one coherent slice that can be verified in the same run. For v0.15, name the observed friction or evidence gap before editing.
 
 ## Product Boundaries
 
@@ -58,7 +60,7 @@ Do not implement or imply:
 - Dependency or lockfile changes without explicit approval.
 - Apple Local Assist distribution-lane changes (`minimumSystemVersion`, App Store/TestFlight settings, signing, entitlements, sandbox assumptions, notarization, helper packaging shape, or network fallback) without explicit user approval. The live local helper is already on `main`; future work should harden quality, unavailable states, and distribution evidence without broadening the trust boundary.
 
-Keep Agent Workbench explicit, allowlisted, one-session, no-restore, and no-auto-apply. Keep Review Desk low-prominence and manual unless the user explicitly resumes feature work.
+Keep Agent Workbench explicit, allowlisted, one-session, no-restore, and no-auto-apply. Keep Review Desk low-prominence and manual unless the user explicitly resumes feature work. Refactoring is acceptable when it is the smallest way to fix or verify a concrete polish issue, but do not turn the quality lane into a broad architecture rewrite.
 
 ## Inspection Rules
 

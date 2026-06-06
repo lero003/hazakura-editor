@@ -24,7 +24,7 @@ Last reviewed: 2026-06-07
 - v0.13.0 local source / local-app gates passed on 2026-06-06. See `docs/releases/0.13.0-source-tag.release.md` for the verification packet.
 - v0.14.0 is the **L Mode Stability Ramp / Apple Local Assist Harness Polish** source / local-app tag: it lands the first five source-preserving L Mode quality slices from the 60-to-80 review path and a small Apple Local Assist harness pass that centers request context around the active target, fixes context-boundary snapping, removes a horizontal-scroll trap in the L Mode review sheet, and localizes common Assist apply-error states.
 - v0.14.0 local source / local-app gates passed on 2026-06-07. See `docs/releases/0.14.0-source-tag.release.md` for the verification packet.
-- Post-v0.14 product polish can let L Mode rest unless a clear regression or performance baseline demands follow-up. The next improvement lane should focus on Apple Local Assist real writing behavior, unavailable / disabled states, and release-prep continuity without broadening the Safe Editor trust boundary.
+- Post-v0.14 product polish should move into a v0.15 **User-Test Quality Polish** lane: fix the small daily-use issues found by actually using the app, including Apple Local Assist, L Mode, theme, settings, status / error copy, and release-prep continuity. Apple Local Assist remains important, but it is not the only v0.15 axis.
 - Older public tags remain immutable.
 
 ## Current Product Boundary
@@ -101,17 +101,25 @@ The product direction remains an external Apple Local Assist Writing Companion, 
 
 Current limits: live generation depends on macOS 26+ Apple Foundation Models availability, local Apple Intelligence state, and a Foundation Models-supported current app language / locale (`SystemLanguageModel.default.supportsLocale()`). Output quality may vary, and this alpha feature may change or be removed. Apple Local Assist is not suitable for code review, multi-file understanding, long-document restructuring, autonomous agent work, external AI-agent replacement, local LLM runtime replacement, or advanced reasoning. There is no network fallback, no App Store/TestFlight distribution change, no background rewriting, no auto-save, no tool calling, and no workspace-wide indexing. `minimumSystemVersion` remains at the v0.11 value (`11.0`) so older Macs can still run the editor; Apple Local Assist reports unavailable/unsupported when the helper, model, or current language / locale is not usable.
 
-## Post-v0.14 Improvement Lane
+## v0.15 User-Test Quality Polish Lane
 
-1. Let L Mode rest unless a clear regression, built-app smoke failure, or small performance baseline shows a need. The first five v0.14 slices have landed and are documented in `docs/l-mode-plan.md`.
-2. For Apple Local Assist, focus on actual lightweight Japanese writing examples, prompt / response quality, unavailable / disabled / unsupported-language states, and the reviewable AI edit transaction path.
-3. For release prep continuity, keep App Store / Developer lane proof separate from the warning-expected DMG lane and do not claim App Store, TestFlight, Developer ID signing, notarization, updater, or installer readiness.
-4. Keep Markdown source canonical; do not introduce Preview DOM editing, `contenteditable`, HTML as the saved model, hidden save-time rewriting, network fallback, tool calling, workspace-wide indexing, or auto-apply.
+v0.15 should be treated as a post-user-test polish pass, not as an Apple Local Assist-only milestone. The work should come from concrete app use, visible friction, or small verification gaps. Good candidates include:
+
+1. Apple Local Assist rough-request quality, real Japanese writing examples, unavailable / disabled / unsupported-language states, stale-target recovery, and reviewable AI edit transactions.
+2. Theme and settings polish, including readability, hover / motion feel, Preferences grouping, restart-required wording, and Assist Surface copy.
+3. L Mode follow-up only when there is a reproduced regression, built-app smoke gap, or measured performance question. The first five v0.14 L Mode slices have landed; do not reopen a broad WYSIWYG refactor without evidence.
+4. Small user-facing error / status improvements where the app currently fails silently or only logs to the console.
+5. Release-prep continuity that keeps App Store / Developer lane proof separate from the warning-expected DMG lane.
+
+Refactoring is allowed when it is the smallest honest way to fix or verify a user-facing problem, but v0.15 should not become a broad architecture cleanup. For large files such as `useAppShellController`, prefer one extracted responsibility with tests over a many-hook rewrite.
+
+Keep Markdown source canonical; do not introduce Preview DOM editing, `contenteditable`, HTML as the saved model, hidden save-time rewriting, network fallback, tool calling, workspace-wide indexing, or auto-apply.
 
 ## Next Safe Actions
 
-1. If continuing quality work, use `docs/development-automation.md` and keep to one small verified slice.
+1. If continuing v0.15 quality work, use `docs/development-automation.md` and keep to one small verified slice from actual app-use friction.
 2. If improving Apple Local Assist after v0.14.0, use `docs/assist-surface-strategy.md`, `docs/apple-local-assist-distribution-plan.md`, and `docs/apple-local-assist-writing-companion-plan.md`; keep Apple Local Assist as an external Writing Companion and require AI edit transactions for direct buffer edits.
-3. If improving L Mode, use `docs/l-mode-plan.md` and prioritize only a measured follow-up: performance baseline, built-app smoke, or a reproduced regression around IME/caret/list/link/table behavior.
-4. If preparing a future release, use `docs/source-release-checklist.md`, `docs/dmg-preview-checklist.md`, and the version-specific release note; do not tag or publish without explicit approval.
-5. If changing product behavior, use `docs/product-brief.md`, `docs/security-boundary.md`, and the touched boundary doc before implementation.
+3. If improving theme / settings, verify persistence, native menu sync, readability, and restart-required copy before debating purely cosmetic variants.
+4. If improving L Mode, use `docs/l-mode-plan.md` and prioritize only a measured follow-up: performance baseline, built-app smoke, or a reproduced regression around IME/caret/list/link/table behavior.
+5. If preparing a future release, use `docs/source-release-checklist.md`, `docs/dmg-preview-checklist.md`, and the version-specific release note; do not tag or publish without explicit approval.
+6. If changing product behavior, use `docs/product-brief.md`, `docs/security-boundary.md`, and the touched boundary doc before implementation.

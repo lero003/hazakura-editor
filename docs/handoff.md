@@ -8,6 +8,7 @@
 - Latest published release body: `docs/releases/0.11.0-warning-expected-dmg-preview.release.md`.
 - Latest source / local-app tag notes: `docs/releases/0.14.0-source-tag.release.md`.
 - Current status source: `docs/current-status.md`.
+- Active lane: v0.15 User-Test Quality Polish.
 
 ## Recent Changes
 
@@ -42,7 +43,8 @@
 - The third v0.14 L Mode slice (visual-overlap fixture) landed: `src/features/editor/lMode/visualOverlapFixtures.test.ts` pins the content `max-width` formula, the horizontal `padding` formula, the chip `left: -2.4em` and `width: 2em` formulas, and a numerical readout of the chip-to-padding headroom at 375 / 480 / 720 / 1024 px. The current headroom is ~10.5px on narrow widths and ~21.7px on wide widths.
 - The fourth v0.14 L Mode slice (task widget accessibility) landed: the task widget now carries `tabindex="0"` and toggles `[ ]` ↔ `[x]` on Enter / Space from a `keydown` handler, with a `:focus-visible` accent ring in the stylesheet. Unrelated keys and non-task targets no-op.
 - The fifth v0.14 L Mode slice (print / export boundary, screen print only) landed: `src/styles/lMode.css` ends with a single `@media print` block that hides L Mode floating chrome, reveals the previously hidden Markdown markers, removes the dim and the margin chip, drops the centered 720px column, and swaps the warm cream paper-feel surface for plain white. The override is gated on `:root[data-l-mode="on"]` so normal-mode print behavior is untouched. Scope is explicit: the canonical Print to PDF / Export HTML flow goes through `useDocumentExport`'s standalone HTML pipeline, not this block, and `Decoration.replace` widgets (Image / HorizontalRule / TaskMarker / TableDelimiter) cannot be CSS-reverted to their source text.
-- `v0.14.0` release preparation aligns npm, Tauri, Cargo, and lockfile version surfaces; adds `docs/releases/0.14.0-source-tag.release.md`; keeps the latest downloadable DMG preview at `v0.11.0`; and frames the next lane as Apple Local Assist quality plus release-prep continuation.
+- `v0.14.0` release preparation aligns npm, Tauri, Cargo, and lockfile version surfaces; adds `docs/releases/0.14.0-source-tag.release.md`; keeps the latest downloadable DMG preview at `v0.11.0`; and frames the next lane as v0.15 User-Test Quality Polish.
+- v0.15 planning now treats Apple Local Assist as one important polish surface rather than the whole milestone. The lane should fix small issues found by using the app across Apple Local Assist, L Mode, theme, settings, status / error copy, and release-prep continuity. Refactors are allowed when they are the smallest way to fix or verify a concrete polish problem, but broad architecture cleanup is out of scope.
 
 ## Decisions
 
@@ -93,13 +95,15 @@
 ## Next Actions
 
 - Before any future publication decision, re-check the latest local gates if code changes again; otherwise use the current release note as the evidence packet.
-- For post-v0.14 assist work, start from `docs/apple-local-assist-writing-companion-plan.md`. Keep Apple Local Assist detachable, prioritize real lightweight writing examples / unavailable states / rough requests, and use AI edit transactions rather than hidden or irreversible applies.
+- For v0.15 work, start from `docs/current-status.md`, `docs/roadmap.md`, and `docs/development-automation.md`. Pick one user-test friction point, verify it, and keep the patch small.
+- For Apple Local Assist work inside v0.15, start from `docs/apple-local-assist-writing-companion-plan.md`. Keep Apple Local Assist detachable, prioritize real lightweight writing examples / unavailable states / rough requests, and use AI edit transactions rather than hidden or irreversible applies.
+- For theme/settings polish inside v0.15, verify persistence, native menu/window theme synchronization, readability, and restart-required copy before spending time on purely cosmetic variants.
 - For Apple Local Assist or App Store distribution planning, start from `docs/apple-local-assist-distribution-plan.md` and keep App Store build decisions separate from the existing developer / warning-expected DMG preview lane.
 - For L Mode follow-up after v0.14, start from `docs/l-mode-plan.md` only when there is a reproduced regression, a built-app smoke gap, or performance-baseline evidence. Apple Developer enrollment is pending, so keep App Store upload / TestFlight work out of scope until credentials exist.
 - Next sandbox proof is Apple Developer / App Store signing and upload validation once account access exists. Do not move to XPC/app-bundled helper/in-process Swift bridge unless that validation fails. If more App Store lane hardening is needed before visual polish, prefer dependency / capability-profile pruning over Apple Local Assist UX expansion.
 - Distribution planning now defaults to two binary lanes only: App Store build (`Safe Editor` + `Apple Local Assist`, no Agent Workbench) and Developer / GitHub build (same base plus Agent Workbench). Treat an official website as routing/explanation, not a third official free build, unless the user explicitly reopens that cost.
 - `docs/roadmap.md` now has an internal App Store Publication Roadmap covering app brush-up, official distribution prep, store review prep, and review/post-review work.
-- For the next Apple Local Assist slices, focus on built-app smoke, rough-request prompt quality, unavailable/disabled state handling, and distribution hardening. Do not re-run the old gate-default-hidden sequence; `bundle.externalBin`, live Swift probe/generate, and Rust command-surface helper routing are already on `main`.
+- For Apple Local Assist slices, focus on built-app smoke, rough-request prompt quality, unavailable/disabled state handling, stale-target recovery, and distribution hardening. Do not re-run the old gate-default-hidden sequence; `bundle.externalBin`, live Swift probe/generate, and Rust command-surface helper routing are already on `main`.
 - If doing more docs cleanup, prefer tightening release-note structure, not resurrecting archived planning docs.
 - For L Mode polish, start from `docs/l-mode-plan.md` and prioritize source-preserving WYSIWYG accuracy before adding new surfaces: rendering fidelity, editing stability, IME/caret/list/link/table behavior, and visual-overlap regression checks.
 - The first five v0.14 L Mode slices (recompute-trigger cleanup, Typewriter / IME stability with rAF race guard, visual-overlap fixture, task widget accessibility, and print / export boundary as a screen-print fallback only) are now complete; before larger CSS splitting or decoration-cache work, the next safe move is a small performance baseline, then deeper refactors only if the baseline demands it.
@@ -108,6 +112,7 @@
 - L Mode floating change review sheet horizontal-scroll fix: the shared `workspace.css` `.diff-split-row` carries `min-width: 720px` for normal-mode side-by-side compare, but the L Mode sheet is a 760px floating window and Apple Local Assist candidates are often single long lines, so that floor forced a horizontal scrollbar as soon as the sheet's content area dropped below 720px. The sheet now overrides the floor with `min-width: 0`; the cells still wrap on their own thanks to the screen-side `white-space: pre-wrap; overflow-wrap: anywhere;`.
 - Apple Local Assist window copy + error classification enrichment (UX slice 1): `getAppleAssistWindowCopy` in `src/components/appleAssist/AppleAssistWindowApp.tsx` now ships detailed en / ja / kana copy for every status and error path. New `*Error` strings (`selectionTooLongError`, `contextTooLongError`, `targetStaleError`, `guardrailError`, `throttledError`, `unknownError`) are wired through a new `classifyApplyError` helper that pattern-matches the raw Rust / Foundation Models error message and returns the matching localized string, so the user no longer sees English error text in a Japanese Apple Assist window. The textarea dropped from 6 rows to 3 (the placeholder + a single line fits comfortably; longer rough requests still scroll inside the box). 27 unit tests in `src/components/appleAssist/AppleAssistWindowApp.test.ts` pin the shape, the per-language differentiation, and the classifier routing.
 - For Apple Local Assist, the next useful implementation is UX hardening from real lightweight writing examples plus App Store/distribution review; do not broaden Apple Local Assist into network fallback, generic chat, tool calling, workspace indexing, or external-agent replacement.
+- For refactors during v0.15, treat large files as acceptable targets only when one extracted responsibility has a clear user-test reason and focused verification. Avoid many-hook rewrites or cleanup-only churn.
 
 ## Avoid
 

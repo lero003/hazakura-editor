@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-07 (post-v0.14 L Mode Stability / Assist Harness Polish)
+Last reviewed: 2026-06-07 (v0.15 User-Test Quality Polish framing)
 
 ## Current Position
 
@@ -15,8 +15,8 @@ Current release state:
 - Latest source / local-app tag: `v0.14.0`.
 - Current package/app version: `0.14.0`.
 - v0.14.0 theme: **L Mode Stability Ramp / Apple Local Assist Harness Polish**.
-- Active lane: v0.15 Apple Local Assist quality and release-prep continuation.
-- Active product polish direction: harden the actual Apple Local Assist writing experience, unavailable states, and distribution evidence while leaving L Mode to rest unless regression evidence appears.
+- Active lane: v0.15 User-Test Quality Polish.
+- Active product polish direction: fix the small issues found by using the app, across Apple Local Assist, L Mode, theme, settings, status / error copy, and release-prep continuity. Apple Local Assist remains a major surface, but v0.15 is not Apple Local Assist-only.
 
 Historical phase details and old milestone text are archived in `docs/archive/roadmaps/roadmap-through-v0.10-doc-refactor.md` and `docs/archive/roadmaps/roadmap-v0.1-archived.md`.
 
@@ -115,7 +115,7 @@ Likely phase shape:
 - `v0.12`: Apple Local Assist live local preview, availability plumbing, rough requests, L Mode smoke, AI edit transaction, and alpha / experimental labeling.
 - `v0.13`: Distribution Probe / L Mode Bridge, including App Store build separation, sandbox / entitlement draft, helper sidecar sandbox proof, lane split, and L Mode peer-mode polish.
 - `v0.14`: L Mode WYSIWYG Accuracy Ramp, including rendering fidelity, editing stability, IME / caret behavior, hidden-marker regression fixtures, and visual-overlap checks.
-- `v0.15`: Apple Local Assist quality and release-prep continuation, including real writing examples, unavailable-state polish, review notes, App Store / Developer lane evidence, and only the TestFlight / submission work that current signing access makes practical.
+- `v0.15`: User-Test Quality Polish, including Apple Local Assist rough-request quality, real writing examples, unavailable-state polish, theme / settings touch-ups, small user-facing status or error improvements, release-prep continuity, App Store / Developer lane evidence, and only the TestFlight / submission work that current signing access makes practical.
 - `v1.0`: App Store Candidate / Review if the App Store build can omit External Agent Workbench cleanly and Apple Local Assist remains document-assist only.
 
 v0.12 tag state (source / local-app tag only):
@@ -171,6 +171,34 @@ Boundaries:
 - No App Store, TestFlight, Developer ID signing, notarization, updater, installer, or completed WYSIWYG-editor claim is made.
 - No Preview DOM editing, `contenteditable`, HTML saved model, hidden save-time rewriting, network fallback, workspace-wide indexing, or auto-apply behavior is added.
 - Deeper L Mode refactors such as CSS splitting or decoration caches should wait for measured evidence. The next active improvement lane can shift back to Apple Local Assist.
+
+## Active Lane: v0.15 User-Test Quality Polish
+
+Goal: use the app, collect the small things that feel wrong, and land narrow verified fixes without widening the Safe Editor boundary.
+
+In scope:
+
+- Apple Local Assist quality from real lightweight Japanese writing examples: rough requests, prompt / response fit, stale-target recovery, unavailable / disabled / unsupported states, and reviewable AI edit transactions.
+- Theme and settings polish: readability, hover / motion feel, Preferences grouping, Assist Surface copy, restart-required wording, persistence, and native menu synchronization.
+- L Mode follow-up only when a regression, built-app smoke gap, or measured performance question appears.
+- Small user-facing status / error improvements where a failure is currently silent or console-only.
+- Documentation and release-prep continuity, including keeping App Store / Developer lane proof distinct from warning-expected DMG preview work.
+- Focused refactors when they directly support a verified polish fix. Large files are not automatically forbidden, but split only one responsibility at a time and keep tests close to the moved behavior.
+
+Out of scope:
+
+- Broad architecture cleanup without a user-test finding.
+- New product surfaces, provider plugins, broad workspace indexing, Git/LSP/terminal behavior, or arbitrary command execution.
+- Preview DOM editing, `contenteditable`, HTML as the saved model, hidden save-time rewriting, network fallback, tool calling, auto-apply, or auto-save.
+- App Store/TestFlight, Developer ID signing, notarization, updater, or installer claims without explicit lane approval and evidence.
+
+Acceptance:
+
+- Each slice names the observed friction or evidence gap.
+- Each slice is small enough to verify in the same run.
+- Theme/settings changes verify persistence and menu/window synchronization where relevant.
+- Apple Local Assist changes preserve the external Writing Companion boundary and explicit AI edit transaction model.
+- L Mode changes preserve Markdown source and use `docs/l-mode-plan.md` only for measured or reproduced follow-up work.
 
 ## App Store Publication Roadmap
 
