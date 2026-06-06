@@ -95,6 +95,7 @@ export const LModeClasses = {
   // each one has a rule.
   actionRail: "l-mode-action-rail",
   actionButton: "l-mode-action-button",
+  actionButtonLabel: "l-mode-action-button-label",
 
   // L Mode workspace drawer. The normal file tree remains
   // hidden by default; these classes drive the translucent

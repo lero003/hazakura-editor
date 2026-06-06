@@ -27,7 +27,10 @@ describe("getLModeCopy", () => {
     for (const lang of ["en", "ja", "kana"] as const) {
       const copy = getLModeCopy(lang);
       expect(Object.keys(copy).sort()).toEqual([
+        "actionRailAppleAssistShortLabel",
         "actionRailLabel",
+        "actionRailReviewChangesShortLabel",
+        "actionRailTypewriterShortLabel",
         "appleAssistReviewBarCloseDiffLabel",
         "appleAssistReviewBarCloseLabel",
         "appleAssistReviewBarCloseTitle",

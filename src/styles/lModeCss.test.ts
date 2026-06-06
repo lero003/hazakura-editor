@@ -114,6 +114,35 @@ describe("lMode.css", () => {
     expect(hudRule).toMatch(/transform:\s*translateY\(-50%\)/);
   });
 
+  it("keeps the action rail compact while showing short labels", () => {
+    const railRule =
+      lModeCss.match(
+        /:root\[data-l-mode="on"\] \.l-mode-action-rail\s*{(?<body>[^}]*)}/s,
+      )?.groups?.body ?? "";
+    const labelRule =
+      lModeCss.match(
+        /:root\[data-l-mode="on"\] \.l-mode-action-button-label\s*{(?<body>[^}]*)}/s,
+      )?.groups?.body ?? "";
+
+    expect(railRule).toMatch(/flex-direction:\s*column/);
+    expect(railRule).toMatch(/right:\s*18px/);
+    expect(railRule).toMatch(/width:\s*94px/);
+    expect(railRule).toMatch(/border-radius:\s*18px/);
+    expect(labelRule).toMatch(/display:\s*inline-block/);
+    expect(labelRule).toMatch(/flex:\s*1 1 auto/);
+    expect(labelRule).toMatch(/text-overflow:\s*ellipsis/);
+    expect(labelRule).not.toMatch(/clip-path:\s*inset\(50%\)/);
+  });
+
+  it("only renders active-line chips on lines that have chip labels", () => {
+    expect(lModeCss).toMatch(
+      /:root\[data-l-mode="on"\] \.cm-line\.cm-lmode-source-line\[data-l-chip\]::before/,
+    );
+    expect(lModeCss).not.toMatch(
+      /:root\[data-l-mode="on"\] \.cm-line\.cm-lmode-source-line::before/,
+    );
+  });
+
   it("does not restyle CodeMirror's measured line boxes with margins", () => {
     expect(lModeCss).not.toMatch(/\.cm-line[^{]*{[^}]*margin/s);
     expect(lModeCss).not.toMatch(/\.cm-lmode-heading-[^{]*{[^}]*margin/s);

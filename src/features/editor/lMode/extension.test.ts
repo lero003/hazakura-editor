@@ -421,6 +421,24 @@ describe("v0.11 Typora-feel rendering", () => {
     ).toBe(true);
   });
 
+  it("keeps a divider visible when typing on the line before ---", () => {
+    // CommonMark parses `text\n---` as a Setext heading, but
+    // in L Mode this interaction reads as "the divider just
+    // disappeared" while writing. Keep the source untouched,
+    // but render the underline marker as the same divider
+    // widget so the visual boundary remains stable.
+    const source = "paragraph\naaaa\n---\n## Next\n";
+    const hrStart = source.indexOf("---");
+    const hrEnd = hrStart + 3;
+    const state = makeState(source, source.indexOf("aaaa") + 4);
+    const set = computeLModeDecorations(state);
+
+    expect(state.doc.toString()).toBe(source);
+    expect(
+      hasReplaceWithWidget(set, hrStart, hrEnd, LModeHorizontalRuleWidget),
+    ).toBe(true);
+  });
+
   it("replaces the TaskMarker with a checkbox widget (doc text untouched)", () => {
     const source = "- [ ] todo\n- [x] done\n";
     const uncheckedStart = source.indexOf("[ ]");

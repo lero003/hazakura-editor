@@ -16,6 +16,9 @@ export type LModeCopy = {
   statusBarReviewChangesTitle: string;
   statusBarWorkspaceTitle: string;
   statusBarAppleAssistLabel: string;
+  actionRailAppleAssistShortLabel: string;
+  actionRailTypewriterShortLabel: string;
+  actionRailReviewChangesShortLabel: string;
   statusBarAppleAssistTitle: string;
   workspaceToggleLabel: string;
   workspaceToggleTitle: string;
@@ -64,6 +67,9 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
       statusBarReviewChangesTitle: "えるもーどのまま ディスクとの さぶんを ひらく",
       statusBarWorkspaceTitle: "えるもーどをとじて わーくすぺーすに もどる",
       statusBarAppleAssistLabel: "Apple Local Assist",
+      actionRailAppleAssistShortLabel: "Assist",
+      actionRailTypewriterShortLabel: "たいぷ",
+      actionRailReviewChangesShortLabel: "さぶん",
       statusBarAppleAssistTitle: "Apple Local Assist の ウィンドウを ひらく / かくす",
       workspaceToggleLabel: "わーくすぺーすを ひらく",
       workspaceToggleTitle: "えるもーどのまま ファイルツリーを ひらく / とぢる",
@@ -105,6 +111,9 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
         statusBarReviewChangesTitle: "えるモードのままディスクとの差分を開く",
         statusBarWorkspaceTitle: "えるモードを閉じてワークスペースに戻る",
         statusBarAppleAssistLabel: "Apple Local Assist",
+        actionRailAppleAssistShortLabel: "Assist",
+        actionRailTypewriterShortLabel: "タイプ",
+        actionRailReviewChangesShortLabel: "確認",
         statusBarAppleAssistTitle: "Apple Local Assist ウィンドウを表示 / 非表示",
         workspaceToggleLabel: "ワークスペースを開く",
         workspaceToggleTitle: "えるモードのままファイルツリーを表示 / 非表示",
@@ -143,6 +152,9 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
         statusBarReviewChangesTitle: "Open the diff against disk without leaving L Mode",
         statusBarWorkspaceTitle: "Exit L Mode and return to the workspace",
         statusBarAppleAssistLabel: "Apple Local Assist",
+        actionRailAppleAssistShortLabel: "Assist",
+        actionRailTypewriterShortLabel: "Type",
+        actionRailReviewChangesShortLabel: "Diff",
         statusBarAppleAssistTitle:
           "Show or hide the Apple Local Assist writing companion window",
         workspaceToggleLabel: "Open workspace",

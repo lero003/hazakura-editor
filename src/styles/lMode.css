@@ -377,9 +377,12 @@
   right: 18px;
   z-index: 99;
   display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  width: 94px;
   padding: 5px;
+  border-radius: 18px;
   opacity: 0.16;
   transition:
     opacity 180ms ease,
@@ -399,12 +402,14 @@
   appearance: none;
   display: inline-flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 5px;
-  min-height: 28px;
-  padding: 0 10px;
+  width: 100%;
+  height: 28px;
+  padding: 0 8px;
   margin: 0;
   border: 1px solid transparent;
-  border-radius: 999px;
+  border-radius: 13px;
   background: transparent;
   color: color-mix(in srgb, var(--text) 78%, transparent);
   font-family: var(--lmode-ui-font-family);
@@ -435,6 +440,18 @@
 
 :root[data-l-mode="on"] .l-mode-action-button:active {
   transform: translateY(1px);
+}
+
+:root[data-l-mode="on"] .l-mode-action-button-label {
+  display: inline-block;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
 }
 
 /* --- 2c. L Mode workspace drawer ---
@@ -1362,7 +1379,7 @@
    italic, no fill, no border, no radius, right-aligned in a
    narrow column. The labels (`H1`, `>`, ` ``` `) are
    provided by the `data-l-chip` attribute set in TS. */
-:root[data-l-mode="on"] .cm-line.cm-lmode-source-line::before {
+:root[data-l-mode="on"] .cm-line.cm-lmode-source-line[data-l-chip]::before {
   content: attr(data-l-chip);
   position: absolute;
   top: 0.05em;

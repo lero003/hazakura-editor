@@ -32,6 +32,7 @@
 - L Mode now keeps the file tree hidden by default but exposes a translucent top-left workspace icon that opens a temporary bounded `WorkspaceSidebar` drawer without leaving L Mode. Dirty state is reduced to a small L Mode indicator dot, and the right action rail stays focused on Apple Local Assist and dirty-buffer review.
 - L Mode dirty-buffer review now opens a local floating diff sheet backed by the same disk-vs-editor diff builder, without exiting to the normal edit surface or using the right compare pane. The normal status bar is hidden in L Mode, the top-right pill now reads as an `編集モード` switch, the action rail includes a Typewriter mode toggle, and the native View menu labels the shortcut as `L Mode / Edit Mode`.
 - Normal edit mode top chrome now keeps `プレビュー` as a visible daily-use toggle, adds an explicit `えるモード` switch, and groups `変更を確認` / `差分` / `アウトライン` under a compact `確認` menu. Diff row contrast is stronger in `dark` and `yakou` themes for both normal compare surfaces and the L Mode floating review sheet.
+- L Mode action rail is now a compact vertical icon rail without native button tooltips. L Mode also keeps list bullets / ordered numbers visible when the cursor is on the active list line, and renders Setext-style `---` / `===` underline markers as the same divider widget so typing on the line before a divider does not make the visual boundary disappear.
 
 ## Decisions
 
@@ -61,6 +62,7 @@
 - Sandbox entitlement smoke on 2026-06-06 passed through the real Tauri parent: `npm run smoke:macos-sandbox-preview` builds the App Store preview, ad-hoc signs the temp app/helper, `codesign --verify --deep --strict --verbose=2` passes, and `HAZAKURA_SANDBOX_PARENT_SMOKE=apple-assist-probe` run through the sandboxed `hazakura-editor` parent returns `apple_assist_parent_smoke: {"kind":"availability","value":{"kind":"available","reason":null}}`. The script also keeps a representative sandbox parent-spawn control. Direct shell execution of the inherited helper still crashes with `SIGTRAP`, which is expected for this shape.
 - L Mode workspace-drawer verification passed: `npm run typecheck`, focused Vitest for `LModeActionRail` / `lMode` locale / L Mode CSS drift / command palette, full `npm run test` (49 files / 269 tests), `npm run build:vite`, and `git diff --check`.
 - L Mode / normal edit top-chrome and dark diff-contrast verification passed: `npm run typecheck`, focused Vitest for `DocumentMetaBar` / `AppTopChrome` and CSS drift checks, full `npm run test` (50 files / 276 tests), `npm run build:vite`, and `git diff --check`.
+- L Mode input/chrome follow-up verification passed: focused Vitest for `lMode/extension`, `lModeCss`, and `LModeActionRail`; full `npm run test` (50 files / 279 tests); `npm run typecheck`; `npm run build:vite`; and `git diff --check`.
 
 ## Risks / Unknowns
 

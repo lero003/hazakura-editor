@@ -113,6 +113,8 @@ describe("LModeActionRail", () => {
 
     const button = screen.getByRole("button", { name: /Typewriter mode/ });
     expect(button.getAttribute("aria-pressed")).toBe("true");
+    expect(button.getAttribute("title")).toBeNull();
+    expect(screen.getByText("Type")).toBeTruthy();
 
     fireEvent.click(button);
 

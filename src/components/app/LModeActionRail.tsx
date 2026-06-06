@@ -159,33 +159,39 @@ export function LModeActionRail({
         aria-label={copy.actionRailLabel}
       >
         <button
+          aria-label={copy.statusBarAppleAssistLabel}
           className={LModeClasses.actionButton}
           onClick={onOpenAppleAssistWindow}
-          title={copy.statusBarAppleAssistTitle}
           type="button"
         >
           <SparklesIcon />
-          <span>{copy.statusBarAppleAssistLabel}</span>
+          <span aria-hidden="true" className={LModeClasses.actionButtonLabel}>
+            {copy.actionRailAppleAssistShortLabel}
+          </span>
         </button>
         <button
+          aria-label={copy.typewriterPreferenceLabel}
           aria-pressed={typewriterModeEnabled}
           className={LModeClasses.actionButton}
           onClick={onToggleTypewriterMode}
-          title={copy.typewriterPreferenceHint}
           type="button"
         >
           <TypewriterIcon />
-          <span>{copy.typewriterPreferenceLabel}</span>
+          <span aria-hidden="true" className={LModeClasses.actionButtonLabel}>
+            {copy.actionRailTypewriterShortLabel}
+          </span>
         </button>
         {reviewChangesAvailable ? (
           <button
+            aria-label={copy.statusBarReviewChangesLabel}
             className={LModeClasses.actionButton}
             onClick={() => void handleReviewChanges()}
-            title={copy.statusBarReviewChangesTitle}
             type="button"
           >
             <DiffIcon />
-            <span>{copy.statusBarReviewChangesLabel}</span>
+            <span aria-hidden="true" className={LModeClasses.actionButtonLabel}>
+              {copy.actionRailReviewChangesShortLabel}
+            </span>
           </button>
         ) : null}
       </div>

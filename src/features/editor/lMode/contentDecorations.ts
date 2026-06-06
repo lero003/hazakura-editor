@@ -234,6 +234,15 @@ export function computeContentDecorations(
       // `.cm-lmode-source-line`, so style changes cannot
       // change which marker ranges exist. Marker nodes are
       // leaves in the Lezer tree, so we do not descend.
+      if (name === "HeaderMark" && isSetextDividerLine(state, node.node)) {
+        decorations.push(
+          Decoration.replace({
+            widget: new LModeHorizontalRuleWidget(),
+          }).range(node.from, node.to),
+        );
+        return false;
+      }
+
       if (LModeMarkerNodeNames.has(name)) {
         decorations.push(hiddenMarker.range(node.from, node.to));
         return false;
@@ -244,6 +253,14 @@ export function computeContentDecorations(
   });
 
   return decorations;
+}
+
+function isSetextDividerLine(state: EditorState, node: SyntaxNode): boolean {
+  const line = state.doc.lineAt(node.from);
+  if (node.from !== line.from || node.to !== line.to) {
+    return false;
+  }
+  return /^(?:-{3,}|={3,})$/.test(line.text.trim());
 }
 
 // Mark every `|` in the given line with the muted pipe
