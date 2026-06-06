@@ -72,18 +72,18 @@ An AI edit transaction should record at least:
 
 The ideal future state is that human edits and AI edits can be separated in change history or diff views. That is not required for the first mock, but the data model should avoid making it impossible.
 
-## Review Desk Role
+## Review Surface Role
 
-Review Desk remains useful, but it should not be the primary Apple Local Assist experience.
+Manual Review Desk entry points are not part of the primary Apple Local Assist experience.
 
-Use Review Desk / Diff as the detailed inspection layer:
+Use Diff / explicit change review as the detailed inspection layer:
 
 - compare AI change against the previous buffer
 - inspect stale or conflicting candidate state
 - recover from an unwanted edit
 - review larger replacements before saving
 
-Do not force every Apple Local Assist action to start inside Review Desk. The companion should help the user write first; review surfaces should appear when they clarify or protect the edit.
+Do not force every Apple Local Assist action to start inside a separate review desk. The companion should help the user write first; review surfaces should appear when they clarify or protect the edit.
 
 ## Current v0.12 Implementation Status
 
@@ -93,7 +93,7 @@ Existing v0.12 slices are still useful foundation work:
 - main-window-only IPC boundary
 - helper fixture / supervisor / watchdog / cooldown
 - locale and command-palette plumbing
-- Review Desk handoff prototype
+- explicit review handoff prototype
 
 However, the command-palette selected-text entries should be treated as early plumbing, not the final product shape.
 

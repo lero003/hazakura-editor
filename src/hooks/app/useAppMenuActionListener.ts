@@ -24,7 +24,6 @@ export type AppMenuActionHandlers = {
   requestWindowClose: () => void | Promise<unknown>;
   saveActiveTab: () => void | Promise<unknown>;
   saveActiveTabAs: () => void | Promise<unknown>;
-  toggleReviewDesk: () => void | Promise<unknown>;
 };
 
 type RefValue<T> = {
@@ -116,9 +115,6 @@ export function useAppMenuActionListener({
           break;
         case "toggle-preview":
           setPreviewVisible((current) => !current);
-          break;
-        case "toggle-review-desk":
-          void actions.toggleReviewDesk();
           break;
         case "toggle-wrap":
           setEditorSettings((current) => ({

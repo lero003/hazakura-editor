@@ -37,7 +37,6 @@ type UseGlobalKeyboardShortcutsOptions = {
   onRequestWindowClose: () => unknown;
   onSaveActiveTab: () => unknown;
   onSaveActiveTabAs: () => unknown;
-  onToggleReviewDesk: () => void;
   selectedImageOpen: boolean;
   setEditorSettings: Dispatch<SetStateAction<EditorSettings>>;
   setFindVisible: Dispatch<SetStateAction<boolean>>;
@@ -67,7 +66,6 @@ export function useGlobalKeyboardShortcuts({
   onRequestWindowClose,
   onSaveActiveTab,
   onSaveActiveTabAs,
-  onToggleReviewDesk,
   selectedImageOpen,
   setEditorSettings,
   setFindVisible,
@@ -148,22 +146,16 @@ export function useGlobalKeyboardShortcuts({
       }
 
       if (isCommandShiftShortcut(event, "r")) {
-        // Review Desk entry point. Cmd+Shift+R toggles the v0.7
-        // review surface that replaces the editor area. IME
-        // composition and modal open are already bailed out at the
-        // top of this handler. See
-        // docs/archive/reviews/v0.7-review-desk-design-decisions.md (B-3, R-4).
+        // Reserved to avoid WebView reload while manual Review Desk
+        // entry points are hidden from the user-facing app surface.
         event.preventDefault();
-        onToggleReviewDesk();
         return;
       }
 
       if (isCommandShiftShortcut(event, "l")) {
         // L Mode (えるモード) toggle. Cmd+Shift+L was free in the
-        // existing map. Sits next to the Review Desk shortcut on
-        // the keyboard so the muscle memory groups the two
-        // "switch context" gestures. IME composition and modal
-        // open are already bailed out at the top of this handler.
+        // existing map. IME composition and modal open are already
+        // bailed out at the top of this handler.
         event.preventDefault();
         setEditorSettings((current) => ({
           ...current,
@@ -308,7 +300,6 @@ export function useGlobalKeyboardShortcuts({
     onRequestWindowClose,
     onSaveActiveTab,
     onSaveActiveTabAs,
-    onToggleReviewDesk,
     selectedImageOpen,
     setEditorSettings,
     setFindVisible,

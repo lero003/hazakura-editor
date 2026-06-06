@@ -98,7 +98,7 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
       emptyIntro:
         "れびゅーのつくゑは、候補てきすとを保存前にたしかめるところです。",
       entryButton: "れびゅー",
-      entryButtonTitle: "れびゅーのつくゑをひらく (Cmd+Shift+R)",
+      entryButtonTitle: "れびゅーのつくゑ",
       futureSlotHint:
         "AI 候補などの前に、まず手動候補を明示的にくらべます。",
       surfaceLabel: "れびゅーのつくゑ",
@@ -161,7 +161,7 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
         emptyIntro:
           "レビューデスクは、候補テキストを保存前に確認してからバッファへ適用するためのレビュー画面です。",
         entryButton: "レビューデスク",
-        entryButtonTitle: "レビューデスクを開く (Cmd+Shift+R)",
+        entryButtonTitle: "レビューデスク",
         futureSlotHint:
           "AI 候補や他のレビュー経路を扱う前に、まず手動貼り付け候補を明示的に比較・適用します。",
         surfaceLabel: "レビューデスク",
@@ -221,7 +221,7 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
         emptyIntro:
           "Review Desk is a review surface for checking candidate text before applying it to the buffer.",
         entryButton: "Review Desk",
-        entryButtonTitle: "Open Review Desk (Cmd+Shift+R)",
+        entryButtonTitle: "Review Desk",
         futureSlotHint:
           "Manual pasted candidates are explicit first; AI candidates and other review routes can connect later without bypassing review.",
         surfaceLabel: "Review Desk",

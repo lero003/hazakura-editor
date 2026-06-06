@@ -102,7 +102,6 @@ pub(crate) const MENU_CLOSE_WINDOW: &str = "close-window";
 pub(crate) const MENU_EXPORT_HTML: &str = "export-html";
 pub(crate) const MENU_EXPORT_PDF: &str = "export-pdf";
 pub(crate) const MENU_TOGGLE_PREVIEW: &str = "toggle-preview";
-pub(crate) const MENU_TOGGLE_REVIEW_DESK: &str = "toggle-review-desk";
 pub(crate) const MENU_TOGGLE_L_MODE: &str = "toggle-l-mode";
 pub(crate) const MENU_TOGGLE_WRAP: &str = "toggle-wrap";
 pub(crate) const MENU_TOGGLE_INVISIBLES: &str = "toggle-invisibles";

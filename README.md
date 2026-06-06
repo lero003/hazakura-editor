@@ -32,7 +32,6 @@ Use this when you want to:
 - preview sanitized Markdown with local image asset rendering
 - preserve LF / CRLF and final-newline behavior
 - compare text files and review local changes without Git awareness
-- review pasted candidate text in Review Desk, compare it against the active buffer, and explicitly apply it without auto-saving
 - notice save conflicts and external changes before overwriting
 - paste or drag-drop images into `assets/` for inline Markdown references
 - export content as standalone HTML or use Print to PDF
@@ -58,8 +57,8 @@ Example use case:
 2. Read README, docs, or notes through the file tree.
 3. Edit a Markdown or text file, with optional image paste / drag-drop.
 4. Preview sanitized Markdown including local asset images.
-5. Compare files, review local changes, or use Review Desk to check candidate text before deciding what to keep.
-6. Apply reviewed candidate text only by explicit action, then save only when you are ready.
+5. Compare files or review local changes before deciding what to keep.
+6. Apply reviewed recovery or assist changes only by explicit action, then save only when you are ready.
 7. Export to HTML or print to PDF.
 8. Use another tool for Git, terminal, build, test, or commit.
 
@@ -97,8 +96,8 @@ Example use case:
 - In-file search for the active tab, with visible match highlights, active-match selection, and keyboard next / previous / return-to-editor flow
 - Search options for case-sensitive, whole-word, and regex matching with invalid-regex reporting
 - Explicit non-Git split Diff workbench for comparing workspace text files by choosing separate source/target slots, plus active editor changes versus disk, recoverable drafts, and external-change conflicts, without inspecting Git repository state
-- Review Desk MVP for manual candidate review: View menu item, shortcut/slash entry points, candidate paste area, explicit compare, explicit apply-to-buffer, and stale-candidate guards for tab switches, buffer edits, candidate edits, and failed comparisons
-- Slash menu commands for opening Review Desk and inserting a Markdown shortcut list, with keyboard execution via Enter or Tab
+- Explicit review routes for active editor changes versus disk, recoverable drafts, external-change conflicts, and Apple Local Assist edit transactions, without auto-saving or Git awareness
+- Slash menu commands for inserting a Markdown shortcut list, with keyboard execution via Enter or Tab
 - Markdown file comparisons show heading context before changed blocks when a nearby ATX heading is available
 - Current-file Markdown outline and current-position context with click-to-jump navigation, transient scroll position HUD, and a visible cap note for very large outlines, without workspace-wide indexing
 - Markdown preview can open relative links to supported text files inside the selected workspace, without opening absolute paths or external URLs
@@ -205,7 +204,7 @@ Developer preview release boundary:
 - The file tree is a workspace browser, not an index. Very large directories are capped per folder and may show only the first visible entries.
 - Workspace image preview is intentionally bounded to local PNG/JPEG/GIF/WebP files up to 20 MB.
 - Save conflicts are recoverable by reviewing changes, reopening, closing, or keeping local edits, and text comparison remains file/workspace based, but there is no merge editor, advanced diff, or Git status view.
-- Review Desk candidate review is manual and explicit. It does not persist review logs, save candidate documents automatically, auto-apply Agent output, or replace Git/merge workflows.
+- Manual Review Desk entry points are hidden in the current App Store-oriented surface. Diff, recovery review, and Apple Local Assist review remain explicit and do not replace Git/merge workflows.
 - The app is not signed or notarized with an Apple Developer ID.
 - Agent Workbench is optional and explicit. It does not provide a general shell prompt, arbitrary command input UI, arbitrary path input UI, provider-add UI, multiple sessions, session restore, auto-apply, auto-commit, or Git integration.
 - Apple Local Assist is an experimental alpha surface, not the main AI feature. Live generation depends on Apple Foundation Models availability on the current Mac; output quality may vary, and the feature may change or be removed.

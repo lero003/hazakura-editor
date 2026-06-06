@@ -23,6 +23,23 @@
   background: transparent;
 }
 
+/* エディタ内スクロールバー: 通常は細く、触ったときだけ太くする。
+   thumb の border を 0 にして width 変化に追随させ、角丸を保つ。 */
+.cm-scroller::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.cm-scroller::-webkit-scrollbar-thumb {
+  border: 0;
+}
+.cm-scroller:hover::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.cm-scroller:hover::-webkit-scrollbar-thumb {
+  border: 0;
+}
+
 /* テキスト選択 */
 ::selection {
   background: var(--selection-bg);

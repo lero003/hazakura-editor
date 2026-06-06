@@ -79,7 +79,6 @@ type UseCommandPaletteControllerActions = {
   toggleLMode: () => void;
   toggleOutlinePane: () => void;
   toggleQuickOpen: () => void;
-  toggleReviewDesk: () => void;
 };
 
 type UseCommandPaletteControllerOptions = {
@@ -391,16 +390,6 @@ export function useCommandPaletteController({
           actions.toggleLMode();
         },
         shortcut: "⇧⌘L",
-      },
-      {
-        category: "Review",
-        id: "review.open",
-        keywords: ["review", "diff", "compare"],
-        label: "Open Review Desk",
-        run: () => {
-          actions.toggleReviewDesk();
-        },
-        shortcut: "⇧⌘R",
       },
       {
         category: "Review",

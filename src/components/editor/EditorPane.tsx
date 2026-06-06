@@ -894,6 +894,7 @@ function editorTheme(theme: "light" | "dark", fontSize: number) {
         backgroundColor: "var(--cm-gutter-bg)",
         borderRight: "1px solid var(--cm-gutter-border)",
         color: "var(--cm-gutter-fg)",
+        fontSize: "0.78em",
       },
       ".cm-activeLine": {
         backgroundColor: "var(--cm-active-line-bg)",

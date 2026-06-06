@@ -102,7 +102,7 @@ export function useAppShellController() {
   } = foundation;
 
   // section: review desk controller (depends on review state + chrome view state)
-  const { toggleReviewDesk, closeReviewDesk } = useReviewDeskController({
+  const { closeReviewDesk } = useReviewDeskController({
     reviewSurface,
     resetReviewDesk,
     setReviewSurface,
@@ -883,7 +883,6 @@ export function useAppShellController() {
     editorPaneRef,
     handleSendSelectionToAgent,
     menuLanguage,
-    openReviewDesk: toggleReviewDesk,
     requestReviewDraftAgainstDisk,
     requestReviewTabAgainstDisk,
     setStatus,
@@ -997,7 +996,6 @@ export function useAppShellController() {
       toggleLMode,
       toggleOutlinePane,
       toggleQuickOpen,
-      toggleReviewDesk,
     },
     activeTab,
     activeTabId,
@@ -1028,7 +1026,6 @@ export function useAppShellController() {
       requestWindowClose,
       saveActiveTab,
       saveActiveTabAs,
-      toggleReviewDesk,
     },
     listener: {
       onOpenRecentFile: openFilePath,
@@ -1127,7 +1124,6 @@ export function useAppShellController() {
       onRequestWindowClose: requestWindowClose,
       onSaveActiveTab: saveActiveTab,
       onSaveActiveTabAs: saveActiveTabAs,
-      onToggleReviewDesk: toggleReviewDesk,
       pendingAppClose,
       pendingCloseTabOpen,
       preferencesCloseButtonRef,

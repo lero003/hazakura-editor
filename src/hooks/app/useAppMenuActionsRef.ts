@@ -14,7 +14,6 @@ export function useAppMenuActionsRef({
   requestWindowClose,
   saveActiveTab,
   saveActiveTabAs,
-  toggleReviewDesk,
 }: AppMenuActionHandlers) {
   const appMenuActions = useMemo<AppMenuActionHandlers>(
     () => ({
@@ -29,7 +28,6 @@ export function useAppMenuActionsRef({
       requestWindowClose,
       saveActiveTab,
       saveActiveTabAs,
-      toggleReviewDesk,
     }),
     [
       createNewFile,
@@ -43,7 +41,6 @@ export function useAppMenuActionsRef({
       requestWindowClose,
       saveActiveTab,
       saveActiveTabAs,
-      toggleReviewDesk,
     ],
   );
 

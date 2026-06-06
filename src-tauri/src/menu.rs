@@ -166,13 +166,6 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
         preview_visible,
         Some("CmdOrCtrl+Option+P"),
     )?;
-    let view_review_desk = MenuItem::with_id(
-        app,
-        MENU_TOGGLE_REVIEW_DESK,
-        label("Review Desk", "レビューデスク"),
-        true,
-        None::<&str>,
-    )?;
     let view_agent_window = MenuItem::with_id(
         app,
         MENU_OPEN_AGENT_WINDOW,
@@ -273,7 +266,7 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
         app,
         Some(label("Enter Full Screen", "フルスクリーンにする")),
     )?;
-    let mut view_items: Vec<&dyn IsMenuItem<R>> = vec![&view_preview, &view_review_desk];
+    let mut view_items: Vec<&dyn IsMenuItem<R>> = vec![&view_preview];
     if agent_workbench_allowed {
         view_items.push(&view_agent_window);
     }
@@ -554,7 +547,6 @@ pub(crate) fn emit_app_menu_event<R: tauri::Runtime>(
                 | MENU_EXPORT_PDF
                 | MENU_CLOSE_WINDOW
                 | MENU_TOGGLE_PREVIEW
-                | MENU_TOGGLE_REVIEW_DESK
                 | MENU_TOGGLE_L_MODE
                 | MENU_TOGGLE_WRAP
                 | MENU_TOGGLE_INVISIBLES

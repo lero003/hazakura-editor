@@ -18,7 +18,6 @@ describe("useAppShellSideEffectsController", () => {
           requestWindowClose: vi.fn(),
           saveActiveTab: vi.fn(),
           saveActiveTabAs: vi.fn(),
-          toggleReviewDesk: vi.fn(),
         },
         listener: {
           onOpenRecentFile: vi.fn(),
@@ -128,7 +127,6 @@ describe("useAppShellSideEffectsController", () => {
           onRequestWindowClose: vi.fn(),
           onSaveActiveTab: vi.fn(),
           onSaveActiveTabAs: vi.fn(),
-          onToggleReviewDesk: vi.fn(),
           pendingAppClose: false,
           pendingCloseTabOpen: false,
           preferencesCloseButtonRef: { current: null },

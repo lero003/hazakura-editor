@@ -5,7 +5,7 @@ Scope: Current manual smoke checks
 Authority: Medium
 Last reviewed: 2026-06-06 (v0.12.0 Apple Local Assist source / local-app tag)
 
-Use this checklist after changes to file operations, saving, preview rendering, L Mode, Review Desk, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
+Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
 Historical smoke logs and old per-release notes are archived in `docs/archive/operations/smoke-checklist-through-v0.10-doc-refactor.md`.
 
@@ -25,7 +25,7 @@ Run these before treating v0.11.0 as ready to publish:
 10. Confirm code blocks, tables, blockquotes, task checkboxes, HR, ordered/bullet lists, and images remain readable as display-only L Mode rendering.
 11. Confirm floating chrome/status text is theme-aware and readable.
 12. Confirm auto-backup restore opens backup-vs-buffer review, applies only to the compared document, marks the tab dirty, and does not save automatically.
-13. Confirm normal mode, Preview, Diff, Review Desk, export, and copy behavior still use Markdown source, not rendered preview content.
+13. Confirm normal mode, Preview, Diff / explicit change review, export, and copy behavior still use Markdown source, not rendered preview content.
 
 ## L Mode v0.11+ (WYSIWYG-tier writing surface)
 
@@ -118,18 +118,16 @@ Run when Markdown preview, image assets, export, or authoring helpers change:
 5. Use Print to PDF handoff and confirm the print-ready layout matches what Export HTML produces (serif body, page-break controls, no theme colors leaking into print).
 6. Insert a Markdown table and confirm the app does not imply row/column table editing beyond the implemented helper.
 
-## Review Desk
+## Manual Review Desk Entry Points
 
-Run when Review Desk or candidate comparison changes:
+Run when Review Desk entry points, candidate comparison, or App Store surface visibility changes:
 
 1. Confirm Review Desk is not a persistent top-chrome primary action.
-2. Open Review Desk via `Cmd+Shift+R`, View menu, and `/review`.
-3. Paste a Markdown candidate and press Compare.
-4. Confirm the diff preview compares active buffer against candidate text.
-5. Confirm candidate editor changes after Compare invalidate the old preview/apply state.
-6. Confirm active-tab switches, active-buffer edits, and compared-tab close make the preview stale and disable Apply.
-7. Press Apply candidate and confirm the buffer changes, the file remains unsaved, and Save is still explicit.
-8. Confirm close button and shortcut close both reset candidate input, preview, stale banner, and errors.
+2. Confirm `Cmd+Shift+R`, View menu, command palette, and slash menu do not expose a manual Review Desk open action.
+3. Confirm `Cmd+Shift+R` does not reload the WebView or move focus unexpectedly.
+4. Confirm active-tab versus disk review still opens through the existing Diff / Review changes route.
+5. Confirm auto-backup restore review still applies only to the compared document, leaves the file unsaved, and keeps Save explicit.
+6. Confirm Apple Local Assist edit review still exposes diff, discard, and close decisions without auto-saving.
 
 ## Auto-Backup Restore
 

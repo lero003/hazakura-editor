@@ -28,7 +28,7 @@ Last reviewed: 2026-06-06
 - Markdown/text source remains the saved document model.
 - Default Safe Editor Mode has no Git client, LSP, general terminal, arbitrary command execution, plugin system, project-wide indexing, auto-apply, or auto-commit behavior.
 - Agent Workbench is optional and explicit. It may host one allowlisted `codex`, `opencode`, `pi`, or `claude` provider session in the selected workspace after restart-required enablement and responsibility-boundary consent.
-- Review Desk remains manual candidate review: compare explicitly, apply explicitly, and never auto-save candidate output.
+- Manual Review Desk entry points are hidden for the current App Store-oriented surface. Diff, recovery review, and Apple Local Assist edit review remain explicit, unsaved, and inspectable.
 - Workspace file operations are bounded to the selected workspace. Workspace-internal drag/drop Move remains experimental; New File, New Folder, Rename, and Move to Trash are the dependable file-tree operations.
 
 ## Release Readiness
@@ -82,7 +82,7 @@ Current limits: live generation depends on macOS 26+ Apple Foundation Models ava
 4. Keep Apple Local Assist quality polish secondary until the App Store lane shape is proven.
 5. Decide whether `minimumSystemVersion` should remain editor-wide `11.0` or move to a split / release-lane policy for Apple Local Assist builds.
 6. Review App Store sandbox, signing, hardened runtime, and notarization behavior for the bundled helper before any distribution-lane change.
-7. Keep the release plan to two binary lanes by default: App Store build (`Safe Editor` + `Apple Local Assist`) and Developer / GitHub build (same base plus `Agent Workbench`). `npm run build:macos-lanes` now leaves the App Store preview at `hazakura editor.app`, re-identifies the Developer / GitHub lane as `hazakura editor Dev.app` with bundle identifier `lab.hazakura.note.dev`, and re-signs it; the warning-expected GitHub DMG preview packages the Dev bundle. Treat an official website as a pointer to those lanes, not a third build.
+7. Keep the release plan to two binary lanes by default: App Store build (`Safe Editor` + `Apple Local Assist`) and Developer / GitHub build (same base plus `Agent Workbench`). `npm run build` now produces the normal App Store preview lane at `hazakura editor.app`; `npm run build:macos-lanes` additionally re-identifies the Developer / GitHub lane as `hazakura editor Dev.app` with bundle identifier `lab.hazakura.note.dev` and re-signs it; the warning-expected GitHub DMG preview packages the Dev bundle. Treat an official website as a pointer to those lanes, not a third build.
 
 ## Next Safe Actions
 

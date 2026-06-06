@@ -24,7 +24,7 @@ The design target is:
 ```txt
 Safe Editor
 =
-Markdown/text reading, editing, preview, file comparison, Review Desk, export
+Markdown/text reading, editing, preview, file comparison, explicit change review, export
 + no general terminal
 + no arbitrary command execution
 + no project-wide agent behavior
@@ -106,7 +106,7 @@ The request target should stay bounded: selected text when present, otherwise th
 
 Because the current Apple model path is small and availability-gated, product claims should stay modest. Apple Local Assist is not intended for code review, multi-file understanding, long-document restructuring, autonomous agent work, broad design judgment, or advanced reasoning.
 
-Apple Local Assist may update the unsaved editor buffer directly **only** as an AI edit transaction: explicit user request, before/after record, source label, no auto-save, and a path to Diff / change history. Review Desk remains a detailed inspection layer, not the primary Apple Local Assist surface.
+Apple Local Assist may update the unsaved editor buffer directly **only** as an AI edit transaction: explicit user request, before/after record, source label, no auto-save, and a path to Diff / change history. Manual Review Desk entry points are not the primary Apple Local Assist surface.
 
 Apple Local Assist must not start as:
 
@@ -144,7 +144,7 @@ Apple Local Assist may reuse Agent Workbench implementation patterns such as ava
 
 Future distribution may use build-time variants rather than runtime settings alone:
 
-- App Store build: Safe Editor, L Mode, Review Desk / Diff, and Apple Local Assist when available; no External Agent Workbench, no CLI launch, no arbitrary process execution, no provider-add UI, and no custom updater.
+- App Store build: Safe Editor, L Mode, Diff / explicit change review, and Apple Local Assist when available; no External Agent Workbench, no CLI launch, no arbitrary process execution, no provider-add UI, and no custom updater.
 - Developer / GitHub build: App Store feature set plus External Agent Workbench when the boundary remains explicit; this lane may carry warning-expected DMG previews until Developer ID signing and notarization are ready.
 
 Build-time separation is preferred for distribution trust because it is easier to explain and audit than hiding risky features behind settings.

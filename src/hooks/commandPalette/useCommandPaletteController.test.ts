@@ -39,7 +39,6 @@ describe("useCommandPaletteController", () => {
           toggleLMode: vi.fn(),
           toggleOutlinePane: vi.fn(),
           toggleQuickOpen: vi.fn(),
-          toggleReviewDesk: vi.fn(),
         },
         activeTab: null,
         activeTabId: null,
@@ -141,7 +140,6 @@ describe("useCommandPaletteController", () => {
           toggleLMode: vi.fn(),
           toggleOutlinePane: vi.fn(),
           toggleQuickOpen: vi.fn(),
-          toggleReviewDesk: vi.fn(),
         },
         activeTab: null,
         activeTabId: null,
@@ -194,6 +192,10 @@ describe("useCommandPaletteController", () => {
     expect(lModeCommand?.category).toBe("View");
     expect(lModeCommand?.label).toBe("えるモード切替");
     expect(lModeCommand?.shortcut).toBe("⇧⌘L");
+
+    const commandIds = result.current.filteredCommands.map((command) => command.id);
+    expect(commandIds).not.toContain("review.open");
+    expect(commandIds).toContain("review.tabAgainstDisk");
   });
 
   it("hides Apple Local Assist commands when availability is not `available`", () => {
@@ -227,7 +229,6 @@ describe("useCommandPaletteController", () => {
           toggleLMode: vi.fn(),
           toggleOutlinePane: vi.fn(),
           toggleQuickOpen: vi.fn(),
-          toggleReviewDesk: vi.fn(),
         },
         activeTab: null,
         activeTabId: null,
@@ -318,7 +319,6 @@ describe("useCommandPaletteController", () => {
           toggleLMode: vi.fn(),
           toggleOutlinePane: vi.fn(),
           toggleQuickOpen: vi.fn(),
-          toggleReviewDesk: vi.fn(),
         },
         activeTab: null,
         activeTabId: null,
@@ -426,7 +426,6 @@ describe("useCommandPaletteController", () => {
           toggleLMode: vi.fn(),
           toggleOutlinePane: vi.fn(),
           toggleQuickOpen: vi.fn(),
-          toggleReviewDesk: vi.fn(),
         },
         activeTab: null,
         activeTabId: null,

@@ -27,7 +27,7 @@ These boundaries stay active across roadmap changes:
 - Markdown/text source remains canonical.
 - Default Safe Editor Mode has no general terminal, arbitrary command execution, Git client, LSP, plugin system, project-wide indexing, auto-apply, or auto-commit behavior.
 - Agent Workbench is a separate trust boundary: explicit, consent-gated, allowlisted providers only, selected workspace root only, one active session, no restore, no auto-apply.
-- Review Desk is manual candidate review: compare explicitly, apply explicitly, save explicitly.
+- Manual Review Desk entry points are hidden for the current App Store-oriented surface. Diff, recovery review, and Apple Local Assist edit review remain explicit, unsaved, and inspectable.
 - Workspace file operations stay bounded to the selected workspace and must not become a full file manager.
 
 ## Published Lane: v0.10 L Mode Alpha Preview
@@ -148,7 +148,7 @@ Current probe memo: `docs/v0.13-distribution-probe.md`.
 
 Goal: make the App Store build feel stable enough for ordinary Markdown writing.
 
-- Smoke the built app with normal editor, L Mode, Diff / Review Desk, export / print, and Apple Local Assist.
+- Smoke the built app with normal editor, L Mode, Diff / explicit change review, export / print, and Apple Local Assist.
 - Polish Apple Local Assist with real lightweight Japanese writing examples: short summaries, rephrasing, heading / tag ideas, light cleanup, and short explanations.
 - Verify unavailable, disabled, unsupported-language, and unsupported-device states without blocking Safe Editor.
 - Keep every AI-written change explicit, unsaved, diff-reviewable, and discardable.
@@ -200,7 +200,7 @@ Current preview releases are warning-expected DMG previews unless the user opens
 
 The intended stable distribution shape is two public binary lanes:
 
-- App Store build: Safe Editor + L Mode + Review Desk / Diff + Apple Local Assist, without External Agent Workbench or CLI launch.
+- App Store build: Safe Editor + L Mode + Diff / explicit change review + Apple Local Assist, without External Agent Workbench or CLI launch.
 - Developer / GitHub build: the same base plus optional Agent Workbench for allowlisted local CLI providers.
 
 An official site may explain the product and route users to those lanes, but should not create a separate official free binary by default.

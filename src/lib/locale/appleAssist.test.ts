@@ -56,12 +56,12 @@ describe("getAppleAssistCopy", () => {
 
   it("disclaims auto-apply in the operation hints", () => {
     // The hint must never read as "this will change your file".
-    // Both operations must say the output goes through Review
-    // Desk and must be applied explicitly.
+    // Both operations must direct the user to review changes before
+    // applying them explicitly.
     for (const lang of ["en", "ja", "kana"] as const) {
       const copy = getAppleAssistCopy(lang);
-      expect(copy.summarizeHint).toMatch(/Review Desk|りびゅー ですく|りびゅー・ですく/);
-      expect(copy.rephraseHint).toMatch(/Review Desk|りびゅー ですく|りびゅー・ですく/);
+      expect(copy.summarizeHint).toMatch(/diff|差分|さぶん/);
+      expect(copy.rephraseHint).toMatch(/diff|差分|さぶん/);
     }
   });
 });

@@ -249,7 +249,7 @@ Include:
 
 - Safe Editor
 - L Mode
-- Review Desk / Diff
+- Diff / explicit change review
 - Apple Local Assist when available
 - bounded workspace file access through user-selected files/folders
 
@@ -273,7 +273,7 @@ May include:
 
 - Safe Editor
 - L Mode
-- Review Desk / Diff
+- Diff / explicit change review
 - Apple Local Assist when available
 - External Agent Workbench
 - allowlisted local CLI providers

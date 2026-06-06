@@ -30,10 +30,10 @@ export function getAppleAssistCopy(lang: MenuLanguage): AppleAssistCopy {
       commandCategory: "あっぷる ろーかる あしす と",
       summarizeLabel: "せんたくはんいを ようやく",
       summarizeHint:
-        "あっぷる の この Mac の きのうで えらんだ ぶんしょうを ようやく します。りびゅー ですく を とおして くわしく みてから つかいます。",
+        "あっぷる の この Mac の きのうで えらんだ ぶんしょうを ようやく します。さぶんを みてから つかいます。",
       rephraseLabel: "せんたくはんいを かきかえ",
       rephraseHint:
-        "あっぷる の この Mac の きのうで えらんだ ぶんしょうを かきかえ します。りびゅー ですく を とおして くわしく みてから つかいます。",
+        "あっぷる の この Mac の きのうで えらんだ ぶんしょうを かきかえ します。さぶんを みてから つかいます。",
       availabilityAvailable: "この Mac で あっぷる ろーかる あしす とが つかえます。",
       availabilityUnavailablePrefix:
         "あっぷる ろーかる あしす とは いま つかえません: ",
@@ -49,10 +49,10 @@ export function getAppleAssistCopy(lang: MenuLanguage): AppleAssistCopy {
         commandCategory: "Apple Local Assist",
         summarizeLabel: "選択範囲を要約",
         summarizeHint:
-          "Apple のオンデバイス機能で、選択した文章を要約します。出力は必ず Review Desk 経由で明示的に適用してください。",
+          "Apple のオンデバイス機能で、選択した文章を要約します。差分を確認してから明示的に適用してください。",
         rephraseLabel: "選択範囲を言い換え",
         rephraseHint:
-          "Apple のオンデバイス機能で、選択した文章を別の表現に書き換えます。出力は必ず Review Desk 経由で明示的に適用してください。",
+          "Apple のオンデバイス機能で、選択した文章を別の表現に書き換えます。差分を確認してから明示的に適用してください。",
         availabilityAvailable: "この Mac で Apple Local Assist が使えます。",
         availabilityUnavailablePrefix:
           "Apple Local Assist は現在使えません: ",
@@ -66,10 +66,10 @@ export function getAppleAssistCopy(lang: MenuLanguage): AppleAssistCopy {
         commandCategory: "Apple Local Assist",
         summarizeLabel: "Summarize selection",
         summarizeHint:
-          "Generate a summary of the selected text using Apple's on-device model. Output is never auto-applied; you must review and apply it explicitly via Review Desk.",
+          "Generate a summary of the selected text using Apple's on-device model. Output is never auto-applied; review the diff before applying it explicitly.",
         rephraseLabel: "Rephrase selection",
         rephraseHint:
-          "Generate a rephrasing of the selected text using Apple's on-device model. Output is never auto-applied; you must review and apply it explicitly via Review Desk.",
+          "Generate a rephrasing of the selected text using Apple's on-device model. Output is never auto-applied; review the diff before applying it explicitly.",
         availabilityAvailable: "Apple Local Assist is available on this Mac.",
         availabilityUnavailablePrefix:
           "Apple Local Assist is currently unavailable: ",

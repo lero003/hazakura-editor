@@ -4,8 +4,8 @@ import { isTauriRuntime } from "./_runtime";
 // Apple Local Assist is an Assist Surface provider class — NOT a
 // CLI-agent provider. The types below describe the narrow
 // document-help surface (selected text in, candidate text out,
-// nothing else). They share the Review Desk / Diff handoff
-// pattern but do not share the External Agent Workbench CLI
+// nothing else). They share the explicit review handoff pattern
+// but do not share the External Agent Workbench CLI
 // trust boundary. See docs/apple-local-assist-distribution-plan.md.
 
 export type AppleAssistOperation =
@@ -61,8 +61,8 @@ export type AppleAssistRequest = {
 export type AppleAssistResponse = {
   operation: AppleAssistOperation;
   // The generated candidate text. NEVER auto-applied. The caller
-  // is expected to feed this into the Review Desk's
-  // runCandidateCompare with a fresh candidateSourceLabel.
+  // is expected to route this through an explicit review surface
+  // before applying it to the editor buffer.
   candidateText: string;
   // Opaque model identifier. Fixture builds return "fixture:*";
   // live builds return an Apple Foundation Models identifier.
