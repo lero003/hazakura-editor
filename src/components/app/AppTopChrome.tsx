@@ -10,6 +10,7 @@ import type {
   RightPaneMode,
   AssistSurfacePreference,
 } from "../../types";
+import { isDeveloperDistributionLane } from "../../lib/distributionLane";
 
 type AppTopChromeProps = {
   activeDirty: boolean;
@@ -76,6 +77,8 @@ export function AppTopChrome({
   sidePaneMode,
   tabs,
 }: AppTopChromeProps) {
+  const showDevBadge = isDeveloperDistributionLane();
+
   return (
     <TabBar
       activeTabId={activeTabId}
@@ -92,6 +95,14 @@ export function AppTopChrome({
       shouldSuppressTabClick={shouldSuppressTabClick}
       tabs={tabs}
     >
+      {showDevBadge ? (
+        <span
+          className="distribution-badge distribution-badge-dev"
+          title="Developer / GitHub preview build"
+        >
+          DEV
+        </span>
+      ) : null}
       <DocumentMetaBar
         activeDirty={activeDirty}
         activeTab={activeTab}

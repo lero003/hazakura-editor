@@ -54,7 +54,7 @@ prepare_dev_bundle_identity() {
 }
 
 echo "==> build Developer / GitHub lane"
-npm run build
+HAZAKURA_DISTRIBUTION_LANE=developer VITE_HAZAKURA_DISTRIBUTION_LANE=developer npm run build
 require_app "$normal_app"
 
 echo "==> copy Developer / GitHub lane to: $dev_app"

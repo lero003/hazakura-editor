@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { setCurrentWindowTitle } from "../../lib/tauri";
+import { isDeveloperDistributionLane } from "../../lib/distributionLane";
 
 type TitledDocument = {
   name: string;
@@ -17,11 +18,14 @@ export function useWindowTitle({
   selectedImage,
 }: UseWindowTitleOptions) {
   useEffect(() => {
-    const title = selectedImage
-      ? `${selectedImage.name} - hazakura editor`
-      : activeTab
-      ? `${activeTab.name}${activeDirty ? " *" : ""} - hazakura editor`
+    const appName = isDeveloperDistributionLane()
+      ? "hazakura editor Dev"
       : "hazakura editor";
+    const title = selectedImage
+      ? `${selectedImage.name} - ${appName}`
+      : activeTab
+      ? `${activeTab.name}${activeDirty ? " *" : ""} - ${appName}`
+      : appName;
 
     void setCurrentWindowTitle(title).catch((err) => {
       console.warn("Failed to update window title", err);

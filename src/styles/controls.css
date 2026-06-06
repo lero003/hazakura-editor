@@ -130,6 +130,29 @@
   font-weight: 500;
 }
 
+.distribution-badge {
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--accent) 32%, var(--border));
+  border-radius: 999px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 10.5px;
+  font-weight: 700;
+  height: 22px;
+  justify-content: center;
+  letter-spacing: 0;
+  line-height: 1;
+  padding: 0 8px;
+  text-transform: uppercase;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.distribution-badge-dev {
+  background: color-mix(in srgb, var(--accent) 13%, var(--surface));
+  color: var(--accent);
+}
+
 /* フローティングカード型タブ / Floating Card Tabs */
 .tab-item {
   align-items: center;
@@ -226,4 +249,3 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-

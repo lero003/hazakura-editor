@@ -12,6 +12,10 @@ export function isAppStoreDistributionLane(): boolean {
   return readHazakuraDistributionLane() === "app-store";
 }
 
+export function isDeveloperDistributionLane(): boolean {
+  return readHazakuraDistributionLane() === "developer";
+}
+
 export function isExternalCliAssistSurfaceAllowed(): boolean {
   return !isAppStoreDistributionLane();
 }
