@@ -2,18 +2,85 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { LModeActionRail } from "./LModeActionRail";
 import { getLModeCopy } from "../../lib/locale/lMode";
+import { getSafeEditorCopy } from "../../lib/locale/safeEditor";
+import { getWorkspaceFileOpsCopy } from "../../lib/locale/workspaceFileOps";
+import type { ChangeReviewSnapshot } from "../../hooks/diff/useCompareExecution";
 
 afterEach(cleanup);
 
+function workspaceSidebarProps() {
+  return {
+    activePath: null,
+    compareSelectionEnabled: false,
+    compareSourcePath: null,
+    compareTargetPath: null,
+    copy: getSafeEditorCopy("en"),
+    fileOpsCopy: getWorkspaceFileOpsCopy("en"),
+    onCreateFile: vi.fn(),
+    onCreateFolder: vi.fn(),
+    onLoadDirectory: vi.fn(),
+    onMoveEntry: vi.fn(),
+    onMoveToTrash: vi.fn(),
+    onOpenContextMenu: vi.fn(),
+    onOpenRootContextMenu: vi.fn(),
+    onOpenFile: vi.fn(),
+    onOpenWorkspace: vi.fn(),
+    onClearCompareSelection: vi.fn(),
+    onSelectCompareFile: vi.fn(),
+    onSubmitRename: vi.fn(),
+    requestRename: vi.fn(),
+    renamingPath: null,
+    workspaceRootPath: null,
+    workspaceTree: null,
+  };
+}
+
+function changeReviewSnapshot(): ChangeReviewSnapshot {
+  return {
+    compareCase: {
+      kind: "changes",
+      key: "case-1",
+      scope: "buffer-vs-disk",
+      documentPath: "/workspace/note.md",
+      documentLabel: "note.md",
+      leftColumnLabel: "Disk",
+      rightColumnLabel: "Editor",
+    },
+    compareView: {
+      caseKey: "case-1",
+      additions: 1,
+      removals: 1,
+      lines: [
+        {
+          kind: "removed",
+          leftLine: 1,
+          rightLine: null,
+          text: "before",
+        },
+        {
+          kind: "added",
+          leftLine: null,
+          rightLine: 1,
+          text: "after",
+        },
+      ],
+    },
+  };
+}
+
 describe("LModeActionRail", () => {
-  it("renders the workspace and Apple Local Assist actions without review changes when clean", () => {
+  it("renders the workspace toggle and Apple Local Assist action without review changes when clean", () => {
     render(
       <LModeActionRail
+        activeDirty={false}
+        activeDocumentPath={null}
         copy={getLModeCopy("en")}
-        onExitToWorkspace={vi.fn()}
+        dirtyLabel=""
+        menuLanguage="en"
         onOpenAppleAssistWindow={vi.fn()}
         onReviewChanges={vi.fn()}
         reviewChangesAvailable={false}
+        workspaceSidebarProps={workspaceSidebarProps()}
       />,
     );
 
@@ -23,26 +90,95 @@ describe("LModeActionRail", () => {
     expect(screen.queryByRole("button", { name: /Review changes/ })).toBeNull();
   });
 
-  it("invokes review, workspace, and Apple Local Assist actions", () => {
-    const onExitToWorkspace = vi.fn();
+  it("opens the local change review sheet and invokes Apple Local Assist", async () => {
     const onOpenAppleAssistWindow = vi.fn();
-    const onReviewChanges = vi.fn();
+    const onReviewChanges = vi.fn().mockResolvedValue(changeReviewSnapshot());
     render(
       <LModeActionRail
+        activeDirty={false}
+        activeDocumentPath="/workspace/note.md"
         copy={getLModeCopy("en")}
-        onExitToWorkspace={onExitToWorkspace}
+        dirtyLabel=""
+        menuLanguage="en"
         onOpenAppleAssistWindow={onOpenAppleAssistWindow}
         onReviewChanges={onReviewChanges}
         reviewChangesAvailable={true}
+        workspaceSidebarProps={workspaceSidebarProps()}
       />,
     );
 
     fireEvent.click(screen.getByRole("button", { name: /Review changes/ }));
     fireEvent.click(screen.getByRole("button", { name: /Apple Local Assist/ }));
-    fireEvent.click(screen.getByRole("button", { name: /Open workspace/ }));
 
+    expect(await screen.findByRole("dialog", { name: "Change review" })).toBeTruthy();
+    expect(screen.getByText("Changes against disk")).toBeTruthy();
     expect(onReviewChanges).toHaveBeenCalledTimes(1);
     expect(onOpenAppleAssistWindow).toHaveBeenCalledTimes(1);
-    expect(onExitToWorkspace).toHaveBeenCalledTimes(1);
+  });
+
+  it("closes the local change review sheet", async () => {
+    render(
+      <LModeActionRail
+        activeDirty={true}
+        activeDocumentPath="/workspace/note.md"
+        copy={getLModeCopy("en")}
+        dirtyLabel="Unsaved"
+        menuLanguage="en"
+        onOpenAppleAssistWindow={vi.fn()}
+        onReviewChanges={vi.fn().mockResolvedValue(changeReviewSnapshot())}
+        reviewChangesAvailable={true}
+        workspaceSidebarProps={workspaceSidebarProps()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Review changes/ }));
+    expect(await screen.findByRole("dialog", { name: "Change review" })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+
+    expect(screen.queryByRole("dialog", { name: "Change review" })).toBeNull();
+  });
+
+  it("opens and closes the L Mode file tree drawer", () => {
+    render(
+      <LModeActionRail
+        activeDirty={false}
+        activeDocumentPath={null}
+        copy={getLModeCopy("en")}
+        dirtyLabel=""
+        menuLanguage="en"
+        onOpenAppleAssistWindow={vi.fn()}
+        onReviewChanges={vi.fn()}
+        reviewChangesAvailable={false}
+        workspaceSidebarProps={workspaceSidebarProps()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Open workspace/ }));
+    expect(screen.getByRole("dialog", { name: "L Mode file tree" })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Close file tree" }));
+    expect(screen.queryByRole("dialog", { name: "L Mode file tree" })).toBeNull();
+  });
+
+  it("marks the workspace toggle when the active tab is dirty", () => {
+    const { container } = render(
+      <LModeActionRail
+        activeDirty={true}
+        activeDocumentPath="/workspace/note.md"
+        copy={getLModeCopy("en")}
+        dirtyLabel="Unsaved"
+        menuLanguage="en"
+        onOpenAppleAssistWindow={vi.fn()}
+        onReviewChanges={vi.fn()}
+        reviewChangesAvailable={false}
+        workspaceSidebarProps={workspaceSidebarProps()}
+      />,
+    );
+
+    expect(
+      screen.getByRole("button", { name: /Open workspace \(Unsaved\)/ }),
+    ).toBeTruthy();
+    expect(container.querySelector(".l-mode-workspace-unsaved-dot")).toBeTruthy();
   });
 });

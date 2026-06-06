@@ -17,6 +17,15 @@ export type LModeCopy = {
   statusBarWorkspaceTitle: string;
   statusBarAppleAssistLabel: string;
   statusBarAppleAssistTitle: string;
+  workspaceToggleLabel: string;
+  workspaceToggleTitle: string;
+  workspaceOverlayLabel: string;
+  workspaceOverlayCloseLabel: string;
+  unsavedIndicatorLabel: string;
+  changeReviewSheetLabel: string;
+  changeReviewSheetTitle: string;
+  changeReviewSheetCloseLabel: string;
+  changeReviewSheetCloseTitle: string;
   // v0.12+ Apple Local Assist Writing Companion (slice 5).
   // The escape-hatch bar shows a one-line summary of a
   // pending AI edit and offers Discard / Close actions.
@@ -47,15 +56,24 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
       typewriterPreferenceHint:
         "そくtyoせんのうほうをちゅうおうにキープします。",
       paletteCommand: "えるモードきりかえ",
-      exitPillLabel: "えるもーどしゅうりょう",
-      exitPillTitle: "えるもーどをとじる",
+      exitPillLabel: "Safe Editへ",
+      exitPillTitle: "Safe Edit に きりかへ",
       actionRailLabel: "えるもーどのどうせん",
       statusBarReviewChangesLabel: "へんこうを かくにん",
       statusBarWorkspaceLabel: "わーくすぺーすへ",
-      statusBarReviewChangesTitle: "えるもーどをとじて ディスクとの さぶんを ひらく",
+      statusBarReviewChangesTitle: "えるもーどのまま ディスクとの さぶんを ひらく",
       statusBarWorkspaceTitle: "えるもーどをとじて わーくすぺーすに もどる",
       statusBarAppleAssistLabel: "Apple Local Assist",
       statusBarAppleAssistTitle: "Apple Local Assist の ウィンドウを ひらく / かくす",
+      workspaceToggleLabel: "わーくすぺーすを ひらく",
+      workspaceToggleTitle: "えるもーどのまま ファイルツリーを ひらく / とぢる",
+      workspaceOverlayLabel: "えるもーどの ファイルツリー",
+      workspaceOverlayCloseLabel: "ファイルツリーを とぢる",
+      unsavedIndicatorLabel: "ほぞんしていません",
+      changeReviewSheetLabel: "へんこうの かくにん",
+      changeReviewSheetTitle: "ディスクとの差分",
+      changeReviewSheetCloseLabel: "とぢる",
+      changeReviewSheetCloseTitle: "へんこうの かくにんを とぢる",
       appleAssistReviewBarLabel: "Apple Local Assist が ほんぶんを へんこうしました",
       appleAssistReviewBarTitle: "さぶんを かくにんするか とりけすか えらんでください",
       appleAssistReviewBarOpenDiffLabel: "さぶんを ひらく",
@@ -79,15 +97,24 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
         typewriterPreferenceHint:
           "カーソル行を縦方向中央付近に保ち、書きながら視線を動かさないようにします。",
         paletteCommand: "えるモード切替",
-        exitPillLabel: "えるモード終了",
-        exitPillTitle: "えるモードを閉じる",
+        exitPillLabel: "Safe Editへ",
+        exitPillTitle: "Safe Edit に切り替え",
         actionRailLabel: "えるモードの導線",
         statusBarReviewChangesLabel: "変更を確認",
         statusBarWorkspaceLabel: "ワークスペースへ",
-        statusBarReviewChangesTitle: "えるモードを閉じてディスクとの差分を開く",
+        statusBarReviewChangesTitle: "えるモードのままディスクとの差分を開く",
         statusBarWorkspaceTitle: "えるモードを閉じてワークスペースに戻る",
         statusBarAppleAssistLabel: "Apple Local Assist",
         statusBarAppleAssistTitle: "Apple Local Assist ウィンドウを表示 / 非表示",
+        workspaceToggleLabel: "ワークスペースを開く",
+        workspaceToggleTitle: "えるモードのままファイルツリーを表示 / 非表示",
+        workspaceOverlayLabel: "えるモードのファイルツリー",
+        workspaceOverlayCloseLabel: "ファイルツリーを閉じる",
+        unsavedIndicatorLabel: "未保存です",
+        changeReviewSheetLabel: "変更の確認",
+        changeReviewSheetTitle: "ディスクとの差分",
+        changeReviewSheetCloseLabel: "閉じる",
+        changeReviewSheetCloseTitle: "変更の確認を閉じる",
         appleAssistReviewBarLabel: "Apple Local Assist が本文を変更しました",
         appleAssistReviewBarTitle: "差分を確認するか取り消すか選んでください",
         appleAssistReviewBarOpenDiffLabel: "差分を開く",
@@ -108,16 +135,25 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
         typewriterPreferenceHint:
           "Keep the active line near the vertical center of the viewport as you type.",
         paletteCommand: "Toggle L Mode",
-        exitPillLabel: "Exit L Mode",
-        exitPillTitle: "Close L Mode",
+        exitPillLabel: "Safe Edit",
+        exitPillTitle: "Switch to Safe Edit mode",
         actionRailLabel: "L Mode actions",
         statusBarReviewChangesLabel: "Review changes",
         statusBarWorkspaceLabel: "Open workspace",
-        statusBarReviewChangesTitle: "Exit L Mode and open the diff against disk",
+        statusBarReviewChangesTitle: "Open the diff against disk without leaving L Mode",
         statusBarWorkspaceTitle: "Exit L Mode and return to the workspace",
         statusBarAppleAssistLabel: "Apple Local Assist",
         statusBarAppleAssistTitle:
           "Show or hide the Apple Local Assist writing companion window",
+        workspaceToggleLabel: "Open workspace",
+        workspaceToggleTitle: "Show or hide the file tree without leaving L Mode",
+        workspaceOverlayLabel: "L Mode file tree",
+        workspaceOverlayCloseLabel: "Close file tree",
+        unsavedIndicatorLabel: "Unsaved changes",
+        changeReviewSheetLabel: "Change review",
+        changeReviewSheetTitle: "Changes against disk",
+        changeReviewSheetCloseLabel: "Close",
+        changeReviewSheetCloseTitle: "Close change review",
         appleAssistReviewBarLabel: "Apple Local Assist changed your text",
         appleAssistReviewBarTitle: "Review or discard the pending AI edit",
         appleAssistReviewBarOpenDiffLabel: "Open diff",

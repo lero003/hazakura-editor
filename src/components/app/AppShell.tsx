@@ -9,6 +9,7 @@ import type {
   ResolvedTheme,
   ReviewSurface as ReviewSurfaceKind,
 } from "../../types";
+import type { ChangeReviewSnapshot } from "../../hooks/diff/useCompareExecution";
 import type { LModeCopy, ReviewDeskCopy } from "../../lib/locale";
 import type { ReviewDeskMode } from "../../types";
 import { AmbientBackground, type AmbientMode } from "./AmbientBackground";
@@ -47,7 +48,7 @@ export type AppShellProps = ComponentProps<typeof AppTopChrome> &
     onDiscardAppleAssistEdit: (tabId: string, before: string) => void;
     onExitLModeToWorkspace: () => void;
     onOpenAppleAssistFromLMode: () => void;
-    onReviewChangesFromLMode: () => void;
+    onReviewChangesFromLMode: () => Promise<ChangeReviewSnapshot | null>;
     onToggleLMode: () => void;
     resolvedTheme: ResolvedTheme;
     reviewDeskCopy: ReviewDeskCopy;
@@ -115,11 +116,49 @@ export function AppShell(props: AppShellProps) {
             onExit={props.onToggleLMode}
           />
           <LModeActionRail
+            activeDirty={props.activeDirty}
+            activeDocumentPath={props.activeTab?.path ?? null}
             copy={props.lModeCopy}
-            onExitToWorkspace={props.onExitLModeToWorkspace}
+            dirtyLabel={props.dirtyLabel}
+            menuLanguage={props.menuLanguage}
             onOpenAppleAssistWindow={props.onOpenAppleAssistFromLMode}
             onReviewChanges={props.onReviewChangesFromLMode}
             reviewChangesAvailable={props.activeDirty}
+            workspaceSidebarProps={{
+              activePath: props.selectedImage?.path ?? props.activeTab?.path ?? null,
+              compareSelectionEnabled: props.sidePaneMode === "compare",
+              compareSourcePath: props.compareAnchor?.path ?? null,
+              compareTargetPath: props.compareTarget?.path ?? null,
+              copy: props.safeEditorCopy,
+              fileOpsCopy: props.fileOpsCopy,
+              onCreateFile: () => {
+                if (props.workspaceRootPath) {
+                  void props.createFile(props.workspaceRootPath);
+                }
+              },
+              onCreateFolder: () => {
+                if (props.workspaceRootPath) {
+                  void props.createFolder(props.workspaceRootPath);
+                }
+              },
+              onLoadDirectory: props.loadWorkspaceDirectory,
+              onMoveEntry: props.onMoveEntry,
+              onMoveToTrash: props.onMoveToTrash,
+              onOpenContextMenu: props.openWorkspaceContextMenu,
+              onOpenRootContextMenu: props.openRootWorkspaceContextMenu,
+              onOpenFile: (path) => void props.openWorkspaceFile(path),
+              onOpenWorkspace: () => void props.openWorkspace(),
+              onClearCompareSelection: () => {
+                props.clearCompareSource();
+                props.clearCompareTarget();
+              },
+              onSelectCompareFile: props.selectWorkspaceCompareFile,
+              onSubmitRename: props.onSubmitRename,
+              renamingPath: props.renamingPath,
+              requestRename: props.requestRename,
+              workspaceRootPath: props.workspaceRootPath,
+              workspaceTree: props.workspaceTree,
+            }}
           />
         </>
       ) : null}

@@ -62,29 +62,47 @@ describe("lMode.css", () => {
     expect(scrollerRule).not.toMatch(/padding:/);
   });
 
-  it("keeps secondary status details out of the quiet default view", () => {
+  it("hides the normal status bar in L Mode", () => {
     const statusRule =
       lModeCss.match(
         /:root\[data-l-mode="on"\] \.status-bar\s*{(?<body>[^}]*)}/s,
       )?.groups?.body ?? "";
-    const detailRule =
-      lModeCss.match(
-        /:root\[data-l-mode="on"\] \.status-bar-detail\s*{(?<body>[^}]*)}/s,
-      )?.groups?.body ?? "";
 
-    expect(statusRule).toMatch(/color:\s*color-mix\(in srgb,\s*var\(--text-muted\)/);
+    expect(statusRule).toMatch(/display:\s*none/);
     expect(statusRule).not.toMatch(/var\(--status-text\)/);
     expect(statusRule).not.toMatch(/var\(--status-bg\)/);
+  });
+
+  it("keeps the L Mode change review diff compact and higher contrast", () => {
+    const diffRule =
+      lModeCss.match(
+        /:root\[data-l-mode="on"\] \.l-mode-change-review-diff\s*{(?<body>[^}]*)}/s,
+      )?.groups?.body ?? "";
+    const lineNumberRule =
+      lModeCss.match(
+        /:root\[data-l-mode="on"\] \.l-mode-change-review-diff \.diff-line-number\s*{(?<body>[^}]*)}/s,
+      )?.groups?.body ?? "";
+
+    expect(diffRule).toMatch(/font-size:\s*11\.25px/);
+    expect(lineNumberRule).toMatch(/font-size:\s*9px/);
     expect(lModeCss).toMatch(
-      /:root\[data-l-mode="on"\] \.status-agent-indicator/,
-    );
-    expect(detailRule).toMatch(/display:\s*none/);
-    expect(lModeCss).toMatch(
-      /:root\[data-l-mode="on"\] \.status-bar:hover \.status-bar-detail/,
+      /:root\[data-l-mode="on"\] \.l-mode-change-review-diff \.diff-cell\.added,\s*:root\[data-l-mode="on"\] \.l-mode-change-review-diff \.diff-line-number\.added\s*{[^}]*var\(--diff-added-fg\) 18%/s,
     );
     expect(lModeCss).toMatch(
-      /:root\[data-l-mode="on"\] \.status-bar:focus-within \.status-bar-detail/,
+      /:root\[data-l-mode="on"\] \.l-mode-change-review-diff \.diff-cell\.removed,\s*:root\[data-l-mode="on"\] \.l-mode-change-review-diff \.diff-line-number\.removed\s*{[^}]*var\(--diff-removed-fg\) 18%/s,
     );
+  });
+
+  it("moves the scroll position HUD away from the top-right L Mode controls", () => {
+    const hudRule =
+      lModeCss.match(
+        /:root\[data-l-mode="on"\] \.scroll-position-hud\s*{(?<body>[^}]*)}/s,
+      )?.groups?.body ?? "";
+
+    expect(hudRule).toMatch(/top:\s*50%/);
+    expect(hudRule).toMatch(/left:\s*50%/);
+    expect(hudRule).toMatch(/right:\s*auto/);
+    expect(hudRule).toMatch(/transform:\s*translate\(-50%,\s*-50%\)/);
   });
 
   it("does not restyle CodeMirror's measured line boxes with margins", () => {

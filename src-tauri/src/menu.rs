@@ -184,7 +184,7 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
     let view_l_mode = CheckMenuItem::with_id(
         app,
         MENU_TOGGLE_L_MODE,
-        label("L Mode", "えるモード"),
+        label("L Mode / Safe Edit", "えるモード / Safe Edit"),
         true,
         l_mode_enabled,
         Some("CmdOrCtrl+Shift+L"),
@@ -444,7 +444,7 @@ fn kana_menu_label(japanese: &'static str) -> Option<&'static str> {
         "表示" => "ながめ",
         "プレビュー" => "したみ",
         "レビューデスク" => "れびゅーのつくゑ",
-        "えるモード" => "えるもーど",
+        "えるモード / Safe Edit" => "えるもーど / Safe Edit",
         "Agent ウィンドウを開く" => "えーじぇんとまどをひらく",
         "行を折り返す" => "くだりををる",
         "不可視文字を表示" => "みえぬもじをあらはす",

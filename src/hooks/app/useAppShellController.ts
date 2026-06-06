@@ -541,6 +541,7 @@ export function useAppShellController() {
     closeCompareView,
     compareWorkspaceFiles,
     copyWorkspaceFullPath,
+    prepareReviewTabAgainstDisk,
     requestReviewBackupAgainstBuffer,
     requestReviewDraftAgainstDisk,
     requestReviewTabAgainstDisk,
@@ -741,17 +742,15 @@ export function useAppShellController() {
     }));
   }, [setEditorSettings]);
 
-  // Escape hatches surfaced in the L Mode action rail. Both
-  // handlers exit L Mode first because the diff pane and the
-  // workspace tree are hidden while L Mode is active.
-  const reviewChangesFromLMode = useCallback(() => {
-    exitLMode();
-    if (activeTab) {
-      window.setTimeout(() => {
-        requestReviewTabAgainstDisk(activeTab);
-      }, 0);
+  // Escape hatch surfaced in the L Mode action rail. This
+  // returns a local diff snapshot so L Mode can show a small
+  // review window without opening the Safe Edit right pane.
+  const reviewChangesFromLMode = useCallback(async () => {
+    if (!activeTab) {
+      return null;
     }
-  }, [activeTab, exitLMode, requestReviewTabAgainstDisk]);
+    return prepareReviewTabAgainstDisk(activeTab);
+  }, [activeTab, prepareReviewTabAgainstDisk]);
   const exitLModeToWorkspace = useCallback(() => {
     exitLMode();
   }, [exitLMode]);

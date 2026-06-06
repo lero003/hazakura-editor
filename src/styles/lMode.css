@@ -304,6 +304,7 @@
 }
 
 :root[data-l-mode="on"] .status-bar {
+  display: none;
   position: fixed;
   right: 18px;
   bottom: 18px;
@@ -346,6 +347,19 @@
 
 :root[data-l-mode="on"] .status-bar-format-group {
   display: none;
+}
+
+:root[data-l-mode="on"] .status-bar-unsaved-pill {
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  margin-left: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--accent);
+  color: transparent;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--surface) 72%, transparent);
+  letter-spacing: 0;
 }
 
 /* --- 2b. L Mode action rail ---
@@ -415,6 +429,320 @@
 
 :root[data-l-mode="on"] .l-mode-action-button:active {
   transform: translateY(1px);
+}
+
+/* --- 2c. L Mode workspace drawer ---
+   The file tree stays hidden by default, but the writer can
+   call it back without leaving L Mode. The visible affordance
+   is a translucent icon in the top-left; the drawer reuses
+   the normal bounded WorkspaceSidebar so file operations keep
+   the same safety behavior as normal mode. */
+:root[data-l-mode="on"] .l-mode-workspace-toggle {
+  --_lmode-surface-bg-opacity: 54%;
+  --_lmode-surface-border-opacity: 34%;
+  --_lmode-surface-blur: 14px;
+  --_lmode-surface-shadow: var(--shadow-sm);
+  position: fixed;
+  top: 16px;
+  left: 18px;
+  z-index: 101;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  color: color-mix(in srgb, var(--text-muted) 82%, transparent);
+  opacity: 0.18;
+  cursor: pointer;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+:root[data-l-mode="on"] .l-mode-workspace-toggle:hover,
+:root[data-l-mode="on"] .l-mode-workspace-toggle:focus-visible,
+:root[data-l-mode="on"] .l-mode-workspace-toggle[data-open="true"] {
+  opacity: 0.96;
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 34%, var(--border));
+  transform: translateY(-1px);
+  outline: none;
+}
+
+:root[data-l-mode="on"] .l-mode-workspace-toggle:active {
+  transform: translateY(1px);
+}
+
+:root[data-l-mode="on"] .l-mode-workspace-unsaved-dot {
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--surface) 72%, transparent);
+}
+
+:root[data-l-mode="on"] .l-mode-workspace-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 98;
+  pointer-events: none;
+}
+
+:root[data-l-mode="on"] .l-mode-workspace-backdrop {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  pointer-events: auto;
+  cursor: default;
+}
+
+:root[data-l-mode="on"] .l-mode-workspace-drawer {
+  position: absolute;
+  top: 58px;
+  left: 18px;
+  bottom: 18px;
+  width: min(320px, calc(100vw - 36px));
+  pointer-events: auto;
+  animation: l-mode-workspace-drawer-in 180ms ease-out;
+}
+
+:root[data-l-mode="on"] .l-mode-workspace-drawer .file-tree-pane {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  border: 1px solid color-mix(in srgb, var(--border) 58%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(18px) saturate(1.05);
+}
+
+:root[data-l-mode="on"] .l-mode-workspace-drawer .workspace-header {
+  background: color-mix(in srgb, var(--surface-strong) 58%, transparent);
+}
+
+@keyframes l-mode-workspace-drawer-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* --- 2d. L Mode local change review sheet ---
+   "Review changes" in L Mode opens a temporary floating
+   window instead of switching into Safe Edit's right pane.
+   The diff renderer is shared with the normal compare view;
+   this CSS only controls the window chrome and bounded size. */
+:root[data-l-mode="on"] .l-mode-change-review-sheet {
+  position: fixed;
+  top: 92px;
+  right: 18px;
+  z-index: 102;
+  display: flex;
+  flex-direction: column;
+  width: min(760px, calc(100vw - 36px));
+  max-height: min(68vh, 620px);
+  padding: 10px;
+  border: 1px solid color-mix(in srgb, var(--border) 62%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface) 84%, transparent);
+  backdrop-filter: blur(20px) saturate(1.05);
+  box-shadow: var(--shadow-lg);
+  color: var(--text);
+  font-family: var(--lmode-ui-font-family);
+  animation: l-mode-change-review-sheet-in 160ms ease-out;
+  overflow: hidden;
+}
+
+:root[data-l-mode="on"] .l-mode-change-review-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 0 0 8px;
+}
+
+:root[data-l-mode="on"] .l-mode-change-review-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+}
+
+:root[data-l-mode="on"] .l-mode-change-review-title-group {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+
+:root[data-l-mode="on"] .l-mode-change-review-title {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-l-mode="on"] .l-mode-change-review-meta {
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-l-mode="on"] .l-mode-change-review-counts {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-l-mode="on"] .l-mode-change-review-counts span {
+  display: inline-block;
+  min-width: 1.6em;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--surface-strong) 74%, transparent);
+  text-align: center;
+}
+
+:root[data-l-mode="on"] .l-mode-change-review-close-button {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  padding: 0;
+  margin: 0;
+  border: 1px solid color-mix(in srgb, var(--border) 64%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-strong) 70%, transparent);
+  color: color-mix(in srgb, var(--text) 76%, var(--text-muted));
+  font: inherit;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
+}
+
+:root[data-l-mode="on"] .l-mode-change-review-close-button:hover,
+:root[data-l-mode="on"] .l-mode-change-review-close-button:focus-visible {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 36%, var(--border));
+  color: var(--accent);
+  outline: none;
+}
+
+:root[data-l-mode="on"] .l-mode-change-review-close-button:active {
+  transform: translateY(1px);
+}
+
+:root[data-l-mode="on"] .l-mode-change-review-diff {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  border-top: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  padding-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 11.25px;
+  line-height: 1.42;
+}
+
+:root[data-l-mode="on"] .l-mode-change-review-diff .diff-row-header {
+  font-size: 9.5px;
+  letter-spacing: 0;
+}
+
+:root[data-l-mode="on"] .l-mode-change-review-diff .diff-cell {
+  padding: 1px 8px;
+}
+
+:root[data-l-mode="on"] .l-mode-change-review-diff .diff-line-number {
+  color: color-mix(in srgb, var(--text-muted) 72%, transparent);
+  font-size: 9px;
+  padding: 1px 8px 1px 6px;
+}
+
+:root[data-l-mode="on"] .l-mode-change-review-diff .diff-cell.added,
+:root[data-l-mode="on"] .l-mode-change-review-diff .diff-line-number.added {
+  background: color-mix(in srgb, var(--diff-added-fg) 18%, transparent);
+}
+
+:root[data-l-mode="on"] .l-mode-change-review-diff .diff-cell.removed,
+:root[data-l-mode="on"] .l-mode-change-review-diff .diff-line-number.removed {
+  background: color-mix(in srgb, var(--diff-removed-fg) 18%, transparent);
+}
+
+:root[data-l-mode="on"] .l-mode-change-review-diff .diff-cell.blank,
+:root[data-l-mode="on"] .l-mode-change-review-diff .diff-line-number.blank {
+  background: color-mix(in srgb, var(--text-muted) 8%, transparent);
+}
+
+:root[data-l-mode="on"] .l-mode-change-review-diff .diff-cell-marker {
+  font-size: 10px;
+  font-weight: 700;
+  opacity: 1;
+  padding-right: 6px;
+}
+
+:root[data-l-mode="on"] .l-mode-change-review-diff .diff-cell.added .diff-cell-marker {
+  color: var(--diff-added-fg);
+}
+
+:root[data-l-mode="on"] .l-mode-change-review-diff .diff-cell.removed .diff-cell-marker {
+  color: var(--diff-removed-fg);
+}
+
+@keyframes l-mode-change-review-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+:root[data-l-mode="on"] .scroll-position-hud {
+  top: 50%;
+  right: auto;
+  left: 50%;
+  max-width: min(420px, calc(100vw - 140px));
+  opacity: 0.82;
+  transform: translate(-50%, -50%);
 }
 
 /* --- 3. Page-like typography (magazine feel) ---

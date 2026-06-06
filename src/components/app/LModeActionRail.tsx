@@ -1,13 +1,30 @@
+import {
+  type ComponentProps,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import type { LModeCopy } from "../../lib/locale";
 import { LModeClasses } from "../../features/editor/lMode";
 import { DiffIcon, FolderOpenIcon, SparklesIcon } from "./Icons";
+import { WorkspaceSidebar } from "../workspace/WorkspaceSidebar";
+import { DiffBody } from "../diff/DiffBody";
+import type { ChangeReviewSnapshot } from "../../hooks/diff/useCompareExecution";
+import type { MenuLanguage } from "../../types";
+
+export type LModeWorkspaceSidebarProps = ComponentProps<typeof WorkspaceSidebar>;
 
 type LModeActionRailProps = {
+  activeDirty: boolean;
+  activeDocumentPath: string | null;
   copy: LModeCopy;
-  onExitToWorkspace: () => void;
+  dirtyLabel: string;
+  menuLanguage: MenuLanguage;
   onOpenAppleAssistWindow: () => void;
-  onReviewChanges: () => void;
+  onReviewChanges: () => Promise<ChangeReviewSnapshot | null>;
   reviewChangesAvailable: boolean;
+  workspaceSidebarProps: LModeWorkspaceSidebarProps;
 };
 
 // v0.12+ Apple Local Assist Writing Companion mock (slice 3).
@@ -20,43 +37,193 @@ type LModeActionRailProps = {
 // enforced server-side by `toggle_apple_assist_window` /
 // `open_agent_window`.
 export function LModeActionRail({
+  activeDirty,
+  activeDocumentPath,
   copy,
-  onExitToWorkspace,
+  dirtyLabel,
+  menuLanguage,
   onOpenAppleAssistWindow,
   onReviewChanges,
   reviewChangesAvailable,
+  workspaceSidebarProps,
 }: LModeActionRailProps) {
+  const [workspaceOpen, setWorkspaceOpen] = useState(false);
+  const [changeReview, setChangeReview] =
+    useState<ChangeReviewSnapshot | null>(null);
+
+  useEffect(() => {
+    if (!workspaceOpen && !changeReview) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setWorkspaceOpen(false);
+        setChangeReview(null);
+      }
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [changeReview, workspaceOpen]);
+
+  useEffect(() => {
+    setChangeReview(null);
+  }, [activeDocumentPath]);
+
+  useEffect(() => {
+    if (!activeDirty) {
+      setChangeReview(null);
+    }
+  }, [activeDirty]);
+
+  const closeWorkspace = useCallback(() => {
+    setWorkspaceOpen(false);
+  }, []);
+
+  const closeChangeReview = useCallback(() => {
+    setChangeReview(null);
+  }, []);
+
+  const handleReviewChanges = useCallback(async () => {
+    const snapshot = await onReviewChanges();
+    if (snapshot && snapshot.compareCase.documentPath === activeDocumentPath) {
+      setChangeReview(snapshot);
+    }
+  }, [activeDocumentPath, onReviewChanges]);
+
+  const sidebarProps = useMemo<LModeWorkspaceSidebarProps>(
+    () => ({
+      ...workspaceSidebarProps,
+      onOpenFile: (path) => {
+        const result = workspaceSidebarProps.onOpenFile(path);
+        setWorkspaceOpen(false);
+        return result;
+      },
+    }),
+    [workspaceSidebarProps],
+  );
+
+  const workspaceToggleLabel =
+    activeDirty && dirtyLabel
+      ? `${copy.workspaceToggleLabel} (${dirtyLabel})`
+      : copy.workspaceToggleLabel;
+  const changeReviewCountsLabel = changeReview
+    ? `+${changeReview.compareView.additions} / -${changeReview.compareView.removals}`
+    : "";
+
   return (
-    <div className={`${LModeClasses.actionRail} lmode-surface`} aria-label={copy.actionRailLabel}>
+    <>
       <button
-        className={LModeClasses.actionButton}
-        onClick={onOpenAppleAssistWindow}
-        title={copy.statusBarAppleAssistTitle}
-        type="button"
-      >
-        <SparklesIcon />
-        <span>{copy.statusBarAppleAssistLabel}</span>
-      </button>
-      {reviewChangesAvailable ? (
-        <button
-          className={LModeClasses.actionButton}
-          onClick={onReviewChanges}
-          title={copy.statusBarReviewChangesTitle}
-          type="button"
-        >
-          <DiffIcon />
-          <span>{copy.statusBarReviewChangesLabel}</span>
-        </button>
-      ) : null}
-      <button
-        className={LModeClasses.actionButton}
-        onClick={onExitToWorkspace}
-        title={copy.statusBarWorkspaceTitle}
+        aria-expanded={workspaceOpen}
+        aria-label={workspaceToggleLabel}
+        className={`${LModeClasses.workspaceToggle} lmode-surface`}
+        data-open={workspaceOpen ? "true" : "false"}
+        onClick={() => setWorkspaceOpen((open) => !open)}
+        title={copy.workspaceToggleTitle}
         type="button"
       >
         <FolderOpenIcon />
-        <span>{copy.statusBarWorkspaceLabel}</span>
+        {activeDirty ? (
+          <span
+            aria-hidden="true"
+            className={LModeClasses.workspaceUnsavedDot}
+            title={dirtyLabel || copy.unsavedIndicatorLabel}
+          />
+        ) : null}
       </button>
-    </div>
+      {workspaceOpen ? (
+        <div
+          aria-label={copy.workspaceOverlayLabel}
+          className={LModeClasses.workspaceOverlay}
+          role="dialog"
+        >
+          <button
+            aria-label={copy.workspaceOverlayCloseLabel}
+            className={LModeClasses.workspaceBackdrop}
+            onClick={closeWorkspace}
+            type="button"
+          />
+          <div className={LModeClasses.workspaceDrawer}>
+            <WorkspaceSidebar {...sidebarProps} />
+          </div>
+        </div>
+      ) : null}
+      <div
+        className={`${LModeClasses.actionRail} lmode-surface`}
+        aria-label={copy.actionRailLabel}
+      >
+        <button
+          className={LModeClasses.actionButton}
+          onClick={onOpenAppleAssistWindow}
+          title={copy.statusBarAppleAssistTitle}
+          type="button"
+        >
+          <SparklesIcon />
+          <span>{copy.statusBarAppleAssistLabel}</span>
+        </button>
+        {reviewChangesAvailable ? (
+          <button
+            className={LModeClasses.actionButton}
+            onClick={() => void handleReviewChanges()}
+            title={copy.statusBarReviewChangesTitle}
+            type="button"
+          >
+            <DiffIcon />
+            <span>{copy.statusBarReviewChangesLabel}</span>
+          </button>
+        ) : null}
+      </div>
+      {changeReview ? (
+        <div
+          aria-label={copy.changeReviewSheetLabel}
+          className={LModeClasses.changeReviewSheet}
+          role="dialog"
+        >
+          <div className={LModeClasses.changeReviewHeader}>
+            <span aria-hidden="true" className={LModeClasses.changeReviewIcon}>
+              <DiffIcon />
+            </span>
+            <span className={LModeClasses.changeReviewTitleGroup}>
+              <span className={LModeClasses.changeReviewTitle}>
+                {copy.changeReviewSheetTitle}
+              </span>
+              <span className={LModeClasses.changeReviewMeta}>
+                {changeReview.compareCase.documentLabel}
+              </span>
+            </span>
+            <span
+              aria-label={changeReviewCountsLabel}
+              className={LModeClasses.changeReviewCounts}
+            >
+              <span>+{changeReview.compareView.additions}</span>
+              <span>-{changeReview.compareView.removals}</span>
+            </span>
+            <button
+              aria-label={copy.changeReviewSheetCloseLabel}
+              className={LModeClasses.changeReviewCloseButton}
+              onClick={closeChangeReview}
+              title={copy.changeReviewSheetCloseTitle}
+              type="button"
+            >
+              ×
+            </button>
+          </div>
+          <div className={LModeClasses.changeReviewDiff} role="table">
+            <div className="diff-split-row diff-row-header" role="row">
+              <span className="diff-line-number" role="columnheader" />
+              <span className="diff-text-column" role="columnheader">
+                {changeReview.compareCase.leftColumnLabel}
+              </span>
+              <span className="diff-line-number" role="columnheader" />
+              <span className="diff-text-column" role="columnheader">
+                {changeReview.compareCase.rightColumnLabel}
+              </span>
+            </div>
+            <DiffBody
+              compareCase={changeReview.compareCase}
+              menuLanguage={menuLanguage}
+              view={changeReview.compareView}
+            />
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }

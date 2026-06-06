@@ -95,6 +95,28 @@ export const LModeClasses = {
   // each one has a rule.
   actionRail: "l-mode-action-rail",
   actionButton: "l-mode-action-button",
+
+  // L Mode workspace drawer. The normal file tree remains
+  // hidden by default; these classes drive the translucent
+  // top-left affordance and the temporary drawer that reuses
+  // the bounded WorkspaceSidebar.
+  workspaceToggle: "l-mode-workspace-toggle",
+  workspaceUnsavedDot: "l-mode-workspace-unsaved-dot",
+  workspaceOverlay: "l-mode-workspace-overlay",
+  workspaceBackdrop: "l-mode-workspace-backdrop",
+  workspaceDrawer: "l-mode-workspace-drawer",
+
+  // Local change review sheet. L Mode uses this transient
+  // window instead of opening Safe Edit's right compare pane.
+  changeReviewSheet: "l-mode-change-review-sheet",
+  changeReviewHeader: "l-mode-change-review-header",
+  changeReviewIcon: "l-mode-change-review-icon",
+  changeReviewTitleGroup: "l-mode-change-review-title-group",
+  changeReviewTitle: "l-mode-change-review-title",
+  changeReviewMeta: "l-mode-change-review-meta",
+  changeReviewCounts: "l-mode-change-review-counts",
+  changeReviewCloseButton: "l-mode-change-review-close-button",
+  changeReviewDiff: "l-mode-change-review-diff",
 } as const;
 
 export type LModeClassName = (typeof LModeClasses)[keyof typeof LModeClasses];

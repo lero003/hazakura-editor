@@ -34,6 +34,39 @@ type UseCompareExecutionOptions = {
   setStatus: Dispatch<SetStateAction<string>>;
 };
 
+export type ChangeReviewSnapshot = {
+  compareCase: Extract<CompareCase, { kind: "changes" }>;
+  compareView: CompareViewState;
+};
+
+export async function buildTabAgainstDiskChangeReview(
+  tab: EditorTab,
+  menuLanguage: MenuLanguage,
+): Promise<ChangeReviewSnapshot> {
+  const diskDocument = await openTextFile(tab.path);
+  const diff = buildLineDiff(diskDocument.contents, tab.contents);
+  const diskLabel = compareColumnLabel(menuLanguage, "disk");
+  const editorLabel = compareColumnLabel(menuLanguage, "editor");
+  const caseKey = crypto.randomUUID();
+  const compareCase: CompareCase = {
+    kind: "changes",
+    key: caseKey,
+    scope: "buffer-vs-disk",
+    documentPath: tab.path,
+    documentLabel: tab.name,
+    leftColumnLabel: diskLabel,
+    rightColumnLabel: editorLabel,
+  };
+
+  return {
+    compareCase,
+    compareView: {
+      caseKey,
+      ...diff,
+    },
+  };
+}
+
 export function useCompareExecution({
   activeTab,
   clearCompareSource,
@@ -55,26 +88,10 @@ export function useCompareExecution({
       setStatus("Reviewing changes...");
 
       try {
-        const diskDocument = await openTextFile(tab.path);
-        const diff = buildLineDiff(diskDocument.contents, tab.contents);
-        const diskLabel = compareColumnLabel(menuLanguage, "disk");
-        const editorLabel = compareColumnLabel(menuLanguage, "editor");
-        const caseKey = crypto.randomUUID();
-        const compareCase: CompareCase = {
-          kind: "changes",
-          key: caseKey,
-          scope: "buffer-vs-disk",
-          documentPath: tab.path,
-          documentLabel: tab.name,
-          leftColumnLabel: diskLabel,
-          rightColumnLabel: editorLabel,
-        };
+        const snapshot = await buildTabAgainstDiskChangeReview(tab, menuLanguage);
 
-        setCompareCaseEntry(compareCase);
-        setCompareView({
-          caseKey,
-          ...diff,
-        });
+        setCompareCaseEntry(snapshot.compareCase);
+        setCompareView(snapshot.compareView);
         setRightPaneMode("compare");
         setSidePaneOpen(true);
         setStatus("Change review ready");
@@ -95,6 +112,23 @@ export function useCompareExecution({
       setSidePaneOpen,
       setStatus,
     ],
+  );
+
+  const prepareReviewTabAgainstDisk = useCallback(
+    async (tab: EditorTab): Promise<ChangeReviewSnapshot | null> => {
+      setGlobalError(null);
+
+      try {
+        return await buildTabAgainstDiskChangeReview(tab, menuLanguage);
+      } catch (err) {
+        const message = String(err);
+        setGlobalError(
+          menuLanguage !== "en" ? localizeCompareError(message, menuLanguage) : message,
+        );
+        return null;
+      }
+    },
+    [menuLanguage, setGlobalError],
   );
 
   const reviewDraftAgainstDisk = useCallback(
@@ -346,6 +380,7 @@ export function useCompareExecution({
 
   return {
     compareWorkspaceFiles,
+    prepareReviewTabAgainstDisk,
     requestReviewBackupAgainstBuffer,
     requestReviewDraftAgainstDisk,
     requestReviewTabAgainstDisk,
