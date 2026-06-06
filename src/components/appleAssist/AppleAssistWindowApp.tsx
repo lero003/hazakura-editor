@@ -56,6 +56,15 @@ import {
 // the Apple Assist window closes the Agent window, and vice
 // versa. The mock itself does not need to coordinate the
 // exclusion.
+//
+// v0.12.x copy enrichment: the original 3-language copy
+// blocks were lean and most strings collapsed nuance into
+// one short line. The `classifyApplyError` helper and the
+// detailed `*Error` strings turn Rust / Foundation Models
+// error messages into localized, actionable text so the
+// user knows what to do next (shrink the selection, check
+// Apple Intelligence, wait for throttling, etc.) instead of
+// seeing a raw English string.
 
 const APPLE_ASSIST_GENERATION_FALLBACK_MS = 365_000;
 
@@ -278,8 +287,7 @@ export function AppleAssistWindowApp() {
     } catch (err: unknown) {
       clearGenerationFallback();
       setBusy(false);
-      const message = err instanceof Error ? err.message : String(err);
-      setError(message);
+      setError(classifyApplyError(err, copy));
     }
   }, [
     available,
@@ -348,7 +356,7 @@ export function AppleAssistWindowApp() {
             setRoughRequest(event.target.value);
             setError(null);
           }}
-          rows={6}
+          rows={3}
           placeholder={copy.placeholder}
           disabled={busy || !available}
         />
@@ -386,16 +394,18 @@ type AppleAssistWindowPreset = {
   prompt: string;
 };
 
-type AppleAssistWindowCopy = {
+export type AppleAssistWindowCopy = {
   activeDocument: (name: string) => string;
   appliedStatus: (request: string) => string;
   applyButton: string;
   availableDisclosure: string;
+  contextTooLongError: string;
   disabledStatus: string;
   emptyRequestError: string;
   generatingButton: string;
   generatingChange: string;
   generatingInMain: (request: string) => string;
+  guardrailError: string;
   localRuntimeUnavailable: (reason: string) => string;
   longRunningStatus: string;
   modeLabel: string;
@@ -406,8 +416,10 @@ type AppleAssistWindowCopy = {
   presetsLabel: string;
   readyStatus: string;
   roughRequestLabel: string;
+  selectionTooLongError: string;
   sendingRequest: string;
   subtitle: string;
+  targetStaleError: string;
   tauriUnavailableError: string;
   targetBlock: (chars: number) => string;
   targetDocument: (chars: number) => string;
@@ -415,6 +427,8 @@ type AppleAssistWindowCopy = {
   targetParagraph: (chars: number) => string;
   targetSection: (chars: number) => string;
   targetSelection: (chars: number) => string;
+  throttledError: string;
+  unknownError: (raw: string) => string;
   unsupportedStatus: string;
   workingLocally: string;
 };
@@ -471,27 +485,83 @@ function isMenuLanguage(value: string | null): value is MenuLanguage {
   return value === "en" || value === "ja" || value === "kana";
 }
 
-function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowCopy {
+// `classifyApplyError` turns a raw catch-block error from the
+// `requestApplyAiEditTransaction` IPC call (or any exception
+// thrown by the listener) into a localized, actionable
+// message for the user. The Rust side returns English-only
+// error strings, and the Foundation Models Swift helper
+// emits English debug descriptions, so without this
+// classification the user would see raw English text in a
+// Japanese (or kana) Apple Assist window. The classifier
+// matches on substrings, not on the exact string, because
+// the helper wraps the original error in `Foundation
+// Models generation failed: ...` and the Rust `validate_
+// request` formats errors with template strings that may
+// shift between versions.
+export function classifyApplyError(
+  err: unknown,
+  copy: AppleAssistWindowCopy,
+): string {
+  const raw = err instanceof Error ? err.message : String(err);
+
+  if (
+    raw.includes("Selected text exceeds") ||
+    raw.includes("selected text exceeds")
+  ) {
+    return copy.selectionTooLongError;
+  }
+  if (
+    raw.includes("Document context exceeds") ||
+    raw.includes("document context exceeds") ||
+    raw.includes("exceededContextWindowSize")
+  ) {
+    return copy.contextTooLongError;
+  }
+  if (raw.includes("stale") || raw.includes("no longer matches")) {
+    return copy.targetStaleError;
+  }
+  if (raw.includes("guardrail") || raw.includes("refus")) {
+    return copy.guardrailError;
+  }
+  if (raw.includes("rate") || raw.includes("concurrent")) {
+    return copy.throttledError;
+  }
+  return copy.unknownError(raw);
+}
+
+export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowCopy {
   if (lang === "kana") {
     return {
       activeDocument: (name) => `いまのふみ: ${name}`,
-      appliedStatus: (request) => `Apple Local Assist が かへました: ${request}`,
+      appliedStatus: (request) =>
+        `ついかしました: ${request}。L Mode の あくしょん れーるから へんこう れびゅー しーとを ひらき、ほぞん まえに ないようを かくにん または とりけして ください。`,
       applyButton: "つかう",
       availableDisclosure:
-        "Apple Intelligence が つかへるときだけ、かるい ぶんしょうほじょをします。",
-      disabledStatus: "Apple Local Assist は このせっしょんで むこうです。",
-      emptyRequestError: "おねがひを かいてください。",
-      generatingButton: "つくっています...",
-      generatingChange: "Apple Local Assist が かきかへを つくっています...",
-      generatingInMain: (request) => `ほんぶんで つくっています: ${request}`,
+        "あっぷる ろーかる あしす と は あっぷる の この Mac の きのうで たいしょうを ほじょ します。かへりは めいん えでぃた の ほぞんせず ばっふぁに はいります。",
+      contextTooLongError:
+        "しゅうへん ぶんしょ が ながすぎ ます。L Mode の たいしょう しゅうへん こんできすと の じょうげん (8000 もじ) を こえました。",
+      disabledStatus:
+        "この せっしょで あっぷる ろーかる あしす とは むこうです。Preferences > Assist Surface で あっぷる ろーかる あしす と (じっけん) を えらび、あぷりを さいきどうして ください。",
+      emptyRequestError:
+        "まずは おねがひを かいてください。れい: ととのえて / しぜんに / つづきを / こうせい。おねがひと えらんだ たいしょうを いっしょに あっぷる ふぁうんでーしょん もでるず に おくります。",
+      generatingButton: "せいせい ちゅう...",
+      generatingChange:
+        "あっぷる ふぁうんでーしょん もでるず で かへりを せいせい ちゅう。けっかは めいん えでぃた に ほぞんせず の AI edit transaction として はいります。",
+      generatingInMain: (request) =>
+        `めいん えでぃた で せいせい ちゅう: ${request}。ほぞん まえに へんこう れびゅー しーと で かくにん または とりけし してください。`,
+      guardrailError:
+        "あっぷる ふぁうんでーしょん もでるず が かーどれーる いはん として この おねがひを きょひ しました。べつ の おねがひ で さいしこう してください。",
       localRuntimeUnavailable: (reason) =>
-        `Apple Local Assist は いま つかへません: ${reason}`,
+        `あっぷる ろーかる あしす とは つかえません: ${reason}。System Settings > Apple Intelligence & Siri で あっぷる いんてりじぇんす が ゆうこうか、げんざいの あぷり ことば が ふぁうんでーしょん もでるず に たいおうしているか を かくにん してください。`,
       longRunningStatus:
-        "Apple Local Assist が まだ かんがへています。まってもよいし、ほんぶんがはの じょうたいを みてもよいです。",
+        "あっぷる ろーかる あしす と は まだ さぎょう ちゅう。ふぁうんでーしょん もでるず は ふつう すうびょうで おうとうしますが、むこうの ときは めいん えでぃた の すてーたす を かくにんするか、うぃんどう を ひらきなおして ください。",
       modeLabel: "Alpha",
-      noActiveDocument: "ひらいている ふみが まだ みつかりません。",
-      noTarget: "たいしょうが ありません。",
-      placeholder: "整えて / 自然にして / 続きを書いて / 校正して / この章を直して",
+      noActiveDocument:
+        "めいん えでぃた に ひらいている ふみが ありません。Markdown / テキスト ふぁいる を ひらいて ください。",
+      noTarget:
+        "たいしょう が まだ えらばれて いません。えでぃた に かーそる を おくか、L Mode を ひらいて たいしょう を せってい して ください。",
+      placeholder:
+        "れい: ととのえて / しぜんに / つづきを / こうせい / このしょうを なおして",
       presets: [
         { id: "tidy", label: "ととのえて", prompt: "整えて" },
         { id: "natural", label: "しぜんに", prompt: "自然にして" },
@@ -499,45 +569,66 @@ function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowCopy {
         { id: "proofread", label: "こうせい", prompt: "校正して" },
         { id: "rewrite-section", label: "このしょうを", prompt: "この章を直して" },
       ],
-      presetsLabel: "ざっくりした おねがひ",
-      readyStatus: "じゅんびできました。かへたところは ほぞんせず、ほんぶんに のこします。",
+      presetsLabel: "ざっくり おねがひの ぷりせっと",
+      readyStatus:
+        "じゅんび できました。めいん えでぃた で たいしょう を えらび、おねがひ を かいて つかう を クリック。かへり は ほぞんせず ばっふぁ に はいります。",
       roughRequestLabel: "おねがひ",
-      sendingRequest: "ほんぶんがはへ おねがひを おくっています...",
-      subtitle: "かるい ぶんしょうほじょ",
-      targetBlock: (chars) => `ぶろっくに つかふ (${chars} もじ)`,
-      targetDocument: (chars) => `ふみぜんたいに つかふ (${chars} もじ)`,
-      targetLabel: (label) => `${label} に つかふ`,
-      targetParagraph: (chars) => `だんらくに つかふ (${chars} もじ)`,
-      targetSection: (chars) => `しょうに つかふ (${chars} もじ)`,
-      targetSelection: (chars) => `えらんだところに つかふ (${chars} もじ)`,
+      selectionTooLongError:
+        "えらんだ ところが ながすぎ ます（さいだい 4000 もじ）。あっぷる ふぁうんでーしょん もでるず の こんできすと まど に おさまらないため、もう すこし ちいさく えらんで ください。",
+      sendingRequest: "めいん えでぃた に おねがひ を おくっています...",
+      subtitle: "けいりょう な おんではばいす ぶんしょう ほじょ",
+      targetStaleError:
+        "たいしょう が ふるく なって います。あっぷる あしす と うぃんどう を ひらきなおすか、めいん えでぃた で たいしょう を えらびなおして ください。",
       tauriUnavailableError:
-        "Apple Local Assist window が Tauri runtime のそとで うごいています。",
+        "あっぷる ろーかる あしす と うぃんどう が Tauri runtime の そとで うごいています。めいん えでぃた に とどけません。.app ばんどる から あぷり を さいきどうして ください。",
+      targetBlock: (chars) => `こーど ぶろっく (${chars} もじ)`,
+      targetDocument: (chars) => `ふみ ぜんたい (${chars} もじ)`,
+      targetLabel: (label) => `${label}`,
+      targetParagraph: (chars) => `だんらく (${chars} もじ)`,
+      targetSection: (chars) => `しょう (${chars} もじ)`,
+      targetSelection: (chars) => `えらんだ ところ (${chars} もじ)`,
+      throttledError:
+        "あっぷる ふぁうんでーしょん もでるず が れーと せいげん ちゅう です。すこし まって から さいしこう してください。",
+      unknownError: (raw) =>
+        `あっぷる ろーかる あしす と の せいせい に しっぱい しました: ${raw}`,
       unsupportedStatus:
-        "Apple Local Assist は いまの ことば または うごくばしょでは つかへません。",
-      workingLocally: "この Mac で さぎょうちゅう",
+        "この はんきょうで あっぷる ろーかる あしす とは つかえません。macOS 26 いこう と、この Mac で ゆうこうかした あっぷる いんてりじぇんす と、ふぁうんでーしょん もでるず たいおう の ことば / ろけーる が ひつようです。",
+      workingLocally: "この Mac で ろーかる しょり ちゅう (ねっとわーく よびだし なし)",
     };
   }
 
   if (lang === "ja") {
     return {
       activeDocument: (name) => `対象: ${name}`,
-      appliedStatus: (request) => `Apple Local Assist が本文を変更しました: ${request}`,
+      appliedStatus: (request) =>
+        `適用しました: ${request}。L Mode のアクショレールから変更レビューシートを開き、保存前に内容を確認または取り消してください。`,
       applyButton: "適用",
       availableDisclosure:
-        "Apple Intelligence 対応環境で、軽いオンデバイス文章補助を行います。",
-      disabledStatus: "Apple Local Assist はこのセッションでは無効です。",
-      emptyRequestError: "依頼文を入力してください。",
+        "準備完了。Apple Local Assist は Apple のオンデバイス Foundation Models を使って、選択中の対象を補助します。変更はメインエディタの未保存バッファに反映され、保存前に差分を確認できます。",
+      contextTooLongError:
+        "周辺の文書が長すぎます。L Mode の対象周辺コンテキスト上限（8000 文字）を超えました。",
+      disabledStatus:
+        "このセッションでは Apple Local Assist は無効です。Preferences > Assist Surface で outside companion slot を「Apple Local Assist (Experimental)」に切り替え、アプリを再起動してください。",
+      emptyRequestError:
+        "まずは依頼文を入力してください。例: 「整えて」「自然にして」「続きを書いて」「校正して」。依頼文と選択中の対象を一緒に Apple Foundation Models に送ります。",
       generatingButton: "生成中...",
-      generatingChange: "Apple Local Assist が変更案を生成しています...",
-      generatingInMain: (request) => `本文側で生成中: ${request}`,
+      generatingChange:
+        "Apple Foundation Models で変更を生成中。結果はメインエディタに未保存の AI edit transaction として反映されます。",
+      generatingInMain: (request) =>
+        `メインエディタで生成中: ${request}。結果は未保存の AI edit transaction として反映されるので、保存前に変更レビューシートで内容を確認または取り消してください。`,
+      guardrailError:
+        "Apple Foundation Models がこの依頼をガードレール違反として拒否しました。別の依頼文で再試行してください。",
       localRuntimeUnavailable: (reason) =>
-        `Apple Local Assist は現在使えません: ${reason}`,
+        `Apple Local Assist は使えません: ${reason}。System Settings > Apple Intelligence & Siri で Apple Intelligence が有効か、現在のアプリ言語が Foundation Models に対応しているかを確認してください。`,
       longRunningStatus:
-        "Apple Local Assist の応答に時間がかかっています。待つか、メインエディタ側の状態を確認してください。",
+        "Apple Local Assist はまだ処理中です。Foundation Models は通常数秒で応答しますが、応答がない場合はメインエディタ下部のステータスを確認するか、Apple Assist ウィンドウを開き直してください。",
       modeLabel: "Alpha",
-      noActiveDocument: "対象の文書がまだ見つかりません。",
-      noTarget: "対象がありません。",
-      placeholder: "整えて / 自然にして / 続きを書いて / 校正して / この章を直して",
+      noActiveDocument:
+        "メインエディタに開いている文書がありません。Markdown / テキストファイルを開いてください。",
+      noTarget:
+        "対象がまだ選ばれていません。エディタにカーソルを置くか、L Mode を開いて対象を設定してください。",
+      placeholder:
+        "例: 整えて / 自然にして / 続きを書いて / 校正して / この章を直して",
       presets: [
         { id: "tidy", label: "整えて", prompt: "整えて" },
         { id: "natural", label: "自然にして", prompt: "自然にして" },
@@ -545,46 +636,65 @@ function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowCopy {
         { id: "proofread", label: "校正して", prompt: "校正して" },
         { id: "rewrite-section", label: "この章を直して", prompt: "この章を直して" },
       ],
-      presetsLabel: "ざっくり依頼",
+      presetsLabel: "ざっくり依頼のプリセット",
       readyStatus:
-        "準備できました。変更はメインエディタの未保存バッファに反映されます。",
+        "準備完了。メインエディタで対象を選び、依頼文を入力して「適用」をクリック。変更はメインエディタの未保存バッファに反映されます。",
       roughRequestLabel: "依頼文",
-      sendingRequest: "メインエディタへ依頼を送信しています...",
-      subtitle: "軽い文章補助",
-      targetBlock: (chars) => `ブロックに適用 (${chars} 文字)`,
-      targetDocument: (chars) => `文書全体に適用 (${chars} 文字)`,
-      targetLabel: (label) => `${label} に適用`,
-      targetParagraph: (chars) => `段落に適用 (${chars} 文字)`,
-      targetSection: (chars) => `章に適用 (${chars} 文字)`,
-      targetSelection: (chars) => `選択範囲に適用 (${chars} 文字)`,
+      selectionTooLongError:
+        "選択範囲が大きすぎます（最大 4000 文字）。Apple Foundation Models のコンテキスト窓に収まらないため、もう少し小さく選択してください。",
+      sendingRequest: "メインエディタに依頼を送信中...",
+      subtitle: "軽量なオンデバイス文章補助",
+      targetStaleError:
+        "対象が古くなっています。Apple Assist ウィンドウを開き直すか、メインエディタで対象を選び直してください。",
       tauriUnavailableError:
-        "Apple Local Assist window が Tauri runtime の外で動作しています。",
+        "Apple Local Assist ウィンドウが Tauri runtime の外で動作しており、メインエディタに到達できません。.app バンドルからアプリを再起動し、ウィンドウを Tauri 子プロセスとして起動してください。",
+      targetBlock: (chars) => `コードブロック (${chars} 文字)`,
+      targetDocument: (chars) => `文書全体 (${chars} 文字)`,
+      targetLabel: (label) => `${label}`,
+      targetParagraph: (chars) => `段落 (${chars} 文字)`,
+      targetSection: (chars) => `章 (${chars} 文字)`,
+      targetSelection: (chars) => `選択範囲 (${chars} 文字)`,
+      throttledError:
+        "Apple Foundation Models がレート制限中です。少し待ってから再試行してください。",
+      unknownError: (raw) =>
+        `Apple Local Assist の生成に失敗しました: ${raw}`,
       unsupportedStatus:
-        "Apple Local Assist は現在のアプリ言語または実行環境では使えません。",
-      workingLocally: "この Mac で処理中",
+        "この環境では Apple Local Assist は使えません。macOS 26 以降と、この Mac で有効化された Apple Intelligence、そして Foundation Models 対応の言語 / ロケールが必要です。",
+      workingLocally: "この Mac 上でローカル処理中（ネットワーク呼び出しなし）",
     };
   }
 
   return {
     activeDocument: (name) => `Active: ${name}`,
-    appliedStatus: (request) => `Apple Local Assist applied: ${request}`,
+    appliedStatus: (request) =>
+      `Applied: ${request}. Open the change review sheet from the L Mode action rail to review or discard before saving.`,
     applyButton: "Apply",
     availableDisclosure:
-      "Experimental lightweight on-device text assistance when Apple intelligence features are available.",
-    disabledStatus: "Apple Local Assist is disabled in this app session.",
-    emptyRequestError: "Type a rough request first.",
+      "Ready. Apple Local Assist uses Apple's on-device Foundation Models to revise the active target. Changes land in the main editor's unsaved buffer; review the diff before saving.",
+    contextTooLongError:
+      "Document context is too long (L Mode harness caps surrounding text at 8000 characters). Pick a tighter target or break the change into smaller requests.",
+    disabledStatus:
+      "Apple Local Assist is disabled in this app session. Open Preferences > Assist Surface and switch the outside companion slot to 'Apple Local Assist (Experimental)'. Restart the app to apply.",
+    emptyRequestError:
+      "Type a rough request first. Examples: 'Make it cleaner', 'Continue this', 'Proofread this'. The request and the active target text are sent together to Apple Foundation Models.",
     generatingButton: "Generating...",
-    generatingChange: "Apple Local Assist is generating a change...",
-    generatingInMain: (request) => `Generating in the main editor: ${request}`,
+    generatingChange:
+      "Generating the change with Apple Foundation Models. The result lands as an unsaved AI edit transaction in the main editor.",
+    generatingInMain: (request) =>
+      `Generating in the main editor: ${request}. The result lands as an unsaved AI edit transaction; review or discard it from the change review sheet before saving.`,
+    guardrailError:
+      "Apple Foundation Models refused this request because it hit a guardrail. Try a different request.",
     localRuntimeUnavailable: (reason) =>
-      `Apple Local Assist is not available for the current app language or runtime: ${reason}`,
+      `Apple Local Assist is unavailable: ${reason}. Verify Apple Intelligence is on in System Settings > Apple Intelligence & Siri, and that the current app language is supported by Foundation Models.`,
     longRunningStatus:
-      "Apple Local Assist is still taking a long time. You can try again or check the main editor status.",
+      "Apple Local Assist is still working. Foundation Models usually returns in a few seconds; if it has not, check the main editor status line for the underlying error, or re-open the Apple Assist window.",
     modeLabel: "Alpha",
-    noActiveDocument: "No active document detected yet.",
-    noTarget: "No active target.",
+    noActiveDocument:
+      "No active document is open in the main editor. Open a Markdown or text file first.",
+    noTarget:
+      "No active target yet. Place the cursor inside the document, or open L Mode to get a target.",
     placeholder:
-      "Make it cleaner / Make it natural / Continue this / Proofread this / Rewrite this section",
+      "e.g. Make it cleaner / Make it natural / Continue this / Proofread this / Rewrite this section",
     presets: [
       { id: "tidy", label: "Clean up", prompt: "Make it cleaner" },
       { id: "natural", label: "Natural", prompt: "Make it sound natural" },
@@ -598,20 +708,28 @@ function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowCopy {
     ],
     presetsLabel: "Rough request presets",
     readyStatus:
-      "Ready. Changes are generated in the main editor and kept unsaved.",
+      "Ready. Pick a target in the main editor, type a rough request, and click Apply. The change lands in the main editor's unsaved buffer.",
     roughRequestLabel: "Rough request",
-    sendingRequest: "Sending request to the main editor...",
-    subtitle: "Lightweight writing help",
-    targetBlock: (chars) => `Apply to code block (${chars} chars)`,
-    targetDocument: (chars) => `Apply to whole document (${chars} chars)`,
-    targetLabel: (label) => `Apply to ${label}`,
-    targetParagraph: (chars) => `Apply to paragraph (${chars} chars)`,
-    targetSection: (chars) => `Apply to section (${chars} chars)`,
-    targetSelection: (chars) => `Apply to selection (${chars} chars)`,
+    selectionTooLongError:
+      "Selection is too long (max 4000 characters). Apple Foundation Models has a bounded context window; pick a smaller selection, or split the change into multiple requests.",
+    sendingRequest: "Sending the request to the main editor...",
+    subtitle: "Lightweight on-device writing help",
+    targetStaleError:
+      "The active target has changed since the request was prepared. Re-open the Apple Assist window, or pick a new target in the main editor.",
     tauriUnavailableError:
-      "Apple Local Assist window is running outside the Tauri runtime; cannot reach the main window.",
+      "Apple Local Assist window is running outside the Tauri runtime; it cannot reach the main editor. Restart the app from the .app bundle so the window launches as a Tauri child process.",
+    targetBlock: (chars) => `Code block (${chars} chars)`,
+    targetDocument: (chars) => `Whole document (${chars} chars)`,
+    targetLabel: (label) => `${label}`,
+    targetParagraph: (chars) => `Paragraph (${chars} chars)`,
+    targetSection: (chars) => `Section (${chars} chars)`,
+    targetSelection: (chars) => `Selection (${chars} chars)`,
+    throttledError:
+      "Apple Foundation Models is rate limited or busy with another request. Try again shortly.",
+    unknownError: (raw) =>
+      `Apple Local Assist generation failed: ${raw}`,
     unsupportedStatus:
-      "Apple Local Assist is not available for the current app language or runtime.",
-    workingLocally: "Working locally",
+      "Apple Local Assist is not supported in this environment. It needs macOS 26 or later and Apple Intelligence turned on for this Mac, with a Foundation Models-supported language and locale.",
+    workingLocally: "Working locally on this Mac (no network call)",
   };
 }
