@@ -24,6 +24,7 @@ export type PreferencesCopy = {
   light: string;
   closeDialog: string;
   menuLanguage: string;
+  menuLanguageHint: string;
   previewPane: string;
   sakura: string;
   yakou: string;
@@ -65,8 +66,9 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
       ambientIntensityOff: "なし",
       ambientIntensitySubtle: "ほのか",
       ambientIntensityNormal: "つね",
-      ambientIntensityDramatic: "はなやか",
-      ambientIntensityHint: "きせつのいろあひにてはたらきます。",
+      ambientIntensityDramatic: "鮮やか",
+      ambientIntensityHint: "sakura / yakou / shokou テーマの時に有効です。",
+      menuLanguageHint: "UI の表示言語を切り替えます。かなふみはひらがな中心のやさしい表記です。",
       themeHint: (theme) => {
         if (theme === "light") {
           return "ひるま や いんさつ むけの あかるい きほん いろあひ。";
@@ -100,6 +102,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         light: "ライト",
         closeDialog: "ダイアログ゙を閉じる",
         menuLanguage: "メニュー言語",
+        menuLanguageHint: "UI の表示言語を切り替えます。かなふみはひらがな中心のやさしい表記です。",
         previewPane: "プレビュー表示",
         sakura: "桜",
         yakou: "夜光",
@@ -113,8 +116,8 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         ambientIntensityOff: "オフ",
         ambientIntensitySubtle: "控えめ",
         ambientIntensityNormal: "標準",
-        ambientIntensityDramatic: "派手",
-        ambientIntensityHint: "季節テーマで有効です。",
+        ambientIntensityDramatic: "鮮やか",
+        ambientIntensityHint: "sakura / yakou / shokou テーマの時に有効です。",
         themeHint: (theme) => {
           if (theme === "light") {
             return "日中や印刷向けの明るい基本テーマ。";
@@ -145,6 +148,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         light: "Light",
         closeDialog: "Close dialog",
         menuLanguage: "Menu language",
+        menuLanguageHint: "Switch the UI display language. Kana mode uses gentle hiragana-centered wording.",
         previewPane: "Preview pane",
         sakura: "Sakura",
         yakou: "Yakou",
@@ -158,8 +162,8 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         ambientIntensityOff: "Off",
         ambientIntensitySubtle: "Subtle",
         ambientIntensityNormal: "Normal",
-        ambientIntensityDramatic: "Dramatic",
-        ambientIntensityHint: "Applies to seasonal themes.",
+        ambientIntensityDramatic: "Vivid",
+        ambientIntensityHint: "Applies when using sakura, yakou, or shokou themes.",
         themeHint: (theme) => {
           if (theme === "light") {
             return "Bright, neutral base theme for daytime and print.";
