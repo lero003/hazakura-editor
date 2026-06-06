@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-07 (v0.15 User-Test Quality Polish framing)
+Last reviewed: 2026-06-07 (v0.15 User-Test Quality Polish / Commercial Quality Baseline framing)
 
 ## Current Position
 
@@ -16,7 +16,7 @@ Current release state:
 - Current package/app version: `0.14.0`.
 - v0.14.0 theme: **L Mode Stability Ramp / Apple Local Assist Harness Polish**.
 - Active lane: v0.15 User-Test Quality Polish.
-- Active product polish direction: fix the small issues found by using the app, across Apple Local Assist, L Mode, theme, settings, status / error copy, and release-prep continuity. Apple Local Assist remains a major surface, but v0.15 is not Apple Local Assist-only.
+- Active product polish direction: fix the small issues found by using the app, across Apple Local Assist, L Mode, theme, settings, status / error copy, and release-prep continuity. Apple Local Assist remains a major surface, but v0.15 is not Apple Local Assist-only. The non-App-Store commercial-quality baseline lives in `docs/commercial-quality-baseline.md`.
 
 Historical phase details and old milestone text are archived in `docs/archive/roadmaps/roadmap-through-v0.10-doc-refactor.md` and `docs/archive/roadmaps/roadmap-v0.1-archived.md`.
 
@@ -183,11 +183,14 @@ In scope:
 - L Mode follow-up only when a regression, built-app smoke gap, or measured performance question appears.
 - Small user-facing status / error improvements where a failure is currently silent or console-only.
 - Documentation and release-prep continuity, including keeping App Store / Developer lane proof distinct from warning-expected DMG preview work.
+- Commercial-quality baseline work: accessibility audit/fixes, performance measurement, L Mode measured follow-up, honest feature-scope wording, and Developer / GitHub distribution-readiness audit.
 - Focused refactors when they directly support a verified polish fix. Large files are not automatically forbidden, but split only one responsibility at a time and keep tests close to the moved behavior.
 
 Out of scope:
 
 - Broad architecture cleanup without a user-test finding.
+- Full E2E suite as the default next investment; use a small smoke harness only if the setup/runtime cost stays low.
+- Privacy policy, support page, Sparkle updater, fully automated release pipeline, Developer ID signing/notarization completion, or App Store review prep unless opened as an explicit lane.
 - New product surfaces, provider plugins, broad workspace indexing, Git/LSP/terminal behavior, or arbitrary command execution.
 - Preview DOM editing, `contenteditable`, HTML as the saved model, hidden save-time rewriting, network fallback, tool calling, auto-apply, or auto-save.
 - App Store/TestFlight, Developer ID signing, notarization, updater, or installer claims without explicit lane approval and evidence.
@@ -198,7 +201,8 @@ Acceptance:
 - Each slice is small enough to verify in the same run.
 - Theme/settings changes verify persistence and menu/window synchronization where relevant.
 - Apple Local Assist changes preserve the external Writing Companion boundary and explicit AI edit transaction model.
-- L Mode changes preserve Markdown source and use `docs/l-mode-plan.md` only for measured or reproduced follow-up work.
+- L Mode changes preserve Markdown source and use `docs/l-mode-plan.md` plus `docs/commercial-quality-baseline.md` only for measured or reproduced follow-up work.
+- Accessibility and performance work starts by recording a baseline before claiming commercial readiness.
 
 ## App Store Publication Roadmap
 

@@ -64,6 +64,7 @@ For future releases, re-check local artifact evidence and, after publication, re
 - `docs/product-brief.md`: durable product direction and non-goals.
 - `docs/roadmap.md`: current release sequence and future phase boundaries.
 - `docs/l-mode-plan.md`: L Mode WYSIWYG Accuracy Ramp and source-preserving writing-surface plan.
+- `docs/commercial-quality-baseline.md`: non-App-Store commercial-quality baseline and follow-up request labels.
 - `docs/apple-local-assist-distribution-plan.md`: v0.12+ Apple Local Assist and App Store / developer-build release-lane planning memo.
 - `docs/apple-local-assist-writing-companion-plan.md`: Apple Local Assist Writing Companion / external Assist Window UX direction.
 - `docs/apple-local-assist-v0.12-design-review.md`: v0.12 implementation slice design + Slice 5 feasibility findings.
@@ -110,6 +111,7 @@ v0.15 should be treated as a post-user-test polish pass, not as an Apple Local A
 3. L Mode follow-up only when there is a reproduced regression, built-app smoke gap, or measured performance question. The first five v0.14 L Mode slices have landed; do not reopen a broad WYSIWYG refactor without evidence.
 4. Small user-facing error / status improvements where the app currently fails silently or only logs to the console.
 5. Release-prep continuity that keeps App Store / Developer lane proof separate from the warning-expected DMG lane.
+6. Commercial-quality baseline work from `docs/commercial-quality-baseline.md`, especially status/recovery polish, settings/theme clarity, accessibility baseline, performance measurement, honest feature-scope wording, and Developer / GitHub distribution-readiness audit.
 
 Refactoring is allowed when it is the smallest honest way to fix or verify a user-facing problem, but v0.15 should not become a broad architecture cleanup. For large files such as `useAppShellController`, prefer one extracted responsibility with tests over a many-hook rewrite.
 
@@ -120,6 +122,6 @@ Keep Markdown source canonical; do not introduce Preview DOM editing, `contented
 1. If continuing v0.15 quality work, use `docs/development-automation.md` and keep to one small verified slice from actual app-use friction.
 2. If improving Apple Local Assist after v0.14.0, use `docs/assist-surface-strategy.md`, `docs/apple-local-assist-distribution-plan.md`, and `docs/apple-local-assist-writing-companion-plan.md`; keep Apple Local Assist as an external Writing Companion and require AI edit transactions for direct buffer edits.
 3. If improving theme / settings, verify persistence, native menu sync, readability, and restart-required copy before debating purely cosmetic variants.
-4. If improving L Mode, use `docs/l-mode-plan.md` and prioritize only a measured follow-up: performance baseline, built-app smoke, or a reproduced regression around IME/caret/list/link/table behavior.
+4. If improving L Mode, use `docs/l-mode-plan.md` and `docs/commercial-quality-baseline.md`; prioritize measurement, built-app smoke, or a reproduced regression around IME/caret/Backspace/list/link/table/image/source-preservation behavior before broad refactors.
 5. If preparing a future release, use `docs/source-release-checklist.md`, `docs/dmg-preview-checklist.md`, and the version-specific release note; do not tag or publish without explicit approval.
 6. If changing product behavior, use `docs/product-brief.md`, `docs/security-boundary.md`, and the touched boundary doc before implementation.

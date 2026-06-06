@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-06-07 (v0.15 User-Test Quality Polish framing)
+Last reviewed: 2026-06-07 (v0.15 User-Test Quality Polish / Commercial Quality Baseline framing)
 
 ## Purpose
 
@@ -26,16 +26,17 @@ Prefer work in this order:
 3. One concrete user-test friction point from Apple Local Assist, L Mode, theme, settings, status / error copy, export, or file/recovery workflows.
 4. Apple Local Assist rough-request quality, unavailable-state, unsupported-language, stale-target recovery, and App Store / developer-build distribution planning drift.
 5. Theme/settings polish with persistence, native menu sync, window-theme sync, and restart-required copy checks.
-6. Safety-boundary regression checks.
-7. Post-release docs/version drift.
-8. One reproduced bug in implemented L Mode WYSIWYG behavior, especially caret, IME, hidden markers, lists, dividers, links, tables, visual overlap, or a measured performance baseline.
-9. Focused refactor only when it directly supports a verified user-facing polish fix; do not split a large file for architecture aesthetics alone.
-10. Documentation drift.
-11. Verified no-op after inspection when no useful small slice is safe.
+6. Commercial-quality baseline slices from `docs/commercial-quality-baseline.md`: accessibility baseline, performance/L Mode measurement baseline, honest feature-scope docs, or Developer / GitHub distribution-readiness audit.
+7. Safety-boundary regression checks.
+8. Post-release docs/version drift.
+9. One reproduced bug in implemented L Mode WYSIWYG behavior, especially caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or a measured performance baseline.
+10. Focused refactor only when it directly supports a verified user-facing polish fix; do not split a large file for architecture aesthetics alone.
+11. Documentation drift.
+12. Verified no-op after inspection when no useful small slice is safe.
 
 ## Start Every Run
 
-1. Read `AGENTS.md`, `README.md`, `docs/README.md`, `docs/current-status.md`, `docs/roadmap.md`, `docs/smoke-checklist.md`, and this document.
+1. Read `AGENTS.md`, `README.md`, `docs/README.md`, `docs/current-status.md`, `docs/roadmap.md`, `docs/smoke-checklist.md`, `docs/commercial-quality-baseline.md`, and this document.
    If the run touches Apple Local Assist, App Store distribution, or assist-provider shape, also read `docs/assist-surface-strategy.md`, `docs/apple-local-assist-distribution-plan.md`, `docs/security-boundary.md`, and `docs/agent-workbench-boundary.md`.
 2. Run `git status --short --branch`.
 3. Treat existing uncommitted changes as user or previous-agent work. Do not revert them.
@@ -57,6 +58,7 @@ Do not implement or imply:
 - Project-wide indexing beyond the shipped bounded search behavior.
 - Strong predictive autocomplete or broad automatic formatting.
 - Signing, notarization, updater, or installer completion without an explicit distribution lane.
+- Full E2E suite, privacy policy, support page, Sparkle updater, or automated release pipeline unless the user opens that lane explicitly. Small smoke harnesses, accessibility audits, and performance baselines are acceptable when they stay bounded.
 - Dependency or lockfile changes without explicit approval.
 - Apple Local Assist distribution-lane changes (`minimumSystemVersion`, App Store/TestFlight settings, signing, entitlements, sandbox assumptions, notarization, helper packaging shape, or network fallback) without explicit user approval. The live local helper is already on `main`; future work should harden quality, unavailable states, and distribution evidence without broadening the trust boundary.
 
