@@ -90,9 +90,18 @@ export function useAppPreferences(options: UseAppPreferencesOptions = {}) {
       // Push the new theme to the agent window (if it is open).
       // App Store lane omits the Agent Workbench surface, so it
       // also skips this Agent-only IPC.
+      //
+      // v0.15 status-feedback scope: `setAgentWindowTheme`
+      // swallows the IPC error internally (logs to
+      // `console.warn` and resolves with `void`), so the
+      // outer `.catch` does not fire in practice and a
+      // status-bar message routed through here would never
+      // reach the user. We deliberately do not surface a
+      // status message from this site; the window-theme and
+      // background-color paths above remain the canonical
+      // status-feedback coverage for theme IPC failures.
       void setAgentWindowTheme(themePreference).catch((err) => {
         console.warn("Failed to update Agent window theme", err);
-        onStatusRef.current?.("Failed to update Agent window theme");
       });
     }
   }, [themePreference]);
