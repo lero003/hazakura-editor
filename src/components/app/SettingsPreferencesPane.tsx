@@ -183,6 +183,7 @@ export function SettingsPreferencesPane({
               {copy.shokou}
             </option>
           </select>
+          <span className="field-hint" data-testid="theme-hint">{copy.themeHint(themePreference)}</span>
         </label>
         <label className="field-control">
           <span>{copy.ambientIntensity}</span>
