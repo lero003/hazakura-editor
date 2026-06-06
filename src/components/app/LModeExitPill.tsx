@@ -20,7 +20,7 @@ export function LModeExitPill({ copy, onExit }: LModeExitPillProps) {
   return (
     <button
       aria-label={copy.exitPillTitle}
-      className={LModeClasses.exitPill}
+      className={`${LModeClasses.exitPill} lmode-surface`}
       onClick={onExit}
       title={copy.exitPillTitle}
       type="button"

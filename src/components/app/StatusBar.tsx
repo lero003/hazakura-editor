@@ -36,7 +36,7 @@ export function StatusBar({
   statusText,
 }: StatusBarProps) {
   return (
-    <footer className="status-bar">
+    <footer className="status-bar lmode-surface">
       <span className="status-bar-segment status-bar-status">
         {saveAffirmation ? (
           <span

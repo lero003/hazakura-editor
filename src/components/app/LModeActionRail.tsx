@@ -27,7 +27,7 @@ export function LModeActionRail({
   reviewChangesAvailable,
 }: LModeActionRailProps) {
   return (
-    <div className={LModeClasses.actionRail} aria-label={copy.actionRailLabel}>
+    <div className={`${LModeClasses.actionRail} lmode-surface`} aria-label={copy.actionRailLabel}>
       <button
         className={LModeClasses.actionButton}
         onClick={onOpenAppleAssistWindow}

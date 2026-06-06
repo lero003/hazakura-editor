@@ -46,7 +46,7 @@ export function TabBar({
 }: TabBarProps) {
   return (
     <section
-      className="tabs-row"
+      className="tabs-row lmode-surface"
       aria-label="Open files"
       onPointerEnter={onPointerEnter}
     >

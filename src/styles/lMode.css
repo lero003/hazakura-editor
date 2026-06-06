@@ -177,6 +177,47 @@
   --cm-mark-quote: var(--text-muted);
 }
 
+/* --- 0c. Shared floating-chrome surface ---
+   えるモードの floating chrome (タブ / ステータスバー /
+   アクションレール / エグジットピル) は同じ frosted glass の
+   質感 — surface を % で薄めた半透明背景 + 薄い border +
+   backdrop-filter の blur + box-shadow + 999px pill radius。
+   この式を 1 箇所にまとめ、各要素の差分は --_lmode-surface-*
+   カスタムプロパティで上書きする。
+
+   使い方:
+   - React 側: 対象要素の className に "lmode-surface" を追加
+     (TabBar / StatusBar / LModeActionRail / LModeExitPill)。
+   - CSS 側: 各要素の :root[data-l-mode="on"] ルールで
+     --_lmode-surface-bg-opacity 等をセットして差分だけ書く。
+   - L モードが OFF の時は :root[data-l-mode="on"] ゲートで
+     このルール自体が効かないので、クラスが要素に付いていても
+     副作用は出ない。
+
+   注意: 命名は lmode-surface(lmode と surface の間にハイフンなし)。
+   これは「chrome 個別」ではなく「chrome 共通の surface utility」
+   目的なので、`l-mode-*`(helpers catalog が chrome 個別クラスを
+   追跡する命名)とは別系統として扱う。*/
+:root[data-l-mode="on"] .lmode-surface {
+  --_lmode-surface-bg-opacity: 68%;
+  --_lmode-surface-border-opacity: 52%;
+  --_lmode-surface-blur: 18px;
+  --_lmode-surface-shadow: var(--shadow-md);
+  background: color-mix(
+    in srgb,
+    var(--surface) var(--_lmode-surface-bg-opacity),
+    transparent
+  );
+  border: 1px solid color-mix(
+    in srgb,
+    var(--border) var(--_lmode-surface-border-opacity),
+    transparent
+  );
+  border-radius: 999px;
+  backdrop-filter: blur(var(--_lmode-surface-blur)) saturate(1.05);
+  box-shadow: var(--_lmode-surface-shadow);
+}
+
 /* --- 1. Hide workspace chrome --- */
 :root[data-l-mode="on"] .app-shell {
   grid-template-rows: minmax(0, 1fr);
@@ -231,18 +272,19 @@
 /* --- 2. Float chrome out of attention ---
    Tabs and status stay reachable, but they no longer read as
    normal bars. They are quiet floating hints that appear only
-   when the user intentionally looks near them. */
+   when the user intentionally looks near them. The shared
+   surface (background / border / blur / shadow / pill radius)
+   lives in `.lmode-surface`; the per-element rules below only
+   set the opacity / geometry / animation. */
 :root[data-l-mode="on"] .tabs-row {
+  --_lmode-surface-bg-opacity: 74%;
+  --_lmode-surface-border-opacity: 62%;
+  /* blur: see `.lmode-surface` default (18px) */
   position: fixed;
   top: 14px;
   left: 50%;
   width: min(640px, calc(100vw - 220px));
   min-height: 36px;
-  border: 1px solid color-mix(in srgb, var(--border) 62%, transparent);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--surface) 74%, transparent);
-  backdrop-filter: blur(18px) saturate(1.05);
-  box-shadow: var(--shadow-md);
   opacity: 0.08;
   font-size: 11px;
   transform: translateX(-50%);
@@ -268,11 +310,7 @@
   width: auto;
   max-width: min(360px, calc(100vw - 36px));
   min-height: 32px;
-  border: 1px solid color-mix(in srgb, var(--border) 52%, transparent);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--surface) 68%, transparent);
-  backdrop-filter: blur(18px) saturate(1.05);
-  box-shadow: var(--shadow-md);
+  /* surface: see `.lmode-surface` — defaults already match (68/52/18px/md) */
   color: color-mix(in srgb, var(--text-muted) 82%, transparent);
   opacity: 0.06;
   font-size: 11px;
@@ -316,6 +354,10 @@
    while preserving the same low-opacity, hover-revealed chrome
    language as the exit affordance. */
 :root[data-l-mode="on"] .l-mode-action-rail {
+  --_lmode-surface-bg-opacity: 64%;
+  --_lmode-surface-border-opacity: 42%;
+  --_lmode-surface-blur: 14px;
+  --_lmode-surface-shadow: var(--shadow-sm);
   position: fixed;
   top: 58px;
   right: 18px;
@@ -324,11 +366,6 @@
   align-items: center;
   gap: 6px;
   padding: 5px;
-  border: 1px solid color-mix(in srgb, var(--border) 42%, transparent);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--surface) 64%, transparent);
-  backdrop-filter: blur(14px) saturate(1.05);
-  box-shadow: var(--shadow-sm);
   opacity: 0.16;
   transition:
     opacity 180ms ease,
@@ -1082,6 +1119,10 @@
    default and lifts on hover, so the chrome stays
    discoverable without dominating the writing surface. */
 .l-mode-exit-pill {
+  --_lmode-surface-bg-opacity: 72%;
+  --_lmode-surface-border-opacity: 48%;
+  --_lmode-surface-blur: 14px;
+  --_lmode-surface-shadow: var(--shadow-sm);
   position: fixed;
   top: 14px;
   right: 18px;
@@ -1090,12 +1131,7 @@
   align-items: center;
   gap: 8px;
   padding: 6px 14px 6px 6px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--surface) 72%, transparent);
   color: var(--text);
-  border: 1px solid color-mix(in srgb, var(--border) 48%, transparent);
-  backdrop-filter: blur(14px) saturate(1.05);
-  box-shadow: var(--shadow-sm);
   font-family: var(--lmode-ui-font-family);
   font-size: 11px;
   letter-spacing: 0.06em;

@@ -21,6 +21,19 @@
   --scrollbar-thumb: rgba(98, 114, 103, 0.25);
   --scrollbar-thumb-hover: rgba(98, 114, 103, 0.4);
 
+  /* Diff カラー / Diff colors
+     追加 / 削除の二色をテーマ横断で揃える土台。--*-bg と --*-fg は
+     **独立したトークン**(背景を color-mix で fg から派生はしない):
+     背景は固定 rgba 13% の薄彩、fg だけ themes.css 側でテーマごとに
+     上書きする(default / sakura は既定値のまま、dark / yakou は
+     明色化してコントラスト確保)。将来テーマを足す人は、
+     「背景を変えずに fg だけ明色化する」運用が基本線。レビュー・バー・
+     差分・比較ビュー全てが同じトークンを参照する。 */
+  --diff-added-bg: rgba(46, 125, 85, 0.13);
+  --diff-added-fg: #2d6c4a;
+  --diff-removed-bg: rgba(158, 63, 67, 0.13);
+  --diff-removed-fg: var(--danger);
+
   /* CodeMirror エディタ配色 / CodeMirror Editor Colors */
   --cm-bg: #ffffff;
   --cm-fg: #1d2521;
@@ -88,6 +101,28 @@
     "Liberation Mono",
     monospace;
 
+  /* 共通フォントスタック / Shared font stacks
+     L モード用(--lmode-*)とは別。chrome / status bar / ツールバー /
+     diff テーブルなど UI 全体で使う。--font-sans は system-ui を
+     中間に挟む macOS 最適化スタック、--font-mono は ui-monospace
+     基点に SF Mono / JetBrains Mono / Menlo と続く。 */
+  --font-sans:
+    -apple-system,
+    "Inter",
+    "Hiragino Sans",
+    "Yu Gothic UI",
+    system-ui,
+    sans-serif;
+  --font-mono:
+    ui-monospace,
+    "JetBrains Mono",
+    "SF Mono",
+    Menlo,
+    Monaco,
+    Consolas,
+    "Liberation Mono",
+    monospace;
+
   /* シャドウ / Shadows */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
@@ -100,6 +135,28 @@
   --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --theme-transition: 0.35s var(--ease-standard);
+
+  /* スペーシング / Spacing scale
+     4 / 8 / 12 / 16 / 20 / 24 / 32 / 48 の 8 段。カード内 padding /
+     gap / アイコン余白の基準。6 / 10 / 14 / 18 など中間の値は
+     リテラル px のままで、必要になったらこの scale を拡張する。 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 48px;
+
+  /* 角丸 / Radius scale
+     sm=4(chips / badges), md=8(cards / preference-feature),
+     lg=12(modals / large surfaces), pill=999。preferences-dialog の
+     10px は Phase 3 で 12px に揃える予定。 */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
 
   color: var(--text);
   background: var(--bg);

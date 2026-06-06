@@ -56,7 +56,6 @@ export function useActiveDocumentSurface({
     ? getCompareCaseByKey(compareView.caseKey) ?? null
     : null;
   const {
-    documentMeta,
     lineCount: activeDocumentLineCount,
     statusDetail: activeStatusDetail,
   } = useDocumentStatus({

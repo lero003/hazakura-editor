@@ -274,7 +274,7 @@
 .review-surface-candidate-summary {
   align-items: center;
   display: flex;
-  font-family: var(--font-mono, ui-monospace, monospace);
+  font-family: var(--font-mono);
   font-size: 12px;
   gap: 6px;
 }
@@ -319,7 +319,7 @@
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  font-family: var(--font-mono, ui-monospace, monospace);
+  font-family: var(--font-mono);
   font-size: 12px;
   min-height: 0;
   overflow: auto;
@@ -399,7 +399,7 @@
 
 .review-surface-candidate-preview-meta-cell dd {
   color: var(--text);
-  font-family: var(--font-mono, ui-monospace, monospace);
+  font-family: var(--font-mono);
   font-size: 12px;
   margin: 0;
   overflow: hidden;

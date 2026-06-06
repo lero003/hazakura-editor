@@ -16,7 +16,7 @@
   background: rgba(var(--surface-strong-rgb), 0.85);
   backdrop-filter: blur(20px);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   color: var(--text);
   max-width: 420px;
@@ -29,7 +29,7 @@
 .preferences-dialog {  background: rgba(var(--surface-strong-rgb), 0.85);
   backdrop-filter: blur(20px);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   color: var(--text);
   max-width: 640px;

@@ -39,6 +39,12 @@ html, body, #root, .app-shell,
   --scrollbar-thumb: rgba(140, 160, 148, 0.15);
   --scrollbar-thumb-hover: rgba(140, 160, 148, 0.3);
 
+  /* Diff カラー: 森の夜の上書き / Diff colors (dark override)
+     default 値の #2d6c4a は暗背景で沈むので、fg だけ明色化して
+     行の判別が効くようにする。--diff-removed-fg は --danger が
+     既に上書き済みなので引き継ぐ。 */
+  --diff-added-fg: #91d7ad;
+
   /* CodeMirror ダーク用配色 / CodeMirror Dark Colors */
   --cm-bg: #141a17;
   --cm-fg: #e8ede5;
@@ -163,6 +169,15 @@ html, body, #root, .app-shell,
   --shadow-accent: 0 4px 20px rgba(168, 65, 95, 0.12);
 }
 
+/* 桜テーマ固有の微調整 / Sakura theme fine-tunes
+   preference-alpha-badge の "ALPHA / EXPERIMENTAL" は font-size
+   10px + uppercase で文字が詰まり気味。sakura の暖色背景上で
+   呼吸を確保するため letter-spacing だけ広げる。repo の既存 CSS
+   は基本 flat selector なので nested ではなくここで並べる。 */
+:root[data-theme="sakura"] .preference-alpha-badge {
+  letter-spacing: 0.08em;
+}
+
 /* 夜光 / Yakou – deep cosmic indigo with luminous purple-teal accent */
 :root[data-theme="yakou"] {
   --bg: linear-gradient(135deg, #0c0c14 0%, #131228 50%, #0c0c14 100%);
@@ -186,6 +201,11 @@ html, body, #root, .app-shell,
   --status-bg: #08080e;
   --status-text: #e4e4f0;
   --selection-bg: rgba(152, 136, 255, 0.18);
+
+  /* Diff カラー: 夜光の上書き / Diff colors (yakou override)
+     default 値の #2d6c4a は --surface: #14141e 上でコントラストが
+     2.92:1 まで落ちる。既存の --xterm-green と揃えて #7fc8a0 に。 */
+  --diff-added-fg: #7fc8a0;
 
   /* CodeMirror 夜光用配色 / CodeMirror Yakou Colors */
   --cm-bg: #14141e;

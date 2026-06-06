@@ -90,13 +90,13 @@
 }
 
 .apple-assist-review-bar-count.added {
-  background: color-mix(in srgb, var(--accent) 16%, transparent);
-  color: var(--accent);
+  background: var(--diff-added-bg);
+  color: var(--diff-added-fg);
 }
 
 .apple-assist-review-bar-count.removed {
-  background: color-mix(in srgb, #b85056 14%, transparent);
-  color: color-mix(in srgb, #b85056 80%, var(--text));
+  background: var(--diff-removed-bg);
+  color: var(--diff-removed-fg);
 }
 
 .apple-assist-review-bar-actions {

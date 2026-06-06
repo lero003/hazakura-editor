@@ -888,28 +888,24 @@
 
 .diff-summary span {
   border-radius: 4px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 700;
   padding: 3px 6px;
 }
 
 .diff-added {
-  background: rgba(46, 125, 85, 0.13);
-  color: #2d6c4a;
+  background: var(--diff-added-bg);
+  color: var(--diff-added-fg);
 }
 
 .diff-removed {
-  background: rgba(158, 63, 67, 0.13);
-  color: var(--danger);
-}
-
-:root[data-theme="dark"] .diff-added {
-  color: #91d7ad;
+  background: var(--diff-removed-bg);
+  color: var(--diff-removed-fg);
 }
 
 .diff-table {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 12.5px;
   line-height: 1.5;
   min-height: 0;
@@ -1130,7 +1126,7 @@
 
 .outline-line {
   color: var(--text-muted);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
 }
 
