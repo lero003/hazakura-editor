@@ -3,10 +3,10 @@
 ## Current State
 
 - `hazakura editor` published `v0.11.0` as a warning-expected DMG preview, framed as **L Mode WYSIWYG-tier Polish**.
-- `hazakura editor` now has a `v0.13.0` source / local-app tag, framed as **Distribution Probe / L Mode Bridge**.
-- Version surfaces are aligned at `0.13.0`.
+- `hazakura editor` now has a `v0.14.0` source / local-app tag, framed as **L Mode Stability Ramp / Apple Local Assist Harness Polish**.
+- Version surfaces are aligned at `0.14.0`.
 - Latest published release body: `docs/releases/0.11.0-warning-expected-dmg-preview.release.md`.
-- Latest source / local-app tag notes: `docs/releases/0.13.0-source-tag.release.md`.
+- Latest source / local-app tag notes: `docs/releases/0.14.0-source-tag.release.md`.
 - Current status source: `docs/current-status.md`.
 
 ## Recent Changes
@@ -42,6 +42,7 @@
 - The third v0.14 L Mode slice (visual-overlap fixture) landed: `src/features/editor/lMode/visualOverlapFixtures.test.ts` pins the content `max-width` formula, the horizontal `padding` formula, the chip `left: -2.4em` and `width: 2em` formulas, and a numerical readout of the chip-to-padding headroom at 375 / 480 / 720 / 1024 px. The current headroom is ~10.5px on narrow widths and ~21.7px on wide widths.
 - The fourth v0.14 L Mode slice (task widget accessibility) landed: the task widget now carries `tabindex="0"` and toggles `[ ]` ↔ `[x]` on Enter / Space from a `keydown` handler, with a `:focus-visible` accent ring in the stylesheet. Unrelated keys and non-task targets no-op.
 - The fifth v0.14 L Mode slice (print / export boundary, screen print only) landed: `src/styles/lMode.css` ends with a single `@media print` block that hides L Mode floating chrome, reveals the previously hidden Markdown markers, removes the dim and the margin chip, drops the centered 720px column, and swaps the warm cream paper-feel surface for plain white. The override is gated on `:root[data-l-mode="on"]` so normal-mode print behavior is untouched. Scope is explicit: the canonical Print to PDF / Export HTML flow goes through `useDocumentExport`'s standalone HTML pipeline, not this block, and `Decoration.replace` widgets (Image / HorizontalRule / TaskMarker / TableDelimiter) cannot be CSS-reverted to their source text.
+- `v0.14.0` release preparation aligns npm, Tauri, Cargo, and lockfile version surfaces; adds `docs/releases/0.14.0-source-tag.release.md`; keeps the latest downloadable DMG preview at `v0.11.0`; and frames the next lane as Apple Local Assist quality plus release-prep continuation.
 
 ## Decisions
 
@@ -79,6 +80,7 @@
 - v0.14 L Mode visual-overlap fixture verification passed: `npm test -- src/features/editor/lMode/visualOverlapFixtures.test.ts` (4 tests), `npm test -- src/features/editor/lMode/` (55 tests), `npm run typecheck`, `npm run build:vite`, and `git diff --check`. Vite chunk-size warning remains existing / expected.
 - v0.14 L Mode task widget accessibility verification passed: `npm test -- src/features/editor/lMode/extension.test.ts` (36 tests), `npm test -- src/features/editor/lMode/` (60 tests), `npm run typecheck`, `npm run build:vite`, and `git diff --check`. Vite chunk-size warning remains existing / expected.
 - v0.14 L Mode print / export boundary verification passed: `npm test -- src/styles/lModeCss.test.ts` (22 tests), `npm test -- src/features/editor/lMode/ src/styles/lModeCss.test.ts` (82 tests), `npm run typecheck`, `npm run build:vite`, and `git diff --check`. Vite chunk-size warning remains existing / expected. The slice is scoped to screen print only; the canonical Print to PDF / Export HTML pipeline lives in `useDocumentExport` and is unchanged.
+- v0.14.0 source / local-app tag verification passed on 2026-06-07: `npm ci`, `npm run typecheck`, `npm run test` (53 files / 339 tests), `npm run build:vite`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml` (initial one-off real-runtime failure, then focused pass and full 238-test pass), `npm run build`, `git diff --check`, `npm audit`, `cargo audit --file src-tauri/Cargo.lock`, built-app metadata (`0.14.0`, `lab.hazakura.note`, `hazakura editor`, `hazakura-editor`), built-app codesign, expected `spctl` insufficient-context rejection, and launch-smoke process observation.
 
 ## Risks / Unknowns
 
@@ -91,9 +93,9 @@
 ## Next Actions
 
 - Before any future publication decision, re-check the latest local gates if code changes again; otherwise use the current release note as the evidence packet.
-- For post-v0.13 assist work, start from `docs/apple-local-assist-writing-companion-plan.md`. Keep Apple Local Assist detachable, prioritize L Mode / rough writing requests, and use AI edit transactions rather than hidden or irreversible applies.
+- For post-v0.14 assist work, start from `docs/apple-local-assist-writing-companion-plan.md`. Keep Apple Local Assist detachable, prioritize real lightweight writing examples / unavailable states / rough requests, and use AI edit transactions rather than hidden or irreversible applies.
 - For Apple Local Assist or App Store distribution planning, start from `docs/apple-local-assist-distribution-plan.md` and keep App Store build decisions separate from the existing developer / warning-expected DMG preview lane.
-- For v0.14, start from `docs/l-mode-plan.md` and treat L Mode WYSIWYG Accuracy Ramp as the main app-quality lane. Apple Developer enrollment is pending, so keep App Store upload / TestFlight work out of scope until credentials exist.
+- For L Mode follow-up after v0.14, start from `docs/l-mode-plan.md` only when there is a reproduced regression, a built-app smoke gap, or performance-baseline evidence. Apple Developer enrollment is pending, so keep App Store upload / TestFlight work out of scope until credentials exist.
 - Next sandbox proof is Apple Developer / App Store signing and upload validation once account access exists. Do not move to XPC/app-bundled helper/in-process Swift bridge unless that validation fails. If more App Store lane hardening is needed before visual polish, prefer dependency / capability-profile pruning over Apple Local Assist UX expansion.
 - Distribution planning now defaults to two binary lanes only: App Store build (`Safe Editor` + `Apple Local Assist`, no Agent Workbench) and Developer / GitHub build (same base plus Agent Workbench). Treat an official website as routing/explanation, not a third official free build, unless the user explicitly reopens that cost.
 - `docs/roadmap.md` now has an internal App Store Publication Roadmap covering app brush-up, official distribution prep, store review prep, and review/post-review work.

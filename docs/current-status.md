@@ -3,13 +3,13 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-06
+Last reviewed: 2026-06-07
 
 ## Current State
 
 - `hazakura editor` is a touchable Tauri desktop app for Markdown-first safe text editing.
-- Current source / local-app tag is `v0.13.0`.
-- Current package/app version is `0.13.0` across npm, Tauri, Cargo, and lockfile metadata.
+- Current source / local-app tag is `v0.14.0`.
+- Current package/app version is `0.14.0` across npm, Tauri, Cargo, and lockfile metadata.
 - Current published downloadable preview remains `v0.11.0` at `https://github.com/lero003/hazakura-editor/releases/tag/v0.11.0`.
 - v0.11.0 is the **L Mode WYSIWYG-tier Polish** preview: it keeps Markdown source canonical while rendering inline emphasis, strong, strike, links, inline code, task checkboxes, horizontal rules, tables, blockquotes, code blocks, ordered/bullet lists, and images as a document-like writing surface through CodeMirror display decoration.
 - v0.11.0 also includes auto-backup restore through an explicit backup-vs-buffer diff/apply flow, hash-based pasted-image deduplication, export CSS parity with Preview, workspace path rekey hardening, common text-extension save filters, and a native View menu L Mode toggle.
@@ -22,7 +22,9 @@ Last reviewed: 2026-06-06
 - v0.12.0 local source / local-app gates passed on 2026-06-06: `npm ci`, `npm run typecheck`, `npm run test` (255 tests), `npm run build:vite`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml` (233 tests), `npm run build:apple-assist-helper:live`, `npm run build`, `git diff --check`, `npm audit`, `cargo audit --file src-tauri/Cargo.lock`, built-app metadata, codesign, expected `spctl` rejection, and built-app launch smoke.
 - v0.13.0 is the **Distribution Probe / L Mode Bridge** source / local-app tag: it separates the App Store preview lane from the Developer / GitHub lane, adds draft sandbox entitlement proof, keeps Apple Local Assist as an availability-gated local helper, improves L Mode mode-completeness, and moves the deeper L Mode WYSIWYG Accuracy Ramp to v0.14 planning.
 - v0.13.0 local source / local-app gates passed on 2026-06-06. See `docs/releases/0.13.0-source-tag.release.md` for the verification packet.
-- Post-v0.13 product polish should treat L Mode WYSIWYG accuracy as the primary writing-surface track. The goal is to make L Mode credible for routine writing and correction while preserving Markdown as the saved source, with particular attention to cursor movement, IME, lists, links, tasks, dividers, tables, images, hidden markers, and source-preserving copy/edit behavior.
+- v0.14.0 is the **L Mode Stability Ramp / Apple Local Assist Harness Polish** source / local-app tag: it lands the first five source-preserving L Mode quality slices from the 60-to-80 review path and a small Apple Local Assist harness pass that centers request context around the active target, fixes context-boundary snapping, removes a horizontal-scroll trap in the L Mode review sheet, and localizes common Assist apply-error states.
+- v0.14.0 local source / local-app gates passed on 2026-06-07. See `docs/releases/0.14.0-source-tag.release.md` for the verification packet.
+- Post-v0.14 product polish can let L Mode rest unless a clear regression or performance baseline demands follow-up. The next improvement lane should focus on Apple Local Assist real writing behavior, unavailable / disabled states, and release-prep continuity without broadening the Safe Editor trust boundary.
 - Older public tags remain immutable.
 
 ## Current Product Boundary
@@ -42,6 +44,7 @@ Use these documents for release evidence and future release decisions:
 - `docs/releases/0.11.0-warning-expected-dmg-preview.release.md`
 - `docs/releases/0.12.0-source-tag.release.md`
 - `docs/releases/0.13.0-source-tag.release.md`
+- `docs/releases/0.14.0-source-tag.release.md`
 - `docs/source-release-checklist.md`
 - `docs/dmg-preview-checklist.md`
 - `docs/smoke-checklist.md`
@@ -51,7 +54,7 @@ The published v0.10.0 release is a warning-expected DMG preview. It is ad-hoc si
 
 The published v0.11.0 release is a warning-expected DMG preview. It is ad-hoc signed, not Developer ID signed, not notarized, and expected to produce Gatekeeper warnings. Local and remote verification passed after publication.
 
-The v0.12.0 and v0.13.0 tags are source / local-app checkpoints. They are not signed, notarized, App Store, TestFlight, or warning-expected DMG publications.
+The v0.12.0, v0.13.0, and v0.14.0 tags are source / local-app checkpoints. They are not signed, notarized, App Store, TestFlight, or warning-expected DMG publications.
 
 For future releases, re-check local artifact evidence and, after publication, re-download GitHub Release assets into a fresh temp directory and verify checksum, `hdiutil verify`, mounted app metadata, and `codesign --verify --deep --strict --verbose=2`.
 
@@ -80,6 +83,16 @@ The sandbox proof is promising but still incomplete. Draft App Store entitlement
 
 L Mode also moved closer to being a peer writing mode: the hidden-by-default file tree can open as a temporary drawer, dirty-buffer review opens as a local floating diff sheet, the top-right switch uses `編集モード`, normal edit mode has an explicit `えるモード` route, and known visual/input regressions around list markers, Setext dividers, action-rail geometry, and dark diff contrast were tightened. The broader WYSIWYG accuracy work is intentionally deferred to v0.14.
 
+## v0.14.0 L Mode Stability Ramp / Apple Local Assist Harness Polish source / local-app tag
+
+v0.14.0 closes the first small L Mode WYSIWYG accuracy ramp and records a bounded Apple Local Assist harness polish pass. It does not claim a completed WYSIWYG editor or a mature AI writing system. The saved Markdown source remains canonical, L Mode still renders through CodeMirror decorations, and there is no Preview DOM editing, `contenteditable`, HTML as the saved model, hidden save-time conversion, network fallback, tool calling, or auto-apply behavior.
+
+The landed behavior changes are deliberately practical: decoration recomputation now reacts to real selection changes without overreacting to same-selection dispatches; Typewriter mode avoids measured recentering during active IME composition and re-checks composition state inside the deferred rAF callback; task checkboxes in L Mode are keyboard focusable and toggle on Enter / Space; visual-overlap math for margin chips versus page padding is pinned across narrow and wider widths; and the L Mode screen-print fallback hides floating chrome and restores the page surface to plain white when the user prints the editor screen.
+
+The print slice is intentionally scoped. The canonical Print to PDF / Export HTML path is still the standalone pipeline in `useDocumentExport`, which renders Markdown source through `renderMarkdown()` and `getMarkdownPreviewCss()`; the L Mode CSS print block is only a screen-side fallback and cannot CSS-recover source text from `Decoration.replace` widgets.
+
+Apple Local Assist also became more dependable for reviewable writing edits: `useAppleAssistApplyHandler` now builds surrounding document context around the selected target instead of the document head, clamps the returned context itself, and snaps to safe line boundaries without erasing nearby lines. The L Mode floating review sheet no longer inherits the normal diff row's `min-width: 720px` floor, reducing horizontal scroll for long Assist candidates. The Apple Assist window now classifies common raw apply errors into localized user-facing messages.
+
 ## v0.12.0 Apple Local Assist source / local-app tag
 
 Apple Local Assist has moved from fixture-only companion mock to a live local preview. `npm run build` builds a release Swift helper without `FIXTURE_MODE`, bundles it through `tauri.conf.json` `bundle.externalBin`, and the production Rust command surface calls the helper supervisor through the main-window / Apple Local Assist-window scoped boundary: availability probe is allowed from `main | apple-assist`, while candidate generation remains `main` only. The helper uses `SystemLanguageModel.default.availability` for probe and `LanguageModelSession.respond` for bounded candidate generation when Apple Foundation Models is available on the current Mac.
@@ -88,20 +101,17 @@ The product direction remains an external Apple Local Assist Writing Companion, 
 
 Current limits: live generation depends on macOS 26+ Apple Foundation Models availability, local Apple Intelligence state, and a Foundation Models-supported current app language / locale (`SystemLanguageModel.default.supportsLocale()`). Output quality may vary, and this alpha feature may change or be removed. Apple Local Assist is not suitable for code review, multi-file understanding, long-document restructuring, autonomous agent work, external AI-agent replacement, local LLM runtime replacement, or advanced reasoning. There is no network fallback, no App Store/TestFlight distribution change, no background rewriting, no auto-save, no tool calling, and no workspace-wide indexing. `minimumSystemVersion` remains at the v0.11 value (`11.0`) so older Macs can still run the editor; Apple Local Assist reports unavailable/unsupported when the helper, model, or current language / locale is not usable.
 
-## Next L Mode WYSIWYG Accuracy Ramp
+## Post-v0.14 Improvement Lane
 
-1. Use `docs/l-mode-plan.md` as the v0.14 planning source.
-2. Prioritize rendering fidelity for headings, inline marks, links, lists, tasks, dividers, Setext underlines, blockquotes, code blocks, tables, images, Japanese prose, and mixed symbols.
-3. Prioritize editing fidelity for caret movement, IME composition, active-line decorations, hidden markers, Backspace / Delete, list continuation, selection, and Markdown-source copy behavior.
-4. Add regression fixtures for mixed Markdown and CSS drift before widening the visual illusion.
-5. The first five v0.14 L Mode slices (recompute-trigger cleanup, Typewriter / IME stability with rAF race guard, visual-overlap fixture, task widget accessibility, and print / export boundary) have landed. The print slice is the screen-print fallback only; the canonical Print to PDF / Export HTML path is the existing standalone pipeline in `useDocumentExport`, which renders Markdown source via `renderMarkdown()` + `getMarkdownPreviewCss()` and does not carry L Mode's `.cm-*` classes. Continue from the `v0.14 Review Notes: 60 To 80 Point Ramp` section in `docs/l-mode-plan.md` with a small performance baseline or deeper refactors only if the baseline demands it.
-6. Keep Markdown source canonical; do not introduce Preview DOM editing, `contenteditable`, HTML as the saved model, or hidden save-time rewriting.
-7. Keep App Store / Developer lane proof on the roadmap, but do not let it displace the next L Mode writing-surface pass unless release packaging forces the issue.
+1. Let L Mode rest unless a clear regression, built-app smoke failure, or small performance baseline shows a need. The first five v0.14 slices have landed and are documented in `docs/l-mode-plan.md`.
+2. For Apple Local Assist, focus on actual lightweight Japanese writing examples, prompt / response quality, unavailable / disabled / unsupported-language states, and the reviewable AI edit transaction path.
+3. For release prep continuity, keep App Store / Developer lane proof separate from the warning-expected DMG lane and do not claim App Store, TestFlight, Developer ID signing, notarization, updater, or installer readiness.
+4. Keep Markdown source canonical; do not introduce Preview DOM editing, `contenteditable`, HTML as the saved model, hidden save-time rewriting, network fallback, tool calling, workspace-wide indexing, or auto-apply.
 
 ## Next Safe Actions
 
 1. If continuing quality work, use `docs/development-automation.md` and keep to one small verified slice.
-2. If improving L Mode, use `docs/l-mode-plan.md` and prioritize source-preserving WYSIWYG accuracy: rendering fidelity, editing stability, IME/caret/list/link/table behavior, and visual-overlap regression checks.
-3. If planning assist work after v0.13.0, use `docs/assist-surface-strategy.md`, `docs/apple-local-assist-distribution-plan.md`, and `docs/apple-local-assist-writing-companion-plan.md`; keep Apple Local Assist as an external Writing Companion and require AI edit transactions for direct buffer edits.
+2. If improving Apple Local Assist after v0.14.0, use `docs/assist-surface-strategy.md`, `docs/apple-local-assist-distribution-plan.md`, and `docs/apple-local-assist-writing-companion-plan.md`; keep Apple Local Assist as an external Writing Companion and require AI edit transactions for direct buffer edits.
+3. If improving L Mode, use `docs/l-mode-plan.md` and prioritize only a measured follow-up: performance baseline, built-app smoke, or a reproduced regression around IME/caret/list/link/table behavior.
 4. If preparing a future release, use `docs/source-release-checklist.md`, `docs/dmg-preview-checklist.md`, and the version-specific release note; do not tag or publish without explicit approval.
 5. If changing product behavior, use `docs/product-brief.md`, `docs/security-boundary.md`, and the touched boundary doc before implementation.

@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-06-06
+Last reviewed: 2026-06-07
 
 `hazakura editor` は、AI時代のメモ帳です。Markdownを中心に、安全にテキストを読む・書く・比べるための軽量なローカル作業場を目指します。
 
@@ -23,7 +23,7 @@ Last reviewed: 2026-06-06
 
 ![hazakura editor diff comparison](docs/images/v0.11-diff-compare.png)
 
-## 0.13 Source / Local App Summary
+## 0.14 Source / Local App Summary
 
 Use this when you want to:
 
@@ -39,6 +39,7 @@ Use this when you want to:
 - run bounded workspace text search without background indexing
 - pin frequently opened files on the start panel
 - use えるモード / L Mode as a WYSIWYG-tier one-pane writing surface with magazine-feel typography, where Markdown source remains the truth
+- write in L Mode with reduced decoration churn, steadier Typewriter / IME behavior, keyboard-toggleable task checkboxes, and pinned visual-overlap / screen-print fallback checks
 - review and explicitly apply auto-backup snapshots to the active document buffer without auto-saving
 - create new workspace files and folders, rename workspace entries, and move entries to Trash from bounded in-app file-tree actions
 - optional detached Agent Window with `codex` / `opencode` / `pi` / `claude` provider sessions
@@ -129,6 +130,7 @@ Example use case:
 - Optional Agent Workbench mode can launch one allowlisted `codex`, `opencode`, `pi`, or `claude` provider session in the selected workspace after restart-required mode enablement and responsibility-boundary consent
 - Agent Workbench renders the selected allowlisted provider's TUI output in a scoped pane, sends keyboard input only to the running provider process, supports Copy full path / Send full path to Agent from existing workspace file rows, and continues to treat provider-made file edits as ordinary external on-disk changes
 - Assist Surface settings can switch the outside companion slot between Apple Local Assist, CLI Agent, and Off after restart. Apple Local Assist is an experimental alpha surface for lightweight on-device text help on supported Macs: short summaries, rephrasing, heading/tag ideas, light cleanup, and explicit unsaved AI edit transactions that remain reviewable through diff before save.
+- Apple Local Assist review requests now build document context around the active target instead of blindly sending the document head, and the Assist window localizes common apply-error states before showing them to the user.
 
 ## Project Docs
 
@@ -192,8 +194,8 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version is `0.13.0` across npm, Tauri, Cargo, and lockfile metadata.
-- The current source / local-app tag is `v0.13.0`; its release-note evidence lives in [0.13.0 Source / Local App Tag](docs/releases/0.13.0-source-tag.release.md).
+- Current package/app version is `0.14.0` across npm, Tauri, Cargo, and lockfile metadata.
+- The current source / local-app tag is `v0.14.0`; its release-note evidence lives in [0.14.0 Source / Local App Tag](docs/releases/0.14.0-source-tag.release.md).
 - Source users build locally with `npm ci` and `npm run build`.
 - The generated local `.app` declares macOS 11.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. Apple Local Assist's bundled helper requires macOS 26+ and local Apple Intelligence availability to return live candidates. The app is not Developer ID signed or notarized.
 - The latest published warning-expected DMG preview is [v0.11.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.11.0). The v0.11.0 release notes live in [0.11.0 Warning-expected DMG Preview](docs/releases/0.11.0-warning-expected-dmg-preview.release.md).

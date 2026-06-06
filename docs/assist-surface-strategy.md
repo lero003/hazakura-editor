@@ -157,10 +157,11 @@ v0.11 shipped L Mode WYSIWYG-tier polish without adding Apple Local Assist. The 
 
 Recommended sequence:
 
-1. Use v0.12 for Apple Local Assist planning and prototype: availability detection, fixture-backed Writing Companion mock, rough writing requests, AI edit transaction, unavailable-state UI, and Diff / history escape hatches.
-2. Use v0.13 for Assist Preview only after v0.12 is stable: add live Foundation Models binding and broader proofreading / continuation flows if prompt quality and review UX are strong enough.
-3. Use v0.14 for Distribution Hardening: App Store build separation, sandbox / entitlement checks, TestFlight packaging, and App Review notes.
-4. Use v1.0 as the App Store Candidate if the App Store build can omit External Agent Workbench cleanly and Apple Local Assist remains document-assist only.
+1. v0.12 shipped Apple Local Assist planning and alpha live-helper foundation: availability detection, rough writing requests, AI edit transaction, unavailable-state UI, and Diff / discard escape hatches.
+2. v0.13 shipped the distribution probe: App Store / Developer build separation, sandbox / entitlement draft, and helper parent-spawn proof.
+3. v0.14 shipped L Mode stability plus bounded Apple Local Assist harness polish: target-centered document context, safer context snapping, L Mode review-sheet horizontal-scroll cleanup, and localized apply-error copy.
+4. Use v0.15 for Apple Local Assist quality and release-prep continuation: real writing examples, unavailable / disabled state polish, App Review notes, and the App Store / Developer lane evidence that current signing access makes practical.
+5. Use v1.0 as the App Store Candidate if the App Store build can omit External Agent Workbench cleanly and Apple Local Assist remains document-assist only.
 
 ## Non-Goals
 

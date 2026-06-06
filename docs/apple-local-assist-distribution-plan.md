@@ -326,13 +326,22 @@ Target:
 
 Reference: [v0.13 Distribution Probe](v0.13-distribution-probe.md).
 
-### v0.14: App Store Prep / App Brush-up
+### v0.14: L Mode Stability / Assist Harness Polish
+
+Target:
+
+- land the first L Mode stability ramp without changing the Markdown-first document model
+- improve Apple Local Assist request context around the active target
+- make Assist apply errors clearer and localized
+- keep App Store / Developer build separation intact without claiming App Store readiness
+
+### v0.15: App Store Prep / App Brush-up
 
 Target:
 
 - app-quality smoke and small polish for the App Store lane
 - build variant automation after v0.13 lane decisions
-- TestFlight packaging
+- TestFlight packaging when signing access makes it practical
 - App Review notes draft
 - Developer / GitHub build signing and notarization plan
 - official website/download-page wording, if needed, as links to the two binary lanes
