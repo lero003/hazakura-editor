@@ -16,13 +16,17 @@ import {
 import { WorkspaceSidebar } from "../workspace/WorkspaceSidebar";
 import { DiffBody } from "../diff/DiffBody";
 import type { ChangeReviewSnapshot } from "../../hooks/diff/useCompareExecution";
-import type { MenuLanguage } from "../../types";
+import type {
+  AssistSurfacePreference,
+  MenuLanguage,
+} from "../../types";
 
 export type LModeWorkspaceSidebarProps = ComponentProps<typeof WorkspaceSidebar>;
 
 type LModeActionRailProps = {
   activeDirty: boolean;
   activeDocumentPath: string | null;
+  assistSurfaceActive: AssistSurfacePreference;
   copy: LModeCopy;
   dirtyLabel: string;
   menuLanguage: MenuLanguage;
@@ -43,9 +47,21 @@ type LModeActionRailProps = {
 // Agent window when opening Apple Assist, and vice versa) is
 // enforced server-side by `toggle_apple_assist_window` /
 // `open_agent_window`.
+//
+// v0.15 polish: the Apple Assist button is hidden when the
+// user has set the Assist Surface preference to anything
+// other than `apple-local` (e.g. `external-cli` or `none`).
+// Without this guard, a user who turned the Apple Local
+// Assist companion off in Preferences would still see a
+// working Apple Assist button inside L Mode — and clicking
+// it would silently toggle nothing. The L Mode action rail
+// now mirrors the `DocumentMetaBar` companion-section rule
+// (`assistSurfaceActive === "apple-local"`) so the rail
+// stays honest about what the user actually has available.
 export function LModeActionRail({
   activeDirty,
   activeDocumentPath,
+  assistSurfaceActive,
   copy,
   dirtyLabel,
   menuLanguage,
@@ -56,6 +72,7 @@ export function LModeActionRail({
   typewriterModeEnabled,
   workspaceSidebarProps,
 }: LModeActionRailProps) {
+  const showAppleAssistButton = assistSurfaceActive === "apple-local";
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const [changeReview, setChangeReview] =
     useState<ChangeReviewSnapshot | null>(null);
@@ -158,18 +175,20 @@ export function LModeActionRail({
         className={`${LModeClasses.actionRail} lmode-surface`}
         aria-label={copy.actionRailLabel}
       >
-        <button
-          aria-label={copy.statusBarAppleAssistLabel}
-          className={LModeClasses.actionButton}
-          onClick={onOpenAppleAssistWindow}
-          title={copy.actionRailAppleAssistTooltip}
-          type="button"
-        >
-          <SparklesIcon />
-          <span aria-hidden="true" className={LModeClasses.actionButtonLabel}>
-            {copy.actionRailAppleAssistShortLabel}
-          </span>
-        </button>
+        {showAppleAssistButton ? (
+          <button
+            aria-label={copy.statusBarAppleAssistLabel}
+            className={LModeClasses.actionButton}
+            onClick={onOpenAppleAssistWindow}
+            title={copy.actionRailAppleAssistTooltip}
+            type="button"
+          >
+            <SparklesIcon />
+            <span aria-hidden="true" className={LModeClasses.actionButtonLabel}>
+              {copy.actionRailAppleAssistShortLabel}
+            </span>
+          </button>
+        ) : null}
         <button
           aria-label={copy.typewriterPreferenceLabel}
           aria-pressed={typewriterModeEnabled}

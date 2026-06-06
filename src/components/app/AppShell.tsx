@@ -118,6 +118,7 @@ export function AppShell(props: AppShellProps) {
           <LModeActionRail
             activeDirty={props.activeDirty}
             activeDocumentPath={props.activeTab?.path ?? null}
+            assistSurfaceActive={props.assistSurfaceActive}
             copy={props.lModeCopy}
             dirtyLabel={props.dirtyLabel}
             menuLanguage={props.menuLanguage}
