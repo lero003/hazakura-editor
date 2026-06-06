@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-06-05
+Last reviewed: 2026-06-06
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
@@ -27,7 +27,8 @@ This directory separates current guidance from historical material. Use current 
 
 ## Current Planning Backlogs
 
-- `l-mode-plan.md`: L Mode / えるモード planning memo.
+- `l-mode-plan.md`: L Mode / えるモード source-preserving WYSIWYG Accuracy Ramp planning memo.
+- `v0.13-distribution-probe.md`: completed v0.13 App Store / Developer-GitHub distribution probe memo and remaining evidence needs.
 - `apple-local-assist-distribution-plan.md`: Apple Local Assist / App Store distribution planning memo.
 - `apple-local-assist-writing-companion-plan.md`: Apple Local Assist Writing Companion / external Assist Window UX direction.
 - `apple-local-assist-v0.12-design-review.md`: Apple Local Assist v0.12 スライス 1〜6 の設計選択・ゲート・残課題レビュー記録。

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-06 (v0.13 Distribution Probe)
+Last reviewed: 2026-06-06 (post-v0.13 L Mode WYSIWYG Accuracy Ramp)
 
 ## Current Position
 
@@ -12,10 +12,11 @@ Last reviewed: 2026-06-06 (v0.13 Distribution Probe)
 Current release state:
 
 - Latest published preview: `v0.11.0` warning-expected DMG preview.
-- Latest source / local-app tag: `v0.12.0`.
-- Current package/app version: `0.12.0`.
-- v0.12.0 theme: **Apple Local Assist Alpha**.
-- Active lane: v0.13 Distribution Probe.
+- Latest source / local-app tag: `v0.13.0`.
+- Current package/app version: `0.13.0`.
+- v0.13.0 theme: **Distribution Probe / L Mode Bridge**.
+- Active lane: v0.14 L Mode WYSIWYG Accuracy Ramp.
+- Active product polish direction: make L Mode credible as a source-preserving WYSIWYG writing surface, not just a focus-mode presentation layer.
 
 Historical phase details and old milestone text are archived in `docs/archive/roadmaps/roadmap-through-v0.10-doc-refactor.md` and `docs/archive/roadmaps/roadmap-v0.1-archived.md`.
 
@@ -112,8 +113,8 @@ Rules:
 Likely phase shape:
 
 - `v0.12`: Apple Local Assist live local preview, availability plumbing, rough requests, L Mode smoke, AI edit transaction, and alpha / experimental labeling.
-- `v0.13`: Distribution Probe, including App Store build separation, sandbox / entitlement draft, helper sidecar sandbox proof, and App Review notes draft.
-- `v0.14`: App Store Prep / App Brush-up, including real app smoke, ordinary writing polish, screenshots, privacy / acceptable-use wording, and TestFlight packaging.
+- `v0.13`: Distribution Probe / L Mode Bridge, including App Store build separation, sandbox / entitlement draft, helper sidecar sandbox proof, lane split, and L Mode peer-mode polish.
+- `v0.14`: L Mode WYSIWYG Accuracy Ramp, including rendering fidelity, editing stability, IME / caret behavior, hidden-marker regression fixtures, and visual-overlap checks.
 - `v0.15`: Store Review Prep, including metadata, review notes, final TestFlight smoke, and submission readiness.
 - `v1.0`: App Store Candidate / Review if the App Store build can omit External Agent Workbench cleanly and Apple Local Assist remains document-assist only.
 
@@ -128,11 +129,32 @@ v0.12 tag state (source / local-app tag only):
 
 The next implementation work should prioritize built-app smoke, prompt quality, unavailable / disabled states, and distribution readiness. Do not broaden Apple Local Assist into network fallback, generic chat, tool calling, workspace indexing, or external-agent replacement.
 
+## Tagged Lane: v0.13 Distribution Probe / L Mode Bridge
+
+Goal: prove the App Store / Developer-GitHub lane shape and bring L Mode closer to being a peer writing mode, without claiming App Store readiness or WYSIWYG completion.
+
+Current evidence:
+
+- `npm run build` builds the App Store preview / normal lane.
+- `npm run build:macos-lanes` also produces a separate Developer / GitHub lane bundle named `hazakura editor Dev.app` with bundle identifier `lab.hazakura.note.dev`.
+- `npm run build:dmg-preview` packages the Dev lane bundle for the warning-expected GitHub preview lane.
+- The App Store preview lane hides or omits Agent Workbench settings, menu, command-palette, IPC, and `agent.html` entry points.
+- Draft sandbox entitlements exist for the app and Apple Local Assist helper.
+- Ad-hoc sandbox signing verifies, and the real sandboxed Tauri parent can spawn the inherited-sandbox Apple Local Assist helper for an availability probe.
+- L Mode now has a temporary workspace drawer, local floating dirty-buffer review, clearer `編集モード` switching, normal-mode `えるモード` routing, stronger dark diff contrast, Typewriter-mode access, and fixes for active list markers and Setext-style divider rendering.
+
+Boundaries:
+
+- No GitHub Release or DMG asset is published for `v0.13.0`.
+- No App Store, TestFlight, Developer ID signing, notarization, updater, or installer claim is made.
+- Apple Developer / App Store signing, provisioning, upload validation, and review behavior remain future proof.
+- L Mode WYSIWYG accuracy is improved only enough to establish direction; the deeper editing/rendering pass moves to `v0.14`.
+
 ## App Store Publication Roadmap
 
 This is an internal roadmap for moving from the current Apple Local Assist preview to App Store review. It is not user-facing release copy.
 
-### 1. Distribution Probe
+### 1. Completed Distribution Probe
 
 Goal: prove the App Store lane can exist before investing more in app polish.
 
@@ -144,15 +166,25 @@ Goal: prove the App Store lane can exist before investing more in app polish.
 
 Current probe memo: `docs/v0.13-distribution-probe.md`.
 
-### 2. App Brush-up
+### 2. L Mode WYSIWYG Accuracy Ramp
 
-Goal: make the App Store build feel stable enough for ordinary Markdown writing.
+Goal: make L Mode stable enough for ordinary Markdown writing and correction.
 
+- Treat L Mode WYSIWYG accuracy as the main app-quality brush-up track. The goal is higher-fidelity rendering and editing behavior for headings, inline marks, links, lists, tasks, HRs, Setext-style underlines, blockquotes, code blocks, tables, images, Japanese prose, IME composition, caret movement, and selection/copy behavior, while Markdown source remains canonical.
+- Use `docs/l-mode-plan.md` as the planning source for this work. Prefer source-preserving CodeMirror decoration, widget, CSS, and editing-behavior fixes over any Preview DOM, `contenteditable`, HTML-document-model, or save-time auto-formatting approach.
 - Smoke the built app with normal editor, L Mode, Diff / explicit change review, export / print, and Apple Local Assist.
 - Polish Apple Local Assist with real lightweight Japanese writing examples: short summaries, rephrasing, heading / tag ideas, light cleanup, and short explanations.
 - Verify unavailable, disabled, unsupported-language, and unsupported-device states without blocking Safe Editor.
 - Keep every AI-written change explicit, unsaved, diff-reviewable, and discardable.
 - Fix only high-confidence daily-use polish; do not add major new feature surfaces before review prep.
+
+L Mode WYSIWYG Accuracy Ramp acceptance:
+
+- Common Markdown writing can stay in L Mode without switching back to normal mode for small corrections.
+- Moving the cursor does not remove bullets, ordered numbers, dividers, or other visible structure.
+- Typing near hidden / replaced markers does not make nearby document structure disappear.
+- IME and Japanese prose remain stable.
+- Source text remains predictable and byte-preserving except for explicit user edits.
 
 ### 3. Official Distribution Prep
 
@@ -189,7 +221,7 @@ Goal: handle App Review without disturbing the Developer / GitHub lane.
 Use these current docs rather than old roadmap bodies:
 
 - `docs/authoring-feature-readiness.md` for incomplete authoring/export claims.
-- `docs/l-mode-plan.md` for L Mode background and follow-up polish.
+- `docs/l-mode-plan.md` for the L Mode WYSIWYG Accuracy Ramp and source-preserving writing-surface work.
 - `docs/apple-local-assist-distribution-plan.md` for Apple Local Assist and App Store / developer-build release lanes.
 - `docs/agent-workbench-boundary.md` for Agent Workbench constraints.
 - `docs/development-automation.md` for small quality-loop work.

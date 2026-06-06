@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-06-06 (v0.12.0 Apple Local Assist source / local-app tag)
+Last reviewed: 2026-06-06 (v0.13.0 source / local-app tag)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-06-06 (post-v0.12.0 source / local-app tag)
+Last reviewed: 2026-06-06 (post-v0.13.0 source / local-app tag)
 
 ## Purpose
 
@@ -17,17 +17,17 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: post-v0.12.0 App Brush-up and Apple Local Assist / distribution-readiness planning.
+Phase: post-v0.13.0 L Mode WYSIWYG Accuracy Ramp and App Brush-up.
 
 Prefer work in this order:
 
 1. Stale or failing quality gates.
 2. Latest-HEAD built-app smoke gaps for L Mode, auto-backup restore, export, and Safe Editor boundaries.
-3. One reproduced bug in implemented L Mode, auto-backup restore, workspace file operations, Agent provider availability, Review Desk, Diff, or Safe Editor behavior.
+3. One reproduced bug in implemented L Mode WYSIWYG behavior, especially caret, IME, hidden markers, lists, dividers, links, tables, or visual overlap.
 4. Safety-boundary regression checks.
 5. Post-release docs/version drift.
-6. Apple Local Assist quality, unavailable-state, and App Store / developer-build distribution planning drift.
-7. Markdown-first editor quality or daily-use polish.
+6. Markdown-first editor quality or daily-use polish.
+7. Apple Local Assist quality, unavailable-state, and App Store / developer-build distribution planning drift.
 8. Documentation drift.
 9. Verified no-op after inspection when no useful small slice is safe.
 

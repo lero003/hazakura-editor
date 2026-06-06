@@ -23,7 +23,7 @@ Last reviewed: 2026-06-06
 
 ![hazakura editor diff comparison](docs/images/v0.11-diff-compare.png)
 
-## 0.12 Source / Local App Summary
+## 0.13 Source / Local App Summary
 
 Use this when you want to:
 
@@ -139,7 +139,7 @@ Example use case:
 - [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Apple Local Assist / Foundation Models planning
 - [Apple Local Assist Writing Companion Plan](docs/apple-local-assist-writing-companion-plan.md): post-v0.11 Apple Local Assist UX direction
 - [Roadmap](docs/roadmap.md): 段階的な開発順序
-- [L Mode Plan](docs/l-mode-plan.md): えるモードの企画メモ (v0.9 alpha → v0.11 WYSIWYG-tier polish)
+- [L Mode Plan](docs/l-mode-plan.md): えるモードの source-preserving WYSIWYG Accuracy Ramp plan
 - [External Agent Review Workflow](docs/external-agent-review-workflow.md): external implementation agent + Codex review workflow
 - [Source Release Checklist](docs/source-release-checklist.md): source-only developer previewの準備境界
 - [DMG Preview Checklist](docs/dmg-preview-checklist.md): warning-expected DMG preview laneの準備・検証境界
@@ -192,8 +192,8 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version is `0.12.0` across npm, Tauri, Cargo, and lockfile metadata.
-- The current source / local-app tag is `v0.12.0`; its release-note evidence lives in [0.12.0 Source / Local App Tag](docs/releases/0.12.0-source-tag.release.md).
+- Current package/app version is `0.13.0` across npm, Tauri, Cargo, and lockfile metadata.
+- The current source / local-app tag is `v0.13.0`; its release-note evidence lives in [0.13.0 Source / Local App Tag](docs/releases/0.13.0-source-tag.release.md).
 - Source users build locally with `npm ci` and `npm run build`.
 - The generated local `.app` declares macOS 11.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. Apple Local Assist's bundled helper requires macOS 26+ and local Apple Intelligence availability to return live candidates. The app is not Developer ID signed or notarized.
 - The latest published warning-expected DMG preview is [v0.11.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.11.0). The v0.11.0 release notes live in [0.11.0 Warning-expected DMG Preview](docs/releases/0.11.0-warning-expected-dmg-preview.release.md).

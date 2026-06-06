@@ -13,6 +13,6 @@ Latest published release body:
 
 Latest source / local-app tag notes:
 
-- `0.12.0-source-tag.release.md`
+- `0.13.0-source-tag.release.md`
 
 Older `.release.md` files are historical release evidence. Keep them here so published release text remains easy to find. Draft proposals that were not release bodies belong in `docs/archive/releases/`.

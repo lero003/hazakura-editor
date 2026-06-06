@@ -3,10 +3,10 @@
 ## Current State
 
 - `hazakura editor` published `v0.11.0` as a warning-expected DMG preview, framed as **L Mode WYSIWYG-tier Polish**.
-- `hazakura editor` now has a `v0.12.0` source / local-app tag, framed as **Apple Local Assist Alpha**.
-- Version surfaces are aligned at `0.12.0`.
+- `hazakura editor` now has a `v0.13.0` source / local-app tag, framed as **Distribution Probe / L Mode Bridge**.
+- Version surfaces are aligned at `0.13.0`.
 - Latest published release body: `docs/releases/0.11.0-warning-expected-dmg-preview.release.md`.
-- Latest source / local-app tag notes: `docs/releases/0.12.0-source-tag.release.md`.
+- Latest source / local-app tag notes: `docs/releases/0.13.0-source-tag.release.md`.
 - Current status source: `docs/current-status.md`.
 
 ## Recent Changes
@@ -33,6 +33,8 @@
 - L Mode dirty-buffer review now opens a local floating diff sheet backed by the same disk-vs-editor diff builder, without exiting to the normal edit surface or using the right compare pane. The normal status bar is hidden in L Mode, the top-right pill now reads as an `編集モード` switch, the action rail includes a Typewriter mode toggle, and the native View menu labels the shortcut as `L Mode / Edit Mode`.
 - Normal edit mode top chrome now keeps `プレビュー` as a visible daily-use toggle, adds an explicit `えるモード` switch, and groups `変更を確認` / `差分` / `アウトライン` under a compact `確認` menu. Diff row contrast is stronger in `dark` and `yakou` themes for both normal compare surfaces and the L Mode floating review sheet.
 - L Mode action rail is now a compact vertical icon rail without native button tooltips. L Mode also keeps list bullets / ordered numbers visible when the cursor is on the active list line, and renders Setext-style `---` / `===` underline markers as the same divider widget so typing on the line before a divider does not make the visual boundary disappear.
+- L Mode planning now treats WYSIWYG accuracy as a serious product-polish track, not a light focus-mode follow-up. `docs/l-mode-plan.md` is the source for the source-preserving WYSIWYG Accuracy Ramp: rendering fidelity, editing stability, IME/caret/list/link/table behavior, visual-overlap checks, and regression fixtures while keeping Markdown source canonical.
+- `v0.13.0` release preparation aligned npm, Tauri, Cargo, and lockfile version surfaces; added source / local-app release notes; kept the latest downloadable DMG preview at `v0.11.0`; and moved the next major implementation lane to `v0.14` L Mode WYSIWYG Accuracy Ramp.
 
 ## Decisions
 
@@ -63,10 +65,11 @@
 - L Mode workspace-drawer verification passed: `npm run typecheck`, focused Vitest for `LModeActionRail` / `lMode` locale / L Mode CSS drift / command palette, full `npm run test` (49 files / 269 tests), `npm run build:vite`, and `git diff --check`.
 - L Mode / normal edit top-chrome and dark diff-contrast verification passed: `npm run typecheck`, focused Vitest for `DocumentMetaBar` / `AppTopChrome` and CSS drift checks, full `npm run test` (50 files / 276 tests), `npm run build:vite`, and `git diff --check`.
 - L Mode input/chrome follow-up verification passed: focused Vitest for `lMode/extension`, `lModeCss`, and `LModeActionRail`; full `npm run test` (50 files / 279 tests); `npm run typecheck`; `npm run build:vite`; and `git diff --check`.
+- v0.13.0 source / local-app tag verification on 2026-06-06 passed: `npm ci`, `npm run typecheck`, `npm run test`, `npm run build:vite`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build`, `npm run smoke:macos-sandbox-preview`, `git diff --check`, `npm audit`, `cargo audit --file src-tauri/Cargo.lock`, built-app metadata (`0.13.0`, `lab.hazakura.note`, `hazakura editor`, `hazakura-editor`), built-app codesign, and expected `spctl` insufficient-context rejection.
 
 ## Risks / Unknowns
 
-- The `v0.10.0`, `v0.11.0`, and `v0.12.0` tags point at release-prep commits; `main` may have later post-publication docs-sync commits.
+- The `v0.10.0`, `v0.11.0`, `v0.12.0`, and `v0.13.0` tags point at release-prep commits; `main` may have later post-publication docs-sync commits.
 - Direct mouse-wheel automation remains unreliable for WebView smoke because macOS accessibility does not expose a dependable scroll action here; treat real trackpad/mouse-wheel coverage as user-operated manual smoke.
 - In-app Browser / Playwright automation was unavailable during the L Mode drawer / change-review slices, so visual smoke for L Mode floating chrome placement and overlap still needs a real app/browser check.
 - GitHub reported one moderate vulnerability notice during push; `npm audit` still reported 0 vulnerabilities locally.
@@ -75,15 +78,16 @@
 ## Next Actions
 
 - Before any future publication decision, re-check the latest local gates if code changes again; otherwise use the current release note as the evidence packet.
-- For post-v0.12 assist work, start from `docs/apple-local-assist-writing-companion-plan.md`. Keep Apple Local Assist detachable, prioritize L Mode / rough writing requests, and use AI edit transactions rather than hidden or irreversible applies.
+- For post-v0.13 assist work, start from `docs/apple-local-assist-writing-companion-plan.md`. Keep Apple Local Assist detachable, prioritize L Mode / rough writing requests, and use AI edit transactions rather than hidden or irreversible applies.
 - For Apple Local Assist or App Store distribution planning, start from `docs/apple-local-assist-distribution-plan.md` and keep App Store build decisions separate from the existing developer / warning-expected DMG preview lane.
-- For the next v0.13 slice, prefer sandbox entitlement draft + local sandbox signing smoke before app-quality polish. Apple Developer enrollment is pending, so keep App Store upload / TestFlight work out of scope until credentials exist.
+- For v0.14, start from `docs/l-mode-plan.md` and treat L Mode WYSIWYG Accuracy Ramp as the main app-quality lane. Apple Developer enrollment is pending, so keep App Store upload / TestFlight work out of scope until credentials exist.
 - Next sandbox proof is Apple Developer / App Store signing and upload validation once account access exists. Do not move to XPC/app-bundled helper/in-process Swift bridge unless that validation fails. If more App Store lane hardening is needed before visual polish, prefer dependency / capability-profile pruning over Apple Local Assist UX expansion.
 - Distribution planning now defaults to two binary lanes only: App Store build (`Safe Editor` + `Apple Local Assist`, no Agent Workbench) and Developer / GitHub build (same base plus Agent Workbench). Treat an official website as routing/explanation, not a third official free build, unless the user explicitly reopens that cost.
 - `docs/roadmap.md` now has an internal App Store Publication Roadmap covering app brush-up, official distribution prep, store review prep, and review/post-review work.
 - For the next Apple Local Assist slices, focus on built-app smoke, rough-request prompt quality, unavailable/disabled state handling, and distribution hardening. Do not re-run the old gate-default-hidden sequence; `bundle.externalBin`, live Swift probe/generate, and Rust command-surface helper routing are already on `main`.
 - If doing more docs cleanup, prefer tightening release-note structure, not resurrecting archived planning docs.
-- After the live helper slice, the next useful implementation is UX hardening from real lightweight writing examples plus App Store/distribution review; do not broaden Apple Local Assist into network fallback, generic chat, tool calling, workspace indexing, or external-agent replacement.
+- For L Mode polish, start from `docs/l-mode-plan.md` and prioritize source-preserving WYSIWYG accuracy before adding new surfaces: rendering fidelity, editing stability, IME/caret/list/link/table behavior, and visual-overlap regression checks.
+- For Apple Local Assist, the next useful implementation is UX hardening from real lightweight writing examples plus App Store/distribution review; do not broaden Apple Local Assist into network fallback, generic chat, tool calling, workspace indexing, or external-agent replacement.
 
 ## Avoid
 
