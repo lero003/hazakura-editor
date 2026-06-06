@@ -463,29 +463,6 @@
   background-color: color-mix(in srgb, var(--accent) 26%, transparent);
 }
 
-/* Webkit scrollbar — hidden by default, revealed on hover
-   or while scrolling. iA Writer and Bear use the same trick
-   to keep the writing surface visually quiet. */
-:root[data-l-mode="on"] .cm-scroller::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-:root[data-l-mode="on"] .cm-scroller::-webkit-scrollbar-track {
-  background: transparent;
-}
-:root[data-l-mode="on"] .cm-scroller::-webkit-scrollbar-thumb {
-  background: rgba(127, 127, 127, 0.0);
-  border-radius: 5px;
-  transition: background 200ms ease;
-}
-:root[data-l-mode="on"] .cm-scroller:hover::-webkit-scrollbar-thumb,
-:root[data-l-mode="on"] .cm-scroller.is-scrolling::-webkit-scrollbar-thumb {
-  background: rgba(127, 127, 127, 0.32);
-}
-:root[data-l-mode="on"] .cm-scroller::-webkit-scrollbar-thumb:hover {
-  background: rgba(127, 127, 127, 0.5);
-}
-
 /* Firefox — opt into the same auto-hide via scrollbar-width
    and a transparent thumb color that becomes visible on
    hover via scrollbar-color. */
