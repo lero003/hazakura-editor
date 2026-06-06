@@ -15,6 +15,7 @@
     "build:vite": "tsc --noEmit && vite build",
     "probe:macos-distribution": "bash scripts/probe-macos-distribution.sh",
     "preview": "vite preview --host 127.0.0.1",
+    "smoke:macos-sandbox-preview": "bash scripts/smoke-macos-sandbox-preview.sh",
     "test": "vitest run",
     "test:watch": "vitest"
   },
