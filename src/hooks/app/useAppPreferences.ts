@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   setAgentWindowTheme,
   setCurrentWindowBackgroundColor,
@@ -20,7 +20,19 @@ import {
   type ThemePreference,
 } from "../../types";
 
-export function useAppPreferences() {
+export type UseAppPreferencesOptions = {
+  /**
+   * Optional status callback. Used to surface theme-related
+   * IPC failures (window theme / background color / agent
+   * window theme) through the existing status bar instead
+   * of dropping them into the console only. The status
+   * string goes through `localizeStatusMessage`, so callers
+   * should pass the raw English key.
+   */
+  onStatus?: (message: string) => void;
+};
+
+export function useAppPreferences(options: UseAppPreferencesOptions = {}) {
   const [themePreference, setThemePreference] = useState<ThemePreference>(() =>
     readStoredThemePreference(),
   );
@@ -33,6 +45,14 @@ export function useAppPreferences() {
   const [menuLanguage, setMenuLanguage] = useState<MenuLanguage>(() =>
     readStoredMenuLanguage(),
   );
+
+  // Keep the latest `onStatus` callback in a ref so the
+  // theme-sync effect does not have to re-run every time the
+  // caller passes a fresh function reference.
+  const onStatusRef = useRef(options.onStatus);
+  useEffect(() => {
+    onStatusRef.current = options.onStatus;
+  }, [options.onStatus]);
 
   const resolvedTheme = themePreference;
   const editorTheme: BaseTheme =
@@ -58,11 +78,13 @@ export function useAppPreferences() {
 
     void setCurrentWindowTheme(windowTheme).catch((err) => {
       console.warn("Failed to update window theme", err);
+      onStatusRef.current?.("Failed to update window theme");
     });
     void setCurrentWindowBackgroundColor(
       windowBackgroundColorForTheme(themePreference),
     ).catch((err) => {
       console.warn("Failed to update window background color", err);
+      onStatusRef.current?.("Failed to update window background color");
     });
     if (isExternalCliAssistSurfaceAllowed()) {
       // Push the new theme to the agent window (if it is open).
@@ -70,6 +92,7 @@ export function useAppPreferences() {
       // also skips this Agent-only IPC.
       void setAgentWindowTheme(themePreference).catch((err) => {
         console.warn("Failed to update Agent window theme", err);
+        onStatusRef.current?.("Failed to update Agent window theme");
       });
     }
   }, [themePreference]);

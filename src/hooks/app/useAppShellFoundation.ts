@@ -38,7 +38,9 @@ export function useAppShellFoundation() {
   const dialogState = useAppDialogState();
   const viewState = useAppViewState();
   const feedbackState = useAppFeedbackState();
-  const appPreferences = useAppPreferences();
+  const appPreferences = useAppPreferences({
+    onStatus: feedbackState.setStatus,
+  });
   const editorTabs = useEditorTabsState();
   const editorSelection = useEditorSelectionState();
   const diffState = useCompareState();
