@@ -38,6 +38,8 @@
 - Post-v0.13 external review notes for L Mode were folded into `docs/l-mode-plan.md` under `v0.14 Review Notes: 60 To 80 Point Ramp`. The preferred first slices are decoration recompute-trigger cleanup, Typewriter / IME stability, narrow-width visual-overlap fixtures, task-widget accessibility, and print / export boundary checks.
 - The first v0.14 L Mode recompute-trigger cleanup slice landed after review: selection changes are now derived from `startState.selection` vs `newSelection`, with tests covering mapped caret movement and same-selection no-op dispatches.
 - The second v0.14 L Mode slice (Typewriter / IME stability) landed after review: the typewriter plugin now skips its recenter schedule while `view.composing` is true so the candidate window is not shoved off-screen during long Japanese compositions, and the commit dispatch on `compositionend` re-enables the existing recenter path.
+- A follow-up race guard for the typewriter plugin landed: `requestAnimationFrame` callbacks now re-check `view.composing` and skip the recenter if composition is active, so a recenter reserved before composition started cannot shove the candidate window once the rAF fires.
+- The third v0.14 L Mode slice (visual-overlap fixture) landed: `src/features/editor/lMode/visualOverlapFixtures.test.ts` pins the content `max-width` formula, the horizontal `padding` formula, the chip `left: -2.4em` and `width: 2em` formulas, and a numerical readout of the chip-to-padding headroom at 375 / 480 / 720 / 1024 px. The current headroom is ~10.5px on narrow widths and ~21.7px on wide widths.
 
 ## Decisions
 
@@ -71,6 +73,8 @@
 - v0.13.0 source / local-app tag verification on 2026-06-06 passed: `npm ci`, `npm run typecheck`, `npm run test`, `npm run build:vite`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build`, `npm run smoke:macos-sandbox-preview`, `git diff --check`, `npm audit`, `cargo audit --file src-tauri/Cargo.lock`, built-app metadata (`0.13.0`, `lab.hazakura.note`, `hazakura editor`, `hazakura-editor`), built-app codesign, and expected `spctl` insufficient-context rejection.
 - v0.14 L Mode recompute-trigger cleanup verification passed: `npm test -- src/features/editor/lMode/extension.test.ts` (30 tests), `npm test -- src/features/editor/lMode/` (49 tests), `npm run typecheck`, `npm run build:vite`, and `git diff --check`. Vite chunk-size warning remains existing / expected.
 - v0.14 L Mode Typewriter / IME stability verification passed: `npm test -- src/features/editor/lMode/extension.test.ts` (31 tests), `npm test -- src/features/editor/lMode/` (50 tests), `npm run typecheck`, `npm run build:vite`, and `git diff --check`. Vite chunk-size warning remains existing / expected.
+- v0.14 L Mode Typewriter rAF race guard verification passed: `npm test -- src/features/editor/lMode/extension.test.ts` (32 tests), `npm test -- src/features/editor/lMode/` (51 tests), `npm run typecheck`, `npm run build:vite`, and `git diff --check`. Vite chunk-size warning remains existing / expected.
+- v0.14 L Mode visual-overlap fixture verification passed: `npm test -- src/features/editor/lMode/visualOverlapFixtures.test.ts` (4 tests), `npm test -- src/features/editor/lMode/` (55 tests), `npm run typecheck`, `npm run build:vite`, and `git diff --check`. Vite chunk-size warning remains existing / expected.
 
 ## Risks / Unknowns
 
@@ -92,7 +96,7 @@
 - For the next Apple Local Assist slices, focus on built-app smoke, rough-request prompt quality, unavailable/disabled state handling, and distribution hardening. Do not re-run the old gate-default-hidden sequence; `bundle.externalBin`, live Swift probe/generate, and Rust command-surface helper routing are already on `main`.
 - If doing more docs cleanup, prefer tightening release-note structure, not resurrecting archived planning docs.
 - For L Mode polish, start from `docs/l-mode-plan.md` and prioritize source-preserving WYSIWYG accuracy before adding new surfaces: rendering fidelity, editing stability, IME/caret/list/link/table behavior, and visual-overlap regression checks.
-- The first two v0.14 L Mode slices (recompute-trigger cleanup and Typewriter / IME stability) are now complete; before larger CSS splitting or decoration-cache work, the next safe moves are visual-overlap fixtures, task-widget accessibility, print / export boundary, or a small performance baseline.
+- The first three v0.14 L Mode slices (recompute-trigger cleanup, Typewriter / IME stability with rAF race guard, and visual-overlap fixture) are now complete; before larger CSS splitting or decoration-cache work, the next safe moves are task-widget accessibility, print / export boundary, or a small performance baseline.
 - For Apple Local Assist, the next useful implementation is UX hardening from real lightweight writing examples plus App Store/distribution review; do not broaden Apple Local Assist into network fallback, generic chat, tool calling, workspace indexing, or external-agent replacement.
 
 ## Avoid

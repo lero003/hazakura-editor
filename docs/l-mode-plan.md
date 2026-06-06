@@ -128,10 +128,10 @@ Use these notes as a v0.14 work queue. Each item should stay a small, verifiable
    - Remaining work: built-app or browser smoke with a real Japanese IME when practical.
 
 3. **Visual-overlap fixture**
-   - Current risk: the margin chip (`data-l-chip`) and page padding depend on available width, so narrow windows may clip or overlap the chip.
-   - Preferred slice: add a fixture / CSS drift check for 375, 480, 720, and 1024 px widths before changing chip geometry.
-   - Verification: screenshot or DOM geometry smoke for headings, blockquotes, fenced code chips, long Japanese headings, and the L Mode action rail.
+   - Initial v0.14 slice landed: `src/features/editor/lMode/visualOverlapFixtures.test.ts` pins the L Mode content `max-width` formula (`min(720px, calc(100% - 64px))`), the horizontal `padding` formula (`clamp(40px, 5vw, 60px)`), the active-line chip `left: -2.4em` and `width: 2em` formulas, and a numerical readout of the chip-to-padding headroom at 375 / 480 / 720 / 1024 px. The current headroom is ~10.5px (narrow) and ~21.7px (wide).
+   - Verification: a CSS drift check is in place; any change to chip geometry, content padding, or prose font size will surface here first.
    - Failure conditions reduced: cursor / source context confusion, controls overlapping document text.
+   - Remaining work: actual screenshot / DOM geometry smoke for headings, blockquotes, fenced code chips, long Japanese headings, and the L Mode action rail is still pending a built-app run.
 
 4. **Task widget accessibility**
    - Current risk: the task checkbox widget has `role="checkbox"` and `aria-checked`, but the keyboard and focus-visible path is not yet a first-class interaction.
