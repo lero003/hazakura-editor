@@ -9,6 +9,7 @@
 // has moved to `crate::agent` so the state machine is testable
 // without going through a Tauri command context.
 use crate::agent::*;
+use crate::distribution::*;
 use crate::security::window_guard::*;
 use crate::types::*;
 use crate::util::*;
@@ -54,6 +55,7 @@ pub(crate) fn start_agent_workbench_session_with_label(
     // Rust session store serializes concurrent starts — so the
     // widened gate does not introduce a race.
     ensure_label_is_main_or_agent(label)?;
+    ensure_agent_workbench_allowed_by_distribution()?;
     let path_var = agent_provider_app_search_path();
     let adapter = RealAgentRuntimeAdapter::new(session_store);
 
@@ -83,6 +85,7 @@ pub(crate) fn stop_agent_workbench_session_with_label(
     session_store: &AgentWorkbenchSessionStore,
 ) -> Result<AgentWorkbenchSessionState, String> {
     ensure_label_is_main_or_agent(label)?;
+    ensure_agent_workbench_allowed_by_distribution()?;
     let adapter = RealAgentRuntimeAdapter::new(session_store);
 
     stop_agent_workbench_session_with_store(session_store, &adapter)
@@ -107,6 +110,7 @@ pub(crate) fn get_agent_workbench_session_state_with_label(
     last_seen_seq: Option<u64>,
 ) -> Result<AgentWorkbenchSessionState, String> {
     ensure_label_is_main_or_agent(label)?;
+    ensure_agent_workbench_allowed_by_distribution()?;
     match last_seen_seq {
         Some(seq) => get_agent_workbench_session_state_since_with_store(session_store, seq),
         None => get_agent_workbench_session_state_with_store(session_store),
@@ -128,6 +132,7 @@ pub(crate) fn write_agent_workbench_session_input_with_label(
     input: String,
 ) -> Result<(), String> {
     ensure_label_is_main_or_agent(label)?;
+    ensure_agent_workbench_allowed_by_distribution()?;
     write_agent_workbench_session_input_with_store(session_store, input)
 }
 
@@ -148,6 +153,7 @@ pub(crate) fn resize_agent_workbench_terminal_with_label(
     rows: u16,
 ) -> Result<AgentWorkbenchSessionState, String> {
     ensure_label_is_main_or_agent(label)?;
+    ensure_agent_workbench_allowed_by_distribution()?;
     resize_agent_workbench_terminal_with_store(session_store, columns, rows)
 }
 
@@ -169,6 +175,7 @@ pub(crate) fn list_agent_provider_availability_with_label(
     label: &str,
 ) -> Result<Vec<AgentProviderAvailability>, String> {
     ensure_label_is_main_or_agent(label)?;
+    ensure_agent_workbench_allowed_by_distribution()?;
     Ok(list_agent_provider_availability_with_store(
         agent_provider_app_search_path().as_deref(),
     ))

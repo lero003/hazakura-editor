@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, renderHook } from "@testing-library/react";
 import {
   AGENT_WORKBENCH_CONSENT_STORAGE_KEY,
@@ -14,6 +14,7 @@ describe("useAgentWorkbenchPreferences", () => {
   });
 
   afterEach(() => {
+    vi.unstubAllEnvs();
     window.localStorage.clear();
   });
 
@@ -94,6 +95,32 @@ describe("useAgentWorkbenchPreferences", () => {
 
     expect(result.current.assistSurfacePreference).toBe("external-cli");
     expect(result.current.assistSurfaceActive).toBe("external-cli");
+  });
+
+  it("forces Apple Local Assist in the App Store distribution lane", () => {
+    vi.stubEnv("VITE_HAZAKURA_DISTRIBUTION_LANE", "app-store");
+    window.localStorage.setItem(AGENT_WORKBENCH_ENABLED_STORAGE_KEY, "true");
+    window.localStorage.setItem(AGENT_WORKBENCH_CONSENT_STORAGE_KEY, "true");
+    window.localStorage.setItem(
+      ASSIST_SURFACE_PREFERENCE_STORAGE_KEY,
+      "external-cli",
+    );
+
+    const { result } = renderHook(() => useAgentWorkbenchPreferences());
+
+    expect(result.current.agentWorkbenchActive).toBe(false);
+    expect(result.current.agentWorkbenchPreference).toBe(false);
+    expect(result.current.agentWorkbenchAvailable).toBe(false);
+    expect(result.current.assistSurfaceActive).toBe("apple-local");
+    expect(result.current.assistSurfacePreference).toBe("apple-local");
+
+    act(() => {
+      result.current.setAgentWorkbenchPreference(true);
+      result.current.setAssistSurfacePreference("external-cli");
+    });
+
+    expect(result.current.agentWorkbenchPreference).toBe(false);
+    expect(result.current.assistSurfacePreference).toBe("apple-local");
   });
 
   it("accepts the allowlisted providers (codex / opencode / pi / claude)", () => {

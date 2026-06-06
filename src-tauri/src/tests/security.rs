@@ -38,6 +38,22 @@ fn label_gate_helpers_accept_known_labels() {
 }
 
 #[test]
+fn agent_workbench_distribution_gate_rejects_app_store_lane() {
+    let err = ensure_agent_workbench_allowed_for_lane(Some("app-store"))
+        .expect_err("App Store distribution lane must reject Agent Workbench");
+
+    assert!(err.contains("Agent Workbench"), "{err}");
+    assert!(err.contains("App Store"), "{err}");
+}
+
+#[test]
+fn agent_workbench_distribution_gate_allows_developer_lane() {
+    ensure_agent_workbench_allowed_for_lane(None).expect("default lane must allow Agent Workbench");
+    ensure_agent_workbench_allowed_for_lane(Some("developer"))
+        .expect("developer lane must allow Agent Workbench");
+}
+
+#[test]
 fn label_gate_apple_assist_rejects_agent_label() {
     // The Apple Assist window and the Agent window are mutually
     // exclusive companion slots, but their label gates are

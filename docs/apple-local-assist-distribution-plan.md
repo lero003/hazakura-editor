@@ -23,6 +23,8 @@ What is **not** done yet:
 - no `minimumSystemVersion` bump; the editor-wide value remains `11.0`
 - no release tag, no GitHub Release, no App Store submission for this live helper state
 
+v0.13 has started the App Store build-lane probe. The current preview gate is intentionally modest: `HAZAKURA_DISTRIBUTION_LANE=app-store` / `VITE_HAZAKURA_DISTRIBUTION_LANE=app-store` hides the External Agent Workbench surface in frontend preferences, normalizes stale `external-cli` preferences to Apple Local Assist, and rejects Agent Workbench IPC on the Rust command surface. This is not a complete App Store bundle profile yet; sandbox entitlements, helper sandbox smoke, and App Review notes remain separate v0.13 slices.
+
 ## Official Information Confirmed (2026-06-05, slice 7)
 
 The following facts are taken from Apple 公式 information only. Each subsection cites the source URL. These are the conditions that v0.12+ implementation must respect; the verbatim quotes we DO use are short (a sentence or two) and are reproduced because they pin down a contract we have to satisfy. Long verbatim lists of Apple's enumerated rules (e.g. the 19-item acceptable-use list) are deliberately summarized into themes so this memo does not rot when Apple updates the underlying page. Non-official speculation is excluded — anything we could not confirm against the cited pages is marked "TBD (verify with Xcode documentation viewer before implementation)."

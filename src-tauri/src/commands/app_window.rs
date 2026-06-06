@@ -1,3 +1,4 @@
+use crate::distribution::*;
 use crate::menu::*;
 use crate::security::window_guard::*;
 use crate::types::*;
@@ -113,6 +114,7 @@ pub(crate) fn open_agent_window<R: tauri::Runtime>(
     theme: Option<String>,
 ) -> Result<(), String> {
     ensure_main_window(&window)?;
+    ensure_agent_workbench_allowed_by_distribution()?;
     if !session_store.agent_workbench_active.load(Ordering::SeqCst) {
         return Err(
             "Agent Workbench is not active. Enable it in Preferences and restart before opening the Agent window."

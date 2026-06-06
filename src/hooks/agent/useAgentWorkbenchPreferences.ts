@@ -1,5 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type SetStateAction } from "react";
 import type { AgentWorkbenchProvider } from "../../lib/tauri";
+import {
+  isExternalCliAssistSurfaceAllowed,
+  normalizeAssistSurfacePreferenceForDistribution,
+} from "../../lib/distributionLane";
 import {
   AGENT_WORKBENCH_CONSENT_STORAGE_KEY,
   AGENT_WORKBENCH_ENABLED_STORAGE_KEY,
@@ -21,11 +25,12 @@ import {
 //     docs/agent-workbench-boundary.md.
 
 export function useAgentWorkbenchPreferences() {
+  const externalCliAllowed = isExternalCliAssistSurfaceAllowed();
   const [agentWorkbenchActive] = useState(() =>
-    readStoredAgentWorkbenchEnabled(),
+    externalCliAllowed && readStoredAgentWorkbenchEnabled(),
   );
   const [agentWorkbenchPreference, setAgentWorkbenchPreference] = useState(() =>
-    readStoredAgentWorkbenchEnabled(),
+    externalCliAllowed && readStoredAgentWorkbenchEnabled(),
   );
   const [agentWorkbenchConsent, setAgentWorkbenchConsent] = useState(() =>
     readStoredAgentWorkbenchConsent(),
@@ -37,6 +42,25 @@ export function useAgentWorkbenchPreferences() {
   );
   const [assistSurfacePreference, setAssistSurfacePreference] =
     useState<AssistSurfacePreference>(() => readStoredAssistSurfacePreference());
+  const setAgentWorkbenchPreferenceForDistribution = useCallback(
+    (value: SetStateAction<boolean>) => {
+      setAgentWorkbenchPreference((previous) => {
+        const next = applySetStateAction(value, previous);
+        return externalCliAllowed ? next : false;
+      });
+    },
+    [externalCliAllowed],
+  );
+  const setAssistSurfacePreferenceForDistribution = useCallback(
+    (value: SetStateAction<AssistSurfacePreference>) => {
+      setAssistSurfacePreference((previous) =>
+        normalizeAssistSurfacePreferenceForDistribution(
+          applySetStateAction(value, previous),
+        ),
+      );
+    },
+    [],
+  );
 
   useEffect(() => {
     window.localStorage.setItem(
@@ -75,10 +99,16 @@ export function useAgentWorkbenchPreferences() {
     assistSurfaceActive,
     assistSurfacePreference,
     setAgentWorkbenchConsent,
-    setAgentWorkbenchPreference,
+    setAgentWorkbenchPreference: setAgentWorkbenchPreferenceForDistribution,
     setAgentWorkbenchProvider,
-    setAssistSurfacePreference,
+    setAssistSurfacePreference: setAssistSurfacePreferenceForDistribution,
   };
+}
+
+function applySetStateAction<T>(value: SetStateAction<T>, previous: T): T {
+  return typeof value === "function"
+    ? (value as (previous: T) => T)(previous)
+    : value;
 }
 
 function readStoredAgentWorkbenchEnabled(): boolean {
@@ -106,11 +136,13 @@ function readStoredAssistSurfacePreference(): AssistSurfacePreference {
     ASSIST_SURFACE_PREFERENCE_STORAGE_KEY,
   );
   if (value === "none" || value === "apple-local" || value === "external-cli") {
-    return value;
+    return normalizeAssistSurfacePreferenceForDistribution(value);
   }
 
   // Backward compatibility for users who already enabled the old
   // Agent Workbench preference before the shared companion-slot
   // setting existed.
-  return readStoredAgentWorkbenchEnabled() ? "external-cli" : "apple-local";
+  return normalizeAssistSurfacePreferenceForDistribution(
+    readStoredAgentWorkbenchEnabled() ? "external-cli" : "apple-local",
+  );
 }

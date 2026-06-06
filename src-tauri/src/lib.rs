@@ -16,6 +16,7 @@ pub(crate) mod commands {
 }
 pub(crate) mod agent;
 pub(crate) mod auto_backup;
+pub(crate) mod distribution;
 pub(crate) mod menu;
 pub(crate) mod types;
 pub(crate) mod util;
@@ -66,6 +67,8 @@ use crate::commands::search::*;
 use crate::commands::workspace::*;
 #[allow(unused_imports)]
 use crate::commands::workspace_broadcast::*;
+#[allow(unused_imports)]
+use crate::distribution::*;
 #[allow(unused_imports)]
 use crate::menu::*;
 #[allow(unused_imports)]
