@@ -1553,3 +1553,81 @@
 :root:not([data-l-mode="on"]) .l-mode-action-rail {
   display: none;
 }
+
+/* --- 6. Print and export boundary ---
+   L Mode's editor-side display rules are tuned for the
+   screen. The hidden markers, dimmed non-active lines,
+   the active-line margin chip, the floating chrome, and
+   the inline widgets all assume a live editing context.
+   None of them help on a printed page, and several
+   actively get in the way: a printout of the editor in
+   L Mode today would show the dim/active treatment,
+   render the margin chip, and keep the floating action
+   rail and exit pill visible. The block below strips
+   them back so Print to PDF / browser print output
+   lands as ordinary source-shaped Markdown with the
+   same images and code blocks a user would see in the
+   existing Markdown preview / export pipeline.
+
+   The markers hidden on screen (cm-lmode-hidden) are
+   revealed here so the printed text matches the saved
+   file character for character; that is also the most
+   useful shape on paper because the user is reading
+   the document rather than editing it. The dim is
+   removed, the soft cream paper-feel background is
+   swapped for plain white, the centered "page" geometry
+   is dropped (the printed sheet is the page), and the
+   floating chrome is hidden so it does not appear on
+   paper. Selectors carry the L Mode data attribute so
+   non-L-Mode print behavior is untouched. */
+@media print {
+  :root[data-l-mode="on"] .l-mode-exit-pill,
+  :root[data-l-mode="on"] .l-mode-action-rail,
+  :root[data-l-mode="on"] .l-mode-workspace-toggle,
+  :root[data-l-mode="on"] .l-mode-workspace-overlay,
+  :root[data-l-mode="on"] .l-mode-workspace-drawer,
+  :root[data-l-mode="on"] .l-mode-change-review-sheet,
+  :root[data-l-mode="on"] .tabs-row,
+  :root[data-l-mode="on"] .status-bar,
+  :root[data-l-mode="on"] .scroll-position-hud,
+  :root[data-l-mode="on"] .l-mode-empty-placeholder {
+    display: none !important;
+  }
+
+  :root[data-l-mode="on"] .cm-lmode-hidden {
+    /* Reveal the source markers so the printed page
+       shows ordinary Markdown source. */
+    color: inherit !important;
+    background: transparent !important;
+    font-size: inherit !important;
+    text-decoration: none !important;
+    display: inline !important;
+    inline-size: auto !important;
+    max-inline-size: none !important;
+  }
+
+  :root[data-l-mode="on"]
+    .cm-line.cm-lmode-source-line[data-l-chip]::before {
+    /* Drop the chip on paper; it has no meaning
+       on a printed page. */
+    content: none !important;
+  }
+
+  :root[data-l-mode="on"] .cm-lmode-dimmed {
+    color: inherit !important;
+    filter: none !important;
+    opacity: 1 !important;
+  }
+
+  :root[data-l-mode="on"] .cm-content {
+    /* Revert the centered "page" treatment. On paper the
+       sheet is the page, not the in-app 720px column. */
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  :root[data-l-mode="on"] .cm-editor {
+    background: white !important;
+  }
+}

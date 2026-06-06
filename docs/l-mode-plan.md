@@ -140,10 +140,10 @@ Use these notes as a v0.14 work queue. Each item should stay a small, verifiable
    - Failure conditions reduced: editing uncertainty, accessibility mismatch.
 
 5. **Print and export boundary**
-   - Current risk: editor-side L Mode CSS has no dedicated print rule, so chips, dimming, widgets, or floating chrome may leak into Print to PDF.
-   - Preferred slice: add a modest `@media print` rule for L Mode editor output or document why print uses the existing export / preview pipeline instead.
-   - Verification: Print to PDF handoff smoke and source-preservation check.
+   - Initial v0.14 slice landed: `src/styles/lMode.css` ends with a single `@media print` block that hides L Mode floating chrome (exit pill, action rail, workspace toggle / overlay / drawer, change review sheet, tabs-row, status bar, scroll HUD, empty placeholder), reveals the previously hidden Markdown markers, removes the dim and the margin chip, drops the centered 720px column, and swaps the warm cream paper-feel surface for plain white. The override is gated on `:root[data-l-mode="on"]` so normal-mode print behavior is untouched.
+   - Verification: `src/styles/lModeCss.test.ts` now ships a `v0.14 L Mode print boundary` describe block with 5 tests pinning: a single top-level `@media print` block, hidden floating chrome selectors carrying `display: none !important`, revealed `cm-lmode-hidden` markers (`color: inherit !important`, `display: inline !important`), removed dim and chip (`opacity: 1 !important`, `content: none !important`), and the unwound 720px column with a white background.
    - Failure conditions reduced: Preview / export consistency breaks, visual beauty creating user anxiety.
+   - Remaining work: an actual Print to PDF handoff smoke in a real browser / built-app is still pending.
 
 ### Measure Before Refactoring
 

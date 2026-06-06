@@ -316,3 +316,106 @@ describe("lMode.css", () => {
     // not by introducing a second source of truth.
   });
 });
+
+// --- v0.14 print / export boundary ---
+//
+// L Mode's screen-only chrome and decoration classes
+// must be stripped back in `@media print` so Print to
+// PDF / browser print output lands as ordinary source-
+// shaped Markdown rather than as a screenshot of the
+// editor. The tests below pin the rules that make that
+// happen. They run against the raw stylesheet text
+// because jsdom does not lay out CSS — the same approach
+// the rest of `lModeCss.test.ts` uses for the
+// screen-side rules.
+describe("v0.14 L Mode print boundary", () => {
+  // Read the `@media print { ... }` block out of the
+  // stylesheet. The block is the last top-level block in
+  // `lMode.css`; `[\s\S]*?` with the lazy `*?` quantifier
+  // matches the smallest closing brace, which is the
+  // expected shape here.
+  const printBlock =
+    lModeCss.match(
+      /@media\s+print\s*{(?<body>[\s\S]*?)\n}\s*$/m,
+    )?.groups?.body ?? "";
+
+  it("declares a single top-level @media print block", () => {
+    // Multiple print blocks would scatter the print
+    // override and make it hard to reason about. The
+    // boundary slice keeps the override in one place.
+    const matches = lModeCss.match(/@media\s+print\s*{/g) ?? [];
+    expect(matches.length).toBe(1);
+  });
+
+  it("hides L Mode floating chrome in print", () => {
+    // Each of these selectors is rendered conditionally
+    // inside the editor; on paper they would print as
+    // empty boxes or, worse, overlapping glyphs.
+    for (const selector of [
+      ".l-mode-exit-pill",
+      ".l-mode-action-rail",
+      ".l-mode-workspace-toggle",
+      ".l-mode-workspace-overlay",
+      ".l-mode-workspace-drawer",
+      ".l-mode-change-review-sheet",
+      ".tabs-row",
+      ".status-bar",
+      ".scroll-position-hud",
+      ".l-mode-empty-placeholder",
+    ]) {
+      const pattern = new RegExp(
+        `:root\\[data-l-mode="on"\\] ${selector.replace(
+          ".",
+          "\\.",
+        )}\\b`,
+      );
+      expect(printBlock, `selector ${selector}`).toMatch(pattern);
+    }
+    // The block must actually apply `display: none` to
+    // those selectors. `!important` is required to win
+    // against the screen-side rules' specificity.
+    expect(printBlock).toMatch(/display:\s*none\s*!important/);
+  });
+
+  it("reveals the hidden Markdown markers in print", () => {
+    // On screen the markers are zero-width transparent
+    // spans; on paper the user is reading the document,
+    // not editing it, so the markers should print as
+    // ordinary source characters. The `cm-lmode-hidden`
+    // override is the central print-boundary concern.
+    expect(printBlock).toMatch(
+      /:root\[data-l-mode="on"\] \.cm-lmode-hidden\s*{[^}]*color:\s*inherit\s*!important/s,
+    );
+    expect(printBlock).toMatch(
+      /:root\[data-l-mode="on"\] \.cm-lmode-hidden\s*{[^}]*display:\s*inline\s*!important/s,
+    );
+  });
+
+  it("removes the dim and the margin chip in print", () => {
+    // The soft-focus dim and the margin chip are
+    // editing-affordance layers that do not translate to
+    // paper. The dim override restores uniform color;
+    // the chip override drops the `::before` content
+    // entirely.
+    expect(printBlock).toMatch(
+      /:root\[data-l-mode="on"\] \.cm-lmode-dimmed\s*{[^}]*opacity:\s*1\s*!important/s,
+    );
+    expect(printBlock).toMatch(
+      /:root\[data-l-mode="on"\]\s*\.cm-line\.cm-lmode-source-line\[data-l-chip\]::before\s*{[^}]*content:\s*none\s*!important/s,
+    );
+  });
+
+  it("drops the centered 720px column and paper-feel background in print", () => {
+    // The screen-side `.cm-content` max-width / margin /
+    // padding shapes a quiet in-app column. On a printed
+    // sheet the page itself is the page, so the override
+    // unwinds that geometry and swaps the warm cream
+    // surface for plain white.
+    expect(printBlock).toMatch(
+      /:root\[data-l-mode="on"\] \.cm-content\s*{[^}]*max-width:\s*none\s*!important/s,
+    );
+    expect(printBlock).toMatch(
+      /:root\[data-l-mode="on"\] \.cm-editor\s*{[^}]*background:\s*white\s*!important/s,
+    );
+  });
+});

@@ -41,6 +41,7 @@
 - A follow-up race guard for the typewriter plugin landed: `requestAnimationFrame` callbacks now re-check `view.composing` and skip the recenter if composition is active, so a recenter reserved before composition started cannot shove the candidate window once the rAF fires.
 - The third v0.14 L Mode slice (visual-overlap fixture) landed: `src/features/editor/lMode/visualOverlapFixtures.test.ts` pins the content `max-width` formula, the horizontal `padding` formula, the chip `left: -2.4em` and `width: 2em` formulas, and a numerical readout of the chip-to-padding headroom at 375 / 480 / 720 / 1024 px. The current headroom is ~10.5px on narrow widths and ~21.7px on wide widths.
 - The fourth v0.14 L Mode slice (task widget accessibility) landed: the task widget now carries `tabindex="0"` and toggles `[ ]` ↔ `[x]` on Enter / Space from a `keydown` handler, with a `:focus-visible` accent ring in the stylesheet. Unrelated keys and non-task targets no-op.
+- The fifth v0.14 L Mode slice (print / export boundary) landed: `src/styles/lMode.css` ends with a single `@media print` block that hides L Mode floating chrome, reveals the previously hidden Markdown markers, removes the dim and the margin chip, drops the centered 720px column, and swaps the warm cream paper-feel surface for plain white. The override is gated on `:root[data-l-mode="on"]` so normal-mode print behavior is untouched.
 
 ## Decisions
 
@@ -77,6 +78,7 @@
 - v0.14 L Mode Typewriter rAF race guard verification passed: `npm test -- src/features/editor/lMode/extension.test.ts` (32 tests), `npm test -- src/features/editor/lMode/` (51 tests), `npm run typecheck`, `npm run build:vite`, and `git diff --check`. Vite chunk-size warning remains existing / expected.
 - v0.14 L Mode visual-overlap fixture verification passed: `npm test -- src/features/editor/lMode/visualOverlapFixtures.test.ts` (4 tests), `npm test -- src/features/editor/lMode/` (55 tests), `npm run typecheck`, `npm run build:vite`, and `git diff --check`. Vite chunk-size warning remains existing / expected.
 - v0.14 L Mode task widget accessibility verification passed: `npm test -- src/features/editor/lMode/extension.test.ts` (36 tests), `npm test -- src/features/editor/lMode/` (60 tests), `npm run typecheck`, `npm run build:vite`, and `git diff --check`. Vite chunk-size warning remains existing / expected.
+- v0.14 L Mode print / export boundary verification passed: `npm test -- src/styles/lModeCss.test.ts` (22 tests), `npm test -- src/features/editor/lMode/ src/styles/lModeCss.test.ts` (82 tests), `npm run typecheck`, `npm run build:vite`, and `git diff --check`. Vite chunk-size warning remains existing / expected.
 
 ## Risks / Unknowns
 
@@ -98,7 +100,7 @@
 - For the next Apple Local Assist slices, focus on built-app smoke, rough-request prompt quality, unavailable/disabled state handling, and distribution hardening. Do not re-run the old gate-default-hidden sequence; `bundle.externalBin`, live Swift probe/generate, and Rust command-surface helper routing are already on `main`.
 - If doing more docs cleanup, prefer tightening release-note structure, not resurrecting archived planning docs.
 - For L Mode polish, start from `docs/l-mode-plan.md` and prioritize source-preserving WYSIWYG accuracy before adding new surfaces: rendering fidelity, editing stability, IME/caret/list/link/table behavior, and visual-overlap regression checks.
-- The first four v0.14 L Mode slices (recompute-trigger cleanup, Typewriter / IME stability with rAF race guard, visual-overlap fixture, and task widget accessibility) are now complete; before larger CSS splitting or decoration-cache work, the next safe moves are print / export boundary or a small performance baseline.
+- The first five v0.14 L Mode slices (recompute-trigger cleanup, Typewriter / IME stability with rAF race guard, visual-overlap fixture, task widget accessibility, and print / export boundary) are now complete; before larger CSS splitting or decoration-cache work, the next safe move is a small performance baseline, then deeper refactors only if the baseline demands it.
 - For Apple Local Assist, the next useful implementation is UX hardening from real lightweight writing examples plus App Store/distribution review; do not broaden Apple Local Assist into network fallback, generic chat, tool calling, workspace indexing, or external-agent replacement.
 
 ## Avoid
