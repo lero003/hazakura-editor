@@ -68,7 +68,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
       ambientIntensityNormal: "つね",
       ambientIntensityDramatic: "あざやか",
       ambientIntensityHint: "さくら / よるひかり / あけぼのひかり の いろあひ で つかへます。",
-      menuLanguageHint: "あぷり の ひょうじ げんご を きりかへ ます。かなふみ は ひらがな ちゅうしん の やさしい ひょうき です。",
+      menuLanguageHint: "あぷり の ひょうじ げんご を きりかへ る。かなふみ は ひらがな ちゅうしん の やさしい ひょうき。",
       themeHint: (theme) => {
         if (theme === "light") {
           return "ひるま や いんさつ むけの あかるい きほん いろあひ。";
