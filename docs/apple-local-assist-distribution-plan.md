@@ -312,20 +312,24 @@ Exit criteria:
 - App Store build exclusions are documented and testable
 - Foundation Models acceptable-use and availability notes are reflected in release docs
 
-### v0.13: Assist Preview
+### v0.13: Distribution Probe
 
 Target:
 
-- add live Foundation Models binding only if the v0.12 mock experience is stable
-- polish rough-request handling, proofreading, continuation, and diff/history labels
 - verify App Store build can omit External Agent Workbench cleanly
+- draft sandbox entitlements and identify any temporary-exception risk
+- prove whether the bundled Apple Local Assist helper can run under sandbox assumptions
+- prepare App Review notes before App Store/TestFlight packaging
+- keep Apple Local Assist quality polish secondary until the distribution lane shape is proven
 
-### v0.14: Distribution Hardening
+Reference: [v0.13 Distribution Probe](v0.13-distribution-probe.md).
+
+### v0.14: App Store Prep / App Brush-up
 
 Target:
 
-- App Store sandbox / entitlement review
-- build variant automation
+- app-quality smoke and small polish for the App Store lane
+- build variant automation after v0.13 lane decisions
 - TestFlight packaging
 - App Review notes draft
 - Developer / GitHub build signing and notarization plan

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-06 (v0.12.0 source / local-app tag)
+Last reviewed: 2026-06-06 (v0.13 Distribution Probe)
 
 ## Current Position
 
@@ -15,7 +15,7 @@ Current release state:
 - Latest source / local-app tag: `v0.12.0`.
 - Current package/app version: `0.12.0`.
 - v0.12.0 theme: **Apple Local Assist Alpha**.
-- Active lane: post-v0.12 App Brush-up and distribution-readiness planning.
+- Active lane: v0.13 Distribution Probe.
 
 Historical phase details and old milestone text are archived in `docs/archive/roadmaps/roadmap-through-v0.10-doc-refactor.md` and `docs/archive/roadmaps/roadmap-v0.1-archived.md`.
 
@@ -112,9 +112,9 @@ Rules:
 Likely phase shape:
 
 - `v0.12`: Apple Local Assist live local preview, availability plumbing, rough requests, L Mode smoke, AI edit transaction, and alpha / experimental labeling.
-- `v0.13`: App Brush-up, including real Japanese writing examples, prompt quality, unavailable-state handling, app polish, and release-claim tightening.
-- `v0.14`: Distribution Prep, including App Store build separation, sandbox / entitlement checks, signing / certificate preparation, TestFlight packaging, and Developer / GitHub notarization planning.
-- `v0.15`: Store Review Prep, including metadata, screenshots, privacy / acceptable-use wording, review notes, and final TestFlight smoke.
+- `v0.13`: Distribution Probe, including App Store build separation, sandbox / entitlement draft, helper sidecar sandbox proof, and App Review notes draft.
+- `v0.14`: App Store Prep / App Brush-up, including real app smoke, ordinary writing polish, screenshots, privacy / acceptable-use wording, and TestFlight packaging.
+- `v0.15`: Store Review Prep, including metadata, review notes, final TestFlight smoke, and submission readiness.
 - `v1.0`: App Store Candidate / Review if the App Store build can omit External Agent Workbench cleanly and Apple Local Assist remains document-assist only.
 
 v0.12 tag state (source / local-app tag only):
@@ -132,7 +132,19 @@ The next implementation work should prioritize built-app smoke, prompt quality, 
 
 This is an internal roadmap for moving from the current Apple Local Assist preview to App Store review. It is not user-facing release copy.
 
-### 1. App Brush-up
+### 1. Distribution Probe
+
+Goal: prove the App Store lane can exist before investing more in app polish.
+
+- Inspect current bundle signing, entitlements, helper signing, and Gatekeeper state.
+- Design an App Store build that omits External Agent Workbench and all CLI launch paths.
+- Draft sandbox entitlements and avoid temporary exceptions unless evidence proves a need.
+- Verify whether the bundled Apple Local Assist helper can run under sandbox assumptions.
+- Keep the Developer / GitHub lane distinct and do not imply it is App Store-ready.
+
+Current probe memo: `docs/v0.13-distribution-probe.md`.
+
+### 2. App Brush-up
 
 Goal: make the App Store build feel stable enough for ordinary Markdown writing.
 
@@ -142,7 +154,7 @@ Goal: make the App Store build feel stable enough for ordinary Markdown writing.
 - Keep every AI-written change explicit, unsaved, diff-reviewable, and discardable.
 - Fix only high-confidence daily-use polish; do not add major new feature surfaces before review prep.
 
-### 2. Official Distribution Prep
+### 3. Official Distribution Prep
 
 Goal: prepare the two binary lanes without creating a third official free build.
 
@@ -152,7 +164,7 @@ Goal: prepare the two binary lanes without creating a third official free build.
 - Decide whether `minimumSystemVersion` stays editor-wide `11.0` with Apple Local Assist availability-gated, or whether a separate App Store build policy is needed.
 - Confirm the bundled Apple Local Assist helper works under the App Store sandbox or replace the helper shape before submission.
 
-### 3. Store Review Prep
+### 4. Store Review Prep
 
 Goal: assemble a clean App Store review package.
 
@@ -162,7 +174,7 @@ Goal: assemble a clean App Store review package.
 - Run TestFlight packaging and internal smoke before App Review submission.
 - Align `README.md`, `docs/current-status.md`, release notes, and smoke checklist with the exact submitted build.
 
-### 4. Review And Post-review
+### 5. Review And Post-review
 
 Goal: handle App Review without disturbing the Developer / GitHub lane.
 

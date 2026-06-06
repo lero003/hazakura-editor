@@ -76,8 +76,8 @@ Current limits: live generation depends on macOS 26+ Apple Foundation Models ava
 
 ## Next Apple Local Assist hardening
 
-1. Improve rough-request prompt shaping and response cleanup based on real lightweight writing examples, while avoiding claims that Apple Local Assist can replace external agents or advanced review tools.
-2. Expand unavailable/disabled/unsupported-language smoke for Apple Local Assist without blocking Safe Editor.
+1. Run the v0.13 Distribution Probe from `docs/v0.13-distribution-probe.md`: App Store build separation, sandbox entitlement draft, helper sidecar sandbox proof, and App Review notes draft.
+2. Keep Apple Local Assist quality polish secondary until the App Store lane shape is proven.
 3. Decide whether `minimumSystemVersion` should remain editor-wide `11.0` or move to a split / release-lane policy for Apple Local Assist builds.
 4. Review App Store sandbox, signing, hardened runtime, and notarization behavior for the bundled helper before any distribution-lane change.
 5. Keep the release plan to two binary lanes by default: App Store build (`Safe Editor` + `Apple Local Assist`) and Developer / GitHub build (same base plus `Agent Workbench`). Treat an official website as a pointer to those lanes, not a third build.

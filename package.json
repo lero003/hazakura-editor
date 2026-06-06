@@ -12,6 +12,7 @@
     "build:apple-assist-helper:live": "bash scripts/build-apple-assist-helper-live.sh",
     "build:dmg-preview": "bash scripts/build-warning-dmg-preview.sh",
     "build:vite": "tsc --noEmit && vite build",
+    "probe:macos-distribution": "bash scripts/probe-macos-distribution.sh",
     "preview": "vite preview --host 127.0.0.1",
     "test": "vitest run",
     "test:watch": "vitest"
