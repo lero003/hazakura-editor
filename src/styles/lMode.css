@@ -1554,31 +1554,50 @@
   display: none;
 }
 
-/* --- 6. Print and export boundary ---
-   L Mode's editor-side display rules are tuned for the
-   screen. The hidden markers, dimmed non-active lines,
-   the active-line margin chip, the floating chrome, and
-   the inline widgets all assume a live editing context.
-   None of them help on a printed page, and several
-   actively get in the way: a printout of the editor in
-   L Mode today would show the dim/active treatment,
-   render the margin chip, and keep the floating action
-   rail and exit pill visible. The block below strips
-   them back so Print to PDF / browser print output
-   lands as ordinary source-shaped Markdown with the
-   same images and code blocks a user would see in the
-   existing Markdown preview / export pipeline.
+/* --- 6. Print and export boundary (screen print only) ---
 
-   The markers hidden on screen (cm-lmode-hidden) are
-   revealed here so the printed text matches the saved
-   file character for character; that is also the most
-   useful shape on paper because the user is reading
-   the document rather than editing it. The dim is
-   removed, the soft cream paper-feel background is
-   swapped for plain white, the centered "page" geometry
-   is dropped (the printed sheet is the page), and the
-   floating chrome is hidden so it does not appear on
-   paper. Selectors carry the L Mode data attribute so
+   IMPORTANT SCOPE: this `@media print` block fires only
+   when the live CodeMirror editor is sent to the browser
+   print dialog. It does NOT affect the user-facing
+   Print to PDF or Export HTML flows: those go through
+   `useDocumentExport`, which renders a standalone HTML
+   document from the saved Markdown source via
+   `renderMarkdown()` + `getMarkdownPreviewCss()` and
+   does not carry L Mode's `.cm-*` classes. So the
+   standalone preview / export pipeline is the canonical
+   print path; this block is the screen-side fallback
+   for "the user hit Cmd+P while the editor is open."
+
+   Within that scoped role, the screen-print result of
+   L Mode is still screen-shaped: the editor's display
+   rules hide Markdown markers, dim non-active lines,
+   show the active-line margin chip, render inline
+   widgets for images / HRs / task checkboxes / table
+   delimiters, and float the action rail / exit pill /
+   workspace drawer / change review sheet over the
+   content. None of those are a print shape, and the
+   widget replacements cannot be CSS-reverted back to
+   their source text (`Decoration.replace` changes the
+   rendered DOM, not the underlying doc). What this
+   block DOES undo is the screen-side chrome and the
+   L Mode-specific readability layers:
+
+   - The floating chrome (action rail, exit pill,
+     workspace toggle / overlay / drawer, change review
+     sheet, tabs-row, status bar, scroll HUD, empty
+     placeholder) is hidden so it does not appear on
+     paper.
+   - The `cm-lmode-hidden` source-marker spans are
+     revealed (color / display) so the printed page
+     shows the same `#`, `>`, `*`, backtick, etc. that
+     the user typed, even though the widgets they
+     anchor to may render as a placeholder.
+   - The dim on non-active lines is removed, the margin
+     chip is dropped, the 720px column geometry is
+     unwound, and the warm cream paper-feel background
+     is swapped for plain white.
+
+   Selectors carry the L Mode data attribute so
    non-L-Mode print behavior is untouched. */
 @media print {
   :root[data-l-mode="on"] .l-mode-exit-pill,

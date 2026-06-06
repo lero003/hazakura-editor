@@ -317,18 +317,35 @@ describe("lMode.css", () => {
   });
 });
 
-// --- v0.14 print / export boundary ---
+// --- v0.14 print / export boundary (screen print only) ---
 //
-// L Mode's screen-only chrome and decoration classes
-// must be stripped back in `@media print` so Print to
-// PDF / browser print output lands as ordinary source-
-// shaped Markdown rather than as a screenshot of the
-// editor. The tests below pin the rules that make that
-// happen. They run against the raw stylesheet text
-// because jsdom does not lay out CSS — the same approach
-// the rest of `lModeCss.test.ts` uses for the
-// screen-side rules.
-describe("v0.14 L Mode print boundary", () => {
+// SCOPE: this describe block pins the `@media print`
+// block in `lMode.css`. That block only fires when the
+// live CodeMirror editor is sent to the browser print
+// dialog. It does NOT cover the user-facing Print to
+// PDF / Export HTML flows: those go through
+// `useDocumentExport`, which renders a standalone HTML
+// document from the saved Markdown source via
+// `renderMarkdown()` + `getMarkdownPreviewCss()` and
+// does not carry L Mode's `.cm-*` classes. So the
+// standalone preview / export pipeline is the canonical
+// print path; this block is the screen-side fallback
+// for "the user hit Cmd+P while the editor is open."
+//
+// The block also cannot reverse L Mode's widget
+// replacements: `Image`, `HorizontalRule`, `TaskMarker`,
+// and `TableDelimiter` are `Decoration.replace`d into
+// display-only widgets whose underlying source text is
+// not in the rendered DOM. What the block DOES undo is
+// the floating chrome, the dim, the margin chip, the
+// hidden marker spans, and the 720px column geometry —
+// a useful insurance shape, not a full source round-trip.
+//
+// The tests run against the raw stylesheet text because
+// jsdom does not lay out CSS — the same approach the
+// rest of `lModeCss.test.ts` uses for the screen-side
+// rules.
+describe("v0.14 L Mode print boundary (screen print only)", () => {
   // Read the `@media print { ... }` block out of the
   // stylesheet. The block is the last top-level block in
   // `lMode.css`; `[\s\S]*?` with the lazy `*?` quantifier
@@ -343,6 +360,9 @@ describe("v0.14 L Mode print boundary", () => {
     // Multiple print blocks would scatter the print
     // override and make it hard to reason about. The
     // boundary slice keeps the override in one place.
+    // Reminder: this block is the screen-print fallback
+    // only; the canonical print path is the standalone
+    // export pipeline in `useDocumentExport`.
     const matches = lModeCss.match(/@media\s+print\s*{/g) ?? [];
     expect(matches.length).toBe(1);
   });
@@ -383,6 +403,11 @@ describe("v0.14 L Mode print boundary", () => {
     // not editing it, so the markers should print as
     // ordinary source characters. The `cm-lmode-hidden`
     // override is the central print-boundary concern.
+    // This only undoes the source-marker hiding; it
+    // does NOT reverse the `Decoration.replace` widgets
+    // for Image / HorizontalRule / TaskMarker /
+    // TableDelimiter (those have no source text in the
+    // rendered DOM to reveal).
     expect(printBlock).toMatch(
       /:root\[data-l-mode="on"\] \.cm-lmode-hidden\s*{[^}]*color:\s*inherit\s*!important/s,
     );
