@@ -173,6 +173,15 @@ export function lModeExtension(
 // advance the caret without a separate `selectionSet` signal.
 // Range selections are deliberately ignored so Shift+Arrow and
 // drag-select do not shove the viewport around.
+//
+// IME composition is also ignored. `view.composing` is true
+// between the first compositionchange and `compositionend`,
+// which is exactly the window where the candidate window
+// follows the caret — recenter there fights the IME and can
+// shove the candidate window off-screen on long compositions.
+// The commit dispatch lands with `view.composing === false`,
+// so the same caret still flows through the existing recenter
+// path on the next update cycle.
 function lModeTypewriterPlugin() {
   return ViewPlugin.define((view) => {
     const win = view.dom.ownerDocument.defaultView ?? window;
@@ -196,6 +205,15 @@ function lModeTypewriterPlugin() {
 
         const selection = update.state.selection.main;
         if (!selection.empty) {
+          return;
+        }
+
+        // Skip recentering while IME composition is in
+        // progress. The commit dispatch on compositionend
+        // arrives with `view.composing === false`, so the
+        // same caret flows through the existing recenter
+        // path on the next update cycle.
+        if (update.view.composing) {
           return;
         }
 

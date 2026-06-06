@@ -122,10 +122,10 @@ Use these notes as a v0.14 work queue. Each item should stay a small, verifiable
    - Failure conditions reduced: cursor uncertainty, IME instability, implementation cost from broad recomputation.
 
 2. **Typewriter and IME stability**
-   - Current risk: Typewriter recentering on `docChanged` / `selectionSet` may fight Japanese composition or move the candidate window.
-   - Preferred slice: avoid recentering while the editor is composing, then recenter once after composition ends if the caret remains collapsed.
-   - Verification: focused plugin test plus built-app or browser smoke with Japanese IME when practical.
+   - Initial v0.14 slice landed: the typewriter plugin now short-circuits its recenter schedule while `view.composing` is true, so IME candidate windows are not shoved off-screen during long compositions. The commit dispatch on `compositionend` lands with `composing === false` and flows through the existing recenter path on the next update cycle.
+   - Verification: focused plugin test pins that a `composing` guard suppresses the recenter, and that the post-composition dispatch re-enables it.
    - Failure conditions reduced: IME instability, layout jumps, visual anxiety.
+   - Remaining work: built-app or browser smoke with a real Japanese IME when practical.
 
 3. **Visual-overlap fixture**
    - Current risk: the margin chip (`data-l-chip`) and page padding depend on available width, so narrow windows may clip or overlap the chip.

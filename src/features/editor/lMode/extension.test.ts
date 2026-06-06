@@ -691,6 +691,74 @@ describe("v0.11 typewriter mode", () => {
   });
 });
 
+// --- v0.14 typewriter IME stability ---
+//
+// The v0.11 typewriter plugin recenters on every
+// `docChanged` / `selectionSet`, regardless of whether the
+// editor is currently in an IME composition. During Japanese
+// (or other CJK) composition the candidate window follows the
+// caret, so a recenter inside the composition window fights
+// the IME and can shove the candidate window off-screen. The
+// v0.14 slice adds a `view.composing` guard: skip recenter
+// while composing, and let the commit dispatch land with
+// `composing === false` so the same caret flows through the
+// existing recenter path on the next update cycle.
+
+describe("v0.14 typewriter IME stability", () => {
+  it("does not request a measured recenter while IME composition is active", async () => {
+    const source = "line one\nline two\n";
+    const parent = document.createElement("div");
+    document.body.append(parent);
+
+    const view = new EditorView({
+      parent,
+      state: EditorState.create({
+        doc: source,
+        extensions: [
+          markdown({ base: markdownLanguage }),
+          lModeExtension(
+            true,
+            { workspaceRoot: null, documentPath: null },
+            { typewriterMode: true },
+          ),
+        ],
+        selection: { anchor: source.length },
+      }),
+    });
+    const measureSpy = vi.spyOn(view, "requestMeasure");
+    const composingSpy = vi
+      .spyOn(view, "composing", "get")
+      .mockReturnValue(true);
+
+    // Insert a character while IME composition is active.
+    // The dispatch triggers the typewriter plugin's `update`
+    // path, but `view.composing === true` must short-circuit
+    // the recenter schedule.
+    view.dispatch({
+      changes: { from: source.length, insert: "x" },
+      selection: { anchor: source.length + 1 },
+    });
+    await nextAnimationFrame();
+
+    expect(
+      measureSpy.mock.calls.some((call) => call.length > 0),
+    ).toBe(false);
+
+    // Composition ends — the next dispatch should re-enable
+    // recentering for the same caret.
+    composingSpy.mockReturnValue(false);
+    view.dispatch({ selection: { anchor: source.length + 1 } });
+    await nextAnimationFrame();
+
+    expect(
+      measureSpy.mock.calls.some((call) => call.length > 0),
+    ).toBe(true);
+
+    view.destroy();
+    parent.remove();
+  });
+});
+
 function nextAnimationFrame(): Promise<void> {
   return new Promise((resolve) => {
     requestAnimationFrame(() => resolve());
