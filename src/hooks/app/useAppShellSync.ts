@@ -70,6 +70,7 @@ export function useAppShellSync({
     agentWorkbenchConsent,
     editorSettings,
     menuLanguage,
+    onStatus,
     previewVisible,
     recentFiles,
     recentFolders,

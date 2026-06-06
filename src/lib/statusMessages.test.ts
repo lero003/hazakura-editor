@@ -45,6 +45,11 @@ describe("localizeStatusMessage: window IPC failure keys (v0.15)", () => {
       .toBe("ウィンドウのタイトル更新に失敗しました");
   });
 
+  it("localizes the app menu state failure to Japanese", () => {
+    expect(localizeStatusMessage("Failed to update app menu state", "ja"))
+      .toBe("アプリケーションメニューの状態更新に失敗しました");
+  });
+
   it("mentions the failure noun (失敗) so the user sees the action did not take effect", () => {
     expect(localizeStatusMessage("Failed to update window theme", "ja"))
       .toMatch(/失敗/);
@@ -55,6 +60,8 @@ describe("localizeStatusMessage: window IPC failure keys (v0.15)", () => {
       ),
     ).toMatch(/失敗/);
     expect(localizeStatusMessage("Failed to update window title", "ja"))
+      .toMatch(/失敗/);
+    expect(localizeStatusMessage("Failed to update app menu state", "ja"))
       .toMatch(/失敗/);
   });
 
@@ -69,6 +76,8 @@ describe("localizeStatusMessage: window IPC failure keys (v0.15)", () => {
     ).toBe("Failed to update window background color");
     expect(localizeStatusMessage("Failed to update window title", "en"))
       .toBe("Failed to update window title");
+    expect(localizeStatusMessage("Failed to update app menu state", "en"))
+      .toBe("Failed to update app menu state");
   });
 
   it("returns distinct Japanese messages for the three keys (no copy collapse)", () => {
@@ -78,6 +87,7 @@ describe("localizeStatusMessage: window IPC failure keys (v0.15)", () => {
       "ja",
     );
     const c = localizeStatusMessage("Failed to update window title", "ja");
-    expect(new Set([a, b, c]).size).toBe(3);
+    const d = localizeStatusMessage("Failed to update app menu state", "ja");
+    expect(new Set([a, b, c, d]).size).toBe(4);
   });
 });
