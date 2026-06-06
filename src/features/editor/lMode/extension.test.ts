@@ -757,6 +757,62 @@ describe("v0.14 typewriter IME stability", () => {
     view.destroy();
     parent.remove();
   });
+
+  it("cancels a pending recenter that was scheduled before IME composition started", async () => {
+    // Race fix: the v0.14 `update` guard only blocks *new*
+    // schedules. A recenter that was reserved on a normal
+    // update must still short-circuit at rAF-callback time
+    // if the user has started an IME composition in the
+    // meantime. Otherwise the candidate window can be
+    // shoved by a stale recenter.
+    const source = "line one\nline two\n";
+    const parent = document.createElement("div");
+    document.body.append(parent);
+
+    const view = new EditorView({
+      parent,
+      state: EditorState.create({
+        doc: source,
+        extensions: [
+          markdown({ base: markdownLanguage }),
+          lModeExtension(
+            true,
+            { workspaceRoot: null, documentPath: null },
+            { typewriterMode: true },
+          ),
+        ],
+        selection: { anchor: source.length },
+      }),
+    });
+    const measureSpy = vi.spyOn(view, "requestMeasure");
+    const composingSpy = vi.spyOn(view, "composing", "get");
+
+    // Step 1: normal (non-composing) update reserves the
+    // rAF. composing === false at this point so the
+    // `update` guard does not fire.
+    composingSpy.mockReturnValue(false);
+    view.dispatch({
+      changes: { from: source.length, insert: "x" },
+      selection: { anchor: source.length + 1 },
+    });
+
+    // Step 2: before the rAF callback fires, the user
+    // starts an IME composition.
+    composingSpy.mockReturnValue(true);
+
+    // Step 3: wait for the rAF callback to fire. The
+    // callback must re-check `view.composing` and skip
+    // `requestTypewriterRecenter` so the candidate window
+    // is not shoved.
+    await nextAnimationFrame();
+
+    expect(
+      measureSpy.mock.calls.some((call) => call.length > 0),
+    ).toBe(false);
+
+    view.destroy();
+    parent.remove();
+  });
 });
 
 function nextAnimationFrame(): Promise<void> {

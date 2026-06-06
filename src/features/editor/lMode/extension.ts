@@ -193,6 +193,17 @@ function lModeTypewriterPlugin() {
       }
       frame = win.requestAnimationFrame(() => {
         frame = null;
+        // Race guard: between the time the recenter was
+        // scheduled and the time the rAF callback fires,
+        // the user may have started an IME composition.
+        // Re-check `view.composing` here so a stale
+        // recenter never shoves the candidate window. The
+        // next non-composition update will schedule a
+        // fresh recenter and the caret still settles
+        // through the existing path.
+        if (view.composing) {
+          return;
+        }
         requestTypewriterRecenter(view);
       });
     }
