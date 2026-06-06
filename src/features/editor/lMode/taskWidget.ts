@@ -76,8 +76,38 @@ export class LModeTaskWidget extends WidgetType {
 }
 
 // `ViewPlugin` that toggles the marker text when a task widget
-// is clicked. The plugin is only included in the L Mode
-// extension, so it's dormant outside L Mode.
+// is clicked or focused-and-keyed. The plugin is only included
+// in the L Mode extension, so it's dormant outside L Mode.
+//
+// v0.15 stability: the `keydown` handler now ignores events
+// while the editor is in an IME composition session
+// (`view.composing === true` or `event.isComposing === true`).
+// Without this guard, pressing Space to confirm a Japanese IME
+// candidate would also flip the task checkbox underneath the
+// composition — a daily-writing paper cut for anyone who uses
+// task lists inside prose. Click and keydown share the same
+// dispatch helper so the click path stays untouched.
+
+export function dispatchTaskToggle(view: EditorView, event: Event): boolean {
+  const target = event.target;
+  if (!(target instanceof Element)) return false;
+  const taskEl = target.closest(`.${LModeClasses.task}`);
+  if (!taskEl) return false;
+  const from = Number(taskEl.getAttribute("data-lmode-task-from"));
+  const to = Number(taskEl.getAttribute("data-lmode-task-to"));
+  if (Number.isNaN(from) || Number.isNaN(to)) return false;
+
+  // The TaskMarker is always 3 chars (`[ ]` or `[x]`); we
+  // replace exactly that range so the rest of the line is
+  // untouched.
+  const text = view.state.doc.sliceString(from, to);
+  const next = text === "[ ]" ? "[x]" : text === "[x]" ? "[ ]" : null;
+  if (!next) return false;
+
+  view.dispatch({ changes: { from, to, insert: next } });
+  return true;
+}
+
 const lModeTaskClickViewPlugin = ViewPlugin.fromClass(
   class {
     constructor(readonly view: EditorView) {}
@@ -86,27 +116,17 @@ const lModeTaskClickViewPlugin = ViewPlugin.fromClass(
   {
     eventHandlers: {
       click(event, view) {
-        const target = event.target;
-        if (!(target instanceof Element)) return;
-        const taskEl = target.closest(`.${LModeClasses.task}`);
-        if (!taskEl) return;
-        const from = Number(taskEl.getAttribute("data-lmode-task-from"));
-        const to = Number(taskEl.getAttribute("data-lmode-task-to"));
-        if (Number.isNaN(from) || Number.isNaN(to)) return;
-
-        // Read the marker text. The TaskMarker is always 3
-        // chars (`[ ]` or `[x]`); we replace exactly that range
-        // so the rest of the line is untouched.
-        const text = view.state.doc.sliceString(from, to);
-        const next = text === "[ ]" ? "[x]" : text === "[x]" ? "[ ]" : null;
-        if (!next) return;
-
-        view.dispatch({ changes: { from, to, insert: next } });
-        // Returning `true` tells CodeMirror we've handled the
-        // event, so it does NOT also place the cursor at the
-        // click position. The user just wanted to toggle, not
-        // to move the caret.
-        return true;
+        // Click is always a deliberate toggle intent — IME
+        // composition does not produce clicks, so we skip the
+        // `view.composing` guard here.
+        if (dispatchTaskToggle(view, event)) {
+          // Returning `true` tells CodeMirror we've handled the
+          // event, so it does NOT also place the cursor at the
+          // click position. The user just wanted to toggle, not
+          // to move the caret.
+          return true;
+        }
+        return undefined;
       },
       keydown(event, view) {
         // Standard `role="checkbox"` keyboard interaction:
@@ -117,23 +137,25 @@ const lModeTaskClickViewPlugin = ViewPlugin.fromClass(
         if (event.key !== "Enter" && event.key !== " ") {
           return;
         }
-        const target = event.target;
-        if (!(target instanceof Element)) return;
-        const taskEl = target.closest(`.${LModeClasses.task}`);
-        if (!taskEl) return;
-        const from = Number(taskEl.getAttribute("data-lmode-task-from"));
-        const to = Number(taskEl.getAttribute("data-lmode-task-to"));
-        if (Number.isNaN(from) || Number.isNaN(to)) return;
+        // IME composition guard. While the editor is mid-
+        // composition (e.g. the user is confirming a Japanese
+        // candidate with Space), the keypress belongs to the
+        // IME, not to the checkbox. The two reliable signals
+        // are `event.isComposing` (set on the native keydown)
+        // and `view.composing` (the editor's own view of the
+        // composition state); check both to cover Chrome
+        // WebView / Safari / Tauri WebView differences.
+        if (event.isComposing || view.composing) {
+          return;
+        }
 
-        const text = view.state.doc.sliceString(from, to);
-        const next = text === "[ ]" ? "[x]" : text === "[x]" ? "[ ]" : null;
-        if (!next) return;
-
+        if (!dispatchTaskToggle(view, event)) {
+          return;
+        }
         // Prevent the default Space scroll and Enter code
         // completion paths so the toggle is the only thing
         // that happens.
         event.preventDefault();
-        view.dispatch({ changes: { from, to, insert: next } });
         return true;
       },
     },
