@@ -1,7 +1,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AppTopChrome } from "./AppTopChrome";
-import { getRecoveryCopy, getSidePaneCopy } from "../../lib/locale";
+import { getLModeCopy, getRecoveryCopy, getSidePaneCopy } from "../../lib/locale";
 
 afterEach(() => {
   cleanup();
@@ -19,6 +19,7 @@ function renderTopChrome() {
       draggingTabId={null}
       dragOverTabId={null}
       emptyTabsLabel="No file open"
+      lModeCopy={getLModeCopy("en")}
       lModeEnabled={false}
       onCloseTab={vi.fn()}
       onFinishTabPointerDrag={vi.fn()}
@@ -31,6 +32,7 @@ function renderTopChrome() {
       onTabPointerDown={vi.fn()}
       onTabPointerMove={vi.fn()}
       onToggleDiff={vi.fn()}
+      onToggleLMode={vi.fn()}
       onToggleOutline={vi.fn()}
       onTogglePreview={vi.fn()}
       recoveryCopy={getRecoveryCopy("en")}

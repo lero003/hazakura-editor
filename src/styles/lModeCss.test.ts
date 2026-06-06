@@ -91,6 +91,12 @@ describe("lMode.css", () => {
     expect(lModeCss).toMatch(
       /:root\[data-l-mode="on"\] \.l-mode-change-review-diff \.diff-cell\.removed,\s*:root\[data-l-mode="on"\] \.l-mode-change-review-diff \.diff-line-number\.removed\s*{[^}]*var\(--diff-removed-fg\) 18%/s,
     );
+    expect(lModeCss).toMatch(
+      /:root\[data-l-mode="on"\]\[data-theme="dark"\] \.l-mode-change-review-diff \.diff-cell\.added,[^}]*:root\[data-l-mode="on"\]\[data-theme="yakou"\] \.l-mode-change-review-diff \.diff-line-number\.added\s*{[^}]*var\(--diff-added-fg\) 24%/s,
+    );
+    expect(lModeCss).toMatch(
+      /:root\[data-l-mode="on"\]\[data-theme="dark"\] \.l-mode-change-review-diff \.diff-cell\.removed,[^}]*:root\[data-l-mode="on"\]\[data-theme="yakou"\] \.l-mode-change-review-diff \.diff-line-number\.removed\s*{[^}]*var\(--diff-removed-fg\) 26%/s,
+    );
   });
 
   it("moves the scroll position HUD to the right side at mid-height in L Mode", () => {

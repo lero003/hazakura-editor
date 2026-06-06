@@ -2,6 +2,7 @@ import type { PointerEvent as ReactPointerEvent } from "react";
 import { DocumentMetaBar } from "./DocumentMetaBar";
 import { TabBar } from "../editor/TabBar";
 import type {
+  LModeCopy,
   RecoveryCopy,
   SidePaneCopy,
 } from "../../lib/locale";
@@ -22,6 +23,7 @@ type AppTopChromeProps = {
   dragOverTabId: string | null;
   emptyTabsLabel: string;
   lModeEnabled: boolean;
+  lModeCopy: LModeCopy;
   onCloseTab: (tabId: string) => void;
   onFinishTabPointerDrag: (target?: EventTarget | null) => void;
   onOpenAgentWindow: () => void;
@@ -39,6 +41,7 @@ type AppTopChromeProps = {
   ) => void;
   onTabPointerMove: (event: ReactPointerEvent<HTMLDivElement>) => void;
   onToggleDiff: () => void;
+  onToggleLMode: () => void;
   onToggleOutline: () => void;
   onTogglePreview: () => void;
   recoveryCopy: RecoveryCopy;
@@ -58,6 +61,7 @@ export function AppTopChrome({
   dragOverTabId,
   emptyTabsLabel,
   lModeEnabled,
+  lModeCopy,
   onCloseTab,
   onFinishTabPointerDrag,
   onOpenAgentWindow,
@@ -69,6 +73,7 @@ export function AppTopChrome({
   onTabPointerDown,
   onTabPointerMove,
   onToggleDiff,
+  onToggleLMode,
   onToggleOutline,
   onTogglePreview,
   recoveryCopy,
@@ -109,11 +114,13 @@ export function AppTopChrome({
         agentWorkbenchAvailable={agentWorkbenchAvailable}
         assistSurfaceActive={assistSurfaceActive}
         diffPaneActive={sidePaneMode === "compare"}
+        lModeCopy={lModeCopy}
         lModeEnabled={lModeEnabled}
         onOpenAgentWindow={onOpenAgentWindow}
         onOpenAppleAssistWindow={onOpenAppleAssistWindow}
         onReviewChanges={onReviewChanges}
         onToggleDiff={onToggleDiff}
+        onToggleLMode={onToggleLMode}
         onToggleOutline={onToggleOutline}
         onTogglePreview={onTogglePreview}
         outlinePaneActive={sidePaneMode === "outline"}

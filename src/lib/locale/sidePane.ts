@@ -21,6 +21,8 @@ export type SidePaneCopy = {
   previewTab: string;
   previewTabTitle: string;
   previewUnavailable: string;
+  reviewMenu: string;
+  reviewMenuTitle: string;
   resizeColumns: string;
   resizeColumnsTitle: string;
   sidePaneMode: string;
@@ -49,6 +51,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
       previewTab: "したみ",
       previewTabTitle: "したみのまどをしめす",
       previewUnavailable: "したみをしめせません",
+      reviewMenu: "かくにん",
+      reviewMenuTitle: "へんこう、ちがひ、みだしのまどをひらく",
       resizeColumns: "えでぃたとよこのまどのはばをかへる",
       resizeColumnsTitle: "ひきて、えでぃたとよこのまどのはばをかへます",
       sidePaneMode: "よこのまど",
@@ -77,6 +81,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         previewTab: "プレビュー",
         previewTabTitle: "プレビューペインを表示",
         previewUnavailable: "プレビューを表示できません",
+        reviewMenu: "確認",
+        reviewMenuTitle: "変更確認・差分・アウトラインを開く",
         resizeColumns: "エディタとサイドペインの幅を変更",
         resizeColumnsTitle:
           "ドラッグしてエディタとサイドペインの幅を変更",
@@ -103,6 +109,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         previewTab: "Preview",
         previewTabTitle: "Show preview pane",
         previewUnavailable: "Preview unavailable",
+        reviewMenu: "Review",
+        reviewMenuTitle: "Open change review, diff, or outline",
         resizeColumns: "Resize editor and side pane columns",
         resizeColumnsTitle: "Drag to resize editor and side pane",
         sidePaneMode: "Side pane mode",

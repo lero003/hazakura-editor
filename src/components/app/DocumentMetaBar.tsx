@@ -4,6 +4,7 @@ import {
 } from "./RightPaneToggleControls";
 import { AgentWindowIcon, SparklesIcon } from "./Icons";
 import type { AssistSurfacePreference, EditorTab } from "../../types";
+import type { LModeCopy } from "../../lib/locale";
 
 type DocumentMetaBarProps = {
   activeDirty: boolean;
@@ -11,11 +12,13 @@ type DocumentMetaBarProps = {
   agentWorkbenchAvailable: boolean;
   assistSurfaceActive: AssistSurfacePreference;
   diffPaneActive: boolean;
+  lModeCopy: LModeCopy;
   lModeEnabled: boolean;
   onOpenAgentWindow: () => void;
   onOpenAppleAssistWindow: () => void;
   onReviewChanges: (tab: EditorTab) => void;
   onToggleDiff: () => void;
+  onToggleLMode: () => void;
   onToggleOutline: () => void;
   onTogglePreview: () => void;
   outlinePaneActive: boolean;
@@ -30,11 +33,13 @@ export function DocumentMetaBar({
   agentWorkbenchAvailable,
   assistSurfaceActive,
   diffPaneActive,
+  lModeCopy,
   lModeEnabled,
   onOpenAgentWindow,
   onOpenAppleAssistWindow,
   onReviewChanges,
   onToggleDiff,
+  onToggleLMode,
   onToggleOutline,
   onTogglePreview,
   outlinePaneActive,
@@ -42,7 +47,6 @@ export function DocumentMetaBar({
   recoveryReviewChangesLabel,
   sidePaneCopy,
 }: DocumentMetaBarProps) {
-  const showDocumentSection = activeTab !== null && !lModeEnabled;
   const showCompanionSection =
     !lModeEnabled &&
     (assistSurfaceActive === "apple-local" ||
@@ -64,35 +68,30 @@ export function DocumentMetaBar({
 
   return (
     <div className="document-meta">
-      <section className="chrome-section" aria-label={sidePaneCopy.sidePaneMode}>
-        <RightPaneToggleControls
-          copy={sidePaneCopy}
-          diffActive={diffPaneActive}
-          diffAvailable
-          onToggleDiff={onToggleDiff}
-          onToggleOutline={onToggleOutline}
-          onTogglePreview={onTogglePreview}
-          outlineActive={outlinePaneActive}
-          outlineAvailable={activeTab !== null}
-          previewActive={previewPaneActive}
-        />
-      </section>
-      {showDocumentSection ? (
-        <>
-          <span className="chrome-divider" aria-hidden="true" />
-          <section className="chrome-section" aria-label={recoveryReviewChangesLabel}>
-            {activeDirty && activeTab ? (
-              <button
-                className="review-changes-button"
-                onClick={() => onReviewChanges(activeTab)}
-                type="button"
-              >
-                <span className="review-changes-dot" aria-hidden="true" />
-                {recoveryReviewChangesLabel}
-              </button>
-            ) : null}
-          </section>
-        </>
+      {!lModeEnabled ? (
+        <section className="chrome-section" aria-label={sidePaneCopy.sidePaneMode}>
+          <RightPaneToggleControls
+            copy={sidePaneCopy}
+            diffActive={diffPaneActive}
+            diffAvailable
+            lModeLabel={lModeCopy.preferenceLabel}
+            lModeTitle={lModeCopy.paletteCommand}
+            onReviewChanges={() => {
+              if (activeTab) {
+                onReviewChanges(activeTab);
+              }
+            }}
+            onToggleDiff={onToggleDiff}
+            onToggleLMode={onToggleLMode}
+            onToggleOutline={onToggleOutline}
+            onTogglePreview={onTogglePreview}
+            outlineActive={outlinePaneActive}
+            outlineAvailable={activeTab !== null}
+            previewActive={previewPaneActive}
+            reviewChangesAvailable={activeDirty && activeTab !== null}
+            reviewChangesLabel={recoveryReviewChangesLabel}
+          />
+        </section>
       ) : null}
       {showCompanionSection ? (
         <>

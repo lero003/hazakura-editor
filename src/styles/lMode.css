@@ -717,6 +717,27 @@
   background: color-mix(in srgb, var(--text-muted) 8%, transparent);
 }
 
+:root[data-l-mode="on"][data-theme="dark"] .l-mode-change-review-diff .diff-cell.added,
+:root[data-l-mode="on"][data-theme="dark"] .l-mode-change-review-diff .diff-line-number.added,
+:root[data-l-mode="on"][data-theme="yakou"] .l-mode-change-review-diff .diff-cell.added,
+:root[data-l-mode="on"][data-theme="yakou"] .l-mode-change-review-diff .diff-line-number.added {
+  background: color-mix(in srgb, var(--diff-added-fg) 24%, transparent);
+}
+
+:root[data-l-mode="on"][data-theme="dark"] .l-mode-change-review-diff .diff-cell.removed,
+:root[data-l-mode="on"][data-theme="dark"] .l-mode-change-review-diff .diff-line-number.removed,
+:root[data-l-mode="on"][data-theme="yakou"] .l-mode-change-review-diff .diff-cell.removed,
+:root[data-l-mode="on"][data-theme="yakou"] .l-mode-change-review-diff .diff-line-number.removed {
+  background: color-mix(in srgb, var(--diff-removed-fg) 26%, transparent);
+}
+
+:root[data-l-mode="on"][data-theme="dark"] .l-mode-change-review-diff .diff-cell.blank,
+:root[data-l-mode="on"][data-theme="dark"] .l-mode-change-review-diff .diff-line-number.blank,
+:root[data-l-mode="on"][data-theme="yakou"] .l-mode-change-review-diff .diff-cell.blank,
+:root[data-l-mode="on"][data-theme="yakou"] .l-mode-change-review-diff .diff-line-number.blank {
+  background: color-mix(in srgb, var(--text-muted) 12%, transparent);
+}
+
 :root[data-l-mode="on"] .l-mode-change-review-diff .diff-cell-marker {
   font-size: 10px;
   font-weight: 700;

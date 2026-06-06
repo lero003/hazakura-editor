@@ -1,8 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { DocumentMetaBar } from "./DocumentMetaBar";
 import type { EditorTab } from "../../types";
 import type { RightPaneToggleCopy } from "./RightPaneToggleControls";
+import { getLModeCopy } from "../../lib/locale/lMode";
 
 afterEach(cleanup);
 
@@ -17,6 +18,8 @@ const sidePaneCopy: RightPaneToggleCopy = {
   outlineTabTitle: "Open Outline",
   previewTab: "Preview",
   previewTabTitle: "Open Preview",
+  reviewMenu: "Review",
+  reviewMenuTitle: "Open review tools",
   sidePaneMode: "Side pane",
 };
 
@@ -45,6 +48,13 @@ function renderMeta(
   assistSurfacePreference: "apple-local" | "external-cli" | "none" =
     "external-cli",
 ) {
+  const actions = {
+    onReviewChanges: vi.fn(),
+    onToggleDiff: vi.fn(),
+    onToggleLMode: vi.fn(),
+    onToggleOutline: vi.fn(),
+    onTogglePreview: vi.fn(),
+  };
   render(
     <DocumentMetaBar
       activeDirty
@@ -52,26 +62,29 @@ function renderMeta(
       agentWorkbenchAvailable
       assistSurfaceActive={assistSurfacePreference}
       diffPaneActive={false}
+      lModeCopy={getLModeCopy("en")}
       lModeEnabled={lModeEnabled}
       onOpenAgentWindow={vi.fn()}
       onOpenAppleAssistWindow={vi.fn()}
-      onReviewChanges={vi.fn()}
-      onToggleDiff={vi.fn()}
-      onToggleOutline={vi.fn()}
-      onTogglePreview={vi.fn()}
+      onReviewChanges={actions.onReviewChanges}
+      onToggleDiff={actions.onToggleDiff}
+      onToggleLMode={actions.onToggleLMode}
+      onToggleOutline={actions.onToggleOutline}
+      onTogglePreview={actions.onTogglePreview}
       outlinePaneActive={false}
       previewPaneActive={false}
       recoveryReviewChangesLabel="変更を確認"
       sidePaneCopy={sidePaneCopy}
     />,
   );
+  return actions;
 }
 
 describe("DocumentMetaBar", () => {
   it("hides review and Agent controls in L Mode", () => {
     renderMeta(true);
 
-    expect(screen.queryByRole("button", { name: "変更を確認" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Review" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Open Agent Window" })).toBeNull();
     expect(
       screen.queryByRole("button", { name: "Open Apple Local Assist Window" }),
@@ -81,8 +94,36 @@ describe("DocumentMetaBar", () => {
   it("keeps review and Agent controls available outside L Mode", () => {
     renderMeta(false);
 
-    expect(screen.getByRole("button", { name: "変更を確認" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Review" }));
+
+    expect(screen.getByRole("menuitem", { name: "変更を確認" })).toBeTruthy();
+    expect(screen.getByRole("menuitem", { name: "Diff" })).toBeTruthy();
+    expect(screen.getByRole("menuitem", { name: "Outline" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Open Agent Window" })).toBeTruthy();
+  });
+
+  it("shows the L Mode switch outside L Mode", () => {
+    const actions = renderMeta(false);
+
+    fireEvent.click(screen.getByRole("button", { name: "L Mode" }));
+
+    expect(actions.onToggleLMode).toHaveBeenCalledTimes(1);
+  });
+
+  it("routes review menu items to their pane actions", () => {
+    const actions = renderMeta(false);
+
+    fireEvent.click(screen.getByRole("button", { name: "Review" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "変更を確認" }));
+    expect(actions.onReviewChanges).toHaveBeenCalledWith(activeTab);
+
+    fireEvent.click(screen.getByRole("button", { name: "Review" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Diff" }));
+    expect(actions.onToggleDiff).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole("button", { name: "Review" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Outline" }));
+    expect(actions.onToggleOutline).toHaveBeenCalledTimes(1);
   });
 
   it("switches the companion button to Apple Local Assist", () => {
