@@ -3,6 +3,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import type { LModeCopy } from "../../lib/locale";
@@ -99,12 +100,24 @@ export function LModeActionRail({
     }
   }, [activeDirty]);
 
+  // Refs into the workspace-toggle and review-changes buttons
+  // so we can restore focus after a drawer / sheet closes.
+  // Without this, Escape or the close button drops focus
+  // back to <body>, which makes the next Tab press jump to the
+  // first non-action control (usually a settings cog) instead
+  // of the next action-rail button. Returning focus to the
+  // originating button keeps keyboard users inside the rail.
+  const workspaceToggleRef = useRef<HTMLButtonElement | null>(null);
+  const reviewChangesButtonRef = useRef<HTMLButtonElement | null>(null);
+
   const closeWorkspace = useCallback(() => {
     setWorkspaceOpen(false);
+    workspaceToggleRef.current?.focus();
   }, []);
 
   const closeChangeReview = useCallback(() => {
     setChangeReview(null);
+    reviewChangesButtonRef.current?.focus();
   }, []);
 
   const handleReviewChanges = useCallback(async () => {
@@ -142,6 +155,7 @@ export function LModeActionRail({
         className={`${LModeClasses.workspaceToggle} lmode-surface`}
         data-open={workspaceOpen ? "true" : "false"}
         onClick={() => setWorkspaceOpen((open) => !open)}
+        ref={workspaceToggleRef}
         title={copy.workspaceToggleTitle}
         type="button"
       >
@@ -207,6 +221,7 @@ export function LModeActionRail({
             aria-label={copy.statusBarReviewChangesLabel}
             className={LModeClasses.actionButton}
             onClick={() => void handleReviewChanges()}
+            ref={reviewChangesButtonRef}
             title={copy.actionRailReviewChangesTooltip}
             type="button"
           >

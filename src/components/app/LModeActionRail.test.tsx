@@ -203,6 +203,58 @@ describe("LModeActionRail", () => {
     expect(screen.queryByRole("dialog", { name: "Change review" })).toBeNull();
   });
 
+  // v0.15 polish: after closing the change review sheet, focus
+  // should return to the Review changes button so keyboard users
+  // can continue navigating the action rail with Tab. Without
+  // this, focus falls back to <body> and the next Tab press
+  // jumps to the first non-rail control.
+  it("returns focus to the Review changes button after closing the sheet", async () => {
+    render(
+      <LModeActionRail
+        {...defaultProps({
+          activeDirty: true,
+          activeDocumentPath: "/workspace/note.md",
+          dirtyLabel: "Unsaved",
+          onReviewChanges: vi.fn().mockResolvedValue(changeReviewSnapshot()),
+          reviewChangesAvailable: true,
+        })}
+      />,
+    );
+
+    const reviewButton = screen.getByRole("button", { name: /Review changes/ });
+    reviewButton.focus();
+    fireEvent.click(reviewButton);
+    expect(
+      await screen.findByRole("dialog", { name: "Change review" }),
+    ).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+
+    // The action rail's Review changes button should hold focus
+    // again, not the body.
+    expect(document.activeElement).toBe(reviewButton);
+  });
+
+  // v0.15 polish: same focus-restoration rule for the file
+  // tree drawer, because the workspace toggle button is the
+  // keyboard user's only way back into the rail.
+  it("returns focus to the workspace toggle after closing the drawer", () => {
+    render(<LModeActionRail {...defaultProps()} />);
+
+    const workspaceToggle = screen.getByRole("button", {
+      name: /Open workspace/,
+    });
+    workspaceToggle.focus();
+    fireEvent.click(workspaceToggle);
+    expect(
+      screen.getByRole("dialog", { name: "L Mode file tree" }),
+    ).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Close file tree" }));
+
+    expect(document.activeElement).toBe(workspaceToggle);
+  });
+
   it("opens and closes the L Mode file tree drawer", () => {
     render(<LModeActionRail {...defaultProps()} />);
 
