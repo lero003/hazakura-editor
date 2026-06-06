@@ -14,6 +14,21 @@
 // label. The original phrase is preserved verbatim so the
 // model's response stays grounded in the Japanese context
 // and the textarea still shows exactly what the user typed.
+//
+// v0.15 payload split: `buildAssistantInstruction` is only
+// one half of the contract. The `AppleAssistApplyEvent`
+// payload carries `request` (the original phrase that ends
+// up in the AI edit transaction, the status message, and
+// the Apple Assist review bar) separately from `instruction`
+// (the helper-side annotated prompt). `buildApplyEvent`
+// keeps that split in one place so the Apple Assist window
+// cannot accidentally re-collapse the two fields and leak
+// internal prompt text into user-facing surfaces.
+
+import type {
+  AppleAssistApplyEvent,
+  AppleAssistTargetSnapshot,
+} from "../../types";
 
 const ROUGH_INTENT_HINTS: Record<string, string> = {
   "tidy":
@@ -77,4 +92,35 @@ export function buildAssistantInstruction(
     return trimmed;
   }
   return `${hint}\n\nUser request: ${trimmed}`;
+}
+
+export type BuildApplyEventInput = {
+  request: string;
+  target: AppleAssistTargetSnapshot | null;
+  requestedAtMs: number;
+  presets: ReadonlyArray<RoughPreset>;
+};
+
+/**
+ * Build the `AppleAssistApplyEvent` payload, keeping the
+ * user-facing `request` (the original rough phrase) separate
+ * from the helper-side `instruction` (the annotated version
+ * with the preset intent hint). The receiver is expected to
+ * feed `instruction` into `generateAppleAssistCandidate`
+ * and to surface `request` in the AI edit transaction, the
+ * main editor status message, and the Apple Assist review
+ * bar so the user only ever sees the phrase they typed.
+ */
+export function buildApplyEvent({
+  request,
+  target,
+  requestedAtMs,
+  presets,
+}: BuildApplyEventInput): AppleAssistApplyEvent {
+  return {
+    request,
+    instruction: buildAssistantInstruction(request, presets),
+    requestedAtMs,
+    target,
+  };
 }

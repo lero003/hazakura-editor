@@ -1,9 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildApplyEvent,
   buildAssistantInstruction,
   resolveRoughIntent,
   type RoughPreset,
 } from "./instruction";
+import type {
+  AppleAssistApplyEvent,
+  AppleAssistTargetSnapshot,
+} from "../../types";
 
 // Apple Local Assist rough-request instruction builder.
 //
@@ -134,5 +139,122 @@ describe("buildAssistantInstruction", () => {
     // `resolveRoughIntent` trims first, so a whitespace-only
     // request becomes an empty string.
     expect(buildAssistantInstruction("   ", JA_PRESETS)).toBe("");
+  });
+});
+
+// v0.15 payload split.
+//
+// `buildApplyEvent` is the single place that decides which
+// piece of the user's rough request travels on the
+// user-facing `payload.request` versus the helper-side
+// `payload.instruction`. The AI edit transaction, the main
+// editor status message, and the Apple Assist review bar
+// all read `payload.request`, so the original phrase must
+// not be replaced by the annotated version. Only the
+// helper (via `generateAppleAssistCandidate.instruction`)
+// sees the annotated version. The tests below pin that
+// contract: a preset match keeps the original phrase in
+// `request` and puts the hint-prepended version in
+// `instruction`, while a free-form request keeps the same
+// string in both fields.
+
+const SAMPLE_TARGET: AppleAssistTargetSnapshot = {
+  kind: "selection",
+  start: 0,
+  end: 10,
+  text: "target-text",
+  label: "selection",
+  activeDocumentPath: "/workspace/notes.md",
+  activeDocumentName: "notes.md",
+  capturedAtMs: 1,
+};
+
+describe("buildApplyEvent", () => {
+  it("keeps the original Japanese phrase verbatim in `request`", () => {
+    const event: AppleAssistApplyEvent = buildApplyEvent({
+      request: "整えて",
+      target: SAMPLE_TARGET,
+      requestedAtMs: 123,
+      presets: JA_PRESETS,
+    });
+    expect(event.request).toBe("整えて");
+  });
+
+  it("puts the hint-prepended instruction in `instruction` for a preset match", () => {
+    const event = buildApplyEvent({
+      request: "整えて",
+      target: SAMPLE_TARGET,
+      requestedAtMs: 123,
+      presets: JA_PRESETS,
+    });
+    expect(event.instruction).toMatch(/^Light cleanup/);
+    expect(event.instruction).toMatch(/User request: 整えて$/);
+  });
+
+  it("never lets the hint leak into `request`", () => {
+    const event = buildApplyEvent({
+      request: "校正して",
+      target: SAMPLE_TARGET,
+      requestedAtMs: 123,
+      presets: JA_PRESETS,
+    });
+    expect(event.request).not.toMatch(/Proofread/);
+    expect(event.request).not.toMatch(/User request:/);
+    expect(event.request).not.toMatch(/^Light cleanup/);
+  });
+
+  it("keeps the same string in both fields for a free-form request", () => {
+    const custom = "もっとカジュアルに";
+    const event = buildApplyEvent({
+      request: custom,
+      target: SAMPLE_TARGET,
+      requestedAtMs: 123,
+      presets: JA_PRESETS,
+    });
+    expect(event.request).toBe(custom);
+    expect(event.instruction).toBe(custom);
+  });
+
+  it("passes `requestedAtMs` and `target` through unchanged", () => {
+    const event = buildApplyEvent({
+      request: "整えて",
+      target: SAMPLE_TARGET,
+      requestedAtMs: 42,
+      presets: JA_PRESETS,
+    });
+    expect(event.requestedAtMs).toBe(42);
+    expect(event.target).toBe(SAMPLE_TARGET);
+  });
+
+  it("keeps `request` and `instruction` distinct for every preset", () => {
+    for (const preset of JA_PRESETS) {
+      const event = buildApplyEvent({
+        request: preset.prompt,
+        target: SAMPLE_TARGET,
+        requestedAtMs: 0,
+        presets: JA_PRESETS,
+      });
+      expect(event.request, `request for ${preset.id}`).toBe(preset.prompt);
+      expect(
+        event.instruction,
+        `instruction differs from request for ${preset.id}`,
+      ).not.toBe(event.request);
+      // The hint must be the only thing that differs — the
+      // user's phrase must be the suffix of the annotated
+      // instruction so the helper can still anchor on it.
+      expect(event.instruction, `instruction for ${preset.id}`).toMatch(
+        new RegExp(`User request: ${preset.prompt}$`),
+      );
+    }
+  });
+
+  it("preserves a null target verbatim", () => {
+    const event = buildApplyEvent({
+      request: "整えて",
+      target: null,
+      requestedAtMs: 0,
+      presets: JA_PRESETS,
+    });
+    expect(event.target).toBeNull();
   });
 });

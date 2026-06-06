@@ -156,7 +156,12 @@ export function useAppleAssistApplyHandler({
           APPLE_ASSIST_CONTEXT_POST_CHARS,
           APPLE_ASSIST_MAX_CONTEXT_CHARS,
         ),
-        instruction: payload.request,
+        // Prefer the helper-side instruction when the caller
+        // provided one (e.g. the Apple Assist window annotates
+        // preset phrases with a short intent hint). The
+        // user-facing surfaces (status, transaction, review
+        // bar) still see the original `payload.request`.
+        instruction: payload.instruction ?? payload.request,
       });
 
       const latestTab = activeTabRef.current;

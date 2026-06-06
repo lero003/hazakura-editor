@@ -197,7 +197,26 @@ export type AppleAssistTargetSnapshot = {
 };
 
 export type AppleAssistApplyEvent = {
+  /**
+   * The original rough request as shown in the textarea, the
+   * AI edit transaction, the main editor status message, and
+   * the Apple Assist review bar. This is the value the user
+   * actually sees end-to-end and is *not* the helper-side
+   * instruction.
+   */
   request: string;
+  /**
+   * Optional helper-side instruction. When omitted, the
+   * receiver falls back to `request`. v0.15+ callers that
+   * annotate the rough request with a preset intent hint
+   * (see `buildAssistantInstruction` in
+   * `src/lib/appleAssist/instruction.ts`) should pass the
+   * annotated value here while keeping `request` set to the
+   * original phrase, so the helper sees a clearer intent
+   * label while the user-facing surfaces keep showing
+   * exactly what the user typed.
+   */
+  instruction?: string;
   requestedAtMs: number;
   target: AppleAssistTargetSnapshot | null;
 };

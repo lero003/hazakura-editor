@@ -7,7 +7,7 @@ import {
 } from "../../lib/tauri";
 import { useAppleAssistAvailability } from "../../hooks/agent/useAppleAssistAvailability";
 import type { AppleAssistAvailability } from "../../lib/tauri/appleAssist";
-import { buildAssistantInstruction } from "../../lib/appleAssist/instruction";
+import { buildApplyEvent } from "../../lib/appleAssist/instruction";
 import {
   APPLE_ASSIST_APPLY_STATUS_EVENT,
   MAIN_APPLE_ASSIST_TARGET_CHANGED_EVENT,
@@ -284,17 +284,19 @@ export function AppleAssistWindowApp() {
       // carries the user's expectation.
       const latestTarget =
         (await getMainAppleAssistTarget().catch(() => null)) ?? target;
-      // Annotate the user's rough request with a short
-      // intent hint when it matches one of the presets. The
-      // user's original phrase is preserved verbatim inside
-      // the payload so the model response stays grounded in
-      // the Japanese context, and the status message still
-      // shows exactly what the user typed.
-      const payload: AppleAssistApplyEvent = {
-        request: buildAssistantInstruction(request, copy.presets),
-        requestedAtMs: Date.now(),
+      // `buildApplyEvent` keeps the user-facing
+      // `payload.request` (the original rough phrase) and
+      // the helper-side `payload.instruction` (the preset
+      // intent hint) separate, so the AI edit transaction,
+      // the main editor status message, and the Apple
+      // Assist review bar only ever see what the user
+      // actually typed.
+      const payload = buildApplyEvent({
+        request,
         target: latestTarget,
-      };
+        requestedAtMs: Date.now(),
+        presets: copy.presets,
+      });
       await requestApplyAiEditTransaction(payload);
       setStatus(copy.generatingInMain(request));
     } catch (err: unknown) {
