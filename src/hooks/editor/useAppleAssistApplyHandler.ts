@@ -286,31 +286,22 @@ function readTargetTextForGeneration(
 // rewrites because the visible "document" was a
 // disconnected prefix.
 //
-// This helper instead centers the context on the target:
-//   - pre slice: up to `preChars` characters before
-//     `start`, with the slice's END boundary (which would
-//     otherwise be `start`) shrunk to the start of the
-//     line containing `start`. This keeps the model from
-//     seeing a half-cut Markdown block on the pre side
-//     (a code fence without its closing fence, a heading
-//     without its body) WITHOUT erasing the lines between
-//     the naive `preStart` and the target's line — those
-//     are exactly the lines the model needs to see for a
-//     context-aware rewrite.
-//   - target: the user's selected text (returned as part
-//     of the slice, not the caller's responsibility here).
-//   - post slice: up to `postChars` characters after
-//     `end`, with the slice's START boundary (which would
-//     otherwise be `end`) extended to the end of the line
-//     containing `end`. Same rationale: the lines between
-//     the target's line and the naive `postEnd` must stay
-//     in the context.
+// This helper instead centers the context on the target.
+// The returned text is one contiguous slice:
+//   - start: up to `preChars` characters before `start`,
+//     snapped forward to the next line boundary when that
+//     boundary still leaves the target in the slice.
+//   - target: the user's selected text.
+//   - end: up to `postChars` characters after `end`,
+//     snapped backward to the previous line boundary when
+//     that boundary still leaves the target in the slice.
 //
-// An earlier version of this helper instead snapped the
-// pre START forward to the target's line start and the
-// post END back to the target's line end, which erased
-// the lines the model actually needs. The current shape
-// preserves them.
+// The snap applies to the actual returned slice boundaries.
+// That matters: a previous repair computed separate pre /
+// post snapped boundaries for length accounting, but still
+// returned `buffer.slice(preStart, postEnd)`, so the returned
+// context could begin or end mid-line and the cap check could
+// disagree with the returned text.
 //
 // The total length is capped at `maxChars`. When the
 // snapped slice would exceed the cap, the helper shrinks
@@ -331,77 +322,93 @@ export function buildSurroundingDocumentContext(
   postChars: number,
   maxChars: number,
 ): string {
+  const targetStart = clampNumber(start, 0, buffer.length);
+  const targetEnd = clampNumber(Math.max(end, targetStart), 0, buffer.length);
+
   // Naive pre / post slices. Clamp to the document bounds
   // so the helper is safe against out-of-range target
   // ranges (the caller has already validated, but defense
   // in depth is cheap here).
-  let preStart = Math.max(0, start - preChars);
-  let postEnd = Math.min(buffer.length, end + postChars);
-
-  // Snap the pre slice's END boundary (which would
-  // otherwise be `start`) forward to the start of the
-  // line containing `start`. The pre slice's START stays
-  // at the naive `preStart`, so any heading or paragraph
-  // that fits inside the pre window is preserved. Only
-  // the end moves to a line boundary, so the model never
-  // sees a half-cut line.
-  //
-  // The snap only fires when the target's line start is
-  // still inside the pre window — when the preChars
-  // window is short enough that `startLineStart` is
-  // before `preStart` (e.g. a target whose line starts
-  // before the naive preChars window), the snap would
-  // push `preEnd` past `preStart` and produce a negative
-  // pre slice. Skipping the snap in that case keeps the
-  // pre slice non-empty and respects the caller's
-  // preChars budget.
-  const startLineStart = buffer.lastIndexOf("\n", start - 1) + 1;
-  let preEnd = start;
-  if (preEnd > startLineStart && startLineStart >= preStart) {
-    preEnd = startLineStart;
-  }
-
-  // Snap the post slice's START boundary (which would
-  // otherwise be `end`) forward to the end of the line
-  // containing `end`. The post slice's END stays at the
-  // naive `postEnd`, so any paragraph that fits inside
-  // the post window is preserved. Only the start moves
-  // to a line boundary, mirroring the pre-side snap.
-  //
-  // The snap only fires when the line end actually fits
-  // inside the post window — when the line end is past
-  // the naive `postEnd` (e.g. the file has no trailing
-  // newline and the postChars window is short), the
-  // snap would push `postStart` past `postEnd` and
-  // produce a negative post slice. Skipping the snap in
-  // that case keeps the post slice non-empty and
-  // respects the caller's postChars budget.
-  const endLineEnd = (() => {
-    const idx = buffer.indexOf("\n", end);
-    return idx === -1 ? buffer.length : idx + 1;
-  })();
-  let postStart = end;
-  if (postStart < endLineEnd && endLineEnd <= postEnd) {
-    postStart = endLineEnd;
-  }
+  let preStart = snapStartToLineBoundary(
+    buffer,
+    Math.max(0, targetStart - preChars),
+    targetStart,
+  );
+  let postEnd = snapEndToLineBoundary(
+    buffer,
+    Math.min(buffer.length, targetEnd + postChars),
+    targetEnd,
+  );
 
   // Cap the total length. The pre slice shrinks first
-  // (it is closer to the snap boundary and the target
-  // itself is sacred), then the post slice.
-  const preLength = preEnd - preStart;
-  const postLength = postEnd - postStart;
-  const targetLength = end - start;
-  const total = preLength + targetLength + postLength;
-  if (total > maxChars) {
-    const over = total - maxChars;
-    const preShrink = Math.min(preLength, over);
-    preStart += preShrink;
-    const remaining = over - preShrink;
+  // (the target itself is sacred), then the post slice.
+  // Prefer line boundaries after shrinking; if long lines
+  // leave the result over cap, fall back to a hard trim of
+  // pre / post context while still preserving the target.
+  const targetLength = targetEnd - targetStart;
+  if (targetLength >= maxChars) {
+    return buffer.slice(targetStart, targetEnd);
+  }
+
+  if (postEnd - preStart > maxChars) {
+    const over = postEnd - preStart - maxChars;
+    const preShrink = Math.min(targetStart - preStart, over);
+    preStart = snapStartToLineBoundary(buffer, preStart + preShrink, targetStart);
+
+    const remaining = postEnd - preStart - maxChars;
     if (remaining > 0) {
-      const postShrink = Math.min(postLength, remaining);
+      const postShrink = Math.min(postEnd - targetEnd, remaining);
+      postEnd = snapEndToLineBoundary(buffer, postEnd - postShrink, targetEnd);
+    }
+  }
+
+  if (postEnd - preStart > maxChars) {
+    const over = postEnd - preStart - maxChars;
+    const preShrink = Math.min(targetStart - preStart, over);
+    preStart += preShrink;
+
+    const remaining = postEnd - preStart - maxChars;
+    if (remaining > 0) {
+      const postShrink = Math.min(postEnd - targetEnd, remaining);
       postEnd -= postShrink;
     }
   }
 
   return buffer.slice(preStart, postEnd);
+}
+
+function clampNumber(value: number, min: number, max: number): number {
+  if (value < min) return min;
+  if (value > max) return max;
+  return value;
+}
+
+function snapStartToLineBoundary(
+  buffer: string,
+  boundary: number,
+  targetStart: number,
+): number {
+  if (boundary <= 0 || buffer[boundary - 1] === "\n") {
+    return boundary;
+  }
+  const nextNewline = buffer.indexOf("\n", boundary);
+  if (nextNewline === -1 || nextNewline + 1 > targetStart) {
+    return boundary;
+  }
+  return nextNewline + 1;
+}
+
+function snapEndToLineBoundary(
+  buffer: string,
+  boundary: number,
+  targetEnd: number,
+): number {
+  if (boundary >= buffer.length || buffer[boundary - 1] === "\n") {
+    return boundary;
+  }
+  const previousNewline = buffer.lastIndexOf("\n", boundary - 1);
+  if (previousNewline === -1 || previousNewline + 1 < targetEnd) {
+    return boundary;
+  }
+  return previousNewline + 1;
 }

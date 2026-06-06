@@ -20,13 +20,14 @@ import { APPLE_ASSIST_MAX_CONTEXT_CHARS } from "../../lib/tauri/appleAssist";
 describe("buildSurroundingDocumentContext", () => {
   it("centers the slice on the target, not on the document head", () => {
     // The previous behavior was `buffer.slice(0, 8000)`. With
-    // a 12 000-character document whose interesting section
+    // a long document whose interesting section
     // lives in the second half, the helper must return text
     // that contains the target, not just the head.
     const buffer =
-      "head-pad\n".repeat(500) + // ~5000 chars
+      "DOCUMENT-HEAD\n" +
+      "head-pad\n".repeat(1000) + // ~9000 chars
       "section-a\nsection-b\n" + // the section to be edited
-      "tail-pad\n".repeat(200); // ~1000 chars
+      "tail-pad\n".repeat(400); // ~3600 chars
     const targetText = "section-a\nsection-b\n";
     const start = buffer.indexOf(targetText);
     const end = start + targetText.length;
@@ -42,9 +43,26 @@ describe("buildSurroundingDocumentContext", () => {
 
     expect(context).toContain(targetText);
     // The context must NOT start at the document head, so
-    // a 12 000-char document that we capped at 8 000
+    // a long document that we capped at 8 000
     // around the target cannot include the head preamble.
-    expect(context.startsWith("head-pad")).toBe(false);
+    expect(context).not.toContain("DOCUMENT-HEAD");
+  });
+
+  it("preserves heading and following lines around the target", () => {
+    const buffer = "# Important Heading\nintro line\nTARGET line\nafter line\n";
+    const start = buffer.indexOf("TARGET");
+    const end = start + "TARGET".length;
+
+    const context = buildSurroundingDocumentContext(
+      buffer,
+      start,
+      end,
+      APPLE_ASSIST_CONTEXT_PRE_CHARS,
+      APPLE_ASSIST_CONTEXT_POST_CHARS,
+      APPLE_ASSIST_MAX_CONTEXT_CHARS,
+    );
+
+    expect(context).toBe(buffer);
   });
 
   it("snaps the pre boundary to the start of the target's line", () => {
@@ -208,6 +226,56 @@ describe("buildSurroundingDocumentContext", () => {
     );
     expect(context.length).toBeLessThanOrEqual(APPLE_ASSIST_MAX_CONTEXT_CHARS);
     expect(context).toContain(target);
+  });
+
+  it("applies the cap to the actual returned context", () => {
+    // This case catches a subtle implementation bug where
+    // separate snapped pre/post boundaries were used for
+    // length accounting, but the helper still returned the
+    // full `buffer.slice(preStart, postEnd)`. A long target
+    // line could then make the returned context disagree
+    // with the cap calculation.
+    const target = "TARGET";
+    const buffer = `${"a".repeat(3000)}${target}${"b".repeat(3000)}\n`;
+    const start = buffer.indexOf(target);
+    const end = start + target.length;
+    const maxChars = 2000;
+
+    const context = buildSurroundingDocumentContext(
+      buffer,
+      start,
+      end,
+      APPLE_ASSIST_CONTEXT_PRE_CHARS,
+      APPLE_ASSIST_CONTEXT_POST_CHARS,
+      maxChars,
+    );
+
+    expect(context.length).toBeLessThanOrEqual(maxChars);
+    expect(context).toContain(target);
+  });
+
+  it("snaps the returned slice boundaries to full lines when possible", () => {
+    const buffer = [
+      "prefix line that should be dropped",
+      "kept heading",
+      "kept intro",
+      "TARGET line",
+      "kept after",
+      "suffix line that should be dropped",
+    ].join("\n");
+    const start = buffer.indexOf("TARGET");
+    const end = start + "TARGET".length;
+
+    const context = buildSurroundingDocumentContext(
+      buffer,
+      start,
+      end,
+      34,
+      32,
+      200,
+    );
+
+    expect(context).toBe("kept heading\nkept intro\nTARGET line\nkept after\n");
   });
 
   it("clamps the pre window to the document start", () => {
