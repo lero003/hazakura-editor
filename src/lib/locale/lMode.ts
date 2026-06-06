@@ -56,8 +56,8 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
       typewriterPreferenceHint:
         "そくtyoせんのうほうをちゅうおうにキープします。",
       paletteCommand: "えるモードきりかえ",
-      exitPillLabel: "Safe Editへ",
-      exitPillTitle: "Safe Edit に きりかへ",
+      exitPillLabel: "へんしゅうへ",
+      exitPillTitle: "へんしゅうもーどに きりかへ",
       actionRailLabel: "えるもーどのどうせん",
       statusBarReviewChangesLabel: "へんこうを かくにん",
       statusBarWorkspaceLabel: "わーくすぺーすへ",
@@ -97,8 +97,8 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
         typewriterPreferenceHint:
           "カーソル行を縦方向中央付近に保ち、書きながら視線を動かさないようにします。",
         paletteCommand: "えるモード切替",
-        exitPillLabel: "Safe Editへ",
-        exitPillTitle: "Safe Edit に切り替え",
+        exitPillLabel: "編集モードへ",
+        exitPillTitle: "編集モードに切り替え",
         actionRailLabel: "えるモードの導線",
         statusBarReviewChangesLabel: "変更を確認",
         statusBarWorkspaceLabel: "ワークスペースへ",
@@ -135,8 +135,8 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
         typewriterPreferenceHint:
           "Keep the active line near the vertical center of the viewport as you type.",
         paletteCommand: "Toggle L Mode",
-        exitPillLabel: "Safe Edit",
-        exitPillTitle: "Switch to Safe Edit mode",
+        exitPillLabel: "Edit mode",
+        exitPillTitle: "Switch to edit mode",
         actionRailLabel: "L Mode actions",
         statusBarReviewChangesLabel: "Review changes",
         statusBarWorkspaceLabel: "Open workspace",

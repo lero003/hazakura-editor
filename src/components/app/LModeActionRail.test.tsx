@@ -79,7 +79,9 @@ describe("LModeActionRail", () => {
         menuLanguage="en"
         onOpenAppleAssistWindow={vi.fn()}
         onReviewChanges={vi.fn()}
+        onToggleTypewriterMode={vi.fn()}
         reviewChangesAvailable={false}
+        typewriterModeEnabled={false}
         workspaceSidebarProps={workspaceSidebarProps()}
       />,
     );
@@ -87,7 +89,34 @@ describe("LModeActionRail", () => {
     expect(screen.getByLabelText("L Mode actions")).toBeTruthy();
     expect(screen.getByRole("button", { name: /Open workspace/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: /Apple Local Assist/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Typewriter mode/ })).toBeTruthy();
     expect(screen.queryByRole("button", { name: /Review changes/ })).toBeNull();
+  });
+
+  it("toggles typewriter mode from the action rail", () => {
+    const onToggleTypewriterMode = vi.fn();
+    render(
+      <LModeActionRail
+        activeDirty={false}
+        activeDocumentPath={null}
+        copy={getLModeCopy("en")}
+        dirtyLabel=""
+        menuLanguage="en"
+        onOpenAppleAssistWindow={vi.fn()}
+        onReviewChanges={vi.fn()}
+        onToggleTypewriterMode={onToggleTypewriterMode}
+        reviewChangesAvailable={false}
+        typewriterModeEnabled={true}
+        workspaceSidebarProps={workspaceSidebarProps()}
+      />,
+    );
+
+    const button = screen.getByRole("button", { name: /Typewriter mode/ });
+    expect(button.getAttribute("aria-pressed")).toBe("true");
+
+    fireEvent.click(button);
+
+    expect(onToggleTypewriterMode).toHaveBeenCalledTimes(1);
   });
 
   it("opens the local change review sheet and invokes Apple Local Assist", async () => {
@@ -102,7 +131,9 @@ describe("LModeActionRail", () => {
         menuLanguage="en"
         onOpenAppleAssistWindow={onOpenAppleAssistWindow}
         onReviewChanges={onReviewChanges}
+        onToggleTypewriterMode={vi.fn()}
         reviewChangesAvailable={true}
+        typewriterModeEnabled={false}
         workspaceSidebarProps={workspaceSidebarProps()}
       />,
     );
@@ -126,7 +157,9 @@ describe("LModeActionRail", () => {
         menuLanguage="en"
         onOpenAppleAssistWindow={vi.fn()}
         onReviewChanges={vi.fn().mockResolvedValue(changeReviewSnapshot())}
+        onToggleTypewriterMode={vi.fn()}
         reviewChangesAvailable={true}
+        typewriterModeEnabled={false}
         workspaceSidebarProps={workspaceSidebarProps()}
       />,
     );
@@ -149,7 +182,9 @@ describe("LModeActionRail", () => {
         menuLanguage="en"
         onOpenAppleAssistWindow={vi.fn()}
         onReviewChanges={vi.fn()}
+        onToggleTypewriterMode={vi.fn()}
         reviewChangesAvailable={false}
+        typewriterModeEnabled={false}
         workspaceSidebarProps={workspaceSidebarProps()}
       />,
     );
@@ -171,7 +206,9 @@ describe("LModeActionRail", () => {
         menuLanguage="en"
         onOpenAppleAssistWindow={vi.fn()}
         onReviewChanges={vi.fn()}
+        onToggleTypewriterMode={vi.fn()}
         reviewChangesAvailable={false}
+        typewriterModeEnabled={false}
         workspaceSidebarProps={workspaceSidebarProps()}
       />,
     );

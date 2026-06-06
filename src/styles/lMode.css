@@ -427,6 +427,12 @@
   outline: none;
 }
 
+:root[data-l-mode="on"] .l-mode-action-button[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 34%, var(--border));
+  color: var(--accent);
+}
+
 :root[data-l-mode="on"] .l-mode-action-button:active {
   transform: translateY(1px);
 }
@@ -543,7 +549,8 @@
 
 /* --- 2d. L Mode local change review sheet ---
    "Review changes" in L Mode opens a temporary floating
-   window instead of switching into Safe Edit's right pane.
+   window instead of switching into the normal edit surface's
+   right pane.
    The diff renderer is shared with the normal compare view;
    this CSS only controls the window chrome and bounded size. */
 :root[data-l-mode="on"] .l-mode-change-review-sheet {

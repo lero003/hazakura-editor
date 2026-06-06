@@ -6,21 +6,21 @@ describe("getLModeCopy", () => {
     const copy = getLModeCopy("en");
     expect(copy.preferenceLabel).toBe("L Mode");
     expect(copy.paletteCommand).toBe("Toggle L Mode");
-    expect(copy.exitPillLabel).toBe("Safe Edit");
+    expect(copy.exitPillLabel).toBe("Edit mode");
   });
 
   it("returns Japanese strings when language is ja", () => {
     const copy = getLModeCopy("ja");
     expect(copy.preferenceLabel).toBe("えるモード");
     expect(copy.paletteCommand).toBe("えるモード切替");
-    expect(copy.exitPillLabel).toBe("Safe Editへ");
+    expect(copy.exitPillLabel).toBe("編集モードへ");
   });
 
   it("returns kana strings when language is kana", () => {
     const copy = getLModeCopy("kana");
     expect(copy.preferenceLabel).toBe("えるもーど");
     expect(copy.paletteCommand).toBe("えるモードきりかえ");
-    expect(copy.exitPillLabel).toBe("Safe Editへ");
+    expect(copy.exitPillLabel).toBe("へんしゅうへ");
   });
 
   it("always exposes the same set of keys across languages", () => {

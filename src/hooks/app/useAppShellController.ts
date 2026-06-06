@@ -744,7 +744,8 @@ export function useAppShellController() {
 
   // Escape hatch surfaced in the L Mode action rail. This
   // returns a local diff snapshot so L Mode can show a small
-  // review window without opening the Safe Edit right pane.
+  // review window without opening the normal edit surface's
+  // right pane.
   const reviewChangesFromLMode = useCallback(async () => {
     if (!activeTab) {
       return null;

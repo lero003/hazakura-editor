@@ -7,7 +7,12 @@ import {
 } from "react";
 import type { LModeCopy } from "../../lib/locale";
 import { LModeClasses } from "../../features/editor/lMode";
-import { DiffIcon, FolderOpenIcon, SparklesIcon } from "./Icons";
+import {
+  DiffIcon,
+  FolderOpenIcon,
+  SparklesIcon,
+  TypewriterIcon,
+} from "./Icons";
 import { WorkspaceSidebar } from "../workspace/WorkspaceSidebar";
 import { DiffBody } from "../diff/DiffBody";
 import type { ChangeReviewSnapshot } from "../../hooks/diff/useCompareExecution";
@@ -23,7 +28,9 @@ type LModeActionRailProps = {
   menuLanguage: MenuLanguage;
   onOpenAppleAssistWindow: () => void;
   onReviewChanges: () => Promise<ChangeReviewSnapshot | null>;
+  onToggleTypewriterMode: () => void;
   reviewChangesAvailable: boolean;
+  typewriterModeEnabled: boolean;
   workspaceSidebarProps: LModeWorkspaceSidebarProps;
 };
 
@@ -44,7 +51,9 @@ export function LModeActionRail({
   menuLanguage,
   onOpenAppleAssistWindow,
   onReviewChanges,
+  onToggleTypewriterMode,
   reviewChangesAvailable,
+  typewriterModeEnabled,
   workspaceSidebarProps,
 }: LModeActionRailProps) {
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
@@ -157,6 +166,16 @@ export function LModeActionRail({
         >
           <SparklesIcon />
           <span>{copy.statusBarAppleAssistLabel}</span>
+        </button>
+        <button
+          aria-pressed={typewriterModeEnabled}
+          className={LModeClasses.actionButton}
+          onClick={onToggleTypewriterMode}
+          title={copy.typewriterPreferenceHint}
+          type="button"
+        >
+          <TypewriterIcon />
+          <span>{copy.typewriterPreferenceLabel}</span>
         </button>
         {reviewChangesAvailable ? (
           <button

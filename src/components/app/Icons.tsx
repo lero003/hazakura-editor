@@ -174,6 +174,35 @@ export function SparklesIcon() {
   );
 }
 
+export function TypewriterIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M3 5.5H13M4.5 5.5V3.5H11.5V5.5M3.5 8.5H12.5M4.5 11.5H11.5"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <rect
+        x="2"
+        y="5.5"
+        width="12"
+        height="7"
+        rx="1.2"
+        stroke="currentColor"
+        strokeWidth="1.2"
+      />
+    </svg>
+  );
+}
+
 export function ChevronIcon({ expanded }: { expanded: boolean }) {
   return (
     <svg

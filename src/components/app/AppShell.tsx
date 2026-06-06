@@ -123,7 +123,14 @@ export function AppShell(props: AppShellProps) {
             menuLanguage={props.menuLanguage}
             onOpenAppleAssistWindow={props.onOpenAppleAssistFromLMode}
             onReviewChanges={props.onReviewChangesFromLMode}
+            onToggleTypewriterMode={() =>
+              props.setEditorSettings((current) => ({
+                ...current,
+                lModeTypewriter: !current.lModeTypewriter,
+              }))
+            }
             reviewChangesAvailable={props.activeDirty}
+            typewriterModeEnabled={props.editorSettings.lModeTypewriter}
             workspaceSidebarProps={{
               activePath: props.selectedImage?.path ?? props.activeTab?.path ?? null,
               compareSelectionEnabled: props.sidePaneMode === "compare",

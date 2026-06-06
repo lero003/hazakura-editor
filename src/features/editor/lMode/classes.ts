@@ -107,7 +107,8 @@ export const LModeClasses = {
   workspaceDrawer: "l-mode-workspace-drawer",
 
   // Local change review sheet. L Mode uses this transient
-  // window instead of opening Safe Edit's right compare pane.
+  // window instead of opening the normal edit surface's right
+  // compare pane.
   changeReviewSheet: "l-mode-change-review-sheet",
   changeReviewHeader: "l-mode-change-review-header",
   changeReviewIcon: "l-mode-change-review-icon",
