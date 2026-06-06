@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit",
     "build": "tauri build",
     "build:app-store-preview": "HAZAKURA_DISTRIBUTION_LANE=app-store VITE_HAZAKURA_DISTRIBUTION_LANE=app-store tauri build",
+    "build:macos-lanes": "bash scripts/build-macos-lanes.sh",
     "build:apple-assist-helper:fixture": "bash scripts/build-apple-assist-helper-fixture.sh",
     "build:apple-assist-helper:live": "bash scripts/build-apple-assist-helper-live.sh",
     "build:dmg-preview": "bash scripts/build-warning-dmg-preview.sh",

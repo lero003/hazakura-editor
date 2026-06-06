@@ -34,20 +34,20 @@ case "$machine_arch" in
     arch="$machine_arch"
     ;;
 esac
-product_name="hazakura editor"
-artifact_name="hazakura-editor"
+product_name="hazakura editor Dev"
+artifact_name="hazakura-editor-dev"
 app_path="src-tauri/target/release/bundle/macos/${product_name}.app"
 dmg_dir="src-tauri/target/release/bundle/dmg"
 dmg_path="${dmg_dir}/${artifact_name}_${version}_${arch}-warning-expected.dmg"
 checksum_path="${dmg_path}.sha256"
 
 if [[ "${SKIP_BUILD:-0}" != "1" ]]; then
-  npm run build
+  npm run build:macos-lanes
 fi
 
 if [[ ! -d "$app_path" ]]; then
   echo "Missing built app: $app_path" >&2
-  echo "Run npm run build before setting SKIP_BUILD=1." >&2
+  echo "Run npm run build:macos-lanes before setting SKIP_BUILD=1." >&2
   exit 1
 fi
 
