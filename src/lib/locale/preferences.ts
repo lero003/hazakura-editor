@@ -66,9 +66,9 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
       ambientIntensityOff: "なし",
       ambientIntensitySubtle: "ほのか",
       ambientIntensityNormal: "つね",
-      ambientIntensityDramatic: "鮮やか",
-      ambientIntensityHint: "sakura / yakou / shokou テーマの時に有効です。",
-      menuLanguageHint: "UI の表示言語を切り替えます。かなふみはひらがな中心のやさしい表記です。",
+      ambientIntensityDramatic: "あざやか",
+      ambientIntensityHint: "さくら / よるひかり / あけぼのひかり の いろあひ で つかへます。",
+      menuLanguageHint: "あぷり の ひょうじ げんご を きりかへ ます。かなふみ は ひらがな ちゅうしん の やさしい ひょうき です。",
       themeHint: (theme) => {
         if (theme === "light") {
           return "ひるま や いんさつ むけの あかるい きほん いろあひ。";
