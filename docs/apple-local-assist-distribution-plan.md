@@ -23,7 +23,7 @@ What is **not** done yet:
 - no `minimumSystemVersion` bump; the editor-wide value remains `11.0`
 - no release tag, no GitHub Release, no App Store submission for this live helper state
 
-v0.13 has started the App Store build-lane probe. The current preview gate is intentionally modest: `HAZAKURA_DISTRIBUTION_LANE=app-store` / `VITE_HAZAKURA_DISTRIBUTION_LANE=app-store` hides the External Agent Workbench surface in frontend preferences, normalizes stale `external-cli` preferences to Apple Local Assist, and rejects Agent Workbench IPC on the Rust command surface. Draft sandbox entitlement files now exist, local ad-hoc sandbox signing verifies, and a representative sandboxed parent can spawn the inherited-sandbox helper and receive an availability envelope. This is not a complete App Store bundle profile yet; real Tauri-parent sandbox smoke and App Review notes remain separate v0.13 slices.
+v0.13 has started the App Store build-lane probe. The current preview gate is intentionally modest: `HAZAKURA_DISTRIBUTION_LANE=app-store` / `VITE_HAZAKURA_DISTRIBUTION_LANE=app-store` hides the External Agent Workbench surface in frontend preferences, normalizes stale `external-cli` preferences to Apple Local Assist, and rejects Agent Workbench IPC on the Rust command surface. Draft sandbox entitlement files now exist, local ad-hoc sandbox signing verifies, and the real sandboxed `hazakura-editor` parent can spawn the inherited-sandbox helper and receive an availability envelope. This is not a complete App Store bundle profile yet; Apple Developer / App Store signing, upload validation, and App Review notes remain separate v0.13 slices.
 
 ## Official Information Confirmed (2026-06-05, slice 7)
 

@@ -80,6 +80,8 @@ use crate::util::*;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    run_sandbox_parent_smoke_if_requested();
+
     let builder = tauri::Builder::default()
         .manage(AgentWorkbenchSessionStore::default())
         .manage(AppleAssistHelperStore::default())
@@ -164,4 +166,28 @@ pub fn run() {
                 let _ = app.emit(OPENED_FILES_EVENT, paths);
             }
         });
+}
+
+fn run_sandbox_parent_smoke_if_requested() {
+    if std::env::var("HAZAKURA_SANDBOX_PARENT_SMOKE").as_deref() != Ok("apple-assist-probe") {
+        return;
+    }
+
+    let store = AppleAssistHelperStore::default();
+    match probe_availability_via_helper(&store) {
+        Ok(envelope) => {
+            match serde_json::to_string(&envelope) {
+                Ok(serialized) => println!("apple_assist_parent_smoke: {serialized}"),
+                Err(err) => {
+                    eprintln!("apple_assist_parent_smoke_error: failed to encode result: {err}");
+                    std::process::exit(1);
+                }
+            }
+            std::process::exit(0);
+        }
+        Err(err) => {
+            eprintln!("apple_assist_parent_smoke_error: {err}");
+            std::process::exit(1);
+        }
+    }
 }

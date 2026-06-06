@@ -71,6 +71,27 @@ echo "== helper entitlements =="
 codesign -d --entitlements :- "$HELPER" 2>/dev/null
 
 echo
+echo "== helper probe from sandboxed hazakura parent =="
+set +e
+PARENT_OUTPUT="$(
+    HAZAKURA_SANDBOX_PARENT_SMOKE=apple-assist-probe \
+        "$APP/Contents/MacOS/hazakura-editor" \
+        2>"$TMP_ROOT/hazakura-parent-stderr.txt"
+)"
+PARENT_STATUS=$?
+set -e
+
+if [ "$PARENT_STATUS" -ne 0 ] || ! grep -q '"kind":"availability"' <<<"$PARENT_OUTPUT"; then
+    echo "hazakura parent helper probe failed under sandbox entitlements" >&2
+    echo "status: $PARENT_STATUS" >&2
+    echo "stdout: $PARENT_OUTPUT" >&2
+    echo "stderr: $(cat "$TMP_ROOT/hazakura-parent-stderr.txt")" >&2
+    exit 1
+fi
+
+echo "$PARENT_OUTPUT"
+
+echo
 echo "== build sandbox parent-spawn probe launcher =="
 cat > "$TMP_ROOT/SandboxLauncher.swift" <<'SWIFT'
 import Foundation
