@@ -158,6 +158,9 @@ pub fn run() {
                     return;
                 }
 
+                #[cfg(target_os = "macos")]
+                raise_main_window_on_opened_files(app, paths.len());
+
                 if let Some(store) = app.try_state::<OpenedFileStore>() {
                     if let Ok(mut pending_paths) = store.0.lock() {
                         pending_paths.extend(paths.clone());

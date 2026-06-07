@@ -46,3 +46,13 @@ fn dock_reopen_with_visible_main_window_should_not_force_restore_main_window() {
 fn dock_reopen_with_only_companion_windows_visible_should_restore_main_window() {
     assert!(should_restore_main_window_on_reopen(Some(false), true));
 }
+
+#[test]
+fn file_open_event_with_paths_should_raise_main_window() {
+    assert!(should_raise_main_window_on_opened_files(1));
+}
+
+#[test]
+fn file_open_event_without_paths_should_not_raise_main_window() {
+    assert!(!should_raise_main_window_on_opened_files(0));
+}

@@ -464,6 +464,10 @@ pub(crate) fn should_restore_main_window_on_reopen(
     }
 }
 
+pub(crate) fn should_raise_main_window_on_opened_files(opened_file_count: usize) -> bool {
+    opened_file_count > 0
+}
+
 #[cfg(target_os = "macos")]
 pub(crate) fn restore_main_window_on_reopen<R: tauri::Runtime>(
     app: &tauri::AppHandle<R>,
@@ -481,6 +485,23 @@ pub(crate) fn restore_main_window_on_reopen<R: tauri::Runtime>(
     let _ = app.show();
     if let Some(window) = main_window {
         let _ = window.show();
+        let _ = window.set_focus();
+    }
+}
+
+#[cfg(target_os = "macos")]
+pub(crate) fn raise_main_window_on_opened_files<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+    opened_file_count: usize,
+) {
+    if !should_raise_main_window_on_opened_files(opened_file_count) {
+        return;
+    }
+
+    let _ = app.show();
+    if let Some(window) = app.get_webview_window(MAIN_WINDOW_LABEL) {
+        let _ = window.show();
+        let _ = window.unminimize();
         let _ = window.set_focus();
     }
 }
