@@ -208,11 +208,6 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   const tabSizeCompartmentRef = useRef(new Compartment());
   const spellcheckCompartmentRef = useRef(new Compartment());
   const lModeCompartmentRef = useRef(new Compartment());
-  // 直前の lModeEnabled を保持し、真の mode トグル時だけ
-  // 1 行目リセットを走らせるための ref。
-  // typewriter / workspaceRoot / documentKey の変化では
-  // リセットしないように判定する。
-  const lModeEnabledRef = useRef(lModeEnabled);
 
   useImperativeHandle(
     ref,
@@ -585,43 +580,18 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       return;
     }
 
-    // 真の L Mode トグル (えるモード ↔ 編集モード) 時のみ
-    // 1 行目に明示的にリセットする。Compartment.reconfigure と
-    // 同フレームの最初の mousedown で click position 認識が古い
-    // layout を読み、意図しない位置にフォーカスが飛ぶ現象を、
-    // 「mode 切替 = 別の画面に遷移」というユーザー体験で置き換える。
-    // (えるモード ↔ 編集モード = 別の文書を見ている感覚)
-    //
-    // lModeTypewriter / workspaceRoot / documentKey の変化は
-    // カーソル位置を維持する。typewriter ボタンのトグルや
-    // 別文書への切替で「執筆中の位置」が飛ばないようにする。
-    const isModeToggle = lModeEnabledRef.current !== lModeEnabled;
-    lModeEnabledRef.current = lModeEnabled;
-
-    const reconfigureEffect = lModeCompartmentRef.current.reconfigure(
-      lModeExtension(
-        lModeEnabled,
-        {
-          workspaceRoot: workspaceRoot ?? null,
-          documentPath: documentKey,
-        },
-        { typewriterMode: lModeTypewriter },
+    view.dispatch({
+      effects: lModeCompartmentRef.current.reconfigure(
+        lModeExtension(
+          lModeEnabled,
+          {
+            workspaceRoot: workspaceRoot ?? null,
+            documentPath: documentKey,
+          },
+          { typewriterMode: lModeTypewriter },
+        ),
       ),
-    );
-
-    if (isModeToggle) {
-      view.dispatch({
-        selection: { anchor: 0, head: 0 },
-        effects: [
-          EditorView.scrollIntoView(0, { y: "start" }),
-          reconfigureEffect,
-        ],
-      });
-    } else {
-      view.dispatch({
-        effects: reconfigureEffect,
-      });
-    }
+    });
   }, [lModeEnabled, lModeTypewriter, workspaceRoot, documentKey]);
 
   useEffect(() => {

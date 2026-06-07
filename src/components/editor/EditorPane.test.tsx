@@ -73,7 +73,7 @@ describe("EditorPane", () => {
     expect(container.querySelector(".editor-mount")).not.toBeNull();
   });
 
-  it("resets the cursor to the first line when L Mode is toggled on", async () => {
+  it("keeps the cursor position when L Mode is toggled on", async () => {
     const editorRef = createRef<EditorPaneHandle>();
     const { rerender } = render(
       renderEditorPane({
@@ -93,10 +93,10 @@ describe("EditorPane", () => {
       }),
     );
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(editorRef.current?.getActiveDocument()?.from).toBe(0);
+    expect(editorRef.current?.getActiveDocument()?.from).toBeGreaterThan(0);
   });
 
-  it("resets the cursor to the first line when L Mode is toggled off", async () => {
+  it("keeps the cursor position when L Mode is toggled off", async () => {
     const editorRef = createRef<EditorPaneHandle>();
     const { rerender } = render(
       renderEditorPane({
@@ -117,7 +117,7 @@ describe("EditorPane", () => {
       }),
     );
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(editorRef.current?.getActiveDocument()?.from).toBe(0);
+    expect(editorRef.current?.getActiveDocument()?.from).toBeGreaterThan(0);
   });
 
   it("keeps the cursor when only lModeTypewriter changes (not a real mode toggle)", async () => {

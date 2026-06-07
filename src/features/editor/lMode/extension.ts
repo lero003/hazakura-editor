@@ -246,7 +246,11 @@ function lModeTypewriterPlugin() {
         // next non-composition update will schedule a
         // fresh recenter and the caret still settles
         // through the existing path.
-        if (view.composing || isManualScrollSuppressed()) {
+        if (
+          view.composing ||
+          isManualScrollSuppressed() ||
+          !view.state.selection.main.empty
+        ) {
           return;
         }
         requestTypewriterRecenter(view);
@@ -262,6 +266,11 @@ function lModeTypewriterPlugin() {
     view.scrollDOM.addEventListener("pointerdown", suppressManualScrollRecenter, {
       passive: true,
     });
+
+    // Turning Typewriter mode on should immediately settle the
+    // current caret line, even when the toggle itself does not
+    // change the document or selection.
+    scheduleRecenter();
 
     return {
       update(update) {

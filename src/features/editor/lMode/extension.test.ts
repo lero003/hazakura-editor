@@ -1089,6 +1089,36 @@ describe("v0.14 task widget keyboard", () => {
 });
 
 describe("v0.11 typewriter mode", () => {
+  it("requests an initial measured recenter when typewriter mode is enabled", async () => {
+    const source = "Line 1\nLine 2\n";
+    const parent = document.createElement("div");
+    document.body.append(parent);
+
+    const view = new EditorView({
+      parent,
+      state: EditorState.create({
+        doc: source,
+        extensions: [
+          markdown({ base: markdownLanguage }),
+          lModeExtension(
+            true,
+            { workspaceRoot: null, documentPath: null },
+            { typewriterMode: true },
+          ),
+        ],
+        selection: { anchor: source.length },
+      }),
+    });
+    const measureSpy = vi.spyOn(view, "requestMeasure");
+
+    await nextAnimationFrame();
+
+    expect(measureSpy.mock.calls.some((call) => call.length > 0)).toBe(true);
+
+    view.destroy();
+    parent.remove();
+  });
+
   it("requests a measured recenter for the collapsed caret after typing", async () => {
     const source = "Line 1\nLine 2\n";
     const parent = document.createElement("div");
