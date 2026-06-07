@@ -79,7 +79,10 @@
 .find-control--main,
 .find-control--replace {
   flex: 1 1 auto;
-  min-width: 0;
+  /* 両方の input 幅を揃える。
+     英語 "Find" / "Replace" のラベル幅差で
+     input 幅がずれる問題を防止。 */
+  min-width: 200px;
 }
 
 .find-control--goto {
