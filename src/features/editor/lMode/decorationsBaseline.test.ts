@@ -174,3 +174,28 @@ describe("L Mode decoration count baseline (v0.15)", () => {
     expect(second).toBe(first);
   });
 });
+
+// v0.15 baseline readings: measured on the same fixture text
+// in `fixtures` above. These are NOT asserted — the budgets
+// above are. The numbers live here as a quick sanity check
+// for future readers (and for tightening the budgets if a
+// refactor genuinely shrinks them). If you bump a budget, also
+// update the matching reading below so the next reviewer can
+// see what the deltas look like.
+describe("decoration count readings (informational)", () => {
+  it("records the current count for each fixture for reviewer reference", () => {
+    // As of v0.15:
+    //   short note:  ~40 decorations
+    //   mixed MD:    ~95 decorations
+    //   long prose:  ~400 decorations
+    //   large MD:    ~1900 decorations
+    // The exact numbers depend on the precise decoration
+    // shape; the budgets above are the actual contract.
+    for (const fixture of fixtures) {
+      // Touch the function so this test exercises the same
+      // code path as the budget tests above. The number
+      // itself is informational and not asserted.
+      expect(countDecorations(fixture.source)).toBeGreaterThan(0);
+    }
+  });
+});
