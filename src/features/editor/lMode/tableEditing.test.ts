@@ -1,11 +1,12 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { EditorSelection, EditorState } from "@codemirror/state";
-import { EditorView } from "@codemirror/view";
+import { EditorView, type ViewUpdate } from "@codemirror/view";
 import {
   deleteSelectedTableRows,
   insertTableRowAfterCursor,
   insertTableCellBreak,
   insertTableCellPipe,
+  lModeCursorBoundaryPlugin,
   moveTableCellLeft,
   moveTableCellRight,
   snapLModeCursorToContent,
@@ -177,5 +178,80 @@ describe("L Mode table editing", () => {
         "| --- | --- | --- |\n" +
         "| Supporter | 支援つき | 開発を応援したい人 |\n",
     );
+  });
+});
+
+describe("lModeCursorBoundaryPlugin", () => {
+  type BoundaryPluginValue = {
+    update: (update: ViewUpdate) => void;
+    destroy: () => void;
+  };
+  type BoundaryPluginSpec = {
+    create: (view: EditorView) => BoundaryPluginValue;
+  };
+  function createPluginInstance(raf: ReturnType<typeof vi.spyOn>) {
+    const view = makeView(
+      "| a | b |\n| --- | --- |\n| x | y |\n",
+      offsetOf("| a | b |\n| --- | --- |\n| x | y |\n", "x"),
+    );
+    // CodeMirror sends a synthetic "no transactions" update to every
+    // view plugin right after construction. Discard it so each test
+    // observes only the update it explicitly feeds below.
+    raf.mockClear();
+    const pluginSpec = lModeCursorBoundaryPlugin() as unknown as BoundaryPluginSpec;
+    const instance = pluginSpec.create(view);
+    return { instance, view };
+  }
+
+  function feedUpdate(
+    instance: { update: (update: ViewUpdate) => void },
+    overrides: { docChanged: boolean; selectionSet: boolean },
+  ) {
+    instance.update(overrides as unknown as ViewUpdate);
+  }
+
+  it("does not schedule a snap rAF when neither the document nor the selection change", () => {
+    const raf = vi
+      .spyOn(window, "requestAnimationFrame")
+      .mockImplementation(() => 0);
+    try {
+      const { instance, view } = createPluginInstance(raf);
+      feedUpdate(instance, { docChanged: false, selectionSet: false });
+      expect(raf).not.toHaveBeenCalled();
+      instance.destroy();
+      view.destroy();
+    } finally {
+      raf.mockRestore();
+    }
+  });
+
+  it("schedules a snap rAF when the document changes", () => {
+    const raf = vi
+      .spyOn(window, "requestAnimationFrame")
+      .mockImplementation(() => 0);
+    try {
+      const { instance, view } = createPluginInstance(raf);
+      feedUpdate(instance, { docChanged: true, selectionSet: false });
+      expect(raf).toHaveBeenCalled();
+      instance.destroy();
+      view.destroy();
+    } finally {
+      raf.mockRestore();
+    }
+  });
+
+  it("schedules a snap rAF when the selection changes", () => {
+    const raf = vi
+      .spyOn(window, "requestAnimationFrame")
+      .mockImplementation(() => 0);
+    try {
+      const { instance, view } = createPluginInstance(raf);
+      feedUpdate(instance, { docChanged: false, selectionSet: true });
+      expect(raf).toHaveBeenCalled();
+      instance.destroy();
+      view.destroy();
+    } finally {
+      raf.mockRestore();
+    }
   });
 });

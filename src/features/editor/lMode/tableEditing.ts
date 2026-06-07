@@ -8,6 +8,7 @@ import {
   EditorView,
   keymap,
   type PluginValue,
+  type ViewUpdate,
   ViewPlugin,
 } from "@codemirror/view";
 
@@ -497,14 +498,17 @@ function setCursor(view: EditorView, position: number): void {
   view.dispatch({ selection: EditorSelection.cursor(position) });
 }
 
-function lModeCursorBoundaryPlugin() {
+export function lModeCursorBoundaryPlugin() {
   return ViewPlugin.fromClass(
     class implements PluginValue {
       private frame: number | null = null;
 
       constructor(readonly view: EditorView) {}
 
-      update() {
+      update(update: ViewUpdate) {
+        if (!update.docChanged && !update.selectionSet) {
+          return;
+        }
         this.scheduleSnap();
       }
 
