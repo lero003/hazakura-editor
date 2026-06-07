@@ -155,6 +155,10 @@ export function localizeStatusMessage(
     return "画像の貼り付けに失敗しました";
   }
 
+  if (message === "Print unavailable") {
+    return "印刷できません";
+  }
+
   return message;
 }
 
