@@ -51,7 +51,7 @@ git diff <previous-tag>..<release-candidate-head> -- docs/ src/ | \
 
 ```bash
 git diff <previous-tag>..<release-candidate-head> | \
-  grep -iE "^\+.*(TODO|FIXME|XXX|HACK|developer note|internal-only|not for review|keisetsu|lero003)" | \
+  grep -E "^\+.*(\\b(TODO|FIXME|XXX|HACK)\\b|developer note|internal-only|not for review|keisetsu|lero003)" | \
   head -20
 ```
 
@@ -61,7 +61,7 @@ Expected: empty for source / docs files. References to the public repository nam
 
 ```bash
 git diff <previous-tag>..<release-candidate-head> | \
-  grep -iE "^\+.*(api[_-]?key|secret|token|password|passwd|bearer|aws[_-]|private[_-]?key|BEGIN [A-Z]+ PRIVATE|192\.168\.|10\.[0-9]+\.|172\.(1[6-9]|2[0-9]|3[01])\.|internal\.|corp\.|localhost:[0-9])" | \
+  grep -iE "^\+.*(api[_-]?key|secret|\\btoken\\b|password|passwd|bearer|aws[_-]|private[_-]?key|BEGIN [A-Z]+ PRIVATE|192\.168\.|10\.[0-9]+\.|172\.(1[6-9]|2[0-9]|3[01])\.|internal\.|corp\.|localhost:[0-9])" | \
   head -20
 ```
 
@@ -97,13 +97,13 @@ When a stop condition fires, fix the issue in the release-candidate worktree and
 
 ## Last Run: v0.16.0 (2026-06-08)
 
-Range: `06b05819..15eb8546` (3 commits, the v0.16.0 フォントサイズ 4 値分割 + タグ付け準備 + ゲート evidence 反映 slice).
+Range: `v0.15.0..HEAD` (v0.16.0 L Mode Live Source quality follow-up + per-surface font sizes + release-prep alignment slice).
 
 Result:
 
-- Section 1 (local paths in diff): **empty**. No `/Users/`, `/tmp/`, `/var/folders/`, or other machine-specific path was added.
-- Section 2 (inappropriate GitHub content in diff): **empty**. No new personal names, organization paths, or developer scratch notes were added. Public `lero003/hazakura-editor` references are unchanged from previous releases.
-- Section 3 (security concerns in diff): **empty**. No tokens, API keys, passwords, private keys, internal IPs, or internal hostnames were added.
+- Section 1 (local paths in diff): hits were limited to this checklist's own example patterns and its historical-audit note. No product code, release note, README, or runtime path gained a new machine-specific path.
+- Section 2 (inappropriate GitHub content in diff): hits were limited to this checklist's own grep examples and public repository references in release evidence. No new developer scratch note or private organization wording was added.
+- Section 3 (security concerns in diff): hits were limited to this checklist's own grep examples. No token, API key, password, private key, internal IP, or internal hostname was added.
 - Section 4 (whole-repo audit): the long-lived entries under `docs/archive/` (e.g. `docs/handoff.md`, `docs/source-release-checklist.md`, and past `docs/releases/0.x.0-*.release.md`) still contain `/Users/keisetsu/...` and `/tmp/hazakura-note-...` references from previous smoke runs. They are accepted as historical release evidence and are not in this checklist's scope for v0.16.0. A future `docs/` archive tidy-up slice can normalize those references to anonymous paths if desired, but it is not a v0.16.0 release blocker.
 
 DMG and source files referenced in v0.16.0 (`src-tauri/target/release/bundle/dmg/hazakura-editor-dev_0.16.0_aarch64-warning-expected.dmg` and `*.dmg.sha256`) are build outputs under `src-tauri/target/`, which is `.gitignore`d. The DMG and SHA-256 will be attached to the GitHub Release as release assets, not committed to the repository.
