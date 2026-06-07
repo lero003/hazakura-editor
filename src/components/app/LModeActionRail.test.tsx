@@ -255,6 +255,58 @@ describe("LModeActionRail", () => {
     expect(document.activeElement).toBe(workspaceToggle);
   });
 
+  // v0.15 polish: Escape is the keyboard user's primary way
+  // to leave a drawer or sheet. The Escape handler must route
+  // through the same `closeWorkspace` / `closeChangeReview`
+  // helpers that the close buttons use, otherwise focus would
+  // fall back to <body> and the next Tab press would skip
+  // the action rail entirely.
+  it("returns focus to the workspace toggle after Escape closes the drawer", () => {
+    render(<LModeActionRail {...defaultProps()} />);
+
+    const workspaceToggle = screen.getByRole("button", {
+      name: /Open workspace/,
+    });
+    workspaceToggle.focus();
+    fireEvent.click(workspaceToggle);
+    expect(
+      screen.getByRole("dialog", { name: "L Mode file tree" }),
+    ).toBeTruthy();
+
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(
+      screen.queryByRole("dialog", { name: "L Mode file tree" }),
+    ).toBeNull();
+    expect(document.activeElement).toBe(workspaceToggle);
+  });
+
+  it("returns focus to the Review changes button after Escape closes the sheet", async () => {
+    render(
+      <LModeActionRail
+        {...defaultProps({
+          activeDirty: true,
+          activeDocumentPath: "/workspace/note.md",
+          dirtyLabel: "Unsaved",
+          onReviewChanges: vi.fn().mockResolvedValue(changeReviewSnapshot()),
+          reviewChangesAvailable: true,
+        })}
+      />,
+    );
+
+    const reviewButton = screen.getByRole("button", { name: /Review changes/ });
+    reviewButton.focus();
+    fireEvent.click(reviewButton);
+    expect(
+      await screen.findByRole("dialog", { name: "Change review" }),
+    ).toBeTruthy();
+
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(
+      screen.queryByRole("dialog", { name: "Change review" }),
+    ).toBeNull();
+    expect(document.activeElement).toBe(reviewButton);
+  });
+
   it("opens and closes the L Mode file tree drawer", () => {
     render(<LModeActionRail {...defaultProps()} />);
 

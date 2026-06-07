@@ -78,28 +78,6 @@ export function LModeActionRail({
   const [changeReview, setChangeReview] =
     useState<ChangeReviewSnapshot | null>(null);
 
-  useEffect(() => {
-    if (!workspaceOpen && !changeReview) return;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setWorkspaceOpen(false);
-        setChangeReview(null);
-      }
-    };
-    window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [changeReview, workspaceOpen]);
-
-  useEffect(() => {
-    setChangeReview(null);
-  }, [activeDocumentPath]);
-
-  useEffect(() => {
-    if (!activeDirty) {
-      setChangeReview(null);
-    }
-  }, [activeDirty]);
-
   // Refs into the workspace-toggle and review-changes buttons
   // so we can restore focus after a drawer / sheet closes.
   // Without this, Escape or the close button drops focus
@@ -107,6 +85,11 @@ export function LModeActionRail({
   // first non-action control (usually a settings cog) instead
   // of the next action-rail button. Returning focus to the
   // originating button keeps keyboard users inside the rail.
+  //
+  // Declared before the Escape effect below because the
+  // Escape handler closes through these helpers to keep
+  // focus-restoration behavior identical across every close
+  // path.
   const workspaceToggleRef = useRef<HTMLButtonElement | null>(null);
   const reviewChangesButtonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -119,6 +102,42 @@ export function LModeActionRail({
     setChangeReview(null);
     reviewChangesButtonRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    if (!workspaceOpen && !changeReview) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      // Close the surface that is currently open. We route
+      // through the same helpers as the explicit close
+      // buttons so focus restoration stays consistent across
+      // every close path: a `setWorkspaceOpen(false)` /
+      // `setChangeReview(null)` direct call would skip the
+      // focus-restoration side effect.
+      //
+      // Priority: change review sheet sits on top of the
+      // workspace drawer (it is a more focused writing-time
+      // surface), so Escape closes it first.
+      if (changeReview) {
+        closeChangeReview();
+        return;
+      }
+      if (workspaceOpen) {
+        closeWorkspace();
+      }
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [changeReview, closeChangeReview, closeWorkspace, workspaceOpen]);
+
+  useEffect(() => {
+    setChangeReview(null);
+  }, [activeDocumentPath]);
+
+  useEffect(() => {
+    if (!activeDirty) {
+      setChangeReview(null);
+    }
+  }, [activeDirty]);
 
   const handleReviewChanges = useCallback(async () => {
     const snapshot = await onReviewChanges();
