@@ -8,6 +8,7 @@ import type {
 } from "../../lib/locale";
 import type {
   EditorTab,
+  ImagePreviewState,
   RightPaneMode,
   AssistSurfacePreference,
 } from "../../types";
@@ -25,6 +26,7 @@ type AppTopChromeProps = {
   lModeEnabled: boolean;
   lModeCopy: LModeCopy;
   onCloseTab: (tabId: string) => void;
+  onCloseSelectedImagePreview: () => void;
   onFinishTabPointerDrag: (target?: EventTarget | null) => void;
   onOpenAgentWindow: () => void;
   onOpenAppleAssistWindow: () => void;
@@ -48,6 +50,7 @@ type AppTopChromeProps = {
   shouldSuppressTabClick: () => boolean;
   sidePaneCopy: SidePaneCopy;
   sidePaneMode: RightPaneMode | null;
+  selectedImage: ImagePreviewState | null;
   tabs: EditorTab[];
 };
 
@@ -63,6 +66,7 @@ export function AppTopChrome({
   lModeEnabled,
   lModeCopy,
   onCloseTab,
+  onCloseSelectedImagePreview,
   onFinishTabPointerDrag,
   onOpenAgentWindow,
   onOpenAppleAssistWindow,
@@ -80,6 +84,7 @@ export function AppTopChrome({
   shouldSuppressTabClick,
   sidePaneCopy,
   sidePaneMode,
+  selectedImage,
   tabs,
 }: AppTopChromeProps) {
   const showDevBadge = isDeveloperDistributionLane();
@@ -91,6 +96,7 @@ export function AppTopChrome({
       dragOverTabId={dragOverTabId}
       emptyTabsLabel={emptyTabsLabel}
       onCloseTab={onCloseTab}
+      onCloseSelectedImagePreview={onCloseSelectedImagePreview}
       onFinishTabPointerDrag={onFinishTabPointerDrag}
       onPointerEnter={onPointerEnter}
       onSelectTab={onSelectTab}
@@ -98,6 +104,7 @@ export function AppTopChrome({
       onTabPointerDown={onTabPointerDown}
       onTabPointerMove={onTabPointerMove}
       shouldSuppressTabClick={shouldSuppressTabClick}
+      selectedImage={selectedImage}
       tabs={tabs}
     >
       {showDevBadge ? (

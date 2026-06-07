@@ -8,7 +8,10 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
-function renderTopChrome() {
+function renderTopChrome(
+  overrides: Partial<Parameters<typeof AppTopChrome>[0]> = {},
+) {
+  const onCloseSelectedImagePreview = vi.fn();
   render(
     <AppTopChrome
       activeDirty={false}
@@ -21,6 +24,7 @@ function renderTopChrome() {
       emptyTabsLabel="No file open"
       lModeCopy={getLModeCopy("en")}
       lModeEnabled={false}
+      onCloseSelectedImagePreview={onCloseSelectedImagePreview}
       onCloseTab={vi.fn()}
       onFinishTabPointerDrag={vi.fn()}
       onOpenAgentWindow={vi.fn()}
@@ -37,11 +41,15 @@ function renderTopChrome() {
       onTogglePreview={vi.fn()}
       recoveryCopy={getRecoveryCopy("en")}
       shouldSuppressTabClick={() => false}
+      selectedImage={null}
       sidePaneCopy={getSidePaneCopy("en")}
       sidePaneMode="preview"
       tabs={[]}
+      {...overrides}
     />,
   );
+
+  return { onCloseSelectedImagePreview };
 }
 
 describe("AppTopChrome", () => {
@@ -57,5 +65,21 @@ describe("AppTopChrome", () => {
     renderTopChrome();
 
     expect(screen.queryByText("DEV")).toBeNull();
+  });
+
+  it("shows the active image preview as a closeable tab", () => {
+    const { onCloseSelectedImagePreview } = renderTopChrome({
+      selectedImage: {
+        name: "photo.png",
+        path: "/workspace/assets/photo.png",
+        size: 128,
+        url: "data:image/png;base64,photo",
+      },
+    });
+
+    expect(screen.getByRole("tab", { name: "photo.png" })).toBeTruthy();
+    screen.getByRole("button", { name: "Close photo.png" }).click();
+
+    expect(onCloseSelectedImagePreview).toHaveBeenCalledTimes(1);
   });
 });

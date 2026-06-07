@@ -3,7 +3,7 @@ import type {
   PointerEvent as ReactPointerEvent,
   ReactNode,
 } from "react";
-import type { EditorTab } from "../../types";
+import type { EditorTab, ImagePreviewState } from "../../types";
 
 type TabBarProps = {
   activeTabId: string | null;
@@ -12,6 +12,7 @@ type TabBarProps = {
   dragOverTabId: string | null;
   emptyTabsLabel: string;
   onCloseTab: (tabId: string) => void;
+  onCloseSelectedImagePreview: () => void;
   onFinishTabPointerDrag: (target?: EventTarget | null) => void;
   onPointerEnter: () => void;
   onSelectTab: (tabId: string) => void;
@@ -25,6 +26,7 @@ type TabBarProps = {
   ) => void;
   onTabPointerMove: (event: ReactPointerEvent<HTMLDivElement>) => void;
   shouldSuppressTabClick: () => boolean;
+  selectedImage: ImagePreviewState | null;
   tabs: EditorTab[];
 };
 
@@ -35,6 +37,7 @@ export function TabBar({
   dragOverTabId,
   emptyTabsLabel,
   onCloseTab,
+  onCloseSelectedImagePreview,
   onFinishTabPointerDrag,
   onPointerEnter,
   onSelectTab,
@@ -42,8 +45,11 @@ export function TabBar({
   onTabPointerDown,
   onTabPointerMove,
   shouldSuppressTabClick,
+  selectedImage,
   tabs,
 }: TabBarProps) {
+  const showEmptyState = tabs.length === 0 && selectedImage === null;
+
   return (
     <section
       className="tabs-row lmode-surface"
@@ -51,63 +57,104 @@ export function TabBar({
       onPointerEnter={onPointerEnter}
     >
       <div className="tab-list" role="tablist" aria-label="Open file tabs">
-        {tabs.length === 0 ? (
+        {showEmptyState ? (
           <span className="empty-tabs">{emptyTabsLabel}</span>
         ) : (
-          tabs.map((tab) => {
-            const dirty = isDirtyTab(tab);
+          <>
+            {tabs.map((tab) => {
+              const dirty = isDirtyTab(tab);
 
-            return (
+              return (
+                <div
+                  className={`tab-item${tab.id === activeTabId ? " active" : ""}${draggingTabId === tab.id ? " dragging" : ""}${dragOverTabId === tab.id ? " drag-over" : ""}`}
+                  data-tab-id={tab.id}
+                  key={tab.id}
+                  role="presentation"
+                  onContextMenu={(event) => onTabContextMenu(tab.path, event)}
+                  onPointerDown={(event) => onTabPointerDown(event, tab.id)}
+                  onPointerMove={onTabPointerMove}
+                  onPointerUp={(event) =>
+                    onFinishTabPointerDrag(event.currentTarget)
+                  }
+                  onPointerCancel={(event) =>
+                    onFinishTabPointerDrag(event.currentTarget)
+                  }
+                  onClick={(event) => {
+                    // The tab-select click is handled on the tab
+                    // item rather than the inner button so it still
+                    // fires when the Tauri WKWebView retargets the
+                    // click event to the captured <div> after
+                    // pointerdown. The close button stops propagation
+                    // via its own onClick + the .tab-close class
+                    // guard in handleTabPointerDown.
+                    if (
+                      event.target instanceof Element &&
+                      event.target.closest(".tab-close")
+                    ) {
+                      return;
+                    }
+                    if (shouldSuppressTabClick()) {
+                      return;
+                    }
+                    onSelectTab(tab.id);
+                  }}
+                >
+                  <button
+                    aria-selected={tab.id === activeTabId}
+                    className="tab-button"
+                    role="tab"
+                    title={tab.path}
+                    type="button"
+                  >
+                    <span className="tab-name">{tab.name}</span>
+                    {dirty ? (
+                      <span className="tab-dirty-dot" aria-label="unsaved" />
+                    ) : null}
+                  </button>
+                  <button
+                    aria-label={`Close ${tab.name}`}
+                    className="tab-close"
+                    onClick={() => onCloseTab(tab.id)}
+                    type="button"
+                  >
+                    <svg
+                      width="8"
+                      height="8"
+                      viewBox="0 0 8 8"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M1 1L7 7M7 1L1 7"
+                        stroke="currentColor"
+                        strokeWidth="1.2"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              );
+            })}
+            {selectedImage ? (
               <div
-                className={`tab-item${tab.id === activeTabId ? " active" : ""}${draggingTabId === tab.id ? " dragging" : ""}${dragOverTabId === tab.id ? " drag-over" : ""}`}
-                data-tab-id={tab.id}
-                key={tab.id}
+                className="tab-item active image-tab"
+                data-tab-id={selectedImage.path}
+                key={`image:${selectedImage.path}`}
                 role="presentation"
-                onContextMenu={(event) => onTabContextMenu(tab.path, event)}
-                onPointerDown={(event) => onTabPointerDown(event, tab.id)}
-                onPointerMove={onTabPointerMove}
-                onPointerUp={(event) =>
-                  onFinishTabPointerDrag(event.currentTarget)
-                }
-                onPointerCancel={(event) =>
-                  onFinishTabPointerDrag(event.currentTarget)
-                }
-                onClick={(event) => {
-                  // The tab-select click is handled on the tab
-                  // item rather than the inner button so it still
-                  // fires when the Tauri WKWebView retargets the
-                  // click event to the captured <div> after
-                  // pointerdown. The close button stops propagation
-                  // via its own onClick + the .tab-close class
-                  // guard in handleTabPointerDown.
-                  if (
-                    event.target instanceof Element &&
-                    event.target.closest(".tab-close")
-                  ) {
-                    return;
-                  }
-                  if (shouldSuppressTabClick()) {
-                    return;
-                  }
-                  onSelectTab(tab.id);
-                }}
               >
                 <button
-                  aria-selected={tab.id === activeTabId}
+                  aria-selected
                   className="tab-button"
                   role="tab"
-                  title={tab.path}
+                  title={selectedImage.path}
                   type="button"
                 >
-                  <span className="tab-name">{tab.name}</span>
-                  {dirty ? (
-                    <span className="tab-dirty-dot" aria-label="unsaved" />
-                  ) : null}
+                  <span className="tab-name">{selectedImage.name}</span>
                 </button>
                 <button
-                  aria-label={`Close ${tab.name}`}
+                  aria-label={`Close ${selectedImage.name}`}
                   className="tab-close"
-                  onClick={() => onCloseTab(tab.id)}
+                  onClick={onCloseSelectedImagePreview}
                   type="button"
                 >
                   <svg
@@ -126,8 +173,8 @@ export function TabBar({
                   </svg>
                 </button>
               </div>
-            );
-          })
+            ) : null}
+          </>
         )}
       </div>
       {children}

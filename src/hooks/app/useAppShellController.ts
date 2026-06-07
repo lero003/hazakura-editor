@@ -1346,6 +1346,7 @@ export function useAppShellController() {
       void toggleAppleAssistWindow(themePreference);
     },
     onCloseReviewDesk: closeReviewDesk,
+    onCloseSelectedImagePreview: closeSelectedImagePreview,
     onCloseTab: requestCloseTab,
     onConvertEncoding: convertActiveEncoding,
     onConvertLineEnding: convertActiveLineEnding,

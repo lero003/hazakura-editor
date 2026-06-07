@@ -60,12 +60,11 @@ export const TEXT_FILE_EXTENSIONS = [
   "gql",
 ];
 
-// Per-extension filter entries for the save dialog. The native
-// macOS / Windows save dialog renders this as a dropdown the
-// user can pick from, and the OS will append the picked
-// filter's extension to the typed name automatically. Without
-// these entries, every save lands on `.md` because the
-// Markdown group is listed first.
+// Per-extension filter entries for the save dialog. Platforms
+// expose these differently (macOS may hide them behind the
+// expanded dialog state), but passing them keeps Save As from
+// being Markdown-only and lets the OS append the selected
+// filter's extension when supported.
 const SAVE_AS_TEXT_FILE_FILTERS: { name: string; extensions: string[] }[] = [
   { name: "Markdown", extensions: ["md", "markdown", "mdown", "mdx"] },
   { name: "Plain Text", extensions: ["txt", "text", "log"] },
