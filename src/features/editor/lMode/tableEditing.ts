@@ -1,12 +1,12 @@
 import {
   EditorSelection,
+  Prec,
   type Line,
   type SelectionRange,
 } from "@codemirror/state";
 import {
   EditorView,
-  ViewPlugin,
-  type PluginValue,
+  keymap,
 } from "@codemirror/view";
 
 type TableCell = {
@@ -106,6 +106,34 @@ export function insertTableRowAfterCursor(view: EditorView): boolean {
   return true;
 }
 
+export function insertTableCellBreak(view: EditorView): boolean {
+  const range = view.state.selection.main;
+  if (!range.empty) {
+    return false;
+  }
+
+  const row = readTableRowAt(view, range.from);
+  if (!row || row.isDelimiter) {
+    return false;
+  }
+
+  const cellIndex = findCellIndex(row.cells, range.from);
+  if (cellIndex < 0) {
+    return false;
+  }
+
+  const cell = row.cells[cellIndex];
+  const insertAt = Math.min(
+    Math.max(range.from, cell.contentFrom),
+    cell.contentTo,
+  );
+  view.dispatch({
+    changes: { from: insertAt, insert: "<br>" },
+    selection: EditorSelection.cursor(insertAt + "<br>".length),
+  });
+  return true;
+}
+
 export function deleteSelectedTableRows(view: EditorView): boolean {
   const range = view.state.selection.main;
   if (range.empty) {
@@ -125,49 +153,33 @@ export function deleteSelectedTableRows(view: EditorView): boolean {
 }
 
 export function lModeTableEditingPlugin() {
-  return ViewPlugin.fromClass(
-    class implements PluginValue {
-      constructor(readonly view: EditorView) {}
-
-      keydown(event: KeyboardEvent) {
-        if (
-          event.defaultPrevented ||
-          event.isComposing ||
-          this.view.composing ||
-          event.metaKey ||
-          event.ctrlKey ||
-          event.altKey ||
-          event.shiftKey
-        ) {
-          return false;
-        }
-
-        const handled =
-          event.key === "ArrowRight"
-            ? moveTableCellRight(this.view)
-            : event.key === "ArrowLeft"
-              ? moveTableCellLeft(this.view)
-              : event.key === "Enter"
-                ? insertTableRowAfterCursor(this.view)
-                : event.key === "Backspace" || event.key === "Delete"
-                  ? deleteSelectedTableRows(this.view)
-                  : false;
-
-        if (!handled) {
-          return false;
-        }
-
-        event.preventDefault();
-        return true;
-      }
-    },
-    {
-      eventHandlers: {
-        keydown(event) {
-          return this.keydown(event);
-        },
+  return Prec.highest(
+    keymap.of([
+      {
+        key: "ArrowRight",
+        run: runWhenNotComposing(moveTableCellRight),
       },
-    },
+      {
+        key: "ArrowLeft",
+        run: runWhenNotComposing(moveTableCellLeft),
+      },
+      {
+        key: "Enter",
+        run: runWhenNotComposing(insertTableRowAfterCursor),
+      },
+      {
+        key: "Shift-Enter",
+        run: runWhenNotComposing(insertTableCellBreak),
+      },
+      {
+        key: "Backspace",
+        run: runWhenNotComposing(deleteSelectedTableRows),
+      },
+      {
+        key: "Delete",
+        run: runWhenNotComposing(deleteSelectedTableRows),
+      },
+    ]),
   );
 }
 
@@ -295,7 +307,7 @@ function selectedBodyRowRange(
 }
 
 function parseTableCells(line: Line): TableCell[] {
-  const separatorIndexes = pipeIndexes(line.text);
+  const separatorIndexes = tableCellBoundaryIndexes(line.text);
   if (separatorIndexes.length < 2) {
     return [];
   }
@@ -307,6 +319,26 @@ function parseTableCells(line: Line): TableCell[] {
     cells.push(trimCell(line, rawFrom, rawTo));
   }
   return cells;
+}
+
+function tableCellBoundaryIndexes(text: string): number[] {
+  const indexes = pipeIndexes(text);
+  if (indexes.length === 0) {
+    return [];
+  }
+
+  const contentStart = text.match(/^\s*/)?.[0].length ?? 0;
+  const contentEnd = text.length - (text.match(/\s*$/)?.[0].length ?? 0);
+  const boundaries = [...indexes];
+
+  if (boundaries[0] !== contentStart) {
+    boundaries.unshift(contentStart - 1);
+  }
+  if (boundaries[boundaries.length - 1] !== contentEnd - 1) {
+    boundaries.push(contentEnd);
+  }
+
+  return boundaries;
 }
 
 function trimCell(line: Line, rawFrom: number, rawTo: number): TableCell {
@@ -364,4 +396,15 @@ function buildEmptyTableRow(columnCount: number, sourceLineText: string): string
 
 function setCursor(view: EditorView, position: number): void {
   view.dispatch({ selection: EditorSelection.cursor(position) });
+}
+
+function runWhenNotComposing(
+  command: (view: EditorView) => boolean,
+): (view: EditorView) => boolean {
+  return (view) => {
+    if (view.composing) {
+      return false;
+    }
+    return command(view);
+  };
 }

@@ -4,6 +4,7 @@ import { EditorView } from "@codemirror/view";
 import {
   deleteSelectedTableRows,
   insertTableRowAfterCursor,
+  insertTableCellBreak,
   moveTableCellLeft,
   moveTableCellRight,
 } from "./tableEditing";
@@ -68,6 +69,43 @@ describe("L Mode table editing", () => {
         "| Preview | 開発版・検証用 | 早期に試したい人 |\n" +
         "|  |  |  |\n" +
         "| Standard | 基本機能 | Markdownを書く人 |\n",
+    );
+  });
+
+  it("inserts a full row after a table row without a trailing pipe", () => {
+    const doc =
+      "| プラン | 内容 | 想定ユーザー |\n" +
+      "| --- | --- | --- |\n" +
+      "| Preview | 表示確認 | 公開前の見え方を確認 |\n" +
+      "| Review | 差分・見出し・比較 | 長文レビューを補助\n";
+    const view = makeView(
+      doc,
+      offsetOf(doc, "長文レビューを補助") + "長文レビューを補助".length,
+    );
+
+    expect(insertTableRowAfterCursor(view)).toBe(true);
+    expect(view.state.doc.toString()).toBe(
+      "| プラン | 内容 | 想定ユーザー |\n" +
+        "| --- | --- | --- |\n" +
+        "| Preview | 表示確認 | 公開前の見え方を確認 |\n" +
+        "| Review | 差分・見出し・比較 | 長文レビューを補助\n" +
+        "|  |  |  |\n",
+    );
+  });
+
+  it("inserts a Markdown-safe cell break on Shift+Enter", () => {
+    const doc =
+      "| プラン | 内容 | 想定ユーザー |\n" +
+      "| --- | --- | --- |\n" +
+      "| Review | 差分・見出し・比較 | 長文レビューを補助 |\n";
+    const insertAt = offsetOf(doc, "長文レビュー") + "長文レビュー".length;
+    const view = makeView(doc, insertAt);
+
+    expect(insertTableCellBreak(view)).toBe(true);
+    expect(view.state.doc.toString()).toBe(
+      "| プラン | 内容 | 想定ユーザー |\n" +
+        "| --- | --- | --- |\n" +
+        "| Review | 差分・見出し・比較 | 長文レビュー<br>を補助 |\n",
     );
   });
 
