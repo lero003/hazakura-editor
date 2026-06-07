@@ -118,25 +118,29 @@ The user-facing polish is intentionally small: L Mode action-rail and task-widge
 
 The DMG uses the Developer / GitHub lane (`hazakura editor Dev.app`, `lab.hazakura.note.dev`) so Agent Workbench remains available for preview users. It is ad-hoc signed, not Developer ID signed, not notarized, and should be treated as a hands-on preview artifact rather than a trusted distribution.
 
-## v0.16 Release Prep Lane
+## v0.16 L Mode Live Source Quality Follow-up
 
-v0.16 should carry the heavier release-prep work that was intentionally not squeezed into v0.15 polish:
+v0.16 should treat the larger-than-expected post-v0.15 L Mode work as a focused quality follow-up, not as leftover v0.15 polish and not as certificate / distribution prep.
 
-1. Developer / GitHub distribution readiness: clarify app identity, DMG instructions, expected macOS warnings, checksum flow, and support boundaries.
-2. App Store lane readiness: continue separating the App Store preview build from the Developer / GitHub build, including helper bundle/signing assumptions and Agent Workbench omission.
-3. Accessibility and keyboard-flow audit for daily surfaces: settings, close dialogs, L Mode rail/drawer/review, image preview, recovery/diff review.
-4. Performance and bundle-size measurement before broad chunk-splitting or L Mode decoration-cache work.
-5. Release automation cleanup where it reduces real release risk, not for its own sake.
+The scope is the Live Source writing surface: readable Markdown presentation when the editor is not focused on that structure, source-like behavior at the active caret / selection, and guardrails that keep tables, checkboxes, code fences, quotes, images, IME composition, and draft recovery from looking broken or silently rewriting Markdown.
 
-## v0.17 Release Polish Lane
+This lane must stay source-preserving. It may improve CodeMirror decorations, keyboard behavior, tests, and built-app smoke coverage around L Mode, but it should not add Preview DOM editing, `contenteditable`, hidden save-time formatting, table cell merging, or broad WYSIWYG structural editing.
 
-v0.17 should be a smaller final polish lane before the next serious public-facing release decision: wording, install instructions, screenshots, release notes, last user-test bugs, and final smoke evidence. Avoid new major product surfaces here unless a release blocker demands it.
+Distribution work now moves after this L Mode follow-up:
+
+1. Developer / GitHub distribution readiness: app identity, DMG instructions, expected macOS warnings, checksum flow, support boundaries, and cross-machine smoke guidance.
+2. App Store lane readiness: App Store preview build separation, Agent Workbench omission, Apple Local Assist helper bundling/signing assumptions, sandbox/review constraints, and certificate/provisioning work.
+3. Accessibility, keyboard-flow, performance, bundle-size, and release automation cleanup where they reduce real release risk.
+
+## v0.17 Distribution Prep / Release Polish Lane
+
+v0.17 should start from distribution prep after v0.16 L Mode evidence is stable, then shrink toward final release polish: certificate / signing lane decisions, wording, install instructions, screenshots, release notes, last user-test bugs, and final smoke evidence. Avoid new major product surfaces here unless a release blocker demands it.
 
 ## Next Safe Actions
 
-1. If continuing into v0.16 release prep, use `docs/source-release-checklist.md`, `docs/dmg-preview-checklist.md`, and `docs/commercial-quality-baseline.md`; keep App Store / Developer / warning-expected DMG lanes separate.
+1. If continuing into v0.16, use `docs/l-mode-plan.md` and `docs/commercial-quality-baseline.md`; prioritize reproduced L Mode regressions, built-app smoke, and source-preserving fixes around IME/caret/Backspace/list/link/table/image/quote/code-fence behavior.
 2. If improving Apple Local Assist after v0.15.0, use `docs/assist-surface-strategy.md`, `docs/apple-local-assist-distribution-plan.md`, and `docs/apple-local-assist-writing-companion-plan.md`; keep Apple Local Assist as an external Writing Companion and require AI edit transactions for direct buffer edits.
 3. If improving theme / settings, verify persistence, native menu sync, readability, and restart-required copy before debating purely cosmetic variants.
-4. If improving L Mode, use `docs/l-mode-plan.md` and `docs/commercial-quality-baseline.md`; prioritize measurement, built-app smoke, or a reproduced regression around IME/caret/Backspace/list/link/table/image/source-preservation behavior before broad refactors.
+4. If preparing v0.17+ distribution work, use `docs/source-release-checklist.md`, `docs/dmg-preview-checklist.md`, and `docs/commercial-quality-baseline.md`; keep App Store / Developer / warning-expected DMG lanes separate.
 5. If preparing a future release, use the version-specific release note; do not tag or publish without explicit approval.
 6. If changing product behavior, use `docs/product-brief.md`, `docs/security-boundary.md`, and the touched boundary doc before implementation.

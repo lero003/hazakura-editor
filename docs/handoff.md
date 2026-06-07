@@ -8,7 +8,7 @@
 - Latest published release body: `docs/releases/0.15.0-warning-expected-dmg-preview.release.md`.
 - Latest source / local-app tag notes: `docs/releases/0.14.0-source-tag.release.md`.
 - Current status source: `docs/current-status.md`.
-- Active lane: v0.16 Release Prep.
+- Active lane: v0.16 L Mode Live Source Quality Follow-up.
 
 ## Recent Changes
 
@@ -51,6 +51,7 @@
 - Post-v0.15 L Mode follow-up reframed the writing surface as **Live Source** in `docs/l-mode-plan.md`: inactive lines may render document-like decorations, but active / selected lines stay source-like at the decoration-building layer. Tables are explicitly limited to readable presentation plus breakage-prevention behavior, not full WYSIWYG structural editing.
 - Follow-up L Mode image behavior now treats editor focus as part of Live Source: while focused, the active image line stays Markdown source; after editor blur, inactive document-like rendering returns, so image widgets can show. Preview workspace-image policy is pinned for Markdown README images, raw HTML `<img>` tags, and async data-URL inlining.
 - L Mode draft-recovery banners intentionally hide the `変更を確認` / `Review changes` action. The draft can still be restored or discarded in L Mode, but draft-vs-disk comparison stays in the normal edit surface to avoid opening the hidden right-pane compare UI under L Mode chrome.
+- Roadmap/current-status now treat this larger post-v0.15 L Mode work as v0.16 **Live Source Quality Follow-up**. Certificate, Developer ID, notarization, provisioning, App Store upload, and broader distribution prep should resume as v0.17+ work after the L Mode evidence is stable.
 
 ## Decisions
 

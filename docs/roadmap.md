@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-07 (v0.15 DMG preview / v0.16-v0.17 release-prep framing)
+Last reviewed: 2026-06-07 (v0.15 DMG preview / v0.16 L Mode Live Source follow-up framing)
 
 ## Current Position
 
@@ -15,8 +15,8 @@ Current release state:
 - Latest source / local-app-only tag: `v0.14.0`.
 - Current package/app version: `0.15.0`.
 - v0.15.0 theme: **User-Test Quality Polish**.
-- Active lane: v0.16 Release Prep.
-- Active product polish direction: prepare the Developer / GitHub and App Store lanes for a more serious release while keeping warning-expected DMG, Developer / GitHub, and App Store evidence separate. The non-App-Store commercial-quality baseline lives in `docs/commercial-quality-baseline.md`.
+- Active lane: v0.16 L Mode Live Source Quality Follow-up.
+- Active product polish direction: stabilize the larger post-v0.15 L Mode Live Source work before entering certificate / distribution prep. Markdown source remains canonical; L Mode may improve presentation, guarded keyboard behavior, and smoke coverage, but not the saved document model.
 
 Historical phase details and old milestone text are archived in `docs/archive/roadmaps/roadmap-through-v0.10-doc-refactor.md` and `docs/archive/roadmaps/roadmap-v0.1-archived.md`.
 
@@ -116,8 +116,8 @@ Likely phase shape:
 - `v0.13`: Distribution Probe / L Mode Bridge, including App Store build separation, sandbox / entitlement draft, helper sidecar sandbox proof, lane split, and L Mode peer-mode polish.
 - `v0.14`: L Mode WYSIWYG Accuracy Ramp, including rendering fidelity, editing stability, IME / caret behavior, hidden-marker regression fixtures, and visual-overlap checks.
 - `v0.15`: User-Test Quality Polish, including Apple Local Assist rough-request quality, real writing examples, unavailable-state polish, theme / settings touch-ups, small user-facing status or error improvements, release-prep continuity, and a warning-expected Developer / GitHub DMG preview for cross-machine testing.
-- `v0.16`: Release Prep, including Developer / GitHub distribution readiness, App Store lane separation, accessibility/keyboard-flow audit, performance and bundle-size measurement, and release automation cleanup where it reduces real risk.
-- `v0.17`: Release Polish, including install wording, screenshots, release notes, final smoke evidence, and last small user-test fixes before the next public-facing release decision.
+- `v0.16`: L Mode Live Source Quality Follow-up, including table/readability guardrails, checkbox/code-fence/quote/image presentation, IME/caret/source-preservation stability, and built-app smoke evidence where practical.
+- `v0.17`: Distribution Prep / Release Polish, including Developer / GitHub distribution readiness, App Store lane separation, certificate/signing/notarization decisions, install wording, screenshots, release notes, final smoke evidence, and last small user-test fixes before the next public-facing release decision.
 - `v1.0`: App Store Candidate / Review if the App Store build can omit External Agent Workbench cleanly and Apple Local Assist remains document-assist only.
 
 v0.12 tag state (source / local-app tag only):
@@ -193,31 +193,33 @@ Boundaries:
 - No Preview DOM editing, `contenteditable`, HTML saved model, hidden save-time rewriting, network fallback, workspace-wide indexing, or auto-apply behavior is added.
 - v0.15 is a quality checkpoint, not the end of release prep.
 
-## Active Lane: v0.16 Release Prep
+## Active Lane: v0.16 L Mode Live Source Quality Follow-up
 
-Goal: do the heavier release-prep work that benefits future public releases without turning the app into a broader IDE or agent platform.
+Goal: treat the larger post-v0.15 L Mode work as its own source-preserving quality lane before release / certificate work resumes.
 
 In scope:
 
-- Developer / GitHub distribution readiness: DMG wording, expected-warning instructions, checksum flow, support boundaries, and cross-machine smoke guidance.
-- App Store lane readiness: continue proving App Store preview build separation, Agent Workbench omission, Apple Local Assist helper bundling/signing assumptions, and sandbox/review constraints.
-- Accessibility and keyboard-flow audit for daily surfaces: settings, close dialogs, L Mode rail/drawer/review, image preview, recovery/diff review.
-- Performance and bundle-size measurement before any broad chunk-splitting, decoration-cache, or CSS-splitting work.
-- Release automation cleanup only where it reduces real release risk.
+- L Mode Live Source readability: tables, checkboxes, code fences, blockquotes, images, and Markdown markers should look intentional when inactive.
+- L Mode editing stability: active caret / selection lines stay source-like, IME candidate windows remain visible, arrow / Enter behavior avoids table breakage, and guarded keyboard helpers never rewrite more than the user asked.
+- Source-preserving tests and built-app smoke where practical, especially around table rows, quotes, image display after blur, recovery banners, and Preview parity.
+- Small accessibility / keyboard-flow checks that directly touch L Mode daily use.
 
 Out of scope:
 
 - New product surfaces, provider plugins, broad workspace indexing, Git/LSP/terminal behavior, or arbitrary command execution.
-- Developer ID / notarization completion unless the needed signing credentials and explicit lane approval exist.
+- Developer ID / notarization, certificate/provisioning work, App Store upload, or trusted distribution claims.
+- Full WYSIWYG structural editing such as table cell merging, Preview DOM editing, `contenteditable`, HTML saved model, or hidden save-time rewriting.
 - Large refactors without measurement, smoke evidence, or a release-readiness blocker.
 
-## Planned Lane: v0.17 Release Polish
+## Planned Lane: v0.17 Distribution Prep / Release Polish
 
-Goal: final release-facing polish after v0.16 prep evidence is in.
+Goal: resume release-facing distribution prep after v0.16 L Mode evidence is stable, then shrink toward final release polish.
 
 Focus:
 
-- Install wording, screenshots, release notes, support/privacy links if needed, final smoke evidence, and last small user-test bugs.
+- Developer / GitHub distribution readiness: DMG wording, expected-warning instructions, checksum flow, support boundaries, and cross-machine smoke guidance.
+- App Store lane readiness: App Store preview build separation, Agent Workbench omission, Apple Local Assist helper bundling/signing assumptions, sandbox/review constraints, certificates, provisioning, and upload validation.
+- Accessibility / keyboard-flow audit, performance and bundle-size measurement, release automation cleanup where it reduces real release risk, install wording, screenshots, release notes, final smoke evidence, and last small user-test bugs.
 - Keep this lane small; avoid new major product surfaces unless a release blocker demands it.
 
 ## App Store Publication Roadmap
@@ -236,19 +238,19 @@ Goal: prove the App Store lane can exist before investing more in app polish.
 
 Current probe memo: `docs/v0.13-distribution-probe.md`.
 
-### 2. Initial L Mode WYSIWYG Accuracy Ramp
+### 2. Current v0.16 L Mode Live Source Quality Follow-up
 
-Goal: make L Mode steadier for ordinary Markdown writing and correction, then pause broad refactors until measured evidence justifies more work.
+Goal: make L Mode steadier for ordinary Markdown writing and correction before resuming official distribution prep.
 
-- Treat L Mode WYSIWYG accuracy as the main app-quality brush-up track. The goal is higher-fidelity rendering and editing behavior for headings, inline marks, links, lists, tasks, HRs, Setext-style underlines, blockquotes, code blocks, tables, images, Japanese prose, IME composition, caret movement, and selection/copy behavior, while Markdown source remains canonical.
+- Treat L Mode Live Source quality as the main app-quality brush-up track. The goal is higher-fidelity inactive rendering and safer active-line editing behavior for headings, inline marks, links, lists, tasks, HRs, Setext-style underlines, blockquotes, code blocks, tables, images, Japanese prose, IME composition, caret movement, and selection/copy behavior, while Markdown source remains canonical.
 - Use `docs/l-mode-plan.md` as the planning source for this work. Prefer source-preserving CodeMirror decoration, widget, CSS, and editing-behavior fixes over any Preview DOM, `contenteditable`, HTML-document-model, or save-time auto-formatting approach.
-- Smoke the built app with normal editor, L Mode, Diff / explicit change review, export / print, and Apple Local Assist when preparing a broader distribution checkpoint.
+- Smoke the built app with normal editor, L Mode, Diff / explicit change review, export / print, and Apple Local Assist when preparing a broader distribution checkpoint, but do not turn this lane into certificate / upload work.
 - Polish Apple Local Assist with real lightweight Japanese writing examples: short summaries, rephrasing, heading / tag ideas, light cleanup, and short explanations.
 - Verify unavailable, disabled, unsupported-language, and unsupported-device states without blocking Safe Editor.
 - Keep every AI-written change explicit, unsaved, diff-reviewable, and discardable.
 - Fix only high-confidence daily-use polish; do not add major new feature surfaces before review prep.
 
-Initial v0.14 acceptance:
+v0.16 acceptance:
 
 - Common Markdown writing has fewer unstable L Mode moments, especially around recompute churn, Typewriter / IME behavior, task checkbox keyboard access, and obvious visual-overlap risks.
 - Moving the cursor does not remove bullets, ordered numbers, dividers, or other visible structure.
@@ -256,9 +258,9 @@ Initial v0.14 acceptance:
 - IME and Japanese prose remain stable.
 - Source text remains predictable and byte-preserving except for explicit user edits.
 
-### 3. Official Distribution Prep
+### 3. Official Distribution Prep (v0.17+)
 
-Goal: prepare the two binary lanes without creating a third official free build.
+Goal: prepare the two binary lanes without creating a third official free build after v0.16 L Mode evidence is stable.
 
 - App Store build: remove / omit External Agent Workbench and all CLI launch paths from the reviewable build.
 - Developer / GitHub build: keep Agent Workbench separate and plan Developer ID signing / notarization for broader outside-App-Store sharing.
