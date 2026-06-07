@@ -201,6 +201,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   const onSelectionChangeRef = useRef(onSelectionChange);
   const onPasteImageRef = useRef(onPasteImage);
   const onSendToAgentRef = useRef<(text: string) => void>(() => {});
+  const applyingExternalValueRef = useRef(false);
   const themeCompartmentRef = useRef(new Compartment());
   const wrappingCompartmentRef = useRef(new Compartment());
   const invisiblesCompartmentRef = useRef(new Compartment());
@@ -465,7 +466,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
           },
         }),
         EditorView.updateListener.of((update) => {
-          if (update.docChanged) {
+          if (update.docChanged && !applyingExternalValueRef.current) {
             onChangeRef.current(update.state.doc.toString());
           }
 
@@ -602,13 +603,18 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       return;
     }
 
-    view.dispatch({
-      changes: {
-        from: 0,
-        to: currentValue.length,
-        insert: value,
-      },
-    });
+    applyingExternalValueRef.current = true;
+    try {
+      view.dispatch({
+        changes: {
+          from: 0,
+          to: view.state.doc.length,
+          insert: value,
+        },
+      });
+    } finally {
+      applyingExternalValueRef.current = false;
+    }
   }, [value]);
 
   useEffect(() => {

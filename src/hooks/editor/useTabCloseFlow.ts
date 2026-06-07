@@ -37,6 +37,18 @@ type UseTabCloseFlowOptions = {
   tabsRef: RefValue<EditorTab[]>;
 };
 
+function resetDiscardedTab(tab: EditorTab): EditorTab {
+  return {
+    ...tab,
+    contents: tab.lastSavedContents,
+    encoding: tab.lastSavedEncoding,
+    error: null,
+    ignoredExternalFingerprint: null,
+    line_ending: tab.lastSavedLineEnding,
+    saveStatus: "idle",
+  };
+}
+
 export function useTabCloseFlow({
   activeTabId,
   allowWindowCloseRef,
@@ -53,13 +65,20 @@ export function useTabCloseFlow({
   setStatus,
   setTabs,
   tabs,
-  tabsRef,
 }: UseTabCloseFlowOptions) {
   const closeTabNow = useCallback(
     (tabId: string) => {
       setTabs((currentTabs) => {
         const closingIndex = currentTabs.findIndex((tab) => tab.id === tabId);
+        const closingTab = currentTabs[closingIndex] ?? null;
         const nextTabs = currentTabs.filter((tab) => tab.id !== tabId);
+
+        if (closingTab) {
+          removeStoredDrafts([closingTab.path]);
+          setPendingDrafts((currentDrafts) =>
+            currentDrafts.filter((draft) => draft.path !== closingTab.path),
+          );
+        }
 
         if (activeTabId === tabId) {
           const nextActive =
@@ -72,7 +91,14 @@ export function useTabCloseFlow({
       setPendingCloseTabId(null);
       setStatus("Tab closed");
     },
-    [activeTabId, setActiveTabId, setPendingCloseTabId, setStatus, setTabs],
+    [
+      activeTabId,
+      setActiveTabId,
+      setPendingCloseTabId,
+      setPendingDrafts,
+      setStatus,
+      setTabs,
+    ],
   );
 
   const requestCloseTab = useCallback(
@@ -122,7 +148,12 @@ export function useTabCloseFlow({
   const saveAllAndCloseWindow = useCallback(async () => {
     if (dirtyTabs.length === 0) {
       allowWindowCloseRef.current = true;
-      await hideMainWindow();
+      setPendingAppClose(false);
+      try {
+        await hideMainWindow();
+      } finally {
+        allowWindowCloseRef.current = false;
+      }
       return;
     }
 
@@ -141,19 +172,30 @@ export function useTabCloseFlow({
     }
 
     allowWindowCloseRef.current = true;
-    await hideMainWindow();
+    setPendingAppClose(false);
+    try {
+      await hideMainWindow();
+    } catch (err) {
+      setGlobalError(`Close failed: ${String(err)}`);
+      setStatus("Close failed");
+    } finally {
+      allowWindowCloseRef.current = false;
+    }
   }, [
     allowWindowCloseRef,
     dirtyTabs,
     focusEditorSoon,
     saveTabById,
     setActiveTabId,
+    setGlobalError,
     setPendingAppClose,
     setStatus,
   ]);
 
   const discardAllAndCloseWindow = useCallback(async () => {
     const discardedDraftPaths = dirtyTabs.map((tab) => tab.path);
+    const dirtyTabById = new Map(dirtyTabs.map((tab) => [tab.id, tab]));
+    const discardedTabIds = new Set(dirtyTabs.map((tab) => tab.id));
 
     discardingWindowCloseRef.current = true;
     removeStoredDrafts(discardedDraftPaths);
@@ -165,14 +207,22 @@ export function useTabCloseFlow({
     allowWindowCloseRef.current = true;
 
     try {
+      setPendingAppClose(false);
+      setTabs((currentTabs) =>
+        currentTabs.map((tab) =>
+          discardedTabIds.has(tab.id) ? resetDiscardedTab(tab) : tab,
+        ),
+      );
       await hideMainWindow();
     } catch (err) {
       allowWindowCloseRef.current = false;
-      discardingWindowCloseRef.current = false;
+      setTabs((currentTabs) =>
+        currentTabs.map((tab) => dirtyTabById.get(tab.id) ?? tab),
+      );
       writeStoredDrafts(
         [
           ...readStoredDrafts(),
-          ...tabsRef.current.filter(isDirty).map(draftRecordFromTab),
+          ...dirtyTabs.map(draftRecordFromTab),
         ].reduce<DraftRecord[]>(
           (records, draft) => upsertDraftRecord(records, draft),
           [],
@@ -181,6 +231,9 @@ export function useTabCloseFlow({
       setPendingAppClose(false);
       setGlobalError(`Close failed: ${String(err)}`);
       setStatus("Close failed");
+    } finally {
+      allowWindowCloseRef.current = false;
+      discardingWindowCloseRef.current = false;
     }
   }, [
     allowWindowCloseRef,
@@ -190,7 +243,7 @@ export function useTabCloseFlow({
     setPendingAppClose,
     setPendingDrafts,
     setStatus,
-    tabsRef,
+    setTabs,
   ]);
 
   return {

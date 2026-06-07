@@ -31,3 +31,18 @@ fn agent_window_background_color_falls_back_to_dark_for_unknown_theme() {
     let fallback = agent_window_background_color("definitely-not-a-theme");
     assert_eq!(fallback, tauri::window::Color(0x0e, 0x13, 0x11, 0xff));
 }
+
+#[test]
+fn dock_reopen_without_visible_windows_should_restore_main_window() {
+    assert!(should_restore_main_window_on_reopen(None, false));
+}
+
+#[test]
+fn dock_reopen_with_visible_main_window_should_not_force_restore_main_window() {
+    assert!(!should_restore_main_window_on_reopen(Some(true), true));
+}
+
+#[test]
+fn dock_reopen_with_only_companion_windows_visible_should_restore_main_window() {
+    assert!(should_restore_main_window_on_reopen(Some(false), true));
+}

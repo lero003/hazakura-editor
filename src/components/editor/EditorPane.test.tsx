@@ -1,6 +1,10 @@
 import { cleanup, render } from "@testing-library/react";
+import { createRef } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getEditorWrappingExtensions } from "./EditorPane";
+import {
+  getEditorWrappingExtensions,
+  type EditorPaneHandle,
+} from "./EditorPane";
 import EditorPane from "./EditorPane";
 import { getLModeCopy, getSlashMenuCopy } from "../../lib/locale";
 
@@ -15,15 +19,26 @@ describe("getEditorWrappingExtensions", () => {
 });
 
 describe("EditorPane", () => {
-  it("mounts a restored markdown document", () => {
-    const { container } = render(
+  function renderEditorPane({
+    documentKey = "/workspace/note.md",
+    onChange = vi.fn(),
+    ref,
+    value,
+  }: {
+    documentKey?: string;
+    onChange?: (nextValue: string) => void;
+    ref?: React.Ref<EditorPaneHandle>;
+    value: string;
+  }) {
+    return (
       <EditorPane
+        ref={ref}
         activeSearchMatchIndex={-1}
-        documentKey="/workspace/note.md"
+        documentKey={documentKey}
         fontSize={15}
         lModeCopy={getLModeCopy("en")}
         lModeEnabled={false}
-        onChange={vi.fn()}
+        onChange={onChange}
         onScrollRatioChange={vi.fn()}
         onSelectionChange={vi.fn()}
         searchMatches={[]}
@@ -33,11 +48,42 @@ describe("EditorPane", () => {
         spellcheckEnabled={true}
         tabSize={2}
         theme="light"
-        value="# Note\n\nRestored."
+        value={value}
         wrapLines={true}
-      />,
+      />
+    );
+  }
+
+  it("mounts a restored markdown document", () => {
+    const { container } = render(
+      renderEditorPane({ value: "# Note\n\nRestored." }),
     );
 
     expect(container.querySelector(".editor-mount")).not.toBeNull();
+  });
+
+  it("syncs the CodeMirror document when the same tab receives an external value reset", () => {
+    const editorRef = createRef<EditorPaneHandle>();
+    const onChange = vi.fn();
+    const { rerender } = render(
+      renderEditorPane({
+        onChange,
+        ref: editorRef,
+        value: "unsaved draft",
+      }),
+    );
+
+    expect(editorRef.current?.getActiveDocument()?.text).toBe("unsaved draft");
+
+    rerender(
+      renderEditorPane({
+        onChange,
+        ref: editorRef,
+        value: "saved on disk",
+      }),
+    );
+
+    expect(editorRef.current?.getActiveDocument()?.text).toBe("saved on disk");
+    expect(onChange).not.toHaveBeenCalled();
   });
 });

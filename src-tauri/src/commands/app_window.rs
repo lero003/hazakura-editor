@@ -453,3 +453,34 @@ pub(crate) fn hide_main_window<R: tauri::Runtime>(app: tauri::AppHandle<R>) -> R
     }
     Ok(())
 }
+
+pub(crate) fn should_restore_main_window_on_reopen(
+    main_window_visible: Option<bool>,
+    has_visible_windows: bool,
+) -> bool {
+    match main_window_visible {
+        Some(visible) => !visible,
+        None => !has_visible_windows,
+    }
+}
+
+#[cfg(target_os = "macos")]
+pub(crate) fn restore_main_window_on_reopen<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+    has_visible_windows: bool,
+) {
+    let main_window = app.get_webview_window(MAIN_WINDOW_LABEL);
+    let main_window_visible = main_window
+        .as_ref()
+        .and_then(|window| window.is_visible().ok());
+
+    if !should_restore_main_window_on_reopen(main_window_visible, has_visible_windows) {
+        return;
+    }
+
+    let _ = app.show();
+    if let Some(window) = main_window {
+        let _ = window.show();
+        let _ = window.set_focus();
+    }
+}
