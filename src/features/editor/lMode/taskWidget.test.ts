@@ -154,6 +154,34 @@ describe("dispatchTaskToggle", () => {
     expect(dispatchTaskToggle(view, event)).toBe(false);
   });
 
+  it("returns false when the data attributes are empty strings", () => {
+    const view = makeView("- [ ] todo");
+    const span = document.createElement("span");
+    span.className = LModeClasses.task;
+    span.dataset.lmodeTaskFrom = "";
+    span.dataset.lmodeTaskTo = "";
+    view.dom.appendChild(span);
+    const event = new MouseEvent("click", { bubbles: true });
+    Object.defineProperty(event, "target", { value: span });
+
+    expect(dispatchTaskToggle(view, event)).toBe(false);
+    expect(view.state.doc.toString()).toBe("- [ ] todo");
+  });
+
+  it("returns false when the data range is stale or outside the document", () => {
+    const view = makeView("- [ ] todo");
+    const span = document.createElement("span");
+    span.className = LModeClasses.task;
+    span.dataset.lmodeTaskFrom = "2";
+    span.dataset.lmodeTaskTo = "12";
+    view.dom.appendChild(span);
+    const event = new MouseEvent("click", { bubbles: true });
+    Object.defineProperty(event, "target", { value: span });
+
+    expect(dispatchTaskToggle(view, event)).toBe(false);
+    expect(view.state.doc.toString()).toBe("- [ ] todo");
+  });
+
   it("returns false when the slice under the widget is not a recognisable TaskMarker", () => {
     const view = makeView("- [?] weird");
     const from = view.state.doc.toString().indexOf("[?]");

@@ -95,9 +95,22 @@ export function dispatchTaskToggle(view: EditorView, event: Event): boolean {
   if (!(target instanceof Element)) return false;
   const taskEl = target.closest(`.${LModeClasses.task}`);
   if (!taskEl) return false;
-  const from = Number(taskEl.getAttribute("data-lmode-task-from"));
-  const to = Number(taskEl.getAttribute("data-lmode-task-to"));
-  if (Number.isNaN(from) || Number.isNaN(to)) return false;
+  const fromAttr = taskEl.getAttribute("data-lmode-task-from");
+  const toAttr = taskEl.getAttribute("data-lmode-task-to");
+  if (
+    fromAttr === null ||
+    toAttr === null ||
+    fromAttr === "" ||
+    toAttr === ""
+  ) {
+    return false;
+  }
+  const from = Number(fromAttr);
+  const to = Number(toAttr);
+  if (!Number.isInteger(from) || !Number.isInteger(to)) return false;
+  if (from < 0 || to > view.state.doc.length || to - from !== 3) {
+    return false;
+  }
 
   // The TaskMarker is always 3 chars (`[ ]`, `[x]`, or `[X]`); we
   // replace exactly that range so the rest of the line is
