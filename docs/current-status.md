@@ -3,14 +3,14 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-07
+Last reviewed: 2026-06-08
 
 ## Current State
 
 - `hazakura editor` is a touchable Tauri desktop app for Markdown-first safe text editing.
-- Current warning-expected DMG preview tag is `v0.15.0`.
-- Current package/app version is `0.15.0` across npm, Tauri, Cargo, and lockfile metadata.
-- Current published downloadable preview is `v0.15.0` at `https://github.com/lero003/hazakura-editor/releases/tag/v0.15.0`.
+- Current warning-expected DMG preview tag is `v0.16.0`.
+- Current package/app version is `0.16.0` across npm, Tauri, Cargo, and lockfile metadata.
+- Current published downloadable preview target: `v0.16.0` (publication pending; see v0.16.0 release notes).
 - v0.11.0 is the **L Mode WYSIWYG-tier Polish** preview: it keeps Markdown source canonical while rendering inline emphasis, strong, strike, links, inline code, task checkboxes, horizontal rules, tables, blockquotes, code blocks, ordered/bullet lists, and images as a document-like writing surface through CodeMirror display decoration.
 - v0.11.0 also includes auto-backup restore through an explicit backup-vs-buffer diff/apply flow, hash-based pasted-image deduplication, export CSS parity with Preview, workspace path rekey hardening, common text-extension save filters, and a native View menu L Mode toggle.
 - Local v0.10.0 gates and warning-expected DMG preview generation passed on 2026-06-04. DMG SHA-256: `a3dcbb5a2580639ae70060d1fe85d81ed298e33ffcfa7fe0498686faffadec05`.
@@ -27,7 +27,10 @@ Last reviewed: 2026-06-07
 - v0.15.0 is the **User-Test Quality Polish** warning-expected DMG preview: it closes the post-user-test polish loop with stale-state hardening, L Mode lightness, Apple Local Assist rough-request / stale-candidate polish, settings/theme clarity, and save/recovery robustness. It publishes an Apple Silicon Developer / GitHub lane DMG for cross-machine testing, but remains ad-hoc signed and not notarized.
 - v0.15.0 local release gates and warning-expected DMG preview verification passed on 2026-06-07. DMG SHA-256: `e835a2052c47651134cf37c909501947e4fa407a97767b7d8856eb98ee5e9ec2`.
 - v0.15.0 GitHub Release assets were re-downloaded into a fresh temp directory after publication and passed checksum, `hdiutil verify`, mounted-app metadata, and `codesign --verify --deep --strict --verbose=2`.
-- Post-v0.15 work should move into a v0.16 **Release Prep** lane, followed by a v0.17 **Release Polish** lane for final release-facing touch-ups.
+- v0.16.0 is the **Per-Surface Font Sizes (v0.16 L Mode Live Source Quality Follow-up)** warning-expected DMG preview. The first slice of the v0.16 lane is settings / theme polish: the font size preference is split into per-surface values for the editor / preview / workspace / L Mode surfaces, the workspace tree CSS is re-anchored so the slider actually changes every text-bearing element, and Chromium / WebKit's `-webkit-small-control` button reset is added so the file tree base size is no longer silently blocked.
+- v0.16.0 local release gates and warning-expected DMG preview verification: _to be recorded after the local gate run completes_.
+- v0.16.0 GitHub Release publication and remote verification: _pending; do not assert publication until the user explicitly approves the warning-expected binary asset_.
+- Post-v0.16 work should move into a v0.17 **Distribution Prep** lane, then a v0.17 **Release Polish** lane for final release-facing touch-ups.
 - Older public tags remain immutable.
 
 ## Current Product Boundary
@@ -49,6 +52,7 @@ Use these documents for release evidence and future release decisions:
 - `docs/releases/0.13.0-source-tag.release.md`
 - `docs/releases/0.14.0-source-tag.release.md`
 - `docs/releases/0.15.0-warning-expected-dmg-preview.release.md`
+- `docs/releases/0.16.0-warning-expected-dmg-preview.release.md`
 - `docs/source-release-checklist.md`
 - `docs/dmg-preview-checklist.md`
 - `docs/smoke-checklist.md`
@@ -117,6 +121,20 @@ The important behavior changes are stale-state oriented. Late async completions 
 The user-facing polish is intentionally small: L Mode action-rail and task-widget behavior is steadier around IME/focus/stale ranges, image previews can be closed from the tab row, L Mode image preview loses the normal divider, settings gained visible theme/language hints and more natural Japanese / かなふみ copy, and IPC failures that matter to the user now surface through status instead of console-only warnings.
 
 The DMG uses the Developer / GitHub lane (`hazakura editor Dev.app`, `lab.hazakura.note.dev`) so Agent Workbench remains available for preview users. It is ad-hoc signed, not Developer ID signed, not notarized, and should be treated as a hands-on preview artifact rather than a trusted distribution.
+
+## v0.16.0 Per-Surface Font Sizes warning-expected DMG preview
+
+v0.16.0 is the first source / settings polish slice in the v0.16 L Mode Live Source Quality Follow-up lane. The release is not the lane's full L Mode guardrail sweep (table / checkbox / code-fence / quote / image / IME work), it is the user-facing settings / theme polish slice that the lane has absorbed: the font size preference is split into per-surface values for the editor / preview / workspace / L Mode surfaces, the workspace tree CSS is re-anchored so every text-bearing element inside the tree pane (file names, folder names, the WORKSPACE kicker, the New File / New Folder popover, the empty-state Open Folder button, the rename input, and the tree-partial note) actually scales with the slider, and Chromium / WebKit's `-webkit-small-control` button reset is added so the file tree base size is no longer silently blocked. Markdown source stays canonical, L Mode still renders through CodeMirror decorations, the saved document model is unchanged, and there is no Preview DOM editing / `contenteditable` / hidden save-time rewriting.
+
+Like v0.15.0, the v0.16.0 DMG uses the Developer / GitHub lane (`hazakura editor Dev.app`, `lab.hazakura.note.dev`) so Agent Workbench remains available for preview users. It is ad-hoc signed, not Developer ID signed, not notarized, and should be treated as a hands-on preview artifact rather than a trusted distribution.
+
+v0.16.0 local release gates and warning-expected DMG preview verification:
+
+- _to be recorded after the local gate run completes._
+
+v0.16.0 GitHub Release publication and remote verification:
+
+- _pending; do not assert publication until the user explicitly approves the warning-expected binary asset._
 
 ## v0.16 L Mode Live Source Quality Follow-up
 
