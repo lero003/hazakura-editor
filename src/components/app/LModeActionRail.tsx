@@ -78,6 +78,7 @@ export function LModeActionRail({
   const [changeReview, setChangeReview] =
     useState<ChangeReviewSnapshot | null>(null);
   const activeDocumentPathRef = useRef(activeDocumentPath);
+  const reviewRequestSeqRef = useRef(0);
   activeDocumentPathRef.current = activeDocumentPath;
 
   // Refs into the workspace-toggle and review-changes buttons
@@ -142,9 +143,12 @@ export function LModeActionRail({
   }, [activeDirty]);
 
   const handleReviewChanges = useCallback(async () => {
+    const requestSeq = reviewRequestSeqRef.current + 1;
+    reviewRequestSeqRef.current = requestSeq;
     const snapshot = await onReviewChanges();
     if (
       snapshot &&
+      requestSeq === reviewRequestSeqRef.current &&
       snapshot.compareCase.documentPath === activeDocumentPathRef.current
     ) {
       setChangeReview(snapshot);

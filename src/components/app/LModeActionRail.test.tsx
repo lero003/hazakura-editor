@@ -69,6 +69,21 @@ function changeReviewSnapshot(): ChangeReviewSnapshot {
   };
 }
 
+function changeReviewSnapshotWithCounts(
+  additions: number,
+  removals: number,
+): ChangeReviewSnapshot {
+  const base = changeReviewSnapshot();
+  return {
+    ...base,
+    compareView: {
+      ...base.compareView,
+      additions,
+      removals,
+    },
+  };
+}
+
 // Default props for the L Mode action rail. Tests override
 // individual fields as needed. The default `assistSurfaceActive`
 // is "apple-local" so the Apple Assist button is visible by
@@ -242,6 +257,45 @@ describe("LModeActionRail", () => {
     });
 
     expect(screen.queryByRole("dialog", { name: "Change review" })).toBeNull();
+  });
+
+  it("keeps the newest review request when older requests resolve later", async () => {
+    const resolvers: Array<
+      (snapshot: ChangeReviewSnapshot | null) => void
+    > = [];
+    const onReviewChanges = vi.fn(
+      () =>
+        new Promise<ChangeReviewSnapshot | null>((resolve) => {
+          resolvers.push(resolve);
+        }),
+    );
+    render(
+      <LModeActionRail
+        {...defaultProps({
+          activeDocumentPath: "/workspace/note.md",
+          onReviewChanges,
+          reviewChangesAvailable: true,
+        })}
+      />,
+    );
+
+    const reviewButton = screen.getByRole("button", { name: /Review changes/ });
+    fireEvent.click(reviewButton);
+    fireEvent.click(reviewButton);
+    expect(onReviewChanges).toHaveBeenCalledTimes(2);
+
+    await act(async () => {
+      resolvers[1]?.(changeReviewSnapshotWithCounts(5, 0));
+      await Promise.resolve();
+    });
+    expect(await screen.findByLabelText("+5 / -0")).toBeTruthy();
+
+    await act(async () => {
+      resolvers[0]?.(changeReviewSnapshotWithCounts(1, 9));
+      await Promise.resolve();
+    });
+    expect(screen.getByLabelText("+5 / -0")).toBeTruthy();
+    expect(screen.queryByLabelText("+1 / -9")).toBeNull();
   });
 
   // v0.15 polish: after closing the change review sheet, focus
