@@ -530,6 +530,26 @@ describe("v0.11 Typora-feel rendering", () => {
     expect(hasLineClass(set, betaStart, "cm-lmode-source-line")).toBe(true);
   });
 
+  it("does not mark the next line active when selection ends at its first column", () => {
+    // CodeMirror selections are half-open. When the selection
+    // ends exactly at the next line's first column, that next
+    // line has no selected character yet, so L Mode should
+    // keep its source-marker reveal quiet.
+    const source = "alpha\nbeta\ngamma\n";
+    const betaStart = source.indexOf("beta");
+    const gammaStart = source.indexOf("gamma");
+    const state = EditorState.create({
+      doc: source,
+      extensions: [markdown({ base: markdownLanguage })],
+      selection: { anchor: betaStart, head: gammaStart },
+    });
+    const set = computeLModeDecorations(state);
+
+    expect(hasLineClass(set, betaStart, "cm-lmode-source-line")).toBe(true);
+    expect(hasLineClass(set, gammaStart, "cm-lmode-source-line")).toBe(false);
+    expect(hasLineClass(set, gammaStart, "cm-lmode-dimmed")).toBe(true);
+  });
+
   it("attaches the data-l-chip attribute to structural lines (heading, blockquote, fenced code)", () => {
     // The chip labels live in the TS catalog
     // (`LModeChipLabels`) and the CSS renders them via

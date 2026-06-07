@@ -49,7 +49,8 @@ export function getActiveLineRanges(
     const from = Math.min(selection.from, selection.to);
     const to = Math.max(selection.from, selection.to);
     const fromLine = state.doc.lineAt(from);
-    const toLine = state.doc.lineAt(to);
+    const inclusiveTo = to > from ? to - 1 : to;
+    const toLine = state.doc.lineAt(inclusiveTo);
     for (
       let lineNumber = fromLine.number;
       lineNumber <= toLine.number;
