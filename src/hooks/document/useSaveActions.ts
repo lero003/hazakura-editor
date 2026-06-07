@@ -14,6 +14,10 @@ import { removeStoredDraft } from "../../lib/storage";
 import { suggestedSaveAsPath } from "../../lib/utils";
 import type { EditorTab } from "../../types";
 
+type RefValue<T> = {
+  current: T;
+};
+
 type UseSaveActionsOptions = {
   activeTab: EditorTab | null;
   activeTabId: string | null;
@@ -24,6 +28,7 @@ type UseSaveActionsOptions = {
   setStatus: Dispatch<SetStateAction<string>>;
   setTabs: Dispatch<SetStateAction<EditorTab[]>>;
   tabs: EditorTab[];
+  tabsRef: RefValue<EditorTab[]>;
   workspaceRootPath: string | null;
 };
 
@@ -37,11 +42,12 @@ export function useSaveActions({
   setStatus,
   setTabs,
   tabs,
+  tabsRef,
   workspaceRootPath,
 }: UseSaveActionsOptions) {
   const saveTabById = useCallback(
     async (tabId: string): Promise<boolean> => {
-      const tab = tabs.find((candidate) => candidate.id === tabId);
+      const tab = tabsRef.current.find((candidate) => candidate.id === tabId);
 
       if (!tab || !isDirty(tab)) {
         return true;
@@ -65,30 +71,40 @@ export function useSaveActions({
           tab.encoding,
         );
 
+        let savedTabIsClean = false;
         setTabs((currentTabs) =>
           currentTabs.map((candidate) =>
             candidate.id === tabId
-              ? {
-                  ...candidate,
-                  line_ending: saved.line_ending,
-                  encoding: saved.encoding,
-                  size: saved.size,
-                  modified_ms: saved.modified_ms,
-                  fingerprint: saved.fingerprint,
-                  large_file_warning: saved.size >= 5 * 1024 * 1024,
-                  lastSavedContents: tab.contents,
-                  lastSavedLineEnding: saved.line_ending,
-                  lastSavedEncoding: saved.encoding,
-                  ignoredExternalFingerprint: null,
-                  externalFingerprint: null,
-                  saveStatus: "saved",
-                  error: null,
-                }
+              ? (() => {
+                  const nextTab: EditorTab = {
+                    ...candidate,
+                    line_ending: saved.line_ending,
+                    encoding: saved.encoding,
+                    size: saved.size,
+                    modified_ms: saved.modified_ms,
+                    fingerprint: saved.fingerprint,
+                    large_file_warning: saved.size >= 5 * 1024 * 1024,
+                    lastSavedContents: tab.contents,
+                    lastSavedLineEnding: saved.line_ending,
+                    lastSavedEncoding: saved.encoding,
+                    ignoredExternalFingerprint: null,
+                    externalFingerprint: null,
+                    error: null,
+                    saveStatus: "idle",
+                  };
+                  savedTabIsClean = !isDirty(nextTab);
+                  return {
+                    ...nextTab,
+                    saveStatus: savedTabIsClean ? "saved" : "idle",
+                  };
+                })()
               : candidate,
           ),
         );
         setStatus("Saved");
-        removeStoredDraft(tab.path);
+        if (savedTabIsClean) {
+          removeStoredDraft(tab.path);
+        }
         return true;
       } catch (err) {
         const message = String(err);
@@ -112,7 +128,7 @@ export function useSaveActions({
         return false;
       }
     },
-    [setStatus, setTabs, tabs],
+    [setStatus, setTabs, tabsRef],
   );
 
   const saveActiveTab = useCallback(async () => {

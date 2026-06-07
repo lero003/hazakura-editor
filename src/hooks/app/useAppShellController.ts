@@ -694,6 +694,7 @@ export function useAppShellController() {
     setStatus,
     setTabs,
     tabs,
+    tabsRef,
     workspaceRootPath,
   });
 
