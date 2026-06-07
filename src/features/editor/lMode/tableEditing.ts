@@ -7,6 +7,8 @@ import {
 import {
   EditorView,
   keymap,
+  type PluginValue,
+  ViewPlugin,
 } from "@codemirror/view";
 
 type TableCell = {
@@ -175,39 +177,61 @@ export function deleteSelectedTableRows(view: EditorView): boolean {
   return true;
 }
 
+export function snapLModeCursorToContent(view: EditorView): boolean {
+  if (view.composing) {
+    return false;
+  }
+
+  const range = view.state.selection.main;
+  if (!range.empty) {
+    return false;
+  }
+
+  const snappedPosition = snapCursorPosition(view, range.from);
+  if (snappedPosition === null || snappedPosition === range.from) {
+    return false;
+  }
+
+  setCursor(view, snappedPosition);
+  return true;
+}
+
 export function lModeTableEditingPlugin() {
-  return Prec.highest(
-    keymap.of([
-      {
-        key: "ArrowRight",
-        run: runWhenNotComposing(moveTableCellRight),
-      },
-      {
-        key: "ArrowLeft",
-        run: runWhenNotComposing(moveTableCellLeft),
-      },
-      {
-        key: "Enter",
-        run: runWhenNotComposing(insertTableRowAfterCursor),
-      },
-      {
-        key: "Shift-Enter",
-        run: runWhenNotComposing(insertTableCellBreak),
-      },
-      {
-        key: "|",
-        run: runWhenNotComposing(insertTableCellPipe),
-      },
-      {
-        key: "Backspace",
-        run: runWhenNotComposing(deleteSelectedTableRows),
-      },
-      {
-        key: "Delete",
-        run: runWhenNotComposing(deleteSelectedTableRows),
-      },
-    ]),
-  );
+  return [
+    Prec.highest(
+      keymap.of([
+        {
+          key: "ArrowRight",
+          run: runWhenNotComposing(moveTableCellRight),
+        },
+        {
+          key: "ArrowLeft",
+          run: runWhenNotComposing(moveTableCellLeft),
+        },
+        {
+          key: "Enter",
+          run: runWhenNotComposing(insertTableRowAfterCursor),
+        },
+        {
+          key: "Shift-Enter",
+          run: runWhenNotComposing(insertTableCellBreak),
+        },
+        {
+          key: "|",
+          run: runWhenNotComposing(insertTableCellPipe),
+        },
+        {
+          key: "Backspace",
+          run: runWhenNotComposing(deleteSelectedTableRows),
+        },
+        {
+          key: "Delete",
+          run: runWhenNotComposing(deleteSelectedTableRows),
+        },
+      ]),
+    ),
+    lModeCursorBoundaryPlugin(),
+  ];
 }
 
 function readTableRowAt(view: EditorView, position: number) {
@@ -223,6 +247,54 @@ function readTableRowAt(view: EditorView, position: number) {
   }
 
   return { line, cells, isDelimiter };
+}
+
+function snapCursorPosition(view: EditorView, position: number): number | null {
+  const tablePosition = snapTableCursorPosition(view, position);
+  if (tablePosition !== null) {
+    return tablePosition;
+  }
+
+  return snapStructuralMarkerPosition(view, position);
+}
+
+function snapTableCursorPosition(
+  view: EditorView,
+  position: number,
+): number | null {
+  const row = readTableRowAt(view, position);
+  if (!row || row.isDelimiter) {
+    return null;
+  }
+
+  const cellIndex = findCellIndex(row.cells, position);
+  if (cellIndex < 0) {
+    return null;
+  }
+
+  const cell = row.cells[cellIndex];
+  if (position < cell.contentFrom) {
+    return cell.contentFrom;
+  }
+  if (position > cell.contentTo) {
+    return cell.contentTo;
+  }
+  return null;
+}
+
+function snapStructuralMarkerPosition(
+  view: EditorView,
+  position: number,
+): number | null {
+  const line = view.state.doc.lineAt(position);
+  const relative = position - line.from;
+  const match = line.text.match(/^(?:#{1,6}|>|[-*+]|\d+[.)])\s+/);
+  if (!match) {
+    return null;
+  }
+
+  const contentStart = match[0].length;
+  return relative < contentStart ? line.from + contentStart : null;
 }
 
 function findTableBlock(
@@ -423,6 +495,40 @@ function buildEmptyTableRow(columnCount: number, sourceLineText: string): string
 
 function setCursor(view: EditorView, position: number): void {
   view.dispatch({ selection: EditorSelection.cursor(position) });
+}
+
+function lModeCursorBoundaryPlugin() {
+  return ViewPlugin.fromClass(
+    class implements PluginValue {
+      private frame: number | null = null;
+
+      constructor(readonly view: EditorView) {}
+
+      update() {
+        this.scheduleSnap();
+      }
+
+      destroy() {
+        if (this.frame !== null) {
+          const win = this.view.dom.ownerDocument.defaultView ?? window;
+          win.cancelAnimationFrame(this.frame);
+          this.frame = null;
+        }
+      }
+
+      private scheduleSnap() {
+        if (this.frame !== null) {
+          return;
+        }
+
+        const win = this.view.dom.ownerDocument.defaultView ?? window;
+        this.frame = win.requestAnimationFrame(() => {
+          this.frame = null;
+          snapLModeCursorToContent(this.view);
+        });
+      }
+    },
+  );
 }
 
 function runWhenNotComposing(

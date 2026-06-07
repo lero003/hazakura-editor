@@ -8,6 +8,7 @@ import {
   insertTableCellPipe,
   moveTableCellLeft,
   moveTableCellRight,
+  snapLModeCursorToContent,
 } from "./tableEditing";
 
 function makeView(doc: string, anchor: number, head = anchor): EditorView {
@@ -124,6 +125,39 @@ describe("L Mode table editing", () => {
         "| --- | --- | --- |\n" +
         "| Preview | 開発版\\|・検証用 | 早期に試したい人 |\n",
     );
+  });
+
+  it("moves the cursor out of structural marker prefixes", () => {
+    const doc = "# Heading\n> Quote\n";
+    const view = makeView(doc, offsetOf(doc, "# Heading") + "#".length);
+
+    expect(snapLModeCursorToContent(view)).toBe(true);
+    expect(view.state.selection.main.from).toBe(offsetOf(doc, "Heading"));
+
+    view.dispatch({
+      selection: EditorSelection.cursor(offsetOf(doc, "> Quote") + ">".length),
+    });
+
+    expect(snapLModeCursorToContent(view)).toBe(true);
+    expect(view.state.selection.main.from).toBe(offsetOf(doc, "Quote"));
+  });
+
+  it("moves the cursor out of table cell padding", () => {
+    const doc =
+      "| プラン | 内容 |\n" +
+      "| --- | --- |\n" +
+      "| あ |  い|\n";
+    const view = makeView(doc, offsetOf(doc, "| あ |") + "|".length);
+
+    expect(snapLModeCursorToContent(view)).toBe(true);
+    expect(view.state.selection.main.from).toBe(offsetOf(doc, "あ"));
+
+    view.dispatch({
+      selection: EditorSelection.cursor(offsetOf(doc, "  い") + 1),
+    });
+
+    expect(snapLModeCursorToContent(view)).toBe(true);
+    expect(view.state.selection.main.from).toBe(offsetOf(doc, "い"));
   });
 
   it("deletes whole selected table body rows", () => {

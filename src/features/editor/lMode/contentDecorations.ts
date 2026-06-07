@@ -272,8 +272,7 @@ export function computeContentDecorations(
 function markerRangeTo(state: EditorState, node: SyntaxNode): number {
   if (
     !shouldHideFollowingMarkerSpace(node.name) ||
-    node.to >= state.doc.length ||
-    isActiveLineNode(state, node)
+    node.to >= state.doc.length
   ) {
     return node.to;
   }
@@ -281,15 +280,6 @@ function markerRangeTo(state: EditorState, node: SyntaxNode): number {
   return state.doc.sliceString(node.to, node.to + 1) === " "
     ? node.to + 1
     : node.to;
-}
-
-function isActiveLineNode(state: EditorState, node: SyntaxNode): boolean {
-  const lineNumber = state.doc.lineAt(node.from).number;
-  return state.selection.ranges.some((range) => {
-    const fromLine = state.doc.lineAt(range.from).number;
-    const toLine = state.doc.lineAt(range.to).number;
-    return lineNumber >= fromLine && lineNumber <= toLine;
-  });
 }
 
 function shouldHideFollowingMarkerSpace(nodeName: string): boolean {

@@ -217,7 +217,7 @@ describe("computeLModeDecorations", () => {
     ).toBe(true);
   });
 
-  it("keeps the marker-following space visible on the active line for IME input", () => {
+  it("keeps marker-following space hidden on active structural lines", () => {
     const source = "# Heading\n> Quote\n";
     const headingMark = source.indexOf("# Heading");
     const quoteMark = source.indexOf("> Quote");
@@ -234,28 +234,12 @@ describe("computeLModeDecorations", () => {
         headingMark + "# ".length,
         "cm-lmode-hidden",
       ),
-    ).toBe(false);
-    expect(
-      hasClassMark(
-        onHeading,
-        headingMark,
-        headingMark + "#".length,
-        "cm-lmode-hidden",
-      ),
     ).toBe(true);
     expect(
       hasClassMark(
         onQuote,
         quoteMark,
         quoteMark + "> ".length,
-        "cm-lmode-hidden",
-      ),
-    ).toBe(false);
-    expect(
-      hasClassMark(
-        onQuote,
-        quoteMark,
-        quoteMark + ">".length,
         "cm-lmode-hidden",
       ),
     ).toBe(true);
