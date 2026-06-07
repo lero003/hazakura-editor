@@ -1,4 +1,4 @@
-import { cleanup, render } from "@testing-library/react";
+import { cleanup, render, waitFor } from "@testing-library/react";
 import { createRef } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
@@ -22,11 +22,16 @@ describe("EditorPane", () => {
   function renderEditorPane({
     documentKey = "/workspace/note.md",
     onChange = vi.fn(),
+    onPasteImage,
     ref,
     value,
   }: {
     documentKey?: string;
     onChange?: (nextValue: string) => void;
+    onPasteImage?: (
+      dataBase64: string,
+      fileName: string,
+    ) => Promise<string | null>;
     ref?: React.Ref<EditorPaneHandle>;
     value: string;
   }) {
@@ -39,6 +44,7 @@ describe("EditorPane", () => {
         lModeCopy={getLModeCopy("en")}
         lModeEnabled={false}
         onChange={onChange}
+        onPasteImage={onPasteImage}
         onScrollRatioChange={vi.fn()}
         onSelectionChange={vi.fn()}
         searchMatches={[]}
@@ -85,5 +91,107 @@ describe("EditorPane", () => {
 
     expect(editorRef.current?.getActiveDocument()?.text).toBe("saved on disk");
     expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("inserts a pasted image at the paste-time selection even if the cursor moves before save completes", async () => {
+    const editorRef = createRef<EditorPaneHandle>();
+    const onChange = vi.fn();
+    let resolvePaste:
+      | ((relativePath: string | null) => void)
+      | undefined;
+    const onPasteImage = vi.fn(
+      () =>
+        new Promise<string | null>((resolve) => {
+          resolvePaste = resolve;
+        }),
+    );
+    const { container } = render(
+      renderEditorPane({
+        onChange,
+        onPasteImage,
+        ref: editorRef,
+        value: "alpha\nbeta\n",
+      }),
+    );
+
+    const content = container.querySelector(".cm-content");
+    expect(content).not.toBeNull();
+    const file = new File(["fake"], "figure.png", { type: "image/png" });
+    const event = new Event("paste", { bubbles: true, cancelable: true });
+    Object.defineProperty(event, "clipboardData", {
+      value: {
+        items: [
+          {
+            type: "image/png",
+            getAsFile: () => file,
+          },
+        ],
+      },
+    });
+
+    content?.dispatchEvent(event);
+    await waitFor(() => {
+      expect(onPasteImage).toHaveBeenCalled();
+    });
+    editorRef.current?.goToLine(2);
+    resolvePaste?.("assets/figure.png");
+
+    await waitFor(() => {
+      expect(onChange).toHaveBeenCalledWith(
+        "![](assets/figure.png)\nalpha\nbeta\n",
+      );
+    });
+  });
+
+  it("does not insert a pasted image if the document changes before save completes", async () => {
+    const editorRef = createRef<EditorPaneHandle>();
+    const onChange = vi.fn();
+    let resolvePaste:
+      | ((relativePath: string | null) => void)
+      | undefined;
+    const onPasteImage = vi.fn(
+      () =>
+        new Promise<string | null>((resolve) => {
+          resolvePaste = resolve;
+        }),
+    );
+    const { container } = render(
+      renderEditorPane({
+        onChange,
+        onPasteImage,
+        ref: editorRef,
+        value: "alpha\nbeta\n",
+      }),
+    );
+
+    const content = container.querySelector(".cm-content");
+    expect(content).not.toBeNull();
+    const file = new File(["fake"], "figure.png", { type: "image/png" });
+    const event = new Event("paste", { bubbles: true, cancelable: true });
+    Object.defineProperty(event, "clipboardData", {
+      value: {
+        items: [
+          {
+            type: "image/png",
+            getAsFile: () => file,
+          },
+        ],
+      },
+    });
+
+    content?.dispatchEvent(event);
+    await waitFor(() => {
+      expect(onPasteImage).toHaveBeenCalled();
+    });
+    editorRef.current?.insertText("typed ");
+    resolvePaste?.("assets/figure.png");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(editorRef.current?.getActiveDocument()?.text).toBe(
+      "typed alpha\nbeta\n",
+    );
+    expect(onChange).not.toHaveBeenCalledWith(
+      "![](assets/figure.png)\nalpha\nbeta\n",
+    );
   });
 });

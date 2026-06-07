@@ -436,6 +436,8 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
 
             event.preventDefault();
 
+            const pasteSelection = view.state.selection.main;
+            const docAtPaste = view.state.doc;
             const file = imageItem.getAsFile();
             if (!file) return false;
 
@@ -450,10 +452,11 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
               try {
                 const relativePath = await handler(rawBase64, fileName);
                 if (!relativePath) return;
+                if (view.state.doc !== docAtPaste) return;
                 view.dispatch({
                   changes: {
-                    from: view.state.selection.main.from,
-                    to: view.state.selection.main.to,
+                    from: pasteSelection.from,
+                    to: pasteSelection.to,
                     insert: `![](${relativePath})\n`,
                   },
                 });
