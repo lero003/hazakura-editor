@@ -21,12 +21,14 @@ describe("getEditorWrappingExtensions", () => {
 describe("EditorPane", () => {
   function renderEditorPane({
     documentKey = "/workspace/note.md",
+    lModeEnabled = false,
     onChange = vi.fn(),
     onPasteImage,
     ref,
     value,
   }: {
     documentKey?: string;
+    lModeEnabled?: boolean;
     onChange?: (nextValue: string) => void;
     onPasteImage?: (
       dataBase64: string,
@@ -42,7 +44,7 @@ describe("EditorPane", () => {
         documentKey={documentKey}
         fontSize={15}
         lModeCopy={getLModeCopy("en")}
-        lModeEnabled={false}
+        lModeEnabled={lModeEnabled}
         onChange={onChange}
         onPasteImage={onPasteImage}
         onScrollRatioChange={vi.fn()}
@@ -66,6 +68,53 @@ describe("EditorPane", () => {
     );
 
     expect(container.querySelector(".editor-mount")).not.toBeNull();
+  });
+
+  it("resets the cursor to the first line when L Mode is toggled on", async () => {
+    const editorRef = createRef<EditorPaneHandle>();
+    const { rerender } = render(
+      renderEditorPane({
+        ref: editorRef,
+        value: "line 1\nline 2\nline 3\n",
+      }),
+    );
+
+    editorRef.current?.goToLine(2);
+    expect(editorRef.current?.getActiveDocument()?.from).toBeGreaterThan(0);
+
+    rerender(
+      renderEditorPane({
+        ref: editorRef,
+        value: "line 1\nline 2\nline 3\n",
+        lModeEnabled: true,
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(editorRef.current?.getActiveDocument()?.from).toBe(0);
+  });
+
+  it("resets the cursor to the first line when L Mode is toggled off", async () => {
+    const editorRef = createRef<EditorPaneHandle>();
+    const { rerender } = render(
+      renderEditorPane({
+        ref: editorRef,
+        value: "line 1\nline 2\nline 3\n",
+        lModeEnabled: true,
+      }),
+    );
+
+    editorRef.current?.goToLine(2);
+    expect(editorRef.current?.getActiveDocument()?.from).toBeGreaterThan(0);
+
+    rerender(
+      renderEditorPane({
+        ref: editorRef,
+        value: "line 1\nline 2\nline 3\n",
+        lModeEnabled: false,
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(editorRef.current?.getActiveDocument()?.from).toBe(0);
   });
 
   it("syncs the CodeMirror document when the same tab receives an external value reset", () => {

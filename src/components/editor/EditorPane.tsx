@@ -580,17 +580,27 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       return;
     }
 
+    // L Mode トグル時は 1 行目に明示的にリセットする。
+    // Compartment.reconfigure と同フレームの最初の mousedown で
+    // click position 認識が古い layout を読み、
+    // 意図しない位置にフォーカスが飛ぶ現象を、
+    // 「mode 切替 = 別の画面に遷移」というユーザー体験で置き換える。
+    // (えるモード ↔ 編集モード = 別の文書を見ている感覚)
     view.dispatch({
-      effects: lModeCompartmentRef.current.reconfigure(
-        lModeExtension(
-          lModeEnabled,
-          {
-            workspaceRoot: workspaceRoot ?? null,
-            documentPath: documentKey,
-          },
-          { typewriterMode: lModeTypewriter },
+      selection: { anchor: 0, head: 0 },
+      effects: [
+        EditorView.scrollIntoView(0, { y: "start" }),
+        lModeCompartmentRef.current.reconfigure(
+          lModeExtension(
+            lModeEnabled,
+            {
+              workspaceRoot: workspaceRoot ?? null,
+              documentPath: documentKey,
+            },
+            { typewriterMode: lModeTypewriter },
+          ),
         ),
-      ),
+      ],
     });
   }, [lModeEnabled, lModeTypewriter, workspaceRoot, documentKey]);
 
