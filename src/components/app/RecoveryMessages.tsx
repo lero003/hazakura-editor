@@ -8,6 +8,7 @@ type RecoveryMessagesProps = {
   activeSaveError: boolean;
   activeTab: EditorTab | null;
   copy: RecoveryCopy;
+  draftReviewAvailable?: boolean;
   onClearSaveError: (tabId: string) => void;
   onCloseTabWithoutSaving: (tabId: string) => void;
   onDiscardDraft: (draftPath: string) => void;
@@ -26,6 +27,7 @@ export function RecoveryMessages({
   activeSaveError,
   activeTab,
   copy,
+  draftReviewAvailable = true,
   onClearSaveError,
   onCloseTabWithoutSaving,
   onDiscardDraft,
@@ -55,12 +57,14 @@ export function RecoveryMessages({
             </span>
           </span>
           <div className="message-actions" aria-label={copy.draftActions}>
-            <button
-              type="button"
-              onClick={() => onReviewDraftAgainstDisk(activeTab, activeDraft)}
-            >
-              {copy.reviewChanges}
-            </button>
+            {draftReviewAvailable ? (
+              <button
+                type="button"
+                onClick={() => onReviewDraftAgainstDisk(activeTab, activeDraft)}
+              >
+                {copy.reviewChanges}
+              </button>
+            ) : null}
             <button type="button" onClick={() => onRestoreDraft(activeDraft)}>
               {copy.restoreDraft}
             </button>

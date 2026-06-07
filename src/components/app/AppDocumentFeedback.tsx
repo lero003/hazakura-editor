@@ -34,6 +34,7 @@ type AppDocumentFeedbackProps = {
   handleReplaceKeyDown: (event: ReactKeyboardEvent<HTMLInputElement>) => void;
   invalidRegex: boolean;
   keepEditingAfterConflict: (tabId: string) => void;
+  lModeEnabled: boolean;
   recoveryCopy: RecoveryCopy;
   reopenTabFromDisk: (tabId: string) => void;
   replaceAll: () => void;
@@ -75,6 +76,7 @@ export function AppDocumentFeedback({
   handleReplaceKeyDown,
   invalidRegex,
   keepEditingAfterConflict,
+  lModeEnabled,
   recoveryCopy,
   reopenTabFromDisk,
   replaceAll,
@@ -128,6 +130,7 @@ export function AppDocumentFeedback({
         activeSaveError={activeSaveError}
         activeTab={activeTab}
         copy={recoveryCopy}
+        draftReviewAvailable={!lModeEnabled}
         onClearSaveError={clearSaveError}
         onCloseTabWithoutSaving={closeTabNow}
         onDiscardDraft={discardDraft}

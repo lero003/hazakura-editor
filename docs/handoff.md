@@ -50,6 +50,7 @@
 - `v0.15.0` release preparation aligns npm, Tauri, Cargo, and lockfile version surfaces; adds `docs/releases/0.15.0-warning-expected-dmg-preview.release.md`; publishes the Developer / GitHub lane as a warning-expected DMG preview for cross-machine testing; and frames the next lanes as v0.16 Release Prep followed by v0.17 Release Polish.
 - Post-v0.15 L Mode follow-up reframed the writing surface as **Live Source** in `docs/l-mode-plan.md`: inactive lines may render document-like decorations, but active / selected lines stay source-like at the decoration-building layer. Tables are explicitly limited to readable presentation plus breakage-prevention behavior, not full WYSIWYG structural editing.
 - Follow-up L Mode image behavior now treats editor focus as part of Live Source: while focused, the active image line stays Markdown source; after editor blur, inactive document-like rendering returns, so image widgets can show. Preview workspace-image policy is pinned for Markdown README images, raw HTML `<img>` tags, and async data-URL inlining.
+- L Mode draft-recovery banners intentionally hide the `変更を確認` / `Review changes` action. The draft can still be restored or discarded in L Mode, but draft-vs-disk comparison stays in the normal edit surface to avoid opening the hidden right-pane compare UI under L Mode chrome.
 
 ## Decisions
 
@@ -94,6 +95,7 @@
 - v0.15.0 remote verification passed after publication: `gh release download v0.15.0` into a fresh temp directory, `shasum -c`, `hdiutil verify`, mounted app metadata (`0.15.0`, `lab.hazakura.note.dev`, `hazakura editor Dev`, `hazakura-editor`), and mounted app `codesign --verify --deep --strict --verbose=2`.
 - L Mode Live Source follow-up verification passed on 2026-06-07: regression RED was observed for active-line marker suppression; then `npm run test` (68 files / 487 tests), `npm run build:vite`, `npm run build`, `codesign --verify --deep --strict --verbose=2 "src-tauri/target/release/bundle/macos/hazakura editor.app"`, and `git diff --check` passed. Built-app IME smoke still requires a real app run.
 - L Mode / Preview workspace-image follow-up verification passed on 2026-06-07: focused tests for `markdown.test.ts`, `lMode/extension.test.ts`, and `lMode/imageWidget.test.ts`; full `npm run test` (68 files / 490 tests); `npm run build:vite`; `npm run build`; built-app `codesign --verify --deep --strict --verbose=2`; and `git diff --check`.
+- L Mode draft-recovery banner follow-up verification passed on 2026-06-07: focused RecoveryMessages / DocumentMetaBar / LModeActionRail tests, full `npm run test` (68 files / 491 tests), `npm run build:vite`, `npm run build`, built-app `codesign --verify --deep --strict --verbose=2`, and `git diff --check`.
 
 ## Risks / Unknowns
 

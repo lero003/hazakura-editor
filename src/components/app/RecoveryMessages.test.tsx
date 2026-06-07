@@ -56,4 +56,59 @@ describe("RecoveryMessages", () => {
 
     expect(screen.getByText("Could not save")).toBeTruthy();
   });
+
+  it("can hide the draft review action for L Mode recovery banners", () => {
+    const review = vi.fn();
+    const draft = {
+      contents: "draft",
+      line_ending: "lf" as const,
+      path: "/workspace/note.md",
+      savedFingerprint: "fp-disk",
+      updatedAt: 1780815960000,
+    };
+    const tab = {
+      contents: "disk",
+      encoding: "utf-8" as const,
+      error: null,
+      externalFingerprint: null,
+      fingerprint: "fp-disk",
+      id: "tab-1",
+      ignoredExternalFingerprint: null,
+      large_file_warning: false,
+      lastSavedContents: "disk",
+      lastSavedEncoding: "utf-8" as const,
+      lastSavedLineEnding: "lf" as const,
+      line_ending: "lf" as const,
+      modified_ms: null,
+      name: "note.md",
+      path: "/workspace/note.md",
+      saveStatus: "idle" as const,
+      size: 4,
+    };
+
+    render(
+      <RecoveryMessages
+        activeConflict={false}
+        activeDraft={draft}
+        activeError={null}
+        activeSaveError={false}
+        activeTab={tab}
+        copy={copy}
+        draftReviewAvailable={false}
+        onClearSaveError={noop}
+        onCloseTabWithoutSaving={noop}
+        onDiscardDraft={noop}
+        onKeepEditingAfterConflict={noop}
+        onReopenTabFromDisk={noop}
+        onRestoreDraft={noop}
+        onReviewDraftAgainstDisk={review}
+        onReviewTabAgainstDisk={noop}
+        onTrySaveAgain={noop}
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: copy.reviewChanges })).toBeNull();
+    expect(screen.getByRole("button", { name: copy.restoreDraft })).toBeTruthy();
+    expect(screen.getByRole("button", { name: copy.discardDraft })).toBeTruthy();
+  });
 });
