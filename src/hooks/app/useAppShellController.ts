@@ -556,6 +556,8 @@ export function useAppShellController() {
     closeWorkspaceContextMenu,
     compareAnchor,
     compareTarget,
+    getCurrentTabById: (tabId) =>
+      tabsRef.current.find((tab) => tab.id === tabId) ?? null,
     menuLanguage,
     setCompareAnchor,
     setCompareCaseEntry,

@@ -24,6 +24,7 @@ type UseCompareExecutionOptions = {
   closeWorkspaceContextMenu: () => void;
   compareAnchor: CompareAnchor | null;
   compareTarget: CompareAnchor | null;
+  getCurrentTabById: (tabId: string) => EditorTab | null;
   menuLanguage: MenuLanguage;
   setCompareCaseEntry: (entry: CompareCase) => void;
   setCompareSource: (file: CompareAnchor) => void;
@@ -42,9 +43,14 @@ export type ChangeReviewSnapshot = {
 export async function buildTabAgainstDiskChangeReview(
   tab: EditorTab,
   menuLanguage: MenuLanguage,
-): Promise<ChangeReviewSnapshot> {
+  getCurrentTabById: (tabId: string) => EditorTab | null = () => tab,
+): Promise<ChangeReviewSnapshot | null> {
   const diskDocument = await openTextFile(tab.path);
-  const diff = buildLineDiff(diskDocument.contents, tab.contents);
+  const latestTab = getCurrentTabById(tab.id);
+  if (!latestTab || latestTab.path !== tab.path) {
+    return null;
+  }
+  const diff = buildLineDiff(diskDocument.contents, latestTab.contents);
   const diskLabel = compareColumnLabel(menuLanguage, "disk");
   const editorLabel = compareColumnLabel(menuLanguage, "editor");
   const caseKey = crypto.randomUUID();
@@ -52,8 +58,8 @@ export async function buildTabAgainstDiskChangeReview(
     kind: "changes",
     key: caseKey,
     scope: "buffer-vs-disk",
-    documentPath: tab.path,
-    documentLabel: tab.name,
+    documentPath: latestTab.path,
+    documentLabel: latestTab.name,
     leftColumnLabel: diskLabel,
     rightColumnLabel: editorLabel,
   };
@@ -73,6 +79,7 @@ export function useCompareExecution({
   closeWorkspaceContextMenu,
   compareAnchor,
   compareTarget,
+  getCurrentTabById,
   menuLanguage,
   setCompareCaseEntry,
   setCompareSource,
@@ -88,7 +95,15 @@ export function useCompareExecution({
       setStatus("Reviewing changes...");
 
       try {
-        const snapshot = await buildTabAgainstDiskChangeReview(tab, menuLanguage);
+        const snapshot = await buildTabAgainstDiskChangeReview(
+          tab,
+          menuLanguage,
+          getCurrentTabById,
+        );
+        if (!snapshot) {
+          setStatus("Change review skipped; document changed");
+          return;
+        }
 
         setCompareCaseEntry(snapshot.compareCase);
         setCompareView(snapshot.compareView);
@@ -104,6 +119,7 @@ export function useCompareExecution({
       }
     },
     [
+      getCurrentTabById,
       menuLanguage,
       setCompareCaseEntry,
       setCompareView,
@@ -119,7 +135,11 @@ export function useCompareExecution({
       setGlobalError(null);
 
       try {
-        return await buildTabAgainstDiskChangeReview(tab, menuLanguage);
+        return await buildTabAgainstDiskChangeReview(
+          tab,
+          menuLanguage,
+          getCurrentTabById,
+        );
       } catch (err) {
         const message = String(err);
         setGlobalError(
@@ -128,7 +148,7 @@ export function useCompareExecution({
         return null;
       }
     },
-    [menuLanguage, setGlobalError],
+    [getCurrentTabById, menuLanguage, setGlobalError],
   );
 
   const reviewDraftAgainstDisk = useCallback(
