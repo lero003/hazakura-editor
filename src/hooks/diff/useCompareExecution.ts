@@ -2,6 +2,7 @@ import {
   type Dispatch,
   type SetStateAction,
   useCallback,
+  useRef,
 } from "react";
 import { buildLineDiff } from "../../features/diff/diff";
 import { openTextFile } from "../../lib/tauri";
@@ -89,6 +90,8 @@ export function useCompareExecution({
   setSidePaneOpen,
   setStatus,
 }: UseCompareExecutionOptions) {
+  const fileCompareRequestSeqRef = useRef(0);
+
   const reviewTabAgainstDisk = useCallback(
     async (tab: EditorTab) => {
       setGlobalError(null);
@@ -279,6 +282,8 @@ export function useCompareExecution({
 
   const compareWorkspaceFiles = useCallback(
     async (rightFile: CompareAnchor) => {
+      const requestSeq = fileCompareRequestSeqRef.current + 1;
+      fileCompareRequestSeqRef.current = requestSeq;
       const canCompareWithActiveTab =
         activeTab !== null && activeTab.path !== rightFile.path;
 
@@ -344,6 +349,9 @@ export function useCompareExecution({
             label: source.rightColumnLabel,
           },
         };
+        if (requestSeq !== fileCompareRequestSeqRef.current) {
+          return;
+        }
 
         setCompareCaseEntry(compareCase);
         setCompareView({
@@ -353,6 +361,9 @@ export function useCompareExecution({
         setRightPaneMode("compare");
         setStatus("Compare ready");
       } catch (err) {
+        if (requestSeq !== fileCompareRequestSeqRef.current) {
+          return;
+        }
         const message = String(err);
         setGlobalError(
           menuLanguage !== "en" ? localizeCompareError(message, menuLanguage) : message,
