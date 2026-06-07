@@ -110,6 +110,7 @@ export function LModeActionRail({
     if (!workspaceOpen && !changeReview) return;
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
+      if (event.isComposing) return;
       // Close the surface that is currently open. We route
       // through the same helpers as the explicit close
       // buttons so focus restoration stays consistent across

@@ -375,6 +375,23 @@ describe("LModeActionRail", () => {
     expect(document.activeElement).toBe(workspaceToggle);
   });
 
+  it("does not close the workspace drawer on Escape during IME composition", () => {
+    render(<LModeActionRail {...defaultProps()} />);
+
+    const workspaceToggle = screen.getByRole("button", {
+      name: /Open workspace/,
+    });
+    fireEvent.click(workspaceToggle);
+    expect(
+      screen.getByRole("dialog", { name: "L Mode file tree" }),
+    ).toBeTruthy();
+
+    fireEvent.keyDown(window, { key: "Escape", isComposing: true });
+    expect(
+      screen.getByRole("dialog", { name: "L Mode file tree" }),
+    ).toBeTruthy();
+  });
+
   it("returns focus to the Review changes button after Escape closes the sheet", async () => {
     render(
       <LModeActionRail
