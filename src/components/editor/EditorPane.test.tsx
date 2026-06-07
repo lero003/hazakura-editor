@@ -22,6 +22,7 @@ describe("EditorPane", () => {
   function renderEditorPane({
     documentKey = "/workspace/note.md",
     lModeEnabled = false,
+    lModeTypewriter = false,
     onChange = vi.fn(),
     onPasteImage,
     ref,
@@ -29,6 +30,7 @@ describe("EditorPane", () => {
   }: {
     documentKey?: string;
     lModeEnabled?: boolean;
+    lModeTypewriter?: boolean;
     onChange?: (nextValue: string) => void;
     onPasteImage?: (
       dataBase64: string,
@@ -45,6 +47,7 @@ describe("EditorPane", () => {
         fontSize={15}
         lModeCopy={getLModeCopy("en")}
         lModeEnabled={lModeEnabled}
+        lModeTypewriter={lModeTypewriter}
         onChange={onChange}
         onPasteImage={onPasteImage}
         onScrollRatioChange={vi.fn()}
@@ -115,6 +118,32 @@ describe("EditorPane", () => {
     );
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(editorRef.current?.getActiveDocument()?.from).toBe(0);
+  });
+
+  it("keeps the cursor when only lModeTypewriter changes (not a real mode toggle)", async () => {
+    const editorRef = createRef<EditorPaneHandle>();
+    const { rerender } = render(
+      renderEditorPane({
+        ref: editorRef,
+        value: "line 1\nline 2\nline 3\n",
+        lModeEnabled: true,
+      }),
+    );
+
+    editorRef.current?.goToLine(2);
+    expect(editorRef.current?.getActiveDocument()?.from).toBeGreaterThan(0);
+
+    // lModeTypewriter だけ変化 → カーソル位置は維持されるはず。
+    rerender(
+      renderEditorPane({
+        ref: editorRef,
+        value: "line 1\nline 2\nline 3\n",
+        lModeEnabled: true,
+        lModeTypewriter: true,
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(editorRef.current?.getActiveDocument()?.from).toBeGreaterThan(0);
   });
 
   it("syncs the CodeMirror document when the same tab receives an external value reset", () => {
