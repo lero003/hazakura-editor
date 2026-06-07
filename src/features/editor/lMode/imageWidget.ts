@@ -192,7 +192,7 @@ let activeImageView: EditorView | null = null;
 export const refreshImagesEffect = StateEffect.define<null>();
 
 function cacheKey(root: string, absPath: string): string {
-  return `${root} ${absPath}`;
+  return JSON.stringify([root, absPath]);
 }
 
 export function peekResolvedImage(
@@ -299,6 +299,7 @@ export const __test__ = {
   isAbsolutePosix,
   dirnamePosix,
   resolvePosix,
+  cacheKey,
   resolvedImageCache,
   inFlightImageResolutions,
 };

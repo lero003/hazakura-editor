@@ -228,3 +228,17 @@ describe("POSIX path utilities", () => {
     expect(widgetInternals.resolvePosix("/a/", "b")).toBe("/a/b");
   });
 });
+
+describe("image resolution cache key", () => {
+  it("does not collide when root or image paths contain spaces", () => {
+    const first = widgetInternals.cacheKey("/ws a", "/img.png");
+    const second = widgetInternals.cacheKey("/ws", "a /img.png");
+    expect(first).not.toBe(second);
+  });
+
+  it("keeps the same root/path pair stable", () => {
+    expect(widgetInternals.cacheKey("/ws a", "/img.png")).toBe(
+      widgetInternals.cacheKey("/ws a", "/img.png"),
+    );
+  });
+});
