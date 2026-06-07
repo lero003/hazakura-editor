@@ -485,6 +485,7 @@ export function useAppShellController() {
     setCompareTarget,
     setCompareView,
     setGlobalError,
+    getCompareCaseByKey,
     setPendingDrafts,
     setRecentFiles,
     setStatus,

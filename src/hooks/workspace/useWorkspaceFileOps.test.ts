@@ -52,6 +52,7 @@ function makeTab(path: string): EditorTab {
 function makeOptions(overrides: Partial<Parameters<typeof useWorkspaceFileOps>[0]> = {}) {
   return {
     clearImagePreview: vi.fn(),
+    getCompareCaseByKey: vi.fn(),
     reloadWorkspaceParent: vi.fn(async () => undefined),
     rememberRecentFile: vi.fn(),
     setActiveTabId: vi.fn(),

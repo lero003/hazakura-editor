@@ -21,6 +21,7 @@ import {
 import { fileNameFromPath } from "../../lib/utils";
 import type {
   CompareAnchor,
+  CompareCase,
   CompareViewState,
   DraftRecord,
   EditorTab,
@@ -28,6 +29,7 @@ import type {
 } from "../../types";
 
 type UseEditorTabsPathRekeyOptions = {
+  getCompareCaseByKey: (caseKey: string) => CompareCase | undefined;
   setActiveTabId: Dispatch<SetStateAction<string | null>>;
   setCompareAnchor: Dispatch<SetStateAction<CompareAnchor | null>>;
   setCompareTarget: Dispatch<SetStateAction<CompareAnchor | null>>;
@@ -38,6 +40,7 @@ type UseEditorTabsPathRekeyOptions = {
 };
 
 export function useEditorTabsPathRekey({
+  getCompareCaseByKey,
   setActiveTabId,
   setCompareAnchor,
   setCompareTarget,
@@ -91,19 +94,22 @@ export function useEditorTabsPathRekey({
           ? { ...current, path: newPath, name: newName }
           : current,
       );
-      // The compare view is keyed by `caseKey` which embeds both
-      // paths; rewriting the view state would require rebuilding
-      // the caseKey, which is more invasive than the v0.9 slice
-      // warrants. The user can re-run the compare. Clear the
-      // current view if it references the old path; the
-      // diffSurface toggle stays in the side pane state.
+      // The visible compare view was computed from the old path,
+      // and modern case keys may be UUIDs. Resolve the registered
+      // CompareCase first, then fall back to older string-shaped
+      // keys so stale diffs disappear after rename / move.
       setCompareView((current) => {
         if (!current) return current;
-        if (!caseKeyMentionsPath(current.caseKey, oldPath)) return current;
+        const compareCase = getCompareCaseByKey(current.caseKey);
+        const mentionsPath = compareCase
+          ? compareCaseMentionsPath(compareCase, oldPath)
+          : caseKeyMentionsPath(current.caseKey, oldPath);
+        if (!mentionsPath) return current;
         return null;
       });
     },
     [
+      getCompareCaseByKey,
       setActiveTabId,
       setCompareAnchor,
       setCompareTarget,
@@ -183,11 +189,16 @@ export function useEditorTabsPathRekey({
       });
       setCompareView((current) => {
         if (!current) return current;
-        if (!caseKeyMentionsPath(current.caseKey, oldPrefix)) return current;
+        const compareCase = getCompareCaseByKey(current.caseKey);
+        const mentionsPath = compareCase
+          ? compareCaseMentionsPathPrefix(compareCase, oldPrefix)
+          : caseKeyMentionsPath(current.caseKey, oldPrefix);
+        if (!mentionsPath) return current;
         return null;
       });
     },
     [
+      getCompareCaseByKey,
       setActiveTabId,
       setCompareAnchor,
       setCompareTarget,
@@ -207,4 +218,41 @@ export function useEditorTabsPathRekey({
 // the next compare action.
 function caseKeyMentionsPath(caseKey: string, path: string): boolean {
   return caseKey.includes(path);
+}
+
+function compareCaseMentionsPath(
+  compareCase: CompareCase,
+  path: string,
+): boolean {
+  switch (compareCase.kind) {
+    case "file":
+      return (
+        compareCase.leftPath === path ||
+        compareCase.rightPath === path ||
+        compareCase.anchor.path === path ||
+        compareCase.target.path === path
+      );
+    case "changes":
+    case "candidate":
+      return compareCase.documentPath === path;
+  }
+}
+
+function compareCaseMentionsPathPrefix(
+  compareCase: CompareCase,
+  prefix: string,
+): boolean {
+  const matchesPrefix = (path: string) => path.startsWith(`${prefix}/`);
+  switch (compareCase.kind) {
+    case "file":
+      return (
+        matchesPrefix(compareCase.leftPath) ||
+        matchesPrefix(compareCase.rightPath) ||
+        matchesPrefix(compareCase.anchor.path) ||
+        matchesPrefix(compareCase.target.path)
+      );
+    case "changes":
+    case "candidate":
+      return matchesPrefix(compareCase.documentPath);
+  }
 }

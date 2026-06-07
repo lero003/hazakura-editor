@@ -3,6 +3,7 @@ import { act, renderHook } from "@testing-library/react";
 import { useEditorTabsPathRekey } from "./useEditorTabsPathRekey";
 import type {
   CompareAnchor,
+  CompareCase,
   CompareViewState,
   DraftRecord,
   EditorTab,
@@ -34,6 +35,7 @@ function makeTab(path: string, name: string, overrides: Partial<EditorTab> = {})
 
 function makeOptions(overrides: Partial<Parameters<typeof useEditorTabsPathRekey>[0]> = {}) {
   return {
+    getCompareCaseByKey: vi.fn(),
     setActiveTabId: vi.fn(),
     setCompareAnchor: vi.fn(),
     setCompareTarget: vi.fn(),
@@ -44,6 +46,27 @@ function makeOptions(overrides: Partial<Parameters<typeof useEditorTabsPathRekey
     ...overrides,
   };
 }
+
+const fileCompareCase = (
+  key: string,
+  leftPath: string,
+  rightPath: string,
+): Extract<CompareCase, { kind: "file" }> => ({
+  anchor: {
+    label: "Source",
+    name: leftPath.split("/").pop() ?? leftPath,
+    path: leftPath,
+  },
+  kind: "file",
+  key,
+  leftPath,
+  rightPath,
+  target: {
+    label: "Target",
+    name: rightPath.split("/").pop() ?? rightPath,
+    path: rightPath,
+  },
+});
 
 describe("useEditorTabsPathRekey", () => {
   it("returns a rekeyPath helper", () => {
@@ -181,6 +204,44 @@ describe("useEditorTabsPathRekey", () => {
     };
     expect(update(referenced)).toBe(null);
     expect(update(null)).toBe(null);
+  });
+
+  it("clears compareView when its CompareCase references the old path", () => {
+    const setCompareView = vi.fn();
+    const getCompareCaseByKey = vi.fn((key: string) =>
+      key === "uuid-case"
+        ? fileCompareCase("uuid-case", "/root/old.md", "/root/other.md")
+        : undefined,
+    );
+    const { result } = renderHook(() =>
+      useEditorTabsPathRekey(
+        makeOptions({ getCompareCaseByKey, setCompareView }),
+      ),
+    );
+
+    act(() => {
+      result.current.rekeyPath("/root/old.md", "/root/new.md");
+    });
+
+    const update = setCompareView.mock.calls[0][0] as (
+      current: CompareViewState | null,
+    ) => CompareViewState | null;
+    expect(
+      update({
+        caseKey: "uuid-case",
+        lines: [],
+        additions: 0,
+        removals: 0,
+      }),
+    ).toBe(null);
+    expect(
+      update({
+        caseKey: "unrelated-case",
+        lines: [],
+        additions: 0,
+        removals: 0,
+      }),
+    ).toMatchObject({ caseKey: "unrelated-case" });
   });
 
   it("returns a rekeyPathPrefix helper", () => {
@@ -336,6 +397,48 @@ describe("useEditorTabsPathRekey", () => {
       }),
     ).toMatchObject({ caseKey: "file:/root/other.md::/root/different.md" });
     expect(update(null)).toBe(null);
+  });
+
+  it("clears compareView when its CompareCase references the rekeyed folder", () => {
+    const setCompareView = vi.fn();
+    const getCompareCaseByKey = vi.fn((key: string) =>
+      key === "uuid-case"
+        ? fileCompareCase(
+            "uuid-case",
+            "/root/notes/today.md",
+            "/root/other.md",
+          )
+        : undefined,
+    );
+    const { result } = renderHook(() =>
+      useEditorTabsPathRekey(
+        makeOptions({ getCompareCaseByKey, setCompareView }),
+      ),
+    );
+
+    act(() => {
+      result.current.rekeyPathPrefix("/root/notes", "/root/archive");
+    });
+
+    const update = setCompareView.mock.calls[0][0] as (
+      current: CompareViewState | null,
+    ) => CompareViewState | null;
+    expect(
+      update({
+        caseKey: "uuid-case",
+        lines: [],
+        additions: 0,
+        removals: 0,
+      }),
+    ).toBe(null);
+    expect(
+      update({
+        caseKey: "unrelated-case",
+        lines: [],
+        additions: 0,
+        removals: 0,
+      }),
+    ).toMatchObject({ caseKey: "unrelated-case" });
   });
 });
 

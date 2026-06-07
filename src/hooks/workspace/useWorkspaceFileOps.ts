@@ -19,6 +19,7 @@ import { isDirty } from "../../features/editor/editorTabs";
 import { useEditorTabsPathRekey } from "../editor/useEditorTabsPathRekey";
 import type {
   CompareAnchor,
+  CompareCase,
   CompareViewState,
   DraftRecord,
   EditorTab,
@@ -41,6 +42,7 @@ type UseWorkspaceFileOpsOptions = {
   setTabs: Dispatch<SetStateAction<EditorTab[]>>;
   tabs: EditorTab[];
   workspaceRootPath: string | null;
+  getCompareCaseByKey: (caseKey: string) => CompareCase | undefined;
 };
 
 type PendingRename = {
@@ -99,6 +101,7 @@ export function useWorkspaceFileOps({
   setTabs,
   tabs,
   workspaceRootPath,
+  getCompareCaseByKey,
 }: UseWorkspaceFileOpsOptions) {
   const [pendingRename, setPendingRename] = useState<PendingRename | null>(
     null,
@@ -107,6 +110,7 @@ export function useWorkspaceFileOps({
   const [renamingPath, setRenamingPath] = useState<string | null>(null);
 
   const { rekeyPath, rekeyPathPrefix } = useEditorTabsPathRekey({
+    getCompareCaseByKey,
     setActiveTabId,
     setCompareAnchor,
     setCompareTarget,
