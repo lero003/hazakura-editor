@@ -193,6 +193,24 @@ describe("lMode.css", () => {
     );
   });
 
+  it("does not render fenced code marker lines as empty numbered rows", () => {
+    const fenceMarkerRules = Array.from(
+      lModeCss.matchAll(
+        /:root\[data-l-mode="on"\] \.cm-lmode-fenced-code-start,\s*:root\[data-l-mode="on"\] \.cm-lmode-fenced-code-end\s*{(?<body>[^}]*)}/gs,
+      ),
+      (match) => match.groups?.body ?? "",
+    );
+    const fenceMarkerRule =
+      fenceMarkerRules.find((rule) => /line-height:\s*0/.test(rule)) ?? "";
+
+    expect(fenceMarkerRule).toMatch(/padding-top:\s*0/);
+    expect(fenceMarkerRule).toMatch(/padding-bottom:\s*0/);
+    expect(fenceMarkerRule).toMatch(/line-height:\s*0/);
+    expect(lModeCss).toMatch(
+      /:root\[data-l-mode="on"\] \.cm-lmode-fenced-code-start::before,\s*:root\[data-l-mode="on"\] \.cm-lmode-fenced-code-end::before\s*{[^}]*content:\s*none/s,
+    );
+  });
+
   it("treats the editor background as a flat page, not a framed panel", () => {
     // v0.11+ design direction: L Mode is a sheet of paper on
     // a quiet desk, not a screen panel. The previous shape —

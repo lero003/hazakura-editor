@@ -955,17 +955,28 @@
   color: inherit;
 }
 
+:root[data-l-mode="on"] .cm-lmode-fenced-code-start,
+:root[data-l-mode="on"] .cm-lmode-fenced-code-end {
+  background: transparent;
+  border-left-color: transparent;
+  counter-increment: none;
+  font-size: 0;
+  line-height: 0;
+  min-height: 0;
+  padding-bottom: 0;
+  padding-top: 0;
+}
+
 :root[data-l-mode="on"] .cm-lmode-fenced-code-start {
-  padding-top: 0.7em;
-  /* Reset the per-block line counter at the first line of
-     the fenced code block. Each subsequent line in the
-     same block inherits the counter from the previous
-     sibling, so the numbers stay continuous. */
+  /* Reset the per-block line counter at the opening fence.
+     The fence itself is marker chrome, not a visible code
+     row, so it does not increment or render a line number. */
   counter-reset: lmode-codeline 0;
 }
 
-:root[data-l-mode="on"] .cm-lmode-fenced-code-end {
-  padding-bottom: 0.7em;
+:root[data-l-mode="on"] .cm-lmode-fenced-code-start::before,
+:root[data-l-mode="on"] .cm-lmode-fenced-code-end::before {
+  content: none;
 }
 
 /* Subtle line numbers on the left edge of each code line.
