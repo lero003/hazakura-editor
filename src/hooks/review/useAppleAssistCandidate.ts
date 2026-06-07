@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   generateAppleAssistCandidate,
   type AppleAssistOperation,
@@ -83,6 +83,9 @@ export function useAppleAssistCandidate({
 }: UseAppleAssistCandidateOptions): UseAppleAssistCandidateResult {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const activeTabRef = useRef<AppleAssistTarget | null>(activeTab);
+  activeTabRef.current = activeTab;
+  const requestSeqRef = useRef(0);
 
   const generateAndCompare = useCallback(
     async (
@@ -105,6 +108,9 @@ export function useAppleAssistCandidate({
         return { ok: false, error: message };
       }
 
+      const requestSeq = requestSeqRef.current + 1;
+      requestSeqRef.current = requestSeq;
+      const requestTab = activeTab;
       setBusy(true);
       setError(null);
 
@@ -113,12 +119,24 @@ export function useAppleAssistCandidate({
           operation,
           selectedText,
         });
+        const staleReason = getStaleAppleAssistResultReason(
+          requestSeq,
+          requestSeqRef.current,
+          requestTab,
+          activeTabRef.current,
+        );
+        if (staleReason) {
+          if (requestSeqRef.current === requestSeq) {
+            setError(staleReason);
+          }
+          return { ok: false, error: staleReason };
+        }
 
         const compareResult = runCandidateCompare({
-          bufferContents: activeTab.contents,
-          documentTabId: activeTab.id,
-          documentPath: activeTab.path,
-          documentLabel: activeTab.name,
+          bufferContents: requestTab.contents,
+          documentTabId: requestTab.id,
+          documentPath: requestTab.path,
+          documentLabel: requestTab.name,
           leftColumnLabel: copy.candidateColumnLeft,
           rightColumnLabel: copy.candidateColumnRight,
           candidateSourceLabel: copy.candidateSourceAppleAssist,
@@ -126,7 +144,9 @@ export function useAppleAssistCandidate({
         });
 
         if (!compareResult.ok) {
-          setError(compareResult.error);
+          if (requestSeqRef.current === requestSeq) {
+            setError(compareResult.error);
+          }
           return { ok: false, error: compareResult.error };
         }
 
@@ -137,10 +157,14 @@ export function useAppleAssistCandidate({
         };
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
-        setError(message);
+        if (requestSeqRef.current === requestSeq) {
+          setError(message);
+        }
         return { ok: false, error: message };
       } finally {
-        setBusy(false);
+        if (requestSeqRef.current === requestSeq) {
+          setBusy(false);
+        }
       }
     },
     [activeTab, copy, runCandidateCompare],
@@ -156,4 +180,25 @@ export function useAppleAssistCandidate({
     generateAndCompare,
     clearError,
   };
+}
+
+function getStaleAppleAssistResultReason(
+  requestSeq: number,
+  latestRequestSeq: number,
+  requestTab: AppleAssistTarget,
+  latestTab: AppleAssistTarget | null,
+): string | null {
+  if (requestSeq !== latestRequestSeq) {
+    return "Apple Local Assist result ignored because a newer request is active.";
+  }
+  if (!latestTab) {
+    return "Apple Local Assist result ignored because there is no active editor tab.";
+  }
+  if (latestTab.id !== requestTab.id || latestTab.path !== requestTab.path) {
+    return "Apple Local Assist result ignored because the active editor tab changed.";
+  }
+  if (latestTab.contents !== requestTab.contents) {
+    return "Apple Local Assist result ignored because the editor buffer changed.";
+  }
+  return null;
 }

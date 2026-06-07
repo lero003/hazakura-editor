@@ -207,6 +207,104 @@ describe("useAppleAssistCandidate", () => {
     expect(result.current.error).toContain("ipc failed");
   });
 
+  it("ignores a generated candidate when the active tab changes before compare", async () => {
+    let resolveGenerate: (value: AppleAssistResponse) => void = () => {};
+    generateAppleAssistCandidate.mockImplementation(
+      () =>
+        new Promise<AppleAssistResponse>((resolve) => {
+          resolveGenerate = resolve;
+        }),
+    );
+
+    const runCandidateCompare = makeRunCandidateCompare();
+    const otherTarget: AppleAssistTarget = {
+      id: "tab-2",
+      name: "other.md",
+      path: "/tmp/other.md",
+      contents: "other document\n",
+    };
+    const { result, rerender } = renderHook(
+      ({ activeTab }: { activeTab: AppleAssistTarget | null }) =>
+        useAppleAssistCandidate({
+          activeTab,
+          copy,
+          runCandidateCompare,
+        }),
+      { initialProps: { activeTab: target } },
+    );
+
+    let inFlight: Promise<unknown> = Promise.resolve();
+    act(() => {
+      inFlight = result.current.generateAndCompare("summarize", "body");
+    });
+    rerender({ activeTab: otherTarget });
+
+    let returned: { ok: boolean; error?: string } = { ok: true };
+    await act(async () => {
+      resolveGenerate({
+        operation: "summarize",
+        candidateText: "stale candidate",
+        modelId: "stub:v0.12",
+        latencyMs: 0,
+      });
+      returned = (await inFlight) as { ok: boolean; error?: string };
+    });
+
+    expect(returned.ok).toBe(false);
+    expect(returned.error).toContain("active editor tab changed");
+    expect(runCandidateCompare).not.toHaveBeenCalled();
+    expect(result.current.error).toContain("active editor tab changed");
+    expect(result.current.busy).toBe(false);
+  });
+
+  it("ignores a generated candidate when the buffer changes before compare", async () => {
+    let resolveGenerate: (value: AppleAssistResponse) => void = () => {};
+    generateAppleAssistCandidate.mockImplementation(
+      () =>
+        new Promise<AppleAssistResponse>((resolve) => {
+          resolveGenerate = resolve;
+        }),
+    );
+
+    const runCandidateCompare = makeRunCandidateCompare();
+    const editedTarget: AppleAssistTarget = {
+      ...target,
+      contents: `${target.contents}edited while generating\n`,
+    };
+    const { result, rerender } = renderHook(
+      ({ activeTab }: { activeTab: AppleAssistTarget | null }) =>
+        useAppleAssistCandidate({
+          activeTab,
+          copy,
+          runCandidateCompare,
+        }),
+      { initialProps: { activeTab: target } },
+    );
+
+    let inFlight: Promise<unknown> = Promise.resolve();
+    act(() => {
+      inFlight = result.current.generateAndCompare("summarize", "body");
+    });
+    rerender({ activeTab: editedTarget });
+
+    let returned: { ok: boolean; error?: string } = { ok: true };
+    await act(async () => {
+      resolveGenerate({
+        operation: "summarize",
+        candidateText: "stale candidate",
+        modelId: "stub:v0.12",
+        latencyMs: 0,
+      });
+      returned = (await inFlight) as { ok: boolean; error?: string };
+    });
+
+    expect(returned.ok).toBe(false);
+    expect(returned.error).toContain("editor buffer changed");
+    expect(runCandidateCompare).not.toHaveBeenCalled();
+    expect(result.current.error).toContain("editor buffer changed");
+    expect(result.current.busy).toBe(false);
+  });
+
   it("toggles busy while a request is in flight", async () => {
     let resolveGenerate: (value: AppleAssistResponse) => void = () => {};
     generateAppleAssistCandidate.mockImplementation(
