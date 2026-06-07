@@ -698,6 +698,105 @@ describe("v0.14 task widget keyboard", () => {
     view.destroy();
     parent.remove();
   });
+
+  // v0.15 stability: the keydown handler ignores events while
+  // the editor is in an IME composition session. Without the
+  // guard, pressing Space to confirm a Japanese IME candidate
+  // would also flip the task checkbox underneath the
+  // composition — a daily-writing paper cut. Two signals
+  // are checked: the native `event.isComposing` and
+  // `view.composing`. We pin both paths here.
+  it("does not toggle [ ] to [x] when Space is pressed during IME composition", () => {
+    const source = "- [ ] todo\n";
+    const { parent, view } = setupTaskView(source);
+    const taskEl = parent.querySelector<HTMLElement>(".cm-lmode-task");
+    expect(taskEl).not.toBeNull();
+    taskEl?.focus();
+    taskEl?.dispatchEvent(
+      new KeyboardEvent("keydown", {
+        key: " ",
+        isComposing: true,
+        bubbles: true,
+      }),
+    );
+
+    expect(view.state.doc.toString()).toBe(source);
+    view.destroy();
+    parent.remove();
+  });
+
+  it("does not toggle [x] to [ ] when Enter is pressed during IME composition", () => {
+    const source = "- [x] done\n";
+    const { parent, view } = setupTaskView(source);
+    const taskEl = parent.querySelector<HTMLElement>(".cm-lmode-task");
+    expect(taskEl).not.toBeNull();
+    taskEl?.focus();
+    taskEl?.dispatchEvent(
+      new KeyboardEvent("keydown", {
+        key: "Enter",
+        isComposing: true,
+        bubbles: true,
+      }),
+    );
+
+    expect(view.state.doc.toString()).toBe(source);
+    view.destroy();
+    parent.remove();
+  });
+
+  it("falls back to `view.composing` when the native signal is missing", () => {
+    // Some platforms (e.g. older Tauri WebView / certain IME
+    // shims) leave `event.isComposing === false` even while
+    // the editor itself knows it is mid-composition. The
+    // keydown handler must also short-circuit on
+    // `view.composing === true` so the fallback is covered.
+    const source = "- [ ] todo\n";
+    const { parent, view } = setupTaskView(source);
+    const composingSpy = vi
+      .spyOn(view, "composing", "get")
+      .mockReturnValue(true);
+    const taskEl = parent.querySelector<HTMLElement>(".cm-lmode-task");
+    taskEl?.focus();
+    taskEl?.dispatchEvent(
+      new KeyboardEvent("keydown", {
+        key: " ",
+        isComposing: false,
+        bubbles: true,
+      }),
+    );
+
+    expect(view.state.doc.toString()).toBe(source);
+    composingSpy.mockRestore();
+    view.destroy();
+    parent.remove();
+  });
+
+  it("toggles normally once the composition ends", () => {
+    // After the composition finishes, the same Space press
+    // should toggle the checkbox as before. This guards the
+    // guard: if the IME check accidentally becomes sticky,
+    // the user can never toggle the checkbox after a long
+    // Japanese sentence.
+    const source = "- [ ] todo\n";
+    const { parent, view } = setupTaskView(source);
+    const composingSpy = vi
+      .spyOn(view, "composing", "get")
+      .mockReturnValue(false);
+    const taskEl = parent.querySelector<HTMLElement>(".cm-lmode-task");
+    taskEl?.focus();
+    taskEl?.dispatchEvent(
+      new KeyboardEvent("keydown", {
+        key: " ",
+        isComposing: false,
+        bubbles: true,
+      }),
+    );
+
+    expect(view.state.doc.toString()).toBe("- [x] todo\n");
+    composingSpy.mockRestore();
+    view.destroy();
+    parent.remove();
+  });
 });
 
 describe("v0.11 typewriter mode", () => {
