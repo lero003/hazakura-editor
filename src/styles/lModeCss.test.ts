@@ -57,7 +57,9 @@ describe("lMode.css", () => {
       )?.groups?.body ?? "";
 
     expect(scrollerRule).toMatch(/overflow-y:\s*auto/);
+    expect(scrollerRule).toMatch(/scroll-behavior:\s*auto/);
     expect(scrollerRule).not.toMatch(/overflow-x:\s*hidden/);
+    expect(scrollerRule).not.toMatch(/scroll-behavior:\s*smooth/);
     expect(scrollerRule).not.toMatch(/height:/);
     expect(scrollerRule).not.toMatch(/padding:/);
   });
@@ -264,6 +266,40 @@ describe("lMode.css", () => {
     expect(lModeCss).not.toMatch(
       /\.cm-line:hover \.cm-lmode-hidden/,
     );
+  });
+
+  it("keeps task list rows from drawing both a bullet and a checkbox", () => {
+    const taskRule =
+      lModeCss.match(
+        /:root\[data-l-mode="on"\] \.cm-lmode-list-task::before\s*{(?<body>[^}]*)}/s,
+      )?.groups?.body ?? "";
+    const taskWidgetRule =
+      lModeCss.match(
+        /:root\[data-l-mode="on"\] \.cm-lmode-task\s*{(?<body>[^}]*)}/s,
+      )?.groups?.body ?? "";
+
+    expect(taskRule).toMatch(/content:\s*none/);
+    expect(taskWidgetRule).toMatch(/font-size:\s*1\.08em/);
+  });
+
+  it("gives L Mode tables width-aware cells instead of loose proportional text", () => {
+    const tableHeaderRowRule =
+      lModeCss.match(
+        /:root\[data-l-mode="on"\] \.cm-lmode-table-header,\s*:root\[data-l-mode="on"\] \.cm-lmode-table-row\s*{(?<body>[^}]*)}/s,
+      )?.groups?.body ?? "";
+    const cellRule =
+      lModeCss.match(
+        /:root\[data-l-mode="on"\] \.cm-lmode-table-cell\s*{(?<body>[^}]*)}/s,
+      )?.groups?.body ?? "";
+
+    expect(tableHeaderRowRule).toMatch(
+      /font-family:\s*var\(--lmode-ui-font-family\)/,
+    );
+    expect(cellRule).toMatch(/display:\s*inline-block/);
+    expect(cellRule).toMatch(
+      /min-inline-size:\s*var\(--lmode-table-cell-width,\s*8ch\)/,
+    );
+    expect(cellRule).toMatch(/overflow-wrap:\s*anywhere/);
   });
 
   // --- Catalog ↔ CSS drift ---

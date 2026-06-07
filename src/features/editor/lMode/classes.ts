@@ -50,6 +50,7 @@ export const LModeClasses = {
   listBullet: "cm-lmode-list-bullet",
   listOrdered: "cm-lmode-list-ordered",
   listOrderedStart: "cm-lmode-list-ordered-start",
+  listTask: "cm-lmode-list-task",
 
   fencedCode: "cm-lmode-fenced-code",
   fencedCodeStart: "cm-lmode-fenced-code-start",
@@ -72,6 +73,7 @@ export const LModeClasses = {
 
   hr: "cm-lmode-hr",
   tableDelimiter: "cm-lmode-table-delimiter",
+  tableCell: "cm-lmode-table-cell",
 
   task: "cm-lmode-task",
   taskUnchecked: "cm-lmode-task-unchecked",
@@ -197,6 +199,7 @@ export const LModeExtraLineClasses: ReadonlyArray<{
 }> = [
   { nodes: ["BulletList"], cls: LModeClasses.listBullet },
   { nodes: ["OrderedList"], cls: LModeClasses.listOrdered },
+  { nodes: ["Task"], cls: LModeClasses.listTask },
 ];
 
 /**

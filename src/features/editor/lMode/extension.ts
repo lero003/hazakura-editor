@@ -186,8 +186,20 @@ function lModeTypewriterPlugin() {
   return ViewPlugin.define((view) => {
     const win = view.dom.ownerDocument.defaultView ?? window;
     let frame: number | null = null;
+    let manualScrollSuppressUntil = 0;
+
+    function suppressManualScrollRecenter() {
+      manualScrollSuppressUntil = Date.now() + 900;
+    }
+
+    function isManualScrollSuppressed() {
+      return Date.now() < manualScrollSuppressUntil;
+    }
 
     function scheduleRecenter() {
+      if (isManualScrollSuppressed()) {
+        return;
+      }
       if (frame !== null) {
         win.cancelAnimationFrame(frame);
       }
@@ -201,12 +213,22 @@ function lModeTypewriterPlugin() {
         // next non-composition update will schedule a
         // fresh recenter and the caret still settles
         // through the existing path.
-        if (view.composing) {
+        if (view.composing || isManualScrollSuppressed()) {
           return;
         }
         requestTypewriterRecenter(view);
       });
     }
+
+    view.scrollDOM.addEventListener("wheel", suppressManualScrollRecenter, {
+      passive: true,
+    });
+    view.scrollDOM.addEventListener("touchstart", suppressManualScrollRecenter, {
+      passive: true,
+    });
+    view.scrollDOM.addEventListener("pointerdown", suppressManualScrollRecenter, {
+      passive: true,
+    });
 
     return {
       update(update) {
@@ -228,12 +250,25 @@ function lModeTypewriterPlugin() {
           return;
         }
 
+        if (isManualScrollSuppressed()) {
+          return;
+        }
+
         scheduleRecenter();
       },
       destroy() {
         if (frame !== null) {
           win.cancelAnimationFrame(frame);
         }
+        view.scrollDOM.removeEventListener("wheel", suppressManualScrollRecenter);
+        view.scrollDOM.removeEventListener(
+          "touchstart",
+          suppressManualScrollRecenter,
+        );
+        view.scrollDOM.removeEventListener(
+          "pointerdown",
+          suppressManualScrollRecenter,
+        );
       },
     };
   });
@@ -268,7 +303,7 @@ function requestTypewriterRecenter(view: EditorView) {
 
       view.scrollDOM.scrollTo({
         top: nextScrollTop,
-        behavior: "smooth",
+        behavior: "auto",
       });
     },
   });

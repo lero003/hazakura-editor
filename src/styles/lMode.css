@@ -832,7 +832,7 @@
   overflow-x: auto;
   overflow-y: auto;
   overscroll-behavior: contain;
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
 }
 
 :root[data-l-mode="on"] .cm-gutters {
@@ -1130,6 +1130,10 @@
   opacity: 0.72;
 }
 
+:root[data-l-mode="on"] .cm-lmode-list-task::before {
+  content: none;
+}
+
 /* Ordered list — counter-based numbering. Each list resets
    the counter on its first line (via the `-start` class),
    so multiple ordered lists in a document each get their
@@ -1295,6 +1299,23 @@
   padding-bottom: 0.32em;
 }
 
+:root[data-l-mode="on"] .cm-lmode-table-header,
+:root[data-l-mode="on"] .cm-lmode-table-row {
+  font-family: var(--lmode-ui-font-family);
+  white-space: pre-wrap;
+}
+
+:root[data-l-mode="on"] .cm-lmode-table-cell {
+  display: inline-block;
+  min-inline-size: var(--lmode-table-cell-width, 8ch);
+  max-inline-size: min(var(--lmode-table-cell-width, 8ch), 42ch);
+  box-sizing: border-box;
+  padding: 0 0.75em 0 0.55em;
+  vertical-align: top;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 :root[data-l-mode="on"] .cm-lmode-pipe {
   color: color-mix(in srgb, var(--text-muted) 56%, transparent);
   padding: 0 0.18em;
@@ -1327,7 +1348,7 @@
   display: inline-block;
   margin-right: 0.45em;
   cursor: pointer;
-  font-size: 0.95em;
+  font-size: 1.08em;
   line-height: 1;
   vertical-align: baseline;
   user-select: none;

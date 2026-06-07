@@ -78,6 +78,14 @@ for (const rule of LModeInlineRules) {
 }
 
 const pipeClassMark = Decoration.mark({ class: LModeClasses.pipe });
+const MAX_TABLE_CELL_WIDTH_CH = 42;
+const MIN_TABLE_CELL_WIDTH_CH = 4;
+
+type TableCellSpan = {
+  from: number;
+  to: number;
+  widthCh: number;
+};
 
 /**
  * Pure function: state + context → list of inline
@@ -91,6 +99,7 @@ export function computeContentDecorations(
 ): Range<Decoration>[] {
   const decorations: Range<Decoration>[] = [];
   const tree = syntaxTree(state);
+  const tableCellPlan = buildTableCellPlan(state);
 
   // Pre-build a lookup from Lezer node name → inline class
   // name. Using a Map keeps the per-node dispatch in the
@@ -207,7 +216,9 @@ export function computeContentDecorations(
       }
       if (name === "TableHeader" || name === "TableRow") {
         const fromLine = state.doc.lineAt(node.from).number;
-        addPipeMarks(state, state.doc.line(fromLine), decorations);
+        const line = state.doc.line(fromLine);
+        addPipeMarks(state, line, decorations);
+        addTableCellMarks(line.number, tableCellPlan, decorations);
         return true;
       }
 
@@ -253,6 +264,149 @@ export function computeContentDecorations(
   });
 
   return decorations;
+}
+
+function buildTableCellPlan(state: EditorState): Map<number, TableCellSpan[]> {
+  const plan = new Map<number, TableCellSpan[]>();
+
+  for (let lineNumber = 2; lineNumber <= state.doc.lines; lineNumber += 1) {
+    const delimiterLine = state.doc.line(lineNumber);
+    if (!isTableDelimiterText(delimiterLine.text)) {
+      continue;
+    }
+
+    const headerLine = state.doc.line(lineNumber - 1);
+    const headerCells = parseTableCells(headerLine.text, headerLine.from);
+    if (headerCells.length === 0) {
+      continue;
+    }
+
+    const tableLines = [{ line: headerLine, cells: headerCells }];
+    for (
+      let bodyLineNumber = lineNumber + 1;
+      bodyLineNumber <= state.doc.lines;
+      bodyLineNumber += 1
+    ) {
+      const bodyLine = state.doc.line(bodyLineNumber);
+      const bodyCells = parseTableCells(bodyLine.text, bodyLine.from);
+      if (bodyCells.length === 0) {
+        break;
+      }
+      tableLines.push({ line: bodyLine, cells: bodyCells });
+    }
+
+    const columnCount = Math.max(
+      ...tableLines.map(({ cells }) => cells.length),
+    );
+    const widths = Array.from(
+      { length: columnCount },
+      () => MIN_TABLE_CELL_WIDTH_CH,
+    );
+    for (const { cells } of tableLines) {
+      cells.forEach((cell, index) => {
+        widths[index] = Math.max(widths[index], displayWidthCh(cell.text));
+      });
+    }
+
+    for (const { line, cells } of tableLines) {
+      plan.set(
+        line.number,
+        cells.map((cell, index) => ({
+          from: cell.from,
+          to: cell.to,
+          widthCh: Math.min(MAX_TABLE_CELL_WIDTH_CH, widths[index]),
+        })),
+      );
+    }
+  }
+
+  return plan;
+}
+
+function addTableCellMarks(
+  lineNumber: number,
+  tableCellPlan: ReadonlyMap<number, TableCellSpan[]>,
+  decorations: Range<Decoration>[],
+): void {
+  for (const cell of tableCellPlan.get(lineNumber) ?? []) {
+    if (cell.to <= cell.from) {
+      continue;
+    }
+    decorations.push(
+      Decoration.mark({
+        class: LModeClasses.tableCell,
+        attributes: {
+          style: `--lmode-table-cell-width: ${cell.widthCh}ch`,
+        },
+      }).range(cell.from, cell.to),
+    );
+  }
+}
+
+function isTableDelimiterText(text: string): boolean {
+  const cells = splitTableCells(text);
+  return (
+    cells.length > 0 &&
+    cells.every((cell) => /^:?-{3,}:?$/.test(cell.trim()))
+  );
+}
+
+function parseTableCells(
+  text: string,
+  lineFrom: number,
+): Array<{ from: number; to: number; text: string }> {
+  if (!text.includes("|") || isTableDelimiterText(text)) {
+    return [];
+  }
+
+  const pipes = pipeIndexes(text);
+  if (pipes.length < 2) {
+    return [];
+  }
+
+  const cells: Array<{ from: number; to: number; text: string }> = [];
+  for (let index = 0; index < pipes.length - 1; index += 1) {
+    const rawFrom = pipes[index] + 1;
+    const rawTo = pipes[index + 1];
+    const raw = text.slice(rawFrom, rawTo);
+    const leading = raw.match(/^\s*/)?.[0].length ?? 0;
+    const trailing = raw.match(/\s*$/)?.[0].length ?? 0;
+    const from = lineFrom + rawFrom + leading;
+    const to = lineFrom + rawTo - trailing;
+    cells.push({ from, to, text: raw.trim() });
+  }
+
+  return cells;
+}
+
+function splitTableCells(text: string): string[] {
+  const pipes = pipeIndexes(text);
+  if (pipes.length < 2) {
+    return [];
+  }
+  const cells: string[] = [];
+  for (let index = 0; index < pipes.length - 1; index += 1) {
+    cells.push(text.slice(pipes[index] + 1, pipes[index + 1]));
+  }
+  return cells;
+}
+
+function pipeIndexes(text: string): number[] {
+  const indexes: number[] = [];
+  for (let index = 0; index < text.length; index += 1) {
+    if (text[index] === "|" && text[index - 1] !== "\\") {
+      indexes.push(index);
+    }
+  }
+  return indexes;
+}
+
+function displayWidthCh(text: string): number {
+  let width = 0;
+  for (const char of Array.from(text.trim())) {
+    width += /[\u3000-\u9fff\uff01-\uff60]/.test(char) ? 2 : 1;
+  }
+  return Math.max(MIN_TABLE_CELL_WIDTH_CH, width);
 }
 
 function isSetextDividerLine(state: EditorState, node: SyntaxNode): boolean {

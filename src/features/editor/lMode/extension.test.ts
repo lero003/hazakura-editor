@@ -510,6 +510,61 @@ describe("v0.11 Typora-feel rendering", () => {
     );
   });
 
+  it("adds width-aware cell marks to L Mode table rows", () => {
+    const source =
+      "| Path | 用途 |\n" +
+      "| --- | --- |\n" +
+      "| ./screenshots/hero-workspace.png | 商品ページ冒頭 |\n" +
+      "| ./a.png | 短い説明 |\n";
+    const firstCellStart = source.indexOf("Path");
+    const bodyPathStart = source.indexOf("./screenshots");
+    const shortPathStart = source.indexOf("./a.png");
+    const state = makeState(source, source.length);
+    const set = computeLModeDecorations(state);
+
+    expect(state.doc.toString()).toBe(source);
+    expect(
+      hasClassMark(
+        set,
+        firstCellStart,
+        firstCellStart + "Path".length,
+        "cm-lmode-table-cell",
+      ),
+    ).toBe(true);
+    expect(
+      hasClassMark(
+        set,
+        bodyPathStart,
+        bodyPathStart + "./screenshots/hero-workspace.png".length,
+        "cm-lmode-table-cell",
+      ),
+    ).toBe(true);
+    expect(
+      hasClassMark(
+        set,
+        shortPathStart,
+        shortPathStart + "./a.png".length,
+        "cm-lmode-table-cell",
+      ),
+    ).toBe(true);
+    expect(
+      tableCellWidth(set, shortPathStart, shortPathStart + "./a.png".length),
+    ).toBe("32ch");
+  });
+
+  it("marks task list lines separately so the bullet marker can stay hidden", () => {
+    const source = "- [ ] todo\n- plain bullet\n";
+    const taskLineStart = 0;
+    const plainBulletStart = source.indexOf("- plain");
+    const state = makeState(source, source.length);
+    const set = computeLModeDecorations(state);
+
+    expect(hasLineClass(set, taskLineStart, "cm-lmode-list-task")).toBe(true);
+    expect(hasLineClass(set, plainBulletStart, "cm-lmode-list-task")).toBe(
+      false,
+    );
+  });
+
   it("dims every line that is not the active selection line", () => {
     // Three lines; the cursor lives on the second. The other
     // two should pick up `cm-lmode-dimmed`. The active line
@@ -944,6 +999,49 @@ describe("v0.11 typewriter mode", () => {
       }),
     ).toBeNull();
   });
+
+  it("does not request a measured recenter immediately after manual scrolling", async () => {
+    const source = "Line 1\nLine 2\n";
+    const parent = document.createElement("div");
+    document.body.append(parent);
+    const nowSpy = vi.spyOn(Date, "now").mockReturnValue(1000);
+
+    const view = new EditorView({
+      parent,
+      state: EditorState.create({
+        doc: source,
+        extensions: [
+          markdown({ base: markdownLanguage }),
+          lModeExtension(
+            true,
+            { workspaceRoot: null, documentPath: null },
+            { typewriterMode: true },
+          ),
+        ],
+        selection: { anchor: source.length },
+      }),
+    });
+    const measureSpy = vi.spyOn(view, "requestMeasure");
+
+    view.scrollDOM.dispatchEvent(new WheelEvent("wheel", { bubbles: true }));
+    view.dispatch({
+      changes: { from: source.length, insert: "x" },
+      selection: { anchor: source.length + 1 },
+    });
+    await nextAnimationFrame();
+
+    expect(measureSpy.mock.calls.some((call) => call.length > 0)).toBe(false);
+
+    nowSpy.mockReturnValue(2000);
+    view.dispatch({ selection: { anchor: 0 } });
+    await nextAnimationFrame();
+
+    expect(measureSpy.mock.calls.some((call) => call.length > 0)).toBe(true);
+
+    nowSpy.mockRestore();
+    view.destroy();
+    parent.remove();
+  });
 });
 
 // --- v0.14 typewriter IME stability ---
@@ -1377,6 +1475,29 @@ function hasClassMark(
     }
   });
   return found;
+}
+
+function tableCellWidth(
+  set: DecorationSet,
+  expectedFrom: number,
+  expectedTo: number,
+): string | undefined {
+  let width: string | undefined;
+  set.between(expectedFrom, expectedTo, (from, to, value) => {
+    const spec = value.spec as
+      | { class?: string; attributes?: { style?: string } }
+      | undefined;
+    if (
+      from === expectedFrom &&
+      to === expectedTo &&
+      classesContainToken(spec?.class, "cm-lmode-table-cell")
+    ) {
+      width = spec?.attributes?.style?.match(
+        /--lmode-table-cell-width:\s*([^;]+)/,
+      )?.[1];
+    }
+  });
+  return width;
 }
 
 // Does the range `[from, to)` carry a Decoration.replace with
