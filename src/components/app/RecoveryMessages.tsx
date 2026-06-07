@@ -47,7 +47,7 @@ export function RecoveryMessages({
   }
 
   return (
-    <div className="message-row">
+    <div className="message-row" aria-live="polite" aria-atomic="true">
       {activeDraft && activeTab ? (
         <div className="draft-banner">
           <span className="message-copy">

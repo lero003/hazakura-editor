@@ -52,6 +52,7 @@
 - Follow-up L Mode image behavior now treats editor focus as part of Live Source: while focused, the active image line stays Markdown source; after editor blur, inactive document-like rendering returns, so image widgets can show. Preview workspace-image policy is pinned for Markdown README images, raw HTML `<img>` tags, and async data-URL inlining.
 - L Mode draft-recovery banners intentionally hide the `変更を確認` / `Review changes` action. The draft can still be restored or discarded in L Mode, but draft-vs-disk comparison stays in the normal edit surface to avoid opening the hidden right-pane compare UI under L Mode chrome.
 - Roadmap/current-status now treat this larger post-v0.15 L Mode work as v0.16 **Live Source Quality Follow-up**. Certificate, Developer ID, notarization, provisioning, App Store upload, and broader distribution prep should resume as v0.17+ work after the L Mode evidence is stable.
+- `RecoveryMessages` now exposes the message row as an `aria-live="polite"` / `aria-atomic="true"` region. Recovery / conflict / save-error banners are announced to screen readers as they appear, without touching the StatusBar (which keeps its intentional low-information shape in L Mode).
 
 ## Decisions
 
