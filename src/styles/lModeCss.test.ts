@@ -179,6 +179,18 @@ describe("lMode.css", () => {
     expect(lModeCss).not.toMatch(/\.cm-lmode-blockquote\s*{[^}]*margin/s);
   });
 
+  it("renders blockquotes with a quiet vertical rule", () => {
+    const blockquoteRule =
+      lModeCss.match(
+        /:root\[data-l-mode="on"\] \.cm-lmode-blockquote\s*{(?<body>[^}]*)}/s,
+      )?.groups?.body ?? "";
+
+    expect(blockquoteRule).toMatch(/border-left:\s*2px\s+solid/);
+    expect(blockquoteRule).toMatch(/padding-left:\s*1\.25em/);
+    expect(blockquoteRule).not.toMatch(/border:\s*none/);
+    expect(blockquoteRule).toMatch(/background:\s*transparent/);
+  });
+
   it("keeps fenced code readable without borrowing status bar colors", () => {
     const fencedCodeRule =
       lModeCss.match(

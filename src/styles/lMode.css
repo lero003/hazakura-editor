@@ -1099,22 +1099,20 @@
   padding-top: 0.65em;
 }
 
-/* Blockquote — a pull-quote, not a citation inset. The
-   v0.10 treatment (italic + 3px left border + narrow padding)
-   read as "callout box." The v0.11+ treatment reads as
-   featured excerpt: upright body, slightly larger, wider
-   margins so the text visibly "sits inside" the column
-   without a frame. No background, no left rule — just
-   indent + breath. */
+/* Blockquote — a quiet citation inset. The source `>` marker
+   stays hidden with the rest of L Mode's Markdown chrome, so
+   the left rule carries the quote affordance without making
+   the line feel like raw source. */
 :root[data-l-mode="on"] .cm-lmode-blockquote {
   background: transparent;
-  border: none;
+  border-left: 2px solid color-mix(in srgb, var(--accent) 36%, transparent);
   color: color-mix(in srgb, var(--text) 86%, var(--text-muted));
   font-style: normal;
   font-size: 1.05em;
   line-height: 1.72;
   opacity: 1;
-  padding: 0.4em 1.6em;
+  padding: 0.4em 1.4em 0.4em 1.25em;
+  padding-left: 1.25em;
   text-wrap: balance;
   letter-spacing: 0.01em;
 }

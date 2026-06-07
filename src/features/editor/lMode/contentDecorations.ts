@@ -257,7 +257,8 @@ export function computeContentDecorations(
       }
 
       if (LModeMarkerNodeNames.has(name)) {
-        decorations.push(hiddenMarker.range(node.from, node.to));
+        const markerTo = markerRangeTo(state, node.node);
+        decorations.push(hiddenMarker.range(node.from, markerTo));
         return false;
       }
 
@@ -266,6 +267,27 @@ export function computeContentDecorations(
   });
 
   return decorations;
+}
+
+function markerRangeTo(state: EditorState, node: SyntaxNode): number {
+  if (
+    !shouldHideFollowingMarkerSpace(node.name) ||
+    node.to >= state.doc.length
+  ) {
+    return node.to;
+  }
+
+  return state.doc.sliceString(node.to, node.to + 1) === " "
+    ? node.to + 1
+    : node.to;
+}
+
+function shouldHideFollowingMarkerSpace(nodeName: string): boolean {
+  return (
+    nodeName === "HeaderMark" ||
+    nodeName === "QuoteMark" ||
+    nodeName === "ListMark"
+  );
 }
 
 function buildTableCellPlan(state: EditorState): Map<number, TableCellSpan[]> {

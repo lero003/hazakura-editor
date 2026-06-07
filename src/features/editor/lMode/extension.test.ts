@@ -184,6 +184,39 @@ describe("computeLModeDecorations", () => {
     expect(listMarkHiddenCount(allHidden, item1Dash, item2Dash)).toBe(2);
   });
 
+  it("hides the marker-following space for structural Markdown lines", () => {
+    const source =
+      "# Heading\n" +
+      "> Quote\n" +
+      "- Bullet\n" +
+      "1. Ordered\n";
+    const headingMark = source.indexOf("# Heading");
+    const quoteMark = source.indexOf("> Quote");
+    const bulletMark = source.indexOf("- Bullet");
+    const orderedMark = source.indexOf("1. Ordered");
+    const state = makeState(source, source.length);
+    const set = computeLModeDecorations(state);
+
+    expect(state.doc.toString()).toBe(source);
+    expect(
+      hasClassMark(set, headingMark, headingMark + "# ".length, "cm-lmode-hidden"),
+    ).toBe(true);
+    expect(
+      hasClassMark(set, quoteMark, quoteMark + "> ".length, "cm-lmode-hidden"),
+    ).toBe(true);
+    expect(
+      hasClassMark(set, bulletMark, bulletMark + "- ".length, "cm-lmode-hidden"),
+    ).toBe(true);
+    expect(
+      hasClassMark(
+        set,
+        orderedMark,
+        orderedMark + "1. ".length,
+        "cm-lmode-hidden",
+      ),
+    ).toBe(true);
+  });
+
   it("hides every documented marker type", () => {
     // A fixture that exercises each marker type listed in
     // MARKER_NODE_NAMES. If any future change drops a marker
