@@ -7,7 +7,11 @@ import {
   computeLModeDecorations,
   lModeExtension,
 } from "./extension";
-import { LModeHorizontalRuleWidget, LModeTableDelimiterWidget } from "./widgets";
+import {
+  LModeHorizontalRuleWidget,
+  LModeTableCellBreakWidget,
+  LModeTableDelimiterWidget,
+} from "./widgets";
 import { LModeTaskWidget } from "./taskWidget";
 
 // Build an EditorState with the markdown grammar so the syntax
@@ -550,6 +554,26 @@ describe("v0.11 Typora-feel rendering", () => {
     expect(
       tableCellWidth(set, shortPathStart, shortPathStart + "./a.png".length),
     ).toBe("32ch");
+  });
+
+  it("renders table cell <br> as a visual line break without changing source", () => {
+    const source =
+      "| プラン | 内容 |\n" +
+      "| --- | --- |\n" +
+      "| Review | 長文レビュー<br>補助 |\n";
+    const breakStart = source.indexOf("<br>");
+    const state = makeState(source, source.length);
+    const set = computeLModeDecorations(state);
+
+    expect(state.doc.toString()).toBe(source);
+    expect(
+      hasReplaceWithWidget(
+        set,
+        breakStart,
+        breakStart + "<br>".length,
+        LModeTableCellBreakWidget,
+      ),
+    ).toBe(true);
   });
 
   it("marks task list lines separately so the bullet marker can stay hidden", () => {

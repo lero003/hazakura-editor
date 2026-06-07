@@ -55,6 +55,7 @@ import {
 import { LModeTaskWidget } from "./taskWidget";
 import {
   LModeHorizontalRuleWidget,
+  LModeTableCellBreakWidget,
   LModeTableDelimiterWidget,
 } from "./widgets";
 import type { LModeContext } from "./extension";
@@ -219,6 +220,7 @@ export function computeContentDecorations(
         const line = state.doc.line(fromLine);
         addPipeMarks(state, line, decorations);
         addTableCellMarks(line.number, tableCellPlan, decorations);
+        addTableCellBreakWidgets(state, line.number, tableCellPlan, decorations);
         return true;
       }
 
@@ -340,6 +342,30 @@ function addTableCellMarks(
         },
       }).range(cell.from, cell.to),
     );
+  }
+}
+
+function addTableCellBreakWidgets(
+  state: EditorState,
+  lineNumber: number,
+  tableCellPlan: ReadonlyMap<number, TableCellSpan[]>,
+  decorations: Range<Decoration>[],
+): void {
+  for (const cell of tableCellPlan.get(lineNumber) ?? []) {
+    const text = state.doc.sliceString(cell.from, cell.to);
+    for (const match of text.matchAll(/<br\s*\/?>/gi)) {
+      if (match.index === undefined) {
+        continue;
+      }
+      decorations.push(
+        Decoration.replace({
+          widget: new LModeTableCellBreakWidget(),
+        }).range(
+          cell.from + match.index,
+          cell.from + match.index + match[0].length,
+        ),
+      );
+    }
   }
 }
 

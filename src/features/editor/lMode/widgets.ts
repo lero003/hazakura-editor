@@ -45,3 +45,17 @@ export class LModeTableDelimiterWidget extends WidgetType {
     return el;
   }
 }
+
+/**
+ * Widget for `<br>` inside GFM table cells. A physical
+ * newline would split the Markdown table row, so the source
+ * keeps the HTML break marker while L Mode presents it as an
+ * actual line break inside the cell.
+ */
+export class LModeTableCellBreakWidget extends WidgetType {
+  toDOM(): HTMLElement {
+    const el = document.createElement("br");
+    el.setAttribute("aria-hidden", "true");
+    return el;
+  }
+}
