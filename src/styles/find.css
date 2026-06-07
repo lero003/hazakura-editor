@@ -1,60 +1,67 @@
 /* === find.css === */
 /* 検索バーのスタイリッシュ化 / Find Panel */
+/* L Mode 美学: 静か / 控えめ / 視線の流れ / ノイズ少 */
 .find-panel {
   position: absolute;
   top: 56px;
   right: 24px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: var(--shadow-md);
-  padding: 8px 16px;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  padding: 12px 36px 12px 16px;
   z-index: 50;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: 520px;
+  width: 640px;
   max-width: calc(100% - 48px);
   will-change: transform, opacity;
   animation: slideDown 0.2s var(--ease-emphasized) forwards;
+}
+
+:root[data-theme="dark"] .find-panel {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 .find-panel__row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .find-panel__row--goto {
   border-top: 1px solid var(--border);
   padding-top: 6px;
   margin-top: 2px;
-  gap: 6px;
   font-size: 11px;
   opacity: 0.85;
+  gap: 6px;
 }
 
 .find-close {
-  background: var(--bg);
-  border: 1px solid var(--border);
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  border: 1px solid transparent;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
   color: var(--text-muted);
   min-width: unset;
   padding: 0;
-  margin-left: auto;
   transition: all 0.15s ease;
 }
 
 .find-close:hover {
   background: var(--bg);
-  border-color: var(--border-strong);
+  border-color: var(--border);
   color: var(--text);
 }
 
@@ -66,40 +73,39 @@
 .find-control {
   align-items: center;
   display: flex;
-  flex: 0 1 280px;
   gap: 8px;
-  min-width: 160px;
 }
 
-.find-control span,
-.find-count {
+.find-control--main,
+.find-control--replace {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.find-control--goto {
+  flex: none;
+}
+
+.find-control__label {
   color: var(--text-muted);
   font-size: 12px;
   font-weight: 500;
-}
-
-.find-count {
-  /* 一致なし / 一致あり / 検索なし / 無効正規表現 で
-     言葉が変わり横幅が変動する問題を max-width で吸収。
-     "999 / 999" / "正規表現が無効です" / "一致なし"
-     のいずれでも枠が揺れない。 */
-  min-width: 110px;
-  display: inline-block;
-  text-align: right;
+  flex: none;
 }
 
 .find-control input {
   background: var(--bg);
-  border: 1px solid var(--border-strong);
-  border-radius: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
   color: var(--text);
   flex: 1;
   font: inherit;
   font-size: 13px;
-  min-height: 30px;
+  min-height: 28px;
   min-width: 0;
-  padding: 0 12px;
+  padding: 0 10px;
   box-shadow: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .find-control input:focus {
@@ -107,16 +113,55 @@
   border-color: var(--accent);
 }
 
+.find-control--goto input {
+  width: 64px;
+  min-height: 22px;
+  font-size: 11px;
+  padding: 0 6px;
+}
+
 .find-actions {
   align-items: center;
   display: flex;
   flex: none;
-  gap: 6px;
+  gap: 4px;
 }
 
 .find-actions button {
-  min-width: 58px;
-  padding: 5px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  min-width: 48px;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.find-actions button:hover:not(:disabled) {
+  background: var(--surface);
+  border-color: var(--border-strong);
+}
+
+.find-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.find-count {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 500;
+  /* 一致なし / 一致あり / 検索なし / 無効正規表現 で
+     言葉が変わり横幅が変動する問題を max-width で吸収。
+     "999 / 999" / "正規表現が無効です" / "一致なし"
+     のいずれでも枠が揺れない。 */
+  min-width: 96px;
+  text-align: right;
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
 }
 
 .find-options {
@@ -128,25 +173,40 @@
 
 .find-options span {
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
 }
 
-.find-panel__row--goto label,
-.find-panel__row--goto input,
-.find-panel__row--goto button {
+.toggle-control {
+  align-items: center;
+  display: inline-flex;
+  gap: 4px;
+  cursor: pointer;
   font-size: 11px;
+  color: var(--text-muted);
 }
 
-.find-panel__row--goto input {
-  width: 64px;
-  min-height: 24px;
-  padding: 0 8px;
+.toggle-control input {
+  cursor: pointer;
+  margin: 0;
 }
 
-.find-panel__row--goto button {
-  min-width: 40px;
-  padding: 3px 8px;
+.find-panel__goto-button {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font: inherit;
+  font-size: 11px;
+  min-width: 36px;
+  padding: 2px 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.find-panel__goto-button:hover {
+  background: var(--surface);
+  border-color: var(--border-strong);
 }
 
 .message-row {

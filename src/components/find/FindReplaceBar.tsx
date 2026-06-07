@@ -80,9 +80,32 @@ export function FindReplaceBar({
 }: FindReplaceBarProps) {
   return (
     <section className="find-panel" aria-label={copy.findInActiveFile}>
+      <button
+        type="button"
+        className="find-close"
+        onClick={onClose}
+        aria-label={copy.closeSearch}
+        title={copy.closeSearch}
+      >
+        <svg
+          width="10"
+          height="10"
+          viewBox="0 0 10 10"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M2 2L8 8M8 2L2 8"
+            stroke="currentColor"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+          />
+        </svg>
+      </button>
+
       <div className="find-panel__row find-panel__row--main">
-        <label className="find-control">
-          <span>{copy.find}</span>
+        <label className="find-control find-control--main">
+          <span className="find-control__label">{copy.find}</span>
           <input
             ref={findInputRef}
             type="search"
@@ -97,6 +120,8 @@ export function FindReplaceBar({
             type="button"
             onClick={onPreviousMatch}
             disabled={findMatchCount === 0}
+            aria-label={copy.previous}
+            title={copy.previous}
           >
             {copy.previous}
           </button>
@@ -104,10 +129,12 @@ export function FindReplaceBar({
             type="button"
             onClick={onNextMatch}
             disabled={findMatchCount === 0}
+            aria-label={copy.next}
+            title={copy.next}
           >
             {copy.next}
           </button>
-          <span className="find-count">
+          <span className="find-count" aria-live="polite">
             {findQuery
               ? invalidRegex
                 ? copy.invalidRegex
@@ -158,31 +185,11 @@ export function FindReplaceBar({
             <span>{copy.regex}</span>
           </label>
         </div>
-        <button
-          type="button"
-          className="find-close"
-          onClick={onClose}
-          aria-label={copy.closeSearch}
-        >
-          <svg
-            width="8"
-            height="8"
-            viewBox="0 0 8 8"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M1 1L7 7M7 1L1 7"
-              stroke="currentColor"
-              strokeWidth="1.2"
-              strokeLinecap="round"
-            />
-          </svg>
-        </button>
       </div>
+
       <div className="find-panel__row find-panel__row--replace">
-        <label className="find-control">
-          <span>{copy.replace}</span>
+        <label className="find-control find-control--replace">
+          <span className="find-control__label">{copy.replace}</span>
           <input
             type="search"
             value={replaceQuery}
@@ -208,23 +215,25 @@ export function FindReplaceBar({
           </button>
         </div>
       </div>
+
       <div className="find-panel__row find-panel__row--goto">
-        <label htmlFor="go-to-line-input">
-          <span>{copy.line}</span>
+        <label className="find-control find-control--goto" htmlFor="go-to-line-input">
+          <span className="find-control__label">{copy.line}</span>
+          <input
+            aria-label={copy.goToLine}
+            id="go-to-line-input"
+            type="number"
+            min="1"
+            value={goToLineValue}
+            onChange={(event) => setGoToLineValue(event.target.value)}
+            onKeyDown={onGoToLineKeyDown}
+          />
         </label>
-        <input
-          aria-label={copy.goToLine}
-          id="go-to-line-input"
-          type="number"
-          min="1"
-          value={goToLineValue}
-          onChange={(event) => setGoToLineValue(event.target.value)}
-          onKeyDown={onGoToLineKeyDown}
-        />
         <button
           aria-label={copy.goToLine}
           type="button"
           onClick={onGoToLine}
+          className="find-panel__goto-button"
         >
           {copy.go}
         </button>
