@@ -53,6 +53,7 @@
 - L Mode draft-recovery banners intentionally hide the `変更を確認` / `Review changes` action. The draft can still be restored or discarded in L Mode, but draft-vs-disk comparison stays in the normal edit surface to avoid opening the hidden right-pane compare UI under L Mode chrome.
 - Roadmap/current-status now treat this larger post-v0.15 L Mode work as v0.16 **Live Source Quality Follow-up**. Certificate, Developer ID, notarization, provisioning, App Store upload, and broader distribution prep should resume as v0.17+ work after the L Mode evidence is stable.
 - `RecoveryMessages` now exposes the message row as an `aria-live="polite"` / `aria-atomic="true"` region. Recovery / conflict / save-error banners are announced to screen readers as they appear, without touching the StatusBar (which keeps its intentional low-information shape in L Mode).
+- `ImagePreviewPane` is now a `<figure role="figure" aria-label="...">` with a `<header>` for the title / file-name block. The existing `.image-preview-pane` / `.image-preview-header` / `.image-preview-stage` CSS classes are unchanged, so the visual stays the same; the DOM now announces which file the preview belongs to when the preview tab is selected.
 
 ## Decisions
 

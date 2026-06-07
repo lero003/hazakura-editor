@@ -8,14 +8,18 @@ export function ImagePreviewPane({
   title: string;
 }) {
   return (
-    <div className="image-preview-pane">
-      <div className="image-preview-header">
-        <span>{title}</span>
+    <figure
+      className="image-preview-pane"
+      role="figure"
+      aria-label={`${title}: ${image.name}`}
+    >
+      <header className="image-preview-header">
+        <span className="image-preview-title">{title}</span>
         <strong title={image.path}>{image.name}</strong>
-      </div>
+      </header>
       <div className="image-preview-stage">
         <img src={image.url} alt={image.name} />
       </div>
-    </div>
+    </figure>
   );
 }
