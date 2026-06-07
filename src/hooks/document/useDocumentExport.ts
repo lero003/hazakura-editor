@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { save as saveDialog } from "@tauri-apps/plugin-dialog";
 import {
   isTauriRuntime,
@@ -31,6 +31,11 @@ export function useDocumentExport({
   setStatus,
   workspaceRootPath,
 }: UseDocumentExportOptions) {
+  const activeContentsRef = useRef(activeContents);
+  activeContentsRef.current = activeContents;
+  const activeTabRef = useRef(activeTab);
+  activeTabRef.current = activeTab;
+
   const exportPdf = useCallback(async () => {
     if (!activeContents || !activeTab) {
       setStatus("No active document to print");
@@ -167,10 +172,17 @@ ${rendered}
       });
       if (!destPath) return;
 
+      const tabForExport = activeTabRef.current;
+      if (!tabForExport || tabForExport.id !== activeTab.id) {
+        setStatus("Export HTML stopped; document changed");
+        return;
+      }
+      const contentsForExport = activeContentsRef.current;
+
       const { renderMarkdown, inlineWorkspaceAssetImages } =
         await loadMarkdownRenderer();
-      let bodyHtml = renderMarkdown(activeContents, {
-        documentPath: activeTab.path,
+      let bodyHtml = renderMarkdown(contentsForExport, {
+        documentPath: tabForExport.path,
         workspaceRoot: workspaceRootPath,
       });
       if (workspaceRootPath) {
@@ -211,7 +223,7 @@ ${rendered}
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${escapeHtml(activeTab.name)}</title>
+<title>${escapeHtml(tabForExport.name)}</title>
 <style>
 :root {
 ${cssVars}
