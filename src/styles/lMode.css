@@ -257,6 +257,10 @@
   min-height: 0;
 }
 
+:root[data-l-mode="on"] .image-preview-header {
+  border-bottom: 0;
+}
+
 /* The "page" is a quiet cream surface, not a framed panel.
    The .cm-content max-width + margin auto centers the prose
    inside it; the surrounding `--bg` warm cream is the desk.

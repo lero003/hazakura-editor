@@ -73,6 +73,15 @@ describe("lMode.css", () => {
     expect(statusRule).not.toMatch(/var\(--status-bg\)/);
   });
 
+  it("removes the normal image preview divider in L Mode", () => {
+    const imagePreviewHeaderRule =
+      lModeCss.match(
+        /:root\[data-l-mode="on"\] \.image-preview-header\s*{(?<body>[^}]*)}/s,
+      )?.groups?.body ?? "";
+
+    expect(imagePreviewHeaderRule).toMatch(/border-bottom:\s*0/);
+  });
+
   it("keeps the L Mode change review diff compact and higher contrast", () => {
     const diffRule =
       lModeCss.match(
