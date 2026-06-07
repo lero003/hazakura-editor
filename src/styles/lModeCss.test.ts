@@ -297,16 +297,17 @@ describe("lMode.css", () => {
     expect(hiddenMarkerRule).toMatch(/background:\s*transparent/);
   });
 
-  it("keeps hidden Markdown markers hidden on every line (layout stability)", () => {
-    // v0.11+ direction: L Mode is a WYSIWYG-tier writing
-    // surface. The document should read like a document, and
-    // the layout must not shift as the cursor moves. The
-    // active-line and hover-reveal path that briefly
-    // re-showed the Markdown markers is gone — toggling L
-    // Mode off is the way to see the source.
-    expect(lModeCss).not.toMatch(
-      /\.cm-lmode-source-line \.cm-lmode-hidden/,
-    );
+  it("keeps Markdown markers hidden except on the active editing line", () => {
+    const activeMarkerRule =
+      lModeCss.match(
+        /:root\[data-l-mode="on"\] \.cm-line\.cm-lmode-source-line \.cm-lmode-hidden\s*{(?<body>[^}]*)}/s,
+      )?.groups?.body ?? "";
+
+    expect(activeMarkerRule).toMatch(/font-size:\s*inherit/);
+    expect(activeMarkerRule).toMatch(/inline-size:\s*auto/);
+    expect(activeMarkerRule).toMatch(/max-inline-size:\s*none/);
+    expect(activeMarkerRule).toMatch(/overflow:\s*visible/);
+    expect(activeMarkerRule).toMatch(/color:\s*color-mix/);
     expect(lModeCss).not.toMatch(
       /\.cm-line:hover \.cm-lmode-hidden/,
     );

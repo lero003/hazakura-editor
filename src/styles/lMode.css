@@ -1168,10 +1168,9 @@
 }
 
 /* Hide the L Mode marker. The class is added by the
-   CodeMirror extension. Markers are visually absent on every
-   line — active, hovered, or otherwise — so the layout is
-   stable as the cursor moves. Toggling L Mode off restores
-   the source text. */
+   CodeMirror extension. Markers are visually absent on
+   inactive lines so the document reads as prose. Toggling L
+   Mode off restores the source text. */
 :root[data-l-mode="on"] .cm-lmode-hidden {
   background: transparent;
   color: transparent;
@@ -1184,6 +1183,23 @@
   user-select: none;
   vertical-align: baseline;
   white-space: pre;
+}
+
+/* On the active editing line, restore the source marker's
+   inline geometry. macOS IME candidate windows depend on a
+   valid caret rectangle; a zero-width, zero-font marker at
+   a tag boundary can leave the IME without an anchor. The
+   marker is intentionally quiet rather than hidden here:
+   editing the line should reveal enough source context to
+   make the cursor position understandable. */
+:root[data-l-mode="on"] .cm-line.cm-lmode-source-line .cm-lmode-hidden {
+  color: color-mix(in srgb, var(--text-muted) 62%, transparent);
+  display: inline;
+  font-size: inherit;
+  inline-size: auto;
+  max-inline-size: none;
+  overflow: visible;
+  user-select: text;
 }
 
 /* --- 4b. Image rendering — magazine style ---
