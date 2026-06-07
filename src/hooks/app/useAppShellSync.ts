@@ -77,7 +77,7 @@ export function useAppShellSync({
     themePreference,
   });
 
-  useThemeMenuStateSync(themePreference);
+  useThemeMenuStateSync(themePreference, { onStatus });
 
   useWorkspaceStatePersistence({
     activeTab,

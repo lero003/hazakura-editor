@@ -58,6 +58,8 @@ export function localizeStatusMessage(
     "Failed to update window title": "ウィンドウのタイトル更新に失敗しました",
     "Failed to update app menu state":
       "アプリケーションメニューの状態更新に失敗しました",
+    "Failed to update theme menu state":
+      "テーマメニューの状態更新に失敗しました",
     "Image markup inserted": "画像の Markdown を挿入しました",
     "Image preview closed": "画像プレビューを閉じました",
     "Image preview failed": "画像プレビューに失敗しました",
