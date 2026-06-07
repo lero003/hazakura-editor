@@ -482,22 +482,36 @@ export function useWorkspaceFileOps({
       // for rename, but for trash the right answer is to drop
       // the entry entirely instead of remapping to a new path.
       const trashedPath = pending.srcPath;
-      setTabs((currentTabs) => currentTabs.filter((tab) => tab.id !== trashedPath));
-      setActiveTabId((current) => (current === trashedPath ? null : current));
+      const matchesTrashedPath = (path: string) =>
+        pathMatchesWorkspaceEntry(path, trashedPath, pending.isDirectory);
+      let compareAnchorRemoved = false;
+      let compareTargetRemoved = false;
+
+      setTabs((currentTabs) =>
+        currentTabs.filter((tab) => !matchesTrashedPath(tab.path)),
+      );
+      setActiveTabId((current) =>
+        current && matchesTrashedPath(current) ? null : current,
+      );
       setPendingDrafts((currentDrafts) =>
-        currentDrafts.filter((draft) => draft.path !== trashedPath),
+        currentDrafts.filter((draft) => !matchesTrashedPath(draft.path)),
       );
       setRecentFiles((currentEntries) =>
-        currentEntries.filter((entry) => entry.path !== trashedPath),
+        currentEntries.filter((entry) => !matchesTrashedPath(entry.path)),
       );
-      setCompareAnchor((current) =>
-        current && current.path === trashedPath ? null : current,
-      );
-      setCompareTarget((current) =>
-        current && current.path === trashedPath ? null : current,
-      );
+      setCompareAnchor((current) => {
+        if (!current || !matchesTrashedPath(current.path)) return current;
+        compareAnchorRemoved = true;
+        return null;
+      });
+      setCompareTarget((current) => {
+        if (!current || !matchesTrashedPath(current.path)) return current;
+        compareTargetRemoved = true;
+        return null;
+      });
       setCompareView((current) => {
         if (!current) return current;
+        if (compareAnchorRemoved || compareTargetRemoved) return null;
         if (!current.caseKey.includes(trashedPath)) return current;
         return null;
       });
@@ -544,4 +558,15 @@ export function useWorkspaceFileOps({
     confirmPendingTrash,
     cancelPendingTrash,
   };
+}
+
+function pathMatchesWorkspaceEntry(
+  path: string,
+  entryPath: string,
+  includeDescendants: boolean,
+): boolean {
+  return (
+    path === entryPath ||
+    (includeDescendants && path.startsWith(`${entryPath}/`))
+  );
 }
