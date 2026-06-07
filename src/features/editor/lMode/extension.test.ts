@@ -921,6 +921,18 @@ describe("v0.11 typewriter mode", () => {
     ).toBe(1230);
   });
 
+  it("does not compute a target when the caret is already centered", () => {
+    expect(
+      lModeExtensionInternals.computeTypewriterScrollTop({
+        caretBottom: 310.4,
+        caretTop: 290,
+        currentScrollTop: 1000,
+        scrollerHeight: 400,
+        scrollerTop: 100,
+      }),
+    ).toBeNull();
+  });
+
   it("does not compute a target for a zero-height scroller", () => {
     expect(
       lModeExtensionInternals.computeTypewriterScrollTop({

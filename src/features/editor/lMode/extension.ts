@@ -295,10 +295,14 @@ function computeTypewriterScrollTop({
 
   const caretCenter = (caretTop + caretBottom) / 2;
   const viewportCenterOffset = scrollerHeight / 2;
-  return Math.max(
+  const nextScrollTop = Math.max(
     0,
     currentScrollTop + caretCenter - scrollerTop - viewportCenterOffset,
   );
+  if (Math.abs(nextScrollTop - currentScrollTop) < 1) {
+    return null;
+  }
+  return nextScrollTop;
 }
 
 function didSelectionChange(transaction: Transaction): boolean {
