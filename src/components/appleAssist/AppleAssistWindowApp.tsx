@@ -188,6 +188,9 @@ export function AppleAssistWindowApp() {
       })
       .catch((err) => {
         console.warn("Failed to listen for Apple Assist apply status", err);
+        if (!disposed) {
+          setError(copy.targetReadFailed);
+        }
       });
 
     return () => {

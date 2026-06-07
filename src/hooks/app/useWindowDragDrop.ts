@@ -89,6 +89,7 @@ export function useWindowDragDrop({
       })
       .catch((err) => {
         console.warn("Failed to listen for drag-drop events", err);
+        onStatus(`Failed to listen for drag-drop events: ${String(err)}`);
       });
 
     return () => {
