@@ -26,6 +26,7 @@ Last reviewed: 2026-06-07
 - v0.14.0 local source / local-app gates passed on 2026-06-07. See `docs/releases/0.14.0-source-tag.release.md` for the verification packet.
 - v0.15.0 is the **User-Test Quality Polish** warning-expected DMG preview: it closes the post-user-test polish loop with stale-state hardening, L Mode lightness, Apple Local Assist rough-request / stale-candidate polish, settings/theme clarity, and save/recovery robustness. It publishes an Apple Silicon Developer / GitHub lane DMG for cross-machine testing, but remains ad-hoc signed and not notarized.
 - v0.15.0 local release gates and warning-expected DMG preview verification passed on 2026-06-07. DMG SHA-256: `e835a2052c47651134cf37c909501947e4fa407a97767b7d8856eb98ee5e9ec2`.
+- v0.15.0 GitHub Release assets were re-downloaded into a fresh temp directory after publication and passed checksum, `hdiutil verify`, mounted-app metadata, and `codesign --verify --deep --strict --verbose=2`.
 - Post-v0.15 work should move into a v0.16 **Release Prep** lane, followed by a v0.17 **Release Polish** lane for final release-facing touch-ups.
 - Older public tags remain immutable.
 
