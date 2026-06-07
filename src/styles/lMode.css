@@ -1185,13 +1185,13 @@
   white-space: pre;
 }
 
-/* On the active editing line, restore the source marker's
-   inline geometry. macOS IME candidate windows depend on a
-   valid caret rectangle; a zero-width, zero-font marker at
-   a tag boundary can leave the IME without an anchor. The
-   marker is intentionally quiet rather than hidden here:
-   editing the line should reveal enough source context to
-   make the cursor position understandable. */
+/* Safety net for source markers on the focused editing line.
+   The primary Live Source rule is implemented in the
+   decoration builder: focused active / selected lines avoid
+   hidden marker spans where possible. This CSS remains as a
+   guard for any marker range that still reaches the source
+   line, because macOS IME candidate windows depend on a
+   valid caret rectangle near tag boundaries. */
 :root[data-l-mode="on"] .cm-line.cm-lmode-source-line .cm-lmode-hidden {
   color: color-mix(in srgb, var(--text-muted) 62%, transparent);
   display: inline;

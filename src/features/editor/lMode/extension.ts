@@ -37,6 +37,7 @@ import {
   EditorState,
   type Extension,
   Facet,
+  StateEffect,
   StateField,
   type Transaction,
 } from "@codemirror/state";
@@ -82,15 +83,33 @@ export const lModeContextFacet = Facet.define<LModeContext, LModeContext>({
     },
 });
 
+const lModeFocusChangedEffect = StateEffect.define<boolean>();
+
+const lModeFocusField = StateField.define<boolean>({
+  create() {
+    return true;
+  },
+  update(focused, transaction) {
+    for (const effect of transaction.effects) {
+      if (effect.is(lModeFocusChangedEffect)) {
+        return effect.value;
+      }
+    }
+    return focused;
+  },
+});
+
 function readContext(state: EditorState): LModeContext {
   return state.facet(lModeContextFacet);
 }
 
 const lModeField = StateField.define<DecorationSet>({
   create(state) {
-    const activeLineRanges = getActiveLineRanges(state);
-    const activeLineNumbers = new Set(activeLineRanges.map((l) => l.number));
-    const lineClasses = computeLineClasses(state, activeLineNumbers);
+    const editorFocused = state.field(lModeFocusField);
+    const activeLineNumbers = getSourceLineNumbers(state, editorFocused);
+    const lineClasses = computeLineClasses(state, activeLineNumbers, {
+      softFocus: editorFocused,
+    });
     const contentDecorations = computeContentDecorations(
       state,
       readContext(state),
@@ -110,17 +129,23 @@ const lModeField = StateField.define<DecorationSet>({
     const refreshFired = transaction.effects.some((e) =>
       e.is(refreshImagesEffect),
     );
+    const focusChanged = transaction.effects.some((e) =>
+      e.is(lModeFocusChangedEffect),
+    );
     const selectionChanged = didSelectionChange(transaction);
     if (
       transaction.docChanged ||
       selectionChanged ||
       contextChanged ||
-      refreshFired
+      refreshFired ||
+      focusChanged
     ) {
       const state = transaction.state;
-      const activeLineRanges = getActiveLineRanges(state);
-      const activeLineNumbers = new Set(activeLineRanges.map((l) => l.number));
-      const lineClasses = computeLineClasses(state, activeLineNumbers);
+      const editorFocused = state.field(lModeFocusField);
+      const activeLineNumbers = getSourceLineNumbers(state, editorFocused);
+      const lineClasses = computeLineClasses(state, activeLineNumbers, {
+        softFocus: editorFocused,
+      });
       const contentDecorations = computeContentDecorations(
         state,
         readContext(state),
@@ -147,8 +172,12 @@ export function lModeExtension(
   // off also drops the plugin.
   return active
     ? [
+        lModeFocusField,
         lModeField,
         lModeContextFacet.of(context),
+        EditorView.focusChangeEffect.of((_state, focusing) =>
+          lModeFocusChangedEffect.of(focusing),
+        ),
         lModeImageResolverPlugin(),
         lModeTaskClickPlugin(),
         lModeTableEditingPlugin(),
@@ -356,6 +385,7 @@ function didSelectionChange(transaction: Transaction): boolean {
 export const __test__ = {
   computeTypewriterScrollTop,
   didSelectionChange,
+  lModeFocusChangedEffect,
 };
 
 /**
@@ -369,8 +399,7 @@ export function computeLModeDecorations(
   state: EditorState,
   context: LModeContext = { workspaceRoot: null, documentPath: null },
 ): DecorationSet {
-  const activeLineRanges = getActiveLineRanges(state);
-  const activeLineNumbers = new Set(activeLineRanges.map((l) => l.number));
+  const activeLineNumbers = getSourceLineNumbers(state, true);
   const lineClasses = computeLineClasses(state, activeLineNumbers);
   const contentDecorations = computeContentDecorations(
     state,
@@ -378,4 +407,15 @@ export function computeLModeDecorations(
     activeLineNumbers,
   );
   return buildLModeDecorations(state, lineClasses, contentDecorations);
+}
+
+function getSourceLineNumbers(
+  state: EditorState,
+  editorFocused: boolean,
+): ReadonlySet<number> {
+  if (!editorFocused) {
+    return new Set();
+  }
+  const activeLineRanges = getActiveLineRanges(state);
+  return new Set(activeLineRanges.map((line) => line.number));
 }

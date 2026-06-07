@@ -79,9 +79,11 @@ export function getActiveLineRanges(
 export function computeLineClasses(
   state: EditorState,
   activeLineNumbers: ReadonlySet<number>,
+  options: { softFocus?: boolean } = {},
 ): Map<number, string[]> {
   const lineClasses = new Map<number, string[]>();
   const tree = syntaxTree(state);
+  const softFocus = options.softFocus ?? true;
   let firstHeading1Seen = false;
 
   // Pre-build a fast lookup from Lezer node name to its
@@ -179,11 +181,13 @@ export function computeLineClasses(
   // `LModeClasses.activeLine` on top of the dim (CSS sets
   // opacity: 1 for active lines), so the two signals compose
   // cleanly.
-  for (let lineNumber = 1; lineNumber <= state.doc.lines; lineNumber += 1) {
-    if (activeLineNumbers.has(lineNumber)) {
-      pushLineClass(lineClasses, lineNumber, LModeClasses.activeLine);
-    } else {
-      pushLineClass(lineClasses, lineNumber, LModeClasses.dimmedLine);
+  if (softFocus) {
+    for (let lineNumber = 1; lineNumber <= state.doc.lines; lineNumber += 1) {
+      if (activeLineNumbers.has(lineNumber)) {
+        pushLineClass(lineClasses, lineNumber, LModeClasses.activeLine);
+      } else {
+        pushLineClass(lineClasses, lineNumber, LModeClasses.dimmedLine);
+      }
     }
   }
 

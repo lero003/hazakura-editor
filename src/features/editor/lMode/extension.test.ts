@@ -471,6 +471,40 @@ describe("computeLModeDecorations", () => {
     view.destroy();
     parent.remove();
   });
+
+  it("renders image widgets after the editor loses focus", async () => {
+    const source = "![shot](data:image/png;base64,iVBORw0KGgo=)\n";
+    const imageStart = source.indexOf("![");
+    const parent = document.createElement("div");
+    document.body.append(parent);
+
+    const view = new EditorView({
+      parent,
+      state: EditorState.create({
+        doc: source,
+        extensions: [
+          markdown({ base: markdownLanguage }),
+          lModeExtension(true, {
+            workspaceRoot: "/ws",
+            documentPath: "/ws/README.md",
+          }),
+        ],
+        selection: { anchor: imageStart },
+      }),
+    });
+
+    expect(parent.querySelector(".cm-lmode-image")).toBeNull();
+
+    view.dispatch({
+      effects: lModeExtensionInternals.lModeFocusChangedEffect.of(false),
+    });
+    await Promise.resolve();
+
+    expect(parent.querySelector(".cm-lmode-image")).not.toBeNull();
+
+    view.destroy();
+    parent.remove();
+  });
 });
 
 // --- v0.11 Typora-feel decorations ---

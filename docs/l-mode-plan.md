@@ -41,7 +41,7 @@ Markdown source remains the truth. The writing surface is Live Source: document-
 ```txt
 Markdown source is truth.
 Decoration is display only.
-Active and selected lines show Markdown source.
+Focused active and selected lines show Markdown source.
 Inactive lines may render as the document.
 ```
 
@@ -53,7 +53,8 @@ The visual target is a custom Live Source writing app: editorial typography, str
 
 - Markdown text is the only canonical document state.
 - L Mode display changes must be CodeMirror decorations, not saved-text rewrites.
-- Lines touched by the caret or selection should remain source-like: Markdown markers, spaces, table pipes, and inline break tags must stay directly editable.
+- While the editor is focused, lines touched by the caret or selection should remain source-like: Markdown markers, spaces, table pipes, and inline break tags must stay directly editable.
+- When the editor loses focus, L Mode should return to the inactive document-like display so images and other block widgets can be read.
 - Inactive lines may hide markers, replace small syntax with widgets, or add document-like typography when that does not change saved source semantics.
 - Copy, save, diff, Preview, Print to PDF, and Export HTML must use the Markdown source or the existing source-rendering pipeline, not L Mode decoration DOM.
 - Tables are not a full WYSIWYG surface. L Mode may add readable table presentation and guarded keyboard behavior, but should avoid structural table editing beyond breakage prevention.
