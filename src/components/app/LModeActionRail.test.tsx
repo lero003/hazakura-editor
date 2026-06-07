@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { LModeActionRail } from "./LModeActionRail";
 import { getLModeCopy } from "../../lib/locale/lMode";
 import { getSafeEditorCopy } from "../../lib/locale/safeEditor";
@@ -199,6 +199,47 @@ describe("LModeActionRail", () => {
     expect(await screen.findByRole("dialog", { name: "Change review" })).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Close" }));
+
+    expect(screen.queryByRole("dialog", { name: "Change review" })).toBeNull();
+  });
+
+  it("does not open a stale review sheet after the active document changes", async () => {
+    let resolveReview:
+      | ((snapshot: ChangeReviewSnapshot | null) => void)
+      | undefined;
+    const onReviewChanges = vi.fn(
+      () =>
+        new Promise<ChangeReviewSnapshot | null>((resolve) => {
+          resolveReview = resolve;
+        }),
+    );
+    const { rerender } = render(
+      <LModeActionRail
+        {...defaultProps({
+          activeDocumentPath: "/workspace/note.md",
+          onReviewChanges,
+          reviewChangesAvailable: true,
+        })}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Review changes/ }));
+    expect(onReviewChanges).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <LModeActionRail
+        {...defaultProps({
+          activeDocumentPath: "/workspace/other.md",
+          onReviewChanges,
+          reviewChangesAvailable: true,
+        })}
+      />,
+    );
+
+    await act(async () => {
+      resolveReview?.(changeReviewSnapshot());
+      await Promise.resolve();
+    });
 
     expect(screen.queryByRole("dialog", { name: "Change review" })).toBeNull();
   });

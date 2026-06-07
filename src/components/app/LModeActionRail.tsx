@@ -77,6 +77,8 @@ export function LModeActionRail({
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const [changeReview, setChangeReview] =
     useState<ChangeReviewSnapshot | null>(null);
+  const activeDocumentPathRef = useRef(activeDocumentPath);
+  activeDocumentPathRef.current = activeDocumentPath;
 
   // Refs into the workspace-toggle and review-changes buttons
   // so we can restore focus after a drawer / sheet closes.
@@ -141,10 +143,13 @@ export function LModeActionRail({
 
   const handleReviewChanges = useCallback(async () => {
     const snapshot = await onReviewChanges();
-    if (snapshot && snapshot.compareCase.documentPath === activeDocumentPath) {
+    if (
+      snapshot &&
+      snapshot.compareCase.documentPath === activeDocumentPathRef.current
+    ) {
       setChangeReview(snapshot);
     }
-  }, [activeDocumentPath, onReviewChanges]);
+  }, [onReviewChanges]);
 
   const sidebarProps = useMemo<LModeWorkspaceSidebarProps>(
     () => ({
