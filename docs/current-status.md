@@ -128,9 +128,7 @@ v0.16.0 is the first source / settings polish slice in the v0.16 L Mode Live Sou
 
 Like v0.15.0, the v0.16.0 DMG uses the Developer / GitHub lane (`hazakura editor Dev.app`, `lab.hazakura.note.dev`) so Agent Workbench remains available for preview users. It is ad-hoc signed, not Developer ID signed, not notarized, and should be treated as a hands-on preview artifact rather than a trusted distribution.
 
-v0.16.0 local release gates and warning-expected DMG preview verification:
-
-- _to be recorded after the local gate run completes._
+v0.16.0 local release gates and warning-expected DMG preview verification passed on 2026-06-08. DMG SHA-256: `10e69400c5d6afa3a272bf606b2c3280a80320b73869a5e5df342d5caa7360ed`. Cargo test ran serially (`-- --test-threads=1`) to dodge default-thread-pool flakiness in the Agent Workbench real-runtime test; 243 tests passed. The DMG and SHA-256 file are written under `src-tauri/target/release/bundle/dmg/`.
 
 v0.16.0 GitHub Release publication and remote verification:
 
