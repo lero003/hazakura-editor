@@ -5,6 +5,7 @@ import {
   deleteSelectedTableRows,
   insertTableRowAfterCursor,
   insertTableCellBreak,
+  insertTableCellPipe,
   moveTableCellLeft,
   moveTableCellRight,
 } from "./tableEditing";
@@ -106,6 +107,22 @@ describe("L Mode table editing", () => {
       "| プラン | 内容 | 想定ユーザー |\n" +
         "| --- | --- | --- |\n" +
         "| Review | 差分・見出し・比較 | 長文レビュー<br>を補助 |\n",
+    );
+  });
+
+  it("escapes a typed pipe inside a table cell instead of adding a column", () => {
+    const doc =
+      "| プラン | 内容 | 想定ユーザー |\n" +
+      "| --- | --- | --- |\n" +
+      "| Preview | 開発版・検証用 | 早期に試したい人 |\n";
+    const insertAt = offsetOf(doc, "開発版") + "開発版".length;
+    const view = makeView(doc, insertAt);
+
+    expect(insertTableCellPipe(view)).toBe(true);
+    expect(view.state.doc.toString()).toBe(
+      "| プラン | 内容 | 想定ユーザー |\n" +
+        "| --- | --- | --- |\n" +
+        "| Preview | 開発版\\|・検証用 | 早期に試したい人 |\n",
     );
   });
 

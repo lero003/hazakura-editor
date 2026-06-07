@@ -179,6 +179,20 @@ describe("lMode.css", () => {
     expect(lModeCss).not.toMatch(/\.cm-lmode-blockquote\s*{[^}]*margin/s);
   });
 
+  it("keeps L Mode headings centered as expressive display text", () => {
+    for (const level of [1, 2, 3, 4, 5, 6]) {
+      const headingRule =
+        lModeCss.match(
+          new RegExp(
+            `:root\\[data-l-mode="on"\\] \\.cm-lmode-heading-${level}\\s*{(?<body>[^}]*)}`,
+            "s",
+          ),
+        )?.groups?.body ?? "";
+
+      expect(headingRule).toMatch(/text-align:\s*center/);
+    }
+  });
+
   it("renders blockquotes with a quiet vertical rule", () => {
     const blockquoteRule =
       lModeCss.match(

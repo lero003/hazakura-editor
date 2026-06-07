@@ -892,15 +892,10 @@
   font-family: inherit;
 }
 
-/* Headings, code, blockquote, and list lines opt out of
+/* Code, blockquote, and list lines opt out of
    justification so the prose body justifies but structural
-   lines don't get pushed around. */
-:root[data-l-mode="on"] .cm-lmode-heading-1,
-:root[data-l-mode="on"] .cm-lmode-heading-2,
-:root[data-l-mode="on"] .cm-lmode-heading-3,
-:root[data-l-mode="on"] .cm-lmode-heading-4,
-:root[data-l-mode="on"] .cm-lmode-heading-5,
-:root[data-l-mode="on"] .cm-lmode-heading-6,
+   lines don't get pushed around. Headings keep their
+   expressive centered treatment in their own rules below. */
 :root[data-l-mode="on"] .cm-lmode-blockquote,
 :root[data-l-mode="on"] .cm-lmode-list,
 :root[data-l-mode="on"] .cm-lmode-fenced-code,
@@ -1015,7 +1010,7 @@
   font-weight: 700;
   line-height: 1.25;
   letter-spacing: -0.014em;
-  text-align: start;
+  text-align: center;
   color: var(--text);
   padding-top: 1.25em;
   padding-bottom: 0.34em;
@@ -1042,7 +1037,7 @@
   font-weight: 700;
   line-height: 1.25;
   letter-spacing: -0.012em;
-  text-align: start;
+  text-align: center;
   color: var(--text);
   padding-top: 1.2em;
   padding-bottom: 0.32em;
@@ -1056,7 +1051,7 @@
   font-weight: 700;
   line-height: 1.3;
   letter-spacing: -0.005em;
-  text-align: start;
+  text-align: center;
   color: color-mix(in srgb, var(--text) 94%, var(--accent));
   padding-top: 1em;
   padding-bottom: 0.18em;
@@ -1068,7 +1063,7 @@
   font-weight: 600;
   font-style: italic;
   line-height: 1.35;
-  text-align: start;
+  text-align: center;
   color: color-mix(in srgb, var(--text) 82%, var(--text-muted));
   padding-top: 0.85em;
   padding-bottom: 0.12em;
@@ -1081,7 +1076,7 @@
   text-transform: uppercase;
   letter-spacing: 0.1em;
   line-height: 1.4;
-  text-align: start;
+  text-align: center;
   color: var(--text-muted);
   padding-top: 0.75em;
 }
@@ -1093,7 +1088,7 @@
   text-transform: uppercase;
   letter-spacing: 0.12em;
   line-height: 1.4;
-  text-align: start;
+  text-align: center;
   color: var(--text-muted);
   opacity: 0.85;
   padding-top: 0.65em;

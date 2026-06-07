@@ -134,6 +134,29 @@ export function insertTableCellBreak(view: EditorView): boolean {
   return true;
 }
 
+export function insertTableCellPipe(view: EditorView): boolean {
+  const range = view.state.selection.main;
+  if (!range.empty) {
+    return false;
+  }
+
+  const row = readTableRowAt(view, range.from);
+  if (!row || row.isDelimiter) {
+    return false;
+  }
+
+  const cellIndex = findCellIndex(row.cells, range.from);
+  if (cellIndex < 0) {
+    return false;
+  }
+
+  view.dispatch({
+    changes: { from: range.from, insert: "\\|" },
+    selection: EditorSelection.cursor(range.from + "\\|".length),
+  });
+  return true;
+}
+
 export function deleteSelectedTableRows(view: EditorView): boolean {
   const range = view.state.selection.main;
   if (range.empty) {
@@ -170,6 +193,10 @@ export function lModeTableEditingPlugin() {
       {
         key: "Shift-Enter",
         run: runWhenNotComposing(insertTableCellBreak),
+      },
+      {
+        key: "|",
+        run: runWhenNotComposing(insertTableCellPipe),
       },
       {
         key: "Backspace",

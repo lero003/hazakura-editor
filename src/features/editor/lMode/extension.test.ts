@@ -217,6 +217,50 @@ describe("computeLModeDecorations", () => {
     ).toBe(true);
   });
 
+  it("keeps the marker-following space visible on the active line for IME input", () => {
+    const source = "# Heading\n> Quote\n";
+    const headingMark = source.indexOf("# Heading");
+    const quoteMark = source.indexOf("> Quote");
+    const headingContent = source.indexOf("Heading");
+    const quoteContent = source.indexOf("Quote");
+
+    const onHeading = computeLModeDecorations(makeState(source, headingContent));
+    const onQuote = computeLModeDecorations(makeState(source, quoteContent));
+
+    expect(
+      hasClassMark(
+        onHeading,
+        headingMark,
+        headingMark + "# ".length,
+        "cm-lmode-hidden",
+      ),
+    ).toBe(false);
+    expect(
+      hasClassMark(
+        onHeading,
+        headingMark,
+        headingMark + "#".length,
+        "cm-lmode-hidden",
+      ),
+    ).toBe(true);
+    expect(
+      hasClassMark(
+        onQuote,
+        quoteMark,
+        quoteMark + "> ".length,
+        "cm-lmode-hidden",
+      ),
+    ).toBe(false);
+    expect(
+      hasClassMark(
+        onQuote,
+        quoteMark,
+        quoteMark + ">".length,
+        "cm-lmode-hidden",
+      ),
+    ).toBe(true);
+  });
+
   it("hides every documented marker type", () => {
     // A fixture that exercises each marker type listed in
     // MARKER_NODE_NAMES. If any future change drops a marker
