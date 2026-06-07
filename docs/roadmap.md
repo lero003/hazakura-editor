@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-08 (v0.16 warning-expected DMG preview candidate alignment)
+Last reviewed: 2026-06-08 (v0.16 warning-expected DMG preview publication)
 
 ## Current Position
 
@@ -11,11 +11,11 @@ Last reviewed: 2026-06-08 (v0.16 warning-expected DMG preview candidate alignmen
 
 Current release state:
 
-- Latest published preview: `v0.15.0` warning-expected DMG preview.
+- Latest published preview: `v0.16.0` warning-expected DMG preview.
 - Latest source / local-app-only tag: `v0.14.0`.
 - Current package/app version: `0.16.0`.
-- v0.16.0 candidate theme: **Per-Surface Font Sizes / L Mode Live Source Quality Follow-up**.
-- Active lane: v0.16 warning-expected DMG preview candidate, then v0.17 Distribution Prep after publication.
+- v0.16.0 theme: **Per-Surface Font Sizes / L Mode Live Source Quality Follow-up**.
+- Active lane: v0.17 Distribution Prep / Release Polish, unless a v0.16 hotfix blocker appears.
 - Active product polish direction: stabilize the larger post-v0.15 L Mode Live Source work before entering certificate / distribution prep. Markdown source remains canonical; L Mode may improve presentation, guarded keyboard behavior, and smoke coverage, but not the saved document model.
 
 Historical phase details and old milestone text are archived in `docs/archive/roadmaps/roadmap-through-v0.10-doc-refactor.md` and `docs/archive/roadmaps/roadmap-v0.1-archived.md`.

@@ -3,12 +3,12 @@
 ## Current State
 
 - `hazakura editor` published `v0.15.0` as the latest public warning-expected DMG preview, framed as **User-Test Quality Polish**.
-- `hazakura editor` has a `v0.16.0` warning-expected DMG preview candidate prepared locally, framed as **Per-Surface Font Sizes / L Mode Live Source Quality Follow-up**.
+- `hazakura editor` published `v0.16.0` as a warning-expected DMG preview, framed as **Per-Surface Font Sizes / L Mode Live Source Quality Follow-up**.
 - Version surfaces are aligned at `0.16.0` across npm, Tauri, Cargo, and lockfile metadata.
-- Candidate release body: `docs/releases/0.16.0-warning-expected-dmg-preview.release.md`.
+- Latest published release body: `docs/releases/0.16.0-warning-expected-dmg-preview.release.md`.
 - Latest source / local-app tag notes: `docs/releases/0.14.0-source-tag.release.md`.
 - Current status source: `docs/current-status.md`.
-- Active lane: v0.16 warning-expected DMG preview candidate; publication, tag, GitHub Release, and remote verification are still pending explicit approval.
+- Active lane: post-v0.16 publication follow-up; next implementation lane remains v0.17 Distribution Prep unless a v0.16 hotfix blocker appears.
 
 ## Recent Changes
 
@@ -56,6 +56,7 @@
 - `ImagePreviewPane` is now a `<figure role="figure" aria-label="...">` with a `<header>` for the title / file-name block. The existing `.image-preview-pane` / `.image-preview-header` / `.image-preview-stage` CSS classes are unchanged, so the visual stays the same; the DOM now announces which file the preview belongs to when the preview tab is selected. `.image-preview-pane` now carries `margin: 0` so the browser's default `<figure>` margin does not shift the preview away from the editor pane edge.
 - `lModeCursorBoundaryPlugin` (L Mode snap-to-content) now skips its rAF schedule when the incoming `ViewUpdate` carries neither `docChanged` nor `selectionSet`. Viewport-only updates (scroll, focus, measurements) no longer wake a snap rAF, reducing per-frame churn during long Markdown scrolls. The save-image style of the class is unchanged: collapsed-caret snap still runs on doc / selection changes; the new condition only narrows the trigger. Tests cover the no-op, doc-changed, and selection-changed branches.
 - v0.16 release-prep alignment fixed the stale lockfile version, clarified pending-vs-published wording in README/current-status/roadmap/release-pre-check, refreshed the app / README logo assets from the transparent hazakura flower-and-leaf mark, regenerated `src-tauri/icons/icon.icns`, and rebuilt the warning-expected Developer / GitHub DMG from the current candidate.
+- v0.16.0 was tagged, pushed, published as a GitHub prerelease, and remote-verified on 2026-06-08. GitHub repository About metadata was also filled with a short Markdown-first safe-editor description and topics (`markdown`, `tauri`, `react`, `editor`, `macos`, `safe-editor`, `writing`, `local-first`). License remains intentionally unspecified pending a commercial/licensing decision.
 
 ## Decisions
 
@@ -101,7 +102,7 @@
 - L Mode Live Source follow-up verification passed on 2026-06-07: regression RED was observed for active-line marker suppression; then `npm run test` (68 files / 487 tests), `npm run build:vite`, `npm run build`, `codesign --verify --deep --strict --verbose=2 "src-tauri/target/release/bundle/macos/hazakura editor.app"`, and `git diff --check` passed. Built-app IME smoke still requires a real app run.
 - L Mode / Preview workspace-image follow-up verification passed on 2026-06-07: focused tests for `markdown.test.ts`, `lMode/extension.test.ts`, and `lMode/imageWidget.test.ts`; full `npm run test` (68 files / 490 tests); `npm run build:vite`; `npm run build`; built-app `codesign --verify --deep --strict --verbose=2`; and `git diff --check`.
 - L Mode draft-recovery banner follow-up verification passed on 2026-06-07: focused RecoveryMessages / DocumentMetaBar / LModeActionRail tests, full `npm run test` (68 files / 491 tests), `npm run build:vite`, `npm run build`, built-app `codesign --verify --deep --strict --verbose=2`, and `git diff --check`.
-- v0.16.0 warning-expected DMG candidate verification passed on 2026-06-08: `npm ci`, `npm run typecheck`, `npm run test` (68 files / 500 tests), `npm run build:vite`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml -- --test-threads=1` (243 tests), `npm run build:apple-assist-helper:live`, `npm run build:dmg-preview`, `git diff --check`, `npm audit --audit-level=moderate`, and `cargo audit --file src-tauri/Cargo.lock`. Local app metadata/codesign, expected `spctl` insufficient-context rejection, DMG checksum/`hdiutil verify`, mounted-DMG metadata/codesign/icon-resource hash, and mounted app launch-process observation passed. DMG SHA-256: `39f63f42fc46c7e2d8659858f1a93127917be8e7a1836f594d885a44105e40fb`.
+- v0.16.0 warning-expected DMG release verification passed on 2026-06-08: `npm ci`, `npm run typecheck`, `npm run test` (68 files / 500 tests), `npm run build:vite`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml -- --test-threads=1` (243 tests), `npm run build:apple-assist-helper:live`, `npm run build:dmg-preview`, `git diff --check`, `npm audit --audit-level=moderate`, and `cargo audit --file src-tauri/Cargo.lock`. Local app metadata/codesign, expected `spctl` insufficient-context rejection, DMG checksum/`hdiutil verify`, mounted-DMG metadata/codesign/icon-resource hash, and mounted app launch-process observation passed. DMG SHA-256: `39f63f42fc46c7e2d8659858f1a93127917be8e7a1836f594d885a44105e40fb`.
 
 ## Risks / Unknowns
 
@@ -110,11 +111,11 @@
 - In-app Browser / Playwright automation was unavailable during the L Mode drawer / change-review slices, so visual smoke for L Mode floating chrome placement and overlap still needs a real app/browser check.
 - GitHub reported one moderate vulnerability notice during push; `npm audit` still reported 0 vulnerabilities locally.
 - `docs/releases/` still contains historical release-note evidence; this is intentional because release verification can depend on it.
-- v0.16.0 is not tagged, pushed, published, or remotely verified yet. Do not state it as a published release until those steps are explicitly approved and completed.
+- v0.16.0 is now published and remotely verified. Older tags remain immutable.
 
 ## Next Actions
 
-- For the v0.16 publication decision, use the current release note and local artifact evidence unless code changes again; if any code, asset, version, or release-note file changes, rerun the affected local gates and regenerate the DMG before tagging.
+- For post-v0.16 work, start from `docs/current-status.md`, `docs/roadmap.md`, and `docs/releases/0.16.0-warning-expected-dmg-preview.release.md`. Do not move the published `v0.16.0` tag or replace assets silently; use a transparent patch release or release-note correction if a published artifact claim needs correction.
 - For v0.15 work, start from `docs/current-status.md`, `docs/roadmap.md`, and `docs/development-automation.md`. Pick one user-test friction point, verify it, and keep the patch small.
 - For Apple Local Assist work inside v0.15, start from `docs/apple-local-assist-writing-companion-plan.md`. Keep Apple Local Assist detachable, prioritize real lightweight writing examples / unavailable states / rough requests, and use AI edit transactions rather than hidden or irreversible applies.
 - For theme/settings polish inside v0.15, verify persistence, native menu/window theme synchronization, readability, and restart-required copy before spending time on purely cosmetic variants.
