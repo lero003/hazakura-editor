@@ -55,3 +55,16 @@ if (isJsdomLike(jsdomInstance)) {
     writable: true,
   });
 }
+
+// Workaround: jsdom 29 does not implement
+// `Range.prototype.getClientRects`. CodeMirror's measure pipeline
+// calls it when resolving `EditorView.scrollIntoView` effects,
+// which surfaces as uncaught exceptions after tests that exercise
+// scroll positioning (e.g. `goToLine`, mode toggles). Provide a
+// no-op fallback that returns an empty rect list. Test-only; the
+// production app runs in Chromium where this is implemented.
+if (typeof Range !== "undefined" && !Range.prototype.getClientRects) {
+  Range.prototype.getClientRects = function () {
+    return [] as unknown as DOMRectList;
+  };
+}
