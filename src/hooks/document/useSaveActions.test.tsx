@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { isDirty } from "../../features/editor/editorTabs";
-import type { SavedFileState } from "../../lib/tauri";
+import type { SavedFileState, TextFileDocument } from "../../lib/tauri";
 import { removeStoredDraft } from "../../lib/storage";
 import type { EditorTab } from "../../types";
 import { useSaveActions } from "./useSaveActions";
@@ -56,6 +56,23 @@ function makeSavedFileState(overrides: Partial<SavedFileState> = {}): SavedFileS
     line_ending: "lf",
     modified_ms: 123,
     path: "/tmp/a.md",
+    size: 5,
+    ...overrides,
+  };
+}
+
+function makeTextFileDocument(
+  overrides: Partial<TextFileDocument> = {},
+): TextFileDocument {
+  return {
+    contents: "draft",
+    encoding: "utf-8",
+    fingerprint: "saved-as-fingerprint",
+    large_file_warning: false,
+    line_ending: "lf",
+    modified_ms: 456,
+    name: "copy.md",
+    path: "/tmp/copy.md",
     size: 5,
     ...overrides,
   };
@@ -168,5 +185,39 @@ describe("useSaveActions", () => {
     });
     expect(isDirty(getTabs()[0])).toBe(true);
     expect(removeStoredDraft).not.toHaveBeenCalled();
+  });
+
+  it("saveActiveTabAs uses the latest buffer after the path picker completes", async () => {
+    const tab = makeTab({ contents: "before dialog" });
+    let resolvePath: (value: string) => void = () => {};
+    fileApi.pickSaveAsTextFilePath.mockImplementation(
+      () =>
+        new Promise<string>((resolve) => {
+          resolvePath = resolve;
+        }),
+    );
+    fileApi.saveTextFileAs.mockResolvedValue(
+      makeTextFileDocument({ contents: "after dialog" }),
+    );
+    const { replaceTabs, result } = setup([tab]);
+
+    let saveAs: Promise<void> = Promise.resolve();
+    act(() => {
+      saveAs = result.current.saveActiveTabAs();
+    });
+    replaceTabs([{ ...tab, contents: "after dialog" }]);
+
+    await act(async () => {
+      resolvePath("/tmp/copy.md");
+      await saveAs;
+    });
+
+    expect(fileApi.saveTextFileAs).toHaveBeenCalledWith(
+      "/tmp/copy.md",
+      "after dialog",
+      tab.line_ending,
+      tab.encoding,
+      null,
+    );
   });
 });

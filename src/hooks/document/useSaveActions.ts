@@ -41,7 +41,6 @@ export function useSaveActions({
   setGlobalError,
   setStatus,
   setTabs,
-  tabs,
   tabsRef,
   workspaceRootPath,
 }: UseSaveActionsOptions) {
@@ -158,7 +157,18 @@ export function useSaveActions({
         return;
       }
 
-      if (tabs.some((tab) => tab.path === path && tab.id !== activeTab.id)) {
+      const tabToSave =
+        tabsRef.current.find((tab) => tab.id === activeTab.id) ?? null;
+      if (!tabToSave) {
+        setStatus("Save As stopped");
+        return;
+      }
+
+      if (
+        tabsRef.current.some(
+          (tab) => tab.path === path && tab.id !== tabToSave.id,
+        )
+      ) {
         setGlobalError("A tab is already open at the selected Save As path.");
         setStatus("Save As stopped");
         return;
@@ -168,19 +178,19 @@ export function useSaveActions({
 
       const savedFile = await saveTextFileAs(
         path,
-        activeTab.contents,
-        activeTab.line_ending,
-        activeTab.encoding,
+        tabToSave.contents,
+        tabToSave.line_ending,
+        tabToSave.encoding,
         workspaceRootPath,
       );
       const nextTab = createEditorTab(savedFile);
 
       setTabs((currentTabs) =>
-        currentTabs.map((tab) => (tab.id === activeTab.id ? nextTab : tab)),
+        currentTabs.map((tab) => (tab.id === tabToSave.id ? nextTab : tab)),
       );
       setActiveTabId(nextTab.id);
       rememberRecentFile(nextTab.path);
-      removeStoredDraft(activeTab.path);
+      removeStoredDraft(tabToSave.path);
 
       if (workspaceRootPath) {
         try {
@@ -217,7 +227,7 @@ export function useSaveActions({
     setGlobalError,
     setStatus,
     setTabs,
-    tabs,
+    tabsRef,
     workspaceRootPath,
   ]);
 
