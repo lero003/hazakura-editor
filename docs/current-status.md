@@ -8,9 +8,9 @@ Last reviewed: 2026-06-07
 ## Current State
 
 - `hazakura editor` is a touchable Tauri desktop app for Markdown-first safe text editing.
-- Current source / local-app tag is `v0.14.0`.
-- Current package/app version is `0.14.0` across npm, Tauri, Cargo, and lockfile metadata.
-- Current published downloadable preview remains `v0.11.0` at `https://github.com/lero003/hazakura-editor/releases/tag/v0.11.0`.
+- Current warning-expected DMG preview tag is `v0.15.0`.
+- Current package/app version is `0.15.0` across npm, Tauri, Cargo, and lockfile metadata.
+- Current published downloadable preview is `v0.15.0` at `https://github.com/lero003/hazakura-editor/releases/tag/v0.15.0`.
 - v0.11.0 is the **L Mode WYSIWYG-tier Polish** preview: it keeps Markdown source canonical while rendering inline emphasis, strong, strike, links, inline code, task checkboxes, horizontal rules, tables, blockquotes, code blocks, ordered/bullet lists, and images as a document-like writing surface through CodeMirror display decoration.
 - v0.11.0 also includes auto-backup restore through an explicit backup-vs-buffer diff/apply flow, hash-based pasted-image deduplication, export CSS parity with Preview, workspace path rekey hardening, common text-extension save filters, and a native View menu L Mode toggle.
 - Local v0.10.0 gates and warning-expected DMG preview generation passed on 2026-06-04. DMG SHA-256: `a3dcbb5a2580639ae70060d1fe85d81ed298e33ffcfa7fe0498686faffadec05`.
@@ -24,7 +24,9 @@ Last reviewed: 2026-06-07
 - v0.13.0 local source / local-app gates passed on 2026-06-06. See `docs/releases/0.13.0-source-tag.release.md` for the verification packet.
 - v0.14.0 is the **L Mode Stability Ramp / Apple Local Assist Harness Polish** source / local-app tag: it lands the first five source-preserving L Mode quality slices from the 60-to-80 review path and a small Apple Local Assist harness pass that centers request context around the active target, fixes context-boundary snapping, removes a horizontal-scroll trap in the L Mode review sheet, and localizes common Assist apply-error states.
 - v0.14.0 local source / local-app gates passed on 2026-06-07. See `docs/releases/0.14.0-source-tag.release.md` for the verification packet.
-- Post-v0.14 product polish should move into a v0.15 **User-Test Quality Polish** lane: fix the small daily-use issues found by actually using the app, including Apple Local Assist, L Mode, theme, settings, status / error copy, and release-prep continuity. Apple Local Assist remains important, but it is not the only v0.15 axis.
+- v0.15.0 is the **User-Test Quality Polish** warning-expected DMG preview: it closes the post-user-test polish loop with stale-state hardening, L Mode lightness, Apple Local Assist rough-request / stale-candidate polish, settings/theme clarity, and save/recovery robustness. It publishes an Apple Silicon Developer / GitHub lane DMG for cross-machine testing, but remains ad-hoc signed and not notarized.
+- v0.15.0 local release gates and warning-expected DMG preview verification passed on 2026-06-07. DMG SHA-256: `e835a2052c47651134cf37c909501947e4fa407a97767b7d8856eb98ee5e9ec2`.
+- Post-v0.15 work should move into a v0.16 **Release Prep** lane, followed by a v0.17 **Release Polish** lane for final release-facing touch-ups.
 - Older public tags remain immutable.
 
 ## Current Product Boundary
@@ -45,6 +47,7 @@ Use these documents for release evidence and future release decisions:
 - `docs/releases/0.12.0-source-tag.release.md`
 - `docs/releases/0.13.0-source-tag.release.md`
 - `docs/releases/0.14.0-source-tag.release.md`
+- `docs/releases/0.15.0-warning-expected-dmg-preview.release.md`
 - `docs/source-release-checklist.md`
 - `docs/dmg-preview-checklist.md`
 - `docs/smoke-checklist.md`
@@ -53,6 +56,8 @@ Use these documents for release evidence and future release decisions:
 The published v0.10.0 release is a warning-expected DMG preview. It is ad-hoc signed, not Developer ID signed, not notarized, and expected to produce Gatekeeper warnings.
 
 The published v0.11.0 release is a warning-expected DMG preview. It is ad-hoc signed, not Developer ID signed, not notarized, and expected to produce Gatekeeper warnings. Local and remote verification passed after publication.
+
+The published v0.15.0 release is a warning-expected DMG preview for the Developer / GitHub lane. It is ad-hoc signed, not Developer ID signed, not notarized, and expected to produce Gatekeeper warnings. Local and remote verification passed after publication.
 
 The v0.12.0, v0.13.0, and v0.14.0 tags are source / local-app checkpoints. They are not signed, notarized, App Store, TestFlight, or warning-expected DMG publications.
 
@@ -102,26 +107,35 @@ The product direction remains an external Apple Local Assist Writing Companion, 
 
 Current limits: live generation depends on macOS 26+ Apple Foundation Models availability, local Apple Intelligence state, and a Foundation Models-supported current app language / locale (`SystemLanguageModel.default.supportsLocale()`). Output quality may vary, and this alpha feature may change or be removed. Apple Local Assist is not suitable for code review, multi-file understanding, long-document restructuring, autonomous agent work, external AI-agent replacement, local LLM runtime replacement, or advanced reasoning. There is no network fallback, no App Store/TestFlight distribution change, no background rewriting, no auto-save, no tool calling, and no workspace-wide indexing. `minimumSystemVersion` remains at the v0.11 value (`11.0`) so older Macs can still run the editor; Apple Local Assist reports unavailable/unsupported when the helper, model, or current language / locale is not usable.
 
-## v0.15 User-Test Quality Polish Lane
+## v0.15.0 User-Test Quality Polish warning-expected DMG preview
 
-v0.15 should be treated as a post-user-test polish pass, not as an Apple Local Assist-only milestone. The work should come from concrete app use, visible friction, or small verification gaps. Good candidates include:
+v0.15.0 closes the post-user-test polish pass and provides a warning-expected DMG preview for other Macs. It is not an Apple Local Assist-only milestone: the tag gathers many small, concrete app-use fixes across save/recovery, L Mode, image preview, Apple Local Assist, settings/theme, status feedback, workspace operations, compare/review, and release-prep continuity.
 
-1. Apple Local Assist rough-request quality, real Japanese writing examples, unavailable / disabled / unsupported-language states, stale-target recovery, and reviewable AI edit transactions.
-2. Theme and settings polish, including readability, hover / motion feel, Preferences grouping, restart-required wording, and Assist Surface copy.
-3. L Mode follow-up only when there is a reproduced regression, built-app smoke gap, or measured performance question. The first five v0.14 L Mode slices have landed; do not reopen a broad WYSIWYG refactor without evidence.
-4. Small user-facing error / status improvements where the app currently fails silently or only logs to the console.
-5. Release-prep continuity that keeps App Store / Developer lane proof separate from the warning-expected DMG lane.
-6. Commercial-quality baseline work from `docs/commercial-quality-baseline.md`, especially status/recovery polish, settings/theme clarity, accessibility baseline, performance measurement, honest feature-scope wording, and Developer / GitHub distribution-readiness audit.
+The important behavior changes are stale-state oriented. Late async completions no longer win over newer user intent in compare, disk-change review, image preview, Apple Local Assist review candidates, Save As, HTML export, and recovery reopen flows. Save completion after further typing no longer makes the buffer look clean or deletes the still-needed recovery draft. Workspace folder trash now clears descendant tabs/drafts/recents/compare state instead of leaving stale references.
 
-Refactoring is allowed when it is the smallest honest way to fix or verify a user-facing problem, but v0.15 should not become a broad architecture cleanup. For large files such as `useAppShellController`, prefer one extracted responsibility with tests over a many-hook rewrite.
+The user-facing polish is intentionally small: L Mode action-rail and task-widget behavior is steadier around IME/focus/stale ranges, image previews can be closed from the tab row, L Mode image preview loses the normal divider, settings gained visible theme/language hints and more natural Japanese / かなふみ copy, and IPC failures that matter to the user now surface through status instead of console-only warnings.
 
-Keep Markdown source canonical; do not introduce Preview DOM editing, `contenteditable`, HTML as the saved model, hidden save-time rewriting, network fallback, tool calling, workspace-wide indexing, or auto-apply.
+The DMG uses the Developer / GitHub lane (`hazakura editor Dev.app`, `lab.hazakura.note.dev`) so Agent Workbench remains available for preview users. It is ad-hoc signed, not Developer ID signed, not notarized, and should be treated as a hands-on preview artifact rather than a trusted distribution.
+
+## v0.16 Release Prep Lane
+
+v0.16 should carry the heavier release-prep work that was intentionally not squeezed into v0.15 polish:
+
+1. Developer / GitHub distribution readiness: clarify app identity, DMG instructions, expected macOS warnings, checksum flow, and support boundaries.
+2. App Store lane readiness: continue separating the App Store preview build from the Developer / GitHub build, including helper bundle/signing assumptions and Agent Workbench omission.
+3. Accessibility and keyboard-flow audit for daily surfaces: settings, close dialogs, L Mode rail/drawer/review, image preview, recovery/diff review.
+4. Performance and bundle-size measurement before broad chunk-splitting or L Mode decoration-cache work.
+5. Release automation cleanup where it reduces real release risk, not for its own sake.
+
+## v0.17 Release Polish Lane
+
+v0.17 should be a smaller final polish lane before the next serious public-facing release decision: wording, install instructions, screenshots, release notes, last user-test bugs, and final smoke evidence. Avoid new major product surfaces here unless a release blocker demands it.
 
 ## Next Safe Actions
 
-1. If continuing v0.15 quality work, use `docs/development-automation.md` and keep to one small verified slice from actual app-use friction.
-2. If improving Apple Local Assist after v0.14.0, use `docs/assist-surface-strategy.md`, `docs/apple-local-assist-distribution-plan.md`, and `docs/apple-local-assist-writing-companion-plan.md`; keep Apple Local Assist as an external Writing Companion and require AI edit transactions for direct buffer edits.
+1. If continuing into v0.16 release prep, use `docs/source-release-checklist.md`, `docs/dmg-preview-checklist.md`, and `docs/commercial-quality-baseline.md`; keep App Store / Developer / warning-expected DMG lanes separate.
+2. If improving Apple Local Assist after v0.15.0, use `docs/assist-surface-strategy.md`, `docs/apple-local-assist-distribution-plan.md`, and `docs/apple-local-assist-writing-companion-plan.md`; keep Apple Local Assist as an external Writing Companion and require AI edit transactions for direct buffer edits.
 3. If improving theme / settings, verify persistence, native menu sync, readability, and restart-required copy before debating purely cosmetic variants.
 4. If improving L Mode, use `docs/l-mode-plan.md` and `docs/commercial-quality-baseline.md`; prioritize measurement, built-app smoke, or a reproduced regression around IME/caret/Backspace/list/link/table/image/source-preservation behavior before broad refactors.
-5. If preparing a future release, use `docs/source-release-checklist.md`, `docs/dmg-preview-checklist.md`, and the version-specific release note; do not tag or publish without explicit approval.
+5. If preparing a future release, use the version-specific release note; do not tag or publish without explicit approval.
 6. If changing product behavior, use `docs/product-brief.md`, `docs/security-boundary.md`, and the touched boundary doc before implementation.

@@ -2,13 +2,13 @@
 
 ## Current State
 
-- `hazakura editor` published `v0.11.0` as a warning-expected DMG preview, framed as **L Mode WYSIWYG-tier Polish**.
+- `hazakura editor` published `v0.15.0` as a warning-expected DMG preview, framed as **User-Test Quality Polish**.
 - `hazakura editor` now has a `v0.14.0` source / local-app tag, framed as **L Mode Stability Ramp / Apple Local Assist Harness Polish**.
-- Version surfaces are aligned at `0.14.0`.
-- Latest published release body: `docs/releases/0.11.0-warning-expected-dmg-preview.release.md`.
+- Version surfaces are aligned at `0.15.0`.
+- Latest published release body: `docs/releases/0.15.0-warning-expected-dmg-preview.release.md`.
 - Latest source / local-app tag notes: `docs/releases/0.14.0-source-tag.release.md`.
 - Current status source: `docs/current-status.md`.
-- Active lane: v0.15 User-Test Quality Polish.
+- Active lane: v0.16 Release Prep.
 
 ## Recent Changes
 
@@ -47,6 +47,7 @@
 - v0.15 planning now treats Apple Local Assist as one important polish surface rather than the whole milestone. The lane should fix small issues found by using the app across Apple Local Assist, L Mode, theme, settings, status / error copy, and release-prep continuity. Refactors are allowed when they are the smallest way to fix or verify a concrete polish problem, but broad architecture cleanup is out of scope.
 - v0.15 product-polish loop has started with small verified robustness slices: Apple Local Assist command-palette candidates ignore stale tab/buffer results before opening Review Desk; saves that complete after further typing no longer show `saved` or remove the recovery draft for the still-dirty buffer; native theme-menu sync failures now surface through status; image preview ignores stale async opens after a newer open/clear; and workspace folder trash now removes descendant tabs, drafts, recents, and stale compare state.
 - v0.15 async/stale-state polish continued with code-focused slices: workspace rename/move now closes compare views through registered `CompareCase` paths even when `caseKey` is a UUID; disk change review ignores closed/renamed tabs and uses the latest buffer after disk reads; file compare keeps the newest request when completions arrive out of order; Save As saves the latest buffer after the path picker; and HTML export uses the latest same-tab contents after the save dialog while stopping if the active tab changed.
+- `v0.15.0` release preparation aligns npm, Tauri, Cargo, and lockfile version surfaces; adds `docs/releases/0.15.0-warning-expected-dmg-preview.release.md`; publishes the Developer / GitHub lane as a warning-expected DMG preview for cross-machine testing; and frames the next lanes as v0.16 Release Prep followed by v0.17 Release Polish.
 
 ## Decisions
 
@@ -87,6 +88,7 @@
 - v0.14.0 source / local-app tag verification passed on 2026-06-07: `npm ci`, `npm run typecheck`, `npm run test` (53 files / 339 tests), `npm run build:vite`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml` (initial one-off real-runtime failure, then focused pass and full 238-test pass), `npm run build`, `git diff --check`, `npm audit`, `cargo audit --file src-tauri/Cargo.lock`, built-app metadata (`0.14.0`, `lab.hazakura.note`, `hazakura editor`, `hazakura-editor`), built-app codesign, expected `spctl` insufficient-context rejection, and launch-smoke process observation.
 - v0.15 polish loop verification so far: focused Vitest passed for `useAppleAssistCandidate`, `useSaveActions`, `useThemeMenuStateSync` + `statusMessages`, `useImagePreview`, `useWorkspaceFileOps`, and L Mode (`LModeActionRail`, task widget, image widget, extension, CSS drift). `npm run typecheck` and `git diff --check` passed after each implementation slice.
 - v0.15 async/stale-state follow-up verification passed: focused Vitest for `useEditorTabsPathRekey` + `useWorkspaceFileOps`, `useCompareExecution`, `useSaveActions`, and `useDocumentExport`; full `npm run test` (65 files / 458 tests); `npm run typecheck`; and `git diff --check`.
+- v0.15.0 warning-expected DMG preview verification passed on 2026-06-07: `npm ci`, `npm run typecheck`, `npm run test` (67 files / 465 tests), `npm run build:vite`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml` (241 tests), `npm run build:apple-assist-helper:live`, `npm run build:dmg-preview`, `git diff --check`, `npm audit`, `cargo audit --file src-tauri/Cargo.lock`, built normal + Dev app metadata/codesign, expected `spctl` insufficient-context rejection, DMG checksum/`hdiutil verify`, mounted-DMG metadata/codesign, and built + mounted Dev app launch process observation. DMG SHA-256: `e835a2052c47651134cf37c909501947e4fa407a97767b7d8856eb98ee5e9ec2`.
 
 ## Risks / Unknowns
 

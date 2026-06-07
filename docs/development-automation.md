@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-06-07 (v0.15 User-Test Quality Polish / Commercial Quality Baseline framing)
+Last reviewed: 2026-06-07 (v0.16 Release Prep framing)
 
 ## Purpose
 
@@ -17,16 +17,16 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: v0.15 User-Test Quality Polish.
+Phase: v0.16 Release Prep.
 
 Prefer work in this order:
 
 1. Stale or failing quality gates.
-2. Latest-HEAD built-app smoke gaps for Apple Local Assist, L Mode, auto-backup restore, export, theme/settings, and Safe Editor boundaries.
-3. One concrete user-test friction point from Apple Local Assist, L Mode, theme, settings, status / error copy, export, or file/recovery workflows.
-4. Apple Local Assist rough-request quality, unavailable-state, unsupported-language, stale-target recovery, and App Store / developer-build distribution planning drift.
-5. Theme/settings polish with persistence, native menu sync, window-theme sync, and restart-required copy checks.
-6. Commercial-quality baseline slices from `docs/commercial-quality-baseline.md`: accessibility baseline, performance/L Mode measurement baseline, honest feature-scope docs, or Developer / GitHub distribution-readiness audit.
+2. Release-prep gaps in Developer / GitHub DMG wording, checksum flow, cross-machine smoke guidance, or expected macOS warning instructions.
+3. App Store / Developer lane separation drift, especially Agent Workbench omission, helper bundle/signing assumptions, and sandbox/review evidence.
+4. Accessibility and keyboard-flow audit slices for settings, close dialogs, L Mode rail/drawer/review, image preview, recovery, and diff review.
+5. Performance and bundle-size measurement before chunk-splitting, L Mode decoration-cache work, or broad CSS splitting.
+6. One concrete user-test friction point from Apple Local Assist, L Mode, theme, settings, status / error copy, export, or file/recovery workflows.
 7. Safety-boundary regression checks.
 8. Post-release docs/version drift.
 9. One reproduced bug in implemented L Mode WYSIWYG behavior, especially caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or a measured performance baseline.
@@ -41,7 +41,7 @@ Prefer work in this order:
 2. Run `git status --short --branch`.
 3. Treat existing uncommitted changes as user or previous-agent work. Do not revert them.
 4. Use Hazakura Habitat before substantial implementation, automation changes, dependency or lockfile work, release work, Git/GitHub mutation, or command-selection uncertainty.
-5. Choose exactly one coherent slice that can be verified in the same run. For v0.15, name the observed friction or evidence gap before editing.
+5. Choose exactly one coherent slice that can be verified in the same run. For v0.16, name the release-prep risk, observed friction, or evidence gap before editing.
 
 ## Product Boundaries
 

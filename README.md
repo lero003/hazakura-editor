@@ -23,7 +23,7 @@ Last reviewed: 2026-06-07
 
 ![hazakura editor diff comparison](docs/images/v0.11-diff-compare.png)
 
-## 0.14 Source / Local App Summary
+## 0.15 Warning-expected DMG Preview Summary
 
 Use this when you want to:
 
@@ -120,6 +120,7 @@ Example use case:
 - Standalone HTML export via save dialog; local workspace images are inlined as data URIs
 - Print to PDF handoff via browser print fallback
 - Workspace image files up to 20 MB can be selected from the file tree and shown as read-only local PNG/JPEG/GIF/WebP previews after a lightweight content-signature check, then closed back to the prior text tab when one is available
+- Image previews also appear as a closeable tab-row pseudo-tab, including in L Mode where the normal preview divider is hidden for a quieter surface
 - Window and dirty-tab close requests are stopped when open tabs have unsaved changes, with safe keyboard cancellation, Save / Discard choices, and editor focus restored after cancellation
 - Dirty-tab and app/window close dialogs keep Tab / Shift+Tab focus within the dialog while it is open
 - Failed or conflicted saves from the dirty-tab close dialog stop the close, select the failed tab, and return to the editor with the normal recovery actions visible
@@ -130,7 +131,7 @@ Example use case:
 - Optional Agent Workbench mode can launch one allowlisted `codex`, `opencode`, `pi`, or `claude` provider session in the selected workspace after restart-required mode enablement and responsibility-boundary consent
 - Agent Workbench renders the selected allowlisted provider's TUI output in a scoped pane, sends keyboard input only to the running provider process, supports Copy full path / Send full path to Agent from existing workspace file rows, and continues to treat provider-made file edits as ordinary external on-disk changes
 - Assist Surface settings can switch the outside companion slot between Apple Local Assist, CLI Agent, and Off after restart. Apple Local Assist is an experimental alpha surface for lightweight on-device text help on supported Macs: short summaries, rephrasing, heading/tag ideas, light cleanup, and explicit unsaved AI edit transactions that remain reviewable through diff before save.
-- Apple Local Assist review requests now build document context around the active target instead of blindly sending the document head, and the Assist window localizes common apply-error states before showing them to the user.
+- Apple Local Assist review requests build document context around the active target instead of blindly sending the document head, separate rough user requests from internal instructions, guard stale candidates, and localize common apply-error states before showing them to the user.
 
 ## Project Docs
 
@@ -194,11 +195,11 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version is `0.14.0` across npm, Tauri, Cargo, and lockfile metadata.
-- The current source / local-app tag is `v0.14.0`; its release-note evidence lives in [0.14.0 Source / Local App Tag](docs/releases/0.14.0-source-tag.release.md).
+- Current package/app version is `0.15.0` across npm, Tauri, Cargo, and lockfile metadata.
+- The current warning-expected DMG preview tag is `v0.15.0`; its release-note evidence lives in [0.15.0 Warning-expected DMG Preview](docs/releases/0.15.0-warning-expected-dmg-preview.release.md).
 - Source users build locally with `npm ci` and `npm run build`.
 - The generated local `.app` declares macOS 11.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. Apple Local Assist's bundled helper requires macOS 26+ and local Apple Intelligence availability to return live candidates. The app is not Developer ID signed or notarized.
-- The latest published warning-expected DMG preview is [v0.11.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.11.0). The v0.11.0 release notes live in [0.11.0 Warning-expected DMG Preview](docs/releases/0.11.0-warning-expected-dmg-preview.release.md).
+- The latest published warning-expected DMG preview is [v0.15.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.15.0). The v0.15.0 release notes live in [0.15.0 Warning-expected DMG Preview](docs/releases/0.15.0-warning-expected-dmg-preview.release.md).
 
 ## Known Limits
 
