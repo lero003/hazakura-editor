@@ -2,7 +2,7 @@
 /* プレビューの洗練 / Markdown Preview Styling */
 .markdown-preview {
   color: var(--text);
-  font-size: 15px;
+  font-size: var(--preview-font-size, 15px);
   line-height: 1.7;
   max-width: 760px;
   padding: 30px 40px 80px;

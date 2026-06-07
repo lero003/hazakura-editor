@@ -210,7 +210,7 @@ function ReviewSurfaceCandidateSection({
           ariaLabel={copy.candidateInputLabel}
           describedById={candidateHintId}
           documentKey="review-desk-candidate"
-          fontSize={editorSettings.fontSize}
+          fontSize={editorSettings.editorFontSize}
           labelledById={candidateLabelId}
           placeholder={copy.candidateInputPlaceholder}
           readOnly={!hasActiveTab}

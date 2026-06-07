@@ -19,8 +19,13 @@ export type PreferencesCopy = {
   dark: string;
   editor: string;
   editorDisplay: string;
-  fontSize: string;
-  fontSizeControl: string;
+  // Per-surface font size labels. Each label is used both
+  // as the visible row text and the `aria-label` of its
+  // number input on the preferences pane.
+  editorFontSize: string;
+  previewFontSize: string;
+  workspaceFontSize: string;
+  lModeFontSize: string;
   light: string;
   closeDialog: string;
   menuLanguage: string;
@@ -48,8 +53,10 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
       dark: "やみ",
       editor: "えでぃた",
       editorDisplay: "えでぃたのながめ",
-      fontSize: "もじのおおきさ",
-      fontSizeControl: "えでぃたのもじのおおきさ",
+      editorFontSize: "えでぃたのもじのおおきさ",
+      previewFontSize: "したみのまどのもじのおおきさ",
+      workspaceFontSize: "わーくすぺーすのもじのおおきさ",
+      lModeFontSize: "えるもーどのもじのおおきさ",
       light: "ひかり",
       closeDialog: "といをとぢる",
       menuLanguage: "ことば",
@@ -59,7 +66,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
       shokou: "あけぼのひかり",
       settingsTitle: "おこのみ",
       showInvisibles: "みえぬもじをしめす",
-      tabSize: "たぶのはば",
+      tabSize: "いんでんとはば",
       theme: "いろあひ",
       wrapLines: "くだりををる",
       ambientIntensity: "うつろひ",
@@ -97,8 +104,10 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         dark: "ダーク",
         editor: "エディタ",
         editorDisplay: "エディタ表示",
-        fontSize: "フォントサイズ",
-        fontSizeControl: "エディタのフォントサイズ",
+        editorFontSize: "エディタのフォントサイズ",
+        previewFontSize: "プレビューのフォントサイズ",
+        workspaceFontSize: "ワークスペースのフォントサイズ",
+        lModeFontSize: "えるモードのフォントサイズ",
         light: "ライト",
         closeDialog: "ダイアログ゙を閉じる",
         menuLanguage: "メニュー言語",
@@ -109,7 +118,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         shokou: "曙光",
         settingsTitle: "設定",
         showInvisibles: "不可視文字を表示",
-        tabSize: "タブ幅",
+        tabSize: "インデント幅",
         theme: "テーマ",
         wrapLines: "行を折り返す",
         ambientIntensity: "アンビエント演出",
@@ -143,8 +152,10 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         dark: "Dark",
         editor: "Editor",
         editorDisplay: "Editor display",
-        fontSize: "Font size",
-        fontSizeControl: "Editor font size",
+        editorFontSize: "Editor font size",
+        previewFontSize: "Preview font size",
+        workspaceFontSize: "Workspace font size",
+        lModeFontSize: "L Mode font size",
         light: "Light",
         closeDialog: "Close dialog",
         menuLanguage: "Menu language",
@@ -155,7 +166,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         shokou: "Shokou",
         settingsTitle: "Preferences",
         showInvisibles: "Show invisibles",
-        tabSize: "Tab size",
+        tabSize: "Indent size",
         theme: "Theme",
         wrapLines: "Wrap lines",
         ambientIntensity: "Ambient effects",

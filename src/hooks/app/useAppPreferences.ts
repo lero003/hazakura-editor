@@ -70,6 +70,39 @@ export function useAppPreferences(options: UseAppPreferencesOptions = {}) {
       : "off";
   }, [editorSettings.lModeEnabled]);
 
+  // Mirror the per-surface font sizes onto `:root` CSS
+  // custom properties. Each surface (preview, workspace,
+  // L Mode) reads its own variable so the user can tune
+  // them independently from the editor pane. The editor
+  // pane itself is sized through the CodeMirror theme
+  // function in `EditorPane`, but the variable is also
+  // written for consistency and to let other surfaces
+  // compose against it if needed.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty(
+      "--editor-font-size",
+      `${editorSettings.editorFontSize}px`,
+    );
+    root.style.setProperty(
+      "--preview-font-size",
+      `${editorSettings.previewFontSize}px`,
+    );
+    root.style.setProperty(
+      "--workspace-font-size",
+      `${editorSettings.workspaceFontSize}px`,
+    );
+    root.style.setProperty(
+      "--lmode-font-size",
+      `${editorSettings.lModeFontSize}px`,
+    );
+  }, [
+    editorSettings.editorFontSize,
+    editorSettings.previewFontSize,
+    editorSettings.workspaceFontSize,
+    editorSettings.lModeFontSize,
+  ]);
+
   useEffect(() => {
     const windowTheme: BaseTheme =
       themePreference === "dark" || themePreference === "yakou"
@@ -175,7 +208,10 @@ function readStoredEditorSettings(): EditorSettings {
   const defaults: EditorSettings = {
     wrapLines: true,
     showInvisibles: false,
-    fontSize: 14,
+    editorFontSize: 14,
+    previewFontSize: 15,
+    workspaceFontSize: 13,
+    lModeFontSize: 15,
     tabSize: 2,
     spellcheckEnabled: true,
     autoBackupEnabled: true,
@@ -204,7 +240,38 @@ function readStoredEditorSettings(): EditorSettings {
         typeof parsed.showInvisibles === "boolean"
           ? parsed.showInvisibles
           : defaults.showInvisibles,
-      fontSize: clampNumber(parsed.fontSize, 12, 22, defaults.fontSize),
+      // Backwards compatibility: v0.15 and earlier stored a
+      // single `fontSize` value for the editor pane. v0.16+
+      // stores four per-surface values. If the legacy key is
+      // present and the new `editorFontSize` is missing,
+      // promote the legacy value into the editor slot and
+      // fall back to the per-surface defaults for the other
+      // three.
+      editorFontSize: clampNumber(
+        parsed.editorFontSize ??
+          (parsed as { fontSize?: unknown }).fontSize,
+        12,
+        22,
+        defaults.editorFontSize,
+      ),
+      previewFontSize: clampNumber(
+        parsed.previewFontSize,
+        12,
+        24,
+        defaults.previewFontSize,
+      ),
+      workspaceFontSize: clampNumber(
+        parsed.workspaceFontSize,
+        10,
+        18,
+        defaults.workspaceFontSize,
+      ),
+      lModeFontSize: clampNumber(
+        parsed.lModeFontSize,
+        12,
+        24,
+        defaults.lModeFontSize,
+      ),
       tabSize: [2, 4, 8].includes(Number(parsed.tabSize))
         ? Number(parsed.tabSize)
         : defaults.tabSize,

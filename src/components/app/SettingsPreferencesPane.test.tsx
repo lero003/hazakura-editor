@@ -10,7 +10,10 @@ function editorSettings(
   return {
     wrapLines: true,
     showInvisibles: false,
-    fontSize: 14,
+    editorFontSize: 14,
+    previewFontSize: 15,
+    workspaceFontSize: 13,
+    lModeFontSize: 15,
     tabSize: 2,
     spellcheckEnabled: true,
     autoBackupEnabled: true,

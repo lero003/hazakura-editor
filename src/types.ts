@@ -292,7 +292,18 @@ export type SearchOptions = {
 export type EditorSettings = {
   wrapLines: boolean;
   showInvisibles: boolean;
-  fontSize: number;
+  // Per-surface font size in px. Each surface reads its own
+  // value through a `:root` CSS custom property
+  // (`--editor-font-size` / `--preview-font-size` /
+  // `--workspace-font-size` / `--lmode-font-size`) so the
+  // editor pane, preview, file tree, and L Mode surface can
+  // scale independently. Defaults preserve the historical
+  // 14 / 15 / 13 / 15px values so existing users see no
+  // visual change on first launch after upgrade.
+  editorFontSize: number;
+  previewFontSize: number;
+  workspaceFontSize: number;
+  lModeFontSize: number;
   tabSize: number;
   spellcheckEnabled: boolean;
   autoBackupEnabled: boolean;

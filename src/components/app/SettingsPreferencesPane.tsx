@@ -82,17 +82,89 @@ export function SettingsPreferencesPane({
           <span>{copy.showInvisibles}</span>
         </label>
         <label className="field-control">
-          <span>{copy.fontSize}</span>
+          <span>{copy.editorFontSize}</span>
           <input
-            aria-label={copy.fontSizeControl}
+            aria-label={copy.editorFontSize}
             type="number"
             min="12"
             max="22"
-            value={editorSettings.fontSize}
+            step="1"
+            value={editorSettings.editorFontSize}
             onChange={(event) =>
               onEditorSettingsChange((current) => ({
                 ...current,
-                fontSize: clampNumber(Number(event.target.value), 12, 22, 14),
+                editorFontSize: clampNumber(
+                  Number(event.target.value),
+                  12,
+                  22,
+                  14,
+                ),
+              }))
+            }
+          />
+        </label>
+        <label className="field-control">
+          <span>{copy.previewFontSize}</span>
+          <input
+            aria-label={copy.previewFontSize}
+            type="number"
+            min="12"
+            max="24"
+            step="1"
+            value={editorSettings.previewFontSize}
+            onChange={(event) =>
+              onEditorSettingsChange((current) => ({
+                ...current,
+                previewFontSize: clampNumber(
+                  Number(event.target.value),
+                  12,
+                  24,
+                  15,
+                ),
+              }))
+            }
+          />
+        </label>
+        <label className="field-control">
+          <span>{copy.workspaceFontSize}</span>
+          <input
+            aria-label={copy.workspaceFontSize}
+            type="number"
+            min="10"
+            max="18"
+            step="1"
+            value={editorSettings.workspaceFontSize}
+            onChange={(event) =>
+              onEditorSettingsChange((current) => ({
+                ...current,
+                workspaceFontSize: clampNumber(
+                  Number(event.target.value),
+                  10,
+                  18,
+                  13,
+                ),
+              }))
+            }
+          />
+        </label>
+        <label className="field-control">
+          <span>{copy.lModeFontSize}</span>
+          <input
+            aria-label={copy.lModeFontSize}
+            type="number"
+            min="12"
+            max="24"
+            step="1"
+            value={editorSettings.lModeFontSize}
+            onChange={(event) =>
+              onEditorSettingsChange((current) => ({
+                ...current,
+                lModeFontSize: clampNumber(
+                  Number(event.target.value),
+                  12,
+                  24,
+                  15,
+                ),
               }))
             }
           />

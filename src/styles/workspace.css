@@ -11,8 +11,24 @@
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
+  font-size: var(--workspace-font-size, 13px);
   min-height: 0;
   overflow: hidden;
+}
+
+/* Chromium / WebKit assign button, input, select, textarea
+   to the OS's "small control" font (about 11-13px on macOS)
+   via `-webkit-small-control`, which breaks `font-size`
+   inheritance from a CSS variable on a parent. Reset to
+   `inherit` so the per-surface workspace font size actually
+   reaches every text-bearing button inside the tree pane
+   (tree rows, the New File / New Folder popover, the empty-
+   state Open Folder button, the rename input, etc.). */
+.file-tree-pane button,
+.file-tree-pane input,
+.file-tree-pane select,
+.file-tree-pane textarea {
+  font-size: inherit;
 }
 
 :root[data-theme="dark"] .file-tree-pane {
@@ -49,7 +65,6 @@
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  font-size: 13px;
   gap: 12px;
   min-height: 0;
   padding: 32px 16px;
@@ -80,7 +95,7 @@
 
 .workspace-kicker {
   color: var(--text-muted);
-  font-size: 10px;
+  font-size: 0.77em;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -88,7 +103,6 @@
 
 .workspace-title {
   color: var(--text);
-  font-size: 13px;
   font-weight: 650;
   min-width: 0;
   overflow: hidden;
@@ -170,7 +184,6 @@
   border-radius: 5px;
   box-shadow: none;
   color: var(--text);
-  font-size: 13px;
   justify-content: flex-start;
   min-height: 28px;
   padding: 5px 8px;
@@ -193,7 +206,6 @@
 
 .workspace-tree {
   flex: 1 1 auto;
-  font-size: 13px;
   min-height: 0;
   overflow: auto;
   padding: 12px 8px 24px;
@@ -250,7 +262,7 @@
 .tree-meta,
 .tree-partial {
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 0.85em;
 }
 
 .tree-meta {

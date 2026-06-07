@@ -99,7 +99,7 @@ export function EditorMainPane({
             ref={editorPaneRef}
             activeSearchMatchIndex={activeSearchMatchIndex}
             documentKey={documentKey}
-            fontSize={editorSettings.fontSize}
+            fontSize={editorSettings.editorFontSize}
             lModeEnabled={editorSettings.lModeEnabled}
             lModeCopy={lModeCopy}
             lModeTypewriter={editorSettings.lModeTypewriter}
