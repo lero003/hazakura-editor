@@ -99,10 +99,11 @@ describe("computeLModeDecorations", () => {
     expect(ranges.length).toBeGreaterThanOrEqual(6);
   });
 
-  it("keeps marker ranges stable and marks the active line for CSS reveal", () => {
-    // The extension always emits the same hidden marker ranges.
-    // CSS decides whether the active line reveals those markers
-    // through the `cm-lmode-source-line` line decoration.
+  it("does not suppress source markers on the active line", () => {
+    // Live Source keeps the active editing line as Markdown
+    // source at the decoration-building layer. CSS should not
+    // have to reconstruct source visibility from zero-width
+    // hidden markers.
     const source = "# Hello **world**\n> quoted line\n";
     const docLength = source.length;
     const blockquoteLineStart = "# Hello **world**\n".length;
@@ -113,10 +114,10 @@ describe("computeLModeDecorations", () => {
     );
     const allHidden = computeLModeDecorations(makeState(source, docLength));
 
-    expect(hiddenMarkerRangeCount(onHeading)).toBe(
+    expect(hiddenMarkerRangeCount(onHeading)).toBeLessThan(
       hiddenMarkerRangeCount(allHidden),
     );
-    expect(hiddenMarkerRangeCount(onBlockquote)).toBe(
+    expect(hiddenMarkerRangeCount(onBlockquote)).toBeLessThan(
       hiddenMarkerRangeCount(allHidden),
     );
 
@@ -126,7 +127,7 @@ describe("computeLModeDecorations", () => {
     ).toBe(true);
   });
 
-  it("reveals only the active line's `>` in a multi-line blockquote", () => {
+  it("does not hide the active line's `>` in a multi-line blockquote", () => {
     // L Mode keeps Markdown visible only where the cursor is.
     // A multi-line blockquote remains quiet except for the
     // selected editing line.
@@ -135,13 +136,12 @@ describe("computeLModeDecorations", () => {
     const bqLine1 = source.indexOf("> quote line 1");
     const bqLine2 = source.indexOf("> quote line 2");
 
-    // The two QuoteMarks are at known positions. Hidden marker
-    // ranges remain stable; active-line reveal is expressed as
-    // a separate line class for CSS.
+    // The two QuoteMarks are at known positions. Only the
+    // inactive quote line should receive a hidden marker range.
     const onBqLine1 = computeLModeDecorations(makeState(source, bqLine1));
     const onBqLine2 = computeLModeDecorations(makeState(source, bqLine2));
-    expect(bqHiddenOn(onBqLine1, bqLine1, bqLine2)).toBe(2);
-    expect(bqHiddenOn(onBqLine2, bqLine1, bqLine2)).toBe(2);
+    expect(bqHiddenOn(onBqLine1, bqLine1, bqLine2)).toBe(1);
+    expect(bqHiddenOn(onBqLine2, bqLine1, bqLine2)).toBe(1);
     expect(hasLineClass(onBqLine1, bqLine1, "cm-lmode-source-line")).toBe(true);
     expect(hasLineClass(onBqLine2, bqLine2, "cm-lmode-source-line")).toBe(true);
 
@@ -166,15 +166,15 @@ describe("computeLModeDecorations", () => {
     const item1Dash = 0; // first `-` is at position 0
     const item2Dash = source.indexOf("- b"); // second `-`
 
-    // Cursor in item 1: both markers still get stable hidden
-    // ranges, while item 1's line gets the CSS reveal class.
+    // Cursor in item 1: only the inactive sibling marker gets
+    // hidden. The active line remains source text.
     const onItem1 = computeLModeDecorations(makeState(source, 1));
-    expect(listMarkHiddenCount(onItem1, item1Dash, item2Dash)).toBe(2);
+    expect(listMarkHiddenCount(onItem1, item1Dash, item2Dash)).toBe(1);
     expect(hasLineClass(onItem1, item1Dash, "cm-lmode-source-line")).toBe(true);
 
     // Cursor in item 2: symmetric.
     const onItem2 = computeLModeDecorations(makeState(source, item2Dash));
-    expect(listMarkHiddenCount(onItem2, item1Dash, item2Dash)).toBe(2);
+    expect(listMarkHiddenCount(onItem2, item1Dash, item2Dash)).toBe(1);
     expect(hasLineClass(onItem2, item2Dash, "cm-lmode-source-line")).toBe(true);
 
     // All-hidden baseline: both markers are hidden.
@@ -217,7 +217,7 @@ describe("computeLModeDecorations", () => {
     ).toBe(true);
   });
 
-  it("keeps marker-following space hidden on active structural lines", () => {
+  it("keeps marker-following space visible on active structural lines", () => {
     const source = "# Heading\n> Quote\n";
     const headingMark = source.indexOf("# Heading");
     const quoteMark = source.indexOf("> Quote");
@@ -234,7 +234,7 @@ describe("computeLModeDecorations", () => {
         headingMark + "# ".length,
         "cm-lmode-hidden",
       ),
-    ).toBe(true);
+    ).toBe(false);
     expect(
       hasClassMark(
         onQuote,
@@ -242,7 +242,76 @@ describe("computeLModeDecorations", () => {
         quoteMark + "> ".length,
         "cm-lmode-hidden",
       ),
-    ).toBe(true);
+    ).toBe(false);
+  });
+
+  it("keeps marker-following spaces visible on selected structural lines", () => {
+    const source = "# Heading\n> Quote\n- Bullet\n";
+    const headingMark = source.indexOf("# Heading");
+    const quoteMark = source.indexOf("> Quote");
+    const bulletMark = source.indexOf("- Bullet");
+    const state = EditorState.create({
+      doc: source,
+      extensions: [markdown({ base: markdownLanguage })],
+      selection: { anchor: headingMark, head: bulletMark + "- Bullet".length },
+    });
+    const set = computeLModeDecorations(state);
+
+    expect(
+      hasClassMark(
+        set,
+        headingMark,
+        headingMark + "# ".length,
+        "cm-lmode-hidden",
+      ),
+    ).toBe(false);
+    expect(
+      hasClassMark(
+        set,
+        quoteMark,
+        quoteMark + "> ".length,
+        "cm-lmode-hidden",
+      ),
+    ).toBe(false);
+    expect(
+      hasClassMark(
+        set,
+        bulletMark,
+        bulletMark + "- ".length,
+        "cm-lmode-hidden",
+      ),
+    ).toBe(false);
+  });
+
+  it("does not replace table widgets on the active table line", () => {
+    const source =
+      "| プラン | 内容 |\n" +
+      "| --- | --- |\n" +
+      "| Review | 長文レビュー<br>補助 |\n";
+    const delimiterStart = source.indexOf("| --- | --- |");
+    const delimiterEnd = delimiterStart + "| --- | --- |".length;
+    const breakStart = source.indexOf("<br>");
+    const onDelimiter = computeLModeDecorations(
+      makeState(source, delimiterStart),
+    );
+    const onBody = computeLModeDecorations(makeState(source, breakStart));
+
+    expect(
+      hasReplaceWithWidget(
+        onDelimiter,
+        delimiterStart,
+        delimiterEnd,
+        LModeTableDelimiterWidget,
+      ),
+    ).toBe(false);
+    expect(
+      hasReplaceWithWidget(
+        onBody,
+        breakStart,
+        breakStart + "<br>".length,
+        LModeTableCellBreakWidget,
+      ),
+    ).toBe(false);
   });
 
   it("hides every documented marker type", () => {
@@ -370,7 +439,7 @@ describe("computeLModeDecorations", () => {
     expect(coveringReplaces).toEqual([{ from: imageStart, to: imageEnd }]);
   });
 
-  it("renders source markers on the active EditorView line only", () => {
+  it("keeps the active EditorView line free of hidden source markers", () => {
     const source = "# Active\n## Quiet\n";
     const quietLineStart = source.indexOf("Quiet");
     const parent = document.createElement("div");
@@ -389,14 +458,14 @@ describe("computeLModeDecorations", () => {
     });
 
     expect(activeLineText(parent)).toContain("Active");
-    expect(activeMarkerCount(parent)).toBeGreaterThanOrEqual(1);
+    expect(activeMarkerCount(parent)).toBe(0);
 
     view.dispatch({ selection: { anchor: quietLineStart } });
 
     expect(activeLineText(parent)).toContain("Quiet");
-    expect(activeMarkerCount(parent)).toBeGreaterThanOrEqual(1);
+    expect(activeMarkerCount(parent)).toBe(0);
     expect(parent.querySelectorAll(".cm-lmode-hidden").length).toBeGreaterThanOrEqual(
-      2,
+      1,
     );
 
     view.destroy();

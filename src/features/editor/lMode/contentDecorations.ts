@@ -5,13 +5,13 @@
 // `Range<Decoration>` entries. The output covers four
 // concerns:
 //
-//   1. **Marker hiding.** Every Lezer node whose name is
+//   1. **Marker hiding.** Non-active Lezer nodes whose name is
 //      in `LModeMarkerNodeNames` (the `#` of a heading, the
 //      `*` of emphasis, the `>` of a blockquote, the
 //      backticks of a code span, etc.) gets a
 //      `LModeClasses.hiddenMarker` mark, which CSS renders as
-//      a zero-width transparent span. This is the cornerstone
-//      of L Mode's "marker suppression" behavior.
+//      a zero-width transparent span. Active / selected lines
+//      stay source-like and do not receive those hidden spans.
 //
 //   2. **Inline styling.** Parent nodes like `Emphasis`,
 //      `StrongEmphasis`, `Strikethrough`, and `Link` get
@@ -21,13 +21,14 @@
 //      pass, so the visible text is just the prose picking
 //      up the visual style.
 //
-//   3. **Widget replacements.** `Image`, `HorizontalRule`,
+//   3. **Widget replacements.** On inactive lines, `Image`,
+//      `HorizontalRule`,
 //      `TableDelimiter`, and `TaskMarker` nodes are replaced
 //      with display-only widgets. The underlying doc text is
 //      never modified — this is the cornerstone invariant
 //      the test suite enforces.
 //
-//   4. **Pipe marks in tables.** Every `|` in a table row
+//   4. **Pipe marks in tables.** Every `|` in an inactive table row
 //      gets a muted class so the cell separators read as
 //      quiet vertical rules instead of raw source
 //      characters.
@@ -97,6 +98,7 @@ type TableCellSpan = {
 export function computeContentDecorations(
   state: EditorState,
   context: LModeContext = { workspaceRoot: null, documentPath: null },
+  sourceLineNumbers: ReadonlySet<number> = new Set(),
 ): Range<Decoration>[] {
   const decorations: Range<Decoration>[] = [];
   const tree = syntaxTree(state);
@@ -127,6 +129,9 @@ export function computeContentDecorations(
       // once we've decided to replace the whole node, the
       // markers inside it are no longer relevant.
       if (name === "Image") {
+        if (touchesSourceLine(state, node.from, node.to, sourceLineNumbers)) {
+          return false;
+        }
         const imageNode = node.node;
         const alt = getImageAlt(imageNode, state);
         const rawUrl = getImageUrl(imageNode, state);
@@ -171,6 +176,9 @@ export function computeContentDecorations(
       // the visual divider; the underlying doc text is
       // untouched.
       if (name === "HorizontalRule") {
+        if (touchesSourceLine(state, node.from, node.to, sourceLineNumbers)) {
+          return false;
+        }
         decorations.push(
           Decoration.replace({
             widget: new LModeHorizontalRuleWidget(),
@@ -188,6 +196,9 @@ export function computeContentDecorations(
         return true;
       }
       if (name === "TaskMarker") {
+        if (touchesSourceLine(state, node.from, node.to, sourceLineNumbers)) {
+          return false;
+        }
         const markerText = state.doc.sliceString(node.from, node.to);
         const checked = markerText === "[x]" || markerText === "[X]";
         decorations.push(
@@ -207,6 +218,9 @@ export function computeContentDecorations(
       // separators read as quiet vertical rules instead of
       // raw source characters.
       if (name === "TableDelimiter") {
+        if (touchesSourceLine(state, node.from, node.to, sourceLineNumbers)) {
+          return false;
+        }
         decorations.push(
           Decoration.replace({ widget: new LModeTableDelimiterWidget() }).range(
             node.from,
@@ -218,6 +232,9 @@ export function computeContentDecorations(
       if (name === "TableHeader" || name === "TableRow") {
         const fromLine = state.doc.lineAt(node.from).number;
         const line = state.doc.line(fromLine);
+        if (sourceLineNumbers.has(line.number)) {
+          return true;
+        }
         addPipeMarks(state, line, decorations);
         addTableCellMarks(line.number, tableCellPlan, decorations);
         addTableCellBreakWidgets(state, line.number, tableCellPlan, decorations);
@@ -233,6 +250,9 @@ export function computeContentDecorations(
       // (italic / bold / line-through / link color).
       const inlineClass = inlineClassByNode.get(name);
       if (inlineClass) {
+        if (touchesSourceLine(state, node.from, node.to, sourceLineNumbers)) {
+          return true;
+        }
         const mark = inlineMarkByClass.get(inlineClass);
         if (mark) {
           decorations.push(mark.range(node.from, node.to));
@@ -242,12 +262,16 @@ export function computeContentDecorations(
 
       // --- Marker hiding ---
       //
-      // Always mark source syntax as hidden. Active-line
-      // and hover reveal are purely CSS concerns via
-      // `.cm-lmode-source-line`, so style changes cannot
-      // change which marker ranges exist. Marker nodes are
-      // leaves in the Lezer tree, so we do not descend.
+      // Hide source syntax only on non-source lines. The
+      // active line and selection lines are Live Source: they
+      // keep the Markdown markers directly editable instead of
+      // asking CSS to reconstruct them from hidden spans.
+      // Marker nodes are leaves in the Lezer tree, so we do
+      // not descend.
       if (name === "HeaderMark" && isSetextDividerLine(state, node.node)) {
+        if (touchesSourceLine(state, node.from, node.to, sourceLineNumbers)) {
+          return false;
+        }
         decorations.push(
           Decoration.replace({
             widget: new LModeHorizontalRuleWidget(),
@@ -257,6 +281,9 @@ export function computeContentDecorations(
       }
 
       if (LModeMarkerNodeNames.has(name)) {
+        if (touchesSourceLine(state, node.from, node.to, sourceLineNumbers)) {
+          return false;
+        }
         const markerTo = markerRangeTo(state, node.node);
         decorations.push(hiddenMarker.range(node.from, markerTo));
         return false;
@@ -267,6 +294,27 @@ export function computeContentDecorations(
   });
 
   return decorations;
+}
+
+function touchesSourceLine(
+  state: EditorState,
+  from: number,
+  to: number,
+  sourceLineNumbers: ReadonlySet<number>,
+): boolean {
+  if (sourceLineNumbers.size === 0) {
+    return false;
+  }
+
+  const fromLine = state.doc.lineAt(from).number;
+  const inclusiveTo = to > from ? to - 1 : to;
+  const toLine = state.doc.lineAt(inclusiveTo).number;
+  for (let lineNumber = fromLine; lineNumber <= toLine; lineNumber += 1) {
+    if (sourceLineNumbers.has(lineNumber)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function markerRangeTo(state: EditorState, node: SyntaxNode): number {

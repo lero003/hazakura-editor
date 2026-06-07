@@ -1,17 +1,17 @@
 # L Mode Plan
 
 Status: Active
-Scope: Source-preserving WYSIWYG writing surface for L Mode
+Scope: Live Source writing surface for L Mode
 Authority: Medium
-Last reviewed: 2026-06-06
+Last reviewed: 2026-06-07
 
 ## Summary
 
-**えるモード** is the source-preserving WYSIWYG writing surface of `hazakura editor`. It should not remain a light focus-mode option. The target is a first-class writing surface where Markdown is still the saved source, but day-to-day writing, reading, and small corrections feel close to editing the document itself.
+**えるモード** is the Live Source writing surface of `hazakura editor`: Markdown stays the saved source, while inactive parts of the editor receive a calm document-like display layer. It should not remain a light focus-mode option. The target is a first-class writing surface where day-to-day writing, reading, and small corrections feel close to editing the document itself without replacing the Markdown document model.
 
-The next direction is a deeper **L Mode WYSIWYG Accuracy Ramp**: make Markdown constructs render with higher fidelity, make cursor/IME/list/link/table editing feel predictable, and reduce the number of moments where the user has to mentally translate between source syntax and document appearance.
+The next direction is a deeper **L Mode Live Source Accuracy Ramp**: make Markdown constructs render with higher fidelity when they are not being edited, keep cursor / selection / IME behavior source-like and predictable, and reduce the number of moments where the user has to mentally translate between raw syntax and document appearance.
 
-The ambition is intentionally high: a custom writing-app feel that can go beyond dedicated WYSIWYG editors like Typora in calmness and document focus. The constraint is equally firm: the app must not replace the Markdown document model with HTML, Preview DOM editing, or hidden irreversible formatting.
+The ambition is intentionally high: a custom writing-app feel that can go beyond dedicated WYSIWYG editors like Typora in calmness and document focus. The constraint is equally firm: the app must not replace the Markdown document model with HTML, Preview DOM editing, `contenteditable`, or hidden irreversible formatting.
 
 It hides surrounding UI such as the file tree, tabs, status details, Agent Surface, and Review Desk as much as practical, then brings the document body forward. The goal is to let novels, essays, notes, philosophical fragments, and narrative text be written while they are read.
 
@@ -28,7 +28,7 @@ Alternative English label: **L Mode**.
 - Normal mode: edit and review Markdown safely.
 - Review Desk: compare candidate text and diffs explicitly.
 - Agent Window: handle external AI at a clear distance.
-- えるモード: a WYSIWYG-tier writing surface whose source model is Markdown.
+- えるモード: a Live Source writing surface whose source model is Markdown.
 
 えるモード should become a first-class writing surface, not just an optional visual mode. Normal mode remains the safety foundation, but routine writing should not require leaving えるモード for every small action.
 
@@ -36,18 +36,29 @@ Alternative English label: **L Mode**.
 
 ## Core Principle
 
-Markdown source remains the truth. The writing surface is WYSIWYG-tier.
+Markdown source remains the truth. The writing surface is Live Source: document-like when reading, source-like where the writer is editing.
 
 ```txt
 Markdown source is truth.
-えるモード renders as the document.
+Decoration is display only.
+Active and selected lines show Markdown source.
+Inactive lines may render as the document.
 ```
 
-The saved file is the same Markdown text used by normal mode. The WYSIWYG-feel rendering is a display concern only — CodeMirror decoration on top of the existing Markdown parser, never direct Preview DOM editing, never `contenteditable`, never irreversible Markdown→HTML transformation.
+The saved file is the same Markdown text used by normal mode. The document-like rendering is a display concern only — CodeMirror decoration on top of the existing Markdown parser, never direct Preview DOM editing, never `contenteditable`, never irreversible Markdown→HTML transformation.
 
-The visual target is a custom WYSIWYG writing app: editorial typography, strong heading hierarchy, magazine-feel block elements, inline emphasis / strong / strike / link that read as the document, layout that does not shift when the cursor moves, and editing rules that do not surprise the writer. The user writes without consciously editing source syntax.
+The visual target is a custom Live Source writing app: editorial typography, strong heading hierarchy, magazine-feel block elements, inline emphasis / strong / strike / link that read as the document when inactive, layout that does not shift when the cursor moves, and editing rules that do not surprise the writer. The user can read the document calmly, then edit the Markdown source exactly where the caret or selection lives.
 
-## Next Major Direction: WYSIWYG Accuracy Ramp
+### Live Source Rules
+
+- Markdown text is the only canonical document state.
+- L Mode display changes must be CodeMirror decorations, not saved-text rewrites.
+- Lines touched by the caret or selection should remain source-like: Markdown markers, spaces, table pipes, and inline break tags must stay directly editable.
+- Inactive lines may hide markers, replace small syntax with widgets, or add document-like typography when that does not change saved source semantics.
+- Copy, save, diff, Preview, Print to PDF, and Export HTML must use the Markdown source or the existing source-rendering pipeline, not L Mode decoration DOM.
+- Tables are not a full WYSIWYG surface. L Mode may add readable table presentation and guarded keyboard behavior, but should avoid structural table editing beyond breakage prevention.
+
+## Next Major Direction: Live Source Accuracy Ramp
 
 Treat the next L Mode work as a focused product track, not a handful of visual tweaks. The work should be broad enough to make L Mode trustworthy as the default writing surface, but still bounded to CodeMirror / Markdown-source rendering.
 
@@ -61,7 +72,7 @@ Improve how Markdown constructs look and compose in the editor:
 - bullet lists, ordered lists, nested lists, task lists, and list continuation rhythm
 - horizontal rules and Setext-style underlines that otherwise look like disappearing dividers
 - fenced code blocks, language labels, long lines, and copyable source clarity
-- tables as readable rows and columns, with delimiter rows hidden without breaking cursor movement
+- tables as readable rows and columns on inactive lines, with delimiter rows hidden only when that does not obscure active editing
 - images and captions from Markdown image syntax, including unresolved or workspace-relative images
 - mixed Japanese / English / symbols / emoji text without clipping or rhythm collapse
 
@@ -73,7 +84,7 @@ Make editing behavior feel stable while the document is visually transformed:
 
 - caret position should remain understandable before, inside, and after hidden markers
 - typing next to hidden or replaced syntax must not make nearby visual structure disappear
-- active-line state must not remove list bullets, ordered numbers, task markers, or block affordances
+- active-line and selection-line state should show Markdown source instead of partially hidden markers
 - IME composition must not trigger shortcut handling, marker flicker, or layout jumps
 - selection should reveal enough source context to explain what will be copied / replaced
 - Backspace / Delete around links, emphasis, code spans, tasks, images, tables, and HRs should preserve normal Markdown semantics
@@ -164,7 +175,7 @@ If the recompute-trigger fix removes the visible problem, keep the implementatio
 - Sakura / Shokou-specific L Mode palettes beyond the intentional day / night writing surface.
 - Broad `userEvent` annotation cleanup across all editor dispatch paths.
 - Replacing hidden marker spans with widgets everywhere.
-- Structural table editing, alternate document models, or save-time formatting.
+- Structural table editing beyond breakage prevention, alternate document models, or save-time formatting.
 
 These are not bad ideas. They are simply larger than the next safe move.
 
@@ -265,7 +276,7 @@ The visual writing surface can grow ambitious, but the source model stays Markdo
 - automatic AI candidate application
 - save-time auto-formatting
 
-The WYSIWYG-tier aspiration is purely about rendering quality — the user keeps editing through the cursor in the Markdown source, and the saved file is exactly the same Markdown text used by normal mode.
+The WYSIWYG-tier aspiration is purely about inactive-line rendering quality — the user keeps editing through the cursor in the Markdown source, and the saved file is exactly the same Markdown text used by normal mode.
 
 ## Success Conditions
 
@@ -295,13 +306,13 @@ If these problems dominate, close the experiment or reduce it to a conventional 
 
 ## Implementation Notes
 
-Implementation is CodeMirror display decoration on top of the existing Markdown parser. The WYSIWYG-tier look comes from how the decoration is styled, not from any structural change to the editor.
+Implementation is CodeMirror display decoration on top of the existing Markdown parser. The document-like look comes from how inactive-line decorations are styled, not from any structural change to the editor.
 
 - Keep Markdown text as the only source of truth.
-- Use display decoration (`mark`, `line`, `replace`, `widget`) to render emphasis, strong, strike, link, tables, task checkboxes, HRs, and other block / inline elements as the document.
+- Use display decoration (`mark`, `line`, `replace`, `widget`) to render emphasis, strong, strike, link, tables, task checkboxes, HRs, and other block / inline elements as the document on inactive lines.
 - Style headings with strong jump rates and editorial treatments (centered H1, distinctive H2/H3, etc.).
-- Keep layout stable: do not reveal Markdown markers on the active line if it would shift the line horizontally; let the visual stay as the document.
-- Restore markers only where editing context demands them (e.g. selection inspection in command palette, Review Desk diff).
+- Keep active and selected lines source-like. Do not rely on CSS to recreate source visibility from hidden zero-width marker spans.
+- Let inactive lines carry the document-like treatment; let active / selected lines carry editing clarity.
 - Do not affect normal mode, Preview, Diff, Review Desk, or export semantics.
 - Theme handling can stay simple (light / dark base) — magazine style is the primary differentiator, not per-theme variation.
 - When a Markdown grammar ambiguity affects the visual surface, prefer a source-preserving visual explanation over rewriting the source. For example, Setext-style `---` / `===` underline markers may render as dividers in L Mode if that keeps writing behavior understandable.
@@ -309,4 +320,4 @@ Implementation is CodeMirror display decoration on top of the existing Markdown 
 
 ## Summary Statement
 
-えるモード is the source-preserving WYSIWYG writing surface of `hazakura editor` — a custom writing-app feel that goes beyond Typora in calmness and document focus, while the source model stays Markdown and the editing surface stays CodeMirror.
+えるモード is the Live Source writing surface of `hazakura editor` — a custom writing-app feel that goes beyond Typora in calmness and document focus, while the source model stays Markdown and the editing surface stays CodeMirror.

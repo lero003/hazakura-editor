@@ -94,12 +94,13 @@ const lModeField = StateField.define<DecorationSet>({
     const contentDecorations = computeContentDecorations(
       state,
       readContext(state),
+      activeLineNumbers,
     );
     return buildLModeDecorations(state, lineClasses, contentDecorations);
   },
   update(decorations, transaction) {
     // Recompute when the doc changes, when the selection
-    // changes (so the active-line reveal follows the cursor),
+    // changes (so Live Source lines follow the cursor),
     // when the L Mode context facet changes (different
     // workspace / document path), or when an async image
     // resolution lands (refreshImagesEffect).
@@ -123,6 +124,7 @@ const lModeField = StateField.define<DecorationSet>({
       const contentDecorations = computeContentDecorations(
         state,
         readContext(state),
+        activeLineNumbers,
       );
       return buildLModeDecorations(state, lineClasses, contentDecorations);
     }
@@ -370,6 +372,10 @@ export function computeLModeDecorations(
   const activeLineRanges = getActiveLineRanges(state);
   const activeLineNumbers = new Set(activeLineRanges.map((l) => l.number));
   const lineClasses = computeLineClasses(state, activeLineNumbers);
-  const contentDecorations = computeContentDecorations(state, context);
+  const contentDecorations = computeContentDecorations(
+    state,
+    context,
+    activeLineNumbers,
+  );
   return buildLModeDecorations(state, lineClasses, contentDecorations);
 }

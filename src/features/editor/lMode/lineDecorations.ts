@@ -175,10 +175,10 @@ export function computeLineClasses(
   // selection gets `LModeClasses.dimmedLine`. The CSS rule
   // lowers its opacity so the cursor's line(s) stand out
   // without us having to track the cursor in a special way.
-  // The active-line reveal is still expressed by
+  // The active-line signal is still expressed by
   // `LModeClasses.activeLine` on top of the dim (CSS sets
-  // opacity: 1 for active lines), so the two signals
-  // compose cleanly.
+  // opacity: 1 for active lines), so the two signals compose
+  // cleanly.
   for (let lineNumber = 1; lineNumber <= state.doc.lines; lineNumber += 1) {
     if (activeLineNumbers.has(lineNumber)) {
       pushLineClass(lineClasses, lineNumber, LModeClasses.activeLine);
