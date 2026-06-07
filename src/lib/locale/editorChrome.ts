@@ -9,12 +9,9 @@ export type EditorChromeCopy = {
   find: string;
   findInActiveFile: string;
   findOptions: string;
-  go: string;
-  goToLine: string;
   inlineCode: string;
   inlineCodeTitle: string;
   invalidRegex: string;
-  line: string;
   lineEnding: string;
   lineEndings: string;
   next: string;
@@ -40,12 +37,9 @@ export function getEditorChromeCopy(lang: MenuLanguage): EditorChromeCopy {
       find: "さがす",
       findInActiveFile: "いまのふみをさがす",
       findOptions: "さがしのおこのみ",
-      go: "ゆく",
-      goToLine: "くだりへゆく",
       inlineCode: "こーど",
       inlineCodeTitle: "こーど (Command+E)",
       invalidRegex: "正規表現がただしくありません",
-      line: "くだり",
       lineEnding: "かへり",
       lineEndings: "かへりのしるし",
       next: "つぎへ",
@@ -71,12 +65,9 @@ export function getEditorChromeCopy(lang: MenuLanguage): EditorChromeCopy {
         find: "検索",
         findInActiveFile: "アクティブファイル内を検索",
         findOptions: "検索オプション",
-        go: "移動",
-        goToLine: "指定行へ移動",
         inlineCode: "インラインコード",
         inlineCodeTitle: "インラインコード (Command+E)",
         invalidRegex: "正規表現が無効です",
-        line: "行",
         lineEnding: "改行",
         lineEndings: "改行コード",
         next: "次へ",
@@ -99,12 +90,9 @@ export function getEditorChromeCopy(lang: MenuLanguage): EditorChromeCopy {
         find: "Find",
         findInActiveFile: "Find in active file",
         findOptions: "Find options",
-        go: "Go",
-        goToLine: "Go to line",
         inlineCode: "Inline code",
         inlineCodeTitle: "Inline code (Command+E)",
         invalidRegex: "Invalid regex",
-        line: "Line",
         lineEnding: "Line",
         lineEndings: "Line endings",
         next: "Next",

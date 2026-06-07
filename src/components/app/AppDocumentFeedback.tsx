@@ -25,12 +25,7 @@ type AppDocumentFeedbackProps = {
   findMatchCount: number;
   findQuery: string;
   findVisible: boolean;
-  goToLine: () => void;
-  goToLineValue: string;
   handleFindKeyDown: (event: ReactKeyboardEvent<HTMLInputElement>) => void;
-  handleGoToLineKeyDown: (
-    event: ReactKeyboardEvent<HTMLInputElement>,
-  ) => void;
   handleReplaceKeyDown: (event: ReactKeyboardEvent<HTMLInputElement>) => void;
   invalidRegex: boolean;
   keepEditingAfterConflict: (tabId: string) => void;
@@ -46,7 +41,6 @@ type AppDocumentFeedbackProps = {
   saveTabById: (tabId: string) => unknown;
   searchOptions: SearchOptions;
   setFindQuery: (value: string) => void;
-  setGoToLineValue: (value: string) => void;
   setReplaceQuery: (value: string) => void;
   setSearchOptions: Dispatch<SetStateAction<SearchOptions>>;
   showNextMatch: () => void;
@@ -69,10 +63,7 @@ export function AppDocumentFeedback({
   findMatchCount,
   findQuery,
   findVisible,
-  goToLine,
-  goToLineValue,
   handleFindKeyDown,
-  handleGoToLineKeyDown,
   handleReplaceKeyDown,
   invalidRegex,
   keepEditingAfterConflict,
@@ -88,7 +79,6 @@ export function AppDocumentFeedback({
   saveTabById,
   searchOptions,
   setFindQuery,
-  setGoToLineValue,
   setReplaceQuery,
   setSearchOptions,
   showNextMatch,
@@ -103,12 +93,9 @@ export function AppDocumentFeedback({
           findInputRef={findInputRef}
           findMatchCount={findMatchCount}
           findQuery={findQuery}
-          goToLineValue={goToLineValue}
           invalidRegex={invalidRegex}
           onClose={closeFindAndFocusEditor}
           onFindKeyDown={handleFindKeyDown}
-          onGoToLine={goToLine}
-          onGoToLineKeyDown={handleGoToLineKeyDown}
           onNextMatch={showNextMatch}
           onPreviousMatch={showPreviousMatch}
           onReplaceAll={replaceAll}
@@ -117,7 +104,6 @@ export function AppDocumentFeedback({
           replaceQuery={replaceQuery}
           searchOptions={searchOptions}
           setFindQuery={setFindQuery}
-          setGoToLineValue={setGoToLineValue}
           setReplaceQuery={setReplaceQuery}
           setSearchOptions={setSearchOptions}
         />

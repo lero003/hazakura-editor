@@ -3,7 +3,7 @@ import { renderHook } from "@testing-library/react";
 import { useEditorFindController } from "./useEditorFindController";
 
 describe("useEditorFindController", () => {
-  it("returns the find/replace + go-to-line surface", () => {
+  it("returns the find/replace surface", () => {
     const { result } = renderHook(() =>
       useEditorFindController({
         documentKey: "test",
@@ -33,10 +33,5 @@ describe("useEditorFindController", () => {
     expect(result.current).toHaveProperty("setSearchOptions");
     expect(result.current).toHaveProperty("showNextMatch");
     expect(result.current).toHaveProperty("showPreviousMatch");
-    // go to line (4)
-    expect(result.current).toHaveProperty("goToLine");
-    expect(result.current).toHaveProperty("goToLineValue");
-    expect(result.current).toHaveProperty("handleGoToLineKeyDown");
-    expect(result.current).toHaveProperty("setGoToLineValue");
   });
 });

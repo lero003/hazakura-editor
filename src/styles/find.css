@@ -1,9 +1,9 @@
 /* === find.css === */
 /* 検索バーのスタイリッシュ化 / Find Panel */
-.find-row {
+.find-panel {
   position: absolute;
   top: 56px;
-  right: 24px;
+  left: 24px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -11,34 +11,21 @@
   padding: 8px 16px;
   z-index: 50;
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  gap: 8px;
   max-width: calc(100% - 48px);
   will-change: transform, opacity;
   animation: slideDown 0.2s var(--ease-emphasized) forwards;
 }
 
-.replace-row {
-  position: absolute;
-  top: 100px;
-  right: 24px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: var(--shadow-md);
-  padding: 8px 16px;
-  z-index: 50;
+.find-panel__row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 12px;
-  max-width: calc(100% - 48px);
-  will-change: transform, opacity;
-  animation: slideDown 0.2s var(--ease-emphasized) forwards;
 }
 
-.find-close {  will-change: transform, opacity;
+.find-close {
   background: transparent;
   border: 0;
   box-shadow: none;
@@ -80,8 +67,7 @@
   font-weight: 500;
 }
 
-.find-control input,
-.goto-control input {
+.find-control input {
   background: var(--bg);
   border: 1px solid var(--border-strong);
   border-radius: 8px;
@@ -95,8 +81,7 @@
   box-shadow: none;
 }
 
-.find-control input:focus,
-.goto-control input:focus {
+.find-control input:focus {
   background: var(--surface);
   border-color: var(--accent);
 }
@@ -113,31 +98,19 @@
   padding: 5px 10px;
 }
 
-.find-options,
-.goto-control {
+.find-options {
   align-items: center;
   display: flex;
   flex: none;
   gap: 8px;
 }
 
-.goto-control label,
 .find-options span {
   color: var(--text-muted);
   font-size: 12px;
   font-weight: 500;
 }
 
-.goto-control input {
-  width: 76px;
-}
-
-.goto-control button {
-  min-width: 48px;
-  padding: 5px 10px;
-}
-
 .message-row {
   min-height: 0;
 }
-
