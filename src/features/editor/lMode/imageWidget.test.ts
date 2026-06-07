@@ -17,11 +17,35 @@ describe("classifyImageUrl", () => {
     });
   });
 
-  it("returns data for data: URLs", () => {
+  it("returns data for supported data:image URLs", () => {
     const data = "data:image/png;base64,iVBORw0KGgo=";
     expect(classifyImageUrl(data, null, "/ws")).toEqual({
       kind: "data",
       value: data,
+    });
+    const jpeg = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ==";
+    expect(classifyImageUrl(jpeg, null, "/ws")).toEqual({
+      kind: "data",
+      value: jpeg,
+    });
+  });
+
+  it("rejects non-preview-safe data URLs", () => {
+    expect(
+      classifyImageUrl("data:text/html,<script></script>", null, "/ws"),
+    ).toEqual({
+      kind: "outside",
+      value: "data:text/html,<script></script>",
+    });
+    expect(
+      classifyImageUrl("data:image/svg+xml,<svg></svg>", null, "/ws"),
+    ).toEqual({
+      kind: "outside",
+      value: "data:image/svg+xml,<svg></svg>",
+    });
+    expect(classifyImageUrl("javascript:alert(1)", null, "/ws")).toEqual({
+      kind: "outside",
+      value: "javascript:alert(1)",
     });
   });
 

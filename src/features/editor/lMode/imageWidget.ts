@@ -8,7 +8,8 @@
 //
 // URL resolution:
 //   - `http://` / `https://` → used directly as the `<img>` src.
-//   - `data:` → used directly (already inline).
+//   - PNG / JPEG / GIF / WebP `data:image` URLs → used
+//     directly (already inline).
 //   - Workspace-relative (`./foo.png`, `assets/...`) or
 //     absolute paths under the workspace root → resolved
 //     through the existing `open_workspace_image` Rust command,
@@ -131,8 +132,11 @@ export function classifyImageUrl(
   if (/^https?:\/\//i.test(rawUrl)) {
     return { kind: "http", value: rawUrl };
   }
-  if (/^data:/i.test(rawUrl)) {
+  if (/^data:image\/(?:png|jpe?g|gif|webp)[;,]/i.test(rawUrl)) {
     return { kind: "data", value: rawUrl };
+  }
+  if (/^[a-z][a-z0-9+.-]*:/i.test(rawUrl)) {
+    return { kind: "outside", value: rawUrl };
   }
 
   if (!workspaceRoot) {
