@@ -2,6 +2,7 @@ import {
   type Dispatch,
   type SetStateAction,
   useCallback,
+  useRef,
   useState,
 } from "react";
 import { openWorkspaceImage } from "../../lib/tauri";
@@ -30,8 +31,10 @@ export function useImagePreview({
     null,
   );
   const [imageReturnTabId, setImageReturnTabId] = useState<string | null>(null);
+  const previewRequestSeqRef = useRef(0);
 
   const clearImagePreview = useCallback(() => {
+    previewRequestSeqRef.current += 1;
     setSelectedImage(null);
     setImageReturnTabId(null);
   }, []);
@@ -46,9 +49,14 @@ export function useImagePreview({
 
       onError(null);
       onStatus("Opening image preview...");
+      const requestSeq = previewRequestSeqRef.current + 1;
+      previewRequestSeqRef.current = requestSeq;
 
       try {
         const image = await openWorkspaceImage(workspaceRootPath, path);
+        if (previewRequestSeqRef.current !== requestSeq) {
+          return false;
+        }
 
         setImageReturnTabId(activeTabId);
         setActiveTabId(null);
@@ -62,6 +70,9 @@ export function useImagePreview({
         onStatus("Image preview opened");
         return true;
       } catch (err) {
+        if (previewRequestSeqRef.current !== requestSeq) {
+          return false;
+        }
         onError(String(err));
         onStatus("Image preview failed");
         return false;
