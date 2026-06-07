@@ -119,6 +119,7 @@ pub fn run() {
             generate_apple_assist_candidate,
             drain_opened_files,
             request_app_restart,
+            hide_main_window,
             save_text_file,
             save_text_file_as,
             update_app_menu_state,

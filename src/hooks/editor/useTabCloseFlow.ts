@@ -3,7 +3,7 @@ import {
   type SetStateAction,
   useCallback,
 } from "react";
-import { closeCurrentWindow } from "../../lib/tauri";
+import { hideMainWindow } from "../../lib/tauri";
 import { isDirty } from "../../features/editor/editorTabs";
 import {
   draftRecordFromTab,
@@ -122,7 +122,7 @@ export function useTabCloseFlow({
   const saveAllAndCloseWindow = useCallback(async () => {
     if (dirtyTabs.length === 0) {
       allowWindowCloseRef.current = true;
-      await closeCurrentWindow();
+      await hideMainWindow();
       return;
     }
 
@@ -141,7 +141,7 @@ export function useTabCloseFlow({
     }
 
     allowWindowCloseRef.current = true;
-    await closeCurrentWindow();
+    await hideMainWindow();
   }, [
     allowWindowCloseRef,
     dirtyTabs,
@@ -165,7 +165,7 @@ export function useTabCloseFlow({
     allowWindowCloseRef.current = true;
 
     try {
-      await closeCurrentWindow();
+      await hideMainWindow();
     } catch (err) {
       allowWindowCloseRef.current = false;
       discardingWindowCloseRef.current = false;

@@ -430,3 +430,26 @@ pub(crate) fn request_app_restart<R: tauri::Runtime>(
     app.request_restart();
     Ok(())
 }
+
+// v0.15 macOS red-close-button contract.
+//
+// On macOS the red button closes the window, not the app
+// (`Cmd+Q` is the app-quit affordance, and Tauri fires
+// `RunEvent::ExitRequested` for it by default). Once the
+// frontend intercepts `CloseRequested` with `preventDefault`
+// (see `useWindowCloseConfirmation`) the NSApplication
+// records the request as "rejected" and re-issuing
+// `WebviewWindow::close()` / `WebviewWindow::destroy()`
+// through the JS bridge is unreliable. The reliable
+// teardown is `WebviewWindow::hide()`, which calls
+// `NSWindow.orderOut:` directly and bypasses both the
+// `windowShouldClose:` delegate and the `RunEvent::Exit`
+// path. The .app stays alive on the Dock and the user
+// re-opens the window by clicking the Dock icon.
+#[tauri::command]
+pub(crate) fn hide_main_window<R: tauri::Runtime>(app: tauri::AppHandle<R>) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window(MAIN_WINDOW_LABEL) {
+        let _ = window.hide();
+    }
+    Ok(())
+}
