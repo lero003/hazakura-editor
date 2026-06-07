@@ -15,6 +15,7 @@ type UseRecoveryActionsOptions = {
   setStatus: Dispatch<SetStateAction<string>>;
   setTabs: Dispatch<SetStateAction<EditorTab[]>>;
   tabs: EditorTab[];
+  tabsRef: { current: EditorTab[] };
 };
 
 export function useRecoveryActions({
@@ -23,11 +24,11 @@ export function useRecoveryActions({
   setPendingDrafts,
   setStatus,
   setTabs,
-  tabs,
+  tabsRef,
 }: UseRecoveryActionsOptions) {
   const reopenTabFromDisk = useCallback(
     async (tabId: string) => {
-      const tab = tabs.find((candidate) => candidate.id === tabId);
+      const tab = tabsRef.current.find((candidate) => candidate.id === tabId);
 
       if (!tab) {
         return;
@@ -37,6 +38,13 @@ export function useRecoveryActions({
 
       try {
         const file = await openTextFile(tab.path);
+        const latestTab = tabsRef.current.find(
+          (candidate) => candidate.id === tabId,
+        );
+        if (!latestTab || latestTab.path !== tab.path) {
+          setStatus("Reopen skipped; document changed");
+          return;
+        }
         const reopenedTab = createEditorTab(file);
 
         setTabs((currentTabs) =>
@@ -47,6 +55,13 @@ export function useRecoveryActions({
         setActiveTabId(reopenedTab.id);
         setStatus("Reopened from disk");
       } catch (err) {
+        const latestTab = tabsRef.current.find(
+          (candidate) => candidate.id === tabId,
+        );
+        if (!latestTab || latestTab.path !== tab.path) {
+          setStatus("Reopen skipped; document changed");
+          return;
+        }
         setTabs((currentTabs) =>
           currentTabs.map((candidate) =>
             candidate.id === tabId
@@ -61,7 +76,7 @@ export function useRecoveryActions({
         setStatus("Reopen failed");
       }
     },
-    [setActiveTabId, setStatus, setTabs, tabs],
+    [setActiveTabId, setStatus, setTabs, tabsRef],
   );
 
   const keepEditingAfterConflict = useCallback(
