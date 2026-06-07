@@ -12,7 +12,10 @@ type FindReplaceBarCopy = {
   find: string;
   findInActiveFile: string;
   findOptions: string;
+  go: string;
+  goToLine: string;
   invalidRegex: string;
+  line: string;
   next: string;
   noMatches: string;
   noSearch: string;
@@ -32,9 +35,12 @@ type FindReplaceBarProps = {
   findInputRef: RefObject<HTMLInputElement | null>;
   findMatchCount: number;
   findQuery: string;
+  goToLineValue: string;
   invalidRegex: boolean;
   onClose: () => void;
   onFindKeyDown: (event: ReactKeyboardEvent<HTMLInputElement>) => void;
+  onGoToLine: () => void;
+  onGoToLineKeyDown: (event: ReactKeyboardEvent<HTMLInputElement>) => void;
   onNextMatch: () => void;
   onPreviousMatch: () => void;
   onReplaceAll: () => void;
@@ -43,6 +49,7 @@ type FindReplaceBarProps = {
   replaceQuery: string;
   searchOptions: SearchOptions;
   setFindQuery: (value: string) => void;
+  setGoToLineValue: (value: string) => void;
   setReplaceQuery: (value: string) => void;
   setSearchOptions: Dispatch<SetStateAction<SearchOptions>>;
 };
@@ -53,9 +60,12 @@ export function FindReplaceBar({
   findInputRef,
   findMatchCount,
   findQuery,
+  goToLineValue,
   invalidRegex,
   onClose,
   onFindKeyDown,
+  onGoToLine,
+  onGoToLineKeyDown,
   onNextMatch,
   onPreviousMatch,
   onReplaceAll,
@@ -64,12 +74,13 @@ export function FindReplaceBar({
   replaceQuery,
   searchOptions,
   setFindQuery,
+  setGoToLineValue,
   setReplaceQuery,
   setSearchOptions,
 }: FindReplaceBarProps) {
   return (
     <section className="find-panel" aria-label={copy.findInActiveFile}>
-      <div className="find-panel__row">
+      <div className="find-panel__row find-panel__row--main">
         <label className="find-control">
           <span>{copy.find}</span>
           <input
@@ -169,7 +180,7 @@ export function FindReplaceBar({
           </svg>
         </button>
       </div>
-      <div className="find-panel__row">
+      <div className="find-panel__row find-panel__row--replace">
         <label className="find-control">
           <span>{copy.replace}</span>
           <input
@@ -196,6 +207,27 @@ export function FindReplaceBar({
             {copy.replaceAll}
           </button>
         </div>
+      </div>
+      <div className="find-panel__row find-panel__row--goto">
+        <label htmlFor="go-to-line-input">
+          <span>{copy.line}</span>
+        </label>
+        <input
+          aria-label={copy.goToLine}
+          id="go-to-line-input"
+          type="number"
+          min="1"
+          value={goToLineValue}
+          onChange={(event) => setGoToLineValue(event.target.value)}
+          onKeyDown={onGoToLineKeyDown}
+        />
+        <button
+          aria-label={copy.goToLine}
+          type="button"
+          onClick={onGoToLine}
+        >
+          {copy.go}
+        </button>
       </div>
     </section>
   );

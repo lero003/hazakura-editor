@@ -3,7 +3,7 @@
 .find-panel {
   position: absolute;
   top: 56px;
-  left: 24px;
+  right: 24px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -13,6 +13,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  width: 520px;
   max-width: calc(100% - 48px);
   will-change: transform, opacity;
   animation: slideDown 0.2s var(--ease-emphasized) forwards;
@@ -25,17 +26,25 @@
   gap: 12px;
 }
 
+.find-panel__row--goto {
+  border-top: 1px solid var(--border);
+  padding-top: 6px;
+  margin-top: 2px;
+  gap: 6px;
+  font-size: 11px;
+  opacity: 0.85;
+}
+
 .find-close {
-  background: transparent;
-  border: 0;
-  box-shadow: none;
+  background: var(--bg);
+  border: 1px solid var(--border);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
   color: var(--text-muted);
   min-width: unset;
   padding: 0;
@@ -44,20 +53,22 @@
 }
 
 .find-close:hover {
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--bg);
+  border-color: var(--border-strong);
   color: var(--text);
 }
 
 :root[data-theme="dark"] .find-close:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--bg);
+  border-color: var(--border-strong);
 }
 
 .find-control {
   align-items: center;
   display: flex;
-  flex: 0 1 380px;
+  flex: 0 1 280px;
   gap: 8px;
-  min-width: 180px;
+  min-width: 160px;
 }
 
 .find-control span,
@@ -65,6 +76,16 @@
   color: var(--text-muted);
   font-size: 12px;
   font-weight: 500;
+}
+
+.find-count {
+  /* 一致なし / 一致あり / 検索なし / 無効正規表現 で
+     言葉が変わり横幅が変動する問題を max-width で吸収。
+     "999 / 999" / "正規表現が無効です" / "一致なし"
+     のいずれでも枠が揺れない。 */
+  min-width: 110px;
+  display: inline-block;
+  text-align: right;
 }
 
 .find-control input {
@@ -109,6 +130,23 @@
   color: var(--text-muted);
   font-size: 12px;
   font-weight: 500;
+}
+
+.find-panel__row--goto label,
+.find-panel__row--goto input,
+.find-panel__row--goto button {
+  font-size: 11px;
+}
+
+.find-panel__row--goto input {
+  width: 64px;
+  min-height: 24px;
+  padding: 0 8px;
+}
+
+.find-panel__row--goto button {
+  min-width: 40px;
+  padding: 3px 8px;
 }
 
 .message-row {
