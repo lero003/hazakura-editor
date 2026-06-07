@@ -48,6 +48,7 @@ import {
 } from "@codemirror/view";
 import { refreshImagesEffect, lModeImageResolverPlugin } from "./imageWidget";
 import { lModeTaskClickPlugin } from "./taskWidget";
+import { lModeTableEditingPlugin } from "./tableEditing";
 import {
   buildLModeDecorations,
   computeContentDecorations,
@@ -148,6 +149,7 @@ export function lModeExtension(
         lModeContextFacet.of(context),
         lModeImageResolverPlugin(),
         lModeTaskClickPlugin(),
+        lModeTableEditingPlugin(),
         options.typewriterMode ? lModeTypewriterPlugin() : [],
       ]
     : [lModeContextFacet.of(context)];
