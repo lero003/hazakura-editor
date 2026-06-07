@@ -440,11 +440,13 @@ describe("v0.11 Typora-feel rendering", () => {
   });
 
   it("replaces the TaskMarker with a checkbox widget (doc text untouched)", () => {
-    const source = "- [ ] todo\n- [x] done\n";
+    const source = "- [ ] todo\n- [x] done\n- [X] loud done\n";
     const uncheckedStart = source.indexOf("[ ]");
     const uncheckedEnd = uncheckedStart + 3;
     const checkedStart = source.indexOf("[x]");
     const checkedEnd = checkedStart + 3;
+    const uppercaseCheckedStart = source.indexOf("[X]");
+    const uppercaseCheckedEnd = uppercaseCheckedStart + 3;
     const state = makeState(source, source.length);
     const set = computeLModeDecorations(state);
 
@@ -454,6 +456,14 @@ describe("v0.11 Typora-feel rendering", () => {
     ).toBe(true);
     expect(
       hasReplaceWithWidget(set, checkedStart, checkedEnd, LModeTaskWidget),
+    ).toBe(true);
+    expect(
+      hasReplaceWithWidget(
+        set,
+        uppercaseCheckedStart,
+        uppercaseCheckedEnd,
+        LModeTaskWidget,
+      ),
     ).toBe(true);
   });
 
@@ -659,6 +669,22 @@ describe("v0.14 task widget keyboard", () => {
     const { parent, view } = setupTaskView(source);
     const taskEl = parent.querySelector<HTMLElement>(".cm-lmode-task");
     expect(taskEl).not.toBeNull();
+    taskEl?.focus();
+    taskEl?.dispatchEvent(
+      new KeyboardEvent("keydown", { key: " ", bubbles: true }),
+    );
+
+    expect(view.state.doc.toString()).toBe("- [ ] done\n");
+    view.destroy();
+    parent.remove();
+  });
+
+  it("treats [X] as checked and toggles it to [ ]", () => {
+    const source = "- [X] done\n";
+    const { parent, view } = setupTaskView(source);
+    const taskEl = parent.querySelector<HTMLElement>(".cm-lmode-task");
+    expect(taskEl).not.toBeNull();
+    expect(taskEl?.classList.contains("cm-lmode-task-checked")).toBe(true);
     taskEl?.focus();
     taskEl?.dispatchEvent(
       new KeyboardEvent("keydown", { key: " ", bubbles: true }),

@@ -179,7 +179,7 @@ export function computeContentDecorations(
       }
       if (name === "TaskMarker") {
         const markerText = state.doc.sliceString(node.from, node.to);
-        const checked = markerText === "[x]";
+        const checked = markerText === "[x]" || markerText === "[X]";
         decorations.push(
           Decoration.replace({
             widget: new LModeTaskWidget(node.from, node.to, checked),

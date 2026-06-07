@@ -38,7 +38,7 @@ function findTaskRange(view: EditorView): { from: number; to: number } {
   // Scan the doc for the first 3-char task marker. Fixtures
   // are arranged so the first one is the one we toggle.
   const doc = view.state.doc.toString();
-  const match = doc.match(/\[ \]|\[x\]/);
+  const match = doc.match(/\[ \]|\[[xX]\]/);
   if (!match || match.index === undefined) {
     throw new Error(`No task marker found in doc: ${doc}`);
   }
@@ -98,6 +98,19 @@ describe("dispatchTaskToggle", () => {
 
   it("toggles [x] -> [ ] when the click target is the widget span", () => {
     const view = makeView("- [x] done");
+    const { from, to } = findTaskRange(view);
+    const span = makeTaskSpan(view, from, to, true);
+
+    const event = new MouseEvent("click", { bubbles: true });
+    Object.defineProperty(event, "target", { value: span });
+    const result = dispatchTaskToggle(view, event);
+
+    expect(result).toBe(true);
+    expect(view.state.doc.toString()).toBe("- [ ] done");
+  });
+
+  it("toggles [X] -> [ ] when the click target is the widget span", () => {
+    const view = makeView("- [X] done");
     const { from, to } = findTaskRange(view);
     const span = makeTaskSpan(view, from, to, true);
 

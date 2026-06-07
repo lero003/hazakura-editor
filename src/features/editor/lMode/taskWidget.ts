@@ -1,19 +1,21 @@
 // Inline task-list checkbox widget for L Mode (えるモード).
 //
-// GFM task list items look like `- [ ] todo` or `- [x] done`.
+// GFM task list items look like `- [ ] todo`, `- [x] done`,
+// or `- [X] done`.
 // The L Mode extension replaces the 3-char `TaskMarker` range
-// (`[ ]` or `[x]`) with this widget so the cursor sees a single
-// inline checkbox glyph instead of the marker text. The
+// (`[ ]`, `[x]`, or `[X]`) with this widget so the cursor sees a
+// single inline checkbox glyph instead of the marker text. The
 // underlying doc text is never modified by the decoration
 // engine — the same cornerstone invariant the rest of L Mode
 // honors.
 //
-// Clicking the widget toggles `[ ]` ↔ `[x]` in the buffer via a
-// dispatched transaction. The toggle path is the only place in
-// L Mode where the user input flows from a widget back into
-// the doc. We do NOT mark the doc dirty ourselves (CodeMirror's
-// `changes` dispatch is the dirty signal — the editor pane
-// re-derives `saveStatus` from the tab contents on its own).
+// Clicking the widget toggles `[ ]` -> `[x]` and checked markers
+// (`[x]` / `[X]`) -> `[ ]` in the buffer via a dispatched
+// transaction. The toggle path is the only place in L Mode where
+// the user input flows from a widget back into the doc. We do NOT
+// mark the doc dirty ourselves (CodeMirror's `changes` dispatch is
+// the dirty signal — the editor pane re-derives `saveStatus` from
+// the tab contents on its own).
 //
 // `from` / `to` are stored in `data-*` attributes on the
 // widget DOM so the click handler can find the range to
@@ -97,11 +99,12 @@ export function dispatchTaskToggle(view: EditorView, event: Event): boolean {
   const to = Number(taskEl.getAttribute("data-lmode-task-to"));
   if (Number.isNaN(from) || Number.isNaN(to)) return false;
 
-  // The TaskMarker is always 3 chars (`[ ]` or `[x]`); we
+  // The TaskMarker is always 3 chars (`[ ]`, `[x]`, or `[X]`); we
   // replace exactly that range so the rest of the line is
   // untouched.
   const text = view.state.doc.sliceString(from, to);
-  const next = text === "[ ]" ? "[x]" : text === "[x]" ? "[ ]" : null;
+  const next =
+    text === "[ ]" ? "[x]" : text === "[x]" || text === "[X]" ? "[ ]" : null;
   if (!next) return false;
 
   view.dispatch({ changes: { from, to, insert: next } });
