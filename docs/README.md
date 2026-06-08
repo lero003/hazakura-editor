@@ -29,6 +29,7 @@ This directory separates current guidance from historical material. Use current 
 
 - `l-mode-plan.md`: L Mode / えるモード source-preserving WYSIWYG Accuracy Ramp planning memo.
 - `commercial-quality-baseline.md`: non-App-Store commercial-quality baseline for status/recovery, settings/theme, accessibility, performance, L Mode measurement, honest feature scope, and Developer / GitHub distribution readiness.
+- `app-store-quality-agent-requests.md`: App Store-facing quality request queue for sandbox, App Store Agent Workbench omission, privacy/local data, review notes, save/restore, accessibility, preview/export security, diagnostics, and measurement work.
 - `v0.13-distribution-probe.md`: completed v0.13 App Store / Developer-GitHub distribution probe memo and remaining evidence needs.
 - `apple-local-assist-distribution-plan.md`: Apple Local Assist / App Store distribution planning memo.
 - `apple-local-assist-writing-companion-plan.md`: Apple Local Assist Writing Companion / external Assist Window UX direction.

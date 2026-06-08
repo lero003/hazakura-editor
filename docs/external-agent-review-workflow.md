@@ -3,13 +3,15 @@
 Status: Operational
 Scope: External implementation agent plus Codex review workflow
 Authority: High
-Last reviewed: 2026-06-01
+Last reviewed: 2026-06-08
 
 ## Purpose
 
 Use this workflow when another agent implements a small Hazakura slice and Codex is asked to review it before acceptance.
 
 The goal is not to make two agents race. The goal is to separate implementation from review so boundary regressions, over-claims, and missing verification are caught before a slice becomes part of the roadmap.
+
+For App Store-facing quality work that excludes certificates, signing, notarization, and DMG packaging, choose a request packet from `docs/app-store-quality-agent-requests.md` before implementation starts.
 
 ## Roles
 
@@ -42,6 +44,7 @@ Before implementation, the external agent should read:
 - `docs/development-automation.md`
 - `docs/external-agent-review-workflow.md`
 - any boundary document directly touched by the slice, especially `docs/security-boundary.md` or `docs/agent-workbench-boundary.md`
+- `docs/app-store-quality-agent-requests.md` when the slice touches App Store quality, sandbox behavior, App Store lane Agent Workbench omission, privacy/local-data disclosure, review notes, accessibility, preview/export safety, diagnostics, or measurement
 
 Implementation rules:
 

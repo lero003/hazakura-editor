@@ -77,6 +77,7 @@ For future releases, re-check local artifact evidence and, after publication, re
 - `docs/roadmap.md`: current release sequence and future phase boundaries.
 - `docs/l-mode-plan.md`: L Mode WYSIWYG Accuracy Ramp and source-preserving writing-surface plan.
 - `docs/commercial-quality-baseline.md`: non-App-Store commercial-quality baseline and follow-up request labels.
+- `docs/app-store-quality-agent-requests.md`: external-agent request packets for App Store-facing quality work that excludes certificates, signing, notarization, and DMG packaging.
 - `docs/apple-local-assist-distribution-plan.md`: v0.12+ Apple Local Assist and App Store / developer-build release-lane planning memo.
 - `docs/apple-local-assist-writing-companion-plan.md`: Apple Local Assist Writing Companion / external Assist Window UX direction.
 - `docs/apple-local-assist-v0.12-design-review.md`: v0.12 implementation slice design + Slice 5 feasibility findings.
@@ -160,6 +161,6 @@ v0.17 should start from distribution prep after v0.16 L Mode evidence is stable,
 1. If continuing into v0.16, use `docs/l-mode-plan.md` and `docs/commercial-quality-baseline.md`; prioritize reproduced L Mode regressions, built-app smoke, and source-preserving fixes around IME/caret/Backspace/list/link/table/image/quote/code-fence behavior.
 2. If improving Apple Local Assist after v0.15.0, use `docs/assist-surface-strategy.md`, `docs/apple-local-assist-distribution-plan.md`, and `docs/apple-local-assist-writing-companion-plan.md`; keep Apple Local Assist as an external Writing Companion and require AI edit transactions for direct buffer edits.
 3. If improving theme / settings, verify persistence, native menu sync, readability, and restart-required copy before debating purely cosmetic variants.
-4. If preparing v0.17+ distribution work, use `docs/source-release-checklist.md`, `docs/dmg-preview-checklist.md`, and `docs/commercial-quality-baseline.md`; keep App Store / Developer / warning-expected DMG lanes separate.
+4. If preparing v0.17+ distribution work, use `docs/source-release-checklist.md`, `docs/dmg-preview-checklist.md`, `docs/commercial-quality-baseline.md`, and `docs/app-store-quality-agent-requests.md`; keep App Store / Developer / warning-expected DMG lanes separate and do not mix App Store quality slices with certificate, signing, notarization, or DMG packaging work.
 5. If preparing a future release, use the version-specific release note; do not tag or publish without explicit approval.
 6. If changing product behavior, use `docs/product-brief.md`, `docs/security-boundary.md`, and the touched boundary doc before implementation.

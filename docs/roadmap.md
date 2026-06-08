@@ -294,6 +294,7 @@ Use these current docs rather than old roadmap bodies:
 
 - `docs/authoring-feature-readiness.md` for incomplete authoring/export claims.
 - `docs/l-mode-plan.md` for the L Mode WYSIWYG Accuracy Ramp and source-preserving writing-surface work.
+- `docs/app-store-quality-agent-requests.md` for external-agent-ready App Store quality slices that exclude certificates, signing, notarization, and DMG packaging.
 - `docs/apple-local-assist-distribution-plan.md` for Apple Local Assist and App Store / developer-build release lanes.
 - `docs/agent-workbench-boundary.md` for Agent Workbench constraints.
 - `docs/development-automation.md` for small quality-loop work.

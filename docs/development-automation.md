@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-06-07 (v0.16 Release Prep framing)
+Last reviewed: 2026-06-08 (v0.17 Distribution Prep framing)
 
 ## Purpose
 
@@ -17,27 +17,29 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: v0.16 Release Prep.
+Phase: v0.17 Distribution Prep / Release Polish, unless a v0.16 hotfix blocker appears.
 
 Prefer work in this order:
 
 1. Stale or failing quality gates.
-2. Release-prep gaps in Developer / GitHub DMG wording, checksum flow, cross-machine smoke guidance, or expected macOS warning instructions.
-3. App Store / Developer lane separation drift, especially Agent Workbench omission, helper bundle/signing assumptions, and sandbox/review evidence.
-4. Accessibility and keyboard-flow audit slices for settings, close dialogs, L Mode rail/drawer/review, image preview, recovery, and diff review.
-5. Performance and bundle-size measurement before chunk-splitting, L Mode decoration-cache work, or broad CSS splitting.
-6. One concrete user-test friction point from Apple Local Assist, L Mode, theme, settings, status / error copy, export, or file/recovery workflows.
-7. Safety-boundary regression checks.
-8. Post-release docs/version drift.
-9. One reproduced bug in implemented L Mode WYSIWYG behavior, especially caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or a measured performance baseline.
-10. Focused refactor only when it directly supports a verified user-facing polish fix; do not split a large file for architecture aesthetics alone.
-11. Documentation drift.
-12. Verified no-op after inspection when no useful small slice is safe.
+2. App Store-facing quality request packets from `docs/app-store-quality-agent-requests.md`, especially sandbox file restore, App Store lane Agent Workbench omission, local-data disclosure, and review-note evidence.
+3. Release-prep gaps in Developer / GitHub DMG wording, checksum flow, cross-machine smoke guidance, or expected macOS warning instructions.
+4. App Store / Developer lane separation drift, especially Agent Workbench omission, helper bundle/signing assumptions, and sandbox/review evidence.
+5. Accessibility and keyboard-flow audit slices for settings, close dialogs, L Mode rail/drawer/review, image preview, recovery, and diff review.
+6. Performance and bundle-size measurement before chunk-splitting, L Mode decoration-cache work, or broad CSS splitting.
+7. One concrete user-test friction point from Apple Local Assist, L Mode, theme, settings, status / error copy, export, or file/recovery workflows.
+8. Safety-boundary regression checks.
+9. Post-release docs/version drift.
+10. One reproduced bug in implemented L Mode WYSIWYG behavior, especially caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or a measured performance baseline.
+11. Focused refactor only when it directly supports a verified user-facing polish fix; do not split a large file for architecture aesthetics alone.
+12. Documentation drift.
+13. Verified no-op after inspection when no useful small slice is safe.
 
 ## Start Every Run
 
 1. Read `AGENTS.md`, `README.md`, `docs/README.md`, `docs/current-status.md`, `docs/roadmap.md`, `docs/smoke-checklist.md`, `docs/commercial-quality-baseline.md`, and this document.
    If the run touches Apple Local Assist, App Store distribution, or assist-provider shape, also read `docs/assist-surface-strategy.md`, `docs/apple-local-assist-distribution-plan.md`, `docs/security-boundary.md`, and `docs/agent-workbench-boundary.md`.
+   If the run is being handed to an external agent for App Store-facing quality work outside certificate / signing / notarization / DMG packaging, also read `docs/app-store-quality-agent-requests.md`.
 2. Run `git status --short --branch`.
 3. Treat existing uncommitted changes as user or previous-agent work. Do not revert them.
 4. Use Hazakura Habitat before substantial implementation, automation changes, dependency or lockfile work, release work, Git/GitHub mutation, or command-selection uncertainty.
