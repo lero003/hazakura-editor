@@ -137,6 +137,12 @@ export function localizeStatusMessage(
     return `${message.slice("Moved to line ".length)} 行目へ移動しました`;
   }
 
+  if (message.startsWith("Workspace restored: ")) {
+    return `ワークスペースを復元しました: ${message.slice(
+      "Workspace restored: ".length,
+    )}`;
+  }
+
   if (message.startsWith("Image saved: ")) {
     return `画像を保存しました: ${message.slice("Image saved: ".length)}`;
   }

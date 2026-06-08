@@ -111,3 +111,72 @@ describe("localizeStatusMessage: window IPC failure keys (v0.15)", () => {
     expect(new Set([a, b, c, d, e]).size).toBe(5);
   });
 });
+
+// v0.16 sandbox-file-restore: the workspace restore hook now
+// reports the count of tabs that could not be reopened on app
+// restart, because the OS no longer grants access to their
+// stored path. The status text is built dynamically
+// (`Workspace restored: N tab(s) reopened, M path(s) skipped
+// (use Open or Open Folder to reauthorize)`), so the
+// localization path is a prefix match on the stable
+// `Workspace restored: ` prefix. The tests below pin the
+// prefix translation and the reauthorization hint wording so
+// future copy edits to either the count format or the
+// reauth hint keep the Japanese UI consistent.
+describe("localizeStatusMessage: workspace restore reauth hint (v0.16)", () => {
+  it("translates the Workspace restored: prefix to Japanese", () => {
+    expect(
+      localizeStatusMessage(
+        "Workspace restored: 1 tab reopened, 1 path skipped (use Open or Open Folder to reauthorize)",
+        "ja",
+      ),
+    ).toBe(
+      "ワークスペースを復元しました: 1 tab reopened, 1 path skipped (use Open or Open Folder to reauthorize)",
+    );
+  });
+
+  it("translates the Workspace restored: prefix to Japanese for the plural form", () => {
+    expect(
+      localizeStatusMessage(
+        "Workspace restored: 3 tabs reopened, 2 paths skipped (use Open or Open Folder to reauthorize)",
+        "ja",
+      ),
+    ).toBe(
+      "ワークスペースを復元しました: 3 tabs reopened, 2 paths skipped (use Open or Open Folder to reauthorize)",
+    );
+  });
+
+  it("preserves the Open / Open Folder reauth hint in the localized form", () => {
+    const localized = localizeStatusMessage(
+      "Workspace restored: 1 tab reopened, 1 path skipped (use Open or Open Folder to reauthorize)",
+      "ja",
+    );
+    expect(localized).toContain("Open");
+    expect(localized).toContain("Open Folder");
+    expect(localized).toContain("reauthorize");
+  });
+
+  it("returns the raw English key for the prefix form when menu language is English", () => {
+    expect(
+      localizeStatusMessage(
+        "Workspace restored: 1 tab reopened, 2 paths skipped (use Open or Open Folder to reauthorize)",
+        "en",
+      ),
+    ).toBe(
+      "Workspace restored: 1 tab reopened, 2 paths skipped (use Open or Open Folder to reauthorize)",
+    );
+  });
+
+  it("does not collapse the dynamic prefix form into the exact-match 'Workspace restored' key", () => {
+    // The exact-match key is for the all-reopened success case
+    // and would lose the reauth hint. The prefix form must
+    // route through its own branch.
+    const exact = localizeStatusMessage("Workspace restored", "ja");
+    const dynamic = localizeStatusMessage(
+      "Workspace restored: 1 tab reopened, 1 path skipped (use Open or Open Folder to reauthorize)",
+      "ja",
+    );
+    expect(dynamic).not.toBe(exact);
+    expect(exact).toBe("ワークスペースを復元しました");
+  });
+});

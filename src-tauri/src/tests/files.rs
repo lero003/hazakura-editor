@@ -21,6 +21,69 @@ fn open_text_file_rejects_binary_looking_file() {
     let _ = fs::remove_dir_all(dir);
 }
 
+// App Store / App Sandbox path: a stored workspace state can
+// reference a file path the OS will no longer open because the
+// user moved it, deleted it, or revoked the file-picker grant on
+// app restart. `open_text_file` must surface that as a clean
+// error string the frontend can show in the restore-status
+// message and the global error chip — never a panic, never a
+// silent "tab reopened" reply. These regression tests pin the
+// expected failure shapes for the most common restore-time
+// breakages so future refactors do not regress the
+// `useWorkspaceRestore` `Promise.allSettled` contract.
+
+#[test]
+fn open_text_file_reports_clean_error_for_missing_file() {
+    let dir = unique_test_dir("open_missing");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("does-not-exist.md");
+
+    let err = open_text_file_with_label(MAIN_WINDOW_LABEL, path.to_string_lossy().to_string())
+        .expect_err("missing path should fail cleanly");
+
+    assert!(err.contains("Cannot read file"), "got error: {err}");
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn open_text_file_rejects_directory_path() {
+    let dir = unique_test_dir("open_directory");
+    fs::create_dir_all(&dir).expect("create test dir");
+
+    let err = open_text_file_with_label(MAIN_WINDOW_LABEL, dir.to_string_lossy().to_string())
+        .expect_err("directory should fail cleanly");
+
+    assert!(err.contains("not a file"), "got error: {err}");
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn open_text_file_rejects_oversized_file() {
+    let dir = unique_test_dir("open_oversized");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("huge.md");
+    let file = File::create(&path).expect("create large file");
+    file.set_len(MAX_EDITABLE_BYTES + 1)
+        .expect("resize large file");
+
+    let err = open_text_file_with_label(MAIN_WINDOW_LABEL, path.to_string_lossy().to_string())
+        .expect_err("oversized file should fail cleanly");
+
+    assert!(err.contains("10 MB"), "got error: {err}");
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn open_text_file_rejects_empty_path() {
+    let err = open_text_file_with_label(MAIN_WINDOW_LABEL, "".to_string())
+        .expect_err("empty path should fail cleanly");
+
+    assert!(err.contains("Cannot read file"), "got error: {err}");
+}
+
 #[test]
 fn open_text_file_opens_utf8_json() {
     let dir = unique_test_dir("open_json_text_file");

@@ -64,14 +64,27 @@ export function useWorkspaceRestore({
           0,
           MAX_RESTORED_TABS,
         );
-        const restoredTabs = (
-          await Promise.allSettled(uniqueTabPaths.map((path) => openTextFile(path)))
-        )
+        // `Promise.allSettled` lets us drop a single failed
+        // reopen without aborting the whole restore, which is
+        // the right shape for App Sandbox assumptions: a stored
+        // path string is not the same as a fresh user-selected
+        // authorization grant, so a path that the OS can no
+        // longer reach (file moved, file deleted, sandbox
+        // container reauthorized the parent folder only, etc.)
+        // must fall out of the restored tab list cleanly.
+        // Counting the rejected results lets the status text
+        // surface the gap instead of pretending the restore
+        // succeeded for every stored path.
+        const openResults = await Promise.allSettled(
+          uniqueTabPaths.map((path) => openTextFile(path)),
+        );
+        const restoredTabs = openResults
           .filter(
             (result): result is PromiseFulfilledResult<TextFileDocument> =>
               result.status === "fulfilled",
           )
           .map((result) => createEditorTab(result.value));
+        const skippedRestoreCount = openResults.length - restoredTabs.length;
         const storedDrafts = readStoredDrafts();
         const recoverableDrafts = restoredTabs.flatMap((tab) => {
           const draft = storedDrafts.find(
@@ -95,11 +108,17 @@ export function useWorkspaceRestore({
               : restoredTabs[0]?.id ?? null,
           );
           onStatus(
-            recoverableDrafts.length > 0
-              ? "Workspace restored with drafts"
-              : restoredTabs.length > 0
-                ? "Workspace restored"
-                : "Ready",
+            skippedRestoreCount > 0
+              ? `Workspace restored: ${restoredTabs.length} tab${
+                  restoredTabs.length === 1 ? "" : "s"
+                } reopened, ${skippedRestoreCount} path${
+                  skippedRestoreCount === 1 ? "" : "s"
+                } skipped (use Open or Open Folder to reauthorize)`
+              : recoverableDrafts.length > 0
+                ? "Workspace restored with drafts"
+                : restoredTabs.length > 0
+                  ? "Workspace restored"
+                  : "Ready",
           );
         }
       } catch (err) {
