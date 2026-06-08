@@ -180,3 +180,73 @@ pub(crate) fn list_agent_provider_availability_with_label(
         agent_provider_app_search_path().as_deref(),
     ))
 }
+
+// The `*_with_label_for_lane` shims below are gate-only check
+// surfaces. They let the `tests::security` App Store lane tests
+// pin each Agent Workbench command's distribution-gate without
+// driving the Tauri command body. Mirrors the pattern already
+// used by `open_main_agent_pane_with_label_for_lane` and
+// `set_agent_window_theme_with_label_for_lane` in
+// `commands/app_window.rs`. The `#[cfg_attr(not(test),
+// allow(dead_code))]` keeps the production build warning-free;
+// the shims are only consumed by the unit-test binary.
+
+#[cfg(desktop)]
+#[cfg_attr(not(test), allow(dead_code))]
+pub(crate) fn start_agent_workbench_session_with_label_for_lane(
+    label: &str,
+    lane: Option<&str>,
+) -> Result<(), String> {
+    ensure_label_is_main_or_agent(label)?;
+    ensure_agent_workbench_allowed_for_lane(lane)
+}
+
+#[cfg(desktop)]
+#[cfg_attr(not(test), allow(dead_code))]
+pub(crate) fn stop_agent_workbench_session_with_label_for_lane(
+    label: &str,
+    lane: Option<&str>,
+) -> Result<(), String> {
+    ensure_label_is_main_or_agent(label)?;
+    ensure_agent_workbench_allowed_for_lane(lane)
+}
+
+#[cfg(desktop)]
+#[cfg_attr(not(test), allow(dead_code))]
+pub(crate) fn get_agent_workbench_session_state_with_label_for_lane(
+    label: &str,
+    lane: Option<&str>,
+) -> Result<(), String> {
+    ensure_label_is_main_or_agent(label)?;
+    ensure_agent_workbench_allowed_for_lane(lane)
+}
+
+#[cfg(desktop)]
+#[cfg_attr(not(test), allow(dead_code))]
+pub(crate) fn write_agent_workbench_session_input_with_label_for_lane(
+    label: &str,
+    lane: Option<&str>,
+) -> Result<(), String> {
+    ensure_label_is_main_or_agent(label)?;
+    ensure_agent_workbench_allowed_for_lane(lane)
+}
+
+#[cfg(desktop)]
+#[cfg_attr(not(test), allow(dead_code))]
+pub(crate) fn resize_agent_workbench_terminal_with_label_for_lane(
+    label: &str,
+    lane: Option<&str>,
+) -> Result<(), String> {
+    ensure_label_is_main_or_agent(label)?;
+    ensure_agent_workbench_allowed_for_lane(lane)
+}
+
+#[cfg(desktop)]
+#[cfg_attr(not(test), allow(dead_code))]
+pub(crate) fn list_agent_provider_availability_with_label_for_lane(
+    label: &str,
+    lane: Option<&str>,
+) -> Result<(), String> {
+    ensure_label_is_main_or_agent(label)?;
+    ensure_agent_workbench_allowed_for_lane(lane)
+}

@@ -83,6 +83,125 @@ fn app_store_distribution_lane_rejects_agent_window_theme_ipc() {
     assert!(err.contains("App Store"), "{err}");
 }
 
+// App Store lane rejection for the rest of the Agent Workbench
+// command surface. The `*_with_label_for_lane` shims are
+// gate-only: they only run the label + distribution-lane gates
+// and never touch the session store / runtime adapter, so the
+// tests below are independent of the body and of any active
+// session. If a future refactor drops
+// `ensure_agent_workbench_allowed_by_distribution()?` from one
+// of the `*_with_label` wrappers, the existing helper-level
+// test (`agent_workbench_distribution_gate_rejects_app_store_lane`)
+// would still pass, but the per-command pin below would
+// continue to pin the gate-only shim and document the
+// App Store boundary. The body of each command is exercised
+// separately by the developer-lane tests in
+// `tests::agent_workbench` (e.g. `agent_workbench_start_*`).
+
+#[test]
+fn app_store_distribution_lane_rejects_start_agent_workbench_session() {
+    start_agent_workbench_session_with_label_for_lane(MAIN_WINDOW_LABEL, Some("developer"))
+        .expect("developer lane may start an Agent Workbench session");
+
+    let err =
+        start_agent_workbench_session_with_label_for_lane(MAIN_WINDOW_LABEL, Some("app-store"))
+            .expect_err("App Store lane must reject start_agent_workbench_session");
+    assert!(err.contains("Agent Workbench"), "{err}");
+    assert!(err.contains("App Store"), "{err}");
+}
+
+#[test]
+fn app_store_distribution_lane_rejects_stop_agent_workbench_session() {
+    stop_agent_workbench_session_with_label_for_lane(MAIN_WINDOW_LABEL, Some("developer"))
+        .expect("developer lane may stop an Agent Workbench session");
+
+    let err =
+        stop_agent_workbench_session_with_label_for_lane(MAIN_WINDOW_LABEL, Some("app-store"))
+            .expect_err("App Store lane must reject stop_agent_workbench_session");
+    assert!(err.contains("Agent Workbench"), "{err}");
+    assert!(err.contains("App Store"), "{err}");
+}
+
+#[test]
+fn app_store_distribution_lane_rejects_get_agent_workbench_session_state() {
+    get_agent_workbench_session_state_with_label_for_lane(MAIN_WINDOW_LABEL, Some("developer"))
+        .expect("developer lane may read Agent Workbench session state");
+
+    let err =
+        get_agent_workbench_session_state_with_label_for_lane(MAIN_WINDOW_LABEL, Some("app-store"))
+            .expect_err("App Store lane must reject get_agent_workbench_session_state");
+    assert!(err.contains("Agent Workbench"), "{err}");
+    assert!(err.contains("App Store"), "{err}");
+}
+
+#[test]
+fn app_store_distribution_lane_rejects_write_agent_workbench_session_input() {
+    write_agent_workbench_session_input_with_label_for_lane(MAIN_WINDOW_LABEL, Some("developer"))
+        .expect("developer lane may write to an Agent Workbench session");
+
+    let err = write_agent_workbench_session_input_with_label_for_lane(
+        MAIN_WINDOW_LABEL,
+        Some("app-store"),
+    )
+    .expect_err("App Store lane must reject write_agent_workbench_session_input");
+    assert!(err.contains("Agent Workbench"), "{err}");
+    assert!(err.contains("App Store"), "{err}");
+}
+
+#[test]
+fn app_store_distribution_lane_rejects_resize_agent_workbench_terminal() {
+    resize_agent_workbench_terminal_with_label_for_lane(MAIN_WINDOW_LABEL, Some("developer"))
+        .expect("developer lane may resize the Agent Workbench terminal");
+
+    let err =
+        resize_agent_workbench_terminal_with_label_for_lane(MAIN_WINDOW_LABEL, Some("app-store"))
+            .expect_err("App Store lane must reject resize_agent_workbench_terminal");
+    assert!(err.contains("Agent Workbench"), "{err}");
+    assert!(err.contains("App Store"), "{err}");
+}
+
+#[test]
+fn app_store_distribution_lane_rejects_list_agent_provider_availability() {
+    list_agent_provider_availability_with_label_for_lane(MAIN_WINDOW_LABEL, Some("developer"))
+        .expect("developer lane may list Agent provider availability");
+
+    let err =
+        list_agent_provider_availability_with_label_for_lane(MAIN_WINDOW_LABEL, Some("app-store"))
+            .expect_err("App Store lane must reject list_agent_provider_availability");
+    assert!(err.contains("Agent Workbench"), "{err}");
+    assert!(err.contains("App Store"), "{err}");
+}
+
+#[test]
+fn app_store_distribution_lane_rejects_agent_window_label_on_agent_commands() {
+    // Pin the second layer: even from the `agent` label, the
+    // App Store distribution lane must reject every Agent
+    // Workbench command. The developer lane is allowed through
+    // the label gate (the `agent` window owns the start flow),
+    // so the developer-lane pass only proves the label gate
+    // cleared and the App Store lane then trips the
+    // distribution gate.
+    for (label, lane) in [
+        (AGENT_WINDOW_LABEL, "developer"),
+        (AGENT_WINDOW_LABEL, "app-store"),
+    ] {
+        let res = start_agent_workbench_session_with_label_for_lane(label, Some(lane));
+        match lane {
+            "developer" => {
+                res.expect("agent window may start a session in the developer lane");
+            }
+            "app-store" => {
+                let err = res.expect_err(
+                    "App Store lane must reject start_agent_workbench_session from the agent window",
+                );
+                assert!(err.contains("Agent Workbench"), "{err}");
+                assert!(err.contains("App Store"), "{err}");
+            }
+            _ => unreachable!(),
+        }
+    }
+}
+
 #[test]
 fn label_gate_apple_assist_rejects_agent_label() {
     // The Apple Assist window and the Agent window are mutually
