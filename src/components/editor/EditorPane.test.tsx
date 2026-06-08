@@ -171,6 +171,41 @@ describe("EditorPane", () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 
+  it("remounts the editor session when switching between Markdown documents", async () => {
+    const editorRef = createRef<EditorPaneHandle>();
+    const { container, rerender } = render(
+      renderEditorPane({
+        documentKey: "/workspace/first.md",
+        ref: editorRef,
+        value: "first line\nsecond line\nthird line\n",
+      }),
+    );
+
+    editorRef.current?.insertText("draft ");
+    expect(editorRef.current?.getActiveDocument()?.text).toBe(
+      "draft first line\nsecond line\nthird line\n",
+    );
+    const firstEditor = container.querySelector(".cm-editor");
+    expect(firstEditor).not.toBeNull();
+
+    rerender(
+      renderEditorPane({
+        documentKey: "/workspace/second.md",
+        ref: editorRef,
+        value: "new file\nstill new\n",
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(editorRef.current?.getActiveDocument()).toMatchObject({
+      text: "new file\nstill new\n",
+      from: 0,
+      to: 0,
+    });
+
+    expect(container.querySelector(".cm-editor")).not.toBe(firstEditor);
+  });
+
   it("inserts a pasted image at the paste-time selection even if the cursor moves before save completes", async () => {
     const editorRef = createRef<EditorPaneHandle>();
     const onChange = vi.fn();

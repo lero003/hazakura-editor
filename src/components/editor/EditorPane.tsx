@@ -1,5 +1,4 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
-import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import {
   selectCharLeft,
   selectCharRight,
@@ -28,7 +27,10 @@ import {
 import { basicSetup } from "codemirror";
 import { SlashMenu, type SlashMenuCopy } from "./SlashMenu";
 import { useSlashMenu } from "../../hooks/editor/useSlashMenu";
-import { markdownSyntaxHighlighting } from "../../features/editor/codeMirrorTheme";
+import {
+  pickEditorLanguage,
+  type EditorLanguageKind,
+} from "../../features/editor/codeMirrorTheme";
 import { lModeExtension, LModeClasses } from "../../features/editor/lMode";
 import type { LModeCopy } from "../../lib/locale";
 import type { SlashCommand } from "../../types/slash";
@@ -208,6 +210,19 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   const tabSizeCompartmentRef = useRef(new Compartment());
   const spellcheckCompartmentRef = useRef(new Compartment());
   const lModeCompartmentRef = useRef(new Compartment());
+  // The active language parser + highlight style are picked
+  // from the file extension on every editor mount. The theme
+  // compartment reconfigure (theme/fontSize change) needs to
+  // re-apply the same highlight, so we mirror it into a ref.
+  const currentHighlightRef = useRef<Extension | null>(null);
+  // The kind (`markdown` / `html` / `css`) the editor was
+  // last mounted with. We re-mount the editor only when the
+  // document changes or the kind changes — the same-document
+  // Markdown → Markdown case (e.g. L Mode toggle on a `.md`
+  // file) must NOT re-mount, otherwise the cursor position
+  // test breaks.
+  const mountedKindRef = useRef<EditorLanguageKind | null>(null);
+  const mountedDocumentKeyRef = useRef<string | null>(null);
 
   useImperativeHandle(
     ref,
@@ -358,6 +373,59 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       return;
     }
 
+    // Pick the language parser + highlight style for the file
+    // extension. The GFM-flavoured `markdownLanguage` base
+    // (used for `.md`/unknown) emits `Table` / `TableDelimiter`
+    // / `Task` / `TaskMarker` / `Strikethrough` nodes that the
+    // L Mode decoration set depends on, so we keep the
+    // Markdown branch on the same base the v0.11 surface was
+    // tuned for. `.css` and `.html` (incl. `.htm`/`.xml`) get
+    // their own parsers and HighlightStyle. When L Mode is
+    // enabled, the picker forces the Markdown branch — the L
+    // Mode decoration pass targets Markdown / GFM AST nodes,
+    // so a non-Markdown parser would leave the L Mode chrome
+    // in an inconsistent state.
+    const picked = pickEditorLanguage(documentKey, { lModeEnabled });
+
+    // We re-mount the editor when the document changes OR
+    // when the language family (`kind`) changes. The
+    // same-document Markdown → Markdown case — e.g. toggling
+    // L Mode on/off while editing a `.md` file — must NOT
+    // re-mount, otherwise the cursor position is lost. But a
+    // different Markdown document is a different editor
+    // session: it should not inherit selection, history, or
+    // plugin state from the previous tab.
+    //
+    // For `.css` / `.html`, the kind flips between Markdown
+    // (L Mode ON) and the file's family (L Mode OFF), so a
+    // re-mount is unavoidable — CodeMirror parsers cannot be
+    // swapped in-place. The cursor reset on those toggles is
+    // a known and accepted trade-off, since L Mode is meant
+    // for the Markdown writing surface, not for CSS / HTML
+    // editing.
+    const shouldRemount =
+      mountedKindRef.current === null ||
+      mountedDocumentKeyRef.current !== documentKey ||
+      mountedKindRef.current !== picked.kind;
+    if (!shouldRemount) {
+      currentHighlightRef.current = picked.highlight;
+      return;
+    }
+
+    // Tear down the previous view (if any) before re-mounting
+    // with the new language family. The unmount-only effect
+    // below also destroys the view, but that fires on
+    // component unmount, not on every dep change — so we
+    // need an explicit destroy here when `shouldRemount` is
+    // true to clear the DOM and `viewRef` before the new
+    // EditorView attaches.
+    viewRef.current?.destroy();
+    viewRef.current = null;
+    mountedDocumentKeyRef.current = documentKey;
+    mountedKindRef.current = picked.kind;
+    currentHighlightRef.current = picked.highlight;
+    const { language, highlight } = picked;
+
     const view = new EditorView({
       doc: value,
       parent: editorMountRef.current,
@@ -367,14 +435,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         crosshairCursor(),
         editorKeyboardShortcuts,
         editorTabIndentation,
-        // Use the GFM-flavored `markdownLanguage` as the base
-        // parser so syntax-tree nodes like `Table`,
-        // `TableDelimiter`, `Task`, `TaskMarker`, and
-        // `Strikethrough` are emitted. The default `markdown()`
-        // base is strict CommonMark and skips them, which would
-        // silently neutralize the v0.11 Typora-feel decorations
-        // for tables, task lists, and strikethrough.
-        markdown({ base: markdownLanguage }),
+        language,
         searchHighlightField,
         wrappingCompartmentRef.current.of(
           getEditorWrappingExtensions(wrapLines, lModeEnabled),
@@ -390,7 +451,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         ),
         themeCompartmentRef.current.of([
           editorTheme(theme, fontSize),
-          markdownSyntaxHighlighting(),
+          highlight,
         ]),
         lModeCompartmentRef.current.of(
           lModeExtension(
@@ -493,12 +554,30 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     onSelectionChangeRef.current(readSelectionInfo(view.state));
     handleScroll();
 
+    // NB: no cleanup return here. The mount useEffect re-runs
+    // on every `documentKey` / `lModeEnabled` change, but
+    // re-mounting should only happen when the language
+    // `kind` changes (the early-return above). When the kind
+    // stays the same (e.g. L Mode toggle on a `.md` file)
+    // we must NOT destroy the view, otherwise the cursor
+    // position is lost. The unmount-only effect below is the
+    // single owner of `viewRef.current.destroy()` for the
+    // end-of-life path.
+  }, [documentKey, lModeEnabled]);
+
+  // Unmount-only effect: destroy the editor when the
+  // component goes away. Lives in its own effect with empty
+  // deps so the cleanup fires only on real unmount, not on
+  // every render where `documentKey` or `lModeEnabled`
+  // change.
+  useEffect(() => {
     return () => {
-      view.scrollDOM.removeEventListener("scroll", handleScroll);
+      viewRef.current?.destroy();
       viewRef.current = null;
-      view.destroy();
+      mountedDocumentKeyRef.current = null;
+      mountedKindRef.current = null;
     };
-  }, [documentKey]);
+  }, []);
 
   useEffect(() => {
     const view = viewRef.current;
@@ -507,13 +586,22 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       return;
     }
 
+    // Re-apply the same language-family highlight the editor
+    // was mounted with — it lives in `currentHighlightRef`
+    // because the language parser itself is not reconfigured
+    // here (changing the parser requires a full editor mount,
+    // which happens via the `[documentKey, lModeEnabled]`
+    // effect above).
+    const highlight =
+      currentHighlightRef.current ??
+      pickEditorLanguage(documentKey, { lModeEnabled }).highlight;
     view.dispatch({
       effects: themeCompartmentRef.current.reconfigure([
         editorTheme(theme, fontSize),
-        markdownSyntaxHighlighting(),
+        highlight,
       ]),
     });
-  }, [fontSize, theme]);
+  }, [fontSize, theme, documentKey, lModeEnabled]);
 
   useEffect(() => {
     const view = viewRef.current;
