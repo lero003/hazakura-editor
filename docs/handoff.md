@@ -9,6 +9,7 @@
 - Latest source / local-app tag notes: `docs/releases/0.14.0-source-tag.release.md`.
 - Current status source: `docs/current-status.md`.
 - Active lane: post-v0.16 publication follow-up; next implementation lane remains v0.17 Distribution Prep unless a v0.16 hotfix blocker appears.
+- `main` now includes the post-v0.16 CodeMirror language-dispatch follow-up: `.css` / `.html` / `.htm` / `.xml` use dedicated CodeMirror parsers in normal editing, while L Mode forces the GFM Markdown parser / highlighting so L Mode remains Markdown-source-preserving. `EditorPane` remounts on document changes or parser-family changes, but preserves the session for same-document Markdown L Mode toggles.
 
 ## Recent Changes
 
@@ -103,6 +104,7 @@
 - L Mode / Preview workspace-image follow-up verification passed on 2026-06-07: focused tests for `markdown.test.ts`, `lMode/extension.test.ts`, and `lMode/imageWidget.test.ts`; full `npm run test` (68 files / 490 tests); `npm run build:vite`; `npm run build`; built-app `codesign --verify --deep --strict --verbose=2`; and `git diff --check`.
 - L Mode draft-recovery banner follow-up verification passed on 2026-06-07: focused RecoveryMessages / DocumentMetaBar / LModeActionRail tests, full `npm run test` (68 files / 491 tests), `npm run build:vite`, `npm run build`, built-app `codesign --verify --deep --strict --verbose=2`, and `git diff --check`.
 - v0.16.0 warning-expected DMG release verification passed on 2026-06-08: `npm ci`, `npm run typecheck`, `npm run test` (68 files / 500 tests), `npm run build:vite`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml -- --test-threads=1` (243 tests), `npm run build:apple-assist-helper:live`, `npm run build:dmg-preview`, `git diff --check`, `npm audit --audit-level=moderate`, and `cargo audit --file src-tauri/Cargo.lock`. Local app metadata/codesign, expected `spctl` insufficient-context rejection, DMG checksum/`hdiutil verify`, mounted-DMG metadata/codesign/icon-resource hash, and mounted app launch-process observation passed. DMG SHA-256: `39f63f42fc46c7e2d8659858f1a93127917be8e7a1836f594d885a44105e40fb`.
+- CodeMirror language-dispatch follow-up verification passed on 2026-06-08: RED was observed for Markdown-document switching remount behavior, then `npm run test -- src/components/editor/EditorPane.test.tsx`, focused language/L Mode tests, `npm run test` (69 files / 513 tests on rerun), `npm run build:vite`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml -- --test-threads=1` (243 tests), `npm run build`, and `git diff --check` passed. The first full `npm run test` attempt showed two L Mode test failures that both passed on focused rerun and the full rerun.
 
 ## Risks / Unknowns
 
