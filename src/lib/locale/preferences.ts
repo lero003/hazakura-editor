@@ -40,6 +40,29 @@ export type PreferencesCopy = {
   theme: string;
   themeHint: (theme: ThemePreference) => string;
   wrapLines: string;
+  // Privacy & Local Data disclosure (v0.16 app-store-quality
+  // privacy-local-data slice). Each label is rendered as a
+  // short section heading or paragraph in
+  // `PrivacyPreferencesPane`. The wording intentionally
+  // mirrors what `docs/security-boundary.md` and
+  // `docs/apple-local-assist-distribution-plan.md` allow us
+  // to claim: what this app's code does and does not do, not
+  // what the user's OS or third-party files might do.
+  privacyTitle: string;
+  privacyIntro: string;
+  privacyOpenLink: string;
+  privacyDocumentsHeading: string;
+  privacyDocumentsBody: string;
+  privacyBackupHeading: string;
+  privacyBackupBody: string;
+  privacyPreviewHeading: string;
+  privacyPreviewBody: string;
+  privacyAppleAssistHeading: string;
+  privacyAppleAssistBody: string;
+  privacyAppStoreLaneHeading: string;
+  privacyAppStoreLaneBody: string;
+  privacyNetworkHeading: string;
+  privacyNetworkBody: string;
 };
 
 export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
@@ -91,6 +114,28 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         }
         return "あけがた の そら を 思わせる あけぼのいろ の きせつ いろあひ。";
       },
+      privacyTitle: "ぷらいばしー と ろーかる でーた",
+      privacyIntro:
+        "このあぷり の こーど が どういう しょり を するか の みじかい せつめい です。OS や がいぶ さーびす の どうさ は ここの せつめい の たいしょう では ありません。",
+      privacyOpenLink: "ぷらいばしー と ろーかる でーた を ひらく",
+      privacyDocumentsHeading: "えらんだ ふみ",
+      privacyDocumentsBody:
+        "このあぷり は、 macOS の ふぁいる / ふぉるだ えらぶ き を とおして えらんだ テキストふみ だけを ひらきます。 ふぁいる ぜんたい を こっそり しらべたり、 ほーむ でぃれくとり を そうさ したりは しません。",
+      privacyBackupHeading: ".hazakura/backups/...",
+      privacyBackupBody:
+        "えらんだ わーくすぺーす の した に、 じどう ばっくあっぷ の すなっぷしょと が ほぞん されます。 わーくすぺーす の がいぶ には むきません。",
+      privacyPreviewHeading: "まどびゅー と えんぽーと",
+      privacyPreviewBody:
+        "まどびゅー は がいぶ 画像 と あぶない HTML / script / iframe / object / embed を ふせぎます。 まどびゅー の りんく くりっく は、 せんたくちゅう わーくすぺーす ない の workspace-relative な テキストふみ への ひらき だけに るーてぃんぐ されます。 がいぶ scheme の りんく ( http:、 https:、 mailto:、 tel: など ) と ぜったい ぱす は むし され、 status めっせーじ が しめされる の で、 くりっく で えでぃた から はなれる せんい は おこりません。 HTML えんぽーと の とき、 わーくすぺーす ない の 画像 は でーた URI に いないれ されます。",
+      privacyAppleAssistHeading: "Apple Local Assist",
+      privacyAppleAssistBody:
+        "Apple Local Assist は Apple の おん・でばいす もでる を つかう じっけんてきな ほじょ です。 こーど は この Mac の うえで うごき、 めーる や さーばー には おくりません。 へんこう は すべて あくしょん れこーど として のこり、 ほぞん まえに Diff で かくにん できます。",
+      privacyAppStoreLaneHeading: "App Store ばんの こうせい",
+      privacyAppStoreLaneBody:
+        "App Store ばん は Agent Workbench と CLI agent と にんい こまんど を もちません。 かんの ある めにゅー、 すいっち、 しょーと かっと も うごきません。",
+      privacyNetworkHeading: "ねっとわーく と とうけい",
+      privacyNetworkBody:
+        "このあぷり の こーど に fetch / XHR / あならいてぃくす / てれめてり / くらっしゅ れぽーてぃんぐ の ような しゅう は ふくまれません。 Apple Local Assist は、 ゆうこう で しすてむ が つかえる とき bundled Apple Local Assist helper を つかう こと が あります。 Developer / GitHub ばん では、 ゆうこう に した Agent Workbench が allowlist された ぷろばいだ を うごかせます。 Finder で ひらく、 いんさつ、 ごみばこ いどう など の めいじ そうさ では、 macOS の きのう に えらんだ ぱす や いちじ ふぁいる を わたす こと が あります。",
     };
   }
 
@@ -142,6 +187,28 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
           }
           return "明け方向けの曙色アンビエントテーマ。";
         },
+        privacyTitle: "プライバシーとローカルデータ",
+        privacyIntro:
+          "このアプリのコードが何をするかについての短い説明です。OS や外部サービスの動作は対象外です。",
+        privacyOpenLink: "プライバシーとローカルデータを開く…",
+        privacyDocumentsHeading: "選んだファイル",
+        privacyDocumentsBody:
+          "このアプリは macOS のファイル/フォルダピッカーを通して選んだテキストファイルだけを開きます。ファイル全体を勝手に走査したり、ホームディレクトリを操作したりはしません。",
+        privacyBackupHeading: ".hazakura/backups/...",
+        privacyBackupBody:
+          "選んだワークスペースの下に、自動バックアップのスナップショットが保存されます。ワークスペース外には書きません。",
+        privacyPreviewHeading: "プレビューとエクスポート",
+        privacyPreviewBody:
+          "プレビューは外部画像と危険な HTML / script / iframe / object / embed を防ぎます。プレビューのリンククリックは、選択中ワークスペース内の workspace-relative なテキストファイルへのオープンだけにルーティングされます。外部 scheme のリンク（http:、https:、mailto:、tel: など）と絶対パスは無視され、status メッセージが表示されるので、クリックでエディタから離れる遷移は起こりません。HTML エクスポートのときは、ワークスペース内の画像がデータ URI として埋め込まれます。",
+        privacyAppleAssistHeading: "Apple Local Assist",
+        privacyAppleAssistBody:
+          "Apple Local Assist は Apple のオンデバイスモデルを使う実験的な補助です。コードはこの Mac のうえで動き、メールやサーバーには送りません。変更はすべて明示操作として残り、保存前に Diff で確認できます。",
+        privacyAppStoreLaneHeading: "App Store 版の構成",
+        privacyAppStoreLaneBody:
+          "App Store 版は Agent Workbench と CLI agent と任意コマンドを持ちません。関連するメニュー・スイッチ・ショートカットも動きません。",
+        privacyNetworkHeading: "ネットワークと統計",
+        privacyNetworkBody:
+          "このアプリのコードに fetch / XHR / analytics / telemetry / crash reporting のような実装は含まれません。Apple Local Assist は、有効化されていてシステムが対応しているときに bundled 済み Apple Local Assist helper を使うことがあります。Developer / GitHub 版では、有効化した Agent Workbench が allowlist されたプロバイダを起動できます。Finderで表示、印刷、ゴミ箱移動などの明示操作では、macOS の機能に選択したパスや一時ファイルを渡すことがあります。",
       }
     : {
         application: "Application",
@@ -190,5 +257,27 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
           }
           return "Dawn-pastel seasonal theme for early mornings.";
         },
+        privacyTitle: "Privacy & Local Data",
+        privacyIntro:
+          "A short description of what this app's code does. It does not describe what the operating system or external services may do.",
+        privacyOpenLink: "Open Privacy & Local Data…",
+        privacyDocumentsHeading: "Files you choose",
+        privacyDocumentsBody:
+          "The app only opens text files you pick through the macOS file or folder picker. It does not scan files on its own or touch your home directory.",
+        privacyBackupHeading: ".hazakura/backups/...",
+        privacyBackupBody:
+          "Inside the selected workspace, the app saves local auto-backup snapshots under a `.hazakura/backups/...` folder. Backups stay inside that workspace.",
+        privacyPreviewHeading: "Preview and export",
+        privacyPreviewBody:
+          "The preview blocks external images and dangerous HTML, script, iframe, object, and embed tags. The preview only routes link clicks to workspace-relative text file opens inside the selected workspace; external scheme links (http:, https:, mailto:, tel:, etc.) and absolute paths are ignored with a status message, so the click never navigates away from the editor. HTML export inlines local workspace images as data URIs.",
+        privacyAppleAssistHeading: "Apple Local Assist",
+        privacyAppleAssistBody:
+          "Apple Local Assist is an experimental on-device helper that uses Apple's on-device model. The code runs on this Mac and does not send anything to a mail service or a server. Every change is recorded as an explicit action and can be reviewed through a diff before you save.",
+        privacyAppStoreLaneHeading: "App Store build",
+        privacyAppStoreLaneBody:
+          "The App Store build does not include Agent Workbench, a CLI agent, or an arbitrary command surface. Related menus, switches, and shortcuts are also disabled.",
+        privacyNetworkHeading: "Network and analytics",
+        privacyNetworkBody:
+          "This app's code does not include fetch, XHR, analytics, telemetry, or crash reporting. Apple Local Assist may use the bundled Apple Local Assist helper when the user enables it and the system supports it. In the Developer / GitHub lane, enabled Agent Workbench can launch an allowlisted provider. Explicit actions such as Show in Finder, print handoff, and Move to Trash may pass the selected path or a temporary file to macOS utilities.",
       };
 }

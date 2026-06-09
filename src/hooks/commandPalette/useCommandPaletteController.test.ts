@@ -344,4 +344,139 @@ describe("useCommandPaletteController", () => {
     );
     expect(assistSettingsCommand?.label).toBe("Assist Settings…");
   });
+
+  it("exposes a Privacy & Local Data command in the Developer / GitHub lane", () => {
+    // The v0.16 app-store-quality: privacy-local-data slice
+    // adds a `settings.privacy` command that opens the new
+    // Privacy & Local Data preferences pane. The Developer
+    // / GitHub lane renders it as a Settings-category
+    // command that fires `setPreferencesDialogMode("privacy")`.
+    vi.stubEnv("VITE_HAZAKURA_DISTRIBUTION_LANE", "developer");
+    const setPreferencesDialogMode = vi.fn();
+    const { result } = renderHook(() =>
+      useCommandPaletteController({
+        actions: {
+          applyActiveMarkdownFormat: vi.fn(),
+          createNewFile: vi.fn(),
+          exportHtml: vi.fn(),
+          exportPdf: vi.fn(),
+          focusAdjacentTab: vi.fn(),
+          handleSendSelectionToAgent: vi.fn(),
+          insertTable: vi.fn(),
+          invokeAppleAssist: vi.fn(),
+          openAgentWindow: vi.fn(),
+          openAppleAssistWindow: vi.fn(),
+          openFile: vi.fn(),
+          openWorkspace: vi.fn(),
+          openWorkspaceFile: vi.fn(),
+          requestCloseTab: vi.fn(),
+          requestRestoreFromBackup: vi.fn(),
+          requestReviewTabAgainstDisk: vi.fn(),
+          requestWindowClose: vi.fn(),
+          saveActiveTab: vi.fn(),
+          saveActiveTabAs: vi.fn(),
+          setEditorSettings: vi.fn(),
+          setFindVisible: vi.fn(),
+          setPreferencesDialogMode,
+          setPreviewVisible: vi.fn(),
+          toggleDiffPane: vi.fn(),
+          toggleLMode: vi.fn(),
+          toggleOutlinePane: vi.fn(),
+          toggleQuickOpen: vi.fn(),
+        },
+        activeTab: null,
+        activeTabId: null,
+        appleAssistAvailability: { kind: "available" },
+        appleAssistCopy: getAppleAssistCopy("en"),
+        editorPaneRef: { current: null },
+        lModeCopy: getLModeCopy("en"),
+        setStatus: vi.fn(),
+        themePreference: "light",
+        workspaceRootPath: null,
+      }),
+    );
+
+    act(() => {
+      result.current.openCommandPalette();
+    });
+
+    const privacy = result.current.filteredCommands.find(
+      (command) => command.id === "settings.privacy",
+    );
+    expect(privacy?.category).toBe("Settings");
+    expect(privacy?.label).toBe("Privacy & Local Data…");
+
+    act(() => {
+      privacy?.run();
+    });
+    expect(setPreferencesDialogMode).toHaveBeenCalledWith("privacy");
+    vi.unstubAllEnvs();
+  });
+
+  it("exposes a Privacy & Local Data command in the App Store lane", () => {
+    // The App Store lane must keep the Privacy disclosure
+    // route reachable so App Review can find it without
+    // enabling Agent Workbench. The env stub is applied
+    // BEFORE `renderHook` so the hook reads the correct
+    // lane value at construction time.
+    vi.stubEnv("VITE_HAZAKURA_DISTRIBUTION_LANE", "app-store");
+    const setPreferencesDialogMode = vi.fn();
+    const { result } = renderHook(() =>
+      useCommandPaletteController({
+        actions: {
+          applyActiveMarkdownFormat: vi.fn(),
+          createNewFile: vi.fn(),
+          exportHtml: vi.fn(),
+          exportPdf: vi.fn(),
+          focusAdjacentTab: vi.fn(),
+          handleSendSelectionToAgent: vi.fn(),
+          insertTable: vi.fn(),
+          invokeAppleAssist: vi.fn(),
+          openAgentWindow: vi.fn(),
+          openAppleAssistWindow: vi.fn(),
+          openFile: vi.fn(),
+          openWorkspace: vi.fn(),
+          openWorkspaceFile: vi.fn(),
+          requestCloseTab: vi.fn(),
+          requestRestoreFromBackup: vi.fn(),
+          requestReviewTabAgainstDisk: vi.fn(),
+          requestWindowClose: vi.fn(),
+          saveActiveTab: vi.fn(),
+          saveActiveTabAs: vi.fn(),
+          setEditorSettings: vi.fn(),
+          setFindVisible: vi.fn(),
+          setPreferencesDialogMode,
+          setPreviewVisible: vi.fn(),
+          toggleDiffPane: vi.fn(),
+          toggleLMode: vi.fn(),
+          toggleOutlinePane: vi.fn(),
+          toggleQuickOpen: vi.fn(),
+        },
+        activeTab: null,
+        activeTabId: null,
+        appleAssistAvailability: { kind: "available" },
+        appleAssistCopy: getAppleAssistCopy("en"),
+        editorPaneRef: { current: null },
+        lModeCopy: getLModeCopy("en"),
+        setStatus: vi.fn(),
+        themePreference: "light",
+        workspaceRootPath: null,
+      }),
+    );
+
+    act(() => {
+      result.current.openCommandPalette();
+    });
+
+    const privacy = result.current.filteredCommands.find(
+      (command) => command.id === "settings.privacy",
+    );
+    expect(privacy?.label).toBe("Privacy & Local Data…");
+
+    act(() => {
+      privacy?.run();
+    });
+    expect(setPreferencesDialogMode).toHaveBeenCalledWith("privacy");
+    vi.unstubAllEnvs();
+  });
 });

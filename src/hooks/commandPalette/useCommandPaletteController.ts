@@ -476,6 +476,26 @@ export function useCommandPaletteController({
         },
         shortcut: "⌘,",
       },
+      {
+        category: "Settings",
+        id: "settings.privacy",
+        keywords: [
+          "privacy",
+          "local",
+          "data",
+          "policy",
+          "disclosure",
+          "telemetry",
+          "analytics",
+          "backup",
+          "sync",
+          "network",
+        ],
+        label: "Privacy & Local Data…",
+        run: () => {
+          actions.setPreferencesDialogMode("privacy");
+        },
+      },
       ...(appleAssistAvailability.kind === "available"
         ? [
             {

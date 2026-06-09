@@ -41,6 +41,7 @@ import { WorkspaceContextMenu } from "../workspace/WorkspaceContextMenu";
 import { AppCloseDialog, DirtyTabCloseDialog } from "./CloseDialogs";
 import { PreferencesDialog } from "./PreferencesDialog";
 import { SettingsPreferencesPane } from "./SettingsPreferencesPane";
+import { PrivacyPreferencesPane } from "./PrivacyPreferencesPane";
 import { AgentWorkbenchPreferencesPane } from "../agent/AgentWorkbenchPreferencesPane";
 import { RenameWarnDialog, type RenameWarningKind } from "./RenameWarnDialog";
 import { MoveToTrashConfirmDialog } from "./MoveToTrashConfirmDialog";
@@ -129,6 +130,7 @@ type AppOverlaysProps = {
   preferencesDialogRef: RefObject<HTMLElement | null>;
   preferencesOpen: boolean;
   previewVisible: boolean;
+  setPreferencesDialogMode: (mode: PreferencesDialogMode) => void;
   quickOpenVisible: boolean;
   recoveryCopy: RecoveryCopy;
   lModeCopy: LModeCopy;
@@ -234,6 +236,7 @@ export function AppOverlays({
   preferencesDialogRef,
   preferencesOpen,
   previewVisible,
+  setPreferencesDialogMode,
   quickOpenVisible,
   recoveryCopy,
   lModeCopy,
@@ -364,7 +367,9 @@ export function AppOverlays({
           title={
             preferencesDialogMode === "agent"
               ? agentWorkbenchCopy.title
-              : preferencesCopy.settingsTitle
+              : preferencesDialogMode === "privacy"
+                ? preferencesCopy.privacyTitle
+                : preferencesCopy.settingsTitle
           }
         >
           {preferencesDialogMode === "agent" ? (
@@ -389,6 +394,8 @@ export function AppOverlays({
               sessionLabel={agentSessionStateLabel(agentSession, menuLanguage)}
               workspaceRootPath={workspaceRootPath}
             />
+          ) : preferencesDialogMode === "privacy" ? (
+            <PrivacyPreferencesPane copy={preferencesCopy} />
           ) : (
             <SettingsPreferencesPane
               copy={preferencesCopy}
@@ -397,6 +404,9 @@ export function AppOverlays({
               menuLanguage={menuLanguage}
               onEditorSettingsChange={setEditorSettings}
               onMenuLanguageChange={setMenuLanguage}
+              onOpenPrivacyPreferences={() =>
+                setPreferencesDialogMode("privacy")
+              }
               onPreviewVisibleChange={setPreviewVisible}
               onThemePreferenceChange={setThemePreference}
               previewVisible={previewVisible}

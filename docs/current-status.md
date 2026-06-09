@@ -156,6 +156,14 @@ Distribution work now moves after this L Mode follow-up:
 
 v0.17 should start from distribution prep after v0.16 L Mode evidence is stable, then shrink toward final release polish: certificate / signing lane decisions, wording, install instructions, screenshots, release notes, last user-test bugs, and final smoke evidence. Avoid new major product surfaces here unless a release blocker demands it.
 
+## v0.16 Privacy & Local Data disclosure (in-app, App Store-quality)
+
+A small in-app disclosure route is now reachable from the existing Preferences dialog: a new `settings.privacy` command in the command palette and a read-only `Privacy & Local Data…` link at the bottom of the Settings → Application section both open a new `Privacy & Local Data…` pane (`PreferencesDialogMode` now includes `"privacy"`). The pane is read-only prose that mirrors what `docs/security-boundary.md` and `docs/apple-local-assist-distribution-plan.md` already let the project claim: local-file-only document access, `.hazakura/backups/...` is a workspace-local auto-backup folder, the preview blocks external images and dangerous HTML / script / iframe / object / embed and only routes link clicks to workspace-relative text file opens inside the selected workspace (external scheme links and absolute paths are ignored with a status message), HTML export inlines workspace images as data URIs, Apple Local Assist is on-device / explicit / unsaved / diff-reviewable, the App Store build omits Agent Workbench / CLI agent / arbitrary command surface, and the app's code does not include `fetch` / `XHR` / `analytics` / `telemetry` / `crash reporting` libraries. The disclosure also keeps local-process wording scoped: Apple Local Assist may use the bundled helper when enabled and supported, the Developer / GitHub lane can launch an allowlisted Agent Workbench provider when that mode is enabled, and explicit OS handoff actions such as Finder reveal, print handoff, and Move to Trash may pass selected paths or temporary files to macOS utilities.
+
+The wording deliberately avoids overclaim: it says what the app's code does and does not include, not what the user's OS or third-party files may do. The disclosure is reachable in both distribution lanes so App Review can find the privacy route without enabling Agent Workbench.
+
+The slice covers `app-store-quality: privacy-local-data` from `docs/app-store-quality-agent-requests.md`. Out of scope: legal-finalized public Privacy Policy, website work, App Store Connect metadata, analytics / crash reporting, and certificate / signing work.
+
 ## Next Safe Actions
 
 1. If continuing into v0.16, use `docs/l-mode-plan.md` and `docs/commercial-quality-baseline.md`; prioritize reproduced L Mode regressions, built-app smoke, and source-preserving fixes around IME/caret/Backspace/list/link/table/image/quote/code-fence behavior.

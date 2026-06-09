@@ -1,8 +1,12 @@
-import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render } from "@testing-library/react";
 import { SettingsPreferencesPane } from "./SettingsPreferencesPane";
 import { getLModeCopy, getPreferencesCopy } from "../../lib/locale";
 import type { EditorSettings } from "../../types";
+
+afterEach(() => {
+  cleanup();
+});
 
 function editorSettings(
   overrides: Partial<EditorSettings> = {},
@@ -36,6 +40,7 @@ describe("SettingsPreferencesPane", () => {
         menuLanguage="en"
         onEditorSettingsChange={onEditorSettingsChange}
         onMenuLanguageChange={vi.fn()}
+        onOpenPrivacyPreferences={vi.fn()}
         onPreviewVisibleChange={vi.fn()}
         onThemePreferenceChange={vi.fn()}
         previewVisible={true}
@@ -75,6 +80,7 @@ describe("SettingsPreferencesPane", () => {
         menuLanguage="en"
         onEditorSettingsChange={vi.fn()}
         onMenuLanguageChange={vi.fn()}
+        onOpenPrivacyPreferences={vi.fn()}
         onPreviewVisibleChange={vi.fn()}
         onThemePreferenceChange={vi.fn()}
         previewVisible={true}
@@ -98,6 +104,7 @@ describe("SettingsPreferencesPane", () => {
           menuLanguage={lang}
           onEditorSettingsChange={vi.fn()}
           onMenuLanguageChange={vi.fn()}
+          onOpenPrivacyPreferences={vi.fn()}
           onPreviewVisibleChange={vi.fn()}
           onThemePreferenceChange={vi.fn()}
           previewVisible={true}
@@ -121,6 +128,7 @@ describe("SettingsPreferencesPane", () => {
         menuLanguage="en"
         onEditorSettingsChange={vi.fn()}
         onMenuLanguageChange={vi.fn()}
+        onOpenPrivacyPreferences={vi.fn()}
         onPreviewVisibleChange={vi.fn()}
         onThemePreferenceChange={vi.fn()}
         previewVisible={true}
@@ -144,6 +152,7 @@ describe("SettingsPreferencesPane", () => {
           menuLanguage={lang}
           onEditorSettingsChange={vi.fn()}
           onMenuLanguageChange={vi.fn()}
+          onOpenPrivacyPreferences={vi.fn()}
           onPreviewVisibleChange={vi.fn()}
           onThemePreferenceChange={vi.fn()}
           previewVisible={true}
@@ -155,5 +164,36 @@ describe("SettingsPreferencesPane", () => {
       expect(hint).not.toBeNull();
       expect(hint!.textContent).toBe(copy.menuLanguageHint);
     }
+  });
+
+  it("renders a Privacy & Local Data link that calls onOpenPrivacyPreferences", () => {
+    // v0.16 app-store-quality: privacy-local-data slice.
+    // The disclosure route must be reachable from the
+    // Application section of the Settings dialog (not just
+    // from the command palette) so App Review can find it
+    // without using the palette.
+    const onOpenPrivacyPreferences = vi.fn();
+    const copy = getPreferencesCopy("en");
+    const { getByTestId } = render(
+      <SettingsPreferencesPane
+        copy={copy}
+        editorSettings={editorSettings()}
+        lModeCopy={getLModeCopy("en")}
+        menuLanguage="en"
+        onEditorSettingsChange={vi.fn()}
+        onMenuLanguageChange={vi.fn()}
+        onOpenPrivacyPreferences={onOpenPrivacyPreferences}
+        onPreviewVisibleChange={vi.fn()}
+        onThemePreferenceChange={vi.fn()}
+        previewVisible={true}
+        themePreference="light"
+      />,
+    );
+
+    const link = getByTestId("open-privacy-preferences");
+    expect(link.textContent).toBe(copy.privacyOpenLink);
+
+    fireEvent.click(link);
+    expect(onOpenPrivacyPreferences).toHaveBeenCalledTimes(1);
   });
 });

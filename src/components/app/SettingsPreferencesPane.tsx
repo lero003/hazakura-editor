@@ -13,6 +13,7 @@ type SettingsPreferencesPaneProps = {
   menuLanguage: MenuLanguage;
   onEditorSettingsChange: Dispatch<SetStateAction<EditorSettings>>;
   onMenuLanguageChange: (language: MenuLanguage) => void;
+  onOpenPrivacyPreferences: () => void;
   onPreviewVisibleChange: (visible: boolean) => void;
   onThemePreferenceChange: (theme: ThemePreference) => void;
   previewVisible: boolean;
@@ -44,6 +45,7 @@ export function SettingsPreferencesPane({
   menuLanguage,
   onEditorSettingsChange,
   onMenuLanguageChange,
+  onOpenPrivacyPreferences,
   onPreviewVisibleChange,
   onThemePreferenceChange,
   previewVisible,
@@ -294,6 +296,14 @@ export function SettingsPreferencesPane({
             {copy.menuLanguageHint}
           </span>
         </label>
+        <button
+          type="button"
+          className="preference-link-button"
+          data-testid="open-privacy-preferences"
+          onClick={onOpenPrivacyPreferences}
+        >
+          {copy.privacyOpenLink}
+        </button>
         <div className="preference-feature">
           <p className="preference-feature-lede">
             <span className="preference-feature-label">

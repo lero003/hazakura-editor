@@ -1423,6 +1423,7 @@ export function useAppShellController() {
     renameWorkspacePath,
     pendingTrash,
     requestTrashWorkspacePath,
+    setPreferencesDialogMode,
     onMoveToTrash: requestTrashWorkspacePath,
     confirmPendingTrash,
     cancelPendingTrash,

@@ -219,6 +219,31 @@
   text-transform: uppercase;
 }
 
+/* Privacy & Local Data disclosure link (v0.16
+   app-store-quality: privacy-local-data slice). Read-only
+   inline action: opens the new `privacy` mode of the
+   Preferences dialog. Aligned with the rest of the section
+   so it does not look like a separate form field. */
+.preference-link-button {
+  align-self: flex-start;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  text-align: left;
+  transition: background 0.12s ease;
+}
+
+.preference-link-button:hover,
+.preference-link-button:focus-visible {
+  background: var(--surface-hover);
+  outline: none;
+}
+
 .preference-note,
 .preference-warning {
   border-radius: 6px;
@@ -442,4 +467,24 @@
   color: var(--text-muted);
   font-size: 11px;
   flex-shrink: 0;
+}
+
+/* Privacy & Local Data disclosure pane (v0.16
+   app-store-quality: privacy-local-data slice). Read-only
+   prose: the existing `.preference-section` row + `h3` chip
+   pattern is reused, and a body paragraph + intro paragraph
+   are added so the disclosure reads as a short document
+   instead of a form field. No toggles, inputs, or focusable
+   controls are rendered — the dialog-level focus trap and
+   close button are the only interactive elements. */
+.privacy-preferences-intro,
+.preference-section-body {
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.privacy-preferences-intro {
+  padding: 18px 20px 0;
 }

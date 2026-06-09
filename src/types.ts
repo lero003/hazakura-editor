@@ -108,7 +108,7 @@ export function isJapaneseMenuLanguage(language: MenuLanguage): boolean {
   return language === "ja" || language === "kana";
 }
 
-export type PreferencesDialogMode = "settings" | "agent";
+export type PreferencesDialogMode = "settings" | "agent" | "privacy";
 
 export type AssistSurfacePreference =
   | "none"
