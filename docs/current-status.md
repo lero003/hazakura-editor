@@ -171,6 +171,8 @@ The wording deliberately avoids overclaim: it says what the app's code does and 
 
 The slice covers `app-store-quality: privacy-local-data` from `docs/app-store-quality-agent-requests.md`. Out of scope: legal-finalized public Privacy Policy, website work, App Store Connect metadata, analytics / crash reporting, and certificate / signing work.
 
+The pane was further reshaped into a small read-only Help-document viewer in v0.16 follow-up. The body is now a bundled English `.md` file (`src/components/app/helpDocs/en/local-data-disclosure.md`) rendered through `renderMarkdown()`, the same function the editor preview uses. The Help surface therefore shares the preview's markdown sanitization and image policy (no `script` / `iframe` / `object` / `embed`, no external image fetch). The tab UI was dropped in favor of an H1 / H2 document structure that reads as a single document. The shell (kicker + boundary card + footer) lives in `src/components/app/helpDocs/index.ts` as a `HelpDoc` object; future slices (Privacy Policy, Open Source Licenses, About, Support Diagnostics) just drop a new `.md` into `helpDocs/` and add an entry there. Help is English-only by request (2026-06-09); the chrome is also English.
+
 ## Next Safe Actions
 
 1. If continuing into v0.16, use `docs/l-mode-plan.md` and `docs/commercial-quality-baseline.md`; prioritize reproduced L Mode regressions, built-app smoke, and source-preserving fixes around IME/caret/Backspace/list/link/table/image/quote/code-fence behavior.

@@ -478,67 +478,62 @@
   flex-shrink: 0;
 }
 
-/* Local Data Disclosure pane (v0.16
-   app-store-quality: privacy-local-data slice). Read-only
-   prose split into tabs so the disclosure reads as a compact
-   reference document instead of a long settings form. */
+/* Local Data Disclosure / Help-document viewer (v0.16
+   app-store-quality: privacy-local-data slice). The pane
+   reads a bundled English `.md` file through
+   `renderMarkdown()` and renders it as a small Help
+   document inside the existing Preferences dialog shell.
+   The shell is `meta` (kicker + boundary note) on top,
+   a scroll region in the middle, and a footer that frames
+   the doc as an in-app reference. It is designed to be
+   reused by future Help-document slices (Privacy Policy,
+   Open Source Licenses, About, Support Diagnostics)
+   without re-inventing the chrome. */
 .privacy-preferences {
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
   min-height: 0;
   overflow: hidden;
 }
 
-.privacy-preferences-summary {
+.privacy-preferences-meta {
   border-bottom: 1px solid var(--border);
   display: grid;
-  gap: 8px;
-  padding: 18px 20px 16px;
+  gap: 10px;
+  padding: 16px 20px 14px;
 }
 
-.privacy-preferences-intro,
-.privacy-policy-note,
-.preference-section-body {
+.privacy-preferences-kicker {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.privacy-boundary-note {
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+}
+
+.privacy-boundary-note-title {
   color: var(--text);
-  font-size: 13px;
-  line-height: 1.55;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   margin: 0;
 }
 
-.privacy-policy-note {
+.privacy-boundary-note-body {
   color: var(--text-muted);
   font-size: 12px;
-}
-
-.privacy-tab-list {
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  padding: 10px 12px;
-}
-
-.privacy-tab {
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  color: var(--text-muted);
-  flex: 0 0 auto;
-  font-size: 12px;
-  font-weight: 650;
-  padding: 6px 10px;
-}
-
-.privacy-tab:hover,
-.privacy-tab:focus-visible {
-  background: var(--surface-muted);
-  color: var(--text);
-}
-
-.privacy-tab[aria-selected="true"] {
-  background: var(--surface-muted);
-  border-color: var(--border);
-  color: var(--text);
+  line-height: 1.55;
+  margin: 0;
 }
 
 .privacy-tab-panel-scroll {
@@ -546,7 +541,144 @@
   overflow-y: auto;
 }
 
-.privacy-tab-panel {
-  border-left: 0;
-  min-height: 220px;
+.help-doc {
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  line-height: 1.7;
+  max-width: 100%;
+  padding: 22px 26px 28px;
+}
+
+.help-doc > :first-child {
+  margin-top: 0;
+}
+
+.help-doc > :last-child {
+  margin-bottom: 0;
+}
+
+.help-doc h1,
+.help-doc h2,
+.help-doc h3 {
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+}
+
+.help-doc h1 {
+  border-bottom: 1px solid var(--border);
+  font-size: 20px;
+  margin: 0 0 18px;
+  padding-bottom: 10px;
+}
+
+.help-doc h2 {
+  border-bottom: 1px solid var(--border);
+  font-size: 15px;
+  margin: 26px 0 12px;
+  padding-bottom: 6px;
+}
+
+.help-doc h3 {
+  font-size: 13.5px;
+  margin: 20px 0 8px;
+}
+
+.help-doc p {
+  margin: 0 0 12px;
+}
+
+.help-doc blockquote {
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  color: var(--text-muted);
+  margin: 14px 0;
+  padding: 10px 14px;
+}
+
+.help-doc blockquote p {
+  margin: 0;
+}
+
+.help-doc ul,
+.help-doc ol {
+  margin: 0 0 12px;
+  padding-left: 22px;
+}
+
+.help-doc li + li {
+  margin-top: 4px;
+}
+
+.help-doc code {
+  background: var(--surface-muted);
+  border-radius: 4px;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  padding: 1px 5px;
+}
+
+.help-doc pre {
+  background: var(--status-bg);
+  border-radius: 8px;
+  color: var(--status-text);
+  overflow-x: auto;
+  padding: 12px 14px;
+}
+
+.help-doc pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+
+.help-doc a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent) 50%, transparent);
+  text-underline-offset: 2px;
+}
+
+.help-doc a:hover,
+.help-doc a:focus-visible {
+  text-decoration-color: var(--accent);
+}
+
+.help-doc hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 20px 0;
+}
+
+.privacy-preferences-footer {
+  background: var(--surface-muted);
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.55;
+  padding: 10px 20px 12px;
+}
+
+.privacy-preferences-footer-text {
+  margin: 0;
+}
+
+/* Visually hidden, still in the accessibility tree. Used by
+   the dialog header on Help-document panes, where the
+   pane's own H1 is the visible document title and the
+   dialog h2 only needs to exist for `aria-labelledby`. */
+.sr-only {
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
 }

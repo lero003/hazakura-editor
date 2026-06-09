@@ -37,7 +37,12 @@ export function PreferencesDialog({
         role="dialog"
       >
         <div className="preferences-header">
-          <h2 id="preferences-title">{title}</h2>
+          <h2
+            className={mode === "privacy" ? "sr-only" : undefined}
+            id="preferences-title"
+          >
+            {title}
+          </h2>
           <button
             aria-label={closeLabel}
             className="icon-button"

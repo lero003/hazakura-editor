@@ -42,6 +42,7 @@ import { AppCloseDialog, DirtyTabCloseDialog } from "./CloseDialogs";
 import { PreferencesDialog } from "./PreferencesDialog";
 import { SettingsPreferencesPane } from "./SettingsPreferencesPane";
 import { PrivacyPreferencesPane } from "./PrivacyPreferencesPane";
+import { localDataDisclosure } from "./helpDocs";
 import { AgentWorkbenchPreferencesPane } from "../agent/AgentWorkbenchPreferencesPane";
 import { RenameWarnDialog, type RenameWarningKind } from "./RenameWarnDialog";
 import { MoveToTrashConfirmDialog } from "./MoveToTrashConfirmDialog";
@@ -368,7 +369,7 @@ export function AppOverlays({
             preferencesDialogMode === "agent"
               ? agentWorkbenchCopy.title
               : preferencesDialogMode === "privacy"
-                ? preferencesCopy.privacyTitle
+                ? localDataDisclosure.title
                 : preferencesCopy.settingsTitle
           }
         >
@@ -395,7 +396,7 @@ export function AppOverlays({
               workspaceRootPath={workspaceRootPath}
             />
           ) : preferencesDialogMode === "privacy" ? (
-            <PrivacyPreferencesPane copy={preferencesCopy} />
+            <PrivacyPreferencesPane />
           ) : (
             <SettingsPreferencesPane
               copy={preferencesCopy}

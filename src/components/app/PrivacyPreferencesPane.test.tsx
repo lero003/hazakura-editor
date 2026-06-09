@@ -1,255 +1,264 @@
 // Tests for the Local Data Disclosure pane
 // (v0.16 app-store-quality: privacy-local-data slice).
 //
-// The pane is a read-only surface. It just renders a list
-// of sections pulled out of `PreferencesCopy`. The tests
-// below pin:
+// The pane is a read-only Help-document viewer: it reads
+// a bundled English `.md` file, runs it through
+// `renderMarkdown()` (which shares the editor preview
+// sanitization policy), and renders the result as a
+// `<article class="help-doc">` inside the existing
+// Preferences dialog shell.
 //
-// - the pane renders the title, intro, and every section
-//   for the current menu language,
-// - the section order matches the implementation order in
-//   `PrivacyPreferencesPane.tsx` so a future reorder is
-//   caught as a deliberate test edit,
-// - the pane is present in all three supported menu
-//   languages (en, ja, kana) without the user-visible copy
-//   collapsing or becoming English-by-default,
-// - none of the section bodies are blank or English-only
-//   for ja / kana (the slice is reviewed by Codex in both
-//   languages).
+// The tests below import the real `.md` file through the
+// same Vite `?raw` suffix the production bundle uses
+// (via the `helpDocs` barrel). There is no `vi.mock` of
+// the markdown body: any future regression in
+// `helpDocs/en/local-data-disclosure.md` shows up here
+// directly.
+//
+// The pane tests below pin:
+//
+// - the bundled `.md` file is rendered into a Help
+//   document (H1 title, H2 sections, intro paragraph),
+// - the section table in `helpDocs/index.ts` is in sync
+//   with the H2 titles in the markdown source, so a
+//   future copy edit that drops or renames a section
+//   fails the build instead of silently producing a doc
+//   with broken anchors,
+// - the pane chrome (kicker, boundary card, footer) is
+//   present and matches the `HelpDoc` metadata,
+// - the body mirrors the evidence-bounded copy in
+//   `docs/security-boundary.md` and
+//   `docs/apple-local-assist-distribution-plan.md` and
+//   does not drift into overclaim ("we never", "collect
+//   nothing", "CSP", "blocks external links"),
+// - the H2 sections anchor IDs come from the section
+//   table in `helpDocs/index.ts` and stay in sync with
+//   the H2 titles in the markdown source,
+// - the renderer keeps the "click never navigates away
+//   from the editor" routing claim without re-introducing
+//   the old "blocks external links" / "CSP" overclaim.
 import { afterEach, describe, expect, it } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { getPreferencesCopy } from "../../lib/locale";
+import { cleanup, render, screen } from "@testing-library/react";
+
+import {
+  injectHelpDocSectionAnchors,
+  localDataDisclosure,
+} from "./helpDocs";
 import { PrivacyPreferencesPane } from "./PrivacyPreferencesPane";
 
 afterEach(() => {
   cleanup();
 });
 
-function renderPane(lang: "en" | "ja" | "kana") {
-  return render(<PrivacyPreferencesPane copy={getPreferencesCopy(lang)} />);
+function renderPane() {
+  return render(<PrivacyPreferencesPane />);
 }
 
+// The pane renders the bundled `.md` through
+// `renderMarkdown()`, so each H2 lives as a flat sibling
+// of the paragraphs that follow it. A `getByTestId` on
+// the section id returns the H2 itself, which has no
+// body text. Walk from the H2 forward until the next H2
+// to recover the body of that section. This helper pins
+// the "body of section X contains substring Y" checks
+// below without coupling them to the exact markdown
+// element structure (paragraph / list / blockquote).
+function getSectionBodyText(testId: string): string {
+  const body = screen.getByTestId("help-doc-body");
+  const heading = body.querySelector(`#${testId}`);
+  if (!(heading instanceof HTMLElement)) {
+    return "";
+  }
+  let text = "";
+  let sibling: Element | null = heading.nextElementSibling;
+  while (sibling && sibling.tagName.toLowerCase() !== "h2") {
+    text += sibling.textContent ?? "";
+    sibling = sibling.nextElementSibling;
+  }
+  return text;
+}
+
+describe("helpDocs / local-data-disclosure.md", () => {
+  it("loads the bundled markdown from the real .md file", () => {
+    // The helpDocs barrel pulls the .md through Vite's
+    // `?raw` suffix in production. If the test still
+    // sees an empty string here, the build wiring is
+    // broken before the pane ever renders.
+    expect(localDataDisclosure.source.length).toBeGreaterThan(0);
+    expect(localDataDisclosure.source).toContain("# Local Data Disclosure");
+  });
+
+  it("keeps the section table in sync with the H2 titles in the markdown source", () => {
+    // Extract H2 titles from the raw markdown by line.
+    // A future copy edit that adds, removes, or renames
+    // an H2 in the .md must update the section table in
+    // `helpDocs/index.ts` to match; otherwise the anchor
+    // injection in the pane misses its target and the
+    // H2 id / `data-testid` for that section disappears.
+    const h2Titles = localDataDisclosure.source
+      .split("\n")
+      .filter((line) => line.startsWith("## "))
+      .map((line) => line.replace(/^##\s+/, "").trim());
+    expect(h2Titles).toEqual(
+      localDataDisclosure.sections.map((section) => section.title),
+    );
+  });
+});
+
 describe("PrivacyPreferencesPane", () => {
-  it("renders the intro, policy boundary note, and all topic tabs in English", () => {
-    const copy = getPreferencesCopy("en");
-    render(<PrivacyPreferencesPane copy={copy} />);
+  it("renders the Help-document chrome around the bundled md body", () => {
+    renderPane();
 
-    // The pane is rendered inside the existing
-    // `PreferencesDialog`, which paints the localized
-    // title in its own h2. The pane itself owns the
-    // intro and the per-section bodies, so we only
-    // assert those.
-    expect(screen.getByTestId("privacy-intro").textContent).toBe(
-      copy.privacyIntro,
+    // The dialog wrapper paints the document title in its
+    // own h2 (visually hidden by the privacy-mode
+    // `sr-only` rule, but still announced via
+    // `aria-labelledby`); the pane itself owns the Help
+    // chrome (kicker, boundary card, footer) and the md
+    // body.
+    expect(screen.getByTestId("help-doc-kicker").textContent).toBe(
+      localDataDisclosure.kicker,
     );
-    expect(screen.getByTestId("privacy-policy-note").textContent).toBe(
-      copy.privacyPolicyNote,
+
+    const boundaryNote = screen.getByTestId("help-doc-boundary-note");
+    expect(boundaryNote.textContent).toContain(
+      localDataDisclosure.boundaryNoteTitle,
     );
-    expect(
-      screen.getByRole("tab", { name: copy.privacyDocumentsHeading }),
-    ).toBeTruthy();
-    expect(
-      screen.getByRole("tab", { name: copy.privacyBackupHeading }),
-    ).toBeTruthy();
-    expect(
-      screen.getByRole("tab", { name: copy.privacyPreviewHeading }),
-    ).toBeTruthy();
-    expect(
-      screen.getByRole("tab", { name: copy.privacyAppleAssistHeading }),
-    ).toBeTruthy();
-    expect(
-      screen.getByRole("tab", { name: copy.privacyAppStoreLaneHeading }),
-    ).toBeTruthy();
-    expect(
-      screen.getByRole("tab", { name: copy.privacyNetworkHeading }),
-    ).toBeTruthy();
+    expect(boundaryNote.textContent).toContain(
+      localDataDisclosure.boundaryNoteBody,
+    );
+
+    expect(screen.getByTestId("help-doc-footer-note").textContent).toBe(
+      localDataDisclosure.footerNote,
+    );
+
+    const body = screen.getByTestId("help-doc-body");
+    expect(body.querySelector("h1")?.textContent).toBe(
+      localDataDisclosure.title,
+    );
   });
 
-  it("renders the localized copy in Japanese", () => {
-    const copy = getPreferencesCopy("ja");
-    render(<PrivacyPreferencesPane copy={copy} />);
+  it("renders the six H2 sections in the order declared in helpDocs/index.ts", () => {
+    renderPane();
 
-    expect(screen.getByTestId("privacy-intro").textContent).toBe(
-      copy.privacyIntro,
+    const body = screen.getByTestId("help-doc-body");
+    const headings = Array.from(body.querySelectorAll("h2"));
+    expect(headings.map((heading) => heading.textContent)).toEqual(
+      localDataDisclosure.sections.map((section) => section.title),
     );
-
-    // The body paragraphs must come from the Japanese
-    // `PreferencesCopy`, not the English one. Checking a
-    // single distinctive substring is enough to catch a
-    // silent English fallback.
-    const docs = screen.getByTestId("privacy-section-documents");
-    expect(docs.textContent).toContain("ファイル/フォルダピッカー");
-    expect(docs.textContent).not.toContain("file or folder picker");
   });
 
-  it("renders the localized copy in kana (hiragana-centered) style", () => {
-    const copy = getPreferencesCopy("kana");
-    render(<PrivacyPreferencesPane copy={copy} />);
+  it("anchors each H2 with the stable testId from the section table", () => {
+    renderPane();
 
-    const docs = screen.getByTestId("privacy-section-documents");
-    expect(docs.textContent).toContain("ふぁいる");
-    // The kana copy is intentionally hiragana-centered; an
-    // accidental katakana / English body would mean a
-    // future copy edit pulled in the ja branch.
-    expect(docs.textContent).not.toContain("file or folder picker");
+    for (const section of localDataDisclosure.sections) {
+      const anchor = screen.getByTestId("help-doc-body")?.querySelector(
+        `#${section.testId}`,
+      );
+      expect(anchor, `missing #${section.testId}`).toBeTruthy();
+      expect(anchor?.tagName.toLowerCase()).toBe("h2");
+      expect(anchor?.textContent).toBe(section.title);
+    }
   });
 
-  it("exposes the App Store lane omission section so App Review can find it", () => {
-    const copy = getPreferencesCopy("en");
-    render(<PrivacyPreferencesPane copy={copy} />);
-
-    fireEvent.click(
-      screen.getByRole("tab", { name: copy.privacyAppStoreLaneHeading }),
-    );
-    const appStoreSection = screen.getByTestId("privacy-section-app-store");
-    expect(appStoreSection.textContent).toContain("App Store build");
-    expect(appStoreSection.textContent).toContain("Agent Workbench");
+  it("describes the App Store lane omission without an overclaim", () => {
+    renderPane();
+    const text = getSectionBodyText("help-doc-section-app-store");
+    expect(text).toContain("App Store build");
+    expect(text).toContain("Agent Workbench");
     // The copy is evidence-bounded: it says the App Store
-    // build "does not include" rather than the broader "we
-    // never" claim, so a future copy edit that drifts into
-    // an overclaim is caught here.
-    expect(appStoreSection.textContent).not.toContain("we never");
+    // build "does not include" rather than the broader
+    // "we never" claim, so a future copy edit that drifts
+    // into an overclaim is caught here.
+    expect(text).not.toContain("we never");
   });
 
-  it("exposes the network / analytics section without an overclaim", () => {
-    const copy = getPreferencesCopy("en");
-    render(<PrivacyPreferencesPane copy={copy} />);
-
-    fireEvent.click(
-      screen.getByRole("tab", { name: copy.privacyNetworkHeading }),
-    );
-    const network = screen.getByTestId("privacy-section-network");
+  it("describes the network / analytics section without an overclaim", () => {
+    renderPane();
+    const text = getSectionBodyText("help-doc-section-network");
     // The body lists specific implementation-verified
     // surfaces (fetch, XHR, analytics, telemetry, crash
     // reporting) rather than a broad "we collect nothing"
     // claim, so a future copy edit that drifts into
     // overclaim is caught.
-    expect(network.textContent).toContain("fetch");
-    expect(network.textContent).toContain("analytics");
-    expect(network.textContent).toContain("telemetry");
-    expect(network.textContent).not.toContain("collect nothing");
+    expect(text).toContain("fetch");
+    expect(text).toContain("analytics");
+    expect(text).toContain("telemetry");
+    expect(text).not.toContain("collect nothing");
   });
 
   it("describes the preview / export policy without the overclaim that external links are blocked", () => {
-    // The reviewer caught a v0.16 first-pass overclaim:
-    // `renderMarkdown()` actually allows `http` / `https` /
-    // `mailto` / `tel` `href`s, and HTML export preserves
-    // them. The primary mechanism that prevents the click
-    // from navigating is `PreviewPane.handleClick` calling
-    // `event.preventDefault()` and routing through
-    // `resolveLocalMarkdownLinkTarget` (`markdownLinks.ts`),
-    // which rejects external schemes and absolute paths.
-    // The CSP is defense-in-depth, not the primary gate.
-    // The pane must describe the routing, not the CSP.
-    const enResult = renderPane("en");
-    fireEvent.click(
-      enResult.getByRole("tab", {
-        name: getPreferencesCopy("en").privacyPreviewHeading,
-      }),
-    );
-    const enPreview = enResult.getByTestId("privacy-section-preview");
-    expect(enPreview.textContent).toContain("external images");
-    expect(enPreview.textContent).toContain("script, iframe, object, and embed");
-    expect(enPreview.textContent).toContain(
+    renderPane();
+    const text = getSectionBodyText("help-doc-section-preview");
+    expect(text).toContain("external images");
+    expect(text).toContain("script, iframe, object, and embed");
+    expect(text).toContain(
       "only routes link clicks to workspace-relative text file opens",
     );
-    expect(enPreview.textContent).toContain("external scheme links");
-    expect(enPreview.textContent).toContain("absolute paths are ignored");
-    expect(enPreview.textContent).toContain("click never navigates away from the editor");
+    expect(text).toContain("external scheme links");
+    expect(text).toContain("absolute paths are ignored");
+    expect(text).toContain("click never navigates away from the editor");
     // No overclaim drift: both old wordings must stay
     // out of the new pane.
-    expect(enPreview.textContent).not.toContain("blocks external links");
-    expect(enPreview.textContent).not.toContain("CSP blocks navigation");
-    cleanup();
-
-    const jaResult = renderPane("ja");
-    fireEvent.click(
-      jaResult.getByRole("tab", {
-        name: getPreferencesCopy("ja").privacyPreviewHeading,
-      }),
-    );
-    const jaPreview = jaResult.getByTestId("privacy-section-preview");
-    expect(jaPreview.textContent).toContain("workspace-relative");
-    expect(jaPreview.textContent).toContain("外部 scheme");
-    expect(jaPreview.textContent).toContain("絶対パス");
-    expect(jaPreview.textContent).toContain("エディタから離れる遷移は起こりません");
-    expect(jaPreview.textContent).not.toContain("CSP のため");
-    expect(jaPreview.textContent).not.toContain("外部リンクの href");
+    expect(text).not.toContain("blocks external links");
+    expect(text).not.toContain("CSP blocks navigation");
   });
 
   it("describes local process handoffs without claiming only two launch paths", () => {
-    // The reviewer caught a v0.16 first-pass overclaim:
-    // the previous copy said "The only local process it
-    // can launch is an allowlisted Agent Workbench
-    // provider" — but `tauri.conf.json`'s `bundle.externalBin`
-    // bundles `hazakura-apple-assist-helper` in every
-    // build lane (App Store + Developer), so the App
-    // Store description must not exclude the helper.
-    const enResult = renderPane("en");
-    fireEvent.click(
-      enResult.getByRole("tab", {
-        name: getPreferencesCopy("en").privacyNetworkHeading,
-      }),
-    );
-    const enNetwork = enResult.getByTestId("privacy-section-network");
-    expect(enNetwork.textContent).toContain("bundled Apple Local Assist helper");
-    expect(enNetwork.textContent).toContain(
+    renderPane();
+    const text = getSectionBodyText("help-doc-section-network");
+    expect(text).toContain("bundled Apple Local Assist helper");
+    expect(text).toContain(
       "Agent Workbench can launch an allowlisted provider",
     );
-    expect(enNetwork.textContent).toContain("macOS utilities");
-    expect(enNetwork.textContent).toContain("Show in Finder");
+    expect(text).toContain("macOS utilities");
+    expect(text).toContain("Show in Finder");
     // The App Store lane description must be honest: the
-    // helper is launchable in every lane, Agent Workbench is
-    // Developer / GitHub-only, and explicit OS handoff actions
-    // can use macOS utilities. The old v0.16 first-pass copy
-    // used "The only local process" and then "The only local
-    // processes"; both are too narrow for the implementation.
-    expect(enNetwork.textContent).not.toContain("The only local process it can launch");
-    expect(enNetwork.textContent).not.toContain("The only local processes the app can launch");
-    cleanup();
-
-    const jaResult = renderPane("ja");
-    fireEvent.click(
-      jaResult.getByRole("tab", {
-        name: getPreferencesCopy("ja").privacyNetworkHeading,
-      }),
+    // helper is launchable in every lane, Agent Workbench
+    // is Developer / GitHub-only, and explicit OS handoff
+    // actions can use macOS utilities. The old v0.16
+    // first-pass copy used "The only local process" and
+    // then "The only local processes"; both are too
+    // narrow for the implementation.
+    expect(text).not.toContain("The only local process it can launch");
+    expect(text).not.toContain(
+      "The only local processes the app can launch",
     );
-    const jaNetwork = jaResult.getByTestId("privacy-section-network");
-    expect(jaNetwork.textContent).toContain("Apple Local Assist helper");
-    expect(jaNetwork.textContent).toContain("Agent Workbench");
-    expect(jaNetwork.textContent).toContain("Finderで表示");
-    expect(jaNetwork.textContent).toContain("macOS の機能");
-    // Old singular-form overclaim in Japanese: it
-    // described only Agent Workbench as the launchable
-    // local process and excluded the bundled helper.
-    expect(jaNetwork.textContent).not.toContain("Agent Workbench を使うときだけ");
   });
 
-  it("keeps every section body non-empty across all three languages", () => {
-    for (const lang of ["en", "ja", "kana"] as const) {
-      const copy = getPreferencesCopy(lang);
-      const { getByRole, getByTestId } = render(
-        <PrivacyPreferencesPane copy={copy} />,
-      );
-      const sections = [
-        [copy.privacyDocumentsHeading, "privacy-section-documents"],
-        [copy.privacyBackupHeading, "privacy-section-backup"],
-        [copy.privacyPreviewHeading, "privacy-section-preview"],
-        [copy.privacyAppleAssistHeading, "privacy-section-apple-assist"],
-        [copy.privacyAppStoreLaneHeading, "privacy-section-app-store"],
-        [copy.privacyNetworkHeading, "privacy-section-network"],
-      ] as const;
-      for (const [heading, testId] of sections) {
-        fireEvent.click(getByRole("tab", { name: heading }));
-        const body = getByTestId(testId).querySelector(
-          ".preference-section-body",
-        );
-        expect(
-          body?.textContent?.trim().length,
-          `${lang} ${testId}`,
-        ).toBeGreaterThan(0);
-      }
-      cleanup();
+  it("keeps every section body non-empty", () => {
+    renderPane();
+    for (const section of localDataDisclosure.sections) {
+      const text = getSectionBodyText(section.testId);
+      // Each section must have at least one paragraph of
+      // body after its H2, otherwise the H2 reads as an
+      // orphan heading.
+      expect(text.trim().length, section.testId).toBeGreaterThan(0);
     }
+  });
+});
+
+describe("injectHelpDocSectionAnchors", () => {
+  it("rewrites H2 tags for the declared sections only", () => {
+    const html = `<h1>Top</h1><h2>Files you choose</h2><p>body</p><h2>Auto-backup (.hazakura/backups/...)</h2><h2>Unknown</h2>`;
+    const next = injectHelpDocSectionAnchors(html, [
+      { testId: "help-doc-section-files", title: "Files you choose" },
+      {
+        testId: "help-doc-section-backup",
+        title: "Auto-backup (.hazakura/backups/...)",
+      },
+    ]);
+    expect(next).toContain(
+      '<h2 id="help-doc-section-files" data-testid="help-doc-section-files">Files you choose</h2>',
+    );
+    expect(next).toContain(
+      '<h2 id="help-doc-section-backup" data-testid="help-doc-section-backup">Auto-backup (.hazakura/backups/...)</h2>',
+    );
+    // H2 that isn't in the section table is left alone.
+    expect(next).toContain("<h2>Unknown</h2>");
+  });
+
+  it("leaves the HTML alone when no sections are declared", () => {
+    const html = `<h1>Top</h1><h2>Files you choose</h2>`;
+    expect(injectHelpDocSectionAnchors(html, [])).toBe(html);
   });
 });

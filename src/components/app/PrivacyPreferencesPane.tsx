@@ -9,110 +9,102 @@
 // privacy claims that the implementation does not support;
 // every paragraph mirrors a contract already documented in
 // `docs/security-boundary.md` and
-// `docs/apple-local-assist-distribution-plan.md` and is
-// tested by existing Rust / Vite tests where applicable.
+// `docs/apple-local-assist-distribution-plan.md`.
 //
 // Routing lives in `AppOverlays.tsx` under
 // `preferencesDialogMode === "privacy"`. The pane is read-
 // only: there are no toggles, inputs, or state writes, so
 // the focus trap and close affordance are the only
 // interactions the user has with it.
-import { useState } from "react";
-import type { PreferencesCopy } from "../../lib/locale";
+//
+// Help-document viewer shell
+// --------------------------
+// The pane is a small Help-document viewer. The body is a
+// bundled English `.md` file (`helpDocs/en/local-data-
+// disclosure.md`) rendered through `renderMarkdown()`, the
+// same function the editor preview uses. The Help
+// surface therefore shares the preview's markdown
+// sanitization and image policy (no `script` / `iframe`
+// / `object` / `embed`, no external image fetch) without
+// the viewer having to re-implement it. The pane does not
+// own localization: the document is English-only and the
+// chrome (kicker / boundary note / footer) is also
+// English. This keeps Help edits and future slices
+// (Privacy Policy, Open Source Licenses, About, Support
+// Diagnostics) as small as dropping a new `.md` into
+// `helpDocs/` and adding an entry to `helpDocs/index.ts`.
+import { useMemo } from "react";
+import { renderMarkdown } from "../../features/editor/markdown";
+import {
+  helpDocSectionId,
+  injectHelpDocSectionAnchors,
+  localDataDisclosure,
+  type HelpDoc,
+} from "./helpDocs";
 
 type PrivacyPreferencesPaneProps = {
-  copy: PreferencesCopy;
+  // Reserved for future Help slices. The pane renders the
+  // bundled `localDataDisclosure` document by default; a
+  // caller can pass a different `HelpDoc` to reuse the
+  // shell for Privacy Policy / Licenses / About /
+  // Diagnostics without changing the dialog wiring.
+  doc?: HelpDoc;
 };
 
-type Section = {
-  body: string;
-  heading: string;
-  testId: string;
-};
-
-export function PrivacyPreferencesPane({ copy }: PrivacyPreferencesPaneProps) {
-  const sections: Section[] = [
-    {
-      body: copy.privacyDocumentsBody,
-      heading: copy.privacyDocumentsHeading,
-      testId: "privacy-section-documents",
-    },
-    {
-      body: copy.privacyBackupBody,
-      heading: copy.privacyBackupHeading,
-      testId: "privacy-section-backup",
-    },
-    {
-      body: copy.privacyPreviewBody,
-      heading: copy.privacyPreviewHeading,
-      testId: "privacy-section-preview",
-    },
-    {
-      body: copy.privacyAppleAssistBody,
-      heading: copy.privacyAppleAssistHeading,
-      testId: "privacy-section-apple-assist",
-    },
-    {
-      body: copy.privacyAppStoreLaneBody,
-      heading: copy.privacyAppStoreLaneHeading,
-      testId: "privacy-section-app-store",
-    },
-    {
-      body: copy.privacyNetworkBody,
-      heading: copy.privacyNetworkHeading,
-      testId: "privacy-section-network",
-    },
-  ];
-  const [activeSectionId, setActiveSectionId] = useState(sections[0].testId);
-  const activeSection =
-    sections.find((section) => section.testId === activeSectionId) ??
-    sections[0];
+export function PrivacyPreferencesPane({
+  doc = localDataDisclosure,
+}: PrivacyPreferencesPaneProps = {}) {
+  const renderedHtml = useMemo(() => {
+    const base = renderMarkdown(doc.source);
+    return injectHelpDocSectionAnchors(base, doc.sections);
+  }, [doc]);
 
   return (
     <div className="privacy-preferences">
-      <div className="privacy-preferences-summary">
+      <div className="privacy-preferences-meta">
         <p
-          className="privacy-preferences-intro"
-          data-testid="privacy-intro"
+          className="privacy-preferences-kicker"
+          data-testid="help-doc-kicker"
         >
-          {copy.privacyIntro}
+          {doc.kicker}
         </p>
-        <p className="privacy-policy-note" data-testid="privacy-policy-note">
-          {copy.privacyPolicyNote}
-        </p>
-      </div>
-      <div
-        aria-label={copy.privacySectionTabsLabel}
-        className="privacy-tab-list"
-        role="tablist"
-      >
-        {sections.map((section) => (
-          <button
-            aria-controls={`${section.testId}-panel`}
-            aria-selected={section.testId === activeSection.testId}
-            className="privacy-tab"
-            id={`${section.testId}-tab`}
-            key={section.testId}
-            onClick={() => setActiveSectionId(section.testId)}
-            role="tab"
-            type="button"
-          >
-            {section.heading}
-          </button>
-        ))}
+        <aside
+          aria-label={doc.boundaryNoteTitle}
+          className="privacy-boundary-note"
+          data-testid="help-doc-boundary-note"
+        >
+          <p className="privacy-boundary-note-title">
+            {doc.boundaryNoteTitle}
+          </p>
+          <p className="privacy-boundary-note-body">
+            {doc.boundaryNoteBody}
+          </p>
+        </aside>
       </div>
       <div className="privacy-tab-panel-scroll">
-        <section
-          aria-labelledby={`${activeSection.testId}-tab`}
-          className="preference-section privacy-tab-panel"
-          data-testid={activeSection.testId}
-          id={`${activeSection.testId}-panel`}
-          role="tabpanel"
-        >
-          <h3>{activeSection.heading}</h3>
-          <p className="preference-section-body">{activeSection.body}</p>
-        </section>
+        <article
+          aria-label={doc.title}
+          className="help-doc"
+          data-testid="help-doc-body"
+          dangerouslySetInnerHTML={{ __html: renderedHtml }}
+        />
       </div>
+      <footer className="privacy-preferences-footer">
+        <p
+          className="privacy-preferences-footer-text"
+          data-testid="help-doc-footer-note"
+        >
+          {doc.footerNote}
+        </p>
+      </footer>
     </div>
   );
 }
+
+// Exported for tests that need to assert the same source
+// the pane renders. Section ids are kept stable for anchor
+// links and are matched 1:1 against the H2 table in
+// `helpDocs/index.ts`.
+export const HELP_DOC_SECTION_IDS = localDataDisclosure.sections.map(
+  (section) => helpDocSectionId(section.testId),
+);
