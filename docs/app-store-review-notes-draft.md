@@ -45,9 +45,16 @@ This avoids opening files from stale path strings without corresponding access.
 
 Restore/backup/recovery handling is recoverable and surfaced through existing app state and recovery workflow.
 
-### 3) Privacy and local data disclosure
+### 3) Privacy, local data disclosure, and Help documents
 
-The app has an in-app `Local Data Disclosure` entry under Help. This is a technical local-data explanation, separate from the public Privacy Policy URL/copy that must be finalized for App Store metadata.
+The app has in-app Help entries for:
+
+- `Local Data Disclosure` — technical local-data behavior.
+- `Privacy Policy` — App Store / public-copy draft.
+- `Open Source Acknowledgements` — readable acknowledgement of primary direct dependencies.
+- `About hazakura editor` — product identity, support direction, and distribution-lane wording.
+
+The Privacy Policy copy is now available in-app as a draft, but the final public URL / App Store metadata copy must still be reviewed before submission.
 
 - No implementation claim is made for cloud sync in this lane.
 - No user content is exported unless the app is asked to save/export by user action.
@@ -83,7 +90,7 @@ Use the current UI labels for each run and keep screenshots to each step.
 3. Open a Markdown/text file.
 4. Edit and save.
 5. Open preview / export and confirm expected output.
-6. Verify local-data disclosure path is discoverable from Help (Local Data Disclosure / ローカルデータの扱い).
+6. Verify Help entries are discoverable from Help: Local Data Disclosure, Privacy Policy, Open Source Acknowledgements, and About hazakura editor.
 7. Verify Apple Local Assist visibility and availability state where supported.
 8. If restore permission is intentionally broken in test environment, verify clear reauthorization path appears and does not reopen the file silently.
 
@@ -93,6 +100,8 @@ The following are intentionally outside this request scope and should remain unc
 
 - certificate / provisioning / TestFlight / App Store upload status,
 - notarization status,
+- final public Privacy Policy URL,
+- full third-party license packet review,
 - general approval outcome claims,
 - App Store Connect metadata completion.
 

@@ -91,6 +91,40 @@
   - 実結果: アプリ由来の更新は見えず、`smoke.md` も変更なし。
 - 未実施（環境要因）: dirty close/quit、Unsaved close dialog、Keyboard-only focus chain、VoiceOver、Increase Contrast。
 
+## Human follow-up smoke
+
+- Date: 2026-06-09
+- Operator: human manual spot check
+- Scope: lightweight follow-up for the paths that OS automation could not
+  drive reliably.
+
+### PASS / spot checked
+
+- Safe Editor basic editing flow was lightly exercised by hand. No issue
+  was reported for manual editing, save, Preview, or HTML export during
+  the spot check.
+- Dirty close / quit behavior was lightly exercised by hand. No issue was
+  reported for unsaved-change confirmation during red-button close or
+  `Cmd+Q` spot checks.
+- Keyboard tab movement was partially checked by hand, including moving
+  between tabs. No issue was reported for the checked tab-navigation path.
+
+### Still partial / skipped
+
+- Full keyboard-only audit remains partial. Some tab movement was checked,
+  but this does not claim exhaustive coverage of every focusable control.
+- VoiceOver smoke remains skipped.
+- Increase Contrast visual smoke remains skipped unless recorded in a
+  later pass.
+
+### Follow-up interpretation
+
+The original automation failure above is retained as an automation
+limitation, not as a confirmed product regression. The human follow-up
+raises confidence in the core Safe Editor, dirty close / quit, and tab
+navigation paths, while VoiceOver and full keyboard-only coverage remain
+open manual checks.
+
 ## App Store / 署名に関する明示
 
 - `npm run build` は ad-hoc signing で実行され、`App Store signed / submitted / approved / TestFlight-ready / notarized` はいずれも claim していない。

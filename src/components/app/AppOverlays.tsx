@@ -42,7 +42,8 @@ import { AppCloseDialog, DirtyTabCloseDialog } from "./CloseDialogs";
 import { PreferencesDialog } from "./PreferencesDialog";
 import { SettingsPreferencesPane } from "./SettingsPreferencesPane";
 import { PrivacyPreferencesPane } from "./PrivacyPreferencesPane";
-import { localDataDisclosure } from "./helpDocs";
+import { DiagnosticsPane } from "./DiagnosticsPane";
+import { helpDocsByMode, isHelpDocumentDialogMode } from "./helpDocs";
 import { AgentWorkbenchPreferencesPane } from "../agent/AgentWorkbenchPreferencesPane";
 import { RenameWarnDialog, type RenameWarningKind } from "./RenameWarnDialog";
 import { MoveToTrashConfirmDialog } from "./MoveToTrashConfirmDialog";
@@ -274,6 +275,11 @@ export function AppOverlays({
   pendingRenameWarning,
   pendingTrash,
 }: AppOverlaysProps) {
+  const activeHelpDoc =
+    preferencesDialogMode && isHelpDocumentDialogMode(preferencesDialogMode)
+      ? helpDocsByMode[preferencesDialogMode]
+      : null;
+
   return (
     <>
       {pendingCloseTab ? (
@@ -368,8 +374,8 @@ export function AppOverlays({
           title={
             preferencesDialogMode === "agent"
               ? agentWorkbenchCopy.title
-              : preferencesDialogMode === "privacy"
-                ? localDataDisclosure.title
+              : activeHelpDoc
+                ? activeHelpDoc.title
                 : preferencesCopy.settingsTitle
           }
         >
@@ -395,8 +401,18 @@ export function AppOverlays({
               sessionLabel={agentSessionStateLabel(agentSession, menuLanguage)}
               workspaceRootPath={workspaceRootPath}
             />
-          ) : preferencesDialogMode === "privacy" ? (
-            <PrivacyPreferencesPane />
+          ) : preferencesDialogMode === "diagnostics" ? (
+            <DiagnosticsPane
+              appleLocalAssistAvailable={
+                appleAssistAvailability.kind === "available"
+              }
+              autoBackupEnabled={editorSettings.autoBackupEnabled}
+              lModeEnabled={editorSettings.lModeEnabled}
+              theme={themePreference}
+              wrapLines={editorSettings.wrapLines}
+            />
+          ) : activeHelpDoc ? (
+            <PrivacyPreferencesPane doc={activeHelpDoc} />
           ) : (
             <SettingsPreferencesPane
               copy={preferencesCopy}

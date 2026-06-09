@@ -95,18 +95,22 @@ git diff --check                                    → clean
 
 ### Before App Store Submission — Manual Smoke Recommended
 
-These are verified by unit tests but have not been exercised with a
-real keyboard / VoiceOver / production build:
+These are verified by unit tests.  A lightweight human spot check on
+2026-06-09 raised confidence for core Safe Editor editing, dirty close /
+quit, and tab navigation, but VoiceOver and full keyboard-only coverage
+remain open manual checks:
 
 - **macOS red-button close with dirty tabs** — unit-tested via
-  `useWindowCloseConfirmation.test.tsx`; manual smoke with real
-  WKWebView close event is recommended.
+  `useWindowCloseConfirmation.test.tsx`; a 2026-06-09 human spot check
+  reported no issue for dirty red-button close, but this was not an
+  exhaustive keyboard / VoiceOver audit.
 - **Cmd+Q with dirty tabs** — Rust `RunEvent::ExitRequested` handler
-  is unit-tested via `useAppExitConfirmation.test.tsx`; manual smoke
-  with real Quit menu is recommended.
+  is unit-tested via `useAppExitConfirmation.test.tsx`; a 2026-06-09
+  human spot check reported no issue for dirty `Cmd+Q`, but final
+  submission smoke should still keep this path visible.
 - **Keyboard-only tab navigation** — arrow-key handler is unit-tested
-  via `AppTopChrome.test.tsx`; manual smoke with real keyboard is
-  recommended.
+  via `AppTopChrome.test.tsx`; 2026-06-09 human spot checks covered some
+  tab movement, while full keyboard-only traversal remains partial.
 - **VoiceOver tab-bar announcement** — `aria-describedby` wiring is
   unit-tested; real VoiceOver smoke is recommended.
 - **prefers-contrast** — `prefers-contrast: more` is now implemented
@@ -119,7 +123,6 @@ real keyboard / VoiceOver / production build:
 
 | Item | Priority | Notes |
 |---|---|---|
-| diagnostics UI (copy/view button) | Low | Serialisation helper exists; no user-facing surface |
 | WorkspaceTree `role="tree"` pattern | Low | Current `<button>`-based tree is keyboard-operable |
 
 ### Out of Scope for Safe Editor / App Store Lane
@@ -142,7 +145,8 @@ human-executed, certificate-gated, or metadata-only work that is
 - App Store upload and submission
 - Notarization
 - DMG creation and publication for review
-- Privacy Policy finalization
+- Privacy Policy final publication URL / metadata review
+- Complete third-party license packet review
 - App Review Notes finalization (`docs/app-store-review-notes-draft.md`)
 
 These are recorded in `docs/app-store-current-work.md` under

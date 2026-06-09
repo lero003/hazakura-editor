@@ -33,6 +33,11 @@ export const ASSIST_SURFACE_PREFERENCE_STORAGE_KEY =
 
 export const APP_MENU_ACTION_EVENT = "hazakura-note://menu-action";
 export const MENU_LOCAL_DATA_DISCLOSURE = "local-data-disclosure";
+export const MENU_OPEN_SUPPORT_DIAGNOSTICS = "open-support-diagnostics";
+export const MENU_PRIVACY_POLICY = "privacy-policy";
+export const MENU_OPEN_SOURCE_ACKNOWLEDGEMENTS =
+  "open-source-acknowledgements";
+export const MENU_ABOUT_HELP = "about-help";
 export const AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS = 500;
 export const AGENT_WORKBENCH_SESSION_POLL_MS = 200;
 export const EXTERNAL_CHANGE_ACTIVE_POLL_MS = 1000;
@@ -111,7 +116,17 @@ export function isJapaneseMenuLanguage(language: MenuLanguage): boolean {
   return language === "ja" || language === "kana";
 }
 
-export type PreferencesDialogMode = "settings" | "agent" | "privacy";
+export type HelpDocumentDialogMode =
+  | "privacy"
+  | "diagnostics"
+  | "privacy-policy"
+  | "open-source-acknowledgements"
+  | "about";
+
+export type PreferencesDialogMode =
+  | "settings"
+  | "agent"
+  | HelpDocumentDialogMode;
 
 export type AssistSurfacePreference =
   | "none"

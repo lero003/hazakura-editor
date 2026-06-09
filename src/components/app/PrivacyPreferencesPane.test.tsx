@@ -41,8 +41,14 @@ import { afterEach, describe, expect, it } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 
 import {
+  aboutHazakuraEditor,
+  helpDocsByMode,
   injectHelpDocSectionAnchors,
   localDataDisclosure,
+  openSourceAcknowledgements,
+  privacyPolicy,
+  supportDiagnostics,
+  type HelpDoc,
 } from "./helpDocs";
 import { PrivacyPreferencesPane } from "./PrivacyPreferencesPane";
 
@@ -50,8 +56,8 @@ afterEach(() => {
   cleanup();
 });
 
-function renderPane() {
-  return render(<PrivacyPreferencesPane />);
+function renderPane(doc?: HelpDoc) {
+  return render(<PrivacyPreferencesPane doc={doc} />);
 }
 
 // The pane renders the bundled `.md` through
@@ -105,6 +111,35 @@ describe("helpDocs / local-data-disclosure.md", () => {
   });
 });
 
+describe("helpDocs bundle", () => {
+  it("keeps every bundled Help document non-empty and titled", () => {
+    expect(Object.values(helpDocsByMode)).toEqual([
+      localDataDisclosure,
+      supportDiagnostics,
+      privacyPolicy,
+      openSourceAcknowledgements,
+      aboutHazakuraEditor,
+    ]);
+
+    for (const doc of Object.values(helpDocsByMode)) {
+      expect(doc.source.length, doc.id).toBeGreaterThan(0);
+      expect(doc.source).toContain(`# ${doc.title}`);
+    }
+  });
+
+  it("keeps every Help document section table in sync with its markdown H2 titles", () => {
+    for (const doc of Object.values(helpDocsByMode)) {
+      const h2Titles = doc.source
+        .split("\n")
+        .filter((line) => line.startsWith("## "))
+        .map((line) => line.replace(/^##\s+/, "").trim());
+      expect(h2Titles, doc.id).toEqual(
+        doc.sections.map((section) => section.title),
+      );
+    }
+  });
+});
+
 describe("PrivacyPreferencesPane", () => {
   it("renders the Help-document chrome around the bundled md body", () => {
     renderPane();
@@ -145,6 +180,36 @@ describe("PrivacyPreferencesPane", () => {
     expect(headings.map((heading) => heading.textContent)).toEqual(
       localDataDisclosure.sections.map((section) => section.title),
     );
+  });
+
+  it("can render the Privacy Policy Help document", () => {
+    renderPane(privacyPolicy);
+
+    expect(screen.getByTestId("help-doc-body").textContent).toContain(
+      "Privacy Policy",
+    );
+    expect(screen.getByTestId("help-doc-boundary-note").textContent).toContain(
+      privacyPolicy.boundaryNoteTitle,
+    );
+  });
+
+  it("can render the Open Source Acknowledgements Help document", () => {
+    renderPane(openSourceAcknowledgements);
+
+    const text = screen.getByTestId("help-doc-body").textContent ?? "";
+    expect(text).toContain("Open Source Acknowledgements");
+    expect(text).toContain("React");
+    expect(text).toContain("Tauri");
+    expect(text).toContain("not a complete legal license packet");
+  });
+
+  it("can render the About Help document", () => {
+    renderPane(aboutHazakuraEditor);
+
+    const text = screen.getByTestId("help-doc-body").textContent ?? "";
+    expect(text).toContain("About hazakura editor");
+    expect(text).toContain("0.16.0");
+    expect(text).toContain("Safe Editor");
   });
 
   it("anchors each H2 with the stable testId from the section table", () => {

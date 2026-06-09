@@ -4,9 +4,13 @@ import { isTauriRuntime } from "../../lib/tauri";
 import { isExternalCliAssistSurfaceAllowed } from "../../lib/distributionLane";
 import {
   APP_MENU_ACTION_EVENT,
+  MENU_ABOUT_HELP,
   MENU_LOCAL_DATA_DISCLOSURE,
   MENU_OPEN_AGENT_WINDOW,
   MENU_OPEN_APPLE_ASSIST_WINDOW,
+  MENU_OPEN_SOURCE_ACKNOWLEDGEMENTS,
+  MENU_OPEN_SUPPORT_DIAGNOSTICS,
+  MENU_PRIVACY_POLICY,
   type EditorSettings,
   type PreferencesDialogMode,
   type RecentEntry,
@@ -164,6 +168,18 @@ export function useAppMenuActionListener({
           break;
         case MENU_LOCAL_DATA_DISCLOSURE:
           setPreferencesDialogMode("privacy");
+          break;
+        case MENU_OPEN_SUPPORT_DIAGNOSTICS:
+          setPreferencesDialogMode("diagnostics");
+          break;
+        case MENU_PRIVACY_POLICY:
+          setPreferencesDialogMode("privacy-policy");
+          break;
+        case MENU_OPEN_SOURCE_ACKNOWLEDGEMENTS:
+          setPreferencesDialogMode("open-source-acknowledgements");
+          break;
+        case MENU_ABOUT_HELP:
+          setPreferencesDialogMode("about");
           break;
         case MENU_OPEN_AGENT_WINDOW:
           if (externalCliAllowed) {

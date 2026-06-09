@@ -405,6 +405,21 @@ describe("useCommandPaletteController", () => {
     );
     expect(privacy?.category).toBe("Help");
     expect(privacy?.label).toBe("Local Data Disclosure…");
+    expect(
+      result.current.filteredCommands.find(
+        (command) => command.id === "help.privacyPolicy",
+      )?.label,
+    ).toBe("Privacy Policy…");
+    expect(
+      result.current.filteredCommands.find(
+        (command) => command.id === "help.openSourceAcknowledgements",
+      )?.label,
+    ).toBe("Open Source Acknowledgements…");
+    expect(
+      result.current.filteredCommands.find(
+        (command) => command.id === "help.about",
+      )?.label,
+    ).toBe("About hazakura editor…");
 
     act(() => {
       privacy?.run();
@@ -472,11 +487,37 @@ describe("useCommandPaletteController", () => {
       (command) => command.id === "help.localDataDisclosure",
     );
     expect(privacy?.label).toBe("Local Data Disclosure…");
+    const privacyPolicy = result.current.filteredCommands.find(
+      (command) => command.id === "help.privacyPolicy",
+    );
+    const openSource = result.current.filteredCommands.find(
+      (command) => command.id === "help.openSourceAcknowledgements",
+    );
+    const about = result.current.filteredCommands.find(
+      (command) => command.id === "help.about",
+    );
+    expect(privacyPolicy?.category).toBe("Help");
+    expect(openSource?.category).toBe("Help");
+    expect(about?.category).toBe("Help");
 
     act(() => {
       privacy?.run();
     });
     expect(setPreferencesDialogMode).toHaveBeenCalledWith("privacy");
+    act(() => {
+      privacyPolicy?.run();
+    });
+    expect(setPreferencesDialogMode).toHaveBeenCalledWith("privacy-policy");
+    act(() => {
+      openSource?.run();
+    });
+    expect(setPreferencesDialogMode).toHaveBeenCalledWith(
+      "open-source-acknowledgements",
+    );
+    act(() => {
+      about?.run();
+    });
+    expect(setPreferencesDialogMode).toHaveBeenCalledWith("about");
     vi.unstubAllEnvs();
   });
 });

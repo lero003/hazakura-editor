@@ -318,13 +318,43 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
         HELP_SUBMENU_ID,
         label("Help", "ヘルプ"),
         true,
-        &[&MenuItem::with_id(
-            app,
-            MENU_LOCAL_DATA_DISCLOSURE,
-            label("Local Data Disclosure...", "ローカルデータの扱い..."),
-            true,
-            None::<&str>,
-        )?],
+        &[
+            &MenuItem::with_id(
+                app,
+                MENU_LOCAL_DATA_DISCLOSURE,
+                label("Local Data Disclosure...", "ローカルデータの扱い..."),
+                true,
+                None::<&str>,
+            )?,
+            &MenuItem::with_id(
+                app,
+                MENU_OPEN_SUPPORT_DIAGNOSTICS,
+                label("Support Diagnostics...", "サポート診断..."),
+                true,
+                None::<&str>,
+            )?,
+            &MenuItem::with_id(
+                app,
+                MENU_PRIVACY_POLICY,
+                label("Privacy Policy...", "プライバシーポリシー..."),
+                true,
+                None::<&str>,
+            )?,
+            &MenuItem::with_id(
+                app,
+                MENU_OPEN_SOURCE_ACKNOWLEDGEMENTS,
+                label("Open Source Acknowledgements...", "オープンソース謝辞..."),
+                true,
+                None::<&str>,
+            )?,
+            &MenuItem::with_id(
+                app,
+                MENU_ABOUT_HELP,
+                label("About hazakura editor...", "hazakura editor について..."),
+                true,
+                None::<&str>,
+            )?,
+        ],
     )?;
 
     #[cfg(target_os = "macos")]
@@ -571,6 +601,10 @@ pub(crate) fn emit_app_menu_event<R: tauri::Runtime>(
                 | MENU_PREFERENCES
                 | MENU_AGENT_WORKBENCH
                 | MENU_LOCAL_DATA_DISCLOSURE
+                | MENU_OPEN_SUPPORT_DIAGNOSTICS
+                | MENU_PRIVACY_POLICY
+                | MENU_OPEN_SOURCE_ACKNOWLEDGEMENTS
+                | MENU_ABOUT_HELP
                 | MENU_OPEN_AGENT_WINDOW
                 | MENU_OPEN_APPLE_ASSIST_WINDOW
         )

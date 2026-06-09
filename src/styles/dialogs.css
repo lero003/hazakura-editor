@@ -636,6 +636,69 @@
   padding: 0;
 }
 
+.diagnostics-help-intro {
+  padding-bottom: 12px;
+}
+
+.diagnostics-pane-actions {
+  align-items: center;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin: 0 26px;
+  padding: 14px 0 10px;
+}
+
+.diagnostics-pane-actions button {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  min-height: 30px;
+  padding: 6px 11px;
+}
+
+.diagnostics-pane-actions button:hover:not(:disabled),
+.diagnostics-pane-actions button:focus-visible {
+  background: var(--surface-muted);
+  border-color: var(--border-strong);
+}
+
+.diagnostics-pane-actions button.diagnostics-pane-copy {
+  background: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 86%, var(--border));
+  color: var(--surface-strong);
+}
+
+:root[data-theme="dark"] .diagnostics-pane-actions button.diagnostics-pane-copy,
+:root[data-theme="yakou"] .diagnostics-pane-actions button.diagnostics-pane-copy {
+  color: var(--status-bg);
+}
+
+.diagnostics-pane-actions button.diagnostics-pane-copy:hover:not(:disabled),
+.diagnostics-pane-actions button.diagnostics-pane-copy:focus-visible {
+  background: color-mix(in srgb, var(--accent) 88%, var(--surface-strong));
+}
+
+.diagnostics-pane-json {
+  background: var(--status-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--status-text);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.55;
+  margin: 0 26px 26px;
+  max-height: min(240px, 34dvh);
+  min-height: 132px;
+  overflow: auto;
+  padding: 12px 14px;
+  white-space: pre;
+}
+
 .help-doc a {
   color: var(--accent);
   text-decoration: underline;

@@ -20,10 +20,11 @@ export function PreferencesDialog({
   onClose,
   title,
 }: PreferencesDialogProps) {
+  const isHelpMode = mode !== "settings" && mode !== "agent";
   const modeClass =
     mode === "agent"
       ? "agent-workbench-dialog"
-      : mode === "privacy"
+      : isHelpMode
         ? "privacy-dialog"
         : "settings-dialog";
 
@@ -38,7 +39,7 @@ export function PreferencesDialog({
       >
         <div className="preferences-header">
           <h2
-            className={mode === "privacy" ? "sr-only" : undefined}
+            className={isHelpMode ? "sr-only" : undefined}
             id="preferences-title"
           >
             {title}

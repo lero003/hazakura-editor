@@ -496,6 +496,74 @@ export function useCommandPaletteController({
           actions.setPreferencesDialogMode("privacy");
         },
       },
+      {
+        category: "Help",
+        id: "help.supportDiagnostics",
+        keywords: [
+          "support",
+          "diagnostics",
+          "diagnostic",
+          "snapshot",
+          "json",
+          "redacted",
+          "share",
+          "copy",
+        ],
+        label: "Support Diagnostics…",
+        run: () => {
+          actions.setPreferencesDialogMode("diagnostics");
+        },
+      },
+      {
+        category: "Help",
+        id: "help.privacyPolicy",
+        keywords: [
+          "privacy",
+          "policy",
+          "app",
+          "store",
+          "metadata",
+          "local",
+          "data",
+        ],
+        label: "Privacy Policy…",
+        run: () => {
+          actions.setPreferencesDialogMode("privacy-policy");
+        },
+      },
+      {
+        category: "Help",
+        id: "help.openSourceAcknowledgements",
+        keywords: [
+          "open",
+          "source",
+          "license",
+          "licenses",
+          "acknowledgements",
+          "dependencies",
+          "third-party",
+        ],
+        label: "Open Source Acknowledgements…",
+        run: () => {
+          actions.setPreferencesDialogMode("open-source-acknowledgements");
+        },
+      },
+      {
+        category: "Help",
+        id: "help.about",
+        keywords: [
+          "about",
+          "version",
+          "support",
+          "hazakura",
+          "editor",
+          "lane",
+        ],
+        label: "About hazakura editor…",
+        run: () => {
+          actions.setPreferencesDialogMode("about");
+        },
+      },
       ...(appleAssistAvailability.kind === "available"
         ? [
             {
