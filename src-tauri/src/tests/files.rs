@@ -595,6 +595,224 @@ fn metadata_rejects_oversized_files() {
     let _ = fs::remove_dir_all(dir);
 }
 
+// v0.17 app-store-quality: save-restore-regression slice 1.2
+// — Shift-JIS / EUC-JP file I/O round-trip. Slice 1.1
+// pinned the UTF-8 BOM path. These tests cover the
+// other two encodings offered in the StatusBar
+// selector. The codec-level round-trip is already
+// pinned in `tests::encoding::encode_text_round_trips_*`;
+// the tests here exercise the full file I/O path
+// (`open_text_file` → in-memory decode → `save_text_file` →
+// on-disk re-encode → re-decode from disk) so a future
+// refactor cannot silently regress either of the
+// non-UTF-8 encodings at the storage layer. The
+// unmappable-char test pins the existing save-time
+// error contract so an emoji or other
+// out-of-repertoire character cannot reach
+// `atomic_write` and corrupt the file.
+
+#[test]
+fn shift_jis_open_detects_label_and_decodes_contents() {
+    // App Store / App Sandbox: a user opens a plain
+    // Markdown note that was authored or exported in
+    // Shift-JIS. The editor must auto-detect the
+    // encoding, surface it in `document.encoding`, and
+    // decode the body losslessly into a Unicode string.
+    let dir = unique_test_dir("shift_jis_open");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("note.md");
+    let original = "こんにちは、世界。\n";
+    let (bytes, _, had_unmappable) = encoding_rs::SHIFT_JIS.encode(original);
+    assert!(
+        !had_unmappable,
+        "fixture string must encode cleanly to Shift-JIS",
+    );
+    fs::write(&path, &bytes).expect("write Shift-JIS fixture");
+
+    let document = open_text_file_with_label(MAIN_WINDOW_LABEL, path.to_string_lossy().to_string())
+        .expect("open shift-jis file");
+
+    assert_eq!(document.encoding, "shift-jis");
+    assert_eq!(document.contents, original);
+    assert_eq!(document.line_ending, "lf");
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn shift_jis_save_round_trip_preserves_bytes() {
+    // Open a Shift-JIS file, re-save the exact same
+    // string with the same encoding label, then read
+    // the on-disk bytes back and assert they match
+    // the original Shift-JIS bytes byte-for-byte.
+    // The save path runs `encode_text(..., "shift-jis")`
+    // on the contents and writes the result through
+    // `atomic_write`, both of which are deterministic,
+    // so the on-disk bytes must be identical to the
+    // pre-save bytes. Catching a byte-level
+    // discrepancy catches more regressions than a
+    // decoded-string equality alone (e.g. an encoder
+    // that started producing IBM vs Microsoft
+    // extension variants for the same scalar).
+    let dir = unique_test_dir("shift_jis_resave");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("note.md");
+    let original = "こんにちは、世界。\n";
+    let (initial_bytes, _, had_unmappable) = encoding_rs::SHIFT_JIS.encode(original);
+    assert!(
+        !had_unmappable,
+        "fixture string must encode cleanly to Shift-JIS",
+    );
+    let initial_bytes: Vec<u8> = initial_bytes.into_owned();
+    fs::write(&path, &initial_bytes).expect("write Shift-JIS fixture");
+
+    let document = open_text_file_with_label(MAIN_WINDOW_LABEL, path.to_string_lossy().to_string())
+        .expect("open shift-jis file");
+    assert_eq!(document.encoding, "shift-jis");
+
+    save_text_file_with_label(
+        MAIN_WINDOW_LABEL,
+        path.to_string_lossy().to_string(),
+        original.to_string(),
+        document.fingerprint,
+        document.line_ending,
+        document.encoding,
+    )
+    .expect("save shift-jis document");
+
+    let saved = fs::read(&path).expect("read saved file");
+    assert_eq!(
+        saved, initial_bytes,
+        "on-disk bytes must match the original Shift-JIS bytes byte-for-byte",
+    );
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn euc_jp_open_detects_label_and_decodes_contents() {
+    // The fixture includes the fullwidth cent sign "￠"
+    // (U+FFE0), which has no Shift-JIS representation.
+    // This is what forces the detector to settle on
+    // "euc-jp" instead of falling into the Shift-JIS
+    // happy path — JIS X 0208 lead bytes in the range
+    // 0xA4–0xA5 are valid single-byte halfwidth katakana
+    // in Shift-JIS, so an EUC-JP kanji-only fixture
+    // would be misidentified.
+    let dir = unique_test_dir("euc_jp_open");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("note.md");
+    let original = "本日￠50です。\n";
+    let (bytes, _, had_unmappable) = encoding_rs::EUC_JP.encode(original);
+    assert!(
+        !had_unmappable,
+        "fixture string must encode cleanly to EUC-JP",
+    );
+    fs::write(&path, &bytes).expect("write EUC-JP fixture");
+
+    let document = open_text_file_with_label(MAIN_WINDOW_LABEL, path.to_string_lossy().to_string())
+        .expect("open euc-jp file");
+
+    assert_eq!(document.encoding, "euc-jp");
+    assert_eq!(document.contents, original);
+    assert_eq!(document.line_ending, "lf");
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn euc_jp_save_round_trip_preserves_bytes() {
+    // Mirror of `shift_jis_save_round_trip_preserves_bytes`:
+    // assert the on-disk bytes match the original
+    // EUC-JP bytes byte-for-byte after a no-op
+    // re-save. See that test for why byte-level
+    // equality is the stronger regression net.
+    let dir = unique_test_dir("euc_jp_resave");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("note.md");
+    let original = "本日￠50です。\n";
+    let (initial_bytes, _, had_unmappable) = encoding_rs::EUC_JP.encode(original);
+    assert!(
+        !had_unmappable,
+        "fixture string must encode cleanly to EUC-JP",
+    );
+    let initial_bytes: Vec<u8> = initial_bytes.into_owned();
+    fs::write(&path, &initial_bytes).expect("write EUC-JP fixture");
+
+    let document = open_text_file_with_label(MAIN_WINDOW_LABEL, path.to_string_lossy().to_string())
+        .expect("open euc-jp file");
+    assert_eq!(document.encoding, "euc-jp");
+
+    save_text_file_with_label(
+        MAIN_WINDOW_LABEL,
+        path.to_string_lossy().to_string(),
+        original.to_string(),
+        document.fingerprint,
+        document.line_ending,
+        document.encoding,
+    )
+    .expect("save euc-jp document");
+
+    let saved = fs::read(&path).expect("read saved file");
+    assert_eq!(
+        saved, initial_bytes,
+        "on-disk bytes must match the original EUC-JP bytes byte-for-byte",
+    );
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn save_with_unmappable_shift_jis_chars_returns_clean_error_and_preserves_file() {
+    // The `encode_text` helper rejects any Unicode scalar
+    // that cannot be losslessly encoded as Shift-JIS.
+    // The save path must surface that as a clean error
+    // and never reach `atomic_write` — otherwise the
+    // encoder would substitute a replacement character
+    // and the on-disk file would silently change. This
+    // pins the existing error contract: emoji / rare
+    // CJK extensions stay in the editor as UTF-8 or get
+    // rejected at save time, never silently re-encoded.
+    let dir = unique_test_dir("shift_jis_unmappable");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("note.md");
+    let original = "こんにちは\n";
+    let (initial_bytes, _, had_unmappable) = encoding_rs::SHIFT_JIS.encode(original);
+    assert!(!had_unmappable);
+    let initial_bytes: Vec<u8> = initial_bytes.into_owned();
+    fs::write(&path, &initial_bytes).expect("write Shift-JIS fixture");
+
+    let document = open_text_file_with_label(MAIN_WINDOW_LABEL, path.to_string_lossy().to_string())
+        .expect("open shift-jis file");
+
+    // "🚀" (U+1F680) is outside the Shift-JIS repertoire.
+    let unmappable_contents = "こんにちは🚀\n".to_string();
+    let err = save_text_file_with_label(
+        MAIN_WINDOW_LABEL,
+        path.to_string_lossy().to_string(),
+        unmappable_contents,
+        document.fingerprint,
+        document.line_ending,
+        "shift-jis".to_string(),
+    )
+    .expect_err("save with unmappable char must fail cleanly");
+
+    assert!(
+        err.contains("Shift-JIS"),
+        "error must name the encoding that rejected the char, got: {err}",
+    );
+
+    // The on-disk file must remain the original Shift-JIS
+    // bytes — atomic_write must not have run.
+    let saved = fs::read(&path).expect("read preserved file");
+    assert_eq!(
+        saved, initial_bytes,
+        "file must not be touched when encode_text rejects the contents",
+    );
+
+    let _ = fs::remove_dir_all(dir);
+}
+
 // v0.17 app-store-quality: save-restore-regression slice 1.1
 // — UTF-8 BOM round-trip across `open_text_file` →
 // `save_text_file` → re-open. The codec-level round-trip is
