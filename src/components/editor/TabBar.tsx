@@ -100,6 +100,7 @@ export function TabBar({
                   }}
                 >
                   <button
+                    aria-describedby={dirty ? `tab-dirty-${encodeURIComponent(tab.id)}` : undefined}
                     aria-selected={tab.id === activeTabId}
                     className="tab-button"
                     role="tab"
@@ -108,7 +109,15 @@ export function TabBar({
                   >
                     <span className="tab-name">{tab.name}</span>
                     {dirty ? (
-                      <span className="tab-dirty-dot" aria-label="unsaved" />
+                      <>
+                        <span className="tab-dirty-dot" aria-hidden="true" />
+                        <span
+                          hidden
+                          id={`tab-dirty-${encodeURIComponent(tab.id)}`}
+                        >
+                          unsaved
+                        </span>
+                      </>
                     ) : null}
                   </button>
                   <button

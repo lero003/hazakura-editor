@@ -54,6 +54,13 @@ describe("StatusBar", () => {
     expect(formatGroup?.previousElementSibling).toBe(detail);
     expect(formatGroup?.querySelectorAll("select")).toHaveLength(2);
     expect(detail?.getAttribute("title")).toBe("Markdown / UTF-8 / 10 bytes");
+
+    // The status text must be exposed as a live region so
+    // screen readers announce status changes (e.g. "Saved",
+    // "Close stopped", "External change detected").
+    const statusSegment = container.querySelector(".status-bar-status");
+    expect(statusSegment?.getAttribute("role")).toBe("status");
+    expect(statusSegment?.getAttribute("aria-live")).toBe("polite");
   });
 
   it("removes focusable format controls in L Mode", () => {
@@ -79,6 +86,13 @@ describe("StatusBar", () => {
     expect(container.querySelector(".status-bar-format-group")).toBeNull();
     expect(container.querySelector(".l-mode-action-rail")).toBeNull();
     expect(container.querySelectorAll("select")).toHaveLength(0);
+
+    // `role="status"` must be present even in L Mode —
+    // status messages (dirty, save, conflict) still need
+    // to be surfaced to assistive technology.
+    const statusSegment = container.querySelector(".status-bar-status");
+    expect(statusSegment?.getAttribute("role")).toBe("status");
+    expect(statusSegment?.getAttribute("aria-live")).toBe("polite");
   });
 
   it("renders the unsaved pill when dirtyLabel is provided", () => {

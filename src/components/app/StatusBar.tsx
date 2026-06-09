@@ -39,7 +39,7 @@ export function StatusBar({
 }: StatusBarProps) {
   return (
     <footer className="status-bar lmode-surface">
-      <span className="status-bar-segment status-bar-status">
+      <span className="status-bar-segment status-bar-status" role="status" aria-live="polite">
         {saveAffirmation ? (
           <span
             aria-hidden="true"

@@ -2,6 +2,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AppTopChrome } from "./AppTopChrome";
 import { getLModeCopy, getRecoveryCopy, getSidePaneCopy } from "../../lib/locale";
+import type { EditorTab } from "../../types";
 
 afterEach(() => {
   cleanup();
@@ -81,5 +82,39 @@ describe("AppTopChrome", () => {
     screen.getByRole("button", { name: "Close photo.png" }).click();
 
     expect(onCloseSelectedImagePreview).toHaveBeenCalledTimes(1);
+  });
+
+  it("exposes dirty tabs as an accessible description", () => {
+    const dirtyTab: EditorTab = {
+      contents: "draft",
+      encoding: "utf-8",
+      error: null,
+      externalFingerprint: null,
+      fingerprint: "fp",
+      ignoredExternalFingerprint: null,
+      id: "/workspace/draft.md",
+      large_file_warning: false,
+      lastSavedContents: "saved",
+      lastSavedEncoding: "utf-8",
+      lastSavedLineEnding: "lf",
+      line_ending: "lf",
+      modified_ms: null,
+      name: "draft.md",
+      path: "/workspace/draft.md",
+      saveStatus: "idle",
+      size: 10,
+    };
+
+    renderTopChrome({ tabs: [dirtyTab], activeDirty: true });
+
+    const tabButton = screen.getByRole("tab", {
+      description: "unsaved",
+      name: "draft.md",
+    });
+    const describedById = tabButton.getAttribute("aria-describedby");
+    expect(describedById).toBeTruthy();
+
+    const description = document.getElementById(describedById!);
+    expect(description?.textContent).toBe("unsaved");
   });
 });
