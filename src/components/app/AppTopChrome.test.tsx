@@ -351,4 +351,95 @@ describe("AppTopChrome", () => {
     // the key must not cycle back to the first tab.
     expect(onSelectTab).not.toHaveBeenCalled();
   });
+
+  // v0.17 slice 3.3 — image tab keyboard nav. The image
+  // preview tab shares the `role="tablist"` with text tabs
+  // and must be reachable via arrow keys. Navigating to
+  // the image tab focuses it (so the user can close it)
+  // but does not call `onSelectTab` (the image tab is a
+  // display-only companion slot, not a text document).
+
+  it("navigates from the last text tab to the image tab with ArrowRight", () => {
+    vi.useFakeTimers();
+    try {
+      const textTab: EditorTab = {
+        contents: "a", encoding: "utf-8", error: null,
+        externalFingerprint: null, fingerprint: "fp",
+        ignoredExternalFingerprint: null,
+        id: "/workspace/a.md", large_file_warning: false,
+        lastSavedContents: "a", lastSavedEncoding: "utf-8",
+        lastSavedLineEnding: "lf", line_ending: "lf",
+        modified_ms: null, name: "a.md",
+        path: "/workspace/a.md", saveStatus: "idle", size: 1,
+      };
+      const onSelectTab = vi.fn();
+
+      renderTopChrome({
+        activeTabId: textTab.id,
+        tabs: [textTab],
+        onSelectTab,
+        selectedImage: {
+          name: "photo.png",
+          path: "/workspace/photo.png",
+          size: 128,
+          url: "data:image/png;base64,photo",
+        },
+      });
+
+      const textButton = screen.getByRole("tab", { name: /a\.md/ });
+      textButton.focus();
+      fireEvent.keyDown(textButton, { key: "ArrowRight" });
+
+      vi.advanceTimersByTime(20);
+
+      expect(onSelectTab).not.toHaveBeenCalled();
+      const imageButton = screen.getByRole("tab", { name: /photo/ });
+      expect(document.activeElement).toBe(imageButton);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("navigates from the image tab back to the last text tab with ArrowLeft", () => {
+    vi.useFakeTimers();
+    try {
+      const textTab: EditorTab = {
+        contents: "a", encoding: "utf-8", error: null,
+        externalFingerprint: null, fingerprint: "fp",
+        ignoredExternalFingerprint: null,
+        id: "/workspace/a.md", large_file_warning: false,
+        lastSavedContents: "a", lastSavedEncoding: "utf-8",
+        lastSavedLineEnding: "lf", line_ending: "lf",
+        modified_ms: null, name: "a.md",
+        path: "/workspace/a.md", saveStatus: "idle", size: 1,
+      };
+      const onSelectTab = vi.fn();
+
+      renderTopChrome({
+        activeTabId: textTab.id,
+        tabs: [textTab],
+        onSelectTab,
+        selectedImage: {
+          name: "photo.png",
+          path: "/workspace/photo.png",
+          size: 128,
+          url: "data:image/png;base64,photo",
+        },
+      });
+
+      const imageButton = screen.getByRole("tab", { name: /photo/ });
+      imageButton.focus();
+      fireEvent.keyDown(imageButton, { key: "ArrowLeft" });
+
+      vi.advanceTimersByTime(20);
+
+      expect(onSelectTab).toHaveBeenCalledWith(textTab.id);
+      expect(onSelectTab).toHaveBeenCalledTimes(1);
+
+      const textButton = screen.getByRole("tab", { name: /a\.md/ });
+      expect(document.activeElement).toBe(textButton);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

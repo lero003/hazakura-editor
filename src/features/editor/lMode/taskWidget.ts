@@ -58,6 +58,10 @@ export class LModeTaskWidget extends WidgetType {
     span.textContent = this.checked ? CHECKED_GLYPH : UNCHECKED_GLYPH;
     span.setAttribute("role", "checkbox");
     span.setAttribute("aria-checked", this.checked ? "true" : "false");
+    span.setAttribute(
+      "aria-label",
+      this.checked ? "Completed task" : "Incomplete task",
+    );
     // `tabindex="0"` puts the widget into the keyboard tab
     // order so a keyboard-only user can reach the checkbox
     // without the mouse. The `keydown` handler in

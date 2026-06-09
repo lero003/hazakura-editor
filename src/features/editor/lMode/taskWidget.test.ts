@@ -64,6 +64,7 @@ describe("LModeTaskWidget DOM contract", () => {
     const span = makeTaskSpan(view, from, to, false);
     expect(span.getAttribute("role")).toBe("checkbox");
     expect(span.getAttribute("aria-checked")).toBe("false");
+    expect(span.getAttribute("aria-label")).toBe("Incomplete task");
     expect(span.getAttribute("tabindex")).toBe("0");
     expect(span.dataset.lmodeTaskFrom).toBe(String(from));
     expect(span.dataset.lmodeTaskTo).toBe(String(to));
@@ -77,6 +78,7 @@ describe("LModeTaskWidget DOM contract", () => {
     const { from, to } = findTaskRange(view);
     const span = makeTaskSpan(view, from, to, true);
     expect(span.getAttribute("aria-checked")).toBe("true");
+    expect(span.getAttribute("aria-label")).toBe("Completed task");
     expect(span.classList.contains(LModeClasses.taskChecked)).toBe(true);
     expect(span.textContent).toBe("\u2611"); // ☑
   });
