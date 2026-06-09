@@ -200,4 +200,161 @@ describe("useTabCloseFlow", () => {
     expect(typeof filterDrafts).toBe("function");
     expect(filterDrafts(pendingDrafts)).toEqual([pendingDrafts[1]]);
   });
+
+  // v0.17 app-store-quality: save-restore-regression slice 1.3
+  // — dirty tab close / app close recovery. The window-close
+  // path is already pinned by
+  // `useWindowCloseConfirmation.test.tsx`. The single-tab
+  // close path is owned by this hook: `requestCloseTab`
+  // decides between the dirty confirmation dialog and an
+  // immediate `closeTabNow`, and `saveAndClosePendingTab`
+  // is the only handler that turns the user's "Save"
+  // choice into a tab removal. The tests below pin the
+  // contracts that data-loss prevention actually depends
+  // on at this layer:
+  //   - a dirty tab close request must open the dialog
+  //     state, never `closeTabNow`,
+  //   - a clean tab close must not surface a dialog,
+  //   - a stale / unknown tabId must be a no-op,
+  //   - a failed save inside the "Save" branch must abort
+  //     the close and return the user to the editor.
+
+  it("opens the dirty confirmation dialog for a dirty tab and does not close", () => {
+    // The most critical data-loss-prevention contract
+    // at this layer: `requestCloseTab` for a dirty tab
+    // must surface the dirty dialog and must NOT call
+    // `closeTabNow`. A silent dirty-drop here would
+    // discard the user's edits on the X-button path
+    // without any UI confirmation.
+    const dirtyTab = makeTab();
+    const setPendingCloseTabId = vi.fn();
+    const setTabs = vi.fn();
+    const { result } = setup({
+      dirtyTabs: [dirtyTab],
+      setPendingCloseTabId,
+      setTabs,
+      tabs: [dirtyTab],
+      tabsRef: { current: [dirtyTab] },
+    });
+
+    act(() => {
+      result.current.requestCloseTab(dirtyTab.id);
+    });
+
+    expect(setPendingCloseTabId).toHaveBeenCalledTimes(1);
+    expect(setPendingCloseTabId).toHaveBeenCalledWith(dirtyTab.id);
+    // No tab removal may run — the dialog owns the
+    // decision from here.
+    expect(setTabs).not.toHaveBeenCalled();
+  });
+
+  it("closes a clean tab immediately without surfacing the dialog", () => {
+    // The inverse contract: a clean tab has no unsaved
+    // edits (`isDirty` is false), so the X-button path
+    // must close it directly. Surfacing a dialog here
+    // would block the everyday "close this tab" flow
+    // for every clean close and tempt users to pick
+    // Discard just to dismiss it.
+    const cleanTab = makeTab({
+      contents: "saved",
+      lastSavedContents: "saved",
+    });
+    const setPendingCloseTabId = vi.fn();
+    const setTabs = vi.fn();
+    const { result } = setup({
+      dirtyTabs: [],
+      setPendingCloseTabId,
+      setTabs,
+      tabs: [cleanTab],
+      tabsRef: { current: [cleanTab] },
+    });
+
+    act(() => {
+      result.current.requestCloseTab(cleanTab.id);
+    });
+
+    // The dialog is opened only by passing the tab id;
+    // `closeTabNow` may also call
+    // `setPendingCloseTabId(null)` as a cleanup at the
+    // end of its run, so the contract is "the dialog
+    // was not opened for this tab" — not "the setter
+    // was never called".
+    expect(setPendingCloseTabId).not.toHaveBeenCalledWith(cleanTab.id);
+    // `closeTabNow` is the only path that removes the
+    // tab from `tabs`; its observable effect is
+    // `setTabs` being called.
+    expect(setTabs).toHaveBeenCalledTimes(1);
+  });
+
+  it("is a no-op for an unknown tab id", () => {
+    // Defensive: a stale tabId (e.g. the tab was already
+    // closed by another path) must not silently open
+    // the dialog or trigger `closeTabNow`. The function
+    // returns before either branch.
+    const dirtyTab = makeTab();
+    const setPendingCloseTabId = vi.fn();
+    const setTabs = vi.fn();
+    const { result } = setup({
+      dirtyTabs: [dirtyTab],
+      setPendingCloseTabId,
+      setTabs,
+      tabs: [dirtyTab],
+      tabsRef: { current: [dirtyTab] },
+    });
+
+    act(() => {
+      result.current.requestCloseTab("/tmp/missing-tab.md");
+    });
+
+    expect(setPendingCloseTabId).not.toHaveBeenCalled();
+    expect(setTabs).not.toHaveBeenCalled();
+  });
+
+  it("aborts the close and reactivates the tab when saveAndClosePendingTab cannot save the tab", async () => {
+    // The "Save" branch in the dirty tab close dialog
+    // calls `saveAndClosePendingTab`. If `saveTabById`
+    // returns false (Save Conflict, write failure,
+    // permission lost), the close MUST abort — the tab
+    // stays open, the user is returned to the editor
+    // for that tab so they can resolve the failure,
+    // and the pending close is cleared so the dialog
+    // can be re-opened cleanly on the next X-button
+    // click. Otherwise the user would think the file
+    // is saved and close the tab, losing the edits.
+    const dirtyTab = makeTab();
+    const setActiveTabId = vi.fn();
+    const setPendingCloseTabId = vi.fn();
+    const saveTabById = vi.fn(async () => false);
+    const setTabs = vi.fn();
+    const focusEditorSoon = vi.fn();
+    const { result } = setup({
+      dirtyTabs: [dirtyTab],
+      focusEditorSoon,
+      pendingCloseTabId: dirtyTab.id,
+      saveTabById,
+      setActiveTabId,
+      setPendingCloseTabId,
+      setTabs,
+      tabs: [dirtyTab],
+      tabsRef: { current: [dirtyTab] },
+    });
+
+    await act(async () => {
+      await result.current.saveAndClosePendingTab();
+    });
+
+    expect(saveTabById).toHaveBeenCalledWith(dirtyTab.id);
+    // No tab removal — `closeTabNow` must not run on
+    // the save-failure branch.
+    expect(setTabs).not.toHaveBeenCalled();
+    // Editor focus must return to the pending tab so
+    // the user can react to the save error surfaced
+    // on the tab itself.
+    expect(setActiveTabId).toHaveBeenCalledWith(dirtyTab.id);
+    // The pending close is cleared so the dialog
+    // state is not left dangling. The next X-button
+    // click opens a fresh dialog.
+    expect(setPendingCloseTabId).toHaveBeenCalledWith(null);
+    expect(focusEditorSoon).toHaveBeenCalledTimes(1);
+  });
 });
