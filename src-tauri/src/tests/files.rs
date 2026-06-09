@@ -594,3 +594,121 @@ fn metadata_rejects_oversized_files() {
 
     let _ = fs::remove_dir_all(dir);
 }
+
+// v0.17 app-store-quality: save-restore-regression slice 1.1
+// — UTF-8 BOM round-trip across `open_text_file` →
+// `save_text_file` → re-open. The codec-level round-trip is
+// already covered in `tests::encoding::encode_text_*`, but
+// the full file I/O path (atomic write + read + BOM
+// re-prepend) is the App Store / sandbox evidence we want.
+// A BOM mishandled at this layer would either silently strip
+// the marker (visible to downstream tools that key off the
+// BOM) or duplicate it on re-save (visible to anything that
+// counts BOMs). The tests below pin both directions.
+
+#[test]
+fn utf8_bom_open_detects_label_and_strips_marker_from_contents() {
+    let dir = unique_test_dir("utf8_bom_open");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("bom.md");
+    let mut bytes = vec![0xEF, 0xBB, 0xBF];
+    bytes.extend_from_slice("# Hello\n".as_bytes());
+    fs::write(&path, &bytes).expect("write BOM fixture");
+
+    let document = open_text_file_with_label(MAIN_WINDOW_LABEL, path.to_string_lossy().to_string())
+        .expect("open utf-8-bom file");
+
+    assert_eq!(document.encoding, "utf-8-bom");
+    // The in-memory string must NOT carry a leading U+FEFF;
+    // see `decode_text_bytes` for the strip-on-read contract.
+    assert!(!document.contents.starts_with('\u{FEFF}'));
+    assert_eq!(document.contents, "# Hello\n");
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn utf8_bom_save_preserves_bom_on_resave() {
+    // Open a utf-8-bom file, edit, re-save with the same
+    // encoding label, and assert the on-disk bytes still
+    // start with the 3-byte BOM. This is the App Store
+    // contract: re-saving never strips the BOM marker.
+    let dir = unique_test_dir("utf8_bom_resave");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("bom.md");
+    let mut bytes = vec![0xEF, 0xBB, 0xBF];
+    bytes.extend_from_slice("# Hello\n".as_bytes());
+    fs::write(&path, &bytes).expect("write BOM fixture");
+
+    let document = open_text_file_with_label(MAIN_WINDOW_LABEL, path.to_string_lossy().to_string())
+        .expect("open utf-8-bom file");
+    assert_eq!(document.encoding, "utf-8-bom");
+
+    save_text_file_with_label(
+        MAIN_WINDOW_LABEL,
+        path.to_string_lossy().to_string(),
+        "# Hello (edited)\n".to_string(),
+        document.fingerprint,
+        document.line_ending,
+        document.encoding,
+    )
+    .expect("save utf-8-bom document");
+
+    let saved = fs::read(&path).expect("read saved file");
+    assert_eq!(
+        &saved[..3],
+        &[0xEF, 0xBB, 0xBF],
+        "BOM must be re-prepended on save, not stripped or duplicated",
+    );
+    assert_eq!(&saved[3..], b"# Hello (edited)\n");
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn utf8_bom_save_does_not_double_write_marker() {
+    // A second-pass safety net: if a future refactor
+    // accidentally re-prepends the BOM to a buffer that
+    // already carries one, the on-disk bytes will have
+    // 6 leading BOM bytes. The test reads the file back
+    // after a no-op save and asserts the BOM is exactly
+    // 3 bytes long.
+    let dir = unique_test_dir("utf8_bom_nodouble");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("bom.md");
+    let mut bytes = vec![0xEF, 0xBB, 0xBF];
+    bytes.extend_from_slice("# Hello\n".as_bytes());
+    fs::write(&path, &bytes).expect("write BOM fixture");
+
+    let document = open_text_file_with_label(MAIN_WINDOW_LABEL, path.to_string_lossy().to_string())
+        .expect("open utf-8-bom file");
+
+    // Re-save with the exact same contents and fingerprint
+    // (no edit). The on-disk BOM must remain 3 bytes.
+    save_text_file_with_label(
+        MAIN_WINDOW_LABEL,
+        path.to_string_lossy().to_string(),
+        document.contents.clone(),
+        document.fingerprint,
+        document.line_ending,
+        document.encoding,
+    )
+    .expect("no-op save utf-8-bom document");
+
+    let saved = fs::read(&path).expect("read saved file");
+    // The on-disk bytes must start with exactly one BOM (3 bytes).
+    // A double BOM bug would produce 6 leading bytes:
+    // EF BB BF EF BB BF. We check both that the first 3
+    // bytes are a BOM and that bytes 3-5 are NOT a BOM.
+    assert_eq!(
+        &saved[..3],
+        &[0xEF, 0xBB, 0xBF],
+        "BOM must appear exactly once (3 bytes)",
+    );
+    assert!(
+        !saved[3..].starts_with(&[0xEF, 0xBB, 0xBF]),
+        "double BOM must not be written (bytes 3-5 must not be a BOM)"
+    );
+
+    let _ = fs::remove_dir_all(dir);
+}
