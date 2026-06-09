@@ -217,3 +217,4 @@ The v0.17 Store-document follow-up adds Help-readable bundled markdown for `Priv
 4. If preparing a future release checkpoint, use `docs/source-release-checklist.md`, `docs/dmg-preview-checklist.md`, and the version-specific release note; keep App Store / Developer / warning-expected DMG lanes separate and do not mix Store submission / official distribution claims into a warning-expected preview.
 5. If preparing a future release, use the version-specific release note; do not tag or publish without explicit approval.
 6. If changing product behavior, use `docs/product-brief.md`, `docs/security-boundary.md`, and the touched boundary doc before implementation.
+7. If improving workspace ergonomics, consider the deferred left workspace sidebar collapse from `docs/roadmap.md`; keep it as a reversible UI affordance without broadening the bounded file-tree model.

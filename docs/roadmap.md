@@ -239,6 +239,12 @@ Deferred to v0.18 / submission prep:
 - Help document overlap cleanup and final copy pass.
 - Remaining real-app smoke: Help readability, full keyboard-only
   traversal, VoiceOver tab-bar announcement, and Increase Contrast.
+- Workspace ergonomics follow-up: add a normal-mode control for
+  collapsing / restoring the left workspace sidebar, similar to the
+  compact project rail pattern in ChatGPT, so long writing or review
+  sessions can reclaim horizontal space without entering L Mode.  Keep
+  it as a UI affordance only: no workspace indexing, full file-manager
+  expansion, Git awareness, or new Agent Workbench behavior.
 - Store submission materials: public Privacy Policy URL, App Store
   metadata, screenshots, App Review Notes final copy, complete
   third-party license packet review, category / age rating / support
@@ -318,6 +324,11 @@ Goal: handle App Review without disturbing the Developer / GitHub lane.
 Use these current docs rather than old roadmap bodies:
 
 - `docs/authoring-feature-readiness.md` for incomplete authoring/export claims.
+- Left workspace sidebar collapse belongs to future workspace ergonomics
+  polish.  Acceptance should cover mouse and keyboard access, persisted
+  expand / collapse preference, a clear restore affordance, and no
+  regression to the bounded file-tree model or L Mode's temporary
+  workspace drawer.
 - `docs/l-mode-plan.md` for the L Mode WYSIWYG Accuracy Ramp and source-preserving writing-surface work.
 - `docs/app-store-quality-agent-requests.md` for external-agent-ready App Store quality slices that exclude certificates, signing, notarization, and DMG packaging.
 - `docs/apple-local-assist-distribution-plan.md` for Apple Local Assist and App Store / developer-build release lanes.
