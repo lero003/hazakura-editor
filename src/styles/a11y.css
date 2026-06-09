@@ -1,0 +1,122 @@
+/* === a11y.css === */
+/* 高コントラスト環境対応 / High-contrast preference support.
+   macOS の "Increase Contrast" アクセシビリティ設定や
+   `(prefers-contrast: more)` を報告する環境で、UI の境界・
+   フォーカスリング・プレースホルダ・スクロールバー・
+   テキストコントラストを底上げする。
+
+   設計方針:
+   - CSS のみ。テーマトークンを上書きする new tokens は追加しない。
+   - 既存テーマの色相を維持するため、color-mix で濃さを調整する。
+   - レイアウト・間隔・transition・animation には触らない。
+   - `themes.css` の `:root[data-theme="..."]` 上書きと同じ詳細度
+     (0,1,1) で `:root, :root[data-theme="..."]...` を列挙し、
+     source order でトークン上書きが勝つようにする。 */
+
+@media (prefers-contrast: more) {
+  /* パネル / コントロールの境界を濃くする。
+     1px 境界が背景に沈んでしまわないよう、text 寄りに寄せる。 */
+  :root,
+  :root[data-theme="light"],
+  :root[data-theme="dark"],
+  :root[data-theme="sakura"],
+  :root[data-theme="yakou"],
+  :root[data-theme="shokou"] {
+    --border: color-mix(in srgb, var(--text) 38%, var(--surface));
+    --border-strong: color-mix(in srgb, var(--text) 62%, var(--surface));
+
+    /* 選択範囲の彩度を上げつつ、テキストが沈まない中庸な alpha に。 */
+    --selection-bg: color-mix(in srgb, var(--accent) 45%, transparent);
+    --cm-selection-bg: color-mix(in srgb, var(--accent) 55%, var(--cm-bg));
+
+    /* スクロールバー thumb を text 寄りに強める。 */
+    --scrollbar-thumb: color-mix(in srgb, var(--text) 40%, transparent);
+    --scrollbar-thumb-hover: color-mix(in srgb, var(--text) 60%, transparent);
+  }
+
+  /* インタラクティブ要素のフォーカスリングを太くする。
+     既定の `outline: 2px / offset: 2px` (animations.css) を
+     `3px / 1px` に上書きする。
+     `:is()` 内の最詳細セレクタ `[role="button"]` / `[tabindex]`
+     と `:focus-visible` で specificity (0,2,0)。元の `button:focus-visible`
+     の (0,1,1) より高いため、source order に依らず勝つ。 */
+  :is(
+    button,
+    [role="button"],
+    input,
+    select,
+    textarea,
+    a,
+    [tabindex]
+  ):focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  /* グラデーション focus リング (yakou / shokou / base.css) も
+     4px → 5px に厚くし、Increase Contrast でも消えないようにする。 */
+  :root[data-theme="yakou"] :is(
+    button,
+    [role="button"],
+    input,
+    select,
+    textarea,
+    a,
+    [tabindex]
+  ):focus-visible,
+  :root[data-theme="shokou"] :is(
+    button,
+    [role="button"],
+    input,
+    select,
+    textarea,
+    a,
+    [tabindex]
+  ):focus-visible {
+    box-shadow:
+      0 0 0 2px var(--surface),
+      0 0 0 5px var(--accent);
+  }
+
+  /* コントロール / ダイアログ / タブの境界を 1px → 2px に。
+     高コントラスト環境では 1px が見失われやすい。 */
+  button,
+  select,
+  input,
+  textarea,
+  .tab-item,
+  .tab-button,
+  .close-dialog,
+  .preferences-dialog {
+    border-width: 2px;
+  }
+
+  /* ステータスバー / 保存確認バナー。枠線を強めて視認性を上げる。
+     `status-bar` には visible な border が無い (preview.css) ので、
+     top border を新設して上の chrome と区切る。 */
+  .status-bar {
+    border-top: 2px solid var(--border-strong);
+  }
+
+  /* save-affirmation は 16px の円形バッジ。border を内側に
+     入れると 2px で 12px になり読みにくいので、box-shadow で
+     外側に 1.5px の ring を足して輪郭を強化する。 */
+  .save-affirmation {
+    box-shadow: 0 0 0 1.5px var(--border-strong);
+  }
+
+  /* プレースホルダ / Placeholder text
+     既定の薄さを、text 寄りに底上げして読みやすくする。 */
+  input::placeholder,
+  textarea::placeholder {
+    color: color-mix(in srgb, var(--text) 70%, transparent);
+    opacity: 1;
+  }
+
+  /* スクロールバー thumb の可視性を上げ、border を足して
+     背景に溶けるのを防ぐ。 */
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb-hover);
+    border: 1px solid var(--border-strong);
+  }
+}

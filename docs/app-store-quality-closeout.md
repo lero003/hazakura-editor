@@ -109,10 +109,11 @@ real keyboard / VoiceOver / production build:
   recommended.
 - **VoiceOver tab-bar announcement** — `aria-describedby` wiring is
   unit-tested; real VoiceOver smoke is recommended.
-- **prefers-contrast** — CSS `@media (prefers-reduced-motion: reduce)`
-  exists but `prefers-contrast: more` is not implemented.  Low risk
-  for App Store review but worth a manual check with macOS "Increase
-  Contrast" enabled.
+- **prefers-contrast** — `prefers-contrast: more` is now implemented
+  in `src/styles/a11y.css` (panel borders / focus ring / placeholder /
+  scrollbar).  CSS-only, theme-aware, and uses `color-mix` against
+  existing tokens.  Manual smoke with macOS "Increase Contrast"
+  enabled is still recommended.
 
 ### Before App Store Submission — Not Yet Implemented
 
