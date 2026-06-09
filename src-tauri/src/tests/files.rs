@@ -369,6 +369,84 @@ fn save_rejects_external_change_before_write() {
     let _ = fs::remove_dir_all(dir);
 }
 
+// v0.17 app-store-quality: save-restore-regression slice 1.5
+// — moved / deleted / permission-lost file errors on the
+// save path. The `readable_text_metadata` gate in
+// `save_text_file_with_label` calls `fs::metadata()` before
+// `atomic_write` is reached. A missing file or a directory
+// target both fail at that gate with a clean error and
+// leave the on-disk state untouched — the user's dirty
+// buffer is never written to a stale path or an invalid
+// target. The tests below pin the two most-certain cases.
+// Permission-lost (`chmod 000`) goes through the same
+// `fs::metadata()` → `map_err("Cannot read file: {err}")`
+// path, but is fragile in CI / macOS sandbox test
+// environments; its contract is already structurally
+// identical to the missing-file case.
+
+#[test]
+fn save_reports_clean_error_for_missing_file() {
+    let dir = unique_test_dir("save_missing");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("note.md");
+    fs::write(&path, "# Original\n").expect("write fixture");
+    let opened_metadata = fs::metadata(&path).expect("read opened metadata");
+    let opened_fingerprint = metadata_fingerprint(&opened_metadata);
+    // Delete the file before save (simulates an external
+    // `rm`, a workspace move, or a tmpdir cleanup between
+    // open and save).
+    fs::remove_file(&path).expect("delete fixture");
+
+    let err = save_text_file_with_label(
+        MAIN_WINDOW_LABEL,
+        path.to_string_lossy().to_string(),
+        "# Editor change\n".to_string(),
+        opened_fingerprint,
+        "lf".to_string(),
+        "utf-8".to_string(),
+    )
+    .expect_err("save to a deleted file must fail cleanly");
+
+    assert!(
+        err.contains("Cannot read file"),
+        "error must mention the unreadable path, got: {err}",
+    );
+    // The file must NOT be re-created by a stray `atomic_write`
+    // that follows the metadata check.
+    assert!(!path.exists(), "save must not re-create a deleted file");
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn save_rejects_directory_path() {
+    let dir = unique_test_dir("save_directory");
+    fs::create_dir_all(&dir).expect("create test dir");
+
+    // `readable_text_metadata` returns an error for any path
+    // that `is_file() == false`, which includes directories.
+    // An accidental save to a directory path would either
+    // silently create a file with the directory's name (if
+    // `atomic_write` ran) or crash. The metadata gate catches
+    // it before either happens.
+    let err = save_text_file_with_label(
+        MAIN_WINDOW_LABEL,
+        dir.to_string_lossy().to_string(),
+        "# Editor change\n".to_string(),
+        "0:0".to_string(),
+        "lf".to_string(),
+        "utf-8".to_string(),
+    )
+    .expect_err("save to a directory must fail cleanly");
+
+    assert!(
+        err.contains("not a file"),
+        "error must mention the path is not a file, got: {err}",
+    );
+
+    let _ = fs::remove_dir_all(dir);
+}
+
 #[test]
 fn save_preserves_crlf_line_endings() {
     let dir = unique_test_dir("save_crlf");
