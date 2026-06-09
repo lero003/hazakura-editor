@@ -83,3 +83,84 @@ describe("renderMarkdown image policy", () => {
     expect(html).not.toContain("https://example.com/shot.png");
   });
 });
+
+// v0.17 app-store-quality: markdown-preview-export-security slice 2.1
+// — script execution vectors in Markdown preview and HTML export.
+// Both preview and export share the same `renderMarkdown` pipeline
+// (marked → image/table policy → DOMPurify.sanitize), so a single
+// test surface covers both. The tests below pin three script-
+// execution vectors: inline `<script>` tags, event-handler
+// attributes on raw-HTML elements, and `javascript:` URIs in
+// Markdown link/image targets. The final test asserts that
+// `renderMarkdown` never mutates the source string — the
+// Markdown source is canonical, and sanitization happens only
+// in the rendered tree.
+//
+// DOMPurify with `USE_PROFILES: { html: true }` already rejects
+// all event handlers and dangerous tags by default; the explicit
+// `FORBID_TAGS` / `FORBID_ATTR` lists in the config are defense-
+// in-depth. The `ALLOWED_URI_REGEXP` rejects any URI scheme that
+// is not http/https/mailto/tel/etc., including `javascript:`.
+
+describe("renderMarkdown sanitization", () => {
+  it("strips inline script tags from Markdown raw HTML", () => {
+    const html = renderMarkdown('<script>alert("xss")</script>\n\nHello');
+
+    expect(html).not.toContain("<script");
+    expect(html).not.toContain("alert");
+    // Non-script content must pass through.
+    expect(html).toContain("Hello");
+  });
+
+  it("strips event-handler attributes from inline HTML elements", () => {
+    // Use `<span>` rather than `<img>` so the assertion
+    // is against DOMPurify's attribute removal, not a
+    // side effect of `applyImagePreviewPolicy` replacing
+    // the image node before DOMPurify runs. A `<span>`
+    // survives both the image and table policies, so any
+    // disappearance of `onclick` / `onmouseover` is
+    // solely DOMPurify's work.
+    const html = renderMarkdown(
+      '<span onclick="alert(1)" onmouseover="boom()">keep</span>',
+    );
+
+    expect(html).not.toContain("onclick");
+    expect(html).not.toContain("onmouseover");
+    expect(html).not.toContain("alert(1)");
+    expect(html).not.toContain("boom()");
+    // The element and its text content must survive —
+    // only the dangerous attributes are stripped.
+    expect(html).toContain("<span");
+    expect(html).toContain("keep");
+  });
+
+  it("removes javascript: URLs from Markdown link targets", () => {
+    const html = renderMarkdown("[click me](javascript:alert(1))");
+
+    expect(html).not.toContain("javascript:");
+    // The link text must survive; only the dangerous href
+    // is removed.
+    expect(html).toContain("click me");
+  });
+
+  it("removes javascript: URLs from Markdown image sources", () => {
+    const html = renderMarkdown(
+      "![xss](javascript:alert(document.cookie))",
+    );
+
+    expect(html).not.toContain("javascript:");
+    // The alt text should remain as the blocked-image
+    // message or a replacement node — not as a passive
+    // `<img src="...">`.
+    expect(html).not.toContain('<img src="javascript');
+  });
+
+  it("does not mutate the source Markdown string", () => {
+    const source = '<script>alert("xss")</script>\n\nHello';
+    const snapshot = source.slice();
+
+    renderMarkdown(source);
+
+    expect(source).toBe(snapshot);
+  });
+});
