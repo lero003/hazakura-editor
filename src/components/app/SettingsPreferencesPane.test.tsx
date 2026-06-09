@@ -2,10 +2,14 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import { SettingsPreferencesPane } from "./SettingsPreferencesPane";
 import { getLModeCopy, getPreferencesCopy } from "../../lib/locale";
-import type { EditorSettings } from "../../types";
+import {
+  AUTO_BACKUP_USER_CHOICE_STORAGE_KEY,
+  type EditorSettings,
+} from "../../types";
 
 afterEach(() => {
   cleanup();
+  window.localStorage.clear();
 });
 
 function editorSettings(
@@ -67,6 +71,37 @@ describe("SettingsPreferencesPane", () => {
     const updater = onEditorSettingsChange.mock.calls[0][0];
     expect(updater(editorSettings())).toEqual(
       editorSettings({ appleAssistDiffInitiallyOpen: false }),
+    );
+  });
+
+  it("records an explicit user choice when toggling auto-backup", () => {
+    const onEditorSettingsChange = vi.fn();
+    const copy = getPreferencesCopy("en");
+    const { getByTestId } = render(
+      <SettingsPreferencesPane
+        copy={copy}
+        editorSettings={editorSettings({ autoBackupEnabled: false })}
+        lModeCopy={getLModeCopy("en")}
+        menuLanguage="en"
+        onEditorSettingsChange={onEditorSettingsChange}
+        onMenuLanguageChange={vi.fn()}
+        onOpenPrivacyPreferences={vi.fn()}
+        onPreviewVisibleChange={vi.fn()}
+        onThemePreferenceChange={vi.fn()}
+        previewVisible={true}
+        themePreference="light"
+      />,
+    );
+
+    const autoBackupInput = getByTestId("auto-backup-toggle") as HTMLInputElement;
+    expect(autoBackupInput.checked).toBe(false);
+
+    fireEvent.click(autoBackupInput);
+
+    expect(window.localStorage.getItem(AUTO_BACKUP_USER_CHOICE_STORAGE_KEY)).toBe("true");
+    const updater = onEditorSettingsChange.mock.calls[0][0];
+    expect(updater(editorSettings({ autoBackupEnabled: false }))).toEqual(
+      editorSettings({ autoBackupEnabled: true }),
     );
   });
 

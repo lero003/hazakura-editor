@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { pruneAutoBackups, saveAutoBackup } from "../../lib/tauri";
 import type { EditorTab } from "../../types";
 import { useLatestValueRef } from "../app/useLatestValueRef";
@@ -20,6 +20,7 @@ export function useAutoBackup({
 }: UseAutoBackupOptions) {
   const tabsRef = useLatestValueRef(tabs);
   const workspaceRootPathRef = useLatestValueRef(workspaceRootPath);
+  const lastBackedUpRef = useRef(new Map<string, BackupSignature>());
 
   useEffect(() => {
     if (!enabled) {
@@ -47,7 +48,14 @@ export function useAutoBackup({
             continue;
           }
 
+          const signature = backupSignature(tab);
+          const backupKey = `${workspaceRoot}\0${relativePath}`;
+          if (sameBackupSignature(lastBackedUpRef.current.get(backupKey), signature)) {
+            continue;
+          }
+
           await saveAutoBackup(workspaceRoot, relativePath, tab.contents);
+          lastBackedUpRef.current.set(backupKey, signature);
           void pruneAutoBackups(
             workspaceRoot,
             relativePath,
@@ -61,6 +69,25 @@ export function useAutoBackup({
 
     return () => window.clearInterval(intervalId);
   }, [enabled]);
+}
+
+type BackupSignature = {
+  contents: string;
+  lineEnding: string;
+};
+
+function backupSignature(tab: EditorTab): BackupSignature {
+  return {
+    contents: tab.contents,
+    lineEnding: tab.line_ending,
+  };
+}
+
+function sameBackupSignature(
+  a: BackupSignature | undefined,
+  b: BackupSignature,
+): boolean {
+  return a?.contents === b.contents && a.lineEnding === b.lineEnding;
 }
 
 function isDirtyTab(tab: EditorTab): boolean {

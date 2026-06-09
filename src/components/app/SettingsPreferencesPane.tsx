@@ -5,6 +5,7 @@ import type {
   MenuLanguage,
   ThemePreference,
 } from "../../types";
+import { AUTO_BACKUP_USER_CHOICE_STORAGE_KEY as AUTO_BACKUP_CHOICE_KEY } from "../../types";
 
 type SettingsPreferencesPaneProps = {
   copy: PreferencesCopy;
@@ -202,17 +203,21 @@ export function SettingsPreferencesPane({
         </label>
         <label className="toggle-switch">
           <input
+            data-testid="auto-backup-toggle"
             type="checkbox"
             checked={editorSettings.autoBackupEnabled}
-            onChange={(event) =>
+            onChange={() => {
+              const autoBackupEnabled = !editorSettings.autoBackupEnabled;
+              window.localStorage.setItem(AUTO_BACKUP_CHOICE_KEY, "true");
               onEditorSettingsChange((current) => ({
                 ...current,
-                autoBackupEnabled: event.target.checked,
-              }))
-            }
+                autoBackupEnabled,
+              }));
+            }}
           />
           <span className="slider"></span>
           <span>{copy.autoBackup}</span>
+          <span className="field-hint">{copy.autoBackupHint}</span>
         </label>
         <label className="toggle-switch">
           <input

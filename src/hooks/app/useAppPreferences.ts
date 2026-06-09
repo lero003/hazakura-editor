@@ -11,6 +11,7 @@ import { clampNumber } from "../../lib/utils";
 import { LMODE_SETTINGS_DEFAULTS, parseLModeSettings } from "../../features/editor/lMode/settings";
 import {
   EDITOR_SETTINGS_STORAGE_KEY,
+  AUTO_BACKUP_USER_CHOICE_STORAGE_KEY,
   MENU_LANGUAGE_STORAGE_KEY,
   PREVIEW_VISIBLE_STORAGE_KEY,
   THEME_STORAGE_KEY,
@@ -214,7 +215,7 @@ function readStoredEditorSettings(): EditorSettings {
     lModeFontSize: 15,
     tabSize: 2,
     spellcheckEnabled: true,
-    autoBackupEnabled: true,
+    autoBackupEnabled: false,
     ambientIntensity: "normal",
     appleAssistDiffInitiallyOpen: true,
     // L Mode defaults are spread in below — keeping the
@@ -280,6 +281,7 @@ function readStoredEditorSettings(): EditorSettings {
           ? parsed.spellcheckEnabled
           : defaults.spellcheckEnabled,
       autoBackupEnabled:
+        window.localStorage.getItem(AUTO_BACKUP_USER_CHOICE_STORAGE_KEY) === "true" &&
         typeof parsed.autoBackupEnabled === "boolean"
           ? parsed.autoBackupEnabled
           : defaults.autoBackupEnabled,

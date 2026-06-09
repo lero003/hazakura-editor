@@ -5,7 +5,8 @@ use std::io::ErrorKind;
 use std::path::{Component, Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-/// Save an auto-backup of a file to `.hazakura/backups/<relative-path>/<timestamp>_<filename>`.
+/// Save an auto-backup of a file to
+/// `.hazakura/backups/<relative-path>/hazakura-backup-<timestamp>.bak`.
 /// Returns the backup file path on success.
 pub(crate) fn save_auto_backup(
     workspace_root: &str,
@@ -18,12 +19,7 @@ pub(crate) fn save_auto_backup(
     ensure_path_stays_inside_workspace(workspace_root, &backup_dir)?;
 
     let timestamp = current_timestamp_for_filename();
-    let file_name = Path::new(relative_file_path)
-        .file_name()
-        .and_then(|n| n.to_str())
-        .unwrap_or("unnamed");
-
-    let backup_path = backup_dir.join(format!("{timestamp}_{file_name}.bak"));
+    let backup_path = backup_dir.join(format!("hazakura-backup-{timestamp}.bak"));
     atomic_write(&backup_path, content.as_bytes())?;
 
     Ok(backup_path.to_string_lossy().to_string())
@@ -134,8 +130,8 @@ fn backup_dir_for(workspace_root: &str, relative_file_path: &str) -> Result<Path
 }
 
 /// Move an existing backup directory from the old relative path
-/// to the new one, keeping the captured `.{ts}_{name}.bak` files
-/// attached to the new path. No-op if the source backup dir is
+/// to the new one, keeping the captured backup files attached to
+/// the new path. No-op if the source backup dir is
 /// missing (freshly created or already cleaned up) or if source
 /// and destination resolve to the same path. Refuses to clobber
 /// a backup dir that already exists at the destination.

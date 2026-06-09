@@ -16,6 +16,7 @@ export type PreferencesCopy = {
   appleAssistDiffInitiallyOpen: string;
   appleAssistDiffInitiallyOpenHint: string;
   autoBackup: string;
+  autoBackupHint: string;
   dark: string;
   editor: string;
   editorDisplay: string;
@@ -73,6 +74,8 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
       appleAssistDiffInitiallyOpenHint:
         "Apple Local Assist が ほんぶんを かへたら さぶんを すぐ みせます。",
       autoBackup: "うつしのこし",
+      autoBackupHint:
+        "じぶんで ON にした ときだけ、未保存の へんこうを 30びょう ごとに .bak として のこします。",
       dark: "やみ",
       editor: "えでぃた",
       editorDisplay: "えでぃたのながめ",
@@ -123,7 +126,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         "このあぷり は、 macOS の ふぁいる / ふぉるだ えらぶ き を とおして えらんだ テキストふみ だけを ひらきます。 ふぁいる ぜんたい を こっそり しらべたり、 ほーむ でぃれくとり を そうさ したりは しません。",
       privacyBackupHeading: ".hazakura/backups/...",
       privacyBackupBody:
-        "えらんだ わーくすぺーす の した に、 じどう ばっくあっぷ の すなっぷしょと が ほぞん されます。 わーくすぺーす の がいぶ には むきません。",
+        "うつしのこし を じぶんで ON にした ときだけ、 えらんだ わーくすぺーす の した に .bak の すなっぷしょっと が ほぞん されます。 わーくすぺーす の がいぶ には むきません。",
       privacyPreviewHeading: "まどびゅー と えんぽーと",
       privacyPreviewBody:
         "まどびゅー は がいぶ 画像 と あぶない HTML / script / iframe / object / embed を ふせぎます。 まどびゅー の りんく くりっく は、 せんたくちゅう わーくすぺーす ない の workspace-relative な テキストふみ への ひらき だけに るーてぃんぐ されます。 がいぶ scheme の りんく ( http:、 https:、 mailto:、 tel: など ) と ぜったい ぱす は むし され、 status めっせーじ が しめされる の で、 くりっく で えでぃた から はなれる せんい は おこりません。 HTML えんぽーと の とき、 わーくすぺーす ない の 画像 は でーた URI に いないれ されます。",
@@ -146,6 +149,8 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         appleAssistDiffInitiallyOpenHint:
           "Apple Local Assist が本文を変更したとき、確認用の小さな差分を最初から表示します。",
         autoBackup: "自動バックアップ",
+        autoBackupHint:
+          "自分で有効化した場合だけ、未保存の変更を30秒ごとに .bak として残します。",
         dark: "ダーク",
         editor: "エディタ",
         editorDisplay: "エディタ表示",
@@ -196,7 +201,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
           "このアプリは macOS のファイル/フォルダピッカーを通して選んだテキストファイルだけを開きます。ファイル全体を勝手に走査したり、ホームディレクトリを操作したりはしません。",
         privacyBackupHeading: ".hazakura/backups/...",
         privacyBackupBody:
-          "選んだワークスペースの下に、自動バックアップのスナップショットが保存されます。ワークスペース外には書きません。",
+          "自動バックアップを自分で有効化した場合だけ、選んだワークスペースの下に .bak スナップショットが保存されます。ワークスペース外には書きません。",
         privacyPreviewHeading: "プレビューとエクスポート",
         privacyPreviewBody:
           "プレビューは外部画像と危険な HTML / script / iframe / object / embed を防ぎます。プレビューのリンククリックは、選択中ワークスペース内の workspace-relative なテキストファイルへのオープンだけにルーティングされます。外部 scheme のリンク（http:、https:、mailto:、tel: など）と絶対パスは無視され、status メッセージが表示されるので、クリックでエディタから離れる遷移は起こりません。HTML エクスポートのときは、ワークスペース内の画像がデータ URI として埋め込まれます。",
@@ -216,6 +221,8 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         appleAssistDiffInitiallyOpenHint:
           "Show the compact diff immediately after Apple Local Assist changes the text.",
         autoBackup: "Auto-backup",
+        autoBackupHint:
+          "When you enable it, unsaved changes are written as .bak snapshots every 30 seconds.",
         dark: "Dark",
         editor: "Editor",
         editorDisplay: "Editor display",
@@ -266,7 +273,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
           "The app only opens text files you pick through the macOS file or folder picker. It does not scan files on its own or touch your home directory.",
         privacyBackupHeading: ".hazakura/backups/...",
         privacyBackupBody:
-          "Inside the selected workspace, the app saves local auto-backup snapshots under a `.hazakura/backups/...` folder. Backups stay inside that workspace.",
+          "Only when you enable auto-backup, the app saves local .bak snapshots under a `.hazakura/backups/...` folder inside the selected workspace. Backups stay inside that workspace.",
         privacyPreviewHeading: "Preview and export",
         privacyPreviewBody:
           "The preview blocks external images and dangerous HTML, script, iframe, object, and embed tags. The preview only routes link clicks to workspace-relative text file opens inside the selected workspace; external scheme links (http:, https:, mailto:, tel:, etc.) and absolute paths are ignored with a status message, so the click never navigates away from the editor. HTML export inlines local workspace images as data URIs.",

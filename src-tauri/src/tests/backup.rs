@@ -22,6 +22,14 @@ fn auto_backup_writes_and_reads_inside_workspace_backup_dir() {
 
     assert_eq!(content, "# Draft\n");
     assert!(backup_path.contains(".hazakura/backups/notes/today.md/"));
+    assert!(
+        backup_name.starts_with("hazakura-backup-"),
+        "backup file name should be app-owned, got: {backup_name}"
+    );
+    assert!(
+        !backup_name.contains("today.md"),
+        "backup file name should not look like the source document"
+    );
 
     let _ = fs::remove_dir_all(dir);
 }
