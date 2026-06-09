@@ -121,7 +121,7 @@ describe("collectDiagnostics", () => {
     const snapshot = collectDiagnostics(basicOptions());
 
     expect(snapshot.app.distributionLane).toBe("app-store");
-    expect(snapshot.app.version).toBe("0.16.0");
+    expect(snapshot.app.version).toBe("0.17.0");
   });
 
   it("excludes document contents, workspace paths, and secret-looking keys", () => {

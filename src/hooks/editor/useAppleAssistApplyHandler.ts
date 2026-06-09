@@ -33,6 +33,23 @@ import {
 // for selections in the second half of a document.
 export const APPLE_ASSIST_CONTEXT_PRE_CHARS = 2000;
 export const APPLE_ASSIST_CONTEXT_POST_CHARS = 2000;
+export const APPLE_ASSIST_SELECTION_CONTEXT_PRE_CHARS = 500;
+export const APPLE_ASSIST_SELECTION_CONTEXT_POST_CHARS = 500;
+
+export function getAppleAssistContextWindow(
+  kind: AppleAssistTargetSnapshot["kind"],
+): { preChars: number; postChars: number } {
+  if (kind === "selection") {
+    return {
+      preChars: APPLE_ASSIST_SELECTION_CONTEXT_PRE_CHARS,
+      postChars: APPLE_ASSIST_SELECTION_CONTEXT_POST_CHARS,
+    };
+  }
+  return {
+    preChars: APPLE_ASSIST_CONTEXT_PRE_CHARS,
+    postChars: APPLE_ASSIST_CONTEXT_POST_CHARS,
+  };
+}
 
 // v0.12+ Apple Local Assist Writing Companion (slice 4).
 // `useAppleAssistApplyHandler` is the main window's
@@ -145,6 +162,7 @@ export function useAppleAssistApplyHandler({
       const startMessage = "Apple Local Assist is generating a change...";
       setStatusRef.current?.(startMessage);
       void emitAppleAssistApplyStatus("started", startMessage, payload.request);
+      const contextWindow = getAppleAssistContextWindow(targetSnapshot.kind);
       const response = await generateAppleAssistCandidate({
         operation: inferAppleAssistOperation(payload.request),
         selectedText: targetCheck.before,
@@ -152,8 +170,8 @@ export function useAppleAssistApplyHandler({
           tab.contents,
           targetSnapshot.start,
           targetSnapshot.end,
-          APPLE_ASSIST_CONTEXT_PRE_CHARS,
-          APPLE_ASSIST_CONTEXT_POST_CHARS,
+          contextWindow.preChars,
+          contextWindow.postChars,
           APPLE_ASSIST_MAX_CONTEXT_CHARS,
         ),
         // Prefer the helper-side instruction when the caller

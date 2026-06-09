@@ -160,9 +160,32 @@
 .apple-assist-review-bar-diff {
   flex: 1 1 auto;
   min-height: 0;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   border-top: 1px solid color-mix(in srgb, var(--border) 48%, transparent);
   padding-top: 6px;
+}
+
+.apple-assist-review-bar-diff .diff-split-row {
+  grid-template-columns: 40px minmax(0, 1fr) 40px minmax(0, 1fr);
+  min-width: 0;
+}
+
+.apple-assist-review-bar-diff .diff-section-row {
+  grid-template-columns: 40px minmax(0, 1fr) 40px minmax(0, 1fr);
+  min-width: 0;
+}
+
+.apple-assist-review-bar-diff .diff-line-number {
+  padding-inline: 4px 6px;
+}
+
+.apple-assist-review-bar-diff .diff-cell {
+  padding-inline: 6px;
+}
+
+.apple-assist-review-bar-diff .diff-section-row span {
+  white-space: normal;
 }
 
 .apple-assist-review-bar-empty {

@@ -105,7 +105,7 @@ export function collectDiagnostics(
 
   return {
     app: {
-      version: "0.16.0",
+      version: "0.17.0",
       distributionLane: readHazakuraDistributionLane(),
     },
     system: {

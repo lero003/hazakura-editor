@@ -116,7 +116,7 @@ export const aboutHazakuraEditor: HelpDoc = {
   boundaryNoteBody:
     "About keeps product identity, support direction, and distribution-lane wording in one small Help document.",
   footerNote:
-    "The current version is 0.16.0. Release, signing, and App Store status must be checked against the current build before publication claims are made.",
+    "The current version is 0.17.0. Release, signing, and App Store status must be checked against the current build before publication claims are made.",
   source: aboutMd,
   sections: [
     { testId: "help-doc-section-app", title: "App" },

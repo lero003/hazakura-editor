@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Last-mile hygiene check before tagging, publishing, or attaching binaries
 Authority: Medium
-Last reviewed: 2026-06-08 (v0.16.0 DMG preview prep)
+Last reviewed: 2026-06-10 (v0.17.0 DMG preview prep)
 
 This checklist runs **immediately before** tagging a source / local-app tag or attaching a warning-expected DMG to a GitHub Release. It does not replace the P0 gates in `docs/source-release-checklist.md` or `docs/dmg-preview-checklist.md`; it sits one step above them as a hygiene pass for things that would be embarrassing on a public surface.
 
@@ -94,6 +94,34 @@ Do not tag or attach a binary if any of the following are true:
 - The whole-repo audit in section 4 surfaces new secrets or new local paths that the diff-scoped greps missed.
 
 When a stop condition fires, fix the issue in the release-candidate worktree and re-run this entire checklist before tagging or publishing.
+
+## Last Run: v0.17.0 (2026-06-10)
+
+Range: `v0.16.0..HEAD` plus the current release-candidate worktree
+before tagging.
+
+Result:
+
+- Section 1 (local paths in diff): hits were limited to explicit
+  privacy / diagnostics / close-flow test fixtures such as `/Users/leak`
+  and `/tmp/missing-tab.md`.  Human-authored docs that had contained the
+  local repository path were normalized before tagging.
+- Section 2 (inappropriate GitHub content in diff): hits were limited
+  to public `lero003/hazakura-editor` release-note references.  No new
+  developer scratch note or private organization wording was added.
+- Section 3 (security concerns in diff): hits were limited to
+  diagnostic/privacy wording and tests that assert secret-looking fields
+  are not collected.  No token, API key, password, private key, internal
+  IP, or internal hostname was added.
+- Section 4 (tracked build outputs): zero tracked files under
+  `src-helpers/apple-assist/.build/`, `src-tauri/target/`, or
+  `node_modules/`.
+
+DMG and source files referenced in v0.17.0
+(`src-tauri/target/release/bundle/dmg/hazakura-editor-dev_0.17.0_aarch64-warning-expected.dmg`
+and `*.dmg.sha256`) are build outputs under `src-tauri/target/`, which
+is `.gitignore`d.  They were generated and verified locally, but not
+committed to the repository and not uploaded as GitHub Release assets.
 
 ## Last Run: v0.16.0 (2026-06-08)
 

@@ -119,6 +119,8 @@ enum GenerateCandidate {
     Preserve Markdown structure, front matter, code fences, links, and the target text language.
     The replacement must use the same language as the target text. If the target text is Japanese, return Japanese.
     If the user asks for a continuation, return the target text plus a natural continuation that can replace the target range.
+    Surrounding document context is reference only. Do not copy headings, list items, or wording from surrounding context into the replacement unless that text is already in the target.
+    Keep the replacement scoped to the target range; do not rewrite other sections of the document.
     """
 
     private static func buildLivePrompt(for request: AppleAssistRequest) -> String {
@@ -142,7 +144,7 @@ enum GenerateCandidate {
         \(request.selectedText)
         ```
 
-        Surrounding document context, for reference only:
+        Surrounding document context, for reference only. Do not use this as replacement text:
         ```markdown
         \(context)
         ```

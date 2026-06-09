@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   APPLE_ASSIST_CONTEXT_POST_CHARS,
   APPLE_ASSIST_CONTEXT_PRE_CHARS,
+  APPLE_ASSIST_SELECTION_CONTEXT_POST_CHARS,
+  APPLE_ASSIST_SELECTION_CONTEXT_PRE_CHARS,
   buildSurroundingDocumentContext,
+  getAppleAssistContextWindow,
 } from "./useAppleAssistApplyHandler";
 import { APPLE_ASSIST_MAX_CONTEXT_CHARS } from "../../lib/tauri/appleAssist";
 
@@ -297,5 +300,27 @@ describe("buildSurroundingDocumentContext", () => {
     );
     expect(context).toContain("pre");
     expect(context).toContain("TARGET");
+  });
+});
+
+describe("getAppleAssistContextWindow", () => {
+  it("uses a tighter context window for explicit selections", () => {
+    const contextWindow = getAppleAssistContextWindow("selection");
+
+    expect(contextWindow).toEqual({
+      preChars: APPLE_ASSIST_SELECTION_CONTEXT_PRE_CHARS,
+      postChars: APPLE_ASSIST_SELECTION_CONTEXT_POST_CHARS,
+    });
+    expect(contextWindow.preChars).toBeLessThan(APPLE_ASSIST_CONTEXT_PRE_CHARS);
+    expect(contextWindow.postChars).toBeLessThan(APPLE_ASSIST_CONTEXT_POST_CHARS);
+  });
+
+  it("keeps the broader context window for inferred targets", () => {
+    for (const kind of ["paragraph", "block", "section", "document"] as const) {
+      expect(getAppleAssistContextWindow(kind)).toEqual({
+        preChars: APPLE_ASSIST_CONTEXT_PRE_CHARS,
+        postChars: APPLE_ASSIST_CONTEXT_POST_CHARS,
+      });
+    }
   });
 });

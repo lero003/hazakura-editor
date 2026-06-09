@@ -14,8 +14,8 @@ and residual risk triage are in `docs/app-store-quality-closeout.md`.
 ## Current State
 
 - `hazakura editor` is a touchable Tauri desktop app for Markdown-first safe text editing.
-- Current warning-expected DMG preview tag is `v0.16.0`.
-- Current package/app version is `0.16.0` across npm, Tauri, Cargo, and lockfile metadata.
+- Current local warning-expected DMG preview checkpoint is `v0.17.0`.
+- Current package/app version is `0.17.0` across npm, Tauri, Cargo, and lockfile metadata.
 - Current published downloadable preview target: `v0.16.0` (see v0.16.0 release notes).
 - v0.11.0 is the **L Mode WYSIWYG-tier Polish** preview: it keeps Markdown source canonical while rendering inline emphasis, strong, strike, links, inline code, task checkboxes, horizontal rules, tables, blockquotes, code blocks, ordered/bullet lists, and images as a document-like writing surface through CodeMirror display decoration.
 - v0.11.0 also includes auto-backup restore through an explicit backup-vs-buffer diff/apply flow, hash-based pasted-image deduplication, export CSS parity with Preview, workspace path rekey hardening, common text-extension save filters, and a native View menu L Mode toggle.
@@ -36,7 +36,8 @@ and residual risk triage are in `docs/app-store-quality-closeout.md`.
 - v0.16.0 is the **Per-Surface Font Sizes (v0.16 L Mode Live Source Quality Follow-up)** warning-expected DMG preview. The first slice of the v0.16 lane is settings / theme polish: the font size preference is split into per-surface values for the editor / preview / workspace / L Mode surfaces, the workspace tree CSS is re-anchored so the slider actually changes every text-bearing element, and Chromium / WebKit's `-webkit-small-control` button reset is added so the file tree base size is no longer silently blocked. The release-prep pass also refreshes the app / README logo assets with the transparent hazakura flower-and-leaf mark and includes the later IPC status-feedback polish in the v0.16 release.
 - v0.16.0 local release gates and warning-expected DMG preview verification passed on 2026-06-08. DMG SHA-256: `39f63f42fc46c7e2d8659858f1a93127917be8e7a1836f594d885a44105e40fb`.
 - v0.16.0 GitHub Release publication and remote verification passed on 2026-06-08.
-- Post-v0.16 v0.17 **Distribution Prep / Release Polish** implementation work is closed on `main`; remaining Help/content polish, real-app smoke, Store-submission material, and official distribution work are deferred to v0.18 / submission-prep lanes.  One optional pre-tag v0.17 release-candidate polish request remains documented for Apple Local Assist operation feedback because it directly improves alpha smokeability without widening the product boundary.
+- v0.17.0 is the **Distribution Prep / Release Polish Closeout** local warning-expected DMG checkpoint.  It closes the App Store quality queues, Help-readable Store-document surfaces, accessibility / diagnostics follow-ups, WorkspaceTree accessibility decision, and bounded Apple Local Assist operation-feedback polish without adding a new product surface.  Local release gates and warning-expected DMG preview verification passed on 2026-06-10.  DMG SHA-256: `a7587995e8437e0c1f1863eecb5167e46614b7387cbe6dec05b54dd24b28f8ab`.
+- Remaining Help/content polish, real-app smoke, Store-submission material, and official distribution work are deferred to v0.18 / submission-prep lanes.
 - Older public tags remain immutable.
 
 ## Current Product Boundary
@@ -59,7 +60,7 @@ Use these documents for release evidence and future release decisions:
 - `docs/releases/0.14.0-source-tag.release.md`
 - `docs/releases/0.15.0-warning-expected-dmg-preview.release.md`
 - `docs/releases/0.16.0-warning-expected-dmg-preview.release.md`
-- `docs/releases/0.17.0-warning-expected-dmg-preview.release.md` (draft; not tagged or verified yet)
+- `docs/releases/0.17.0-warning-expected-dmg-preview.release.md`
 - `docs/source-release-checklist.md`
 - `docs/dmg-preview-checklist.md`
 - `docs/smoke-checklist.md`
@@ -72,6 +73,8 @@ The published v0.11.0 release is a warning-expected DMG preview. It is ad-hoc si
 The published v0.15.0 release is a warning-expected DMG preview for the Developer / GitHub lane. It is ad-hoc signed, not Developer ID signed, not notarized, and expected to produce Gatekeeper warnings. Local and remote verification passed after publication.
 
 The published v0.16.0 release is a warning-expected DMG preview for the Developer / GitHub lane. It is ad-hoc signed, not Developer ID signed, not notarized, and expected to produce Gatekeeper warnings. Local and remote verification passed after publication.
+
+The local v0.17.0 checkpoint is a warning-expected DMG preview for the Developer / GitHub lane. It is ad-hoc signed, not Developer ID signed, not notarized, and expected to produce Gatekeeper warnings. Local verification passed on 2026-06-10. A GitHub Release and remote assets have not been published for v0.17.0.
 
 The v0.12.0, v0.13.0, and v0.14.0 tags are source / local-app checkpoints. They are not signed, notarized, App Store, TestFlight, or warning-expected DMG publications.
 
@@ -87,7 +90,7 @@ For future releases, re-check local artifact evidence and, after publication, re
 - `docs/app-store-current-work.md`: completed App Store-facing quality queue closeout and v0.18 / submission-prep deferral list.
 - `docs/app-store-quality-agent-requests.md`: external-agent request packet catalog for App Store-facing quality work that excludes certificates, signing, notarization, and DMG packaging.
 - `docs/v0.17-external-agent-requests.md`: historical v0.17 follow-up request packet; the accessibility / diagnostics / workspace-tree requests are complete or closed by recorded decision.
-- `docs/v0.17-apple-local-assist-operation-feedback-request.md`: optional pre-tag v0.17 release-candidate polish request for bounded Apple Local Assist operation feedback.
+- `docs/v0.17-apple-local-assist-operation-feedback-request.md`: historical v0.17 release-candidate polish request for bounded Apple Local Assist operation feedback.
 - `docs/app-store-review-notes-draft.md`: internal App Review Notes draft for later submission-copy adjustment.
 - `docs/apple-local-assist-distribution-plan.md`: v0.12+ Apple Local Assist and App Store / developer-build release-lane planning memo.
 - `docs/apple-local-assist-writing-companion-plan.md`: Apple Local Assist Writing Companion / external Assist Window UX direction.
@@ -162,21 +165,23 @@ Distribution work now moves after this L Mode follow-up:
 2. App Store lane readiness: App Store preview build separation, Agent Workbench omission, Apple Local Assist helper bundling/signing assumptions, sandbox/review constraints, and certificate/provisioning work.
 3. Accessibility, keyboard-flow, performance, bundle-size, and release automation cleanup where they reduce real release risk.
 
-## v0.17 Distribution Prep / Release Polish Lane
+## v0.17.0 Distribution Prep / Release Polish local checkpoint
 
-v0.17 closes the small implementation follow-ups after the App Store
+v0.17.0 closes the small implementation follow-ups after the App Store
 quality queues: `prefers-contrast: more`, Support Diagnostics UI,
 Help-readable Store documents, and the WorkspaceTree accessibility
-decision / tests.  It remains a release-prep checkpoint, not App Store
-submission.
-
-An optional pre-tag Apple Local Assist polish slice is allowed if kept
-within `docs/v0.17-apple-local-assist-operation-feedback-request.md`:
-show compact, window-local operation feedback so real-app smoke can see
-target acquisition, sending, local generation, applied, failed, and
-reviewable states.  This must remain an ephemeral UI trail, not raw
+decision / tests.  It also includes bounded Apple Local Assist
+operation-feedback polish so alpha smoke can see target selection,
+request acceptance, local generation, and edit reflection without raw
 Foundation Models prompts / responses, provider transcripts, model
-reasoning, persistent logs, or Support Diagnostics data.
+reasoning, persistent logs, or Support Diagnostics data.  It remains a
+release-prep checkpoint, not App Store submission.
+
+Known v0.17 Apple Local Assist limitation: the operation-feedback panel
+is still an alpha smoke aid.  In repeated request sessions, the panel
+may not preserve or visually surface every intermediate item after the
+first request.  The unsaved AI edit transaction, review bar, and diff
+remain the source of truth for accepting or discarding changes.
 
 The following are deliberately deferred to v0.18 / submission prep:
 Help document overlap cleanup, final real-app smoke (VoiceOver, full
@@ -185,6 +190,12 @@ Privacy Policy URL / metadata copy, final App Review Notes, complete
 third-party license packet review, screenshots, and official
 certificate / provisioning / signing / notarization / upload work.
 Avoid reopening v0.17 for these unless a release blocker is found.
+
+Local v0.17.0 verification passed on 2026-06-10.  The warning-expected
+Developer / GitHub DMG was generated at
+`src-tauri/target/release/bundle/dmg/hazakura-editor-dev_0.17.0_aarch64-warning-expected.dmg`;
+SHA-256: `a7587995e8437e0c1f1863eecb5167e46614b7387cbe6dec05b54dd24b28f8ab`.
+The DMG and checksum are local build outputs, not committed files.
 
 ## v0.16 Local Data Disclosure (in-app, App Store-quality)
 
@@ -200,9 +211,9 @@ The v0.17 Store-document follow-up adds Help-readable bundled markdown for `Priv
 
 ## Next Safe Actions
 
-1. If continuing into v0.16, use `docs/l-mode-plan.md` and `docs/commercial-quality-baseline.md`; prioritize reproduced L Mode regressions, built-app smoke, and source-preserving fixes around IME/caret/Backspace/list/link/table/image/quote/code-fence behavior.
-2. If improving Apple Local Assist after v0.15.0, use `docs/assist-surface-strategy.md`, `docs/apple-local-assist-distribution-plan.md`, and `docs/apple-local-assist-writing-companion-plan.md`; keep Apple Local Assist as an external Writing Companion and require AI edit transactions for direct buffer edits.
+1. If continuing into v0.18, use `docs/app-store-current-work.md`, `docs/app-store-quality-closeout.md`, `docs/dmg-preview-checklist.md`, and the v0.17 release note; prioritize remaining real-app smoke, Help copy overlap cleanup, Store metadata, and official distribution prep.
+2. If improving Apple Local Assist after v0.17.0, use `docs/assist-surface-strategy.md`, `docs/apple-local-assist-distribution-plan.md`, and `docs/apple-local-assist-writing-companion-plan.md`; keep Apple Local Assist as an external Writing Companion and require AI edit transactions for direct buffer edits.
 3. If improving theme / settings, verify persistence, native menu sync, readability, and restart-required copy before debating purely cosmetic variants.
-4. If preparing the v0.17 release checkpoint, use `docs/source-release-checklist.md`, `docs/dmg-preview-checklist.md`, `docs/app-store-quality-closeout.md`, and `docs/app-store-current-work.md`; keep App Store / Developer / warning-expected DMG lanes separate and do not mix v0.18 Help / Store submission / official distribution tasks into the v0.17 tag.  If the optional Apple Local Assist operation-feedback slice is attempted before tagging, keep it inside `docs/v0.17-apple-local-assist-operation-feedback-request.md`.
+4. If preparing a future release checkpoint, use `docs/source-release-checklist.md`, `docs/dmg-preview-checklist.md`, and the version-specific release note; keep App Store / Developer / warning-expected DMG lanes separate and do not mix Store submission / official distribution claims into a warning-expected preview.
 5. If preparing a future release, use the version-specific release note; do not tag or publish without explicit approval.
 6. If changing product behavior, use `docs/product-brief.md`, `docs/security-boundary.md`, and the touched boundary doc before implementation.

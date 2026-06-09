@@ -12,11 +12,12 @@ Last reviewed: 2026-06-10 (v0.17 closeout plus optional Assist feedback slice)
 Current release state:
 
 - Latest published preview: `v0.16.0` warning-expected DMG preview.
+- Latest local warning-expected DMG checkpoint: `v0.17.0`.
 - Latest source / local-app-only tag: `v0.14.0`.
-- Current package/app version: `0.16.0`.
-- v0.16.0 theme: **Per-Surface Font Sizes / L Mode Live Source Quality Follow-up**.
-- Active lane: v0.17 Distribution Prep / Release Polish closeout, unless a v0.16 hotfix blocker appears.
-- Active product polish direction: keep v0.17 bounded to the completed release-prep follow-ups and prepare the release checkpoint.  A single optional Apple Local Assist operation-feedback slice may land before tagging if it stays within the documented security boundary.  Help-content overlap, remaining real-app smoke, Store-submission materials, and official distribution work move to v0.18 / submission-prep lanes.
+- Current package/app version: `0.17.0`.
+- v0.17.0 theme: **Distribution Prep / Release Polish Closeout**.
+- Active lane: v0.18 Help-content refinement, remaining real-app smoke, Store-submission materials, and official distribution prep, unless a v0.17 hotfix blocker appears.
+- Active product polish direction: keep v0.17 closed as a bounded release checkpoint.  Future work should refine Help copy, complete remaining real-app smoke, prepare Store metadata, and handle official signing / notarization / submission in v0.18+ lanes.
 
 Historical phase details and old milestone text are archived in `docs/archive/roadmaps/roadmap-through-v0.10-doc-refactor.md` and `docs/archive/roadmaps/roadmap-v0.1-archived.md`.
 
@@ -212,10 +213,11 @@ Out of scope:
 - Full WYSIWYG structural editing such as table cell merging, Preview DOM editing, `contenteditable`, HTML saved model, or hidden save-time rewriting.
 - Large refactors without measurement, smoke evidence, or a release-readiness blocker.
 
-## Active Lane: v0.17 Distribution Prep / Release Polish Closeout
+## Tagged Lane: v0.17 Distribution Prep / Release Polish Closeout
 
 Goal: keep the v0.17 release checkpoint small now that the App Store
-quality queues and non-smoke implementation follow-ups are complete.
+quality queues, non-smoke implementation follow-ups, and bounded Apple
+Local Assist operation-feedback polish are complete.
 
 Focus:
 
@@ -227,11 +229,10 @@ Focus:
 - Do not add Store-submission, official signing, notarization, or
   TestFlight work to v0.17.
 - Keep Markdown source canonical and Safe Editor primary.
-- One optional pre-tag Apple Local Assist operation-feedback slice may
-  be attempted if it stays inside
-  `docs/v0.17-apple-local-assist-operation-feedback-request.md`: compact
-  lifecycle feedback in the existing Assist Window, no raw transcript,
-  no persistence, and no new product surface.
+- Apple Local Assist now shows compact lifecycle feedback in the
+  existing Assist Window, keeps generation scoped to the active target
+  plus bounded surrounding context, and avoids raw transcript,
+  persistence, or any new product surface.
 
 Deferred to v0.18 / submission prep:
 

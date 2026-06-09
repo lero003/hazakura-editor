@@ -30,6 +30,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   OPERATION_FEEDBACK_MAX_ENTRIES,
+  scrollOperationFeedbackToEnd,
   useOperationFeedback,
 } from "./AppleAssistWindowApp";
 
@@ -309,5 +310,24 @@ describe("useOperationFeedback", () => {
       result.current.clearFeedback();
     });
     expect(result.current.feedback).toEqual([]);
+  });
+});
+
+describe("scrollOperationFeedbackToEnd", () => {
+  it("scrolls the feedback panel to the newest entry", () => {
+    const panel = document.createElement("section");
+    Object.defineProperty(panel, "scrollHeight", {
+      configurable: true,
+      value: 320,
+    });
+    panel.scrollTop = 12;
+
+    scrollOperationFeedbackToEnd(panel);
+
+    expect(panel.scrollTop).toBe(320);
+  });
+
+  it("ignores a missing feedback panel", () => {
+    expect(() => scrollOperationFeedbackToEnd(null)).not.toThrow();
   });
 });

@@ -7,11 +7,11 @@ Last reviewed: 2026-06-10
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
-Latest published release body:
+Latest published GitHub Release body:
 
 - `0.16.0-warning-expected-dmg-preview.release.md`
 
-Current draft release body:
+Current local release checkpoint body:
 
 - `0.17.0-warning-expected-dmg-preview.release.md`
 

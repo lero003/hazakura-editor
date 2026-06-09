@@ -30,7 +30,7 @@ import {
 // The user types a rough request ("整えて" / "自然にして" / "続きを書いて" /
 // "校正して" / "この章を直して") into a textarea, picks the
 // active tab from the main window's broadcast, and clicks
-// "Apply" to emit `APPLY_AI_EDIT_TRANSACTION_EVENT` to the main
+// the request button to emit `APPLY_AI_EDIT_TRANSACTION_EVENT` to the main
 // window. The main window is responsible for:
 //   - inferring the bounded target (selection → paragraph →
 //     block → section) via `REQUEST_AI_EDIT_TARGET_EVENT` round
@@ -45,9 +45,7 @@ import {
 //   - a header that names the companion and shows the current
 //     active document title (mirrored from the main window),
 //   - a rough-request textarea + a few preset chips for the
-//     common rough requests,
-//   - a "Refresh document" affordance to re-pull the active
-//     tab from the main window.
+//     common rough requests.
 //
 // Status / error feedback is shown inline so the mock is
 // usable end-to-end without depending on the agent
@@ -84,6 +82,13 @@ const APPLE_ASSIST_GENERATION_FALLBACK_MS = 365_000;
 // exceeded so the panel never grows past a screen of
 // information.
 export const OPERATION_FEEDBACK_MAX_ENTRIES = 6;
+
+export function scrollOperationFeedbackToEnd(element: HTMLElement | null): void {
+  if (!element) {
+    return;
+  }
+  element.scrollTop = element.scrollHeight;
+}
 
 export function useOperationFeedback() {
   const [feedback, setFeedback] = useState<FeedbackEntry[]>([]);
@@ -189,6 +194,7 @@ export function AppleAssistWindowApp() {
   const [target, setTarget] = useState<AppleAssistTargetSnapshot | null>(null);
   const { availability, available, probed } = useAppleAssistAvailability();
   const { feedback, pushFeedback } = useOperationFeedback();
+  const feedbackSectionRef = useRef<HTMLElement | null>(null);
   // Track whether the availability probe has been reported
   // to the feedback panel so we only push one "ready" /
   // "unavailable" entry, not one per availability re-emit.
@@ -216,6 +222,10 @@ export function AppleAssistWindowApp() {
       setStatus(copy.longRunningStatus);
     }, APPLE_ASSIST_GENERATION_FALLBACK_MS);
   }, [clearGenerationFallback, copy.longRunningStatus]);
+
+  useEffect(() => {
+    scrollOperationFeedbackToEnd(feedbackSectionRef.current);
+  }, [feedback.length]);
 
   // Apply theme to the Apple Assist window's document so the
   // CSS variable surface matches the main window. Mirrors the
@@ -489,26 +499,6 @@ export function AppleAssistWindowApp() {
     setError(null);
   }, []);
 
-  // Manual re-pull of the active target from the main window.
-  // The cached snapshot may have gone stale (cursor moved,
-  // tab closed, focus left the editor). The user-facing
-  // affordance for this lives in the header as the
-  // "Refresh document" button so the recovery is obvious
-  // without reopening the window.
-  const refreshTarget = useCallback(async () => {
-    if (!isTauriEventAvailable()) {
-      return;
-    }
-    try {
-      const next = await getMainAppleAssistTarget();
-      setTarget(next);
-      setError(null);
-    } catch (err) {
-      console.warn("Failed to refresh apple assist target", err);
-      setError(copy.targetReadFailed);
-    }
-  }, [copy]);
-
   return (
     <div className="apple-assist-window-shell" data-testid="apple-assist-shell">
       <header className="apple-assist-window-header">
@@ -530,33 +520,56 @@ export function AppleAssistWindowApp() {
         <div className="apple-assist-window-target" data-testid="apple-assist-target">
           {renderTargetSummary(target, copy)}
         </div>
-        <button
-          type="button"
-          className="apple-assist-window-refresh"
-          onClick={() => void refreshTarget()}
-          disabled={busy || !isTauriEventAvailable()}
-          aria-label={copy.refreshDocumentButton}
-          data-testid="apple-assist-refresh"
-        >
-          {copy.refreshDocumentButton}
-        </button>
       </header>
 
+      <section className="apple-assist-window-form" aria-label={copy.roughRequestLabel}>
+        <label
+          htmlFor="apple-assist-rough-request"
+          className="apple-assist-window-label"
+        >
+          {copy.roughRequestLabel}
+        </label>
+        <textarea
+          id="apple-assist-rough-request"
+          className="apple-assist-window-textarea"
+          value={roughRequest}
+          onChange={(event) => {
+            setRoughRequest(event.target.value);
+            setError(null);
+          }}
+          rows={3}
+          placeholder={copy.placeholder}
+          disabled={busy || !available}
+        />
+        <button
+          type="button"
+          className="apple-assist-window-apply"
+          onClick={() => void applyRoughRequest()}
+          disabled={busy || !available || roughRequest.trim().length === 0}
+        >
+          {busy ? copy.generatingButton : copy.applyButton}
+        </button>
+      </section>
+
       <section className="apple-assist-window-presets" aria-label={copy.presetsLabel}>
-        {copy.presets.map((preset) => (
-          <button
-            key={preset.id}
-            type="button"
-            className="apple-assist-preset"
-            onClick={() => onPickPreset(preset.prompt)}
-            disabled={busy || !available}
-          >
-            {preset.label}
-          </button>
-        ))}
+        <p className="apple-assist-presets-heading">{copy.presetsLabel}</p>
+        <div className="apple-assist-presets-list">
+          {copy.presets.map((preset) => (
+            <button
+              key={preset.id}
+              type="button"
+              className="apple-assist-preset"
+              onClick={() => onPickPreset(preset.prompt)}
+              disabled={busy || !available}
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
       </section>
 
       <section
+        ref={feedbackSectionRef}
         className="apple-assist-window-feedback"
         aria-label={copy.feedbackHeading}
         data-testid="apple-assist-feedback-section"
@@ -592,35 +605,6 @@ export function AppleAssistWindowApp() {
             ))}
           </ul>
         )}
-      </section>
-
-      <section className="apple-assist-window-form" aria-label={copy.roughRequestLabel}>
-        <label
-          htmlFor="apple-assist-rough-request"
-          className="apple-assist-window-label"
-        >
-          {copy.roughRequestLabel}
-        </label>
-        <textarea
-          id="apple-assist-rough-request"
-          className="apple-assist-window-textarea"
-          value={roughRequest}
-          onChange={(event) => {
-            setRoughRequest(event.target.value);
-            setError(null);
-          }}
-          rows={2}
-          placeholder={copy.placeholder}
-          disabled={busy || !available}
-        />
-        <button
-          type="button"
-          className="apple-assist-window-apply"
-          onClick={() => void applyRoughRequest()}
-          disabled={busy || !available || roughRequest.trim().length === 0}
-        >
-          {busy ? copy.generatingButton : copy.applyButton}
-        </button>
       </section>
 
       <footer className="apple-assist-window-footer">
@@ -668,7 +652,6 @@ export type AppleAssistWindowCopy = {
   presets: AppleAssistWindowPreset[];
   presetsLabel: string;
   readyStatus: string;
-  refreshDocumentButton: string;
   roughRequestLabel: string;
   selectionTooLongError: string;
   sendingRequest: string;
@@ -827,21 +810,21 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     return {
       activeDocument: (name) => `いまのふみ: ${name}`,
       appliedStatus: (request) =>
-        `ついかしました: ${request}。L Mode の あくしょん れーるから へんこう れびゅー しーとを ひらき、ほぞん まえに ないようを かくにん または とりけして ください。`,
-      applyButton: "つかう",
+        `へんしゅう あんを はんえいしました: ${request}。ほぞん まえに さぶんで かくにん できます。`,
+      applyButton: "おねがいする",
       availableDisclosure:
-        "あっぷる ろーかる あしす と は あっぷる の この Mac の きのうで たいしょうを ほじょ します。かへりは めいん えでぃた の ほぞんせず ばっふぁに はいります。",
+        "この Mac だけで ぶんしょう の てなおしを てつだいます。えらんだ ところや いまの だんらくを たいしょうにし、けっかは ほぞん まえの へんしゅう あんとして はいります。",
       contextTooLongError:
         "しゅうへん ぶんしょ が ながすぎ ます。L Mode の たいしょう しゅうへん こんできすと の じょうげん (8000 もじ) を こえました。",
       disabledStatus:
         "この せっしょで あっぷる ろーかる あしす とは むこうです。Preferences > Assist Surface で あっぷる ろーかる あしす と (じっけん) を えらび、あぷりを さいきどうして ください。",
       emptyRequestError:
-        "まずは おねがひを かいてください。れい: ととのえて / しぜんに / つづきを / こうせい。おねがひと えらんだ たいしょうを いっしょに あっぷる ふぁうんでーしょん もでるず に おくります。",
-      generatingButton: "せいせい ちゅう...",
+        "まずは おねがいを かいてください。れい: ととのえて / しぜんに / つづきを / こうせい。",
+      generatingButton: "おねがい中...",
       generatingChange:
-        "あっぷる ふぁうんでーしょん もでるず で かへりを せいせい ちゅう。けっかは めいん えでぃた に ほぞんせず の AI edit transaction として はいります。",
+        "この Mac で へんしゅう あんを つくっています。けっかは ほぞん まえの へんしゅう あんとして はいります。",
       generatingInMain: (request) =>
-        `めいん えでぃた で せいせい ちゅう: ${request}。ほぞん まえに へんこう れびゅー しーと で かくにん または とりけし してください。`,
+        `へんしゅう あんを つくっています: ${request}。ほぞん まえに さぶんで かくにん できます。`,
       guardrailError:
         "あっぷる ふぁうんでーしょん もでるず が かーどれーる いはん として この おねがひを きょひ しました。べつ の おねがひ で さいしこう してください。",
       localRuntimeUnavailable: (reason) =>
@@ -854,7 +837,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       noTarget:
         "たいしょう が まだ えらばれて いません。えでぃた に かーそる を おくか、L Mode を ひらいて たいしょう を せってい して ください。",
       placeholder:
-        "れい: ととのえて / しぜんに / つづきを / こうせい / このしょうを なおして",
+        "どう なおしたいかを かいてください",
       presets: [
         { id: "tidy", label: "ととのえて", prompt: "整えて" },
         { id: "natural", label: "しぜんに", prompt: "自然にして" },
@@ -862,19 +845,18 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         { id: "proofread", label: "こうせい", prompt: "校正して" },
         { id: "rewrite-section", label: "このしょうを", prompt: "この章を直して" },
       ],
-      presetsLabel: "ざっくり おねがひの ぷりせっと",
+      presetsLabel: "よくつかう おねがい",
       readyStatus:
-        "じゅんび できました。めいん えでぃた で たいしょう を えらび、おねがひ を かいて つかう を クリック。かへり は ほぞんせず ばっふぁ に はいります。",
-      refreshDocumentButton: "ぶんしょ を さいしゅとく",
-      roughRequestLabel: "おねがひ",
+        "じゅんび できました。たいしょうを えらび、おねがいを かいてください。けっかは ほぞん まえの へんしゅう あんとして はいります。",
+      roughRequestLabel: "おねがい",
       selectionTooLongError:
         "えらんだ ところが ながすぎ ます（さいだい 4000 もじ）。あっぷる ふぁうんでーしょん もでるず の こんできすと まど に おさまらないため、もう すこし ちいさく えらんで ください。",
-      sendingRequest: "めいん えでぃた に おねがひ を おくっています...",
+      sendingRequest: "おねがいを うけつけました...",
       subtitle: "けいりょう な おんではばいす ぶんしょう ほじょ",
       targetStaleError:
         "たいしょう が ふるく なって います。あっぷる あしす と うぃんどう を ひらきなおすか、めいん えでぃた で たいしょう を えらびなおして ください。",
       targetReadFailed:
-        "たいしょう の さいしゅとく に しっぱい しました。めいん えでぃた の じょうたい を かくにん して から、もう いちど ぶんしょ を さいしゅとく して ください。",
+        "たいしょう の よみこみ に しっぱい しました。めいん えでぃた で えらびなおしてから、もう いちど おねがいして ください。",
       tauriUnavailableError:
         "あっぷる ろーかる あしす と うぃんどう が Tauri runtime の そとで うごいています。めいん えでぃた に とどけません。.app ばんどる から あぷり を さいきどうして ください。",
       targetBlock: (chars) => `こーど ぶろっく (${chars} もじ)`,
@@ -891,44 +873,44 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         "この はんきょうで あっぷる ろーかる あしす とは つかえません。macOS 26 いこう と、この Mac で ゆうこうかした あっぷる いんてりじぇんす と、ふぁうんでーしょん もでるず たいおう の ことば / ろけーる が ひつようです。",
       workingLocally: "この Mac で ろーかる しょり ちゅう (ねっとわーく よびだし なし)",
       // v0.17 operation-feedback panel copy.
-      feedbackHeading: "この Mac の うごき",
+      feedbackHeading: "すすみぐあい",
       feedbackEmpty:
-        "あっぷる ろーかる あしす との うごき は まだ ありません。ぶんしょ を ひらいて たいしょう を えらび、おねがひ を かか ださい。",
+        "まだ おねがいは ありません。たいしょうを えらび、おねがいを かいてください。",
       feedbackEntry: (kind, payload) => {
         if (kind === "ready") {
-          return "じゅんび できました。たいしょう を まって います。";
+          return "じゅんび できました。";
         }
         if (kind === "target-acquired") {
           const tk = payload?.targetKind;
           const chars = payload?.targetChars ?? 0;
           if (tk === "selection") {
-            return `たいしょう: えらんだ ところ、およそ ${chars} もじ`;
+            return `今回のたいしょう: えらんだ ところ、およそ ${chars} もじ`;
           }
           if (tk === "paragraph") {
-            return `たいしょう: だんらく、およそ ${chars} もじ`;
+            return `今回のたいしょう: だんらく、およそ ${chars} もじ`;
           }
           if (tk === "block") {
-            return `たいしょう: こーど ぶろっく、およそ ${chars} もじ`;
+            return `今回のたいしょう: こーど ぶろっく、およそ ${chars} もじ`;
           }
           if (tk === "section") {
-            return `たいしょう: しょう、およそ ${chars} もじ`;
+            return `今回のたいしょう: しょう、およそ ${chars} もじ`;
           }
           if (tk === "document") {
-            return `たいしょう: ふみ ぜんたい、およそ ${chars} もじ`;
+            return `今回のたいしょう: ふみ ぜんたい、およそ ${chars} もじ`;
           }
-          return "たいしょう を えらびました。";
+          return "今回のたいしょうを きめました。";
         }
         if (kind === "request-sent") {
-          return "あっぷる ろーかる あしす と へ おねがひ を おくりました。";
+          return "おねがいを うけつけました。";
         }
         if (kind === "generation-started") {
-          return "ろーかる で せいせい かいし。";
+          return "この Mac で へんしゅう あんを つくっています。";
         }
         if (kind === "applied") {
-          return "ほぞんせず の AI edit transaction として ついかしました。ほぞん まえに かくにん してください。";
+          return "へんしゅう あんを はんえいしました。ほぞん まえに かくにん できます。";
         }
         if (kind === "failed") {
-          return "しっぱい しました。すてーたす らん を みてください。";
+          return "うまく いきませんでした。下の すてーたす を みてください。";
         }
         return "あっぷる ろーかる あしす とは この はんきょうで つかえません。";
       },
@@ -939,21 +921,21 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     return {
       activeDocument: (name) => `対象: ${name}`,
       appliedStatus: (request) =>
-        `適用しました: ${request}。L Mode のアクショレールから変更レビューシートを開き、保存前に内容を確認または取り消してください。`,
-      applyButton: "適用",
+        `編集案を反映しました: ${request}。保存前に差分で確認できます。`,
+      applyButton: "依頼する",
       availableDisclosure:
-        "準備完了。Apple Local Assist は Apple のオンデバイス Foundation Models を使って、選択中の対象を補助します。変更はメインエディタの未保存バッファに反映され、保存前に差分を確認できます。",
+        "この Mac 上で文章の手直しを手伝います。選択範囲や現在の段落を対象にし、結果は未保存の編集案として反映します。保存前に差分で確認できます。",
       contextTooLongError:
         "周辺の文書が長すぎます。L Mode の対象周辺コンテキスト上限（8000 文字）を超えました。",
       disabledStatus:
         "このセッションでは Apple Local Assist は無効です。Preferences > Assist Surface で outside companion slot を「Apple Local Assist (Experimental)」に切り替え、アプリを再起動してください。",
       emptyRequestError:
-        "まずは依頼文を入力してください。例: 「整えて」「自然にして」「続きを書いて」「校正して」。依頼文と選択中の対象を一緒に Apple Foundation Models に送ります。",
-      generatingButton: "生成中...",
+        "まずは依頼内容を入力してください。例: 「整えて」「自然にして」「続きを書いて」「校正して」。",
+      generatingButton: "依頼中...",
       generatingChange:
-        "Apple Foundation Models で変更を生成中。結果はメインエディタに未保存の AI edit transaction として反映されます。",
+        "この Mac 上で編集案を作っています。結果は未保存の編集案として反映されます。",
       generatingInMain: (request) =>
-        `メインエディタで生成中: ${request}。結果は未保存の AI edit transaction として反映されるので、保存前に変更レビューシートで内容を確認または取り消してください。`,
+        `編集案を作っています: ${request}。保存前に差分で確認できます。`,
       guardrailError:
         "Apple Foundation Models がこの依頼をガードレール違反として拒否しました。別の依頼文で再試行してください。",
       localRuntimeUnavailable: (reason) =>
@@ -966,7 +948,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       noTarget:
         "対象がまだ選ばれていません。エディタにカーソルを置くか、L Mode を開いて対象を設定してください。",
       placeholder:
-        "例: 整えて / 自然にして / 続きを書いて / 校正して / この章を直して",
+        "どう直したいかを書いてください",
       presets: [
         { id: "tidy", label: "整えて", prompt: "整えて" },
         { id: "natural", label: "自然にして", prompt: "自然にして" },
@@ -974,19 +956,18 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         { id: "proofread", label: "校正して", prompt: "校正して" },
         { id: "rewrite-section", label: "この章を直して", prompt: "この章を直して" },
       ],
-      presetsLabel: "ざっくり依頼のプリセット",
+      presetsLabel: "よく使う依頼",
       readyStatus:
-        "準備完了。メインエディタで対象を選び、依頼文を入力して「適用」をクリック。変更はメインエディタの未保存バッファに反映されます。",
-      refreshDocumentButton: "文書を再取得",
-      roughRequestLabel: "依頼文",
+        "準備完了。対象を選び、依頼内容を入力してください。結果は未保存の編集案として反映されます。",
+      roughRequestLabel: "依頼内容",
       selectionTooLongError:
         "選択範囲が大きすぎます（最大 4000 文字）。Apple Foundation Models のコンテキスト窓に収まらないため、もう少し小さく選択してください。",
-      sendingRequest: "メインエディタに依頼を送信中...",
+      sendingRequest: "依頼を受け付けました...",
       subtitle: "軽量なオンデバイス文章補助",
       targetStaleError:
         "対象が古くなっています。Apple Assist ウィンドウを開き直すか、メインエディタで対象を選び直してください。",
       targetReadFailed:
-        "対象の再取得に失敗しました。メインエディタの状態を確認してから、もう一度文書を再取得してください。",
+        "対象の読み込みに失敗しました。メインエディタで選び直してから、もう一度依頼してください。",
       tauriUnavailableError:
         "Apple Local Assist ウィンドウが Tauri runtime の外で動作しており、メインエディタに到達できません。.app バンドルからアプリを再起動し、ウィンドウを Tauri 子プロセスとして起動してください。",
       targetBlock: (chars) => `コードブロック (${chars} 文字)`,
@@ -1003,44 +984,44 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         "この環境では Apple Local Assist は使えません。macOS 26 以降と、この Mac で有効化された Apple Intelligence、そして Foundation Models 対応の言語 / ロケールが必要です。",
       workingLocally: "この Mac 上でローカル処理中（ネットワーク呼び出しなし）",
       // v0.17 operation-feedback panel copy.
-      feedbackHeading: "ローカルでの動き",
+      feedbackHeading: "処理の流れ",
       feedbackEmpty:
-        "Apple Local Assist の動きはまだありません。文書を開いて対象を選び、依頼文を入力してください。",
+        "まだ依頼はありません。対象を選び、依頼内容を入力してください。",
       feedbackEntry: (kind, payload) => {
         if (kind === "ready") {
-          return "準備完了。対象を待っています。";
+          return "準備完了。";
         }
         if (kind === "target-acquired") {
           const tk = payload?.targetKind;
           const chars = payload?.targetChars ?? 0;
           if (tk === "selection") {
-            return `対象: 選択範囲、およそ ${chars} 文字`;
+            return `今回の対象: 選択範囲、およそ ${chars} 文字`;
           }
           if (tk === "paragraph") {
-            return `対象: 段落、およそ ${chars} 文字`;
+            return `今回の対象: 段落、およそ ${chars} 文字`;
           }
           if (tk === "block") {
-            return `対象: コードブロック、およそ ${chars} 文字`;
+            return `今回の対象: コードブロック、およそ ${chars} 文字`;
           }
           if (tk === "section") {
-            return `対象: 章、およそ ${chars} 文字`;
+            return `今回の対象: 章、およそ ${chars} 文字`;
           }
           if (tk === "document") {
-            return `対象: 文書全体、およそ ${chars} 文字`;
+            return `今回の対象: 文書全体、およそ ${chars} 文字`;
           }
-          return "対象を選びました。";
+          return "今回の対象を決めました。";
         }
         if (kind === "request-sent") {
-          return "Apple Local Assist へ依頼を送信しました。";
+          return "依頼を受け付けました。";
         }
         if (kind === "generation-started") {
-          return "ローカルで生成開始。";
+          return "この Mac 上で編集案を作っています。";
         }
         if (kind === "applied") {
-          return "未保存の AI edit transaction として追加しました。保存前に確認してください。";
+          return "編集案を反映しました。保存前に確認できます。";
         }
         if (kind === "failed") {
-          return "失敗しました。ステータス欄を確認してください。";
+          return "うまくいきませんでした。下のステータスを確認してください。";
         }
         return "Apple Local Assist はこの環境では使えません。";
       },
@@ -1050,21 +1031,21 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
   return {
     activeDocument: (name) => `Active: ${name}`,
     appliedStatus: (request) =>
-      `Applied: ${request}. Open the change review sheet from the L Mode action rail to review or discard before saving.`,
-    applyButton: "Apply",
+      `Draft edit applied: ${request}. Review the diff before saving.`,
+    applyButton: "Send request",
     availableDisclosure:
-      "Ready. Apple Local Assist uses Apple's on-device Foundation Models to revise the active target. Changes land in the main editor's unsaved buffer; review the diff before saving.",
+      "Apple Local Assist helps revise the selected text or current paragraph on this Mac. Results land as an unsaved draft edit, so you can review the diff before saving.",
     contextTooLongError:
       "Document context is too long (L Mode harness caps surrounding text at 8000 characters). Pick a tighter target or break the change into smaller requests.",
     disabledStatus:
       "Apple Local Assist is disabled in this app session. Open Preferences > Assist Surface and switch the outside companion slot to 'Apple Local Assist (Experimental)'. Restart the app to apply.",
     emptyRequestError:
-      "Type a rough request first. Examples: 'Make it cleaner', 'Continue this', 'Proofread this'. The request and the active target text are sent together to Apple Foundation Models.",
-    generatingButton: "Generating...",
+      "Type what you want changed first. Examples: 'Make it cleaner', 'Continue this', 'Proofread this'.",
+    generatingButton: "Sending...",
     generatingChange:
-      "Generating the change with Apple Foundation Models. The result lands as an unsaved AI edit transaction in the main editor.",
+      "Creating a draft edit on this Mac. The result lands as an unsaved draft edit in the main editor.",
     generatingInMain: (request) =>
-      `Generating in the main editor: ${request}. The result lands as an unsaved AI edit transaction; review or discard it from the change review sheet before saving.`,
+      `Creating a draft edit: ${request}. Review the diff before saving.`,
     guardrailError:
       "Apple Foundation Models refused this request because it hit a guardrail. Try a different request.",
     localRuntimeUnavailable: (reason) =>
@@ -1076,8 +1057,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       "No active document is open in the main editor. Open a Markdown or text file first.",
     noTarget:
       "No active target yet. Place the cursor inside the document, or open L Mode to get a target.",
-    placeholder:
-      "e.g. Make it cleaner / Make it natural / Continue this / Proofread this / Rewrite this section",
+    placeholder: "Describe what you want changed",
     presets: [
       { id: "tidy", label: "Clean up", prompt: "Make it cleaner" },
       { id: "natural", label: "Natural", prompt: "Make it sound natural" },
@@ -1089,19 +1069,18 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         prompt: "Rewrite this section",
       },
     ],
-    presetsLabel: "Rough request presets",
+    presetsLabel: "Common requests",
     readyStatus:
-      "Ready. Pick a target in the main editor, type a rough request, and click Apply. The change lands in the main editor's unsaved buffer.",
-    refreshDocumentButton: "Refresh document",
-    roughRequestLabel: "Rough request",
+      "Ready. Pick a target and type what you want changed. Results land as unsaved draft edits.",
+    roughRequestLabel: "Request",
     selectionTooLongError:
       "Selection is too long (max 4000 characters). Apple Foundation Models has a bounded context window; pick a smaller selection, or split the change into multiple requests.",
-    sendingRequest: "Sending the request to the main editor...",
+    sendingRequest: "Request accepted...",
     subtitle: "Lightweight on-device writing help",
     targetStaleError:
       "The active target has changed since the request was prepared. Re-open the Apple Assist window, or pick a new target in the main editor.",
     targetReadFailed:
-      "Could not re-read the active target from the main editor. Verify the main editor state, then click Refresh document again.",
+      "Could not read the target. Pick the text again in the main editor, then send the request again.",
     tauriUnavailableError:
       "Apple Local Assist window is running outside the Tauri runtime; it cannot reach the main editor. Restart the app from the .app bundle so the window launches as a Tauri child process.",
     targetBlock: (chars) => `Code block (${chars} chars)`,
@@ -1118,44 +1097,44 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       "Apple Local Assist is not supported in this environment. It needs macOS 26 or later and Apple Intelligence turned on for this Mac, with a Foundation Models-supported language and locale.",
     workingLocally: "Working locally on this Mac (no network call)",
     // v0.17 operation-feedback panel copy.
-    feedbackHeading: "Activity",
+    feedbackHeading: "Progress",
     feedbackEmpty:
-      "No activity yet. Open a document, pick a target, and type a rough request to begin.",
+      "No requests yet. Pick a target and describe what you want changed.",
     feedbackEntry: (kind, payload) => {
       if (kind === "ready") {
-        return "Ready. Waiting for a target.";
+        return "Ready.";
       }
       if (kind === "target-acquired") {
         const tk = payload?.targetKind;
         const chars = payload?.targetChars ?? 0;
         if (tk === "selection") {
-          return `Target: selection, about ${chars} characters`;
+          return `This request targets: selection, about ${chars} characters`;
         }
         if (tk === "paragraph") {
-          return `Target: paragraph, about ${chars} characters`;
+          return `This request targets: paragraph, about ${chars} characters`;
         }
         if (tk === "block") {
-          return `Target: code block, about ${chars} characters`;
+          return `This request targets: code block, about ${chars} characters`;
         }
         if (tk === "section") {
-          return `Target: section, about ${chars} characters`;
+          return `This request targets: section, about ${chars} characters`;
         }
         if (tk === "document") {
-          return `Target: whole document, about ${chars} characters`;
+          return `This request targets: whole document, about ${chars} characters`;
         }
-        return "Target acquired.";
+        return "Target selected for this request.";
       }
       if (kind === "request-sent") {
-        return "Request sent to local Apple Assist.";
+        return "Request accepted.";
       }
       if (kind === "generation-started") {
-        return "Local generation started.";
+        return "Creating a draft edit on this Mac.";
       }
       if (kind === "applied") {
-        return "Applied as an unsaved AI edit. Review before saving.";
+        return "Draft edit applied. Review before saving.";
       }
       if (kind === "failed") {
-        return "Failed. See the status line for the reason.";
+        return "That did not work. Check the status below.";
       }
       return "Apple Local Assist is unavailable in this environment.";
     },

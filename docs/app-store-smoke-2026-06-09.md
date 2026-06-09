@@ -32,7 +32,7 @@
 ### 2) Safe Editor 基本操作
 
 - PASS: アプリ起動 / Markdown ファイル open
-  - `open -a "hazakura editor" /tmp/hazakura-smoke-2026-06-09/smoke.md` で
+  - `open -a "hazakura editor" <temp-smoke-dir>/smoke.md` で
     ウィンドウタイトルが `smoke.md - hazakura editor` と表示。
 - FAIL: 編集の自動実施
   - 再現手順: アプリ起動後、`osascript` で `⌘A` + `⌘C` を送信。

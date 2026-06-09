@@ -47,7 +47,6 @@ const REQUIRED_KEYS: ReadonlyArray<keyof AppleAssistWindowCopy> = [
   "presets",
   "presetsLabel",
   "readyStatus",
-  "refreshDocumentButton",
   "roughRequestLabel",
   "selectionTooLongError",
   "sendingRequest",
@@ -110,7 +109,6 @@ describe("getAppleAssistWindowCopy", () => {
         expect(copy.targetDocument(123)).toMatch(/\S/);
         expect(copy.targetLabel("H2 見出し")).toMatch(/\S/);
         expect(copy.unknownError("raw detail")).toMatch(/\S/);
-        expect(copy.refreshDocumentButton).toMatch(/\S/);
         expect(copy.targetReadFailed).toMatch(/\S/);
       });
 
@@ -121,11 +119,11 @@ describe("getAppleAssistWindowCopy", () => {
 
       it("uses the language's expected `applyButton`", () => {
         if (lang === "ja") {
-          expect(copy.applyButton).toBe("適用");
+          expect(copy.applyButton).toBe("依頼する");
         } else if (lang === "kana") {
-          expect(copy.applyButton).toBe("つかう");
+          expect(copy.applyButton).toBe("おねがいする");
         } else {
-          expect(copy.applyButton).toBe("Apply");
+          expect(copy.applyButton).toBe("Send request");
         }
       });
 
@@ -187,17 +185,6 @@ describe("getAppleAssistWindowCopy", () => {
     expect(new Set([en, ja, kana]).size).toBe(3);
   });
 
-  it("uses different refreshDocumentButton labels per language (no en bleed-through)", () => {
-    const en = getAppleAssistWindowCopy("en").refreshDocumentButton;
-    const ja = getAppleAssistWindowCopy("ja").refreshDocumentButton;
-    const kana = getAppleAssistWindowCopy("kana").refreshDocumentButton;
-    expect(new Set([en, ja, kana]).size).toBe(3);
-    // The English copy must not accidentally leak into the
-    // Japanese / kana refresh button label.
-    expect(ja).not.toMatch(/^Refresh document$/);
-    expect(kana).not.toMatch(/^Refresh document$/);
-  });
-
   it("uses different targetReadFailed messages per language (no en bleed-through)", () => {
     const en = getAppleAssistWindowCopy("en").targetReadFailed;
     const ja = getAppleAssistWindowCopy("ja").targetReadFailed;
@@ -205,15 +192,19 @@ describe("getAppleAssistWindowCopy", () => {
     expect(new Set([en, ja, kana]).size).toBe(3);
   });
 
+  it("does not expose a manual target refresh label because apply re-reads the target", () => {
+    expect("refreshDocumentButton" in getAppleAssistWindowCopy("ja")).toBe(false);
+  });
+
   it("never accidentally leaks English into the `emptyRequestError`", () => {
     const en = getAppleAssistWindowCopy("en").emptyRequestError;
     const ja = getAppleAssistWindowCopy("ja").emptyRequestError;
     const kana = getAppleAssistWindowCopy("kana").emptyRequestError;
     // `en` is expected to be English; `ja` and `kana` must
-    // not start with the English lead-in "Type a rough".
-    expect(en).toMatch(/^Type a rough/);
-    expect(ja.startsWith("Type a rough")).toBe(false);
-    expect(kana.startsWith("Type a rough")).toBe(false);
+    // not start with the English lead-in.
+    expect(en).toMatch(/^Type what you want changed/);
+    expect(ja.startsWith("Type what you want changed")).toBe(false);
+    expect(kana.startsWith("Type what you want changed")).toBe(false);
   });
 
   it("keeps the error copy actionable (mentions the cap or the recovery action)", () => {

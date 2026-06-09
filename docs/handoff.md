@@ -2,14 +2,15 @@
 
 ## Current State
 
-- `hazakura editor` published `v0.15.0` as the latest public warning-expected DMG preview, framed as **User-Test Quality Polish**.
-- `hazakura editor` published `v0.16.0` as a warning-expected DMG preview, framed as **Per-Surface Font Sizes / L Mode Live Source Quality Follow-up**.
-- Version surfaces are aligned at `0.16.0` across npm, Tauri, Cargo, and lockfile metadata.
+- `hazakura editor` published `v0.16.0` as the latest public warning-expected DMG preview, framed as **Per-Surface Font Sizes / L Mode Live Source Quality Follow-up**.
+- `v0.17.0` is a local warning-expected DMG checkpoint for **Distribution Prep / Release Polish Closeout**.  It is locally verified and tagged, but no GitHub Release or remote assets have been published.
+- Version surfaces are aligned at `0.17.0` across npm, Tauri, Cargo, and lockfile metadata.
+- Latest local release body: `docs/releases/0.17.0-warning-expected-dmg-preview.release.md`.
 - Latest published release body: `docs/releases/0.16.0-warning-expected-dmg-preview.release.md`.
 - Latest source / local-app tag notes: `docs/releases/0.14.0-source-tag.release.md`.
 - Current status source: `docs/current-status.md`.
-- Active lane: post-v0.16 publication follow-up; next implementation lane remains v0.17 Distribution Prep unless a v0.16 hotfix blocker appears.
-- `main` now includes the post-v0.16 CodeMirror language-dispatch follow-up: `.css` / `.html` / `.htm` / `.xml` use dedicated CodeMirror parsers in normal editing, while L Mode forces the GFM Markdown parser / highlighting so L Mode remains Markdown-source-preserving. `EditorPane` remounts on document changes or parser-family changes, but preserves the session for same-document Markdown L Mode toggles.
+- Active lane: v0.18 Help-content refinement, remaining real-app smoke, Store-submission material, and official distribution prep unless a v0.17 hotfix blocker appears.
+- `main` now includes the v0.17 Distribution Prep closeout, including App Store quality queues, Help-readable Store documents, Support Diagnostics UI, WorkspaceTree accessibility decision, and bounded Apple Local Assist operation-feedback polish.
 
 ## Recent Changes
 
@@ -58,6 +59,7 @@
 - `lModeCursorBoundaryPlugin` (L Mode snap-to-content) now skips its rAF schedule when the incoming `ViewUpdate` carries neither `docChanged` nor `selectionSet`. Viewport-only updates (scroll, focus, measurements) no longer wake a snap rAF, reducing per-frame churn during long Markdown scrolls. The save-image style of the class is unchanged: collapsed-caret snap still runs on doc / selection changes; the new condition only narrows the trigger. Tests cover the no-op, doc-changed, and selection-changed branches.
 - v0.16 release-prep alignment fixed the stale lockfile version, clarified pending-vs-published wording in README/current-status/roadmap/release-pre-check, refreshed the app / README logo assets from the transparent hazakura flower-and-leaf mark, regenerated `src-tauri/icons/icon.icns`, and rebuilt the warning-expected Developer / GitHub DMG from the current candidate.
 - v0.16.0 was tagged, pushed, published as a GitHub prerelease, and remote-verified on 2026-06-08. GitHub repository About metadata was also filled with a short Markdown-first safe-editor description and topics (`markdown`, `tauri`, `react`, `editor`, `macos`, `safe-editor`, `writing`, `local-first`). License remains intentionally unspecified pending a commercial/licensing decision.
+- v0.17.0 release-prep aligned version surfaces, updated README / current-status / roadmap / release-note evidence, generated and verified the local warning-expected Developer / GitHub DMG, and recorded the Apple Local Assist operation-feedback limitation: repeated request sessions may not preserve every intermediate feedback item in the panel, so the AI edit transaction / review bar / diff remain the source of truth.
 
 ## Decisions
 
@@ -105,6 +107,7 @@
 - L Mode draft-recovery banner follow-up verification passed on 2026-06-07: focused RecoveryMessages / DocumentMetaBar / LModeActionRail tests, full `npm run test` (68 files / 491 tests), `npm run build:vite`, `npm run build`, built-app `codesign --verify --deep --strict --verbose=2`, and `git diff --check`.
 - v0.16.0 warning-expected DMG release verification passed on 2026-06-08: `npm ci`, `npm run typecheck`, `npm run test` (68 files / 500 tests), `npm run build:vite`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml -- --test-threads=1` (243 tests), `npm run build:apple-assist-helper:live`, `npm run build:dmg-preview`, `git diff --check`, `npm audit --audit-level=moderate`, and `cargo audit --file src-tauri/Cargo.lock`. Local app metadata/codesign, expected `spctl` insufficient-context rejection, DMG checksum/`hdiutil verify`, mounted-DMG metadata/codesign/icon-resource hash, and mounted app launch-process observation passed. DMG SHA-256: `39f63f42fc46c7e2d8659858f1a93127917be8e7a1836f594d885a44105e40fb`.
 - CodeMirror language-dispatch follow-up verification passed on 2026-06-08: RED was observed for Markdown-document switching remount behavior, then `npm run test -- src/components/editor/EditorPane.test.tsx`, focused language/L Mode tests, `npm run test` (69 files / 513 tests on rerun), `npm run build:vite`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml -- --test-threads=1` (243 tests), `npm run build`, and `git diff --check` passed. The first full `npm run test` attempt showed two L Mode test failures that both passed on focused rerun and the full rerun.
+- v0.17.0 local warning-expected DMG checkpoint verification passed on 2026-06-10: `npm ci`, `npm run typecheck`, `npm run test` (78 files / 639 tests), `npm run build:vite`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml -- --test-threads=1` (265 tests), `npm run build:apple-assist-helper:live`, `npm run build:dmg-preview`, `npm audit`, `cargo audit --file src-tauri/Cargo.lock` (exit 0 with 17 warnings), app metadata/codesign, expected `spctl` insufficient-context rejection, mounted-DMG metadata/codesign, release-pre-check greps, and `git diff --check`. DMG SHA-256: `a7587995e8437e0c1f1863eecb5167e46614b7387cbe6dec05b54dd24b28f8ab`.
 
 ## Risks / Unknowns
 
@@ -113,11 +116,13 @@
 - In-app Browser / Playwright automation was unavailable during the L Mode drawer / change-review slices, so visual smoke for L Mode floating chrome placement and overlap still needs a real app/browser check.
 - GitHub reported one moderate vulnerability notice during push; `npm audit` still reported 0 vulnerabilities locally.
 - `docs/releases/` still contains historical release-note evidence; this is intentional because release verification can depend on it.
-- v0.16.0 is now published and remotely verified. Older tags remain immutable.
+- v0.16.0 is published and remotely verified. v0.17.0 is locally verified and tagged but not published as a GitHub Release. Older tags remain immutable.
+- Apple Local Assist operation feedback is still an alpha smoke aid; repeated request sessions may not preserve every intermediate feedback item in the panel.
 
 ## Next Actions
 
-- For post-v0.16 work, start from `docs/current-status.md`, `docs/roadmap.md`, and `docs/releases/0.16.0-warning-expected-dmg-preview.release.md`. Do not move the published `v0.16.0` tag or replace assets silently; use a transparent patch release or release-note correction if a published artifact claim needs correction.
+- For post-v0.17 work, start from `docs/current-status.md`, `docs/roadmap.md`, and `docs/releases/0.17.0-warning-expected-dmg-preview.release.md`. Do not claim GitHub Release publication or remote asset verification for v0.17.0 unless that lane is explicitly performed.
+- For v0.18, prioritize Help copy overlap cleanup, remaining real-app smoke, Store-submission materials, final license / Privacy Policy review, and official distribution work.
 - For v0.15 work, start from `docs/current-status.md`, `docs/roadmap.md`, and `docs/development-automation.md`. Pick one user-test friction point, verify it, and keep the patch small.
 - For Apple Local Assist work inside v0.15, start from `docs/apple-local-assist-writing-companion-plan.md`. Keep Apple Local Assist detachable, prioritize real lightweight writing examples / unavailable states / rough requests, and use AI edit transactions rather than hidden or irreversible applies.
 - For theme/settings polish inside v0.15, verify persistence, native menu/window theme synchronization, readability, and restart-required copy before spending time on purely cosmetic variants.
