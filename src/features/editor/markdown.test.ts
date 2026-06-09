@@ -82,6 +82,49 @@ describe("renderMarkdown image policy", () => {
     expect(html).toContain("Image blocked: remote");
     expect(html).not.toContain("https://example.com/shot.png");
   });
+
+  // v0.17 app-store-quality: markdown-preview-export-security
+  // slice 2.2 — data:image URI validation. The
+  // `isAllowedEmbeddedImageSource` regex restricts
+  // embedded images to four known image formats (png,
+  // jpeg, gif, webp) with a well-formed base64 payload.
+  // Any data URI outside that narrow envelope is treated
+  // as an external image and replaced by a "blocked"
+  // placeholder — no `<img>` node with the raw URI
+  // survives in the output. An oversized guard
+  // (data:image > 2 MB) is deferred to slice 2.3; the
+  // regex currently accepts arbitrarily large payloads.
+
+  it("blocks data:image/svg+xml URIs", () => {
+    const html = renderMarkdown(
+      "![svg](data:image/svg+xml;base64,PHN2ZyBvbmxvYWQ9YWxlcnQoMSk+PC9zdmc+)",
+    );
+
+    expect(html).toContain("Image blocked");
+    expect(html).not.toContain("data:image/svg+xml");
+  });
+
+  it("blocks non-image data URIs as img sources", () => {
+    const html = renderMarkdown(
+      "![html](data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==)",
+    );
+
+    expect(html).toContain("Image blocked");
+    expect(html).not.toContain("data:text/html");
+  });
+
+  it("blocks data:image URIs with invalid base64 payloads", () => {
+    // The `;base64,` prefix is required, and the
+    // payload must only contain [A-Za-z0-9+/=\s].
+    // Semicolons and other characters break the
+    // encoding and must not fall through.
+    const html = renderMarkdown(
+      '![bad](data:image/png;base64,iVBORw0KGgo=;alert(1))',
+    );
+
+    expect(html).toContain("Image blocked");
+    expect(html).not.toContain("alert(1)");
+  });
 });
 
 // v0.17 app-store-quality: markdown-preview-export-security slice 2.1
