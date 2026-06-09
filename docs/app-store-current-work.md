@@ -1,16 +1,19 @@
 # App Store Current Work
 
-Status: Operational
-Scope: Current App Store-facing quality work for external agents
+Status: Closeout
+Scope: Completed App Store-facing quality work and v0.18 deferrals
 Authority: High
-Last reviewed: 2026-06-09 (queues 1–5 complete; closeout in `docs/app-store-quality-closeout.md`)
+Last reviewed: 2026-06-10 (v0.17 follow-up implementation closed)
 
 ## Purpose
 
-Use this file as the single current work queue for App Store-facing quality work.
+Use this file as the closeout record for completed App Store-facing
+quality work and as the handoff point for v0.18 / submission-prep
+deferrals.
 
 This is not App Store Connect metadata, certificate work, notarization, upload, DMG packaging, or final legal copy.
-It is the ordered implementation/review queue for proving that the App Store lane remains a Markdown-first Safe Editor.
+It records the completed implementation/review queue that proved the
+App Store lane remains a Markdown-first Safe Editor.
 
 For detailed request background, use `docs/app-store-quality-agent-requests.md` as the packet catalog.
 For queue 1–5 evidence summary, see `docs/app-store-quality-closeout.md`.
@@ -81,20 +84,40 @@ Single slice.  See closeout doc.
 
 Single slice.  See closeout doc.
 
-## Follow-Up Candidates (NOT ordered implementation queue)
+## v0.17 Follow-Up Implementation Closeout
 
-These are residual items from the closeout review.  They are not
-blockers for submission and do not require an implementation agent
-before a human can proceed to certificate/metadata work.
-Ready-to-delegate v0.17 request text is in
-`docs/v0.17-external-agent-requests.md`.
+The three v0.17 follow-up requests are complete or closed by recorded
+decision:
 
-- Manual smoke: red-button close, Cmd+Q, keyboard-only tab nav,
-  VoiceOver tab-bar announcement.
-- `prefers-contrast: more` CSS media query (not yet implemented).
-- Diagnostics UI (serialisation helper exists; no copy/view button).
-- WorkspaceTree `role="tree"` pattern (current button-based tree
-  is keyboard-operable).
+- `v0.17:a11y-prefers-contrast` — implemented as a CSS-only
+  `prefers-contrast: more` pass.
+- `v0.17:diagnostics-ui` — implemented as a Help-menu Support
+  Diagnostics pane with copy / refresh UI.
+- `v0.17:workspace-tree-role-audit` — closed by decision: keep the
+  current button-based model for v0.17 and pin its behaviour with
+  focused tests.  See `docs/workspace-tree-accessibility-decision.md`.
+
+`docs/v0.17-external-agent-requests.md` is now a historical request
+packet for this closeout, not the source of a new open implementation
+queue.
+
+## Deferred To v0.18 / Submission Prep
+
+These are intentionally not part of the v0.17 implementation closeout:
+
+- Remaining real-app smoke: Help document readability, full
+  keyboard-only traversal, VoiceOver tab-bar announcement, and
+  Increase Contrast visual smoke.
+- Help document content polish: reduce overlap between Local Data
+  Disclosure, Privacy Policy, Support Diagnostics, About, and Open
+  Source Acknowledgements.
+- Store submission materials: final public Privacy Policy URL,
+  App Store metadata copy, screenshots, App Review Notes final copy,
+  complete third-party license packet review, category / age rating /
+  support URL / keywords.
+- Official distribution work: Apple Developer account / certificates,
+  provisioning, App Store signing, notarization decisions, upload,
+  TestFlight, and review handling.
 
 ## Explicitly Out Of Scope
 

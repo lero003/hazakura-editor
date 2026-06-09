@@ -29,7 +29,7 @@ This directory separates current guidance from historical material. Use current 
 
 - `l-mode-plan.md`: L Mode / えるモード source-preserving WYSIWYG Accuracy Ramp planning memo.
 - `commercial-quality-baseline.md`: non-App-Store commercial-quality baseline for status/recovery, settings/theme, accessibility, performance, L Mode measurement, honest feature scope, and Developer / GitHub distribution readiness.
-- `app-store-current-work.md`: current ordered App Store-facing quality work queue for external agents.
+- `app-store-current-work.md`: App Store-facing quality closeout and v0.18 / submission-prep deferral handoff.
 - `app-store-quality-agent-requests.md`: App Store-facing request packet catalog and Codex review guide.
 - `app-store-review-notes-draft.md`: internal App Review Notes draft for later submission-copy adjustment.
 - `apple-local-assist-distribution-plan.md`: Apple Local Assist / App Store distribution planning memo.

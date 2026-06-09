@@ -140,11 +140,13 @@ These are intentionally not part of the App Store lane:
 - Auto-apply, auto-commit, project indexing
 - Telemetry, background collection, automatic upload
 
-## Next Phase: Submission Preparation
+## Next Phase: v0.18 / Submission Preparation
 
-The App Store quality queue is complete.  The next phase involves
-human-executed, certificate-gated, or metadata-only work that is
-**not in scope for automated implementation agents**:
+The App Store quality queue and v0.17 non-smoke implementation
+follow-ups are complete.  The next phase is deferred to v0.18 /
+submission-prep work and involves human-executed, certificate-gated,
+or metadata-only work that is **not in scope for automated
+implementation agents**:
 
 - App Store Connect metadata (description, keywords, screenshots)
 - Certificate / provisioning profile work
@@ -154,6 +156,9 @@ human-executed, certificate-gated, or metadata-only work that is
 - Privacy Policy final publication URL / metadata review
 - Complete third-party license packet review
 - App Review Notes finalization (`docs/app-store-review-notes-draft.md`)
+- Help document content-overlap cleanup
+- Remaining real-app smoke: Help readability, full keyboard-only
+  traversal, VoiceOver tab-bar announcement, and Increase Contrast
 
 These are recorded in `docs/app-store-current-work.md` under
-"Explicitly Out Of Scope".
+"Deferred To v0.18 / Submission Prep" and "Explicitly Out Of Scope".

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-09 (App Store quality queues 1–5 complete)
+Last reviewed: 2026-06-10 (v0.17 implementation closeout)
 
 ## Current Position
 
@@ -15,8 +15,8 @@ Current release state:
 - Latest source / local-app-only tag: `v0.14.0`.
 - Current package/app version: `0.16.0`.
 - v0.16.0 theme: **Per-Surface Font Sizes / L Mode Live Source Quality Follow-up**.
-- Active lane: v0.17 Distribution Prep / Release Polish, unless a v0.16 hotfix blocker appears.
-- Active product polish direction: stabilize the larger post-v0.15 L Mode Live Source work before entering certificate / distribution prep. Markdown source remains canonical; L Mode may improve presentation, guarded keyboard behavior, and smoke coverage, but not the saved document model.
+- Active lane: v0.17 Distribution Prep / Release Polish closeout, unless a v0.16 hotfix blocker appears.
+- Active product polish direction: keep v0.17 bounded to the completed release-prep follow-ups and prepare the release checkpoint. Help-content overlap, remaining real-app smoke, Store-submission materials, and official distribution work move to v0.18 / submission-prep lanes.
 
 Historical phase details and old milestone text are archived in `docs/archive/roadmaps/roadmap-through-v0.10-doc-refactor.md` and `docs/archive/roadmaps/roadmap-v0.1-archived.md`.
 
@@ -117,7 +117,8 @@ Likely phase shape:
 - `v0.14`: L Mode WYSIWYG Accuracy Ramp, including rendering fidelity, editing stability, IME / caret behavior, hidden-marker regression fixtures, and visual-overlap checks.
 - `v0.15`: User-Test Quality Polish, including Apple Local Assist rough-request quality, real writing examples, unavailable-state polish, theme / settings touch-ups, small user-facing status or error improvements, release-prep continuity, and a warning-expected Developer / GitHub DMG preview for cross-machine testing.
 - `v0.16`: L Mode Live Source Quality Follow-up, including table/readability guardrails, checkbox/code-fence/quote/image presentation, IME/caret/source-preservation stability, and built-app smoke evidence where practical.
-- `v0.17`: Distribution Prep / Release Polish, including Developer / GitHub distribution readiness, App Store lane separation, certificate/signing/notarization decisions, install wording, screenshots, release notes, final smoke evidence, and last small user-test fixes before the next public-facing release decision.
+- `v0.17`: Distribution Prep / Release Polish closeout, including App Store quality queue completion, high-contrast CSS, Support Diagnostics UI, Help-readable Store documents, and the WorkspaceTree accessibility decision.  It is a release-prep checkpoint, not App Store submission.
+- `v0.18`: Help-content refinement, remaining real-app smoke, Store submission materials, final license / Privacy Policy review, and official distribution work.
 - `v1.0`: App Store Candidate / Review if the App Store build can omit External Agent Workbench cleanly and Apple Local Assist remains document-assist only.
 
 v0.12 tag state (source / local-app tag only):
@@ -211,16 +212,34 @@ Out of scope:
 - Full WYSIWYG structural editing such as table cell merging, Preview DOM editing, `contenteditable`, HTML saved model, or hidden save-time rewriting.
 - Large refactors without measurement, smoke evidence, or a release-readiness blocker.
 
-## Planned Lane: v0.17 Distribution Prep / Release Polish
+## Active Lane: v0.17 Distribution Prep / Release Polish Closeout
 
-Goal: resume release-facing distribution prep after v0.16 L Mode evidence is stable, then shrink toward final release polish.
+Goal: keep the v0.17 release checkpoint small now that the App Store
+quality queues and non-smoke implementation follow-ups are complete.
 
 Focus:
 
-- Developer / GitHub distribution readiness: DMG wording, expected-warning instructions, checksum flow, support boundaries, and cross-machine smoke guidance.
-- App Store lane readiness: App Store preview build separation, Agent Workbench omission, Apple Local Assist helper bundling/signing assumptions, sandbox/review constraints, certificates, provisioning, and upload validation.
-- Accessibility / keyboard-flow audit, performance and bundle-size measurement, release automation cleanup where it reduces real release risk, install wording, screenshots, release notes, final smoke evidence, and last small user-test bugs.
-- Keep this lane small; avoid new major product surfaces unless a release blocker demands it.
+- Keep the landed App Store-quality work coherent: save/restore
+  regressions, preview/export security, accessibility smoke, support
+  diagnostics, performance baseline, high-contrast CSS, Help-readable
+  Store documents, and WorkspaceTree accessibility decision.
+- Prepare the release checkpoint without adding new product surfaces.
+- Do not add Store-submission, official signing, notarization, or
+  TestFlight work to v0.17.
+- Keep Markdown source canonical and Safe Editor primary.
+
+Deferred to v0.18 / submission prep:
+
+- Help document overlap cleanup and final copy pass.
+- Remaining real-app smoke: Help readability, full keyboard-only
+  traversal, VoiceOver tab-bar announcement, and Increase Contrast.
+- Store submission materials: public Privacy Policy URL, App Store
+  metadata, screenshots, App Review Notes final copy, complete
+  third-party license packet review, category / age rating / support
+  URL / keywords.
+- Official distribution work: Apple Developer account / certificates,
+  provisioning, App Store signing, notarization decisions, upload,
+  TestFlight, and review handling.
 
 ## App Store Publication Roadmap
 
@@ -258,7 +277,7 @@ v0.16 acceptance:
 - IME and Japanese prose remain stable.
 - Source text remains predictable and byte-preserving except for explicit user edits.
 
-### 3. Official Distribution Prep (v0.17+)
+### 3. Official Distribution Prep (v0.18+)
 
 Goal: prepare the two binary lanes without creating a third official free build after v0.16 L Mode evidence is stable.
 
