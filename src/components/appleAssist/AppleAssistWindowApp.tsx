@@ -15,6 +15,7 @@ import {
   THEME_STORAGE_KEY,
   type AppleAssistApplyEvent,
   type AppleAssistApplyStatusEvent,
+  type AppleAssistTargetKind,
   type AppleAssistTargetSnapshot,
   type MenuLanguage,
   type ThemePreference,
@@ -69,6 +70,92 @@ import {
 
 const APPLE_ASSIST_GENERATION_FALLBACK_MS = 365_000;
 
+// v0.17 operation-feedback panel.
+//
+// The Assist Window keeps a short, current-session list of
+// app-known lifecycle events. The list is in React window
+// state only and is intentionally not persisted to disk,
+// localStorage, logs, diagnostics, or Support Diagnostics.
+//
+// The cap (`OPERATION_FEEDBACK_MAX_ENTRIES = 6`) matches the
+// "latest 5-7 entries" guidance in the v0.17 request doc
+// and in `docs/apple-local-assist-writing-companion-plan.md`.
+// Older entries are dropped from the head when the cap is
+// exceeded so the panel never grows past a screen of
+// information.
+export const OPERATION_FEEDBACK_MAX_ENTRIES = 6;
+
+export function useOperationFeedback() {
+  const [feedback, setFeedback] = useState<FeedbackEntry[]>([]);
+
+  const pushFeedback = useCallback(
+    (entry: { kind: OperationFeedbackKind; payload?: OperationFeedbackPayload }) => {
+      setFeedback((current) => {
+        const at = Date.now();
+        const id = `${at}-${Math.random().toString(36).slice(2, 8)}`;
+        // Defense-in-depth sanitizer: the `OperationFeedbackPayload`
+        // type only allows `targetKind` and `targetChars`, but
+        // the hook is exported (for testability) and a future
+        // caller could spread a wider object. The sanitizer
+        // below keeps only the two allowed fields so a stray
+        // `target.text`, `target.label`, document name, file
+        // path, or secret-looking value never reaches the
+        // window state. The hook tests verify this behaviour
+        // at runtime with a cast.
+        const next: FeedbackEntry = {
+          kind: entry.kind,
+          payload: sanitizeOperationFeedbackPayload(entry.payload),
+          id,
+          at,
+        };
+        const updated = [...current, next];
+        return updated.length > OPERATION_FEEDBACK_MAX_ENTRIES
+          ? updated.slice(-OPERATION_FEEDBACK_MAX_ENTRIES)
+          : updated;
+      });
+    },
+    [],
+  );
+
+  const clearFeedback = useCallback(() => {
+    setFeedback([]);
+  }, []);
+
+  return { feedback, pushFeedback, clearFeedback };
+}
+
+// Strict allow-list sanitizer. Anything outside
+// `targetKind` / `targetChars` is dropped so a stray
+// `text` / `label` / `path` / `documentName` field from
+// a future refactor does not leak authoring content
+// into the feedback trail.
+function sanitizeOperationFeedbackPayload(
+  payload?: OperationFeedbackPayload,
+): OperationFeedbackPayload | undefined {
+  if (!payload) {
+    return undefined;
+  }
+  const cleaned: OperationFeedbackPayload = {};
+  if (payload.targetKind !== undefined) {
+    cleaned.targetKind = payload.targetKind;
+  }
+  if (
+    typeof payload.targetChars === "number" &&
+    Number.isFinite(payload.targetChars) &&
+    payload.targetChars >= 0
+  ) {
+    cleaned.targetChars = payload.targetChars;
+  }
+  return cleaned;
+}
+
+type FeedbackEntry = {
+  id: string;
+  kind: OperationFeedbackKind;
+  at: number;
+  payload?: OperationFeedbackPayload;
+};
+
 function readInitialTheme(): ThemePreference {
   if (typeof window === "undefined") {
     return "dark";
@@ -100,7 +187,17 @@ export function AppleAssistWindowApp() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<boolean>(false);
   const [target, setTarget] = useState<AppleAssistTargetSnapshot | null>(null);
-  const { availability, available } = useAppleAssistAvailability();
+  const { availability, available, probed } = useAppleAssistAvailability();
+  const { feedback, pushFeedback } = useOperationFeedback();
+  // Track whether the availability probe has been reported
+  // to the feedback panel so we only push one "ready" /
+  // "unavailable" entry, not one per availability re-emit.
+  // The initial target snapshot is intentionally NOT
+  // pushed to the panel; live target updates are
+  // intentionally NOT pushed either — only the target
+  // at the moment of apply is, so the trail stays
+  // aligned with the IPC payload.
+  const availabilityReportedRef = useRef<boolean>(false);
   const availabilityMessage = renderAvailabilityMessage(availability, copy);
   const generationFallbackRef = useRef<number | null>(null);
 
@@ -135,6 +232,33 @@ export function AppleAssistWindowApp() {
     });
   }, [theme]);
 
+  // v0.17 operation-feedback: when the availability probe
+  // resolves, push exactly one "ready" or "unavailable"
+  // entry. The `probed` flag is required so the panel
+  // also reports "unavailable" when the probe settles
+  // on `unsupported` (genuinely unsupported environment)
+  // — `availability.kind === "unsupported"` alone is
+  // ambiguous between "probe in flight" and "probe
+  // settled on unsupported".
+  useEffect(() => {
+    if (availabilityReportedRef.current) {
+      return;
+    }
+    if (!probed) {
+      return;
+    }
+    if (availability.kind === "available") {
+      pushFeedback({ kind: "ready" });
+    } else {
+      // `unavailable` / `disabled` / `unsupported` all
+      // collapse to a single "unavailable" entry in the
+      // panel; the disclosure still carries the more
+      // specific copy.
+      pushFeedback({ kind: "unavailable" });
+    }
+    availabilityReportedRef.current = true;
+  }, [availability.kind, probed, pushFeedback]);
+
   useEffect(() => {
     const onStorage = (event: StorageEvent) => {
       if (event.key === THEME_STORAGE_KEY && event.newValue) {
@@ -166,6 +290,7 @@ export function AppleAssistWindowApp() {
           setBusy(true);
           setError(null);
           setStatus(copy.generatingChange);
+          pushFeedback({ kind: "generation-started" });
           scheduleGenerationFallback();
           return;
         }
@@ -177,6 +302,9 @@ export function AppleAssistWindowApp() {
             : payload.message,
         );
         setError(payload.phase === "failed" ? payload.message : null);
+        pushFeedback({
+          kind: payload.phase === "completed" ? "applied" : "failed",
+        });
       },
     )
       .then((handle) => {
@@ -221,6 +349,14 @@ export function AppleAssistWindowApp() {
           return;
         }
         setTarget(initial);
+        // The initial snapshot is shown in the header /
+        // target summary area; the feedback panel waits
+        // for the user's first apply so the panel entry
+        // matches the target that was actually sent.
+        // Live target updates are intentionally NOT
+        // reported to the feedback panel — only the
+        // target at the moment of apply is, to keep
+        // the trail aligned with the IPC payload.
       })
       .catch((err) => {
         console.warn("Failed to read initial apple assist target", err);
@@ -287,6 +423,25 @@ export function AppleAssistWindowApp() {
       // carries the user's expectation.
       const latestTarget =
         (await getMainAppleAssistTarget().catch(() => null)) ?? target;
+      // v0.17 operation-feedback: report the target the
+      // user is actually about to send to, *before* the
+      // `request-sent` entry. The header / target summary
+      // area may have drifted from the cached snapshot
+      // (cursor / selection / document change) while the
+      // window was open, so a "target-acquired" entry
+      // pinned to the apply payload is the only way to
+      // keep the feedback trail in sync with what the
+      // main window actually received.
+      if (latestTarget) {
+        pushFeedback({
+          kind: "target-acquired",
+          payload: {
+            targetKind: latestTarget.kind,
+            targetChars: latestTarget.text.length,
+          },
+        });
+      }
+      pushFeedback({ kind: "request-sent" });
       // `buildApplyEvent` keeps the user-facing
       // `payload.request` (the original rough phrase) and
       // the helper-side `payload.instruction` (the preset
@@ -306,12 +461,24 @@ export function AppleAssistWindowApp() {
       clearGenerationFallback();
       setBusy(false);
       setError(classifyApplyError(err, copy));
+      // Push a "failed" entry when the IPC call itself
+      // throws. The status-event listener above also
+      // pushes "failed" when the main window emits a
+      // `failed` phase; in practice exactly one of the
+      // two branches fires for a given apply, but a
+      // double-fail can leave two "failed" entries in
+      // the cap window. That is acceptable for the
+      // feedback trail because both lines render the
+      // same localized "failed" text and the cap (6)
+      // keeps the panel bounded.
+      pushFeedback({ kind: "failed" });
     }
   }, [
     available,
     availabilityMessage,
     clearGenerationFallback,
     copy,
+    pushFeedback,
     roughRequest,
     scheduleGenerationFallback,
     target,
@@ -389,6 +556,44 @@ export function AppleAssistWindowApp() {
         ))}
       </section>
 
+      <section
+        className="apple-assist-window-feedback"
+        aria-label={copy.feedbackHeading}
+        data-testid="apple-assist-feedback-section"
+      >
+        <p
+          className="apple-assist-feedback-heading"
+          data-testid="apple-assist-feedback-heading"
+          id="apple-assist-feedback-heading-id"
+        >
+          {copy.feedbackHeading}
+        </p>
+        {feedback.length === 0 ? (
+          <p
+            className="apple-assist-feedback-empty"
+            data-testid="apple-assist-feedback-empty"
+          >
+            {copy.feedbackEmpty}
+          </p>
+        ) : (
+          <ul
+            className="apple-assist-feedback-list"
+            data-testid="apple-assist-feedback-list"
+          >
+            {feedback.map((entry) => (
+              <li
+                className={`apple-assist-feedback-entry apple-assist-feedback-entry-kind-${entry.kind}`}
+                data-feedback-kind={entry.kind}
+                data-testid="apple-assist-feedback-entry"
+                key={entry.id}
+              >
+                {copy.feedbackEntry(entry.kind, entry.payload)}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
       <section className="apple-assist-window-form" aria-label={copy.roughRequestLabel}>
         <label
           htmlFor="apple-assist-rough-request"
@@ -404,7 +609,7 @@ export function AppleAssistWindowApp() {
             setRoughRequest(event.target.value);
             setError(null);
           }}
-          rows={3}
+          rows={2}
           placeholder={copy.placeholder}
           disabled={busy || !available}
         />
@@ -481,6 +686,44 @@ export type AppleAssistWindowCopy = {
   unknownError: (raw: string) => string;
   unsupportedStatus: string;
   workingLocally: string;
+  // v0.17 operation-feedback panel. The panel shows app-
+  // known lifecycle events (target acquired, request sent,
+  // generation started, applied, failed, unavailable). It
+  // intentionally never receives raw Foundation Models
+  // prompts, raw model responses, hidden instructions,
+  // provider transcripts, model reasoning, broad document
+  // excerpts, filesystem paths, or secrets — see
+  // docs/v0.17-apple-local-assist-operation-feedback-request.md.
+  feedbackHeading: string;
+  feedbackEmpty: string;
+  feedbackEntry: (
+    kind: OperationFeedbackKind,
+    payload?: OperationFeedbackPayload,
+  ) => string;
+};
+
+// Lifecycle event kinds for the v0.17 operation-feedback
+// panel. The component keeps the list bounded, in window
+// state only, and never persists entries to disk, logs,
+// diagnostics, or Support Diagnostics.
+export type OperationFeedbackKind =
+  | "ready"
+  | "target-acquired"
+  | "request-sent"
+  | "generation-started"
+  | "applied"
+  | "failed"
+  | "unavailable";
+
+// Payload fields for the operation-feedback panel. Only
+// non-sensitive, non-document fields are allowed. The
+// component does not pass `target.text`, `target.label`,
+// or `activeDocumentName` through this payload because
+// those are broad document excerpts or section labels and
+// would leak authoring content into the feedback trail.
+export type OperationFeedbackPayload = {
+  targetKind?: AppleAssistTargetKind;
+  targetChars?: number;
 };
 
 function renderAvailabilityMessage(
@@ -647,6 +890,48 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       unsupportedStatus:
         "この はんきょうで あっぷる ろーかる あしす とは つかえません。macOS 26 いこう と、この Mac で ゆうこうかした あっぷる いんてりじぇんす と、ふぁうんでーしょん もでるず たいおう の ことば / ろけーる が ひつようです。",
       workingLocally: "この Mac で ろーかる しょり ちゅう (ねっとわーく よびだし なし)",
+      // v0.17 operation-feedback panel copy.
+      feedbackHeading: "この Mac の うごき",
+      feedbackEmpty:
+        "あっぷる ろーかる あしす との うごき は まだ ありません。ぶんしょ を ひらいて たいしょう を えらび、おねがひ を かか ださい。",
+      feedbackEntry: (kind, payload) => {
+        if (kind === "ready") {
+          return "じゅんび できました。たいしょう を まって います。";
+        }
+        if (kind === "target-acquired") {
+          const tk = payload?.targetKind;
+          const chars = payload?.targetChars ?? 0;
+          if (tk === "selection") {
+            return `たいしょう: えらんだ ところ、およそ ${chars} もじ`;
+          }
+          if (tk === "paragraph") {
+            return `たいしょう: だんらく、およそ ${chars} もじ`;
+          }
+          if (tk === "block") {
+            return `たいしょう: こーど ぶろっく、およそ ${chars} もじ`;
+          }
+          if (tk === "section") {
+            return `たいしょう: しょう、およそ ${chars} もじ`;
+          }
+          if (tk === "document") {
+            return `たいしょう: ふみ ぜんたい、およそ ${chars} もじ`;
+          }
+          return "たいしょう を えらびました。";
+        }
+        if (kind === "request-sent") {
+          return "あっぷる ろーかる あしす と へ おねがひ を おくりました。";
+        }
+        if (kind === "generation-started") {
+          return "ろーかる で せいせい かいし。";
+        }
+        if (kind === "applied") {
+          return "ほぞんせず の AI edit transaction として ついかしました。ほぞん まえに かくにん してください。";
+        }
+        if (kind === "failed") {
+          return "しっぱい しました。すてーたす らん を みてください。";
+        }
+        return "あっぷる ろーかる あしす とは この はんきょうで つかえません。";
+      },
     };
   }
 
@@ -717,6 +1002,48 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       unsupportedStatus:
         "この環境では Apple Local Assist は使えません。macOS 26 以降と、この Mac で有効化された Apple Intelligence、そして Foundation Models 対応の言語 / ロケールが必要です。",
       workingLocally: "この Mac 上でローカル処理中（ネットワーク呼び出しなし）",
+      // v0.17 operation-feedback panel copy.
+      feedbackHeading: "ローカルでの動き",
+      feedbackEmpty:
+        "Apple Local Assist の動きはまだありません。文書を開いて対象を選び、依頼文を入力してください。",
+      feedbackEntry: (kind, payload) => {
+        if (kind === "ready") {
+          return "準備完了。対象を待っています。";
+        }
+        if (kind === "target-acquired") {
+          const tk = payload?.targetKind;
+          const chars = payload?.targetChars ?? 0;
+          if (tk === "selection") {
+            return `対象: 選択範囲、およそ ${chars} 文字`;
+          }
+          if (tk === "paragraph") {
+            return `対象: 段落、およそ ${chars} 文字`;
+          }
+          if (tk === "block") {
+            return `対象: コードブロック、およそ ${chars} 文字`;
+          }
+          if (tk === "section") {
+            return `対象: 章、およそ ${chars} 文字`;
+          }
+          if (tk === "document") {
+            return `対象: 文書全体、およそ ${chars} 文字`;
+          }
+          return "対象を選びました。";
+        }
+        if (kind === "request-sent") {
+          return "Apple Local Assist へ依頼を送信しました。";
+        }
+        if (kind === "generation-started") {
+          return "ローカルで生成開始。";
+        }
+        if (kind === "applied") {
+          return "未保存の AI edit transaction として追加しました。保存前に確認してください。";
+        }
+        if (kind === "failed") {
+          return "失敗しました。ステータス欄を確認してください。";
+        }
+        return "Apple Local Assist はこの環境では使えません。";
+      },
     };
   }
 
@@ -790,5 +1117,47 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     unsupportedStatus:
       "Apple Local Assist is not supported in this environment. It needs macOS 26 or later and Apple Intelligence turned on for this Mac, with a Foundation Models-supported language and locale.",
     workingLocally: "Working locally on this Mac (no network call)",
+    // v0.17 operation-feedback panel copy.
+    feedbackHeading: "Activity",
+    feedbackEmpty:
+      "No activity yet. Open a document, pick a target, and type a rough request to begin.",
+    feedbackEntry: (kind, payload) => {
+      if (kind === "ready") {
+        return "Ready. Waiting for a target.";
+      }
+      if (kind === "target-acquired") {
+        const tk = payload?.targetKind;
+        const chars = payload?.targetChars ?? 0;
+        if (tk === "selection") {
+          return `Target: selection, about ${chars} characters`;
+        }
+        if (tk === "paragraph") {
+          return `Target: paragraph, about ${chars} characters`;
+        }
+        if (tk === "block") {
+          return `Target: code block, about ${chars} characters`;
+        }
+        if (tk === "section") {
+          return `Target: section, about ${chars} characters`;
+        }
+        if (tk === "document") {
+          return `Target: whole document, about ${chars} characters`;
+        }
+        return "Target acquired.";
+      }
+      if (kind === "request-sent") {
+        return "Request sent to local Apple Assist.";
+      }
+      if (kind === "generation-started") {
+        return "Local generation started.";
+      }
+      if (kind === "applied") {
+        return "Applied as an unsaved AI edit. Review before saving.";
+      }
+      if (kind === "failed") {
+        return "Failed. See the status line for the reason.";
+      }
+      return "Apple Local Assist is unavailable in this environment.";
+    },
   };
 }

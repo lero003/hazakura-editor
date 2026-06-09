@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-10 (v0.17 implementation closeout)
+Last reviewed: 2026-06-10 (v0.17 closeout plus optional Assist feedback slice)
 
 ## Current Position
 
@@ -16,7 +16,7 @@ Current release state:
 - Current package/app version: `0.16.0`.
 - v0.16.0 theme: **Per-Surface Font Sizes / L Mode Live Source Quality Follow-up**.
 - Active lane: v0.17 Distribution Prep / Release Polish closeout, unless a v0.16 hotfix blocker appears.
-- Active product polish direction: keep v0.17 bounded to the completed release-prep follow-ups and prepare the release checkpoint. Help-content overlap, remaining real-app smoke, Store-submission materials, and official distribution work move to v0.18 / submission-prep lanes.
+- Active product polish direction: keep v0.17 bounded to the completed release-prep follow-ups and prepare the release checkpoint.  A single optional Apple Local Assist operation-feedback slice may land before tagging if it stays within the documented security boundary.  Help-content overlap, remaining real-app smoke, Store-submission materials, and official distribution work move to v0.18 / submission-prep lanes.
 
 Historical phase details and old milestone text are archived in `docs/archive/roadmaps/roadmap-through-v0.10-doc-refactor.md` and `docs/archive/roadmaps/roadmap-v0.1-archived.md`.
 
@@ -227,6 +227,11 @@ Focus:
 - Do not add Store-submission, official signing, notarization, or
   TestFlight work to v0.17.
 - Keep Markdown source canonical and Safe Editor primary.
+- One optional pre-tag Apple Local Assist operation-feedback slice may
+  be attempted if it stays inside
+  `docs/v0.17-apple-local-assist-operation-feedback-request.md`: compact
+  lifecycle feedback in the existing Assist Window, no raw transcript,
+  no persistence, and no new product surface.
 
 Deferred to v0.18 / submission prep:
 

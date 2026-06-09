@@ -3,7 +3,7 @@
 Status: Closeout
 Scope: Completed App Store-facing quality work and v0.18 deferrals
 Authority: High
-Last reviewed: 2026-06-10 (v0.17 follow-up implementation closed)
+Last reviewed: 2026-06-10 (v0.17 follow-up implementation closed; optional Assist feedback slice documented)
 
 ## Purpose
 
@@ -100,6 +100,21 @@ decision:
 `docs/v0.17-external-agent-requests.md` is now a historical request
 packet for this closeout, not the source of a new open implementation
 queue.
+
+## Optional v0.17 Release-Candidate Polish
+
+One narrow Apple Local Assist polish slice may be attempted before the
+v0.17 tag if the user wants more alpha smokeability:
+
+- `v0.17:apple-local-assist-operation-feedback`
+
+Use `docs/v0.17-apple-local-assist-operation-feedback-request.md` as
+the request packet.  This is not a new App Store quality queue and does
+not reopen the completed v0.17 external-agent request packet.  The
+slice must stay inside the existing Assist Window, show only
+window-local app-known lifecycle feedback, and avoid raw Foundation
+Models transcripts, hidden prompts, responses, model reasoning,
+persistence, diagnostics export, or any new automation capability.
 
 ## Deferred To v0.18 / Submission Prep
 

@@ -3,7 +3,7 @@
 Status: Active live-preview implementation
 Scope: v0.12+ Apple Local Assist user experience direction
 Authority: Medium
-Last reviewed: 2026-06-06
+Last reviewed: 2026-06-10
 
 ## Purpose
 
@@ -108,6 +108,39 @@ The first external Writing Companion is now implemented on `main`:
 - each generated edit records an AI edit transaction and exposes a compact Diff / Discard affordance
 
 The fixture helper remains available for supervisor regression tests, but the production build path now uses the live helper. Live generation depends on macOS 26+ Apple Foundation Models availability, local Apple Intelligence state, and a Foundation Models-supported current app locale; when unavailable, Apple Local Assist must disclose the unavailable/disabled/unsupported state rather than falling back to a network model or hidden fixture output.
+
+## Operation Feedback
+
+Apple Local Assist should be easier to smoke and understand while it
+remains alpha.  The Assist Window may therefore show a compact
+operation-feedback panel above the rough-request form.
+
+This panel should explain what the app is doing, not what the model is
+"thinking."  It can show a short, current-session trail such as:
+
+- target acquired: selection / paragraph / block / section / document,
+  with approximate character count
+- request sent to the local helper
+- Foundation Models generation started
+- unsaved AI edit transaction applied and reviewable
+- failed / unavailable / stale target, using localized user-facing copy
+
+The panel must stay bounded:
+
+- no raw provider transcript
+- no raw prompt / response body
+- no hidden instruction display
+- no chain-of-thought or inferred model reasoning
+- no persistence across window reload or app restart
+- no inclusion in Support Diagnostics
+- no file path, broad document excerpt, token dump, or secret-bearing
+  data
+
+The existing rough-request textarea does not need to dominate the
+window.  Reducing it from three rows to two rows is acceptable if long
+requests remain scrollable and the preset buttons remain reachable.
+The panel should not replace Diff / review; it only helps the user see
+the lifecycle before they inspect or discard the edit.
 
 ## First Mock Slice
 

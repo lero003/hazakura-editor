@@ -19,12 +19,25 @@ import { probeAppleAssistAvailability, type AppleAssistAvailability } from "../.
 export type UseAppleAssistAvailabilityResult = {
   availability: AppleAssistAvailability;
   available: boolean;
+  /**
+   * `true` once the availability probe has resolved
+   * (either to a non-`unsupported` value, or back to
+   * `unsupported` meaning the environment is genuinely
+   * unsupported). The initial value is `false` so callers
+   * can distinguish "probe in flight" from "probe settled
+   * on `unsupported`". The Apple Local Assist operation-
+   * feedback panel uses this to avoid leaving the panel
+   * empty when the probe stays at `unsupported` because
+   * the environment is unsupported.
+   */
+  probed: boolean;
 };
 
 export function useAppleAssistAvailability(): UseAppleAssistAvailabilityResult {
   const [availability, setAvailability] = useState<AppleAssistAvailability>({
     kind: "unsupported",
   });
+  const [probed, setProbed] = useState<boolean>(false);
 
   useEffect(() => {
     let disposed = false;
@@ -33,6 +46,7 @@ export function useAppleAssistAvailability(): UseAppleAssistAvailabilityResult {
       .then((snapshot) => {
         if (!disposed) {
           setAvailability(snapshot);
+          setProbed(true);
         }
       })
       .catch((err: unknown) => {
@@ -44,6 +58,7 @@ export function useAppleAssistAvailability(): UseAppleAssistAvailabilityResult {
           // the feature is not working right now without us
           // claiming the platform is fundamentally unsupported.
           setAvailability({ kind: "unavailable", reason });
+          setProbed(true);
         }
       });
 
@@ -55,5 +70,6 @@ export function useAppleAssistAvailability(): UseAppleAssistAvailabilityResult {
   return {
     availability,
     available: availability.kind === "available",
+    probed,
   };
 }

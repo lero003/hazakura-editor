@@ -3,7 +3,7 @@
 Status: Canonical
 Scope: Safety constraints for implementation
 Authority: High
-Last reviewed: 2026-06-02
+Last reviewed: 2026-06-10
 
 ## Core Rule
 
@@ -67,3 +67,16 @@ AI支援を入れる場合も、常時補完や自動書き換えにはしない
 Agent Workbench Mode はこの AI Assistance 方針とは別の任意モードである。`hazakura-note` は汎用 shell prompt や任意コマンド欄を提供せず、直接起動できるのは allowlist された agent CLI だけに限定する。CLI 内部で何ができるかは CLI 側仕様とユーザー操作に依存するため、ユーザー責任と既存の external-change / conflict handling を明示する。
 
 Future Apple Local Assist or Foundation Models-based assistance must stay closer to the AI Assistance rule than to Agent Workbench. It may change the unsaved editor buffer only after an explicit user action and only as an AI edit transaction that records before/after text, source, target scope, and review state. These edits must remain inspectable through Diff, change history, Review Desk, or an equivalent review surface before the user saves. The first Apple Local Assist implementation must not expose tool-calling side effects, background workspace indexing, generic chat, command execution, local HTTP fallback, provider plugins, automatic save, or hidden/irreversible file application without a fresh boundary review.
+
+Apple Local Assist may show bounded, user-visible operation feedback in
+the Assist Window to make the alpha behaviour understandable.  This
+feedback is UI state, not a provider transcript or diagnostics log.  It
+may describe the app-known lifecycle, such as target kind, approximate
+target length, sending / generating / applied / failed phases, and
+whether the result is reviewable before save.  It must not show raw
+Foundation Models prompts, raw model responses, hidden system
+instructions, chain-of-thought-like "reasoning", broad document
+excerpts, filesystem paths, secrets, or provider internals.  It must not
+be persisted, exported, copied through Support Diagnostics, or sent to
+another process beyond the existing explicit Apple Local Assist request
+and AI edit transaction flow.

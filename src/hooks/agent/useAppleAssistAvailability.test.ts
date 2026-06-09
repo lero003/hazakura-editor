@@ -44,6 +44,11 @@ describe("useAppleAssistAvailability", () => {
 
     expect(result.current.availability).toEqual({ kind: "unsupported" });
     expect(result.current.available).toBe(false);
+    // The probe has not resolved yet, so `probed` is
+    // `false`. Callers (e.g. the operation-feedback panel)
+    // use this to distinguish "probe in flight" from
+    // "probe settled on `unsupported`".
+    expect(result.current.probed).toBe(false);
 
     // Drain the pending promise so it does not leak.
     resolveProbe({ kind: "unsupported" });
@@ -58,6 +63,26 @@ describe("useAppleAssistAvailability", () => {
       expect(result.current.availability).toEqual({ kind: "available" });
     });
     expect(result.current.available).toBe(true);
+    expect(result.current.probed).toBe(true);
+  });
+
+  it("flips `probed` to true even when the probe settles on `unsupported`", async () => {
+    // The Apple Local Assist operation-feedback panel
+    // depends on `probed` to distinguish "probe in flight"
+    // from "the environment is genuinely unsupported".
+    // If the probe stays at `unsupported` (no IPC call
+    // ever returned a different value), the panel still
+    // wants to render an "unavailable" entry instead of
+    // looking empty.
+    probeAppleAssistAvailability.mockResolvedValue({ kind: "unsupported" });
+
+    const { result } = renderHook(() => useAppleAssistAvailability());
+
+    await waitFor(() => {
+      expect(result.current.probed).toBe(true);
+    });
+    expect(result.current.availability).toEqual({ kind: "unsupported" });
+    expect(result.current.available).toBe(false);
   });
 
   it("reflects each non-available state verbatim", async () => {

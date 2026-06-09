@@ -3,6 +3,7 @@ import {
   classifyApplyError,
   getAppleAssistWindowCopy,
   type AppleAssistWindowCopy,
+  type OperationFeedbackKind,
 } from "./AppleAssistWindowApp";
 
 // v0.12.x Apple Local Assist copy + error classification.
@@ -64,9 +65,26 @@ const REQUIRED_KEYS: ReadonlyArray<keyof AppleAssistWindowCopy> = [
   "unknownError",
   "unsupportedStatus",
   "workingLocally",
+  // v0.17 operation-feedback panel. The keys are the
+  // minimum required to render the panel; the
+  // `feedbackEntry` function shape is exercised in a
+  // separate test below.
+  "feedbackHeading",
+  "feedbackEmpty",
+  "feedbackEntry",
 ];
 
 const PRESET_IDS = ["tidy", "natural", "continue", "proofread", "rewrite-section"];
+
+const FEEDBACK_KINDS: ReadonlyArray<OperationFeedbackKind> = [
+  "ready",
+  "target-acquired",
+  "request-sent",
+  "generation-started",
+  "applied",
+  "failed",
+  "unavailable",
+];
 
 describe("getAppleAssistWindowCopy", () => {
   for (const lang of ["en", "ja", "kana"] as const) {
@@ -113,6 +131,51 @@ describe("getAppleAssistWindowCopy", () => {
 
       it("labels the mode as Alpha in every language", () => {
         expect(copy.modeLabel).toBe("Alpha");
+      });
+
+      // v0.17 operation-feedback panel: every lifecycle
+      // kind must produce a non-empty, language-localized
+      // string. The exact wording is not pinned so routine
+      // copy edits do not need a test rewrite; the
+      // structural properties (non-empty, no obvious
+      // safety keywords, no English bleed-through into
+      // ja / kana) are.
+      it("renders a non-empty string for every operation-feedback kind", () => {
+        for (const kind of FEEDBACK_KINDS) {
+          const payload =
+            kind === "target-acquired"
+              ? { targetKind: "selection" as const, targetChars: 142 }
+              : undefined;
+          const text = copy.feedbackEntry(kind, payload);
+          expect(text, `${lang} kind ${kind}`).toMatch(/\S/);
+        }
+      });
+
+      it("keeps the target-acquired entry to a kind + character count (no document body, no path, no transcript)", () => {
+        const text = copy.feedbackEntry("target-acquired", {
+          targetKind: "selection",
+          targetChars: 142,
+        });
+        expect(text).not.toContain("/Users/");
+        expect(text).not.toMatch(/transcript|prompt|response|reasoning|chain of thought/i);
+      });
+
+      it("never accidentally leaks English into the feedback panel for ja / kana", () => {
+        if (lang === "en") {
+          return;
+        }
+        for (const kind of FEEDBACK_KINDS) {
+          const payload =
+            kind === "target-acquired"
+              ? { targetKind: "selection" as const, targetChars: 142 }
+              : undefined;
+          const text = copy.feedbackEntry(kind, payload);
+          expect(text, `${lang} kind ${kind}`).not.toMatch(/^Ready\./);
+          expect(text, `${lang} kind ${kind}`).not.toMatch(/^Request sent/);
+          expect(text, `${lang} kind ${kind}`).not.toMatch(/^Local generation started/);
+          expect(text, `${lang} kind ${kind}`).not.toMatch(/^Applied as/);
+          expect(text, `${lang} kind ${kind}`).not.toMatch(/^Failed\./);
+        }
       });
     });
   }

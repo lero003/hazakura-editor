@@ -3,7 +3,7 @@
 Status: Planning
 Scope: Future assist and agent surface direction
 Authority: Medium
-Last reviewed: 2026-06-05
+Last reviewed: 2026-06-10
 
 ## Purpose
 
@@ -107,6 +107,14 @@ The request target should stay bounded: selected text when present, otherwise th
 Because the current Apple model path is small and availability-gated, product claims should stay modest. Apple Local Assist is not intended for code review, multi-file understanding, long-document restructuring, autonomous agent work, broad design judgment, or advanced reasoning.
 
 Apple Local Assist may update the unsaved editor buffer directly **only** as an AI edit transaction: explicit user request, before/after record, source label, no auto-save, and a path to Diff / change history. Manual Review Desk entry points are not the primary Apple Local Assist surface.
+
+The companion may show compact operation feedback so users can
+understand alpha behaviour during real-app smoke.  This should be an
+ephemeral UI trail of app-known events (target acquired, request sent,
+generation started, applied, failed), not raw Foundation Models prompts,
+responses, hidden instructions, provider transcripts, or model
+reasoning.  It must not become a persistent log, diagnostics payload, or
+general chat history.
 
 Apple Local Assist must not start as:
 
