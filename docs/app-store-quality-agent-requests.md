@@ -1,9 +1,9 @@
 # App Store Quality Agent Requests
 
-Status: Planning
-Scope: External-agent request packets for App Store quality work excluding certificates, signing, notarization, and DMG packaging
-Authority: Medium
-Last reviewed: 2026-06-08
+Status: Complete (queues 1–5 closed 2026-06-09)
+Scope: Historical request-packet catalog for completed App Store quality work
+Authority: Reference
+Last reviewed: 2026-06-09
 
 ## Purpose
 

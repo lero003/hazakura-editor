@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-08 (v0.16 warning-expected DMG preview publication)
+Last reviewed: 2026-06-09 (App Store quality queues 1–5 complete)
 
 ## Current Position
 

@@ -3,7 +3,13 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-08
+Last reviewed: 2026-06-09
+
+## App Store Quality Queue
+
+The five ordered queues in `docs/app-store-current-work.md` are
+**complete** (2026-06-09). Evidence summary, verification snapshot,
+and residual risk triage are in `docs/app-store-quality-closeout.md`.
 
 ## Current State
 
