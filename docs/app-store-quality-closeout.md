@@ -119,11 +119,17 @@ remain open manual checks:
   existing tokens.  Manual smoke with macOS "Increase Contrast"
   enabled is still recommended.
 
-### Before App Store Submission — Not Yet Implemented
+### Before App Store Submission — Recorded Decisions and Deferred Items
+
+These are either intentional v0.17 keep-decisions, recorded
+with rationale, or open items that App Review may surface
+later. They are not blockers for an external agent and do
+not require another implementation pass before submission
+metadata / certificate work begins.
 
 | Item | Priority | Notes |
 |---|---|---|
-| WorkspaceTree `role="tree"` pattern | Low | Current `<button>`-based tree is keyboard-operable |
+| WorkspaceTree `role="tree"` pattern | Decision (2026-06-09) | Keep the current button-based model for v0.17. See `docs/workspace-tree-accessibility-decision.md` for the rationale and revisit criteria. The current model satisfies the relevant WCAG 2.2 AA Name / Role / State / Keyboard guidance via real `<button>` rows, `aria-expanded` on directory rows, a real `<input>` during rename, and an `Escape` clear-compare affordance on the container. |
 
 ### Out of Scope for Safe Editor / App Store Lane
 
