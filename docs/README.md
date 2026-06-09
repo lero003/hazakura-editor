@@ -29,14 +29,11 @@ This directory separates current guidance from historical material. Use current 
 
 - `l-mode-plan.md`: L Mode / えるモード source-preserving WYSIWYG Accuracy Ramp planning memo.
 - `commercial-quality-baseline.md`: non-App-Store commercial-quality baseline for status/recovery, settings/theme, accessibility, performance, L Mode measurement, honest feature scope, and Developer / GitHub distribution readiness.
-- `app-store-quality-agent-requests.md`: App Store-facing quality request queue for sandbox, App Store Agent Workbench omission, privacy/local data, review notes, save/restore, accessibility, preview/export security, diagnostics, and measurement work.
-- `v0.13-distribution-probe.md`: completed v0.13 App Store / Developer-GitHub distribution probe memo and remaining evidence needs.
+- `app-store-current-work.md`: current ordered App Store-facing quality work queue for external agents.
+- `app-store-quality-agent-requests.md`: App Store-facing request packet catalog and Codex review guide.
+- `app-store-review-notes-draft.md`: internal App Review Notes draft for later submission-copy adjustment.
 - `apple-local-assist-distribution-plan.md`: Apple Local Assist / App Store distribution planning memo.
 - `apple-local-assist-writing-companion-plan.md`: Apple Local Assist Writing Companion / external Assist Window UX direction.
-- `apple-local-assist-v0.12-design-review.md`: Apple Local Assist v0.12 スライス 1〜6 の設計選択・ゲート・残課題レビュー記録。
-- `apple-local-assist-live-helper-plan.md`: `src-helpers/apple-assist/` fixture mode / live mode 分離と live mode 実装前の設計メモ。
-- `apple-local-assist-rust-supervisor-plan.md`: helper sidecar を呼ぶ Rust supervisor 層の設計メモ。
-- `apple-local-assist-ui-unavailable-state-plan.md`: 4 状態 (`available` / `unavailable` / `disabled` / `unsupported`) の UI 提示方針と v0.12.x での移行計画。
 - `authoring-feature-readiness.md`: incomplete authoring/export/Agent-adjacent feature claims.
 
 ## Historical And Archive Areas

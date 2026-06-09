@@ -98,7 +98,7 @@ Current planning source:
 - `docs/assist-surface-strategy.md`
 - `docs/apple-local-assist-distribution-plan.md`
 - `docs/apple-local-assist-writing-companion-plan.md`
-- `docs/apple-local-assist-v0.12-design-review.md`
+- `docs/archive/reviews/apple-local-assist-v0.12-design-review.md`
 
 Rules:
 
@@ -236,7 +236,7 @@ Goal: prove the App Store lane can exist before investing more in app polish.
 - Verify whether the bundled Apple Local Assist helper can run under sandbox assumptions.
 - Keep the Developer / GitHub lane distinct and do not imply it is App Store-ready.
 
-Current probe memo: `docs/v0.13-distribution-probe.md`.
+Historical probe memo: `docs/archive/planning/v0.13-distribution-probe.md`.
 
 ### 2. Current v0.16 L Mode Live Source Quality Follow-up
 

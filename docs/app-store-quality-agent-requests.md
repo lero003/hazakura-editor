@@ -7,7 +7,8 @@ Last reviewed: 2026-06-08
 
 ## Purpose
 
-Use this memo when asking an external implementation agent to work on App Store-facing quality before certificate, provisioning, notarization, upload, or DMG work begins.
+Use `docs/app-store-current-work.md` for the current execution order.
+Use this memo as the packet catalog and Codex review guide when asking an external implementation agent to work on App Store-facing quality before certificate, provisioning, notarization, upload, or DMG work begins.
 
 The goal is to turn review-readiness concerns into small, reviewable slices. Each request should produce evidence that `hazakura editor` remains a Markdown-first safe editor under tighter distribution assumptions.
 

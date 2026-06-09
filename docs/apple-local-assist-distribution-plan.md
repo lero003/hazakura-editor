@@ -324,7 +324,7 @@ Target:
 - prepare App Review notes before App Store/TestFlight packaging
 - keep Apple Local Assist quality polish secondary until the distribution lane shape is proven
 
-Reference: [v0.13 Distribution Probe](v0.13-distribution-probe.md).
+Reference: [v0.13 Distribution Probe](archive/planning/v0.13-distribution-probe.md).
 
 ### v0.14: L Mode Stability / Assist Harness Polish
 
