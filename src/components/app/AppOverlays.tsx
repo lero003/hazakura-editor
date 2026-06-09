@@ -404,9 +404,6 @@ export function AppOverlays({
               menuLanguage={menuLanguage}
               onEditorSettingsChange={setEditorSettings}
               onMenuLanguageChange={setMenuLanguage}
-              onOpenPrivacyPreferences={() =>
-                setPreferencesDialogMode("privacy")
-              }
               onPreviewVisibleChange={setPreviewVisible}
               onThemePreferenceChange={setThemePreference}
               previewVisible={previewVisible}

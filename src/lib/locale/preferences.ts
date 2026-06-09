@@ -13,6 +13,7 @@ export type PreferencesCopy = {
   ambientIntensityDramatic: string;
   ambientIntensityHint: string;
   application: string;
+  appearanceAndWriting: string;
   appleAssistDiffInitiallyOpen: string;
   appleAssistDiffInitiallyOpenHint: string;
   autoBackup: string;
@@ -41,7 +42,7 @@ export type PreferencesCopy = {
   theme: string;
   themeHint: (theme: ThemePreference) => string;
   wrapLines: string;
-  // Privacy & Local Data disclosure (v0.16 app-store-quality
+  // Local Data Disclosure (v0.16 app-store-quality
   // privacy-local-data slice). Each label is rendered as a
   // short section heading or paragraph in
   // `PrivacyPreferencesPane`. The wording intentionally
@@ -51,7 +52,8 @@ export type PreferencesCopy = {
   // what the user's OS or third-party files might do.
   privacyTitle: string;
   privacyIntro: string;
-  privacyOpenLink: string;
+  privacyPolicyNote: string;
+  privacySectionTabsLabel: string;
   privacyDocumentsHeading: string;
   privacyDocumentsBody: string;
   privacyBackupHeading: string;
@@ -70,6 +72,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
   if (isKanaStyle(lang)) {
     return {
       application: "あぷり",
+      appearanceAndWriting: "みため と かくこと",
       appleAssistDiffInitiallyOpen: "Apple Local Assist の さぶんを ひらく",
       appleAssistDiffInitiallyOpenHint:
         "Apple Local Assist が ほんぶんを かへたら さぶんを すぐ みせます。",
@@ -117,10 +120,12 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         }
         return "あけがた の そら を 思わせる あけぼのいろ の きせつ いろあひ。";
       },
-      privacyTitle: "ぷらいばしー と ろーかる でーた",
+      privacyTitle: "ろーかる でーた の あつかひ",
       privacyIntro:
         "このあぷり の こーど が どういう しょり を するか の みじかい せつめい です。OS や がいぶ さーびす の どうさ は ここの せつめい の たいしょう では ありません。",
-      privacyOpenLink: "ぷらいばしー と ろーかる でーた を ひらく",
+      privacyPolicyNote:
+        "これは あぷり の なか の ぎじゅつてきな せつめい です。 こうかい よう の Privacy Policy は、 べつに ととのへる ぶんしょ です。",
+      privacySectionTabsLabel: "ろーかる でーた の せつめい",
       privacyDocumentsHeading: "えらんだ ふみ",
       privacyDocumentsBody:
         "このあぷり は、 macOS の ふぁいる / ふぉるだ えらぶ き を とおして えらんだ テキストふみ だけを ひらきます。 ふぁいる ぜんたい を こっそり しらべたり、 ほーむ でぃれくとり を そうさ したりは しません。",
@@ -145,6 +150,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
   return isJapaneseMenuLanguage(lang)
     ? {
         application: "アプリケーション",
+        appearanceAndWriting: "見た目と書き心地",
         appleAssistDiffInitiallyOpen: "Apple Local Assist の差分を自動で開く",
         appleAssistDiffInitiallyOpenHint:
           "Apple Local Assist が本文を変更したとき、確認用の小さな差分を最初から表示します。",
@@ -192,10 +198,12 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
           }
           return "明け方向けの曙色アンビエントテーマ。";
         },
-        privacyTitle: "プライバシーとローカルデータ",
+        privacyTitle: "ローカルデータの扱い",
         privacyIntro:
           "このアプリのコードが何をするかについての短い説明です。OS や外部サービスの動作は対象外です。",
-        privacyOpenLink: "プライバシーとローカルデータを開く…",
+        privacyPolicyNote:
+          "これはアプリ内の技術的な説明です。公開用の Privacy Policy は別途最終化する文書です。",
+        privacySectionTabsLabel: "ローカルデータの説明",
         privacyDocumentsHeading: "選んだファイル",
         privacyDocumentsBody:
           "このアプリは macOS のファイル/フォルダピッカーを通して選んだテキストファイルだけを開きます。ファイル全体を勝手に走査したり、ホームディレクトリを操作したりはしません。",
@@ -217,6 +225,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
       }
     : {
         application: "Application",
+        appearanceAndWriting: "Appearance & Writing",
         appleAssistDiffInitiallyOpen: "Open Apple Local Assist diff automatically",
         appleAssistDiffInitiallyOpenHint:
           "Show the compact diff immediately after Apple Local Assist changes the text.",
@@ -264,10 +273,12 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
           }
           return "Dawn-pastel seasonal theme for early mornings.";
         },
-        privacyTitle: "Privacy & Local Data",
+        privacyTitle: "Local Data Disclosure",
         privacyIntro:
           "A short description of what this app's code does. It does not describe what the operating system or external services may do.",
-        privacyOpenLink: "Open Privacy & Local Data…",
+        privacyPolicyNote:
+          "This is an in-app technical disclosure. The public Privacy Policy is a separate document that still needs final legal copy.",
+        privacySectionTabsLabel: "Local data topics",
         privacyDocumentsHeading: "Files you choose",
         privacyDocumentsBody:
           "The app only opens text files you pick through the macOS file or folder picker. It does not scan files on its own or touch your home directory.",

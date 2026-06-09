@@ -20,12 +20,19 @@ export function PreferencesDialog({
   onClose,
   title,
 }: PreferencesDialogProps) {
+  const modeClass =
+    mode === "agent"
+      ? "agent-workbench-dialog"
+      : mode === "privacy"
+        ? "privacy-dialog"
+        : "settings-dialog";
+
   return (
     <div className="modal-backdrop" role="presentation">
       <section
         aria-labelledby="preferences-title"
         aria-modal="true"
-        className={`preferences-dialog ${mode === "agent" ? "agent-workbench-dialog" : "settings-dialog"}`}
+        className={`preferences-dialog ${modeClass}`}
         ref={dialogRef}
         role="dialog"
       >

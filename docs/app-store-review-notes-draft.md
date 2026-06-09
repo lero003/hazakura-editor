@@ -47,7 +47,7 @@ Restore/backup/recovery handling is recoverable and surfaced through existing ap
 
 ### 3) Privacy and local data disclosure
 
-The app has an in-app `Privacy & Local Data` disclosure entry under Settings.
+The app has an in-app `Local Data Disclosure` entry under Help. This is a technical local-data explanation, separate from the public Privacy Policy URL/copy that must be finalized for App Store metadata.
 
 - No implementation claim is made for cloud sync in this lane.
 - No user content is exported unless the app is asked to save/export by user action.
@@ -83,7 +83,7 @@ Use the current UI labels for each run and keep screenshots to each step.
 3. Open a Markdown/text file.
 4. Edit and save.
 5. Open preview / export and confirm expected output.
-6. Verify privacy path is discoverable from Settings (Privacy & Local Data).
+6. Verify local-data disclosure path is discoverable from Help (Local Data Disclosure / ローカルデータの扱い).
 7. Verify Apple Local Assist visibility and availability state where supported.
 8. If restore permission is intentionally broken in test environment, verify clear reauthorization path appears and does not reopen the file silently.
 
@@ -102,4 +102,3 @@ The following are intentionally outside this request scope and should remain unc
 - Distribution split and App Store omission context should remain consistent with `docs/current-status.md`.
 - Keep boundary wording strict: Safe Editor primary, Agent Workbench is lane-specific, optional, and explicit.
 - If a claim cannot be verified in current source behavior, mark it as `要確認`.
-

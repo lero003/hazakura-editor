@@ -4,6 +4,7 @@ import { isTauriRuntime } from "../../lib/tauri";
 import { isExternalCliAssistSurfaceAllowed } from "../../lib/distributionLane";
 import {
   APP_MENU_ACTION_EVENT,
+  MENU_LOCAL_DATA_DISCLOSURE,
   MENU_OPEN_AGENT_WINDOW,
   MENU_OPEN_APPLE_ASSIST_WINDOW,
   type EditorSettings,
@@ -160,6 +161,9 @@ export function useAppMenuActionListener({
           break;
         case "agent-workbench":
           setPreferencesDialogMode("agent");
+          break;
+        case MENU_LOCAL_DATA_DISCLOSURE:
+          setPreferencesDialogMode("privacy");
           break;
         case MENU_OPEN_AGENT_WINDOW:
           if (externalCliAllowed) {

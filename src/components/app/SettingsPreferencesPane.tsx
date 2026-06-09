@@ -14,7 +14,6 @@ type SettingsPreferencesPaneProps = {
   menuLanguage: MenuLanguage;
   onEditorSettingsChange: Dispatch<SetStateAction<EditorSettings>>;
   onMenuLanguageChange: (language: MenuLanguage) => void;
-  onOpenPrivacyPreferences: () => void;
   onPreviewVisibleChange: (visible: boolean) => void;
   onThemePreferenceChange: (theme: ThemePreference) => void;
   previewVisible: boolean;
@@ -46,14 +45,13 @@ export function SettingsPreferencesPane({
   menuLanguage,
   onEditorSettingsChange,
   onMenuLanguageChange,
-  onOpenPrivacyPreferences,
   onPreviewVisibleChange,
   onThemePreferenceChange,
   previewVisible,
   themePreference,
 }: SettingsPreferencesPaneProps) {
   return (
-    <div className="preferences-sections">
+    <div className="preferences-sections settings-preferences">
       <section className="preference-section" aria-label={copy.editorDisplay}>
         <h3>{copy.editor}</h3>
         <label className="toggle-switch">
@@ -238,6 +236,29 @@ export function SettingsPreferencesPane({
           </span>
         </label>
         <label className="field-control">
+          <span>{copy.menuLanguage}</span>
+          <select
+            aria-label={copy.menuLanguage}
+            value={menuLanguage}
+            onChange={(event) =>
+              onMenuLanguageChange(event.target.value as MenuLanguage)
+            }
+          >
+            <option value="en">English</option>
+            <option value="ja">日本語</option>
+            <option value="kana">かなふみ</option>
+          </select>
+          <span className="field-hint" data-testid="menu-language-hint">
+            {copy.menuLanguageHint}
+          </span>
+        </label>
+      </section>
+      <section
+        className="preference-section"
+        aria-label={copy.appearanceAndWriting}
+      >
+        <h3>{copy.appearanceAndWriting}</h3>
+        <label className="field-control">
           <span>{copy.theme}</span>
           <select
             aria-label={copy.theme}
@@ -262,7 +283,9 @@ export function SettingsPreferencesPane({
               {copy.shokou}
             </option>
           </select>
-          <span className="field-hint" data-testid="theme-hint">{copy.themeHint(themePreference)}</span>
+          <span className="field-hint" data-testid="theme-hint">
+            {copy.themeHint(themePreference)}
+          </span>
         </label>
         <label className="field-control">
           <span>{copy.ambientIntensity}</span>
@@ -284,31 +307,6 @@ export function SettingsPreferencesPane({
           </select>
           <span className="field-hint">{copy.ambientIntensityHint}</span>
         </label>
-        <label className="field-control">
-          <span>{copy.menuLanguage}</span>
-          <select
-            aria-label={copy.menuLanguage}
-            value={menuLanguage}
-            onChange={(event) =>
-              onMenuLanguageChange(event.target.value as MenuLanguage)
-            }
-          >
-            <option value="en">English</option>
-            <option value="ja">日本語</option>
-            <option value="kana">かなふみ</option>
-          </select>
-          <span className="field-hint" data-testid="menu-language-hint">
-            {copy.menuLanguageHint}
-          </span>
-        </label>
-        <button
-          type="button"
-          className="preference-link-button"
-          data-testid="open-privacy-preferences"
-          onClick={onOpenPrivacyPreferences}
-        >
-          {copy.privacyOpenLink}
-        </button>
         <div className="preference-feature">
           <p className="preference-feature-lede">
             <span className="preference-feature-label">

@@ -345,11 +345,11 @@ describe("useCommandPaletteController", () => {
     expect(assistSettingsCommand?.label).toBe("Assist Settings…");
   });
 
-  it("exposes a Privacy & Local Data command in the Developer / GitHub lane", () => {
+  it("exposes a Local Data Disclosure command in the Developer / GitHub lane", () => {
     // The v0.16 app-store-quality: privacy-local-data slice
-    // adds a `settings.privacy` command that opens the new
-    // Privacy & Local Data preferences pane. The Developer
-    // / GitHub lane renders it as a Settings-category
+    // adds a `help.localDataDisclosure` command that opens
+    // the Local Data Disclosure preferences pane. The
+    // Developer / GitHub lane renders it as a Help-category
     // command that fires `setPreferencesDialogMode("privacy")`.
     vi.stubEnv("VITE_HAZAKURA_DISTRIBUTION_LANE", "developer");
     const setPreferencesDialogMode = vi.fn();
@@ -401,10 +401,10 @@ describe("useCommandPaletteController", () => {
     });
 
     const privacy = result.current.filteredCommands.find(
-      (command) => command.id === "settings.privacy",
+      (command) => command.id === "help.localDataDisclosure",
     );
-    expect(privacy?.category).toBe("Settings");
-    expect(privacy?.label).toBe("Privacy & Local Data…");
+    expect(privacy?.category).toBe("Help");
+    expect(privacy?.label).toBe("Local Data Disclosure…");
 
     act(() => {
       privacy?.run();
@@ -413,7 +413,7 @@ describe("useCommandPaletteController", () => {
     vi.unstubAllEnvs();
   });
 
-  it("exposes a Privacy & Local Data command in the App Store lane", () => {
+  it("exposes a Local Data Disclosure command in the App Store lane", () => {
     // The App Store lane must keep the Privacy disclosure
     // route reachable so App Review can find it without
     // enabling Agent Workbench. The env stub is applied
@@ -469,9 +469,9 @@ describe("useCommandPaletteController", () => {
     });
 
     const privacy = result.current.filteredCommands.find(
-      (command) => command.id === "settings.privacy",
+      (command) => command.id === "help.localDataDisclosure",
     );
-    expect(privacy?.label).toBe("Privacy & Local Data…");
+    expect(privacy?.label).toBe("Local Data Disclosure…");
 
     act(() => {
       privacy?.run();

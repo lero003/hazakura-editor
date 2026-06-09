@@ -1,4 +1,4 @@
-// Privacy & Local Data disclosure pane.
+// Local Data Disclosure pane.
 //
 // v0.16 app-store-quality: privacy-local-data slice. This
 // pane is the in-app surface that explains, in evidence-
@@ -17,6 +17,7 @@
 // only: there are no toggles, inputs, or state writes, so
 // the focus trap and close affordance are the only
 // interactions the user has with it.
+import { useState } from "react";
 import type { PreferencesCopy } from "../../lib/locale";
 
 type PrivacyPreferencesPaneProps = {
@@ -62,26 +63,56 @@ export function PrivacyPreferencesPane({ copy }: PrivacyPreferencesPaneProps) {
       testId: "privacy-section-network",
     },
   ];
+  const [activeSectionId, setActiveSectionId] = useState(sections[0].testId);
+  const activeSection =
+    sections.find((section) => section.testId === activeSectionId) ??
+    sections[0];
 
   return (
-    <div className="preferences-sections privacy-preferences">
-      <p
-        className="privacy-preferences-intro"
-        data-testid="privacy-intro"
-      >
-        {copy.privacyIntro}
-      </p>
-      {sections.map((section) => (
-        <section
-          aria-label={section.heading}
-          className="preference-section"
-          data-testid={section.testId}
-          key={section.testId}
+    <div className="privacy-preferences">
+      <div className="privacy-preferences-summary">
+        <p
+          className="privacy-preferences-intro"
+          data-testid="privacy-intro"
         >
-          <h3>{section.heading}</h3>
-          <p className="preference-section-body">{section.body}</p>
+          {copy.privacyIntro}
+        </p>
+        <p className="privacy-policy-note" data-testid="privacy-policy-note">
+          {copy.privacyPolicyNote}
+        </p>
+      </div>
+      <div
+        aria-label={copy.privacySectionTabsLabel}
+        className="privacy-tab-list"
+        role="tablist"
+      >
+        {sections.map((section) => (
+          <button
+            aria-controls={`${section.testId}-panel`}
+            aria-selected={section.testId === activeSection.testId}
+            className="privacy-tab"
+            id={`${section.testId}-tab`}
+            key={section.testId}
+            onClick={() => setActiveSectionId(section.testId)}
+            role="tab"
+            type="button"
+          >
+            {section.heading}
+          </button>
+        ))}
+      </div>
+      <div className="privacy-tab-panel-scroll">
+        <section
+          aria-labelledby={`${activeSection.testId}-tab`}
+          className="preference-section privacy-tab-panel"
+          data-testid={activeSection.testId}
+          id={`${activeSection.testId}-panel`}
+          role="tabpanel"
+        >
+          <h3>{activeSection.heading}</h3>
+          <p className="preference-section-body">{activeSection.body}</p>
         </section>
-      ))}
+      </div>
     </div>
   );
 }

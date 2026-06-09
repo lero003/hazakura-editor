@@ -477,8 +477,8 @@ export function useCommandPaletteController({
         shortcut: "⌘,",
       },
       {
-        category: "Settings",
-        id: "settings.privacy",
+        category: "Help",
+        id: "help.localDataDisclosure",
         keywords: [
           "privacy",
           "local",
@@ -491,7 +491,7 @@ export function useCommandPaletteController({
           "sync",
           "network",
         ],
-        label: "Privacy & Local Data…",
+        label: "Local Data Disclosure…",
         run: () => {
           actions.setPreferencesDialogMode("privacy");
         },

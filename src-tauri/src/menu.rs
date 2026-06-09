@@ -313,8 +313,19 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
             )?,
         ],
     )?;
-    let help_menu =
-        Submenu::with_id_and_items(app, HELP_SUBMENU_ID, label("Help", "ヘルプ"), true, &[])?;
+    let help_menu = Submenu::with_id_and_items(
+        app,
+        HELP_SUBMENU_ID,
+        label("Help", "ヘルプ"),
+        true,
+        &[&MenuItem::with_id(
+            app,
+            MENU_LOCAL_DATA_DISCLOSURE,
+            label("Local Data Disclosure...", "ローカルデータの扱い..."),
+            true,
+            None::<&str>,
+        )?],
+    )?;
 
     #[cfg(target_os = "macos")]
     {
@@ -467,6 +478,7 @@ fn kana_menu_label(japanese: &'static str) -> Option<&'static str> {
         "しまう" => "しまふ",
         "拡大/縮小" => "おほきく/ちひさく",
         "ヘルプ" => "たすけ",
+        "ローカルデータの扱い..." => "ろーかるでーたのあつかひ...",
         "hazakura editor について" => "hazakura editor のこと",
         "サービス" => "つかへ",
         "hazakura editor を隠す" => "hazakura editor をかくす",
@@ -558,6 +570,7 @@ pub(crate) fn emit_app_menu_event<R: tauri::Runtime>(
                 | MENU_THEME_SHOKOU
                 | MENU_PREFERENCES
                 | MENU_AGENT_WORKBENCH
+                | MENU_LOCAL_DATA_DISCLOSURE
                 | MENU_OPEN_AGENT_WINDOW
                 | MENU_OPEN_APPLE_ASSIST_WINDOW
         )

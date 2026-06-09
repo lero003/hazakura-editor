@@ -1,4 +1,4 @@
-// Tests for the Privacy & Local Data disclosure pane
+// Tests for the Local Data Disclosure pane
 // (v0.16 app-store-quality: privacy-local-data slice).
 //
 // The pane is a read-only surface. It just renders a list
@@ -17,7 +17,7 @@
 //   for ja / kana (the slice is reviewed by Codex in both
 //   languages).
 import { afterEach, describe, expect, it } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { getPreferencesCopy } from "../../lib/locale";
 import { PrivacyPreferencesPane } from "./PrivacyPreferencesPane";
 
@@ -30,7 +30,7 @@ function renderPane(lang: "en" | "ja" | "kana") {
 }
 
 describe("PrivacyPreferencesPane", () => {
-  it("renders the intro and all six sections in English", () => {
+  it("renders the intro, policy boundary note, and all topic tabs in English", () => {
     const copy = getPreferencesCopy("en");
     render(<PrivacyPreferencesPane copy={copy} />);
 
@@ -42,12 +42,27 @@ describe("PrivacyPreferencesPane", () => {
     expect(screen.getByTestId("privacy-intro").textContent).toBe(
       copy.privacyIntro,
     );
-    expect(screen.getByTestId("privacy-section-documents")).toBeTruthy();
-    expect(screen.getByTestId("privacy-section-backup")).toBeTruthy();
-    expect(screen.getByTestId("privacy-section-preview")).toBeTruthy();
-    expect(screen.getByTestId("privacy-section-apple-assist")).toBeTruthy();
-    expect(screen.getByTestId("privacy-section-app-store")).toBeTruthy();
-    expect(screen.getByTestId("privacy-section-network")).toBeTruthy();
+    expect(screen.getByTestId("privacy-policy-note").textContent).toBe(
+      copy.privacyPolicyNote,
+    );
+    expect(
+      screen.getByRole("tab", { name: copy.privacyDocumentsHeading }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("tab", { name: copy.privacyBackupHeading }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("tab", { name: copy.privacyPreviewHeading }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("tab", { name: copy.privacyAppleAssistHeading }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("tab", { name: copy.privacyAppStoreLaneHeading }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("tab", { name: copy.privacyNetworkHeading }),
+    ).toBeTruthy();
   });
 
   it("renders the localized copy in Japanese", () => {
@@ -83,6 +98,9 @@ describe("PrivacyPreferencesPane", () => {
     const copy = getPreferencesCopy("en");
     render(<PrivacyPreferencesPane copy={copy} />);
 
+    fireEvent.click(
+      screen.getByRole("tab", { name: copy.privacyAppStoreLaneHeading }),
+    );
     const appStoreSection = screen.getByTestId("privacy-section-app-store");
     expect(appStoreSection.textContent).toContain("App Store build");
     expect(appStoreSection.textContent).toContain("Agent Workbench");
@@ -97,6 +115,9 @@ describe("PrivacyPreferencesPane", () => {
     const copy = getPreferencesCopy("en");
     render(<PrivacyPreferencesPane copy={copy} />);
 
+    fireEvent.click(
+      screen.getByRole("tab", { name: copy.privacyNetworkHeading }),
+    );
     const network = screen.getByTestId("privacy-section-network");
     // The body lists specific implementation-verified
     // surfaces (fetch, XHR, analytics, telemetry, crash
@@ -121,6 +142,11 @@ describe("PrivacyPreferencesPane", () => {
     // The CSP is defense-in-depth, not the primary gate.
     // The pane must describe the routing, not the CSP.
     const enResult = renderPane("en");
+    fireEvent.click(
+      enResult.getByRole("tab", {
+        name: getPreferencesCopy("en").privacyPreviewHeading,
+      }),
+    );
     const enPreview = enResult.getByTestId("privacy-section-preview");
     expect(enPreview.textContent).toContain("external images");
     expect(enPreview.textContent).toContain("script, iframe, object, and embed");
@@ -137,6 +163,11 @@ describe("PrivacyPreferencesPane", () => {
     cleanup();
 
     const jaResult = renderPane("ja");
+    fireEvent.click(
+      jaResult.getByRole("tab", {
+        name: getPreferencesCopy("ja").privacyPreviewHeading,
+      }),
+    );
     const jaPreview = jaResult.getByTestId("privacy-section-preview");
     expect(jaPreview.textContent).toContain("workspace-relative");
     expect(jaPreview.textContent).toContain("外部 scheme");
@@ -155,6 +186,11 @@ describe("PrivacyPreferencesPane", () => {
     // build lane (App Store + Developer), so the App
     // Store description must not exclude the helper.
     const enResult = renderPane("en");
+    fireEvent.click(
+      enResult.getByRole("tab", {
+        name: getPreferencesCopy("en").privacyNetworkHeading,
+      }),
+    );
     const enNetwork = enResult.getByTestId("privacy-section-network");
     expect(enNetwork.textContent).toContain("bundled Apple Local Assist helper");
     expect(enNetwork.textContent).toContain(
@@ -173,6 +209,11 @@ describe("PrivacyPreferencesPane", () => {
     cleanup();
 
     const jaResult = renderPane("ja");
+    fireEvent.click(
+      jaResult.getByRole("tab", {
+        name: getPreferencesCopy("ja").privacyNetworkHeading,
+      }),
+    );
     const jaNetwork = jaResult.getByTestId("privacy-section-network");
     expect(jaNetwork.textContent).toContain("Apple Local Assist helper");
     expect(jaNetwork.textContent).toContain("Agent Workbench");
@@ -187,12 +228,28 @@ describe("PrivacyPreferencesPane", () => {
   it("keeps every section body non-empty across all three languages", () => {
     for (const lang of ["en", "ja", "kana"] as const) {
       const copy = getPreferencesCopy(lang);
-      const { container } = render(<PrivacyPreferencesPane copy={copy} />);
-      const bodies = container.querySelectorAll(".preference-section-body");
-      expect(bodies.length).toBe(6);
-      for (const body of Array.from(bodies)) {
-        expect(body.textContent?.trim().length, `${lang} body`).toBeGreaterThan(0);
+      const { getByRole, getByTestId } = render(
+        <PrivacyPreferencesPane copy={copy} />,
+      );
+      const sections = [
+        [copy.privacyDocumentsHeading, "privacy-section-documents"],
+        [copy.privacyBackupHeading, "privacy-section-backup"],
+        [copy.privacyPreviewHeading, "privacy-section-preview"],
+        [copy.privacyAppleAssistHeading, "privacy-section-apple-assist"],
+        [copy.privacyAppStoreLaneHeading, "privacy-section-app-store"],
+        [copy.privacyNetworkHeading, "privacy-section-network"],
+      ] as const;
+      for (const [heading, testId] of sections) {
+        fireEvent.click(getByRole("tab", { name: heading }));
+        const body = getByTestId(testId).querySelector(
+          ".preference-section-body",
+        );
+        expect(
+          body?.textContent?.trim().length,
+          `${lang} ${testId}`,
+        ).toBeGreaterThan(0);
       }
+      cleanup();
     }
   });
 });

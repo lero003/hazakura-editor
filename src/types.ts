@@ -32,6 +32,7 @@ export const ASSIST_SURFACE_PREFERENCE_STORAGE_KEY =
 // ── App Constants ──
 
 export const APP_MENU_ACTION_EVENT = "hazakura-note://menu-action";
+export const MENU_LOCAL_DATA_DISCLOSURE = "local-data-disclosure";
 export const AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS = 500;
 export const AGENT_WORKBENCH_SESSION_POLL_MS = 200;
 export const EXTERNAL_CHANGE_ACTIVE_POLL_MS = 1000;

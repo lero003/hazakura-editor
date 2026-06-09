@@ -26,12 +26,16 @@
   animation: modalShow 0.18s var(--ease-spring) forwards;
 }
 
-.preferences-dialog {  background: rgba(var(--surface-strong-rgb), 0.85);
+.preferences-dialog {
+  background: rgba(var(--surface-strong-rgb), 0.85);
   backdrop-filter: blur(20px);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   color: var(--text);
+  display: flex;
+  flex-direction: column;
+  max-height: min(760px, calc(100dvh - 48px));
   max-width: 640px;
   padding: 0;
   width: min(640px, calc(100vw - 48px));
@@ -39,7 +43,17 @@
   overflow: hidden;
 }
 
+.preferences-dialog.settings-dialog {
+  max-width: 920px;
+  width: min(920px, calc(100vw - 48px));
+}
+
 .preferences-dialog.agent-workbench-dialog {
+  max-width: 760px;
+  width: min(760px, calc(100vw - 48px));
+}
+
+.preferences-dialog.privacy-dialog {
   max-width: 760px;
   width: min(760px, calc(100vw - 48px));
 }
@@ -48,6 +62,7 @@
   align-items: center;
   border-bottom: 1px solid var(--border);
   display: flex;
+  flex: 0 0 auto;
   justify-content: space-between;
   padding: 18px 20px;
 }
@@ -99,6 +114,12 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.settings-preferences {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .agent-workbench-settings {
@@ -124,6 +145,14 @@
 }
 
 .preference-section:nth-child(2n + 1) {
+  border-left: 0;
+}
+
+.settings-preferences .preference-section {
+  border-left: 1px solid var(--border);
+}
+
+.settings-preferences .preference-section:first-child {
   border-left: 0;
 }
 
@@ -217,31 +246,6 @@
   line-height: 1;
   padding: 4px 8px;
   text-transform: uppercase;
-}
-
-/* Privacy & Local Data disclosure link (v0.16
-   app-store-quality: privacy-local-data slice). Read-only
-   inline action: opens the new `privacy` mode of the
-   Preferences dialog. Aligned with the rest of the section
-   so it does not look like a separate form field. */
-.preference-link-button {
-  align-self: flex-start;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--accent);
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 6px 12px;
-  text-align: left;
-  transition: background 0.12s ease;
-}
-
-.preference-link-button:hover,
-.preference-link-button:focus-visible {
-  background: var(--surface-hover);
-  outline: none;
 }
 
 .preference-note,
@@ -396,9 +400,14 @@
     grid-column: auto;
   }
 
-  .preference-section + .preference-section {
+  .preference-section + .preference-section,
+  .settings-preferences .preference-section {
     border-left: 0;
     border-top: 1px solid var(--border);
+  }
+
+  .settings-preferences .preference-section:first-child {
+    border-top: 0;
   }
 }
 
@@ -469,15 +478,26 @@
   flex-shrink: 0;
 }
 
-/* Privacy & Local Data disclosure pane (v0.16
+/* Local Data Disclosure pane (v0.16
    app-store-quality: privacy-local-data slice). Read-only
-   prose: the existing `.preference-section` row + `h3` chip
-   pattern is reused, and a body paragraph + intro paragraph
-   are added so the disclosure reads as a short document
-   instead of a form field. No toggles, inputs, or focusable
-   controls are rendered — the dialog-level focus trap and
-   close button are the only interactive elements. */
+   prose split into tabs so the disclosure reads as a compact
+   reference document instead of a long settings form. */
+.privacy-preferences {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.privacy-preferences-summary {
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  gap: 8px;
+  padding: 18px 20px 16px;
+}
+
 .privacy-preferences-intro,
+.privacy-policy-note,
 .preference-section-body {
   color: var(--text);
   font-size: 13px;
@@ -485,6 +505,48 @@
   margin: 0;
 }
 
-.privacy-preferences-intro {
-  padding: 18px 20px 0;
+.privacy-policy-note {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.privacy-tab-list {
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 10px 12px;
+}
+
+.privacy-tab {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: var(--text-muted);
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 650;
+  padding: 6px 10px;
+}
+
+.privacy-tab:hover,
+.privacy-tab:focus-visible {
+  background: var(--surface-muted);
+  color: var(--text);
+}
+
+.privacy-tab[aria-selected="true"] {
+  background: var(--surface-muted);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.privacy-tab-panel-scroll {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.privacy-tab-panel {
+  border-left: 0;
+  min-height: 220px;
 }

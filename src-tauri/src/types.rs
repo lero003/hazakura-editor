@@ -126,6 +126,7 @@ pub(crate) const MENU_THEME_YAKOU: &str = "theme-yakou";
 pub(crate) const MENU_THEME_SHOKOU: &str = "theme-shokou";
 pub(crate) const MENU_PREFERENCES: &str = "preferences";
 pub(crate) const MENU_AGENT_WORKBENCH: &str = "agent-workbench";
+pub(crate) const MENU_LOCAL_DATA_DISCLOSURE: &str = "local-data-disclosure";
 pub(crate) const MENU_OPEN_AGENT_WINDOW: &str = "open-agent-window";
 pub(crate) const MENU_OPEN_APPLE_ASSIST_WINDOW: &str = "open-apple-assist-window";
 pub(crate) const MENU_RECENT_FILE_PREFIX: &str = "recent-file-";
