@@ -61,7 +61,7 @@ pub(crate) fn get_main_apple_assist_target<R: tauri::Runtime>(
     // The gate is intentionally permissive so the apple-assist
     // window can poll the cache without depending on the main
     // window being alive.
-    let _ = ensure_label_is_main_or_apple_assist(window.label())?;
+    ensure_label_is_main_or_apple_assist(window.label())?;
     let cache_state = app.state::<MainAppleAssistTargetCache>();
     let cache = cache_state
         .0
@@ -91,7 +91,8 @@ pub(crate) fn set_main_apple_assist_target<R: tauri::Runtime>(
     *cache = Some(target.clone());
     drop(cache);
 
-    let _ = app.emit(MAIN_APPLE_ASSIST_TARGET_CHANGED_EVENT, target);
+    app.emit(MAIN_APPLE_ASSIST_TARGET_CHANGED_EVENT, target)
+        .ok();
     Ok(())
 }
 

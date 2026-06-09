@@ -22,8 +22,7 @@ pub(crate) fn start_agent_workbench_session<R: tauri::Runtime>(
     consent_acknowledged: bool,
     provider: String,
     workspace_root: String,
-    terminal_columns: Option<u16>,
-    terminal_rows: Option<u16>,
+    terminal_size: Option<(u16, u16)>,
 ) -> Result<AgentWorkbenchSessionStartResult, String> {
     start_agent_workbench_session_with_label(
         window.label(),
@@ -32,8 +31,7 @@ pub(crate) fn start_agent_workbench_session<R: tauri::Runtime>(
         consent_acknowledged,
         provider,
         workspace_root,
-        terminal_columns,
-        terminal_rows,
+        terminal_size,
     )
 }
 
@@ -44,8 +42,7 @@ pub(crate) fn start_agent_workbench_session_with_label(
     consent_acknowledged: bool,
     provider: String,
     workspace_root: String,
-    terminal_columns: Option<u16>,
-    terminal_rows: Option<u16>,
+    terminal_size: Option<(u16, u16)>,
 ) -> Result<AgentWorkbenchSessionStartResult, String> {
     // The detached Agent window is now the only Agent surface
     // (v0.8+ slice), and it owns the Start flow via
@@ -58,6 +55,10 @@ pub(crate) fn start_agent_workbench_session_with_label(
     ensure_agent_workbench_allowed_by_distribution()?;
     let path_var = agent_provider_app_search_path();
     let adapter = RealAgentRuntimeAdapter::new(session_store);
+
+    let (terminal_columns, terminal_rows) = terminal_size
+        .map(|(columns, rows)| (Some(columns), Some(rows)))
+        .unwrap_or((None, None));
 
     start_agent_workbench_session_with_store(
         session_store,

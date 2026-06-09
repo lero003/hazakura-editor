@@ -1,12 +1,15 @@
 import { useMemo } from "react";
 import { isDirty, isSaveFailureError } from "../../features/editor/editorTabs";
+import { localizeStatusMessage } from "../../lib/statusMessages";
 import type { DraftRecord, EditorTab } from "../../types";
+import type { MenuLanguage } from "../../types";
 
 type UseEditorTabStateOptions = {
   activeTabId: string | null;
   globalError: string | null;
   pendingCloseTabId: string | null;
   pendingDrafts: DraftRecord[];
+  menuLanguage: MenuLanguage;
   tabs: EditorTab[];
 };
 
@@ -15,6 +18,7 @@ export function useEditorTabState({
   globalError,
   pendingCloseTabId,
   pendingDrafts,
+  menuLanguage,
   tabs,
 }: UseEditorTabStateOptions) {
   const activeTab = useMemo(
@@ -35,7 +39,10 @@ export function useEditorTabState({
   );
   const activeContents = activeTab?.contents ?? "";
   const activeDirty = activeTab ? isDirty(activeTab) : false;
-  const activeError = activeTab?.error ?? globalError;
+  const activeError = useMemo(() => {
+    const error = activeTab?.error ?? globalError;
+    return error ? localizeStatusMessage(error, menuLanguage) : null;
+  }, [activeTab?.error, globalError, menuLanguage]);
   const activeConflict = activeTab?.saveStatus === "conflict";
   const activeSaveError = isSaveFailureError(activeTab);
 

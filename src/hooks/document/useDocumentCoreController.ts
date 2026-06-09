@@ -23,7 +23,7 @@
 // wrap.
 
 import type { Dispatch, SetStateAction } from "react";
-import type { DraftRecord, EditorTab } from "../../types";
+import type { DraftRecord, EditorTab, MenuLanguage } from "../../types";
 import { usePastedImageAction } from "./usePastedImageAction";
 import { useEditorTabState } from "../editor/useEditorTabState";
 
@@ -32,6 +32,7 @@ type UseDocumentCoreControllerOptions = {
   globalError: string | null;
   pendingCloseTabId: string | null;
   pendingDrafts: DraftRecord[];
+  menuLanguage: MenuLanguage;
   setStatus: Dispatch<SetStateAction<string>>;
   tabs: EditorTab[];
   workspaceRootPath: string | null;
@@ -42,6 +43,7 @@ export function useDocumentCoreController({
   globalError,
   pendingCloseTabId,
   pendingDrafts,
+  menuLanguage,
   setStatus,
   tabs,
   workspaceRootPath,
@@ -51,6 +53,7 @@ export function useDocumentCoreController({
     globalError,
     pendingCloseTabId,
     pendingDrafts,
+    menuLanguage,
     tabs,
   });
   const pastedImage = usePastedImageAction({

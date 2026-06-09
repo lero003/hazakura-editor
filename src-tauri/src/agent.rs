@@ -439,6 +439,7 @@ use std::ffi::OsStr;
 use std::io::Write;
 use std::path::PathBuf;
 
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn start_agent_workbench_session_with_store(
     session_store: &AgentWorkbenchSessionStore,
     runtime_adapter: &dyn AgentRuntimeAdapter,

@@ -15,6 +15,7 @@ describe("useDocumentCoreController", () => {
         globalError: null,
         pendingCloseTabId: null,
         pendingDrafts: [],
+        menuLanguage: "ja",
         setStatus: vi.fn(),
         tabs: [],
         workspaceRootPath: null,

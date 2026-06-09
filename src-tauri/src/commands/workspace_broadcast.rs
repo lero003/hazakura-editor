@@ -29,7 +29,7 @@ pub(crate) fn get_main_active_workspace<R: tauri::Runtime>(
     // window may also call it (for self-consistency). The gate is
     // intentionally permissive so the agent window does not depend
     // on the main window being alive.
-    let _ = ensure_label_is_main_or_agent(window.label())?;
+    ensure_label_is_main_or_agent(window.label())?;
     let cache_state = app.state::<MainWorkspaceCache>();
     let cache = cache_state
         .0
@@ -63,7 +63,7 @@ pub(crate) fn set_main_active_workspace<R: tauri::Runtime>(
     *cache = workspace.clone();
     drop(cache);
 
-    let _ = app.emit(MAIN_WORKSPACE_CHANGED_EVENT, workspace);
+    app.emit(MAIN_WORKSPACE_CHANGED_EVENT, workspace).ok();
     Ok(())
 }
 

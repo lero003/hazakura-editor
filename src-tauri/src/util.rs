@@ -109,7 +109,7 @@ pub(crate) fn decode_base64(encoded: &str) -> Result<Vec<u8>, String> {
     if cleaned.is_empty() {
         return Ok(Vec::new());
     }
-    if cleaned.len() % 4 != 0 {
+    if !cleaned.len().is_multiple_of(4) {
         return Err("Invalid base64 input length".to_string());
     }
 
@@ -126,11 +126,11 @@ pub(crate) fn decode_base64(encoded: &str) -> Result<Vec<u8>, String> {
 
     for (chunk_index, chunk) in cleaned.chunks(4).enumerate() {
         let is_last_chunk = chunk_index == last_chunk_index;
+        let padding_in_first_pair = chunk[0] == b'=' || chunk[1] == b'=';
+        let padding_before_last_chunk = !is_last_chunk && (chunk[2] == b'=' || chunk[3] == b'=');
+        let invalid_padding_order = chunk[2] == b'=' && chunk[3] != b'=';
 
-        if (chunk[0] == b'=' || chunk[1] == b'=')
-            || (!is_last_chunk && (chunk[2] == b'=' || chunk[3] == b'='))
-            || (chunk[2] == b'=' && chunk[3] != b'=')
-        {
+        if padding_in_first_pair || padding_before_last_chunk || invalid_padding_order {
             return Err("Invalid base64 padding".to_string());
         }
 
@@ -418,7 +418,7 @@ pub(crate) fn agent_provider_search_path_dirs_from_path_env(
 }
 
 pub(crate) fn push_unique_existing_directory(paths: &mut Vec<PathBuf>, path: PathBuf) {
-    if !path.is_dir() || paths.iter().any(|candidate| candidate == &path) {
+    if !path.is_dir() || paths.contains(&path) {
         return;
     }
 

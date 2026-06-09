@@ -686,7 +686,6 @@ fn agent_start_allows_agent_window_label() {
         "zsh".to_string(),
         dir.to_string_lossy().to_string(),
         None,
-        None,
     )
     .expect_err("non-allowlisted provider must be rejected by the body");
     assert!(
@@ -712,7 +711,6 @@ fn agent_start_rejects_unknown_label() {
         AGENT_PROVIDER_CODEX.to_string(),
         dir.to_string_lossy().to_string(),
         None,
-        None,
     )
     .expect_err("start_agent_workbench_session must reject unknown labels");
     assert!(err.contains(UNKNOWN_WINDOW_LABEL), "{err}");
@@ -737,7 +735,6 @@ fn agent_start_allows_main_label() {
         true,
         "zsh".to_string(),
         dir.to_string_lossy().to_string(),
-        None,
         None,
     )
     .expect_err("non-allowlisted provider must be rejected by the body");

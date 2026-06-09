@@ -222,6 +222,7 @@ export function useAppShellController() {
   } = useDocumentCoreController({
     activeTabId,
     globalError,
+    menuLanguage,
     pendingCloseTabId,
     pendingDrafts,
     setStatus,

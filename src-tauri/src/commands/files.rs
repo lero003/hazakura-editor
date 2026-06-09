@@ -74,7 +74,7 @@ pub(crate) fn reveal_path_in_file_manager_with_label(
             return Ok(());
         }
 
-        return Err(format!("Finder reveal failed with status {status}."));
+        Err(format!("Finder reveal failed with status {status}."))
     }
 
     #[cfg(target_os = "windows")]
@@ -132,7 +132,7 @@ pub(crate) fn create_text_file_with_label(
     let path_buf = PathBuf::from(&path);
 
     if let Some(root) = workspace_root.as_deref() {
-        let _ = ensure_path_inside_workspace_root(&path_buf, &PathBuf::from(root))?;
+        ensure_path_inside_workspace_root(&path_buf, &PathBuf::from(root))?;
     }
 
     if path_buf.exists() {
@@ -190,7 +190,7 @@ pub(crate) fn create_text_folder_with_label(
         .and_then(|name| name.to_str())
         .ok_or_else(|| "Cannot create a folder with an invalid name.".to_string())?;
 
-    let _ = ensure_path_inside_workspace_root(&path_buf, &root_buf)?;
+    ensure_path_inside_workspace_root(&path_buf, &root_buf)?;
 
     fs::create_dir(&path_buf).map_err(|err| format!("Cannot create folder: {err}"))?;
     Ok(())
@@ -307,7 +307,7 @@ pub(crate) fn save_text_file_as_with_label(
     let path_buf = PathBuf::from(&path);
 
     if let Some(root) = workspace_root.as_deref() {
-        let _ = ensure_path_inside_workspace_root(&path_buf, &PathBuf::from(root))?;
+        ensure_path_inside_workspace_root(&path_buf, &PathBuf::from(root))?;
     }
 
     if path_buf.exists() {

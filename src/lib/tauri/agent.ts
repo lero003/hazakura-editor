@@ -66,13 +66,17 @@ export async function startAgentWorkbenchSession(
   terminalColumns?: number,
   terminalRows?: number,
 ): Promise<AgentWorkbenchSessionStartResult> {
+  const terminalSize =
+    terminalColumns !== undefined && terminalRows !== undefined
+      ? [terminalColumns, terminalRows]
+      : undefined;
+
   return invoke<AgentWorkbenchSessionStartResult>("start_agent_workbench_session", {
     agentWorkbenchEnabled,
     consentAcknowledged,
     provider,
     workspaceRoot,
-    terminalColumns,
-    terminalRows,
+    terminalSize,
   });
 }
 

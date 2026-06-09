@@ -85,6 +85,7 @@ For future releases, re-check local artifact evidence and, after publication, re
 - `docs/commercial-quality-baseline.md`: non-App-Store commercial-quality baseline and follow-up request labels.
 - `docs/app-store-current-work.md`: current ordered App Store-facing quality work queue for external agents.
 - `docs/app-store-quality-agent-requests.md`: external-agent request packet catalog for App Store-facing quality work that excludes certificates, signing, notarization, and DMG packaging.
+- `docs/v0.17-external-agent-requests.md`: ready-to-delegate v0.17 follow-up requests for non-smoke accessibility / diagnostics / workspace-tree work.
 - `docs/app-store-review-notes-draft.md`: internal App Review Notes draft for later submission-copy adjustment.
 - `docs/apple-local-assist-distribution-plan.md`: v0.12+ Apple Local Assist and App Store / developer-build release-lane planning memo.
 - `docs/apple-local-assist-writing-companion-plan.md`: Apple Local Assist Writing Companion / external Assist Window UX direction.

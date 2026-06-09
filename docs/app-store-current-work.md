@@ -86,6 +86,8 @@ Single slice.  See closeout doc.
 These are residual items from the closeout review.  They are not
 blockers for submission and do not require an implementation agent
 before a human can proceed to certificate/metadata work.
+Ready-to-delegate v0.17 request text is in
+`docs/v0.17-external-agent-requests.md`.
 
 - Manual smoke: red-button close, Cmd+Q, keyboard-only tab nav,
   VoiceOver tab-bar announcement.
