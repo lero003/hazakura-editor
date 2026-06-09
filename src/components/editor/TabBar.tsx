@@ -1,8 +1,10 @@
 import type {
+  KeyboardEvent as ReactKeyboardEvent,
   MouseEvent as ReactMouseEvent,
   PointerEvent as ReactPointerEvent,
   ReactNode,
 } from "react";
+import { useRef } from "react";
 import type { EditorTab, ImagePreviewState } from "../../types";
 
 type TabBarProps = {
@@ -48,7 +50,73 @@ export function TabBar({
   selectedImage,
   tabs,
 }: TabBarProps) {
+  const tabButtonRefs = useRef(new Map<string, HTMLButtonElement>());
   const showEmptyState = tabs.length === 0 && selectedImage === null;
+
+  const handleTabKeyDown = (
+    event: ReactKeyboardEvent<HTMLButtonElement>,
+    currentTabId: string,
+  ) => {
+    // The image preview tab lives in the same
+    // `role="tablist"` but does not have a text-tab id
+    // (it's keyed by `image:{path}`). Include it in the
+    // navigation order so arrow keys can reach it, but
+    // do not call `onSelectTab` for it — the image tab
+    // is a display-only companion slot whose only action
+    // is the close button.
+    const imageTabId = selectedImage
+      ? `image:${selectedImage.path}`
+      : null;
+    const textTabIds = tabs.map((tab) => tab.id);
+    const allTabIds = imageTabId
+      ? [...textTabIds, imageTabId]
+      : textTabIds;
+    const currentIndex = allTabIds.indexOf(currentTabId);
+
+    if (currentIndex === -1) {
+      return;
+    }
+
+    let nextIndex: number | null = null;
+
+    switch (event.key) {
+      case "ArrowLeft":
+        nextIndex = currentIndex - 1;
+        break;
+      case "ArrowRight":
+        nextIndex = currentIndex + 1;
+        break;
+      case "Home":
+        nextIndex = 0;
+        break;
+      case "End":
+        nextIndex = allTabIds.length - 1;
+        break;
+      default:
+        return;
+    }
+
+    // Boundary clamp without wrap: ArrowLeft on the
+    // first tab and ArrowRight on the last tab are
+    // no-ops. WAI-ARIA does not require wrapping; the
+    // no-wrap behaviour avoids focus moving from the
+    // last tab to the first one unexpectedly.
+    if (nextIndex !== null && nextIndex >= 0 && nextIndex < allTabIds.length) {
+      event.preventDefault();
+      const nextId = allTabIds[nextIndex];
+      if (textTabIds.includes(nextId)) {
+        onSelectTab(nextId);
+      }
+      // `onSelectTab` triggers a state change; React
+      // re-renders the tab row before the next paint.
+      // Defer the focus call so the new tab button is
+      // already in the DOM with `aria-selected=true`
+      // when it receives focus.
+      window.requestAnimationFrame(() => {
+        tabButtonRefs.current.get(nextId)?.focus();
+      });
+    }
+  };
 
   return (
     <section
@@ -103,6 +171,14 @@ export function TabBar({
                     aria-describedby={dirty ? `tab-dirty-${encodeURIComponent(tab.id)}` : undefined}
                     aria-selected={tab.id === activeTabId}
                     className="tab-button"
+                    onKeyDown={(event) => handleTabKeyDown(event, tab.id)}
+                    ref={(el) => {
+                      if (el) {
+                        tabButtonRefs.current.set(tab.id, el);
+                      } else {
+                        tabButtonRefs.current.delete(tab.id);
+                      }
+                    }}
                     role="tab"
                     title={tab.path}
                     type="button"
@@ -154,6 +230,17 @@ export function TabBar({
                 <button
                   aria-selected
                   className="tab-button"
+                  onKeyDown={(event) =>
+                    handleTabKeyDown(event, `image:${selectedImage.path}`)
+                  }
+                  ref={(el) => {
+                    const key = `image:${selectedImage.path}`;
+                    if (el) {
+                      tabButtonRefs.current.set(key, el);
+                    } else {
+                      tabButtonRefs.current.delete(key);
+                    }
+                  }}
                   role="tab"
                   title={selectedImage.path}
                   type="button"

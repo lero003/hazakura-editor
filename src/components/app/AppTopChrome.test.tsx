@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AppTopChrome } from "./AppTopChrome";
 import { getLModeCopy, getRecoveryCopy, getSidePaneCopy } from "../../lib/locale";
@@ -116,5 +116,239 @@ describe("AppTopChrome", () => {
 
     const description = document.getElementById(describedById!);
     expect(description?.textContent).toBe("unsaved");
+  });
+
+  // v0.17 app-store-quality: accessibility-smoke slice 3.2
+  // — TabBar keyboard navigation (arrow keys / Home / End)
+  // for `role="tablist"` compliance. The handler lives on
+  // each `<button role="tab">`; arrow keys select + focus
+  // the adjacent tab without needing a separate
+  // activation step (the automatic-activation pattern
+  // from WAI-ARIA).
+
+  it("navigates to the next tab with ArrowRight", () => {
+    const first: EditorTab = {
+      contents: "a",
+      encoding: "utf-8",
+      error: null,
+      externalFingerprint: null,
+      fingerprint: "fp",
+      ignoredExternalFingerprint: null,
+      id: "/workspace/a.md",
+      large_file_warning: false,
+      lastSavedContents: "a",
+      lastSavedEncoding: "utf-8",
+      lastSavedLineEnding: "lf",
+      line_ending: "lf",
+      modified_ms: null,
+      name: "a.md",
+      path: "/workspace/a.md",
+      saveStatus: "idle",
+      size: 1,
+    };
+    const second: EditorTab = {
+      ...first,
+      contents: "b",
+      id: "/workspace/b.md",
+      lastSavedContents: "b",
+      name: "b.md",
+      path: "/workspace/b.md",
+    };
+    const onSelectTab = vi.fn();
+
+    renderTopChrome({
+      activeTabId: first.id,
+      tabs: [first, second],
+      onSelectTab,
+    });
+
+    const firstButton = screen.getByRole("tab", { name: /a\.md/ });
+    firstButton.focus();
+    fireEvent.keyDown(firstButton, { key: "ArrowRight" });
+
+    // ArrowRight on the first tab must call onSelectTab
+    // with the second tab's id (the actual selection is
+    // owned by the controller, but we assert the callback
+    // is wired correctly).
+    expect(onSelectTab).toHaveBeenCalledWith(second.id);
+  });
+
+  it("navigates to the previous tab with ArrowLeft", () => {
+    const first: EditorTab = {
+      contents: "a",
+      encoding: "utf-8",
+      error: null,
+      externalFingerprint: null,
+      fingerprint: "fp",
+      ignoredExternalFingerprint: null,
+      id: "/workspace/a.md",
+      large_file_warning: false,
+      lastSavedContents: "a",
+      lastSavedEncoding: "utf-8",
+      lastSavedLineEnding: "lf",
+      line_ending: "lf",
+      modified_ms: null,
+      name: "a.md",
+      path: "/workspace/a.md",
+      saveStatus: "idle",
+      size: 1,
+    };
+    const second: EditorTab = { ...first, id: "/workspace/b.md", name: "b.md", path: "/workspace/b.md", contents: "b", lastSavedContents: "b" };
+    const onSelectTab = vi.fn();
+
+    renderTopChrome({
+      activeTabId: second.id,
+      tabs: [first, second],
+      onSelectTab,
+    });
+
+    const secondButton = screen.getByRole("tab", { name: /b\.md/ });
+    secondButton.focus();
+    fireEvent.keyDown(secondButton, { key: "ArrowLeft" });
+
+    expect(onSelectTab).toHaveBeenCalledWith(first.id);
+  });
+
+  it("jumps to the first tab with Home", () => {
+    const tabs: EditorTab[] = [0, 1, 2].map((i) => ({
+      contents: `${i}`,
+      encoding: "utf-8" as const,
+      error: null,
+      externalFingerprint: null,
+      fingerprint: "fp",
+      ignoredExternalFingerprint: null,
+      id: `/workspace/tab${i}.md`,
+      large_file_warning: false,
+      lastSavedContents: `${i}`,
+      lastSavedEncoding: "utf-8" as const,
+      lastSavedLineEnding: "lf" as const,
+      line_ending: "lf" as const,
+      modified_ms: null,
+      name: `tab${i}.md`,
+      path: `/workspace/tab${i}.md`,
+      saveStatus: "idle" as const,
+      size: 1,
+    }));
+    const onSelectTab = vi.fn();
+
+    renderTopChrome({
+      activeTabId: tabs[2].id,
+      tabs,
+      onSelectTab,
+    });
+
+    const lastButton = screen.getByRole("tab", { name: /tab2/ });
+    lastButton.focus();
+    fireEvent.keyDown(lastButton, { key: "Home" });
+
+    // Home from the last tab must jump directly to the
+    // first tab, not step through every intermediate one.
+    expect(onSelectTab).toHaveBeenCalledWith(tabs[0].id);
+    expect(onSelectTab).toHaveBeenCalledTimes(1);
+  });
+
+  it("jumps to the last text tab with End (image tab excluded)", () => {
+    const tabs: EditorTab[] = [0, 1, 2].map((i) => ({
+      contents: `${i}`,
+      encoding: "utf-8" as const,
+      error: null,
+      externalFingerprint: null,
+      fingerprint: "fp",
+      ignoredExternalFingerprint: null,
+      id: `/workspace/tab${i}.md`,
+      large_file_warning: false,
+      lastSavedContents: `${i}`,
+      lastSavedEncoding: "utf-8" as const,
+      lastSavedLineEnding: "lf" as const,
+      line_ending: "lf" as const,
+      modified_ms: null,
+      name: `tab${i}.md`,
+      path: `/workspace/tab${i}.md`,
+      saveStatus: "idle" as const,
+      size: 1,
+    }));
+    const onSelectTab = vi.fn();
+
+    renderTopChrome({
+      activeTabId: tabs[0].id,
+      tabs,
+      onSelectTab,
+    });
+
+    const firstButton = screen.getByRole("tab", { name: /tab0/ });
+    firstButton.focus();
+    fireEvent.keyDown(firstButton, { key: "End" });
+
+    // End from the first tab must jump to the last text
+    // tab (the image tab is a display-only companion slot
+    // and is not a text-tab target for `onSelectTab`).
+    expect(onSelectTab).toHaveBeenCalledWith(tabs[2].id);
+    expect(onSelectTab).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not wrap past the first tab with ArrowLeft", () => {
+    const first: EditorTab = {
+      contents: "a", encoding: "utf-8", error: null,
+      externalFingerprint: null, fingerprint: "fp",
+      ignoredExternalFingerprint: null,
+      id: "/workspace/a.md", large_file_warning: false,
+      lastSavedContents: "a", lastSavedEncoding: "utf-8",
+      lastSavedLineEnding: "lf", line_ending: "lf",
+      modified_ms: null, name: "a.md",
+      path: "/workspace/a.md", saveStatus: "idle", size: 1,
+    };
+    const second: EditorTab = {
+      ...first, id: "/workspace/b.md", name: "b.md",
+      path: "/workspace/b.md", contents: "b", lastSavedContents: "b",
+    };
+    const onSelectTab = vi.fn();
+
+    renderTopChrome({
+      activeTabId: first.id,
+      tabs: [first, second],
+      onSelectTab,
+    });
+
+    const firstButton = screen.getByRole("tab", { name: /a\.md/ });
+    firstButton.focus();
+    fireEvent.keyDown(firstButton, { key: "ArrowLeft" });
+
+    // WAI-ARIA does not mandate wrapping. ArrowLeft on the
+    // first tab must be a no-op — no selection callback
+    // must fire.
+    expect(onSelectTab).not.toHaveBeenCalled();
+  });
+
+  it("does not wrap past the last text tab with ArrowRight", () => {
+    const first: EditorTab = {
+      contents: "a", encoding: "utf-8", error: null,
+      externalFingerprint: null, fingerprint: "fp",
+      ignoredExternalFingerprint: null,
+      id: "/workspace/a.md", large_file_warning: false,
+      lastSavedContents: "a", lastSavedEncoding: "utf-8",
+      lastSavedLineEnding: "lf", line_ending: "lf",
+      modified_ms: null, name: "a.md",
+      path: "/workspace/a.md", saveStatus: "idle", size: 1,
+    };
+    const second: EditorTab = {
+      ...first, id: "/workspace/b.md", name: "b.md",
+      path: "/workspace/b.md", contents: "b", lastSavedContents: "b",
+    };
+    const onSelectTab = vi.fn();
+
+    renderTopChrome({
+      activeTabId: second.id,
+      tabs: [first, second],
+      onSelectTab,
+    });
+
+    const secondButton = screen.getByRole("tab", { name: /b\.md/ });
+    secondButton.focus();
+    fireEvent.keyDown(secondButton, { key: "ArrowRight" });
+
+    // ArrowRight on the last text tab is a no-op. A future
+    // image tab might live to the right, but without one
+    // the key must not cycle back to the first tab.
+    expect(onSelectTab).not.toHaveBeenCalled();
   });
 });
