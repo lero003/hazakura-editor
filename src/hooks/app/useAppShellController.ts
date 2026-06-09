@@ -19,13 +19,14 @@
 // function lets the React hook order stay obvious and the
 // dependency wiring stay in one place.
 
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   openAgentWindow,
   openAppleAssistWindow,
   toggleAppleAssistWindow,
 } from "../../lib/tauri";
 import { useAgentWorkbenchController } from "../agent/useAgentWorkbenchController";
+import { useAppExitConfirmation } from "./useAppExitConfirmation";
 import { useAppleAssistAvailability } from "../agent/useAppleAssistAvailability";
 import { useAppleAssistCandidate } from "../review/useAppleAssistCandidate";
 import { useCommandPaletteController } from "../commandPalette/useCommandPaletteController";
@@ -251,6 +252,18 @@ export function useAppShellController() {
     preferencesDialogMode,
     tabs,
   });
+
+  // v0.17 app-store-quality: save-restore-regression slice 1.4
+  // — `Cmd+Q` / Quit menu dirty guard. The ref is flipped
+  // to `true` by `useAppExitConfirmation` when a
+  // `RunEvent::ExitRequested` lands while there are
+  // unsaved tabs, then read by
+  // `useTabCloseFlow.saveAllAndCloseWindow` /
+  // `discardAllAndCloseWindow` to dispatch through
+  // `exitApp` instead of `hideMainWindow`. The cancel
+  // path below resets it so a later red-button window
+  // close does not silently exit the app.
+  const appExitInProgressRef = useRef(false);
 
   // section: document preview (image preview + document identity)
   const {
@@ -511,6 +524,28 @@ export function useAppShellController() {
     setPendingCloseTabId,
     setPreferencesDialogMode,
     setStatus,
+  });
+
+  // v0.17 app-store-quality: save-restore-regression slice 1.4
+  // — wrap the existing `requestAppCloseConfirmation` and
+  // `cancelPendingAppClose` so the app-exit ref is flipped
+  // and reset through the same dialog callbacks the
+  // window-close path already uses. The wrapper is the only
+  // place the ref is mutated outside of `useTabCloseFlow`'s
+  // `finally` block.
+  const onAppExitNeedsConfirmation = useCallback(() => {
+    appExitInProgressRef.current = true;
+    requestAppCloseConfirmation();
+  }, [requestAppCloseConfirmation]);
+  const cancelPendingAppCloseAndExitFlag = useCallback(() => {
+    appExitInProgressRef.current = false;
+    cancelPendingAppClose();
+  }, [cancelPendingAppClose]);
+
+  useAppExitConfirmation({
+    appExitInProgressRef,
+    dirtyTabCount,
+    onNeedsConfirmation: onAppExitNeedsConfirmation,
   });
 
   // section: tab bar controller
@@ -811,6 +846,7 @@ export function useAppShellController() {
     saveAndClosePendingTab,
   } = useDocumentSafetyActions({
     activeTabId,
+    appExitInProgressRef,
     allowWindowCloseRef,
     dirtyTabs,
     discardingWindowCloseRef,
@@ -1249,7 +1285,7 @@ export function useAppShellController() {
     appCloseCancelButtonRef,
     appCloseDialogRef,
     appRestartPending,
-    cancelPendingAppClose,
+    cancelPendingAppClose: cancelPendingAppCloseAndExitFlag,
     cancelPendingRename,
     cancelPendingTabClose,
     clearCompareSource,

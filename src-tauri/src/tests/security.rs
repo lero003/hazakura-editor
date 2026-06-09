@@ -791,6 +791,33 @@ fn toggle_apple_assist_window_accepts_main_window_only() {
 }
 
 #[test]
+fn exit_app_accepts_main_window_only() {
+    // v0.17 app-store-quality: save-restore-regression slice 1.4.
+    // `exit_app` is the frontend's escape hatch for the dirty
+    // `Cmd+Q` confirmation flow — after the user picks
+    // Save/Discard on the `AppCloseDialog`, the main window
+    // calls this to actually terminate the process. The
+    // process exit (`std::process::exit(0)`) would tear down
+    // the test runner, so we pin the label gate only.
+    exit_app_with_label(MAIN_WINDOW_LABEL).expect("main must be allowed to call exit_app");
+
+    let agent_err = exit_app_with_label(AGENT_WINDOW_LABEL)
+        .expect_err("agent must not be allowed to call exit_app");
+    assert!(agent_err.contains(AGENT_WINDOW_LABEL), "{agent_err}");
+
+    let apple_assist_err = exit_app_with_label(APPLE_ASSIST_WINDOW_LABEL)
+        .expect_err("apple-assist must not be allowed to call exit_app");
+    assert!(
+        apple_assist_err.contains(APPLE_ASSIST_WINDOW_LABEL),
+        "{apple_assist_err}"
+    );
+
+    let unknown_err = exit_app_with_label(UNKNOWN_WINDOW_LABEL)
+        .expect_err("unknown labels must not be allowed to call exit_app");
+    assert!(unknown_err.contains(UNKNOWN_WINDOW_LABEL), "{unknown_err}");
+}
+
+#[test]
 fn rename_workspace_entry_rejects_agent_window_label() {
     let root = unique_label_path("rename_workspace_entry_agent");
     fs::create_dir_all(&root).expect("create root");

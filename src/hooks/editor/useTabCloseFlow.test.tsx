@@ -4,6 +4,13 @@ import { useTabCloseFlow } from "./useTabCloseFlow";
 import type { DraftRecord, EditorTab } from "../../types";
 
 const tauriWindow = vi.hoisted(() => ({
+  // v0.17 slice 1.4: the close flow now picks between
+  // `hideMainWindow` (window-close path) and `exitApp`
+  // (app-exit path). Both are imported from
+  // `../../lib/tauri/window`, so the mock below targets
+  // that module instead of the legacy `../../lib/tauri`
+  // barrel.
+  exitApp: vi.fn(async () => {}),
   hideMainWindow: vi.fn(async () => {}),
 }));
 
@@ -17,7 +24,8 @@ const storage = vi.hoisted(() => ({
   writeStoredDrafts: vi.fn(),
 }));
 
-vi.mock("../../lib/tauri", () => ({
+vi.mock("../../lib/tauri/window", () => ({
+  exitApp: tauriWindow.exitApp,
   hideMainWindow: tauriWindow.hideMainWindow,
 }));
 
@@ -84,6 +92,7 @@ function setup(overrides: Partial<Parameters<typeof useTabCloseFlow>[0]> = {}) {
 describe("useTabCloseFlow", () => {
   beforeEach(() => {
     tauriWindow.hideMainWindow.mockClear();
+    tauriWindow.exitApp.mockClear();
     storage.draftRecordFromTab.mockClear();
     storage.readStoredDrafts.mockClear();
     storage.removeStoredDrafts.mockClear();
@@ -356,5 +365,70 @@ describe("useTabCloseFlow", () => {
     // click opens a fresh dialog.
     expect(setPendingCloseTabId).toHaveBeenCalledWith(null);
     expect(focusEditorSoon).toHaveBeenCalledTimes(1);
+  });
+
+  // v0.17 app-store-quality: save-restore-regression slice 1.4
+  // — `Cmd+Q` / Quit menu dirty guard. The dialog is
+  // shared between the window-close (red button) and
+  // app-exit (Cmd+Q) paths; the `appExitInProgressRef`
+  // tells `saveAllAndCloseWindow` /
+  // `discardAllAndCloseWindow` which final action to
+  // take. The tests below pin the four contracts that
+  // data-loss prevention depends on at this layer:
+  //   - Save All routes to `exitApp` when the dialog
+  //     was opened by an app-exit request,
+  //   - the ref is reset after the save loop, so a
+  //     later red-button click on the same window does
+  //     not silently exit,
+  //   - Discard All mirrors the same two contracts.
+
+  it("routes Save All through exitApp when the dialog was opened for app exit", async () => {
+    const dirtyTab = makeTab();
+    const appExitInProgressRef = { current: true };
+    const { result } = setup({
+      appExitInProgressRef,
+      dirtyTabs: [dirtyTab],
+      tabs: [dirtyTab],
+      tabsRef: { current: [dirtyTab] },
+    });
+
+    await act(async () => {
+      await result.current.saveAllAndCloseWindow();
+    });
+
+    expect(tauriWindow.exitApp).toHaveBeenCalledTimes(1);
+    // The window-close path must NOT fire on the
+    // app-exit path — calling `hideMainWindow` would
+    // hide the window without exiting, leaving the
+    // user to re-trigger the quit manually.
+    expect(tauriWindow.hideMainWindow).not.toHaveBeenCalled();
+    // The ref is reset so a subsequent red-button
+    // close on the now-hidden-to-be-quit window does
+    // not re-enter the exit path.
+    expect(appExitInProgressRef.current).toBe(false);
+  });
+
+  it("routes Discard All through exitApp when the dialog was opened for app exit", async () => {
+    const dirtyTab = makeTab();
+    const appExitInProgressRef = { current: true };
+    const setTabs = vi.fn();
+    const { result } = setup({
+      appExitInProgressRef,
+      dirtyTabs: [dirtyTab],
+      setTabs,
+      tabs: [dirtyTab],
+      tabsRef: { current: [dirtyTab] },
+    });
+
+    await act(async () => {
+      await result.current.discardAllAndCloseWindow();
+    });
+
+    expect(tauriWindow.exitApp).toHaveBeenCalledTimes(1);
+    expect(tauriWindow.hideMainWindow).not.toHaveBeenCalled();
+    // The discarded-tab reset still runs (the buffers
+    // must be reverted to lastSaved* before exit).
+    expect(setTabs).toHaveBeenCalled();
+    expect(appExitInProgressRef.current).toBe(false);
   });
 });

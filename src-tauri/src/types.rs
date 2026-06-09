@@ -62,6 +62,19 @@ pub(crate) const O_NOCTTY_FLAG: i32 = 0x00020000;
 pub(crate) const MENU_ACTION_EVENT: &str = "hazakura-note://menu-action";
 pub(crate) const OPENED_FILES_EVENT: &str = "hazakura-note://opened-files";
 pub(crate) const OPEN_MAIN_AGENT_PANE_EVENT: &str = "hazakura-note://open-main-agent-pane";
+// v0.17 app-store-quality: save-restore-regression slice 1.4.
+// `Cmd+Q` (macOS) and the Quit menu item both fire
+// `RunEvent::ExitRequested` in Tauri 2. The Rust run loop
+// catches that event, calls `api.prevent_exit()` to abort
+// the bare exit, and emits this event to the main window
+// so the frontend can either (a) confirm-and-exit on a
+// clean state, or (b) surface the existing `AppCloseDialog`
+// and, after Save/Discard All, actually exit via the
+// `exit_app` IPC (which uses `std::process::exit(0)` to
+// avoid re-firing `ExitRequested`). The constant is the
+// single source of truth; the TS mirror lives in
+// `src/types.ts`.
+pub(crate) const APP_EXIT_REQUESTED_EVENT: &str = "hazakura-note://app-exit-requested";
 // v0.12+ Apple Local Assist Writing Companion mock (slice 2+).
 // Companion slot: the Apple Assist window and the Agent window
 // normally replace each other. The Apple Assist window emits

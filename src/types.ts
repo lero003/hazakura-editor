@@ -241,6 +241,19 @@ export type AppleAssistApplyStatusEvent = {
 export const OPEN_MAIN_AGENT_PANE_EVENT =
   "hazakura-note://open-main-agent-pane";
 
+// v0.17 app-store-quality: save-restore-regression slice 1.4.
+// Mirror of the Rust `APP_EXIT_REQUESTED_EVENT` constant. The
+// Rust run loop catches `RunEvent::ExitRequested` (fired by
+// macOS `Cmd+Q` / the Quit menu item), calls
+// `api.prevent_exit()` to abort the bare exit, and emits this
+// event to the main window. The main window's
+// `useAppExitConfirmation` hook then either calls `exitApp`
+// (clean state) or surfaces the existing `AppCloseDialog` for
+// Save / Discard / Cancel. See src-tauri/src/types.rs and
+// `docs/app-store-current-work.md` queue 1.
+export const APP_EXIT_REQUESTED_EVENT =
+  "hazakura-note://app-exit-requested";
+
 // Mirror of the Rust MAIN_WORKSPACE_CHANGED_EVENT constant. The main
 // window emits this when the active workspace opens / closes; the
 // detached Agent window subscribes to learn the active workspace

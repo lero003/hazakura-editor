@@ -3,7 +3,7 @@ use crate::menu::*;
 use crate::security::window_guard::*;
 use crate::types::*;
 
-use std::sync::atomic::Ordering;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::OnceLock;
 use tauri::window::Color;
 use tauri::Emitter;
@@ -429,6 +429,56 @@ pub(crate) fn request_app_restart<R: tauri::Runtime>(
     ensure_main_window(&window)?;
     app.request_restart();
     Ok(())
+}
+
+// v0.17 app-store-quality: save-restore-regression slice 1.4
+// — frontend-confirmed app exit gate.
+//
+// The `RunEvent::ExitRequested` handler always calls
+// `prevent_exit()` for bare Cmd+Q / Quit menu events so
+// the frontend can consult dirty state. Calling
+// `app.exit(0)` from the command would re-fire
+// `ExitRequested` and loop back. Instead, the command
+// flips this flag and THEN calls `app.exit(0)`. The
+// handler sees the flag, skips `prevent_exit()`, and
+// Tauri runs its normal shutdown sequence (Drop handlers
+// for `AgentWorkbenchSessionStore`, Apple Assist helper
+// cleanup, etc.) before the process terminates. The flag
+// is checked BEFORE `api.prevent_exit()` so the
+// confirmed exit is a true pass-through.
+pub(crate) static EXIT_CONFIRMED_BY_FRONTEND: AtomicBool = AtomicBool::new(false);
+
+// v0.17 app-store-quality: save-restore-regression slice 1.4
+// — frontend-driven app exit (the "user picked Save/Discard
+// on the AppCloseDialog" path, or a clean `Cmd+Q`). The
+// command flips the shared gate flag and calls
+// `app.exit(0)`; the `RunEvent::ExitRequested` handler
+// sees the flag and passes through without `prevent_exit`.
+// Normal Tauri shutdown (Drop, managed state cleanup, child
+// process teardown) runs before the process terminates,
+// unlike `std::process::exit(0)` which would bypass all of
+// that.
+#[tauri::command]
+pub(crate) fn exit_app<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    app: tauri::AppHandle<R>,
+) -> Result<(), String> {
+    ensure_main_window(&window)?;
+    EXIT_CONFIRMED_BY_FRONTEND.store(true, Ordering::SeqCst);
+    app.exit(0);
+    Ok(())
+}
+
+// Label-only check used by the `exit_app` boundary test.
+// The process exit would tear down the test runner, so the
+// gate is the only piece worth pinning with the same shim
+// pattern used by the other main-only commands. The flag
+// above does not block the label check; the test passes
+// without touching the real exit path.
+#[cfg(desktop)]
+#[cfg_attr(not(test), allow(dead_code))]
+pub(crate) fn exit_app_with_label(label: &str) -> Result<(), String> {
+    ensure_label_is_main(label)
 }
 
 // v0.15 macOS red-close-button contract.

@@ -42,6 +42,8 @@ use std::fs;
 use std::path::PathBuf;
 #[allow(unused_imports)]
 use std::process::Command;
+#[allow(unused_imports)]
+use std::sync::atomic::Ordering;
 
 #[allow(unused_imports)]
 use crate::agent::*;
@@ -119,6 +121,7 @@ pub fn run() {
             generate_apple_assist_candidate,
             drain_opened_files,
             request_app_restart,
+            exit_app,
             hide_main_window,
             save_text_file,
             save_text_file_as,
@@ -175,6 +178,30 @@ pub fn run() {
                 ..
             } => {
                 restore_main_window_on_reopen(app, has_visible_windows);
+            }
+            // v0.17 app-store-quality: save-restore-regression slice 1.4
+            // — intercept app-level exit requests so the frontend
+            // gets a chance to consult dirty state. The macOS Quit
+            // menu item, `Cmd+Q`, and OS-driven quit signals all
+            // route through `RunEvent::ExitRequested` in Tauri 2.
+            //
+            // `EXIT_CONFIRMED_BY_FRONTEND` is flipped by the
+            // `exit_app` command when the frontend has confirmed
+            // the exit (user picked Save/Discard, or the dirty-
+            // count was zero). Once that flag is set, we skip
+            // `prevent_exit()` and let Tauri run its normal
+            // shutdown — Drop handlers for managed state
+            // (`AgentWorkbenchSessionStore`, Apple Assist helpers)
+            // fire, child processes are killed/waited, and
+            // cleanup runs before the process terminates.
+            tauri::RunEvent::ExitRequested { api, .. } => {
+                if EXIT_CONFIRMED_BY_FRONTEND.load(Ordering::SeqCst) {
+                    return;
+                }
+                api.prevent_exit();
+                if let Some(window) = app.get_webview_window(MAIN_WINDOW_LABEL) {
+                    let _ = window.emit(APP_EXIT_REQUESTED_EVENT, ());
+                }
             }
             _ => {}
         });

@@ -3,7 +3,7 @@ import {
   type SetStateAction,
   useCallback,
 } from "react";
-import { hideMainWindow } from "../../lib/tauri";
+import { exitApp, hideMainWindow } from "../../lib/tauri/window";
 import { isDirty } from "../../features/editor/editorTabs";
 import {
   draftRecordFromTab,
@@ -20,6 +20,16 @@ type RefValue<T> = {
 
 type UseTabCloseFlowOptions = {
   activeTabId: string | null;
+  // v0.17 app-store-quality: save-restore-regression slice 1.4
+  // — the app-exit dirty guard. The shared ref is owned by
+  // the app-shell controller and flipped to `true` by
+  // `useAppExitConfirmation` before it surfaces the
+  // existing `AppCloseDialog` on a `Cmd+Q`. The Save All
+  // / Discard All handlers then dispatch through
+  // `exitApp` instead of `hideMainWindow`. The cancel path
+  // resets the ref so a later red-button click on the
+  // window does not silently exit the app.
+  appExitInProgressRef?: RefValue<boolean>;
   allowWindowCloseRef: RefValue<boolean>;
   dirtyTabs: EditorTab[];
   discardingWindowCloseRef: RefValue<boolean>;
@@ -51,6 +61,7 @@ function resetDiscardedTab(tab: EditorTab): EditorTab {
 
 export function useTabCloseFlow({
   activeTabId,
+  appExitInProgressRef,
   allowWindowCloseRef,
   dirtyTabs,
   discardingWindowCloseRef,
@@ -147,12 +158,28 @@ export function useTabCloseFlow({
 
   const saveAllAndCloseWindow = useCallback(async () => {
     if (dirtyTabs.length === 0) {
+      // v0.17 slice 1.4: the close dialog may have been
+      // surfaced by either the red-button close path
+      // (`pendingAppClose` set via the window-close
+      // hook) or the `Cmd+Q` app-exit path
+      // (`appExitInProgressRef.current === true`). The
+      // window-close path teardown is `hideMainWindow`;
+      // the app-exit path must actually exit the process
+      // via the Rust `exit_app` command.
+      const exitAfter = appExitInProgressRef?.current === true;
       allowWindowCloseRef.current = true;
       setPendingAppClose(false);
       try {
-        await hideMainWindow();
+        if (exitAfter) {
+          await exitApp();
+        } else {
+          await hideMainWindow();
+        }
       } finally {
         allowWindowCloseRef.current = false;
+        if (appExitInProgressRef) {
+          appExitInProgressRef.current = false;
+        }
       }
       return;
     }
@@ -171,18 +198,27 @@ export function useTabCloseFlow({
       }
     }
 
+    const exitAfter = appExitInProgressRef?.current === true;
     allowWindowCloseRef.current = true;
     setPendingAppClose(false);
     try {
-      await hideMainWindow();
+      if (exitAfter) {
+        await exitApp();
+      } else {
+        await hideMainWindow();
+      }
     } catch (err) {
       setGlobalError(`Close failed: ${String(err)}`);
       setStatus("Close failed");
     } finally {
       allowWindowCloseRef.current = false;
+      if (appExitInProgressRef) {
+        appExitInProgressRef.current = false;
+      }
     }
   }, [
     allowWindowCloseRef,
+    appExitInProgressRef,
     dirtyTabs,
     focusEditorSoon,
     saveTabById,
@@ -196,6 +232,11 @@ export function useTabCloseFlow({
     const discardedDraftPaths = dirtyTabs.map((tab) => tab.path);
     const dirtyTabById = new Map(dirtyTabs.map((tab) => [tab.id, tab]));
     const discardedTabIds = new Set(dirtyTabs.map((tab) => tab.id));
+    // v0.17 slice 1.4: see the matching dispatch in
+    // `saveAllAndCloseWindow`. The ref is captured at the
+    // start so a re-render between dialog confirm and
+    // final action cannot switch the close target.
+    const exitAfter = appExitInProgressRef?.current === true;
 
     discardingWindowCloseRef.current = true;
     removeStoredDrafts(discardedDraftPaths);
@@ -213,7 +254,11 @@ export function useTabCloseFlow({
           discardedTabIds.has(tab.id) ? resetDiscardedTab(tab) : tab,
         ),
       );
-      await hideMainWindow();
+      if (exitAfter) {
+        await exitApp();
+      } else {
+        await hideMainWindow();
+      }
     } catch (err) {
       allowWindowCloseRef.current = false;
       setTabs((currentTabs) =>
@@ -234,9 +279,13 @@ export function useTabCloseFlow({
     } finally {
       allowWindowCloseRef.current = false;
       discardingWindowCloseRef.current = false;
+      if (appExitInProgressRef) {
+        appExitInProgressRef.current = false;
+      }
     }
   }, [
     allowWindowCloseRef,
+    appExitInProgressRef,
     dirtyTabs,
     discardingWindowCloseRef,
     setGlobalError,
