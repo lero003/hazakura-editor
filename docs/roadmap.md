@@ -11,8 +11,7 @@ Last reviewed: 2026-06-10 (v0.17 closeout plus optional Assist feedback slice)
 
 Current release state:
 
-- Latest published preview: `v0.16.0` warning-expected DMG preview.
-- Latest local warning-expected DMG checkpoint: `v0.17.0`.
+- Latest published preview: `v0.17.0` warning-expected DMG preview.
 - Latest source / local-app-only tag: `v0.14.0`.
 - Current package/app version: `0.17.0`.
 - v0.17.0 theme: **Distribution Prep / Release Polish Closeout**.

@@ -14,9 +14,9 @@ and residual risk triage are in `docs/app-store-quality-closeout.md`.
 ## Current State
 
 - `hazakura editor` is a touchable Tauri desktop app for Markdown-first safe text editing.
-- Current local warning-expected DMG preview checkpoint is `v0.17.0`.
+- Current warning-expected DMG preview tag is `v0.17.0`.
 - Current package/app version is `0.17.0` across npm, Tauri, Cargo, and lockfile metadata.
-- Current published downloadable preview target: `v0.16.0` (see v0.16.0 release notes).
+- Current published downloadable preview target: `v0.17.0` (see v0.17.0 release notes).
 - v0.11.0 is the **L Mode WYSIWYG-tier Polish** preview: it keeps Markdown source canonical while rendering inline emphasis, strong, strike, links, inline code, task checkboxes, horizontal rules, tables, blockquotes, code blocks, ordered/bullet lists, and images as a document-like writing surface through CodeMirror display decoration.
 - v0.11.0 also includes auto-backup restore through an explicit backup-vs-buffer diff/apply flow, hash-based pasted-image deduplication, export CSS parity with Preview, workspace path rekey hardening, common text-extension save filters, and a native View menu L Mode toggle.
 - Local v0.10.0 gates and warning-expected DMG preview generation passed on 2026-06-04. DMG SHA-256: `a3dcbb5a2580639ae70060d1fe85d81ed298e33ffcfa7fe0498686faffadec05`.
@@ -36,7 +36,7 @@ and residual risk triage are in `docs/app-store-quality-closeout.md`.
 - v0.16.0 is the **Per-Surface Font Sizes (v0.16 L Mode Live Source Quality Follow-up)** warning-expected DMG preview. The first slice of the v0.16 lane is settings / theme polish: the font size preference is split into per-surface values for the editor / preview / workspace / L Mode surfaces, the workspace tree CSS is re-anchored so the slider actually changes every text-bearing element, and Chromium / WebKit's `-webkit-small-control` button reset is added so the file tree base size is no longer silently blocked. The release-prep pass also refreshes the app / README logo assets with the transparent hazakura flower-and-leaf mark and includes the later IPC status-feedback polish in the v0.16 release.
 - v0.16.0 local release gates and warning-expected DMG preview verification passed on 2026-06-08. DMG SHA-256: `39f63f42fc46c7e2d8659858f1a93127917be8e7a1836f594d885a44105e40fb`.
 - v0.16.0 GitHub Release publication and remote verification passed on 2026-06-08.
-- v0.17.0 is the **Distribution Prep / Release Polish Closeout** local warning-expected DMG checkpoint.  It closes the App Store quality queues, Help-readable Store-document surfaces, accessibility / diagnostics follow-ups, WorkspaceTree accessibility decision, and bounded Apple Local Assist operation-feedback polish without adding a new product surface.  Local release gates and warning-expected DMG preview verification passed on 2026-06-10.  DMG SHA-256: `a7587995e8437e0c1f1863eecb5167e46614b7387cbe6dec05b54dd24b28f8ab`.
+- v0.17.0 is the **Distribution Prep / Release Polish Closeout** warning-expected DMG preview.  It closes the App Store quality queues, Help-readable Store-document surfaces, accessibility / diagnostics follow-ups, WorkspaceTree accessibility decision, and bounded Apple Local Assist operation-feedback polish without adding a new product surface.  Local release gates, GitHub Release publication, and remote asset verification passed on 2026-06-10.  DMG SHA-256: `a7587995e8437e0c1f1863eecb5167e46614b7387cbe6dec05b54dd24b28f8ab`.
 - Remaining Help/content polish, real-app smoke, Store-submission material, and official distribution work are deferred to v0.18 / submission-prep lanes.
 - Older public tags remain immutable.
 
@@ -74,7 +74,7 @@ The published v0.15.0 release is a warning-expected DMG preview for the Develope
 
 The published v0.16.0 release is a warning-expected DMG preview for the Developer / GitHub lane. It is ad-hoc signed, not Developer ID signed, not notarized, and expected to produce Gatekeeper warnings. Local and remote verification passed after publication.
 
-The local v0.17.0 checkpoint is a warning-expected DMG preview for the Developer / GitHub lane. It is ad-hoc signed, not Developer ID signed, not notarized, and expected to produce Gatekeeper warnings. Local verification passed on 2026-06-10. A GitHub Release and remote assets have not been published for v0.17.0.
+The published v0.17.0 release is a warning-expected DMG preview for the Developer / GitHub lane. It is ad-hoc signed, not Developer ID signed, not notarized, and expected to produce Gatekeeper warnings. Local and remote verification passed after publication.
 
 The v0.12.0, v0.13.0, and v0.14.0 tags are source / local-app checkpoints. They are not signed, notarized, App Store, TestFlight, or warning-expected DMG publications.
 
@@ -165,7 +165,7 @@ Distribution work now moves after this L Mode follow-up:
 2. App Store lane readiness: App Store preview build separation, Agent Workbench omission, Apple Local Assist helper bundling/signing assumptions, sandbox/review constraints, and certificate/provisioning work.
 3. Accessibility, keyboard-flow, performance, bundle-size, and release automation cleanup where they reduce real release risk.
 
-## v0.17.0 Distribution Prep / Release Polish local checkpoint
+## v0.17.0 Distribution Prep / Release Polish warning-expected DMG preview
 
 v0.17.0 closes the small implementation follow-ups after the App Store
 quality queues: `prefers-contrast: more`, Support Diagnostics UI,
@@ -196,6 +196,11 @@ Developer / GitHub DMG was generated at
 `src-tauri/target/release/bundle/dmg/hazakura-editor-dev_0.17.0_aarch64-warning-expected.dmg`;
 SHA-256: `a7587995e8437e0c1f1863eecb5167e46614b7387cbe6dec05b54dd24b28f8ab`.
 The DMG and checksum are local build outputs, not committed files.
+
+v0.17.0 GitHub Release publication and remote verification:
+
+- Published at `https://github.com/lero003/hazakura-editor/releases/tag/v0.17.0`.
+- Remote assets were downloaded into a fresh `src-tauri/target/release/remote-verify-v0.17.0-*` directory and passed `shasum -c`, `hdiutil verify`, mounted app metadata (`0.17.0`, `lab.hazakura.note.dev`, `hazakura editor Dev`, `hazakura-editor`), and mounted app `codesign --verify --deep --strict --verbose=2`.
 
 ## v0.16 Local Data Disclosure (in-app, App Store-quality)
 

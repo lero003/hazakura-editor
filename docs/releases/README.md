@@ -9,10 +9,6 @@ This directory stores GitHub Release body drafts and published release-note evid
 
 Latest published GitHub Release body:
 
-- `0.16.0-warning-expected-dmg-preview.release.md`
-
-Current local release checkpoint body:
-
 - `0.17.0-warning-expected-dmg-preview.release.md`
 
 Latest source / local-app tag notes:
