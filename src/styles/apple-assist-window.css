@@ -127,7 +127,7 @@
  * prompts, raw responses, hidden instructions, provider
  * transcripts, model reasoning, broad document excerpts, or
  * filesystem paths. See
- * docs/v0.17-apple-local-assist-operation-feedback-request.md.
+ * docs/archive/operations/app-store-v0.17/apple-local-assist-operation-feedback-request.md.
  */
 .apple-assist-window-feedback {
   border: 1px solid var(--border, rgba(127, 127, 127, 0.25));

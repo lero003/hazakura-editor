@@ -3,7 +3,7 @@
 Status: Operational
 Scope: External implementation agent plus Codex review workflow
 Authority: High
-Last reviewed: 2026-06-08
+Last reviewed: 2026-06-10
 
 ## Purpose
 
@@ -11,13 +11,17 @@ Use this workflow when another agent implements a small Hazakura slice and Codex
 
 The goal is not to make two agents race. The goal is to separate implementation from review so boundary regressions, over-claims, and missing verification are caught before a slice becomes part of the roadmap.
 
-For App Store-facing quality work that excludes certificates, signing, notarization, and DMG packaging, choose a request packet from `docs/app-store-quality-agent-requests.md` before implementation starts.
+For active UX or App Store-facing quality work, choose one slice from
+`docs/current-work.md` before implementation starts. Historical v0.17
+request packets are archived under
+`docs/archive/operations/app-store-v0.17/` and should be used only for
+background.
 
 ## Roles
 
 External implementation agent:
 
-- chooses one explicitly approved slice from `docs/roadmap.md`, `docs/development-automation.md`, or a user prompt
+- chooses one explicitly approved slice from `docs/current-work.md`, `docs/roadmap.md`, `docs/development-automation.md`, or a user prompt
 - implements only that slice
 - preserves Safe Editor Mode as primary
 - keeps Agent Workbench behind its existing explicit trust boundary
@@ -40,11 +44,12 @@ Before implementation, the external agent should read:
 - `AGENTS.md`
 - `README.md`
 - `docs/current-status.md`
+- `docs/current-work.md`
 - `docs/roadmap.md`
 - `docs/development-automation.md`
 - `docs/external-agent-review-workflow.md`
 - any boundary document directly touched by the slice, especially `docs/security-boundary.md` or `docs/agent-workbench-boundary.md`
-- `docs/app-store-quality-agent-requests.md` when the slice touches App Store quality, sandbox behavior, App Store lane Agent Workbench omission, privacy/local-data disclosure, review notes, accessibility, preview/export safety, diagnostics, or measurement
+- `docs/app-store-review-notes-draft.md` when the slice touches App Store review notes or submission copy
 
 Implementation rules:
 
@@ -79,9 +84,10 @@ If there are no blocking findings, say so clearly and name any residual test or 
 
 Codex should patch issues only when the user asks for a follow-up fix, or when the review request explicitly includes "review and fix". Otherwise, Codex remains reviewer, not co-implementer.
 
-## v0.7 Release-Prep Review Focus
+## Historical v0.7 Release-Prep Review Focus
 
-For `v0.7: Hazakura Review Desk MVP and release prep`, review these risks especially:
+For old `v0.7: Hazakura Review Desk MVP and release prep` review work,
+the historical risks were:
 
 - Diff / Review UI becoming Git-shaped through labels such as stage, commit, branch, merge, checkout, or apply patch.
 - Review Desk entry points, Slash commands, or native menu actions opening the wrong surface or leaving stray editor input.

@@ -266,7 +266,7 @@ export const OPEN_MAIN_AGENT_PANE_EVENT =
 // `useAppExitConfirmation` hook then either calls `exitApp`
 // (clean state) or surfaces the existing `AppCloseDialog` for
 // Save / Discard / Cancel. See src-tauri/src/types.rs and
-// `docs/app-store-current-work.md` queue 1.
+// `docs/archive/operations/app-store-v0.17/current-work-closeout.md` queue 1.
 export const APP_EXIT_REQUESTED_EVENT =
   "hazakura-note://app-exit-requested";
 

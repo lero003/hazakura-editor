@@ -53,11 +53,13 @@ FORBID_TAGS, `data:` URI in `<a href>`, source Markdown non-mutation.
 | 3.2 | TabBar keyboard navigation | `bdd45b6d` |
 | 3.3 | image tab nav test / L Mode task checkbox aria-label | `39433f05` |
 
-Coverage: tab-bar dirty-dot accessible descriptor, StatusBar
+Coverage: focused/unit accessibility checks for tab-bar dirty-dot accessible descriptor, StatusBar
 `role="status"` + `aria-live`, tab-bar arrow-key / Home / End keyboard
 navigation, image-preview-tab keyboard nav, L Mode task checkbox
 `aria-label`.  Apple Local Assist review bar, RightPaneToggleControls,
 CloseDialogs, WorkspaceTree, and reduced-motion CSS are verified no-op.
+This is not a full manual VoiceOver / keyboard-only / Increase Contrast
+smoke pass.
 
 ### Queue 4: support-diagnostics
 
@@ -162,3 +164,6 @@ implementation agents**:
 
 These are recorded in `docs/app-store-current-work.md` under
 "Deferred To v0.18 / Submission Prep" and "Explicitly Out Of Scope".
+The 2026-06-10 Chika review intake is also summarized there so the
+next v0.18 slice can pick from a concrete priority list instead of
+reopening the whole v0.17 closeout.

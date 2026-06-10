@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-06-08 (v0.17 Distribution Prep framing)
+Last reviewed: 2026-06-10 (current-work routing)
 
 ## Purpose
 
@@ -17,33 +17,34 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: v0.17 Distribution Prep / Release Polish, unless a v0.16 hotfix blocker appears.
+Phase: v0.18 UX polish / submission prep, unless a v0.17 hotfix blocker appears.
 
 Prefer work in this order:
 
 1. Stale or failing quality gates.
-2. App Store-facing quality request packets from `docs/app-store-quality-agent-requests.md`, especially sandbox file restore, App Store lane Agent Workbench omission, local-data disclosure, and review-note evidence.
-3. Release-prep gaps in Developer / GitHub DMG wording, checksum flow, cross-machine smoke guidance, or expected macOS warning instructions.
-4. App Store / Developer lane separation drift, especially Agent Workbench omission, helper bundle/signing assumptions, and sandbox/review evidence.
-5. Accessibility and keyboard-flow audit slices for settings, close dialogs, L Mode rail/drawer/review, image preview, recovery, and diff review.
-6. Performance and bundle-size measurement before chunk-splitting, L Mode decoration-cache work, or broad CSS splitting.
-7. One concrete user-test friction point from Apple Local Assist, L Mode, theme, settings, status / error copy, export, or file/recovery workflows.
-8. Safety-boundary regression checks.
-9. Post-release docs/version drift.
-10. One reproduced bug in implemented L Mode WYSIWYG behavior, especially caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or a measured performance baseline.
-11. Focused refactor only when it directly supports a verified user-facing polish fix; do not split a large file for architecture aesthetics alone.
-12. Documentation drift.
-13. Verified no-op after inspection when no useful small slice is safe.
+2. Active UX queue from `docs/current-work.md`, especially Markdown preview task checkboxes, workspace sidebar collapse, WorkspaceTree rename markup, and encoding-only dirty indication.
+3. Submission-prep queue from `docs/current-work.md`, especially entitlement/signing lane definition, App Review Notes final copy, license packet review, and manual accessibility smoke.
+4. Release-prep gaps in Developer / GitHub DMG wording, checksum flow, cross-machine smoke guidance, or expected macOS warning instructions.
+5. App Store / Developer lane separation drift, especially Agent Workbench omission, helper bundle/signing assumptions, and sandbox/review evidence.
+6. Accessibility and keyboard-flow audit slices for settings, close dialogs, L Mode rail/drawer/review, image preview, recovery, and diff review.
+7. Performance and bundle-size measurement before chunk-splitting, L Mode decoration-cache work, or broad CSS splitting.
+8. One concrete user-test friction point from Apple Local Assist, L Mode, theme, settings, status / error copy, export, or file/recovery workflows.
+9. Safety-boundary regression checks.
+10. Post-release docs/version drift.
+11. One reproduced bug in implemented L Mode WYSIWYG behavior, especially caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or a measured performance baseline.
+12. Focused refactor only when it directly supports a verified user-facing polish fix; do not split a large file for architecture aesthetics alone.
+13. Documentation drift.
+14. Verified no-op after inspection when no useful small slice is safe.
 
 ## Start Every Run
 
-1. Read `AGENTS.md`, `README.md`, `docs/README.md`, `docs/current-status.md`, `docs/roadmap.md`, `docs/smoke-checklist.md`, `docs/commercial-quality-baseline.md`, and this document.
+1. Read `AGENTS.md`, `README.md`, `docs/README.md`, `docs/current-work.md`, `docs/current-status.md`, `docs/roadmap.md`, `docs/smoke-checklist.md`, and this document.
    If the run touches Apple Local Assist, App Store distribution, or assist-provider shape, also read `docs/assist-surface-strategy.md`, `docs/apple-local-assist-distribution-plan.md`, `docs/security-boundary.md`, and `docs/agent-workbench-boundary.md`.
-   If the run is being handed to an external agent for App Store-facing quality work outside certificate / signing / notarization / DMG packaging, also read `docs/app-store-quality-agent-requests.md`.
+   Historical v0.17 App Store-quality request packets live under `docs/archive/operations/app-store-v0.17/`; read them only for background.
 2. Run `git status --short --branch`.
 3. Treat existing uncommitted changes as user or previous-agent work. Do not revert them.
 4. Use Hazakura Habitat before substantial implementation, automation changes, dependency or lockfile work, release work, Git/GitHub mutation, or command-selection uncertainty.
-5. Choose exactly one coherent slice that can be verified in the same run. For v0.16, name the release-prep risk, observed friction, or evidence gap before editing.
+5. Choose exactly one coherent slice that can be verified in the same run. Name the release-prep risk, observed friction, or evidence gap before editing.
 
 ## Product Boundaries
 
@@ -113,6 +114,7 @@ For release-candidate work, use `hazakura-note-release-candidate`, `docs/source-
 Update only docs whose truth changed:
 
 - `docs/current-status.md` for current implementation state, release-candidate state, risks, and next actions.
+- `docs/current-work.md` for the active UX / submission-prep queue.
 - `docs/roadmap.md` when active lanes or phase boundaries change.
 - `docs/smoke-checklist.md` when manual checks change.
 - `docs/external-agent-review-workflow.md` when implementation/review ownership changes.

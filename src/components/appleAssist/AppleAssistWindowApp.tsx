@@ -676,7 +676,7 @@ export type AppleAssistWindowCopy = {
   // prompts, raw model responses, hidden instructions,
   // provider transcripts, model reasoning, broad document
   // excerpts, filesystem paths, or secrets — see
-  // docs/v0.17-apple-local-assist-operation-feedback-request.md.
+  // docs/archive/operations/app-store-v0.17/apple-local-assist-operation-feedback-request.md.
   feedbackHeading: string;
   feedbackEmpty: string;
   feedbackEntry: (

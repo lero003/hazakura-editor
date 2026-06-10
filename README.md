@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-06-07
+Last reviewed: 2026-06-10
 
 `hazakura editor` は、AI時代のメモ帳です。Markdownを中心に、安全にテキストを読む・書く・比べるための軽量なローカル作業場を目指します。
 
@@ -23,7 +23,7 @@ Last reviewed: 2026-06-07
 
 ![hazakura editor diff comparison](docs/images/v0.11-diff-compare.png)
 
-## 0.15 Warning-expected DMG Preview Summary
+## Developer Preview Summary
 
 Use this when you want to:
 
@@ -140,6 +140,7 @@ Example use case:
 - [Security Boundary](docs/security-boundary.md): 安全性のために守る制約
 - [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
 - [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Apple Local Assist / Foundation Models planning
+- [Current Work](docs/current-work.md): active UX and submission-prep queue
 - [Apple Local Assist Writing Companion Plan](docs/apple-local-assist-writing-companion-plan.md): post-v0.11 Apple Local Assist UX direction
 - [Roadmap](docs/roadmap.md): 段階的な開発順序
 - [L Mode Plan](docs/l-mode-plan.md): えるモードの source-preserving WYSIWYG Accuracy Ramp plan

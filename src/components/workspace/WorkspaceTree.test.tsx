@@ -3,7 +3,7 @@
 // button-based, keyboard-operable model for v0.17 instead
 // of adopting a full ARIA `role="tree"` pattern, and to
 // document the rationale in
-// `docs/workspace-tree-accessibility-decision.md`. These
+// `docs/archive/reviews/workspace-tree-accessibility-decision-v0.17.md`. These
 // tests pin the existing accessible behaviour so any
 // future regression in the button model fails the build
 // rather than shipping silently.

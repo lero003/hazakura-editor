@@ -159,17 +159,18 @@ Build-time separation is preferred for distribution trust because it is easier t
 
 Do not create a separate "official free build" by default. An official website can explain the product and route users to the App Store build or GitHub developer build without owning a third binary lane.
 
-## Post-v0.11 Path
+## Shipped Assist Path And Current Lane
 
-v0.11 shipped L Mode WYSIWYG-tier polish without adding Apple Local Assist. The next assist lane should stay narrow, but it should test the Writing Companion experience rather than treating selected-text command-palette entries as the final UX.
+v0.11 shipped L Mode WYSIWYG-tier polish without adding Apple Local Assist. Later assist work stayed narrow and tested the Writing Companion experience rather than treating selected-text command-palette entries as the final UX.
 
 Recommended sequence:
 
 1. v0.12 shipped Apple Local Assist planning and alpha live-helper foundation: availability detection, rough writing requests, AI edit transaction, unavailable-state UI, and Diff / discard escape hatches.
 2. v0.13 shipped the distribution probe: App Store / Developer build separation, sandbox / entitlement draft, and helper parent-spawn proof.
 3. v0.14 shipped L Mode stability plus bounded Apple Local Assist harness polish: target-centered document context, safer context snapping, L Mode review-sheet horizontal-scroll cleanup, and localized apply-error copy.
-4. Use v0.15 as a User-Test Quality Polish lane. Apple Local Assist remains one major surface, especially real writing examples and unavailable / disabled state polish, but theme/settings, L Mode regressions, status / error copy, and release-prep continuity may also be first-class v0.15 work when actual app use exposes friction.
-5. Use v1.0 as the App Store Candidate if the App Store build can omit External Agent Workbench cleanly and Apple Local Assist remains document-assist only.
+4. v0.15-v0.17 carried user-test polish, App Store-quality request packets, and warning-expected DMG preview evidence. Treat those notes as historical background, not the active queue.
+5. For current UX and submission-prep work, start from `docs/current-work.md`. Apple Local Assist remains a document-assist surface only, and App Store work must keep External Agent Workbench out of that lane.
+6. Use v1.0 as the App Store Candidate only if the App Store build can omit External Agent Workbench cleanly and Apple Local Assist remains document-assist only.
 
 ## Non-Goals
 

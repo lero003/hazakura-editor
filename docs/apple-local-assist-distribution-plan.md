@@ -335,7 +335,7 @@ Target:
 - make Assist apply errors clearer and localized
 - keep App Store / Developer build separation intact without claiming App Store readiness
 
-### v0.15: App Store Prep / App Brush-up
+### v0.15-v0.17: App Brush-up / Warning-expected DMG Previews
 
 Target:
 
@@ -345,6 +345,20 @@ Target:
 - App Review notes draft
 - Developer / GitHub build signing and notarization plan
 - official website/download-page wording, if needed, as links to the two binary lanes
+
+These release notes and review packets are historical evidence now. Use
+`docs/current-work.md` for the current v0.18 UX and submission-prep queue.
+
+### v0.18: UX Polish / Submission Prep
+
+Target:
+
+- finish small editor UX fixes that affect daily writing confidence
+- define App Store entitlement and signing lane before claiming submission
+  readiness
+- finalize App Review Notes, privacy/support metadata, and third-party
+  license packet
+- keep Agent Workbench out of the App Store lane
 
 ### v1.0: App Store Candidate
 

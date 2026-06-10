@@ -3,7 +3,7 @@
 Status: Decision
 Scope: Whether to adopt a formal ARIA `role="tree"` pattern for `WorkspaceTree`
 Authority: Medium (product a11y)
-Last reviewed: 2026-06-09 (v0.17 `workspace-tree-role-audit`)
+Last reviewed: 2026-06-10 (v0.18 review-intake note)
 
 ## Decision
 
@@ -42,6 +42,14 @@ full pattern justified.
 Together, these satisfy the WCAG 2.2 AA-relevant tree-style
 guidance (Name, Role, State, Keyboard) at the cost of not being
 a strict WAI-ARIA `tree` widget.
+
+Review-intake caveat (2026-06-10): the current implementation
+renders that rename `<input>` inside the normal row `<button>` for
+both file and directory rows.  The v0.17 decision to avoid a partial
+ARIA `tree` conversion still stands, but nested interactive controls
+are a credible VoiceOver / focus / click / blur risk.  A v0.18 slice
+should consider rendering rename state as a non-button row containing
+only the input, while keeping the normal non-rename rows as buttons.
 
 ## Why a full `role="tree"` is not justified for v0.17
 

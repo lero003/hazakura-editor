@@ -1,12 +1,12 @@
 # App Store Review Notes Draft (Internal)
 
-Last updated: 2026-06-09
+Last updated: 2026-06-10
 Status: draft for internal review
 Scope: App Store-quality evidence prep (excludes App Store Connect metadata, certificates, signing, notarization, DMG packaging, and upload)
 
 ## App summary
 
-Hazakura Note is a **Markdown-first safe editor** for local text workflows.
+`hazakura editor` is a **Markdown-first safe editor** for local text workflows.
 It is intentionally focused on:
 
 - opening user-selected folders/files,
@@ -19,10 +19,10 @@ It is not marketed as an IDE, terminal, project-indexing service, or general-pur
 
 ## Product shape and distribution lanes
 
-The app keeps Safe Editor as the default surface.  
+The app keeps Safe Editor as the default surface.
 The current repository separates:
 
-- App Store lane (preview orientation): optional agent/CLI surfaces are intentionally omitted.
+- App Store lane (preview orientation): CLI Agent / Agent Workbench execution surfaces are intentionally omitted. Assist Surface remains limited to App Store-allowed choices such as Apple Local Assist / Off.
 - Developer / GitHub lane: optional Agent Workbench remains available behind explicit mode/consent gates.
 
 If you are reviewing App Store lane behavior, please evaluate only what is exposed in that lane and do not assume Developer / GitHub lane features.
@@ -36,11 +36,11 @@ It does not scan the whole home directory automatically.
 
 The app uses local recovery paths (including `.hazakura/backups/...`) for safety handling of unsaved data and restore flows.
 
-When restoration is blocked by sandbox authorization loss, the app routes users to clear reauthorization flow instead of silently reopening files.
+When restoration is blocked by sandbox authorization loss, the app skips inaccessible restored paths and tells the user to use Open / Open Folder to reauthorize access instead of silently reopening files.
 
 ### 2) Restore and conflict behavior
 
-When a previously opened file cannot be accessed due to permission state, the app uses an explicit path to reauthorize access before continuing.
+When a previously opened file cannot be accessed due to permission state, the app does not silently continue from the stale path.  The current UX tells the user to re-open the file or folder through the normal picker before continuing.
 This avoids opening files from stale path strings without corresponding access.
 
 Restore/backup/recovery handling is recoverable and surfaced through existing app state and recovery workflow.
@@ -78,7 +78,7 @@ Apple Local Assist behavior is explicitly availability-gated.
 
 ### 6) App Store lane Agent Workbench exclusion
 
-In App Store-targeted path, Agent Workbench UI and CLI launch behavior are intentionally removed from user entry points and command surfaces.
+In App Store-targeted path, CLI Agent / Agent Workbench execution behavior is intentionally removed from user entry points and command surfaces.  Assist Surface can remain visible only for non-CLI choices that are valid for the App Store lane.
 This is part of the release boundary for this lane, not a removal from other lanes.
 
 ## Reviewer smoke steps (app behavior)
@@ -92,7 +92,7 @@ Use the current UI labels for each run and keep screenshots to each step.
 5. Open preview / export and confirm expected output.
 6. Verify Help entries are discoverable from Help: Local Data Disclosure, Privacy Policy, Open Source Acknowledgements, and About hazakura editor.
 7. Verify Apple Local Assist visibility and availability state where supported.
-8. If restore permission is intentionally broken in test environment, verify clear reauthorization path appears and does not reopen the file silently.
+8. If restore permission is intentionally broken in test environment, verify Open / Open Folder reauthorization guidance appears and the file is not reopened silently.
 
 ## What should be listed under limitations
 
