@@ -9,6 +9,7 @@
 - Current status source: `docs/current-status.md`.
 - Active lane: v0.18 Help-content refinement, remaining real-app smoke, Store-submission material, and official distribution prep unless a v0.17 hotfix blocker appears.
 - `main` now includes the v0.17 Distribution Prep closeout, including App Store quality queues, Help-readable Store documents, Support Diagnostics UI, WorkspaceTree accessibility decision, and bounded Apple Local Assist operation-feedback polish.
+- Root `LICENSE` / `THIRD_PARTY_NOTICES.md` now draft the commercial proprietary app-body posture plus OSS acknowledgements; final legal / distribution review is still required before App Store or commercial binary submission.
 
 ## Recent Changes
 
@@ -56,7 +57,7 @@
 - `ImagePreviewPane` is now a `<figure role="figure" aria-label="...">` with a `<header>` for the title / file-name block. The existing `.image-preview-pane` / `.image-preview-header` / `.image-preview-stage` CSS classes are unchanged, so the visual stays the same; the DOM now announces which file the preview belongs to when the preview tab is selected. `.image-preview-pane` now carries `margin: 0` so the browser's default `<figure>` margin does not shift the preview away from the editor pane edge.
 - `lModeCursorBoundaryPlugin` (L Mode snap-to-content) now skips its rAF schedule when the incoming `ViewUpdate` carries neither `docChanged` nor `selectionSet`. Viewport-only updates (scroll, focus, measurements) no longer wake a snap rAF, reducing per-frame churn during long Markdown scrolls. The save-image style of the class is unchanged: collapsed-caret snap still runs on doc / selection changes; the new condition only narrows the trigger. Tests cover the no-op, doc-changed, and selection-changed branches.
 - v0.16 release-prep alignment fixed the stale lockfile version, clarified pending-vs-published wording in README/current-status/roadmap/release-pre-check, refreshed the app / README logo assets from the transparent hazakura flower-and-leaf mark, regenerated `src-tauri/icons/icon.icns`, and rebuilt the warning-expected Developer / GitHub DMG from the current candidate.
-- v0.16.0 was tagged, pushed, published as a GitHub prerelease, and remote-verified on 2026-06-08. GitHub repository About metadata was also filled with a short Markdown-first safe-editor description and topics (`markdown`, `tauri`, `react`, `editor`, `macos`, `safe-editor`, `writing`, `local-first`). License remains intentionally unspecified pending a commercial/licensing decision.
+- v0.16.0 was tagged, pushed, published as a GitHub prerelease, and remote-verified on 2026-06-08. GitHub repository About metadata was also filled with a short Markdown-first safe-editor description and topics (`markdown`, `tauri`, `react`, `editor`, `macos`, `safe-editor`, `writing`, `local-first`). The earlier unspecified-license state is now superseded by the root proprietary-license / third-party-notice draft.
 - v0.17.0 release-prep aligned version surfaces, updated README / current-status / roadmap / release-note evidence, generated and verified the warning-expected Developer / GitHub DMG, published it as a GitHub prerelease, re-downloaded the remote assets for verification, and recorded the Apple Local Assist operation-feedback limitation: repeated request sessions may not preserve every intermediate feedback item in the panel, so the AI edit transaction / review bar / diff remain the source of truth.
 
 ## Decisions
@@ -107,6 +108,7 @@
 - CodeMirror language-dispatch follow-up verification passed on 2026-06-08: RED was observed for Markdown-document switching remount behavior, then `npm run test -- src/components/editor/EditorPane.test.tsx`, focused language/L Mode tests, `npm run test` (69 files / 513 tests on rerun), `npm run build:vite`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml -- --test-threads=1` (243 tests), `npm run build`, and `git diff --check` passed. The first full `npm run test` attempt showed two L Mode test failures that both passed on focused rerun and the full rerun.
 - v0.17.0 warning-expected DMG verification passed on 2026-06-10: `npm ci`, `npm run typecheck`, `npm run test` (78 files / 639 tests), `npm run build:vite`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml -- --test-threads=1` (265 tests), `npm run build:apple-assist-helper:live`, `npm run build:dmg-preview`, `npm audit`, `cargo audit --file src-tauri/Cargo.lock` (exit 0 with 17 warnings), app metadata/codesign, expected `spctl` insufficient-context rejection, mounted-DMG metadata/codesign, release-pre-check greps, and `git diff --check`. DMG SHA-256: `a7587995e8437e0c1f1863eecb5167e46614b7387cbe6dec05b54dd24b28f8ab`.
 - v0.17.0 remote verification passed after publication: `gh release download v0.17.0` into a fresh temp directory, `shasum -c`, `hdiutil verify`, mounted app metadata (`0.17.0`, `lab.hazakura.note.dev`, `hazakura editor Dev`, `hazakura-editor`), and mounted app `codesign --verify --deep --strict --verbose=2`.
+- License-notice draft verification passed: `git diff --check`, `git diff --no-index --check /dev/null LICENSE`, and the same no-index check for `THIRD_PARTY_NOTICES.md`.
 
 ## Risks / Unknowns
 
@@ -117,6 +119,7 @@
 - `docs/releases/` still contains historical release-note evidence; this is intentional because release verification can depend on it.
 - v0.17.0 is published and remotely verified. Older tags remain immutable.
 - Apple Local Assist operation feedback is still an alpha smoke aid; repeated request sessions may not preserve every intermediate feedback item in the panel.
+- `THIRD_PARTY_NOTICES.md` is a draft notice packet. Before official binary distribution, refresh the lockfile-derived scans, include full upstream license texts / notice files, and review icon/logo provenance plus the `encoding_rs` BSD-3-Clause WHATWG notice.
 
 ## Next Actions
 

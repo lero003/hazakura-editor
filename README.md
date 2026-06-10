@@ -147,6 +147,10 @@ Example use case:
 - [Source Release Checklist](docs/source-release-checklist.md): source-only developer previewの準備境界
 - [DMG Preview Checklist](docs/dmg-preview-checklist.md): warning-expected DMG preview laneの準備・検証境界
 
+## License
+
+hazakura editor本体は商用プロプライエタリソフトウェアとして扱います。第三者OSSのライセンスと出自メモは [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) を参照してください。
+
 ## Run
 
 ```bash

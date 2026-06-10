@@ -1,0 +1,22 @@
+hazakura editor License
+
+Copyright (c) 2026 Hazakura Lab. All rights reserved.
+
+hazakura editor is proprietary software.
+You may not copy, redistribute, modify, reverse engineer, decompile,
+disassemble, sublicense, resell, or otherwise exploit this software except as
+permitted by applicable app store terms or by written permission from
+Hazakura Lab.
+
+Access to this repository, source code, binaries, documentation, screenshots,
+or release artifacts does not grant an open source license to hazakura editor
+itself.
+
+This software includes and depends on open source software. Those third-party
+components remain licensed by their respective authors and rights holders
+under their own licenses, including but not limited to MIT, Apache-2.0, BSD,
+MPL-2.0, CC0, BlueOak, ISC, Unicode, Unlicense, and Zlib-style licenses.
+
+We are grateful to the open source maintainers whose work makes this software
+possible. See THIRD_PARTY_NOTICES.md for the current draft of third-party
+license acknowledgements and provenance notes.
