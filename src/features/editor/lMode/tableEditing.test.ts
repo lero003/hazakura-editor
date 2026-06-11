@@ -33,6 +33,151 @@ function offsetOf(doc: string, needle: string): number {
 }
 
 describe("L Mode table editing", () => {
+  // v0.18 caret movement edge cases. These pin down
+  // the table cell boundary arithmetic for:
+  //   * rows with uneven cell padding (e.g. `| あ |  い|`),
+  //   * rows without a trailing pipe (e.g. `| Review | 差分・比較`),
+  //   * cursor positions strictly inside a cell,
+  //   * cursor positions at the first / last cell of a row.
+  // The contract: caret movement must be predictable and
+  // must never rewrite doc text. Inside a cell, the L Mode
+  // ArrowLeft / ArrowRight handler must fall through to
+  // the standard CodeMirror handler.
+  describe("table cell caret movement", () => {
+    function positionOf(doc: string, lineNumber: number, column: number): number {
+      // lineNumber is 1-indexed; column is the 0-indexed character
+      // offset within that line.
+      let offset = 0;
+      for (let i = 1; i < lineNumber; i += 1) {
+        const nl = doc.indexOf("\n", offset);
+        if (nl < 0) {
+          throw new Error(`Line ${lineNumber} out of range for fixture`);
+        }
+        offset = nl + 1;
+      }
+      return offset + column;
+    }
+
+    it("moves right from the content end of an uneven-padded cell to the next cell's content start", () => {
+      const doc =
+        "| A | B |\n" +
+        "| --- | --- |\n" +
+        "| あ |  い|\n";
+      // body row `| あ |  い|` (length 9). Cell 1 content end is at column 3.
+      const cell1ContentEnd = positionOf(doc, 3, 3);
+      const cell2ContentStart = positionOf(doc, 3, 7);
+      const view = makeView(doc, cell1ContentEnd);
+
+      expect(moveTableCellRight(view)).toBe(true);
+      expect(view.state.selection.main.from).toBe(cell2ContentStart);
+      // doc text must not change.
+      expect(view.state.doc.toString()).toBe(doc);
+    });
+
+    it("moves left from the content start of an uneven-padded cell to the previous cell's content end", () => {
+      const doc =
+        "| A | B |\n" +
+        "| --- | --- |\n" +
+        "| あ |  い|\n";
+      // Cell 2 content start is at column 7.
+      const cell2ContentStart = positionOf(doc, 3, 7);
+      const cell1ContentEnd = positionOf(doc, 3, 3);
+      const view = makeView(doc, cell2ContentStart);
+
+      expect(moveTableCellLeft(view)).toBe(true);
+      expect(view.state.selection.main.from).toBe(cell1ContentEnd);
+      expect(view.state.doc.toString()).toBe(doc);
+    });
+
+    it("moves right across a cell boundary when the row has no trailing pipe", () => {
+      const doc =
+        "| A | B |\n" +
+        "| --- | --- |\n" +
+        "| Review | 差分・比較\n";
+      // body row `| Review | 差分・比較` (length 16). Cell 1 content end is at column 8.
+      const cell1ContentEnd = positionOf(doc, 3, 8);
+      const cell2ContentStart = positionOf(doc, 3, 11);
+      const view = makeView(doc, cell1ContentEnd);
+
+      expect(moveTableCellRight(view)).toBe(true);
+      expect(view.state.selection.main.from).toBe(cell2ContentStart);
+      expect(view.state.doc.toString()).toBe(doc);
+    });
+
+    it("moves left across a cell boundary when the row has no trailing pipe", () => {
+      const doc =
+        "| A | B |\n" +
+        "| --- | --- |\n" +
+        "| Review | 差分・比較\n";
+      // Cell 2 content start is at column 11.
+      const cell2ContentStart = positionOf(doc, 3, 11);
+      const cell1ContentEnd = positionOf(doc, 3, 8);
+      const view = makeView(doc, cell2ContentStart);
+
+      expect(moveTableCellLeft(view)).toBe(true);
+      expect(view.state.selection.main.from).toBe(cell1ContentEnd);
+      expect(view.state.doc.toString()).toBe(doc);
+    });
+
+    it("does not hijack ArrowRight when the cursor is strictly inside a cell", () => {
+      const doc =
+        "| A | B |\n" +
+        "| --- | --- |\n" +
+        "| Review | 差分・比較\n";
+      // Inside cell 2's content (column 12 = `分`).
+      const insideCell2 = positionOf(doc, 3, 12);
+      const view = makeView(doc, insideCell2);
+
+      expect(moveTableCellRight(view)).toBe(false);
+      // The handler refused, so the cursor and doc must be untouched;
+      // the standard CodeMirror ArrowRight handler gets a clean shot.
+      expect(view.state.selection.main.from).toBe(insideCell2);
+      expect(view.state.doc.toString()).toBe(doc);
+    });
+
+    it("does not hijack ArrowLeft when the cursor is strictly inside a cell", () => {
+      const doc =
+        "| A | B |\n" +
+        "| --- | --- |\n" +
+        "| Review | 差分・比較\n";
+      // Inside cell 2's content (column 12 = `分`).
+      const insideCell2 = positionOf(doc, 3, 12);
+      const view = makeView(doc, insideCell2);
+
+      expect(moveTableCellLeft(view)).toBe(false);
+      expect(view.state.selection.main.from).toBe(insideCell2);
+      expect(view.state.doc.toString()).toBe(doc);
+    });
+
+    it("refuses to move right from the last cell of a row without a trailing pipe", () => {
+      const doc =
+        "| A | B |\n" +
+        "| --- | --- |\n" +
+        "| Review | 差分・比較\n";
+      // Last cell content end is at the line end (column 16).
+      const lastCellEnd = positionOf(doc, 3, 16);
+      const view = makeView(doc, lastCellEnd);
+
+      expect(moveTableCellRight(view)).toBe(false);
+      expect(view.state.selection.main.from).toBe(lastCellEnd);
+      expect(view.state.doc.toString()).toBe(doc);
+    });
+
+    it("refuses to move left from the first cell of a row", () => {
+      const doc =
+        "| A | B |\n" +
+        "| --- | --- |\n" +
+        "| Review | 差分・比較\n";
+      // First cell content start is at column 2.
+      const firstCellStart = positionOf(doc, 3, 2);
+      const view = makeView(doc, firstCellStart);
+
+      expect(moveTableCellLeft(view)).toBe(false);
+      expect(view.state.selection.main.from).toBe(firstCellStart);
+      expect(view.state.doc.toString()).toBe(doc);
+    });
+  });
+
   it("moves right from the end of a table cell into the next cell", () => {
     const doc =
       "| プラン | 内容 | 想定ユーザー |\n" +

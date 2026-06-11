@@ -9,6 +9,15 @@ const lModeCss = readFileSync(
   "utf8",
 );
 
+// a11y.css is read here for the cross-file drift tests below.
+// The block-comment stripping is the same as for lMode.css:
+// `[\s\S]*?` is non-greedy and a single pass is enough since
+// CSS block comments cannot be nested.
+const a11yCss = readFileSync(
+  `${process.cwd()}/src/styles/a11y.css`,
+  "utf8",
+);
+
 // Strip block comments from a CSS string so test assertions
 // don't accidentally match prose inside /* ... */. Block
 // comments cannot be nested in CSS, so a single non-greedy
@@ -423,6 +432,253 @@ describe("lMode.css", () => {
     // If you find yourself wanting to extract it into the
     // catalog, do so as a single constant shared by both,
     // not by introducing a second source of truth.
+  });
+});
+
+// --- v0.15 L Mode floating controls focus visibility ---
+//
+// The three floating controls (action rail buttons, workspace
+// toggle, change review close button) are the keyboard-reachable
+// chrome in L Mode. They all share a single quiet affordance
+// pattern: `outline: none` plus the same background / border /
+// color shift that `:hover` already applies, with `var(--accent)`
+// as the color source. The intent is that L Mode stays calm —
+// the focus ring is the same shape as the hover glow, so the
+// surface does not pick up an extra ring during a keyboard tab.
+//
+// That intent is deliberate, but it also means:
+//
+//   1. `:focus-visible` is visually indistinguishable from
+//      `:hover` for these elements. A user tabbing through the
+//      floating chrome cannot tell whether focus has landed on
+//      a button without watching the cursor change.
+//
+//   2. `a11y.css` ships an `@media (prefers-contrast: more)`
+//      rule that thickens the focus ring to `3px` for
+//      `:is(button, [role=button], input, select, textarea, a,
+//      [tabindex]):focus-visible` at specificity (0,2,0). The
+//      L Mode floating-control rules live at (0,3,1) and
+//      declare `outline: none`, so the a11y upgrade cannot
+//      reach them — L Mode's quiet by design wins over the
+//      user's high-contrast preference.
+//
+// The tests below pin the current shape. They are regression
+// guards: a future change that gives the floating controls a
+// proper keyboard focus ring (e.g. an accent `outline` or an
+// `inset box-shadow` on `:focus-visible` only) will need to
+// update these assertions, which is the right time to ask
+// whether the L Mode philosophy should stay as quiet as it is
+// today or grow a louder keyboard affordance.
+describe("v0.15 L Mode floating controls focus visibility", () => {
+  // The three L Mode floating-control classes that the React
+  // chrome renders and that the keyboard can tab to. Sourced
+  // from the catalog so a renamed class surfaces here first.
+  const floatingControlClasses = [
+    "l-mode-action-button",
+    "l-mode-workspace-toggle",
+    "l-mode-change-review-close-button",
+  ] as const;
+
+  // The `.l-mode-workspace-toggle` rule pairs `:hover`,
+  // `:focus-visible`, AND `[data-open="true"]` in a single
+  // selector list, while the other two pair just `:hover`
+  // and `:focus-visible`. The regex below matches any
+  // selector block that contains `.${cls}` followed (any-
+  // where in the comma-separated list) by `:focus-visible`,
+  // so it does not care how many sibling selectors share
+  // the block.
+  function extractFocusVisibleRule(cls: string): string {
+    const match = lModeCss.match(
+      new RegExp(
+        `\\.${cls}(?![a-z0-9-])[^{}]*:focus-visible[^{}]*\\{(?<body>[^}]*)\\}`,
+        "s",
+      ),
+    );
+    return match?.groups?.body ?? "";
+  }
+
+  it("keeps the floating controls' :focus-visible rule gated to L Mode", () => {
+    // The L Mode attribute gate is what scopes these rules to
+    // the writing surface; without it the rules would leak
+    // into the normal-mode chrome and stomp the existing
+    // `outline: 2px / offset: 2px` button focus ring.
+    for (const cls of floatingControlClasses) {
+      const rule = extractFocusVisibleRule(cls);
+      expect(rule, `${cls} :focus-visible rule not found`).not.toBe("");
+      // The selector list must include the L Mode gate so
+      // the rule does not fire outside the writing surface.
+      expect(
+        lModeCss,
+        `${cls} :focus-visible must live under :root[data-l-mode="on"]`,
+      ).toMatch(
+        new RegExp(
+          `:root\\[data-l-mode="on"\\][^{}]*\\.${cls}(?![a-z0-9-])[^{}]*:focus-visible`,
+          "s",
+        ),
+      );
+    }
+  });
+
+  it("suppresses the default outline on floating-control :focus-visible", () => {
+    // L Mode philosophy: the focus ring on the floating chrome
+    // is carried by the same `background / border / color`
+    // shift that `:hover` already applies. The default `2px
+    // solid var(--accent)` outline from `animations.css` would
+    // add a second ring on top, which reads as "selected" in
+    // the calm-L-Mode visual language, so it is intentionally
+    // turned off here.
+    for (const cls of floatingControlClasses) {
+      const rule = extractFocusVisibleRule(cls);
+      expect(rule, `${cls} :focus-visible must keep outline: none`).toMatch(
+        /outline:\s*none/,
+      );
+    }
+  });
+
+  it("drives floating-control :focus-visible from the same accent tokens across themes", () => {
+    // Theme cross-check: dark / sakura / yakou / shokou all
+    // define a distinct `--accent` value. The L Mode floating
+    // controls read `var(--accent)` directly (no hard-coded
+    // color), so the focus tint shifts with the active theme
+    // without a per-theme rule. Light is the only theme that
+    // does not override `--accent`, so the system default
+    // applies; the rule still reads from the same token.
+    for (const cls of floatingControlClasses) {
+      const rule = extractFocusVisibleRule(cls);
+      expect(rule, `${cls} :focus-visible must use var(--accent)`).toMatch(
+        /var\(--accent\)/,
+      );
+      // No hard-coded hex / rgb / hsl value sneaks in —
+      // those would break the theme-invariant focus tint.
+      expect(
+        rule,
+        `${cls} :focus-visible must not hardcode a color`,
+      ).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+      expect(
+        rule,
+        `${cls} :focus-visible must not hardcode an rgb / hsl color`,
+      ).not.toMatch(/\b(?:rgb|hsl)a?\(/);
+    }
+  });
+
+  it("does not let hover and focus-visible diverge into two different shapes", () => {
+    // The whole point of the L Mode quiet treatment is that
+    // hover and keyboard focus use the same `background /
+    // border / color` set, so the floating chrome does not
+    // light up twice while a user tabs through it. The block
+    // pairs `:hover` and `:focus-visible` together; for
+    // `.l-mode-workspace-toggle` the block also pairs the
+    // open-state `[data-open="true"]` selector, which is
+    // allowed because that is a visual open/closed state,
+    // not a focus state.
+    for (const cls of floatingControlClasses) {
+      const rule = extractFocusVisibleRule(cls);
+      // The shared block must carry at least one of the
+      // accent-driven properties; otherwise the focus tint
+      // is silently empty.
+      expect(rule).toMatch(
+        /(?:background|border-color|color|opacity):\s*(?:color-mix|var\(--accent\))/,
+      );
+    }
+  });
+});
+
+// --- v0.15 L Mode floating controls focus visibility: a11y
+//     high-contrast reinforcement ---
+//
+// The v0.15 describe block above pins the *normal* focus
+// visibility of the L Mode floating controls. This describe
+// block pins the complementary behavior under
+// `(prefers-contrast: more)`: lMode.css declares
+// `outline: none` at specificity (0,3,1) so the generic a11y
+// rule at (0,2,0) cannot reach these elements. a11y.css
+// re-asserts the focus ring inside the L Mode gate at the
+// same (0,3,1) specificity so the user's high-contrast
+// preference still lands on the floating chrome.
+//
+// The two CSS files are read together here so a future
+// refactor that drops the a11y reinforcement — or that
+// re-keys the class names — surfaces in this test, not in
+// a manual keyboard tab through every L Mode theme.
+describe("v0.15 L Mode floating controls focus visibility: prefers-contrast reinforcement", () => {
+  const floatingControlClasses = [
+    "l-mode-action-button",
+    "l-mode-workspace-toggle",
+    "l-mode-change-review-close-button",
+  ] as const;
+
+  // Pull the body of the
+  // `@media (prefers-contrast: more) { ... }` block out of
+  // a11y.css. The block is a single top-level `{}` pair in
+  // that file, so `[\s\S]*?` with a non-greedy quantifier
+  // matches the smallest closing brace. Comments inside the
+  // body are stripped so a literal "outline" inside prose
+  // does not satisfy a `toMatch(/outline:/)` assertion.
+  const a11yContrastBlock = stripCssComments(
+    a11yCss.match(
+      /@media\s+\(prefers-contrast:\s*more\)\s*{(?<body>[\s\S]*?)\n}\s*$/m,
+    )?.groups?.body ?? "",
+  );
+
+  it("declares a single @media (prefers-contrast: more) block in a11y.css", () => {
+    // A scattered pair of contrast blocks would let one
+    // block's overrides leak past the other's intent. The
+    // a11y.css shape is one block that owns the full
+    // high-contrast upgrade.
+    const matches = a11yCss.match(/@media\s+\(prefers-contrast:\s*more\)/g) ?? [];
+    expect(matches.length).toBe(1);
+  });
+
+  it("reinforces the L Mode floating controls inside the contrast block", () => {
+    // The a11y upgrade must list every L Mode floating-
+    // control class inside `:focus-visible` so the OS
+    // high-contrast preference actually lands on the
+    // floating chrome. Skipping a class would leave that
+    // one element with only its quiet background tint.
+    for (const cls of floatingControlClasses) {
+      const rulePattern = new RegExp(
+        `:root\\[data-l-mode="on"\\][^{}]*\\.${cls}(?![a-z0-9-])[^{}]*:focus-visible`,
+        "s",
+      );
+      expect(
+        a11yContrastBlock,
+        `${cls} :focus-visible reinforcement missing from a11y.css contrast block`,
+      ).toMatch(rulePattern);
+    }
+  });
+
+  it("uses an outline (not a background tint) for the L Mode reinforcement", () => {
+    // The L Mode quiet-by-design rules already carry a
+    // `background: color-mix(var(--accent) 10-12%, ...)`
+    // tint on `:focus-visible`. Re-applying the same tint
+    // inside the contrast block would do nothing new; the
+    // contrast block's value is the *outline*, which the
+    // L Mode gate has suppressed. A regression that swaps
+    // `outline:` for another `background:` would silence
+    // the high-contrast upgrade, so pin the property name.
+    const combined = new RegExp(
+      `:root\\[data-l-mode="on"\\][^{}]*\\.l-mode-action-button(?![a-z0-9-])[^{}]*:focus-visible[^{}]*\\{(?<body>[^}]*)\\}`,
+      "s",
+    );
+    const ruleBody =
+      a11yContrastBlock.match(combined)?.groups?.body ?? "";
+    expect(ruleBody, "a11y L Mode action-button reinforcement block").not.toBe(
+      "",
+    );
+    expect(ruleBody).toMatch(/outline:\s*\d+(?:\.\d+)?(?:px|em|rem)/);
+  });
+
+  it("keeps the L Mode reinforcement gated to the L Mode attribute", () => {
+    // The reinforcement must be scoped to
+    // `:root[data-l-mode="on"]`; an ungated rule would
+    // re-enable the outline on the normal-mode chrome
+    // (action rail etc. are also rendered there, hidden
+    // by `:root:not([data-l-mode="on"]) { display: none }`),
+    // which would double the focus ring during normal-
+    // mode keyboard tab.
+    expect(a11yContrastBlock).toMatch(
+      /:root\[data-l-mode="on"\][^{}]*\.l-mode-action-button(?![a-z0-9-])[^{}]*:focus-visible/s,
+    );
   });
 });
 

@@ -119,4 +119,23 @@
     background: var(--scrollbar-thumb-hover);
     border: 1px solid var(--border-strong);
   }
+
+  /* L Mode floating controls: lMode.css (0,3,1) の
+     `outline: none` が上記の focus 強化 (0,2,0) を阻むため、
+     L Mode gate をつけて同 specificity (0,3,1) で上書きする。
+     L Mode 哲学 (focus-visible と hover が同じアフォーダンス)
+     は通常環境では維持し、prefers-contrast:more 環境でのみ
+     キーボードフォーカス位置を明確にする。
+     ヤコウ/曙光テーマには box-shadow リング 4-5px が a11y で
+     5px に太くなる仕組みが既にあるが、 dark / sakura / shokou /
+     light ではリングが background 10-12% のみで薄いため、
+     outline を上乗せしてフォーカス位置を補強する。 */
+  :root[data-l-mode="on"] :is(
+    .l-mode-action-button,
+    .l-mode-workspace-toggle,
+    .l-mode-change-review-close-button
+  ):focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
 }
