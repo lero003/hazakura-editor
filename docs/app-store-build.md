@@ -111,6 +111,21 @@ APPLE_SIGNING_IDENTITY="Apple Distribution: <Name> (<TEAM_ID>)" \
   npm run build:app-store-submit
 ```
 
+Before each new App Store Connect / TestFlight upload for the same app
+version, increment the App Store-only bundle version:
+
+```bash
+npm run bump:app-store-build
+```
+
+This updates `bundle.macOS.bundleVersion` in
+`src-tauri/tauri.conf.appstore.json`, which becomes
+`CFBundleVersion`. App Store Connect requires this value to be higher
+than any previously uploaded build for the same app version, including
+builds that were uploaded but later rejected for validation issues. Keep
+this value as a positive integer counter (`1`, `2`, `3`, ...), separate
+from the user-visible app version.
+
 The submit command uses:
 
 ```txt
@@ -122,6 +137,7 @@ That config sets:
 - `beforeBuildCommand` to `npm run build:vite`
 - `frontendDist` to `../dist`
 - `bundle.externalBin` to `[]`
+- `bundle.macOS.bundleVersion` to the current App Store Connect build number
 - `bundle.macOS.entitlements` to `./entitlements/mac-app-store.entitlements`
 - `bundle.macOS.files.embedded.provisionprofile` to the local profile path
 
@@ -153,6 +169,10 @@ Authority=Apple Distribution: ...
 Check entitlements:
 
 ```xml
+<key>com.apple.application-identifier</key>
+<string><TEAM_ID>.dev.hazakura.editor</string>
+<key>com.apple.developer.team-identifier</key>
+<string><TEAM_ID></string>
 <key>com.apple.security.app-sandbox</key>
 <true/>
 <key>com.apple.security.files.user-selected.read-write</key>
@@ -162,6 +182,12 @@ Check entitlements:
 <key>com.apple.security.network.client</key>
 <true/>
 ```
+
+For the current App Store provisioning profile, `<TEAM_ID>` is
+`8BNUB2R9C8`. The signed app and embedded provisioning profile must agree
+on `com.apple.application-identifier`; otherwise App Store Connect can
+accept the upload but mark the build ineligible for TestFlight with
+warning 90886.
 
 Check helper omission:
 
@@ -174,13 +200,16 @@ test ! -e "$APP/Contents/MacOS/hazakura-apple-assist-helper"
 ```bash
 /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$APP/Contents/Info.plist"
 /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP/Contents/Info.plist"
+/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$APP/Contents/Info.plist"
 find "$APP/Contents/MacOS" -maxdepth 1 -type f -print
 ```
 
 Expected:
 
 - `CFBundleIdentifier` is `dev.hazakura.editor`
-- version is `0.17.0`
+- `CFBundleShortVersionString` is `0.17.0`
+- `CFBundleVersion` is a positive integer higher than the last uploaded
+  App Store Connect build
 - `hazakura-editor` is present
 - `hazakura-apple-assist-helper` is absent
 

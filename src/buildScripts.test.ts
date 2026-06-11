@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
@@ -22,6 +23,7 @@ const appStoreSubmitConfig = readFileSync(
 );
 const appStoreSubmitConfigJson = JSON.parse(appStoreSubmitConfig) as {
   build?: { frontendDist?: string };
+  bundle?: { macOS?: { bundleVersion?: string } };
 };
 const appStoreEntitlements = readFileSync(
   "src-tauri/entitlements/mac-app-store.entitlements",
@@ -88,6 +90,33 @@ describe("macOS build scripts", () => {
     );
     expect(appStoreSubmitConfigJson.build?.frontendDist).toBe("../dist");
     expect(appStoreSubmitConfig).toContain('"externalBin": []');
+  });
+
+  it("provides an App Store build-version bump helper for repeated TestFlight uploads", () => {
+    expect(packageJson.scripts["bump:app-store-build"]).toBe(
+      "node scripts/bump-app-store-build-version.mjs",
+    );
+    const currentBundleVersion =
+      appStoreSubmitConfigJson.bundle?.macOS?.bundleVersion;
+    expect(currentBundleVersion).toMatch(/^[1-9]\d*$/);
+
+    const nextFromOne = execFileSync(
+      process.execPath,
+      ["scripts/bump-app-store-build-version.mjs", "--print-next", "1"],
+      { encoding: "utf8" },
+    ).trim();
+    const nextFromCurrent = execFileSync(
+      process.execPath,
+      [
+        "scripts/bump-app-store-build-version.mjs",
+        "--print-next",
+        currentBundleVersion ?? "",
+      ],
+      { encoding: "utf8" },
+    ).trim();
+
+    expect(nextFromOne).toBe("2");
+    expect(nextFromCurrent).toBe(String(Number(currentBundleVersion) + 1));
   });
 
   it("uses the dedicated Developer lane script before copying the Dev bundle", () => {

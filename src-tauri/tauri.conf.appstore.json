@@ -11,7 +11,8 @@
       "entitlements": "./entitlements/mac-app-store.entitlements",
       "files": {
         "embedded.provisionprofile": "./profiles/Hazakura_Editor_Mac_App_Store_Profile.provisionprofile"
-      }
+      },
+      "bundleVersion": "3"
     }
   }
 }
