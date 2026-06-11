@@ -79,14 +79,17 @@ export const privacyPolicy: HelpDoc = {
   boundaryNoteBody:
     "This is the App Store / public-copy draft for the app's privacy policy. It is separate from the more technical Local Data Disclosure.",
   footerNote:
-    "This draft reflects the current App Store preview lane. Review the final website URL and App Store metadata before submission.",
+    "This draft reflects the App Store version of Hazakura Editor. Review the final website URL and App Store metadata before submission.",
   source: privacyPolicyMd,
   sections: [
     { testId: "help-doc-section-overview", title: "Overview" },
     { testId: "help-doc-section-files", title: "Files you choose" },
     { testId: "help-doc-section-local-data", title: "Local data" },
     { testId: "help-doc-section-assist", title: "Apple Local Assist" },
-    { testId: "help-doc-section-network", title: "Network and analytics" },
+    {
+      testId: "help-doc-section-network",
+      title: "Network, analytics, and cloud services",
+    },
     { testId: "help-doc-section-contact", title: "Contact" },
   ],
 };
