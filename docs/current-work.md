@@ -60,10 +60,12 @@ Use this section for recurring or unattended pre-review automation.
 | 10 | Auto-backup filename uniqueness | Code / verified no-op | `implemented`: same-second backup collision is reproduced and fixed. `verified no-op`: focused inspection cannot reproduce a realistic overwrite risk. |
 | 11 | Help copy overlap cleanup | Product copy | Keep for human/Codex review unless explicitly assigned with tight wording constraints. |
 
-Order 1 is implemented as of 2026-06-12. The remaining Move to Trash
-proof is signed TestFlight smoke, tracked under the submission-prep
-manual smoke items; the next open automation slice is Order 2 unless
-TestFlight specifically reopens the Trash behavior.
+Order 1 is implemented as of 2026-06-12. Order 2 is implemented at the
+code-regression level as of 2026-06-12. The remaining Move to Trash and
+workspace-persistence proofs are signed TestFlight smoke, tracked under
+the submission-prep manual smoke items; the next open automation slice is
+Order 3 unless TestFlight specifically reopens the Trash or workspace
+restore behavior.
 
 ## Active UX Queue
 
@@ -71,7 +73,6 @@ Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| P0 | Workspace persistence before App Review | Treat the TestFlight workspace loss observations as bugs, not product spec: (1) opening a workspace and repeatedly quitting/relaunching must retain the selected workspace root, and (2) quitting/relaunching while the active tab is outside the workspace must still retain the selected workspace root. Reproduce both shapes first, then add narrow persistence/restore regression coverage before changing behavior. The workspace selection should disappear only after an explicit user action or unrecoverable authorization failure with a visible reauthorization path. |
 | P1 | Pasted image decoded-size cap / `data:image` wording | `save_pasted_image` should reject oversized pasted image payloads before unbounded memory growth. Add a base64-length preflight where practical, enforce a decoded byte cap aligned with the existing 20 MB image limit, localize the user-facing error, and align Help/docs wording to decoded image bytes rather than vague data-URI length. Verify paste/drag-drop still writes supported PNG/JPEG/GIF/WebP images into `assets/`. |
 | P1 | Direct save fallback failure safety | The App Sandbox direct-file fallback can use a truncate-and-write path when temp-file creation is denied. Add focused failure coverage for partial write / sync failure behavior: local edits must remain dirty/recoverable, the UI must not imply success, and any feasible original-bytes recovery should be attempted before reporting failure. Keep the normal atomic save path unchanged. |
 | P1 | Manual accessibility smoke | Code-level observation recorded in `docs/smoke-checklist.md` and `docs/archive/operations/v0.18-manual-accessibility-smoke-observation.md` (Help readability, full keyboard-only traversal, VoiceOver tab-bar announcement, Increase Contrast). Live VoiceOver and Increase Contrast observation items still pending on the user's Mac. Baseline dialogs partially observed; `MoveToTrashConfirmDialog` focus management now wired (see Completed v0.18 Slices). |
@@ -91,7 +92,6 @@ over copy-heavy or product-voice-sensitive work.
 | Good | Direct save fallback failure safety | Add failure-injection coverage for the direct write fallback and improve recovery only if the test proves a user-visible data-loss risk. Do not weaken external-change fingerprint checks. |
 | Good | L Mode quality investigation | Pick one reproduced L Mode issue or one measurable quality gap only: caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or performance baseline. Do not add a new editing model or contenteditable surface. |
 | Good | Theme quality investigation | Pick one concrete theme issue only: contrast, focus visibility, status/error readability, dialog readability, or Increase Contrast behavior. Do not redesign palettes or add theme customization. |
-| Good | Workspace persistence before App Review | Debug only the observed persistence shapes where repeated app launch/quit or an outside-workspace active tab can cause the selected workspace root to be absent after restart. Keep the fix near workspace state persistence / restore and avoid changing direct-open file permissions or workspace file operations. |
 | Good | Status bar encoding / line-ending de-duplication | Remove redundant passive `UTF-8` / `LF` style labels while preserving the existing dropdown controls, status/dirty affordances, and compact status-bar layout. |
 | Good | Auto-backup filename uniqueness | If reproducible, make backup names unique within the same second while preserving recovery list sorting and cleanup behavior. |
 | Good | Focused refactor for a verified bug | Refactor only when it directly fixes or tests one observed user-facing problem. Keep ownership boundaries and public behavior stable. |
@@ -110,6 +110,16 @@ over copy-heavy or product-voice-sensitive work.
   path, outside-workspace rejection, Agent Window label rejection, and
   auto-backup cleanup passes. Signed TestFlight smoke still needs to
   confirm the App Store-lane user flow before App Review.
+- 2026-06-12: Workspace persistence before App Review is implemented
+  at the code-regression level. Focused inspection confirmed the
+  repeated launch / relaunch path is pinned by
+  `useWorkspaceStatePersistence.test.ts`, while the outside-active-tab
+  and partial-restore path is covered across
+  `useWorkspaceStatePersistence.test.ts`, `useWorkspaceRestore.test.ts`,
+  and `storage.test.ts`. The focused command
+  `npm run test -- src/hooks/workspace/useWorkspaceStatePersistence.test.ts src/hooks/workspace/useWorkspaceRestore.test.ts src/lib/storage.test.ts`
+  passes with 3 files / 31 tests. Signed TestFlight smoke still needs to
+  repeat the user-facing workspace-retention flow before App Review.
 - 2026-06-11: Workspace restore / standalone save regression slice.
   `useWorkspaceStatePersistence` no longer overwrites the
   user's last good persisted state when the restore latch
