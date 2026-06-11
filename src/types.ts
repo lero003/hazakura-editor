@@ -305,6 +305,7 @@ export type EditorTab = TextFileDocument & {
 
 export type PersistedWorkspaceState = {
   workspaceRootPath: string | null;
+  workspaceRootBookmark?: number[] | null;
   tabPaths: string[];
   activeTabPath: string | null;
 };

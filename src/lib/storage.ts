@@ -162,6 +162,12 @@ export function readPersistedWorkspaceState(): PersistedWorkspaceState | null {
         typeof parsed.workspaceRootPath === "string"
           ? parsed.workspaceRootPath
           : null,
+      workspaceRootBookmark: Array.isArray(parsed.workspaceRootBookmark)
+        ? parsed.workspaceRootBookmark.filter(
+            (byte): byte is number =>
+              Number.isInteger(byte) && byte >= 0 && byte <= 255,
+          )
+        : null,
       tabPaths: Array.isArray(parsed.tabPaths)
         ? parsed.tabPaths.filter((path): path is string => typeof path === "string")
         : [],
@@ -174,7 +180,32 @@ export function readPersistedWorkspaceState(): PersistedWorkspaceState | null {
 }
 
 export function writePersistedWorkspaceState(state: PersistedWorkspaceState) {
-  window.localStorage.setItem(WORKSPACE_STATE_STORAGE_KEY, JSON.stringify(state));
+  const existing = readPersistedWorkspaceState();
+  const workspaceRootBookmark =
+    state.workspaceRootBookmark !== undefined
+      ? state.workspaceRootBookmark
+      : existing?.workspaceRootPath === state.workspaceRootPath
+        ? existing.workspaceRootBookmark
+        : null;
+
+  window.localStorage.setItem(
+    WORKSPACE_STATE_STORAGE_KEY,
+    JSON.stringify({ ...state, workspaceRootBookmark }),
+  );
+}
+
+export function writeWorkspaceRootBookmark(
+  workspaceRootPath: string,
+  workspaceRootBookmark: number[] | null,
+) {
+  const existing = readPersistedWorkspaceState();
+
+  writePersistedWorkspaceState({
+    workspaceRootPath,
+    workspaceRootBookmark,
+    tabPaths: existing?.tabPaths ?? [],
+    activeTabPath: existing?.activeTabPath ?? null,
+  });
 }
 
 function readStoredRecentEntries(storageKey: string): RecentEntry[] {

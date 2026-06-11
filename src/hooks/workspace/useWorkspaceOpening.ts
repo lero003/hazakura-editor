@@ -4,11 +4,13 @@ import {
   useCallback,
 } from "react";
 import {
+  createSecurityScopedBookmark,
   listWorkspaceTree,
   pickWorkspaceFolder,
   setMainActiveWorkspace,
   type WorkspaceTreeEntry,
 } from "../../lib/tauri";
+import { writeWorkspaceRootBookmark } from "../../lib/storage";
 import type { CompareAnchor, CompareViewState } from "../../types";
 
 type UseWorkspaceOpeningOptions = {
@@ -41,6 +43,10 @@ export function useWorkspaceOpening({
 
       try {
         const tree = await listWorkspaceTree(path);
+        const bookmark = await createSecurityScopedBookmark(path).catch(
+          () => null,
+        );
+        writeWorkspaceRootBookmark(path, bookmark);
         setWorkspaceTree(tree);
         setWorkspaceRootPath(path);
         // Push the active workspace to the Rust-side cache so the

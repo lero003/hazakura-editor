@@ -2,6 +2,7 @@ import { useEffect, type Dispatch, type SetStateAction } from "react";
 import {
   listWorkspaceTree,
   openTextFile,
+  resolveSecurityScopedBookmark,
   type TextFileDocument,
   type WorkspaceTreeEntry,
 } from "../../lib/tauri";
@@ -40,6 +41,36 @@ export function useWorkspaceRestore({
   useEffect(() => {
     let cancelled = false;
 
+    async function restoreWorkspaceRoot(
+      path: string,
+      bookmark: number[] | null | undefined,
+    ): Promise<boolean> {
+      try {
+        const tree = await listWorkspaceTree(path);
+
+        if (!cancelled) {
+          setWorkspaceTree(tree);
+          setWorkspaceRootPath(path);
+        }
+
+        return true;
+      } catch {
+        if (!bookmark || bookmark.length === 0) {
+          return false;
+        }
+      }
+
+      const resolvedPath = await resolveSecurityScopedBookmark(bookmark);
+      const tree = await listWorkspaceTree(resolvedPath);
+
+      if (!cancelled) {
+        setWorkspaceTree(tree);
+        setWorkspaceRootPath(resolvedPath);
+      }
+
+      return true;
+    }
+
     async function restoreWorkspaceState() {
       const persistedState = readPersistedWorkspaceState();
 
@@ -55,14 +86,11 @@ export function useWorkspaceRestore({
 
         if (persistedState.workspaceRootPath) {
           try {
-            const tree = await listWorkspaceTree(
+            const restoredWorkspaceRoot = await restoreWorkspaceRoot(
               persistedState.workspaceRootPath,
+              persistedState.workspaceRootBookmark,
             );
-
-            if (!cancelled) {
-              setWorkspaceTree(tree);
-              setWorkspaceRootPath(persistedState.workspaceRootPath);
-            }
+            skippedWorkspaceRootRestore = !restoredWorkspaceRoot;
           } catch {
             skippedWorkspaceRootRestore = true;
           }

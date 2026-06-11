@@ -21,10 +21,10 @@ Last reviewed: 2026-06-11 (v0.18 UX polish slices)
   preview lane: `frontendDist` is explicit in the App Store configs and
   the sandbox entitlement includes `com.apple.security.network.client`
   for the Tauri/WebKit runtime.
-- Sandboxed workspace restore treats a stale stored folder grant as a
-  reauthorization skip, not a global error toast. This does not implement
-  persistent security-scoped bookmarks; users still reauthorize through
-  Open Folder when needed.
+- Sandboxed workspace restore stores an app-scoped security-scoped
+  bookmark for user-selected workspace folders and resolves it on
+  restart. Older path-only state can still fall back to the
+  reauthorization status hint.
 
 ## Current Work Queue
 
@@ -41,8 +41,9 @@ Left workspace sidebar collapse / restore is also complete in normal
 mode without changing the file-tree model.
 App Store preview packaged-app smoke now renders the start screen
 instead of a blank WebKit surface.
-Sandboxed workspace restore also avoids the restart-time folder
-permission error toast when only the stored folder path lost permission.
+Sandboxed workspace restore now uses app-scoped security-scoped
+bookmarks for selected workspace folders. Older path-only state still
+asks the user to reauthorize through Open Folder when needed.
 
 Submission-prep items in the same queue include App Store
 entitlement/signing lane definition, App Review Notes final copy,

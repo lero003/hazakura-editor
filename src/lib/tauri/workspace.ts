@@ -16,6 +16,18 @@ export async function listWorkspaceTree(
   return invoke<WorkspaceTreeEntry>("list_workspace_tree", { root });
 }
 
+export async function createSecurityScopedBookmark(
+  path: string,
+): Promise<number[] | null> {
+  return invoke<number[] | null>("create_security_scoped_bookmark", { path });
+}
+
+export async function resolveSecurityScopedBookmark(
+  bookmark: number[],
+): Promise<string> {
+  return invoke<string>("resolve_security_scoped_bookmark", { bookmark });
+}
+
 export async function listWorkspaceDirectory(
   root: string,
   directory: string,

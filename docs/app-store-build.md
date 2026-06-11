@@ -151,6 +151,8 @@ Check entitlements:
 <true/>
 <key>com.apple.security.files.user-selected.read-write</key>
 <true/>
+<key>com.apple.security.files.bookmarks.app-scope</key>
+<true/>
 <key>com.apple.security.network.client</key>
 <true/>
 ```

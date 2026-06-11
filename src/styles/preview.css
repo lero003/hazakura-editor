@@ -290,8 +290,7 @@
 }
 
 .status-bar-status {
-  flex: 0 1 min(34ch, 34vw);
-  max-width: min(34ch, 34vw);
+  flex: 1 1 auto;
   overflow: hidden;
   padding-right: 6px;
   text-overflow: ellipsis;
@@ -299,8 +298,9 @@
 }
 
 .status-bar-detail {
-  flex: 1 1 auto;
-  max-width: min(64ch, 52vw);
+  flex: 0 1 auto;
+  max-width: min(36ch, 34vw);
+  margin-left: auto;
   opacity: 0.85;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -310,10 +310,9 @@
 .status-bar-format-group {
   align-items: center;
   display: inline-flex;
-  flex: 0 0 auto;
+  flex: 0 1 clamp(176px, 26vw, 252px);
   gap: 3px;
   justify-content: flex-end;
-  margin-left: 0;
   min-width: 0;
 }
 

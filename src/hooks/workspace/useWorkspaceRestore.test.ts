@@ -18,12 +18,15 @@ import { useWorkspaceRestore } from "./useWorkspaceRestore";
 
 const openTextFile = vi.fn();
 const listWorkspaceTree = vi.fn();
+const resolveSecurityScopedBookmark = vi.fn();
 const readPersistedWorkspaceState = vi.fn();
 const readStoredDrafts = vi.fn();
 
 vi.mock("../../lib/tauri", () => ({
   listWorkspaceTree: (...args: unknown[]) => listWorkspaceTree(...args),
   openTextFile: (...args: unknown[]) => openTextFile(...args),
+  resolveSecurityScopedBookmark: (...args: unknown[]) =>
+    resolveSecurityScopedBookmark(...args),
 }));
 
 vi.mock("../../lib/storage", () => ({
@@ -51,6 +54,7 @@ describe("useWorkspaceRestore", () => {
   beforeEach(() => {
     openTextFile.mockReset();
     listWorkspaceTree.mockReset();
+    resolveSecurityScopedBookmark.mockReset();
     readPersistedWorkspaceState.mockReset();
     readStoredDrafts.mockReset();
   });
@@ -257,6 +261,55 @@ describe("useWorkspaceRestore", () => {
     // the folder again through the start panel.
     expect(args.setWorkspaceRootPath).not.toHaveBeenCalled();
     expect(args.setWorkspaceTree).not.toHaveBeenCalled();
+  });
+
+  it("restores a sandboxed workspace through its security-scoped bookmark", async () => {
+    const tree = {
+      name: "root",
+      path: "/old/root",
+      kind: "directory",
+      children: [],
+      children_loaded: true,
+      children_truncated: false,
+    };
+    readPersistedWorkspaceState.mockReturnValue({
+      workspaceRootPath: "/old/root",
+      workspaceRootBookmark: [1, 2, 3],
+      tabPaths: ["/old/root/note.md"],
+      activeTabPath: "/old/root/note.md",
+    });
+    readStoredDrafts.mockReturnValue([]);
+    listWorkspaceTree
+      .mockRejectedValueOnce(new Error("Cannot read folder: forbidden"))
+      .mockResolvedValueOnce(tree);
+    resolveSecurityScopedBookmark.mockResolvedValue("/old/root");
+    openTextFile.mockResolvedValue({
+      path: "/old/root/note.md",
+      name: "note.md",
+      contents: "body",
+      line_ending: "lf",
+      encoding: "utf-8",
+      size: 4,
+      modified_ms: 1,
+      fingerprint: "fp",
+      large_file_warning: false,
+    });
+    const args = buildArgs();
+
+    renderHook(() => useWorkspaceRestore(args));
+
+    await waitFor(() => {
+      expect(args.onStatus).toHaveBeenCalledWith("Workspace restored");
+    });
+    expect(resolveSecurityScopedBookmark).toHaveBeenCalledWith([1, 2, 3]);
+    expect(listWorkspaceTree).toHaveBeenNthCalledWith(1, "/old/root");
+    expect(listWorkspaceTree).toHaveBeenNthCalledWith(2, "/old/root");
+    expect(args.setWorkspaceRootPath).toHaveBeenCalledWith("/old/root");
+    expect(args.setWorkspaceTree).toHaveBeenCalledWith(tree);
+    expect(args.onError).not.toHaveBeenCalled();
+    expect(args.onStatus).not.toHaveBeenCalledWith(
+      expect.stringContaining("skipped"),
+    );
   });
 
   it("fires the restore-complete latch exactly once across the restore", async () => {

@@ -11,6 +11,7 @@ pub(crate) mod commands {
     pub(crate) mod files;
     pub(crate) mod images;
     pub(crate) mod search;
+    pub(crate) mod security_bookmarks;
     pub(crate) mod workspace;
     pub(crate) mod workspace_broadcast;
 }
@@ -66,6 +67,8 @@ use crate::commands::images::*;
 #[allow(unused_imports)]
 use crate::commands::search::*;
 #[allow(unused_imports)]
+use crate::commands::security_bookmarks::*;
+#[allow(unused_imports)]
 use crate::commands::workspace::*;
 #[allow(unused_imports)]
 use crate::commands::workspace_broadcast::*;
@@ -106,6 +109,8 @@ pub fn run() {
             get_file_metadata,
             list_workspace_directory,
             list_workspace_tree,
+            create_security_scoped_bookmark,
+            resolve_security_scoped_bookmark,
             rename_workspace_entry,
             move_workspace_entry,
             move_workspace_entry_to_trash,
