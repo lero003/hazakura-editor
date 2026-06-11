@@ -30,6 +30,10 @@ Explicit user actions, such as printing, showing a file in Finder, or moving a f
 
 ## Contact
 
-For support or privacy questions, please use the support contact listed on the App Store product page or the Hazakura Editor support page.
+For support or privacy questions, please contact:
+
+support@hazakura.dev
+
+Support page: https://hazakura.dev/hazakura-editor/support/
 
 Include only the information you choose to share.

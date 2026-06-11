@@ -185,11 +185,15 @@ describe("PrivacyPreferencesPane", () => {
   it("can render the Privacy Policy Help document", () => {
     renderPane(privacyPolicy);
 
-    expect(screen.getByTestId("help-doc-body").textContent).toContain(
-      "Privacy Policy",
-    );
+    const bodyText = screen.getByTestId("help-doc-body").textContent ?? "";
+    expect(bodyText).toContain("Privacy Policy");
+    expect(bodyText).toContain("support@hazakura.dev");
+    expect(bodyText).toContain("https://hazakura.dev/hazakura-editor/support/");
     expect(screen.getByTestId("help-doc-boundary-note").textContent).toContain(
       privacyPolicy.boundaryNoteTitle,
+    );
+    expect(screen.getByTestId("help-doc-footer-note").textContent).toContain(
+      "https://hazakura.dev/hazakura-editor/privacy/",
     );
   });
 

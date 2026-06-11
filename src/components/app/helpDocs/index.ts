@@ -1,6 +1,6 @@
 // Help-document bundle.
 //
-// v0.16 app-store-quality: privacy-local-data slice. Each
+// App Store submission-prep Help surface. Each
 // in-app Help document is a single `.md` file that is
 // loaded with Vite's `?raw` import and rendered through
 // `renderMarkdown()`, the same function the editor
@@ -56,7 +56,7 @@ export const localDataDisclosure: HelpDoc = {
   boundaryNoteBody:
     "This is the in-app technical disclosure. The Privacy Policy is a separate public-copy draft for website and App Store metadata review.",
   footerNote:
-    "This document is an in-app reference reflecting the v0.16 app code. Use the Privacy Policy Help page for public-copy review, and confirm the final URL / metadata before submission.",
+    "This document is an in-app reference reflecting the current app code and distribution-lane boundary. Use the Privacy Policy Help page for public-copy review.",
   source: localDataDisclosureMd,
   sections: [
     { testId: "help-doc-section-files", title: "Files you choose" },
@@ -79,7 +79,7 @@ export const privacyPolicy: HelpDoc = {
   boundaryNoteBody:
     "This is the App Store / public-copy draft for the app's privacy policy. It is separate from the more technical Local Data Disclosure.",
   footerNote:
-    "This draft reflects the App Store version of Hazakura Editor. Review the final website URL and App Store metadata before submission.",
+    "This in-app draft mirrors the public Privacy Policy at https://hazakura.dev/hazakura-editor/privacy/. App Store metadata still needs field-by-field review before submission.",
   source: privacyPolicyMd,
   sections: [
     { testId: "help-doc-section-overview", title: "Overview" },
