@@ -12,6 +12,7 @@ APP="${1:-$REPO_ROOT/src-tauri/target/release/bundle/macos/Hazakura Editor.app}"
 EXPECTED_DISTRIBUTION_LANE="${EXPECTED_DISTRIBUTION_LANE:-app-store}"
 HELPER="$APP/Contents/MacOS/hazakura-apple-assist-helper"
 PLIST="$APP/Contents/Info.plist"
+RESOURCES="$APP/Contents/Resources"
 
 if [ ! -d "$APP" ]; then
     echo "error: app bundle not found: $APP" >&2
@@ -36,6 +37,19 @@ echo "identifier: $(print_plist_value CFBundleIdentifier)"
 echo "name: $(print_plist_value CFBundleName)"
 echo "executable: $(print_plist_value CFBundleExecutable)"
 echo "minimumSystemVersion: $(print_plist_value LSMinimumSystemVersion)"
+
+echo
+echo "== bundled notices =="
+missing_notice=0
+for notice in LICENSE THIRD_PARTY_NOTICES.md; do
+    notice_path="$RESOURCES/$notice"
+    if [ -s "$notice_path" ]; then
+        echo "$notice: present"
+    else
+        echo "$notice: missing or empty"
+        missing_notice=1
+    fi
+done
 
 echo
 echo "== nested helper =="
@@ -114,6 +128,11 @@ fi
 
 if [ "$EXPECTED_DISTRIBUTION_LANE" = "app-store" ]; then
     failed=0
+
+    if [ "$missing_notice" -ne 0 ]; then
+        echo "error: App Store lane must bundle license and third-party notices" >&2
+        failed=1
+    fi
 
     if [ -e "$HELPER" ]; then
         echo "error: App Store lane must not bundle Apple Assist helper: $HELPER" >&2

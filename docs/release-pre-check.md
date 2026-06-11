@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Last-mile hygiene check before tagging, publishing, or attaching binaries
 Authority: Medium
-Last reviewed: 2026-06-10 (v0.17.0 DMG preview prep)
+Last reviewed: 2026-06-12 (bundled third-party notices)
 
 This checklist runs **immediately before** tagging a source / local-app tag or attaching a warning-expected DMG to a GitHub Release. It does not replace the P0 gates in `docs/source-release-checklist.md` or `docs/dmg-preview-checklist.md`; it sits one step above them as a hygiene pass for things that would be embarrassing on a public surface.
 
@@ -16,6 +16,7 @@ Three concerns that are easy to miss in code / docs work but are very visible on
 1. **Hard-coded local paths** — `/Users/...`, `/tmp/...`, `/var/folders/...`, `/home/...`, Windows-style `C:\Users\...`, or other machine-specific paths that would point readers to the author's own filesystem.
 2. **Inappropriate GitHub content** — personal names, organization-internal paths, machine temp paths, TODO-style developer scratch notes, or other surface that should not appear in a public release note / status doc.
 3. **Security concerns** — API keys, tokens, passwords, AWS / GCP / Azure credentials, private keys, internal hostnames, internal IPs, or other secret-bearing strings.
+4. **Bundled license notices** — generated macOS app bundles should carry the app license and third-party notice files under `Contents/Resources/`.
 
 ## How To Run
 
@@ -84,6 +85,18 @@ git ls-files src-helpers/apple-assist/.build/ src-tauri/target/ node_modules/ 2>
 
 Expected: zero tracked files under `src-helpers/apple-assist/.build/`, `src-tauri/target/`, and `node_modules/`. Long-lived docs entries under `docs/archive/` or `docs/releases/` are accepted as historical evidence and are not in this checklist's scope.
 
+### 5. Bundled License Notices
+
+After building a macOS app bundle, verify that the generated bundle
+contains the packaged license and third-party notice files:
+
+```bash
+npm run probe:macos-distribution -- "src-tauri/target/release/bundle/macos/Hazakura Editor.app"
+```
+
+Expected: the `== bundled notices ==` section reports both
+`LICENSE: present` and `THIRD_PARTY_NOTICES.md: present`.
+
 ## Stop Conditions
 
 Do not tag or attach a binary if any of the following are true:
@@ -92,6 +105,7 @@ Do not tag or attach a binary if any of the following are true:
 - The diff-scoped grep in section 2 returns a non-empty result that is not the public repository name `lero003/hazakura-editor` in `docs/releases/`.
 - The diff-scoped grep in section 3 returns a non-empty result of any kind. Rotate the credential before continuing.
 - The whole-repo audit in section 4 surfaces new secrets or new local paths that the diff-scoped greps missed.
+- The bundled notice check in section 5 reports a missing or empty `LICENSE` or `THIRD_PARTY_NOTICES.md`.
 
 When a stop condition fires, fix the issue in the release-candidate worktree and re-run this entire checklist before tagging or publishing.
 

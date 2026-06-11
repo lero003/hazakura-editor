@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-11 (App Store review display-name polish)
+Last reviewed: 2026-06-12 (bundled third-party notices)
 
 ## Current State
 
@@ -38,6 +38,10 @@ Last reviewed: 2026-06-11 (App Store review display-name polish)
   still uses `open_workspace_image` and its root containment check.
 - App Store lane Settings hides Apple Local Assist-specific preference
   rows; Developer / GitHub lane can still expose those assist controls.
+- Generated macOS app bundles now include repository-root `LICENSE`
+  and `THIRD_PARTY_NOTICES.md` under `Contents/Resources/`.
+  `scripts/probe-macos-distribution.sh` verifies those files for the
+  App Store lane.
 
 ## Current Work Queue
 
@@ -62,9 +66,9 @@ checkboxes, normal mode sidebar collapse / restore, App Store preview
 startup, and sandboxed workspace bookmark restore are also complete for
 v0.18.
 
-Submission-prep items in the same queue include App Store
-entitlement/signing lane definition, App Review Notes final copy,
-Privacy Policy / metadata, third-party license packet review, and manual
+Submission-prep items in the same queue include App Store Connect /
+TestFlight validation, App Review Notes final copy, Privacy Policy /
+metadata, final third-party notice content review, and manual
 accessibility smoke.
 
 ## Source Docs
@@ -103,13 +107,10 @@ accessibility smoke.
 
 ## Verification Guidance
 
-- Latest verified slice: `cargo fmt --manifest-path
-  src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path
-  src-tauri/Cargo.toml`, focused frontend tests for Settings / Agent
-  Workbench / Help / command palette, `npm run build:vite`, `npm run
-  build`, App Store preview bundle metadata checks, helper-omission
-  check, and `git diff --check` passed on 2026-06-11 after the App
-  Store review display-name / settings polish.
+- Latest verified slice: `npm run build`, `npm run
+  probe:macos-distribution`, and `git diff --check` passed on
+  2026-06-12 after adding bundled `LICENSE` /
+  `THIRD_PARTY_NOTICES.md` resources and notice checks.
 - Latest packaged-app release evidence remains the v0.17
   warning-expected DMG preview; use the linked release note and
   release checklists before making distribution-readiness claims.

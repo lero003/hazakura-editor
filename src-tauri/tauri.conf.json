@@ -31,6 +31,10 @@
     "targets": "app",
     "icon": ["icons/icon.icns"],
     "externalBin": ["../binaries/hazakura-apple-assist-helper"],
+    "resources": {
+      "../LICENSE": "LICENSE",
+      "../THIRD_PARTY_NOTICES.md": "THIRD_PARTY_NOTICES.md"
+    },
     "fileAssociations": [
       {
         "name": "Markdown files",

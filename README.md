@@ -153,7 +153,7 @@ Example use case:
 
 ## License
 
-Hazakura Editor本体は商用プロプライエタリソフトウェアとして扱います。第三者OSSのライセンスと出自メモは [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) を参照してください。
+Hazakura Editor本体は商用プロプライエタリソフトウェアとして扱います。第三者OSSのライセンスと出自メモは [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) を参照してください。生成されるmacOS app bundleには、`LICENSE` と `THIRD_PARTY_NOTICES.md` が `Contents/Resources/` に同梱されます。
 
 ## Run
 

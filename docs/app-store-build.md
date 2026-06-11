@@ -3,7 +3,7 @@
 Status: Draft
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-06-12 (Transporter package step)
+Last reviewed: 2026-06-12 (bundled notice resources)
 
 ## Purpose
 
@@ -137,12 +137,30 @@ That config sets:
 - `beforeBuildCommand` to `npm run build:vite`
 - `frontendDist` to `../dist`
 - `bundle.externalBin` to `[]`
+- base `bundle.resources` to include `LICENSE` and
+  `THIRD_PARTY_NOTICES.md` inside `Contents/Resources`
 - `bundle.macOS.bundleVersion` to the current App Store Connect build number
 - `bundle.macOS.entitlements` to `./entitlements/mac-app-store.entitlements`
 - `bundle.macOS.files.embedded.provisionprofile` to the local profile path
 
 The preview config uses the same helper-free build shape but does not
 embed a provisioning profile.
+
+## Bundled Notices
+
+All Tauri build lanes inherit the base `bundle.resources` setting in
+`src-tauri/tauri.conf.json`, which copies these repository-root files
+into the generated macOS app bundle:
+
+```txt
+Contents/Resources/LICENSE
+Contents/Resources/THIRD_PARTY_NOTICES.md
+```
+
+These files are the packaged license / third-party notice surface for
+the app bundle. The in-app Help page remains a readable acknowledgement
+summary; before submission, refresh and review the notice contents from
+the current lockfiles.
 
 ## Verify The Built App
 
@@ -156,6 +174,7 @@ codesign --verify --deep --strict --verbose=2 "$APP"
 codesign -dv --verbose=4 "$APP"
 codesign -d --entitlements - "$APP"
 spctl --assess --type execute --verbose "$APP"
+npm run probe:macos-distribution -- "$APP"
 ```
 
 Check identity:

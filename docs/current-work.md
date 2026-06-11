@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active v0.18 UX polish and submission-prep routing
 Authority: High
-Last reviewed: 2026-06-11
+Last reviewed: 2026-06-12
 
 ## Purpose
 
@@ -160,11 +160,18 @@ certificate, or App Store Connect access.
 | P0 | TestFlight / App Store Connect validation | The helper-free App Store submit lane is defined in `docs/app-store-build.md`; remaining proof is account-bound: build with Apple Distribution identity + provisioning profile, upload / Apple validation, and TestFlight smoke evidence. Do not claim submitted, approved, or TestFlight-ready until that evidence exists. |
 | P1 | App Review Notes final copy / attachments | Private review-note draft and store-copy material exist outside the public docs. Final pass should attach screenshots or reviewer evidence as needed, keep account/contact-specific text out of tracked docs, and preserve the App Store lane omission claim for CLI Agent / Agent Workbench / Apple Local Assist. |
 | P1 | Public metadata final pass | Privacy Policy URL is `https://hazakura.dev/hazakura-editor/privacy/`. Remaining metadata work is support URL, category / keywords / age rating / screenshots, and App Store Connect field-by-field review. |
-| P1 | Third-party license packet | `THIRD_PARTY_NOTICES.md` is a lockfile-derived draft and the in-app Open Source Acknowledgements are only a readable summary. Before submission, decide whether the full notice packet ships in-app, inside the app bundle, as a release / support asset, or in multiple places, and include required full license texts / notices. |
+| P1 | Third-party license packet | `LICENSE` and `THIRD_PARTY_NOTICES.md` now ship inside the generated app bundle, while the in-app Open Source Acknowledgements remain a readable summary. Before submission, refresh/review the lockfile-derived notice contents and include any required full license texts / upstream notices. |
 | P2 | Bundle-size follow-up | Measure first. Split Help / Diagnostics / Assist chunks only if it reduces real startup or review risk. |
 
 ## Completed Submission-Prep Slices
 
+- 2026-06-12: Tauri bundle resources now automatically include
+  repository-root `LICENSE` and `THIRD_PARTY_NOTICES.md` in generated
+  macOS app bundles. `scripts/probe-macos-distribution.sh` verifies
+  `Contents/Resources/LICENSE` and
+  `Contents/Resources/THIRD_PARTY_NOTICES.md` for App Store lane
+  checks, so notice omission fails the distribution probe instead of
+  remaining a manual memory item.
 - 2026-06-11: Helper-free App Store build / signing lane is defined.
   `npm run build:app-store-preview` and
   `npm run build:app-store-submit` use App Store-specific Tauri config,
