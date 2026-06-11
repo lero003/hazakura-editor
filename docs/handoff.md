@@ -26,12 +26,10 @@ Last reviewed: 2026-06-12 (v0.18 pre-review todo review)
 - Normal mode workspace sidebar collapse / restore is complete for
   v0.18. L Mode still owns its separate temporary file-tree drawer.
 - App Store preview packaging remains helper-free: `frontendDist` is
-  explicit in the App Store configs and the sandbox entitlement includes
-  `com.apple.security.network.client` for the Tauri/WebKit runtime.
-  In the v0.18 release-prep session, `open -n` on the ad-hoc App Store
-  preview bundle failed with `RBSRequestErrorDomain Code=5`; the
-  Developer / GitHub lane app and mounted DMG app launched. Treat
-  App Store-lane launch as a separate submission-prep follow-up.
+  explicit in the App Store configs. `npm run build` skips App Store
+  sandbox entitlements so the generated `Hazakura Editor.app` can launch
+  for local smoke. Use `npm run smoke:macos-sandbox-preview` or the signed
+  submit / TestFlight lane for sandbox-entitlement proof.
 - Sandboxed workspace restore stores an app-scoped security-scoped
   bookmark for user-selected workspace folders and resolves it on
   restart. Older path-only state can still fall back to the
@@ -49,12 +47,12 @@ Last reviewed: 2026-06-12 (v0.18 pre-review todo review)
   though the encoding / line-ending dropdowns already expose those
   values. Remove the duplicate passive labels while preserving the
   dropdown controls and dirty/save status affordances.
-- External static review added a higher-risk App Store-lane follow-up:
-  `move_workspace_entry_to_trash` currently reaches macOS Trash through
-  `osascript`. Before App Review, replace that path with native macOS
-  Trash handling or make Move to Trash unavailable in the App Store
-  lane. Do not add AppleEvents / automation entitlements merely to keep
-  the current bridge.
+- App Store-lane Move to Trash external-process review is implemented:
+  `move_workspace_entry_to_trash` now calls native macOS
+  `NSFileManager` Trash handling from Rust through the existing
+  `objc2` / `NSURL` bridge. It no longer launches `osascript` or relies
+  on AppleEvents. Signed TestFlight smoke still needs to confirm the
+  user flow before App Review.
 - External static review also promoted two data-safety follow-ups:
   add a decoded-size cap for pasted images, and pin failure behavior for
   the direct save fallback that uses truncate-and-write when sandboxed
@@ -78,14 +76,16 @@ Last reviewed: 2026-06-12 (v0.18 pre-review todo review)
 Use `docs/current-work.md` for the active queue. The current highest
 priority UX items are:
 
-1. App Store lane Move to Trash external-process review.
-2. Workspace persistence before App Review.
-3. Pasted image decoded-size cap / `data:image` wording.
-4. Direct save fallback failure safety.
-5. Status bar encoding / line-ending de-duplication.
-6. Manual accessibility smoke.
-7. Auto-backup filename uniqueness, if same-second collision reproduces.
-8. Help copy overlap cleanup.
+1. Workspace persistence before App Review.
+2. Pasted image decoded-size cap / `data:image` wording.
+3. Direct save fallback failure safety.
+4. Status bar encoding / line-ending de-duplication.
+5. Manual accessibility smoke.
+6. Third-party license packet.
+7. About metadata finalization.
+8. Pre-review regression evidence.
+9. Auto-backup filename uniqueness, if same-second collision reproduces.
+10. Help copy overlap cleanup.
 
 Recently completed: direct-open standalone file save now handles the
 App Sandbox-style case where the selected file itself is writable but
@@ -110,6 +110,11 @@ file associations, App Store lane omissions, and Move to Trash; do not
 treat low-risk icon size, known Vite chunk warnings, or Help copy
 overlap as blockers unless they reproduce as concrete review or
 usability failures.
+
+Recurring automation should use `docs/current-work.md`'s
+`Pre-Review Automation Order` before the generic automation preference
+list. Each run should pick exactly one open slice and close it as
+`implemented`, `manual-blocked`, or `verified no-op`.
 
 ## Source Docs
 

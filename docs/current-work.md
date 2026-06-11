@@ -25,13 +25,52 @@ Editor boundary.
 - Agent Workbench remains a separate, explicit Developer / GitHub lane
   trust boundary and is not part of the App Store lane.
 
+## Automation Slice Protocol
+
+Use this section for recurring or unattended pre-review automation.
+
+- Pick exactly one slice from the Pre-Review Automation Order table.
+- Prefer the first open slice whose required environment is available.
+- Keep the slice inside its named files/surface; do not bundle nearby
+  polish.
+- Before code changes, write or identify the focused regression/smoke
+  that proves the issue.
+- End each run as one of:
+  - `implemented`: code/docs changed and the listed checks passed.
+  - `manual-blocked`: the next proof needs the user's Mac, TestFlight,
+    App Store Connect, certificate, or accessibility setting.
+  - `verified no-op`: inspection showed no useful small change is safe
+    or necessary.
+- Update this file, `docs/smoke-checklist.md`, or `docs/handoff.md`
+  only when the state, evidence, or next slice actually changes.
+
+## Pre-Review Automation Order
+
+| Order | Slice | Run Type | Automation Exit |
+|---|---|---|---|
+| 1 | App Store lane Move to Trash external-process review | Code / lane decision | `implemented`: App Store lane uses native Trash or cannot reach Move to Trash; focused Rust/UI tests pass; TestFlight smoke item remains if local signing is unavailable. `manual-blocked`: only signed TestFlight proof remains. |
+| 2 | Workspace persistence before App Review | Code / TestFlight smoke | `implemented`: repeated launch/relaunch and outside-active-tab restore are covered by regression tests and local app evidence where possible. `manual-blocked`: signed TestFlight proof remains. |
+| 3 | Pasted image decoded-size cap / `data:image` wording | Code + docs | `implemented`: oversized pasted payloads are rejected before unsafe memory growth, normal image paste still works, user-facing copy/docs match decoded-byte policy. |
+| 4 | Direct save fallback failure safety | Code / test | `implemented`: failure-injection coverage proves direct fallback failures leave edits dirty/recoverable and do not report success; recovery is improved only if the test proves it is needed. |
+| 5 | Status bar encoding / line-ending de-duplication | UI polish | `implemented`: duplicate passive `UTF-8` / `LF` labels are removed while dropdown controls, dirty/save state, and compact layout remain intact. |
+| 6 | Manual accessibility smoke | Manual smoke / small fixes | `manual-blocked`: live VoiceOver or Increase Contrast is unavailable. `implemented`: any discovered focus/contrast issue is fixed narrowly and recorded. |
+| 7 | Third-party license packet | Docs / release prep | `implemented`: notices are refreshed/reviewed against `package-lock.json` and `src-tauri/Cargo.lock`, bundled-resource probe passes, and any required upstream notices are included. |
+| 8 | About metadata finalization | Config / bundle smoke | `implemented`: Tauri bundle metadata or documented canonical About surface is finalized and built-bundle About behavior is verified. |
+| 9 | Pre-review regression evidence | CI or local evidence | `implemented`: either a small CI workflow exists or local release-readiness evidence is archived for the listed commands; signing/Transporter remain local account-bound. |
+| 10 | Auto-backup filename uniqueness | Code / verified no-op | `implemented`: same-second backup collision is reproduced and fixed. `verified no-op`: focused inspection cannot reproduce a realistic overwrite risk. |
+| 11 | Help copy overlap cleanup | Product copy | Keep for human/Codex review unless explicitly assigned with tight wording constraints. |
+
+Order 1 is implemented as of 2026-06-12. The remaining Move to Trash
+proof is signed TestFlight smoke, tracked under the submission-prep
+manual smoke items; the next open automation slice is Order 2 unless
+TestFlight specifically reopens the Trash behavior.
+
 ## Active UX Queue
 
 Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| P0 | App Store lane Move to Trash external-process review | Remove the App Store review risk around `move_workspace_entry_to_trash` invoking `osascript`. Preferred fix: replace the JavaScript-for-Automation bridge with a native macOS `NSFileManager` Trash call from Rust. Conservative fallback: hide/disable Move to Trash in the App Store lane and make the command reject there. Acceptance: signed TestFlight build either successfully trashes workspace files/folders without `osascript` / AppleEvents / automation entitlements, or the operation is unreachable and clearly absent in the App Store lane. Preserve workspace containment checks and destructive-action confirmation. |
 | P0 | Workspace persistence before App Review | Treat the TestFlight workspace loss observations as bugs, not product spec: (1) opening a workspace and repeatedly quitting/relaunching must retain the selected workspace root, and (2) quitting/relaunching while the active tab is outside the workspace must still retain the selected workspace root. Reproduce both shapes first, then add narrow persistence/restore regression coverage before changing behavior. The workspace selection should disappear only after an explicit user action or unrecoverable authorization failure with a visible reauthorization path. |
 | P1 | Pasted image decoded-size cap / `data:image` wording | `save_pasted_image` should reject oversized pasted image payloads before unbounded memory growth. Add a base64-length preflight where practical, enforce a decoded byte cap aligned with the existing 20 MB image limit, localize the user-facing error, and align Help/docs wording to decoded image bytes rather than vague data-URI length. Verify paste/drag-drop still writes supported PNG/JPEG/GIF/WebP images into `assets/`. |
 | P1 | Direct save fallback failure safety | The App Sandbox direct-file fallback can use a truncate-and-write path when temp-file creation is denied. Add focused failure coverage for partial write / sync failure behavior: local edits must remain dirty/recoverable, the UI must not imply success, and any feasible original-bytes recovery should be attempted before reporting failure. Keep the normal atomic save path unchanged. |
@@ -48,7 +87,6 @@ over copy-heavy or product-voice-sensitive work.
 
 | Fit | Candidate | Scope |
 |---|---|---|
-| Good | App Store lane Move to Trash external-process review | Replace `osascript` with a native macOS Trash path or disable Move to Trash only in the App Store lane. Keep path containment, confirmation UI, and backup cleanup semantics pinned. |
 | Good | Pasted image decoded-size cap | Add the decoded-size guard and focused tests around `save_pasted_image`; align docs/error wording with the implemented 20 MB limit. Do not change workspace image preview policy beyond what the cap requires. |
 | Good | Direct save fallback failure safety | Add failure-injection coverage for the direct write fallback and improve recovery only if the test proves a user-visible data-loss risk. Do not weaken external-change fingerprint checks. |
 | Good | L Mode quality investigation | Pick one reproduced L Mode issue or one measurable quality gap only: caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or performance baseline. Do not add a new editing model or contenteditable surface. |
@@ -62,6 +100,16 @@ over copy-heavy or product-voice-sensitive work.
 
 ## Completed v0.18 Slices
 
+- 2026-06-12: App Store lane Move to Trash external-process review is
+  implemented. `move_workspace_entry_to_trash` now calls the native
+  macOS `NSFileManager` Trash API from Rust through the existing
+  `objc2` / `NSURL` bridge instead of launching `osascript` or relying
+  on AppleEvents. Workspace containment checks, main-window label
+  gating, destructive confirmation UI, and auto-backup cleanup remain
+  unchanged. Focused Rust coverage for the trash happy path, missing
+  path, outside-workspace rejection, Agent Window label rejection, and
+  auto-backup cleanup passes. Signed TestFlight smoke still needs to
+  confirm the App Store-lane user flow before App Review.
 - 2026-06-11: Workspace restore / standalone save regression slice.
   `useWorkspaceStatePersistence` no longer overwrites the
   user's last good persisted state when the restore latch
@@ -136,15 +184,15 @@ over copy-heavy or product-voice-sensitive work.
   sidebar through a visible restore rail. The file-tree model is
   unchanged, and L Mode continues to own its separate temporary
   workspace drawer.
-- 2026-06-11: App Store preview builds no longer open to a blank WebKit
-  surface. The helper-free App Store configs keep `frontendDist:
-  "../dist"`, the sandbox entitlement includes `network.client` for the
-  Tauri/WebKit runtime, and a local packaged-app smoke rendered the
-  start screen. Later v0.18 release-prep evidence on 2026-06-12 saw
-  `open -n` fail for the ad-hoc App Store preview bundle with
-  `RBSRequestErrorDomain Code=5`; the Developer / GitHub app and
-  mounted DMG app launched. Treat App Store-lane launch validation as
-  still pending under the submission-prep queue.
+- 2026-06-11 / 2026-06-12: App Store preview builds no longer open to a
+  blank WebKit surface. The helper-free App Store configs keep
+  `frontendDist: "../dist"`. A later ad-hoc App Store preview carrying
+  sandbox entitlements failed with `RBSRequestErrorDomain Code=5`, while
+  the Developer / GitHub app and mounted DMG app launched. `npm run build`
+  now produces a launchable helper-free local smoke bundle and leaves
+  App Store sandbox entitlement proof to
+  `npm run smoke:macos-sandbox-preview` or the signed submit / TestFlight
+  lane.
 - 2026-06-11: Restarting a sandboxed preview can restore a selected
   workspace through an app-scoped security-scoped bookmark. Older
   path-only state still skips stale folder paths without a global error

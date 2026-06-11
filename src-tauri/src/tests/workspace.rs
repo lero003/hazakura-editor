@@ -864,10 +864,10 @@ fn move_workspace_entry_to_trash_rejects_missing_path() {
 #[cfg(target_os = "macos")]
 #[test]
 fn move_workspace_entry_to_trash_removes_file_on_macos() {
-    // macOS-only happy path: hand a real file to Finder via
-    // osascript and assert it disappears from the workspace
+    // macOS-only happy path: hand a real file to the native
+    // Trash API and assert it disappears from the workspace
     // root. Skipped on non-macOS because the backend relies on
-    // the Finder trash path.
+    // the macOS Trash path.
     let root = unique_test_dir("trash_happy");
     fs::create_dir_all(&root).expect("create root");
     let src = root.join("note.md");

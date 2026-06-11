@@ -146,7 +146,7 @@ pub(crate) fn move_workspace_entry_to_trash_with_label(
     } else {
         None
     };
-    move_to_finder_trash(&src_path)?;
+    move_to_macos_trash(&src_path)?;
 
     // For a single-file trash, drop the auto-backup dir so the
     // entry doesn't linger in `.hazakura/backups/` after the
@@ -163,31 +163,38 @@ pub(crate) fn move_workspace_entry_to_trash_with_label(
     Ok(())
 }
 
-// macOS-only: use NSFileManager through JavaScript for
-// Automation's ObjC bridge so the entry lands in the user's
-// Trash without waiting on Finder AppleEvents, which can time
-// out in release automation.
-fn move_to_finder_trash(path: &std::path::Path) -> Result<(), String> {
-    let path_str = path.to_string_lossy().to_string();
-    let escaped = serde_json::to_string(&path_str)
-        .map_err(|err| format!("Cannot encode workspace entry path for Trash: {err}"))?;
-    let script = format!(
-        "ObjC.import('Foundation');\
-         const url = $.NSURL.fileURLWithPath({});\
-         const ok = $.NSFileManager.defaultManager.trashItemAtURLResultingItemURLError(url, null, null);\
-         if (!ok) throw new Error('NSFileManager refused to trash entry');",
-        escaped
-    );
-    let output = std::process::Command::new("osascript")
-        .arg("-l")
-        .arg("JavaScript")
-        .arg("-e")
-        .arg(&script)
-        .output()
-        .map_err(|err| format!("Cannot invoke macOS Trash API: {err}"))?;
-    if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
-        return Err(format!("macOS Trash API refused entry: {}", stderr.trim()));
+#[cfg(target_os = "macos")]
+fn move_to_macos_trash(path: &std::path::Path) -> Result<(), String> {
+    use objc2::runtime::{AnyObject, Bool};
+    use objc2::{class, msg_send};
+    use objc2_foundation::NSURL;
+    use std::ptr;
+
+    let url = if path.is_dir() {
+        NSURL::from_directory_path(path)
+    } else {
+        NSURL::from_file_path(path)
     }
+    .ok_or_else(|| "Cannot create workspace entry URL for Trash.".to_string())?;
+
+    let file_manager: &AnyObject = unsafe { msg_send![class!(NSFileManager), defaultManager] };
+    let result: Bool = unsafe {
+        msg_send![
+            file_manager,
+            trashItemAtURL: &*url,
+            resultingItemURL: ptr::null_mut::<*mut AnyObject>(),
+            error: ptr::null_mut::<*mut AnyObject>()
+        ]
+    };
+
+    if !result.as_bool() {
+        return Err("macOS Trash API refused entry.".to_string());
+    }
+
     Ok(())
+}
+
+#[cfg(not(target_os = "macos"))]
+fn move_to_macos_trash(_path: &std::path::Path) -> Result<(), String> {
+    Err("macOS Trash API is only available on macOS.".to_string())
 }
