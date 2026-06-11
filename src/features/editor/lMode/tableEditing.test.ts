@@ -273,6 +273,120 @@ describe("L Mode table editing", () => {
     );
   });
 
+  // v0.18 source-preservation pins for `insertTableCellPipe`.
+  //
+  // The L Mode keymap must only intercept `|` inside an
+  // editable table body cell. Outside a table, with an
+  // active selection, or in a delimiter row, the handler
+  // must fall through to the standard CodeMirror keymap
+  // so the typed pipe lands as a normal character. The
+  // escape produced inside a cell must be the literal
+  // two-character sequence `\|` (source of truth =
+  // Markdown source), and the cell count of the row must
+  // not drift across consecutive pipe insertions.
+  describe("insertTableCellPipe source preservation", () => {
+    it("escapes a pipe inside a cell that has leading and trailing padding", () => {
+      // Body row has three spaces of padding on both sides
+      // of every cell. The caret sits exactly at the end of
+      // `foo`, so we are still strictly inside cell 1.
+      const doc =
+        "| A | B |\n" +
+        "| --- | --- |\n" +
+        "|   foo   |   bar   |\n";
+      const insertAt = offsetOf(doc, "foo") + "foo".length;
+      const view = makeView(doc, insertAt);
+
+      expect(insertTableCellPipe(view)).toBe(true);
+      // The escape is the literal two-character sequence
+      // `\|`; the row keeps the same three `|` boundaries
+      // (i.e. two cells).
+      expect(view.state.doc.toString()).toBe(
+        "| A | B |\n" +
+          "| --- | --- |\n" +
+          "|   foo\\|   |   bar   |\n",
+      );
+    });
+
+    it("escapes a pipe inside a row that has no trailing pipe", () => {
+      // Body row missing the trailing `|`. The caret sits
+      // at the end of cell 1 (`Review`). A typed pipe
+      // must escape to `\|` so the cell count stays at two.
+      // The escape lands at the content end of cell 1,
+      // before the padding space and the cell boundary
+      // `|`; the row keeps the same two-cell shape.
+      const doc =
+        "| A | B |\n" +
+        "| --- | --- |\n" +
+        "| Review | 差分・比較\n";
+      const insertAt = offsetOf(doc, "Review") + "Review".length;
+      const view = makeView(doc, insertAt);
+
+      expect(insertTableCellPipe(view)).toBe(true);
+      expect(view.state.doc.toString()).toBe(
+        "| A | B |\n" +
+          "| --- | --- |\n" +
+          "| Review\\| | 差分・比較\n",
+      );
+    });
+
+    it("does not hijack a pipe typed outside any table", () => {
+      // A plain paragraph that happens to contain `|`.
+      // The handler must refuse, leaving the doc and
+      // selection untouched for the standard CodeMirror
+      // keymap.
+      const doc = "Some text with | a pipe\n";
+      const insertAt = doc.indexOf("|");
+      const view = makeView(doc, insertAt);
+
+      expect(insertTableCellPipe(view)).toBe(false);
+      expect(view.state.doc.toString()).toBe(doc);
+      expect(view.state.selection.main.from).toBe(insertAt);
+    });
+
+    it("does not hijack a pipe when there is an active selection inside a cell", () => {
+      // The whole `Review` word in cell 1 is selected.
+      // The handler must refuse so a standard replace
+      // selection can run; the doc must not be mutated
+      // and the selection must not be collapsed.
+      const doc =
+        "| A | B |\n" +
+        "| --- | --- |\n" +
+        "| Review | 差分・比較 |\n";
+      const cellStart = offsetOf(doc, "Review");
+      const cellEnd = cellStart + "Review".length;
+      const view = makeView(doc, cellStart, cellEnd);
+
+      expect(insertTableCellPipe(view)).toBe(false);
+      expect(view.state.doc.toString()).toBe(doc);
+      expect(view.state.selection.main.from).toBe(cellStart);
+      expect(view.state.selection.main.to).toBe(cellEnd);
+    });
+
+    it("keeps the cell structure stable across two consecutive pipe insertions", () => {
+      // Source preservation across multiple escapes: the
+      // second typed pipe must also be escaped to `\|`, so
+      // the row keeps the same two-cell shape (three `|`
+      // boundaries). A naive handler that re-parses the
+      // row after each insertion would mistake the first
+      // `\|` for a real column boundary and split the
+      // cell — this test pins the intended behavior.
+      const doc =
+        "| A | B |\n" +
+        "| --- | --- |\n" +
+        "| foo | bar |\n";
+      const insertAt = offsetOf(doc, "foo") + "foo".length;
+      const view = makeView(doc, insertAt);
+
+      expect(insertTableCellPipe(view)).toBe(true);
+      expect(insertTableCellPipe(view)).toBe(true);
+      expect(view.state.doc.toString()).toBe(
+        "| A | B |\n" +
+          "| --- | --- |\n" +
+          "| foo\\|\\| | bar |\n",
+      );
+    });
+  });
+
   it("moves the cursor out of structural marker prefixes", () => {
     const doc = "# Heading\n> Quote\n";
     const view = makeView(doc, offsetOf(doc, "# Heading") + "#".length);
