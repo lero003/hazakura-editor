@@ -100,6 +100,19 @@ export function useWorkspaceRestore({
           0,
           MAX_RESTORED_TABS,
         );
+        async function openPersistedTextFile(path: string) {
+          try {
+            return await openTextFile(path);
+          } catch (err) {
+            const bookmark = persistedState?.tabFileBookmarks?.[path];
+            if (!bookmark || bookmark.length === 0) {
+              throw err;
+            }
+
+            const resolvedPath = await resolveSecurityScopedBookmark(bookmark);
+            return openTextFile(resolvedPath);
+          }
+        }
         // `Promise.allSettled` lets us drop a single failed
         // reopen without aborting the whole restore, which is
         // the right shape for App Sandbox assumptions: a stored
@@ -112,7 +125,7 @@ export function useWorkspaceRestore({
         // surface the gap instead of pretending the restore
         // succeeded for every stored path.
         const openResults = await Promise.allSettled(
-          uniqueTabPaths.map((path) => openTextFile(path)),
+          uniqueTabPaths.map((path) => openPersistedTextFile(path)),
         );
         const restoredTabs = openResults
           .filter(

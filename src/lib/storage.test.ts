@@ -22,6 +22,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { WORKSPACE_STATE_STORAGE_KEY, type PersistedWorkspaceState } from "../types";
 import {
   readPersistedWorkspaceState,
+  writePersistedFileBookmark,
   writePersistedWorkspaceState,
 } from "./storage";
 
@@ -270,5 +271,55 @@ describe("writePersistedWorkspaceState", () => {
 
     expect(readStored()?.workspaceRootPath).toBe("/new");
     expect(readStored()?.workspaceRootBookmark).toBeNull();
+  });
+
+  it("preserves file bookmarks only for tabs that remain open", () => {
+    seedPersistedState({
+      workspaceRootPath: "/workspace",
+      workspaceRootBookmark: [1, 2, 3],
+      tabPaths: ["/workspace/a.md", "/outside/keep.md", "/outside/closed.md"],
+      tabFileBookmarks: {
+        "/outside/keep.md": [7, 8, 9],
+        "/outside/closed.md": [4, 5, 6],
+      },
+      activeTabPath: "/outside/keep.md",
+    });
+
+    writePersistedWorkspaceState({
+      workspaceRootPath: "/workspace",
+      tabPaths: ["/workspace/a.md", "/outside/keep.md"],
+      activeTabPath: "/outside/keep.md",
+    });
+
+    expect(readStored()).toEqual({
+      workspaceRootPath: "/workspace",
+      workspaceRootBookmark: [1, 2, 3],
+      tabPaths: ["/workspace/a.md", "/outside/keep.md"],
+      tabFileBookmarks: {
+        "/outside/keep.md": [7, 8, 9],
+      },
+      activeTabPath: "/outside/keep.md",
+    });
+  });
+
+  it("stores a direct file bookmark without inventing an open tab path", () => {
+    seedPersistedState({
+      workspaceRootPath: "/workspace",
+      workspaceRootBookmark: [1, 2, 3],
+      tabPaths: ["/workspace/a.md"],
+      activeTabPath: "/workspace/a.md",
+    });
+
+    writePersistedFileBookmark("/outside/note.md", [7, 8, 9]);
+
+    expect(readStored()).toEqual({
+      workspaceRootPath: "/workspace",
+      workspaceRootBookmark: [1, 2, 3],
+      tabPaths: ["/workspace/a.md"],
+      tabFileBookmarks: {
+        "/outside/note.md": [7, 8, 9],
+      },
+      activeTabPath: "/workspace/a.md",
+    });
   });
 });

@@ -223,6 +223,74 @@ describe("useWorkspaceRestore", () => {
     expect(resolvedTabs[0].path).toBe("/a.md");
   });
 
+  it("restores an outside-workspace tab through its persisted file bookmark", async () => {
+    readPersistedWorkspaceState.mockReturnValue({
+      workspaceRootPath: "/workspace",
+      workspaceRootBookmark: [1, 2, 3],
+      tabPaths: ["/workspace/a.md", "/outside/note.md"],
+      tabFileBookmarks: {
+        "/outside/note.md": [7, 8, 9],
+      },
+      activeTabPath: "/outside/note.md",
+    });
+    readStoredDrafts.mockReturnValue([]);
+    listWorkspaceTree.mockResolvedValue({
+      name: "workspace",
+      path: "/workspace",
+      kind: "directory",
+      children: [],
+      children_loaded: true,
+      children_truncated: false,
+    });
+    resolveSecurityScopedBookmark.mockResolvedValue("/outside/note.md");
+    openTextFile.mockImplementation(async (path: string) => {
+      if (path === "/workspace/a.md") {
+        return {
+          path,
+          name: "a.md",
+          contents: "workspace",
+          line_ending: "lf",
+          encoding: "utf-8",
+          size: 9,
+          modified_ms: 1,
+          fingerprint: "fp-workspace",
+          large_file_warning: false,
+        };
+      }
+      if (path === "/outside/note.md" && openTextFile.mock.calls.length > 2) {
+        return {
+          path,
+          name: "note.md",
+          contents: "outside",
+          line_ending: "lf",
+          encoding: "utf-8",
+          size: 7,
+          modified_ms: 1,
+          fingerprint: "fp-outside",
+          large_file_warning: false,
+        };
+      }
+      throw new Error("Cannot read file: sandbox access lost");
+    });
+    const setTabs = vi.fn();
+    const args = { ...buildArgs(), setTabs };
+
+    renderHook(() => useWorkspaceRestore(args));
+
+    await waitFor(() => {
+      expect(args.onStatus).toHaveBeenCalledWith("Workspace restored");
+    });
+
+    expect(resolveSecurityScopedBookmark).toHaveBeenCalledWith([7, 8, 9]);
+    expect(args.setActiveTabId).toHaveBeenCalledWith("/outside/note.md");
+    const restoredTabs = setTabs.mock.calls.at(-1)?.[0];
+    expect(restoredTabs).toHaveLength(2);
+    expect(restoredTabs.map((tab: { path: string }) => tab.path)).toEqual([
+      "/workspace/a.md",
+      "/outside/note.md",
+    ]);
+  });
+
   it("skips a lost workspace-tree grant without showing a global error", async () => {
     readPersistedWorkspaceState.mockReturnValue({
       workspaceRootPath: "/old/root",

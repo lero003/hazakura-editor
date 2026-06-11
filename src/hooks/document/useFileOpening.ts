@@ -4,13 +4,18 @@ import {
   useCallback,
 } from "react";
 import {
+  createSecurityScopedBookmark,
   createTextFile,
   openTextFile,
   pickMarkdownFile,
   pickNewMarkdownFilePath,
 } from "../../lib/tauri";
 import { createEditorTab } from "../../features/editor/editorTabs";
-import { readStoredDrafts, upsertDraftRecord } from "../../lib/storage";
+import {
+  readStoredDrafts,
+  upsertDraftRecord,
+  writePersistedFileBookmark,
+} from "../../lib/storage";
 import { isComparableTextFile } from "../../features/diff/diff";
 import { resolveLocalMarkdownLinkTarget } from "../../features/editor/markdownLinks";
 import {
@@ -60,7 +65,7 @@ export function useFileOpening({
   workspaceRootPath,
 }: UseFileOpeningOptions) {
   const openFilePath = useCallback(
-    async (path: string) => {
+    async (path: string, options: { persistFileBookmark?: boolean } = {}) => {
       setGlobalError(null);
 
       const existingTab = tabs.find((tab) => tab.path === path);
@@ -78,6 +83,12 @@ export function useFileOpening({
       try {
         const file = await openTextFile(path);
         const nextTab = createEditorTab(file);
+        if (options.persistFileBookmark) {
+          const bookmark = await createSecurityScopedBookmark(path).catch(
+            () => null,
+          );
+          writePersistedFileBookmark(path, bookmark);
+        }
         const draft = readStoredDrafts().find(
           (candidate) =>
             candidate.path === path &&
@@ -132,7 +143,7 @@ export function useFileOpening({
         if (isSupportedImageFile(path)) {
           await openImagePreview(path);
         } else {
-          await openFilePath(path);
+          await openFilePath(path, { persistFileBookmark: true });
         }
       }
     },
@@ -261,7 +272,7 @@ export function useFileOpening({
         return;
       }
 
-      await openFilePath(path);
+      await openFilePath(path, { persistFileBookmark: true });
     } catch (err) {
       setGlobalError(String(err));
       setStatus("Open failed");

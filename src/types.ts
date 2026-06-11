@@ -307,6 +307,7 @@ export type PersistedWorkspaceState = {
   workspaceRootPath: string | null;
   workspaceRootBookmark?: number[] | null;
   tabPaths: string[];
+  tabFileBookmarks?: Record<string, number[]>;
   activeTabPath: string | null;
 };
 
