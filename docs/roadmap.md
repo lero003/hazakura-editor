@@ -50,23 +50,24 @@ submission work hardens around it.
 
 Use `docs/current-work.md` as the queue. The near-term UX priorities are:
 
-1. App Store lane Move to Trash external-process review: replace the
-   current `osascript` path with a native macOS Trash path, or make the
-   operation unreachable in the App Store lane.
-2. Workspace persistence before App Review: repeated app launch/quit
-   and outside-workspace active-tab restarts must retain the selected
-   workspace unless the user explicitly clears it or reauthorization is
-   visibly required.
-3. Direct save fallback failure safety: pin failure behavior for the
-   sandbox direct-write fallback.
-4. Status bar encoding / line-ending de-duplication: keep the change
+1. Status bar encoding / line-ending de-duplication: keep the change
    dropdowns, remove redundant passive `UTF-8` / `LF` style labels.
-5. Manual accessibility smoke: Help readability, full keyboard-only
+2. Manual accessibility smoke: Help readability, full keyboard-only
    traversal, VoiceOver tab-bar announcement, and Increase Contrast.
-6. Help copy overlap cleanup.
+3. Help copy overlap cleanup.
 
 Recently completed:
 
+- Direct save fallback failure safety: the sandbox-oriented direct write
+  fallback now attempts to restore original bytes if a direct write or
+  sync fails after partially changing the selected file, while keeping
+  the normal atomic save path unchanged.
+- App Store lane Move to Trash external-process review: the App Store
+  lane now uses the native macOS Trash API instead of `osascript` /
+  AppleEvents, with signed TestFlight smoke still tracked separately.
+- Workspace persistence before App Review: repeated launch / relaunch
+  and outside-active-tab restore are pinned by code-level regression
+  tests, with signed TestFlight smoke still tracked separately.
 - Encoding-only dirty indication and auto-backup coverage: `TabBar`
   and the auto-backup loop now share the same `isDirty()` contract
   used elsewhere, and `encoding` is part of the auto-backup

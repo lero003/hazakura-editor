@@ -17,10 +17,10 @@ Last reviewed: 2026-06-12 (v0.18 pre-review todo review)
 - Older public tags and release assets remain immutable.
 - Current active work is v0.18 pre-review bug fixing, fuller
   TestFlight smoke, and App Store submission prep. The highest-risk
-  queue items are direct-save fallback failure safety, status-bar
-  encoding / line-ending de-duplication, fuller accessibility smoke,
-  third-party license review, About metadata, and pre-review regression
-  evidence. Use `docs/current-work.md` first.
+  queue items are status-bar encoding / line-ending de-duplication,
+  fuller accessibility smoke, third-party license review, About
+  metadata, and pre-review regression evidence. Use
+  `docs/current-work.md` first.
 
 ## Current Product Boundary
 
@@ -45,6 +45,9 @@ Last reviewed: 2026-06-12 (v0.18 pre-review todo review)
 
 - Safe open/edit/save for Markdown and text files, including LF / CRLF,
   final-newline, UTF-8 BOM, Shift-JIS, and EUC-JP handling.
+- The sandbox-oriented direct save fallback preserves the normal atomic
+  save path, and when direct write / sync fails after a partial write it
+  attempts to restore the original bytes before reporting failure.
 - Read-only preview for user-selected local PNG/JPEG/GIF/WebP image files
   up to 20 MB, including directly opened files outside the selected
   workspace.

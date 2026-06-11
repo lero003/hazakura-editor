@@ -827,6 +827,34 @@ pub(crate) fn write_existing_file_with_atomic_fallback(
 }
 
 fn write_existing_file_directly(path: &Path, bytes: &[u8]) -> Result<(), String> {
+    write_existing_file_directly_with_writer(path, bytes, write_existing_file_directly_once)
+}
+
+pub(crate) fn write_existing_file_directly_with_writer<F>(
+    path: &Path,
+    bytes: &[u8],
+    mut write_once: F,
+) -> Result<(), String>
+where
+    F: FnMut(&Path, &[u8]) -> Result<(), String>,
+{
+    let original_bytes = fs::read(path)
+        .map_err(|err| format!("Cannot read selected file before direct write: {err}"))?;
+
+    match write_once(path, bytes) {
+        Ok(()) => Ok(()),
+        Err(write_err) => match write_once(path, &original_bytes) {
+            Ok(()) => Err(format!(
+                "{write_err}. Original contents were restored after the failed direct save."
+            )),
+            Err(restore_err) => Err(format!(
+                "{write_err}. Original contents could not be restored after the failed direct save: {restore_err}"
+            )),
+        },
+    }
+}
+
+fn write_existing_file_directly_once(path: &Path, bytes: &[u8]) -> Result<(), String> {
     let mut file = OpenOptions::new()
         .write(true)
         .truncate(true)

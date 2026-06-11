@@ -378,6 +378,71 @@ fn save_updates_existing_file_when_parent_cannot_create_temp_file() {
 }
 
 #[test]
+fn direct_existing_file_write_restores_original_bytes_after_write_failure() {
+    let dir = unique_test_dir("direct_save_restore_after_write_failure");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("note.md");
+    fs::write(&path, b"# Original\n").expect("write fixture");
+    let mut writes = 0;
+
+    let err = write_existing_file_directly_with_writer(&path, b"# Edited\n", |path, bytes| {
+        writes += 1;
+        if writes == 1 {
+            fs::write(path, b"# Partial").expect("simulate partial direct write");
+            return Err("Cannot write selected file directly: injected write failure".to_string());
+        }
+        fs::write(path, bytes).map_err(|err| format!("restore failed: {err}"))
+    })
+    .expect_err("injected direct-write failure should be reported");
+
+    assert!(err.contains("injected write failure"), "got error: {err}");
+    assert!(
+        err.contains("Original contents were restored"),
+        "got error: {err}"
+    );
+    assert_eq!(
+        fs::read(&path).expect("read restored file"),
+        b"# Original\n"
+    );
+    assert_eq!(writes, 2, "failed write should attempt one restore write");
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn direct_existing_file_write_reports_when_original_bytes_cannot_be_restored() {
+    let dir = unique_test_dir("direct_save_restore_failure");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("note.md");
+    fs::write(&path, b"# Original\n").expect("write fixture");
+    let mut writes = 0;
+
+    let err = write_existing_file_directly_with_writer(&path, b"# Edited\n", |path, _bytes| {
+        writes += 1;
+        if writes == 1 {
+            fs::write(path, b"# Partial").expect("simulate partial direct write");
+            return Err("Cannot write selected file directly: injected write failure".to_string());
+        }
+        Err("Cannot write selected file directly: injected restore failure".to_string())
+    })
+    .expect_err("restore failure should be reported");
+
+    assert!(err.contains("injected write failure"), "got error: {err}");
+    assert!(
+        err.contains("Original contents could not be restored"),
+        "got error: {err}",
+    );
+    assert!(err.contains("injected restore failure"), "got error: {err}");
+    assert_eq!(
+        fs::read(&path).expect("read partially written file"),
+        b"# Partial"
+    );
+    assert_eq!(writes, 2, "failed write should attempt one restore write");
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
 fn save_rejects_external_change_before_write() {
     let dir = unique_test_dir("save_conflict");
     fs::create_dir_all(&dir).expect("create test dir");

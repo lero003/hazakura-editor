@@ -62,10 +62,11 @@ Use this section for recurring or unattended pre-review automation.
 
 Order 1 is implemented as of 2026-06-12. Order 2 is implemented at the
 code-regression level as of 2026-06-12. Order 3 is implemented as of
-2026-06-12. The remaining Move to Trash and workspace-persistence
-proofs are signed TestFlight smoke, tracked under the submission-prep
-manual smoke items; the next open automation slice is Order 4 unless
-TestFlight specifically reopens the Trash or workspace restore behavior.
+2026-06-12. Order 4 is implemented as of 2026-06-12. The remaining Move
+to Trash and workspace-persistence proofs are signed TestFlight smoke,
+tracked under the submission-prep manual smoke items unless TestFlight
+specifically reopens the Trash or workspace restore behavior. The next
+open automation slice is Order 5.
 
 ## Active UX Queue
 
@@ -73,7 +74,6 @@ Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| P1 | Direct save fallback failure safety | The App Sandbox direct-file fallback can use a truncate-and-write path when temp-file creation is denied. Add focused failure coverage for partial write / sync failure behavior: local edits must remain dirty/recoverable, the UI must not imply success, and any feasible original-bytes recovery should be attempted before reporting failure. Keep the normal atomic save path unchanged. |
 | P1 | Manual accessibility smoke | Code-level observation recorded in `docs/smoke-checklist.md` and `docs/archive/operations/v0.18-manual-accessibility-smoke-observation.md` (Help readability, full keyboard-only traversal, VoiceOver tab-bar announcement, Increase Contrast). Live VoiceOver and Increase Contrast observation items still pending on the user's Mac. Baseline dialogs partially observed; `MoveToTrashConfirmDialog` focus management now wired (see Completed v0.18 Slices). |
 | P1 | Status bar encoding / line-ending de-duplication | Remove the passive duplicate status labels such as `UTF-8` and `LF` from the lower status area when the encoding / line-ending change dropdowns already expose those values. Keep the actual change controls and save semantics intact; verify compact widths do not leave awkward gaps or hide important dirty/save state. |
 | P2 | Auto-backup filename uniqueness | Auto-backup filenames currently use second-resolution timestamps. If focused tests can reproduce same-second overwrite/collision risk, add milliseconds, a monotonic counter, or a short random suffix so rapid backups do not overwrite each other. Keep recovery listing newest-first and path containment unchanged. |
@@ -87,7 +87,6 @@ over copy-heavy or product-voice-sensitive work.
 
 | Fit | Candidate | Scope |
 |---|---|---|
-| Good | Direct save fallback failure safety | Add failure-injection coverage for the direct write fallback and improve recovery only if the test proves a user-visible data-loss risk. Do not weaken external-change fingerprint checks. |
 | Good | L Mode quality investigation | Pick one reproduced L Mode issue or one measurable quality gap only: caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or performance baseline. Do not add a new editing model or contenteditable surface. |
 | Good | Theme quality investigation | Pick one concrete theme issue only: contrast, focus visibility, status/error readability, dialog readability, or Increase Contrast behavior. Do not redesign palettes or add theme customization. |
 | Good | Status bar encoding / line-ending de-duplication | Remove redundant passive `UTF-8` / `LF` style labels while preserving the existing dropdown controls, status/dirty affordances, and compact status-bar layout. |
@@ -98,6 +97,17 @@ over copy-heavy or product-voice-sensitive work.
 
 ## Completed v0.18 Slices
 
+- 2026-06-12: Direct save fallback failure safety is implemented.
+  The App Sandbox direct-file fallback still only runs when the normal
+  atomic temp-file path cannot create the temp file with
+  `PermissionDenied`, but that direct path now reads the original bytes
+  before truncating. If the direct write or sync fails after a partial
+  write, it attempts to restore the original bytes before returning an
+  error, so the frontend keeps the tab dirty/recoverable and never sees
+  a successful save response. Focused Rust failure-injection coverage
+  pins both successful original-byte restoration and the honest
+  restore-failed error path; the existing direct fallback success test
+  remains green.
 - 2026-06-12: App Store lane Move to Trash external-process review is
   implemented. `move_workspace_entry_to_trash` now calls the native
   macOS `NSFileManager` Trash API from Rust through the existing
