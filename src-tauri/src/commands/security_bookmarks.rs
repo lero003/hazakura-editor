@@ -61,14 +61,16 @@ fn create_security_scoped_bookmark_for_path(path: &str) -> Result<Vec<u8>, Strin
 
     let path = PathBuf::from(path);
     let metadata =
-        std::fs::metadata(&path).map_err(|err| format!("Cannot read workspace folder: {err}"))?;
+        std::fs::metadata(&path).map_err(|err| format!("Cannot read selected path: {err}"))?;
 
-    if !metadata.is_dir() {
-        return Err("Selected workspace path is not a folder.".to_string());
+    let url = if metadata.is_dir() {
+        NSURL::from_directory_path(&path)
+    } else if metadata.is_file() {
+        NSURL::from_file_path(&path)
+    } else {
+        return Err("Selected path is not a regular file or folder.".to_string());
     }
-
-    let url = NSURL::from_directory_path(&path)
-        .ok_or_else(|| "Cannot create workspace folder URL.".to_string())?;
+    .ok_or_else(|| "Cannot create selected path URL.".to_string())?;
     let bookmark = url
         .bookmarkDataWithOptions_includingResourceValuesForKeys_relativeToURL_error(
             NSURLBookmarkCreationOptions::WithSecurityScope,
