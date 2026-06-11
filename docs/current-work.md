@@ -147,12 +147,25 @@ certificate, or App Store Connect access.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| P0 | App Store entitlement / signing lane | Define the official helper-free App Store build/signing path. Do not claim App Store-ready, notarized, submitted, or approved status until verified. |
-| P0 | Distribution probe helper entitlement wording | `scripts/probe-macos-distribution.sh` should check the helper for `com.apple.security.inherit`, while the app bundle check remains `com.apple.security.app-sandbox`. |
-| P1 | App Review Notes final copy | Keep private draft notes under ignored `docs/internal/`; public docs should only carry generic review boundaries and say CLI Agent / Agent Workbench execution surfaces are omitted from the App Store lane. |
-| P1 | Public Privacy Policy URL / metadata | Finalize public Privacy Policy URL, support URL, category, keywords, screenshots, age rating, and App Store metadata. |
-| P1 | Third-party license packet | Generate or review the complete lockfile-derived license packet before public submission. Help acknowledgements alone are not the final legal packet. |
+| P0 | TestFlight / App Store Connect validation | The helper-free App Store submit lane is defined in `docs/app-store-build.md`; remaining proof is account-bound: build with Apple Distribution identity + provisioning profile, upload / Apple validation, and TestFlight smoke evidence. Do not claim submitted, approved, or TestFlight-ready until that evidence exists. |
+| P1 | App Review Notes final copy / attachments | Private review-note draft and store-copy material exist outside the public docs. Final pass should attach screenshots or reviewer evidence as needed, keep account/contact-specific text out of tracked docs, and preserve the App Store lane omission claim for CLI Agent / Agent Workbench / Apple Local Assist. |
+| P1 | Public metadata final pass | Privacy Policy URL is `https://hazakura.dev/hazakura-editor/privacy/`. Remaining metadata work is support URL, category / keywords / age rating / screenshots, and App Store Connect field-by-field review. |
+| P1 | Third-party license packet | `THIRD_PARTY_NOTICES.md` is a lockfile-derived draft and the in-app Open Source Acknowledgements are only a readable summary. Before submission, decide whether the full notice packet ships in-app, inside the app bundle, as a release / support asset, or in multiple places, and include required full license texts / notices. |
 | P2 | Bundle-size follow-up | Measure first. Split Help / Diagnostics / Assist chunks only if it reduces real startup or review risk. |
+
+## Completed Submission-Prep Slices
+
+- 2026-06-11: Helper-free App Store build / signing lane is defined.
+  `npm run build:app-store-preview` and
+  `npm run build:app-store-submit` use App Store-specific Tauri config,
+  omit `bundle.externalBin`, use the minimal App Sandbox entitlement file,
+  and keep Developer / GitHub lane helper behavior separate. The remaining
+  App Store Connect work is upload / validation / TestFlight evidence, not
+  initial lane definition.
+- 2026-06-11: `scripts/probe-macos-distribution.sh` now checks the app
+  bundle for `com.apple.security.app-sandbox` and the Developer / GitHub
+  lane helper for `com.apple.security.inherit`, matching the inherited
+  sandbox helper model instead of reporting a misleading helper sandbox miss.
 
 ## Where To Look
 

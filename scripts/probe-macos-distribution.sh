@@ -61,17 +61,27 @@ else
 fi
 
 echo
-echo "== sandbox entitlement check =="
-if codesign -d --entitlements - "$APP" 2>/dev/null | grep -q "com.apple.security.app-sandbox"; then
+has_entitlement() {
+    local target="$1"
+    local entitlement="$2"
+    codesign -d --entitlements - "$target" 2>/dev/null | grep -q "$entitlement"
+}
+
+echo "== entitlement check =="
+if has_entitlement "$APP" "com.apple.security.app-sandbox"; then
     echo "app sandbox entitlement: present"
 else
     echo "app sandbox entitlement: missing"
 fi
 
-if [ -x "$HELPER" ] && codesign -d --entitlements - "$HELPER" 2>/dev/null | grep -q "com.apple.security.app-sandbox"; then
-    echo "helper sandbox entitlement: present"
+if [ ! -e "$HELPER" ]; then
+    echo "helper inherit entitlement: unavailable (helper absent)"
+elif [ ! -x "$HELPER" ]; then
+    echo "helper inherit entitlement: unavailable (helper not executable)"
+elif has_entitlement "$HELPER" "com.apple.security.inherit"; then
+    echo "helper inherit entitlement: present"
 else
-    echo "helper sandbox entitlement: missing or helper unavailable"
+    echo "helper inherit entitlement: missing"
 fi
 
 echo

@@ -31,6 +31,8 @@ Apple Local Assist and Agent Workbench behind their existing boundaries.
 - Bundle ID: `dev.hazakura.editor`
 - Current version: `0.17.0`
 - App Store category: `Productivity`
+- Public Privacy Policy URL:
+  `https://hazakura.dev/hazakura-editor/privacy/`
 
 Keep SKU, Team ID, signing identity, App Store Connect contact data,
 screenshots, and reviewer-copy drafts in ignored local notes, not in
@@ -204,3 +206,15 @@ Run on the actual App Store lane build:
 Do not mark the build App Store-ready, submitted, approved, or
 TestFlight-ready until the signing, local smoke, App Store Connect upload,
 and Apple validation evidence all exist.
+
+## App Store Connect Status Notes
+
+The helper-free build lane and privacy-policy URL are defined here. App Store
+Connect account work remains outside tracked public docs:
+
+- provisioning profile and Apple Distribution identity selection
+- upload / Apple validation evidence
+- TestFlight distribution and smoke evidence
+- screenshots and attachment material
+- support URL, category / keywords / age rating, and final product-page fields
+- private reviewer notes and contact details
