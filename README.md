@@ -114,11 +114,11 @@ Example use case:
 - Rust-side binary-looking file rejection, large-file warning, editing size limit, and atomic save helper with temporary-file cleanup after failed replace attempts plus existing-temp-file overwrite protection
 - Existing LF / CRLF line endings are preserved on save
 - Existing final-newline presence is preserved on save; the app does not add or remove a trailing newline by policy
-- Markdown preview blocks external/out-of-workspace image references and allows embedded `data:image` PNG/JPEG/GIF/WebP images
+- Markdown preview blocks external/out-of-workspace image references and allows small embedded `data:image` PNG/JPEG/GIF/WebP images under the preview/export inline cap
 - Markdown preview renders local workspace-relative images, including generated `assets/...` references and README-style `docs/images/...` screenshots, through the existing workspace-image validation path
 - Markdown preview gives lists, task checkboxes, horizontal rules, code blocks, blockquotes, and tables readable review-oriented spacing
-- Clipboard image paste (Cmd+V) saves to `assets/<hash>.<ext>`, inserts `![](assets/...)` Markdown syntax, with hash-based deduplication
-- Image drag-and-drop from Finder imports into `assets/` and inserts Markdown image reference
+- Clipboard image paste (Cmd+V) saves supported decoded image data up to 20 MB to `assets/<hash>.<ext>`, inserts `![](assets/...)` Markdown syntax, with hash-based deduplication
+- Image drag-and-drop from Finder imports supported image files up to 20 MB into `assets/` and inserts Markdown image reference
 - Standalone HTML export via save dialog; local workspace images are inlined as data URIs
 - Print to PDF handoff via browser print fallback
 - Workspace image files and directly selected local image files up to 20 MB can be shown as read-only PNG/JPEG/GIF/WebP previews after a lightweight content-signature check, then closed back to the prior text tab when one is available

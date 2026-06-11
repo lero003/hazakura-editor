@@ -52,8 +52,8 @@ Run these on the signed TestFlight build before App Review submission:
    through the native Trash path without `osascript`, AppleEvents, or
    automation entitlements.
 3. Image paste / drag-drop: supported PNG/JPEG/GIF/WebP images under
-   the cap save into `assets/`; oversized pasted-image payloads fail
-   cleanly without crashing or implying success.
+   the 20 MB decoded/file cap save into `assets/`; oversized pasted-image
+   payloads fail cleanly without crashing or implying success.
 4. Save fallback safety: direct-open file save failures should leave
    local edits dirty/recoverable and must not show a successful save.
 5. Dirty close: `Cmd+Q` and the red close button show the expected dirty

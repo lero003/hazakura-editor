@@ -284,6 +284,12 @@ export function localizeStatusMessage(
     return `画像を保存しました: ${message.slice("Image saved: ".length)}`;
   }
 
+  if (message.startsWith("Image paste failed: ")) {
+    return `画像の貼り付けに失敗しました: ${message.slice(
+      "Image paste failed: ".length,
+    )}`;
+  }
+
   if (message.startsWith("Imported: ")) {
     return `画像を取り込みました: ${message.slice("Imported: ".length)}`;
   }

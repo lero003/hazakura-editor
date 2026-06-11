@@ -53,10 +53,11 @@ Last reviewed: 2026-06-12 (v0.18 pre-review todo review)
   `objc2` / `NSURL` bridge. It no longer launches `osascript` or relies
   on AppleEvents. Signed TestFlight smoke still needs to confirm the
   user flow before App Review.
-- External static review also promoted two data-safety follow-ups:
-  add a decoded-size cap for pasted images, and pin failure behavior for
-  the direct save fallback that uses truncate-and-write when sandboxed
-  temp-file creation is denied.
+- External static review also promoted direct save fallback failure
+  coverage for the truncate-and-write path used when sandboxed temp-file
+  creation is denied. Pasted image decoded-size guarding is now complete:
+  pasted PNG/JPEG/GIF/WebP data is rejected above the 20 MB decoded
+  image boundary before allocation.
 - Direct-open standalone files can save even when the parent folder
   cannot create a sibling temp file: `save_text_file` keeps the normal
   atomic path, then falls back to direct existing-file write only on
@@ -76,16 +77,14 @@ Last reviewed: 2026-06-12 (v0.18 pre-review todo review)
 Use `docs/current-work.md` for the active queue. The current highest
 priority UX items are:
 
-1. Workspace persistence before App Review.
-2. Pasted image decoded-size cap / `data:image` wording.
-3. Direct save fallback failure safety.
-4. Status bar encoding / line-ending de-duplication.
-5. Manual accessibility smoke.
-6. Third-party license packet.
-7. About metadata finalization.
-8. Pre-review regression evidence.
-9. Auto-backup filename uniqueness, if same-second collision reproduces.
-10. Help copy overlap cleanup.
+1. Direct save fallback failure safety.
+2. Status bar encoding / line-ending de-duplication.
+3. Manual accessibility smoke.
+4. Third-party license packet.
+5. About metadata finalization.
+6. Pre-review regression evidence.
+7. Auto-backup filename uniqueness, if same-second collision reproduces.
+8. Help copy overlap cleanup.
 
 Recently completed: direct-open standalone file save now handles the
 App Sandbox-style case where the selected file itself is writable but
@@ -97,9 +96,9 @@ result, and standalone-file `saveActiveTab` is pinned for the
 no-workspace case. L Mode table Backspace / Delete, table caret
 movement coverage, floating-control focus visibility, encoding-only
 dirty indication, WorkspaceTree rename markup, Markdown preview task
-checkboxes, normal mode sidebar collapse / restore, App Store preview
-startup, and sandboxed workspace bookmark restore are also complete for
-v0.18.
+checkboxes, pasted image decoded-size guarding, normal mode sidebar
+collapse / restore, App Store preview startup, and sandboxed workspace
+bookmark restore are also complete for v0.18.
 
 Submission-prep items in the same queue include fuller TestFlight smoke,
 App Review Notes final copy, Privacy Policy / metadata, final

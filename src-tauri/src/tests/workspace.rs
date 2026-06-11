@@ -331,6 +331,28 @@ fn save_pasted_image_rejects_non_image_bytes() {
     let _ = fs::remove_dir_all(dir);
 }
 
+#[test]
+fn save_pasted_image_rejects_oversized_decoded_payload_before_image_type_check() {
+    let dir = unique_test_dir("pasted_image_oversized");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let decoded_bytes_over_limit = MAX_IMAGE_PREVIEW_BYTES as usize + 1;
+    let base64_chars = decoded_bytes_over_limit.div_ceil(3) * 4;
+    let oversized_base64 = "A".repeat(base64_chars);
+
+    let error = save_pasted_image_with_label(
+        MAIN_WINDOW_LABEL,
+        dir.to_string_lossy().to_string(),
+        oversized_base64,
+        "pasted.png".to_string(),
+    )
+    .expect_err("oversized paste should be rejected before type validation");
+
+    assert!(error.contains("image limit of 20 MB"), "{error}");
+    assert!(!dir.join("assets").exists());
+
+    let _ = fs::remove_dir_all(dir);
+}
+
 #[cfg(unix)]
 #[test]
 fn save_pasted_image_rejects_assets_symlink_outside_workspace() {

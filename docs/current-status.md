@@ -17,9 +17,10 @@ Last reviewed: 2026-06-12 (v0.18 pre-review todo review)
 - Older public tags and release assets remain immutable.
 - Current active work is v0.18 pre-review bug fixing, fuller
   TestFlight smoke, and App Store submission prep. The highest-risk
-  queue items are App Store-lane Move to Trash external-process review,
-  workspace persistence, pasted-image size guarding, and direct-save
-  fallback failure safety. Use `docs/current-work.md` first.
+  queue items are direct-save fallback failure safety, status-bar
+  encoding / line-ending de-duplication, fuller accessibility smoke,
+  third-party license review, About metadata, and pre-review regression
+  evidence. Use `docs/current-work.md` first.
 
 ## Current Product Boundary
 
@@ -47,6 +48,9 @@ Last reviewed: 2026-06-12 (v0.18 pre-review todo review)
 - Read-only preview for user-selected local PNG/JPEG/GIF/WebP image files
   up to 20 MB, including directly opened files outside the selected
   workspace.
+- Clipboard image paste now rejects decoded PNG/JPEG/GIF/WebP payloads
+  above the same 20 MB image boundary before allocating the decoded
+  buffer; drag/drop image import keeps the existing 20 MB file-size cap.
 - Multi-tab editor with dirty-tab close protection, app/window close
   confirmation, save-conflict recovery, and explicit draft recovery.
 - Normal Safe Editor mode can collapse and restore the left workspace
@@ -104,10 +108,10 @@ baseline, and smoke evidence are archived under
 ## Next Safe Actions
 
 1. For UX work, start with `docs/current-work.md` and pick one item:
-   App Store-lane Move to Trash external-process review, workspace
-   persistence before App Review, pasted-image decoded-size cap, direct
-   save fallback failure safety, status-bar encoding / line-ending
-   de-duplication, or manual accessibility smoke.
+   direct save fallback failure safety, status-bar encoding /
+   line-ending de-duplication, manual accessibility smoke, license /
+   About metadata prep, pre-review regression evidence, or the next
+   open slice named there.
 2. For App Store submission prep, start with `docs/current-work.md`
    and `docs/app-store-build.md`; keep account-specific notes under
    ignored `docs/internal/` files;

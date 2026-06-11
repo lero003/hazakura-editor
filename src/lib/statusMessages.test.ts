@@ -112,6 +112,19 @@ describe("localizeStatusMessage: window IPC failure keys (v0.15)", () => {
   });
 });
 
+describe("localizeStatusMessage: pasted image failures", () => {
+  it("localizes the pasted image failure prefix while preserving the Rust reason", () => {
+    expect(
+      localizeStatusMessage(
+        "Image paste failed: Pasted image is larger than the image limit of 20 MB.",
+        "ja",
+      ),
+    ).toBe(
+      "画像の貼り付けに失敗しました: Pasted image is larger than the image limit of 20 MB.",
+    );
+  });
+});
+
 // v0.16 sandbox-file-restore: the workspace restore hook now
 // reports the count of tabs that could not be reopened on app
 // restart, because the OS no longer grants access to their

@@ -157,6 +157,39 @@ pub(crate) fn decode_base64(encoded: &str) -> Result<Vec<u8>, String> {
     Ok(decoded)
 }
 
+/// Return the decoded byte length of a standard base64 string without
+/// allocating the decoded buffer.
+pub(crate) fn decoded_base64_len(encoded: &str) -> Result<usize, String> {
+    let mut len = 0usize;
+    let mut padding = 0usize;
+    let mut seen_padding = false;
+
+    for byte in encoded.bytes().filter(|byte| !byte.is_ascii_whitespace()) {
+        len += 1;
+        if byte == b'=' {
+            seen_padding = true;
+            padding += 1;
+            if padding > 2 {
+                return Err("Invalid base64 padding".to_string());
+            }
+        } else if seen_padding {
+            return Err("Invalid base64 padding".to_string());
+        }
+    }
+
+    if len == 0 {
+        return Ok(0);
+    }
+    if !len.is_multiple_of(4) {
+        return Err("Invalid base64 input length".to_string());
+    }
+    if padding > 0 && len <= padding + 1 {
+        return Err("Invalid base64 padding".to_string());
+    }
+
+    Ok((len / 4 * 3).saturating_sub(padding))
+}
+
 pub(crate) fn ensure_workspace_root(root_path: &Path) -> Result<PathBuf, String> {
     let metadata =
         fs::metadata(root_path).map_err(|err| format!("Cannot read workspace folder: {err}"))?;

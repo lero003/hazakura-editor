@@ -57,9 +57,8 @@ Use `docs/current-work.md` as the queue. The near-term UX priorities are:
    and outside-workspace active-tab restarts must retain the selected
    workspace unless the user explicitly clears it or reauthorization is
    visibly required.
-3. Pasted image decoded-size cap and direct save fallback failure
-   safety: prevent large pasted-image memory risk and pin failure
-   behavior for the sandbox direct-write fallback.
+3. Direct save fallback failure safety: pin failure behavior for the
+   sandbox direct-write fallback.
 4. Status bar encoding / line-ending de-duplication: keep the change
    dropdowns, remove redundant passive `UTF-8` / `LF` style labels.
 5. Manual accessibility smoke: Help readability, full keyboard-only
@@ -82,6 +81,10 @@ Recently completed:
 - Left workspace sidebar collapse / restore: normal mode has a
   reversible restore rail, while L Mode keeps its separate temporary
   workspace drawer.
+- Pasted image decoded-size cap: `save_pasted_image` rejects decoded
+  pasted image payloads above the existing 20 MB local image boundary
+  before allocating the decoded buffer; status and docs distinguish this
+  from the separate small `data:image` preview/export inline cap.
 
 Out of scope for this lane:
 

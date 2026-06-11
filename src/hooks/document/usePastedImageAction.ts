@@ -7,6 +7,10 @@ type UsePastedImageActionOptions = {
   workspaceRootPath: string | null;
 };
 
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
 export function usePastedImageAction({
   activeTabPath,
   setStatus,
@@ -30,7 +34,7 @@ export function usePastedImageAction({
         return result;
       } catch (err) {
         console.warn("Failed to save pasted image", err);
-        setStatus("Image paste failed");
+        setStatus(`Image paste failed: ${errorMessage(err)}`);
         return null;
       }
     },

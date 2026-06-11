@@ -61,11 +61,11 @@ Use this section for recurring or unattended pre-review automation.
 | 11 | Help copy overlap cleanup | Product copy | Keep for human/Codex review unless explicitly assigned with tight wording constraints. |
 
 Order 1 is implemented as of 2026-06-12. Order 2 is implemented at the
-code-regression level as of 2026-06-12. The remaining Move to Trash and
-workspace-persistence proofs are signed TestFlight smoke, tracked under
-the submission-prep manual smoke items; the next open automation slice is
-Order 3 unless TestFlight specifically reopens the Trash or workspace
-restore behavior.
+code-regression level as of 2026-06-12. Order 3 is implemented as of
+2026-06-12. The remaining Move to Trash and workspace-persistence
+proofs are signed TestFlight smoke, tracked under the submission-prep
+manual smoke items; the next open automation slice is Order 4 unless
+TestFlight specifically reopens the Trash or workspace restore behavior.
 
 ## Active UX Queue
 
@@ -73,7 +73,6 @@ Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| P1 | Pasted image decoded-size cap / `data:image` wording | `save_pasted_image` should reject oversized pasted image payloads before unbounded memory growth. Add a base64-length preflight where practical, enforce a decoded byte cap aligned with the existing 20 MB image limit, localize the user-facing error, and align Help/docs wording to decoded image bytes rather than vague data-URI length. Verify paste/drag-drop still writes supported PNG/JPEG/GIF/WebP images into `assets/`. |
 | P1 | Direct save fallback failure safety | The App Sandbox direct-file fallback can use a truncate-and-write path when temp-file creation is denied. Add focused failure coverage for partial write / sync failure behavior: local edits must remain dirty/recoverable, the UI must not imply success, and any feasible original-bytes recovery should be attempted before reporting failure. Keep the normal atomic save path unchanged. |
 | P1 | Manual accessibility smoke | Code-level observation recorded in `docs/smoke-checklist.md` and `docs/archive/operations/v0.18-manual-accessibility-smoke-observation.md` (Help readability, full keyboard-only traversal, VoiceOver tab-bar announcement, Increase Contrast). Live VoiceOver and Increase Contrast observation items still pending on the user's Mac. Baseline dialogs partially observed; `MoveToTrashConfirmDialog` focus management now wired (see Completed v0.18 Slices). |
 | P1 | Status bar encoding / line-ending de-duplication | Remove the passive duplicate status labels such as `UTF-8` and `LF` from the lower status area when the encoding / line-ending change dropdowns already expose those values. Keep the actual change controls and save semantics intact; verify compact widths do not leave awkward gaps or hide important dirty/save state. |
@@ -88,7 +87,6 @@ over copy-heavy or product-voice-sensitive work.
 
 | Fit | Candidate | Scope |
 |---|---|---|
-| Good | Pasted image decoded-size cap | Add the decoded-size guard and focused tests around `save_pasted_image`; align docs/error wording with the implemented 20 MB limit. Do not change workspace image preview policy beyond what the cap requires. |
 | Good | Direct save fallback failure safety | Add failure-injection coverage for the direct write fallback and improve recovery only if the test proves a user-visible data-loss risk. Do not weaken external-change fingerprint checks. |
 | Good | L Mode quality investigation | Pick one reproduced L Mode issue or one measurable quality gap only: caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or performance baseline. Do not add a new editing model or contenteditable surface. |
 | Good | Theme quality investigation | Pick one concrete theme issue only: contrast, focus visibility, status/error readability, dialog readability, or Increase Contrast behavior. Do not redesign palettes or add theme customization. |
@@ -120,6 +118,15 @@ over copy-heavy or product-voice-sensitive work.
   `npm run test -- src/hooks/workspace/useWorkspaceStatePersistence.test.ts src/hooks/workspace/useWorkspaceRestore.test.ts src/lib/storage.test.ts`
   passes with 3 files / 31 tests. Signed TestFlight smoke still needs to
   repeat the user-facing workspace-retention flow before App Review.
+- 2026-06-12: Pasted image decoded-size cap / `data:image` wording is
+  implemented. `save_pasted_image` now computes the decoded base64 byte
+  length before allocating the decoded buffer and rejects pasted images
+  above the existing 20 MB image boundary with a user-visible status
+  reason. Normal PNG paste and drag/drop image import still write
+  supported files into `assets/` through the existing hash-based naming
+  and workspace containment checks. README and Help copy now distinguish
+  pasted decoded image bytes from the separate small `data:image`
+  preview/export inline cap.
 - 2026-06-11: Workspace restore / standalone save regression slice.
   `useWorkspaceStatePersistence` no longer overwrites the
   user's last good persisted state when the restore latch

@@ -104,7 +104,14 @@ pub(crate) fn save_pasted_image_with_label(
     let root = PathBuf::from(&workspace_root);
     let canonical_root = ensure_workspace_root(&root)?;
 
-    // Decode the base64 image data FIRST
+    let decoded_len = decoded_base64_len(&data_base64)?;
+    if decoded_len as u64 > MAX_IMAGE_PREVIEW_BYTES {
+        return Err(format!(
+            "Pasted image is larger than the image limit of {} MB.",
+            MAX_IMAGE_PREVIEW_BYTES / (1024 * 1024)
+        ));
+    }
+
     let bytes = decode_base64(&data_base64)?;
 
     // Validate image type from bytes only (magic bytes check)
