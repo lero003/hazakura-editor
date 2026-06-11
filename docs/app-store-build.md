@@ -1,9 +1,9 @@
 # App Store Build
 
-Status: Draft
+Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-06-12 (bundled notice resources)
+Last reviewed: 2026-06-12 (v0.18 TestFlight delivery)
 
 ## Purpose
 
@@ -282,7 +282,10 @@ spctl --assess --type install --verbose=4 "$PKG"
 Upload `HazakuraEditor-0.18.0-mas.pkg` with Transporter. After upload,
 record the App Store Connect processing result, TestFlight internal
 group assignment, and any Apple validation warnings in ignored
-`docs/internal/` notes.
+`docs/internal/` notes. Tracked docs may record public-safe summaries
+such as app version, build number, warning/no-warning outcome, and
+manual smoke result, but should not include raw Transporter logs,
+request headers, account metadata, or device identifiers.
 
 ## Manual Smoke Before Upload
 
@@ -305,9 +308,9 @@ Run on the actual App Store lane build:
 - VoiceOver announces the tab bar acceptably.
 - Increase Contrast keeps controls legible.
 
-Do not mark the build App Store-ready, submitted, approved, or
-TestFlight-ready until the signing, local smoke, App Store Connect upload,
-and Apple validation evidence all exist.
+Do not mark the build App Store-ready, submitted, or approved until the
+signing, local smoke, App Store Connect upload, Apple validation,
+metadata, and App Review evidence all exist.
 
 ## App Store Connect Status Notes
 
@@ -328,3 +331,10 @@ helper-free App Store preview bundle failed in the agent session with
 `RBSRequestErrorDomain Code=5` / `Launchd job spawn failed`. Treat
 App Store-lane launch validation as part of the signed submit /
 TestFlight proof, not as covered by the Developer / GitHub DMG preview.
+
+v0.18 TestFlight note: on 2026-06-12, the signed
+`HazakuraEditor-0.18.0-mas.pkg` for app version `0.18.0` and build `4`
+was delivered through Transporter and reached TestFlight distribution
+with no reported Apple validation warnings. Basic launch and save smoke
+on the TestFlight build passed. Fuller manual smoke, final metadata, and
+App Review submission / approval remain separate evidence.

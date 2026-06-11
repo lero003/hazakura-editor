@@ -31,7 +31,9 @@ Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
+| P0 | Workspace persistence before App Review | Treat the TestFlight workspace loss observations as bugs, not product spec: (1) opening a workspace and repeatedly quitting/relaunching must retain the selected workspace root, and (2) quitting/relaunching while the active tab is outside the workspace must still retain the selected workspace root. Reproduce both shapes first, then add narrow persistence/restore regression coverage before changing behavior. The workspace selection should disappear only after an explicit user action or unrecoverable authorization failure with a visible reauthorization path. |
 | P1 | Manual accessibility smoke | Code-level observation recorded in `docs/smoke-checklist.md` and `docs/archive/operations/v0.18-manual-accessibility-smoke-observation.md` (Help readability, full keyboard-only traversal, VoiceOver tab-bar announcement, Increase Contrast). Live VoiceOver and Increase Contrast observation items still pending on the user's Mac. Baseline dialogs partially observed; `MoveToTrashConfirmDialog` focus management now wired (see Completed v0.18 Slices). |
+| P1 | Status bar encoding / line-ending de-duplication | Remove the passive duplicate status labels such as `UTF-8` and `LF` from the lower status area when the encoding / line-ending change dropdowns already expose those values. Keep the actual change controls and save semantics intact; verify compact widths do not leave awkward gaps or hide important dirty/save state. |
 | P2 | Help copy overlap cleanup | Separate Privacy Policy, Local Data Disclosure, Support Diagnostics, About, and Open Source Acknowledgements so each page has one job. |
 | P2 | `data:image` size wording | Align implementation and docs: either call the check a data-URI length cap or measure decoded image bytes. |
 
@@ -45,6 +47,8 @@ over copy-heavy or product-voice-sensitive work.
 |---|---|---|
 | Good | L Mode quality investigation | Pick one reproduced L Mode issue or one measurable quality gap only: caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or performance baseline. Do not add a new editing model or contenteditable surface. |
 | Good | Theme quality investigation | Pick one concrete theme issue only: contrast, focus visibility, status/error readability, dialog readability, or Increase Contrast behavior. Do not redesign palettes or add theme customization. |
+| Good | Workspace persistence before App Review | Debug only the observed persistence shapes where repeated app launch/quit or an outside-workspace active tab can cause the selected workspace root to be absent after restart. Keep the fix near workspace state persistence / restore and avoid changing direct-open file permissions or workspace file operations. |
+| Good | Status bar encoding / line-ending de-duplication | Remove redundant passive `UTF-8` / `LF` style labels while preserving the existing dropdown controls, status/dirty affordances, and compact status-bar layout. |
 | Good | Focused refactor for a verified bug | Refactor only when it directly fixes or tests one observed user-facing problem. Keep ownership boundaries and public behavior stable. |
 | Caution | `data:image` size wording | First inspect whether the implementation is a data-URI length cap or decoded-byte check. Prefer wording/docs alignment unless a small implementation correction is clearly safer. |
 | Poor fit | Help copy overlap cleanup | This is product voice and submission copy work. Keep it for human/Codex review unless explicitly assigned with tight wording constraints. |
@@ -161,7 +165,7 @@ certificate, or App Store Connect access.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| P0 | TestFlight / App Store Connect validation | The helper-free App Store submit lane is defined in `docs/app-store-build.md`; remaining proof is account-bound: build with Apple Distribution identity + provisioning profile, upload / Apple validation, and TestFlight smoke evidence. The v0.18 release-prep session also saw `open -n` fail for the ad-hoc App Store preview bundle with `RBSRequestErrorDomain Code=5`, while the Developer / GitHub DMG app launched; keep App Store-lane launch validation in this slice. Do not claim submitted, approved, or TestFlight-ready until that evidence exists. |
+| P0 | TestFlight / App Store Connect validation | The helper-free App Store submit lane is defined in `docs/app-store-build.md`. 2026-06-12 evidence: the signed `HazakuraEditor-0.18.0-mas.pkg` upload reached TestFlight distribution with no reported Apple validation warnings, and basic TestFlight launch / save smoke passed. Remaining proof before broader App Store-ready claims: fuller manual smoke on the TestFlight build, final review metadata, and App Review submission / approval evidence. The earlier ad-hoc App Store preview `open -n` failure remains non-blocking unless it reproduces on the signed TestFlight build. |
 | P1 | App Review Notes final copy / attachments | Private review-note draft and store-copy material exist outside the public docs. Final pass should attach screenshots or reviewer evidence as needed, keep account/contact-specific text out of tracked docs, and preserve the App Store lane omission claim for CLI Agent / Agent Workbench / Apple Local Assist. |
 | P1 | Public metadata final pass | Privacy Policy URL is `https://hazakura.dev/hazakura-editor/privacy/`. Remaining metadata work is support URL, category / keywords / age rating / screenshots, and App Store Connect field-by-field review. |
 | P1 | Third-party license packet | `LICENSE` and `THIRD_PARTY_NOTICES.md` now ship inside the generated app bundle, while the in-app Open Source Acknowledgements remain a readable summary. Before submission, refresh/review the lockfile-derived notice contents and include any required full license texts / upstream notices. |
@@ -169,6 +173,12 @@ certificate, or App Store Connect access.
 
 ## Completed Submission-Prep Slices
 
+- 2026-06-12: v0.18 TestFlight delivery evidence recorded. The
+  signed `HazakuraEditor-0.18.0-mas.pkg` upload completed and the
+  resulting `0.18.0` / build `4` TestFlight distribution showed no
+  reported Apple validation warnings. Basic TestFlight launch and save
+  smoke passed. Keep raw Transporter logs and account/request metadata
+  out of tracked docs; record only public-safe build/result summaries.
 - 2026-06-12: Tauri bundle resources now automatically include
   repository-root `LICENSE` and `THIRD_PARTY_NOTICES.md` in generated
   macOS app bundles. `scripts/probe-macos-distribution.sh` verifies

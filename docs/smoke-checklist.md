@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-06-11 (v0.18 UX polish slices, manual accessibility smoke code-level observed; live observation pending)
+Last reviewed: 2026-06-12 (v0.18 TestFlight basic smoke)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -14,6 +14,30 @@ Historical smoke logs and old per-release notes are archived in `docs/archive/op
 Use Vite / browser smoke only for frontend-only rendering checks that do not require Tauri runtime APIs. The browser surface cannot prove native app behavior that depends on `@tauri-apps/api` `invoke`, native dialogs, window/menu integration, bundled sidecar helpers, filesystem permissions, app launch state, or macOS signing / bundle metadata.
 
 When a checklist item covers file open/save, workspace folders, app menus, Apple Local Assist live helper behavior, Agent Workbench provider launch, close/quit handling, or L Mode behavior that must be judged inside the packaged desktop shell, run the built app from `src-tauri/target/release/bundle/macos/Hazakura Editor.app` on a Mac that can launch it. If that environment is unavailable or blocked, report the smoke as blocked/skipped and keep automated checks limited to unit tests, Vite build, Tauri build, bundle metadata, and codesign evidence. Do not claim manual app smoke passed from browser-only evidence.
+
+## v0.18 TestFlight Basic Smoke
+
+Observation on 2026-06-12 for helper-free App Store lane version
+`0.18.0` / build `4`:
+
+- TestFlight distribution succeeded with no reported Apple validation
+  warnings.
+- Basic launch passed on the TestFlight build.
+- Basic save flow passed on the TestFlight build.
+- Pre-review bug follow-up observed: repeatedly quitting/relaunching
+  can lose the selected workspace instead of retaining it.
+- Pre-review bug follow-up observed: if the active tab is outside the
+  selected workspace when the app quits/restarts, the workspace may not
+  be retained.
+- Pre-review UI follow-up observed: the lower status area can show
+  passive `UTF-8` / `LF` style labels even though the change dropdowns
+  already expose those values; remove the duplicate passive labels while
+  keeping the dropdown controls.
+
+Track these under `docs/current-work.md` before App Review submission.
+
+This does not replace the fuller App Store / TestFlight manual smoke
+items below.
 
 ## v0.11 Release-Candidate Focus
 

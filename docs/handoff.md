@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-12 (v0.18 release prep)
+Last reviewed: 2026-06-12 (v0.18 TestFlight delivery)
 
 ## Current State
 
@@ -14,7 +14,11 @@ Last reviewed: 2026-06-12 (v0.18 release prep)
   display form.
 - Latest published downloadable preview is `v0.18.0` warning-expected DMG preview.
 - `v0.18.0` is ad-hoc signed, not Developer ID signed, not notarized, and expected to show macOS security warnings.
-- Current active lane is v0.18 follow-up polish and App Store submission prep.
+- The helper-free App Store lane delivered `0.18.0` build `4` to
+  TestFlight on 2026-06-12 with no reported Apple validation warnings;
+  basic TestFlight launch / save smoke passed.
+- Current active lane is v0.18 pre-review bug fixing, fuller
+  TestFlight smoke, and App Store submission prep.
 - Start from `docs/current-work.md`.
 - Markdown preview task checkboxes are complete for v0.18: Preview renders
   `- [ ]` / `- [x]` as inert display-only checkbox glyphs without
@@ -32,6 +36,19 @@ Last reviewed: 2026-06-12 (v0.18 release prep)
   bookmark for user-selected workspace folders and resolves it on
   restart. Older path-only state can still fall back to the
   reauthorization status hint.
+- TestFlight use found workspace persistence follow-ups to fix before
+  App Review: repeatedly quitting/relaunching can lose the selected
+  workspace, and quitting/relaunching while the active tab is outside
+  the selected workspace may also leave the workspace unretained. Treat
+  these as restore/persistence bugs to reproduce and test narrowly; the
+  workspace selection should disappear only after explicit user action
+  or unrecoverable authorization failure with a visible reauthorization
+  path.
+- TestFlight use found one UI cleanup follow-up before App Review: the
+  lower status area can show passive `UTF-8` / `LF` style labels even
+  though the encoding / line-ending dropdowns already expose those
+  values. Remove the duplicate passive labels while preserving the
+  dropdown controls and dirty/save status affordances.
 - Direct-open standalone files can save even when the parent folder
   cannot create a sibling temp file: `save_text_file` keeps the normal
   atomic path, then falls back to direct existing-file write only on
@@ -51,9 +68,11 @@ Last reviewed: 2026-06-12 (v0.18 release prep)
 Use `docs/current-work.md` for the active queue. The current highest
 priority UX items are:
 
-1. Manual accessibility smoke.
-2. Help copy overlap cleanup.
-3. `data:image` size wording alignment.
+1. Workspace persistence before App Review.
+2. Status bar encoding / line-ending de-duplication.
+3. Manual accessibility smoke.
+4. Help copy overlap cleanup.
+5. `data:image` size wording alignment.
 
 Recently completed: direct-open standalone file save now handles the
 App Sandbox-style case where the selected file itself is writable but
@@ -69,10 +88,9 @@ checkboxes, normal mode sidebar collapse / restore, App Store preview
 startup, and sandboxed workspace bookmark restore are also complete for
 v0.18.
 
-Submission-prep items in the same queue include App Store Connect /
-TestFlight validation, App Review Notes final copy, Privacy Policy /
-metadata, final third-party notice content review, and manual
-accessibility smoke.
+Submission-prep items in the same queue include fuller TestFlight smoke,
+App Review Notes final copy, Privacy Policy / metadata, final
+third-party notice content review, and manual accessibility smoke.
 
 ## Source Docs
 
@@ -113,9 +131,12 @@ accessibility smoke.
 - Latest release-prep slice: v0.18 version surfaces are aligned across
   npm, Tauri, Cargo, Help About, Support Diagnostics, current docs, and
   release notes. The v0.18 warning-expected DMG prerelease was
-  published and remote-verified on 2026-06-12; use the v0.18 release
-  note and release checklists before making broader
-  distribution-readiness claims.
+  published and remote-verified on 2026-06-12. The helper-free
+  App Store lane also reached TestFlight as `0.18.0` build `4` with no
+  reported Apple validation warnings, and basic launch / save smoke
+  passed. Use the v0.18 release note, `docs/app-store-build.md`, and
+  release checklists before making broader distribution-readiness
+  claims.
 - For docs-only work, run `git diff --check`.
 - For code changes, follow `docs/development-automation.md`.
 - For UI behavior changes, update or exercise `docs/smoke-checklist.md`.

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-12 (v0.18 release prep)
+Last reviewed: 2026-06-12 (v0.18 TestFlight delivery)
 
 ## Current State
 
@@ -11,8 +11,13 @@ Last reviewed: 2026-06-12 (v0.18 release prep)
 - Current package/app version: `0.18.0` across npm, Tauri, Cargo, and lockfile metadata.
 - Latest published downloadable preview: `v0.18.0` warning-expected DMG preview.
 - `v0.18.0` is a Developer / GitHub lane preview, ad-hoc signed, not Developer ID signed, not notarized, and expected to show macOS security warnings.
+- The helper-free App Store lane delivered `0.18.0` build `4` to
+  TestFlight on 2026-06-12 with no reported Apple validation warnings;
+  basic TestFlight launch / save smoke passed.
 - Older public tags and release assets remain immutable.
-- Current active work is v0.18 follow-up polish and App Store submission prep. Use `docs/current-work.md` first.
+- Current active work is v0.18 pre-review bug fixing, fuller
+  TestFlight smoke, and App Store submission prep. Use
+  `docs/current-work.md` first.
 
 ## Current Product Boundary
 
@@ -97,12 +102,14 @@ baseline, and smoke evidence are archived under
 ## Next Safe Actions
 
 1. For UX work, start with `docs/current-work.md` and pick one item:
-   manual accessibility smoke.
+   workspace persistence before App Review, status-bar encoding /
+   line-ending de-duplication, or manual accessibility smoke.
 2. For App Store submission prep, start with `docs/current-work.md`
    and `docs/app-store-build.md`; keep account-specific notes under
    ignored `docs/internal/` files;
-   keep certificate, provisioning, signing, notarization, upload, and
-   review handling as explicit distribution-lane work.
+   keep certificate, provisioning, signing, notarization, upload, fuller
+   TestFlight smoke, and review handling as explicit distribution-lane
+   work.
 3. For Apple Local Assist, use `docs/assist-surface-strategy.md`,
    `docs/apple-local-assist-distribution-plan.md`, and
    `docs/apple-local-assist-writing-companion-plan.md`; keep direct
