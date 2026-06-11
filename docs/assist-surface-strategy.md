@@ -9,7 +9,7 @@ Last reviewed: 2026-06-10
 
 This document records the future direction for separating assist and agent features from the Markdown-first Safe Editor.
 
-The goal is not to build a general AI platform in `hazakura editor`. The goal is to keep the core editor safe and understandable while leaving a clean path to move optional assist features between:
+The goal is not to build a general AI platform in `Hazakura Editor`. The goal is to keep the core editor safe and understandable while leaving a clean path to move optional assist features between:
 
 - the current External Agent Workbench model
 - a future Apple Local Assist model based on Apple's Foundation Models framework
@@ -17,7 +17,7 @@ The goal is not to build a general AI platform in `hazakura editor`. The goal is
 
 ## Decision
 
-`hazakura editor` should treat assist features as a detachable or separately gated surface rather than as part of the default Safe Editor.
+`Hazakura Editor` should treat assist features as a detachable or separately gated surface rather than as part of the default Safe Editor.
 
 The design target is:
 
@@ -87,7 +87,7 @@ References:
 - [Foundation Models](https://developer.apple.com/documentation/foundationmodels/)
 - [Generating content and performing tasks with Foundation Models](https://developer.apple.com/documentation/foundationmodels/generating-content-and-performing-tasks-with-foundation-models)
 
-For `hazakura editor`, Apple Local Assist should start as a document-writing companion, not as an agent. The strongest product shape is an external Assist Window that uses the same broad "outside companion" slot as Agent Workbench, while keeping a different UI and trust boundary. The app should normally show either Apple Local Assist or External Agent Workbench, not both side by side.
+For `Hazakura Editor`, Apple Local Assist should start as a document-writing companion, not as an agent. The strongest product shape is an external Assist Window that uses the same broad "outside companion" slot as Agent Workbench, while keeping a different UI and trust boundary. The app should normally show either Apple Local Assist or External Agent Workbench, not both side by side.
 
 Short user-facing distinction:
 
@@ -134,11 +134,11 @@ If Apple Local Assist is implemented, prefer a narrow macOS helper, sidecar, or 
 A possible shape:
 
 ```txt
-hazakura editor
+Hazakura Editor
   -> structured request for selected text / current writing context
 hazakura-apple-assist-helper
   -> Foundation Models framework
-hazakura editor
+Hazakura Editor
   <- structured candidate output / edit proposal
 AI edit transaction
   -> unsaved buffer change, Diff / history remains available

@@ -3,11 +3,15 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-11 (v0.18 direct-open standalone save fallback)
+Last reviewed: 2026-06-11 (App Store review display-name polish)
 
 ## Current State
 
-- `hazakura editor` is at `0.17.0`.
+- `Hazakura Editor` is at `0.17.0`.
+- User-facing app identity is capitalized as `Hazakura Editor`. The
+  App Store preview bundle is `Hazakura Editor.app`; current docs and
+  smoke paths should use that name rather than the older lowercase
+  display form.
 - Latest published downloadable preview is `v0.17.0` warning-expected DMG preview.
 - `v0.17.0` is ad-hoc signed, not Developer ID signed, not notarized, and expected to show macOS security warnings.
 - Current active lane is v0.18 UX polish and submission prep.
@@ -32,6 +36,8 @@ Last reviewed: 2026-06-11 (v0.18 direct-open standalone save fallback)
 - Directly opened PNG/JPEG/GIF/WebP files can preview without an active
   workspace through `open_image_file`; workspace-tree image preview
   still uses `open_workspace_image` and its root containment check.
+- App Store lane Settings hides Apple Local Assist-specific preference
+  rows; Developer / GitHub lane can still expose those assist controls.
 
 ## Current Work Queue
 
@@ -99,9 +105,11 @@ accessibility smoke.
 
 - Latest verified slice: `cargo fmt --manifest-path
   src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path
-  src-tauri/Cargo.toml`, `npm run build:vite`, `npm test`,
-  `git diff --check`, and `npm run build` passed on 2026-06-11
-  after the direct-open standalone save / image preview fallback.
+  src-tauri/Cargo.toml`, focused frontend tests for Settings / Agent
+  Workbench / Help / command palette, `npm run build:vite`, `npm run
+  build`, App Store preview bundle metadata checks, helper-omission
+  check, and `git diff --check` passed on 2026-06-11 after the App
+  Store review display-name / settings polish.
 - Latest packaged-app release evidence remains the v0.17
   warning-expected DMG preview; use the linked release note and
   release checklists before making distribution-readiness claims.

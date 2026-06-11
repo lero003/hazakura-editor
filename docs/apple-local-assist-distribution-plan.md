@@ -62,7 +62,7 @@ The Guidelines text does not contain a clause specifically targeting on-device L
 - **5.1.2(i)** (Data Use and Sharing): "You must clearly disclose where personal data will be shared with third parties, **including with third-party AI**, and obtain explicit permission before doing so." This is the only clause in the actual guideline text that names "AI." It is a privacy/disclosure requirement. *Reading for us:* on-device Foundation Models does not transmit user data to Apple or a third party by default, so this clause is satisfied without a per-prompt consent dialog as long as our privacy policy says so.
 - **2.5.2** (no downloaded/executed code): "Apps should be self-contained in their bundles, and may not read or write data outside the designated container area, nor may they download, install, or execute code which introduces or changes features or functionality of the app." *Reading for us:* an Apple-Local-Assist feature that uses the on-device model in-process does not download or execute new code. Fine.
 - **2.4.2** (no unrelated background processes): the precedent is "cryptocurrency mining" is not allowed. *Reading for us:* the helper sidecar would only spawn on a user-initiated command-palette invocation, not in the background. This matches the spec. A live binding must not background-poll the model.
-- **2.4.5(i)** (Mac App Store sandbox): "They must be appropriately sandboxed, and follow [macOS File System Documentation]." *Reading for us:* the macOS App Store build of `hazakura editor` is already sandboxed. The helper sidecar runs inside the sandbox; spawning a bundled `binaries/...` helper from the Tauri host process is allowed under the existing sandbox as long as it stays inside the bundle container. **TBD (verify):** whether the App Store sandbox requires any specific entitlement for the sidecar spawn path.
+- **2.4.5(i)** (Mac App Store sandbox): "They must be appropriately sandboxed, and follow [macOS File System Documentation]." *Reading for us:* the macOS App Store build of `Hazakura Editor` is already sandboxed. The helper sidecar runs inside the sandbox; spawning a bundled `binaries/...` helper from the Tauri host process is allowed under the existing sandbox as long as it stays inside the bundle container. **TBD (verify):** whether the App Store sandbox requires any specific entitlement for the sidecar spawn path.
 - **5.1.1 (Privacy)**: full privacy framework (privacy policy URL, consent, data minimization, no covert profiling). *Reading for us:* the in-app disclosure recommended above also satisfies the privacy-policy component. We do not log the prompt or the candidate, do not sync them to a server, do not share them with a third party.
 - **4.7 (Mini apps / chatbots)**: 4.7.2 says "Your app may not extend or expose native platform APIs or technologies to the software without prior permission from Apple." *Reading for us:* we are not embedding a third-party chatbot or mini-app runtime; the editor itself calls the Foundation Models framework. Fine.
 - **No new entitlement is enumerated** for Foundation Models in the current Guidelines text. If Apple's posture changes between now and the App Store submission, we may need to file an entitlement request.
@@ -104,7 +104,7 @@ Anything beyond what these four pages say is **not** in the record above.
 
 This memo turns the rough v0.12 Apple Local Assist idea into a release and architecture direction.
 
-The goal is not to turn `hazakura editor` into a general AI agent platform. The goal is to make the existing Markdown-first editor feel more helpful by adding on-device document assistance where Apple Intelligence is available, while keeping every generated change explicit, reviewable, and reversible.
+The goal is not to turn `Hazakura Editor` into a general AI agent platform. The goal is to make the existing Markdown-first editor feel more helpful by adding on-device document assistance where Apple Intelligence is available, while keeping every generated change explicit, reviewable, and reversible.
 
 User-facing wording should set expectations accordingly: Apple Local Assist is an **alpha / experimental** local writing helper for short summaries, rephrasing, heading / tag ideas, light cleanup, and short explanations. It should not be marketed as "Apple's AI inside hazakura" or as a serious alternative to Codex, Claude Code, OpenCode, pi, or future local LLM runtimes.
 
@@ -211,11 +211,11 @@ Apple Local Assist must:
 The current candidate shape is a narrow macOS helper boundary:
 
 ```txt
-hazakura editor
+Hazakura Editor
   -> structured Apple Local Assist request for current writing context
 bundled Swift helper
   -> Foundation Models framework
-hazakura editor
+Hazakura Editor
   <- structured candidate response / edit proposal
 AI edit transaction
   -> unsaved buffer change, Diff / history remains available

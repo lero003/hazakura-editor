@@ -5,7 +5,7 @@ Scope: Source-only release readiness
 Authority: High
 Last reviewed: 2026-06-10 (v0.17 warning-expected DMG preview prep)
 
-This checklist is for a source-only developer preview release of `hazakura editor` / `hazakura-note`.
+This checklist is for a source-only developer preview release of `Hazakura Editor` / `hazakura-note`.
 
 Source-only means publishing the repository state, tag, source archive, release notes, and build instructions. It does not mean distributing a signed or notarized macOS app.
 
@@ -13,8 +13,8 @@ Source-only means publishing the repository state, tag, source archive, release 
 
 Since `v0.13.0` (2026-06-06), the local macOS build commands map to three distinct lanes. This checklist must keep the lanes separate; do not let a source / local-app tag slip evidence from the warning-expected DMG preview lane into its gate list, and vice versa.
 
-- **App Store preview lane**: `npm run build` (alias for `npm run build:app-store-preview`) produces `hazakura editor.app` with bundle identifier `dev.hazakura.editor`. This is the normal / App Store preview bundle.
-- **Developer / GitHub lane**: `npm run build:developer-preview` (or `npm run build:macos-lanes` for both bundles) produces `hazakura editor Dev.app` with bundle identifier `lab.hazakura.note.dev` and a small `DEV` badge. Agent Workbench stays enabled in this lane.
+- **App Store preview lane**: `npm run build` (alias for `npm run build:app-store-preview`) produces `Hazakura Editor.app` with bundle identifier `dev.hazakura.editor`. This is the normal / App Store preview bundle.
+- **Developer / GitHub lane**: `npm run build:developer-preview` (or `npm run build:macos-lanes` for both bundles) produces `Hazakura Editor Dev.app` with bundle identifier `lab.hazakura.note.dev` and a small `DEV` badge. Agent Workbench stays enabled in this lane.
 - **Warning-expected DMG preview lane**: `npm run build:dmg-preview` packages the Developer / GitHub lane bundle as `hazakura-editor-dev_...-warning-expected.dmg`. See `docs/dmg-preview-checklist.md`. Ad-hoc signed only, not Developer ID signed, not notarized.
 
 For a v0.12+ source / local-app tag, the local gate evidence is taken from the **App Store preview lane** (`npm run build`) by default. Add the **Developer / GitHub lane** to the same run with `npm run build:macos-lanes` when the tag also needs to prove the Developer bundle path (see the v0.13.0 source / local-app release notes for an example). Do not add `npm run build:dmg-preview` to a source / local-app tag gate unless the lane is explicitly being published.
@@ -58,7 +58,7 @@ npm run build
 git diff --check
 ```
 
-`npm run build` here means the **helper-free App Store preview lane** (`npm run build:app-store-preview`, producing `hazakura editor.app` with bundle identifier `dev.hazakura.editor`). Add `npm run build:macos-lanes` (or `npm run build:developer-preview`) when the source / local-app tag also needs to prove the Developer / GitHub lane (`hazakura editor Dev.app`, `lab.hazakura.note.dev`). Do not add `npm run build:dmg-preview`; that lane is governed by `docs/dmg-preview-checklist.md`.
+`npm run build` here means the **helper-free App Store preview lane** (`npm run build:app-store-preview`, producing `Hazakura Editor.app` with bundle identifier `dev.hazakura.editor`). Add `npm run build:macos-lanes` (or `npm run build:developer-preview`) when the source / local-app tag also needs to prove the Developer / GitHub lane (`Hazakura Editor Dev.app`, `lab.hazakura.note.dev`). Do not add `npm run build:dmg-preview`; that lane is governed by `docs/dmg-preview-checklist.md`.
 
 **Apple Local Assist helper verification** (Developer / GitHub lane only):
 
@@ -115,7 +115,7 @@ Treat `dompurify` and `marked` as preview-boundary dependencies because Markdown
 
 Use the latest built app from the current release HEAD and record concise evidence in `docs/current-status.md` before tagging:
 
-- Launch with `open -n "src-tauri/target/release/bundle/macos/hazakura editor.app"`.
+- Launch with `open -n "src-tauri/target/release/bundle/macos/Hazakura Editor.app"`.
 - Confirm native File menu and View menu are present.
 - Confirm Save and Save As are disabled in the no-file state.
 - Confirm dirty-tab close Cancel / Save / Discard behavior.
@@ -148,7 +148,7 @@ Before tagging:
 - Confirm `package.json`, `src-tauri/tauri.conf.json`, and `src-tauri/Cargo.toml` carry the intended version for the release candidate. Do not rely on an older checklist snapshot for the version value.
 - For v0.7 release prep, keep package/version bumps out of ordinary quality slices until the release lane is explicitly approved.
 - Add or update the version-specific file under `docs/releases/` for the intended source preview.
-- State clearly that users build from source with `npm ci` and `npm run build`. `npm run build` resolves to the App Store preview lane (`hazakura editor.app`); users who need the Developer / GitHub lane should run `npm run build:macos-lanes` or `npm run build:developer-preview` instead. This is present in `README.md`.
+- State clearly that users build from source with `npm ci` and `npm run build`. `npm run build` resolves to the App Store preview lane (`Hazakura Editor.app`); users who need the Developer / GitHub lane should run `npm run build:macos-lanes` or `npm run build:developer-preview` instead. This is present in `README.md`.
 - State clearly that the built local app is ad-hoc signed only and is not Developer ID signed or notarized. This is present in `README.md` Known Limits.
 - Keep known limits visible in `README.md` and `docs/current-status.md`.
 

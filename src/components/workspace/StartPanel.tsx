@@ -40,7 +40,7 @@ export function StartPanel({
       <div className="start-panel-main">
         <div className="start-brand">
           <img className="start-logo" src={hazakuraMark} alt="" />
-          <span className="start-kicker">hazakura editor</span>
+          <span className="start-kicker">Hazakura Editor</span>
         </div>
         <h1>{copy.startHeading}</h1>
         <div className="start-actions" aria-label={copy.startActions}>

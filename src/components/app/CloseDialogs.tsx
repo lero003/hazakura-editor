@@ -107,7 +107,7 @@ function getCloseDialogCopy(lang: MenuLanguage) {
   if (isKanaStyle(lang)) {
     return {
       appDescription: (count: number) =>
-        `${formatDirtyTabCount(count, lang)}を、hazakura editor を とぢる まえに ほぞん または はき して ください。`,
+        `${formatDirtyTabCount(count, lang)}を、Hazakura Editor を とぢる まえに ほぞん または はき して ください。`,
       cancel: "きゃんせる",
       discard: "はき",
       discardAll: "すべて はき",
@@ -121,7 +121,7 @@ function getCloseDialogCopy(lang: MenuLanguage) {
   if (isJapaneseMenuLanguage(lang)) {
     return {
       appDescription: (count: number) =>
-        `${formatDirtyTabCount(count, lang)}を、hazakura editor を閉じる前に保存または破棄してください。`,
+        `${formatDirtyTabCount(count, lang)}を、Hazakura Editor を閉じる前に保存または破棄してください。`,
       cancel: "キャンセル",
       discard: "破棄",
       discardAll: "すべて破棄",
@@ -134,7 +134,7 @@ function getCloseDialogCopy(lang: MenuLanguage) {
   }
   return {
     appDescription: (count: number) =>
-      `${formatDirtyTabCount(count, lang)} must be saved or discarded before closing hazakura editor.`,
+      `${formatDirtyTabCount(count, lang)} must be saved or discarded before closing Hazakura Editor.`,
     cancel: "Cancel",
     discard: "Discard",
     discardAll: "Discard All",

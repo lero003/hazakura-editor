@@ -6,6 +6,7 @@ import type {
   ThemePreference,
 } from "../../types";
 import { AUTO_BACKUP_USER_CHOICE_STORAGE_KEY as AUTO_BACKUP_CHOICE_KEY } from "../../types";
+import { isAppleLocalAssistSurfaceAllowed } from "../../lib/distributionLane";
 
 type SettingsPreferencesPaneProps = {
   copy: PreferencesCopy;
@@ -50,6 +51,8 @@ export function SettingsPreferencesPane({
   previewVisible,
   themePreference,
 }: SettingsPreferencesPaneProps) {
+  const appleLocalAssistAllowed = isAppleLocalAssistSurfaceAllowed();
+
   return (
     <div className="preferences-sections settings-preferences">
       <section className="preference-section" aria-label={copy.editorDisplay}>
@@ -217,24 +220,26 @@ export function SettingsPreferencesPane({
           <span>{copy.autoBackup}</span>
           <span className="field-hint">{copy.autoBackupHint}</span>
         </label>
-        <label className="toggle-switch">
-          <input
-            type="checkbox"
-            checked={editorSettings.appleAssistDiffInitiallyOpen}
-            onChange={(event) => {
-              const appleAssistDiffInitiallyOpen = event.currentTarget.checked;
-              onEditorSettingsChange((current) => ({
-                ...current,
-                appleAssistDiffInitiallyOpen,
-              }));
-            }}
-          />
-          <span className="slider"></span>
-          <span>{copy.appleAssistDiffInitiallyOpen}</span>
-          <span className="field-hint">
-            {copy.appleAssistDiffInitiallyOpenHint}
-          </span>
-        </label>
+        {appleLocalAssistAllowed ? (
+          <label className="toggle-switch">
+            <input
+              type="checkbox"
+              checked={editorSettings.appleAssistDiffInitiallyOpen}
+              onChange={(event) => {
+                const appleAssistDiffInitiallyOpen = event.currentTarget.checked;
+                onEditorSettingsChange((current) => ({
+                  ...current,
+                  appleAssistDiffInitiallyOpen,
+                }));
+              }}
+            />
+            <span className="slider"></span>
+            <span>{copy.appleAssistDiffInitiallyOpen}</span>
+            <span className="field-hint">
+              {copy.appleAssistDiffInitiallyOpenHint}
+            </span>
+          </label>
+        ) : null}
         <label className="field-control">
           <span>{copy.menuLanguage}</span>
           <select

@@ -425,7 +425,7 @@ describe("useCommandPaletteController", () => {
       result.current.filteredCommands.find(
         (command) => command.id === "help.about",
       )?.label,
-    ).toBe("About hazakura editor…");
+    ).toBe("About Hazakura Editor…");
 
     act(() => {
       privacy?.run();

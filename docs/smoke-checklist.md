@@ -13,13 +13,13 @@ Historical smoke logs and old per-release notes are archived in `docs/archive/op
 
 Use Vite / browser smoke only for frontend-only rendering checks that do not require Tauri runtime APIs. The browser surface cannot prove native app behavior that depends on `@tauri-apps/api` `invoke`, native dialogs, window/menu integration, bundled sidecar helpers, filesystem permissions, app launch state, or macOS signing / bundle metadata.
 
-When a checklist item covers file open/save, workspace folders, app menus, Apple Local Assist live helper behavior, Agent Workbench provider launch, close/quit handling, or L Mode behavior that must be judged inside the packaged desktop shell, run the built app from `src-tauri/target/release/bundle/macos/hazakura editor.app` on a Mac that can launch it. If that environment is unavailable or blocked, report the smoke as blocked/skipped and keep automated checks limited to unit tests, Vite build, Tauri build, bundle metadata, and codesign evidence. Do not claim manual app smoke passed from browser-only evidence.
+When a checklist item covers file open/save, workspace folders, app menus, Apple Local Assist live helper behavior, Agent Workbench provider launch, close/quit handling, or L Mode behavior that must be judged inside the packaged desktop shell, run the built app from `src-tauri/target/release/bundle/macos/Hazakura Editor.app` on a Mac that can launch it. If that environment is unavailable or blocked, report the smoke as blocked/skipped and keep automated checks limited to unit tests, Vite build, Tauri build, bundle metadata, and codesign evidence. Do not claim manual app smoke passed from browser-only evidence.
 
 ## v0.11 Release-Candidate Focus
 
 Run these before treating v0.11.0 as ready to publish:
 
-1. Launch the latest built app from `src-tauri/target/release/bundle/macos/hazakura editor.app`.
+1. Launch the latest built app from `src-tauri/target/release/bundle/macos/Hazakura Editor.app`.
 2. Confirm default Safe Editor startup has no Git UI, general terminal, arbitrary command/path field, provider-add UI, auto-apply, or auto-commit behavior.
 3. Open a Markdown document with headings, lists, links, code blocks, and long paragraphs.
 4. Enter and exit L Mode with `Cmd+Shift+L`.
@@ -200,7 +200,7 @@ the user's Mac. Detailed code-level walk-through is archived in
 ### Build / environment
 
 - Built app target for pending live observation:
-  `src-tauri/target/release/bundle/macos/hazakura editor.app`
+  `src-tauri/target/release/bundle/macos/Hazakura Editor.app`
   (v0.17.0, ad-hoc, not notarized; warning-expected). The built
   app was NOT launched in this smoke pass; live observation
   items below still need a manual run on the user's Mac.

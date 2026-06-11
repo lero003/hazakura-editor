@@ -7,7 +7,7 @@ Last reviewed: 2026-06-11 (v0.18 UX polish slices)
 
 ## Current Position
 
-`hazakura editor` is a Markdown-first safe editor. It is not an IDE,
+`Hazakura Editor` is a Markdown-first safe editor. It is not an IDE,
 Git client, general terminal, plugin platform, project analyzer, or
 automatic agent-apply system.
 

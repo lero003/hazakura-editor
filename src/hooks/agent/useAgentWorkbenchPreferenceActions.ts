@@ -284,12 +284,12 @@ function agentWorkbenchWillDisableMessage(
 
 function restartingAppMessage(menuLanguage: MenuLanguage): string {
   if (isKanaStyle(menuLanguage)) {
-    return "hazakura editor を さいきどう ちゅう...";
+    return "Hazakura Editor を さいきどう ちゅう...";
   }
   if (isJapaneseMenuLanguage(menuLanguage)) {
-    return "hazakura editor を再起動中...";
+    return "Hazakura Editor を再起動中...";
   }
-  return "Restarting hazakura editor...";
+  return "Restarting Hazakura Editor...";
 }
 
 function restartFailedMessage(menuLanguage: MenuLanguage): string {

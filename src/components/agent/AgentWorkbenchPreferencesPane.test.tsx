@@ -125,7 +125,7 @@ describe("AgentWorkbenchPreferencesPane", () => {
 
     expect(
       screen.getByText(
-        "The assist type changes after restarting hazakura editor.",
+        "The assist type changes after restarting Hazakura Editor.",
       ),
     ).toBeTruthy();
   });

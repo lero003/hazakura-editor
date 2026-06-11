@@ -565,7 +565,7 @@ export function useCommandPaletteController({
           "editor",
           "lane",
         ],
-        label: "About hazakura editor…",
+        label: "About Hazakura Editor…",
         run: () => {
           actions.setPreferencesDialogMode("about");
         },

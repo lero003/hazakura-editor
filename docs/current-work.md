@@ -7,7 +7,7 @@ Last reviewed: 2026-06-11
 
 ## Purpose
 
-Start here when choosing the next small `hazakura editor` slice.
+Start here when choosing the next small `Hazakura Editor` slice.
 This file is the current work queue.  Older v0.17 App Store-quality
 request packets and closeout evidence now live under
 `docs/archive/operations/app-store-v0.17/`.

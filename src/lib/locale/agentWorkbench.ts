@@ -87,7 +87,7 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
         safeSessionMode:
           "このアプリセッションでは Safe Editor モードが有効です。",
         restartRequired:
-          "エージェント画面と CLI 起動の有効状態を切り替えるには、hazakura editor の再起動が必要です。",
+          "エージェント画面と CLI 起動の有効状態を切り替えるには、Hazakura Editor の再起動が必要です。",
         restartNow: "今すぐ再起動",
         restarting: "再起動中...",
         provider: "プロバイダー",
@@ -120,7 +120,7 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
         assistSurfaceApple: "Apple Local Assist (Experimental)",
         assistSurfaceExternalCli: "CLI Agent",
         assistSurfaceRestartRequired:
-          "The assist type changes after restarting hazakura editor.",
+          "The assist type changes after restarting Hazakura Editor.",
         appleHeading: "Apple Local Assist",
         appleSectionLabel: "Apple Local Assist status and notes",
         appleExperimentalLabel: "Alpha / Experimental",
@@ -151,7 +151,7 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
           "Agent Workbench mode is active for this app session.",
         safeSessionMode: "Safe Editor Mode is active for this app session.",
         restartRequired:
-          "Restart hazakura editor before Agent Workbench UI or backend launch commands change.",
+          "Restart Hazakura Editor before Agent Workbench UI or backend launch commands change.",
         restartNow: "Restart now",
         restarting: "Restarting...",
         provider: "Provider",

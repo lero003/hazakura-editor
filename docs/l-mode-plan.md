@@ -7,7 +7,7 @@ Last reviewed: 2026-06-07
 
 ## Summary
 
-**えるモード** is the Live Source writing surface of `hazakura editor`: Markdown stays the saved source, while inactive parts of the editor receive a calm document-like display layer. It should not remain a light focus-mode option. The target is a first-class writing surface where day-to-day writing, reading, and small corrections feel close to editing the document itself without replacing the Markdown document model.
+**えるモード** is the Live Source writing surface of `Hazakura Editor`: Markdown stays the saved source, while inactive parts of the editor receive a calm document-like display layer. It should not remain a light focus-mode option. The target is a first-class writing surface where day-to-day writing, reading, and small corrections feel close to editing the document itself without replacing the Markdown document model.
 
 The next direction is a deeper **L Mode Live Source Accuracy Ramp**: make Markdown constructs render with higher fidelity when they are not being edited, keep cursor / selection / IME behavior source-like and predictable, and reduce the number of moments where the user has to mentally translate between raw syntax and document appearance.
 
@@ -23,7 +23,7 @@ Alternative English label: **L Mode**.
 
 ## Positioning
 
-`hazakura editor` normal mode remains the safe Markdown workspace.
+`Hazakura Editor` normal mode remains the safe Markdown workspace.
 
 - Normal mode: edit and review Markdown safely.
 - Review Desk: compare candidate text and diffs explicitly.
@@ -321,4 +321,4 @@ Implementation is CodeMirror display decoration on top of the existing Markdown 
 
 ## Summary Statement
 
-えるモード is the Live Source writing surface of `hazakura editor` — a custom writing-app feel that goes beyond Typora in calmness and document focus, while the source model stays Markdown and the editing surface stays CodeMirror.
+えるモード is the Live Source writing surface of `Hazakura Editor` — a custom writing-app feel that goes beyond Typora in calmness and document focus, while the source model stays Markdown and the editing surface stays CodeMirror.

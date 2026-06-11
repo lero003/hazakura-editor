@@ -354,7 +354,7 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
             &MenuItem::with_id(
                 app,
                 MENU_ABOUT_HELP,
-                label("About hazakura editor...", "hazakura editor について..."),
+                label("About Hazakura Editor...", "Hazakura Editor について..."),
                 true,
                 None::<&str>,
             )?,
@@ -366,7 +366,7 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
         let package_info = app.package_info();
         let config = app.config();
         let about_metadata = AboutMetadata {
-            name: Some(package_info.name.clone()),
+            name: Some("Hazakura Editor".to_string()),
             version: Some(package_info.version.to_string()),
             copyright: config.bundle.copyright.clone(),
             authors: config
@@ -378,7 +378,7 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
         };
         let about_item = PredefinedMenuItem::about(
             app,
-            Some(label("About hazakura editor", "hazakura editor について")),
+            Some(label("About Hazakura Editor", "Hazakura Editor について")),
             Some(about_metadata),
         )?;
         let separator_after_about = PredefinedMenuItem::separator(app)?;
@@ -401,14 +401,14 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
         let separator_after_services = PredefinedMenuItem::separator(app)?;
         let hide_item = PredefinedMenuItem::hide(
             app,
-            Some(label("Hide hazakura editor", "hazakura editor を隠す")),
+            Some(label("Hide Hazakura Editor", "Hazakura Editor を隠す")),
         )?;
         let hide_others_item =
             PredefinedMenuItem::hide_others(app, Some(label("Hide Others", "ほかを隠す")))?;
         let separator_before_quit = PredefinedMenuItem::separator(app)?;
         let quit_item = PredefinedMenuItem::quit(
             app,
-            Some(label("Quit hazakura editor", "hazakura editor を終了")),
+            Some(label("Quit Hazakura Editor", "Hazakura Editor を終了")),
         )?;
 
         let mut app_menu_items: Vec<&dyn IsMenuItem<R>> =
@@ -524,11 +524,11 @@ fn kana_menu_label(japanese: &'static str) -> Option<&'static str> {
         "拡大/縮小" => "おほきく/ちひさく",
         "ヘルプ" => "たすけ",
         "ローカルデータの扱い..." => "ろーかるでーたのあつかひ...",
-        "hazakura editor について" => "hazakura editor のこと",
+        "Hazakura Editor について" => "Hazakura Editor のこと",
         "サービス" => "つかへ",
-        "hazakura editor を隠す" => "hazakura editor をかくす",
+        "Hazakura Editor を隠す" => "Hazakura Editor をかくす",
         "ほかを隠す" => "ほかをかくす",
-        "hazakura editor を終了" => "hazakura editor ををはる",
+        "Hazakura Editor を終了" => "Hazakura Editor ををはる",
         _ => return None,
     })
 }

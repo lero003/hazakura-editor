@@ -7,7 +7,7 @@ Last reviewed: 2026-06-11 (v0.18 UX polish slices)
 
 ## Purpose
 
-This document is the current source of truth for unattended or recurring `hazakura editor` improvement loops.
+This document is the current source of truth for unattended or recurring `Hazakura Editor` improvement loops.
 
 The loop should make the app safer and more comfortable in one small verified slice. It must not turn the product into an IDE, agent platform, Git client, terminal, or project analyzer.
 

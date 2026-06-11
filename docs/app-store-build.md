@@ -8,7 +8,7 @@ Last reviewed: 2026-06-11
 ## Purpose
 
 This document defines the public-safe helper-free Mac App Store build
-lane for `hazakura editor`. It intentionally avoids account-specific
+lane for `Hazakura Editor`. It intentionally avoids account-specific
 App Store Connect metadata, certificate names, signing identities,
 contacts, screenshots, or private reviewer-copy drafts.
 
@@ -132,7 +132,7 @@ Adjust the path if you build a universal target and Tauri writes under a
 target-specific directory.
 
 ```bash
-APP="src-tauri/target/release/bundle/macos/hazakura editor.app"
+APP="src-tauri/target/release/bundle/macos/Hazakura Editor.app"
 
 codesign --verify --deep --strict --verbose=2 "$APP"
 codesign -dv --verbose=4 "$APP"

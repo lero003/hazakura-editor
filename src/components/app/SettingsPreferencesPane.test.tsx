@@ -8,6 +8,7 @@ import {
 } from "../../types";
 
 afterEach(() => {
+  vi.unstubAllEnvs();
   cleanup();
   window.localStorage.clear();
 });
@@ -70,6 +71,29 @@ describe("SettingsPreferencesPane", () => {
     const updater = onEditorSettingsChange.mock.calls[0][0];
     expect(updater(editorSettings())).toEqual(
       editorSettings({ appleAssistDiffInitiallyOpen: false }),
+    );
+  });
+
+  it("hides the Apple Local Assist diff preference in the App Store distribution lane", () => {
+    vi.stubEnv("VITE_HAZAKURA_DISTRIBUTION_LANE", "app-store");
+    const { container } = render(
+      <SettingsPreferencesPane
+        copy={getPreferencesCopy("en")}
+        editorSettings={editorSettings()}
+        lModeCopy={getLModeCopy("en")}
+        menuLanguage="en"
+        onEditorSettingsChange={vi.fn()}
+        onMenuLanguageChange={vi.fn()}
+        onPreviewVisibleChange={vi.fn()}
+        onThemePreferenceChange={vi.fn()}
+        previewVisible={true}
+        themePreference="light"
+      />,
+    );
+
+    expect(container.textContent).not.toContain("Apple Local Assist");
+    expect(container.textContent).not.toContain(
+      "Open Apple Local Assist diff automatically",
     );
   });
 

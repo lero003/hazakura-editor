@@ -1,6 +1,6 @@
 # Open Source Acknowledgements
 
-hazakura editor is built with open source software. This page is a readable acknowledgement for the app. It is not a complete legal license packet.
+Hazakura Editor is built with open source software. This page is a readable acknowledgement for the app. It is not a complete legal license packet.
 
 ## JavaScript and UI
 

@@ -1,15 +1,15 @@
 <p align="center">
-  <img src="src/assets/hazakura-mark.png" alt="hazakura editor logo" width="128">
+  <img src="src/assets/hazakura-mark.png" alt="Hazakura Editor logo" width="128">
 </p>
 
-# hazakura editor
+# Hazakura Editor
 
 Status: Operational
 Scope: Project entry point
 Authority: High
 Last reviewed: 2026-06-10
 
-`hazakura editor` は、AI時代のメモ帳です。Markdownを中心に、安全にテキストを読む・書く・比べるための軽量なローカル作業場を目指します。
+`Hazakura Editor` は、AI時代のメモ帳です。Markdownを中心に、安全にテキストを読む・書く・比べるための軽量なローカル作業場を目指します。
 
 万能IDEではありません。拡張機能、LSP、Gitクライアント、汎用ターミナル、任意コマンド実行を持たないことで、信頼しきれないプロジェクト内のテキストを静かに扱うことを目的にします。
 
@@ -17,11 +17,11 @@ Last reviewed: 2026-06-10
 
 ## Preview
 
-![hazakura editor L Mode writing surface](docs/images/v0.11-l-mode.png)
+![Hazakura Editor L Mode writing surface](docs/images/v0.11-l-mode.png)
 
-![hazakura editor Safe Editor with Markdown preview](docs/images/v0.11-safe-editor-preview.png)
+![Hazakura Editor Safe Editor with Markdown preview](docs/images/v0.11-safe-editor-preview.png)
 
-![hazakura editor diff comparison](docs/images/v0.11-diff-compare.png)
+![Hazakura Editor diff comparison](docs/images/v0.11-diff-compare.png)
 
 ## Developer Preview Summary
 
@@ -129,7 +129,7 @@ Example use case:
 - Failed or conflicted Save All from the app/window close dialog stops the close, selects the failed tab, and returns to the editor with the normal recovery actions visible
 - Discard All from the app/window close dialog clears matching unsaved recovery drafts so intentionally discarded edits are not offered after restart
 - Long file names are clipped or wrapped in tabs, the file tree, status/error rows, and close dialogs so core controls stay reachable
-- App bundle icon and start screen use the hazakura editor flower-and-leaf logo
+- App bundle icon and start screen use the Hazakura Editor flower-and-leaf logo
 - Optional Agent Workbench mode can launch one allowlisted `codex`, `opencode`, `pi`, or `claude` provider session in the selected workspace after restart-required mode enablement and responsibility-boundary consent
 - Agent Workbench renders the selected allowlisted provider's TUI output in a scoped pane, sends keyboard input only to the running provider process, supports Copy full path / Send full path to Agent from existing workspace file rows, and continues to treat provider-made file edits as ordinary external on-disk changes
 - Assist Surface settings can switch the outside companion slot between Apple Local Assist, CLI Agent, and Off after restart in the Developer / GitHub lane. The App Store submission lane forces Assist Surface off and does not bundle the Apple Local Assist helper.
@@ -153,7 +153,7 @@ Example use case:
 
 ## License
 
-hazakura editor本体は商用プロプライエタリソフトウェアとして扱います。第三者OSSのライセンスと出自メモは [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) を参照してください。
+Hazakura Editor本体は商用プロプライエタリソフトウェアとして扱います。第三者OSSのライセンスと出自メモは [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) を参照してください。
 
 ## Run
 
@@ -172,7 +172,7 @@ npm run build
 The built app is generated at:
 
 ```txt
-src-tauri/target/release/bundle/macos/hazakura editor.app
+src-tauri/target/release/bundle/macos/Hazakura Editor.app
 ```
 
 Build a warning-expected local DMG preview only after that release lane is explicitly approved:

@@ -37,8 +37,8 @@ export function useWindowTitle({
 
   useEffect(() => {
     const appName = isDeveloperDistributionLane()
-      ? "hazakura editor Dev"
-      : "hazakura editor";
+      ? "Hazakura Editor Dev"
+      : "Hazakura Editor";
     const title = selectedImage
       ? `${selectedImage.name} - ${appName}`
       : activeTab

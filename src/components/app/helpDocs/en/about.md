@@ -1,10 +1,10 @@
-# About hazakura editor
+# About Hazakura Editor
 
-hazakura editor is a Markdown-first safe editor for local text work. It is designed for reading, writing, previewing, comparing, and saving selected text files without turning the app into an IDE or command runner.
+Hazakura Editor is a Markdown-first safe editor for local text work. It is designed for reading, writing, previewing, comparing, and saving selected text files without turning the app into an IDE or command runner.
 
 ## App
 
-- Product name: hazakura editor
+- Product name: Hazakura Editor
 - Current app/package version: 0.17.0
 - Developer: Hazakura Lab
 - Primary surface: Safe Editor

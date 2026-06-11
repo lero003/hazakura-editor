@@ -113,7 +113,7 @@ export const openSourceAcknowledgements: HelpDoc = {
 
 export const aboutHazakuraEditor: HelpDoc = {
   id: "about",
-  title: "About hazakura editor",
+  title: "About Hazakura Editor",
   kicker: "Help",
   boundaryNoteTitle: "App identity",
   boundaryNoteBody:
