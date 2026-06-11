@@ -10,6 +10,7 @@ import {
   type PersistedWorkspaceState,
   type RecentEntry,
 } from "../types";
+import { isPathInsideDirectory } from "./utils";
 
 export function readStoredDrafts(): DraftRecord[] {
   const value = window.localStorage.getItem(DRAFT_STATE_STORAGE_KEY);
@@ -181,16 +182,132 @@ export function readPersistedWorkspaceState(): PersistedWorkspaceState | null {
 
 export function writePersistedWorkspaceState(state: PersistedWorkspaceState) {
   const existing = readPersistedWorkspaceState();
-  const workspaceRootBookmark =
-    state.workspaceRootBookmark !== undefined
-      ? state.workspaceRootBookmark
-      : existing?.workspaceRootPath === state.workspaceRootPath
-        ? existing.workspaceRootBookmark
-        : null;
+  const resolvedRoot = resolveWorkspaceRootForWrite(state, existing);
 
   window.localStorage.setItem(
     WORKSPACE_STATE_STORAGE_KEY,
-    JSON.stringify({ ...state, workspaceRootBookmark }),
+    JSON.stringify({
+      workspaceRootPath: resolvedRoot.workspaceRootPath,
+      workspaceRootBookmark: resolvedRoot.workspaceRootBookmark,
+      tabPaths: state.tabPaths,
+      activeTabPath: state.activeTabPath,
+    }),
+  );
+}
+
+// `resolveWorkspaceRootForWrite` decides which workspace
+// root (path + bookmark) to write alongside `state`. The
+// bookmark is the only thing the next launch needs to
+// re-authorize the same folder through the file picker,
+// but `useWorkspaceRestore` only consults the bookmark
+// when `persistedState.workspaceRootPath` is truthy, so
+// the path has to be preserved too on the partial-restore
+// shape. The hierarchy is:
+//
+// 1. An explicit `workspaceRootBookmark` on the incoming
+//    state always wins (the caller has spoken); the
+//    `workspaceRootPath` is taken from the incoming state
+//    as-is.
+// 2. Otherwise, if the workspaceRootPath is unchanged
+//    from the previous write, the previous bookmark is
+//    preserved (same workspace, same grant).
+// 3. Otherwise, if the incoming state lost its
+//    workspaceRootPath but at least one tab path still
+//    sits inside the previous workspace, the previous
+//    workspaceRootPath and its bookmark are preserved
+//    together (partial restore: the user has not actually
+//    left the folder, the workspace tree grant was just
+//    dropped on relaunch). Without this branch the next
+//    launch would not even reach the bookmark-resolution
+//    path because `useWorkspaceRestore` only attempts it
+//    for truthy `workspaceRootPath`.
+// 4. Otherwise the bookmark is null and the
+//    workspaceRootPath mirrors the incoming state
+//    (different workspace opened, or no in-workspace
+//    tab anchoring the previous folder).
+function resolveWorkspaceRootForWrite(
+  state: PersistedWorkspaceState,
+  existing: PersistedWorkspaceState | null,
+): {
+  workspaceRootPath: string | null;
+  workspaceRootBookmark: number[] | null;
+} {
+  if (state.workspaceRootBookmark !== undefined) {
+    return {
+      workspaceRootPath: state.workspaceRootPath ?? null,
+      workspaceRootBookmark: state.workspaceRootBookmark,
+    };
+  }
+  if (!existing) {
+    return {
+      workspaceRootPath: state.workspaceRootPath ?? null,
+      workspaceRootBookmark: null,
+    };
+  }
+  if (existing.workspaceRootPath === state.workspaceRootPath) {
+    return {
+      workspaceRootPath: existing.workspaceRootPath,
+      workspaceRootBookmark: existing.workspaceRootBookmark ?? null,
+    };
+  }
+  if (tabsReferenceExistingWorkspace(state, existing)) {
+    return {
+      workspaceRootPath: existing.workspaceRootPath,
+      workspaceRootBookmark: existing.workspaceRootBookmark ?? null,
+    };
+  }
+  return {
+    workspaceRootPath: state.workspaceRootPath ?? null,
+    workspaceRootBookmark: null,
+  };
+}
+
+// `tabsReferenceExistingWorkspace` returns true when the
+// incoming state lost its `workspaceRootPath` (e.g. a
+// partial restore where the workspace tree grant was
+// dropped on relaunch but the tab files are still
+// reachable) and at least one of its tab paths is still
+// strictly inside the previous `workspaceRootPath`.
+//
+// In that case the user has not actually left the old
+// folder — they are still editing a file in it. The
+// security-scoped bookmark is the only thing that lets
+// the next launch re-authorize that folder through the
+// file picker, so dropping it on this write would mean
+// the user has to pick the folder from scratch again
+// even though the partial restore already proved they
+// were just in it. Keeping the bookmark alive for this
+// shape is intentionally narrower than the
+// `useWorkspaceStatePersistence` empty-restore guard:
+// the effect-level guard only fires on
+// `tabs = [] && workspaceRootPath = null`, whereas this
+// helper also handles `tabs.length > 0 && workspaceRootPath = null`
+// when a tab path still anchors the workspace context.
+//
+// The check keys on `isPathInsideDirectory` rather than a
+// free-form string match so `..` segments, redundant
+// separators, and the workspace root itself cannot trick
+// the heuristic into dragging a stale bookmark across.
+function tabsReferenceExistingWorkspace(
+  state: PersistedWorkspaceState,
+  existing: PersistedWorkspaceState | null,
+): boolean {
+  if (!existing) {
+    return false;
+  }
+  if (existing.workspaceRootPath === null) {
+    return false;
+  }
+  if (state.workspaceRootPath !== null) {
+    return false;
+  }
+  if (state.tabPaths.length === 0) {
+    return false;
+  }
+
+  const existingRoot = existing.workspaceRootPath;
+  return state.tabPaths.some((tabPath) =>
+    isPathInsideDirectory(tabPath, existingRoot),
   );
 }
 

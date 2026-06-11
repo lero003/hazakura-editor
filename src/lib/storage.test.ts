@@ -1,0 +1,274 @@
+// Unit tests for `writePersistedWorkspaceState` and the
+// helpers around it. These tests pin the bookmark-preservation
+// contract that `useWorkspaceStatePersistence` relies on:
+//
+// 1. Same workspaceRootPath: bookmark is preserved.
+// 2. Different workspaceRootPath: bookmark is not dragged
+//    across workspaces.
+// 3. Empty incoming state with empty existing state:
+//    bookmark is null.
+// 4. workspaceRootPath goes from non-null to null but at
+//    least one tab path still references the old workspace:
+//    bookmark is preserved (this is the derived partial-restore
+//    case the empty-restore guard alone does not cover).
+// 5. workspaceRootPath goes from non-null to null and no
+//    tab path references the old workspace: bookmark is
+//    not preserved (the user has moved off the old folder).
+// 6. Explicit `workspaceRootBookmark: null` on the incoming
+//    state always wins (the caller is asserting "I want this
+//    cleared").
+
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { WORKSPACE_STATE_STORAGE_KEY, type PersistedWorkspaceState } from "../types";
+import {
+  readPersistedWorkspaceState,
+  writePersistedWorkspaceState,
+} from "./storage";
+
+function seedPersistedState(value: PersistedWorkspaceState) {
+  window.localStorage.setItem(
+    WORKSPACE_STATE_STORAGE_KEY,
+    JSON.stringify(value),
+  );
+}
+
+function readStored(): PersistedWorkspaceState | null {
+  return readPersistedWorkspaceState();
+}
+
+describe("writePersistedWorkspaceState", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
+  afterEach(() => {
+    window.localStorage.clear();
+  });
+
+  it("preserves the bookmark when the same workspace is written again", () => {
+    seedPersistedState({
+      workspaceRootPath: "/old/root",
+      workspaceRootBookmark: [1, 2, 3],
+      tabPaths: ["/old/root/note.md"],
+      activeTabPath: "/old/root/note.md",
+    });
+
+    writePersistedWorkspaceState({
+      workspaceRootPath: "/old/root",
+      tabPaths: ["/old/root/note.md", "/old/root/other.md"],
+      activeTabPath: "/old/root/other.md",
+    });
+
+    expect(readStored()).toEqual({
+      workspaceRootPath: "/old/root",
+      workspaceRootBookmark: [1, 2, 3],
+      tabPaths: ["/old/root/note.md", "/old/root/other.md"],
+      activeTabPath: "/old/root/other.md",
+    });
+  });
+
+  it("does not drag the old bookmark when a different workspace is written", () => {
+    seedPersistedState({
+      workspaceRootPath: "/old/root",
+      workspaceRootBookmark: [1, 2, 3],
+      tabPaths: ["/old/root/note.md"],
+      activeTabPath: "/old/root/note.md",
+    });
+
+    writePersistedWorkspaceState({
+      workspaceRootPath: "/new/root",
+      workspaceRootBookmark: [9, 9, 9],
+      tabPaths: ["/new/root/other.md"],
+      activeTabPath: "/new/root/other.md",
+    });
+
+    expect(readStored()).toEqual({
+      workspaceRootPath: "/new/root",
+      workspaceRootBookmark: [9, 9, 9],
+      tabPaths: ["/new/root/other.md"],
+      activeTabPath: "/new/root/other.md",
+    });
+  });
+
+  it("preserves the bookmark when the new state has no workspaceRootPath but a tab still references the existing workspace", () => {
+    // Derived partial-restore case: the workspace tree
+    // grant was lost on relaunch, but the tab file is still
+    // reachable. The user is still working in the same
+    // folder, so the bookmark is the only thing that lets
+    // the next launch re-authorize that folder.
+    seedPersistedState({
+      workspaceRootPath: "/old/root",
+      workspaceRootBookmark: [1, 2, 3],
+      tabPaths: ["/old/root/note.md"],
+      activeTabPath: "/old/root/note.md",
+    });
+
+    writePersistedWorkspaceState({
+      workspaceRootPath: null,
+      tabPaths: ["/old/root/note.md"],
+      activeTabPath: "/old/root/note.md",
+    });
+
+    expect(readStored()).toEqual({
+      workspaceRootPath: "/old/root",
+      workspaceRootBookmark: [1, 2, 3],
+      tabPaths: ["/old/root/note.md"],
+      activeTabPath: "/old/root/note.md",
+    });
+  });
+
+  it("preserves the workspaceRootPath and bookmark even when only one of several tab paths references the existing workspace", () => {
+    // A mixed tab list (some inside, some outside) still
+    // implies the user has not left the old workspace for
+    // good; one in-workspace tab is enough to keep both
+    // the workspaceRootPath and the bookmark alive. Keeping
+    // the path is what makes the bookmark useful on the
+    // next launch — `useWorkspaceRestore` only consults
+    // the bookmark when workspaceRootPath is truthy.
+    seedPersistedState({
+      workspaceRootPath: "/old/root",
+      workspaceRootBookmark: [1, 2, 3],
+      tabPaths: ["/old/root/note.md"],
+      activeTabPath: "/old/root/note.md",
+    });
+
+    writePersistedWorkspaceState({
+      workspaceRootPath: null,
+      tabPaths: ["/old/root/note.md", "/elsewhere/scratch.md"],
+      activeTabPath: "/old/root/note.md",
+    });
+
+    const stored = readStored();
+    expect(stored?.workspaceRootPath).toBe("/old/root");
+    expect(stored?.workspaceRootBookmark).toEqual([1, 2, 3]);
+  });
+
+  it("drops the bookmark when the new state has no workspaceRootPath and no tab path references the existing workspace", () => {
+    // The user closed the workspace and kept working on a
+    // tab from a different folder; the old bookmark is no
+    // longer relevant and would only confuse the next
+    // re-authorization attempt.
+    seedPersistedState({
+      workspaceRootPath: "/old/root",
+      workspaceRootBookmark: [1, 2, 3],
+      tabPaths: ["/old/root/note.md"],
+      activeTabPath: "/old/root/note.md",
+    });
+
+    writePersistedWorkspaceState({
+      workspaceRootPath: null,
+      tabPaths: ["/elsewhere/scratch.md"],
+      activeTabPath: "/elsewhere/scratch.md",
+    });
+
+    expect(readStored()).toEqual({
+      workspaceRootPath: null,
+      workspaceRootBookmark: null,
+      tabPaths: ["/elsewhere/scratch.md"],
+      activeTabPath: "/elsewhere/scratch.md",
+    });
+  });
+
+  it("drops the bookmark when the new state has no workspaceRootPath and an empty tab list", () => {
+    // The user closed the workspace and every tab; nothing
+    // left points at the old folder, so the bookmark
+    // is dropped.
+    seedPersistedState({
+      workspaceRootPath: "/old/root",
+      workspaceRootBookmark: [1, 2, 3],
+      tabPaths: ["/old/root/note.md"],
+      activeTabPath: "/old/root/note.md",
+    });
+
+    writePersistedWorkspaceState({
+      workspaceRootPath: null,
+      tabPaths: [],
+      activeTabPath: null,
+    });
+
+    expect(readStored()).toEqual({
+      workspaceRootPath: null,
+      workspaceRootBookmark: null,
+      tabPaths: [],
+      activeTabPath: null,
+    });
+  });
+
+  it("writes the empty state cleanly when the existing state was already empty", () => {
+    seedPersistedState({
+      workspaceRootPath: null,
+      workspaceRootBookmark: null,
+      tabPaths: [],
+      activeTabPath: null,
+    });
+
+    writePersistedWorkspaceState({
+      workspaceRootPath: null,
+      tabPaths: [],
+      activeTabPath: null,
+    });
+
+    expect(readStored()).toEqual({
+      workspaceRootPath: null,
+      workspaceRootBookmark: null,
+      tabPaths: [],
+      activeTabPath: null,
+    });
+  });
+
+  it("honors an explicit `workspaceRootBookmark: null` on the incoming state", () => {
+    // Callers that want to clear the bookmark for any
+    // reason (e.g. tests, future "forget this workspace"
+    // affordance) must be able to do so without falling
+    // back to the preservation heuristic.
+    seedPersistedState({
+      workspaceRootPath: "/old/root",
+      workspaceRootBookmark: [1, 2, 3],
+      tabPaths: ["/old/root/note.md"],
+      activeTabPath: "/old/root/note.md",
+    });
+
+    writePersistedWorkspaceState({
+      workspaceRootPath: "/old/root",
+      workspaceRootBookmark: null,
+      tabPaths: ["/old/root/note.md"],
+      activeTabPath: "/old/root/note.md",
+    });
+
+    expect(readStored()?.workspaceRootBookmark).toBeNull();
+  });
+
+  it("writes a fresh bookmark when the incoming state supplies one for a brand new workspace", () => {
+    // No prior state, the caller already has a fresh
+    // bookmark ready for the brand new workspace. The
+    // heuristic must not interfere with this path.
+    writePersistedWorkspaceState({
+      workspaceRootPath: "/brand/new",
+      workspaceRootBookmark: [42, 42, 42],
+      tabPaths: [],
+      activeTabPath: null,
+    });
+
+    expect(readStored()).toEqual({
+      workspaceRootPath: "/brand/new",
+      workspaceRootBookmark: [42, 42, 42],
+      tabPaths: [],
+      activeTabPath: null,
+    });
+  });
+
+  it("does not crash when existing state is malformed JSON", () => {
+    // Defensive: a corrupted entry must not throw and
+    // must not block the write.
+    window.localStorage.setItem(WORKSPACE_STATE_STORAGE_KEY, "{not json");
+
+    writePersistedWorkspaceState({
+      workspaceRootPath: "/new",
+      tabPaths: [],
+      activeTabPath: null,
+    });
+
+    expect(readStored()?.workspaceRootPath).toBe("/new");
+    expect(readStored()?.workspaceRootBookmark).toBeNull();
+  });
+});
