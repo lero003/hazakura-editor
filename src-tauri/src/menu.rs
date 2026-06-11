@@ -27,6 +27,7 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
     let spellcheck_enabled = state.map(|state| state.spellcheck_enabled).unwrap_or(true);
     let l_mode_enabled = state.map(|state| state.l_mode_enabled).unwrap_or(false);
     let agent_workbench_allowed = agent_workbench_allowed_by_distribution();
+    let apple_assist_allowed = apple_assist_allowed_by_distribution();
     let agent_workbench_active = state
         .map(|state| state.agent_workbench_active)
         .unwrap_or(false);
@@ -270,10 +271,12 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
     if agent_workbench_allowed {
         view_items.push(&view_agent_window);
     }
+    if apple_assist_allowed {
+        view_items.push(&view_apple_assist_window);
+        view_items.push(&view_separator_after_companion);
+    }
     view_items.extend([
-        &view_apple_assist_window as &dyn IsMenuItem<R>,
-        &view_separator_after_companion,
-        &view_l_mode,
+        &view_l_mode as &dyn IsMenuItem<R>,
         &view_wrap,
         &view_invisibles,
         &view_spellcheck,

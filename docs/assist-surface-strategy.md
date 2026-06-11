@@ -150,10 +150,10 @@ Apple Local Assist may reuse Agent Workbench implementation patterns such as ava
 
 ## Store And Distribution Variants
 
-Future distribution may use build-time variants rather than runtime settings alone:
+Current submission work uses build-time variants rather than runtime settings alone:
 
-- App Store build: Safe Editor, L Mode, Diff / explicit change review, and Apple Local Assist when available; no External Agent Workbench, no CLI launch, no arbitrary process execution, no provider-add UI, and no custom updater.
-- Developer / GitHub build: App Store feature set plus External Agent Workbench when the boundary remains explicit; this lane may carry warning-expected DMG previews until Developer ID signing and notarization are ready.
+- App Store build: Safe Editor, L Mode, Diff / explicit change review, and local export; no External Agent Workbench, no CLI launch, no Apple Local Assist helper, no external AI/API calls, no arbitrary process execution, no provider-add UI, and no custom updater.
+- Developer / GitHub build: Safe Editor feature set plus optional Apple Local Assist and External Agent Workbench when their boundaries remain explicit; this lane may carry warning-expected DMG previews until Developer ID signing and notarization are ready.
 
 Build-time separation is preferred for distribution trust because it is easier to explain and audit than hiding risky features behind settings.
 
@@ -166,11 +166,11 @@ v0.11 shipped L Mode WYSIWYG-tier polish without adding Apple Local Assist. Late
 Recommended sequence:
 
 1. v0.12 shipped Apple Local Assist planning and alpha live-helper foundation: availability detection, rough writing requests, AI edit transaction, unavailable-state UI, and Diff / discard escape hatches.
-2. v0.13 shipped the distribution probe: App Store / Developer build separation, sandbox / entitlement draft, and helper parent-spawn proof.
+2. v0.13 shipped the distribution probe: App Store / Developer build separation, sandbox / entitlement draft, and helper parent-spawn proof for the then-current Apple Local Assist experiment.
 3. v0.14 shipped L Mode stability plus bounded Apple Local Assist harness polish: target-centered document context, safer context snapping, L Mode review-sheet horizontal-scroll cleanup, and localized apply-error copy.
 4. v0.15-v0.17 carried user-test polish, App Store-quality request packets, and warning-expected DMG preview evidence. Treat those notes as historical background, not the active queue.
-5. For current UX and submission-prep work, start from `docs/current-work.md`. Apple Local Assist remains a document-assist surface only, and App Store work must keep External Agent Workbench out of that lane.
-6. Use v1.0 as the App Store Candidate only if the App Store build can omit External Agent Workbench cleanly and Apple Local Assist remains document-assist only.
+5. For current UX and submission-prep work, start from `docs/current-work.md` and `docs/app-store-build.md`. Apple Local Assist remains a Developer / GitHub lane document-assist surface, and current App Store work must omit both External Agent Workbench and Apple Local Assist helper.
+6. Use v1.0 as the App Store Candidate only if the App Store build can omit External Agent Workbench, CLI launch, Apple Local Assist helper, and external AI/API calls cleanly.
 
 ## Non-Goals
 

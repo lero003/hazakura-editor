@@ -31,3 +31,21 @@ pub(crate) fn ensure_agent_workbench_allowed_for_lane(lane: Option<&str>) -> Res
 
     Ok(())
 }
+
+pub(crate) fn apple_assist_allowed_by_distribution() -> bool {
+    !is_app_store_distribution_lane()
+}
+
+pub(crate) fn ensure_apple_assist_allowed_by_distribution() -> Result<(), String> {
+    ensure_apple_assist_allowed_for_lane(Some(distribution_lane()))
+}
+
+pub(crate) fn ensure_apple_assist_allowed_for_lane(lane: Option<&str>) -> Result<(), String> {
+    if is_app_store_distribution_lane_for_lane(lane) {
+        return Err(
+            "Apple Local Assist is not available in the App Store distribution lane.".to_string(),
+        );
+    }
+
+    Ok(())
+}

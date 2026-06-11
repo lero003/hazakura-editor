@@ -97,7 +97,7 @@ describe("useAgentWorkbenchPreferences", () => {
     expect(result.current.assistSurfaceActive).toBe("external-cli");
   });
 
-  it("forces Apple Local Assist in the App Store distribution lane", () => {
+  it("forces the assist surface off in the App Store distribution lane", () => {
     vi.stubEnv("VITE_HAZAKURA_DISTRIBUTION_LANE", "app-store");
     window.localStorage.setItem(AGENT_WORKBENCH_ENABLED_STORAGE_KEY, "true");
     window.localStorage.setItem(AGENT_WORKBENCH_CONSENT_STORAGE_KEY, "true");
@@ -111,8 +111,8 @@ describe("useAgentWorkbenchPreferences", () => {
     expect(result.current.agentWorkbenchActive).toBe(false);
     expect(result.current.agentWorkbenchPreference).toBe(false);
     expect(result.current.agentWorkbenchAvailable).toBe(false);
-    expect(result.current.assistSurfaceActive).toBe("apple-local");
-    expect(result.current.assistSurfacePreference).toBe("apple-local");
+    expect(result.current.assistSurfaceActive).toBe("none");
+    expect(result.current.assistSurfacePreference).toBe("none");
 
     act(() => {
       result.current.setAgentWorkbenchPreference(true);
@@ -120,7 +120,7 @@ describe("useAgentWorkbenchPreferences", () => {
     });
 
     expect(result.current.agentWorkbenchPreference).toBe(false);
-    expect(result.current.assistSurfacePreference).toBe("apple-local");
+    expect(result.current.assistSurfacePreference).toBe("none");
   });
 
   it("accepts the allowlisted providers (codex / opencode / pi / claude)", () => {

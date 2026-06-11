@@ -26,6 +26,7 @@ use crate::commands::apple_assist_supervisor::{
     generate_candidate_via_helper, probe_availability_via_helper, AppleAssistHelperStore,
     HelperAvailability, HelperCandidate, WireEnvelope,
 };
+use crate::distribution::*;
 use crate::security::window_guard::*;
 use serde::{Deserialize, Serialize};
 
@@ -123,6 +124,7 @@ pub(crate) fn probe_apple_assist_availability_with_label(
     helper_store: &AppleAssistHelperStore,
 ) -> Result<AppleAssistAvailability, String> {
     ensure_label_is_main_or_apple_assist(label)?;
+    ensure_apple_assist_allowed_by_distribution()?;
     probe_apple_assist_availability_with_helper(helper_store)
 }
 
@@ -164,8 +166,29 @@ pub(crate) fn generate_apple_assist_candidate_with_label(
     request: AppleAssistRequest,
 ) -> Result<AppleAssistResponse, String> {
     ensure_label_is_main(label)?;
+    ensure_apple_assist_allowed_by_distribution()?;
     validate_request(&request)?;
     generate_apple_assist_candidate_with_helper(helper_store, &request)
+}
+
+#[cfg(desktop)]
+#[cfg_attr(not(test), allow(dead_code))]
+pub(crate) fn probe_apple_assist_availability_with_label_for_lane(
+    label: &str,
+    lane: Option<&str>,
+) -> Result<(), String> {
+    ensure_label_is_main_or_apple_assist(label)?;
+    ensure_apple_assist_allowed_for_lane(lane)
+}
+
+#[cfg(desktop)]
+#[cfg_attr(not(test), allow(dead_code))]
+pub(crate) fn generate_apple_assist_candidate_with_label_for_lane(
+    label: &str,
+    lane: Option<&str>,
+) -> Result<(), String> {
+    ensure_label_is_main(label)?;
+    ensure_apple_assist_allowed_for_lane(lane)
 }
 
 // Pure validation. The `with_label` wrapper is the gate; this

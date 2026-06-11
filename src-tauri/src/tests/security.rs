@@ -62,6 +62,22 @@ fn agent_workbench_distribution_gate_allows_developer_lane() {
 }
 
 #[test]
+fn apple_assist_distribution_gate_rejects_app_store_lane() {
+    let err = ensure_apple_assist_allowed_for_lane(Some("app-store"))
+        .expect_err("App Store distribution lane must reject Apple Local Assist");
+
+    assert!(err.contains("Apple Local Assist"), "{err}");
+    assert!(err.contains("App Store"), "{err}");
+}
+
+#[test]
+fn apple_assist_distribution_gate_allows_developer_lane() {
+    ensure_apple_assist_allowed_for_lane(None).expect("default lane must allow Apple Local Assist");
+    ensure_apple_assist_allowed_for_lane(Some("developer"))
+        .expect("developer lane must allow Apple Local Assist");
+}
+
+#[test]
 fn app_store_distribution_lane_rejects_agent_window_reverse_link() {
     open_main_agent_pane_with_label_for_lane(MAIN_WINDOW_LABEL, Some("developer"))
         .expect("developer lane may route the Agent reverse-link");
@@ -169,6 +185,65 @@ fn app_store_distribution_lane_rejects_list_agent_provider_availability() {
         list_agent_provider_availability_with_label_for_lane(MAIN_WINDOW_LABEL, Some("app-store"))
             .expect_err("App Store lane must reject list_agent_provider_availability");
     assert!(err.contains("Agent Workbench"), "{err}");
+    assert!(err.contains("App Store"), "{err}");
+}
+
+#[test]
+fn app_store_distribution_lane_rejects_apple_assist_window_commands() {
+    open_apple_assist_window_with_label_for_lane(MAIN_WINDOW_LABEL, Some("developer"))
+        .expect("developer lane may open Apple Assist");
+    toggle_apple_assist_window_with_label_for_lane(MAIN_WINDOW_LABEL, Some("developer"))
+        .expect("developer lane may toggle Apple Assist");
+    set_apple_assist_window_theme_with_label_for_lane(MAIN_WINDOW_LABEL, Some("developer"))
+        .expect("developer lane may theme Apple Assist");
+
+    let err = open_apple_assist_window_with_label_for_lane(MAIN_WINDOW_LABEL, Some("app-store"))
+        .expect_err("App Store lane must reject open_apple_assist_window");
+    assert!(err.contains("Apple Local Assist"), "{err}");
+    assert!(err.contains("App Store"), "{err}");
+
+    let err = toggle_apple_assist_window_with_label_for_lane(MAIN_WINDOW_LABEL, Some("app-store"))
+        .expect_err("App Store lane must reject toggle_apple_assist_window");
+    assert!(err.contains("Apple Local Assist"), "{err}");
+    assert!(err.contains("App Store"), "{err}");
+
+    let err =
+        set_apple_assist_window_theme_with_label_for_lane(MAIN_WINDOW_LABEL, Some("app-store"))
+            .expect_err("App Store lane must reject set_apple_assist_window_theme");
+    assert!(err.contains("Apple Local Assist"), "{err}");
+    assert!(err.contains("App Store"), "{err}");
+}
+
+#[test]
+fn app_store_distribution_lane_rejects_apple_assist_generation_commands() {
+    probe_apple_assist_availability_with_label_for_lane(MAIN_WINDOW_LABEL, Some("developer"))
+        .expect("developer lane may probe Apple Assist");
+    generate_apple_assist_candidate_with_label_for_lane(MAIN_WINDOW_LABEL, Some("developer"))
+        .expect("developer lane may generate Apple Assist candidates");
+    request_apply_ai_edit_transaction_with_label_for_lane(
+        APPLE_ASSIST_WINDOW_LABEL,
+        Some("developer"),
+    )
+    .expect("developer lane may request Apple Assist apply from the Apple Assist window");
+
+    let err =
+        probe_apple_assist_availability_with_label_for_lane(MAIN_WINDOW_LABEL, Some("app-store"))
+            .expect_err("App Store lane must reject Apple Assist probe");
+    assert!(err.contains("Apple Local Assist"), "{err}");
+    assert!(err.contains("App Store"), "{err}");
+
+    let err =
+        generate_apple_assist_candidate_with_label_for_lane(MAIN_WINDOW_LABEL, Some("app-store"))
+            .expect_err("App Store lane must reject Apple Assist generation");
+    assert!(err.contains("Apple Local Assist"), "{err}");
+    assert!(err.contains("App Store"), "{err}");
+
+    let err = request_apply_ai_edit_transaction_with_label_for_lane(
+        APPLE_ASSIST_WINDOW_LABEL,
+        Some("app-store"),
+    )
+    .expect_err("App Store lane must reject Apple Assist apply requests");
+    assert!(err.contains("Apple Local Assist"), "{err}");
     assert!(err.contains("App Store"), "{err}");
 }
 

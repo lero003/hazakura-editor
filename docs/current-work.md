@@ -46,9 +46,9 @@ certificate, or App Store Connect access.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| P0 | App Store entitlement / signing lane | Define the official App Store build/signing path. Do not claim App Store-ready, notarized, submitted, or approved status until verified. |
+| P0 | App Store entitlement / signing lane | Define the official helper-free App Store build/signing path. Do not claim App Store-ready, notarized, submitted, or approved status until verified. |
 | P0 | Distribution probe helper entitlement wording | `scripts/probe-macos-distribution.sh` should check the helper for `com.apple.security.inherit`, while the app bundle check remains `com.apple.security.app-sandbox`. |
-| P1 | App Review Notes final copy | Keep the product name `hazakura editor`, describe reauthorization as current Open / Open Folder guidance unless a CTA exists, and say CLI Agent / Agent Workbench execution surfaces are omitted from the App Store lane. |
+| P1 | App Review Notes final copy | Keep private draft notes under ignored `docs/internal/`; public docs should only carry generic review boundaries and say CLI Agent / Agent Workbench execution surfaces are omitted from the App Store lane. |
 | P1 | Public Privacy Policy URL / metadata | Finalize public Privacy Policy URL, support URL, category, keywords, screenshots, age rating, and App Store metadata. |
 | P1 | Third-party license packet | Generate or review the complete lockfile-derived license packet before public submission. Help acknowledgements alone are not the final legal packet. |
 | P2 | Bundle-size follow-up | Measure first. Split Help / Diagnostics / Assist chunks only if it reduces real startup or review risk. |
@@ -62,7 +62,7 @@ certificate, or App Store Connect access.
 - Manual smoke: `docs/smoke-checklist.md`
 - Release gates: `docs/source-release-checklist.md`,
   `docs/dmg-preview-checklist.md`, `docs/release-pre-check.md`
-- App Review draft: `docs/app-store-review-notes-draft.md`
+- Private App Review draft: ignored `docs/internal/` files only
 - Historical v0.17 App Store-quality work:
   `docs/archive/operations/app-store-v0.17/`
 

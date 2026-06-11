@@ -86,6 +86,7 @@ type UseCommandPaletteControllerOptions = {
   activeTab: EditorTab | null;
   activeTabId: string | null;
   appleAssistAvailability: AppleAssistAvailability;
+  appleLocalAssistAllowed: boolean;
   appleAssistCopy: AppleAssistCopy;
   editorPaneRef: RefObject<EditorPaneHandle | null>;
   lModeCopy: LModeCopy;
@@ -99,6 +100,7 @@ export function useCommandPaletteController({
   activeTab,
   activeTabId,
   appleAssistAvailability,
+  appleLocalAssistAllowed,
   appleAssistCopy,
   editorPaneRef,
   lModeCopy,
@@ -422,23 +424,27 @@ export function useCommandPaletteController({
             },
           ]
         : []),
-      {
-        category: "Writing Companion",
-        id: "apple-assist.openWindow",
-        keywords: [
-          "apple",
-          "local",
-          "assist",
-          "writing",
-          "companion",
-          "foundation",
-          "models",
-        ],
-        label: "Open Apple Local Assist Window",
-        run: () => {
-          void actions.openAppleAssistWindow(themePreference);
-        },
-      },
+      ...(appleLocalAssistAllowed
+        ? [
+            {
+              category: "Writing Companion",
+              id: "apple-assist.openWindow",
+              keywords: [
+                "apple",
+                "local",
+                "assist",
+                "writing",
+                "companion",
+                "foundation",
+                "models",
+              ],
+              label: "Open Apple Local Assist Window",
+              run: () => {
+                void actions.openAppleAssistWindow(themePreference);
+              },
+            },
+          ]
+        : []),
       ...(externalCliAllowed
         ? [
             {
@@ -564,7 +570,7 @@ export function useCommandPaletteController({
           actions.setPreferencesDialogMode("about");
         },
       },
-      ...(appleAssistAvailability.kind === "available"
+      ...(appleLocalAssistAllowed && appleAssistAvailability.kind === "available"
         ? [
             {
               category: appleAssistCopy.commandCategory,
@@ -614,6 +620,7 @@ export function useCommandPaletteController({
       activeTab,
       activeTabId,
       appleAssistAvailability,
+      appleLocalAssistAllowed,
       appleAssistCopy,
       editorPaneRef,
       externalCliAllowed,

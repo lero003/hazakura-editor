@@ -33,7 +33,9 @@ export type UseAppleAssistAvailabilityResult = {
   probed: boolean;
 };
 
-export function useAppleAssistAvailability(): UseAppleAssistAvailabilityResult {
+export function useAppleAssistAvailability(
+  enabled = true,
+): UseAppleAssistAvailabilityResult {
   const [availability, setAvailability] = useState<AppleAssistAvailability>({
     kind: "unsupported",
   });
@@ -41,6 +43,14 @@ export function useAppleAssistAvailability(): UseAppleAssistAvailabilityResult {
 
   useEffect(() => {
     let disposed = false;
+
+    if (!enabled) {
+      setAvailability({ kind: "disabled" });
+      setProbed(true);
+      return () => {
+        disposed = true;
+      };
+    }
 
     probeAppleAssistAvailability()
       .then((snapshot) => {
@@ -65,7 +75,7 @@ export function useAppleAssistAvailability(): UseAppleAssistAvailabilityResult {
     return () => {
       disposed = true;
     };
-  }, []);
+  }, [enabled]);
 
   return {
     availability,

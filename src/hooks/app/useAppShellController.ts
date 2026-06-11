@@ -25,6 +25,7 @@ import {
   openAppleAssistWindow,
   toggleAppleAssistWindow,
 } from "../../lib/tauri";
+import { isAppleLocalAssistSurfaceAllowed } from "../../lib/distributionLane";
 import { useAgentWorkbenchController } from "../agent/useAgentWorkbenchController";
 import { useAppExitConfirmation } from "./useAppExitConfirmation";
 import { useAppleAssistAvailability } from "../agent/useAppleAssistAvailability";
@@ -51,6 +52,8 @@ import { useAppShellSideEffectsController } from "./useAppShellSideEffectsContro
 import { useAutoBackupRestore } from "../workspace/useAutoBackupRestore";
 
 export function useAppShellController() {
+  const appleLocalAssistAllowed = isAppleLocalAssistSurfaceAllowed();
+
   // section: state pool (orchestrator extracts dep-free leaf hooks)
   const foundation = useAppShellFoundation();
 
@@ -931,8 +934,9 @@ export function useAppShellController() {
   });
 
   // section: command palette + global search
-  const { availability: appleAssistAvailability } =
-    useAppleAssistAvailability();
+  const { availability: appleAssistAvailability } = useAppleAssistAvailability(
+    appleLocalAssistAllowed,
+  );
 
   // The Apple Assist target is a 4-field projection of the
   // active tab. We don't pass the whole tab so the hook stays
@@ -1018,6 +1022,9 @@ export function useAppShellController() {
         void openAgentWindow(theme);
       },
       openAppleAssistWindow: (theme) => {
+        if (!appleLocalAssistAllowed) {
+          return;
+        }
         void openAppleAssistWindow(theme);
       },
       openFile,
@@ -1040,7 +1047,8 @@ export function useAppShellController() {
     },
     activeTab,
     activeTabId,
-    appleAssistAvailability,
+      appleAssistAvailability,
+      appleLocalAssistAllowed,
     appleAssistCopy,
     editorPaneRef,
     lModeCopy,
@@ -1059,6 +1067,9 @@ export function useAppShellController() {
         void openAgentWindow(themePreference);
       },
       openAppleAssistWindow: () => {
+        if (!appleLocalAssistAllowed) {
+          return;
+        }
         void openAppleAssistWindow(themePreference);
       },
       openFile,
@@ -1272,6 +1283,7 @@ export function useAppShellController() {
     agentWorkbenchProvider,
     agentWorkbenchRestartRequired,
     appleAssistAvailability,
+    appleLocalAssistAllowed,
     assistSurfaceActive,
     assistSurfacePreference,
     autoBackupRestoreCopy,
@@ -1380,6 +1392,9 @@ export function useAppShellController() {
       void openAgentWindow(themePreference);
     },
     onOpenAppleAssistWindow: () => {
+      if (!appleLocalAssistAllowed) {
+        return;
+      }
       void toggleAppleAssistWindow(themePreference);
     },
     onCloseReviewDesk: closeReviewDesk,
@@ -1397,6 +1412,9 @@ export function useAppShellController() {
       // intentionally NOT called: showing / hiding the Apple
       // Assist window is a side-surface action, not a
       // workspace exit.
+      if (!appleLocalAssistAllowed) {
+        return;
+      }
       void toggleAppleAssistWindow(themePreference);
     },
     onOpenCommandPalette: openCommandPalette,

@@ -26,15 +26,22 @@ submission-prep, or quality-polish slice.
 - `external-agent-review-workflow.md`: external implementation agent plus Codex review workflow.
 - `source-release-checklist.md`: source-preview release readiness.
 - `dmg-preview-checklist.md`: warning-expected DMG preview readiness.
+- `app-store-build.md`: public-safe helper-free Mac App Store build, signing, and smoke boundary.
 - `smoke-checklist.md`: manual smoke checklist.
 - `handoff.md`: concise handoff for the next coding agent.
 
 ## Current Planning Backlogs
 
 - `l-mode-plan.md`: L Mode / えるモード source-preserving WYSIWYG Accuracy Ramp planning memo.
-- `app-store-review-notes-draft.md`: internal App Review Notes draft for later submission-copy adjustment.
 - `apple-local-assist-distribution-plan.md`: Apple Local Assist / App Store distribution planning memo.
 - `apple-local-assist-writing-companion-plan.md`: Apple Local Assist Writing Companion / external Assist Window UX direction.
+
+## Local-Only Internal Notes
+
+Keep account-specific App Store Connect notes, certificate names, signing
+identity strings, screenshots, contact details, or private review drafts
+under `docs/internal/` or `*.local.md`. Those paths are intentionally
+git-ignored and should not be referenced from public-facing docs.
 
 ## Historical And Archive Areas
 

@@ -271,9 +271,12 @@ pub(crate) fn open_apple_assist_window<R: tauri::Runtime>(
     // Unlike the Agent window it is NOT gated on
     // `agent_workbench_active` / `agent_workbench_consent`: Apple
     // Local Assist is a different trust boundary (Writing
-    // Companion, not Code Agent). Only the main window may spawn
-    // it, matching the Agent window's gate.
+    // Companion, not Code Agent). It is still distribution-gated
+    // so the helper-free App Store lane cannot spawn the window.
+    // Only the main window may spawn it, matching the Agent
+    // window's label gate.
     ensure_main_window(&window)?;
+    ensure_apple_assist_allowed_by_distribution()?;
 
     let theme = theme.unwrap_or_else(|| "dark".to_string());
 
@@ -291,6 +294,7 @@ pub(crate) fn toggle_apple_assist_window<R: tauri::Runtime>(
     // call `open_apple_assist_window` so they keep the predictable
     // "open or focus" behavior.
     ensure_main_window(&window)?;
+    ensure_apple_assist_allowed_by_distribution()?;
 
     if let Some(existing) = app.get_webview_window(APPLE_ASSIST_WINDOW_LABEL) {
         if existing.is_visible().unwrap_or(false) {
@@ -313,6 +317,26 @@ pub(crate) fn toggle_apple_assist_window<R: tauri::Runtime>(
 #[cfg_attr(not(test), allow(dead_code))]
 pub(crate) fn toggle_apple_assist_window_with_label(label: &str) -> Result<(), String> {
     ensure_label_is_main(label)
+}
+
+#[cfg(desktop)]
+#[cfg_attr(not(test), allow(dead_code))]
+pub(crate) fn open_apple_assist_window_with_label_for_lane(
+    label: &str,
+    lane: Option<&str>,
+) -> Result<(), String> {
+    ensure_label_is_main(label)?;
+    ensure_apple_assist_allowed_for_lane(lane)
+}
+
+#[cfg(desktop)]
+#[cfg_attr(not(test), allow(dead_code))]
+pub(crate) fn toggle_apple_assist_window_with_label_for_lane(
+    label: &str,
+    lane: Option<&str>,
+) -> Result<(), String> {
+    ensure_label_is_main(label)?;
+    ensure_apple_assist_allowed_for_lane(lane)
 }
 
 fn show_or_create_apple_assist_window<R: tauri::Runtime>(
@@ -375,6 +399,7 @@ pub(crate) fn set_apple_assist_window_theme<R: tauri::Runtime>(
     // the main window can also push a theme update, mirroring
     // the `set_agent_window_theme` pattern.
     ensure_label_is_main_or_apple_assist(window.label())?;
+    ensure_apple_assist_allowed_by_distribution()?;
     let bg = agent_window_background_color(&theme);
     let os_theme = agent_window_os_theme(&theme);
 
@@ -397,6 +422,7 @@ pub(crate) fn request_apply_ai_edit_transaction<R: tauri::Runtime>(
     payload: serde_json::Value,
 ) -> Result<(), String> {
     ensure_apple_assist_window(&window)?;
+    ensure_apple_assist_allowed_by_distribution()?;
     app.emit_to(MAIN_WINDOW_LABEL, APPLY_AI_EDIT_TRANSACTION_EVENT, payload)
         .map_err(|err| format!("Cannot request Apple Assist edit: {err}"))?;
     Ok(())
@@ -406,6 +432,26 @@ pub(crate) fn request_apply_ai_edit_transaction<R: tauri::Runtime>(
 #[cfg_attr(not(test), allow(dead_code))]
 pub(crate) fn request_apply_ai_edit_transaction_with_label(label: &str) -> Result<(), String> {
     ensure_label_is_apple_assist(label)
+}
+
+#[cfg(desktop)]
+#[cfg_attr(not(test), allow(dead_code))]
+pub(crate) fn set_apple_assist_window_theme_with_label_for_lane(
+    label: &str,
+    lane: Option<&str>,
+) -> Result<(), String> {
+    ensure_label_is_main_or_apple_assist(label)?;
+    ensure_apple_assist_allowed_for_lane(lane)
+}
+
+#[cfg(desktop)]
+#[cfg_attr(not(test), allow(dead_code))]
+pub(crate) fn request_apply_ai_edit_transaction_with_label_for_lane(
+    label: &str,
+    lane: Option<&str>,
+) -> Result<(), String> {
+    ensure_label_is_apple_assist(label)?;
+    ensure_apple_assist_allowed_for_lane(lane)
 }
 
 #[tauri::command]

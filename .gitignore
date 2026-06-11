@@ -4,6 +4,9 @@ src-tauri/target/
 src-tauri/gen/
 src-helpers/apple-assist/.build/
 binaries/
+src-tauri/profiles/*.provisionprofile
+docs/internal/
+*.local.md
 *.log
 .DS_Store
 habitat-report/

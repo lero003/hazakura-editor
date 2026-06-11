@@ -14,13 +14,13 @@ The app reads and writes files or folders you select through the app UI. It does
 
 The app stores local preferences such as theme, tab state, editor settings, recent items, and unsaved recovery state on this Mac. If auto-backup is enabled, backup snapshots are written under `.hazakura/backups/...` inside the selected workspace.
 
-## Apple Local Assist
+## App Store assist features
 
-Apple Local Assist is an optional, experimental, on-device assist surface. When available and explicitly used, it may process selected text or nearby document context on this Mac through Apple's local model support. Suggested edits are not saved automatically; they remain reviewable before you save.
+The App Store submission build does not include Apple Local Assist, external AI calls, analytics, telemetry, crash reporting, or cloud sync. Developer / GitHub builds may expose Apple Local Assist as an explicit alpha feature.
 
 ## Network and analytics
 
-The app code does not include analytics, telemetry, crash reporting, or cloud sync. The Markdown preview does not fetch external images. Explicit user actions, such as printing, showing a file in Finder, moving a file to Trash, or opening Apple Local Assist, may hand selected paths or temporary files to macOS system services.
+The app code does not include analytics, telemetry, crash reporting, or cloud sync. The Markdown preview does not fetch external images. Explicit user actions, such as printing, showing a file in Finder, or moving a file to Trash, may hand selected paths or temporary files to macOS system services.
 
 ## Contact
 

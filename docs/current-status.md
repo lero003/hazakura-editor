@@ -45,8 +45,10 @@ Last reviewed: 2026-06-10 (documentation cleanup)
   layer, not a separate saved document model.
 - Diff / explicit change review for active editor changes, recovery
   drafts, external-change conflicts, and Apple Local Assist edits.
-- Optional Apple Local Assist alpha as an availability-gated, on-device
-  assist surface with explicit unsaved AI edit transactions.
+- Optional Apple Local Assist alpha in the Developer / GitHub lane as an
+  availability-gated, on-device assist surface with explicit unsaved AI
+  edit transactions. The current App Store submission lane omits this
+  helper and forces Assist Surface off.
 - Optional Developer / GitHub lane Agent Workbench, separated from the
   App Store lane.
 - Help-readable Store-document drafts and Support Diagnostics UI.
@@ -84,17 +86,18 @@ baseline, and smoke evidence are archived under
 - `docs/assist-surface-strategy.md`: assist-surface direction.
 - `docs/apple-local-assist-distribution-plan.md`: Apple Local Assist and lane planning.
 - `docs/apple-local-assist-writing-companion-plan.md`: Apple Local Assist companion UX direction.
-- `docs/app-store-review-notes-draft.md`: internal App Review Notes draft.
+- `docs/app-store-build.md`: public-safe App Store build/signing boundary.
 
 ## Next Safe Actions
 
 1. For UX work, start with `docs/current-work.md` and pick one item:
    Markdown preview task checkboxes, workspace sidebar collapse,
    WorkspaceTree rename markup, or encoding-only dirty indication.
-2. For App Store submission prep, start with `docs/current-work.md` and
-   `docs/app-store-review-notes-draft.md`; keep certificate,
-   provisioning, signing, notarization, upload, and review handling as
-   explicit distribution-lane work.
+2. For App Store submission prep, start with `docs/current-work.md`
+   and `docs/app-store-build.md`; keep account-specific notes under
+   ignored `docs/internal/` files;
+   keep certificate, provisioning, signing, notarization, upload, and
+   review handling as explicit distribution-lane work.
 3. For Apple Local Assist, use `docs/assist-surface-strategy.md`,
    `docs/apple-local-assist-distribution-plan.md`, and
    `docs/apple-local-assist-writing-companion-plan.md`; keep direct

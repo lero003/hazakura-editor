@@ -130,7 +130,7 @@ Example use case:
 - App bundle icon and start screen use the hazakura editor flower-and-leaf logo
 - Optional Agent Workbench mode can launch one allowlisted `codex`, `opencode`, `pi`, or `claude` provider session in the selected workspace after restart-required mode enablement and responsibility-boundary consent
 - Agent Workbench renders the selected allowlisted provider's TUI output in a scoped pane, sends keyboard input only to the running provider process, supports Copy full path / Send full path to Agent from existing workspace file rows, and continues to treat provider-made file edits as ordinary external on-disk changes
-- Assist Surface settings can switch the outside companion slot between Apple Local Assist, CLI Agent, and Off after restart. Apple Local Assist is an experimental alpha surface for lightweight on-device text help on supported Macs: short summaries, rephrasing, heading/tag ideas, light cleanup, and explicit unsaved AI edit transactions that remain reviewable through diff before save.
+- Assist Surface settings can switch the outside companion slot between Apple Local Assist, CLI Agent, and Off after restart in the Developer / GitHub lane. The App Store submission lane forces Assist Surface off and does not bundle the Apple Local Assist helper.
 - Apple Local Assist review requests build document context around the active target instead of blindly sending the document head, separate rough user requests from internal instructions, guard stale candidates, and localize common apply-error states before showing them to the user.
 
 ## Project Docs
@@ -147,6 +147,7 @@ Example use case:
 - [External Agent Review Workflow](docs/external-agent-review-workflow.md): external implementation agent + Codex review workflow
 - [Source Release Checklist](docs/source-release-checklist.md): source-only developer previewの準備境界
 - [DMG Preview Checklist](docs/dmg-preview-checklist.md): warning-expected DMG preview laneの準備・検証境界
+- [App Store Build](docs/app-store-build.md): Mac App Store提出用helper-free build / signing / smoke境界
 
 ## License
 
@@ -203,7 +204,7 @@ Developer preview release boundary:
 - Current package/app version is `0.17.0` across npm, Tauri, Cargo, and lockfile metadata.
 - The current warning-expected DMG preview tag is `v0.17.0`; its release-note evidence lives in [0.17.0 Warning-expected DMG Preview](docs/releases/0.17.0-warning-expected-dmg-preview.release.md).
 - Source users build locally with `npm ci` and `npm run build`.
-- The generated local `.app` declares macOS 11.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. Apple Local Assist's bundled helper requires macOS 26+ and local Apple Intelligence availability to return live candidates. The app is not Developer ID signed or notarized.
+- The generated App Store preview `.app` declares macOS 11.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. The App Store submission lane is helper-free and does not include Agent Workbench, CLI Agent, Apple Local Assist helper, or external AI/API calls. Developer / GitHub builds may still include the Apple Local Assist helper. The app is not Developer ID signed or notarized.
 - The latest published warning-expected DMG preview is [v0.17.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.17.0). The v0.17.0 release notes live in [0.17.0 Warning-expected DMG Preview](docs/releases/0.17.0-warning-expected-dmg-preview.release.md).
 
 ## Known Limits
@@ -217,7 +218,7 @@ Developer preview release boundary:
 - Agent Workbench is optional and explicit. It does not provide a general shell prompt, arbitrary command input UI, arbitrary path input UI, provider-add UI, multiple sessions, session restore, auto-apply, auto-commit, or Git integration.
 - Apple Local Assist is an experimental alpha surface, not the main AI feature. Live generation depends on Apple Foundation Models availability on the current Mac; output quality may vary, and the feature may change or be removed.
 - Apple Local Assist is intended for lightweight text assistance only. It is not a replacement for External Agent Workbench, external AI agents, local LLM runtimes, code review, multi-file understanding, long-document restructuring, autonomous agent work, or advanced reasoning.
-- Apple Local Assist has no network fallback, App Store/TestFlight distribution change, background rewriting, auto-save, tool calling, or workspace-wide indexing.
+- Apple Local Assist has no network fallback, background rewriting, auto-save, tool calling, or workspace-wide indexing. It is omitted from the helper-free App Store submission lane and remains a Developer / GitHub lane alpha feature unless a later App Store-specific review reopens it.
 - CLI provider internals are outside hazakura's safety boundary. What happens inside `codex`, `opencode`, `pi`, or `claude` depends on the provider and the user's choices.
 - Agent Workbench does not expose a shell prompt, arbitrary command field, arbitrary path field, or general terminal.
 - Outside Agent Workbench there is no Git integration, LSP, terminal, AI assistance, plugin system, arbitrary command execution, or project-wide analysis.

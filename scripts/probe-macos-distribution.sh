@@ -50,25 +50,25 @@ codesign --verify --deep --strict --verbose=2 "$APP"
 
 echo
 echo "== app signature details =="
-codesign -dvvv --entitlements :- "$APP" 2>&1 || true
+codesign -dvvv --entitlements - "$APP" 2>&1 || true
 
 echo
 echo "== helper signature details =="
 if [ -x "$HELPER" ]; then
-    codesign -dvvv --entitlements :- "$HELPER" 2>&1 || true
+    codesign -dvvv --entitlements - "$HELPER" 2>&1 || true
 else
     echo "(helper unavailable)"
 fi
 
 echo
 echo "== sandbox entitlement check =="
-if codesign -d --entitlements :- "$APP" 2>/dev/null | grep -q "com.apple.security.app-sandbox"; then
+if codesign -d --entitlements - "$APP" 2>/dev/null | grep -q "com.apple.security.app-sandbox"; then
     echo "app sandbox entitlement: present"
 else
     echo "app sandbox entitlement: missing"
 fi
 
-if [ -x "$HELPER" ] && codesign -d --entitlements :- "$HELPER" 2>/dev/null | grep -q "com.apple.security.app-sandbox"; then
+if [ -x "$HELPER" ] && codesign -d --entitlements - "$HELPER" 2>/dev/null | grep -q "com.apple.security.app-sandbox"; then
     echo "helper sandbox entitlement: present"
 else
     echo "helper sandbox entitlement: missing or helper unavailable"

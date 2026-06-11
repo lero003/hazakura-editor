@@ -8,7 +8,7 @@ The diagnostics pane runs the same `collectDiagnostics()` helper that the existi
 
 ## What it includes
 
-App version, distribution lane (`developer` or `app-store`), the current theme, whether line wrap, L Mode, auto-backup, and Apple Local Assist availability are on, and the platform reported by the browser. The pane refreshes on demand and shows the time the snapshot was built.
+App version, distribution lane (`developer` or `app-store`), the current theme, whether line wrap, L Mode, auto-backup, and assist availability are on, and the platform reported by the browser. The pane refreshes on demand and shows the time the snapshot was built.
 
 ## What it does not include
 

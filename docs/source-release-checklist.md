@@ -58,9 +58,9 @@ npm run build
 git diff --check
 ```
 
-`npm run build` here means the **App Store preview lane** (`npm run build:app-store-preview`, producing `hazakura editor.app` with bundle identifier `lab.hazakura.note`). Add `npm run build:macos-lanes` (or `npm run build:developer-preview`) when the source / local-app tag also needs to prove the Developer / GitHub lane (`hazakura editor Dev.app`, `lab.hazakura.note.dev`). Do not add `npm run build:dmg-preview`; that lane is governed by `docs/dmg-preview-checklist.md`.
+`npm run build` here means the **helper-free App Store preview lane** (`npm run build:app-store-preview`, producing `hazakura editor.app` with bundle identifier `dev.hazakura.editor`). Add `npm run build:macos-lanes` (or `npm run build:developer-preview`) when the source / local-app tag also needs to prove the Developer / GitHub lane (`hazakura editor Dev.app`, `lab.hazakura.note.dev`). Do not add `npm run build:dmg-preview`; that lane is governed by `docs/dmg-preview-checklist.md`.
 
-**Apple Local Assist helper verification** (v0.12+ required):
+**Apple Local Assist helper verification** (Developer / GitHub lane only):
 
 ```bash
 npm run build:apple-assist-helper:live
@@ -69,7 +69,8 @@ npm run build:apple-assist-helper:live
 This builds the Swift helper in live mode and runs the JSON-over-stdio smoke test (availability probe + candidate generation). Verify:
 - Helper binary is produced at `src-tauri/target/release/hazakura-apple-assist-helper`
 - Smoke test returns `availability: { kind: "available" }` (or `unavailable`/`unsupported` with reason on unsupported hardware)
-- Helper is bundled into the app via `tauri.conf.json` `bundle.externalBin` (verify with `codesign -dv --verbose=2 <app>` and check `Contents/MacOS/hazakura-apple-assist-helper` exists)
+- Helper is bundled into the Developer / GitHub app via `tauri.conf.json` `bundle.externalBin` (verify with `codesign -dv --verbose=2 <app>` and check `Contents/MacOS/hazakura-apple-assist-helper` exists). Developer / GitHub lane build scripts intentionally unset `APPLE_SIGNING_IDENTITY`; any real certificate identity belongs only to the explicit App Store submit command.
+- Helper is absent from the helper-free App Store preview / submission lane
 - Fixture mode smoke also passes: `npm run build:apple-assist-helper:fixture`
 
 The Vite chunk-size warning is acceptable for the source preview if it is still listed in known limits.

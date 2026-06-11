@@ -49,7 +49,7 @@ Before implementation, the external agent should read:
 - `docs/development-automation.md`
 - `docs/external-agent-review-workflow.md`
 - any boundary document directly touched by the slice, especially `docs/security-boundary.md` or `docs/agent-workbench-boundary.md`
-- `docs/app-store-review-notes-draft.md` when the slice touches App Store review notes or submission copy
+- ignored `docs/internal/` notes when the slice touches private App Store review notes or submission copy
 
 Implementation rules:
 

@@ -1,0 +1,14 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "build": {
+    "beforeBuildCommand": "npm run build:vite"
+  },
+  "bundle": {
+    "category": "Productivity",
+    "externalBin": [],
+    "macOS": {
+      "entitlements": "./entitlements/mac-app-store.entitlements",
+      "signingIdentity": "-"
+    }
+  }
+}

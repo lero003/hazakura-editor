@@ -167,7 +167,7 @@ Run when Agent Workbench, provider availability, terminal sizing, or Agent Windo
 Run when `src/lib/tauri/appleAssist.ts`, `src-tauri/src/commands/apple_assist.rs`, `src-tauri/src/commands/apple_assist_supervisor.rs`, `src-helpers/apple-assist/`, `useAppleAssistAvailability`, `useAppleAssistCandidate`, `src/lib/locale/appleAssist.ts`, or the Apple Assist companion / command palette entries change.
 
 1. Build the live helper with `npm run build:apple-assist-helper:live`; confirm the probe smoke returns an availability envelope. On a Mac where Apple Foundation Models is available and `SystemLanguageModel.default.supportsLocale()` is true, optionally run `HAZAKURA_APPLE_ASSIST_LIVE_SMOKE_GENERATE=1 npm run build:apple-assist-helper:live` and confirm a candidate or honest error envelope.
-2. Confirm `npm run build` bundles `Contents/MacOS/hazakura-apple-assist-helper` and signs it with the local app bundle.
+2. Confirm `npm run build:developer-preview` bundles `Contents/MacOS/hazakura-apple-assist-helper` and signs it with the local app bundle. Confirm `npm run build:app-store-preview` does not bundle the helper.
 3. Confirm the Settings / Agent Workbench Preferences surface does not list Apple Local Assist as a CLI agent provider — it is a separate Assist Surface provider class.
 4. Confirm no menu entry, status bar item, autosave path, or background timer runs Apple Local Assist generation without an explicit user request.
 5. In the built app, select `Apple Local Assist (Experimental)`, restart if prompted, open the companion from normal editor, issue a rough request, and confirm the buffer becomes dirty without auto-saving.

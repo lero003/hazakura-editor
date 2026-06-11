@@ -23,7 +23,7 @@ What is **not** done yet:
 - no `minimumSystemVersion` bump; the editor-wide value remains `11.0`
 - no release tag, no GitHub Release, no App Store submission for this live helper state
 
-v0.13 has started the App Store build-lane probe. The current preview gate is intentionally modest: `HAZAKURA_DISTRIBUTION_LANE=app-store` / `VITE_HAZAKURA_DISTRIBUTION_LANE=app-store` hides the External Agent Workbench surface in frontend preferences, normalizes stale `external-cli` preferences to Apple Local Assist, and rejects Agent Workbench IPC on the Rust command surface. Draft sandbox entitlement files now exist, local ad-hoc sandbox signing verifies, and the real sandboxed `hazakura-editor` parent can spawn the inherited-sandbox helper and receive an availability envelope. This is not a complete App Store bundle profile yet; Apple Developer / App Store signing, upload validation, and App Review notes remain separate v0.13 slices.
+The current App Store submission lane has moved to a stricter helper-free shape: `HAZAKURA_DISTRIBUTION_LANE=app-store` / `VITE_HAZAKURA_DISTRIBUTION_LANE=app-store` hides External Agent Workbench, forces Assist Surface off, rejects Agent Workbench and Apple Local Assist IPC on the Rust command surface, and uses an App Store Tauri config with no `externalBin`. Earlier sandbox-helper spawn proof remains historical evidence for the Apple Local Assist experiment, not the current submission default.
 
 ## Official Information Confirmed (2026-06-05, slice 7)
 
@@ -250,13 +250,14 @@ Include:
 - Safe Editor
 - L Mode
 - Diff / explicit change review
-- Apple Local Assist when available
 - bounded workspace file access through user-selected files/folders
 
 Exclude:
 
 - External Agent Workbench
 - CLI provider launch
+- Apple Local Assist helper / Apple Intelligence helper
+- external AI/API calls
 - arbitrary process execution
 - generic terminal behavior
 - provider-add UI
@@ -358,25 +359,24 @@ Target:
   readiness
 - finalize App Review Notes, privacy/support metadata, and third-party
   license packet
-- keep Agent Workbench out of the App Store lane
+- keep Agent Workbench, CLI launch, Apple Local Assist helper, and
+  external AI/API calls out of the App Store lane
 
 ### v1.0: App Store Candidate
 
 Target:
 
 - TestFlight feedback incorporated
-- App Store build submitted with Safe Editor + Apple Local Assist only
-- Developer build remains separate if Agent Workbench continues
+- App Store build submitted as Safe Editor + L Mode + local review/export only
+- Developer build remains separate if Apple Local Assist or Agent Workbench continues
 
 ## App Review Notes To Prepare
 
 Before App Store submission, prepare concise review notes that explain:
 
 - the app is a Markdown/text editor
-- Apple Local Assist is optional and on-device
-- the app checks availability at runtime
-- generated text only changes the unsaved editor buffer after explicit user action, records an AI edit transaction, and remains reviewable before save
-- the App Store build does not include External Agent Workbench or arbitrary command execution
+- Apple Local Assist is omitted from the submitted App Store build
+- the App Store build does not include External Agent Workbench, CLI launch, arbitrary command execution, Apple Local Assist helper, external AI/API calls, or network-required features
 - file access is user-selected and workspace-bounded
 
 ## References

@@ -73,7 +73,10 @@ Out of scope for this lane:
 Goal: prepare the reviewable App Store lane without mixing it with the
 Developer / GitHub preview lane.
 
-Use `docs/current-work.md` and `docs/app-store-review-notes-draft.md`.
+Use `docs/current-work.md` and `docs/app-store-build.md`.
+Keep account-specific App Store Connect notes, certificate names,
+signing identities, screenshots, contact details, and private reviewer
+copy under ignored `docs/internal/` files.
 
 Required work:
 
@@ -83,7 +86,7 @@ Required work:
   screenshots, category, keywords, age rating, and metadata.
 - Review complete third-party license material from lockfiles.
 - Confirm App Store lane omits CLI Agent / Agent Workbench execution
-  surfaces while keeping Apple Local Assist explicit and availability-gated.
+  surfaces, Apple Local Assist helper, and external AI/API calls.
 - Keep all submitted-build claims tied to verified local or App Store
   Connect evidence.
 
@@ -98,10 +101,11 @@ user opens a different lane.
 
 The intended stable distribution shape remains two public binary lanes:
 
-- App Store build: Safe Editor + L Mode + Diff / explicit change review
-  + Apple Local Assist, without External Agent Workbench or CLI launch.
-- Developer / GitHub build: the same base plus optional Agent Workbench
-  for allowlisted local CLI providers.
+- App Store build: Safe Editor + L Mode + Diff / explicit change review,
+  without External Agent Workbench, CLI launch, Apple Local Assist helper,
+  or external AI/API calls.
+- Developer / GitHub build: the same base plus optional Apple Local
+  Assist and Agent Workbench for allowlisted local CLI providers.
 
 Use:
 

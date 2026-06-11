@@ -97,20 +97,20 @@ describe("AgentWorkbenchPreferencesPane", () => {
     );
   });
 
-  it("hides the CLI Agent option in the App Store distribution lane", () => {
+  it("hides CLI Agent and Apple Local Assist options in the App Store distribution lane", () => {
     vi.stubEnv("VITE_HAZAKURA_DISTRIBUTION_LANE", "app-store");
 
     render(
       <AgentWorkbenchPreferencesPane
         {...baseProps}
-        assistSurfacePreference="apple-local"
+        assistSurfacePreference="none"
       />,
     );
 
     expect(screen.queryByRole("option", { name: "CLI Agent" })).toBeNull();
     expect(
-      screen.getByRole("option", { name: "Apple Local Assist (Experimental)" }),
-    ).toBeTruthy();
+      screen.queryByRole("option", { name: "Apple Local Assist (Experimental)" }),
+    ).toBeNull();
     expect(screen.getByRole("option", { name: "Off" })).toBeTruthy();
   });
 

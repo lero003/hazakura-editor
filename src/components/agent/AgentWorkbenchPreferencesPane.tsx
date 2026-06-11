@@ -4,7 +4,10 @@ import type {
   AppleAssistAvailability,
 } from "../../lib/tauri";
 import { useAgentProviderAvailability } from "../../hooks/agent/useAgentProviderAvailability";
-import { isExternalCliAssistSurfaceAllowed } from "../../lib/distributionLane";
+import {
+  isAppleLocalAssistSurfaceAllowed,
+  isExternalCliAssistSurfaceAllowed,
+} from "../../lib/distributionLane";
 import {
   AGENT_WORKBENCH_PROVIDERS,
   type AssistSurfacePreference,
@@ -54,12 +57,14 @@ export function AgentWorkbenchPreferencesPane({
   workspaceRootPath,
 }: AgentWorkbenchPreferencesPaneProps) {
   const externalCliAllowed = isExternalCliAssistSurfaceAllowed();
+  const appleLocalAssistAllowed = isAppleLocalAssistSurfaceAllowed();
   const { availabilityByProvider } =
     useAgentProviderAvailability(externalCliAllowed);
   const currentAvailability = availabilityByProvider.get(provider);
   const currentProviderUnavailable =
     currentAvailability !== undefined && !currentAvailability.available;
-  const showAppleSettings = assistSurfacePreference === "apple-local";
+  const showAppleSettings =
+    appleLocalAssistAllowed && assistSurfacePreference === "apple-local";
   const showCliSettings =
     externalCliAllowed && assistSurfacePreference === "external-cli";
   const assistSurfaceRestartRequired =
@@ -84,7 +89,9 @@ export function AgentWorkbenchPreferencesPane({
               )
             }
           >
-            <option value="apple-local">{copy.assistSurfaceApple}</option>
+            {appleLocalAssistAllowed ? (
+              <option value="apple-local">{copy.assistSurfaceApple}</option>
+            ) : null}
             {externalCliAllowed ? (
               <option value="external-cli">
                 {copy.assistSurfaceExternalCli}

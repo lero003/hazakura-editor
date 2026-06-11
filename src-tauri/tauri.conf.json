@@ -2,7 +2,7 @@
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "hazakura editor",
   "version": "0.17.0",
-  "identifier": "lab.hazakura.note",
+  "identifier": "dev.hazakura.editor",
   "build": {
     "beforeDevCommand": "npm run dev:vite",
     "devUrl": "http://127.0.0.1:1420",
