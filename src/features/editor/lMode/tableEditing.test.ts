@@ -162,14 +162,22 @@ describe("L Mode table editing", () => {
   });
 
   it("deletes whole selected table body rows", () => {
+    // v0.18 caret boundary around table syntax. The row
+    // delete shortcut is an opt-in for an explicit
+    // whole-line selection. A selection that starts or
+    // ends inside a cell is treated as normal text and
+    // falls through to the standard CodeMirror Backspace /
+    // Delete handler, in line with the L Mode plan's
+    // "preserve normal Markdown semantics" rule.
     const doc =
       "| プラン | 内容 | 想定ユーザー |\n" +
       "| --- | --- | --- |\n" +
       "| Preview | 開発版・検証用 | 早期に試したい人 |\n" +
       "| Standard | 基本機能 | Markdownを書く人 |\n" +
       "| Supporter | 支援つき | 開発を応援したい人 |\n";
-    const selectionStart = offsetOf(doc, "Preview");
-    const selectionEnd = offsetOf(doc, "Markdownを書く人") + "Markdownを書く人".length;
+    const selectionStart = offsetOf(doc, "Preview") - 2;
+    const standardRow = "| Standard | 基本機能 | Markdownを書く人 |";
+    const selectionEnd = offsetOf(doc, standardRow) + standardRow.length;
     const view = makeView(doc, selectionStart, selectionEnd);
 
     expect(deleteSelectedTableRows(view)).toBe(true);
@@ -177,6 +185,55 @@ describe("L Mode table editing", () => {
       "| プラン | 内容 | 想定ユーザー |\n" +
         "| --- | --- | --- |\n" +
         "| Supporter | 支援つき | 開発を応援したい人 |\n",
+    );
+  });
+
+  // v0.18 caret boundary around table syntax.
+  //
+  // L Mode should preserve normal Markdown semantics for
+  // Backspace / Delete. The "delete a row" shortcut only
+  // makes sense when the user is clearly targeting a full
+  // body line; a selection that is strictly inside a single
+  // cell (e.g. a double-clicked word) should fall through to
+  // the standard CodeMirror Backspace / Delete handler so
+  // the selected text is removed and the rest of the row
+  // stays intact.
+  it("does not delete the row when only a cell's text is selected", () => {
+    const doc =
+      "| プラン | 内容 |\n" +
+      "| --- | --- |\n" +
+      "| Preview | 表示確認 |\n";
+    const cellStart = offsetOf(doc, "Preview");
+    const cellEnd = cellStart + "Preview".length;
+    const view = makeView(doc, cellStart, cellEnd);
+
+    expect(deleteSelectedTableRows(view)).toBe(false);
+    // The function refused the command; the doc must be
+    // untouched, so the standard Backspace / Delete handler
+    // gets a clean shot at the selected text.
+    expect(view.state.doc.toString()).toBe(doc);
+  });
+
+  it("deletes a single body row when the whole body line is selected", () => {
+    // Companion to the "cell text only" test: when the
+    // selection spans the full body line (line start to
+    // line end, without the trailing newline), the row
+    // delete shortcut still fires.
+    const doc =
+      "| プラン | 内容 |\n" +
+      "| --- | --- |\n" +
+      "| Preview | 表示確認 |\n" +
+      "| Standard | 基本機能 |\n";
+    const row = "| Preview | 表示確認 |";
+    const rowStart = offsetOf(doc, row);
+    const rowEnd = rowStart + row.length;
+    const view = makeView(doc, rowStart, rowEnd);
+
+    expect(deleteSelectedTableRows(view)).toBe(true);
+    expect(view.state.doc.toString()).toBe(
+      "| プラン | 内容 |\n" +
+        "| --- | --- |\n" +
+        "| Standard | 基本機能 |\n",
     );
   });
 });

@@ -52,6 +52,16 @@ over copy-heavy or product-voice-sensitive work.
 
 ## Completed v0.18 Slices
 
+- 2026-06-11: L Mode table Backspace / Delete now preserves
+  normal Markdown semantics: a selection that is strictly
+  inside a single cell (e.g. a double-clicked word) falls
+  through to the standard CodeMirror handler, while an
+  explicit whole-body-line selection still triggers the
+  row delete shortcut. Tests pin both shapes; the existing
+  v0.18 `MoveToTrashConfirmDialog`, encoding-only dirty,
+  preview task checkboxes, left-sidebar restore rail,
+  preview startup, sandboxed bookmark restore, and
+  `WorkspaceTree` rename DOM slices stay green.
 - 2026-06-11: `MoveToTrashConfirmDialog` now follows the same
   focus-management pattern as the v0.7 dirty-tab / app-close
   dialogs: it owns a dialog ref and a Cancel button ref, the

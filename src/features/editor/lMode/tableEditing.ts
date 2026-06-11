@@ -402,6 +402,21 @@ function selectedBodyRowRange(
 
   const first = lines[0];
   const last = lines[lines.length - 1];
+  // Only treat the selection as a "delete the whole row"
+  // intent when it spans the body line(s) from the first
+  // line's start to the last line's end. A selection that
+  // is strictly inside a single cell (e.g. a double-clicked
+  // word, or a cell-internal Shift+Arrow selection) must
+  // fall through to the standard CodeMirror Backspace /
+  // Delete handler so the selected text is removed and the
+  // rest of the row stays intact. L Mode is supposed to
+  // preserve normal Markdown editing semantics; the row
+  // delete shortcut is a deliberate opt-in for an explicit
+  // whole-line selection.
+  if (range.from !== first.from || range.to !== last.to) {
+    return null;
+  }
+
   const deleteTo = last.to < doc.length ? last.to + 1 : last.to;
   return { from: first.from, to: deleteTo };
 }
