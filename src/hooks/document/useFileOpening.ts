@@ -272,12 +272,17 @@ export function useFileOpening({
         return;
       }
 
+      if (isSupportedImageFile(path)) {
+        await openImagePreview(path);
+        return;
+      }
+
       await openFilePath(path, { persistFileBookmark: true });
     } catch (err) {
       setGlobalError(String(err));
       setStatus("Open failed");
     }
-  }, [openFilePath, setGlobalError, setStatus]);
+  }, [openFilePath, openImagePreview, setGlobalError, setStatus]);
 
   return {
     createNewFile,

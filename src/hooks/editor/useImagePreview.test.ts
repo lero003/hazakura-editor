@@ -80,6 +80,41 @@ describe("useImagePreview", () => {
     expect(options.onStatus).toHaveBeenCalledWith("Image preview opened");
   });
 
+  it("opens a directly selected image outside the active workspace without workspace-root validation", async () => {
+    vi.mocked(openImageFile).mockResolvedValue(
+      image("/outside/photo.png", "photo.png"),
+    );
+    const { options, result } = setup({ workspaceRootPath: "/workspace" });
+
+    let opened: unknown = false;
+    await act(async () => {
+      opened = await result.current.openImagePreview("/outside/photo.png");
+    });
+
+    expect(openImageFile).toHaveBeenCalledWith("/outside/photo.png");
+    expect(openWorkspaceImage).not.toHaveBeenCalled();
+    expect(opened).toBe(true);
+    expect(result.current.selectedImage?.path).toBe("/outside/photo.png");
+    expect(options.onStatus).toHaveBeenCalledWith("Image preview opened");
+  });
+
+  it("keeps workspace image previews inside the active workspace-root validation path", async () => {
+    vi.mocked(openWorkspaceImage).mockResolvedValue(
+      image("/workspace/photo.png", "photo.png"),
+    );
+    const { result } = setup({ workspaceRootPath: "/workspace" });
+
+    await act(async () => {
+      await result.current.openImagePreview("/workspace/photo.png");
+    });
+
+    expect(openWorkspaceImage).toHaveBeenCalledWith(
+      "/workspace",
+      "/workspace/photo.png",
+    );
+    expect(openImageFile).not.toHaveBeenCalled();
+  });
+
   it("keeps the latest image preview when an older request resolves last", async () => {
     let resolveFirst: (value: ImagePreviewDocument) => void = () => {};
     let resolveSecond: (value: ImagePreviewDocument) => void = () => {};

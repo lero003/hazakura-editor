@@ -1,6 +1,10 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createSecurityScopedBookmark, openTextFile } from "../../lib/tauri";
+import {
+  createSecurityScopedBookmark,
+  openTextFile,
+  pickMarkdownFile,
+} from "../../lib/tauri";
 import { writePersistedFileBookmark } from "../../lib/storage";
 import { useFileOpening } from "./useFileOpening";
 
@@ -46,6 +50,7 @@ describe("useFileOpening", () => {
   beforeEach(() => {
     vi.mocked(createSecurityScopedBookmark).mockReset();
     vi.mocked(openTextFile).mockReset();
+    vi.mocked(pickMarkdownFile).mockReset();
     vi.mocked(writePersistedFileBookmark).mockReset();
   });
 
@@ -58,6 +63,19 @@ describe("useFileOpening", () => {
 
     expect(options.openImagePreview).toHaveBeenCalledWith("/outside/photo.png");
     expect(openTextFile).not.toHaveBeenCalled();
+  });
+
+  it("routes a file-dialog-selected image to image preview instead of text open", async () => {
+    vi.mocked(pickMarkdownFile).mockResolvedValueOnce("/outside/photo.png");
+    const { options, result } = setup();
+
+    await act(async () => {
+      await result.current.openFile();
+    });
+
+    expect(options.openImagePreview).toHaveBeenCalledWith("/outside/photo.png");
+    expect(openTextFile).not.toHaveBeenCalled();
+    expect(writePersistedFileBookmark).not.toHaveBeenCalled();
   });
 
   it("stores a file bookmark when a directly opened text file is outside the workspace", async () => {

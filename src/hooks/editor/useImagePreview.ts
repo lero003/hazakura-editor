@@ -6,6 +6,7 @@ import {
   useState,
 } from "react";
 import { openImageFile, openWorkspaceImage } from "../../lib/tauri";
+import { isPathInsideDirectory } from "../../lib/utils";
 import type { CompareViewState, EditorTab, ImagePreviewState } from "../../types";
 
 type UseImagePreviewOptions = {
@@ -47,7 +48,8 @@ export function useImagePreview({
       previewRequestSeqRef.current = requestSeq;
 
       try {
-        const image = workspaceRootPath
+        const image =
+          workspaceRootPath && isPathInsideDirectory(path, workspaceRootPath)
           ? await openWorkspaceImage(workspaceRootPath, path)
           : await openImageFile(path);
         if (previewRequestSeqRef.current !== requestSeq) {
