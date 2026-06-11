@@ -219,7 +219,7 @@ describe("useWorkspaceRestore", () => {
     expect(resolvedTabs[0].path).toBe("/a.md");
   });
 
-  it("records the workspace-tree error and still reports restore complete", async () => {
+  it("skips a lost workspace-tree grant without showing a global error", async () => {
     readPersistedWorkspaceState.mockReturnValue({
       workspaceRootPath: "/old/root",
       tabPaths: ["/old/root/note.md"],
@@ -246,13 +246,11 @@ describe("useWorkspaceRestore", () => {
     await waitFor(() => {
       expect(args.setRestoreComplete).toHaveBeenCalledWith(true);
     });
+    expect(onError).not.toHaveBeenCalled();
     await waitFor(() => {
-      expect(onError).toHaveBeenCalledWith(
-        expect.stringContaining("Cannot read folder: forbidden"),
+      expect(args.onStatus).toHaveBeenCalledWith(
+        "Workspace restored: 1 tab reopened, 1 path skipped (use Open or Open Folder to reauthorize)",
       );
-    });
-    await waitFor(() => {
-      expect(args.onStatus).toHaveBeenCalledWith("Workspace restore skipped");
     });
     // The workspace tree failure must not leave the active
     // workspaceRootPath poisoned; the user is asked to pick

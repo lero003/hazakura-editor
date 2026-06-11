@@ -26,7 +26,7 @@ describe("status bar CSS", () => {
 
     expect(statusBarRule).toMatch(/min-height:\s*28px/);
     expect(statusBarRule).toMatch(/overflow:\s*visible/);
-    expect(detailRule).toMatch(/max-width:\s*min\(36ch,\s*34vw\)/);
+    expect(detailRule).toMatch(/max-width:\s*min\(64ch,\s*52vw\)/);
     expect(mediumRule).toMatch(/\.status-bar-detail\s*{[^}]*display:\s*none/s);
     expect(compactRule).toMatch(
       /\.status-bar-format-label\s*{[^}]*display:\s*none/s,

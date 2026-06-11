@@ -53,6 +53,10 @@ Pick one item at a time.
   "../dist"`, the sandbox entitlement includes `network.client` for the
   Tauri/WebKit runtime, and a local packaged-app smoke rendered the
   start screen.
+- 2026-06-11: Restarting a sandboxed preview no longer shows a global
+  error when the stored workspace folder grant is gone. The restore flow
+  skips the stale folder path, keeps recoverable file tabs, and surfaces
+  the existing reauthorization status hint instead.
 
 ## Submission-Prep Queue
 

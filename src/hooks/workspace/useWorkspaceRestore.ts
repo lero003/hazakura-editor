@@ -51,12 +51,20 @@ export function useWorkspaceRestore({
       onStatus("Restoring workspace...");
 
       try {
-        if (persistedState.workspaceRootPath) {
-          const tree = await listWorkspaceTree(persistedState.workspaceRootPath);
+        let skippedWorkspaceRootRestore = false;
 
-          if (!cancelled) {
-            setWorkspaceTree(tree);
-            setWorkspaceRootPath(persistedState.workspaceRootPath);
+        if (persistedState.workspaceRootPath) {
+          try {
+            const tree = await listWorkspaceTree(
+              persistedState.workspaceRootPath,
+            );
+
+            if (!cancelled) {
+              setWorkspaceTree(tree);
+              setWorkspaceRootPath(persistedState.workspaceRootPath);
+            }
+          } catch {
+            skippedWorkspaceRootRestore = true;
           }
         }
 
@@ -84,7 +92,10 @@ export function useWorkspaceRestore({
               result.status === "fulfilled",
           )
           .map((result) => createEditorTab(result.value));
-        const skippedRestoreCount = openResults.length - restoredTabs.length;
+        const skippedRestoreCount =
+          openResults.length -
+          restoredTabs.length +
+          (skippedWorkspaceRootRestore ? 1 : 0);
         const storedDrafts = readStoredDrafts();
         const recoverableDrafts = restoredTabs.flatMap((tab) => {
           const draft = storedDrafts.find(

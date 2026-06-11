@@ -21,6 +21,10 @@ Last reviewed: 2026-06-11 (v0.18 UX polish slices)
   preview lane: `frontendDist` is explicit in the App Store configs and
   the sandbox entitlement includes `com.apple.security.network.client`
   for the Tauri/WebKit runtime.
+- Sandboxed workspace restore treats a stale stored folder grant as a
+  reauthorization skip, not a global error toast. This does not implement
+  persistent security-scoped bookmarks; users still reauthorize through
+  Open Folder when needed.
 
 ## Current Work Queue
 
@@ -37,6 +41,8 @@ Left workspace sidebar collapse / restore is also complete in normal
 mode without changing the file-tree model.
 App Store preview packaged-app smoke now renders the start screen
 instead of a blank WebKit surface.
+Sandboxed workspace restore also avoids the restart-time folder
+permission error toast when only the stored folder path lost permission.
 
 Submission-prep items in the same queue include App Store
 entitlement/signing lane definition, App Review Notes final copy,
@@ -83,9 +89,10 @@ accessibility smoke.
   --verify --deep --strict --verbose=2`, entitlement inspection,
   embedded asset string inspection, packaged-app launch/log smoke, and
   `git diff --check` passed on 2026-06-11 after the Markdown preview
-  checkbox, Help-doc drift, workspace sidebar collapse, and App Store
-  preview black-screen fixes. A Vite/browser smoke also confirmed
-  normal-mode sidebar collapse / restore DOM state.
+  checkbox, Help-doc drift, workspace sidebar collapse, App Store
+  preview black-screen, status-bar detail width, and sandbox restore
+  stale-folder fixes. A Vite/browser smoke also confirmed normal-mode
+  sidebar collapse / restore DOM state.
 - For docs-only work, run `git diff --check`.
 - For code changes, follow `docs/development-automation.md`.
 - For UI behavior changes, update or exercise `docs/smoke-checklist.md`.
