@@ -287,6 +287,113 @@ describe("WorkspaceTree", () => {
       expect(destButton.getAttribute("aria-expanded")).toBe("true");
     });
 
+    it("renders the file rename input outside any row <button>", () => {
+      // The v0.18 slice moved rename state into a non-button
+      // row so the rename <input> is not nested inside a row
+      // <button> (a nested-interactive-control risk for
+      // VoiceOver / focus / click / blur). This test pins the
+      // new DOM shape for file rows; the directory-row
+      // counterpart is pinned in the next test.
+      vi.useFakeTimers();
+
+      const { view } = renderTree({
+        renamingPath: sourcePath,
+        requestRename: vi.fn(),
+      });
+
+      expandDirectory(view, sourceDirPath);
+
+      const input = view.container.querySelector(
+        ".tree-rename-input",
+      ) as HTMLInputElement | null;
+      expect(input).toBeTruthy();
+      if (!input) return;
+
+      // The input must not live inside a <button>. The rename
+      // row is a plain <div class="tree-file tree-file-rename">.
+      expect(input.closest("button")).toBeNull();
+
+      // The replaceable row is rendered with the rename marker
+      // class so the CSS can highlight the active edit.
+      const renameRow = input.closest(".tree-file-rename");
+      expect(renameRow).toBeTruthy();
+      expect(renameRow?.tagName.toLowerCase()).toBe("div");
+    });
+
+    it("renders the directory rename input outside any row <button>", () => {
+      // The directory branch mirrors the file branch: rename
+      // state is a plain <div class="tree-directory-button
+      // tree-directory-rename"> holding only the chevron, the
+      // folder icon, and the rename <input>. The outer
+      // `.tree-directory` <div> still owns the drop handlers.
+      vi.useFakeTimers();
+
+      const { view } = renderTree({
+        renamingPath: destPath,
+        requestRename: vi.fn(),
+      });
+
+      const input = view.container.querySelector(
+        ".tree-rename-input",
+      ) as HTMLInputElement | null;
+      expect(input).toBeTruthy();
+      if (!input) return;
+
+      // No <button> ancestor at all. The disclosure button is
+      // intentionally absent while renaming.
+      expect(input.closest("button")).toBeNull();
+
+      // The rename row keeps the directory-button layout class
+      // for visual alignment with the surrounding tree.
+      const renameRow = input.closest(".tree-directory-rename");
+      expect(renameRow).toBeTruthy();
+      expect(renameRow?.tagName.toLowerCase()).toBe("div");
+    });
+
+    it("focuses and selects the rename input on entry", () => {
+      // The v0.18 slice moved the rename row out of a
+      // <button> to avoid a nested interactive control
+      // (the rename <input> inside a row <button> was a
+      // VoiceOver / focus / click / blur risk; see
+      // `docs/archive/reviews/workspace-tree-accessibility-decision-v0.17.md`).
+      // This test pins the rename contract that the new DOM
+      // still has to keep: focus() and select() run on entry
+      // so the rename interaction hands the keyboard to the
+      // user without an extra click. A future regression that
+      // loses focus on entry, or that breaks the select-all
+      // behavior, fails the build.
+      vi.useFakeTimers();
+
+      const { view } = renderTree({
+        renamingPath: sourcePath,
+        requestRename: vi.fn(),
+      });
+
+      expandDirectory(view, sourceDirPath);
+
+      const input = view.container.querySelector(
+        ".tree-rename-input",
+      ) as HTMLInputElement | null;
+      expect(input).toBeTruthy();
+      if (!input) return;
+
+      // The focus effect is deferred by setTimeout(0) so the
+      // input has a chance to mount first. Drain the timer
+      // inside `act` so React flushes the focus call.
+      act(() => {
+        vi.advanceTimersByTime(0);
+      });
+
+      const ownerDocument = view.container.ownerDocument;
+      expect(ownerDocument.activeElement).toBe(input);
+      // `select()` flips the selection to cover the entire
+      // value, which the input's `selectionStart` /
+      // `selectionEnd` reflect. jsdom exposes both on
+      // HTMLInputElement.
+      expect(input.selectionStart).toBe(0);
+      expect(input.selectionEnd).toBe(input.value.length);
+    });
+
     it("commits the rename input on Enter via onSubmitRename", () => {
       // Fake timers so the 250 ms click-debounce does not
       // interfere with the rename input.

@@ -143,6 +143,39 @@ function TreeEntry({
       cancelPendingSingleClick();
       requestRename(entry.path);
     };
+    // Rename state is rendered as a non-button row so the
+    // rename <input> is not nested inside a row <button>.
+    // Nested interactive controls are a VoiceOver / focus /
+    // click / blur risk; the v0.17 accessibility decision kept
+    // the button-based model for normal rows but flagged this
+    // rename case as a v0.18 cleanup. The replaceable row
+    // intentionally drops `draggable` and the click / context
+    // menu / double-click handlers — a user editing a name
+    // should not be opening the file, dragging it, or seeing a
+    // context menu for the row underneath the input.
+    if (isRenaming) {
+      return (
+        <div
+          className={`tree-file tree-file-rename${entry.path === activePath ? " active" : ""}${entry.path === compareSourcePath ? " compare-source" : ""}${entry.path === compareTargetPath ? " compare-target" : ""}`}
+          title={entry.path}
+        >
+          {isImage ? (
+            <ImageFileIcon />
+          ) : isMarkdown ? (
+            <MarkdownFileIcon />
+          ) : (
+            <TextFileIcon />
+          )}
+          <RenameInput
+            draft={renameDraft}
+            inputRef={renameInputRef}
+            onChange={setRenameDraft}
+            onCancel={onClearRenaming}
+            onCommit={(value) => onSubmitRename(entry.path, value)}
+          />
+        </div>
+      );
+    }
     return (
       <button
         className={`tree-file${entry.path === activePath ? " active" : ""}${entry.path === compareSourcePath ? " compare-source" : ""}${entry.path === compareTargetPath ? " compare-target" : ""}`}
@@ -163,17 +196,7 @@ function TreeEntry({
         ) : (
           <TextFileIcon />
         )}
-        {isRenaming ? (
-          <RenameInput
-            draft={renameDraft}
-            inputRef={renameInputRef}
-            onChange={setRenameDraft}
-            onCancel={onClearRenaming}
-            onCommit={(value) => onSubmitRename(entry.path, value)}
-          />
-        ) : (
-          <span className="tree-name">{entry.name}</span>
-        )}
+        <span className="tree-name">{entry.name}</span>
       </button>
     );
   }
@@ -236,37 +259,54 @@ function TreeEntry({
     onMoveEntry(srcPath, entry.path);
   };
 
+  // Rename state is rendered as a non-button row so the
+  // rename <input> is not nested inside a row <button> (see
+  // the matching comment in the file-row branch above). The
+  // directory button still owns the click-debounce, the
+  // context menu, the `aria-expanded` disclosure, and the
+  // loading disabled state. Drop handling stays on the outer
+  // `.tree-directory` <div>, so a rename row is not needed on
+  // the drop target itself.
+  const directoryButton = isRenaming ? (
+    <div
+      className="tree-directory-button tree-directory-rename"
+      title={entry.path}
+    >
+      <ChevronIcon expanded={expanded} />
+      {expanded ? <FolderOpenIcon /> : <FolderIcon />}
+      <RenameInput
+        draft={renameDraft}
+        inputRef={renameInputRef}
+        onChange={setRenameDraft}
+        onCancel={onClearRenaming}
+        onCommit={(value) => onSubmitRename(entry.path, value)}
+      />
+    </div>
+  ) : (
+    <button
+      aria-expanded={expanded}
+      className="tree-directory-button"
+      disabled={loading}
+      onClick={handleDirectoryClick}
+      onContextMenu={(event) => onOpenContextMenu(entry, event, "directory")}
+      onDoubleClick={handleDirectoryDoubleClick}
+      title={entry.path}
+      type="button"
+    >
+      <ChevronIcon expanded={expanded} />
+      {expanded ? <FolderOpenIcon /> : <FolderIcon />}
+      <span className="tree-name">{entry.name}</span>
+      {loading ? <span className="tree-meta">Loading...</span> : null}
+    </button>
+  );
+
   return (
     <div
       className="tree-directory"
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      <button
-        aria-expanded={expanded}
-        className="tree-directory-button"
-        disabled={loading}
-        onClick={handleDirectoryClick}
-        onContextMenu={(event) => onOpenContextMenu(entry, event, "directory")}
-        onDoubleClick={handleDirectoryDoubleClick}
-        title={entry.path}
-        type="button"
-      >
-        <ChevronIcon expanded={expanded} />
-        {expanded ? <FolderOpenIcon /> : <FolderIcon />}
-        {isRenaming ? (
-          <RenameInput
-            draft={renameDraft}
-            inputRef={renameInputRef}
-            onChange={setRenameDraft}
-            onCancel={onClearRenaming}
-            onCommit={(value) => onSubmitRename(entry.path, value)}
-          />
-        ) : (
-          <span className="tree-name">{entry.name}</span>
-        )}
-        {loading ? <span className="tree-meta">Loading...</span> : null}
-      </button>
+      {directoryButton}
       {expanded ? (
         <div className="tree-children">
           {entry.children.map((child) => (
@@ -341,11 +381,11 @@ function RenameInput({
     event.stopPropagation();
   };
 
-  // Clicking inside the input would normally bubble up to the
-  // parent <button> and trigger its onClick — prevent that.
-  const handleClick = (event: ReactMouseEvent<HTMLInputElement>) => {
-    event.stopPropagation();
-  };
+  // The rename row is a plain <div> (not a <button>), so a
+  // click inside the input no longer has a row-level click
+  // handler to bubble to. The propagation stop is no longer
+  // needed and was intentionally removed when rename rows
+  // stopped being <button> children.
 
   return (
     <input
@@ -353,7 +393,6 @@ function RenameInput({
       className="tree-rename-input"
       onBlur={handleBlur}
       onChange={(event) => onChange(event.target.value)}
-      onClick={handleClick}
       onKeyDown={handleKeyDown}
       ref={inputRef}
       spellCheck={false}
