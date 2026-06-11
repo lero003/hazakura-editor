@@ -138,8 +138,9 @@ Result:
 DMG and source files referenced in v0.18.0
 (`src-tauri/target/release/bundle/dmg/hazakura-editor-dev_0.18.0_aarch64-warning-expected.dmg`
 and `*.dmg.sha256`) are build outputs under `src-tauri/target/`, which
-is `.gitignore`d. They were generated and verified locally, but not
-committed to the repository.
+is `.gitignore`d. They were generated and verified locally, not
+committed to the repository, then uploaded as GitHub Release assets and
+re-downloaded for remote verification.
 
 ## Last Run: v0.17.0 (2026-06-10)
 

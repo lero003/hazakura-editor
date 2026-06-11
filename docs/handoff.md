@@ -112,8 +112,10 @@ accessibility smoke.
 
 - Latest release-prep slice: v0.18 version surfaces are aligned across
   npm, Tauri, Cargo, Help About, Support Diagnostics, current docs, and
-  release notes. Use the v0.18 release note and release checklists
-  before making distribution-readiness claims.
+  release notes. The v0.18 warning-expected DMG prerelease was
+  published and remote-verified on 2026-06-12; use the v0.18 release
+  note and release checklists before making broader
+  distribution-readiness claims.
 - For docs-only work, run `git diff --check`.
 - For code changes, follow `docs/development-automation.md`.
 - For UI behavior changes, update or exercise `docs/smoke-checklist.md`.
