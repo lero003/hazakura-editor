@@ -36,8 +36,24 @@ pub(crate) fn apple_assist_allowed_by_distribution() -> bool {
     !is_app_store_distribution_lane()
 }
 
+pub(crate) fn assist_surface_settings_allowed_by_distribution() -> bool {
+    assist_surface_settings_allowed_for_lane(Some(distribution_lane()))
+}
+
+pub(crate) fn assist_surface_settings_allowed_for_lane(lane: Option<&str>) -> bool {
+    agent_workbench_allowed_for_lane(lane) || apple_assist_allowed_for_lane(lane)
+}
+
 pub(crate) fn ensure_apple_assist_allowed_by_distribution() -> Result<(), String> {
     ensure_apple_assist_allowed_for_lane(Some(distribution_lane()))
+}
+
+fn agent_workbench_allowed_for_lane(lane: Option<&str>) -> bool {
+    !is_app_store_distribution_lane_for_lane(lane)
+}
+
+fn apple_assist_allowed_for_lane(lane: Option<&str>) -> bool {
+    !is_app_store_distribution_lane_for_lane(lane)
 }
 
 pub(crate) fn ensure_apple_assist_allowed_for_lane(lane: Option<&str>) -> Result<(), String> {

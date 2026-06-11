@@ -28,6 +28,7 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
     let l_mode_enabled = state.map(|state| state.l_mode_enabled).unwrap_or(false);
     let agent_workbench_allowed = agent_workbench_allowed_by_distribution();
     let apple_assist_allowed = apple_assist_allowed_by_distribution();
+    let assist_surface_settings_allowed = assist_surface_settings_allowed_by_distribution();
     let agent_workbench_active = state
         .map(|state| state.agent_workbench_active)
         .unwrap_or(false);
@@ -375,46 +376,57 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
                 .map(|publisher| vec![publisher]),
             ..Default::default()
         };
-        let app_menu = Submenu::with_items(
+        let about_item = PredefinedMenuItem::about(
             app,
-            package_info.name.clone(),
-            true,
-            &[
-                &PredefinedMenuItem::about(
-                    app,
-                    Some(label("About hazakura editor", "hazakura editor について")),
-                    Some(about_metadata),
-                )?,
-                &PredefinedMenuItem::separator(app)?,
-                &MenuItem::with_id(
-                    app,
-                    MENU_PREFERENCES,
-                    label("Preferences...", "設定..."),
-                    true,
-                    Some("CmdOrCtrl+,"),
-                )?,
-                &MenuItem::with_id(
-                    app,
-                    MENU_AGENT_WORKBENCH,
-                    label("Assist Surface...", "アシスト設定..."),
-                    true,
-                    None::<&str>,
-                )?,
-                &PredefinedMenuItem::separator(app)?,
-                &PredefinedMenuItem::services(app, Some(label("Services", "サービス")))?,
-                &PredefinedMenuItem::separator(app)?,
-                &PredefinedMenuItem::hide(
-                    app,
-                    Some(label("Hide hazakura editor", "hazakura editor を隠す")),
-                )?,
-                &PredefinedMenuItem::hide_others(app, Some(label("Hide Others", "ほかを隠す")))?,
-                &PredefinedMenuItem::separator(app)?,
-                &PredefinedMenuItem::quit(
-                    app,
-                    Some(label("Quit hazakura editor", "hazakura editor を終了")),
-                )?,
-            ],
+            Some(label("About hazakura editor", "hazakura editor について")),
+            Some(about_metadata),
         )?;
+        let separator_after_about = PredefinedMenuItem::separator(app)?;
+        let preferences_item = MenuItem::with_id(
+            app,
+            MENU_PREFERENCES,
+            label("Preferences...", "設定..."),
+            true,
+            Some("CmdOrCtrl+,"),
+        )?;
+        let assist_surface_item = MenuItem::with_id(
+            app,
+            MENU_AGENT_WORKBENCH,
+            label("Assist Surface...", "アシスト設定..."),
+            true,
+            None::<&str>,
+        )?;
+        let separator_after_preferences = PredefinedMenuItem::separator(app)?;
+        let services_item = PredefinedMenuItem::services(app, Some(label("Services", "サービス")))?;
+        let separator_after_services = PredefinedMenuItem::separator(app)?;
+        let hide_item = PredefinedMenuItem::hide(
+            app,
+            Some(label("Hide hazakura editor", "hazakura editor を隠す")),
+        )?;
+        let hide_others_item =
+            PredefinedMenuItem::hide_others(app, Some(label("Hide Others", "ほかを隠す")))?;
+        let separator_before_quit = PredefinedMenuItem::separator(app)?;
+        let quit_item = PredefinedMenuItem::quit(
+            app,
+            Some(label("Quit hazakura editor", "hazakura editor を終了")),
+        )?;
+
+        let mut app_menu_items: Vec<&dyn IsMenuItem<R>> =
+            vec![&about_item, &separator_after_about, &preferences_item];
+        if assist_surface_settings_allowed {
+            app_menu_items.push(&assist_surface_item);
+        }
+        app_menu_items.extend([
+            &separator_after_preferences as &dyn IsMenuItem<R>,
+            &services_item,
+            &separator_after_services,
+            &hide_item,
+            &hide_others_item,
+            &separator_before_quit,
+            &quit_item,
+        ]);
+
+        let app_menu = Submenu::with_items(app, package_info.name.clone(), true, &app_menu_items)?;
 
         menu.remove_at(0)?;
         menu.insert(&app_menu, 0)?;

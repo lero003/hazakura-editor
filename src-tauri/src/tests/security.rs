@@ -78,6 +78,14 @@ fn apple_assist_distribution_gate_allows_developer_lane() {
 }
 
 #[test]
+fn assist_surface_settings_distribution_gate_hides_app_store_lane() {
+    assert!(!assist_surface_settings_allowed_for_lane(Some("app-store")));
+    assert!(!assist_surface_settings_allowed_for_lane(Some("App-Store")));
+    assert!(assist_surface_settings_allowed_for_lane(None));
+    assert!(assist_surface_settings_allowed_for_lane(Some("developer")));
+}
+
+#[test]
 fn app_store_distribution_lane_rejects_agent_window_reverse_link() {
     open_main_agent_pane_with_label_for_lane(MAIN_WINDOW_LABEL, Some("developer"))
         .expect("developer lane may route the Agent reverse-link");
