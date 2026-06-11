@@ -50,6 +50,7 @@ import { useWindowDialogActions } from "./useWindowDialogActions";
 import { useLocalizedAppCopy } from "./useLocalizedAppCopy";
 import { useAppShellSideEffectsController } from "./useAppShellSideEffectsController";
 import { useAutoBackupRestore } from "../workspace/useAutoBackupRestore";
+import { persistWorkspaceStateSnapshot } from "../workspace/useWorkspaceStatePersistence";
 
 export function useAppShellController() {
   const appleLocalAssistAllowed = isAppleLocalAssistSurfaceAllowed();
@@ -560,9 +561,26 @@ export function useAppShellController() {
     cancelPendingAppClose();
   }, [cancelPendingAppClose]);
 
+  const persistWorkspaceSession = useCallback(() => {
+    if (!restoreComplete) {
+      return;
+    }
+
+    const latestTabs = tabsRef.current;
+    const latestActiveTab =
+      latestTabs.find((tab) => tab.id === activeTabId) ?? activeTab ?? null;
+
+    persistWorkspaceStateSnapshot({
+      activeTab: latestActiveTab,
+      tabs: latestTabs,
+      workspaceRootPath,
+    });
+  }, [activeTab, activeTabId, restoreComplete, tabsRef, workspaceRootPath]);
+
   useAppExitConfirmation({
     appExitInProgressRef,
     dirtyTabCount,
+    onBeforeExit: persistWorkspaceSession,
     onNeedsConfirmation: onAppExitNeedsConfirmation,
   });
 
@@ -869,6 +887,7 @@ export function useAppShellController() {
     dirtyTabs,
     discardingWindowCloseRef,
     focusEditorSoon,
+    onBeforeWindowClose: persistWorkspaceSession,
     pendingCloseTabId,
     saveTabById,
     setActiveTabId,

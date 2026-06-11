@@ -102,14 +102,23 @@ describe("useTabCloseFlow", () => {
 
   it("clears the app-close dialog state after saving all dirty tabs", async () => {
     const allowWindowCloseRef = { current: false };
+    const onBeforeWindowClose = vi.fn();
     const setPendingAppClose = vi.fn();
-    const { result } = setup({ allowWindowCloseRef, setPendingAppClose });
+    const { result } = setup({
+      allowWindowCloseRef,
+      onBeforeWindowClose,
+      setPendingAppClose,
+    });
 
     await act(async () => {
       await result.current.saveAllAndCloseWindow();
     });
 
     expect(setPendingAppClose).toHaveBeenCalledWith(false);
+    expect(onBeforeWindowClose).toHaveBeenCalledTimes(1);
+    expect(onBeforeWindowClose.mock.invocationCallOrder[0]).toBeLessThan(
+      tauriWindow.hideMainWindow.mock.invocationCallOrder[0],
+    );
     expect(tauriWindow.hideMainWindow).toHaveBeenCalledTimes(1);
     expect(allowWindowCloseRef.current).toBe(false);
   });
@@ -117,6 +126,7 @@ describe("useTabCloseFlow", () => {
   it("clears the app-close dialog and resets dirty buffers after discarding all tabs", async () => {
     const allowWindowCloseRef = { current: false };
     const discardingWindowCloseRef = { current: false };
+    const onBeforeWindowClose = vi.fn();
     const setPendingAppClose = vi.fn();
     const setTabs = vi.fn();
     const dirtyTab = makeTab({
@@ -129,6 +139,7 @@ describe("useTabCloseFlow", () => {
       allowWindowCloseRef,
       dirtyTabs: [dirtyTab],
       discardingWindowCloseRef,
+      onBeforeWindowClose,
       setPendingAppClose,
       setTabs,
       tabs: [dirtyTab],
@@ -142,6 +153,13 @@ describe("useTabCloseFlow", () => {
     expect(setPendingAppClose).toHaveBeenCalledWith(false);
     expect(tauriWindow.hideMainWindow).toHaveBeenCalledTimes(1);
     expect(setTabs.mock.invocationCallOrder[0]).toBeLessThan(
+      tauriWindow.hideMainWindow.mock.invocationCallOrder[0],
+    );
+    expect(onBeforeWindowClose).toHaveBeenCalledTimes(1);
+    expect(setTabs.mock.invocationCallOrder[0]).toBeLessThan(
+      onBeforeWindowClose.mock.invocationCallOrder[0],
+    );
+    expect(onBeforeWindowClose.mock.invocationCallOrder[0]).toBeLessThan(
       tauriWindow.hideMainWindow.mock.invocationCallOrder[0],
     );
     expect(allowWindowCloseRef.current).toBe(false);

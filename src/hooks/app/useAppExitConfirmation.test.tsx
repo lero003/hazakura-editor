@@ -94,10 +94,12 @@ describe("useAppExitConfirmation", () => {
 
   it("exits the app immediately when no tabs are dirty", () => {
     const appExitInProgressRef = { current: false };
+    const onBeforeExit = vi.fn();
     const onNeedsConfirmation = vi.fn();
     const { result } = setup({
       appExitInProgressRef,
       dirtyTabCount: 0,
+      onBeforeExit,
       onNeedsConfirmation,
     });
     void result;
@@ -110,6 +112,10 @@ describe("useAppExitConfirmation", () => {
     // `exit_app` command.
     expect(appExitInProgressRef.current).toBe(false);
     expect(onNeedsConfirmation).not.toHaveBeenCalled();
+    expect(onBeforeExit).toHaveBeenCalledTimes(1);
+    expect(onBeforeExit.mock.invocationCallOrder[0]).toBeLessThan(
+      tauriWindow.exitApp.mock.invocationCallOrder[0],
+    );
     expect(tauriWindow.exitApp).toHaveBeenCalledTimes(1);
   });
 

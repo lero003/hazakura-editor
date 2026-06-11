@@ -18,7 +18,10 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { readPersistedWorkspaceState } from "../../lib/storage";
 import { WORKSPACE_STATE_STORAGE_KEY, type EditorTab } from "../../types";
-import { useWorkspaceStatePersistence } from "./useWorkspaceStatePersistence";
+import {
+  persistWorkspaceStateSnapshot,
+  useWorkspaceStatePersistence,
+} from "./useWorkspaceStatePersistence";
 
 function makeTab(overrides: Partial<EditorTab> = {}): EditorTab {
   return {
@@ -290,6 +293,29 @@ describe("useWorkspaceStatePersistence", () => {
 
     const stored = readPersistedWorkspaceState();
     expect(stored).toEqual({
+      workspaceRootPath: "/old/root",
+      workspaceRootBookmark: [1, 2, 3],
+      tabPaths: ["/old/root/note.md"],
+      activeTabPath: "/old/root/note.md",
+    });
+  });
+
+  it("allows the app-exit flush to persist the latest open workspace and tabs", () => {
+    seedPersistedState({
+      workspaceRootPath: "/old/root",
+      workspaceRootBookmark: [1, 2, 3],
+      tabPaths: [],
+      activeTabPath: null,
+    });
+
+    const tab = makeTab();
+    persistWorkspaceStateSnapshot({
+      activeTab: tab,
+      tabs: [tab],
+      workspaceRootPath: "/old/root",
+    });
+
+    expect(readPersistedWorkspaceState()).toEqual({
       workspaceRootPath: "/old/root",
       workspaceRootBookmark: [1, 2, 3],
       tabPaths: ["/old/root/note.md"],

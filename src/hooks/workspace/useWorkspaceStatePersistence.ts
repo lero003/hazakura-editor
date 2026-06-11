@@ -12,6 +12,11 @@ type UseWorkspaceStatePersistenceOptions = {
   workspaceRootPath: string | null;
 };
 
+export type WorkspaceStateSnapshot = Omit<
+  UseWorkspaceStatePersistenceOptions,
+  "restoreComplete"
+>;
+
 export function useWorkspaceStatePersistence({
   activeTab,
   restoreComplete,
@@ -43,20 +48,32 @@ export function useWorkspaceStatePersistence({
     // the bookmark and the previous tab list, so the user
     // gets a real "Workspace restore skipped" affordance
     // and the next launch can keep trying.
-    if (tabs.length === 0 && workspaceRootPath === null) {
-      const existing = readPersistedWorkspaceState();
-      if (
-        existing &&
-        (existing.tabPaths.length > 0 || existing.workspaceRootPath !== null)
-      ) {
-        return;
-      }
-    }
-
-    writePersistedWorkspaceState({
+    persistWorkspaceStateSnapshot({
+      activeTab,
+      tabs,
       workspaceRootPath,
-      tabPaths: tabs.map((tab) => tab.path),
-      activeTabPath: activeTab?.path ?? null,
     });
   }, [activeTab, restoreComplete, tabs, workspaceRootPath]);
+}
+
+export function persistWorkspaceStateSnapshot({
+  activeTab,
+  tabs,
+  workspaceRootPath,
+}: WorkspaceStateSnapshot) {
+  if (tabs.length === 0 && workspaceRootPath === null) {
+    const existing = readPersistedWorkspaceState();
+    if (
+      existing &&
+      (existing.tabPaths.length > 0 || existing.workspaceRootPath !== null)
+    ) {
+      return;
+    }
+  }
+
+  writePersistedWorkspaceState({
+    workspaceRootPath,
+    tabPaths: tabs.map((tab) => tab.path),
+    activeTabPath: activeTab?.path ?? null,
+  });
 }

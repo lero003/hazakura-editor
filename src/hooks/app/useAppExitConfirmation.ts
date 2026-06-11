@@ -26,6 +26,7 @@ type UseAppExitConfirmationOptions = {
   // window-close path uses, with the ref deciding whether
   // the final action is `exitApp` or `hideMainWindow`.
   onNeedsConfirmation: () => void;
+  onBeforeExit?: () => void;
 };
 
 // v0.17 app-store-quality: save-restore-regression slice 1.4
@@ -55,15 +56,18 @@ type UseAppExitConfirmationOptions = {
 export function useAppExitConfirmation({
   appExitInProgressRef,
   dirtyTabCount,
+  onBeforeExit,
   onNeedsConfirmation,
 }: UseAppExitConfirmationOptions) {
   const dirtyTabCountRef = useRef(dirtyTabCount);
+  const onBeforeExitRef = useRef(onBeforeExit);
   const onNeedsConfirmationRef = useRef(onNeedsConfirmation);
 
   useEffect(() => {
     dirtyTabCountRef.current = dirtyTabCount;
+    onBeforeExitRef.current = onBeforeExit;
     onNeedsConfirmationRef.current = onNeedsConfirmation;
-  }, [dirtyTabCount, onNeedsConfirmation]);
+  }, [dirtyTabCount, onBeforeExit, onNeedsConfirmation]);
 
   useEffect(() => {
     let cancelled = false;
@@ -78,6 +82,7 @@ export function useAppExitConfirmation({
         // Clean state: the user explicitly chose to quit
         // the app, nothing in the buffer would be lost.
         // Go straight to the Rust `exit_app` command.
+        onBeforeExitRef.current?.();
         void exitApp();
         return;
       }
