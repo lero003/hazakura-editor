@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-11 (v0.18 UX polish slices)
+Last reviewed: 2026-06-11 (v0.18 workspace restore / standalone save regression slice)
 
 ## Current State
 
@@ -31,19 +31,18 @@ Last reviewed: 2026-06-11 (v0.18 UX polish slices)
 Use `docs/current-work.md` for the active queue. The current highest
 priority UX items are:
 
-1. WorkspaceTree rename-state markup cleanup.
-2. Encoding-only dirty indication / auto-backup coverage.
+1. Manual accessibility smoke.
+2. Help copy overlap cleanup.
+3. `data:image` size wording alignment.
 
-Recently completed: Markdown preview task checkboxes now render
-`- [ ]` / `- [x]` as display-only checkbox glyphs in Preview without
-changing saved Markdown.
-Left workspace sidebar collapse / restore is also complete in normal
-mode without changing the file-tree model.
-App Store preview packaged-app smoke now renders the start screen
-instead of a blank WebKit surface.
-Sandboxed workspace restore now uses app-scoped security-scoped
-bookmarks for selected workspace folders. Older path-only state still
-asks the user to reauthorize through Open Folder when needed.
+Recently completed: workspace restore now preserves the last good
+persisted state when a restore attempt produces an empty live result,
+and standalone-file `saveActiveTab` is pinned for the no-workspace
+case. L Mode table Backspace / Delete, table caret movement coverage,
+floating-control focus visibility, encoding-only dirty indication,
+WorkspaceTree rename markup, Markdown preview task checkboxes, normal
+mode sidebar collapse / restore, App Store preview startup, and
+sandboxed workspace bookmark restore are also complete for v0.18.
 
 Submission-prep items in the same queue include App Store
 entitlement/signing lane definition, App Review Notes final copy,
@@ -86,14 +85,14 @@ accessibility smoke.
 
 ## Verification Guidance
 
-- Latest verified slice: `npm test`, `npm run build`, `codesign
-  --verify --deep --strict --verbose=2`, entitlement inspection,
-  embedded asset string inspection, packaged-app launch/log smoke, and
-  `git diff --check` passed on 2026-06-11 after the Markdown preview
-  checkbox, Help-doc drift, workspace sidebar collapse, App Store
-  preview black-screen, status-bar detail width, and sandbox restore
-  stale-folder fixes. A Vite/browser smoke also confirmed normal-mode
-  sidebar collapse / restore DOM state.
+- Latest verified slice: `npm test`, `npm run build:vite`, and
+  `git diff --check` passed on 2026-06-11 after the v0.18
+  workspace restore / standalone save regression fix
+  (`useWorkspaceStatePersistence` empty-restore guard and
+  `useSaveActions.saveActiveTab` standalone-file pin).
+- Latest packaged-app release evidence remains the v0.17
+  warning-expected DMG preview; use the linked release note and
+  release checklists before making distribution-readiness claims.
 - For docs-only work, run `git diff --check`.
 - For code changes, follow `docs/development-automation.md`.
 - For UI behavior changes, update or exercise `docs/smoke-checklist.md`.

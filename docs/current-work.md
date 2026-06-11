@@ -52,6 +52,30 @@ over copy-heavy or product-voice-sensitive work.
 
 ## Completed v0.18 Slices
 
+- 2026-06-11: Workspace restore / standalone save regression slice.
+  `useWorkspaceStatePersistence` no longer overwrites the
+  user's last good persisted state when the restore latch
+  flips to `true` with an empty live result
+  (`tabs = []`, `workspaceRootPath = null`). The
+  sandbox-loss / moved-folder / missing-file path now
+  preserves the persisted state, including the
+  security-scoped bookmark, so the next launch can
+  re-attempt the restore or the start panel can
+  re-authorize the same folder. Already-empty persisted
+  state remains unaffected.
+  A new unit suite (`useWorkspaceStatePersistence.test.ts`)
+  pins the new contract across five cases:
+  pre-restore, empty-restore with non-empty storage,
+  bookmark-only storage, already-empty storage, and
+  post-restore mirroring. A new
+  `useSaveActions` test
+  (`saveActiveTab saves a dirty standalone file when
+  no workspace is open`) pins the standalone-file
+  save path so a future refactor cannot silently
+  short-circuit `save_text_file` for tabs that were
+  opened outside a workspace. The `useWorkspaceRestore`
+  and `useSaveActions` test suites stay green; `npm
+  test` and `npm run build:vite` pass.
 - 2026-06-11: L Mode table Backspace / Delete now preserves
   normal Markdown semantics: a selection that is strictly
   inside a single cell (e.g. a double-clicked word) falls
