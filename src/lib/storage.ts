@@ -10,7 +10,7 @@ import {
   type PersistedWorkspaceState,
   type RecentEntry,
 } from "../types";
-import { isPathInsideDirectory } from "./utils";
+import { isPathInsideDirectory, normalizeAbsolutePath } from "./utils";
 
 export function readStoredDrafts(): DraftRecord[] {
   const value = window.localStorage.getItem(DRAFT_STATE_STORAGE_KEY);
@@ -237,14 +237,55 @@ function resolveTabFileBookmarksForWrite(
   existing: PersistedWorkspaceState | null,
 ): Record<string, number[]> {
   return state.tabPaths.reduce<Record<string, number[]>>((bookmarks, path) => {
-    const bookmark =
-      state.tabFileBookmarks?.[path] ?? existing?.tabFileBookmarks?.[path];
+    const bookmark = findPersistedFileBookmark(path, state, existing);
     const normalized = normalizeBookmarkBytes(bookmark);
     if (normalized.length > 0) {
       bookmarks[path] = normalized;
     }
     return bookmarks;
   }, {});
+}
+
+function findPersistedFileBookmark(
+  path: string,
+  state: PersistedWorkspaceState,
+  existing: PersistedWorkspaceState | null,
+): number[] | undefined {
+  const directBookmark =
+    state.tabFileBookmarks?.[path] ?? existing?.tabFileBookmarks?.[path];
+  if (directBookmark) {
+    return directBookmark;
+  }
+
+  for (const candidatePath of equivalentMacOSPrivatePaths(path)) {
+    const bookmark =
+      state.tabFileBookmarks?.[candidatePath] ??
+      existing?.tabFileBookmarks?.[candidatePath];
+    if (bookmark) {
+      return bookmark;
+    }
+  }
+
+  return undefined;
+}
+
+function equivalentMacOSPrivatePaths(path: string): string[] {
+  const normalized = normalizeAbsolutePath(path);
+  const aliases = new Set<string>();
+
+  if (normalized.startsWith("/private/tmp/")) {
+    aliases.add(normalized.replace(/^\/private\/tmp/, "/tmp"));
+  } else if (normalized.startsWith("/tmp/")) {
+    aliases.add(normalized.replace(/^\/tmp/, "/private/tmp"));
+  }
+
+  if (normalized.startsWith("/private/var/")) {
+    aliases.add(normalized.replace(/^\/private\/var/, "/var"));
+  } else if (normalized.startsWith("/var/")) {
+    aliases.add(normalized.replace(/^\/var/, "/private/var"));
+  }
+
+  return Array.from(aliases);
 }
 
 // `resolveWorkspaceRootForWrite` decides which workspace

@@ -302,6 +302,34 @@ describe("writePersistedWorkspaceState", () => {
     });
   });
 
+  it("preserves an outside file bookmark when the restored path gains the macOS /private prefix", () => {
+    seedPersistedState({
+      workspaceRootPath: "/workspace",
+      workspaceRootBookmark: [1, 2, 3],
+      tabPaths: ["/workspace/a.md", "/tmp/outside/keep.md"],
+      tabFileBookmarks: {
+        "/tmp/outside/keep.md": [7, 8, 9],
+      },
+      activeTabPath: "/tmp/outside/keep.md",
+    });
+
+    writePersistedWorkspaceState({
+      workspaceRootPath: "/workspace",
+      tabPaths: ["/workspace/a.md", "/private/tmp/outside/keep.md"],
+      activeTabPath: "/private/tmp/outside/keep.md",
+    });
+
+    expect(readStored()).toEqual({
+      workspaceRootPath: "/workspace",
+      workspaceRootBookmark: [1, 2, 3],
+      tabPaths: ["/workspace/a.md", "/private/tmp/outside/keep.md"],
+      tabFileBookmarks: {
+        "/private/tmp/outside/keep.md": [7, 8, 9],
+      },
+      activeTabPath: "/private/tmp/outside/keep.md",
+    });
+  });
+
   it("stores a direct file bookmark without inventing an open tab path", () => {
     seedPersistedState({
       workspaceRootPath: "/workspace",

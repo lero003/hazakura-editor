@@ -10,6 +10,7 @@ import { createEditorTab } from "../../features/editor/editorTabs";
 import {
   readPersistedWorkspaceState,
   readStoredDrafts,
+  writePersistedFileBookmark,
 } from "../../lib/storage";
 import {
   MAX_RESTORED_TABS,
@@ -100,9 +101,15 @@ export function useWorkspaceRestore({
           0,
           MAX_RESTORED_TABS,
         );
-        async function openPersistedTextFile(path: string) {
+        async function openPersistedTextFile(path: string): Promise<{
+          document: TextFileDocument;
+          persistedPath: string;
+        }> {
           try {
-            return await openTextFile(path);
+            return {
+              document: await openTextFile(path),
+              persistedPath: path,
+            };
           } catch (err) {
             const bookmark = persistedState?.tabFileBookmarks?.[path];
             if (!bookmark || bookmark.length === 0) {
@@ -110,7 +117,11 @@ export function useWorkspaceRestore({
             }
 
             const resolvedPath = await resolveSecurityScopedBookmark(bookmark);
-            return openTextFile(resolvedPath);
+            const document = await openTextFile(resolvedPath);
+            if (document.path !== path) {
+              writePersistedFileBookmark(document.path, bookmark);
+            }
+            return { document, persistedPath: path };
           }
         }
         // `Promise.allSettled` lets us drop a single failed
@@ -129,10 +140,30 @@ export function useWorkspaceRestore({
         );
         const restoredTabs = openResults
           .filter(
-            (result): result is PromiseFulfilledResult<TextFileDocument> =>
+            (
+              result,
+            ): result is PromiseFulfilledResult<{
+              document: TextFileDocument;
+              persistedPath: string;
+            }> =>
               result.status === "fulfilled",
           )
-          .map((result) => createEditorTab(result.value));
+          .map((result) => createEditorTab(result.value.document));
+        const restoredActiveTab = openResults
+          .filter(
+            (
+              result,
+            ): result is PromiseFulfilledResult<{
+              document: TextFileDocument;
+              persistedPath: string;
+            }> =>
+              result.status === "fulfilled",
+          )
+          .find(
+            (result) =>
+              result.value.persistedPath === persistedState.activeTabPath ||
+              result.value.document.path === persistedState.activeTabPath,
+          );
         const skippedRestoreCount =
           openResults.length -
           restoredTabs.length +
@@ -153,11 +184,7 @@ export function useWorkspaceRestore({
           setTabs(restoredTabs);
           setPendingDrafts(recoverableDrafts);
           setActiveTabId(
-            restoredTabs.some(
-              (tab) => tab.path === persistedState.activeTabPath,
-            )
-              ? persistedState.activeTabPath
-              : restoredTabs[0]?.id ?? null,
+            restoredActiveTab?.value.document.path ?? restoredTabs[0]?.id ?? null,
           );
           onStatus(
             skippedRestoreCount > 0

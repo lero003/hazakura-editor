@@ -21,6 +21,7 @@ const listWorkspaceTree = vi.fn();
 const resolveSecurityScopedBookmark = vi.fn();
 const readPersistedWorkspaceState = vi.fn();
 const readStoredDrafts = vi.fn();
+const writePersistedFileBookmark = vi.fn();
 
 vi.mock("../../lib/tauri", () => ({
   listWorkspaceTree: (...args: unknown[]) => listWorkspaceTree(...args),
@@ -33,6 +34,8 @@ vi.mock("../../lib/storage", () => ({
   readPersistedWorkspaceState: (...args: unknown[]) =>
     readPersistedWorkspaceState(...args),
   readStoredDrafts: (...args: unknown[]) => readStoredDrafts(...args),
+  writePersistedFileBookmark: (...args: unknown[]) =>
+    writePersistedFileBookmark(...args),
 }));
 
 type RestoreArgs = Parameters<typeof useWorkspaceRestore>[0];
@@ -57,6 +60,7 @@ describe("useWorkspaceRestore", () => {
     resolveSecurityScopedBookmark.mockReset();
     readPersistedWorkspaceState.mockReset();
     readStoredDrafts.mockReset();
+    writePersistedFileBookmark.mockReset();
   });
 
   it("finishes immediately with restore complete when no state was persisted", async () => {
@@ -288,6 +292,76 @@ describe("useWorkspaceRestore", () => {
     expect(restoredTabs.map((tab: { path: string }) => tab.path)).toEqual([
       "/workspace/a.md",
       "/outside/note.md",
+    ]);
+  });
+
+  it("migrates an outside file bookmark when bookmark resolution returns a different path", async () => {
+    readPersistedWorkspaceState.mockReturnValue({
+      workspaceRootPath: "/workspace",
+      workspaceRootBookmark: [1, 2, 3],
+      tabPaths: ["/workspace/a.md", "/outside/original.md"],
+      tabFileBookmarks: {
+        "/outside/original.md": [7, 8, 9],
+      },
+      activeTabPath: "/outside/original.md",
+    });
+    readStoredDrafts.mockReturnValue([]);
+    listWorkspaceTree.mockResolvedValue({
+      name: "workspace",
+      path: "/workspace",
+      kind: "directory",
+      children: [],
+      children_loaded: true,
+      children_truncated: false,
+    });
+    resolveSecurityScopedBookmark.mockResolvedValue("/resolved/outside.md");
+    openTextFile.mockImplementation(async (path: string) => {
+      if (path === "/workspace/a.md") {
+        return {
+          path,
+          name: "a.md",
+          contents: "workspace",
+          line_ending: "lf",
+          encoding: "utf-8",
+          size: 9,
+          modified_ms: 1,
+          fingerprint: "fp-workspace",
+          large_file_warning: false,
+        };
+      }
+      if (path === "/resolved/outside.md") {
+        return {
+          path,
+          name: "outside.md",
+          contents: "outside",
+          line_ending: "lf",
+          encoding: "utf-8",
+          size: 7,
+          modified_ms: 1,
+          fingerprint: "fp-outside",
+          large_file_warning: false,
+        };
+      }
+      throw new Error("Cannot read file: sandbox access lost");
+    });
+    const setTabs = vi.fn();
+    const args = { ...buildArgs(), setTabs };
+
+    renderHook(() => useWorkspaceRestore(args));
+
+    await waitFor(() => {
+      expect(args.onStatus).toHaveBeenCalledWith("Workspace restored");
+    });
+
+    expect(writePersistedFileBookmark).toHaveBeenCalledWith(
+      "/resolved/outside.md",
+      [7, 8, 9],
+    );
+    expect(args.setActiveTabId).toHaveBeenCalledWith("/resolved/outside.md");
+    const restoredTabs = setTabs.mock.calls.at(-1)?.[0];
+    expect(restoredTabs.map((tab: { path: string }) => tab.path)).toEqual([
+      "/workspace/a.md",
+      "/resolved/outside.md",
     ]);
   });
 
