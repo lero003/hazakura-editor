@@ -220,4 +220,49 @@ describe("useSaveActions", () => {
       null,
     );
   });
+
+  it("saveActiveTab saves a dirty standalone file when no workspace is open", async () => {
+    // Regression guard: a standalone file opened via the
+    // File > Open picker (i.e. `workspaceRootPath: null`)
+    // must still go through the regular `save_text_file`
+    // IPC. The save path does not consult
+    // `workspaceRootPath`, and the Rust side does not
+    // require a workspace root either, so a dirty tab
+    // opened outside a workspace must clear its dirty
+    // state on save and the recovery draft must be
+    // removed. Pinning the post-save tab state here is
+    // what catches a regression where the save path
+    // silently short-circuits for non-workspace tabs.
+    const tab = makeTab({
+      contents: "standalone draft",
+      lastSavedContents: "standalone",
+      path: "/tmp/standalone.md",
+    });
+    fileApi.saveTextFile.mockResolvedValue(
+      makeSavedFileState({ path: "/tmp/standalone.md" }),
+    );
+    const { getTabs, result } = setup([tab]);
+
+    expect(isDirty(getTabs()[0])).toBe(true);
+
+    await act(async () => {
+      await result.current.saveActiveTab();
+    });
+
+    expect(fileApi.saveTextFile).toHaveBeenCalledWith(
+      "/tmp/standalone.md",
+      "standalone draft",
+      tab.fingerprint,
+      tab.line_ending,
+      tab.encoding,
+    );
+    expect(getTabs()[0]).toMatchObject({
+      contents: "standalone draft",
+      fingerprint: "next-fingerprint",
+      lastSavedContents: "standalone draft",
+      saveStatus: "saved",
+    });
+    expect(isDirty(getTabs()[0])).toBe(false);
+    expect(removeStoredDraft).toHaveBeenCalledWith("/tmp/standalone.md");
+  });
 });
