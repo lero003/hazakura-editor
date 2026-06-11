@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-06-11 (v0.18 UX polish slices)
+Last reviewed: 2026-06-11 (v0.18 UX polish slices, manual accessibility smoke code-level observed; live observation pending)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -189,6 +189,99 @@ Run when preparing a warning-expected DMG preview:
 6. Run `codesign --verify --deep --strict --verbose=2` on the built or mounted app.
 7. Run `spctl` and confirm rejection/insufficient context is described as expected only for ad-hoc, not-notarized preview builds.
 8. After GitHub Release publication, download assets into a fresh temp directory and repeat checksum, DMG, mounted-app metadata, and codesign verification.
+
+## v0.18 Manual Accessibility Smoke
+
+Code-and-observation pass on 2026-06-11. Do not claim this slice
+"passed" until the pending live observation items below are run on
+the user's Mac. Detailed code-level walk-through is archived in
+[`docs/archive/operations/v0.18-manual-accessibility-smoke-observation.md`](../archive/operations/v0.18-manual-accessibility-smoke-observation.md).
+
+### Build / environment
+
+- Built app target for pending live observation:
+  `src-tauri/target/release/bundle/macos/hazakura editor.app`
+  (v0.17.0, ad-hoc, not notarized; warning-expected). The built
+  app was NOT launched in this smoke pass; live observation
+  items below still need a manual run on the user's Mac.
+- macOS host: macOS 26.5.1, `Darwin keinoMac-Studio.local`, arm64.
+- Frontend: `npm run build:vite` → `✓ built in 141ms`, 303 modules
+  transformed, no errors.
+- Tests: `npm test` → 80 files / 658 tests pass, including the
+  v0.18 dirty-description cases in
+  `src/components/app/AppTopChrome.test.tsx`.
+- VoiceOver: installed (`/System/Library/CoreServices/VoiceOver.app`)
+  but disabled in the current user session.
+- Increase Contrast: off in the current user session.
+
+### Pending live observation checklist
+
+Run these on the live built app, on a real Mac, with the user's
+actual accessibility settings. Mark each item only after the
+interaction is actually performed.
+
+1. Help readability
+   1. Open Help / Privacy Policy / Local Data Disclosure /
+      Support Diagnostics / About / Open Source Acknowledgements.
+   2. Confirm headings, body, links, scroll, and narrow-width
+      readability. Five-document structure, anchor integrity,
+      and `.privacy-tab-panel-scroll` body are pinned in code
+      (see archive); the scroll affordance on a long document
+      still needs a live check.
+2. Full keyboard-only traversal (mouse not used)
+   1. Use `Tab` / `Shift+Tab` / `Enter` / `Space` / `Esc` /
+      arrow keys to traverse the Safe Editor baseline, tab
+      bar, sidebar collapse / restore, status bar controls,
+      Preferences, Help surfaces, and close dialogs.
+   2. Record any focus that is invisible, trapped,
+      unrecoverable, or fires an unintended action.
+   3. Specifically confirm the `MoveToTrashConfirmDialog`
+      focus behaviour, which is recorded as a separate P2
+      follow-up in `docs/current-work.md` (no initial focus,
+      no focus-trap).
+3. VoiceOver tab-bar announcement
+   1. VoiceOver on (`Cmd+F5`), `VO+→` to the tab bar.
+   2. Confirm text tab / dirty tab / image preview tab /
+      close button read with the right role and description.
+   3. Confirm dirty tab is read as "unsaved" and that the
+      encoding-only dirty slice did not regress the
+      description.
+4. Increase Contrast
+   1. System Settings → Accessibility → Display → Increase
+      contrast: on. Re-launch the built app.
+   2. Confirm tab dirty dot, focus ring, sidebar restore
+      rail, Help text, buttons, status / error rows, and
+      dialogs are all legible. The CSS rules in
+      `src/styles/a11y.css` under
+      `@media (prefers-contrast: more)` should activate
+      automatically.
+   3. Return Increase Contrast to off and confirm the app
+      reverts to the regular look without a restart.
+
+### Result summary (2026-06-11)
+
+- Help readability: code-level observed; long-document
+  scroll on the live dialog still pending.
+- Full keyboard-only traversal: baseline dialogs
+  **partially observed; follow-up recorded** —
+  `MoveToTrashConfirmDialog` has no initial focus and no
+  focus-trap; recorded as a separate P2 follow-up in
+  `docs/current-work.md` (no fix attempted in this slice).
+- VoiceOver tab-bar announcement: code-level observed
+  (encoding-only dirty description pinned by the existing
+  AppTopChrome test); live observation pending on the
+  user's Mac.
+- Increase Contrast: code-level observed
+  (`prefers-contrast: more` rules in
+  `src/styles/a11y.css`); live observation pending on the
+  user's Mac.
+
+Active UX Queue still lists `Manual accessibility smoke`
+until the pending live observation items above are run on
+the user's Mac. The `MoveToTrashConfirmDialog`
+focus-management gap is recorded as a separate small
+follow-up; it is not a blocker for moving the slice
+forward once the live observations are recorded.
 
 ## Reporting
 
