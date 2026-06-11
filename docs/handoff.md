@@ -90,7 +90,12 @@ v0.18.
 
 Submission-prep items in the same queue include fuller TestFlight smoke,
 App Review Notes final copy, Privacy Policy / metadata, final
-third-party notice content review, and manual accessibility smoke.
+third-party notice content review, About metadata finalization, and
+manual accessibility smoke. External review notes worth preserving:
+prepare reviewer-note answers for `network.client`, inert script-like
+file associations, and App Store lane omissions; do not treat low-risk
+icon size, known Vite chunk warnings, or Help copy overlap as blockers
+unless they reproduce as concrete review or usability failures.
 
 ## Source Docs
 

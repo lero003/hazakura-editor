@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-12 (v0.18 release prep)
+Last reviewed: 2026-06-12 (v0.18 pre-review follow-up)
 
 ## Current Position
 
@@ -15,7 +15,8 @@ Current release state:
 
 - Latest published preview: `v0.18.0` warning-expected DMG preview.
 - Current package/app version: `0.18.0`.
-- Active lane: v0.18 follow-up polish and App Store submission prep.
+- Active lane: v0.18 pre-review bug fixing, fuller TestFlight smoke,
+  and App Store submission prep.
 - Current work queue: `docs/current-work.md`.
 
 Historical phase details now live in release notes and archive files:
@@ -49,9 +50,15 @@ submission work hardens around it.
 
 Use `docs/current-work.md` as the queue. The near-term UX priorities are:
 
-1. Manual accessibility smoke: Help readability, full keyboard-only
+1. Workspace persistence before App Review: repeated app launch/quit
+   and outside-workspace active-tab restarts must retain the selected
+   workspace unless the user explicitly clears it or reauthorization is
+   visibly required.
+2. Status bar encoding / line-ending de-duplication: keep the change
+   dropdowns, remove redundant passive `UTF-8` / `LF` style labels.
+3. Manual accessibility smoke: Help readability, full keyboard-only
    traversal, VoiceOver tab-bar announcement, and Increase Contrast.
-2. Help copy overlap cleanup.
+4. Help copy overlap cleanup.
 
 Recently completed:
 
@@ -97,6 +104,8 @@ Required work:
 - Finalize App Review Notes, Privacy Policy URL, support URL,
   screenshots, category, keywords, age rating, and metadata.
 - Review complete third-party license material from lockfiles.
+- Finalize macOS About metadata if the native About panel is expected
+  to carry publisher / copyright information.
 - Confirm App Store lane omits CLI Agent / Agent Workbench execution
   surfaces, Apple Local Assist helper, and external AI/API calls.
 - Keep all submitted-build claims tied to verified local or App Store

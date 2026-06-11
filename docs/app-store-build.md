@@ -312,6 +312,26 @@ Do not mark the build App Store-ready, submitted, or approved until the
 signing, local smoke, App Store Connect upload, Apple validation,
 metadata, and App Review evidence all exist.
 
+## Reviewer Note Prompts
+
+Keep the final reviewer note in ignored local files, but make sure it
+can answer these public-safe points before submission:
+
+- `com.apple.security.network.client` is present so the Tauri/WebKit
+  runtime can load bundled app assets under App Sandbox. The App Store
+  lane is not designed to contact external services and keeps
+  network-required features out of the submitted build.
+- Script-like file associations such as `.sh`, `.bash`, `.zsh`,
+  `.fish`, and `.ps1` are treated as text-editor inputs only. Opening
+  those files does not execute them, launch a shell, run a terminal, or
+  provide arbitrary command execution.
+- The App Store lane omits Apple Local Assist helper, Agent Workbench,
+  CLI Agent launch, dev mode, arbitrary command execution, and external
+  AI/API calls. The Developer / GitHub lane remains separate.
+- If asked about `style-src 'unsafe-inline'`, explain it as the current
+  Tauri/React UI styling allowance; do not broaden it into any claim
+  that scripts, remote content, or external network calls are allowed.
+
 ## App Store Connect Status Notes
 
 The helper-free build lane and privacy-policy URL are defined here. App Store
