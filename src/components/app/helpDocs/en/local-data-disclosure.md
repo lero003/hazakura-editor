@@ -4,7 +4,7 @@ A short description of what this app's code does. It does not describe what the 
 
 ## Files you choose
 
-The app only opens text files you pick through the macOS file or folder picker. It does not scan files on its own or touch your home directory.
+The app opens text files and supported local image previews that you pick through the macOS file or folder picker. It does not scan files on its own or touch your home directory.
 
 ## Auto-backup (.hazakura/backups/...)
 

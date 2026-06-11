@@ -129,10 +129,14 @@ export function useFileOpening({
   const openExternalFilePaths = useCallback(
     async (paths: string[]) => {
       for (const path of Array.from(new Set(paths)).filter(Boolean)) {
-        await openFilePath(path);
+        if (isSupportedImageFile(path)) {
+          await openImagePreview(path);
+        } else {
+          await openFilePath(path);
+        }
       }
     },
-    [openFilePath],
+    [openFilePath, openImagePreview],
   );
 
   const openWorkspaceFile = useCallback(

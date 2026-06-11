@@ -2,7 +2,7 @@ use crate::types::*;
 use std::env;
 use std::ffi::{OsStr, OsString};
 use std::fs::{self, File, OpenOptions};
-use std::io::{Read, Write};
+use std::io::{ErrorKind, Read, Write};
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -708,32 +708,62 @@ pub(crate) fn decode_text_bytes<'a>(
     Ok(decoded)
 }
 
+#[derive(Debug, PartialEq, Eq)]
+enum AtomicWriteFailureKind {
+    TempCreate(ErrorKind),
+    Other,
+}
+
+#[derive(Debug)]
+struct AtomicWriteFailure {
+    kind: AtomicWriteFailureKind,
+    message: String,
+}
+
 pub(crate) fn atomic_write(path: &Path, bytes: &[u8]) -> Result<(), String> {
-    let parent = path
-        .parent()
-        .ok_or_else(|| "Cannot save a file without a parent directory.".to_string())?;
+    atomic_write_inner(path, bytes).map_err(|err| err.message)
+}
+
+fn atomic_write_inner(path: &Path, bytes: &[u8]) -> Result<(), AtomicWriteFailure> {
+    let parent = path.parent().ok_or_else(|| AtomicWriteFailure {
+        kind: AtomicWriteFailureKind::Other,
+        message: "Cannot save a file without a parent directory.".to_string(),
+    })?;
     let file_name = path
         .file_name()
         .and_then(|name| name.to_str())
-        .ok_or_else(|| "Cannot save a file with an invalid name.".to_string())?;
+        .ok_or_else(|| AtomicWriteFailure {
+            kind: AtomicWriteFailureKind::Other,
+            message: "Cannot save a file with an invalid name.".to_string(),
+        })?;
     let temp_path = parent.join(format!(".{file_name}.hazakura-note.tmp"));
 
     let mut temp_created = false;
-    let write_result = (|| -> Result<(), String> {
+    let write_result = (|| -> Result<(), AtomicWriteFailure> {
         let mut temp_file = OpenOptions::new()
             .write(true)
             .create_new(true)
             .open(&temp_path)
-            .map_err(|err| format!("Cannot create temp file: {err}"))?;
+            .map_err(|err| AtomicWriteFailure {
+                kind: AtomicWriteFailureKind::TempCreate(err.kind()),
+                message: format!("Cannot create temp file: {err}"),
+            })?;
         temp_created = true;
         temp_file
             .write_all(bytes)
-            .map_err(|err| format!("Cannot write temp file: {err}"))?;
-        temp_file
-            .sync_all()
-            .map_err(|err| format!("Cannot sync temp file: {err}"))?;
+            .map_err(|err| AtomicWriteFailure {
+                kind: AtomicWriteFailureKind::Other,
+                message: format!("Cannot write temp file: {err}"),
+            })?;
+        temp_file.sync_all().map_err(|err| AtomicWriteFailure {
+            kind: AtomicWriteFailureKind::Other,
+            message: format!("Cannot sync temp file: {err}"),
+        })?;
 
-        fs::rename(&temp_path, path).map_err(|err| format!("Cannot replace saved file: {err}"))
+        fs::rename(&temp_path, path).map_err(|err| AtomicWriteFailure {
+            kind: AtomicWriteFailureKind::Other,
+            message: format!("Cannot replace saved file: {err}"),
+        })
     })();
 
     if write_result.is_err() && temp_created {
@@ -741,6 +771,39 @@ pub(crate) fn atomic_write(path: &Path, bytes: &[u8]) -> Result<(), String> {
     }
 
     write_result?;
+
+    Ok(())
+}
+
+pub(crate) fn write_existing_file_with_atomic_fallback(
+    path: &Path,
+    bytes: &[u8],
+) -> Result<(), String> {
+    match atomic_write_inner(path, bytes) {
+        Ok(()) => Ok(()),
+        Err(err)
+            if matches!(
+                err.kind,
+                AtomicWriteFailureKind::TempCreate(ErrorKind::PermissionDenied)
+            ) =>
+        {
+            write_existing_file_directly(path, bytes)
+        }
+        Err(err) => Err(err.message),
+    }
+}
+
+fn write_existing_file_directly(path: &Path, bytes: &[u8]) -> Result<(), String> {
+    let mut file = OpenOptions::new()
+        .write(true)
+        .truncate(true)
+        .open(path)
+        .map_err(|err| format!("Cannot write selected file directly: {err}"))?;
+
+    file.write_all(bytes)
+        .map_err(|err| format!("Cannot write selected file directly: {err}"))?;
+    file.sync_all()
+        .map_err(|err| format!("Cannot sync selected file directly: {err}"))?;
 
     Ok(())
 }

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-11 (v0.18 workspace restore / standalone save regression slice)
+Last reviewed: 2026-06-11 (v0.18 direct-open standalone save fallback)
 
 ## Current State
 
@@ -25,6 +25,13 @@ Last reviewed: 2026-06-11 (v0.18 workspace restore / standalone save regression 
   bookmark for user-selected workspace folders and resolves it on
   restart. Older path-only state can still fall back to the
   reauthorization status hint.
+- Direct-open standalone files can save even when the parent folder
+  cannot create a sibling temp file: `save_text_file` keeps the normal
+  atomic path, then falls back to direct existing-file write only on
+  temp-create `PermissionDenied`.
+- Directly opened PNG/JPEG/GIF/WebP files can preview without an active
+  workspace through `open_image_file`; workspace-tree image preview
+  still uses `open_workspace_image` and its root containment check.
 
 ## Current Work Queue
 
@@ -35,14 +42,19 @@ priority UX items are:
 2. Help copy overlap cleanup.
 3. `data:image` size wording alignment.
 
-Recently completed: workspace restore now preserves the last good
-persisted state when a restore attempt produces an empty live result,
-and standalone-file `saveActiveTab` is pinned for the no-workspace
-case. L Mode table Backspace / Delete, table caret movement coverage,
-floating-control focus visibility, encoding-only dirty indication,
-WorkspaceTree rename markup, Markdown preview task checkboxes, normal
-mode sidebar collapse / restore, App Store preview startup, and
-sandboxed workspace bookmark restore are also complete for v0.18.
+Recently completed: direct-open standalone file save now handles the
+App Sandbox-style case where the selected file itself is writable but
+creating `.hazakura-note.tmp` next to it is denied. Direct-open image
+files now route to read-only image preview instead of text open failure
+when no workspace is active. Workspace restore also preserves the last
+good persisted state when a restore attempt produces an empty live
+result, and standalone-file `saveActiveTab` is pinned for the
+no-workspace case. L Mode table Backspace / Delete, table caret
+movement coverage, floating-control focus visibility, encoding-only
+dirty indication, WorkspaceTree rename markup, Markdown preview task
+checkboxes, normal mode sidebar collapse / restore, App Store preview
+startup, and sandboxed workspace bookmark restore are also complete for
+v0.18.
 
 Submission-prep items in the same queue include App Store
 entitlement/signing lane definition, App Review Notes final copy,
@@ -85,11 +97,11 @@ accessibility smoke.
 
 ## Verification Guidance
 
-- Latest verified slice: `npm test`, `npm run build:vite`, and
-  `git diff --check` passed on 2026-06-11 after the v0.18
-  workspace restore / standalone save regression fix
-  (`useWorkspaceStatePersistence` empty-restore guard and
-  `useSaveActions.saveActiveTab` standalone-file pin).
+- Latest verified slice: `cargo fmt --manifest-path
+  src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path
+  src-tauri/Cargo.toml`, `npm run build:vite`, `npm test`,
+  `git diff --check`, and `npm run build` passed on 2026-06-11
+  after the direct-open standalone save / image preview fallback.
 - Latest packaged-app release evidence remains the v0.17
   warning-expected DMG preview; use the linked release note and
   release checklists before making distribution-readiness claims.

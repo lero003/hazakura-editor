@@ -112,6 +112,23 @@ fn open_workspace_image_returns_data_url_for_supported_image() {
 }
 
 #[test]
+fn open_image_file_returns_data_url_without_workspace_root() {
+    let outside = unique_test_dir("direct_image_outside_workspace");
+    fs::create_dir_all(&outside).expect("create outside dir");
+    let path = outside.join("tiny.png");
+    fs::write(&path, b"\x89PNG\r\n\x1a\n").expect("write png fixture");
+
+    let image = open_image_file_with_label(MAIN_WINDOW_LABEL, path.to_string_lossy().to_string())
+        .expect("open direct image");
+
+    assert_eq!(image.name, "tiny.png");
+    assert_eq!(image.path, path.to_string_lossy());
+    assert_eq!(image.data_url, "data:image/png;base64,iVBORw0KGgo=");
+
+    let _ = fs::remove_dir_all(outside);
+}
+
+#[test]
 fn open_workspace_image_accepts_supported_signatures_by_extension() {
     let dir = unique_test_dir("workspace_image_signatures");
     fs::create_dir_all(&dir).expect("create test dir");

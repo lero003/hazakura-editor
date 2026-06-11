@@ -114,6 +114,7 @@ pub fn run() {
             rename_workspace_entry,
             move_workspace_entry,
             move_workspace_entry_to_trash,
+            open_image_file,
             open_workspace_image,
             search_workspace_files,
             start_agent_workbench_session,

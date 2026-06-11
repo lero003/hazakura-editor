@@ -29,6 +29,7 @@ Use this when you want to:
 
 - open a selected project folder without running it
 - read and edit Markdown or text files
+- preview selected local PNG/JPEG/GIF/WebP image files without importing them
 - preview sanitized Markdown with local image asset rendering
 - preserve LF / CRLF and final-newline behavior
 - compare text files and review local changes without Git awareness
@@ -120,7 +121,7 @@ Example use case:
 - Image drag-and-drop from Finder imports into `assets/` and inserts Markdown image reference
 - Standalone HTML export via save dialog; local workspace images are inlined as data URIs
 - Print to PDF handoff via browser print fallback
-- Workspace image files up to 20 MB can be selected from the file tree and shown as read-only local PNG/JPEG/GIF/WebP previews after a lightweight content-signature check, then closed back to the prior text tab when one is available
+- Workspace image files and directly selected local image files up to 20 MB can be shown as read-only PNG/JPEG/GIF/WebP previews after a lightweight content-signature check, then closed back to the prior text tab when one is available
 - Image previews also appear as a closeable tab-row pseudo-tab, including in L Mode where the normal preview divider is hidden for a quieter surface
 - Window and dirty-tab close requests are stopped when open tabs have unsaved changes, with safe keyboard cancellation, Save / Discard choices, and editor focus restored after cancellation
 - Dirty-tab and app/window close dialogs keep Tab / Shift+Tab focus within the dialog while it is open
@@ -212,7 +213,7 @@ Developer preview release boundary:
 
 - Unsaved draft restore is explicit and fingerprint-bound; it is not autosave and does not merge with changed disk content.
 - The file tree is a workspace browser, not an index. Very large directories are capped per folder and may show only the first visible entries.
-- Workspace image preview is intentionally bounded to local PNG/JPEG/GIF/WebP files up to 20 MB.
+- Image preview is intentionally bounded to user-selected local PNG/JPEG/GIF/WebP files up to 20 MB.
 - Save conflicts are recoverable by reviewing changes, reopening, closing, or keeping local edits, and text comparison remains file/workspace based, but there is no merge editor, advanced diff, or Git status view.
 - Manual Review Desk entry points are hidden in the current App Store-oriented surface. Diff, recovery review, and Apple Local Assist review remain explicit and do not replace Git/merge workflows.
 - The app is not signed or notarized with an Apple Developer ID.

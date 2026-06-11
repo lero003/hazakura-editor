@@ -261,7 +261,7 @@ pub(crate) fn save_text_file_with_label(
 
     let normalized_contents = normalize_line_endings(&contents, &line_ending);
     let encoded_bytes = encode_text(&normalized_contents, &encoding)?;
-    atomic_write(&path_buf, &encoded_bytes)?;
+    write_existing_file_with_atomic_fallback(&path_buf, &encoded_bytes)?;
 
     let metadata =
         fs::metadata(&path_buf).map_err(|err| format!("Cannot verify saved file: {err}"))?;

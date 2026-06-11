@@ -1,10 +1,11 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { openWorkspaceImage } from "../../lib/tauri";
+import { openImageFile, openWorkspaceImage } from "../../lib/tauri";
 import type { ImagePreviewDocument } from "../../lib/tauri";
 import { useImagePreview } from "./useImagePreview";
 
 vi.mock("../../lib/tauri", () => ({
+  openImageFile: vi.fn(),
   openWorkspaceImage: vi.fn(),
 }));
 
@@ -17,7 +18,9 @@ function image(path: string, name: string): ImagePreviewDocument {
   };
 }
 
-function setup() {
+function setup(
+  overrides: Partial<Parameters<typeof useImagePreview>[0]> = {},
+) {
   const options: Parameters<typeof useImagePreview>[0] = {
     activeTabId: "tab-1",
     onError: vi.fn(),
@@ -46,6 +49,7 @@ function setup() {
       },
     ],
     workspaceRootPath: "/workspace",
+    ...overrides,
   };
 
   return {
@@ -56,7 +60,24 @@ function setup() {
 
 describe("useImagePreview", () => {
   beforeEach(() => {
+    vi.mocked(openImageFile).mockReset();
     vi.mocked(openWorkspaceImage).mockReset();
+  });
+
+  it("opens a directly selected image without requiring a workspace", async () => {
+    vi.mocked(openImageFile).mockResolvedValue(image("/outside/a.png", "a.png"));
+    const { options, result } = setup({ workspaceRootPath: null });
+
+    let opened: unknown = false;
+    await act(async () => {
+      opened = await result.current.openImagePreview("/outside/a.png");
+    });
+
+    expect(openImageFile).toHaveBeenCalledWith("/outside/a.png");
+    expect(openWorkspaceImage).not.toHaveBeenCalled();
+    expect(opened).toBe(true);
+    expect(result.current.selectedImage?.path).toBe("/outside/a.png");
+    expect(options.onStatus).toHaveBeenCalledWith("Image preview opened");
   });
 
   it("keeps the latest image preview when an older request resolves last", async () => {

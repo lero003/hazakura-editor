@@ -5,7 +5,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { openWorkspaceImage } from "../../lib/tauri";
+import { openImageFile, openWorkspaceImage } from "../../lib/tauri";
 import type { CompareViewState, EditorTab, ImagePreviewState } from "../../types";
 
 type UseImagePreviewOptions = {
@@ -41,19 +41,15 @@ export function useImagePreview({
 
   const openImagePreview = useCallback(
     async (path: string) => {
-      if (!workspaceRootPath) {
-        onError("Open a workspace before previewing an image.");
-        onStatus("Image preview failed");
-        return false;
-      }
-
       onError(null);
       onStatus("Opening image preview...");
       const requestSeq = previewRequestSeqRef.current + 1;
       previewRequestSeqRef.current = requestSeq;
 
       try {
-        const image = await openWorkspaceImage(workspaceRootPath, path);
+        const image = workspaceRootPath
+          ? await openWorkspaceImage(workspaceRootPath, path)
+          : await openImageFile(path);
         if (previewRequestSeqRef.current !== requestSeq) {
           return false;
         }

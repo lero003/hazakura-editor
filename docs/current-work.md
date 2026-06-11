@@ -76,6 +76,16 @@ over copy-heavy or product-voice-sensitive work.
   opened outside a workspace. The `useWorkspaceRestore`
   and `useSaveActions` test suites stay green; `npm
   test` and `npm run build:vite` pass.
+- 2026-06-11: Direct-open standalone file save fallback.
+  `save_text_file` now keeps the normal atomic temp-file replace path,
+  but falls back to direct existing-file write when the temp file cannot
+  be created with `PermissionDenied`. This preserves the App Sandbox /
+  direct file-picker case where the user-selected file itself is
+  writable but creating a sibling `.hazakura-note.tmp` file is not.
+  Directly opened local image files now route to read-only image preview
+  without requiring an active workspace, while workspace file-tree image
+  previews still use the workspace-root containment check. Existing-temp-
+  file clobber protection is unchanged.
 - 2026-06-11: L Mode table Backspace / Delete now preserves
   normal Markdown semantics: a selection that is strictly
   inside a single cell (e.g. a double-clicked word) falls

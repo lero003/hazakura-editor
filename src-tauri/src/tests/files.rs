@@ -6,6 +6,9 @@ use super::*;
 
 use std::fs::File;
 
+#[cfg(unix)]
+use std::os::unix::fs::PermissionsExt;
+
 #[test]
 fn open_text_file_rejects_binary_looking_file() {
     let dir = unique_test_dir("open_binary");
@@ -333,6 +336,42 @@ fn atomic_write_does_not_clobber_existing_temp_file() {
     assert_eq!(
         fs::read_to_string(&temp_path).expect("read existing temp file"),
         "# Existing temp\n"
+    );
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[cfg(unix)]
+#[test]
+fn save_updates_existing_file_when_parent_cannot_create_temp_file() {
+    let dir = unique_test_dir("save_direct_file_grant_without_parent_write");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("note.md");
+    fs::write(&path, "# Original\n").expect("write fixture");
+    let document = open_text_file_with_label(MAIN_WINDOW_LABEL, path.to_string_lossy().to_string())
+        .expect("open fixture");
+
+    fs::set_permissions(&path, fs::Permissions::from_mode(0o600))
+        .expect("make file directly writable");
+    fs::set_permissions(&dir, fs::Permissions::from_mode(0o500))
+        .expect("remove parent write permission");
+
+    let result = save_text_file_with_label(
+        MAIN_WINDOW_LABEL,
+        path.to_string_lossy().to_string(),
+        "# Edited\n".to_string(),
+        document.fingerprint,
+        document.line_ending,
+        "utf-8".to_string(),
+    );
+
+    fs::set_permissions(&dir, fs::Permissions::from_mode(0o700))
+        .expect("restore parent permissions");
+
+    result.expect("save should fall back to direct existing-file write");
+    assert_eq!(
+        fs::read_to_string(&path).expect("read saved file"),
+        "# Edited\n"
     );
 
     let _ = fs::remove_dir_all(dir);

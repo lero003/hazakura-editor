@@ -556,6 +556,20 @@ fn open_workspace_image_rejects_agent_window_label() {
 }
 
 #[test]
+fn open_image_file_rejects_agent_window_label() {
+    let dir = unique_label_path("open_image_file_agent");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("tiny.png");
+    fs::write(&path, b"\x89PNG\r\n\x1a\n").expect("write png fixture");
+
+    let err = open_image_file_with_label(AGENT_WINDOW_LABEL, path.to_string_lossy().to_string())
+        .expect_err("open_image_file must reject the agent window");
+    assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
 fn save_pasted_image_rejects_agent_window_label() {
     let dir = unique_label_path("save_pasted_image_agent");
     fs::create_dir_all(&dir).expect("create test dir");

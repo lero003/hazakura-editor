@@ -50,6 +50,10 @@ export async function openTextFile(path: string): Promise<TextFileDocument> {
   return invoke<TextFileDocument>("open_text_file", { path });
 }
 
+export async function openImageFile(path: string): Promise<ImagePreviewDocument> {
+  return invoke<ImagePreviewDocument>("open_image_file", { path });
+}
+
 export async function createTextFile(
   path: string,
   workspaceRoot: string | null,

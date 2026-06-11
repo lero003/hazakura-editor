@@ -37,6 +37,9 @@ Last reviewed: 2026-06-11 (v0.18 UX polish slices)
 
 - Safe open/edit/save for Markdown and text files, including LF / CRLF,
   final-newline, UTF-8 BOM, Shift-JIS, and EUC-JP handling.
+- Read-only preview for user-selected local PNG/JPEG/GIF/WebP image files
+  up to 20 MB, including directly opened files outside the selected
+  workspace.
 - Multi-tab editor with dirty-tab close protection, app/window close
   confirmation, save-conflict recovery, and explicit draft recovery.
 - Normal Safe Editor mode can collapse and restore the left workspace

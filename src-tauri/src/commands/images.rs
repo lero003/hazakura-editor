@@ -13,6 +13,14 @@ pub(crate) fn open_workspace_image<R: tauri::Runtime>(
     open_workspace_image_with_label(window.label(), root, path)
 }
 
+#[tauri::command]
+pub(crate) fn open_image_file<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    path: String,
+) -> Result<ImagePreviewDocument, String> {
+    open_image_file_with_label(window.label(), path)
+}
+
 pub(crate) fn open_workspace_image_with_label(
     label: &str,
     root: String,
@@ -29,6 +37,23 @@ pub(crate) fn open_workspace_image_with_label(
         return Err("Selected image is outside the workspace root.".to_string());
     }
 
+    read_image_preview_document(path, image_path)
+}
+
+pub(crate) fn open_image_file_with_label(
+    label: &str,
+    path: String,
+) -> Result<ImagePreviewDocument, String> {
+    ensure_label_is_main(label)?;
+    let image_path = PathBuf::from(&path);
+
+    read_image_preview_document(path, image_path)
+}
+
+fn read_image_preview_document(
+    path: String,
+    image_path: PathBuf,
+) -> Result<ImagePreviewDocument, String> {
     let metadata = fs::metadata(&image_path).map_err(|err| format!("Cannot read image: {err}"))?;
 
     if !metadata.is_file() {
