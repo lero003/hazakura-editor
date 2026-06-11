@@ -4,6 +4,7 @@ src-tauri/target/
 src-tauri/gen/
 src-helpers/apple-assist/.build/
 binaries/
+/assets/
 src-tauri/profiles/*.provisionprofile
 docs/internal/
 *.local.md

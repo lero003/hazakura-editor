@@ -13,7 +13,7 @@ Source-only means publishing the repository state, tag, source archive, release 
 
 Since `v0.13.0` (2026-06-06), the local macOS build commands map to three distinct lanes. This checklist must keep the lanes separate; do not let a source / local-app tag slip evidence from the warning-expected DMG preview lane into its gate list, and vice versa.
 
-- **App Store preview lane**: `npm run build` (alias for `npm run build:app-store-preview`) produces `hazakura editor.app` with bundle identifier `lab.hazakura.note`. This is the normal / App Store preview bundle.
+- **App Store preview lane**: `npm run build` (alias for `npm run build:app-store-preview`) produces `hazakura editor.app` with bundle identifier `dev.hazakura.editor`. This is the normal / App Store preview bundle.
 - **Developer / GitHub lane**: `npm run build:developer-preview` (or `npm run build:macos-lanes` for both bundles) produces `hazakura editor Dev.app` with bundle identifier `lab.hazakura.note.dev` and a small `DEV` badge. Agent Workbench stays enabled in this lane.
 - **Warning-expected DMG preview lane**: `npm run build:dmg-preview` packages the Developer / GitHub lane bundle as `hazakura-editor-dev_...-warning-expected.dmg`. See `docs/dmg-preview-checklist.md`. Ad-hoc signed only, not Developer ID signed, not notarized.
 

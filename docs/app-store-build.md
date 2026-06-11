@@ -76,6 +76,8 @@ Allowed:
 
 - `com.apple.security.app-sandbox`
 - `com.apple.security.files.user-selected.read-write`
+- `com.apple.security.files.bookmarks.app-scope` for restoring
+  user-selected workspace folders across sandboxed app restarts
 - `com.apple.security.network.client` for the Tauri/WebKit runtime to
   load bundled app assets under App Sandbox
 
