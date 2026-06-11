@@ -93,7 +93,7 @@ baseline, and smoke evidence are archived under
 ## Next Safe Actions
 
 1. For UX work, start with `docs/current-work.md` and pick one item:
-   WorkspaceTree rename markup or encoding-only dirty indication.
+   manual accessibility smoke.
 2. For App Store submission prep, start with `docs/current-work.md`
    and `docs/app-store-build.md`; keep account-specific notes under
    ignored `docs/internal/` files;

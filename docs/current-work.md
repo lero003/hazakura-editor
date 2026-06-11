@@ -31,13 +31,19 @@ Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| P1 | Encoding-only dirty indication | Tab dirty state and auto-backup dirty detection should include encoding-only changes, matching shared editor dirty logic. |
 | P1 | Manual accessibility smoke | Record Help readability, full keyboard-only traversal, VoiceOver tab-bar announcement, and Increase Contrast smoke before submission. |
 | P2 | Help copy overlap cleanup | Separate Privacy Policy, Local Data Disclosure, Support Diagnostics, About, and Open Source Acknowledgements so each page has one job. |
 | P2 | `data:image` size wording | Align implementation and docs: either call the check a data-URI length cap or measure decoded image bytes. |
 
 ## Completed v0.18 Slices
 
+- 2026-06-11: Encoding-only dirty indication is now consistent across
+  the shared `isDirty()` contract, `TabBar`, and the auto-backup
+  loop. Encoding-only changes surface the TabBar dirty dot and
+  accessible "unsaved" description and are eligible for auto-backup
+  with `encoding` included in the backup signature so repeated
+  ticks do not pile up duplicates. The actual byte rewrite still
+  happens on the next save via the encoding selector.
 - 2026-06-11: Markdown preview task checkboxes now render `- [ ]` and
   `- [x]` as inert display-only checkbox glyphs in Preview. Saved
   Markdown remains unchanged; task items suppress the normal list marker

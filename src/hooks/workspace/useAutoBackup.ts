@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { isDirty } from "../../features/editor/editorTabs";
 import { pruneAutoBackups, saveAutoBackup } from "../../lib/tauri";
 import type { EditorTab } from "../../types";
 import { useLatestValueRef } from "../app/useLatestValueRef";
@@ -33,7 +34,7 @@ export function useAutoBackup({
         return;
       }
 
-      const dirtyTabsSnapshot = tabsRef.current.filter(isDirtyTab);
+      const dirtyTabsSnapshot = tabsRef.current.filter(isDirty);
       if (dirtyTabsSnapshot.length === 0) {
         return;
       }
@@ -74,12 +75,14 @@ export function useAutoBackup({
 type BackupSignature = {
   contents: string;
   lineEnding: string;
+  encoding: string;
 };
 
 function backupSignature(tab: EditorTab): BackupSignature {
   return {
     contents: tab.contents,
     lineEnding: tab.line_ending,
+    encoding: tab.encoding,
   };
 }
 
@@ -87,12 +90,9 @@ function sameBackupSignature(
   a: BackupSignature | undefined,
   b: BackupSignature,
 ): boolean {
-  return a?.contents === b.contents && a.lineEnding === b.lineEnding;
-}
-
-function isDirtyTab(tab: EditorTab): boolean {
   return (
-    tab.contents !== tab.lastSavedContents ||
-    tab.line_ending !== tab.lastSavedLineEnding
+    a?.contents === b.contents &&
+    a.lineEnding === b.lineEnding &&
+    a.encoding === b.encoding
   );
 }

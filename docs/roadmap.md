@@ -49,14 +49,20 @@ submission work hardens around it.
 
 Use `docs/current-work.md` as the queue. The near-term UX priorities are:
 
-1. WorkspaceTree rename-state markup cleanup.
-2. Encoding-only dirty indication and auto-backup coverage.
-3. Manual accessibility smoke: Help readability, full keyboard-only
+1. Manual accessibility smoke: Help readability, full keyboard-only
    traversal, VoiceOver tab-bar announcement, and Increase Contrast.
-4. Help copy overlap cleanup.
+2. Help copy overlap cleanup.
 
 Recently completed:
 
+- Encoding-only dirty indication and auto-backup coverage: `TabBar`
+  and the auto-backup loop now share the same `isDirty()` contract
+  used elsewhere, and `encoding` is part of the auto-backup
+  signature so repeated ticks do not pile up duplicates.
+- WorkspaceTree rename-state markup cleanup: the rename `<input>`
+  is rendered as a non-button row instead of being nested inside
+  the row `<button>`, avoiding a nested-interactive-control
+  VoiceOver / focus / click / blur risk.
 - Markdown preview task checkboxes: `- [ ]` and `- [x]` render as
   display-only task checkboxes in Preview without changing saved
   Markdown.

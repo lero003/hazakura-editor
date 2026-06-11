@@ -118,6 +118,46 @@ describe("AppTopChrome", () => {
     expect(description?.textContent).toBe("unsaved");
   });
 
+  // v0.18 UX polish — encoding-only dirty indication.
+  // The shared `isDirty()` covers contents, line ending,
+  // and encoding. TabBar's local dirty check must mirror
+  // that, so an encoding-only change still surfaces the
+  // dirty dot and the accessible "unsaved" description.
+
+  it("exposes encoding-only dirty tabs as an accessible description", () => {
+    const encodingDirtyTab: EditorTab = {
+      contents: "saved",
+      encoding: "shift-jis",
+      error: null,
+      externalFingerprint: null,
+      fingerprint: "fp",
+      ignoredExternalFingerprint: null,
+      id: "/workspace/encoding-dirty.md",
+      large_file_warning: false,
+      lastSavedContents: "saved",
+      lastSavedEncoding: "utf-8",
+      lastSavedLineEnding: "lf",
+      line_ending: "lf",
+      modified_ms: null,
+      name: "encoding-dirty.md",
+      path: "/workspace/encoding-dirty.md",
+      saveStatus: "idle",
+      size: 5,
+    };
+
+    renderTopChrome({ tabs: [encodingDirtyTab], activeDirty: true });
+
+    const tabButton = screen.getByRole("tab", {
+      description: "unsaved",
+      name: "encoding-dirty.md",
+    });
+    const describedById = tabButton.getAttribute("aria-describedby");
+    expect(describedById).toBeTruthy();
+
+    const description = document.getElementById(describedById!);
+    expect(description?.textContent).toBe("unsaved");
+  });
+
   // v0.17 app-store-quality: accessibility-smoke slice 3.2
   // — TabBar keyboard navigation (arrow keys / Home / End)
   // for `role="tablist"` compliance. The handler lives on

@@ -5,6 +5,7 @@ import type {
   ReactNode,
 } from "react";
 import { useRef } from "react";
+import { isDirty } from "../../features/editor/editorTabs";
 import type { EditorTab, ImagePreviewState } from "../../types";
 
 type TabBarProps = {
@@ -130,7 +131,7 @@ export function TabBar({
         ) : (
           <>
             {tabs.map((tab) => {
-              const dirty = isDirtyTab(tab);
+              const dirty = isDirty(tab);
 
               return (
                 <div
@@ -275,12 +276,5 @@ export function TabBar({
       </div>
       {children}
     </section>
-  );
-}
-
-function isDirtyTab(tab: EditorTab): boolean {
-  return (
-    tab.contents !== tab.lastSavedContents ||
-    tab.line_ending !== tab.lastSavedLineEnding
   );
 }
