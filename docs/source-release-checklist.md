@@ -3,7 +3,7 @@
 Status: Operational release-prep checklist
 Scope: Source-only release readiness
 Authority: High
-Last reviewed: 2026-06-12 (v0.18 warning-expected DMG preview prep)
+Last reviewed: 2026-06-12 (launchable local smoke build)
 
 This checklist is for a source-only developer preview release of `Hazakura Editor` / `hazakura-note`.
 
@@ -13,11 +13,12 @@ Source-only means publishing the repository state, tag, source archive, release 
 
 Since `v0.13.0` (2026-06-06), the local macOS build commands map to three distinct lanes. This checklist must keep the lanes separate; do not let a source / local-app tag slip evidence from the warning-expected DMG preview lane into its gate list, and vice versa.
 
-- **App Store preview lane**: `npm run build` (alias for `npm run build:app-store-preview`) produces `Hazakura Editor.app` with bundle identifier `dev.hazakura.editor`. This is the normal / App Store preview bundle.
+- **Local smoke / App Store preview shape**: `npm run build` (alias for `npm run build:app-store-preview`) produces a launchable, helper-free `Hazakura Editor.app` with bundle identifier `dev.hazakura.editor`. It deliberately skips App Store sandbox entitlements so development smoke can launch locally.
 - **Developer / GitHub lane**: `npm run build:developer-preview` (or `npm run build:macos-lanes` for both bundles) produces `Hazakura Editor Dev.app` with bundle identifier `lab.hazakura.note.dev` and a small `DEV` badge. Agent Workbench stays enabled in this lane.
 - **Warning-expected DMG preview lane**: `npm run build:dmg-preview` packages the Developer / GitHub lane bundle as `hazakura-editor-dev_...-warning-expected.dmg`. See `docs/dmg-preview-checklist.md`. Ad-hoc signed only, not Developer ID signed, not notarized.
+- **App Store submit lane**: `npm run build:app-store-submit` uses the helper-free App Store config with sandbox entitlements and the local provisioning profile for TestFlight / App Store Connect packaging.
 
-For a v0.12+ source / local-app tag, the local gate evidence is taken from the **App Store preview lane** (`npm run build`) by default. Add the **Developer / GitHub lane** to the same run with `npm run build:macos-lanes` when the tag also needs to prove the Developer bundle path (see the v0.13.0 source / local-app release notes for an example). Do not add `npm run build:dmg-preview` to a source / local-app tag gate unless the lane is explicitly being published.
+For a v0.12+ source / local-app tag, the local gate evidence is taken from the **launchable local smoke bundle** (`npm run build`) by default. Add the **Developer / GitHub lane** to the same run with `npm run build:macos-lanes` when the tag also needs to prove the Developer bundle path (see the v0.13.0 source / local-app release notes for an example). Do not add `npm run build:dmg-preview` to a source / local-app tag gate unless the lane is explicitly being published.
 
 The latest published downloadable DMG preview is `v0.18.0`. v0.12.0, v0.13.0, and v0.14.0 are source / local-app tags and intentionally do not attach a DMG asset.
 
@@ -58,7 +59,7 @@ npm run build
 git diff --check
 ```
 
-`npm run build` here means the **helper-free App Store preview lane** (`npm run build:app-store-preview`, producing `Hazakura Editor.app` with bundle identifier `dev.hazakura.editor`). Add `npm run build:macos-lanes` (or `npm run build:developer-preview`) when the source / local-app tag also needs to prove the Developer / GitHub lane (`Hazakura Editor Dev.app`, `lab.hazakura.note.dev`). Do not add `npm run build:dmg-preview`; that lane is governed by `docs/dmg-preview-checklist.md`.
+`npm run build` here means the **launchable helper-free local smoke lane** (`npm run build:app-store-preview`, producing `Hazakura Editor.app` with bundle identifier `dev.hazakura.editor`). Add `npm run smoke:macos-sandbox-preview` or the signed `npm run build:app-store-submit` lane when the release goal needs App Store sandbox entitlement evidence. Add `npm run build:macos-lanes` (or `npm run build:developer-preview`) when the source / local-app tag also needs to prove the Developer / GitHub lane (`Hazakura Editor Dev.app`, `lab.hazakura.note.dev`). Do not add `npm run build:dmg-preview`; that lane is governed by `docs/dmg-preview-checklist.md`.
 
 **Apple Local Assist helper verification** (Developer / GitHub lane only):
 
@@ -148,7 +149,7 @@ Before tagging:
 - Confirm `package.json`, `src-tauri/tauri.conf.json`, and `src-tauri/Cargo.toml` carry the intended version for the release candidate. Do not rely on an older checklist snapshot for the version value.
 - For v0.7 release prep, keep package/version bumps out of ordinary quality slices until the release lane is explicitly approved.
 - Add or update the version-specific file under `docs/releases/` for the intended source preview.
-- State clearly that users build from source with `npm ci` and `npm run build`. `npm run build` resolves to the App Store preview lane (`Hazakura Editor.app`); users who need the Developer / GitHub lane should run `npm run build:macos-lanes` or `npm run build:developer-preview` instead. This is present in `README.md`.
+- State clearly that users build from source with `npm ci` and `npm run build`. `npm run build` resolves to the launchable helper-free local smoke lane (`Hazakura Editor.app`); App Store sandbox entitlements belong to `npm run smoke:macos-sandbox-preview` or the signed submit lane. Users who need the Developer / GitHub lane should run `npm run build:macos-lanes` or `npm run build:developer-preview` instead. This is present in `README.md`.
 - State clearly that the built local app is ad-hoc signed only and is not Developer ID signed or notarized. This is present in `README.md` Known Limits.
 - Keep known limits visible in `README.md` and `docs/current-status.md`.
 

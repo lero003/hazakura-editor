@@ -3,13 +3,15 @@
 #
 # This script is read-only. It does not sign, notarize, package, upload,
 # or mutate the app. Use it after `npm run build` has produced the local
-# app bundle.
+# app bundle. Set REQUIRE_APP_STORE_ENTITLEMENTS=1 when probing a signed
+# App Store submit bundle or an intentionally sandbox-re-signed preview.
 
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 APP="${1:-$REPO_ROOT/src-tauri/target/release/bundle/macos/Hazakura Editor.app}"
 EXPECTED_DISTRIBUTION_LANE="${EXPECTED_DISTRIBUTION_LANE:-app-store}"
+REQUIRE_APP_STORE_ENTITLEMENTS="${REQUIRE_APP_STORE_ENTITLEMENTS:-0}"
 HELPER="$APP/Contents/MacOS/hazakura-apple-assist-helper"
 PLIST="$APP/Contents/Info.plist"
 RESOURCES="$APP/Contents/Resources"
@@ -88,10 +90,16 @@ if has_entitlement "$APP" "com.apple.security.app-sandbox"; then
     echo "app sandbox entitlement: present"
 else
     echo "app sandbox entitlement: missing"
-    missing_required_entitlement=1
+    if [ "$REQUIRE_APP_STORE_ENTITLEMENTS" = "1" ]; then
+        missing_required_entitlement=1
+    fi
 fi
 
 if [ "$EXPECTED_DISTRIBUTION_LANE" = "app-store" ]; then
+    if [ "$REQUIRE_APP_STORE_ENTITLEMENTS" != "1" ]; then
+        echo "app store entitlement gate: skipped for launchable local preview"
+    fi
+
     for entitlement in \
         "com.apple.security.files.user-selected.read-write" \
         "com.apple.security.files.bookmarks.app-scope" \
@@ -100,7 +108,9 @@ if [ "$EXPECTED_DISTRIBUTION_LANE" = "app-store" ]; then
             echo "app $entitlement entitlement: present"
         else
             echo "app $entitlement entitlement: missing"
-            missing_required_entitlement=1
+            if [ "$REQUIRE_APP_STORE_ENTITLEMENTS" = "1" ]; then
+                missing_required_entitlement=1
+            fi
         fi
     done
 

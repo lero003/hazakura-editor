@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-06-11 (v0.18 UX polish slices)
+Last reviewed: 2026-06-12 (v0.18 pre-review automation order)
 
 ## Purpose
 
@@ -17,23 +17,48 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: v0.18 UX polish / submission prep, unless a v0.17 hotfix blocker appears.
+Phase: v0.18 pre-review bug fixing / TestFlight smoke / submission
+prep, unless a v0.18 hotfix blocker appears.
+
+For recurring automation, use the `Pre-Review Automation Order` in
+`docs/current-work.md` before the generic preference list below. Each
+run should pick the first open slice whose required environment is
+available and close it as `implemented`, `manual-blocked`, or
+`verified no-op`.
 
 Prefer work in this order:
 
-1. Stale or failing quality gates.
-2. Active UX queue from `docs/current-work.md`, especially manual accessibility follow-up and the external-agent friendly implementation queue.
-3. Submission-prep queue from `docs/current-work.md`, especially entitlement/signing lane definition, App Review Notes final copy, license packet review, and manual accessibility live observation.
-4. Release-prep gaps in Developer / GitHub DMG wording, checksum flow, cross-machine smoke guidance, or expected macOS warning instructions.
-5. App Store / Developer lane separation drift, especially Agent Workbench omission, helper bundle/signing assumptions, and sandbox/review evidence.
-6. Accessibility and keyboard-flow audit slices for settings, close dialogs, L Mode rail/drawer/review, image preview, recovery, and diff review.
-7. Performance and bundle-size measurement before chunk-splitting, L Mode decoration-cache work, or broad CSS splitting.
-8. One concrete user-test friction point from Apple Local Assist, L Mode, theme, settings, status / error copy, export, or file/recovery workflows.
-9. Safety-boundary regression checks.
+1. Pre-review automation order from `docs/current-work.md`.
+2. Stale or failing quality gates that block the selected slice.
+3. Submission-prep queue from `docs/current-work.md`, especially fuller
+   TestFlight smoke, reviewer notes, license packet review, About
+   metadata, and regression evidence.
+4. App Store / Developer lane separation drift, especially Agent
+   Workbench omission, helper bundle/signing assumptions, external
+   process appearance, sandbox/review evidence, and `network.client`
+   explanation.
+5. Accessibility and keyboard-flow audit slices for settings, close
+   dialogs, L Mode rail/drawer/review, image preview, recovery, and diff
+   review.
+6. One concrete user-test friction point from Apple Local Assist,
+   L Mode, theme, settings, status / error copy, export, or
+   file/recovery workflows.
+7. Safety-boundary regression checks.
+8. Release-prep gaps in Developer / GitHub DMG wording, checksum flow,
+   cross-machine smoke guidance, or expected macOS warning instructions.
+9. Performance and bundle-size measurement before chunk-splitting,
+   L Mode decoration-cache work, or broad CSS splitting.
 10. Post-release docs/version drift.
-11. One reproduced bug in implemented L Mode WYSIWYG behavior, especially caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or a measured performance baseline.
-12. One concrete theme-quality issue, especially focus visibility, contrast, status/error readability, dialog readability, or Increase Contrast behavior.
-13. Focused refactor only when it directly supports a verified user-facing polish fix; do not split a large file for architecture aesthetics alone.
+11. One reproduced bug in implemented L Mode WYSIWYG behavior,
+   especially caret, IME, Backspace/Delete, hidden markers, lists,
+   dividers, links, tables, images, visual overlap, source preservation,
+   or a measured performance baseline.
+12. One concrete theme-quality issue, especially focus visibility,
+   contrast, status/error readability, dialog readability, or Increase
+   Contrast behavior.
+13. Focused refactor only when it directly supports a verified
+   user-facing polish fix; do not split a large file for architecture
+   aesthetics alone.
 14. Documentation drift.
 15. Verified no-op after inspection when no useful small slice is safe.
 
@@ -45,7 +70,10 @@ Prefer work in this order:
 2. Run `git status --short --branch`.
 3. Treat existing uncommitted changes as user or previous-agent work. Do not revert them.
 4. Use Hazakura Habitat before substantial implementation, automation changes, dependency or lockfile work, release work, Git/GitHub mutation, or command-selection uncertainty.
-5. Choose exactly one coherent slice that can be verified in the same run. Name the release-prep risk, observed friction, or evidence gap before editing.
+5. Choose exactly one coherent slice that can be verified in the same
+   run. Name the release-prep risk, observed friction, or evidence gap
+   before editing. For pre-review work, also name the `Automation Exit`
+   target from `docs/current-work.md`.
 
 ## Product Boundaries
 

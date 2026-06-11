@@ -143,8 +143,12 @@ That config sets:
 - `bundle.macOS.entitlements` to `./entitlements/mac-app-store.entitlements`
 - `bundle.macOS.files.embedded.provisionprofile` to the local profile path
 
-The preview config uses the same helper-free build shape but does not
-embed a provisioning profile.
+The preview config uses the same helper-free build shape, but deliberately
+skips the App Store sandbox entitlements and provisioning profile so
+`npm run build` produces a launchable local smoke bundle. Use
+`npm run smoke:macos-sandbox-preview` for a local sandbox-entitlement
+probe, and use `npm run build:app-store-submit` plus `productbuild` for
+the signed TestFlight / App Store Connect lane.
 
 ## Bundled Notices
 
@@ -185,7 +189,14 @@ TeamIdentifier=<TEAM_ID>
 Authority=Apple Distribution: ...
 ```
 
-Check entitlements:
+For a signed submit bundle or an intentionally sandbox-re-signed preview,
+run the probe with entitlement enforcement:
+
+```bash
+REQUIRE_APP_STORE_ENTITLEMENTS=1 npm run probe:macos-distribution -- "$APP"
+```
+
+Check entitlements on the signed App Store artifact:
 
 ```xml
 <key>com.apple.application-identifier</key>
@@ -357,11 +368,12 @@ Connect account work remains outside tracked public docs:
 - private reviewer notes and contact details
 
 v0.18 release-prep note: the warning-expected Developer / GitHub DMG app
-launched locally and from the mounted DMG, but `open -n` on the ad-hoc
-helper-free App Store preview bundle failed in the agent session with
-`RBSRequestErrorDomain Code=5` / `Launchd job spawn failed`. Treat
-App Store-lane launch validation as part of the signed submit /
-TestFlight proof, not as covered by the Developer / GitHub DMG preview.
+launched locally and from the mounted DMG. An earlier ad-hoc helper-free
+App Store preview bundle that carried App Store sandbox entitlements failed
+with `RBSRequestErrorDomain Code=5` / `Launchd job spawn failed`, so local
+`npm run build` smoke now skips those entitlements. Treat App Store-lane
+launch validation as part of the signed submit / TestFlight proof, not as
+covered by local ad-hoc entitlement probes.
 
 v0.18 TestFlight note: on 2026-06-12, the signed
 `HazakuraEditor-0.18.0-mas.pkg` for app version `0.18.0` and build `4`

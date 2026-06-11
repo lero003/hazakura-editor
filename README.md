@@ -162,7 +162,7 @@ npm ci
 npm run dev
 ```
 
-Build a local macOS app bundle:
+Build a launchable local macOS smoke bundle:
 
 ```bash
 npm ci
@@ -174,6 +174,12 @@ The built app is generated at:
 ```txt
 src-tauri/target/release/bundle/macos/Hazakura Editor.app
 ```
+
+This local bundle uses the helper-free App Store preview shape, but skips
+App Store sandbox entitlements so it can launch for development smoke.
+Use `npm run build:app-store-submit` for the signed App Store submission
+lane and `npm run smoke:macos-sandbox-preview` for the local sandbox
+entitlement probe.
 
 Build a warning-expected local DMG preview only after that release lane is explicitly approved:
 
@@ -206,7 +212,7 @@ Developer preview release boundary:
 - Current package/app version is `0.18.0` across npm, Tauri, Cargo, and lockfile metadata.
 - The current warning-expected DMG preview tag is `v0.18.0`; its release-note evidence lives in [0.18.0 Warning-expected DMG Preview](docs/releases/0.18.0-warning-expected-dmg-preview.release.md).
 - Source users build locally with `npm ci` and `npm run build`.
-- The generated App Store preview `.app` declares macOS 11.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. The App Store submission lane is helper-free and does not include Agent Workbench, CLI Agent, Apple Local Assist helper, or external AI/API calls. Developer / GitHub builds may still include the Apple Local Assist helper. The app is not Developer ID signed or notarized.
+- The generated local smoke `.app` declares macOS 11.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. The App Store submission lane is helper-free and does not include Agent Workbench, CLI Agent, Apple Local Assist helper, or external AI/API calls. Developer / GitHub builds may still include the Apple Local Assist helper. The app is not Developer ID signed or notarized.
 - The latest published warning-expected DMG preview is [v0.18.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.18.0). The v0.18.0 release notes live in [0.18.0 Warning-expected DMG Preview](docs/releases/0.18.0-warning-expected-dmg-preview.release.md).
 
 ## Known Limits

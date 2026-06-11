@@ -8,7 +8,6 @@
     "category": "Productivity",
     "externalBin": [],
     "macOS": {
-      "entitlements": "./entitlements/mac-app-store.entitlements",
       "signingIdentity": "-"
     }
   }
