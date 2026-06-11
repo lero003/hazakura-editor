@@ -104,8 +104,42 @@ describe("macOS build scripts", () => {
       "env -u APPLE_SIGNING_IDENTITY tauri build",
     );
     expect(macosLanesScript).toContain("npm run build:developer-preview");
+    expect(macosLanesScript).toContain('app_name="Hazakura Editor"');
+    expect(macosLanesScript).toContain(
+      'dev_app_name="Hazakura Editor Dev"',
+    );
     expect(macosLanesScript).not.toContain(
       "HAZAKURA_DISTRIBUTION_LANE=developer VITE_HAZAKURA_DISTRIBUTION_LANE=developer npm run build",
+    );
+  });
+
+  it("keeps smoke/probe scripts on the current App Store preview bundle name", () => {
+    const probeScript = readFileSync(
+      "scripts/probe-macos-distribution.sh",
+      "utf8",
+    );
+    const smokeScript = readFileSync(
+      "scripts/smoke-macos-sandbox-preview.sh",
+      "utf8",
+    );
+
+    expect(probeScript).toContain(
+      "src-tauri/target/release/bundle/macos/Hazakura Editor.app",
+    );
+    expect(probeScript).toContain(
+      'EXPECTED_DISTRIBUTION_LANE="${EXPECTED_DISTRIBUTION_LANE:-app-store}"',
+    );
+    expect(probeScript).toContain(
+      "App Store lane must not bundle Apple Assist helper",
+    );
+    expect(smokeScript).toContain(
+      "src-tauri/target/release/bundle/macos/Hazakura Editor.app",
+    );
+    expect(probeScript).not.toContain(
+      "src-tauri/target/release/bundle/macos/hazakura editor.app",
+    );
+    expect(smokeScript).not.toContain(
+      "src-tauri/target/release/bundle/macos/hazakura editor.app",
     );
   });
 });

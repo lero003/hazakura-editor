@@ -4,8 +4,8 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
-app_name="hazakura editor"
-dev_app_name="hazakura editor Dev"
+app_name="Hazakura Editor"
+dev_app_name="Hazakura Editor Dev"
 dev_bundle_identifier="lab.hazakura.note.dev"
 app_dir="src-tauri/target/release/bundle/macos"
 normal_app="${app_dir}/${app_name}.app"

@@ -8,7 +8,8 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-APP="${1:-$REPO_ROOT/src-tauri/target/release/bundle/macos/hazakura editor.app}"
+APP="${1:-$REPO_ROOT/src-tauri/target/release/bundle/macos/Hazakura Editor.app}"
+EXPECTED_DISTRIBUTION_LANE="${EXPECTED_DISTRIBUTION_LANE:-app-store}"
 HELPER="$APP/Contents/MacOS/hazakura-apple-assist-helper"
 PLIST="$APP/Contents/Info.plist"
 
@@ -68,10 +69,37 @@ has_entitlement() {
 }
 
 echo "== entitlement check =="
+missing_required_entitlement=0
 if has_entitlement "$APP" "com.apple.security.app-sandbox"; then
     echo "app sandbox entitlement: present"
 else
     echo "app sandbox entitlement: missing"
+    missing_required_entitlement=1
+fi
+
+if [ "$EXPECTED_DISTRIBUTION_LANE" = "app-store" ]; then
+    for entitlement in \
+        "com.apple.security.files.user-selected.read-write" \
+        "com.apple.security.files.bookmarks.app-scope" \
+        "com.apple.security.network.client"; do
+        if has_entitlement "$APP" "$entitlement"; then
+            echo "app $entitlement entitlement: present"
+        else
+            echo "app $entitlement entitlement: missing"
+            missing_required_entitlement=1
+        fi
+    done
+
+    for entitlement in \
+        "com.apple.security.network.server" \
+        "com.apple.security.automation.apple-events"; do
+        if has_entitlement "$APP" "$entitlement"; then
+            echo "app $entitlement entitlement: unexpected"
+            missing_required_entitlement=1
+        else
+            echo "app $entitlement entitlement: absent"
+        fi
+    done
 fi
 
 if [ ! -e "$HELPER" ]; then
@@ -82,6 +110,29 @@ elif has_entitlement "$HELPER" "com.apple.security.inherit"; then
     echo "helper inherit entitlement: present"
 else
     echo "helper inherit entitlement: missing"
+fi
+
+if [ "$EXPECTED_DISTRIBUTION_LANE" = "app-store" ]; then
+    failed=0
+
+    if [ -e "$HELPER" ]; then
+        echo "error: App Store lane must not bundle Apple Assist helper: $HELPER" >&2
+        failed=1
+    fi
+
+    if [ "$(print_plist_value CFBundleIdentifier)" != "dev.hazakura.editor" ]; then
+        echo "error: App Store lane bundle identifier must be dev.hazakura.editor" >&2
+        failed=1
+    fi
+
+    if [ "$missing_required_entitlement" -ne 0 ]; then
+        echo "error: App Store lane entitlement check failed" >&2
+        failed=1
+    fi
+
+    if [ "$failed" -ne 0 ]; then
+        exit 1
+    fi
 fi
 
 echo

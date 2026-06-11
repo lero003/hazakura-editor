@@ -8,10 +8,10 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-APP_SRC="$REPO_ROOT/src-tauri/target/release/bundle/macos/hazakura editor.app"
+APP_SRC="$REPO_ROOT/src-tauri/target/release/bundle/macos/Hazakura Editor.app"
 APP_ENTITLEMENTS="$REPO_ROOT/src-tauri/entitlements/mac-app-store.entitlements"
 TMP_ROOT="$(mktemp -d)"
-APP="$TMP_ROOT/hazakura editor.app"
+APP="$TMP_ROOT/Hazakura Editor.app"
 HELPER="$APP/Contents/MacOS/hazakura-apple-assist-helper"
 
 cleanup() {
