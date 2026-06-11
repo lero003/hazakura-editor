@@ -31,7 +31,7 @@ Apple Local Assist and Agent Workbench behind their existing boundaries.
 
 - App name: `Hazakura Editor`
 - Bundle ID: `dev.hazakura.editor`
-- Current version: `0.17.0`
+- Current version: `0.18.0`
 - App Store category: `Productivity`
 - Public Privacy Policy URL:
   `https://hazakura.dev/hazakura-editor/privacy/`
@@ -226,7 +226,7 @@ find "$APP/Contents/MacOS" -maxdepth 1 -type f -print
 Expected:
 
 - `CFBundleIdentifier` is `dev.hazakura.editor`
-- `CFBundleShortVersionString` is `0.17.0`
+- `CFBundleShortVersionString` is `0.18.0`
 - `CFBundleVersion` is a positive integer higher than the last uploaded
   App Store Connect build
 - `hazakura-editor` is present
@@ -261,7 +261,7 @@ Keep the real installer signing identity in ignored local notes.
 
 ```bash
 APP="src-tauri/target/universal-apple-darwin/release/bundle/macos/Hazakura Editor.app"
-PKG="src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.17.0-mas.pkg"
+PKG="src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.18.0-mas.pkg"
 
 mkdir -p "$(dirname "$PKG")"
 
@@ -279,7 +279,7 @@ pkgutil --check-signature "$PKG"
 spctl --assess --type install --verbose=4 "$PKG"
 ```
 
-Upload `HazakuraEditor-0.17.0-mas.pkg` with Transporter. After upload,
+Upload `HazakuraEditor-0.18.0-mas.pkg` with Transporter. After upload,
 record the App Store Connect processing result, TestFlight internal
 group assignment, and any Apple validation warnings in ignored
 `docs/internal/` notes.
@@ -321,3 +321,10 @@ Connect account work remains outside tracked public docs:
 - screenshots and attachment material
 - support URL, category / keywords / age rating, and final product-page fields
 - private reviewer notes and contact details
+
+v0.18 release-prep note: the warning-expected Developer / GitHub DMG app
+launched locally and from the mounted DMG, but `open -n` on the ad-hoc
+helper-free App Store preview bundle failed in the agent session with
+`RBSRequestErrorDomain Code=5` / `Launchd job spawn failed`. Treat
+App Store-lane launch validation as part of the signed submit /
+TestFlight proof, not as covered by the Developer / GitHub DMG preview.

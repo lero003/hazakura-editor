@@ -130,7 +130,11 @@ over copy-heavy or product-voice-sensitive work.
   surface. The helper-free App Store configs keep `frontendDist:
   "../dist"`, the sandbox entitlement includes `network.client` for the
   Tauri/WebKit runtime, and a local packaged-app smoke rendered the
-  start screen.
+  start screen. Later v0.18 release-prep evidence on 2026-06-12 saw
+  `open -n` fail for the ad-hoc App Store preview bundle with
+  `RBSRequestErrorDomain Code=5`; the Developer / GitHub app and
+  mounted DMG app launched. Treat App Store-lane launch validation as
+  still pending under the submission-prep queue.
 - 2026-06-11: Restarting a sandboxed preview can restore a selected
   workspace through an app-scoped security-scoped bookmark. Older
   path-only state still skips stale folder paths without a global error
@@ -157,7 +161,7 @@ certificate, or App Store Connect access.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| P0 | TestFlight / App Store Connect validation | The helper-free App Store submit lane is defined in `docs/app-store-build.md`; remaining proof is account-bound: build with Apple Distribution identity + provisioning profile, upload / Apple validation, and TestFlight smoke evidence. Do not claim submitted, approved, or TestFlight-ready until that evidence exists. |
+| P0 | TestFlight / App Store Connect validation | The helper-free App Store submit lane is defined in `docs/app-store-build.md`; remaining proof is account-bound: build with Apple Distribution identity + provisioning profile, upload / Apple validation, and TestFlight smoke evidence. The v0.18 release-prep session also saw `open -n` fail for the ad-hoc App Store preview bundle with `RBSRequestErrorDomain Code=5`, while the Developer / GitHub DMG app launched; keep App Store-lane launch validation in this slice. Do not claim submitted, approved, or TestFlight-ready until that evidence exists. |
 | P1 | App Review Notes final copy / attachments | Private review-note draft and store-copy material exist outside the public docs. Final pass should attach screenshots or reviewer evidence as needed, keep account/contact-specific text out of tracked docs, and preserve the App Store lane omission claim for CLI Agent / Agent Workbench / Apple Local Assist. |
 | P1 | Public metadata final pass | Privacy Policy URL is `https://hazakura.dev/hazakura-editor/privacy/`. Remaining metadata work is support URL, category / keywords / age rating / screenshots, and App Store Connect field-by-field review. |
 | P1 | Third-party license packet | `LICENSE` and `THIRD_PARTY_NOTICES.md` now ship inside the generated app bundle, while the in-app Open Source Acknowledgements remain a readable summary. Before submission, refresh/review the lockfile-derived notice contents and include any required full license texts / upstream notices. |

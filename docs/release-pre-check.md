@@ -109,6 +109,38 @@ Do not tag or attach a binary if any of the following are true:
 
 When a stop condition fires, fix the issue in the release-candidate worktree and re-run this entire checklist before tagging or publishing.
 
+## Last Run: v0.18.0 (2026-06-12)
+
+Range: `v0.17.0..release-candidate worktree` before tagging.
+
+Result:
+
+- Section 1 (local paths in diff): hits were limited to test fixtures
+  such as `/tmp/standalone.md`, `/tmp/outside/keep.md`, and
+  `/private/tmp/outside/keep.md`, plus normalization logic that maps
+  `/private/tmp` / `/private/var` aliases. No product code or public
+  release prose gained a new machine-specific author path.
+- Section 2 (inappropriate GitHub content in diff): hits were limited
+  to public `lero003/hazakura-editor` release-note / README links. No
+  new developer scratch note or private organization wording was added.
+- Section 3 (security concerns in diff): the only hit was a code
+  comment mentioning a parser token. No token, API key, password,
+  private key, internal IP, or internal hostname was added.
+- Section 4 (whole-repo audit): long-lived `/Users/...` examples remain
+  under archive / checklist history, and source hits for
+  `secret-looking` / `token` were diagnostics redaction tests or
+  sanitizer wording. Zero tracked files were found under
+  `src-helpers/apple-assist/.build/`, `src-tauri/target/`, or
+  `node_modules/`.
+- Section 5 (bundled notices): `npm run probe:macos-distribution -- "src-tauri/target/release/bundle/macos/Hazakura Editor.app"`
+  passed with both `LICENSE` and `THIRD_PARTY_NOTICES.md` present.
+
+DMG and source files referenced in v0.18.0
+(`src-tauri/target/release/bundle/dmg/hazakura-editor-dev_0.18.0_aarch64-warning-expected.dmg`
+and `*.dmg.sha256`) are build outputs under `src-tauri/target/`, which
+is `.gitignore`d. They were generated and verified locally, but not
+committed to the repository.
+
 ## Last Run: v0.17.0 (2026-06-10)
 
 Range: `v0.16.0..HEAD` plus the current release-candidate worktree

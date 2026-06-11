@@ -3,28 +3,31 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-12 (bundled third-party notices)
+Last reviewed: 2026-06-12 (v0.18 release prep)
 
 ## Current State
 
-- `Hazakura Editor` is at `0.17.0`.
+- `Hazakura Editor` is at `0.18.0`.
 - User-facing app identity is capitalized as `Hazakura Editor`. The
   App Store preview bundle is `Hazakura Editor.app`; current docs and
   smoke paths should use that name rather than the older lowercase
   display form.
-- Latest published downloadable preview is `v0.17.0` warning-expected DMG preview.
-- `v0.17.0` is ad-hoc signed, not Developer ID signed, not notarized, and expected to show macOS security warnings.
-- Current active lane is v0.18 UX polish and submission prep.
+- Latest published downloadable preview is `v0.18.0` warning-expected DMG preview.
+- `v0.18.0` is ad-hoc signed, not Developer ID signed, not notarized, and expected to show macOS security warnings.
+- Current active lane is v0.18 follow-up polish and App Store submission prep.
 - Start from `docs/current-work.md`.
 - Markdown preview task checkboxes are complete for v0.18: Preview renders
   `- [ ]` / `- [x]` as inert display-only checkbox glyphs without
   changing saved Markdown.
 - Normal mode workspace sidebar collapse / restore is complete for
   v0.18. L Mode still owns its separate temporary file-tree drawer.
-- App Store preview black-screen smoke is fixed for the helper-free
-  preview lane: `frontendDist` is explicit in the App Store configs and
-  the sandbox entitlement includes `com.apple.security.network.client`
-  for the Tauri/WebKit runtime.
+- App Store preview packaging remains helper-free: `frontendDist` is
+  explicit in the App Store configs and the sandbox entitlement includes
+  `com.apple.security.network.client` for the Tauri/WebKit runtime.
+  In the v0.18 release-prep session, `open -n` on the ad-hoc App Store
+  preview bundle failed with `RBSRequestErrorDomain Code=5`; the
+  Developer / GitHub lane app and mounted DMG app launched. Treat
+  App Store-lane launch as a separate submission-prep follow-up.
 - Sandboxed workspace restore stores an app-scoped security-scoped
   bookmark for user-selected workspace folders and resolves it on
   restart. Older path-only state can still fall back to the
@@ -82,8 +85,8 @@ accessibility smoke.
 - Manual smoke: `docs/smoke-checklist.md`
 - Release gates: `docs/source-release-checklist.md`,
   `docs/dmg-preview-checklist.md`, `docs/release-pre-check.md`
-- v0.17 release evidence:
-  `docs/releases/0.17.0-warning-expected-dmg-preview.release.md`
+- v0.18 release evidence:
+  `docs/releases/0.18.0-warning-expected-dmg-preview.release.md`
 
 ## Archive Notes
 
@@ -103,17 +106,14 @@ accessibility smoke.
   project-wide indexing, auto-apply, or auto-commit.
 - Agent Workbench remains optional, allowlisted, one-session, no-restore,
   and outside the App Store lane.
-- Do not move or replace published `v0.17.0` tags/assets silently.
+- Do not move or replace published `v0.18.0` tags/assets silently.
 
 ## Verification Guidance
 
-- Latest verified slice: `npm run build`, `npm run
-  probe:macos-distribution`, and `git diff --check` passed on
-  2026-06-12 after adding bundled `LICENSE` /
-  `THIRD_PARTY_NOTICES.md` resources and notice checks.
-- Latest packaged-app release evidence remains the v0.17
-  warning-expected DMG preview; use the linked release note and
-  release checklists before making distribution-readiness claims.
+- Latest release-prep slice: v0.18 version surfaces are aligned across
+  npm, Tauri, Cargo, Help About, Support Diagnostics, current docs, and
+  release notes. Use the v0.18 release note and release checklists
+  before making distribution-readiness claims.
 - For docs-only work, run `git diff --check`.
 - For code changes, follow `docs/development-automation.md`.
 - For UI behavior changes, update or exercise `docs/smoke-checklist.md`.

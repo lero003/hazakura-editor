@@ -201,7 +201,7 @@ the user's Mac. Detailed code-level walk-through is archived in
 
 - Built app target for pending live observation:
   `src-tauri/target/release/bundle/macos/Hazakura Editor.app`
-  (v0.17.0, ad-hoc, not notarized; warning-expected). The built
+  (v0.18.0, ad-hoc, not notarized; warning-expected). The built
   app was NOT launched in this smoke pass; live observation
   items below still need a manual run on the user's Mac.
 - macOS host: macOS 26.5.1, `Darwin keinoMac-Studio.local`, arm64.

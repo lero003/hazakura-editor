@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-06-10
+Last reviewed: 2026-06-12
 
 `Hazakura Editor` は、AI時代のメモ帳です。Markdownを中心に、安全にテキストを読む・書く・比べるための軽量なローカル作業場を目指します。
 
@@ -203,11 +203,11 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version is `0.17.0` across npm, Tauri, Cargo, and lockfile metadata.
-- The current warning-expected DMG preview tag is `v0.17.0`; its release-note evidence lives in [0.17.0 Warning-expected DMG Preview](docs/releases/0.17.0-warning-expected-dmg-preview.release.md).
+- Current package/app version is `0.18.0` across npm, Tauri, Cargo, and lockfile metadata.
+- The current warning-expected DMG preview tag is `v0.18.0`; its release-note evidence lives in [0.18.0 Warning-expected DMG Preview](docs/releases/0.18.0-warning-expected-dmg-preview.release.md).
 - Source users build locally with `npm ci` and `npm run build`.
 - The generated App Store preview `.app` declares macOS 11.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. The App Store submission lane is helper-free and does not include Agent Workbench, CLI Agent, Apple Local Assist helper, or external AI/API calls. Developer / GitHub builds may still include the Apple Local Assist helper. The app is not Developer ID signed or notarized.
-- The latest published warning-expected DMG preview is [v0.17.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.17.0). The v0.17.0 release notes live in [0.17.0 Warning-expected DMG Preview](docs/releases/0.17.0-warning-expected-dmg-preview.release.md).
+- The latest published warning-expected DMG preview is [v0.18.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.18.0). The v0.18.0 release notes live in [0.18.0 Warning-expected DMG Preview](docs/releases/0.18.0-warning-expected-dmg-preview.release.md).
 
 ## Known Limits
 

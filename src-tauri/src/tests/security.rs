@@ -919,20 +919,17 @@ fn security_scoped_bookmark_accepts_direct_files() {
     let path = dir.join("outside-note.md");
     fs::write(&path, "# outside\n").expect("write test file");
 
-    let bookmark = create_security_scoped_bookmark_with_label(
-        MAIN_WINDOW_LABEL,
-        &path.to_string_lossy(),
-    )
-    .expect("direct file bookmark command must succeed")
-    .expect("macOS direct file bookmark must be created");
+    let bookmark =
+        create_security_scoped_bookmark_with_label(MAIN_WINDOW_LABEL, &path.to_string_lossy())
+            .expect("direct file bookmark command must succeed")
+            .expect("macOS direct file bookmark must be created");
 
     assert!(
         !bookmark.is_empty(),
         "direct file bookmark should contain security-scoped data"
     );
-    let resolved =
-        resolve_security_scoped_bookmark_with_label(MAIN_WINDOW_LABEL, &bookmark)
-            .expect("direct file bookmark must resolve");
+    let resolved = resolve_security_scoped_bookmark_with_label(MAIN_WINDOW_LABEL, &bookmark)
+        .expect("direct file bookmark must resolve");
     let expected = fs::canonicalize(&path).expect("canonicalize test file");
     let actual = fs::canonicalize(&resolved).expect("canonicalize resolved file");
     assert_eq!(actual, expected);

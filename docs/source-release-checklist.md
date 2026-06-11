@@ -3,7 +3,7 @@
 Status: Operational release-prep checklist
 Scope: Source-only release readiness
 Authority: High
-Last reviewed: 2026-06-10 (v0.17 warning-expected DMG preview prep)
+Last reviewed: 2026-06-12 (v0.18 warning-expected DMG preview prep)
 
 This checklist is for a source-only developer preview release of `Hazakura Editor` / `hazakura-note`.
 
@@ -19,7 +19,7 @@ Since `v0.13.0` (2026-06-06), the local macOS build commands map to three distin
 
 For a v0.12+ source / local-app tag, the local gate evidence is taken from the **App Store preview lane** (`npm run build`) by default. Add the **Developer / GitHub lane** to the same run with `npm run build:macos-lanes` when the tag also needs to prove the Developer bundle path (see the v0.13.0 source / local-app release notes for an example). Do not add `npm run build:dmg-preview` to a source / local-app tag gate unless the lane is explicitly being published.
 
-The latest published downloadable DMG preview is `v0.17.0`. v0.12.0, v0.13.0, and v0.14.0 are source / local-app tags and intentionally do not attach a DMG asset.
+The latest published downloadable DMG preview is `v0.18.0`. v0.12.0, v0.13.0, and v0.14.0 are source / local-app tags and intentionally do not attach a DMG asset.
 
 ## Release Boundary
 

@@ -3,16 +3,16 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-11 (v0.18 UX polish slices)
+Last reviewed: 2026-06-12 (v0.18 release prep)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: `0.17.0` across npm, Tauri, Cargo, and lockfile metadata.
-- Latest published downloadable preview: `v0.17.0` warning-expected DMG preview.
-- `v0.17.0` is a Developer / GitHub lane preview, ad-hoc signed, not Developer ID signed, not notarized, and expected to show macOS security warnings.
+- Current package/app version: `0.18.0` across npm, Tauri, Cargo, and lockfile metadata.
+- Latest published downloadable preview: `v0.18.0` warning-expected DMG preview.
+- `v0.18.0` is a Developer / GitHub lane preview, ad-hoc signed, not Developer ID signed, not notarized, and expected to show macOS security warnings.
 - Older public tags and release assets remain immutable.
-- Current active work is v0.18 UX polish and submission prep. Use `docs/current-work.md` first.
+- Current active work is v0.18 follow-up polish and App Store submission prep. Use `docs/current-work.md` first.
 
 ## Current Product Boundary
 
@@ -62,6 +62,7 @@ Last reviewed: 2026-06-11 (v0.18 UX polish slices)
 
 Use release notes for detailed historical evidence:
 
+- `docs/releases/0.18.0-warning-expected-dmg-preview.release.md`
 - `docs/releases/0.17.0-warning-expected-dmg-preview.release.md`
 - `docs/releases/0.16.0-warning-expected-dmg-preview.release.md`
 - `docs/releases/0.15.0-warning-expected-dmg-preview.release.md`

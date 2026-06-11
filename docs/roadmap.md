@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-11 (v0.18 UX polish slices)
+Last reviewed: 2026-06-12 (v0.18 release prep)
 
 ## Current Position
 
@@ -13,9 +13,9 @@ automatic agent-apply system.
 
 Current release state:
 
-- Latest published preview: `v0.17.0` warning-expected DMG preview.
-- Current package/app version: `0.17.0`.
-- Active lane: v0.18 UX polish and submission prep.
+- Latest published preview: `v0.18.0` warning-expected DMG preview.
+- Current package/app version: `0.18.0`.
+- Active lane: v0.18 follow-up polish and App Store submission prep.
 - Current work queue: `docs/current-work.md`.
 
 Historical phase details now live in release notes and archive files:
