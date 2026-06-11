@@ -8,6 +8,7 @@ binaries/
 src-tauri/profiles/*.provisionprofile
 docs/internal/
 *.local.md
+HazakuraEditor-*-mas.pkg
 *.log
 .DS_Store
 habitat-report/

@@ -3,14 +3,16 @@
 Status: Draft
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-06-11
+Last reviewed: 2026-06-12 (Transporter package step)
 
 ## Purpose
 
 This document defines the public-safe helper-free Mac App Store build
-lane for `Hazakura Editor`. It intentionally avoids account-specific
-App Store Connect metadata, certificate names, signing identities,
-contacts, screenshots, or private reviewer-copy drafts.
+lane for `Hazakura Editor`. It is an internal operational note for
+maintainers and release agents, not public App Store product copy. It
+intentionally avoids account-specific App Store Connect metadata,
+certificate names, signing identities, contacts, screenshots, or private
+reviewer-copy drafts.
 
 The App Store lane is a reviewable safe Markdown editor build. It omits:
 
@@ -182,6 +184,58 @@ Expected:
 - `hazakura-editor` is present
 - `hazakura-apple-assist-helper` is absent
 
+## Transporter Package For Internal TestFlight
+
+Use this step only after the submission-oriented App Store app bundle is
+signed and the local checks above have passed. This is internal
+distribution work for App Store Connect / TestFlight, not a public
+download lane.
+
+Transporter receives a signed installer package:
+
+```txt
+*.pkg
+```
+
+Do not upload:
+
+- the raw `.app` bundle
+- a `.dmg`
+- a `.sha256`
+- any `warning-expected` DMG preview artifact
+
+The `warning-expected` DMG lane is the Developer / GitHub preview lane
+and must stay separate from App Store Connect / TestFlight uploads.
+
+Create the package from the signed App Store bundle. Adjust `APP` if
+Tauri writes the universal target under a different output directory.
+Keep the real installer signing identity in ignored local notes.
+
+```bash
+APP="src-tauri/target/universal-apple-darwin/release/bundle/macos/Hazakura Editor.app"
+PKG="src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.17.0-mas.pkg"
+
+mkdir -p "$(dirname "$PKG")"
+
+productbuild \
+  --component "$APP" \
+  /Applications \
+  --sign "3rd Party Mac Developer Installer: <Name> (<TEAM_ID>)" \
+  "$PKG"
+```
+
+Verify the package before opening Transporter:
+
+```bash
+pkgutil --check-signature "$PKG"
+spctl --assess --type install --verbose=4 "$PKG"
+```
+
+Upload `HazakuraEditor-0.17.0-mas.pkg` with Transporter. After upload,
+record the App Store Connect processing result, TestFlight internal
+group assignment, and any Apple validation warnings in ignored
+`docs/internal/` notes.
+
 ## Manual Smoke Before Upload
 
 Run on the actual App Store lane build:
@@ -213,6 +267,7 @@ The helper-free build lane and privacy-policy URL are defined here. App Store
 Connect account work remains outside tracked public docs:
 
 - provisioning profile and Apple Distribution identity selection
+- Transporter package path and installer signing identity
 - upload / Apple validation evidence
 - TestFlight distribution and smoke evidence
 - screenshots and attachment material
