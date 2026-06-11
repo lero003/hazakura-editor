@@ -5,11 +5,13 @@ import type {
   PointerEvent as ReactPointerEvent,
   RefObject,
 } from "react";
+import { useState } from "react";
 import type { EditorPaneHandle, EditorSelectionInfo } from "../editor/EditorPane";
 import { EditorMainPane } from "../editor/EditorMainPane";
 import { PaneResizer } from "../editor/PaneResizer";
 import { SidePane } from "./SidePane";
 import { WorkspaceSidebar } from "../workspace/WorkspaceSidebar";
+import { PanelLeftOpenIcon } from "./Icons";
 import type {
   LModeCopy,
   SafeEditorCopy,
@@ -235,43 +237,69 @@ export function AppWorkspace({
   workspaceRootPath,
   workspaceTree,
 }: AppWorkspaceProps) {
+  const [workspaceSidebarCollapsed, setWorkspaceSidebarCollapsed] =
+    useState(false);
+  const isWorkspaceSidebarCollapsed =
+    workspaceSidebarCollapsed && !editorSettings.lModeEnabled;
+
   return (
-    <section className="workspace">
-      <WorkspaceSidebar
-        activePath={selectedImage?.path ?? activeTab?.path ?? null}
-        compareSelectionEnabled={sidePaneMode === "compare"}
-        compareSourcePath={compareAnchor?.path ?? null}
-        compareTargetPath={compareTarget?.path ?? null}
-        copy={safeEditorCopy}
-        fileOpsCopy={fileOpsCopy}
-        onCreateFile={() => {
-          if (workspaceRootPath) {
-            void createFile(workspaceRootPath);
+    <section
+      className={`workspace${isWorkspaceSidebarCollapsed ? " workspace-sidebar-collapsed" : ""}`}
+    >
+      {isWorkspaceSidebarCollapsed ? (
+        <div className="workspace-sidebar-rail">
+          <button
+            aria-label={safeEditorCopy.restoreWorkspaceSidebar}
+            className="workspace-restore-button"
+            onClick={() => setWorkspaceSidebarCollapsed(false)}
+            title={safeEditorCopy.restoreWorkspaceSidebar}
+            type="button"
+          >
+            <PanelLeftOpenIcon />
+          </button>
+        </div>
+      ) : (
+        <WorkspaceSidebar
+          activePath={selectedImage?.path ?? activeTab?.path ?? null}
+          compareSelectionEnabled={sidePaneMode === "compare"}
+          compareSourcePath={compareAnchor?.path ?? null}
+          compareTargetPath={compareTarget?.path ?? null}
+          copy={safeEditorCopy}
+          fileOpsCopy={fileOpsCopy}
+          onCollapse={
+            editorSettings.lModeEnabled
+              ? undefined
+              : () => setWorkspaceSidebarCollapsed(true)
           }
-        }}
-        onCreateFolder={() => {
-          if (workspaceRootPath) {
-            void createFolder(workspaceRootPath);
-          }
-        }}
-        onLoadDirectory={loadWorkspaceDirectory}
-        onMoveEntry={onMoveEntry}
-        onMoveToTrash={onMoveToTrash}
-        onOpenContextMenu={openWorkspaceContextMenu}
-        onOpenRootContextMenu={openRootWorkspaceContextMenu}
-        onOpenFile={(path) => void openWorkspaceFile(path)}
-        onOpenWorkspace={() => void openWorkspace()}
-        onClearCompareSelection={() => {
-          clearCompareSource();
-          clearCompareTarget();
-        }}
-        onSelectCompareFile={selectWorkspaceCompareFile}
-        onSubmitRename={onSubmitRename}
-        renamingPath={renamingPath}
-        requestRename={requestRename}
-        workspaceRootPath={workspaceRootPath}
-        workspaceTree={workspaceTree}
-      />
+          onCreateFile={() => {
+            if (workspaceRootPath) {
+              void createFile(workspaceRootPath);
+            }
+          }}
+          onCreateFolder={() => {
+            if (workspaceRootPath) {
+              void createFolder(workspaceRootPath);
+            }
+          }}
+          onLoadDirectory={loadWorkspaceDirectory}
+          onMoveEntry={onMoveEntry}
+          onMoveToTrash={onMoveToTrash}
+          onOpenContextMenu={openWorkspaceContextMenu}
+          onOpenRootContextMenu={openRootWorkspaceContextMenu}
+          onOpenFile={(path) => void openWorkspaceFile(path)}
+          onOpenWorkspace={() => void openWorkspace()}
+          onClearCompareSelection={() => {
+            clearCompareSource();
+            clearCompareTarget();
+          }}
+          onSelectCompareFile={selectWorkspaceCompareFile}
+          onSubmitRename={onSubmitRename}
+          renamingPath={renamingPath}
+          requestRename={requestRename}
+          workspaceRootPath={workspaceRootPath}
+          workspaceTree={workspaceTree}
+        />
+      )}
       <div
         ref={editorPreviewGridRef}
         className={`editor-preview-grid${sidePaneVisible ? "" : " preview-hidden"}${hasWorkspaceSelection ? "" : " empty-session"}${sidePaneMode === "compare" ? " diff-workbench" : ""}`}

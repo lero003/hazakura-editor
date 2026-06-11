@@ -1,7 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "build": {
-    "beforeBuildCommand": "npm run build:vite"
+    "beforeBuildCommand": "npm run build:vite",
+    "frontendDist": "../dist"
   },
   "bundle": {
     "category": "Productivity",

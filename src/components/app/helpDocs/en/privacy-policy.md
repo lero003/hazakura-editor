@@ -14,7 +14,7 @@ The app reads and writes files or folders you select through the app UI. It does
 
 The app stores local preferences such as theme, tab state, editor settings, recent items, and unsaved recovery state on this Mac. If auto-backup is enabled, backup snapshots are written under `.hazakura/backups/...` inside the selected workspace.
 
-## App Store assist features
+## Apple Local Assist
 
 The App Store submission build does not include Apple Local Assist, external AI calls, analytics, telemetry, crash reporting, or cloud sync. Developer / GitHub builds may expose Apple Local Assist as an explicit alpha feature.
 

@@ -7,7 +7,12 @@ import {
 } from "react";
 import type { WorkspaceTreeEntry } from "../../lib/tauri";
 import type { SafeEditorCopy, WorkspaceFileOpsCopy } from "../../lib/locale";
-import { OpenFolderIcon, PlusIcon, TrashIcon } from "../app/Icons";
+import {
+  OpenFolderIcon,
+  PanelLeftCloseIcon,
+  PlusIcon,
+  TrashIcon,
+} from "../app/Icons";
 import { WorkspaceTree } from "./WorkspaceTree";
 
 const INTERNAL_MOVE_MIME = "application/x-hazakura-workspace-move";
@@ -21,6 +26,7 @@ type WorkspaceSidebarProps = {
   fileOpsCopy: WorkspaceFileOpsCopy;
   onCreateFile: () => void;
   onCreateFolder: () => void;
+  onCollapse?: () => void;
   onLoadDirectory: (path: string) => Promise<void>;
   onMoveEntry: (srcPath: string, dstParentPath: string) => void;
   onMoveToTrash: (path: string, name: string, isDirectory: boolean) => void;
@@ -50,6 +56,7 @@ export function WorkspaceSidebar({
   fileOpsCopy,
   onCreateFile,
   onCreateFolder,
+  onCollapse,
   onLoadDirectory,
   onMoveEntry,
   onMoveToTrash,
@@ -193,6 +200,17 @@ export function WorkspaceSidebar({
             >
               <OpenFolderIcon />
             </button>
+            {onCollapse ? (
+              <button
+                aria-label={copy.collapseWorkspaceSidebar}
+                className="workspace-collapse-button"
+                onClick={onCollapse}
+                title={copy.collapseWorkspaceSidebar}
+                type="button"
+              >
+                <PanelLeftCloseIcon />
+              </button>
+            ) : null}
           </div>
         </div>
       </div>

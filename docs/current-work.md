@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active v0.18 UX polish and submission-prep routing
 Authority: High
-Last reviewed: 2026-06-10
+Last reviewed: 2026-06-11
 
 ## Purpose
 
@@ -31,13 +31,28 @@ Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| P0 | Markdown preview task checkboxes | `- [ ]` and `- [x]` render as task checkboxes in Preview, not as plain list text. Keep saved Markdown unchanged. Add or update focused preview tests and smoke checklist coverage. |
-| P0 | Left workspace sidebar collapse | Normal mode gets a reversible collapse / restore affordance for the left workspace sidebar. It must not broaden the file-tree model, hide the only restore path, or conflict with L Mode's temporary workspace drawer. |
 | P1 | WorkspaceTree rename row markup | Rename state should avoid rendering a text `<input>` inside a row `<button>`. Normal rows may stay button-based. Keep rename Enter / Escape / blur behavior and add focused tests. Historical context: `docs/archive/reviews/workspace-tree-accessibility-decision-v0.17.md`. |
 | P1 | Encoding-only dirty indication | Tab dirty state and auto-backup dirty detection should include encoding-only changes, matching shared editor dirty logic. |
 | P1 | Manual accessibility smoke | Record Help readability, full keyboard-only traversal, VoiceOver tab-bar announcement, and Increase Contrast smoke before submission. |
 | P2 | Help copy overlap cleanup | Separate Privacy Policy, Local Data Disclosure, Support Diagnostics, About, and Open Source Acknowledgements so each page has one job. |
 | P2 | `data:image` size wording | Align implementation and docs: either call the check a data-URI length cap or measure decoded image bytes. |
+
+## Completed v0.18 Slices
+
+- 2026-06-11: Markdown preview task checkboxes now render `- [ ]` and
+  `- [x]` as inert display-only checkbox glyphs in Preview. Saved
+  Markdown remains unchanged; task items suppress the normal list marker
+  so the checkbox glyph does not overlap. Focused preview tests and
+  smoke checklist coverage were updated.
+- 2026-06-11: Normal mode can collapse and restore the left workspace
+  sidebar through a visible restore rail. The file-tree model is
+  unchanged, and L Mode continues to own its separate temporary
+  workspace drawer.
+- 2026-06-11: App Store preview builds no longer open to a blank WebKit
+  surface. The helper-free App Store configs keep `frontendDist:
+  "../dist"`, the sandbox entitlement includes `network.client` for the
+  Tauri/WebKit runtime, and a local packaged-app smoke rendered the
+  start screen.
 
 ## Submission-Prep Queue
 

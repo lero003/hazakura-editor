@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-10 (documentation cleanup)
+Last reviewed: 2026-06-11 (v0.18 UX polish slices)
 
 ## Current State
 
@@ -39,6 +39,8 @@ Last reviewed: 2026-06-10 (documentation cleanup)
   final-newline, UTF-8 BOM, Shift-JIS, and EUC-JP handling.
 - Multi-tab editor with dirty-tab close protection, app/window close
   confirmation, save-conflict recovery, and explicit draft recovery.
+- Normal Safe Editor mode can collapse and restore the left workspace
+  sidebar without changing the file-tree model or L Mode drawer.
 - Sanitized Markdown preview, local workspace image handling,
   standalone HTML export, and Print to PDF handoff.
 - L Mode / えるモード as a source-preserving CodeMirror presentation
@@ -91,8 +93,7 @@ baseline, and smoke evidence are archived under
 ## Next Safe Actions
 
 1. For UX work, start with `docs/current-work.md` and pick one item:
-   Markdown preview task checkboxes, workspace sidebar collapse,
-   WorkspaceTree rename markup, or encoding-only dirty indication.
+   WorkspaceTree rename markup or encoding-only dirty indication.
 2. For App Store submission prep, start with `docs/current-work.md`
    and `docs/app-store-build.md`; keep account-specific notes under
    ignored `docs/internal/` files;

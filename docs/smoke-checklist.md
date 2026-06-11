@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-06-06 (v0.13.0 source / local-app tag)
+Last reviewed: 2026-06-11 (v0.18 UX polish slices)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -112,12 +112,14 @@ Run when the file tree or workspace commands change:
 5. Move a file/folder to Trash and confirm user confirmation appears before destructive action.
 6. Confirm paths outside the selected workspace cannot be targeted.
 7. Treat workspace-internal drag/drop Move as experimental unless this exact flow is freshly confirmed in the built app.
+8. In normal mode, collapse the left workspace sidebar and confirm the restore rail remains visible; restore it and confirm the file tree returns without changing the selected workspace or active tab.
+9. Enter L Mode and confirm the normal sidebar restore rail is not shown; use the L Mode workspace button to open and close its temporary file-tree drawer.
 
 ## Preview And Authoring
 
 Run when Markdown preview, image assets, export, or authoring helpers change:
 
-1. Confirm sanitized Markdown preview renders headings, lists, tables, code blocks, blockquotes, task checkboxes, and local workspace-relative images such as `assets/...` and `docs/images/...`.
+1. Confirm sanitized Markdown preview renders headings, lists, tables, code blocks, blockquotes, task checkboxes (`- [ ]` / `- [x]` as display-only checkbox glyphs, not raw marker text), and local workspace-relative images such as `assets/...` and `docs/images/...`.
 2. Confirm external image URLs and unsafe local image paths are blocked.
 3. Paste or drag-drop an image and confirm `assets/<hash>.<ext>` is created and Markdown image syntax is inserted.
 4. Export HTML and confirm local workspace images are inlined and the saved file uses the same preview CSS as the live preview pane (`.markdown-preview` rules, no theme-specific overrides inlined).

@@ -14,7 +14,7 @@ Only when you enable auto-backup, the app saves local .bak snapshots under a `.h
 
 The preview blocks external images and dangerous HTML, script, iframe, object, and embed tags. The preview only routes link clicks to workspace-relative text file opens inside the selected workspace; external scheme links (`http:`, `https:`, `mailto:`, `tel:`, etc.) and absolute paths are ignored with a status message, so the click never navigates away from the editor. HTML export inlines local workspace images as data URIs.
 
-## App Store assist features
+## Apple Local Assist
 
 The App Store submission build does not bundle Apple Local Assist and does not call Apple Foundation Models, external AI services, or external APIs. Developer / GitHub builds may expose Apple Local Assist as a separate alpha feature.
 
@@ -24,4 +24,4 @@ The App Store build does not include Agent Workbench, a CLI agent, Apple Local A
 
 ## Network and analytics
 
-This app's App Store lane code does not include fetch, XHR, analytics, telemetry, crash reporting, or external AI/API calls. In the Developer / GitHub lane, Apple Local Assist may use the bundled helper and enabled Agent Workbench can launch an allowlisted provider. Explicit actions such as Show in Finder, print handoff, and Move to Trash may pass the selected path or a temporary file to macOS utilities.
+This app's App Store lane code does not include fetch, XHR, analytics, telemetry, crash reporting, or external AI/API calls. In the Developer / GitHub lane, Apple Local Assist may use the bundled Apple Local Assist helper and enabled Agent Workbench can launch an allowlisted provider. Explicit actions such as Show in Finder, print handoff, and Move to Trash may pass the selected path or a temporary file to macOS utilities.

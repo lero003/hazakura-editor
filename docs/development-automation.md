@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-06-10 (current-work routing)
+Last reviewed: 2026-06-11 (v0.18 UX polish slices)
 
 ## Purpose
 
@@ -22,7 +22,7 @@ Phase: v0.18 UX polish / submission prep, unless a v0.17 hotfix blocker appears.
 Prefer work in this order:
 
 1. Stale or failing quality gates.
-2. Active UX queue from `docs/current-work.md`, especially Markdown preview task checkboxes, workspace sidebar collapse, WorkspaceTree rename markup, and encoding-only dirty indication.
+2. Active UX queue from `docs/current-work.md`, especially WorkspaceTree rename markup and encoding-only dirty indication.
 3. Submission-prep queue from `docs/current-work.md`, especially entitlement/signing lane definition, App Review Notes final copy, license packet review, and manual accessibility smoke.
 4. Release-prep gaps in Developer / GitHub DMG wording, checksum flow, cross-machine smoke guidance, or expected macOS warning instructions.
 5. App Store / Developer lane separation drift, especially Agent Workbench omission, helper bundle/signing assumptions, and sandbox/review evidence.

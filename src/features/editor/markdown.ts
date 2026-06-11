@@ -21,8 +21,9 @@ export function renderMarkdown(
     options?.documentPath ?? null,
   );
   const tableBoundedHtml = applyTablePreviewPolicy(imageBoundedHtml);
+  const taskListBoundedHtml = applyTaskListPreviewPolicy(tableBoundedHtml);
 
-  return DOMPurify.sanitize(tableBoundedHtml, {
+  return DOMPurify.sanitize(taskListBoundedHtml, {
     USE_PROFILES: { html: true },
     ALLOWED_URI_REGEXP:
       /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|matrix):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
@@ -144,6 +145,30 @@ function applyTablePreviewPolicy(html: string): string {
     frame.setAttribute("aria-label", "Markdown table");
     table.replaceWith(frame);
     frame.append(table);
+  }
+
+  return template.innerHTML;
+}
+
+function applyTaskListPreviewPolicy(html: string): string {
+  const template = document.createElement("template");
+  template.innerHTML = html;
+
+  for (const checkbox of Array.from(
+    template.content.querySelectorAll('li > input[type="checkbox"][disabled]'),
+  )) {
+    const item = checkbox.parentElement;
+    const checked = checkbox.hasAttribute("checked");
+    const replacement = document.createElement("span");
+    replacement.className = checked
+      ? "markdown-task-checkbox markdown-task-checkbox--checked"
+      : "markdown-task-checkbox markdown-task-checkbox--unchecked";
+    replacement.setAttribute("role", "checkbox");
+    replacement.setAttribute("aria-checked", checked ? "true" : "false");
+    replacement.setAttribute("aria-disabled", "true");
+    replacement.textContent = checked ? "☑" : "☐";
+    item?.classList.add("markdown-task-list-item");
+    checkbox.replaceWith(replacement);
   }
 
   return template.innerHTML;

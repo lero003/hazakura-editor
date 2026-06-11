@@ -155,6 +155,47 @@ describe("renderMarkdown image policy", () => {
   });
 });
 
+describe("renderMarkdown task list preview", () => {
+  it("renders GFM task list markers as inert preview checkboxes", () => {
+    const html = renderMarkdown("- [ ] todo\n- [x] done");
+    const template = document.createElement("template");
+    template.innerHTML = html;
+    const checkboxes = Array.from(
+      template.content.querySelectorAll<HTMLElement>(".markdown-task-checkbox"),
+    );
+
+    expect(checkboxes).toHaveLength(2);
+    expect(checkboxes[0]?.closest("li")?.classList).toContain(
+      "markdown-task-list-item",
+    );
+    expect(checkboxes[1]?.closest("li")?.classList).toContain(
+      "markdown-task-list-item",
+    );
+    expect(checkboxes[0]?.getAttribute("role")).toBe("checkbox");
+    expect(checkboxes[0]?.getAttribute("aria-checked")).toBe("false");
+    expect(checkboxes[0]?.getAttribute("aria-disabled")).toBe("true");
+    expect(checkboxes[0]?.textContent).toBe("☐");
+    expect(checkboxes[1]?.getAttribute("role")).toBe("checkbox");
+    expect(checkboxes[1]?.getAttribute("aria-checked")).toBe("true");
+    expect(checkboxes[1]?.getAttribute("aria-disabled")).toBe("true");
+    expect(checkboxes[1]?.textContent).toBe("☑");
+    expect(html).toContain("todo");
+    expect(html).toContain("done");
+    expect(html).not.toContain("<input");
+    expect(html).not.toContain("[ ]");
+    expect(html).not.toContain("[x]");
+  });
+
+  it("does not mutate Markdown source when rendering task lists", () => {
+    const source = "- [ ] todo\n- [x] done";
+    const snapshot = source.slice();
+
+    renderMarkdown(source);
+
+    expect(source).toBe(snapshot);
+  });
+});
+
 // v0.17 app-store-quality: markdown-preview-export-security slice 2.1
 // — script execution vectors in Markdown preview and HTML export.
 // Both preview and export share the same `renderMarkdown` pipeline

@@ -76,10 +76,11 @@ Allowed:
 
 - `com.apple.security.app-sandbox`
 - `com.apple.security.files.user-selected.read-write`
+- `com.apple.security.network.client` for the Tauri/WebKit runtime to
+  load bundled app assets under App Sandbox
 
 Do not add these unless there is a fresh documented reason:
 
-- `com.apple.security.network.client`
 - `com.apple.security.network.server`
 - `com.apple.security.automation.apple-events`
 - temporary exception entitlements
@@ -113,6 +114,7 @@ src-tauri/tauri.conf.appstore.json
 That config sets:
 
 - `beforeBuildCommand` to `npm run build:vite`
+- `frontendDist` to `../dist`
 - `bundle.externalBin` to `[]`
 - `bundle.macOS.entitlements` to `./entitlements/mac-app-store.entitlements`
 - `bundle.macOS.files.embedded.provisionprofile` to the local profile path
@@ -148,6 +150,8 @@ Check entitlements:
 <key>com.apple.security.app-sandbox</key>
 <true/>
 <key>com.apple.security.files.user-selected.read-write</key>
+<true/>
+<key>com.apple.security.network.client</key>
 <true/>
 ```
 

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-10 (documentation cleanup)
+Last reviewed: 2026-06-11 (v0.18 UX polish slices)
 
 ## Current Position
 
@@ -49,14 +49,20 @@ submission work hardens around it.
 
 Use `docs/current-work.md` as the queue. The near-term UX priorities are:
 
-1. Markdown preview task checkboxes: `- [ ]` and `- [x]` should render
-   as task checkboxes in Preview without changing saved Markdown.
-2. Left workspace sidebar collapse / restore in normal mode.
-3. WorkspaceTree rename-state markup cleanup.
-4. Encoding-only dirty indication and auto-backup coverage.
-5. Manual accessibility smoke: Help readability, full keyboard-only
+1. WorkspaceTree rename-state markup cleanup.
+2. Encoding-only dirty indication and auto-backup coverage.
+3. Manual accessibility smoke: Help readability, full keyboard-only
    traversal, VoiceOver tab-bar announcement, and Increase Contrast.
-6. Help copy overlap cleanup.
+4. Help copy overlap cleanup.
+
+Recently completed:
+
+- Markdown preview task checkboxes: `- [ ]` and `- [x]` render as
+  display-only task checkboxes in Preview without changing saved
+  Markdown.
+- Left workspace sidebar collapse / restore: normal mode has a
+  reversible restore rail, while L Mode keeps its separate temporary
+  workspace drawer.
 
 Out of scope for this lane:
 

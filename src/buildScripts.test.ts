@@ -13,8 +13,18 @@ const appStorePreviewConfig = readFileSync(
   "src-tauri/tauri.conf.appstore-preview.json",
   "utf8",
 );
+const appStorePreviewConfigJson = JSON.parse(appStorePreviewConfig) as {
+  build?: { frontendDist?: string };
+};
 const appStoreSubmitConfig = readFileSync(
   "src-tauri/tauri.conf.appstore.json",
+  "utf8",
+);
+const appStoreSubmitConfigJson = JSON.parse(appStoreSubmitConfig) as {
+  build?: { frontendDist?: string };
+};
+const appStoreEntitlements = readFileSync(
+  "src-tauri/entitlements/mac-app-store.entitlements",
   "utf8",
 );
 const viteConfig = readFileSync("vite.config.ts", "utf8");
@@ -41,9 +51,16 @@ describe("macOS build scripts", () => {
     expect(appStorePreviewConfig).toContain(
       '"beforeBuildCommand": "npm run build:vite"',
     );
+    expect(appStorePreviewConfigJson.build?.frontendDist).toBe("../dist");
     expect(appStorePreviewConfig).toContain('"externalBin": []');
     expect(appStorePreviewConfig).toContain(
       '"entitlements": "./entitlements/mac-app-store.entitlements"',
+    );
+    expect(appStoreEntitlements).toContain(
+      "<key>com.apple.security.network.client</key>",
+    );
+    expect(appStoreEntitlements).not.toContain(
+      "<key>com.apple.security.network.server</key>",
     );
     expect(viteConfig).toContain(
       'process.env.VITE_HAZAKURA_DISTRIBUTION_LANE === "app-store"',
@@ -69,6 +86,7 @@ describe("macOS build scripts", () => {
     expect(appStoreSubmitConfig).toContain(
       '"embedded.provisionprofile": "./profiles/Hazakura_Editor_Mac_App_Store_Profile.provisionprofile"',
     );
+    expect(appStoreSubmitConfigJson.build?.frontendDist).toBe("../dist");
     expect(appStoreSubmitConfig).toContain('"externalBin": []');
   });
 

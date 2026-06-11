@@ -102,9 +102,19 @@
   margin-top: 6px;
 }
 
-.markdown-preview input[type="checkbox"] {
+.markdown-preview .markdown-task-list-item {
+  list-style: none;
+}
+
+.markdown-preview .markdown-task-checkbox {
   accent-color: var(--accent);
-  margin: 0 8px 0 -20px;
+  color: var(--accent);
+  display: inline-block;
+  font-size: 0.95em;
+  line-height: 1;
+  margin: 0 7px 0 -18px;
+  min-width: 1.05em;
+  transform: translateY(0.04em);
 }
 
 .markdown-preview hr {

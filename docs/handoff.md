@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-10 (documentation cleanup)
+Last reviewed: 2026-06-11 (v0.18 UX polish slices)
 
 ## Current State
 
@@ -12,17 +12,31 @@ Last reviewed: 2026-06-10 (documentation cleanup)
 - `v0.17.0` is ad-hoc signed, not Developer ID signed, not notarized, and expected to show macOS security warnings.
 - Current active lane is v0.18 UX polish and submission prep.
 - Start from `docs/current-work.md`.
+- Markdown preview task checkboxes are complete for v0.18: Preview renders
+  `- [ ]` / `- [x]` as inert display-only checkbox glyphs without
+  changing saved Markdown.
+- Normal mode workspace sidebar collapse / restore is complete for
+  v0.18. L Mode still owns its separate temporary file-tree drawer.
+- App Store preview black-screen smoke is fixed for the helper-free
+  preview lane: `frontendDist` is explicit in the App Store configs and
+  the sandbox entitlement includes `com.apple.security.network.client`
+  for the Tauri/WebKit runtime.
 
 ## Current Work Queue
 
 Use `docs/current-work.md` for the active queue. The current highest
 priority UX items are:
 
-1. Markdown preview task checkboxes: `- [ ]` / `- [x]` should render as
-   task checkboxes in Preview without changing saved Markdown.
-2. Left workspace sidebar collapse / restore in normal mode.
-3. WorkspaceTree rename-state markup cleanup.
-4. Encoding-only dirty indication / auto-backup coverage.
+1. WorkspaceTree rename-state markup cleanup.
+2. Encoding-only dirty indication / auto-backup coverage.
+
+Recently completed: Markdown preview task checkboxes now render
+`- [ ]` / `- [x]` as display-only checkbox glyphs in Preview without
+changing saved Markdown.
+Left workspace sidebar collapse / restore is also complete in normal
+mode without changing the file-tree model.
+App Store preview packaged-app smoke now renders the start screen
+instead of a blank WebKit surface.
 
 Submission-prep items in the same queue include App Store
 entitlement/signing lane definition, App Review Notes final copy,
@@ -65,6 +79,13 @@ accessibility smoke.
 
 ## Verification Guidance
 
+- Latest verified slice: `npm test`, `npm run build`, `codesign
+  --verify --deep --strict --verbose=2`, entitlement inspection,
+  embedded asset string inspection, packaged-app launch/log smoke, and
+  `git diff --check` passed on 2026-06-11 after the Markdown preview
+  checkbox, Help-doc drift, workspace sidebar collapse, and App Store
+  preview black-screen fixes. A Vite/browser smoke also confirmed
+  normal-mode sidebar collapse / restore DOM state.
 - For docs-only work, run `git diff --check`.
 - For code changes, follow `docs/development-automation.md`.
 - For UI behavior changes, update or exercise `docs/smoke-checklist.md`.
