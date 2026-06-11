@@ -67,6 +67,8 @@ type AppOverlaysProps = {
   assistSurfacePreference: AssistSurfacePreference;
   appCloseCancelButtonRef: RefObject<HTMLButtonElement | null>;
   appCloseDialogRef: RefObject<HTMLElement | null>;
+  moveTrashCancelButtonRef: RefObject<HTMLButtonElement | null>;
+  moveTrashDialogRef: RefObject<HTMLElement | null>;
   appRestartPending: boolean;
   autoBackupRestoreCopy: AutoBackupRestoreCopy;
   autoBackupRestoreEntries: AutoBackupEntry[];
@@ -183,6 +185,8 @@ export function AppOverlays({
   assistSurfacePreference,
   appCloseCancelButtonRef,
   appCloseDialogRef,
+  moveTrashCancelButtonRef,
+  moveTrashDialogRef,
   appRestartPending,
   autoBackupRestoreCopy,
   autoBackupRestoreEntries,
@@ -317,7 +321,9 @@ export function AppOverlays({
 
       {pendingTrash ? (
         <MoveToTrashConfirmDialog
+          cancelButtonRef={moveTrashCancelButtonRef}
           copy={fileOpsCopy}
+          dialogRef={moveTrashDialogRef}
           isDirectory={pendingTrash.isDirectory}
           menuLanguage={menuLanguage}
           name={pendingTrash.name}

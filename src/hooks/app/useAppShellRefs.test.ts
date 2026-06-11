@@ -18,7 +18,10 @@ describe("useAppShellRefs", () => {
     expect(result.current).toHaveProperty("findInputRef");
     expect(result.current).toHaveProperty("previewPaneRef");
     expect(result.current).toHaveProperty("tabsRef");
-    // dialog refs (11)
+    // dialog refs (13) — v0.18 added the move-to-trash dialog
+    // ref and cancel button ref so the trash dialog can join
+    // the same `useDialogInitialFocus` + `useModalKeyboardGuard`
+    // pipeline as the v0.7-era close / app-close dialogs.
     expect(result.current).toHaveProperty("allowWindowCloseRef");
     expect(result.current).toHaveProperty("appCloseCancelButtonRef");
     expect(result.current).toHaveProperty("appCloseDialogRef");
@@ -26,6 +29,8 @@ describe("useAppShellRefs", () => {
     expect(result.current).toHaveProperty("closeTabDialogRef");
     expect(result.current).toHaveProperty("discardingWindowCloseRef");
     expect(result.current).toHaveProperty("modalOpen");
+    expect(result.current).toHaveProperty("moveTrashCancelButtonRef");
+    expect(result.current).toHaveProperty("moveTrashDialogRef");
     expect(result.current).toHaveProperty("pendingCloseTabOpen");
     expect(result.current).toHaveProperty("preferencesCloseButtonRef");
     expect(result.current).toHaveProperty("preferencesDialogRef");

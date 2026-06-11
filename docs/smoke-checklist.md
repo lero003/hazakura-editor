@@ -236,9 +236,14 @@ interaction is actually performed.
    2. Record any focus that is invisible, trapped,
       unrecoverable, or fires an unintended action.
    3. Specifically confirm the `MoveToTrashConfirmDialog`
-      focus behaviour, which is recorded as a separate P2
-      follow-up in `docs/current-work.md` (no initial focus,
-      no focus-trap).
+      focus behaviour on the live built app. The code-side
+      wiring is in place: initial focus lands on the Cancel
+      button via `useDialogInitialFocus`, Tab / Shift+Tab
+      are trapped inside the dialog via
+      `useModalKeyboardGuard`, and Escape routes to
+      `cancelPendingTrash`. The live observation is still
+      needed because the code-level tests do not cover the
+      user-facing keyboard traversal on the user's Mac.
 3. VoiceOver tab-bar announcement
    1. VoiceOver on (`Cmd+F5`), `VO+→` to the tab bar.
    2. Confirm text tab / dirty tab / image preview tab /
@@ -263,10 +268,15 @@ interaction is actually performed.
 - Help readability: code-level observed; long-document
   scroll on the live dialog still pending.
 - Full keyboard-only traversal: baseline dialogs
-  **partially observed; follow-up recorded** —
-  `MoveToTrashConfirmDialog` has no initial focus and no
-  focus-trap; recorded as a separate P2 follow-up in
-  `docs/current-work.md` (no fix attempted in this slice).
+  **partially observed** —
+  `MoveToTrashConfirmDialog` now lands initial focus on
+  the Cancel button, traps Tab / Shift+Tab inside the
+  dialog, and routes Escape to `cancelPendingTrash` (see
+  the v0.18 Completed slice in `docs/current-work.md`).
+  New component + hook tests pin this behaviour and the
+  existing dirty-tab / app-close / preferences Esc + Tab
+  routing stays green. Live observation on the user's Mac
+  is still pending.
 - VoiceOver tab-bar announcement: code-level observed
   (encoding-only dirty description pinned by the existing
   AppTopChrome test); live observation pending on the
@@ -279,9 +289,9 @@ interaction is actually performed.
 Active UX Queue still lists `Manual accessibility smoke`
 until the pending live observation items above are run on
 the user's Mac. The `MoveToTrashConfirmDialog`
-focus-management gap is recorded as a separate small
-follow-up; it is not a blocker for moving the slice
-forward once the live observations are recorded.
+focus-management gap is now closed in code; only the live
+keyboard / VoiceOver observation on the user's Mac is
+still pending.
 
 ## Reporting
 

@@ -12,13 +12,21 @@ type UseModalKeyboardGuardOptions = {
   commandPaletteVisible: boolean;
   globalSearchVisible: boolean;
   modalOpen: boolean;
+  // v0.18 accessibility follow-up: the move-to-trash dialog
+  // joins the Esc and Tab priority chain at the same level as
+  // the dirty-tab / app-close dialogs. The Tauri trash command
+  // is irreversible from the app's perspective, so Esc must
+  // route to the same cancel handler the Cancel button uses.
+  moveTrashDialogRef: RefValue<HTMLElement>;
   onCancelAppClose: () => void;
+  onCancelPendingTrash: () => void;
   onCancelTabClose: () => void;
   onCloseCommandPalette: () => void;
   onCloseGlobalSearch: () => void;
   onClosePreferences: () => void;
   pendingAppClose: boolean;
   pendingCloseTabOpen: boolean;
+  pendingTrashOpen: boolean;
   preferencesDialogRef: RefValue<HTMLElement>;
   preferencesOpen: boolean;
 };
@@ -29,13 +37,16 @@ export function useModalKeyboardGuard({
   commandPaletteVisible,
   globalSearchVisible,
   modalOpen,
+  moveTrashDialogRef,
   onCancelAppClose,
+  onCancelPendingTrash,
   onCancelTabClose,
   onCloseCommandPalette,
   onCloseGlobalSearch,
   onClosePreferences,
   pendingAppClose,
   pendingCloseTabOpen,
+  pendingTrashOpen,
   preferencesDialogRef,
   preferencesOpen,
 }: UseModalKeyboardGuardOptions) {
@@ -58,6 +69,11 @@ export function useModalKeyboardGuard({
         // other modal priority is checked. The palette is
         // checked first so a user that opened palette over
         // search can close them one at a time with Esc.
+        // The move-to-trash dialog sits at the same level as
+        // the close / app-close dialogs: it is a destructive
+        // confirmation that must always be cancellable from
+        // the keyboard regardless of which other modal
+        // surface is open.
         if (commandPaletteVisible) {
           onCloseCommandPalette();
         } else if (globalSearchVisible) {
@@ -66,6 +82,8 @@ export function useModalKeyboardGuard({
           onCancelTabClose();
         } else if (pendingAppClose) {
           onCancelAppClose();
+        } else if (pendingTrashOpen) {
+          onCancelPendingTrash();
         } else if (preferencesOpen) {
           onClosePreferences();
         }
@@ -77,7 +95,9 @@ export function useModalKeyboardGuard({
             ? closeTabDialogRef.current
             : pendingAppClose
               ? appCloseDialogRef.current
-              : preferencesDialogRef.current,
+              : pendingTrashOpen
+                ? moveTrashDialogRef.current
+                : preferencesDialogRef.current,
           event,
         );
       }
@@ -94,13 +114,16 @@ export function useModalKeyboardGuard({
     commandPaletteVisible,
     globalSearchVisible,
     modalOpen,
+    moveTrashDialogRef,
     onCancelAppClose,
+    onCancelPendingTrash,
     onCancelTabClose,
     onCloseCommandPalette,
     onCloseGlobalSearch,
     onClosePreferences,
     pendingAppClose,
     pendingCloseTabOpen,
+    pendingTrashOpen,
     preferencesDialogRef,
     preferencesOpen,
   ]);

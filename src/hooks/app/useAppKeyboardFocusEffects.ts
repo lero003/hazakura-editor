@@ -29,6 +29,15 @@ type UseAppKeyboardFocusEffectsOptions = {
   appCloseDialogRef: RefValue<HTMLElement>;
   closeTabCancelButtonRef: RefValue<{ focus: () => void }>;
   closeTabDialogRef: RefValue<HTMLElement>;
+  // v0.18 accessibility follow-up: the move-to-trash dialog
+  // joins the central focus and keyboard guard alongside the
+  // dirty-tab / app-close / preferences dialogs. `modalOpen`
+  // and the per-dialog focus targets must reach both
+  // `useDialogInitialFocus` and `useModalKeyboardGuard` here
+  // so the trash dialog can land focus on Cancel, trap Tab,
+  // and route Esc back to `cancelPendingTrash`.
+  moveTrashCancelButtonRef: RefValue<{ focus: () => void }>;
+  moveTrashDialogRef: RefValue<HTMLElement>;
   commandPaletteVisible: boolean;
   dirtyTabCount: number;
   editorPaneRef: RefValue<EditorPaneHandle>;
@@ -38,6 +47,7 @@ type UseAppKeyboardFocusEffectsOptions = {
   modalOpen: boolean;
   onApplyMarkdownFormat: (format: MarkdownFormat) => void;
   onCancelAppClose: () => void;
+  onCancelPendingTrash: () => void;
   onCancelTabClose: () => void;
   onCheckTabForExternalChange: (tabId: string) => unknown;
   onCloseCommandPalette: () => void;
@@ -59,6 +69,7 @@ type UseAppKeyboardFocusEffectsOptions = {
   onSaveActiveTabAs: () => unknown;
   pendingAppClose: boolean;
   pendingCloseTabOpen: boolean;
+  pendingTrashOpen: boolean;
   preferencesCloseButtonRef: RefValue<{ focus: () => void }>;
   preferencesDialogRef: RefValue<HTMLElement>;
   preferencesOpen: boolean;
@@ -79,6 +90,8 @@ export function useAppKeyboardFocusEffects({
   appCloseDialogRef,
   closeTabCancelButtonRef,
   closeTabDialogRef,
+  moveTrashCancelButtonRef,
+  moveTrashDialogRef,
   commandPaletteVisible,
   dirtyTabCount,
   editorPaneRef,
@@ -88,6 +101,7 @@ export function useAppKeyboardFocusEffects({
   modalOpen,
   onApplyMarkdownFormat,
   onCancelAppClose,
+  onCancelPendingTrash,
   onCancelTabClose,
   onCheckTabForExternalChange,
   onCloseCommandPalette,
@@ -109,6 +123,7 @@ export function useAppKeyboardFocusEffects({
   onSaveActiveTabAs,
   pendingAppClose,
   pendingCloseTabOpen,
+  pendingTrashOpen,
   preferencesCloseButtonRef,
   preferencesDialogRef,
   preferencesOpen,
@@ -149,13 +164,16 @@ export function useAppKeyboardFocusEffects({
     commandPaletteVisible,
     globalSearchVisible,
     modalOpen: anyModalOpen,
+    moveTrashDialogRef,
     onCancelAppClose,
+    onCancelPendingTrash,
     onCancelTabClose,
     onCloseCommandPalette,
     onCloseGlobalSearch,
     onClosePreferences,
     pendingAppClose,
     pendingCloseTabOpen,
+    pendingTrashOpen,
     preferencesDialogRef,
     preferencesOpen,
   });
@@ -192,8 +210,10 @@ export function useAppKeyboardFocusEffects({
   useDialogInitialFocus({
     appCloseCancelButtonRef,
     closeTabCancelButtonRef,
+    moveTrashCancelButtonRef,
     pendingAppClose,
     pendingCloseTabOpen,
+    pendingTrashOpen,
     preferencesCloseButtonRef,
     preferencesOpen,
   });

@@ -246,6 +246,8 @@ export function useAppShellController() {
     closeTabDialogRef,
     discardingWindowCloseRef,
     modalOpen,
+    moveTrashCancelButtonRef,
+    moveTrashDialogRef,
     pendingCloseTabOpen,
     preferencesCloseButtonRef,
     preferencesDialogRef,
@@ -512,6 +514,18 @@ export function useAppShellController() {
     tabs,
     workspaceRootPath,
   });
+
+  // v0.18 accessibility follow-up: the move-to-trash dialog
+  // is a modal-shaped surface, so the controller composes the
+  // `pendingTrashOpen` boolean and the augmented `modalOpen`
+  // here, after the workspace hook destructures the trash
+  // state. The values are forwarded to the keyboard guard and
+  // the focus hook through the `keyboardFocus` object below.
+  // The ref pool above still owns the dialog ref and the
+  // cancel button ref so the dialog itself stays structurally
+  // aligned with the v0.7-era close / app-close dialogs.
+  const pendingTrashOpen = pendingTrash !== null;
+  const modalOpenWithTrash = modalOpen || pendingTrashOpen;
 
   // section: window dialog actions
   const {
@@ -1149,15 +1163,18 @@ export function useAppShellController() {
       appCloseDialogRef,
       closeTabCancelButtonRef,
       closeTabDialogRef,
+      moveTrashCancelButtonRef,
+      moveTrashDialogRef,
       commandPaletteVisible,
       dirtyTabCount,
       editorPaneRef,
       findInputRef,
       findVisible,
       globalSearchVisible,
-      modalOpen,
+      modalOpen: modalOpenWithTrash,
       onApplyMarkdownFormat: applyActiveMarkdownFormat,
       onCancelAppClose: cancelPendingAppClose,
+      onCancelPendingTrash: cancelPendingTrash,
       onCancelTabClose: cancelPendingTabClose,
       onCheckTabForExternalChange: checkTabForExternalChange,
       onCloseCommandPalette: closeCommandPalette,
@@ -1179,6 +1196,7 @@ export function useAppShellController() {
       onSaveActiveTabAs: saveActiveTabAs,
       pendingAppClose,
       pendingCloseTabOpen,
+      pendingTrashOpen,
       preferencesCloseButtonRef,
       preferencesDialogRef,
       preferencesOpen,
@@ -1313,6 +1331,8 @@ export function useAppShellController() {
     closeTabDialogRef,
     closeTabNow,
     closeWorkspaceContextMenu,
+    moveTrashCancelButtonRef,
+    moveTrashDialogRef,
     closeCommandPalette,
     commandPaletteActiveIndex,
     confirmPendingRename,

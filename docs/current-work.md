@@ -31,13 +31,41 @@ Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| P1 | Manual accessibility smoke | Code-level observation recorded in `docs/smoke-checklist.md` and `docs/archive/operations/v0.18-manual-accessibility-smoke-observation.md` (Help readability, full keyboard-only traversal, VoiceOver tab-bar announcement, Increase Contrast). Live VoiceOver and Increase Contrast observation items still pending on the user's Mac. Baseline dialogs partially observed; `MoveToTrashConfirmDialog` focus management recorded as a small follow-up. |
+| P1 | Manual accessibility smoke | Code-level observation recorded in `docs/smoke-checklist.md` and `docs/archive/operations/v0.18-manual-accessibility-smoke-observation.md` (Help readability, full keyboard-only traversal, VoiceOver tab-bar announcement, Increase Contrast). Live VoiceOver and Increase Contrast observation items still pending on the user's Mac. Baseline dialogs partially observed; `MoveToTrashConfirmDialog` focus management now wired (see Completed v0.18 Slices). |
 | P2 | Help copy overlap cleanup | Separate Privacy Policy, Local Data Disclosure, Support Diagnostics, About, and Open Source Acknowledgements so each page has one job. |
 | P2 | `data:image` size wording | Align implementation and docs: either call the check a data-URI length cap or measure decoded image bytes. |
-| P2 | `MoveToTrashConfirmDialog` focus management | Give the move-to-trash dialog a dialog ref, initial focus on the cancel button, and a focus-trap path through `useModalKeyboardGuard`. Small diff, no copy or visual change. |
+
+## External-Agent Friendly Queue
+
+Use this when handing work to an external implementation agent. Prefer
+debugging, small implementation fixes, and evidence-backed refactors
+over copy-heavy or product-voice-sensitive work.
+
+| Fit | Candidate | Scope |
+|---|---|---|
+| Good | L Mode quality investigation | Pick one reproduced L Mode issue or one measurable quality gap only: caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or performance baseline. Do not add a new editing model or contenteditable surface. |
+| Good | Theme quality investigation | Pick one concrete theme issue only: contrast, focus visibility, status/error readability, dialog readability, or Increase Contrast behavior. Do not redesign palettes or add theme customization. |
+| Good | Focused refactor for a verified bug | Refactor only when it directly fixes or tests one observed user-facing problem. Keep ownership boundaries and public behavior stable. |
+| Caution | `data:image` size wording | First inspect whether the implementation is a data-URI length cap or decoded-byte check. Prefer wording/docs alignment unless a small implementation correction is clearly safer. |
+| Poor fit | Help copy overlap cleanup | This is product voice and submission copy work. Keep it for human/Codex review unless explicitly assigned with tight wording constraints. |
+| Poor fit | Live VoiceOver / Increase Contrast observation | Requires the user's Mac accessibility settings and real interaction. Do not outsource unless that environment is explicitly available. |
 
 ## Completed v0.18 Slices
 
+- 2026-06-11: `MoveToTrashConfirmDialog` now follows the same
+  focus-management pattern as the v0.7 dirty-tab / app-close
+  dialogs: it owns a dialog ref and a Cancel button ref, the
+  central `useDialogInitialFocus` lands focus on the Cancel
+  button on open, the central `useModalKeyboardGuard` traps
+  Tab / Shift+Tab inside the dialog, and Escape routes to
+  `cancelPendingTrash`. The dialog copy, visual styling,
+  Tauri command, workspace path validation, and trash
+  execution logic are unchanged. New tests cover the
+  component (`MoveToTrashConfirmDialog.test.tsx`), the focus
+  hook (`useDialogInitialFocus.test.tsx`), and the keyboard
+  guard (`useModalKeyboardGuard.test.tsx`); the existing
+  dirty-tab / app-close / preferences Esc + Tab behaviour
+  stays pinned.
 - 2026-06-11: Encoding-only dirty indication is now consistent across
   the shared `isDirty()` contract, `TabBar`, and the auto-backup
   loop. Encoding-only changes surface the TabBar dirty dot and

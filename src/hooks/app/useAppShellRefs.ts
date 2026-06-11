@@ -20,6 +20,13 @@ import { useAppEditorRefs } from "./useAppEditorRefs";
 type UseAppShellRefsOptions = {
   pendingAppClose: boolean;
   pendingCloseTab: EditorTab | null;
+  // v0.18 accessibility follow-up: the move-to-trash dialog
+  // now also owns a dialog ref and a cancel button ref, kept
+  // structurally aligned with the v0.7-era close / app-close
+  // dialogs. The pool no longer takes the workspace-side
+  // `pendingTrash` state; the controller composes the final
+  // `modalOpen` and forwards `pendingTrashOpen` to the
+  // keyboard guard and the focus hook.
   preferencesDialogMode: PreferencesDialogMode | null;
   tabs: EditorTab[];
 };
