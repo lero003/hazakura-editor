@@ -406,9 +406,12 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
         let hide_others_item =
             PredefinedMenuItem::hide_others(app, Some(label("Hide Others", "ほかを隠す")))?;
         let separator_before_quit = PredefinedMenuItem::separator(app)?;
-        let quit_item = PredefinedMenuItem::quit(
+        let quit_item = MenuItem::with_id(
             app,
-            Some(label("Quit Hazakura Editor", "Hazakura Editor を終了")),
+            MENU_QUIT_APP,
+            label("Quit Hazakura Editor", "Hazakura Editor を終了"),
+            true,
+            Some("CmdOrCtrl+Q"),
         )?;
 
         let mut app_menu_items: Vec<&dyn IsMenuItem<R>> =
@@ -603,6 +606,7 @@ pub(crate) fn emit_app_menu_event<R: tauri::Runtime>(
                 | MENU_EXPORT_HTML
                 | MENU_EXPORT_PDF
                 | MENU_CLOSE_WINDOW
+                | MENU_QUIT_APP
                 | MENU_TOGGLE_PREVIEW
                 | MENU_TOGGLE_L_MODE
                 | MENU_TOGGLE_WRAP

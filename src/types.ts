@@ -38,6 +38,7 @@ export const MENU_PRIVACY_POLICY = "privacy-policy";
 export const MENU_OPEN_SOURCE_ACKNOWLEDGEMENTS =
   "open-source-acknowledgements";
 export const MENU_ABOUT_HELP = "about-help";
+export const MENU_QUIT_APP = "quit-app";
 export const AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS = 500;
 export const AGENT_WORKBENCH_SESSION_POLL_MS = 200;
 export const EXTERNAL_CHANGE_ACTIVE_POLL_MS = 1000;
@@ -259,14 +260,12 @@ export const OPEN_MAIN_AGENT_PANE_EVENT =
 
 // v0.17 app-store-quality: save-restore-regression slice 1.4.
 // Mirror of the Rust `APP_EXIT_REQUESTED_EVENT` constant. The
-// Rust run loop catches `RunEvent::ExitRequested` (fired by
-// macOS `Cmd+Q` / the Quit menu item), calls
-// `api.prevent_exit()` to abort the bare exit, and emits this
-// event to the main window. The main window's
-// `useAppExitConfirmation` hook then either calls `exitApp`
-// (clean state) or surfaces the existing `AppCloseDialog` for
-// Save / Discard / Cancel. See src-tauri/src/types.rs and
-// `docs/archive/operations/app-store-v0.17/current-work-closeout.md` queue 1.
+// normal macOS Quit item is custom-routed through `MENU_QUIT_APP`
+// so Cmd+Q reaches the frontend dirty-state guard first. This
+// event remains the fallback for OS-driven app exits that bypass
+// the custom menu item: Rust catches `RunEvent::ExitRequested`,
+// calls `api.prevent_exit()`, and emits this event to the main
+// window. See src-tauri/src/types.rs.
 export const APP_EXIT_REQUESTED_EVENT =
   "hazakura-note://app-exit-requested";
 

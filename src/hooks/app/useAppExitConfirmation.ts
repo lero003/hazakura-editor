@@ -30,12 +30,13 @@ type UseAppExitConfirmationOptions = {
 };
 
 // v0.17 app-store-quality: save-restore-regression slice 1.4
-// — macOS `Cmd+Q` / Quit menu dirty-state guard.
+// — OS-driven app-exit dirty-state fallback.
 //
-// The Rust run loop catches `RunEvent::ExitRequested` (fired
-// by the macOS Quit menu item and `Cmd+Q`; Tauri 2 does not
-// give the JS side a window-style `onCloseRequested` for
-// app-level exit) and routes it here via
+// The normal macOS Quit menu item is custom-routed through
+// `MENU_QUIT_APP` so Cmd+Q reaches `requestAppQuit` directly.
+// This hook remains the fallback for OS-driven app-level exits
+// that still surface as `RunEvent::ExitRequested`: Rust prevents
+// the bare exit and routes it here via
 // `APP_EXIT_REQUESTED_EVENT`. The handler mirrors
 // `useWindowCloseConfirmation`:
 //

@@ -187,9 +187,11 @@ pub fn run() {
             }
             // v0.17 app-store-quality: save-restore-regression slice 1.4
             // — intercept app-level exit requests so the frontend
-            // gets a chance to consult dirty state. The macOS Quit
-            // menu item, `Cmd+Q`, and OS-driven quit signals all
-            // route through `RunEvent::ExitRequested` in Tauri 2.
+            // gets a chance to consult dirty state. The normal macOS
+            // Quit menu item is custom-routed through `MENU_QUIT_APP`
+            // first; this run-loop arm remains the fallback for
+            // OS-driven quit signals that still route through
+            // `RunEvent::ExitRequested` in Tauri 2.
             //
             // `EXIT_CONFIRMED_BY_FRONTEND` is flipped by the
             // `exit_app` command when the frontend has confirmed

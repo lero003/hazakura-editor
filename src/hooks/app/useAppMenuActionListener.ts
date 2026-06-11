@@ -11,6 +11,7 @@ import {
   MENU_OPEN_SOURCE_ACKNOWLEDGEMENTS,
   MENU_OPEN_SUPPORT_DIAGNOSTICS,
   MENU_PRIVACY_POLICY,
+  MENU_QUIT_APP,
   type EditorSettings,
   type PreferencesDialogMode,
   type RecentEntry,
@@ -26,6 +27,7 @@ export type AppMenuActionHandlers = {
   openFile: () => void | Promise<unknown>;
   openWorkspace: () => void | Promise<unknown>;
   openWorkspacePath: (path: string) => void | Promise<unknown>;
+  requestAppQuit: () => void | Promise<unknown>;
   requestWindowClose: () => void | Promise<unknown>;
   saveActiveTab: () => void | Promise<unknown>;
   saveActiveTabAs: () => void | Promise<unknown>;
@@ -111,6 +113,9 @@ export function useAppMenuActionListener({
           break;
         case "close-window":
           void actions.requestWindowClose();
+          break;
+        case MENU_QUIT_APP:
+          void actions.requestAppQuit();
           break;
         case "export-html":
           void actions.exportHtml();

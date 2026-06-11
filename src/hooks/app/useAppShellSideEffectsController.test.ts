@@ -15,6 +15,7 @@ describe("useAppShellSideEffectsController", () => {
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
           openWorkspacePath: vi.fn(),
+          requestAppQuit: vi.fn(),
           requestWindowClose: vi.fn(),
           saveActiveTab: vi.fn(),
           saveActiveTabAs: vi.fn(),

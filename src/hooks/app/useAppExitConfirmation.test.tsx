@@ -5,12 +5,14 @@ import { exitApp } from "../../lib/tauri/window";
 import { listen } from "@tauri-apps/api/event";
 
 // v0.17 app-store-quality: save-restore-regression slice 1.4
-// — `Cmd+Q` / Quit menu dirty-state guard.
+// — OS-driven app-exit dirty-state fallback.
 //
-// The Rust run loop's `RunEvent::ExitRequested` arm
-// prevents the bare exit, then emits
-// `APP_EXIT_REQUESTED_EVENT` to the main window. This hook
-// is the receiving end. It mirrors
+// The normal macOS Quit item is custom-routed through
+// `MENU_QUIT_APP`; this hook is the receiving end for
+// app-level exits that bypass that menu route. The Rust
+// run loop's `RunEvent::ExitRequested` arm prevents the bare
+// exit, then emits `APP_EXIT_REQUESTED_EVENT` to the main
+// window. It mirrors
 // `useWindowCloseConfirmation` (clean → fast path, dirty →
 // `onNeedsConfirmation` so the controller can flip a ref
 // and reuse the existing `AppCloseDialog`). The tests below

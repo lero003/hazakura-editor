@@ -51,6 +51,7 @@ import { useLocalizedAppCopy } from "./useLocalizedAppCopy";
 import { useAppShellSideEffectsController } from "./useAppShellSideEffectsController";
 import { useAutoBackupRestore } from "../workspace/useAutoBackupRestore";
 import { persistWorkspaceStateSnapshot } from "../workspace/useWorkspaceStatePersistence";
+import { exitApp } from "../../lib/tauri/window";
 
 export function useAppShellController() {
   const appleLocalAssistAllowed = isAppleLocalAssistSurfaceAllowed();
@@ -576,6 +577,22 @@ export function useAppShellController() {
       workspaceRootPath,
     });
   }, [activeTab, activeTabId, restoreComplete, tabsRef, workspaceRootPath]);
+
+  const requestAppQuit = useCallback(() => {
+    if (dirtyTabCount === 0) {
+      persistWorkspaceSession();
+      void exitApp();
+      return;
+    }
+
+    appExitInProgressRef.current = true;
+    requestAppCloseConfirmation();
+  }, [
+    appExitInProgressRef,
+    dirtyTabCount,
+    persistWorkspaceSession,
+    requestAppCloseConfirmation,
+  ]);
 
   useAppExitConfirmation({
     appExitInProgressRef,
@@ -1108,6 +1125,7 @@ export function useAppShellController() {
       openFile,
       openWorkspace,
       openWorkspacePath,
+      requestAppQuit,
       requestWindowClose,
       saveActiveTab,
       saveActiveTabAs,

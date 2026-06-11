@@ -63,16 +63,15 @@ pub(crate) const MENU_ACTION_EVENT: &str = "hazakura-note://menu-action";
 pub(crate) const OPENED_FILES_EVENT: &str = "hazakura-note://opened-files";
 pub(crate) const OPEN_MAIN_AGENT_PANE_EVENT: &str = "hazakura-note://open-main-agent-pane";
 // v0.17 app-store-quality: save-restore-regression slice 1.4.
-// `Cmd+Q` (macOS) and the Quit menu item both fire
+// OS-driven app exit requests can still fire
 // `RunEvent::ExitRequested` in Tauri 2. The Rust run loop
 // catches that event, calls `api.prevent_exit()` to abort
-// the bare exit, and emits this event to the main window
-// so the frontend can either (a) confirm-and-exit on a
-// clean state, or (b) surface the existing `AppCloseDialog`
-// and, after Save/Discard All, actually exit via the
-// `exit_app` IPC (which uses `std::process::exit(0)` to
-// avoid re-firing `ExitRequested`). The constant is the
-// single source of truth; the TS mirror lives in
+// the bare exit, and emits this event to the main window.
+// The normal macOS app-menu Quit item is custom-routed
+// through `MENU_QUIT_APP` so Cmd+Q reaches the frontend's
+// dirty-state guard before any native quit path runs.
+// This event remains the fallback for app-level exits that
+// bypass the custom menu item. The TS mirror lives in
 // `src/types.ts`.
 pub(crate) const APP_EXIT_REQUESTED_EVENT: &str = "hazakura-note://app-exit-requested";
 // v0.12+ Apple Local Assist Writing Companion mock (slice 2+).
@@ -112,6 +111,7 @@ pub(crate) const MENU_OPEN_FOLDER: &str = "open-folder";
 pub(crate) const MENU_SAVE: &str = "save";
 pub(crate) const MENU_SAVE_AS: &str = "save-as";
 pub(crate) const MENU_CLOSE_WINDOW: &str = "close-window";
+pub(crate) const MENU_QUIT_APP: &str = "quit-app";
 pub(crate) const MENU_EXPORT_HTML: &str = "export-html";
 pub(crate) const MENU_EXPORT_PDF: &str = "export-pdf";
 pub(crate) const MENU_TOGGLE_PREVIEW: &str = "toggle-preview";

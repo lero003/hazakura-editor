@@ -78,16 +78,11 @@ export async function onCurrentWindowCloseRequested(
 }
 
 // v0.17 app-store-quality: save-restore-regression slice 1.4.
-// The frontend's escape hatch for the dirty `Cmd+Q`
-// confirmation flow. The Rust run loop's
-// `RunEvent::ExitRequested` arm already calls
-// `api.prevent_exit()` and emits
-// `APP_EXIT_REQUESTED_EVENT`, so by the time the user has
-// confirmed Save / Discard on the `AppCloseDialog`, the app
-// must actually terminate. The Rust `exit_app` command uses
-// `std::process::exit(0)` rather than `app.exit(0)` so the
-// `ExitRequested` event does not re-fire and loop back into
-// our handler.
+// The frontend's escape hatch after a clean custom Quit action
+// or after the user confirms Save / Discard on `AppCloseDialog`.
+// The Rust `exit_app` command flips the confirmed-exit gate before
+// terminating so fallback `RunEvent::ExitRequested` handling does
+// not loop back into the dirty-state guard.
 export async function exitApp(): Promise<void> {
   if (!isTauriRuntime()) {
     return;
