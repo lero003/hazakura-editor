@@ -296,9 +296,15 @@ Run on the actual App Store lane build:
 - Open an existing Markdown file through user selection.
 - Save succeeds.
 - Save As succeeds.
+- Repeated quit/relaunch preserves the selected workspace.
+- Quit/relaunch while an outside-workspace tab is active still
+  preserves the selected workspace or shows a clear reauthorization
+  path.
 - Preview renders.
 - HTML export succeeds.
 - Image paste and drag/drop do not break under sandboxed file access.
+- Move to Trash either succeeds without `osascript` / AppleEvents /
+  automation entitlements or is unreachable in the App Store lane.
 - Agent Workbench / CLI Agent / dev mode / Apple Local Assist are absent.
 - No external network communication occurs; if any system handoff appears,
   record the reason.
@@ -320,11 +326,16 @@ can answer these public-safe points before submission:
 - `com.apple.security.network.client` is present so the Tauri/WebKit
   runtime can load bundled app assets under App Sandbox. The App Store
   lane is not designed to contact external services and keeps
-  network-required features out of the submitted build.
+  network-required features out of the submitted build. Pair this with a
+  TestFlight smoke note that no external network communication was
+  observed.
 - Script-like file associations such as `.sh`, `.bash`, `.zsh`,
   `.fish`, and `.ps1` are treated as text-editor inputs only. Opening
   those files does not execute them, launch a shell, run a terminal, or
   provide arbitrary command execution.
+- Move to Trash must not be explained as an automation or scripting
+  feature. Before submission, make sure the App Store lane either uses a
+  native macOS Trash path or does not expose the operation.
 - The App Store lane omits Apple Local Assist helper, Agent Workbench,
   CLI Agent launch, dev mode, arbitrary command execution, and external
   AI/API calls. The Developer / GitHub lane remains separate.

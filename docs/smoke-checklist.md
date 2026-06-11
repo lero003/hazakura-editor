@@ -39,6 +39,33 @@ Track these under `docs/current-work.md` before App Review submission.
 This does not replace the fuller App Store / TestFlight manual smoke
 items below.
 
+## v0.18 Pre-Review Smoke Focus
+
+Run these on the signed TestFlight build before App Review submission:
+
+1. Workspace restore: open a workspace, quit/relaunch several times,
+   then repeat with an outside-workspace tab active. The selected
+   workspace should remain available or show a clear reauthorization
+   path.
+2. Move to Trash: confirm the App Store lane decision. Either the
+   operation is unavailable, or workspace file/folder trashing succeeds
+   through the native Trash path without `osascript`, AppleEvents, or
+   automation entitlements.
+3. Image paste / drag-drop: supported PNG/JPEG/GIF/WebP images under
+   the cap save into `assets/`; oversized pasted-image payloads fail
+   cleanly without crashing or implying success.
+4. Save fallback safety: direct-open file save failures should leave
+   local edits dirty/recoverable and must not show a successful save.
+5. Dirty close: `Cmd+Q` and the red close button show the expected dirty
+   tab/app-close confirmation and preserve recoverability on save
+   failure.
+6. Network observation: record whether any external network
+   communication appears. The expected App Store lane result is no
+   app-data external network access.
+7. Accessibility: complete live VoiceOver, keyboard-only traversal, and
+   Increase Contrast checks for the tab bar, file tree, dirty dialogs,
+   Preferences, Help, and status/error rows.
+
 ## v0.11 Release-Candidate Focus
 
 Run these before treating v0.11.0 as ready to publish:

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-12 (v0.18 pre-review follow-up)
+Last reviewed: 2026-06-12 (v0.18 pre-review todo review)
 
 ## Current Position
 
@@ -50,15 +50,21 @@ submission work hardens around it.
 
 Use `docs/current-work.md` as the queue. The near-term UX priorities are:
 
-1. Workspace persistence before App Review: repeated app launch/quit
+1. App Store lane Move to Trash external-process review: replace the
+   current `osascript` path with a native macOS Trash path, or make the
+   operation unreachable in the App Store lane.
+2. Workspace persistence before App Review: repeated app launch/quit
    and outside-workspace active-tab restarts must retain the selected
    workspace unless the user explicitly clears it or reauthorization is
    visibly required.
-2. Status bar encoding / line-ending de-duplication: keep the change
+3. Pasted image decoded-size cap and direct save fallback failure
+   safety: prevent large pasted-image memory risk and pin failure
+   behavior for the sandbox direct-write fallback.
+4. Status bar encoding / line-ending de-duplication: keep the change
    dropdowns, remove redundant passive `UTF-8` / `LF` style labels.
-3. Manual accessibility smoke: Help readability, full keyboard-only
+5. Manual accessibility smoke: Help readability, full keyboard-only
    traversal, VoiceOver tab-bar announcement, and Increase Contrast.
-4. Help copy overlap cleanup.
+6. Help copy overlap cleanup.
 
 Recently completed:
 
@@ -106,6 +112,12 @@ Required work:
 - Review complete third-party license material from lockfiles.
 - Finalize macOS About metadata if the native About panel is expected
   to carry publisher / copyright information.
+- Complete fuller TestFlight smoke, including workspace restore,
+  image paste/drag-drop, dirty close, no external network observation,
+  accessibility checks, and the App Store-lane Move to Trash decision.
+- Capture pre-review regression evidence locally or in CI before
+  submission; signing and Transporter can remain local account-bound
+  steps.
 - Confirm App Store lane omits CLI Agent / Agent Workbench execution
   surfaces, Apple Local Assist helper, and external AI/API calls.
 - Keep all submitted-build claims tied to verified local or App Store

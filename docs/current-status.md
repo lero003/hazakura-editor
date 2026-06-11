@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-12 (v0.18 TestFlight delivery)
+Last reviewed: 2026-06-12 (v0.18 pre-review todo review)
 
 ## Current State
 
@@ -16,8 +16,10 @@ Last reviewed: 2026-06-12 (v0.18 TestFlight delivery)
   basic TestFlight launch / save smoke passed.
 - Older public tags and release assets remain immutable.
 - Current active work is v0.18 pre-review bug fixing, fuller
-  TestFlight smoke, and App Store submission prep. Use
-  `docs/current-work.md` first.
+  TestFlight smoke, and App Store submission prep. The highest-risk
+  queue items are App Store-lane Move to Trash external-process review,
+  workspace persistence, pasted-image size guarding, and direct-save
+  fallback failure safety. Use `docs/current-work.md` first.
 
 ## Current Product Boundary
 
@@ -102,8 +104,10 @@ baseline, and smoke evidence are archived under
 ## Next Safe Actions
 
 1. For UX work, start with `docs/current-work.md` and pick one item:
-   workspace persistence before App Review, status-bar encoding /
-   line-ending de-duplication, or manual accessibility smoke.
+   App Store-lane Move to Trash external-process review, workspace
+   persistence before App Review, pasted-image decoded-size cap, direct
+   save fallback failure safety, status-bar encoding / line-ending
+   de-duplication, or manual accessibility smoke.
 2. For App Store submission prep, start with `docs/current-work.md`
    and `docs/app-store-build.md`; keep account-specific notes under
    ignored `docs/internal/` files;

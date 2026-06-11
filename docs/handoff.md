@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-12 (v0.18 TestFlight delivery)
+Last reviewed: 2026-06-12 (v0.18 pre-review todo review)
 
 ## Current State
 
@@ -49,6 +49,16 @@ Last reviewed: 2026-06-12 (v0.18 TestFlight delivery)
   though the encoding / line-ending dropdowns already expose those
   values. Remove the duplicate passive labels while preserving the
   dropdown controls and dirty/save status affordances.
+- External static review added a higher-risk App Store-lane follow-up:
+  `move_workspace_entry_to_trash` currently reaches macOS Trash through
+  `osascript`. Before App Review, replace that path with native macOS
+  Trash handling or make Move to Trash unavailable in the App Store
+  lane. Do not add AppleEvents / automation entitlements merely to keep
+  the current bridge.
+- External static review also promoted two data-safety follow-ups:
+  add a decoded-size cap for pasted images, and pin failure behavior for
+  the direct save fallback that uses truncate-and-write when sandboxed
+  temp-file creation is denied.
 - Direct-open standalone files can save even when the parent folder
   cannot create a sibling temp file: `save_text_file` keeps the normal
   atomic path, then falls back to direct existing-file write only on
@@ -68,11 +78,14 @@ Last reviewed: 2026-06-12 (v0.18 TestFlight delivery)
 Use `docs/current-work.md` for the active queue. The current highest
 priority UX items are:
 
-1. Workspace persistence before App Review.
-2. Status bar encoding / line-ending de-duplication.
-3. Manual accessibility smoke.
-4. Help copy overlap cleanup.
-5. `data:image` size wording alignment.
+1. App Store lane Move to Trash external-process review.
+2. Workspace persistence before App Review.
+3. Pasted image decoded-size cap / `data:image` wording.
+4. Direct save fallback failure safety.
+5. Status bar encoding / line-ending de-duplication.
+6. Manual accessibility smoke.
+7. Auto-backup filename uniqueness, if same-second collision reproduces.
+8. Help copy overlap cleanup.
 
 Recently completed: direct-open standalone file save now handles the
 App Sandbox-style case where the selected file itself is writable but
@@ -91,11 +104,12 @@ v0.18.
 Submission-prep items in the same queue include fuller TestFlight smoke,
 App Review Notes final copy, Privacy Policy / metadata, final
 third-party notice content review, About metadata finalization, and
-manual accessibility smoke. External review notes worth preserving:
+pre-review regression evidence. External review notes worth preserving:
 prepare reviewer-note answers for `network.client`, inert script-like
-file associations, and App Store lane omissions; do not treat low-risk
-icon size, known Vite chunk warnings, or Help copy overlap as blockers
-unless they reproduce as concrete review or usability failures.
+file associations, App Store lane omissions, and Move to Trash; do not
+treat low-risk icon size, known Vite chunk warnings, or Help copy
+overlap as blockers unless they reproduce as concrete review or
+usability failures.
 
 ## Source Docs
 

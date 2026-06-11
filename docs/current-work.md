@@ -1,7 +1,7 @@
 # Current Work
 
 Status: Operational
-Scope: Active v0.18 UX polish and submission-prep routing
+Scope: Active v0.18 pre-review bug fixing and submission-prep routing
 Authority: High
 Last reviewed: 2026-06-12
 
@@ -31,11 +31,14 @@ Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
+| P0 | App Store lane Move to Trash external-process review | Remove the App Store review risk around `move_workspace_entry_to_trash` invoking `osascript`. Preferred fix: replace the JavaScript-for-Automation bridge with a native macOS `NSFileManager` Trash call from Rust. Conservative fallback: hide/disable Move to Trash in the App Store lane and make the command reject there. Acceptance: signed TestFlight build either successfully trashes workspace files/folders without `osascript` / AppleEvents / automation entitlements, or the operation is unreachable and clearly absent in the App Store lane. Preserve workspace containment checks and destructive-action confirmation. |
 | P0 | Workspace persistence before App Review | Treat the TestFlight workspace loss observations as bugs, not product spec: (1) opening a workspace and repeatedly quitting/relaunching must retain the selected workspace root, and (2) quitting/relaunching while the active tab is outside the workspace must still retain the selected workspace root. Reproduce both shapes first, then add narrow persistence/restore regression coverage before changing behavior. The workspace selection should disappear only after an explicit user action or unrecoverable authorization failure with a visible reauthorization path. |
+| P1 | Pasted image decoded-size cap / `data:image` wording | `save_pasted_image` should reject oversized pasted image payloads before unbounded memory growth. Add a base64-length preflight where practical, enforce a decoded byte cap aligned with the existing 20 MB image limit, localize the user-facing error, and align Help/docs wording to decoded image bytes rather than vague data-URI length. Verify paste/drag-drop still writes supported PNG/JPEG/GIF/WebP images into `assets/`. |
+| P1 | Direct save fallback failure safety | The App Sandbox direct-file fallback can use a truncate-and-write path when temp-file creation is denied. Add focused failure coverage for partial write / sync failure behavior: local edits must remain dirty/recoverable, the UI must not imply success, and any feasible original-bytes recovery should be attempted before reporting failure. Keep the normal atomic save path unchanged. |
 | P1 | Manual accessibility smoke | Code-level observation recorded in `docs/smoke-checklist.md` and `docs/archive/operations/v0.18-manual-accessibility-smoke-observation.md` (Help readability, full keyboard-only traversal, VoiceOver tab-bar announcement, Increase Contrast). Live VoiceOver and Increase Contrast observation items still pending on the user's Mac. Baseline dialogs partially observed; `MoveToTrashConfirmDialog` focus management now wired (see Completed v0.18 Slices). |
 | P1 | Status bar encoding / line-ending de-duplication | Remove the passive duplicate status labels such as `UTF-8` and `LF` from the lower status area when the encoding / line-ending change dropdowns already expose those values. Keep the actual change controls and save semantics intact; verify compact widths do not leave awkward gaps or hide important dirty/save state. |
+| P2 | Auto-backup filename uniqueness | Auto-backup filenames currently use second-resolution timestamps. If focused tests can reproduce same-second overwrite/collision risk, add milliseconds, a monotonic counter, or a short random suffix so rapid backups do not overwrite each other. Keep recovery listing newest-first and path containment unchanged. |
 | P2 | Help copy overlap cleanup | Separate Privacy Policy, Local Data Disclosure, Support Diagnostics, About, and Open Source Acknowledgements so each page has one job. |
-| P2 | `data:image` size wording | Align implementation and docs: either call the check a data-URI length cap or measure decoded image bytes. |
 
 ## External-Agent Friendly Queue
 
@@ -45,12 +48,15 @@ over copy-heavy or product-voice-sensitive work.
 
 | Fit | Candidate | Scope |
 |---|---|---|
+| Good | App Store lane Move to Trash external-process review | Replace `osascript` with a native macOS Trash path or disable Move to Trash only in the App Store lane. Keep path containment, confirmation UI, and backup cleanup semantics pinned. |
+| Good | Pasted image decoded-size cap | Add the decoded-size guard and focused tests around `save_pasted_image`; align docs/error wording with the implemented 20 MB limit. Do not change workspace image preview policy beyond what the cap requires. |
+| Good | Direct save fallback failure safety | Add failure-injection coverage for the direct write fallback and improve recovery only if the test proves a user-visible data-loss risk. Do not weaken external-change fingerprint checks. |
 | Good | L Mode quality investigation | Pick one reproduced L Mode issue or one measurable quality gap only: caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or performance baseline. Do not add a new editing model or contenteditable surface. |
 | Good | Theme quality investigation | Pick one concrete theme issue only: contrast, focus visibility, status/error readability, dialog readability, or Increase Contrast behavior. Do not redesign palettes or add theme customization. |
 | Good | Workspace persistence before App Review | Debug only the observed persistence shapes where repeated app launch/quit or an outside-workspace active tab can cause the selected workspace root to be absent after restart. Keep the fix near workspace state persistence / restore and avoid changing direct-open file permissions or workspace file operations. |
 | Good | Status bar encoding / line-ending de-duplication | Remove redundant passive `UTF-8` / `LF` style labels while preserving the existing dropdown controls, status/dirty affordances, and compact status-bar layout. |
+| Good | Auto-backup filename uniqueness | If reproducible, make backup names unique within the same second while preserving recovery list sorting and cleanup behavior. |
 | Good | Focused refactor for a verified bug | Refactor only when it directly fixes or tests one observed user-facing problem. Keep ownership boundaries and public behavior stable. |
-| Caution | `data:image` size wording | First inspect whether the implementation is a data-URI length cap or decoded-byte check. Prefer wording/docs alignment unless a small implementation correction is clearly safer. |
 | Poor fit | Help copy overlap cleanup | This is product voice and submission copy work. Keep it for human/Codex review unless explicitly assigned with tight wording constraints. |
 | Poor fit | Live VoiceOver / Increase Contrast observation | Requires the user's Mac accessibility settings and real interaction. Do not outsource unless that environment is explicitly available. |
 
@@ -165,11 +171,12 @@ certificate, or App Store Connect access.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| P0 | TestFlight / App Store Connect validation | The helper-free App Store submit lane is defined in `docs/app-store-build.md`. 2026-06-12 evidence: the signed `HazakuraEditor-0.18.0-mas.pkg` upload reached TestFlight distribution with no reported Apple validation warnings, and basic TestFlight launch / save smoke passed. Remaining proof before broader App Store-ready claims: fuller manual smoke on the TestFlight build, final review metadata, and App Review submission / approval evidence. The earlier ad-hoc App Store preview `open -n` failure remains non-blocking unless it reproduces on the signed TestFlight build. |
+| P0 | TestFlight / App Store Connect validation | The helper-free App Store submit lane is defined in `docs/app-store-build.md`. 2026-06-12 evidence: the signed `HazakuraEditor-0.18.0-mas.pkg` upload reached TestFlight distribution with no reported Apple validation warnings, and basic TestFlight launch / save smoke passed. Remaining proof before broader App Store-ready claims: fuller manual smoke on the TestFlight build, final metadata, and App Review submission / approval evidence. The fuller smoke should explicitly cover workspace persistence, image paste/drag-drop, dirty `Cmd+Q` / red-close behavior, no external network communication, accessibility live checks, and the App Store-lane Move to Trash decision. The earlier ad-hoc App Store preview `open -n` failure remains non-blocking unless it reproduces on the signed TestFlight build. |
 | P1 | App Review Notes final copy / attachments | Private review-note draft and store-copy material exist outside the public docs. Final pass should attach screenshots or reviewer evidence as needed, keep account/contact-specific text out of tracked docs, and preserve the App Store lane omission claim for CLI Agent / Agent Workbench / Apple Local Assist. Prepare concise reviewer-note answers for the non-obvious App Store lane facts: `network.client` exists for Tauri/WebKit bundled asset loading under App Sandbox rather than app-data networking; script-like file extensions open as inert text only and are never executed; the App Store lane omits Apple Local Assist helper, Agent Workbench, CLI Agent launch, dev mode, arbitrary command execution, and external AI/API calls. |
 | P1 | Public metadata final pass | Privacy Policy URL is `https://hazakura.dev/hazakura-editor/privacy/`. Remaining metadata work is support URL, category / keywords / age rating / screenshots, and App Store Connect field-by-field review. |
 | P1 | About metadata finalization | `src-tauri/src/menu.rs` builds the macOS About panel from Tauri bundle `copyright` and `publisher`, but the current Tauri configs do not set those values. Before App Review, either set the bundle metadata for all relevant lanes or document why the in-app Help About surface is the canonical legal/about surface. Verify the built App Store bundle's About panel after any metadata change. |
 | P1 | Third-party license packet | `LICENSE` and `THIRD_PARTY_NOTICES.md` now ship inside the generated app bundle, while the in-app Open Source Acknowledgements remain a readable summary. Before submission, refresh/review the notice contents against `package-lock.json` and `src-tauri/Cargo.lock`, include any required full license texts / upstream notices, and re-run the bundled-resource distribution probe. |
+| P1 | Pre-review regression evidence | There is no tracked GitHub Actions workflow for the latest follow-up commits. Before App Review, either add a small CI workflow or run and archive local evidence for the release-readiness gates: `npm ci`, `npm run build:vite`, `npm test`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build`, `npm audit`, `cargo audit`, and `git diff --check`. Keep signing / Transporter as local account-bound steps. |
 | P2 | Bundle-size follow-up | Measure first. Split Help / Diagnostics / Assist chunks only if it reduces real startup or review risk. |
 
 ## Completed Submission-Prep Slices
