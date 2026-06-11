@@ -54,6 +54,9 @@ Before implementation, the external agent should read:
 Implementation rules:
 
 - Pick one coherent slice only.
+- Prefer implementation, debugging, smoke-follow-up, and small
+  evidence-backed refactors. Copy-heavy product-voice work is a poor
+  external-agent fit unless the wording constraints are explicit.
 - Do not add Git integration, LSP, arbitrary command execution, general terminal behavior, plugin systems, project-wide indexing, Agent auto-apply, Agent auto-commit, provider-add UI, or session restore.
 - Do not implement signing, notarization, updater, or paid-distribution work unless the user explicitly opens that lane.
 - Do not treat Review Desk as a Git client or merge tool.
@@ -66,6 +69,22 @@ Verification:
 - For code changes, run the project quality gates from `docs/development-automation.md`.
 - For docs-only changes, run `git diff --check`.
 - For UI behavior changes, update or exercise `docs/smoke-checklist.md`; do not claim smoke passed unless it was actually exercised.
+
+Good external-agent candidates usually look like:
+
+- a reproduced bug with a focused test expectation
+- a code-level smoke follow-up such as focus management or keyboard flow
+- one bounded L Mode or theme quality investigation with a clear
+  verification path
+- a refactor that directly supports one bug fix or one regression test
+
+Poor candidates usually look like:
+
+- broad copy cleanup, product positioning, or App Review wording
+- live VoiceOver / Increase Contrast checks without access to the
+  user's Mac accessibility settings
+- speculative L Mode, theme, or refactor work without a concrete
+  symptom, measurement, or acceptance test
 
 ## Codex Review Contract
 

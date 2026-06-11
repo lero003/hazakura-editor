@@ -22,8 +22,8 @@ Phase: v0.18 UX polish / submission prep, unless a v0.17 hotfix blocker appears.
 Prefer work in this order:
 
 1. Stale or failing quality gates.
-2. Active UX queue from `docs/current-work.md`, especially WorkspaceTree rename markup and encoding-only dirty indication.
-3. Submission-prep queue from `docs/current-work.md`, especially entitlement/signing lane definition, App Review Notes final copy, license packet review, and manual accessibility smoke.
+2. Active UX queue from `docs/current-work.md`, especially manual accessibility follow-up and the external-agent friendly implementation queue.
+3. Submission-prep queue from `docs/current-work.md`, especially entitlement/signing lane definition, App Review Notes final copy, license packet review, and manual accessibility live observation.
 4. Release-prep gaps in Developer / GitHub DMG wording, checksum flow, cross-machine smoke guidance, or expected macOS warning instructions.
 5. App Store / Developer lane separation drift, especially Agent Workbench omission, helper bundle/signing assumptions, and sandbox/review evidence.
 6. Accessibility and keyboard-flow audit slices for settings, close dialogs, L Mode rail/drawer/review, image preview, recovery, and diff review.
@@ -32,9 +32,10 @@ Prefer work in this order:
 9. Safety-boundary regression checks.
 10. Post-release docs/version drift.
 11. One reproduced bug in implemented L Mode WYSIWYG behavior, especially caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or a measured performance baseline.
-12. Focused refactor only when it directly supports a verified user-facing polish fix; do not split a large file for architecture aesthetics alone.
-13. Documentation drift.
-14. Verified no-op after inspection when no useful small slice is safe.
+12. One concrete theme-quality issue, especially focus visibility, contrast, status/error readability, dialog readability, or Increase Contrast behavior.
+13. Focused refactor only when it directly supports a verified user-facing polish fix; do not split a large file for architecture aesthetics alone.
+14. Documentation drift.
+15. Verified no-op after inspection when no useful small slice is safe.
 
 ## Start Every Run
 
