@@ -341,4 +341,77 @@ describe("useWorkspaceRestore", () => {
     });
     expect(args.setRestoreComplete).toHaveBeenCalledTimes(1);
   });
+
+  it("consumes a partial-restore-shaped persisted state via the bookmark resolution path on the next launch", async () => {
+    // The partial-restore slice of
+    // `useWorkspaceStatePersistence` writes a persisted
+    // state that still carries `workspaceRootPath` and
+    // `workspaceRootBookmark` (only `workspaceRootPath`
+    // was reachable as a string in the live render; the
+    // storage layer promotes it back from the previous
+    // write). On the next launch, this state must reach
+    // the bookmark-resolution branch — a persisted state
+    // that lost `workspaceRootPath` would skip that
+    // branch entirely (`if (persistedState.workspaceRootPath)`)
+    // and the security-scoped bookmark would never be
+    // consumed.
+    const tree = {
+      name: "root",
+      path: "/old/root",
+      kind: "directory",
+      children: [],
+      children_loaded: true,
+      children_truncated: false,
+    };
+    // Shape produced by the partial-restore slice:
+    // workspaceRootPath + bookmark preserved, tab list
+    // reflects the live session that was partially
+    // restored.
+    readPersistedWorkspaceState.mockReturnValue({
+      workspaceRootPath: "/old/root",
+      workspaceRootBookmark: [4, 5, 6],
+      tabPaths: ["/old/root/note.md"],
+      activeTabPath: "/old/root/note.md",
+    });
+    readStoredDrafts.mockReturnValue([]);
+    listWorkspaceTree
+      // First attempt with the persisted path fails —
+      // same sandbox-loss shape that triggered the
+      // partial-restore write in the first place.
+      .mockRejectedValueOnce(new Error("Cannot read folder: forbidden"))
+      .mockResolvedValueOnce(tree);
+    resolveSecurityScopedBookmark.mockResolvedValue("/old/root");
+    openTextFile.mockResolvedValue({
+      path: "/old/root/note.md",
+      name: "note.md",
+      contents: "body",
+      line_ending: "lf",
+      encoding: "utf-8",
+      size: 4,
+      modified_ms: 1,
+      fingerprint: "fp",
+      large_file_warning: false,
+    });
+    const args = buildArgs();
+
+    renderHook(() => useWorkspaceRestore(args));
+
+    await waitFor(() => {
+      expect(args.onStatus).toHaveBeenCalledWith("Workspace restored");
+    });
+
+    // The first listWorkspaceTree call must use the
+    // persisted path (not fall through silently to
+    // "no workspaceRootPath, skip"), and the bookmark
+    // resolution must be attempted with the persisted
+    // bytes. Together those two assertions pin the
+    // contract that the partial-restore persisted state
+    // is actually consumable by the next launch.
+    expect(listWorkspaceTree).toHaveBeenNthCalledWith(1, "/old/root");
+    expect(resolveSecurityScopedBookmark).toHaveBeenCalledWith([4, 5, 6]);
+    expect(listWorkspaceTree).toHaveBeenNthCalledWith(2, "/old/root");
+    expect(args.setWorkspaceRootPath).toHaveBeenCalledWith("/old/root");
+    expect(args.setWorkspaceTree).toHaveBeenCalledWith(tree);
+    expect(args.onError).not.toHaveBeenCalled();
+  });
 });

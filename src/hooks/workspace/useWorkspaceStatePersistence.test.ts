@@ -185,6 +185,57 @@ describe("useWorkspaceStatePersistence", () => {
     });
   });
 
+  it("preserves the workspaceRootPath and bookmark on a partial restore where tabs are restored but the workspace tree grant is lost", async () => {
+    // Derived regression guard: a restore attempt that
+    // reopens one or more tab files but cannot re-list the
+    // workspace tree leaves the live state in
+    // `tabs = [tab in old workspace]`,
+    // `workspaceRootPath = null`. The empty-restore guard
+    // (which only fires on `tabs = []`) cannot help here,
+    // so the persistence effect does reach
+    // `writePersistedWorkspaceState` with
+    // `workspaceRootPath = null`.
+    //
+    // The storage layer must preserve BOTH the previous
+    // `workspaceRootPath` and the security-scoped bookmark
+    // in that case. The path is what allows the next
+    // launch's `useWorkspaceRestore` to even attempt the
+    // bookmark-resolution branch — the restore hook
+    // guards that branch with `if (persistedState.workspaceRootPath)`,
+    // so a persisted state with `workspaceRootPath: null`
+    // would silently skip the re-authorization attempt and
+    // the bookmark would never be consumed.
+    seedPersistedState({
+      workspaceRootPath: "/old/root",
+      workspaceRootBookmark: [1, 2, 3],
+      tabPaths: ["/old/root/note.md"],
+      activeTabPath: "/old/root/note.md",
+    });
+
+    const tab = makeTab();
+    renderHook(() =>
+      useWorkspaceStatePersistence({
+        activeTab: tab,
+        restoreComplete: true,
+        tabs: [tab],
+        workspaceRootPath: null,
+      }),
+    );
+
+    await waitFor(() => {
+      const stored = readPersistedWorkspaceState();
+      expect(stored?.workspaceRootPath).toBe("/old/root");
+    });
+
+    const stored = readPersistedWorkspaceState();
+    expect(stored).toEqual({
+      workspaceRootPath: "/old/root",
+      workspaceRootBookmark: [1, 2, 3],
+      tabPaths: ["/old/root/note.md"],
+      activeTabPath: "/old/root/note.md",
+    });
+  });
+
   it("persists the restored tabs and workspace once restore succeeds", async () => {
     seedPersistedState({
       workspaceRootPath: "/old/root",
