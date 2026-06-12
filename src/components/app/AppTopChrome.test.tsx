@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AppTopChrome } from "./AppTopChrome";
 import { getLModeCopy, getRecoveryCopy, getSidePaneCopy } from "../../lib/locale";
-import type { EditorTab } from "../../types";
+import type { EditorSettings, EditorTab } from "../../types";
 
 afterEach(() => {
   cleanup();
@@ -14,7 +14,7 @@ function renderTopChrome(
 ) {
   const onCloseSelectedImagePreview = vi.fn();
   const onCreateNewFile = vi.fn();
-  const onToggleWorkspaceSidebar = vi.fn();
+  const onEditorSettingsChange = vi.fn();
   render(
     <AppTopChrome
       activeDirty={false}
@@ -25,12 +25,15 @@ function renderTopChrome(
       draggingTabId={null}
       dragOverTabId={null}
       emptyTabsLabel="No file open"
+      editorSettings={defaultEditorSettings()}
       lModeCopy={getLModeCopy("en")}
       lModeEnabled={false}
+      menuLanguage="en"
       newFileLabel="New File"
       onCloseSelectedImagePreview={onCloseSelectedImagePreview}
       onCloseTab={vi.fn()}
       onCreateNewFile={onCreateNewFile}
+      onEditorSettingsChange={onEditorSettingsChange}
       onFinishTabPointerDrag={vi.fn()}
       onOpenAgentWindow={vi.fn()}
       onOpenAppleAssistWindow={vi.fn()}
@@ -44,15 +47,12 @@ function renderTopChrome(
       onToggleLMode={vi.fn()}
       onToggleOutline={vi.fn()}
       onTogglePreview={vi.fn()}
-      onToggleWorkspaceSidebar={onToggleWorkspaceSidebar}
       recoveryCopy={getRecoveryCopy("en")}
       shouldSuppressTabClick={() => false}
       selectedImage={null}
       sidePaneCopy={getSidePaneCopy("en")}
       sidePaneMode="preview"
       tabs={[]}
-      workspaceSidebarCollapsed={false}
-      workspaceSidebarToggleLabel="Collapse workspace sidebar"
       {...overrides}
     />,
   );
@@ -60,7 +60,7 @@ function renderTopChrome(
   return {
     onCloseSelectedImagePreview,
     onCreateNewFile,
-    onToggleWorkspaceSidebar,
+    onEditorSettingsChange,
   };
 }
 
@@ -73,20 +73,53 @@ describe("AppTopChrome", () => {
     expect(onCreateNewFile).toHaveBeenCalledTimes(1);
   });
 
-  it("exposes the workspace sidebar toggle in normal mode", () => {
-    const { onToggleWorkspaceSidebar } = renderTopChrome();
+  it("opens an editor quick settings menu from the top-left button", () => {
+    renderTopChrome();
 
-    const toggle = screen.getByRole("button", {
-      name: "Collapse workspace sidebar",
-    });
-    fireEvent.click(toggle);
+    fireEvent.click(screen.getByRole("button", { name: "Editor settings" }));
 
-    expect(toggle.getAttribute("aria-pressed")).toBe("false");
-    expect(onToggleWorkspaceSidebar).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("menu", { name: "Editor settings" })).toBeTruthy();
+    expect(
+      screen.getByRole("checkbox", { name: "Wrap lines" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("slider", { name: "Editor font size" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("slider", { name: "Preview font size" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("slider", { name: "Workspace font size" }),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole("checkbox", { name: "Preview pane" }),
+    ).toBeNull();
+    expect(screen.queryByRole("slider", { name: "L Mode font size" })).toBeNull();
+    expect(screen.queryByRole("combobox", { name: "Theme" })).toBeNull();
   });
 
-  it("hides the workspace sidebar toggle while L Mode owns workspace access", () => {
-    renderTopChrome({ lModeEnabled: true });
+  it("updates editor settings from the quick settings menu", () => {
+    const { onEditorSettingsChange } = renderTopChrome();
+
+    fireEvent.click(screen.getByRole("button", { name: "Editor settings" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "Wrap lines" }));
+    fireEvent.change(screen.getByRole("slider", { name: "Editor font size" }), {
+      target: { value: "18" },
+    });
+
+    expect(onEditorSettingsChange).toHaveBeenCalledTimes(2);
+    expect(onEditorSettingsChange).toHaveBeenNthCalledWith(1, expect.any(Function));
+    expect(onEditorSettingsChange).toHaveBeenNthCalledWith(2, expect.any(Function));
+    expect(onEditorSettingsChange.mock.calls[0][0](defaultEditorSettings())).toMatchObject({
+      wrapLines: false,
+    });
+    expect(onEditorSettingsChange.mock.calls[1][0](defaultEditorSettings())).toMatchObject({
+      editorFontSize: 18,
+    });
+  });
+
+  it("does not expose the workspace sidebar toggle from top chrome", () => {
+    renderTopChrome();
 
     expect(
       screen.queryByRole("button", { name: "Collapse workspace sidebar" }),
@@ -571,3 +604,24 @@ describe("AppTopChrome", () => {
     }
   });
 });
+
+function defaultEditorSettings(
+  overrides: Partial<EditorSettings> = {},
+): EditorSettings {
+  return {
+    ambientIntensity: "normal",
+    appleAssistDiffInitiallyOpen: true,
+    autoBackupEnabled: false,
+    editorFontSize: 14,
+    lModeEnabled: false,
+    lModeFontSize: 15,
+    lModeTypewriter: false,
+    previewFontSize: 15,
+    showInvisibles: false,
+    spellcheckEnabled: true,
+    tabSize: 2,
+    workspaceFontSize: 13,
+    wrapLines: true,
+    ...overrides,
+  };
+}

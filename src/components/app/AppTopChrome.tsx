@@ -1,5 +1,10 @@
-import type { PointerEvent as ReactPointerEvent } from "react";
+import type {
+  Dispatch,
+  PointerEvent as ReactPointerEvent,
+  SetStateAction,
+} from "react";
 import { DocumentMetaBar } from "./DocumentMetaBar";
+import { EditorQuickSettingsMenu } from "./EditorQuickSettingsMenu";
 import { TabBar } from "../editor/TabBar";
 import type {
   LModeCopy,
@@ -8,7 +13,9 @@ import type {
 } from "../../lib/locale";
 import type {
   EditorTab,
+  EditorSettings,
   ImagePreviewState,
+  MenuLanguage,
   RightPaneMode,
   AssistSurfacePreference,
 } from "../../types";
@@ -23,12 +30,15 @@ type AppTopChromeProps = {
   draggingTabId: string | null;
   dragOverTabId: string | null;
   emptyTabsLabel: string;
+  editorSettings: EditorSettings;
   lModeEnabled: boolean;
   lModeCopy: LModeCopy;
+  menuLanguage: MenuLanguage;
   newFileLabel?: string;
   onCloseTab: (tabId: string) => void;
   onCloseSelectedImagePreview: () => void;
   onCreateNewFile?: () => void;
+  onEditorSettingsChange: Dispatch<SetStateAction<EditorSettings>>;
   onFinishTabPointerDrag: (target?: EventTarget | null) => void;
   onOpenAgentWindow: () => void;
   onOpenAppleAssistWindow: () => void;
@@ -48,15 +58,12 @@ type AppTopChromeProps = {
   onToggleLMode: () => void;
   onToggleOutline: () => void;
   onTogglePreview: () => void;
-  onToggleWorkspaceSidebar?: () => void;
   recoveryCopy: RecoveryCopy;
   shouldSuppressTabClick: () => boolean;
   sidePaneCopy: SidePaneCopy;
   sidePaneMode: RightPaneMode | null;
   selectedImage: ImagePreviewState | null;
   tabs: EditorTab[];
-  workspaceSidebarCollapsed?: boolean;
-  workspaceSidebarToggleLabel?: string;
 };
 
 export function AppTopChrome({
@@ -68,12 +75,15 @@ export function AppTopChrome({
   draggingTabId,
   dragOverTabId,
   emptyTabsLabel,
+  editorSettings,
   lModeEnabled,
   lModeCopy,
+  menuLanguage,
   newFileLabel,
   onCloseTab,
   onCloseSelectedImagePreview,
   onCreateNewFile,
+  onEditorSettingsChange,
   onFinishTabPointerDrag,
   onOpenAgentWindow,
   onOpenAppleAssistWindow,
@@ -87,15 +97,12 @@ export function AppTopChrome({
   onToggleLMode,
   onToggleOutline,
   onTogglePreview,
-  onToggleWorkspaceSidebar,
   recoveryCopy,
   shouldSuppressTabClick,
   sidePaneCopy,
   sidePaneMode,
   selectedImage,
   tabs,
-  workspaceSidebarCollapsed = false,
-  workspaceSidebarToggleLabel,
 }: AppTopChromeProps) {
   const showDevBadge = isDeveloperDistributionLane();
 
@@ -105,6 +112,13 @@ export function AppTopChrome({
       draggingTabId={draggingTabId}
       dragOverTabId={dragOverTabId}
       emptyTabsLabel={emptyTabsLabel}
+      leadingControl={
+        <EditorQuickSettingsMenu
+          editorSettings={editorSettings}
+          menuLanguage={menuLanguage}
+          onEditorSettingsChange={onEditorSettingsChange}
+        />
+      }
       newFileLabel={newFileLabel}
       onCloseTab={onCloseTab}
       onCloseSelectedImagePreview={onCloseSelectedImagePreview}
@@ -118,11 +132,6 @@ export function AppTopChrome({
       shouldSuppressTabClick={shouldSuppressTabClick}
       selectedImage={selectedImage}
       tabs={tabs}
-      workspaceSidebarCollapsed={workspaceSidebarCollapsed}
-      workspaceSidebarToggleLabel={workspaceSidebarToggleLabel}
-      onToggleWorkspaceSidebar={
-        lModeEnabled ? undefined : onToggleWorkspaceSidebar
-      }
     >
       {showDevBadge ? (
         <span

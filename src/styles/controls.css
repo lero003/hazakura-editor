@@ -146,6 +146,129 @@
   color: var(--accent);
 }
 
+.editor-quick-settings {
+  flex: 0 0 auto;
+  position: relative;
+}
+
+.editor-quick-settings-trigger[aria-expanded="true"] {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 24%, transparent);
+  color: var(--accent);
+}
+
+.editor-quick-settings-popover {
+  background: color-mix(in srgb, var(--surface-strong) 96%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-strong) 64%, transparent);
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  display: grid;
+  gap: 10px;
+  left: 0;
+  min-width: 268px;
+  padding: 10px;
+  position: absolute;
+  top: calc(100% + 8px);
+  z-index: 70;
+}
+
+.editor-quick-settings-section {
+  border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  display: grid;
+  gap: 8px;
+  padding-top: 9px;
+}
+
+.editor-quick-settings-section:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.editor-quick-settings-heading {
+  color: var(--accent);
+  font-size: 10.5px;
+  font-weight: 760;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.editor-quick-settings-toggle,
+.editor-quick-settings-range {
+  align-items: center;
+  color: var(--text);
+  display: grid;
+  font-size: 12px;
+  font-weight: 600;
+  gap: 8px;
+  min-width: 0;
+}
+
+.editor-quick-settings-toggle {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.editor-quick-settings-toggle input {
+  height: 1px;
+  opacity: 0;
+  position: absolute;
+  width: 1px;
+}
+
+.editor-quick-settings-switch {
+  background: color-mix(in srgb, var(--text-muted) 20%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--border-strong) 70%, transparent);
+  border-radius: 999px;
+  display: inline-flex;
+  height: 18px;
+  position: relative;
+  transition:
+    background 0.15s var(--ease-standard),
+    border-color 0.15s var(--ease-standard);
+  width: 32px;
+}
+
+.editor-quick-settings-switch::after {
+  background: var(--surface-strong);
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+  content: "";
+  height: 14px;
+  left: 1px;
+  position: absolute;
+  top: 1px;
+  transition: transform 0.15s var(--ease-standard);
+  width: 14px;
+}
+
+.editor-quick-settings-toggle input:checked + .editor-quick-settings-switch {
+  background: color-mix(in srgb, var(--accent) 68%, var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 56%, transparent);
+}
+
+.editor-quick-settings-toggle input:checked + .editor-quick-settings-switch::after {
+  transform: translateX(14px);
+}
+
+.editor-quick-settings-toggle input:focus-visible + .editor-quick-settings-switch {
+  outline: 2px solid color-mix(in srgb, var(--accent) 56%, transparent);
+  outline-offset: 2px;
+}
+
+.editor-quick-settings-range {
+  grid-template-columns: minmax(96px, 1fr) minmax(104px, 1.35fr) 28px;
+}
+
+.editor-quick-settings-range input {
+  accent-color: var(--accent);
+  min-width: 0;
+}
+
+.editor-quick-settings-range output {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
 .tab-list {
   align-items: center;
   display: flex;

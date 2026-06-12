@@ -23,7 +23,10 @@ import { LModeExitPill } from "./LModeExitPill";
 import { AppleAssistReviewBar } from "./AppleAssistReviewBar";
 import { ReviewSurface } from "../review/ReviewSurface";
 
-export type AppShellProps = ComponentProps<typeof AppTopChrome> &
+export type AppShellProps = Omit<
+  ComponentProps<typeof AppTopChrome>,
+  "onEditorSettingsChange"
+> &
   ComponentProps<typeof AppDocumentFeedback> &
   ComponentProps<typeof AppWorkspace> &
   ComponentProps<typeof AppStatusBar> &
@@ -71,9 +74,6 @@ export function AppShell(props: AppShellProps) {
   const ambientMode = isAmbientMode(props.resolvedTheme) ? props.resolvedTheme : null;
   const [workspaceSidebarCollapsed, setWorkspaceSidebarCollapsed] =
     useState(false);
-  const workspaceSidebarToggleLabel = workspaceSidebarCollapsed
-    ? props.safeEditorCopy.restoreWorkspaceSidebar
-    : props.safeEditorCopy.collapseWorkspaceSidebar;
 
   return (
     <main className="app-shell">
@@ -87,11 +87,7 @@ export function AppShell(props: AppShellProps) {
         {...props}
         newFileLabel={props.safeEditorCopy.newFile}
         onCreateNewFile={() => void props.createNewFile()}
-        onToggleWorkspaceSidebar={() =>
-          setWorkspaceSidebarCollapsed((collapsed) => !collapsed)
-        }
-        workspaceSidebarCollapsed={workspaceSidebarCollapsed}
-        workspaceSidebarToggleLabel={workspaceSidebarToggleLabel}
+        onEditorSettingsChange={props.setEditorSettings}
       />
       <AppDocumentFeedback {...props} />
       {props.reviewSurface !== null ? (

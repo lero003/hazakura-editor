@@ -8,8 +8,6 @@ import { useRef } from "react";
 import { isDirty } from "../../features/editor/editorTabs";
 import type { EditorTab, ImagePreviewState } from "../../types";
 import {
-  PanelLeftCloseIcon,
-  PanelLeftOpenIcon,
   PlusIcon,
   TabImageIcon,
   TabMarkdownIcon,
@@ -22,6 +20,7 @@ type TabBarProps = {
   draggingTabId: string | null;
   dragOverTabId: string | null;
   emptyTabsLabel: string;
+  leadingControl?: ReactNode;
   newFileLabel?: string;
   onCloseTab: (tabId: string) => void;
   onCloseSelectedImagePreview: () => void;
@@ -41,9 +40,6 @@ type TabBarProps = {
   shouldSuppressTabClick: () => boolean;
   selectedImage: ImagePreviewState | null;
   tabs: EditorTab[];
-  workspaceSidebarCollapsed?: boolean;
-  workspaceSidebarToggleLabel?: string;
-  onToggleWorkspaceSidebar?: () => void;
 };
 
 // 拡張子ごとのファイルアイコンを返す。
@@ -86,6 +82,7 @@ export function TabBar({
   draggingTabId,
   dragOverTabId,
   emptyTabsLabel,
+  leadingControl,
   newFileLabel = "New File",
   onCloseTab,
   onCloseSelectedImagePreview,
@@ -99,9 +96,6 @@ export function TabBar({
   shouldSuppressTabClick,
   selectedImage,
   tabs,
-  workspaceSidebarCollapsed = false,
-  workspaceSidebarToggleLabel = "Toggle workspace sidebar",
-  onToggleWorkspaceSidebar,
 }: TabBarProps) {
   const tabButtonRefs = useRef(new Map<string, HTMLButtonElement>());
   const showEmptyState = tabs.length === 0 && selectedImage === null;
@@ -177,22 +171,7 @@ export function TabBar({
       aria-label="Open files"
       onPointerEnter={onPointerEnter}
     >
-      {onToggleWorkspaceSidebar ? (
-        <button
-          aria-label={workspaceSidebarToggleLabel}
-          aria-pressed={workspaceSidebarCollapsed}
-          className="chrome-icon-button workspace-menu-button"
-          onClick={onToggleWorkspaceSidebar}
-          title={workspaceSidebarToggleLabel}
-          type="button"
-        >
-          {workspaceSidebarCollapsed ? (
-            <PanelLeftOpenIcon />
-          ) : (
-            <PanelLeftCloseIcon />
-          )}
-        </button>
-      ) : null}
+      {leadingControl}
       <div className="tab-list" role="tablist" aria-label="Open file tabs">
         {showEmptyState ? (
           <span className="empty-tabs">{emptyTabsLabel}</span>

@@ -41,6 +41,17 @@ export function OpenFolderIcon() {
   );
 }
 
+export function SlidersIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 4.5H13M3 8H13M3 11.5H13" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round"/>
+      <circle cx="6" cy="4.5" r="1.35" fill="var(--surface)" stroke="currentColor" strokeWidth="1.2"/>
+      <circle cx="10" cy="8" r="1.35" fill="var(--surface)" stroke="currentColor" strokeWidth="1.2"/>
+      <circle cx="7.5" cy="11.5" r="1.35" fill="var(--surface)" stroke="currentColor" strokeWidth="1.2"/>
+    </svg>
+  );
+}
+
 export function PanelLeftCloseIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
