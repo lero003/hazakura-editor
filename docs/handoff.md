@@ -82,8 +82,9 @@ Last reviewed: 2026-06-12 (v0.18 Help copy overlap cleanup)
 Use `docs/current-work.md` for the active queue. The current highest
 priority UX items are:
 
-1. Core Safe Editor quality probe.
-2. Light accessibility sanity adjacent to the selected core surface.
+1. Tab close affordance clarity.
+2. Core Safe Editor quality probe.
+3. Light accessibility sanity adjacent to the selected core surface.
 
 Recently completed: External-window routing for Markdown / Help links
 now keeps workspace-relative text links in-app while handing explicit

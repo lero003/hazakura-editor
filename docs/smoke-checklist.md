@@ -171,9 +171,10 @@ Run when file I/O, tabs, close behavior, or save logic changes:
 5. Trigger an external-change conflict and confirm overwrite is stopped.
 6. Trigger or simulate a save failure and confirm local edits remain recoverable.
 7. Close a dirty tab and confirm Save / Discard / Cancel behavior.
-8. Close the app with dirty tabs and confirm Save All / Discard All / Cancel behavior.
-9. Confirm intentionally discarded edits are not offered as recovery drafts after restart.
-10. Confirm Japanese IME composition does not trigger save, search, close, open, or tab-close shortcuts.
+8. Confirm the tab close button reads visually as a close affordance, not a plain circle or dirty/status marker: the `x` / icon is visible enough on hover and focus-visible, remains distinct from the dirty dot, and stays reachable for text tabs and image-preview tabs.
+9. Close the app with dirty tabs and confirm Save All / Discard All / Cancel behavior.
+10. Confirm intentionally discarded edits are not offered as recovery drafts after restart.
+11. Confirm Japanese IME composition does not trigger save, search, close, open, or tab-close shortcuts.
 
 ## Workspace File Operations
 
@@ -338,6 +339,10 @@ interaction is actually performed.
    3. Confirm dirty tab is read as "unsaved" and that the
       encoding-only dirty slice did not regress the
       description.
+   4. Confirm the visible close control is not confused with
+      the dirty dot: the hover / focus-visible close affordance
+      reads as close while the dirty dot remains only the
+      unsaved-state marker.
 4. Increase Contrast
    1. System Settings → Accessibility → Display → Increase
       contrast: on. Re-launch the built app.
