@@ -77,7 +77,7 @@ export function useEditorCommands({
             ? {
                 ...tab,
                 contents: nextValue,
-                saveStatus: "idle",
+                saveStatus: tab.saveStatus === "saving" ? "saving" : "idle",
                 error: null,
               }
             : tab,
