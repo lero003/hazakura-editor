@@ -14,6 +14,14 @@ const appShellCss = readFileSync(
   "utf8",
 );
 
+function ruleBody(css: string, selector: string): string {
+  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return (
+    css.match(new RegExp(`${escapedSelector}\\s*{(?<body>[^}]*)}`, "s"))
+      ?.groups?.body ?? ""
+  );
+}
+
 describe("editor tab close affordance CSS", () => {
   it("keeps tab close controls visually distinct from dirty dots", () => {
     expect(editorCss).toContain(".tab-close-icon");
@@ -45,12 +53,19 @@ describe("editor tab close affordance CSS", () => {
     expect(controlsCss).toMatch(/\.tab-item\.active:hover\s*\{[\s\S]*background:/);
   });
 
-  it("keeps ambient particles behind readable app surfaces", () => {
-    expect(appShellCss).toMatch(/\.ambient\s*{[\s\S]*z-index:\s*0/);
-    expect(appShellCss).toMatch(/\.tabs-row\s*{[\s\S]*z-index:\s*20/);
+  it("keeps ambient particles above the workspace but below top chrome", () => {
+    expect(ruleBody(appShellCss, ".ambient")).toMatch(/z-index:\s*2(?:;|\n)/);
+    expect(ruleBody(appShellCss, ".tabs-row")).toMatch(/z-index:\s*20(?:;|\n)/);
     expect(appShellCss).toMatch(
       /\.workspace,[\s\S]*\.status-bar,[\s\S]*z-index:\s*1/s,
     );
+  });
+
+  it("keeps Sakura ambient particles restrained", () => {
+    const rule = ruleBody(appShellCss, ".ambient-sakura .ambient-particle");
+
+    expect(rule).toMatch(/opacity:\s*0\.48/);
+    expect(rule).toMatch(/filter:\s*saturate\(0\.82\)/);
   });
 
   it("keeps top chrome popovers above the workspace layer", () => {

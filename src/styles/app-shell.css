@@ -39,7 +39,7 @@
   overflow: hidden;
   pointer-events: none;
   position: fixed;
-  z-index: 0;
+  z-index: 2;
 }
 
 .tabs-row {
@@ -74,7 +74,9 @@
       hsl(var(--ambient-hue, 345), 60%, 72%) 100%
     );
   border-radius: 70% 30% 70% 30%;
+  filter: saturate(0.82);
   height: var(--ambient-h, 14px);
+  opacity: 0.48;
   top: -24px;
   transform-origin: 50% 80%;
   width: var(--ambient-w, 10px);
@@ -92,8 +94,9 @@
     );
   border-radius: 50%;
   bottom: -8px;
-  box-shadow: 0 0 6px 1px hsl(var(--ambient-hue, 210), 80%, 80%, 0.55);
+  box-shadow: 0 0 9px 1px hsl(var(--ambient-hue, 210), 85%, 82%, 0.68);
   height: var(--ambient-h, 2.5px);
+  opacity: 0.9;
   width: var(--ambient-w, 2.5px);
 }
 
@@ -108,8 +111,9 @@
   );
   border-radius: 50%;
   bottom: -8px;
-  box-shadow: 0 0 8px 1px hsl(var(--ambient-hue, 45), 90%, 80%, 0.4);
+  box-shadow: 0 0 10px 1px hsl(var(--ambient-hue, 45), 88%, 76%, 0.45);
   height: var(--ambient-h, 3px);
+  opacity: 0.78;
   width: var(--ambient-w, 3px);
 }
 

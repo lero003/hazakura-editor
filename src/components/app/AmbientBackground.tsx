@@ -19,9 +19,9 @@ type AmbientBackgroundProps = {
 };
 
 const COUNT_BY_MODE: Record<AmbientMode, number> = {
-  sakura: 28,
-  shokou: 22,
-  yakou: 32,
+  sakura: 18,
+  shokou: 46,
+  yakou: 52,
 };
 
 const INTENSITY_MULTIPLIER: Record<AmbientIntensity, number> = {
@@ -62,12 +62,12 @@ function generateItems(
       case "sakura":
         return {
           delay: -((seed * 2.3 + index * 1.9) % 20),
-          drift: ((seed * 0.7 + index * 3.1) % 12) - 6,
-          duration: (12 + (seed % 9) * 1.8) * durationScale,
+          drift: ((seed * 0.7 + index * 3.1) % 10) - 5,
+          duration: (15 + (seed % 9) * 2.1) * durationScale,
           hue: 340 + (seed % 16) - 4,
           index,
           left: ((seed * 1.618 + index * 7) % 100),
-          size: (8 + (seed % 7) * 1.5) * sizeScale,
+          size: (6 + (seed % 6) * 1.1) * sizeScale,
         };
       case "yakou":
         return {
@@ -77,18 +77,22 @@ function generateItems(
           hue: 200 + (seed % 30) - 6,
           index,
           left: ((seed * 1.618 + index * 7) % 100),
-          size: Math.max(0.8, (1.5 + (seed % 4) * 0.6) * sizeScale),
+          size: Math.max(1, (1.8 + (seed % 5) * 0.65) * sizeScale),
         };
       case "shokou":
-        return {
-          delay: -((seed * 2.1 + index * 1.3) % 16),
-          drift: ((seed * 0.5 + index * 4.1) % 18) - 9,
-          duration: (14 + (seed % 6) * 1.4) * durationScale,
-          hue: 42 + (seed % 18) - 4,
-          index,
-          left: ((seed * 1.618 + index * 7) % 100),
-          size: Math.max(0.8, (2 + (seed % 5) * 0.8) * sizeScale),
-        };
+        {
+          const hueBand = [34, 48, 204, 212][index % 4];
+          const hueOffset = (seed % 10) - 5;
+          return {
+            delay: -((seed * 2.1 + index * 1.3) % 18),
+            drift: ((seed * 0.5 + index * 4.1) % 18) - 9,
+            duration: (15 + (seed % 7) * 1.6) * durationScale,
+            hue: hueBand + hueOffset,
+            index,
+            left: ((seed * 1.618 + index * 7) % 100),
+            size: Math.max(1, (2.2 + (seed % 5) * 0.85) * sizeScale),
+          };
+        }
     }
   });
 }
