@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-13 (v0.20 UX planning)
+Last reviewed: 2026-06-13 (v0.19 App Store package evidence)
 
 ## Current State
 
@@ -16,7 +16,9 @@ Last reviewed: 2026-06-13 (v0.20 UX planning)
   TestFlight on 2026-06-12 with no reported Apple validation warnings;
   basic TestFlight launch / save smoke passed.
 - The current App Store submission candidate is `0.19.0` with App Store
-  build counter `10`; upload, App Store Connect validation, fuller
+  build counter `10`; the signed local submit package
+  `HazakuraEditor-0.19.0-build10-mas.pkg` has been generated and
+  checked locally. Upload, App Store Connect validation, fuller
   TestFlight smoke, metadata finalization, and App Review submission
   remain separate evidence.
 - Human-side App Store lane smoke on 2026-06-12 passed launch,

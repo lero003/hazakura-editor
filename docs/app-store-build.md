@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-06-12 (v0.19 App Store submission candidate)
+Last reviewed: 2026-06-13 (v0.19 build 10 package evidence)
 
 ## Purpose
 
@@ -422,5 +422,5 @@ local package, so treat that as local trust-policy evidence rather than
 an App Store Connect validation result. SHA-256:
 
 ```txt
-75da7701e71b35fc74018ee562515bfd7a3f4da466853fa420162d217bc4bbe7
+4d0661befd10bfca0584d671af6fbe6deec7c2a235100a0b0d4233914b43be3e
 ```
