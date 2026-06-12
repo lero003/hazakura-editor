@@ -69,10 +69,12 @@ code-regression level as of 2026-06-12. Order 3 is implemented as of
 implemented as of 2026-06-12. Order 6 is implemented as of 2026-06-12
 through the Recent Files surface-removal core probe. Order 7 is
 implemented as of 2026-06-12. Order 8 is implemented as of
-2026-06-12. Order 9 is implemented as of 2026-06-12 through archived
-local regression evidence. Order 10 is implemented as of 2026-06-12.
-Order 11 is implemented as of 2026-06-12 through the Help-document
-scroll-region keyboard reachability pass.
+2026-06-12. Order 9 was first implemented as of 2026-06-12 through
+archived local regression evidence, and has fresh v0.19 candidate
+evidence as of 2026-06-13 through the archived pre-release-fix/package
+checks. Order 10 is implemented as of 2026-06-12. Order 11 is
+implemented as of 2026-06-12 through the Help-document scroll-region
+keyboard reachability pass.
 Order 12 is implemented as of 2026-06-12 through a focused Privacy
 Policy / Local Data Disclosure role-split copy pass.
 The remaining Move
@@ -409,9 +411,6 @@ certificate, or App Store Connect access.
 | P0 | TestFlight / App Store Connect validation | The helper-free App Store submit lane is defined in `docs/app-store-build.md`. 2026-06-12 evidence: the signed `HazakuraEditor-0.18.0-mas.pkg` upload reached TestFlight distribution with no reported Apple validation warnings, and basic TestFlight launch / save smoke passed. Current candidate: `0.19.0` with App Store build counter `10`. Human-side smoke on 2026-06-12 passed launch, basic document creation/open, preview/export, image paste/drag/drop, App Store surface omission, dirty-close confirmation, Move to Trash, and network observation; Save As UX remains an observation, workspace restore is acceptable with a residual Google Drive / quit-before-interaction risk, and live accessibility is partial. A `Cmd+Shift+F` global-search result activation bug found during smoke has a focused code-level fix. Remaining proof before broader App Store-ready claims: upload / Apple validation for the `0.19.0` candidate, fuller manual smoke on the resulting TestFlight build, final metadata, and App Review submission / approval evidence. The earlier ad-hoc App Store preview `open -n` failure remains non-blocking unless it reproduces on the signed TestFlight build. |
 | P1 | App Review Notes final copy / attachments | Private review-note draft and store-copy material exist outside the public docs. Final pass should attach screenshots or reviewer evidence as needed, keep account/contact-specific text out of tracked docs, and preserve the App Store lane omission claim for CLI Agent / Agent Workbench / Apple Local Assist. Prepare concise reviewer-note answers for the non-obvious App Store lane facts: `network.client` exists for Tauri/WebKit bundled asset loading under App Sandbox rather than app-data networking; script-like file extensions open as inert text only and are never executed; the App Store lane omits Apple Local Assist helper, Agent Workbench, CLI Agent launch, dev mode, arbitrary command execution, and external AI/API calls. |
 | P1 | Public metadata final pass | Privacy Policy URL is `https://hazakura.dev/hazakura-editor/privacy/`. Remaining metadata work is support URL, category / keywords / age rating / screenshots, and App Store Connect field-by-field review. |
-| P1 | About metadata finalization | `src-tauri/src/menu.rs` builds the macOS About panel from Tauri bundle `copyright` and `publisher`, but the current Tauri configs do not set those values. Before App Review, either set the bundle metadata for all relevant lanes or document why the in-app Help About surface is the canonical legal/about surface. Verify the built App Store bundle's About panel after any metadata change. |
-| P1 | Third-party license packet | `LICENSE` and `THIRD_PARTY_NOTICES.md` now ship inside the generated app bundle, while the in-app Open Source Acknowledgements remain a readable summary. Before submission, refresh/review the notice contents against `package-lock.json` and `src-tauri/Cargo.lock`, include any required full license texts / upstream notices, and re-run the bundled-resource distribution probe. |
-| P1 | Pre-review regression evidence | There is no tracked GitHub Actions workflow for the latest follow-up commits. Before App Review, either add a small CI workflow or run and archive local evidence for the release-readiness gates: `npm ci`, `npm run build:vite`, `npm test`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build`, `npm audit`, `cargo audit`, and `git diff --check`. Keep signing / Transporter as local account-bound steps. |
 | P2 | Bundle-size follow-up | Measure first. Split Help / Diagnostics / Assist chunks only if it reduces real startup or review risk. |
 
 ## Completed Submission-Prep Slices
@@ -436,6 +435,13 @@ certificate, or App Store Connect access.
   `Contents/Resources/THIRD_PARTY_NOTICES.md` for App Store lane
   checks, so notice omission fails the distribution probe instead of
   remaining a manual memory item.
+- 2026-06-13: v0.19 pre-release-fix and package evidence is archived in
+  `docs/archive/operations/v0.19-pre-release-fix-plan-evidence-2026-06-13.md`.
+  It records the local code-quality gates, signed submit bundle probe,
+  `HazakuraEditor-0.19.0-build10-mas.pkg` signature/payload checks,
+  SHA-256, and dependency audit results. Transporter upload,
+  App Store Connect validation, TestFlight smoke, metadata finalization,
+  and App Review handling remain account-bound follow-up work.
 - 2026-06-11: Helper-free App Store build / signing lane is defined.
   `npm run build:app-store-preview` and
   `npm run build:app-store-submit` use App Store-specific Tauri config,
