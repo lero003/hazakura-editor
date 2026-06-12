@@ -65,11 +65,12 @@ Order 1 is implemented as of 2026-06-12. Order 2 is implemented at the
 code-regression level as of 2026-06-12. Order 3 is implemented as of
 2026-06-12. Order 4 is implemented as of 2026-06-12. Order 5 is
 implemented as of 2026-06-12. Order 6 is implemented as of 2026-06-12
-through the Recent Files surface-removal core probe. The remaining Move
+through the Recent Files surface-removal core probe. Order 7 is
+implemented as of 2026-06-12. The remaining Move
 to Trash and workspace-persistence proofs are signed TestFlight smoke,
 tracked under the submission-prep manual smoke items unless TestFlight
 specifically reopens the Trash or workspace restore behavior. The next
-open automation slice is Order 7.
+open automation slice is Order 8.
 
 ## Active UX Queue
 
@@ -100,6 +101,16 @@ over copy-heavy or product-voice-sensitive work.
 
 ## Completed v0.18 Slices
 
+- 2026-06-12: Third-party license packet refresh is implemented for
+  the current lockfiles. `THIRD_PARTY_NOTICES.md` now records the
+  2026-06-12 `package-lock.json` runtime scan result, the
+  `cargo metadata --locked` refresh command, and an appendix for
+  resolved Cargo graph entries that were present in the lockfile graph
+  but not previously named explicitly. The packaged app-bundle notice
+  surface remains `LICENSE` plus `THIRD_PARTY_NOTICES.md`; final legal
+  review, full license text packet decisions, and icon source
+  provenance remain distribution-review tasks rather than app behavior
+  changes.
 - 2026-06-12: Recent Files surface removal is implemented as the Order
   6 Core Safe Editor quality probe. The misleading file-level recent
   surface no longer appears on the start panel or native File menu, and

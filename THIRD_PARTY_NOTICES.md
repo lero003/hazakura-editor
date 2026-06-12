@@ -3,7 +3,7 @@
 Status: Draft
 Scope: hazakura editor dependency, bundled-helper, and asset provenance notes
 Authority: Medium
-Last reviewed: 2026-06-10
+Last reviewed: 2026-06-12
 
 This file is a distribution-prep draft, not legal advice. Before a public App
 Store, Developer ID, or commercial binary distribution, refresh the dependency
@@ -42,6 +42,12 @@ shoulders of open source software.
 - `scripts/build-apple-assist-helper-live.sh`
 - `src-tauri/tauri.conf.json`
 - Current project docs for app icon and helper build provenance
+- 2026-06-12 refresh:
+  - `package-lock.json` runtime dependency names were compared against this
+    file; no missing runtime JavaScript entries were found.
+  - `cargo metadata --manifest-path src-tauri/Cargo.toml --locked
+    --format-version 1` was compared against this file; additional resolved
+    Cargo graph entries were added in the appendix below.
 
 ## Important Policy Notes
 
@@ -113,6 +119,25 @@ Derived from `package-lock.json`, excluding packages marked dev-only.
 Derived from `cargo metadata --manifest-path src-tauri/Cargo.toml --locked`.
 This list is conservative: it includes the resolved Cargo graph and may include
 platform-specific crates that are not linked into a particular macOS build.
+
+### 2026-06-12 Resolved Cargo Graph Appendix
+
+The following entries were present in the resolved Cargo graph but were not
+previously named explicitly in this file. They are grouped by the license value
+reported by `cargo metadata --locked`.
+
+| License | Additional resolved components |
+| --- | --- |
+| `Apache-2.0 OR MIT` | `bit-set@0.8.0`, `bit-vec@0.8.0`, `ctor-proc-macro@0.0.7`, `ctor@0.8.0`, `dtor-proc-macro@0.0.6`, `dtor@0.3.0`, `fastrand@2.4.1`, `idna_adapter@1.2.2`, `indexmap@1.9.3`, `libappindicator-sys@0.9.0`, `libappindicator@0.9.0`, `rustc-hash@2.1.2`, `utf8_iter@1.0.4`, `window-vibrancy@0.6.0` |
+| `Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT` | `wasip3@0.4.0+wasi-0.3.0-rc-2026-01-06`, `wit-bindgen-core@0.51.0`, `wit-bindgen-rust-macro@0.51.0`, `wit-bindgen-rust@0.51.0`, `wit-bindgen@0.51.0` |
+| `Apache-2.0/MIT` | `cesu8@1.1.0`, `dbus@0.9.11`, `libdbus-sys@0.2.7` |
+| `MIT` | `cairo-sys-rs@0.18.2`, `darling_core@0.23.0`, `darling_macro@0.23.0`, `derive_more-impl@2.1.1`, `dlopen2@0.8.2`, `dlopen2_derive@0.4.3`, `gdk-pixbuf-sys@0.18.0`, `gdk-pixbuf@0.18.5`, `gdk-sys@0.18.2`, `gdkwayland-sys@0.18.2`, `gdkx11-sys@0.18.2`, `gdkx11@0.18.2`, `generic-array@0.14.7`, `gio-sys@0.18.1`, `glib-macros@0.18.5`, `glib-sys@0.18.1`, `gobject-sys@0.18.0`, `gtk-sys@0.18.2`, `gtk3-macros@0.18.2`, `http-body-util@0.1.3`, `http-body@1.0.1`, `hyper-util@0.1.20`, `javascriptcore-rs-sys@1.1.1`, `libredox@0.1.16`, `new_debug_unreachable@1.0.6`, `objc2-encode@4.1.0`, `pango-sys@0.18.0`, `phf_codegen@0.13.1`, `phf_generator@0.13.1`, `phf_macros@0.13.1`, `phf_shared@0.13.1`, `precomputed-hash@0.1.1`, `redox_syscall@0.5.18`, `redox_users@0.5.2`, `schemars@0.8.22`, `schemars@0.9.0`, `schemars_derive@0.8.22`, `simd-adler32@0.3.9`, `soup3-sys@0.5.0`, `synstructure@0.13.2`, `tokio-util@0.7.18`, `tower-http@0.6.11`, `tower-layer@0.3.3`, `tower-service@0.3.3`, `tracing-core@0.1.36`, `try-lock@0.2.5`, `version-compare@0.2.1`, `vswhom-sys@0.1.3`, `vswhom@0.1.0`, `want@0.3.1`, `webkit2gtk-sys@2.0.2`, `webview2-com-macros@0.8.1`, `webview2-com-sys@0.38.2`, `winnow@0.5.40`, `winnow@0.7.15` |
+| `MIT OR Apache-2.0` | `block-buffer@0.10.4`, `cargo-platform@0.1.9`, `cfg-expr@0.15.8`, `core-graphics-types@0.2.0`, `cpufeatures@0.2.17`, `crossbeam-channel@0.5.15`, `crossbeam-utils@0.8.21`, `crypto-common@0.1.7`, `deranged@0.5.8`, `digest@0.10.7`, `dirs-sys@0.5.0`, `displaydoc@0.2.5`, `dtoa@1.0.11`, `dyn-clone@1.0.20`, `embed_plist@1.2.2`, `erased-serde@0.4.10`, `fdeflate@0.3.7`, `field-offset@0.3.6`, `find-msvc-tools@0.1.9`, `form_urlencoded@1.2.2`, `futures-channel@0.3.32`, `futures-executor@0.3.32`, `futures-io@0.3.32`, `futures-macro@0.3.32`, `futures-sink@0.3.32`, `futures-task@0.3.32`, `getrandom@0.4.2`, `glob@0.3.3`, `hashbrown@0.12.3`, `hashbrown@0.15.5`, `heck@0.4.1`, `heck@0.5.0`, `hex@0.4.3`, `html5ever@0.38.0`, `httparse@1.10.1`, `iana-time-zone-haiku@0.1.2`, `iana-time-zone@0.1.65`, `ipnet@2.12.0`, `jni-sys-macros@0.4.1`, `jni-sys@0.3.1`, `jni-sys@0.4.1`, `js-sys@0.3.99`, `jsonptr@0.6.3`, `keyboard-types@0.7.0`, `leb128fmt@0.1.0`, `lock_api@0.4.14`, `markup5ever@0.38.0`, `mime@0.3.17`, `ndk-sys@0.6.0+11769913`, `ndk@0.9.0`, `num-conv@0.2.2`, `num-traits@0.2.19`, `parking_lot_core@0.9.12`, `pkg-config@0.3.33`, `png@0.17.16`, `powerfmt@0.2.0`, `prettyplease@0.2.37`, `proc-macro-crate@1.3.1`, `proc-macro-crate@2.0.2`, `proc-macro-crate@3.5.0`, `proc-macro-error-attr@1.0.4`, `proc-macro-error@1.0.4`, `ref-cast-impl@1.0.25`, `ref-cast@1.0.25`, `regex-automata@0.4.14`, `regex-syntax@0.8.10`, `rustc_version@0.4.1`, `rustversion@1.0.22`, `scopeguard@1.2.0`, `serde-untagged@0.1.9`, `serde_core@1.0.228`, `serde_derive@1.0.228`, `serde_derive_internals@0.29.1`, `serde_repr@0.1.20`, `serde_spanned@0.6.9`, `serde_spanned@1.1.1`, `serde_with@3.20.0`, `serde_with_macros@3.20.0`, `serialize-to-javascript-impl@0.1.2`, `serialize-to-javascript@0.1.2`, `servo_arc@0.4.3`, `shlex@1.3.0`, `socket2@0.6.3`, `softbuffer@0.4.8`, `stable_deref_trait@1.2.1`, `string_cache@0.9.0`, `string_cache_codegen@0.6.1`, `syn@1.0.109`, `system-deps@6.2.2`, `tao-macros@0.1.3`, `tendril@0.5.0`, `thiserror-impl@1.0.69`, `thiserror-impl@2.0.18`, `thiserror@1.0.69`, `time-core@0.1.8`, `time-macros@0.2.27`, `toml@0.8.2`, `toml@0.9.12+spec-1.1.0`, `toml_datetime@0.6.3`, `toml_datetime@0.7.5+spec-1.1.0`, `toml_datetime@1.1.1+spec-1.1.0`, `toml_edit@0.19.15`, `toml_edit@0.20.2`, `toml_edit@0.25.11+spec-1.1.0`, `toml_parser@1.1.2+spec-1.1.0`, `toml_writer@1.1.1+spec-1.1.0`, `tray-icon@0.23.1`, `typeid@1.0.3`, `typenum@1.20.0`, `unicode-segmentation@1.13.2`, `unicode-xid@0.2.6`, `utf-8@0.7.6`, `wasm-bindgen-futures@0.4.72`, `wasm-bindgen-macro-support@0.2.122`, `wasm-bindgen-macro@0.2.122`, `wasm-bindgen-shared@0.2.122`, `wasm-streams@0.5.0`, `web_atoms@0.2.4`, `windows-collections@0.2.0`, `windows-core@0.61.2`, `windows-core@0.62.2`, `windows-future@0.2.1`, `windows-implement@0.60.2`, `windows-interface@0.59.3`, `windows-link@0.1.3`, `windows-link@0.2.1`, `windows-numerics@0.2.0`, `windows-result@0.3.4`, `windows-result@0.4.1`, `windows-strings@0.4.2`, `windows-strings@0.5.1`, `windows-sys@0.45.0`, `windows-sys@0.59.0`, `windows-sys@0.60.2`, `windows-sys@0.61.2`, `windows-targets@0.42.2`, `windows-targets@0.52.6`, `windows-targets@0.53.5`, `windows-threading@0.1.0`, `windows-version@0.1.7`, `windows_aarch64_gnullvm@0.42.2`, `windows_aarch64_gnullvm@0.52.6`, `windows_aarch64_gnullvm@0.53.1`, `windows_aarch64_msvc@0.42.2`, `windows_aarch64_msvc@0.52.6`, `windows_aarch64_msvc@0.53.1`, `windows_i686_gnu@0.42.2`, `windows_i686_gnu@0.52.6`, `windows_i686_gnu@0.53.1`, `windows_i686_gnullvm@0.52.6`, `windows_i686_gnullvm@0.53.1`, `windows_i686_msvc@0.42.2`, `windows_i686_msvc@0.52.6`, `windows_i686_msvc@0.53.1`, `windows_x86_64_gnu@0.42.2`, `windows_x86_64_gnu@0.52.6`, `windows_x86_64_gnu@0.53.1`, `windows_x86_64_gnullvm@0.42.2`, `windows_x86_64_gnullvm@0.52.6`, `windows_x86_64_gnullvm@0.53.1`, `windows_x86_64_msvc@0.42.2`, `windows_x86_64_msvc@0.52.6`, `windows_x86_64_msvc@0.53.1` |
+| `MIT OR Apache-2.0 OR Zlib` | `raw-window-handle@0.6.2`, `tinyvec_macros@0.1.1` |
+| `MIT OR Zlib OR Apache-2.0` | `miniz_oxide@0.8.9` |
+| `MIT/Apache-2.0` | `bs58@0.5.1`, `foreign-types-macros@0.2.3`, `foreign-types-shared@0.3.1`, `foreign-types@0.5.0`, `id-arena@2.3.0`, `ident_case@1.0.1`, `siphasher@1.0.3`, `unic-char-property@0.9.0`, `unic-char-range@0.9.0`, `unic-common@0.9.0`, `unic-ucd-ident@0.9.0`, `unic-ucd-version@0.9.0`, `winapi-i686-pc-windows-gnu@0.4.0`, `winapi-x86_64-pc-windows-gnu@0.4.0` |
+| `Unicode-3.0` | `icu_normalizer_data@2.2.0`, `icu_properties_data@2.2.0`, `potential_utf@0.1.5`, `yoke-derive@0.8.2`, `zerofrom-derive@0.1.7`, `zerovec-derive@0.11.3` |
+| `Zlib OR Apache-2.0 OR MIT` | `objc2-cloud-kit@0.3.2`, `objc2-core-data@0.3.2`, `objc2-core-image@0.3.2`, `objc2-core-location@0.3.2`, `objc2-core-text@0.3.2`, `objc2-exception-helper@0.1.1`, `objc2-io-surface@0.3.2`, `objc2-quartz-core@0.3.2`, `objc2-ui-kit@0.3.2`, `objc2-user-notifications@0.3.2` |
 
 ### MIT / Apache-2.0 Family
 
@@ -273,7 +298,8 @@ app's Apple distribution lane, not as an OSS dependency.
 
 ## Final Distribution Checklist
 
-- Refresh `package-lock.json` and `src-tauri/Cargo.lock` license scans.
+- Refresh `package-lock.json` and `src-tauri/Cargo.lock` license scans before
+  each submission package. Latest tracked refresh: 2026-06-12.
 - Confirm which dependencies are actually bundled in App Store and Developer /
   GitHub builds.
 - Preserve DOMPurify under the Apache-2.0 notice option or record a deliberate

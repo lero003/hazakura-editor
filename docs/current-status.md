@@ -17,9 +17,9 @@ Last reviewed: 2026-06-12 (v0.18 pre-review todo review)
 - Older public tags and release assets remain immutable.
 - Current active work is v0.18 pre-review bug fixing, core Safe Editor
   quality checks, fuller TestFlight smoke, and App Store submission
-  prep. The highest-risk queue items are third-party license review,
-  About metadata, pre-review regression evidence, and remaining basic
-  editor surfaces (open/save/close, restore/recovery, preview,
+  prep. The highest-risk queue items are About metadata, pre-review
+  regression evidence, and remaining basic editor surfaces
+  (open/save/close, restore/recovery, preview,
   diff/review, workspace files, standalone files, image handling,
   keyboard/IME, and error recovery). Accessibility work should stay a
   lightweight sanity pass unless a concrete issue appears. Use
