@@ -60,6 +60,10 @@ Last reviewed: 2026-06-12 (v0.18 pre-review regression evidence)
   buffer; drag/drop image import keeps the existing 20 MB file-size cap.
 - Multi-tab editor with dirty-tab close protection, app/window close
   confirmation, save-conflict recovery, and explicit draft recovery.
+- Auto-backup snapshots for a workspace file remain distinct even when
+  multiple backups are captured in the same second; filenames include
+  millisecond precision with a bounded collision suffix, and recovery
+  listing stays newest-first.
 - Normal Safe Editor mode can collapse and restore the left workspace
   sidebar without changing the file-tree model or L Mode drawer.
 - The normal-mode status bar avoids duplicating the active `UTF-8` /
@@ -124,9 +128,8 @@ baseline, and smoke evidence are archived under
 ## Next Safe Actions
 
 1. For UX work, start with `docs/current-work.md` and pick one item:
-   one core Safe Editor quality probe, auto-backup filename uniqueness,
-   light accessibility sanity, license / About metadata prep,
-   pre-review regression evidence, or the next open slice named there.
+   one core Safe Editor quality probe, light accessibility sanity,
+   Help copy overlap cleanup, or the next open slice named there.
 2. For App Store submission prep, start with `docs/current-work.md`
    and `docs/app-store-build.md`; keep account-specific notes under
    ignored `docs/internal/` files;

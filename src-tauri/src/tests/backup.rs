@@ -35,6 +35,46 @@ fn auto_backup_writes_and_reads_inside_workspace_backup_dir() {
 }
 
 #[test]
+fn auto_backup_keeps_rapid_same_second_snapshots_distinct() {
+    let dir = unique_test_dir("auto_backup_same_second_unique");
+    fs::create_dir_all(&dir).expect("create test dir");
+
+    wait_for_start_of_second_window();
+
+    let first = auto_backup::save_auto_backup(&dir.to_string_lossy(), "note.md", "# v1\n")
+        .expect("save first backup");
+    let second = auto_backup::save_auto_backup(&dir.to_string_lossy(), "note.md", "# v2\n")
+        .expect("save second backup");
+
+    assert_ne!(
+        first, second,
+        "rapid auto-backups must not overwrite an earlier same-second snapshot"
+    );
+
+    let entries =
+        auto_backup::list_auto_backups(&dir.to_string_lossy(), "note.md").expect("list backups");
+    assert_eq!(
+        entries.len(),
+        2,
+        "both same-second snapshots should remain restorable"
+    );
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+fn wait_for_start_of_second_window() {
+    for _ in 0..250 {
+        let elapsed = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("system time");
+        if elapsed.subsec_millis() < 100 {
+            return;
+        }
+        std::thread::sleep(Duration::from_millis(5));
+    }
+}
+
+#[test]
 fn auto_backup_rejects_paths_outside_workspace_boundary() {
     let dir = unique_test_dir("auto_backup_boundary");
     fs::create_dir_all(&dir).expect("create test dir");
@@ -80,10 +120,6 @@ fn auto_backup_prune_keeps_only_recent_files() {
     let dir = unique_test_dir("auto_backup_prune");
     fs::create_dir_all(&dir).expect("create test dir");
 
-    // Write 5 backups. Each backup filename embeds a
-    // seconds-resolution timestamp, so we need >1s between
-    // writes for the filenames (and therefore the files) to
-    // differ. 1.1s is enough on every supported platform.
     for index in 0..5 {
         auto_backup::save_auto_backup(
             &dir.to_string_lossy(),
@@ -91,7 +127,6 @@ fn auto_backup_prune_keeps_only_recent_files() {
             format!("# v{index}\n").as_str(),
         )
         .expect("save backup");
-        std::thread::sleep(Duration::from_millis(1100));
     }
 
     let backup_dir = dir.join(".hazakura").join("backups").join("note.md");
@@ -135,12 +170,8 @@ fn auto_backup_rekey_moves_backup_dir_to_new_path() {
     let dir = unique_test_dir("auto_backup_rekey");
     fs::create_dir_all(&dir).expect("create test dir");
 
-    // Each backup filename embeds a seconds-resolution
-    // timestamp, so back-to-back writes need >1s between them
-    // for the filenames (and therefore the files) to differ.
     auto_backup::save_auto_backup(&dir.to_string_lossy(), "notes/today.md", "# v1\n")
         .expect("save backup");
-    std::thread::sleep(Duration::from_millis(1100));
     auto_backup::save_auto_backup(&dir.to_string_lossy(), "notes/today.md", "# v2\n")
         .expect("save second backup");
 
@@ -207,7 +238,6 @@ fn auto_backup_rekey_refuses_to_clobber_existing_destination_backup() {
     fs::create_dir_all(&dir).expect("create test dir");
 
     auto_backup::save_auto_backup(&dir.to_string_lossy(), "a/note.md", "# a\n").expect("save a");
-    std::thread::sleep(Duration::from_millis(1100));
     auto_backup::save_auto_backup(&dir.to_string_lossy(), "b/note.md", "# b\n").expect("save b");
 
     let err = auto_backup::rekey_auto_backup_dir(&dir.to_string_lossy(), "a/note.md", "b/note.md")

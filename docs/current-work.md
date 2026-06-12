@@ -68,11 +68,12 @@ implemented as of 2026-06-12. Order 6 is implemented as of 2026-06-12
 through the Recent Files surface-removal core probe. Order 7 is
 implemented as of 2026-06-12. Order 8 is implemented as of
 2026-06-12. Order 9 is implemented as of 2026-06-12 through archived
-local regression evidence. The remaining Move
+local regression evidence. Order 10 is implemented as of 2026-06-12.
+The remaining Move
 to Trash and workspace-persistence proofs are signed TestFlight smoke,
 tracked under the submission-prep manual smoke items unless TestFlight
 specifically reopens the Trash or workspace restore behavior. The next
-open automation slice is Order 10.
+open automation slice is Order 11.
 
 ## Active UX Queue
 
@@ -81,7 +82,6 @@ Pick one item at a time.
 | Priority | Slice | Acceptance |
 |---|---|---|
 | P1 | Core Safe Editor quality probe | When concrete queue items are exhausted, inspect one basic high-risk surface instead of adding broad tests: open/save/close, restore/recovery, preview, diff/review, workspace file operations, standalone files, image handling, keyboard/IME, or error recovery. State the risk hypothesis, run a focused source/app inspection or smoke, then either fix the smallest issue found or close as `verified no-op`. |
-| P2 | Auto-backup filename uniqueness | Auto-backup filenames currently use second-resolution timestamps. If focused tests can reproduce same-second overwrite/collision risk, add milliseconds, a monotonic counter, or a short random suffix so rapid backups do not overwrite each other. Keep recovery listing newest-first and path containment unchanged. |
 | P2 | Light accessibility sanity | Keep accessibility as a light sanity pass adjacent to core surfaces: keyboard reachability, focus escape/Tab behavior, readable labels, and obvious contrast. Do not prioritize broad accessibility audits over basic editor quality unless a concrete accessibility failure is observed. |
 | P2 | Help copy overlap cleanup | Separate Privacy Policy, Local Data Disclosure, Support Diagnostics, About, and Open Source Acknowledgements so each page has one job. |
 
@@ -96,13 +96,20 @@ over copy-heavy or product-voice-sensitive work.
 | Good | L Mode quality investigation | Pick one reproduced L Mode issue or one measurable quality gap only: caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or performance baseline. Do not add a new editing model or contenteditable surface. |
 | Good | Theme quality investigation | Pick one concrete theme issue only: contrast, focus visibility, status/error readability, dialog readability, or Increase Contrast behavior. Do not redesign palettes or add theme customization. |
 | Good | Core Safe Editor quality probe | Inspect one basic surface with a clear risk hypothesis, then fix only a reproduced issue or close as `verified no-op`. Prefer open/save/close, restore/recovery, preview, diff/review, workspace files, standalone files, image handling, keyboard/IME, or error recovery. |
-| Good | Auto-backup filename uniqueness | If reproducible, make backup names unique within the same second while preserving recovery list sorting and cleanup behavior. |
 | Good | Focused refactor for a verified bug | Refactor only when it directly fixes or tests one observed user-facing problem. Keep ownership boundaries and public behavior stable. |
 | Poor fit | Help copy overlap cleanup | This is product voice and submission copy work. Keep it for human/Codex review unless explicitly assigned with tight wording constraints. |
 | Poor fit | Broad accessibility audit | Keep accessibility to lightweight sanity checks adjacent to core surfaces unless a concrete failure is observed or the user's Mac is available for live VoiceOver / Increase Contrast work. |
 
 ## Completed v0.18 Slices
 
+- 2026-06-12: Auto-backup filename uniqueness is implemented.
+  Focused Rust regression coverage reproduced same-second snapshot
+  overwrite risk for a single workspace file. Backup filenames now
+  include milliseconds and use a bounded numeric suffix only when a
+  same-name file already exists, so rapid snapshots remain distinct
+  while staying under `.hazakura/backups/<relative-path>/`. Recovery
+  listing remains newest-first, with filename tie-breaking for
+  same-timestamp files.
 - 2026-06-12: Pre-review regression evidence is archived in
   `docs/archive/operations/v0.18-pre-review-regression-evidence-2026-06-12.md`.
   The local gate pass includes `npm ci`, `npm run build:vite`,

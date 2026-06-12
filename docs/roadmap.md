@@ -56,6 +56,10 @@ Use `docs/current-work.md` as the queue. The near-term UX priorities are:
 
 Recently completed:
 
+- Auto-backup filename uniqueness: rapid snapshots for the same
+  workspace file no longer overwrite each other within the same second;
+  backup filenames now include milliseconds and a bounded collision
+  suffix while recovery listing remains newest-first.
 - Status bar encoding / line-ending de-duplication: normal Safe Editor
   mode removes duplicate passive `UTF-8` / `LF`-style detail values when
   the trailing encoding and line-ending dropdowns already expose those

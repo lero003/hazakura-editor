@@ -19,7 +19,7 @@ pub(crate) fn save_auto_backup(
     ensure_path_stays_inside_workspace(workspace_root, &backup_dir)?;
 
     let timestamp = current_timestamp_for_filename();
-    let backup_path = backup_dir.join(format!("hazakura-backup-{timestamp}.bak"));
+    let backup_path = unique_backup_path(&backup_dir, &timestamp)?;
     atomic_write(&backup_path, content.as_bytes())?;
 
     Ok(backup_path.to_string_lossy().to_string())
@@ -112,8 +112,33 @@ fn collect_backup_files_sorted(backup_dir: &Path) -> Result<Vec<(PathBuf, u64)>,
         })
         .collect();
 
-    files.sort_by_key(|entry| std::cmp::Reverse(entry.1));
+    files.sort_by(|a, b| {
+        b.1.cmp(&a.1)
+            .then_with(|| file_name_for_sort(&b.0).cmp(&file_name_for_sort(&a.0)))
+    });
     Ok(files)
+}
+
+fn unique_backup_path(backup_dir: &Path, timestamp: &str) -> Result<PathBuf, String> {
+    for collision_index in 0..10_000 {
+        let file_name = if collision_index == 0 {
+            format!("hazakura-backup-{timestamp}.bak")
+        } else {
+            format!("hazakura-backup-{timestamp}_{collision_index:04}.bak")
+        };
+        let path = backup_dir.join(file_name);
+        if !path.exists() {
+            return Ok(path);
+        }
+    }
+
+    Err("Cannot choose a unique backup file name.".to_string())
+}
+
+fn file_name_for_sort(path: &Path) -> String {
+    path.file_name()
+        .map(|name| name.to_string_lossy().to_string())
+        .unwrap_or_default()
 }
 
 fn backup_dir_for(workspace_root: &str, relative_file_path: &str) -> Result<PathBuf, String> {
@@ -314,10 +339,11 @@ fn current_timestamp_for_filename() -> String {
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default();
     let secs = now.as_secs();
-    // Format: YYYYMMDD_HHMMSS
+    let millis = now.subsec_millis();
+    // Format: YYYYMMDD_HHMMSS_mmm
     // We can't use chrono, so do a simple calculation
     let (year, month, day, hour, min, sec) = timestamp_components(secs);
-    format!("{year}{month:02}{day:02}_{hour:02}{min:02}{sec:02}")
+    format!("{year}{month:02}{day:02}_{hour:02}{min:02}{sec:02}_{millis:03}")
 }
 
 fn timestamp_components(secs: u64) -> (u64, u64, u64, u64, u64, u64) {

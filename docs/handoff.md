@@ -34,19 +34,14 @@ Last reviewed: 2026-06-12 (v0.18 pre-review regression evidence)
   bookmark for user-selected workspace folders and resolves it on
   restart. Older path-only state can still fall back to the
   reauthorization status hint.
-- TestFlight use found workspace persistence follow-ups to fix before
-  App Review: repeatedly quitting/relaunching can lose the selected
-  workspace, and quitting/relaunching while the active tab is outside
-  the selected workspace may also leave the workspace unretained. Treat
-  these as restore/persistence bugs to reproduce and test narrowly; the
-  workspace selection should disappear only after explicit user action
-  or unrecoverable authorization failure with a visible reauthorization
-  path.
-- TestFlight use found one UI cleanup follow-up before App Review: the
-  lower status area can show passive `UTF-8` / `LF` style labels even
-  though the encoding / line-ending dropdowns already expose those
-  values. Remove the duplicate passive labels while preserving the
-  dropdown controls and dirty/save status affordances.
+- TestFlight use found workspace persistence follow-ups before App
+  Review. Code-level regression coverage now pins repeated relaunch and
+  outside-active-tab restore behavior; signed TestFlight fuller smoke
+  still needs to repeat the user-facing flow before App Review.
+- TestFlight use found one status-area cleanup follow-up before App
+  Review. Code-level UI coverage now removes duplicate passive
+  `UTF-8` / `LF` style labels in normal Safe Editor mode while
+  preserving the dropdown controls and dirty/save status affordances.
 - App Store-lane Move to Trash external-process review is implemented:
   `move_workspace_entry_to_trash` now calls native macOS
   `NSFileManager` Trash handling from Rust through the existing
@@ -81,11 +76,13 @@ Last reviewed: 2026-06-12 (v0.18 pre-review regression evidence)
 Use `docs/current-work.md` for the active queue. The current highest
 priority UX items are:
 
-1. Auto-backup filename uniqueness, if same-second collision reproduces.
-2. Light accessibility sanity adjacent to a selected core surface.
-3. Help copy overlap cleanup.
+1. Light accessibility sanity adjacent to a selected core surface.
+2. Help copy overlap cleanup.
 
-Recently completed: direct-open standalone file save now handles the
+Recently completed: auto-backup filenames now stay unique for rapid
+same-second snapshots by adding millisecond precision and a bounded
+collision suffix while keeping recovery listing newest-first.
+Direct-open standalone file save now handles the
 App Sandbox-style case where the selected file itself is writable but
 creating `.hazakura-note.tmp` next to it is denied. Direct-open image
 files now route to read-only image preview instead of text open failure
