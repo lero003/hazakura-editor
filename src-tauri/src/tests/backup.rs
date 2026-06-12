@@ -62,6 +62,55 @@ fn auto_backup_keeps_rapid_same_second_snapshots_distinct() {
     let _ = fs::remove_dir_all(dir);
 }
 
+#[test]
+fn auto_backup_skips_duplicate_latest_snapshot_after_restart() {
+    let dir = unique_test_dir("auto_backup_dedup_restart");
+    fs::create_dir_all(&dir).expect("create test dir");
+
+    let first = auto_backup::save_auto_backup(&dir.to_string_lossy(), "note.md", "# draft\n")
+        .expect("save first backup");
+
+    let second = auto_backup::save_auto_backup(&dir.to_string_lossy(), "note.md", "# draft\n")
+        .expect("same dirty buffer should reuse latest backup");
+
+    assert_eq!(
+        first, second,
+        "same dirty content after relaunch should not create a duplicate backup"
+    );
+
+    let entries =
+        auto_backup::list_auto_backups(&dir.to_string_lossy(), "note.md").expect("list backups");
+    assert_eq!(entries.len(), 1, "duplicate snapshot should be skipped");
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn auto_backup_writes_when_latest_snapshot_content_changes() {
+    let dir = unique_test_dir("auto_backup_dedup_changed");
+    fs::create_dir_all(&dir).expect("create test dir");
+
+    let first = auto_backup::save_auto_backup(&dir.to_string_lossy(), "note.md", "# draft\n")
+        .expect("save first backup");
+    let second = auto_backup::save_auto_backup(&dir.to_string_lossy(), "note.md", "# draft 2\n")
+        .expect("changed dirty buffer should create backup");
+
+    assert_ne!(
+        first, second,
+        "changed dirty content should create a backup"
+    );
+
+    let entries =
+        auto_backup::list_auto_backups(&dir.to_string_lossy(), "note.md").expect("list backups");
+    assert_eq!(
+        entries.len(),
+        2,
+        "changed snapshot should remain restorable"
+    );
+
+    let _ = fs::remove_dir_all(dir);
+}
+
 fn wait_for_start_of_second_window() {
     for _ in 0..250 {
         let elapsed = std::time::SystemTime::now()

@@ -18,6 +18,10 @@ pub(crate) fn save_auto_backup(
         .map_err(|err| format!("Cannot create backup directory: {err}"))?;
     ensure_path_stays_inside_workspace(workspace_root, &backup_dir)?;
 
+    if let Some(existing_path) = latest_backup_path_with_content(&backup_dir, content)? {
+        return Ok(existing_path.to_string_lossy().to_string());
+    }
+
     let timestamp = current_timestamp_for_filename();
     let backup_path = unique_backup_path(&backup_dir, &timestamp)?;
     atomic_write(&backup_path, content.as_bytes())?;
@@ -133,6 +137,26 @@ fn unique_backup_path(backup_dir: &Path, timestamp: &str) -> Result<PathBuf, Str
     }
 
     Err("Cannot choose a unique backup file name.".to_string())
+}
+
+fn latest_backup_path_with_content(
+    backup_dir: &Path,
+    content: &str,
+) -> Result<Option<PathBuf>, String> {
+    let Some((latest_path, _)) = collect_backup_files_sorted(backup_dir)?.into_iter().next() else {
+        return Ok(None);
+    };
+
+    reject_symlink(&latest_path)?;
+    let Ok(latest_content) = fs::read_to_string(&latest_path) else {
+        return Ok(None);
+    };
+
+    if latest_content == content {
+        return Ok(Some(latest_path));
+    }
+
+    Ok(None)
 }
 
 fn file_name_for_sort(path: &Path) -> String {
