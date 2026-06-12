@@ -82,10 +82,27 @@ export function EditorMainPane({
   slashMenuCopy,
   workspaceRootPath,
 }: EditorMainPaneProps) {
+  const activeDocumentPathLabel = activeTab
+    ? formatDocumentPathLabel(activeTab.path, workspaceRootPath)
+    : null;
+  const showActiveDocumentPath =
+    activeTab !== null && activeDocumentPathLabel !== activeTab.name;
+
   return (
     <div className="pane editor-pane" aria-label="Editor">
       {activeTab ? (
         <>
+          <header
+            className="editor-document-header"
+            title={activeTab.path}
+          >
+            <span className="editor-document-name">{activeTab.name}</span>
+            {showActiveDocumentPath ? (
+              <span className="editor-document-path">
+                {activeDocumentPathLabel}
+              </span>
+            ) : null}
+          </header>
           <EditorPane
             ref={editorPaneRef}
             activeSearchMatchIndex={activeSearchMatchIndex}
@@ -131,4 +148,24 @@ export function EditorMainPane({
       )}
     </div>
   );
+}
+
+function formatDocumentPathLabel(
+  documentPath: string,
+  workspaceRootPath: string | null,
+): string {
+  if (!workspaceRootPath) {
+    return documentPath;
+  }
+
+  const normalizedRoot = workspaceRootPath.endsWith("/")
+    ? workspaceRootPath.slice(0, -1)
+    : workspaceRootPath;
+  const prefix = `${normalizedRoot}/`;
+
+  if (documentPath.startsWith(prefix)) {
+    return documentPath.slice(prefix.length);
+  }
+
+  return documentPath;
 }

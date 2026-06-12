@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-12 (v0.19 GitHub source release)
+Last reviewed: 2026-06-13 (v0.20 UX planning)
 
 ## Current State
 
@@ -37,6 +37,13 @@ Last reviewed: 2026-06-12 (v0.19 GitHub source release)
   keyboard/IME, and error recovery). Accessibility work should stay a
   lightweight sanity pass unless a concrete issue appears. Use
   `docs/current-work.md` first.
+- The v0.20 Sakura workspace ergonomics slice is implemented locally:
+  the tab row has a new-file `+` entry, the main chrome can collapse /
+  restore the workspace sidebar, the central editor pane shows the
+  active file with path context, Markdown preview hierarchy is more
+  card-like, and the selected workspace file has Sakura-specific
+  accenting. Workspace switching dropdowns remain deferred to preserve
+  the simple single-workspace model.
 
 ## Current Product Boundary
 
@@ -72,6 +79,9 @@ Last reviewed: 2026-06-12 (v0.19 GitHub source release)
   buffer; drag/drop image import keeps the existing 20 MB file-size cap.
 - Multi-tab editor with dirty-tab close protection, app/window close
   confirmation, save-conflict recovery, and explicit draft recovery.
+- Normal Safe Editor chrome now exposes a tab-row new-file button and a
+  main-chrome workspace sidebar toggle, both routed through the existing
+  file creation and sidebar collapse flows.
 - Auto-backup snapshots for a workspace file remain distinct even when
   multiple backups are captured in the same second; filenames include
   millisecond precision with a bounded collision suffix, and recovery
@@ -146,8 +156,9 @@ baseline, and smoke evidence are archived under
 ## Next Safe Actions
 
 1. For UX work, start with `docs/current-work.md` and pick one item:
-   one core Safe Editor quality probe, light accessibility sanity
-   adjacent to that surface, or the next open slice named there.
+   the v0.20 Sakura workspace ergonomics slice, one core Safe Editor
+   quality probe, light accessibility sanity adjacent to that surface, or
+   the next open slice named there.
 2. For App Store submission prep, start with `docs/current-work.md`
    and `docs/app-store-build.md`; keep account-specific notes under
    ignored `docs/internal/` files;

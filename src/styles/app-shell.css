@@ -39,7 +39,18 @@
   overflow: hidden;
   pointer-events: none;
   position: fixed;
-  z-index: 2;
+  z-index: 0;
+}
+
+.tabs-row,
+.workspace,
+.status-bar,
+.modal-backdrop,
+.apple-assist-review-bar,
+.lmode-exit-pill,
+.lmode-action-rail {
+  position: relative;
+  z-index: 1;
 }
 
 .ambient-particle {
@@ -124,4 +135,3 @@
 .toggle-control input {
   margin: 0;
 }
-

@@ -82,10 +82,12 @@ export function SidePane({
   // slice accidentally adds a candidate case to the right pane.
   const rightPaneCompareCase =
     compareCase && compareCase.kind !== "candidate" ? compareCase : null;
+  const showMarkdownPreviewCard =
+    sidePaneMode === "preview" && activeTab !== null && previewVisible;
 
   return (
     <div
-      className="pane preview-pane"
+      className={`pane preview-pane preview-pane-${sidePaneMode}${showMarkdownPreviewCard ? " preview-pane-card" : ""}`}
       ref={sidePaneMode === "preview" ? previewPaneRef : null}
       aria-label={sidePaneAriaLabel(sidePaneMode, copy)}
       onScroll={sidePaneMode === "preview" ? onPreviewScroll : undefined}

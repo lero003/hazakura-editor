@@ -13,6 +13,8 @@ function renderTopChrome(
   overrides: Partial<Parameters<typeof AppTopChrome>[0]> = {},
 ) {
   const onCloseSelectedImagePreview = vi.fn();
+  const onCreateNewFile = vi.fn();
+  const onToggleWorkspaceSidebar = vi.fn();
   render(
     <AppTopChrome
       activeDirty={false}
@@ -25,8 +27,10 @@ function renderTopChrome(
       emptyTabsLabel="No file open"
       lModeCopy={getLModeCopy("en")}
       lModeEnabled={false}
+      newFileLabel="New File"
       onCloseSelectedImagePreview={onCloseSelectedImagePreview}
       onCloseTab={vi.fn()}
+      onCreateNewFile={onCreateNewFile}
       onFinishTabPointerDrag={vi.fn()}
       onOpenAgentWindow={vi.fn()}
       onOpenAppleAssistWindow={vi.fn()}
@@ -40,20 +44,55 @@ function renderTopChrome(
       onToggleLMode={vi.fn()}
       onToggleOutline={vi.fn()}
       onTogglePreview={vi.fn()}
+      onToggleWorkspaceSidebar={onToggleWorkspaceSidebar}
       recoveryCopy={getRecoveryCopy("en")}
       shouldSuppressTabClick={() => false}
       selectedImage={null}
       sidePaneCopy={getSidePaneCopy("en")}
       sidePaneMode="preview"
       tabs={[]}
+      workspaceSidebarCollapsed={false}
+      workspaceSidebarToggleLabel="Collapse workspace sidebar"
       {...overrides}
     />,
   );
 
-  return { onCloseSelectedImagePreview };
+  return {
+    onCloseSelectedImagePreview,
+    onCreateNewFile,
+    onToggleWorkspaceSidebar,
+  };
 }
 
 describe("AppTopChrome", () => {
+  it("routes the tab-row plus button to the existing new-file flow", () => {
+    const { onCreateNewFile } = renderTopChrome();
+
+    screen.getByRole("button", { name: "New File" }).click();
+
+    expect(onCreateNewFile).toHaveBeenCalledTimes(1);
+  });
+
+  it("exposes the workspace sidebar toggle in normal mode", () => {
+    const { onToggleWorkspaceSidebar } = renderTopChrome();
+
+    const toggle = screen.getByRole("button", {
+      name: "Collapse workspace sidebar",
+    });
+    fireEvent.click(toggle);
+
+    expect(toggle.getAttribute("aria-pressed")).toBe("false");
+    expect(onToggleWorkspaceSidebar).toHaveBeenCalledTimes(1);
+  });
+
+  it("hides the workspace sidebar toggle while L Mode owns workspace access", () => {
+    renderTopChrome({ lModeEnabled: true });
+
+    expect(
+      screen.queryByRole("button", { name: "Collapse workspace sidebar" }),
+    ).toBeNull();
+  });
+
   it("shows a Dev badge in the Developer / GitHub lane", () => {
     renderTopChrome();
 

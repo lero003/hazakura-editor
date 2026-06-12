@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-12 (v0.19 GitHub source release)
+Last reviewed: 2026-06-13 (v0.20 UX planning)
 
 ## Current Position
 
@@ -143,6 +143,37 @@ Required work:
 Do not claim App Store signed, submitted, approved, TestFlight-ready,
 Developer ID signed, notarized, or production-ready status until that
 lane is actually completed and verified.
+
+## v0.20 Sakura Workspace Ergonomics
+
+Goal: refine the normal Safe Editor surface around the Sakura visual
+language without turning the app into a file manager or IDE.
+
+Use `docs/current-work.md` as the queue. Keep the first slice focused on
+the existing Safe Editor chrome:
+
+- Add a tab-row `+` affordance that starts the existing new-file flow.
+- Make the workspace sidebar collapse / restore control easier to find
+  from the main chrome, while keeping the current file-tree model.
+- Show the active file name with path context at the top of the central
+  editor pane, clipped safely for long paths.
+- Strengthen Markdown preview hierarchy with card-like emphasis for
+  important blocks, headings, code, and quote/readout areas.
+- Use Sakura accenting to make the selected workspace file state clearer.
+- Keep the bottom status bar concise: breadcrumb / position / file stats
+  can be clarified, but do not reintroduce duplicate `UTF-8` / `LF`
+  labels that are already exposed as controls.
+
+Explicitly deferred:
+
+- Workspace switching dropdowns. The simple single-workspace model is
+  still preferable until a later UX pass proves the extra state is worth
+  the complexity.
+- Multi-workspace sessions, background indexing, Git status, LSP,
+  terminal, plugin, or arbitrary command behavior.
+
+First slice status: implemented locally on 2026-06-13 with focused
+React/CSS coverage, `npm run build:vite`, and `npm run test`.
 
 ## Distribution Lanes
 

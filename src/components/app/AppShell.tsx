@@ -1,4 +1,4 @@
-import type { ComponentProps } from "react";
+import { useState, type ComponentProps } from "react";
 import type {
   AmbientIntensity,
   CompareCase,
@@ -69,6 +69,12 @@ export type AppShellProps = ComponentProps<typeof AppTopChrome> &
 
 export function AppShell(props: AppShellProps) {
   const ambientMode = isAmbientMode(props.resolvedTheme) ? props.resolvedTheme : null;
+  const [workspaceSidebarCollapsed, setWorkspaceSidebarCollapsed] =
+    useState(false);
+  const workspaceSidebarToggleLabel = workspaceSidebarCollapsed
+    ? props.safeEditorCopy.restoreWorkspaceSidebar
+    : props.safeEditorCopy.collapseWorkspaceSidebar;
+
   return (
     <main className="app-shell">
       {ambientMode ? (
@@ -77,7 +83,16 @@ export function AppShell(props: AppShellProps) {
           mode={ambientMode}
         />
       ) : null}
-      <AppTopChrome {...props} />
+      <AppTopChrome
+        {...props}
+        newFileLabel={props.safeEditorCopy.newFile}
+        onCreateNewFile={() => void props.createNewFile()}
+        onToggleWorkspaceSidebar={() =>
+          setWorkspaceSidebarCollapsed((collapsed) => !collapsed)
+        }
+        workspaceSidebarCollapsed={workspaceSidebarCollapsed}
+        workspaceSidebarToggleLabel={workspaceSidebarToggleLabel}
+      />
       <AppDocumentFeedback {...props} />
       {props.reviewSurface !== null ? (
         <ReviewSurface
@@ -98,7 +113,11 @@ export function AppShell(props: AppShellProps) {
           setCandidateInputText={props.setCandidateInputText}
         />
       ) : (
-        <AppWorkspace {...props} />
+        <AppWorkspace
+          {...props}
+          onWorkspaceSidebarCollapsedChange={setWorkspaceSidebarCollapsed}
+          workspaceSidebarCollapsedOverride={workspaceSidebarCollapsed}
+        />
       )}
       <AppStatusBar {...props} />
       <AppOverlays {...props} />

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-12 (v0.19 App Store submission candidate)
+Last reviewed: 2026-06-13 (v0.20 Sakura workspace ergonomics)
 
 ## Current State
 
@@ -25,6 +25,12 @@ Last reviewed: 2026-06-12 (v0.19 App Store submission candidate)
   `3291b122e0f2fd563e64354281de2771af7d912bb94dfaab9e1ae24a127b0e67`;
   it declares minimum macOS 15.0 and passed `pkgutil --check-signature`.
 - Start from `docs/current-work.md`.
+- v0.20 Sakura workspace ergonomics P0 is implemented locally: the tab
+  row has a localized `+` new-file entry, the main chrome can collapse /
+  restore the workspace sidebar, the central editor pane shows active
+  file name plus workspace-relative path context, Markdown preview has a
+  card-like reading surface, and Sakura theme gives the selected
+  workspace file a clearer accent. Workspace switching remains deferred.
 - Markdown preview task checkboxes are complete for v0.18: Preview renders
   `- [ ]` / `- [x]` as inert display-only checkbox glyphs without
   changing saved Markdown.
@@ -96,13 +102,20 @@ Last reviewed: 2026-06-12 (v0.19 App Store submission candidate)
 ## Current Work Queue
 
 Use `docs/current-work.md` for the active queue. The current highest
-priority UX items are:
+priority UX items after the v0.20 Sakura chrome slice are:
 
-1. Tab close affordance clarity.
-2. Core Safe Editor quality probe.
-3. Light accessibility sanity adjacent to the selected core surface.
+1. Core Safe Editor quality probe.
+2. Light accessibility sanity adjacent to the selected core surface.
+3. Any follow-up discovered by manual app smoke of the v0.20 Sakura
+   chrome / preview polish.
 
-Recently completed: External-window routing for Markdown / Help links
+Recently completed: v0.20 Sakura chrome / file-state clarity added the
+tab-row new-file button, top chrome workspace-sidebar toggle, central
+active-file path display, Markdown preview card styling, and
+Sakura-specific selected-file highlight without adding a workspace
+switching dropdown or changing the single-workspace model.
+
+Earlier completed: External-window routing for Markdown / Help links
 now keeps workspace-relative text links in-app while handing explicit
 external URL clicks to the OS default browser/app. Help copy overlap
 cleanup now keeps the in-app Privacy Policy public-copy oriented while

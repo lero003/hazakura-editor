@@ -170,4 +170,18 @@ describe("AppWorkspace workspace sidebar collapse", () => {
       screen.queryByRole("button", { name: "Restore workspace sidebar" }),
     ).toBeNull();
   });
+
+  it("uses externally controlled sidebar collapse state when provided", () => {
+    const onWorkspaceSidebarCollapsedChange = vi.fn();
+
+    renderWorkspace({
+      onWorkspaceSidebarCollapsedChange,
+      workspaceSidebarCollapsedOverride: false,
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Collapse workspace sidebar" }));
+
+    expect(onWorkspaceSidebarCollapsedChange).toHaveBeenCalledWith(true);
+    expect(screen.getByLabelText("Workspace file tree")).toBeTruthy();
+  });
 });

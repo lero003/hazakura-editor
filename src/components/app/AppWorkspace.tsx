@@ -101,6 +101,7 @@ type AppWorkspaceProps = {
   onMoveEntry: (srcPath: string, dstParentPath: string) => void;
   onMoveToTrash: (path: string, name: string, isDirectory: boolean) => void;
   onSubmitRename: (srcPath: string, newName: string) => void;
+  onWorkspaceSidebarCollapsedChange?: (collapsed: boolean) => void;
   requestRename: (path: string) => void;
   renamingPath: string | null;
   openFile: () => unknown;
@@ -142,6 +143,7 @@ type AppWorkspaceProps = {
   onSuspendAgentUiRefresh: () => void;
   outlineTruncated: boolean;
   workspaceRootPath: string | null;
+  workspaceSidebarCollapsedOverride?: boolean;
   workspaceTree: WorkspaceTreeEntry | null;
 };
 
@@ -191,6 +193,7 @@ export function AppWorkspace({
   onMoveEntry,
   onMoveToTrash,
   onSubmitRename,
+  onWorkspaceSidebarCollapsedChange,
   requestRename,
   renamingPath,
   openFile,
@@ -228,10 +231,19 @@ export function AppWorkspace({
   onSuspendAgentUiRefresh,
   outlineTruncated,
   workspaceRootPath,
+  workspaceSidebarCollapsedOverride,
   workspaceTree,
 }: AppWorkspaceProps) {
-  const [workspaceSidebarCollapsed, setWorkspaceSidebarCollapsed] =
+  const [internalWorkspaceSidebarCollapsed, setInternalWorkspaceSidebarCollapsed] =
     useState(false);
+  const workspaceSidebarCollapsed =
+    workspaceSidebarCollapsedOverride ?? internalWorkspaceSidebarCollapsed;
+  const setWorkspaceSidebarCollapsed = (collapsed: boolean) => {
+    if (workspaceSidebarCollapsedOverride === undefined) {
+      setInternalWorkspaceSidebarCollapsed(collapsed);
+    }
+    onWorkspaceSidebarCollapsedChange?.(collapsed);
+  };
   const isWorkspaceSidebarCollapsed =
     workspaceSidebarCollapsed && !editorSettings.lModeEnabled;
 

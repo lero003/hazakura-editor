@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: Active v0.19 App Store submission-candidate smoke and submission-prep routing
+Scope: Active v0.20 Sakura workspace ergonomics and submission-prep routing
 Authority: High
-Last reviewed: 2026-06-12
+Last reviewed: 2026-06-13
 
 ## Purpose
 
@@ -82,6 +82,37 @@ specifically reopens the Trash or workspace restore behavior. The
 pre-review automation table is currently exhausted; the next recurring
 quality run should use the Active UX Queue, starting with one Core Safe
 Editor quality probe whose risk hypothesis can be inspected or smoked.
+
+## v0.20 Sakura Workspace Ergonomics
+
+This is the next named UX improvement lane. Keep it inside the normal
+Safe Editor surface and do not introduce a broader file-manager or IDE
+model.
+
+| Priority | Slice | Acceptance |
+|---|---|---|
+| P0 | Sakura chrome / file-state clarity | Add the tab-row `+` as an entry to the existing new-file flow; expose sidebar collapse / restore from the main chrome or make the existing control clearly discoverable; show the active file name with path context above the editor; strengthen Markdown preview hierarchy with card-like contrast; highlight the selected workspace file with Sakura accenting; keep the status bar concise without duplicating encoding / line-ending values. |
+| Deferred | Workspace switching dropdown | Keep the simple single-workspace model for now. Do not add a workspace switcher, multi-workspace session model, background indexing, Git status, LSP, terminal, plugin, or arbitrary command behavior in this lane. |
+
+P0 is implemented locally as of 2026-06-13. Verification:
+`npm run test -- src/components/app/AppTopChrome.test.tsx
+src/components/app/AppWorkspace.test.tsx
+src/components/editor/EditorMainPane.test.tsx
+src/styles/editorCss.test.ts src/styles/workspaceCss.test.ts
+src/styles/statusCss.test.ts`, `npm run build:vite`, and `npm run test`.
+
+## Completed v0.20 Slices
+
+- 2026-06-13: Sakura chrome / file-state clarity is implemented. The
+  tab row now exposes a localized `+` button wired to the existing
+  new-file flow, normal Safe Editor chrome can collapse / restore the
+  workspace sidebar through the same sidebar model, and L Mode keeps its
+  separate workspace drawer. The central editor pane shows the active
+  file name plus workspace-relative path context, clipped for long paths.
+  Markdown preview now renders as a card-like reading surface with
+  stronger heading, quote, and code contrast, and Sakura theme gives the
+  selected workspace file a clearer pink-accent highlight. Workspace
+  switching remains intentionally deferred.
 
 ## Active UX Queue
 

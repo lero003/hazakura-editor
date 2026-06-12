@@ -1,11 +1,18 @@
 /* === preview.css === */
 /* プレビューの洗練 / Markdown Preview Styling */
 .markdown-preview {
+  background: var(--surface-strong);
+  border: 1px solid color-mix(in srgb, var(--border-strong) 58%, transparent);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  box-sizing: border-box;
   color: var(--text);
   font-size: var(--preview-font-size, 15px);
   line-height: 1.7;
+  margin: 22px auto;
   max-width: 760px;
   padding: 30px 40px 80px;
+  width: calc(100% - 44px);
 }
 
 .markdown-preview h1,
@@ -19,7 +26,7 @@
 }
 
 .markdown-preview h1 {
-  border-bottom: 2px solid var(--border);
+  border-bottom: 2px solid color-mix(in srgb, var(--accent) 44%, var(--border));
   font-size: 26px;
   padding-bottom: 12px;
   margin-top: 0;
@@ -30,7 +37,7 @@
   font-size: 20px;
   margin-top: 32px;
   margin-bottom: 16px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
   padding-bottom: 6px;
 }
 
@@ -71,10 +78,11 @@
 .markdown-preview blockquote {
   border-left: 4px solid var(--accent);
   background: var(--accent-soft);
-  color: var(--text-muted);
+  color: var(--text);
   margin: 20px 0;
   padding: 12px 20px;
-  border-radius: 0 8px 8px 0;
+  border-radius: var(--radius-md);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 16%, transparent);
 }
 
 .markdown-preview p {
@@ -208,6 +216,22 @@
   margin: 20px 0;
   max-width: 100%;
   box-shadow: var(--shadow-sm);
+}
+
+:root[data-theme="sakura"] .markdown-preview {
+  border-color: color-mix(in srgb, var(--accent) 22%, var(--border));
+  box-shadow:
+    var(--shadow-md),
+    0 0 0 1px color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+:root[data-theme="sakura"] .markdown-preview h1,
+:root[data-theme="sakura"] .markdown-preview h2 {
+  color: color-mix(in srgb, var(--text) 86%, var(--accent));
+}
+
+:root[data-theme="sakura"] .markdown-preview blockquote {
+  background: color-mix(in srgb, var(--accent-soft) 72%, var(--surface-strong));
 }
 
 :root[data-theme="dark"] .markdown-preview code,

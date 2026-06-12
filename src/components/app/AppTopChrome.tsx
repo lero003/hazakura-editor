@@ -25,8 +25,10 @@ type AppTopChromeProps = {
   emptyTabsLabel: string;
   lModeEnabled: boolean;
   lModeCopy: LModeCopy;
+  newFileLabel?: string;
   onCloseTab: (tabId: string) => void;
   onCloseSelectedImagePreview: () => void;
+  onCreateNewFile?: () => void;
   onFinishTabPointerDrag: (target?: EventTarget | null) => void;
   onOpenAgentWindow: () => void;
   onOpenAppleAssistWindow: () => void;
@@ -46,12 +48,15 @@ type AppTopChromeProps = {
   onToggleLMode: () => void;
   onToggleOutline: () => void;
   onTogglePreview: () => void;
+  onToggleWorkspaceSidebar?: () => void;
   recoveryCopy: RecoveryCopy;
   shouldSuppressTabClick: () => boolean;
   sidePaneCopy: SidePaneCopy;
   sidePaneMode: RightPaneMode | null;
   selectedImage: ImagePreviewState | null;
   tabs: EditorTab[];
+  workspaceSidebarCollapsed?: boolean;
+  workspaceSidebarToggleLabel?: string;
 };
 
 export function AppTopChrome({
@@ -65,8 +70,10 @@ export function AppTopChrome({
   emptyTabsLabel,
   lModeEnabled,
   lModeCopy,
+  newFileLabel,
   onCloseTab,
   onCloseSelectedImagePreview,
+  onCreateNewFile,
   onFinishTabPointerDrag,
   onOpenAgentWindow,
   onOpenAppleAssistWindow,
@@ -80,12 +87,15 @@ export function AppTopChrome({
   onToggleLMode,
   onToggleOutline,
   onTogglePreview,
+  onToggleWorkspaceSidebar,
   recoveryCopy,
   shouldSuppressTabClick,
   sidePaneCopy,
   sidePaneMode,
   selectedImage,
   tabs,
+  workspaceSidebarCollapsed = false,
+  workspaceSidebarToggleLabel,
 }: AppTopChromeProps) {
   const showDevBadge = isDeveloperDistributionLane();
 
@@ -95,8 +105,10 @@ export function AppTopChrome({
       draggingTabId={draggingTabId}
       dragOverTabId={dragOverTabId}
       emptyTabsLabel={emptyTabsLabel}
+      newFileLabel={newFileLabel}
       onCloseTab={onCloseTab}
       onCloseSelectedImagePreview={onCloseSelectedImagePreview}
+      onCreateNewFile={onCreateNewFile}
       onFinishTabPointerDrag={onFinishTabPointerDrag}
       onPointerEnter={onPointerEnter}
       onSelectTab={onSelectTab}
@@ -106,6 +118,11 @@ export function AppTopChrome({
       shouldSuppressTabClick={shouldSuppressTabClick}
       selectedImage={selectedImage}
       tabs={tabs}
+      workspaceSidebarCollapsed={workspaceSidebarCollapsed}
+      workspaceSidebarToggleLabel={workspaceSidebarToggleLabel}
+      onToggleWorkspaceSidebar={
+        lModeEnabled ? undefined : onToggleWorkspaceSidebar
+      }
     >
       {showDevBadge ? (
         <span

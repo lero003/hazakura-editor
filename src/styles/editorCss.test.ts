@@ -9,6 +9,10 @@ const controlsCss = readFileSync(
   `${process.cwd()}/src/styles/controls.css`,
   "utf8",
 );
+const appShellCss = readFileSync(
+  `${process.cwd()}/src/styles/app-shell.css`,
+  "utf8",
+);
 
 describe("editor tab close affordance CSS", () => {
   it("keeps tab close controls visually distinct from dirty dots", () => {
@@ -39,5 +43,12 @@ describe("editor tab close affordance CSS", () => {
   it("keeps the tab hover background on the whole tab item", () => {
     expect(controlsCss).toMatch(/\.tab-item:not\(\.active\):hover\s*\{[\s\S]*background:/);
     expect(controlsCss).toMatch(/\.tab-item\.active:hover\s*\{[\s\S]*background:/);
+  });
+
+  it("keeps ambient particles behind readable app surfaces", () => {
+    expect(appShellCss).toMatch(/\.ambient\s*{[\s\S]*z-index:\s*0/);
+    expect(appShellCss).toMatch(
+      /\.tabs-row,[\s\S]*\.workspace,[\s\S]*\.status-bar,[\s\S]*z-index:\s*1/s,
+    );
   });
 });
