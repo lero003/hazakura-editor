@@ -9,10 +9,10 @@
   color: var(--text);
   font-size: var(--preview-font-size, 15px);
   line-height: 1.7;
-  margin: 22px auto;
+  margin: 14px auto;
   max-width: 760px;
   padding: 30px 40px 80px;
-  width: calc(100% - 44px);
+  width: calc(100% - 28px);
 }
 
 .markdown-preview h1,

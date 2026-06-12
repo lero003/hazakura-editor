@@ -24,6 +24,13 @@ describe("preview.css", () => {
     );
   });
 
+  it("keeps the preview card outside gutter compact", () => {
+    const body = ruleBody(".markdown-preview");
+
+    expect(body).toMatch(/margin:\s*14px auto/);
+    expect(body).toMatch(/width:\s*calc\(100% - 28px\)/);
+  });
+
   it("keeps Markdown preview hierarchy scaled from the preview font size", () => {
     for (const selector of [
       ".markdown-preview h1",
