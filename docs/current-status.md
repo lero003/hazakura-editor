@@ -15,10 +15,14 @@ Last reviewed: 2026-06-12 (v0.18 pre-review todo review)
   TestFlight on 2026-06-12 with no reported Apple validation warnings;
   basic TestFlight launch / save smoke passed.
 - Older public tags and release assets remain immutable.
-- Current active work is v0.18 pre-review bug fixing, fuller
-  TestFlight smoke, and App Store submission prep. The highest-risk
-  queue items are fuller accessibility smoke, third-party license
-  review, About metadata, and pre-review regression evidence. Use
+- Current active work is v0.18 pre-review bug fixing, core Safe Editor
+  quality checks, fuller TestFlight smoke, and App Store submission
+  prep. The highest-risk queue items are basic editor surfaces
+  (open/save/close, restore/recovery, preview, diff/review, workspace
+  files, standalone files, image handling, keyboard/IME, and error
+  recovery), third-party license review, About metadata, and pre-review
+  regression evidence. Accessibility work should stay a lightweight
+  sanity pass unless a concrete issue appears. Use
   `docs/current-work.md` first.
 
 ## Current Product Boundary
@@ -113,10 +117,10 @@ baseline, and smoke evidence are archived under
 ## Next Safe Actions
 
 1. For UX work, start with `docs/current-work.md` and pick one item:
-   direct save fallback failure safety, status-bar encoding /
-   line-ending de-duplication, manual accessibility smoke, license /
-   About metadata prep, pre-review regression evidence, or the next
-   open slice named there.
+   Recent Files surface removal, one core Safe Editor quality probe,
+   auto-backup filename uniqueness, light accessibility sanity, license /
+   About metadata prep, pre-review regression evidence, or the next open
+   slice named there.
 2. For App Store submission prep, start with `docs/current-work.md`
    and `docs/app-store-build.md`; keep account-specific notes under
    ignored `docs/internal/` files;
