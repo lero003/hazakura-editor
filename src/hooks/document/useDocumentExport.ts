@@ -74,6 +74,8 @@ export function useDocumentExport({
     --surface: #ffffff;
     --surface-muted: #f5f5f7;
     --surface-strong: #ffffff;
+    --status-bg: #1c2420;
+    --status-text: #f0f7f3;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
@@ -204,6 +206,8 @@ ${rendered}
         "--surface",
         "--surface-muted",
         "--surface-strong",
+        "--status-bg",
+        "--status-text",
         "--font-mono",
         "--font-ui",
         "--shadow-sm",

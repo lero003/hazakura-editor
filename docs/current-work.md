@@ -107,6 +107,14 @@ over copy-heavy or product-voice-sensitive work.
 
 ## Completed v0.18 Slices
 
+- 2026-06-12: Core Safe Editor preview/export CSS variable guard is
+  implemented. Export HTML and Print to PDF standalone preview HTML now
+  define the `--status-bg` / `--status-text` variables used by the live
+  Markdown preview CSS for code blocks and blocked-image placeholders,
+  so exported documents do not silently lose those preview colors. A
+  focused `useDocumentExport` regression test pins the exported HTML
+  variable contract without changing Markdown rendering, save behavior,
+  or preview link routing.
 - 2026-06-12: Core Safe Editor malformed external Markdown link
   guard is implemented. Preview / Help external-link normalization now
   rejects `http:` / `https:` links that omit the explicit `//host`

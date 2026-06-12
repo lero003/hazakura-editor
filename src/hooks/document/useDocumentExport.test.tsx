@@ -25,6 +25,19 @@ vi.mock("../../lib/tauri", () => ({
   saveTextFileAs: tauriApi.saveTextFileAs,
 }));
 
+vi.mock("../../features/document/markdownExportCss", () => ({
+  getMarkdownPreviewCss: () => `
+.markdown-preview pre {
+  background: var(--status-bg);
+  color: var(--status-text);
+}
+.blocked-image {
+  background: var(--status-bg);
+  color: var(--status-text);
+}
+`,
+}));
+
 const markdownApi = vi.hoisted(() => ({
   inlineWorkspaceAssetImages: vi.fn(async (html: string) => html),
   renderMarkdown: vi.fn((contents: string) => `<p>${contents}</p>`),
@@ -64,6 +77,7 @@ describe("useDocumentExport", () => {
     markdownApi.inlineWorkspaceAssetImages.mockClear();
     markdownApi.renderMarkdown.mockClear();
     tauriApi.saveTextFileAs.mockReset();
+    document.documentElement.removeAttribute("style");
   });
 
   it("exports the latest active contents after the save dialog completes", async () => {
@@ -165,5 +179,32 @@ describe("useDocumentExport", () => {
     expect(setStatus).toHaveBeenCalledWith(
       "Export HTML stopped; document changed",
     );
+  });
+
+  it("exports the preview status colors used by code blocks and blocked-image placeholders", async () => {
+    document.documentElement.style.setProperty("--status-bg", "#102030");
+    document.documentElement.style.setProperty("--status-text", "#f6f1e8");
+    dialogApi.save.mockResolvedValue("/tmp/a.html");
+    tauriApi.saveTextFileAs.mockResolvedValue(undefined);
+
+    const { result } = renderHook(() =>
+      useDocumentExport({
+        activeContents: "```ts\nconst value = 1;\n```",
+        activeTab: makeTab(),
+        setGlobalError: vi.fn(),
+        setStatus: vi.fn(),
+        workspaceRootPath: null,
+      }),
+    );
+
+    await act(async () => {
+      await result.current.exportHtml();
+    });
+
+    const exportedHtml = tauriApi.saveTextFileAs.mock.calls[0]?.[1] ?? "";
+    expect(exportedHtml).toContain("  --status-bg: #102030;");
+    expect(exportedHtml).toContain("  --status-text: #f6f1e8;");
+    expect(exportedHtml).toContain("background: var(--status-bg)");
+    expect(exportedHtml).toContain("color: var(--status-text)");
   });
 });
