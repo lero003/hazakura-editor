@@ -248,9 +248,14 @@ over copy-heavy or product-voice-sensitive work.
   `useWorkspaceStatePersistence.test.ts`, while the outside-active-tab
   and partial-restore path is covered across
   `useWorkspaceStatePersistence.test.ts`, `useWorkspaceRestore.test.ts`,
-  and `storage.test.ts`. The focused command
-  `npm run test -- src/hooks/workspace/useWorkspaceStatePersistence.test.ts src/hooks/workspace/useWorkspaceRestore.test.ts src/lib/storage.test.ts`
-  passes with 3 files / 31 tests. Signed TestFlight smoke still needs to
+  and `storage.test.ts`. A follow-up regression now covers the
+  "launch, restore state arrives, immediately quit before the restore
+  latch settles" path: clean app-exit persistence may flush when live
+  tabs or a live workspace root are already present, but still skips the
+  truly empty pre-restore state so the last good bookmark is not erased.
+  The focused command
+  `npm run test -- src/hooks/workspace/useWorkspaceStatePersistence.test.ts src/hooks/workspace/useWorkspaceRestore.test.ts src/lib/storage.test.ts src/hooks/app/useAppExitConfirmation.test.tsx`
+  passes with 4 files / 39 tests. Signed TestFlight smoke still needs to
   repeat the user-facing workspace-retention flow before App Review.
 - 2026-06-12: Pasted image decoded-size cap / `data:image` wording is
   implemented. `save_pasted_image` now computes the decoded base64 byte

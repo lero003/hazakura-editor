@@ -35,9 +35,11 @@ Last reviewed: 2026-06-12 (v0.19 App Store submission candidate)
   restart. Older path-only state can still fall back to the
   reauthorization status hint.
 - TestFlight use found workspace persistence follow-ups before App
-  Review. Code-level regression coverage now pins repeated relaunch and
-  outside-active-tab restore behavior; signed TestFlight fuller smoke
-  still needs to repeat the user-facing flow before App Review.
+  Review. Code-level regression coverage now pins repeated relaunch,
+  outside-active-tab restore, and the fast clean-quit path where restored
+  tabs/workspace state is already live before the restore-complete latch
+  settles. Signed TestFlight fuller smoke still needs to repeat the
+  user-facing flow before App Review.
 - Human-side App Store lane smoke on 2026-06-12 passed launch, basic
   document creation/open, preview/export, image paste/drag-drop, App
   Store surface omission, and dirty-close confirmation. Treat Save As
@@ -107,7 +109,8 @@ creating `.hazakura-note.tmp` next to it is denied. Direct-open image
 files now route to read-only image preview instead of text open failure
 when no workspace is active. Workspace restore also preserves the last
 good persisted state when a restore attempt produces an empty live
-result, and standalone-file `saveActiveTab` is pinned for the
+result, allows clean app-exit persistence once live restored state is
+present, and standalone-file `saveActiveTab` is pinned for the
 no-workspace case. L Mode table Backspace / Delete, table caret
 movement coverage, floating-control focus visibility, encoding-only
 dirty indication, WorkspaceTree rename markup, Markdown preview task
@@ -176,6 +179,9 @@ list. Each run should pick exactly one open slice and close it as
   claims.
 - For docs-only work, run `git diff --check`.
 - For code changes, follow `docs/development-automation.md`.
+- Latest workspace persistence focused checks:
+  `npm run test -- src/hooks/workspace/useWorkspaceStatePersistence.test.ts src/hooks/workspace/useWorkspaceRestore.test.ts src/lib/storage.test.ts src/hooks/app/useAppExitConfirmation.test.tsx`
+  and `npm run build:vite`.
 - For UI behavior changes, update or exercise `docs/smoke-checklist.md`.
 - Do not claim manual smoke passed unless it was actually exercised.
 - Current known local worktree caveat: a pre-existing
