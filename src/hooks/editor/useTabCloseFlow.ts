@@ -78,6 +78,7 @@ export function useTabCloseFlow({
   setStatus,
   setTabs,
   tabs,
+  tabsRef,
 }: UseTabCloseFlowOptions) {
   const closeTabNow = useCallback(
     (tabId: string) => {
@@ -131,6 +132,15 @@ export function useTabCloseFlow({
     },
     [closeTabNow, setPendingCloseTabId, tabs],
   );
+
+  const findDirtyTargetAfterSave = useCallback(() => {
+    const targetTabIds = new Set(dirtyTabs.map((tab) => tab.id));
+    return (
+      tabsRef.current.find(
+        (tab) => targetTabIds.has(tab.id) && isDirty(tab),
+      ) ?? null
+    );
+  }, [dirtyTabs, tabsRef]);
 
   const saveAndClosePendingTab = useCallback(async () => {
     if (!pendingCloseTabId) {
@@ -201,6 +211,18 @@ export function useTabCloseFlow({
       }
     }
 
+    const dirtyAfterSave = findDirtyTargetAfterSave();
+    if (dirtyAfterSave) {
+      setActiveTabId(dirtyAfterSave.id);
+      setPendingAppClose(false);
+      setStatus("Close stopped");
+      focusEditorSoon();
+      if (appExitInProgressRef) {
+        appExitInProgressRef.current = false;
+      }
+      return;
+    }
+
     const exitAfter = appExitInProgressRef?.current === true;
     allowWindowCloseRef.current = true;
     setPendingAppClose(false);
@@ -224,6 +246,7 @@ export function useTabCloseFlow({
     allowWindowCloseRef,
     appExitInProgressRef,
     dirtyTabs,
+    findDirtyTargetAfterSave,
     focusEditorSoon,
     onBeforeWindowClose,
     saveTabById,

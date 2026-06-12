@@ -62,6 +62,21 @@ function makeTab(overrides: Partial<EditorTab> = {}): EditorTab {
 
 function setup(overrides: Partial<Parameters<typeof useTabCloseFlow>[0]> = {}) {
   const dirtyTab = makeTab();
+  const defaultTabsRef = overrides.tabsRef ?? { current: [dirtyTab] };
+  const defaultSaveTabById = vi.fn(async (tabId: string) => {
+    defaultTabsRef.current = defaultTabsRef.current.map((tab) =>
+      tab.id === tabId
+        ? {
+            ...tab,
+            lastSavedContents: tab.contents,
+            lastSavedEncoding: tab.encoding,
+            lastSavedLineEnding: tab.line_ending,
+            saveStatus: "saved",
+          }
+        : tab,
+    );
+    return true;
+  });
   const options: Parameters<typeof useTabCloseFlow>[0] = {
     activeTabId: dirtyTab.id,
     allowWindowCloseRef: { current: false },
@@ -69,7 +84,7 @@ function setup(overrides: Partial<Parameters<typeof useTabCloseFlow>[0]> = {}) {
     discardingWindowCloseRef: { current: false },
     focusEditorSoon: vi.fn(),
     pendingCloseTabId: null,
-    saveTabById: vi.fn(async () => true),
+    saveTabById: defaultSaveTabById,
     setActiveTabId: vi.fn(),
     setGlobalError: vi.fn(),
     setPendingAppClose: vi.fn(),
@@ -78,7 +93,7 @@ function setup(overrides: Partial<Parameters<typeof useTabCloseFlow>[0]> = {}) {
     setStatus: vi.fn(),
     setTabs: vi.fn(),
     tabs: [dirtyTab],
-    tabsRef: { current: [dirtyTab] },
+    tabsRef: defaultTabsRef,
     ...overrides,
   };
 
@@ -423,6 +438,49 @@ describe("useTabCloseFlow", () => {
     // The ref is reset so a subsequent red-button
     // close on the now-hidden-to-be-quit window does
     // not re-enter the exit path.
+    expect(appExitInProgressRef.current).toBe(false);
+  });
+
+  it("stops Save All when a tab becomes dirty again during the save loop", async () => {
+    const dirtyTab = makeTab({ contents: "first edit" });
+    const redirtiedTab = {
+      ...dirtyTab,
+      contents: "second edit during save",
+      lastSavedContents: "first edit",
+    };
+    const tabsRef = { current: [dirtyTab] };
+    const appExitInProgressRef = { current: true };
+    const setActiveTabId = vi.fn();
+    const setPendingAppClose = vi.fn();
+    const setStatus = vi.fn();
+    const focusEditorSoon = vi.fn();
+    const saveTabById = vi.fn(async () => {
+      tabsRef.current = [redirtiedTab];
+      return true;
+    });
+    const { result } = setup({
+      appExitInProgressRef,
+      dirtyTabs: [dirtyTab],
+      focusEditorSoon,
+      saveTabById,
+      setActiveTabId,
+      setPendingAppClose,
+      setStatus,
+      tabs: [dirtyTab],
+      tabsRef,
+    });
+
+    await act(async () => {
+      await result.current.saveAllAndCloseWindow();
+    });
+
+    expect(saveTabById).toHaveBeenCalledWith(dirtyTab.id);
+    expect(tauriWindow.exitApp).not.toHaveBeenCalled();
+    expect(tauriWindow.hideMainWindow).not.toHaveBeenCalled();
+    expect(setActiveTabId).toHaveBeenCalledWith(dirtyTab.id);
+    expect(setPendingAppClose).toHaveBeenCalledWith(false);
+    expect(setStatus).toHaveBeenCalledWith("Close stopped");
+    expect(focusEditorSoon).toHaveBeenCalledTimes(1);
     expect(appExitInProgressRef.current).toBe(false);
   });
 
