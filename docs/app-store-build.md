@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-06-12 (v0.18 TestFlight delivery)
+Last reviewed: 2026-06-12 (v0.19 App Store submission candidate)
 
 ## Purpose
 
@@ -31,7 +31,7 @@ Apple Local Assist and Agent Workbench behind their existing boundaries.
 
 - App name: `Hazakura Editor`
 - Bundle ID: `dev.hazakura.editor`
-- Current version: `0.18.0`
+- Current version: `0.19.0`
 - App Store category: `Productivity`
 - Public Privacy Policy URL:
   `https://hazakura.dev/hazakura-editor/privacy/`
@@ -249,7 +249,7 @@ find "$APP/Contents/MacOS" -maxdepth 1 -type f -print
 Expected:
 
 - `CFBundleIdentifier` is `dev.hazakura.editor`
-- `CFBundleShortVersionString` is `0.18.0`
+- `CFBundleShortVersionString` is `0.19.0`
 - `CFBundleVersion` is a positive integer higher than the last uploaded
   App Store Connect build
 - `hazakura-editor` is present
@@ -284,7 +284,7 @@ Keep the real installer signing identity in ignored local notes.
 
 ```bash
 APP="src-tauri/target/universal-apple-darwin/release/bundle/macos/Hazakura Editor.app"
-PKG="src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.18.0-mas.pkg"
+PKG="src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.19.0-build7-mas.pkg"
 
 mkdir -p "$(dirname "$PKG")"
 
@@ -302,7 +302,7 @@ pkgutil --check-signature "$PKG"
 spctl --assess --type install --verbose=4 "$PKG"
 ```
 
-Upload `HazakuraEditor-0.18.0-mas.pkg` with Transporter. After upload,
+Upload `HazakuraEditor-0.19.0-build7-mas.pkg` with Transporter. After upload,
 record the App Store Connect processing result, TestFlight internal
 group assignment, and any Apple validation warnings in ignored
 `docs/internal/` notes. Tracked docs may record public-safe summaries
@@ -395,3 +395,14 @@ was delivered through Transporter and reached TestFlight distribution
 with no reported Apple validation warnings. Basic launch and save smoke
 on the TestFlight build passed. Fuller manual smoke, final metadata, and
 App Review submission / approval remain separate evidence.
+
+v0.19 submission-candidate note: the current user-visible app version is
+`0.19.0` and the App Store build counter is `7`. Treat the next
+Transporter upload, Apple validation, TestFlight distribution, and fuller
+manual smoke as fresh `0.19.0` evidence; do not reuse the `0.18.0` build
+`4` TestFlight result as final App Review proof.
+In local Codex smoke, the ad-hoc sandbox submit-lane bundle reported the
+expected `0.19.0` / `7` metadata and entitlements but still failed
+`open -n` with `RBSRequestErrorDomain Code=5`; this remains a local
+ad-hoc sandbox limitation until the signed TestFlight build proves
+launch.

@@ -11,6 +11,10 @@ Latest published GitHub Release body:
 
 - `0.18.0-warning-expected-dmg-preview.release.md`
 
+Latest App Store submission-candidate note:
+
+- `0.19.0-app-store-submission-candidate.release.md`
+
 Latest source / local-app tag notes:
 
 - `0.14.0-source-tag.release.md`

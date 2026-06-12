@@ -9,53 +9,137 @@
   margin-left: 2px;
 }
 
+/* タブ close はタブ本体の hover にだけ薄く出す。
+   背景はタブ全体に任せ、close 単体の円で分断しない。*/
 .tab-close[data-close-affordance="x"] {
   background: transparent;
-  border: 1px solid var(--border);
+  border: 0;
   box-shadow: none;
-  color: var(--text-muted);
-  flex: 0 0 24px;
-  height: 24px;
+  color: color-mix(in srgb, var(--text) 56%, transparent);
+  flex: 0 0 20px;
+  height: 20px;
+  width: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 4px;
-  border-radius: 6px;
-  opacity: 0.78;
-  transition: all 0.15s var(--ease-standard);
-  width: 24px;
+  margin-right: 5px;
+  border-radius: 999px;
+  opacity: 0;
+  position: relative;
+  transform: scale(0.92);
+  transition:
+    background 0.12s var(--ease-standard),
+    color 0.12s var(--ease-standard),
+    opacity 0.12s var(--ease-standard),
+    transform 0.12s var(--ease-standard);
 }
 
 .tab-close-icon {
-  opacity: 0.76;
-  transform: scale(0.96);
+  display: none;
+  opacity: 0;
+  transform: scale(0.9);
   transition:
-    opacity 0.15s var(--ease-standard),
-    transform 0.15s var(--ease-standard);
+    opacity 0.12s var(--ease-standard),
+    color 0.12s var(--ease-standard),
+    transform 0.12s var(--ease-standard);
 }
 
-.tab-item:hover .tab-close,
-.tab-item.active .tab-close {
-  background: var(--surface-muted);
-  opacity: 0.92;
+.tab-close::before,
+.tab-close::after {
+  background: currentColor;
+  border-radius: 999px;
+  content: "";
+  height: 1.45px;
+  left: 50%;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform-origin: center;
+  transition:
+    opacity 0.12s var(--ease-standard),
+    background 0.12s var(--ease-standard);
+  width: 8px;
 }
 
-.tab-item:hover .tab-close-icon,
-.tab-item.active .tab-close-icon,
-.tab-close:focus-visible .tab-close-icon {
+.tab-close::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.tab-close::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.tab-item:hover .tab-close {
+  background: transparent;
+  color: color-mix(in srgb, var(--text) 62%, transparent);
   opacity: 1;
-  transform: scale(1.08);
+  transform: scale(1);
+}
+
+.tab-item:hover .tab-close::before,
+.tab-item:hover .tab-close::after,
+.tab-item:hover .tab-close-icon {
+  opacity: 0.72;
+}
+
+/* 非アクティブタブをホバー: ファイルアイコンとタブ名も
+   アクティブ時と同じ濃さになり、タブ全体として
+   「触っている」感が出る。*/
+.tab-item:not(.active):hover .tab-button {
+  color: var(--text);
+}
+
+.tab-item:not(.active):hover .tab-file-icon {
+  color: var(--text);
+  opacity: 1;
 }
 
 .tab-close:hover {
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  color: color-mix(in srgb, var(--text) 76%, transparent);
   opacity: 1 !important;
-  background: var(--surface-strong);
-  border-color: var(--accent);
-  color: var(--danger);
+  transform: scale(1);
+}
+
+.tab-close:hover::before,
+.tab-close:hover::after,
+.tab-close:hover .tab-close-icon {
+  opacity: 0.88 !important;
+}
+
+.tab-close:focus-visible {
+  background: color-mix(in srgb, var(--text) 14%, transparent);
+  color: color-mix(in srgb, var(--text) 78%, transparent);
+  opacity: 1;
+  outline: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  outline-offset: 1px;
+}
+
+.tab-close:focus-visible::before,
+.tab-close:focus-visible::after,
+.tab-close:focus-visible .tab-close-icon {
+  opacity: 0.9;
 }
 
 :root[data-theme="dark"] .tab-close:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: color-mix(in srgb, #ffffff 10%, transparent);
+}
+
+/* タブのファイルアイコン (12px、currentColor 対応) */
+.tab-file-icon {
+  align-items: center;
+  color: var(--text-muted);
+  display: inline-flex;
+  flex: 0 0 auto;
+  line-height: 0;
+  opacity: 0.85;
+  transition: color 0.12s var(--ease-standard), opacity 0.12s var(--ease-standard);
+}
+
+.tab-item.active .tab-file-icon {
+  color: var(--text);
+  opacity: 1;
 }
 
 .document-meta {

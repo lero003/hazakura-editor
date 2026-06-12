@@ -7,6 +7,11 @@ import type {
 import { useRef } from "react";
 import { isDirty } from "../../features/editor/editorTabs";
 import type { EditorTab, ImagePreviewState } from "../../types";
+import {
+  TabImageIcon,
+  TabMarkdownIcon,
+  TabTextIcon,
+} from "../app/Icons";
 
 type TabBarProps = {
   activeTabId: string | null;
@@ -32,6 +37,40 @@ type TabBarProps = {
   selectedImage: ImagePreviewState | null;
   tabs: EditorTab[];
 };
+
+// 拡張子ごとのファイルアイコンを返す。
+// タブ用に新規追加した `TabMarkdownIcon` / `TabTextIcon` /
+// `TabImageIcon` は currentColor 対応なので、active / 非
+// アクティブの色差分は CSS 側 (.tab-file-icon と
+// .tab-item.active .tab-file-icon) で切り替える。
+// ここでは「あとに続くファイル名」を読み取られる可能性が
+// あるため SVG 自体には aria-hidden を付けており、意味は
+// ファイル名 (tab.name) に乗る。
+function getFileIcon(fileName: string) {
+  const lower = fileName.toLowerCase();
+  const dot = lower.lastIndexOf(".");
+  const ext = dot >= 0 ? lower.slice(dot + 1) : "";
+
+  if (ext === "md" || ext === "markdown" || ext === "mdown" || ext === "mkd") {
+    return <TabMarkdownIcon />;
+  }
+  if (
+    ext === "png" ||
+    ext === "jpg" ||
+    ext === "jpeg" ||
+    ext === "gif" ||
+    ext === "webp" ||
+    ext === "svg" ||
+    ext === "bmp" ||
+    ext === "ico" ||
+    ext === "heic" ||
+    ext === "tif" ||
+    ext === "tiff"
+  ) {
+    return <TabImageIcon />;
+  }
+  return <TabTextIcon />;
+}
 
 export function TabBar({
   activeTabId,
@@ -184,6 +223,9 @@ export function TabBar({
                     title={tab.path}
                     type="button"
                   >
+                    <span className="tab-file-icon" aria-hidden="true">
+                      {getFileIcon(tab.name)}
+                    </span>
                     <span className="tab-name">{tab.name}</span>
                     {dirty ? (
                       <>
@@ -207,16 +249,16 @@ export function TabBar({
                     <svg
                       aria-hidden="true"
                       className="tab-close-icon"
-                      width="8"
-                      height="8"
-                      viewBox="0 0 8 8"
+                      width="9"
+                      height="9"
+                      viewBox="0 0 9 9"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
                     >
                       <path
-                        d="M1 1L7 7M7 1L1 7"
+                        d="M1.5 1.5L7.5 7.5M7.5 1.5L1.5 7.5"
                         stroke="currentColor"
-                        strokeWidth="1.2"
+                        strokeWidth="1.5"
                         strokeLinecap="round"
                       />
                     </svg>
@@ -249,6 +291,9 @@ export function TabBar({
                   title={selectedImage.path}
                   type="button"
                 >
+                  <span className="tab-file-icon" aria-hidden="true">
+                    <TabImageIcon />
+                  </span>
                   <span className="tab-name">{selectedImage.name}</span>
                 </button>
                 <button
@@ -261,16 +306,16 @@ export function TabBar({
                   <svg
                     aria-hidden="true"
                     className="tab-close-icon"
-                    width="8"
-                    height="8"
-                    viewBox="0 0 8 8"
+                    width="9"
+                    height="9"
+                    viewBox="0 0 9 9"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M1 1L7 7M7 1L1 7"
+                      d="M1.5 1.5L7.5 7.5M7.5 1.5L1.5 7.5"
                       stroke="currentColor"
-                      strokeWidth="1.2"
+                      strokeWidth="1.5"
                       strokeLinecap="round"
                     />
                   </svg>

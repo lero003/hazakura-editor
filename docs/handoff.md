@@ -3,11 +3,11 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-12 (v0.18 Help copy overlap cleanup)
+Last reviewed: 2026-06-12 (v0.19 App Store submission candidate)
 
 ## Current State
 
-- `Hazakura Editor` is at `0.18.0`.
+- `Hazakura Editor` is at `0.19.0`.
 - User-facing app identity is capitalized as `Hazakura Editor`. The
   App Store preview bundle is `Hazakura Editor.app`; current docs and
   smoke paths should use that name rather than the older lowercase
@@ -17,8 +17,8 @@ Last reviewed: 2026-06-12 (v0.18 Help copy overlap cleanup)
 - The helper-free App Store lane delivered `0.18.0` build `4` to
   TestFlight on 2026-06-12 with no reported Apple validation warnings;
   basic TestFlight launch / save smoke passed.
-- Current active lane is v0.18 pre-review bug fixing, fuller
-  TestFlight smoke, and App Store submission prep.
+- Current active lane is v0.19 App Store submission-candidate smoke and
+  App Store submission prep. The current App Store build counter is `7`.
 - Start from `docs/current-work.md`.
 - Markdown preview task checkboxes are complete for v0.18: Preview renders
   `- [ ]` / `- [x]` as inert display-only checkbox glyphs without
@@ -38,6 +38,12 @@ Last reviewed: 2026-06-12 (v0.18 Help copy overlap cleanup)
   Review. Code-level regression coverage now pins repeated relaunch and
   outside-active-tab restore behavior; signed TestFlight fuller smoke
   still needs to repeat the user-facing flow before App Review.
+- Human-side App Store lane smoke on 2026-06-12 passed launch, basic
+  document creation/open, preview/export, image paste/drag-drop, App
+  Store surface omission, and dirty-close confirmation. Treat Save As
+  UX, workspace restore, Move to Trash, network observation, and live
+  accessibility checks as partial or unconfirmed until the exact signed
+  `0.19.0` TestFlight build is tied to the upload record.
 - TestFlight use found one status-area cleanup follow-up before App
   Review. Code-level UI coverage now removes duplicate passive
   `UTF-8` / `LF` style labels in normal Safe Editor mode while

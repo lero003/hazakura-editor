@@ -348,7 +348,8 @@ Target:
 - official website/download-page wording, if needed, as links to the two binary lanes
 
 These release notes and review packets are historical evidence now. Use
-`docs/current-work.md` for the current v0.18 UX and submission-prep queue.
+`docs/current-work.md` for the current v0.19 App Store
+submission-candidate queue.
 
 ### v0.18: UX Polish / Submission Prep
 

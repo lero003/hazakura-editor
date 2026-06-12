@@ -208,7 +208,7 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version is `0.18.0` across npm, Tauri, Cargo, and lockfile metadata.
+- Current package/app version is `0.19.0` across npm, Tauri, Cargo, and lockfile metadata.
 - The current warning-expected DMG preview tag is `v0.18.0`; its release-note evidence lives in [0.18.0 Warning-expected DMG Preview](docs/releases/0.18.0-warning-expected-dmg-preview.release.md).
 - Source users build locally with `npm ci` and `npm run build`.
 - The generated local smoke `.app` declares macOS 11.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. The App Store submission lane is helper-free and does not include Agent Workbench, CLI Agent, Apple Local Assist helper, or external AI/API calls. Developer / GitHub builds may still include the Apple Local Assist helper. The app is not Developer ID signed or notarized.

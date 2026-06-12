@@ -99,6 +99,40 @@ export function ImageFileIcon() {
   );
 }
 
+// Tab 用のファイルアイコン (currentColor 対応、12px 罫線)。
+// 既存 MarkdownFileIcon / TextFileIcon / ImageFileIcon は
+// ワークスペースツリーで `var(--text-muted)` ハードコードの
+// ままで使われているため、アクティブ/非アクティブの色を CSS
+// だけで切り替えたいタブ用に currentColor 版を別途用意する。
+export function TabMarkdownIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M3 1.5C2.17157 1.5 1.5 2.17157 1.5 3V13C1.5 13.8284 2.17157 14.5 3 14.5H13C13.8284 14.5 14.5 13.8284 14.5 13V3C14.5 2.17157 13.8284 1.5 13 1.5H3Z" stroke="currentColor" strokeWidth="1.4"/>
+      <path d="M4.25 5V11M4.25 5L6.75 8.5L9.25 5V11M11.25 6.5V9.5M10.25 8H12.25" stroke="currentColor" strokeWidth="1.15" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+export function TabTextIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M3 1.5C2.17157 1.5 1.5 2.17157 1.5 3V13C1.5 13.8284 2.17157 14.5 3 14.5H13C13.8284 14.5 14.5 13.8284 14.5 13V5.25L10.25 1.5H3Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+      <path d="M10.25 1.5V5.25H14.5" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+      <path d="M4 8H12M4 10.75H9" stroke="currentColor" strokeWidth="1.15" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+export function TabImageIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M2.5 3C2.5 2.17157 3.17157 1.5 4 1.5H12C12.8284 1.5 13.5 2.17157 13.5 3V13C13.5 13.8284 12.8284 14.5 12 14.5H4C3.17157 14.5 2.5 13.8284 2.5 13V3Z" stroke="currentColor" strokeWidth="1.3"/>
+      <path d="M4.25 11.25L6.25 8.75L8.25 10.75L9.75 8.75L12 11.25" stroke="currentColor" strokeWidth="1.15" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="10.5" cy="5.25" r="0.95" fill="currentColor" opacity="0.75"/>
+    </svg>
+  );
+}
+
 export function PreviewIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -3,21 +3,30 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-12 (v0.18 Help copy overlap cleanup)
+Last reviewed: 2026-06-12 (v0.19 App Store submission candidate)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: `0.18.0` across npm, Tauri, Cargo, and lockfile metadata.
+- Current package/app version: `0.19.0` across npm, Tauri, Cargo, and lockfile metadata.
 - Latest published downloadable preview: `v0.18.0` warning-expected DMG preview.
 - `v0.18.0` is a Developer / GitHub lane preview, ad-hoc signed, not Developer ID signed, not notarized, and expected to show macOS security warnings.
 - The helper-free App Store lane delivered `0.18.0` build `4` to
   TestFlight on 2026-06-12 with no reported Apple validation warnings;
   basic TestFlight launch / save smoke passed.
+- The current App Store submission candidate is `0.19.0` with App Store
+  build counter `7`; upload, App Store Connect validation, fuller
+  TestFlight smoke, metadata finalization, and App Review submission
+  remain separate evidence.
+- Human-side App Store lane smoke on 2026-06-12 passed launch,
+  basic document creation/open, preview/export, image paste/drag-drop,
+  App Store surface omission, and dirty-close confirmation, but left
+  Save As UX, workspace restore, Move to Trash, network observation, and
+  live accessibility checks as partial or unconfirmed before final App
+  Review submission.
 - Older public tags and release assets remain immutable.
-- Current active work is v0.18 pre-review bug fixing, core Safe Editor
-  quality checks, fuller TestFlight smoke, and App Store submission
-  prep. Local pre-review regression evidence is archived under
+- Current active work is v0.19 App Store submission-candidate smoke and
+  submission prep. Local pre-review regression evidence is archived under
   `docs/archive/operations/`; the highest-risk remaining queue items are
   basic editor surfaces
   (open/save/close, restore/recovery, preview,
@@ -119,7 +128,7 @@ baseline, and smoke evidence are archived under
 
 ## Active Planning Sources
 
-- `docs/current-work.md`: current v0.18 UX and submission-prep queue.
+- `docs/current-work.md`: current v0.19 App Store submission-candidate queue.
 - `docs/roadmap.md`: phase order and future boundaries.
 - `docs/product-brief.md`: durable product direction and non-goals.
 - `docs/security-boundary.md`: safe editor constraints.

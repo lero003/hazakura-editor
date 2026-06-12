@@ -58,9 +58,10 @@ and avoids visible developer-lane badges. It does not prove signed
 bundle identity, sandbox behavior, external network absence, App Store
 Connect processing, or TestFlight user flows.
 
-## v0.18 Pre-Review Smoke Focus
+## v0.19 App Store Candidate Smoke Focus
 
-Run these on the signed TestFlight build before App Review submission:
+Run these on the signed `0.19.0` TestFlight build before App Review
+submission:
 
 1. Workspace restore: open a workspace, quit/relaunch several times,
    then repeat with an outside-workspace tab active. The selected
@@ -88,6 +89,49 @@ Run these on the signed TestFlight build before App Review submission:
 8. Accessibility: complete live VoiceOver, keyboard-only traversal, and
    Increase Contrast checks for the tab bar, file tree, dirty dialogs,
    Preferences, Help, and status/error rows.
+
+## v0.19 Human-Side App Store Lane Smoke Note
+
+Human-side smoke notes received on 2026-06-12 for the App Store lane
+candidate. The source note did not record a final App Store Connect
+build number, so keep this as partial manual evidence until the exact
+TestFlight build is tied to the upload record.
+
+Passed:
+
+- First launch.
+- New Markdown creation.
+- Opening an existing Markdown file through user selection.
+- Preview and HTML export.
+- Image paste and drag/drop under sandboxed file access.
+- App Store surface omission: Agent Workbench, CLI Agent, dev mode, and
+  Apple Local Assist were not visible.
+- Dirty-tab `Cmd+Q` and red-window-button close confirmation.
+
+Partial / needs another pass:
+
+- Save / Save As worked enough not to corrupt data, but Save As felt
+  surprising because the original file could appear to close as a clean
+  unedited tab after saving under another name. Treat as UX observation,
+  not a release-blocking data-loss claim unless reproduced.
+- Workspace restore remained inconsistent in the human note, especially
+  when quitting before interacting with the workspace and possibly more
+  often with Google Drive-backed folders. If the workspace cannot be
+  reopened, the previously open file tabs may close. Re-test on the
+  exact signed TestFlight build and confirm either persistence or a clear
+  reauthorization path.
+- Workspace-outside active-tab restore remains tied to the same
+  workspace persistence uncertainty.
+- External network observation was marked "probably pass"; the observed
+  open files were system/WebKit and local app-container resources, not a
+  definitive external-socket audit.
+
+Unknown / still required:
+
+- Move to Trash in the signed App Store lane.
+- Live VoiceOver, keyboard-only traversal, and Increase Contrast checks.
+- Tab close affordance should be rechecked on the exact signed build;
+  the human note reported the close `x` was not visible enough.
 
 ## v0.11 Release-Candidate Focus
 

@@ -199,8 +199,16 @@
   background: rgba(0, 0, 0, 0.03);
 }
 
+.tab-item.active:hover {
+  background: color-mix(in srgb, var(--surface) 92%, var(--text) 8%);
+}
+
 :root[data-theme="dark"] .tab-item:not(.active):hover {
   background: rgba(255, 255, 255, 0.03);
+}
+
+:root[data-theme="dark"] .tab-item.active:hover {
+  background: color-mix(in srgb, var(--surface) 90%, #ffffff 10%);
 }
 
 .tab-item.dragging {
@@ -229,7 +237,7 @@
   font-size: 12.5px;
   gap: 6px;
   overflow: hidden;
-  padding: 0 8px 0 12px;
+  padding: 0 4px 0 10px;
   height: 100%;
   text-align: left;
   white-space: nowrap;
