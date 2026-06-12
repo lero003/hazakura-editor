@@ -410,7 +410,7 @@ certificate, or App Store Connect access.
 |---|---|---|
 | P0 | TestFlight / App Store Connect validation | The helper-free App Store submit lane is defined in `docs/app-store-build.md`. 2026-06-12 evidence: the signed `HazakuraEditor-0.18.0-mas.pkg` upload reached TestFlight distribution with no reported Apple validation warnings, and basic TestFlight launch / save smoke passed. Current candidate: `0.19.0` with App Store build counter `10`. Human-side smoke on 2026-06-12 passed launch, basic document creation/open, preview/export, image paste/drag/drop, App Store surface omission, dirty-close confirmation, Move to Trash, and network observation; Save As UX remains an observation, workspace restore is acceptable with a residual Google Drive / quit-before-interaction risk, and live accessibility is partial. A `Cmd+Shift+F` global-search result activation bug found during smoke has a focused code-level fix. Remaining proof before broader App Store-ready claims: upload / Apple validation for the `0.19.0` candidate, fuller manual smoke on the resulting TestFlight build, final metadata, and App Review submission / approval evidence. The earlier ad-hoc App Store preview `open -n` failure remains non-blocking unless it reproduces on the signed TestFlight build. |
 | P1 | App Review Notes final copy / attachments | The ignored internal review-note draft is aligned to the current `0.19.0` build `10` candidate and the non-obvious lane facts: `network.client` exists for Tauri/WebKit bundled asset loading under App Sandbox rather than app-data networking; script-like file extensions open as inert text only and are never executed; Move to Trash is native macOS file handling rather than automation; the App Store lane omits Apple Local Assist helper, Agent Workbench, CLI Agent launch, dev mode, arbitrary command execution, and external AI/API calls. Remaining work is final App Store Connect field entry, screenshots / reviewer evidence attachments, and account/contact-specific copy in ignored local notes. |
-| P1 | Public metadata final pass | Privacy Policy URL is `https://hazakura.dev/hazakura-editor/privacy/`. Remaining metadata work is support URL, category / keywords / age rating / screenshots, and App Store Connect field-by-field review. |
+| P1 | Public metadata final pass | Privacy Policy URL is `https://hazakura.dev/hazakura-editor/privacy/`; Support URL candidate is `https://hazakura.dev/hazakura-editor/support/`. Both URLs returned HTTP 200 on 2026-06-13, and ignored local App Store submission notes now carry public-safe field candidates for app name, bundle ID, version/build, category, keywords, and reviewer boundary wording. Remaining work is App Store Connect field-by-field entry, age-rating questionnaire result, screenshots / attachments, and account-specific review. |
 
 ## Completed Submission-Prep Slices
 
@@ -423,6 +423,11 @@ certificate, or App Store Connect access.
   smoke points to verify. Final App Store Connect fields, screenshots,
   attachments, and account/contact-specific reviewer copy remain outside
   tracked docs.
+- 2026-06-13: Public metadata local notes are prepared under ignored
+  `docs/internal/` notes. Privacy and support URLs both returned HTTP
+  200, and the local notes record candidate App Store Connect fields
+  without account contacts, certificates, raw logs, or private screenshot
+  material.
 - 2026-06-13: Bundle-size follow-up is closed as `verified no-op`.
   `npm run build:vite` passes with the existing Vite large-chunk warning;
   measured output has `main-BfLm2n6P.js` at 1,080,445 bytes minified /
