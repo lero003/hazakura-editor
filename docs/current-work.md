@@ -107,6 +107,13 @@ over copy-heavy or product-voice-sensitive work.
 
 ## Completed v0.18 Slices
 
+- 2026-06-12: Core Safe Editor malformed external Markdown link
+  guard is implemented. Preview / Help external-link normalization now
+  rejects `http:` / `https:` links that omit the explicit `//host`
+  separator before they can be handed to the OS external-open path,
+  matching the existing Rust command boundary. Workspace-relative
+  Markdown links, allowed external links, unsafe-scheme blocking, and
+  in-app text-open routing remain unchanged.
 - 2026-06-12: Tab close affordance clarity is implemented. Text-file
   tabs and image-preview tabs now expose the close control as a stable
   `x` button rather than a plain circular mark, while retaining the

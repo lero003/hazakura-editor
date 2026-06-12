@@ -17,6 +17,21 @@ export function normalizeExternalMarkdownLink(href: string): string | null {
     return null;
   }
 
+  const schemeSeparatorIndex = trimmedHref.indexOf(":");
+  if (schemeSeparatorIndex <= 0) {
+    return null;
+  }
+
+  const scheme = trimmedHref.slice(0, schemeSeparatorIndex).toLowerCase();
+  const remainder = trimmedHref.slice(schemeSeparatorIndex + 1);
+
+  if (
+    (scheme === "http" || scheme === "https") &&
+    !remainder.startsWith("//")
+  ) {
+    return null;
+  }
+
   try {
     const url = new URL(trimmedHref);
     if (!EXTERNAL_LINK_PROTOCOLS.has(url.protocol.toLowerCase())) {

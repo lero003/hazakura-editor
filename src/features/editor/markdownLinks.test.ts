@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { resolveLocalMarkdownLinkTarget } from "./markdownLinks";
+import {
+  normalizeExternalMarkdownLink,
+  resolveLocalMarkdownLinkTarget,
+} from "./markdownLinks";
+
+describe("normalizeExternalMarkdownLink", () => {
+  it("rejects http and https links without an explicit host separator", () => {
+    expect(normalizeExternalMarkdownLink("https:hazakura.dev/no-host")).toBeNull();
+    expect(normalizeExternalMarkdownLink("http:/hazakura.dev/one-slash")).toBeNull();
+  });
+});
 
 describe("resolveLocalMarkdownLinkTarget", () => {
   const workspaceRoot = "/workspace";
