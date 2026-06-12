@@ -75,6 +75,7 @@ Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
+| P1 | Recent Files surface removal | Confirmed bug: file-level recent entries cannot reliably reopen unless a workspace is already open, which makes the affordance misleading for standalone-file use. Prefer removing the `Recent Files` / recently opened file surface instead of widening workspace restore or file access semantics. Keep `Recent Folders` / workspace reopen behavior intact unless focused inspection proves it shares the same bug. Verify start panel, native File menu, and stored recent-file cleanup/migration behavior; update README and Help copy only after the behavior change lands. |
 | P1 | Manual accessibility smoke | Code-level observation recorded in `docs/smoke-checklist.md` and `docs/archive/operations/v0.18-manual-accessibility-smoke-observation.md` (Help readability, full keyboard-only traversal, VoiceOver tab-bar announcement, Increase Contrast). Live VoiceOver and Increase Contrast observation items still pending on the user's Mac. Baseline dialogs partially observed; `MoveToTrashConfirmDialog` focus management now wired (see Completed v0.18 Slices). |
 | P2 | Auto-backup filename uniqueness | Auto-backup filenames currently use second-resolution timestamps. If focused tests can reproduce same-second overwrite/collision risk, add milliseconds, a monotonic counter, or a short random suffix so rapid backups do not overwrite each other. Keep recovery listing newest-first and path containment unchanged. |
 | P2 | Help copy overlap cleanup | Separate Privacy Policy, Local Data Disclosure, Support Diagnostics, About, and Open Source Acknowledgements so each page has one job. |
@@ -89,6 +90,7 @@ over copy-heavy or product-voice-sensitive work.
 |---|---|---|
 | Good | L Mode quality investigation | Pick one reproduced L Mode issue or one measurable quality gap only: caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or performance baseline. Do not add a new editing model or contenteditable surface. |
 | Good | Theme quality investigation | Pick one concrete theme issue only: contrast, focus visibility, status/error readability, dialog readability, or Increase Contrast behavior. Do not redesign palettes or add theme customization. |
+| Good | Recent Files surface removal | Remove the misleading file-level recent surface after reproducing the no-workspace reopen bug. Keep the implementation small: do not broaden sandbox/file access, do not change `Recent Folders`, and preserve explicit Open / Open Folder flows. |
 | Good | Auto-backup filename uniqueness | If reproducible, make backup names unique within the same second while preserving recovery list sorting and cleanup behavior. |
 | Good | Focused refactor for a verified bug | Refactor only when it directly fixes or tests one observed user-facing problem. Keep ownership boundaries and public behavior stable. |
 | Poor fit | Help copy overlap cleanup | This is product voice and submission copy work. Keep it for human/Codex review unless explicitly assigned with tight wording constraints. |
