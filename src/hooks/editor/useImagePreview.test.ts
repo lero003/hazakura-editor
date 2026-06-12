@@ -80,6 +80,24 @@ describe("useImagePreview", () => {
     expect(options.onStatus).toHaveBeenCalledWith("Image preview opened");
   });
 
+  it("returns to the previous text tab when the image preview closes", async () => {
+    vi.mocked(openImageFile).mockResolvedValue(image("/outside/a.png", "a.png"));
+    const { options, result } = setup({ workspaceRootPath: null });
+
+    await act(async () => {
+      await result.current.openImagePreview("/outside/a.png");
+    });
+
+    act(() => {
+      result.current.closeSelectedImagePreview();
+    });
+
+    expect(result.current.selectedImage).toBeNull();
+    expect(options.setActiveTabId).toHaveBeenCalledWith(null);
+    expect(options.setActiveTabId).toHaveBeenLastCalledWith("tab-1");
+    expect(options.onStatus).toHaveBeenCalledWith("Image preview closed");
+  });
+
   it("opens a directly selected image outside the active workspace without workspace-root validation", async () => {
     vi.mocked(openImageFile).mockResolvedValue(
       image("/outside/photo.png", "photo.png"),

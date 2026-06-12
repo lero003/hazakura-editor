@@ -107,6 +107,12 @@ over copy-heavy or product-voice-sensitive work.
 
 ## Completed v0.18 Slices
 
+- 2026-06-12: Core Safe Editor image-preview close regression
+  coverage is implemented. A focused `useImagePreview` test now pins
+  that closing a directly opened standalone image preview clears the
+  image surface and returns to the previous text tab, preserving the
+  read-only image-preview-as-tab contract without changing workspace
+  file operations or save behavior.
 - 2026-06-12: Help copy overlap cleanup is implemented as a
   narrow Privacy Policy / Local Data Disclosure role split. The in-app
   Privacy Policy now stays public-copy oriented, avoids the
