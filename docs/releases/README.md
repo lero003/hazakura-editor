@@ -9,6 +9,10 @@ This directory stores GitHub Release body drafts and published release-note evid
 
 Latest published GitHub Release body:
 
+- `0.19.0-source-tag.release.md`
+
+Latest downloadable GitHub DMG Release body:
+
 - `0.18.0-warning-expected-dmg-preview.release.md`
 
 Latest App Store submission-candidate note:
@@ -17,6 +21,7 @@ Latest App Store submission-candidate note:
 
 Latest source / local-app tag notes:
 
+- `0.19.0-source-tag.release.md`
 - `0.14.0-source-tag.release.md`
 
 Older `.release.md` files are historical release evidence. Keep them here so published release text remains easy to find. Draft proposals that were not release bodies belong in `docs/archive/releases/`.

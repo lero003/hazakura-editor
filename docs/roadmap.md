@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-12 (v0.19 App Store submission candidate)
+Last reviewed: 2026-06-12 (v0.19 GitHub source release)
 
 ## Current Position
 
@@ -13,7 +13,8 @@ automatic agent-apply system.
 
 Current release state:
 
-- Latest published preview: `v0.18.0` warning-expected DMG preview.
+- Latest published source / local-app release: `v0.19.0`.
+- Latest published downloadable preview: `v0.18.0` warning-expected DMG preview.
 - Current package/app version: `0.19.0`.
 - Active lane: v0.19 App Store submission-candidate smoke and App
   Store submission prep.
