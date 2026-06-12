@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-12 (v0.18 pre-review todo review)
+Last reviewed: 2026-06-12 (v0.18 pre-review regression evidence)
 
 ## Current State
 
@@ -71,20 +71,19 @@ Last reviewed: 2026-06-12 (v0.18 pre-review todo review)
   and `THIRD_PARTY_NOTICES.md` under `Contents/Resources/`.
   `scripts/probe-macos-distribution.sh` verifies those files for the
   App Store lane.
+- Pre-review regression evidence is archived at
+  `docs/archive/operations/v0.18-pre-review-regression-evidence-2026-06-12.md`.
+  The local gates passed after one transient Rust full-test failure was
+  cleared by focused and full reruns.
 
 ## Current Work Queue
 
 Use `docs/current-work.md` for the active queue. The current highest
 priority UX items are:
 
-1. Direct save fallback failure safety.
-2. Status bar encoding / line-ending de-duplication.
-3. Manual accessibility smoke.
-4. Third-party license packet.
-5. About metadata finalization.
-6. Pre-review regression evidence.
-7. Auto-backup filename uniqueness, if same-second collision reproduces.
-8. Help copy overlap cleanup.
+1. Auto-backup filename uniqueness, if same-second collision reproduces.
+2. Light accessibility sanity adjacent to a selected core surface.
+3. Help copy overlap cleanup.
 
 Recently completed: direct-open standalone file save now handles the
 App Sandbox-style case where the selected file itself is writable but
@@ -101,9 +100,8 @@ collapse / restore, App Store preview startup, and sandboxed workspace
 bookmark restore are also complete for v0.18.
 
 Submission-prep items in the same queue include fuller TestFlight smoke,
-App Review Notes final copy, Privacy Policy / metadata, final
-third-party notice content review, About metadata finalization, and
-pre-review regression evidence. External review notes worth preserving:
+App Review Notes final copy, Privacy Policy / metadata, and remaining
+account-bound App Review evidence. External review notes worth preserving:
 prepare reviewer-note answers for `network.client`, inert script-like
 file associations, App Store lane omissions, and Move to Trash; do not
 treat low-risk icon size, known Vite chunk warnings, or Help copy

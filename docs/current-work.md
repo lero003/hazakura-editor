@@ -67,11 +67,12 @@ code-regression level as of 2026-06-12. Order 3 is implemented as of
 implemented as of 2026-06-12. Order 6 is implemented as of 2026-06-12
 through the Recent Files surface-removal core probe. Order 7 is
 implemented as of 2026-06-12. Order 8 is implemented as of
-2026-06-12. The remaining Move
+2026-06-12. Order 9 is implemented as of 2026-06-12 through archived
+local regression evidence. The remaining Move
 to Trash and workspace-persistence proofs are signed TestFlight smoke,
 tracked under the submission-prep manual smoke items unless TestFlight
 specifically reopens the Trash or workspace restore behavior. The next
-open automation slice is Order 9.
+open automation slice is Order 10.
 
 ## Active UX Queue
 
@@ -102,6 +103,17 @@ over copy-heavy or product-voice-sensitive work.
 
 ## Completed v0.18 Slices
 
+- 2026-06-12: Pre-review regression evidence is archived in
+  `docs/archive/operations/v0.18-pre-review-regression-evidence-2026-06-12.md`.
+  The local gate pass includes `npm ci`, `npm run build:vite`,
+  `npm test`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`,
+  `cargo test --manifest-path src-tauri/Cargo.toml`, `npm audit`,
+  `cargo audit -f src-tauri/Cargo.lock`, `npm run build`, and the
+  macOS distribution probe. The first Rust full-test run had one
+  transient Agent Workbench PATH propagation failure; the focused rerun
+  and a full rerun passed, so this remains evidence to watch rather than
+  a product bug claim. Signed TestFlight smoke, App Review submission,
+  and account-bound distribution proof remain separate.
 - 2026-06-12: About metadata finalization is implemented. The base
   Tauri config now sets `bundle.publisher` to `Hazakura Lab` and
   `bundle.copyright` to

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-12 (v0.18 pre-review todo review)
+Last reviewed: 2026-06-12 (v0.18 pre-review regression evidence)
 
 ## Current State
 
@@ -17,8 +17,9 @@ Last reviewed: 2026-06-12 (v0.18 pre-review todo review)
 - Older public tags and release assets remain immutable.
 - Current active work is v0.18 pre-review bug fixing, core Safe Editor
   quality checks, fuller TestFlight smoke, and App Store submission
-  prep. The highest-risk queue items are pre-review regression
-  evidence and remaining basic editor surfaces
+  prep. Local pre-review regression evidence is archived under
+  `docs/archive/operations/`; the highest-risk remaining queue items are
+  basic editor surfaces
   (open/save/close, restore/recovery, preview,
   diff/review, workspace files, standalone files, image handling,
   keyboard/IME, and error recovery). Accessibility work should stay a
