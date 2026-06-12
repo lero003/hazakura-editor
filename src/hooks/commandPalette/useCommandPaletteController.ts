@@ -1,7 +1,8 @@
 // `useCommandPaletteController` is the v0.9
 // `useAppShellController` Slice E-1 domain composer. It bundles
-// `useCommandPalette` (9 fields) and `useGlobalSearch` (11
-// fields) into a single typed surface (~20 fields), and moves
+// `useCommandPalette` (9 fields), `useGlobalSearch` (11
+// fields), and a search-result runner into a single typed
+// surface (~21 fields), and moves
 // the inline command list and the `handleOpenSearchMatch`
 // callback out of the orchestrator into the new hook.
 //
@@ -678,6 +679,7 @@ export function useCommandPaletteController({
     openCommandPalette,
     openGlobalSearch,
     runCommand,
+    runGlobalSearchMatch: handleOpenSearchMatch,
     setCommandPaletteActiveIndex,
     setCommandPaletteQuery,
     setGlobalSearchActiveIndex,

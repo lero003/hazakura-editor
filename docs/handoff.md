@@ -42,10 +42,13 @@ Last reviewed: 2026-06-12 (v0.19 App Store submission candidate)
   user-facing flow before App Review.
 - Human-side App Store lane smoke on 2026-06-12 passed launch, basic
   document creation/open, preview/export, image paste/drag-drop, App
-  Store surface omission, and dirty-close confirmation. Treat Save As
-  UX, workspace restore, Move to Trash, network observation, and live
-  accessibility checks as partial or unconfirmed until the exact signed
-  `0.19.0` TestFlight build is tied to the upload record.
+  Store surface omission, dirty-close confirmation, Move to Trash, and
+  network observation. Treat Save As UX as an observation, workspace
+  restore as acceptable with residual Google Drive /
+  quit-before-interaction risk, and live accessibility as partial until
+  the exact signed `0.19.0` TestFlight build is tied to the upload
+  record. A `Cmd+Shift+F` global-search result activation bug found
+  during smoke has a focused code-level fix.
 - TestFlight use found one status-area cleanup follow-up before App
   Review. Code-level UI coverage now removes duplicate passive
   `UTF-8` / `LF` style labels in normal Safe Editor mode while

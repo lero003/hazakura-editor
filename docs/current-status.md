@@ -20,10 +20,12 @@ Last reviewed: 2026-06-12 (v0.19 App Store submission candidate)
   remain separate evidence.
 - Human-side App Store lane smoke on 2026-06-12 passed launch,
   basic document creation/open, preview/export, image paste/drag-drop,
-  App Store surface omission, and dirty-close confirmation, but left
-  Save As UX, workspace restore, Move to Trash, network observation, and
-  live accessibility checks as partial or unconfirmed before final App
-  Review submission.
+  App Store surface omission, dirty-close confirmation, Move to Trash,
+  and network observation. Save As UX remains an observation, workspace
+  restore is acceptable with a residual Google Drive /
+  quit-before-interaction risk, and live accessibility is partial before
+  final App Review submission. A `Cmd+Shift+F` global-search result
+  activation bug found during smoke has a focused code-level fix.
 - Older public tags and release assets remain immutable.
 - Current active work is v0.19 App Store submission-candidate smoke and
   submission prep. Local pre-review regression evidence is archived under

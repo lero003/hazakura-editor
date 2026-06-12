@@ -107,6 +107,10 @@ Passed:
 - App Store surface omission: Agent Workbench, CLI Agent, dev mode, and
   Apple Local Assist were not visible.
 - Dirty-tab `Cmd+Q` and red-window-button close confirmation.
+- Move to Trash appeared to work normally in the tested App Store lane
+  build.
+- Network observation did not show a concrete issue in the tested
+  flow.
 
 Partial / needs another pass:
 
@@ -114,22 +118,22 @@ Partial / needs another pass:
   surprising because the original file could appear to close as a clean
   unedited tab after saving under another name. Treat as UX observation,
   not a release-blocking data-loss claim unless reproduced.
-- Workspace restore remained inconsistent in the human note, especially
-  when quitting before interacting with the workspace and possibly more
-  often with Google Drive-backed folders. If the workspace cannot be
-  reopened, the previously open file tabs may close. Re-test on the
-  exact signed TestFlight build and confirm either persistence or a clear
-  reauthorization path.
+- Workspace restore remained within the user's acceptable range after
+  follow-up smoke, though the Google Drive / quit-before-interaction edge
+  should stay a residual risk until the exact signed TestFlight build is
+  tied to the upload record.
 - Workspace-outside active-tab restore remains tied to the same
   workspace persistence uncertainty.
-- External network observation was marked "probably pass"; the observed
-  open files were system/WebKit and local app-container resources, not a
-  definitive external-socket audit.
+- VoiceOver was partially usable, but fuller accessibility coverage is
+  deferred rather than treated as complete for the candidate.
+- `Cmd+Shift+F` global search returned results, but clicking a result did
+  not open the file. Code-level follow-up now routes result activation to
+  the existing workspace-file opener and line jump handler.
 
 Unknown / still required:
 
-- Move to Trash in the signed App Store lane.
-- Live VoiceOver, keyboard-only traversal, and Increase Contrast checks.
+- Full live VoiceOver, keyboard-only traversal, and Increase Contrast
+  checks.
 - Tab close affordance should be rechecked on the exact signed build;
   the human note reported the close `x` was not visible enough.
 

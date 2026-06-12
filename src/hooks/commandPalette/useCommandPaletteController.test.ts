@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, renderHook } from "@testing-library/react";
 import { useCommandPaletteController } from "./useCommandPaletteController";
+import type { GlobalSearchRow } from "../globalSearch/useGlobalSearch";
+import type { EditorPaneHandle } from "../../components/editor/EditorPane";
 import { getAppleAssistCopy, getLModeCopy } from "../../lib/locale";
 
 afterEach(() => {
@@ -63,7 +65,7 @@ describe("useCommandPaletteController", () => {
     expect(result.current).toHaveProperty("runCommand");
     expect(result.current).toHaveProperty("setCommandPaletteActiveIndex");
     expect(result.current).toHaveProperty("setCommandPaletteQuery");
-    // global search (11)
+    // global search (12)
     expect(result.current).toHaveProperty("closeGlobalSearch");
     expect(result.current).toHaveProperty("globalSearchActiveIndex");
     expect(result.current).toHaveProperty("globalSearchError");
@@ -73,8 +75,89 @@ describe("useCommandPaletteController", () => {
     expect(result.current).toHaveProperty("globalSearching");
     expect(result.current).toHaveProperty("globalSearchVisible");
     expect(result.current).toHaveProperty("openGlobalSearch");
+    expect(result.current).toHaveProperty("runGlobalSearchMatch");
     expect(result.current).toHaveProperty("setGlobalSearchActiveIndex");
     expect(result.current).toHaveProperty("setGlobalSearchQuery");
+  });
+
+  it("opens the selected global search match and jumps to its line", async () => {
+    vi.useFakeTimers();
+    const openWorkspaceFile = vi.fn(async () => {});
+    const goToLine = vi.fn();
+    const editorPane = { goToLine } as unknown as EditorPaneHandle;
+    const setStatus = vi.fn();
+    const { result } = renderHook(() =>
+      useCommandPaletteController({
+        actions: {
+          applyActiveMarkdownFormat: vi.fn(),
+          createNewFile: vi.fn(),
+          exportHtml: vi.fn(),
+          exportPdf: vi.fn(),
+          focusAdjacentTab: vi.fn(),
+          handleSendSelectionToAgent: vi.fn(),
+          insertTable: vi.fn(),
+          invokeAppleAssist: vi.fn(),
+          openAgentWindow: vi.fn(),
+          openAppleAssistWindow: vi.fn(),
+          openFile: vi.fn(),
+          openWorkspace: vi.fn(),
+          openWorkspaceFile,
+          requestCloseTab: vi.fn(),
+          requestRestoreFromBackup: vi.fn(),
+          requestReviewTabAgainstDisk: vi.fn(),
+          requestWindowClose: vi.fn(),
+          saveActiveTab: vi.fn(),
+          saveActiveTabAs: vi.fn(),
+          setEditorSettings: vi.fn(),
+          setFindVisible: vi.fn(),
+          setPreferencesDialogMode: vi.fn(),
+          setPreviewVisible: vi.fn(),
+          toggleDiffPane: vi.fn(),
+          toggleLMode: vi.fn(),
+          toggleOutlinePane: vi.fn(),
+          toggleQuickOpen: vi.fn(),
+        },
+        activeTab: null,
+        activeTabId: null,
+        appleAssistAvailability: { kind: "unsupported" },
+        appleLocalAssistAllowed: true,
+        appleAssistCopy: getAppleAssistCopy("en"),
+        editorPaneRef: { current: editorPane },
+        lModeCopy: getLModeCopy("en"),
+        setStatus,
+        themePreference: "light",
+        workspaceRootPath: "/workspace",
+      }),
+    );
+    const row: GlobalSearchRow = {
+      fileIndex: 0,
+      matchIndex: 0,
+      file: {
+        matches: [{ column: 4, line: 12, text: "hello match" }],
+        path: "/workspace/docs/note.md",
+        relativePath: "docs/note.md",
+        truncated: false,
+      },
+      match: { column: 4, line: 12, text: "hello match" },
+    };
+    const surface = result.current as typeof result.current & {
+      runGlobalSearchMatch: (match: GlobalSearchRow) => void;
+    };
+
+    act(() => {
+      surface.runGlobalSearchMatch(row);
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    expect(openWorkspaceFile).toHaveBeenCalledWith("/workspace/docs/note.md");
+    expect(goToLine).toHaveBeenCalledWith(12);
+    expect(setStatus).toHaveBeenCalledWith("Opened docs/note.md:12");
+    vi.useRealTimers();
   });
 
   it("exposes the L Mode toggle command in the View category", () => {
