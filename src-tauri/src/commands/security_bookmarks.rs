@@ -99,10 +99,30 @@ fn resolve_security_scoped_bookmark_data(bookmark: &[u8]) -> Result<String, Stri
     }
     .map_err(|err| format!("Cannot resolve security-scoped bookmark: {err}"))?;
 
-    let _access_started = unsafe { url.startAccessingSecurityScopedResource() };
+    start_restored_bookmark_process_access(&url)?;
     let path = url
         .to_file_path()
         .ok_or_else(|| "Cannot resolve bookmark to a file path.".to_string())?;
 
     Ok(path.to_string_lossy().to_string())
+}
+
+#[cfg(target_os = "macos")]
+fn start_restored_bookmark_process_access(url: &objc2_foundation::NSURL) -> Result<(), String> {
+    // The restore command returns a path that later file/tree commands
+    // use during the same app process. Pairing start/stop inside this
+    // function would close the grant before those commands run, so this
+    // is intentionally a process-lifetime access model for restored
+    // bookmarks. App exit releases the security scope.
+    let access_started = unsafe { url.startAccessingSecurityScopedResource() };
+    require_security_scope_started(access_started)
+}
+
+#[cfg(target_os = "macos")]
+pub(crate) fn require_security_scope_started(started: bool) -> Result<(), String> {
+    if started {
+        Ok(())
+    } else {
+        Err("Cannot start security-scoped resource access.".to_string())
+    }
 }

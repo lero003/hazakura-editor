@@ -913,6 +913,19 @@ fn exit_app_accepts_main_window_only() {
 
 #[cfg(target_os = "macos")]
 #[test]
+fn security_scoped_bookmark_requires_started_access() {
+    require_security_scope_started(true).expect("started access should be accepted");
+
+    let err = require_security_scope_started(false)
+        .expect_err("failed security-scope access must be reported");
+    assert!(
+        err.contains("Cannot start security-scoped resource access"),
+        "{err}"
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
 fn security_scoped_bookmark_accepts_direct_files() {
     let dir = unique_test_dir("security_bookmark_file");
     fs::create_dir_all(&dir).expect("create test dir");
