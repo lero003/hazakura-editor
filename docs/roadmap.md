@@ -50,14 +50,17 @@ submission work hardens around it.
 
 Use `docs/current-work.md` as the queue. The near-term UX priorities are:
 
-1. Status bar encoding / line-ending de-duplication: keep the change
-   dropdowns, remove redundant passive `UTF-8` / `LF` style labels.
-2. Manual accessibility smoke: Help readability, full keyboard-only
+1. Manual accessibility smoke: Help readability, full keyboard-only
    traversal, VoiceOver tab-bar announcement, and Increase Contrast.
-3. Help copy overlap cleanup.
+2. Help copy overlap cleanup.
 
 Recently completed:
 
+- Status bar encoding / line-ending de-duplication: normal Safe Editor
+  mode removes duplicate passive `UTF-8` / `LF`-style detail values when
+  the trailing encoding and line-ending dropdowns already expose those
+  active values; L Mode keeps the passive detail because those controls
+  are hidden.
 - Direct save fallback failure safety: the sandbox-oriented direct write
   fallback now attempts to restore original bytes if a direct write or
   sync fails after partially changing the selected file, while keeping

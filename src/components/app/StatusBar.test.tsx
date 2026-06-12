@@ -63,6 +63,39 @@ describe("StatusBar", () => {
     expect(statusSegment?.getAttribute("aria-live")).toBe("polite");
   });
 
+  it("hides duplicate format values from the passive detail in normal mode", () => {
+    const { container } = render(
+      <StatusBar
+        activeTab={activeTab}
+        agentLabel={null}
+        detail="Markdown · UTF-8 · 10 B · 7 characters · LF · final newline · Ln 1, Col 1"
+        dirtyLabel=""
+        encodingAriaLabel="Encoding"
+        encodingLabel="Encoding"
+        lineEndingAriaLabel="Line endings"
+        lineEndingLabel="Line endings"
+        lModeEnabled={false}
+        onConvertEncoding={vi.fn()}
+        onConvertLineEnding={vi.fn()}
+        saveAffirmation={false}
+        saveAffirmationKey={null}
+        statusText="Ready"
+      />,
+    );
+
+    const detail = container.querySelector(".status-bar-detail");
+    const formatGroup = container.querySelector(".status-bar-format-group");
+
+    expect(formatGroup?.querySelector("select")?.textContent).toContain("LF");
+    expect(formatGroup?.textContent).toContain("UTF-8");
+    expect(detail?.textContent).toBe(
+      "Markdown · 10 B · 7 characters · final newline · Ln 1, Col 1",
+    );
+    expect(detail?.getAttribute("title")).toBe(
+      "Markdown · UTF-8 · 10 B · 7 characters · LF · final newline · Ln 1, Col 1",
+    );
+  });
+
   it("removes focusable format controls in L Mode", () => {
     const { container } = render(
       <StatusBar

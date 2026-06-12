@@ -37,6 +37,11 @@ export function StatusBar({
   saveAffirmationKey,
   statusText,
 }: StatusBarProps) {
+  const showFormatControls = Boolean(activeTab && !lModeEnabled);
+  const visibleDetail = showFormatControls && activeTab
+    ? removeDuplicateFormatValues(detail, activeTab)
+    : detail;
+
   return (
     <footer className="status-bar lmode-surface">
       <span className="status-bar-segment status-bar-status" role="status" aria-live="polite">
@@ -67,9 +72,9 @@ export function StatusBar({
         </span>
       ) : null}
       <span className="status-bar-segment status-bar-detail" title={detail}>
-        {detail}
+        {visibleDetail}
       </span>
-      {activeTab && !lModeEnabled ? (
+      {showFormatControls && activeTab ? (
         <span className="status-bar-format-group">
           <label className="status-bar-segment status-bar-format-chip">
             <span className="status-bar-format-label">{lineEndingLabel}</span>
@@ -105,4 +110,33 @@ export function StatusBar({
       ) : null}
     </footer>
   );
+}
+
+function removeDuplicateFormatValues(detail: string, activeTab: EditorTab): string {
+  const duplicateValues = new Set([
+    formatVisibleLineEnding(activeTab.line_ending),
+    formatVisibleEncoding(activeTab.encoding),
+  ]);
+  const visibleParts = detail
+    .split(" · ")
+    .filter((part) => !duplicateValues.has(part));
+
+  return visibleParts.length > 0 ? visibleParts.join(" · ") : detail;
+}
+
+function formatVisibleLineEnding(lineEnding: EditableLineEnding): string {
+  return lineEnding === "crlf" ? "CRLF" : "LF";
+}
+
+function formatVisibleEncoding(encoding: TextEncoding): string {
+  switch (encoding) {
+    case "utf-8":
+      return "UTF-8";
+    case "utf-8-bom":
+      return "UTF-8 BOM";
+    case "shift-jis":
+      return "Shift-JIS";
+    case "euc-jp":
+      return "EUC-JP";
+  }
 }

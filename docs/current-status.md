@@ -17,9 +17,8 @@ Last reviewed: 2026-06-12 (v0.18 pre-review todo review)
 - Older public tags and release assets remain immutable.
 - Current active work is v0.18 pre-review bug fixing, fuller
   TestFlight smoke, and App Store submission prep. The highest-risk
-  queue items are status-bar encoding / line-ending de-duplication,
-  fuller accessibility smoke, third-party license review, About
-  metadata, and pre-review regression evidence. Use
+  queue items are fuller accessibility smoke, third-party license
+  review, About metadata, and pre-review regression evidence. Use
   `docs/current-work.md` first.
 
 ## Current Product Boundary
@@ -58,6 +57,9 @@ Last reviewed: 2026-06-12 (v0.18 pre-review todo review)
   confirmation, save-conflict recovery, and explicit draft recovery.
 - Normal Safe Editor mode can collapse and restore the left workspace
   sidebar without changing the file-tree model or L Mode drawer.
+- The normal-mode status bar avoids duplicating the active `UTF-8` /
+  `LF`-style format values in the passive detail when the trailing
+  encoding and line-ending dropdowns already expose them.
 - Sanitized Markdown preview, local workspace image handling,
   standalone HTML export, and Print to PDF handoff.
 - L Mode / えるモード as a source-preserving CodeMirror presentation

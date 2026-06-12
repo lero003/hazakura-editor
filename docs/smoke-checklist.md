@@ -32,7 +32,9 @@ Observation on 2026-06-12 for helper-free App Store lane version
 - Pre-review UI follow-up observed: the lower status area can show
   passive `UTF-8` / `LF` style labels even though the change dropdowns
   already expose those values; remove the duplicate passive labels while
-  keeping the dropdown controls.
+  keeping the dropdown controls. Code-level follow-up is implemented
+  after this TestFlight build; include the status bar in the next signed
+  build smoke only if the App Review lane needs user-facing confirmation.
 
 Track these under `docs/current-work.md` before App Review submission.
 
