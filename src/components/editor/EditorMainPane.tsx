@@ -85,6 +85,7 @@ export function EditorMainPane({
   const activeDocumentPathLabel = activeTab
     ? formatDocumentPathLabel(activeTab.path, workspaceRootPath)
     : null;
+  const showDocumentHeader = activeTab !== null && !editorSettings.lModeEnabled;
   const showActiveDocumentPath =
     activeTab !== null && activeDocumentPathLabel !== activeTab.name;
 
@@ -92,17 +93,19 @@ export function EditorMainPane({
     <div className="pane editor-pane" aria-label="Editor">
       {activeTab ? (
         <>
-          <header
-            className="editor-document-header"
-            title={activeTab.path}
-          >
-            <span className="editor-document-name">{activeTab.name}</span>
-            {showActiveDocumentPath ? (
-              <span className="editor-document-path">
-                {activeDocumentPathLabel}
-              </span>
-            ) : null}
-          </header>
+          {showDocumentHeader ? (
+            <header
+              className="editor-document-header"
+              title={activeTab.path}
+            >
+              <span className="editor-document-name">{activeTab.name}</span>
+              {showActiveDocumentPath ? (
+                <span className="editor-document-path">
+                  {activeDocumentPathLabel}
+                </span>
+              ) : null}
+            </header>
+          ) : null}
           <EditorPane
             ref={editorPaneRef}
             activeSearchMatchIndex={activeSearchMatchIndex}

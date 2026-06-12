@@ -124,4 +124,17 @@ describe("EditorMainPane", () => {
 
     expect(screen.getAllByText("root.md")).toHaveLength(1);
   });
+
+  it("hides the normal document header in L Mode", () => {
+    renderEditorMainPane({
+      editorSettings: {
+        ...editorSettings,
+        lModeEnabled: true,
+      },
+    });
+
+    expect(screen.queryByText("draft.md")).toBeNull();
+    expect(screen.queryByText("docs/draft.md")).toBeNull();
+    expect(screen.getByTestId("mock-editor-pane")).toBeTruthy();
+  });
 });

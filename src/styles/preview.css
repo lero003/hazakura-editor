@@ -27,14 +27,14 @@
 
 .markdown-preview h1 {
   border-bottom: 2px solid color-mix(in srgb, var(--accent) 44%, var(--border));
-  font-size: 26px;
+  font-size: 1.73em;
   padding-bottom: 12px;
   margin-top: 0;
   margin-bottom: 24px;
 }
 
 .markdown-preview h2 {
-  font-size: 20px;
+  font-size: 1.33em;
   margin-top: 32px;
   margin-bottom: 16px;
   border-bottom: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
@@ -42,7 +42,7 @@
 }
 
 .markdown-preview h3 {
-  font-size: 16.5px;
+  font-size: 1.1em;
   margin-top: 24px;
   margin-bottom: 12px;
 }
@@ -152,7 +152,7 @@
 .markdown-table-frame table {
   border-collapse: separate;
   border-spacing: 0;
-  font-size: 13.5px;
+  font-size: 0.9em;
   line-height: 1.55;
   min-width: 520px;
   width: 100%;
@@ -283,7 +283,7 @@
   border-radius: 6px;
   color: var(--text-muted);
   display: inline-block;
-  font-size: 12px;
+  font-size: 0.8em;
   margin: 6px 0;
   max-width: 100%;
   overflow-wrap: anywhere;
