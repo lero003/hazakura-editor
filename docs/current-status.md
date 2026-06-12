@@ -16,7 +16,7 @@ Last reviewed: 2026-06-13 (v0.20 UX planning)
   TestFlight on 2026-06-12 with no reported Apple validation warnings;
   basic TestFlight launch / save smoke passed.
 - The current App Store submission candidate is `0.19.0` with App Store
-  build counter `9`; upload, App Store Connect validation, fuller
+  build counter `10`; upload, App Store Connect validation, fuller
   TestFlight smoke, metadata finalization, and App Review submission
   remain separate evidence.
 - Human-side App Store lane smoke on 2026-06-12 passed launch,
