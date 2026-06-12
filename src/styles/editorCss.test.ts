@@ -47,8 +47,14 @@ describe("editor tab close affordance CSS", () => {
 
   it("keeps ambient particles behind readable app surfaces", () => {
     expect(appShellCss).toMatch(/\.ambient\s*{[\s\S]*z-index:\s*0/);
+    expect(appShellCss).toMatch(/\.tabs-row\s*{[\s\S]*z-index:\s*20/);
     expect(appShellCss).toMatch(
-      /\.tabs-row,[\s\S]*\.workspace,[\s\S]*\.status-bar,[\s\S]*z-index:\s*1/s,
+      /\.workspace,[\s\S]*\.status-bar,[\s\S]*z-index:\s*1/s,
     );
+  });
+
+  it("keeps top chrome popovers above the workspace layer", () => {
+    expect(appShellCss).toMatch(/\.tabs-row\s*{[\s\S]*z-index:\s*20/);
+    expect(appShellCss).toMatch(/\.workspace,[\s\S]*z-index:\s*1/s);
   });
 });

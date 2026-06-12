@@ -42,7 +42,11 @@
   z-index: 0;
 }
 
-.tabs-row,
+.tabs-row {
+  position: relative;
+  z-index: 20;
+}
+
 .workspace,
 .status-bar,
 .modal-backdrop,
