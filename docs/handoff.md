@@ -18,7 +18,12 @@ Last reviewed: 2026-06-12 (v0.19 App Store submission candidate)
   TestFlight on 2026-06-12 with no reported Apple validation warnings;
   basic TestFlight launch / save smoke passed.
 - Current active lane is v0.19 App Store submission-candidate smoke and
-  App Store submission prep. The current App Store build counter is `8`.
+  App Store submission prep. The current App Store build counter is `9`.
+  The local App Store release-candidate package is
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.19.0-build9-mas.pkg`
+  with SHA-256
+  `3291b122e0f2fd563e64354281de2771af7d912bb94dfaab9e1ae24a127b0e67`;
+  it declares minimum macOS 15.0 and passed `pkgutil --check-signature`.
 - Start from `docs/current-work.md`.
 - Markdown preview task checkboxes are complete for v0.18: Preview renders
   `- [ ]` / `- [x]` as inert display-only checkbox glyphs without

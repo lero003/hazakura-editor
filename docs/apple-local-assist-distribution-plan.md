@@ -3,7 +3,7 @@
 Status: Planning
 Scope: v0.12+ Apple Local Assist direction and App Store / developer-build release lanes
 Authority: Medium
-Last reviewed: 2026-06-06
+Last reviewed: 2026-06-12
 
 ## Implementation Snapshot (v0.12, in-progress)
 
@@ -20,7 +20,9 @@ What is **not** done yet:
 
 - no App Store sandbox or TestFlight packaging change
 - no Developer ID signing / notarization lane for the bundled helper
-- no `minimumSystemVersion` bump; the editor-wide value remains `11.0`
+- the editor-wide `minimumSystemVersion` later moved to `15.0` for the
+  v0.19 App Store package candidate; this is separate from any future
+  Apple Local Assist / Foundation Models `26.0` requirement
 - no release tag, no GitHub Release, no App Store submission for this live helper state
 
 The current App Store submission lane has moved to a stricter helper-free shape: `HAZAKURA_DISTRIBUTION_LANE=app-store` / `VITE_HAZAKURA_DISTRIBUTION_LANE=app-store` hides External Agent Workbench, forces Assist Surface off, rejects Agent Workbench and Apple Local Assist IPC on the Rust command surface, and uses an App Store Tauri config with no `externalBin`. Earlier sandbox-helper spawn proof remains historical evidence for the Apple Local Assist experiment, not the current submission default.
@@ -87,7 +89,11 @@ The Guidelines text does not contain a clause specifically targeting on-device L
 
 - **Exact `@available(macOS, introduced: 26.0, *)` annotation on `SystemLanguageModel`** — the reference page did not render via WebFetch. Must be re-verified against the Xcode documentation viewer before any live binding is written.
 - **App Store sandbox behavior of spawning a bundled `binaries/...` sidecar** — not directly addressed by the App Review Guidelines. Apple's developer forums / a TSFI / a pre-submission inquiry is the right path; we should not rely on inference.
-- **`minimumSystemVersion` policy** — the marketing page does not state a per-platform minimum. The reference page (when renderable) will give the `@available` annotation. Until then, `tauri.conf.json` stays at `11.0` (the v0.11.0 value) and a follow-up slice decides whether the App Store build or only a "developer with Apple Local Assist" build flavor raises it to `26.0`.
+- **`minimumSystemVersion` policy** — the marketing page does not state
+  a per-platform minimum. The editor-wide value is now `15.0` for the
+  v0.19 App Store package candidate. A separate follow-up still decides
+  whether any Apple Local Assist / Foundation Models build flavor raises
+  the minimum to `26.0`.
 - **Code signing / notarization of the helper** — the App Review Guidelines do not address `externalBin` directly. macOS Developer ID signing + notarization rules (separate from App Review) cover this, and the existing v0.10/v0.11 warning-expected DMG lane gives us a working precedent.
 - **Foundation Models acceptable-use on non-Apple-Intelligence devices** — the acceptable-use page applies whenever the framework is invoked. If we ever call the framework on a device that does *not* satisfy the device list above, the framework should refuse. We will not paper over that refusal.
 
@@ -230,7 +236,9 @@ Open implementation questions before locking the design:
 - whether Apple Local Assist should require restart-required preference changes or can be enabled dynamically
 - whether the App Store build should raise the minimum macOS version, or whether only the Apple Local feature should be availability-gated
 
-Do not raise the minimum OS for every distribution lane merely to support Apple Local Assist. Decide per build variant after the Foundation Models SDK and App Store sandbox proof is complete.
+Do not raise the minimum OS to `26.0` for every distribution lane merely
+to support Apple Local Assist. Decide per build variant after the
+Foundation Models SDK and App Store sandbox proof is complete.
 
 ## Distribution Lanes
 

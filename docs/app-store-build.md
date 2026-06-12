@@ -252,6 +252,7 @@ Expected:
 - `CFBundleShortVersionString` is `0.19.0`
 - `CFBundleVersion` is a positive integer higher than the last uploaded
   App Store Connect build
+- `LSMinimumSystemVersion` is `15.0`
 - `hazakura-editor` is present
 - `hazakura-apple-assist-helper` is absent
 
@@ -284,7 +285,7 @@ Keep the real installer signing identity in ignored local notes.
 
 ```bash
 APP="src-tauri/target/universal-apple-darwin/release/bundle/macos/Hazakura Editor.app"
-PKG="src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.19.0-build8-mas.pkg"
+PKG="src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.19.0-build9-mas.pkg"
 
 mkdir -p "$(dirname "$PKG")"
 
@@ -302,7 +303,7 @@ pkgutil --check-signature "$PKG"
 spctl --assess --type install --verbose=4 "$PKG"
 ```
 
-Upload `HazakuraEditor-0.19.0-build8-mas.pkg` with Transporter. After upload,
+Upload `HazakuraEditor-0.19.0-build9-mas.pkg` with Transporter. After upload,
 record the App Store Connect processing result, TestFlight internal
 group assignment, and any Apple validation warnings in ignored
 `docs/internal/` notes. Tracked docs may record public-safe summaries
@@ -397,12 +398,29 @@ on the TestFlight build passed. Fuller manual smoke, final metadata, and
 App Review submission / approval remain separate evidence.
 
 v0.19 submission-candidate note: the current user-visible app version is
-`0.19.0` and the App Store build counter is `8`. Treat the next
+`0.19.0` and the App Store build counter is `9`. Treat the next
 Transporter upload, Apple validation, TestFlight distribution, and fuller
 manual smoke as fresh `0.19.0` evidence; do not reuse the `0.18.0` build
 `4` TestFlight result as final App Review proof.
 In local Codex packaging, the signed submit-lane bundle reported the
-expected `0.19.0` / `8` metadata and entitlements. Local Gatekeeper
+expected `0.19.0` / `9` metadata, `15.0` minimum macOS, and
+entitlements. Local Gatekeeper
 assessment can still report `Insufficient Context` for this lane; treat
 launch validation as signed TestFlight proof, not as covered by local
 package inspection alone.
+
+The local release-candidate package generated for this lane is:
+
+```txt
+src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.19.0-build9-mas.pkg
+```
+
+`productbuild` reported supported OS `[Min: 15.0, Before: None]`.
+`pkgutil --check-signature` passed with the 3rd Party Mac Developer
+Installer certificate. `spctl --assess --type install` rejected the
+local package, so treat that as local trust-policy evidence rather than
+an App Store Connect validation result. SHA-256:
+
+```txt
+3291b122e0f2fd563e64354281de2771af7d912bb94dfaab9e1ae24a127b0e67
+```
