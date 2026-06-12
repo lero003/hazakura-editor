@@ -198,7 +198,12 @@ export function DiagnosticsPane({
           </p>
         </aside>
       </div>
-      <div className="privacy-tab-panel-scroll">
+      <div
+        aria-label={`Scrollable Help document: ${supportDiagnostics.title}`}
+        className="privacy-tab-panel-scroll"
+        role="region"
+        tabIndex={0}
+      >
         <article
           aria-label={supportDiagnostics.title}
           className="help-doc diagnostics-help-intro"

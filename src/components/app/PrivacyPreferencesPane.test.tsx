@@ -172,6 +172,18 @@ describe("PrivacyPreferencesPane", () => {
     );
   });
 
+  it("makes the Help document scroll region keyboard reachable", () => {
+    renderPane(privacyPolicy);
+
+    const scrollRegion = screen.getByRole("region", {
+      name: `Scrollable Help document: ${privacyPolicy.title}`,
+    });
+    expect(scrollRegion.getAttribute("tabindex")).toBe("0");
+    expect(scrollRegion.contains(screen.getByTestId("help-doc-body"))).toBe(
+      true,
+    );
+  });
+
   it("renders the six H2 sections in the order declared in helpDocs/index.ts", () => {
     renderPane();
 

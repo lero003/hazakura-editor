@@ -69,11 +69,13 @@ through the Recent Files surface-removal core probe. Order 7 is
 implemented as of 2026-06-12. Order 8 is implemented as of
 2026-06-12. Order 9 is implemented as of 2026-06-12 through archived
 local regression evidence. Order 10 is implemented as of 2026-06-12.
+Order 11 is implemented as of 2026-06-12 through the Help-document
+scroll-region keyboard reachability pass.
 The remaining Move
 to Trash and workspace-persistence proofs are signed TestFlight smoke,
 tracked under the submission-prep manual smoke items unless TestFlight
 specifically reopens the Trash or workspace restore behavior. The next
-open automation slice is Order 11.
+open automation slice is Order 12.
 
 ## Active UX Queue
 
@@ -102,6 +104,15 @@ over copy-heavy or product-voice-sensitive work.
 
 ## Completed v0.18 Slices
 
+- 2026-06-12: Light accessibility sanity is implemented as a narrow
+  Help-surface pass. The Privacy Policy / Local Data Disclosure / About
+  / Open Source Acknowledgements Help documents and the Support
+  Diagnostics pane now expose their long body scroll container as a
+  named `region` with `tabIndex=0`, so keyboard-only users can focus
+  the scroll area before reading or paging through long Help text.
+  Focused tests pin both the read-only Help shell and diagnostics JSON
+  shell. Live VoiceOver and Increase Contrast checks remain manual
+  smoke items on the user's Mac rather than code-level claims.
 - 2026-06-12: Auto-backup filename uniqueness is implemented.
   Focused Rust regression coverage reproduced same-second snapshot
   overwrite risk for a single workspace file. Backup filenames now

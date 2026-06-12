@@ -319,7 +319,12 @@ interaction is actually performed.
 ### Result summary (2026-06-11)
 
 - Help readability: code-level observed; long-document
-  scroll on the live dialog still pending.
+  scroll on the live dialog still pending. 2026-06-12
+  follow-up: the Help-document body scroll container and
+  Support Diagnostics scroll container are now named
+  `region`s with `tabIndex=0`, and focused tests pin that
+  keyboard-only users can reach the scroll area before
+  paging through long Help text.
 - Full keyboard-only traversal: baseline dialogs
   **partially observed** —
   `MoveToTrashConfirmDialog` now lands initial focus on
@@ -341,7 +346,9 @@ interaction is actually performed.
 
 Active UX Queue still lists `Manual accessibility smoke`
 until the pending live observation items above are run on
-the user's Mac. The `MoveToTrashConfirmDialog`
+the user's Mac. The Help-document scroll-region
+keyboard-reachability gap is closed in code; the
+`MoveToTrashConfirmDialog`
 focus-management gap is now closed in code; only the live
 keyboard / VoiceOver observation on the user's Mac is
 still pending.

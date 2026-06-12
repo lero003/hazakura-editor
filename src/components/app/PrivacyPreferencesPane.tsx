@@ -81,7 +81,12 @@ export function PrivacyPreferencesPane({
           </p>
         </aside>
       </div>
-      <div className="privacy-tab-panel-scroll">
+      <div
+        aria-label={`Scrollable Help document: ${doc.title}`}
+        className="privacy-tab-panel-scroll"
+        role="region"
+        tabIndex={0}
+      >
         <article
           aria-label={doc.title}
           className="help-doc"

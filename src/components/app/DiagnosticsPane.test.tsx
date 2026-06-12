@@ -105,6 +105,21 @@ describe("DiagnosticsPane", () => {
     );
   });
 
+  it("makes the diagnostics scroll region keyboard reachable", () => {
+    renderPane();
+
+    const scrollRegion = screen.getByRole("region", {
+      name: `Scrollable Help document: ${supportDiagnostics.title}`,
+    });
+    expect(scrollRegion.getAttribute("tabindex")).toBe("0");
+    expect(scrollRegion.contains(screen.getByTestId("help-doc-body"))).toBe(
+      true,
+    );
+    expect(
+      scrollRegion.contains(screen.getByTestId("diagnostics-pane-json")),
+    ).toBe(true);
+  });
+
   it("reflects the live editor settings inside the JSON snapshot", () => {
     renderPane({
       appleLocalAssistAvailable: true,
