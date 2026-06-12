@@ -4,6 +4,38 @@ import {
   normalizeAbsolutePath,
 } from "../../lib/utils";
 
+const EXTERNAL_LINK_PROTOCOLS = new Set(["http:", "https:", "mailto:", "tel:"]);
+
+export function normalizeExternalMarkdownLink(href: string): string | null {
+  const trimmedHref = href.trim();
+
+  if (!trimmedHref || trimmedHref.startsWith("//")) {
+    return null;
+  }
+
+  if (/[\s\x00-\x1F\x7F]/.test(trimmedHref)) {
+    return null;
+  }
+
+  try {
+    const url = new URL(trimmedHref);
+    if (!EXTERNAL_LINK_PROTOCOLS.has(url.protocol.toLowerCase())) {
+      return null;
+    }
+    return trimmedHref;
+  } catch {
+    return null;
+  }
+}
+
+export function hasUnsafeMarkdownLinkScheme(href: string): boolean {
+  const trimmedHref = href.trim();
+  return (
+    /^[a-z][a-z0-9+.-]*:/i.test(trimmedHref) &&
+    !normalizeExternalMarkdownLink(trimmedHref)
+  );
+}
+
 export function resolveLocalMarkdownLinkTarget(
   href: string,
   sourcePath: string,

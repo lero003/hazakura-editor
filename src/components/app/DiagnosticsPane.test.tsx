@@ -44,6 +44,7 @@ function renderPane(overrides: {
   theme?: string;
   onCopy?: (text: string) => void;
   forceSafetyCheckFailure?: boolean;
+  onOpenExternalLink?: (href: string) => void;
 } = {}) {
   return render(
     <DiagnosticsPane
@@ -54,6 +55,7 @@ function renderPane(overrides: {
       forceSafetyCheckFailure={overrides.forceSafetyCheckFailure ?? false}
       lModeEnabled={overrides.lModeEnabled ?? false}
       onCopy={overrides.onCopy}
+      onOpenExternalLink={overrides.onOpenExternalLink}
       theme={overrides.theme ?? "dark"}
       wrapLines={overrides.wrapLines ?? true}
     />,
@@ -118,6 +120,26 @@ describe("DiagnosticsPane", () => {
     expect(
       scrollRegion.contains(screen.getByTestId("diagnostics-pane-json")),
     ).toBe(true);
+  });
+
+  it("routes Support Diagnostics intro links externally without app WebView navigation", () => {
+    const onOpenExternalLink = vi.fn();
+    renderPane({ onOpenExternalLink });
+
+    const body = screen.getByTestId("help-doc-body");
+    const link = body.querySelector("a[href]");
+    expect(link).toBeInstanceOf(HTMLAnchorElement);
+
+    const href = link?.getAttribute("href") ?? "";
+    const event = new MouseEvent("click", {
+      bubbles: true,
+      cancelable: true,
+    });
+    const clickResult = link?.dispatchEvent(event);
+
+    expect(clickResult).toBe(false);
+    expect(event.defaultPrevented).toBe(true);
+    expect(onOpenExternalLink).toHaveBeenCalledWith(href);
   });
 
   it("reflects the live editor settings inside the JSON snapshot", () => {

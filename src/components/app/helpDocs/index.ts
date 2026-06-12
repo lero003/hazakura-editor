@@ -9,10 +9,11 @@
 // `iframe` / `object` / `embed` / external image fetch)
 // without the viewer having to re-implement it. Note
 // that the preview's href allow-list still permits
-// `http:`, `https:`, `mailto:`, `tel:`, and similar
-// non-`javascript:` schemes, so Help documents should
-// avoid hand-written external links; routing is not the
-// viewer's job.
+// `http:`, `https:`, `mailto:`, and `tel:` schemes.
+// Help viewers must intercept clicks and route those
+// explicit user actions through the app's bounded
+// external-link helper so the main WebView never navigates
+// away from the editor shell.
 //
 // The viewer shell in `PrivacyPreferencesPane` is generic
 // over `HelpDoc`; future Help slices (Privacy Policy,

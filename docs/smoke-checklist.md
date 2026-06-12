@@ -195,10 +195,23 @@ Run when Markdown preview, image assets, export, or authoring helpers change:
 
 1. Confirm sanitized Markdown preview renders headings, lists, tables, code blocks, blockquotes, task checkboxes (`- [ ]` / `- [x]` as display-only checkbox glyphs, not raw marker text), and local workspace-relative images such as `assets/...` and `docs/images/...`.
 2. Confirm external image URLs and unsafe local image paths are blocked.
-3. Paste or drag-drop an image and confirm `assets/<hash>.<ext>` is created and Markdown image syntax is inserted.
-4. Export HTML and confirm local workspace images are inlined and the saved file uses the same preview CSS as the live preview pane (`.markdown-preview` rules, no theme-specific overrides inlined).
-5. Use Print to PDF handoff and confirm the print-ready layout matches what Export HTML produces (serif body, page-break controls, no theme colors leaking into print).
-6. Insert a Markdown table and confirm the app does not imply row/column table editing beyond the implemented helper.
+3. Click a workspace-relative Markdown link to a supported text file and confirm it opens as an app tab without leaving the current app shell.
+4. Click an external Markdown link such as `https://hazakura.dev/` and confirm the main app WebView does not navigate away; the link opens in the OS default browser/new external window.
+5. Paste or drag-drop an image and confirm `assets/<hash>.<ext>` is created and Markdown image syntax is inserted.
+6. Export HTML and confirm local workspace images are inlined and the saved file uses the same preview CSS as the live preview pane (`.markdown-preview` rules, no theme-specific overrides inlined).
+7. Use Print to PDF handoff and confirm the print-ready layout matches what Export HTML produces (serif body, page-break controls, no theme colors leaking into print).
+8. Insert a Markdown table and confirm the app does not imply row/column table editing beyond the implemented helper.
+
+## Help Link Routing
+
+Run when the Help document shell, Support Diagnostics intro, Markdown
+link routing, or external URL handling changes:
+
+1. Open Help / Privacy Policy / Local Data Disclosure / About / Open Source Acknowledgements.
+2. Click any public URL shown in the Help body or footer, such as the privacy/support site URL, and confirm the Preferences / Help dialog and main app shell remain visible.
+3. Confirm the URL opens in the OS default browser/new external window.
+4. Confirm unsafe schemes such as `javascript:` do not open externally and do not navigate the app WebView.
+5. Open Support Diagnostics and repeat the same check for links in the diagnostics Help intro.
 
 ## Manual Review Desk Entry Points
 

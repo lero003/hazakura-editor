@@ -8,6 +8,7 @@ pub(crate) mod commands {
     pub(crate) mod apple_assist_supervisor;
     pub(crate) mod apple_assist_target;
     pub(crate) mod export;
+    pub(crate) mod external_links;
     pub(crate) mod files;
     pub(crate) mod images;
     pub(crate) mod search;
@@ -60,6 +61,8 @@ use crate::commands::apple_assist_supervisor::*;
 use crate::commands::apple_assist_target::*;
 #[allow(unused_imports)]
 use crate::commands::export::*;
+#[allow(unused_imports)]
+use crate::commands::external_links::*;
 #[allow(unused_imports)]
 use crate::commands::files::*;
 #[allow(unused_imports)]
@@ -147,6 +150,7 @@ pub fn run() {
             save_pasted_image,
             import_image_from_path,
             open_temp_print_html,
+            open_external_url,
             save_auto_backup,
             list_auto_backups,
             read_auto_backup,

@@ -6,6 +6,7 @@ import {
 import {
   createSecurityScopedBookmark,
   createTextFile,
+  openExternalUrl,
   openTextFile,
   pickMarkdownFile,
   pickNewMarkdownFilePath,
@@ -17,7 +18,11 @@ import {
   writePersistedFileBookmark,
 } from "../../lib/storage";
 import { isComparableTextFile } from "../../features/diff/diff";
-import { resolveLocalMarkdownLinkTarget } from "../../features/editor/markdownLinks";
+import {
+  hasUnsafeMarkdownLinkScheme,
+  normalizeExternalMarkdownLink,
+  resolveLocalMarkdownLinkTarget,
+} from "../../features/editor/markdownLinks";
 import {
   isSupportedImageFile,
   suggestedNewFilePath,
@@ -164,6 +169,24 @@ export function useFileOpening({
 
   const openPreviewMarkdownLink = useCallback(
     async (href: string) => {
+      const externalUrl = normalizeExternalMarkdownLink(href);
+
+      if (externalUrl) {
+        try {
+          await openExternalUrl(externalUrl);
+          setStatus(externalLinkOpenedMessage(menuLanguage));
+        } catch (err) {
+          setGlobalError(String(err));
+          setStatus(externalLinkFailedMessage(menuLanguage));
+        }
+        return;
+      }
+
+      if (hasUnsafeMarkdownLinkScheme(href)) {
+        setStatus(externalLinkBlockedMessage(menuLanguage));
+        return;
+      }
+
       const targetPath =
         activeTab && workspaceRootPath
           ? resolveLocalMarkdownLinkTarget(
@@ -189,7 +212,14 @@ export function useFileOpening({
         setStatus(linkedFileOpenedMessage(menuLanguage));
       }
     },
-    [activeTab, menuLanguage, openFilePath, setStatus, workspaceRootPath],
+    [
+      activeTab,
+      menuLanguage,
+      openFilePath,
+      setGlobalError,
+      setStatus,
+      workspaceRootPath,
+    ],
   );
 
   const createNewFile = useCallback(async () => {
@@ -322,4 +352,34 @@ function linkedFileOpenedMessage(menuLanguage: MenuLanguage): string {
     return "リンク先ファイルを開きました";
   }
   return "Linked file opened";
+}
+
+function externalLinkOpenedMessage(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) {
+    return "そとの りんくを ひらきました";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "外部リンクを開きました";
+  }
+  return "External link opened";
+}
+
+function externalLinkFailedMessage(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) {
+    return "そとの りんくを ひらけませんでした";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "外部リンクを開けませんでした";
+  }
+  return "External link failed";
+}
+
+function externalLinkBlockedMessage(menuLanguage: MenuLanguage): string {
+  if (isKanaStyle(menuLanguage)) {
+    return "その りんくは ひらけません";
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return "このリンクは開けません";
+  }
+  return "External link blocked";
 }

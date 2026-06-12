@@ -35,6 +35,30 @@ describe("PreviewPane local link routing", () => {
     );
   });
 
+  it("prevents main WebView navigation for external links before routing", () => {
+    const onOpenLocalLink = vi.fn();
+    render(
+      <PreviewPane
+        onOpenLocalLink={onOpenLocalLink}
+        source="[Support](https://hazakura.dev/hazakura-editor/support/)"
+      />,
+    );
+
+    const link = screen.getByRole("link", { name: "Support" });
+    const event = new MouseEvent("click", {
+      bubbles: true,
+      cancelable: true,
+    });
+
+    const clickResult = link.dispatchEvent(event);
+
+    expect(clickResult).toBe(false);
+    expect(event.defaultPrevented).toBe(true);
+    expect(onOpenLocalLink).toHaveBeenCalledWith(
+      "https://hazakura.dev/hazakura-editor/support/",
+    );
+  });
+
   it("does not route clicks outside preview links", () => {
     const onOpenLocalLink = vi.fn();
     render(

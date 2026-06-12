@@ -2,6 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createSecurityScopedBookmark,
+  openExternalUrl,
   openTextFile,
   pickMarkdownFile,
 } from "../../lib/tauri";
@@ -11,6 +12,7 @@ import { useFileOpening } from "./useFileOpening";
 vi.mock("../../lib/tauri", () => ({
   createTextFile: vi.fn(),
   createSecurityScopedBookmark: vi.fn(),
+  openExternalUrl: vi.fn(),
   openTextFile: vi.fn(),
   pickMarkdownFile: vi.fn(),
   pickNewMarkdownFilePath: vi.fn(),
@@ -22,7 +24,9 @@ vi.mock("../../lib/storage", () => ({
   writePersistedFileBookmark: vi.fn(),
 }));
 
-function setup() {
+function setup(
+  overrides: Partial<Parameters<typeof useFileOpening>[0]> = {},
+) {
   const options: Parameters<typeof useFileOpening>[0] = {
     activeTab: null,
     clearImagePreview: vi.fn(),
@@ -38,6 +42,7 @@ function setup() {
     setTabs: vi.fn(),
     tabs: [],
     workspaceRootPath: null,
+    ...overrides,
   };
 
   return {
@@ -49,6 +54,7 @@ function setup() {
 describe("useFileOpening", () => {
   beforeEach(() => {
     vi.mocked(createSecurityScopedBookmark).mockReset();
+    vi.mocked(openExternalUrl).mockReset();
     vi.mocked(openTextFile).mockReset();
     vi.mocked(pickMarkdownFile).mockReset();
     vi.mocked(writePersistedFileBookmark).mockReset();
@@ -102,5 +108,78 @@ describe("useFileOpening", () => {
       "/outside/note.md",
       [7, 8, 9],
     );
+  });
+
+  it("opens allowed external Markdown links outside the app WebView", async () => {
+    vi.mocked(openExternalUrl).mockResolvedValueOnce(undefined);
+    const { options, result } = setup();
+
+    await act(async () => {
+      await result.current.openPreviewMarkdownLink(
+        "https://hazakura.dev/hazakura-editor/support/",
+      );
+    });
+
+    expect(openExternalUrl).toHaveBeenCalledWith(
+      "https://hazakura.dev/hazakura-editor/support/",
+    );
+    expect(openTextFile).not.toHaveBeenCalled();
+    expect(options.setStatus).toHaveBeenLastCalledWith("External link opened");
+  });
+
+  it("keeps workspace-relative Markdown links on the in-app text-open path", async () => {
+    vi.mocked(openTextFile).mockResolvedValueOnce({
+      path: "/workspace/docs/linked.md",
+      name: "linked.md",
+      contents: "linked",
+      line_ending: "lf",
+      encoding: "utf-8",
+      size: 6,
+      modified_ms: 1,
+      fingerprint: "fp-linked",
+      large_file_warning: false,
+    });
+    const { options, result } = setup({
+      activeTab: {
+        id: "/workspace/docs/source.md",
+        path: "/workspace/docs/source.md",
+        name: "source.md",
+        contents: "[linked](linked.md)",
+        lastSavedContents: "[linked](linked.md)",
+        line_ending: "lf",
+        lastSavedLineEnding: "lf",
+        encoding: "utf-8",
+        lastSavedEncoding: "utf-8",
+        size: 19,
+        modified_ms: 1,
+        fingerprint: "fp-source",
+        large_file_warning: false,
+        ignoredExternalFingerprint: null,
+        externalFingerprint: null,
+        saveStatus: "saved",
+        error: null,
+      },
+      workspaceRootPath: "/workspace",
+    });
+
+    await act(async () => {
+      await result.current.openPreviewMarkdownLink("linked.md");
+    });
+
+    expect(openTextFile).toHaveBeenCalledWith("/workspace/docs/linked.md");
+    expect(openExternalUrl).not.toHaveBeenCalled();
+    expect(options.setStatus).toHaveBeenLastCalledWith("Linked file opened");
+  });
+
+  it("blocks unsafe Markdown link schemes with status feedback", async () => {
+    const { options, result } = setup();
+
+    await act(async () => {
+      await result.current.openPreviewMarkdownLink("javascript:alert(1)");
+    });
+
+    expect(openExternalUrl).not.toHaveBeenCalled();
+    expect(openTextFile).not.toHaveBeenCalled();
+    expect(options.setStatus).toHaveBeenLastCalledWith("External link blocked");
   });
 });

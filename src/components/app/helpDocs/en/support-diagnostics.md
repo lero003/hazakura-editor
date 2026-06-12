@@ -16,7 +16,7 @@ No document contents, no file paths, no open tabs, no recent files, no provider 
 
 ## How to use it
 
-Open this page through the Help menu or the command palette, review the JSON, and use Copy to put it on your clipboard. Paste it into a support request only if you have reviewed the snapshot yourself; the helper does not see or send anything you do not explicitly copy.
+Open this page through the Help menu or the command palette, review the JSON, and use Copy to put it on your clipboard. Paste it into a support request, such as the Hazakura Editor support page at [hazakura.dev/hazakura-editor/support](https://hazakura.dev/hazakura-editor/support/), only if you have reviewed the snapshot yourself; the helper does not see or send anything you do not explicitly copy.
 
 ## What is not yet wired
 

@@ -102,7 +102,7 @@ Example use case:
 - Slash menu commands for inserting a Markdown shortcut list, with keyboard execution via Enter or Tab
 - Markdown file comparisons show heading context before changed blocks when a nearby ATX heading is available
 - Current-file Markdown outline and current-position context with click-to-jump navigation, transient scroll position HUD, and a visible cap note for very large outlines, without workspace-wide indexing
-- Markdown preview can open relative links to supported text files inside the selected workspace, without opening absolute paths or external URLs
+- Markdown preview can open relative links to supported text files inside the selected workspace, and explicit `http:` / `https:` / `mailto:` / `tel:` clicks are handed to the OS default browser/app instead of navigating the app WebView
 - Go to Line, cursor line/column status, and approximate selected character/line count
 - Editor display settings for line wrap, invisible characters, font size, and tab size, with persisted preference
 - Find-field and global shortcut handling ignores active IME composition so Japanese text conversion is not mistaken for editor commands

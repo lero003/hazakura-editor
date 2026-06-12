@@ -107,6 +107,16 @@ over copy-heavy or product-voice-sensitive work.
 
 ## Completed v0.18 Slices
 
+- 2026-06-12: External-window routing for Markdown / Help links is
+  implemented. Markdown preview clicks still open supported
+  workspace-relative text links inside the app, while explicit
+  `http:` / `https:` / `mailto:` / `tel:` clicks from Preview, Help
+  documents, and Support Diagnostics are intercepted before WebView
+  navigation and routed through a bounded Tauri external-open command.
+  Unsupported files, absolute paths, workspace-outside links, and unsafe
+  schemes remain blocked; focused frontend tests pin Preview, Help,
+  Diagnostics, local-link preservation, and unsafe-scheme behavior, and
+  Rust tests pin the command allowlist.
 - 2026-06-12: Core Safe Editor image-preview close regression
   coverage is implemented. A focused `useImagePreview` test now pins
   that closing a directly opened standalone image preview clears the

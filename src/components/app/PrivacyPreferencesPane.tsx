@@ -34,7 +34,9 @@
 // Diagnostics) as small as dropping a new `.md` into
 // `helpDocs/` and adding an entry to `helpDocs/index.ts`.
 import { useMemo } from "react";
+import { normalizeExternalMarkdownLink } from "../../features/editor/markdownLinks";
 import { renderMarkdown } from "../../features/editor/markdown";
+import { openExternalUrl } from "../../lib/tauri";
 import {
   helpDocSectionId,
   injectHelpDocSectionAnchors,
@@ -49,10 +51,12 @@ type PrivacyPreferencesPaneProps = {
   // shell for Privacy Policy / Licenses / About /
   // Diagnostics without changing the dialog wiring.
   doc?: HelpDoc;
+  onOpenExternalLink?: (href: string) => void | Promise<void>;
 };
 
 export function PrivacyPreferencesPane({
   doc = localDataDisclosure,
+  onOpenExternalLink = openExternalUrl,
 }: PrivacyPreferencesPaneProps = {}) {
   const renderedHtml = useMemo(() => {
     const base = renderMarkdown(doc.source);
@@ -84,6 +88,23 @@ export function PrivacyPreferencesPane({
       <div
         aria-label={`Scrollable Help document: ${doc.title}`}
         className="privacy-tab-panel-scroll"
+        onClick={(event) => {
+          const target = event.target;
+          if (!(target instanceof Element)) {
+            return;
+          }
+          const link = target.closest("a[href]");
+          if (!link || !event.currentTarget.contains(link)) {
+            return;
+          }
+          event.preventDefault();
+          const externalUrl = normalizeExternalMarkdownLink(
+            link.getAttribute("href") ?? "",
+          );
+          if (externalUrl) {
+            void onOpenExternalLink(externalUrl);
+          }
+        }}
         role="region"
         tabIndex={0}
       >

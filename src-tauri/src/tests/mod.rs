@@ -17,6 +17,7 @@ mod apple_assist_supervisor;
 mod backup;
 mod common;
 mod encoding;
+mod external_links;
 mod files;
 mod search;
 mod security;

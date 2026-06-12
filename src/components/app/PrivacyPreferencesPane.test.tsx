@@ -39,6 +39,7 @@
 //   the old "blocks external links" / "CSP" overclaim.
 import { afterEach, describe, expect, it } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
+import { vi } from "vitest";
 
 import {
   aboutHazakuraEditor,
@@ -184,6 +185,52 @@ describe("PrivacyPreferencesPane", () => {
     );
   });
 
+  it("routes allowed Help document links externally without app WebView navigation", () => {
+    const onOpenExternalLink = vi.fn();
+    render(
+      <PrivacyPreferencesPane
+        doc={privacyPolicy}
+        onOpenExternalLink={onOpenExternalLink}
+      />,
+    );
+
+    const body = screen.getByTestId("help-doc-body");
+    const link = body.querySelector(
+      'a[href="https://hazakura.dev/hazakura-editor/support/"]',
+    );
+    expect(link).toBeInstanceOf(HTMLAnchorElement);
+
+    const event = new MouseEvent("click", {
+      bubbles: true,
+      cancelable: true,
+    });
+    const clickResult = link?.dispatchEvent(event);
+
+    expect(clickResult).toBe(false);
+    expect(event.defaultPrevented).toBe(true);
+    expect(onOpenExternalLink).toHaveBeenCalledWith(
+      "https://hazakura.dev/hazakura-editor/support/",
+    );
+  });
+
+  it("blocks unsafe Help document link schemes", () => {
+    const onOpenExternalLink = vi.fn();
+    render(
+      <PrivacyPreferencesPane
+        doc={{
+          ...privacyPolicy,
+          source: "# Unsafe\n\n[bad](javascript:alert(1))",
+        }}
+        onOpenExternalLink={onOpenExternalLink}
+      />,
+    );
+
+    const link = screen.getByText("bad").closest("a");
+    expect(link).toBeInstanceOf(HTMLAnchorElement);
+    expect(link?.getAttribute("href")).toBeNull();
+    expect(onOpenExternalLink).not.toHaveBeenCalled();
+  });
+
   it("renders the six H2 sections in the order declared in helpDocs/index.ts", () => {
     renderPane();
 
@@ -278,17 +325,15 @@ describe("PrivacyPreferencesPane", () => {
     expect(text).not.toContain("collect nothing");
   });
 
-  it("describes the preview / export policy without the overclaim that external links are blocked", () => {
+  it("describes the preview / export link policy without WebView-navigation overclaim", () => {
     renderPane();
     const text = getSectionBodyText("help-doc-section-preview");
     expect(text).toContain("external images");
     expect(text).toContain("script, iframe, object, and embed");
-    expect(text).toContain(
-      "only routes link clicks to workspace-relative text file opens",
-    );
-    expect(text).toContain("external scheme links");
-    expect(text).toContain("absolute paths are ignored");
-    expect(text).toContain("click never navigates away from the editor");
+    expect(text).toContain("Workspace-relative text links open");
+    expect(text).toContain("OS default browser or app");
+    expect(text).toContain("unsafe schemes stay blocked");
+    expect(text).toContain("app WebView does not navigate away");
     // No overclaim drift: both old wordings must stay
     // out of the new pane.
     expect(text).not.toContain("blocks external links");

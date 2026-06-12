@@ -14,7 +14,7 @@ Only when you enable auto-backup, the app saves local .bak snapshots under a `.h
 
 ## Preview and export
 
-The preview blocks external images and dangerous HTML, script, iframe, object, and embed tags. Small embedded `data:image` PNG/JPEG/GIF/WebP references are allowed only within the preview/export inline cap. The preview only routes link clicks to workspace-relative text file opens inside the selected workspace; external scheme links (`http:`, `https:`, `mailto:`, `tel:`, etc.) and absolute paths are ignored with a status message, so the click never navigates away from the editor. HTML export inlines local workspace images as data URIs.
+The preview blocks external images and dangerous HTML, script, iframe, object, and embed tags. Small embedded `data:image` PNG/JPEG/GIF/WebP references are allowed only within the preview/export inline cap. Workspace-relative text links open inside the selected workspace. Explicit clicks on `http:`, `https:`, `mailto:`, and `tel:` links are handed to the OS default browser or app, while absolute paths, workspace-outside paths, unsupported files, and unsafe schemes stay blocked so the app WebView does not navigate away from the editor. HTML export inlines local workspace images as data URIs.
 
 ## Apple Local Assist
 

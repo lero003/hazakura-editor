@@ -77,6 +77,10 @@ Last reviewed: 2026-06-12 (v0.18 Help copy overlap cleanup)
   `Copyright (c) 2026 Hazakura Lab. All rights reserved.`.
 - Sanitized Markdown preview, local workspace image handling,
   standalone HTML export, and Print to PDF handoff.
+- Markdown preview and Help document links keep supported
+  workspace-relative text files inside the app, but route explicit
+  `http:` / `https:` / `mailto:` / `tel:` clicks to the OS default
+  browser/app without navigating the main WebView.
 - L Mode / えるモード as a source-preserving CodeMirror presentation
   layer, not a separate saved document model.
 - Diff / explicit change review for active editor changes, recovery
