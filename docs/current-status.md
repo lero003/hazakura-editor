@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-13 (v0.19 App Store package evidence)
+Last reviewed: 2026-06-13 (v0.19 App Store submission-prep queue)
 
 ## Current State
 
@@ -31,14 +31,13 @@ Last reviewed: 2026-06-13 (v0.19 App Store package evidence)
   activation bug found during smoke has a focused code-level fix.
 - Older public tags and release assets remain immutable.
 - Current active work is v0.19 App Store submission-candidate smoke and
-  submission prep. Local pre-review regression evidence is archived under
-  `docs/archive/operations/`; the highest-risk remaining queue items are
-  basic editor surfaces
-  (open/save/close, restore/recovery, preview,
-  diff/review, workspace files, standalone files, image handling,
-  keyboard/IME, and error recovery). Accessibility work should stay a
-  lightweight sanity pass unless a concrete issue appears. Use
-  `docs/current-work.md` first.
+  submission prep. Local pre-review regression, package, payload,
+  dependency-audit, bundle metadata, license-resource, and bundle-size
+  evidence is archived under `docs/archive/operations/` or summarized in
+  `docs/current-work.md`. Remaining App Store readiness proof is mainly
+  account-bound: Transporter upload, App Store Connect validation,
+  TestFlight smoke, final metadata, reviewer notes, and App Review
+  handling.
 - The v0.20 Sakura workspace ergonomics slice is implemented locally:
   the tab row has a new-file `+` entry, the main chrome can collapse /
   restore the workspace sidebar, the central editor pane shows the

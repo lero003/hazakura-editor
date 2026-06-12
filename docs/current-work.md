@@ -411,10 +411,17 @@ certificate, or App Store Connect access.
 | P0 | TestFlight / App Store Connect validation | The helper-free App Store submit lane is defined in `docs/app-store-build.md`. 2026-06-12 evidence: the signed `HazakuraEditor-0.18.0-mas.pkg` upload reached TestFlight distribution with no reported Apple validation warnings, and basic TestFlight launch / save smoke passed. Current candidate: `0.19.0` with App Store build counter `10`. Human-side smoke on 2026-06-12 passed launch, basic document creation/open, preview/export, image paste/drag/drop, App Store surface omission, dirty-close confirmation, Move to Trash, and network observation; Save As UX remains an observation, workspace restore is acceptable with a residual Google Drive / quit-before-interaction risk, and live accessibility is partial. A `Cmd+Shift+F` global-search result activation bug found during smoke has a focused code-level fix. Remaining proof before broader App Store-ready claims: upload / Apple validation for the `0.19.0` candidate, fuller manual smoke on the resulting TestFlight build, final metadata, and App Review submission / approval evidence. The earlier ad-hoc App Store preview `open -n` failure remains non-blocking unless it reproduces on the signed TestFlight build. |
 | P1 | App Review Notes final copy / attachments | Private review-note draft and store-copy material exist outside the public docs. Final pass should attach screenshots or reviewer evidence as needed, keep account/contact-specific text out of tracked docs, and preserve the App Store lane omission claim for CLI Agent / Agent Workbench / Apple Local Assist. Prepare concise reviewer-note answers for the non-obvious App Store lane facts: `network.client` exists for Tauri/WebKit bundled asset loading under App Sandbox rather than app-data networking; script-like file extensions open as inert text only and are never executed; the App Store lane omits Apple Local Assist helper, Agent Workbench, CLI Agent launch, dev mode, arbitrary command execution, and external AI/API calls. |
 | P1 | Public metadata final pass | Privacy Policy URL is `https://hazakura.dev/hazakura-editor/privacy/`. Remaining metadata work is support URL, category / keywords / age rating / screenshots, and App Store Connect field-by-field review. |
-| P2 | Bundle-size follow-up | Measure first. Split Help / Diagnostics / Assist chunks only if it reduces real startup or review risk. |
 
 ## Completed Submission-Prep Slices
 
+- 2026-06-13: Bundle-size follow-up is closed as `verified no-op`.
+  `npm run build:vite` passes with the existing Vite large-chunk warning;
+  measured output has `main-BfLm2n6P.js` at 1,080,445 bytes minified /
+  336,207 bytes gzip, `agent-D2tmzj3c.js` at 353,913 bytes minified /
+  89,802 bytes gzip, and `hazakura-mark-X75Ti9mc.png` at 307,180 bytes
+  / 306,631 bytes gzip. There is no concrete App Review or startup
+  evidence that justifies a pre-submission Help / Diagnostics / Assist
+  split.
 - 2026-06-12: App Store lane command-palette assist omission is
   implemented. The command palette no longer exposes `agent.*`,
   `appleAssist.*`, Apple Local Assist window, or `Assist Settings…`
