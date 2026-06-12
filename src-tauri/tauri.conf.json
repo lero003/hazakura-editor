@@ -29,6 +29,8 @@
   "bundle": {
     "active": true,
     "targets": "app",
+    "publisher": "Hazakura Lab",
+    "copyright": "Copyright (c) 2026 Hazakura Lab. All rights reserved.",
     "icon": ["icons/icon.icns"],
     "externalBin": ["../binaries/hazakura-apple-assist-helper"],
     "resources": {

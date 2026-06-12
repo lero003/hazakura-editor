@@ -66,11 +66,12 @@ code-regression level as of 2026-06-12. Order 3 is implemented as of
 2026-06-12. Order 4 is implemented as of 2026-06-12. Order 5 is
 implemented as of 2026-06-12. Order 6 is implemented as of 2026-06-12
 through the Recent Files surface-removal core probe. Order 7 is
-implemented as of 2026-06-12. The remaining Move
+implemented as of 2026-06-12. Order 8 is implemented as of
+2026-06-12. The remaining Move
 to Trash and workspace-persistence proofs are signed TestFlight smoke,
 tracked under the submission-prep manual smoke items unless TestFlight
 specifically reopens the Trash or workspace restore behavior. The next
-open automation slice is Order 8.
+open automation slice is Order 9.
 
 ## Active UX Queue
 
@@ -101,6 +102,14 @@ over copy-heavy or product-voice-sensitive work.
 
 ## Completed v0.18 Slices
 
+- 2026-06-12: About metadata finalization is implemented. The base
+  Tauri config now sets `bundle.publisher` to `Hazakura Lab` and
+  `bundle.copyright` to
+  `Copyright (c) 2026 Hazakura Lab. All rights reserved.`, so the
+  macOS About panel built from `src-tauri/src/menu.rs` has canonical
+  publisher and copyright data across inherited build lanes. The local
+  helper-free App Store preview bundle's `Info.plist` now includes
+  `NSHumanReadableCopyright` with the expected value.
 - 2026-06-12: Third-party license packet refresh is implemented for
   the current lockfiles. `THIRD_PARTY_NOTICES.md` now records the
   2026-06-12 `package-lock.json` runtime scan result, the

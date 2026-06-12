@@ -17,8 +17,8 @@ Last reviewed: 2026-06-12 (v0.18 pre-review todo review)
 - Older public tags and release assets remain immutable.
 - Current active work is v0.18 pre-review bug fixing, core Safe Editor
   quality checks, fuller TestFlight smoke, and App Store submission
-  prep. The highest-risk queue items are About metadata, pre-review
-  regression evidence, and remaining basic editor surfaces
+  prep. The highest-risk queue items are pre-review regression
+  evidence and remaining basic editor surfaces
   (open/save/close, restore/recovery, preview,
   diff/review, workspace files, standalone files, image handling,
   keyboard/IME, and error recovery). Accessibility work should stay a
@@ -67,6 +67,9 @@ Last reviewed: 2026-06-12 (v0.18 pre-review todo review)
 - The misleading file-level Recent Files surface is removed from the
   start panel and native File menu. Legacy file-recent localStorage is
   cleared, while Recent Folders and explicit Open / Open Folder remain.
+- The macOS About panel inherits canonical Tauri bundle metadata:
+  publisher `Hazakura Lab` and
+  `Copyright (c) 2026 Hazakura Lab. All rights reserved.`.
 - Sanitized Markdown preview, local workspace image handling,
   standalone HTML export, and Print to PDF handoff.
 - L Mode / えるモード as a source-preserving CodeMirror presentation

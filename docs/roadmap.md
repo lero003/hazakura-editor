@@ -89,6 +89,9 @@ Recently completed:
   pasted image payloads above the existing 20 MB local image boundary
   before allocating the decoded buffer; status and docs distinguish this
   from the separate small `data:image` preview/export inline cap.
+- About metadata finalization: the base Tauri bundle metadata now sets
+  the macOS About publisher and copyright source inherited by the
+  local helper-free App Store preview and other build lanes.
 
 Out of scope for this lane:
 
@@ -117,8 +120,8 @@ Required work:
 - Finalize App Review Notes, Privacy Policy URL, support URL,
   screenshots, category, keywords, age rating, and metadata.
 - Review complete third-party license material from lockfiles.
-- Finalize macOS About metadata if the native About panel is expected
-  to carry publisher / copyright information.
+- Keep macOS About metadata verified in built App Store-lane bundles
+  after config changes.
 - Complete fuller TestFlight smoke, including workspace restore,
   image paste/drag-drop, dirty close, no external network observation,
   accessibility checks, and the App Store-lane Move to Trash decision.
