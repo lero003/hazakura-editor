@@ -84,7 +84,8 @@ Last reviewed: 2026-06-12 (v0.18 Help copy overlap cleanup)
 - Optional Apple Local Assist alpha in the Developer / GitHub lane as an
   availability-gated, on-device assist surface with explicit unsaved AI
   edit transactions. The current App Store submission lane omits this
-  helper and forces Assist Surface off.
+  helper, forces Assist Surface off, and hides command-palette assist /
+  agent settings entries.
 - Optional Developer / GitHub lane Agent Workbench, separated from the
   App Store lane.
 - Help-readable Store-document drafts and Support Diagnostics UI.

@@ -150,6 +150,18 @@ skips the App Store sandbox entitlements and provisioning profile so
 probe, and use `npm run build:app-store-submit` plus `productbuild` for
 the signed TestFlight / App Store Connect lane.
 
+Run the lightweight App Store surface smoke before submission-facing
+builds or metadata review:
+
+```bash
+npm run smoke:app-store-surface
+```
+
+This does not replace signed TestFlight manual smoke. It only pins that
+the App Store lane keeps CLI Agent / Agent Workbench / Apple Local
+Assist commands, settings, helper assumptions, and visible dev badges
+out of the source-tested surface.
+
 ## Bundled Notices
 
 All Tauri build lanes inherit the base `bundle.resources` setting in
@@ -316,7 +328,9 @@ Run on the actual App Store lane build:
 - Image paste and drag/drop do not break under sandboxed file access.
 - Move to Trash either succeeds without `osascript` / AppleEvents /
   automation entitlements or is unreachable in the App Store lane.
-- Agent Workbench / CLI Agent / dev mode / Apple Local Assist are absent.
+- Agent Workbench / CLI Agent / dev mode / Apple Local Assist are absent,
+  including command palette entries such as `Agent`, `Apple Local
+  Assist`, `CLI Agent`, and `Assist Settings…`.
 - No external network communication occurs; if any system handoff appears,
   record the reason.
 - `Cmd+Q` with dirty tabs shows the dirty-tab confirmation flow.

@@ -42,8 +42,10 @@ Prefer work in this order:
    metadata, and regression evidence.
 5. App Store / Developer lane separation drift, especially Agent
    Workbench omission, helper bundle/signing assumptions, external
-   process appearance, sandbox/review evidence, and `network.client`
-   explanation.
+   process appearance, command palette / Preferences visibility,
+   sandbox/review evidence, and `network.client` explanation. Use
+   `npm run smoke:app-store-surface` for the lightweight source-level
+   App Store surface check before escalating to signed TestFlight smoke.
 6. One concrete user-test friction point from Apple Local Assist,
    L Mode, theme, settings, status / error copy, export, or
    file/recovery workflows.
@@ -141,6 +143,13 @@ For docs-only changes, run:
 
 ```bash
 git diff --check
+```
+
+For App Store / Developer lane surface checks that do not require a
+signed build, run:
+
+```bash
+npm run smoke:app-store-surface
 ```
 
 For UI behavior changes, update or exercise `docs/smoke-checklist.md`. If the built app or an Agent provider session was opened, quit it before final reporting when practical.

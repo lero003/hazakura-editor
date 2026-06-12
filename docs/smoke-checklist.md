@@ -41,6 +41,23 @@ Track these under `docs/current-work.md` before App Review submission.
 This does not replace the fuller App Store / TestFlight manual smoke
 items below.
 
+## App Store Surface Auto Smoke
+
+Run this before submission-facing builds, metadata review, or App
+Review-note finalization when the concern is App Store / Developer lane
+separation:
+
+```bash
+npm run smoke:app-store-surface
+```
+
+This lightweight smoke groups the source-level checks that the App
+Store lane hides Agent Workbench / CLI Agent / Apple Local Assist
+commands and settings, keeps App Store-only build scripts helper-free,
+and avoids visible developer-lane badges. It does not prove signed
+bundle identity, sandbox behavior, external network absence, App Store
+Connect processing, or TestFlight user flows.
+
 ## v0.18 Pre-Review Smoke Focus
 
 Run these on the signed TestFlight build before App Review submission:
@@ -64,7 +81,11 @@ Run these on the signed TestFlight build before App Review submission:
 6. Network observation: record whether any external network
    communication appears. The expected App Store lane result is no
    app-data external network access.
-7. Accessibility: complete live VoiceOver, keyboard-only traversal, and
+7. App Store surface omission: confirm the command palette, native menu,
+   Preferences, and visible chrome do not expose `Agent`, `CLI Agent`,
+   `Apple Local Assist`, `Assist Settings…`, dev mode, or arbitrary
+   command execution entry points.
+8. Accessibility: complete live VoiceOver, keyboard-only traversal, and
    Increase Contrast checks for the tab bar, file tree, dirty dialogs,
    Preferences, Help, and status/error rows.
 

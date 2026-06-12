@@ -346,6 +346,13 @@ certificate, or App Store Connect access.
 
 ## Completed Submission-Prep Slices
 
+- 2026-06-12: App Store lane command-palette assist omission is
+  implemented. The command palette no longer exposes `agent.*`,
+  `appleAssist.*`, Apple Local Assist window, or `Assist Settings…`
+  commands when the App Store lane disables both CLI Agent and Apple
+  Local Assist surfaces. `npm run smoke:app-store-surface` now groups
+  the lightweight App Store surface-omission tests for repeatable
+  pre-submission automation.
 - 2026-06-12: v0.18 TestFlight delivery evidence recorded. The
   signed `HazakuraEditor-0.18.0-mas.pkg` upload completed and the
   resulting `0.18.0` / build `4` TestFlight distribution showed no

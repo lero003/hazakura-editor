@@ -459,19 +459,23 @@ export function useCommandPaletteController({
             },
           ]
         : []),
-      {
-        category: externalCliAllowed ? "Agent" : "Settings",
-        id: "agent.preferences",
-        keywords: externalCliAllowed
-          ? ["agent", "preferences", "settings", "workbench"]
-          : ["assist", "apple", "local", "preferences", "settings"],
-        label: externalCliAllowed
-          ? "Agent Workbench Preferences…"
-          : "Assist Settings…",
-        run: () => {
-          actions.setPreferencesDialogMode("agent");
-        },
-      },
+      ...(externalCliAllowed || appleLocalAssistAllowed
+        ? [
+            {
+              category: externalCliAllowed ? "Agent" : "Settings",
+              id: "agent.preferences",
+              keywords: externalCliAllowed
+                ? ["agent", "preferences", "settings", "workbench"]
+                : ["assist", "apple", "local", "preferences", "settings"],
+              label: externalCliAllowed
+                ? "Agent Workbench Preferences…"
+                : "Assist Settings…",
+              run: () => {
+                actions.setPreferencesDialogMode("agent");
+              },
+            },
+          ]
+        : []),
       {
         category: "Settings",
         id: "settings.open",

@@ -279,7 +279,7 @@ describe("useCommandPaletteController", () => {
     expect(invokeAppleAssist).toHaveBeenCalledWith("summarize", "hello");
   });
 
-  it("hides Agent commands in the App Store distribution lane", () => {
+  it("hides assist commands in the App Store distribution lane", () => {
     vi.stubEnv("VITE_HAZAKURA_DISTRIBUTION_LANE", "app-store");
 
     const { result } = renderHook(() =>
@@ -316,7 +316,7 @@ describe("useCommandPaletteController", () => {
         activeTab: null,
         activeTabId: null,
         appleAssistAvailability: { kind: "available" },
-        appleLocalAssistAllowed: true,
+        appleLocalAssistAllowed: false,
         appleAssistCopy: getAppleAssistCopy("en"),
         editorPaneRef: { current: null },
         lModeCopy: getLModeCopy("en"),
@@ -330,24 +330,32 @@ describe("useCommandPaletteController", () => {
       result.current.openCommandPalette();
     });
 
+    const commandIds = result.current.filteredCommands.map(
+      (command) => command.id,
+    );
+    const commandLabels = result.current.filteredCommands.map(
+      (command) => command.label,
+    );
+    expect(commandIds.some((id) => id.startsWith("agent."))).toBe(false);
+    expect(commandIds.some((id) => id.startsWith("appleAssist."))).toBe(false);
     expect(
-      result.current.filteredCommands.find((command) => command.id === "agent.open"),
+      result.current.filteredCommands.find(
+        (command) => command.id === "apple-assist.openWindow",
+      ),
     ).toBeUndefined();
     expect(
       result.current.filteredCommands.find(
-        (command) => command.id === "agent.sendSelection",
+        (command) => command.id === "agent.preferences",
       ),
     ).toBeUndefined();
-    const appleAssistWindowCommand = result.current.filteredCommands.find(
-      (command) => command.id === "apple-assist.openWindow",
+    expect(
+      result.current.filteredCommands.find((command) =>
+        command.label.includes("Assist Settings"),
+      ),
+    ).toBeUndefined();
+    expect(commandLabels.join("\n")).not.toMatch(
+      /Agent|Apple Local Assist|CLI Agent/,
     );
-    expect(appleAssistWindowCommand?.label).toBe(
-      "Open Apple Local Assist Window",
-    );
-    const assistSettingsCommand = result.current.filteredCommands.find(
-      (command) => command.id === "agent.preferences",
-    );
-    expect(assistSettingsCommand?.label).toBe("Assist Settings…");
   });
 
   it("exposes a Local Data Disclosure command in the Developer / GitHub lane", () => {
