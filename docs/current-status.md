@@ -17,12 +17,12 @@ Last reviewed: 2026-06-12 (v0.18 pre-review todo review)
 - Older public tags and release assets remain immutable.
 - Current active work is v0.18 pre-review bug fixing, core Safe Editor
   quality checks, fuller TestFlight smoke, and App Store submission
-  prep. The highest-risk queue items are basic editor surfaces
-  (open/save/close, restore/recovery, preview, diff/review, workspace
-  files, standalone files, image handling, keyboard/IME, and error
-  recovery), third-party license review, About metadata, and pre-review
-  regression evidence. Accessibility work should stay a lightweight
-  sanity pass unless a concrete issue appears. Use
+  prep. The highest-risk queue items are third-party license review,
+  About metadata, pre-review regression evidence, and remaining basic
+  editor surfaces (open/save/close, restore/recovery, preview,
+  diff/review, workspace files, standalone files, image handling,
+  keyboard/IME, and error recovery). Accessibility work should stay a
+  lightweight sanity pass unless a concrete issue appears. Use
   `docs/current-work.md` first.
 
 ## Current Product Boundary
@@ -64,6 +64,9 @@ Last reviewed: 2026-06-12 (v0.18 pre-review todo review)
 - The normal-mode status bar avoids duplicating the active `UTF-8` /
   `LF`-style format values in the passive detail when the trailing
   encoding and line-ending dropdowns already expose them.
+- The misleading file-level Recent Files surface is removed from the
+  start panel and native File menu. Legacy file-recent localStorage is
+  cleared, while Recent Folders and explicit Open / Open Folder remain.
 - Sanitized Markdown preview, local workspace image handling,
   standalone HTML export, and Print to PDF handoff.
 - L Mode / えるモード as a source-preserving CodeMirror presentation
@@ -117,10 +120,9 @@ baseline, and smoke evidence are archived under
 ## Next Safe Actions
 
 1. For UX work, start with `docs/current-work.md` and pick one item:
-   Recent Files surface removal, one core Safe Editor quality probe,
-   auto-backup filename uniqueness, light accessibility sanity, license /
-   About metadata prep, pre-review regression evidence, or the next open
-   slice named there.
+   one core Safe Editor quality probe, auto-backup filename uniqueness,
+   light accessibility sanity, license / About metadata prep,
+   pre-review regression evidence, or the next open slice named there.
 2. For App Store submission prep, start with `docs/current-work.md`
    and `docs/app-store-build.md`; keep account-specific notes under
    ignored `docs/internal/` files;

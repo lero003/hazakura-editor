@@ -12,7 +12,7 @@ Hazakura Editor reads and writes files or folders you select through the app UI.
 
 ## Local data
 
-Hazakura Editor stores local preferences such as theme, tab state, editor settings, recent items, and unsaved recovery state on this Mac.
+Hazakura Editor stores local preferences such as theme, tab state, editor settings, recent folders, and unsaved recovery state on this Mac.
 
 If auto-backup is enabled, backup snapshots are written under `.hazakura/backups/...` inside the selected workspace.
 

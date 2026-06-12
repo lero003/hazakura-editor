@@ -64,11 +64,12 @@ Use this section for recurring or unattended pre-review automation.
 Order 1 is implemented as of 2026-06-12. Order 2 is implemented at the
 code-regression level as of 2026-06-12. Order 3 is implemented as of
 2026-06-12. Order 4 is implemented as of 2026-06-12. Order 5 is
-implemented as of 2026-06-12. The remaining Move to Trash and
-workspace-persistence proofs are signed TestFlight smoke, tracked under
-the submission-prep manual smoke items unless TestFlight specifically
-reopens the Trash or workspace restore behavior. The next open
-automation slice is Order 6.
+implemented as of 2026-06-12. Order 6 is implemented as of 2026-06-12
+through the Recent Files surface-removal core probe. The remaining Move
+to Trash and workspace-persistence proofs are signed TestFlight smoke,
+tracked under the submission-prep manual smoke items unless TestFlight
+specifically reopens the Trash or workspace restore behavior. The next
+open automation slice is Order 7.
 
 ## Active UX Queue
 
@@ -76,7 +77,6 @@ Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| P1 | Recent Files surface removal | Confirmed bug: file-level recent entries cannot reliably reopen unless a workspace is already open, which makes the affordance misleading for standalone-file use. Prefer removing the `Recent Files` / recently opened file surface instead of widening workspace restore or file access semantics. Keep `Recent Folders` / workspace reopen behavior intact unless focused inspection proves it shares the same bug. Verify start panel, native File menu, and stored recent-file cleanup/migration behavior; update README and Help copy only after the behavior change lands. |
 | P1 | Core Safe Editor quality probe | When concrete queue items are exhausted, inspect one basic high-risk surface instead of adding broad tests: open/save/close, restore/recovery, preview, diff/review, workspace file operations, standalone files, image handling, keyboard/IME, or error recovery. State the risk hypothesis, run a focused source/app inspection or smoke, then either fix the smallest issue found or close as `verified no-op`. |
 | P2 | Auto-backup filename uniqueness | Auto-backup filenames currently use second-resolution timestamps. If focused tests can reproduce same-second overwrite/collision risk, add milliseconds, a monotonic counter, or a short random suffix so rapid backups do not overwrite each other. Keep recovery listing newest-first and path containment unchanged. |
 | P2 | Light accessibility sanity | Keep accessibility as a light sanity pass adjacent to core surfaces: keyboard reachability, focus escape/Tab behavior, readable labels, and obvious contrast. Do not prioritize broad accessibility audits over basic editor quality unless a concrete accessibility failure is observed. |
@@ -92,7 +92,6 @@ over copy-heavy or product-voice-sensitive work.
 |---|---|---|
 | Good | L Mode quality investigation | Pick one reproduced L Mode issue or one measurable quality gap only: caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or performance baseline. Do not add a new editing model or contenteditable surface. |
 | Good | Theme quality investigation | Pick one concrete theme issue only: contrast, focus visibility, status/error readability, dialog readability, or Increase Contrast behavior. Do not redesign palettes or add theme customization. |
-| Good | Recent Files surface removal | Remove the misleading file-level recent surface after reproducing the no-workspace reopen bug. Keep the implementation small: do not broaden sandbox/file access, do not change `Recent Folders`, and preserve explicit Open / Open Folder flows. |
 | Good | Core Safe Editor quality probe | Inspect one basic surface with a clear risk hypothesis, then fix only a reproduced issue or close as `verified no-op`. Prefer open/save/close, restore/recovery, preview, diff/review, workspace files, standalone files, image handling, keyboard/IME, or error recovery. |
 | Good | Auto-backup filename uniqueness | If reproducible, make backup names unique within the same second while preserving recovery list sorting and cleanup behavior. |
 | Good | Focused refactor for a verified bug | Refactor only when it directly fixes or tests one observed user-facing problem. Keep ownership boundaries and public behavior stable. |
@@ -101,6 +100,15 @@ over copy-heavy or product-voice-sensitive work.
 
 ## Completed v0.18 Slices
 
+- 2026-06-12: Recent Files surface removal is implemented as the Order
+  6 Core Safe Editor quality probe. The misleading file-level recent
+  surface no longer appears on the start panel or native File menu, and
+  legacy `hazakura-note-recent-files` localStorage entries are removed
+  on read/write instead of being migrated forward. `Recent Folders`,
+  explicit Open / Open Folder, workspace restore, standalone-file open,
+  and normal save paths remain unchanged. README, Help privacy copy, and
+  the workspace-file smoke wording now refer only to retained recent
+  folder behavior where applicable.
 - 2026-06-12: Status bar encoding / line-ending de-duplication is
   implemented. In normal Safe Editor mode, the passive status detail now
   removes the active tab's currently selected `UTF-8` / `LF`-style

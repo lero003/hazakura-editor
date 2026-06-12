@@ -192,7 +192,6 @@ export function useAppShellController() {
 
   // section: recent entries
   const {
-    pinRecentFile,
     recentFiles,
     recentFilesRef,
     recentFolders,
@@ -201,7 +200,6 @@ export function useAppShellController() {
     rememberRecentFolder,
     setRecentFiles,
     setRecentFolders,
-    unpinRecentFile,
   } = foundation;
 
   // section: agent UI refresh gate
@@ -788,34 +786,6 @@ export function useAppShellController() {
     tabsRef,
     workspaceRootPath,
   });
-
-  // section: pinned file toggle
-  //
-  // The start panel surfaces pinned files above recents. The
-  // toggle flips the pin state in place — a quick affordance
-  // for the daily-driver case where the same note is opened
-  // every session. The toggle callback is a no-op if the file
-  // is already in the requested state, so re-clicking the pin
-  // star on a pinned file un-pins it.
-  const pinnedFiles = useMemo(
-    () => recentFiles.filter((entry) => entry.pinnedAt !== null),
-    [recentFiles],
-  );
-
-  const handleTogglePinRecentFile = useCallback(
-    (path: string) => {
-      const entry = recentFiles.find((candidate) => candidate.path === path);
-      if (!entry) {
-        return;
-      }
-      if (entry.pinnedAt === null) {
-        pinRecentFile(path);
-      } else {
-        unpinRecentFile(path);
-      }
-    },
-    [pinRecentFile, recentFiles, unpinRecentFile],
-  );
 
   // L Mode (えるモード) toggle. Wraps a simple
   // setEditorSettings flip so the command palette and the
@@ -1519,8 +1489,6 @@ export function useAppShellController() {
     previewVisible,
     quickOpenVisible,
     recentFiles,
-    pinnedFiles,
-    onTogglePinRecentFile: handleTogglePinRecentFile,
     restoreBackupDialogOpen,
     onMoveEntry: (srcPath: string, dstParentPath: string) => {
       void moveWorkspacePath(srcPath, dstParentPath);

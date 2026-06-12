@@ -85,15 +85,6 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
             &PredefinedMenuItem::separator(app)?,
             &recent_submenu(
                 app,
-                label("Recent Files", "最近使ったファイル"),
-                label("No Recent Items", "最近使った項目はありません"),
-                MENU_RECENT_FILE_PREFIX,
-                state
-                    .map(|state| state.recent_files.as_slice())
-                    .unwrap_or(&[]),
-            )?,
-            &recent_submenu(
-                app,
                 label("Recent Folders", "最近使ったフォルダ"),
                 label("No Recent Items", "最近使った項目はありません"),
                 MENU_RECENT_FOLDER_PREFIX,
@@ -490,7 +481,6 @@ fn kana_menu_label(japanese: &'static str) -> Option<&'static str> {
         "新規ファイル" => "あらたなるふみ",
         "開く..." => "ひらく...",
         "フォルダを開く..." => "ところをひらく...",
-        "最近使ったファイル" => "このごろのふみ",
         "最近使った項目はありません" => "このごろのものなし",
         "最近使ったフォルダ" => "このごろのところ",
         "設定..." => "おこのみ...",

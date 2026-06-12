@@ -19,10 +19,16 @@
 //    cleared").
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { WORKSPACE_STATE_STORAGE_KEY, type PersistedWorkspaceState } from "../types";
 import {
+  RECENT_FILES_STORAGE_KEY,
+  WORKSPACE_STATE_STORAGE_KEY,
+  type PersistedWorkspaceState,
+} from "../types";
+import {
+  readStoredRecentFiles,
   readPersistedWorkspaceState,
   writePersistedFileBookmark,
+  writeStoredRecentFiles,
   writePersistedWorkspaceState,
 } from "./storage";
 
@@ -349,5 +355,45 @@ describe("writePersistedWorkspaceState", () => {
       },
       activeTabPath: "/workspace/a.md",
     });
+  });
+});
+
+describe("recent file storage removal", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
+  afterEach(() => {
+    window.localStorage.clear();
+  });
+
+  it("drops legacy recent-file entries when reading the removed surface", () => {
+    window.localStorage.setItem(
+      RECENT_FILES_STORAGE_KEY,
+      JSON.stringify([
+        {
+          path: "/outside/note.md",
+          label: "note.md",
+          openedAt: 123,
+          pinnedAt: null,
+        },
+      ]),
+    );
+
+    expect(readStoredRecentFiles()).toEqual([]);
+    expect(window.localStorage.getItem(RECENT_FILES_STORAGE_KEY)).toBeNull();
+  });
+
+  it("does not write file-level recents after the surface is removed", () => {
+    writeStoredRecentFiles([
+      {
+        path: "/outside/note.md",
+        label: "note.md",
+        openedAt: 123,
+        pinnedAt: null,
+      },
+    ]);
+
+    expect(window.localStorage.getItem(RECENT_FILES_STORAGE_KEY)).toBeNull();
   });
 });

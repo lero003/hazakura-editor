@@ -86,7 +86,8 @@ export function upsertDraftRecord(
 }
 
 export function readStoredRecentFiles(): RecentEntry[] {
-  return readStoredRecentEntries(RECENT_FILES_STORAGE_KEY);
+  window.localStorage.removeItem(RECENT_FILES_STORAGE_KEY);
+  return [];
 }
 
 export function readStoredRecentFolders(): RecentEntry[] {
@@ -94,7 +95,8 @@ export function readStoredRecentFolders(): RecentEntry[] {
 }
 
 export function writeStoredRecentFiles(entries: RecentEntry[]) {
-  writeStoredRecentEntries(RECENT_FILES_STORAGE_KEY, entries);
+  void entries;
+  window.localStorage.removeItem(RECENT_FILES_STORAGE_KEY);
 }
 
 export function writeStoredRecentFolders(entries: RecentEntry[]) {

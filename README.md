@@ -38,7 +38,6 @@ Use this when you want to:
 - export content as standalone HTML or use Print to PDF
 - use a command palette for existing safe app actions
 - run bounded workspace text search without background indexing
-- pin frequently opened files on the start panel
 - use えるモード / L Mode as a WYSIWYG-tier one-pane writing surface with magazine-feel typography, where Markdown source remains the truth
 - write in L Mode with reduced decoration churn, steadier Typewriter / IME behavior, keyboard-toggleable task checkboxes, and pinned visual-overlap / screen-print fallback checks
 - review and explicitly apply auto-backup snapshots to the active document buffer without auto-saving
@@ -83,7 +82,7 @@ Example use case:
 - Active-tab metadata for UTF-8 encoding, approximate bytes, character count, LF / CRLF line-ending mode, and final-newline state
 - Explicit LF / CRLF conversion before save
 - Save As to a new common UTF-8 text file extension, with existing-file overwrite rejection
-- Native File menu entries for New File, Open, Open Folder, Save, Save As, and Recent items
+- Native File menu entries for New File, Open, Open Folder, Save, Save As, and Recent Folders
 - Native app menu entries for Preferences and Assist Surface settings on macOS
 - Native View menu and Preferences dialog for Preview, Wrap, Invisibles, Theme, Font, Tab settings, menu language, ambient effects, and spellcheck toggle
 - Native macOS spellcheck toggle (Cmd+Option+;)

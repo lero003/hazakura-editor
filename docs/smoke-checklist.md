@@ -161,7 +161,7 @@ Run when the file tree or workspace commands change:
 1. Open a throwaway workspace.
 2. Use the sidebar `+` to create a file and a folder.
 3. Use a folder context menu to create a child file/folder.
-4. Rename a file and confirm open tabs, dirty state, recents, and comparison anchors remain coherent.
+4. Rename a file and confirm open tabs, dirty state, and comparison anchors remain coherent.
 5. Move a file/folder to Trash and confirm user confirmation appears before destructive action.
 6. Confirm paths outside the selected workspace cannot be targeted.
 7. Treat workspace-internal drag/drop Move as experimental unless this exact flow is freshly confirmed in the built app.

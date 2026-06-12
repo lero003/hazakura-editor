@@ -55,7 +55,7 @@ describe("macOS build scripts", () => {
     );
     expect(appStorePreviewConfigJson.build?.frontendDist).toBe("../dist");
     expect(appStorePreviewConfig).toContain('"externalBin": []');
-    expect(appStorePreviewConfig).toContain(
+    expect(appStorePreviewConfig).not.toContain(
       '"entitlements": "./entitlements/mac-app-store.entitlements"',
     );
     expect(appStoreEntitlements).toContain(
@@ -90,6 +90,9 @@ describe("macOS build scripts", () => {
     );
     expect(appStoreSubmitConfigJson.build?.frontendDist).toBe("../dist");
     expect(appStoreSubmitConfig).toContain('"externalBin": []');
+    expect(appStoreSubmitConfig).toContain(
+      '"entitlements": "./entitlements/mac-app-store.entitlements"',
+    );
   });
 
   it("provides an App Store build-version bump helper for repeated TestFlight uploads", () => {

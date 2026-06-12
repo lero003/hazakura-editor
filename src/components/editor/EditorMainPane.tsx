@@ -14,7 +14,6 @@ import type {
   ImagePreviewState,
   MarkdownHeadingContext,
   MenuLanguage,
-  RecentEntry,
   TextMatch,
 } from "../../types";
 import type { SlashCommand } from "../../types/slash";
@@ -36,7 +35,6 @@ type EditorMainPaneProps = {
   onNewFile: () => void | Promise<void>;
   onOpenFile: () => void | Promise<void>;
   onOpenFolder: () => void | Promise<void>;
-  onOpenRecentFile: (path: string) => void;
   onPasteImage: (
     dataBase64: string,
     fileName: string,
@@ -44,9 +42,6 @@ type EditorMainPaneProps = {
   onScrollRatioChange: (ratio: number) => void;
   onSelectionChange: (selection: EditorSelectionInfo) => void;
   onSendToAgent: (text: string) => void;
-  onTogglePinRecentFile: (path: string) => void;
-  pinnedFiles: RecentEntry[];
-  recentFiles: RecentEntry[];
   scrollHudContext: MarkdownHeadingContext;
   scrollHudLine: number;
   scrollHudVisible: boolean;
@@ -74,14 +69,10 @@ export function EditorMainPane({
   onNewFile,
   onOpenFile,
   onOpenFolder,
-  onOpenRecentFile,
   onPasteImage,
   onScrollRatioChange,
   onSelectionChange,
   onSendToAgent,
-  onTogglePinRecentFile,
-  pinnedFiles,
-  recentFiles,
   scrollHudContext,
   scrollHudLine,
   scrollHudVisible,
@@ -136,10 +127,6 @@ export function EditorMainPane({
           onNewFile={onNewFile}
           onOpenFile={onOpenFile}
           onOpenFolder={onOpenFolder}
-          onOpenRecentFile={onOpenRecentFile}
-          onTogglePinRecentFile={onTogglePinRecentFile}
-          pinnedFiles={pinnedFiles}
-          recentFiles={recentFiles}
         />
       )}
     </div>

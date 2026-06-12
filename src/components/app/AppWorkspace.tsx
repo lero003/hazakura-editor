@@ -37,7 +37,6 @@ import type {
   MarkdownHeading,
   MarkdownHeadingContext,
   MenuLanguage,
-  RecentEntry,
   ResolvedTheme,
   RightPaneMode,
   TextMatch,
@@ -118,9 +117,6 @@ type AppWorkspaceProps = {
   previewColumnPercent: number;
   previewPaneRef: RefObject<HTMLDivElement | null>;
   previewVisible: boolean;
-  onTogglePinRecentFile: (path: string) => void;
-  pinnedFiles: RecentEntry[];
-  recentFiles: RecentEntry[];
   resolvedTheme: ResolvedTheme;
   runSelectedFileCompare: () => void;
   safeEditorCopy: SafeEditorCopy;
@@ -207,9 +203,6 @@ export function AppWorkspace({
   previewColumnPercent,
   previewPaneRef,
   previewVisible,
-  onTogglePinRecentFile,
-  pinnedFiles,
-  recentFiles,
   resolvedTheme,
   runSelectedFileCompare,
   safeEditorCopy,
@@ -322,14 +315,10 @@ export function AppWorkspace({
           onNewFile={() => void createNewFile()}
           onOpenFile={() => void openFile()}
           onOpenFolder={() => void openWorkspace()}
-          onOpenRecentFile={(path) => void openFilePath(path)}
           onPasteImage={handlePasteImage}
           onScrollRatioChange={syncPreviewScroll}
           onSelectionChange={setSelectionInfo}
           onSendToAgent={handleSendSelectionToAgent}
-          onTogglePinRecentFile={onTogglePinRecentFile}
-          pinnedFiles={pinnedFiles}
-          recentFiles={recentFiles}
           scrollHudContext={scrollHudContext}
           scrollHudLine={scrollHudLine}
           scrollHudVisible={scrollHudVisible}
