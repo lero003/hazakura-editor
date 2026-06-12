@@ -9,28 +9,42 @@
   margin-left: 2px;
 }
 
-.tab-close {
-  background: var(--surface-muted);
+.tab-close[data-close-affordance="x"] {
+  background: transparent;
   border: 1px solid var(--border);
   box-shadow: none;
   color: var(--text-muted);
-  flex: 0 0 26px;
-  height: 26px;
+  flex: 0 0 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 4px;
-  border-radius: 50%;
-  opacity: 0.72;
-  transform: scale(0.9);
+  border-radius: 6px;
+  opacity: 0.78;
   transition: all 0.15s var(--ease-standard);
-  width: 26px;
+  width: 24px;
+}
+
+.tab-close-icon {
+  opacity: 0.76;
+  transform: scale(0.96);
+  transition:
+    opacity 0.15s var(--ease-standard),
+    transform 0.15s var(--ease-standard);
 }
 
 .tab-item:hover .tab-close,
 .tab-item.active .tab-close {
-  opacity: 0.86;
-  transform: scale(1);
+  background: var(--surface-muted);
+  opacity: 0.92;
+}
+
+.tab-item:hover .tab-close-icon,
+.tab-item.active .tab-close-icon,
+.tab-close:focus-visible .tab-close-icon {
+  opacity: 1;
+  transform: scale(1.08);
 }
 
 .tab-close:hover {

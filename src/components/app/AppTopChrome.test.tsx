@@ -84,6 +84,55 @@ describe("AppTopChrome", () => {
     expect(onCloseSelectedImagePreview).toHaveBeenCalledTimes(1);
   });
 
+  it("marks text and image tab close controls as x affordances", () => {
+    const dirtyTab: EditorTab = {
+      contents: "draft",
+      encoding: "utf-8",
+      error: null,
+      externalFingerprint: null,
+      fingerprint: "fp",
+      ignoredExternalFingerprint: null,
+      id: "/workspace/draft.md",
+      large_file_warning: false,
+      lastSavedContents: "saved",
+      lastSavedEncoding: "utf-8",
+      lastSavedLineEnding: "lf",
+      line_ending: "lf",
+      modified_ms: null,
+      name: "draft.md",
+      path: "/workspace/draft.md",
+      saveStatus: "idle",
+      size: 10,
+    };
+
+    renderTopChrome({
+      activeDirty: true,
+      activeTabId: dirtyTab.id,
+      selectedImage: {
+        name: "photo.png",
+        path: "/workspace/assets/photo.png",
+        size: 128,
+        url: "data:image/png;base64,photo",
+      },
+      tabs: [dirtyTab],
+    });
+
+    const textCloseButton = screen.getByRole("button", {
+      name: "Close draft.md",
+    });
+    const imageCloseButton = screen.getByRole("button", {
+      name: "Close photo.png",
+    });
+
+    expect(textCloseButton.getAttribute("data-close-affordance")).toBe("x");
+    expect(imageCloseButton.getAttribute("data-close-affordance")).toBe("x");
+    expect(textCloseButton.querySelector(".tab-close-icon")).toBeTruthy();
+    expect(imageCloseButton.querySelector(".tab-close-icon")).toBeTruthy();
+    expect(
+      screen.getByRole("tab", { description: "unsaved", name: "draft.md" }),
+    ).toBeTruthy();
+  });
+
   it("exposes dirty tabs as an accessible description", () => {
     const dirtyTab: EditorTab = {
       contents: "draft",

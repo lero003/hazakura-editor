@@ -200,10 +200,13 @@ export function TabBar({
                   <button
                     aria-label={`Close ${tab.name}`}
                     className="tab-close"
+                    data-close-affordance="x"
                     onClick={() => onCloseTab(tab.id)}
                     type="button"
                   >
                     <svg
+                      aria-hidden="true"
+                      className="tab-close-icon"
                       width="8"
                       height="8"
                       viewBox="0 0 8 8"
@@ -251,10 +254,13 @@ export function TabBar({
                 <button
                   aria-label={`Close ${selectedImage.name}`}
                   className="tab-close"
+                  data-close-affordance="x"
                   onClick={onCloseSelectedImagePreview}
                   type="button"
                 >
                   <svg
+                    aria-hidden="true"
+                    className="tab-close-icon"
                     width="8"
                     height="8"
                     viewBox="0 0 8 8"

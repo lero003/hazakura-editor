@@ -87,9 +87,8 @@ Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| P1 | Tab close affordance clarity | Text-file tabs and image-preview tabs should not present the close control as a plain circular mark that can be mistaken for a status dot. Keep the existing tab selection, dirty-dot, keyboard, and `aria-label` behavior, but make the visual close affordance clearly read as close: for example, a subdued `x` / icon that becomes clearer on tab hover, close-button hover, and focus-visible. The button must remain reachable, stable in size, and distinct from the dirty indicator across normal, active, hovered, dark, and Increase Contrast states. Add focused component/CSS coverage or a bounded visual smoke note before implementation. |
-| P2 | Core Safe Editor quality probe | When concrete queue items are exhausted, inspect one basic high-risk surface instead of adding broad tests: open/save/close, restore/recovery, preview, diff/review, workspace file operations, standalone files, image handling, keyboard/IME, or error recovery. State the risk hypothesis, run a focused source/app inspection or smoke, then either fix the smallest issue found or close as `verified no-op`. |
-| P3 | Light accessibility sanity | Keep accessibility as a light sanity pass adjacent to core surfaces: keyboard reachability, focus escape/Tab behavior, readable labels, and obvious contrast. Do not prioritize broad accessibility audits over basic editor quality unless a concrete accessibility failure is observed. |
+| P1 | Core Safe Editor quality probe | When concrete queue items are exhausted, inspect one basic high-risk surface instead of adding broad tests: open/save/close, restore/recovery, preview, diff/review, workspace file operations, standalone files, image handling, keyboard/IME, or error recovery. State the risk hypothesis, run a focused source/app inspection or smoke, then either fix the smallest issue found or close as `verified no-op`. |
+| P2 | Light accessibility sanity | Keep accessibility as a light sanity pass adjacent to core surfaces: keyboard reachability, focus escape/Tab behavior, readable labels, and obvious contrast. Do not prioritize broad accessibility audits over basic editor quality unless a concrete accessibility failure is observed. |
 
 ## External-Agent Friendly Queue
 
@@ -99,7 +98,6 @@ over copy-heavy or product-voice-sensitive work.
 
 | Fit | Candidate | Scope |
 |---|---|---|
-| Good | Tab close affordance clarity | Fix only the visual clarity of the tab close control. Likely surfaces: `src/components/editor/TabBar.tsx`, `src/styles/editor.css`, `src/styles/controls.css`, and contrast styles if needed. Do not change tab identity, dirty-state logic, close-confirmation flow, drag/reorder behavior, or keyboard navigation. |
 | Good | L Mode quality investigation | Pick one reproduced L Mode issue or one measurable quality gap only: caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or performance baseline. Do not add a new editing model or contenteditable surface. |
 | Good | Theme quality investigation | Pick one concrete theme issue only: contrast, focus visibility, status/error readability, dialog readability, or Increase Contrast behavior. Do not redesign palettes or add theme customization. |
 | Good | Core Safe Editor quality probe | Inspect one basic surface with a clear risk hypothesis, then fix only a reproduced issue or close as `verified no-op`. Prefer open/save/close, restore/recovery, preview, diff/review, workspace files, standalone files, image handling, keyboard/IME, or error recovery. |
@@ -109,6 +107,13 @@ over copy-heavy or product-voice-sensitive work.
 
 ## Completed v0.18 Slices
 
+- 2026-06-12: Tab close affordance clarity is implemented. Text-file
+  tabs and image-preview tabs now expose the close control as a stable
+  `x` button rather than a plain circular mark, while retaining the
+  existing tab selection, dirty-dot, keyboard navigation, and
+  `aria-label` behavior. Focused component coverage pins the text and
+  image close controls plus dirty-tab description, and focused CSS
+  coverage keeps the close affordance distinct from the dirty dot.
 - 2026-06-12: External-window routing for Markdown / Help links is
   implemented. Markdown preview clicks still open supported
   workspace-relative text links inside the app, while explicit
