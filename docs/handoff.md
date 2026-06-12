@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-13 (v0.20 Sakura workspace ergonomics)
+Last reviewed: 2026-06-13 (pre-release fix plan)
 
 ## Current State
 
@@ -22,9 +22,14 @@ Last reviewed: 2026-06-13 (v0.20 Sakura workspace ergonomics)
   The local App Store release-candidate package is
   `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.19.0-build10-mas.pkg`
   with SHA-256
-  `75da7701e71b35fc74018ee562515bfd7a3f4da466853fa420162d217bc4bbe7`;
+  `4d0661befd10bfca0584d671af6fbe6deec7c2a235100a0b0d4233914b43be3e`;
   it declares minimum macOS 15.0 and passed `pkgutil --check-signature`.
 - Start from `docs/current-work.md`.
+- A review-derived pre-release code-quality fix queue now lives in
+  `docs/pre-release-fix-plan.md`. A follow-up external quality review
+  has been triaged there as accepted vs deferred / not adopted items. It
+  intentionally excludes manual smoke, TestFlight, App Store Connect,
+  and reviewer-note work.
 - v0.20 Sakura workspace ergonomics P0 is implemented locally: the tab
   row has a localized `+` new-file entry, the main chrome can collapse /
   restore the workspace sidebar, the central editor pane shows active
@@ -156,6 +161,7 @@ list. Each run should pick exactly one open slice and close it as
 ## Source Docs
 
 - Current work: `docs/current-work.md`
+- Pre-release code-quality fixes: `docs/pre-release-fix-plan.md`
 - Current implementation state: `docs/current-status.md`
 - Phase boundaries: `docs/roadmap.md`
 - Product boundary: `docs/product-brief.md`

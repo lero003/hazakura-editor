@@ -27,6 +27,7 @@ submission-prep, or quality-polish slice.
 - `source-release-checklist.md`: source-preview release readiness.
 - `dmg-preview-checklist.md`: warning-expected DMG preview readiness.
 - `app-store-build.md`: public-safe helper-free Mac App Store build, signing, and smoke boundary.
+- `pre-release-fix-plan.md`: review-derived code-quality fixes to complete before release, excluding smoke execution.
 - `smoke-checklist.md`: manual smoke checklist.
 - `handoff.md`: concise handoff for the next coding agent.
 
