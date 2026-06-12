@@ -318,7 +318,7 @@ fn atomic_write_removes_temp_file_after_replace_failure() {
 }
 
 #[test]
-fn atomic_write_does_not_clobber_existing_temp_file() {
+fn atomic_write_succeeds_without_clobbering_existing_temp_file() {
     let dir = unique_test_dir("atomic_write_existing_temp");
     fs::create_dir_all(&dir).expect("create test dir");
     let path = dir.join("note.md");
@@ -326,16 +326,27 @@ fn atomic_write_does_not_clobber_existing_temp_file() {
     fs::write(&path, "# Old\n").expect("write fixture");
     fs::write(&temp_path, "# Existing temp\n").expect("write existing temp fixture");
 
-    let err = atomic_write(&path, b"# New\n").expect_err("existing temp should fail safely");
+    atomic_write(&path, b"# New\n").expect("save should use a fresh temp path");
 
-    assert!(err.contains("Cannot create temp file"));
     assert_eq!(
-        fs::read_to_string(&path).expect("read protected file"),
-        "# Old\n"
+        fs::read_to_string(&path).expect("read saved file"),
+        "# New\n"
     );
     assert_eq!(
         fs::read_to_string(&temp_path).expect("read existing temp file"),
         "# Existing temp\n"
+    );
+    assert_eq!(
+        fs::read_dir(&dir)
+            .expect("read temp dir")
+            .filter_map(|entry| entry.ok())
+            .filter(|entry| entry
+                .file_name()
+                .to_string_lossy()
+                .contains("hazakura-note.tmp"))
+            .count(),
+        1,
+        "only the pre-existing stale temp should remain"
     );
 
     let _ = fs::remove_dir_all(dir);

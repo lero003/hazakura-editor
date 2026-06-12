@@ -753,6 +753,8 @@ struct AtomicWriteFailure {
     message: String,
 }
 
+const ATOMIC_WRITE_TEMP_ATTEMPTS: usize = 64;
+
 pub(crate) fn atomic_write(path: &Path, bytes: &[u8]) -> Result<(), String> {
     atomic_write_inner(path, bytes).map_err(|err| err.message)
 }
@@ -769,19 +771,11 @@ fn atomic_write_inner(path: &Path, bytes: &[u8]) -> Result<(), AtomicWriteFailur
             kind: AtomicWriteFailureKind::Other,
             message: "Cannot save a file with an invalid name.".to_string(),
         })?;
-    let temp_path = parent.join(format!(".{file_name}.hazakura-note.tmp"));
 
-    let mut temp_created = false;
+    let mut temp_path: Option<PathBuf> = None;
     let write_result = (|| -> Result<(), AtomicWriteFailure> {
-        let mut temp_file = OpenOptions::new()
-            .write(true)
-            .create_new(true)
-            .open(&temp_path)
-            .map_err(|err| AtomicWriteFailure {
-                kind: AtomicWriteFailureKind::TempCreate(err.kind()),
-                message: format!("Cannot create temp file: {err}"),
-            })?;
-        temp_created = true;
+        let (candidate_path, mut temp_file) = create_atomic_temp_file(parent, file_name)?;
+        temp_path = Some(candidate_path.clone());
         temp_file
             .write_all(bytes)
             .map_err(|err| AtomicWriteFailure {
@@ -793,19 +787,54 @@ fn atomic_write_inner(path: &Path, bytes: &[u8]) -> Result<(), AtomicWriteFailur
             message: format!("Cannot sync temp file: {err}"),
         })?;
 
-        fs::rename(&temp_path, path).map_err(|err| AtomicWriteFailure {
+        fs::rename(&candidate_path, path).map_err(|err| AtomicWriteFailure {
             kind: AtomicWriteFailureKind::Other,
             message: format!("Cannot replace saved file: {err}"),
         })
     })();
 
-    if write_result.is_err() && temp_created {
-        let _ = fs::remove_file(&temp_path);
+    if write_result.is_err() {
+        if let Some(temp_path) = &temp_path {
+            let _ = fs::remove_file(temp_path);
+        }
     }
 
     write_result?;
 
     Ok(())
+}
+
+fn create_atomic_temp_file(
+    parent: &Path,
+    file_name: &str,
+) -> Result<(PathBuf, File), AtomicWriteFailure> {
+    let timestamp = current_time_ms();
+    let process_id = std::process::id();
+
+    for attempt in 0..ATOMIC_WRITE_TEMP_ATTEMPTS {
+        let temp_path = parent.join(format!(
+            ".{file_name}.hazakura-note.tmp.{process_id}.{timestamp}.{attempt}"
+        ));
+        match OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&temp_path)
+        {
+            Ok(file) => return Ok((temp_path, file)),
+            Err(err) if err.kind() == ErrorKind::AlreadyExists => continue,
+            Err(err) => {
+                return Err(AtomicWriteFailure {
+                    kind: AtomicWriteFailureKind::TempCreate(err.kind()),
+                    message: format!("Cannot create temp file: {err}"),
+                });
+            }
+        }
+    }
+
+    Err(AtomicWriteFailure {
+        kind: AtomicWriteFailureKind::TempCreate(ErrorKind::AlreadyExists),
+        message: "Cannot create temp file: too many temp name collisions".to_string(),
+    })
 }
 
 pub(crate) fn write_existing_file_with_atomic_fallback(
