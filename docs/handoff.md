@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-12 (v0.18 pre-review regression evidence)
+Last reviewed: 2026-06-12 (v0.18 Help copy overlap cleanup)
 
 ## Current State
 
@@ -76,10 +76,13 @@ Last reviewed: 2026-06-12 (v0.18 pre-review regression evidence)
 Use `docs/current-work.md` for the active queue. The current highest
 priority UX items are:
 
-1. Light accessibility sanity adjacent to a selected core surface.
-2. Help copy overlap cleanup.
+1. Core Safe Editor quality probe.
+2. Light accessibility sanity adjacent to the selected core surface.
 
-Recently completed: auto-backup filenames now stay unique for rapid
+Recently completed: Help copy overlap cleanup now keeps the in-app
+Privacy Policy public-copy oriented while Local Data Disclosure owns
+technical implementation details such as workspace backup paths and
+preview/export routing. Auto-backup filenames now stay unique for rapid
 same-second snapshots by adding millisecond precision and a bounded
 collision suffix while keeping recovery listing newest-first.
 Direct-open standalone file save now handles the

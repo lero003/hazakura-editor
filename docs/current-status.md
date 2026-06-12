@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-12 (v0.18 pre-review regression evidence)
+Last reviewed: 2026-06-12 (v0.18 Help copy overlap cleanup)
 
 ## Current State
 
@@ -128,8 +128,8 @@ baseline, and smoke evidence are archived under
 ## Next Safe Actions
 
 1. For UX work, start with `docs/current-work.md` and pick one item:
-   one core Safe Editor quality probe, light accessibility sanity,
-   Help copy overlap cleanup, or the next open slice named there.
+   one core Safe Editor quality probe, light accessibility sanity
+   adjacent to that surface, or the next open slice named there.
 2. For App Store submission prep, start with `docs/current-work.md`
    and `docs/app-store-build.md`; keep account-specific notes under
    ignored `docs/internal/` files;

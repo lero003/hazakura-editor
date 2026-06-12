@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-12 (v0.18 pre-review todo review)
+Last reviewed: 2026-06-12 (v0.18 Help copy overlap cleanup)
 
 ## Current Position
 
@@ -48,14 +48,16 @@ These boundaries stay active across roadmap changes:
 Goal: make the current Safe Editor experience easier to use before
 submission work hardens around it.
 
-Use `docs/current-work.md` as the queue. The near-term UX priorities are:
-
-1. Manual accessibility smoke: Help readability, full keyboard-only
-   traversal, VoiceOver tab-bar announcement, and Increase Contrast.
-2. Help copy overlap cleanup.
+Use `docs/current-work.md` as the queue. The near-term UX priority is a
+Core Safe Editor quality probe, with lightweight accessibility sanity
+kept adjacent to the selected surface.
 
 Recently completed:
 
+- Help copy overlap cleanup: the in-app Privacy Policy now stays
+  public-copy oriented, while Local Data Disclosure retains technical
+  details such as workspace backup paths, preview/export routing, App
+  Store lane omissions, and process/network boundaries.
 - Auto-backup filename uniqueness: rapid snapshots for the same
   workspace file no longer overwrite each other within the same second;
   backup filenames now include milliseconds and a bounded collision

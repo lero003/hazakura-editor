@@ -12,9 +12,7 @@ Hazakura Editor reads and writes files or folders you select through the app UI.
 
 ## Local data
 
-Hazakura Editor stores local preferences such as theme, tab state, editor settings, recent folders, and unsaved recovery state on this Mac.
-
-If auto-backup is enabled, backup snapshots are written under `.hazakura/backups/...` inside the selected workspace.
+Hazakura Editor stores local preferences such as theme, tab state, editor settings, recent folders, and optional recovery and backup data on this Mac or inside the workspace you choose.
 
 ## Apple Local Assist
 
@@ -24,7 +22,7 @@ The App Store version of Hazakura Editor does not include Apple Local Assist.
 
 The App Store version of Hazakura Editor does not include external AI calls, analytics, telemetry, third-party crash reporting, or cloud sync.
 
-The Markdown preview does not fetch external images.
+The Markdown preview does not load external images.
 
 Explicit user actions, such as printing, showing a file in Finder, or moving a file to Trash, may hand selected paths or temporary files to macOS system services.
 

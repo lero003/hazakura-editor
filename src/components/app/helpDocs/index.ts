@@ -79,7 +79,7 @@ export const privacyPolicy: HelpDoc = {
   boundaryNoteBody:
     "This is the App Store / public-copy draft for the app's privacy policy. It is separate from the more technical Local Data Disclosure.",
   footerNote:
-    "This in-app draft mirrors the public Privacy Policy at https://hazakura.dev/hazakura-editor/privacy/. App Store metadata still needs field-by-field review before submission.",
+    "This in-app draft is the companion to the public Privacy Policy at https://hazakura.dev/hazakura-editor/privacy/. App Store metadata still needs field-by-field review before submission.",
   source: privacyPolicyMd,
   sections: [
     { testId: "help-doc-section-overview", title: "Overview" },

@@ -71,11 +71,15 @@ implemented as of 2026-06-12. Order 8 is implemented as of
 local regression evidence. Order 10 is implemented as of 2026-06-12.
 Order 11 is implemented as of 2026-06-12 through the Help-document
 scroll-region keyboard reachability pass.
+Order 12 is implemented as of 2026-06-12 through a focused Privacy
+Policy / Local Data Disclosure role-split copy pass.
 The remaining Move
 to Trash and workspace-persistence proofs are signed TestFlight smoke,
 tracked under the submission-prep manual smoke items unless TestFlight
-specifically reopens the Trash or workspace restore behavior. The next
-open automation slice is Order 12.
+specifically reopens the Trash or workspace restore behavior. The
+pre-review automation table is currently exhausted; the next recurring
+quality run should use the Active UX Queue, starting with one Core Safe
+Editor quality probe whose risk hypothesis can be inspected or smoked.
 
 ## Active UX Queue
 
@@ -85,7 +89,6 @@ Pick one item at a time.
 |---|---|---|
 | P1 | Core Safe Editor quality probe | When concrete queue items are exhausted, inspect one basic high-risk surface instead of adding broad tests: open/save/close, restore/recovery, preview, diff/review, workspace file operations, standalone files, image handling, keyboard/IME, or error recovery. State the risk hypothesis, run a focused source/app inspection or smoke, then either fix the smallest issue found or close as `verified no-op`. |
 | P2 | Light accessibility sanity | Keep accessibility as a light sanity pass adjacent to core surfaces: keyboard reachability, focus escape/Tab behavior, readable labels, and obvious contrast. Do not prioritize broad accessibility audits over basic editor quality unless a concrete accessibility failure is observed. |
-| P2 | Help copy overlap cleanup | Separate Privacy Policy, Local Data Disclosure, Support Diagnostics, About, and Open Source Acknowledgements so each page has one job. |
 
 ## External-Agent Friendly Queue
 
@@ -104,6 +107,15 @@ over copy-heavy or product-voice-sensitive work.
 
 ## Completed v0.18 Slices
 
+- 2026-06-12: Help copy overlap cleanup is implemented as a
+  narrow Privacy Policy / Local Data Disclosure role split. The in-app
+  Privacy Policy now stays public-copy oriented, avoids the
+  `.hazakura/backups/...` implementation path and `fetch` wording, and
+  points to local preferences plus optional recovery / backup data at a
+  high level. Local Data Disclosure keeps the technical storage,
+  preview/export, App Store lane, and network/process detail. Focused
+  Help-pane coverage pins that the Privacy Policy does not absorb the
+  technical disclosure details again.
 - 2026-06-12: Light accessibility sanity is implemented as a narrow
   Help-surface pass. The Privacy Policy / Local Data Disclosure / About
   / Open Source Acknowledgements Help documents and the Support

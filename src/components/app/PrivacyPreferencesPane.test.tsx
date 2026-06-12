@@ -209,6 +209,17 @@ describe("PrivacyPreferencesPane", () => {
     );
   });
 
+  it("keeps the Privacy Policy as public copy instead of technical disclosure", () => {
+    renderPane(privacyPolicy);
+
+    const text = screen.getByTestId("help-doc-body").textContent ?? "";
+    expect(text).toContain("local preferences");
+    expect(text).toContain("optional recovery and backup data");
+    expect(text).not.toContain(".hazakura/backups/");
+    expect(text).not.toContain("fetch");
+    expect(text).not.toContain("XHR");
+  });
+
   it("can render the Open Source Acknowledgements Help document", () => {
     renderPane(openSourceAcknowledgements);
 
