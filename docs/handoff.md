@@ -42,6 +42,12 @@ Last reviewed: 2026-06-12 (v0.18 Help copy overlap cleanup)
   Review. Code-level UI coverage now removes duplicate passive
   `UTF-8` / `LF` style labels in normal Safe Editor mode while
   preserving the dropdown controls and dirty/save status affordances.
+- External-window routing for Markdown / Help links is implemented:
+  Preview, Help documents, and Support Diagnostics intercept explicit
+  `http:` / `https:` / `mailto:` / `tel:` clicks before WebView
+  navigation and hand them to a bounded external-open Tauri command.
+  Workspace-relative supported text links still open inside the app;
+  unsafe schemes and unsupported/local-outside targets stay blocked.
 - App Store-lane Move to Trash external-process review is implemented:
   `move_workspace_entry_to_trash` now calls native macOS
   `NSFileManager` Trash handling from Rust through the existing
@@ -79,10 +85,13 @@ priority UX items are:
 1. Core Safe Editor quality probe.
 2. Light accessibility sanity adjacent to the selected core surface.
 
-Recently completed: Help copy overlap cleanup now keeps the in-app
-Privacy Policy public-copy oriented while Local Data Disclosure owns
-technical implementation details such as workspace backup paths and
-preview/export routing. Auto-backup filenames now stay unique for rapid
+Recently completed: External-window routing for Markdown / Help links
+now keeps workspace-relative text links in-app while handing explicit
+external URL clicks to the OS default browser/app. Help copy overlap
+cleanup now keeps the in-app Privacy Policy public-copy oriented while
+Local Data Disclosure owns technical implementation details such as
+workspace backup paths and preview/export routing. Auto-backup filenames
+now stay unique for rapid
 same-second snapshots by adding millisecond precision and a bounded
 collision suffix while keeping recovery listing newest-first.
 Direct-open standalone file save now handles the
@@ -162,3 +171,7 @@ list. Each run should pick exactly one open slice and close it as
 - For code changes, follow `docs/development-automation.md`.
 - For UI behavior changes, update or exercise `docs/smoke-checklist.md`.
 - Do not claim manual smoke passed unless it was actually exercised.
+- Current known local worktree caveat: a pre-existing
+  `src-tauri/tauri.conf.appstore.json` `bundleVersion` bump to `6` may
+  remain unstaged; do not fold it into unrelated quality slices unless
+  the App Store lane explicitly asks for that build-number change.
