@@ -18,7 +18,7 @@ Last reviewed: 2026-06-12 (v0.19 App Store submission candidate)
   TestFlight on 2026-06-12 with no reported Apple validation warnings;
   basic TestFlight launch / save smoke passed.
 - Current active lane is v0.19 App Store submission-candidate smoke and
-  App Store submission prep. The current App Store build counter is `7`.
+  App Store submission prep. The current App Store build counter is `8`.
 - Start from `docs/current-work.md`.
 - Markdown preview task checkboxes are complete for v0.18: Preview renders
   `- [ ]` / `- [x]` as inert display-only checkbox glyphs without
@@ -184,7 +184,6 @@ list. Each run should pick exactly one open slice and close it as
   and `npm run build:vite`.
 - For UI behavior changes, update or exercise `docs/smoke-checklist.md`.
 - Do not claim manual smoke passed unless it was actually exercised.
-- Current known local worktree caveat: a pre-existing
-  `src-tauri/tauri.conf.appstore.json` `bundleVersion` bump to `6` may
-  remain unstaged; do not fold it into unrelated quality slices unless
-  the App Store lane explicitly asks for that build-number change.
+- Current known local worktree caveat: App Store build-number changes
+  belong only to the explicit App Store lane; do not fold them into
+  unrelated quality slices.
