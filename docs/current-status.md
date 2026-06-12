@@ -16,8 +16,8 @@ Last reviewed: 2026-06-13 (v0.19 App Store submission-prep queue)
   TestFlight on 2026-06-12 with no reported Apple validation warnings;
   basic TestFlight launch / save smoke passed.
 - The current App Store submission candidate is `0.19.0` with App Store
-  build counter `10`; the signed local submit package
-  `HazakuraEditor-0.19.0-build10-mas.pkg` has been generated and
+  build counter `11`; the signed local submit package
+  `HazakuraEditor-0.19.0-build11-mas.pkg` has been generated and
   checked locally. Upload, App Store Connect validation, fuller
   TestFlight smoke, metadata finalization, and App Review submission
   remain separate evidence.

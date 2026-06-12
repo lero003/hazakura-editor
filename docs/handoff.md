@@ -18,11 +18,11 @@ Last reviewed: 2026-06-13 (pre-release fix plan)
   TestFlight on 2026-06-12 with no reported Apple validation warnings;
   basic TestFlight launch / save smoke passed.
 - Current active lane is v0.19 App Store submission-candidate smoke and
-  App Store submission prep. The current App Store build counter is `10`.
+  App Store submission prep. The current App Store build counter is `11`.
   The local App Store release-candidate package is
-  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.19.0-build10-mas.pkg`
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.19.0-build11-mas.pkg`
   with SHA-256
-  `4d0661befd10bfca0584d671af6fbe6deec7c2a235100a0b0d4233914b43be3e`;
+  `0524a68e4da23c2f7be4c8b3f168896e001d356085bbcbbb847daf550a9f4f6d`;
   it declares minimum macOS 15.0 and passed `pkgutil --check-signature`.
 - Start from `docs/current-work.md`.
 - A review-derived pre-release code-quality fix queue now lives in

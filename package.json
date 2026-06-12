@@ -14,6 +14,7 @@
     "build:tauri:app-store-submit": "tauri build --bundles app --target universal-apple-darwin --config src-tauri/tauri.conf.appstore.json",
     "build:app-store-preview": "HAZAKURA_DISTRIBUTION_LANE=app-store VITE_HAZAKURA_DISTRIBUTION_LANE=app-store npm run build:tauri:app-store-preview",
     "build:app-store-submit": "HAZAKURA_DISTRIBUTION_LANE=app-store VITE_HAZAKURA_DISTRIBUTION_LANE=app-store npm run build:tauri:app-store-submit",
+    "build:app-store-pkg": "node scripts/build-app-store-pkg.mjs",
     "bump:app-store-build": "node scripts/bump-app-store-build-version.mjs",
     "build:developer-preview": "HAZAKURA_DISTRIBUTION_LANE=developer VITE_HAZAKURA_DISTRIBUTION_LANE=developer npm run build:tauri:developer-preview",
     "build:macos-lanes": "bash scripts/build-macos-lanes.sh",

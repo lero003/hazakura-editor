@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-06-13 (v0.19 build 10 package evidence)
+Last reviewed: 2026-06-13 (v0.19 build 11 package evidence)
 
 ## Purpose
 
@@ -104,27 +104,28 @@ The preview command intentionally unsets `APPLE_SIGNING_IDENTITY` so a
 previous submission shell does not leak an account-specific certificate
 name into preview or Developer / GitHub lane signing output.
 
-Submission-oriented App Store app bundle:
+Submission-oriented App Store package:
 
 ```bash
 APPLE_SIGNING_IDENTITY="Apple Distribution: <Name> (<TEAM_ID>)" \
-  npm run build:app-store-submit
+APPLE_INSTALLER_SIGNING_IDENTITY="3rd Party Mac Developer Installer: <Name> (<TEAM_ID>)" \
+  npm run build:app-store-pkg
 ```
 
-Before each new App Store Connect / TestFlight upload for the same app
-version, increment the App Store-only bundle version:
+`npm run build:app-store-pkg` increments
+`src-tauri/tauri.conf.appstore.json` `bundle.macOS.bundleVersion` before
+building, and that value becomes `CFBundleVersion`. App Store Connect
+requires this value to be higher than any previously uploaded build for
+the same app version, including builds that were uploaded but later
+rejected for validation issues. Keep this value as a positive integer
+counter (`1`, `2`, `3`, ...), separate from the user-visible app version.
 
-```bash
-npm run bump:app-store-build
-```
-
-This updates `bundle.macOS.bundleVersion` in
-`src-tauri/tauri.conf.appstore.json`, which becomes
-`CFBundleVersion`. App Store Connect requires this value to be higher
-than any previously uploaded build for the same app version, including
-builds that were uploaded but later rejected for validation issues. Keep
-this value as a positive integer counter (`1`, `2`, `3`, ...), separate
-from the user-visible app version.
+The package script derives the output path from `package.json` `version`
+and the newly incremented App Store `bundleVersion`. Do not hand-edit
+the `HazakuraEditor-<version>-build<build>-mas.pkg` name. If a manual
+counter-only bump is ever needed, `npm run bump:app-store-build` remains
+available, but the normal package path should use `build:app-store-pkg`
+so the counter and filename advance together.
 
 The submit command uses:
 
@@ -279,22 +280,11 @@ Do not upload:
 The `warning-expected` DMG lane is the Developer / GitHub preview lane
 and must stay separate from App Store Connect / TestFlight uploads.
 
-Create the package from the signed App Store bundle. Adjust `APP` if
-Tauri writes the universal target under a different output directory.
-Keep the real installer signing identity in ignored local notes.
-
-```bash
-APP="src-tauri/target/universal-apple-darwin/release/bundle/macos/Hazakura Editor.app"
-PKG="src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.19.0-build10-mas.pkg"
-
-mkdir -p "$(dirname "$PKG")"
-
-productbuild \
-  --component "$APP" \
-  /Applications \
-  --sign "3rd Party Mac Developer Installer: <Name> (<TEAM_ID>)" \
-  "$PKG"
-```
+`scripts/build-app-store-pkg.mjs` increments the App Store build counter,
+builds the signed App Store app bundle, runs the macOS distribution probe
+with App Store entitlement checks, creates the signed installer package
+with `productbuild`, verifies the package signature, and prints the
+SHA-256 plus `PKG_PATH`.
 
 Verify the package before opening Transporter:
 
@@ -303,7 +293,8 @@ pkgutil --check-signature "$PKG"
 spctl --assess --type install --verbose=4 "$PKG"
 ```
 
-Upload `HazakuraEditor-0.19.0-build10-mas.pkg` with Transporter. After upload,
+Upload the `PKG_PATH` printed by `npm run build:app-store-pkg` with
+Transporter. After upload,
 record the App Store Connect processing result, TestFlight internal
 group assignment, and any Apple validation warnings in ignored
 `docs/internal/` notes. Tracked docs may record public-safe summaries
@@ -398,12 +389,12 @@ on the TestFlight build passed. Fuller manual smoke, final metadata, and
 App Review submission / approval remain separate evidence.
 
 v0.19 submission-candidate note: the current user-visible app version is
-`0.19.0` and the App Store build counter is `10`. Treat the next
+`0.19.0` and the App Store build counter is `11`. Treat the next
 Transporter upload, Apple validation, TestFlight distribution, and fuller
 manual smoke as fresh `0.19.0` evidence; do not reuse the `0.18.0` build
 `4` TestFlight result as final App Review proof.
 In local Codex packaging, the signed submit-lane bundle reported the
-expected `0.19.0` / `10` metadata, `15.0` minimum macOS, and
+expected `0.19.0` / `11` metadata, `15.0` minimum macOS, and
 entitlements. Local Gatekeeper
 assessment can still report `Insufficient Context` for this lane; treat
 launch validation as signed TestFlight proof, not as covered by local
@@ -412,7 +403,7 @@ package inspection alone.
 The local release-candidate package generated for this lane is:
 
 ```txt
-src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.19.0-build10-mas.pkg
+src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.19.0-build11-mas.pkg
 ```
 
 `productbuild` reported supported OS `[Min: 15.0, Before: None]`.
@@ -422,5 +413,5 @@ local package, so treat that as local trust-policy evidence rather than
 an App Store Connect validation result. SHA-256:
 
 ```txt
-4d0661befd10bfca0584d671af6fbe6deec7c2a235100a0b0d4233914b43be3e
+0524a68e4da23c2f7be4c8b3f168896e001d356085bbcbbb847daf550a9f4f6d
 ```
