@@ -24,6 +24,7 @@ describe("EditorPane", () => {
     lModeEnabled = false,
     lModeTypewriter = false,
     onChange = vi.fn(),
+    onScrollRatioChange = vi.fn(),
     onPasteImage,
     ref,
     value,
@@ -32,6 +33,7 @@ describe("EditorPane", () => {
     lModeEnabled?: boolean;
     lModeTypewriter?: boolean;
     onChange?: (nextValue: string) => void;
+    onScrollRatioChange?: (ratio: number) => void;
     onPasteImage?: (
       dataBase64: string,
       fileName: string,
@@ -50,7 +52,7 @@ describe("EditorPane", () => {
         lModeTypewriter={lModeTypewriter}
         onChange={onChange}
         onPasteImage={onPasteImage}
-        onScrollRatioChange={vi.fn()}
+        onScrollRatioChange={onScrollRatioChange}
         onSelectionChange={vi.fn()}
         searchMatches={[]}
         showInvisibles={false}
@@ -204,6 +206,37 @@ describe("EditorPane", () => {
     });
 
     expect(container.querySelector(".cm-editor")).not.toBe(firstEditor);
+  });
+
+  it("removes the old scroll listener when remounting the editor session", async () => {
+    const onScrollRatioChange = vi.fn();
+    const { container, rerender } = render(
+      renderEditorPane({
+        documentKey: "/workspace/first.md",
+        onScrollRatioChange,
+        value: "first line\nsecond line\nthird line\n",
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const firstScroller = container.querySelector(".cm-scroller");
+    expect(firstScroller).not.toBeNull();
+
+    rerender(
+      renderEditorPane({
+        documentKey: "/workspace/second.md",
+        onScrollRatioChange,
+        value: "new file\nstill new\n",
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(container.querySelector(".cm-scroller")).not.toBe(firstScroller);
+
+    onScrollRatioChange.mockClear();
+    firstScroller?.dispatchEvent(new Event("scroll"));
+
+    expect(onScrollRatioChange).not.toHaveBeenCalled();
   });
 
   it("inserts a pasted image at the paste-time selection even if the cursor moves before save completes", async () => {

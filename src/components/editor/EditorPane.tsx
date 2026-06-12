@@ -198,6 +198,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   ) {
   const editorMountRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
+  const destroyMountedViewRef = useRef<(() => void) | null>(null);
   const onChangeRef = useRef(onChange);
   const onScrollRatioChangeRef = useRef(onScrollRatioChange);
   const onSelectionChangeRef = useRef(onSelectionChange);
@@ -417,9 +418,10 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     // below also destroys the view, but that fires on
     // component unmount, not on every dep change — so we
     // need an explicit destroy here when `shouldRemount` is
-    // true to clear the DOM and `viewRef` before the new
-    // EditorView attaches.
-    viewRef.current?.destroy();
+    // true to clear the DOM, listeners, and `viewRef` before
+    // the new EditorView attaches.
+    destroyMountedViewRef.current?.();
+    destroyMountedViewRef.current = null;
     viewRef.current = null;
     mountedDocumentKeyRef.current = documentKey;
     mountedKindRef.current = picked.kind;
@@ -550,6 +552,13 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     };
 
     view.scrollDOM.addEventListener("scroll", handleScroll, { passive: true });
+    destroyMountedViewRef.current = () => {
+      view.scrollDOM.removeEventListener("scroll", handleScroll);
+      view.destroy();
+      if (viewRef.current === view) {
+        viewRef.current = null;
+      }
+    };
     viewRef.current = view;
     onSelectionChangeRef.current(readSelectionInfo(view.state));
     handleScroll();
@@ -560,9 +569,8 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     // `kind` changes (the early-return above). When the kind
     // stays the same (e.g. L Mode toggle on a `.md` file)
     // we must NOT destroy the view, otherwise the cursor
-    // position is lost. The unmount-only effect below is the
-    // single owner of `viewRef.current.destroy()` for the
-    // end-of-life path.
+    // position is lost. `destroyMountedViewRef` is called
+    // only on actual remount or component unmount.
   }, [documentKey, lModeEnabled]);
 
   // Unmount-only effect: destroy the editor when the
@@ -572,7 +580,8 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   // change.
   useEffect(() => {
     return () => {
-      viewRef.current?.destroy();
+      destroyMountedViewRef.current?.();
+      destroyMountedViewRef.current = null;
       viewRef.current = null;
       mountedDocumentKeyRef.current = null;
       mountedKindRef.current = null;
