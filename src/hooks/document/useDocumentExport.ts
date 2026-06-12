@@ -7,14 +7,11 @@ import {
   saveTextFileAs,
 } from "../../lib/tauri";
 import { getMarkdownPreviewCss } from "../../features/document/markdownExportCss";
+import {
+  inlineWorkspaceAssetImages,
+  renderMarkdown,
+} from "../../features/editor/markdown";
 import type { EditorTab } from "../../types";
-
-// `marked` + `dompurify` together are ~150 kB gzipped. Export
-// runs once when the user picks Export HTML / PDF from a menu,
-// so deferring the chunk via dynamic import keeps the cold-start
-// bundle smaller without a perceivable delay on the actual
-// export.
-const loadMarkdownRenderer = () => import("../../features/editor/markdown");
 
 type UseDocumentExportOptions = {
   activeContents: string;
@@ -44,8 +41,6 @@ export function useDocumentExport({
 
     setStatus("Opening in browser for printing...");
     try {
-      const { renderMarkdown, inlineWorkspaceAssetImages } =
-        await loadMarkdownRenderer();
       let rendered = renderMarkdown(activeContents, {
         documentPath: activeTab.path,
         workspaceRoot: workspaceRootPath ?? undefined,
@@ -181,8 +176,6 @@ ${rendered}
       }
       const contentsForExport = activeContentsRef.current;
 
-      const { renderMarkdown, inlineWorkspaceAssetImages } =
-        await loadMarkdownRenderer();
       let bodyHtml = renderMarkdown(contentsForExport, {
         documentPath: tabForExport.path,
         workspaceRoot: workspaceRootPath,

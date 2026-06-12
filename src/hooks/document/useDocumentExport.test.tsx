@@ -1,4 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
+import { readFileSync } from "node:fs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useDocumentExport } from "./useDocumentExport";
 import type { EditorTab } from "../../types";
@@ -48,6 +49,11 @@ vi.mock("../../features/editor/markdown", () => ({
   renderMarkdown: markdownApi.renderMarkdown,
 }));
 
+const useDocumentExportSource = readFileSync(
+  `${process.cwd()}/src/hooks/document/useDocumentExport.ts`,
+  "utf8",
+);
+
 function makeTab(overrides: Partial<EditorTab> = {}): EditorTab {
   return {
     contents: "draft",
@@ -72,6 +78,12 @@ function makeTab(overrides: Partial<EditorTab> = {}): EditorTab {
 }
 
 describe("useDocumentExport", () => {
+  it("keeps the Markdown renderer statically imported", () => {
+    expect(useDocumentExportSource).not.toContain(
+      'import("../../features/editor/markdown")',
+    );
+  });
+
   beforeEach(() => {
     dialogApi.save.mockReset();
     markdownApi.inlineWorkspaceAssetImages.mockClear();
