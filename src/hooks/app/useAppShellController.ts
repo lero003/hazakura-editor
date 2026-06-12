@@ -50,7 +50,10 @@ import { useWindowDialogActions } from "./useWindowDialogActions";
 import { useLocalizedAppCopy } from "./useLocalizedAppCopy";
 import { useAppShellSideEffectsController } from "./useAppShellSideEffectsController";
 import { useAutoBackupRestore } from "../workspace/useAutoBackupRestore";
-import { persistWorkspaceStateSnapshot } from "../workspace/useWorkspaceStatePersistence";
+import {
+  persistWorkspaceStateSnapshot,
+  shouldPersistWorkspaceSessionOnQuit,
+} from "../workspace/useWorkspaceStatePersistence";
 import { exitApp } from "../../lib/tauri/window";
 
 export function useAppShellController() {
@@ -561,11 +564,17 @@ export function useAppShellController() {
   }, [cancelPendingAppClose]);
 
   const persistWorkspaceSession = useCallback(() => {
-    if (!restoreComplete) {
+    const latestTabs = tabsRef.current;
+    if (
+      !shouldPersistWorkspaceSessionOnQuit({
+        restoreComplete,
+        tabs: latestTabs,
+        workspaceRootPath,
+      })
+    ) {
       return;
     }
 
-    const latestTabs = tabsRef.current;
     const latestActiveTab =
       latestTabs.find((tab) => tab.id === activeTabId) ?? activeTab ?? null;
 

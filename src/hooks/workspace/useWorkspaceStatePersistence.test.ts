@@ -20,6 +20,7 @@ import { readPersistedWorkspaceState } from "../../lib/storage";
 import { WORKSPACE_STATE_STORAGE_KEY, type EditorTab } from "../../types";
 import {
   persistWorkspaceStateSnapshot,
+  shouldPersistWorkspaceSessionOnQuit,
   useWorkspaceStatePersistence,
 } from "./useWorkspaceStatePersistence";
 
@@ -321,5 +322,25 @@ describe("useWorkspaceStatePersistence", () => {
       tabPaths: ["/old/root/note.md"],
       activeTabPath: "/old/root/note.md",
     });
+  });
+
+  it("allows the app-exit flush before the restore latch when live restore state is already present", () => {
+    expect(
+      shouldPersistWorkspaceSessionOnQuit({
+        restoreComplete: false,
+        tabs: [makeTab()],
+        workspaceRootPath: "/old/root",
+      }),
+    ).toBe(true);
+  });
+
+  it("skips the app-exit flush before the restore latch when the live state is still empty", () => {
+    expect(
+      shouldPersistWorkspaceSessionOnQuit({
+        restoreComplete: false,
+        tabs: [],
+        workspaceRootPath: null,
+      }),
+    ).toBe(false);
   });
 });

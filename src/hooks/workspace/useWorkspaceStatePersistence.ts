@@ -17,6 +17,11 @@ export type WorkspaceStateSnapshot = Omit<
   "restoreComplete"
 >;
 
+export type WorkspaceSessionQuitFlushState = Pick<
+  UseWorkspaceStatePersistenceOptions,
+  "restoreComplete" | "tabs" | "workspaceRootPath"
+>;
+
 export function useWorkspaceStatePersistence({
   activeTab,
   restoreComplete,
@@ -76,4 +81,12 @@ export function persistWorkspaceStateSnapshot({
     tabPaths: tabs.map((tab) => tab.path),
     activeTabPath: activeTab?.path ?? null,
   });
+}
+
+export function shouldPersistWorkspaceSessionOnQuit({
+  restoreComplete,
+  tabs,
+  workspaceRootPath,
+}: WorkspaceSessionQuitFlushState) {
+  return restoreComplete || tabs.length > 0 || workspaceRootPath !== null;
 }
