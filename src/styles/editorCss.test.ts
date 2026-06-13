@@ -90,8 +90,17 @@ describe("editor tab close affordance CSS", () => {
   it("keeps Sakura ambient particles restrained", () => {
     const rule = ruleBody(appShellCss, ".ambient-sakura .ambient-particle");
 
-    expect(rule).toMatch(/opacity:\s*0\.48/);
-    expect(rule).toMatch(/filter:\s*saturate\(0\.82\)/);
+    expect(rule).toMatch(/border-radius:\s*50%/);
+    expect(rule).toMatch(/opacity:\s*0\.56/);
+    expect(rule).toMatch(/filter:\s*saturate\(0\.95\)/);
+  });
+
+  it("keeps Shokou ambient particles visibly colored", () => {
+    const rule = ruleBody(appShellCss, ".ambient-shokou .ambient-particle");
+
+    expect(rule).toMatch(/hsl\(var\(--ambient-hue,\s*45\),\s*92%,\s*82%\)/);
+    expect(rule).toMatch(/opacity:\s*0\.88/);
+    expect(rule).toMatch(/box-shadow:\s*0 0 12px 1px/);
   });
 
   it("keeps top chrome popovers above the workspace layer", () => {
@@ -125,7 +134,9 @@ describe("editor tab close affordance CSS", () => {
     expect(pathBarActive).toMatch(/box-shadow:\s*none/);
     expect(pathBarActive).toMatch(/transform:\s*none/);
 
-    expect(sakuraPathBar).toMatch(/background:\s*var\(--cm-bg\)/);
+    expect(sakuraPathBar).toMatch(/background:\s*linear-gradient/);
+    expect(sakuraPathBar).toMatch(/var\(--cm-bg\) 0%/);
+    expect(sakuraPathBar).toMatch(/var\(--accent-secondary\)/);
   });
 
   it("removes the workspace footer trash button border without changing its hit size", () => {

@@ -220,6 +220,12 @@
 
 :root[data-theme="sakura"] .markdown-preview {
   border-color: color-mix(in srgb, var(--accent) 22%, var(--border));
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface-strong) 92%, var(--accent-soft)) 0%,
+      var(--surface-strong) 30%
+    );
   box-shadow:
     var(--shadow-md),
     0 0 0 1px color-mix(in srgb, var(--accent) 8%, transparent);
@@ -231,7 +237,11 @@
 }
 
 :root[data-theme="sakura"] .markdown-preview blockquote {
-  background: color-mix(in srgb, var(--accent-soft) 72%, var(--surface-strong));
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent-soft) 74%, var(--surface-strong)) 0%,
+    color-mix(in srgb, var(--surface-strong) 88%, var(--accent-secondary)) 100%
+  );
 }
 
 :root[data-theme="dark"] .markdown-preview code,

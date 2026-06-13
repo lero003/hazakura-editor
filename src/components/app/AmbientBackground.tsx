@@ -19,7 +19,7 @@ type AmbientBackgroundProps = {
 };
 
 const COUNT_BY_MODE: Record<AmbientMode, number> = {
-  sakura: 18,
+  sakura: 24,
   shokou: 46,
   yakou: 52,
 };
@@ -61,13 +61,13 @@ function generateItems(
     switch (mode) {
       case "sakura":
         return {
-          delay: -((seed * 2.3 + index * 1.9) % 20),
-          drift: ((seed * 0.7 + index * 3.1) % 10) - 5,
-          duration: (15 + (seed % 9) * 2.1) * durationScale,
-          hue: 340 + (seed % 16) - 4,
+          delay: -((seed * 2.3 + index * 1.9) % 22),
+          drift: ((seed * 0.7 + index * 3.1) % 12) - 6,
+          duration: (17 + (seed % 9) * 2.3) * durationScale,
+          hue: 338 + (seed % 20) - 5,
           index,
           left: ((seed * 1.618 + index * 7) % 100),
-          size: (6 + (seed % 6) * 1.1) * sizeScale,
+          size: (2.4 + (seed % 5) * 0.45) * sizeScale,
         };
       case "yakou":
         return {
@@ -81,8 +81,8 @@ function generateItems(
         };
       case "shokou":
         {
-          const hueBand = [34, 48, 204, 212][index % 4];
-          const hueOffset = (seed % 10) - 5;
+          const hueBand = [24, 36, 202, 214, 330][index % 5];
+          const hueOffset = (seed % 12) - 6;
           return {
             delay: -((seed * 2.1 + index * 1.3) % 18),
             drift: ((seed * 0.5 + index * 4.1) % 18) - 9,
@@ -120,7 +120,7 @@ export function AmbientBackground({
           key={item.index}
           style={{
             "--ambient-h": `${item.size}px`,
-            "--ambient-w": `${item.size * 0.7}px`,
+            "--ambient-w": `${mode === "sakura" ? item.size : item.size * 0.7}px`,
             "--ambient-hue": item.hue,
             "--ambient-drift": `${item.drift}vw`,
             "--ambient-delay": `${item.delay}s`,

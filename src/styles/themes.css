@@ -98,17 +98,19 @@ html, body, #root, .app-shell,
 
 /* 桜 / Sakura – luminous cream-pink with vibrant rose-cherry accent */
 :root[data-theme="sakura"] {
-  --bg: #fdf3f4;
-  --surface: #fffafb;
+  --bg: linear-gradient(145deg, #fffaf6 0%, #f8eef2 48%, #edf5ea 100%);
+  --surface: #fffdfb;
   --surface-rgb: 255, 250, 251;
-  --surface-strong: #fffcfd;
+  --surface-strong: #fffefe;
   --surface-strong-rgb: 255, 252, 253;
-  --surface-muted: #f8e8eb;
-  --border: #ead4d9;
-  --border-strong: #d8a8b3;
+  --surface-muted: #f5ebe7;
+  --border: #ead8d0;
+  --border-strong: #d8aca9;
   --text: #322830;
   --text-muted: #806878;
   --accent: #a8415f;
+  --accent-secondary: #6f8f63;
+  --accent-gradient: linear-gradient(135deg, #a8415f 0%, #d78398 46%, #6f8f63 100%);
   --accent-soft: #f6d8df;
   --accent-glass: rgba(168, 65, 95, 0.08);
   --danger: #b85056;
@@ -266,7 +268,7 @@ html, body, #root, .app-shell,
 
 /* 曙光 / Shokou – bright dawn sky with soft blue and warm peach */
 :root[data-theme="shokou"] {
-  --bg: linear-gradient(135deg, #edf4fc 0%, #fdecd5 100%);
+  --bg: linear-gradient(135deg, #e8f3ff 0%, #f7fbff 38%, #ffe5bf 74%, #fbd2bd 100%);
   --surface: #f7faff;
   --surface-rgb: 247, 250, 255;
   --surface-strong: #ffffff;
@@ -278,7 +280,7 @@ html, body, #root, .app-shell,
   --text-muted: #5b7589;
   --accent: #3a82b8;
   --accent-secondary: #f5a85a;
-  --accent-gradient: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
+  --accent-gradient: linear-gradient(135deg, #3a82b8 0%, #74b7d7 42%, #f5a85a 78%, #db7d8a 100%);
   --accent-soft: #dceaf6;
   --accent-glass: rgba(58, 130, 184, 0.08);
   --danger: #c66b6e;

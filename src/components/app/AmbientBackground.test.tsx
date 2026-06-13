@@ -13,7 +13,18 @@ function renderAmbient(mode: "sakura" | "yakou" | "shokou") {
 
 describe("AmbientBackground", () => {
   it("keeps Sakura calmer than the other special themes", () => {
-    expect(renderAmbient("sakura")).toHaveLength(18);
+    expect(renderAmbient("sakura")).toHaveLength(24);
+  });
+
+  it("renders Sakura particles as small round falling dots", () => {
+    const particles = renderAmbient("sakura");
+    const firstParticle = particles[0];
+
+    expect(firstParticle.style.getPropertyValue("--ambient-w")).toBe(
+      firstParticle.style.getPropertyValue("--ambient-h"),
+    );
+    expect(Number.parseFloat(firstParticle.style.getPropertyValue("--ambient-h")))
+      .toBeLessThan(5);
   });
 
   it("makes Yakou ambient particles dense enough to read", () => {

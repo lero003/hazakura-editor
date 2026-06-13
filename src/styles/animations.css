@@ -18,20 +18,20 @@
 @keyframes petalFall {
   0% {
     opacity: 0;
-    transform: translate3d(0, -12vh, 0) rotate(0deg);
+    transform: translate3d(0, -12vh, 0) scale(0.86);
   }
   10% {
-    opacity: 0.78;
+    opacity: 0.62;
   }
   30% {
-    opacity: 0.6;
+    opacity: 0.5;
   }
   75% {
-    opacity: 0.35;
+    opacity: 0.28;
   }
   100% {
     opacity: 0;
-    transform: translate3d(var(--ambient-drift, 10vw), 112vh, 0) rotate(360deg);
+    transform: translate3d(var(--ambient-drift, 10vw), 112vh, 0) scale(1.08);
   }
 }
 
@@ -140,5 +140,4 @@ button:disabled {
   background: var(--bg);
   position: relative;
 }
-
 

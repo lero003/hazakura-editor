@@ -18,9 +18,14 @@
   animation: bgDrift 20s ease-in-out infinite;
 }
 
+/* 桜: 薄紅に葉色を混ぜた静かなグラデーション / Sakura: Petal and Leaf Gradient */
+:root[data-theme="sakura"] .app-shell {
+  background: linear-gradient(145deg, #fffaf6 0%, #f9eff2 46%, #eef6ea 100%);
+}
+
 /* 曙光: ゆっくりと変化する曙のグラデーション / Shokou: Slow Dawn Shift */
 :root[data-theme="shokou"] .app-shell {
-  background: linear-gradient(135deg, #edf4fc 0%, #fdecd5 50%, #f7e6cd 100%);
+  background: linear-gradient(135deg, #e7f3ff 0%, #f8fbff 36%, #ffe4bd 72%, #fbd2bd 100%);
   background-size: 200% 200%;
   animation: bgDrift 25s ease-in-out infinite;
 }
@@ -67,16 +72,16 @@
   animation: petalFall var(--ambient-duration, 14s) linear infinite;
   animation-delay: var(--ambient-delay, 0s);
   background:
-    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.9), transparent 26%),
-    linear-gradient(
-      135deg,
-      hsl(var(--ambient-hue, 345), 70%, 88%) 0%,
-      hsl(var(--ambient-hue, 345), 60%, 72%) 100%
+    radial-gradient(
+      circle,
+      hsl(var(--ambient-hue, 345), 72%, 82%) 0%,
+      hsl(var(--ambient-hue, 345), 68%, 70%) 52%,
+      transparent 100%
     );
-  border-radius: 70% 30% 70% 30%;
-  filter: saturate(0.82);
+  border-radius: 50%;
+  filter: saturate(0.95);
   height: var(--ambient-h, 14px);
-  opacity: 0.48;
+  opacity: 0.56;
   top: -24px;
   transform-origin: 50% 80%;
   width: var(--ambient-w, 10px);
@@ -103,17 +108,19 @@
 .ambient-shokou .ambient-particle {
   animation: heatDrift var(--ambient-duration, 14s) ease-in-out infinite;
   animation-delay: var(--ambient-delay, 0s);
-  background: radial-gradient(
-    circle,
-    hsl(var(--ambient-hue, 45), 95%, 88%) 0%,
-    hsl(var(--ambient-hue, 45), 80%, 70%) 60%,
-    transparent 100%
-  );
+  background:
+    radial-gradient(circle at 40% 35%, rgba(255, 255, 255, 0.9), transparent 24%),
+    radial-gradient(
+      circle,
+      hsl(var(--ambient-hue, 45), 92%, 82%) 0%,
+      hsl(var(--ambient-hue, 45), 84%, 62%) 58%,
+      transparent 100%
+    );
   border-radius: 50%;
   bottom: -8px;
-  box-shadow: 0 0 10px 1px hsl(var(--ambient-hue, 45), 88%, 76%, 0.45);
+  box-shadow: 0 0 12px 1px hsl(var(--ambient-hue, 45), 88%, 68%, 0.62);
   height: var(--ambient-h, 3px);
-  opacity: 0.78;
+  opacity: 0.88;
   width: var(--ambient-w, 3px);
 }
 

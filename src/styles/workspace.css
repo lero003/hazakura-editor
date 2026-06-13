@@ -363,9 +363,13 @@
 }
 
 :root[data-theme="sakura"] .tree-file.active {
-  background: color-mix(in srgb, var(--accent-soft) 72%, var(--surface-strong));
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent-soft) 72%, var(--surface-strong)) 0%,
+    color-mix(in srgb, var(--surface-strong) 82%, var(--accent-secondary)) 100%
+  );
   box-shadow:
-    inset 3px 0 0 var(--accent),
+    inset 3px 0 0 color-mix(in srgb, var(--accent) 74%, var(--accent-secondary)),
     inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent);
   color: color-mix(in srgb, var(--text) 88%, var(--accent));
 }
@@ -530,7 +534,12 @@
 }
 
 :root[data-theme="sakura"] .editor-document-path-bar {
-  background: var(--cm-bg);
+  background: linear-gradient(
+    90deg,
+    var(--cm-bg) 0%,
+    color-mix(in srgb, var(--cm-bg) 86%, var(--accent-soft)) 54%,
+    color-mix(in srgb, var(--cm-bg) 90%, var(--accent-secondary)) 100%
+  );
 }
 
 .editor-preview-grid:not(.preview-hidden) .editor-pane {
@@ -1231,7 +1240,11 @@
 }
 
 :root[data-theme="sakura"] .preview-pane-card {
-  background: color-mix(in srgb, var(--surface-muted) 72%, var(--accent-soft));
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--surface-muted) 72%, var(--accent-soft)) 0%,
+    color-mix(in srgb, var(--surface-strong) 86%, var(--accent-secondary)) 100%
+  );
 }
 
 .side-pane-tabs {
