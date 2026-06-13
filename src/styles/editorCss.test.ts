@@ -13,6 +13,10 @@ const appShellCss = readFileSync(
   `${process.cwd()}/src/styles/app-shell.css`,
   "utf8",
 );
+const workspaceCss = readFileSync(
+  `${process.cwd()}/src/styles/workspace.css`,
+  "utf8",
+);
 
 function ruleBody(css: string, selector: string): string {
   const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -93,5 +97,47 @@ describe("editor tab close affordance CSS", () => {
   it("keeps top chrome popovers above the workspace layer", () => {
     expect(appShellCss).toMatch(/\.tabs-row\s*{[\s\S]*z-index:\s*20/);
     expect(appShellCss).toMatch(/\.workspace,[\s\S]*z-index:\s*1/s);
+  });
+
+  it("keeps the editor full-path bar visually quiet", () => {
+    const pathBar = ruleBody(workspaceCss, ".editor-document-path-bar");
+    const pathBarHover = ruleBody(
+      workspaceCss,
+      ".editor-document-path-bar:hover,\n.editor-document-path-bar:focus-visible",
+    );
+    const pathBarActive = ruleBody(workspaceCss, ".editor-document-path-bar:active");
+    const sakuraPathBar = ruleBody(
+      workspaceCss,
+      ':root[data-theme="sakura"] .editor-document-path-bar',
+    );
+
+    expect(pathBar).toMatch(/background:\s*var\(--cm-bg\)/);
+    expect(pathBar).toMatch(/border:\s*0/);
+    expect(pathBar).toMatch(/border-radius:\s*0/);
+    expect(pathBar).toMatch(/box-shadow:\s*none/);
+    expect(pathBar).toMatch(/transform:\s*none/);
+
+    expect(pathBarHover).toMatch(/background:\s*var\(--cm-bg\)/);
+    expect(pathBarHover).toMatch(/box-shadow:\s*none/);
+    expect(pathBarHover).toMatch(/transform:\s*none/);
+
+    expect(pathBarActive).toMatch(/background:\s*var\(--cm-bg\)/);
+    expect(pathBarActive).toMatch(/box-shadow:\s*none/);
+    expect(pathBarActive).toMatch(/transform:\s*none/);
+
+    expect(sakuraPathBar).toMatch(/background:\s*var\(--cm-bg\)/);
+  });
+
+  it("removes the workspace footer trash button border without changing its hit size", () => {
+    const trashButton = ruleBody(workspaceCss, ".workspace-trash-button");
+    const trashButtonHover = ruleBody(
+      workspaceCss,
+      ".workspace-trash-button:hover:not(:disabled)",
+    );
+
+    expect(trashButton).toMatch(/border:\s*0/);
+    expect(trashButton).toMatch(/min-height:\s*32px/);
+    expect(trashButton).toMatch(/padding:\s*4px\s+10px/);
+    expect(trashButtonHover).not.toMatch(/border-color/);
   });
 });

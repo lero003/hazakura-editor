@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-06-13 (v0.19 build 11 package evidence)
+Last reviewed: 2026-06-13 (v0.19 build 13 package evidence)
 
 ## Purpose
 
@@ -389,12 +389,12 @@ on the TestFlight build passed. Fuller manual smoke, final metadata, and
 App Review submission / approval remain separate evidence.
 
 v0.19 submission-candidate note: the current user-visible app version is
-`0.19.0` and the App Store build counter is `11`. Treat the next
+`0.19.0` and the App Store build counter is `13`. Treat the next
 Transporter upload, Apple validation, TestFlight distribution, and fuller
 manual smoke as fresh `0.19.0` evidence; do not reuse the `0.18.0` build
 `4` TestFlight result as final App Review proof.
 In local Codex packaging, the signed submit-lane bundle reported the
-expected `0.19.0` / `11` metadata, `15.0` minimum macOS, and
+expected `0.19.0` / `13` metadata, `15.0` minimum macOS, and
 entitlements. Local Gatekeeper
 assessment can still report `Insufficient Context` for this lane; treat
 launch validation as signed TestFlight proof, not as covered by local
@@ -403,15 +403,16 @@ package inspection alone.
 The local release-candidate package generated for this lane is:
 
 ```txt
-src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.19.0-build11-mas.pkg
+src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.19.0-build13-mas.pkg
 ```
 
-`productbuild` reported supported OS `[Min: 15.0, Before: None]`.
+`productbuild --synthesize` emitted a Distribution XML
+`allowed-os-versions` entry with `min="15.0"`.
 `pkgutil --check-signature` passed with the 3rd Party Mac Developer
 Installer certificate. `spctl --assess --type install` rejected the
 local package, so treat that as local trust-policy evidence rather than
 an App Store Connect validation result. SHA-256:
 
 ```txt
-0524a68e4da23c2f7be4c8b3f168896e001d356085bbcbbb847daf550a9f4f6d
+85aa5f5ce887a2639f7905b418adb9aadabbe30a9541f08ef7520c08e603048c
 ```

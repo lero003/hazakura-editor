@@ -16,8 +16,8 @@ Last reviewed: 2026-06-13 (v0.19 App Store submission-prep queue)
   TestFlight on 2026-06-12 with no reported Apple validation warnings;
   basic TestFlight launch / save smoke passed.
 - The current App Store submission candidate is `0.19.0` with App Store
-  build counter `11`; the signed local submit package
-  `HazakuraEditor-0.19.0-build11-mas.pkg` has been generated and
+  build counter `13`; the signed local submit package
+  `HazakuraEditor-0.19.0-build13-mas.pkg` has been generated and
   checked locally. Upload, App Store Connect validation, fuller
   TestFlight smoke, metadata finalization, and App Review submission
   remain separate evidence.
@@ -40,11 +40,11 @@ Last reviewed: 2026-06-13 (v0.19 App Store submission-prep queue)
   handling.
 - The v0.20 Sakura workspace ergonomics slice is implemented locally:
   the tab row has a new-file `+` entry, the main chrome can collapse /
-  restore the workspace sidebar, the central editor pane shows the
-  active file with path context, Markdown preview hierarchy is more
-  card-like, and the selected workspace file has Sakura-specific
-  accenting. Workspace switching dropdowns remain deferred to preserve
-  the simple single-workspace model.
+  restore the workspace sidebar, the central editor pane keeps a thin
+  bottom full-path copy bar for the active file, Markdown preview
+  hierarchy is more card-like, and the selected workspace file has
+  Sakura-specific accenting. Workspace switching dropdowns remain
+  deferred to preserve the simple single-workspace model.
 
 ## Current Product Boundary
 

@@ -18,11 +18,11 @@ Last reviewed: 2026-06-13 (pre-release fix plan)
   TestFlight on 2026-06-12 with no reported Apple validation warnings;
   basic TestFlight launch / save smoke passed.
 - Current active lane is v0.19 App Store submission-candidate smoke and
-  App Store submission prep. The current App Store build counter is `11`.
+  App Store submission prep. The current App Store build counter is `13`.
   The local App Store release-candidate package is
-  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.19.0-build11-mas.pkg`
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.19.0-build13-mas.pkg`
   with SHA-256
-  `0524a68e4da23c2f7be4c8b3f168896e001d356085bbcbbb847daf550a9f4f6d`;
+  `85aa5f5ce887a2639f7905b418adb9aadabbe30a9541f08ef7520c08e603048c`;
   it declares minimum macOS 15.0 and passed `pkgutil --check-signature`.
 - Start from `docs/current-work.md`.
 - A review-derived pre-release code-quality fix queue now lives in
@@ -32,8 +32,9 @@ Last reviewed: 2026-06-13 (pre-release fix plan)
   and reviewer-note work.
 - v0.20 Sakura workspace ergonomics P0 is implemented locally: the tab
   row has a localized `+` new-file entry, the main chrome can collapse /
-  restore the workspace sidebar, the central editor pane shows active
-  file name plus workspace-relative path context, Markdown preview has a
+  restore the workspace sidebar, the central editor pane uses a thin
+  bottom full-path copy bar instead of a top file-name header,
+  Markdown preview has a
   card-like reading surface, and Sakura theme gives the selected
   workspace file a clearer accent. Workspace switching remains deferred.
 - Markdown preview task checkboxes are complete for v0.18: Preview renders
@@ -116,7 +117,7 @@ priority UX items after the v0.20 Sakura chrome slice are:
 
 Recently completed: v0.20 Sakura chrome / file-state clarity added the
 tab-row new-file button, top chrome workspace-sidebar toggle, central
-active-file path display, Markdown preview card styling, and
+bottom full-path copy bar, Markdown preview card styling, and
 Sakura-specific selected-file highlight without adding a workspace
 switching dropdown or changing the single-workspace model.
 

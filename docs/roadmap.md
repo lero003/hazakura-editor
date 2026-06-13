@@ -155,8 +155,8 @@ the existing Safe Editor chrome:
 - Add a tab-row `+` affordance that starts the existing new-file flow.
 - Make the workspace sidebar collapse / restore control easier to find
   from the main chrome, while keeping the current file-tree model.
-- Show the active file name with path context at the top of the central
-  editor pane, clipped safely for long paths.
+- Move the active file path context into a thin bottom full-path copy
+  bar in the central editor pane, clipped safely for long paths.
 - Strengthen Markdown preview hierarchy with card-like emphasis for
   important blocks, headings, code, and quote/readout areas.
 - Use Sakura accenting to make the selected workspace file state clearer.

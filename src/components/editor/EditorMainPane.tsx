@@ -5,7 +5,9 @@ import EditorPane, {
 } from "./EditorPane";
 import { ImagePreviewPane } from "./preview/ImagePreviewPane";
 import { ScrollPositionHud } from "./ScrollPositionHud";
+import { CopyIcon } from "../app/Icons";
 import { StartPanel } from "../workspace/StartPanel";
+import { writeTextToClipboard } from "../../lib/clipboard";
 import type { LModeCopy, SafeEditorCopy, SlashMenuCopy } from "../../lib/locale";
 import type {
   BaseTheme,
@@ -82,30 +84,15 @@ export function EditorMainPane({
   slashMenuCopy,
   workspaceRootPath,
 }: EditorMainPaneProps) {
-  const activeDocumentPathLabel = activeTab
-    ? formatDocumentPathLabel(activeTab.path, workspaceRootPath)
-    : null;
-  const showDocumentHeader = activeTab !== null && !editorSettings.lModeEnabled;
-  const showActiveDocumentPath =
-    activeTab !== null && activeDocumentPathLabel !== activeTab.name;
+  const showDocumentPathBar = activeTab !== null && !editorSettings.lModeEnabled;
+  const copyFullPathLabel = activeTab
+    ? formatCopyFullPathLabel(menuLanguage, activeTab.path)
+    : "";
 
   return (
     <div className="pane editor-pane" aria-label="Editor">
       {activeTab ? (
         <>
-          {showDocumentHeader ? (
-            <header
-              className="editor-document-header"
-              title={activeTab.path}
-            >
-              <span className="editor-document-name">{activeTab.name}</span>
-              {showActiveDocumentPath ? (
-                <span className="editor-document-path">
-                  {activeDocumentPathLabel}
-                </span>
-              ) : null}
-            </header>
-          ) : null}
           <EditorPane
             ref={editorPaneRef}
             activeSearchMatchIndex={activeSearchMatchIndex}
@@ -138,6 +125,22 @@ export function EditorMainPane({
               totalLines={activeDocumentLineCount}
             />
           ) : null}
+          {showDocumentPathBar ? (
+            <button
+              aria-label={copyFullPathLabel}
+              className="editor-document-path-bar"
+              onClick={() => {
+                void writeTextToClipboard(activeTab.path).catch(() => undefined);
+              }}
+              title={activeTab.path}
+              type="button"
+            >
+              <span className="editor-document-full-path">{activeTab.path}</span>
+              <span className="editor-document-path-copy-icon" aria-hidden="true">
+                <CopyIcon />
+              </span>
+            </button>
+          ) : null}
         </>
       ) : selectedImage ? (
         <ImagePreviewPane image={selectedImage} title={imagePreviewTitle} />
@@ -153,22 +156,15 @@ export function EditorMainPane({
   );
 }
 
-function formatDocumentPathLabel(
+function formatCopyFullPathLabel(
+  menuLanguage: MenuLanguage,
   documentPath: string,
-  workspaceRootPath: string | null,
 ): string {
-  if (!workspaceRootPath) {
-    return documentPath;
+  switch (menuLanguage) {
+    case "ja":
+      return `フルパスをコピー: ${documentPath}`;
+    case "en":
+    default:
+      return `Copy full path: ${documentPath}`;
   }
-
-  const normalizedRoot = workspaceRootPath.endsWith("/")
-    ? workspaceRootPath.slice(0, -1)
-    : workspaceRootPath;
-  const prefix = `${normalizedRoot}/`;
-
-  if (documentPath.startsWith(prefix)) {
-    return documentPath.slice(prefix.length);
-  }
-
-  return documentPath;
 }

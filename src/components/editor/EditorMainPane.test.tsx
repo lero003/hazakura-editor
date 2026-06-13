@@ -1,7 +1,8 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { createRef } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { EditorMainPane } from "./EditorMainPane";
+import { writeTextToClipboard } from "../../lib/clipboard";
 import {
   getLModeCopy,
   getSafeEditorCopy,
@@ -26,7 +27,14 @@ vi.mock("./preview/ImagePreviewPane", () => ({
   ImagePreviewPane: () => <div data-testid="image-preview-pane" />,
 }));
 
-afterEach(cleanup);
+vi.mock("../../lib/clipboard", () => ({
+  writeTextToClipboard: vi.fn().mockResolvedValue(undefined),
+}));
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+});
 
 const editorSettings: EditorSettings = {
   ambientIntensity: "subtle",
@@ -103,15 +111,33 @@ function renderEditorMainPane(
 }
 
 describe("EditorMainPane", () => {
-  it("shows the active file name and workspace-relative path above the editor", () => {
+  it("shows the active full path in a thin bar below the editor", () => {
     renderEditorMainPane();
 
-    expect(screen.getByText("draft.md")).toBeTruthy();
-    expect(screen.getByText("docs/draft.md")).toBeTruthy();
+    expect(screen.queryByText("draft.md")).toBeNull();
+    expect(screen.queryByText("docs/draft.md")).toBeNull();
+    expect(screen.getByRole("button", {
+      name: "Copy full path: /workspace/docs/draft.md",
+    })).toBeTruthy();
+    expect(screen.getByText("/workspace/docs/draft.md")).toBeTruthy();
     expect(screen.getByTestId("mock-editor-pane")).toBeTruthy();
   });
 
-  it("does not duplicate the file name when the workspace-relative path is the same", () => {
+  it("copies the active full path from the bottom path bar", async () => {
+    renderEditorMainPane();
+
+    fireEvent.click(screen.getByRole("button", {
+      name: "Copy full path: /workspace/docs/draft.md",
+    }));
+
+    await waitFor(() => {
+      expect(writeTextToClipboard).toHaveBeenCalledWith(
+        "/workspace/docs/draft.md",
+      );
+    });
+  });
+
+  it("shows a root workspace file as its full path only", () => {
     renderEditorMainPane({
       activeTab: {
         ...activeTab,
@@ -122,10 +148,11 @@ describe("EditorMainPane", () => {
       documentKey: "/workspace/root.md",
     });
 
-    expect(screen.getAllByText("root.md")).toHaveLength(1);
+    expect(screen.queryByText("root.md")).toBeNull();
+    expect(screen.getByText("/workspace/root.md")).toBeTruthy();
   });
 
-  it("hides the normal document header in L Mode", () => {
+  it("hides the normal path bar in L Mode", () => {
     renderEditorMainPane({
       editorSettings: {
         ...editorSettings,
@@ -135,6 +162,7 @@ describe("EditorMainPane", () => {
 
     expect(screen.queryByText("draft.md")).toBeNull();
     expect(screen.queryByText("docs/draft.md")).toBeNull();
+    expect(screen.queryByText("/workspace/docs/draft.md")).toBeNull();
     expect(screen.getByTestId("mock-editor-pane")).toBeTruthy();
   });
 });
