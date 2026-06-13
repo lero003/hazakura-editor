@@ -1015,6 +1015,9 @@ function editorTheme(theme: "light" | "dark", fontSize: number) {
       "&.cm-focused .cm-selectionLayer .cm-selectionBackground": {
         backgroundColor: "var(--cm-selection-bg)",
       },
+      "&.cm-focused": {
+        outline: "none",
+      },
       ".cm-content ::selection": {
         backgroundColor: "var(--cm-selection-bg)",
       },

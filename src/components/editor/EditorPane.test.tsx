@@ -1,4 +1,5 @@
 import { cleanup, render, waitFor } from "@testing-library/react";
+import { readFileSync } from "node:fs";
 import { createRef } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
@@ -7,6 +8,11 @@ import {
 } from "./EditorPane";
 import EditorPane from "./EditorPane";
 import { getLModeCopy, getSlashMenuCopy } from "../../lib/locale";
+
+const editorPaneSource = readFileSync(
+  `${process.cwd()}/src/components/editor/EditorPane.tsx`,
+  "utf8",
+);
 
 afterEach(cleanup);
 
@@ -73,6 +79,12 @@ describe("EditorPane", () => {
     );
 
     expect(container.querySelector(".editor-mount")).not.toBeNull();
+  });
+
+  it("suppresses the default CodeMirror focused outline", () => {
+    expect(editorPaneSource).toMatch(
+      /"&\.cm-focused"\s*:\s*{\s*outline:\s*"none"/,
+    );
   });
 
   it("keeps the cursor position when L Mode is toggled on", async () => {
