@@ -272,11 +272,13 @@
 .tab-list {
   align-items: center;
   display: flex;
-  flex: 0 1 auto;
-  max-width: min(52vw, 720px);
+  flex: 1 1 auto;
+  max-width: none;
   min-width: 0;
   height: 100%;
   overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
   gap: 4px;
 }
 
@@ -329,9 +331,11 @@
   align-items: center;
   cursor: grab;
   display: flex;
-  flex: 0 0 auto;
-  max-width: 200px;
-  min-width: 120px;
+  flex-basis: clamp(140px, 18vw, 220px);
+  flex-grow: 1;
+  flex-shrink: 1;
+  max-width: clamp(180px, 24vw, 240px);
+  min-width: clamp(96px, 12vw, 140px);
   height: 34px;
   border-radius: 6px;
   margin: 0 2px;
@@ -345,6 +349,11 @@
   background: var(--surface);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border);
+  flex-basis: clamp(180px, 22vw, 280px);
+  flex-grow: 1.25;
+  flex-shrink: 1;
+  max-width: clamp(220px, 28vw, 300px);
+  min-width: clamp(120px, 14vw, 180px);
 }
 
 .tab-item.active::before {

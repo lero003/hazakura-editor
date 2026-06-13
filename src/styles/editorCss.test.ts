@@ -53,6 +53,28 @@ describe("editor tab close affordance CSS", () => {
     expect(controlsCss).toMatch(/\.tab-item\.active:hover\s*\{[\s\S]*background:/);
   });
 
+  it("shrinks open tabs down to a readable minimum before horizontal scrolling", () => {
+    const tabList = ruleBody(controlsCss, ".tab-list");
+    const tabItem = ruleBody(controlsCss, ".tab-item");
+    const activeTabItem = ruleBody(controlsCss, ".tab-item.active");
+
+    expect(tabList).toMatch(/flex:\s*1\s+1\s+auto/);
+    expect(tabList).toMatch(/max-width:\s*none/);
+    expect(tabList).toMatch(/overflow-x:\s*auto/);
+
+    expect(tabItem).toMatch(/flex-basis:\s*clamp\(140px,\s*18vw,\s*220px\)/);
+    expect(tabItem).toMatch(/flex-grow:\s*1/);
+    expect(tabItem).toMatch(/flex-shrink:\s*1/);
+    expect(tabItem).toMatch(/max-width:\s*clamp\(180px,\s*24vw,\s*240px\)/);
+    expect(tabItem).toMatch(/min-width:\s*clamp\(96px,\s*12vw,\s*140px\)/);
+
+    expect(activeTabItem).toMatch(/flex-basis:\s*clamp\(180px,\s*22vw,\s*280px\)/);
+    expect(activeTabItem).toMatch(/flex-grow:\s*1\.25/);
+    expect(activeTabItem).toMatch(/flex-shrink:\s*1/);
+    expect(activeTabItem).toMatch(/max-width:\s*clamp\(220px,\s*28vw,\s*300px\)/);
+    expect(activeTabItem).toMatch(/min-width:\s*clamp\(120px,\s*14vw,\s*180px\)/);
+  });
+
   it("keeps ambient particles above the workspace but below top chrome", () => {
     expect(ruleBody(appShellCss, ".ambient")).toMatch(/z-index:\s*2(?:;|\n)/);
     expect(ruleBody(appShellCss, ".tabs-row")).toMatch(/z-index:\s*20(?:;|\n)/);
