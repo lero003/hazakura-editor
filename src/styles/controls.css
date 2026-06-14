@@ -282,10 +282,6 @@
   gap: 4px;
 }
 
-.tab-new-file-button {
-  margin-left: 0;
-}
-
 .tab-list::-webkit-scrollbar {
   display: none;
 }

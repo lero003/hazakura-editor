@@ -34,10 +34,8 @@ type AppTopChromeProps = {
   lModeEnabled: boolean;
   lModeCopy: LModeCopy;
   menuLanguage: MenuLanguage;
-  newFileLabel?: string;
   onCloseTab: (tabId: string) => void;
   onCloseSelectedImagePreview: () => void;
-  onCreateNewFile?: () => void;
   onEditorSettingsChange: Dispatch<SetStateAction<EditorSettings>>;
   onFinishTabPointerDrag: (target?: EventTarget | null) => void;
   onOpenAgentWindow: () => void;
@@ -79,10 +77,8 @@ export function AppTopChrome({
   lModeEnabled,
   lModeCopy,
   menuLanguage,
-  newFileLabel,
   onCloseTab,
   onCloseSelectedImagePreview,
-  onCreateNewFile,
   onEditorSettingsChange,
   onFinishTabPointerDrag,
   onOpenAgentWindow,
@@ -119,10 +115,8 @@ export function AppTopChrome({
           onEditorSettingsChange={onEditorSettingsChange}
         />
       }
-      newFileLabel={newFileLabel}
       onCloseTab={onCloseTab}
       onCloseSelectedImagePreview={onCloseSelectedImagePreview}
-      onCreateNewFile={onCreateNewFile}
       onFinishTabPointerDrag={onFinishTabPointerDrag}
       onPointerEnter={onPointerEnter}
       onSelectTab={onSelectTab}

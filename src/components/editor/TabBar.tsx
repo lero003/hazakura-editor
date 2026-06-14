@@ -8,7 +8,6 @@ import { useRef } from "react";
 import { isDirty } from "../../features/editor/editorTabs";
 import type { EditorTab, ImagePreviewState } from "../../types";
 import {
-  PlusIcon,
   TabImageIcon,
   TabMarkdownIcon,
   TabTextIcon,
@@ -21,10 +20,8 @@ type TabBarProps = {
   dragOverTabId: string | null;
   emptyTabsLabel: string;
   leadingControl?: ReactNode;
-  newFileLabel?: string;
   onCloseTab: (tabId: string) => void;
   onCloseSelectedImagePreview: () => void;
-  onCreateNewFile?: () => void;
   onFinishTabPointerDrag: (target?: EventTarget | null) => void;
   onPointerEnter: () => void;
   onSelectTab: (tabId: string) => void;
@@ -83,10 +80,8 @@ export function TabBar({
   dragOverTabId,
   emptyTabsLabel,
   leadingControl,
-  newFileLabel = "New File",
   onCloseTab,
   onCloseSelectedImagePreview,
-  onCreateNewFile,
   onFinishTabPointerDrag,
   onPointerEnter,
   onSelectTab,
@@ -333,17 +328,6 @@ export function TabBar({
           </>
         )}
       </div>
-      {onCreateNewFile ? (
-        <button
-          aria-label={newFileLabel}
-          className="chrome-icon-button tab-new-file-button"
-          onClick={onCreateNewFile}
-          title={newFileLabel}
-          type="button"
-        >
-          <PlusIcon />
-        </button>
-      ) : null}
       {children}
     </section>
   );

@@ -93,7 +93,7 @@ model.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| P0 | Sakura chrome / file-state clarity | Add the tab-row `+` as an entry to the existing new-file flow; expose sidebar collapse / restore from the main chrome or make the existing control clearly discoverable; show the active file name with path context above the editor; strengthen Markdown preview hierarchy with card-like contrast; highlight the selected workspace file with Sakura accenting; keep the status bar concise without duplicating encoding / line-ending values. |
+| P0 | Sakura chrome / file-state clarity | Expose sidebar collapse / restore from the main chrome or make the existing control clearly discoverable; show the active file name with path context above the editor; strengthen Markdown preview hierarchy with card-like contrast; highlight the selected workspace file with Sakura accenting; keep the status bar concise without duplicating encoding / line-ending values; keep New File on the existing menu, shortcut, command-palette, and workspace-file paths rather than a tab-row `+` affordance. |
 | Deferred | Workspace switching dropdown | Keep the simple single-workspace model for now. Do not add a workspace switcher, multi-workspace session model, background indexing, Git status, LSP, terminal, plugin, or arbitrary command behavior in this lane. |
 
 P0 is implemented locally as of 2026-06-13. Verification:
@@ -105,16 +105,18 @@ src/styles/statusCss.test.ts`, `npm run build:vite`, and `npm run test`.
 
 ## Completed v0.20 Slices
 
-- 2026-06-13: Sakura chrome / file-state clarity is implemented. The
-  tab row now exposes a localized `+` button wired to the existing
-  new-file flow, normal Safe Editor chrome can collapse / restore the
-  workspace sidebar through the same sidebar model, and L Mode keeps its
-  separate workspace drawer. The central editor pane shows the active
-  file name plus workspace-relative path context, clipped for long paths.
-  Markdown preview now renders as a card-like reading surface with
-  stronger heading, quote, and code contrast, and Sakura theme gives the
-  selected workspace file a clearer pink-accent highlight. Workspace
-  switching remains intentionally deferred.
+- 2026-06-13: Sakura chrome / file-state clarity is implemented. Normal
+  Safe Editor chrome can collapse / restore the workspace sidebar
+  through the same sidebar model, and L Mode keeps its separate
+  workspace drawer. The central editor pane shows the active file name
+  plus workspace-relative path context, clipped for long paths. Markdown
+  preview now renders as a card-like reading surface with stronger
+  heading, quote, and code contrast, and Sakura theme gives the selected
+  workspace file a clearer pink-accent highlight. The initial tab-row
+  new-file `+` affordance was removed after visual review; New File
+  remains on the existing menu, shortcut, command-palette, and
+  workspace-file paths. Workspace switching remains intentionally
+  deferred.
 
 ## Active UX Queue
 
@@ -124,6 +126,7 @@ Pick one item at a time.
 |---|---|---|
 | P1 | Core Safe Editor quality probe | When concrete queue items are exhausted, inspect one basic high-risk surface instead of adding broad tests: open/save/close, restore/recovery, preview, diff/review, workspace file operations, standalone files, image handling, keyboard/IME, or error recovery. State the risk hypothesis, run a focused source/app inspection or smoke, then either fix the smallest issue found or close as `verified no-op`. |
 | P2 | Light accessibility sanity | Keep accessibility as a light sanity pass adjacent to core surfaces: keyboard reachability, focus escape/Tab behavior, readable labels, and obvious contrast. Do not prioritize broad accessibility audits over basic editor quality unless a concrete accessibility failure is observed. |
+| v0.21+ | Status bar structure cleanup | Treat the v0.20 compact status detail as a stopgap. For a later UX slice, split status metadata into priority-aware fields instead of one long `statusDetail` string, keep line-ending / encoding controls always reachable, and move lower-priority details such as final-newline state, line/column, selection, and heading context into hover, popover, or adaptive secondary display. |
 
 ## External-Agent Friendly Queue
 

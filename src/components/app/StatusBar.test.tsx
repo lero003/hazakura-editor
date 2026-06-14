@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { StatusBar } from "./StatusBar";
 import type { EditorTab } from "../../types";
 
@@ -26,7 +26,9 @@ const activeTab: EditorTab = {
 };
 
 describe("StatusBar", () => {
-  it("keeps format controls in the trailing cluster", () => {
+  it("keeps detail and format controls in the same trailing row", () => {
+    const onConvertEncoding = vi.fn();
+    const onConvertLineEnding = vi.fn();
     const { container } = render(
       <StatusBar
         activeTab={activeTab}
@@ -38,8 +40,8 @@ describe("StatusBar", () => {
         lineEndingAriaLabel="Line endings"
         lineEndingLabel="Line endings"
         lModeEnabled={false}
-        onConvertEncoding={vi.fn()}
-        onConvertLineEnding={vi.fn()}
+        onConvertEncoding={onConvertEncoding}
+        onConvertLineEnding={onConvertLineEnding}
         saveAffirmation={false}
         saveAffirmationKey={null}
         statusText="Ready"
@@ -51,9 +53,19 @@ describe("StatusBar", () => {
     const detail = container.querySelector(".status-bar-detail");
 
     expect(statusBar?.lastElementChild).toBe(formatGroup);
-    expect(formatGroup?.previousElementSibling).toBe(detail);
+    expect(detail?.parentElement).toBe(formatGroup);
     expect(formatGroup?.querySelectorAll("select")).toHaveLength(2);
     expect(detail?.getAttribute("title")).toBe("Markdown / UTF-8 / 10 bytes");
+
+    fireEvent.change(screen.getByRole("combobox", { name: "Line endings" }), {
+      target: { value: "crlf" },
+    });
+    fireEvent.change(screen.getByRole("combobox", { name: "Encoding" }), {
+      target: { value: "shift-jis" },
+    });
+
+    expect(onConvertLineEnding).toHaveBeenCalledWith("crlf");
+    expect(onConvertEncoding).toHaveBeenCalledWith("shift-jis");
 
     // The status text must be exposed as a live region so
     // screen readers announce status changes (e.g. "Saved",
@@ -63,7 +75,7 @@ describe("StatusBar", () => {
     expect(statusSegment?.getAttribute("aria-live")).toBe("polite");
   });
 
-  it("hides duplicate format values from the passive detail in normal mode", () => {
+  it("shortens the passive detail in normal mode while keeping the full title", () => {
     const { container } = render(
       <StatusBar
         activeTab={activeTab}
@@ -88,9 +100,7 @@ describe("StatusBar", () => {
 
     expect(formatGroup?.querySelector("select")?.textContent).toContain("LF");
     expect(formatGroup?.textContent).toContain("UTF-8");
-    expect(detail?.textContent).toBe(
-      "Markdown · 10 B · 7 characters · final newline · Ln 1, Col 1",
-    );
+    expect(detail?.textContent).toBe("Markdown · 10 B · 7 characters");
     expect(detail?.getAttribute("title")).toBe(
       "Markdown · UTF-8 · 10 B · 7 characters · LF · final newline · Ln 1, Col 1",
     );

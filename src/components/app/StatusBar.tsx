@@ -39,7 +39,7 @@ export function StatusBar({
 }: StatusBarProps) {
   const showFormatControls = Boolean(activeTab && !lModeEnabled);
   const visibleDetail = showFormatControls && activeTab
-    ? removeDuplicateFormatValues(detail, activeTab)
+    ? compactVisibleDetail(removeDuplicateFormatValues(detail, activeTab))
     : detail;
 
   return (
@@ -71,11 +71,11 @@ export function StatusBar({
           {agentLabel}
         </span>
       ) : null}
-      <span className="status-bar-segment status-bar-detail" title={detail}>
-        {visibleDetail}
-      </span>
       {showFormatControls && activeTab ? (
         <span className="status-bar-format-group">
+          <span className="status-bar-segment status-bar-detail" title={detail}>
+            {visibleDetail}
+          </span>
           <label className="status-bar-segment status-bar-format-chip">
             <span className="status-bar-format-label">{lineEndingLabel}</span>
             <select
@@ -107,7 +107,11 @@ export function StatusBar({
             </select>
           </label>
         </span>
-      ) : null}
+      ) : (
+        <span className="status-bar-segment status-bar-detail" title={detail}>
+          {visibleDetail}
+        </span>
+      )}
     </footer>
   );
 }
@@ -120,6 +124,12 @@ function removeDuplicateFormatValues(detail: string, activeTab: EditorTab): stri
   const visibleParts = detail
     .split(" · ")
     .filter((part) => !duplicateValues.has(part));
+
+  return visibleParts.length > 0 ? visibleParts.join(" · ") : detail;
+}
+
+function compactVisibleDetail(detail: string): string {
+  const visibleParts = detail.split(" · ").slice(0, 3);
 
   return visibleParts.length > 0 ? visibleParts.join(" · ") : detail;
 }

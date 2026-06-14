@@ -13,7 +13,6 @@ function renderTopChrome(
   overrides: Partial<Parameters<typeof AppTopChrome>[0]> = {},
 ) {
   const onCloseSelectedImagePreview = vi.fn();
-  const onCreateNewFile = vi.fn();
   const onEditorSettingsChange = vi.fn();
   render(
     <AppTopChrome
@@ -29,10 +28,8 @@ function renderTopChrome(
       lModeCopy={getLModeCopy("en")}
       lModeEnabled={false}
       menuLanguage="en"
-      newFileLabel="New File"
       onCloseSelectedImagePreview={onCloseSelectedImagePreview}
       onCloseTab={vi.fn()}
-      onCreateNewFile={onCreateNewFile}
       onEditorSettingsChange={onEditorSettingsChange}
       onFinishTabPointerDrag={vi.fn()}
       onOpenAgentWindow={vi.fn()}
@@ -59,18 +56,15 @@ function renderTopChrome(
 
   return {
     onCloseSelectedImagePreview,
-    onCreateNewFile,
     onEditorSettingsChange,
   };
 }
 
 describe("AppTopChrome", () => {
-  it("routes the tab-row plus button to the existing new-file flow", () => {
-    const { onCreateNewFile } = renderTopChrome();
+  it("does not expose the tab-row plus button in edit chrome", () => {
+    renderTopChrome();
 
-    screen.getByRole("button", { name: "New File" }).click();
-
-    expect(onCreateNewFile).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("button", { name: "New File" })).toBeNull();
   });
 
   it("opens an editor quick settings menu from the top-left button", () => {

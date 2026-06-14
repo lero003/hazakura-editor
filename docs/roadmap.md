@@ -152,7 +152,6 @@ language without turning the app into a file manager or IDE.
 Use `docs/current-work.md` as the queue. Keep the first slice focused on
 the existing Safe Editor chrome:
 
-- Add a tab-row `+` affordance that starts the existing new-file flow.
 - Make the workspace sidebar collapse / restore control easier to find
   from the main chrome, while keeping the current file-tree model.
 - Move the active file path context into a thin bottom full-path copy
@@ -163,6 +162,8 @@ the existing Safe Editor chrome:
 - Keep the bottom status bar concise: breadcrumb / position / file stats
   can be clarified, but do not reintroduce duplicate `UTF-8` / `LF`
   labels that are already exposed as controls.
+- Keep New File on the existing menu, shortcut, command-palette, and
+  workspace-file paths rather than a tab-row `+` affordance.
 
 Explicitly deferred:
 
@@ -173,7 +174,15 @@ Explicitly deferred:
   terminal, plugin, or arbitrary command behavior.
 
 First slice status: implemented locally on 2026-06-13 with focused
-React/CSS coverage, `npm run build:vite`, and `npm run test`.
+React/CSS coverage, `npm run build:vite`, and `npm run test`; the
+tab-row new-file `+` affordance was removed after visual review on
+2026-06-14.
+
+v0.21+ follow-up: the v0.20 compact status detail is a stopgap. A later
+UX slice should split status metadata into priority-aware fields instead
+of one long `statusDetail` string, keep line-ending / encoding controls
+always reachable, and move lower-priority document details into hover,
+popover, or adaptive secondary display.
 
 ## Distribution Lanes
 

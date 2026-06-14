@@ -85,8 +85,6 @@ export function AppShell(props: AppShellProps) {
       ) : null}
       <AppTopChrome
         {...props}
-        newFileLabel={props.safeEditorCopy.newFile}
-        onCreateNewFile={() => void props.createNewFile()}
         onEditorSettingsChange={props.setEditorSettings}
       />
       <AppDocumentFeedback {...props} />

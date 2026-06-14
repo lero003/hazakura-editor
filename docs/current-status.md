@@ -39,12 +39,14 @@ Last reviewed: 2026-06-13 (v0.19 App Store submission-prep queue)
   TestFlight smoke, final metadata, reviewer notes, and App Review
   handling.
 - The v0.20 Sakura workspace ergonomics slice is implemented locally:
-  the tab row has a new-file `+` entry, the main chrome can collapse /
-  restore the workspace sidebar, the central editor pane keeps a thin
-  bottom full-path copy bar for the active file, Markdown preview
-  hierarchy is more card-like, and the selected workspace file has
-  Sakura-specific accenting. Workspace switching dropdowns remain
-  deferred to preserve the simple single-workspace model.
+  the main chrome can collapse / restore the workspace sidebar, the
+  central editor pane keeps a thin bottom full-path copy bar for the
+  active file, Markdown preview hierarchy is more card-like, and the
+  selected workspace file has Sakura-specific accenting. The tab-row
+  new-file `+` affordance was removed after visual review; New File
+  remains available through existing menu, shortcut, and workspace-file
+  actions. Workspace switching dropdowns remain deferred to preserve the
+  simple single-workspace model.
 
 ## Current Product Boundary
 
@@ -80,9 +82,11 @@ Last reviewed: 2026-06-13 (v0.19 App Store submission-prep queue)
   buffer; drag/drop image import keeps the existing 20 MB file-size cap.
 - Multi-tab editor with dirty-tab close protection, app/window close
   confirmation, save-conflict recovery, and explicit draft recovery.
-- Normal Safe Editor chrome now exposes a tab-row new-file button and a
-  main-chrome workspace sidebar toggle, both routed through the existing
-  file creation and sidebar collapse flows.
+- Normal Safe Editor chrome now exposes a main-chrome workspace sidebar
+  toggle routed through the existing sidebar collapse flow. New File
+  remains available through the native menu, keyboard shortcut, command
+  palette, and bounded workspace-file actions rather than a tab-row `+`
+  button.
 - Auto-backup snapshots for a workspace file remain distinct even when
   multiple backups are captured in the same second; filenames include
   millisecond precision with a bounded collision suffix, and recovery
