@@ -35,6 +35,7 @@ submission-prep, or quality-polish slice.
 
 - `l-mode-plan.md`: L Mode / えるモード source-preserving WYSIWYG Accuracy Ramp planning memo.
 - `ebook-mode-epub-export-plan.md`: v0.21+ e-bookモード / EPUB export planning memo.
+- `native-macos-appearance-plan.md`: v0.21+ native-feeling macOS UI planning memo.
 - `apple-local-assist-distribution-plan.md`: Apple Local Assist / App Store distribution planning memo.
 - `apple-local-assist-writing-companion-plan.md`: Apple Local Assist Writing Companion / external Assist Window UX direction.
 

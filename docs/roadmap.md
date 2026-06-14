@@ -221,6 +221,9 @@ Keep future product work source-preserving and narrow:
 - e-book Mode / EPUB export: keep it as a Markdown-source-preserving
   EPUB simulation and explicit export direction for v0.21+. Use
   `docs/ebook-mode-epub-export-plan.md`.
+- Native macOS appearance: explore a more native-feeling macOS 26+
+  interface, with macOS 27 treated as a future verification target. Use
+  `docs/native-macos-appearance-plan.md`.
 - Agent Workbench: keep it optional, allowlisted, one-session, no-restore,
   and outside the App Store lane. Use `docs/agent-workbench-boundary.md`.
 
