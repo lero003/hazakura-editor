@@ -218,6 +218,9 @@ Keep future product work source-preserving and narrow:
   gated writing companion with unsaved, diff-reviewable edits. Use
   `docs/assist-surface-strategy.md` and
   `docs/apple-local-assist-writing-companion-plan.md`.
+- e-book Mode / EPUB export: keep it as a Markdown-source-preserving
+  EPUB simulation and explicit export direction for v0.21+. Use
+  `docs/ebook-mode-epub-export-plan.md`.
 - Agent Workbench: keep it optional, allowlisted, one-session, no-restore,
   and outside the App Store lane. Use `docs/agent-workbench-boundary.md`.
 
