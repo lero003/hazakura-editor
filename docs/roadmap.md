@@ -224,9 +224,15 @@ Keep future product work source-preserving and narrow:
 - Native macOS appearance: explore a more native-feeling macOS 26+
   interface, with macOS 27 treated as a future verification target. Use
   `docs/native-macos-appearance-plan.md`.
+- Speculative local AI future: preserve, but do not yet commit to,
+  a changeable v1+ / v2+ / v3+ direction for AI-ready editing
+  primitives, OS-provided local models, whitelisted external `.aimodel`
+  support, and much later local image generation. Use
+  `docs/speculative-local-ai-future-plan.md`.
 - Agent Workbench: keep it optional, allowlisted, one-session, no-restore,
   and outside the App Store lane. Use `docs/agent-workbench-boundary.md`.
 
 Any broader WYSIWYG editing model, database-like workspace layer,
-collaboration feature, updater, plugin system, or automated agent-apply
-flow needs a fresh product-boundary decision before implementation.
+collaboration feature, updater, plugin system, arbitrary model runtime,
+local image-generation platform, or automated agent-apply flow needs a
+fresh product-boundary decision before implementation.
