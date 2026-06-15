@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-06-13 (v0.19 build 13 package evidence)
+Last reviewed: 2026-06-13 (v0.19 build 14 package evidence)
 
 ## Purpose
 
@@ -403,7 +403,7 @@ package inspection alone.
 The local release-candidate package generated for this lane is:
 
 ```txt
-src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.19.0-build13-mas.pkg
+src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.19.0-build14-mas.pkg
 ```
 
 `productbuild --synthesize` emitted a Distribution XML
