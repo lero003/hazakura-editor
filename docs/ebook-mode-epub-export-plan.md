@@ -97,8 +97,13 @@ v0.21 PoC では、L Mode の CodeMirror decorations / widgets / CSS を
   テストの再利用可能性を調査する。
 - 既存の `useDocumentExport` / `renderMarkdown` /
   Markdown preview CSS と、EPUB向けHTML生成を分けるべき箇所を決める。
+- 表示専用PoCの土台は、まず CodeMirror decorations ではなく既存の
+  `renderMarkdown` / Preview HTML pipeline を優先して検証する。これに
+  より sanitize、workspace image boundary、Preview / Export 系の既存
+  安全境界を流用しやすくする。
 - `src/features/editor/lMode/` の CodeMirror decorations / widgets /
-  parser helpers / CSS を e-book Mode に流用できるか調査する。
+  parser helpers / CSS は、PoCの主経路ではなく、後続の統合 / 共存 /
+  進化系判断のための参考資産として軽く監査する。
 - 単一長文MarkdownをATX見出しで章分割し、横書きの表示専用PoCを作る。
 - 複数Markdownを一冊の章構造として俯瞰するUI基礎を調べる。
 - L Mode との関係を「統合」「共存」「進化系」のどれで進めるか

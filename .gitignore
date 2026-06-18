@@ -12,4 +12,5 @@ HazakuraEditor-*-mas.pkg
 *.log
 .DS_Store
 habitat-report/
+.superpowers/
 .hazakura/

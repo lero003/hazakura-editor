@@ -123,6 +123,27 @@ src/styles/statusCss.test.ts`, `npm run build:vite`, and `npm run test`.
   workspace-file paths. Workspace switching remains intentionally
   deferred.
 
+## v0.21 e-book Mode PoC
+
+Start v0.21 with a display-only e-book Mode PoC for a single Markdown
+document. The first implementation slice should use the existing
+`renderMarkdown` / Preview HTML pipeline rather than CodeMirror
+decorations, split ATX headings into chapter-like sections, and keep
+Markdown source unchanged.
+
+Keep this first slice out of:
+
+- EPUB archive generation.
+- Vertical writing.
+- Multiple Markdown files as one book.
+- L Mode integration beyond a light source-read of reusable boundaries.
+- Status bar structure cleanup, which remains a separate v0.21+ UX debt.
+
+External-agent friendly handoff: implement the smallest Path Y preview
+surface and focused chapter-splitting tests, then report whether the
+Preview pipeline remains the right base before any L Mode integration
+decision.
+
 ## Active UX Queue
 
 Pick one item at a time.
@@ -142,6 +163,7 @@ over copy-heavy or product-voice-sensitive work.
 
 | Fit | Candidate | Scope |
 |---|---|---|
+| Good | v0.21 e-book Mode Path Y PoC | Use the existing `renderMarkdown` / Preview HTML pipeline for a display-only single-document e-book preview. Add a small ATX-heading chapter splitter and focused tests. Do not use L Mode CodeMirror decorations as the main surface, generate EPUB files, add vertical writing, or introduce multiple-file book structure in this slice. |
 | Good | L Mode quality investigation | Pick one reproduced L Mode issue or one measurable quality gap only: caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or performance baseline. Do not add a new editing model or contenteditable surface. |
 | Good | Theme quality investigation | Pick one concrete theme issue only: contrast, focus visibility, status/error readability, dialog readability, or Increase Contrast behavior. Do not redesign palettes or add theme customization. |
 | Good | Core Safe Editor quality probe | Inspect one basic surface with a clear risk hypothesis, then fix only a reproduced issue or close as `verified no-op`. Prefer open/save/close, restore/recovery, preview, diff/review, workspace files, standalone files, image handling, keyboard/IME, or error recovery. |
