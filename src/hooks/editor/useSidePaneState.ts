@@ -27,18 +27,22 @@ export function useSidePaneState({
       ? "compare"
       : rightPaneMode === "outline"
         ? "outline"
-        : rightPaneMode === "preview" && previewVisible
-          ? "preview"
-          : null
+        : rightPaneMode === "ebook" && previewVisible
+          ? "ebook"
+          : rightPaneMode === "preview" && previewVisible
+            ? "preview"
+            : null
     : null;
   const outlinePaneVisible = sidePaneMode === "outline" && activeTab !== null;
   const previewPaneVisible = sidePaneMode === "preview" && activeTab !== null;
+  const ebookPaneVisible = sidePaneMode === "ebook" && activeTab !== null;
   const sidePaneVisible = sidePaneMode !== null;
   const hasWorkspaceSelection = Boolean(
     activeTab || selectedImage || compareView,
   );
 
   return {
+    ebookPaneVisible,
     hasWorkspaceSelection,
     outlinePaneVisible,
     previewPaneVisible,

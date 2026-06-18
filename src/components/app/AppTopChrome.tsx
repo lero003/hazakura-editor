@@ -53,6 +53,7 @@ type AppTopChromeProps = {
   ) => void;
   onTabPointerMove: (event: ReactPointerEvent<HTMLDivElement>) => void;
   onToggleDiff: () => void;
+  onToggleEbook: () => void;
   onToggleLMode: () => void;
   onToggleOutline: () => void;
   onTogglePreview: () => void;
@@ -90,6 +91,7 @@ export function AppTopChrome({
   onTabPointerDown,
   onTabPointerMove,
   onToggleDiff,
+  onToggleEbook,
   onToggleLMode,
   onToggleOutline,
   onTogglePreview,
@@ -141,12 +143,14 @@ export function AppTopChrome({
         agentWorkbenchAvailable={agentWorkbenchAvailable}
         assistSurfaceActive={assistSurfaceActive}
         diffPaneActive={sidePaneMode === "compare"}
+        ebookPaneActive={sidePaneMode === "ebook"}
         lModeCopy={lModeCopy}
         lModeEnabled={lModeEnabled}
         onOpenAgentWindow={onOpenAgentWindow}
         onOpenAppleAssistWindow={onOpenAppleAssistWindow}
         onReviewChanges={onReviewChanges}
         onToggleDiff={onToggleDiff}
+        onToggleEbook={onToggleEbook}
         onToggleLMode={onToggleLMode}
         onToggleOutline={onToggleOutline}
         onTogglePreview={onTogglePreview}

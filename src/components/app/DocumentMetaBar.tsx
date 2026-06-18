@@ -12,12 +12,14 @@ type DocumentMetaBarProps = {
   agentWorkbenchAvailable: boolean;
   assistSurfaceActive: AssistSurfacePreference;
   diffPaneActive: boolean;
+  ebookPaneActive: boolean;
   lModeCopy: LModeCopy;
   lModeEnabled: boolean;
   onOpenAgentWindow: () => void;
   onOpenAppleAssistWindow: () => void;
   onReviewChanges: (tab: EditorTab) => void;
   onToggleDiff: () => void;
+  onToggleEbook: () => void;
   onToggleLMode: () => void;
   onToggleOutline: () => void;
   onTogglePreview: () => void;
@@ -33,12 +35,14 @@ export function DocumentMetaBar({
   agentWorkbenchAvailable,
   assistSurfaceActive,
   diffPaneActive,
+  ebookPaneActive,
   lModeCopy,
   lModeEnabled,
   onOpenAgentWindow,
   onOpenAppleAssistWindow,
   onReviewChanges,
   onToggleDiff,
+  onToggleEbook,
   onToggleLMode,
   onToggleOutline,
   onTogglePreview,
@@ -74,6 +78,8 @@ export function DocumentMetaBar({
             copy={sidePaneCopy}
             diffActive={diffPaneActive}
             diffAvailable
+            ebookActive={ebookPaneActive}
+            ebookAvailable={activeTab !== null}
             lModeLabel={lModeCopy.preferenceLabel}
             lModeTitle={lModeCopy.paletteCommand}
             onReviewChanges={() => {
@@ -82,6 +88,7 @@ export function DocumentMetaBar({
               }
             }}
             onToggleDiff={onToggleDiff}
+            onToggleEbook={onToggleEbook}
             onToggleLMode={onToggleLMode}
             onToggleOutline={onToggleOutline}
             onTogglePreview={onTogglePreview}

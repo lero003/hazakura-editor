@@ -355,6 +355,7 @@ export function useAppShellController() {
     syncEditorScroll,
     syncPreviewScroll,
     toggleDiffPane,
+    toggleEbookPane,
     toggleOutlinePane,
     togglePreviewPane,
   } = useEditorSurfaceController({
@@ -1470,6 +1471,7 @@ export function useAppShellController() {
     onTabPointerDown: handleTabPointerDown,
     onTabPointerMove: handleTabPointerMove,
     onToggleDiff: toggleDiffPane,
+    onToggleEbook: toggleEbookPane,
     onToggleLMode: toggleLMode,
     onToggleOutline: toggleOutlinePane,
     onTogglePreview: togglePreviewPane,

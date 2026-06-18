@@ -21,6 +21,12 @@ import { PreviewUnavailablePane } from "../editor/preview/PreviewUnavailablePane
 // styling) act as the loading frame.
 const PreviewPane = lazy(() => import("../editor/preview/PreviewPane"));
 
+// EBookPane reuses the same marked + DOMPurify pipeline, so it lives
+// in the same lazy chunk as PreviewPane. Like PreviewPane it is a
+// display-only, sanitised surface — it renders Markdown through
+// `renderMarkdown()` and never edits source.
+const EBookPane = lazy(() => import("../editor/preview/EBookPane"));
+
 type SidePaneProps = {
   activeContents: string;
   activeTab: EditorTab | null;
@@ -122,6 +128,18 @@ export function SidePane({
           onSelect={onSelectHeading}
           truncated={outlineTruncated}
         />
+      ) : sidePaneMode === "ebook" && activeTab && previewVisible ? (
+        <Suspense fallback={null}>
+          <EBookPane
+            documentPath={activeTab.path}
+            onOpenLocalLink={onOpenPreviewLocalLink}
+            source={activeContents}
+            workspaceRoot={
+              workspaceRootPath ??
+              (activeTab.path ? activeTab.path.replace(/\/[^/]+$/, "") : null)
+            }
+          />
+        </Suspense>
       ) : activeTab && previewVisible ? (
         <Suspense fallback={null}>
           <PreviewPane
@@ -151,6 +169,10 @@ function sidePaneAriaLabel(mode: RightPaneMode, copy: SidePaneCopy): string {
 
   if (mode === "outline") {
     return copy.documentOutline;
+  }
+
+  if (mode === "ebook") {
+    return copy.ebookReading;
   }
 
   return copy.markdownPreview;

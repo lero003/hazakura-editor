@@ -8,6 +8,9 @@ export type SidePaneCopy = {
   appleAssistWindowTitle: string;
   diffTab: string;
   diffTabTitle: string;
+  ebookReading: string;
+  ebookTab: string;
+  ebookTabTitle: string;
   fileComparison: string;
   imagePreview: string;
   markdownPreview: string;
@@ -37,6 +40,9 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
       appleAssistWindowTitle: "Apple Local Assist まどを ひらく / かくす",
       diffTab: "ちがひ",
       diffTabTitle: "ちがひのまどをひらく",
+      ebookReading: "ほんのやうに よむ (えーぼっく)",
+      ebookTab: "ゑーほん",
+      ebookTabTitle: "ほんのやうに まどで よむ (ためし)",
       fileComparison: "ふみくらべ",
       imagePreview: "ゑのしたみ",
       markdownPreview: "Markdown したみ",
@@ -67,6 +73,9 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         appleAssistWindowTitle: "Apple Local Assist ウィンドウを表示 / 非表示",
         diffTab: "差分",
         diffTabTitle: "差分ペインを表示",
+        ebookReading: "本のように読む（e-book）",
+        ebookTab: "e書籍",
+        ebookTabTitle: "本のようにペインで読む（試用）",
         fileComparison: "ファイル比較",
         imagePreview: "画像プレビュー",
         markdownPreview: "Markdown プレビュー",
@@ -95,6 +104,9 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         appleAssistWindowTitle: "Show or hide Apple Local Assist window",
         diffTab: "Diff",
         diffTabTitle: "Show diff pane",
+        ebookReading: "Read as a book (e-book)",
+        ebookTab: "e-book",
+        ebookTabTitle: "Read like a book in the pane (preview)",
         fileComparison: "File comparison",
         imagePreview: "Image Preview",
         markdownPreview: "Markdown preview",

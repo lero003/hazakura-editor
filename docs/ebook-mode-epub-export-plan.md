@@ -125,6 +125,54 @@ v0.21 PoC では、L Mode の CodeMirror decorations / widgets / CSS を
 workspace boundary、画像サイズ上限、sanitize方針、export UI と
 合わせて見直す。
 
+### v0.21 PoC Slice 0 (実装済み / 2026-06-18)
+
+最初の表示専用PoCスライス。範囲は最小限。
+
+- 章分割: `src/features/editor/ebookChapters.ts` がATX見出し
+  (`#`〜`######`) ベースで単一Markdownを章セグメントに分割する。
+  fenced code block 内の `#` は章境界にしない。Setextは扱わない。
+  各章の `source` は元のMarkdownの verbatim 部分文字列であり、
+  並び順や内容を一切書き換えない。
+- 表示面: `src/components/editor/preview/EBookPane.tsx` が章ごとに
+  `renderMarkdown()` + `inlineWorkspaceAssetImages()` を呼び、
+  DOMPurify / workspace image / 外部参照の既存安全境界をそのまま
+  再利用する。編集要素・`contenteditable` は持たない（表示専用）。
+- 導線: `RightPaneMode` に `"ebook"` を追加し、Preview / Outline /
+  Diff と同じサイドペイントグルから開ける。`useSidePaneState` /
+  `useSidePaneToggles` / `SidePane` / `RightPaneToggleControls` /
+  `DocumentMetaBar` / `AppTopChrome` を経由。L Mode 時は非表示。
+- CSS: `src/styles/preview.css` 末尾に章ベースの reading surface
+  スタイル。章は「ページのメタファー」であり、本物のページネーション
+  ではない（長い章はスクロール、短い章は1ブロック）。
+
+判断記録:
+
+- **Path Y（描画HTML）を選んだ理由**: 表示専用なら CodeMirror
+  decoration である必要がない。`renderMarkdown` 経由なら sanitize・
+  workspace image boundary・Preview/Export の安全パイプラインを
+  丸ごと再利用でき、caret / IME / selection の Live Source リスクを
+  扱わずに済む。L Mode 資産の再利用監査は PoC のブロッカーにしない。
+- **L Mode 統合を保留した理由**: Path Y で組むと L Mode（CodeMirror系）
+  とは物理的に別レイヤーになる。「統合 / 共存 / 進化系」の判断材料は
+  PoC を見てから揃うため、現時点では明示的に共存とする。
+
+検証:
+
+- `ebookChapters.test.ts`（11件）: 章分割・fence無視・preamble・
+  Setext 非境界・verbatim 部分文字列。
+- `EBookPane.test.tsx`（7件）: 章レンダリング・`<script>` 除去・
+  外部画像 block・`javascript:` リンク無害化・リンクルーティング。
+- `npm run build:vite` 成功、`npm run test` 822件全通過（既存
+  Preview / Diff / L Mode / Export / Editor 各テストは不変）。
+
+PoCスコープ外（明示的に今回やらない）:
+
+- EPUB 生成、縦書き、複数ファイル章構造、保存設定。
+- 本物のページネーション（行/画像高さ計算・左右ページ同期）。
+- L Mode 資産の再利用監査本体（別スライスで実施）。
+- 見開きレイアウト（別相談で一度外した）。
+
 ### v0.22: e-book Mode MVP
 
 最初は「編集しながら雰囲気を確認する」ことだけに絞る。

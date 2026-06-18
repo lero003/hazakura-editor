@@ -5,6 +5,7 @@ import {
   useState,
 } from "react";
 import {
+  BookIcon,
   DiffIcon,
   LModeIcon,
   OutlineIcon,
@@ -18,6 +19,8 @@ export interface RightPaneToggleCopy {
   appleAssistWindowTitle: string;
   diffTab: string;
   diffTabTitle: string;
+  ebookTab: string;
+  ebookTabTitle: string;
   outlineTab: string;
   outlineTabTitle: string;
   previewTab: string;
@@ -188,10 +191,13 @@ export function RightPaneToggleControls({
   copy,
   diffActive,
   diffAvailable,
+  ebookActive,
+  ebookAvailable,
   lModeLabel,
   lModeTitle,
   onReviewChanges,
   onToggleDiff,
+  onToggleEbook,
   onToggleLMode,
   onToggleOutline,
   onTogglePreview,
@@ -204,10 +210,13 @@ export function RightPaneToggleControls({
   copy: RightPaneToggleCopy;
   diffActive: boolean;
   diffAvailable: boolean;
+  ebookActive: boolean;
+  ebookAvailable: boolean;
   lModeLabel: string;
   lModeTitle: string;
   onReviewChanges: () => void;
   onToggleDiff: () => void;
+  onToggleEbook: () => void;
   onToggleLMode: () => void;
   onToggleOutline: () => void;
   onTogglePreview: () => void;
@@ -233,6 +242,15 @@ export function RightPaneToggleControls({
         onClick={onToggleLMode}
         title={lModeTitle}
       />
+      {ebookAvailable ? (
+        <PaneToggle
+          active={ebookActive}
+          caption={copy.ebookTab}
+          icon={<BookIcon />}
+          onClick={onToggleEbook}
+          title={copy.ebookTabTitle}
+        />
+      ) : null}
       <ReviewPaneMenu
         copy={copy}
         diffActive={diffActive}

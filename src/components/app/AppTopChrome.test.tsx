@@ -41,6 +41,7 @@ function renderTopChrome(
       onTabPointerDown={vi.fn()}
       onTabPointerMove={vi.fn()}
       onToggleDiff={vi.fn()}
+      onToggleEbook={vi.fn()}
       onToggleLMode={vi.fn()}
       onToggleOutline={vi.fn()}
       onTogglePreview={vi.fn()}

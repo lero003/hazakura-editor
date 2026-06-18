@@ -194,6 +194,15 @@ export function OutlineIcon() {
   );
 }
 
+export function BookIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 3H8V13H3.5C3.22 13 3 12.78 3 12.5V3.5C3 3.22 3.22 3 3.5 3Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+      <path d="M13 3H8V13H12.5C12.78 13 13 12.78 13 12.5V3.5C13 3.22 12.78 3 12.5 3Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
 export function AgentWindowIcon() {
   return (
     <svg

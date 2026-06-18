@@ -97,7 +97,7 @@ export type LineEndingKind = EditableLineEnding | "mixed" | "none";
 // encoding selector chip).
 export type TextEncoding = "utf-8" | "utf-8-bom" | "shift-jis" | "euc-jp";
 
-export type RightPaneMode = "preview" | "compare" | "outline";
+export type RightPaneMode = "preview" | "compare" | "outline" | "ebook";
 
 // Review Desk is a top-level review surface that intentionally replaces
 // the editor area when open, separate from RightPaneMode which lives

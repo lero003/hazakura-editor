@@ -57,6 +57,7 @@ export function useSidePaneController({
   });
   const {
     toggleDiffPane,
+    toggleEbookPane,
     toggleOutlinePane,
     togglePreviewPane,
   } = useSidePaneToggles({
@@ -79,6 +80,7 @@ export function useSidePaneController({
     sidePaneMode,
     sidePaneVisible,
     toggleDiffPane,
+    toggleEbookPane,
     toggleOutlinePane,
     togglePreviewPane,
   };

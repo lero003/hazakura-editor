@@ -437,3 +437,69 @@
     padding: 0 4px;
   }
 }
+
+/* ── v0.21 e-book Mode PoC ───────────────────────────────────────
+ *
+ * Display-only book-like reading surface. This is Path Y from the
+ * v0.21 plan: the chapter HTML comes from `renderMarkdown()` and
+ * carries the same `.markdown-preview` selectors as the live preview,
+ * so the rules below only layer a chapter rhythm on top of the
+ * existing preview typography. Source is never edited here.
+ *
+ * The chapter is a page-like metaphor, not real pagination: a long
+ * chapter scrolls within its section and a short chapter sits in one
+ * block. Real pagination is a v0.22+ concern.
+ */
+
+.ebook-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.ebook-chapter {
+  /* Each chapter reads as one page block: a calm paper surface with
+     generous vertical air above and below, then a quiet rule that
+     separates it from the next chapter. */
+  background: var(--surface, #ffffff);
+  border-radius: 4px;
+  margin: 0 auto 32px;
+  max-width: min(720px, calc(100% - 64px));
+  padding: clamp(40px, 6vw, 72px) clamp(40px, 5vw, 60px);
+  position: relative;
+}
+
+.ebook-chapter + .ebook-chapter::before {
+  /* Faint chapter break rule. Kept as `::before` on every chapter
+     after the first so a preamble + N chapters show N-1 dividers. */
+  background: color-mix(in srgb, var(--border, #d2d2d7) 70%, transparent);
+  content: "";
+  height: 1px;
+  left: 50%;
+  position: absolute;
+  top: -16px;
+  transform: translateX(-50%);
+  width: min(240px, 60%);
+}
+
+.ebook-chapter-preamble {
+  /* The leading preamble (text before the first heading) reads as a
+     shorter front-matter block, not a full chapter page. */
+  padding-top: clamp(24px, 3vw, 40px);
+  padding-bottom: clamp(24px, 3vw, 40px);
+}
+
+.ebook-chapter > div {
+  /* The inner div wraps each chapter's sanitised HTML. Inherit the
+     `.markdown-preview` typography already defined above. */
+  font-family: "Iowan Old Style", "Charter", Georgia, "Times New Roman", serif;
+  font-size: var(--preview-font-size, 16px);
+  line-height: 1.85;
+}
+
+.ebook-chapter h1,
+.ebook-chapter h2 {
+  /* Strong heading rhythm so chapter starts read as page openers. */
+  letter-spacing: 0.01em;
+  margin-top: 0;
+}

@@ -14,6 +14,8 @@ const sidePaneCopy: RightPaneToggleCopy = {
   appleAssistWindowTitle: "Open Apple Local Assist Window",
   diffTab: "Diff",
   diffTabTitle: "Open Diff",
+  ebookTab: "e-book",
+  ebookTabTitle: "Open e-book",
   outlineTab: "Outline",
   outlineTabTitle: "Open Outline",
   previewTab: "Preview",
@@ -51,6 +53,7 @@ function renderMeta(
   const actions = {
     onReviewChanges: vi.fn(),
     onToggleDiff: vi.fn(),
+    onToggleEbook: vi.fn(),
     onToggleLMode: vi.fn(),
     onToggleOutline: vi.fn(),
     onTogglePreview: vi.fn(),
@@ -62,12 +65,14 @@ function renderMeta(
       agentWorkbenchAvailable
       assistSurfaceActive={assistSurfacePreference}
       diffPaneActive={false}
+      ebookPaneActive={false}
       lModeCopy={getLModeCopy("en")}
       lModeEnabled={lModeEnabled}
       onOpenAgentWindow={vi.fn()}
       onOpenAppleAssistWindow={vi.fn()}
       onReviewChanges={actions.onReviewChanges}
       onToggleDiff={actions.onToggleDiff}
+      onToggleEbook={actions.onToggleEbook}
       onToggleLMode={actions.onToggleLMode}
       onToggleOutline={actions.onToggleOutline}
       onTogglePreview={actions.onTogglePreview}
