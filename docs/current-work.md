@@ -425,6 +425,22 @@ Store build. Future App Store work should restart from
 `docs/app-store-build.md`, current version/build state, and fresh
 App Store Connect evidence.
 
+## Current App Store Update Package Candidate
+
+- 2026-06-18: Generated the local helper-free App Store submit-lane
+  package for `0.20.0` build `15`:
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.20.0-build15-mas.pkg`.
+  SHA-256:
+  `68145b4799d105a704c943022817624803d07299728b939e4ee0021408c3875c`.
+  Local checks passed for App Store surface omission, Apple Distribution
+  signed app bundle, 3rd Party Mac Developer Installer package
+  signature, App Sandbox entitlements, helper absence, bundled notices,
+  `0.20.0` / `15` metadata, and minimum macOS `15.0`.
+  `spctl --assess --type install` rejected locally; keep treating that
+  as non-authoritative local trust-policy evidence for this lane.
+  Upload, Apple validation, TestFlight distribution, manual TestFlight
+  smoke, and App Review remain unclaimed.
+
 ## Completed Submission-Prep Slices
 
 - 2026-06-18: `0.19.0` passed App Review and was published on the Mac

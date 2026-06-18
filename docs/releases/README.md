@@ -18,11 +18,14 @@ Latest downloadable GitHub DMG Release body:
 Latest App Store status:
 
 - `0.19.0` passed App Review and is published on the Mac App Store.
+- `0.20.0` build `15` has a local App Store submit-lane package
+  candidate. Upload / Apple validation / TestFlight / App Review are
+  not claimed.
   See `../current-status.md` for current distribution status.
 
-Latest App Store submission-candidate note retained as historical
-evidence:
+Latest App Store submission-candidate note:
 
+- `0.20.0-app-store-submission-candidate.release.md`
 - `0.19.0-app-store-submission-candidate.release.md`
 
 Latest source / local-app tag notes:

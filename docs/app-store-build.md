@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-06-18 (v0.19 approval / v0.20 Developer release boundary)
+Last reviewed: 2026-06-18 (v0.20 App Store package candidate)
 
 ## Purpose
 
@@ -251,7 +251,8 @@ find "$APP/Contents/MacOS" -maxdepth 1 -type f -print
 Expected:
 
 - `CFBundleIdentifier` is `dev.hazakura.editor`
-- `CFBundleShortVersionString` is `0.19.0`
+- `CFBundleShortVersionString` is the current package version (`0.20.0`
+  for the current candidate)
 - `CFBundleVersion` is a positive integer higher than the last uploaded
   App Store Connect build
 - `LSMinimumSystemVersion` is `15.0`
@@ -420,4 +421,33 @@ an App Store Connect validation result. SHA-256:
 
 ```txt
 85aa5f5ce887a2639f7905b418adb9aadabbe30a9541f08ef7520c08e603048c
+```
+
+v0.20 package-candidate note: on 2026-06-18, Codex generated a local
+App Store submit-lane package for user-visible version `0.20.0` and
+App Store build counter `15`. This is local packaging evidence only:
+upload, Apple validation, TestFlight distribution, manual TestFlight
+smoke, and App Review are not claimed here.
+
+The local package generated for this lane is:
+
+```txt
+src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.20.0-build15-mas.pkg
+```
+
+The signed submit-lane bundle reported `CFBundleIdentifier`
+`dev.hazakura.editor`, `CFBundleShortVersionString` `0.20.0`,
+`CFBundleVersion` `15`, and `LSMinimumSystemVersion` `15.0`. It had the
+expected App Sandbox, user-selected read/write, app-scoped bookmark, and
+network-client entitlements; it omitted the Apple Local Assist helper
+and included bundled `LICENSE` / `THIRD_PARTY_NOTICES.md` resources.
+`productbuild --synthesize` emitted a Distribution XML
+`allowed-os-versions` entry with `min="15.0"`.
+`pkgutil --check-signature` passed with the 3rd Party Mac Developer
+Installer certificate. `spctl --assess --type install` rejected the
+local package, so keep treating that as local trust-policy evidence
+rather than an App Store Connect validation result. SHA-256:
+
+```txt
+68145b4799d105a704c943022817624803d07299728b939e4ee0021408c3875c
 ```

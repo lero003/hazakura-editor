@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-18 (App Store approval closeout)
+Last reviewed: 2026-06-18 (v0.20 App Store package candidate)
 
 ## Current State
 
@@ -27,6 +27,14 @@ Last reviewed: 2026-06-18 (App Store approval closeout)
   with SHA-256
   `9d5164a9cf508242dbe6f7612e4d29167065d1c7b0cb884f6ed610723625f0cf`;
   it declares minimum macOS 15.0 and passed `pkgutil --check-signature`.
+- The next helper-free App Store update package candidate is `0.20.0`
+  build `15`. The local package is
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.20.0-build15-mas.pkg`
+  with SHA-256
+  `68145b4799d105a704c943022817624803d07299728b939e4ee0021408c3875c`.
+  Local packaging/signing checks passed on 2026-06-18. Upload, Apple
+  validation, TestFlight distribution, manual TestFlight smoke, and App
+  Review are not claimed yet.
 - Start from `docs/current-work.md`.
 - A review-derived pre-release code-quality fix queue now lives in
   `docs/pre-release-fix-plan.md`. A follow-up external quality review
@@ -219,6 +227,13 @@ open Active UX Queue slice and close it as `implemented`,
   downloaded DMG checksum verification, `hdiutil verify`, mounted-app
   metadata, codesign verification, and mounted-app launch smoke all
   passed.
+- Latest App Store package gate: `0.20.0` build `15` local package
+  generation passed on 2026-06-18. Checks run:
+  `npm run smoke:app-store-surface`, `npm run build:app-store-pkg`,
+  `pkgutil --check-signature`, SHA-256, `codesign --verify --deep
+  --strict`, entitlements inspection, helper/resource checks,
+  `productbuild --synthesize`, Info.plist version/build/minimum-OS
+  inspection, and `git diff --check`.
 - For docs-only work, run `git diff --check`.
 - For code changes, follow `docs/development-automation.md`.
 - Latest workspace persistence focused checks:

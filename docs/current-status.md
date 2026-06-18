@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-18 (App Store approval closeout)
+Last reviewed: 2026-06-18 (v0.20 App Store package candidate)
 
 ## Current State
 
@@ -22,6 +22,12 @@ Last reviewed: 2026-06-18 (App Store approval closeout)
   tracked submit-lane candidate for that approval was build counter
   `14`; local package and signing evidence remain historical release
   evidence, not the next active queue.
+- The next helper-free App Store update package candidate is `0.20.0`
+  build `15`. Local packaging/signing checks passed on 2026-06-18, and
+  the generated package is
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.20.0-build15-mas.pkg`.
+  Upload, Apple validation, TestFlight distribution, manual TestFlight
+  smoke, and App Review are not claimed yet.
 - Pre-approval human-side App Store lane smoke on 2026-06-12 passed launch,
   basic document creation/open, preview/export, image paste/drag-drop,
   App Store surface omission, dirty-close confirmation, Move to Trash,
@@ -125,6 +131,7 @@ Last reviewed: 2026-06-18 (App Store approval closeout)
 Use release notes for detailed historical evidence:
 
 - `docs/releases/0.19.0-source-tag.release.md`
+- `docs/releases/0.20.0-app-store-submission-candidate.release.md`
 - `docs/releases/0.20.0-warning-expected-dmg-preview.release.md`
 - `docs/releases/0.18.0-warning-expected-dmg-preview.release.md`
 - `docs/releases/0.17.0-warning-expected-dmg-preview.release.md`
