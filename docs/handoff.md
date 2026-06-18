@@ -215,6 +215,10 @@ open Active UX Queue slice and close it as `implemented`,
   `eaa5f576d4ec9aeb69429102d527778264f4d2776b03ba800c34911514fd92d9`.
   `npm audit` reports one low-severity DOMPurify advisory; no high or
   critical npm advisory was reported.
+- Remote verification for `v0.20.0` also passed after publication:
+  downloaded DMG checksum verification, `hdiutil verify`, mounted-app
+  metadata, codesign verification, and mounted-app launch smoke all
+  passed.
 - For docs-only work, run `git diff --check`.
 - For code changes, follow `docs/development-automation.md`.
 - Latest workspace persistence focused checks:
