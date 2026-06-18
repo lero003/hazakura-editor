@@ -45,6 +45,11 @@ L Mode: write and lightly edit Markdown as a calm Live Source document.
 e-book Mode: read one or more Markdown chapters as a book-like surface.
 ```
 
+If future work wants WYSIWYG-like value, keep it in this Live Source /
+Visual Markdown direction: CodeMirror decorations and widgets may improve
+inactive-line readability, but Preview DOM editing and `contenteditable`
+remain out of bounds.
+
 v0.21 PoC では、`src/features/editor/lMode/` の CodeMirror
 decorations、widgets、parser helpers、CSS の再利用可能性を確認する。
 PoC後の判断は次の三択にする。

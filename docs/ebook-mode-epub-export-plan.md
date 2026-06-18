@@ -11,12 +11,19 @@ Last reviewed: 2026-06-19
 執筆面として扱いやすくするための表示モードである。EPUB に近い
 読み上がり確認は、その中心的な用途の一つとして扱う。
 
+価値の芯は、綺麗なPreviewではなく **読んで直す** 体験に置く。
+長いMarkdown原稿を章・ページ・見開きに近い単位で読み、違和感を
+見つけた箇所からMarkdown sourceへ戻り、必要に応じてDiff / Reviewへ
+接続できることを優先する。
+
 作業上の通称は **いーモード** または **びーモード** とする。
 正式名称とUI表記は未決定。
 
 これは高度なWYSIWYG編集面ではない。Markdown source remains the
 truth. えるモード / L Mode と同じく、保存される本文はMarkdownのまま
-保ち、表示だけをEPUB向けに近似する。
+保ち、表示だけをEPUB向けに近似する。将来のWYSIWYG-tier編集は、
+Preview DOMを直接編集する方向ではなく、L Mode / CodeMirror
+decorations 系の Visual Markdown として別スパイクで扱う。
 
 将来の関連機能として、画像と基本スタイルを含めた **EPUB
 エクスポート** を検討する。ただし、最初の実装では表示モードと
@@ -49,7 +56,8 @@ L Mode は、日常の読み書きを静かにする Live Source writing surface
 である。
 
 e-bookモードは、本として読む・章として眺める・EPUB export 前に
-構造を確認する book reading / EPUB simulation surface として扱う。
+構造を確認し、必要ならMarkdown sourceへ戻って直す book reading /
+book review / EPUB simulation surface として扱う。
 
 ```txt
 Normal Mode: safe Markdown editing and review
@@ -296,6 +304,71 @@ layout結果を端末シミュレーションとして扱う。
   使い、ページ分割の破綻を観測する。
 - `---` は Markdown の水平線として維持する。将来の明示改ページ記法に
   昇格するかは、CSS columns Spike 後に判断する。
+
+#### v0.23 Spike Slice (実装済み / 2026-06-19)
+
+最初の疑似ページ送りSpike。目的は、e-book Mode が通常Previewより
+「本として読む」体感を持てるかを最小実装で見ることである。
+
+- DOM: `section.ebook-chapter > .ebook-page-viewport >
+  .ebook-page-flow` に分け、CSS Columns は `.ebook-page-flow` のみに
+  適用した。reader chrome は列レイアウトに巻き込まない。
+- Columns: `.ebook-page-viewport` を文庫相当の固定シミュレーション枠にし、
+  `.ebook-page-flow` は viewport と同じ高さで `column-width` /
+  `column-gap` / `column-fill: auto` を使う。`column-fill: balance` は
+  空ページ化リスクがあるため採用しない。
+- 操作: 前後ボタンと reader root の左右キーは、まず章内ページを送る。
+  章末 / 章頭では次章 / 前章へ接続する。1ページだけの章も次ページ操作で
+  次章へ進む。
+- 計測: `ebookPagination.ts` にページ数と `translateX` offset のhelperを
+  分離した。測定不能時は1ページとして扱う。レビュー後、offsetは
+  render中に `flowRef.current` を読まず、layout後にstateへ反映する形へ
+  調整した。
+- 再測定: active HTML 差し替え、workspace image の非同期インライン完了、
+  `.ebook-page-viewport` resize、root `style` / `data-theme` 変更を
+  再測定トリガにした。
+- 長いcode block: `pre` はページ高の一部に収め、はみ出す場合は
+  code block 内スクロールに逃がす。これは真の組版ではなく、Spike中の
+  破綻抑制である。
+
+検証:
+
+- `EBookPane.test.tsx`: 本文コンテナだけのページDOM、ページ表示、ページ送り、
+  章境界接続、1ページ章、前章最終ページ復帰、reset / clamp、画像インライン後
+  再測定、既存の sanitize / image boundary / link routing。
+- `previewCss.test.ts`: `.ebook-page-flow` への columns 限定、
+  `column-fill: auto`、viewport clipping、長い `pre` の高さ制限、
+  Preview / chrome への漏れ防止。
+- `npm run test -- src/components/editor/preview/EBookPane.test.tsx
+  src/styles/previewCss.test.ts`
+- `npm run build:vite`
+- `npm run test`
+
+残る評価:
+
+- 実機で、長い章・画像入り章・表 / 長いcode block・Tab focus・
+  light/dark theme / font size変更後のページ数追従を確認する。
+- 読書感がPreviewとの差として十分かを見てから、次の短いスライスとして
+  full-pane / 2ページ見開き visual exploration を前倒しするか決める。
+  今回のSpikeには含めない。
+
+#### Near Follow-up: Full-pane / Two-page Visual Exploration
+
+v0.23 の manual smoke で「Previewではなく本として読む」体感が確認できたら、
+見開き表示は前倒ししてよい。これはEPUB reader完全再現ではなく、
+Hazakura内の固定シミュレーション端末で読むための 2-up display である。
+
+最初の範囲:
+
+- 既存の active chapter / CSS Columns 疑似ページ送りを維持する。
+- 右ペイン幅で無理に見開きにせず、必要なら full-pane 相当の表示領域を
+  使う。
+- 2ページを左右に並べる表示だけを試し、ページ境界の正確性や端末別
+  プリセットは保証しない。
+- 章 / ページ位置、読書位置、Markdown sourceへ戻る導線の評価を
+  見開きの合否条件に含める。
+- Diff / Review接続は設計上の次候補として記録し、最初の見開きスライスに
+  混ぜない。
 
 #### Spike Non-goals
 

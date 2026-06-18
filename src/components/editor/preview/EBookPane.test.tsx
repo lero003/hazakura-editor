@@ -5,21 +5,44 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { openWorkspaceImage } from "../../../lib/tauri";
+import {
+  getEBookPageOffset,
+  measureEBookPageCount,
+} from "./ebookPagination";
 import EBookPane from "./EBookPane";
 
 vi.mock("../../../lib/tauri", () => ({
   openWorkspaceImage: vi.fn(),
 }));
 
+vi.mock("./ebookPagination", () => ({
+  getEBookPageOffset: vi.fn((pageIndex: number) => pageIndex * 320),
+  measureEBookPageCount: vi.fn(() => 1),
+}));
+
+class TestResizeObserver {
+  observe = vi.fn();
+  disconnect = vi.fn();
+  unobserve = vi.fn();
+}
+
+beforeEach(() => {
+  vi.stubGlobal("ResizeObserver", TestResizeObserver);
+});
+
 afterEach(() => {
   cleanup();
   vi.mocked(openWorkspaceImage).mockReset();
+  vi.mocked(getEBookPageOffset).mockClear();
+  vi.mocked(measureEBookPageCount).mockReset();
+  vi.mocked(measureEBookPageCount).mockReturnValue(1);
+  vi.unstubAllGlobals();
 });
 
 describe("EBookPane chapter reader", () => {
-  it("renders only the active chapter and switches with reader controls", () => {
+  it("renders only the active chapter and scopes pagination DOM to the chapter body", async () => {
     render(
       <EBookPane
         menuLanguage="ja"
@@ -32,19 +55,29 @@ describe("EBookPane chapter reader", () => {
     expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
     expect(screen.getByText("body one")).toBeTruthy();
     expect(screen.queryByRole("heading", { name: "Chapter Two" })).toBeNull();
-    expect(screen.getByText("1 / 2")).toBeTruthy();
+    expect(screen.getByText("章 1 / 2")).toBeTruthy();
+    expect(screen.getByText("ページ 1 / 1")).toBeTruthy();
+    expect(article.querySelector(".ebook-page-viewport")).toBeTruthy();
+    expect(article.querySelector(".ebook-page-flow")).toBeTruthy();
+    expect(
+      article.querySelector(".ebook-reader-chrome .ebook-page-flow"),
+    ).toBeNull();
 
-    fireEvent.click(screen.getByRole("button", { name: "次の章" }));
+    fireEvent.click(screen.getByRole("button", { name: "次のページ" }));
 
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Chapter Two" })).toBeTruthy();
+    });
     expect(article.querySelectorAll(".ebook-chapter")).toHaveLength(1);
-    expect(screen.getByRole("heading", { name: "Chapter Two" })).toBeTruthy();
     expect(screen.getByText("body two")).toBeTruthy();
     expect(screen.queryByRole("heading", { name: "Chapter One" })).toBeNull();
-    expect(screen.getByText("2 / 2")).toBeTruthy();
+    expect(screen.getByText("章 2 / 2")).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("button", { name: "前の章" }));
+    fireEvent.click(screen.getByRole("button", { name: "前のページ" }));
 
-    expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
+    });
     expect(screen.queryByRole("heading", { name: "Chapter Two" })).toBeNull();
   });
 
@@ -56,8 +89,8 @@ describe("EBookPane chapter reader", () => {
       />,
     );
 
-    const previous = screen.getByRole("button", { name: "前の章" });
-    const next = screen.getByRole("button", { name: "次の章" });
+    const previous = screen.getByRole("button", { name: "前のページ" });
+    const next = screen.getByRole("button", { name: "次のページ" });
 
     expect((previous as HTMLButtonElement).disabled).toBe(true);
     expect((next as HTMLButtonElement).disabled).toBe(false);
@@ -68,7 +101,93 @@ describe("EBookPane chapter reader", () => {
     expect((next as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it("handles ArrowLeft and ArrowRight only from the focused reader root", () => {
+  it("shows measured pages and moves within the active chapter before changing chapters", async () => {
+    vi.mocked(measureEBookPageCount).mockReturnValue(3);
+
+    render(
+      <EBookPane
+        menuLanguage="ja"
+        source={"# Chapter One\n\nbody one\n\n# Chapter Two\n\nbody two"}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("ページ 1 / 3")).toBeTruthy();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "次のページ" }));
+
+    expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
+    expect(screen.getByText("ページ 2 / 3")).toBeTruthy();
+    expect(getEBookPageOffset).toHaveBeenCalledWith(
+      1,
+      expect.any(HTMLElement),
+    );
+    expect(
+      vi.mocked(getEBookPageOffset).mock.calls.some(([, element]) => element === null),
+    ).toBe(false);
+
+    fireEvent.click(screen.getByRole("button", { name: "次のページ" }));
+    fireEvent.click(screen.getByRole("button", { name: "次のページ" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Chapter Two" })).toBeTruthy();
+    });
+    expect(screen.getByText("章 2 / 2")).toBeTruthy();
+    expect(screen.getByText("ページ 1 / 3")).toBeTruthy();
+  });
+
+  it("connects one-page chapters to the next chapter from the next-page action", async () => {
+    vi.mocked(measureEBookPageCount).mockReturnValue(1);
+
+    render(
+      <EBookPane
+        menuLanguage="en"
+        source={"# Chapter One\n\nbody one\n\n# Chapter Two\n\nbody two"}
+      />,
+    );
+
+    expect(screen.getByText("Page 1 / 1")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Next page" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Chapter Two" })).toBeTruthy();
+    });
+    expect(screen.getByText("Chapter 2 / 2")).toBeTruthy();
+    expect(screen.getByText("Page 1 / 1")).toBeTruthy();
+  });
+
+  it("returns to the previous chapter's last measured page from the first page", async () => {
+    vi.mocked(measureEBookPageCount).mockImplementation((element) =>
+      element?.textContent?.includes("body one") ? 3 : 1,
+    );
+
+    render(
+      <EBookPane
+        menuLanguage="en"
+        source={"# Chapter One\n\nbody one\n\n# Chapter Two\n\nbody two"}
+      />,
+    );
+
+    const nextPage = screen.getByRole("button", { name: "Next page" });
+    fireEvent.click(nextPage);
+    fireEvent.click(nextPage);
+    fireEvent.click(nextPage);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Chapter Two" })).toBeTruthy();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Previous page" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
+      expect(screen.getByText("Page 3 / 3")).toBeTruthy();
+    });
+  });
+
+  it("handles ArrowLeft and ArrowRight only from the focused reader root", async () => {
     render(
       <EBookPane
         menuLanguage="en"
@@ -87,16 +206,21 @@ describe("EBookPane chapter reader", () => {
     article.focus();
     fireEvent.keyDown(article, { key: "ArrowRight" });
 
-    expect(screen.getByRole("heading", { name: "Chapter Two" })).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Chapter Two" })).toBeTruthy();
+    });
     expect(screen.queryByRole("heading", { name: "Chapter One" })).toBeNull();
 
     fireEvent.keyDown(article, { key: "ArrowLeft" });
 
-    expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
+    });
     expect(screen.queryByRole("heading", { name: "Chapter Two" })).toBeNull();
   });
 
-  it("resets to the first chapter when the document path changes", () => {
+  it("resets to the first chapter and first page when the document path changes", async () => {
+    vi.mocked(measureEBookPageCount).mockReturnValue(3);
     const { rerender } = render(
       <EBookPane
         documentPath="/workspace/one.md"
@@ -105,8 +229,8 @@ describe("EBookPane chapter reader", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Next chapter" }));
-    expect(screen.getByRole("heading", { name: "Chapter Two" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Next page" }));
+    expect(screen.getByText("Page 2 / 3")).toBeTruthy();
 
     rerender(
       <EBookPane
@@ -116,11 +240,15 @@ describe("EBookPane chapter reader", () => {
       />,
     );
 
-    expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
+      expect(screen.getByText("Page 1 / 3")).toBeTruthy();
+    });
     expect(screen.queryByRole("heading", { name: "Chapter Two" })).toBeNull();
   });
 
-  it("clamps the active chapter when source edits reduce the chapter count", () => {
+  it("clamps the active chapter and page when source edits reduce available content", async () => {
+    vi.mocked(measureEBookPageCount).mockReturnValueOnce(3).mockReturnValue(1);
     const { rerender } = render(
       <EBookPane
         menuLanguage="en"
@@ -130,9 +258,12 @@ describe("EBookPane chapter reader", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Next chapter" }));
-    fireEvent.click(screen.getByRole("button", { name: "Next chapter" }));
-    expect(screen.getByRole("heading", { name: "Chapter Three" })).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByText("Page 1 / 3")).toBeTruthy();
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Next page" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next page" }));
+    expect(screen.getByText("Page 3 / 3")).toBeTruthy();
 
     rerender(
       <EBookPane
@@ -141,9 +272,12 @@ describe("EBookPane chapter reader", () => {
       />,
     );
 
-    expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
+      expect(screen.getByText("Page 1 / 1")).toBeTruthy();
+    });
     expect(screen.queryByRole("heading", { name: "Chapter Three" })).toBeNull();
-    expect(screen.getByText("1 / 1")).toBeTruthy();
+    expect(screen.getByText("Chapter 1 / 1")).toBeTruthy();
   });
 
   it("labels preamble and heading-less documents without breaking display", () => {
@@ -176,8 +310,8 @@ describe("EBookPane chapter reader", () => {
       />,
     );
 
-    expect(screen.getByRole("button", { name: "前の章" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "次の章" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "前のページ" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "次のページ" })).toBeTruthy();
 
     rerender(
       <EBookPane
@@ -186,8 +320,8 @@ describe("EBookPane chapter reader", () => {
       />,
     );
 
-    expect(screen.getByRole("button", { name: "Previous chapter" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Next chapter" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Previous page" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Next page" })).toBeTruthy();
 
     rerender(
       <EBookPane
@@ -196,8 +330,8 @@ describe("EBookPane chapter reader", () => {
       />,
     );
 
-    expect(screen.getByRole("button", { name: "まへの章" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "つぎの章" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "まへのページ" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "つぎのページ" })).toBeTruthy();
   });
 
   it("marks the opening H1 chapter as a cover-style opener", () => {
@@ -215,6 +349,27 @@ describe("EBookPane chapter reader", () => {
     expect(chapter?.classList.contains("ebook-chapter-cover")).toBe(true);
     expect(chapter?.classList.contains("ebook-chapter-opener")).toBe(true);
     expect(chapter?.classList.contains("ebook-chapter-preamble")).toBe(false);
+  });
+});
+
+describe("EBookPane pagination measurement", () => {
+  it("remeasures after workspace images are inlined", async () => {
+    vi.mocked(openWorkspaceImage).mockResolvedValue({
+      dataUrl: "data:image/png;base64,RESOLVED",
+    } as Awaited<ReturnType<typeof openWorkspaceImage>>);
+
+    render(
+      <EBookPane
+        documentPath="/workspace/note.md"
+        source={"# Chapter\n\n![cat](./assets/cat.png)"}
+        workspaceRoot="/workspace"
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("img")).toBeTruthy();
+    });
+    expect(measureEBookPageCount).toHaveBeenCalledTimes(2);
   });
 });
 
@@ -239,7 +394,7 @@ describe("EBookPane safety boundary (renderMarkdown reuse)", () => {
     expect(article.textContent).not.toContain("alert('xss')");
     expect(article.textContent).not.toContain("alert('xss2')");
 
-    fireEvent.click(screen.getByRole("button", { name: "Next chapter" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next page" }));
 
     expect(article.querySelectorAll("script")).toHaveLength(0);
     expect(article.textContent).not.toContain("alert('xss')");

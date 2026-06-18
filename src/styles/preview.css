@@ -442,9 +442,9 @@
  *
  * Display-only active chapter reader (Path Y). The chapter HTML comes
  * from `renderMarkdown()` and reuses the `.markdown-preview` selectors
- * above; the rules below only add reader chrome and a book-like
- * single-chapter paper canvas. Source is never edited here. Not real
- * pagination, not a spread: a long chapter still scrolls vertically.
+ * above; the rules below only add reader chrome and a CSS Columns
+ * pseudo-pagination surface. Source is never edited here. Not real
+ * pagination, not a spread, not an EPUB-reader page-count guarantee.
  */
 
 .ebook-pane {
@@ -542,19 +542,39 @@
 }
 
 .ebook-chapter {
+  --ebook-page-gap: clamp(32px, 7vw, 56px);
+  --ebook-page-height: clamp(500px, calc(100vh - 190px), 680px);
+  --ebook-page-width: min(430px, calc(100vw - 48px));
   box-sizing: border-box;
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: center;
   margin: 0 auto;
-  max-width: min(760px, 100%);
-  padding: clamp(48px, 7vw, 92px) clamp(36px, 7vw, 84px) clamp(64px, 9vw, 120px);
+  max-width: 100%;
+  padding: clamp(34px, 5vw, 64px) clamp(24px, 5vw, 56px) clamp(44px, 6vw, 72px);
   width: 100%;
 }
 
-.ebook-chapter > div {
+.ebook-page-viewport {
+  box-sizing: border-box;
+  height: var(--ebook-page-height);
+  max-width: var(--ebook-page-width);
+  overflow: hidden;
+  width: 100%;
+}
+
+.ebook-page-flow {
+  column-fill: auto;
+  column-gap: var(--ebook-page-gap);
+  column-width: var(--ebook-page-width);
   color: var(--text, #1d1d1f);
   font-family: "Iowan Old Style", "Charter", Georgia, "Times New Roman", serif;
   font-size: var(--preview-font-size, 17px);
+  height: 100%;
   line-height: 1.9;
   text-wrap: pretty;
+  transition: transform 160ms ease;
+  will-change: transform;
   word-break: break-word;
 }
 
@@ -566,7 +586,7 @@
   margin-top: 0;
 }
 
-.ebook-chapter > div > h1:first-child {
+.ebook-chapter .ebook-page-flow > h1:first-child {
   border-bottom: 0;
   margin: 0 auto clamp(32px, 4vw, 52px);
   max-width: 18em;
@@ -574,7 +594,7 @@
   text-align: center;
 }
 
-.ebook-chapter > div > h2:first-child {
+.ebook-chapter .ebook-page-flow > h2:first-child {
   border-bottom: 0;
   margin: 0 auto clamp(32px, 4vw, 52px);
   max-width: 18em;
@@ -582,8 +602,8 @@
   text-align: center;
 }
 
-.ebook-chapter > div > h1:first-child::after,
-.ebook-chapter > div > h2:first-child::after {
+.ebook-chapter .ebook-page-flow > h1:first-child::after,
+.ebook-chapter .ebook-page-flow > h2:first-child::after {
   background: color-mix(in srgb, var(--accent, #b3416a) 62%, transparent);
   content: "";
   display: block;
@@ -596,8 +616,25 @@
   margin: 0 0 1em;
 }
 
+.ebook-chapter img,
+.ebook-chapter blockquote,
+.ebook-chapter pre,
+.ebook-chapter .markdown-table-frame {
+  break-inside: avoid;
+}
+
+.ebook-chapter img {
+  max-height: calc(var(--ebook-page-height) * 0.72);
+  object-fit: contain;
+}
+
+.ebook-chapter pre {
+  max-height: calc(var(--ebook-page-height) * 0.72);
+  overflow: auto;
+}
+
 .ebook-chapter-opener.ebook-chapter-cover {
-  padding-top: clamp(72px, 12vw, 132px);
+  padding-top: clamp(46px, 8vw, 88px);
 }
 
 .ebook-chapter-opener.ebook-chapter-cover h1 {
@@ -615,7 +652,7 @@
   max-width: min(620px, 100%);
 }
 
-.ebook-chapter-frontmatter > div {
+.ebook-chapter-frontmatter .ebook-page-flow {
   color: var(--text-muted, #6e6e73);
   font-size: calc(var(--preview-font-size, 17px) * 0.94);
 }
@@ -645,7 +682,8 @@
   }
 
   .ebook-chapter {
-    padding: clamp(32px, 8vw, 52px) clamp(20px, 6vw, 34px) clamp(52px, 10vw, 76px);
+    --ebook-page-height: clamp(420px, calc(100vh - 160px), 620px);
+    padding: clamp(22px, 6vw, 42px) clamp(14px, 4vw, 24px) clamp(34px, 8vw, 56px);
   }
 
   .ebook-chapter-opener.ebook-chapter-cover {

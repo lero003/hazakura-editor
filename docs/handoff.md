@@ -49,6 +49,15 @@ Last reviewed: 2026-06-18 (v0.20 App Store package candidate)
   The tab-row new-file `+` affordance was removed after visual review;
   New File remains on existing menu, shortcut, command-palette, and
   workspace-file paths. Workspace switching remains deferred.
+- v0.23 e-book Mode pseudo-pagination Spike is implemented locally:
+  the active chapter reader now pages the rendered chapter body with
+  CSS Columns under `.ebook-page-flow`, keeps reader chrome outside
+  columns, uses `column-fill: auto`, and treats page counts as a
+  Hazakura simulation rather than an EPUB-reader guarantee. A review
+  follow-up moved page offset calculation out of render-time ref reads
+  and caps long `pre` blocks inside the simulated page. Manual app smoke
+  should still judge whether the page reading feel is meaningfully
+  different from Preview before considering full-pane / two-page work.
 - Markdown preview task checkboxes are complete for v0.18: Preview renders
   `- [ ]` / `- [x]` as inert display-only checkbox glyphs without
   changing saved Markdown.
@@ -124,11 +133,16 @@ slice are:
 
 1. Post-approval docs/archive cleanup for completed App Store evidence,
    if still useful.
-2. Core Safe Editor quality probe.
-3. Light accessibility sanity adjacent to the selected core surface.
-4. Any follow-up discovered by manual app smoke of the v0.20 Sakura
+2. Manual app smoke of the v0.23 e-book page reader: e-book toggle,
+   page movement, chapter boundary movement, long chapters, image-heavy
+   chapters, long code blocks with inner scroll, tables, Tab focus,
+   light/dark themes, font-size changes, and whether full-pane /
+   two-page exploration is worth a later slice.
+3. Core Safe Editor quality probe.
+4. Light accessibility sanity adjacent to the selected core surface.
+5. Any follow-up discovered by manual app smoke of the v0.20 Sakura
    chrome / preview polish.
-5. v0.21+ status bar structure cleanup: replace the current compact
+6. v0.21+ status bar structure cleanup: replace the current compact
    status-detail stopgap with priority-aware metadata fields while
    keeping line-ending / encoding controls reachable.
 
@@ -138,6 +152,12 @@ workspace-sidebar toggle, central bottom full-path copy bar, Markdown
 preview card styling, and Sakura-specific selected-file highlight
 without adding a workspace switching dropdown or changing the
 single-workspace model.
+
+Latest completed: v0.23 e-book pseudo-pagination keeps Markdown source
+canonical and Preview / Export / L Mode untouched while adding page-first
+reader controls, page measurement / offset helpers, layout-time offset
+state, viewport resize and root theme/font remeasurement, long-code-block
+height capping, and focused CSS scoping around `.ebook-page-flow`.
 
 Earlier completed: External-window routing for Markdown / Help links
 now keeps workspace-relative text links in-app while handing explicit
@@ -234,6 +254,10 @@ open Active UX Queue slice and close it as `implemented`,
   --strict`, entitlements inspection, helper/resource checks,
   `productbuild --synthesize`, Info.plist version/build/minimum-OS
   inspection, and `git diff --check`.
+- Latest e-book Mode code gate: v0.23 pseudo-pagination passed on
+  2026-06-19 with
+  `npm run test -- src/components/editor/preview/EBookPane.test.tsx src/styles/previewCss.test.ts`,
+  `npm run build:vite`, `npm run test`, and `git diff --check`.
 - For docs-only work, run `git diff --check`.
 - For code changes, follow `docs/development-automation.md`.
 - Latest workspace persistence focused checks:

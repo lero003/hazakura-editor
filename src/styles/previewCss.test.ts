@@ -71,16 +71,45 @@ describe("preview.css", () => {
   });
 
   it("keeps e-book chapter header styling inside the e-book pane flow", () => {
-    const body = ruleBody(".ebook-chapter > div > h1:first-child");
+    const body = ruleBody(".ebook-chapter .ebook-page-flow > h1:first-child");
 
     expect(body).toMatch(/text-align:\s*center/);
     expect(body).toMatch(/border-bottom:\s*0/);
     expect(previewCss).not.toMatch(/(?:^|\n)\.markdown-preview > div > h1:first-child/);
   });
 
+  it("keeps e-book CSS columns scoped to the page flow only", () => {
+    const flowBody = ruleBody(".ebook-page-flow");
+    const paneBody = ruleBody(".ebook-pane");
+    const chromeBody = ruleBody(".ebook-pane .ebook-reader-chrome");
+
+    expect(flowBody).toMatch(/column-width:/);
+    expect(flowBody).toMatch(/column-gap:/);
+    expect(flowBody).toMatch(/column-fill:\s*auto/);
+    expect(paneBody).not.toMatch(/column-/);
+    expect(chromeBody).not.toMatch(/column-/);
+  });
+
+  it("keeps the e-book page viewport as the only clipping page frame", () => {
+    const viewportBody = ruleBody(".ebook-page-viewport");
+
+    expect(viewportBody).toMatch(/overflow:\s*hidden/);
+    expect(viewportBody).toMatch(/height:/);
+    expect(viewportBody).toMatch(/max-width:/);
+  });
+
+  it("caps long e-book code blocks inside the simulated page", () => {
+    const preBody = ruleBody(".ebook-chapter pre");
+
+    expect(preBody).toMatch(/max-height:\s*calc\(var\(--ebook-page-height\) \* 0\.72\)/);
+    expect(preBody).toMatch(/overflow:\s*auto/);
+  });
+
   it("removes the old multi-sheet e-book dependencies", () => {
     expect(previewCss).not.toMatch(/\.ebook-pane \.ebook-nav/);
     expect(previewCss).not.toMatch(/\.ebook-chapter \+ \.ebook-chapter::before/);
     expect(ruleBody(".ebook-chapter")).not.toMatch(/box-shadow:/);
+    expect(previewCss).not.toMatch(/writing-mode:\s*vertical/);
+    expect(previewCss).not.toMatch(/\.ebook-spread/);
   });
 });

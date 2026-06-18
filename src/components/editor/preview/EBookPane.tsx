@@ -17,7 +17,9 @@ import {
   type KeyboardEvent,
   type MouseEvent,
   useEffect,
+  useLayoutEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { splitMarkdownIntoChapters } from "../../../features/editor/ebookChapters";
@@ -28,6 +30,10 @@ import {
 import { openWorkspaceImage } from "../../../lib/tauri";
 import type { MenuLanguage } from "../../../types";
 import { isJapaneseMenuLanguage } from "../../../types";
+import {
+  getEBookPageOffset,
+  measureEBookPageCount,
+} from "./ebookPagination";
 
 type EBookPaneProps = {
   documentPath?: string | null;
@@ -46,9 +52,11 @@ type RenderedChapter = {
 
 type EBookReaderCopy = {
   body: string;
+  chapterProgress: string;
   frontMatter: string;
-  nextChapter: string;
-  previousChapter: string;
+  nextPage: string;
+  pageProgress: string;
+  previousPage: string;
   readerLabel: string;
 };
 
@@ -62,9 +70,17 @@ export default function EBookPane({
   const copy = getEBookReaderCopy(menuLanguage);
   const chapters = useMemo(() => splitMarkdownIntoChapters(source), [source]);
   const [activeChapterIndex, setActiveChapterIndex] = useState(0);
+  const [activePageIndex, setActivePageIndex] = useState(0);
+  const [measuredPageCount, setMeasuredPageCount] = useState(1);
+  const [pageOffset, setPageOffset] = useState(0);
+  const pendingPageTargetRef = useRef<"first" | "last" | null>(null);
+  const flowRef = useRef<HTMLDivElement | null>(null);
+  const viewportRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    pendingPageTargetRef.current = "first";
     setActiveChapterIndex(0);
+    setActivePageIndex(0);
   }, [documentPath]);
 
   useEffect(() => {
@@ -76,6 +92,10 @@ export default function EBookPane({
   const activeChapterIndexSafe = clampChapterIndex(
     activeChapterIndex,
     chapters.length,
+  );
+  const activePageIndexSafe = clampPageIndex(
+    activePageIndex,
+    measuredPageCount,
   );
   const activeChapter = chapters[activeChapterIndexSafe] ?? chapters[0];
   const activeRenderedChapter = useMemo<RenderedChapter | null>(() => {
@@ -130,14 +150,117 @@ export default function EBookPane({
     };
   }, [activeRenderedChapter, workspaceRoot]);
 
-  const goToPreviousChapter = () => {
-    setActiveChapterIndex((current) => Math.max(current - 1, 0));
+  useLayoutEffect(() => {
+    if (!activeChapterHtml || activeChapterHtml.index !== activeChapter?.index) {
+      return;
+    }
+
+    const flow = flowRef.current;
+    const nextPageCount = measureEBookPageCount(flow);
+    setMeasuredPageCount(nextPageCount);
+    setActivePageIndex((current) => {
+      const pendingTarget = pendingPageTargetRef.current;
+      pendingPageTargetRef.current = null;
+      if (pendingTarget === "last") {
+        return Math.max(nextPageCount - 1, 0);
+      }
+      if (pendingTarget === "first") {
+        return 0;
+      }
+      return clampPageIndex(current, nextPageCount);
+    });
+  }, [activeChapter?.index, activeChapterHtml]);
+
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport || typeof ResizeObserver === "undefined") {
+      return;
+    }
+
+    const observer = new ResizeObserver(() => {
+      setMeasuredPageCount(measureEBookPageCount(flowRef.current));
+    });
+    observer.observe(viewport);
+    return () => {
+      observer.disconnect();
+    };
+  }, [activeChapterHtml]);
+
+  useEffect(() => {
+    if (typeof MutationObserver === "undefined") {
+      return;
+    }
+
+    const root = document.documentElement;
+    const observer = new MutationObserver(() => {
+      setMeasuredPageCount(measureEBookPageCount(flowRef.current));
+    });
+    observer.observe(root, {
+      attributeFilter: ["data-theme", "style"],
+      attributes: true,
+    });
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    const flow = flowRef.current;
+    if (!flow) {
+      return;
+    }
+
+    const handleImageSettled = () => {
+      setMeasuredPageCount(measureEBookPageCount(flowRef.current));
+    };
+    const images = Array.from(flow.querySelectorAll("img"));
+    for (const image of images) {
+      image.addEventListener("load", handleImageSettled);
+      image.addEventListener("error", handleImageSettled);
+    }
+    return () => {
+      for (const image of images) {
+        image.removeEventListener("load", handleImageSettled);
+        image.removeEventListener("error", handleImageSettled);
+      }
+    };
+  }, [activeChapterHtml]);
+
+  useEffect(() => {
+    setActivePageIndex((current) => clampPageIndex(current, measuredPageCount));
+  }, [measuredPageCount]);
+
+  useLayoutEffect(() => {
+    setPageOffset(getEBookPageOffset(activePageIndexSafe, flowRef.current));
+  }, [activePageIndexSafe, activeChapterHtml, measuredPageCount]);
+
+  const goToPreviousPage = () => {
+    if (activePageIndex > 0) {
+      setActivePageIndex((current) => Math.max(current - 1, 0));
+      return;
+    }
+
+    if (activeChapterIndexSafe > 0) {
+      pendingPageTargetRef.current = "last";
+      setActiveChapterIndex((current) => Math.max(current - 1, 0));
+    }
   };
 
-  const goToNextChapter = () => {
-    setActiveChapterIndex((current) =>
-      Math.min(current + 1, Math.max(chapters.length - 1, 0)),
-    );
+  const goToNextPage = () => {
+    if (activePageIndex < measuredPageCount - 1) {
+      setActivePageIndex((current) =>
+        clampPageIndex(current + 1, measuredPageCount),
+      );
+      return;
+    }
+
+    if (activeChapterIndexSafe < chapters.length - 1) {
+      pendingPageTargetRef.current = "first";
+      setActivePageIndex(0);
+      setActiveChapterIndex((current) =>
+        Math.min(current + 1, Math.max(chapters.length - 1, 0)),
+      );
+    }
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
@@ -147,10 +270,10 @@ export default function EBookPane({
 
     if (event.key === "ArrowLeft") {
       event.preventDefault();
-      goToPreviousChapter();
+      goToPreviousPage();
     } else if (event.key === "ArrowRight") {
       event.preventDefault();
-      goToNextChapter();
+      goToNextPage();
     }
   };
 
@@ -181,6 +304,11 @@ export default function EBookPane({
     totalChapters,
     copy,
   );
+  const previousDisabled =
+    activeChapterIndexSafe === 0 && activePageIndexSafe === 0;
+  const nextDisabled =
+    activeChapterIndexSafe >= totalChapters - 1 &&
+    activePageIndexSafe >= measuredPageCount - 1;
 
   return (
     <article
@@ -193,27 +321,30 @@ export default function EBookPane({
       <header className="ebook-reader-chrome">
         <button
           className="ebook-reader-button"
-          disabled={activeChapterIndexSafe === 0}
-          onClick={goToPreviousChapter}
+          disabled={previousDisabled}
+          onClick={goToPreviousPage}
           type="button"
         >
-          {copy.previousChapter}
+          {copy.previousPage}
         </button>
         <div className="ebook-reader-status">
           <div className="ebook-reader-title" title={chapterLabel}>
             {chapterLabel}
           </div>
-          <div className="ebook-reader-progress">
-            {activeChapterIndexSafe + 1} / {totalChapters}
+          <div className="ebook-reader-progress" aria-label={copy.chapterProgress}>
+            {copy.chapterProgress} {activeChapterIndexSafe + 1} / {totalChapters}
+          </div>
+          <div className="ebook-reader-progress" aria-label={copy.pageProgress}>
+            {copy.pageProgress} {activePageIndexSafe + 1} / {measuredPageCount}
           </div>
         </div>
         <button
           className="ebook-reader-button"
-          disabled={activeChapterIndexSafe >= totalChapters - 1}
-          onClick={goToNextChapter}
+          disabled={nextDisabled}
+          onClick={goToNextPage}
           type="button"
         >
-          {copy.nextChapter}
+          {copy.nextPage}
         </button>
       </header>
       {activeChapterHtml ? (
@@ -223,7 +354,14 @@ export default function EBookPane({
             activeChapterIndexSafe,
           )}
         >
-          <div dangerouslySetInnerHTML={{ __html: activeChapterHtml.html }} />
+          <div className="ebook-page-viewport" ref={viewportRef}>
+            <div
+              className="ebook-page-flow"
+              dangerouslySetInnerHTML={{ __html: activeChapterHtml.html }}
+              ref={flowRef}
+              style={{ transform: `translateX(-${pageOffset}px)` }}
+            />
+          </div>
         </section>
       ) : null}
     </article>
@@ -235,6 +373,13 @@ function clampChapterIndex(index: number, totalChapters: number): number {
     return 0;
   }
   return Math.min(Math.max(index, 0), totalChapters - 1);
+}
+
+function clampPageIndex(index: number, totalPages: number): number {
+  if (totalPages <= 0) {
+    return 0;
+  }
+  return Math.min(Math.max(index, 0), totalPages - 1);
 }
 
 function chapterClassName(
@@ -281,9 +426,11 @@ function getEBookReaderCopy(
   if (menuLanguage === "kana") {
     return {
       body: "本文",
+      chapterProgress: "章",
       frontMatter: "前付",
-      nextChapter: "つぎの章",
-      previousChapter: "まへの章",
+      nextPage: "つぎのページ",
+      pageProgress: "ページ",
+      previousPage: "まへのページ",
       readerLabel: "章送り",
     };
   }
@@ -291,18 +438,22 @@ function getEBookReaderCopy(
   if (isJapaneseMenuLanguage(menuLanguage)) {
     return {
       body: "本文",
+      chapterProgress: "章",
       frontMatter: "前付",
-      nextChapter: "次の章",
-      previousChapter: "前の章",
+      nextPage: "次のページ",
+      pageProgress: "ページ",
+      previousPage: "前のページ",
       readerLabel: "章送り",
     };
   }
 
   return {
     body: "Body",
+    chapterProgress: "Chapter",
     frontMatter: "Front matter",
-    nextChapter: "Next chapter",
-    previousChapter: "Previous chapter",
+    nextPage: "Next page",
+    pageProgress: "Page",
+    previousPage: "Previous page",
     readerLabel: "Chapter reader",
   };
 }

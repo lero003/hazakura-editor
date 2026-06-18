@@ -253,6 +253,10 @@ Expected direction:
   Apple Books, Kobo, or EPUB-reader pagination.
 - Use horizontal page movement before considering true page calculation,
   vertical writing, spread view, or EPUB export page fidelity.
+- If manual smoke shows the reading feel is clearly stronger than
+  Preview, a narrow full-pane / two-page visual exploration may move
+  forward as the next e-book Mode slice. Treat it as 2-up simulation,
+  not as true EPUB pagination.
 
 Do not add:
 
@@ -265,6 +269,10 @@ Do not add:
 
 Book Structure Overview moves later: several Markdown files as one book
 should wait until the single-document reading surface proves useful.
+
+WYSIWYG-like editing remains an L Mode / Live Source concern. Do not
+turn e-book Mode into Preview DOM editing or a second saved document
+model.
 
 ## v0.24 AI Proposal Ingest And Review
 

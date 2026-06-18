@@ -1,7 +1,7 @@
 # Current Work
 
 Status: Operational
-Scope: Active post-approval, v0.20-v0.22, and quality routing
+Scope: Active post-approval, v0.20-v0.23, and quality routing
 Authority: High
 Last reviewed: 2026-06-19
 
@@ -172,14 +172,46 @@ previous/next controls, reader-root keyboard focus, workspace images,
 blocked image appearance, light/dark appearance, and one very long
 chapter's responsiveness.
 
-Next candidate after review: CSS columns pseudo-pagination Spike. Keep
-the v0.22 active chapter reader, choose one fixed reference reader device
-for verification, and treat page counts as an app simulation result
-rather than a guarantee of Kindle / Apple Books / Kobo pagination.
-
 Do not include in v0.22: CSS columns pseudo-pagination, true pagination,
 spread view, vertical writing, EPUB export, multi-file book structure,
 or L Mode integration.
+
+## v0.23 e-book Mode Pseudo Pagination Spike
+
+Implemented locally as of 2026-06-19:
+
+- The v0.22 active chapter reader now pages the visible chapter body
+  with CSS Columns inside `.ebook-page-flow`; `.ebook-pane` and
+  `.ebook-reader-chrome` do not receive column layout.
+- `.ebook-page-viewport` provides the fixed 文庫相当 simulation frame
+  and clipping boundary, while `.ebook-page-flow` uses
+  `column-fill: auto` plus horizontal `translateX(...)` page movement.
+- Reader controls now move by page first, then connect to the next /
+  previous chapter at chapter boundaries. A one-page chapter still
+  advances to the next chapter through the page action.
+- Page count is measured from the rendered chapter body and remeasured
+  after active HTML changes, async workspace-image inlining,
+  viewport resize, and root `style` / `data-theme` changes. Counts
+  remain an app simulation result, not an EPUB-reader guarantee.
+- Follow-up review tightened the Spike before manual smoke: page offset
+  is now stored after layout measurement instead of reading
+  `flowRef.current` during render, and long fenced code blocks are capped
+  inside the simulated page with their own scroll.
+
+Verification: `npm run test -- src/components/editor/preview/EBookPane.test.tsx
+src/styles/previewCss.test.ts`, `npm run build:vite`, and `npm run test`.
+
+Manual smoke still useful: e-book toggle, page movement, chapter
+boundary movement, long chapters, image-heavy chapters, long code
+blocks with inner scroll, tables, light/dark themes, Tab focus, and
+whether the page reading surface feels different enough from Preview.
+
+Possible follow-up after review: decide whether the reading feel is
+strong enough to justify bringing forward a larger full-pane / two-page
+visual exploration. Keep full screen, spread view, vertical writing,
+EPUB export, and multi-file book structure out of this Spike; if picked
+next, treat the two-page surface as Hazakura内の2-up simulation, not as
+true EPUB pagination or a WYSIWYG editing model.
 
 ## Active UX Queue
 
