@@ -49,6 +49,45 @@ describe("EBookPane chapter rendering", () => {
     expect(chapters[0].textContent).toContain("Front matter text.");
     expect(chapters[1].textContent).toContain("Chapter One");
   });
+
+  it("marks the opening H1 chapter as a cover page", () => {
+    // A document that starts with an H1 reads as a title page: the
+    // first visible chapter carries the cover treatment, subsequent
+    // chapters are plain page sheets.
+    render(
+      <EBookPane
+        source={"# Title\n\nintro\n\n## Chapter\n\nbody"}
+      />,
+    );
+
+    const chapters = screen
+      .getByRole("article")
+      .querySelectorAll(".ebook-chapter");
+
+    expect(chapters[0].classList.contains("ebook-chapter-cover")).toBe(true);
+    expect(chapters[0].classList.contains("ebook-chapter-opener")).toBe(true);
+    // The H1 chapter is not a preamble.
+    expect(chapters[0].classList.contains("ebook-chapter-preamble")).toBe(false);
+    // A following non-opening chapter is a plain sheet.
+    expect(chapters[1].classList.contains("ebook-chapter-opener")).toBe(false);
+    expect(chapters[1].classList.contains("ebook-chapter-cover")).toBe(false);
+  });
+
+  it("marks the opening preamble as front matter", () => {
+    render(
+      <EBookPane source={"preface text\n\n# Chapter\n\nbody"} />,
+    );
+
+    const chapters = screen
+      .getByRole("article")
+      .querySelectorAll(".ebook-chapter");
+
+    expect(chapters[0].classList.contains("ebook-chapter-frontmatter")).toBe(true);
+    expect(chapters[0].classList.contains("ebook-chapter-cover")).toBe(false);
+    // The following H1 is not the opener (the preamble is), so it is a
+    // plain chapter sheet.
+    expect(chapters[1].classList.contains("ebook-chapter-opener")).toBe(false);
+  });
 });
 
 describe("EBookPane safety boundary (renderMarkdown reuse)", () => {

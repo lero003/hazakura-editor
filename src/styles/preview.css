@@ -440,66 +440,209 @@
 
 /* ── v0.21 e-book Mode PoC ───────────────────────────────────────
  *
- * Display-only book-like reading surface. This is Path Y from the
- * v0.21 plan: the chapter HTML comes from `renderMarkdown()` and
- * carries the same `.markdown-preview` selectors as the live preview,
- * so the rules below only layer a chapter rhythm on top of the
- * existing preview typography. Source is never edited here.
+ * Display-only book-like reading surface (Path Y). The chapter HTML
+ * comes from `renderMarkdown()` and reuses the `.markdown-preview`
+ * selectors above; the rules below only layer a book canvas, page
+ * sheets, and chapter-opener / cover / front-matter treatments on top.
+ * Source is never edited here. Not real pagination, not a spread — a
+ * long chapter scrolls within its page sheet.
  *
- * The chapter is a page-like metaphor, not real pagination: a long
- * chapter scrolls within its section and a short chapter sits in one
- * block. Real pagination is a v0.22+ concern.
+ * Theme variables (--surface / --surface-strong / --text /
+ * --text-muted / --border / --accent / --accent-soft) are defined per
+ * theme in themes.css, so the same rules hold for light and dark.
  */
 
 .ebook-pane {
+  /* The canvas sits behind the page sheets: a calm, slightly recessed
+     tone that lets the sheets read as paper without competing with the
+     app background. */
+  background: color-mix(in srgb, var(--bg, #f5f5f7) 80%, var(--surface-muted, #ededf0) 20%);
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: clamp(20px, 3vw, 36px);
+  /* The pane itself is the scroll container; add breathing room so the
+     first and last page sheets are not flush against the pane edges. */
+  padding: clamp(24px, 4vw, 56px) clamp(12px, 3vw, 32px) clamp(48px, 6vw, 96px);
+}
+
+/* The pane also carries the `.markdown-preview` class so the shared
+   typography / colour selectors apply, but the standalone-preview
+   "card" chrome (border / radius / shadow / outer margin / fixed
+   reading width / inner padding) is a Preview concern, not a book
+   canvas concern. Reset it here so the page sheets — not the pane —
+   carry the paper treatment. */
+.ebook-pane.markdown-preview {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0;
+  max-width: none;
+  padding: clamp(24px, 4vw, 56px) clamp(12px, 3vw, 32px) clamp(48px, 6vw, 96px);
+  width: 100%;
 }
 
 .ebook-chapter {
-  /* Each chapter reads as one page block: a calm paper surface with
-     generous vertical air above and below, then a quiet rule that
-     separates it from the next chapter. */
+  /* Each chapter reads as one page sheet: a calm paper surface, a
+     quiet hairline edge, and a soft drop shadow so consecutive sheets
+     separate visually even when a chapter is short. */
   background: var(--surface, #ffffff);
-  border-radius: 4px;
-  margin: 0 auto 32px;
-  max-width: min(720px, calc(100% - 64px));
-  padding: clamp(40px, 6vw, 72px) clamp(40px, 5vw, 60px);
+  border: 1px solid color-mix(in srgb, var(--border, #d2d2d7) 55%, transparent);
+  border-radius: 6px;
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--text, #000) 6%, transparent),
+    0 8px 28px color-mix(in srgb, var(--text, #000) 5%, transparent);
+  box-sizing: border-box;
+  margin: 0 auto;
+  max-width: min(720px, 100%);
+  padding: clamp(40px, 6vw, 80px) clamp(36px, 6vw, 76px);
   position: relative;
-}
-
-.ebook-chapter + .ebook-chapter::before {
-  /* Faint chapter break rule. Kept as `::before` on every chapter
-     after the first so a preamble + N chapters show N-1 dividers. */
-  background: color-mix(in srgb, var(--border, #d2d2d7) 70%, transparent);
-  content: "";
-  height: 1px;
-  left: 50%;
-  position: absolute;
-  top: -16px;
-  transform: translateX(-50%);
-  width: min(240px, 60%);
-}
-
-.ebook-chapter-preamble {
-  /* The leading preamble (text before the first heading) reads as a
-     shorter front-matter block, not a full chapter page. */
-  padding-top: clamp(24px, 3vw, 40px);
-  padding-bottom: clamp(24px, 3vw, 40px);
+  width: 100%;
 }
 
 .ebook-chapter > div {
-  /* The inner div wraps each chapter's sanitised HTML. Inherit the
-     `.markdown-preview` typography already defined above. */
+  /* The inner div wraps each chapter's sanitised HTML. Book-forward
+     serif typography with generous line-height for sustained reading. */
+  color: var(--text, #1d1d1f);
   font-family: "Iowan Old Style", "Charter", Georgia, "Times New Roman", serif;
-  font-size: var(--preview-font-size, 16px);
-  line-height: 1.85;
+  font-size: var(--preview-font-size, 17px);
+  line-height: 1.9;
+  /* Hyphenation + text-wrap balance keeps prose edges calm on long
+     Japanese / English mixed lines without altering the saved source. */
+  text-wrap: pretty;
+  word-break: break-word;
 }
+
+/* Chapter-opener headings read as the start of a new page. */
 
 .ebook-chapter h1,
 .ebook-chapter h2 {
-  /* Strong heading rhythm so chapter starts read as page openers. */
+  color: var(--text, #1d1d1f);
+  font-family: "Iowan Old Style", "Charter", Georgia, "Times New Roman", serif;
   letter-spacing: 0.01em;
   margin-top: 0;
+}
+
+.ebook-chapter > div > h1:first-child,
+.ebook-chapter > div > h2:first-child {
+  /* A chapter that begins with its heading gets opener air above. */
+  margin-top: 0;
+}
+
+.ebook-chapter p {
+  /* Gentle paragraph indentation rhythm is intentionally NOT applied:
+     Markdown mixes lists, quotes, code, and prose, and forcing indent
+     on every <p> would fight block elements. Keep paragraphs spaced. */
+  margin: 0 0 1em;
+}
+
+/* ── Cover / front matter (the opening page) ── */
+
+.ebook-chapter-opener.ebook-chapter-cover {
+  /* The first H1 chapter reads as a title page: a taller sheet with a
+     centered, accented title and a quiet rule beneath it. */
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: min(60vh, 560px);
+  padding: clamp(64px, 10vw, 128px) clamp(36px, 6vw, 76px);
+  text-align: center;
+}
+
+.ebook-chapter-opener.ebook-chapter-cover > div {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  max-width: 36em;
+}
+
+.ebook-chapter-opener.ebook-chapter-cover h1 {
+  /* The cover title uses its own short accent rule (`h1::after` below),
+     so the shared `.markdown-preview h1` underline must be removed to
+     avoid a long bottom border stacking under the short rule. */
+  border-bottom: 0;
+  color: var(--accent, #b3416a);
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin: 0 0 clamp(20px, 3vw, 36px);
+  padding-bottom: 0;
+}
+
+.ebook-chapter-opener.ebook-chapter-cover h1::after {
+  /* A short accent rule under the cover title marks it as a title
+     page rather than a chapter heading. */
+  background: color-mix(in srgb, var(--accent, #b3416a) 70%, transparent);
+  content: "";
+  display: block;
+  height: 2px;
+  margin-top: clamp(14px, 2vw, 22px);
+  width: clamp(40px, 8vw, 72px);
+}
+
+.ebook-chapter-frontmatter {
+  /* The opening preamble (text before the first heading) reads as
+     front matter: a smaller, calmer sheet than a chapter page. */
+  font-style: normal;
+  max-width: min(620px, 100%);
+}
+
+.ebook-chapter-frontmatter > div {
+  color: var(--text-muted, #6e6e73);
+  font-size: calc(var(--preview-font-size, 17px) * 0.94);
+}
+
+/* ── Chapter break ornament between sheets ── */
+
+.ebook-chapter + .ebook-chapter::before {
+  /* A centered dingbat-style break between page sheets replaces the
+     flat rule so consecutive chapters read as turned pages. Positioned
+     in the pane gap (negative top), not on the sheet itself. */
+  align-items: center;
+  color: color-mix(in srgb, var(--text-muted, #8a9b91) 55%, transparent);
+  content: "❧";
+  display: flex;
+  font-size: clamp(14px, 1.6vw, 18px);
+  height: 0;
+  justify-content: center;
+  left: 50%;
+  position: absolute;
+  top: clamp(-26px, -3vw, -18px);
+  transform: translateX(-50%);
+  width: 0;
+}
+
+/* ── Blocked-image note: present but unobtrusive ── */
+
+.ebook-pane .blocked-image {
+  /* A blocked image is a reading footnote, not a warning. Inline,
+     muted, and italic so it sits with the prose instead of breaking
+     the page rhythm. */
+  background: color-mix(in srgb, var(--surface-muted, #f5f5f7) 70%, transparent);
+  border-radius: 4px;
+  color: var(--text-muted, #6e6e73);
+  display: inline-block;
+  font-family: var(--font-ui, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: 0.85em;
+  font-style: italic;
+  padding: 1px 8px;
+}
+
+/* ── Reading-width responsiveness ── */
+
+@media (max-width: 720px) {
+  .ebook-pane {
+    gap: clamp(16px, 4vw, 24px);
+    padding: 16px 6px 64px;
+  }
+
+  .ebook-chapter {
+    border-radius: 4px;
+    padding: clamp(28px, 6vw, 44px) clamp(20px, 5vw, 32px);
+  }
+
+  .ebook-chapter-opener.ebook-chapter-cover {
+    min-height: auto;
+    padding: clamp(40px, 10vw, 72px) clamp(20px, 5vw, 32px);
+  }
 }

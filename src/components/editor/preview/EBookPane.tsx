@@ -36,6 +36,7 @@ type EBookPaneProps = {
 
 type RenderedChapter = {
   index: number;
+  headingLevel: number | null;
   headingText: string | null;
   html: string;
 };
@@ -59,6 +60,7 @@ export default function EBookPane({
     () =>
       chapters.map((chapter) => ({
         index: chapter.index,
+        headingLevel: chapter.headingLevel,
         headingText: chapter.headingText,
         html: renderMarkdown(chapter.source, {
           documentPath,
@@ -131,16 +133,39 @@ export default function EBookPane({
       className="ebook-pane markdown-preview"
       onClick={handleClick}
     >
-      {chaptersHtml.map((chapter) => (
+      {chaptersHtml.map((chapter, position) => (
         <section
           key={chapter.index}
-          className={`ebook-chapter${
-            chapter.headingText ? "" : " ebook-chapter-preamble"
-          }`}
+          className={chapterClassName(chapter, position)}
         >
           <div dangerouslySetInnerHTML={{ __html: chapter.html }} />
         </section>
       ))}
     </article>
   );
+}
+
+// Compose the per-chapter class so the stylesheet can render a
+// front-matter / cover treatment for the opening segment and a
+// chapter-opener treatment for the rest, without the component owning
+// any styling of its own. `position` is the rendered ordinal (0-based)
+// so a dropped empty preamble still makes the first visible chapter the
+// cover candidate.
+function chapterClassName(
+  chapter: RenderedChapter,
+  position: number,
+): string {
+  const classes = ["ebook-chapter"];
+  if (position === 0) {
+    classes.push("ebook-chapter-opener");
+    if (chapter.headingLevel === 1 && chapter.headingText) {
+      classes.push("ebook-chapter-cover");
+    } else {
+      classes.push("ebook-chapter-frontmatter");
+    }
+  }
+  if (chapter.headingText === null) {
+    classes.push("ebook-chapter-preamble");
+  }
+  return classes.join(" ");
 }
