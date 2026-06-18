@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-06-13 (v0.19 build 14 package evidence)
+Last reviewed: 2026-06-18 (v0.19 approval / v0.20 Developer release boundary)
 
 ## Purpose
 
@@ -31,7 +31,8 @@ Apple Local Assist and Agent Workbench behind their existing boundaries.
 
 - App name: `Hazakura Editor`
 - Bundle ID: `dev.hazakura.editor`
-- Current version: `0.19.0`
+- Published App Store version: `0.19.0`
+- Current source / Developer version: `0.20.0`
 - App Store category: `Productivity`
 - Public Privacy Policy URL:
   `https://hazakura.dev/hazakura-editor/privacy/`
@@ -278,7 +279,9 @@ Do not upload:
 - any `warning-expected` DMG preview artifact
 
 The `warning-expected` DMG lane is the Developer / GitHub preview lane
-and must stay separate from App Store Connect / TestFlight uploads.
+and must stay separate from App Store Connect / TestFlight uploads. It
+may use Developer ID Application signing for GitHub Release assets, but
+that does not make it an App Store, TestFlight, or notarized artifact.
 
 `scripts/build-app-store-pkg.mjs` increments the App Store build counter,
 builds the signed App Store app bundle, runs the macOS distribution probe
@@ -331,9 +334,9 @@ Run on the actual App Store lane build:
 - VoiceOver announces the tab bar acceptably.
 - Increase Contrast keeps controls legible.
 
-Do not mark the build App Store-ready, submitted, or approved until the
-signing, local smoke, App Store Connect upload, Apple validation,
-metadata, and App Review evidence all exist.
+For each new build, do not mark it App Store-ready, submitted, or
+approved until the signing, local smoke, App Store Connect upload, Apple
+validation, metadata, and App Review evidence all exist.
 
 ## Reviewer Note Prompts
 
@@ -362,8 +365,9 @@ can answer these public-safe points before submission:
 
 ## App Store Connect Status Notes
 
-The helper-free build lane and privacy-policy URL are defined here. App Store
-Connect account work remains outside tracked public docs:
+The helper-free build lane and privacy-policy URL are defined here.
+Future App Store Connect account work remains outside tracked public
+docs:
 
 - provisioning profile and Apple Distribution identity selection
 - Transporter package path and installer signing identity
@@ -388,17 +392,18 @@ with no reported Apple validation warnings. Basic launch and save smoke
 on the TestFlight build passed. Fuller manual smoke, final metadata, and
 App Review submission / approval remain separate evidence.
 
-v0.19 submission-candidate note: the current user-visible app version is
-`0.19.0` and the App Store build counter is `13`. Treat the next
-Transporter upload, Apple validation, TestFlight distribution, and fuller
-manual smoke as fresh `0.19.0` evidence; do not reuse the `0.18.0` build
-`4` TestFlight result as final App Review proof.
+v0.19 approval note: the user-visible app version `0.19.0` passed App
+Review and was published on 2026-06-18. The public listing is
+`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
+The tracked submit-lane candidate for the approval was build counter
+`14`; do not reuse the `0.18.0` build `4` TestFlight result as proof for
+future submissions.
 In local Codex packaging, the signed submit-lane bundle reported the
-expected `0.19.0` / `13` metadata, `15.0` minimum macOS, and
+expected `0.19.0` / `14` metadata, `15.0` minimum macOS, and
 entitlements. Local Gatekeeper
 assessment can still report `Insufficient Context` for this lane; treat
-launch validation as signed TestFlight proof, not as covered by local
-package inspection alone.
+launch validation for a future build as signed TestFlight or App Store
+proof, not as covered by local package inspection alone.
 
 The local release-candidate package generated for this lane is:
 

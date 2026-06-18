@@ -3,12 +3,12 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-06-10
+Last reviewed: 2026-06-18
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
-Start with `current-work.md` when choosing the next UX, App Store
-submission-prep, or quality-polish slice.
+Start with `current-work.md` when choosing the next UX, post-approval,
+or quality-polish slice.
 
 ## Current Canonical Docs
 
@@ -16,7 +16,7 @@ submission-prep, or quality-polish slice.
 - `security-boundary.md`: safety constraints for file handling and execution boundaries.
 - `agent-workbench-boundary.md`: optional CLI-agent workbench trust boundary.
 - `assist-surface-strategy.md`: future assist-surface direction.
-- `current-work.md`: active v0.18 UX and submission-prep work queue.
+- `current-work.md`: active v0.20/v0.21 UX, post-approval, and quality work queue.
 - `roadmap.md`: active release sequence and phase boundaries.
 - `current-status.md`: current implementation and release state.
 
@@ -35,6 +35,7 @@ submission-prep, or quality-polish slice.
 
 - `l-mode-plan.md`: L Mode / えるモード source-preserving WYSIWYG Accuracy Ramp planning memo.
 - `ebook-mode-epub-export-plan.md`: v0.21+ e-bookモード / EPUB export planning memo.
+- `ai-markdown-ingest-plan.md`: v0.24+ explicit AI Markdown proposal ingest and Diff / Review planning memo.
 - `native-macos-appearance-plan.md`: v0.21+ native-feeling macOS UI planning memo.
 - `speculative-local-ai-future-plan.md`: changeable v1+ / v2+ / v3+ local AI direction.
 - `apple-local-assist-distribution-plan.md`: Apple Local Assist / App Store distribution planning memo.

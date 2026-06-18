@@ -7,13 +7,22 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-06-12
+Last reviewed: 2026-06-18
 
 `Hazakura Editor` は、AI時代のメモ帳です。Markdownを中心に、安全にテキストを読む・書く・比べるための軽量なローカル作業場を目指します。
 
 万能IDEではありません。拡張機能、LSP、Gitクライアント、汎用ターミナル、任意コマンド実行を持たないことで、信頼しきれないプロジェクト内のテキストを静かに扱うことを目的にします。
 
 > メモ帳より賢く、IDEより静か。
+
+## Mac App Store
+
+Hazakura Editor `0.19.0` is published on the Mac App Store:
+[Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12).
+
+The App Store build is the helper-free Safe Editor lane. It omits Agent
+Workbench, CLI Agent launch, Apple Local Assist helper, external AI/API
+calls, and arbitrary command execution surfaces.
 
 ## Preview
 
@@ -44,7 +53,7 @@ Use this when you want to:
 - create new workspace files and folders, rename workspace entries, and move entries to Trash from bounded in-app file-tree actions
 - optional detached Agent Window with `codex` / `opencode` / `pi` / `claude` provider sessions
 
-Do not use this as:
+Do not use the Developer / GitHub preview as:
 
 - an IDE
 - a terminal
@@ -141,11 +150,12 @@ Example use case:
 - [Security Boundary](docs/security-boundary.md): 安全性のために守る制約
 - [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
 - [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Apple Local Assist / Foundation Models planning
-- [Current Work](docs/current-work.md): active UX and submission-prep queue
+- [Current Work](docs/current-work.md): active UX, post-approval, and next-slice queue
 - [Apple Local Assist Writing Companion Plan](docs/apple-local-assist-writing-companion-plan.md): post-v0.11 Apple Local Assist UX direction
 - [Roadmap](docs/roadmap.md): 段階的な開発順序
 - [L Mode Plan](docs/l-mode-plan.md): えるモードの source-preserving WYSIWYG Accuracy Ramp plan
 - [e-book Mode And EPUB Export Plan](docs/ebook-mode-epub-export-plan.md): v0.21+ e-bookモード / EPUB export planning memo
+- [AI Markdown Ingest Plan](docs/ai-markdown-ingest-plan.md): v0.24+ AI提案取込 / Diff Review planning memo
 - [Native macOS Appearance Plan](docs/native-macos-appearance-plan.md): v0.21+ native-feeling macOS UI planning memo
 - [External Agent Review Workflow](docs/external-agent-review-workflow.md): external implementation agent + Codex review workflow
 - [Source Release Checklist](docs/source-release-checklist.md): source-only developer previewの準備境界
@@ -189,7 +199,10 @@ npm ci
 npm run build:dmg-preview
 ```
 
-The DMG preview is ad-hoc signed only and is not Developer ID signed or notarized.
+The DMG preview requires a local `Developer ID Application` signing
+identity and remains not notarized, so macOS security warnings can still
+appear. Set `HAZAKURA_DEVELOPER_ID_IDENTITY` if more than one Developer
+ID Application identity is installed.
 
 Release-readiness gates for the source preview:
 
@@ -210,12 +223,13 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version is `0.19.0` across npm, Tauri, Cargo, and lockfile metadata.
-- The latest GitHub source / local-app release is [v0.19.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.19.0).
-- The current warning-expected DMG preview tag is `v0.18.0`; its release-note evidence lives in [0.18.0 Warning-expected DMG Preview](docs/releases/0.18.0-warning-expected-dmg-preview.release.md).
+- Current package/app version is `0.20.0` across npm, Tauri, Cargo, and lockfile metadata.
+- The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12), published from the helper-free App Store lane.
+- The latest GitHub Developer / local-app release is [v0.20.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.20.0).
+- The current warning-expected DMG preview tag is `v0.20.0`; its release-note evidence lives in [0.20.0 Warning-expected DMG Preview](docs/releases/0.20.0-warning-expected-dmg-preview.release.md).
 - Source users build locally with `npm ci` and `npm run build`.
-- The generated local smoke `.app` declares macOS 15.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. The App Store submission lane is helper-free and does not include Agent Workbench, CLI Agent, Apple Local Assist helper, or external AI/API calls. Developer / GitHub builds may still include the Apple Local Assist helper. The app is not Developer ID signed or notarized.
-- The latest published warning-expected DMG preview is [v0.18.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.18.0). The v0.18.0 release notes live in [0.18.0 Warning-expected DMG Preview](docs/releases/0.18.0-warning-expected-dmg-preview.release.md).
+- The generated local smoke `.app` declares macOS 15.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. The App Store submission lane is helper-free and does not include Agent Workbench, CLI Agent, Apple Local Assist helper, or external AI/API calls. Developer / GitHub builds may still include the Apple Local Assist helper. GitHub Release DMG previews require Developer ID Application signing but are not notarized until the separate notarization lane is completed.
+- The latest published warning-expected DMG preview is [v0.20.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.20.0). The v0.20.0 release notes live in [0.20.0 Warning-expected DMG Preview](docs/releases/0.20.0-warning-expected-dmg-preview.release.md).
 
 ## Known Limits
 
@@ -224,7 +238,7 @@ Developer preview release boundary:
 - Image preview is intentionally bounded to user-selected local PNG/JPEG/GIF/WebP files up to 20 MB.
 - Save conflicts are recoverable by reviewing changes, reopening, closing, or keeping local edits, and text comparison remains file/workspace based, but there is no merge editor, advanced diff, or Git status view.
 - Manual Review Desk entry points are hidden in the current App Store-oriented surface. Diff, recovery review, and Apple Local Assist review remain explicit and do not replace Git/merge workflows.
-- The app is not signed or notarized with an Apple Developer ID.
+- The default local smoke app is not signed or notarized with an Apple Developer ID. GitHub Release DMG previews can be Developer ID signed, but are still not notarized unless a separate notarization pass is completed.
 - Agent Workbench is optional and explicit. It does not provide a general shell prompt, arbitrary command input UI, arbitrary path input UI, provider-add UI, multiple sessions, session restore, auto-apply, auto-commit, or Git integration.
 - Apple Local Assist is an experimental alpha surface, not the main AI feature. Live generation depends on Apple Foundation Models availability on the current Mac; output quality may vary, and the feature may change or be removed.
 - Apple Local Assist is intended for lightweight text assistance only. It is not a replacement for External Agent Workbench, external AI agents, local LLM runtimes, code review, multi-file understanding, long-document restructuring, autonomous agent work, or advanced reasoning.

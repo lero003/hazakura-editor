@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-13 (v0.20 UX planning)
+Last reviewed: 2026-06-18 (App Store approval closeout)
 
 ## Current Position
 
@@ -13,12 +13,23 @@ automatic agent-apply system.
 
 Current release state:
 
-- Latest published source / local-app release: `v0.19.0`.
-- Latest published downloadable preview: `v0.18.0` warning-expected DMG preview.
-- Current package/app version: `0.19.0`.
-- Active lane: v0.19 App Store submission-candidate smoke and App
-  Store submission prep.
+- Latest published Developer / local-app release: `v0.20.0`.
+- Mac App Store listing:
+  `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
+- Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
+- Current package/app version: `0.20.0`.
+- Active lane: post-approval closeout and v0.21 e-book Mode PoC
+  preparation.
 - Current work queue: `docs/current-work.md`.
+
+North star for the next product arc:
+
+> AIが書いたMarkdownを、本として読み、差分で直す。
+
+This does not mean automatic agent application. It means Hazakura should
+make Markdown drafts easier to read as a book, easier to structure as
+chapters, and easier to accept or reject through explicit Diff / Review
+flows.
 
 Historical phase details now live in release notes and archive files:
 
@@ -110,39 +121,30 @@ Out of scope for this lane:
 - Certificate, notarization, upload, or App Store account work unless
   explicitly picked from the submission-prep queue.
 
-## App Store Submission Prep
+## App Store Approval Closeout
 
-Goal: prepare the reviewable App Store lane without mixing it with the
-Developer / GitHub preview lane.
+Goal: keep the approved App Store lane accurately documented without
+mixing it with the Developer / GitHub preview lane.
 
 Use `docs/current-work.md` and `docs/app-store-build.md`.
 Keep account-specific App Store Connect notes, certificate names,
 signing identities, screenshots, contact details, and private reviewer
 copy under ignored `docs/internal/` files.
 
-Required work:
+Completed result:
 
-- Define the official App Store entitlement / signing / provisioning
-  path.
-- Finalize App Review Notes, Privacy Policy URL, support URL,
-  screenshots, category, keywords, age rating, and metadata.
-- Review complete third-party license material from lockfiles.
-- Keep macOS About metadata verified in built App Store-lane bundles
-  after config changes.
-- Complete fuller TestFlight smoke, including workspace restore,
-  image paste/drag-drop, dirty close, no external network observation,
-  accessibility checks, and the App Store-lane Move to Trash decision.
-- Capture pre-review regression evidence locally or in CI before
-  submission; signing and Transporter can remain local account-bound
-  steps.
-- Confirm App Store lane omits CLI Agent / Agent Workbench execution
-  surfaces, Apple Local Assist helper, and external AI/API calls.
-- Keep all submitted-build claims tied to verified local or App Store
-  Connect evidence.
+- The helper-free App Store lane for `0.19.0` passed App Review and is
+  published on the Mac App Store.
+- The published App Store lane omits CLI Agent / Agent Workbench
+  execution surfaces, Apple Local Assist helper, external AI/API calls,
+  and arbitrary command execution.
+- Completed local packaging, smoke, metadata, reviewer-note, and
+  submission-prep evidence remains historical release evidence rather
+  than the next product queue.
 
-Do not claim App Store signed, submitted, approved, TestFlight-ready,
-Developer ID signed, notarized, or production-ready status until that
-lane is actually completed and verified.
+For future App Store submissions, restart from `docs/app-store-build.md`
+and tie each new signed, submitted, approved, TestFlight-ready,
+notarized, or production-ready claim to fresh evidence for that build.
 
 ## v0.20 Sakura Workspace Ergonomics
 
@@ -184,6 +186,146 @@ of one long `statusDetail` string, keep line-ending / encoding controls
 always reachable, and move lower-priority document details into hover,
 popover, or adaptive secondary display.
 
+## v0.21 PoC And Preparation
+
+Goal: prove the e-book Mode direction without committing to a broad new
+document model.
+
+Use `docs/ebook-mode-epub-export-plan.md` and `docs/l-mode-plan.md`.
+Keep the first slice display-only and source-preserving:
+
+- Build or prototype an e-book Mode display-only PoC for horizontal
+  Japanese / English Markdown prose.
+- Split a single long Markdown document into chapter-like pages from ATX
+  headings.
+- Audit whether `src/features/editor/lMode/` CodeMirror decorations,
+  widgets, parser helpers, or CSS rules can be reused.
+- Explore the UI basis for seeing multiple Markdown files in one
+  selected workspace as a book-like chapter structure.
+- Document the decision criteria for whether L Mode and e-book Mode
+  should be integrated, coexist as separate modes, or evolve into one
+  future writing surface.
+
+Out of scope:
+
+- EPUB archive generation.
+- Vertical writing.
+- Multiple-workspace or file-manager behavior.
+- Background indexing, project analysis, Git state, or automatic AI
+  application.
+
+## v0.22 e-book Mode MVP
+
+Goal: make Markdown readable as an EPUB-like book surface while keeping
+Markdown source canonical.
+
+Expected MVP shape:
+
+- Horizontal EPUB-like display mode.
+- Heading-based chapter page splitting for a single long document.
+- Readable rendering for prose, headings, images, blockquotes, lists,
+  tables, and code using existing preview / workspace safety boundaries
+  where practical.
+- Mode switching that does not mutate source, saved text, Diff, Preview,
+  or Export HTML behavior.
+
+Defer:
+
+- Vertical writing.
+- Advanced pagination fidelity.
+- Cover / metadata editing.
+- EPUB archive export.
+
+## v0.23 Book Structure Overview
+
+Goal: let one selected workspace present several Markdown files as a
+book structure, without becoming a file manager or project analyzer.
+
+Expected direction:
+
+- Treat selected workspace Markdown files as chapters only through
+  explicit user action or an explicit book structure file.
+- Show chapter order and table-of-contents candidates.
+- Generate or update a table of contents only from a clear user command.
+- Decide where chapter order lives: frontmatter, `index.md`, a dedicated
+  table-of-contents file, or app-local settings.
+
+The likely first decision is to investigate an `index.md`-style structure
+because it may also fit later OKF bundle reading, but this remains an
+implementation decision for the PoC.
+
+Do not add:
+
+- Full file-management workflows.
+- Workspace-wide semantic indexing.
+- Git, LSP, terminal, plugin, or arbitrary command behavior.
+
+## v0.24 AI Proposal Ingest And Review
+
+Goal: make AI-written Markdown easier to import, compare, and accept
+explicitly.
+
+Use `docs/ai-markdown-ingest-plan.md` as the planning memo. The durable
+boundary is manual review:
+
+- Support multi-file Diff / Review for AI or external-agent output.
+- Add an explicit ingest flow for AI-proposed Markdown changes.
+- Keep App Store lane ingestion file-based and helper-free.
+- Keep Developer / GitHub lane integration separate, where Apple Local
+  Assist or Agent Workbench may create external or unsaved edits under
+  their existing boundaries.
+
+Do not add auto-apply, auto-save, auto-commit, hidden workspace
+rewriting, or general agent orchestration.
+
+## v1.0 Candidate
+
+Goal: ship a coherent book-oriented writing surface, not every future
+authoring idea.
+
+Candidate criteria:
+
+- e-book Mode is stable enough to serve as a daily writing and reading
+  surface for Markdown prose.
+- Initial EPUB export exists as an explicit user action.
+- L Mode integration is complete, or the product defines a clear
+  long-term coexistence between L Mode and e-book Mode.
+- App Store lane status is separately verified and accurately reported
+  for each release; the initial `0.19.0` App Store lane is approved and
+  published.
+
+Defer beyond v1.0 unless a focused review reopens scope:
+
+- OKF bundle support.
+- Vertical writing.
+- Advanced EPUB metadata, cover, navigation, and validation workflow.
+- Speculative OS-model or local-model integration.
+
+## v1.x Book And EPUB Expansion
+
+Goal: deepen the book model after the first daily-use surface is proven.
+
+Possible directions:
+
+- Read OKF-style bundles as books, including readable frontmatter,
+  `index.md` / `log.md` conventions, and simple link-graph views.
+- Add vertical writing if the horizontal e-book surface is already stable.
+- Improve EPUB export with metadata, cover selection, navigation, and
+  clearer manual validation guidance.
+
+OKF remains a proposal-stage dependency. Re-check the latest OKF shape
+before treating it as an implementation contract.
+
+## v2.x Speculative Local AI Decision
+
+Goal: decide whether OS-provided local AI belongs in the product after
+the book / review primitives are strong.
+
+Use `docs/speculative-local-ai-future-plan.md`. Do not start a v2.0
+OS-model integration just because the roadmap names it; require a fresh
+product-boundary decision and working proof that edits remain explicit,
+unsaved until accepted, and reviewable.
+
 ## Distribution Lanes
 
 Current preview releases are warning-expected DMG previews unless the
@@ -211,16 +353,17 @@ and stable distribution remain explicit future distribution-lane work.
 
 Keep future product work source-preserving and narrow:
 
-- L Mode: continue improving readability and editing stability through
-  CodeMirror decorations, widgets, CSS, and focused editing behavior.
-  Use `docs/l-mode-plan.md`.
+- L Mode: treat it as the existing Live Source writing surface and a
+  potential e-book Mode integration target. Use `docs/l-mode-plan.md`.
+- e-book Mode / EPUB export: make it the next book-oriented authoring
+  arc. Use `docs/ebook-mode-epub-export-plan.md`.
+- AI proposal ingest: keep AI output explicit, file-based or
+  transaction-based, and Diff / Review centered. Use
+  `docs/ai-markdown-ingest-plan.md`.
 - Apple Local Assist: keep it as an explicit, on-device, availability-
   gated writing companion with unsaved, diff-reviewable edits. Use
   `docs/assist-surface-strategy.md` and
   `docs/apple-local-assist-writing-companion-plan.md`.
-- e-book Mode / EPUB export: keep it as a Markdown-source-preserving
-  EPUB simulation and explicit export direction for v0.21+. Use
-  `docs/ebook-mode-epub-export-plan.md`.
 - Native macOS appearance: explore a more native-feeling macOS 26+
   interface, with macOS 27 treated as a future verification target. Use
   `docs/native-macos-appearance-plan.md`.

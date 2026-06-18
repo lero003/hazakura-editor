@@ -169,5 +169,5 @@ echo "== Gatekeeper assessment =="
 if spctl -a -vv -t open "$APP" 2>&1; then
     echo "spctl: accepted"
 else
-    echo "spctl: rejected or inconclusive (expected for ad-hoc, not-notarized local builds)"
+    echo "spctl: rejected or inconclusive (expected for local or not-notarized preview builds)"
 fi

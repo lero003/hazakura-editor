@@ -18,6 +18,7 @@ fi
 
 require_command node
 require_command npm
+require_command codesign
 require_command hdiutil
 require_command shasum
 
@@ -41,8 +42,21 @@ dmg_dir="src-tauri/target/release/bundle/dmg"
 dmg_path="${dmg_dir}/${artifact_name}_${version}_${arch}-warning-expected.dmg"
 checksum_path="${dmg_path}.sha256"
 
+verify_developer_id_signature() {
+  local signature_details
+
+  signature_details="$(codesign -dv --verbose=4 "$app_path" 2>&1)"
+  if ! printf "%s\n" "$signature_details" | grep -F "Authority=Developer ID Application:" >/dev/null; then
+    echo "Developer / GitHub release app is not signed with Developer ID Application." >&2
+    echo "Build without SKIP_BUILD=1, or set HAZAKURA_DEVELOPER_ID_IDENTITY to the distribution identity." >&2
+    exit 1
+  fi
+
+  codesign --verify --deep --strict --verbose=2 "$app_path"
+}
+
 if [[ "${SKIP_BUILD:-0}" != "1" ]]; then
-  npm run build:macos-lanes
+  HAZAKURA_REQUIRE_DEVELOPER_ID_SIGNING=1 npm run build:macos-lanes
 fi
 
 if [[ ! -d "$app_path" ]]; then
@@ -50,6 +64,8 @@ if [[ ! -d "$app_path" ]]; then
   echo "Run npm run build:macos-lanes before setting SKIP_BUILD=1." >&2
   exit 1
 fi
+
+verify_developer_id_signature
 
 mkdir -p "$dmg_dir"
 staging_root="$(mktemp -d "${dmg_dir}/${artifact_name}-dmg-root.XXXXXX")"

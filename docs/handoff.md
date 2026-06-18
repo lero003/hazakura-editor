@@ -3,23 +3,26 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-13 (pre-release fix plan)
+Last reviewed: 2026-06-18 (App Store approval closeout)
 
 ## Current State
 
-- `Hazakura Editor` is at `0.19.0`.
+- `Hazakura Editor` is at `0.20.0`.
 - User-facing app identity is capitalized as `Hazakura Editor`. The
   App Store preview bundle is `Hazakura Editor.app`; current docs and
   smoke paths should use that name rather than the older lowercase
   display form.
-- Latest published downloadable preview is `v0.18.0` warning-expected DMG preview.
+- Mac App Store listing:
+  `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
+- Latest published downloadable GitHub preview is `v0.20.0` warning-expected DMG preview.
 - `v0.18.0` is ad-hoc signed, not Developer ID signed, not notarized, and expected to show macOS security warnings.
 - The helper-free App Store lane delivered `0.18.0` build `4` to
   TestFlight on 2026-06-12 with no reported Apple validation warnings;
   basic TestFlight launch / save smoke passed.
-- Current active lane is v0.19 App Store submission-candidate smoke and
-  App Store submission prep. The current App Store build counter is `14`.
-  The local App Store release-candidate package is
+- The `0.19.0` helper-free App Store lane passed App Review and was
+  published on 2026-06-18. The tracked submit-lane candidate for that
+  approval used App Store build counter `14`. The local App Store
+  release-candidate package was
   `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.19.0-build14-mas.pkg`
   with SHA-256
   `9d5164a9cf508242dbe6f7612e4d29167065d1c7b0cb884f6ed610723625f0cf`;
@@ -53,20 +56,19 @@ Last reviewed: 2026-06-13 (pre-release fix plan)
   restart. Older path-only state can still fall back to the
   reauthorization status hint.
 - TestFlight use found workspace persistence follow-ups before App
-  Review. Code-level regression coverage now pins repeated relaunch,
+  Review. Code-level regression coverage pins repeated relaunch,
   outside-active-tab restore, and the fast clean-quit path where restored
   tabs/workspace state is already live before the restore-complete latch
-  settles. Signed TestFlight fuller smoke still needs to repeat the
-  user-facing flow before App Review.
+  settles. Treat this as historical App Store-prep evidence unless a
+  future App Store build reopens workspace-restore risk.
 - Human-side App Store lane smoke on 2026-06-12 passed launch, basic
   document creation/open, preview/export, image paste/drag-drop, App
   Store surface omission, dirty-close confirmation, Move to Trash, and
   network observation. Treat Save As UX as an observation, workspace
   restore as acceptable with residual Google Drive /
-  quit-before-interaction risk, and live accessibility as partial until
-  the exact signed `0.19.0` TestFlight build is tied to the upload
-  record. A `Cmd+Shift+F` global-search result activation bug found
-  during smoke has a focused code-level fix.
+  quit-before-interaction risk, and live accessibility as partial at
+  that checkpoint. A `Cmd+Shift+F` global-search result activation bug
+  found during smoke has a focused code-level fix.
 - TestFlight use found one status-area cleanup follow-up before App
   Review. Code-level UI coverage now removes duplicate passive
   `UTF-8` / `LF` style labels in normal Safe Editor mode while
@@ -81,8 +83,8 @@ Last reviewed: 2026-06-13 (pre-release fix plan)
   `move_workspace_entry_to_trash` now calls native macOS
   `NSFileManager` Trash handling from Rust through the existing
   `objc2` / `NSURL` bridge. It no longer launches `osascript` or relies
-  on AppleEvents. Signed TestFlight smoke still needs to confirm the
-  user flow before App Review.
+  on AppleEvents. The signed-flow confirmation is historical App
+  Store-prep evidence unless a future build reopens this behavior.
 - External static review also promoted direct save fallback failure
   coverage for the truncate-and-write path used when sandboxed temp-file
   creation is denied. Pasted image decoded-size guarding is now complete:
@@ -109,13 +111,16 @@ Last reviewed: 2026-06-13 (pre-release fix plan)
 ## Current Work Queue
 
 Use `docs/current-work.md` for the active queue. The current highest
-priority UX items after the v0.20 Sakura chrome slice are:
+priority items after App Store approval and the v0.20 Sakura chrome
+slice are:
 
-1. Core Safe Editor quality probe.
-2. Light accessibility sanity adjacent to the selected core surface.
-3. Any follow-up discovered by manual app smoke of the v0.20 Sakura
+1. Post-approval docs/archive cleanup for completed App Store evidence,
+   if still useful.
+2. Core Safe Editor quality probe.
+3. Light accessibility sanity adjacent to the selected core surface.
+4. Any follow-up discovered by manual app smoke of the v0.20 Sakura
    chrome / preview polish.
-4. v0.21+ status bar structure cleanup: replace the current compact
+5. v0.21+ status bar structure cleanup: replace the current compact
    status-detail stopgap with priority-aware metadata fields while
    keeping line-ending / encoding controls reachable.
 
@@ -150,19 +155,18 @@ checkboxes, pasted image decoded-size guarding, normal mode sidebar
 collapse / restore, App Store preview startup, and sandboxed workspace
 bookmark restore are also complete for v0.18.
 
-Submission-prep items in the same queue include fuller TestFlight smoke,
-App Review Notes final copy, Privacy Policy / metadata, and remaining
-account-bound App Review evidence. External review notes worth preserving:
-prepare reviewer-note answers for `network.client`, inert script-like
-file associations, App Store lane omissions, and Move to Trash; do not
-treat low-risk icon size, known Vite chunk warnings, or Help copy
-overlap as blockers unless they reproduce as concrete review or
-usability failures.
+The old App Store submission-prep items are now historical evidence, not
+the active queue. External review notes worth preserving for future
+submissions: reviewer-note answers for `network.client`, inert
+script-like file associations, App Store lane omissions, and Move to
+Trash; do not treat low-risk icon size, known Vite chunk warnings, or
+Help copy overlap as blockers unless they reproduce as concrete review
+or usability failures.
 
-Recurring automation should use `docs/current-work.md`'s
-`Pre-Review Automation Order` before the generic automation preference
-list. Each run should pick exactly one open slice and close it as
-`implemented`, `manual-blocked`, or `verified no-op`.
+Recurring automation should use `docs/current-work.md` first. The old
+pre-review automation order is exhausted; each new run should pick one
+open Active UX Queue slice and close it as `implemented`,
+`manual-blocked`, or `verified no-op`.
 
 ## Source Docs
 
@@ -201,15 +205,16 @@ list. Each run should pick exactly one open slice and close it as
 
 ## Verification Guidance
 
-- Latest release-prep slice: v0.18 version surfaces are aligned across
-  npm, Tauri, Cargo, Help About, Support Diagnostics, current docs, and
-  release notes. The v0.18 warning-expected DMG prerelease was
-  published and remote-verified on 2026-06-12. The helper-free
-  App Store lane also reached TestFlight as `0.18.0` build `4` with no
-  reported Apple validation warnings, and basic launch / save smoke
-  passed. Use the v0.18 release note, `docs/app-store-build.md`, and
-  release checklists before making broader distribution-readiness
-  claims.
+- Latest docs closeout: App Store approval status was reflected in
+  README, current status, current work, roadmap, App Store build notes,
+  release-note index, and this handoff on 2026-06-18. Verification run:
+  `git diff --check`.
+- Latest release gate: v0.20.0 Developer / GitHub warning-expected DMG
+  preview local verification passed on 2026-06-18. The DMG is Developer
+  ID signed, not notarized, and has SHA-256
+  `eaa5f576d4ec9aeb69429102d527778264f4d2776b03ba800c34911514fd92d9`.
+  `npm audit` reports one low-severity DOMPurify advisory; no high or
+  critical npm advisory was reported.
 - For docs-only work, run `git diff --check`.
 - For code changes, follow `docs/development-automation.md`.
 - Latest workspace persistence focused checks:

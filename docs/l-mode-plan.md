@@ -3,7 +3,7 @@
 Status: Active
 Scope: Live Source writing surface for L Mode
 Authority: Medium
-Last reviewed: 2026-06-07
+Last reviewed: 2026-06-17
 
 ## Summary
 
@@ -33,6 +33,38 @@ Alternative English label: **L Mode**.
 えるモード should become a first-class writing surface, not just an optional visual mode. Normal mode remains the safety foundation, but routine writing should not require leaving えるモード for every small action.
 
 えるモード is not an AI generation mode and not an automatic editing mode. AI, Diff, and Review Desk can be used through explicit, lightweight review surfaces when needed.
+
+## Relationship To e-book Mode
+
+v0.21+ の e-book Mode は、L Mode の競合ではなく統合候補として扱う。
+L Mode は Live Source writing surface、e-book Mode は book-like reading
+and EPUB simulation surface である。
+
+```txt
+L Mode: write and lightly edit Markdown as a calm Live Source document.
+e-book Mode: read one or more Markdown chapters as a book-like surface.
+```
+
+v0.21 PoC では、`src/features/editor/lMode/` の CodeMirror
+decorations、widgets、parser helpers、CSS の再利用可能性を確認する。
+PoC後の判断は次の三択にする。
+
+- **統合**: e-book Mode が L Mode の発展形として実装でき、通常の
+  読み書き面を一本化できる。
+- **共存**: L Mode は日常執筆、e-book Mode は本として読む / EPUB
+  simulation として分けた方がユーザーに分かりやすい。
+- **進化系**: 既存L Mode資産を一部使いつつ、book-oriented writing
+  surface として新しい構造に進む。
+
+統合を急がない。PoC で次の条件を確認してから決める。
+
+- Markdown source が常に canonical であり続ける。
+- active / selected line の編集明瞭性を失わない。
+- L Mode の IME、caret、selection、typewriter 安定性を壊さない。
+- Preview、Diff、Review、Export HTML、Print to PDF が L Mode /
+  e-book Mode の decoration DOM に依存しない。
+- 複数ファイル俯瞰が workspace file manager や project analyzer に
+  変質しない。
 
 ## Core Principle
 

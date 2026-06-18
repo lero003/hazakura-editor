@@ -3,41 +3,40 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-13 (v0.19 App Store submission-prep queue)
+Last reviewed: 2026-06-18 (App Store approval closeout)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: `0.19.0` across npm, Tauri, Cargo, and lockfile metadata.
-- Latest published GitHub source / local-app release: `v0.19.0`.
-- Latest published downloadable preview: `v0.18.0` warning-expected DMG preview.
+- Current package/app version: `0.20.0` across npm, Tauri, Cargo, and lockfile metadata.
+- Mac App Store listing: `Hazakura Editor`
+  (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
+- Latest published GitHub Developer / local-app release: `v0.20.0`.
+- Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
 - `v0.18.0` is a Developer / GitHub lane preview, ad-hoc signed, not Developer ID signed, not notarized, and expected to show macOS security warnings.
 - The helper-free App Store lane delivered `0.18.0` build `4` to
   TestFlight on 2026-06-12 with no reported Apple validation warnings;
   basic TestFlight launch / save smoke passed.
-- The current App Store submission candidate is `0.19.0` with App Store
-  build counter `14`; the signed local submit package
-  `HazakuraEditor-0.19.0-build14-mas.pkg` has been generated and
-  checked locally. Upload, App Store Connect validation, fuller
-  TestFlight smoke, metadata finalization, and App Review submission
-  remain separate evidence.
-- Human-side App Store lane smoke on 2026-06-12 passed launch,
+- The `0.19.0` App Store lane passed App Review and was published on
+  2026-06-18, based on the user-provided public listing above. The
+  tracked submit-lane candidate for that approval was build counter
+  `14`; local package and signing evidence remain historical release
+  evidence, not the next active queue.
+- Pre-approval human-side App Store lane smoke on 2026-06-12 passed launch,
   basic document creation/open, preview/export, image paste/drag-drop,
   App Store surface omission, dirty-close confirmation, Move to Trash,
   and network observation. Save As UX remains an observation, workspace
   restore is acceptable with a residual Google Drive /
-  quit-before-interaction risk, and live accessibility is partial before
-  final App Review submission. A `Cmd+Shift+F` global-search result
-  activation bug found during smoke has a focused code-level fix.
+  quit-before-interaction risk, and live accessibility was partial at
+  that checkpoint. A `Cmd+Shift+F` global-search result activation bug
+  found during smoke has a focused code-level fix.
 - Older public tags and release assets remain immutable.
-- Current active work is v0.19 App Store submission-candidate smoke and
-  submission prep. Local pre-review regression, package, payload,
+- Current active work is post-approval documentation closeout and the
+  next product slice. Local pre-review regression, package, payload,
   dependency-audit, bundle metadata, license-resource, and bundle-size
-  evidence is archived under `docs/archive/operations/` or summarized in
-  `docs/current-work.md`. Remaining App Store readiness proof is mainly
-  account-bound: Transporter upload, App Store Connect validation,
-  TestFlight smoke, final metadata, reviewer notes, and App Review
-  handling.
+  evidence remains archived under `docs/archive/operations/` or
+  summarized in `docs/current-work.md`; it should no longer drive the
+  main queue unless a new App Store build is prepared.
 - The v0.20 Sakura workspace ergonomics slice is implemented locally:
   the main chrome can collapse / restore the workspace sidebar, the
   central editor pane keeps a thin bottom full-path copy bar for the
@@ -114,9 +113,9 @@ Last reviewed: 2026-06-13 (v0.19 App Store submission-prep queue)
   drafts, external-change conflicts, and Apple Local Assist edits.
 - Optional Apple Local Assist alpha in the Developer / GitHub lane as an
   availability-gated, on-device assist surface with explicit unsaved AI
-  edit transactions. The current App Store submission lane omits this
-  helper, forces Assist Surface off, and hides command-palette assist /
-  agent settings entries.
+  edit transactions. The published App Store lane omits this helper,
+  forces Assist Surface off, and hides command-palette assist / agent
+  settings entries.
 - Optional Developer / GitHub lane Agent Workbench, separated from the
   App Store lane.
 - Help-readable Store-document drafts and Support Diagnostics UI.
@@ -126,6 +125,7 @@ Last reviewed: 2026-06-13 (v0.19 App Store submission-prep queue)
 Use release notes for detailed historical evidence:
 
 - `docs/releases/0.19.0-source-tag.release.md`
+- `docs/releases/0.20.0-warning-expected-dmg-preview.release.md`
 - `docs/releases/0.18.0-warning-expected-dmg-preview.release.md`
 - `docs/releases/0.17.0-warning-expected-dmg-preview.release.md`
 - `docs/releases/0.16.0-warning-expected-dmg-preview.release.md`
@@ -147,7 +147,7 @@ baseline, and smoke evidence are archived under
 
 ## Active Planning Sources
 
-- `docs/current-work.md`: current v0.19 App Store submission-candidate queue.
+- `docs/current-work.md`: current post-approval, v0.20/v0.21, and quality queue.
 - `docs/roadmap.md`: phase order and future boundaries.
 - `docs/product-brief.md`: durable product direction and non-goals.
 - `docs/security-boundary.md`: safe editor constraints.
@@ -160,20 +160,21 @@ baseline, and smoke evidence are archived under
 
 ## Next Safe Actions
 
-1. For UX work, start with `docs/current-work.md` and pick one item:
-   the v0.20 Sakura workspace ergonomics slice, one core Safe Editor
-   quality probe, light accessibility sanity adjacent to that surface, or
-   the next open slice named there.
-2. For App Store submission prep, start with `docs/current-work.md`
-   and `docs/app-store-build.md`; keep account-specific notes under
-   ignored `docs/internal/` files;
-   keep certificate, provisioning, signing, notarization, upload, fuller
+1. For post-approval cleanup, keep App Store-specific evidence public-safe
+   and archive only completed version-specific material; canonical build
+   and boundary docs stay live for future submissions.
+2. For UX work, start with `docs/current-work.md` and pick one item:
+   one core Safe Editor quality probe, light accessibility sanity
+   adjacent to that surface, or the next v0.21 e-book Mode PoC slice.
+3. For a future App Store submission, start with `docs/app-store-build.md`;
+   keep account-specific notes under ignored `docs/internal/` files and
+   treat certificate, provisioning, signing, notarization, upload,
    TestFlight smoke, and review handling as explicit distribution-lane
    work.
-3. For Apple Local Assist, use `docs/assist-surface-strategy.md`,
+4. For Apple Local Assist, use `docs/assist-surface-strategy.md`,
    `docs/apple-local-assist-distribution-plan.md`, and
    `docs/apple-local-assist-writing-companion-plan.md`; keep direct
    buffer edits as explicit AI edit transactions.
-4. For future release checkpoints, use the version-specific release
+5. For future release checkpoints, use the version-specific release
    note plus the release checklists. Do not tag or publish without
    explicit approval.

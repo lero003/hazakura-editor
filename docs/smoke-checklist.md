@@ -323,8 +323,9 @@ Run when preparing a warning-expected DMG preview:
 4. Verify image with `hdiutil verify`.
 5. Mount the DMG and inspect the contained app metadata.
 6. Run `codesign --verify --deep --strict --verbose=2` on the built or mounted app.
-7. Run `spctl` and confirm rejection/insufficient context is described as expected only for ad-hoc, not-notarized preview builds.
-8. After GitHub Release publication, download assets into a fresh temp directory and repeat checksum, DMG, mounted-app metadata, and codesign verification.
+7. Confirm `codesign -dv --verbose=4` reports `Authority=Developer ID Application:` for the Developer / GitHub app.
+8. Run `spctl` and confirm any rejection or inconclusive result is described as expected for a not-notarized preview build, not as a codesign failure.
+9. After GitHub Release publication, download assets into a fresh temp directory and repeat checksum, DMG, mounted-app metadata, and codesign verification.
 
 ## v0.18 Manual Accessibility Smoke
 

@@ -1,18 +1,19 @@
 # Current Work
 
 Status: Operational
-Scope: Active v0.20 Sakura workspace ergonomics and submission-prep routing
+Scope: Active post-approval, v0.20/v0.21, and quality routing
 Authority: High
-Last reviewed: 2026-06-13
+Last reviewed: 2026-06-18
 
 ## Purpose
 
 Start here when choosing the next small `Hazakura Editor` slice.
-This file is the current work queue. Older v0.17 App Store-quality
-request packets and closeout evidence live under
-`docs/archive/operations/app-store-v0.17/`, and the completed v0.18
-pre-review automation slices remain below as historical evidence for
-the current v0.19 submission candidate.
+This file is the current work queue. The `0.19.0` App Store lane passed
+App Review and was published on 2026-06-18; keep the completed
+submission-prep material as evidence, not as the active queue.
+Older v0.17 App Store-quality request packets and closeout evidence live
+under `docs/archive/operations/app-store-v0.17/`, and the completed
+v0.18 pre-review automation slices remain below as historical evidence.
 
 Keep every slice small, verifiable, and inside the Markdown-first Safe
 Editor boundary.
@@ -77,13 +78,13 @@ implemented as of 2026-06-12 through the Help-document scroll-region
 keyboard reachability pass.
 Order 12 is implemented as of 2026-06-12 through a focused Privacy
 Policy / Local Data Disclosure role-split copy pass.
-The remaining Move
-to Trash and workspace-persistence proofs are signed TestFlight smoke,
-tracked under the submission-prep manual smoke items unless TestFlight
-specifically reopens the Trash or workspace restore behavior. The
-pre-review automation table is currently exhausted; the next recurring
-quality run should use the Active UX Queue, starting with one Core Safe
-Editor quality probe whose risk hypothesis can be inspected or smoked.
+The remaining signed-TestFlight-only proof notes are superseded by the
+App Store approval unless a future App Store build specifically reopens
+Trash, workspace restore, accessibility, or network-observation risk.
+The pre-review automation table is currently exhausted; the next
+recurring quality run should use the Active UX Queue, starting with one
+Core Safe Editor quality probe whose risk hypothesis can be inspected or
+smoked.
 
 ## v0.20 Sakura Workspace Ergonomics
 
@@ -105,6 +106,10 @@ src/styles/statusCss.test.ts`, `npm run build:vite`, and `npm run test`.
 
 ## Completed v0.20 Slices
 
+- 2026-06-18: Developer / GitHub v0.20 release prep moved the source
+  and Developer-lane version to `0.20.0`, kept the published App Store
+  version documented as `0.19.0`, and prepared the warning-expected DMG
+  preview release note for `v0.20.0`.
 - 2026-06-13: Sakura chrome / file-state clarity is implemented. Normal
   Safe Editor chrome can collapse / restore the workspace sidebar
   through the same sidebar model, and L Mode keeps its separate
@@ -405,19 +410,30 @@ over copy-heavy or product-voice-sensitive work.
   the non-button rename DOM, the auto-focus + select on
   entry, and the directory rename row shape.
 
-## Submission-Prep Queue
+## App Store Approval Closeout
 
-These are not ordinary UX polish and may require human account,
-certificate, or App Store Connect access.
+The `0.19.0` helper-free App Store lane passed App Review and is now
+published at:
 
-| Priority | Slice | Acceptance |
-|---|---|---|
-| P0 | TestFlight / App Store Connect validation | The helper-free App Store submit lane is defined in `docs/app-store-build.md`. 2026-06-12 evidence: the signed `HazakuraEditor-0.18.0-mas.pkg` upload reached TestFlight distribution with no reported Apple validation warnings, and basic TestFlight launch / save smoke passed. Current candidate: `0.19.0` with App Store build counter `13`. Human-side smoke on 2026-06-12 passed launch, basic document creation/open, preview/export, image paste/drag/drop, App Store surface omission, dirty-close confirmation, Move to Trash, and network observation; Save As UX remains an observation, workspace restore is acceptable with a residual Google Drive / quit-before-interaction risk, and live accessibility is partial. A `Cmd+Shift+F` global-search result activation bug found during smoke has a focused code-level fix. Remaining proof before broader App Store-ready claims: upload / Apple validation for the `0.19.0` candidate, fuller manual smoke on the resulting TestFlight build, final metadata, and App Review submission / approval evidence. The earlier ad-hoc App Store preview `open -n` failure remains non-blocking unless it reproduces on the signed TestFlight build. |
-| P1 | App Review Notes final copy / attachments | The tracked reviewer-note facts remain aligned to the current `0.19.0` build `13` candidate: `network.client` exists for Tauri/WebKit bundled asset loading under App Sandbox rather than app-data networking; script-like file extensions open as inert text only and are never executed; Move to Trash is native macOS file handling rather than automation; the App Store lane omits Apple Local Assist helper, Agent Workbench, CLI Agent launch, dev mode, arbitrary command execution, and external AI/API calls. Remaining work is final App Store Connect field entry, screenshots / reviewer evidence attachments, and account/contact-specific copy in ignored local notes. |
-| P1 | Public metadata final pass | Privacy Policy URL is `https://hazakura.dev/hazakura-editor/privacy/`; Support URL candidate is `https://hazakura.dev/hazakura-editor/support/`. Both URLs returned HTTP 200 on 2026-06-13, and ignored local App Store submission notes now carry public-safe field candidates for app name, bundle ID, version/build, category, keywords, and reviewer boundary wording. Remaining work is App Store Connect field-by-field entry, age-rating questionnaire result, screenshots / attachments, and account-specific review. |
+```txt
+https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12
+```
+
+The completed submission-prep notes below are retained as public-safe
+evidence. Do not use them as the active queue unless preparing a new App
+Store build. Future App Store work should restart from
+`docs/app-store-build.md`, current version/build state, and fresh
+App Store Connect evidence.
 
 ## Completed Submission-Prep Slices
 
+- 2026-06-18: `0.19.0` passed App Review and was published on the Mac
+  App Store. The public listing is
+  `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
+  The App Store lane remains the helper-free Safe Editor lane; Agent
+  Workbench, CLI Agent launch, Apple Local Assist helper, external
+  AI/API calls, and arbitrary command execution surfaces stay outside
+  that published build.
 - 2026-06-13: The ignored internal App Review notes draft was refreshed
   during the `0.19.0` submission-candidate lane, and the tracked
   reviewer-note facts apply to build `13`. It

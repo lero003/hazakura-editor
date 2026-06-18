@@ -11,6 +11,9 @@ app_dir="src-tauri/target/release/bundle/macos"
 normal_app="${app_dir}/${app_name}.app"
 dev_app="${app_dir}/${dev_app_name}.app"
 plist_buddy="/usr/libexec/PlistBuddy"
+developer_id_required="${HAZAKURA_REQUIRE_DEVELOPER_ID_SIGNING:-0}"
+developer_id_identity="${HAZAKURA_DEVELOPER_ID_IDENTITY:-}"
+dev_signing_identity="-"
 
 require_app() {
   local path="$1"
@@ -18,6 +21,49 @@ require_app() {
     echo "Missing built app: $path" >&2
     exit 1
   fi
+}
+
+detect_developer_id_identity() {
+  local matches
+  local count
+
+  matches="$(security find-identity -p codesigning -v 2>/dev/null | awk -F'"' '/"Developer ID Application:/{print $2}')"
+  count="$(printf "%s\n" "$matches" | sed '/^$/d' | wc -l | tr -d ' ')"
+
+  case "$count" in
+    0)
+      echo "No valid Developer ID Application signing identity was found." >&2
+      echo "Set HAZAKURA_DEVELOPER_ID_IDENTITY or install the distribution certificate." >&2
+      exit 1
+      ;;
+    1)
+      printf "%s\n" "$matches" | sed '/^$/d'
+      ;;
+    *)
+      echo "Multiple Developer ID Application identities were found." >&2
+      echo "Set HAZAKURA_DEVELOPER_ID_IDENTITY to the exact identity to use:" >&2
+      printf "%s\n" "$matches" | sed '/^$/d' >&2
+      exit 1
+      ;;
+  esac
+}
+
+resolve_dev_signing_identity() {
+  if [[ -n "$developer_id_identity" ]]; then
+    if ! security find-identity -p codesigning -v 2>/dev/null | grep -F "\"$developer_id_identity\"" >/dev/null; then
+      echo "Developer ID signing identity not found: $developer_id_identity" >&2
+      exit 1
+    fi
+    printf "%s\n" "$developer_id_identity"
+    return
+  fi
+
+  if [[ "$developer_id_required" == "1" ]]; then
+    detect_developer_id_identity
+    return
+  fi
+
+  printf "%s\n" "-"
 }
 
 set_plist_value() {
@@ -35,10 +81,16 @@ set_plist_value() {
 
 sign_app_bundle() {
   local app_path="$1"
+  local timestamp_args=()
 
-  codesign --force --options runtime --sign - "${app_path}/Contents/MacOS/hazakura-apple-assist-helper"
-  codesign --force --options runtime --sign - "${app_path}/Contents/MacOS/hazakura-editor"
-  codesign --force --deep --options runtime --sign - "$app_path"
+  if [[ "$dev_signing_identity" != "-" ]]; then
+    timestamp_args=(--timestamp)
+  fi
+
+  codesign --force --options runtime "${timestamp_args[@]}" --sign "$dev_signing_identity" "${app_path}/Contents/MacOS/hazakura-apple-assist-helper"
+  codesign --force --options runtime "${timestamp_args[@]}" --sign "$dev_signing_identity" "${app_path}/Contents/MacOS/hazakura-editor"
+  codesign --force --deep --options runtime "${timestamp_args[@]}" --sign "$dev_signing_identity" "$app_path"
+  codesign --verify --deep --strict --verbose=2 "$app_path"
 }
 
 prepare_dev_bundle_identity() {
@@ -50,8 +102,11 @@ prepare_dev_bundle_identity() {
   set_plist_value "$plist_path" "CFBundleIdentifier" "string" "$dev_bundle_identifier"
 
   echo "==> re-sign Developer / GitHub lane"
+  echo "Signing identity: $dev_signing_identity"
   sign_app_bundle "$dev_app"
 }
+
+dev_signing_identity="$(resolve_dev_signing_identity)"
 
 echo "==> build Developer / GitHub lane"
 npm run build:developer-preview
