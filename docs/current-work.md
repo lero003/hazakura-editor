@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: Active post-approval, v0.20/v0.21, and quality routing
+Scope: Active post-approval, v0.20-v0.22, and quality routing
 Authority: High
-Last reviewed: 2026-06-18
+Last reviewed: 2026-06-19
 
 ## Purpose
 
@@ -125,17 +125,16 @@ src/styles/statusCss.test.ts`, `npm run build:vite`, and `npm run test`.
 
 ## v0.21 e-book Mode PoC
 
-v0.21 now has a display-only e-book Mode PoC for a single Markdown
-document. It uses the existing `renderMarkdown` / Preview HTML pipeline
-rather than CodeMirror decorations, splits ATX headings into
-chapter-like page sheets, keeps Markdown source unchanged, and adds a
+v0.21 had a display-only e-book Mode PoC for a single Markdown
+document. It used the existing `renderMarkdown` / Preview HTML pipeline
+rather than CodeMirror decorations, split ATX headings into
+chapter-like page sheets, kept Markdown source unchanged, and added a
 thin in-pane chapter navigation bar plus lightweight deferred rendering
 for the e-book surface.
 
-This is the MVP-prep finish line, not the v0.22 MVP. The next useful
-checks are visual/manual smoke and a narrow decision on whether the
-current Path Y surface is good enough to become the v0.22 horizontal
-e-book Mode MVP.
+This is historical MVP-prep evidence. v0.22 replaces the continuous
+scroll / all-chapter display with an active chapter reader while keeping
+the same Path Y safety boundary.
 
 Keep the completed v0.21 PoC out of:
 
@@ -145,11 +144,42 @@ Keep the completed v0.21 PoC out of:
 - L Mode integration beyond a light source-read of reusable boundaries.
 - Status bar structure cleanup, which remains a separate v0.21+ UX debt.
 
-External-agent friendly handoff: run manual smoke for e-book toggle,
-chapter navigation, workspace images, light/dark appearance, and long
-prose responsiveness. If these pass, treat Path Y as the v0.22 base and
-plan only the next MVP slice; do not jump to EPUB export or multi-file
-book structure.
+## v0.22 e-book Mode Chapter Reader MVP
+
+v0.22 turns e-book Mode into a chapter reader MVP. It keeps Markdown
+source canonical and continues to use `splitMarkdownIntoChapters`,
+`renderMarkdown`, `inlineWorkspaceAssetImages`, sanitize, workspace
+image boundary, and Preview link routing.
+
+Implemented locally as of 2026-06-19:
+
+- `EBookPane` renders only the active `.ebook-chapter` into the DOM.
+- `前の章` / `次の章` controls, chapter title, and `n / total` progress
+  provide a simple reader chrome.
+- `documentPath` changes reset to the first chapter, and source edits
+  that reduce chapter count clamp the active index.
+- `ArrowLeft` / `ArrowRight` chapter changes are scoped to the focused
+  reader root only; no global key listener is used.
+- `useDeferredValue(source)` is removed. The reader renders the visible
+  chapter only, so source/chapter state consistency is prioritized over
+  deferred display.
+- e-book CSS removes the old multiple page sheet / chapter ornament /
+  horizontal chapter nav model and scopes new reader chrome under
+  `.ebook-pane`.
+
+Manual smoke still useful: e-book toggle, one-chapter display,
+previous/next controls, reader-root keyboard focus, workspace images,
+blocked image appearance, light/dark appearance, and one very long
+chapter's responsiveness.
+
+Next candidate after review: CSS columns pseudo-pagination Spike. Keep
+the v0.22 active chapter reader, choose one fixed reference reader device
+for verification, and treat page counts as an app simulation result
+rather than a guarantee of Kindle / Apple Books / Kobo pagination.
+
+Do not include in v0.22: CSS columns pseudo-pagination, true pagination,
+spread view, vertical writing, EPUB export, multi-file book structure,
+or L Mode integration.
 
 ## Active UX Queue
 

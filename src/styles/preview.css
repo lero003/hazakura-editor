@@ -438,31 +438,22 @@
   }
 }
 
-/* ── v0.21 e-book Mode PoC ───────────────────────────────────────
+/* ── v0.22 e-book Mode MVP ────────────────────────────────────────
  *
- * Display-only book-like reading surface (Path Y). The chapter HTML
- * comes from `renderMarkdown()` and reuses the `.markdown-preview`
- * selectors above; the rules below only layer a book canvas, page
- * sheets, and chapter-opener / cover / front-matter treatments on top.
- * Source is never edited here. Not real pagination, not a spread — a
- * long chapter scrolls within its page sheet.
- *
- * Theme variables (--surface / --surface-strong / --text /
- * --text-muted / --border / --accent / --accent-soft) are defined per
- * theme in themes.css, so the same rules hold for light and dark.
+ * Display-only active chapter reader (Path Y). The chapter HTML comes
+ * from `renderMarkdown()` and reuses the `.markdown-preview` selectors
+ * above; the rules below only add reader chrome and a book-like
+ * single-chapter paper canvas. Source is never edited here. Not real
+ * pagination, not a spread: a long chapter still scrolls vertically.
  */
 
 .ebook-pane {
-  /* The canvas sits behind the page sheets: a calm, slightly recessed
-     tone that lets the sheets read as paper without competing with the
-     app background. */
-  background: color-mix(in srgb, var(--bg, #f5f5f7) 80%, var(--surface-muted, #ededf0) 20%);
+  background: var(--surface, #ffffff);
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: clamp(20px, 3vw, 36px);
-  /* The pane itself is the scroll container; add breathing room so the
-     first and last page sheets are not flush against the pane edges. */
-  padding: clamp(24px, 4vw, 56px) clamp(12px, 3vw, 32px) clamp(48px, 6vw, 96px);
+  min-height: 100%;
+  padding: 0;
 }
 
 /* The pane also carries the `.markdown-preview` class so the shared
@@ -477,93 +468,95 @@
   box-shadow: none;
   margin: 0;
   max-width: none;
-  padding: clamp(24px, 4vw, 56px) clamp(12px, 3vw, 32px) clamp(48px, 6vw, 96px);
+  padding: 0;
   width: 100%;
 }
 
-.ebook-pane .ebook-nav {
-  align-self: center;
-  background: color-mix(in srgb, var(--surface, #ffffff) 90%, transparent);
-  border: 1px solid color-mix(in srgb, var(--border, #d2d2d7) 55%, transparent);
-  border-radius: 6px;
-  box-shadow: 0 4px 18px color-mix(in srgb, var(--text, #000) 5%, transparent);
+.ebook-pane .ebook-reader-chrome {
+  align-items: center;
+  background: color-mix(in srgb, var(--surface, #ffffff) 94%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--border, #d2d2d7) 55%, transparent);
   box-sizing: border-box;
-  max-width: min(720px, 100%);
-  overflow-x: auto;
-  padding: 6px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(92px, auto) minmax(0, 1fr) minmax(92px, auto);
+  min-height: 48px;
+  padding: 8px clamp(12px, 3vw, 28px);
   position: sticky;
-  scrollbar-width: thin;
   top: 0;
-  width: 100%;
   z-index: 1;
 }
 
-.ebook-pane .ebook-nav-list {
-  display: flex;
-  gap: 6px;
-  min-width: max-content;
-}
-
-.ebook-pane .ebook-nav-item {
-  background: transparent;
-  border: 1px solid transparent;
+.ebook-pane .ebook-reader-button {
+  background: color-mix(in srgb, var(--surface-muted, #f5f5f7) 75%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border, #d2d2d7) 65%, transparent);
   border-radius: 4px;
-  color: var(--text-muted, #6e6e73);
+  color: var(--text, #1d1d1f);
   cursor: pointer;
-  flex: 0 0 auto;
   font-family: var(--font-ui, -apple-system, BlinkMacSystemFont, sans-serif);
   font-size: 12px;
+  font-weight: 500;
   line-height: 1.3;
-  max-width: 18em;
-  overflow: hidden;
-  padding: 5px 9px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-height: 30px;
+  padding: 5px 10px;
 }
 
-.ebook-pane .ebook-nav-item:hover {
-  background: color-mix(in srgb, var(--accent-soft, #f8dbe8) 42%, transparent);
+.ebook-pane .ebook-reader-button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-soft, #f8dbe8) 42%, var(--surface, #ffffff));
   border-color: color-mix(in srgb, var(--accent, #b3416a) 28%, transparent);
-  color: var(--text, #1d1d1f);
 }
 
-.ebook-pane .ebook-nav-item:focus-visible {
+.ebook-pane .ebook-reader-button:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--accent, #b3416a) 55%, transparent);
   outline-offset: 1px;
 }
 
+.ebook-pane .ebook-reader-button:disabled {
+  color: color-mix(in srgb, var(--text-muted, #6e6e73) 58%, transparent);
+  cursor: default;
+  opacity: 0.64;
+}
+
+.ebook-pane .ebook-reader-status {
+  min-width: 0;
+  text-align: center;
+}
+
+.ebook-pane .ebook-reader-title {
+  color: var(--text, #1d1d1f);
+  font-family: var(--font-ui, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ebook-pane .ebook-reader-progress {
+  color: var(--text-muted, #6e6e73);
+  font-family: var(--font-ui, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: 11px;
+  line-height: 1.3;
+  margin-top: 2px;
+}
+
 .ebook-chapter {
-  /* Each chapter reads as one page sheet: a calm paper surface, a
-     quiet hairline edge, and a soft drop shadow so consecutive sheets
-     separate visually even when a chapter is short. */
-  background: var(--surface, #ffffff);
-  border: 1px solid color-mix(in srgb, var(--border, #d2d2d7) 55%, transparent);
-  border-radius: 6px;
-  box-shadow:
-    0 1px 2px color-mix(in srgb, var(--text, #000) 6%, transparent),
-    0 8px 28px color-mix(in srgb, var(--text, #000) 5%, transparent);
   box-sizing: border-box;
   margin: 0 auto;
-  max-width: min(720px, 100%);
-  padding: clamp(40px, 6vw, 80px) clamp(36px, 6vw, 76px);
-  position: relative;
+  max-width: min(760px, 100%);
+  padding: clamp(48px, 7vw, 92px) clamp(36px, 7vw, 84px) clamp(64px, 9vw, 120px);
   width: 100%;
 }
 
 .ebook-chapter > div {
-  /* The inner div wraps each chapter's sanitised HTML. Book-forward
-     serif typography with generous line-height for sustained reading. */
   color: var(--text, #1d1d1f);
   font-family: "Iowan Old Style", "Charter", Georgia, "Times New Roman", serif;
   font-size: var(--preview-font-size, 17px);
   line-height: 1.9;
-  /* Hyphenation + text-wrap balance keeps prose edges calm on long
-     Japanese / English mixed lines without altering the saved source. */
   text-wrap: pretty;
   word-break: break-word;
 }
-
-/* Chapter-opener headings read as the start of a new page. */
 
 .ebook-chapter h1,
 .ebook-chapter h2 {
@@ -573,44 +566,41 @@
   margin-top: 0;
 }
 
-.ebook-chapter > div > h1:first-child,
-.ebook-chapter > div > h2:first-child {
-  /* A chapter that begins with its heading gets opener air above. */
-  margin-top: 0;
-}
-
-.ebook-chapter p {
-  /* Gentle paragraph indentation rhythm is intentionally NOT applied:
-     Markdown mixes lists, quotes, code, and prose, and forcing indent
-     on every <p> would fight block elements. Keep paragraphs spaced. */
-  margin: 0 0 1em;
-}
-
-/* ── Cover / front matter (the opening page) ── */
-
-.ebook-chapter-opener.ebook-chapter-cover {
-  /* The first H1 chapter reads as a title page: a taller sheet with a
-     centered, accented title and a quiet rule beneath it. */
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: min(60vh, 560px);
-  padding: clamp(64px, 10vw, 128px) clamp(36px, 6vw, 76px);
+.ebook-chapter > div > h1:first-child {
+  border-bottom: 0;
+  margin: 0 auto clamp(32px, 4vw, 52px);
+  max-width: 18em;
+  padding-bottom: 0;
   text-align: center;
 }
 
-.ebook-chapter-opener.ebook-chapter-cover > div {
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  max-width: 36em;
+.ebook-chapter > div > h2:first-child {
+  border-bottom: 0;
+  margin: 0 auto clamp(32px, 4vw, 52px);
+  max-width: 18em;
+  padding-bottom: 0;
+  text-align: center;
+}
+
+.ebook-chapter > div > h1:first-child::after,
+.ebook-chapter > div > h2:first-child::after {
+  background: color-mix(in srgb, var(--accent, #b3416a) 62%, transparent);
+  content: "";
+  display: block;
+  height: 2px;
+  margin: clamp(14px, 2vw, 22px) auto 0;
+  width: clamp(44px, 7vw, 72px);
+}
+
+.ebook-chapter p {
+  margin: 0 0 1em;
+}
+
+.ebook-chapter-opener.ebook-chapter-cover {
+  padding-top: clamp(72px, 12vw, 132px);
 }
 
 .ebook-chapter-opener.ebook-chapter-cover h1 {
-  /* The cover title uses its own short accent rule (`h1::after` below),
-     so the shared `.markdown-preview h1` underline must be removed to
-     avoid a long bottom border stacking under the short rule. */
   border-bottom: 0;
   color: var(--accent, #b3416a);
   font-size: clamp(1.8rem, 4vw, 2.6rem);
@@ -620,20 +610,7 @@
   padding-bottom: 0;
 }
 
-.ebook-chapter-opener.ebook-chapter-cover h1::after {
-  /* A short accent rule under the cover title marks it as a title
-     page rather than a chapter heading. */
-  background: color-mix(in srgb, var(--accent, #b3416a) 70%, transparent);
-  content: "";
-  display: block;
-  height: 2px;
-  margin-top: clamp(14px, 2vw, 22px);
-  width: clamp(40px, 8vw, 72px);
-}
-
 .ebook-chapter-frontmatter {
-  /* The opening preamble (text before the first heading) reads as
-     front matter: a smaller, calmer sheet than a chapter page. */
   font-style: normal;
   max-width: min(620px, 100%);
 }
@@ -643,32 +620,7 @@
   font-size: calc(var(--preview-font-size, 17px) * 0.94);
 }
 
-/* ── Chapter break ornament between sheets ── */
-
-.ebook-chapter + .ebook-chapter::before {
-  /* A centered dingbat-style break between page sheets replaces the
-     flat rule so consecutive chapters read as turned pages. Positioned
-     in the pane gap (negative top), not on the sheet itself. */
-  align-items: center;
-  color: color-mix(in srgb, var(--text-muted, #8a9b91) 55%, transparent);
-  content: "❧";
-  display: flex;
-  font-size: clamp(14px, 1.6vw, 18px);
-  height: 0;
-  justify-content: center;
-  left: 50%;
-  position: absolute;
-  top: clamp(-26px, -3vw, -18px);
-  transform: translateX(-50%);
-  width: 0;
-}
-
-/* ── Blocked-image note: present but unobtrusive ── */
-
 .ebook-pane .blocked-image {
-  /* A blocked image is a reading footnote, not a warning. Inline,
-     muted, and italic so it sits with the prose instead of breaking
-     the page rhythm. */
   background: color-mix(in srgb, var(--surface-muted, #f5f5f7) 70%, transparent);
   border-radius: 4px;
   color: var(--text-muted, #6e6e73);
@@ -679,30 +631,24 @@
   padding: 1px 8px;
 }
 
-/* ── Reading-width responsiveness ── */
-
 @media (max-width: 720px) {
-  .ebook-pane {
-    gap: clamp(16px, 4vw, 24px);
-    padding: 16px 6px 64px;
+  .ebook-pane .ebook-reader-chrome {
+    gap: 6px;
+    grid-template-columns: minmax(68px, auto) minmax(0, 1fr) minmax(68px, auto);
+    padding: 7px 8px;
   }
 
-  .ebook-pane.markdown-preview {
-    padding: 16px 6px 64px;
-  }
-
-  .ebook-pane .ebook-nav {
-    border-radius: 4px;
-    padding: 5px;
+  .ebook-pane .ebook-reader-button {
+    font-size: 11px;
+    min-height: 28px;
+    padding: 4px 7px;
   }
 
   .ebook-chapter {
-    border-radius: 4px;
-    padding: clamp(28px, 6vw, 44px) clamp(20px, 5vw, 32px);
+    padding: clamp(32px, 8vw, 52px) clamp(20px, 6vw, 34px) clamp(52px, 10vw, 76px);
   }
 
   .ebook-chapter-opener.ebook-chapter-cover {
-    min-height: auto;
-    padding: clamp(40px, 10vw, 72px) clamp(20px, 5vw, 32px);
+    padding-top: clamp(48px, 12vw, 80px);
   }
 }

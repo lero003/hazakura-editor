@@ -3,7 +3,7 @@
 Status: Proposal
 Scope: v0.21+ authoring and export planning
 Authority: Medium
-Last reviewed: 2026-06-17
+Last reviewed: 2026-06-19
 
 ## Summary
 
@@ -209,40 +209,104 @@ Markdown source、Preview、Diff、Export HTML、L Mode の編集面は
 - 追加の実機 smoke 項目: e-book toggle、章ナビ移動、workspace内画像、
   light/dark表示、長文入力時の体感。
 
-### v0.22: e-book Mode MVP
+### v0.22: e-book Mode Chapter Reader MVP (実装済み / 2026-06-19)
 
-最初は「編集しながら雰囲気を確認する」ことだけに絞る。
+v0.21 の連続スクロール型PoCを、章送りの読書面へ作り替えた。
+目的は EPUB 完全再現ではなく、「綺麗なPreview」から「章をめくる
+読書面」へ体感を変えられるか評価することである。
 
-- 既存のモード切り替え導線から e-bookモードへ入る。
-- Markdown source は同じタブの本文として保持する。
-- 表示は横書き EPUB-like page preview を横に出す、または一時的な
-  one-pane preview とする。
-- 単一長文の章構造を見出しベースでレンダリングする。
-- 横書きを先に実装し、縦書きは後続に分ける。
-- 画像は既存の workspace image validation とサイズ上限に従う。
-- リアルタイム反映は debounced preview とし、大きい画像や長文では
-  更新頻度を落とす。
-- スタイル調整は最初は固定プリセットに留める。
+- `EBookPane` は `activeChapterIndex` を内部stateで持ち、DOMに出す
+  `.ebook-chapter` は常に1つだけにした。`documentPath` 変更時は
+  先頭章へ戻し、source編集で章数が減った場合は index を有効範囲へ
+  clampする。
+- `useDeferredValue(source)` は外した。章送りでは全章レンダリングを
+  やめ、表示中の1章だけを `renderMarkdown()` +
+  `inlineWorkspaceAssetImages()` に通すため、遅延表示より source と
+  章stateの同期を優先した。
+- 章送りUIは `前の章` / `次の章`、章タイトル、`n / total` の最小
+  reader chrome とした。`SidePane` から `menuLanguage` を渡し、
+  ja / en / kana の短いcopyを切り替える。
+- キーボード操作は reader root にフォーカスがある時だけ
+  `ArrowLeft` / `ArrowRight` を扱う。window/global listener は使わず、
+  リンク、ボタン、検索、パレット等の Arrow 操作を奪わない。
+- 章扉仕様は MVP では「A: 章の冒頭ヘッダ」。見出しは active chapter
+  内で中央寄せ/強調するが、独立ページには分けない。本文は下に続き、
+  章内スクロールでヘッダが流れることを許容する。
+- CSSは e-book block 内で作り直した。複数 page sheet、章間
+  オーナメント、横スクロール章ナビは撤去し、`.ebook-pane` を紙面
+  キャンバス、`.ebook-reader-*` を reader chrome、`.ebook-chapter`
+  を active chapter 本文として扱う。
 
-MVPで扱う候補:
+検証:
 
-- body width / line-height / font-size
-- heading rhythm
-- paragraph spacing
-- blockquote / code / table の最低限の可読性
-- page break marker
-- unresolved image warning
+- `EBookPane.test.tsx`: active chapterのみのDOM、前/次ボタン、
+  端のdisabled、root focus限定の左右キー、`documentPath` reset、
+  source shrink clamp、preamble / heading-less label、ja/en/kana copy、
+  workspace画像解決、blocked image、sanitize、link routing。
+- `previewCss.test.ts`: e-book reader chrome と章ヘッダCSSのスコープ、
+  Previewカード継承リセット、cover H1下線解除、旧page sheet /
+  章間オーナメント / 横ナビ依存の撤去。
 
 MVPで扱わないもの:
 
-- 完全なKindle端末再現
-- 縦書きの確定実装
-- 細かな組版UI
-- 画像トリミングやレイアウト編集
-- EPUBファイル生成
-- 複数ファイルの章順保存
+- CSS columns 擬似ページネーション。
+- 本物のページ計算、見開き、縦書き。
+- 細かな組版UI、画像トリミングやレイアウト編集。
+- EPUBファイル生成。
+- 複数ファイルの章順保存。
+- L Mode統合。共存を継続する。
 
-### v0.23: Book Structure Overview
+### v0.23: CSS Columns Pseudo Pagination Spike
+
+v0.22 の章送りMVPで「章をめくる」体感は得られた。次の確認対象は、
+章内の本文を実際の読書端末に近い単位で「ページをめくる」体感へ
+寄せられるかである。
+
+ここでいう擬似ページネーションは、Markdown sourceを文字数で分割する
+機能ではない。読書端末と同じく、ページ境界はフォント、本文幅、
+表示高さ、行間、画像、見出し、表、コードブロックによって変わる。
+そのため、まずは描画済みHTMLをCSS columnsで横方向に流し、ブラウザの
+layout結果を端末シミュレーションとして扱う。
+
+#### Simulation Device Policy
+
+初期の e-book Mode は、特定の実機Kindle / Apple Books / Koboを完全に
+再現しない。代わりに、アプリ内で次の **固定シミュレーション端末** を
+定義して検証する。
+
+- writing preview device: 現在の右ペイン幅を基準にした可変プレビュー。
+  執筆中の軽い確認向け。ウィンドウ幅に応じてページ数は変わってよい。
+- reference reader device: 後続で1つだけ固定サイズを決める基準端末。
+  例: 文庫相当の本文幅、横書き、serif / 明朝系、固定行間。手動smokeや
+  回帰確認ではこの端末を基準にする。
+
+この方針により、e-book Mode のページ数は **実際のEPUBリーダーでの
+最終ページ数を保証しない**。保証するのは、同じsourceと同じ
+シミュレーション設定の中で、章内の読み進み、画像の収まり、見出しの
+強さ、長文の読書感を評価できることである。
+
+#### Spike Scope
+
+- active chapter reader は維持し、章内本文だけを CSS columns で
+  横方向の擬似ページにする。
+- 左右キーはまず章内ページ送りに使い、章末 / 章頭で必要なら章送りへ
+  接続する。
+- reader chrome は `章 n / total` と `ページ n / total` を分けて表示する。
+- 画像、表、コードブロックは `break-inside: avoid` や `max-height` を
+  使い、ページ分割の破綻を観測する。
+- `---` は Markdown の水平線として維持する。将来の明示改ページ記法に
+  昇格するかは、CSS columns Spike 後に判断する。
+
+#### Spike Non-goals
+
+- 文字数ベースの分割。日本語、画像、リスト、表、コードで破綻しやすく、
+  実際の読書端末のページ境界とも一致しない。
+- 本物のページ計算エンジン。行高、禁則、画像高、表分割を自前で計算する
+  実装はこのSpikeでは扱わない。
+- 複数端末プリセット、端末選択UI、縦書き、見開き。
+- EPUB export のページ数保証。
+
+### Later: Book Structure Overview
 
 複数Markdownファイルを「一冊の本の章」として眺める。これは
 ファイルマネージャではなく、章構造化表示である。

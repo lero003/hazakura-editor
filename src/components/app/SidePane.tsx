@@ -132,6 +132,7 @@ export function SidePane({
         <Suspense fallback={null}>
           <EBookPane
             documentPath={activeTab.path}
+            menuLanguage={menuLanguage}
             onOpenLocalLink={onOpenPreviewLocalLink}
             source={activeContents}
             workspaceRoot={

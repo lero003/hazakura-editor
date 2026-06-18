@@ -1,41 +1,37 @@
-// v0.21 e-book Mode PoC — display-only book-like reading surface.
+// v0.22 e-book Mode MVP — display-only active chapter reader.
 //
-// This is Path Y from the v0.21 plan: it renders Markdown through the
-// existing `renderMarkdown()` / `inlineWorkspaceAssetImages()` safety
-// pipeline, never through CodeMirror decoration. The Markdown source is
-// never edited here; this pane is read-only by construction (it only
-// sets `dangerouslySetInnerHTML` on sanitised HTML, with no input or
+// This is still Path Y: Markdown is rendered through the existing
+// `renderMarkdown()` / `inlineWorkspaceAssetImages()` safety pipeline,
+// never through CodeMirror decoration. The Markdown source is never
+// edited here; this pane is read-only by construction (it only sets
+// `dangerouslySetInnerHTML` on sanitised HTML, with no input or
 // contenteditable surface).
 //
-// The chapter split happens before rendering: the source is split into
-// ATX-heading chapter segments and each segment is rendered through
-// `renderMarkdown()` independently, so a `<script>` / `<iframe>` /
-// external image inside one chapter cannot reach the others and the
-// same DOMPurify + workspace-image boundary that protects Preview also
-// protects this surface.
-//
-// Coexistence with L Mode is intentional: L Mode is the CodeMirror
-// Live Source writing surface; this pane is a separate, HTML-rendered
-// reading surface. The two do not share state. See
-// docs/ebook-mode-epub-export-plan.md (Relationship To L Mode).
+// v0.22 changes the v0.21 continuous-scroll PoC into a chapter reader:
+// only the active chapter is rendered into the DOM, and previous / next
+// controls move between chapter segments. Coexistence with L Mode is
+// intentional: L Mode remains the Live Source writing surface, while
+// this pane is a separate, HTML-rendered reading surface.
 
 import {
+  type KeyboardEvent,
   type MouseEvent,
-  useDeferredValue,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
+import { splitMarkdownIntoChapters } from "../../../features/editor/ebookChapters";
 import {
   inlineWorkspaceAssetImages,
   renderMarkdown,
 } from "../../../features/editor/markdown";
-import { splitMarkdownIntoChapters } from "../../../features/editor/ebookChapters";
 import { openWorkspaceImage } from "../../../lib/tauri";
+import type { MenuLanguage } from "../../../types";
+import { isJapaneseMenuLanguage } from "../../../types";
 
 type EBookPaneProps = {
   documentPath?: string | null;
+  menuLanguage?: MenuLanguage;
   onOpenLocalLink?: (href: string) => void;
   source: string;
   workspaceRoot?: string | null;
@@ -48,77 +44,115 @@ type RenderedChapter = {
   html: string;
 };
 
+type EBookReaderCopy = {
+  body: string;
+  frontMatter: string;
+  nextChapter: string;
+  previousChapter: string;
+  readerLabel: string;
+};
+
 export default function EBookPane({
   documentPath,
+  menuLanguage = "en",
   onOpenLocalLink,
   source,
   workspaceRoot,
 }: EBookPaneProps) {
-  // Keep editor input responsive while this display-only surface rebuilds
-  // its sanitised HTML for long prose / image-heavy documents.
-  const deferredSource = useDeferredValue(source);
-  const chapterElementsRef = useRef(new Map<number, HTMLElement>());
+  const copy = getEBookReaderCopy(menuLanguage);
+  const chapters = useMemo(() => splitMarkdownIntoChapters(source), [source]);
+  const [activeChapterIndex, setActiveChapterIndex] = useState(0);
 
-  // Split once per source; chapter boundaries are a pure function of
-  // the Markdown text, so they are memoised independently of rendering.
-  const chapters = useMemo(
-    () => splitMarkdownIntoChapters(deferredSource),
-    [deferredSource],
+  useEffect(() => {
+    setActiveChapterIndex(0);
+  }, [documentPath]);
+
+  useEffect(() => {
+    setActiveChapterIndex((current) =>
+      clampChapterIndex(current, chapters.length),
+    );
+  }, [chapters.length]);
+
+  const activeChapterIndexSafe = clampChapterIndex(
+    activeChapterIndex,
+    chapters.length,
   );
+  const activeChapter = chapters[activeChapterIndexSafe] ?? chapters[0];
+  const activeRenderedChapter = useMemo<RenderedChapter | null>(() => {
+    if (!activeChapter) {
+      return null;
+    }
 
-  // Each chapter is rendered through `renderMarkdown()` so the same
-  // sanitisation, image, table, and task policies apply per chapter.
-  const renderedChapters = useMemo<RenderedChapter[]>(
-    () =>
-      chapters.map((chapter) => ({
-        index: chapter.index,
-        headingLevel: chapter.headingLevel,
-        headingText: chapter.headingText,
-        html: renderMarkdown(chapter.source, {
-          documentPath,
-          workspaceRoot,
-        }),
-      })),
-    [chapters, documentPath, workspaceRoot],
-  );
+    return {
+      index: activeChapter.index,
+      headingLevel: activeChapter.headingLevel,
+      headingText: activeChapter.headingText,
+      html: renderMarkdown(activeChapter.source, {
+        documentPath,
+        workspaceRoot,
+      }),
+    };
+  }, [activeChapter, documentPath, workspaceRoot]);
 
-  const [chaptersHtml, setChaptersHtml] =
-    useState<RenderedChapter[]>(renderedChapters);
+  const [activeChapterHtml, setActiveChapterHtml] =
+    useState<RenderedChapter | null>(activeRenderedChapter);
 
   useEffect(() => {
     let cancelled = false;
-    setChaptersHtml(renderedChapters);
+    setActiveChapterHtml(activeRenderedChapter);
 
-    if (!workspaceRoot) {
+    if (!activeRenderedChapter || !workspaceRoot) {
       return () => {
         cancelled = true;
       };
     }
 
-    // Inline workspace images per chapter, mirroring PreviewPane. Each
-    // chapter's image resolution is independent so a slow / blocked
-    // image in one chapter does not stall the others.
-    void Promise.all(
-      renderedChapters.map(async (chapter) => {
-        const inlined = await inlineWorkspaceAssetImages(
-          chapter.html,
-          async (path) => {
-            const image = await openWorkspaceImage(workspaceRoot, path);
-            return image.dataUrl;
-          },
-        );
-        return { ...chapter, html: inlined };
-      }),
-    ).then((resolved) => {
+    // Inline workspace images for the visible chapter only. This keeps
+    // the Preview safety boundary while avoiding the v0.21 all-chapter
+    // rebuild cost.
+    void inlineWorkspaceAssetImages(
+      activeRenderedChapter.html,
+      async (path) => {
+        const image = await openWorkspaceImage(workspaceRoot, path);
+        return image.dataUrl;
+      },
+    ).then((inlined) => {
       if (!cancelled) {
-        setChaptersHtml(resolved);
+        setActiveChapterHtml({
+          ...activeRenderedChapter,
+          html: inlined,
+        });
       }
     });
 
     return () => {
       cancelled = true;
     };
-  }, [renderedChapters, workspaceRoot]);
+  }, [activeRenderedChapter, workspaceRoot]);
+
+  const goToPreviousChapter = () => {
+    setActiveChapterIndex((current) => Math.max(current - 1, 0));
+  };
+
+  const goToNextChapter = () => {
+    setActiveChapterIndex((current) =>
+      Math.min(current + 1, Math.max(chapters.length - 1, 0)),
+    );
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
+    if (event.target !== event.currentTarget) {
+      return;
+    }
+
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      goToPreviousChapter();
+    } else if (event.key === "ArrowRight") {
+      event.preventDefault();
+      goToNextChapter();
+    }
+  };
 
   const handleClick = (event: MouseEvent<HTMLElement>) => {
     if (!onOpenLocalLink) {
@@ -140,65 +174,69 @@ export default function EBookPane({
     onOpenLocalLink(href);
   };
 
-  const scrollToChapter = (chapterIndex: number) => {
-    chapterElementsRef.current.get(chapterIndex)?.scrollIntoView({
-      block: "start",
-      behavior: "smooth",
-    });
-  };
+  const totalChapters = chapters.length;
+  const chapterLabel = chapterNavigationLabel(
+    activeChapter ?? null,
+    activeChapterIndexSafe,
+    totalChapters,
+    copy,
+  );
 
   return (
     <article
+      aria-label={copy.readerLabel}
       className="ebook-pane markdown-preview"
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
     >
-      <nav className="ebook-nav" aria-label="章">
-        <div className="ebook-nav-list">
-          {chaptersHtml.map((chapter, position) => {
-            const label = chapterNavigationLabel(
-              chapter,
-              position,
-              chaptersHtml.length,
-            );
-            return (
-              <button
-                className="ebook-nav-item"
-                key={chapter.index}
-                onClick={() => scrollToChapter(chapter.index)}
-                title={label}
-                type="button"
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
-      </nav>
-      {chaptersHtml.map((chapter, position) => (
-        <section
-          key={chapter.index}
-          className={chapterClassName(chapter, position)}
-          ref={(element) => {
-            if (element) {
-              chapterElementsRef.current.set(chapter.index, element);
-            } else {
-              chapterElementsRef.current.delete(chapter.index);
-            }
-          }}
+      <header className="ebook-reader-chrome">
+        <button
+          className="ebook-reader-button"
+          disabled={activeChapterIndexSafe === 0}
+          onClick={goToPreviousChapter}
+          type="button"
         >
-          <div dangerouslySetInnerHTML={{ __html: chapter.html }} />
+          {copy.previousChapter}
+        </button>
+        <div className="ebook-reader-status">
+          <div className="ebook-reader-title" title={chapterLabel}>
+            {chapterLabel}
+          </div>
+          <div className="ebook-reader-progress">
+            {activeChapterIndexSafe + 1} / {totalChapters}
+          </div>
+        </div>
+        <button
+          className="ebook-reader-button"
+          disabled={activeChapterIndexSafe >= totalChapters - 1}
+          onClick={goToNextChapter}
+          type="button"
+        >
+          {copy.nextChapter}
+        </button>
+      </header>
+      {activeChapterHtml ? (
+        <section
+          className={chapterClassName(
+            activeChapterHtml,
+            activeChapterIndexSafe,
+          )}
+        >
+          <div dangerouslySetInnerHTML={{ __html: activeChapterHtml.html }} />
         </section>
-      ))}
+      ) : null}
     </article>
   );
 }
 
-// Compose the per-chapter class so the stylesheet can render a
-// front-matter / cover treatment for the opening segment and a
-// chapter-opener treatment for the rest, without the component owning
-// any styling of its own. `position` is the rendered ordinal (0-based)
-// so a dropped empty preamble still makes the first visible chapter the
-// cover candidate.
+function clampChapterIndex(index: number, totalChapters: number): number {
+  if (totalChapters <= 0) {
+    return 0;
+  }
+  return Math.min(Math.max(index, 0), totalChapters - 1);
+}
+
 function chapterClassName(
   chapter: RenderedChapter,
   position: number,
@@ -219,19 +257,52 @@ function chapterClassName(
 }
 
 function chapterNavigationLabel(
-  chapter: RenderedChapter,
+  chapter: Pick<RenderedChapter, "headingText"> | null,
   position: number,
   totalChapters: number,
+  copy: EBookReaderCopy,
 ): string {
-  const headingText = chapter.headingText?.trim();
+  const headingText = chapter?.headingText?.trim();
   if (headingText) {
     return headingText;
   }
   if (totalChapters === 1) {
-    return "本文";
+    return copy.body;
   }
   if (position === 0) {
-    return "前付";
+    return copy.frontMatter;
   }
-  return `章 ${position + 1}`;
+  return `${position + 1} / ${totalChapters}`;
+}
+
+function getEBookReaderCopy(
+  menuLanguage: MenuLanguage,
+): EBookReaderCopy {
+  if (menuLanguage === "kana") {
+    return {
+      body: "本文",
+      frontMatter: "前付",
+      nextChapter: "つぎの章",
+      previousChapter: "まへの章",
+      readerLabel: "章送り",
+    };
+  }
+
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return {
+      body: "本文",
+      frontMatter: "前付",
+      nextChapter: "次の章",
+      previousChapter: "前の章",
+      readerLabel: "章送り",
+    };
+  }
+
+  return {
+    body: "Body",
+    frontMatter: "Front matter",
+    nextChapter: "Next chapter",
+    previousChapter: "Previous chapter",
+    readerLabel: "Chapter reader",
+  };
 }

@@ -236,29 +236,35 @@ Defer:
 - Cover / metadata editing.
 - EPUB archive export.
 
-## v0.23 Book Structure Overview
+## v0.23 CSS Columns Pseudo Pagination Spike
 
-Goal: let one selected workspace present several Markdown files as a
-book structure, without becoming a file manager or project analyzer.
+Goal: test whether the v0.22 chapter reader can become a page-like
+reading surface without introducing a custom pagination engine or a new
+document model.
 
 Expected direction:
 
-- Treat selected workspace Markdown files as chapters only through
-  explicit user action or an explicit book structure file.
-- Show chapter order and table-of-contents candidates.
-- Generate or update a table of contents only from a clear user command.
-- Decide where chapter order lives: frontmatter, `index.md`, a dedicated
-  table-of-contents file, or app-local settings.
-
-The likely first decision is to investigate an `index.md`-style structure
-because it may also fit later OKF bundle reading, but this remains an
-implementation decision for the PoC.
+- Keep Markdown source canonical and keep the existing Preview safety
+  pipeline.
+- Keep the active chapter reader, then paginate only the rendered active
+  chapter body with CSS columns.
+- Define one fixed reference reader device for verification. Treat
+  page counts as an app simulation result, not as a guarantee of Kindle,
+  Apple Books, Kobo, or EPUB-reader pagination.
+- Use horizontal page movement before considering true page calculation,
+  vertical writing, spread view, or EPUB export page fidelity.
 
 Do not add:
 
-- Full file-management workflows.
-- Workspace-wide semantic indexing.
+- Character-count based source splitting.
+- True pagination / line-layout calculation.
+- Multiple device presets or device-selection UI in the first spike.
+- Vertical writing, spread view, or EPUB page-count guarantees.
+- Full file-management workflows or workspace-wide semantic indexing.
 - Git, LSP, terminal, plugin, or arbitrary command behavior.
+
+Book Structure Overview moves later: several Markdown files as one book
+should wait until the single-document reading surface proves useful.
 
 ## v0.24 AI Proposal Ingest And Review
 

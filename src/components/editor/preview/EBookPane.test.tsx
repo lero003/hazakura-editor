@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { openWorkspaceImage } from "../../../lib/tauri";
 import EBookPane from "./EBookPane";
@@ -12,127 +18,208 @@ afterEach(() => {
   vi.mocked(openWorkspaceImage).mockReset();
 });
 
-describe("EBookPane chapter rendering", () => {
-  it("renders one chapter section per ATX heading", () => {
+describe("EBookPane chapter reader", () => {
+  it("renders only the active chapter and switches with reader controls", () => {
     render(
       <EBookPane
+        menuLanguage="ja"
         source={"# Chapter One\n\nbody one\n\n# Chapter Two\n\nbody two"}
       />,
     );
 
-    const chapters = screen
-      .getByRole("article")
-      .querySelectorAll(".ebook-chapter");
+    const article = screen.getByRole("article", { name: "章送り" });
+    expect(article.querySelectorAll(".ebook-chapter")).toHaveLength(1);
+    expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
+    expect(screen.getByText("body one")).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Chapter Two" })).toBeNull();
+    expect(screen.getByText("1 / 2")).toBeTruthy();
 
-    // Document starts with a heading, so the empty preamble is dropped
-    // and two chapter sections remain.
-    expect(chapters).toHaveLength(2);
-    expect(chapters[0].textContent).toContain("Chapter One");
-    expect(chapters[0].textContent).toContain("body one");
-    expect(chapters[1].textContent).toContain("Chapter Two");
-    expect(chapters[1].textContent).toContain("body two");
+    fireEvent.click(screen.getByRole("button", { name: "次の章" }));
+
+    expect(article.querySelectorAll(".ebook-chapter")).toHaveLength(1);
+    expect(screen.getByRole("heading", { name: "Chapter Two" })).toBeTruthy();
+    expect(screen.getByText("body two")).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Chapter One" })).toBeNull();
+    expect(screen.getByText("2 / 2")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "前の章" }));
+
+    expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Chapter Two" })).toBeNull();
   });
 
-  it("keeps a non-empty preamble as a front-matter chapter", () => {
+  it("disables reader controls at the document edges", () => {
     render(
       <EBookPane
-        source={"Front matter text.\n\n# Chapter One\n\nbody"}
+        menuLanguage="ja"
+        source={"# Chapter One\n\nbody one\n\n# Chapter Two\n\nbody two"}
       />,
     );
 
-    const chapters = screen
-      .getByRole("article")
-      .querySelectorAll(".ebook-chapter");
+    const previous = screen.getByRole("button", { name: "前の章" });
+    const next = screen.getByRole("button", { name: "次の章" });
 
-    expect(chapters).toHaveLength(2);
-    expect(chapters[0].classList.contains("ebook-chapter-preamble")).toBe(true);
-    expect(chapters[0].textContent).toContain("Front matter text.");
-    expect(chapters[1].textContent).toContain("Chapter One");
+    expect((previous as HTMLButtonElement).disabled).toBe(true);
+    expect((next as HTMLButtonElement).disabled).toBe(false);
+
+    fireEvent.click(next);
+
+    expect((previous as HTMLButtonElement).disabled).toBe(false);
+    expect((next as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it("marks the opening H1 chapter as a cover page", () => {
-    // A document that starts with an H1 reads as a title page: the
-    // first visible chapter carries the cover treatment, subsequent
-    // chapters are plain page sheets.
+  it("handles ArrowLeft and ArrowRight only from the focused reader root", () => {
     render(
       <EBookPane
+        menuLanguage="en"
+        source={"# Chapter One\n\n[open](./other.md)\n\n# Chapter Two\n\nbody two"}
+      />,
+    );
+
+    const article = screen.getByRole("article", { name: "Chapter reader" });
+    const link = screen.getByRole("link", { name: "open" });
+
+    fireEvent.keyDown(link, { key: "ArrowRight" });
+
+    expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Chapter Two" })).toBeNull();
+
+    article.focus();
+    fireEvent.keyDown(article, { key: "ArrowRight" });
+
+    expect(screen.getByRole("heading", { name: "Chapter Two" })).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Chapter One" })).toBeNull();
+
+    fireEvent.keyDown(article, { key: "ArrowLeft" });
+
+    expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Chapter Two" })).toBeNull();
+  });
+
+  it("resets to the first chapter when the document path changes", () => {
+    const { rerender } = render(
+      <EBookPane
+        documentPath="/workspace/one.md"
+        menuLanguage="en"
+        source={"# Chapter One\n\nbody one\n\n# Chapter Two\n\nbody two"}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Next chapter" }));
+    expect(screen.getByRole("heading", { name: "Chapter Two" })).toBeTruthy();
+
+    rerender(
+      <EBookPane
+        documentPath="/workspace/two.md"
+        menuLanguage="en"
+        source={"# Chapter One\n\nbody one\n\n# Chapter Two\n\nbody two"}
+      />,
+    );
+
+    expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Chapter Two" })).toBeNull();
+  });
+
+  it("clamps the active chapter when source edits reduce the chapter count", () => {
+    const { rerender } = render(
+      <EBookPane
+        menuLanguage="en"
+        source={
+          "# Chapter One\n\nbody one\n\n# Chapter Two\n\nbody two\n\n# Chapter Three\n\nbody three"
+        }
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Next chapter" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next chapter" }));
+    expect(screen.getByRole("heading", { name: "Chapter Three" })).toBeTruthy();
+
+    rerender(
+      <EBookPane
+        menuLanguage="en"
+        source={"# Chapter One\n\nbody one"}
+      />,
+    );
+
+    expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Chapter Three" })).toBeNull();
+    expect(screen.getByText("1 / 1")).toBeTruthy();
+  });
+
+  it("labels preamble and heading-less documents without breaking display", () => {
+    const { rerender } = render(
+      <EBookPane
+        menuLanguage="ja"
+        source={"front matter\n\n# Chapter\n\nbody"}
+      />,
+    );
+
+    expect(screen.getByText("前付")).toBeTruthy();
+    expect(screen.getByText("front matter")).toBeTruthy();
+
+    rerender(
+      <EBookPane
+        menuLanguage="en"
+        source={"plain body without headings"}
+      />,
+    );
+
+    expect(screen.getByText("Body")).toBeTruthy();
+    expect(screen.getByText("plain body without headings")).toBeTruthy();
+  });
+
+  it("localizes the minimal reader chrome for ja, en, and kana", () => {
+    const { rerender } = render(
+      <EBookPane
+        menuLanguage="ja"
+        source={"# 一\n\n本文\n\n# 二\n\n続き"}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "前の章" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "次の章" })).toBeTruthy();
+
+    rerender(
+      <EBookPane
+        menuLanguage="en"
+        source={"# One\n\nbody\n\n# Two\n\nmore"}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "Previous chapter" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Next chapter" })).toBeTruthy();
+
+    rerender(
+      <EBookPane
+        menuLanguage="kana"
+        source={"# 一\n\n本文\n\n# 二\n\n続き"}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "まへの章" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "つぎの章" })).toBeTruthy();
+  });
+
+  it("marks the opening H1 chapter as a cover-style opener", () => {
+    render(
+      <EBookPane
+        menuLanguage="en"
         source={"# Title\n\nintro\n\n## Chapter\n\nbody"}
       />,
     );
 
-    const chapters = screen
-      .getByRole("article")
-      .querySelectorAll(".ebook-chapter");
+    const chapter = screen
+      .getByRole("article", { name: "Chapter reader" })
+      .querySelector(".ebook-chapter");
 
-    expect(chapters[0].classList.contains("ebook-chapter-cover")).toBe(true);
-    expect(chapters[0].classList.contains("ebook-chapter-opener")).toBe(true);
-    // The H1 chapter is not a preamble.
-    expect(chapters[0].classList.contains("ebook-chapter-preamble")).toBe(false);
-    // A following non-opening chapter is a plain sheet.
-    expect(chapters[1].classList.contains("ebook-chapter-opener")).toBe(false);
-    expect(chapters[1].classList.contains("ebook-chapter-cover")).toBe(false);
-  });
-
-  it("marks the opening preamble as front matter", () => {
-    render(
-      <EBookPane source={"preface text\n\n# Chapter\n\nbody"} />,
-    );
-
-    const chapters = screen
-      .getByRole("article")
-      .querySelectorAll(".ebook-chapter");
-
-    expect(chapters[0].classList.contains("ebook-chapter-frontmatter")).toBe(true);
-    expect(chapters[0].classList.contains("ebook-chapter-cover")).toBe(false);
-    // The following H1 is not the opener (the preamble is), so it is a
-    // plain chapter sheet.
-    expect(chapters[1].classList.contains("ebook-chapter-opener")).toBe(false);
-  });
-
-  it("renders a thin chapter navigation for preamble, headings, and heading-less documents", () => {
-    const { rerender } = render(
-      <EBookPane
-        source={"preface text\n\n# Title\n\nintro\n\n## Chapter\n\nbody"}
-      />,
-    );
-
-    const nav = screen.getByRole("navigation", { name: "章" });
-    expect(nav.querySelectorAll(".ebook-nav-item")).toHaveLength(3);
-    expect(screen.getByRole("button", { name: "前付" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Title" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Chapter" })).toBeTruthy();
-
-    rerender(<EBookPane source={"plain body without headings"} />);
-
-    expect(screen.getByRole("button", { name: "本文" })).toBeTruthy();
-  });
-
-  it("scrolls the matching chapter into view from the chapter navigation", () => {
-    const scrollIntoView = vi.fn();
-    const originalScrollIntoView = HTMLElement.prototype.scrollIntoView;
-    HTMLElement.prototype.scrollIntoView = scrollIntoView;
-
-    try {
-      render(
-        <EBookPane
-          source={"# Title\n\nintro\n\n## Chapter One\n\nbody\n\n## Chapter Two\n\nmore"}
-        />,
-      );
-
-      fireEvent.click(screen.getByRole("button", { name: "Chapter Two" }));
-
-      expect(scrollIntoView).toHaveBeenCalledWith({
-        block: "start",
-        behavior: "smooth",
-      });
-    } finally {
-      HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
-    }
+    expect(chapter?.classList.contains("ebook-chapter-cover")).toBe(true);
+    expect(chapter?.classList.contains("ebook-chapter-opener")).toBe(true);
+    expect(chapter?.classList.contains("ebook-chapter-preamble")).toBe(false);
   });
 });
 
 describe("EBookPane safety boundary (renderMarkdown reuse)", () => {
-  it("strips a raw <script> tag across all chapters", () => {
+  it("strips raw <script> tags from the active chapter", () => {
     const source = [
       "# Chapter One",
       "",
@@ -151,12 +238,15 @@ describe("EBookPane safety boundary (renderMarkdown reuse)", () => {
     expect(article.querySelectorAll("script")).toHaveLength(0);
     expect(article.textContent).not.toContain("alert('xss')");
     expect(article.textContent).not.toContain("alert('xss2')");
+
+    fireEvent.click(screen.getByRole("button", { name: "Next chapter" }));
+
+    expect(article.querySelectorAll("script")).toHaveLength(0);
+    expect(article.textContent).not.toContain("alert('xss')");
+    expect(article.textContent).not.toContain("alert('xss2')");
   });
 
   it("blocks external image sources and keeps the workspace boundary intact", () => {
-    // Without a workspaceRoot, both a workspace-relative image and an
-    // external image must be replaced by a blocked-image note — the
-    // renderMarkdown policy must never fetch either.
     const source =
       "# Chapter\n\n![remote](https://evil.example/cat.png)\n\n![local](./local.png)";
 
@@ -168,9 +258,6 @@ describe("EBookPane safety boundary (renderMarkdown reuse)", () => {
   });
 
   it("resolves a workspace-relative image through inlineWorkspaceAssetImages", async () => {
-    // Regression for the v0.21 Slice 1 image bug: a workspace image in a
-    // chapter must be inlined into an <img> once openWorkspaceImage
-    // resolves. This mirrors what PreviewPane does.
     vi.mocked(openWorkspaceImage).mockResolvedValue({
       dataUrl: "data:image/png;base64,RESOLVED",
     } as Awaited<ReturnType<typeof openWorkspaceImage>>);
@@ -183,9 +270,6 @@ describe("EBookPane safety boundary (renderMarkdown reuse)", () => {
       />,
     );
 
-    // The async resolution lands after the first paint. Re-query the img
-    // inside waitFor so we read the live DOM attribute after React
-    // applies the inlined HTML, not a stale element reference.
     await waitFor(() => {
       const img = screen.getByRole("img");
       expect(img.getAttribute("src")).toBe("data:image/png;base64,RESOLVED");
@@ -198,9 +282,6 @@ describe("EBookPane safety boundary (renderMarkdown reuse)", () => {
   });
 
   it("shows a blocked-image note when openWorkspaceImage rejects", async () => {
-    // If the workspace image cannot be read (missing file, outside the
-    // workspace, decode error), the image becomes a blocked note rather
-    // than a broken <img> — matching the Preview behaviour.
     vi.mocked(openWorkspaceImage).mockRejectedValue(
       new Error("not found"),
     );
@@ -226,8 +307,6 @@ describe("EBookPane safety boundary (renderMarkdown reuse)", () => {
 
     const article = screen.getByRole("article");
     const links = article.querySelectorAll("a[href]");
-    // The dangerous href is stripped; either no link remains or the
-    // href is neutralised. Either way it cannot be a javascript: URL.
     for (const link of Array.from(links)) {
       expect(link.getAttribute("href")).not.toMatch(/^javascript:/i);
     }

@@ -62,11 +62,25 @@ describe("preview.css", () => {
     expect(body).toMatch(/padding-bottom:\s*0/);
   });
 
-  it("scopes the e-book chapter navigation to the e-book pane", () => {
-    const body = ruleBody(".ebook-pane .ebook-nav");
+  it("scopes the e-book reader chrome to the e-book pane", () => {
+    const body = ruleBody(".ebook-pane .ebook-reader-chrome");
 
     expect(body).toMatch(/position:\s*sticky/);
-    expect(body).toMatch(/overflow-x:\s*auto/);
-    expect(previewCss).not.toMatch(/(?:^|\n)\.ebook-nav\s*{/);
+    expect(body).toMatch(/grid-template-columns:/);
+    expect(previewCss).not.toMatch(/(?:^|\n)\.ebook-reader-chrome\s*{/);
+  });
+
+  it("keeps e-book chapter header styling inside the e-book pane flow", () => {
+    const body = ruleBody(".ebook-chapter > div > h1:first-child");
+
+    expect(body).toMatch(/text-align:\s*center/);
+    expect(body).toMatch(/border-bottom:\s*0/);
+    expect(previewCss).not.toMatch(/(?:^|\n)\.markdown-preview > div > h1:first-child/);
+  });
+
+  it("removes the old multi-sheet e-book dependencies", () => {
+    expect(previewCss).not.toMatch(/\.ebook-pane \.ebook-nav/);
+    expect(previewCss).not.toMatch(/\.ebook-chapter \+ \.ebook-chapter::before/);
+    expect(ruleBody(".ebook-chapter")).not.toMatch(/box-shadow:/);
   });
 });
