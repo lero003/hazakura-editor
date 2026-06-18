@@ -173,6 +173,42 @@ PoCスコープ外（明示的に今回やらない）:
 - L Mode 資産の再利用監査本体（別スライスで実施）。
 - 見開きレイアウト（別相談で一度外した）。
 
+### v0.21 PoC Slice 1/2 (実装済み / 2026-06-18)
+
+Slice 0 の Path Y 土台を、v0.21 の完了線である「本として読む入口を
+評価できる状態」まで整えた。範囲は引き続き表示専用であり、
+Markdown source、Preview、Diff、Export HTML、L Mode の編集面は
+変更しない。
+
+- 本風 reading surface: `EBookPane` の章ごとに page sheet / cover /
+  front matter の class を付与し、`src/styles/preview.css` の e-book
+  block だけで紙面風の余白、本文幅、serif typography、章間の
+  オーナメント、blocked image note を調整した。これはページの
+  メタファーであり、本物のページネーションではない。
+- 章ナビ: e-book pane 内の上部に薄い章ナビを追加した。章タイトルは
+  `splitMarkdownIntoChapters()` の `headingText` / `headingLevel` 由来で、
+  preamble は「前付」、見出しなし文書は「本文」として扱う。クリックは
+  該当章への scroll に留まり、Markdown source や outline state は
+  変更しない。
+- 軽い遅延表示: e-book pane の source 入力だけ `useDeferredValue` で
+  低優先表示にし、長文や画像混在文書で通常エディタ入力を優先する。
+  明示的なms debounce、idle scheduler、dirty section rebuild は
+  入れていない。
+- L Mode との関係: 引き続き共存。L Mode の CodeMirror decorations /
+  widgets は Live Source writing surface の資産として残し、e-book
+  Mode の主経路には使わない。統合 / 進化系判断は、v0.21 の運用と
+  v0.22 MVP検討の入力にする。
+
+検証:
+
+- `EBookPane.test.tsx`: 章レンダリング、cover/front matter class、
+  章ナビ表示、章ナビ scroll、sanitize、workspace画像解決、blocked
+  image、link routing。
+- `previewCss.test.ts`: Previewカード継承リセット、cover H1 の下線解除、
+  e-book章ナビのスコープ。
+- 追加の実機 smoke 項目: e-book toggle、章ナビ移動、workspace内画像、
+  light/dark表示、長文入力時の体感。
+
 ### v0.22: e-book Mode MVP
 
 最初は「編集しながら雰囲気を確認する」ことだけに絞る。

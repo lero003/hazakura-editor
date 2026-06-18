@@ -125,13 +125,19 @@ src/styles/statusCss.test.ts`, `npm run build:vite`, and `npm run test`.
 
 ## v0.21 e-book Mode PoC
 
-Start v0.21 with a display-only e-book Mode PoC for a single Markdown
-document. The first implementation slice should use the existing
-`renderMarkdown` / Preview HTML pipeline rather than CodeMirror
-decorations, split ATX headings into chapter-like sections, and keep
-Markdown source unchanged.
+v0.21 now has a display-only e-book Mode PoC for a single Markdown
+document. It uses the existing `renderMarkdown` / Preview HTML pipeline
+rather than CodeMirror decorations, splits ATX headings into
+chapter-like page sheets, keeps Markdown source unchanged, and adds a
+thin in-pane chapter navigation bar plus lightweight deferred rendering
+for the e-book surface.
 
-Keep this first slice out of:
+This is the MVP-prep finish line, not the v0.22 MVP. The next useful
+checks are visual/manual smoke and a narrow decision on whether the
+current Path Y surface is good enough to become the v0.22 horizontal
+e-book Mode MVP.
+
+Keep the completed v0.21 PoC out of:
 
 - EPUB archive generation.
 - Vertical writing.
@@ -139,10 +145,11 @@ Keep this first slice out of:
 - L Mode integration beyond a light source-read of reusable boundaries.
 - Status bar structure cleanup, which remains a separate v0.21+ UX debt.
 
-External-agent friendly handoff: implement the smallest Path Y preview
-surface and focused chapter-splitting tests, then report whether the
-Preview pipeline remains the right base before any L Mode integration
-decision.
+External-agent friendly handoff: run manual smoke for e-book toggle,
+chapter navigation, workspace images, light/dark appearance, and long
+prose responsiveness. If these pass, treat Path Y as the v0.22 base and
+plan only the next MVP slice; do not jump to EPUB export or multi-file
+book structure.
 
 ## Active UX Queue
 

@@ -19,7 +19,14 @@
 // reading surface. The two do not share state. See
 // docs/ebook-mode-epub-export-plan.md (Relationship To L Mode).
 
-import { type MouseEvent, useEffect, useMemo, useState } from "react";
+import {
+  type MouseEvent,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   inlineWorkspaceAssetImages,
   renderMarkdown,
@@ -47,11 +54,16 @@ export default function EBookPane({
   source,
   workspaceRoot,
 }: EBookPaneProps) {
+  // Keep editor input responsive while this display-only surface rebuilds
+  // its sanitised HTML for long prose / image-heavy documents.
+  const deferredSource = useDeferredValue(source);
+  const chapterElementsRef = useRef(new Map<number, HTMLElement>());
+
   // Split once per source; chapter boundaries are a pure function of
   // the Markdown text, so they are memoised independently of rendering.
   const chapters = useMemo(
-    () => splitMarkdownIntoChapters(source),
-    [source],
+    () => splitMarkdownIntoChapters(deferredSource),
+    [deferredSource],
   );
 
   // Each chapter is rendered through `renderMarkdown()` so the same
@@ -128,15 +140,51 @@ export default function EBookPane({
     onOpenLocalLink(href);
   };
 
+  const scrollToChapter = (chapterIndex: number) => {
+    chapterElementsRef.current.get(chapterIndex)?.scrollIntoView({
+      block: "start",
+      behavior: "smooth",
+    });
+  };
+
   return (
     <article
       className="ebook-pane markdown-preview"
       onClick={handleClick}
     >
+      <nav className="ebook-nav" aria-label="章">
+        <div className="ebook-nav-list">
+          {chaptersHtml.map((chapter, position) => {
+            const label = chapterNavigationLabel(
+              chapter,
+              position,
+              chaptersHtml.length,
+            );
+            return (
+              <button
+                className="ebook-nav-item"
+                key={chapter.index}
+                onClick={() => scrollToChapter(chapter.index)}
+                title={label}
+                type="button"
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      </nav>
       {chaptersHtml.map((chapter, position) => (
         <section
           key={chapter.index}
           className={chapterClassName(chapter, position)}
+          ref={(element) => {
+            if (element) {
+              chapterElementsRef.current.set(chapter.index, element);
+            } else {
+              chapterElementsRef.current.delete(chapter.index);
+            }
+          }}
         >
           <div dangerouslySetInnerHTML={{ __html: chapter.html }} />
         </section>
@@ -168,4 +216,22 @@ function chapterClassName(
     classes.push("ebook-chapter-preamble");
   }
   return classes.join(" ");
+}
+
+function chapterNavigationLabel(
+  chapter: RenderedChapter,
+  position: number,
+  totalChapters: number,
+): string {
+  const headingText = chapter.headingText?.trim();
+  if (headingText) {
+    return headingText;
+  }
+  if (totalChapters === 1) {
+    return "本文";
+  }
+  if (position === 0) {
+    return "前付";
+  }
+  return `章 ${position + 1}`;
 }

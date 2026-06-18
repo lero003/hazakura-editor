@@ -481,6 +481,57 @@
   width: 100%;
 }
 
+.ebook-pane .ebook-nav {
+  align-self: center;
+  background: color-mix(in srgb, var(--surface, #ffffff) 90%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border, #d2d2d7) 55%, transparent);
+  border-radius: 6px;
+  box-shadow: 0 4px 18px color-mix(in srgb, var(--text, #000) 5%, transparent);
+  box-sizing: border-box;
+  max-width: min(720px, 100%);
+  overflow-x: auto;
+  padding: 6px;
+  position: sticky;
+  scrollbar-width: thin;
+  top: 0;
+  width: 100%;
+  z-index: 1;
+}
+
+.ebook-pane .ebook-nav-list {
+  display: flex;
+  gap: 6px;
+  min-width: max-content;
+}
+
+.ebook-pane .ebook-nav-item {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--text-muted, #6e6e73);
+  cursor: pointer;
+  flex: 0 0 auto;
+  font-family: var(--font-ui, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: 12px;
+  line-height: 1.3;
+  max-width: 18em;
+  overflow: hidden;
+  padding: 5px 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ebook-pane .ebook-nav-item:hover {
+  background: color-mix(in srgb, var(--accent-soft, #f8dbe8) 42%, transparent);
+  border-color: color-mix(in srgb, var(--accent, #b3416a) 28%, transparent);
+  color: var(--text, #1d1d1f);
+}
+
+.ebook-pane .ebook-nav-item:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent, #b3416a) 55%, transparent);
+  outline-offset: 1px;
+}
+
 .ebook-chapter {
   /* Each chapter reads as one page sheet: a calm paper surface, a
      quiet hairline edge, and a soft drop shadow so consecutive sheets
@@ -634,6 +685,15 @@
   .ebook-pane {
     gap: clamp(16px, 4vw, 24px);
     padding: 16px 6px 64px;
+  }
+
+  .ebook-pane.markdown-preview {
+    padding: 16px 6px 64px;
+  }
+
+  .ebook-pane .ebook-nav {
+    border-radius: 4px;
+    padding: 5px;
   }
 
   .ebook-chapter {

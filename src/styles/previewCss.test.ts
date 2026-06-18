@@ -44,4 +44,29 @@ describe("preview.css", () => {
       expect(body).not.toMatch(/font-size:\s*[0-9.]+px/);
     }
   });
+
+  it("keeps the e-book pane from inheriting the standalone preview card", () => {
+    const body = ruleBody(".ebook-pane.markdown-preview");
+
+    expect(body).toMatch(/border:\s*0/);
+    expect(body).toMatch(/box-shadow:\s*none/);
+    expect(body).toMatch(/margin:\s*0/);
+    expect(body).toMatch(/max-width:\s*none/);
+    expect(body).toMatch(/width:\s*100%/);
+  });
+
+  it("keeps the e-book cover title on its own short rule", () => {
+    const body = ruleBody(".ebook-chapter-opener.ebook-chapter-cover h1");
+
+    expect(body).toMatch(/border-bottom:\s*0/);
+    expect(body).toMatch(/padding-bottom:\s*0/);
+  });
+
+  it("scopes the e-book chapter navigation to the e-book pane", () => {
+    const body = ruleBody(".ebook-pane .ebook-nav");
+
+    expect(body).toMatch(/position:\s*sticky/);
+    expect(body).toMatch(/overflow-x:\s*auto/);
+    expect(previewCss).not.toMatch(/(?:^|\n)\.ebook-nav\s*{/);
+  });
 });

@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { openWorkspaceImage } from "../../../lib/tauri";
 import EBookPane from "./EBookPane";
 
@@ -87,6 +87,47 @@ describe("EBookPane chapter rendering", () => {
     // The following H1 is not the opener (the preamble is), so it is a
     // plain chapter sheet.
     expect(chapters[1].classList.contains("ebook-chapter-opener")).toBe(false);
+  });
+
+  it("renders a thin chapter navigation for preamble, headings, and heading-less documents", () => {
+    const { rerender } = render(
+      <EBookPane
+        source={"preface text\n\n# Title\n\nintro\n\n## Chapter\n\nbody"}
+      />,
+    );
+
+    const nav = screen.getByRole("navigation", { name: "章" });
+    expect(nav.querySelectorAll(".ebook-nav-item")).toHaveLength(3);
+    expect(screen.getByRole("button", { name: "前付" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Title" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Chapter" })).toBeTruthy();
+
+    rerender(<EBookPane source={"plain body without headings"} />);
+
+    expect(screen.getByRole("button", { name: "本文" })).toBeTruthy();
+  });
+
+  it("scrolls the matching chapter into view from the chapter navigation", () => {
+    const scrollIntoView = vi.fn();
+    const originalScrollIntoView = HTMLElement.prototype.scrollIntoView;
+    HTMLElement.prototype.scrollIntoView = scrollIntoView;
+
+    try {
+      render(
+        <EBookPane
+          source={"# Title\n\nintro\n\n## Chapter One\n\nbody\n\n## Chapter Two\n\nmore"}
+        />,
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Chapter Two" }));
+
+      expect(scrollIntoView).toHaveBeenCalledWith({
+        block: "start",
+        behavior: "smooth",
+      });
+    } finally {
+      HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+    }
   });
 });
 
