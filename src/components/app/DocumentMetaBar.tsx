@@ -80,6 +80,7 @@ export function DocumentMetaBar({
             diffAvailable
             ebookActive={ebookPaneActive}
             ebookAvailable={activeTab !== null}
+            lModeActive={lModeEnabled}
             lModeLabel={lModeCopy.preferenceLabel}
             lModeTitle={lModeCopy.paletteCommand}
             onReviewChanges={() => {

@@ -193,6 +193,7 @@ export function RightPaneToggleControls({
   diffAvailable,
   ebookActive,
   ebookAvailable,
+  lModeActive,
   lModeLabel,
   lModeTitle,
   onReviewChanges,
@@ -212,6 +213,7 @@ export function RightPaneToggleControls({
   diffAvailable: boolean;
   ebookActive: boolean;
   ebookAvailable: boolean;
+  lModeActive: boolean;
   lModeLabel: string;
   lModeTitle: string;
   onReviewChanges: () => void;
@@ -236,7 +238,7 @@ export function RightPaneToggleControls({
         title={copy.previewTabTitle}
       />
       <PaneToggle
-        active={false}
+        active={lModeActive}
         caption={lModeLabel}
         icon={<LModeIcon />}
         onClick={onToggleLMode}

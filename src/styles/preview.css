@@ -504,12 +504,12 @@
 }
 
 .ebook-pane .ebook-reader-button:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--accent-soft, #f8dbe8) 42%, var(--surface, #ffffff));
-  border-color: color-mix(in srgb, var(--accent, #b3416a) 28%, transparent);
+  background: color-mix(in srgb, var(--accent-soft) 42%, var(--surface, #ffffff));
+  border-color: color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
 .ebook-pane .ebook-reader-button:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--accent, #b3416a) 55%, transparent);
+  outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
   outline-offset: 1px;
 }
 
@@ -648,7 +648,7 @@
 
 .ebook-chapter .ebook-page-flow > h1:first-child::after,
 .ebook-chapter .ebook-page-flow > h2:first-child::after {
-  background: color-mix(in srgb, var(--accent, #b3416a) 62%, transparent);
+  background: color-mix(in srgb, var(--accent) 62%, transparent);
   content: "";
   display: block;
   height: 2px;
@@ -683,7 +683,7 @@
 
 .ebook-chapter-opener.ebook-chapter-cover h1 {
   border-bottom: 0;
-  color: var(--accent, #b3416a);
+  color: var(--accent);
   font-size: clamp(1.8rem, 4vw, 2.6rem);
   font-weight: 600;
   letter-spacing: 0.02em;

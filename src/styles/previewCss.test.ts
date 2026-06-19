@@ -131,6 +131,16 @@ describe("preview.css", () => {
     expect(previewCss).not.toMatch(/\.ebook-page-flow\s+\.ebook-reader-footer/);
   });
 
+  it("keeps e-book accent styling on current design tokens", () => {
+    expect(previewCss).not.toMatch(/#b3416a|#f8dbe8/);
+    expect(ruleBody(".ebook-pane .ebook-reader-button:hover:not(:disabled)")).toMatch(
+      /var\(--accent-soft\)/,
+    );
+    expect(ruleBody(".ebook-pane .ebook-reader-button:focus-visible")).toMatch(
+      /var\(--accent\)/,
+    );
+  });
+
   it("caps long e-book code blocks inside the simulated page", () => {
     const preBody = ruleBody(".ebook-chapter pre");
 
