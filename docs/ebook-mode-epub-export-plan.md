@@ -348,27 +348,36 @@ layout結果を端末シミュレーションとして扱う。
 
 - 実機で、長い章・画像入り章・表 / 長いcode block・Tab focus・
   light/dark theme / font size変更後のページ数追従を確認する。
-- 読書感がPreviewとの差として十分かを見てから、次の短いスライスとして
-  full-pane / 2ページ見開き visual exploration を前倒しするか決める。
-  今回のSpikeには含めない。
+- 読書感がPreviewとの差として十分かを見てから、次の短いスライスでは
+  右ペイン内で成立する単ページ固定感を深める。右ペイン内2-upは
+  幅不足で価値が出にくいため、今回の後続には含めない。
 
-#### Near Follow-up: Full-pane / Two-page Visual Exploration
+#### v0.24 Follow-up: Single-page Reading Surface Polish
 
-v0.23 の manual smoke で「Previewではなく本として読む」体感が確認できたら、
-見開き表示は前倒ししてよい。これはEPUB reader完全再現ではなく、
-Hazakura内の固定シミュレーション端末で読むための 2-up display である。
+v0.23 の manual smoke では単ページでも読書感が少し出た。一方で、
+右ペイン内の見開きは、2ページ分の幅を確保すると編集エリアを大きく
+潰すため、次スライスの主軸にしない。
 
 最初の範囲:
 
 - 既存の active chapter / CSS Columns 疑似ページ送りを維持する。
-- 右ペイン幅で無理に見開きにせず、必要なら full-pane 相当の表示領域を
-  使う。
-- 2ページを左右に並べる表示だけを試し、ページ境界の正確性や端末別
-  プリセットは保証しない。
-- 章 / ページ位置、読書位置、Markdown sourceへ戻る導線の評価を
-  見開きの合否条件に含める。
-- Diff / Review接続は設計上の次候補として記録し、最初の見開きスライスに
-  混ぜない。
+- `.ebook-page-flow` は本文だけの columns flow として維持し、reader
+  footer は flow 外の固定chromeとして置く。
+- footer は章タイトルと章内 `n / total` を表示する。本全体の通しページ
+  番号は、全章の事前計測が必要になるため扱わない。
+- ページ高、幅、gap、余白、footer height は実装後に
+  `previewCss.test.ts` で固定し、意図せず戻らないようにする。
+- 右ペイン内2-up toggle、横スクロール、幅による自動見開き化、
+  `RightPaneMode` 追加は入れない。
+
+Decision record:
+
+- 右ペイン内2-upは、ページ幅430px前後を2枚とgapで並べるため
+  約900pxが必要になる。通常の右ペイン幅ではほぼ単ページfallbackに
+  なり、最大化しても編集エリアを潰しやすい。
+- 見開きは破棄ではなく、将来の e-book occupied reading mode
+  （compare mode のように編集エリアを一時的に隠す読書面）の候補として
+  扱う。
 
 #### Spike Non-goals
 
@@ -376,7 +385,7 @@ Hazakura内の固定シミュレーション端末で読むための 2-up displa
   実際の読書端末のページ境界とも一致しない。
 - 本物のページ計算エンジン。行高、禁則、画像高、表分割を自前で計算する
   実装はこのSpikeでは扱わない。
-- 複数端末プリセット、端末選択UI、縦書き、見開き。
+- 複数端末プリセット、端末選択UI、縦書き、右ペイン内見開き。
 - EPUB export のページ数保証。
 
 ### Later: Book Structure Overview

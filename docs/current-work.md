@@ -1,7 +1,7 @@
 # Current Work
 
 Status: Operational
-Scope: Active post-approval, v0.20-v0.23, and quality routing
+Scope: Active post-approval, v0.20-v0.24, and quality routing
 Authority: High
 Last reviewed: 2026-06-19
 
@@ -206,12 +206,32 @@ boundary movement, long chapters, image-heavy chapters, long code
 blocks with inner scroll, tables, light/dark themes, Tab focus, and
 whether the page reading surface feels different enough from Preview.
 
-Possible follow-up after review: decide whether the reading feel is
-strong enough to justify bringing forward a larger full-pane / two-page
-visual exploration. Keep full screen, spread view, vertical writing,
-EPUB export, and multi-file book structure out of this Spike; if picked
-next, treat the two-page surface as Hazakura内の2-up simulation, not as
-true EPUB pagination or a WYSIWYG editing model.
+Follow-up decision after review: do not build a right-pane 2-up toggle.
+The current right-pane grid cannot reliably provide the roughly 900px
+needed for a two-page spread without making the editor column nearly
+unusable. Treat 2-up as a future e-book occupied reading mode, not a
+right-pane sub-feature.
+
+## v0.24 e-book Mode Single-page Reading Surface Polish
+
+Implemented locally as of 2026-06-19:
+
+- The v0.23 single-page reader now has a page-sheet wrapper that keeps
+  the paginated `.ebook-page-flow` separate from reader chrome.
+- A fixed reader footer sits outside the CSS Columns flow and shows the
+  chapter label plus chapter-local page progress. It does not attempt a
+  whole-book page number.
+- The single-page simulation frame was tightened to keep the page feel
+  steadier in the right pane: page width, height, gap, padding, and
+  footer height are pinned in `previewCss.test.ts`.
+- Right-pane 2-up, spread view, horizontal scroll, `RightPaneMode`
+  changes, full-screen takeover, EPUB pagination, and WYSIWYG editing
+  remain out of this slice.
+
+Manual smoke still useful: single-page reading feel, reader footer,
+chapter boundary movement, long chapters, image-heavy chapters, long
+code blocks with inner scroll, tables, light/dark themes, font-size
+changes, and Tab focus.
 
 ## Active UX Queue
 

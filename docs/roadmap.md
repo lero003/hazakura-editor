@@ -254,9 +254,9 @@ Expected direction:
 - Use horizontal page movement before considering true page calculation,
   vertical writing, spread view, or EPUB export page fidelity.
 - If manual smoke shows the reading feel is clearly stronger than
-  Preview, a narrow full-pane / two-page visual exploration may move
-  forward as the next e-book Mode slice. Treat it as 2-up simulation,
-  not as true EPUB pagination.
+  Preview, deepen the single-page right-pane reading surface first.
+  Treat right-pane 2-up as a poor fit because it needs too much width;
+  revisit it only as a later occupied reading mode.
 
 Do not add:
 
@@ -274,7 +274,33 @@ WYSIWYG-like editing remains an L Mode / Live Source concern. Do not
 turn e-book Mode into Preview DOM editing or a second saved document
 model.
 
-## v0.24 AI Proposal Ingest And Review
+## v0.24 e-book Mode Single-page Reading Surface Polish
+
+Goal: deepen the v0.23 page-like reading feel inside the current right
+pane without adding a spread view or a new document model.
+
+Expected direction:
+
+- Keep the active chapter reader and CSS Columns pseudo-pagination.
+- Add a fixed reader footer outside `.ebook-page-flow` so chapter title
+  and chapter-local page progress feel anchored to the page sheet.
+- Tune the single-page simulation frame only where it improves reading
+  feel in the existing right-pane layout.
+- Record the decision that right-pane 2-up is not a good fit: it needs
+  roughly 900px and would make the editor column nearly unusable.
+
+Do not add:
+
+- Right-pane 2-up toggle, spread view, horizontal scroll, or automatic
+  width-based spread behavior.
+- Whole-book page numbering that requires pre-measuring every chapter.
+- `RightPaneMode` changes, full-screen takeover, EPUB export, vertical
+  writing, or WYSIWYG editing.
+
+Treat 2-up as a later e-book occupied reading mode candidate, not a
+right-pane sub-feature.
+
+## v0.25 AI Proposal Ingest And Review
 
 Goal: make AI-written Markdown easier to import, compare, and accept
 explicitly.

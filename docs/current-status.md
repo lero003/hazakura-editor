@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-19 (e-book Mode v0.23 planning sync)
+Last reviewed: 2026-06-19 (e-book Mode v0.24 single-page polish)
 
 ## Current State
 
@@ -154,7 +154,7 @@ baseline, and smoke evidence are archived under
 
 ## Active Planning Sources
 
-- `docs/current-work.md`: current post-approval, v0.20-v0.23, and quality queue.
+- `docs/current-work.md`: current post-approval, v0.20-v0.24, and quality queue.
 - `docs/roadmap.md`: phase order and future boundaries.
 - `docs/product-brief.md`: durable product direction and non-goals.
 - `docs/security-boundary.md`: safe editor constraints.
@@ -172,8 +172,8 @@ baseline, and smoke evidence are archived under
    and boundary docs stay live for future submissions.
 2. For UX work, start with `docs/current-work.md` and pick one item:
    one core Safe Editor quality probe, light accessibility sanity
-   adjacent to that surface, or the next e-book Mode reading-surface
-   evaluation / follow-up slice.
+   adjacent to that surface, or the v0.24 e-book Mode single-page
+   reading-surface polish slice.
 3. For a future App Store submission, start with `docs/app-store-build.md`;
    keep account-specific notes under ignored `docs/internal/` files and
    treat certificate, provisioning, signing, notarization, upload,

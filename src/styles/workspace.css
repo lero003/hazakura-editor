@@ -1235,6 +1235,10 @@
   overflow: auto;
 }
 
+.preview-pane-ebook {
+  overflow: hidden;
+}
+
 .preview-pane-card {
   background: var(--surface-muted);
 }

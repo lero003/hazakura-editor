@@ -62,6 +62,12 @@ describe("EBookPane chapter reader", () => {
     expect(
       article.querySelector(".ebook-reader-chrome .ebook-page-flow"),
     ).toBeNull();
+    expect(article.querySelector(".ebook-page-sheet")).toBeTruthy();
+    const footer = article.querySelector(".ebook-reader-footer");
+    expect(footer).toBeTruthy();
+    expect(footer?.closest(".ebook-page-flow")).toBeNull();
+    expect(footer?.textContent).toContain("章: Chapter One");
+    expect(footer?.textContent).toContain("章内ページ 1 / 1");
 
     fireEvent.click(screen.getByRole("button", { name: "次のページ" }));
 
@@ -72,6 +78,9 @@ describe("EBookPane chapter reader", () => {
     expect(screen.getByText("body two")).toBeTruthy();
     expect(screen.queryByRole("heading", { name: "Chapter One" })).toBeNull();
     expect(screen.getByText("章 2 / 2")).toBeTruthy();
+    expect(article.querySelector(".ebook-reader-footer")?.textContent).toContain(
+      "章: Chapter Two",
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "前のページ" }));
 
@@ -79,6 +88,39 @@ describe("EBookPane chapter reader", () => {
       expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
     });
     expect(screen.queryByRole("heading", { name: "Chapter Two" })).toBeNull();
+  });
+
+  it("keeps the reader footer outside the paginated columns with chapter-local page numbers", async () => {
+    vi.mocked(measureEBookPageCount).mockReturnValue(4);
+
+    render(
+      <EBookPane
+        menuLanguage="en"
+        source={"# Chapter One\n\nbody one"}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Page 1 / 4")).toBeTruthy();
+    });
+
+    const article = screen.getByRole("article", { name: "Chapter reader" });
+    const sheet = article.querySelector(".ebook-page-sheet");
+    const viewport = article.querySelector(".ebook-page-viewport");
+    const flow = article.querySelector(".ebook-page-flow");
+    const footer = article.querySelector(".ebook-reader-footer");
+
+    expect(sheet).toBeTruthy();
+    expect(sheet?.contains(viewport)).toBe(true);
+    expect(sheet?.contains(footer)).toBe(true);
+    expect(flow?.contains(footer)).toBe(false);
+    expect(footer?.textContent).toContain("Chapter: Chapter One");
+    expect(footer?.textContent).toContain("Chapter page 1 / 4");
+    expect(footer?.textContent).not.toContain("Chapter 1 / 1");
+
+    fireEvent.click(screen.getByRole("button", { name: "Next page" }));
+
+    expect(footer?.textContent).toContain("Chapter page 2 / 4");
   });
 
   it("disables reader controls at the document edges", () => {

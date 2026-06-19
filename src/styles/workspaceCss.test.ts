@@ -8,7 +8,21 @@ const workspaceCss = readFileSync(
   "utf8",
 );
 
+function ruleBody(selector: string): string {
+  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return (
+    workspaceCss.match(
+      new RegExp(`${escapedSelector}\\s*{(?<body>[^}]*)}`, "s"),
+    )?.groups?.body ?? ""
+  );
+}
+
 describe("workspace.css", () => {
+  it("keeps the e-book side pane from using the generic preview scroll", () => {
+    expect(ruleBody(".preview-pane")).toMatch(/overflow:\s*auto/);
+    expect(ruleBody(".preview-pane-ebook")).toMatch(/overflow:\s*hidden/);
+  });
+
   it("keeps dark and Yakou diff rows high contrast", () => {
     expect(workspaceCss).toMatch(
       /:root\[data-theme="dark"\] \.diff-cell\.added,[^}]*:root\[data-theme="yakou"\] \.diff-line-number\.added\s*{[^}]*var\(--diff-added-fg\) 18%/s,

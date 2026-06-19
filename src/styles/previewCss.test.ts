@@ -98,10 +98,43 @@ describe("preview.css", () => {
     expect(viewportBody).toMatch(/max-width:/);
   });
 
+  it("pins the single-page e-book reading frame dimensions", () => {
+    const chapterBody = ruleBody(".ebook-chapter");
+
+    expect(chapterBody).not.toMatch(/100vh/);
+    expect(chapterBody).toMatch(/--ebook-page-height-max:\s*700px/);
+    expect(chapterBody).toMatch(
+      /--ebook-page-width:\s*min\(420px,\s*calc\(100vw - 56px\)\)/,
+    );
+    expect(chapterBody).toMatch(
+      /--ebook-page-gap:\s*clamp\(28px,\s*5vw,\s*44px\)/,
+    );
+    expect(chapterBody).toMatch(/--ebook-page-footer-height:\s*34px/);
+  });
+
+  it("keeps the e-book footer fixed outside the paginated flow", () => {
+    const sheetBody = ruleBody(".ebook-page-sheet");
+    const footerBody = ruleBody(".ebook-pane .ebook-reader-footer");
+    const flowBody = ruleBody(".ebook-page-flow");
+
+    expect(sheetBody).toMatch(/max-width:\s*var\(--ebook-page-width\)/);
+    expect(sheetBody).toMatch(/height:\s*min\(100%,\s*calc\(var\(--ebook-page-height-max\) \+ var\(--ebook-page-footer-height\)\)\)/);
+    expect(sheetBody).toMatch(/grid-template-rows:\s*minmax\(0,\s*1fr\) var\(--ebook-page-footer-height\)/);
+    expect(sheetBody).toMatch(/min-height:\s*0/);
+    expect(ruleBody(".ebook-page-viewport")).toMatch(/min-height:\s*0/);
+    expect(footerBody).toMatch(/display:\s*grid/);
+    expect(footerBody).toMatch(/grid-template-columns:\s*minmax\(0,\s*1fr\) auto/);
+    expect(footerBody).toMatch(/height:\s*100%/);
+    expect(footerBody).toMatch(/padding:\s*0 1px/);
+    expect(footerBody).not.toMatch(/position:\s*sticky/);
+    expect(flowBody).not.toMatch(/footer/);
+    expect(previewCss).not.toMatch(/\.ebook-page-flow\s+\.ebook-reader-footer/);
+  });
+
   it("caps long e-book code blocks inside the simulated page", () => {
     const preBody = ruleBody(".ebook-chapter pre");
 
-    expect(preBody).toMatch(/max-height:\s*calc\(var\(--ebook-page-height\) \* 0\.72\)/);
+    expect(preBody).toMatch(/max-height:\s*72%/);
     expect(preBody).toMatch(/overflow:\s*auto/);
   });
 
@@ -111,5 +144,6 @@ describe("preview.css", () => {
     expect(ruleBody(".ebook-chapter")).not.toMatch(/box-shadow:/);
     expect(previewCss).not.toMatch(/writing-mode:\s*vertical/);
     expect(previewCss).not.toMatch(/\.ebook-spread/);
+    expect(previewCss).not.toMatch(/2-up|two-page|spread-view/);
   });
 });

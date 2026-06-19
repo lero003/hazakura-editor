@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-18 (v0.20 App Store package candidate)
+Last reviewed: 2026-06-19 (v0.24 e-book single-page polish)
 
 ## Current State
 
@@ -49,15 +49,16 @@ Last reviewed: 2026-06-18 (v0.20 App Store package candidate)
   The tab-row new-file `+` affordance was removed after visual review;
   New File remains on existing menu, shortcut, command-palette, and
   workspace-file paths. Workspace switching remains deferred.
-- v0.23 e-book Mode pseudo-pagination Spike is implemented locally:
+- v0.24 e-book Mode single-page polish is implemented locally:
   the active chapter reader now pages the rendered chapter body with
   CSS Columns under `.ebook-page-flow`, keeps reader chrome outside
   columns, uses `column-fill: auto`, and treats page counts as a
-  Hazakura simulation rather than an EPUB-reader guarantee. A review
-  follow-up moved page offset calculation out of render-time ref reads
-  and caps long `pre` blocks inside the simulated page. Manual app smoke
-  should still judge whether the page reading feel is meaningfully
-  different from Preview before considering full-pane / two-page work.
+  Hazakura simulation rather than an EPUB-reader guarantee. The reader
+  now wraps the viewport in `.ebook-page-sheet` and adds a fixed footer
+  outside the columns with chapter title plus chapter-local page
+  progress. Right-pane 2-up was intentionally deferred: it needs roughly
+  900px of width and should be revisited only as a future occupied
+  reading mode, not as a right-pane toggle.
 - Markdown preview task checkboxes are complete for v0.18: Preview renders
   `- [ ]` / `- [x]` as inert display-only checkbox glyphs without
   changing saved Markdown.
@@ -133,11 +134,10 @@ slice are:
 
 1. Post-approval docs/archive cleanup for completed App Store evidence,
    if still useful.
-2. Manual app smoke of the v0.23 e-book page reader: e-book toggle,
-   page movement, chapter boundary movement, long chapters, image-heavy
-   chapters, long code blocks with inner scroll, tables, Tab focus,
-   light/dark themes, font-size changes, and whether full-pane /
-   two-page exploration is worth a later slice.
+2. Manual app smoke of the v0.24 e-book single-page reader: e-book
+   toggle, page movement, reader footer, chapter boundary movement,
+   long chapters, image-heavy chapters, long code blocks with inner
+   scroll, tables, Tab focus, light/dark themes, and font-size changes.
 3. Core Safe Editor quality probe.
 4. Light accessibility sanity adjacent to the selected core surface.
 5. Any follow-up discovered by manual app smoke of the v0.20 Sakura
@@ -153,11 +153,11 @@ preview card styling, and Sakura-specific selected-file highlight
 without adding a workspace switching dropdown or changing the
 single-workspace model.
 
-Latest completed: v0.23 e-book pseudo-pagination keeps Markdown source
-canonical and Preview / Export / L Mode untouched while adding page-first
-reader controls, page measurement / offset helpers, layout-time offset
-state, viewport resize and root theme/font remeasurement, long-code-block
-height capping, and focused CSS scoping around `.ebook-page-flow`.
+Latest completed: v0.24 e-book single-page polish keeps Markdown source
+canonical and Preview / Export / L Mode untouched while adding a fixed
+reader footer outside `.ebook-page-flow`, pinning the single-page frame
+dimensions in CSS tests, and documenting that right-pane 2-up should
+wait for a future occupied reading mode.
 
 Earlier completed: External-window routing for Markdown / Help links
 now keeps workspace-relative text links in-app while handing explicit

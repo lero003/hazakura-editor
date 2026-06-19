@@ -1,4 +1,4 @@
-// v0.22 e-book Mode MVP — display-only active chapter reader.
+// v0.24 e-book Mode — display-only active chapter reader.
 //
 // This is still Path Y: Markdown is rendered through the existing
 // `renderMarkdown()` / `inlineWorkspaceAssetImages()` safety pipeline,
@@ -7,11 +7,9 @@
 // `dangerouslySetInnerHTML` on sanitised HTML, with no input or
 // contenteditable surface).
 //
-// v0.22 changes the v0.21 continuous-scroll PoC into a chapter reader:
-// only the active chapter is rendered into the DOM, and previous / next
-// controls move between chapter segments. Coexistence with L Mode is
-// intentional: L Mode remains the Live Source writing surface, while
-// this pane is a separate, HTML-rendered reading surface.
+// The reader keeps one active chapter in the DOM and pages the chapter
+// body with CSS Columns. Reader chrome, including the footer, stays
+// outside the paginated flow so the columns never own navigation UI.
 
 import {
   type KeyboardEvent,
@@ -53,6 +51,8 @@ type RenderedChapter = {
 type EBookReaderCopy = {
   body: string;
   chapterProgress: string;
+  footerChapter: string;
+  footerPageProgress: string;
   frontMatter: string;
   nextPage: string;
   pageProgress: string;
@@ -354,13 +354,27 @@ export default function EBookPane({
             activeChapterIndexSafe,
           )}
         >
-          <div className="ebook-page-viewport" ref={viewportRef}>
-            <div
-              className="ebook-page-flow"
-              dangerouslySetInnerHTML={{ __html: activeChapterHtml.html }}
-              ref={flowRef}
-              style={{ transform: `translateX(-${pageOffset}px)` }}
-            />
+          <div className="ebook-page-sheet">
+            <div className="ebook-page-viewport" ref={viewportRef}>
+              <div
+                className="ebook-page-flow"
+                dangerouslySetInnerHTML={{ __html: activeChapterHtml.html }}
+                ref={flowRef}
+                style={{ transform: `translateX(-${pageOffset}px)` }}
+              />
+            </div>
+            <footer
+              className="ebook-reader-footer"
+              aria-label={copy.pageProgress}
+            >
+              <span className="ebook-reader-footer-title" title={chapterLabel}>
+                {copy.footerChapter}: {chapterLabel}
+              </span>
+              <span className="ebook-reader-footer-page">
+                {copy.footerPageProgress} {activePageIndexSafe + 1} /{" "}
+                {measuredPageCount}
+              </span>
+            </footer>
           </div>
         </section>
       ) : null}
@@ -427,6 +441,8 @@ function getEBookReaderCopy(
     return {
       body: "本文",
       chapterProgress: "章",
+      footerChapter: "章",
+      footerPageProgress: "章内ページ",
       frontMatter: "前付",
       nextPage: "つぎのページ",
       pageProgress: "ページ",
@@ -439,6 +455,8 @@ function getEBookReaderCopy(
     return {
       body: "本文",
       chapterProgress: "章",
+      footerChapter: "章",
+      footerPageProgress: "章内ページ",
       frontMatter: "前付",
       nextPage: "次のページ",
       pageProgress: "ページ",
@@ -450,6 +468,8 @@ function getEBookReaderCopy(
   return {
     body: "Body",
     chapterProgress: "Chapter",
+    footerChapter: "Chapter",
+    footerPageProgress: "Chapter page",
     frontMatter: "Front matter",
     nextPage: "Next page",
     pageProgress: "Page",
