@@ -3,11 +3,11 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-19 (v0.25 native-feeling chrome polish planning)
+Last reviewed: 2026-06-19 (v0.25 version aligned for source tag)
 
 ## Current State
 
-- `Hazakura Editor` is at `0.20.0`.
+- `Hazakura Editor` is at `0.25.0`.
 - User-facing app identity is capitalized as `Hazakura Editor`. The
   App Store preview bundle is `Hazakura Editor.app`; current docs and
   smoke paths should use that name rather than the older lowercase
@@ -27,14 +27,15 @@ Last reviewed: 2026-06-19 (v0.25 native-feeling chrome polish planning)
   with SHA-256
   `9d5164a9cf508242dbe6f7612e4d29167065d1c7b0cb884f6ed610723625f0cf`;
   it declares minimum macOS 15.0 and passed `pkgutil --check-signature`.
-- The next helper-free App Store update package candidate is `0.20.0`
-  build `15`. The local package is
-  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.20.0-build15-mas.pkg`
+- A helper-free App Store update package was generated for `0.20.0`
+  build `16`. The local package is
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.20.0-build16-mas.pkg`
   with SHA-256
-  `68145b4799d105a704c943022817624803d07299728b939e4ee0021408c3875c`.
-  Local packaging/signing checks passed on 2026-06-18. Upload, Apple
-  validation, TestFlight distribution, manual TestFlight smoke, and App
-  Review are not claimed yet.
+  `b2bf37df86b7e589dd34411635f68988b27b24a9db87f7125833c1471938eb50`.
+  Local packaging/signing checks passed on 2026-06-19, but the package
+  is superseded by the `0.25.0` version alignment before upload. Do not
+  submit it; regenerate a fresh `0.25.0` App Store package before
+  Transporter / App Store Connect work.
 - Start from `docs/current-work.md`.
 - A review-derived pre-release code-quality fix queue now lives in
   `docs/pre-release-fix-plan.md`. A follow-up external quality review
@@ -255,8 +256,9 @@ open Active UX Queue slice and close it as `implemented`,
   downloaded DMG checksum verification, `hdiutil verify`, mounted-app
   metadata, codesign verification, and mounted-app launch smoke all
   passed.
-- Latest App Store package gate: `0.20.0` build `15` local package
-  generation passed on 2026-06-18. Checks run:
+- Superseded App Store package gate: `0.20.0` build `16` local package
+  generation passed on 2026-06-19, but should not be uploaded after the
+  `0.25.0` version alignment. Checks run:
   `npm run smoke:app-store-surface`, `npm run build:app-store-pkg`,
   `pkgutil --check-signature`, SHA-256, `codesign --verify --deep
   --strict`, entitlements inspection, helper/resource checks,

@@ -223,9 +223,9 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version is `0.20.0` across npm, Tauri, Cargo, and lockfile metadata.
+- Current package/app version is `0.25.0` across npm, Tauri, Cargo, and lockfile metadata.
 - The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12), published from the helper-free App Store lane.
-- The latest GitHub Developer / local-app release is [v0.20.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.20.0).
+- The latest GitHub source / local-app tag is [v0.25.0](https://github.com/lero003/hazakura-editor/tree/v0.25.0).
 - The current warning-expected DMG preview tag is `v0.20.0`; its release-note evidence lives in [0.20.0 Warning-expected DMG Preview](docs/releases/0.20.0-warning-expected-dmg-preview.release.md).
 - Source users build locally with `npm ci` and `npm run build`.
 - The generated local smoke `.app` declares macOS 26.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. The App Store submission lane is helper-free and does not include Agent Workbench, CLI Agent, Apple Local Assist helper, or external AI/API calls. Developer / GitHub builds may still include the Apple Local Assist helper. GitHub Release DMG previews require Developer ID Application signing but are not notarized until the separate notarization lane is completed.

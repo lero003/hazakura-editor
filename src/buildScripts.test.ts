@@ -54,7 +54,7 @@ describe("macOS build scripts", () => {
     expect(mainWindow?.titleBarStyle).toBe("Overlay");
     expect(mainWindow?.hiddenTitle).toBe(true);
     expect(mainWindow?.transparent).toBe(true);
-    expect(mainWindow?.trafficLightPosition).toEqual({ x: 14, y: 16 });
+    expect(mainWindow?.trafficLightPosition).toEqual({ x: 18, y: 18 });
   });
 
   it("allows the main window to start native dragging from custom chrome", () => {

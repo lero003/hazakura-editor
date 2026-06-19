@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-19 (v0.25 chrome polish done; native vibrancy + macOS 26 floor planning)
+Last reviewed: 2026-06-19 (v0.25 version aligned for source tag)
 
 ## Current Position
 
@@ -17,10 +17,9 @@ Current release state:
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
 - Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
-- Current package/app version: `0.20.0`.
-- Active lane: v0.25 native-feeling Safe Editor chrome polish (Phase 1
-  complete) moving into native vibrancy via `window-vibrancy` with the
-  macOS deployment target raised to macOS 26.
+- Current package/app version: `0.25.0`.
+- Active lane: v0.25 native-feeling Safe Editor chrome polish, native
+  vibrancy, and macOS 26 floor alignment.
 - Current work queue: `docs/current-work.md`.
 
 North star for the next product arc:

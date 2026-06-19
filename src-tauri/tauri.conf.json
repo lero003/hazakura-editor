@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Hazakura Editor",
-  "version": "0.20.0",
+  "version": "0.25.0",
   "identifier": "dev.hazakura.editor",
   "build": {
     "beforeDevCommand": "npm run dev:vite",
@@ -19,7 +19,7 @@
         "minHeight": 640,
         "theme": "Dark",
         "titleBarStyle": "Overlay",
-        "trafficLightPosition": { "x": 14, "y": 16 },
+        "trafficLightPosition": { "x": 18, "y": 18 },
         "hiddenTitle": true,
         "transparent": true,
         "backgroundColor": "#101613"

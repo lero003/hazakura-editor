@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active post-approval, v0.20-v0.26 planning, and quality routing
 Authority: High
-Last reviewed: 2026-06-19 (v0.25 chrome polish done; native vibrancy + macOS 26 floor next)
+Last reviewed: 2026-06-19 (v0.25 version aligned for source tag)
 
 ## Purpose
 
@@ -617,19 +617,22 @@ App Store Connect evidence.
 
 ## Current App Store Update Package Candidate
 
-- 2026-06-18: Generated the local helper-free App Store submit-lane
-  package for `0.20.0` build `15`:
-  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.20.0-build15-mas.pkg`.
+- 2026-06-19: Generated the local helper-free App Store submit-lane
+  package for `0.20.0` build `16`:
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.20.0-build16-mas.pkg`.
   SHA-256:
-  `68145b4799d105a704c943022817624803d07299728b939e4ee0021408c3875c`.
+  `b2bf37df86b7e589dd34411635f68988b27b24a9db87f7125833c1471938eb50`.
   Local checks passed for App Store surface omission, Apple Distribution
   signed app bundle, 3rd Party Mac Developer Installer package
   signature, App Sandbox entitlements, helper absence, bundled notices,
-  `0.20.0` / `15` metadata, and minimum macOS `15.0`.
+  `0.20.0` / `16` metadata, and minimum macOS `26.0`.
   `spctl --assess --type install` rejected locally; keep treating that
   as non-authoritative local trust-policy evidence for this lane.
-  Upload, Apple validation, TestFlight distribution, manual TestFlight
-  smoke, and App Review remain unclaimed.
+  This package is superseded by the `0.25.0` version alignment before
+  upload. Do not submit it; regenerate a fresh `0.25.0` App Store
+  package before Transporter / App Store Connect work. Upload, Apple
+  validation, TestFlight distribution, manual TestFlight smoke, and App
+  Review remain unclaimed for `0.25.0`.
 
 ## Completed Submission-Prep Slices
 

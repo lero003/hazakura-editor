@@ -3,15 +3,15 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-19 (v0.25 chrome polish done; native vibrancy + macOS 26 floor planning)
+Last reviewed: 2026-06-19 (v0.25 version aligned for source tag)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: `0.20.0` across npm, Tauri, Cargo, and lockfile metadata.
+- Current package/app version: `0.25.0` across npm, Tauri, Cargo, and lockfile metadata.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Latest published GitHub Developer / local-app release: `v0.20.0`.
+- Latest GitHub source / local-app tag: `v0.25.0`.
 - Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
 - `v0.18.0` is a Developer / GitHub lane preview, ad-hoc signed, not Developer ID signed, not notarized, and expected to show macOS security warnings.
 - The helper-free App Store lane delivered `0.18.0` build `4` to
@@ -22,12 +22,11 @@ Last reviewed: 2026-06-19 (v0.25 chrome polish done; native vibrancy + macOS 26 
   tracked submit-lane candidate for that approval was build counter
   `14`; local package and signing evidence remain historical release
   evidence, not the next active queue.
-- The next helper-free App Store update package candidate is `0.20.0`
-  build `15`. Local packaging/signing checks passed on 2026-06-18, and
-  the generated package is
-  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.20.0-build15-mas.pkg`.
-  Upload, Apple validation, TestFlight distribution, manual TestFlight
-  smoke, and App Review are not claimed yet.
+- A local helper-free App Store update package was generated for
+  `0.20.0` build `16` on 2026-06-19, but it is superseded by the
+  `0.25.0` version alignment before upload. Do not submit
+  `HazakuraEditor-0.20.0-build16-mas.pkg`; regenerate a fresh `0.25.0`
+  App Store package before Transporter / App Store Connect work.
 - Pre-approval human-side App Store lane smoke on 2026-06-12 passed launch,
   basic document creation/open, preview/export, image paste/drag-drop,
   App Store surface omission, dirty-close confirmation, Move to Trash,
@@ -146,6 +145,7 @@ Last reviewed: 2026-06-19 (v0.25 chrome polish done; native vibrancy + macOS 26 
 
 Use release notes for detailed historical evidence:
 
+- `docs/releases/0.25.0-source-tag.release.md`
 - `docs/releases/0.19.0-source-tag.release.md`
 - `docs/releases/0.20.0-app-store-submission-candidate.release.md`
 - `docs/releases/0.20.0-warning-expected-dmg-preview.release.md`
