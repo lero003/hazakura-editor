@@ -29,6 +29,23 @@ pub(crate) mod tests;
 use tauri::Emitter;
 use tauri::Manager;
 
+// v0.25 native-feeling shell: apply macOS vibrancy to the main window so
+// the sidebar / top-chrome surfaces (made transparent in CSS) sit over a
+// real `NSVisualEffectView` instead of a `backdrop-filter` CSS
+// approximation. macOS-only and best-effort: a vibrancy failure must not
+// prevent the editor from launching, so the result is ignored.
+#[cfg(target_os = "macos")]
+fn apply_macos_vibrancy<R: tauri::Runtime>(app: &tauri::AppHandle<R>) {
+    use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
+
+    // The main window is created by `tauri.conf.json` before `setup`
+    // runs, so resolve it by its configured label.
+    let Some(window) = app.get_webview_window(MAIN_WINDOW_LABEL) else {
+        return;
+    };
+    let _ = apply_vibrancy(&window, NSVisualEffectMaterial::Sidebar, None, None);
+}
+
 // `use super::*;` in `src/tests.rs` pulls in everything from the crate
 // root. The following `use` lines don't have call sites in `run()`
 // itself, but they re-export the symbols into the crate root so
@@ -102,6 +119,14 @@ pub fn run() {
     let builder = builder
         .menu(build_app_menu)
         .on_menu_event(emit_app_menu_event);
+
+    // v0.25 native-feeling shell: apply macOS vibrancy once the main
+    // window exists. On non-macOS targets this is a no-op setup hook.
+    #[cfg(target_os = "macos")]
+    let builder = builder.setup(|app| {
+        apply_macos_vibrancy(app.handle());
+        Ok(())
+    });
 
     builder
         .invoke_handler(tauri::generate_handler![
