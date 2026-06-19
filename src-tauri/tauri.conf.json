@@ -107,7 +107,7 @@
       }
     ],
     "macOS": {
-      "minimumSystemVersion": "15.0",
+      "minimumSystemVersion": "26.0",
       "signingIdentity": "-"
     }
   }

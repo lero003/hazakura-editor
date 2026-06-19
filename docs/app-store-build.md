@@ -255,7 +255,7 @@ Expected:
   for the current candidate)
 - `CFBundleVersion` is a positive integer higher than the last uploaded
   App Store Connect build
-- `LSMinimumSystemVersion` is `15.0`
+- `LSMinimumSystemVersion` is `26.0`
 - `hazakura-editor` is present
 - `hazakura-apple-assist-helper` is absent
 
