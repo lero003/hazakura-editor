@@ -106,8 +106,13 @@
   -webkit-app-region: drag;
   background: var(--surface-muted);
   border-bottom: 1px solid var(--border);
-  gap: 8px;
-  justify-content: space-between;
+  gap: 4px;
+  /* Drop `justify-content: space-between`: with transparent chrome the
+     space-between distribution opened a dead gap between the leading
+     quick-settings control and the tab list. The tab list already
+     flexes (`flex: 1 1 auto`) to fill the middle, and the trailing
+     document-meta uses `margin-left: auto` to hug the right edge, so
+     the leading controls now pack left without an artificial gap. */
   min-width: 0;
   padding: 0 14px 0 var(--titlebar-control-inset);
   height: 44px;
