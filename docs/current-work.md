@@ -1,7 +1,7 @@
 # Current Work
 
 Status: Operational
-Scope: Active post-approval, v0.20-v0.25, and quality routing
+Scope: Active post-approval, v0.20-v0.26 planning, and quality routing
 Authority: High
 Last reviewed: 2026-06-19
 
@@ -295,6 +295,10 @@ Initial implementation as of 2026-06-19:
   `npm run build:vite`, and `git diff --check`. Manual app smoke is
   still the next proof for actual macOS titlebar dragging and click
   hit-testing.
+- Human-side spot check after the initial pass did not identify a
+  blocker. Keep the listed manual smoke items when finalizing the slice,
+  especially Review menu clickability, segmented-control visibility,
+  dense tabs, L Mode floating chrome, and focus rings.
 
 ## Active UX Queue
 
@@ -302,7 +306,7 @@ Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| v0.25 P0 | Native-feeling Safe Editor chrome polish | Initial code/CSS pass is implemented. Next proof is manual app smoke for traffic-light-safe dragging, click hit-testing, dense tabs, L Mode floating pill, segmented mode controls, e-book / Preview / Diff, light/dark themes, and keyboard focus. Do not introduce true native vibrancy, toolbar rewrites, new modes, or AI ingest in this slice. |
+| v0.25 P0 | Native-feeling Safe Editor chrome polish | Initial code/CSS pass is implemented, and human-side spot check found no blocker. Keep final manual smoke focused on traffic-light-safe dragging, click hit-testing, dense tabs, L Mode floating pill, segmented mode controls, e-book / Preview / Diff, light/dark themes, and keyboard focus. Do not introduce true native vibrancy, toolbar rewrites, new modes, or AI ingest in this slice. |
 | P1 | Core Safe Editor quality probe | When concrete queue items are exhausted, inspect one basic high-risk surface instead of adding broad tests: open/save/close, restore/recovery, preview, diff/review, workspace file operations, standalone files, image handling, keyboard/IME, or error recovery. State the risk hypothesis, run a focused source/app inspection or smoke, then either fix the smallest issue found or close as `verified no-op`. |
 | P2 | Light accessibility sanity | Keep accessibility as a light sanity pass adjacent to core surfaces: keyboard reachability, focus escape/Tab behavior, readable labels, and obvious contrast. Do not prioritize broad accessibility audits over basic editor quality unless a concrete accessibility failure is observed. |
 | v0.21+ | Status bar structure cleanup | Treat the v0.20 compact status detail as a stopgap. For a later UX slice, split status metadata into priority-aware fields instead of one long `statusDetail` string, keep line-ending / encoding controls always reachable, and move lower-priority details such as final-newline state, line/column, selection, and heading context into hover, popover, or adaptive secondary display. |

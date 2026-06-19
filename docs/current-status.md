@@ -56,8 +56,8 @@ Last reviewed: 2026-06-19 (v0.25 native-feeling chrome polish planning)
   is implemented: traffic-light-safe drag / no-drag rules, subtle editor
   focus visibility, truthful mode active state, e-book chrome token cleanup,
   segmented right-pane mode controls, and tokenized Diff row backgrounds.
-  Manual app smoke remains the next proof for actual macOS titlebar
-  dragging and click hit-testing.
+  Human-side spot check found no blocker; keep targeted manual smoke as
+  the final proof for actual macOS titlebar dragging and click hit-testing.
 
 ## Current Product Boundary
 
@@ -115,6 +115,12 @@ Last reviewed: 2026-06-19 (v0.25 native-feeling chrome polish planning)
   `Copyright (c) 2026 Hazakura Lab. All rights reserved.`.
 - Sanitized Markdown preview, local workspace image handling,
   standalone HTML export, and Print to PDF handoff.
+- e-book Mode is a display-only right-pane reading surface for the active
+  Markdown document. It uses the existing Preview safety pipeline,
+  heading-based chapter splitting, CSS Columns pseudo-pagination for the
+  active chapter, and a fixed reader footer with chapter-local page
+  progress. Markdown source remains canonical; right-pane 2-up, EPUB
+  export, and whole-book page numbering remain deferred.
 - Markdown preview and Help document links keep supported
   workspace-relative text files inside the app, but route explicit
   `http:` / `https:` / `mailto:` / `tel:` clicks to the OS default
@@ -160,7 +166,7 @@ baseline, and smoke evidence are archived under
 
 ## Active Planning Sources
 
-- `docs/current-work.md`: current post-approval, v0.20-v0.25, and quality queue.
+- `docs/current-work.md`: current post-approval, v0.20-v0.26 planning, and quality queue.
 - `docs/roadmap.md`: phase order and future boundaries.
 - `docs/product-brief.md`: durable product direction and non-goals.
 - `docs/security-boundary.md`: safe editor constraints.
