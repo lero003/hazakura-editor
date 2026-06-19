@@ -182,6 +182,11 @@
   gap: 2px;
 }
 
+.pane-toggle,
+.pane-review-menu-popover {
+  -webkit-app-region: no-drag;
+}
+
 .pane-toggle {
   align-items: center;
   background: transparent;

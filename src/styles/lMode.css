@@ -283,6 +283,7 @@
 :root[data-l-mode="on"] .tabs-row {
   --_lmode-surface-bg-opacity: 74%;
   --_lmode-surface-border-opacity: 62%;
+  -webkit-app-region: drag;
   /* blur: see `.lmode-surface` default (18px) */
   position: fixed;
   top: 14px;
@@ -291,9 +292,16 @@
   min-height: 36px;
   opacity: 0.08;
   font-size: 11px;
+  padding: 0 12px;
   transform: translateX(-50%);
   transition: opacity 160ms ease, transform 160ms ease;
   z-index: 90;
+}
+
+:root[data-l-mode="on"] .l-mode-exit-pill,
+:root[data-l-mode="on"] .l-mode-action-rail,
+:root[data-l-mode="on"] .l-mode-action-button {
+  -webkit-app-region: no-drag;
 }
 
 :root[data-l-mode="on"] .tabs-row:hover,

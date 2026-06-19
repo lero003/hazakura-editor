@@ -682,6 +682,20 @@ describe("v0.15 L Mode floating controls focus visibility: prefers-contrast rein
   });
 });
 
+describe("v0.25 L Mode floating chrome drag boundary", () => {
+  it("keeps the floating tab pill draggable while preserving clickable controls", () => {
+    expect(lModeCss).toMatch(
+      /:root\[data-l-mode="on"\] \.tabs-row\s*{[^}]*-webkit-app-region:\s*drag/s,
+    );
+    expect(lModeCss).toMatch(
+      /:root\[data-l-mode="on"\] \.tabs-row\s*{[^}]*padding:\s*0\s+12px/s,
+    );
+    expect(lModeCss).toMatch(
+      /:root\[data-l-mode="on"\] \.l-mode-exit-pill,[\s\S]*:root\[data-l-mode="on"\] \.l-mode-action-rail,[\s\S]*:root\[data-l-mode="on"\] \.l-mode-action-button\s*{[\s\S]*-webkit-app-region:\s*no-drag/s,
+    );
+  });
+});
+
 // --- v0.14 print / export boundary (screen print only) ---
 //
 // SCOPE: this describe block pins the `@media print`

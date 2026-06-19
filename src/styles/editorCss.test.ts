@@ -108,6 +108,21 @@ describe("editor tab close affordance CSS", () => {
     expect(appShellCss).toMatch(/\.workspace,[\s\S]*z-index:\s*1/s);
   });
 
+  it("keeps the transparent titlebar draggable without swallowing controls", () => {
+    const tabsRow = ruleBody(controlsCss, ".tabs-row");
+
+    expect(tabsRow).toMatch(/-webkit-app-region:\s*drag/);
+    expect(tabsRow).toMatch(/--titlebar-control-inset:\s*82px/);
+    expect(tabsRow).toMatch(/padding:\s*0\s+14px\s+0\s+var\(--titlebar-control-inset\)/);
+
+    expect(controlsCss).toMatch(
+      /\.tab-item,[\s\S]*\.editor-quick-settings,[\s\S]*\.document-meta,[\s\S]*\.distribution-badge,[\s\S]*\.tabs-row button,[\s\S]*\.tabs-row input,[\s\S]*\.tabs-row label,[\s\S]*\.tabs-row \[role="tab"\],[\s\S]*\.tabs-row \[role="menu"\],[\s\S]*\.tabs-row \[role="menuitem"\]\s*{[\s\S]*-webkit-app-region:\s*no-drag/s,
+    );
+    expect(editorCss).toMatch(
+      /\.pane-toggle,[\s\S]*\.pane-review-menu-popover\s*{[\s\S]*-webkit-app-region:\s*no-drag/s,
+    );
+  });
+
   it("keeps the editor full-path bar visually quiet", () => {
     const pathBar = ruleBody(workspaceCss, ".editor-document-path-bar");
     const pathBarHover = ruleBody(

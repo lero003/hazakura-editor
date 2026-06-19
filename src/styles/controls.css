@@ -98,13 +98,28 @@
 }
 
 .tabs-row {
+  --titlebar-control-inset: 82px;
+  -webkit-app-region: drag;
   background: var(--surface-muted);
   border-bottom: 1px solid var(--border);
   gap: 8px;
   justify-content: space-between;
   min-width: 0;
-  padding: 0 14px 0 8px;
+  padding: 0 14px 0 var(--titlebar-control-inset);
   height: 44px;
+}
+
+.tab-item,
+.editor-quick-settings,
+.document-meta,
+.distribution-badge,
+.tabs-row button,
+.tabs-row input,
+.tabs-row label,
+.tabs-row [role="tab"],
+.tabs-row [role="menu"],
+.tabs-row [role="menuitem"] {
+  -webkit-app-region: no-drag;
 }
 
 .chrome-icon-button {
