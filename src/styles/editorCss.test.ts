@@ -123,6 +123,27 @@ describe("editor tab close affordance CSS", () => {
     );
   });
 
+  it("treats right-pane mode controls as one segmented control", () => {
+    const group = ruleBody(editorCss, ".pane-toggles");
+    const toggle = ruleBody(editorCss, ".pane-toggle");
+    const reviewMenu = ruleBody(editorCss, ".pane-review-menu");
+
+    expect(group).toMatch(/background:\s*color-mix/);
+    expect(group).toMatch(/border:\s*1px solid/);
+    expect(group).toMatch(/border-radius:\s*7px/);
+    expect(group).toMatch(/gap:\s*0/);
+    expect(group).toMatch(/padding:\s*2px/);
+
+    expect(toggle).toMatch(/border:\s*0/);
+    expect(toggle).toMatch(/border-radius:\s*5px/);
+    expect(toggle).toMatch(/height:\s*24px/);
+
+    expect(reviewMenu).toMatch(/display:\s*inline-flex/);
+    expect(editorCss).toMatch(
+      /\.pane-toggle,[\s\S]*\.pane-review-menu-popover\s*{[\s\S]*-webkit-app-region:\s*no-drag/s,
+    );
+  });
+
   it("keeps the editor full-path bar visually quiet", () => {
     const pathBar = ruleBody(workspaceCss, ".editor-document-path-bar");
     const pathBarHover = ruleBody(
