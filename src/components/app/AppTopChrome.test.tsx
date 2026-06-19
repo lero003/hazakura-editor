@@ -154,6 +154,14 @@ describe("AppTopChrome", () => {
     expect(screen.queryByRole("combobox", { name: "Theme" })).toBeNull();
   });
 
+  it("hides editor quick settings from the L Mode chrome", () => {
+    renderTopChrome({ lModeEnabled: true });
+
+    expect(
+      screen.queryByRole("button", { name: "Editor settings" }),
+    ).toBeNull();
+  });
+
   it("updates editor settings from the quick settings menu", () => {
     const { onEditorSettingsChange } = renderTopChrome();
 

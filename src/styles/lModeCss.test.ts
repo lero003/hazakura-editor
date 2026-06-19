@@ -684,7 +684,7 @@ describe("v0.15 L Mode floating controls focus visibility: prefers-contrast rein
 });
 
 describe("v0.25 L Mode floating chrome drag boundary", () => {
-  it("keeps the floating tab pill draggable while preserving clickable controls", () => {
+  it("keeps the floating tab pill centered by leaving drag to the transparent top band", () => {
     expect(lModeCss).toMatch(
       /:root\[data-l-mode="on"\] \.tabs-row\s*{[^}]*-webkit-app-region:\s*drag/s,
     );
@@ -697,12 +697,50 @@ describe("v0.25 L Mode floating chrome drag boundary", () => {
     expect(lModeCss).toMatch(
       /:root\[data-l-mode="on"\] \.tabs-row\s*{[^}]*height:\s*36px/s,
     );
-    expect(lModeCss).toMatch(
-      /:root\[data-l-mode="on"\] \.window-drag-strip\s*{[^}]*display:\s*none/s,
-    );
+    const dragStripRule =
+      lModeCss.match(
+        /:root\[data-l-mode="on"\] \.window-drag-strip\s*{(?<body>[^}]*)}/s,
+      )?.groups?.body ?? "";
+
+    expect(dragStripRule).toMatch(/display:\s*none/);
+    expect(dragStripRule).not.toMatch(/flex:/);
+    expect(dragStripRule).not.toMatch(/min-width:/);
     expect(lModeCss).toMatch(
       /:root\[data-l-mode="on"\] \.l-mode-exit-pill,[\s\S]*:root\[data-l-mode="on"\] \.l-mode-action-rail,[\s\S]*:root\[data-l-mode="on"\] \.l-mode-action-button\s*{[\s\S]*-webkit-app-region:\s*no-drag/s,
     );
+  });
+
+  it("adds a transparent L Mode top band for blank-space window dragging", () => {
+    const dragBandRule =
+      lModeCss.match(
+        /:root\[data-l-mode="on"\] \.lmode-window-drag-band\s*{(?<body>[^}]*)}/s,
+      )?.groups?.body ?? "";
+
+    expect(dragBandRule).toMatch(/-webkit-app-region:\s*drag/);
+    expect(dragBandRule).toMatch(/position:\s*fixed/);
+    expect(dragBandRule).toMatch(/top:\s*0/);
+    expect(dragBandRule).toMatch(/left:\s*96px/);
+    expect(dragBandRule).toMatch(/right:\s*156px/);
+    expect(dragBandRule).toMatch(/height:\s*52px/);
+    expect(dragBandRule).toMatch(/z-index:\s*88/);
+    expect(lModeCss).toMatch(
+      /:root:not\(\[data-l-mode="on"\]\) \.lmode-window-drag-band\s*{[^}]*display:\s*none/s,
+    );
+  });
+
+  it("keeps the L Mode workspace button below the macOS traffic-light band", () => {
+    const workspaceToggleRule =
+      lModeCss.match(
+        /:root\[data-l-mode="on"\] \.l-mode-workspace-toggle\s*{(?<body>[^}]*)}/s,
+      )?.groups?.body ?? "";
+    const workspaceDrawerRule =
+      lModeCss.match(
+        /:root\[data-l-mode="on"\] \.l-mode-workspace-drawer\s*{(?<body>[^}]*)}/s,
+      )?.groups?.body ?? "";
+
+    expect(workspaceToggleRule).toMatch(/top:\s*58px/);
+    expect(workspaceToggleRule).toMatch(/left:\s*18px/);
+    expect(workspaceDrawerRule).toMatch(/top:\s*100px/);
   });
 });
 

@@ -111,11 +111,13 @@ export function AppTopChrome({
       dragOverTabId={dragOverTabId}
       emptyTabsLabel={emptyTabsLabel}
       leadingControl={
-        <EditorQuickSettingsMenu
-          editorSettings={editorSettings}
-          menuLanguage={menuLanguage}
-          onEditorSettingsChange={onEditorSettingsChange}
-        />
+        lModeEnabled ? null : (
+          <EditorQuickSettingsMenu
+            editorSettings={editorSettings}
+            menuLanguage={menuLanguage}
+            onEditorSettingsChange={onEditorSettingsChange}
+          />
+        )
       }
       onCloseTab={onCloseTab}
       onCloseSelectedImagePreview={onCloseSelectedImagePreview}

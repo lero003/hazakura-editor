@@ -307,6 +307,17 @@
   display: none;
 }
 
+:root[data-l-mode="on"] .lmode-window-drag-band {
+  -webkit-app-region: drag;
+  position: fixed;
+  top: 0;
+  right: 156px;
+  left: 96px;
+  z-index: 88;
+  height: 52px;
+  cursor: default;
+}
+
 :root[data-l-mode="on"] .l-mode-exit-pill,
 :root[data-l-mode="on"] .l-mode-action-rail,
 :root[data-l-mode="on"] .l-mode-action-button {
@@ -487,7 +498,7 @@
   --_lmode-surface-blur: 14px;
   --_lmode-surface-shadow: var(--shadow-sm);
   position: fixed;
-  top: 16px;
+  top: 58px;
   left: 18px;
   z-index: 101;
   display: inline-flex;
@@ -551,7 +562,7 @@
 
 :root[data-l-mode="on"] .l-mode-workspace-drawer {
   position: absolute;
-  top: 58px;
+  top: 100px;
   left: 18px;
   bottom: 18px;
   width: min(320px, calc(100vw - 36px));
@@ -1632,6 +1643,10 @@
 }
 
 :root:not([data-l-mode="on"]) .l-mode-action-rail {
+  display: none;
+}
+
+:root:not([data-l-mode="on"]) .lmode-window-drag-band {
   display: none;
 }
 

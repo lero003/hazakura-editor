@@ -20,6 +20,7 @@ import { AppTopChrome } from "./AppTopChrome";
 import { AppWorkspace } from "./AppWorkspace";
 import { LModeActionRail } from "./LModeActionRail";
 import { LModeExitPill } from "./LModeExitPill";
+import { LModeWindowDragBand } from "./LModeWindowDragBand";
 import { AppleAssistReviewBar } from "./AppleAssistReviewBar";
 import { ReviewSurface } from "../review/ReviewSurface";
 
@@ -124,6 +125,7 @@ export function AppShell(props: AppShellProps) {
       />
       {props.lModeEnabled ? (
         <>
+          <LModeWindowDragBand />
           <LModeExitPill
             copy={props.lModeCopy}
             onExit={props.onToggleLMode}
