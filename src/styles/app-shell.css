@@ -13,14 +13,20 @@
 
 /* 夜光: 背景グラデーションアニメーション / Yakou: Animated BG */
 :root[data-theme="yakou"] .app-shell {
-  background: linear-gradient(135deg, #0c0c14 0%, #131228 50%, #0c0c14 100%);
+  background:
+    radial-gradient(circle at 12% 8%, rgba(80, 116, 168, 0.24), transparent 34%),
+    radial-gradient(circle at 92% 14%, rgba(135, 96, 164, 0.14), transparent 30%),
+    linear-gradient(135deg, #0b1014 0%, #111623 46%, #0a0d13 100%);
   background-size: 200% 200%;
   animation: bgDrift 20s ease-in-out infinite;
 }
 
 /* 桜: 薄紅に葉色を混ぜた静かなグラデーション / Sakura: Petal and Leaf Gradient */
 :root[data-theme="sakura"] .app-shell {
-  background: linear-gradient(145deg, #fffaf6 0%, #f9eff2 46%, #eef6ea 100%);
+  background:
+    radial-gradient(circle at 10% 0%, rgba(237, 151, 175, 0.24), transparent 32%),
+    radial-gradient(circle at 94% 10%, rgba(133, 178, 126, 0.16), transparent 34%),
+    linear-gradient(145deg, #fffaf6 0%, #f8edf1 48%, #edf7eb 100%);
 }
 
 /* 曙光: ゆっくりと変化する曙のグラデーション / Shokou: Slow Dawn Shift */

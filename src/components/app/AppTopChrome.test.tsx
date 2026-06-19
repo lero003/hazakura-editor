@@ -4,8 +4,19 @@ import { AppTopChrome } from "./AppTopChrome";
 import { getLModeCopy, getRecoveryCopy, getSidePaneCopy } from "../../lib/locale";
 import type { EditorSettings, EditorTab } from "../../types";
 
+const windowMocks = vi.hoisted(() => ({
+  startDragging: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("@tauri-apps/api/window", () => ({
+  getCurrentWindow: () => ({
+    startDragging: windowMocks.startDragging,
+  }),
+}));
+
 afterEach(() => {
   cleanup();
+  vi.clearAllMocks();
   vi.unstubAllEnvs();
 });
 
@@ -66,6 +77,56 @@ describe("AppTopChrome", () => {
     renderTopChrome();
 
     expect(screen.queryByRole("button", { name: "New File" })).toBeNull();
+  });
+
+  it("marks top chrome gaps as Tauri drag regions without making tabs draggable", () => {
+    const tab: EditorTab = {
+      contents: "draft",
+      encoding: "utf-8",
+      error: null,
+      externalFingerprint: null,
+      fingerprint: "fp",
+      ignoredExternalFingerprint: null,
+      id: "/workspace/draft.md",
+      large_file_warning: false,
+      lastSavedContents: "draft",
+      lastSavedEncoding: "utf-8",
+      lastSavedLineEnding: "lf",
+      line_ending: "lf",
+      modified_ms: null,
+      name: "draft.md",
+      path: "/workspace/draft.md",
+      saveStatus: "idle",
+      size: 10,
+    };
+
+    renderTopChrome({
+      activeTabId: tab.id,
+      tabs: [tab],
+    });
+
+    expect(
+      document.querySelector(".tabs-row")?.getAttribute("data-tauri-drag-region"),
+    ).toBe("deep");
+    expect(
+      document.querySelector(".tab-item")?.getAttribute("data-tauri-drag-region"),
+    ).toBe("false");
+    expect(
+      screen.getByRole("tab", { name: "draft.md" }).getAttribute("data-tauri-drag-region"),
+    ).toBeNull();
+  });
+
+  it("starts native window dragging from the dedicated titlebar strip", () => {
+    renderTopChrome();
+
+    const dragStrip = document.querySelector(".window-drag-strip") as HTMLElement | null;
+
+    expect(dragStrip).toBeTruthy();
+    expect(dragStrip?.getAttribute("data-tauri-drag-region")).toBe("true");
+
+    fireEvent.mouseDown(dragStrip!, { button: 0 });
+
+    expect(windowMocks.startDragging).toHaveBeenCalledTimes(1);
   });
 
   it("opens an editor quick settings menu from the top-left button", () => {

@@ -4,6 +4,7 @@ import type {
   PointerEvent as ReactPointerEvent,
   ReactNode,
 } from "react";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useRef } from "react";
 import { isDirty } from "../../features/editor/editorTabs";
 import type { EditorTab, ImagePreviewState } from "../../types";
@@ -95,6 +96,15 @@ export function TabBar({
   const tabButtonRefs = useRef(new Map<string, HTMLButtonElement>());
   const showEmptyState = tabs.length === 0 && selectedImage === null;
 
+  const handleWindowDragMouseDown = (
+    event: ReactMouseEvent<HTMLDivElement>,
+  ) => {
+    if (event.button !== 0) {
+      return;
+    }
+    void getCurrentWindow().startDragging().catch(() => {});
+  };
+
   const handleTabKeyDown = (
     event: ReactKeyboardEvent<HTMLButtonElement>,
     currentTabId: string,
@@ -163,9 +173,16 @@ export function TabBar({
   return (
     <section
       className="tabs-row lmode-surface"
+      data-tauri-drag-region="deep"
       aria-label="Open files"
       onPointerEnter={onPointerEnter}
     >
+      <div
+        aria-hidden="true"
+        className="window-drag-strip"
+        data-tauri-drag-region="true"
+        onMouseDown={handleWindowDragMouseDown}
+      />
       {leadingControl}
       <div className="tab-list" role="tablist" aria-label="Open file tabs">
         {showEmptyState ? (
@@ -178,6 +195,7 @@ export function TabBar({
               return (
                 <div
                   className={`tab-item${tab.id === activeTabId ? " active" : ""}${draggingTabId === tab.id ? " dragging" : ""}${dragOverTabId === tab.id ? " drag-over" : ""}`}
+                  data-tauri-drag-region="false"
                   data-tab-id={tab.id}
                   key={tab.id}
                   role="presentation"
@@ -272,6 +290,7 @@ export function TabBar({
             {selectedImage ? (
               <div
                 className="tab-item active image-tab"
+                data-tauri-drag-region="false"
                 data-tab-id={selectedImage.path}
                 key={`image:${selectedImage.path}`}
                 role="presentation"

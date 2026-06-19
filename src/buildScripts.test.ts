@@ -25,6 +25,22 @@ const appStoreSubmitConfigJson = JSON.parse(appStoreSubmitConfig) as {
   build?: { frontendDist?: string };
   bundle?: { macOS?: { bundleVersion?: string } };
 };
+const tauriConfig = JSON.parse(readFileSync("src-tauri/tauri.conf.json", "utf8")) as {
+  app?: {
+    windows?: Array<{
+      hiddenTitle?: boolean;
+      titleBarStyle?: string;
+      trafficLightPosition?: { x?: number; y?: number };
+      transparent?: boolean;
+    }>;
+  };
+};
+const defaultCapability = JSON.parse(
+  readFileSync("src-tauri/capabilities/default.json", "utf8"),
+) as {
+  permissions?: string[];
+  windows?: string[];
+};
 const appStoreEntitlements = readFileSync(
   "src-tauri/entitlements/mac-app-store.entitlements",
   "utf8",
@@ -32,6 +48,22 @@ const appStoreEntitlements = readFileSync(
 const viteConfig = readFileSync("vite.config.ts", "utf8");
 
 describe("macOS build scripts", () => {
+  it("uses an overlay macOS titlebar so the web chrome owns the top material", () => {
+    const mainWindow = tauriConfig.app?.windows?.[0];
+
+    expect(mainWindow?.titleBarStyle).toBe("Overlay");
+    expect(mainWindow?.hiddenTitle).toBe(true);
+    expect(mainWindow?.transparent).toBe(true);
+    expect(mainWindow?.trafficLightPosition).toEqual({ x: 14, y: 16 });
+  });
+
+  it("allows the main window to start native dragging from custom chrome", () => {
+    expect(defaultCapability.windows).toEqual(["main"]);
+    expect(defaultCapability.permissions).toContain(
+      "core:window:allow-start-dragging",
+    );
+  });
+
   it("keeps npm run build on the normal App Store preview lane", () => {
     expect(packageJson.scripts["build:tauri"]).toBe("tauri build");
     expect(packageJson.scripts.build).toBe("npm run build:app-store-preview");

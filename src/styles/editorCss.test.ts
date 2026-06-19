@@ -13,6 +13,14 @@ const appShellCss = readFileSync(
   `${process.cwd()}/src/styles/app-shell.css`,
   "utf8",
 );
+const animationsCss = readFileSync(
+  `${process.cwd()}/src/styles/animations.css`,
+  "utf8",
+);
+const dialogsCss = readFileSync(
+  `${process.cwd()}/src/styles/dialogs.css`,
+  "utf8",
+);
 const workspaceCss = readFileSync(
   `${process.cwd()}/src/styles/workspace.css`,
   "utf8",
@@ -103,6 +111,20 @@ describe("editor tab close affordance CSS", () => {
     expect(rule).toMatch(/box-shadow:\s*0 0 12px 1px/);
   });
 
+  it("keeps special theme app shell gradients visible behind native chrome", () => {
+    const sakuraShell = ruleBody(appShellCss, ':root[data-theme="sakura"] .app-shell');
+    const yakouShell = ruleBody(appShellCss, ':root[data-theme="yakou"] .app-shell');
+    const shokouShell = ruleBody(appShellCss, ':root[data-theme="shokou"] .app-shell');
+
+    expect(sakuraShell).toMatch(/background:\s*radial-gradient/);
+    expect(sakuraShell).toMatch(/linear-gradient\(145deg/);
+    expect(yakouShell).toMatch(/background:\s*radial-gradient/);
+    expect(yakouShell).toMatch(/linear-gradient\(135deg/);
+    expect(yakouShell).toMatch(/animation:\s*bgDrift\s+20s/);
+    expect(shokouShell).toMatch(/background:\s*linear-gradient\(135deg/);
+    expect(shokouShell).toMatch(/animation:\s*bgDrift\s+25s/);
+  });
+
   it("keeps top chrome popovers above the workspace layer", () => {
     expect(appShellCss).toMatch(/\.tabs-row\s*{[\s\S]*z-index:\s*20/);
     expect(appShellCss).toMatch(/\.workspace,[\s\S]*z-index:\s*1/s);
@@ -110,10 +132,41 @@ describe("editor tab close affordance CSS", () => {
 
   it("keeps the transparent titlebar draggable without swallowing controls", () => {
     const tabsRow = ruleBody(controlsCss, ".tabs-row");
+    const dragStrip = ruleBody(controlsCss, ".window-drag-strip");
+    const tabList = ruleBody(controlsCss, ".tab-list");
+    const quickSettings = ruleBody(controlsCss, ".editor-quick-settings");
+    const documentMeta = ruleBody(editorCss, ".document-meta");
 
+    expect(tabsRow).toMatch(/display:\s*grid/);
+    expect(tabsRow).toMatch(/grid-template-rows:\s*26px\s+44px/);
     expect(tabsRow).toMatch(/-webkit-app-region:\s*drag/);
-    expect(tabsRow).toMatch(/--titlebar-control-inset:\s*76px/);
-    expect(tabsRow).toMatch(/padding:\s*0\s+14px\s+0\s+var\(--titlebar-control-inset\)/);
+    expect(tabsRow).toMatch(/--titlebar-traffic-light-inset:\s*84px/);
+    expect(tabsRow).toMatch(/--titlebar-leading-control-width:\s*44px/);
+    expect(tabsRow).toMatch(
+      /grid-template-columns:\s*var\(--titlebar-leading-control-width\)\s+calc\(var\(--titlebar-traffic-light-inset\)\s+-\s+var\(--titlebar-leading-control-width\)\)\s+minmax\(0,\s*1fr\)\s+auto/,
+    );
+    expect(tabsRow).toMatch(/border-bottom:\s*0/);
+    expect(tabsRow).toMatch(/height:\s*70px/);
+    expect(tabsRow).toMatch(/padding:\s*0\s+14px\s+0\s+0/);
+    expect(ruleBody(animationsCss, ".app-shell")).toMatch(
+      /grid-template-rows:\s*70px\s+min-content\s+minmax\(0,\s*1fr\)\s+28px/,
+    );
+    expect(dialogsCss).toMatch(
+      /@media \(max-width:\s*1040px\)\s*{[\s\S]*\.app-shell\s*{[^}]*grid-template-rows:\s*70px\s+min-content\s+minmax\(0,\s*1fr\)\s+28px/s,
+    );
+
+    expect(dragStrip).toMatch(/grid-column:\s*3\s*\/\s*4/);
+    expect(dragStrip).toMatch(/grid-row:\s*1/);
+    expect(dragStrip).toMatch(/-webkit-app-region:\s*drag/);
+    expect(dragStrip).toMatch(/cursor:\s*default/);
+
+    expect(quickSettings).toMatch(/grid-column:\s*1/);
+    expect(quickSettings).toMatch(/grid-row:\s*2/);
+    expect(quickSettings).toMatch(/justify-self:\s*center/);
+    expect(tabList).toMatch(/grid-column:\s*2\s*\/\s*5/);
+    expect(tabList).toMatch(/grid-row:\s*2/);
+    expect(documentMeta).toMatch(/grid-column:\s*4/);
+    expect(documentMeta).toMatch(/grid-row:\s*1/);
 
     expect(controlsCss).toMatch(
       /\.tab-item,[\s\S]*\.editor-quick-settings,[\s\S]*\.document-meta,[\s\S]*\.distribution-badge,[\s\S]*\.tabs-row button,[\s\S]*\.tabs-row input,[\s\S]*\.tabs-row label,[\s\S]*\.tabs-row \[role="tab"\],[\s\S]*\.tabs-row \[role="menu"\],[\s\S]*\.tabs-row \[role="menuitem"\]\s*{[\s\S]*-webkit-app-region:\s*no-drag/s,
@@ -123,20 +176,24 @@ describe("editor tab close affordance CSS", () => {
     );
   });
 
-  it("treats right-pane mode controls as one segmented control", () => {
+  it("integrates right-pane mode controls into the top chrome", () => {
     const group = ruleBody(editorCss, ".pane-toggles");
     const toggle = ruleBody(editorCss, ".pane-toggle");
+    const activeToggle = ruleBody(editorCss, ".pane-toggle.active");
     const reviewMenu = ruleBody(editorCss, ".pane-review-menu");
 
     expect(group).toMatch(/background:\s*color-mix/);
     expect(group).toMatch(/border:\s*1px solid/);
-    expect(group).toMatch(/border-radius:\s*7px/);
-    expect(group).toMatch(/gap:\s*0/);
+    expect(group).toMatch(/border-radius:\s*8px/);
+    expect(group).toMatch(/box-shadow:\s*inset 0 1px 0/);
+    expect(group).toMatch(/gap:\s*1px/);
     expect(group).toMatch(/padding:\s*2px/);
 
     expect(toggle).toMatch(/border:\s*0/);
-    expect(toggle).toMatch(/border-radius:\s*5px/);
-    expect(toggle).toMatch(/height:\s*24px/);
+    expect(toggle).toMatch(/border-radius:\s*6px/);
+    expect(toggle).toMatch(/height:\s*28px/);
+    expect(activeToggle).toMatch(/background:\s*color-mix/);
+    expect(activeToggle).toMatch(/box-shadow:\s*inset 0 0 0 1px/);
 
     expect(reviewMenu).toMatch(/display:\s*inline-flex/);
     expect(editorCss).toMatch(

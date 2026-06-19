@@ -12,7 +12,7 @@
 
 .file-tree-pane {
   background: var(--surface-muted);
-  border-right: 1px solid var(--border);
+  border-right: 0;
   display: flex;
   flex-direction: column;
   font-size: var(--workspace-font-size, 13px);
@@ -35,58 +35,89 @@
   font-size: inherit;
 }
 
-/* v0.25 native vibrancy: the dark sidebar sits over the native
+/* v0.25 native vibrancy: shell chrome sits over the native
    NSVisualEffectView material rather than a CSS backdrop-filter. Keep a
-   very faint dark tint so the Sakura palette still reads, but let the
-   native material dominate. The other themes (light/sakura/yakou/shokou)
-   still use the CSS backdrop-filter approximation until each is tuned
-   over the native material in a follow-up slice. */
+   very faint theme tint so each palette still reads, but let the native
+   material dominate. */
+:root[data-theme="dark"] {
+  --native-shell-tint: rgba(14, 19, 17, 0.12);
+  --native-shell-border: color-mix(in srgb, var(--border) 38%, transparent);
+}
+
+:root[data-theme="light"] {
+  --native-shell-tint: rgba(233, 240, 235, 0.24);
+  --native-shell-border: color-mix(in srgb, var(--border) 40%, transparent);
+}
+
+:root[data-theme="sakura"] {
+  --native-shell-tint: rgba(248, 230, 236, 0.26);
+  --native-shell-border: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+:root[data-theme="yakou"] {
+  --native-shell-tint: rgba(20, 20, 30, 0.18);
+  --native-shell-border: color-mix(in srgb, var(--accent-secondary) 18%, transparent);
+}
+
+:root[data-theme="shokou"] {
+  --native-shell-tint: rgba(237, 244, 252, 0.24);
+  --native-shell-border: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
 :root[data-theme="dark"] .file-tree-pane {
-  background: rgba(14, 19, 17, 0.12);
+  background: var(--native-shell-tint);
+  border-right-color: var(--native-shell-border);
 }
 
-/* The dark top chrome follows the sidebar: a faint tint over the native
-   material instead of an opaque `--surface-muted` fill, so the titlebar
-   band and sidebar read as one continuous native surface. */
 :root[data-theme="dark"] .tabs-row {
-  background: rgba(14, 19, 17, 0.12);
-}
-
-/* Let the native material show through the dark app shell. The editor
-   body (`.editor-pane` / `.cm-bg`) keeps its own opaque `--cm-bg`, so
-   dense Markdown prose stays readable and is not placed over vibrancy.
-   `--bg` itself is left opaque for non-shell consumers; only the shell
-   surface is opened up here. */
-:root[data-theme="dark"] .app-shell {
-  background: transparent;
+  background: var(--native-shell-tint);
+  border-bottom-color: var(--native-shell-border);
 }
 
 :root[data-theme="light"] .file-tree-pane {
-  background: rgba(233, 240, 235, 0.7);
-  backdrop-filter: blur(16px);
+  background: var(--native-shell-tint);
+  border-right-color: var(--native-shell-border);
 }
 
 :root[data-theme="sakura"] .file-tree-pane {
-  background: rgba(248, 230, 236, 0.72);
-  backdrop-filter: blur(16px);
+  background: var(--native-shell-tint);
+  border-right-color: var(--native-shell-border);
 }
 
 :root[data-theme="yakou"] .file-tree-pane {
-  background: rgba(20, 20, 30, 0.75);
-  backdrop-filter: blur(16px);
-  border-right-color: color-mix(in srgb, var(--accent-secondary) 15%, transparent);
+  background: var(--native-shell-tint);
+  border-right-color: var(--native-shell-border);
 }
 
 :root[data-theme="shokou"] .file-tree-pane {
-  background: rgba(237, 244, 252, 0.68);
-  backdrop-filter: blur(16px);
-  border-right-color: color-mix(in srgb, var(--accent) 14%, transparent);
+  background: var(--native-shell-tint);
+  border-right-color: var(--native-shell-border);
+}
+
+:root[data-theme="light"] .tabs-row {
+  background: var(--native-shell-tint);
+  border-bottom-color: var(--native-shell-border);
+}
+
+:root[data-theme="sakura"] .tabs-row {
+  background: var(--native-shell-tint);
+  border-bottom-color: var(--native-shell-border);
+}
+
+:root[data-theme="yakou"] .tabs-row {
+  background: var(--native-shell-tint);
+  border-bottom-color: var(--native-shell-border);
+}
+
+:root[data-theme="shokou"] .tabs-row {
+  background: var(--native-shell-tint);
+  border-bottom-color: var(--native-shell-border);
 }
 
 .workspace-sidebar-rail {
   align-items: flex-start;
   background: var(--surface-muted);
-  border-right: 1px solid var(--border);
+  border-right: 0;
   display: flex;
   justify-content: center;
   min-height: 0;
@@ -94,30 +125,35 @@
 }
 
 :root[data-theme="dark"] .workspace-sidebar-rail {
-  background: rgba(17, 23, 20, 0.7);
-  backdrop-filter: blur(16px);
+  background: var(--native-shell-tint);
+  border-right-color: var(--native-shell-border);
 }
 
 :root[data-theme="light"] .workspace-sidebar-rail {
-  background: rgba(233, 240, 235, 0.7);
-  backdrop-filter: blur(16px);
+  background: var(--native-shell-tint);
+  border-right-color: var(--native-shell-border);
 }
 
 :root[data-theme="sakura"] .workspace-sidebar-rail {
-  background: rgba(248, 230, 236, 0.72);
-  backdrop-filter: blur(16px);
+  background: var(--native-shell-tint);
+  border-right-color: var(--native-shell-border);
 }
 
 :root[data-theme="yakou"] .workspace-sidebar-rail {
-  background: rgba(20, 20, 30, 0.75);
-  backdrop-filter: blur(16px);
-  border-right-color: color-mix(in srgb, var(--accent-secondary) 15%, transparent);
+  background: var(--native-shell-tint);
+  border-right-color: var(--native-shell-border);
 }
 
 :root[data-theme="shokou"] .workspace-sidebar-rail {
-  background: rgba(237, 244, 252, 0.68);
-  backdrop-filter: blur(16px);
-  border-right-color: color-mix(in srgb, var(--accent) 14%, transparent);
+  background: var(--native-shell-tint);
+  border-right-color: var(--native-shell-border);
+}
+
+/* Let native material show through standard shells. Special themes keep
+   their app-shell gradients behind the native-tinted chrome surfaces. */
+:root[data-theme="dark"] .app-shell,
+:root[data-theme="light"] .app-shell {
+  background: transparent;
 }
 
 .workspace-empty {
@@ -134,7 +170,7 @@
 }
 
 .workspace-header {
-  border-bottom: 1px solid var(--border);
+  border-bottom: 0;
   flex: 0 0 auto;
   min-width: 0;
   padding: 10px 12px;
@@ -449,7 +485,7 @@
 }
 
 .tree-children {
-  border-left: 1px solid var(--border);
+  border-left: 0;
   margin-left: 17px;
   padding-left: 2px;
 }
@@ -1455,7 +1491,7 @@
 }
 
 .workspace-footer {
-  border-top: 1px solid var(--border);
+  border-top: 0;
   display: flex;
   flex: 0 0 auto;
   justify-content: stretch;

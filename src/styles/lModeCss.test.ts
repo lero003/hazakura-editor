@@ -692,6 +692,15 @@ describe("v0.25 L Mode floating chrome drag boundary", () => {
       /:root\[data-l-mode="on"\] \.tabs-row\s*{[^}]*padding:\s*0\s+12px/s,
     );
     expect(lModeCss).toMatch(
+      /:root\[data-l-mode="on"\] \.tabs-row\s*{[^}]*display:\s*flex/s,
+    );
+    expect(lModeCss).toMatch(
+      /:root\[data-l-mode="on"\] \.tabs-row\s*{[^}]*height:\s*36px/s,
+    );
+    expect(lModeCss).toMatch(
+      /:root\[data-l-mode="on"\] \.window-drag-strip\s*{[^}]*display:\s*none/s,
+    );
+    expect(lModeCss).toMatch(
       /:root\[data-l-mode="on"\] \.l-mode-exit-pill,[\s\S]*:root\[data-l-mode="on"\] \.l-mode-action-rail,[\s\S]*:root\[data-l-mode="on"\] \.l-mode-action-button\s*{[\s\S]*-webkit-app-region:\s*no-drag/s,
     );
   });

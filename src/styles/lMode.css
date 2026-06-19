@@ -285,6 +285,11 @@
   --_lmode-surface-border-opacity: 62%;
   -webkit-app-region: drag;
   /* blur: see `.lmode-surface` default (18px) */
+  display: flex;
+  gap: 4px;
+  grid-template-columns: none;
+  grid-template-rows: none;
+  height: 36px;
   position: fixed;
   top: 14px;
   left: 50%;
@@ -296,6 +301,10 @@
   transform: translateX(-50%);
   transition: opacity 160ms ease, transform 160ms ease;
   z-index: 90;
+}
+
+:root[data-l-mode="on"] .window-drag-strip {
+  display: none;
 }
 
 :root[data-l-mode="on"] .l-mode-exit-pill,

@@ -64,9 +64,14 @@ describe("preview.css", () => {
 
   it("scopes the e-book reader chrome to the e-book pane", () => {
     const body = ruleBody(".ebook-pane .ebook-reader-chrome");
+    const buttonBody = ruleBody(".ebook-pane .ebook-reader-button");
+    const statusBody = ruleBody(".ebook-pane .ebook-reader-status");
 
     expect(body).toMatch(/position:\s*sticky/);
-    expect(body).toMatch(/grid-template-columns:/);
+    expect(body).toMatch(/height:\s*72px/);
+    expect(body).toMatch(/grid-template-columns:\s*minmax\(104px,\s*128px\) minmax\(0,\s*1fr\) minmax\(104px,\s*128px\)/);
+    expect(statusBody).toMatch(/align-self:\s*center/);
+    expect(buttonBody).toMatch(/width:\s*100%/);
     expect(previewCss).not.toMatch(/(?:^|\n)\.ebook-reader-chrome\s*{/);
   });
 

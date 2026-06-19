@@ -18,9 +18,11 @@
         "minWidth": 960,
         "minHeight": 640,
         "theme": "Dark",
-        "titleBarStyle": "Transparent",
+        "titleBarStyle": "Overlay",
+        "trafficLightPosition": { "x": 14, "y": 16 },
+        "hiddenTitle": true,
         "transparent": true,
-        "backgroundColor": "#0d0d12"
+        "backgroundColor": "#101613"
       }
     ],
     "security": {

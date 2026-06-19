@@ -189,6 +189,9 @@ function readStoredThemePreference(): ThemePreference {
 }
 
 function windowBackgroundColorForTheme(theme: ThemePreference): string {
+  // This color feeds the transparent native macOS titlebar / window
+  // background. Keep it aligned with the shell chrome tint, while the
+  // editor / preview panes keep their own readable content backgrounds.
   return (
     themeBackgroundColorJson[theme] ??
     themeBackgroundColorJson.dark

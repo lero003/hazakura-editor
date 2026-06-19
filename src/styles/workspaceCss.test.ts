@@ -26,6 +26,53 @@ function ruleBody(selector: string): string {
 }
 
 describe("workspace.css", () => {
+  it("lets native vibrancy drive every theme shell surface", () => {
+    for (const theme of ["dark", "light", "sakura", "yakou", "shokou"]) {
+      expect(
+        ruleBody(`:root[data-theme="${theme}"] .file-tree-pane`),
+      ).toMatch(/background:\s*var\(--native-shell-tint\)/);
+      expect(
+        ruleBody(`:root[data-theme="${theme}"] .workspace-sidebar-rail`),
+      ).toMatch(/background:\s*var\(--native-shell-tint\)/);
+      expect(ruleBody(`:root[data-theme="${theme}"] .tabs-row`)).toMatch(
+        /background:\s*var\(--native-shell-tint\)/,
+      );
+    }
+
+    expect(workspaceCss).not.toMatch(
+      /:root\[data-theme="(?:dark|light|sakura|yakou|shokou)"\] \.(?:file-tree-pane|workspace-sidebar-rail|tabs-row)\s*{[^}]*backdrop-filter/s,
+    );
+    expect(workspaceCss).toMatch(
+      /:root\[data-theme="dark"\]\s*{[^}]*--native-shell-tint:\s*rgba\(14, 19, 17, 0\.12\)/s,
+    );
+    expect(workspaceCss).toMatch(
+      /:root\[data-theme="shokou"\]\s*{[^}]*--native-shell-tint:\s*rgba\(237, 244, 252, 0\.24\)/s,
+    );
+  });
+
+  it("keeps standard themes transparent while special themes keep their shell gradients", () => {
+    expect(workspaceCss).toMatch(
+      /:root\[data-theme="dark"\] \.app-shell,[^}]*:root\[data-theme="light"\] \.app-shell\s*{[^}]*background:\s*transparent/s,
+    );
+    expect(workspaceCss).not.toMatch(
+      /:root\[data-theme="sakura"\] \.app-shell,[^}]*background:\s*transparent/s,
+    );
+    expect(workspaceCss).not.toMatch(
+      /:root\[data-theme="yakou"\] \.app-shell,[^}]*background:\s*transparent/s,
+    );
+    expect(workspaceCss).not.toMatch(
+      /:root\[data-theme="shokou"\] \.app-shell,[^}]*background:\s*transparent/s,
+    );
+  });
+
+  it("removes hard workspace chrome divider lines from the native shell", () => {
+    expect(ruleBody(".file-tree-pane")).toMatch(/border-right:\s*0/);
+    expect(ruleBody(".workspace-sidebar-rail")).toMatch(/border-right:\s*0/);
+    expect(ruleBody(".workspace-header")).toMatch(/border-bottom:\s*0/);
+    expect(ruleBody(".workspace-footer")).toMatch(/border-top:\s*0/);
+    expect(ruleBody(".tree-children")).toMatch(/border-left:\s*0/);
+  });
+
   it("keeps the e-book side pane from using the generic preview scroll", () => {
     expect(ruleBody(".preview-pane")).toMatch(/overflow:\s*auto/);
     expect(ruleBody(".preview-pane-ebook")).toMatch(/overflow:\s*hidden/);

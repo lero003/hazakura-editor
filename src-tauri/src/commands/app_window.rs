@@ -13,15 +13,14 @@ use tauri::TitleBarStyle;
 use tauri::WebviewUrl;
 use tauri::WebviewWindowBuilder;
 
-// Single source of truth for the per-theme OS window background color.
+// Single source of truth for the per-theme OS window chrome color.
 // Mirrors `windowBackgroundColorForTheme` in
 // `src/hooks/app/useAppPreferences.ts` (both import the same JSON).
 // The hex values are the initial-paint colors used for the agent
 // window's Tauri `background_color` and the main window's
-// `setCurrentWindowBackgroundColor` IPC. For themes whose CSS
-// `--bg` is a gradient (yakou / shokou), this is the gradient's
-// start color, picked to keep the title-bar / chrome visually
-// close to the actual surface during the pre-CSS paint.
+// `setCurrentWindowBackgroundColor` IPC. They are tuned for the
+// transparent macOS title bar / shell chrome, not for dense editor
+// content backgrounds.
 const THEME_BACKGROUND_COLORS_JSON: &str = include_str!("../../../src/lib/theme-palette.json");
 
 #[derive(serde::Deserialize)]
