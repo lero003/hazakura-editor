@@ -44,6 +44,9 @@ html, body, #root, .app-shell,
      行の判別が効くようにする。--diff-removed-fg は --danger が
      既に上書き済みなので引き継ぐ。 */
   --diff-added-fg: #91d7ad;
+  --diff-added-row-bg: color-mix(in srgb, var(--diff-added-fg) 18%, transparent);
+  --diff-removed-row-bg: color-mix(in srgb, var(--diff-removed-fg) 20%, transparent);
+  --diff-blank-row-bg: color-mix(in srgb, var(--text-muted) 10%, transparent);
 
   /* CodeMirror ダーク用配色 / CodeMirror Dark Colors */
   --cm-bg: #141a17;
@@ -208,6 +211,9 @@ html, body, #root, .app-shell,
      default 値の #2d6c4a は --surface: #14141e 上でコントラストが
      2.92:1 まで落ちる。既存の --xterm-green と揃えて #7fc8a0 に。 */
   --diff-added-fg: #7fc8a0;
+  --diff-added-row-bg: color-mix(in srgb, var(--diff-added-fg) 18%, transparent);
+  --diff-removed-row-bg: color-mix(in srgb, var(--diff-removed-fg) 20%, transparent);
+  --diff-blank-row-bg: color-mix(in srgb, var(--text-muted) 10%, transparent);
 
   /* CodeMirror 夜光用配色 / CodeMirror Yakou Colors */
   --cm-bg: #14141e;

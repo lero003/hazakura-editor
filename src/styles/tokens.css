@@ -31,8 +31,11 @@
      差分・比較ビュー全てが同じトークンを参照する。 */
   --diff-added-bg: rgba(46, 125, 85, 0.13);
   --diff-added-fg: #2d6c4a;
+  --diff-added-row-bg: rgba(46, 125, 85, 0.08);
   --diff-removed-bg: rgba(158, 63, 67, 0.13);
   --diff-removed-fg: var(--danger);
+  --diff-removed-row-bg: rgba(158, 63, 67, 0.08);
+  --diff-blank-row-bg: rgba(127, 127, 127, 0.04);
 
   /* CodeMirror エディタ配色 / CodeMirror Editor Colors */
   --cm-bg: #ffffff;

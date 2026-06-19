@@ -1178,21 +1178,21 @@
 
 .diff-cell.added,
 .diff-line-number.added {
-  background: rgba(46, 125, 85, 0.08);
+  background: var(--diff-added-row-bg);
 }
 
 .diff-cell.removed,
 .diff-line-number.removed {
-  background: rgba(158, 63, 67, 0.08);
+  background: var(--diff-removed-row-bg);
 }
 
 .diff-cell.blank,
 .diff-line-number.blank {
-  background: rgba(127, 127, 127, 0.04);
+  background: var(--diff-blank-row-bg);
 }
 
 .diff-cell.added .diff-cell-marker {
-  color: #2d6c4a;
+  color: var(--diff-added-fg);
 }
 
 .diff-cell.removed .diff-cell-marker {
@@ -1203,21 +1203,21 @@
 :root[data-theme="dark"] .diff-line-number.added,
 :root[data-theme="yakou"] .diff-cell.added,
 :root[data-theme="yakou"] .diff-line-number.added {
-  background: color-mix(in srgb, var(--diff-added-fg) 18%, transparent);
+  background: var(--diff-added-row-bg);
 }
 
 :root[data-theme="dark"] .diff-cell.removed,
 :root[data-theme="dark"] .diff-line-number.removed,
 :root[data-theme="yakou"] .diff-cell.removed,
 :root[data-theme="yakou"] .diff-line-number.removed {
-  background: color-mix(in srgb, var(--diff-removed-fg) 20%, transparent);
+  background: var(--diff-removed-row-bg);
 }
 
 :root[data-theme="dark"] .diff-cell.blank,
 :root[data-theme="dark"] .diff-line-number.blank,
 :root[data-theme="yakou"] .diff-cell.blank,
 :root[data-theme="yakou"] .diff-line-number.blank {
-  background: color-mix(in srgb, var(--text-muted) 10%, transparent);
+  background: var(--diff-blank-row-bg);
 }
 
 :root[data-theme="dark"] .diff-cell.added .diff-cell-marker,
