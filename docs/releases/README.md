@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-06-19
+Last reviewed: 2026-06-20
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
@@ -21,15 +21,15 @@ Latest downloadable GitHub DMG Release body:
 
 Latest App Store status:
 
-- `0.19.0` passed App Review and is published on the Mac App Store.
-- `0.20.0` build `16` has a local App Store submit-lane package
-  candidate, but it was superseded before upload by the `0.25.0`
-  version alignment. A fresh `0.25.0` package is required before
-  Transporter / App Store Connect work.
+- `0.25.0` has been reported as released on the Mac App Store.
+- `0.25.0` build `18` is the tracked local App Store submit-lane
+  package evidence. Raw App Store Connect, TestFlight, and App Review
+  logs are not tracked in this repository.
   See `../current-status.md` for current distribution status.
 
 Latest App Store submission-candidate note:
 
+- `0.25.0-app-store-submission-candidate.release.md`
 - `0.20.0-app-store-submission-candidate.release.md`
 - `0.19.0-app-store-submission-candidate.release.md`
 

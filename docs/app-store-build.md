@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-06-19 (v0.25 version alignment; 0.20 build 16 superseded)
+Last reviewed: 2026-06-20 (v0.25 App Store release reported)
 
 ## Purpose
 
@@ -31,7 +31,7 @@ Apple Local Assist and Agent Workbench behind their existing boundaries.
 
 - App name: `Hazakura Editor`
 - Bundle ID: `dev.hazakura.editor`
-- Published App Store version: `0.19.0`
+- Published App Store version: `0.25.0` (reported released on 2026-06-20)
 - Current source / Developer version: `0.25.0`
 - App Store category: `Productivity`
 - Public Privacy Policy URL:
@@ -427,8 +427,8 @@ v0.20 package-candidate note: on 2026-06-19, Codex generated a local
 App Store submit-lane package for user-visible version `0.20.0` and
 App Store build counter `16`. This package was superseded before upload
 when the release target moved to `0.25.0`. Do not submit this package;
-regenerate a fresh `0.25.0` App Store submit-lane package before
-Transporter / App Store Connect work.
+the replacement local candidate is the `0.25.0` build `18` package
+recorded below.
 
 The local package generated for this lane is:
 
@@ -451,4 +451,34 @@ rather than an App Store Connect validation result. SHA-256:
 
 ```txt
 b2bf37df86b7e589dd34411635f68988b27b24a9db87f7125833c1471938eb50
+```
+
+v0.25 package-candidate note: on 2026-06-19, Codex generated a local
+App Store submit-lane package for user-visible version `0.25.0` and
+App Store build counter `18`. The `0.25.0` App Store update was later
+reported as released on 2026-06-20. This note is still local packaging
+evidence only; raw App Store Connect, TestFlight, and App Review logs
+are not tracked here.
+
+The local package generated for this lane is:
+
+```txt
+src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.25.0-build18-mas.pkg
+```
+
+The signed submit-lane bundle reported `CFBundleIdentifier`
+`dev.hazakura.editor`, `CFBundleShortVersionString` `0.25.0`,
+`CFBundleVersion` `18`, and `LSMinimumSystemVersion` `26.0`. It had the
+expected App Sandbox, user-selected read/write, app-scoped bookmark, and
+network-client entitlements; it omitted the Apple Local Assist helper
+and included bundled `LICENSE` / `THIRD_PARTY_NOTICES.md` resources.
+`productbuild --synthesize` emitted a Distribution XML
+`allowed-os-versions` entry with `min="26.0"`.
+`pkgutil --check-signature` passed with the 3rd Party Mac Developer
+Installer certificate. `spctl --assess --type install` rejected the
+local package, so keep treating that as local trust-policy evidence
+rather than an App Store Connect validation result. SHA-256:
+
+```txt
+211ed7ffa935929cb4d3e31e88b6d9034c08a2335876e3f3fbf61a90e4400b61
 ```

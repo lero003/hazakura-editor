@@ -3,7 +3,7 @@
 Status: Proposal
 Scope: v0.26+ explicit AI proposal intake and review
 Authority: Medium
-Last reviewed: 2026-06-19
+Last reviewed: 2026-06-20
 
 ## Summary
 
@@ -42,11 +42,18 @@ Do not add:
 - generic provider plugins
 - general chat or agent orchestration
 
-## v0.26 Direction
+## v0.26+ Direction
 
 This work is intentionally after v0.25 native-feeling Safe Editor chrome
-polish. The ingest / review workflow should sit on a clearer app shell and
-mode-control foundation rather than driving that chrome redesign itself.
+polish. As of the v0.26 planning pass, the immediate v0.26 lane is
+expected to prioritize authoring polish and initial EPUB export first:
+no-workspace New File / Save As, e-book empty-state affordance, and a
+minimal explicit EPUB export path.
+
+AI ingest remains a good v0.26+ direction, but it should begin only when
+one focused review primitive is selected. The ingest / review workflow
+should sit on a clearer app shell and mode-control foundation rather
+than driving that chrome redesign itself.
 
 Start with the smallest reusable review primitive:
 

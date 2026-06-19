@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-06-18
+Last reviewed: 2026-06-20
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
@@ -16,7 +16,7 @@ or quality-polish slice.
 - `security-boundary.md`: safety constraints for file handling and execution boundaries.
 - `agent-workbench-boundary.md`: optional CLI-agent workbench trust boundary.
 - `assist-surface-strategy.md`: future assist-surface direction.
-- `current-work.md`: active v0.20/v0.21 UX, post-approval, and quality work queue.
+- `current-work.md`: active v0.26 polish, EPUB export, post-approval, and quality work queue.
 - `roadmap.md`: active release sequence and phase boundaries.
 - `current-status.md`: current implementation and release state.
 
@@ -37,6 +37,7 @@ or quality-polish slice.
 - `ebook-mode-epub-export-plan.md`: v0.21+ e-bookモード / EPUB export planning memo.
 - `ai-markdown-ingest-plan.md`: v0.26+ explicit AI Markdown proposal ingest and Diff / Review planning memo.
 - `native-macos-appearance-plan.md`: v0.25 native-feeling Safe Editor chrome planning memo.
+- `post-v0.25-product-refinement-plan.md`: post-App-Store refinement lens for raising product grade without adding heavy surfaces.
 - `speculative-local-ai-future-plan.md`: changeable v1+ / v2+ / v3+ local AI direction.
 - `apple-local-assist-distribution-plan.md`: Apple Local Assist / App Store distribution planning memo.
 - `apple-local-assist-writing-companion-plan.md`: Apple Local Assist Writing Companion / external Assist Window UX direction.

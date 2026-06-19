@@ -3,7 +3,7 @@
 Status: Proposal
 Scope: v0.21+ authoring and export planning
 Authority: Medium
-Last reviewed: 2026-06-19
+Last reviewed: 2026-06-20
 
 ## Summary
 
@@ -402,12 +402,48 @@ Decision record:
 OKF の `index.md` 規約に近い形へ寄せられる可能性はあるが、OKF
 自体はまだ提案段階として扱い、v0.23 の実装契約にはしない。
 
+### v0.26: EPUB Export First Slice
+
+v0.26 では、いくつかの authoring polish と合わせて EPUB export の
+初期版を扱う。これは v1.0 完成版ではなく、「Markdown source から
+明示的に `.epub` を書き出せる」ことを確認する first slice である。
+
+Scope:
+
+- active Markdown source から `.epub` archive を生成する。
+- save dialog を通じた明示的な export action にする。
+- ATX headings から章 / navigation / table of contents の初期構造を作る。
+- title / language / identifier は安全な初期値を使い、必要なら最低限の
+  入力だけにする。
+- XHTML content と stylesheet は Markdown source から生成する。
+- workspace-local images は既存の workspace image boundary とサイズ
+  方針を再確認して取り込む。扱えない画像は warning にする。
+- standalone / no-workspace document は、まず Save As で実ファイルに
+  した後の export を dependable path とする。未保存sourceからの export
+  は可能でも、相対画像解決に制限があることを明示する。
+
+Do not include:
+
+- external EPUBCheck / Calibre launch;
+- App Store lane 外部通信やアップロード;
+- vertical writing;
+- advanced metadata / cover editor;
+- reader-perfect pagination or EPUB-reader page-count claims;
+- saved EPUB as a second editable document model.
+
+Verification direction:
+
+- source text is not mutated by export;
+- generated archive is deterministic enough for regression tests;
+- unresolved / blocked images produce warnings instead of unsafe reads;
+- Preview / e-book Mode / HTML export behavior remains unchanged;
+- manual EPUBCheck remains documentation guidance, not an in-app command.
+
 ### Later: Style Simulation And Review Hooks
 
-v0.24 は単ページ読書面 polish として閉じ、AI Markdown ingest は
-v0.25 ではなく v0.26 へ送る。次に e-book 側でスタイル調整を
-再開する場合は、v0.25 native-feeling chrome polish の後続として
-限定的に扱う。
+v0.24 は単ページ読書面 polish として閉じた。v0.26 で EPUB export の
+初期版へ進む場合も、style simulation は最小限に留め、export の
+安全境界と再現性を先に固める。
 
 - font scale
 - line height

@@ -1,15 +1,15 @@
 # Current Work
 
 Status: Operational
-Scope: Active post-approval, v0.20-v0.26 planning, and quality routing
+Scope: Active post-approval, v0.26 planning, and quality routing
 Authority: High
-Last reviewed: 2026-06-19 (v0.25 version aligned for source tag)
+Last reviewed: 2026-06-20 (v0.26 polish and EPUB export queue)
 
 ## Purpose
 
 Start here when choosing the next small `Hazakura Editor` slice.
-This file is the current work queue. The `0.19.0` App Store lane passed
-App Review and was published on 2026-06-18; keep the completed
+This file is the current work queue. The `0.25.0` App Store update has
+been reported as released on 2026-06-20; keep completed
 submission-prep material as evidence, not as the active queue.
 Older v0.17 App Store-quality request packets and closeout evidence live
 under `docs/archive/operations/app-store-v0.17/`, and the completed
@@ -235,9 +235,9 @@ changes, and Tab focus.
 
 ## v0.25 Native-feeling Safe Editor Chrome Polish
 
-This is the current named product slice after v0.24 e-book Mode polish.
-AI Markdown ingest moves to v0.26 so the app shell and mode controls can
-feel more native and stable before a new review/import workflow is added.
+This is the completed named product slice after v0.24 e-book Mode
+polish. The v0.26 lane now focuses on authoring polish and initial EPUB
+export before heavier review/import workflows.
 
 Goal: reduce the sense of a web app inside a macOS window while keeping
 the Markdown-first Safe Editor boundary intact.
@@ -310,12 +310,51 @@ Treat the macOS 26 floor change as release-planning work: a new App
 Store build declaring macOS 26 is a lane decision with TestFlight / App
 Review evidence, not a silent metadata bump.
 
+## v0.26 Polish And EPUB Export
+
+v0.26 should raise product quality with a few focused polish slices and
+an initial EPUB export path. Keep this release inside the Markdown-first
+Safe Editor boundary.
+
+Goal: make the app harder to get stuck in, make the e-book surface feel
+consistently available, and add an explicit first EPUB export action
+without introducing a second document model.
+
+Suggested order:
+
+1. **No-workspace new document / Save As**: New File should work when no
+   workspace is selected by creating an untitled standalone Markdown tab.
+   Save for a pathless tab should route to Save As / file picker before
+   writing, then become an ordinary standalone file tab. Do not create a
+   hidden workspace, background autosave location, or app-managed project
+   folder in this slice.
+2. **e-book affordance empty-state polish**: the e-book / book button
+   should not disappear just because no file is open. Keep the control
+   visible in the mode cluster, but show a disabled or empty state until
+   a Markdown/text document is active. It must not show stale content
+   from a previous file.
+3. **Initial EPUB export**: export the active Markdown source through an
+   explicit user action and save dialog. Start with a minimal `.epub`
+   archive for the current document / current chapter structure, using
+   Markdown source and the existing preview safety assumptions. Do not
+   add external command execution, Calibre / EPUBCheck launch, background
+   upload, vertical writing, advanced metadata editing, or a hidden EPUB
+   document model.
+
+AI Markdown ingest remains useful, but it should not crowd out these
+basic authoring and export improvements in v0.26 unless a separate
+focused slice is explicitly selected.
+
 ## Active UX Queue
 
 Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
+| v0.26 P0 | No-workspace new document / Save As | With no workspace selected, New File creates an untitled standalone Markdown tab with normal dirty/close protection. Save routes to Save As before writing, then the tab becomes a normal standalone file tab. Preview/e-book affordances should work from the unsaved source where safe, but workspace-only image operations remain unavailable until a file/workspace path exists. No hidden workspace, background autosave folder, project indexing, Git/LSP/terminal behavior, or arbitrary path text input. |
+| v0.26 P1 | e-book button empty-state polish | The e-book control remains visible when no file is open or when the active tab cannot render as Markdown. It is disabled or opens a clear empty state instead of disappearing, and it never reuses stale prior-document content. Verify no-file, image-preview, unsupported/binary, Markdown, and L Mode/normal mode cases. |
+| v0.26 P2 | Initial EPUB export | Add an explicit export action for the active Markdown source that writes a minimal `.epub` through a save dialog. Keep Markdown source canonical and reuse the preview/export safety boundary where practical. Include basic title/language defaults, XHTML content, stylesheet, workspace-local image handling or warnings, and a generated navigation/table of contents from headings. Do not launch external validators, add advanced metadata/cover/vertical-writing UI, or claim reader-perfect pagination. |
+| Post-v0.25 lens | Product refinement triage | Use `docs/post-v0.25-product-refinement-plan.md` to choose one small slice that tightens the existing product instead of adding surfaces: mode-transition consistency, Workspace-as-book information architecture, flow-preserving editing, large-document / preview reliability, layered native chrome, or AI-as-review-layer wording. Close as a docs-only decision, `implemented`, `manual-blocked`, or `verified no-op`; do not bundle with distribution work. |
 | v0.25 Phase 2 | Native vibrancy via `window-vibrancy` + macOS 26 floor | Phase 1 chrome polish is done at code/CSS level. The CSS glass follow-up is dropped (scrap-and-build). Next: bump `minimumSystemVersion` to macOS 26 as release-planning work, add `window-vibrancy`, call `apply_vibrancy` on the main window, make sidebar / top-chrome transparent over the native material, tune the five themes, and verify with built `.app` smoke on macOS 26. Do not add a SwiftUI/AppKit rewrite, Liquid Glass fidelity, vibrancy behind dense Markdown text, toolbar rewrites, new modes, or AI ingest in this slice. |
 | v0.25 Phase 1 proof | Manual macOS app smoke for the implemented chrome polish | Phase 1 is implemented: drag regions, editor focus, mode active state, segmented controls, e-book / Diff tokens. Final proof is manual app smoke: titlebar dragging, click hit-testing (esp. Review menu), dense tabs, L Mode floating pill, segmented mode controls, e-book / Preview / Diff, light/dark themes, and keyboard focus. |
 | P1 | Core Safe Editor quality probe | When concrete queue items are exhausted, inspect one basic high-risk surface instead of adding broad tests: open/save/close, restore/recovery, preview, diff/review, workspace file operations, standalone files, image handling, keyboard/IME, or error recovery. State the risk hypothesis, run a focused source/app inspection or smoke, then either fix the smallest issue found or close as `verified no-op`. |
@@ -331,6 +370,9 @@ over copy-heavy or product-voice-sensitive work.
 
 | Fit | Candidate | Scope |
 |---|---|---|
+| Good | v0.26 no-workspace New File / Save As | Implement one Safe Editor core slice: pathless New File creates an untitled standalone Markdown tab, Save routes through Save As, dirty close protection remains intact, and the saved tab becomes a normal standalone file. Keep workspace-only operations unavailable until a file/workspace path exists. |
+| Good | v0.26 e-book empty-state polish | Keep the e-book control visible across no-file, non-Markdown, image-preview, and Markdown states. Prefer disabled/empty-state behavior over hiding the control, and prove stale previous-document content cannot appear. |
+| Good | v0.26 EPUB export first slice | Add an explicit minimal EPUB export from active Markdown source only. Keep generation deterministic and bounded; no external validator launch, advanced metadata editor, vertical writing, or page-count fidelity claim. |
 | Good | v0.25 native-feeling chrome P0 | Implement one small shell polish slice: traffic-light-safe drag region, subtle editor focus signal, truthful mode active states, or token cleanup. Keep it inside existing React/CSS chrome and prove it with focused tests plus manual app smoke where needed. |
 | Good | L Mode quality investigation | Pick one reproduced L Mode issue or one measurable quality gap only: caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or performance baseline. Do not add a new editing model or contenteditable surface. |
 | Good | Theme quality investigation | Pick one concrete theme issue only: contrast, focus visibility, status/error readability, dialog readability, or Increase Contrast behavior. Do not redesign palettes or add theme customization. |
@@ -602,8 +644,8 @@ over copy-heavy or product-voice-sensitive work.
 
 ## App Store Approval Closeout
 
-The `0.19.0` helper-free App Store lane passed App Review and is now
-published at:
+The `0.25.0` helper-free App Store update has been reported as released
+on 2026-06-20. The public listing is:
 
 ```txt
 https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12
@@ -615,24 +657,21 @@ Store build. Future App Store work should restart from
 `docs/app-store-build.md`, current version/build state, and fresh
 App Store Connect evidence.
 
-## Current App Store Update Package Candidate
+## Latest App Store Update Evidence
 
 - 2026-06-19: Generated the local helper-free App Store submit-lane
-  package for `0.20.0` build `16`:
-  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.20.0-build16-mas.pkg`.
+  package for `0.25.0` build `18`:
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.25.0-build18-mas.pkg`.
   SHA-256:
-  `b2bf37df86b7e589dd34411635f68988b27b24a9db87f7125833c1471938eb50`.
+  `211ed7ffa935929cb4d3e31e88b6d9034c08a2335876e3f3fbf61a90e4400b61`.
   Local checks passed for App Store surface omission, Apple Distribution
   signed app bundle, 3rd Party Mac Developer Installer package
   signature, App Sandbox entitlements, helper absence, bundled notices,
-  `0.20.0` / `16` metadata, and minimum macOS `26.0`.
+  `0.25.0` / `18` metadata, and minimum macOS `26.0`.
   `spctl --assess --type install` rejected locally; keep treating that
   as non-authoritative local trust-policy evidence for this lane.
-  This package is superseded by the `0.25.0` version alignment before
-  upload. Do not submit it; regenerate a fresh `0.25.0` App Store
-  package before Transporter / App Store Connect work. Upload, Apple
-  validation, TestFlight distribution, manual TestFlight smoke, and App
-  Review remain unclaimed for `0.25.0`.
+  The later App Store release is user-reported; raw App Store Connect,
+  TestFlight, and App Review logs are not tracked in this repository.
 
 ## Completed Submission-Prep Slices
 

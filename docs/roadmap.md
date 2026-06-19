@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-19 (v0.25 version aligned for source tag)
+Last reviewed: 2026-06-20 (v0.26 polish and EPUB export)
 
 ## Current Position
 
@@ -18,13 +18,18 @@ Current release state:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
 - Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
 - Current package/app version: `0.25.0`.
-- Active lane: v0.25 native-feeling Safe Editor chrome polish, native
-  vibrancy, and macOS 26 floor alignment.
+- Active lane: v0.26 polish, no-workspace authoring, e-book affordance
+  cleanup, and initial EPUB export.
 - Current work queue: `docs/current-work.md`.
 
 North star for the next product arc:
 
 > AIが書いたMarkdownを、本として読み、差分で直す。
+
+Post-v0.25 refinement lens:
+
+> 編集空間はひとつ。Markdown source を、読む・書く・比べる・変換する
+> レイヤーとして扱う。
 
 This does not mean automatic agent application. It means Hazakura should
 make Markdown drafts easier to read as a book, easier to structure as
@@ -345,7 +350,31 @@ Treat the macOS 26 floor change as release-planning work: a new App Store
 build declaring macOS 26 is a lane decision with TestFlight / App Review
 evidence, not a silent metadata bump.
 
-## v0.26 AI Proposal Ingest And Review
+## v0.26 Polish And EPUB Export
+
+Goal: ship a tighter authoring surface before opening heavier review or
+AI workflows.
+
+Use `docs/current-work.md`,
+`docs/post-v0.25-product-refinement-plan.md`, and
+`docs/ebook-mode-epub-export-plan.md`.
+
+Expected v0.26 shape:
+
+- no-workspace New File creates an untitled standalone Markdown tab;
+- Save on an untitled/pathless tab routes to Save As before writing;
+- the e-book affordance remains visible in no-file / non-Markdown empty
+  states instead of disappearing;
+- initial EPUB export exists as an explicit action from Markdown source;
+- EPUB output is an initial archive for current-document / heading-based
+  content, not a reader-perfect pagination guarantee.
+
+Do not add hidden temporary workspaces, background autosave folders,
+workspace-wide indexing, Preview DOM editing, `contenteditable`, external
+validator launches, plugin/provider systems, or Git/LSP/terminal
+behavior.
+
+## v0.26+ AI Proposal Ingest And Review
 
 Goal: make AI-written Markdown easier to import, compare, and accept
 explicitly.
@@ -362,6 +391,28 @@ boundary is manual review:
 
 Do not add auto-apply, auto-save, auto-commit, hidden workspace
 rewriting, or general agent orchestration.
+
+## Post-v0.25 Product Refinement
+
+Goal: raise the product grade by tightening the existing experience
+instead of adding broad new surfaces.
+
+Use `docs/post-v0.25-product-refinement-plan.md` as the refinement lens.
+The strongest direction is:
+
+- treat Normal Mode, L Mode, e-book Mode, Preview, Diff, and AI review as
+  source-preserving layers over one Markdown editing space;
+- move the workspace / book idea forward carefully, where files may be
+  chapter candidates and a table of contents is explicit;
+- make UI chrome feel layered and callable rather than card-heavy or
+  dashboard-like;
+- prioritize stability, large-document behavior, tab-state retention,
+  preview memory behavior, and mode-switch context before broader feature
+  expansion.
+
+Do not turn this into a full WYSIWYG rewrite, plugin system, always-on
+CLI / terminal surface, background project analyzer, or AI auto-apply
+workflow.
 
 ## v1.0 Candidate
 
@@ -452,6 +503,10 @@ Keep future product work source-preserving and narrow:
 - Native macOS appearance: explore a more native-feeling macOS 26+
   interface, with macOS 27 treated as a future verification target. Use
   `docs/native-macos-appearance-plan.md`.
+- Post-v0.25 product refinement: keep the product feeling like one
+  quiet, safe Markdown editing space while tightening book structure,
+  mode transitions, chrome density, and reliability. Use
+  `docs/post-v0.25-product-refinement-plan.md`.
 - Speculative local AI future: preserve, but do not yet commit to,
   a changeable v1+ / v2+ / v3+ direction for AI-ready editing
   primitives, OS-provided local models, whitelisted external `.aimodel`

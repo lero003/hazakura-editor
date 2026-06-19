@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-19 (v0.25 version aligned for source tag)
+Last reviewed: 2026-06-20 (v0.26 polish and EPUB export queue)
 
 ## Current State
 
@@ -22,11 +22,12 @@ Last reviewed: 2026-06-19 (v0.25 version aligned for source tag)
   tracked submit-lane candidate for that approval was build counter
   `14`; local package and signing evidence remain historical release
   evidence, not the next active queue.
-- A local helper-free App Store update package was generated for
-  `0.20.0` build `16` on 2026-06-19, but it is superseded by the
-  `0.25.0` version alignment before upload. Do not submit
-  `HazakuraEditor-0.20.0-build16-mas.pkg`; regenerate a fresh `0.25.0`
-  App Store package before Transporter / App Store Connect work.
+- The helper-free App Store update for `0.25.0` has been reported as
+  released on 2026-06-20. The tracked local package evidence is build
+  `18`, generated on 2026-06-19:
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.25.0-build18-mas.pkg`.
+  Raw App Store Connect, TestFlight, and App Review logs are not tracked
+  in this repository.
 - Pre-approval human-side App Store lane smoke on 2026-06-12 passed launch,
   basic document creation/open, preview/export, image paste/drag-drop,
   App Store surface omission, dirty-close confirmation, Move to Trash,
@@ -146,6 +147,7 @@ Last reviewed: 2026-06-19 (v0.25 version aligned for source tag)
 Use release notes for detailed historical evidence:
 
 - `docs/releases/0.25.0-source-tag.release.md`
+- `docs/releases/0.25.0-app-store-submission-candidate.release.md`
 - `docs/releases/0.19.0-source-tag.release.md`
 - `docs/releases/0.20.0-app-store-submission-candidate.release.md`
 - `docs/releases/0.20.0-warning-expected-dmg-preview.release.md`
@@ -170,13 +172,15 @@ baseline, and smoke evidence are archived under
 
 ## Active Planning Sources
 
-- `docs/current-work.md`: current post-approval, v0.20-v0.26 planning, and quality queue.
+- `docs/current-work.md`: current post-approval, v0.26 polish / EPUB export planning, and quality queue.
 - `docs/roadmap.md`: phase order and future boundaries.
 - `docs/product-brief.md`: durable product direction and non-goals.
 - `docs/security-boundary.md`: safe editor constraints.
 - `docs/agent-workbench-boundary.md`: implemented Agent Workbench trust boundary.
 - `docs/l-mode-plan.md`: L Mode source-preserving writing-surface direction.
 - `docs/assist-surface-strategy.md`: assist-surface direction.
+- `docs/post-v0.25-product-refinement-plan.md`: post-App-Store
+  refinement lens.
 - `docs/apple-local-assist-distribution-plan.md`: Apple Local Assist and lane planning.
 - `docs/apple-local-assist-writing-companion-plan.md`: Apple Local Assist companion UX direction.
 - `docs/app-store-build.md`: public-safe App Store build/signing boundary.
@@ -186,15 +190,10 @@ baseline, and smoke evidence are archived under
 1. For post-approval cleanup, keep App Store-specific evidence public-safe
    and archive only completed version-specific material; canonical build
    and boundary docs stay live for future submissions.
-2. For UX work, start with `docs/current-work.md`. The current named
-   product slice is v0.25 native-feeling Safe Editor chrome polish:
-   Phase 1 (drag regions, focus, mode active state, segmented controls,
-   e-book / Diff tokens) is implemented at code/CSS level. The CSS
-   glass follow-up is dropped (scrap-and-build); v0.25 now moves into
-   native vibrancy via `window-vibrancy` with the macOS deployment
-   target raised to macOS 26. Treat the floor change as
-   release-planning work with TestFlight / App Review evidence, not a
-   silent metadata bump.
+2. For UX work, start with `docs/current-work.md`. The current v0.26
+   product queue is: no-workspace New File / Save As, e-book empty-state
+   affordance polish, and initial EPUB export. Keep each slice small and
+   source-preserving.
 3. For a future App Store submission, start with `docs/app-store-build.md`;
    keep account-specific notes under ignored `docs/internal/` files and
    treat certificate, provisioning, signing, notarization, upload,

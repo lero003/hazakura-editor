@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-06-18
+Last reviewed: 2026-06-20
 
 `Hazakura Editor` は、AI時代のメモ帳です。Markdownを中心に、安全にテキストを読む・書く・比べるための軽量なローカル作業場を目指します。
 
@@ -17,7 +17,7 @@ Last reviewed: 2026-06-18
 
 ## Mac App Store
 
-Hazakura Editor `0.19.0` is published on the Mac App Store:
+Hazakura Editor `0.25.0` is published on the Mac App Store:
 [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12).
 
 The App Store build is the helper-free Safe Editor lane. It omits Agent
@@ -157,6 +157,7 @@ Example use case:
 - [e-book Mode And EPUB Export Plan](docs/ebook-mode-epub-export-plan.md): v0.21+ e-bookモード / EPUB export planning memo
 - [AI Markdown Ingest Plan](docs/ai-markdown-ingest-plan.md): v0.26+ AI提案取込 / Diff Review planning memo
 - [Native macOS Appearance Plan](docs/native-macos-appearance-plan.md): v0.25 native-feeling Safe Editor chrome planning memo
+- [Post-v0.25 Product Refinement Plan](docs/post-v0.25-product-refinement-plan.md): App Store release後の完成度向上レンズ
 - [External Agent Review Workflow](docs/external-agent-review-workflow.md): external implementation agent + Codex review workflow
 - [Source Release Checklist](docs/source-release-checklist.md): source-only developer previewの準備境界
 - [DMG Preview Checklist](docs/dmg-preview-checklist.md): warning-expected DMG preview laneの準備・検証境界

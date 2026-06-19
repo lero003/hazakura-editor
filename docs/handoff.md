@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-19 (v0.25 version aligned for source tag)
+Last reviewed: 2026-06-20 (v0.26 polish and EPUB export queue)
 
 ## Current State
 
@@ -27,15 +27,15 @@ Last reviewed: 2026-06-19 (v0.25 version aligned for source tag)
   with SHA-256
   `9d5164a9cf508242dbe6f7612e4d29167065d1c7b0cb884f6ed610723625f0cf`;
   it declares minimum macOS 15.0 and passed `pkgutil --check-signature`.
-- A helper-free App Store update package was generated for `0.20.0`
-  build `16`. The local package is
-  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.20.0-build16-mas.pkg`
+- The helper-free App Store update for `0.25.0` has been reported as
+  released on 2026-06-20. The tracked local package evidence is build
+  `18`:
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.25.0-build18-mas.pkg`
   with SHA-256
-  `b2bf37df86b7e589dd34411635f68988b27b24a9db87f7125833c1471938eb50`.
-  Local packaging/signing checks passed on 2026-06-19, but the package
-  is superseded by the `0.25.0` version alignment before upload. Do not
-  submit it; regenerate a fresh `0.25.0` App Store package before
-  Transporter / App Store Connect work.
+  `211ed7ffa935929cb4d3e31e88b6d9034c08a2335876e3f3fbf61a90e4400b61`.
+  Local packaging/signing checks passed on 2026-06-19. Raw App Store
+  Connect, TestFlight, and App Review logs are not tracked in this
+  repository.
 - Start from `docs/current-work.md`.
 - A review-derived pre-release code-quality fix queue now lives in
   `docs/pre-release-fix-plan.md`. A follow-up external quality review
@@ -60,11 +60,10 @@ Last reviewed: 2026-06-19 (v0.25 version aligned for source tag)
   progress. Right-pane 2-up was intentionally deferred: it needs roughly
   900px of width and should be revisited only as a future occupied
   reading mode, not as a right-pane toggle.
-- Roadmap direction after v0.24: v0.25 is now native-feeling Safe Editor
-  chrome polish, not AI proposal ingest. Keep it to the existing
-  React/CSS shell first: traffic-light-safe drag regions, editor focus
-  visibility, truthful mode active states, token cleanup, and then
-  segmented-control polish. AI Markdown ingest moves to v0.26.
+- Roadmap direction after v0.25: v0.26 is now a polish and initial EPUB
+  export lane before heavier AI proposal ingest. Keep it focused on
+  no-workspace New File / Save As, e-book empty-state affordance, and
+  explicit EPUB export from Markdown source.
 - Markdown preview task checkboxes are complete for v0.18: Preview renders
   `- [ ]` / `- [x]` as inert display-only checkbox glyphs without
   changing saved Markdown.
@@ -135,23 +134,35 @@ Last reviewed: 2026-06-19 (v0.25 version aligned for source tag)
 ## Current Work Queue
 
 Use `docs/current-work.md` for the active queue. The current highest
-priority items after App Store approval and the v0.20 Sakura chrome
-slice are:
+priority items after the v0.25 App Store release are:
 
-1. Post-approval docs/archive cleanup for completed App Store evidence,
-   if still useful.
-2. v0.25 native-feeling Safe Editor chrome polish: start with the P0
-   chrome slice in `docs/current-work.md` and
-   `docs/native-macos-appearance-plan.md`.
-3. Manual app smoke of the v0.24 e-book single-page reader: e-book
+1. v0.26 no-workspace New File / Save As: with no workspace selected,
+   New File should create an untitled standalone Markdown tab; Save
+   should route through Save As before writing and then become a normal
+   standalone file tab. Do not introduce hidden temporary workspaces or
+   background autosave as a substitute for Save As.
+2. v0.26 e-book empty-state polish: keep the e-book control visible
+   when no file is open or when the active tab cannot render as
+   Markdown; use disabled/empty-state behavior and avoid stale previous
+   document content.
+3. v0.26 initial EPUB export: explicit export action from Markdown
+   source to a minimal `.epub` through a save dialog. No external
+   validator launch, vertical writing, advanced metadata editor, or
+   reader-perfect page-count claims.
+4. Post-v0.25 product refinement triage:
+   `docs/post-v0.25-product-refinement-plan.md` captures the next
+   product-grade lens: one editing space, Workspace-as-book, UI that
+   recedes, reliability, and AI as a review layer. Pick one small slice
+   from that lens rather than adding broad new surfaces.
+5. Manual app smoke of the v0.24 e-book single-page reader: e-book
    toggle, page movement, reader footer, chapter boundary movement,
    long chapters, image-heavy chapters, long code blocks with inner
    scroll, tables, Tab focus, light/dark themes, and font-size changes.
-4. Core Safe Editor quality probe.
-5. Light accessibility sanity adjacent to the selected core surface.
-6. Any follow-up discovered by manual app smoke of the v0.20 Sakura
+6. Core Safe Editor quality probe.
+7. Light accessibility sanity adjacent to the selected core surface.
+8. Any follow-up discovered by manual app smoke of the v0.20 Sakura
    chrome / preview polish.
-7. v0.21+ status bar structure cleanup: replace the current compact
+9. v0.21+ status bar structure cleanup: replace the current compact
    status-detail stopgap with priority-aware metadata fields while
    keeping line-ending / encoding controls reachable.
 
@@ -242,6 +253,8 @@ open Active UX Queue slice and close it as `implemented`,
 
 ## Verification Guidance
 
+- Latest docs-refinement pass: v0.26 polish / EPUB export planning docs
+  were checked with `git diff --check` on 2026-06-20.
 - Latest docs closeout: App Store approval status was reflected in
   README, current status, current work, roadmap, App Store build notes,
   release-note index, and this handoff on 2026-06-18. Verification run:
@@ -256,9 +269,8 @@ open Active UX Queue slice and close it as `implemented`,
   downloaded DMG checksum verification, `hdiutil verify`, mounted-app
   metadata, codesign verification, and mounted-app launch smoke all
   passed.
-- Superseded App Store package gate: `0.20.0` build `16` local package
-  generation passed on 2026-06-19, but should not be uploaded after the
-  `0.25.0` version alignment. Checks run:
+- Latest App Store package gate: `0.25.0` build `18` local package
+  generation passed on 2026-06-19. Checks run:
   `npm run smoke:app-store-surface`, `npm run build:app-store-pkg`,
   `pkgutil --check-signature`, SHA-256, `codesign --verify --deep
   --strict`, entitlements inspection, helper/resource checks,
