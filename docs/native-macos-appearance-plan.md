@@ -1,9 +1,9 @@
 # Native macOS Appearance Plan
 
 Status: Proposal
-Scope: v0.21+ native-feeling macOS UI exploration
+Scope: v0.25 native-feeling Safe Editor chrome polish
 Authority: Medium
-Last reviewed: 2026-06-15
+Last reviewed: 2026-06-19
 
 ## Summary
 
@@ -18,6 +18,10 @@ guess future platform behavior.
 This is not a request to turn the app into a generic IDE or a heavy custom UI.
 The goal is to make the existing Markdown-first Safe Editor feel more at home
 on modern macOS.
+
+Current roadmap decision: this becomes the v0.25 product slice. AI
+Markdown ingest moves to v0.26 so the app shell, top chrome, and mode
+controls can be made steadier first.
 
 ## Product Fit
 
@@ -108,13 +112,20 @@ Create an inventory before changing code.
 
 Output: one short audit note and screenshots. No visual rewrite yet.
 
+Status as of 2026-06-19: the first code/CSS audit is sufficient to start
+a small v0.25 chrome polish slice. The strongest initial findings are:
+missing explicit drag / no-drag regions for the transparent titlebar,
+traffic-light inset risk, weak editor focus visibility, inaccurate mode
+active state, segmented-control styling debt, and stale fallback color
+literals in e-book chrome.
+
 ### Phase 1: Safe Editor Chrome Alignment
 
 First implementation slice should be small and reversible.
 
 Candidate scope:
 
-- top chrome grouping and action priority;
+- traffic-light-safe top chrome drag region and action priority;
 - sidebar surface density and selection treatment;
 - status bar / metadata hierarchy;
 - Preferences and Help panel control density;
@@ -204,9 +215,11 @@ Browser-only smoke is not enough for native window or menu claims.
 
 ## Recommendation
 
-This is worth keeping as a v0.21+ direction.
+This is now the v0.25 product direction.
 
-The first winning move is **a native UI audit**, not an immediate restyle.
-After that, improve one shell surface at a time: top chrome, sidebar, status
-metadata, Preferences, or L Mode controls. Treat macOS 26 as the concrete
-baseline and macOS 27 as a future verification target.
+The first winning move for v0.25 is **Safe Editor chrome alignment**, not a
+full restyle. Start with traffic-light-safe drag behavior, focus visibility,
+truthful active states, and token cleanup. After that, improve one shell
+surface at a time: segmented controls, sidebar, status metadata,
+Preferences, or L Mode controls. Treat macOS 26 as the concrete baseline
+and macOS 27 as a future verification target.

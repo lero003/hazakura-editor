@@ -155,8 +155,8 @@ Example use case:
 - [Roadmap](docs/roadmap.md): 段階的な開発順序
 - [L Mode Plan](docs/l-mode-plan.md): えるモードの source-preserving WYSIWYG Accuracy Ramp plan
 - [e-book Mode And EPUB Export Plan](docs/ebook-mode-epub-export-plan.md): v0.21+ e-bookモード / EPUB export planning memo
-- [AI Markdown Ingest Plan](docs/ai-markdown-ingest-plan.md): v0.25+ AI提案取込 / Diff Review planning memo
-- [Native macOS Appearance Plan](docs/native-macos-appearance-plan.md): v0.21+ native-feeling macOS UI planning memo
+- [AI Markdown Ingest Plan](docs/ai-markdown-ingest-plan.md): v0.26+ AI提案取込 / Diff Review planning memo
+- [Native macOS Appearance Plan](docs/native-macos-appearance-plan.md): v0.25 native-feeling Safe Editor chrome planning memo
 - [External Agent Review Workflow](docs/external-agent-review-workflow.md): external implementation agent + Codex review workflow
 - [Source Release Checklist](docs/source-release-checklist.md): source-only developer previewの準備境界
 - [DMG Preview Checklist](docs/dmg-preview-checklist.md): warning-expected DMG preview laneの準備・検証境界

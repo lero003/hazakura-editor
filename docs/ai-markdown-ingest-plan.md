@@ -1,9 +1,9 @@
 # AI Markdown Ingest Plan
 
 Status: Proposal
-Scope: v0.24+ explicit AI proposal intake and review
+Scope: v0.26+ explicit AI proposal intake and review
 Authority: Medium
-Last reviewed: 2026-06-17
+Last reviewed: 2026-06-19
 
 ## Summary
 
@@ -42,7 +42,11 @@ Do not add:
 - generic provider plugins
 - general chat or agent orchestration
 
-## v0.24 Direction
+## v0.26 Direction
+
+This work is intentionally after v0.25 native-feeling Safe Editor chrome
+polish. The ingest / review workflow should sit on a clearer app shell and
+mode-control foundation rather than driving that chrome redesign itself.
 
 Start with the smallest reusable review primitive:
 

@@ -1,7 +1,7 @@
 # Current Work
 
 Status: Operational
-Scope: Active post-approval, v0.20-v0.24, and quality routing
+Scope: Active post-approval, v0.20-v0.25, and quality routing
 Authority: High
 Last reviewed: 2026-06-19
 
@@ -233,16 +233,66 @@ chapter boundary movement, long chapters, image-heavy chapters, long
 code blocks with inner scroll, tables, light/dark themes, font-size
 changes, and Tab focus.
 
+## v0.25 Native-feeling Safe Editor Chrome Polish
+
+This is the next named product slice after v0.24 e-book Mode polish.
+AI Markdown ingest moves to v0.26 so the app shell and mode controls can
+feel more native and stable before a new review/import workflow is added.
+
+Goal: reduce the sense of a web app inside a macOS window while keeping
+the Markdown-first Safe Editor boundary intact.
+
+Do:
+
+- Keep the change inside the existing React/CSS Safe Editor shell.
+- Add or verify a traffic-light-safe drag region in the top chrome, with
+  interactive controls explicitly excluded from dragging.
+- Restore a subtle CodeMirror focus signal without changing editor
+  behavior or saved Markdown.
+- Make existing active states accurate, including the L Mode control.
+- Align token usage and stale fallback colors in e-book / right-pane
+  chrome.
+- Convert the right-pane mode toggle toward a true segmented-control
+  treatment only after the smaller P0 fixes are verified.
+- Tokenize small visual inconsistencies such as Diff row backgrounds when
+  the current light/dark behavior can be preserved.
+
+Do not add:
+
+- True AppKit / SwiftUI vibrancy or `NSVisualEffectView` work in this
+  slice.
+- A full top-bar rewrite, separate toolbar architecture, or new
+  `RightPaneMode`.
+- Outline / Diff information-architecture changes beyond visual polish.
+- Theme redesign, dependency additions, Git / LSP / terminal / plugin
+  behavior, or arbitrary command surfaces.
+
+Suggested slice order:
+
+1. P0: drag region and traffic-light inset; CodeMirror focus indication;
+   L Mode active state; stale e-book fallback color cleanup.
+2. P1: segmented-control treatment for right-pane mode controls; e-book
+   button tone alignment; Diff background tokenization.
+3. P2: defer full bar separation, Outline / Diff top-level routing, and
+   native material / vibrancy exploration until the shell polish proves
+   useful.
+
+Verification: focused component / CSS tests for changed controls,
+`npm run build:vite`, `git diff --check`, and manual app smoke for window
+dragging, traffic-light overlap, dense tabs, light/dark themes, L Mode,
+e-book / Preview / Diff, and keyboard focus.
+
 ## Active UX Queue
 
 Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
+| v0.25 P0 | Native-feeling Safe Editor chrome polish | Start with the smallest chrome slice: traffic-light-safe drag region, subtle editor focus signal, accurate mode active states, and token cleanup. Do not introduce true native vibrancy, toolbar rewrites, new modes, or AI ingest in this slice. |
 | P1 | Core Safe Editor quality probe | When concrete queue items are exhausted, inspect one basic high-risk surface instead of adding broad tests: open/save/close, restore/recovery, preview, diff/review, workspace file operations, standalone files, image handling, keyboard/IME, or error recovery. State the risk hypothesis, run a focused source/app inspection or smoke, then either fix the smallest issue found or close as `verified no-op`. |
 | P2 | Light accessibility sanity | Keep accessibility as a light sanity pass adjacent to core surfaces: keyboard reachability, focus escape/Tab behavior, readable labels, and obvious contrast. Do not prioritize broad accessibility audits over basic editor quality unless a concrete accessibility failure is observed. |
 | v0.21+ | Status bar structure cleanup | Treat the v0.20 compact status detail as a stopgap. For a later UX slice, split status metadata into priority-aware fields instead of one long `statusDetail` string, keep line-ending / encoding controls always reachable, and move lower-priority details such as final-newline state, line/column, selection, and heading context into hover, popover, or adaptive secondary display. |
-| v0.21+ | Native macOS appearance audit | Before restyling, audit the Safe Editor shell against modern macOS 26 guidance and decide which one surface should become more native-feeling first. Treat macOS 27 as a future verification target, not an assumed API baseline. Use `docs/native-macos-appearance-plan.md`. |
+| Deferred | Native material / vibrancy exploration | True OS material work, AppKit / SwiftUI interop, and toolbar architecture changes need a separate slice after v0.25 chrome polish proves the direction. Use `docs/native-macos-appearance-plan.md`. |
 
 ## External-Agent Friendly Queue
 
@@ -252,7 +302,7 @@ over copy-heavy or product-voice-sensitive work.
 
 | Fit | Candidate | Scope |
 |---|---|---|
-| Good | v0.21 e-book Mode Path Y PoC | Use the existing `renderMarkdown` / Preview HTML pipeline for a display-only single-document e-book preview. Add a small ATX-heading chapter splitter and focused tests. Do not use L Mode CodeMirror decorations as the main surface, generate EPUB files, add vertical writing, or introduce multiple-file book structure in this slice. |
+| Good | v0.25 native-feeling chrome P0 | Implement one small shell polish slice: traffic-light-safe drag region, subtle editor focus signal, truthful mode active states, or token cleanup. Keep it inside existing React/CSS chrome and prove it with focused tests plus manual app smoke where needed. |
 | Good | L Mode quality investigation | Pick one reproduced L Mode issue or one measurable quality gap only: caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or performance baseline. Do not add a new editing model or contenteditable surface. |
 | Good | Theme quality investigation | Pick one concrete theme issue only: contrast, focus visibility, status/error readability, dialog readability, or Increase Contrast behavior. Do not redesign palettes or add theme customization. |
 | Good | Core Safe Editor quality probe | Inspect one basic surface with a clear risk hypothesis, then fix only a reproduced issue or close as `verified no-op`. Prefer open/save/close, restore/recovery, preview, diff/review, workspace files, standalone files, image handling, keyboard/IME, or error recovery. |

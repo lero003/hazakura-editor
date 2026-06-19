@@ -402,9 +402,12 @@ Decision record:
 OKF の `index.md` 規約に近い形へ寄せられる可能性はあるが、OKF
 自体はまだ提案段階として扱い、v0.23 の実装契約にはしない。
 
-### v0.24: Style Simulation And Review Hooks
+### Later: Style Simulation And Review Hooks
 
-MVPが重くなければ、限定的なスタイル調整を追加する。
+v0.24 は単ページ読書面 polish として閉じ、AI Markdown ingest は
+v0.25 ではなく v0.26 へ送る。次に e-book 側でスタイル調整を
+再開する場合は、v0.25 native-feeling chrome polish の後続として
+限定的に扱う。
 
 - font scale
 - line height

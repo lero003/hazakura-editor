@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-19 (v0.24 e-book single-page polish)
+Last reviewed: 2026-06-19 (v0.25 native-feeling chrome polish planning)
 
 ## Current State
 
@@ -59,6 +59,11 @@ Last reviewed: 2026-06-19 (v0.24 e-book single-page polish)
   progress. Right-pane 2-up was intentionally deferred: it needs roughly
   900px of width and should be revisited only as a future occupied
   reading mode, not as a right-pane toggle.
+- Roadmap direction after v0.24: v0.25 is now native-feeling Safe Editor
+  chrome polish, not AI proposal ingest. Keep it to the existing
+  React/CSS shell first: traffic-light-safe drag regions, editor focus
+  visibility, truthful mode active states, token cleanup, and then
+  segmented-control polish. AI Markdown ingest moves to v0.26.
 - Markdown preview task checkboxes are complete for v0.18: Preview renders
   `- [ ]` / `- [x]` as inert display-only checkbox glyphs without
   changing saved Markdown.
@@ -134,15 +139,18 @@ slice are:
 
 1. Post-approval docs/archive cleanup for completed App Store evidence,
    if still useful.
-2. Manual app smoke of the v0.24 e-book single-page reader: e-book
+2. v0.25 native-feeling Safe Editor chrome polish: start with the P0
+   chrome slice in `docs/current-work.md` and
+   `docs/native-macos-appearance-plan.md`.
+3. Manual app smoke of the v0.24 e-book single-page reader: e-book
    toggle, page movement, reader footer, chapter boundary movement,
    long chapters, image-heavy chapters, long code blocks with inner
    scroll, tables, Tab focus, light/dark themes, and font-size changes.
-3. Core Safe Editor quality probe.
-4. Light accessibility sanity adjacent to the selected core surface.
-5. Any follow-up discovered by manual app smoke of the v0.20 Sakura
+4. Core Safe Editor quality probe.
+5. Light accessibility sanity adjacent to the selected core surface.
+6. Any follow-up discovered by manual app smoke of the v0.20 Sakura
    chrome / preview polish.
-6. v0.21+ status bar structure cleanup: replace the current compact
+7. v0.21+ status bar structure cleanup: replace the current compact
    status-detail stopgap with priority-aware metadata fields while
    keeping line-ending / encoding controls reachable.
 

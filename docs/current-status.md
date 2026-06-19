@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-19 (e-book Mode v0.24 single-page polish)
+Last reviewed: 2026-06-19 (v0.25 native-feeling chrome polish planning)
 
 ## Current State
 
@@ -154,7 +154,7 @@ baseline, and smoke evidence are archived under
 
 ## Active Planning Sources
 
-- `docs/current-work.md`: current post-approval, v0.20-v0.24, and quality queue.
+- `docs/current-work.md`: current post-approval, v0.20-v0.25, and quality queue.
 - `docs/roadmap.md`: phase order and future boundaries.
 - `docs/product-brief.md`: durable product direction and non-goals.
 - `docs/security-boundary.md`: safe editor constraints.
@@ -170,10 +170,10 @@ baseline, and smoke evidence are archived under
 1. For post-approval cleanup, keep App Store-specific evidence public-safe
    and archive only completed version-specific material; canonical build
    and boundary docs stay live for future submissions.
-2. For UX work, start with `docs/current-work.md` and pick one item:
-   one core Safe Editor quality probe, light accessibility sanity
-   adjacent to that surface, or the v0.24 e-book Mode single-page
-   reading-surface polish slice.
+2. For UX work, start with `docs/current-work.md`. The current named
+   product slice is v0.25 native-feeling Safe Editor chrome polish:
+   traffic-light-safe drag regions, clearer focus / active states, and
+   token-aligned controls before AI Markdown ingest.
 3. For a future App Store submission, start with `docs/app-store-build.md`;
    keep account-specific notes under ignored `docs/internal/` files and
    treat certificate, provisioning, signing, notarization, upload,
