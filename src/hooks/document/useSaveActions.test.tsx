@@ -265,4 +265,47 @@ describe("useSaveActions", () => {
     expect(isDirty(getTabs()[0])).toBe(false);
     expect(removeStoredDraft).toHaveBeenCalledWith("/tmp/standalone.md");
   });
+
+  it("saveActiveTab routes a dirty pathless tab through Save As before writing", async () => {
+    const tab = makeTab({
+      contents: "# Unsaved draft",
+      id: "untitled:1",
+      lastSavedContents: "",
+      name: "untitled.md",
+      path: "",
+      size: 0,
+    });
+    fileApi.pickSaveAsTextFilePath.mockResolvedValueOnce("/tmp/untitled.md");
+    fileApi.saveTextFileAs.mockResolvedValue(
+      makeTextFileDocument({
+        contents: "# Unsaved draft",
+        name: "untitled.md",
+        path: "/tmp/untitled.md",
+      }),
+    );
+    const { getTabs, options, result } = setup([tab]);
+
+    await act(async () => {
+      await result.current.saveActiveTab();
+    });
+
+    expect(fileApi.pickSaveAsTextFilePath).toHaveBeenCalledWith("untitled.md");
+    expect(fileApi.saveTextFile).not.toHaveBeenCalled();
+    expect(fileApi.saveTextFileAs).toHaveBeenCalledWith(
+      "/tmp/untitled.md",
+      "# Unsaved draft",
+      tab.line_ending,
+      tab.encoding,
+      null,
+    );
+    expect(getTabs()[0]).toMatchObject({
+      contents: "# Unsaved draft",
+      id: "/tmp/untitled.md",
+      lastSavedContents: "# Unsaved draft",
+      path: "/tmp/untitled.md",
+      saveStatus: "idle",
+    });
+    expect(options.setActiveTabId).toHaveBeenCalledWith("/tmp/untitled.md");
+    expect(removeStoredDraft).not.toHaveBeenCalledWith("");
+  });
 });

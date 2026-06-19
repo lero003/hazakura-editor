@@ -1,10 +1,12 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  createTextFile,
   createSecurityScopedBookmark,
   openExternalUrl,
   openTextFile,
   pickMarkdownFile,
+  pickNewMarkdownFilePath,
 } from "../../lib/tauri";
 import { writePersistedFileBookmark } from "../../lib/storage";
 import { useFileOpening } from "./useFileOpening";
@@ -53,11 +55,44 @@ function setup(
 
 describe("useFileOpening", () => {
   beforeEach(() => {
+    vi.mocked(createTextFile).mockReset();
     vi.mocked(createSecurityScopedBookmark).mockReset();
     vi.mocked(openExternalUrl).mockReset();
     vi.mocked(openTextFile).mockReset();
     vi.mocked(pickMarkdownFile).mockReset();
+    vi.mocked(pickNewMarkdownFilePath).mockReset();
     vi.mocked(writePersistedFileBookmark).mockReset();
+  });
+
+  it("creates an untitled standalone tab without choosing a path when no workspace is open", async () => {
+    const { options, result } = setup({ workspaceRootPath: null });
+
+    await act(async () => {
+      await result.current.createNewFile();
+    });
+
+    expect(pickNewMarkdownFilePath).not.toHaveBeenCalled();
+    expect(createTextFile).not.toHaveBeenCalled();
+    expect(options.rememberRecentFile).not.toHaveBeenCalled();
+    expect(options.refreshWorkspaceTree).not.toHaveBeenCalled();
+
+    const setTabsArg = vi.mocked(options.setTabs).mock.calls[0]?.[0];
+    expect(typeof setTabsArg).toBe("function");
+    const nextTabs =
+      typeof setTabsArg === "function" ? setTabsArg([]) : setTabsArg;
+    expect(nextTabs).toHaveLength(1);
+    expect(nextTabs[0]).toMatchObject({
+      contents: "",
+      lastSavedContents: "",
+      name: "untitled.md",
+      path: "",
+      saveStatus: "idle",
+    });
+    expect(nextTabs[0].id).toMatch(/^untitled:/);
+    expect(options.setActiveTabId).toHaveBeenCalledWith(nextTabs[0].id);
+    expect(options.clearImagePreview).toHaveBeenCalled();
+    expect(options.setCompareView).toHaveBeenCalledWith(null);
+    expect(options.setStatus).toHaveBeenLastCalledWith("New file created");
   });
 
   it("routes directly opened image files to image preview instead of text open", async () => {

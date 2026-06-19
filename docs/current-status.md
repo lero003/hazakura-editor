@@ -97,6 +97,10 @@ Last reviewed: 2026-06-20 (v0.26 polish and EPUB export queue)
   buffer; drag/drop image import keeps the existing 20 MB file-size cap.
 - Multi-tab editor with dirty-tab close protection, app/window close
   confirmation, save-conflict recovery, and explicit draft recovery.
+- No-workspace New File creates an untitled standalone Markdown tab
+  without writing to disk. Save on a pathless untitled tab routes
+  through Save As before writing, then the saved tab becomes an ordinary
+  standalone file tab.
 - Normal Safe Editor chrome now exposes a main-chrome workspace sidebar
   toggle routed through the existing sidebar collapse flow. New File
   remains available through the native menu, keyboard shortcut, command

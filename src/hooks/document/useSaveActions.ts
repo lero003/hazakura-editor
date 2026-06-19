@@ -44,11 +44,121 @@ export function useSaveActions({
   tabsRef,
   workspaceRootPath,
 }: UseSaveActionsOptions) {
+  const saveTabAsById = useCallback(
+    async (tabId: string): Promise<boolean> => {
+      const tabToSave = tabsRef.current.find((tab) => tab.id === tabId) ?? null;
+
+      if (!tabToSave) {
+        setStatus("Save As stopped");
+        return false;
+      }
+
+      setGlobalError(null);
+      setStatus("Choosing Save As path...");
+
+      try {
+        const suggestedPath = tabToSave.path
+          ? suggestedSaveAsPath(tabToSave.path)
+          : tabToSave.name || "untitled.md";
+        const path = await pickSaveAsTextFilePath(suggestedPath);
+
+        if (!path) {
+          setStatus("Save As cancelled");
+          return false;
+        }
+
+        const latestTab =
+          tabsRef.current.find((tab) => tab.id === tabToSave.id) ?? null;
+        if (!latestTab) {
+          setStatus("Save As stopped");
+          return false;
+        }
+
+        if (
+          tabsRef.current.some(
+            (tab) => tab.path === path && tab.id !== latestTab.id,
+          )
+        ) {
+          setGlobalError("A tab is already open at the selected Save As path.");
+          setStatus("Save As stopped");
+          return false;
+        }
+
+        setStatus("Saving as...");
+
+        const savedFile = await saveTextFileAs(
+          path,
+          latestTab.contents,
+          latestTab.line_ending,
+          latestTab.encoding,
+          workspaceRootPath,
+        );
+        const nextTab = createEditorTab(savedFile);
+
+        setTabs((currentTabs) =>
+          currentTabs.map((tab) => (tab.id === latestTab.id ? nextTab : tab)),
+        );
+        setActiveTabId(nextTab.id);
+        rememberRecentFile(nextTab.path);
+        if (latestTab.path) {
+          removeStoredDraft(latestTab.path);
+        }
+
+        if (workspaceRootPath) {
+          try {
+            await refreshWorkspaceTree();
+          } catch (err) {
+            setGlobalError(String(err));
+            setStatus("Saved as; folder refresh failed");
+            return true;
+          }
+        }
+
+        setStatus("Saved as");
+        return true;
+      } catch (err) {
+        const message = String(err);
+
+        setTabs((currentTabs) =>
+          currentTabs.map((tab) =>
+            tab.id === tabId
+              ? {
+                  ...tab,
+                  saveStatus: "error",
+                  error: message,
+                }
+              : tab,
+          ),
+        );
+        setStatus("Save As failed");
+        return false;
+      }
+    },
+    [
+      refreshWorkspaceTree,
+      rememberRecentFile,
+      setActiveTabId,
+      setGlobalError,
+      setStatus,
+      setTabs,
+      tabsRef,
+      workspaceRootPath,
+    ],
+  );
+
   const saveTabById = useCallback(
     async (tabId: string): Promise<boolean> => {
       const tab = tabsRef.current.find((candidate) => candidate.id === tabId);
 
-      if (!tab || !isDirty(tab)) {
+      if (!tab) {
+        return true;
+      }
+
+      if (!tab.path) {
+        return saveTabAsById(tabId);
+      }
+
+      if (!isDirty(tab)) {
         return true;
       }
 
@@ -127,7 +237,7 @@ export function useSaveActions({
         return false;
       }
     },
-    [setStatus, setTabs, tabsRef],
+    [saveTabAsById, setStatus, setTabs, tabsRef],
   );
 
   const saveActiveTab = useCallback(async () => {
@@ -144,92 +254,8 @@ export function useSaveActions({
       return;
     }
 
-    setGlobalError(null);
-    setStatus("Choosing Save As path...");
-
-    try {
-      const path = await pickSaveAsTextFilePath(
-        suggestedSaveAsPath(activeTab.path),
-      );
-
-      if (!path) {
-        setStatus("Save As cancelled");
-        return;
-      }
-
-      const tabToSave =
-        tabsRef.current.find((tab) => tab.id === activeTab.id) ?? null;
-      if (!tabToSave) {
-        setStatus("Save As stopped");
-        return;
-      }
-
-      if (
-        tabsRef.current.some(
-          (tab) => tab.path === path && tab.id !== tabToSave.id,
-        )
-      ) {
-        setGlobalError("A tab is already open at the selected Save As path.");
-        setStatus("Save As stopped");
-        return;
-      }
-
-      setStatus("Saving as...");
-
-      const savedFile = await saveTextFileAs(
-        path,
-        tabToSave.contents,
-        tabToSave.line_ending,
-        tabToSave.encoding,
-        workspaceRootPath,
-      );
-      const nextTab = createEditorTab(savedFile);
-
-      setTabs((currentTabs) =>
-        currentTabs.map((tab) => (tab.id === tabToSave.id ? nextTab : tab)),
-      );
-      setActiveTabId(nextTab.id);
-      rememberRecentFile(nextTab.path);
-      removeStoredDraft(tabToSave.path);
-
-      if (workspaceRootPath) {
-        try {
-          await refreshWorkspaceTree();
-        } catch (err) {
-          setGlobalError(String(err));
-          setStatus("Saved as; folder refresh failed");
-          return;
-        }
-      }
-
-      setStatus("Saved as");
-    } catch (err) {
-      const message = String(err);
-
-      setTabs((currentTabs) =>
-        currentTabs.map((tab) =>
-          tab.id === activeTab.id
-            ? {
-                ...tab,
-                saveStatus: "error",
-                error: message,
-              }
-            : tab,
-        ),
-      );
-      setStatus("Save As failed");
-    }
-  }, [
-    activeTab,
-    refreshWorkspaceTree,
-    rememberRecentFile,
-    setActiveTabId,
-    setGlobalError,
-    setStatus,
-    setTabs,
-    tabsRef,
-    workspaceRootPath,
-  ]);
+    await saveTabAsById(activeTab.id);
+  }, [activeTab, saveTabAsById, setStatus]);
 
   return {
     saveActiveTab,

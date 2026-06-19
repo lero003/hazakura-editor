@@ -157,6 +157,32 @@ describe("useWorkspaceStatePersistence", () => {
     expect(stored?.workspaceRootBookmark).toEqual([9, 8, 7]);
   });
 
+  it("does not persist pathless untitled tabs as restorable file paths", () => {
+    persistWorkspaceStateSnapshot({
+      activeTab: makeTab({
+        id: "untitled:1",
+        name: "untitled.md",
+        path: "",
+      }),
+      tabs: [
+        makeTab({
+          id: "untitled:1",
+          name: "untitled.md",
+          path: "",
+        }),
+      ],
+      workspaceRootPath: null,
+    });
+
+    const stored = readPersistedWorkspaceState();
+    expect(stored).toEqual({
+      workspaceRootPath: null,
+      workspaceRootBookmark: null,
+      tabPaths: [],
+      activeTabPath: null,
+    });
+  });
+
   it("writes an empty record when the persisted state was already empty", async () => {
     // The user closed the workspace and all tabs in a
     // previous session. The persisted state is already

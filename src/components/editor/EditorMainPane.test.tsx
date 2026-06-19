@@ -152,6 +152,24 @@ describe("EditorMainPane", () => {
     expect(screen.getByText("/workspace/root.md")).toBeTruthy();
   });
 
+  it("does not show the full-path copy bar for an untitled pathless tab", () => {
+    renderEditorMainPane({
+      activeTab: {
+        ...activeTab,
+        id: "untitled:1",
+        name: "untitled.md",
+        path: "",
+      },
+      documentKey: "untitled:1",
+      workspaceRootPath: null,
+    });
+
+    expect(screen.getByTestId("mock-editor-pane")).toBeTruthy();
+    expect(
+      screen.queryByRole("button", { name: /^Copy full path:/ }),
+    ).toBeNull();
+  });
+
   it("hides the normal path bar in L Mode", () => {
     renderEditorMainPane({
       editorSettings: {

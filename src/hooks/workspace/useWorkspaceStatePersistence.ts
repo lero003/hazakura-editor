@@ -76,10 +76,16 @@ export function persistWorkspaceStateSnapshot({
     }
   }
 
+  const restorableTabPaths = tabs
+    .map((tab) => tab.path)
+    .filter((path) => path.length > 0);
+  const activeTabPath =
+    activeTab && activeTab.path.length > 0 ? activeTab.path : null;
+
   writePersistedWorkspaceState({
     workspaceRootPath,
-    tabPaths: tabs.map((tab) => tab.path),
-    activeTabPath: activeTab?.path ?? null,
+    tabPaths: restorableTabPaths,
+    activeTabPath,
   });
 }
 

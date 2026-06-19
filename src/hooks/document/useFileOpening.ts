@@ -11,7 +11,10 @@ import {
   pickMarkdownFile,
   pickNewMarkdownFilePath,
 } from "../../lib/tauri";
-import { createEditorTab } from "../../features/editor/editorTabs";
+import {
+  createEditorTab,
+  createUntitledEditorTab,
+} from "../../features/editor/editorTabs";
 import {
   readStoredDrafts,
   upsertDraftRecord,
@@ -224,6 +227,18 @@ export function useFileOpening({
 
   const createNewFile = useCallback(async () => {
     setGlobalError(null);
+
+    if (!workspaceRootPath) {
+      const nextTab = createUntitledEditorTab();
+
+      setTabs((currentTabs) => [...currentTabs, nextTab]);
+      setActiveTabId(nextTab.id);
+      clearImagePreview();
+      setCompareView(null);
+      setStatus("New file created");
+      return;
+    }
+
     setStatus("Choosing new file path...");
 
     try {

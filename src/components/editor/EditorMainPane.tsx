@@ -84,7 +84,10 @@ export function EditorMainPane({
   slashMenuCopy,
   workspaceRootPath,
 }: EditorMainPaneProps) {
-  const showDocumentPathBar = activeTab !== null && !editorSettings.lModeEnabled;
+  const showDocumentPathBar =
+    activeTab !== null &&
+    activeTab.path.length > 0 &&
+    !editorSettings.lModeEnabled;
   const copyFullPathLabel = activeTab
     ? formatCopyFullPathLabel(menuLanguage, activeTab.path)
     : "";

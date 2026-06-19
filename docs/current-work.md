@@ -345,13 +345,26 @@ AI Markdown ingest remains useful, but it should not crowd out these
 basic authoring and export improvements in v0.26 unless a separate
 focused slice is explicitly selected.
 
+P0 is implemented locally as of 2026-06-20. With no workspace selected,
+New File now creates an untitled standalone Markdown tab without writing
+to disk. Save on that pathless tab routes through Save As, then rekeys
+the tab to the selected standalone file. Pathless untitled tabs are not
+persisted as restorable file paths and do not expose an empty full-path
+copy bar.
+
+Verification: `npm run test -- src/hooks/document/useFileOpening.test.tsx
+src/hooks/document/useSaveActions.test.tsx
+src/hooks/workspace/useWorkspaceStatePersistence.test.ts
+src/components/editor/EditorMainPane.test.tsx
+src/hooks/document/useActiveDocumentIdentity.test.ts`, `npm run test`,
+`npm run build:vite`, and `git diff --check`.
+
 ## Active UX Queue
 
 Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| v0.26 P0 | No-workspace new document / Save As | With no workspace selected, New File creates an untitled standalone Markdown tab with normal dirty/close protection. Save routes to Save As before writing, then the tab becomes a normal standalone file tab. Preview/e-book affordances should work from the unsaved source where safe, but workspace-only image operations remain unavailable until a file/workspace path exists. No hidden workspace, background autosave folder, project indexing, Git/LSP/terminal behavior, or arbitrary path text input. |
 | v0.26 P1 | e-book button empty-state polish | The e-book control remains visible when no file is open or when the active tab cannot render as Markdown. It is disabled or opens a clear empty state instead of disappearing, and it never reuses stale prior-document content. Verify no-file, image-preview, unsupported/binary, Markdown, and L Mode/normal mode cases. |
 | v0.26 P2 | Initial EPUB export | Add an explicit export action for the active Markdown source that writes a minimal `.epub` through a save dialog. Keep Markdown source canonical and reuse the preview/export safety boundary where practical. Include basic title/language defaults, XHTML content, stylesheet, workspace-local image handling or warnings, and a generated navigation/table of contents from headings. Do not launch external validators, add advanced metadata/cover/vertical-writing UI, or claim reader-perfect pagination. |
 | Post-v0.25 lens | Product refinement triage | Use `docs/post-v0.25-product-refinement-plan.md` to choose one small slice that tightens the existing product instead of adding surfaces: mode-transition consistency, Workspace-as-book information architecture, flow-preserving editing, large-document / preview reliability, layered native chrome, or AI-as-review-layer wording. Close as a docs-only decision, `implemented`, `manual-blocked`, or `verified no-op`; do not bundle with distribution work. |

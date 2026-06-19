@@ -64,6 +64,12 @@ Last reviewed: 2026-06-20 (v0.26 polish and EPUB export queue)
   export lane before heavier AI proposal ingest. Keep it focused on
   no-workspace New File / Save As, e-book empty-state affordance, and
   explicit EPUB export from Markdown source.
+- v0.26 no-workspace New File / Save As is implemented locally:
+  no-workspace New File creates a pathless untitled Markdown tab without
+  writing to disk, Save routes that tab through Save As, and saved tabs
+  rekey to ordinary standalone file paths. Pathless untitled tabs are
+  not persisted as restorable file paths or recovery drafts, and they do
+  not show an empty full-path copy bar.
 - Markdown preview task checkboxes are complete for v0.18: Preview renders
   `- [ ]` / `- [x]` as inert display-only checkbox glyphs without
   changing saved Markdown.
@@ -136,33 +142,28 @@ Last reviewed: 2026-06-20 (v0.26 polish and EPUB export queue)
 Use `docs/current-work.md` for the active queue. The current highest
 priority items after the v0.25 App Store release are:
 
-1. v0.26 no-workspace New File / Save As: with no workspace selected,
-   New File should create an untitled standalone Markdown tab; Save
-   should route through Save As before writing and then become a normal
-   standalone file tab. Do not introduce hidden temporary workspaces or
-   background autosave as a substitute for Save As.
-2. v0.26 e-book empty-state polish: keep the e-book control visible
+1. v0.26 e-book empty-state polish: keep the e-book control visible
    when no file is open or when the active tab cannot render as
    Markdown; use disabled/empty-state behavior and avoid stale previous
    document content.
-3. v0.26 initial EPUB export: explicit export action from Markdown
+2. v0.26 initial EPUB export: explicit export action from Markdown
    source to a minimal `.epub` through a save dialog. No external
    validator launch, vertical writing, advanced metadata editor, or
    reader-perfect page-count claims.
-4. Post-v0.25 product refinement triage:
+3. Post-v0.25 product refinement triage:
    `docs/post-v0.25-product-refinement-plan.md` captures the next
    product-grade lens: one editing space, Workspace-as-book, UI that
    recedes, reliability, and AI as a review layer. Pick one small slice
    from that lens rather than adding broad new surfaces.
-5. Manual app smoke of the v0.24 e-book single-page reader: e-book
+4. Manual app smoke of the v0.24 e-book single-page reader: e-book
    toggle, page movement, reader footer, chapter boundary movement,
    long chapters, image-heavy chapters, long code blocks with inner
    scroll, tables, Tab focus, light/dark themes, and font-size changes.
-6. Core Safe Editor quality probe.
-7. Light accessibility sanity adjacent to the selected core surface.
-8. Any follow-up discovered by manual app smoke of the v0.20 Sakura
+5. Core Safe Editor quality probe.
+6. Light accessibility sanity adjacent to the selected core surface.
+7. Any follow-up discovered by manual app smoke of the v0.20 Sakura
    chrome / preview polish.
-9. v0.21+ status bar structure cleanup: replace the current compact
+8. v0.21+ status bar structure cleanup: replace the current compact
    status-detail stopgap with priority-aware metadata fields while
    keeping line-ending / encoding controls reachable.
 

@@ -33,7 +33,9 @@ export function useDraftPersistence({
       return;
     }
 
-    const dirtyDrafts = tabs.filter(isDirty).map(draftRecordFromTab);
+    const dirtyDrafts = tabs
+      .filter((tab) => tab.path.length > 0 && isDirty(tab))
+      .map(draftRecordFromTab);
 
     writeStoredDrafts(
       [...pendingDrafts, ...dirtyDrafts].reduce<DraftRecord[]>(
