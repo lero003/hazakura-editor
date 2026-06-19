@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-19 (v0.25 native-feeling chrome polish planning)
+Last reviewed: 2026-06-19 (v0.25 chrome polish done; native vibrancy + macOS 26 floor planning)
 
 ## Current State
 
@@ -52,12 +52,16 @@ Last reviewed: 2026-06-19 (v0.25 native-feeling chrome polish planning)
   remains available through existing menu, shortcut, and workspace-file
   actions. Workspace switching dropdowns remain deferred to preserve the
   simple single-workspace model.
-- The v0.25 native-feeling Safe Editor chrome polish initial code/CSS pass
+- The v0.25 native-feeling Safe Editor chrome polish Phase 1 code/CSS pass
   is implemented: traffic-light-safe drag / no-drag rules, subtle editor
   focus visibility, truthful mode active state, e-book chrome token cleanup,
   segmented right-pane mode controls, and tokenized Diff row backgrounds.
   Human-side spot check found no blocker; keep targeted manual smoke as
   the final proof for actual macOS titlebar dragging and click hit-testing.
+  The CSS-only glass follow-up was dropped (scrap-and-build); v0.25 now
+  moves into native vibrancy via `window-vibrancy` with the macOS
+  deployment target raised to macOS 26. See
+  `docs/native-macos-appearance-plan.md`.
 
 ## Current Product Boundary
 
@@ -184,10 +188,13 @@ baseline, and smoke evidence are archived under
    and boundary docs stay live for future submissions.
 2. For UX work, start with `docs/current-work.md`. The current named
    product slice is v0.25 native-feeling Safe Editor chrome polish:
-   the initial code/CSS pass is implemented, and the next proof is
-   manual app smoke for titlebar dragging, click hit-testing, L Mode
-   floating chrome, segmented mode controls, e-book / Preview / Diff,
-   light/dark themes, and keyboard focus before AI Markdown ingest.
+   Phase 1 (drag regions, focus, mode active state, segmented controls,
+   e-book / Diff tokens) is implemented at code/CSS level. The CSS
+   glass follow-up is dropped (scrap-and-build); v0.25 now moves into
+   native vibrancy via `window-vibrancy` with the macOS deployment
+   target raised to macOS 26. Treat the floor change as
+   release-planning work with TestFlight / App Review evidence, not a
+   silent metadata bump.
 3. For a future App Store submission, start with `docs/app-store-build.md`;
    keep account-specific notes under ignored `docs/internal/` files and
    treat certificate, provisioning, signing, notarization, upload,

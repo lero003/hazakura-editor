@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-19 (v0.25 native-feeling chrome polish planning)
+Last reviewed: 2026-06-19 (v0.25 chrome polish done; native vibrancy + macOS 26 floor planning)
 
 ## Current Position
 
@@ -18,8 +18,9 @@ Current release state:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
 - Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
 - Current package/app version: `0.20.0`.
-- Active lane: v0.25 native-feeling Safe Editor chrome polish after the
-  v0.24 e-book Mode single-page reader polish.
+- Active lane: v0.25 native-feeling Safe Editor chrome polish (Phase 1
+  complete) moving into native vibrancy via `window-vibrancy` with the
+  macOS deployment target raised to macOS 26.
 - Current work queue: `docs/current-work.md`.
 
 North star for the next product arc:
@@ -305,21 +306,9 @@ right-pane sub-feature.
 Goal: make the existing Markdown-first Safe Editor shell feel more like a
 macOS app before adding a new AI proposal ingest workflow.
 
-Use `docs/native-macos-appearance-plan.md` as the planning memo. Keep the
-first implementation slice inside current React/CSS chrome:
+Use `docs/native-macos-appearance-plan.md` as the planning memo.
 
-- Add or verify traffic-light-safe top-chrome drag regions, with buttons,
-  tabs, menus, and segmented controls excluded from drag behavior.
-- Restore a subtle editor focus indication and make existing mode active
-  states truthful.
-- Align right-pane / e-book chrome colors with existing design tokens and
-  remove stale fallback literals.
-- Improve right-pane mode controls toward a real segmented-control feel
-  only after the P0 chrome fixes are verified.
-- Tokenize narrow visual inconsistencies, such as Diff row backgrounds,
-  when the current light/dark behavior can be preserved.
-
-Initial implementation as of 2026-06-19:
+Phase 1 (chrome alignment) is complete and verified at code/CSS level:
 
 - Traffic-light-safe drag / no-drag rules, including L Mode floating
   chrome boundaries.
@@ -327,17 +316,35 @@ Initial implementation as of 2026-06-19:
   token-aligned e-book chrome, segmented right-pane mode controls, and
   tokenized Diff row backgrounds.
 
-Next proof: manual app smoke for titlebar dragging, control clickability,
-L Mode floating pill behavior, dense tabs, e-book / Preview / Diff,
-light/dark themes, and keyboard focus.
+Phase 1 remaining proof: manual app smoke for titlebar dragging, control
+clickability, L Mode floating pill behavior, dense tabs, e-book / Preview /
+Diff, light/dark themes, and keyboard focus.
 
-Do not add true native vibrancy, AppKit / SwiftUI architecture changes,
-top-bar rewrites, new `RightPaneMode` values, Outline / Diff information-
-architecture changes, AI ingest, Git, LSP, terminal, plugin, or arbitrary
-command behavior in this slice.
+Scrap-and-build decision as of 2026-06-19: the CSS-only glass polish that
+was considered as a Phase 1 follow-up is **dropped**. A `backdrop-filter`
+approximation does not change the feel enough to justify the work, and it
+would be thrown away once real native vibrancy lands.
 
-Treat OS material / Liquid Glass exploration as a later design and
-architecture decision, not as incidental CSS polish.
+Phase 2 (native vibrancy, brought forward) is now the active work:
+
+- Add `window-vibrancy` and call `apply_vibrancy` on the main window with
+  an `NSVisualEffectMaterial` matching the sidebar / titlebar band.
+- Make the window transparent and replace the CSS
+  `backdrop-filter: blur(16px)` approximation with transparent surfaces
+  that let the native material render.
+- Keep the five themes legible over the native material, and keep dense
+  Markdown text on a readable non-vibrant background.
+- Raise the macOS deployment target to **macOS 26** as part of this slice.
+
+Do not add a full SwiftUI / AppKit rewrite, true Liquid Glass fidelity,
+vibrancy behind dense Markdown text, top-bar rewrites, new
+`RightPaneMode` values, Outline / Diff information-architecture changes,
+AI ingest, Git, LSP, terminal, plugin, or arbitrary command behavior in
+this slice.
+
+Treat the macOS 26 floor change as release-planning work: a new App Store
+build declaring macOS 26 is a lane decision with TestFlight / App Review
+evidence, not a silent metadata bump.
 
 ## v0.26 AI Proposal Ingest And Review
 
