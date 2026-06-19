@@ -119,6 +119,14 @@ traffic-light inset risk, weak editor focus visibility, inaccurate mode
 active state, segmented-control styling debt, and stale fallback color
 literals in e-book chrome.
 
+Implementation note as of 2026-06-19: the first Safe Editor chrome
+alignment pass is implemented at the React/CSS level. It covers
+traffic-light-safe drag / no-drag rules, normal-editor focus visibility,
+truthful mode active state, e-book token cleanup, right-pane segmented
+mode controls, and tokenized Diff row backgrounds. The next proof is
+manual macOS app smoke, especially titlebar dragging, control
+clickability, L Mode floating pill behavior, and dense-tab hit testing.
+
 ### Phase 1: Safe Editor Chrome Alignment
 
 First implementation slice should be small and reversible.

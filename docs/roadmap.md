@@ -319,6 +319,18 @@ first implementation slice inside current React/CSS chrome:
 - Tokenize narrow visual inconsistencies, such as Diff row backgrounds,
   when the current light/dark behavior can be preserved.
 
+Initial implementation as of 2026-06-19:
+
+- Traffic-light-safe drag / no-drag rules, including L Mode floating
+  chrome boundaries.
+- Subtle normal-editor focus signal, truthful L Mode active state,
+  token-aligned e-book chrome, segmented right-pane mode controls, and
+  tokenized Diff row backgrounds.
+
+Next proof: manual app smoke for titlebar dragging, control clickability,
+L Mode floating pill behavior, dense tabs, e-book / Preview / Diff,
+light/dark themes, and keyboard focus.
+
 Do not add true native vibrancy, AppKit / SwiftUI architecture changes,
 top-bar rewrites, new `RightPaneMode` values, Outline / Diff information-
 architecture changes, AI ingest, Git, LSP, terminal, plugin, or arbitrary

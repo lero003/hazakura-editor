@@ -235,7 +235,7 @@ changes, and Tab focus.
 
 ## v0.25 Native-feeling Safe Editor Chrome Polish
 
-This is the next named product slice after v0.24 e-book Mode polish.
+This is the current named product slice after v0.24 e-book Mode polish.
 AI Markdown ingest moves to v0.26 so the app shell and mode controls can
 feel more native and stable before a new review/import workflow is added.
 
@@ -282,13 +282,27 @@ Verification: focused component / CSS tests for changed controls,
 dragging, traffic-light overlap, dense tabs, light/dark themes, L Mode,
 e-book / Preview / Diff, and keyboard focus.
 
+Initial implementation as of 2026-06-19:
+
+- Top chrome now has a traffic-light-safe drag region, with tabs,
+  buttons, menus, and the L Mode floating chrome explicitly kept
+  no-drag.
+- Normal CodeMirror focus has a subtle visible signal while L Mode keeps
+  the paper surface flat.
+- L Mode active state, e-book accent fallback colors, right-pane mode
+  segmented-control styling, and Diff row background tokens are aligned.
+- Verification so far is code/CSS level: focused component/CSS tests,
+  `npm run build:vite`, and `git diff --check`. Manual app smoke is
+  still the next proof for actual macOS titlebar dragging and click
+  hit-testing.
+
 ## Active UX Queue
 
 Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| v0.25 P0 | Native-feeling Safe Editor chrome polish | Start with the smallest chrome slice: traffic-light-safe drag region, subtle editor focus signal, accurate mode active states, and token cleanup. Do not introduce true native vibrancy, toolbar rewrites, new modes, or AI ingest in this slice. |
+| v0.25 P0 | Native-feeling Safe Editor chrome polish | Initial code/CSS pass is implemented. Next proof is manual app smoke for traffic-light-safe dragging, click hit-testing, dense tabs, L Mode floating pill, segmented mode controls, e-book / Preview / Diff, light/dark themes, and keyboard focus. Do not introduce true native vibrancy, toolbar rewrites, new modes, or AI ingest in this slice. |
 | P1 | Core Safe Editor quality probe | When concrete queue items are exhausted, inspect one basic high-risk surface instead of adding broad tests: open/save/close, restore/recovery, preview, diff/review, workspace file operations, standalone files, image handling, keyboard/IME, or error recovery. State the risk hypothesis, run a focused source/app inspection or smoke, then either fix the smallest issue found or close as `verified no-op`. |
 | P2 | Light accessibility sanity | Keep accessibility as a light sanity pass adjacent to core surfaces: keyboard reachability, focus escape/Tab behavior, readable labels, and obvious contrast. Do not prioritize broad accessibility audits over basic editor quality unless a concrete accessibility failure is observed. |
 | v0.21+ | Status bar structure cleanup | Treat the v0.20 compact status detail as a stopgap. For a later UX slice, split status metadata into priority-aware fields instead of one long `statusDetail` string, keep line-ending / encoding controls always reachable, and move lower-priority details such as final-newline state, line/column, selection, and heading context into hover, popover, or adaptive secondary display. |

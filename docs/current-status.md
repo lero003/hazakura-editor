@@ -52,6 +52,12 @@ Last reviewed: 2026-06-19 (v0.25 native-feeling chrome polish planning)
   remains available through existing menu, shortcut, and workspace-file
   actions. Workspace switching dropdowns remain deferred to preserve the
   simple single-workspace model.
+- The v0.25 native-feeling Safe Editor chrome polish initial code/CSS pass
+  is implemented: traffic-light-safe drag / no-drag rules, subtle editor
+  focus visibility, truthful mode active state, e-book chrome token cleanup,
+  segmented right-pane mode controls, and tokenized Diff row backgrounds.
+  Manual app smoke remains the next proof for actual macOS titlebar
+  dragging and click hit-testing.
 
 ## Current Product Boundary
 
@@ -172,8 +178,10 @@ baseline, and smoke evidence are archived under
    and boundary docs stay live for future submissions.
 2. For UX work, start with `docs/current-work.md`. The current named
    product slice is v0.25 native-feeling Safe Editor chrome polish:
-   traffic-light-safe drag regions, clearer focus / active states, and
-   token-aligned controls before AI Markdown ingest.
+   the initial code/CSS pass is implemented, and the next proof is
+   manual app smoke for titlebar dragging, click hit-testing, L Mode
+   floating chrome, segmented mode controls, e-book / Preview / Diff,
+   light/dark themes, and keyboard focus before AI Markdown ingest.
 3. For a future App Store submission, start with `docs/app-store-build.md`;
    keep account-specific notes under ignored `docs/internal/` files and
    treat certificate, provisioning, signing, notarization, upload,
