@@ -37,19 +37,19 @@
 
 /* v0.25 native vibrancy: the dark sidebar sits over the native
    NSVisualEffectView material rather than a CSS backdrop-filter. Keep a
-   faint dark tint so the Sakura palette still reads, but let the native
-   material show through. The other themes (light/sakura/yakou/shokou)
+   very faint dark tint so the Sakura palette still reads, but let the
+   native material dominate. The other themes (light/sakura/yakou/shokou)
    still use the CSS backdrop-filter approximation until each is tuned
    over the native material in a follow-up slice. */
 :root[data-theme="dark"] .file-tree-pane {
-  background: rgba(14, 19, 17, 0.28);
+  background: rgba(14, 19, 17, 0.12);
 }
 
 /* The dark top chrome follows the sidebar: a faint tint over the native
    material instead of an opaque `--surface-muted` fill, so the titlebar
    band and sidebar read as one continuous native surface. */
 :root[data-theme="dark"] .tabs-row {
-  background: rgba(14, 19, 17, 0.28);
+  background: rgba(14, 19, 17, 0.12);
 }
 
 /* Let the native material show through the dark app shell. The editor

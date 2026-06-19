@@ -86,7 +86,7 @@ describe("EditorPane", () => {
       /"&\.cm-focused"\s*:\s*{[^}]*outline:\s*"none"/s,
     );
     expect(editorPaneSource).toMatch(
-      /"&\.cm-focused"\s*:\s*{[^}]*boxShadow:\s*"inset 0 0 0 1px color-mix\(in srgb, var\(--accent\) 28%, transparent\)"/s,
+      /"&\.cm-focused"\s*:\s*{[^}]*boxShadow:\s*"inset 0 1px 0 color-mix\(in srgb, var\(--accent\) 40%, transparent\)"/s,
     );
   });
 

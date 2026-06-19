@@ -36,14 +36,22 @@ use tauri::Manager;
 // prevent the editor from launching, so the result is ignored.
 #[cfg(target_os = "macos")]
 fn apply_macos_vibrancy<R: tauri::Runtime>(app: &tauri::AppHandle<R>) {
-    use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
+    use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial, NSVisualEffectState};
 
     // The main window is created by `tauri.conf.json` before `setup`
     // runs, so resolve it by its configured label.
     let Some(window) = app.get_webview_window(MAIN_WINDOW_LABEL) else {
         return;
     };
-    let _ = apply_vibrancy(&window, NSVisualEffectMaterial::Sidebar, None, None);
+    // `Active` state forces the vibrant appearance regardless of window
+    // key state, so the material reads clearly instead of flattening to a
+    // near-solid tint behind the dark overlay.
+    let _ = apply_vibrancy(
+        &window,
+        NSVisualEffectMaterial::Sidebar,
+        Some(NSVisualEffectState::Active),
+        None,
+    );
 }
 
 // `use super::*;` in `src/tests.rs` pulls in everything from the crate

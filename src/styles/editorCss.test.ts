@@ -112,7 +112,7 @@ describe("editor tab close affordance CSS", () => {
     const tabsRow = ruleBody(controlsCss, ".tabs-row");
 
     expect(tabsRow).toMatch(/-webkit-app-region:\s*drag/);
-    expect(tabsRow).toMatch(/--titlebar-control-inset:\s*82px/);
+    expect(tabsRow).toMatch(/--titlebar-control-inset:\s*76px/);
     expect(tabsRow).toMatch(/padding:\s*0\s+14px\s+0\s+var\(--titlebar-control-inset\)/);
 
     expect(controlsCss).toMatch(

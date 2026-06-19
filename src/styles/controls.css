@@ -98,7 +98,11 @@
 }
 
 .tabs-row {
-  --titlebar-control-inset: 82px;
+  /* Inset for the macOS traffic lights. Tightened from 82px so the
+     leading quick-settings control sits closer to the lights now that
+     the top chrome is transparent and the sidebar shows through; the
+     larger gap read as dead space. */
+  --titlebar-control-inset: 76px;
   -webkit-app-region: drag;
   background: var(--surface-muted);
   border-bottom: 1px solid var(--border);

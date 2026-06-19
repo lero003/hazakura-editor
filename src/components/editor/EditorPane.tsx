@@ -1016,8 +1016,11 @@ function editorTheme(theme: "light" | "dark", fontSize: number) {
         backgroundColor: "var(--cm-selection-bg)",
       },
       "&.cm-focused": {
-        boxShadow:
-          "inset 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent)",
+        // Focus shown as a single accent underline at the top edge of the
+        // editor, not a four-sided inset ring: under the v0.25 transparent
+        // shell a full inset box-shadow reads as an unnatural border around
+        // the whole editor pane.
+        boxShadow: "inset 0 1px 0 color-mix(in srgb, var(--accent) 40%, transparent)",
         outline: "none",
       },
       ".cm-content ::selection": {
