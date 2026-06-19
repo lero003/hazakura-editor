@@ -110,16 +110,40 @@ Submission-oriented App Store package:
 ```bash
 APPLE_SIGNING_IDENTITY="Apple Distribution: <Name> (<TEAM_ID>)" \
 APPLE_INSTALLER_SIGNING_IDENTITY="3rd Party Mac Developer Installer: <Name> (<TEAM_ID>)" \
-  npm run build:app-store-pkg
+  npm run release:candidate -- --with-app-store-pkg
 ```
 
-`npm run build:app-store-pkg` increments
+`npm run release:candidate -- --with-app-store-pkg` is the normal local
+candidate workflow for work checkpoints that might become TestFlight
+uploads. It runs the lightweight App Store surface smoke, builds the
+signed App Store package, writes ignored candidate metadata under
+`docs/internal/app-store-candidates/`, and prunes older generated
+`HazakuraEditor-*-mas.pkg` files while keeping the five highest build
+numbers by default. Use `--keep-pkgs=N` to adjust local retention,
+`--no-prune-pkgs` to keep every generated package, or `--skip-smoke`
+only when the same surface smoke has already passed for the current
+source state.
+
+This wrapper intentionally does not update tracked release notes,
+`docs/current-status.md`, or historical candidate sections. Package
+generation is a local candidate action; update tracked docs only when a
+package is selected for upload, submitted to App Store Connect, reaches
+TestFlight, or becomes release evidence.
+
+`npm run build:app-store-pkg` remains the lower-level package builder
+used by the candidate wrapper. It increments
 `src-tauri/tauri.conf.appstore.json` `bundle.macOS.bundleVersion` before
 building, and that value becomes `CFBundleVersion`. App Store Connect
 requires this value to be higher than any previously uploaded build for
 the same app version, including builds that were uploaded but later
 rejected for validation issues. Keep this value as a positive integer
 counter (`1`, `2`, `3`, ...), separate from the user-visible app version.
+Do not treat every build number as a tracked product-history item; the
+app version, tag, selected package path, and upload / TestFlight result
+are the durable release facts.
+If the package build fails before signature and SHA-256 verification
+complete, the builder restores the previous tracked `bundleVersion` so
+failed local attempts do not advance the counter by themselves.
 
 The package script derives the output path from `package.json` `version`
 and the newly incremented App Store `bundleVersion`. Do not hand-edit
@@ -290,6 +314,21 @@ with App Store entitlement checks, creates the signed installer package
 with `productbuild`, verifies the package signature, and prints the
 SHA-256 plus `PKG_PATH`.
 
+Prefer the candidate wrapper for routine checkpoints:
+
+```bash
+APPLE_SIGNING_IDENTITY="Apple Distribution: <Name> (<TEAM_ID>)" \
+APPLE_INSTALLER_SIGNING_IDENTITY="3rd Party Mac Developer Installer: <Name> (<TEAM_ID>)" \
+  npm run release:candidate -- --with-app-store-pkg
+```
+
+The wrapper records the candidate locally in ignored
+`docs/internal/app-store-candidates/latest.json`, then prints `PKG_PATH`,
+`PKG_SHA256`, and `APP_STORE_VERSION_BUILD`. Keep that local note for
+operator convenience; do not copy it into tracked docs unless the
+package is actually uploaded or selected as the App Store submission
+candidate.
+
 Verify the package before opening Transporter:
 
 ```bash
@@ -297,7 +336,7 @@ pkgutil --check-signature "$PKG"
 spctl --assess --type install --verbose=4 "$PKG"
 ```
 
-Upload the `PKG_PATH` printed by `npm run build:app-store-pkg` with
+Upload the `PKG_PATH` printed by the candidate workflow with
 Transporter. After upload,
 record the App Store Connect processing result, TestFlight internal
 group assignment, and any Apple validation warnings in ignored

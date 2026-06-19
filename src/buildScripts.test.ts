@@ -10,6 +10,14 @@ const macosLanesScript = readFileSync(
   "scripts/build-macos-lanes.sh",
   "utf8",
 );
+const appStorePkgScript = readFileSync(
+  "scripts/build-app-store-pkg.mjs",
+  "utf8",
+);
+const releaseCandidateScript = readFileSync(
+  "scripts/prepare-release-candidate.mjs",
+  "utf8",
+);
 const appStorePreviewConfig = readFileSync(
   "src-tauri/tauri.conf.appstore-preview.json",
   "utf8",
@@ -152,6 +160,45 @@ describe("macOS build scripts", () => {
 
     expect(nextFromOne).toBe("2");
     expect(nextFromCurrent).toBe(String(Number(currentBundleVersion) + 1));
+  });
+
+  it("wraps App Store pkg candidates without tracked release-doc updates", () => {
+    expect(packageJson.scripts["release:candidate"]).toBe(
+      "node scripts/prepare-release-candidate.mjs",
+    );
+    expect(packageJson.scripts["candidate:app-store-pkg"]).toBe(
+      "node scripts/prepare-release-candidate.mjs --with-app-store-pkg",
+    );
+    expect(appStorePkgScript).toContain("App Store bundleVersion:");
+    expect(appStorePkgScript).toContain(
+      "Restored App Store bundleVersion after failed package build.",
+    );
+    expect(appStorePkgScript).toContain("PKG_PATH=");
+    expect(releaseCandidateScript).toContain("npm run smoke:app-store-surface");
+    expect(releaseCandidateScript).toContain("npm run build:app-store-pkg");
+    expect(releaseCandidateScript).toContain(
+      "docs/internal/app-store-candidates/latest.json",
+    );
+    expect(releaseCandidateScript).toContain(
+      "Tracked release docs were not updated.",
+    );
+
+    const dryRun = execFileSync(
+      process.execPath,
+      [
+        "scripts/prepare-release-candidate.mjs",
+        "--with-app-store-pkg",
+        "--keep-pkgs=3",
+        "--dry-run",
+      ],
+      { encoding: "utf8" },
+    );
+
+    expect(dryRun).toContain("Release candidate plan:");
+    expect(dryRun).toContain("npm run smoke:app-store-surface");
+    expect(dryRun).toContain("npm run build:app-store-pkg");
+    expect(dryRun).toContain("keep highest build numbers: 3");
+    expect(dryRun).toContain("Tracked release docs: not updated");
   });
 
   it("uses the dedicated Developer lane script before copying the Dev bundle", () => {

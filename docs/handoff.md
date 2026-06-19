@@ -88,6 +88,13 @@ Last reviewed: 2026-06-20 (v0.26 polish and EPUB export queue)
   sandbox entitlements so the generated `Hazakura Editor.app` can launch
   for local smoke. Use `npm run smoke:macos-sandbox-preview` or the signed
   submit / TestFlight lane for sandbox-entitlement proof.
+- App Store/TestFlight package checkpoints should use
+  `npm run release:candidate -- --with-app-store-pkg`. The wrapper runs
+  App Store surface smoke, builds the signed pkg through the existing
+  counter-incrementing packager, writes ignored local metadata under
+  `docs/internal/app-store-candidates/`, and prunes older generated pkgs
+  by build number by default. Tracked docs should change only when a pkg
+  is uploaded, selected for submission, or needed as release evidence.
 - Sandboxed workspace restore stores an app-scoped security-scoped
   bookmark for user-selected workspace folders and resolves it on
   restart. Older path-only state can still fall back to the

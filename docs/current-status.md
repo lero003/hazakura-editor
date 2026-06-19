@@ -204,10 +204,13 @@ baseline, and smoke evidence are archived under
    e-book empty-state affordance polish; the next product slice is
    initial EPUB export. Keep each slice small and source-preserving.
 3. For a future App Store submission, start with `docs/app-store-build.md`;
-   keep account-specific notes under ignored `docs/internal/` files and
-   treat certificate, provisioning, signing, notarization, upload,
-   TestFlight smoke, and review handling as explicit distribution-lane
-   work.
+   use `npm run release:candidate -- --with-app-store-pkg` for local
+   signed package checkpoints, keep account-specific notes under ignored
+   `docs/internal/` files, and treat certificate, provisioning, signing,
+   notarization, upload, TestFlight smoke, and review handling as
+   explicit distribution-lane work. Do not update tracked release docs
+   for every generated package; record public-safe evidence only when a
+   package is uploaded, submitted, or selected as release evidence.
 4. For Apple Local Assist, use `docs/assist-surface-strategy.md`,
    `docs/apple-local-assist-distribution-plan.md`, and
    `docs/apple-local-assist-writing-companion-plan.md`; keep direct

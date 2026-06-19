@@ -16,6 +16,8 @@
     "build:app-store-submit": "HAZAKURA_DISTRIBUTION_LANE=app-store VITE_HAZAKURA_DISTRIBUTION_LANE=app-store npm run build:tauri:app-store-submit",
     "build:app-store-pkg": "node scripts/build-app-store-pkg.mjs",
     "bump:app-store-build": "node scripts/bump-app-store-build-version.mjs",
+    "release:candidate": "node scripts/prepare-release-candidate.mjs",
+    "candidate:app-store-pkg": "node scripts/prepare-release-candidate.mjs --with-app-store-pkg",
     "build:developer-preview": "HAZAKURA_DISTRIBUTION_LANE=developer VITE_HAZAKURA_DISTRIBUTION_LANE=developer npm run build:tauri:developer-preview",
     "build:macos-lanes": "bash scripts/build-macos-lanes.sh",
     "build:apple-assist-helper:fixture": "bash scripts/build-apple-assist-helper-fixture.sh",

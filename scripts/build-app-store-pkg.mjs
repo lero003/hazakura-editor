@@ -75,6 +75,7 @@ function requireEnv(name) {
 const appSigningIdentity = requireEnv("APPLE_SIGNING_IDENTITY");
 const installerSigningIdentity = requireEnv("APPLE_INSTALLER_SIGNING_IDENTITY");
 const packageJson = readJson(packageJsonPath);
+const originalAppStoreConfigContents = readFileSync(appStoreConfigPath, "utf8");
 const appStoreConfig = readJson(appStoreConfigPath);
 const version = packageJson.version;
 const previousBuild = appStoreConfig.bundle?.macOS?.bundleVersion ?? "0";
@@ -113,32 +114,43 @@ console.log(`App Store package target: ${pkgPath}`);
 console.log(`App Store bundleVersion: ${previousBuild} -> ${build}`);
 console.log(`App Store version/build: ${version} / ${build}`);
 
-run("npm", ["run", "build:app-store-submit"], {
-  env: { APPLE_SIGNING_IDENTITY: appSigningIdentity },
-});
+let candidateComplete = false;
 
-run("npm", ["run", "probe:macos-distribution", "--", appPath], {
-  env: { REQUIRE_APP_STORE_ENTITLEMENTS: "1" },
-});
+try {
+  run("npm", ["run", "build:app-store-submit"], {
+    env: { APPLE_SIGNING_IDENTITY: appSigningIdentity },
+  });
 
-mkdirSync(dirname(pkgPath), { recursive: true });
-rmSync(tmpPkgPath, { force: true });
-run("productbuild", [
-  "--component",
-  appPath,
-  "/Applications",
-  "--sign",
-  installerSigningIdentity,
-  tmpPkgPath,
-]);
-renameSync(tmpPkgPath, pkgPath);
+  run("npm", ["run", "probe:macos-distribution", "--", appPath], {
+    env: { REQUIRE_APP_STORE_ENTITLEMENTS: "1" },
+  });
 
-if (!existsSync(pkgPath)) {
-  throw new Error(`Package was not created: ${pkgPath}`);
+  mkdirSync(dirname(pkgPath), { recursive: true });
+  rmSync(tmpPkgPath, { force: true });
+  run("productbuild", [
+    "--component",
+    appPath,
+    "/Applications",
+    "--sign",
+    installerSigningIdentity,
+    tmpPkgPath,
+  ]);
+  renameSync(tmpPkgPath, pkgPath);
+
+  if (!existsSync(pkgPath)) {
+    throw new Error(`Package was not created: ${pkgPath}`);
+  }
+
+  run("pkgutil", ["--check-signature", pkgPath]);
+
+  const sha256 = capture("shasum", ["-a", "256", pkgPath]);
+  candidateComplete = true;
+  console.log(sha256);
+  console.log(`PKG_PATH=${pkgPath}`);
+} catch (error) {
+  if (!candidateComplete) {
+    writeFileSync(appStoreConfigPath, originalAppStoreConfigContents);
+    console.error("Restored App Store bundleVersion after failed package build.");
+  }
+  throw error;
 }
-
-run("pkgutil", ["--check-signature", pkgPath]);
-
-const sha256 = capture("shasum", ["-a", "256", pkgPath]);
-console.log(sha256);
-console.log(`PKG_PATH=${pkgPath}`);
