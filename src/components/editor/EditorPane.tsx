@@ -1016,6 +1016,8 @@ function editorTheme(theme: "light" | "dark", fontSize: number) {
         backgroundColor: "var(--cm-selection-bg)",
       },
       "&.cm-focused": {
+        boxShadow:
+          "inset 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent)",
         outline: "none",
       },
       ".cm-content ::selection": {

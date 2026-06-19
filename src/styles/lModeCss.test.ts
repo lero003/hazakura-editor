@@ -285,6 +285,7 @@ describe("lMode.css", () => {
     expect(editorRule).toMatch(
       /background:\s*var\(--(?:bg|surface)\)/,
     );
+    expect(editorRule).toMatch(/box-shadow:\s*none/);
 
     // The prose container stays clean — no border, no
     // shadow, no min-height that would push the body to

@@ -81,9 +81,12 @@ describe("EditorPane", () => {
     expect(container.querySelector(".editor-mount")).not.toBeNull();
   });
 
-  it("suppresses the default CodeMirror focused outline", () => {
+  it("suppresses the default CodeMirror focused outline while adding a subtle focus signal", () => {
     expect(editorPaneSource).toMatch(
-      /"&\.cm-focused"\s*:\s*{\s*outline:\s*"none"/,
+      /"&\.cm-focused"\s*:\s*{[^}]*outline:\s*"none"/s,
+    );
+    expect(editorPaneSource).toMatch(
+      /"&\.cm-focused"\s*:\s*{[^}]*boxShadow:\s*"inset 0 0 0 1px color-mix\(in srgb, var\(--accent\) 28%, transparent\)"/s,
     );
   });
 

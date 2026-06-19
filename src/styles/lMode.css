@@ -834,6 +834,7 @@
   background: var(--bg);
   outline: none;
   border: none;
+  box-shadow: none;
 }
 
 :root[data-l-mode="on"] .cm-scroller {
