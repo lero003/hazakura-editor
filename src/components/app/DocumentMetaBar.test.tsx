@@ -49,6 +49,7 @@ function renderMeta(
   lModeEnabled: boolean,
   assistSurfacePreference: "apple-local" | "external-cli" | "none" =
     "external-cli",
+  overrides: Partial<Parameters<typeof DocumentMetaBar>[0]> = {},
 ) {
   const actions = {
     onReviewChanges: vi.fn(),
@@ -80,6 +81,7 @@ function renderMeta(
       previewPaneActive={false}
       recoveryReviewChangesLabel="変更を確認"
       sidePaneCopy={sidePaneCopy}
+      {...overrides}
     />,
   );
   return actions;
@@ -90,6 +92,7 @@ describe("DocumentMetaBar", () => {
     renderMeta(true);
 
     expect(screen.queryByRole("button", { name: "Review" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "e-book" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Open Agent Window" })).toBeNull();
     expect(
       screen.queryByRole("button", { name: "Open Apple Local Assist Window" }),
@@ -113,6 +116,32 @@ describe("DocumentMetaBar", () => {
     fireEvent.click(screen.getByRole("button", { name: "L Mode" }));
 
     expect(actions.onToggleLMode).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the e-book toggle visible but disabled when no document is active", () => {
+    const actions = renderMeta(false, "external-cli", {
+      activeDirty: false,
+      activeTab: null,
+      ebookPaneActive: true,
+    });
+
+    const ebookButton = screen.getByRole("button", { name: "e-book" });
+
+    expect((ebookButton as HTMLButtonElement).disabled).toBe(true);
+    expect(ebookButton.getAttribute("aria-pressed")).toBe("false");
+
+    fireEvent.click(ebookButton);
+    expect(actions.onToggleEbook).not.toHaveBeenCalled();
+  });
+
+  it("keeps the e-book toggle enabled for an active Markdown document", () => {
+    const actions = renderMeta(false);
+
+    const ebookButton = screen.getByRole("button", { name: "e-book" });
+
+    expect((ebookButton as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(ebookButton);
+    expect(actions.onToggleEbook).toHaveBeenCalledTimes(1);
   });
 
   it("routes review menu items to their pane actions", () => {

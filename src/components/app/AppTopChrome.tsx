@@ -145,6 +145,7 @@ export function AppTopChrome({
         agentWorkbenchAvailable={agentWorkbenchAvailable}
         assistSurfaceActive={assistSurfaceActive}
         diffPaneActive={sidePaneMode === "compare"}
+        ebookAvailable={activeTab !== null && selectedImage === null}
         ebookPaneActive={sidePaneMode === "ebook"}
         lModeCopy={lModeCopy}
         lModeEnabled={lModeEnabled}

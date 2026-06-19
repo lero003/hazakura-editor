@@ -359,13 +359,25 @@ src/components/editor/EditorMainPane.test.tsx
 src/hooks/document/useActiveDocumentIdentity.test.ts`, `npm run test`,
 `npm run build:vite`, and `git diff --check`.
 
+P1 is implemented locally as of 2026-06-20. The e-book toggle remains
+visible in the right-pane mode cluster even when no active document is
+available, but it is disabled and reports inactive state so it cannot
+surface stale prior-document content. Active editor documents keep the
+e-book toggle enabled unless an image preview is the foreground surface.
+L Mode continues to hide the normal meta bar controls as before.
+
+Verification: `npm run test --
+src/components/app/RightPaneToggleControls.test.tsx
+src/components/app/DocumentMetaBar.test.tsx
+src/components/app/AppTopChrome.test.tsx src/components/app/SidePane.test.tsx`,
+`npm run test`, `npm run build:vite`, and `git diff --check`.
+
 ## Active UX Queue
 
 Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| v0.26 P1 | e-book button empty-state polish | The e-book control remains visible when no file is open or when the active tab cannot render as Markdown. It is disabled or opens a clear empty state instead of disappearing, and it never reuses stale prior-document content. Verify no-file, image-preview, unsupported/binary, Markdown, and L Mode/normal mode cases. |
 | v0.26 P2 | Initial EPUB export | Add an explicit export action for the active Markdown source that writes a minimal `.epub` through a save dialog. Keep Markdown source canonical and reuse the preview/export safety boundary where practical. Include basic title/language defaults, XHTML content, stylesheet, workspace-local image handling or warnings, and a generated navigation/table of contents from headings. Do not launch external validators, add advanced metadata/cover/vertical-writing UI, or claim reader-perfect pagination. |
 | Post-v0.25 lens | Product refinement triage | Use `docs/post-v0.25-product-refinement-plan.md` to choose one small slice that tightens the existing product instead of adding surfaces: mode-transition consistency, Workspace-as-book information architecture, flow-preserving editing, large-document / preview reliability, layered native chrome, or AI-as-review-layer wording. Close as a docs-only decision, `implemented`, `manual-blocked`, or `verified no-op`; do not bundle with distribution work. |
 | v0.25 Phase 2 | Native vibrancy via `window-vibrancy` + macOS 26 floor | Phase 1 chrome polish is done at code/CSS level. The CSS glass follow-up is dropped (scrap-and-build). Next: bump `minimumSystemVersion` to macOS 26 as release-planning work, add `window-vibrancy`, call `apply_vibrancy` on the main window, make sidebar / top-chrome transparent over the native material, tune the five themes, and verify with built `.app` smoke on macOS 26. Do not add a SwiftUI/AppKit rewrite, Liquid Glass fidelity, vibrancy behind dense Markdown text, toolbar rewrites, new modes, or AI ingest in this slice. |
@@ -384,7 +396,6 @@ over copy-heavy or product-voice-sensitive work.
 | Fit | Candidate | Scope |
 |---|---|---|
 | Good | v0.26 no-workspace New File / Save As | Implement one Safe Editor core slice: pathless New File creates an untitled standalone Markdown tab, Save routes through Save As, dirty close protection remains intact, and the saved tab becomes a normal standalone file. Keep workspace-only operations unavailable until a file/workspace path exists. |
-| Good | v0.26 e-book empty-state polish | Keep the e-book control visible across no-file, non-Markdown, image-preview, and Markdown states. Prefer disabled/empty-state behavior over hiding the control, and prove stale previous-document content cannot appear. |
 | Good | v0.26 EPUB export first slice | Add an explicit minimal EPUB export from active Markdown source only. Keep generation deterministic and bounded; no external validator launch, advanced metadata editor, vertical writing, or page-count fidelity claim. |
 | Good | v0.25 native-feeling chrome P0 | Implement one small shell polish slice: traffic-light-safe drag region, subtle editor focus signal, truthful mode active states, or token cleanup. Keep it inside existing React/CSS chrome and prove it with focused tests plus manual app smoke where needed. |
 | Good | L Mode quality investigation | Pick one reproduced L Mode issue or one measurable quality gap only: caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or performance baseline. Do not add a new editing model or contenteditable surface. |

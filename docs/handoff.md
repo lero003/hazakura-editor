@@ -70,6 +70,14 @@ Last reviewed: 2026-06-20 (v0.26 polish and EPUB export queue)
   rekey to ordinary standalone file paths. Pathless untitled tabs are
   not persisted as restorable file paths or recovery drafts, and they do
   not show an empty full-path copy bar.
+- v0.26 e-book empty-state polish is implemented locally: the e-book
+  right-pane toggle stays visible when no active document is available,
+  but is disabled and inactive until an editor document can drive the
+  reading surface. Image preview keeps the control disabled even if a
+  text tab remains open behind it, and L Mode continues to hide the
+  normal meta bar controls. Verification passed with focused app chrome
+  / side-pane tests, `npm run test`, `npm run build:vite`, and
+  `git diff --check`.
 - Markdown preview task checkboxes are complete for v0.18: Preview renders
   `- [ ]` / `- [x]` as inert display-only checkbox glyphs without
   changing saved Markdown.
@@ -142,28 +150,24 @@ Last reviewed: 2026-06-20 (v0.26 polish and EPUB export queue)
 Use `docs/current-work.md` for the active queue. The current highest
 priority items after the v0.25 App Store release are:
 
-1. v0.26 e-book empty-state polish: keep the e-book control visible
-   when no file is open or when the active tab cannot render as
-   Markdown; use disabled/empty-state behavior and avoid stale previous
-   document content.
-2. v0.26 initial EPUB export: explicit export action from Markdown
+1. v0.26 initial EPUB export: explicit export action from Markdown
    source to a minimal `.epub` through a save dialog. No external
    validator launch, vertical writing, advanced metadata editor, or
    reader-perfect page-count claims.
-3. Post-v0.25 product refinement triage:
+2. Post-v0.25 product refinement triage:
    `docs/post-v0.25-product-refinement-plan.md` captures the next
    product-grade lens: one editing space, Workspace-as-book, UI that
    recedes, reliability, and AI as a review layer. Pick one small slice
    from that lens rather than adding broad new surfaces.
-4. Manual app smoke of the v0.24 e-book single-page reader: e-book
+3. Manual app smoke of the v0.24 e-book single-page reader: e-book
    toggle, page movement, reader footer, chapter boundary movement,
    long chapters, image-heavy chapters, long code blocks with inner
    scroll, tables, Tab focus, light/dark themes, and font-size changes.
-5. Core Safe Editor quality probe.
-6. Light accessibility sanity adjacent to the selected core surface.
-7. Any follow-up discovered by manual app smoke of the v0.20 Sakura
+4. Core Safe Editor quality probe.
+5. Light accessibility sanity adjacent to the selected core surface.
+6. Any follow-up discovered by manual app smoke of the v0.20 Sakura
    chrome / preview polish.
-8. v0.21+ status bar structure cleanup: replace the current compact
+7. v0.21+ status bar structure cleanup: replace the current compact
    status-detail stopgap with priority-aware metadata fields while
    keeping line-ending / encoding controls reachable.
 
@@ -174,7 +178,13 @@ preview card styling, and Sakura-specific selected-file highlight
 without adding a workspace switching dropdown or changing the
 single-workspace model.
 
-Latest completed: v0.24 e-book single-page polish keeps Markdown source
+Latest completed: v0.26 e-book empty-state polish keeps the right-pane
+e-book toggle visible but disabled when no active document is available,
+keeps it disabled for image preview, and preserves enabled behavior for
+active editor documents while leaving L Mode's hidden-meta-bar behavior
+unchanged.
+
+Earlier completed: v0.24 e-book single-page polish keeps Markdown source
 canonical and Preview / Export / L Mode untouched while adding a fixed
 reader footer outside `.ebook-page-flow`, pinning the single-page frame
 dimensions in CSS tests, and documenting that right-pane 2-up should

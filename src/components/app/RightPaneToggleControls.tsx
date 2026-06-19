@@ -244,15 +244,14 @@ export function RightPaneToggleControls({
         onClick={onToggleLMode}
         title={lModeTitle}
       />
-      {ebookAvailable ? (
-        <PaneToggle
-          active={ebookActive}
-          caption={copy.ebookTab}
-          icon={<BookIcon />}
-          onClick={onToggleEbook}
-          title={copy.ebookTabTitle}
-        />
-      ) : null}
+      <PaneToggle
+        active={ebookAvailable && ebookActive}
+        caption={copy.ebookTab}
+        disabled={!ebookAvailable}
+        icon={<BookIcon />}
+        onClick={onToggleEbook}
+        title={copy.ebookTabTitle}
+      />
       <ReviewPaneMenu
         copy={copy}
         diffActive={diffActive}

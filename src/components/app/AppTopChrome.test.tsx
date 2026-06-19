@@ -25,6 +25,7 @@ function renderTopChrome(
 ) {
   const onCloseSelectedImagePreview = vi.fn();
   const onEditorSettingsChange = vi.fn();
+  const onToggleEbook = vi.fn();
   render(
     <AppTopChrome
       activeDirty={false}
@@ -52,7 +53,7 @@ function renderTopChrome(
       onTabPointerDown={vi.fn()}
       onTabPointerMove={vi.fn()}
       onToggleDiff={vi.fn()}
-      onToggleEbook={vi.fn()}
+      onToggleEbook={onToggleEbook}
       onToggleLMode={vi.fn()}
       onToggleOutline={vi.fn()}
       onTogglePreview={vi.fn()}
@@ -69,6 +70,7 @@ function renderTopChrome(
   return {
     onCloseSelectedImagePreview,
     onEditorSettingsChange,
+    onToggleEbook,
   };
 }
 
@@ -218,6 +220,48 @@ describe("AppTopChrome", () => {
     screen.getByRole("button", { name: "Close photo.png" }).click();
 
     expect(onCloseSelectedImagePreview).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the e-book toggle disabled while an image preview is active", () => {
+    const textTab: EditorTab = {
+      contents: "# Draft\n",
+      encoding: "utf-8",
+      error: null,
+      externalFingerprint: null,
+      fingerprint: "fp",
+      ignoredExternalFingerprint: null,
+      id: "/workspace/draft.md",
+      large_file_warning: false,
+      lastSavedContents: "# Draft\n",
+      lastSavedEncoding: "utf-8",
+      lastSavedLineEnding: "lf",
+      line_ending: "lf",
+      modified_ms: null,
+      name: "draft.md",
+      path: "/workspace/draft.md",
+      saveStatus: "idle",
+      size: 8,
+    };
+    const { onToggleEbook } = renderTopChrome({
+      activeTab: textTab,
+      activeTabId: textTab.id,
+      selectedImage: {
+        name: "photo.png",
+        path: "/workspace/assets/photo.png",
+        size: 128,
+        url: "data:image/png;base64,photo",
+      },
+      sidePaneMode: "ebook",
+      tabs: [textTab],
+    });
+
+    const ebookButton = screen.getByRole("button", { name: "e-book" });
+
+    expect((ebookButton as HTMLButtonElement).disabled).toBe(true);
+    expect(ebookButton.getAttribute("aria-pressed")).toBe("false");
+
+    fireEvent.click(ebookButton);
+    expect(onToggleEbook).not.toHaveBeenCalled();
   });
 
   it("marks text and image tab close controls as x affordances", () => {

@@ -101,6 +101,11 @@ Last reviewed: 2026-06-20 (v0.26 polish and EPUB export queue)
   without writing to disk. Save on a pathless untitled tab routes
   through Save As before writing, then the saved tab becomes an ordinary
   standalone file tab.
+- The e-book right-pane toggle stays visible in the mode cluster when no
+  active document is available, but is disabled and inactive until an
+  editor document can drive the reading surface. Image preview keeps the
+  control disabled even if a text tab remains open behind it, so stale
+  prior-document content is not exposed from the button state.
 - Normal Safe Editor chrome now exposes a main-chrome workspace sidebar
   toggle routed through the existing sidebar collapse flow. New File
   remains available through the native menu, keyboard shortcut, command
@@ -195,9 +200,9 @@ baseline, and smoke evidence are archived under
    and archive only completed version-specific material; canonical build
    and boundary docs stay live for future submissions.
 2. For UX work, start with `docs/current-work.md`. The current v0.26
-   product queue is: no-workspace New File / Save As, e-book empty-state
-   affordance polish, and initial EPUB export. Keep each slice small and
-   source-preserving.
+   product queue has completed no-workspace New File / Save As and
+   e-book empty-state affordance polish; the next product slice is
+   initial EPUB export. Keep each slice small and source-preserving.
 3. For a future App Store submission, start with `docs/app-store-build.md`;
    keep account-specific notes under ignored `docs/internal/` files and
    treat certificate, provisioning, signing, notarization, upload,

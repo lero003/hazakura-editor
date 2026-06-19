@@ -13,6 +13,7 @@ type DocumentMetaBarProps = {
   assistSurfaceActive: AssistSurfacePreference;
   diffPaneActive: boolean;
   ebookPaneActive: boolean;
+  ebookAvailable?: boolean;
   lModeCopy: LModeCopy;
   lModeEnabled: boolean;
   onOpenAgentWindow: () => void;
@@ -36,6 +37,7 @@ export function DocumentMetaBar({
   assistSurfaceActive,
   diffPaneActive,
   ebookPaneActive,
+  ebookAvailable = activeTab !== null,
   lModeCopy,
   lModeEnabled,
   onOpenAgentWindow,
@@ -79,7 +81,7 @@ export function DocumentMetaBar({
             diffActive={diffPaneActive}
             diffAvailable
             ebookActive={ebookPaneActive}
-            ebookAvailable={activeTab !== null}
+            ebookAvailable={ebookAvailable}
             lModeActive={lModeEnabled}
             lModeLabel={lModeCopy.preferenceLabel}
             lModeTitle={lModeCopy.paletteCommand}
