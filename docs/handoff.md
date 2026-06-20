@@ -82,13 +82,11 @@ Last reviewed: 2026-06-20 (v0.26 polish and EPUB export queue)
   command palette expose `Export EPUB (Beta)...`, the active Markdown
   source is written through a save dialog as a minimal `.epub`, and the
   archive includes XHTML content, heading-based navigation, package
-  metadata defaults, and a small stylesheet. It remains a beta export:
-  no external validator launch, cover / metadata editor, vertical
-  writing, bundled workspace-image resource packaging, or reader-perfect
-  pagination claim. Follow-up planning now requires a dedicated
-  `EpubExportSettings` draft state before adding Title / Author /
-  Language input UI; the current identifier / modified metadata values
-  are beta placeholders.
+  metadata, and a small stylesheet. It remains a beta export: no external
+  validator launch, cover editor, vertical writing, or reader-perfect
+  pagination claim. Title / Author / Language input, workspace-image
+  resource packaging, per-export UUID identifiers, and export-time
+  `dcterms:modified` are now implemented in follow-up slices.
 - Markdown preview task checkboxes are complete for v0.18: Preview renders
   `- [ ]` / `- [x]` as inert display-only checkbox glyphs without
   changing saved Markdown.
@@ -173,8 +171,8 @@ priority items after the v0.25 App Store release are:
    product-grade lens: one editing space, Workspace-as-book, UI that
    recedes, reliability, and AI as a review layer. Pick one small slice
    from that lens rather than adding broad new surfaces.
-2. v0.26 EPUB beta follow-up: Slice 1 content quality and Slice 2 manual
-   EPUBCheck evidence are implemented.
+2. v0.26 EPUB beta follow-up: Slice 1 content quality, Slice 2 manual
+   EPUBCheck evidence, and Slice 3 metadata UI are implemented.
    EPUB export now packages workspace images and allowed small
    `data:image` references into `OEBPS/images/`, strips Preview-only
    markup before XHTML output, uses `splitMarkdownIntoChapters` for
@@ -184,10 +182,10 @@ priority items after the v0.25 App Store release are:
    Disclosure now describes the beta export image and validator boundary.
    Slice 2 fixed the placeholder `dc:identifier` EPUBCheck warning by
    generating a valid per-export UUID; user-checked `test02.epub` passed
-   EPUBCheck 3.3 with no errors or warnings. Next slices:
-   `EpubExportSettings` UI, then standalone `---` / `===` page-break
-   markers. Title / Author / Language UI and modified timestamp handling
-   remain placeholders.
+   EPUBCheck 3.3 with no errors or warnings. Slice 3 adds a dialog-scoped
+   Title / Author / Language draft before Save As, writes `dcterms:modified`
+   from export time, and omits `dc:creator` when Author is blank. Next
+   slice: standalone `---` / `===` page-break markers.
 3. Manual app smoke of the v0.24 e-book single-page reader: e-book
    toggle, page movement, reader footer, chapter boundary movement,
    long chapters, image-heavy chapters, long code blocks with inner
@@ -210,7 +208,7 @@ single-workspace model.
 Latest completed: v0.26 initial EPUB export beta adds a File menu and
 command palette action that writes the active Markdown source to a
 minimal `.epub` archive through a save dialog, with generated XHTML,
-heading navigation, package metadata defaults, and a small stylesheet.
+heading navigation, package metadata, and a small stylesheet.
 
 Latest completed: v0.26 EPUB beta Slice 1 content quality. The archive
 builder is async, packages workspace images and allowed small `data:image`
@@ -233,6 +231,15 @@ pasted workspace-root `assets/...` images insert as paths relative to
 the active Markdown document, so nested documents preview and export
 the imported image instead of pointing at a non-existent sibling
 `assets/` folder.
+
+Latest completed: v0.26 EPUB beta Slice 3 metadata UI. Export EPUB now
+opens a small dialog-scoped Title / Author / Language draft before the
+native Save As dialog. The dialog defaults Title from the first H1 or
+file stem, Author blank, and Language `ja`; it does not write Markdown
+frontmatter, does not persist last-used values, and does not create a
+separate EPUB document model. The archive writer escapes metadata,
+generates `dcterms:modified` from export time, keeps per-export UUID
+identifiers, and omits `dc:creator` when Author is blank.
 
 Earlier completed: v0.24 e-book single-page polish keeps Markdown source
 canonical and Preview / Export / L Mode untouched while adding a fixed

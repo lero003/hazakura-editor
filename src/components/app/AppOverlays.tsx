@@ -47,10 +47,13 @@ import { helpDocsByMode, isHelpDocumentDialogMode } from "./helpDocs";
 import { AgentWorkbenchPreferencesPane } from "../agent/AgentWorkbenchPreferencesPane";
 import { RenameWarnDialog, type RenameWarningKind } from "./RenameWarnDialog";
 import { MoveToTrashConfirmDialog } from "./MoveToTrashConfirmDialog";
+import { EpubExportSettingsDialog } from "./EpubExportSettingsDialog";
 import { RestoreFromBackupDialog } from "../backup/RestoreFromBackupDialog";
 import type { AutoBackupEntry } from "../../lib/tauri/autoBackup";
 import type { AutoBackupRestoreCopy } from "../../lib/locale/autoBackup";
 import type { WorkspaceFileOpsCopy } from "../../lib/locale/workspaceFileOps";
+import type { EpubExportSettings } from "../../features/document/epubExport";
+import type { EpubExportRequest } from "../../hooks/document/useDocumentExport";
 
 type AppOverlaysProps = {
   activeAgentSession: boolean;
@@ -112,9 +115,12 @@ type AppOverlaysProps = {
   dirtyTabCount: number;
   discardAllAndCloseWindow: () => void;
   editorSettings: EditorSettings;
+  epubExportRequest: EpubExportRequest | null;
   fileOpsCopy: WorkspaceFileOpsCopy;
   filteredCommands: Command[];
   menuLanguage: MenuLanguage;
+  onCancelEpubBetaExport: () => void;
+  onConfirmEpubBetaExport: (settings: EpubExportSettings) => void | Promise<void>;
   onOpenCommandPalette: () => void;
   onRunCommand: (command: Command) => void;
   openWorkspaceFile: (path: string) => void | Promise<void>;
@@ -226,9 +232,12 @@ export function AppOverlays({
   dirtyTabCount,
   discardAllAndCloseWindow,
   editorSettings,
+  epubExportRequest,
   fileOpsCopy,
   filteredCommands,
   menuLanguage,
+  onCancelEpubBetaExport,
+  onConfirmEpubBetaExport,
   onOpenCommandPalette,
   onRunCommand,
   openWorkspaceFile,
@@ -367,6 +376,16 @@ export function AppOverlays({
           searching={globalSearching}
           summary={globalSearchSummary}
           workspaceOpen={workspaceRootPath !== null}
+        />
+      ) : null}
+
+      {epubExportRequest ? (
+        <EpubExportSettingsDialog
+          documentName={epubExportRequest.documentName}
+          initialSettings={epubExportRequest.settings}
+          menuLanguage={menuLanguage}
+          onCancel={onCancelEpubBetaExport}
+          onConfirm={(settings) => void onConfirmEpubBetaExport(settings)}
         />
       ) : null}
 

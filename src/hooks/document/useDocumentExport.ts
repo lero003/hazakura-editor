@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { save as saveDialog } from "@tauri-apps/plugin-dialog";
 import {
   isTauriRuntime,
@@ -7,7 +7,11 @@ import {
   saveBinaryFileAs,
   saveTextFileAs,
 } from "../../lib/tauri";
-import { buildEpubBetaArchive } from "../../features/document/epubExport";
+import {
+  buildEpubBetaArchive,
+  defaultEpubExportSettings,
+  type EpubExportSettings,
+} from "../../features/document/epubExport";
 import { getMarkdownPreviewCss } from "../../features/document/markdownExportCss";
 import {
   inlineWorkspaceAssetImages,
@@ -23,6 +27,12 @@ type UseDocumentExportOptions = {
   workspaceRootPath: string | null;
 };
 
+export type EpubExportRequest = {
+  documentName: string;
+  settings: EpubExportSettings;
+  tabId: string;
+};
+
 export function useDocumentExport({
   activeContents,
   activeTab,
@@ -34,6 +44,8 @@ export function useDocumentExport({
   activeContentsRef.current = activeContents;
   const activeTabRef = useRef(activeTab);
   activeTabRef.current = activeTab;
+  const [epubExportRequest, setEpubExportRequest] =
+    useState<EpubExportRequest | null>(null);
 
   const exportPdf = useCallback(async () => {
     if (!activeContents || !activeTab) {
@@ -313,15 +325,37 @@ ${bodyHtml}
       return;
     }
 
+    setEpubExportRequest({
+      documentName: activeTab.name,
+      settings: defaultEpubExportSettings({
+        documentName: activeTab.name,
+        markdown: activeContents,
+      }),
+      tabId: activeTab.id,
+    });
+  }, [activeContents, activeTab, setStatus]);
+
+  const cancelEpubBetaExport = useCallback(() => {
+    setEpubExportRequest(null);
+  }, []);
+
+  const confirmEpubBetaExport = useCallback(async (settings: EpubExportSettings) => {
+    const request = epubExportRequest;
+    if (!request) {
+      return;
+    }
+
+    setEpubExportRequest(null);
+
     try {
       const destPath = await saveDialog({
-        defaultPath: activeTab.name.replace(/\.[^.]+$/, "") + ".epub",
+        defaultPath: request.documentName.replace(/\.[^.]+$/, "") + ".epub",
         filters: [{ name: "EPUB (Beta)", extensions: ["epub"] }],
       });
       if (!destPath) return;
 
       const tabForExport = activeTabRef.current;
-      if (!tabForExport || tabForExport.id !== activeTab.id) {
+      if (!tabForExport || tabForExport.id !== request.tabId) {
         setStatus("Export EPUB beta stopped; document changed");
         return;
       }
@@ -335,6 +369,12 @@ ${bodyHtml}
               return { dataUrl: image.dataUrl };
             }
           : undefined,
+        metadata: {
+          author: settings.author.trim(),
+          language: settings.language.trim() || "ja",
+          modified: formatEpubModifiedDate(new Date()),
+          title: settings.title.trim() || request.settings.title,
+        },
         markdown: activeContentsRef.current,
         workspaceRoot: workspaceRootPath,
       });
@@ -344,9 +384,16 @@ ${bodyHtml}
       setGlobalError(`Export EPUB beta failed: ${String(err)}`);
       setStatus("Export EPUB beta failed");
     }
-  }, [activeContents, activeTab, setGlobalError, setStatus, workspaceRootPath]);
+  }, [epubExportRequest, setGlobalError, setStatus, workspaceRootPath]);
 
-  return { exportEpubBeta, exportHtml, exportPdf };
+  return {
+    cancelEpubBetaExport,
+    confirmEpubBetaExport,
+    epubExportRequest,
+    exportEpubBeta,
+    exportHtml,
+    exportPdf,
+  };
 }
 
 function escapeHtml(text: string): string {
@@ -355,4 +402,8 @@ function escapeHtml(text: string): string {
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
+}
+
+function formatEpubModifiedDate(date: Date): string {
+  return date.toISOString().replace(/\.\d{3}Z$/, "Z");
 }

@@ -498,10 +498,12 @@ type EpubExportSettings = {
 - Markdown frontmatter への自動書き込み、隠し workspace metadata、
   EPUB を別の編集対象として保持することはしない。
 
-現在の beta は、title を最初の見出しまたはファイル名から作り、
-language を `ja` とし、identifier / modified にテストしやすい固定値を
-使っている。これは beta placeholder であり、複数回 export する
-実運用の標準状態ではない。
+現在の beta は、2026-06-20 の Slice 3 で Title / Author / Language を
+dialog scoped draft state として入力できるようになった。Title は最初の
+見出しまたはファイル名から初期化し、Author は空欄、Language は `ja` を
+初期値にする。identifier は export ごとに UUID 生成、`dcterms:modified`
+は export 実行時刻から生成する。Markdown frontmatter への自動書き込み、
+localStorage 保存、last-used author の持ち越しはしない。
 
 #### Structure and page-break semantics
 
@@ -629,8 +631,8 @@ slice の「生成 EPUB は手動で EPUBCheck に通せる形を目標にする
 
 ##### Slice 3: metadata 設定 UI（`EpubExportSettings`）
 
-「EPUB metadata and export settings」節の契約を dialog scoped draft
-state として実装する。
+2026-06-20 に実装済み。「EPUB metadata and export settings」節の契約を
+dialog scoped draft state として実装した。
 
 - Title / Author / Language の入力。identifier は export ごとに UUID 生成、
   `dcterms:modified` は export 実行時刻から生成する。author が空なら
@@ -681,8 +683,9 @@ marker を実装する。Slice 1 の frontmatter 認識の上に載せる。
 - 手動 EPUBCheck 検証はドキュメント案内のみ（App 内コマンドではない）。
 - 縦書き・cover editor・外部 validator 起動は beta 範囲外であること。
 
-Help 更新は Slice 1（画像取り込み）の完了後、2026-06-20 に実施済み。
-metadata UI（Slice 3）完成後は、初期値の説明を入力欄の説明に差し替える。
+Help 更新は Slice 1（画像取り込み）と Slice 3（metadata UI）の完了後、
+2026-06-20 に実施済み。EPUB export は local Title / Author / Language
+metadata dialog と Save As dialog を通る明示操作として説明している。
 
 ### Later: Style Simulation And Review Hooks
 

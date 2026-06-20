@@ -529,8 +529,6 @@ export function useAppShellController() {
   // cancel button ref so the dialog itself stays structurally
   // aligned with the v0.7-era close / app-close dialogs.
   const pendingTrashOpen = pendingTrash !== null;
-  const modalOpenWithTrash = modalOpen || pendingTrashOpen;
-
   // section: window dialog actions
   const {
     cancelPendingAppClose,
@@ -776,6 +774,9 @@ export function useAppShellController() {
 
   // section: document IO controller
   const {
+    cancelEpubBetaExport,
+    confirmEpubBetaExport,
+    epubExportRequest,
     exportEpubBeta,
     exportHtml,
     exportPdf,
@@ -797,6 +798,8 @@ export function useAppShellController() {
     tabsRef,
     workspaceRootPath,
   });
+  const modalOpenWithBlockingDialogs =
+    modalOpen || pendingTrashOpen || epubExportRequest !== null;
 
   // L Mode (えるモード) toggle. Wraps a simple
   // setEditorSettings flip so the command palette and the
@@ -1192,7 +1195,7 @@ export function useAppShellController() {
       findInputRef,
       findVisible,
       globalSearchVisible,
-      modalOpen: modalOpenWithTrash,
+      modalOpen: modalOpenWithBlockingDialogs,
       onApplyMarkdownFormat: applyActiveMarkdownFormat,
       onCancelAppClose: cancelPendingAppClose,
       onCancelPendingTrash: cancelPendingTrash,
@@ -1386,6 +1389,7 @@ export function useAppShellController() {
     editorPreviewGridStyle,
     editorSettings,
     editorTheme,
+    epubExportRequest,
     lModeCopy,
     lModeEnabled: editorSettings.lModeEnabled,
     emptyTabsLabel: safeEditorCopy.emptyTabs,
@@ -1492,6 +1496,8 @@ export function useAppShellController() {
     openWorkspaceContextMenu,
     openWorkspaceFile,
     outlineTruncated: documentOutline?.truncated ?? false,
+    onCancelEpubBetaExport: cancelEpubBetaExport,
+    onConfirmEpubBetaExport: confirmEpubBetaExport,
     pendingAppClose,
     pendingCloseTab,
     preferencesCloseButtonRef,

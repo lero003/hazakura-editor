@@ -137,16 +137,15 @@ Last reviewed: 2026-06-20 (v0.26 polish and EPUB export queue)
 - EPUB export beta is available from the File menu and command palette
   as an explicit active-document export action. It writes a minimal
   `.epub` archive from the current Markdown source with XHTML content,
-  generated heading navigation, package metadata defaults, workspace image
-  resources where readable, allowed small `data:image` resources, and a
-  small stylesheet. The EPUB path strips Preview-only markup before XHTML
-  output, handles inline Markdown in headings for navigation, and ignores
-  YAML frontmatter for export navigation/content. It is not a second
-  document model and does not claim reader-perfect pagination, vertical
-  writing, cover metadata, or external validator proof. Follow-up planning
-  still requires dedicated EPUB export settings before adding Title /
-  Author / Language input UI; the current identifier / modified metadata
-  defaults are beta placeholders, not the long-term export contract.
+  generated heading navigation, dialog-scoped Title / Author / Language
+  metadata, workspace image resources where readable, allowed small
+  `data:image` resources, and a small stylesheet. The EPUB path strips
+  Preview-only markup before XHTML output, handles inline Markdown in
+  headings for navigation, ignores YAML frontmatter for export
+  navigation/content, generates per-export UUID identifiers, and writes
+  `dcterms:modified` from export time. It is not a second document model
+  and does not claim reader-perfect pagination, vertical writing, cover
+  metadata, or in-app validator proof.
 - Markdown preview and Help document links keep supported
   workspace-relative text files inside the app, but route explicit
   `http:` / `https:` / `mailto:` / `tel:` clicks to the OS default

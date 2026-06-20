@@ -334,6 +334,16 @@
   overflow-wrap: anywhere;
 }
 
+.epub-export-settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.epub-export-settings-form .dialog-actions {
+  margin-top: 4px;
+}
+
 .dialog-actions {
   display: flex;
   flex-wrap: wrap;

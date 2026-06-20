@@ -51,6 +51,44 @@ describe("buildEpubBetaArchive", () => {
     expect(text).not.toContain("urn:uuid:hazakura-epub-beta");
   });
 
+  it("writes explicit EPUB metadata settings", async () => {
+    const archive = await buildEpubBetaArchive({
+      markdown: "# Source Title\n\nBody.",
+      documentName: "source.md",
+      metadata: {
+        author: "Kaguya & Co.",
+        language: "en",
+        modified: "2026-06-20T04:30:00Z",
+        title: "Book <Title>",
+      },
+    });
+    const text = archiveText(archive);
+
+    expect(text).toContain("<dc:title>Book &lt;Title&gt;</dc:title>");
+    expect(text).toContain("<dc:creator>Kaguya &amp; Co.</dc:creator>");
+    expect(text).toContain("<dc:language>en</dc:language>");
+    expect(text).toContain(
+      '<meta property="dcterms:modified">2026-06-20T04:30:00Z</meta>',
+    );
+    expect(text).toContain("<title>Book &lt;Title&gt; - Navigation</title>");
+  });
+
+  it("omits EPUB creator metadata when author is blank", async () => {
+    const archive = await buildEpubBetaArchive({
+      markdown: "# Source Title\n\nBody.",
+      documentName: "source.md",
+      metadata: {
+        author: "   ",
+        language: "ja",
+        modified: "2026-06-20T04:30:00Z",
+        title: "Source Title",
+      },
+    });
+    const text = archiveText(archive);
+
+    expect(text).not.toContain("<dc:creator>");
+  });
+
   it("packages workspace images as EPUB resources with relative XHTML references", async () => {
     const loadWorkspaceImage = vi.fn(async (path: string) => ({
       bytes: new Uint8Array([137, 80, 78, 71]),

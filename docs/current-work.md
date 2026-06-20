@@ -395,13 +395,12 @@ src/lib/diagnostics.test.ts`, `cargo test --manifest-path
 src-tauri/Cargo.toml epub_beta -- --nocapture`, and focused
 `save_binary_file_as` Rust tests.
 
-Follow-up planning note as of 2026-06-20: before adding EPUB input UI,
-define a dedicated `EpubExportSettings` draft state for Title / Author /
-Language plus generated identifier / modified metadata. The current beta
-metadata defaults are placeholders, not the long-term export contract.
-Headings should keep driving navigation / table of contents; explicit
-page breaks should be introduced separately as standalone `---` / `===`
-markers, without silently rewriting Markdown source.
+Follow-up planning note as of 2026-06-20: EPUB input UI now uses a
+dedicated `EpubExportSettings` dialog draft state for Title / Author /
+Language plus generated identifier / modified metadata. Headings should
+keep driving navigation / table of contents; explicit page breaks should
+be introduced separately as standalone `---` / `===` markers, without
+silently rewriting Markdown source.
 
 The EPUB beta follow-up is now decomposed into four slices in
 `docs/ebook-mode-epub-export-plan.md` ("v0.26 Follow-up Slice 構成"). The
@@ -438,10 +437,13 @@ The Local Data Disclosure Help document now describes the EPUB beta image
 and validation boundary. Slice 2 found one EPUBCheck warning for the
 placeholder `dc:identifier`, replaced it with a per-export valid UUID,
 and the user-checked `test02.epub` passed EPUBCheck 3.3 with 0 fatal
-errors / 0 errors / 0 warnings / 0 info. Remaining slice order: Slice 3
-(`EpubExportSettings` UI), then Slice 4 (standalone `---` / `===`
-page-break markers). Each slice keeps Markdown source canonical and
-leaves Preview / e-book Mode / HTML export behavior unchanged.
+errors / 0 errors / 0 warnings / 0 info. Slice 3 adds a dialog-scoped
+Title / Author / Language draft before Save As, generates `dcterms:modified`
+from export time, keeps per-export UUID identifiers, and omits
+`dc:creator` when Author is blank. Remaining slice order: Slice 4
+(standalone `---` / `===` page-break markers). Each slice keeps Markdown
+source canonical and leaves Preview / e-book Mode / HTML export behavior
+unchanged.
 
 ## Active UX Queue
 
@@ -449,7 +451,6 @@ Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| v0.26 EPUB beta follow-up | Slice 3: `EpubExportSettings` UI | Add Title / Author / Language dialog draft state; generate identifier per export (UUID) and `dcterms:modified` from export time; omit `dc:creator` when author is empty. No frontmatter auto-write, no localStorage persistence. |
 | v0.26 EPUB beta follow-up | Slice 4: standalone `---` / `===` page breaks | On top of Slice 1 frontmatter recognition, turn blank-line-flanked standalone `---` / `===` into `.page-break` classes in the single `content.xhtml`. Prove fenced code blocks / frontmatter / normal rules are preserved before enabling. Headings stay navigation-only. |
 | Post-v0.25 lens | Product refinement triage | Use `docs/post-v0.25-product-refinement-plan.md` to choose one small slice that tightens the existing product instead of adding surfaces: mode-transition consistency, Workspace-as-book information architecture, flow-preserving editing, large-document / preview reliability, layered native chrome, or AI-as-review-layer wording. Close as a docs-only decision, `implemented`, `manual-blocked`, or `verified no-op`; do not bundle with distribution work. |
 | v0.25 Phase 2 | Native vibrancy via `window-vibrancy` + macOS 26 floor | Phase 1 chrome polish is done at code/CSS level. The CSS glass follow-up is dropped (scrap-and-build). Next: bump `minimumSystemVersion` to macOS 26 as release-planning work, add `window-vibrancy`, call `apply_vibrancy` on the main window, make sidebar / top-chrome transparent over the native material, tune the five themes, and verify with built `.app` smoke on macOS 26. Do not add a SwiftUI/AppKit rewrite, Liquid Glass fidelity, vibrancy behind dense Markdown text, toolbar rewrites, new modes, or AI ingest in this slice. |
@@ -467,7 +468,6 @@ over copy-heavy or product-voice-sensitive work.
 
 | Fit | Candidate | Scope |
 |---|---|---|
-| Good | v0.26 EPUB export Slice 3 (`EpubExportSettings` UI) | Implement the documented metadata follow-up: Title / Author / Language dialog draft state, generated per-export identifier / modified metadata. Keep it dialog-scoped and preserve Markdown source unchanged. Depends on Slice 1 frontmatter recognition. |
 | Good | v0.26 EPUB export Slice 4 (page-break markers) | Add standalone `---` / `===` page-break markers as `.page-break` classes in `content.xhtml`, after tests prove fenced code blocks / frontmatter / normal rules are preserved. Depends on Slice 1. |
 | Good | v0.26 no-workspace New File / Save As | Implement one Safe Editor core slice: pathless New File creates an untitled standalone Markdown tab, Save routes through Save As, dirty close protection remains intact, and the saved tab becomes a normal standalone file. Keep workspace-only operations unavailable until a file/workspace path exists. |
 | Good | v0.26 EPUB export first slice | Add an explicit minimal EPUB export from active Markdown source only. Keep generation deterministic and bounded; no external validator launch, advanced metadata editor, vertical writing, or page-count fidelity claim. |

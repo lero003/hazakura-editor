@@ -5,9 +5,22 @@ type BuildEpubBetaArchiveOptions = {
   documentPath?: string | null;
   documentName: string;
   loadWorkspaceImage?: (absolutePath: string) => Promise<LoadedEpubImage>;
+  metadata?: Partial<EpubExportMetadata>;
   markdown: string;
   workspaceRoot?: string | null;
 };
+
+export type EpubExportMetadata = {
+  author: string;
+  language: string;
+  modified: string;
+  title: string;
+};
+
+export type EpubExportSettings = Pick<
+  EpubExportMetadata,
+  "author" | "language" | "title"
+>;
 
 type EpubEntry = {
   path: string;
@@ -43,6 +56,7 @@ export async function buildEpubBetaArchive({
   documentPath = null,
   documentName,
   loadWorkspaceImage,
+  metadata,
   markdown,
   workspaceRoot = null,
 }: BuildEpubBetaArchiveOptions): Promise<Uint8Array> {
@@ -53,20 +67,41 @@ export async function buildEpubBetaArchive({
     markdown,
     workspaceRoot,
   });
+  const epubMetadata = normalizeEpubMetadata(metadata, title);
   const entries: EpubEntry[] = [
     textEntry("mimetype", "application/epub+zip"),
     textEntry("META-INF/container.xml", containerXml()),
     textEntry(
       "OEBPS/package.opf",
-      packageOpf(title, images, createEpubIdentifier()),
+      packageOpf(epubMetadata, images, createEpubIdentifier()),
     ),
-    textEntry("OEBPS/nav.xhtml", navXhtml(title, headings)),
-    textEntry("OEBPS/content.xhtml", contentXhtml(title, body)),
+    textEntry("OEBPS/nav.xhtml", navXhtml(epubMetadata.title, headings)),
+    textEntry("OEBPS/content.xhtml", contentXhtml(epubMetadata.title, body)),
     textEntry("OEBPS/styles.css", epubCss()),
     ...images,
   ];
 
   return buildStoredZip(entries);
+}
+
+export function defaultEpubExportSettings({
+  documentName,
+  markdown,
+}: {
+  documentName: string;
+  markdown: string;
+}): EpubExportSettings {
+  const contentMarkdown = stripYamlFrontmatter(markdown);
+  const firstHeading = collectMarkdownHeadings(contentMarkdown)[0];
+  const title = firstHeading
+    ? markdownInlineText(firstHeading.text)
+    : titleFromDocumentName(documentName);
+
+  return {
+    author: "",
+    language: "ja",
+    title,
+  };
 }
 
 async function buildContent({
@@ -342,13 +377,28 @@ function containerXml(): string {
 `;
 }
 
+function normalizeEpubMetadata(
+  metadata: Partial<EpubExportMetadata> | undefined,
+  fallbackTitle: string,
+): EpubExportMetadata {
+  return {
+    author: metadata?.author?.trim() ?? "",
+    language: metadata?.language?.trim() || "ja",
+    modified: metadata?.modified?.trim() || "2026-01-01T00:00:00Z",
+    title: metadata?.title?.trim() || fallbackTitle,
+  };
+}
+
 function packageOpf(
-  title: string,
+  metadata: EpubExportMetadata,
   images: ImageEntry[],
   identifier: string,
 ): string {
-  const escapedTitle = escapeXml(title);
+  const escapedTitle = escapeXml(metadata.title);
   const escapedIdentifier = escapeXml(identifier);
+  const creator = metadata.author
+    ? `    <dc:creator>${escapeXml(metadata.author)}</dc:creator>\n`
+    : "";
   const imageItems = images
     .map(
       (image) =>
@@ -363,8 +413,8 @@ function packageOpf(
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
     <dc:identifier id="book-id">${escapedIdentifier}</dc:identifier>
     <dc:title>${escapedTitle}</dc:title>
-    <dc:language>ja</dc:language>
-    <meta property="dcterms:modified">2026-01-01T00:00:00Z</meta>
+${creator}    <dc:language>${escapeXml(metadata.language)}</dc:language>
+    <meta property="dcterms:modified">${escapeXml(metadata.modified)}</meta>
   </metadata>
   <manifest>
     <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
