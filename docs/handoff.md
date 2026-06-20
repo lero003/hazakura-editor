@@ -173,7 +173,8 @@ priority items after the v0.25 App Store release are:
    product-grade lens: one editing space, Workspace-as-book, UI that
    recedes, reliability, and AI as a review layer. Pick one small slice
    from that lens rather than adding broad new surfaces.
-2. v0.26 EPUB beta follow-up: Slice 1 content quality is implemented.
+2. v0.26 EPUB beta follow-up: Slice 1 content quality and Slice 2 manual
+   EPUBCheck evidence are implemented.
    EPUB export now packages workspace images and allowed small
    `data:image` references into `OEBPS/images/`, strips Preview-only
    markup before XHTML output, uses `splitMarkdownIntoChapters` for
@@ -181,9 +182,12 @@ priority items after the v0.25 App Store release are:
    dropping later nav entries, and recognizes YAML frontmatter so
    frontmatter `#` / `---` do not become book headings. Local Data
    Disclosure now describes the beta export image and validator boundary.
-   Next slices: manual EPUBCheck milestone, `EpubExportSettings` UI, then
-   standalone `---` / `===` page-break markers. The current beta metadata
-   defaults remain placeholders.
+   Slice 2 fixed the placeholder `dc:identifier` EPUBCheck warning by
+   generating a valid per-export UUID; user-checked `test02.epub` passed
+   EPUBCheck 3.3 with no errors or warnings. Next slices:
+   `EpubExportSettings` UI, then standalone `---` / `===` page-break
+   markers. Title / Author / Language UI and modified timestamp handling
+   remain placeholders.
 3. Manual app smoke of the v0.24 e-book single-page reader: e-book
    toggle, page movement, reader footer, chapter boundary movement,
    long chapters, image-heavy chapters, long code blocks with inner
@@ -219,6 +223,16 @@ workspace image loader into the archive builder. Local Data Disclosure now
 documents EPUB beta export as an explicit Save As action with local image
 packaging, no external image fetch, no upload, no page-count guarantee,
 and manual outside-app EPUBCheck guidance.
+
+Latest completed: v0.26 EPUB beta Slice 2 manual EPUBCheck milestone.
+The first check caught a placeholder UUID warning in `dc:identifier`;
+the export now writes a valid per-export UUID. The follow-up
+`epubcheck test02.epub` result reported 0 fatal errors / 0 errors /
+0 warnings / 0 info. A related image insertion fix makes dropped or
+pasted workspace-root `assets/...` images insert as paths relative to
+the active Markdown document, so nested documents preview and export
+the imported image instead of pointing at a non-existent sibling
+`assets/` folder.
 
 Earlier completed: v0.24 e-book single-page polish keeps Markdown source
 canonical and Preview / Export / L Mode untouched while adding a fixed

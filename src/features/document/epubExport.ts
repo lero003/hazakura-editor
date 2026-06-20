@@ -56,7 +56,10 @@ export async function buildEpubBetaArchive({
   const entries: EpubEntry[] = [
     textEntry("mimetype", "application/epub+zip"),
     textEntry("META-INF/container.xml", containerXml()),
-    textEntry("OEBPS/package.opf", packageOpf(title, images)),
+    textEntry(
+      "OEBPS/package.opf",
+      packageOpf(title, images, createEpubIdentifier()),
+    ),
     textEntry("OEBPS/nav.xhtml", navXhtml(title, headings)),
     textEntry("OEBPS/content.xhtml", contentXhtml(title, body)),
     textEntry("OEBPS/styles.css", epubCss()),
@@ -339,8 +342,13 @@ function containerXml(): string {
 `;
 }
 
-function packageOpf(title: string, images: ImageEntry[]): string {
+function packageOpf(
+  title: string,
+  images: ImageEntry[],
+  identifier: string,
+): string {
   const escapedTitle = escapeXml(title);
+  const escapedIdentifier = escapeXml(identifier);
   const imageItems = images
     .map(
       (image) =>
@@ -353,7 +361,7 @@ function packageOpf(title: string, images: ImageEntry[]): string {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <package version="3.0" unique-identifier="book-id" xmlns="http://www.idpf.org/2007/opf">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
-    <dc:identifier id="book-id">urn:uuid:hazakura-epub-beta</dc:identifier>
+    <dc:identifier id="book-id">${escapedIdentifier}</dc:identifier>
     <dc:title>${escapedTitle}</dc:title>
     <dc:language>ja</dc:language>
     <meta property="dcterms:modified">2026-01-01T00:00:00Z</meta>
@@ -368,6 +376,38 @@ ${manifestImageItems}  </manifest>
   </spine>
 </package>
 `;
+}
+
+function createEpubIdentifier(): string {
+  return `urn:uuid:${createUuid()}`;
+}
+
+function createUuid(): string {
+  const randomUUID = globalThis.crypto?.randomUUID?.bind(globalThis.crypto);
+  if (randomUUID) {
+    return randomUUID();
+  }
+
+  const bytes = new Uint8Array(16);
+  if (globalThis.crypto?.getRandomValues) {
+    globalThis.crypto.getRandomValues(bytes);
+  } else {
+    for (let index = 0; index < bytes.length; index += 1) {
+      bytes[index] = Math.floor(Math.random() * 256);
+    }
+  }
+
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0"));
+  return [
+    hex.slice(0, 4).join(""),
+    hex.slice(4, 6).join(""),
+    hex.slice(6, 8).join(""),
+    hex.slice(8, 10).join(""),
+    hex.slice(10, 16).join(""),
+  ].join("-");
 }
 
 function navXhtml(title: string, headings: HeadingEntry[]): string {

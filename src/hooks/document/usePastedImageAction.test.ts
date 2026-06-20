@@ -8,6 +8,29 @@ vi.mock("../../lib/tauri", () => ({
 }));
 
 describe("usePastedImageAction", () => {
+  it("returns an image path relative to a nested active document", async () => {
+    vi.mocked(savePastedImage).mockResolvedValueOnce("assets/image.png");
+    const setStatus = vi.fn();
+
+    const { result } = renderHook(() =>
+      usePastedImageAction({
+        activeTabPath: "/workspace/books/draft.md",
+        setStatus,
+        workspaceRootPath: "/workspace",
+      }),
+    );
+
+    let pastedPath: string | null = null;
+    await act(async () => {
+      pastedPath = await result.current.handlePasteImage("base64", "pasted.png");
+    });
+
+    expect(pastedPath).toBe("../assets/image.png");
+    expect(setStatus).toHaveBeenLastCalledWith(
+      "Image saved: ../assets/image.png",
+    );
+  });
+
   it("keeps the pasted image failure reason in the status message", async () => {
     vi.mocked(savePastedImage).mockRejectedValueOnce(
       new Error("Pasted image is larger than the image limit of 20 MB."),

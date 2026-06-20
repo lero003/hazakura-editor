@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { markdownPathForImportedImage } from "../../features/editor/markdownImageReferences";
 import { savePastedImage } from "../../lib/tauri";
 
 type UsePastedImageActionOptions = {
@@ -30,8 +31,13 @@ export function usePastedImageAction({
       setStatus("Saving pasted image...");
       try {
         const result = await savePastedImage(rootForPaste, dataBase64, fileName);
-        setStatus(`Image saved: ${result}`);
-        return result;
+        const markdownPath = markdownPathForImportedImage({
+          activeTabPath,
+          assetRelativePath: result,
+          assetRootPath: rootForPaste,
+        });
+        setStatus(`Image saved: ${markdownPath}`);
+        return markdownPath;
       } catch (err) {
         console.warn("Failed to save pasted image", err);
         setStatus(`Image paste failed: ${errorMessage(err)}`);

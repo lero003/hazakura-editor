@@ -38,6 +38,19 @@ describe("buildEpubBetaArchive", () => {
     expect(text).toContain("Plain text.");
   });
 
+  it("writes a valid UUID identifier for EPUBCheck", async () => {
+    const archive = await buildEpubBetaArchive({
+      markdown: "# Identifier\n\nBody.",
+      documentName: "identifier.md",
+    });
+    const text = archiveText(archive);
+
+    expect(text).toMatch(
+      /<dc:identifier id="book-id">urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}<\/dc:identifier>/i,
+    );
+    expect(text).not.toContain("urn:uuid:hazakura-epub-beta");
+  });
+
   it("packages workspace images as EPUB resources with relative XHTML references", async () => {
     const loadWorkspaceImage = vi.fn(async (path: string) => ({
       bytes: new Uint8Array([137, 80, 78, 71]),

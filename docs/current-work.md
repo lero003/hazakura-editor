@@ -423,8 +423,10 @@ implementation and the first-slice scope, recorded in the same plan under
 4. **Duplicated parser helpers**: chapter splitting and heading collection
    are separate implementations with already-divergent fenced-code and
    Setext handling, so the "same helper" verification item is not met.
-5. **No EPUBCheck milestone**: no manual EPUBCheck verification checkpoint
-   exists for the beta output.
+5. **No EPUBCheck milestone**: the beta output originally had no manual
+   EPUBCheck verification checkpoint. Slice 2 now records the first
+   warning (`dc:identifier` placeholder UUID), the fix, and a follow-up
+   `test02.epub` pass with no errors or warnings.
 
 Slice 1 is implemented locally as of 2026-06-20: EPUB export now packages
 workspace images and allowed small `data:image` references into
@@ -433,10 +435,13 @@ workspace images and allowed small `data:image` references into
 Markdown in headings without dropping later nav entries, and recognizes
 YAML frontmatter so frontmatter `#` / `---` do not become book headings.
 The Local Data Disclosure Help document now describes the EPUB beta image
-and validation boundary. Remaining slice order: Slice 2 (manual EPUBCheck
-milestone), Slice 3 (`EpubExportSettings` UI), Slice 4 (standalone `---`
-/ `===` page-break markers). Each slice keeps Markdown source canonical
-and leaves Preview / e-book Mode / HTML export behavior unchanged.
+and validation boundary. Slice 2 found one EPUBCheck warning for the
+placeholder `dc:identifier`, replaced it with a per-export valid UUID,
+and the user-checked `test02.epub` passed EPUBCheck 3.3 with 0 fatal
+errors / 0 errors / 0 warnings / 0 info. Remaining slice order: Slice 3
+(`EpubExportSettings` UI), then Slice 4 (standalone `---` / `===`
+page-break markers). Each slice keeps Markdown source canonical and
+leaves Preview / e-book Mode / HTML export behavior unchanged.
 
 ## Active UX Queue
 
@@ -444,7 +449,6 @@ Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| v0.26 EPUB beta follow-up | Slice 2: manual EPUBCheck milestone | Run the Slice 1 output through a manual EPUBCheck and record pass / fix evidence. Do not add an in-app validator command (security boundary stays intact). |
 | v0.26 EPUB beta follow-up | Slice 3: `EpubExportSettings` UI | Add Title / Author / Language dialog draft state; generate identifier per export (UUID) and `dcterms:modified` from export time; omit `dc:creator` when author is empty. No frontmatter auto-write, no localStorage persistence. |
 | v0.26 EPUB beta follow-up | Slice 4: standalone `---` / `===` page breaks | On top of Slice 1 frontmatter recognition, turn blank-line-flanked standalone `---` / `===` into `.page-break` classes in the single `content.xhtml`. Prove fenced code blocks / frontmatter / normal rules are preserved before enabling. Headings stay navigation-only. |
 | Post-v0.25 lens | Product refinement triage | Use `docs/post-v0.25-product-refinement-plan.md` to choose one small slice that tightens the existing product instead of adding surfaces: mode-transition consistency, Workspace-as-book information architecture, flow-preserving editing, large-document / preview reliability, layered native chrome, or AI-as-review-layer wording. Close as a docs-only decision, `implemented`, `manual-blocked`, or `verified no-op`; do not bundle with distribution work. |

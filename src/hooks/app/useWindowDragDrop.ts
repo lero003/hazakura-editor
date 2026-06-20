@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import type { UnlistenFn } from "@tauri-apps/api/event";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
+import { markdownPathForImportedImage } from "../../features/editor/markdownImageReferences";
 import { importImageFromPath, isTauriRuntime } from "../../lib/tauri";
 
 const IMAGE_FILE_PATTERN = /\.(png|jpe?g|gif|webp)$/i;
@@ -69,9 +70,14 @@ export function useWindowDragDrop({
                 rootForDrop,
                 imagePath,
               );
+              const markdownPath = markdownPathForImportedImage({
+                activeTabPath,
+                assetRelativePath: relativePath,
+                assetRootPath: rootForDrop,
+              });
 
-              onInsertMarkdown(`![](${relativePath})`);
-              onStatus(`Imported: ${relativePath}`);
+              onInsertMarkdown(`![](${markdownPath})`);
+              onStatus(`Imported: ${markdownPath}`);
             } catch (err) {
               console.warn("Failed to import image:", imagePath, err);
               onStatus(`Failed to import image: ${String(err)}`);

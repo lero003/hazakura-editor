@@ -537,7 +537,7 @@ e-book Mode / preview-style reading surface の表示にも関わる。
 
 first slice の beta 実装は導線と最小 archive 生成を満たしていたが、本節の
 Scope と既存 helper の構造の間に 5 点の乖離があった。1〜4 は
-2026-06-20 の Slice 1 で実装済み。5 は次の Slice 2 で証拠化する。
+2026-06-20 の Slice 1 で実装済み。5 は同日の Slice 2 で証拠化済み。
 
 1. **画像取り込みの不在**: `buildEpubBetaArchive` は `renderMarkdown()`
    を呼ぶが `inlineWorkspaceAssetImages()` を呼んでいない。workspace 画像は
@@ -558,8 +558,9 @@ Scope と既存 helper の構造の間に 5 点の乖離があった。1〜4 は
    ある。fenced code block 内の `#` 扱いや Setextの扱いが既にずれて
    おり、検証項目「同じ helper に基づくこと」を構造的に満たさない。
 5. **EPUBCheck 検証マイルストーンの不在**: beta 出力が手動 EPUBCheck を
-   通るかの確認マイルストーンが計画のどこにもない。single `content.xhtml`
-   と nav なら高確率で通るが、未確認である。
+   通るかの確認マイルストーンが計画のどこにもなかった。Slice 2 で
+   placeholder `dc:identifier` 警告を修正し、`test02.epub` の 0 warnings
+   通過を確認済み。
 
 これらのうち 1〜4 は「beta の出力品質」、5 は「beta の検証証拠」に分類
 する。metadata 設定 UI と page-break 記法は frontmatter / parser 統一に
@@ -612,13 +613,19 @@ first slice の実質的な完成線。
 
 ##### Slice 2: EPUBCheck 手動検証マイルストーン
 
-Slice 1 の出力を手動 EPUBCheck に通し、first slice の「生成 EPUB は
-手動で EPUBCheck に通せる形を目標にする」を証拠化する。
+2026-06-20 に実施済み。Slice 1 の出力を手動 EPUBCheck に通し、first
+slice の「生成 EPUB は手動で EPUBCheck に通せる形を目標にする」を
+証拠化した。
 
 - App 内コマンド化はしない。外部 EPUBCheck / Calibre 起動は引き続き
   安全境界の外。
-- 通過した場合はその旨を文書化し、修正点が出た場合は Slice 1 へ戻す。
-- 検証結果（通過 / 修正点）を `docs/current-work.md` と handoff に残す。
+- 初回 `epubcheck test.epub` で placeholder `dc:identifier`
+  (`urn:uuid:hazakura-epub-beta`) が不正 UUID として警告されたため、
+  export ごとに valid UUID を生成する最小修正を入れた。
+- follow-up の `epubcheck test02.epub` は EPUB 3.3 ルールで 0 fatal
+  errors / 0 errors / 0 warnings / 0 info。
+- App 内 validator、外部コマンド起動、Calibre / EPUBCheck 連携 UI は
+  引き続き入れない。
 
 ##### Slice 3: metadata 設定 UI（`EpubExportSettings`）
 
