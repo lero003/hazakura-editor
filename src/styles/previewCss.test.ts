@@ -158,6 +158,7 @@ describe("preview.css", () => {
 
     expect(body).toMatch(/break-before:\s*column/);
     expect(body).toMatch(/page-break-before:\s*always/);
+    expect(body).not.toMatch(/border-top:/);
     expect(previewCss).not.toMatch(/(?:^|\n)\.page-break\s*{/);
   });
 

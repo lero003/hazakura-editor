@@ -59,6 +59,7 @@ export function localizeStatusMessage(
     "Draft discarded": "下書きを破棄しました",
     "Draft restored": "下書きを復元しました",
     "Enter a valid line number": "有効な行番号を入力してください",
+    "Error dismissed": "エラー表示を閉じました",
     "Export EPUB beta failed": "EPUB β版のエクスポートに失敗しました",
     "Export EPUB beta stopped; document changed":
       "文書の変更で EPUB β版エクスポートを停止しました",

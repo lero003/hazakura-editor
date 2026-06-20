@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-20 (v0.26 release prep)
+Last reviewed: 2026-06-20 (v0.26 App Store release)
 
 ## Current State
 
@@ -11,6 +11,8 @@ Last reviewed: 2026-06-20 (v0.26 release prep)
 - Current package/app version: `0.26.0` across npm, Tauri, Cargo, and lockfile metadata.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
+- Published Mac App Store version: `0.26.0`, reported released on
+  2026-06-20 after App Review completion.
 - Latest GitHub source / local-app tag: `v0.26.0`.
 - Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
 - `v0.18.0` is a Developer / GitHub lane preview, ad-hoc signed, not Developer ID signed, not notarized, and expected to show macOS security warnings.
@@ -28,14 +30,15 @@ Last reviewed: 2026-06-20 (v0.26 release prep)
   `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.25.0-build18-mas.pkg`.
   Raw App Store Connect, TestFlight, and App Review logs are not tracked
   in this repository.
-- The next helper-free App Store package candidate for `0.26.0` is local
-  build `21`, generated on 2026-06-20 after the Japanese `電子書籍`
-  label correction:
+- The helper-free App Store update for `0.26.0` has been reported as
+  released on 2026-06-20 after App Review completion. The tracked local
+  package evidence is build `21`, generated on 2026-06-20 after the
+  Japanese `電子書籍` label correction:
   `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.26.0-build21-mas.pkg`.
   SHA-256:
   `1cc4f694334badc7a408c0e61278ee40b340a0939378d082de9bfe41e44df515`.
-  It has not been uploaded to App Store Connect in this repository
-  state.
+  Raw App Store Connect, TestFlight, and App Review logs are not tracked
+  in this repository.
 - Pre-approval human-side App Store lane smoke on 2026-06-12 passed launch,
   basic document creation/open, preview/export, image paste/drag-drop,
   App Store surface omission, dirty-close confirmation, Move to Trash,
@@ -45,8 +48,8 @@ Last reviewed: 2026-06-20 (v0.26 release prep)
   that checkpoint. A `Cmd+Shift+F` global-search result activation bug
   found during smoke has a focused code-level fix.
 - Older public tags and release assets remain immutable.
-- Current active work is post-approval documentation closeout and the
-  next product slice. Local pre-review regression, package, payload,
+- Current active work is post-v0.26 release quality polish and the next
+  product slice. Local pre-review regression, package, payload,
   dependency-audit, bundle metadata, license-resource, and bundle-size
   evidence remains archived under `docs/archive/operations/` or
   summarized in `docs/current-work.md`; it should no longer drive the
@@ -223,12 +226,12 @@ baseline, and smoke evidence are archived under
 1. For post-approval cleanup, keep App Store-specific evidence public-safe
    and archive only completed version-specific material; canonical build
    and boundary docs stay live for future submissions.
-2. For UX work, start with `docs/current-work.md`. The current v0.26
-   product queue has completed no-workspace New File / Save As and
-   e-book empty-state affordance polish, initial EPUB export beta,
-   EPUBCheck evidence, metadata settings, and manual page-break
-   semantics. Keep each slice small and source-preserving; do not add
-   cover editing or an EPUB document model.
+2. For UX work, start with `docs/current-work.md`. The v0.26 product
+   queue has shipped; the next quality work should stay small and
+   source-preserving, such as post-release error recovery, e-book
+   readability polish, or the next explicitly selected v0.27 slice.
+   Do not add cover editing or an EPUB document model unless that lane
+   is explicitly opened.
 3. For a future App Store submission, start with `docs/app-store-build.md`;
    use `npm run release:candidate -- --with-app-store-pkg` for local
    signed package checkpoints, keep account-specific notes under ignored

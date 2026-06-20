@@ -10,9 +10,11 @@ export type RecoveryCopy = {
   conflictActions: string;
   conflictDetail: string;
   conflictHeading: string;
+  dismiss: string;
   discardDraft: string;
   draftActions: string;
   draftAvailable: (name: string) => string;
+  errorActions: string;
   keepEditing: string;
   reopenFromDisk: string;
   reviewChanges: string;
@@ -31,9 +33,11 @@ export function getRecoveryCopy(lang: MenuLanguage): RecoveryCopy {
         conflictDetail:
           "ディスク上のファイルが別のアプリまたは Agent provider によって変更された可能性があります。続行方法を選ぶまで保存は停止されます。",
         conflictHeading: "ファイルが外部で変更されました",
+        dismiss: "閉じる",
         discardDraft: "下書きを破棄",
         draftActions: "下書きの操作",
         draftAvailable: (name: string) => `${name} の未保存下書きがあります。`,
+        errorActions: "エラーの操作",
         keepEditing: "編集を続ける",
         reopenFromDisk: "ディスクから再読み込み",
         reviewChanges: "変更を確認",
@@ -50,10 +54,12 @@ export function getRecoveryCopy(lang: MenuLanguage): RecoveryCopy {
         conflictActions: "Conflict actions",
         conflictDetail: EXTERNAL_CHANGE_CONFLICT_MESSAGE,
         conflictHeading: "File changed outside hazakura",
+        dismiss: "Dismiss",
         discardDraft: "Discard draft",
         draftActions: "Draft actions",
         draftAvailable: (name: string) =>
           `Unsaved draft available for ${name}.`,
+        errorActions: "Error actions",
         keepEditing: "Keep editing",
         reopenFromDisk: "Reopen from disk",
         reviewChanges: "Review changes",

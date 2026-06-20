@@ -905,6 +905,23 @@ export function useAppShellController() {
     tabsRef,
   });
 
+  const dismissActiveError = useCallback(() => {
+    if (activeTabId !== null) {
+      setTabs((currentTabs) =>
+        currentTabs.map((tab) =>
+          tab.id === activeTabId &&
+          tab.error &&
+          tab.saveStatus !== "conflict" &&
+          tab.saveStatus !== "error"
+            ? { ...tab, error: null }
+            : tab,
+        ),
+      );
+    }
+    setGlobalError(null);
+    setStatus("Error dismissed");
+  }, [activeTabId, setGlobalError, setStatus, setTabs]);
+
   // section: agent workbench (preference + session + terminal actions)
   const {
     handlePresetPrompt,
@@ -1380,6 +1397,7 @@ export function useAppShellController() {
     detail: activeStatusDetail,
     dirtyLabel: activeDirtyLabel,
     dirtyTabCount,
+    dismissActiveError,
     discardAllAndCloseWindow,
     discardDraft,
     pendingRenameWarning,

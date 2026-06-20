@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-20 (v0.26 polish and EPUB export)
+Last reviewed: 2026-06-20 (v0.26 App Store release)
 
 ## Current Position
 
@@ -18,8 +18,11 @@ Current release state:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
 - Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
 - Current package/app version: `0.26.0`.
-- Active lane: v0.26 release prep after no-workspace authoring,
-  e-book affordance cleanup, and EPUB export beta follow-up.
+- Mac App Store published version: `0.26.0`, reported released on
+  2026-06-20 after App Review completion.
+- Active lane: post-v0.26 quality polish and v0.27 prelude after
+  no-workspace authoring, e-book affordance cleanup, and EPUB export
+  beta follow-up shipped.
 - Current work queue: `docs/current-work.md`.
 
 North star for the next product arc:
@@ -359,7 +362,7 @@ Use `docs/current-work.md`,
 `docs/post-v0.25-product-refinement-plan.md`, and
 `docs/ebook-mode-epub-export-plan.md`.
 
-Expected v0.26 shape:
+Shipped v0.26 shape:
 
 - no-workspace New File creates an untitled standalone Markdown tab;
 - Save on an untitled/pathless tab routes to Save As before writing;

@@ -12,6 +12,7 @@ type RecoveryMessagesProps = {
   onClearSaveError: (tabId: string) => void;
   onCloseTabWithoutSaving: (tabId: string) => void;
   onDiscardDraft: (draftPath: string) => void;
+  onDismissError: () => void;
   onKeepEditingAfterConflict: (tabId: string) => void;
   onReopenTabFromDisk: (tabId: string) => void;
   onRestoreDraft: (draft: DraftRecord) => void;
@@ -31,6 +32,7 @@ export function RecoveryMessages({
   onClearSaveError,
   onCloseTabWithoutSaving,
   onDiscardDraft,
+  onDismissError,
   onKeepEditingAfterConflict,
   onReopenTabFromDisk,
   onRestoreDraft,
@@ -130,7 +132,13 @@ export function RecoveryMessages({
                 {copy.keepEditing}
               </button>
             </div>
-          ) : null}
+          ) : (
+            <div className="message-actions" aria-label={copy.errorActions}>
+              <button type="button" onClick={onDismissError}>
+                {copy.dismiss}
+              </button>
+            </div>
+          )}
         </div>
       ) : null}
     </div>

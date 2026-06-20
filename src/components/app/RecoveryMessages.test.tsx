@@ -21,6 +21,7 @@ describe("RecoveryMessages", () => {
         onClearSaveError={noop}
         onCloseTabWithoutSaving={noop}
         onDiscardDraft={noop}
+        onDismissError={noop}
         onKeepEditingAfterConflict={noop}
         onReopenTabFromDisk={noop}
         onRestoreDraft={noop}
@@ -34,6 +35,8 @@ describe("RecoveryMessages", () => {
   });
 
   it("renders an active error message", () => {
+    const dismissError = vi.fn();
+
     render(
       <RecoveryMessages
         activeConflict={false}
@@ -45,6 +48,7 @@ describe("RecoveryMessages", () => {
         onClearSaveError={noop}
         onCloseTabWithoutSaving={noop}
         onDiscardDraft={noop}
+        onDismissError={dismissError}
         onKeepEditingAfterConflict={noop}
         onReopenTabFromDisk={noop}
         onRestoreDraft={noop}
@@ -55,6 +59,8 @@ describe("RecoveryMessages", () => {
     );
 
     expect(screen.getByText("Could not save")).toBeTruthy();
+    screen.getByRole("button", { name: copy.dismiss }).click();
+    expect(dismissError).toHaveBeenCalledTimes(1);
   });
 
   it("can hide the draft review action for L Mode recovery banners", () => {
@@ -98,6 +104,7 @@ describe("RecoveryMessages", () => {
         onClearSaveError={noop}
         onCloseTabWithoutSaving={noop}
         onDiscardDraft={noop}
+        onDismissError={noop}
         onKeepEditingAfterConflict={noop}
         onReopenTabFromDisk={noop}
         onRestoreDraft={noop}
@@ -151,6 +158,7 @@ describe("RecoveryMessages", () => {
         onClearSaveError={noop}
         onCloseTabWithoutSaving={noop}
         onDiscardDraft={noop}
+        onDismissError={noop}
         onKeepEditingAfterConflict={noop}
         onReopenTabFromDisk={noop}
         onRestoreDraft={noop}
@@ -178,6 +186,7 @@ describe("RecoveryMessages", () => {
         onClearSaveError={noop}
         onCloseTabWithoutSaving={noop}
         onDiscardDraft={noop}
+        onDismissError={noop}
         onKeepEditingAfterConflict={noop}
         onReopenTabFromDisk={noop}
         onRestoreDraft={noop}

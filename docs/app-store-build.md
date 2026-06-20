@@ -31,7 +31,8 @@ Apple Local Assist and Agent Workbench behind their existing boundaries.
 
 - App name: `Hazakura Editor`
 - Bundle ID: `dev.hazakura.editor`
-- Published App Store version: `0.25.0` (reported released on 2026-06-20)
+- Published App Store version: `0.26.0` (reported released on 2026-06-20
+  after App Review completion)
 - Current source / Developer version: `0.26.0`
 - App Store category: `Productivity`
 - Public Privacy Policy URL:
@@ -522,11 +523,13 @@ rather than an App Store Connect validation result. SHA-256:
 211ed7ffa935929cb4d3e31e88b6d9034c08a2335876e3f3fbf61a90e4400b61
 ```
 
-v0.26 package-candidate note: on 2026-06-20, Codex generated a local
-App Store submit-lane package for user-visible version `0.26.0` and
-App Store build counter `21` after correcting the Japanese e-book label
-to `電子書籍`. This is local packaging evidence only; raw App Store
-Connect, TestFlight, and App Review logs are not tracked here.
+v0.26 package/release note: on 2026-06-20, Codex generated a local App
+Store submit-lane package for user-visible version `0.26.0` and App
+Store build counter `21` after correcting the Japanese e-book label to
+`電子書籍`. The update was later reported as App Review-complete and
+released on the Mac App Store on 2026-06-20. This repository tracks the
+local package evidence; raw App Store Connect, TestFlight, and App
+Review logs are not tracked here.
 
 The local package generated for this lane is:
 

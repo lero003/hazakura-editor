@@ -1,16 +1,17 @@
 # Current Work
 
 Status: Operational
-Scope: Active post-approval, v0.26 planning, and quality routing
+Scope: Active post-v0.26 release quality routing and v0.27 prelude
 Authority: High
-Last reviewed: 2026-06-20 (v0.26 polish and EPUB export queue)
+Last reviewed: 2026-06-20 (v0.26 released, v0.27 prelude)
 
 ## Purpose
 
 Start here when choosing the next small `Hazakura Editor` slice.
-This file is the current work queue. The `0.25.0` App Store update has
-been reported as released on 2026-06-20; keep completed
-submission-prep material as evidence, not as the active queue.
+This file is the current work queue. The `0.26.0` App Store update has
+been reported as released on 2026-06-20 after App Review completion;
+keep completed submission-prep material as evidence, not as the active
+queue.
 Older v0.17 App Store-quality request packets and closeout evidence live
 under `docs/archive/operations/app-store-v0.17/`, and the completed
 v0.18 pre-review automation slices remain below as historical evidence.
@@ -312,15 +313,16 @@ Review evidence, not a silent metadata bump.
 
 ## v0.26 Polish And EPUB Export
 
-v0.26 should raise product quality with a few focused polish slices and
-an initial EPUB export path. Keep this release inside the Markdown-first
-Safe Editor boundary.
+v0.26 is released on the Mac App Store as of 2026-06-20. The completed
+work raised product quality with focused polish slices and an initial
+EPUB export path while staying inside the Markdown-first Safe Editor
+boundary.
 
 Goal: make the app harder to get stuck in, make the e-book surface feel
 consistently available, and add an explicit first EPUB export action
 without introducing a second document model.
 
-Suggested order:
+Completed order:
 
 1. **No-workspace new document / Save As**: New File should work when no
    workspace is selected by creating an untitled standalone Markdown tab.
@@ -448,6 +450,19 @@ EPUB `content.xhtml` receives `.page-break` blocks and e-book Mode shows
 the same markers as page cues, while YAML frontmatter, fenced code, and
 non-blank-flanked rules stay unchanged. Markdown source remains
 canonical, and normal Preview / HTML export are unchanged.
+
+Post-release pre-v0.27 quality follow-up as of 2026-06-20:
+
+- Right-bottom error/recovery banners now expose a dismiss action for
+  generic errors that previously had no recovery buttons. Save failures
+  and external-change conflicts keep their existing explicit recovery
+  actions.
+- e-book Mode page-break markers no longer draw a horizontal rule in
+  the right pane, so blank-line-flanked standalone `---` / `===`
+  markers read as page cues rather than both a rule and a page break.
+- Human-side built-app smoke for both behaviours passed on 2026-06-20,
+  per user report. Code-level verification is recorded in the commit
+  that introduced the fix.
 
 ## Active UX Queue
 

@@ -20,6 +20,7 @@ type AppDocumentFeedbackProps = {
   closeTabNow: (tabId: string) => void;
   clearSaveError: (tabId: string) => void;
   discardDraft: (draftPath: string) => void;
+  dismissActiveError: () => void;
   editorChromeCopy: EditorChromeCopy;
   findInputRef: RefObject<HTMLInputElement | null>;
   findMatchCount: number;
@@ -64,6 +65,7 @@ export function AppDocumentFeedback({
   closeTabNow,
   clearSaveError,
   discardDraft,
+  dismissActiveError,
   editorChromeCopy,
   findInputRef,
   findMatchCount,
@@ -134,6 +136,7 @@ export function AppDocumentFeedback({
         onClearSaveError={clearSaveError}
         onCloseTabWithoutSaving={closeTabNow}
         onDiscardDraft={discardDraft}
+        onDismissError={dismissActiveError}
         onKeepEditingAfterConflict={keepEditingAfterConflict}
         onReopenTabFromDisk={reopenTabFromDisk}
         onRestoreDraft={restoreDraft}
