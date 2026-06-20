@@ -472,7 +472,9 @@ Post-release pre-v0.27 quality follow-up as of 2026-06-20:
 Use `docs/v0.27-refinement-slice-plan.md` as the execution memo.
 
 Phase 1 is implemented locally as of 2026-06-20 at code-regression
-level. Investigation found that `PreviewPane` rendered Markdown
+level and accepted as the v0.27 Phase 1 result after human-side
+large-document built-app smoke confirmed the central editor text renders
+normally. Investigation found that `PreviewPane` rendered Markdown
 synchronously during React render, so a large document with Preview
 already visible could compete with the editor's first commit. The
 Preview surface now clears stale content before paint, shows a
@@ -485,6 +487,13 @@ falling back to the start panel while `restoreComplete` is still false.
 This keeps Markdown source, Preview sanitization, local-link routing,
 and export behavior unchanged.
 
+Known deferred request: showing the app theme before React starts remains
+desirable for perceived startup quality, but the attempted boot-theme
+approach made CodeMirror / Tauri first-paint layout failures hard to
+isolate in the real app. Keep the improvement request, but do not reopen
+it inside v0.27 Phase 1. Revisit only as a separate debug slice with
+real-app DevTools evidence and one boot-path change at a time.
+
 Verification: `npm run test --
 src/components/editor/preview/PreviewPane.test.tsx
 src/styles/previewCss.test.ts src/components/app/SidePane.test.tsx
@@ -493,9 +502,10 @@ src/components/editor/EditorMainPane.test.tsx
 src/components/app/AppWorkspace.test.tsx src/styles/editorCss.test.ts`.
 
 Manual large-document built-app smoke remains useful for actual
-first-paint feel. If e-book Mode still shows a first-render disturbance,
-inspect its active-chapter render / CSS Columns measurement as the next
-bounded Phase 1 follow-up.
+first-paint feel. Phase 1 itself is otherwise closed; if e-book Mode
+still shows a first-render disturbance, inspect its active-chapter render
+/ CSS Columns measurement as a separate follow-up rather than expanding
+Phase 1.
 
 ## Active UX Queue
 

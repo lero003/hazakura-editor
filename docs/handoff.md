@@ -39,14 +39,18 @@ Last reviewed: 2026-06-20 (v0.27 refinement Phase 1)
 - Start from `docs/current-work.md`; v0.27 execution is now anchored in
   `docs/v0.27-refinement-slice-plan.md`.
 - v0.27 Phase 1 large-document initial rendering stabilization is
-  implemented locally at code-regression level. `PreviewPane` clears
-  stale content before paint, shows a theme-bound preview loading
-  surface, and defers Markdown rendering to the next animation frame.
-  Startup workspace restore now keeps the editor pane on a
-  theme-bound restore loading surface while restored tabs are still
-  opening, instead of briefly falling back to the start panel.
-  Manual built-app smoke with a large restored Markdown file remains
-  the proof for actual first-paint feel.
+  accepted as closed at `b2126c14` plus this docs-only follow-up.
+  `PreviewPane` clears stale content before paint, shows a theme-bound
+  preview loading surface, and defers Markdown rendering to the next
+  animation frame. Startup workspace restore now keeps the editor pane
+  on a theme-bound restore loading surface while restored tabs are
+  still opening, instead of briefly falling back to the start panel.
+  Human-side large-document built-app smoke confirmed the central editor
+  text renders normally.
+- Deferred: applying the theme before React startup remains a valid UX
+  request, but the boot-theme attempt caused hard-to-isolate real-app
+  CodeMirror / Tauri first-paint layout failures. Keep it out of v0.27
+  Phase 1; revisit only as a separate real-app DevTools debug slice.
 - A review-derived pre-release code-quality fix queue now lives in
   `docs/pre-release-fix-plan.md`. A follow-up external quality review
   has been triaged there as accepted vs deferred / not adopted items. It
