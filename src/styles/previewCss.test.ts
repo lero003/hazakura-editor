@@ -153,6 +153,14 @@ describe("preview.css", () => {
     expect(preBody).toMatch(/overflow:\s*auto/);
   });
 
+  it("scopes e-book page-break marker styling to the paginated flow", () => {
+    const body = ruleBody(".ebook-page-flow .page-break");
+
+    expect(body).toMatch(/break-before:\s*column/);
+    expect(body).toMatch(/page-break-before:\s*always/);
+    expect(previewCss).not.toMatch(/(?:^|\n)\.page-break\s*{/);
+  });
+
   it("removes the old multi-sheet e-book dependencies", () => {
     expect(previewCss).not.toMatch(/\.ebook-pane \.ebook-nav/);
     expect(previewCss).not.toMatch(/\.ebook-chapter \+ \.ebook-chapter::before/);

@@ -191,4 +191,51 @@ describe("buildEpubBetaArchive", () => {
     expect(text).toContain('href="content.xhtml#sub-emphasis"');
     expect(text).toContain('href="content.xhtml#second"');
   });
+
+  it("writes standalone page-break markers as content.xhtml page-break blocks", async () => {
+    const archive = await buildEpubBetaArchive({
+      markdown: [
+        "# Chapter",
+        "",
+        "Before break.",
+        "",
+        "---",
+        "",
+        "After break.",
+        "",
+        "```",
+        "---",
+        "===",
+        "```",
+      ].join("\n"),
+      documentName: "breaks.md",
+    });
+    const text = archiveText(archive);
+
+    expect(text).toContain('class="page-break"');
+    expect(text.match(/class="page-break"/g)).toHaveLength(1);
+    expect(text).toContain("break-before: page");
+    expect(text).toContain("Before break.");
+    expect(text).toContain("After break.");
+    expect(text).toContain("---\n===");
+  });
+
+  it("does not turn YAML frontmatter fences into EPUB page breaks", async () => {
+    const archive = await buildEpubBetaArchive({
+      markdown: [
+        "---",
+        "title: Draft",
+        "---",
+        "",
+        "# Chapter",
+        "",
+        "Body.",
+      ].join("\n"),
+      documentName: "frontmatter.md",
+    });
+    const text = archiveText(archive);
+
+    expect(text).not.toContain('class="page-break"');
+    expect(text).not.toContain("title: Draft");
+  });
 });

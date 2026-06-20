@@ -427,6 +427,21 @@ describe("EBookPane chapter reader", () => {
     expect(chapter?.classList.contains("ebook-chapter-opener")).toBe(true);
     expect(chapter?.classList.contains("ebook-chapter-preamble")).toBe(false);
   });
+
+  it("renders standalone page-break markers with the shared e-book helper", () => {
+    render(
+      <EBookPane
+        menuLanguage="en"
+        source={["# Chapter", "", "Before.", "", "---", "", "After."].join(
+          "\n",
+        )}
+      />,
+    );
+
+    const article = screen.getByRole("article", { name: "Chapter reader" });
+    expect(article.querySelectorAll(".page-break")).toHaveLength(1);
+    expect(screen.queryByRole("separator", { name: "Page break" })).toBeTruthy();
+  });
 });
 
 describe("EBookPane pagination measurement", () => {

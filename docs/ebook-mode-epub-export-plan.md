@@ -649,6 +649,9 @@ dialog scoped draft state として実装した。
 
 ##### Slice 4: page-break 記法（standalone `---` / `===`）
 
+2026-06-20 に実装済み。Shared e-book helper で blank-line-flanked
+standalone `---` / `===` だけを page-break marker として扱う。
+
 「Structure and page-break semantics」節の standalone 行 page-break
 marker を実装する。Slice 1 の frontmatter 認識の上に載せる。
 
@@ -663,6 +666,10 @@ marker を実装する。Slice 1 の frontmatter 認識の上に載せる。
 
 - `---` / `===` が fenced code block / frontmatter / 通常水平線と衝突
   しないこと、通常水平線との互換性リスクを Help / docs で明示。
+- Focused tests: `ebookChapters.test.ts`, `epubExport.test.ts`,
+  `EBookPane.test.tsx`, and `previewCss.test.ts` cover helper conversion,
+  EPUB `content.xhtml` / CSS output, e-book visual cue rendering, and scoped
+  CSS.
 
 #### Help 文書の EPUB 説明追加
 

@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { splitMarkdownIntoChapters } from "./ebookChapters";
+import {
+  applyEbookPageBreakMarkers,
+  splitMarkdownIntoChapters,
+} from "./ebookChapters";
 
 describe("splitMarkdownIntoChapters", () => {
   it("returns a single preamble chapter for a heading-less document", () => {
@@ -325,5 +328,57 @@ describe("splitMarkdownIntoChapters", () => {
 
     expect(chapters).toHaveLength(1);
     expect(chapters[0].source).toContain("=============");
+  });
+});
+
+describe("applyEbookPageBreakMarkers", () => {
+  it("turns blank-line-flanked standalone markers into page-break blocks", () => {
+    const source = ["First page", "", "---", "", "Second page", "", "===", "", "Third page"].join("\n");
+
+    const marked = applyEbookPageBreakMarkers(source);
+
+    expect(marked).toContain('class="page-break"');
+    expect(marked.match(/class="page-break"/g)).toHaveLength(2);
+    expect(marked).toContain("First page");
+    expect(marked).toContain("Second page");
+    expect(marked).toContain("Third page");
+  });
+
+  it("treats a document-ending standalone marker as blank-line-flanked", () => {
+    const withoutTrailingNewline = applyEbookPageBreakMarkers("Para\n\n---");
+    const withTrailingNewline = applyEbookPageBreakMarkers("Para\n\n---\n");
+
+    expect(withoutTrailingNewline.match(/class="page-break"/g)).toHaveLength(1);
+    expect(withTrailingNewline.match(/class="page-break"/g)).toHaveLength(1);
+  });
+
+  it("does not convert frontmatter, fenced code, or non-blank-flanked rules", () => {
+    const source = [
+      "---",
+      "title: Draft",
+      "---",
+      "",
+      "# Chapter",
+      "Setext title",
+      "---",
+      "",
+      "```",
+      "---",
+      "===",
+      "```",
+      "",
+      "Paragraph",
+      "",
+      "---",
+      "",
+      "Next page",
+    ].join("\n");
+
+    const marked = applyEbookPageBreakMarkers(source);
+
+    expect(marked.match(/class="page-break"/g)).toHaveLength(1);
+    expect(marked).toContain("title: Draft");
+    expect(marked).toContain("Setext title\n---");
+    expect(marked).toContain("```\n---\n===\n```");
   });
 });

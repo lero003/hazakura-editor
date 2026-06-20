@@ -150,6 +150,96 @@ export function splitMarkdownIntoChapters(source: string): EbookChapter[] {
   }));
 }
 
+export function applyEbookPageBreakMarkers(source: string): string {
+  const lines = markdownLines(source);
+  if (lines.length === 0) {
+    return source;
+  }
+
+  let inFence = false;
+  let fenceChar = "";
+  let fenceLength = 0;
+  const frontmatterEnd = yamlFrontmatterEndOffset(source);
+
+  return lines
+    .map((line, index) => {
+      if (frontmatterEnd !== null && line.start < frontmatterEnd) {
+        return line.raw;
+      }
+
+      const fence = matchFence(line.text);
+      if (fence) {
+        const role = classifyFence(fence, inFence, fenceChar, fenceLength);
+        if (role === "open") {
+          inFence = true;
+          fenceChar = fence.char;
+          fenceLength = fence.length;
+        } else if (role === "close") {
+          inFence = false;
+          fenceChar = "";
+          fenceLength = 0;
+        }
+        return line.raw;
+      }
+
+      if (!inFence && isPageBreakMarkerLine(lines, index)) {
+        return `${pageBreakMarkerHtml()}${line.ending}`;
+      }
+
+      return line.raw;
+    })
+    .join("");
+}
+
+function pageBreakMarkerHtml(): string {
+  return '<div class="page-break" role="separator" aria-label="Page break"></div>';
+}
+
+function isPageBreakMarkerLine(
+  lines: Array<{ text: string }>,
+  index: number,
+): boolean {
+  const marker = lines[index].text.trim();
+  if (marker !== "---" && marker !== "===") {
+    return false;
+  }
+
+  const previous = lines[index - 1]?.text.trim() ?? null;
+  const next = lines[index + 1]?.text.trim() ?? "";
+  return previous === "" && next === "";
+}
+
+function markdownLines(source: string): Array<{
+  ending: string;
+  raw: string;
+  start: number;
+  text: string;
+}> {
+  const lines: Array<{
+    ending: string;
+    raw: string;
+    start: number;
+    text: string;
+  }> = [];
+
+  let start = 0;
+  while (start < source.length) {
+    const nlIndex = source.indexOf("\n", start);
+    const end = nlIndex === -1 ? source.length : nlIndex;
+    const ending = nlIndex === -1 ? "" : "\n";
+    const text = source.slice(start, end);
+    lines.push({
+      ending,
+      raw: source.slice(start, end) + ending,
+      start,
+      text,
+    });
+    start = nlIndex === -1 ? source.length : nlIndex + 1;
+  }
+
+  return lines;
+}
+
 function matchAtxHeading(
   line: string,
 ): { level: number; text: string } | null {

@@ -1,5 +1,8 @@
 import { renderMarkdown } from "../editor/markdown";
-import { splitMarkdownIntoChapters } from "../editor/ebookChapters";
+import {
+  applyEbookPageBreakMarkers,
+  splitMarkdownIntoChapters,
+} from "../editor/ebookChapters";
 
 type BuildEpubBetaArchiveOptions = {
   documentPath?: string | null;
@@ -116,7 +119,7 @@ async function buildContent({
     "documentPath" | "loadWorkspaceImage" | "workspaceRoot"
   >) {
   const contentMarkdown = stripYamlFrontmatter(markdown);
-  const rendered = renderMarkdown(contentMarkdown, {
+  const rendered = renderMarkdown(applyEbookPageBreakMarkers(contentMarkdown), {
     documentPath,
     workspaceRoot,
   });
@@ -518,6 +521,12 @@ pre, code {
 }
 img {
   max-width: 100%;
+}
+.page-break {
+  break-before: page;
+  height: 0;
+  margin: 0;
+  page-break-before: always;
 }
 `;
 }

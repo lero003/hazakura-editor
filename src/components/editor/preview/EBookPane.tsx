@@ -20,7 +20,10 @@ import {
   useRef,
   useState,
 } from "react";
-import { splitMarkdownIntoChapters } from "../../../features/editor/ebookChapters";
+import {
+  applyEbookPageBreakMarkers,
+  splitMarkdownIntoChapters,
+} from "../../../features/editor/ebookChapters";
 import {
   inlineWorkspaceAssetImages,
   renderMarkdown,
@@ -109,7 +112,7 @@ export default function EBookPane({
       index: activeChapter.index,
       headingLevel: activeChapter.headingLevel,
       headingText: activeChapter.headingText,
-      html: renderMarkdown(activeChapter.source, {
+      html: renderMarkdown(applyEbookPageBreakMarkers(activeChapter.source), {
         documentPath,
         workspaceRoot,
       }),

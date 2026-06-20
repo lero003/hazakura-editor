@@ -602,6 +602,16 @@
   transition: none;
 }
 
+.ebook-page-flow .page-break {
+  break-before: column;
+  border-top: 1px solid
+    color-mix(in srgb, var(--border, #d2d2d7) 54%, transparent);
+  box-sizing: border-box;
+  height: 0;
+  margin: 0 0 1.5em;
+  page-break-before: always;
+}
+
 .ebook-pane .ebook-reader-footer {
   align-items: center;
   border-top: 1px solid

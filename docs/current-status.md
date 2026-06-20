@@ -142,10 +142,11 @@ Last reviewed: 2026-06-20 (v0.26 polish and EPUB export queue)
   `data:image` resources, and a small stylesheet. The EPUB path strips
   Preview-only markup before XHTML output, handles inline Markdown in
   headings for navigation, ignores YAML frontmatter for export
-  navigation/content, generates per-export UUID identifiers, and writes
-  `dcterms:modified` from export time. It is not a second document model
-  and does not claim reader-perfect pagination, vertical writing, cover
-  metadata, or in-app validator proof.
+  navigation/content, turns blank-line-flanked standalone `---` / `===`
+  into explicit page-break hints, generates per-export UUID identifiers,
+  and writes `dcterms:modified` from export time. It is not a second
+  document model and does not claim reader-perfect pagination, vertical
+  writing, cover metadata, or in-app validator proof.
 - Markdown preview and Help document links keep supported
   workspace-relative text files inside the app, but route explicit
   `http:` / `https:` / `mailto:` / `tel:` clicks to the OS default
@@ -213,11 +214,10 @@ baseline, and smoke evidence are archived under
    and boundary docs stay live for future submissions.
 2. For UX work, start with `docs/current-work.md`. The current v0.26
    product queue has completed no-workspace New File / Save As and
-   e-book empty-state affordance polish, and initial EPUB export beta.
-   Keep each slice small and source-preserving. The next EPUB-safe
-   follow-up is a manual EPUBCheck milestone, then export settings and
-   manual page-break semantics; do not add cover editing or an EPUB
-   document model.
+   e-book empty-state affordance polish, initial EPUB export beta,
+   EPUBCheck evidence, metadata settings, and manual page-break
+   semantics. Keep each slice small and source-preserving; do not add
+   cover editing or an EPUB document model.
 3. For a future App Store submission, start with `docs/app-store-build.md`;
    use `npm run release:candidate -- --with-app-store-pkg` for local
    signed package checkpoints, keep account-specific notes under ignored

@@ -172,7 +172,8 @@ priority items after the v0.25 App Store release are:
    recedes, reliability, and AI as a review layer. Pick one small slice
    from that lens rather than adding broad new surfaces.
 2. v0.26 EPUB beta follow-up: Slice 1 content quality, Slice 2 manual
-   EPUBCheck evidence, and Slice 3 metadata UI are implemented.
+   EPUBCheck evidence, Slice 3 metadata UI, and Slice 4 page-break markers
+   are implemented.
    EPUB export now packages workspace images and allowed small
    `data:image` references into `OEBPS/images/`, strips Preview-only
    markup before XHTML output, uses `splitMarkdownIntoChapters` for
@@ -184,8 +185,11 @@ priority items after the v0.25 App Store release are:
    generating a valid per-export UUID; user-checked `test02.epub` passed
    EPUBCheck 3.3 with no errors or warnings. Slice 3 adds a dialog-scoped
    Title / Author / Language draft before Save As, writes `dcterms:modified`
-   from export time, and omits `dc:creator` when Author is blank. Next
-   slice: standalone `---` / `===` page-break markers.
+   from export time, and omits `dc:creator` when Author is blank. Slice 4
+   adds blank-line-flanked standalone `---` / `===` page-break markers via
+   a shared e-book helper; EPUB `content.xhtml` receives `.page-break`
+   blocks and e-book Mode shows the same markers as page cues while
+   frontmatter, fenced code, and non-blank-flanked rules remain unchanged.
 3. Manual app smoke of the v0.24 e-book single-page reader: e-book
    toggle, page movement, reader footer, chapter boundary movement,
    long chapters, image-heavy chapters, long code blocks with inner
@@ -240,6 +244,15 @@ frontmatter, does not persist last-used values, and does not create a
 separate EPUB document model. The archive writer escapes metadata,
 generates `dcterms:modified` from export time, keeps per-export UUID
 identifiers, and omits `dc:creator` when Author is blank.
+
+Latest completed: v0.26 EPUB beta Slice 4 page-break markers.
+Blank-line-flanked standalone `---` / `===` lines are converted through
+the shared e-book helper into `.page-break` blocks for EPUB
+`content.xhtml` and e-book Mode visual cues. YAML frontmatter, fenced
+code blocks, Setext / non-blank-flanked rules, normal Preview, HTML
+export, and Markdown source are left unchanged. Local Data Disclosure now
+notes the beta compatibility risk for documents that used those
+standalone rules as ordinary horizontal rules.
 
 Earlier completed: v0.24 e-book single-page polish keeps Markdown source
 canonical and Preview / Export / L Mode untouched while adding a fixed
