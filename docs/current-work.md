@@ -372,13 +372,35 @@ src/components/app/DocumentMetaBar.test.tsx
 src/components/app/AppTopChrome.test.tsx src/components/app/SidePane.test.tsx`,
 `npm run test`, `npm run build:vite`, and `git diff --check`.
 
+P2 is implemented locally as of 2026-06-20 as an EPUB export beta. The
+File menu and command palette expose `Export EPUB (Beta)...`, which
+exports the active Markdown source to a minimal `.epub` through a save
+dialog. The archive contains a package file, navigation document,
+single XHTML content document, and small stylesheet generated from the
+current Markdown headings. Markdown source remains canonical. This beta
+does not launch external validators, add cover / metadata editing,
+bundle workspace images as EPUB resources, support vertical writing, or
+claim reader-perfect pagination. The beta writes the archive through a
+base64 IPC payload to avoid JSON number-array expansion; if future work
+adds bundled image resources or large EPUB packages, prefer a plugin-fs
+or temp-file handoff instead of growing this IPC path.
+
+Verification: `npm run test --
+src/features/document/epubExport.test.ts
+src/hooks/document/useDocumentExport.test.tsx
+src/hooks/app/useAppMenuActionListener.test.tsx
+src/hooks/commandPalette/useCommandPaletteController.test.ts
+src/hooks/app/useAppShellSideEffectsController.test.ts
+src/lib/diagnostics.test.ts`, `cargo test --manifest-path
+src-tauri/Cargo.toml epub_beta -- --nocapture`, and focused
+`save_binary_file_as` Rust tests.
+
 ## Active UX Queue
 
 Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| v0.26 P2 | Initial EPUB export | Add an explicit export action for the active Markdown source that writes a minimal `.epub` through a save dialog. Keep Markdown source canonical and reuse the preview/export safety boundary where practical. Include basic title/language defaults, XHTML content, stylesheet, workspace-local image handling or warnings, and a generated navigation/table of contents from headings. Do not launch external validators, add advanced metadata/cover/vertical-writing UI, or claim reader-perfect pagination. |
 | Post-v0.25 lens | Product refinement triage | Use `docs/post-v0.25-product-refinement-plan.md` to choose one small slice that tightens the existing product instead of adding surfaces: mode-transition consistency, Workspace-as-book information architecture, flow-preserving editing, large-document / preview reliability, layered native chrome, or AI-as-review-layer wording. Close as a docs-only decision, `implemented`, `manual-blocked`, or `verified no-op`; do not bundle with distribution work. |
 | v0.25 Phase 2 | Native vibrancy via `window-vibrancy` + macOS 26 floor | Phase 1 chrome polish is done at code/CSS level. The CSS glass follow-up is dropped (scrap-and-build). Next: bump `minimumSystemVersion` to macOS 26 as release-planning work, add `window-vibrancy`, call `apply_vibrancy` on the main window, make sidebar / top-chrome transparent over the native material, tune the five themes, and verify with built `.app` smoke on macOS 26. Do not add a SwiftUI/AppKit rewrite, Liquid Glass fidelity, vibrancy behind dense Markdown text, toolbar rewrites, new modes, or AI ingest in this slice. |
 | v0.25 Phase 1 proof | Manual macOS app smoke for the implemented chrome polish | Phase 1 is implemented: drag regions, editor focus, mode active state, segmented controls, e-book / Diff tokens. Final proof is manual app smoke: titlebar dragging, click hit-testing (esp. Review menu), dense tabs, L Mode floating pill, segmented mode controls, e-book / Preview / Diff, light/dark themes, and keyboard focus. |

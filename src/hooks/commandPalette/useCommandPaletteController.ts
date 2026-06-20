@@ -50,6 +50,7 @@ import {
 type UseCommandPaletteControllerActions = {
   applyActiveMarkdownFormat: (kind: MarkdownFormat) => void;
   createNewFile: () => Promise<void>;
+  exportEpubBeta: () => Promise<void>;
   exportHtml: () => Promise<void>;
   exportPdf: () => Promise<void>;
   focusAdjacentTab: (direction: "next" | "previous") => void;
@@ -213,6 +214,15 @@ export function useCommandPaletteController({
         label: "Export HTML…",
         run: () => {
           void actions.exportHtml();
+        },
+      },
+      {
+        category: "File",
+        id: "file.exportEpubBeta",
+        keywords: ["export", "epub", "beta", "book"],
+        label: "Export EPUB (Beta)…",
+        run: () => {
+          void actions.exportEpubBeta();
         },
       },
       {

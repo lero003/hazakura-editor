@@ -335,6 +335,52 @@ pub(crate) fn save_text_file_as_with_label(
 }
 
 #[tauri::command]
+pub(crate) fn save_binary_file_as<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    path: String,
+    contents_base64: String,
+) -> Result<(), String> {
+    save_binary_file_as_base64_with_label(window.label(), path, contents_base64)
+}
+
+pub(crate) fn save_binary_file_as_base64_with_label(
+    label: &str,
+    path: String,
+    contents_base64: String,
+) -> Result<(), String> {
+    let contents = decode_base64(&contents_base64)?;
+    save_binary_file_as_with_label(label, path, contents)
+}
+
+pub(crate) fn save_binary_file_as_with_label(
+    label: &str,
+    path: String,
+    contents: Vec<u8>,
+) -> Result<(), String> {
+    ensure_label_is_main(label)?;
+    let path_buf = PathBuf::from(&path);
+
+    if path_buf.exists() {
+        return Err("A file already exists at the selected path.".to_string());
+    }
+
+    let parent = path_buf
+        .parent()
+        .ok_or_else(|| "Cannot save a file without a parent directory.".to_string())?;
+
+    if !parent.is_dir() {
+        return Err("Selected folder does not exist.".to_string());
+    }
+
+    path_buf
+        .file_name()
+        .and_then(|name| name.to_str())
+        .ok_or_else(|| "Cannot save a file with an invalid name.".to_string())?;
+
+    write_new_file(&path_buf, &contents)
+}
+
+#[tauri::command]
 pub(crate) fn save_auto_backup<R: tauri::Runtime>(
     window: tauri::WebviewWindow<R>,
     workspace_root: String,

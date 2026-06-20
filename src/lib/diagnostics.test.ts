@@ -76,17 +76,18 @@ describe("collectDiagnostics", () => {
         "Save failed",
         "Close stopped",
         "Metadata check failed",
+        "Export EPUB beta failed",
         "Export HTML failed",
         "External change detected",
         "Reopen failed",
       ],
     });
 
-    // All 7 entries are known-safe, but only the last 5
+    // All 8 entries are known-safe, but only the last 5
     // survive the cap.
     expect(snapshot.errors.recentCategories).toEqual([
-      "Close stopped",
       "Metadata check failed",
+      "Export EPUB beta failed",
       "Export HTML failed",
       "External change detected",
       "Reopen failed",

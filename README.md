@@ -84,6 +84,8 @@ Example use case:
 ## Current Features
 
 - Markdown/text file creation, open, edit, save, and sanitized preview
+- EPUB export beta for the active Markdown document, producing a minimal
+  heading-navigable `.epub` without claiming reader-perfect pagination
 - Finder/app-icon open events for common UTF-8 text documents, including JSON, use the same safe text-open path as File > Open
 - Folder picker with a lazy, bounded file tree
 - File-tree, Open, and restored files unified into the same tab model

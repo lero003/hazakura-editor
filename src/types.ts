@@ -39,6 +39,7 @@ export const MENU_OPEN_SOURCE_ACKNOWLEDGEMENTS =
   "open-source-acknowledgements";
 export const MENU_ABOUT_HELP = "about-help";
 export const MENU_QUIT_APP = "quit-app";
+export const MENU_EXPORT_EPUB_BETA = "export-epub-beta";
 export const AGENT_WORKBENCH_MAX_OUTPUT_CHUNKS = 500;
 export const AGENT_WORKBENCH_SESSION_POLL_MS = 200;
 export const EXTERNAL_CHANGE_ACTIVE_POLL_MS = 1000;

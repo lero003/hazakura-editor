@@ -78,6 +78,14 @@ Last reviewed: 2026-06-20 (v0.26 polish and EPUB export queue)
   normal meta bar controls. Verification passed with focused app chrome
   / side-pane tests, `npm run test`, `npm run build:vite`, and
   `git diff --check`.
+- v0.26 initial EPUB export beta is implemented locally: File menu and
+  command palette expose `Export EPUB (Beta)...`, the active Markdown
+  source is written through a save dialog as a minimal `.epub`, and the
+  archive includes XHTML content, heading-based navigation, package
+  metadata defaults, and a small stylesheet. It remains a beta export:
+  no external validator launch, cover / metadata editor, vertical
+  writing, bundled workspace-image resource packaging, or reader-perfect
+  pagination claim.
 - Markdown preview task checkboxes are complete for v0.18: Preview renders
   `- [ ]` / `- [x]` as inert display-only checkbox glyphs without
   changing saved Markdown.
@@ -157,11 +165,7 @@ Last reviewed: 2026-06-20 (v0.26 polish and EPUB export queue)
 Use `docs/current-work.md` for the active queue. The current highest
 priority items after the v0.25 App Store release are:
 
-1. v0.26 initial EPUB export: explicit export action from Markdown
-   source to a minimal `.epub` through a save dialog. No external
-   validator launch, vertical writing, advanced metadata editor, or
-   reader-perfect page-count claims.
-2. Post-v0.25 product refinement triage:
+1. Post-v0.25 product refinement triage:
    `docs/post-v0.25-product-refinement-plan.md` captures the next
    product-grade lens: one editing space, Workspace-as-book, UI that
    recedes, reliability, and AI as a review layer. Pick one small slice
@@ -185,11 +189,10 @@ preview card styling, and Sakura-specific selected-file highlight
 without adding a workspace switching dropdown or changing the
 single-workspace model.
 
-Latest completed: v0.26 e-book empty-state polish keeps the right-pane
-e-book toggle visible but disabled when no active document is available,
-keeps it disabled for image preview, and preserves enabled behavior for
-active editor documents while leaving L Mode's hidden-meta-bar behavior
-unchanged.
+Latest completed: v0.26 initial EPUB export beta adds a File menu and
+command palette action that writes the active Markdown source to a
+minimal `.epub` archive through a save dialog, with generated XHTML,
+heading navigation, package metadata defaults, and a small stylesheet.
 
 Earlier completed: v0.24 e-book single-page polish keeps Markdown source
 canonical and Preview / Export / L Mode untouched while adding a fixed

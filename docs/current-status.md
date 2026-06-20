@@ -132,8 +132,15 @@ Last reviewed: 2026-06-20 (v0.26 polish and EPUB export queue)
   Markdown document. It uses the existing Preview safety pipeline,
   heading-based chapter splitting, CSS Columns pseudo-pagination for the
   active chapter, and a fixed reader footer with chapter-local page
-  progress. Markdown source remains canonical; right-pane 2-up, EPUB
-  export, and whole-book page numbering remain deferred.
+  progress. Markdown source remains canonical; right-pane 2-up and
+  whole-book page numbering remain deferred.
+- EPUB export beta is available from the File menu and command palette
+  as an explicit active-document export action. It writes a minimal
+  `.epub` archive from the current Markdown source with XHTML content,
+  generated heading navigation, package metadata defaults, and a small
+  stylesheet. It is not a second document model and does not claim
+  reader-perfect pagination, vertical writing, cover metadata, or
+  external validator proof.
 - Markdown preview and Help document links keep supported
   workspace-relative text files inside the app, but route explicit
   `http:` / `https:` / `mailto:` / `tel:` clicks to the OS default
@@ -201,8 +208,8 @@ baseline, and smoke evidence are archived under
    and boundary docs stay live for future submissions.
 2. For UX work, start with `docs/current-work.md`. The current v0.26
    product queue has completed no-workspace New File / Save As and
-   e-book empty-state affordance polish; the next product slice is
-   initial EPUB export. Keep each slice small and source-preserving.
+   e-book empty-state affordance polish, and initial EPUB export beta.
+   Keep each slice small and source-preserving.
 3. For a future App Store submission, start with `docs/app-store-build.md`;
    use `npm run release:candidate -- --with-app-store-pkg` for local
    signed package checkpoints, keep account-specific notes under ignored

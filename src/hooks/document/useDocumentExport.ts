@@ -4,8 +4,10 @@ import {
   isTauriRuntime,
   openTempPrintHtml,
   openWorkspaceImage,
+  saveBinaryFileAs,
   saveTextFileAs,
 } from "../../lib/tauri";
+import { buildEpubBetaArchive } from "../../features/document/epubExport";
 import { getMarkdownPreviewCss } from "../../features/document/markdownExportCss";
 import {
   inlineWorkspaceAssetImages,
@@ -305,7 +307,38 @@ ${bodyHtml}
     }
   }, [activeContents, activeTab, setGlobalError, setStatus, workspaceRootPath]);
 
-  return { exportHtml, exportPdf };
+  const exportEpubBeta = useCallback(async () => {
+    if (!activeTab || activeContents === undefined) {
+      setStatus("No active document to export");
+      return;
+    }
+
+    try {
+      const destPath = await saveDialog({
+        defaultPath: activeTab.name.replace(/\.[^.]+$/, "") + ".epub",
+        filters: [{ name: "EPUB (Beta)", extensions: ["epub"] }],
+      });
+      if (!destPath) return;
+
+      const tabForExport = activeTabRef.current;
+      if (!tabForExport || tabForExport.id !== activeTab.id) {
+        setStatus("Export EPUB beta stopped; document changed");
+        return;
+      }
+
+      const archive = buildEpubBetaArchive({
+        documentName: tabForExport.name,
+        markdown: activeContentsRef.current,
+      });
+      await saveBinaryFileAs(destPath, archive);
+      setStatus(`Exported EPUB beta: ${destPath}`);
+    } catch (err) {
+      setGlobalError(`Export EPUB beta failed: ${String(err)}`);
+      setStatus("Export EPUB beta failed");
+    }
+  }, [activeContents, activeTab, setGlobalError, setStatus]);
+
+  return { exportEpubBeta, exportHtml, exportPdf };
 }
 
 function escapeHtml(text: string): string {

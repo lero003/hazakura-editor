@@ -167,6 +167,7 @@ pub fn run() {
             hide_main_window,
             save_text_file,
             save_text_file_as,
+            save_binary_file_as,
             update_app_menu_state,
             update_theme_menu_state,
             open_agent_window,

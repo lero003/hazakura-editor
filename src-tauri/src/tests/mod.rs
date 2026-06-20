@@ -19,6 +19,7 @@ mod common;
 mod encoding;
 mod external_links;
 mod files;
+mod menu;
 mod search;
 mod security;
 mod util;

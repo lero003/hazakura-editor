@@ -16,6 +16,7 @@ const tauriApi = vi.hoisted(() => ({
   isTauriRuntime: vi.fn(() => false),
   openTempPrintHtml: vi.fn(),
   openWorkspaceImage: vi.fn(),
+  saveBinaryFileAs: vi.fn(),
   saveTextFileAs: vi.fn(),
 }));
 
@@ -23,7 +24,12 @@ vi.mock("../../lib/tauri", () => ({
   isTauriRuntime: tauriApi.isTauriRuntime,
   openTempPrintHtml: tauriApi.openTempPrintHtml,
   openWorkspaceImage: tauriApi.openWorkspaceImage,
+  saveBinaryFileAs: tauriApi.saveBinaryFileAs,
   saveTextFileAs: tauriApi.saveTextFileAs,
+}));
+
+vi.mock("../../features/document/epubExport", () => ({
+  buildEpubBetaArchive: vi.fn(() => new Uint8Array([1, 2, 3])),
 }));
 
 vi.mock("../../features/document/markdownExportCss", () => ({
@@ -88,6 +94,7 @@ describe("useDocumentExport", () => {
     dialogApi.save.mockReset();
     markdownApi.inlineWorkspaceAssetImages.mockClear();
     markdownApi.renderMarkdown.mockClear();
+    tauriApi.saveBinaryFileAs.mockReset();
     tauriApi.saveTextFileAs.mockReset();
     document.documentElement.removeAttribute("style");
   });
@@ -218,5 +225,85 @@ describe("useDocumentExport", () => {
     expect(exportedHtml).toContain("  --status-text: #f6f1e8;");
     expect(exportedHtml).toContain("background: var(--status-bg)");
     expect(exportedHtml).toContain("color: var(--status-text)");
+  });
+
+  it("exports EPUB beta through an EPUB save dialog and binary file write", async () => {
+    dialogApi.save.mockResolvedValue("/tmp/a.epub");
+    tauriApi.saveBinaryFileAs.mockResolvedValue(undefined);
+    const setStatus = vi.fn();
+
+    const { result } = renderHook(() =>
+      useDocumentExport({
+        activeContents: "# Book\n",
+        activeTab: makeTab({ name: "book.md" }),
+        setGlobalError: vi.fn(),
+        setStatus,
+        workspaceRootPath: null,
+      }),
+    );
+
+    await act(async () => {
+      await result.current.exportEpubBeta();
+    });
+
+    expect(dialogApi.save).toHaveBeenCalledWith({
+      defaultPath: "book.epub",
+      filters: [{ name: "EPUB (Beta)", extensions: ["epub"] }],
+    });
+    expect(tauriApi.saveBinaryFileAs).toHaveBeenCalledWith(
+      "/tmp/a.epub",
+      new Uint8Array([1, 2, 3]),
+    );
+    expect(setStatus).toHaveBeenCalledWith("Exported EPUB beta: /tmp/a.epub");
+  });
+
+  it("stops EPUB beta export when the active tab changes while the dialog is open", async () => {
+    const firstTab = makeTab();
+    const secondTab = makeTab({
+      id: "/workspace/b.md",
+      name: "b.md",
+      path: "/workspace/b.md",
+    });
+    const setStatus = vi.fn();
+    let resolvePath: (value: string) => void = () => {};
+    dialogApi.save.mockImplementation(
+      () =>
+        new Promise<string>((resolve) => {
+          resolvePath = resolve;
+        }),
+    );
+
+    const { result, rerender } = renderHook(
+      ({ activeContents, activeTab }) =>
+        useDocumentExport({
+          activeContents,
+          activeTab,
+          setGlobalError: vi.fn(),
+          setStatus,
+          workspaceRootPath: null,
+        }),
+      {
+        initialProps: {
+          activeContents: "# First",
+          activeTab: firstTab,
+        },
+      },
+    );
+
+    let exportEpub: Promise<void> = Promise.resolve();
+    act(() => {
+      exportEpub = result.current.exportEpubBeta();
+    });
+    rerender({ activeContents: "# Second", activeTab: secondTab });
+
+    await act(async () => {
+      resolvePath("/tmp/a.epub");
+      await exportEpub;
+    });
+
+    expect(tauriApi.saveBinaryFileAs).not.toHaveBeenCalled();
+    expect(setStatus).toHaveBeenCalledWith(
+      "Export EPUB beta stopped; document changed",
+    );
   });
 });

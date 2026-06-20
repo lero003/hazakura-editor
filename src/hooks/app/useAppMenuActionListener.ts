@@ -5,6 +5,7 @@ import { isExternalCliAssistSurfaceAllowed } from "../../lib/distributionLane";
 import {
   APP_MENU_ACTION_EVENT,
   MENU_ABOUT_HELP,
+  MENU_EXPORT_EPUB_BETA,
   MENU_LOCAL_DATA_DISCLOSURE,
   MENU_OPEN_AGENT_WINDOW,
   MENU_OPEN_APPLE_ASSIST_WINDOW,
@@ -20,6 +21,7 @@ import {
 
 export type AppMenuActionHandlers = {
   createNewFile: () => void | Promise<unknown>;
+  exportEpubBeta: () => void | Promise<unknown>;
   exportHtml: () => void | Promise<unknown>;
   exportPdf: () => void | Promise<unknown>;
   openAgentWindow: () => void | Promise<unknown>;
@@ -119,6 +121,9 @@ export function useAppMenuActionListener({
           break;
         case "export-html":
           void actions.exportHtml();
+          break;
+        case MENU_EXPORT_EPUB_BETA:
+          void actions.exportEpubBeta();
           break;
         case "export-pdf":
           void actions.exportPdf();

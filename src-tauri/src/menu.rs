@@ -136,6 +136,13 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
             )?,
             &MenuItem::with_id(
                 app,
+                MENU_EXPORT_EPUB_BETA,
+                label("Export as EPUB (Beta)…", "EPUBとして書き出す（β）…"),
+                true,
+                None::<&str>,
+            )?,
+            &MenuItem::with_id(
+                app,
                 MENU_EXPORT_PDF,
                 label("Print to PDF…", "PDFに印刷…"),
                 true,
@@ -594,6 +601,7 @@ pub(crate) fn emit_app_menu_event<R: tauri::Runtime>(
                 | MENU_SAVE
                 | MENU_SAVE_AS
                 | MENU_EXPORT_HTML
+                | MENU_EXPORT_EPUB_BETA
                 | MENU_EXPORT_PDF
                 | MENU_CLOSE_WINDOW
                 | MENU_QUIT_APP

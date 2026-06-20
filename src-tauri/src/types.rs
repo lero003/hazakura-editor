@@ -113,6 +113,7 @@ pub(crate) const MENU_SAVE_AS: &str = "save-as";
 pub(crate) const MENU_CLOSE_WINDOW: &str = "close-window";
 pub(crate) const MENU_QUIT_APP: &str = "quit-app";
 pub(crate) const MENU_EXPORT_HTML: &str = "export-html";
+pub(crate) const MENU_EXPORT_EPUB_BETA: &str = "export-epub-beta";
 pub(crate) const MENU_EXPORT_PDF: &str = "export-pdf";
 pub(crate) const MENU_TOGGLE_PREVIEW: &str = "toggle-preview";
 pub(crate) const MENU_TOGGLE_L_MODE: &str = "toggle-l-mode";

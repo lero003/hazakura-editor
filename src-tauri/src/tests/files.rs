@@ -773,6 +773,106 @@ fn save_text_file_as_allows_path_inside_workspace_root() {
 }
 
 #[test]
+fn save_binary_file_as_writes_new_binary_file() {
+    let dir = unique_test_dir("save_binary_as");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("book.epub");
+
+    save_binary_file_as_with_label(
+        MAIN_WINDOW_LABEL,
+        path.to_string_lossy().to_string(),
+        vec![0x50, 0x4b, 0x03, 0x04],
+    )
+    .expect("save binary file");
+
+    assert_eq!(
+        fs::read(&path).expect("read saved binary"),
+        vec![0x50, 0x4b, 0x03, 0x04],
+    );
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn save_binary_file_as_base64_decodes_ipc_payload() {
+    let dir = unique_test_dir("save_binary_base64");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("book.epub");
+
+    save_binary_file_as_base64_with_label(
+        MAIN_WINDOW_LABEL,
+        path.to_string_lossy().to_string(),
+        "AAEC/f7/".to_string(),
+    )
+    .expect("save base64 binary file");
+
+    assert_eq!(
+        fs::read(&path).expect("read saved binary"),
+        vec![0, 1, 2, 253, 254, 255],
+    );
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn save_binary_file_as_base64_rejects_invalid_payload() {
+    let dir = unique_test_dir("save_binary_invalid_base64");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("book.epub");
+
+    let err = save_binary_file_as_base64_with_label(
+        MAIN_WINDOW_LABEL,
+        path.to_string_lossy().to_string(),
+        "not-valid!!!".to_string(),
+    )
+    .expect_err("invalid base64 payload should be rejected");
+
+    assert!(err.contains("Invalid base64"), "{err}");
+    assert!(!path.exists());
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn save_binary_file_as_rejects_existing_file() {
+    let dir = unique_test_dir("save_binary_existing");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("book.epub");
+    fs::write(&path, b"keep me").expect("write existing file");
+
+    let err = save_binary_file_as_with_label(
+        MAIN_WINDOW_LABEL,
+        path.to_string_lossy().to_string(),
+        vec![0x50, 0x4b],
+    )
+    .expect_err("existing binary file should not be overwritten");
+
+    assert!(err.contains("already exists"), "{err}");
+    assert_eq!(fs::read(&path).expect("read protected file"), b"keep me");
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn save_binary_file_as_rejects_non_main_window() {
+    let dir = unique_test_dir("save_binary_agent");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("book.epub");
+
+    let err = save_binary_file_as_with_label(
+        AGENT_WINDOW_LABEL,
+        path.to_string_lossy().to_string(),
+        vec![0x50, 0x4b],
+    )
+    .expect_err("agent window should not write binary files");
+
+    assert!(err.contains("not allowed"), "{err}");
+    assert!(!path.exists());
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
 fn metadata_rejects_oversized_files() {
     let dir = unique_test_dir("oversized");
     fs::create_dir_all(&dir).expect("create test dir");

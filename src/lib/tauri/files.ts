@@ -100,6 +100,28 @@ export async function saveTextFileAs(
   });
 }
 
+export async function saveBinaryFileAs(
+  path: string,
+  contents: Uint8Array,
+): Promise<void> {
+  await invoke("save_binary_file_as", {
+    path,
+    contentsBase64: bytesToBase64(contents),
+  });
+}
+
+function bytesToBase64(contents: Uint8Array): string {
+  let binary = "";
+  const chunkSize = 8192;
+
+  for (let index = 0; index < contents.length; index += chunkSize) {
+    const chunk = contents.subarray(index, index + chunkSize);
+    binary += String.fromCharCode(...chunk);
+  }
+
+  return btoa(binary);
+}
+
 export async function revealPathInFileManager(path: string): Promise<void> {
   if (!isTauriRuntime()) {
     return;

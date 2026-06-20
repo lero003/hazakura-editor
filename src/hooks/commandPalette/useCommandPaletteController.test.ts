@@ -16,6 +16,7 @@ describe("useCommandPaletteController", () => {
         actions: {
           applyActiveMarkdownFormat: vi.fn(),
           createNewFile: vi.fn(),
+          exportEpubBeta: vi.fn(),
           exportHtml: vi.fn(),
           exportPdf: vi.fn(),
           focusAdjacentTab: vi.fn(),
@@ -91,6 +92,7 @@ describe("useCommandPaletteController", () => {
         actions: {
           applyActiveMarkdownFormat: vi.fn(),
           createNewFile: vi.fn(),
+          exportEpubBeta: vi.fn(),
           exportHtml: vi.fn(),
           exportPdf: vi.fn(),
           focusAdjacentTab: vi.fn(),
@@ -171,6 +173,7 @@ describe("useCommandPaletteController", () => {
         actions: {
           applyActiveMarkdownFormat: vi.fn(),
           createNewFile: vi.fn(),
+          exportEpubBeta: vi.fn(),
           exportHtml: vi.fn(),
           exportPdf: vi.fn(),
           focusAdjacentTab: vi.fn(),
@@ -227,12 +230,77 @@ describe("useCommandPaletteController", () => {
     expect(commandIds).toContain("review.tabAgainstDisk");
   });
 
+  it("runs the EPUB beta export command from the command palette", () => {
+    const exportEpubBeta = vi.fn(async () => {});
+    const { result } = renderHook(() =>
+      useCommandPaletteController({
+        actions: {
+          applyActiveMarkdownFormat: vi.fn(),
+          createNewFile: vi.fn(),
+          exportEpubBeta,
+          exportHtml: vi.fn(),
+          exportPdf: vi.fn(),
+          focusAdjacentTab: vi.fn(),
+          handleSendSelectionToAgent: vi.fn(),
+          insertTable: vi.fn(),
+          invokeAppleAssist: vi.fn(),
+          openAgentWindow: vi.fn(),
+          openAppleAssistWindow: vi.fn(),
+          openFile: vi.fn(),
+          openWorkspace: vi.fn(),
+          openWorkspaceFile: vi.fn(),
+          requestCloseTab: vi.fn(),
+          requestRestoreFromBackup: vi.fn(),
+          requestReviewTabAgainstDisk: vi.fn(),
+          requestWindowClose: vi.fn(),
+          saveActiveTab: vi.fn(),
+          saveActiveTabAs: vi.fn(),
+          setEditorSettings: vi.fn(),
+          setFindVisible: vi.fn(),
+          setPreferencesDialogMode: vi.fn(),
+          setPreviewVisible: vi.fn(),
+          toggleDiffPane: vi.fn(),
+          toggleLMode: vi.fn(),
+          toggleOutlinePane: vi.fn(),
+          toggleQuickOpen: vi.fn(),
+        },
+        activeTab: null,
+        activeTabId: null,
+        appleAssistAvailability: { kind: "unsupported" },
+        appleLocalAssistAllowed: true,
+        appleAssistCopy: getAppleAssistCopy("en"),
+        editorPaneRef: { current: null },
+        lModeCopy: getLModeCopy("en"),
+        setStatus: vi.fn(),
+        themePreference: "light",
+        workspaceRootPath: null,
+      }),
+    );
+
+    act(() => {
+      result.current.openCommandPalette();
+      result.current.setCommandPaletteQuery("epub");
+    });
+
+    const command = result.current.filteredCommands.find(
+      (item) => item.id === "file.exportEpubBeta",
+    );
+    expect(command?.label).toBe("Export EPUB (Beta)…");
+
+    act(() => {
+      command?.run();
+    });
+
+    expect(exportEpubBeta).toHaveBeenCalledTimes(1);
+  });
+
   it("hides Apple Local Assist commands when availability is not `available`", () => {
     const { result } = renderHook(() =>
       useCommandPaletteController({
         actions: {
           applyActiveMarkdownFormat: vi.fn(),
           createNewFile: vi.fn(),
+          exportEpubBeta: vi.fn(),
           exportHtml: vi.fn(),
           exportPdf: vi.fn(),
           focusAdjacentTab: vi.fn(),
@@ -293,6 +361,7 @@ describe("useCommandPaletteController", () => {
         actions: {
           applyActiveMarkdownFormat: vi.fn(),
           createNewFile: vi.fn(),
+          exportEpubBeta: vi.fn(),
           exportHtml: vi.fn(),
           exportPdf: vi.fn(),
           focusAdjacentTab: vi.fn(),
@@ -370,6 +439,7 @@ describe("useCommandPaletteController", () => {
         actions: {
           applyActiveMarkdownFormat: vi.fn(),
           createNewFile: vi.fn(),
+          exportEpubBeta: vi.fn(),
           exportHtml: vi.fn(),
           exportPdf: vi.fn(),
           focusAdjacentTab: vi.fn(),
@@ -454,6 +524,7 @@ describe("useCommandPaletteController", () => {
         actions: {
           applyActiveMarkdownFormat: vi.fn(),
           createNewFile: vi.fn(),
+          exportEpubBeta: vi.fn(),
           exportHtml: vi.fn(),
           exportPdf: vi.fn(),
           focusAdjacentTab: vi.fn(),
@@ -538,6 +609,7 @@ describe("useCommandPaletteController", () => {
         actions: {
           applyActiveMarkdownFormat: vi.fn(),
           createNewFile: vi.fn(),
+          exportEpubBeta: vi.fn(),
           exportHtml: vi.fn(),
           exportPdf: vi.fn(),
           focusAdjacentTab: vi.fn(),

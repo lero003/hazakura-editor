@@ -8,6 +8,7 @@ describe("useAppShellSideEffectsController", () => {
       useAppShellSideEffectsController({
         actions: {
           createNewFile: vi.fn(),
+          exportEpubBeta: vi.fn(),
           exportHtml: vi.fn(),
           exportPdf: vi.fn(),
           openAgentWindow: vi.fn(),

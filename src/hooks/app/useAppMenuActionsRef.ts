@@ -4,6 +4,7 @@ import { useLatestValueRef } from "./useLatestValueRef";
 
 export function useAppMenuActionsRef({
   createNewFile,
+  exportEpubBeta,
   exportHtml,
   exportPdf,
   openAgentWindow,
@@ -19,6 +20,7 @@ export function useAppMenuActionsRef({
   const appMenuActions = useMemo<AppMenuActionHandlers>(
     () => ({
       createNewFile,
+      exportEpubBeta,
       exportHtml,
       exportPdf,
       openAgentWindow,
@@ -33,6 +35,7 @@ export function useAppMenuActionsRef({
     }),
     [
       createNewFile,
+      exportEpubBeta,
       exportHtml,
       exportPdf,
       openAgentWindow,

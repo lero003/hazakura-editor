@@ -365,7 +365,7 @@ Expected v0.26 shape:
 - Save on an untitled/pathless tab routes to Save As before writing;
 - the e-book affordance remains visible in no-file / non-Markdown empty
   states instead of disappearing;
-- initial EPUB export exists as an explicit action from Markdown source;
+- initial EPUB export beta exists as an explicit action from Markdown source;
 - EPUB output is an initial archive for current-document / heading-based
   content, not a reader-perfect pagination guarantee.
 

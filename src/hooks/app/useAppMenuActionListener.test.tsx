@@ -27,6 +27,7 @@ vi.mock("@tauri-apps/api/event", () => ({
 function setup() {
   const actions = {
     createNewFile: vi.fn(),
+    exportEpubBeta: vi.fn(),
     exportHtml: vi.fn(),
     exportPdf: vi.fn(),
     openAgentWindow: vi.fn(),
@@ -69,5 +70,15 @@ describe("useAppMenuActionListener", () => {
 
     expect(actions.requestAppQuit).toHaveBeenCalledTimes(1);
     expect(actions.requestWindowClose).not.toHaveBeenCalled();
+  });
+
+  it("routes the EPUB beta export menu action", () => {
+    const actions = setup();
+
+    void menuListeners[0]?.({ payload: "export-epub-beta" } as never);
+
+    expect(actions.exportEpubBeta).toHaveBeenCalledTimes(1);
+    expect(actions.exportHtml).not.toHaveBeenCalled();
+    expect(actions.exportPdf).not.toHaveBeenCalled();
   });
 });

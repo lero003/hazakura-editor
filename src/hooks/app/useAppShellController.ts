@@ -776,6 +776,7 @@ export function useAppShellController() {
 
   // section: document IO controller
   const {
+    exportEpubBeta,
     exportHtml,
     exportPdf,
     saveActiveTab,
@@ -1043,6 +1044,7 @@ export function useAppShellController() {
     actions: {
       applyActiveMarkdownFormat,
       createNewFile,
+      exportEpubBeta,
       exportHtml,
       exportPdf,
       focusAdjacentTab,
@@ -1092,6 +1094,7 @@ export function useAppShellController() {
   useAppShellSideEffectsController({
     actions: {
       createNewFile,
+      exportEpubBeta,
       exportHtml,
       exportPdf,
       openAgentWindow: () => {
