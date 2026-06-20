@@ -1,9 +1,10 @@
-import { cleanup, render, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 import { readFileSync } from "node:fs";
 import { createRef } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   getEditorWrappingExtensions,
+  isScrollerPointerOnScrollbar,
   type EditorPaneHandle,
 } from "./EditorPane";
 import EditorPane from "./EditorPane";
@@ -21,6 +22,78 @@ describe("getEditorWrappingExtensions", () => {
     expect(getEditorWrappingExtensions(false, false)).toHaveLength(0);
     expect(getEditorWrappingExtensions(true, false).length).toBeGreaterThan(0);
     expect(getEditorWrappingExtensions(false, true).length).toBeGreaterThan(0);
+  });
+});
+
+describe("isScrollerPointerOnScrollbar", () => {
+  function makeScroller({
+    clientHeight = 200,
+    clientWidth = 280,
+    offsetHeight = 215,
+    offsetWidth = 300,
+    scrollHeight = 1200,
+    scrollWidth = 280,
+  }: {
+    clientHeight?: number;
+    clientWidth?: number;
+    offsetHeight?: number;
+    offsetWidth?: number;
+    scrollHeight?: number;
+    scrollWidth?: number;
+  }) {
+    const scroller = document.createElement("div");
+    Object.defineProperties(scroller, {
+      clientHeight: { configurable: true, value: clientHeight },
+      clientWidth: { configurable: true, value: clientWidth },
+      offsetHeight: { configurable: true, value: offsetHeight },
+      offsetWidth: { configurable: true, value: offsetWidth },
+      scrollHeight: { configurable: true, value: scrollHeight },
+      scrollWidth: { configurable: true, value: scrollWidth },
+    });
+    scroller.getBoundingClientRect = () =>
+      ({
+        bottom: 215,
+        height: 215,
+        left: 0,
+        right: 300,
+        top: 0,
+        width: 300,
+      }) as DOMRect;
+
+    return scroller;
+  }
+
+  it("detects pointer down in the vertical scrollbar gutter", () => {
+    expect(
+      isScrollerPointerOnScrollbar(
+        { button: 0, clientX: 292, clientY: 50, target: null },
+        makeScroller({ offsetWidth: 300, clientWidth: 280 }),
+      ),
+    ).toBe(true);
+  });
+
+  it("uses a narrow right-edge fallback for overlay scrollbars", () => {
+    const scroller = makeScroller({ offsetWidth: 300, clientWidth: 300 });
+
+    expect(
+      isScrollerPointerOnScrollbar(
+        { button: 0, clientX: 292, clientY: 50, target: scroller },
+        scroller,
+      ),
+    ).toBe(true);
+  });
+
+  it("does not treat normal editor content clicks as scrollbar interaction", () => {
+    const scroller = makeScroller({ offsetWidth: 300, clientWidth: 280 });
+    const content = document.createElement("div");
+    scroller.append(content);
+
+    expect(
+      isScrollerPointerOnScrollbar(
+        { button: 0, clientX: 120, clientY: 50, target: content },
+        scroller,
+      ),
+    ).toBe(false);
   });
 });
 
@@ -202,6 +275,44 @@ describe("EditorPane", () => {
     } finally {
       requestAnimationFrameSpy.mockRestore();
     }
+  });
+
+  it("blurs the editor content when the native scrollbar gutter is pressed", () => {
+    const { container } = render(
+      renderEditorPane({
+        value: Array.from({ length: 80 }, (_, index) => `line ${index + 1}`).join(
+          "\n",
+        ),
+      }),
+    );
+    const scroller = container.querySelector(".cm-scroller") as HTMLElement;
+    const content = container.querySelector(".cm-content") as HTMLElement;
+    Object.defineProperties(scroller, {
+      clientHeight: { configurable: true, value: 200 },
+      clientWidth: { configurable: true, value: 280 },
+      offsetHeight: { configurable: true, value: 215 },
+      offsetWidth: { configurable: true, value: 300 },
+      scrollHeight: { configurable: true, value: 1200 },
+      scrollWidth: { configurable: true, value: 280 },
+    });
+    scroller.getBoundingClientRect = () =>
+      ({
+        bottom: 215,
+        height: 215,
+        left: 0,
+        right: 300,
+        top: 0,
+        width: 300,
+      }) as DOMRect;
+    const blurSpy = vi.spyOn(content, "blur");
+
+    fireEvent.mouseDown(scroller, {
+      button: 0,
+      clientX: 292,
+      clientY: 50,
+    });
+
+    expect(blurSpy).toHaveBeenCalledTimes(1);
   });
 
   it("syncs the CodeMirror document when the same tab receives an external value reset", () => {

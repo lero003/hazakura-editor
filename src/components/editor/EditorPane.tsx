@@ -557,7 +557,13 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     const handleScroll = () => {
       onScrollRatioChangeRef.current(readScrollRatio(view.scrollDOM));
     };
+    const handleScrollerMouseDown = (event: MouseEvent) => {
+      if (isScrollerPointerOnScrollbar(event, view.scrollDOM)) {
+        view.contentDOM.blur();
+      }
+    };
 
+    view.scrollDOM.addEventListener("mousedown", handleScrollerMouseDown);
     view.scrollDOM.addEventListener("scroll", handleScroll, { passive: true });
     destroyMountedViewRef.current = () => {
       if (jumpScrollReportFrameRef.current !== null) {
@@ -565,6 +571,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         win.cancelAnimationFrame(jumpScrollReportFrameRef.current);
         jumpScrollReportFrameRef.current = null;
       }
+      view.scrollDOM.removeEventListener("mousedown", handleScrollerMouseDown);
       view.scrollDOM.removeEventListener("scroll", handleScroll);
       view.destroy();
       if (viewRef.current === view) {
@@ -869,6 +876,59 @@ function clampScrollRatio(ratio: number): number {
   }
 
   return Math.min(Math.max(ratio, 0), 1);
+}
+
+type ScrollbarPointerEvent = Pick<
+  PointerEvent | MouseEvent,
+  "button" | "clientX" | "clientY" | "target"
+>;
+
+export function isScrollerPointerOnScrollbar(
+  event: ScrollbarPointerEvent,
+  scroller: HTMLElement,
+): boolean {
+  if (event.button !== 0) {
+    return false;
+  }
+
+  if (event.target instanceof Node && !scroller.contains(event.target)) {
+    return false;
+  }
+
+  const rect = scroller.getBoundingClientRect();
+  const hasVerticalScrollbar = scroller.scrollHeight > scroller.clientHeight;
+  const hasHorizontalScrollbar = scroller.scrollWidth > scroller.clientWidth;
+  const eventTargetIsScroller = event.target === scroller;
+  const verticalScrollbarWidth = Math.max(
+    0,
+    scroller.offsetWidth - scroller.clientWidth,
+  );
+  const horizontalScrollbarHeight = Math.max(
+    0,
+    scroller.offsetHeight - scroller.clientHeight,
+  );
+  const effectiveVerticalScrollbarWidth =
+    verticalScrollbarWidth > 0
+      ? verticalScrollbarWidth
+      : eventTargetIsScroller
+        ? 14
+        : 0;
+  const effectiveHorizontalScrollbarHeight =
+    horizontalScrollbarHeight > 0
+      ? horizontalScrollbarHeight
+      : eventTargetIsScroller
+        ? 14
+        : 0;
+  const isVerticalScrollbar =
+    hasVerticalScrollbar &&
+    effectiveVerticalScrollbarWidth > 0 &&
+    event.clientX >= rect.right - effectiveVerticalScrollbarWidth;
+  const isHorizontalScrollbar =
+    hasHorizontalScrollbar &&
+    effectiveHorizontalScrollbarHeight > 0 &&
+    event.clientY >= rect.bottom - effectiveHorizontalScrollbarHeight;
+
+  return isVerticalScrollbar || isHorizontalScrollbar;
 }
 
 function insertTableAtCursor(view: EditorView, columns: number) {
