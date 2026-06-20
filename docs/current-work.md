@@ -544,13 +544,31 @@ on the later browser scroll event and avoid the line-ratio mismatch.
 This keeps Markdown source, outline parsing, cursor selection, Preview
 rendering, and mode state unchanged.
 
-Verification: `npm run test -- src/components/editor/EditorPane.test.tsx`.
+Follow-up human-side use found a separate unresolved manual-scroll issue:
+Outline heading jumps are fine, but central-editor manual scrolling with
+a trackpad, wheel, or scrollbar can fail after the first successful large
+movement. The editor can appear to stay near the previous focus area and
+behave like text is being selected instead of scrolling. A scroll-sync
+feedback hypothesis was explored, but scrollbar testing still reproduced
+the issue, so no behavior change is kept from that attempt. Treat this as
+a held investigation item around CodeMirror scrollbar / pointer handling,
+CSS hit targets, or WebView native scrolling behavior rather than as a
+Phase 3 completion blocker. This still does not add persistence,
+indexing, Preview DOM editing, source-aware mapping, or a second document
+model.
+
+Verification for the accepted Phase 3 code path:
+`npm run test -- src/components/editor/EditorPane.test.tsx`.
 
 Human-side built-app smoke passed on 2026-06-20: with a long Markdown
 document, Outline heading clicks near deep document positions did not
 feel uncomfortable, including the observed Preview sync behavior around
-roughly 6000 lines. Phase 3 is closed. The broader session-local
-editing-position history candidate is not implemented in this slice.
+roughly 6000 lines. The unresolved central-editor manual-scroll issue is
+held for a later focused debugging slice unless it becomes release
+blocking. The remaining editor / Preview visual drift is tracked as lower
+priority unless it makes navigation feel broken. The broader
+session-local editing-position history candidate is not implemented in
+this slice.
 
 ## Active UX Queue
 

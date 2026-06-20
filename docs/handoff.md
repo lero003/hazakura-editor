@@ -66,7 +66,17 @@ Last reviewed: 2026-06-20 (v0.27 refinement Phase 2)
   and reports the settled editor pixel scroll ratio, so scroll sync /
   HUD consumers do not depend only on the later browser scroll event and
   avoid the target-line-ratio mismatch seen in long documents. The
-  broader editing-position history idea remains unimplemented.
+  unresolved residual issue is central-editor manual scrolling, not
+  Outline jumps: after the first successful large movement, trackpad /
+  wheel / scrollbar scrolling can appear to stay near the previous focus
+  area and behave like text selection. A scroll-sync feedback hypothesis
+  was explored, but scrollbar testing still reproduced the issue, so no
+  behavior change is kept from that attempt. Hold this for a later
+  focused CodeMirror scrollbar / pointer handling / WebView scrolling
+  investigation unless it becomes release blocking. The remaining editor
+  / Preview visual drift is lower priority unless it makes navigation
+  feel broken. The broader editing-position history idea remains
+  unimplemented.
 - A review-derived pre-release code-quality fix queue now lives in
   `docs/pre-release-fix-plan.md`. A follow-up external quality review
   has been triaged there as accepted vs deferred / not adopted items. It
@@ -197,7 +207,11 @@ Use `docs/current-work.md` for the active queue. The current highest
 priority items after the v0.26 App Store release are:
 
 1. v0.27 Phase 4 status bar structure cleanup.
-2. Core Safe Editor quality probe only when concrete v0.27 queue items
+2. Held residual: central-editor manual scrollbar / trackpad / wheel large
+   scrolling can misbehave after the first successful large movement.
+   Reopen only as a focused CodeMirror scrollbar / pointer / WebView
+   scrolling slice, or if it becomes release blocking.
+3. Core Safe Editor quality probe only when concrete v0.27 queue items
    are exhausted.
 
 Recently completed: v0.20 Sakura chrome / file-state clarity kept New
