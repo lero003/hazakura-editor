@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState, type RefObject } from "react";
 import type { EpubExportSettings } from "../../features/document/epubExport";
 import type { MenuLanguage } from "../../types";
 import { isJapaneseMenuLanguage } from "../../types";
 
 type EpubExportSettingsDialogProps = {
+  cancelButtonRef: RefObject<HTMLButtonElement | null>;
+  dialogRef: RefObject<HTMLElement | null>;
   documentName: string;
   initialSettings: EpubExportSettings;
   menuLanguage: MenuLanguage;
@@ -12,6 +14,8 @@ type EpubExportSettingsDialogProps = {
 };
 
 export function EpubExportSettingsDialog({
+  cancelButtonRef,
+  dialogRef,
   documentName,
   initialSettings,
   menuLanguage,
@@ -24,17 +28,6 @@ export function EpubExportSettingsDialog({
   const [language, setLanguage] = useState(initialSettings.language);
   const titleValid = title.trim().length > 0;
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onCancel();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown, true);
-    return () => window.removeEventListener("keydown", handleKeyDown, true);
-  }, [onCancel]);
-
   return (
     <div className="modal-backdrop" role="presentation">
       <section
@@ -42,6 +35,7 @@ export function EpubExportSettingsDialog({
         aria-labelledby="epub-export-settings-title"
         aria-modal="true"
         className="close-dialog epub-export-settings-dialog"
+        ref={dialogRef}
         role="dialog"
       >
         <h2 id="epub-export-settings-title">{copy.title}</h2>
@@ -88,7 +82,7 @@ export function EpubExportSettingsDialog({
             <button type="submit" disabled={!titleValid}>
               {copy.export}
             </button>
-            <button type="button" onClick={onCancel}>
+            <button ref={cancelButtonRef} type="button" onClick={onCancel}>
               {copy.cancel}
             </button>
           </div>

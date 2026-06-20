@@ -248,6 +248,8 @@ export function useAppShellController() {
     closeTabCancelButtonRef,
     closeTabDialogRef,
     discardingWindowCloseRef,
+    epubExportCancelButtonRef,
+    epubExportDialogRef,
     modalOpen,
     moveTrashCancelButtonRef,
     moveTrashDialogRef,
@@ -798,8 +800,9 @@ export function useAppShellController() {
     tabsRef,
     workspaceRootPath,
   });
+  const epubExportSettingsOpen = epubExportRequest !== null;
   const modalOpenWithBlockingDialogs =
-    modalOpen || pendingTrashOpen || epubExportRequest !== null;
+    modalOpen || pendingTrashOpen || epubExportSettingsOpen;
 
   // L Mode (えるモード) toggle. Wraps a simple
   // setEditorSettings flip so the command palette and the
@@ -1187,6 +1190,8 @@ export function useAppShellController() {
       appCloseDialogRef,
       closeTabCancelButtonRef,
       closeTabDialogRef,
+      epubExportDialogRef,
+      epubExportSettingsOpen,
       moveTrashCancelButtonRef,
       moveTrashDialogRef,
       commandPaletteVisible,
@@ -1218,6 +1223,7 @@ export function useAppShellController() {
       onRequestWindowClose: requestWindowClose,
       onSaveActiveTab: saveActiveTab,
       onSaveActiveTabAs: saveActiveTabAs,
+      onCancelEpubBetaExport: cancelEpubBetaExport,
       pendingAppClose,
       pendingCloseTabOpen,
       pendingTrashOpen,
@@ -1389,6 +1395,8 @@ export function useAppShellController() {
     editorPreviewGridStyle,
     editorSettings,
     editorTheme,
+    epubExportCancelButtonRef,
+    epubExportDialogRef,
     epubExportRequest,
     lModeCopy,
     lModeEnabled: editorSettings.lModeEnabled,

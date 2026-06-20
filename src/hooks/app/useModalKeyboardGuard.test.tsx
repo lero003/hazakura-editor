@@ -35,15 +35,18 @@ function renderGuard(overrides: {
   modalOpen?: boolean;
   appCloseDialogRef?: RefValue<HTMLElement>;
   closeTabDialogRef?: RefValue<HTMLElement>;
+  epubExportDialogRef?: RefValue<HTMLElement>;
   moveTrashDialogRef?: RefValue<HTMLElement>;
   preferencesDialogRef?: RefValue<HTMLElement>;
   pendingAppClose?: boolean;
   pendingCloseTabOpen?: boolean;
+  epubExportSettingsOpen?: boolean;
   pendingTrashOpen?: boolean;
   preferencesOpen?: boolean;
   commandPaletteVisible?: boolean;
   globalSearchVisible?: boolean;
   onCancelAppClose?: () => void;
+  onCancelEpubBetaExport?: () => void;
   onCancelPendingTrash?: () => void;
   onCancelTabClose?: () => void;
   onCloseCommandPalette?: () => void;
@@ -51,6 +54,7 @@ function renderGuard(overrides: {
   onClosePreferences?: () => void;
 }) {
   const onCancelAppClose = overrides.onCancelAppClose ?? vi.fn();
+  const onCancelEpubBetaExport = overrides.onCancelEpubBetaExport ?? vi.fn();
   const onCancelPendingTrash = overrides.onCancelPendingTrash ?? vi.fn();
   const onCancelTabClose = overrides.onCancelTabClose ?? vi.fn();
   const onCloseCommandPalette = overrides.onCloseCommandPalette ?? vi.fn();
@@ -60,6 +64,9 @@ function renderGuard(overrides: {
     current: null,
   };
   const closeTabDialogRef = overrides.closeTabDialogRef ?? {
+    current: null,
+  };
+  const epubExportDialogRef = overrides.epubExportDialogRef ?? {
     current: null,
   };
   const moveTrashDialogRef = overrides.moveTrashDialogRef ?? {
@@ -74,10 +81,13 @@ function renderGuard(overrides: {
       appCloseDialogRef,
       closeTabDialogRef,
       commandPaletteVisible: overrides.commandPaletteVisible ?? false,
+      epubExportDialogRef,
+      epubExportSettingsOpen: overrides.epubExportSettingsOpen ?? false,
       globalSearchVisible: overrides.globalSearchVisible ?? false,
       modalOpen: overrides.modalOpen ?? true,
       moveTrashDialogRef,
       onCancelAppClose,
+      onCancelEpubBetaExport,
       onCancelPendingTrash,
       onCancelTabClose,
       onCloseCommandPalette,
@@ -97,8 +107,10 @@ function renderGuard(overrides: {
     ...utils,
     appCloseDialogRef,
     closeTabDialogRef,
+    epubExportDialogRef,
     moveTrashDialogRef,
     onCancelAppClose,
+    onCancelEpubBetaExport,
     onCancelPendingTrash,
     onCancelTabClose,
     onCloseCommandPalette,
@@ -138,6 +150,16 @@ describe("useModalKeyboardGuard v0.7 modal Escape routing", () => {
     expect(utils.onCancelTabClose).not.toHaveBeenCalled();
     expect(utils.onCancelAppClose).not.toHaveBeenCalled();
     expect(utils.onCancelPendingTrash).not.toHaveBeenCalled();
+  });
+
+  it("routes Escape to onCancelEpubBetaExport when the EPUB settings dialog is open", () => {
+    const utils = renderGuard({ epubExportSettingsOpen: true });
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(utils.onCancelEpubBetaExport).toHaveBeenCalledTimes(1);
+    expect(utils.onCancelTabClose).not.toHaveBeenCalled();
+    expect(utils.onCancelAppClose).not.toHaveBeenCalled();
+    expect(utils.onCancelPendingTrash).not.toHaveBeenCalled();
+    expect(utils.onClosePreferences).not.toHaveBeenCalled();
   });
 
   it("prefers the command palette over the move-to-trash dialog on Escape", () => {
@@ -334,5 +356,50 @@ describe("useModalKeyboardGuard v0.18 move-to-trash Tab trap", () => {
     utils.unmount();
     trashSection.remove();
     preferencesSection.remove();
+  });
+});
+
+describe("useModalKeyboardGuard EPUB export settings Tab trap", () => {
+  function setupDialog() {
+    const section = document.createElement("section");
+    section.setAttribute("role", "dialog");
+    const titleInput = document.createElement("input");
+    const exportButton = document.createElement("button");
+    exportButton.type = "button";
+    exportButton.textContent = "Export";
+    const cancelButton = document.createElement("button");
+    cancelButton.type = "button";
+    cancelButton.textContent = "Cancel";
+    section.append(titleInput, exportButton, cancelButton);
+    document.body.append(section);
+    const dialogRef: RefValue<HTMLElement> = { current: section };
+    return {
+      cancelButton,
+      cleanup: () => {
+        section.remove();
+      },
+      dialogRef,
+      titleInput,
+    };
+  }
+
+  it("wraps Tab from the last focusable back to the first inside the EPUB settings dialog", async () => {
+    const { cancelButton, cleanup, dialogRef, titleInput } = setupDialog();
+    const utils = renderGuard({
+      epubExportDialogRef: dialogRef,
+      epubExportSettingsOpen: true,
+    });
+
+    await act(async () => {
+      cancelButton.focus();
+    });
+    expect(document.activeElement).toBe(cancelButton);
+
+    fireEvent.keyDown(window, { key: "Tab" });
+
+    expect(document.activeElement).toBe(titleInput);
+
+    utils.unmount();
+    cleanup();
   });
 });

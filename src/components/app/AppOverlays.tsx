@@ -115,6 +115,8 @@ type AppOverlaysProps = {
   dirtyTabCount: number;
   discardAllAndCloseWindow: () => void;
   editorSettings: EditorSettings;
+  epubExportCancelButtonRef: RefObject<HTMLButtonElement | null>;
+  epubExportDialogRef: RefObject<HTMLElement | null>;
   epubExportRequest: EpubExportRequest | null;
   fileOpsCopy: WorkspaceFileOpsCopy;
   filteredCommands: Command[];
@@ -232,6 +234,8 @@ export function AppOverlays({
   dirtyTabCount,
   discardAllAndCloseWindow,
   editorSettings,
+  epubExportCancelButtonRef,
+  epubExportDialogRef,
   epubExportRequest,
   fileOpsCopy,
   filteredCommands,
@@ -381,6 +385,8 @@ export function AppOverlays({
 
       {epubExportRequest ? (
         <EpubExportSettingsDialog
+          cancelButtonRef={epubExportCancelButtonRef}
+          dialogRef={epubExportDialogRef}
           documentName={epubExportRequest.documentName}
           initialSettings={epubExportRequest.settings}
           menuLanguage={menuLanguage}

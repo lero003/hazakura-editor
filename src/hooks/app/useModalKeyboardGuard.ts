@@ -10,6 +10,8 @@ type UseModalKeyboardGuardOptions = {
   appCloseDialogRef: RefValue<HTMLElement>;
   closeTabDialogRef: RefValue<HTMLElement>;
   commandPaletteVisible: boolean;
+  epubExportDialogRef: RefValue<HTMLElement>;
+  epubExportSettingsOpen: boolean;
   globalSearchVisible: boolean;
   modalOpen: boolean;
   // v0.18 accessibility follow-up: the move-to-trash dialog
@@ -19,6 +21,7 @@ type UseModalKeyboardGuardOptions = {
   // route to the same cancel handler the Cancel button uses.
   moveTrashDialogRef: RefValue<HTMLElement>;
   onCancelAppClose: () => void;
+  onCancelEpubBetaExport: () => void;
   onCancelPendingTrash: () => void;
   onCancelTabClose: () => void;
   onCloseCommandPalette: () => void;
@@ -35,10 +38,13 @@ export function useModalKeyboardGuard({
   appCloseDialogRef,
   closeTabDialogRef,
   commandPaletteVisible,
+  epubExportDialogRef,
+  epubExportSettingsOpen,
   globalSearchVisible,
   modalOpen,
   moveTrashDialogRef,
   onCancelAppClose,
+  onCancelEpubBetaExport,
   onCancelPendingTrash,
   onCancelTabClose,
   onCloseCommandPalette,
@@ -84,6 +90,8 @@ export function useModalKeyboardGuard({
           onCancelAppClose();
         } else if (pendingTrashOpen) {
           onCancelPendingTrash();
+        } else if (epubExportSettingsOpen) {
+          onCancelEpubBetaExport();
         } else if (preferencesOpen) {
           onClosePreferences();
         }
@@ -97,7 +105,9 @@ export function useModalKeyboardGuard({
               ? appCloseDialogRef.current
               : pendingTrashOpen
                 ? moveTrashDialogRef.current
-                : preferencesDialogRef.current,
+                : epubExportSettingsOpen
+                  ? epubExportDialogRef.current
+                  : preferencesDialogRef.current,
           event,
         );
       }
@@ -112,10 +122,13 @@ export function useModalKeyboardGuard({
     appCloseDialogRef,
     closeTabDialogRef,
     commandPaletteVisible,
+    epubExportDialogRef,
+    epubExportSettingsOpen,
     globalSearchVisible,
     modalOpen,
     moveTrashDialogRef,
     onCancelAppClose,
+    onCancelEpubBetaExport,
     onCancelPendingTrash,
     onCancelTabClose,
     onCloseCommandPalette,
