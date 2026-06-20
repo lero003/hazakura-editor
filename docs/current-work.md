@@ -507,13 +507,33 @@ still shows a first-render disturbance, inspect its active-chapter render
 / CSS Columns measurement as a separate follow-up rather than expanding
 Phase 1.
 
+Phase 2 is implemented locally as of 2026-06-20 at code-regression
+level and accepted as the v0.27 Phase 2 result after human-side
+right-pane built-app smoke confirmed chapter / page handoff across mode
+switches. Investigation found a concrete mode-switching disconnect: when
+the right pane moved from e-book Mode to Preview / another pane and back,
+the e-book reader lost its active chapter / page and returned to the
+document start. `SidePane` now keeps the e-book reader location keyed by
+the active document and passes it back into `EBookPane` when the reader
+surface remounts. This preserves the feeling that Preview and e-book are
+two layers over the same Markdown source; it does not add persistence,
+background indexing, or a second document model.
+
+Verification: `npm run test --
+src/components/app/SidePane.test.tsx
+src/components/editor/preview/EBookPane.test.tsx`.
+
+Human-side right-pane built-app smoke passed on 2026-06-20: opening a
+multi-chapter Markdown file, moving e-book Mode to another chapter,
+switching right-pane modes, then returning to e-book Mode kept the same
+chapter / page context. Phase 2 is closed.
+
 ## Active UX Queue
 
 Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| v0.27 Phase 2 | One Editing Space minimal mode context retention | Find one concrete mode-switching disconnect across Normal / L Mode / e-book / Preview / Diff, such as scroll, cursor, heading context, or visual re-entry. Fix only that point, or close as `verified no-op` if current behavior already holds. |
 | v0.27 Phase 3 | Flow-preserving editing | Prioritize heading jump immediacy / predictability. A lightweight editing-position history may be session-only, but must not introduce persistence, background indexing, or hidden bookkeeping. |
 | v0.27 Phase 4 | Status bar structure cleanup | Treat the v0.20 compact status detail as a stopgap. Split status metadata into priority-aware fields, keep line-ending / encoding controls always reachable, and move lower-priority details such as final-newline state, line/column, selection, and heading context into hover, popover, or adaptive secondary display. |
 | P1 | Core Safe Editor quality probe | When concrete queue items are exhausted, inspect one basic high-risk surface instead of adding broad tests: open/save/close, restore/recovery, preview, diff/review, workspace file operations, standalone files, image handling, keyboard/IME, or error recovery. State the risk hypothesis, run a focused source/app inspection or smoke, then either fix the smallest issue found or close as `verified no-op`. |

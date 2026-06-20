@@ -1,4 +1,4 @@
-import { lazy, Suspense, type RefObject } from "react";
+import { lazy, Suspense, useCallback, useState, type RefObject } from "react";
 import type { SidePaneCopy } from "../../lib/locale";
 import type {
   CompareAnchor,
@@ -13,6 +13,7 @@ import { DiffPane } from "../diff/DiffPane";
 import { DiffSetupPane } from "../diff/DiffSetupPane";
 import { OutlinePane } from "../editor/OutlinePane";
 import { PreviewUnavailablePane } from "../editor/preview/PreviewUnavailablePane";
+import type { EBookReaderLocation } from "../editor/preview/EBookPane";
 
 // PreviewPane pulls in marked + DOMPurify, which together add
 // ~150 kB gzipped to the main bundle. The preview is off by
@@ -78,6 +79,10 @@ export function SidePane({
   sidePaneMode,
   workspaceRootPath,
 }: SidePaneProps) {
+  const [ebookLocation, setEbookLocation] = useState<{
+    documentKey: string;
+    location: EBookReaderLocation;
+  } | null>(null);
   const compareCase = compareView
     ? getCompareCaseByKey(compareView.caseKey) ?? null
     : null;
@@ -90,6 +95,24 @@ export function SidePane({
     compareCase && compareCase.kind !== "candidate" ? compareCase : null;
   const showMarkdownPreviewCard =
     sidePaneMode === "preview" && activeTab !== null && previewVisible;
+  const activeEbookDocumentKey = activeTab ? ebookDocumentKey(activeTab) : null;
+  const initialEbookLocation =
+    activeEbookDocumentKey !== null &&
+    ebookLocation?.documentKey === activeEbookDocumentKey
+      ? ebookLocation.location
+      : null;
+  const handleEbookLocationChange = useCallback(
+    (location: EBookReaderLocation) => {
+      if (!activeEbookDocumentKey) {
+        return;
+      }
+      setEbookLocation({
+        documentKey: activeEbookDocumentKey,
+        location,
+      });
+    },
+    [activeEbookDocumentKey],
+  );
 
   return (
     <div
@@ -132,7 +155,9 @@ export function SidePane({
         <Suspense fallback={null}>
           <EBookPane
             documentPath={activeTab.path}
+            initialLocation={initialEbookLocation}
             menuLanguage={menuLanguage}
+            onLocationChange={handleEbookLocationChange}
             onOpenLocalLink={onOpenPreviewLocalLink}
             source={activeContents}
             workspaceRoot={
@@ -161,6 +186,10 @@ export function SidePane({
       )}
     </div>
   );
+}
+
+function ebookDocumentKey(tab: EditorTab): string {
+  return tab.path || tab.id;
 }
 
 function sidePaneAriaLabel(mode: RightPaneMode, copy: SidePaneCopy): string {

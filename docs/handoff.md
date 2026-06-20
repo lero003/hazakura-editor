@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-20 (v0.27 refinement Phase 1)
+Last reviewed: 2026-06-20 (v0.27 refinement Phase 2)
 
 ## Current State
 
@@ -51,6 +51,14 @@ Last reviewed: 2026-06-20 (v0.27 refinement Phase 1)
   request, but the boot-theme attempt caused hard-to-isolate real-app
   CodeMirror / Tauri first-paint layout failures. Keep it out of v0.27
   Phase 1; revisit only as a separate real-app DevTools debug slice.
+- v0.27 Phase 2 One Editing Space minimal context retention is
+  implemented and accepted after human-side right-pane built-app smoke
+  confirmed chapter / page handoff across mode switches. The concrete
+  disconnect was e-book Mode losing its active chapter / page when
+  switching to another right-pane mode and back. `SidePane` now keeps the
+  reader location for the active document and restores it into
+  `EBookPane` on remount. It is intentionally session-local and does not
+  introduce persistence, indexing, or a second document model.
 - A review-derived pre-release code-quality fix queue now lives in
   `docs/pre-release-fix-plan.md`. A follow-up external quality review
   has been triaged there as accepted vs deferred / not adopted items. It
@@ -180,14 +188,10 @@ Last reviewed: 2026-06-20 (v0.27 refinement Phase 1)
 Use `docs/current-work.md` for the active queue. The current highest
 priority items after the v0.26 App Store release are:
 
-1. v0.27 Phase 1 manual large-document built-app smoke, especially
-   startup restore with a large Markdown file and Preview / e-book
-   first-paint feel. The code-regression slice is implemented locally.
-2. v0.27 Phase 2 One Editing Space minimal mode context retention.
-3. v0.27 Phase 3 flow-preserving editing, starting with heading jump
+1. v0.27 Phase 3 flow-preserving editing, starting with heading jump
    immediacy / predictability.
-4. v0.27 Phase 4 status bar structure cleanup.
-5. Core Safe Editor quality probe only when concrete v0.27 queue items
+2. v0.27 Phase 4 status bar structure cleanup.
+3. Core Safe Editor quality probe only when concrete v0.27 queue items
    are exhausted.
 
 Recently completed: v0.20 Sakura chrome / file-state clarity kept New

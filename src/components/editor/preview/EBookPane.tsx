@@ -38,10 +38,17 @@ import {
 
 type EBookPaneProps = {
   documentPath?: string | null;
+  initialLocation?: EBookReaderLocation | null;
   menuLanguage?: MenuLanguage;
+  onLocationChange?: (location: EBookReaderLocation) => void;
   onOpenLocalLink?: (href: string) => void;
   source: string;
   workspaceRoot?: string | null;
+};
+
+export type EBookReaderLocation = {
+  chapterIndex: number;
+  pageIndex: number;
 };
 
 type RenderedChapter = {
@@ -65,15 +72,21 @@ type EBookReaderCopy = {
 
 export default function EBookPane({
   documentPath,
+  initialLocation,
   menuLanguage = "en",
+  onLocationChange,
   onOpenLocalLink,
   source,
   workspaceRoot,
 }: EBookPaneProps) {
   const copy = getEBookReaderCopy(menuLanguage);
   const chapters = useMemo(() => splitMarkdownIntoChapters(source), [source]);
-  const [activeChapterIndex, setActiveChapterIndex] = useState(0);
-  const [activePageIndex, setActivePageIndex] = useState(0);
+  const [activeChapterIndex, setActiveChapterIndex] = useState(
+    () => initialLocation?.chapterIndex ?? 0,
+  );
+  const [activePageIndex, setActivePageIndex] = useState(
+    () => initialLocation?.pageIndex ?? 0,
+  );
   const [measuredPageCount, setMeasuredPageCount] = useState(1);
   const [pageOffset, setPageOffset] = useState(0);
   const [pageTransitionSuppressed, setPageTransitionSuppressed] =
@@ -83,9 +96,11 @@ export default function EBookPane({
   const viewportRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    pendingPageTargetRef.current = "first";
-    setActiveChapterIndex(0);
-    setActivePageIndex(0);
+    pendingPageTargetRef.current = initialLocation ? null : "first";
+    setActiveChapterIndex(
+      clampChapterIndex(initialLocation?.chapterIndex ?? 0, chapters.length),
+    );
+    setActivePageIndex(Math.max(initialLocation?.pageIndex ?? 0, 0));
   }, [documentPath]);
 
   useEffect(() => {
@@ -234,6 +249,13 @@ export default function EBookPane({
   useEffect(() => {
     setActivePageIndex((current) => clampPageIndex(current, measuredPageCount));
   }, [measuredPageCount]);
+
+  useEffect(() => {
+    onLocationChange?.({
+      chapterIndex: activeChapterIndexSafe,
+      pageIndex: Math.max(activePageIndex, 0),
+    });
+  }, [activeChapterIndexSafe, activePageIndex, onLocationChange]);
 
   useLayoutEffect(() => {
     setPageOffset(getEBookPageOffset(activePageIndexSafe, flowRef.current));
