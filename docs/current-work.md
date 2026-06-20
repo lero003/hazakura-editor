@@ -376,14 +376,16 @@ P2 is implemented locally as of 2026-06-20 as an EPUB export beta. The
 File menu and command palette expose `Export EPUB (Beta)...`, which
 exports the active Markdown source to a minimal `.epub` through a save
 dialog. The archive contains a package file, navigation document,
-single XHTML content document, and small stylesheet generated from the
-current Markdown headings. Markdown source remains canonical. This beta
-does not launch external validators, add cover / metadata editing,
-bundle workspace images as EPUB resources, support vertical writing, or
-claim reader-perfect pagination. The beta writes the archive through a
-base64 IPC payload to avoid JSON number-array expansion; if future work
-adds bundled image resources or large EPUB packages, prefer a plugin-fs
-or temp-file handoff instead of growing this IPC path.
+single XHTML content document, packaged workspace / allowed `data:image`
+resources, dialog-scoped Title / Author / Language metadata, explicit
+page-break hints from blank-line-flanked standalone `---` / `===` lines,
+and a small stylesheet generated from the current Markdown headings.
+Markdown source remains canonical. This beta does not launch external
+validators, add a cover editor, support vertical writing, manage
+multi-file book order, or claim reader-perfect pagination. The beta writes
+the archive through a base64 IPC payload; if future work adds larger EPUB
+packages or heavier resource bundles, prefer a plugin-fs or temp-file
+handoff instead of growing this IPC path.
 
 Verification: `npm run test --
 src/features/document/epubExport.test.ts

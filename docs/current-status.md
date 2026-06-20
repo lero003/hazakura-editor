@@ -146,7 +146,8 @@ Last reviewed: 2026-06-20 (v0.26 polish and EPUB export queue)
   into explicit page-break hints, generates per-export UUID identifiers,
   and writes `dcterms:modified` from export time. It is not a second
   document model and does not claim reader-perfect pagination, vertical
-  writing, cover metadata, or in-app validator proof.
+  writing, cover asset management, multi-file book ordering, or in-app
+  validator proof.
 - Markdown preview and Help document links keep supported
   workspace-relative text files inside the app, but route explicit
   `http:` / `https:` / `mailto:` / `tel:` clicks to the OS default
