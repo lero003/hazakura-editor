@@ -1,9 +1,9 @@
 # AI Markdown Ingest Plan
 
 Status: Proposal
-Scope: v0.26+ explicit AI proposal intake and review
+Scope: v0.28+ explicit AI proposal intake and review
 Authority: Medium
-Last reviewed: 2026-06-20
+Last reviewed: 2026-06-21
 
 ## Summary
 
@@ -42,18 +42,17 @@ Do not add:
 - generic provider plugins
 - general chat or agent orchestration
 
-## v0.26+ Direction
+## v0.28+ Direction
 
-This work is intentionally after v0.25 native-feeling Safe Editor chrome
-polish. As of the v0.26 planning pass, the immediate v0.26 lane is
-expected to prioritize authoring polish and initial EPUB export first:
-no-workspace New File / Save As, e-book empty-state affordance, and a
-minimal explicit EPUB export path.
-
-AI ingest remains a good v0.26+ direction, but it should begin only when
-one focused review primitive is selected. The ingest / review workflow
-should sit on a clearer app shell and mode-control foundation rather
-than driving that chrome redesign itself.
+This work follows the completed v0.26 authoring / EPUB export lane and
+the completed v0.27 refinement lane. v0.28 should treat AI ingest as a
+foundation task, not a broad AI feature launch: begin only when one
+focused review primitive is selected, and keep the slice small enough to
+prove explicit review without changing the product trust model.
+For planning purposes, v0.28 should add at most one review primitive;
+v0.29+ can expand ingest sources and review ergonomics after the first
+path proves source-preserving review, rejection, and explicit
+application.
 
 Start with the smallest reusable review primitive:
 
@@ -128,6 +127,8 @@ understand chapter order and scope before accepting changes.
   table-of-contents file, or app-local settings?
 - How much provenance should be shown to the user without exposing
   prompts, hidden instructions, filesystem details, or provider internals?
+- Which structural book-scope choices should wait for v2.0 Book
+  Workspace Alpha rather than entering the first AI ingest slice?
 
 ## Verification Direction
 

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-20 (v0.27 source / App Store candidate prep)
+Last reviewed: 2026-06-21 (v0.28 planning alignment)
 
 ## Current State
 
@@ -58,12 +58,13 @@ Last reviewed: 2026-06-20 (v0.27 source / App Store candidate prep)
   that checkpoint. A `Cmd+Shift+F` global-search result activation bug
   found during smoke has a focused code-level fix.
 - Older public tags and release assets remain immutable.
-- Current active work is post-v0.27 release-candidate cleanup and the next
-  product slice. Local pre-review regression, package, payload,
-  dependency-audit, bundle metadata, license-resource, and bundle-size
-  evidence remains archived under `docs/archive/operations/` or
-  summarized in `docs/current-work.md`; it should no longer drive the
-  main queue unless a new App Store build is prepared.
+- Current active work is v0.28 Safety, Quality, and AI Review Foundation.
+  The v0.27 refinement phases are complete for source-tag purposes. Local
+  pre-review regression, package, payload, dependency-audit, bundle
+  metadata, license-resource, and bundle-size evidence remains archived
+  under `docs/archive/operations/` or summarized in `docs/current-work.md`;
+  it should no longer drive the main queue unless a new App Store build is
+  prepared.
 - The v0.20 Sakura workspace ergonomics slice is implemented locally:
   the main chrome can collapse / restore the workspace sidebar, the
   central editor pane keeps a thin bottom full-path copy bar for the
@@ -220,8 +221,8 @@ baseline, and smoke evidence are archived under
 
 ## Active Planning Sources
 
-- `docs/current-work.md`: current post-approval quality and completed v0.27
-  refinement notes.
+- `docs/current-work.md`: current v0.28 quality / AI-review foundation
+  queue and completed v0.27 refinement notes.
 - `docs/v0.27-refinement-slice-plan.md`: v0.27 execution phases for
   large-document rendering, One Editing Space, flow-preserving editing,
   and status bar cleanup.
@@ -242,14 +243,15 @@ baseline, and smoke evidence are archived under
 1. For post-approval cleanup, keep App Store-specific evidence public-safe
    and archive only completed version-specific material; canonical build
    and boundary docs stay live for future submissions.
-2. For UX work, start with `docs/current-work.md` and
-   `docs/v0.27-refinement-slice-plan.md`. The v0.26 product queue has
-   shipped; the selected v0.27 work is source-preserving refinement of
-   large-document rendering, mode context, flow-preserving editing, and
-   status bar structure. Do not add AI ingest, Workspace As Book
-   information-architecture changes, Native Vibrancy Phase 2, cover
-   editing, or an EPUB document model unless that lane is explicitly
-   opened.
+2. For the next product slice, start with `docs/current-work.md`. v0.28
+   is the selected Safety, Quality, and AI Review Foundation lane:
+   prioritize L Mode / Preview image-policy parity including `data:image`
+   validation / cap parity, workspace search parity for Shift-JIS /
+   EUC-JP files the editor can open, OS handoff hardening, and one
+   reusable AI proposal review primitive. Do not add Book Workspace Alpha,
+   hidden multi-file book manifests, structural book-workspace information
+   architecture, Native Vibrancy Phase 2, cover editing, or an EPUB
+   document model unless that lane is explicitly opened.
 3. For the current `0.27.0` App Store submission lane, build `22` is the
    selected local package candidate. User-side upload / review work is
    outside this repository unless new evidence is explicitly recorded.

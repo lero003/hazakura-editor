@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: Active post-v0.27 release quality routing and completed v0.27 refinement
+Scope: Active v0.28 quality / AI-review foundation routing and completed v0.27 refinement
 Authority: High
-Last reviewed: 2026-06-20 (v0.27 source / App Store candidate prep)
+Last reviewed: 2026-06-21 (v0.28 planning alignment)
 
 ## Purpose
 
@@ -21,7 +21,10 @@ Editor boundary.
 The v0.27 refinement phases are complete for source-tag purposes. Keep
 `docs/v0.27-refinement-slice-plan.md` as the execution memo / historical
 phase boundary and `docs/post-v0.25-product-refinement-plan.md` as the
-broader lens.
+broader lens. The active v0.28 lane is Safety, Quality, and AI Review
+Foundation: tighten implementation / safety-claim consistency and start
+the smallest reusable AI proposal review primitive before structural Book
+Workspace work.
 
 ## Product Boundary
 
@@ -599,12 +602,42 @@ v0.27 release-candidate closeout note as of 2026-06-20:
 - AI Markdown ingest, Workspace As Book, Native Vibrancy Phase 2, and
   EPUB document-model work remain outside the v0.27 source tag.
 
+## v0.28 Safety, Quality, And AI Review Foundation
+
+Use `docs/roadmap.md`, `docs/security-boundary.md`, and
+`docs/ai-markdown-ingest-plan.md` as the planning boundary. v0.28 may
+ship several small slices, but each slice should have a focused proof and
+must not depend on Book Workspace Alpha.
+
+Goal: align product trust claims with implementation, preserve the
+Japanese long-form editing experience, and create the first reusable
+AI-proposal review foundation without becoming an agent platform.
+
+| Priority | Slice | Acceptance |
+|---|---|---|
+| P0 | L Mode image policy parity | L Mode follows the same external-image and `data:image` safety expectations as Preview / export. External `http:` / `https:` images are not rendered as a direct fetch path. Supported `data:image` MIME types, strict base64 validation, and the 2 MB inline cap match Preview's embedded-image policy. Workspace images still resolve through the bounded workspace-image command, source text remains unchanged, and focused L Mode tests pin the behavior. |
+| P1 | Workspace search encoding parity | Workspace search uses the same practical decode assumptions as safe file open where possible: UTF-8 plus Shift-JIS / EUC-JP. Do not claim broader legacy-encoding parity unless file open supports it first. Binary-looking and oversized files remain skipped, and focused Rust tests cover UTF-8 plus Shift-JIS or EUC-JP. |
+| P2 | System handoff hardening | Fixed OS handoff routes such as external links, Finder reveal, and print/browser handoff are easier to audit as allowlisted OS handoff, not arbitrary command execution. Keep behavior user-initiated and bounded; prove normalization / allowlist behavior with existing or focused tests. |
+| P3 | AI proposal review foundation | Add only one reusable intake / review primitive: file, paste, or existing transaction input into explicit Diff / Review. App Store lane remains helper-free and file/text based; Developer / GitHub integrations stay behind Apple Local Assist / Agent Workbench boundaries. No auto-apply, auto-save, auto-commit, generic chat, provider plugin, or hidden workspace rewrite. |
+| Release gate | Golden-path smoke checklist | Before tagging a v0.28 source / local-app release, run or update a focused checklist for New File, Save / Save As, L Mode, e-book Mode, EPUB export, Diff / Recovery, and AI proposal review if the review primitive is included. |
+
+Deferred from v0.28:
+
+- Book Workspace Alpha, multi-file chapter ordering, saved book
+  manifests, and `Workspace = Book` information architecture. Target
+  v2.0 after single-document book / EPUB / review primitives are strong.
+- Native Vibrancy Phase 2 and macOS 26 release-lane changes unless that
+  lane is explicitly reopened.
+- EPUB document-model work, cover editing, vertical writing, OKF, or
+  reader-perfect pagination claims.
+
 ## Active UX Queue
 
 Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
+| P0 | Follow the v0.28 table above | Prefer the first open v0.28 slice whose proof path is available. Keep the selected slice independent and do not bundle nearby polish. |
 | P1 | Core Safe Editor quality probe | When concrete queue items are exhausted, inspect one basic high-risk surface instead of adding broad tests: open/save/close, restore/recovery, preview, diff/review, workspace file operations, standalone files, image handling, keyboard/IME, or error recovery. State the risk hypothesis, run a focused source/app inspection or smoke, then either fix the smallest issue found or close as `verified no-op`. |
 | P2 | Light accessibility sanity | Keep accessibility as a light sanity pass adjacent to core surfaces: keyboard reachability, focus escape/Tab behavior, readable labels, and obvious contrast. Do not prioritize broad accessibility audits over basic editor quality unless a concrete accessibility failure is observed. |
 | Separate lane | Native vibrancy via `window-vibrancy` + macOS 26 floor | Keep as an independent release-planning lane outside v0.27 refinement. It requires a macOS 26 floor decision, built `.app` smoke on macOS 26, and App Store lane judgment before becoming active work. |
@@ -618,9 +651,10 @@ over copy-heavy or product-voice-sensitive work.
 
 | Fit | Candidate | Scope |
 |---|---|---|
-| Good | v0.26 no-workspace New File / Save As | Implement one Safe Editor core slice: pathless New File creates an untitled standalone Markdown tab, Save routes through Save As, dirty close protection remains intact, and the saved tab becomes a normal standalone file. Keep workspace-only operations unavailable until a file/workspace path exists. |
-| Good | v0.26 EPUB export first slice | Add an explicit minimal EPUB export from active Markdown source only. Keep generation deterministic and bounded; no external validator launch, advanced metadata editor, vertical writing, or page-count fidelity claim. |
-| Good | v0.25 native-feeling chrome P0 | Implement one small shell polish slice: traffic-light-safe drag region, subtle editor focus signal, truthful mode active states, or token cleanup. Keep it inside existing React/CSS chrome and prove it with focused tests plus manual app smoke where needed. |
+| Good | v0.28 L Mode image policy parity | Align L Mode image rendering with Preview / export safety expectations, including no direct remote image rendering and Preview-equivalent `data:image` validation / cap behavior. Keep Markdown source untouched, preserve bounded workspace-image loading, and prove remote-image / `data:image` behavior with focused tests. |
+| Good | v0.28 workspace search encoding parity | Reuse or align with safe file-open decoding so Shift-JIS / EUC-JP text that can be opened is not silently invisible to search. Keep binary / oversized skip behavior intact and prove with focused Rust tests. |
+| Good | v0.28 system handoff hardening | Organize external-link, Finder reveal, and print/browser handoff as user-initiated allowlisted OS handoff. Do not add arbitrary command input or generic shell behavior. |
+| Good | v0.28 AI proposal review foundation | Implement one explicit proposal intake / review primitive only: file, paste, or existing transaction to Diff / Review. Leave broader ingest expansion for v0.29+. No auto-apply, auto-save, auto-commit, provider plugins, generic chat, or hidden workspace rewrite. |
 | Good | L Mode quality investigation | Pick one reproduced L Mode issue or one measurable quality gap only: caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or performance baseline. Do not add a new editing model or contenteditable surface. |
 | Good | Theme quality investigation | Pick one concrete theme issue only: contrast, focus visibility, status/error readability, dialog readability, or Increase Contrast behavior. Do not redesign palettes or add theme customization. |
 | Good | Core Safe Editor quality probe | Inspect one basic surface with a clear risk hypothesis, then fix only a reproduced issue or close as `verified no-op`. Prefer open/save/close, restore/recovery, preview, diff/review, workspace files, standalone files, image handling, keyboard/IME, or error recovery. |
