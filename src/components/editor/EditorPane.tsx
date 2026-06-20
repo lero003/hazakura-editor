@@ -205,6 +205,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   const onPasteImageRef = useRef(onPasteImage);
   const onSendToAgentRef = useRef<(text: string) => void>(() => {});
   const applyingExternalValueRef = useRef(false);
+  const jumpScrollReportFrameRef = useRef<number | null>(null);
   const themeCompartmentRef = useRef(new Compartment());
   const wrappingCompartmentRef = useRef(new Compartment());
   const invisiblesCompartmentRef = useRef(new Compartment());
@@ -247,6 +248,17 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         view.dispatch({
           selection: { anchor: lineInfo.from },
           effects: EditorView.scrollIntoView(lineInfo.from, { y: "center" }),
+        });
+        const win = view.dom.ownerDocument.defaultView ?? window;
+        if (jumpScrollReportFrameRef.current !== null) {
+          win.cancelAnimationFrame(jumpScrollReportFrameRef.current);
+        }
+        jumpScrollReportFrameRef.current = win.requestAnimationFrame(() => {
+          jumpScrollReportFrameRef.current = null;
+          if (viewRef.current !== view) {
+            return;
+          }
+          onScrollRatioChangeRef.current(readScrollRatio(view.scrollDOM));
         });
         view.focus();
       },
@@ -543,16 +555,16 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       ],
     });
     const handleScroll = () => {
-      const scroller = view.scrollDOM;
-      const scrollableHeight = scroller.scrollHeight - scroller.clientHeight;
-
-      onScrollRatioChangeRef.current(
-        scrollableHeight <= 0 ? 0 : scroller.scrollTop / scrollableHeight,
-      );
+      onScrollRatioChangeRef.current(readScrollRatio(view.scrollDOM));
     };
 
     view.scrollDOM.addEventListener("scroll", handleScroll, { passive: true });
     destroyMountedViewRef.current = () => {
+      if (jumpScrollReportFrameRef.current !== null) {
+        const win = view.dom.ownerDocument.defaultView ?? window;
+        win.cancelAnimationFrame(jumpScrollReportFrameRef.current);
+        jumpScrollReportFrameRef.current = null;
+      }
       view.scrollDOM.removeEventListener("scroll", handleScroll);
       view.destroy();
       if (viewRef.current === view) {
@@ -1094,6 +1106,15 @@ function readSelectionInfo(state: EditorState): EditorSelectionInfo {
     selectedCharacters,
     selectedLines: endLine.number - startLine.number + 1,
   };
+}
+
+function readScrollRatio(scroller: HTMLElement): number {
+  const scrollableHeight = scroller.scrollHeight - scroller.clientHeight;
+  if (scrollableHeight <= 0) {
+    return 0;
+  }
+
+  return scroller.scrollTop / scrollableHeight;
 }
 
 function buildInvisibleDecorations(doc: Text): DecorationSet {

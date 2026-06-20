@@ -59,6 +59,14 @@ Last reviewed: 2026-06-20 (v0.27 refinement Phase 2)
   reader location for the active document and restores it into
   `EBookPane` on remount. It is intentionally session-local and does not
   introduce persistence, indexing, or a second document model.
+- v0.27 Phase 3 Flow-Preserving Editing is implemented locally at
+  focused-regression level and accepted after human-side heading-jump
+  built-app smoke found no interaction discomfort. `goToLine()` now
+  waits one animation frame after dispatching the CodeMirror line jump
+  and reports the settled editor pixel scroll ratio, so scroll sync /
+  HUD consumers do not depend only on the later browser scroll event and
+  avoid the target-line-ratio mismatch seen in long documents. The
+  broader editing-position history idea remains unimplemented.
 - A review-derived pre-release code-quality fix queue now lives in
   `docs/pre-release-fix-plan.md`. A follow-up external quality review
   has been triaged there as accepted vs deferred / not adopted items. It
@@ -188,10 +196,8 @@ Last reviewed: 2026-06-20 (v0.27 refinement Phase 2)
 Use `docs/current-work.md` for the active queue. The current highest
 priority items after the v0.26 App Store release are:
 
-1. v0.27 Phase 3 flow-preserving editing, starting with heading jump
-   immediacy / predictability.
-2. v0.27 Phase 4 status bar structure cleanup.
-3. Core Safe Editor quality probe only when concrete v0.27 queue items
+1. v0.27 Phase 4 status bar structure cleanup.
+2. Core Safe Editor quality probe only when concrete v0.27 queue items
    are exhausted.
 
 Recently completed: v0.20 Sakura chrome / file-state clarity kept New

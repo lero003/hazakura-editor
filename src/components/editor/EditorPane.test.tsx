@@ -163,6 +163,47 @@ describe("EditorPane", () => {
     expect(editorRef.current?.getActiveDocument()?.from).toBeGreaterThan(0);
   });
 
+  it("reports the settled editor scroll position when jumping to a line", () => {
+    const editorRef = createRef<EditorPaneHandle>();
+    const onScrollRatioChange = vi.fn();
+    const { container } = render(
+      renderEditorPane({
+        onScrollRatioChange,
+        ref: editorRef,
+        value: "line 1\nline 2\nline 3\nline 4\nline 5",
+      }),
+    );
+    const scroller = container.querySelector(".cm-scroller") as HTMLElement;
+    Object.defineProperty(scroller, "scrollHeight", {
+      configurable: true,
+      value: 1000,
+    });
+    Object.defineProperty(scroller, "clientHeight", {
+      configurable: true,
+      value: 200,
+    });
+    scroller.scrollTop = 100;
+    const frameCallbacks: FrameRequestCallback[] = [];
+    const requestAnimationFrameSpy = vi
+      .spyOn(window, "requestAnimationFrame")
+      .mockImplementation((callback) => {
+        frameCallbacks.push(callback);
+        return frameCallbacks.length;
+      });
+
+    try {
+      onScrollRatioChange.mockClear();
+      editorRef.current?.goToLine(4);
+      scroller.scrollTop = 400;
+      frameCallbacks.forEach((callback) => callback(0));
+
+      expect(onScrollRatioChange).not.toHaveBeenCalledWith(0.75);
+      expect(onScrollRatioChange).toHaveBeenLastCalledWith(0.5);
+    } finally {
+      requestAnimationFrameSpy.mockRestore();
+    }
+  });
+
   it("syncs the CodeMirror document when the same tab receives an external value reset", () => {
     const editorRef = createRef<EditorPaneHandle>();
     const onChange = vi.fn();

@@ -528,13 +528,36 @@ multi-chapter Markdown file, moving e-book Mode to another chapter,
 switching right-pane modes, then returning to e-book Mode kept the same
 chapter / page context. Phase 2 is closed.
 
+Phase 3 is implemented locally as of 2026-06-20 at focused-regression
+level and accepted as the v0.27 Phase 3 result after human-side
+heading-jump built-app smoke found no interaction discomfort.
+Investigation found that `goToLine()`
+selected and scrolled the CodeMirror target line, but the editor scroll
+ratio reported to the rest of the surface still depended on the later
+scroll event / measurement path. A first attempt used target line ratio,
+but real-app review found that long documents can show a temporary
+Preview offset because Preview consumes the ratio as a pixel scroll
+ratio. `goToLine()` now waits one animation frame after the CodeMirror
+jump and reports the settled editor pixel scroll ratio, so
+position-aware surfaces such as scroll sync / HUD no longer depend only
+on the later browser scroll event and avoid the line-ratio mismatch.
+This keeps Markdown source, outline parsing, cursor selection, Preview
+rendering, and mode state unchanged.
+
+Verification: `npm run test -- src/components/editor/EditorPane.test.tsx`.
+
+Human-side built-app smoke passed on 2026-06-20: with a long Markdown
+document, Outline heading clicks near deep document positions did not
+feel uncomfortable, including the observed Preview sync behavior around
+roughly 6000 lines. Phase 3 is closed. The broader session-local
+editing-position history candidate is not implemented in this slice.
+
 ## Active UX Queue
 
 Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| v0.27 Phase 3 | Flow-preserving editing | Prioritize heading jump immediacy / predictability. A lightweight editing-position history may be session-only, but must not introduce persistence, background indexing, or hidden bookkeeping. |
 | v0.27 Phase 4 | Status bar structure cleanup | Treat the v0.20 compact status detail as a stopgap. Split status metadata into priority-aware fields, keep line-ending / encoding controls always reachable, and move lower-priority details such as final-newline state, line/column, selection, and heading context into hover, popover, or adaptive secondary display. |
 | P1 | Core Safe Editor quality probe | When concrete queue items are exhausted, inspect one basic high-risk surface instead of adding broad tests: open/save/close, restore/recovery, preview, diff/review, workspace file operations, standalone files, image handling, keyboard/IME, or error recovery. State the risk hypothesis, run a focused source/app inspection or smoke, then either fix the smallest issue found or close as `verified no-op`. |
 | P2 | Light accessibility sanity | Keep accessibility as a light sanity pass adjacent to core surfaces: keyboard reachability, focus escape/Tab behavior, readable labels, and obvious contrast. Do not prioritize broad accessibility audits over basic editor quality unless a concrete accessibility failure is observed. |
