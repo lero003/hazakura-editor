@@ -23,9 +23,10 @@ Latest App Store status:
 
 - `0.25.0` has been reported as released on the Mac App Store.
 - `0.26.0` has been reported as released on the Mac App Store.
-- `0.27.0` App Store package generation is the next local candidate
-  lane. Exact build and package evidence are recorded after the package
-  is generated.
+- `0.27.0` build `22` is the current local App Store submit-lane package
+  candidate. App Store Connect upload, processing, TestFlight, App
+  Review, and release handling are outside this repository unless
+  separately recorded.
 - `0.25.0` build `18` is the tracked local App Store submit-lane
   package evidence. Raw App Store Connect, TestFlight, and App Review
   logs are not tracked in this repository.
@@ -33,6 +34,7 @@ Latest App Store status:
 
 Latest App Store submission-candidate note:
 
+- `0.27.0-app-store-submission-candidate.release.md`
 - `0.26.0-app-store-submission-candidate.release.md`
 - `0.25.0-app-store-submission-candidate.release.md`
 - `0.20.0-app-store-submission-candidate.release.md`

@@ -3,12 +3,12 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-20 (v0.27 refinement Phase 2)
+Last reviewed: 2026-06-20 (v0.27 source tag / App Store build22)
 
 ## Current State
 
-- `Hazakura Editor` is at `0.27.0` for the prepared source / local-app
-  release candidate. The published Mac App Store version remains
+- `Hazakura Editor` is tagged at `v0.27.0` for the source / local-app
+  release checkpoint. The published Mac App Store version remains
   `0.26.0` until a new App Store build is uploaded, approved, and
   released.
 - User-facing app identity is capitalized as `Hazakura Editor`. The
@@ -39,6 +39,15 @@ Last reviewed: 2026-06-20 (v0.27 refinement Phase 2)
   Local packaging/signing checks passed on 2026-06-19. Raw App Store
   Connect, TestFlight, and App Review logs are not tracked in this
   repository.
+- The helper-free App Store package candidate for `0.27.0` is build
+  `22`:
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.27.0-build22-mas.pkg`
+  with SHA-256
+  `3cf8a09dcf4b3fd81d50ad330d552c0e7de30ec56713b2fc4b4f2a62ae913ff7`.
+  Local `pkgutil --check-signature`, app metadata, required entitlement,
+  helper-absence, bundled-notice, and SHA checks passed on 2026-06-20.
+  App Store Connect upload / processing / TestFlight / App Review work
+  is handled outside this repository unless explicitly recorded later.
 - Start from `docs/current-work.md`; v0.27 execution is complete for
   source-tag purposes and remains documented in
   `docs/v0.27-refinement-slice-plan.md`.

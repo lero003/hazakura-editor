@@ -13,7 +13,7 @@ Last reviewed: 2026-06-20 (v0.27 source / App Store candidate prep)
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
 - Published Mac App Store version: `0.26.0`, reported released on
   2026-06-20 after App Review completion.
-- Latest GitHub source / local-app tag: `v0.27.0` prepared locally.
+- Latest GitHub source / local-app tag: `v0.27.0`.
 - Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
 - `v0.18.0` is a Developer / GitHub lane preview, ad-hoc signed, not Developer ID signed, not notarized, and expected to show macOS security warnings.
 - The helper-free App Store lane delivered `0.18.0` build `4` to
@@ -39,6 +39,16 @@ Last reviewed: 2026-06-20 (v0.27 source / App Store candidate prep)
   `1cc4f694334badc7a408c0e61278ee40b340a0939378d082de9bfe41e44df515`.
   Raw App Store Connect, TestFlight, and App Review logs are not tracked
   in this repository.
+- The helper-free App Store package candidate for `0.27.0` is build
+  `22`, generated on 2026-06-20 after the `v0.27.0` source / local-app
+  tag:
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.27.0-build22-mas.pkg`.
+  SHA-256:
+  `3cf8a09dcf4b3fd81d50ad330d552c0e7de30ec56713b2fc4b4f2a62ae913ff7`.
+  Local signature, entitlement, helper-absence, bundled-notice, and
+  package SHA checks passed. App Store Connect upload, processing,
+  TestFlight, App Review, and release handling are not tracked in this
+  repository unless separately recorded.
 - Pre-approval human-side App Store lane smoke on 2026-06-12 passed launch,
   basic document creation/open, preview/export, image paste/drag-drop,
   App Store surface omission, dirty-close confirmation, Move to Trash,
@@ -181,6 +191,7 @@ Last reviewed: 2026-06-20 (v0.27 source / App Store candidate prep)
 Use release notes for detailed historical evidence:
 
 - `docs/releases/0.27.0-source-tag.release.md`
+- `docs/releases/0.27.0-app-store-submission-candidate.release.md`
 - `docs/releases/0.26.0-source-tag.release.md`
 - `docs/releases/0.26.0-app-store-submission-candidate.release.md`
 - `docs/releases/0.25.0-source-tag.release.md`
@@ -239,7 +250,10 @@ baseline, and smoke evidence are archived under
    information-architecture changes, Native Vibrancy Phase 2, cover
    editing, or an EPUB document model unless that lane is explicitly
    opened.
-3. For a future App Store submission, start with `docs/app-store-build.md`;
+3. For the current `0.27.0` App Store submission lane, build `22` is the
+   selected local package candidate. User-side upload / review work is
+   outside this repository unless new evidence is explicitly recorded.
+   For a future App Store submission, start with `docs/app-store-build.md`;
    use `npm run release:candidate -- --with-app-store-pkg` for local
    signed package checkpoints, keep account-specific notes under ignored
    `docs/internal/` files, and treat certificate, provisioning, signing,

@@ -34,6 +34,7 @@ Apple Local Assist and Agent Workbench behind their existing boundaries.
 - Published App Store version: `0.26.0` (reported released on 2026-06-20
   after App Review completion)
 - Current source / Developer version: `0.27.0`
+- Current local App Store package candidate: `0.27.0` build `22`
 - App Store category: `Productivity`
 - Public Privacy Policy URL:
   `https://hazakura.dev/hazakura-editor/privacy/`
@@ -552,4 +553,33 @@ rather than an App Store Connect validation result. SHA-256:
 
 ```txt
 1cc4f694334badc7a408c0e61278ee40b340a0939378d082de9bfe41e44df515
+```
+
+v0.27 package-candidate note: on 2026-06-20, a local App Store
+submit-lane package was generated for user-visible version `0.27.0` and
+App Store build counter `22` after the `v0.27.0` source / local-app tag.
+Upload, App Store Connect processing, TestFlight, App Review, and
+release handling are outside this repository unless separately recorded.
+
+The local package generated for this lane is:
+
+```txt
+src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.27.0-build22-mas.pkg
+```
+
+The signed submit-lane bundle reported `CFBundleIdentifier`
+`dev.hazakura.editor`, `CFBundleShortVersionString` `0.27.0`,
+`CFBundleVersion` `22`, and `LSMinimumSystemVersion` `26.0`. It had the
+expected App Sandbox, user-selected read/write, app-scoped bookmark, and
+network-client entitlements; it omitted the Apple Local Assist helper
+and included bundled `LICENSE` / `THIRD_PARTY_NOTICES.md` resources.
+`REQUIRE_APP_STORE_ENTITLEMENTS=1 npm run probe:macos-distribution -- <app>`
+passed for the generated app. `pkgutil --check-signature` passed with
+the 3rd Party Mac Developer Installer certificate. `spctl` rejected or
+returned inconclusive local assessment for the signed app, so keep
+treating that as local trust-policy evidence rather than an App Store
+Connect validation result. SHA-256:
+
+```txt
+3cf8a09dcf4b3fd81d50ad330d552c0e7de30ec56713b2fc4b4f2a62ae913ff7
 ```
