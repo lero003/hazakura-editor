@@ -1,15 +1,95 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import PreviewPane from "./PreviewPane";
 
 vi.mock("../../../lib/tauri", () => ({
   openWorkspaceImage: vi.fn(),
 }));
 
-afterEach(cleanup);
+let pendingAnimationFrames: FrameRequestCallback[] = [];
+
+beforeEach(() => {
+  pendingAnimationFrames = [];
+  vi.stubGlobal(
+    "requestAnimationFrame",
+    vi.fn((callback: FrameRequestCallback) => {
+      pendingAnimationFrames.push(callback);
+      return pendingAnimationFrames.length;
+    }),
+  );
+  vi.stubGlobal(
+    "cancelAnimationFrame",
+    vi.fn((handle: number) => {
+      pendingAnimationFrames[handle - 1] = () => undefined;
+    }),
+  );
+});
+
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
+
+async function flushPreviewFrame() {
+  const callbacks = pendingAnimationFrames;
+  pendingAnimationFrames = [];
+  await act(async () => {
+    for (const callback of callbacks) {
+      callback(performance.now());
+    }
+  });
+}
 
 describe("PreviewPane local link routing", () => {
-  it("prevents in-preview navigation and forwards the clicked href", () => {
+  it("defers the initial markdown render until the next animation frame", async () => {
+    const { container } = render(
+      <PreviewPane source={["# Large Draft", "", "Body"].join("\n")} />,
+    );
+
+    expect(
+      screen.queryByRole("heading", { name: "Large Draft" }),
+    ).toBeNull();
+    expect(container.querySelector(".markdown-preview-loading")).toBeTruthy();
+
+    await flushPreviewFrame();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("heading", { name: "Large Draft" }),
+      ).toBeTruthy();
+    });
+    expect(container.querySelector(".markdown-preview-loading")).toBeNull();
+  });
+
+  it("clears stale preview content while the next document is waiting for its frame", async () => {
+    const { container, rerender } = render(
+      <PreviewPane source={["# Previous Draft", "", "Body"].join("\n")} />,
+    );
+    await flushPreviewFrame();
+
+    expect(
+      screen.getByRole("heading", { name: "Previous Draft" }),
+    ).toBeTruthy();
+
+    rerender(<PreviewPane source={["# Next Draft", "", "Body"].join("\n")} />);
+
+    expect(
+      screen.queryByRole("heading", { name: "Previous Draft" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("heading", { name: "Next Draft" }),
+    ).toBeNull();
+    expect(container.querySelector(".markdown-preview-loading")).toBeTruthy();
+  });
+
+  it("prevents in-preview navigation and forwards the clicked href", async () => {
     const onOpenLocalLink = vi.fn();
     render(
       <PreviewPane
@@ -19,6 +99,7 @@ describe("PreviewPane local link routing", () => {
         workspaceRoot="/workspace"
       />,
     );
+    await flushPreviewFrame();
 
     const link = screen.getByRole("link", { name: "Open note" });
     const event = new MouseEvent("click", {
@@ -35,7 +116,7 @@ describe("PreviewPane local link routing", () => {
     );
   });
 
-  it("prevents main WebView navigation for external links before routing", () => {
+  it("prevents main WebView navigation for external links before routing", async () => {
     const onOpenLocalLink = vi.fn();
     render(
       <PreviewPane
@@ -43,6 +124,7 @@ describe("PreviewPane local link routing", () => {
         source="[Support](https://hazakura.dev/hazakura-editor/support/)"
       />,
     );
+    await flushPreviewFrame();
 
     const link = screen.getByRole("link", { name: "Support" });
     const event = new MouseEvent("click", {
@@ -59,7 +141,7 @@ describe("PreviewPane local link routing", () => {
     );
   });
 
-  it("does not route clicks outside preview links", () => {
+  it("does not route clicks outside preview links", async () => {
     const onOpenLocalLink = vi.fn();
     render(
       <PreviewPane
@@ -67,6 +149,7 @@ describe("PreviewPane local link routing", () => {
         source="Plain paragraph"
       />,
     );
+    await flushPreviewFrame();
 
     fireEvent.click(screen.getByText("Plain paragraph"));
 

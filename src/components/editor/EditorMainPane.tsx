@@ -44,6 +44,7 @@ type EditorMainPaneProps = {
   onScrollRatioChange: (ratio: number) => void;
   onSelectionChange: (selection: EditorSelectionInfo) => void;
   onSendToAgent: (text: string) => void;
+  restoreComplete: boolean;
   scrollHudContext: MarkdownHeadingContext;
   scrollHudLine: number;
   scrollHudVisible: boolean;
@@ -75,6 +76,7 @@ export function EditorMainPane({
   onScrollRatioChange,
   onSelectionChange,
   onSendToAgent,
+  restoreComplete,
   scrollHudContext,
   scrollHudLine,
   scrollHudVisible,
@@ -147,6 +149,13 @@ export function EditorMainPane({
         </>
       ) : selectedImage ? (
         <ImagePreviewPane image={selectedImage} title={imagePreviewTitle} />
+      ) : !restoreComplete ? (
+        <div className="editor-restore-loading" aria-hidden="true">
+          <span className="editor-restore-loading-line" />
+          <span className="editor-restore-loading-line" />
+          <span className="editor-restore-loading-line" />
+          <span className="editor-restore-loading-line" />
+        </div>
       ) : (
         <StartPanel
           copy={copy}

@@ -15,6 +15,36 @@
   width: calc(100% - 28px);
 }
 
+.markdown-preview-loading {
+  min-height: 220px;
+  position: relative;
+}
+
+.markdown-preview-loading::before,
+.markdown-preview-loading::after {
+  background: color-mix(in srgb, var(--text-muted) 14%, transparent);
+  border-radius: 999px;
+  content: "";
+  display: block;
+}
+
+.markdown-preview-loading::before {
+  height: 16px;
+  max-width: 18em;
+  width: 42%;
+}
+
+.markdown-preview-loading::after {
+  box-shadow:
+    0 28px 0 color-mix(in srgb, var(--text-muted) 10%, transparent),
+    0 56px 0 color-mix(in srgb, var(--text-muted) 9%, transparent),
+    0 84px 0 color-mix(in srgb, var(--text-muted) 8%, transparent);
+  height: 10px;
+  margin-top: 34px;
+  max-width: 34em;
+  width: 68%;
+}
+
 .markdown-preview h1,
 .markdown-preview h2,
 .markdown-preview h3,

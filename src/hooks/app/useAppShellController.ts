@@ -1536,6 +1536,7 @@ export function useAppShellController() {
     previewVisible,
     quickOpenVisible,
     recentFiles,
+    restoreComplete,
     restoreBackupDialogOpen,
     onMoveEntry: (srcPath: string, dstParentPath: string) => {
       void moveWorkspacePath(srcPath, dstParentPath);

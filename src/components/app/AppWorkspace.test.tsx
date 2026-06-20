@@ -109,6 +109,7 @@ function renderWorkspace(overrides: Partial<ComponentProps<typeof AppWorkspace>>
     previewVisible: true,
     renamingPath: null,
     requestRename: vi.fn(),
+    restoreComplete: true,
     resolvedTheme: "light",
     runSelectedFileCompare: vi.fn(),
     safeEditorCopy: getSafeEditorCopy("en"),

@@ -1,5 +1,13 @@
-import { type MouseEvent, useEffect, useMemo, useState } from "react";
-import { inlineWorkspaceAssetImages, renderMarkdown } from "../../../features/editor/markdown";
+import {
+  type MouseEvent,
+  useEffect,
+  useLayoutEffect,
+  useState,
+} from "react";
+import {
+  inlineWorkspaceAssetImages,
+  renderMarkdown,
+} from "../../../features/editor/markdown";
 import { openWorkspaceImage } from "../../../lib/tauri";
 
 type PreviewPaneProps = {
@@ -15,35 +23,45 @@ export default function PreviewPane({
   source,
   workspaceRoot,
 }: PreviewPaneProps) {
-  const renderedHtml = useMemo(
-    () => renderMarkdown(source, { documentPath, workspaceRoot }),
-    [documentPath, source, workspaceRoot],
-  );
-  const [html, setHtml] = useState(renderedHtml);
+  const [preview, setPreview] = useState({ html: "", pending: true });
+
+  useLayoutEffect(() => {
+    setPreview({ html: "", pending: true });
+  }, [documentPath, source, workspaceRoot]);
 
   useEffect(() => {
     let cancelled = false;
-    setHtml(renderedHtml);
 
-    if (!workspaceRoot) {
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    void inlineWorkspaceAssetImages(renderedHtml, async (path) => {
-      const image = await openWorkspaceImage(workspaceRoot, path);
-      return image.dataUrl;
-    }).then((nextHtml) => {
-      if (!cancelled) {
-        setHtml(nextHtml);
+    const cancelRender = schedulePreviewRender(() => {
+      if (cancelled) {
+        return;
       }
+
+      const renderedHtml = renderMarkdown(source, {
+        documentPath,
+        workspaceRoot,
+      });
+      setPreview({ html: renderedHtml, pending: false });
+
+      if (!workspaceRoot) {
+        return;
+      }
+
+      void inlineWorkspaceAssetImages(renderedHtml, async (path) => {
+        const image = await openWorkspaceImage(workspaceRoot, path);
+        return image.dataUrl;
+      }).then((nextHtml) => {
+        if (!cancelled) {
+          setPreview({ html: nextHtml, pending: false });
+        }
+      });
     });
 
     return () => {
       cancelled = true;
+      cancelRender();
     };
-  }, [renderedHtml, workspaceRoot]);
+  }, [documentPath, source, workspaceRoot]);
 
   const handleClick = (event: MouseEvent<HTMLElement>) => {
     if (!onOpenLocalLink) {
@@ -70,9 +88,28 @@ export default function PreviewPane({
 
   return (
     <article
-      className="markdown-preview"
-      dangerouslySetInnerHTML={{ __html: html }}
+      aria-busy={preview.pending ? "true" : undefined}
+      className={
+        preview.pending
+          ? "markdown-preview markdown-preview-loading"
+          : "markdown-preview"
+      }
+      dangerouslySetInnerHTML={{ __html: preview.html }}
       onClick={handleClick}
     />
   );
+}
+
+function schedulePreviewRender(callback: () => void): () => void {
+  if (typeof requestAnimationFrame === "function") {
+    const handle = requestAnimationFrame(callback);
+    return () => {
+      cancelAnimationFrame(handle);
+    };
+  }
+
+  const handle = window.setTimeout(callback, 0);
+  return () => {
+    window.clearTimeout(handle);
+  };
 }

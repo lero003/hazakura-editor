@@ -31,6 +31,16 @@ describe("preview.css", () => {
     expect(body).toMatch(/width:\s*calc\(100% - 28px\)/);
   });
 
+  it("keeps the Markdown preview loading surface theme-bound", () => {
+    const body = ruleBody(".markdown-preview-loading");
+
+    expect(body).toMatch(/min-height:\s*220px/);
+    expect(previewCss).toMatch(
+      /\.markdown-preview-loading::before,\n\.markdown-preview-loading::after\s*{[^}]*var\(--text-muted\)/s,
+    );
+    expect(previewCss).not.toMatch(/(?:^|\n)\.preview-loading\s*{/);
+  });
+
   it("keeps Markdown preview hierarchy scaled from the preview font size", () => {
     for (const selector of [
       ".markdown-preview h1",

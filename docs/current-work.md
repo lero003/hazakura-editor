@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: Active post-v0.26 release quality routing and v0.27 prelude
+Scope: Active post-v0.26 release quality routing and v0.27 refinement
 Authority: High
-Last reviewed: 2026-06-20 (v0.26 released, v0.27 prelude)
+Last reviewed: 2026-06-20 (v0.26 released, v0.27 refinement plan selected)
 
 ## Purpose
 
@@ -18,6 +18,9 @@ v0.18 pre-review automation slices remain below as historical evidence.
 
 Keep every slice small, verifiable, and inside the Markdown-first Safe
 Editor boundary.
+For v0.27 product work, use
+`docs/v0.27-refinement-slice-plan.md` as the execution memo and keep
+`docs/post-v0.25-product-refinement-plan.md` as the broader lens.
 
 ## Product Boundary
 
@@ -143,7 +146,7 @@ Keep the completed v0.21 PoC out of:
 - Vertical writing.
 - Multiple Markdown files as one book.
 - L Mode integration beyond a light source-read of reusable boundaries.
-- Status bar structure cleanup, which remains a separate v0.21+ UX debt.
+- Status bar structure cleanup, now tracked as v0.27 Phase 4.
 
 ## v0.22 e-book Mode Chapter Reader MVP
 
@@ -464,18 +467,48 @@ Post-release pre-v0.27 quality follow-up as of 2026-06-20:
   per user report. Code-level verification is recorded in the commit
   that introduced the fix.
 
+## v0.27 Refinement
+
+Use `docs/v0.27-refinement-slice-plan.md` as the execution memo.
+
+Phase 1 is implemented locally as of 2026-06-20 at code-regression
+level. Investigation found that `PreviewPane` rendered Markdown
+synchronously during React render, so a large document with Preview
+already visible could compete with the editor's first commit. The
+Preview surface now clears stale content before paint, shows a
+theme-bound loading surface, schedules Markdown rendering for the next
+animation frame, then performs the existing workspace-image inlining
+path. A follow-up startup check found that restored tabs are only
+installed after the persisted files finish opening, so the editor pane
+now shows a theme-bound restore loading surface instead of briefly
+falling back to the start panel while `restoreComplete` is still false.
+This keeps Markdown source, Preview sanitization, local-link routing,
+and export behavior unchanged.
+
+Verification: `npm run test --
+src/components/editor/preview/PreviewPane.test.tsx
+src/styles/previewCss.test.ts src/components/app/SidePane.test.tsx
+src/components/editor/preview/EBookPane.test.tsx`, `npm run test --
+src/components/editor/EditorMainPane.test.tsx
+src/components/app/AppWorkspace.test.tsx src/styles/editorCss.test.ts`.
+
+Manual large-document built-app smoke remains useful for actual
+first-paint feel. If e-book Mode still shows a first-render disturbance,
+inspect its active-chapter render / CSS Columns measurement as the next
+bounded Phase 1 follow-up.
+
 ## Active UX Queue
 
 Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| Post-v0.25 lens | Product refinement triage | Use `docs/post-v0.25-product-refinement-plan.md` to choose one small slice that tightens the existing product instead of adding surfaces: mode-transition consistency, Workspace-as-book information architecture, flow-preserving editing, large-document / preview reliability, layered native chrome, or AI-as-review-layer wording. Close as a docs-only decision, `implemented`, `manual-blocked`, or `verified no-op`; do not bundle with distribution work. |
-| v0.25 Phase 2 | Native vibrancy via `window-vibrancy` + macOS 26 floor | Phase 1 chrome polish is done at code/CSS level. The CSS glass follow-up is dropped (scrap-and-build). Next: bump `minimumSystemVersion` to macOS 26 as release-planning work, add `window-vibrancy`, call `apply_vibrancy` on the main window, make sidebar / top-chrome transparent over the native material, tune the five themes, and verify with built `.app` smoke on macOS 26. Do not add a SwiftUI/AppKit rewrite, Liquid Glass fidelity, vibrancy behind dense Markdown text, toolbar rewrites, new modes, or AI ingest in this slice. |
-| v0.25 Phase 1 proof | Manual macOS app smoke for the implemented chrome polish | Phase 1 is implemented: drag regions, editor focus, mode active state, segmented controls, e-book / Diff tokens. Final proof is manual app smoke: titlebar dragging, click hit-testing (esp. Review menu), dense tabs, L Mode floating pill, segmented mode controls, e-book / Preview / Diff, light/dark themes, and keyboard focus. |
+| v0.27 Phase 2 | One Editing Space minimal mode context retention | Find one concrete mode-switching disconnect across Normal / L Mode / e-book / Preview / Diff, such as scroll, cursor, heading context, or visual re-entry. Fix only that point, or close as `verified no-op` if current behavior already holds. |
+| v0.27 Phase 3 | Flow-preserving editing | Prioritize heading jump immediacy / predictability. A lightweight editing-position history may be session-only, but must not introduce persistence, background indexing, or hidden bookkeeping. |
+| v0.27 Phase 4 | Status bar structure cleanup | Treat the v0.20 compact status detail as a stopgap. Split status metadata into priority-aware fields, keep line-ending / encoding controls always reachable, and move lower-priority details such as final-newline state, line/column, selection, and heading context into hover, popover, or adaptive secondary display. |
 | P1 | Core Safe Editor quality probe | When concrete queue items are exhausted, inspect one basic high-risk surface instead of adding broad tests: open/save/close, restore/recovery, preview, diff/review, workspace file operations, standalone files, image handling, keyboard/IME, or error recovery. State the risk hypothesis, run a focused source/app inspection or smoke, then either fix the smallest issue found or close as `verified no-op`. |
 | P2 | Light accessibility sanity | Keep accessibility as a light sanity pass adjacent to core surfaces: keyboard reachability, focus escape/Tab behavior, readable labels, and obvious contrast. Do not prioritize broad accessibility audits over basic editor quality unless a concrete accessibility failure is observed. |
-| v0.21+ | Status bar structure cleanup | Treat the v0.20 compact status detail as a stopgap. For a later UX slice, split status metadata into priority-aware fields instead of one long `statusDetail` string, keep line-ending / encoding controls always reachable, and move lower-priority details such as final-newline state, line/column, selection, and heading context into hover, popover, or adaptive secondary display. |
+| Separate lane | Native vibrancy via `window-vibrancy` + macOS 26 floor | Keep as an independent release-planning lane outside v0.27 refinement. It requires a macOS 26 floor decision, built `.app` smoke on macOS 26, and App Store lane judgment before becoming active work. |
 | Deferred | Toolbar / bar architecture separation | Full top-bar rewrite, separate toolbar architecture, and Outline / Diff top-level routing remain later slices after v0.25 vibrancy proves the shell direction. |
 
 ## External-Agent Friendly Queue

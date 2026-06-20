@@ -38,6 +38,7 @@ or quality-polish slice.
 - `ai-markdown-ingest-plan.md`: v0.26+ explicit AI Markdown proposal ingest and Diff / Review planning memo.
 - `native-macos-appearance-plan.md`: v0.25 native-feeling Safe Editor chrome planning memo.
 - `post-v0.25-product-refinement-plan.md`: post-App-Store refinement lens for raising product grade without adding heavy surfaces.
+- `v0.27-refinement-slice-plan.md`: v0.27 refinement execution phases applying the post-v0.25 lens (large-document rendering, One Editing Space, flow-preserving editing, status bar cleanup).
 - `speculative-local-ai-future-plan.md`: changeable v1+ / v2+ / v3+ local AI direction.
 - `apple-local-assist-distribution-plan.md`: Apple Local Assist / App Store distribution planning memo.
 - `apple-local-assist-writing-companion-plan.md`: Apple Local Assist Writing Companion / external Assist Window UX direction.

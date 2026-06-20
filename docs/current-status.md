@@ -208,7 +208,11 @@ baseline, and smoke evidence are archived under
 
 ## Active Planning Sources
 
-- `docs/current-work.md`: current post-approval, v0.26 polish / EPUB export planning, and quality queue.
+- `docs/current-work.md`: current post-approval quality and v0.27
+  refinement queue.
+- `docs/v0.27-refinement-slice-plan.md`: v0.27 execution phases for
+  large-document rendering, One Editing Space, flow-preserving editing,
+  and status bar cleanup.
 - `docs/roadmap.md`: phase order and future boundaries.
 - `docs/product-brief.md`: durable product direction and non-goals.
 - `docs/security-boundary.md`: safe editor constraints.
@@ -226,12 +230,14 @@ baseline, and smoke evidence are archived under
 1. For post-approval cleanup, keep App Store-specific evidence public-safe
    and archive only completed version-specific material; canonical build
    and boundary docs stay live for future submissions.
-2. For UX work, start with `docs/current-work.md`. The v0.26 product
-   queue has shipped; the next quality work should stay small and
-   source-preserving, such as post-release error recovery, e-book
-   readability polish, or the next explicitly selected v0.27 slice.
-   Do not add cover editing or an EPUB document model unless that lane
-   is explicitly opened.
+2. For UX work, start with `docs/current-work.md` and
+   `docs/v0.27-refinement-slice-plan.md`. The v0.26 product queue has
+   shipped; the selected v0.27 work is source-preserving refinement of
+   large-document rendering, mode context, flow-preserving editing, and
+   status bar structure. Do not add AI ingest, Workspace As Book
+   information-architecture changes, Native Vibrancy Phase 2, cover
+   editing, or an EPUB document model unless that lane is explicitly
+   opened.
 3. For a future App Store submission, start with `docs/app-store-build.md`;
    use `npm run release:candidate -- --with-app-store-pkg` for local
    signed package checkpoints, keep account-specific notes under ignored

@@ -3,11 +3,11 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-20 (v0.26 polish and EPUB export queue)
+Last reviewed: 2026-06-20 (v0.27 refinement Phase 1)
 
 ## Current State
 
-- `Hazakura Editor` is at `0.25.0`.
+- `Hazakura Editor` is at `0.26.0`.
 - User-facing app identity is capitalized as `Hazakura Editor`. The
   App Store preview bundle is `Hazakura Editor.app`; current docs and
   smoke paths should use that name rather than the older lowercase
@@ -36,7 +36,17 @@ Last reviewed: 2026-06-20 (v0.26 polish and EPUB export queue)
   Local packaging/signing checks passed on 2026-06-19. Raw App Store
   Connect, TestFlight, and App Review logs are not tracked in this
   repository.
-- Start from `docs/current-work.md`.
+- Start from `docs/current-work.md`; v0.27 execution is now anchored in
+  `docs/v0.27-refinement-slice-plan.md`.
+- v0.27 Phase 1 large-document initial rendering stabilization is
+  implemented locally at code-regression level. `PreviewPane` clears
+  stale content before paint, shows a theme-bound preview loading
+  surface, and defers Markdown rendering to the next animation frame.
+  Startup workspace restore now keeps the editor pane on a
+  theme-bound restore loading surface while restored tabs are still
+  opening, instead of briefly falling back to the start panel.
+  Manual built-app smoke with a large restored Markdown file remains
+  the proof for actual first-paint feel.
 - A review-derived pre-release code-quality fix queue now lives in
   `docs/pre-release-fix-plan.md`. A follow-up external quality review
   has been triaged there as accepted vs deferred / not adopted items. It
@@ -164,43 +174,17 @@ Last reviewed: 2026-06-20 (v0.26 polish and EPUB export queue)
 ## Current Work Queue
 
 Use `docs/current-work.md` for the active queue. The current highest
-priority items after the v0.25 App Store release are:
+priority items after the v0.26 App Store release are:
 
-1. Post-v0.25 product refinement triage:
-   `docs/post-v0.25-product-refinement-plan.md` captures the next
-   product-grade lens: one editing space, Workspace-as-book, UI that
-   recedes, reliability, and AI as a review layer. Pick one small slice
-   from that lens rather than adding broad new surfaces.
-2. v0.26 EPUB beta follow-up: Slice 1 content quality, Slice 2 manual
-   EPUBCheck evidence, Slice 3 metadata UI, and Slice 4 page-break markers
-   are implemented.
-   EPUB export now packages workspace images and allowed small
-   `data:image` references into `OEBPS/images/`, strips Preview-only
-   markup before XHTML output, uses `splitMarkdownIntoChapters` for
-   export navigation, handles inline Markdown in headings without
-   dropping later nav entries, and recognizes YAML frontmatter so
-   frontmatter `#` / `---` do not become book headings. Local Data
-   Disclosure now describes the beta export image and validator boundary.
-   Slice 2 fixed the placeholder `dc:identifier` EPUBCheck warning by
-   generating a valid per-export UUID; user-checked `test02.epub` passed
-   EPUBCheck 3.3 with no errors or warnings. Slice 3 adds a dialog-scoped
-   Title / Author / Language draft before Save As, writes `dcterms:modified`
-   from export time, and omits `dc:creator` when Author is blank. Slice 4
-   adds blank-line-flanked standalone `---` / `===` page-break markers via
-   a shared e-book helper; EPUB `content.xhtml` receives `.page-break`
-   blocks and e-book Mode shows the same markers as page cues while
-   frontmatter, fenced code, and non-blank-flanked rules remain unchanged.
-3. Manual app smoke of the v0.24 e-book single-page reader: e-book
-   toggle, page movement, reader footer, chapter boundary movement,
-   long chapters, image-heavy chapters, long code blocks with inner
-   scroll, tables, Tab focus, light/dark themes, and font-size changes.
-4. Core Safe Editor quality probe.
-5. Light accessibility sanity adjacent to the selected core surface.
-6. Any follow-up discovered by manual app smoke of the v0.20 Sakura
-   chrome / preview polish.
-7. v0.21+ status bar structure cleanup: replace the current compact
-   status-detail stopgap with priority-aware metadata fields while
-   keeping line-ending / encoding controls reachable.
+1. v0.27 Phase 1 manual large-document built-app smoke, especially
+   startup restore with a large Markdown file and Preview / e-book
+   first-paint feel. The code-regression slice is implemented locally.
+2. v0.27 Phase 2 One Editing Space minimal mode context retention.
+3. v0.27 Phase 3 flow-preserving editing, starting with heading jump
+   immediacy / predictability.
+4. v0.27 Phase 4 status bar structure cleanup.
+5. Core Safe Editor quality probe only when concrete v0.27 queue items
+   are exhausted.
 
 Recently completed: v0.20 Sakura chrome / file-state clarity kept New
 File on existing non-tab-row paths, added the top chrome

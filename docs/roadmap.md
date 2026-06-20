@@ -20,9 +20,10 @@ Current release state:
 - Current package/app version: `0.26.0`.
 - Mac App Store published version: `0.26.0`, reported released on
   2026-06-20 after App Review completion.
-- Active lane: post-v0.26 quality polish and v0.27 prelude after
-  no-workspace authoring, e-book affordance cleanup, and EPUB export
-  beta follow-up shipped.
+- Active lane: v0.27 refinement execution after no-workspace authoring,
+  e-book affordance cleanup, and EPUB export beta follow-up shipped.
+  Use `docs/v0.27-refinement-slice-plan.md` for the Phase 1 -> 4
+  execution order.
 - Current work queue: `docs/current-work.md`.
 
 North star for the next product arc:
@@ -401,7 +402,10 @@ Goal: raise the product grade by tightening the existing experience
 instead of adding broad new surfaces.
 
 Use `docs/post-v0.25-product-refinement-plan.md` as the refinement lens.
-The strongest direction is:
+For v0.27 execution, use `docs/v0.27-refinement-slice-plan.md`; it
+keeps AI ingest, Workspace As Book information-architecture changes, and
+Native Vibrancy Phase 2 outside the main v0.27 scope. The strongest
+direction is:
 
 - treat Normal Mode, L Mode, e-book Mode, Preview, Diff, and AI review as
   source-preserving layers over one Markdown editing space;

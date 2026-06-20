@@ -232,6 +232,16 @@ describe("editor tab close affordance CSS", () => {
     expect(sakuraPathBar).toMatch(/var\(--accent-secondary\)/);
   });
 
+  it("keeps the startup restore loading surface bound to editor theme tokens", () => {
+    const loading = ruleBody(workspaceCss, ".editor-restore-loading");
+
+    expect(loading).toMatch(/background:\s*var\(--cm-bg\)/);
+    expect(loading).toMatch(/flex:\s*1\s+1\s+auto/);
+    expect(workspaceCss).toMatch(
+      /\.editor-restore-loading-line\s*{[\s\S]*var\(--text-muted\)/,
+    );
+  });
+
   it("removes the workspace footer trash button border without changing its hit size", () => {
     const trashButton = ruleBody(workspaceCss, ".workspace-trash-button");
     const trashButtonHover = ruleBody(

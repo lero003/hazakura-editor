@@ -104,6 +104,7 @@ type AppWorkspaceProps = {
   onWorkspaceSidebarCollapsedChange?: (collapsed: boolean) => void;
   requestRename: (path: string) => void;
   renamingPath: string | null;
+  restoreComplete: boolean;
   openFile: () => unknown;
   openFilePath: (path: string) => unknown;
   openPreviewMarkdownLink: (path: string) => void | Promise<void>;
@@ -196,6 +197,7 @@ export function AppWorkspace({
   onWorkspaceSidebarCollapsedChange,
   requestRename,
   renamingPath,
+  restoreComplete,
   openFile,
   openFilePath,
   openPreviewMarkdownLink,
@@ -331,6 +333,7 @@ export function AppWorkspace({
           onScrollRatioChange={syncPreviewScroll}
           onSelectionChange={setSelectionInfo}
           onSendToAgent={handleSendSelectionToAgent}
+          restoreComplete={restoreComplete}
           scrollHudContext={scrollHudContext}
           scrollHudLine={scrollHudLine}
           scrollHudVisible={scrollHudVisible}

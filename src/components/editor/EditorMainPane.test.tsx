@@ -73,9 +73,11 @@ const activeTab: EditorTab = {
 };
 
 function renderEditorMainPane(
-  overrides: Partial<Parameters<typeof EditorMainPane>[0]> = {},
+  overrides: Partial<
+    Parameters<typeof EditorMainPane>[0] & { restoreComplete: boolean }
+  > = {},
 ) {
-  render(
+  return render(
     <EditorMainPane
       activeContents="# Draft"
       activeDocumentLineCount={1}
@@ -105,6 +107,7 @@ function renderEditorMainPane(
       slashCommands={[]}
       slashMenuCopy={getSlashMenuCopy("en")}
       workspaceRootPath="/workspace"
+      restoreComplete={true}
       {...overrides}
     />,
   );
@@ -182,5 +185,19 @@ describe("EditorMainPane", () => {
     expect(screen.queryByText("docs/draft.md")).toBeNull();
     expect(screen.queryByText("/workspace/docs/draft.md")).toBeNull();
     expect(screen.getByTestId("mock-editor-pane")).toBeTruthy();
+  });
+
+  it("shows a themed restore loading surface before restored tabs are ready", () => {
+    const { container } = renderEditorMainPane({
+      activeContents: "",
+      activeTab: null,
+      documentKey: "restore-pending",
+      restoreComplete: false,
+      workspaceRootPath: null,
+    });
+
+    expect(screen.queryByTestId("start-panel")).toBeNull();
+    expect(screen.queryByTestId("mock-editor-pane")).toBeNull();
+    expect(container.querySelector(".editor-restore-loading")).toBeTruthy();
   });
 });
