@@ -142,7 +142,7 @@ export function computeContentDecorations(
             context.workspaceRoot,
           );
           let resolvedSrc: string | null | undefined;
-          if (classified.kind === "http" || classified.kind === "data") {
+          if (classified.kind === "data") {
             resolvedSrc = classified.value;
           } else if (classified.kind === "workspace") {
             const cached = peekResolvedImage(

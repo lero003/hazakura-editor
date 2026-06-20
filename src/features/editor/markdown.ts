@@ -1,5 +1,6 @@
 import DOMPurify from "dompurify";
 import { marked } from "marked";
+import { isAllowedEmbeddedImageSource } from "./imagePolicy";
 
 marked.use({
   gfm: true,
@@ -172,21 +173,6 @@ function applyTaskListPreviewPolicy(html: string): string {
   }
 
   return template.innerHTML;
-}
-
-// v0.17 app-store-quality: slice 2.3 — cap embedded images at
-// 2 MB. A data:image URI larger than this in a Markdown note
-// would produce a multi-megabyte HTML export file and a
-// sluggish preview parse; treating it as an oversized
-// payload lets the image policy surface a "blocked" message
-// instead of injecting a giant inline image into the DOM.
-const MAX_EMBEDDED_IMAGE_BYTES = 2 * 1024 * 1024; // 2 MB
-
-function isAllowedEmbeddedImageSource(src: string): boolean {
-  if (src.length > MAX_EMBEDDED_IMAGE_BYTES) {
-    return false;
-  }
-  return /^data:image\/(?:png|jpe?g|gif|webp);base64,[a-z0-9+/=\s]+$/i.test(src);
 }
 
 function workspaceImagePath(

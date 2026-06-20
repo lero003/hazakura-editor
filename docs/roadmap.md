@@ -408,8 +408,11 @@ Expected slices:
   export. Treat Preview's embedded-image policy as the implementation
   reference: no direct `http:` / `https:` image fetch path, supported
   `data:image` MIME types only, strict base64 validation, and the same
-  2 MB inline cap. Do not let L Mode become a separate external fetch
-  path.
+  2 MB inline cap. This cap applies only to Markdown-embedded
+  `data:image` payloads, not to workspace image files or EPUB packaged
+  images; those remain under the workspace/local image boundary and may
+  need a separate EPUB image policy later. Do not let L Mode become a
+  separate external fetch path.
 - **Workspace search encoding parity**: search should use the same
   Japanese text decoding assumptions as safe file open where practical:
   UTF-8 plus Shift-JIS / EUC-JP, not broader legacy encodings unless file

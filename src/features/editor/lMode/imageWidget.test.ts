@@ -6,13 +6,13 @@ import {
 } from "./imageWidget";
 
 describe("classifyImageUrl", () => {
-  it("returns http for http(s) URLs", () => {
+  it("blocks http(s) URLs instead of rendering external images", () => {
     expect(classifyImageUrl("http://example.com/foo.png", null, "/ws")).toEqual({
-      kind: "http",
+      kind: "outside",
       value: "http://example.com/foo.png",
     });
     expect(classifyImageUrl("https://example.com/foo.png", null, "/ws")).toEqual({
-      kind: "http",
+      kind: "outside",
       value: "https://example.com/foo.png",
     });
   });
@@ -49,9 +49,26 @@ describe("classifyImageUrl", () => {
     });
   });
 
+  it("rejects invalid data:image base64 payloads", () => {
+    expect(
+      classifyImageUrl("data:image/png;base64,iVBORw0KGgo=;alert(1)", null, "/ws"),
+    ).toEqual({
+      kind: "outside",
+      value: "data:image/png;base64,iVBORw0KGgo=;alert(1)",
+    });
+  });
+
+  it("rejects oversized embedded data:image URLs", () => {
+    const oversized = `data:image/png;base64,${"A".repeat(2 * 1024 * 1024)}`;
+    const classified = classifyImageUrl(oversized, null, "/ws");
+
+    expect(classified.kind).toBe("outside");
+    expect(classified.value.length).toBe(oversized.length);
+  });
+
   it("returns outside when there is no workspace root and the URL is not http/data", () => {
-    // Without a workspace, anything other than http(s) and
-    // data: cannot be resolved. The classifier must not try.
+    // Without a workspace, anything other than a preview-safe
+    // data:image payload cannot be resolved. The classifier must not try.
     expect(classifyImageUrl("./foo.png", null, null)).toEqual({
       kind: "outside",
       value: "./foo.png",

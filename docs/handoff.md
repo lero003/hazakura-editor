@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-20 (v0.27 source tag / App Store build22)
+Last reviewed: 2026-06-21 (v0.28 P0 image-policy parity)
 
 ## Current State
 
@@ -51,6 +51,13 @@ Last reviewed: 2026-06-20 (v0.27 source tag / App Store build22)
 - Start from `docs/current-work.md`; v0.27 execution is complete for
   source-tag purposes and remains documented in
   `docs/v0.27-refinement-slice-plan.md`.
+- v0.28 P0 L Mode image-policy parity is implemented locally. L Mode no
+  longer renders `http:` / `https:` image URLs directly and now shares
+  Preview's supported `data:image` MIME, strict base64, and 2 MB
+  Markdown-inline cap policy. Workspace image files continue through the
+  bounded workspace-image command; EPUB packaged image policy remains a
+  separate future concern. Continue v0.28 from workspace search encoding
+  parity unless a higher-priority regression appears.
 - v0.27 Phase 1 large-document initial rendering stabilization is
   accepted as closed at `b2126c14` plus this docs-only follow-up.
   `PreviewPane` clears stale content before paint, shows a theme-bound

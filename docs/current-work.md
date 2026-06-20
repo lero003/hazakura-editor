@@ -615,11 +615,20 @@ AI-proposal review foundation without becoming an agent platform.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| P0 | L Mode image policy parity | L Mode follows the same external-image and `data:image` safety expectations as Preview / export. External `http:` / `https:` images are not rendered as a direct fetch path. Supported `data:image` MIME types, strict base64 validation, and the 2 MB inline cap match Preview's embedded-image policy. Workspace images still resolve through the bounded workspace-image command, source text remains unchanged, and focused L Mode tests pin the behavior. |
+| P0 | L Mode image policy parity | L Mode follows the same external-image and `data:image` safety expectations as Preview / export. External `http:` / `https:` images are not rendered as a direct fetch path. Supported `data:image` MIME types, strict base64 validation, and the 2 MB inline cap match Preview's embedded-image policy. The 2 MB cap is only for Markdown-embedded `data:image` payloads; workspace image files and EPUB packaged images stay under the separate workspace/local image boundary and may need their own EPUB image policy later. Workspace images still resolve through the bounded workspace-image command, source text remains unchanged, and focused L Mode tests pin the behavior. |
 | P1 | Workspace search encoding parity | Workspace search uses the same practical decode assumptions as safe file open where possible: UTF-8 plus Shift-JIS / EUC-JP. Do not claim broader legacy-encoding parity unless file open supports it first. Binary-looking and oversized files remain skipped, and focused Rust tests cover UTF-8 plus Shift-JIS or EUC-JP. |
 | P2 | System handoff hardening | Fixed OS handoff routes such as external links, Finder reveal, and print/browser handoff are easier to audit as allowlisted OS handoff, not arbitrary command execution. Keep behavior user-initiated and bounded; prove normalization / allowlist behavior with existing or focused tests. |
 | P3 | AI proposal review foundation | Add only one reusable intake / review primitive: file, paste, or existing transaction input into explicit Diff / Review. App Store lane remains helper-free and file/text based; Developer / GitHub integrations stay behind Apple Local Assist / Agent Workbench boundaries. No auto-apply, auto-save, auto-commit, generic chat, provider plugin, or hidden workspace rewrite. |
 | Release gate | Golden-path smoke checklist | Before tagging a v0.28 source / local-app release, run or update a focused checklist for New File, Save / Save As, L Mode, e-book Mode, EPUB export, Diff / Recovery, and AI proposal review if the review primitive is included. |
+
+P0 is implemented locally as of 2026-06-21. L Mode no longer renders
+external `http:` / `https:` image URLs as a direct fetch path; those
+remain source-preserving placeholders. L Mode now shares Preview's
+embedded `data:image` policy for supported MIME types, strict base64
+validation, and the 2 MB Markdown-inline cap, while workspace image files
+continue to resolve through the bounded workspace-image command. Focused
+verification: `npm run test -- src/features/editor/lMode/imageWidget.test.ts src/features/editor/lMode/extension.test.ts src/features/editor/markdown.test.ts`;
+`npm run build:vite`; `git diff --check`.
 
 Deferred from v0.28:
 
@@ -651,7 +660,7 @@ over copy-heavy or product-voice-sensitive work.
 
 | Fit | Candidate | Scope |
 |---|---|---|
-| Good | v0.28 L Mode image policy parity | Align L Mode image rendering with Preview / export safety expectations, including no direct remote image rendering and Preview-equivalent `data:image` validation / cap behavior. Keep Markdown source untouched, preserve bounded workspace-image loading, and prove remote-image / `data:image` behavior with focused tests. |
+| Done locally | v0.28 L Mode image policy parity | Implemented on 2026-06-21. Do not re-pick unless a regression appears; continue with workspace search encoding parity or the next v0.28 slice. |
 | Good | v0.28 workspace search encoding parity | Reuse or align with safe file-open decoding so Shift-JIS / EUC-JP text that can be opened is not silently invisible to search. Keep binary / oversized skip behavior intact and prove with focused Rust tests. |
 | Good | v0.28 system handoff hardening | Organize external-link, Finder reveal, and print/browser handoff as user-initiated allowlisted OS handoff. Do not add arbitrary command input or generic shell behavior. |
 | Good | v0.28 AI proposal review foundation | Implement one explicit proposal intake / review primitive only: file, paste, or existing transaction to Diff / Review. Leave broader ingest expansion for v0.29+. No auto-apply, auto-save, auto-commit, provider plugins, generic chat, or hidden workspace rewrite. |

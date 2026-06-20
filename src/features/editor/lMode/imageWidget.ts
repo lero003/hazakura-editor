@@ -7,9 +7,10 @@
 // existing extension test enforces it.
 //
 // URL resolution:
-//   - `http://` / `https://` → used directly as the `<img>` src.
-//   - PNG / JPEG / GIF / WebP `data:image` URLs → used
-//     directly (already inline).
+//   - `http://` / `https://` → placeholder only; L Mode must
+//     not become a separate external image fetch path.
+//   - Preview-safe PNG / JPEG / GIF / WebP `data:image` URLs
+//     → used directly (already inline).
 //   - Workspace-relative (`./foo.png`, `assets/...`) or
 //     absolute paths under the workspace root → resolved
 //     through the existing `open_workspace_image` Rust command,
@@ -32,16 +33,16 @@ import {
 } from "@codemirror/view";
 import { StateEffect, type Extension } from "@codemirror/state";
 import { openWorkspaceImage } from "../../../lib/tauri/workspace";
+import { isAllowedEmbeddedImageSource } from "../imagePolicy";
 import { LModeClasses } from "./classes";
 
 // The class returned by `classifyImageUrl`. `value` is the
-// `src` to use directly for `http` / `data` kinds, or the
-// absolute filesystem path for `workspace` (to be passed to
-// `openWorkspaceImage`), or the original raw URL for
-// `outside` (used only for diagnostics — the widget shows the
-// alt text and never attempts a read).
+// `src` to use directly for `data` kinds, or the absolute
+// filesystem path for `workspace` (to be passed to
+// `openWorkspaceImage`), or the original raw URL for `outside`
+// (used only for diagnostics — the widget shows the alt text
+// and never attempts a read).
 export type ClassifiedImageUrl =
-  | { kind: "http"; value: string }
   | { kind: "data"; value: string }
   | { kind: "workspace"; value: string }
   | { kind: "outside"; value: string };
@@ -49,8 +50,8 @@ export type ClassifiedImageUrl =
 // `resolvedSrc` is the actual `<img>` src to render. Three
 // states:
 //   - `string` (non-null): either a data URL (from
-//     `openWorkspaceImage`) or an http(s) / data URL. Render
-//     the image.
+//     `openWorkspaceImage`) or a preview-safe inline data URL.
+//     Render the image.
 //   - `null`: the image could not be loaded (or the URL is
 //     outside the workspace). Render the alt text only.
 //   - `undefined`: the resolution is still in flight. Render
@@ -129,10 +130,7 @@ export function classifyImageUrl(
   documentPath: string | null,
   workspaceRoot: string | null,
 ): ClassifiedImageUrl {
-  if (/^https?:\/\//i.test(rawUrl)) {
-    return { kind: "http", value: rawUrl };
-  }
-  if (/^data:image\/(?:png|jpe?g|gif|webp)[;,]/i.test(rawUrl)) {
+  if (isAllowedEmbeddedImageSource(rawUrl)) {
     return { kind: "data", value: rawUrl };
   }
   if (/^[a-z][a-z0-9+.-]*:/i.test(rawUrl)) {

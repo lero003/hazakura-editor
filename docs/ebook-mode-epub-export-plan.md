@@ -584,8 +584,10 @@ first slice の実質的な完成線。
   （manifest `item` 追加、XHTML 側 `<img src>` を相対パスに書き換え）。
   既存の 20 MB local image boundary と preview/export の 2 MB data:image
   inline cap を再利用し、許可済み `data:image` も `OEBPS/images/` に
-  リソース化する。扱えない画像は warning span にする。外部画像は
-  取り込まない。
+  リソース化する。2 MB cap は Markdown source に直接埋め込まれた
+  `data:image` payload のための preview/export inline 境界であり、
+  workspace image file や EPUB packaged image の一般上限ではない。
+  扱えない画像は warning span にする。外部画像は取り込まない。
 - EPUB 用クリーンアップ層を `renderMarkdown()` と `contentXhtml()` の間に
   挟む。`.markdown-table-frame` を外して `<table>` を戻す、task checkbox を
   テキスト表現に戻す、`.blocked-image` を warning にする。この層は
@@ -758,6 +760,9 @@ OKF対応前には、その時点のOKF仕様を再確認する。
   検討する。
 - 既存の20 MB local image boundary と preview/export inline cap の
   どちらを使うかは、表示とEPUB生成で分けて明示する。
+- `data:image` inline cap は Markdown source / Preview DOM の肥大化を
+  防ぐ境界として扱い、workspace image file や EPUB packaged image の
+  品質・圧縮・総サイズ上限は別のEPUB画像ポリシーとして検討する。
 
 ## Verification Direction
 
