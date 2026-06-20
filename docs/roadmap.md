@@ -17,9 +17,9 @@ Current release state:
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
 - Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
-- Current package/app version: `0.25.0`.
-- Active lane: v0.26 polish, no-workspace authoring, e-book affordance
-  cleanup, and initial EPUB export.
+- Current package/app version: `0.26.0`.
+- Active lane: v0.26 release prep after no-workspace authoring,
+  e-book affordance cleanup, and EPUB export beta follow-up.
 - Current work queue: `docs/current-work.md`.
 
 North star for the next product arc:

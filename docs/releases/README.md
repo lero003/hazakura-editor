@@ -9,7 +9,7 @@ This directory stores GitHub Release body drafts and published release-note evid
 
 Latest GitHub source / local-app tag note:
 
-- `0.25.0-source-tag.release.md`
+- `0.26.0-source-tag.release.md`
 
 Latest published GitHub Release body:
 
