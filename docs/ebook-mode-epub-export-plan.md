@@ -413,8 +413,9 @@ Scope:
 - active Markdown source から `.epub` archive を生成する。
 - save dialog を通じた明示的な export action にする。
 - ATX headings から章 / navigation / table of contents の初期構造を作る。
-- title / language / identifier は安全な初期値を使い、必要なら最低限の
-  入力だけにする。
+- title / language / identifier は安全な初期値を使う。ただし、標準的な
+  export UI としては title / author / language を専用入力として扱う
+  必要がある。
 - XHTML content と stylesheet は Markdown source から生成する。
 - workspace-local images は既存の workspace image boundary とサイズ
   方針を再確認して取り込む。扱えない画像は warning にする。
@@ -438,6 +439,88 @@ Verification direction:
 - unresolved / blocked images produce warnings instead of unsafe reads;
 - Preview / e-book Mode / HTML export behavior remains unchanged;
 - manual EPUBCheck remains documentation guidance, not an in-app command.
+
+#### EPUB metadata and export settings
+
+EPUB package metadata の標準側で最低限必要なものは、Package Document
+内の `dc:title`、`dc:identifier`、`dc:language`、および
+`meta property="dcterms:modified"` である。`dc:creator` / Author は
+EPUB の最小必須項目ではないが、Kindle 向けの実用フローや一般的な
+書籍 export UI では first-class field として扱う。したがって
+Hazakura の次スライスでも、利用者に見える入力はまず次の3項目に
+絞る。
+
+References:
+
+- W3C EPUB Packages 3.2, DCMES required elements:
+  `https://www.w3.org/publishing/epub32/epub-packages.html`
+- Reference tool UI and guide:
+  `https://kindle-epub-tool.pages.dev/`
+
+- `Title`: 書名。初期値は最初の H1、なければファイル名 stem、さらに
+  なければ `Untitled`。
+- `Author`: 著者名。初期値は空欄。Markdown source から推測しない。
+- `Language`: 言語。初期値は `ja`。将来は BCP 47 風の言語コードとして
+  検証する。
+
+実装上は、これらを editor tab や Markdown 本文へ混ぜず、export 専用の
+draft state として持つ。
+
+```ts
+type EpubExportSettings = {
+  title: string;
+  author: string;
+  language: string;
+  identifier: string;
+  pageBreakMode: "manual-markers";
+};
+```
+
+- `identifier` は UI に最初から出さなくてよいが、export ごとに UUID
+  などで生成し、固定値を使い回さない。
+- `dcterms:modified` は export 実行時刻から生成する。ユーザー入力には
+  しない。
+- `author` が空なら beta では `dc:creator` を出さない、または保存前に
+  入力を求める。どちらにするかは UI slice で決める。
+- 初期実装では dialog / modal scoped state に留め、完了後の
+  localStorage 保存や last-used author は後続判断にする。
+- Markdown frontmatter への自動書き込み、隠し workspace metadata、
+  EPUB を別の編集対象として保持することはしない。
+
+現在の beta は、title を最初の見出しまたはファイル名から作り、
+language を `ja` とし、identifier / modified にテストしやすい固定値を
+使っている。これは beta placeholder であり、複数回 export する
+実運用の標準状態ではない。
+
+#### Structure and page-break semantics
+
+見出しと改ページは別の意味として扱う。この整理は EPUB export だけでなく、
+e-book Mode / preview-style reading surface の表示にも関わる。
+
+- `h1` - `h6`: navigation / table of contents / anchor の構造を作る。
+  すべての見出しを自動で物理ページ区切りにしない。
+- standalone line の `---` または `===`: 将来の explicit page break
+  marker 候補。空行で挟まれた単独行だけを対象にし、通常の水平線との
+  互換性リスクを UI / docs で明示する。
+- e-book Mode が page-break marker を visual cue として表示する場合も、
+  Markdown source は書き換えず、export と同じ parser helper を使って
+  semantics がずれないようにする。
+- v0.26 beta follow-up では single `content.xhtml` の中に
+  `.page-break` class を挿入する程度に留める。`h1` ごとの
+  `chapter-001.xhtml` 分割や spine 分割は後続の互換性確認後に扱う。
+- page break は「読書システムへの希望」であり、Kindle / Apple Books
+  など各リーダーで同じページ数になる保証ではない。
+
+次の実装スライスで追加すべき検証:
+
+- Title / Author / Language の初期値と escaping。
+- export ごとに identifier が固定値にならないこと。
+- `dcterms:modified` が export 時刻由来で生成されること。
+- `---` / `===` の page-break marker が fenced code block 内や通常本文を
+  壊さないこと。
+- e-book Mode / preview-side visual cue と EPUB export の page-break 判定が
+  同じ helper に基づくこと。
+- metadata settings を変更しても Markdown source が変わらないこと。
 
 ### Later: Style Simulation And Review Hooks
 

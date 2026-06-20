@@ -85,7 +85,10 @@ Last reviewed: 2026-06-20 (v0.26 polish and EPUB export queue)
   metadata defaults, and a small stylesheet. It remains a beta export:
   no external validator launch, cover / metadata editor, vertical
   writing, bundled workspace-image resource packaging, or reader-perfect
-  pagination claim.
+  pagination claim. Follow-up planning now requires a dedicated
+  `EpubExportSettings` draft state before adding Title / Author /
+  Language input UI; the current identifier / modified metadata values
+  are beta placeholders.
 - Markdown preview task checkboxes are complete for v0.18: Preview renders
   `- [ ]` / `- [x]` as inert display-only checkbox glyphs without
   changing saved Markdown.
@@ -170,6 +173,11 @@ priority items after the v0.25 App Store release are:
    product-grade lens: one editing space, Workspace-as-book, UI that
    recedes, reliability, and AI as a review layer. Pick one small slice
    from that lens rather than adding broad new surfaces.
+2. v0.26 EPUB beta follow-up: implement the documented export settings
+   slice only if selected. Keep Title / Author / Language in dialog
+   draft state first, generate identifier / modified metadata per
+   export, and treat standalone `---` / `===` page-break markers as
+   separate from heading-based navigation.
 3. Manual app smoke of the v0.24 e-book single-page reader: e-book
    toggle, page movement, reader footer, chapter boundary movement,
    long chapters, image-heavy chapters, long code blocks with inner
@@ -193,6 +201,14 @@ Latest completed: v0.26 initial EPUB export beta adds a File menu and
 command palette action that writes the active Markdown source to a
 minimal `.epub` archive through a save dialog, with generated XHTML,
 heading navigation, package metadata defaults, and a small stylesheet.
+
+Latest docs decision: EPUB export metadata should move from beta
+defaults to dedicated export settings before UI is added. Required
+standard metadata includes title, identifier, language, and modified;
+Author is not the EPUB minimum but is first-class practical export input.
+Headings remain navigation structure, while explicit page breaks should
+be standalone `---` / `===` markers rather than automatic breaks at every
+heading.
 
 Earlier completed: v0.24 e-book single-page polish keeps Markdown source
 canonical and Preview / Export / L Mode untouched while adding a fixed

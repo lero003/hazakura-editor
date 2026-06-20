@@ -395,12 +395,21 @@ src/lib/diagnostics.test.ts`, `cargo test --manifest-path
 src-tauri/Cargo.toml epub_beta -- --nocapture`, and focused
 `save_binary_file_as` Rust tests.
 
+Follow-up planning note as of 2026-06-20: before adding EPUB input UI,
+define a dedicated `EpubExportSettings` draft state for Title / Author /
+Language plus generated identifier / modified metadata. The current beta
+metadata defaults are placeholders, not the long-term export contract.
+Headings should keep driving navigation / table of contents; explicit
+page breaks should be introduced separately as standalone `---` / `===`
+markers, without silently rewriting Markdown source.
+
 ## Active UX Queue
 
 Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
+| v0.26 EPUB beta follow-up | Export settings and page-break semantics | Add a dedicated EPUB export settings draft for Title / Author / Language, generate identifier / modified metadata per export, and treat standalone `---` / `===` as explicit page-break markers only after tests prove normal Markdown / fenced code blocks are preserved. Keep Markdown source canonical and do not add cover UI, image packaging, EPUBCheck launch, vertical writing, or a second EPUB document model in this slice. |
 | Post-v0.25 lens | Product refinement triage | Use `docs/post-v0.25-product-refinement-plan.md` to choose one small slice that tightens the existing product instead of adding surfaces: mode-transition consistency, Workspace-as-book information architecture, flow-preserving editing, large-document / preview reliability, layered native chrome, or AI-as-review-layer wording. Close as a docs-only decision, `implemented`, `manual-blocked`, or `verified no-op`; do not bundle with distribution work. |
 | v0.25 Phase 2 | Native vibrancy via `window-vibrancy` + macOS 26 floor | Phase 1 chrome polish is done at code/CSS level. The CSS glass follow-up is dropped (scrap-and-build). Next: bump `minimumSystemVersion` to macOS 26 as release-planning work, add `window-vibrancy`, call `apply_vibrancy` on the main window, make sidebar / top-chrome transparent over the native material, tune the five themes, and verify with built `.app` smoke on macOS 26. Do not add a SwiftUI/AppKit rewrite, Liquid Glass fidelity, vibrancy behind dense Markdown text, toolbar rewrites, new modes, or AI ingest in this slice. |
 | v0.25 Phase 1 proof | Manual macOS app smoke for the implemented chrome polish | Phase 1 is implemented: drag regions, editor focus, mode active state, segmented controls, e-book / Diff tokens. Final proof is manual app smoke: titlebar dragging, click hit-testing (esp. Review menu), dense tabs, L Mode floating pill, segmented mode controls, e-book / Preview / Diff, light/dark themes, and keyboard focus. |
@@ -417,6 +426,7 @@ over copy-heavy or product-voice-sensitive work.
 
 | Fit | Candidate | Scope |
 |---|---|---|
+| Good | v0.26 EPUB export settings | Implement the documented metadata follow-up: Title / Author / Language draft state, generated per-export identifier / modified metadata, and optional manual page-break markers. Keep it dialog-scoped first and preserve Markdown source unchanged. |
 | Good | v0.26 no-workspace New File / Save As | Implement one Safe Editor core slice: pathless New File creates an untitled standalone Markdown tab, Save routes through Save As, dirty close protection remains intact, and the saved tab becomes a normal standalone file. Keep workspace-only operations unavailable until a file/workspace path exists. |
 | Good | v0.26 EPUB export first slice | Add an explicit minimal EPUB export from active Markdown source only. Keep generation deterministic and bounded; no external validator launch, advanced metadata editor, vertical writing, or page-count fidelity claim. |
 | Good | v0.25 native-feeling chrome P0 | Implement one small shell polish slice: traffic-light-safe drag region, subtle editor focus signal, truthful mode active states, or token cleanup. Keep it inside existing React/CSS chrome and prove it with focused tests plus manual app smoke where needed. |

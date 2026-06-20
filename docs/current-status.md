@@ -140,7 +140,10 @@ Last reviewed: 2026-06-20 (v0.26 polish and EPUB export queue)
   generated heading navigation, package metadata defaults, and a small
   stylesheet. It is not a second document model and does not claim
   reader-perfect pagination, vertical writing, cover metadata, or
-  external validator proof.
+  external validator proof. Follow-up planning now requires dedicated
+  EPUB export settings before adding Title / Author / Language input UI;
+  the current identifier / modified metadata defaults are beta
+  placeholders, not the long-term export contract.
 - Markdown preview and Help document links keep supported
   workspace-relative text files inside the app, but route explicit
   `http:` / `https:` / `mailto:` / `tel:` clicks to the OS default
@@ -209,7 +212,9 @@ baseline, and smoke evidence are archived under
 2. For UX work, start with `docs/current-work.md`. The current v0.26
    product queue has completed no-workspace New File / Save As and
    e-book empty-state affordance polish, and initial EPUB export beta.
-   Keep each slice small and source-preserving.
+   Keep each slice small and source-preserving. The next EPUB-safe
+   follow-up is export settings and manual page-break semantics, not
+   cover/image packaging or an EPUB document model.
 3. For a future App Store submission, start with `docs/app-store-build.md`;
    use `npm run release:candidate -- --with-app-store-pkg` for local
    signed package checkpoints, keep account-specific notes under ignored
