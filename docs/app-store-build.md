@@ -524,19 +524,19 @@ rather than an App Store Connect validation result. SHA-256:
 
 v0.26 package-candidate note: on 2026-06-20, Codex generated a local
 App Store submit-lane package for user-visible version `0.26.0` and
-App Store build counter `20`. This is local packaging evidence only;
-raw App Store Connect, TestFlight, and App Review logs are not tracked
-here.
+App Store build counter `21` after correcting the Japanese e-book label
+to `電子書籍`. This is local packaging evidence only; raw App Store
+Connect, TestFlight, and App Review logs are not tracked here.
 
 The local package generated for this lane is:
 
 ```txt
-src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.26.0-build20-mas.pkg
+src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.26.0-build21-mas.pkg
 ```
 
 The signed submit-lane bundle reported `CFBundleIdentifier`
 `dev.hazakura.editor`, `CFBundleShortVersionString` `0.26.0`,
-`CFBundleVersion` `20`, and `LSMinimumSystemVersion` `26.0`. It had the
+`CFBundleVersion` `21`, and `LSMinimumSystemVersion` `26.0`. It had the
 expected App Sandbox, user-selected read/write, app-scoped bookmark, and
 network-client entitlements; it omitted the Apple Local Assist helper
 and included bundled `LICENSE` / `THIRD_PARTY_NOTICES.md` resources.
@@ -548,5 +548,5 @@ local package, so keep treating that as local trust-policy evidence
 rather than an App Store Connect validation result. SHA-256:
 
 ```txt
-30a6a72ba8dd40e15943f8725284e3de548d4b3bd8a87887e7d9486915bbe361
+1cc4f694334badc7a408c0e61278ee40b340a0939378d082de9bfe41e44df515
 ```

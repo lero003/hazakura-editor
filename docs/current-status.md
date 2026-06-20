@@ -29,10 +29,11 @@ Last reviewed: 2026-06-20 (v0.26 release prep)
   Raw App Store Connect, TestFlight, and App Review logs are not tracked
   in this repository.
 - The next helper-free App Store package candidate for `0.26.0` is local
-  build `20`, generated on 2026-06-20:
-  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.26.0-build20-mas.pkg`.
+  build `21`, generated on 2026-06-20 after the Japanese `電子書籍`
+  label correction:
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.26.0-build21-mas.pkg`.
   SHA-256:
-  `30a6a72ba8dd40e15943f8725284e3de548d4b3bd8a87887e7d9486915bbe361`.
+  `1cc4f694334badc7a408c0e61278ee40b340a0939378d082de9bfe41e44df515`.
   It has not been uploaded to App Store Connect in this repository
   state.
 - Pre-approval human-side App Store lane smoke on 2026-06-12 passed launch,
