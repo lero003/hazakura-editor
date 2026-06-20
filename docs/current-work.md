@@ -570,13 +570,31 @@ priority unless it makes navigation feel broken. The broader
 session-local editing-position history candidate is not implemented in
 this slice.
 
+Phase 4 is implemented locally as of 2026-06-20 and has passed the full
+local verification gate. The status bar no longer relies on a single compacted
+`statusDetail` string for the normal Safe Editor surface: active document
+metadata is split into primary detail (file type, byte size, character
+count, and large-file warning when present) and secondary detail
+(encoding, line ending, final-newline state, cursor / selection, and
+heading context). Normal mode shows the primary detail while preserving
+the secondary detail in hover/title, and keeps the LF / CRLF and encoding
+selectors reachable in the trailing format group. L Mode keeps format
+controls hidden and shows the combined detail, preserving the existing
+quiet focused-writing behavior. A small follow-up also keeps the L Mode
+top chrome free of the developer-build badge and exposes Review / Diff /
+Outline as independent right-pane controls instead of collapsing them into
+one menu.
+
+Verification: `npm run test`, `npm run build:vite`, and
+`git diff --check`.
+
 ## Active UX Queue
 
 Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| v0.27 Phase 4 | Status bar structure cleanup | Treat the v0.20 compact status detail as a stopgap. Split status metadata into priority-aware fields, keep line-ending / encoding controls always reachable, and move lower-priority details such as final-newline state, line/column, selection, and heading context into hover, popover, or adaptive secondary display. |
+| Held residual | Central editor manual-scroll investigation | Central-editor manual scrollbar / trackpad / wheel large scrolling can misbehave after the first successful large movement. Reopen only as a focused CodeMirror scrollbar / pointer / WebView scrolling slice, or if it becomes release blocking. |
 | P1 | Core Safe Editor quality probe | When concrete queue items are exhausted, inspect one basic high-risk surface instead of adding broad tests: open/save/close, restore/recovery, preview, diff/review, workspace file operations, standalone files, image handling, keyboard/IME, or error recovery. State the risk hypothesis, run a focused source/app inspection or smoke, then either fix the smallest issue found or close as `verified no-op`. |
 | P2 | Light accessibility sanity | Keep accessibility as a light sanity pass adjacent to core surfaces: keyboard reachability, focus escape/Tab behavior, readable labels, and obvious contrast. Do not prioritize broad accessibility audits over basic editor quality unless a concrete accessibility failure is observed. |
 | Separate lane | Native vibrancy via `window-vibrancy` + macOS 26 floor | Keep as an independent release-planning lane outside v0.27 refinement. It requires a macOS 26 floor decision, built `.app` smoke on macOS 26, and App Store lane judgment before becoming active work. |

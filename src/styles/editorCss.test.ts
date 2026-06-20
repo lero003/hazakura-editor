@@ -171,8 +171,8 @@ describe("editor tab close affordance CSS", () => {
     expect(controlsCss).toMatch(
       /\.tab-item,[\s\S]*\.editor-quick-settings,[\s\S]*\.document-meta,[\s\S]*\.distribution-badge,[\s\S]*\.tabs-row button,[\s\S]*\.tabs-row input,[\s\S]*\.tabs-row label,[\s\S]*\.tabs-row \[role="tab"\],[\s\S]*\.tabs-row \[role="menu"\],[\s\S]*\.tabs-row \[role="menuitem"\]\s*{[\s\S]*-webkit-app-region:\s*no-drag/s,
     );
-    expect(editorCss).toMatch(
-      /\.pane-toggle,[\s\S]*\.pane-review-menu-popover\s*{[\s\S]*-webkit-app-region:\s*no-drag/s,
+    expect(ruleBody(editorCss, ".pane-toggle")).toMatch(
+      /-webkit-app-region:\s*no-drag/,
     );
   });
 
@@ -180,7 +180,6 @@ describe("editor tab close affordance CSS", () => {
     const group = ruleBody(editorCss, ".pane-toggles");
     const toggle = ruleBody(editorCss, ".pane-toggle");
     const activeToggle = ruleBody(editorCss, ".pane-toggle.active");
-    const reviewMenu = ruleBody(editorCss, ".pane-review-menu");
 
     expect(group).toMatch(/background:\s*color-mix/);
     expect(group).toMatch(/border:\s*1px solid/);
@@ -194,11 +193,6 @@ describe("editor tab close affordance CSS", () => {
     expect(toggle).toMatch(/height:\s*28px/);
     expect(activeToggle).toMatch(/background:\s*color-mix/);
     expect(activeToggle).toMatch(/box-shadow:\s*inset 0 0 0 1px/);
-
-    expect(reviewMenu).toMatch(/display:\s*inline-flex/);
-    expect(editorCss).toMatch(
-      /\.pane-toggle,[\s\S]*\.pane-review-menu-popover\s*{[\s\S]*-webkit-app-region:\s*no-drag/s,
-    );
   });
 
   it("keeps the editor full-path bar visually quiet", () => {

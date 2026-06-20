@@ -34,6 +34,7 @@ describe("StatusBar", () => {
         activeTab={activeTab}
         agentLabel={null}
         detail="Markdown / UTF-8 / 10 bytes"
+        secondaryDetail=""
         dirtyLabel=""
         encodingAriaLabel="Encoding"
         encodingLabel="Encoding"
@@ -80,7 +81,8 @@ describe("StatusBar", () => {
       <StatusBar
         activeTab={activeTab}
         agentLabel={null}
-        detail="Markdown · UTF-8 · 10 B · 7 characters · LF · final newline · Ln 1, Col 1"
+        detail="Markdown · 10 B · 7 characters"
+        secondaryDetail="UTF-8 · LF · final newline · Ln 1, Col 1"
         dirtyLabel=""
         encodingAriaLabel="Encoding"
         encodingLabel="Encoding"
@@ -102,7 +104,36 @@ describe("StatusBar", () => {
     expect(formatGroup?.textContent).toContain("UTF-8");
     expect(detail?.textContent).toBe("Markdown · 10 B · 7 characters");
     expect(detail?.getAttribute("title")).toBe(
-      "Markdown · UTF-8 · 10 B · 7 characters · LF · final newline · Ln 1, Col 1",
+      "Markdown · 10 B · 7 characters · UTF-8 · LF · final newline · Ln 1, Col 1",
+    );
+  });
+
+  it("shows the full detail in L Mode because format controls are hidden", () => {
+    const { container } = render(
+      <StatusBar
+        activeTab={activeTab}
+        agentLabel={null}
+        detail="Markdown · 10 B · 7 characters"
+        secondaryDetail="UTF-8 · LF · final newline · Ln 1, Col 1"
+        dirtyLabel=""
+        encodingAriaLabel="Encoding"
+        encodingLabel="Encoding"
+        lineEndingAriaLabel="Line endings"
+        lineEndingLabel="Line endings"
+        lModeEnabled={true}
+        onConvertEncoding={vi.fn()}
+        onConvertLineEnding={vi.fn()}
+        saveAffirmation={false}
+        saveAffirmationKey={null}
+        statusText="Ready"
+      />,
+    );
+
+    const detail = container.querySelector(".status-bar-detail");
+
+    expect(container.querySelector(".status-bar-format-group")).toBeNull();
+    expect(detail?.textContent).toBe(
+      "Markdown · 10 B · 7 characters · UTF-8 · LF · final newline · Ln 1, Col 1",
     );
   });
 
@@ -112,6 +143,7 @@ describe("StatusBar", () => {
         activeTab={activeTab}
         agentLabel={null}
         detail="Markdown / UTF-8 / 10 bytes"
+        secondaryDetail=""
         dirtyLabel=""
         encodingAriaLabel="Encoding"
         encodingLabel="Encoding"
@@ -144,6 +176,7 @@ describe("StatusBar", () => {
         activeTab={activeTab}
         agentLabel={null}
         detail="Markdown / UTF-8 / 10 bytes"
+        secondaryDetail=""
         dirtyLabel=""
         encodingAriaLabel="Encoding"
         encodingLabel="Encoding"
@@ -165,6 +198,7 @@ describe("StatusBar", () => {
         activeTab={activeTab}
         agentLabel={null}
         detail="Markdown / UTF-8 / 10 bytes"
+        secondaryDetail=""
         dirtyLabel="未保存"
         encodingAriaLabel="Encoding"
         encodingLabel="Encoding"

@@ -102,7 +102,7 @@ export function AppTopChrome({
   selectedImage,
   tabs,
 }: AppTopChromeProps) {
-  const showDevBadge = isDeveloperDistributionLane();
+  const showDevBadge = !lModeEnabled && isDeveloperDistributionLane();
 
   return (
     <TabBar

@@ -198,6 +198,12 @@ describe("AppTopChrome", () => {
     expect(screen.getByText("DEV")).toBeTruthy();
   });
 
+  it("hides the Dev badge from the L Mode chrome", () => {
+    renderTopChrome({ lModeEnabled: true });
+
+    expect(screen.queryByText("DEV")).toBeNull();
+  });
+
   it("hides the Dev badge in the App Store lane", () => {
     vi.stubEnv("VITE_HAZAKURA_DISTRIBUTION_LANE", "app-store");
 

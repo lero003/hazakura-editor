@@ -59,6 +59,7 @@ export function useActiveDocumentSurface({
     dirtyLabel: activeDirtyLabel,
     lineCount: activeDocumentLineCount,
     statusDetail: activeStatusDetail,
+    statusSecondaryDetail: activeStatusSecondaryDetail,
   } = useDocumentStatus({
     activeContents,
     activeDirty,
@@ -90,6 +91,7 @@ export function useActiveDocumentSurface({
     activeDirtyLabel,
     activeDocumentLineCount,
     activeStatusDetail,
+    activeStatusSecondaryDetail,
     currentMarkdownHeading,
     documentHeadings,
     documentOutline,

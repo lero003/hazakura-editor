@@ -8,6 +8,7 @@ type StatusBarProps = {
   activeTab: EditorTab | null;
   agentLabel: string | null;
   detail: string;
+  secondaryDetail: string;
   dirtyLabel: string;
   encodingAriaLabel: string;
   encodingLabel: string;
@@ -25,6 +26,7 @@ export function StatusBar({
   activeTab,
   agentLabel,
   detail,
+  secondaryDetail,
   dirtyLabel,
   encodingAriaLabel,
   encodingLabel,
@@ -38,9 +40,8 @@ export function StatusBar({
   statusText,
 }: StatusBarProps) {
   const showFormatControls = Boolean(activeTab && !lModeEnabled);
-  const visibleDetail = showFormatControls && activeTab
-    ? compactVisibleDetail(removeDuplicateFormatValues(detail, activeTab))
-    : detail;
+  const fullDetail = joinStatusDetail(detail, secondaryDetail);
+  const visibleDetail = showFormatControls ? detail : fullDetail;
 
   return (
     <footer className="status-bar lmode-surface">
@@ -73,7 +74,7 @@ export function StatusBar({
       ) : null}
       {showFormatControls && activeTab ? (
         <span className="status-bar-format-group">
-          <span className="status-bar-segment status-bar-detail" title={detail}>
+          <span className="status-bar-segment status-bar-detail" title={fullDetail}>
             {visibleDetail}
           </span>
           <label className="status-bar-segment status-bar-format-chip">
@@ -108,7 +109,7 @@ export function StatusBar({
           </label>
         </span>
       ) : (
-        <span className="status-bar-segment status-bar-detail" title={detail}>
+        <span className="status-bar-segment status-bar-detail" title={fullDetail}>
           {visibleDetail}
         </span>
       )}
@@ -116,37 +117,6 @@ export function StatusBar({
   );
 }
 
-function removeDuplicateFormatValues(detail: string, activeTab: EditorTab): string {
-  const duplicateValues = new Set([
-    formatVisibleLineEnding(activeTab.line_ending),
-    formatVisibleEncoding(activeTab.encoding),
-  ]);
-  const visibleParts = detail
-    .split(" · ")
-    .filter((part) => !duplicateValues.has(part));
-
-  return visibleParts.length > 0 ? visibleParts.join(" · ") : detail;
-}
-
-function compactVisibleDetail(detail: string): string {
-  const visibleParts = detail.split(" · ").slice(0, 3);
-
-  return visibleParts.length > 0 ? visibleParts.join(" · ") : detail;
-}
-
-function formatVisibleLineEnding(lineEnding: EditableLineEnding): string {
-  return lineEnding === "crlf" ? "CRLF" : "LF";
-}
-
-function formatVisibleEncoding(encoding: TextEncoding): string {
-  switch (encoding) {
-    case "utf-8":
-      return "UTF-8";
-    case "utf-8-bom":
-      return "UTF-8 BOM";
-    case "shift-jis":
-      return "Shift-JIS";
-    case "euc-jp":
-      return "EUC-JP";
-  }
+function joinStatusDetail(primary: string, secondary: string): string {
+  return [primary, secondary].filter(Boolean).join(" · ");
 }

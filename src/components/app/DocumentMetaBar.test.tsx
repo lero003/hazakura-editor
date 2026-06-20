@@ -102,11 +102,10 @@ describe("DocumentMetaBar", () => {
   it("keeps review and Agent controls available outside L Mode", () => {
     renderMeta(false);
 
-    fireEvent.click(screen.getByRole("button", { name: "Review" }));
-
-    expect(screen.getByRole("menuitem", { name: "変更を確認" })).toBeTruthy();
-    expect(screen.getByRole("menuitem", { name: "Diff" })).toBeTruthy();
-    expect(screen.getByRole("menuitem", { name: "Outline" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Review" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Diff" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Outline" })).toBeTruthy();
+    expect(screen.queryByRole("menu")).toBeNull();
     expect(screen.getByRole("button", { name: "Open Agent Window" })).toBeTruthy();
   });
 
@@ -144,19 +143,16 @@ describe("DocumentMetaBar", () => {
     expect(actions.onToggleEbook).toHaveBeenCalledTimes(1);
   });
 
-  it("routes review menu items to their pane actions", () => {
+  it("routes independent review controls to their pane actions", () => {
     const actions = renderMeta(false);
 
     fireEvent.click(screen.getByRole("button", { name: "Review" }));
-    fireEvent.click(screen.getByRole("menuitem", { name: "変更を確認" }));
     expect(actions.onReviewChanges).toHaveBeenCalledWith(activeTab);
 
-    fireEvent.click(screen.getByRole("button", { name: "Review" }));
-    fireEvent.click(screen.getByRole("menuitem", { name: "Diff" }));
+    fireEvent.click(screen.getByRole("button", { name: "Diff" }));
     expect(actions.onToggleDiff).toHaveBeenCalledTimes(1);
 
-    fireEvent.click(screen.getByRole("button", { name: "Review" }));
-    fireEvent.click(screen.getByRole("menuitem", { name: "Outline" }));
+    fireEvent.click(screen.getByRole("button", { name: "Outline" }));
     expect(actions.onToggleOutline).toHaveBeenCalledTimes(1);
   });
 

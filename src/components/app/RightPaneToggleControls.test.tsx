@@ -28,7 +28,10 @@ const copy: RightPaneToggleCopy = {
 function renderControls(
   overrides: Partial<Parameters<typeof RightPaneToggleControls>[0]> = {},
 ) {
+  const onReviewChanges = vi.fn();
+  const onToggleDiff = vi.fn();
   const onToggleEbook = vi.fn();
+  const onToggleOutline = vi.fn();
   render(
     <RightPaneToggleControls
       copy={copy}
@@ -39,11 +42,11 @@ function renderControls(
       lModeActive={false}
       lModeLabel="L Mode"
       lModeTitle="Toggle L Mode"
-      onReviewChanges={vi.fn()}
-      onToggleDiff={vi.fn()}
+      onReviewChanges={onReviewChanges}
+      onToggleDiff={onToggleDiff}
       onToggleEbook={onToggleEbook}
       onToggleLMode={vi.fn()}
-      onToggleOutline={vi.fn()}
+      onToggleOutline={onToggleOutline}
       onTogglePreview={vi.fn()}
       outlineActive={false}
       outlineAvailable
@@ -54,7 +57,7 @@ function renderControls(
     />,
   );
 
-  return { onToggleEbook };
+  return { onReviewChanges, onToggleDiff, onToggleEbook, onToggleOutline };
 }
 
 describe("RightPaneToggleControls", () => {
@@ -77,5 +80,27 @@ describe("RightPaneToggleControls", () => {
 
     ebookButton.click();
     expect(onToggleEbook).not.toHaveBeenCalled();
+  });
+
+  it("keeps review, Diff, and Outline controls visible as independent buttons", () => {
+    const { onReviewChanges, onToggleDiff, onToggleOutline } = renderControls({
+      reviewChangesAvailable: true,
+    });
+
+    const reviewButton = screen.getByRole("button", { name: "Review" });
+    const diffButton = screen.getByRole("button", { name: "Diff" });
+    const outlineButton = screen.getByRole("button", { name: "Outline" });
+
+    expect(reviewButton.getAttribute("aria-pressed")).toBeNull();
+    reviewButton.click();
+    expect(onReviewChanges).toHaveBeenCalledTimes(1);
+
+    expect(diffButton.getAttribute("aria-pressed")).toBe("false");
+    diffButton.click();
+    expect(onToggleDiff).toHaveBeenCalledTimes(1);
+
+    expect(outlineButton.getAttribute("aria-pressed")).toBe("false");
+    outlineButton.click();
+    expect(onToggleOutline).toHaveBeenCalledTimes(1);
   });
 });

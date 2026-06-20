@@ -40,9 +40,10 @@ describe("useEditorSurfaceController", () => {
     expect(result.current).toHaveProperty("toggleDiffPane");
     expect(result.current).toHaveProperty("toggleOutlinePane");
     expect(result.current).toHaveProperty("togglePreviewPane");
-    // active document surface (10)
+    // active document surface (11)
     expect(result.current).toHaveProperty("activeDocumentLineCount");
     expect(result.current).toHaveProperty("activeStatusDetail");
+    expect(result.current).toHaveProperty("activeStatusSecondaryDetail");
     expect(result.current).toHaveProperty("currentMarkdownHeading");
     expect(result.current).toHaveProperty("documentHeadings");
     expect(result.current).toHaveProperty("documentOutline");

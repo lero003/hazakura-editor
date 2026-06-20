@@ -69,25 +69,31 @@ export function useDocumentStatus({
   const documentMetaParts = activeTab
     ? formatActiveDocumentMeta(stats, activeTab, activeDirty, menuLanguage)
     : selectedImage
-      ? { meta: `${localizeImageLabel(menuLanguage)} · ${formatBytes(selectedImage.size)} · ${selectedImage.name}`, dirtyLabel: "" }
-      : { meta: noFileOpenText, dirtyLabel: "" };
-  const statusDetail = compareMeta
-    ? compareMeta
+      ? {
+          meta: `${localizeImageLabel(menuLanguage)} · ${formatBytes(selectedImage.size)} · ${selectedImage.name}`,
+          secondaryMeta: "",
+          dirtyLabel: "",
+        }
+      : { meta: noFileOpenText, secondaryMeta: "", dirtyLabel: "" };
+  const statusMetadata = compareMeta
+    ? { primary: compareMeta, secondary: "" }
     : activeTab
-      ? formatActiveEditorStatusDetail(
+      ? formatActiveEditorStatusMetadata(
           documentMetaParts.meta,
+          documentMetaParts.secondaryMeta,
           selectionInfo,
           currentMarkdownHeading,
           menuLanguage,
         )
-      : documentMetaParts.meta;
+      : { primary: documentMetaParts.meta, secondary: documentMetaParts.secondaryMeta };
 
   return {
     documentMeta: documentMetaParts.meta,
     dirtyLabel: documentMetaParts.dirtyLabel,
     lineCount,
     stats,
-    statusDetail,
+    statusDetail: statusMetadata.primary,
+    statusSecondaryDetail: statusMetadata.secondary,
   };
 }
 
@@ -161,19 +167,26 @@ function formatActiveDocumentMeta(
   tab: EditorTab,
   dirty: boolean,
   menuLanguage: MenuLanguage,
-): { meta: string; dirtyLabel: string } {
-  const meta = [
-    ...formatDocumentMetaParts(stats, tab.name, tab.encoding, menuLanguage),
-    tab.large_file_warning
-      ? localizeLargeFileLabel(menuLanguage)
-      : null,
-  ]
+): { meta: string; secondaryMeta: string; dirtyLabel: string } {
+  const [
+    fileType,
+    encoding,
+    bytes,
+    characters,
+    lineEnding,
+    finalNewline,
+  ] = formatDocumentMetaParts(stats, tab.name, tab.encoding, menuLanguage);
+  const largeFile = tab.large_file_warning
+    ? localizeLargeFileLabel(menuLanguage)
+    : null;
+  const meta = [fileType, bytes, characters, largeFile]
     .filter((part): part is string => Boolean(part))
     .join(" · ");
+  const secondaryMeta = [encoding, lineEnding, finalNewline].join(" · ");
   const dirtyLabel = dirty
     ? localizeUnsavedLabel(menuLanguage)
     : "";
-  return { meta, dirtyLabel };
+  return { meta, secondaryMeta, dirtyLabel };
 }
 
 function formatDocumentMetaParts(
@@ -290,16 +303,17 @@ function formatSelectionInfo(
   return `Ln ${selection.line.toLocaleString()}, Col ${selection.column.toLocaleString()}${selectionText}`;
 }
 
-function formatActiveEditorStatusDetail(
-  documentMeta: string,
+function formatActiveEditorStatusMetadata(
+  primaryMeta: string,
+  secondaryMeta: string,
   selection: SelectionInfo,
   currentHeading: MarkdownHeading | null,
   menuLanguage: MenuLanguage,
-): string {
-  const parts = [documentMeta, formatSelectionInfo(selection, menuLanguage)];
+): { primary: string; secondary: string } {
+  const secondaryParts = [secondaryMeta, formatSelectionInfo(selection, menuLanguage)];
 
   if (currentHeading) {
-    parts.push(
+    secondaryParts.push(
       isKanaStyle(menuLanguage)
         ? `げんざいいち: § ${currentHeading.text}`
         : isJapaneseMenuLanguage(menuLanguage)
@@ -308,7 +322,10 @@ function formatActiveEditorStatusDetail(
     );
   }
 
-  return parts.join(" · ");
+  return {
+    primary: primaryMeta,
+    secondary: secondaryParts.filter(Boolean).join(" · "),
+  };
 }
 
 function localizeImageLabel(menuLanguage: MenuLanguage): string {
