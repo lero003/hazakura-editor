@@ -28,6 +28,13 @@ Last reviewed: 2026-06-20 (v0.26 release prep)
   `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.25.0-build18-mas.pkg`.
   Raw App Store Connect, TestFlight, and App Review logs are not tracked
   in this repository.
+- The next helper-free App Store package candidate for `0.26.0` is local
+  build `20`, generated on 2026-06-20:
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.26.0-build20-mas.pkg`.
+  SHA-256:
+  `30a6a72ba8dd40e15943f8725284e3de548d4b3bd8a87887e7d9486915bbe361`.
+  It has not been uploaded to App Store Connect in this repository
+  state.
 - Pre-approval human-side App Store lane smoke on 2026-06-12 passed launch,
   basic document creation/open, preview/export, image paste/drag-drop,
   App Store surface omission, dirty-close confirmation, Move to Trash,
@@ -170,6 +177,7 @@ Last reviewed: 2026-06-20 (v0.26 release prep)
 Use release notes for detailed historical evidence:
 
 - `docs/releases/0.26.0-source-tag.release.md`
+- `docs/releases/0.26.0-app-store-submission-candidate.release.md`
 - `docs/releases/0.25.0-source-tag.release.md`
 - `docs/releases/0.25.0-app-store-submission-candidate.release.md`
 - `docs/releases/0.19.0-source-tag.release.md`
