@@ -61,6 +61,7 @@ export function splitMarkdownIntoChapters(source: string): EbookChapter[] {
   let inFence = false;
   let fenceChar = "";
   let fenceLength = 0;
+  const frontmatterEnd = yamlFrontmatterEndOffset(source);
   let currentStart = 0;
   let currentLevel: number | null = null;
   let currentText: string | null = null;
@@ -85,6 +86,12 @@ export function splitMarkdownIntoChapters(source: string): EbookChapter[] {
     const nlIndex = source.indexOf("\n", pos);
     const lineEnd = nlIndex === -1 ? source.length : nlIndex;
     const line = source.slice(lineStart, lineEnd);
+
+    if (frontmatterEnd !== null && lineStart < frontmatterEnd) {
+      pos = nextLineStart(source, lineEnd);
+      lineStart = pos;
+      continue;
+    }
 
     const fence = matchFence(line);
     if (fence) {
@@ -243,4 +250,25 @@ function nextLineStart(source: string, lineEnd: number): number {
     return lineEnd + 1;
   }
   return lineEnd + 1;
+}
+
+function yamlFrontmatterEndOffset(source: string): number | null {
+  const firstLineEnd = source.indexOf("\n");
+  const firstLine = firstLineEnd === -1 ? source : source.slice(0, firstLineEnd);
+  if (firstLine.trim() !== "---") {
+    return null;
+  }
+
+  let lineStart = firstLineEnd === -1 ? source.length : firstLineEnd + 1;
+  while (lineStart < source.length) {
+    const lineEnd = source.indexOf("\n", lineStart);
+    const effectiveLineEnd = lineEnd === -1 ? source.length : lineEnd;
+    const line = source.slice(lineStart, effectiveLineEnd);
+    if (line.trim() === "---") {
+      return lineEnd === -1 ? source.length : lineEnd + 1;
+    }
+    lineStart = lineEnd === -1 ? source.length : lineEnd + 1;
+  }
+
+  return null;
 }

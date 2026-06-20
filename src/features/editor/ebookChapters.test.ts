@@ -90,6 +90,40 @@ describe("splitMarkdownIntoChapters", () => {
     expect(chapters[1].headingText).toBe("After the fence, a real subheading");
   });
 
+  it("ignores YAML frontmatter headings and keeps it with the preamble", () => {
+    const source = [
+      "---",
+      "title: # Metadata Title",
+      "# internal note",
+      "tags:",
+      "  - draft",
+      "---",
+      "",
+      "# Real Chapter",
+      "",
+      "Body.",
+    ].join("\n");
+
+    const chapters = splitMarkdownIntoChapters(source);
+
+    expect(chapters).toHaveLength(2);
+    expect(chapters[0].headingLevel).toBeNull();
+    expect(chapters[0].source).toContain("title: # Metadata Title");
+    expect(chapters[0].source).toContain("# internal note");
+    expect(chapters[1].headingLevel).toBe(1);
+    expect(chapters[1].headingText).toBe("Real Chapter");
+  });
+
+  it("does not treat an unclosed opening horizontal rule as frontmatter", () => {
+    const source = ["---", "", "# Real Chapter", "", "Body."].join("\n");
+
+    const chapters = splitMarkdownIntoChapters(source);
+
+    expect(chapters).toHaveLength(2);
+    expect(chapters[0].source).toBe("---\n\n");
+    expect(chapters[1].headingText).toBe("Real Chapter");
+  });
+
   it("pairs backtick and tilde fences independently", () => {
     const source = [
       "# Chapter",

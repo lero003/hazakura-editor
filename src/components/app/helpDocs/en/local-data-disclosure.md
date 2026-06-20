@@ -16,6 +16,8 @@ Only when you enable auto-backup, the app saves local .bak snapshots under a `.h
 
 The preview blocks external images and dangerous HTML, script, iframe, object, and embed tags. Small embedded `data:image` PNG/JPEG/GIF/WebP references are allowed only within the preview/export inline cap. Workspace-relative text links open inside the selected workspace. Explicit clicks on `http:`, `https:`, `mailto:`, and `tel:` links are handed to the OS default browser or app, while absolute paths, workspace-outside paths, unsupported files, and unsafe schemes stay blocked so the app WebView does not navigate away from the editor. HTML export inlines local workspace images as data URIs.
 
+EPUB export is a beta, explicit File menu or command palette action that writes the active Markdown document through a Save As dialog. Workspace-local images are packaged into the EPUB when they stay within the same local image boundaries; images that cannot be read are replaced with an in-document warning, and external images are not fetched. The beta uses simple default metadata, does not send the document anywhere, and does not guarantee page counts across EPUB readers. EPUBCheck validation remains a manual outside-app step; the app does not launch external validators, cover editors, or vertical-writing converters.
+
 ## Apple Local Assist
 
 The App Store submission build does not bundle Apple Local Assist and does not call Apple Foundation Models, external AI services, or external APIs. Developer / GitHub builds may expose Apple Local Assist as a separate alpha feature.

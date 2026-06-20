@@ -173,11 +173,17 @@ priority items after the v0.25 App Store release are:
    product-grade lens: one editing space, Workspace-as-book, UI that
    recedes, reliability, and AI as a review layer. Pick one small slice
    from that lens rather than adding broad new surfaces.
-2. v0.26 EPUB beta follow-up: implement the documented export settings
-   slice only if selected. Keep Title / Author / Language in dialog
-   draft state first, generate identifier / modified metadata per
-   export, and treat standalone `---` / `===` page-break markers as
-   separate from heading-based navigation.
+2. v0.26 EPUB beta follow-up: Slice 1 content quality is implemented.
+   EPUB export now packages workspace images and allowed small
+   `data:image` references into `OEBPS/images/`, strips Preview-only
+   markup before XHTML output, uses `splitMarkdownIntoChapters` for
+   export navigation, handles inline Markdown in headings without
+   dropping later nav entries, and recognizes YAML frontmatter so
+   frontmatter `#` / `---` do not become book headings. Local Data
+   Disclosure now describes the beta export image and validator boundary.
+   Next slices: manual EPUBCheck milestone, `EpubExportSettings` UI, then
+   standalone `---` / `===` page-break markers. The current beta metadata
+   defaults remain placeholders.
 3. Manual app smoke of the v0.24 e-book single-page reader: e-book
    toggle, page movement, reader footer, chapter boundary movement,
    long chapters, image-heavy chapters, long code blocks with inner
@@ -202,13 +208,17 @@ command palette action that writes the active Markdown source to a
 minimal `.epub` archive through a save dialog, with generated XHTML,
 heading navigation, package metadata defaults, and a small stylesheet.
 
-Latest docs decision: EPUB export metadata should move from beta
-defaults to dedicated export settings before UI is added. Required
-standard metadata includes title, identifier, language, and modified;
-Author is not the EPUB minimum but is first-class practical export input.
-Headings remain navigation structure, while explicit page breaks should
-be standalone `---` / `===` markers rather than automatic breaks at every
-heading.
+Latest completed: v0.26 EPUB beta Slice 1 content quality. The archive
+builder is async, packages workspace images and allowed small `data:image`
+references as manifest resources under `OEBPS/images/`, cleans
+Preview-only table / task / blocked-image markup before XHTML output,
+strips YAML frontmatter from EPUB content, and collects navigation
+headings through `splitMarkdownIntoChapters` with inline Markdown heading
+text normalized against the rendered DOM. `useDocumentExport` passes the
+workspace image loader into the archive builder. Local Data Disclosure now
+documents EPUB beta export as an explicit Save As action with local image
+packaging, no external image fetch, no upload, no page-count guarantee,
+and manual outside-app EPUBCheck guidance.
 
 Earlier completed: v0.24 e-book single-page polish keeps Markdown source
 canonical and Preview / Export / L Mode untouched while adding a fixed
@@ -317,6 +327,9 @@ open Active UX Queue slice and close it as `implemented`,
   2026-06-19 with
   `npm run test -- src/components/editor/preview/EBookPane.test.tsx src/styles/previewCss.test.ts`,
   `npm run build:vite`, `npm run test`, and `git diff --check`.
+- Latest EPUB beta code gate: v0.26 Slice 1 content quality passed on
+  2026-06-20 with `npm run test`, `npm run build:vite`, and
+  `git diff --check`.
 - For docs-only work, run `git diff --check`.
 - For code changes, follow `docs/development-automation.md`.
 - Latest workspace persistence focused checks:

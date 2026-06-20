@@ -408,6 +408,17 @@ v0.26 では、いくつかの authoring polish と合わせて EPUB export の
 初期版を扱う。これは v1.0 完成版ではなく、「Markdown source から
 明示的に `.epub` を書き出せる」ことを確認する first slice である。
 
+実装状態: File メニューとコマンドパレットの `Export EPUB (Beta)...`
+経由で、active Markdown source を最小の `.epub` archive として書き出す
+経路は実装済み（`src/features/document/epubExport.ts` の
+`buildEpubBetaArchive`、`src/hooks/document/useDocumentExport.ts` の
+`exportEpubBeta`、Rust 側 `save_binary_file_as` の base64 IPC 経由保存）。
+2026-06-20 の follow-up Slice 1 で、workspace-local images の取り込み、
+小さな `data:image` の EPUB resource 化、扱えない画像の warning 化、
+Preview 専用マークアップ除去、frontmatter 認識、heading parser 統一は
+実装済み。残る beta follow-up は、手動 EPUBCheck 証拠化、metadata 設定
+UI、page-break marker である。
+
 Scope:
 
 - active Markdown source から `.epub` archive を生成する。
@@ -521,6 +532,150 @@ e-book Mode / preview-style reading surface の表示にも関わる。
 - e-book Mode / preview-side visual cue と EPUB export の page-break 判定が
   同じ helper に基づくこと。
 - metadata settings を変更しても Markdown source が変わらないこと。
+
+#### Beta 実装の未達スコープと乖離
+
+first slice の beta 実装は導線と最小 archive 生成を満たしていたが、本節の
+Scope と既存 helper の構造の間に 5 点の乖離があった。1〜4 は
+2026-06-20 の Slice 1 で実装済み。5 は次の Slice 2 で証拠化する。
+
+1. **画像取り込みの不在**: `buildEpubBetaArchive` は `renderMarkdown()`
+   を呼ぶが `inlineWorkspaceAssetImages()` を呼んでいない。workspace 画像は
+   `data-hazakura-image-path` 属性付きの透明 GIF のまま XHTML に入り、
+   EPUB リーダーで壊れた画像になる。Scope の「workspace-local images を
+   取り込む。扱えない画像は warning にする」を未達成。
+2. **Preview 専用マークアップの XHTML 混入**: `renderMarkdown()` が付与する
+   `.markdown-table-frame`（table ラッパー）、`.markdown-task-checkbox`
+   （`☑` / `☐` の span）、`.blocked-image`（span）がそのまま XHTML content
+   に入る。`epubCss()` に対応スタイルがなく、表紙崩れや意味の変質を招く。
+3. **frontmatter と `---` 改ページの衝突**: Markdown frontmatter（YAML）
+   の開始・終了 `---` を page-break や章境界に誤認するリスクがある。
+   `splitMarkdownIntoChapters`（e-book Mode）も `collectMarkdownHeadings`
+   （EPUB export）も frontmatter を認識しない。
+4. **parser helper の二重実装**: e-book Mode の章分割は
+   `splitMarkdownIntoChapters`、EPUB export の見出し収集は
+   `collectMarkdownHeadings`（`parseMarkdownHeadingLine`）と別実装で
+   ある。fenced code block 内の `#` 扱いや Setextの扱いが既にずれて
+   おり、検証項目「同じ helper に基づくこと」を構造的に満たさない。
+5. **EPUBCheck 検証マイルストーンの不在**: beta 出力が手動 EPUBCheck を
+   通るかの確認マイルストーンが計画のどこにもない。single `content.xhtml`
+   と nav なら高確率で通るが、未確認である。
+
+これらのうち 1〜4 は「beta の出力品質」、5 は「beta の検証証拠」に分類
+する。metadata 設定 UI と page-break 記法は frontmatter / parser 統一に
+依存するため、beta 出力品質を先に固める順序にした。
+
+#### v0.26 Follow-up Slice 構成（4 分解）
+
+beta の未達スコープを小さく独立して検証できる 4 スライスに分ける。
+各スライスは Markdown source を保存内容として維持し、Preview / e-book
+Mode / HTML export の既存挙動を壊さない。
+
+##### Slice 1: EPUB content 品質（画像・マークアップ・parser 統一）
+
+Implemented locally as of 2026-06-20. beta 出力を読める品質にする
+first slice の実質的な完成線。
+
+- `buildEpubBetaArchive` に `inlineWorkspaceAssetImages()` 相当の画像
+  解決を組み込む。workspace 画像は `OEBPS/images/` へリソース化
+  （manifest `item` 追加、XHTML 側 `<img src>` を相対パスに書き換え）。
+  既存の 20 MB local image boundary と preview/export の 2 MB data:image
+  inline cap を再利用し、許可済み `data:image` も `OEBPS/images/` に
+  リソース化する。扱えない画像は warning span にする。外部画像は
+  取り込まない。
+- EPUB 用クリーンアップ層を `renderMarkdown()` と `contentXhtml()` の間に
+  挟む。`.markdown-table-frame` を外して `<table>` を戻す、task checkbox を
+  テキスト表現に戻す、`.blocked-image` を warning にする。この層は
+  Preview / HTML export のパスには影響させない。
+- `collectMarkdownHeadings` を `splitMarkdownIntoChapters` と同じ見出し
+  検出に統一する。あわせて frontmatter 認識を追加し、frontmatter 内の
+  見出し風行や `---` を章境界・見出しにしない。
+- IPC は引き続き base64 `save_binary_file_as` を使う。画像リソース化で
+  archive が大きくなる場合は、計画文書の Performance Notes に沿って
+  plugin-fs / temp-file handoff への移行候補として記録する。
+
+検証:
+
+- 既存 `epubExport.test.ts` の回帰、画像インライン後の manifest と
+  `<img src>` の整合、Preview 専用 class が XHTML に入らないこと、
+  frontmatter 内 `#` / `---` が章境界・見出しにならないこと、inline
+  Markdown を含む見出しの後続 navigation が落ちないこと。
+- `npm run test -- src/features/document/epubExport.test.ts
+  src/features/editor/ebookChapters.test.ts
+  src/hooks/document/useDocumentExport.test.tsx
+  src/hooks/app/useAppMenuActionListener.test.tsx
+  src/hooks/commandPalette/useCommandPaletteController.test.ts
+  src/hooks/app/useAppShellSideEffectsController.test.tsx
+  src/lib/diagnostics.test.ts`
+- `npm run test`
+- `npm run build:vite`
+
+##### Slice 2: EPUBCheck 手動検証マイルストーン
+
+Slice 1 の出力を手動 EPUBCheck に通し、first slice の「生成 EPUB は
+手動で EPUBCheck に通せる形を目標にする」を証拠化する。
+
+- App 内コマンド化はしない。外部 EPUBCheck / Calibre 起動は引き続き
+  安全境界の外。
+- 通過した場合はその旨を文書化し、修正点が出た場合は Slice 1 へ戻す。
+- 検証結果（通過 / 修正点）を `docs/current-work.md` と handoff に残す。
+
+##### Slice 3: metadata 設定 UI（`EpubExportSettings`）
+
+「EPUB metadata and export settings」節の契約を dialog scoped draft
+state として実装する。
+
+- Title / Author / Language の入力。identifier は export ごとに UUID 生成、
+  `dcterms:modified` は export 実行時刻から生成する。author が空なら
+  `dc:creator` を出さない。
+- Markdown frontmatter への自動書き込み、localStorage 保存、last-used
+  author の持ち越しはしない（既存方針維持）。
+- Slice 1 で導入した frontmatter 認識と parser helper を再利用する。
+
+検証:
+
+- 設定変更で Markdown source が変わらないこと、identifier が固定値に
+  ならないこと、`dcterms:modified` が実行時刻由来であること、metadata
+  escaping。
+
+##### Slice 4: page-break 記法（standalone `---` / `===`）
+
+「Structure and page-break semantics」節の standalone 行 page-break
+marker を実装する。Slice 1 の frontmatter 認識の上に載せる。
+
+- 空行で挟まれた単独行 `---` / `===` を single `content.xhtml` 内の
+  `.page-break` class にする。fenced code block 内や frontmatter を
+  壊さないことをテストで証明してから導入する。
+- 見出しは引き続き navigation のみで、自動改ページしない。
+- e-book Mode が同じ helper で page-break を visual cue 表示する場合は、
+  Markdown source を書き換えない。
+
+検証:
+
+- `---` / `===` が fenced code block / frontmatter / 通常水平線と衝突
+  しないこと、通常水平線との互換性リスクを Help / docs で明示。
+
+#### Help 文書の EPUB 説明追加
+
+ユーザー向けに、EPUB export beta の説明を Help に足す。技術的開示の
+位置づけで、`src/components/app/helpDocs/en/local-data-disclosure.md` の
+「Preview and export」節を拡充する（UI 文言ではなく技術開示。Help は
+英語のみという既存方針を維持）。
+
+追加内容:
+
+- beta であること、明示的な File メニュー / コマンドパレット操作で
+  あること。保存は Save As ダイアログ経由であること。
+- workspace 画像の取り扱い（Slice 1 後は取り込む、扱えない画像は
+  warning）。外部画像は取り込まない。
+- metadata の初期値（title は最初の H1 / ファイル名、language は `ja`、
+  author は空）。外部送信しない。
+- ページ数保証がないこと（リーダー依存）。
+- 手動 EPUBCheck 検証はドキュメント案内のみ（App 内コマンドではない）。
+- 縦書き・cover editor・外部 validator 起動は beta 範囲外であること。
+
+Help 更新は Slice 1（画像取り込み）の完了後、2026-06-20 に実施済み。
+metadata UI（Slice 3）完成後は、初期値の説明を入力欄の説明に差し替える。
 
 ### Later: Style Simulation And Review Hooks
 

@@ -20,6 +20,10 @@ const tauriApi = vi.hoisted(() => ({
   saveTextFileAs: vi.fn(),
 }));
 
+const epubApi = vi.hoisted(() => ({
+  buildEpubBetaArchive: vi.fn(async () => new Uint8Array([1, 2, 3])),
+}));
+
 vi.mock("../../lib/tauri", () => ({
   isTauriRuntime: tauriApi.isTauriRuntime,
   openTempPrintHtml: tauriApi.openTempPrintHtml,
@@ -29,7 +33,7 @@ vi.mock("../../lib/tauri", () => ({
 }));
 
 vi.mock("../../features/document/epubExport", () => ({
-  buildEpubBetaArchive: vi.fn(() => new Uint8Array([1, 2, 3])),
+  buildEpubBetaArchive: epubApi.buildEpubBetaArchive,
 }));
 
 vi.mock("../../features/document/markdownExportCss", () => ({
@@ -94,8 +98,10 @@ describe("useDocumentExport", () => {
     dialogApi.save.mockReset();
     markdownApi.inlineWorkspaceAssetImages.mockClear();
     markdownApi.renderMarkdown.mockClear();
+    epubApi.buildEpubBetaArchive.mockClear();
     tauriApi.saveBinaryFileAs.mockReset();
     tauriApi.saveTextFileAs.mockReset();
+    tauriApi.openWorkspaceImage.mockReset();
     document.documentElement.removeAttribute("style");
   });
 
@@ -255,6 +261,55 @@ describe("useDocumentExport", () => {
       new Uint8Array([1, 2, 3]),
     );
     expect(setStatus).toHaveBeenCalledWith("Exported EPUB beta: /tmp/a.epub");
+  });
+
+  it("passes workspace image loading into EPUB beta archive generation", async () => {
+    dialogApi.save.mockResolvedValue("/tmp/a.epub");
+    tauriApi.saveBinaryFileAs.mockResolvedValue(undefined);
+    tauriApi.openWorkspaceImage.mockResolvedValue({
+      dataUrl: "data:image/png;base64,AAAA",
+    });
+
+    const { result } = renderHook(() =>
+      useDocumentExport({
+        activeContents: "# Book\n\n![cover](assets/cover.png)",
+        activeTab: makeTab({ name: "book.md" }),
+        setGlobalError: vi.fn(),
+        setStatus: vi.fn(),
+        workspaceRootPath: "/workspace",
+      }),
+    );
+
+    await act(async () => {
+      await result.current.exportEpubBeta();
+    });
+
+    type BuildEpubOptions = {
+      documentName: string;
+      documentPath: string;
+      loadWorkspaceImage?: (absolutePath: string) => Promise<{ dataUrl: string }>;
+      markdown: string;
+      workspaceRoot: string;
+    };
+    const buildCalls = epubApi.buildEpubBetaArchive.mock
+      .calls as unknown as Array<[BuildEpubOptions]>;
+    const options = buildCalls[0]?.[0];
+    expect(options).toMatchObject({
+      documentName: "book.md",
+      documentPath: "/workspace/a.md",
+      markdown: "# Book\n\n![cover](assets/cover.png)",
+      workspaceRoot: "/workspace",
+    });
+    expect(options?.loadWorkspaceImage).toEqual(expect.any(Function));
+
+    const loaded = await options?.loadWorkspaceImage?.(
+      "/workspace/assets/cover.png",
+    );
+    expect(tauriApi.openWorkspaceImage).toHaveBeenCalledWith(
+      "/workspace",
+      "/workspace/assets/cover.png",
+    );
+    expect(loaded).toEqual({ dataUrl: "data:image/png;base64,AAAA" });
   });
 
   it("stops EPUB beta export when the active tab changes while the dialog is open", async () => {

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { buildEpubBetaArchive } from "./epubExport";
 
 function archiveText(bytes: Uint8Array): string {
@@ -6,8 +6,8 @@ function archiveText(bytes: Uint8Array): string {
 }
 
 describe("buildEpubBetaArchive", () => {
-  it("builds a minimal EPUB archive with the required package files", () => {
-    const archive = buildEpubBetaArchive({
+  it("builds a minimal EPUB archive with the required package files", async () => {
+    const archive = await buildEpubBetaArchive({
       markdown: "# Sakura Draft\n\n## Chapter One\n\nHello **book**.",
       documentName: "draft.md",
     });
@@ -26,8 +26,8 @@ describe("buildEpubBetaArchive", () => {
     expect(text).toContain('href="content.xhtml#chapter-one"');
   });
 
-  it("escapes metadata and content for XHTML output", () => {
-    const archive = buildEpubBetaArchive({
+  it("escapes metadata and content for XHTML output", async () => {
+    const archive = await buildEpubBetaArchive({
       markdown: '# A & B\n\n<script>alert("x")</script>\n\nPlain text.',
       documentName: "a-and-b.md",
     });
@@ -36,5 +36,108 @@ describe("buildEpubBetaArchive", () => {
     expect(text).toContain("A &amp; B");
     expect(text).not.toContain("<script>");
     expect(text).toContain("Plain text.");
+  });
+
+  it("packages workspace images as EPUB resources with relative XHTML references", async () => {
+    const loadWorkspaceImage = vi.fn(async (path: string) => ({
+      bytes: new Uint8Array([137, 80, 78, 71]),
+      mediaType: "image/png",
+      extension: "png",
+      warning: null,
+      path,
+    }));
+
+    const archive = await buildEpubBetaArchive({
+      markdown: "# Images\n\n![cover](assets/cover.png)",
+      documentName: "draft.md",
+      documentPath: "/workspace/draft.md",
+      workspaceRoot: "/workspace",
+      loadWorkspaceImage,
+    });
+    const text = archiveText(archive);
+
+    expect(loadWorkspaceImage).toHaveBeenCalledWith("/workspace/assets/cover.png");
+    expect(text).toContain("OEBPS/images/image-1.png");
+    expect(text).toContain(
+      '<item id="image-1" href="images/image-1.png" media-type="image/png"/>',
+    );
+    expect(text).toContain('<img src="images/image-1.png" alt="cover"');
+    expect(text).not.toContain("data-hazakura-image-path");
+    expect(text).not.toContain("data:image/gif;base64");
+  });
+
+  it("packages allowed embedded data images as EPUB resources", async () => {
+    const archive = await buildEpubBetaArchive({
+      markdown: "# Images\n\n![inline](data:image/png;base64,iVBORw0KGgo=)",
+      documentName: "draft.md",
+    });
+    const text = archiveText(archive);
+
+    expect(text).toContain("OEBPS/images/image-1.png");
+    expect(text).toContain(
+      '<item id="image-1" href="images/image-1.png" media-type="image/png"/>',
+    );
+    expect(text).toContain('<img src="images/image-1.png" alt="inline"');
+    expect(text).not.toContain("data:image/png;base64");
+  });
+
+  it("cleans Preview-only markup before writing XHTML content", async () => {
+    const archive = await buildEpubBetaArchive({
+      markdown: [
+        "# Content",
+        "",
+        "| A | B |",
+        "| --- | --- |",
+        "| 1 | 2 |",
+        "",
+        "- [x] done",
+        "- [ ] todo",
+        "",
+        "![remote](https://example.com/remote.png)",
+      ].join("\n"),
+      documentName: "content.md",
+    });
+    const text = archiveText(archive);
+
+    expect(text).toContain("<table");
+    expect(text).not.toContain("markdown-table-frame");
+    expect(text).not.toContain("markdown-task-checkbox");
+    expect(text).not.toContain("markdown-task-list-item");
+    expect(text).not.toContain("☑");
+    expect(text).not.toContain("☐");
+    expect(text).not.toContain("blocked-image");
+    expect(text).toContain("Image unavailable: remote");
+  });
+
+  it("uses chapter heading parsing so frontmatter headings are not exported to nav", async () => {
+    const archive = await buildEpubBetaArchive({
+      markdown: ["---", "title: # Metadata Title", "---", "", "# Real Title"].join(
+        "\n",
+      ),
+      documentName: "frontmatter.md",
+    });
+    const text = archiveText(archive);
+
+    expect(text).toContain("<dc:title>Real Title</dc:title>");
+    expect(text).toContain('href="content.xhtml#real-title"');
+    expect(text).not.toContain("metadata-title");
+  });
+
+  it("keeps later navigation headings when an earlier heading has inline Markdown", async () => {
+    const archive = await buildEpubBetaArchive({
+      markdown: [
+        "# First",
+        "",
+        "## Sub *emphasis*",
+        "",
+        "# Second",
+      ].join("\n"),
+      documentName: "headings.md",
+    });
+    const text = archiveText(archive);
+
+    expect(text).toContain('href="content.xhtml#first"');
+    expect(text).toContain('href="content.xhtml#sub-emphasis"');
+    expect(text).toContain('href="content.xhtml#second"');
   });
 });

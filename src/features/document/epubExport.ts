@@ -1,9 +1,12 @@
 import { renderMarkdown } from "../editor/markdown";
-import { parseMarkdownHeadingLine } from "../../lib/utils";
+import { splitMarkdownIntoChapters } from "../editor/ebookChapters";
 
 type BuildEpubBetaArchiveOptions = {
+  documentPath?: string | null;
   documentName: string;
+  loadWorkspaceImage?: (absolutePath: string) => Promise<LoadedEpubImage>;
   markdown: string;
+  workspaceRoot?: string | null;
 };
 
 type EpubEntry = {
@@ -17,46 +20,102 @@ type HeadingEntry = {
   text: string;
 };
 
-const encoder = new TextEncoder();
+type LoadedEpubImage =
+  | {
+      bytes: Uint8Array;
+      extension?: string;
+      mediaType: string;
+    }
+  | {
+      dataUrl: string;
+    };
 
-export function buildEpubBetaArchive({
+type ImageEntry = EpubEntry & {
+  id: string;
+  mediaType: string;
+  relativePath: string;
+};
+
+const encoder = new TextEncoder();
+const WORKSPACE_IMAGE_PATH_ATTR = "data-hazakura-image-path";
+
+export async function buildEpubBetaArchive({
+  documentPath = null,
   documentName,
+  loadWorkspaceImage,
   markdown,
-}: BuildEpubBetaArchiveOptions): Uint8Array {
-  const { body, headings, title } = buildContent(markdown, documentName);
+  workspaceRoot = null,
+}: BuildEpubBetaArchiveOptions): Promise<Uint8Array> {
+  const { body, headings, images, title } = await buildContent({
+    documentName,
+    documentPath,
+    loadWorkspaceImage,
+    markdown,
+    workspaceRoot,
+  });
   const entries: EpubEntry[] = [
     textEntry("mimetype", "application/epub+zip"),
     textEntry("META-INF/container.xml", containerXml()),
-    textEntry("OEBPS/package.opf", packageOpf(title)),
+    textEntry("OEBPS/package.opf", packageOpf(title, images)),
     textEntry("OEBPS/nav.xhtml", navXhtml(title, headings)),
     textEntry("OEBPS/content.xhtml", contentXhtml(title, body)),
     textEntry("OEBPS/styles.css", epubCss()),
+    ...images,
   ];
 
   return buildStoredZip(entries);
 }
 
-function buildContent(markdown: string, documentName: string) {
-  const rendered = renderMarkdown(markdown);
+async function buildContent({
+  documentName,
+  documentPath,
+  loadWorkspaceImage,
+  markdown,
+  workspaceRoot,
+}: Required<Pick<BuildEpubBetaArchiveOptions, "documentName" | "markdown">> &
+  Pick<
+    BuildEpubBetaArchiveOptions,
+    "documentPath" | "loadWorkspaceImage" | "workspaceRoot"
+  >) {
+  const contentMarkdown = stripYamlFrontmatter(markdown);
+  const rendered = renderMarkdown(contentMarkdown, {
+    documentPath,
+    workspaceRoot,
+  });
   const template = document.createElement("template");
   template.innerHTML = rendered;
-  const markdownHeadings = collectMarkdownHeadings(markdown);
+  const markdownHeadings = collectMarkdownHeadings(contentMarkdown);
+  const images = await packageWorkspaceImages(template, loadWorkspaceImage);
+  cleanupPreviewOnlyMarkup(template);
   const headingElements = Array.from(
     template.content.querySelectorAll("h1, h2, h3, h4, h5, h6"),
   );
   const headings: HeadingEntry[] = [];
   const usedIds = new Set<string>();
 
-  headingElements.forEach((heading, index) => {
-    const sourceHeading = markdownHeadings[index];
-    const text = heading.textContent?.trim() || sourceHeading?.text || "Section";
-    const id = uniqueId(slugify(text) || `section-${index + 1}`, usedIds);
+  let sourceHeadingIndex = 0;
+  headingElements.forEach((heading) => {
+    const sourceHeading = markdownHeadings[sourceHeadingIndex];
+    const text = heading.textContent?.trim() || "";
+    const sourceText = sourceHeading
+      ? markdownInlineText(sourceHeading.text)
+      : "";
+
+    if (!sourceHeading || text !== sourceText) {
+      return;
+    }
+
+    const id = uniqueId(
+      slugify(text) || `section-${headings.length + 1}`,
+      usedIds,
+    );
     heading.setAttribute("id", id);
     headings.push({
       id,
-      level: sourceHeading?.level ?? Number(heading.tagName.slice(1)) ?? 1,
+      level: sourceHeading.level,
       text,
     });
+    sourceHeadingIndex += 1;
   });
 
   const title = headings[0]?.text || titleFromDocumentName(documentName);
@@ -65,19 +124,209 @@ function buildContent(markdown: string, documentName: string) {
     .map((node) => serializer.serializeToString(node))
     .join("\n");
 
-  return { body, headings, title };
+  return { body, headings, images, title };
 }
 
 function collectMarkdownHeadings(markdown: string): HeadingEntry[] {
-  return markdown
-    .split(/\r\n|\r|\n/)
-    .map((line, index) => parseMarkdownHeadingLine(line, index + 1))
-    .filter((heading): heading is NonNullable<typeof heading> => heading !== null)
-    .map((heading) => ({
+  return splitMarkdownIntoChapters(markdown)
+    .filter((chapter) => chapter.headingLevel !== null)
+    .map((chapter) => ({
       id: "",
-      level: heading.level,
-      text: heading.text,
+      level: chapter.headingLevel ?? 1,
+      text: chapter.headingText ?? "Section",
     }));
+}
+
+async function packageWorkspaceImages(
+  template: HTMLTemplateElement,
+  loadWorkspaceImage?: (absolutePath: string) => Promise<LoadedEpubImage>,
+): Promise<ImageEntry[]> {
+  const images: ImageEntry[] = [];
+  const imageElements = Array.from(template.content.querySelectorAll("img"));
+
+  for (const image of imageElements) {
+    const workspacePath = image.getAttribute(WORKSPACE_IMAGE_PATH_ATTR);
+    const dataSrc = image.getAttribute("src")?.trim() ?? "";
+
+    if (!workspacePath && isSupportedImageDataUrl(dataSrc)) {
+      try {
+        const asset = imageAssetFromDataUrl(dataSrc);
+        addImageAsset(image, images, asset);
+      } catch {
+        image.replaceWith(epubWarningMessage(image.getAttribute("alt")?.trim()));
+      }
+      continue;
+    }
+
+    if (!workspacePath || !loadWorkspaceImage) {
+      image.replaceWith(epubWarningMessage(image.getAttribute("alt")?.trim()));
+      continue;
+    }
+
+    try {
+      const loaded = await loadWorkspaceImage(workspacePath);
+      const asset = normalizeLoadedImage(loaded);
+      addImageAsset(image, images, asset);
+    } catch {
+      image.replaceWith(epubWarningMessage(image.getAttribute("alt")?.trim()));
+    }
+  }
+
+  return images;
+}
+
+function addImageAsset(
+  image: HTMLImageElement,
+  images: ImageEntry[],
+  asset: { bytes: Uint8Array; extension: string; mediaType: string },
+): void {
+  const index = images.length + 1;
+  const id = `image-${index}`;
+  const relativePath = `images/${id}.${asset.extension}`;
+  image.setAttribute("src", relativePath);
+  image.removeAttribute(WORKSPACE_IMAGE_PATH_ATTR);
+  image.removeAttribute("loading");
+  image.removeAttribute("decoding");
+  images.push({
+    bytes: asset.bytes,
+    id,
+    mediaType: asset.mediaType,
+    path: `OEBPS/${relativePath}`,
+    relativePath,
+  });
+}
+
+function cleanupPreviewOnlyMarkup(template: HTMLTemplateElement): void {
+  for (const frame of Array.from(
+    template.content.querySelectorAll<HTMLElement>(".markdown-table-frame"),
+  )) {
+    const table = frame.querySelector("table");
+    if (table) {
+      frame.replaceWith(table);
+    }
+  }
+
+  for (const checkbox of Array.from(
+    template.content.querySelectorAll<HTMLElement>(".markdown-task-checkbox"),
+  )) {
+    const checked = checkbox.getAttribute("aria-checked") === "true";
+    checkbox.parentElement?.classList.remove("markdown-task-list-item");
+    checkbox.replaceWith(document.createTextNode(checked ? "[x]" : "[ ]"));
+  }
+
+  for (const blocked of Array.from(
+    template.content.querySelectorAll<HTMLElement>(".blocked-image"),
+  )) {
+    blocked.replaceWith(
+      epubWarningMessage(
+        blocked.textContent?.replace(/^Image blocked:\s*/i, ""),
+      ),
+    );
+  }
+}
+
+function epubWarningMessage(label?: string | null): HTMLSpanElement {
+  const warning = document.createElement("span");
+  warning.setAttribute("role", "note");
+  const cleanLabel = label?.trim();
+  warning.textContent = cleanLabel
+    ? `Image unavailable: ${cleanLabel}`
+    : "Image unavailable.";
+  return warning;
+}
+
+function normalizeLoadedImage(loaded: LoadedEpubImage): {
+  bytes: Uint8Array;
+  extension: string;
+  mediaType: string;
+} {
+  if ("bytes" in loaded) {
+    const mediaType = normalizeImageMediaType(loaded.mediaType);
+    return {
+      bytes: loaded.bytes,
+      extension: loaded.extension ?? extensionFromMediaType(mediaType),
+      mediaType,
+    };
+  }
+
+  return imageAssetFromDataUrl(loaded.dataUrl);
+}
+
+function markdownInlineText(markdown: string): string {
+  const template = document.createElement("template");
+  template.innerHTML = renderMarkdown(markdown);
+  return template.content.textContent?.trim() || markdown.trim();
+}
+
+function isSupportedImageDataUrl(src: string): boolean {
+  return /^data:image\/(?:png|jpe?g|gif|webp);base64,/i.test(src);
+}
+
+function imageAssetFromDataUrl(dataUrl: string): {
+  bytes: Uint8Array;
+  extension: string;
+  mediaType: string;
+} {
+  const match = /^data:(image\/(?:png|jpe?g|gif|webp));base64,([\s\S]+)$/i.exec(
+    dataUrl,
+  );
+  if (!match) {
+    throw new Error("Unsupported EPUB image data URL");
+  }
+
+  const binary = atob(match[2].replace(/\s/g, ""));
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+
+  return {
+    bytes,
+    extension: extensionFromMediaType(match[1]),
+    mediaType: normalizeImageMediaType(match[1]),
+  };
+}
+
+function normalizeImageMediaType(mediaType: string): string {
+  return mediaType.toLowerCase() === "image/jpg"
+    ? "image/jpeg"
+    : mediaType.toLowerCase();
+}
+
+function extensionFromMediaType(mediaType: string): string {
+  switch (mediaType.toLowerCase()) {
+    case "image/jpeg":
+    case "image/jpg":
+      return "jpg";
+    case "image/gif":
+      return "gif";
+    case "image/webp":
+      return "webp";
+    case "image/png":
+    default:
+      return "png";
+  }
+}
+
+function stripYamlFrontmatter(markdown: string): string {
+  const firstLineEnd = markdown.indexOf("\n");
+  const firstLine = firstLineEnd === -1 ? markdown : markdown.slice(0, firstLineEnd);
+  if (firstLine.trim() !== "---") {
+    return markdown;
+  }
+
+  let lineStart = firstLineEnd === -1 ? markdown.length : firstLineEnd + 1;
+  while (lineStart < markdown.length) {
+    const lineEnd = markdown.indexOf("\n", lineStart);
+    const effectiveLineEnd = lineEnd === -1 ? markdown.length : lineEnd;
+    const line = markdown.slice(lineStart, effectiveLineEnd);
+    if (line.trim() === "---") {
+      return lineEnd === -1 ? "" : markdown.slice(lineEnd + 1);
+    }
+    lineStart = lineEnd === -1 ? markdown.length : lineEnd + 1;
+  }
+
+  return markdown;
 }
 
 function containerXml(): string {
@@ -90,8 +339,17 @@ function containerXml(): string {
 `;
 }
 
-function packageOpf(title: string): string {
+function packageOpf(title: string, images: ImageEntry[]): string {
   const escapedTitle = escapeXml(title);
+  const imageItems = images
+    .map(
+      (image) =>
+        `    <item id="${escapeXml(image.id)}" href="${escapeXml(
+          image.relativePath,
+        )}" media-type="${escapeXml(image.mediaType)}"/>`,
+    )
+    .join("\n");
+  const manifestImageItems = imageItems.length > 0 ? `${imageItems}\n` : "";
   return `<?xml version="1.0" encoding="UTF-8"?>
 <package version="3.0" unique-identifier="book-id" xmlns="http://www.idpf.org/2007/opf">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
@@ -104,7 +362,7 @@ function packageOpf(title: string): string {
     <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
     <item id="content" href="content.xhtml" media-type="application/xhtml+xml"/>
     <item id="style" href="styles.css" media-type="text/css"/>
-  </manifest>
+${manifestImageItems}  </manifest>
   <spine>
     <itemref idref="content"/>
   </spine>

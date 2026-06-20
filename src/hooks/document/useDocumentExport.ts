@@ -326,9 +326,17 @@ ${bodyHtml}
         return;
       }
 
-      const archive = buildEpubBetaArchive({
+      const archive = await buildEpubBetaArchive({
+        documentPath: tabForExport.path,
         documentName: tabForExport.name,
+        loadWorkspaceImage: workspaceRootPath
+          ? async (path) => {
+              const image = await openWorkspaceImage(workspaceRootPath, path);
+              return { dataUrl: image.dataUrl };
+            }
+          : undefined,
         markdown: activeContentsRef.current,
+        workspaceRoot: workspaceRootPath,
       });
       await saveBinaryFileAs(destPath, archive);
       setStatus(`Exported EPUB beta: ${destPath}`);
@@ -336,7 +344,7 @@ ${bodyHtml}
       setGlobalError(`Export EPUB beta failed: ${String(err)}`);
       setStatus("Export EPUB beta failed");
     }
-  }, [activeContents, activeTab, setGlobalError, setStatus]);
+  }, [activeContents, activeTab, setGlobalError, setStatus, workspaceRootPath]);
 
   return { exportEpubBeta, exportHtml, exportPdf };
 }
