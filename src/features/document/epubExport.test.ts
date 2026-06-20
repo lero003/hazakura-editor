@@ -151,6 +151,10 @@ describe("buildEpubBetaArchive", () => {
     const text = archiveText(archive);
 
     expect(text).toContain("<table");
+    expect(text).toContain("table {");
+    expect(text).toContain("border-collapse: collapse");
+    expect(text).toContain("th, td {");
+    expect(text).toContain("border: 1px solid #d9d4cc");
     expect(text).not.toContain("markdown-table-frame");
     expect(text).not.toContain("markdown-task-checkbox");
     expect(text).not.toContain("markdown-task-list-item");

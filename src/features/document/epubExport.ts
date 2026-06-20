@@ -522,6 +522,20 @@ pre, code {
 img {
   max-width: 100%;
 }
+table {
+  border-collapse: collapse;
+  margin: 1em 0;
+  width: 100%;
+}
+th, td {
+  border: 1px solid #d9d4cc;
+  padding: 0.35em 0.55em;
+  vertical-align: top;
+}
+th {
+  background: #f7f3ed;
+  font-weight: 600;
+}
 .page-break {
   break-before: page;
   height: 0;
