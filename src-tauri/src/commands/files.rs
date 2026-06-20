@@ -360,10 +360,6 @@ pub(crate) fn save_binary_file_as_with_label(
     ensure_label_is_main(label)?;
     let path_buf = PathBuf::from(&path);
 
-    if path_buf.exists() {
-        return Err("A file already exists at the selected path.".to_string());
-    }
-
     let parent = path_buf
         .parent()
         .ok_or_else(|| "Cannot save a file without a parent directory.".to_string())?;
@@ -376,6 +372,13 @@ pub(crate) fn save_binary_file_as_with_label(
         .file_name()
         .and_then(|name| name.to_str())
         .ok_or_else(|| "Cannot save a file with an invalid name.".to_string())?;
+
+    if path_buf.exists() {
+        if !path_buf.is_file() {
+            return Err("Selected path is not a file.".to_string());
+        }
+        return write_existing_file_with_atomic_fallback(&path_buf, &contents);
+    }
 
     write_new_file(&path_buf, &contents)
 }

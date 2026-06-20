@@ -179,6 +179,41 @@ describe("EBookPane chapter reader", () => {
     expect(screen.getByText("ページ 1 / 3")).toBeTruthy();
   });
 
+  it("suppresses page-flow transition while resetting to the next chapter", async () => {
+    vi.mocked(measureEBookPageCount).mockReturnValue(3);
+
+    render(
+      <EBookPane
+        menuLanguage="en"
+        source={"# Chapter One\n\nbody one\n\n# Chapter Two\n\nbody two"}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Page 1 / 3")).toBeTruthy();
+    });
+
+    const nextPage = screen.getByRole("button", { name: "Next page" });
+    fireEvent.click(nextPage);
+    expect(
+      screen
+        .getByRole("article", { name: "Chapter reader" })
+        .querySelector(".ebook-page-flow-transition-suppressed"),
+    ).toBeNull();
+
+    fireEvent.click(nextPage);
+    fireEvent.click(nextPage);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Chapter Two" })).toBeTruthy();
+    });
+    expect(
+      screen
+        .getByRole("article", { name: "Chapter reader" })
+        .querySelector(".ebook-page-flow-transition-suppressed"),
+    ).toBeTruthy();
+  });
+
   it("connects one-page chapters to the next chapter from the next-page action", async () => {
     vi.mocked(measureEBookPageCount).mockReturnValue(1);
 

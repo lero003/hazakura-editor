@@ -834,21 +834,23 @@ fn save_binary_file_as_base64_rejects_invalid_payload() {
 }
 
 #[test]
-fn save_binary_file_as_rejects_existing_file() {
-    let dir = unique_test_dir("save_binary_existing");
+fn save_binary_file_as_overwrites_existing_file_after_save_dialog_confirmation() {
+    let dir = unique_test_dir("save_binary_overwrite_existing");
     fs::create_dir_all(&dir).expect("create test dir");
     let path = dir.join("book.epub");
     fs::write(&path, b"keep me").expect("write existing file");
 
-    let err = save_binary_file_as_with_label(
+    save_binary_file_as_with_label(
         MAIN_WINDOW_LABEL,
         path.to_string_lossy().to_string(),
         vec![0x50, 0x4b],
     )
-    .expect_err("existing binary file should not be overwritten");
+    .expect("save dialog confirmed binary export should overwrite");
 
-    assert!(err.contains("already exists"), "{err}");
-    assert_eq!(fs::read(&path).expect("read protected file"), b"keep me");
+    assert_eq!(
+        fs::read(&path).expect("read overwritten file"),
+        vec![0x50, 0x4b]
+    );
 
     let _ = fs::remove_dir_all(dir);
 }

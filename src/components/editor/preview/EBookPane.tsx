@@ -73,6 +73,8 @@ export default function EBookPane({
   const [activePageIndex, setActivePageIndex] = useState(0);
   const [measuredPageCount, setMeasuredPageCount] = useState(1);
   const [pageOffset, setPageOffset] = useState(0);
+  const [pageTransitionSuppressed, setPageTransitionSuppressed] =
+    useState(false);
   const pendingPageTargetRef = useRef<"first" | "last" | null>(null);
   const flowRef = useRef<HTMLDivElement | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
@@ -236,18 +238,21 @@ export default function EBookPane({
 
   const goToPreviousPage = () => {
     if (activePageIndex > 0) {
+      setPageTransitionSuppressed(false);
       setActivePageIndex((current) => Math.max(current - 1, 0));
       return;
     }
 
     if (activeChapterIndexSafe > 0) {
       pendingPageTargetRef.current = "last";
+      setPageTransitionSuppressed(true);
       setActiveChapterIndex((current) => Math.max(current - 1, 0));
     }
   };
 
   const goToNextPage = () => {
     if (activePageIndex < measuredPageCount - 1) {
+      setPageTransitionSuppressed(false);
       setActivePageIndex((current) =>
         clampPageIndex(current + 1, measuredPageCount),
       );
@@ -256,6 +261,7 @@ export default function EBookPane({
 
     if (activeChapterIndexSafe < chapters.length - 1) {
       pendingPageTargetRef.current = "first";
+      setPageTransitionSuppressed(true);
       setActivePageIndex(0);
       setActiveChapterIndex((current) =>
         Math.min(current + 1, Math.max(chapters.length - 1, 0)),
@@ -357,7 +363,11 @@ export default function EBookPane({
           <div className="ebook-page-sheet">
             <div className="ebook-page-viewport" ref={viewportRef}>
               <div
-                className="ebook-page-flow"
+                className={
+                  pageTransitionSuppressed
+                    ? "ebook-page-flow ebook-page-flow-transition-suppressed"
+                    : "ebook-page-flow"
+                }
                 dangerouslySetInnerHTML={{ __html: activeChapterHtml.html }}
                 ref={flowRef}
                 style={{ transform: `translateX(-${pageOffset}px)` }}

@@ -598,6 +598,10 @@
   word-break: break-word;
 }
 
+.ebook-page-flow-transition-suppressed {
+  transition: none;
+}
+
 .ebook-pane .ebook-reader-footer {
   align-items: center;
   border-top: 1px solid
