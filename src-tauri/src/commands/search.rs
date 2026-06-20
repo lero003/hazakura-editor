@@ -29,6 +29,9 @@ use std::path::{Path, PathBuf};
 //   * are larger than `MAX_EDITABLE_BYTES` (matches the editor's
 //     own size limit, so the result list never points at a file
 //     the open path would refuse).
+//   * cannot be decoded losslessly using the same supported text
+//     encodings as file open: UTF-8, UTF-8 BOM, Shift-JIS, or
+//     EUC-JP.
 //
 // Matches are 1-based line + 1-based column. The line text is
 // trimmed to `MAX_WORKSPACE_SEARCH_LINE_BYTES` so a long log
@@ -140,7 +143,12 @@ pub(crate) fn search_workspace_files_with_label(
                 continue;
             }
 
-            let contents = match fs::read_to_string(&child_path) {
+            let bytes = match fs::read(&child_path) {
+                Ok(bytes) => bytes,
+                Err(_) => continue,
+            };
+            let encoding = detect_text_encoding(&bytes);
+            let contents = match decode_text_bytes(&bytes, encoding) {
                 Ok(contents) => contents,
                 Err(_) => continue,
             };

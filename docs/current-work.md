@@ -630,6 +630,17 @@ continue to resolve through the bounded workspace-image command. Focused
 verification: `npm run test -- src/features/editor/lMode/imageWidget.test.ts src/features/editor/lMode/extension.test.ts src/features/editor/markdown.test.ts`;
 `npm run build:vite`; `git diff --check`.
 
+P1 is implemented locally as of 2026-06-21. Workspace search now reads
+bytes and reuses the file-open text decoding helpers, so UTF-8, UTF-8
+BOM, Shift-JIS, and EUC-JP files that pass the existing binary / size
+guards can be searched without broadening the supported encoding set.
+Files that still cannot be decoded losslessly remain skipped. Focused
+verification: `cargo test --manifest-path src-tauri/Cargo.toml search_finds_ -- --nocapture`;
+`cargo test --manifest-path src-tauri/Cargo.toml tests::search:: -- --nocapture`;
+`cargo test --manifest-path src-tauri/Cargo.toml -- --test-threads=1`;
+`cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`;
+`git diff --check`.
+
 Deferred from v0.28:
 
 - Book Workspace Alpha, multi-file chapter ordering, saved book
@@ -660,8 +671,8 @@ over copy-heavy or product-voice-sensitive work.
 
 | Fit | Candidate | Scope |
 |---|---|---|
-| Done locally | v0.28 L Mode image policy parity | Implemented on 2026-06-21. Do not re-pick unless a regression appears; continue with workspace search encoding parity or the next v0.28 slice. |
-| Good | v0.28 workspace search encoding parity | Reuse or align with safe file-open decoding so Shift-JIS / EUC-JP text that can be opened is not silently invisible to search. Keep binary / oversized skip behavior intact and prove with focused Rust tests. |
+| Done locally | v0.28 L Mode image policy parity | Implemented on 2026-06-21. Do not re-pick unless a regression appears; continue with system handoff hardening or the next v0.28 slice. |
+| Done locally | v0.28 workspace search encoding parity | Implemented on 2026-06-21. Do not re-pick unless a regression appears; continue with system handoff hardening or the next v0.28 slice. |
 | Good | v0.28 system handoff hardening | Organize external-link, Finder reveal, and print/browser handoff as user-initiated allowlisted OS handoff. Do not add arbitrary command input or generic shell behavior. |
 | Good | v0.28 AI proposal review foundation | Implement one explicit proposal intake / review primitive only: file, paste, or existing transaction to Diff / Review. Leave broader ingest expansion for v0.29+. No auto-apply, auto-save, auto-commit, provider plugins, generic chat, or hidden workspace rewrite. |
 | Good | L Mode quality investigation | Pick one reproduced L Mode issue or one measurable quality gap only: caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or performance baseline. Do not add a new editing model or contenteditable surface. |

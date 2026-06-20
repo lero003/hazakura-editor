@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-21 (v0.28 P0 image-policy parity)
+Last reviewed: 2026-06-21 (v0.28 P1 search encoding parity)
 
 ## Current State
 
@@ -56,8 +56,13 @@ Last reviewed: 2026-06-21 (v0.28 P0 image-policy parity)
   Preview's supported `data:image` MIME, strict base64, and 2 MB
   Markdown-inline cap policy. Workspace image files continue through the
   bounded workspace-image command; EPUB packaged image policy remains a
-  separate future concern. Continue v0.28 from workspace search encoding
-  parity unless a higher-priority regression appears.
+  separate future concern.
+- v0.28 P1 workspace search encoding parity is implemented locally.
+  Workspace search now reuses the file-open decode helpers for UTF-8,
+  UTF-8 BOM, Shift-JIS, and EUC-JP after the existing binary / size
+  guards. Undecodable files still skip rather than broadening supported
+  encodings. Continue v0.28 from system handoff hardening unless a
+  higher-priority regression appears.
 - v0.27 Phase 1 large-document initial rendering stabilization is
   accepted as closed at `b2126c14` plus this docs-only follow-up.
   `PreviewPane` clears stale content before paint, shows a theme-bound

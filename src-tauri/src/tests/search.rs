@@ -82,6 +82,66 @@ fn search_is_case_insensitive() {
 }
 
 #[test]
+fn search_finds_shift_jis_text_that_file_open_can_decode() {
+    let dir = unique_test_dir("search_shift_jis");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("note.md");
+    let original = "これは検索できます。\n";
+    let (bytes, _, had_unmappable) = encoding_rs::SHIFT_JIS.encode(original);
+    assert!(
+        !had_unmappable,
+        "fixture string must encode cleanly to Shift-JIS",
+    );
+    fs::write(&path, &bytes).expect("write Shift-JIS fixture");
+
+    let result = search_workspace_files_with_label(
+        MAIN_WINDOW_LABEL,
+        dir.to_string_lossy().to_string(),
+        "検索".to_string(),
+    )
+    .expect("search workspace");
+
+    assert_eq!(result.total_matches, 1);
+    assert_eq!(result.files.len(), 1);
+    assert_eq!(result.files[0].relative_path, "note.md");
+    assert_eq!(result.files[0].matches[0].line, 1);
+    assert_eq!(result.files[0].matches[0].column, 4);
+    assert_eq!(result.files[0].matches[0].text, original.trim_end());
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn search_finds_euc_jp_text_that_file_open_can_decode() {
+    let dir = unique_test_dir("search_euc_jp");
+    fs::create_dir_all(&dir).expect("create test dir");
+    let path = dir.join("note.md");
+    let original = "本日￠50を検索します。\n";
+    let (bytes, _, had_unmappable) = encoding_rs::EUC_JP.encode(original);
+    assert!(
+        !had_unmappable,
+        "fixture string must encode cleanly to EUC-JP",
+    );
+    fs::write(&path, &bytes).expect("write EUC-JP fixture");
+
+    let result = search_workspace_files_with_label(
+        MAIN_WINDOW_LABEL,
+        dir.to_string_lossy().to_string(),
+        "検索".to_string(),
+    )
+    .expect("search workspace");
+
+    assert_eq!(result.total_matches, 1);
+    assert_eq!(result.files.len(), 1);
+    assert_eq!(result.files[0].relative_path, "note.md");
+    assert_eq!(result.files[0].matches[0].line, 1);
+    assert_eq!(result.files[0].matches[0].column, 7);
+    assert_eq!(result.files[0].matches[0].text, original.trim_end());
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
 fn search_empty_query_returns_no_results() {
     let dir = unique_test_dir("search_empty");
     fs::create_dir_all(&dir).expect("create test dir");
