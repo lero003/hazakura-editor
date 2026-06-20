@@ -7,7 +7,10 @@ Last reviewed: 2026-06-20 (v0.27 refinement Phase 2)
 
 ## Current State
 
-- `Hazakura Editor` is at `0.26.0`.
+- `Hazakura Editor` is at `0.27.0` for the prepared source / local-app
+  release candidate. The published Mac App Store version remains
+  `0.26.0` until a new App Store build is uploaded, approved, and
+  released.
 - User-facing app identity is capitalized as `Hazakura Editor`. The
   App Store preview bundle is `Hazakura Editor.app`; current docs and
   smoke paths should use that name rather than the older lowercase
@@ -36,7 +39,8 @@ Last reviewed: 2026-06-20 (v0.27 refinement Phase 2)
   Local packaging/signing checks passed on 2026-06-19. Raw App Store
   Connect, TestFlight, and App Review logs are not tracked in this
   repository.
-- Start from `docs/current-work.md`; v0.27 execution is now anchored in
+- Start from `docs/current-work.md`; v0.27 execution is complete for
+  source-tag purposes and remains documented in
   `docs/v0.27-refinement-slice-plan.md`.
 - v0.27 Phase 1 large-document initial rendering stabilization is
   accepted as closed at `b2126c14` plus this docs-only follow-up.

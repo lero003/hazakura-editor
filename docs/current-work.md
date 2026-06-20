@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: Active post-v0.26 release quality routing and v0.27 refinement
+Scope: Active post-v0.27 release quality routing and completed v0.27 refinement
 Authority: High
-Last reviewed: 2026-06-20 (v0.26 released, v0.27 refinement plan selected)
+Last reviewed: 2026-06-20 (v0.27 source / App Store candidate prep)
 
 ## Purpose
 
@@ -18,9 +18,10 @@ v0.18 pre-review automation slices remain below as historical evidence.
 
 Keep every slice small, verifiable, and inside the Markdown-first Safe
 Editor boundary.
-For v0.27 product work, use
-`docs/v0.27-refinement-slice-plan.md` as the execution memo and keep
-`docs/post-v0.25-product-refinement-plan.md` as the broader lens.
+The v0.27 refinement phases are complete for source-tag purposes. Keep
+`docs/v0.27-refinement-slice-plan.md` as the execution memo / historical
+phase boundary and `docs/post-v0.25-product-refinement-plan.md` as the
+broader lens.
 
 ## Product Boundary
 
@@ -544,31 +545,30 @@ on the later browser scroll event and avoid the line-ratio mismatch.
 This keeps Markdown source, outline parsing, cursor selection, Preview
 rendering, and mode state unchanged.
 
-Follow-up human-side use found a separate unresolved manual-scroll issue:
-Outline heading jumps are fine, but central-editor manual scrolling with
-a trackpad, wheel, or scrollbar can fail after the first successful large
-movement. The editor can appear to stay near the previous focus area and
-behave like text is being selected instead of scrolling. A scroll-sync
-feedback hypothesis was explored, but scrollbar testing still reproduced
-the issue, so no behavior change is kept from that attempt. Treat this as
-a held investigation item around CodeMirror scrollbar / pointer handling,
-CSS hit targets, or WebView native scrolling behavior rather than as a
-Phase 3 completion blocker. This still does not add persistence,
-indexing, Preview DOM editing, source-aware mapping, or a second document
-model.
+Follow-up human-side use found a separate manual-scroll issue: Outline
+heading jumps were fine, but central-editor manual scrolling with a
+trackpad, wheel, or scrollbar could fail after the first successful large
+movement. The editor could appear to stay near the previous focus area
+and behave like text was being selected instead of scrolling. A focused
+follow-up confirmed the likely cause: CodeMirror retained editing focus
+while the native scrollbar gutter was used. The editor now blurs the
+editing DOM only when the scrollbar gutter is pressed, which human-side
+built-app smoke confirmed fixes the second-large-scroll behavior without
+changing normal content clicks, source, or selection semantics. This
+still does not add persistence, indexing, Preview DOM editing,
+source-aware mapping, or a second document model.
 
 Verification for the accepted Phase 3 code path:
 `npm run test -- src/components/editor/EditorPane.test.tsx`.
 
-Human-side built-app smoke passed on 2026-06-20: with a long Markdown
+Human-side heading-jump built-app smoke passed on 2026-06-20: with a long Markdown
 document, Outline heading clicks near deep document positions did not
 feel uncomfortable, including the observed Preview sync behavior around
-roughly 6000 lines. The unresolved central-editor manual-scroll issue is
-held for a later focused debugging slice unless it becomes release
-blocking. The remaining editor / Preview visual drift is tracked as lower
-priority unless it makes navigation feel broken. The broader
-session-local editing-position history candidate is not implemented in
-this slice.
+roughly 6000 lines. The central-editor manual-scroll issue is fixed by
+the follow-up scrollbar-gutter blur slice. The remaining editor /
+Preview visual drift is tracked as lower priority unless it makes
+navigation feel broken. The broader session-local editing-position
+history candidate is not implemented in this slice.
 
 Phase 4 is implemented locally as of 2026-06-20 and has passed the full
 local verification gate. The status bar no longer relies on a single compacted
@@ -588,13 +588,23 @@ one menu.
 Verification: `npm run test`, `npm run build:vite`, and
 `git diff --check`.
 
+v0.27 release-candidate closeout note as of 2026-06-20:
+
+- The boot-theme-first startup improvement remains intentionally
+  deferred. Reopen only as a separate real-app DevTools debug slice.
+- Very long-document editor / Preview scroll sync can still drift
+  because the app does not maintain a semantic source map between the
+  editor and rendered Preview. Treat as a future quality slice, not a
+  v0.27 blocker.
+- AI Markdown ingest, Workspace As Book, Native Vibrancy Phase 2, and
+  EPUB document-model work remain outside the v0.27 source tag.
+
 ## Active UX Queue
 
 Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| Held residual | Central editor manual-scroll investigation | Central-editor manual scrollbar / trackpad / wheel large scrolling can misbehave after the first successful large movement. Reopen only as a focused CodeMirror scrollbar / pointer / WebView scrolling slice, or if it becomes release blocking. |
 | P1 | Core Safe Editor quality probe | When concrete queue items are exhausted, inspect one basic high-risk surface instead of adding broad tests: open/save/close, restore/recovery, preview, diff/review, workspace file operations, standalone files, image handling, keyboard/IME, or error recovery. State the risk hypothesis, run a focused source/app inspection or smoke, then either fix the smallest issue found or close as `verified no-op`. |
 | P2 | Light accessibility sanity | Keep accessibility as a light sanity pass adjacent to core surfaces: keyboard reachability, focus escape/Tab behavior, readable labels, and obvious contrast. Do not prioritize broad accessibility audits over basic editor quality unless a concrete accessibility failure is observed. |
 | Separate lane | Native vibrancy via `window-vibrancy` + macOS 26 floor | Keep as an independent release-planning lane outside v0.27 refinement. It requires a macOS 26 floor decision, built `.app` smoke on macOS 26, and App Store lane judgment before becoming active work. |

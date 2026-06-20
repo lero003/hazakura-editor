@@ -9,7 +9,7 @@ This directory stores GitHub Release body drafts and published release-note evid
 
 Latest GitHub source / local-app tag note:
 
-- `0.26.0-source-tag.release.md`
+- `0.27.0-source-tag.release.md`
 
 Latest published GitHub Release body:
 
@@ -22,9 +22,10 @@ Latest downloadable GitHub DMG Release body:
 Latest App Store status:
 
 - `0.25.0` has been reported as released on the Mac App Store.
-- `0.26.0` build `21` is the current local App Store submit-lane package
-  candidate. It has not been uploaded to App Store Connect in this
-  repository state.
+- `0.26.0` has been reported as released on the Mac App Store.
+- `0.27.0` App Store package generation is the next local candidate
+  lane. Exact build and package evidence are recorded after the package
+  is generated.
 - `0.25.0` build `18` is the tracked local App Store submit-lane
   package evidence. Raw App Store Connect, TestFlight, and App Review
   logs are not tracked in this repository.
@@ -39,6 +40,7 @@ Latest App Store submission-candidate note:
 
 Latest source / local-app tag notes:
 
+- `0.27.0-source-tag.release.md`
 - `0.26.0-source-tag.release.md`
 - `0.25.0-source-tag.release.md`
 - `0.19.0-source-tag.release.md`

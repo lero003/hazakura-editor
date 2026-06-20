@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-20 (v0.26 App Store release)
+Last reviewed: 2026-06-20 (v0.27 source / App Store candidate prep)
 
 ## Current Position
 
@@ -17,13 +17,13 @@ Current release state:
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
 - Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
-- Current package/app version: `0.26.0`.
+- Current package/app version: `0.27.0`.
 - Mac App Store published version: `0.26.0`, reported released on
   2026-06-20 after App Review completion.
-- Active lane: v0.27 refinement execution after no-workspace authoring,
-  e-book affordance cleanup, and EPUB export beta follow-up shipped.
-  Use `docs/v0.27-refinement-slice-plan.md` for the Phase 1 -> 4
-  execution order.
+- Active lane: post-v0.27 refinement cleanup after large-document
+  rendering, One Editing Space context retention, flow-preserving
+  heading jumps, status bar structure cleanup, and the editor-scrollbar
+  focus fix shipped.
 - Current work queue: `docs/current-work.md`.
 
 North star for the next product arc:

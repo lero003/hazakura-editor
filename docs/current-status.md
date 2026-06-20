@@ -3,17 +3,17 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-20 (v0.26 App Store release)
+Last reviewed: 2026-06-20 (v0.27 source / App Store candidate prep)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: `0.26.0` across npm, Tauri, Cargo, and lockfile metadata.
+- Current package/app version: `0.27.0` across npm, Tauri, Cargo, and lockfile metadata.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
 - Published Mac App Store version: `0.26.0`, reported released on
   2026-06-20 after App Review completion.
-- Latest GitHub source / local-app tag: `v0.26.0`.
+- Latest GitHub source / local-app tag: `v0.27.0` prepared locally.
 - Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
 - `v0.18.0` is a Developer / GitHub lane preview, ad-hoc signed, not Developer ID signed, not notarized, and expected to show macOS security warnings.
 - The helper-free App Store lane delivered `0.18.0` build `4` to
@@ -48,7 +48,7 @@ Last reviewed: 2026-06-20 (v0.26 App Store release)
   that checkpoint. A `Cmd+Shift+F` global-search result activation bug
   found during smoke has a focused code-level fix.
 - Older public tags and release assets remain immutable.
-- Current active work is post-v0.26 release quality polish and the next
+- Current active work is post-v0.27 release-candidate cleanup and the next
   product slice. Local pre-review regression, package, payload,
   dependency-audit, bundle metadata, license-resource, and bundle-size
   evidence remains archived under `docs/archive/operations/` or
@@ -180,6 +180,7 @@ Last reviewed: 2026-06-20 (v0.26 App Store release)
 
 Use release notes for detailed historical evidence:
 
+- `docs/releases/0.27.0-source-tag.release.md`
 - `docs/releases/0.26.0-source-tag.release.md`
 - `docs/releases/0.26.0-app-store-submission-candidate.release.md`
 - `docs/releases/0.25.0-source-tag.release.md`
@@ -208,8 +209,8 @@ baseline, and smoke evidence are archived under
 
 ## Active Planning Sources
 
-- `docs/current-work.md`: current post-approval quality and v0.27
-  refinement queue.
+- `docs/current-work.md`: current post-approval quality and completed v0.27
+  refinement notes.
 - `docs/v0.27-refinement-slice-plan.md`: v0.27 execution phases for
   large-document rendering, One Editing Space, flow-preserving editing,
   and status bar cleanup.

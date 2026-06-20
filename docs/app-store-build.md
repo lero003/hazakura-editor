@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-06-20 (v0.26 release prep)
+Last reviewed: 2026-06-20 (v0.27 source / App Store candidate prep)
 
 ## Purpose
 
@@ -33,7 +33,7 @@ Apple Local Assist and Agent Workbench behind their existing boundaries.
 - Bundle ID: `dev.hazakura.editor`
 - Published App Store version: `0.26.0` (reported released on 2026-06-20
   after App Review completion)
-- Current source / Developer version: `0.26.0`
+- Current source / Developer version: `0.27.0`
 - App Store category: `Productivity`
 - Public Privacy Policy URL:
   `https://hazakura.dev/hazakura-editor/privacy/`
@@ -276,7 +276,7 @@ find "$APP/Contents/MacOS" -maxdepth 1 -type f -print
 Expected:
 
 - `CFBundleIdentifier` is `dev.hazakura.editor`
-- `CFBundleShortVersionString` is the current package version (`0.26.0`
+- `CFBundleShortVersionString` is the current package version (`0.27.0`
   for the next candidate)
 - `CFBundleVersion` is a positive integer higher than the last uploaded
   App Store Connect build
