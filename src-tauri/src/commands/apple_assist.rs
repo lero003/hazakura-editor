@@ -23,12 +23,17 @@
 // See docs/apple-local-assist-distribution-plan.md and
 // docs/apple-local-assist-v0.12-design-review.md.
 use crate::commands::apple_assist_supervisor::{
-    generate_candidate_via_helper, probe_availability_via_helper, AppleAssistHelperStore,
-    HelperAvailability, HelperCandidate, WireEnvelope,
+    generate_candidate_stream_via_helper, generate_candidate_via_helper,
+    probe_availability_via_helper, AppleAssistHelperStore, HelperAvailability, HelperCandidate,
+    HelperCandidatePartial, WireEnvelope,
 };
 use crate::distribution::*;
 use crate::security::window_guard::*;
+use crate::types::APPLE_ASSIST_APPLY_STATUS_EVENT;
+use crate::util::current_time_ms;
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
+use tauri::Emitter;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
@@ -116,9 +121,9 @@ pub const APPLE_ASSIST_MAX_INSTRUCTION_CHARS: usize = 1000;
 #[tauri::command]
 pub(crate) fn probe_apple_assist_availability<R: tauri::Runtime>(
     window: tauri::WebviewWindow<R>,
-    helper_store: tauri::State<'_, AppleAssistHelperStore>,
+    helper_store: tauri::State<'_, Arc<AppleAssistHelperStore>>,
 ) -> Result<AppleAssistAvailability, String> {
-    probe_apple_assist_availability_with_label(window.label(), &helper_store)
+    probe_apple_assist_availability_with_label(window.label(), helper_store.inner().as_ref())
 }
 
 pub(crate) fn probe_apple_assist_availability_with_label(
@@ -140,7 +145,7 @@ pub(crate) fn probe_apple_assist_availability_with_helper(
             WireEnvelope::Error(error) => Ok(AppleAssistAvailability::Unavailable {
                 reason: error.error,
             }),
-            WireEnvelope::Candidate(_) => Err(
+            WireEnvelope::Candidate(_) | WireEnvelope::CandidatePartial(_) => Err(
                 "Hazakura Local Assist helper returned a candidate envelope for an availability probe."
                     .to_string(),
             ),
@@ -156,10 +161,14 @@ pub(crate) fn probe_apple_assist_availability_with_helper(
 #[tauri::command]
 pub(crate) fn generate_apple_assist_candidate<R: tauri::Runtime>(
     window: tauri::WebviewWindow<R>,
-    helper_store: tauri::State<'_, AppleAssistHelperStore>,
+    helper_store: tauri::State<'_, Arc<AppleAssistHelperStore>>,
     request: AppleAssistRequest,
 ) -> Result<AppleAssistResponse, String> {
-    generate_apple_assist_candidate_with_label(window.label(), &helper_store, request)
+    generate_apple_assist_candidate_with_label(
+        window.label(),
+        helper_store.inner().as_ref(),
+        request,
+    )
 }
 
 pub(crate) fn generate_apple_assist_candidate_with_label(
@@ -171,6 +180,33 @@ pub(crate) fn generate_apple_assist_candidate_with_label(
     ensure_apple_assist_allowed_by_distribution()?;
     validate_request(&request)?;
     generate_apple_assist_candidate_with_helper(helper_store, &request)
+}
+
+#[tauri::command]
+pub(crate) async fn generate_apple_assist_candidate_streaming<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    app: tauri::AppHandle<R>,
+    helper_store: tauri::State<'_, Arc<AppleAssistHelperStore>>,
+    request: AppleAssistRequest,
+    request_id: String,
+    request_label: String,
+) -> Result<AppleAssistResponse, String> {
+    ensure_label_is_main(window.label())?;
+    ensure_apple_assist_allowed_by_distribution()?;
+    validate_request(&request)?;
+
+    let helper_store = Arc::clone(helper_store.inner());
+    tauri::async_runtime::spawn_blocking(move || {
+        generate_apple_assist_candidate_with_helper_streaming(
+            helper_store.as_ref(),
+            &request,
+            |partial| {
+                emit_partial_status(&app, &request_id, &request_label, partial);
+            },
+        )
+    })
+    .await
+    .map_err(|e| format!("Hazakura Local Assist streaming task failed: {e}"))?
 }
 
 #[cfg(desktop)]
@@ -253,7 +289,7 @@ pub(crate) fn generate_apple_assist_candidate_with_helper(
         )? {
             WireEnvelope::Candidate(value) => map_helper_candidate(value),
             WireEnvelope::Error(error) => Err(error.error),
-            WireEnvelope::Availability(_) => Err(
+            WireEnvelope::Availability(_) | WireEnvelope::CandidatePartial(_) => Err(
                 "Hazakura Local Assist helper returned an availability envelope for candidate generation."
                     .to_string(),
             ),
@@ -265,6 +301,75 @@ pub(crate) fn generate_apple_assist_candidate_with_helper(
         let _ = request;
         Err("Hazakura Local Assist is supported on macOS only.".to_string())
     }
+}
+
+pub(crate) fn generate_apple_assist_candidate_with_helper_streaming<F>(
+    helper_store: &AppleAssistHelperStore,
+    request: &AppleAssistRequest,
+    on_partial: F,
+) -> Result<AppleAssistResponse, String>
+where
+    F: FnMut(HelperCandidatePartial),
+{
+    #[cfg(target_os = "macos")]
+    {
+        match generate_candidate_stream_via_helper(
+            helper_store,
+            request.operation.as_wire_str(),
+            &request.selected_text,
+            request.document_context.as_deref(),
+            request.instruction.as_deref(),
+            request.action_id.as_deref(),
+            request.additional_request.as_deref(),
+            on_partial,
+        )? {
+            WireEnvelope::Candidate(value) => map_helper_candidate(value),
+            WireEnvelope::Error(error) => Err(error.error),
+            WireEnvelope::Availability(_) | WireEnvelope::CandidatePartial(_) => Err(
+                "Hazakura Local Assist helper returned a non-final envelope for streaming candidate generation."
+                    .to_string(),
+            ),
+        }
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = helper_store;
+        let _ = request;
+        let _ = on_partial;
+        Err("Hazakura Local Assist is supported on macOS only.".to_string())
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct AppleAssistApplyStatusPayload {
+    phase: &'static str,
+    request_id: String,
+    message: String,
+    request: String,
+    partial_text: String,
+    emitted_at_ms: u64,
+}
+
+fn emit_partial_status<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+    request_id: &str,
+    request_label: &str,
+    partial: HelperCandidatePartial,
+) {
+    let payload = AppleAssistApplyStatusPayload {
+        phase: "partial",
+        request_id: request_id.to_string(),
+        message: "Hazakura Local Assist partial candidate".to_string(),
+        request: request_label.to_string(),
+        partial_text: partial.candidate_text,
+        emitted_at_ms: current_time_ms(),
+    };
+    let _ = app.emit_to(
+        APPLE_ASSIST_WINDOW_LABEL,
+        APPLE_ASSIST_APPLY_STATUS_EVENT,
+        payload,
+    );
 }
 
 pub(crate) fn map_helper_availability(value: HelperAvailability) -> AppleAssistAvailability {

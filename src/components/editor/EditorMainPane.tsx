@@ -11,6 +11,7 @@ import { writeTextToClipboard } from "../../lib/clipboard";
 import type { LModeCopy, SafeEditorCopy, SlashMenuCopy } from "../../lib/locale";
 import type {
   BaseTheme,
+  AppleAssistGenerationLock,
   EditorSettings,
   EditorTab,
   ImagePreviewState,
@@ -30,6 +31,7 @@ type EditorMainPaneProps = {
   editorPaneRef: RefObject<EditorPaneHandle | null>;
   editorSettings: EditorSettings;
   editorTheme: BaseTheme;
+  generationLock?: AppleAssistGenerationLock | null;
   imagePreviewTitle: string;
   lModeCopy: LModeCopy;
   menuLanguage: MenuLanguage;
@@ -65,6 +67,7 @@ export function EditorMainPane({
   editorPaneRef,
   editorSettings,
   editorTheme,
+  generationLock = null,
   imagePreviewTitle,
   lModeCopy,
   menuLanguage,
@@ -93,6 +96,7 @@ export function EditorMainPane({
   const copyFullPathLabel = activeTab
     ? formatCopyFullPathLabel(menuLanguage, activeTab.path)
     : "";
+  const appleAssistLocked = generationLock !== null;
 
   return (
     <div className="pane editor-pane" aria-label="Editor">
@@ -108,6 +112,7 @@ export function EditorMainPane({
             lModeTypewriter={editorSettings.lModeTypewriter}
             onChange={onChange}
             onScrollRatioChange={onScrollRatioChange}
+            readOnly={appleAssistLocked}
             onSelectionChange={onSelectionChange}
             searchMatches={searchMatches}
             showInvisibles={editorSettings.showInvisibles}
@@ -122,6 +127,11 @@ export function EditorMainPane({
             onSendToAgent={onSendToAgent}
             onPasteImage={onPasteImage}
           />
+          {appleAssistLocked ? (
+            <div className="editor-apple-assist-lock" role="status">
+              生成中のため、この文書の編集を一時停止しています
+            </div>
+          ) : null}
           {scrollHudVisible && scrollHudContext.current ? (
             <ScrollPositionHud
               context={scrollHudContext}

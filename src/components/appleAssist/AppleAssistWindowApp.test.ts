@@ -66,6 +66,7 @@ const REQUIRED_KEYS: ReadonlyArray<keyof AppleAssistWindowCopy> = [
   "unknownError",
   "unsupportedStatus",
   "workingLocally",
+  "streamPreviewHeading",
   // v0.17 operation-feedback panel. The keys are the
   // minimum required to render the panel; the
   // `feedbackEntry` function shape is exercised in a
@@ -387,6 +388,7 @@ describe("getApplyStatusPresentation", () => {
     const presentation = getApplyStatusPresentation(
       {
         phase: "failed",
+        requestId: "req-failed",
         message: raw,
         request: "Make this more natural.",
         emittedAtMs: 1,
@@ -404,6 +406,7 @@ describe("getApplyStatusPresentation", () => {
     const presentation = getApplyStatusPresentation(
       {
         phase: "completed",
+        requestId: "req-completed",
         message: "Hazakura Local Assist applied: Rewrite",
         request: "Rewrite",
         emittedAtMs: 1,

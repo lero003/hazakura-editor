@@ -369,6 +369,94 @@ impl AppleAssistHelperStore {
             .map_err(|e| format!("Failed to parse helper response: {e} (raw: {line:?})"))
     }
 
+    fn read_envelope_locked(
+        inner: &mut AppleAssistHelperInner,
+        timeout: Duration,
+    ) -> Result<WireEnvelope, String> {
+        let done_pair = Arc::new((Mutex::new(false), Condvar::new()));
+        let done_pair_w = done_pair.clone();
+        let child_arc = inner.child.clone();
+        let timed_out = Arc::new(AtomicBool::new(false));
+        let timed_out_w = timed_out.clone();
+
+        let watchdog = std::thread::Builder::new()
+            .name("apple-assist-supervisor-stream-watchdog".to_string())
+            .spawn(move || {
+                let (lock, cvar) = &*done_pair_w;
+                let mut done = lock.lock().expect("watchdog lock");
+                if !*done {
+                    let (next_done, _) = cvar
+                        .wait_timeout(done, timeout)
+                        .expect("watchdog wait_timeout");
+                    done = next_done;
+                }
+                if !*done {
+                    timed_out_w.store(true, Ordering::SeqCst);
+                    Self::kill_child(&child_arc);
+                }
+            })
+            .map_err(|e| format!("Failed to spawn watchdog thread: {e}"))?;
+
+        let mut line = String::new();
+        let read_result = inner.stdout.read_line(&mut line);
+
+        {
+            let (lock, cvar) = &*done_pair;
+            let mut done = lock.lock().expect("watchdog signal lock");
+            *done = true;
+            cvar.notify_all();
+        }
+        let _ = watchdog.join();
+
+        if timed_out.load(Ordering::SeqCst) {
+            return Err(format!(
+                "Hazakura Local Assist helper timed out after {}s",
+                timeout.as_secs()
+            ));
+        }
+        if line.is_empty() {
+            return Err("Hazakura Local Assist helper closed the response stream.".to_string());
+        }
+        if let Err(e) = read_result {
+            return Err(format!("Failed to read helper response: {e}"));
+        }
+        serde_json::from_str(&line)
+            .map_err(|e| format!("Failed to parse helper response: {e} (raw: {line:?})"))
+    }
+
+    fn round_trip_stream_locked<F>(
+        inner: &mut AppleAssistHelperInner,
+        request: &WireRequest<'_>,
+        timeout: Duration,
+        mut on_partial: F,
+    ) -> Result<WireEnvelope, String>
+    where
+        F: FnMut(HelperCandidatePartial),
+    {
+        let serialized = serde_json::to_string(request)
+            .map_err(|e| format!("Failed to serialize helper request: {e}"))?;
+        inner
+            .stdin
+            .write_all(serialized.as_bytes())
+            .map_err(|e| format!("Failed to write to helper stdin: {e}"))?;
+        inner
+            .stdin
+            .write_all(b"\n")
+            .map_err(|e| format!("Failed to write newline to helper stdin: {e}"))?;
+        inner
+            .stdin
+            .flush()
+            .map_err(|e| format!("Failed to flush helper stdin: {e}"))?;
+
+        loop {
+            let envelope = Self::read_envelope_locked(inner, timeout)?;
+            match envelope {
+                WireEnvelope::CandidatePartial(partial) => on_partial(partial),
+                other => return Ok(other),
+            }
+        }
+    }
+
     fn is_in_cooldown(&self) -> bool {
         if self.consecutive_failures.load(Ordering::SeqCst) < CONSECUTIVE_FAILURE_LIMIT {
             return false;
@@ -433,12 +521,26 @@ enum WireRequest<'a> {
         #[serde(skip_serializing_if = "Option::is_none")]
         additional_request: Option<&'a str>,
     },
+    #[serde(rename_all = "camelCase")]
+    GenerateCandidateStreaming {
+        operation: &'a str,
+        selected_text: &'a str,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        document_context: Option<&'a str>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        instruction: Option<&'a str>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        action_id: Option<&'a str>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        additional_request: Option<&'a str>,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(tag = "kind", content = "value", rename_all = "snake_case")]
 pub(crate) enum WireEnvelope {
     Availability(HelperAvailability),
+    CandidatePartial(HelperCandidatePartial),
     Candidate(HelperCandidate),
     Error(HelperError),
 }
@@ -456,6 +558,12 @@ pub(crate) struct HelperCandidate {
     pub(crate) candidate_text: String,
     pub(crate) model_id: String,
     pub(crate) latency_ms: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct HelperCandidatePartial {
+    pub(crate) candidate_text: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -508,7 +616,7 @@ pub(crate) fn probe_availability_via_helper(
         // A Candidate envelope in response to a probe is a
         // protocol violation from the helper side. Reset and
         // count so the next call respawns.
-        Ok(WireEnvelope::Candidate(_)) => {
+        Ok(WireEnvelope::Candidate(_)) | Ok(WireEnvelope::CandidatePartial(_)) => {
             store.reset_locked(&mut guard);
             store.record_failure();
         }
@@ -575,7 +683,61 @@ pub(crate) fn generate_candidate_via_helper(
         // An Availability envelope in response to a generate
         // is a protocol violation from the helper side. Reset
         // and count so the next call respawns.
-        Ok(WireEnvelope::Availability(_)) => {
+        Ok(WireEnvelope::Availability(_)) | Ok(WireEnvelope::CandidatePartial(_)) => {
+            store.reset_locked(&mut guard);
+            store.record_failure();
+        }
+        Err(_) => {
+            store.reset_locked(&mut guard);
+            store.record_failure();
+        }
+    }
+    result
+}
+
+pub(crate) fn generate_candidate_stream_via_helper<F>(
+    store: &AppleAssistHelperStore,
+    operation: &str,
+    selected_text: &str,
+    document_context: Option<&str>,
+    instruction: Option<&str>,
+    action_id: Option<&str>,
+    additional_request: Option<&str>,
+    on_partial: F,
+) -> Result<WireEnvelope, String>
+where
+    F: FnMut(HelperCandidatePartial),
+{
+    if store.is_in_cooldown() {
+        return Err(
+            "Hazakura Local Assist is currently unavailable. Try again in a moment.".to_string(),
+        );
+    }
+
+    let mut guard = store.inner.lock().expect("helper store lock");
+    if guard.is_none() {
+        store.spawn_locked(&mut guard)?;
+    }
+
+    let timeout = store.effective_generate_timeout();
+    let result = AppleAssistHelperStore::round_trip_stream_locked(
+        guard.as_mut().expect("just spawned"),
+        &WireRequest::GenerateCandidateStreaming {
+            operation,
+            selected_text,
+            document_context,
+            instruction,
+            action_id,
+            additional_request,
+        },
+        timeout,
+        on_partial,
+    );
+
+    match &result {
+        Ok(WireEnvelope::Candidate(_)) => store.record_success(),
+        Ok(WireEnvelope::Error(_)) => {}
+        Ok(WireEnvelope::Availability(_)) | Ok(WireEnvelope::CandidatePartial(_)) => {
             store.reset_locked(&mut guard);
             store.record_failure();
         }

@@ -163,6 +163,7 @@ export function resolveLocalAssistActionId(
 }
 
 export type BuildApplyEventInput = {
+  requestId: string;
   actionId: LocalAssistActionId;
   requestText: string;
   target: AppleAssistTargetSnapshot | null;
@@ -170,6 +171,7 @@ export type BuildApplyEventInput = {
 };
 
 export function buildApplyEvent({
+  requestId,
   actionId,
   requestText,
   target,
@@ -178,6 +180,7 @@ export function buildApplyEvent({
   const action = getLocalAssistAction(actionId);
   const trimmedRequest = requestText.trim();
   return {
+    requestId,
     actionId,
     additionalRequest: trimmedRequest,
     request: trimmedRequest || action.requestText,

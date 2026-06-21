@@ -6,6 +6,7 @@ import {
   APPLE_ASSIST_SELECTION_CONTEXT_PRE_CHARS,
   buildSurroundingDocumentContext,
   getAppleAssistContextWindow,
+  isSameAppleAssistTargetTab,
   sanitizeAppleAssistCandidateText,
 } from "./useAppleAssistApplyHandler";
 import { APPLE_ASSIST_MAX_CONTEXT_CHARS } from "../../lib/tauri/appleAssist";
@@ -351,5 +352,32 @@ describe("sanitizeAppleAssistCandidateText", () => {
     const candidate = "# Heading\n\n- item\n";
 
     expect(sanitizeAppleAssistCandidateText(candidate)).toBe(candidate);
+  });
+});
+
+describe("isSameAppleAssistTargetTab", () => {
+  const tab = {
+    id: "tab-1",
+    name: "note.md",
+    path: "/workspace/note.md",
+    contents: "body",
+  };
+
+  it("requires both tab id and path to remain stable before applying the final candidate", () => {
+    expect(isSameAppleAssistTargetTab(tab, { ...tab, contents: "new" })).toBe(
+      true,
+    );
+    expect(
+      isSameAppleAssistTargetTab(tab, {
+        ...tab,
+        id: "tab-2",
+      }),
+    ).toBe(false);
+    expect(
+      isSameAppleAssistTargetTab(tab, {
+        ...tab,
+        path: "/workspace/other.md",
+      }),
+    ).toBe(false);
   });
 });

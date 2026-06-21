@@ -105,6 +105,7 @@ describe("EditorPane", () => {
     onChange = vi.fn(),
     onScrollRatioChange = vi.fn(),
     onPasteImage,
+    readOnly = false,
     ref,
     value,
   }: {
@@ -117,6 +118,7 @@ describe("EditorPane", () => {
       dataBase64: string,
       fileName: string,
     ) => Promise<string | null>;
+    readOnly?: boolean;
     ref?: React.Ref<EditorPaneHandle>;
     value: string;
   }) {
@@ -132,6 +134,7 @@ describe("EditorPane", () => {
         onChange={onChange}
         onPasteImage={onPasteImage}
         onScrollRatioChange={onScrollRatioChange}
+        readOnly={readOnly}
         onSelectionChange={vi.fn()}
         searchMatches={[]}
         showInvisibles={false}
@@ -152,6 +155,24 @@ describe("EditorPane", () => {
     );
 
     expect(container.querySelector(".editor-mount")).not.toBeNull();
+  });
+
+  it("marks CodeMirror content non-editable when readOnly is true and editable again when released", async () => {
+    const { container, rerender } = render(
+      renderEditorPane({ readOnly: true, value: "# Locked\n" }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(
+      container.querySelector(".cm-content")?.getAttribute("contenteditable"),
+    ).toBe("false");
+
+    rerender(renderEditorPane({ readOnly: false, value: "# Locked\n" }));
+    await waitFor(() => {
+      expect(
+        container.querySelector(".cm-content")?.getAttribute("contenteditable"),
+      ).toBe("true");
+    });
   });
 
   it("suppresses the default CodeMirror focused outline while adding a subtle focus signal", () => {

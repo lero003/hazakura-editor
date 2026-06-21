@@ -156,6 +156,37 @@
   overflow: hidden;
 }
 
+.apple-assist-window-stream-preview {
+  border: 1px solid var(--border, rgba(127, 127, 127, 0.25));
+  border-radius: 6px;
+  display: grid;
+  gap: 6px;
+  min-height: 0;
+  padding: 8px 9px;
+}
+
+.apple-assist-stream-preview-heading {
+  color: var(--text-muted, var(--text));
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  margin: 0;
+  opacity: 0.78;
+  text-transform: uppercase;
+}
+
+.apple-assist-stream-preview-body {
+  color: var(--text);
+  font-family: var(--font-editor, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 12px;
+  line-height: 1.55;
+  margin: 0;
+  max-height: 120px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .apple-assist-feedback-header {
   border-bottom: 1px solid var(--border, rgba(127, 127, 127, 0.2));
   display: flex;

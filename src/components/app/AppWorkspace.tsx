@@ -27,6 +27,7 @@ import type {
 import type {
   AgentLaunchGateState,
   AgentTerminalSize,
+  AppleAssistGenerationLock,
   BaseTheme,
   CompareAnchor,
   CompareCase,
@@ -56,6 +57,7 @@ type AppWorkspaceProps = {
   agentSession: AgentWorkbenchSession | null;
   agentStopPending: boolean;
   agentWorkbenchProvider: AgentWorkbenchProvider;
+  appleAssistGenerationLock?: AppleAssistGenerationLock | null;
   clearCompareSource: () => void;
   clearCompareTarget: () => void;
   closeCompareView: (options?: { returnToEditor?: boolean }) => void;
@@ -158,6 +160,7 @@ export function AppWorkspace({
   agentSession,
   agentStopPending,
   agentWorkbenchProvider,
+  appleAssistGenerationLock = null,
   clearCompareSource,
   clearCompareTarget,
   closeCompareView,
@@ -322,6 +325,7 @@ export function AppWorkspace({
           editorPaneRef={editorPaneRef}
           editorSettings={editorSettings}
           editorTheme={editorTheme}
+          generationLock={appleAssistGenerationLock}
           imagePreviewTitle={sidePaneCopy.imagePreview}
           lModeCopy={lModeCopy}
           menuLanguage={menuLanguage}

@@ -19,7 +19,7 @@
 // function lets the React hook order stay obvious and the
 // dependency wiring stay in one place.
 
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   openAgentWindow,
   openAppleAssistWindow,
@@ -53,6 +53,7 @@ import {
   shouldPersistWorkspaceSessionOnQuit,
 } from "../workspace/useWorkspaceStatePersistence";
 import { exitApp } from "../../lib/tauri/window";
+import type { AppleAssistGenerationLock } from "../../types";
 
 export function useAppShellController() {
   const appleLocalAssistAllowed = isAppleLocalAssistSurfaceAllowed();
@@ -106,7 +107,19 @@ export function useAppShellController() {
 
   // section: editor tabs
   const { activeTabId, setActiveTabId, setTabs, tabs } = foundation;
-
+  const [appleAssistGenerationLock, setAppleAssistGenerationLock] =
+    useState<AppleAssistGenerationLock | null>(null);
+  const appleAssistLockMessage =
+    "生成中のため、この文書の編集を一時停止しています";
+  const isAppleAssistTabLocked = useCallback(
+    (tabId: string | null | undefined, tabPath: string | null | undefined) =>
+      Boolean(
+        appleAssistGenerationLock &&
+          (appleAssistGenerationLock.tabId === tabId ||
+            appleAssistGenerationLock.tabPath === tabPath),
+      ),
+    [appleAssistGenerationLock],
+  );
   // section: editor selection
   const { selectionInfo, setSelectionInfo } = foundation;
 
@@ -211,6 +224,10 @@ export function useAppShellController() {
     tabs,
     workspaceRootPath,
   });
+  const activeAppleAssistGenerationLock =
+    activeTab && isAppleAssistTabLocked(activeTab.id, activeTab.path)
+      ? appleAssistGenerationLock
+      : null;
 
   // section: refs (editor + dialog; depends on tabs + editor tab state)
   const {
@@ -446,6 +463,7 @@ export function useAppShellController() {
       );
     },
     setStatus,
+    setGenerationLock: setAppleAssistGenerationLock,
   });
 
   // section: workspace file opening
@@ -757,9 +775,9 @@ export function useAppShellController() {
     exportEpubBeta,
     exportHtml,
     exportPdf,
-    saveActiveTab,
-    saveActiveTabAs,
-    saveTabById,
+    saveActiveTab: saveActiveTabUnsafe,
+    saveActiveTabAs: saveActiveTabAsUnsafe,
+    saveTabById: saveTabByIdUnsafe,
   } = useDocumentIoController({
     activeContents,
     activeTab,
@@ -775,6 +793,52 @@ export function useAppShellController() {
     tabsRef,
     workspaceRootPath,
   });
+  const saveActiveTab = useCallback(async () => {
+    if (activeTab && isAppleAssistTabLocked(activeTab.id, activeTab.path)) {
+      setStatus(appleAssistLockMessage);
+      return;
+    }
+    await saveActiveTabUnsafe();
+  }, [
+    activeTab,
+    appleAssistLockMessage,
+    isAppleAssistTabLocked,
+    saveActiveTabUnsafe,
+    setStatus,
+  ]);
+  const saveActiveTabAs = useCallback(async () => {
+    if (activeTab && isAppleAssistTabLocked(activeTab.id, activeTab.path)) {
+      setStatus(appleAssistLockMessage);
+      return;
+    }
+    await saveActiveTabAsUnsafe();
+  }, [
+    activeTab,
+    appleAssistLockMessage,
+    isAppleAssistTabLocked,
+    saveActiveTabAsUnsafe,
+    setStatus,
+  ]);
+  const saveTabById = useCallback(
+    async (tabId: string): Promise<boolean> => {
+      const targetTab = tabs.find((tab) => tab.id === tabId) ?? null;
+      if (
+        targetTab &&
+        isAppleAssistTabLocked(targetTab.id, targetTab.path)
+      ) {
+        setStatus(appleAssistLockMessage);
+        return false;
+      }
+      return saveTabByIdUnsafe(tabId);
+    },
+    [
+      appleAssistLockMessage,
+      isAppleAssistTabLocked,
+      saveTabByIdUnsafe,
+      setStatus,
+      tabs,
+    ],
+  );
   const epubExportSettingsOpen = epubExportRequest !== null;
   const modalOpenWithBlockingDialogs =
     modalOpen || pendingTrashOpen || epubExportSettingsOpen;
@@ -937,7 +1001,7 @@ export function useAppShellController() {
     applyActiveMarkdownFormat,
     convertActiveEncoding,
     convertActiveLineEnding,
-    handleEditorChange,
+    handleEditorChange: handleEditorChangeUnsafe,
     insertMarkdownAtCursor,
     insertTable,
     jumpToHeading,
@@ -955,6 +1019,22 @@ export function useAppShellController() {
     setStatus,
     setTabs,
   });
+  const handleEditorChange = useCallback(
+    (nextValue: string) => {
+      if (activeTab && isAppleAssistTabLocked(activeTab.id, activeTab.path)) {
+        setStatus(appleAssistLockMessage);
+        return;
+      }
+      handleEditorChangeUnsafe(nextValue);
+    },
+    [
+      activeTab,
+      appleAssistLockMessage,
+      handleEditorChangeUnsafe,
+      isAppleAssistTabLocked,
+      setStatus,
+    ],
+  );
 
   // section: command palette + global search
   const appleLocalAssistActive =
@@ -1235,6 +1315,7 @@ export function useAppShellController() {
     agentWorkbenchProvider,
     agentWorkbenchRestartRequired,
     appleAssistAvailability,
+    appleAssistGenerationLock: activeAppleAssistGenerationLock,
     appleLocalAssistAllowed,
     assistSurfaceActive,
     assistSurfacePreference,

@@ -63,6 +63,7 @@ type EditorPaneProps = {
   lModeEnabled: boolean;
   lModeCopy: LModeCopy;
   lModeTypewriter?: boolean;
+  readOnly?: boolean;
   activeSearchMatchIndex: number;
   searchMatches: SearchMatch[];
   slashCommands: readonly SlashCommand[];
@@ -178,6 +179,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       lModeEnabled,
       lModeCopy,
       lModeTypewriter = false,
+      readOnly = false,
       searchMatches,
       showInvisibles,
       slashCommands,
@@ -212,6 +214,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   const tabSizeCompartmentRef = useRef(new Compartment());
   const spellcheckCompartmentRef = useRef(new Compartment());
   const lModeCompartmentRef = useRef(new Compartment());
+  const readOnlyCompartmentRef = useRef(new Compartment());
   // The active language parser + highlight style are picked
   // from the file extension on every editor mount. The theme
   // compartment reconfigure (theme/fontSize change) needs to
@@ -477,6 +480,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
             { typewriterMode: lModeTypewriter },
           ),
         ),
+        readOnlyCompartmentRef.current.of(EditorView.editable.of(!readOnly)),
         EditorView.domEventHandlers({
           keydown(event, view) {
             if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key === "Enter") {
@@ -591,6 +595,20 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     // position is lost. `destroyMountedViewRef` is called
     // only on actual remount or component unmount.
   }, [documentKey, lModeEnabled]);
+
+  useEffect(() => {
+    const view = viewRef.current;
+
+    if (!view) {
+      return;
+    }
+
+    view.dispatch({
+      effects: readOnlyCompartmentRef.current.reconfigure(
+        EditorView.editable.of(!readOnly),
+      ),
+    });
+  }, [readOnly]);
 
   // Unmount-only effect: destroy the editor when the
   // component goes away. Lives in its own effect with empty

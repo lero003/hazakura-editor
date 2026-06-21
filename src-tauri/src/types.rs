@@ -92,6 +92,9 @@ pub(crate) const APP_EXIT_REQUESTED_EVENT: &str = "hazakura-note://app-exit-requ
 pub(crate) const APPLY_AI_EDIT_TRANSACTION_EVENT: &str =
     "hazakura-note://apply-ai-edit-transaction";
 #[allow(dead_code)]
+pub(crate) const APPLE_ASSIST_APPLY_STATUS_EVENT: &str =
+    "hazakura-note://apple-assist-apply-status";
+#[allow(dead_code)]
 pub(crate) const REQUEST_AI_EDIT_TARGET_EVENT: &str = "hazakura-note://request-ai-edit-target";
 #[allow(dead_code)]
 pub(crate) const AI_EDIT_TARGET_RESULT_EVENT: &str = "hazakura-note://ai-edit-target-result";

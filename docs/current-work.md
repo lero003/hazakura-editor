@@ -176,6 +176,27 @@ heavier than copy / loading polish, so keep it separate from the current
 `0.29.0` package evidence and do not mix it with broader AI ingest,
 Book Workspace, Agent Workbench, or App Store metadata work.
 
+Implementation state as of 2026-06-22:
+
+- The source implementation is in place for request-scoped Local Assist
+  streaming responsiveness: Assist Window requests carry `requestId`,
+  stale status / partial events are ignored, `started` is emitted before
+  helper generation, and long-running copy no longer clears the busy state.
+- The active target document is locked read-only during generation while
+  the app shell and Assist Window stay usable. Partial output is shown only
+  in the Assist Window generation preview; the editor buffer still changes
+  only when the final candidate enters the existing unsaved AI edit
+  transaction / Diff review path.
+- The Swift helper now supports `generate_candidate_streaming` with
+  `candidate_partial` envelopes and final `candidate` envelopes; the Rust
+  supervisor / Tauri command forwards partials to the Assist Window and
+  keeps the legacy final-only command for compatibility.
+- Verified locally with focused frontend tests, Rust `apple_assist` tests,
+  fixture helper streaming smoke, live helper compile/probe smoke,
+  `npm run build:vite`, `cargo fmt --check`, and `git diff --check`.
+  Built-app long-generation smoke on macOS 26 + Apple Intelligence remains
+  manual.
+
 Observed product problem:
 
 - Local Foundation Models generation can make the app feel like it stopped
@@ -205,10 +226,10 @@ Implementation order:
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| P0 | Separate generation wait from UI responsiveness | `started` progress is emitted and painted before the helper generation wait; long-running generation no longer clears `busy` early or allows duplicate requests. Add a focused regression around the slow path. |
-| P0 | Target document generation lock | The active target editor is read-only while its Local Assist request is running, with clear inline copy. Save, AI re-request, and apply-like actions are guarded for that target; unrelated app chrome remains usable. |
-| P1 | Streaming helper protocol | Extend the helper / supervisor boundary from final `candidate` only to lifecycle events such as `started`, `partial`, `completed`, and `failed`, preserving bounded error hygiene and no raw prompt / hidden instruction exposure. |
-| P1 | Streaming preview UI | Show partial generated text in the Assist Window as a preview while keeping editor source unchanged until completion. The final result still flows through the existing AI edit transaction and Diff review path. |
+| P0 done | Separate generation wait from UI responsiveness | `started` progress is emitted before helper generation waits; the handler yields before the streaming command; 2s long-running copy keeps `busy` true and duplicate requests disabled. |
+| P0 done | Target document generation lock | The active target editor is read-only while its Local Assist request is running, with clear inline copy. Save and editor-change paths are guarded for that target; unrelated app chrome remains usable. |
+| P1 done | Streaming helper protocol | The helper / supervisor boundary supports `candidate_partial` streaming envelopes and final `candidate` envelopes. Rust forwards partials as request-scoped Tauri status events and keeps the legacy final-only command. |
+| P1 done | Streaming preview UI | Partial generated text appears in the Assist Window preview only. The editor source changes only on final completion through the existing AI edit transaction and Diff review path. |
 | P2 | Cancel / stale request handling | Add request IDs and cancellation only when the helper process can actually stop or ignore the request safely. Do not show `Escでキャンセル` / `Esc to cancel` before that behavior is real. |
 
 Non-goals for `v0.29.01`:

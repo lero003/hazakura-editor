@@ -74,7 +74,7 @@ import {
 // Apple Intelligence, wait for throttling, etc.) instead of
 // seeing a raw English string.
 
-const APPLE_ASSIST_GENERATION_FALLBACK_MS = 365_000;
+const APPLE_ASSIST_GENERATION_FALLBACK_MS = 2_000;
 
 // v0.17 operation-feedback panel.
 //
@@ -94,6 +94,20 @@ export function scrollOperationFeedbackToEnd(element: HTMLElement | null): void 
     return;
   }
   element.scrollTop = element.scrollHeight;
+}
+
+export function createAppleAssistRequestId(): string {
+  if (globalThis.crypto?.randomUUID) {
+    return globalThis.crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+export function isApplyStatusForActiveRequest(
+  activeRequestId: string | null,
+  payload: AppleAssistApplyStatusEvent,
+): boolean {
+  return activeRequestId !== null && payload.requestId === activeRequestId;
 }
 
 export function useOperationFeedback() {
@@ -214,6 +228,13 @@ export function AppleAssistWindowApp() {
   const availabilityReportedRef = useRef<boolean>(false);
   const availabilityMessage = renderAvailabilityMessage(availability, copy);
   const generationFallbackRef = useRef<number | null>(null);
+  const [activeRequestId, setActiveRequestId] = useState<string | null>(null);
+  const activeRequestIdRef = useRef<string | null>(null);
+  const [streamPreview, setStreamPreview] = useState<string>("");
+
+  useEffect(() => {
+    activeRequestIdRef.current = activeRequestId;
+  }, [activeRequestId]);
 
   const clearGenerationFallback = useCallback(() => {
     if (generationFallbackRef.current !== null) {
@@ -226,7 +247,6 @@ export function AppleAssistWindowApp() {
     clearGenerationFallback();
     generationFallbackRef.current = window.setTimeout(() => {
       generationFallbackRef.current = null;
-      setBusy(false);
       setStatus(copy.longRunningStatus);
     }, APPLE_ASSIST_GENERATION_FALLBACK_MS);
   }, [clearGenerationFallback, copy.longRunningStatus]);
@@ -304,16 +324,29 @@ export function AppleAssistWindowApp() {
           return;
         }
         const payload = event.payload;
+        if (!isApplyStatusForActiveRequest(activeRequestIdRef.current, payload)) {
+          return;
+        }
         if (payload.phase === "started") {
           setBusy(true);
           setError(null);
+          setStreamPreview("");
           setStatus(copy.generatingChange);
           pushFeedback({ kind: "generation-started" });
           scheduleGenerationFallback();
           return;
         }
+        if (payload.phase === "partial") {
+          setBusy(true);
+          setError(null);
+          setStreamPreview(payload.partialText ?? "");
+          return;
+        }
         clearGenerationFallback();
         setBusy(false);
+        setActiveRequestId(null);
+        activeRequestIdRef.current = null;
+        setStreamPreview("");
         const presentation = getApplyStatusPresentation(payload, copy);
         setStatus(presentation.status);
         setError(presentation.error);
@@ -426,8 +459,12 @@ export function AppleAssistWindowApp() {
     }
     setBusy(true);
     setError(null);
+    setStreamPreview("");
     setStatus(copy.sendingRequest);
     scheduleGenerationFallback();
+    const requestId = createAppleAssistRequestId();
+    setActiveRequestId(requestId);
+    activeRequestIdRef.current = requestId;
     try {
       // Re-read the latest target snapshot at the moment of
       // apply — the cached one might be stale by a few
@@ -461,6 +498,7 @@ export function AppleAssistWindowApp() {
       // the visible request text is passed as prompt data, not
       // system instruction.
       const payload = buildApplyEvent({
+        requestId,
         actionId:
           selectedActionId ?? resolveLocalAssistActionId(request, copy.presets),
         requestText: request,
@@ -472,6 +510,9 @@ export function AppleAssistWindowApp() {
     } catch (err: unknown) {
       clearGenerationFallback();
       setBusy(false);
+      setActiveRequestId(null);
+      activeRequestIdRef.current = null;
+      setStreamPreview("");
       setError(classifyApplyError(err, copy));
       // Push a "failed" entry when the IPC call itself
       // throws. The status-event listener above also
@@ -574,6 +615,19 @@ export function AppleAssistWindowApp() {
           ))}
         </div>
       </section>
+
+      {streamPreview.trim().length > 0 ? (
+        <section
+          className="apple-assist-window-stream-preview"
+          aria-label={copy.streamPreviewHeading}
+          data-testid="apple-assist-stream-preview"
+        >
+          <p className="apple-assist-stream-preview-heading">
+            {copy.streamPreviewHeading}
+          </p>
+          <pre className="apple-assist-stream-preview-body">{streamPreview}</pre>
+        </section>
+      ) : null}
 
       <section
         className="apple-assist-window-feedback"
@@ -703,6 +757,7 @@ export type AppleAssistWindowCopy = {
   unknownError: (raw: string) => string;
   unsupportedStatus: string;
   workingLocally: string;
+  streamPreviewHeading: string;
   // v0.17 operation-feedback panel. The panel shows app-
   // known lifecycle events (target acquired, request sent,
   // generation started, applied, failed, unavailable). It
@@ -893,7 +948,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         "まずは おねがいの ないようを かいてください。",
       generatingButton: "おねがい中...",
       generatingChange:
-        "この Mac で へんしゅう あんを つくっています。ほぞん まえに さぶんで かくにん できます。",
+        "ろーかる もでるで しょり中。ほぞん まえに さぶんで かくにん できます。",
       generatingInMain: () =>
         "へんしゅう あんを つくっています。ほぞん まえに さぶんで かくにん できます。",
       failedStatus:
@@ -903,7 +958,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       localRuntimeUnavailable: (reason) =>
         `はざくら ろーかる あしす とは つかえません: ${reason}。めやすは macOS 26 いこう、M1 いこうの Mac、あっぷる いんてりじぇんす の ゆうこうか、たいおう げんご / ちいき です。くわしくは あっぷる こうしき の Apple Intelligence あんないを かくにん してください。`,
       longRunningStatus:
-        "はざくら ろーかる あしす と は まだ さぎょう ちゅう。ふぁうんでーしょん もでるず は ふつう すうびょうで おうとうしますが、むこうの ときは めいん えでぃた の すてーたす を かくにんするか、うぃんどう を ひらきなおして ください。",
+        "はつかいや ながい ぶんでは すこし じかんが かかることがあります。",
       modeLabel: "ぷれびゅー",
       noActiveDocument:
         "めいん えでぃた に ひらいている ふみが ありません。Markdown / テキスト ふぁいる を ひらいて ください。",
@@ -939,6 +994,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       unsupportedStatus:
         "この はんきょうで はざくら ろーかる あしす とは つかえません。macOS 26 いこう、M1 いこうの Mac、この Mac で ゆうこうかした あっぷる いんてりじぇんす、たいおう げんご / ちいき が ひつようです。",
       workingLocally: "この Mac で しょり ちゅう (そとの AI さーびすには おくりません)",
+      streamPreviewHeading: "せいせい ぷれびゅー",
       // v0.17 operation-feedback panel copy.
       feedbackHeading: "しんこうじょうきょう",
       feedbackDescription:
@@ -1002,7 +1058,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         "まずは依頼内容を入力してください。",
       generatingButton: "依頼中...",
       generatingChange:
-        "この Mac 上で編集案を作っています。保存前に差分で確認できます。",
+        "ローカルモデルで処理中。保存前に差分で確認できます。",
       generatingInMain: () =>
         "編集案を作っています。保存前に差分で確認できます。",
       failedStatus:
@@ -1012,7 +1068,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       localRuntimeUnavailable: (reason) =>
         `Hazakura Local Assist は使えません: ${reason}。目安として macOS 26 以降、M1 以降の Mac、Apple Intelligence の有効化、対応言語 / 地域が必要です。詳しくは Apple 公式の Apple Intelligence 案内を確認してください。`,
       longRunningStatus:
-        "Hazakura Local Assist はまだ処理中です。Foundation Models は通常数秒で応答しますが、応答がない場合はメインエディタ下部のステータスを確認するか、Hazakura Local Assist ウィンドウを開き直してください。",
+        "初回や長文では少し時間がかかることがあります。",
       modeLabel: "プレビュー",
       noActiveDocument:
         "メインエディタに開いている文書がありません。Markdown / テキストファイルを開いてください。",
@@ -1048,6 +1104,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       unsupportedStatus:
         "この環境では Hazakura Local Assist は使えません。macOS 26 以降、M1 以降の Mac、この Mac で有効化された Apple Intelligence、対応言語 / 地域が必要です。",
       workingLocally: "この Mac 上で処理中（外部 AI サービスには送りません）",
+      streamPreviewHeading: "生成プレビュー",
       // v0.17 operation-feedback panel copy.
       feedbackHeading: "進行状況",
       feedbackDescription:
@@ -1110,7 +1167,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       "Type a request first.",
     generatingButton: "Sending...",
     generatingChange:
-      "Creating a draft edit on this Mac. Review the diff before saving.",
+      "Processing with the local model. Review the diff before saving.",
     generatingInMain: () =>
       "Creating a draft edit. Review the diff before saving.",
     failedStatus:
@@ -1120,7 +1177,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     localRuntimeUnavailable: (reason) =>
       `Hazakura Local Assist is unavailable: ${reason}. As a guide, it needs macOS 26 or later, a Mac with M1 or later, Apple Intelligence turned on, and a supported language and region. Check Apple's Apple Intelligence support information for current requirements.`,
     longRunningStatus:
-      "Hazakura Local Assist is still working. Foundation Models usually returns in a few seconds; if it has not, check the main editor status line for the underlying error, or re-open the Hazakura Local Assist window.",
+      "First runs or longer passages can take a little while.",
     modeLabel: "Preview",
     noActiveDocument:
       "No active document is open in the main editor. Open a Markdown or text file first.",
@@ -1155,6 +1212,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     unsupportedStatus:
       "Hazakura Local Assist is not supported in this environment. It needs macOS 26 or later, a Mac with M1 or later, Apple Intelligence turned on for this Mac, and a supported language and region.",
     workingLocally: "Working locally on this Mac (no third-party AI service)",
+    streamPreviewHeading: "Generation preview",
     // v0.17 operation-feedback panel copy.
     feedbackHeading: "Progress",
     feedbackDescription:

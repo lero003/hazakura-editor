@@ -111,6 +111,109 @@ enum GenerateCandidate {
         #endif
     }
 
+    static func runStreaming(
+        _ request: AppleAssistRequest,
+        onPartial: (AppleAssistPartialResponse) -> Void
+    ) async -> RunResult {
+        guard IntentAllowlist.allOperations.contains(request.operation) else {
+            return .error(
+                AppleAssistErrorEnvelope(
+                    error: "Unknown operation: \(request.operation)",
+                    kind: "validation"
+                )
+            )
+        }
+
+        guard IntentAllowlist.implementedInV0_12.contains(request.operation) else {
+            return .error(
+                AppleAssistErrorEnvelope(
+                    error: "Operation '\(request.operation)' is deferred in v0.12.",
+                    kind: "deferred"
+                )
+            )
+        }
+
+        #if FIXTURE_MODE
+        let candidate =
+            CandidatePrefix.prefix(for: request.operation) + request.selectedText
+        onPartial(AppleAssistPartialResponse(candidateText: candidate))
+        return .ok(
+            AppleAssistResponse(
+                operation: request.operation,
+                candidateText: candidate,
+                modelId: CandidatePrefix.fixtureModelId(),
+                latencyMs: 0
+            )
+        )
+        #else
+        if #available(macOS 26.0, *) {
+            let availability = AvailabilityProbe.probe()
+            guard availability.kind == "available" else {
+                return .error(
+                    AppleAssistErrorEnvelope(
+                        error: availability.reason ?? "Foundation Models is not available.",
+                        kind: "unavailable"
+                    )
+                )
+            }
+
+            let startedAt = Date()
+            do {
+                let model = SystemLanguageModel.default
+                guard model.supportsLocale() else {
+                    return .error(
+                        AppleAssistErrorEnvelope(
+                            error: "Apple Foundation Models does not support the current app language or locale for generation yet: \(Locale.current.identifier)",
+                            kind: "unsupported_language"
+                        )
+                    )
+                }
+                let session = LanguageModelSession(
+                    model: model,
+                    instructions: Instructions(liveSystemInstructions)
+                )
+                var latestCandidate = ""
+                let stream = session.streamResponse(
+                    to: Prompt(buildLivePrompt(for: request))
+                )
+                for try await snapshot in stream {
+                    let candidate = stripOuterMarkdownFence(
+                        snapshot.content.trimmingCharacters(in: .whitespacesAndNewlines)
+                    )
+                    if !candidate.isEmpty && candidate != latestCandidate {
+                        latestCandidate = candidate
+                        onPartial(AppleAssistPartialResponse(candidateText: candidate))
+                    }
+                }
+                guard !latestCandidate.isEmpty else {
+                    return .error(
+                        AppleAssistErrorEnvelope(
+                            error: "Foundation Models returned an empty candidate.",
+                            kind: "internal"
+                        )
+                    )
+                }
+                return .ok(
+                    AppleAssistResponse(
+                        operation: request.operation,
+                        candidateText: latestCandidate,
+                        modelId: "apple:foundation-models:system-default",
+                        latencyMs: Int(Date().timeIntervalSince(startedAt) * 1_000)
+                    )
+                )
+            } catch {
+                return .error(classify(error))
+            }
+        }
+        return .error(
+            AppleAssistErrorEnvelope(
+                error: "Foundation Models requires macOS 26 or later.",
+                kind: "unavailable"
+            )
+        )
+        #endif
+    }
+
     #if !FIXTURE_MODE
     @available(macOS 26.0, *)
     private static let liveSystemInstructions = """

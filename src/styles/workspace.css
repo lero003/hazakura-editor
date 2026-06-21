@@ -520,6 +520,23 @@
   position: relative;
 }
 
+.editor-apple-assist-lock {
+  align-self: flex-start;
+  background: color-mix(in srgb, var(--surface-strong) 88%, var(--accent) 12%);
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--border));
+  border-radius: 6px;
+  bottom: 28px;
+  color: var(--text);
+  font-size: 12px;
+  left: 12px;
+  line-height: 1.4;
+  max-width: min(460px, calc(100% - 24px));
+  padding: 6px 9px;
+  pointer-events: none;
+  position: absolute;
+  z-index: 4;
+}
+
 .editor-restore-loading {
   align-items: stretch;
   background: var(--cm-bg);

@@ -30,12 +30,35 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   OPERATION_FEEDBACK_MAX_ENTRIES,
+  isApplyStatusForActiveRequest,
   scrollOperationFeedbackToEnd,
   useOperationFeedback,
 } from "./AppleAssistWindowApp";
 
 afterEach(() => {
   vi.restoreAllMocks();
+});
+
+describe("isApplyStatusForActiveRequest", () => {
+  it("accepts only status events for the active streaming request id", () => {
+    const matching = {
+      phase: "partial" as const,
+      requestId: "req-current",
+      request: "校正",
+      message: "partial",
+      partialText: "途中結果",
+      emittedAtMs: 1,
+    };
+    const stale = {
+      ...matching,
+      requestId: "req-stale",
+      partialText: "古い途中結果",
+    };
+
+    expect(isApplyStatusForActiveRequest("req-current", matching)).toBe(true);
+    expect(isApplyStatusForActiveRequest("req-current", stale)).toBe(false);
+    expect(isApplyStatusForActiveRequest(null, matching)).toBe(false);
+  });
 });
 
 describe("useOperationFeedback", () => {

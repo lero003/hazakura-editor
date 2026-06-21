@@ -12,6 +12,7 @@ import Foundation
 //   * Output: one JSON response per line on stdout. Each response
 //     also has a top-level discriminant `"kind"`:
 //       { "kind": "availability", "value": { ... } }
+//       { "kind": "candidate_partial", "value": { ... } }
 //       { "kind": "candidate",    "value": { ... } }
 //       { "kind": "error",        "value": { "error": "...", "kind": "..." } }
 //   * stderr is reserved for log lines only and is NEVER parsed
@@ -24,6 +25,7 @@ import Foundation
 
 enum WireEnvelope: Encodable {
     case availability(AppleAssistAvailabilityResponse)
+    case candidatePartial(AppleAssistPartialResponse)
     case candidate(AppleAssistResponse)
     case error(AppleAssistErrorEnvelope)
 
@@ -36,6 +38,9 @@ enum WireEnvelope: Encodable {
         switch self {
         case .availability(let value):
             try container.encode("availability", forKey: .kind)
+            try container.encode(value, forKey: .value)
+        case .candidatePartial(let value):
+            try container.encode("candidate_partial", forKey: .kind)
             try container.encode(value, forKey: .value)
         case .candidate(let value):
             try container.encode("candidate", forKey: .kind)
@@ -97,13 +102,13 @@ func dispatch(_ raw: String) async {
     switch request.action {
     case "probe_availability":
         emit(.availability(AvailabilityProbe.probe()))
-    case "generate_candidate":
+    case "generate_candidate", "generate_candidate_streaming":
         guard let operation = request.operation,
               let selectedText = request.selectedText else {
             emit(.error(
                 AppleAssistErrorEnvelope(
                     error:
-                        "generate_candidate requires `operation` and `selectedText`",
+                        "\(request.action) requires `operation` and `selectedText`",
                     kind: "validation"
                 )
             ))
@@ -117,11 +122,22 @@ func dispatch(_ raw: String) async {
             instruction: request.instruction,
             additionalRequest: request.additionalRequest
         )
-        switch await GenerateCandidate.run(req) {
-        case .ok(let response):
-            emit(.candidate(response))
-        case .error(let envelope):
-            emit(.error(envelope))
+        if request.action == "generate_candidate_streaming" {
+            switch await GenerateCandidate.runStreaming(req, onPartial: { partial in
+                emit(.candidatePartial(partial))
+            }) {
+            case .ok(let response):
+                emit(.candidate(response))
+            case .error(let envelope):
+                emit(.error(envelope))
+            }
+        } else {
+            switch await GenerateCandidate.run(req) {
+            case .ok(let response):
+                emit(.candidate(response))
+            case .error(let envelope):
+                emit(.error(envelope))
+            }
         }
     default:
         emit(.error(

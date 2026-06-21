@@ -111,3 +111,15 @@ export async function generateAppleAssistCandidate(
     request,
   });
 }
+
+export async function generateAppleAssistCandidateStreaming(
+  request: AppleAssistRequest,
+  requestId: string,
+  requestLabel: string,
+): Promise<AppleAssistResponse> {
+  return invoke<AppleAssistResponse>("generate_apple_assist_candidate_streaming", {
+    request,
+    requestId,
+    requestLabel,
+  });
+}

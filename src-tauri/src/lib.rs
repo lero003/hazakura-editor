@@ -120,7 +120,7 @@ pub fn run() {
 
     let builder = tauri::Builder::default()
         .manage(AgentWorkbenchSessionStore::default())
-        .manage(AppleAssistHelperStore::default())
+        .manage(std::sync::Arc::new(AppleAssistHelperStore::default()))
         .manage(OpenedFileStore::default())
         .manage(commands::workspace_broadcast::MainWorkspaceCache::default())
         .manage(commands::apple_assist_target::MainAppleAssistTargetCache::default())
@@ -164,6 +164,7 @@ pub fn run() {
             list_agent_provider_availability,
             probe_apple_assist_availability,
             generate_apple_assist_candidate,
+            generate_apple_assist_candidate_streaming,
             drain_opened_files,
             request_app_restart,
             exit_app,

@@ -37,7 +37,7 @@ use crate::commands::apple_assist_supervisor::{
     bundled_helper_filename, generate_candidate_via_helper as generate_candidate_via_helper_impl,
     probe_availability_via_helper, resolve_bundled_helper_path, rust_target_triple,
     store_with_helper_path, store_without_helper, AppleAssistHelperStore, HelperAvailability,
-    HelperCandidate, WireEnvelope, GENERATE_TIMEOUT, PROBE_TIMEOUT,
+    HelperCandidate, HelperCandidatePartial, WireEnvelope, GENERATE_TIMEOUT, PROBE_TIMEOUT,
 };
 
 fn generate_candidate_via_helper(
@@ -56,6 +56,21 @@ fn generate_candidate_via_helper(
         None,
         None,
     )
+}
+
+#[test]
+fn supervisor_parses_candidate_partial_envelope() {
+    let envelope: WireEnvelope = serde_json::from_str(
+        r#"{"kind":"candidate_partial","value":{"candidateText":"途中結果"}}"#,
+    )
+    .expect("candidate_partial envelope should parse");
+
+    assert_eq!(
+        envelope,
+        WireEnvelope::CandidatePartial(HelperCandidatePartial {
+            candidate_text: "途中結果".to_string(),
+        }),
+    );
 }
 
 // ----------------------------------------------------------------

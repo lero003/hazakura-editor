@@ -15,6 +15,10 @@ struct AppleAssistResponse: Codable {
     let latencyMs: Int
 }
 
+struct AppleAssistPartialResponse: Codable {
+    let candidateText: String
+}
+
 struct AppleAssistAvailabilityResponse: Codable {
     // tag is one of "available" | "unavailable" | "disabled" | "unsupported"
     // (matches the AppleAssistAvailability serde enum on the Rust side)
