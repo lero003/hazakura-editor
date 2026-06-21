@@ -95,9 +95,12 @@ Last reviewed: 2026-06-21 (v0.29 Hazakura Local Assist review triage)
   main-shell availability probe, safe default `none`, active preference
   gating for command palette / app menu, visible `Hazakura Local Assist`
   naming, softer Local Assist network wording, short probe timeout
-  separation, and helper error hygiene. Next, run built-app smoke for the
-  `apple-assist` window and helper process absence, then handle Hazakura
-  Local Assist transaction review smoke. File/paste /
+  separation, and helper error hygiene. 2026-06-21 user-side light
+  built-app smoke confirmed the dedicated Local Assist UI opens, the
+  helper is absent from Activity Monitor memory before opening the
+  companion, and a simple request can be generated/applied and checked
+  through the diff/update flow. Next, keep any remaining proof work on
+  formal signed submit-lane smoke and packaging boundaries. File/paste /
   multi-file proposal ingest remains deferred until a fresh boundary
   review reopens it.
 - Latest docs cleanup keeps current entry points lighter: README now
@@ -469,6 +472,13 @@ open Active UX Queue slice and close it as `implemented`,
   manual signed-build smoke remain outside the repository unless new
   evidence is explicitly recorded.
 - Latest v0.29 Hazakura Local Assist App Store-lane gate: source tests and
+  user-side light built-app smoke evidence is now recorded: dedicated
+  Local Assist UI, no helper in Activity Monitor before opening the
+  window, and simple request generation/apply with diff/update
+  confirmation. This is useful pre-submission confidence, but it is not a
+  substitute for formal signed submit-lane packaging / TestFlight /
+  App Review proof.
+- Previous v0.29 Hazakura Local Assist App Store-lane gate: source tests and
   P0 probe/error hygiene fixes landed after the entrypoint fix:
   React marks a hanging availability probe unavailable after a short UI
   timeout, Rust supervisor uses a shorter probe timeout than generation,

@@ -355,6 +355,13 @@ Run when `src/lib/tauri/appleAssist.ts`, `src-tauri/src/commands/apple_assist.rs
 11. Confirm user-visible status/error copy does not expose raw helper error text, Foundation Models `debugDescription`, prompts, hidden instructions, broad document excerpts, file paths, secrets, or provider internals.
 12. (Supervisor regression, optional) Build the fixture helper with `npm run build:apple-assist-helper:fixture` and run `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE=binaries/hazakura-apple-assist-helper-aarch64-apple-darwin cargo test apple_assist_supervisor --manifest-path src-tauri/Cargo.toml`.
 
+Latest light manual note: on 2026-06-21, user-side built-app smoke
+confirmed the dedicated Hazakura Local Assist UI opened, the helper was
+not present in Activity Monitor memory before opening the Local Assist
+window, and a simple request could be generated/applied and checked
+through the diff/update flow. Treat this as light local confidence, not
+as signed submit-lane, TestFlight, or App Review proof.
+
 ## Release Packaging
 
 Run when preparing a warning-expected DMG preview:

@@ -82,7 +82,11 @@ Last reviewed: 2026-06-21 (v0.29 Hazakura Local Assist review triage)
   softer Local Assist network wording, short probe timeout separation,
   and helper error hygiene that avoids Foundation Models
   `debugDescription` in user-facing error envelopes. Remaining
-  pre-submission risk is signed/built-app smoke. Local
+  pre-submission risk is formal signed submit-lane smoke. A
+  2026-06-21 user-side light built-app smoke confirmed the dedicated
+  Local Assist UI opens, the helper is absent from Activity Monitor
+  memory before opening the Local Assist window, and a simple request can
+  be generated/applied and checked through the diff/update flow. Local
   pre-review
   regression, package, payload, dependency-audit, bundle metadata,
   license-resource, and bundle-size evidence remains archived under
@@ -277,8 +281,7 @@ baseline, and smoke evidence are archived under
    is the selected AI assist review API lane. First prefer the accepted
    Hazakura Local Assist pre-submission fixes still remaining in
    `docs/current-work.md`: signed/built-app smoke for the corrected
-   `apple-assist` window and helper process absence before explicit Local
-   Assist use. Keep the App Store path limited to Hazakura Local Assist,
+   full signed submit-lane smoke and packaging proof. Keep the App Store path limited to Hazakura Local Assist,
    with no external Agent surface; do not add Book Workspace Alpha, hidden multi-file book
    manifests, structural book-workspace information architecture, Native
    Vibrancy Phase 2, cover editing, or an EPUB document model unless that
