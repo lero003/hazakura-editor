@@ -28,6 +28,7 @@ const copy: RightPaneToggleCopy = {
 function renderControls(
   overrides: Partial<Parameters<typeof RightPaneToggleControls>[0]> = {},
 ) {
+  const onOpenReviewDesk = vi.fn();
   const onReviewChanges = vi.fn();
   const onToggleDiff = vi.fn();
   const onToggleEbook = vi.fn();
@@ -42,6 +43,7 @@ function renderControls(
       lModeActive={false}
       lModeLabel="L Mode"
       lModeTitle="Toggle L Mode"
+      onOpenReviewDesk={onOpenReviewDesk}
       onReviewChanges={onReviewChanges}
       onToggleDiff={onToggleDiff}
       onToggleEbook={onToggleEbook}
@@ -53,11 +55,21 @@ function renderControls(
       previewActive={false}
       reviewChangesAvailable={false}
       reviewChangesLabel="Review changes"
+      reviewDeskActive={false}
+      reviewDeskAvailable
+      reviewDeskLabel="Review Desk"
+      reviewDeskTitle="Open Review Desk"
       {...overrides}
     />,
   );
 
-  return { onReviewChanges, onToggleDiff, onToggleEbook, onToggleOutline };
+  return {
+    onOpenReviewDesk,
+    onReviewChanges,
+    onToggleDiff,
+    onToggleEbook,
+    onToggleOutline,
+  };
 }
 
 describe("RightPaneToggleControls", () => {
@@ -82,20 +94,31 @@ describe("RightPaneToggleControls", () => {
     expect(onToggleEbook).not.toHaveBeenCalled();
   });
 
-  it("keeps review hidden until review changes are available", () => {
+  it("keeps review changes hidden until dirty review is available", () => {
     renderControls();
 
     expect(screen.queryByRole("button", { name: "Review" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Review Desk" })).toBeTruthy();
   });
 
   it("keeps review, Diff, and Outline controls available when relevant", () => {
-    const { onReviewChanges, onToggleDiff, onToggleOutline } = renderControls({
+    const {
+      onOpenReviewDesk,
+      onReviewChanges,
+      onToggleDiff,
+      onToggleOutline,
+    } = renderControls({
       reviewChangesAvailable: true,
     });
 
+    const reviewDeskButton = screen.getByRole("button", { name: "Review Desk" });
     const reviewButton = screen.getByRole("button", { name: "Review" });
     const diffButton = screen.getByRole("button", { name: "Diff" });
     const outlineButton = screen.getByRole("button", { name: "Outline" });
+
+    expect(reviewDeskButton.getAttribute("aria-pressed")).toBe("false");
+    reviewDeskButton.click();
+    expect(onOpenReviewDesk).toHaveBeenCalledTimes(1);
 
     expect(reviewButton.getAttribute("aria-pressed")).toBeNull();
     reviewButton.click();
@@ -115,14 +138,22 @@ describe("RightPaneToggleControls", () => {
 
     expect(
       screen.getAllByRole("button").map((button) => button.textContent),
-    ).toEqual(["Review", "Preview", "L Mode", "e-book", "Outline", "Diff"]);
+    ).toEqual([
+      "Review Desk",
+      "Review",
+      "Preview",
+      "L Mode",
+      "e-book",
+      "Outline",
+      "Diff",
+    ]);
   });
 
-  it("keeps the normal mode cluster shorter when review is unavailable", () => {
+  it("keeps Review Desk while hiding dirty review when review changes are unavailable", () => {
     renderControls();
 
     expect(
       screen.getAllByRole("button").map((button) => button.textContent),
-    ).toEqual(["Preview", "L Mode", "e-book", "Outline", "Diff"]);
+    ).toEqual(["Review Desk", "Preview", "L Mode", "e-book", "Outline", "Diff"]);
   });
 });

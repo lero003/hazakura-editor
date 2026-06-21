@@ -71,6 +71,7 @@ export function RightPaneToggleControls({
   lModeActive,
   lModeLabel,
   lModeTitle,
+  onOpenReviewDesk,
   onReviewChanges,
   onToggleDiff,
   onToggleEbook,
@@ -82,6 +83,10 @@ export function RightPaneToggleControls({
   previewActive,
   reviewChangesAvailable,
   reviewChangesLabel,
+  reviewDeskActive,
+  reviewDeskAvailable,
+  reviewDeskLabel,
+  reviewDeskTitle,
 }: {
   copy: RightPaneToggleCopy;
   diffActive: boolean;
@@ -91,6 +96,7 @@ export function RightPaneToggleControls({
   lModeActive: boolean;
   lModeLabel: string;
   lModeTitle: string;
+  onOpenReviewDesk: () => void;
   onReviewChanges: () => void;
   onToggleDiff: () => void;
   onToggleEbook: () => void;
@@ -102,9 +108,21 @@ export function RightPaneToggleControls({
   previewActive: boolean;
   reviewChangesAvailable: boolean;
   reviewChangesLabel: string;
+  reviewDeskActive: boolean;
+  reviewDeskAvailable: boolean;
+  reviewDeskLabel: string;
+  reviewDeskTitle: string;
 }) {
   return (
     <div className="pane-control-cluster" aria-label={copy.sidePaneMode}>
+      <PaneToggle
+        active={reviewDeskActive}
+        caption={reviewDeskLabel}
+        disabled={!reviewDeskAvailable}
+        icon={<ReviewDeskIcon />}
+        onClick={onOpenReviewDesk}
+        title={reviewDeskTitle}
+      />
       {reviewChangesAvailable ? (
         <PaneToggle
           caption={copy.reviewMenu}

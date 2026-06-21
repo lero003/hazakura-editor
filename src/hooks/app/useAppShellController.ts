@@ -30,6 +30,7 @@ import { useAgentWorkbenchController } from "../agent/useAgentWorkbenchControlle
 import { useAppExitConfirmation } from "./useAppExitConfirmation";
 import { useAppleAssistAvailability } from "../agent/useAppleAssistAvailability";
 import { useAppleAssistCandidate } from "../review/useAppleAssistCandidate";
+import { useCandidateFileImport } from "../review/useCandidateFileImport";
 import { useCommandPaletteController } from "../commandPalette/useCommandPaletteController";
 import { useCompareController } from "../diff/useCompareController";
 import { useDocumentSafetyActions } from "../document/useDocumentSafetyActions";
@@ -111,7 +112,7 @@ export function useAppShellController() {
   } = foundation;
 
   // section: review desk controller (depends on review state + chrome view state)
-  const { closeReviewDesk } = useReviewDeskController({
+  const { closeReviewDesk, openReviewDesk } = useReviewDeskController({
     reviewSurface,
     resetReviewDesk,
     setReviewSurface,
@@ -1043,6 +1044,24 @@ export function useAppShellController() {
   void clearAppleAssistError;
 
   const {
+    busy: candidateFileImportBusy,
+    error: candidateFileImportError,
+    importAndCompare: importCandidateFileAndCompare,
+  } = useCandidateFileImport({
+    activeTab: appleAssistTarget,
+    copy: reviewDeskCopy,
+    runCandidateCompare,
+    setCandidateInputText,
+  });
+
+  const importCandidateFile = useCallback(async () => {
+    const result = await importCandidateFileAndCompare();
+    if (!result.ok && "error" in result) {
+      setStatus(result.error);
+    }
+  }, [importCandidateFileAndCompare, setStatus]);
+
+  const {
     closeCommandPalette,
     closeGlobalSearch,
     commandPaletteActiveIndex,
@@ -1359,6 +1378,8 @@ export function useAppShellController() {
     candidateCompareCase,
     candidateCompareView,
     candidateErrorMessage,
+    candidateFileImportBusy,
+    candidateFileImportError,
     candidateInputText,
     clearCandidate,
     appCloseCancelButtonRef,
@@ -1470,6 +1491,7 @@ export function useAppShellController() {
       }
       void toggleAppleAssistWindow(themePreference);
     },
+    onOpenReviewDesk: openReviewDesk,
     onCloseReviewDesk: closeReviewDesk,
     onCloseSelectedImagePreview: closeSelectedImagePreview,
     onCloseTab: requestCloseTab,
@@ -1477,6 +1499,7 @@ export function useAppShellController() {
     onConvertLineEnding: convertActiveLineEnding,
     onExitLModeToWorkspace: exitLModeToWorkspace,
     onFinishTabPointerDrag: finishTabPointerDrag,
+    onImportCandidateFile: importCandidateFile,
     onOpenAppleAssistFromLMode: () => {
       // v0.12+ Apple Local Assist Writing Companion mock
       // (slice 3). The L Mode action rail's Apple Assist

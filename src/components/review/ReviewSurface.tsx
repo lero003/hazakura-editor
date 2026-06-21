@@ -18,6 +18,8 @@ type ReviewSurfaceProps = {
   candidateCompareCase: CompareCase | null;
   candidateCompareView: CompareViewState | null;
   candidateErrorMessage: string | null;
+  candidateFileImportBusy: boolean;
+  candidateFileImportError: string | null;
   candidateInputText: string;
   clearCandidate: () => void;
   editorSettings: EditorSettings;
@@ -29,6 +31,7 @@ type ReviewSurfaceProps = {
     documentContents: string,
   ) => void;
   onClose: () => void;
+  onImportCandidateFile: () => Promise<void>;
   reviewDeskCopy: ReviewDeskCopy;
   reviewDeskMode: ReviewDeskMode;
   runCandidateCompare: (params: {
@@ -58,6 +61,8 @@ export function ReviewSurface({
   candidateCompareCase,
   candidateCompareView,
   candidateErrorMessage,
+  candidateFileImportBusy,
+  candidateFileImportError,
   candidateInputText,
   clearCandidate,
   editorSettings,
@@ -65,6 +70,7 @@ export function ReviewSurface({
   menuLanguage,
   onApplyCandidate,
   onClose,
+  onImportCandidateFile,
   reviewDeskCopy,
   reviewDeskMode,
   runCandidateCompare,
@@ -100,6 +106,8 @@ export function ReviewSurface({
           candidateCompareCase={candidateCompareCase}
           candidateCompareView={candidateCompareView}
           candidateErrorMessage={candidateErrorMessage}
+          candidateFileImportBusy={candidateFileImportBusy}
+          candidateFileImportError={candidateFileImportError}
           candidateInputText={candidateInputText}
           clearCandidate={clearCandidate}
           copy={reviewDeskCopy}
@@ -107,6 +115,7 @@ export function ReviewSurface({
           editorTheme={editorTheme}
           menuLanguage={menuLanguage}
           onApplyCandidate={onApplyCandidate}
+          onImportCandidateFile={onImportCandidateFile}
           runCandidateCompare={runCandidateCompare}
           setCandidateInputText={setCandidateInputText}
         />
@@ -130,6 +139,8 @@ type ReviewSurfaceCandidateSectionProps = {
   candidateCompareCase: CompareCase | null;
   candidateCompareView: CompareViewState | null;
   candidateErrorMessage: string | null;
+  candidateFileImportBusy: boolean;
+  candidateFileImportError: string | null;
   candidateInputText: string;
   clearCandidate: () => void;
   copy: ReviewDeskCopy;
@@ -141,6 +152,7 @@ type ReviewSurfaceCandidateSectionProps = {
     documentTabId: string,
     documentContents: string,
   ) => void;
+  onImportCandidateFile: () => Promise<void>;
   runCandidateCompare: (params: {
     bufferContents: string;
     documentTabId: string;
@@ -159,6 +171,8 @@ function ReviewSurfaceCandidateSection({
   candidateCompareCase,
   candidateCompareView,
   candidateErrorMessage,
+  candidateFileImportBusy,
+  candidateFileImportError,
   candidateInputText,
   clearCandidate,
   copy,
@@ -166,6 +180,7 @@ function ReviewSurfaceCandidateSection({
   editorTheme,
   menuLanguage,
   onApplyCandidate,
+  onImportCandidateFile,
   runCandidateCompare,
   setCandidateInputText,
 }: ReviewSurfaceCandidateSectionProps) {
@@ -192,6 +207,10 @@ function ReviewSurfaceCandidateSection({
       candidateSourceLabel: copy.candidateSourceManual,
       candidateText: candidateInputText,
     });
+  };
+
+  const handleImportCandidateFile = () => {
+    void onImportCandidateFile();
   };
 
   return (
@@ -230,6 +249,21 @@ function ReviewSurfaceCandidateSection({
         <div className="review-surface-candidate-actions">
           <button
             type="button"
+            className="review-surface-candidate-import"
+            onClick={handleImportCandidateFile}
+            disabled={!hasActiveTab || candidateFileImportBusy}
+            title={
+              hasActiveTab
+                ? copy.candidateImportFileButtonTitle
+                : copy.candidateImportFileDisabledHint
+            }
+          >
+            {candidateFileImportBusy
+              ? copy.candidateImportFileButtonBusy
+              : copy.candidateImportFileButton}
+          </button>
+          <button
+            type="button"
             className="review-surface-candidate-compare"
             onClick={handleCompare}
             disabled={!canCompare}
@@ -258,6 +292,15 @@ function ReviewSurfaceCandidateSection({
             aria-live="polite"
           >
             {localizeCandidateError(candidateErrorMessage, menuLanguage)}
+          </p>
+        ) : null}
+        {candidateFileImportError !== null ? (
+          <p
+            className="review-surface-candidate-error"
+            role="alert"
+            aria-live="polite"
+          >
+            {candidateFileImportError}
           </p>
         ) : null}
       </div>
@@ -468,6 +511,10 @@ function ReviewSurfaceCandidatePreviewMeta({
             candidateChars,
           )}
         </dd>
+      </div>
+      <div className="review-surface-candidate-preview-meta-cell">
+        <dt>{copy.candidatePreviewSourceLabel}</dt>
+        <dd>{compareCase.candidateSourceLabel}</dd>
       </div>
       <div className="review-surface-candidate-preview-meta-cell">
         <dt>{copy.candidatePreviewComparedAtLabel}</dt>

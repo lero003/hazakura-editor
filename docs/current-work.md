@@ -22,10 +22,11 @@ The v0.27 refinement phases are complete for source-tag purposes. Keep
 `docs/archive/planning/v0.27-refinement-slice-plan.md` as the execution
 memo / historical phase boundary and
 `docs/post-v0.25-product-refinement-plan.md` as the
-broader lens. The active v0.28 lane is Safety, Quality, and AI Review
-Foundation: tighten implementation / safety-claim consistency and start
-the smallest reusable AI proposal review primitive before structural Book
-Workspace work.
+broader lens. The active v0.29 lane is explicit AI Markdown proposal
+ingest on top of the completed v0.28 review foundation: keep the App
+Store path helper-free and start with user-selected Markdown / text
+proposal files flowing into Review Desk before structural Book Workspace
+work.
 
 ## Product Boundary
 
@@ -94,6 +95,27 @@ The pre-review automation table is currently exhausted; the next
 recurring quality run should use the Active UX Queue, starting with one
 Core Safe Editor quality probe whose risk hypothesis can be inspected or
 smoked.
+
+## v0.29 AI Markdown Proposal Ingest
+
+Implemented locally as of 2026-06-21:
+
+- Review Desk can import a user-selected Markdown / text proposal file,
+  load it through the existing text-open safety path, place it in the
+  candidate input, and render an explicit Diff against the active buffer.
+- Candidate preview metadata now shows the proposal source, so manual
+  paste, Apple Local Assist, and file import remain distinguishable.
+- The file-import path does not apply, save, auto-accept, call external
+  AI/API, launch helpers, or modify workspace files.
+
+Next useful v0.29 slices, if needed:
+
+- Built-app smoke for Review Desk file import in the App Store preview
+  lane.
+- Paste/source provenance polish that keeps provider metadata out of the
+  core editor surface.
+- Multi-file proposal review remains deferred until single-file ingest
+  feels trustworthy.
 
 ## v0.20 Sakura Workspace Ergonomics
 

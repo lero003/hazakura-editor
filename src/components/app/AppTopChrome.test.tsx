@@ -1,7 +1,12 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AppTopChrome } from "./AppTopChrome";
-import { getLModeCopy, getRecoveryCopy, getSidePaneCopy } from "../../lib/locale";
+import {
+  getLModeCopy,
+  getRecoveryCopy,
+  getReviewDeskCopy,
+  getSidePaneCopy,
+} from "../../lib/locale";
 import type { EditorSettings, EditorTab } from "../../types";
 
 const windowMocks = vi.hoisted(() => ({
@@ -46,6 +51,7 @@ function renderTopChrome(
       onFinishTabPointerDrag={vi.fn()}
       onOpenAgentWindow={vi.fn()}
       onOpenAppleAssistWindow={vi.fn()}
+      onOpenReviewDesk={vi.fn()}
       onPointerEnter={vi.fn()}
       onReviewChanges={vi.fn()}
       onSelectTab={vi.fn()}
@@ -58,6 +64,8 @@ function renderTopChrome(
       onToggleOutline={vi.fn()}
       onTogglePreview={vi.fn()}
       recoveryCopy={getRecoveryCopy("en")}
+      reviewDeskCopy={getReviewDeskCopy("en")}
+      reviewSurface={null}
       shouldSuppressTabClick={() => false}
       selectedImage={null}
       sidePaneCopy={getSidePaneCopy("en")}

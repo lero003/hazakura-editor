@@ -37,6 +37,8 @@ export type AppShellProps = Omit<
     candidateCompareCase: CompareCase | null;
     candidateCompareView: CompareViewState | null;
     candidateErrorMessage: string | null;
+    candidateFileImportBusy: boolean;
+    candidateFileImportError: string | null;
     candidateInputText: string;
     clearCandidate: () => void;
     editorSettings: EditorSettings;
@@ -51,7 +53,9 @@ export type AppShellProps = Omit<
     onCloseReviewDesk: () => void;
     onDiscardAppleAssistEdit: (tabId: string, before: string) => void;
     onExitLModeToWorkspace: () => void;
+    onImportCandidateFile: () => Promise<void>;
     onOpenAppleAssistFromLMode: () => void;
+    onOpenReviewDesk: () => void;
     onReviewChangesFromLMode: () => Promise<ChangeReviewSnapshot | null>;
     onToggleLMode: () => void;
     resolvedTheme: ResolvedTheme;
@@ -95,6 +99,8 @@ export function AppShell(props: AppShellProps) {
           candidateCompareCase={props.candidateCompareCase}
           candidateCompareView={props.candidateCompareView}
           candidateErrorMessage={props.candidateErrorMessage}
+          candidateFileImportBusy={props.candidateFileImportBusy}
+          candidateFileImportError={props.candidateFileImportError}
           candidateInputText={props.candidateInputText}
           clearCandidate={props.clearCandidate}
           editorSettings={props.editorSettings}
@@ -102,6 +108,7 @@ export function AppShell(props: AppShellProps) {
           menuLanguage={props.menuLanguage}
           onApplyCandidate={props.onApplyManualCandidate}
           onClose={props.onCloseReviewDesk}
+          onImportCandidateFile={props.onImportCandidateFile}
           reviewDeskCopy={props.reviewDeskCopy}
           reviewDeskMode={props.reviewDeskMode}
           runCandidateCompare={props.runCandidateCompare}

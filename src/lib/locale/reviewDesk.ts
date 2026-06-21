@@ -15,6 +15,10 @@ export type ReviewDeskCopy = {
   candidateCompareDisabledHint: string;
   candidateEmptyHeading: string;
   candidateEmptyHint: string;
+  candidateImportFileButton: string;
+  candidateImportFileButtonBusy: string;
+  candidateImportFileButtonTitle: string;
+  candidateImportFileDisabledHint: string;
   candidateInputHint: string;
   candidateInputLabel: string;
   candidateInputPlaceholder: string;
@@ -24,10 +28,12 @@ export type ReviewDeskCopy = {
   candidatePreviewCandidateSizeText: (lines: number, chars: number) => string;
   candidatePreviewComparedAtLabel: string;
   candidatePreviewEmpty: string;
+  candidatePreviewSourceLabel: string;
   candidatePreviewTargetLabel: string;
   candidatePreviewTitle: string;
   candidateSourceManual: string;
   candidateSourceAppleAssist: string;
+  candidateSourceFile: (name: string) => string;
   candidateStaleActionReCompare: string;
   candidateStaleHeading: string;
   candidateStaleReasonBufferEdited: string;
@@ -64,6 +70,12 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
       candidateEmptyHeading: "くらべるふみがありません",
       candidateEmptyHint:
         "れびゅーのつくゑは、えでぃたでてきすとをひらいているときだけ使えます。",
+      candidateImportFileButton: "ふぁいるから読む",
+      candidateImportFileButtonBusy: "読みこみ中",
+      candidateImportFileButtonTitle:
+        "Markdown / てきすとふぁいるを候補として読みこみ、いまのふみとくらべる",
+      candidateImportFileDisabledHint:
+        "読みこむには、えでぃたでてきすとをひらいてください。",
       candidateInputHint:
         "くらべたい候補てきすとをここへ貼り付けます。",
       candidateInputLabel: "候補てきすと",
@@ -77,10 +89,12 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
       candidatePreviewComparedAtLabel: "くらべたじこく",
       candidatePreviewEmpty:
         "くらべるを押すと、いまのふみと候補のちがひをここにしめします。",
+      candidatePreviewSourceLabel: "候補元",
       candidatePreviewTargetLabel: "あたらしいふみ",
       candidatePreviewTitle: "候補のしたみ",
       candidateSourceManual: "手で貼り付け",
       candidateSourceAppleAssist: "あっぷる あしす と (この Mac のみ)",
+      candidateSourceFile: (name) => `ふぁいる読みこみ: ${name}`,
       candidateStaleActionReCompare: "もういちどくらべる",
       candidateStaleHeading: "したみがふるくなっています",
       candidateStaleReasonBufferEdited:
@@ -126,6 +140,12 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
         candidateEmptyHeading: "比較できるエディタタブがありません",
         candidateEmptyHint:
           "レビューデスクの手動候補レビューは、エディタでテキストを開いているときだけ使えます。",
+        candidateImportFileButton: "ファイルから読み込む",
+        candidateImportFileButtonBusy: "読み込み中",
+        candidateImportFileButtonTitle:
+          "Markdown / テキストファイルを候補として読み込み、現在のバッファと比較",
+        candidateImportFileDisabledHint:
+          "読み込むには、エディタでテキストファイルを開いてください。",
         candidateInputHint:
           "比較したい候補テキスト（AI 出力、レビューメモ、別バージョンなど）をここに貼り付けます。",
         candidateInputLabel: "手動候補テキスト",
@@ -140,10 +160,12 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
         candidatePreviewComparedAtLabel: "比較時刻",
         candidatePreviewEmpty:
           "比較ボタンを押すと、現在のバッファと手動候補の差分プレビューがここに表示されます。",
+        candidatePreviewSourceLabel: "候補元",
         candidatePreviewTargetLabel: "保存先",
         candidatePreviewTitle: "手動候補プレビュー",
         candidateSourceManual: "手動貼り付け",
-      candidateSourceAppleAssist: "Apple Local Assist (この Mac のみ)",
+        candidateSourceAppleAssist: "Apple Local Assist (この Mac のみ)",
+        candidateSourceFile: (name) => `ファイル読み込み: ${name}`,
         candidateStaleActionReCompare: "再比較",
         candidateStaleHeading: "プレビューが古くなっています",
         candidateStaleReasonBufferEdited:
@@ -187,6 +209,12 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
         candidateEmptyHeading: "No editor tab is open to compare",
         candidateEmptyHint:
           "The Review Desk manual candidate review is only available while a text file is open in the editor.",
+        candidateImportFileButton: "Import file",
+        candidateImportFileButtonBusy: "Importing",
+        candidateImportFileButtonTitle:
+          "Import a Markdown / text file as a candidate and compare it with the current buffer",
+        candidateImportFileDisabledHint:
+          "Open a text file in the editor to import a candidate file.",
         candidateInputHint:
           "Paste a candidate snapshot (AI output, review notes, an alternate draft) to compare against the current buffer.",
         candidateInputLabel: "Manual candidate text",
@@ -200,10 +228,12 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
         candidatePreviewComparedAtLabel: "Compared at",
         candidatePreviewEmpty:
           "Press Compare to render a diff preview of the current buffer and the manual candidate here.",
+        candidatePreviewSourceLabel: "Source",
         candidatePreviewTargetLabel: "Target",
         candidatePreviewTitle: "Manual candidate preview",
         candidateSourceManual: "Manual paste",
-      candidateSourceAppleAssist: "Apple Local Assist (on-device)",
+        candidateSourceAppleAssist: "Apple Local Assist (on-device)",
+        candidateSourceFile: (name) => `File import: ${name}`,
         candidateStaleActionReCompare: "Re-run Compare",
         candidateStaleHeading: "Preview is out of date",
         candidateStaleReasonBufferEdited:

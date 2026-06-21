@@ -204,6 +204,7 @@
   gap: 8px;
 }
 
+.review-surface-candidate-import,
 .review-surface-candidate-compare,
 .review-surface-candidate-clear {
   background: var(--surface);
@@ -215,12 +216,14 @@
   padding: 6px 12px;
 }
 
+.review-surface-candidate-import:hover:not(:disabled),
 .review-surface-candidate-compare:hover:not(:disabled),
 .review-surface-candidate-clear:hover:not(:disabled) {
   background: var(--surface-strong);
   border-color: var(--border-strong);
 }
 
+.review-surface-candidate-import:disabled,
 .review-surface-candidate-compare:disabled,
 .review-surface-candidate-clear:disabled {
   color: var(--text-muted);
@@ -478,4 +481,3 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
-

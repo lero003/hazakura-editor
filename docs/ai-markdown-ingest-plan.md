@@ -1,7 +1,7 @@
 # AI Markdown Ingest Plan
 
-Status: Proposal; v0.28 foundation primitive selected
-Scope: v0.28+ explicit AI proposal intake and review
+Status: Proposal; v0.29 first file-import slice implemented
+Scope: v0.29+ explicit AI proposal intake and review
 Authority: Medium
 Last reviewed: 2026-06-21
 
@@ -64,6 +64,14 @@ transactions and exposes compact Diff / Discard review before save. Treat
 that as the foundation proof; defer explicit file import, richer paste
 ingest, multi-file proposal review, Agent Workbench external-edit intake,
 and richer provenance display to v0.29+.
+
+v0.29 first slice as of 2026-06-21: Review Desk can import a
+user-selected local Markdown / text proposal file into the candidate
+input and render an explicit candidate Diff against the active buffer.
+The imported candidate records a visible file-import source label in the
+preview metadata. This slice still does not apply, save, auto-accept, call
+external AI/API, launch helpers, or modify files without the existing
+explicit Apply / Save steps.
 
 Start with the smallest reusable review primitive:
 

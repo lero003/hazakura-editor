@@ -4,7 +4,7 @@ import {
 } from "./RightPaneToggleControls";
 import { AgentWindowIcon, SparklesIcon } from "./Icons";
 import type { AssistSurfacePreference, EditorTab } from "../../types";
-import type { LModeCopy } from "../../lib/locale";
+import type { LModeCopy, ReviewDeskCopy } from "../../lib/locale";
 
 type DocumentMetaBarProps = {
   activeDirty: boolean;
@@ -18,6 +18,7 @@ type DocumentMetaBarProps = {
   lModeEnabled: boolean;
   onOpenAgentWindow: () => void;
   onOpenAppleAssistWindow: () => void;
+  onOpenReviewDesk: () => void;
   onReviewChanges: (tab: EditorTab) => void;
   onToggleDiff: () => void;
   onToggleEbook: () => void;
@@ -27,6 +28,8 @@ type DocumentMetaBarProps = {
   outlinePaneActive: boolean;
   previewPaneActive: boolean;
   recoveryReviewChangesLabel: string;
+  reviewDeskActive: boolean;
+  reviewDeskCopy: ReviewDeskCopy;
   sidePaneCopy: RightPaneToggleCopy;
 };
 
@@ -42,6 +45,7 @@ export function DocumentMetaBar({
   lModeEnabled,
   onOpenAgentWindow,
   onOpenAppleAssistWindow,
+  onOpenReviewDesk,
   onReviewChanges,
   onToggleDiff,
   onToggleEbook,
@@ -51,6 +55,8 @@ export function DocumentMetaBar({
   outlinePaneActive,
   previewPaneActive,
   recoveryReviewChangesLabel,
+  reviewDeskActive,
+  reviewDeskCopy,
   sidePaneCopy,
 }: DocumentMetaBarProps) {
   const showCompanionSection =
@@ -85,6 +91,7 @@ export function DocumentMetaBar({
             lModeActive={lModeEnabled}
             lModeLabel={lModeCopy.preferenceLabel}
             lModeTitle={lModeCopy.paletteCommand}
+            onOpenReviewDesk={onOpenReviewDesk}
             onReviewChanges={() => {
               if (activeTab) {
                 onReviewChanges(activeTab);
@@ -100,6 +107,10 @@ export function DocumentMetaBar({
             previewActive={previewPaneActive}
             reviewChangesAvailable={activeDirty && activeTab !== null}
             reviewChangesLabel={recoveryReviewChangesLabel}
+            reviewDeskActive={reviewDeskActive}
+            reviewDeskAvailable={activeTab !== null}
+            reviewDeskLabel={reviewDeskCopy.entryButton}
+            reviewDeskTitle={reviewDeskCopy.entryButtonTitle}
           />
         </section>
       ) : null}
