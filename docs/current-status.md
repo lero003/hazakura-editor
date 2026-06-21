@@ -50,18 +50,16 @@ Last reviewed: 2026-06-21 (v0.28 App Store package candidate)
   TestFlight, App Review, and release handling are not tracked in this
   repository unless separately recorded.
 - The latest generated helper-free App Store package evidence for `0.28.0` is build
-  `25`, generated on 2026-06-21 after the v0.28 safety / quality /
-  AI review foundation slice and an initial top-chrome tab/menu spacing
-  adjustment:
-  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.28.0-build25-mas.pkg`.
+  `26`, generated on 2026-06-21 after the v0.28 safety / quality /
+  AI review foundation slice and the later top-chrome quieting pass:
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.28.0-build26-mas.pkg`.
   SHA-256:
-  `ebbcf48da476c47c2a9874cfa91278429673a167189a00bea7887234f5c9099a`.
+  `32b2e0dfee55c793b4cac5a127657cc7d2fe8b32af4341102acf387ad60dcd88`.
   Local App Store surface smoke, package signature, entitlement,
   helper-absence, bundled-notice, supported-OS, and package SHA checks
   passed. App Store Connect upload, processing, TestFlight, App Review,
   and release handling are not tracked in this repository unless
-  separately recorded. A later source-only top-chrome quieting pass is not
-  included in build `25`; rebuild the App Store package before upload.
+  separately recorded.
 - Pre-approval human-side App Store lane smoke on 2026-06-12 passed launch,
   basic document creation/open, preview/export, image paste/drag-drop,
   App Store surface omission, dirty-close confirmation, Move to Trash,
@@ -268,9 +266,9 @@ baseline, and smoke evidence are archived under
    book manifests, structural book-workspace information architecture,
    Native Vibrancy Phase 2, cover editing, or an EPUB document model unless
    that lane is explicitly opened.
-3. For the current `0.28.0` App Store submission lane, build `25` is the
-   latest generated local package evidence, but current source has a later
-   top-chrome quieting pass. Rebuild the signed package before upload.
+3. For the current `0.28.0` App Store submission lane, build `26` is the
+   latest generated local package evidence after the top-chrome quieting
+   pass.
    User-side upload / review work is outside this repository unless new
    evidence is explicitly recorded.
    For a future App Store submission, start with `docs/app-store-build.md`;
