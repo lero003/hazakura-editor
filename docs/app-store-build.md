@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-06-22 (v0.29 helper sandbox validation fix)
+Last reviewed: 2026-06-22 (v0.29 build 29 delivery success)
 
 ## Purpose
 
@@ -689,9 +689,10 @@ first local `0.29.0` build `28` package because the bundled
 `com.apple.security.app-sandbox`. Codex updated the helper entitlement
 file and distribution probe, then generated a replacement local App
 Store submit-lane package for user-visible version `0.29.0` and App
-Store build counter `29`. Re-delivery, App Store Connect processing,
-TestFlight, App Review, and release handling are outside this
-repository unless separately recorded.
+Store build counter `29`. The user reported successful Transporter
+delivery for this corrected package on 2026-06-22. App Store Connect
+processing, TestFlight, App Review, and release handling are outside
+this repository unless separately recorded.
 
 The local package generated for this lane is:
 
