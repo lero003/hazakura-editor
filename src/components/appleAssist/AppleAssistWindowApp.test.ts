@@ -69,6 +69,7 @@ const REQUIRED_KEYS: ReadonlyArray<keyof AppleAssistWindowCopy> = [
   // `feedbackEntry` function shape is exercised in a
   // separate test below.
   "feedbackHeading",
+  "feedbackDescription",
   "feedbackEmpty",
   "feedbackEntry",
 ];
@@ -148,6 +149,28 @@ describe("getAppleAssistWindowCopy", () => {
           const text = copy.feedbackEntry(kind, payload);
           expect(text, `${lang} kind ${kind}`).toMatch(/\S/);
         }
+      });
+
+      it("explains the request flow without turning the panel into a transcript", () => {
+        expect(copy.feedbackDescription).toMatch(/\S/);
+        expect(copy.feedbackDescription).not.toMatch(
+          /transcript|prompt|response|reasoning|chain of thought/i,
+        );
+        if (lang === "ja") {
+          expect(copy.feedbackDescription).toMatch(/依頼ごと|対象確認|差分/);
+          expect(copy.availableDisclosure).toMatch(/未保存|差分|外部 AI/);
+        }
+        if (lang === "en") {
+          expect(copy.feedbackDescription).toMatch(/Each request|unsaved|save/);
+          expect(copy.availableDisclosure).toMatch(/external AI service/);
+        }
+      });
+
+      it("keeps footer status copy short instead of echoing long request text", () => {
+        const longRequest =
+          "この依頼文は長くてもフッターの高さを変えないための確認文です";
+        expect(copy.appliedStatus(longRequest)).not.toContain(longRequest);
+        expect(copy.generatingInMain(longRequest)).not.toContain(longRequest);
       });
 
       it("keeps the target-acquired entry to a kind + character count (no document body, no path, no transcript)", () => {

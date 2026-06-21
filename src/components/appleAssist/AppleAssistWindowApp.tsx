@@ -192,7 +192,7 @@ export function AppleAssistWindowApp() {
   const [target, setTarget] = useState<AppleAssistTargetSnapshot | null>(null);
   const { availability, available, probed } = useAppleAssistAvailability();
   const { feedback, pushFeedback } = useOperationFeedback();
-  const feedbackSectionRef = useRef<HTMLElement | null>(null);
+  const feedbackSectionRef = useRef<HTMLDivElement | null>(null);
   // Track whether the availability probe has been reported
   // to the feedback panel so we only push one "ready" /
   // "unavailable" entry, not one per availability re-emit.
@@ -475,10 +475,10 @@ export function AppleAssistWindowApp() {
       // `failed` phase; in practice exactly one of the
       // two branches fires for a given apply, but a
       // double-fail can leave two "failed" entries in
-      // the cap window. That is acceptable for the
-      // feedback trail because both lines render the
-      // same localized "failed" text and the cap (6)
-      // keeps the panel bounded.
+      // the bounded session log. That is acceptable for
+      // the feedback trail because both lines render the
+      // same localized "failed" text and the panel keeps
+      // its own fixed scroll area.
       pushFeedback({ kind: "failed" });
     }
   }, [
@@ -506,9 +506,7 @@ export function AppleAssistWindowApp() {
           <span className="apple-assist-window-mode">{copy.modeLabel}</span>
         </div>
         <div className="apple-assist-window-disclosure">
-          {available
-            ? copy.availableDisclosure
-            : availabilityMessage}
+          {available ? copy.availableDisclosure : availabilityMessage}
         </div>
         <div className="apple-assist-window-doc">
           {target?.activeDocumentName
@@ -567,44 +565,74 @@ export function AppleAssistWindowApp() {
       </section>
 
       <section
-        ref={feedbackSectionRef}
         className="apple-assist-window-feedback"
         aria-label={copy.feedbackHeading}
-        aria-live="polite"
         data-testid="apple-assist-feedback-section"
-        role="log"
       >
-        <p
-          className="apple-assist-feedback-heading"
-          data-testid="apple-assist-feedback-heading"
-          id="apple-assist-feedback-heading-id"
-        >
-          {copy.feedbackHeading}
-        </p>
-        {feedback.length === 0 ? (
+        <div className="apple-assist-feedback-header">
           <p
-            className="apple-assist-feedback-empty"
-            data-testid="apple-assist-feedback-empty"
+            className="apple-assist-feedback-heading"
+            data-testid="apple-assist-feedback-heading"
+            id="apple-assist-feedback-heading-id"
           >
-            {copy.feedbackEmpty}
+            {copy.feedbackHeading}
           </p>
-        ) : (
-          <ul
-            className="apple-assist-feedback-list"
-            data-testid="apple-assist-feedback-list"
+          <p
+            className="apple-assist-feedback-description"
+            id="apple-assist-feedback-description-id"
           >
-            {feedback.map((entry) => (
-              <li
-                className={`apple-assist-feedback-entry apple-assist-feedback-entry-kind-${entry.kind}`}
-                data-feedback-kind={entry.kind}
-                data-testid="apple-assist-feedback-entry"
-                key={entry.id}
-              >
-                {copy.feedbackEntry(entry.kind, entry.payload)}
-              </li>
-            ))}
-          </ul>
-        )}
+            {copy.feedbackDescription}
+          </p>
+        </div>
+        <div
+          ref={feedbackSectionRef}
+          className="apple-assist-feedback-body"
+          aria-describedby="apple-assist-feedback-description-id"
+          aria-labelledby="apple-assist-feedback-heading-id"
+          aria-live="polite"
+          role="log"
+        >
+          {feedback.length === 0 ? (
+            <p
+              className="apple-assist-feedback-empty"
+              data-testid="apple-assist-feedback-empty"
+            >
+              {copy.feedbackEmpty}
+            </p>
+          ) : (
+            <ul
+              className="apple-assist-feedback-list"
+              data-testid="apple-assist-feedback-list"
+            >
+              {feedback.map((entry, index) => {
+                const startsRequestGroup =
+                  index > 0 &&
+                  (entry.kind === "target-acquired" ||
+                    (entry.kind === "request-sent" &&
+                      feedback[index - 1]?.kind !== "target-acquired"));
+                const className = [
+                  "apple-assist-feedback-entry",
+                  `apple-assist-feedback-entry-kind-${entry.kind}`,
+                  startsRequestGroup
+                    ? "apple-assist-feedback-entry-group-start"
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join(" ");
+                return (
+                  <li
+                    className={className}
+                    data-feedback-kind={entry.kind}
+                    data-testid="apple-assist-feedback-entry"
+                    key={entry.id}
+                  >
+                    {copy.feedbackEntry(entry.kind, entry.payload)}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
       </section>
 
       <footer className="apple-assist-window-footer">
@@ -678,6 +706,7 @@ export type AppleAssistWindowCopy = {
   // excerpts, filesystem paths, or secrets — see
   // docs/archive/operations/app-store-v0.17/apple-local-assist-operation-feedback-request.md.
   feedbackHeading: string;
+  feedbackDescription: string;
   feedbackEmpty: string;
   feedbackEntry: (
     kind: OperationFeedbackKind,
@@ -809,11 +838,11 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
   if (lang === "kana") {
     return {
       activeDocument: (name) => `いまのふみ: ${name}`,
-      appliedStatus: (request) =>
-        `へんしゅう あんを はんえいしました: ${request}。ほぞん まえに さぶんで かくにん できます。`,
+      appliedStatus: () =>
+        "へんしゅう あんを はんえいしました。ほぞん まえに さぶんで かくにん できます。",
       applyButton: "おねがいする",
       availableDisclosure:
-        "この Mac の なかで ぶんしょう の したがき や てなおしを てつだいます。けっかは ほぞん まえの へんしゅう あんとして はいり、さぶんで かくにん できます。",
+        "えらんだ ところ または いまの だんらくを、この Mac の Apple Intelligence たいおう きのうで したがき・てなおしします。けっかは ほぞん まえの ほんぶんに はいり、さぶんで かくにん できます。そとの AI さーびすには おくりません。",
       contextTooLongError:
         "しゅうへん ぶんしょ が ながすぎ ます。L Mode の たいしょう しゅうへん こんできすと の じょうげん (8000 もじ) を こえました。",
       disabledStatus:
@@ -823,8 +852,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       generatingButton: "おねがい中...",
       generatingChange:
         "この Mac で へんしゅう あんを つくっています。けっかは ほぞん まえの へんしゅう あんとして はいります。",
-      generatingInMain: (request) =>
-        `へんしゅう あんを つくっています: ${request}。ほぞん まえに さぶんで かくにん できます。`,
+      generatingInMain: () =>
+        "へんしゅう あんを つくっています。ほぞん まえに さぶんで かくにん できます。",
       guardrailError:
         "あっぷる ふぁうんでーしょん もでるず が かーどれーる いはん として この おねがひを きょひ しました。べつ の おねがひ で さいしこう してください。",
       localRuntimeUnavailable: (reason) =>
@@ -847,7 +876,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       ],
       presetsLabel: "よくつかう おねがい",
       readyStatus:
-        "じゅんび できました。たいしょうを えらび、おねがいを かいてください。けっかは ほぞん まえの へんしゅう あんとして はいります。",
+        "じゅんび できました。たいしょうを えらび、おねがいを かいてください。",
       roughRequestLabel: "おねがい",
       selectionTooLongError:
         "えらんだ ところが ながすぎ ます（さいだい 4000 もじ）。あっぷる ふぁうんでーしょん もでるず の こんできすと まど に おさまらないため、もう すこし ちいさく えらんで ください。",
@@ -874,6 +903,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       workingLocally: "この Mac で ろーかる しょり ちゅう (そとの AI さーびす は つかいません)",
       // v0.17 operation-feedback panel copy.
       feedbackHeading: "すすみぐあい",
+      feedbackDescription:
+        "おねがいごとに、たいしょうの かくにん、せいせい、はんえいまでを ここに きろくします。けっかは ほぞん まえに さぶんで みられます。",
       feedbackEmpty:
         "まだ おねがいは ありません。たいしょうを えらび、おねがいを かいてください。",
       feedbackEntry: (kind, payload) => {
@@ -920,11 +951,11 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
   if (lang === "ja") {
     return {
       activeDocument: (name) => `対象: ${name}`,
-      appliedStatus: (request) =>
-        `編集案を反映しました: ${request}。保存前に差分で確認できます。`,
+      appliedStatus: () =>
+        "編集案を反映しました。保存前に差分で確認できます。",
       applyButton: "依頼する",
       availableDisclosure:
-        "このMac上で文章の下書きや手直しを支援します。結果は未保存の編集案として反映され、保存前に差分で確認できます。",
+        "選択範囲または現在の段落を、この Mac 上の Apple Intelligence 対応機能で下書き・手直しします。編集案は未保存の本文に反映され、保存前に差分で確認できます。外部 AI サービスには送りません。",
       contextTooLongError:
         "周辺の文書が長すぎます。L Mode の対象周辺コンテキスト上限（8000 文字）を超えました。",
       disabledStatus:
@@ -934,8 +965,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       generatingButton: "依頼中...",
       generatingChange:
         "この Mac 上で編集案を作っています。結果は未保存の編集案として反映されます。",
-      generatingInMain: (request) =>
-        `編集案を作っています: ${request}。保存前に差分で確認できます。`,
+      generatingInMain: () =>
+        "編集案を作っています。保存前に差分で確認できます。",
       guardrailError:
         "Apple Foundation Models がこの依頼をガードレール違反として拒否しました。別の依頼文で再試行してください。",
       localRuntimeUnavailable: (reason) =>
@@ -958,7 +989,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       ],
       presetsLabel: "よく使う依頼",
       readyStatus:
-        "準備完了。対象を選び、依頼内容を入力してください。結果は未保存の編集案として反映されます。",
+        "準備完了。対象を選び、依頼内容を入力してください。",
       roughRequestLabel: "依頼内容",
       selectionTooLongError:
         "選択範囲が大きすぎます（最大 4000 文字）。Apple Foundation Models のコンテキスト窓に収まらないため、もう少し小さく選択してください。",
@@ -985,6 +1016,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       workingLocally: "この Mac 上でローカル処理中（外部 AI サービスは使いません）",
       // v0.17 operation-feedback panel copy.
       feedbackHeading: "処理の流れ",
+      feedbackDescription:
+        "依頼ごとに、対象確認、生成、編集案の反映までをここに表示します。結果は未保存の本文に入り、保存前に差分で確認できます。",
       feedbackEmpty:
         "まだ依頼はありません。対象を選び、依頼内容を入力してください。",
       feedbackEntry: (kind, payload) => {
@@ -1030,11 +1063,11 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
 
   return {
     activeDocument: (name) => `Active: ${name}`,
-    appliedStatus: (request) =>
-      `Draft edit applied: ${request}. Review the diff before saving.`,
+    appliedStatus: () =>
+      "Draft edit applied. Review the diff before saving.",
     applyButton: "Send request",
     availableDisclosure:
-      "Hazakura Local Assist helps draft or revise writing on this Mac. Results land as an unsaved draft edit, so you can review the diff before saving.",
+      "Hazakura Local Assist drafts or revises the selection or current paragraph with Apple Intelligence-capable features on this Mac. The draft edit is applied to the unsaved text, can be reviewed in the diff before saving, and is not sent to an external AI service.",
     contextTooLongError:
       "Document context is too long (L Mode harness caps surrounding text at 8000 characters). Pick a tighter target or break the change into smaller requests.",
     disabledStatus:
@@ -1044,8 +1077,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     generatingButton: "Sending...",
     generatingChange:
       "Creating a draft edit on this Mac. The result lands as an unsaved draft edit in the main editor.",
-    generatingInMain: (request) =>
-      `Creating a draft edit: ${request}. Review the diff before saving.`,
+    generatingInMain: () =>
+      "Creating a draft edit. Review the diff before saving.",
     guardrailError:
       "Apple Foundation Models refused this request because it hit a guardrail. Try a different request.",
     localRuntimeUnavailable: (reason) =>
@@ -1071,7 +1104,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     ],
     presetsLabel: "Common requests",
     readyStatus:
-      "Ready. Pick a target and type what you want changed. Results land as unsaved draft edits.",
+      "Ready. Pick a target and type what you want changed.",
     roughRequestLabel: "Request",
     selectionTooLongError:
       "Selection is too long (max 4000 characters). Apple Foundation Models has a bounded context window; pick a smaller selection, or split the change into multiple requests.",
@@ -1098,6 +1131,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     workingLocally: "Working locally on this Mac (no third-party AI service)",
     // v0.17 operation-feedback panel copy.
     feedbackHeading: "Progress",
+    feedbackDescription:
+      "Each request records target selection, local generation, and draft application here. Results stay unsaved until you review and save them.",
     feedbackEmpty:
       "No requests yet. Pick a target and describe what you want changed.",
     feedbackEntry: (kind, payload) => {
