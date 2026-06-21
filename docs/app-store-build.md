@@ -3,12 +3,12 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-06-21 (v0.28 App Store candidate prep)
+Last reviewed: 2026-06-21 (v0.29 Apple Local Assist App Store lane)
 
 ## Purpose
 
-This document defines the public-safe helper-free Mac App Store build
-lane for `Hazakura Editor`. It is an internal operational note for
+This document defines the public-safe Mac App Store build lane for
+`Hazakura Editor`. It is an internal operational note for
 maintainers and release agents, not public App Store product copy. It
 intentionally avoids account-specific App Store Connect metadata,
 certificate names, signing identities, contacts, screenshots, or private
@@ -20,12 +20,17 @@ The App Store lane is a reviewable safe Markdown editor build. It omits:
 - CLI Agent launch
 - dev mode
 - arbitrary command execution
-- Apple Local Assist helper / Apple Intelligence helper
 - external AI/API calls
 - network-required features
 
+The App Store lane may include Apple Local Assist as an on-device,
+availability-gated writing companion. Its output must stay explicit,
+unsaved, and Diff / Discard reviewable, with no network fallback,
+auto-save, tool calling, workspace-wide indexing, or external provider
+process launch.
+
 The Developer / GitHub lane remains separate and may include optional
-Apple Local Assist and Agent Workbench behind their existing boundaries.
+Agent Workbench behind its existing boundary.
 
 ## App Identity
 
@@ -50,6 +55,7 @@ tracked docs.
 - `src-tauri/tauri.conf.appstore-preview.json`
 - `src-tauri/tauri.conf.appstore.json`
 - `src-tauri/entitlements/mac-app-store.entitlements`
+- `src-tauri/entitlements/app-store-helper.plist`
 
 ## Local Files Not Committed
 
@@ -89,6 +95,11 @@ Allowed:
 - `com.apple.security.network.client` for the Tauri/WebKit runtime to
   load bundled app assets under App Sandbox
 
+The Apple Local Assist helper is re-signed after the App Store submit
+bundle is built, using `src-tauri/entitlements/app-store-helper.plist`
+with `com.apple.security.inherit`. The app bundle is then re-signed so
+the resource seal includes the updated helper signature.
+
 Do not add these unless there is a fresh documented reason:
 
 - `com.apple.security.network.server`
@@ -98,7 +109,7 @@ Do not add these unless there is a fresh documented reason:
 
 ## Build Commands
 
-Local helper-free preview:
+Local helper-enabled preview:
 
 ```bash
 npm run build:app-store-preview
@@ -163,16 +174,24 @@ src-tauri/tauri.conf.appstore.json
 
 That config sets:
 
-- `beforeBuildCommand` to `npm run build:vite`
+- `beforeBuildCommand` to
+  `npm run build:apple-assist-helper:live && npm run build:vite`
 - `frontendDist` to `../dist`
-- `bundle.externalBin` to `[]`
+- `bundle.externalBin` to `["../binaries/hazakura-apple-assist-helper"]`
 - base `bundle.resources` to include `LICENSE` and
   `THIRD_PARTY_NOTICES.md` inside `Contents/Resources`
 - `bundle.macOS.bundleVersion` to the current App Store Connect build number
 - `bundle.macOS.entitlements` to `./entitlements/mac-app-store.entitlements`
 - `bundle.macOS.files.embedded.provisionprofile` to the local profile path
 
-The preview config uses the same helper-free build shape, but deliberately
+After Tauri finishes the submit app bundle, `npm run build:app-store-submit`
+runs `scripts/sign-app-store-submit-app.mjs`. That post-sign step gives
+the helper the inherited sandbox entitlement, re-signs the app bundle,
+and verifies the deep signature. `scripts/build-apple-assist-helper-live.sh`
+also emits `aarch64`, `x86_64`, and `universal-apple-darwin` helper
+sidecars so Tauri's universal App Store target can bundle the helper.
+
+The preview config uses the same helper-enabled build shape, but deliberately
 skips the App Store sandbox entitlements and provisioning profile so
 `npm run build` produces a launchable local smoke bundle. Use
 `npm run smoke:macos-sandbox-preview` for a local sandbox-entitlement
@@ -187,9 +206,9 @@ npm run smoke:app-store-surface
 ```
 
 This does not replace signed TestFlight manual smoke. It only pins that
-the App Store lane keeps CLI Agent / Agent Workbench / Apple Local
-Assist commands, settings, helper assumptions, and visible dev badges
-out of the source-tested surface.
+the App Store lane keeps CLI Agent / Agent Workbench commands and visible
+dev badges out of the source-tested surface while allowing the Apple
+Local Assist window, settings, and helper assumptions.
 
 ## Bundled Notices
 
@@ -366,9 +385,11 @@ Run on the actual App Store lane build:
 - Image paste and drag/drop do not break under sandboxed file access.
 - Move to Trash either succeeds without `osascript` / AppleEvents /
   automation entitlements or is unreachable in the App Store lane.
-- Agent Workbench / CLI Agent / dev mode / Apple Local Assist are absent,
-  including command palette entries such as `Agent`, `Apple Local
-  Assist`, `CLI Agent`, and `Assist Settings…`.
+- Agent Workbench / CLI Agent / dev mode are absent, including command
+  palette entries such as `Agent` and `CLI Agent`.
+- Apple Local Assist is reachable from the visible assist surface, reports
+  unavailable/disabled/unsupported states honestly, and never auto-saves
+  or silently applies generated text.
 - No external network communication occurs; if any system handoff appears,
   record the reason.
 - `Cmd+Q` with dirty tabs shows the dirty-tab confirmation flow.
@@ -399,16 +420,18 @@ can answer these public-safe points before submission:
 - Move to Trash must not be explained as an automation or scripting
   feature. Before submission, make sure the App Store lane either uses a
   native macOS Trash path or does not expose the operation.
-- The App Store lane omits Apple Local Assist helper, Agent Workbench,
-  CLI Agent launch, dev mode, arbitrary command execution, and external
-  AI/API calls. The Developer / GitHub lane remains separate.
+- The App Store lane includes Apple Local Assist only as an on-device,
+  availability-gated writing companion. It omits Agent Workbench, CLI
+  Agent launch, dev mode, arbitrary command execution, external AI/API
+  calls, and network fallback. The Developer / GitHub lane remains
+  separate.
 - If asked about `style-src 'unsafe-inline'`, explain it as the current
   Tauri/React UI styling allowance; do not broaden it into any claim
   that scripts, remote content, or external network calls are allowed.
 
 ## App Store Connect Status Notes
 
-The helper-free build lane and privacy-policy URL are defined here.
+The App Store build lane and privacy-policy URL are defined here.
 Future App Store Connect account work remains outside tracked public
 docs:
 

@@ -462,7 +462,7 @@ export function useCommandPaletteController({
         ? [
             {
               category: externalCliAllowed ? "Agent" : "Settings",
-              id: "agent.preferences",
+              id: externalCliAllowed ? "agent.preferences" : "assist.preferences",
               keywords: externalCliAllowed
                 ? ["agent", "preferences", "settings", "workbench"]
                 : ["assist", "apple", "local", "preferences", "settings"],

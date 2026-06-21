@@ -26,7 +26,7 @@ or quality-polish slice.
 - `external-agent-review-workflow.md`: external implementation agent plus Codex review workflow.
 - `source-release-checklist.md`: source-preview release readiness.
 - `dmg-preview-checklist.md`: warning-expected DMG preview readiness.
-- `app-store-build.md`: public-safe helper-free Mac App Store build, signing, and smoke boundary.
+- `app-store-build.md`: public-safe Mac App Store build, signing, and smoke boundary.
 - `smoke-checklist.md`: manual smoke checklist.
 - `handoff.md`: concise handoff for the next coding agent.
 

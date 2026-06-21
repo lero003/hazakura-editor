@@ -12,7 +12,7 @@ Hazakura Editor is a Markdown-first safe editor for local text work. It is desig
 
 ## Distribution lanes
 
-The App Store submission lane omits Agent Workbench, CLI-agent entry points, Apple Local Assist helper, and external AI/API calls. The Developer / GitHub lane may include Apple Local Assist and Agent Workbench behind explicit preference and consent gates.
+The App Store submission lane omits Agent Workbench, CLI-agent entry points, arbitrary command execution, and external AI/API calls. It may include Apple Local Assist as an on-device writing companion. The Developer / GitHub lane may also include Agent Workbench behind explicit preference and consent gates.
 
 The current public GitHub preview builds are warning-expected developer previews unless a later release record says otherwise. Do not treat a preview build as App Store submitted, App Store approved, TestFlight-ready, Developer ID signed, or notarized unless the current release evidence explicitly says so.
 

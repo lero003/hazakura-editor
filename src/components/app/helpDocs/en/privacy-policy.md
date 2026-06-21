@@ -16,7 +16,7 @@ Hazakura Editor stores local preferences such as theme, tab state, editor settin
 
 ## Apple Local Assist
 
-The App Store version of Hazakura Editor does not include Apple Local Assist.
+The App Store version of Hazakura Editor may include Apple Local Assist as an on-device writing companion. It uses Apple's Foundation Models framework through a bundled helper only after an explicit user action. The app does not send Apple Local Assist requests to external AI services, and generated text is not saved unless you review and save it.
 
 ## Network, analytics, and cloud services
 

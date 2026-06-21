@@ -1,12 +1,12 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "build": {
-    "beforeBuildCommand": "npm run build:vite",
+    "beforeBuildCommand": "npm run build:apple-assist-helper:live && npm run build:vite",
     "frontendDist": "../dist"
   },
   "bundle": {
     "category": "Productivity",
-    "externalBin": [],
+    "externalBin": ["../binaries/hazakura-apple-assist-helper"],
     "macOS": {
       "signingIdentity": "-"
     }

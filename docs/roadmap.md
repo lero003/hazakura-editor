@@ -136,8 +136,8 @@ Expected slices:
   transaction intake into explicit Diff / Review. For v0.28 and the first
   v0.29 follow-up, the selected visible primitive is the Apple Local
   Assist transaction / compact Diff path; broader file / paste /
-  multi-file ingest remains deferred work. Keep it helper-free in the App
-  Store lane and separate from Agent Workbench.
+  multi-file ingest remains deferred work. Keep App Store AI assistance
+  limited to Apple Local Assist and separate from Agent Workbench.
 - **Golden-path smoke**: keep a repeatable release-quality path for New
   File, Save / Save As, L Mode, e-book Mode, EPUB export, Diff /
   Recovery, and AI proposal review once the first review primitive
@@ -171,7 +171,8 @@ boundary is manual review:
 - Expand from the one v0.28 review primitive into broader ingest flows
   only after the first path proves source-preserving review, rejection,
   and explicit application.
-- Keep App Store lane ingestion file-based and helper-free.
+- Keep App Store lane ingestion limited to explicit Apple Local Assist
+  transactions unless a fresh boundary review opens file/paste ingest.
 - Keep Developer / GitHub lane integration separate, where Apple Local
   Assist or Agent Workbench may create external or unsaved edits under
   their existing boundaries.
@@ -296,11 +297,12 @@ user opens a different lane.
 
 The intended stable distribution shape remains two public binary lanes:
 
-- App Store build: Safe Editor + L Mode + Diff / explicit change review,
-  without External Agent Workbench, CLI launch, Apple Local Assist helper,
-  or external AI/API calls.
-- Developer / GitHub build: the same base plus optional Apple Local
-  Assist and Agent Workbench for allowlisted local CLI providers.
+- App Store build: Safe Editor + L Mode + Diff / explicit change review
+  plus Apple Local Assist as an on-device, availability-gated writing
+  companion; without External Agent Workbench, CLI launch, arbitrary
+  command execution, external AI/API calls, or network fallback.
+- Developer / GitHub build: the same base plus optional Agent Workbench
+  for allowlisted local CLI providers.
 
 Use:
 

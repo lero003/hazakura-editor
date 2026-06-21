@@ -413,8 +413,10 @@ describe("useCommandPaletteController", () => {
     expect(openAppleAssistWindow).toHaveBeenCalledWith("light");
   });
 
-  it("hides assist commands in the App Store distribution lane", () => {
+  it("hides external Agent commands but exposes Apple Local Assist in the App Store distribution lane", () => {
     vi.stubEnv("VITE_HAZAKURA_DISTRIBUTION_LANE", "app-store");
+    const openAppleAssistWindow = vi.fn();
+    const setPreferencesDialogMode = vi.fn();
 
     const { result } = renderHook(() =>
       useCommandPaletteController({
@@ -428,7 +430,7 @@ describe("useCommandPaletteController", () => {
           handleSendSelectionToAgent: vi.fn(),
           insertTable: vi.fn(),
           openAgentWindow: vi.fn(),
-          openAppleAssistWindow: vi.fn(),
+          openAppleAssistWindow,
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
           openWorkspaceFile: vi.fn(),
@@ -440,7 +442,7 @@ describe("useCommandPaletteController", () => {
           saveActiveTabAs: vi.fn(),
           setEditorSettings: vi.fn(),
           setFindVisible: vi.fn(),
-          setPreferencesDialogMode: vi.fn(),
+          setPreferencesDialogMode,
           setPreviewVisible: vi.fn(),
           toggleDiffPane: vi.fn(),
           toggleLMode: vi.fn(),
@@ -449,7 +451,7 @@ describe("useCommandPaletteController", () => {
         },
         activeTab: null,
         activeTabId: null,
-        appleLocalAssistAllowed: false,
+        appleLocalAssistAllowed: true,
         editorPaneRef: { current: null },
         lModeCopy: getLModeCopy("en"),
         setStatus: vi.fn(),
@@ -470,24 +472,25 @@ describe("useCommandPaletteController", () => {
     );
     expect(commandIds.some((id) => id.startsWith("agent."))).toBe(false);
     expect(commandIds.some((id) => id.startsWith("appleAssist."))).toBe(false);
-    expect(
-      result.current.filteredCommands.find(
-        (command) => command.id === "apple-assist.openWindow",
-      ),
-    ).toBeUndefined();
-    expect(
-      result.current.filteredCommands.find(
-        (command) => command.id === "agent.preferences",
-      ),
-    ).toBeUndefined();
-    expect(
-      result.current.filteredCommands.find((command) =>
-        command.label.includes("Assist Settings"),
-      ),
-    ).toBeUndefined();
-    expect(commandLabels.join("\n")).not.toMatch(
-      /Agent|Apple Local Assist|CLI Agent/,
+    expect(commandLabels.join("\n")).not.toMatch(/Agent|CLI Agent/);
+
+    const openWindow = result.current.filteredCommands.find(
+      (command) => command.id === "apple-assist.openWindow",
     );
+    expect(openWindow?.label).toBe("Open Apple Local Assist Window");
+    act(() => {
+      openWindow?.run();
+    });
+    expect(openAppleAssistWindow).toHaveBeenCalledWith("light");
+
+    const assistSettings = result.current.filteredCommands.find(
+      (command) => command.id === "assist.preferences",
+    );
+    expect(assistSettings?.label).toBe("Assist Settings…");
+    act(() => {
+      assistSettings?.run();
+    });
+    expect(setPreferencesDialogMode).toHaveBeenCalledWith("agent");
   });
 
   it("exposes a Local Data Disclosure command in the Developer / GitHub lane", () => {

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-21 (v0.29 Review Desk retirement alignment)
+Last reviewed: 2026-06-21 (v0.29 Apple Local Assist App Store lane)
 
 ## Current State
 
@@ -79,6 +79,10 @@ Last reviewed: 2026-06-21 (v0.29 Review Desk retirement alignment)
   `docs/archive/operations/` or summarized in `docs/current-work.md`; it
   should no longer drive the main queue unless a new App Store build is
   prepared.
+- The current source App Store lane now reopens Apple Local Assist as a
+  narrow on-device writing companion. Agent Workbench, CLI Agent launch,
+  arbitrary command execution, external AI/API calls, provider-add UI,
+  and network fallback remain outside the App Store lane.
 - The v0.20 Sakura workspace ergonomics slice is implemented locally:
   the main chrome can collapse / restore the workspace sidebar, the
   central editor pane keeps a thin bottom full-path copy bar for the
@@ -194,13 +198,12 @@ Last reviewed: 2026-06-21 (v0.29 Review Desk retirement alignment)
   layer, not a separate saved document model.
 - Diff / explicit change review for active editor changes, recovery
   drafts, external-change conflicts, and Apple Local Assist edits.
-- Optional Apple Local Assist alpha in the Developer / GitHub lane as an
-  availability-gated, on-device assist surface with explicit unsaved AI
-  edit transactions. The published App Store lane omits this helper,
-  forces Assist Surface off, and hides command-palette assist / agent
-  settings entries.
-- Optional Developer / GitHub lane Agent Workbench, separated from the
-  App Store lane.
+- Apple Local Assist alpha as an availability-gated, on-device assist
+  surface with explicit unsaved AI edit transactions. The current source
+  App Store lane may expose it; older published App Store builds may still
+  omit the helper until a new build is uploaded, approved, and released.
+- Optional Developer / GitHub lane Agent Workbench, separated from and
+  hidden in the App Store lane.
 - Help-readable Store-document drafts and Support Diagnostics UI.
 
 ## Release Evidence
@@ -263,8 +266,8 @@ baseline, and smoke evidence are archived under
 2. For the next product slice, start with `docs/current-work.md`. v0.29
    is the selected AI assist review API lane. Continue only with a narrow
    Apple Local Assist transaction review / retired Review Desk exposure
-   guard whose proof path is available. Keep the App Store path
-   helper-free; do not add Book Workspace Alpha, hidden multi-file book
+   guard whose proof path is available. Keep the App Store path limited
+   to Apple Local Assist, with no external Agent surface; do not add Book Workspace Alpha, hidden multi-file book
    manifests, structural book-workspace information architecture, Native
    Vibrancy Phase 2, cover editing, or an EPUB document model unless that
    lane is explicitly opened.

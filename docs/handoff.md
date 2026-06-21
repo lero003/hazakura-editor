@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-21 (v0.29 Review Desk retirement alignment)
+Last reviewed: 2026-06-21 (v0.29 Apple Local Assist App Store lane)
 
 ## Current State
 
@@ -86,6 +86,8 @@ Last reviewed: 2026-06-21 (v0.29 Review Desk retirement alignment)
   `candidate` CompareCase and diff view without auto-save or auto-apply.
   `smoke:app-store-surface` now checks retired Review Desk exposure
   through chrome / command tests and keeps the internal primitive test.
+  The current source App Store lane now exposes Apple Local Assist while
+  keeping Agent Workbench / CLI Agent hidden.
   `Cmd+Shift+R` remains reserved only to avoid WebView reload. Next useful
   work should stay narrow: Apple Local Assist transaction review smoke or
   a source-level guard if retired Review Desk routes are touched again.
@@ -202,11 +204,16 @@ Last reviewed: 2026-06-21 (v0.29 Review Desk retirement alignment)
   changing saved Markdown.
 - Normal mode workspace sidebar collapse / restore is complete for
   v0.18. L Mode still owns its separate temporary file-tree drawer.
-- App Store preview packaging remains helper-free: `frontendDist` is
-  explicit in the App Store configs. `npm run build` skips App Store
-  sandbox entitlements so the generated `Hazakura Editor.app` can launch
-  for local smoke. Use `npm run smoke:macos-sandbox-preview` or the signed
-  submit / TestFlight lane for sandbox-entitlement proof.
+- App Store preview packaging is helper-enabled for Apple Local Assist:
+  `frontendDist` and `bundle.externalBin` are explicit in the App Store
+  configs. `npm run build` skips App Store sandbox entitlements so the
+  generated `Hazakura Editor.app` can launch for local smoke. Use
+  `npm run smoke:macos-sandbox-preview` or the signed submit / TestFlight
+  lane for sandbox-entitlement proof.
+- App Store submit packaging now builds `aarch64`, `x86_64`, and
+  `universal-apple-darwin` Apple Assist helper sidecars, then runs
+  `scripts/sign-app-store-submit-app.mjs` so the helper carries
+  `com.apple.security.inherit` before the app bundle is re-signed.
 - App Store/TestFlight package checkpoints should use
   `npm run release:candidate -- --with-app-store-pkg`. The wrapper runs
   App Store surface smoke, builds the signed pkg through the existing
@@ -260,8 +267,9 @@ Last reviewed: 2026-06-21 (v0.29 Review Desk retirement alignment)
 - Directly opened PNG/JPEG/GIF/WebP files can preview without an active
   workspace through `open_image_file`; workspace-tree image preview
   still uses `open_workspace_image` and its root containment check.
-- App Store lane Settings hides Apple Local Assist-specific preference
-  rows; Developer / GitHub lane can still expose those assist controls.
+- App Store lane Settings exposes Apple Local Assist-specific preference
+  rows; Agent Workbench / CLI Agent controls remain Developer /
+  GitHub-only.
 - Generated macOS app bundles now include repository-root `LICENSE`
   and `THIRD_PARTY_NOTICES.md` under `Contents/Resources/`.
   `scripts/probe-macos-distribution.sh` verifies those files for the
@@ -453,6 +461,18 @@ open Active UX Queue slice and close it as `implemented`,
   Upload, App Store Connect processing, TestFlight, App Review, and
   manual signed-build smoke remain outside the repository unless new
   evidence is explicitly recorded.
+- Latest v0.29 Apple Local Assist App Store-lane gate: source tests and
+  local build checks passed on 2026-06-21 with
+  `npm run smoke:app-store-surface`, `npm run test`,
+  `cargo test --manifest-path src-tauri/Cargo.toml -- --test-threads=1`,
+  `npm run build:apple-assist-helper:live`, `npm run build:vite`,
+  `npm run build:app-store-preview`, `npm run probe:macos-distribution`,
+  `SKIP_BUILD=1 npm run smoke:macos-sandbox-preview`,
+  `npm run build:app-store-submit`, and
+  `REQUIRE_APP_STORE_ENTITLEMENTS=1 bash scripts/probe-macos-distribution.sh <universal app>`.
+  The submit build was locally ad-hoc signed because no App Store
+  Distribution identity was supplied in this run; package upload /
+  TestFlight / App Review remain unproven.
 - Latest e-book Mode code gate: v0.23 pseudo-pagination passed on
   2026-06-19 with
   `npm run test -- src/components/editor/preview/EBookPane.test.tsx src/styles/previewCss.test.ts`,

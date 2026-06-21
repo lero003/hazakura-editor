@@ -21,7 +21,7 @@ export function isExternalCliAssistSurfaceAllowed(): boolean {
 }
 
 export function isAppleLocalAssistSurfaceAllowed(): boolean {
-  return !isAppStoreDistributionLane();
+  return true;
 }
 
 export function isAssistSurfaceAllowedForDistribution(

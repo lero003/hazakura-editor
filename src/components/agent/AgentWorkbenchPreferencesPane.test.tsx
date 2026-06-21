@@ -97,21 +97,27 @@ describe("AgentWorkbenchPreferencesPane", () => {
     );
   });
 
-  it("hides CLI Agent and Apple Local Assist options in the App Store distribution lane", () => {
+  it("hides CLI Agent but keeps Apple Local Assist available in the App Store distribution lane", () => {
     vi.stubEnv("VITE_HAZAKURA_DISTRIBUTION_LANE", "app-store");
 
     render(
       <AgentWorkbenchPreferencesPane
         {...baseProps}
-        assistSurfacePreference="none"
+        assistSurfacePreference="apple-local"
       />,
     );
 
     expect(screen.queryByRole("option", { name: "CLI Agent" })).toBeNull();
     expect(
-      screen.queryByRole("option", { name: "Apple Local Assist (Experimental)" }),
-    ).toBeNull();
+      screen.getByRole("option", { name: "Apple Local Assist (Experimental)" }),
+    ).toBeTruthy();
     expect(screen.getByRole("option", { name: "Off" })).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { name: "Apple Local Assist" }),
+    ).toBeTruthy();
+    expect(
+      screen.queryByLabelText("Agent Workbench provider"),
+    ).toBeNull();
   });
 
   it("shows restart warning when the assist surface preference differs from the active surface", () => {

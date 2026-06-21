@@ -74,7 +74,7 @@ describe("SettingsPreferencesPane", () => {
     );
   });
 
-  it("hides the Apple Local Assist diff preference in the App Store distribution lane", () => {
+  it("keeps the Apple Local Assist diff preference in the App Store distribution lane", () => {
     vi.stubEnv("VITE_HAZAKURA_DISTRIBUTION_LANE", "app-store");
     const { container } = render(
       <SettingsPreferencesPane
@@ -91,8 +91,8 @@ describe("SettingsPreferencesPane", () => {
       />,
     );
 
-    expect(container.textContent).not.toContain("Apple Local Assist");
-    expect(container.textContent).not.toContain(
+    expect(container.textContent).toContain("Apple Local Assist");
+    expect(container.textContent).toContain(
       "Open Apple Local Assist diff automatically",
     );
   });

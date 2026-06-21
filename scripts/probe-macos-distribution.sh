@@ -134,6 +134,9 @@ elif has_entitlement "$HELPER" "com.apple.security.inherit"; then
     echo "helper inherit entitlement: present"
 else
     echo "helper inherit entitlement: missing"
+    if [ "$REQUIRE_APP_STORE_ENTITLEMENTS" = "1" ]; then
+        missing_required_entitlement=1
+    fi
 fi
 
 if [ "$EXPECTED_DISTRIBUTION_LANE" = "app-store" ]; then
@@ -144,8 +147,8 @@ if [ "$EXPECTED_DISTRIBUTION_LANE" = "app-store" ]; then
         failed=1
     fi
 
-    if [ -e "$HELPER" ]; then
-        echo "error: App Store lane must not bundle Apple Assist helper: $HELPER" >&2
+    if [ ! -x "$HELPER" ]; then
+        echo "error: App Store lane must bundle Apple Assist helper: $HELPER" >&2
         failed=1
     fi
 

@@ -23,10 +23,10 @@ The v0.27 refinement phases are complete for source-tag purposes. Keep
 memo / historical phase boundary and
 `docs/post-v0.25-product-refinement-plan.md` as the
 broader lens. The active v0.29 lane is explicit AI assist review on top
-of the completed v0.28 review foundation: keep the App Store path
-helper-free, retire the standalone Review Desk screen, and route visible
-AI assistance through the Apple Local Assist transaction / Diff review
-surface before any broader ingest or Book Workspace work.
+of the completed v0.28 review foundation: keep the App Store path limited
+to Apple Local Assist, retire the standalone Review Desk screen, and
+route visible AI assistance through the Apple Local Assist transaction /
+Diff review surface before any broader ingest or Book Workspace work.
 
 ## Product Boundary
 
@@ -652,7 +652,7 @@ AI-proposal review foundation without becoming an agent platform.
 | P0 | L Mode image policy parity | L Mode follows the same external-image and `data:image` safety expectations as Preview / export. External `http:` / `https:` images are not rendered as a direct fetch path. Supported `data:image` MIME types, strict base64 validation, and the 2 MB inline cap match Preview's embedded-image policy. The 2 MB cap is only for Markdown-embedded `data:image` payloads; workspace image files and EPUB packaged images stay under the separate workspace/local image boundary and may need their own EPUB image policy later. Workspace images still resolve through the bounded workspace-image command, source text remains unchanged, and focused L Mode tests pin the behavior. |
 | P1 | Workspace search encoding parity | Workspace search uses the same practical decode assumptions as safe file open where possible: UTF-8 plus Shift-JIS / EUC-JP. Do not claim broader legacy-encoding parity unless file open supports it first. Binary-looking and oversized files remain skipped, and focused Rust tests cover UTF-8 plus Shift-JIS or EUC-JP. |
 | P2 | System handoff hardening | Fixed OS handoff routes such as external links, Finder reveal, and print/browser handoff are easier to audit as allowlisted OS handoff, not arbitrary command execution. Keep behavior user-initiated and bounded; prove normalization / allowlist behavior with existing or focused tests. |
-| P3 | AI proposal review foundation | Add only one reusable intake / review primitive: file, paste, or existing transaction input into explicit Diff / Review. App Store lane remains helper-free and file/text based; Developer / GitHub integrations stay behind Apple Local Assist / Agent Workbench boundaries. No auto-apply, auto-save, auto-commit, generic chat, provider plugin, or hidden workspace rewrite. |
+| P3 | AI proposal review foundation | Add only one reusable intake / review primitive: file, paste, or existing transaction input into explicit Diff / Review. App Store lane remains Apple Local Assist-only for AI assistance; Developer / GitHub integrations stay behind Apple Local Assist / Agent Workbench boundaries. No auto-apply, auto-save, auto-commit, generic chat, provider plugin, or hidden workspace rewrite. |
 | Release gate | Golden-path smoke checklist | Before tagging a v0.28 source / local-app release, run or update a focused checklist for New File, Save / Save As, L Mode, e-book Mode, EPUB export, Diff / Recovery, and AI proposal review if the review primitive is included. |
 
 P0 is implemented locally as of 2026-06-21. L Mode no longer renders
@@ -698,7 +698,7 @@ candidate-review primitive can still build a source-preserving
 `candidate` CompareCase, and the detached Apple Local Assist Writing
 Companion records unsaved AI edit transactions with compact Diff /
 Discard review before save. This closes the v0.28 foundation goal without
-adding App Store helper behavior, provider plugins, generic chat, hidden
+adding broader provider plugins, generic chat, hidden
 workspace rewrites, auto-save, auto-commit, or broader Agent Workbench
 integration. Explicit file/paste ingest expansion, multi-file proposal
 review, richer provenance, and Agent Workbench external-edit intake remain
@@ -723,7 +723,7 @@ Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| P0 | Follow the v0.29 AI assist review API section above | Prefer one narrow Apple Local Assist / AI edit transaction review slice whose proof path is available. Keep it helper-free for the App Store lane, explicit Diff / Review only, and do not reopen the standalone Review Desk screen without a fresh boundary decision. |
+| P0 | Follow the v0.29 AI assist review API section above | Prefer one narrow Apple Local Assist / AI edit transaction review slice whose proof path is available. Keep App Store AI assistance limited to Apple Local Assist, explicit Diff / Review only, and do not reopen the standalone Review Desk screen without a fresh boundary decision. |
 | P1 | Core Safe Editor quality probe | When concrete queue items are exhausted, inspect one basic high-risk surface instead of adding broad tests: open/save/close, restore/recovery, preview, diff/review, workspace file operations, standalone files, image handling, keyboard/IME, or error recovery. State the risk hypothesis, run a focused source/app inspection or smoke, then either fix the smallest issue found or close as `verified no-op`. |
 | P2 | Light accessibility sanity | Keep accessibility as a light sanity pass adjacent to core surfaces: keyboard reachability, focus escape/Tab behavior, readable labels, and obvious contrast. Do not prioritize broad accessibility audits over basic editor quality unless a concrete accessibility failure is observed. |
 | Separate lane | Native vibrancy via `window-vibrancy` + macOS 26 floor | Keep as an independent release-planning lane outside v0.27 refinement. It requires a macOS 26 floor decision, built `.app` smoke on macOS 26, and App Store lane judgment before becoming active work. |
@@ -1046,9 +1046,9 @@ App Store Connect evidence.
 - 2026-06-18: `0.19.0` passed App Review and was published on the Mac
   App Store. The public listing is
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
-  The App Store lane remains the helper-free Safe Editor lane; Agent
-  Workbench, CLI Agent launch, Apple Local Assist helper, external
-  AI/API calls, and arbitrary command execution surfaces stay outside
+  That published App Store build used the helper-free Safe Editor lane;
+  Agent Workbench, CLI Agent launch, Apple Local Assist helper, external
+  AI/API calls, and arbitrary command execution surfaces stayed outside
   that published build.
 - 2026-06-13: The ignored internal App Review notes draft was refreshed
   during the `0.19.0` submission-candidate lane, and the tracked

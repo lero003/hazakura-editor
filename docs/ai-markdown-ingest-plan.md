@@ -27,7 +27,8 @@ This plan inherits the existing Safe Editor and AI Assistance boundary:
 - Ingest is user-initiated.
 - Review is explicit and Diff-centered.
 - Saving remains a normal user decision after review.
-- App Store lane stays helper-free. File/paste ingest needs a fresh
+- App Store lane may use Apple Local Assist transactions only through the
+  explicit AI edit transaction boundary. File/paste ingest needs a fresh
   boundary decision before it re-enters the product surface.
 - Developer / GitHub lane may interoperate with Apple Local Assist or
   Agent Workbench only through their existing explicit boundaries.
@@ -100,9 +101,10 @@ Acceptable current shape:
 - Retired Review Desk and candidate file-import entry points remain
   absent from the App Store-safe surface.
 
-No Apple Local Assist helper, Agent Workbench, external AI/API calls, or
-provider process launch belongs in the App Store submission lane unless
-a later App Store-specific review reopens that decision.
+No Agent Workbench, external AI/API calls, provider process launch, or
+network fallback belongs in the App Store submission lane. Apple Local
+Assist may appear there only as an on-device, availability-gated writing
+companion with explicit review before save.
 
 ## Developer / GitHub Lane
 
@@ -155,8 +157,8 @@ Future implementation should prove:
 - AI-generated text does not auto-save or overwrite files;
 - accepted changes are explicit and reviewable;
 - rejected changes leave source unchanged;
-- App Store lane remains helper-free and does not expose retired Review
-  Desk import routes;
+- App Store lane does not expose retired Review Desk import routes,
+  external Agent surfaces, or hidden AI application paths;
 - Developer / GitHub lane integrations do not bypass existing Apple
   Local Assist or Agent Workbench boundaries;
 - Normal Mode, L Mode, e-book Mode, Preview, Diff, and Export continue

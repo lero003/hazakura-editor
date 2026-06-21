@@ -345,7 +345,7 @@ describe("PrivacyPreferencesPane", () => {
     const text = getSectionBodyText("help-doc-section-network");
     expect(text).toContain("bundled Apple Local Assist helper");
     expect(text).toContain(
-      "Agent Workbench can launch an allowlisted provider",
+      "Agent Workbench in the Developer / GitHub lane can launch an allowlisted provider",
     );
     expect(text).toContain("macOS utilities");
     expect(text).toContain("Show in Finder");

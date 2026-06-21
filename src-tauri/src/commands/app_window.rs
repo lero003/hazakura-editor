@@ -270,9 +270,8 @@ pub(crate) fn open_apple_assist_window<R: tauri::Runtime>(
     // Unlike the Agent window it is NOT gated on
     // `agent_workbench_active` / `agent_workbench_consent`: Apple
     // Local Assist is a different trust boundary (Writing
-    // Companion, not Code Agent). It is still distribution-gated
-    // so the helper-free App Store lane cannot spawn the window.
-    // Only the main window may spawn it, matching the Agent
+    // Companion, not Code Agent). App Store builds may expose it,
+    // but only the main window may spawn it, matching the Agent
     // window's label gate.
     ensure_main_window(&window)?;
     ensure_apple_assist_allowed_by_distribution()?;

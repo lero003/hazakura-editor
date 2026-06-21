@@ -3,7 +3,7 @@
 Status: Planning
 Scope: v0.12+ Apple Local Assist direction and App Store / developer-build release lanes
 Authority: Medium
-Last reviewed: 2026-06-12
+Last reviewed: 2026-06-21
 
 ## Implementation Snapshot (v0.12, in-progress)
 
@@ -18,14 +18,14 @@ Apple Local Assist has moved from fixture-only plumbing to a live local preview 
 
 What is **not** done yet:
 
-- no App Store sandbox or TestFlight packaging change
+- no uploaded helper-enabled App Store / TestFlight package evidence yet
 - no Developer ID signing / notarization lane for the bundled helper
 - the editor-wide `minimumSystemVersion` later moved to `15.0` for the
   v0.19 App Store package candidate; this is separate from any future
   Apple Local Assist / Foundation Models `26.0` requirement
 - no release tag, no GitHub Release, no App Store submission for this live helper state
 
-The current App Store submission lane has moved to a stricter helper-free shape: `HAZAKURA_DISTRIBUTION_LANE=app-store` / `VITE_HAZAKURA_DISTRIBUTION_LANE=app-store` hides External Agent Workbench, forces Assist Surface off, rejects Agent Workbench and Apple Local Assist IPC on the Rust command surface, and uses an App Store Tauri config with no `externalBin`. Earlier sandbox-helper spawn proof remains historical evidence for the Apple Local Assist experiment, not the current submission default.
+The current App Store submission lane has reopened Apple Local Assist in the narrow on-device writing-companion shape: `HAZAKURA_DISTRIBUTION_LANE=app-store` / `VITE_HAZAKURA_DISTRIBUTION_LANE=app-store` still hides External Agent Workbench and CLI Agent IPC, but allows Apple Local Assist window / probe / generation / AI edit transaction IPC and uses an App Store Tauri config with the bundled helper sidecar. Earlier helper-free package evidence remains historical evidence for already-submitted builds, not the current source default.
 
 ## Official Information Confirmed (2026-06-05, slice 7)
 
@@ -259,12 +259,13 @@ Include:
 - L Mode
 - Diff / explicit change review
 - bounded workspace file access through user-selected files/folders
+- Apple Local Assist when available, limited to on-device writing help
+  and explicit unsaved AI edit transactions
 
 Exclude:
 
 - External Agent Workbench
 - CLI provider launch
-- Apple Local Assist helper / Apple Intelligence helper
 - external AI/API calls
 - arbitrary process execution
 - generic terminal behavior
@@ -272,7 +273,9 @@ Exclude:
 - custom updater
 - warning-expected unsigned/not-notarized messaging
 
-This build should be prepared through TestFlight before App Store submission.
+This build should be prepared through TestFlight before App Store submission,
+with Apple Local Assist unavailable states and no-network-fallback behavior
+included in the smoke notes.
 
 ### Developer Build
 
@@ -368,8 +371,8 @@ Target:
   readiness
 - finalize App Review Notes, privacy/support metadata, and third-party
   license packet
-- keep Agent Workbench, CLI launch, Apple Local Assist helper, and
-  external AI/API calls out of the App Store lane
+- keep Agent Workbench, CLI launch, arbitrary command execution, network
+  fallback, and external AI/API calls out of the App Store lane
 
 ### v1.0: App Store Candidate
 
@@ -384,8 +387,8 @@ Target:
 Before App Store submission, prepare concise review notes that explain:
 
 - the app is a Markdown/text editor
-- Apple Local Assist is omitted from the submitted App Store build
-- the App Store build does not include External Agent Workbench, CLI launch, arbitrary command execution, Apple Local Assist helper, external AI/API calls, or network-required features
+- Apple Local Assist is included only as an on-device, availability-gated writing companion with explicit review before save
+- the App Store build does not include External Agent Workbench, CLI launch, arbitrary command execution, external AI/API calls, network fallback, or network-required features
 - file access is user-selected and workspace-bounded
 
 ## References

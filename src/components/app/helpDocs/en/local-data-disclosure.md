@@ -20,12 +20,12 @@ EPUB export is a beta, explicit File menu or command palette action that writes 
 
 ## Apple Local Assist
 
-The App Store submission build does not bundle Apple Local Assist and does not call Apple Foundation Models, external AI services, or external APIs. Developer / GitHub builds may expose Apple Local Assist as a separate alpha feature.
+The App Store submission build may bundle Apple Local Assist as an on-device writing companion. It calls Apple's Foundation Models framework through the bundled helper only after an explicit user action. The app does not send Apple Local Assist requests to external AI services or external APIs, and there is no network fallback.
 
 ## App Store build
 
-The App Store build does not include Agent Workbench, a CLI agent, Apple Local Assist helper, or an arbitrary command surface. Related menus, switches, shortcuts, and IPC routes are also disabled.
+The App Store build does not include Agent Workbench, a CLI agent, or an arbitrary command surface. Related Agent menus, switches, shortcuts, and IPC routes are disabled.
 
 ## Network and analytics
 
-This app's App Store lane code does not include fetch, XHR, analytics, telemetry, crash reporting, or external AI/API calls. In the Developer / GitHub lane, Apple Local Assist may use the bundled Apple Local Assist helper and enabled Agent Workbench can launch an allowlisted provider. Explicit actions such as Show in Finder, print handoff, and Move to Trash may pass the selected path or a temporary file to macOS utilities.
+This app's App Store lane code does not include fetch, XHR, analytics, telemetry, crash reporting, or external AI/API calls. Apple Local Assist may use the bundled Apple Local Assist helper to call Apple's local Foundation Models framework, and enabled Agent Workbench in the Developer / GitHub lane can launch an allowlisted provider. Explicit actions such as Show in Finder, print handoff, and Move to Trash may pass the selected path or a temporary file to macOS utilities.

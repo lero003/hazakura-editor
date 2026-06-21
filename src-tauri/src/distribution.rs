@@ -33,7 +33,7 @@ pub(crate) fn ensure_agent_workbench_allowed_for_lane(lane: Option<&str>) -> Res
 }
 
 pub(crate) fn apple_assist_allowed_by_distribution() -> bool {
-    !is_app_store_distribution_lane()
+    apple_assist_allowed_for_lane(Some(distribution_lane()))
 }
 
 pub(crate) fn assist_surface_settings_allowed_by_distribution() -> bool {
@@ -52,16 +52,12 @@ fn agent_workbench_allowed_for_lane(lane: Option<&str>) -> bool {
     !is_app_store_distribution_lane_for_lane(lane)
 }
 
-fn apple_assist_allowed_for_lane(lane: Option<&str>) -> bool {
-    !is_app_store_distribution_lane_for_lane(lane)
+// Apple Local Assist is allowed in every lane as an on-device writing
+// companion. External CLI Agent remains lane-gated separately above.
+fn apple_assist_allowed_for_lane(_lane: Option<&str>) -> bool {
+    true
 }
 
-pub(crate) fn ensure_apple_assist_allowed_for_lane(lane: Option<&str>) -> Result<(), String> {
-    if is_app_store_distribution_lane_for_lane(lane) {
-        return Err(
-            "Apple Local Assist is not available in the App Store distribution lane.".to_string(),
-        );
-    }
-
+pub(crate) fn ensure_apple_assist_allowed_for_lane(_lane: Option<&str>) -> Result<(), String> {
     Ok(())
 }

@@ -13,7 +13,7 @@ Historical smoke logs and old per-release notes are archived in `docs/archive/op
 
 Use Vite / browser smoke only for frontend-only rendering checks that do not require Tauri runtime APIs. The browser surface cannot prove native app behavior that depends on `@tauri-apps/api` `invoke`, native dialogs, window/menu integration, bundled sidecar helpers, filesystem permissions, app launch state, or macOS signing / bundle metadata.
 
-When a checklist item covers file open/save, workspace folders, app menus, close/quit handling, or L Mode behavior that must be judged inside the packaged desktop shell, run `npm run build` and launch `src-tauri/target/release/bundle/macos/Hazakura Editor.app`. This local smoke bundle is helper-free and launchable, but it is not the signed App Store sandbox submit artifact. Use the signed TestFlight build for App Store-lane proof, and use the Developer / GitHub bundle for Apple Local Assist or Agent Workbench checks. If that environment is unavailable or blocked, report the smoke as blocked/skipped and keep automated checks limited to unit tests, Vite build, Tauri build, bundle metadata, and codesign evidence. Do not claim manual app smoke passed from browser-only evidence.
+When a checklist item covers file open/save, workspace folders, app menus, close/quit handling, L Mode behavior, or Apple Local Assist behavior that must be judged inside the packaged desktop shell, run `npm run build` and launch `src-tauri/target/release/bundle/macos/Hazakura Editor.app`. This local smoke bundle is helper-enabled and launchable, but it is not the signed App Store sandbox submit artifact. Use the signed TestFlight build for App Store-lane proof, and use the Developer / GitHub bundle for Agent Workbench checks. If that environment is unavailable or blocked, report the smoke as blocked/skipped and keep automated checks limited to unit tests, Vite build, Tauri build, bundle metadata, and codesign evidence. Do not claim manual app smoke passed from browser-only evidence.
 
 For a repeatable local packaged-app launch/window proof, run:
 
@@ -66,10 +66,10 @@ npm run smoke:app-store-surface
 ```
 
 This lightweight smoke groups the source-level checks that the App
-Store lane hides Agent Workbench / CLI Agent / Apple Local Assist
-commands and settings, keeps App Store-only build scripts helper-free,
-avoids visible developer-lane badges, and covers the helper-free Review
-Desk proposal-import path at source level. It does not prove signed
+Store lane hides Agent Workbench / CLI Agent commands and settings,
+allows the Apple Local Assist surface and helper configuration, avoids
+visible developer-lane badges, and covers the retired Review Desk
+proposal-import path at source level. It does not prove signed
 bundle identity, sandbox behavior, native file-picker interaction,
 external network absence, App Store Connect processing, or TestFlight
 user flows.
@@ -341,7 +341,7 @@ Run when Agent Workbench, provider availability, terminal sizing, or Agent Windo
 Run when `src/lib/tauri/appleAssist.ts`, `src-tauri/src/commands/apple_assist.rs`, `src-tauri/src/commands/apple_assist_supervisor.rs`, `src-helpers/apple-assist/`, `useAppleAssistAvailability`, `useAppleAssistCandidate`, `src/lib/locale/appleAssist.ts`, or the Apple Assist companion / command palette entries change.
 
 1. Build the live helper with `npm run build:apple-assist-helper:live`; confirm the probe smoke returns an availability envelope. On a Mac where Apple Foundation Models is available and `SystemLanguageModel.default.supportsLocale()` is true, optionally run `HAZAKURA_APPLE_ASSIST_LIVE_SMOKE_GENERATE=1 npm run build:apple-assist-helper:live` and confirm a candidate or honest error envelope.
-2. Confirm `npm run build:developer-preview` bundles `Contents/MacOS/hazakura-apple-assist-helper` and signs it with the local app bundle. Confirm `npm run build:app-store-preview` does not bundle the helper.
+2. Confirm `npm run build:developer-preview` and `npm run build:app-store-preview` bundle `Contents/MacOS/hazakura-apple-assist-helper` and sign it with the local app bundle.
 3. Confirm the Settings / Agent Workbench Preferences surface does not list Apple Local Assist as a CLI agent provider — it is a separate Assist Surface provider class.
 4. Confirm no menu entry, status bar item, autosave path, or background timer runs Apple Local Assist generation without an explicit user request.
 5. In the built app, select `Apple Local Assist (Experimental)`, restart if prompted, open the companion from normal editor, issue a rough request, and confirm the buffer becomes dirty without auto-saving.

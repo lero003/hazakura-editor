@@ -20,9 +20,11 @@ Last reviewed: 2026-06-21
 Hazakura Editor `0.26.0` is published on the Mac App Store:
 [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12).
 
-The App Store build is the helper-free Safe Editor lane. It omits Agent
-Workbench, CLI Agent launch, Apple Local Assist helper, external AI/API
-calls, and arbitrary command execution surfaces.
+The App Store build is the Safe Editor lane. It omits Agent Workbench,
+CLI Agent launch, external AI/API calls, and arbitrary command execution
+surfaces. Apple Local Assist may be exposed as an on-device writing
+companion where Apple Foundation Models is available, with no network
+fallback, auto-save, tool calling, or workspace-wide indexing.
 
 ## Preview
 
@@ -101,9 +103,10 @@ Hazakura Editor currently focuses on these surfaces:
 - Native macOS menus, Preferences, theme and editor display settings,
   dirty-close protection, keyboard/focus guards, and localized Japanese-first
   UI copy.
-- Developer / GitHub-only Assist surfaces: optional Agent Workbench with one
-  allowlisted provider session, and Apple Local Assist review/transaction
-  flows. The App Store lane remains helper-free and forces Assist Surface off.
+- Assist surfaces: Apple Local Assist review/transaction flows may be exposed
+  in the App Store lane as on-device writing assistance. Optional Agent
+  Workbench with one allowlisted provider session remains Developer /
+  GitHub-only.
 
 For the full implementation inventory and release state, see
 [`docs/current-status.md`](docs/current-status.md).
@@ -126,7 +129,7 @@ For the full implementation inventory and release state, see
 - [External Agent Review Workflow](docs/external-agent-review-workflow.md): external implementation agent + Codex review workflow
 - [Source Release Checklist](docs/source-release-checklist.md): source-only developer previewの準備境界
 - [DMG Preview Checklist](docs/dmg-preview-checklist.md): warning-expected DMG preview laneの準備・検証境界
-- [App Store Build](docs/app-store-build.md): Mac App Store提出用helper-free build / signing / smoke境界
+- [App Store Build](docs/app-store-build.md): Mac App Store提出用 build / signing / smoke境界
 
 ## License
 
@@ -152,7 +155,8 @@ The built app is generated at:
 src-tauri/target/release/bundle/macos/Hazakura Editor.app
 ```
 
-This local bundle uses the helper-free App Store preview shape, but skips
+This local bundle uses the App Store preview shape, including the bundled
+Apple Local Assist helper, but skips
 App Store sandbox entitlements so it can launch for development smoke.
 Use `npm run build:app-store-submit` for the signed App Store submission
 lane and `npm run smoke:macos-sandbox-preview` for the local sandbox
@@ -211,7 +215,7 @@ Developer preview release boundary:
 - The latest prepared GitHub source / local-app tag is [v0.27.0](https://github.com/lero003/hazakura-editor/tree/v0.27.0).
 - The current warning-expected DMG preview tag is `v0.20.0`; its release-note evidence lives in [0.20.0 Warning-expected DMG Preview](docs/releases/0.20.0-warning-expected-dmg-preview.release.md).
 - Source users build locally with `npm ci` and `npm run build`.
-- The generated local smoke `.app` declares macOS 26.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. The App Store submission lane is helper-free and does not include Agent Workbench, CLI Agent, Apple Local Assist helper, or external AI/API calls. Developer / GitHub builds may still include the Apple Local Assist helper. GitHub Release DMG previews require Developer ID Application signing but are not notarized until the separate notarization lane is completed.
+- The generated local smoke `.app` declares macOS 26.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. The App Store submission lane can include Apple Local Assist as an on-device writing companion, but does not include Agent Workbench, CLI Agent, arbitrary command execution, or external AI/API calls. Developer / GitHub builds may still include Agent Workbench. GitHub Release DMG previews require Developer ID Application signing but are not notarized until the separate notarization lane is completed.
 - The latest published warning-expected DMG preview is [v0.20.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.20.0). The v0.20.0 release notes live in [0.20.0 Warning-expected DMG Preview](docs/releases/0.20.0-warning-expected-dmg-preview.release.md).
 
 ## Known Limits
@@ -225,7 +229,7 @@ Developer preview release boundary:
 - Agent Workbench is optional and explicit. It does not provide a general shell prompt, arbitrary command input UI, arbitrary path input UI, provider-add UI, multiple sessions, session restore, auto-apply, auto-commit, or Git integration.
 - Apple Local Assist is an experimental alpha surface, not the main AI feature. Live generation depends on Apple Foundation Models availability on the current Mac; output quality may vary, and the feature may change or be removed.
 - Apple Local Assist is intended for lightweight text assistance only. It is not a replacement for External Agent Workbench, external AI agents, local LLM runtimes, code review, multi-file understanding, long-document restructuring, autonomous agent work, or advanced reasoning.
-- Apple Local Assist has no network fallback, background rewriting, auto-save, tool calling, or workspace-wide indexing. It is omitted from the helper-free App Store submission lane and remains a Developer / GitHub lane alpha feature unless a later App Store-specific review reopens it.
+- Apple Local Assist has no network fallback, background rewriting, auto-save, tool calling, or workspace-wide indexing. In the App Store lane it remains a narrow on-device writing companion and must fail gracefully when Apple Foundation Models is unavailable.
 - CLI provider internals are outside hazakura's safety boundary. What happens inside `codex`, `opencode`, `pi`, or `claude` depends on the provider and the user's choices.
 - Agent Workbench does not expose a shell prompt, arbitrary command field, arbitrary path field, or general terminal.
 - Outside Agent Workbench there is no Git integration, LSP, terminal, AI assistance, plugin system, arbitrary command execution, or project-wide analysis.
