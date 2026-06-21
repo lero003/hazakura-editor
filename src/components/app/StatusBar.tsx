@@ -3,6 +3,7 @@ import type {
   EditorTab,
   TextEncoding,
 } from "../../types";
+import { formatLineEndingKind, formatTextEncoding } from "../../lib/format";
 
 type StatusBarProps = {
   activeTab: EditorTab | null;
@@ -79,6 +80,9 @@ export function StatusBar({
           </span>
           <label className="status-bar-segment status-bar-format-chip">
             <span className="status-bar-format-label">{lineEndingLabel}</span>
+            <span className="status-bar-format-value" aria-hidden="true">
+              {formatLineEndingKind(activeTab.line_ending)}
+            </span>
             <select
               aria-label={lineEndingAriaLabel}
               className="status-bar-format-select"
@@ -93,6 +97,9 @@ export function StatusBar({
           </label>
           <label className="status-bar-segment status-bar-format-chip">
             <span className="status-bar-format-label">{encodingLabel}</span>
+            <span className="status-bar-format-value" aria-hidden="true">
+              {formatTextEncoding(activeTab.encoding, "en")}
+            </span>
             <select
               aria-label={encodingAriaLabel}
               className="status-bar-format-select"

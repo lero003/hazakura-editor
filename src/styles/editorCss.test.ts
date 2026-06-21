@@ -107,12 +107,17 @@ describe("editor tab close affordance CSS", () => {
     expect(rule).toMatch(/filter:\s*saturate\(0\.95\)/);
   });
 
-  it("keeps Shokou ambient particles visibly colored", () => {
+  it("keeps Shokou ambient particles as quiet shadow particles", () => {
     const rule = ruleBody(appShellCss, ".ambient-shokou .ambient-particle");
 
-    expect(rule).toMatch(/hsl\(var\(--ambient-hue,\s*45\),\s*92%,\s*82%\)/);
-    expect(rule).toMatch(/opacity:\s*0\.88/);
-    expect(rule).toMatch(/box-shadow:\s*0 0 12px 1px/);
+    expect(rule).toMatch(/hsl\(var\(--ambient-hue,\s*222\),\s*24%,\s*28%\)/);
+    expect(rule).toMatch(/hsl\(var\(--ambient-hue,\s*222\),\s*18%,\s*14%\)/);
+    expect(rule).toMatch(/box-shadow:\s*0 0 4px 1px/);
+    expect(rule).toMatch(/0 0 13px 3px/);
+    expect(rule).toMatch(/height:\s*var\(--ambient-h,\s*2\.5px\)/);
+    expect(rule).toMatch(/width:\s*var\(--ambient-w,\s*2\.5px\)/);
+    expect(rule).toMatch(/opacity:\s*0\.5/);
+    expect(rule).not.toMatch(/rgba\(255,\s*255,\s*255/);
   });
 
   it("keeps special theme app shell gradients visible behind native chrome", () => {
@@ -123,7 +128,9 @@ describe("editor tab close affordance CSS", () => {
     expect(sakuraShell).toMatch(/background:\s*radial-gradient/);
     expect(sakuraShell).toMatch(/linear-gradient\(145deg/);
     expect(yakouShell).toMatch(/background:\s*radial-gradient/);
-    expect(yakouShell).toMatch(/linear-gradient\(135deg/);
+    expect(yakouShell).toMatch(/circle at 0% 0%/);
+    expect(yakouShell).toMatch(/rgba\(62,\s*119,\s*190,\s*0\.4\)/);
+    expect(yakouShell).toMatch(/linear-gradient\(145deg/);
     expect(yakouShell).toMatch(/animation:\s*bgDrift\s+20s/);
     expect(shokouShell).toMatch(/background:\s*linear-gradient\(135deg/);
     expect(shokouShell).toMatch(/animation:\s*bgDrift\s+25s/);

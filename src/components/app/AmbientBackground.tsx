@@ -81,8 +81,10 @@ function generateItems(
         };
       case "shokou":
         {
-          const hueBand = [24, 36, 202, 214, 330][index % 5];
+          const hueBand = [216, 222, 228, 234, 240][index % 5];
           const hueOffset = (seed % 12) - 6;
+          const shokouSizeScale =
+            intensity === "dramatic" ? sizeScale * 0.82 : sizeScale;
           return {
             delay: -((seed * 2.1 + index * 1.3) % 18),
             drift: ((seed * 0.5 + index * 4.1) % 18) - 9,
@@ -90,7 +92,7 @@ function generateItems(
             hue: hueBand + hueOffset,
             index,
             left: ((seed * 1.618 + index * 7) % 100),
-            size: Math.max(1, (2.2 + (seed % 5) * 0.85) * sizeScale),
+            size: Math.max(1, (1.8 + (seed % 5) * 0.65) * shokouSizeScale),
           };
         }
     }

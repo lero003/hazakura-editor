@@ -363,7 +363,7 @@
 
 .status-bar-detail {
   flex: 1 1 auto;
-  max-width: min(34ch, 30vw);
+  max-width: min(40ch, 38vw);
   opacity: 0.85;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -378,10 +378,11 @@
 .status-bar-format-group {
   align-items: center;
   display: inline-flex;
-  flex: 0 1 min(58ch, 54vw);
+  flex: 0 1 auto;
   gap: 3px;
   justify-content: flex-end;
   margin-left: auto;
+  max-width: min(64ch, 72vw);
   min-width: 0;
 }
 
@@ -399,12 +400,15 @@
   height: 22px;
   margin: 0 1px;
   padding: 0 4px 0 6px;
+  position: relative;
   transition: all 0.15s var(--ease-standard);
 }
 
-.status-bar-format-chip:hover {
-  background: color-mix(in srgb, var(--status-text) 14%, transparent);
-  border-color: color-mix(in srgb, var(--status-text) 26%, transparent);
+.status-bar-format-chip:hover,
+.status-bar-format-chip:focus-within {
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 36%, transparent);
+  color: var(--status-text);
 }
 
 .status-bar-format-label {
@@ -413,32 +417,46 @@
   pointer-events: none;
 }
 
+.status-bar-format-value {
+  color: var(--status-text);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
 .status-bar-format-select {
   appearance: none;
   -webkit-appearance: none;
   background: transparent;
+  background-color: transparent;
+  background-image: none;
   border: 0;
   box-shadow: none;
   color: var(--status-text);
+  color-scheme: dark;
   cursor: pointer;
   font: inherit;
   font-size: 11px;
   font-weight: 700;
+  height: 100%;
+  inset: 0;
   letter-spacing: 0.04em;
   min-height: 0;
-  padding: 0 4px 0 0;
-  text-overflow: ellipsis;
-  min-width: 42px;
+  min-width: 0;
+  opacity: 0;
+  padding: 0;
+  position: absolute;
+  width: 100%;
 }
 
 .status-bar-format-select:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--status-text) 50%, transparent);
-  outline-offset: 1px;
-  border-radius: 4px;
+  outline: none;
 }
 
 .status-bar-format-select:hover {
-  color: color-mix(in srgb, var(--status-text) 100%, var(--accent) 10%);
+  color: var(--status-text);
 }
 
 @media (max-width: 860px) {

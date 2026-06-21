@@ -99,9 +99,21 @@ describe("StatusBar", () => {
 
     const detail = container.querySelector(".status-bar-detail");
     const formatGroup = container.querySelector(".status-bar-format-group");
+    const visualValues = Array.from(
+      container.querySelectorAll(".status-bar-format-value"),
+    );
 
     expect(formatGroup?.querySelector("select")?.textContent).toContain("LF");
     expect(formatGroup?.textContent).toContain("UTF-8");
+    expect(visualValues.map((value) => value.textContent)).toEqual([
+      "LF",
+      "UTF-8",
+    ]);
+    expect(
+      visualValues.every(
+        (value) => value.getAttribute("aria-hidden") === "true",
+      ),
+    ).toBe(true);
     expect(detail?.textContent).toBe("Markdown · 10 B · 7 characters");
     expect(detail?.getAttribute("title")).toBe(
       "Markdown · 10 B · 7 characters · UTF-8 · LF · final newline · Ln 1, Col 1",

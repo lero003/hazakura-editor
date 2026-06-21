@@ -14,9 +14,10 @@
 /* 夜光: 背景グラデーションアニメーション / Yakou: Animated BG */
 :root[data-theme="yakou"] .app-shell {
   background:
-    radial-gradient(circle at 12% 8%, rgba(80, 116, 168, 0.24), transparent 34%),
-    radial-gradient(circle at 92% 14%, rgba(135, 96, 164, 0.14), transparent 30%),
-    linear-gradient(135deg, #0b1014 0%, #111623 46%, #0a0d13 100%);
+    radial-gradient(circle at 0% 0%, rgba(62, 119, 190, 0.4), transparent 34%),
+    radial-gradient(circle at 18% 12%, rgba(42, 88, 148, 0.28), transparent 38%),
+    radial-gradient(circle at 92% 14%, rgba(88, 70, 126, 0.12), transparent 30%),
+    linear-gradient(145deg, #08111d 0%, #0c1220 38%, #111827 66%, #080b12 100%);
   background-size: 200% 200%;
   animation: bgDrift 20s ease-in-out infinite;
 }
@@ -115,19 +116,20 @@
   animation: heatDrift var(--ambient-duration, 14s) ease-in-out infinite;
   animation-delay: var(--ambient-delay, 0s);
   background:
-    radial-gradient(circle at 40% 35%, rgba(255, 255, 255, 0.9), transparent 24%),
     radial-gradient(
       circle,
-      hsl(var(--ambient-hue, 45), 92%, 82%) 0%,
-      hsl(var(--ambient-hue, 45), 84%, 62%) 58%,
+      hsl(var(--ambient-hue, 222), 24%, 28%) 0%,
+      hsl(var(--ambient-hue, 222), 18%, 14%) 58%,
       transparent 100%
     );
   border-radius: 50%;
   bottom: -8px;
-  box-shadow: 0 0 12px 1px hsl(var(--ambient-hue, 45), 88%, 68%, 0.62);
-  height: var(--ambient-h, 3px);
-  opacity: 0.88;
-  width: var(--ambient-w, 3px);
+  box-shadow:
+    0 0 4px 1px hsl(var(--ambient-hue, 222), 22%, 10%, 0.38),
+    0 0 13px 3px hsl(var(--ambient-hue, 222), 18%, 8%, 0.24);
+  height: var(--ambient-h, 2.5px);
+  opacity: 0.5;
+  width: var(--ambient-w, 2.5px);
 }
 
 @media (prefers-reduced-motion: reduce) {
