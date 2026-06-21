@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-21 (v0.28 planning alignment)
+Last reviewed: 2026-06-21 (v0.29 proposal-ingest alignment)
 
 ## Current Position
 
@@ -20,8 +20,8 @@ Current release state:
 - Current package/app version: `0.28.0`.
 - Mac App Store published version: `0.26.0`, reported released on
   2026-06-20 after App Review completion.
-- Active lane: v0.28 Safety, Quality, and AI Review Foundation after
-  the v0.27 refinement source / local-app tag.
+- Active lane: v0.29 AI Proposal Ingest and Writing Flow on top of the
+  completed v0.28 safety / AI-review foundation.
 - Current work queue: `docs/current-work.md`.
 
 North star for the next product arc:
@@ -40,12 +40,11 @@ flows.
 
 Near-term phase order:
 
-1. v0.28 tightens quality and trust consistency, especially around image
+1. v0.28 tightened quality and trust consistency, especially around image
    loading, Japanese text search parity, OS handoff explanation, and the
    first reusable AI proposal review primitives.
-2. v0.29+ deepens writing / review flow only after those foundations are
-   solid: L Mode / e-book transitions, proposal import, Diff / Review, and
-   release-quality smoke.
+2. v0.29 deepens writing / review flow from that foundation: Review Desk
+   proposal import, explicit Diff / Review, and release-quality smoke.
 3. v1.0 should be a polished single-document Markdown book-writing
    surface with explicit export and review, not a full multi-file book
    workspace.
@@ -71,9 +70,10 @@ These boundaries stay active across roadmap changes:
 - Agent Workbench is a separate Developer / GitHub lane trust boundary:
   explicit, consent-gated, allowlisted providers only, selected
   workspace root only, one active session, no restore, no auto-apply.
-- Manual Review Desk entry points are hidden for the current App
-  Store-oriented surface. Diff, recovery review, and Apple Local Assist
-  edit review remain explicit, unsaved, and inspectable.
+- Review Desk entry points should remain explicit and low-prominence.
+  The current v0.29 App Store-safe shape exposes Review Desk from normal
+  chrome only for an active text tab; candidate import stays local
+  file/text based and never auto-saves or auto-applies.
 - Workspace file operations stay bounded to the selected workspace and
   must not become a full file manager.
 
@@ -159,6 +159,9 @@ explicitly.
 Use `docs/ai-markdown-ingest-plan.md` as the planning memo. The durable
 boundary is manual review:
 
+- The first v0.29 slice exposes Review Desk from normal chrome for an
+  active text tab and imports a user-selected Markdown / text proposal
+  file into the existing candidate Diff flow.
 - Support Diff / Review for AI or external-agent output, starting with
   the smallest reusable proposal intake path.
 - Add explicit ingest for AI-proposed Markdown changes from selected

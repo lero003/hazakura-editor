@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-21 (v0.28 App Store package candidate)
+Last reviewed: 2026-06-21 (v0.29 proposal-ingest alignment)
 
 ## Current State
 
@@ -69,15 +69,16 @@ Last reviewed: 2026-06-21 (v0.28 App Store package candidate)
   that checkpoint. A `Cmd+Shift+F` global-search result activation bug
   found during smoke has a focused code-level fix.
 - Older public tags and release assets remain immutable.
-- Current active work is v0.28 Safety, Quality, and AI Review Foundation.
-  P0 / P1 / P2 are implemented locally, and P3 is accepted as the already
-  implemented Apple Local Assist transaction / Review Desk candidate Diff
-  review primitive. The v0.27 refinement phases are complete for
-  source-tag purposes. Local pre-review regression, package, payload,
-  dependency-audit, bundle metadata, license-resource, and bundle-size
-  evidence remains archived under `docs/archive/operations/` or summarized
-  in `docs/current-work.md`; it should no longer drive the main queue
-  unless a new App Store build is prepared.
+- Current active work is v0.29 AI Markdown proposal ingest. The v0.28
+  Safety, Quality, and AI Review Foundation lane is implemented /
+  accepted locally, and the first v0.29 slice exposes Review Desk for an
+  active text tab so a user-selected Markdown / text proposal file can be
+  imported into the explicit candidate Diff flow. Local pre-review
+  regression, package, payload, dependency-audit, bundle metadata,
+  license-resource, and bundle-size evidence remains archived under
+  `docs/archive/operations/` or summarized in `docs/current-work.md`; it
+  should no longer drive the main queue unless a new App Store build is
+  prepared.
 - The v0.20 Sakura workspace ergonomics slice is implemented locally:
   the main chrome can collapse / restore the workspace sidebar, the
   central editor pane keeps a thin bottom full-path copy bar for the
@@ -109,9 +110,11 @@ Last reviewed: 2026-06-21 (v0.28 App Store package candidate)
   `codex`, `opencode`, `pi`, or `claude` provider session in the
   selected workspace after restart-required enablement and
   responsibility-boundary consent.
-- Manual Review Desk entry points are hidden for the current App
-  Store-oriented surface. Diff, recovery review, and Apple Local Assist
-  edit review remain explicit, unsaved, and inspectable.
+- Review Desk is explicit and low-prominence in the current
+  App Store-safe surface: it is reachable from normal chrome only when an
+  active text tab exists, can import user-selected Markdown / text
+  proposal files into candidate Diff review, and still does not
+  auto-save, auto-apply, launch helpers, or call external AI/API.
 - Workspace file operations are bounded to the selected workspace.
   Workspace-internal drag/drop Move remains experimental; New File, New
   Folder, Rename, and Move to Trash are the dependable file-tree
@@ -235,8 +238,8 @@ baseline, and smoke evidence are archived under
 
 ## Active Planning Sources
 
-- `docs/current-work.md`: current v0.28 quality / AI-review foundation
-  queue and completed v0.27 refinement notes.
+- `docs/current-work.md`: current v0.29 proposal-ingest queue plus
+  completed v0.28 foundation and v0.27 refinement notes.
 - `docs/archive/planning/v0.27-refinement-slice-plan.md`: historical v0.27
   execution phases for large-document rendering, One Editing Space,
   flow-preserving editing, and status bar cleanup.
@@ -257,15 +260,14 @@ baseline, and smoke evidence are archived under
 1. For post-approval cleanup, keep App Store-specific evidence public-safe
    and archive only completed version-specific material; canonical build
    and boundary docs stay live for future submissions.
-2. For the next product slice, start with `docs/current-work.md`. v0.28
-   is the selected Safety, Quality, and AI Review Foundation lane. L Mode
-   / Preview image-policy parity, workspace search encoding parity, system
-   handoff hardening, and AI proposal review foundation are implemented /
-   accepted locally; continue with the release-gate smoke checklist or one
-   narrow quality probe. Do not add Book Workspace Alpha, hidden multi-file
-   book manifests, structural book-workspace information architecture,
-   Native Vibrancy Phase 2, cover editing, or an EPUB document model unless
-   that lane is explicitly opened.
+2. For the next product slice, start with `docs/current-work.md`. v0.29
+   is the selected AI Markdown proposal-ingest lane. Continue only with a
+   narrow Review Desk / proposal-source / smoke slice whose proof path is
+   available. Keep the App Store path helper-free and file/text based; do
+   not add Book Workspace Alpha, hidden multi-file book manifests,
+   structural book-workspace information architecture, Native Vibrancy
+   Phase 2, cover editing, or an EPUB document model unless that lane is
+   explicitly opened.
 3. For the current `0.28.0` App Store submission lane, build `26` is the
    latest generated local package evidence after the top-chrome quieting
    pass.

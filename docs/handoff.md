@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-21 (v0.28 App Store package candidate)
+Last reviewed: 2026-06-21 (v0.29 proposal-ingest alignment)
 
 ## Current State
 
@@ -77,18 +77,15 @@ Last reviewed: 2026-06-21 (v0.28 App Store package candidate)
   use one fixed OS handoff helper with static platform command templates.
   Print handoff rejects path-like or non-HTML file names before creating
   the temporary file.
-- v0.28 P3 AI proposal review foundation is accepted locally as an
-  existing implementation slice rather than new feature work. The first
-  reusable primitive is the existing transaction / candidate review path:
-  manual Review Desk candidate input builds an explicit Diff review,
-  command-palette Apple Local Assist candidate generation hands output
-  into the same Review Desk candidate flow without auto-applying, and the
-  detached Apple Local Assist Writing Companion records unsaved AI edit
-  transactions with compact Diff / Discard review before save. Do not add
-  file/paste/multi-file ingest in v0.28; leave broader proposal ingest for
-  v0.29+ unless explicitly reopened. Continue v0.28 from the release-gate
-  smoke checklist or one narrow quality probe unless a higher-priority
-  regression appears.
+- v0.29 AI Markdown proposal ingest is now active on top of the completed
+  v0.28 foundation. Review Desk is reachable from normal chrome for an
+  active text tab, can import a user-selected Markdown / text proposal
+  file into the candidate input, records file-import source metadata, and
+  renders an explicit Diff without auto-save, auto-apply, helper launch,
+  or external AI/API calls. Next useful work should stay narrow: built-app
+  smoke for this file-import path, paste/source provenance polish, or a
+  focused Review Desk quality fix if one is reproduced. Multi-file
+  proposal review remains deferred.
 - Latest docs cleanup keeps current entry points lighter: README now
   summarizes feature areas instead of listing every implemented behavior,
   roadmap keeps a short shipped-phase summary for v0.18-v0.26, and

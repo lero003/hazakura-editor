@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: Active v0.28 quality / AI-review foundation routing and completed v0.27 refinement
+Scope: Active v0.29 AI Markdown proposal ingest and completed v0.28 foundation
 Authority: High
-Last reviewed: 2026-06-21 (v0.28 planning alignment)
+Last reviewed: 2026-06-21 (v0.29 proposal-ingest alignment)
 
 ## Purpose
 
@@ -714,7 +714,7 @@ Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| P0 | Follow the v0.28 table above | Prefer the first open v0.28 slice whose proof path is available. Keep the selected slice independent and do not bundle nearby polish. |
+| P0 | Follow the v0.29 proposal-ingest section above | Prefer one narrow Review Desk / proposal-ingest slice whose proof path is available. Keep it file/text based, helper-free for the App Store lane, and explicit Diff / Review only. |
 | P1 | Core Safe Editor quality probe | When concrete queue items are exhausted, inspect one basic high-risk surface instead of adding broad tests: open/save/close, restore/recovery, preview, diff/review, workspace file operations, standalone files, image handling, keyboard/IME, or error recovery. State the risk hypothesis, run a focused source/app inspection or smoke, then either fix the smallest issue found or close as `verified no-op`. |
 | P2 | Light accessibility sanity | Keep accessibility as a light sanity pass adjacent to core surfaces: keyboard reachability, focus escape/Tab behavior, readable labels, and obvious contrast. Do not prioritize broad accessibility audits over basic editor quality unless a concrete accessibility failure is observed. |
 | Separate lane | Native vibrancy via `window-vibrancy` + macOS 26 floor | Keep as an independent release-planning lane outside v0.27 refinement. It requires a macOS 26 floor decision, built `.app` smoke on macOS 26, and App Store lane judgment before becoming active work. |
@@ -732,6 +732,7 @@ over copy-heavy or product-voice-sensitive work.
 | Done locally | v0.28 workspace search encoding parity | Implemented on 2026-06-21. Do not re-pick unless a regression appears; continue with the release-gate smoke checklist or a narrow quality probe. |
 | Done locally | v0.28 system handoff hardening | Implemented on 2026-06-21. Do not re-pick unless a regression appears; continue with the release-gate smoke checklist or a narrow quality probe. |
 | Done locally | v0.28 AI proposal review foundation | Accepted on 2026-06-21 as an existing transaction / candidate Diff review primitive. Do not add file/paste/multi-file ingest in v0.28; leave broader ingest expansion for v0.29+. |
+| Done locally | v0.29 single-file proposal import | Implemented on 2026-06-21. Review Desk is reachable from normal chrome for an active text tab, imports a user-selected Markdown / text file into candidate input, records file-import source metadata, and renders an explicit Diff without auto-save or auto-apply. |
 | Good | L Mode quality investigation | Pick one reproduced L Mode issue or one measurable quality gap only: caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or performance baseline. Do not add a new editing model or contenteditable surface. |
 | Good | Theme quality investigation | Pick one concrete theme issue only: contrast, focus visibility, status/error readability, dialog readability, or Increase Contrast behavior. Do not redesign palettes or add theme customization. |
 | Good | Core Safe Editor quality probe | Inspect one basic surface with a clear risk hypothesis, then fix only a reproduced issue or close as `verified no-op`. Prefer open/save/close, restore/recovery, preview, diff/review, workspace files, standalone files, image handling, keyboard/IME, or error recovery. |

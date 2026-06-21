@@ -266,12 +266,15 @@ link routing, or external URL handling changes:
 
 Run when Review Desk entry points, candidate comparison, or App Store surface visibility changes:
 
-1. Confirm Review Desk is not a persistent top-chrome primary action.
-2. Confirm `Cmd+Shift+R`, View menu, command palette, and slash menu do not expose a manual Review Desk open action.
-3. Confirm `Cmd+Shift+R` does not reload the WebView or move focus unexpectedly.
-4. Confirm active-tab versus disk review still opens through the existing Diff / Review changes route.
-5. Confirm auto-backup restore review still applies only to the compared document, leaves the file unsaved, and keeps Save explicit.
-6. Confirm Apple Local Assist edit review still exposes diff, discard, and close decisions without auto-saving.
+1. Open a text file and confirm the normal chrome shows the low-prominence Review Desk entry point.
+2. Close all text tabs or switch to a non-text/image-only surface and confirm the Review Desk entry point is disabled or unavailable.
+3. Open Review Desk and confirm importing a user-selected Markdown / text proposal fills the candidate input and renders a Diff preview without saving or applying.
+4. Confirm the candidate preview metadata shows the source as file import and the imported file name.
+5. Confirm `Cmd+Shift+R` does not reload the WebView or move focus unexpectedly.
+6. Confirm View menu, command palette, and slash menu do not add additional manual Review Desk open actions unless that surface is explicitly reopened.
+7. Confirm active-tab versus disk review still opens through the existing Diff / Review changes route.
+8. Confirm auto-backup restore review still applies only to the compared document, leaves the file unsaved, and keeps Save explicit.
+9. Confirm Apple Local Assist edit review still exposes diff, discard, and close decisions without auto-saving.
 
 ## Auto-Backup Restore
 
