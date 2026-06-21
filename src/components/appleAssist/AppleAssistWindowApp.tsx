@@ -543,6 +543,11 @@ export function AppleAssistWindowApp() {
     setRequestText(preset.requestText);
     setError(null);
   }, []);
+  const streamPreviewPresentation = getStreamPreviewPresentation(
+    streamPreview,
+    busy,
+    copy,
+  );
 
   return (
     <div className="apple-assist-window-shell" data-testid="apple-assist-shell">
@@ -616,18 +621,24 @@ export function AppleAssistWindowApp() {
         </div>
       </section>
 
-      {streamPreview.trim().length > 0 ? (
-        <section
-          className="apple-assist-window-stream-preview"
-          aria-label={copy.streamPreviewHeading}
-          data-testid="apple-assist-stream-preview"
-        >
-          <p className="apple-assist-stream-preview-heading">
-            {copy.streamPreviewHeading}
+      <section
+        className={`apple-assist-window-stream-preview apple-assist-window-stream-preview-${streamPreviewPresentation.kind}`}
+        aria-label={copy.streamPreviewHeading}
+        data-testid="apple-assist-stream-preview"
+      >
+        <p className="apple-assist-stream-preview-heading">
+          {copy.streamPreviewHeading}
+        </p>
+        {streamPreviewPresentation.kind === "content" ? (
+          <pre className="apple-assist-stream-preview-body">
+            {streamPreviewPresentation.text}
+          </pre>
+        ) : (
+          <p className="apple-assist-stream-preview-placeholder">
+            {streamPreviewPresentation.text}
           </p>
-          <pre className="apple-assist-stream-preview-body">{streamPreview}</pre>
-        </section>
-      ) : null}
+        )}
+      </section>
 
       <section
         className="apple-assist-window-feedback"
@@ -642,17 +653,10 @@ export function AppleAssistWindowApp() {
           >
             {copy.feedbackHeading}
           </p>
-          <p
-            className="apple-assist-feedback-description"
-            id="apple-assist-feedback-description-id"
-          >
-            {copy.feedbackDescription}
-          </p>
         </div>
         <div
           ref={feedbackSectionRef}
           className="apple-assist-feedback-body"
-          aria-describedby="apple-assist-feedback-description-id"
           aria-labelledby="apple-assist-feedback-heading-id"
           aria-live="polite"
           role="log"
@@ -758,6 +762,8 @@ export type AppleAssistWindowCopy = {
   unsupportedStatus: string;
   workingLocally: string;
   streamPreviewHeading: string;
+  streamPreviewIdle: string;
+  streamPreviewWaiting: string;
   // v0.17 operation-feedback panel. The panel shows app-
   // known lifecycle events (target acquired, request sent,
   // generation started, applied, failed, unavailable). It
@@ -767,7 +773,6 @@ export type AppleAssistWindowCopy = {
   // excerpts, filesystem paths, or secrets — see
   // docs/archive/operations/app-store-v0.17/apple-local-assist-operation-feedback-request.md.
   feedbackHeading: string;
-  feedbackDescription: string;
   feedbackEmpty: string;
   feedbackEntry: (
     kind: OperationFeedbackKind,
@@ -822,6 +827,53 @@ export function getApplyStatusPresentation(
     error: payload.message,
     feedbackKind: "failed",
   };
+}
+
+export type StreamPreviewPresentation = {
+  kind: "content" | "placeholder";
+  text: string;
+};
+
+export function getStreamPreviewPresentation(
+  rawPreview: string,
+  busy: boolean,
+  copy: AppleAssistWindowCopy,
+): StreamPreviewPresentation {
+  const text = sanitizeStreamPreviewText(rawPreview);
+  if (text.length > 0) {
+    return { kind: "content", text };
+  }
+  return {
+    kind: "placeholder",
+    text: busy ? copy.streamPreviewWaiting : copy.streamPreviewIdle,
+  };
+}
+
+function sanitizeStreamPreviewText(rawPreview: string): string {
+  const trimmed = rawPreview.trim();
+  if (!trimmed) {
+    return "";
+  }
+  const boundaryPatterns = [
+    /<<<HAZAKURA_TEXT_START\s*\n([\s\S]*?)\n?HAZAKURA_TEXT_END>>>/,
+    /<<<HAZAKURA_CONTEXT_START\s*\n([\s\S]*?)\n?HAZAKURA_CONTEXT_END>>>/,
+  ];
+
+  for (const pattern of boundaryPatterns) {
+    const inner = trimmed.match(pattern)?.[1]?.trim();
+    if (inner) {
+      return inner;
+    }
+  }
+
+  const withoutBoundaryStart = trimmed
+    .replace(/^<<<HAZAKURA_(TEXT|CONTEXT)_START\s*/u, "")
+    .replace(/\s*HAZAKURA_(TEXT|CONTEXT)_END>>>$/u, "")
+    .trim();
+  if (!withoutBoundaryStart || /^<<<HAZAKURA_[A-Z_]+_START$/u.test(trimmed)) {
+    return "";
+  }
+  return withoutBoundaryStart;
 }
 
 function renderAvailabilityMessage(
@@ -994,11 +1046,13 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       unsupportedStatus:
         "この はんきょうで はざくら ろーかる あしす とは つかえません。macOS 26 いこう、M1 いこうの Mac、この Mac で ゆうこうかした あっぷる いんてりじぇんす、たいおう げんご / ちいき が ひつようです。",
       workingLocally: "この Mac で しょり ちゅう (そとの AI さーびすには おくりません)",
-      streamPreviewHeading: "せいせい ぷれびゅー",
+      streamPreviewHeading: "つくっている あん",
+      streamPreviewIdle:
+        "おねがいすると、AI が つくっている とちゅうの ぶんが ここに でます。できあがった あんは、ほぞん まえに へんこうてんを かくにん できます。",
+      streamPreviewWaiting:
+        "つくりはじめています。ぶんが とどくと ここに でます。",
       // v0.17 operation-feedback panel copy.
       feedbackHeading: "しんこうじょうきょう",
-      feedbackDescription:
-        "おねがいごとに、たいしょうの かくにん、せいせい、へんしゅう あんの はんえいまでを ここに ひょうじします。ほぞん まえに さぶんで かくにんできます。",
       feedbackEmpty:
         "まだ おねがいは ありません。たいしょうを えらび、おねがいの ないようを かいてください。",
       feedbackEntry: (kind, payload) => {
@@ -1104,11 +1158,13 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       unsupportedStatus:
         "この環境では Hazakura Local Assist は使えません。macOS 26 以降、M1 以降の Mac、この Mac で有効化された Apple Intelligence、対応言語 / 地域が必要です。",
       workingLocally: "この Mac 上で処理中（外部 AI サービスには送りません）",
-      streamPreviewHeading: "生成プレビュー",
+      streamPreviewHeading: "作成中の案",
+      streamPreviewIdle:
+        "依頼すると、AI が作っている途中の文章がここに出ます。完成した案は、保存する前に変更点を確認できます。",
+      streamPreviewWaiting:
+        "作り始めています。文章が届くとここに出ます。",
       // v0.17 operation-feedback panel copy.
       feedbackHeading: "進行状況",
-      feedbackDescription:
-        "依頼ごとに、対象の確認、生成、編集案の反映までをここに表示します。保存前に差分で確認できます。",
       feedbackEmpty:
         "まだ依頼はありません。対象を選び、依頼内容を入力してください。",
       feedbackEntry: (kind, payload) => {
@@ -1212,11 +1268,13 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     unsupportedStatus:
       "Hazakura Local Assist is not supported in this environment. It needs macOS 26 or later, a Mac with M1 or later, Apple Intelligence turned on for this Mac, and a supported language and region.",
     workingLocally: "Working locally on this Mac (no third-party AI service)",
-    streamPreviewHeading: "Generation preview",
+    streamPreviewHeading: "Draft in progress",
+    streamPreviewIdle:
+      "When you send a request, the text being written will appear here. You can check the finished changes before saving.",
+    streamPreviewWaiting:
+      "Starting the draft. Text will appear here as it arrives.",
     // v0.17 operation-feedback panel copy.
     feedbackHeading: "Progress",
-    feedbackDescription:
-      "Each request records target selection, local generation, and draft application here. Review the diff before saving.",
     feedbackEmpty:
       "No requests yet. Pick a target and describe what you want changed.",
     feedbackEntry: (kind, payload) => {

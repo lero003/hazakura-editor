@@ -3,6 +3,7 @@ import {
   classifyApplyError,
   getApplyStatusPresentation,
   getAppleAssistWindowCopy,
+  getStreamPreviewPresentation,
   type AppleAssistWindowCopy,
   type OperationFeedbackKind,
 } from "./AppleAssistWindowApp";
@@ -67,12 +68,13 @@ const REQUIRED_KEYS: ReadonlyArray<keyof AppleAssistWindowCopy> = [
   "unsupportedStatus",
   "workingLocally",
   "streamPreviewHeading",
+  "streamPreviewIdle",
+  "streamPreviewWaiting",
   // v0.17 operation-feedback panel. The keys are the
   // minimum required to render the panel; the
   // `feedbackEntry` function shape is exercised in a
   // separate test below.
   "feedbackHeading",
-  "feedbackDescription",
   "feedbackEmpty",
   "feedbackEntry",
 ];
@@ -180,17 +182,12 @@ describe("getAppleAssistWindowCopy", () => {
         }
       });
 
-      it("explains the request flow without turning the panel into a transcript", () => {
-        expect(copy.feedbackDescription).toMatch(/\S/);
-        expect(copy.feedbackDescription).not.toMatch(
-          /transcript|prompt|response|reasoning|chain of thought/i,
-        );
+      it("keeps progress copy compact and leaves detailed flow explanation out of the panel", () => {
+        expect("feedbackDescription" in copy).toBe(false);
         if (lang === "ja") {
-          expect(copy.feedbackDescription).toMatch(/依頼ごと|対象の確認|差分/);
           expect(copy.availableDisclosure).toMatch(/未保存|差分|外部 AI/);
         }
         if (lang === "en") {
-          expect(copy.feedbackDescription).toMatch(/Each request|unsaved|save/);
           expect(copy.availableDisclosure).toMatch(/external AI service/);
         }
       });
@@ -288,6 +285,55 @@ describe("getAppleAssistWindowCopy", () => {
     expect(ja.contextTooLongError).toMatch(/8000/);
     expect(ja.disabledStatus).toMatch(/アシスト設定|再起動/);
     expect(ja.unsupportedStatus).toMatch(/macOS 26|M1|Apple Intelligence|対応言語/);
+  });
+});
+
+describe("getStreamPreviewPresentation", () => {
+  const copy = getAppleAssistWindowCopy("ja");
+
+  it("keeps the preview area meaningful before the first partial arrives", () => {
+    expect(copy.streamPreviewHeading).toBe("作成中の案");
+    expect(copy.streamPreviewIdle).not.toMatch(/生成|プレビュー|システム/);
+    expect(copy.streamPreviewWaiting).not.toMatch(/生成|プレビュー|システム/);
+    expect(getStreamPreviewPresentation("", false, copy)).toEqual({
+      kind: "placeholder",
+      text: copy.streamPreviewIdle,
+    });
+    expect(getStreamPreviewPresentation("", true, copy)).toEqual({
+      kind: "placeholder",
+      text: copy.streamPreviewWaiting,
+    });
+  });
+
+  it("strips leaked Hazakura prompt boundary markers from streaming previews", () => {
+    const presentation = getStreamPreviewPresentation(
+      [
+        "<<<HAZAKURA_TEXT_START",
+        "翻訳案です。",
+        "HAZAKURA_TEXT_END>>>",
+      ].join("\n"),
+      true,
+      copy,
+    );
+
+    expect(presentation).toEqual({
+      kind: "content",
+      text: "翻訳案です。",
+    });
+  });
+
+  it("falls back to waiting copy when the partial contains only a boundary marker", () => {
+    const presentation = getStreamPreviewPresentation(
+      "<<<HAZAKURA_TEXT_START",
+      true,
+      copy,
+    );
+
+    expect(presentation).toEqual({
+      kind: "placeholder",
+      text: copy.streamPreviewWaiting,
+    });
+    expect(presentation.text).not.toContain("HAZAKURA_TEXT_START");
   });
 });
 
