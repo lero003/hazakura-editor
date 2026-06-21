@@ -81,16 +81,37 @@ set_plist_value() {
 
 sign_app_bundle() {
   local app_path="$1"
-  local timestamp_args=()
+  local timestamp_enabled=0
 
   if [[ "$dev_signing_identity" != "-" ]]; then
-    timestamp_args=(--timestamp)
+    timestamp_enabled=1
   fi
 
-  codesign --force --options runtime "${timestamp_args[@]}" --sign "$dev_signing_identity" "${app_path}/Contents/MacOS/hazakura-apple-assist-helper"
-  codesign --force --options runtime "${timestamp_args[@]}" --sign "$dev_signing_identity" "${app_path}/Contents/MacOS/hazakura-editor"
-  codesign --force --deep --options runtime "${timestamp_args[@]}" --sign "$dev_signing_identity" "$app_path"
+  sign_codesign_target "${app_path}/Contents/MacOS/hazakura-apple-assist-helper" 0 "$timestamp_enabled"
+  sign_codesign_target "${app_path}/Contents/MacOS/hazakura-editor" 0 "$timestamp_enabled"
+  sign_codesign_target "$app_path" 1 "$timestamp_enabled"
   codesign --verify --deep --strict --verbose=2 "$app_path"
+}
+
+sign_codesign_target() {
+  local target="$1"
+  local deep="$2"
+  local timestamp_enabled="$3"
+
+  if [[ "$deep" == "1" && "$timestamp_enabled" == "1" ]]; then
+    codesign --force --deep --options runtime --timestamp --sign "$dev_signing_identity" "$target"
+    return
+  fi
+  if [[ "$deep" == "1" ]]; then
+    codesign --force --deep --options runtime --sign "$dev_signing_identity" "$target"
+    return
+  fi
+  if [[ "$timestamp_enabled" == "1" ]]; then
+    codesign --force --options runtime --timestamp --sign "$dev_signing_identity" "$target"
+    return
+  fi
+
+  codesign --force --options runtime --sign "$dev_signing_identity" "$target"
 }
 
 prepare_dev_bundle_identity() {

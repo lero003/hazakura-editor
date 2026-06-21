@@ -115,6 +115,9 @@ Next useful v0.29 slices, if needed:
 
 - Built-app smoke for Review Desk file import in the App Store preview
   lane; keep this separate from the source-level smoke above.
+  `npm run build:macos-lanes` now produces the separate
+  `Hazakura Editor Dev.app` again for local UI smoke setup, but the
+  actual Review Desk import flow still needs a visible app-window smoke.
 - Paste/source provenance polish that keeps provider metadata out of the
   core editor surface.
 - Multi-file proposal review remains deferred until single-file ingest

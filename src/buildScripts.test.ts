@@ -241,6 +241,11 @@ describe("macOS build scripts", () => {
     );
   });
 
+  it("keeps macOS lane ad-hoc signing compatible with nounset shells", () => {
+    expect(macosLanesScript).toContain("sign_codesign_target");
+    expect(macosLanesScript).not.toContain('"${timestamp_args[@]}"');
+  });
+
   it("keeps smoke/probe scripts on the current App Store preview bundle name", () => {
     const probeScript = readFileSync(
       "scripts/probe-macos-distribution.sh",
