@@ -1,6 +1,14 @@
 import { useCallback, useRef, useState } from "react";
 import { openTextFile, pickCandidateTextFile } from "../../lib/tauri";
-import type { ReviewDeskCopy } from "../../lib/locale";
+import {
+  CANDIDATE_FILE_IMPORT_BUFFER_CHANGED_ERROR,
+  CANDIDATE_FILE_IMPORT_NEWER_REQUEST_ERROR,
+  CANDIDATE_FILE_IMPORT_NO_ACTIVE_TAB_ERROR,
+  CANDIDATE_FILE_IMPORT_NO_CURRENT_TAB_ERROR,
+  CANDIDATE_FILE_IMPORT_TAB_CHANGED_ERROR,
+  formatCandidateFileImportFailure,
+  type ReviewDeskCopy,
+} from "../../lib/locale";
 
 export type CandidateFileImportTarget = {
   id: string;
@@ -61,7 +69,7 @@ export function useCandidateFileImport({
   const importAndCompare =
     useCallback(async (): Promise<CandidateFileImportResult> => {
       if (!activeTab) {
-        const message = "No active editor tab.";
+        const message = CANDIDATE_FILE_IMPORT_NO_ACTIVE_TAB_ERROR;
         setError(message);
         return { ok: false, error: message };
       }
@@ -118,7 +126,8 @@ export function useCandidateFileImport({
           sourcePath: document.path,
         };
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : String(err);
+        const detail = err instanceof Error ? err.message : String(err);
+        const message = formatCandidateFileImportFailure(detail);
         if (requestSeqRef.current === requestSeq) {
           setError(message);
         }
@@ -149,16 +158,16 @@ function getStaleCandidateFileImportReason(
   latestTab: CandidateFileImportTarget | null,
 ): string | null {
   if (requestSeq !== latestRequestSeq) {
-    return "Candidate file import ignored because a newer request is active.";
+    return CANDIDATE_FILE_IMPORT_NEWER_REQUEST_ERROR;
   }
   if (!latestTab) {
-    return "Candidate file import ignored because there is no active editor tab.";
+    return CANDIDATE_FILE_IMPORT_NO_CURRENT_TAB_ERROR;
   }
   if (latestTab.id !== requestTab.id || latestTab.path !== requestTab.path) {
-    return "Candidate file import ignored because the active editor tab changed.";
+    return CANDIDATE_FILE_IMPORT_TAB_CHANGED_ERROR;
   }
   if (latestTab.contents !== requestTab.contents) {
-    return "Candidate file import ignored because the editor buffer changed.";
+    return CANDIDATE_FILE_IMPORT_BUFFER_CHANGED_ERROR;
   }
   return null;
 }

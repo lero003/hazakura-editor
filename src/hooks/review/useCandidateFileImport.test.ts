@@ -27,6 +27,11 @@ vi.mock("../../lib/tauri", async () => {
 });
 
 import {
+  CANDIDATE_FILE_IMPORT_FAILED_PREFIX,
+  CANDIDATE_FILE_IMPORT_NO_ACTIVE_TAB_ERROR,
+  CANDIDATE_FILE_IMPORT_TAB_CHANGED_ERROR,
+} from "../../lib/locale";
+import {
   useCandidateFileImport,
   type CandidateFileImportTarget,
 } from "./useCandidateFileImport";
@@ -169,8 +174,8 @@ describe("useCandidateFileImport", () => {
     });
 
     expect(returned.ok).toBe(false);
-    expect(returned.error).toContain("active editor tab");
-    expect(result.current.error).toContain("active editor tab");
+    expect(returned.error).toBe(CANDIDATE_FILE_IMPORT_NO_ACTIVE_TAB_ERROR);
+    expect(result.current.error).toBe(CANDIDATE_FILE_IMPORT_NO_ACTIVE_TAB_ERROR);
     expect(pickCandidateTextFile).not.toHaveBeenCalled();
   });
 
@@ -218,8 +223,38 @@ describe("useCandidateFileImport", () => {
     });
 
     expect(returned.ok).toBe(false);
-    expect(returned.error).toContain("active editor tab changed");
-    expect(result.current.error).toContain("active editor tab changed");
+    expect(returned.error).toBe(CANDIDATE_FILE_IMPORT_TAB_CHANGED_ERROR);
+    expect(result.current.error).toBe(CANDIDATE_FILE_IMPORT_TAB_CHANGED_ERROR);
+    expect(setCandidateInputText).not.toHaveBeenCalled();
+    expect(runCandidateCompare).not.toHaveBeenCalled();
+  });
+
+  it("wraps file-open failures in a stable import error prefix", async () => {
+    pickCandidateTextFile.mockResolvedValueOnce("/tmp/proposal.md");
+    openTextFile.mockRejectedValueOnce(new Error("Cannot decode selected file"));
+    const setCandidateInputText = vi.fn();
+    const runCandidateCompare = makeRunCandidateCompare();
+    const { result } = renderHook(() =>
+      useCandidateFileImport({
+        activeTab: target,
+        copy,
+        runCandidateCompare,
+        setCandidateInputText,
+      }),
+    );
+
+    let returned: { ok: boolean; error?: string } = { ok: true };
+    await act(async () => {
+      returned = await result.current.importAndCompare();
+    });
+
+    expect(returned.ok).toBe(false);
+    expect(returned.error).toBe(
+      `${CANDIDATE_FILE_IMPORT_FAILED_PREFIX}Cannot decode selected file`,
+    );
+    expect(result.current.error).toBe(
+      `${CANDIDATE_FILE_IMPORT_FAILED_PREFIX}Cannot decode selected file`,
+    );
     expect(setCandidateInputText).not.toHaveBeenCalled();
     expect(runCandidateCompare).not.toHaveBeenCalled();
   });

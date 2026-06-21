@@ -113,6 +113,9 @@ Implemented locally as of 2026-06-21:
 - `smoke:macos-window` now gives a repeatable local packaged-app
   launch/window proof for `Hazakura Editor Dev.app` via
   `CoreGraphics` / `CGWindowListCopyWindowInfo`.
+- Candidate file-import failures now use stable Review Desk messages,
+  localize in the Review Desk and status bar, and can be cleared even
+  when no candidate input or preview remains.
 
 Next useful v0.29 slices, if needed:
 

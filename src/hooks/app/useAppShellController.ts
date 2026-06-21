@@ -1045,6 +1045,7 @@ export function useAppShellController() {
 
   const {
     busy: candidateFileImportBusy,
+    clearError: clearCandidateFileImportError,
     error: candidateFileImportError,
     importAndCompare: importCandidateFileAndCompare,
   } = useCandidateFileImport({
@@ -1053,6 +1054,19 @@ export function useAppShellController() {
     runCandidateCompare,
     setCandidateInputText,
   });
+
+  const setCandidateInputTextAndClearImportError = useCallback(
+    (value: string) => {
+      clearCandidateFileImportError();
+      setCandidateInputText(value);
+    },
+    [clearCandidateFileImportError, setCandidateInputText],
+  );
+
+  const clearCandidateAndImportError = useCallback(() => {
+    clearCandidateFileImportError();
+    clearCandidate();
+  }, [clearCandidate, clearCandidateFileImportError]);
 
   const importCandidateFile = useCallback(async () => {
     const result = await importCandidateFileAndCompare();
@@ -1304,10 +1318,10 @@ export function useAppShellController() {
             : tab,
         ),
       );
-      clearCandidate();
+      clearCandidateAndImportError();
       setStatus("Manual candidate applied");
     },
-    [activeTab, clearCandidate, setStatus, setTabs],
+    [activeTab, clearCandidateAndImportError, setStatus, setTabs],
   );
 
   // v0.12+ Apple Local Assist Writing Companion (slice 5).
@@ -1381,7 +1395,7 @@ export function useAppShellController() {
     candidateFileImportBusy,
     candidateFileImportError,
     candidateInputText,
-    clearCandidate,
+    clearCandidate: clearCandidateAndImportError,
     appCloseCancelButtonRef,
     appCloseDialogRef,
     appRestartPending,
@@ -1592,7 +1606,7 @@ export function useAppShellController() {
     runCandidateCompare,
     runSelectedFileCompare,
     safeEditorCopy,
-    setCandidateInputText,
+    setCandidateInputText: setCandidateInputTextAndClearImportError,
     saveAllAndCloseWindow,
     saveAndClosePendingTab,
     saveTabById,

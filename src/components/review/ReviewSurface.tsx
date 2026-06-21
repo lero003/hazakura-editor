@@ -9,7 +9,10 @@ import type {
 } from "../../types";
 import { isJapaneseMenuLanguage } from "../../types";
 import { isKanaStyle } from "../../lib/locale/_helpers";
-import type { ReviewDeskCopy } from "../../lib/locale";
+import {
+  localizeCandidateFileImportError,
+  type ReviewDeskCopy,
+} from "../../lib/locale";
 import { CandidateEditor } from "../editor/CandidateEditor";
 import { DiffBody } from "../diff/DiffBody";
 
@@ -189,7 +192,8 @@ function ReviewSurfaceCandidateSection({
   const canClear =
     candidateInputText.length > 0 ||
     candidateCompareCase !== null ||
-    candidateErrorMessage !== null;
+    candidateErrorMessage !== null ||
+    candidateFileImportError !== null;
   const candidateLabelId = "review-surface-candidate-editor-label";
   const candidateHintId = "review-surface-candidate-editor-hint";
 
@@ -300,7 +304,10 @@ function ReviewSurfaceCandidateSection({
             role="alert"
             aria-live="polite"
           >
-            {candidateFileImportError}
+            {localizeCandidateFileImportError(
+              candidateFileImportError,
+              menuLanguage,
+            )}
           </p>
         ) : null}
       </div>

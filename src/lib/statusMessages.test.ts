@@ -1,4 +1,8 @@
 import { describe, expect, it } from "vitest";
+import {
+  CANDIDATE_FILE_IMPORT_FAILED_PREFIX,
+  CANDIDATE_FILE_IMPORT_NO_ACTIVE_TAB_ERROR,
+} from "./locale";
 import { localizeStatusMessage } from "./statusMessages";
 
 // v0.15 IPC status feedback.
@@ -121,6 +125,27 @@ describe("localizeStatusMessage: pasted image failures", () => {
       ),
     ).toBe(
       "画像の貼り付けに失敗しました: Pasted image is larger than the image limit of 20 MB.",
+    );
+  });
+});
+
+describe("localizeStatusMessage: Review Desk candidate file import", () => {
+  it("localizes stable candidate file import errors to Japanese", () => {
+    expect(
+      localizeStatusMessage(CANDIDATE_FILE_IMPORT_NO_ACTIVE_TAB_ERROR, "ja"),
+    ).toBe(
+      "候補ファイルを読み込むには、エディタでテキストファイルを開いてください。",
+    );
+  });
+
+  it("localizes the candidate file import failure prefix while preserving the detail", () => {
+    expect(
+      localizeStatusMessage(
+        `${CANDIDATE_FILE_IMPORT_FAILED_PREFIX}Cannot decode selected file`,
+        "ja",
+      ),
+    ).toBe(
+      "候補ファイルを読み込めませんでした: Cannot decode selected file",
     );
   });
 });

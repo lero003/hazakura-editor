@@ -6,7 +6,10 @@ import type {
   EditorSettings,
   EditorTab,
 } from "../../types";
-import { getReviewDeskCopy } from "../../lib/locale";
+import {
+  CANDIDATE_FILE_IMPORT_NO_ACTIVE_TAB_ERROR,
+  getReviewDeskCopy,
+} from "../../lib/locale";
 import { ReviewSurface } from "./ReviewSurface";
 
 vi.mock("../editor/CandidateEditor", () => ({
@@ -147,5 +150,27 @@ describe("ReviewSurface", () => {
 
     expect(screen.getByText("Source")).toBeTruthy();
     expect(screen.getByText("File import: proposal.md")).toBeTruthy();
+  });
+
+  it("localizes candidate file import errors and allows clearing an error-only state", () => {
+    const clearCandidate = vi.fn();
+    renderSurface({
+      candidateFileImportError: CANDIDATE_FILE_IMPORT_NO_ACTIVE_TAB_ERROR,
+      clearCandidate,
+      menuLanguage: "ja",
+      reviewDeskCopy: getReviewDeskCopy("ja"),
+    });
+
+    expect(
+      screen.getByText(
+        "候補ファイルを読み込むには、エディタでテキストファイルを開いてください。",
+      ),
+    ).toBeTruthy();
+
+    const clearButton = screen.getByRole("button", { name: "クリア" });
+    expect(clearButton.hasAttribute("disabled")).toBe(false);
+    fireEvent.click(clearButton);
+
+    expect(clearCandidate).toHaveBeenCalledTimes(1);
   });
 });

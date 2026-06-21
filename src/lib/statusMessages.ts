@@ -1,5 +1,6 @@
 import type { MarkdownFormat } from "../components/editor/EditorPane";
 import type { MenuLanguage } from "../types";
+import { localizeCandidateFileImportError } from "./locale/reviewDesk";
 
 export function localizeStatusMessage(
   message: string,
@@ -177,6 +178,14 @@ export function localizeStatusMessage(
 
   if (exact[message]) {
     return exact[message];
+  }
+
+  const candidateFileImportMessage = localizeCandidateFileImportError(
+    message,
+    menuLanguage,
+  );
+  if (candidateFileImportMessage !== message) {
+    return candidateFileImportMessage;
   }
 
   if (message.startsWith("Agent session state unavailable: ")) {

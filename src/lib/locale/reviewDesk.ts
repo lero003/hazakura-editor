@@ -50,6 +50,79 @@ export type ReviewDeskCopy = {
   title: string;
 };
 
+export const CANDIDATE_FILE_IMPORT_NO_ACTIVE_TAB_ERROR =
+  "Candidate file import failed: no active editor tab.";
+export const CANDIDATE_FILE_IMPORT_NEWER_REQUEST_ERROR =
+  "Candidate file import ignored: a newer import request is active.";
+export const CANDIDATE_FILE_IMPORT_NO_CURRENT_TAB_ERROR =
+  "Candidate file import ignored: there is no active editor tab.";
+export const CANDIDATE_FILE_IMPORT_TAB_CHANGED_ERROR =
+  "Candidate file import ignored: the active editor tab changed.";
+export const CANDIDATE_FILE_IMPORT_BUFFER_CHANGED_ERROR =
+  "Candidate file import ignored: the editor buffer changed.";
+export const CANDIDATE_FILE_IMPORT_FAILED_PREFIX =
+  "Candidate file import failed: ";
+
+export function formatCandidateFileImportFailure(detail: string): string {
+  return `${CANDIDATE_FILE_IMPORT_FAILED_PREFIX}${detail}`;
+}
+
+export function localizeCandidateFileImportError(
+  rawMessage: string,
+  menuLanguage: MenuLanguage,
+): string {
+  if (
+    rawMessage.includes("too large for the comparison preview") ||
+    rawMessage.includes("comparison preview")
+  ) {
+    if (isKanaStyle(menuLanguage)) {
+      return "くらべるには おおきすぎます";
+    }
+    if (isJapaneseMenuLanguage(menuLanguage)) {
+      return "現在のバッファと候補ファイルの差分が大きすぎるため、比較できません。";
+    }
+    return "The buffer and candidate file combination is too large to diff.";
+  }
+
+  if (menuLanguage === "en") {
+    return rawMessage;
+  }
+
+  if (rawMessage === CANDIDATE_FILE_IMPORT_NO_ACTIVE_TAB_ERROR) {
+    return isKanaStyle(menuLanguage)
+      ? "候補ふぁいるを読むには、てきすとをひらいてください。"
+      : "候補ファイルを読み込むには、エディタでテキストファイルを開いてください。";
+  }
+  if (rawMessage === CANDIDATE_FILE_IMPORT_NEWER_REQUEST_ERROR) {
+    return isKanaStyle(menuLanguage)
+      ? "新しい読みこみが始まったため、前の候補ふぁいるは読みこみませんでした。"
+      : "新しい読み込み操作が始まったため、前の候補ファイル取り込みを無視しました。";
+  }
+  if (rawMessage === CANDIDATE_FILE_IMPORT_NO_CURRENT_TAB_ERROR) {
+    return isKanaStyle(menuLanguage)
+      ? "読みこみ中にふみがとぢられたため、候補ふぁいるは読みこめませんでした。"
+      : "読み込み中に対象タブが閉じられたため、候補ファイルの取り込みを中止しました。";
+  }
+  if (rawMessage === CANDIDATE_FILE_IMPORT_TAB_CHANGED_ERROR) {
+    return isKanaStyle(menuLanguage)
+      ? "読みこみ中に別のふみへ移ったため、候補ふぁいるは読みこめませんでした。"
+      : "読み込み中に対象タブが変わったため、候補ファイルの取り込みを中止しました。";
+  }
+  if (rawMessage === CANDIDATE_FILE_IMPORT_BUFFER_CHANGED_ERROR) {
+    return isKanaStyle(menuLanguage)
+      ? "読みこみ中にふみが変わったため、候補ふぁいるは読みこめませんでした。"
+      : "読み込み中にバッファが変更されたため、候補ファイルの取り込みを中止しました。";
+  }
+  if (rawMessage.startsWith(CANDIDATE_FILE_IMPORT_FAILED_PREFIX)) {
+    const detail = rawMessage.slice(CANDIDATE_FILE_IMPORT_FAILED_PREFIX.length);
+    return isKanaStyle(menuLanguage)
+      ? `候補ふぁいるを読みこめませんでした: ${detail}`
+      : `候補ファイルを読み込めませんでした: ${detail}`;
+  }
+
+  return rawMessage;
+}
+
 export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
   if (isKanaStyle(lang)) {
     return {
