@@ -151,7 +151,7 @@ describe("getAppleAssistWindowCopy", () => {
       it("discloses that the helper is still a preview-quality writing aid", () => {
         if (lang === "ja") {
           expect(copy.availableDisclosure).toMatch(/試験的|プレビュー/);
-          expect(copy.availableDisclosure).toMatch(/結果|ぶれる|確認/);
+          expect(copy.availableDisclosure).toMatch(/出力品質|安定|確認/);
         }
         if (lang === "kana") {
           expect(copy.availableDisclosure).toMatch(/しけんてき|ぷれびゅー/);
@@ -185,7 +185,7 @@ describe("getAppleAssistWindowCopy", () => {
           /transcript|prompt|response|reasoning|chain of thought/i,
         );
         if (lang === "ja") {
-          expect(copy.feedbackDescription).toMatch(/依頼ごと|対象確認|差分/);
+          expect(copy.feedbackDescription).toMatch(/依頼ごと|対象の確認|差分/);
           expect(copy.availableDisclosure).toMatch(/未保存|差分|外部 AI/);
         }
         if (lang === "en") {
@@ -277,7 +277,7 @@ describe("getAppleAssistWindowCopy", () => {
     const en = getAppleAssistWindowCopy("en");
     expect(en.selectionTooLongError).toMatch(/4000/);
     expect(en.contextTooLongError).toMatch(/8000/);
-    expect(en.disabledStatus).toMatch(/Preferences/);
+    expect(en.disabledStatus).toMatch(/Assist Settings|restart/);
     expect(en.unsupportedStatus).toMatch(/macOS 26/);
     expect(en.guardrailError).toMatch(/guardrail|refused/i);
     expect(en.throttledError).toMatch(/rate|busy/i);
@@ -285,7 +285,7 @@ describe("getAppleAssistWindowCopy", () => {
     const ja = getAppleAssistWindowCopy("ja");
     expect(ja.selectionTooLongError).toMatch(/4000/);
     expect(ja.contextTooLongError).toMatch(/8000/);
-    expect(ja.disabledStatus).toMatch(/Preferences|Assist Surface/);
+    expect(ja.disabledStatus).toMatch(/アシスト設定|再起動/);
     expect(ja.unsupportedStatus).toMatch(/macOS 26|M1|Apple Intelligence|対応言語/);
   });
 });

@@ -49,30 +49,31 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
     ? {
         title: "アシスト設定",
         surfaceHeading: "アシストの種類",
-        surfaceSectionLabel: "外部アシストの種類",
-        assistSurfaceControl: "外部アシスト",
+        surfaceSectionLabel: "使用するアシスト",
+        assistSurfaceControl: "使用するアシスト",
         assistSurfaceNone: "使わない",
         assistSurfaceApple: "Hazakura Local Assist (プレビュー)",
         assistSurfaceExternalCli: "CLI Agent",
         assistSurfaceRestartRequired:
           "アシストの種類は再起動後に切り替わります。",
         appleHeading: "Hazakura Local Assist",
-        appleSectionLabel: "Hazakura Local Assist の状態と注意事項",
+        appleSectionLabel: "Hazakura Local Assist について",
         applePreviewLabel: "プレビュー",
         appleDescription:
-          "Apple Intelligence が使える Mac で動くプレビュー版の文章補助です。目安として macOS 26 以降、M1 以降の Mac、Apple Intelligence の有効化、対応言語 / 地域が必要です。詳しい条件は Apple 公式の Apple Intelligence 案内を確認してください。",
+          "Apple Intelligence 対応の Mac で使える、プレビュー版のローカル AI 文章支援です。利用には目安として macOS 26 以降、M1 以降の Mac、Apple Intelligence の有効化、対応言語 / 地域が必要です。詳しい条件は Apple 公式の Apple Intelligence 案内を確認してください。",
         appleFixtureStatus:
           "Hazakura Local Assist は現在利用できません。",
         appleLiveStatus:
-          "この Mac では Hazakura Local Assist をプレビュー機能として利用できます。",
+          "この Mac では Hazakura Local Assist を利用できます。",
         appleUnavailablePrefix:
-          "この Mac では Hazakura Local Assist をまだ利用できません: ",
+          "この Mac では Hazakura Local Assist をまだ使えません: ",
         appleUnsupportedStatus:
-          "この環境では Hazakura Local Assist はサポートされていません。",
+          "この環境では Hazakura Local Assist は使えません。",
         appleNotes: [
-          "Hazakura Local Assist は軽い文章補助であり、外部 AI エージェントや高度なレビュー機能の代替ではありません。",
-          "コードレビュー、複数ファイルをまたぐ理解、長文全体の構成改善、専門的な推論には向きません。",
-          "本文への変更は未保存の AI edit transaction として記録し、差分で確認できます。",
+          "校正、要約、翻訳、短縮などの軽い文章整理を支援します。",
+          "外部 AI サービスには情報を送りません。コードレビューや複数ファイルの解析、長文全体の大きな再構成には向きません。",
+          "編集案は未保存の変更として扱い、保存前に差分で確認できます。",
+          "プレビュー機能のため、出力品質は安定しないことがあります。",
           "Apple Intelligence の対応状況は macOS、Mac のモデル、言語、地域によって変わることがあります。",
           "自動保存、背景での書き換え、ワークスペース全体の解析は行いません。",
         ],
@@ -126,7 +127,7 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
         appleSectionLabel: "Hazakura Local Assist status and notes",
         applePreviewLabel: "Preview",
         appleDescription:
-          "Preview on-device writing help for Macs that can use Apple Intelligence. As a guide, it needs macOS 26 or later, an Apple silicon Mac with M1 or later, Apple Intelligence turned on, and a supported language and region. Check Apple's Apple Intelligence support information for current requirements.",
+          "Preview local AI writing assistance for Macs that can use Apple Intelligence. As a guide, it needs macOS 26 or later, an Apple silicon Mac with M1 or later, Apple Intelligence turned on, and a supported language and region. Check Apple's Apple Intelligence support information for current requirements.",
         appleFixtureStatus:
           "Hazakura Local Assist is not currently available.",
         appleLiveStatus:
@@ -136,9 +137,10 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
         appleUnsupportedStatus:
           "Hazakura Local Assist is not supported in this environment.",
         appleNotes: [
-          "Hazakura Local Assist is lightweight text assistance, not a replacement for external AI agents or advanced review tools.",
-          "It is not suited for code review, multi-file understanding, long-document restructuring, autonomous agent work, or advanced reasoning.",
-          "Text changes are recorded as unsaved AI edit transactions and remain reviewable through diff.",
+          "Hazakura Local Assist helps with lightweight text cleanup such as proofreading, summarizing, translating, and shortening.",
+          "It does not send information to external AI services, and it is not suited for code review, multi-file analysis, or large document restructuring.",
+          "Draft edits are kept unsaved and remain reviewable through diff before you save.",
+          "Because this is a preview feature, output quality may vary.",
           "Apple Intelligence availability may vary by macOS version, Mac model, language, and region.",
           "No auto-save, background rewriting, or broad workspace analysis is performed.",
         ],

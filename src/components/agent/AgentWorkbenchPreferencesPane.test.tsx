@@ -51,7 +51,7 @@ describe("AgentWorkbenchPreferencesPane", () => {
     ).toBeTruthy();
     expect(screen.getByText("Preview")).toBeTruthy();
     expect(
-      screen.getByText(/preview on-device writing help/i),
+      screen.getByText(/preview local AI writing assistance/i),
     ).toBeTruthy();
     expect(screen.getByText(/macOS 26 or later/i)).toBeTruthy();
     expect(screen.getByText(/Apple silicon Mac/i)).toBeTruthy();

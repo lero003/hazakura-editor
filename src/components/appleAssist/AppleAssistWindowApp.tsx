@@ -884,13 +884,13 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         "へんしゅう あんを はんえいしました。ほぞん まえに さぶんで かくにん できます。",
       applyButton: "おねがいする",
       availableDisclosure:
-        "これは しけんてきな ぷれびゅー きのうです。この Mac の Apple Intelligence たいおう きのうで ぶんしょう せいりしますが、けっかは ぶれることがあります。ほんぶんを かえる けっかは ほぞん まえに さぶんで かくにんできます。そとの AI さーびすには おくりません。",
+        "これは ぷれびゅーばんの ろーかる AI ぶんしょう しえんです。この Mac の Apple Intelligence たいおう きのうで ぶんしょうを ととのえますが、しゅつりょく ひんしつは あんてい しないことがあります。へんしゅう あんは ほぞん まえに さぶんで かくにんできます。そとの AI さーびすには おくりません。",
       contextTooLongError:
         "しゅうへん ぶんしょ が ながすぎ ます。L Mode の たいしょう しゅうへん こんできすと の じょうげん (8000 もじ) を こえました。",
       disabledStatus:
-        "この せっしょで はざくら ろーかる あしす とは むこうです。Preferences > Assist Surface で はざくら ろーかる あしす と (ぷれびゅー) を えらび、あぷりを さいきどうして ください。",
+        "この せっしょんでは はざくら ろーかる あしす とは むこうです。あしすと せっていで はざくら ろーかる あしす と (ぷれびゅー) を えらび、あぷりを さいきどうして ください。",
       emptyRequestError:
-        "まずは おねがいの ぶんを かいてください。",
+        "まずは おねがいの ないようを かいてください。",
       generatingButton: "おねがい中...",
       generatingChange:
         "この Mac で へんしゅう あんを つくっています。ほぞん まえに さぶんで かくにん できます。",
@@ -899,7 +899,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       failedStatus:
         "おねがいに しっぱいしました。下の めっせーじを みてください。",
       guardrailError:
-        "あっぷる ふぁうんでーしょん もでるず が かーどれーる いはん として この おねがひを きょひ しました。べつ の おねがひ で さいしこう してください。",
+        "あっぷる ふぁうんでーしょん もでるず が この おねがいを うけつけませんでした。べつの おねがいで さいしこう してください。",
       localRuntimeUnavailable: (reason) =>
         `はざくら ろーかる あしす とは つかえません: ${reason}。めやすは macOS 26 いこう、M1 いこうの Mac、あっぷる いんてりじぇんす の ゆうこうか、たいおう げんご / ちいき です。くわしくは あっぷる こうしき の Apple Intelligence あんないを かくにん してください。`,
       longRunningStatus:
@@ -910,22 +910,22 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       noTarget:
         "たいしょう が まだ えらばれて いません。えでぃた に かーそる を おくか、L Mode を ひらいて たいしょう を せってい して ください。",
       placeholder:
-        "ここに おねがいの ぶんを かいてください",
+        "ここに おねがいの ないようを かいてください",
       presets: buildLocalAssistPresets("kana"),
-      presetsLabel: "ぷりせっと",
+      presetsLabel: "よくつかう おねがい",
       readyStatus:
-        "じゅんび できました。ぷりせっとを えらぶか、おねがいの ぶんを かいてください。",
-      roughRequestLabel: "おねがいの ぶん",
+        "じゅんび できました。よくつかう おねがいを えらぶか、おねがいの ないようを かいてください。",
+      roughRequestLabel: "おねがいの ないよう",
       selectionTooLongError:
         "えらんだ ところが ながすぎ ます（さいだい 4000 もじ）。あっぷる ふぁうんでーしょん もでるず の こんできすと まど に おさまらないため、もう すこし ちいさく えらんで ください。",
       sendingRequest: "おねがいを うけつけました...",
-      subtitle: "この Mac で うごく ぶんしょう さぽーと",
+      subtitle: "この Mac で うごく ろーかる AI ぶんしょう しえん",
       targetStaleError:
         "たいしょう が ふるく なって います。あっぷる あしす と うぃんどう を ひらきなおすか、めいん えでぃた で たいしょう を えらびなおして ください。",
       targetReadFailed:
         "たいしょう の よみこみ に しっぱい しました。めいん えでぃた で えらびなおしてから、もう いちど おねがいして ください。",
       tauriUnavailableError:
-        "はざくら ろーかる あしす と うぃんどう が Tauri runtime の そとで うごいています。めいん えでぃた に とどけません。.app ばんどる から あぷり を さいきどうして ください。",
+        "はざくら ろーかる あしす と うぃんどう が あぷりと せつぞく できません。.app から Hazakura Editor を ひらきなおして ください。",
       targetBlock: (chars) => `こーど ぶろっく (${chars} もじ)`,
       targetDocument: (chars) => `ふみ ぜんたい (${chars} もじ)`,
       targetLabel: (label) => `${label}`,
@@ -938,13 +938,13 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         `はざくら ろーかる あしす と の せいせい に しっぱい しました: ${raw}`,
       unsupportedStatus:
         "この はんきょうで はざくら ろーかる あしす とは つかえません。macOS 26 いこう、M1 いこうの Mac、この Mac で ゆうこうかした あっぷる いんてりじぇんす、たいおう げんご / ちいき が ひつようです。",
-      workingLocally: "この Mac で ろーかる しょり ちゅう (そとの AI さーびす は つかいません)",
+      workingLocally: "この Mac で しょり ちゅう (そとの AI さーびすには おくりません)",
       // v0.17 operation-feedback panel copy.
-      feedbackHeading: "すすみぐあい",
+      feedbackHeading: "しんこうじょうきょう",
       feedbackDescription:
-        "おねがいごとに、たいしょうの かくにん、せいせい、へんしゅう あんの はんえいまでを ここに きろくします。ほぞん まえに さぶんで かくにんできます。",
+        "おねがいごとに、たいしょうの かくにん、せいせい、へんしゅう あんの はんえいまでを ここに ひょうじします。ほぞん まえに さぶんで かくにんできます。",
       feedbackEmpty:
-        "まだ おねがいは ありません。たいしょうを えらび、おねがいを かいてください。",
+        "まだ おねがいは ありません。たいしょうを えらび、おねがいの ないようを かいてください。",
       feedbackEntry: (kind, payload) => {
         if (kind === "ready") {
           return "じゅんび できました。";
@@ -993,13 +993,13 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         "編集案を反映しました。保存前に差分で確認できます。",
       applyButton: "依頼する",
       availableDisclosure:
-        "これは試験的なプレビュー機能です。この Mac 上の Apple Intelligence 対応機能で文章整備しますが、結果はぶれることがあります。本文を変える結果は未保存の本文に反映され、保存前に差分で確認できます。外部 AI サービスには送りません。",
+        "これはプレビュー版のローカル AI 文章支援です。この Mac の Apple Intelligence 対応機能で文章を整えますが、出力品質は安定しないことがあります。編集案は未保存の変更として扱い、保存前に差分で確認できます。外部 AI サービスには情報を送りません。",
       contextTooLongError:
         "周辺の文書が長すぎます。L Mode の対象周辺コンテキスト上限（8000 文字）を超えました。",
       disabledStatus:
-        "このセッションでは Hazakura Local Assist は無効です。Preferences > Assist Surface で outside companion slot を「Hazakura Local Assist (プレビュー)」に切り替え、アプリを再起動してください。",
+        "このセッションでは Hazakura Local Assist は無効です。アシスト設定で「Hazakura Local Assist (プレビュー)」を選び、アプリを再起動してください。",
       emptyRequestError:
-        "まずは依頼文を入力してください。",
+        "まずは依頼内容を入力してください。",
       generatingButton: "依頼中...",
       generatingChange:
         "この Mac 上で編集案を作っています。保存前に差分で確認できます。",
@@ -1008,7 +1008,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       failedStatus:
         "依頼に失敗しました。下のメッセージを確認してください。",
       guardrailError:
-        "Apple Foundation Models がこの依頼をガードレール違反として拒否しました。別の依頼文で再試行してください。",
+        "Apple Foundation Models がこの依頼を受け付けませんでした。別の依頼内容で再試行してください。",
       localRuntimeUnavailable: (reason) =>
         `Hazakura Local Assist は使えません: ${reason}。目安として macOS 26 以降、M1 以降の Mac、Apple Intelligence の有効化、対応言語 / 地域が必要です。詳しくは Apple 公式の Apple Intelligence 案内を確認してください。`,
       longRunningStatus:
@@ -1019,22 +1019,22 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       noTarget:
         "対象がまだ選ばれていません。エディタにカーソルを置くか、L Mode を開いて対象を設定してください。",
       placeholder:
-        "ここに依頼文を入力してください",
+        "ここに依頼内容を入力してください",
       presets: buildLocalAssistPresets("ja"),
-      presetsLabel: "プリセット",
+      presetsLabel: "よく使う依頼",
       readyStatus:
-        "準備完了。プリセットを選ぶか、依頼文を入力してください。",
-      roughRequestLabel: "依頼文",
+        "準備できました。よく使う依頼を選ぶか、依頼内容を入力してください。",
+      roughRequestLabel: "依頼内容",
       selectionTooLongError:
         "選択範囲が大きすぎます（最大 4000 文字）。Apple Foundation Models のコンテキスト窓に収まらないため、もう少し小さく選択してください。",
       sendingRequest: "依頼を受け付けました...",
-      subtitle: "このMacで動く文章サポート",
+      subtitle: "この Mac で動くローカル AI 文章支援",
       targetStaleError:
         "対象が古くなっています。Hazakura Local Assist ウィンドウを開き直すか、メインエディタで対象を選び直してください。",
       targetReadFailed:
         "対象の読み込みに失敗しました。メインエディタで選び直してから、もう一度依頼してください。",
       tauriUnavailableError:
-        "Hazakura Local Assist ウィンドウが Tauri runtime の外で動作しており、メインエディタに到達できません。.app バンドルからアプリを再起動し、ウィンドウを Tauri 子プロセスとして起動してください。",
+        "Hazakura Local Assist ウィンドウがアプリと接続できません。.app から Hazakura Editor を開き直してください。",
       targetBlock: (chars) => `コードブロック (${chars} 文字)`,
       targetDocument: (chars) => `文書全体 (${chars} 文字)`,
       targetLabel: (label) => `${label}`,
@@ -1047,16 +1047,16 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         `Hazakura Local Assist の生成に失敗しました: ${raw}`,
       unsupportedStatus:
         "この環境では Hazakura Local Assist は使えません。macOS 26 以降、M1 以降の Mac、この Mac で有効化された Apple Intelligence、対応言語 / 地域が必要です。",
-      workingLocally: "この Mac 上でローカル処理中（外部 AI サービスは使いません）",
+      workingLocally: "この Mac 上で処理中（外部 AI サービスには送りません）",
       // v0.17 operation-feedback panel copy.
-      feedbackHeading: "処理の流れ",
+      feedbackHeading: "進行状況",
       feedbackDescription:
-        "依頼ごとに、対象確認、生成、編集案の反映までをここに表示します。保存前に差分で確認できます。",
+        "依頼ごとに、対象の確認、生成、編集案の反映までをここに表示します。保存前に差分で確認できます。",
       feedbackEmpty:
         "まだ依頼はありません。対象を選び、依頼内容を入力してください。",
       feedbackEntry: (kind, payload) => {
         if (kind === "ready") {
-          return "準備完了。";
+          return "準備できました。";
         }
         if (kind === "target-acquired") {
           const tk = payload?.targetKind;
@@ -1105,7 +1105,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     contextTooLongError:
       "Document context is too long (L Mode harness caps surrounding text at 8000 characters). Pick a tighter target or break the change into smaller requests.",
     disabledStatus:
-      "Hazakura Local Assist is disabled in this app session. Open Preferences > Assist Surface and switch the outside companion slot to 'Hazakura Local Assist (Preview)'. Restart the app to apply.",
+      "Hazakura Local Assist is disabled in this app session. Open Assist Settings, choose 'Hazakura Local Assist (Preview)', then restart the app.",
     emptyRequestError:
       "Type a request first.",
     generatingButton: "Sending...",
@@ -1141,7 +1141,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     targetReadFailed:
       "Could not read the target. Pick the text again in the main editor, then send the request again.",
     tauriUnavailableError:
-      "Hazakura Local Assist window is running outside the Tauri runtime; it cannot reach the main editor. Restart the app from the .app bundle so the window launches as a Tauri child process.",
+      "Hazakura Local Assist cannot connect to the main editor. Reopen Hazakura Editor from the .app bundle and try again.",
     targetBlock: (chars) => `Code block (${chars} chars)`,
     targetDocument: (chars) => `Whole document (${chars} chars)`,
     targetLabel: (label) => `${label}`,
