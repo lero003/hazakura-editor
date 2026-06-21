@@ -292,6 +292,19 @@ Run when Review Desk entry points, candidate comparison, or App Store surface vi
 8. Confirm auto-backup restore review still applies only to the compared document, leaves the file unsaved, and keeps Save explicit.
 9. Confirm Apple Local Assist edit review still exposes diff, discard, and close decisions without auto-saving.
 
+2026-06-21 local Developer / GitHub app note:
+
+- `npm run smoke:macos-window` rebuilt the macOS lanes and confirmed
+  `Hazakura Editor Dev.app` showed an onscreen window.
+- Computer Use opened a temporary `draft.md`, opened Review Desk,
+  selected a temporary `proposal.md` through the native Open panel, and
+  confirmed the candidate input filled, the Diff preview rendered, and
+  source metadata showed `File import: proposal.md`.
+- The same smoke confirmed `Cmd+Shift+R` left Review Desk and the Diff
+  preview in place instead of reloading the WebView.
+- This is local Developer / GitHub app evidence only. It is not signed
+  App Store / TestFlight, sandbox, upload, or notarization proof.
+
 ## Auto-Backup Restore
 
 Run when auto-backup storage, the restore picker, or backup-vs-buffer comparison changes:

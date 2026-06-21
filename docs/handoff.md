@@ -89,12 +89,18 @@ Last reviewed: 2026-06-21 (v0.29 proposal-ingest alignment)
   Candidate input tracks manual paste, file import, and edited
   file-import state so re-comparing an imported candidate preserves the
   source label without exposing local paths or provider internals.
+  The local Developer / GitHub native-dialog Review Desk import path was
+  smoked with Computer Use against temporary `draft.md` / `proposal.md`
+  files after rebuilding the app; imported candidates now stay labeled
+  as file imports until the candidate text is actually edited, and
+  `Cmd+Shift+R` did not reload the WebView.
   Candidate file-import failures now use stable Review Desk messages,
   localize in the Review Desk and status bar, and remain clearable even
   when only the import error is visible.
-  Next useful work should stay narrow: native-dialog Review Desk smoke,
-  a reproduced provenance edge case, or a focused Review Desk quality fix
-  if one is reproduced. Multi-file proposal review remains deferred.
+  Next useful work should stay narrow: signed App Store / TestFlight
+  smoke only when preparing a submit build, a reproduced provenance edge
+  case, or a focused Review Desk quality fix if one is reproduced.
+  Multi-file proposal review remains deferred.
 - Latest docs cleanup keeps current entry points lighter: README now
   summarizes feature areas instead of listing every implemented behavior,
   roadmap keeps a short shipped-phase summary for v0.18-v0.26, and

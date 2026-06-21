@@ -215,6 +215,9 @@ describe("macOS build scripts", () => {
       "src/components/app/DocumentMetaBar.test.tsx",
     );
     expect(appStoreSurfaceSmoke).toContain(
+      "src/components/editor/CandidateEditor.test.tsx",
+    );
+    expect(appStoreSurfaceSmoke).toContain(
       "src/components/review/ReviewSurface.test.tsx",
     );
     expect(appStoreSurfaceSmoke).toContain(

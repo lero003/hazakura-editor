@@ -117,16 +117,22 @@ Implemented locally as of 2026-06-21:
 - `smoke:macos-window` now gives a repeatable local packaged-app
   launch/window proof for `Hazakura Editor Dev.app` via
   `CoreGraphics` / `CGWindowListCopyWindowInfo`.
+- Native-dialog Review Desk file import passed in the rebuilt
+  Developer / GitHub app via Computer Use using temporary `draft.md` /
+  `proposal.md` files. The pass caught and fixed a controlled
+  `CandidateEditor` sync bug where an imported file was immediately
+  marked as edited; source metadata now stays `File import: proposal.md`
+  until the candidate text is actually edited. `Cmd+Shift+R` stayed
+  reserved and did not reload the WebView during this smoke.
 - Candidate file-import failures now use stable Review Desk messages,
   localize in the Review Desk and status bar, and can be cleared even
   when no candidate input or preview remains.
 
 Next useful v0.29 slices, if needed:
 
-- Native-dialog Review Desk file-import smoke in a built app; keep this
-  separate from the source-level smoke and the packaged-app window smoke
-  above. Computer Use / AX capture can be blocked for Tauri windows, so
-  do not claim this interaction proof from CGWindow evidence alone.
+- Signed App Store / TestFlight Review Desk smoke only when a submit
+  build is being prepared; the local Developer / GitHub native-dialog
+  path is already covered separately from source-level smoke.
 - Focused paste/source quality polish if another small provenance issue
   is reproduced; keep provider metadata out of the core editor surface.
 - Multi-file proposal review remains deferred until single-file ingest

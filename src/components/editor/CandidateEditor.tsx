@@ -59,6 +59,7 @@ export function CandidateEditor({
   const mountRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
+  const applyingExternalValueRef = useRef(false);
   const themeCompartmentRef = useRef(new Compartment());
   const wrapCompartmentRef = useRef(new Compartment());
   const tabSizeCompartmentRef = useRef(new Compartment());
@@ -105,7 +106,7 @@ export function CandidateEditor({
           }),
         ),
         EditorView.updateListener.of((update) => {
-          if (update.docChanged) {
+          if (update.docChanged && !applyingExternalValueRef.current) {
             onChangeRef.current(update.state.doc.toString());
           }
         }),
@@ -189,13 +190,18 @@ export function CandidateEditor({
     if (!view) return;
     const currentValue = view.state.doc.toString();
     if (currentValue === value) return;
-    view.dispatch({
-      changes: {
-        from: 0,
-        to: currentValue.length,
-        insert: value,
-      },
-    });
+    applyingExternalValueRef.current = true;
+    try {
+      view.dispatch({
+        changes: {
+          from: 0,
+          to: currentValue.length,
+          insert: value,
+        },
+      });
+    } finally {
+      applyingExternalValueRef.current = false;
+    }
   }, [value]);
 
   return (

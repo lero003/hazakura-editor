@@ -26,7 +26,7 @@
     "build:vite": "tsc --noEmit && vite build",
     "probe:macos-distribution": "bash scripts/probe-macos-distribution.sh",
     "preview": "vite preview --host 127.0.0.1",
-    "smoke:app-store-surface": "vitest run src/buildScripts.test.ts src/hooks/commandPalette/useCommandPaletteController.test.ts src/hooks/agent/useAgentWorkbenchPreferences.test.ts src/components/agent/AgentWorkbenchPreferencesPane.test.tsx src/components/app/SettingsPreferencesPane.test.tsx src/components/app/AppTopChrome.test.tsx src/components/app/RightPaneToggleControls.test.tsx src/components/app/DocumentMetaBar.test.tsx src/components/review/ReviewSurface.test.tsx src/hooks/review/useCandidateFileImport.test.ts src/hooks/review/useReviewDeskState.test.ts",
+    "smoke:app-store-surface": "vitest run src/buildScripts.test.ts src/hooks/commandPalette/useCommandPaletteController.test.ts src/hooks/agent/useAgentWorkbenchPreferences.test.ts src/components/agent/AgentWorkbenchPreferencesPane.test.tsx src/components/app/SettingsPreferencesPane.test.tsx src/components/app/AppTopChrome.test.tsx src/components/app/RightPaneToggleControls.test.tsx src/components/app/DocumentMetaBar.test.tsx src/components/editor/CandidateEditor.test.tsx src/components/review/ReviewSurface.test.tsx src/hooks/review/useCandidateFileImport.test.ts src/hooks/review/useReviewDeskState.test.ts",
     "smoke:macos-window": "bash scripts/smoke-macos-window.sh",
     "smoke:macos-sandbox-preview": "bash scripts/smoke-macos-sandbox-preview.sh",
     "clean:generated": "node scripts/clean-generated-artifacts.mjs",
