@@ -201,6 +201,23 @@ describe("macOS build scripts", () => {
     expect(dryRun).toContain("Tracked release docs: not updated");
   });
 
+  it("keeps the App Store surface smoke covering Review Desk proposal import", () => {
+    const appStoreSurfaceSmoke = packageJson.scripts["smoke:app-store-surface"];
+
+    expect(appStoreSurfaceSmoke).toContain(
+      "src/components/app/RightPaneToggleControls.test.tsx",
+    );
+    expect(appStoreSurfaceSmoke).toContain(
+      "src/components/app/DocumentMetaBar.test.tsx",
+    );
+    expect(appStoreSurfaceSmoke).toContain(
+      "src/components/review/ReviewSurface.test.tsx",
+    );
+    expect(appStoreSurfaceSmoke).toContain(
+      "src/hooks/review/useCandidateFileImport.test.ts",
+    );
+  });
+
   it("uses the dedicated Developer lane script before copying the Dev bundle", () => {
     expect(packageJson.scripts["build:developer-preview"]).toContain(
       "HAZAKURA_DISTRIBUTION_LANE=developer",

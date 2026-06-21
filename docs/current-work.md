@@ -107,11 +107,14 @@ Implemented locally as of 2026-06-21:
   paste, Apple Local Assist, and file import remain distinguishable.
 - The file-import path does not apply, save, auto-accept, call external
   AI/API, launch helpers, or modify workspace files.
+- `smoke:app-store-surface` now includes the source-level Review Desk /
+  single-file proposal import tests, so App Store surface checks cover
+  this helper-free path.
 
 Next useful v0.29 slices, if needed:
 
 - Built-app smoke for Review Desk file import in the App Store preview
-  lane.
+  lane; keep this separate from the source-level smoke above.
 - Paste/source provenance polish that keeps provider metadata out of the
   core editor surface.
 - Multi-file proposal review remains deferred until single-file ingest
