@@ -127,15 +127,28 @@ if [ "$EXPECTED_DISTRIBUTION_LANE" = "app-store" ]; then
 fi
 
 if [ ! -e "$HELPER" ]; then
+    echo "helper sandbox entitlement: unavailable (helper absent)"
     echo "helper inherit entitlement: unavailable (helper absent)"
 elif [ ! -x "$HELPER" ]; then
+    echo "helper sandbox entitlement: unavailable (helper not executable)"
     echo "helper inherit entitlement: unavailable (helper not executable)"
-elif has_entitlement "$HELPER" "com.apple.security.inherit"; then
-    echo "helper inherit entitlement: present"
 else
-    echo "helper inherit entitlement: missing"
-    if [ "$REQUIRE_APP_STORE_ENTITLEMENTS" = "1" ]; then
-        missing_required_entitlement=1
+    if has_entitlement "$HELPER" "com.apple.security.app-sandbox"; then
+        echo "helper sandbox entitlement: present"
+    else
+        echo "helper sandbox entitlement: missing"
+        if [ "$REQUIRE_APP_STORE_ENTITLEMENTS" = "1" ]; then
+            missing_required_entitlement=1
+        fi
+    fi
+
+    if has_entitlement "$HELPER" "com.apple.security.inherit"; then
+        echo "helper inherit entitlement: present"
+    else
+        echo "helper inherit entitlement: missing"
+        if [ "$REQUIRE_APP_STORE_ENTITLEMENTS" = "1" ]; then
+            missing_required_entitlement=1
+        fi
     fi
 fi
 

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-06-21 (v0.29 Hazakura Local Assist review triage)
+Last reviewed: 2026-06-22 (v0.29 helper sandbox validation fix)
 
 ## Purpose
 
@@ -44,9 +44,10 @@ Agent Workbench behind its existing boundary.
 - Published App Store version: `0.26.0` (reported released on 2026-06-20
   after App Review completion)
 - Current source / Developer version: `0.29.0`
-- Latest generated local App Store package evidence: `0.28.0` build `26`
-  (generated after the later top-chrome quieting pass)
-- Next App Store submit config build counter: `27`
+- Latest generated local App Store package evidence: `0.29.0` build `29`
+  (generated after the helper sandbox entitlement validation fix)
+- Current App Store submit config build counter: `29`
+  (the next package build will increment from this value)
 - App Store category: `Productivity`
 - Public Privacy Policy URL:
   `https://hazakura.dev/hazakura-editor/privacy/`
@@ -103,8 +104,9 @@ Allowed:
 
 The Hazakura Local Assist helper is re-signed after the App Store submit
 bundle is built, using `src-tauri/entitlements/app-store-helper.plist`
-with `com.apple.security.inherit`. The app bundle is then re-signed so
-the resource seal includes the updated helper signature.
+with `com.apple.security.app-sandbox` and
+`com.apple.security.inherit`. The app bundle is then re-signed so the
+resource seal includes the updated helper signature.
 
 Do not add these unless there is a fresh documented reason:
 
@@ -331,7 +333,8 @@ Expected:
 - `LSMinimumSystemVersion` is `26.0`
 - `hazakura-editor` is present
 - `hazakura-apple-assist-helper` is present, executable, signed, and
-  inherits the App Store sandbox through the helper entitlement
+  carries both `com.apple.security.app-sandbox` and
+  `com.apple.security.inherit`
 
 ## Transporter Package For Internal TestFlight
 
@@ -677,4 +680,41 @@ result. SHA-256:
 
 ```txt
 32b2e0dfee55c793b4cac5a127657cc7d2fe8b32af4341102acf387ad60dcd88
+```
+
+v0.29 package-candidate note: on 2026-06-22, Transporter rejected the
+first local `0.29.0` build `28` package because the bundled
+`hazakura-apple-assist-helper` only carried
+`com.apple.security.inherit` and lacked
+`com.apple.security.app-sandbox`. Codex updated the helper entitlement
+file and distribution probe, then generated a replacement local App
+Store submit-lane package for user-visible version `0.29.0` and App
+Store build counter `29`. Re-delivery, App Store Connect processing,
+TestFlight, App Review, and release handling are outside this
+repository unless separately recorded.
+
+The local package generated for this lane is:
+
+```txt
+src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.29.0-build29-mas.pkg
+```
+
+The signed submit-lane bundle reported `CFBundleIdentifier`
+`dev.hazakura.editor`, `CFBundleShortVersionString` `0.29.0`,
+`CFBundleVersion` `29`, and `LSMinimumSystemVersion` `26.0`. It had the
+expected App Sandbox, user-selected read/write, app-scoped bookmark, and
+network-client entitlements. The bundled Hazakura Local Assist helper
+was present, executable, Apple Distribution signed, and carried both
+`com.apple.security.app-sandbox` and `com.apple.security.inherit`.
+`REQUIRE_APP_STORE_ENTITLEMENTS=1 npm run probe:macos-distribution -- <app>`
+passed for the generated app, and expanded-package payload inspection
+confirmed the same helper entitlements in the pkg payload.
+`pkgutil --check-signature` passed with the 3rd Party Mac Developer
+Installer certificate. `spctl` rejected or returned inconclusive local
+assessment for the signed app, so keep treating that as local
+trust-policy evidence rather than an App Store Connect validation
+result. SHA-256:
+
+```txt
+37e8afb8e34520e760c4150565dfe0616498d4768a00e3ef3edafbc4291f27bd
 ```

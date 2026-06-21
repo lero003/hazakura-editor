@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-21 (v0.29 Hazakura Local Assist review triage)
+Last reviewed: 2026-06-22 (v0.29 helper sandbox validation fix)
 
 ## Current State
 
@@ -82,7 +82,8 @@ Last reviewed: 2026-06-21 (v0.29 Hazakura Local Assist review triage)
   softer Local Assist network wording, short probe timeout separation,
   and helper error hygiene that avoids Foundation Models
   `debugDescription` in user-facing error envelopes. Remaining
-  pre-submission risk is formal signed submit-lane smoke. A
+  pre-submission risk is re-delivery / App Store Connect processing of
+  the corrected signed submit-lane package. A
   2026-06-21 user-side light built-app smoke confirmed the dedicated
   Local Assist UI opens, the helper is absent from Activity Monitor
   memory before opening the Local Assist window, and a simple request can
@@ -91,8 +92,21 @@ Last reviewed: 2026-06-21 (v0.29 Hazakura Local Assist review triage)
   regression, package, payload, dependency-audit, bundle metadata,
   license-resource, and bundle-size evidence remains archived under
   `docs/archive/operations/` or summarized in `docs/current-work.md`; it
-  should no longer drive the main queue unless a new App Store build is
-  prepared.
+  should no longer drive the main queue unless older App Store evidence
+  is explicitly needed.
+- The latest generated helper-enabled App Store package candidate for
+  `0.29.0` is build `29`, generated on 2026-06-22 after Transporter
+  rejected build `28` because the bundled
+  `hazakura-apple-assist-helper` lacked
+  `com.apple.security.app-sandbox`. The helper entitlement file now
+  carries both `com.apple.security.app-sandbox` and
+  `com.apple.security.inherit`, and the distribution probe checks both
+  values. Local package signature, signed app probe, and expanded pkg
+  payload entitlement checks passed. SHA-256:
+  `37e8afb8e34520e760c4150565dfe0616498d4768a00e3ef3edafbc4291f27bd`.
+  Re-delivery, App Store Connect processing, TestFlight, App Review, and
+  release handling are not tracked in this repository unless separately
+  recorded.
 - The current source App Store lane now reopens Hazakura Local Assist as a
   narrow on-device writing companion. Agent Workbench, CLI Agent launch,
   arbitrary command execution, external AI/API calls, provider-add UI,
@@ -278,20 +292,19 @@ baseline, and smoke evidence are archived under
    and archive only completed version-specific material; canonical build
    and boundary docs stay live for future submissions.
 2. For the next product slice, start with `docs/current-work.md`. v0.29
-   is the selected AI assist review API lane. First prefer the accepted
-   Hazakura Local Assist pre-submission fixes still remaining in
-   `docs/current-work.md`: signed/built-app smoke for the corrected
-   full signed submit-lane smoke and packaging proof. Keep the App Store path limited to Hazakura Local Assist,
-   with no external Agent surface; do not add Book Workspace Alpha, hidden multi-file book
+   is the selected AI assist review API lane. The immediate App Store
+   lane follow-up is re-delivery and App Store Connect / TestFlight
+   processing proof for the corrected `0.29.0` build `29` package. Keep
+   the App Store path limited to Hazakura Local Assist, with no external
+   Agent surface; do not add Book Workspace Alpha, hidden multi-file book
    manifests, structural book-workspace information architecture, Native
    Vibrancy Phase 2, cover editing, or an EPUB document model unless that
    lane is explicitly opened.
-3. For the current `0.29.0` source lane, build `27` is reserved in the
-   App Store submit config as the next build counter. The latest generated
-   local package evidence remains `0.28.0` build `26` after the
-   top-chrome quieting pass.
-   User-side upload / review work is outside this repository unless new
-   evidence is explicitly recorded.
+3. For the current `0.29.0` source lane, build `29` is the latest local
+   App Store submit package evidence after the helper sandbox entitlement
+   validation fix. Build `28` was rejected by Transporter and should not
+   be reused. User-side upload / review work is outside this repository
+   unless new evidence is explicitly recorded.
    For a future App Store submission, start with `docs/app-store-build.md`;
    use `npm run release:candidate -- --with-app-store-pkg` for local
    signed package checkpoints, keep account-specific notes under ignored
