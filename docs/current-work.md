@@ -657,6 +657,23 @@ verification: `cargo test --manifest-path src-tauri/Cargo.toml tests::os_handoff
 `npm run build:vite`;
 `git diff --check`.
 
+P3 is accepted as an already-implemented foundation slice as of
+2026-06-21. The first reusable primitive is the existing transaction /
+candidate review path, not a new file-import workflow: manual Review Desk
+candidate input builds a source-preserving `candidate` CompareCase, Apple
+Local Assist candidate generation hands its output into the same Review
+Desk diff flow without auto-applying, and the detached Apple Local Assist
+Writing Companion records unsaved AI edit transactions with compact Diff /
+Discard review before save. This closes the v0.28 foundation goal without
+adding App Store helper behavior, provider plugins, generic chat, hidden
+workspace rewrites, auto-save, auto-commit, or broader Agent Workbench
+integration. Explicit file/paste ingest expansion, multi-file proposal
+review, richer provenance, and Agent Workbench external-edit intake remain
+v0.29+ work under `docs/ai-markdown-ingest-plan.md`. Focused verification:
+`npm run test -- src/hooks/review/useAppleAssistCandidate.test.ts src/features/editor/aiEditTransactions.test.ts src/components/app/AppleAssistReviewBar.test.tsx src/features/editor/aiEditTarget.test.ts`;
+`npm run build:vite`;
+`git diff --check`.
+
 Deferred from v0.28:
 
 - Book Workspace Alpha, multi-file chapter ordering, saved book
@@ -687,10 +704,10 @@ over copy-heavy or product-voice-sensitive work.
 
 | Fit | Candidate | Scope |
 |---|---|---|
-| Done locally | v0.28 L Mode image policy parity | Implemented on 2026-06-21. Do not re-pick unless a regression appears; continue with AI proposal review foundation or the release-gate smoke checklist. |
-| Done locally | v0.28 workspace search encoding parity | Implemented on 2026-06-21. Do not re-pick unless a regression appears; continue with AI proposal review foundation or the release-gate smoke checklist. |
-| Done locally | v0.28 system handoff hardening | Implemented on 2026-06-21. Do not re-pick unless a regression appears; continue with AI proposal review foundation or the release-gate smoke checklist. |
-| Good | v0.28 AI proposal review foundation | Implement one explicit proposal intake / review primitive only: file, paste, or existing transaction to Diff / Review. Leave broader ingest expansion for v0.29+. No auto-apply, auto-save, auto-commit, provider plugins, generic chat, or hidden workspace rewrite. |
+| Done locally | v0.28 L Mode image policy parity | Implemented on 2026-06-21. Do not re-pick unless a regression appears; continue with the release-gate smoke checklist or a narrow quality probe. |
+| Done locally | v0.28 workspace search encoding parity | Implemented on 2026-06-21. Do not re-pick unless a regression appears; continue with the release-gate smoke checklist or a narrow quality probe. |
+| Done locally | v0.28 system handoff hardening | Implemented on 2026-06-21. Do not re-pick unless a regression appears; continue with the release-gate smoke checklist or a narrow quality probe. |
+| Done locally | v0.28 AI proposal review foundation | Accepted on 2026-06-21 as an existing transaction / candidate Diff review primitive. Do not add file/paste/multi-file ingest in v0.28; leave broader ingest expansion for v0.29+. |
 | Good | L Mode quality investigation | Pick one reproduced L Mode issue or one measurable quality gap only: caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or performance baseline. Do not add a new editing model or contenteditable surface. |
 | Good | Theme quality investigation | Pick one concrete theme issue only: contrast, focus visibility, status/error readability, dialog readability, or Increase Contrast behavior. Do not redesign palettes or add theme customization. |
 | Good | Core Safe Editor quality probe | Inspect one basic surface with a clear risk hypothesis, then fix only a reproduced issue or close as `verified no-op`. Prefer open/save/close, restore/recovery, preview, diff/review, workspace files, standalone files, image handling, keyboard/IME, or error recovery. |

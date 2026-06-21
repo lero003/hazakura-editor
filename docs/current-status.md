@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-21 (v0.28 planning alignment)
+Last reviewed: 2026-06-21 (v0.28 P3 AI proposal review foundation)
 
 ## Current State
 
@@ -59,12 +59,14 @@ Last reviewed: 2026-06-21 (v0.28 planning alignment)
   found during smoke has a focused code-level fix.
 - Older public tags and release assets remain immutable.
 - Current active work is v0.28 Safety, Quality, and AI Review Foundation.
-  The v0.27 refinement phases are complete for source-tag purposes. Local
-  pre-review regression, package, payload, dependency-audit, bundle
-  metadata, license-resource, and bundle-size evidence remains archived
-  under `docs/archive/operations/` or summarized in `docs/current-work.md`;
-  it should no longer drive the main queue unless a new App Store build is
-  prepared.
+  P0 / P1 / P2 are implemented locally, and P3 is accepted as the already
+  implemented Apple Local Assist transaction / Review Desk candidate Diff
+  review primitive. The v0.27 refinement phases are complete for
+  source-tag purposes. Local pre-review regression, package, payload,
+  dependency-audit, bundle metadata, license-resource, and bundle-size
+  evidence remains archived under `docs/archive/operations/` or summarized
+  in `docs/current-work.md`; it should no longer drive the main queue
+  unless a new App Store build is prepared.
 - The v0.20 Sakura workspace ergonomics slice is implemented locally:
   the main chrome can collapse / restore the workspace sidebar, the
   central editor pane keeps a thin bottom full-path copy bar for the
@@ -245,13 +247,13 @@ baseline, and smoke evidence are archived under
    and boundary docs stay live for future submissions.
 2. For the next product slice, start with `docs/current-work.md`. v0.28
    is the selected Safety, Quality, and AI Review Foundation lane. L Mode
-   / Preview image-policy parity, workspace search encoding parity, and
-   system handoff hardening are implemented locally; continue with one
-   reusable AI proposal review primitive or the release-gate smoke
-   checklist. Do not add Book Workspace Alpha, hidden multi-file book
-   manifests, structural book-workspace information architecture, Native
-   Vibrancy Phase 2, cover editing, or an EPUB document model unless that
-   lane is explicitly opened.
+   / Preview image-policy parity, workspace search encoding parity, system
+   handoff hardening, and AI proposal review foundation are implemented /
+   accepted locally; continue with the release-gate smoke checklist or one
+   narrow quality probe. Do not add Book Workspace Alpha, hidden multi-file
+   book manifests, structural book-workspace information architecture,
+   Native Vibrancy Phase 2, cover editing, or an EPUB document model unless
+   that lane is explicitly opened.
 3. For the current `0.27.0` App Store submission lane, build `22` is the
    selected local package candidate. User-side upload / review work is
    outside this repository unless new evidence is explicitly recorded.

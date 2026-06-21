@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-21 (v0.28 P2 system handoff hardening)
+Last reviewed: 2026-06-21 (v0.28 P3 AI proposal review foundation)
 
 ## Current State
 
@@ -66,9 +66,19 @@ Last reviewed: 2026-06-21 (v0.28 P2 system handoff hardening)
   opening, Finder / file-manager reveal, and print-browser handoff now
   use one fixed OS handoff helper with static platform command templates.
   Print handoff rejects path-like or non-HTML file names before creating
-  the temporary file. Continue v0.28 from AI proposal review foundation
-  or the release-gate smoke checklist unless a higher-priority regression
-  appears.
+  the temporary file.
+- v0.28 P3 AI proposal review foundation is accepted locally as an
+  existing implementation slice rather than new feature work. The first
+  reusable primitive is the existing transaction / candidate review path:
+  manual Review Desk candidate input builds an explicit Diff review,
+  command-palette Apple Local Assist candidate generation hands output
+  into the same Review Desk candidate flow without auto-applying, and the
+  detached Apple Local Assist Writing Companion records unsaved AI edit
+  transactions with compact Diff / Discard review before save. Do not add
+  file/paste/multi-file ingest in v0.28; leave broader proposal ingest for
+  v0.29+ unless explicitly reopened. Continue v0.28 from the release-gate
+  smoke checklist or one narrow quality probe unless a higher-priority
+  regression appears.
 - v0.27 Phase 1 large-document initial rendering stabilization is
   accepted as closed at `b2126c14` plus this docs-only follow-up.
   `PreviewPane` clears stale content before paint, shows a theme-bound

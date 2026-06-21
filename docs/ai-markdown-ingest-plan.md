@@ -1,6 +1,6 @@
 # AI Markdown Ingest Plan
 
-Status: Proposal
+Status: Proposal; v0.28 foundation primitive selected
 Scope: v0.28+ explicit AI proposal intake and review
 Authority: Medium
 Last reviewed: 2026-06-21
@@ -53,6 +53,17 @@ For planning purposes, v0.28 should add at most one review primitive;
 v0.29+ can expand ingest sources and review ergonomics after the first
 path proves source-preserving review, rejection, and explicit
 application.
+
+v0.28 selection as of 2026-06-21: the first primitive is the existing
+transaction / candidate review path, not a new import surface. Manual
+Review Desk candidate input already compares pasted candidate text against
+the active buffer. Apple Local Assist selected-text candidate generation
+hands output into that Review Desk candidate flow without auto-applying.
+The detached Apple Local Assist Writing Companion records unsaved AI edit
+transactions and exposes compact Diff / Discard review before save. Treat
+that as the foundation proof; defer explicit file import, richer paste
+ingest, multi-file proposal review, Agent Workbench external-edit intake,
+and richer provenance display to v0.29+.
 
 Start with the smallest reusable review primitive:
 
@@ -119,8 +130,6 @@ understand chapter order and scope before accepting changes.
 
 ## Open Questions
 
-- Should the first import path be selected local files, paste, or an
-  existing AI edit transaction?
 - How should accepted hunks be represented across multiple Markdown
   files without becoming a merge editor?
 - Should chapter order come from frontmatter, `index.md`, a dedicated

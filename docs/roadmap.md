@@ -423,8 +423,11 @@ Expected slices:
   easier to explain and test as OS handoff rather than arbitrary command
   execution.
 - **AI proposal review foundation**: add one review primitive only: file,
-  paste, or transaction intake into explicit Diff / Review. Keep it
-  helper-free in the App Store lane and separate from Agent Workbench.
+  paste, or transaction intake into explicit Diff / Review. For v0.28 the
+  selected primitive is the existing Apple Local Assist transaction /
+  Review Desk candidate Diff path; broader file / paste / multi-file ingest
+  remains v0.29+ work. Keep it helper-free in the App Store lane and
+  separate from Agent Workbench.
 - **Golden-path smoke**: keep a repeatable release-quality path for New
   File, Save / Save As, L Mode, e-book Mode, EPUB export, Diff /
   Recovery, and AI proposal review once the first review primitive
