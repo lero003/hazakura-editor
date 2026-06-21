@@ -84,24 +84,10 @@ const SAVE_AS_TEXT_FILE_FILTERS: { name: string; extensions: string[] }[] = [
   },
 ];
 
-const CANDIDATE_TEXT_FILE_FILTERS: { name: string; extensions: string[] }[] = [
-  { name: "Markdown / Text", extensions: TEXT_FILE_EXTENSIONS },
-];
-
 export async function pickMarkdownFile(): Promise<string | null> {
   const selected = await open({
     multiple: false,
     directory: false,
-  });
-
-  return typeof selected === "string" ? selected : null;
-}
-
-export async function pickCandidateTextFile(): Promise<string | null> {
-  const selected = await open({
-    multiple: false,
-    directory: false,
-    filters: CANDIDATE_TEXT_FILE_FILTERS,
   });
 
   return typeof selected === "string" ? selected : null;

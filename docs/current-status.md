@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-21 (v0.29 proposal-ingest alignment)
+Last reviewed: 2026-06-21 (v0.29 Review Desk retirement alignment)
 
 ## Current State
 
@@ -69,11 +69,11 @@ Last reviewed: 2026-06-21 (v0.29 proposal-ingest alignment)
   that checkpoint. A `Cmd+Shift+F` global-search result activation bug
   found during smoke has a focused code-level fix.
 - Older public tags and release assets remain immutable.
-- Current active work is v0.29 AI Markdown proposal ingest. The v0.28
+- Current active work is v0.29 AI assist review API alignment. The v0.28
   Safety, Quality, and AI Review Foundation lane is implemented /
-  accepted locally, and the first v0.29 slice exposes Review Desk for an
-  active text tab so a user-selected Markdown / text proposal file can be
-  imported into the explicit candidate Diff flow. Local pre-review
+  accepted locally, and the current v0.29 shape retires the standalone
+  Review Desk screen while preserving the internal candidate comparison
+  primitive for AI assist plumbing. Local pre-review
   regression, package, payload, dependency-audit, bundle metadata,
   license-resource, and bundle-size evidence remains archived under
   `docs/archive/operations/` or summarized in `docs/current-work.md`; it
@@ -110,11 +110,11 @@ Last reviewed: 2026-06-21 (v0.29 proposal-ingest alignment)
   `codex`, `opencode`, `pi`, or `claude` provider session in the
   selected workspace after restart-required enablement and
   responsibility-boundary consent.
-- Review Desk is explicit and low-prominence in the current
-  App Store-safe surface: it is reachable from normal chrome only when an
-  active text tab exists, can import user-selected Markdown / text
-  proposal files into candidate Diff review, and still does not
-  auto-save, auto-apply, launch helpers, or call external AI/API.
+- The standalone Review Desk screen is retired from the current
+  App Store-safe surface. Diff, recovery review, and Apple Local Assist
+  transaction review remain explicit; the internal candidate comparison
+  primitive still must not auto-save, auto-apply, launch helpers, or call
+  external AI/API by itself.
 - Workspace file operations are bounded to the selected workspace.
   Workspace-internal drag/drop Move remains experimental; New File, New
   Folder, Rename, and Move to Trash are the dependable file-tree
@@ -238,7 +238,7 @@ baseline, and smoke evidence are archived under
 
 ## Active Planning Sources
 
-- `docs/current-work.md`: current v0.29 proposal-ingest queue plus
+- `docs/current-work.md`: current v0.29 AI assist review API queue plus
   completed v0.28 foundation and v0.27 refinement notes.
 - `docs/archive/planning/v0.27-refinement-slice-plan.md`: historical v0.27
   execution phases for large-document rendering, One Editing Space,
@@ -261,13 +261,13 @@ baseline, and smoke evidence are archived under
    and archive only completed version-specific material; canonical build
    and boundary docs stay live for future submissions.
 2. For the next product slice, start with `docs/current-work.md`. v0.29
-   is the selected AI Markdown proposal-ingest lane. Continue only with a
-   narrow Review Desk / proposal-source / smoke slice whose proof path is
-   available. Keep the App Store path helper-free and file/text based; do
-   not add Book Workspace Alpha, hidden multi-file book manifests,
-   structural book-workspace information architecture, Native Vibrancy
-   Phase 2, cover editing, or an EPUB document model unless that lane is
-   explicitly opened.
+   is the selected AI assist review API lane. Continue only with a narrow
+   Apple Local Assist transaction review / retired Review Desk exposure
+   guard whose proof path is available. Keep the App Store path
+   helper-free; do not add Book Workspace Alpha, hidden multi-file book
+   manifests, structural book-workspace information architecture, Native
+   Vibrancy Phase 2, cover editing, or an EPUB document model unless that
+   lane is explicitly opened.
 3. For the current `0.28.0` App Store submission lane, build `26` is the
    latest generated local package evidence after the top-chrome quieting
    pass.

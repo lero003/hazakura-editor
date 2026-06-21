@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { DocumentMetaBar } from "./DocumentMetaBar";
 import type { EditorTab } from "../../types";
 import type { RightPaneToggleCopy } from "./RightPaneToggleControls";
-import { getLModeCopy, getReviewDeskCopy } from "../../lib/locale";
+import { getLModeCopy } from "../../lib/locale";
 
 afterEach(cleanup);
 
@@ -52,7 +52,6 @@ function renderMeta(
   overrides: Partial<Parameters<typeof DocumentMetaBar>[0]> = {},
 ) {
   const actions = {
-    onOpenReviewDesk: vi.fn(),
     onReviewChanges: vi.fn(),
     onToggleDiff: vi.fn(),
     onToggleEbook: vi.fn(),
@@ -72,7 +71,6 @@ function renderMeta(
       lModeEnabled={lModeEnabled}
       onOpenAgentWindow={vi.fn()}
       onOpenAppleAssistWindow={vi.fn()}
-      onOpenReviewDesk={actions.onOpenReviewDesk}
       onReviewChanges={actions.onReviewChanges}
       onToggleDiff={actions.onToggleDiff}
       onToggleEbook={actions.onToggleEbook}
@@ -82,8 +80,6 @@ function renderMeta(
       outlinePaneActive={false}
       previewPaneActive={false}
       recoveryReviewChangesLabel="変更を確認"
-      reviewDeskActive={false}
-      reviewDeskCopy={getReviewDeskCopy("en")}
       sidePaneCopy={sidePaneCopy}
       {...overrides}
     />,
@@ -104,10 +100,10 @@ describe("DocumentMetaBar", () => {
     ).toBeNull();
   });
 
-  it("keeps review and Agent controls available outside L Mode", () => {
+  it("keeps dirty review and Agent controls available outside L Mode", () => {
     renderMeta(false);
 
-    expect(screen.getByRole("button", { name: "Review Desk" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Review Desk" })).toBeNull();
     expect(screen.getByRole("button", { name: "Review" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Diff" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Outline" })).toBeTruthy();
@@ -149,11 +145,8 @@ describe("DocumentMetaBar", () => {
     expect(actions.onToggleEbook).toHaveBeenCalledTimes(1);
   });
 
-  it("routes independent review controls to their pane actions", () => {
+  it("routes dirty review controls to their pane actions", () => {
     const actions = renderMeta(false);
-
-    fireEvent.click(screen.getByRole("button", { name: "Review Desk" }));
-    expect(actions.onOpenReviewDesk).toHaveBeenCalledTimes(1);
 
     fireEvent.click(screen.getByRole("button", { name: "Review" }));
     expect(actions.onReviewChanges).toHaveBeenCalledWith(activeTab);

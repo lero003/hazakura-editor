@@ -45,7 +45,7 @@ describe("useGlobalKeyboardShortcuts", () => {
     vi.restoreAllMocks();
   });
 
-  it("reserves Cmd+Shift+R without opening a hidden Review Desk surface", () => {
+  it("reserves Cmd+Shift+R without opening a retired Review Desk surface", () => {
     const props = setup();
     const event = new KeyboardEvent("keydown", {
       bubbles: true,

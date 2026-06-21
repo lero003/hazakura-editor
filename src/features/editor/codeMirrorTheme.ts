@@ -1,15 +1,12 @@
-// Shared CodeMirror theme + highlight style for the editor
-// surfaces (EditorPane and CandidateEditor). Each supported
-// file family has its own `HighlightStyle` so the colour
-// decisions stay in one place per language. The surrounding
-// `EditorView.theme` spec differs in CSS variables and padding
-// values per surface, so it stays inline in each component.
+// Shared CodeMirror theme + highlight style for the editor surface.
+// Each supported file family has its own `HighlightStyle` so the
+// colour decisions stay in one place per language. The surrounding
+// `EditorView.theme` spec differs in CSS variables and padding values,
+// so it stays inline in each component.
 //
 // The picker (`pickEditorLanguage`) keys off the file
 // extension, falling back to Markdown for anything we don't
-// explicitly recognise. The Markdown style is the same one
-// the CandidateEditor uses, since that surface is always
-// Markdown (AI drafts).
+// explicitly recognise.
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { tags as highlightTags } from "@lezer/highlight";
 import { css } from "@codemirror/lang-css";

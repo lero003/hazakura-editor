@@ -87,10 +87,9 @@ export function SidePane({
     ? getCompareCaseByKey(compareView.caseKey) ?? null
     : null;
   // The right-pane compare route only handles file / changes cases.
-  // The manual candidate case is owned by the Review Desk
-  // (useReviewDeskState) and never registered with
-  // useCompareState, but narrow defensively in case a future
-  // slice accidentally adds a candidate case to the right pane.
+  // AI candidate cases are owned by the internal candidate-review
+  // primitive and never registered with useCompareState, but narrow
+  // defensively in case a future slice accidentally adds one here.
   const rightPaneCompareCase =
     compareCase && compareCase.kind !== "candidate" ? compareCase : null;
   const showMarkdownPreviewCard =

@@ -35,7 +35,6 @@ describe("useAppShellFoundation", () => {
     // chrome view state
     expect(result.current).toHaveProperty("rightPaneMode");
     expect(result.current).toHaveProperty("sidePaneOpen");
-    expect(result.current).toHaveProperty("reviewSurface");
     // chrome feedback
     expect(result.current).toHaveProperty("globalError");
     expect(result.current).toHaveProperty("status");
@@ -66,10 +65,10 @@ describe("useAppShellFoundation", () => {
     expect(result.current).toHaveProperty("agentSession");
     expect(result.current).toHaveProperty("agentOutput");
     expect(result.current).toHaveProperty("agentUiSuspendedRef");
-    // review desk
-    expect(result.current).toHaveProperty("reviewDeskMode");
-    expect(result.current).toHaveProperty("candidateInputText");
-    expect(result.current).toHaveProperty("candidateInputSource");
+    // internal candidate review primitive
+    expect(result.current).toHaveProperty("candidateCompareCase");
+    expect(result.current).toHaveProperty("candidateCompareView");
+    expect(result.current).toHaveProperty("runCandidateCompare");
     // side
     expect(result.current).toHaveProperty("quickOpenVisible");
     expect(result.current).toHaveProperty("workspaceContextMenu");

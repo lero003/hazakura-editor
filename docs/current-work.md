@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: Active v0.29 AI Markdown proposal ingest and completed v0.28 foundation
+Scope: Active v0.29 AI assist review API alignment and completed v0.28 foundation
 Authority: High
-Last reviewed: 2026-06-21 (v0.29 proposal-ingest alignment)
+Last reviewed: 2026-06-21 (v0.29 Review Desk retirement alignment)
 
 ## Purpose
 
@@ -22,11 +22,11 @@ The v0.27 refinement phases are complete for source-tag purposes. Keep
 `docs/archive/planning/v0.27-refinement-slice-plan.md` as the execution
 memo / historical phase boundary and
 `docs/post-v0.25-product-refinement-plan.md` as the
-broader lens. The active v0.29 lane is explicit AI Markdown proposal
-ingest on top of the completed v0.28 review foundation: keep the App
-Store path helper-free and start with user-selected Markdown / text
-proposal files flowing into Review Desk before structural Book Workspace
-work.
+broader lens. The active v0.29 lane is explicit AI assist review on top
+of the completed v0.28 review foundation: keep the App Store path
+helper-free, retire the standalone Review Desk screen, and route visible
+AI assistance through the Apple Local Assist transaction / Diff review
+surface before any broader ingest or Book Workspace work.
 
 ## Product Boundary
 
@@ -96,47 +96,36 @@ recurring quality run should use the Active UX Queue, starting with one
 Core Safe Editor quality probe whose risk hypothesis can be inspected or
 smoked.
 
-## v0.29 AI Markdown Proposal Ingest
+## v0.29 AI Assist Review API
 
 Implemented locally as of 2026-06-21:
 
-- Review Desk can import a user-selected Markdown / text proposal file,
-  load it through the existing text-open safety path, place it in the
-  candidate input, and render an explicit Diff against the active buffer.
-- Candidate preview metadata now shows the proposal source, so manual
-  paste, Apple Local Assist, and file import remain distinguishable.
-- Candidate input now tracks manual paste, file import, and edited
-  file-import state. Re-comparing an imported candidate keeps the file
-  source label without exposing local paths, provider internals, or
-  auto-apply behavior.
-- The file-import path does not apply, save, auto-accept, call external
-  AI/API, launch helpers, or modify workspace files.
-- `smoke:app-store-surface` now includes the source-level Review Desk /
-  single-file proposal import tests, so App Store surface checks cover
-  this helper-free path.
+- The standalone Review Desk screen, normal chrome entry point, manual
+  candidate editor, and Markdown / text candidate file-import UI are
+  retired from the current product surface.
+- The internal candidate comparison primitive remains available for AI
+  assist plumbing: `useReviewDeskState.runCandidateCompare` can still
+  build a source-labelled `candidate` CompareCase and diff view without
+  auto-save or auto-apply.
+- `smoke:app-store-surface` now covers the retired surface expectation:
+  top chrome / document meta / command palette do not expose manual Review
+  Desk entry points, while the internal candidate comparison primitive
+  remains tested.
 - `smoke:macos-window` now gives a repeatable local packaged-app
   launch/window proof for `Hazakura Editor Dev.app` via
   `CoreGraphics` / `CGWindowListCopyWindowInfo`.
-- Native-dialog Review Desk file import passed in the rebuilt
-  Developer / GitHub app via Computer Use using temporary `draft.md` /
-  `proposal.md` files. The pass caught and fixed a controlled
-  `CandidateEditor` sync bug where an imported file was immediately
-  marked as edited; source metadata now stays `File import: proposal.md`
-  until the candidate text is actually edited. `Cmd+Shift+R` stayed
-  reserved and did not reload the WebView during this smoke.
-- Candidate file-import failures now use stable Review Desk messages,
-  localize in the Review Desk and status bar, and can be cleared even
-  when no candidate input or preview remains.
+- `Cmd+Shift+R` stays reserved only to avoid WebView reload; it no longer
+  opens a hidden Review Desk surface.
 
 Next useful v0.29 slices, if needed:
 
-- Signed App Store / TestFlight Review Desk smoke only when a submit
-  build is being prepared; the local Developer / GitHub native-dialog
-  path is already covered separately from source-level smoke.
-- Focused paste/source quality polish if another small provenance issue
-  is reproduced; keep provider metadata out of the core editor surface.
-- Multi-file proposal review remains deferred until single-file ingest
-  feels trustworthy.
+- Focused Apple Local Assist transaction review smoke: generate/apply an
+  AI edit transaction, verify the compact Diff / Discard bar is explicit,
+  and confirm no auto-save / auto-apply beyond the requested unsaved edit.
+- Source-level guard for retired Review Desk routes if command palette,
+  slash menu, View menu, or top chrome are touched again.
+- Broader file/paste/multi-file proposal ingest remains deferred until a
+  fresh product boundary review reopens it.
 
 ## v0.20 Sakura Workspace Ergonomics
 
@@ -704,17 +693,16 @@ verification: `cargo test --manifest-path src-tauri/Cargo.toml tests::os_handoff
 
 P3 is accepted as an already-implemented foundation slice as of
 2026-06-21. The first reusable primitive is the existing transaction /
-candidate review path, not a new file-import workflow: manual Review Desk
-candidate input builds a source-preserving `candidate` CompareCase, Apple
-Local Assist candidate generation hands its output into the same Review
-Desk diff flow without auto-applying, and the detached Apple Local Assist
-Writing Companion records unsaved AI edit transactions with compact Diff /
+candidate review path, not a new file-import workflow: the internal
+candidate-review primitive can still build a source-preserving
+`candidate` CompareCase, and the detached Apple Local Assist Writing
+Companion records unsaved AI edit transactions with compact Diff /
 Discard review before save. This closes the v0.28 foundation goal without
 adding App Store helper behavior, provider plugins, generic chat, hidden
 workspace rewrites, auto-save, auto-commit, or broader Agent Workbench
 integration. Explicit file/paste ingest expansion, multi-file proposal
 review, richer provenance, and Agent Workbench external-edit intake remain
-v0.29+ work under `docs/ai-markdown-ingest-plan.md`. Focused verification:
+deferred v0.29+ work under `docs/ai-markdown-ingest-plan.md`. Focused verification:
 `npm run test -- src/hooks/review/useAppleAssistCandidate.test.ts src/features/editor/aiEditTransactions.test.ts src/components/app/AppleAssistReviewBar.test.tsx src/features/editor/aiEditTarget.test.ts`;
 `npm run build:vite`;
 `git diff --check`.
@@ -735,7 +723,7 @@ Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| P0 | Follow the v0.29 proposal-ingest section above | Prefer one narrow Review Desk / proposal-ingest slice whose proof path is available. Keep it file/text based, helper-free for the App Store lane, and explicit Diff / Review only. |
+| P0 | Follow the v0.29 AI assist review API section above | Prefer one narrow Apple Local Assist / AI edit transaction review slice whose proof path is available. Keep it helper-free for the App Store lane, explicit Diff / Review only, and do not reopen the standalone Review Desk screen without a fresh boundary decision. |
 | P1 | Core Safe Editor quality probe | When concrete queue items are exhausted, inspect one basic high-risk surface instead of adding broad tests: open/save/close, restore/recovery, preview, diff/review, workspace file operations, standalone files, image handling, keyboard/IME, or error recovery. State the risk hypothesis, run a focused source/app inspection or smoke, then either fix the smallest issue found or close as `verified no-op`. |
 | P2 | Light accessibility sanity | Keep accessibility as a light sanity pass adjacent to core surfaces: keyboard reachability, focus escape/Tab behavior, readable labels, and obvious contrast. Do not prioritize broad accessibility audits over basic editor quality unless a concrete accessibility failure is observed. |
 | Separate lane | Native vibrancy via `window-vibrancy` + macOS 26 floor | Keep as an independent release-planning lane outside v0.27 refinement. It requires a macOS 26 floor decision, built `.app` smoke on macOS 26, and App Store lane judgment before becoming active work. |
@@ -753,7 +741,7 @@ over copy-heavy or product-voice-sensitive work.
 | Done locally | v0.28 workspace search encoding parity | Implemented on 2026-06-21. Do not re-pick unless a regression appears; continue with the release-gate smoke checklist or a narrow quality probe. |
 | Done locally | v0.28 system handoff hardening | Implemented on 2026-06-21. Do not re-pick unless a regression appears; continue with the release-gate smoke checklist or a narrow quality probe. |
 | Done locally | v0.28 AI proposal review foundation | Accepted on 2026-06-21 as an existing transaction / candidate Diff review primitive. Do not add file/paste/multi-file ingest in v0.28; leave broader ingest expansion for v0.29+. |
-| Done locally | v0.29 single-file proposal import | Implemented on 2026-06-21. Review Desk is reachable from normal chrome for an active text tab, imports a user-selected Markdown / text file into candidate input, records file-import source metadata, and renders an explicit Diff without auto-save or auto-apply. |
+| Superseded locally | v0.29 single-file proposal import | The 2026-06-21 Review Desk file-import slice was retired before release. The current v0.29 shape removes the standalone Review Desk screen and keeps only the internal candidate comparison primitive for AI assist plumbing. |
 | Good | L Mode quality investigation | Pick one reproduced L Mode issue or one measurable quality gap only: caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or performance baseline. Do not add a new editing model or contenteditable surface. |
 | Good | Theme quality investigation | Pick one concrete theme issue only: contrast, focus visibility, status/error readability, dialog readability, or Increase Contrast behavior. Do not redesign palettes or add theme customization. |
 | Good | Core Safe Editor quality probe | Inspect one basic surface with a clear risk hypothesis, then fix only a reproduced issue or close as `verified no-op`. Prefer open/save/close, restore/recovery, preview, diff/review, workspace files, standalone files, image handling, keyboard/IME, or error recovery. |

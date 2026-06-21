@@ -241,7 +241,6 @@
    authoritative visual control here. */
 :root[data-l-mode="on"] .preview-pane,
 :root[data-l-mode="on"] .pane-toggles,
-:root[data-l-mode="on"] .review-surface,
 :root[data-l-mode="on"] .diff-pane {
   display: none;
 }

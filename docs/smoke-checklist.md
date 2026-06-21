@@ -26,8 +26,8 @@ launches the Developer / GitHub `Hazakura Editor Dev.app` bundle, and
 uses `CoreGraphics` / `CGWindowListCopyWindowInfo` to confirm an
 onscreen layer-0 app window. It proves the built bundle can surface a
 visible app window on this Mac; it does not prove native dialog
-selection, full Review Desk file-import interaction, TestFlight, App
-Store sandbox behavior, or notarization.
+selection, Apple Local Assist transaction review, TestFlight, App Store
+sandbox behavior, or notarization.
 
 ## v0.18 TestFlight Basic Smoke
 
@@ -278,30 +278,34 @@ link routing, or external URL handling changes:
 4. Confirm unsafe schemes such as `javascript:` do not open externally and do not navigate the app WebView.
 5. Open Support Diagnostics and repeat the same check for links in the diagnostics Help intro.
 
-## Manual Review Desk Entry Points
+## Retired Review Desk Surface / AI Review
 
-Run when Review Desk entry points, candidate comparison, or App Store surface visibility changes:
+Run when retired Review Desk exposure, candidate comparison, or App
+Store surface visibility changes:
 
-1. Open a text file and confirm the normal chrome shows the low-prominence Review Desk entry point.
-2. Close all text tabs or switch to a non-text/image-only surface and confirm the Review Desk entry point is disabled or unavailable.
-3. Open Review Desk and confirm importing a user-selected Markdown / text proposal fills the candidate input and renders a Diff preview without saving or applying.
-4. Confirm the candidate preview metadata shows the source as file import and the imported file name.
-5. Confirm `Cmd+Shift+R` does not reload the WebView or move focus unexpectedly.
-6. Confirm View menu, command palette, and slash menu do not add additional manual Review Desk open actions unless that surface is explicitly reopened.
-7. Confirm active-tab versus disk review still opens through the existing Diff / Review changes route.
-8. Confirm auto-backup restore review still applies only to the compared document, leaves the file unsaved, and keeps Save explicit.
-9. Confirm Apple Local Assist edit review still exposes diff, discard, and close decisions without auto-saving.
+1. Open a text file and confirm the normal chrome does not show a manual
+   Review Desk entry point.
+2. Close all text tabs or switch to a non-text/image-only surface and
+   confirm no Review Desk entry point appears.
+3. Confirm `Cmd+Shift+R` does not reload the WebView or move focus
+   unexpectedly, and does not open a hidden Review Desk surface.
+4. Confirm View menu, command palette, and slash menu do not add manual
+   Review Desk open actions.
+5. Confirm active-tab versus disk review still opens through the existing
+   Diff / Review changes route.
+6. Confirm auto-backup restore review still applies only to the compared
+   document, leaves the file unsaved, and keeps Save explicit.
+7. Confirm Apple Local Assist edit review still exposes diff, discard, and
+   close decisions without auto-saving.
 
 2026-06-21 local Developer / GitHub app note:
 
 - `npm run smoke:macos-window` rebuilt the macOS lanes and confirmed
   `Hazakura Editor Dev.app` showed an onscreen window.
-- Computer Use opened a temporary `draft.md`, opened Review Desk,
-  selected a temporary `proposal.md` through the native Open panel, and
-  confirmed the candidate input filled, the Diff preview rendered, and
-  source metadata showed `File import: proposal.md`.
-- The same smoke confirmed `Cmd+Shift+R` left Review Desk and the Diff
-  preview in place instead of reloading the WebView.
+- The earlier Review Desk native file-import smoke was retired before
+  release. The current source-level smoke covers absence of manual Review
+  Desk entry points and preservation of the internal candidate comparison
+  primitive.
 - This is local Developer / GitHub app evidence only. It is not signed
   App Store / TestFlight, sandbox, upload, or notarization proof.
 

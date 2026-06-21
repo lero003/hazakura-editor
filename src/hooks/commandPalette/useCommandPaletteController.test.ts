@@ -3,7 +3,7 @@ import { act, renderHook } from "@testing-library/react";
 import { useCommandPaletteController } from "./useCommandPaletteController";
 import type { GlobalSearchRow } from "../globalSearch/useGlobalSearch";
 import type { EditorPaneHandle } from "../../components/editor/EditorPane";
-import { getAppleAssistCopy, getLModeCopy } from "../../lib/locale";
+import { getLModeCopy } from "../../lib/locale";
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -22,7 +22,6 @@ describe("useCommandPaletteController", () => {
           focusAdjacentTab: vi.fn(),
           handleSendSelectionToAgent: vi.fn(),
           insertTable: vi.fn(),
-          invokeAppleAssist: vi.fn(),
           openAgentWindow: vi.fn(),
           openAppleAssistWindow: vi.fn(),
           openFile: vi.fn(),
@@ -45,9 +44,7 @@ describe("useCommandPaletteController", () => {
         },
         activeTab: null,
         activeTabId: null,
-        appleAssistAvailability: { kind: "unsupported" },
         appleLocalAssistAllowed: true,
-        appleAssistCopy: getAppleAssistCopy("en"),
         editorPaneRef: { current: null },
         lModeCopy: getLModeCopy("en"),
         setStatus: vi.fn(),
@@ -98,7 +95,6 @@ describe("useCommandPaletteController", () => {
           focusAdjacentTab: vi.fn(),
           handleSendSelectionToAgent: vi.fn(),
           insertTable: vi.fn(),
-          invokeAppleAssist: vi.fn(),
           openAgentWindow: vi.fn(),
           openAppleAssistWindow: vi.fn(),
           openFile: vi.fn(),
@@ -121,9 +117,7 @@ describe("useCommandPaletteController", () => {
         },
         activeTab: null,
         activeTabId: null,
-        appleAssistAvailability: { kind: "unsupported" },
         appleLocalAssistAllowed: true,
-        appleAssistCopy: getAppleAssistCopy("en"),
         editorPaneRef: { current: editorPane },
         lModeCopy: getLModeCopy("en"),
         setStatus,
@@ -179,7 +173,6 @@ describe("useCommandPaletteController", () => {
           focusAdjacentTab: vi.fn(),
           handleSendSelectionToAgent: vi.fn(),
           insertTable: vi.fn(),
-          invokeAppleAssist: vi.fn(),
           openAgentWindow: vi.fn(),
           openAppleAssistWindow: vi.fn(),
           openFile: vi.fn(),
@@ -202,9 +195,7 @@ describe("useCommandPaletteController", () => {
         },
         activeTab: null,
         activeTabId: null,
-        appleAssistAvailability: { kind: "unsupported" },
         appleLocalAssistAllowed: true,
-        appleAssistCopy: getAppleAssistCopy("ja"),
         editorPaneRef: { current: null },
         lModeCopy: getLModeCopy("ja"),
         setStatus: vi.fn(),
@@ -243,7 +234,6 @@ describe("useCommandPaletteController", () => {
           focusAdjacentTab: vi.fn(),
           handleSendSelectionToAgent: vi.fn(),
           insertTable: vi.fn(),
-          invokeAppleAssist: vi.fn(),
           openAgentWindow: vi.fn(),
           openAppleAssistWindow: vi.fn(),
           openFile: vi.fn(),
@@ -266,9 +256,7 @@ describe("useCommandPaletteController", () => {
         },
         activeTab: null,
         activeTabId: null,
-        appleAssistAvailability: { kind: "unsupported" },
         appleLocalAssistAllowed: true,
-        appleAssistCopy: getAppleAssistCopy("en"),
         editorPaneRef: { current: null },
         lModeCopy: getLModeCopy("en"),
         setStatus: vi.fn(),
@@ -294,7 +282,7 @@ describe("useCommandPaletteController", () => {
     expect(exportEpubBeta).toHaveBeenCalledTimes(1);
   });
 
-  it("hides Apple Local Assist commands when availability is not `available`", () => {
+  it("does not expose retired selected-text Apple Local Assist commands", () => {
     const { result } = renderHook(() =>
       useCommandPaletteController({
         actions: {
@@ -306,7 +294,6 @@ describe("useCommandPaletteController", () => {
           focusAdjacentTab: vi.fn(),
           handleSendSelectionToAgent: vi.fn(),
           insertTable: vi.fn(),
-          invokeAppleAssist: vi.fn(),
           openAgentWindow: vi.fn(),
           openAppleAssistWindow: vi.fn(),
           openFile: vi.fn(),
@@ -329,9 +316,7 @@ describe("useCommandPaletteController", () => {
         },
         activeTab: null,
         activeTabId: null,
-        appleAssistAvailability: { kind: "unsupported" },
         appleLocalAssistAllowed: true,
-        appleAssistCopy: getAppleAssistCopy("en"),
         editorPaneRef: { current: null },
         lModeCopy: getLModeCopy("en"),
         setStatus: vi.fn(),
@@ -354,8 +339,8 @@ describe("useCommandPaletteController", () => {
     expect(rephrase).toBeUndefined();
   });
 
-  it("exposes Apple Local Assist commands when availability is `available`", () => {
-    const invokeAppleAssist = vi.fn();
+  it("exposes the Apple Local Assist window command when allowed", () => {
+    const openAppleAssistWindow = vi.fn();
     const { result } = renderHook(() =>
       useCommandPaletteController({
         actions: {
@@ -367,9 +352,8 @@ describe("useCommandPaletteController", () => {
           focusAdjacentTab: vi.fn(),
           handleSendSelectionToAgent: vi.fn(),
           insertTable: vi.fn(),
-          invokeAppleAssist,
           openAgentWindow: vi.fn(),
-          openAppleAssistWindow: vi.fn(),
+          openAppleAssistWindow,
           openFile: vi.fn(),
           openWorkspace: vi.fn(),
           openWorkspaceFile: vi.fn(),
@@ -390,9 +374,7 @@ describe("useCommandPaletteController", () => {
         },
         activeTab: null,
         activeTabId: null,
-        appleAssistAvailability: { kind: "available" },
         appleLocalAssistAllowed: true,
-        appleAssistCopy: getAppleAssistCopy("en"),
         editorPaneRef: {
           current: {
             getSelectionText: () => "hello",
@@ -417,18 +399,18 @@ describe("useCommandPaletteController", () => {
     const rephrase = result.current.filteredCommands.find(
       (command) => command.id === "appleAssist.rephrase",
     );
-    expect(summarize).toBeDefined();
-    expect(summarize?.category).toBe("Apple Local Assist");
-    expect(summarize?.label).toBe("Summarize selection");
-    expect(rephrase).toBeDefined();
-    expect(rephrase?.label).toBe("Rephrase selection");
+    const openWindow = result.current.filteredCommands.find(
+      (command) => command.id === "apple-assist.openWindow",
+    );
 
-    // Running the command should pass the editor's current
-    // selection text to `invokeAppleAssist`.
+    expect(summarize).toBeUndefined();
+    expect(rephrase).toBeUndefined();
+    expect(openWindow?.category).toBe("Writing Companion");
+    expect(openWindow?.label).toBe("Open Apple Local Assist Window");
     act(() => {
-      summarize?.run();
+      openWindow?.run();
     });
-    expect(invokeAppleAssist).toHaveBeenCalledWith("summarize", "hello");
+    expect(openAppleAssistWindow).toHaveBeenCalledWith("light");
   });
 
   it("hides assist commands in the App Store distribution lane", () => {
@@ -445,7 +427,6 @@ describe("useCommandPaletteController", () => {
           focusAdjacentTab: vi.fn(),
           handleSendSelectionToAgent: vi.fn(),
           insertTable: vi.fn(),
-          invokeAppleAssist: vi.fn(),
           openAgentWindow: vi.fn(),
           openAppleAssistWindow: vi.fn(),
           openFile: vi.fn(),
@@ -468,9 +449,7 @@ describe("useCommandPaletteController", () => {
         },
         activeTab: null,
         activeTabId: null,
-        appleAssistAvailability: { kind: "available" },
         appleLocalAssistAllowed: false,
-        appleAssistCopy: getAppleAssistCopy("en"),
         editorPaneRef: { current: null },
         lModeCopy: getLModeCopy("en"),
         setStatus: vi.fn(),
@@ -530,7 +509,6 @@ describe("useCommandPaletteController", () => {
           focusAdjacentTab: vi.fn(),
           handleSendSelectionToAgent: vi.fn(),
           insertTable: vi.fn(),
-          invokeAppleAssist: vi.fn(),
           openAgentWindow: vi.fn(),
           openAppleAssistWindow: vi.fn(),
           openFile: vi.fn(),
@@ -553,9 +531,7 @@ describe("useCommandPaletteController", () => {
         },
         activeTab: null,
         activeTabId: null,
-        appleAssistAvailability: { kind: "available" },
         appleLocalAssistAllowed: true,
-        appleAssistCopy: getAppleAssistCopy("en"),
         editorPaneRef: { current: null },
         lModeCopy: getLModeCopy("en"),
         setStatus: vi.fn(),
@@ -615,7 +591,6 @@ describe("useCommandPaletteController", () => {
           focusAdjacentTab: vi.fn(),
           handleSendSelectionToAgent: vi.fn(),
           insertTable: vi.fn(),
-          invokeAppleAssist: vi.fn(),
           openAgentWindow: vi.fn(),
           openAppleAssistWindow: vi.fn(),
           openFile: vi.fn(),
@@ -638,9 +613,7 @@ describe("useCommandPaletteController", () => {
         },
         activeTab: null,
         activeTabId: null,
-        appleAssistAvailability: { kind: "available" },
         appleLocalAssistAllowed: true,
-        appleAssistCopy: getAppleAssistCopy("en"),
         editorPaneRef: { current: null },
         lModeCopy: getLModeCopy("en"),
         setStatus: vi.fn(),

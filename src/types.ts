@@ -100,22 +100,6 @@ export type TextEncoding = "utf-8" | "utf-8-bom" | "shift-jis" | "euc-jp";
 
 export type RightPaneMode = "preview" | "compare" | "outline" | "ebook";
 
-// Review Desk is a top-level review surface that intentionally replaces
-// the editor area when open, separate from RightPaneMode which lives
-// next to the editor. See docs/archive/reviews/v0.7-review-desk-design-decisions.md
-// (B-1) and docs/archive/reviews/v0.7-readiness-gate.md (R-1).
-export type ReviewSurface = "review" | null;
-
-// Review Desk internal surface mode. Today only the empty state is
-// reachable; future slices will add the AI candidate / change review
-// / draft review / conflict review modes through the same enum. See
-// docs/archive/reviews/v0.7-review-desk-design-decisions.md (R-4).
-export type ReviewDeskMode = "empty";
-
-export type CandidateInputSource =
-  | { kind: "manual" }
-  | { kind: "file"; name: string; edited: boolean };
-
 export type MenuLanguage = "en" | "ja" | "kana";
 
 export function isJapaneseMenuLanguage(language: MenuLanguage): boolean {

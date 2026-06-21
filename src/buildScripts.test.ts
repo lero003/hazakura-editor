@@ -205,9 +205,12 @@ describe("macOS build scripts", () => {
     expect(dryRun).toContain("Tracked release docs: not updated");
   });
 
-  it("keeps the App Store surface smoke covering Review Desk proposal import", () => {
+  it("keeps the App Store surface smoke covering retired Review Desk exposure", () => {
     const appStoreSurfaceSmoke = packageJson.scripts["smoke:app-store-surface"];
 
+    expect(appStoreSurfaceSmoke).toContain(
+      "src/hooks/commandPalette/useCommandPaletteController.test.ts",
+    );
     expect(appStoreSurfaceSmoke).toContain(
       "src/components/app/RightPaneToggleControls.test.tsx",
     );
@@ -215,17 +218,11 @@ describe("macOS build scripts", () => {
       "src/components/app/DocumentMetaBar.test.tsx",
     );
     expect(appStoreSurfaceSmoke).toContain(
-      "src/components/editor/CandidateEditor.test.tsx",
-    );
-    expect(appStoreSurfaceSmoke).toContain(
-      "src/components/review/ReviewSurface.test.tsx",
-    );
-    expect(appStoreSurfaceSmoke).toContain(
-      "src/hooks/review/useCandidateFileImport.test.ts",
-    );
-    expect(appStoreSurfaceSmoke).toContain(
       "src/hooks/review/useReviewDeskState.test.ts",
     );
+    expect(appStoreSurfaceSmoke).not.toContain("ReviewSurface.test.tsx");
+    expect(appStoreSurfaceSmoke).not.toContain("CandidateEditor.test.tsx");
+    expect(appStoreSurfaceSmoke).not.toContain("useCandidateFileImport.test.ts");
   });
 
   it("uses the dedicated Developer lane script before copying the Dev bundle", () => {

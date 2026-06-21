@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-21 (v0.29 proposal-ingest alignment)
+Last reviewed: 2026-06-21 (v0.29 Review Desk retirement alignment)
 
 ## Current State
 
@@ -77,30 +77,20 @@ Last reviewed: 2026-06-21 (v0.29 proposal-ingest alignment)
   use one fixed OS handoff helper with static platform command templates.
   Print handoff rejects path-like or non-HTML file names before creating
   the temporary file.
-- v0.29 AI Markdown proposal ingest is now active on top of the completed
-  v0.28 foundation. Review Desk is reachable from normal chrome for an
-  active text tab, can import a user-selected Markdown / text proposal
-  file into the candidate input, records file-import source metadata, and
-  renders an explicit Diff without auto-save, auto-apply, helper launch,
-  or external AI/API calls. A repeatable packaged-app window smoke is
-  available as `npm run smoke:macos-window`; it confirms the local
-  `Hazakura Editor Dev.app` shows an onscreen window via
-  `CoreGraphics`, but it is not native file-picker interaction proof.
-  Candidate input tracks manual paste, file import, and edited
-  file-import state so re-comparing an imported candidate preserves the
-  source label without exposing local paths or provider internals.
-  The local Developer / GitHub native-dialog Review Desk import path was
-  smoked with Computer Use against temporary `draft.md` / `proposal.md`
-  files after rebuilding the app; imported candidates now stay labeled
-  as file imports until the candidate text is actually edited, and
-  `Cmd+Shift+R` did not reload the WebView.
-  Candidate file-import failures now use stable Review Desk messages,
-  localize in the Review Desk and status bar, and remain clearable even
-  when only the import error is visible.
-  Next useful work should stay narrow: signed App Store / TestFlight
-  smoke only when preparing a submit build, a reproduced provenance edge
-  case, or a focused Review Desk quality fix if one is reproduced.
-  Multi-file proposal review remains deferred.
+- v0.29 AI assist review API alignment is active on top of the completed
+  v0.28 foundation. The standalone Review Desk screen, normal chrome
+  entry point, manual candidate editor, and Markdown / text candidate
+  file-import UI are retired before release. The internal candidate
+  comparison primitive remains for AI assist plumbing:
+  `useReviewDeskState.runCandidateCompare` can build a source-labelled
+  `candidate` CompareCase and diff view without auto-save or auto-apply.
+  `smoke:app-store-surface` now checks retired Review Desk exposure
+  through chrome / command tests and keeps the internal primitive test.
+  `Cmd+Shift+R` remains reserved only to avoid WebView reload. Next useful
+  work should stay narrow: Apple Local Assist transaction review smoke or
+  a source-level guard if retired Review Desk routes are touched again.
+  File/paste/multi-file proposal ingest remains deferred until a fresh
+  boundary review reopens it.
 - Latest docs cleanup keeps current entry points lighter: README now
   summarizes feature areas instead of listing every implemented behavior,
   roadmap keeps a short shipped-phase summary for v0.18-v0.26, and

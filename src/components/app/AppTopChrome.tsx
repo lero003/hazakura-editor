@@ -9,7 +9,6 @@ import { TabBar } from "../editor/TabBar";
 import type {
   LModeCopy,
   RecoveryCopy,
-  ReviewDeskCopy,
   SidePaneCopy,
 } from "../../lib/locale";
 import type {
@@ -19,7 +18,6 @@ import type {
   MenuLanguage,
   RightPaneMode,
   AssistSurfacePreference,
-  ReviewSurface,
 } from "../../types";
 import { isDeveloperDistributionLane } from "../../lib/distributionLane";
 
@@ -42,7 +40,6 @@ type AppTopChromeProps = {
   onFinishTabPointerDrag: (target?: EventTarget | null) => void;
   onOpenAgentWindow: () => void;
   onOpenAppleAssistWindow: () => void;
-  onOpenReviewDesk: () => void;
   onPointerEnter: () => void;
   onReviewChanges: (tab: EditorTab) => void;
   onSelectTab: (tabId: string) => void;
@@ -61,8 +58,6 @@ type AppTopChromeProps = {
   onToggleOutline: () => void;
   onTogglePreview: () => void;
   recoveryCopy: RecoveryCopy;
-  reviewDeskCopy: ReviewDeskCopy;
-  reviewSurface: ReviewSurface;
   shouldSuppressTabClick: () => boolean;
   sidePaneCopy: SidePaneCopy;
   sidePaneMode: RightPaneMode | null;
@@ -89,7 +84,6 @@ export function AppTopChrome({
   onFinishTabPointerDrag,
   onOpenAgentWindow,
   onOpenAppleAssistWindow,
-  onOpenReviewDesk,
   onPointerEnter,
   onReviewChanges,
   onSelectTab,
@@ -102,8 +96,6 @@ export function AppTopChrome({
   onToggleOutline,
   onTogglePreview,
   recoveryCopy,
-  reviewDeskCopy,
-  reviewSurface,
   shouldSuppressTabClick,
   sidePaneCopy,
   sidePaneMode,
@@ -159,7 +151,6 @@ export function AppTopChrome({
         lModeEnabled={lModeEnabled}
         onOpenAgentWindow={onOpenAgentWindow}
         onOpenAppleAssistWindow={onOpenAppleAssistWindow}
-        onOpenReviewDesk={onOpenReviewDesk}
         onReviewChanges={onReviewChanges}
         onToggleDiff={onToggleDiff}
         onToggleEbook={onToggleEbook}
@@ -169,8 +160,6 @@ export function AppTopChrome({
         outlinePaneActive={sidePaneMode === "outline"}
         previewPaneActive={sidePaneMode === "preview"}
         recoveryReviewChangesLabel={recoveryCopy.reviewChanges}
-        reviewDeskActive={reviewSurface === "review"}
-        reviewDeskCopy={reviewDeskCopy}
         sidePaneCopy={sidePaneCopy}
       />
     </TabBar>

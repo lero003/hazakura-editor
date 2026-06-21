@@ -220,7 +220,7 @@ Developer preview release boundary:
 - The file tree is a workspace browser, not an index. Very large directories are capped per folder and may show only the first visible entries.
 - Image preview is intentionally bounded to user-selected local PNG/JPEG/GIF/WebP files up to 20 MB.
 - Save conflicts are recoverable by reviewing changes, reopening, closing, or keeping local edits, and text comparison remains file/workspace based, but there is no merge editor, advanced diff, or Git status view.
-- Manual Review Desk entry points are hidden in the current App Store-oriented surface. Diff, recovery review, and Apple Local Assist review remain explicit and do not replace Git/merge workflows.
+- The standalone Review Desk screen is retired from the current App Store-oriented surface. Diff, recovery review, and Apple Local Assist review remain explicit and do not replace Git/merge workflows.
 - The default local smoke app is not signed or notarized with an Apple Developer ID. GitHub Release DMG previews can be Developer ID signed, but are still not notarized unless a separate notarization pass is completed.
 - Agent Workbench is optional and explicit. It does not provide a general shell prompt, arbitrary command input UI, arbitrary path input UI, provider-add UI, multiple sessions, session restore, auto-apply, auto-commit, or Git integration.
 - Apple Local Assist is an experimental alpha surface, not the main AI feature. Live generation depends on Apple Foundation Models availability on the current Mac; output quality may vary, and the feature may change or be removed.

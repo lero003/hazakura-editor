@@ -13,7 +13,7 @@ The next direction is a deeper **L Mode Live Source Accuracy Ramp**: make Markdo
 
 The ambition is intentionally high: a custom writing-app feel that can go beyond dedicated WYSIWYG editors like Typora in calmness and document focus. The constraint is equally firm: the app must not replace the Markdown document model with HTML, Preview DOM editing, `contenteditable`, or hidden irreversible formatting.
 
-It hides surrounding UI such as the file tree, tabs, status details, Agent Surface, and Review Desk as much as practical, then brings the document body forward. The goal is to let novels, essays, notes, philosophical fragments, and narrative text be written while they are read.
+It hides surrounding UI such as the file tree, tabs, status details, and Agent Surface as much as practical, then brings the document body forward. The retired standalone Review Desk should not reappear inside this mode. The goal is to let novels, essays, notes, philosophical fragments, and narrative text be written while they are read.
 
 Short description:
 
@@ -26,13 +26,13 @@ Alternative English label: **L Mode**.
 `Hazakura Editor` normal mode remains the safe Markdown workspace.
 
 - Normal mode: edit and review Markdown safely.
-- Review Desk: compare candidate text and diffs explicitly.
+- Diff / AI review: compare changes explicitly without auto-applying.
 - Agent Window: handle external AI at a clear distance.
 - えるモード: a Live Source writing surface whose source model is Markdown.
 
 えるモード should become a first-class writing surface, not just an optional visual mode. Normal mode remains the safety foundation, but routine writing should not require leaving えるモード for every small action.
 
-えるモード is not an AI generation mode and not an automatic editing mode. AI, Diff, and Review Desk can be used through explicit, lightweight review surfaces when needed.
+えるモード is not an AI generation mode and not an automatic editing mode. AI and Diff can be used through explicit, lightweight review surfaces when needed.
 
 ## Relationship To e-book Mode
 
@@ -222,7 +222,7 @@ These are not bad ideas. They are simply larger than the next safe move.
 When entering えるモード, the screen should become document-centered:
 
 - hide the file tree and surrounding side surfaces
-- hide Agent Surface and Review Desk
+- hide Agent Surface and retired review side surfaces
 - reduce tab and status prominence
 - center the document body
 - constrain line width for reading
@@ -237,7 +237,7 @@ The core interaction should stay loose and low-pressure:
 - show unsaved state only as a subtle signal, not as a dominant save button or warning
 - keep file switching available through the existing mode / tab behavior
 - keep save behavior available without making save the main visible control
-- show AI edit differences as a compact, closable review sheet rather than forcing the full Review Desk surface
+- show AI edit differences as a compact, closable review sheet
 - keep the file tree hidden by default, with a translucent top-left icon that opens a temporary drawer or overlay when needed
 
 The intended feel is not "editing code that happens to be prose." It is "looking at a work or note, then continuing it."
@@ -248,7 +248,7 @@ The intended feel is not "editing code that happens to be prose." It is "looking
 
 - Hide the file tree.
 - Hide Agent Surface.
-- Hide Review Desk.
+- Keep the retired standalone Review Desk absent.
 - Reduce tab bar and status detail prominence.
 - Center the active document body.
 
@@ -296,7 +296,7 @@ Markers must become available around the active line, active block, selection, o
 - When Apple Local Assist changes the buffer from えるモード, show a compact diff / discard review surface inside or adjacent to えるモード.
 - The review surface should be closable so the user can return to writing immediately.
 - The surface should make the AI-originated change explicit, unsaved, reviewable, and discardable.
-- Do not promote this into the persistent Manual Review Desk entry point.
+- Do not promote this into a persistent manual Review Desk entry point.
 
 ## Non-Scope
 
@@ -337,7 +337,7 @@ If these problems dominate, close the experiment or reduce it to a conventional 
 - IME input becomes unstable
 - Markdown source becomes hard to infer
 - saved content feels uncertain
-- Preview, Diff, or Review Desk consistency breaks
+- Preview, Diff, or AI review consistency breaks
 - visual beauty creates more anxiety than confidence
 - implementation cost is high compared with the experience gain
 - WYSIWYG polish starts requiring a second hidden document model
@@ -351,7 +351,7 @@ Implementation is CodeMirror display decoration on top of the existing Markdown 
 - Style headings with strong jump rates and editorial treatments (centered H1, distinctive H2/H3, etc.).
 - Keep active and selected lines source-like. Do not rely on CSS to recreate source visibility from hidden zero-width marker spans.
 - Let inactive lines carry the document-like treatment; let active / selected lines carry editing clarity.
-- Do not affect normal mode, Preview, Diff, Review Desk, or export semantics.
+- Do not affect normal mode, Preview, Diff, AI review, or export semantics.
 - Theme handling can stay simple (light / dark base) — magazine style is the primary differentiator, not per-theme variation.
 - When a Markdown grammar ambiguity affects the visual surface, prefer a source-preserving visual explanation over rewriting the source. For example, Setext-style `---` / `===` underline markers may render as dividers in L Mode if that keeps writing behavior understandable.
 - Prefer explicit tests for every "hidden marker" or `Decoration.replace` behavior that could affect typing near the range.

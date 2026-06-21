@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-21 (v0.29 proposal-ingest alignment)
+Last reviewed: 2026-06-21 (v0.29 Review Desk retirement alignment)
 
 ## Current Position
 
@@ -43,8 +43,9 @@ Near-term phase order:
 1. v0.28 tightened quality and trust consistency, especially around image
    loading, Japanese text search parity, OS handoff explanation, and the
    first reusable AI proposal review primitives.
-2. v0.29 deepens writing / review flow from that foundation: Review Desk
-   proposal import, explicit Diff / Review, and release-quality smoke.
+2. v0.29 deepens writing / review flow from that foundation: Apple Local
+   Assist transaction review, explicit Diff / Review, retired Review Desk
+   exposure guards, and release-quality smoke.
 3. v1.0 should be a polished single-document Markdown book-writing
    surface with explicit export and review, not a full multi-file book
    workspace.
@@ -70,10 +71,10 @@ These boundaries stay active across roadmap changes:
 - Agent Workbench is a separate Developer / GitHub lane trust boundary:
   explicit, consent-gated, allowlisted providers only, selected
   workspace root only, one active session, no restore, no auto-apply.
-- Review Desk entry points should remain explicit and low-prominence.
-  The current v0.29 App Store-safe shape exposes Review Desk from normal
-  chrome only for an active text tab; candidate import stays local
-  file/text based and never auto-saves or auto-applies.
+- The standalone Review Desk screen is retired from the current product
+  surface. Apple Local Assist and other AI-assist paths must remain
+  explicit, inspectable through Diff / change history or an equivalent
+  review surface, and never auto-save or auto-apply without user action.
 - Workspace file operations stay bounded to the selected workspace and
   must not become a full file manager.
 
@@ -131,12 +132,12 @@ Expected slices:
   external links, Finder reveal, and print/browser handoff so they are
   easier to explain and test as OS handoff rather than arbitrary command
   execution.
-- **AI proposal review foundation**: add one review primitive only: file,
-  paste, or transaction intake into explicit Diff / Review. For v0.28 the
-  selected primitive is the existing Apple Local Assist transaction /
-  Review Desk candidate Diff path; broader file / paste / multi-file ingest
-  remains v0.29+ work. Keep it helper-free in the App Store lane and
-  separate from Agent Workbench.
+- **AI proposal review foundation**: add one review primitive only:
+  transaction intake into explicit Diff / Review. For v0.28 and the first
+  v0.29 follow-up, the selected visible primitive is the Apple Local
+  Assist transaction / compact Diff path; broader file / paste /
+  multi-file ingest remains deferred work. Keep it helper-free in the App
+  Store lane and separate from Agent Workbench.
 - **Golden-path smoke**: keep a repeatable release-quality path for New
   File, Save / Save As, L Mode, e-book Mode, EPUB export, Diff /
   Recovery, and AI proposal review once the first review primitive
@@ -153,17 +154,17 @@ Do not include:
 
 ## v0.29+ AI Proposal Ingest And Writing Flow
 
-Goal: make AI-written Markdown easier to import, compare, and accept
-explicitly.
+Goal: make AI-written Markdown easier to review and accept explicitly
+without reviving the standalone Review Desk screen.
 
 Use `docs/ai-markdown-ingest-plan.md` as the planning memo. The durable
 boundary is manual review:
 
-- The first v0.29 slice exposes Review Desk from normal chrome for an
-  active text tab and imports a user-selected Markdown / text proposal
-  file into the existing candidate Diff flow.
+- The first v0.29 correction retires the standalone Review Desk screen
+  and keeps only the internal candidate comparison primitive for AI assist
+  plumbing.
 - Support Diff / Review for AI or external-agent output, starting with
-  the smallest reusable proposal intake path.
+  the smallest reusable Apple Local Assist transaction review path.
 - Add explicit ingest for AI-proposed Markdown changes from selected
   files, pasted text, Apple Local Assist transactions, or Agent Workbench
   external edits when those lanes are active.
@@ -237,7 +238,7 @@ the first daily-use surface is proven.
 
 Possible directions:
 
-- Improve AI proposal import, provenance display, and Diff / Review
+- Improve AI proposal review, provenance display, and Diff / Review
   ergonomics without making Hazakura an agent platform.
 - Improve EPUB export with metadata, cover selection, navigation, and
   clearer manual validation guidance.

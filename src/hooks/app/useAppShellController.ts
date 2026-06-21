@@ -29,8 +29,6 @@ import { isAppleLocalAssistSurfaceAllowed } from "../../lib/distributionLane";
 import { useAgentWorkbenchController } from "../agent/useAgentWorkbenchController";
 import { useAppExitConfirmation } from "./useAppExitConfirmation";
 import { useAppleAssistAvailability } from "../agent/useAppleAssistAvailability";
-import { useAppleAssistCandidate } from "../review/useAppleAssistCandidate";
-import { useCandidateFileImport } from "../review/useCandidateFileImport";
 import { useCommandPaletteController } from "../commandPalette/useCommandPaletteController";
 import { useCompareController } from "../diff/useCompareController";
 import { useDocumentSafetyActions } from "../document/useDocumentSafetyActions";
@@ -43,7 +41,6 @@ import { useAppleAssistApplyHandler } from "../editor/useAppleAssistApplyHandler
 import { useEditorCommands } from "../editor/useEditorCommands";
 import { useEditorFindController } from "../editor/useEditorFindController";
 import { useTabBarController } from "../editor/useTabBarController";
-import { useReviewDeskController } from "../review/useReviewDeskController";
 import { useWorkspaceFileOpening } from "../workspace/useWorkspaceFileOpening";
 import { useAppShellFoundation } from "./useAppShellFoundation";
 import { useAppShellRefs } from "./useAppShellRefs";
@@ -92,33 +89,9 @@ export function useAppShellController() {
   const {
     rightPaneMode,
     setRightPaneMode,
-    setReviewSurface,
     setSidePaneOpen,
     sidePaneOpen,
-    reviewSurface,
   } = foundation;
-
-  // section: review desk state
-  const {
-    candidateCompareCase,
-    candidateCompareView,
-    candidateErrorMessage,
-    candidateInputSource,
-    candidateInputText,
-    clearCandidate,
-    resetReviewDesk,
-    reviewDeskMode,
-    runCandidateCompare,
-    setCandidateInputFromFile,
-    setCandidateInputText,
-  } = foundation;
-
-  // section: review desk controller (depends on review state + chrome view state)
-  const { closeReviewDesk, openReviewDesk } = useReviewDeskController({
-    reviewSurface,
-    resetReviewDesk,
-    setReviewSurface,
-  });
 
   // section: draft recovery
   const { pendingDrafts, setPendingDrafts } = foundation;
@@ -320,14 +293,12 @@ export function useAppShellController() {
   const {
     agentWorkbenchCopy,
     agentWorkbenchRestartRequired,
-    appleAssistCopy,
     autoBackupRestoreCopy,
     editorChromeCopy,
     fileOpsCopy,
     lModeCopy,
     preferencesCopy,
     recoveryCopy,
-    reviewDeskCopy,
     safeEditorCopy,
     sidePaneCopy,
     slashMenuCopy,
@@ -628,7 +599,7 @@ export function useAppShellController() {
     clearImagePreview,
     focusEditorSoon,
     imageReturnTabId,
-    onShowDocumentSurface: () => setReviewSurface(null),
+    onShowDocumentSurface: () => {},
     setActiveTabId,
     setTabs,
     setStatus,
@@ -839,19 +810,15 @@ export function useAppShellController() {
     exitLMode();
   }, [exitLMode]);
 
-  // When L Mode turns on, force the side pane and the Review
-  // Desk closed. The CSS hides the toggles in L Mode so the user
-  // cannot re-open them from chrome alone; this effect keeps the
-  // state consistent so the next time the user toggles L Mode off,
-  // the workspace is in a clean (collapsed) state.
+  // When L Mode turns on, force the side pane closed. The CSS hides
+  // the toggles in L Mode so the user cannot re-open them from chrome
+  // alone; this effect keeps the state consistent so the next time the
+  // user toggles L Mode off, the workspace is in a clean state.
   useEffect(() => {
     if (!editorSettings.lModeEnabled) {
       return;
     }
     setSidePaneOpen(false);
-    if (reviewSurface !== null) {
-      closeReviewDesk();
-    }
     // Compare selection is invisible in L Mode (the workspace
     // tree and the compare panel are both hidden), but the
     // source/target anchors persist in state. If we leave them
@@ -867,11 +834,9 @@ export function useAppShellController() {
   }, [
     clearCompareSource,
     clearCompareTarget,
-    closeReviewDesk,
     compareAnchor,
     compareTarget,
     editorSettings.lModeEnabled,
-    reviewSurface,
     setSidePaneOpen,
   ]);
 
@@ -996,87 +961,6 @@ export function useAppShellController() {
     appleLocalAssistAllowed,
   );
 
-  // The Apple Assist target is a 4-field projection of the
-  // active tab. We don't pass the whole tab so the hook stays
-  // decoupled from the editor's full state surface.
-  const appleAssistTarget = useMemo(
-    () =>
-      activeTab
-        ? {
-            id: activeTab.id,
-            name: activeTab.name,
-            path: activeTab.path,
-            contents: activeTab.contents,
-          }
-        : null,
-    [activeTab],
-  );
-
-  const {
-    error: appleAssistError,
-    generateAndCompare: generateAppleAssistAndCompare,
-    clearError: clearAppleAssistError,
-  } = useAppleAssistCandidate({
-    activeTab: appleAssistTarget,
-    copy: reviewDeskCopy,
-    runCandidateCompare,
-  });
-
-  // `invokeAppleAssist` is the command-palette entrypoint. It
-  // delegates to the hook and surfaces any error through the
-  // existing `setStatus` channel — no auto-apply, no toast, no
-  // new UI surface.
-  const invokeAppleAssist = useCallback(
-    (operation: "summarize" | "rephrase" | "extract" | "proofread" | "explain_diff", selectedText: string) => {
-      void generateAppleAssistAndCompare(operation, selectedText).then(
-        (result) => {
-          if (result.ok) {
-            return;
-          }
-          setStatus(result.error);
-        },
-      );
-    },
-    [generateAppleAssistAndCompare, setStatus],
-  );
-
-  // Suppress unused-var warnings; these are wired up at the
-  // UI layer in a follow-up slice.
-  void appleAssistError;
-  void clearAppleAssistError;
-
-  const {
-    busy: candidateFileImportBusy,
-    clearError: clearCandidateFileImportError,
-    error: candidateFileImportError,
-    importAndCompare: importCandidateFileAndCompare,
-  } = useCandidateFileImport({
-    activeTab: appleAssistTarget,
-    copy: reviewDeskCopy,
-    runCandidateCompare,
-    setCandidateInputFromFile,
-  });
-
-  const setCandidateInputTextAndClearImportError = useCallback(
-    (value: string) => {
-      clearCandidateFileImportError();
-      setCandidateInputText(value);
-    },
-    [clearCandidateFileImportError, setCandidateInputText],
-  );
-
-  const clearCandidateAndImportError = useCallback(() => {
-    clearCandidateFileImportError();
-    clearCandidate();
-  }, [clearCandidate, clearCandidateFileImportError]);
-
-  const importCandidateFile = useCallback(async () => {
-    const result = await importCandidateFileAndCompare();
-    if (!result.ok && "error" in result) {
-      setStatus(result.error);
-    }
-  }, [importCandidateFileAndCompare, setStatus]);
-
   const {
     closeCommandPalette,
     closeGlobalSearch,
@@ -1109,7 +993,6 @@ export function useAppShellController() {
       focusAdjacentTab,
       handleSendSelectionToAgent,
       insertTable,
-      invokeAppleAssist,
       openAgentWindow: (theme) => {
         void openAgentWindow(theme);
       },
@@ -1139,9 +1022,7 @@ export function useAppShellController() {
     },
     activeTab,
     activeTabId,
-      appleAssistAvailability,
-      appleLocalAssistAllowed,
-    appleAssistCopy,
+    appleLocalAssistAllowed,
     editorPaneRef,
     lModeCopy,
     setStatus,
@@ -1292,40 +1173,6 @@ export function useAppShellController() {
     },
   });
 
-  // section: manual candidate apply helper
-  const applyManualCandidateToActiveTab = useCallback(
-    (
-      candidateText: string,
-      documentTabId: string,
-      documentContents: string,
-    ) => {
-      if (
-        !activeTab ||
-        activeTab.id !== documentTabId ||
-        activeTab.contents !== documentContents
-      ) {
-        setStatus("Manual candidate apply failed");
-        return;
-      }
-
-      setTabs((currentTabs) =>
-        currentTabs.map((tab) =>
-          tab.id === activeTab.id
-            ? {
-                ...tab,
-                contents: candidateText,
-                saveStatus: "idle",
-                error: null,
-              }
-            : tab,
-        ),
-      );
-      clearCandidateAndImportError();
-      setStatus("Manual candidate applied");
-    },
-    [activeTab, clearCandidateAndImportError, setStatus, setTabs],
-  );
-
   // v0.12+ Apple Local Assist Writing Companion (slice 5).
   // The escape hatch's Discard button reverts the affected
   // tab's contents to the transaction's full-buffer snapshot
@@ -1391,14 +1238,6 @@ export function useAppShellController() {
     autoBackupRestoreEntries: autoBackupRestore.backups,
     autoBackupRestoreError: autoBackupRestore.error,
     autoBackupRestoreLoading: autoBackupRestore.loading,
-    candidateCompareCase,
-    candidateCompareView,
-    candidateErrorMessage,
-    candidateFileImportBusy,
-    candidateFileImportError,
-    candidateInputSource,
-    candidateInputText,
-    clearCandidate: clearCandidateAndImportError,
     appCloseCancelButtonRef,
     appCloseDialogRef,
     appRestartPending,
@@ -1496,7 +1335,6 @@ export function useAppShellController() {
     lineEndingLabel: editorChromeCopy.lineEnding,
     loadWorkspaceDirectory,
     menuLanguage,
-    onApplyManualCandidate: applyManualCandidateToActiveTab,
     onCheckAgentGate: requestAgentLaunchGateCheck,
     onDiscardAppleAssistEdit: discardAppleAssistEdit,
     onOpenAgentWindow: () => {
@@ -1508,15 +1346,12 @@ export function useAppShellController() {
       }
       void toggleAppleAssistWindow(themePreference);
     },
-    onOpenReviewDesk: openReviewDesk,
-    onCloseReviewDesk: closeReviewDesk,
     onCloseSelectedImagePreview: closeSelectedImagePreview,
     onCloseTab: requestCloseTab,
     onConvertEncoding: convertActiveEncoding,
     onConvertLineEnding: convertActiveLineEnding,
     onExitLModeToWorkspace: exitLModeToWorkspace,
     onFinishTabPointerDrag: finishTabPointerDrag,
-    onImportCandidateFile: importCandidateFile,
     onOpenAppleAssistFromLMode: () => {
       // v0.12+ Apple Local Assist Writing Companion mock
       // (slice 3). The L Mode action rail's Apple Assist
@@ -1599,17 +1434,12 @@ export function useAppShellController() {
     cancelPendingTrash,
     resolvedTheme,
     restartAppForAgentMode,
-    reviewDeskCopy,
-    reviewDeskMode,
     reviewDraftAgainstDisk: requestReviewDraftAgainstDisk,
-    reviewSurface,
     reviewTabAgainstDisk: requestReviewTabAgainstDisk,
     restoreDraft,
     revealWorkspacePath,
-    runCandidateCompare,
     runSelectedFileCompare,
     safeEditorCopy,
-    setCandidateInputText: setCandidateInputTextAndClearImportError,
     saveAllAndCloseWindow,
     saveAndClosePendingTab,
     saveTabById,

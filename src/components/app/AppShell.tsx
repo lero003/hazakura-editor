@@ -1,18 +1,13 @@
 import { useState, type ComponentProps } from "react";
 import type {
   AmbientIntensity,
-  CandidateInputSource,
-  CompareCase,
-  CompareViewState,
   EditorSettings,
   EditorTab,
   MenuLanguage,
   ResolvedTheme,
-  ReviewSurface as ReviewSurfaceKind,
 } from "../../types";
 import type { ChangeReviewSnapshot } from "../../hooks/diff/useCompareExecution";
-import type { LModeCopy, ReviewDeskCopy } from "../../lib/locale";
-import type { ReviewDeskMode } from "../../types";
+import type { LModeCopy } from "../../lib/locale";
 import { AmbientBackground, type AmbientMode } from "./AmbientBackground";
 import { AppDocumentFeedback } from "./AppDocumentFeedback";
 import { AppOverlays } from "./AppOverlays";
@@ -23,7 +18,6 @@ import { LModeActionRail } from "./LModeActionRail";
 import { LModeExitPill } from "./LModeExitPill";
 import { LModeWindowDragBand } from "./LModeWindowDragBand";
 import { AppleAssistReviewBar } from "./AppleAssistReviewBar";
-import { ReviewSurface } from "../review/ReviewSurface";
 
 export type AppShellProps = Omit<
   ComponentProps<typeof AppTopChrome>,
@@ -35,46 +29,16 @@ export type AppShellProps = Omit<
   ComponentProps<typeof AppOverlays> & {
     activeTab: EditorTab | null;
     ambientIntensity: AmbientIntensity;
-    candidateCompareCase: CompareCase | null;
-    candidateCompareView: CompareViewState | null;
-    candidateErrorMessage: string | null;
-    candidateFileImportBusy: boolean;
-    candidateFileImportError: string | null;
-    candidateInputSource: CandidateInputSource;
-    candidateInputText: string;
-    clearCandidate: () => void;
     editorSettings: EditorSettings;
     lModeCopy: LModeCopy;
     lModeEnabled: boolean;
     menuLanguage: MenuLanguage;
-    onApplyManualCandidate: (
-      candidateText: string,
-      documentTabId: string,
-      documentContents: string,
-    ) => void;
-    onCloseReviewDesk: () => void;
     onDiscardAppleAssistEdit: (tabId: string, before: string) => void;
     onExitLModeToWorkspace: () => void;
-    onImportCandidateFile: () => Promise<void>;
     onOpenAppleAssistFromLMode: () => void;
-    onOpenReviewDesk: () => void;
     onReviewChangesFromLMode: () => Promise<ChangeReviewSnapshot | null>;
     onToggleLMode: () => void;
     resolvedTheme: ResolvedTheme;
-    reviewDeskCopy: ReviewDeskCopy;
-    reviewDeskMode: ReviewDeskMode;
-    reviewSurface: ReviewSurfaceKind;
-    runCandidateCompare: (params: {
-      bufferContents: string;
-      documentTabId: string;
-      documentPath: string;
-      documentLabel: string;
-      leftColumnLabel: string;
-      rightColumnLabel: string;
-      candidateSourceLabel: string;
-      candidateText: string;
-    }) => { ok: true } | { ok: false; error: string };
-    setCandidateInputText: (value: string) => void;
   };
 
 export function AppShell(props: AppShellProps) {
@@ -95,35 +59,11 @@ export function AppShell(props: AppShellProps) {
         onEditorSettingsChange={props.setEditorSettings}
       />
       <AppDocumentFeedback {...props} />
-      {props.reviewSurface !== null ? (
-        <ReviewSurface
-          activeTab={props.activeTab}
-          candidateCompareCase={props.candidateCompareCase}
-          candidateCompareView={props.candidateCompareView}
-          candidateErrorMessage={props.candidateErrorMessage}
-          candidateFileImportBusy={props.candidateFileImportBusy}
-          candidateFileImportError={props.candidateFileImportError}
-          candidateInputSource={props.candidateInputSource}
-          candidateInputText={props.candidateInputText}
-          clearCandidate={props.clearCandidate}
-          editorSettings={props.editorSettings}
-          editorTheme={props.editorTheme}
-          menuLanguage={props.menuLanguage}
-          onApplyCandidate={props.onApplyManualCandidate}
-          onClose={props.onCloseReviewDesk}
-          onImportCandidateFile={props.onImportCandidateFile}
-          reviewDeskCopy={props.reviewDeskCopy}
-          reviewDeskMode={props.reviewDeskMode}
-          runCandidateCompare={props.runCandidateCompare}
-          setCandidateInputText={props.setCandidateInputText}
-        />
-      ) : (
-        <AppWorkspace
-          {...props}
-          onWorkspaceSidebarCollapsedChange={setWorkspaceSidebarCollapsed}
-          workspaceSidebarCollapsedOverride={workspaceSidebarCollapsed}
-        />
-      )}
+      <AppWorkspace
+        {...props}
+        onWorkspaceSidebarCollapsedChange={setWorkspaceSidebarCollapsed}
+        workspaceSidebarCollapsedOverride={workspaceSidebarCollapsed}
+      />
       <AppStatusBar {...props} />
       <AppOverlays {...props} />
       <AppleAssistReviewBar

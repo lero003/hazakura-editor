@@ -104,7 +104,7 @@ Do not implement or imply:
 - Dependency or lockfile changes without explicit approval.
 - Apple Local Assist distribution-lane changes (`minimumSystemVersion`, App Store/TestFlight settings, signing, entitlements, sandbox assumptions, notarization, helper packaging shape, or network fallback) without explicit user approval. The live local helper is already on `main`; future work should harden quality, unavailable states, and distribution evidence without broadening the trust boundary.
 
-Keep Agent Workbench explicit, allowlisted, one-session, no-restore, and no-auto-apply. Keep Review Desk low-prominence and manual unless the user explicitly resumes feature work. Refactoring is acceptable when it is the smallest way to fix or verify a concrete polish issue, but do not turn the quality lane into a broad architecture rewrite.
+Keep Agent Workbench explicit, allowlisted, one-session, no-restore, and no-auto-apply. Keep the standalone Review Desk retired unless the user explicitly reopens that product direction. Refactoring is acceptable when it is the smallest way to fix or verify a concrete polish issue, but do not turn the quality lane into a broad architecture rewrite.
 
 ## Inspection Rules
 

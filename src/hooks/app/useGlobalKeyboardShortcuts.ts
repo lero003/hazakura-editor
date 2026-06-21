@@ -146,8 +146,8 @@ export function useGlobalKeyboardShortcuts({
       }
 
       if (isCommandShiftShortcut(event, "r")) {
-        // Reserved to avoid WebView reload while manual Review Desk
-        // entry points are hidden from the user-facing app surface.
+        // Reserved to avoid WebView reload; the retired Review Desk
+        // no longer opens from this shortcut.
         event.preventDefault();
         return;
       }

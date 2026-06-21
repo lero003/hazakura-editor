@@ -2,49 +2,63 @@ import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { useReviewDeskState } from "./useReviewDeskState";
 
-describe("useReviewDeskState candidate input source", () => {
-  it("tracks a file-imported candidate source until the user edits it", () => {
+describe("useReviewDeskState candidate compare primitive", () => {
+  it("builds an internal candidate compare view without a Review Desk surface", () => {
     const { result } = renderHook(() => useReviewDeskState());
 
     act(() => {
-      result.current.setCandidateInputFromFile("# Proposal\n", "proposal.md");
+      const compareResult = result.current.runCandidateCompare({
+        bufferContents: "# Draft\nold line\n",
+        documentTabId: "tab-1",
+        documentPath: "/workspace/draft.md",
+        documentLabel: "draft.md",
+        leftColumnLabel: "Current buffer",
+        rightColumnLabel: "AI candidate",
+        candidateSourceLabel: "Apple Local Assist",
+        candidateText: "# Draft\nnew line\n",
+      });
+      expect(compareResult).toEqual({ ok: true });
     });
 
-    expect(result.current.candidateInputText).toBe("# Proposal\n");
-    expect(result.current.candidateInputSource).toEqual({
-      kind: "file",
-      name: "proposal.md",
-      edited: false,
-    });
-
-    act(() => {
-      result.current.setCandidateInputText("# Edited proposal\n");
-    });
-
-    expect(result.current.candidateInputSource).toEqual({
-      kind: "file",
-      name: "proposal.md",
-      edited: true,
-    });
-
-    act(() => {
-      result.current.setCandidateInputText("");
-    });
-
-    expect(result.current.candidateInputSource).toEqual({ kind: "manual" });
+    expect(result.current.candidateErrorMessage).toBeNull();
+    expect(result.current.candidateCompareCase).toEqual(
+      expect.objectContaining({
+        kind: "candidate",
+        documentTabId: "tab-1",
+        documentPath: "/workspace/draft.md",
+        documentLabel: "draft.md",
+        leftColumnLabel: "Current buffer",
+        rightColumnLabel: "AI candidate",
+        candidateSourceLabel: "Apple Local Assist",
+        candidateText: "# Draft\nnew line\n",
+      }),
+    );
+    expect(result.current.candidateCompareView?.caseKey).toBe(
+      result.current.candidateCompareCase?.key,
+    );
   });
 
-  it("resets the candidate source when clearing the candidate", () => {
+  it("clears an internal candidate compare view", () => {
     const { result } = renderHook(() => useReviewDeskState());
 
     act(() => {
-      result.current.setCandidateInputFromFile("# Proposal\n", "proposal.md");
+      result.current.runCandidateCompare({
+        bufferContents: "before\n",
+        documentTabId: "tab-1",
+        documentPath: "/workspace/draft.md",
+        documentLabel: "draft.md",
+        leftColumnLabel: "Current buffer",
+        rightColumnLabel: "AI candidate",
+        candidateSourceLabel: "Apple Local Assist",
+        candidateText: "after\n",
+      });
     });
     act(() => {
       result.current.clearCandidate();
     });
 
-    expect(result.current.candidateInputText).toBe("");
-    expect(result.current.candidateInputSource).toEqual({ kind: "manual" });
+    expect(result.current.candidateCompareCase).toBeNull();
+    expect(result.current.candidateCompareView).toBeNull();
+    expect(result.current.candidateErrorMessage).toBeNull();
   });
 });

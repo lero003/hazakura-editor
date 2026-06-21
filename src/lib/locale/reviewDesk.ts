@@ -1,6 +1,5 @@
 import {
   isJapaneseMenuLanguage,
-  type CandidateInputSource,
   type MenuLanguage,
 } from "../../types";
 import { isKanaStyle } from "./_helpers";
@@ -70,18 +69,6 @@ export const CANDIDATE_FILE_IMPORT_FAILED_PREFIX =
 
 export function formatCandidateFileImportFailure(detail: string): string {
   return `${CANDIDATE_FILE_IMPORT_FAILED_PREFIX}${detail}`;
-}
-
-export function formatCandidateInputSourceLabel(
-  source: CandidateInputSource,
-  copy: ReviewDeskCopy,
-): string {
-  if (source.kind === "file") {
-    return source.edited
-      ? copy.candidateSourceFileEdited(source.name)
-      : copy.candidateSourceFile(source.name);
-  }
-  return copy.candidateSourceManual;
 }
 
 export function localizeCandidateFileImportError(

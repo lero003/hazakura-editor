@@ -207,11 +207,9 @@ export function useAppleAssistApplyHandler({
 
       // Precompute the line diff so the escape hatch can
       // render the comparison without recomputing it on
-      // every render. `buildLineDiff` is the same helper
-      // the manual candidate Review Desk uses. The diff
-      // is keyed on the transaction's `id` so the case
-      // lookup (`getCompareCaseByKey`) treats it as a
-      // standalone case rather than colliding with any
+      // every render. The diff is keyed on the transaction's
+      // `id` so the case lookup (`getCompareCaseByKey`) treats
+      // it as a standalone case rather than colliding with any
       // existing compare slot.
       const lineDiff = buildLineDiff(
         result.transaction.before,

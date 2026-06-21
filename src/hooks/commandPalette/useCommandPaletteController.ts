@@ -29,11 +29,7 @@ import type {
   EditorPaneHandle,
   MarkdownFormat,
 } from "../../components/editor/EditorPane";
-import type { AppleAssistCopy, LModeCopy } from "../../lib/locale";
-import type {
-  AppleAssistAvailability,
-  AppleAssistOperation,
-} from "../../lib/tauri";
+import type { LModeCopy } from "../../lib/locale";
 import { isExternalCliAssistSurfaceAllowed } from "../../lib/distributionLane";
 import type {
   EditorSettings,
@@ -56,10 +52,6 @@ type UseCommandPaletteControllerActions = {
   focusAdjacentTab: (direction: "next" | "previous") => void;
   handleSendSelectionToAgent: (text: string) => void;
   insertTable: () => void;
-  invokeAppleAssist: (
-    operation: AppleAssistOperation,
-    selectedText: string,
-  ) => void;
   openAgentWindow: (themePreference: ThemePreference) => void;
   openAppleAssistWindow: (themePreference: ThemePreference) => void;
   openFile: () => Promise<void>;
@@ -87,9 +79,7 @@ type UseCommandPaletteControllerOptions = {
   actions: UseCommandPaletteControllerActions;
   activeTab: EditorTab | null;
   activeTabId: string | null;
-  appleAssistAvailability: AppleAssistAvailability;
   appleLocalAssistAllowed: boolean;
-  appleAssistCopy: AppleAssistCopy;
   editorPaneRef: RefObject<EditorPaneHandle | null>;
   lModeCopy: LModeCopy;
   setStatus: Dispatch<SetStateAction<string>>;
@@ -101,9 +91,7 @@ export function useCommandPaletteController({
   actions,
   activeTab,
   activeTabId,
-  appleAssistAvailability,
   appleLocalAssistAllowed,
-  appleAssistCopy,
   editorPaneRef,
   lModeCopy,
   setStatus,
@@ -585,58 +573,12 @@ export function useCommandPaletteController({
           actions.setPreferencesDialogMode("about");
         },
       },
-      ...(appleLocalAssistAllowed && appleAssistAvailability.kind === "available"
-        ? [
-            {
-              category: appleAssistCopy.commandCategory,
-              id: "appleAssist.summarize",
-              keywords: [
-                "apple",
-                "assist",
-                "summarize",
-                "selection",
-                "あっぷる",
-                "ようやく",
-                "要約",
-              ],
-              label: appleAssistCopy.summarizeLabel,
-              description: appleAssistCopy.summarizeHint,
-              run: () => {
-                const text =
-                  editorPaneRef.current?.getSelectionText() ?? "";
-                actions.invokeAppleAssist("summarize", text);
-              },
-            },
-            {
-              category: appleAssistCopy.commandCategory,
-              id: "appleAssist.rephrase",
-              keywords: [
-                "apple",
-                "assist",
-                "rephrase",
-                "selection",
-                "あっぷる",
-                "かきかえ",
-                "言い換え",
-              ],
-              label: appleAssistCopy.rephraseLabel,
-              description: appleAssistCopy.rephraseHint,
-              run: () => {
-                const text =
-                  editorPaneRef.current?.getSelectionText() ?? "";
-                actions.invokeAppleAssist("rephrase", text);
-              },
-            },
-          ]
-        : []),
     ],
     [
       actions,
       activeTab,
       activeTabId,
-      appleAssistAvailability,
       appleLocalAssistAllowed,
-      appleAssistCopy,
       editorPaneRef,
       externalCliAllowed,
       lModeCopy,
