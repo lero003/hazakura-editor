@@ -88,9 +88,9 @@ export type EditorPaneHandle = {
   replaceCurrent: (replacement: string) => boolean;
   replaceAll: (replacement: string) => void;
   getSelectionText: () => string;
-  // v0.12+ Apple Local Assist Writing Companion (slice 3).
+  // v0.12+ Hazakura Local Assist Writing Companion (slice 3).
   // Returns the active document text plus the selection range
-  // as character offsets into that text. The Apple Assist
+  // as character offsets into that text. The Hazakura Local Assist
   // target sync hook uses this to feed
   // `inferAppleAssistTarget` on every selection / cursor
   // change without going through the React selection state

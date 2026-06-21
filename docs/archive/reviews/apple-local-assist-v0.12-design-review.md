@@ -1,7 +1,7 @@
-# Apple Local Assist v0.12 設計レビュー
+# Hazakura Local Assist v0.12 設計レビュー
 
 Status: Review record (post-slice-6)
-Scope: v0.12 Apple Local Assist スライス 1〜6 (型・境界 / probe / Review Desk handoff / UI entry / Swift helper feasibility / docs sync) の設計選択・ゲート・残課題レビュー
+Scope: v0.12 Hazakura Local Assist スライス 1〜6 (型・境界 / probe / Review Desk handoff / UI entry / Swift helper feasibility / docs sync) の設計選択・ゲート・残課題レビュー
 Authority: Medium
 Last reviewed: 2026-06-05 (post-slice-6 implementation, post-P1/P2 boundary fixes, post-slice-7 official info confirmation)
 
@@ -31,7 +31,7 @@ Current-state note (2026-06-06): this is now a historical review record. The liv
 
 ## 結論: 実装可能 (着地済み)
 
-既存の Review Desk candidate flow はすでに `candidateSourceLabel` を引数で受ける設計になっている。Apple Local Assist 候補も同じ `runCandidateCompare` 経路に新しいラベルで流し込めば、UI 側の diff 描画は既存を再利用できる。手動 apply の安全策 (stale candidate guards / tab switch / buffer edit) はそのまま機能する。
+既存の Review Desk candidate flow はすでに `candidateSourceLabel` を引数で受ける設計になっている。Hazakura Local Assist 候補も同じ `runCandidateCompare` 経路に新しいラベルで流し込めば、UI 側の diff 描画は既存を再利用できる。手動 apply の安全策 (stale candidate guards / tab switch / buffer edit) はそのまま機能する。
 
 Agent Workbench のパターン (active / preference 分離、availability probe、restart-required、consent、`*_with_label` シム、window label gate) は流用可能だった。ただし、**実装は別ディレクトリ・別型として切り出し、既存の `AgentWorkbenchProvider` には触らない** — これも v0.12 内で守られている (src/hooks/agent/* は無変更)。
 
@@ -84,7 +84,7 @@ export type AppleAssistAvailability =
 ### 4. 再起動は要求しない
 
 - Agent Workbench の restart-required は PTY バックエンド初期化が必要なため
-- Apple Local Assist はランタイム probe 1 回 + 候補生成コマンドの 2 つだけ。スライス 1〜5 時点ではプロセス spawn しない (Rust 側 stub で完結)。slice 5 で Swift helper を `binaries/` に書く形は検証済みだが、bundled sidecar として spawn する経路は Foundation Models live binding 着地後に別スライスで扱う
+- Hazakura Local Assist はランタイム probe 1 回 + 候補生成コマンドの 2 つだけ。スライス 1〜5 時点ではプロセス spawn しない (Rust 側 stub で完結)。slice 5 で Swift helper を `binaries/` に書く形は検証済みだが、bundled sidecar として spawn する経路は Foundation Models live binding 着地後に別スライスで扱う
 - availability の変化 (Apple Intelligence をあとで有効化、等) は次の probe / 次の generate 呼び出しで反映すればよい
 - これは Agent Workbench パターンからの意図的な divergence
 
@@ -104,7 +104,7 @@ export type AppleAssistAvailability =
 
 ### 7. UI 露出経路は 1 つだけ
 
-- Command Palette にだけ項目を出す ("Apple Assist: Summarize selection" / "…: Rephrase selection")
+- Command Palette にだけ項目を出す ("Hazakura Local Assist: Summarize selection" / "…: Rephrase selection")
 - View メニューには出さない (L Mode toggle とは別物なので混同を避ける)
 - Preferences にも独立セクションは作らない (slice 4 完了時点で enable 設定も追加しない判断 — gate-default-hidden 契約と相性が良いため)
 - 汎用チャット画面 / 常駐サイドバー / agent window 化 / prompt editor / provider-add UI は作らない
@@ -115,12 +115,12 @@ export type AppleAssistAvailability =
 - Apply は手動経路 (UI 上の Apply ボタン)。auto-apply なし
 - 保存は明示 Save のみ (auto-save なし)
 
-### 9. IPC は main window / Apple Assist window に限定
+### 9. IPC は main window / Hazakura Local Assist window に限定
 
-- `probe_apple_assist_availability_with_label` の gate は `ensure_label_is_main_or_apple_assist` を使う。読み取り専用の availability probe は、Apple Assist window 自身が unavailable / disabled / unsupported state を表示するために必要
+- `probe_apple_assist_availability_with_label` の gate は `ensure_label_is_main_or_apple_assist` を使う。読み取り専用の availability probe は、Hazakura Local Assist window 自身が unavailable / disabled / unsupported state を表示するために必要
 - `generate_apple_assist_candidate_with_label` の gate は `ensure_label_is_main` を使う。本文 context を渡す candidate generation は main window 側に限定する
 - どちらも `..._or_agent` は使わない
-- Agent Workbench の CLI trust boundary を継承しない。`agent` ラベルの窓から Apple Assist IPC を呼ぼうとすると即時 `Command is not allowed from window 'agent'.` で拒否される
+- Agent Workbench の CLI trust boundary を継承しない。`agent` ラベルの窓から Hazakura Local Assist IPC を呼ぼうとすると即時 `Command is not allowed from window 'agent'.` で拒否される
 - これは strategy doc の「Agent Workbench の CLI trust boundary を継承しない」と一致する
 
 ### 10. historical: probe は "gate-default-hidden" 契約
@@ -197,8 +197,8 @@ export type AppleAssistAvailability =
 1. **素案 (plan ファイル) を読み返して v0.12 を始めると、provider モデルが `AgentWorkbenchProvider` 拡張になってしまう** — distribution plan と本メモを authoritative とし、素案は破棄
 2. **availability 4 状態の UI 文言が、platform / locale / 個人設定で発散する** — slice 2 で文言を集約、3 言語 × 4 状態 = 12 種類をレビュー時に確認済み。v0.12 内の 4 状態は `src/lib/locale/appleAssist.ts` の 1 ファイルに集約されているが、将来 `disabled` を "user disabled" 以外の文脈で使う場合に発散の余地あり
 3. **stub と本番の境界** — v0.12 の Rust 側 probe は macOS で `Unavailable { reason }` を返し、non-macOS で `Unsupported` を返す。`Available` を返さないことが「gate-default-hidden」契約の本体。ライブ Foundation Models バインドが乗ったスライスだけが `Available` を返し始める (slice 5 までの検証済み)
-4. **Apply 経路の安全性** — `runCandidateCompare` 後の Apply が手動ボタンであることを、UI 上に毎回明示する。Apple Local Assist だから auto-apply される、という誤読を防ぐ
-5. **distribution plan で「may include Apple Local Assist when available」と書いたが、App Store build には含める前提でよいか** — ユーザー指示は「App Store build には External Agent Workbench / CLI launch / arbitrary process execution を入れない方向」なので、Apple Local Assist 自体は App Store build に入る前提。distribution plan と整合
+4. **Apply 経路の安全性** — `runCandidateCompare` 後の Apply が手動ボタンであることを、UI 上に毎回明示する。Hazakura Local Assist だから auto-apply される、という誤読を防ぐ
+5. **distribution plan で「may include Hazakura Local Assist when available」と書いたが、App Store build には含める前提でよいか** — ユーザー指示は「App Store build には External Agent Workbench / CLI launch / arbitrary process execution を入れない方向」なので、Hazakura Local Assist 自体は App Store build に入る前提。distribution plan と整合
 6. **agent 窓からの IPC 呼び出し** — `ensure_label_is_main_or_agent` を使って agent 窓からも呼べてしまうと、Agent Workbench の CLI trust boundary を継承してしまう。v0.12 では `ensure_label_is_main` に絞り、agent ラベルは Rust 側で即時拒否する (section 9)
 
 ## 次のアクション (v0.12.0 リリース前)

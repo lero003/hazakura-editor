@@ -14,9 +14,9 @@ Hazakura Editor reads and writes files or folders you select through the app UI.
 
 Hazakura Editor stores local preferences such as theme, tab state, editor settings, recent folders, and optional recovery and backup data on this Mac or inside the workspace you choose.
 
-## Apple Local Assist
+## Hazakura Local Assist
 
-The App Store version of Hazakura Editor may include Apple Local Assist as an on-device writing companion. It uses Apple's Foundation Models framework through a bundled helper only after an explicit user action. The app does not send Apple Local Assist requests to external AI services, and generated text is not saved unless you review and save it.
+The App Store version of Hazakura Editor may include Hazakura Local Assist as an on-device writing companion. It uses Apple's Foundation Models framework through a bundled helper only after an explicit user action. The app does not send Hazakura Local Assist requests to external AI services, and generated text is not saved unless you review and save it.
 
 ## Network, analytics, and cloud services
 

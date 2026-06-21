@@ -15,7 +15,7 @@ function stripCssComments(css: string): string {
 describe("apple-assist-review.css", () => {
   const css = stripCssComments(appleAssistReviewCss);
 
-  it("keeps the inline Apple Assist diff from creating horizontal scroll", () => {
+  it("keeps the inline Hazakura Local Assist diff from creating horizontal scroll", () => {
     const diffRule =
       css.match(/\.apple-assist-review-bar-diff\s*{(?<body>[^}]*)}/s)?.groups
         ?.body ?? "";

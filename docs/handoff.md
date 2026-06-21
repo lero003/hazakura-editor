@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-21 (v0.29 Apple Local Assist App Store lane)
+Last reviewed: 2026-06-21 (v0.29 Hazakura Local Assist review triage)
 
 ## Current State
 
@@ -86,13 +86,20 @@ Last reviewed: 2026-06-21 (v0.29 Apple Local Assist App Store lane)
   `candidate` CompareCase and diff view without auto-save or auto-apply.
   `smoke:app-store-surface` now checks retired Review Desk exposure
   through chrome / command tests and keeps the internal primitive test.
-  The current source App Store lane now exposes Apple Local Assist while
+  The current source App Store lane now exposes Hazakura Local Assist while
   keeping Agent Workbench / CLI Agent hidden.
   `Cmd+Shift+R` remains reserved only to avoid WebView reload. Next useful
-  work should stay narrow: Apple Local Assist transaction review smoke or
-  a source-level guard if retired Review Desk routes are touched again.
-  File/paste/multi-file proposal ingest remains deferred until a fresh
-  boundary review reopens it.
+  work should stay narrow: source-level fixes are now in place for the
+  accepted Hazakura Local Assist pre-submission risks around
+  `apple-assist.html` App Store entrypoint inclusion, no startup
+  main-shell availability probe, safe default `none`, active preference
+  gating for command palette / app menu, visible `Hazakura Local Assist`
+  naming, and softer Local Assist network wording. Next, run built-app
+  smoke for the `apple-assist` window and helper process absence, then
+  handle short probe timeout / raw error hygiene and Hazakura Local Assist
+  transaction review smoke. File/paste /
+  multi-file proposal ingest remains deferred until a fresh boundary
+  review reopens it.
 - Latest docs cleanup keeps current entry points lighter: README now
   summarizes feature areas instead of listing every implemented behavior,
   roadmap keeps a short shipped-phase summary for v0.18-v0.26, and
@@ -204,14 +211,14 @@ Last reviewed: 2026-06-21 (v0.29 Apple Local Assist App Store lane)
   changing saved Markdown.
 - Normal mode workspace sidebar collapse / restore is complete for
   v0.18. L Mode still owns its separate temporary file-tree drawer.
-- App Store preview packaging is helper-enabled for Apple Local Assist:
+- App Store preview packaging is helper-enabled for Hazakura Local Assist:
   `frontendDist` and `bundle.externalBin` are explicit in the App Store
   configs. `npm run build` skips App Store sandbox entitlements so the
   generated `Hazakura Editor.app` can launch for local smoke. Use
   `npm run smoke:macos-sandbox-preview` or the signed submit / TestFlight
   lane for sandbox-entitlement proof.
 - App Store submit packaging now builds `aarch64`, `x86_64`, and
-  `universal-apple-darwin` Apple Assist helper sidecars, then runs
+  `universal-apple-darwin` Hazakura Local Assist helper sidecars, then runs
   `scripts/sign-app-store-submit-app.mjs` so the helper carries
   `com.apple.security.inherit` before the app bundle is re-signed.
 - App Store/TestFlight package checkpoints should use
@@ -267,7 +274,7 @@ Last reviewed: 2026-06-21 (v0.29 Apple Local Assist App Store lane)
 - Directly opened PNG/JPEG/GIF/WebP files can preview without an active
   workspace through `open_image_file`; workspace-tree image preview
   still uses `open_workspace_image` and its root containment check.
-- App Store lane Settings exposes Apple Local Assist-specific preference
+- App Store lane Settings exposes Hazakura Local Assist-specific preference
   rows; Agent Workbench / CLI Agent controls remain Developer /
   GitHub-only.
 - Generated macOS app bundles now include repository-root `LICENSE`
@@ -461,7 +468,15 @@ open Active UX Queue slice and close it as `implemented`,
   Upload, App Store Connect processing, TestFlight, App Review, and
   manual signed-build smoke remain outside the repository unless new
   evidence is explicitly recorded.
-- Latest v0.29 Apple Local Assist App Store-lane gate: source tests and
+- Latest v0.29 Hazakura Local Assist App Store-lane gate: source tests and
+  source-level entrypoint / naming / preference-gate fixes landed on
+  2026-06-21 with `npm run test`, `npm run typecheck`,
+  `cargo check --manifest-path src-tauri/Cargo.toml`, and
+  `VITE_HAZAKURA_DISTRIBUTION_LANE=app-store HAZAKURA_DISTRIBUTION_LANE=app-store npm run build:vite`
+  confirming `dist/apple-assist.html` is emitted. Signed built-app smoke
+  remains unproven for the corrected `apple-assist` window and helper
+  process absence before explicit Local Assist use.
+- Previous v0.29 Hazakura Local Assist App Store-lane gate: source tests and
   local build checks passed on 2026-06-21 with
   `npm run smoke:app-store-surface`, `npm run test`,
   `cargo test --manifest-path src-tauri/Cargo.toml -- --test-threads=1`,

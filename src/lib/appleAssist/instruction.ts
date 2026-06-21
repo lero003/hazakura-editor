@@ -1,6 +1,6 @@
-// Apple Local Assist rough-request instruction builder.
+// Hazakura Local Assist rough-request instruction builder.
 //
-// The Apple Assist window's preset chips are short Japanese
+// The Hazakura Local Assist window's preset chips are short Japanese
 // phrases ("整えて" / "自然にして" / "続きを書いて" /
 // "校正して" / "この章を直して"), and the user can also type
 // any free-form request. The on-device Foundation Models
@@ -19,9 +19,9 @@
 // one half of the contract. The `AppleAssistApplyEvent`
 // payload carries `request` (the original phrase that ends
 // up in the AI edit transaction, the status message, and
-// the Apple Assist review bar) separately from `instruction`
+// the Hazakura Local Assist review bar) separately from `instruction`
 // (the helper-side annotated prompt). `buildApplyEvent`
-// keeps that split in one place so the Apple Assist window
+// keeps that split in one place so the Hazakura Local Assist window
 // cannot accidentally re-collapse the two fields and leak
 // internal prompt text into user-facing surfaces.
 
@@ -108,7 +108,7 @@ export type BuildApplyEventInput = {
  * with the preset intent hint). The receiver is expected to
  * feed `instruction` into `generateAppleAssistCandidate`
  * and to surface `request` in the AI edit transaction, the
- * main editor status message, and the Apple Assist review
+ * main editor status message, and the Hazakura Local Assist review
  * bar so the user only ever sees the phrase they typed.
  */
 export function buildApplyEvent({

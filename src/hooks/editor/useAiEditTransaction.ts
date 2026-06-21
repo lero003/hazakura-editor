@@ -4,7 +4,7 @@ import {
   type AiEditTransaction,
 } from "../../features/editor/aiEditTransactions";
 
-// v0.12+ Apple Local Assist Writing Companion (slice 4+).
+// v0.12+ Hazakura Local Assist Writing Companion (slice 4+).
 // `useAiEditTransaction` is a thin re-rendering wrapper over
 // the module-level `aiEditTransactionStore`. The store is
 // session-local and singleton, so the hook just subscribes

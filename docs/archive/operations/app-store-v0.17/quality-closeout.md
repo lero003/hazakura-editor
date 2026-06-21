@@ -56,7 +56,7 @@ FORBID_TAGS, `data:` URI in `<a href>`, source Markdown non-mutation.
 Coverage: focused/unit accessibility checks for tab-bar dirty-dot accessible descriptor, StatusBar
 `role="status"` + `aria-live`, tab-bar arrow-key / Home / End keyboard
 navigation, image-preview-tab keyboard nav, L Mode task checkbox
-`aria-label`.  Apple Local Assist review bar, RightPaneToggleControls,
+`aria-label`.  Hazakura Local Assist review bar, RightPaneToggleControls,
 CloseDialogs, WorkspaceTree, and reduced-motion CSS are verified no-op.
 This is not a full manual VoiceOver / keyboard-only / Increase Contrast
 smoke pass.

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the Apple Local Assist helper in fixture mode.
+# Build the Hazakura Local Assist helper in fixture mode.
 #
 # Fixture mode skips the FoundationModels binding and returns
 # canned candidate JSON. This is the build flavor that:

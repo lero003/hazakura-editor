@@ -343,7 +343,7 @@ describe("PrivacyPreferencesPane", () => {
   it("describes local process handoffs without claiming only two launch paths", () => {
     renderPane();
     const text = getSectionBodyText("help-doc-section-network");
-    expect(text).toContain("bundled Apple Local Assist helper");
+    expect(text).toContain("bundled Hazakura Local Assist helper");
     expect(text).toContain(
       "Agent Workbench in the Developer / GitHub lane can launch an allowlisted provider",
     );

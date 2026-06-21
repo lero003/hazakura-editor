@@ -9,7 +9,7 @@ Last reviewed: 2026-06-07
 
 This memo records the commercial-quality work that is worth doing after the current v0.15 user-test polish slice, excluding App Store review preparation.
 
-The goal is not to add more product surface. The goal is to make the existing Safe Editor, L Mode, Apple Local Assist, settings, release lane, and documentation trustworthy enough that the app can be evaluated as a paid or otherwise commercial product.
+The goal is not to add more product surface. The goal is to make the existing Safe Editor, L Mode, Hazakura Local Assist, settings, release lane, and documentation trustworthy enough that the app can be evaluated as a paid or otherwise commercial product.
 
 ## Current Decision
 
@@ -25,7 +25,7 @@ Use these as good follow-up requests once the current separate work is finished.
 
 1. **User-visible status and recovery audit**
    - Find failures that are silent or console-only.
-   - Prefer save, external-change, image paste / drag-drop, Apple Local Assist apply, theme/window sync, and command-palette/slash-menu failures.
+   - Prefer save, external-change, image paste / drag-drop, Hazakura Local Assist apply, theme/window sync, and command-palette/slash-menu failures.
    - Fix one class of failure at a time with localized status copy and a recovery path where practical.
 
 2. **Settings and theme clarity**
@@ -34,7 +34,7 @@ Use these as good follow-up requests once the current separate work is finished.
    - Verify persistence and restart-pending behavior when relevant.
 
 3. **Accessibility baseline**
-   - Audit the main editor shell, Preferences, close/dirty dialogs, file tree actions, L Mode chrome, task widgets, Apple Local Assist review bar, and status/error surfaces.
+   - Audit the main editor shell, Preferences, close/dirty dialogs, file tree actions, L Mode chrome, task widgets, Hazakura Local Assist review bar, and status/error surfaces.
    - Prioritize keyboard operation, focus visibility, focus trapping, accessible names, contrast, reduced motion, and screen-reader-friendly status.
    - Treat this as a baseline: fix critical/major barriers first, then record remaining lower-priority issues.
 
@@ -44,7 +44,7 @@ Use these as good follow-up requests once the current separate work is finished.
    - Use the results to decide whether L Mode needs targeted fixes, decoration-cache work, CSS/layout tuning, or no change.
 
 5. **Honest feature-scope documentation**
-   - Keep claims precise for images, tables, spellcheck, Print to PDF, Apple Local Assist, and Agent Workbench.
+   - Keep claims precise for images, tables, spellcheck, Print to PDF, Hazakura Local Assist, and Agent Workbench.
    - Prefer "Print to PDF handoff" over "PDF export" unless the app generates PDF itself.
    - Prefer "experimental on-device text help on supported Macs" over broad "local AI" claims.
    - Keep Safe Editor's "does not execute / does not auto-apply / review before save" promise easy to understand.

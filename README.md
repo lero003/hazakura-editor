@@ -22,7 +22,7 @@ Hazakura Editor `0.26.0` is published on the Mac App Store:
 
 The App Store build is the Safe Editor lane. It omits Agent Workbench,
 CLI Agent launch, external AI/API calls, and arbitrary command execution
-surfaces. Apple Local Assist may be exposed as an on-device writing
+surfaces. Hazakura Local Assist may be exposed as an on-device writing
 companion where Apple Foundation Models is available, with no network
 fallback, auto-save, tool calling, or workspace-wide indexing.
 
@@ -103,7 +103,7 @@ Hazakura Editor currently focuses on these surfaces:
 - Native macOS menus, Preferences, theme and editor display settings,
   dirty-close protection, keyboard/focus guards, and localized Japanese-first
   UI copy.
-- Assist surfaces: Apple Local Assist review/transaction flows may be exposed
+- Assist surfaces: Hazakura Local Assist review/transaction flows may be exposed
   in the App Store lane as on-device writing assistance. Optional Agent
   Workbench with one allowlisted provider session remains Developer /
   GitHub-only.
@@ -117,9 +117,9 @@ For the full implementation inventory and release state, see
 - [Product Brief](docs/product-brief.md): 何を作るか、何を作らないか
 - [Security Boundary](docs/security-boundary.md): 安全性のために守る制約
 - [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
-- [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Apple Local Assist / Foundation Models planning
+- [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Hazakura Local Assist / Foundation Models planning
 - [Current Work](docs/current-work.md): active UX, post-approval, and next-slice queue
-- [Apple Local Assist Writing Companion Plan](docs/apple-local-assist-writing-companion-plan.md): post-v0.11 Apple Local Assist UX direction
+- [Hazakura Local Assist Writing Companion Plan](docs/apple-local-assist-writing-companion-plan.md): post-v0.11 Hazakura Local Assist UX direction
 - [Roadmap](docs/roadmap.md): 段階的な開発順序
 - [L Mode Plan](docs/l-mode-plan.md): えるモードの source-preserving WYSIWYG Accuracy Ramp plan
 - [e-book Mode And EPUB Export Plan](docs/ebook-mode-epub-export-plan.md): v0.21+ e-bookモード / EPUB export planning memo
@@ -156,7 +156,7 @@ src-tauri/target/release/bundle/macos/Hazakura Editor.app
 ```
 
 This local bundle uses the App Store preview shape, including the bundled
-Apple Local Assist helper, but skips
+Hazakura Local Assist helper, but skips
 App Store sandbox entitlements so it can launch for development smoke.
 Use `npm run build:app-store-submit` for the signed App Store submission
 lane and `npm run smoke:macos-sandbox-preview` for the local sandbox
@@ -215,7 +215,7 @@ Developer preview release boundary:
 - The latest prepared GitHub source / local-app tag is [v0.27.0](https://github.com/lero003/hazakura-editor/tree/v0.27.0).
 - The current warning-expected DMG preview tag is `v0.20.0`; its release-note evidence lives in [0.20.0 Warning-expected DMG Preview](docs/releases/0.20.0-warning-expected-dmg-preview.release.md).
 - Source users build locally with `npm ci` and `npm run build`.
-- The generated local smoke `.app` declares macOS 26.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. The App Store submission lane can include Apple Local Assist as an on-device writing companion, but does not include Agent Workbench, CLI Agent, arbitrary command execution, or external AI/API calls. Developer / GitHub builds may still include Agent Workbench. GitHub Release DMG previews require Developer ID Application signing but are not notarized until the separate notarization lane is completed.
+- The generated local smoke `.app` declares macOS 26.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. The App Store submission lane can include Hazakura Local Assist as an on-device writing companion, but does not include Agent Workbench, CLI Agent, arbitrary command execution, or external AI/API calls. Developer / GitHub builds may still include Agent Workbench. GitHub Release DMG previews require Developer ID Application signing but are not notarized until the separate notarization lane is completed.
 - The latest published warning-expected DMG preview is [v0.20.0](https://github.com/lero003/hazakura-editor/releases/tag/v0.20.0). The v0.20.0 release notes live in [0.20.0 Warning-expected DMG Preview](docs/releases/0.20.0-warning-expected-dmg-preview.release.md).
 
 ## Known Limits
@@ -224,12 +224,12 @@ Developer preview release boundary:
 - The file tree is a workspace browser, not an index. Very large directories are capped per folder and may show only the first visible entries.
 - Image preview is intentionally bounded to user-selected local PNG/JPEG/GIF/WebP files up to 20 MB.
 - Save conflicts are recoverable by reviewing changes, reopening, closing, or keeping local edits, and text comparison remains file/workspace based, but there is no merge editor, advanced diff, or Git status view.
-- The standalone Review Desk screen is retired from the current App Store-oriented surface. Diff, recovery review, and Apple Local Assist review remain explicit and do not replace Git/merge workflows.
+- The standalone Review Desk screen is retired from the current App Store-oriented surface. Diff, recovery review, and Hazakura Local Assist review remain explicit and do not replace Git/merge workflows.
 - The default local smoke app is not signed or notarized with an Apple Developer ID. GitHub Release DMG previews can be Developer ID signed, but are still not notarized unless a separate notarization pass is completed.
 - Agent Workbench is optional and explicit. It does not provide a general shell prompt, arbitrary command input UI, arbitrary path input UI, provider-add UI, multiple sessions, session restore, auto-apply, auto-commit, or Git integration.
-- Apple Local Assist is an experimental alpha surface, not the main AI feature. Live generation depends on Apple Foundation Models availability on the current Mac; output quality may vary, and the feature may change or be removed.
-- Apple Local Assist is intended for lightweight text assistance only. It is not a replacement for External Agent Workbench, external AI agents, local LLM runtimes, code review, multi-file understanding, long-document restructuring, autonomous agent work, or advanced reasoning.
-- Apple Local Assist has no network fallback, background rewriting, auto-save, tool calling, or workspace-wide indexing. In the App Store lane it remains a narrow on-device writing companion and must fail gracefully when Apple Foundation Models is unavailable.
+- Hazakura Local Assist is an experimental alpha surface, not the main AI feature. Live generation depends on Apple Foundation Models availability on the current Mac; output quality may vary, and the feature may change or be removed.
+- Hazakura Local Assist is intended for lightweight text assistance only. It is not a replacement for External Agent Workbench, external AI agents, local LLM runtimes, code review, multi-file understanding, long-document restructuring, autonomous agent work, or advanced reasoning.
+- Hazakura Local Assist has no network fallback, background rewriting, auto-save, tool calling, or workspace-wide indexing. In the App Store lane it remains a narrow on-device writing companion and must fail gracefully when Apple Foundation Models is unavailable.
 - CLI provider internals are outside hazakura's safety boundary. What happens inside `codex`, `opencode`, `pi`, or `claude` depends on the provider and the user's choices.
 - Agent Workbench does not expose a shell prompt, arbitrary command field, arbitrary path field, or general terminal.
 - Outside Agent Workbench there is no Git integration, LSP, terminal, AI assistance, plugin system, arbitrary command execution, or project-wide analysis.

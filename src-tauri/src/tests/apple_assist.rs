@@ -1,4 +1,4 @@
-// Tests for the Apple Local Assist command surface.
+// Tests for the Hazakura Local Assist command surface.
 //
 // These tests exercise the `*_with_label` shims and the pure
 // validation / stub helpers in `commands::apple_assist`. The
@@ -46,9 +46,9 @@ fn apple_assist_generate_rejects_unknown_window_label() {
 
 #[test]
 fn apple_assist_probe_accepts_main_and_apple_assist_windows() {
-    // Apple Local Assist must NOT inherit the Agent Workbench
+    // Hazakura Local Assist must NOT inherit the Agent Workbench
     // CLI trust boundary. The read-only probe is allowed from
-    // main and the detached Apple Assist companion so both
+    // main and the detached Hazakura Local Assist companion so both
     // surfaces can gate on the real Foundation Models state.
     let store = store_without_helper();
     assert!(probe_apple_assist_availability_with_label("main", &store).is_err());

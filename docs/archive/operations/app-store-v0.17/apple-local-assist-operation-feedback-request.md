@@ -1,13 +1,13 @@
-# v0.17 Apple Local Assist Operation Feedback Request
+# v0.17 Hazakura Local Assist Operation Feedback Request
 
 Status: Ready for one small implementation slice
-Scope: Apple Local Assist companion UI transparency before v0.17 tag
+Scope: Hazakura Local Assist companion UI transparency before v0.17 tag
 Authority: Medium
 Last reviewed: 2026-06-10
 
 ## Purpose
 
-Apple Local Assist is alpha and difficult to smoke because the user can
+Hazakura Local Assist is alpha and difficult to smoke because the user can
 see the request form and final Diff / Discard affordance, but not the
 short lifecycle between them.  This request allows one small v0.17
 release-candidate polish slice to make the behaviour understandable
@@ -39,7 +39,7 @@ That opacity makes the alpha feel more mysterious than it needs to be.
 
 Allowed:
 
-- Keep Apple Local Assist as the existing detached Writing Companion.
+- Keep Hazakura Local Assist as the existing detached Writing Companion.
 - Add a compact operation-feedback panel above the rough-request form.
 - Reduce the rough-request textarea from `rows={3}` to `rows={2}` if
   long requests remain scrollable.
@@ -86,7 +86,7 @@ Keep the Assist Window visually compact:
 Use labels that communicate app state, not model internals.  Good copy:
 
 - `Target: section, about 420 characters`
-- `Request sent to local Apple Assist`
+- `Request sent to local Hazakura Local Assist`
 - `Generating locally`
 - `Applied as an unsaved AI edit. Review before saving.`
 - `Failed: target changed. Refresh the document and retry.`
@@ -104,7 +104,7 @@ Likely files:
 
 - `src/components/appleAssist/AppleAssistWindowApp.tsx`
 - `src/components/appleAssist/AppleAssistWindowApp.test.tsx`
-- Apple Assist window CSS, if the panel needs layout polish
+- Hazakura Local Assist window CSS, if the panel needs layout polish
 
 Docs to update only if the implementation meaning changes:
 
@@ -133,7 +133,7 @@ npm run build
 
 Manual smoke:
 
-- Open Apple Local Assist in the built app.
+- Open Hazakura Local Assist in the built app.
 - Issue one rough request against a Markdown document.
 - Confirm the feedback trail shows target / sending / generating /
   applied or failed.
@@ -168,7 +168,7 @@ Before changing files, read:
 
 Goal:
 
-- Make Apple Local Assist alpha behaviour understandable by adding a
+- Make Hazakura Local Assist alpha behaviour understandable by adding a
   compact operation-feedback trail to the existing Assist Window.
 - Keep the rough-request form smaller if it improves the layout.
 - Do not create a raw Foundation Models transcript or persistent log.
@@ -177,7 +177,7 @@ Rules:
 
 - Preserve Safe Editor as the primary product surface.
 - Keep Markdown/text source canonical.
-- Keep Apple Local Assist as the existing detached Writing Companion.
+- Keep Hazakura Local Assist as the existing detached Writing Companion.
 - Keep AI edits explicit, unsaved, and reviewable through the existing
   Diff / Discard path before save.
 - Do not show raw prompts, raw responses, hidden instructions,

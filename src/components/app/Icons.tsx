@@ -229,7 +229,7 @@ export function SparklesIcon() {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Apple Assist / Writing Companion icon — a small star
+      {/* Hazakura Local Assist / Writing Companion icon — a small star
        * with two off-axis sparkles. Restrained line weight
        * matching the L Mode action rail's other icons. */}
       <path

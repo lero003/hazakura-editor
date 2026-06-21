@@ -243,7 +243,7 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
         candidatePreviewTargetLabel: "保存先",
         candidatePreviewTitle: "手動候補プレビュー",
         candidateSourceManual: "手動貼り付け",
-        candidateSourceAppleAssist: "Apple Local Assist (この Mac のみ)",
+        candidateSourceAppleAssist: "Hazakura Local Assist (この Mac のみ)",
         candidateSourceFile: (name) => `ファイル読み込み: ${name}`,
         candidateSourceFileEdited: (name) =>
           `ファイル読み込み（編集済み）: ${name}`,
@@ -313,7 +313,7 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
         candidatePreviewTargetLabel: "Target",
         candidatePreviewTitle: "Manual candidate preview",
         candidateSourceManual: "Manual paste",
-        candidateSourceAppleAssist: "Apple Local Assist (on-device)",
+        candidateSourceAppleAssist: "Hazakura Local Assist (on-device)",
         candidateSourceFile: (name) => `File import: ${name}`,
         candidateSourceFileEdited: (name) => `File import (edited): ${name}`,
         candidateStaleActionReCompare: "Re-run Compare",

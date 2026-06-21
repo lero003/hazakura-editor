@@ -1,7 +1,7 @@
-// v0.12+ Apple Local Assist Writing Companion (slice 3+).
+// v0.12+ Hazakura Local Assist Writing Companion (slice 3+).
 // Bounded target inference for AI edit transactions.
 //
-// When the Apple Assist window sends an "apply" request, the
+// When the Hazakura Local Assist window sends an "apply" request, the
 // main window must decide *which* span of the unsaved buffer
 // the request is meant to operate on. The user might have
 // selected a sentence, or only placed the cursor inside a

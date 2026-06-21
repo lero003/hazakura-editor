@@ -32,7 +32,7 @@ export type LModeCopy = {
   changeReviewSheetTitle: string;
   changeReviewSheetCloseLabel: string;
   changeReviewSheetCloseTitle: string;
-  // v0.12+ Apple Local Assist Writing Companion (slice 5).
+  // v0.12+ Hazakura Local Assist Writing Companion (slice 5).
   // The escape-hatch bar shows a one-line summary of a
   // pending AI edit and offers Discard / Close actions.
   // Labels live on `LModeCopy` because the bar's chrome
@@ -69,17 +69,17 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
       statusBarWorkspaceLabel: "わーくすぺーすへ",
       statusBarReviewChangesTitle: "えるもーどのまま ディスクとの さぶんを ひらく",
       statusBarWorkspaceTitle: "えるもーどをとじて わーくすぺーすに もどる",
-      statusBarAppleAssistLabel: "Apple Local Assist",
+      statusBarAppleAssistLabel: "Hazakura Local Assist",
       actionRailAppleAssistShortLabel: "Assist",
       actionRailTypewriterShortLabel: "たいぷ",
       actionRailReviewChangesShortLabel: "さぶん",
       actionRailAppleAssistTooltip:
-        "Apple Local Assist の うぃんどう を ひらく (えるもーどから でずに)",
+        "Hazakura Local Assist の うぃんどう を ひらく (えるもーどから でずに)",
       actionRailTypewriterTooltip:
         "そくせん ちゅうおう を オン / オフ に きりかへ",
       actionRailReviewChangesTooltip:
         "えるもーどのまま ディスクとの さぶん を ひらく",
-      statusBarAppleAssistTitle: "Apple Local Assist の ウィンドウを ひらく / かくす",
+      statusBarAppleAssistTitle: "Hazakura Local Assist の ウィンドウを ひらく / かくす",
       workspaceToggleLabel: "わーくすぺーすを ひらく",
       workspaceToggleTitle: "えるもーどのまま ファイルツリーを ひらく / とぢる",
       workspaceOverlayLabel: "えるもーどの ファイルツリー",
@@ -89,7 +89,7 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
       changeReviewSheetTitle: "ディスクとの差分",
       changeReviewSheetCloseLabel: "とぢる",
       changeReviewSheetCloseTitle: "へんこうの かくにんを とぢる",
-      appleAssistReviewBarLabel: "Apple Local Assist が ほんぶんを へんこうしました",
+      appleAssistReviewBarLabel: "Hazakura Local Assist が ほんぶんを へんこうしました",
       appleAssistReviewBarTitle: "さぶんを かくにんするか とりけすか えらんでください",
       appleAssistReviewBarOpenDiffLabel: "さぶんを ひらく",
       appleAssistReviewBarCloseDiffLabel: "さぶんを とぢる",
@@ -119,17 +119,17 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
         statusBarWorkspaceLabel: "ワークスペースへ",
         statusBarReviewChangesTitle: "えるモードのままディスクとの差分を開く",
         statusBarWorkspaceTitle: "えるモードを閉じてワークスペースに戻る",
-        statusBarAppleAssistLabel: "Apple Local Assist",
+        statusBarAppleAssistLabel: "Hazakura Local Assist",
         actionRailAppleAssistShortLabel: "Assist",
         actionRailTypewriterShortLabel: "タイプ",
         actionRailReviewChangesShortLabel: "確認",
         actionRailAppleAssistTooltip:
-          "Apple Local Assist ウィンドウを開く（えるモードから出ずに）",
+          "Hazakura Local Assist ウィンドウを開く（えるモードから出ずに）",
         actionRailTypewriterTooltip:
           "タイプライターモードをオン / オフに切り替え（カーソル行を縦中央付近に保つ）",
         actionRailReviewChangesTooltip:
           "えるモードのまま、ディスクとの差分を開く",
-        statusBarAppleAssistTitle: "Apple Local Assist ウィンドウを表示 / 非表示",
+        statusBarAppleAssistTitle: "Hazakura Local Assist ウィンドウを表示 / 非表示",
         workspaceToggleLabel: "ワークスペースを開く",
         workspaceToggleTitle: "えるモードのままファイルツリーを表示 / 非表示",
         workspaceOverlayLabel: "えるモードのファイルツリー",
@@ -139,7 +139,7 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
         changeReviewSheetTitle: "ディスクとの差分",
         changeReviewSheetCloseLabel: "閉じる",
         changeReviewSheetCloseTitle: "変更の確認を閉じる",
-        appleAssistReviewBarLabel: "Apple Local Assist が本文を変更しました",
+        appleAssistReviewBarLabel: "Hazakura Local Assist が本文を変更しました",
         appleAssistReviewBarTitle: "差分を確認するか取り消すか選んでください",
         appleAssistReviewBarOpenDiffLabel: "差分を開く",
         appleAssistReviewBarCloseDiffLabel: "差分を閉じる",
@@ -166,18 +166,18 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
         statusBarWorkspaceLabel: "Open workspace",
         statusBarReviewChangesTitle: "Open the diff against disk without leaving L Mode",
         statusBarWorkspaceTitle: "Exit L Mode and return to the workspace",
-        statusBarAppleAssistLabel: "Apple Local Assist",
+        statusBarAppleAssistLabel: "Hazakura Local Assist",
         actionRailAppleAssistShortLabel: "Assist",
         actionRailTypewriterShortLabel: "Type",
         actionRailReviewChangesShortLabel: "Diff",
         actionRailAppleAssistTooltip:
-          "Open the Apple Local Assist writing companion without leaving L Mode",
+          "Open the Hazakura Local Assist writing companion without leaving L Mode",
         actionRailTypewriterTooltip:
           "Toggle typewriter mode on or off (keeps the active line near the vertical center)",
         actionRailReviewChangesTooltip:
           "Open the disk-vs-editor diff without leaving L Mode",
         statusBarAppleAssistTitle:
-          "Show or hide the Apple Local Assist writing companion window",
+          "Show or hide the Hazakura Local Assist writing companion window",
         workspaceToggleLabel: "Open workspace",
         workspaceToggleTitle: "Show or hide the file tree without leaving L Mode",
         workspaceOverlayLabel: "L Mode file tree",
@@ -187,7 +187,7 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
         changeReviewSheetTitle: "Changes against disk",
         changeReviewSheetCloseLabel: "Close",
         changeReviewSheetCloseTitle: "Close change review",
-        appleAssistReviewBarLabel: "Apple Local Assist changed your text",
+        appleAssistReviewBarLabel: "Hazakura Local Assist changed your text",
         appleAssistReviewBarTitle: "Review or discard the pending AI edit",
         appleAssistReviewBarOpenDiffLabel: "Open diff",
         appleAssistReviewBarCloseDiffLabel: "Close diff",

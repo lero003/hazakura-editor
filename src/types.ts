@@ -150,13 +150,13 @@ export const MENU_OPEN_AGENT_WINDOW = "open-agent-window";
 
 // Mirror of the Rust MENU_OPEN_APPLE_ASSIST_WINDOW constant. See
 // src-tauri/src/types.rs and docs/apple-local-assist-writing-companion-plan.md.
-// The Apple Assist window is the v0.12+ Writing Companion mock and
+// The Hazakura Local Assist window is the v0.12+ Writing Companion mock and
 // lives in the same outside-companion slot as the Agent window.
 export const MENU_OPEN_APPLE_ASSIST_WINDOW = "open-apple-assist-window";
 
 // Mirror of the Rust APPLY_AI_EDIT_TRANSACTION_EVENT /
 // REQUEST_AI_EDIT_TARGET_EVENT / AI_EDIT_TARGET_RESULT_EVENT
-// constants. The Apple Assist window emits
+// constants. The Hazakura Local Assist window emits
 // `APPLY_AI_EDIT_TRANSACTION_EVENT` to ask the main window to
 // apply an AI edit transaction; the main window answers the
 // `REQUEST_AI_EDIT_TARGET_EVENT` round-trip with a bounded
@@ -174,8 +174,8 @@ export const AI_EDIT_TARGET_RESULT_EVENT =
 
 // Mirror of the Rust MAIN_APPLE_ASSIST_TARGET_CHANGED_EVENT
 // constant. The main window broadcasts this whenever the
-// inferred Apple Assist target moves (selection change,
-// cursor move, document switch); the detached Apple Assist
+// inferred Hazakura Local Assist target moves (selection change,
+// cursor move, document switch); the detached Hazakura Local Assist
 // window subscribes to keep its target panel live.
 export const MAIN_APPLE_ASSIST_TARGET_CHANGED_EVENT =
   "hazakura-note://main-apple-assist-target-changed";
@@ -208,7 +208,7 @@ export type AppleAssistApplyEvent = {
   /**
    * The original rough request as shown in the textarea, the
    * AI edit transaction, the main editor status message, and
-   * the Apple Assist review bar. This is the value the user
+   * the Hazakura Local Assist review bar. This is the value the user
    * actually sees end-to-end and is *not* the helper-side
    * instruction.
    */
@@ -338,7 +338,7 @@ export type EditorSettings = {
   // find it disorienting, and the default top-anchored flow is
   // what most editors do.
   lModeTypewriter: boolean;
-  // When Apple Assist changes the buffer, open the compact inline
+  // When Hazakura Local Assist changes the buffer, open the compact inline
   // diff by default so the edit is immediately visible. Users can
   // turn this off when the bar feels too large for their workflow.
   appleAssistDiffInitiallyOpen: boolean;
@@ -444,7 +444,7 @@ export type CompareCase = {
     | "draft-vs-disk"
     | "conflict-vs-disk"
     | "backup-vs-buffer"
-    // v0.12+ Apple Local Assist Writing Companion (slice 5).
+    // v0.12+ Hazakura Local Assist Writing Companion (slice 5).
     // The escape hatch renders an inline diff of a pending
     // AI edit transaction (`before` -> `after`) using the
     // existing `DiffBody` pipeline; the synthetic case

@@ -1,13 +1,13 @@
 import type { AppleAssistTargetSnapshot } from "../../types";
 import type { CompareViewState } from "../../types";
 
-// v0.12+ Apple Local Assist Writing Companion (slice 4+).
+// v0.12+ Hazakura Local Assist Writing Companion (slice 4+).
 // AI edit transaction data model + session-local store.
 //
 // An `AiEditTransaction` is the durable record of one
-// "AI wrote to the unsaved buffer" event. The Apple Assist
+// "AI wrote to the unsaved buffer" event. The Hazakura Local Assist
 // window fires `APPLY_AI_EDIT_TRANSACTION_EVENT`; the main
-// window's listener asks Apple Assist for a bounded replacement, mutates
+// window's listener asks Hazakura Local Assist for a bounded replacement, mutates
 // the unsaved buffer in place, and records a transaction
 // here. The escape hatch (slice 5) reads `latest` to
 // render the "Open Diff" / "Discard" affordances.
@@ -99,25 +99,25 @@ export function applyAiEditTransaction(
   if (!target) {
     return {
       ok: false,
-      error: "No Apple Assist target snapshot was supplied with the request.",
+      error: "No Hazakura Local Assist target snapshot was supplied with the request.",
     };
   }
   if (target.start < 0 || target.end < target.start) {
     return {
       ok: false,
-      error: "Apple Assist target range is invalid.",
+      error: "Hazakura Local Assist target range is invalid.",
     };
   }
   if (target.end > input.buffer.length) {
     return {
       ok: false,
-      error: "Apple Assist target range is out of bounds for the active buffer.",
+      error: "Hazakura Local Assist target range is out of bounds for the active buffer.",
     };
   }
   if (target.activeDocumentPath !== input.tabPath) {
     return {
       ok: false,
-      error: "Apple Assist target is stale for the active document.",
+      error: "Hazakura Local Assist target is stale for the active document.",
     };
   }
 
@@ -125,7 +125,7 @@ export function applyAiEditTransaction(
   if (before !== target.text) {
     return {
       ok: false,
-      error: "Apple Assist target text no longer matches the active buffer.",
+      error: "Hazakura Local Assist target text no longer matches the active buffer.",
     };
   }
 
@@ -133,7 +133,7 @@ export function applyAiEditTransaction(
   if (after === before) {
     return {
       ok: false,
-      error: "Apple Assist returned no changes for the selected target.",
+      error: "Hazakura Local Assist returned no changes for the selected target.",
     };
   }
   const nextBuffer =

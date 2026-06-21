@@ -1,51 +1,51 @@
-# Apple Local Assist — Writing Companion Plan
+# Hazakura Local Assist — Writing Companion Plan
 
 Status: Active live-preview implementation
-Scope: v0.12+ Apple Local Assist user experience direction
+Scope: v0.12+ Hazakura Local Assist user experience direction
 Authority: Medium
 Last reviewed: 2026-06-10
 
 ## Purpose
 
-This memo records the updated product direction for Apple Local Assist after the v0.11 L Mode release.
+This memo records the updated product direction for Hazakura Local Assist after the v0.11 L Mode release.
 
-The important change is that Apple Local Assist should not be treated mainly as a command-palette selected-text helper. The stronger product shape is an external writing companion that can help the user from beside the editor, especially while the user is writing in L Mode.
+The important change is that Hazakura Local Assist should not be treated mainly as a command-palette selected-text helper. The stronger product shape is an external writing companion that can help the user from beside the editor, especially while the user is writing in L Mode.
 
 ## Product Decision
 
-Apple Local Assist should be an **external Writing Companion / Assist Window**.
+Hazakura Local Assist should be an **external Writing Companion / Assist Window**.
 
 It is conceptually close to the detached Agent Window because it lives outside the main editor surface, but it does not share the same trust boundary or UI. The user should normally see either:
 
 - External Agent Workbench, or
-- Apple Local Assist Writing Companion
+- Hazakura Local Assist Writing Companion
 
 not both at the same time. Treat this as a single external companion slot with different provider classes.
 
-Apple Local Assist is still document assistance, not a CLI agent. It is also an **alpha / experimental** lightweight text-assistance surface, not the main AI feature and not a replacement for External Agent Workbench, external AI agents, or future local LLM runtimes. It must not become command execution, tool calling, provider plugins, broad workspace indexing, or a general chat product.
+Hazakura Local Assist is still document assistance, not a CLI agent. It is also an **alpha / experimental** lightweight text-assistance surface, not the main AI feature and not a replacement for External Agent Workbench, external AI agents, or future local LLM runtimes. It must not become command execution, tool calling, provider plugins, broad workspace indexing, or a general chat product.
 
 ## Experience Target
 
 The target experience is:
 
 1. The user writes in Safe Editor or L Mode.
-2. The user opens the Apple Local Assist companion.
+2. The user opens the Hazakura Local Assist companion.
 3. The user gives a rough request, such as "整えて", "続きを書いて", "自然にして", "校正して", or "この章を直して".
 4. The app infers a bounded target from the current writing context:
    - selected text, if present
    - otherwise the current paragraph or block
    - otherwise the current section
    - only with explicit user choice, a larger document excerpt
-5. Apple Local Assist proposes or applies an edit as an **AI edit transaction**.
+5. Hazakura Local Assist proposes or applies an edit as an **AI edit transaction**.
 6. The user can inspect what changed through Diff / change history, then save explicitly.
 
 The product should be forgiving of vague instructions. Many writers cannot or will not describe the exact operation they want. The UI should make rough intent usable rather than requiring the user to know whether they need "summarize", "rephrase", "proofread", or "extract".
 
-The alpha scope is intentionally modest. Favor short summaries, rephrasing, heading ideas, tag / title suggestions, light cleanup, and short explanations. Do not present Apple Local Assist as suitable for code review, multi-file understanding, long-document restructuring, autonomous agent work, advanced reasoning, or expert design judgment.
+The alpha scope is intentionally modest. Favor short summaries, rephrasing, heading ideas, tag / title suggestions, light cleanup, and short explanations. Do not present Hazakura Local Assist as suitable for code review, multi-file understanding, long-document restructuring, autonomous agent work, advanced reasoning, or expert design judgment.
 
 ## L Mode Priority
 
-L Mode is the primary authoring experience for v0.11+. Apple Local Assist should be useful there.
+L Mode is the primary authoring experience for v0.11+. Hazakura Local Assist should be useful there.
 
 The companion can stay outside the document, but its actions should feel like they affect the current writing surface. The user should not need to leave L Mode just to ask for a broad prose improvement. When review details are needed, the app may open the normal Diff / Review layer as an escape hatch.
 
@@ -62,7 +62,7 @@ The old "no auto-apply" rule should not be read as "AI can never write into the 
 
 An AI edit transaction should record at least:
 
-- source: Apple Local Assist
+- source: Hazakura Local Assist
 - operation or request text
 - target range / document scope
 - before text
@@ -74,7 +74,7 @@ The ideal future state is that human edits and AI edits can be separated in chan
 
 ## Review Surface Role
 
-Manual Review Desk entry points are not part of the primary Apple Local Assist experience.
+Manual Review Desk entry points are not part of the primary Hazakura Local Assist experience.
 
 Use Diff / explicit change review as the detailed inspection layer:
 
@@ -83,7 +83,7 @@ Use Diff / explicit change review as the detailed inspection layer:
 - recover from an unwanted edit
 - review larger replacements before saving
 
-Do not force every Apple Local Assist action to start inside a separate review desk. The companion should help the user write first; review surfaces should appear when they clarify or protect the edit.
+Do not force every Hazakura Local Assist action to start inside a separate review desk. The companion should help the user write first; review surfaces should appear when they clarify or protect the edit.
 
 ## Current v0.12 Implementation Status
 
@@ -99,19 +99,19 @@ However, the command-palette selected-text entries should be treated as early pl
 
 The first external Writing Companion is now implemented on `main`:
 
-- the detached Apple Local Assist window opens from the shared external companion slot
-- Agent Window and Apple Local Assist Window replace rather than coexist with each other
-- Preferences now expose the shared outside companion slot as a restart-applied `Apple Local Assist (Experimental)` / `CLI Agent` / `Off` choice, with CLI Agent retaining the existing Agent Workbench restart / consent / provider boundary
-- the normal top-chrome companion button switches between Apple Local Assist and Agent according to the active setting for the current app launch
+- the detached Hazakura Local Assist window opens from the shared external companion slot
+- Agent Window and Hazakura Local Assist Window replace rather than coexist with each other
+- Preferences now expose the shared outside companion slot as a restart-applied `Hazakura Local Assist (Experimental)` / `CLI Agent` / `Off` choice, with CLI Agent retaining the existing Agent Workbench restart / consent / provider boundary
+- the normal top-chrome companion button switches between Hazakura Local Assist and Agent according to the active setting for the current app launch
 - L Mode can open the companion without leaving the focused writing surface
-- rough requests call the bundled Apple Local Assist helper when Apple Foundation Models is locally available
+- rough requests call the bundled Hazakura Local Assist helper when Apple Foundation Models is locally available
 - each generated edit records an AI edit transaction and exposes a compact Diff / Discard affordance
 
-The fixture helper remains available for supervisor regression tests, but the production build path now uses the live helper. Live generation depends on macOS 26+ Apple Foundation Models availability, local Apple Intelligence state, and a Foundation Models-supported current app locale; when unavailable, Apple Local Assist must disclose the unavailable/disabled/unsupported state rather than falling back to a network model or hidden fixture output.
+The fixture helper remains available for supervisor regression tests, but the production build path now uses the live helper. Live generation depends on macOS 26+ Apple Foundation Models availability, local Apple Intelligence state, and a Foundation Models-supported current app locale; when unavailable, Hazakura Local Assist must disclose the unavailable/disabled/unsupported state rather than falling back to a network model or hidden fixture output.
 
 ## Operation Feedback
 
-Apple Local Assist should be easier to smoke and understand while it
+Hazakura Local Assist should be easier to smoke and understand while it
 remains alpha.  The Assist Window may therefore show a compact
 operation-feedback panel above the rough-request form.
 
@@ -146,7 +146,7 @@ the lifecycle before they inspect or discard the edit.
 
 Completed: before flipping the live Foundation Models gate, the project built a touchable mock that proved the experience:
 
-1. Add an external Apple Local Assist companion slot that replaces, rather than coexists with, the Agent Window slot.
+1. Add an external Hazakura Local Assist companion slot that replaces, rather than coexists with, the Agent Window slot.
 2. Support fixture-only rough requests against the current editor context.
 3. Let the mock directly update the unsaved editor buffer through an AI edit transaction.
 4. Show a compact "AI changed this" affordance with a path to Diff / change history.

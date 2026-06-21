@@ -29,6 +29,10 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
     let agent_workbench_allowed = agent_workbench_allowed_by_distribution();
     let apple_assist_allowed = apple_assist_allowed_by_distribution();
     let assist_surface_settings_allowed = assist_surface_settings_allowed_by_distribution();
+    let apple_assist_active = apple_assist_allowed
+        && state
+            .map(|state| state.assist_surface_active.as_str() == "apple-local")
+            .unwrap_or(false);
     let agent_workbench_active = state
         .map(|state| state.agent_workbench_active)
         .unwrap_or(false);
@@ -176,8 +180,8 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
     let view_apple_assist_window = MenuItem::with_id(
         app,
         MENU_OPEN_APPLE_ASSIST_WINDOW,
-        label("Open Apple Assist Window", "Apple Assist ウィンドウを開く"),
-        true,
+        label("Open Hazakura Local Assist Window", "Hazakura Local Assist ウィンドウを開く"),
+        apple_assist_active,
         None::<&str>,
     )?;
     let view_separator_after_companion = PredefinedMenuItem::separator(app)?;

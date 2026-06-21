@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-06-21 (v0.29 Apple Local Assist App Store lane)
+Last reviewed: 2026-06-21 (v0.29 Hazakura Local Assist review triage)
 
 ## Purpose
 
@@ -23,11 +23,16 @@ The App Store lane is a reviewable safe Markdown editor build. It omits:
 - external AI/API calls
 - network-required features
 
-The App Store lane may include Apple Local Assist as an on-device,
+The App Store lane may include Hazakura Local Assist as an on-device,
 availability-gated writing companion. Its output must stay explicit,
 unsaved, and Diff / Discard reviewable, with no network fallback,
 auto-save, tool calling, workspace-wide indexing, or external provider
 process launch.
+The helper-enabled lane must not probe Hazakura Local Assist or spawn the
+helper at app startup. Availability checks and helper launch belong only
+after an explicit Local Assist user action, such as opening the Local
+Assist surface or sending a writing request. Shipping permission
+(`allowed`) must stay separate from the user's active assist choice.
 
 The Developer / GitHub lane remains separate and may include optional
 Agent Workbench behind its existing boundary.
@@ -95,7 +100,7 @@ Allowed:
 - `com.apple.security.network.client` for the Tauri/WebKit runtime to
   load bundled app assets under App Sandbox
 
-The Apple Local Assist helper is re-signed after the App Store submit
+The Hazakura Local Assist helper is re-signed after the App Store submit
 bundle is built, using `src-tauri/entitlements/app-store-helper.plist`
 with `com.apple.security.inherit`. The app bundle is then re-signed so
 the resource seal includes the updated helper signature.
@@ -176,6 +181,12 @@ That config sets:
 
 - `beforeBuildCommand` to
   `npm run build:apple-assist-helper:live && npm run build:vite`
+- the Vite/Rollup app input must include both `index.html` and
+  `apple-assist.html` while this lane is helper-enabled. If
+  `apple-assist.html` is omitted, `WebviewUrl::App("apple-assist.html")`
+  can fail or fall back into the wrong surface, causing the
+  `apple-assist` window to render Safe Editor UI and hit main-window
+  command guards.
 - `frontendDist` to `../dist`
 - `bundle.externalBin` to `["../binaries/hazakura-apple-assist-helper"]`
 - base `bundle.resources` to include `LICENSE` and
@@ -279,11 +290,26 @@ on `com.apple.application-identifier`; otherwise App Store Connect can
 accept the upload but mark the build ineligible for TestFlight with
 warning 90886.
 
-Check helper omission:
+Check helper sidecar signing:
 
 ```bash
-test ! -e "$APP/Contents/MacOS/hazakura-apple-assist-helper"
+test -x "$APP/Contents/MacOS/hazakura-apple-assist-helper"
+codesign -dv --verbose=4 "$APP/Contents/MacOS/hazakura-apple-assist-helper"
+codesign --verify --deep --strict --verbose=2 "$APP"
 ```
+
+Check the Local Assist web entrypoint for helper-enabled builds:
+
+```bash
+test -s dist/apple-assist.html
+```
+
+Then open the `apple-assist` window in the built app and confirm it
+renders the Local Assist companion UI, not the Safe Editor start panel.
+The error `Command is not allowed from window 'apple-assist'.` should
+never be reachable through first-party UI. If it appears, treat the
+server-side denial as correct but the build/window entrypoint as not
+App Store-ready.
 
 ## Build Output Sanity Checks
 
@@ -303,7 +329,8 @@ Expected:
   App Store Connect build
 - `LSMinimumSystemVersion` is `26.0`
 - `hazakura-editor` is present
-- `hazakura-apple-assist-helper` is absent
+- `hazakura-apple-assist-helper` is present, executable, signed, and
+  inherits the App Store sandbox through the helper entitlement
 
 ## Transporter Package For Internal TestFlight
 
@@ -372,6 +399,11 @@ request headers, account metadata, or device identifiers.
 Run on the actual App Store lane build:
 
 - First launch succeeds.
+- Before opening Local Assist, `hazakura-apple-assist-helper` is not
+  spawned and no Foundation Models availability error is shown.
+- Opening Local Assist shows only the companion UI. It must not show the
+  Safe Editor start panel, file/folder open buttons, workspace browser,
+  or any main-window-only file command surface.
 - Create a new Markdown file.
 - Open an existing Markdown file through user selection.
 - Save succeeds.
@@ -387,11 +419,14 @@ Run on the actual App Store lane build:
   automation entitlements or is unreachable in the App Store lane.
 - Agent Workbench / CLI Agent / dev mode are absent, including command
   palette entries such as `Agent` and `CLI Agent`.
-- Apple Local Assist is reachable from the visible assist surface, reports
+- Hazakura Local Assist is reachable from the visible assist surface, reports
   unavailable/disabled/unsupported states honestly, and never auto-saves
   or silently applies generated text.
-- No external network communication occurs; if any system handoff appears,
-  record the reason.
+- No unexpected external network communication occurs. In reviewer-facing
+  notes, avoid absolute "no network call" wording; state that there is no
+  third-party AI service, no external AI/API provider, and no network
+  fallback for Local Assist. If any system handoff appears, record the
+  reason.
 - `Cmd+Q` with dirty tabs shows the dirty-tab confirmation flow.
 - macOS red close button with dirty tabs shows the dirty-tab confirmation flow.
 - Keyboard-only tab navigation works.
@@ -420,11 +455,13 @@ can answer these public-safe points before submission:
 - Move to Trash must not be explained as an automation or scripting
   feature. Before submission, make sure the App Store lane either uses a
   native macOS Trash path or does not expose the operation.
-- The App Store lane includes Apple Local Assist only as an on-device,
+- The App Store lane includes Hazakura Local Assist only as an on-device,
   availability-gated writing companion. It omits Agent Workbench, CLI
   Agent launch, dev mode, arbitrary command execution, external AI/API
-  calls, and network fallback. The Developer / GitHub lane remains
-  separate.
+  calls, and network fallback. Local Assist is not started on app launch;
+  the helper is launched only after an explicit Local Assist user action.
+  Generated text remains an unsaved draft edit that can be reviewed or
+  discarded before saving. The Developer / GitHub lane remains separate.
 - If asked about `style-src 'unsafe-inline'`, explain it as the current
   Tauri/React UI styling allowance; do not broaden it into any claim
   that scripts, remote content, or external network calls are allowed.
@@ -505,7 +542,7 @@ The signed submit-lane bundle reported `CFBundleIdentifier`
 `dev.hazakura.editor`, `CFBundleShortVersionString` `0.20.0`,
 `CFBundleVersion` `16`, and `LSMinimumSystemVersion` `26.0`. It had the
 expected App Sandbox, user-selected read/write, app-scoped bookmark, and
-network-client entitlements; it omitted the Apple Local Assist helper
+network-client entitlements; it omitted the Hazakura Local Assist helper
 and included bundled `LICENSE` / `THIRD_PARTY_NOTICES.md` resources.
 `productbuild --synthesize` emitted a Distribution XML
 `allowed-os-versions` entry with `min="26.0"`.
@@ -535,7 +572,7 @@ The signed submit-lane bundle reported `CFBundleIdentifier`
 `dev.hazakura.editor`, `CFBundleShortVersionString` `0.25.0`,
 `CFBundleVersion` `18`, and `LSMinimumSystemVersion` `26.0`. It had the
 expected App Sandbox, user-selected read/write, app-scoped bookmark, and
-network-client entitlements; it omitted the Apple Local Assist helper
+network-client entitlements; it omitted the Hazakura Local Assist helper
 and included bundled `LICENSE` / `THIRD_PARTY_NOTICES.md` resources.
 `productbuild --synthesize` emitted a Distribution XML
 `allowed-os-versions` entry with `min="26.0"`.
@@ -566,7 +603,7 @@ The signed submit-lane bundle reported `CFBundleIdentifier`
 `dev.hazakura.editor`, `CFBundleShortVersionString` `0.26.0`,
 `CFBundleVersion` `21`, and `LSMinimumSystemVersion` `26.0`. It had the
 expected App Sandbox, user-selected read/write, app-scoped bookmark, and
-network-client entitlements; it omitted the Apple Local Assist helper
+network-client entitlements; it omitted the Hazakura Local Assist helper
 and included bundled `LICENSE` / `THIRD_PARTY_NOTICES.md` resources.
 `productbuild --synthesize` emitted a Distribution XML
 `allowed-os-versions` entry with `min="26.0"`.
@@ -595,7 +632,7 @@ The signed submit-lane bundle reported `CFBundleIdentifier`
 `dev.hazakura.editor`, `CFBundleShortVersionString` `0.27.0`,
 `CFBundleVersion` `22`, and `LSMinimumSystemVersion` `26.0`. It had the
 expected App Sandbox, user-selected read/write, app-scoped bookmark, and
-network-client entitlements; it omitted the Apple Local Assist helper
+network-client entitlements; it omitted the Hazakura Local Assist helper
 and included bundled `LICENSE` / `THIRD_PARTY_NOTICES.md` resources.
 `REQUIRE_APP_STORE_ENTITLEMENTS=1 npm run probe:macos-distribution -- <app>`
 passed for the generated app. `pkgutil --check-signature` passed with
@@ -626,7 +663,7 @@ The signed submit-lane bundle reported `CFBundleIdentifier`
 `dev.hazakura.editor`, `CFBundleShortVersionString` `0.28.0`,
 `CFBundleVersion` `26`, and `LSMinimumSystemVersion` `26.0`. It had the
 expected App Sandbox, user-selected read/write, app-scoped bookmark, and
-network-client entitlements; it omitted the Apple Local Assist helper
+network-client entitlements; it omitted the Hazakura Local Assist helper
 and included bundled `LICENSE` / `THIRD_PARTY_NOTICES.md` resources.
 `REQUIRE_APP_STORE_ENTITLEMENTS=1 npm run probe:macos-distribution -- <app>`
 passed for the generated app. `productbuild --synthesize` emitted a

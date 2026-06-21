@@ -52,7 +52,7 @@ fn agent_workbench_allowed_for_lane(lane: Option<&str>) -> bool {
     !is_app_store_distribution_lane_for_lane(lane)
 }
 
-// Apple Local Assist is allowed in every lane as an on-device writing
+// Hazakura Local Assist is allowed in every lane as an on-device writing
 // companion. External CLI Agent remains lane-gated separately above.
 fn apple_assist_allowed_for_lane(_lane: Option<&str>) -> bool {
     true

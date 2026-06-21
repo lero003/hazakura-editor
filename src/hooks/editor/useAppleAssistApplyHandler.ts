@@ -21,7 +21,7 @@ import {
 } from "../../types";
 
 // Per-request window for the surrounding document context
-// that Apple Local Assist sees. `preChars` is taken before
+// that Hazakura Local Assist sees. `preChars` is taken before
 // `start`, `postChars` after `end`, both snap to a line
 // boundary inside `buildSurroundingDocumentContext` to keep
 // the model from seeing a half-cut Markdown block. The
@@ -51,11 +51,11 @@ export function getAppleAssistContextWindow(
   };
 }
 
-// v0.12+ Apple Local Assist Writing Companion (slice 4).
+// v0.12+ Hazakura Local Assist Writing Companion (slice 4).
 // `useAppleAssistApplyHandler` is the main window's
 // listener for the `APPLY_AI_EDIT_TRANSACTION_EVENT` that
-// the detached Apple Assist window fires on Apply. The
-// hook requests a bounded Apple Assist candidate, rewrites the active
+// the detached Hazakura Local Assist window fires on Apply. The
+// hook requests a bounded Hazakura Local Assist candidate, rewrites the active
 // tab's unsaved buffer in place, marks the tab dirty, and
 // records an `AiEditTransaction` in the session-local
 // store so the escape hatch (slice 5) can render a
@@ -78,7 +78,7 @@ type ActiveTab = {
 type UseAppleAssistApplyHandlerOptions = {
   // The currently active tab in the main window, or `null`
   // when no tab is open. The handler early-outs when this
-  // is null (the Apple Assist window would not be sending
+  // is null (the Hazakura Local Assist window would not be sending
   // an apply with no active tab on the main side).
   activeTab: ActiveTab | null;
   // Replaces the active tab's contents with the new
@@ -137,7 +137,7 @@ export function useAppleAssistApplyHandler({
   async function applyAppleAssistRequest(payload: AppleAssistApplyEvent): Promise<void> {
     const tab = activeTabRef.current;
     if (!tab) {
-      const message = "Apple Local Assist apply ignored: no active tab.";
+      const message = "Hazakura Local Assist apply ignored: no active tab.";
       setStatusRef.current?.(message);
       void emitAppleAssistApplyStatus("failed", message, payload.request);
       return;
@@ -146,7 +146,7 @@ export function useAppleAssistApplyHandler({
     const target = payload.target;
     const targetCheck = readTargetTextForGeneration(target, tab);
     if (!targetCheck.ok) {
-      const message = `Apple Local Assist apply failed: ${targetCheck.error}`;
+      const message = `Hazakura Local Assist apply failed: ${targetCheck.error}`;
       setStatusRef.current?.(message);
       void emitAppleAssistApplyStatus("failed", message, payload.request);
       return;
@@ -159,7 +159,7 @@ export function useAppleAssistApplyHandler({
     const targetSnapshot = targetCheck.target;
 
     try {
-      const startMessage = "Apple Local Assist is generating a change...";
+      const startMessage = "Hazakura Local Assist is generating a change...";
       setStatusRef.current?.(startMessage);
       void emitAppleAssistApplyStatus("started", startMessage, payload.request);
       const contextWindow = getAppleAssistContextWindow(targetSnapshot.kind);
@@ -175,7 +175,7 @@ export function useAppleAssistApplyHandler({
           APPLE_ASSIST_MAX_CONTEXT_CHARS,
         ),
         // Prefer the helper-side instruction when the caller
-        // provided one (e.g. the Apple Assist window annotates
+        // provided one (e.g. the Hazakura Local Assist window annotates
         // preset phrases with a short intent hint). The
         // user-facing surfaces (status, transaction, review
         // bar) still see the original `payload.request`.
@@ -184,7 +184,7 @@ export function useAppleAssistApplyHandler({
 
       const latestTab = activeTabRef.current;
       if (!latestTab) {
-        const message = "Apple Local Assist apply ignored: no active tab.";
+        const message = "Hazakura Local Assist apply ignored: no active tab.";
         setStatusRef.current?.(message);
         void emitAppleAssistApplyStatus("failed", message, payload.request);
         return;
@@ -199,7 +199,7 @@ export function useAppleAssistApplyHandler({
         afterText: response.candidateText,
       });
       if (!result.ok) {
-        const message = `Apple Local Assist apply failed: ${result.error}`;
+        const message = `Hazakura Local Assist apply failed: ${result.error}`;
         setStatusRef.current?.(message);
         void emitAppleAssistApplyStatus("failed", message, payload.request);
         return;
@@ -226,12 +226,12 @@ export function useAppleAssistApplyHandler({
       };
       aiEditTransactionStore.record(stored);
       setActiveTabContentsRef.current(result.nextBuffer);
-      const successMessage = `Apple Local Assist applied: ${result.transaction.request} (${result.transaction.target.kind})`;
+      const successMessage = `Hazakura Local Assist applied: ${result.transaction.request} (${result.transaction.target.kind})`;
       setStatusRef.current?.(successMessage);
       void emitAppleAssistApplyStatus("completed", successMessage, payload.request);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      const errorMessage = `Apple Local Assist generation failed: ${message}`;
+      const errorMessage = `Hazakura Local Assist generation failed: ${message}`;
       setStatusRef.current?.(errorMessage);
       void emitAppleAssistApplyStatus("failed", errorMessage, payload.request);
     }
@@ -251,7 +251,7 @@ async function emitAppleAssistApplyStatus(
       emittedAtMs: Date.now(),
     } satisfies AppleAssistApplyStatusEvent);
   } catch (err) {
-    console.warn("Failed to emit Apple Local Assist apply status", err);
+    console.warn("Failed to emit Hazakura Local Assist apply status", err);
   }
 }
 
@@ -273,26 +273,26 @@ function readTargetTextForGeneration(
   if (!target) {
     return {
       ok: false,
-      error: "No Apple Local Assist target snapshot was supplied with the request.",
+      error: "No Hazakura Local Assist target snapshot was supplied with the request.",
     };
   }
   if (target.start < 0 || target.end < target.start) {
-    return { ok: false, error: "Apple Local Assist target range is invalid." };
+    return { ok: false, error: "Hazakura Local Assist target range is invalid." };
   }
   if (target.end > tab.contents.length) {
     return {
       ok: false,
-      error: "Apple Local Assist target range is out of bounds for the active buffer.",
+      error: "Hazakura Local Assist target range is out of bounds for the active buffer.",
     };
   }
   if (target.activeDocumentPath !== tab.path) {
-    return { ok: false, error: "Apple Local Assist target is stale for the active document." };
+    return { ok: false, error: "Hazakura Local Assist target is stale for the active document." };
   }
   const before = tab.contents.slice(target.start, target.end);
   if (before !== target.text) {
     return {
       ok: false,
-      error: "Apple Local Assist target text no longer matches the active buffer.",
+      error: "Hazakura Local Assist target text no longer matches the active buffer.",
     };
   }
   return { ok: true, target, before };

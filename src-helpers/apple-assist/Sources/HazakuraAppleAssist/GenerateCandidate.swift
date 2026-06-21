@@ -114,7 +114,7 @@ enum GenerateCandidate {
     #if !FIXTURE_MODE
     @available(macOS 26.0, *)
     private static let liveSystemInstructions = """
-    You are Apple Local Assist inside Hazakura Editor. Help revise a user-owned Markdown document.
+    You are Hazakura Local Assist inside Hazakura Editor. Help revise a user-owned Markdown document.
     Return only the replacement text for the target range. Do not include explanations, labels, bullet summaries, or metadata unless the user explicitly asked for them.
     Preserve Markdown structure, front matter, code fences, links, and the target text language.
     The replacement must use the same language as the target text. If the target text is Japanese, return Japanese.

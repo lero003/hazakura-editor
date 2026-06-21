@@ -59,9 +59,9 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
     return {
       application: "あぷり",
       appearanceAndWriting: "みため と かくこと",
-      appleAssistDiffInitiallyOpen: "Apple Local Assist の さぶんを ひらく",
+      appleAssistDiffInitiallyOpen: "Hazakura Local Assist の さぶんを ひらく",
       appleAssistDiffInitiallyOpenHint:
-        "Apple Local Assist が ほんぶんを かへたら さぶんを すぐ みせます。",
+        "Hazakura Local Assist が ほんぶんを かへたら さぶんを すぐ みせます。",
       autoBackup: "うつしのこし",
       autoBackupHint:
         "じぶんで ON にした ときだけ、未保存の へんこうを 30びょう ごとに .bak として のこします。",
@@ -113,9 +113,9 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
     ? {
         application: "アプリケーション",
         appearanceAndWriting: "見た目と書き心地",
-        appleAssistDiffInitiallyOpen: "Apple Local Assist の差分を自動で開く",
+        appleAssistDiffInitiallyOpen: "Hazakura Local Assist の差分を自動で開く",
         appleAssistDiffInitiallyOpenHint:
-          "Apple Local Assist が本文を変更したとき、確認用の小さな差分を最初から表示します。",
+          "Hazakura Local Assist が本文を変更したとき、確認用の小さな差分を最初から表示します。",
         autoBackup: "自動バックアップ",
         autoBackupHint:
           "自分で有効化した場合だけ、未保存の変更を30秒ごとに .bak として残します。",
@@ -164,9 +164,9 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
     : {
         application: "Application",
         appearanceAndWriting: "Appearance & Writing",
-        appleAssistDiffInitiallyOpen: "Open Apple Local Assist diff automatically",
+        appleAssistDiffInitiallyOpen: "Open Hazakura Local Assist diff automatically",
         appleAssistDiffInitiallyOpenHint:
-          "Show the compact diff immediately after Apple Local Assist changes the text.",
+          "Show the compact diff immediately after Hazakura Local Assist changes the text.",
         autoBackup: "Auto-backup",
         autoBackupHint:
           "When you enable it, unsaved changes are written as .bak snapshots every 30 seconds.",

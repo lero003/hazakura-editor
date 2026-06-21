@@ -33,7 +33,7 @@ for (const path of [appPath, helperPath, appEntitlements, helperEntitlements]) {
 }
 
 console.log(`App Store submit signing identity: ${identity}`);
-console.log("Re-signing Apple Assist helper with inherited sandbox entitlement.");
+console.log("Re-signing Hazakura Local Assist helper with inherited sandbox entitlement.");
 run("codesign", [
   "--force",
   "--sign",

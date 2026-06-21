@@ -35,7 +35,7 @@ function editorSettings(
 }
 
 describe("SettingsPreferencesPane", () => {
-  it("updates the Apple Local Assist diff default-open preference", () => {
+  it("updates the Hazakura Local Assist diff default-open preference", () => {
     const onEditorSettingsChange = vi.fn();
     const { container } = render(
       <SettingsPreferencesPane
@@ -52,14 +52,14 @@ describe("SettingsPreferencesPane", () => {
       />,
     );
 
-    // The toggle for "Open Apple Local Assist diff automatically" is the
+    // The toggle for "Open Hazakura Local Assist diff automatically" is the
     // third toggle in the application section (after previewPane and
     // autoBackup). The label wraps the checkbox input and its visual
     // slider. Find the label by its text content and click it.
     const labels = container.querySelectorAll('label.toggle-switch');
     let appleAssistLabel: HTMLLabelElement | null = null;
     for (const label of Array.from(labels)) {
-      if (label.textContent?.includes("Open Apple Local Assist diff")) {
+      if (label.textContent?.includes("Open Hazakura Local Assist diff")) {
         appleAssistLabel = label as HTMLLabelElement;
         break;
       }
@@ -74,7 +74,7 @@ describe("SettingsPreferencesPane", () => {
     );
   });
 
-  it("keeps the Apple Local Assist diff preference in the App Store distribution lane", () => {
+  it("keeps the Hazakura Local Assist diff preference in the App Store distribution lane", () => {
     vi.stubEnv("VITE_HAZAKURA_DISTRIBUTION_LANE", "app-store");
     const { container } = render(
       <SettingsPreferencesPane
@@ -91,9 +91,9 @@ describe("SettingsPreferencesPane", () => {
       />,
     );
 
-    expect(container.textContent).toContain("Apple Local Assist");
+    expect(container.textContent).toContain("Hazakura Local Assist");
     expect(container.textContent).toContain(
-      "Open Apple Local Assist diff automatically",
+      "Open Hazakura Local Assist diff automatically",
     );
   });
 

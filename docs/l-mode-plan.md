@@ -138,7 +138,7 @@ L Mode should be able to complete common writing loops without sending the user 
 - open the temporary file-tree drawer when needed, then return focus to writing
 - show unsaved state as a quiet signal
 - expose Typewriter mode without making the top-right controls noisy
-- expose Apple Local Assist and local change review as lightweight, closable surfaces
+- expose Hazakura Local Assist and local change review as lightweight, closable surfaces
 - keep normal-mode routes available for Preview / Diff / Outline without making L Mode feel secondary
 - avoid visible controls overlapping document text, scroll HUDs, or selection/caret areas
 
@@ -293,7 +293,7 @@ Markers must become available around the active line, active block, selection, o
 
 ### 6. Compact AI Change Review
 
-- When Apple Local Assist changes the buffer from えるモード, show a compact diff / discard review surface inside or adjacent to えるモード.
+- When Hazakura Local Assist changes the buffer from えるモード, show a compact diff / discard review surface inside or adjacent to えるモード.
 - The review surface should be closable so the user can return to writing immediately.
 - The surface should make the AI-originated change explicit, unsaved, reviewable, and discardable.
 - Do not promote this into a persistent manual Review Desk entry point.

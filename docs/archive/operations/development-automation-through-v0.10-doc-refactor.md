@@ -25,7 +25,7 @@ Primary outcome: one coherent post-release quality-check, bug-fix, smoke-coverag
 
 Each run should fit the temporary hourly cadence. If the useful slice is larger than that, narrow it, leave a short next-step note, or stop with a verified no-op instead of stretching the scope.
 
-Do not expand Review Desk into a larger workbench by default. Treat it as a low-prominence candidate-review receiver for pasted or Agent output now, and for future v0.11+ Apple Local Assist output after Foundation Models work begins, unless the user explicitly resumes Review Desk feature work.
+Do not expand Review Desk into a larger workbench by default. Treat it as a low-prominence candidate-review receiver for pasted or Agent output now, and for future v0.11+ Hazakura Local Assist output after Foundation Models work begins, unless the user explicitly resumes Review Desk feature work.
 
 Claude Code CLI is now an allowlisted local CLI provider inside the existing Agent Workbench boundary, not a replacement strategy. Do not add Claude-specific permission UI, MCP UI, arbitrary arguments, provider-add UI, auto-apply, or Git integration.
 

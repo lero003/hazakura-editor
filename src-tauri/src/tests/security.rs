@@ -64,12 +64,12 @@ fn agent_workbench_distribution_gate_allows_developer_lane() {
 #[test]
 fn apple_assist_distribution_gate_allows_app_store_and_developer_lanes() {
     ensure_apple_assist_allowed_for_lane(Some("app-store"))
-        .expect("App Store lane may use Apple Local Assist");
+        .expect("App Store lane may use Hazakura Local Assist");
     ensure_apple_assist_allowed_for_lane(Some("App-Store"))
         .expect("App Store lane detection is case-insensitive");
-    ensure_apple_assist_allowed_for_lane(None).expect("default lane must allow Apple Local Assist");
+    ensure_apple_assist_allowed_for_lane(None).expect("default lane must allow Hazakura Local Assist");
     ensure_apple_assist_allowed_for_lane(Some("developer"))
-        .expect("developer lane must allow Apple Local Assist");
+        .expect("developer lane must allow Hazakura Local Assist");
 }
 
 #[test]
@@ -194,40 +194,40 @@ fn app_store_distribution_lane_rejects_list_agent_provider_availability() {
 #[test]
 fn app_store_distribution_lane_allows_apple_assist_window_commands() {
     open_apple_assist_window_with_label_for_lane(MAIN_WINDOW_LABEL, Some("developer"))
-        .expect("developer lane may open Apple Assist");
+        .expect("developer lane may open Hazakura Local Assist");
     toggle_apple_assist_window_with_label_for_lane(MAIN_WINDOW_LABEL, Some("developer"))
-        .expect("developer lane may toggle Apple Assist");
+        .expect("developer lane may toggle Hazakura Local Assist");
     set_apple_assist_window_theme_with_label_for_lane(MAIN_WINDOW_LABEL, Some("developer"))
-        .expect("developer lane may theme Apple Assist");
+        .expect("developer lane may theme Hazakura Local Assist");
     open_apple_assist_window_with_label_for_lane(MAIN_WINDOW_LABEL, Some("app-store"))
-        .expect("App Store lane may open Apple Assist");
+        .expect("App Store lane may open Hazakura Local Assist");
     toggle_apple_assist_window_with_label_for_lane(MAIN_WINDOW_LABEL, Some("app-store"))
-        .expect("App Store lane may toggle Apple Assist");
+        .expect("App Store lane may toggle Hazakura Local Assist");
     set_apple_assist_window_theme_with_label_for_lane(MAIN_WINDOW_LABEL, Some("app-store"))
-        .expect("App Store lane may theme Apple Assist");
+        .expect("App Store lane may theme Hazakura Local Assist");
 }
 
 #[test]
 fn app_store_distribution_lane_allows_apple_assist_generation_commands() {
     probe_apple_assist_availability_with_label_for_lane(MAIN_WINDOW_LABEL, Some("developer"))
-        .expect("developer lane may probe Apple Assist");
+        .expect("developer lane may probe Hazakura Local Assist");
     generate_apple_assist_candidate_with_label_for_lane(MAIN_WINDOW_LABEL, Some("developer"))
-        .expect("developer lane may generate Apple Assist candidates");
+        .expect("developer lane may generate Hazakura Local Assist candidates");
     request_apply_ai_edit_transaction_with_label_for_lane(
         APPLE_ASSIST_WINDOW_LABEL,
         Some("developer"),
     )
-    .expect("developer lane may request Apple Assist apply from the Apple Assist window");
+    .expect("developer lane may request Hazakura Local Assist apply from the Hazakura Local Assist window");
 
     probe_apple_assist_availability_with_label_for_lane(MAIN_WINDOW_LABEL, Some("app-store"))
-        .expect("App Store lane may probe Apple Assist");
+        .expect("App Store lane may probe Hazakura Local Assist");
     generate_apple_assist_candidate_with_label_for_lane(MAIN_WINDOW_LABEL, Some("app-store"))
-        .expect("App Store lane may generate Apple Assist candidates");
+        .expect("App Store lane may generate Hazakura Local Assist candidates");
     request_apply_ai_edit_transaction_with_label_for_lane(
         APPLE_ASSIST_WINDOW_LABEL,
         Some("app-store"),
     )
-    .expect("App Store lane may request Apple Assist apply from the Apple Assist window");
+    .expect("App Store lane may request Hazakura Local Assist apply from the Hazakura Local Assist window");
 }
 
 #[test]
@@ -262,7 +262,7 @@ fn app_store_distribution_lane_rejects_agent_window_label_on_agent_commands() {
 
 #[test]
 fn label_gate_apple_assist_rejects_agent_label() {
-    // The Apple Assist window and the Agent window are mutually
+    // The Hazakura Local Assist window and the Agent window are mutually
     // exclusive companion slots, but their label gates are
     // independent: a Tauri command guarded by
     // `ensure_label_is_main_or_apple_assist` must NOT accept
@@ -293,21 +293,21 @@ fn request_apply_ai_edit_transaction_accepts_apple_assist_only() {
         .expect("apple-assist must be allowed to request AI edit apply");
 
     let err = request_apply_ai_edit_transaction_with_label(MAIN_WINDOW_LABEL)
-        .expect_err("main must not request Apple Assist apply through this command");
+        .expect_err("main must not request Hazakura Local Assist apply through this command");
     assert!(err.contains(MAIN_WINDOW_LABEL), "{err}");
 
     let err = request_apply_ai_edit_transaction_with_label(AGENT_WINDOW_LABEL)
-        .expect_err("agent must not request Apple Assist apply");
+        .expect_err("agent must not request Hazakura Local Assist apply");
     assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
 
     let err = request_apply_ai_edit_transaction_with_label(UNKNOWN_WINDOW_LABEL)
-        .expect_err("unknown window must not request Apple Assist apply");
+        .expect_err("unknown window must not request Hazakura Local Assist apply");
     assert!(err.contains(UNKNOWN_WINDOW_LABEL), "{err}");
 }
 
 #[test]
 fn get_main_apple_assist_target_allows_main_and_apple_assist_labels() {
-    // The detached Apple Assist window is the primary caller
+    // The detached Hazakura Local Assist window is the primary caller
     // of `get_main_apple_assist_target`; the main window may
     // also call it for self-consistency. Both must clear the
     // gate. The label-only shim pins the gate without needing
@@ -332,7 +332,7 @@ fn get_main_apple_assist_target_rejects_agent_and_unknown_labels() {
 #[test]
 fn set_main_apple_assist_target_rejects_non_main_labels() {
     // Only the main window may push the target snapshot.
-    // The Apple Assist window reads the cache via
+    // The Hazakura Local Assist window reads the cache via
     // `get_main_apple_assist_target` and listens for the
     // change event; it must NOT be able to push a target
     // back into the cache.
@@ -848,14 +848,14 @@ fn open_main_agent_pane_rejects_unknown_label() {
 #[test]
 fn toggle_apple_assist_window_accepts_main_window_only() {
     toggle_apple_assist_window_with_label(MAIN_WINDOW_LABEL)
-        .expect("main must be allowed to toggle the Apple Assist window");
+        .expect("main must be allowed to toggle the Hazakura Local Assist window");
 
     let agent_err = toggle_apple_assist_window_with_label(AGENT_WINDOW_LABEL)
-        .expect_err("agent must not be allowed to toggle the Apple Assist window");
+        .expect_err("agent must not be allowed to toggle the Hazakura Local Assist window");
     assert!(agent_err.contains(AGENT_WINDOW_LABEL), "{agent_err}");
 
     let unknown_err = toggle_apple_assist_window_with_label(UNKNOWN_WINDOW_LABEL)
-        .expect_err("unknown labels must not be allowed to toggle the Apple Assist window");
+        .expect_err("unknown labels must not be allowed to toggle the Hazakura Local Assist window");
     assert!(unknown_err.contains(UNKNOWN_WINDOW_LABEL), "{unknown_err}");
 }
 

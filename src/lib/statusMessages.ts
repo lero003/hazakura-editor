@@ -23,8 +23,8 @@ export function localizeStatusMessage(
     "Agent session stop failed": "Agent セッションの停止に失敗しました",
     "Agent session stopped": "Agent セッションを停止しました",
     "Agent terminal resize failed": "Agent ターミナルのリサイズに失敗しました",
-    "Apple Local Assist discard failed": "Apple Local Assist の破棄に失敗しました",
-    "Apple Local Assist edit discarded": "Apple Local Assist の編集を破棄しました",
+    "Hazakura Local Assist discard failed": "Hazakura Local Assist の破棄に失敗しました",
+    "Hazakura Local Assist edit discarded": "Hazakura Local Assist の編集を破棄しました",
     "Backup applied — save to keep changes":
       "バックアップを適用しました。変更を保存して保持してください",
     "Backup apply failed": "バックアップの適用に失敗しました",

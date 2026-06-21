@@ -86,7 +86,7 @@ function changeReviewSnapshotWithCounts(
 
 // Default props for the L Mode action rail. Tests override
 // individual fields as needed. The default `assistSurfaceActive`
-// is "apple-local" so the Apple Assist button is visible by
+// is "apple-local" so the Hazakura Local Assist button is visible by
 // default; tests that want to hide it pass a different value.
 function defaultProps(overrides: Partial<React.ComponentProps<typeof LModeActionRail>> = {}) {
   return {
@@ -107,12 +107,12 @@ function defaultProps(overrides: Partial<React.ComponentProps<typeof LModeAction
 }
 
 describe("LModeActionRail", () => {
-  it("renders the workspace toggle and Apple Local Assist action without review changes when clean", () => {
+  it("renders the workspace toggle and Hazakura Local Assist action without review changes when clean", () => {
     render(<LModeActionRail {...defaultProps()} />);
 
     expect(screen.getByLabelText("L Mode actions")).toBeTruthy();
     expect(screen.getByRole("button", { name: /Open workspace/ })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Apple Local Assist/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Hazakura Local Assist/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: /Typewriter mode/ })).toBeTruthy();
     expect(screen.queryByRole("button", { name: /Review changes/ })).toBeNull();
   });
@@ -152,7 +152,7 @@ describe("LModeActionRail", () => {
     );
 
     const appleAssist = screen.getByRole("button", {
-      name: /Apple Local Assist/,
+      name: /Hazakura Local Assist/,
     });
     expect(appleAssist.getAttribute("title")).toBe(
       copy.actionRailAppleAssistTooltip,
@@ -174,7 +174,7 @@ describe("LModeActionRail", () => {
     expect(review.getAttribute("title")).toMatch(/\S/);
   });
 
-  it("opens the local change review sheet and invokes Apple Local Assist", async () => {
+  it("opens the local change review sheet and invokes Hazakura Local Assist", async () => {
     const onOpenAppleAssistWindow = vi.fn();
     const onReviewChanges = vi.fn().mockResolvedValue(changeReviewSnapshot());
     render(
@@ -189,7 +189,7 @@ describe("LModeActionRail", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: /Review changes/ }));
-    fireEvent.click(screen.getByRole("button", { name: /Apple Local Assist/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Hazakura Local Assist/ }));
 
     expect(await screen.findByRole("dialog", { name: "Change review" })).toBeTruthy();
     expect(screen.getByText("Changes against disk")).toBeTruthy();
@@ -446,13 +446,13 @@ describe("LModeActionRail", () => {
     expect(container.querySelector(".l-mode-workspace-unsaved-dot")).toBeTruthy();
   });
 
-  // v0.15 polish: the Apple Assist button should only show when
+  // v0.15 polish: the Hazakura Local Assist button should only show when
   // the Assist Surface preference is set to "apple-local".
-  // Without this guard, a user who turned Apple Local Assist
+  // Without this guard, a user who turned Hazakura Local Assist
   // off in Preferences would still see a working button inside
   // L Mode — and clicking it would silently toggle nothing.
-  describe("Apple Assist button visibility (v0.15 polish)", () => {
-    it("hides the Apple Assist button when assist surface is 'none'", () => {
+  describe("Hazakura Local Assist button visibility (v0.15 polish)", () => {
+    it("hides the Hazakura Local Assist button when assist surface is 'none'", () => {
       render(
         <LModeActionRail
           {...defaultProps({ assistSurfaceActive: "none" })}
@@ -460,11 +460,11 @@ describe("LModeActionRail", () => {
       );
 
       expect(
-        screen.queryByRole("button", { name: /Apple Local Assist/ }),
+        screen.queryByRole("button", { name: /Hazakura Local Assist/ }),
       ).toBeNull();
     });
 
-    it("hides the Apple Assist button when assist surface is 'external-cli'", () => {
+    it("hides the Hazakura Local Assist button when assist surface is 'external-cli'", () => {
       render(
         <LModeActionRail
           {...defaultProps({ assistSurfaceActive: "external-cli" })}
@@ -472,11 +472,11 @@ describe("LModeActionRail", () => {
       );
 
       expect(
-        screen.queryByRole("button", { name: /Apple Local Assist/ }),
+        screen.queryByRole("button", { name: /Hazakura Local Assist/ }),
       ).toBeNull();
     });
 
-    it("keeps the Apple Assist button visible when assist surface is 'apple-local'", () => {
+    it("keeps the Hazakura Local Assist button visible when assist surface is 'apple-local'", () => {
       render(
         <LModeActionRail
           {...defaultProps({ assistSurfaceActive: "apple-local" })}
@@ -484,11 +484,11 @@ describe("LModeActionRail", () => {
       );
 
       expect(
-        screen.getByRole("button", { name: /Apple Local Assist/ }),
+        screen.getByRole("button", { name: /Hazakura Local Assist/ }),
       ).toBeTruthy();
     });
 
-    it("still shows the Typewriter mode button when Apple Assist is hidden", () => {
+    it("still shows the Typewriter mode button when Hazakura Local Assist is hidden", () => {
       render(
         <LModeActionRail
           {...defaultProps({ assistSurfaceActive: "none" })}

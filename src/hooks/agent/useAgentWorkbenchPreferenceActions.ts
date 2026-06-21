@@ -207,7 +207,7 @@ function assistSurfaceSelectedMessage(
       return "この あしすとの せっていは ゆうこうです";
     }
     if (surface === "apple-local") {
-      return "さいきどうごに Apple Local Assist を つかひます";
+      return "さいきどうごに Hazakura Local Assist を つかひます";
     }
     if (surface === "external-cli") {
       return "さいきどうごに CLI Agent を つかひます";
@@ -219,7 +219,7 @@ function assistSurfaceSelectedMessage(
       return "このアシスト設定は現在有効です";
     }
     if (surface === "apple-local") {
-      return "再起動後に Apple Local Assist を使います";
+      return "再起動後に Hazakura Local Assist を使います";
     }
     if (surface === "external-cli") {
       return "再起動後に CLI Agent を使います";
@@ -230,7 +230,7 @@ function assistSurfaceSelectedMessage(
     return "Assist surface already active";
   }
   if (surface === "apple-local") {
-    return "Apple Local Assist will be used after restart";
+    return "Hazakura Local Assist will be used after restart";
   }
   if (surface === "external-cli") {
     return "CLI Agent will be used after restart";

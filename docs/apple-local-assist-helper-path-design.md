@@ -1,4 +1,4 @@
-# Apple Local Assist — Bundled Helper Path 設計メモ
+# Hazakura Local Assist — Bundled Helper Path 設計メモ
 
 Status: Implemented on main (live helper gate flipped)
 Scope: `src-tauri/src/commands/apple_assist_supervisor.rs` の `helper_path()` が production で bundled helper path を解決する現行設計。`bundle.externalBin` は追加済み。`minimumSystemVersion` / signing / entitlements / App Store sandbox は distribution-lane hardening として未決。
@@ -17,7 +17,7 @@ Rust supervisor は `binaries/hazakura-apple-assist-helper-<rust-triple>` を bu
   - **dev** (`npm run tauri dev`): `beforeDevCommand` は Vite のみ。production resolver は実行中バイナリ隣接 helper を探すため、dev で live helper を使うには helper を dev 実行バイナリの隣へ明示配置する必要がある。production `Default` は env var を読まない。
   - **test** (`cargo test --manifest-path src-tauri/Cargo.toml`): `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE` env var で fixture binary path を渡し、`store_with_helper_path` 経由で supervisor に注入。production `Default` は env var を読まない (slice 14+ の回帰テストで固定)。
   - **packaged build** (DMG preview / App Store build / developer build): `bundle.externalBin` が `tauri.conf.json` に追加済み。`npm run build` は live helper を build し、Tauri が `Contents/MacOS/hazakura-apple-assist-helper` として同梱・署名する。
-- **missing helper 時の error message**: 現行 resolver は "Apple Assist helper is not configured for this build. Looked in <dir>." を返す。packaged build で `externalBin` を間違って外した / build artifact が壊れた場合は、この reason が UI に出る。
+- **missing helper 時の error message**: 現行 resolver は "Hazakura Local Assist helper is not configured for this build. Looked in <dir>." を返す。packaged build で `externalBin` を間違って外した / build artifact が壊れた場合は、この reason が UI に出る。
 - **App Store sandbox / signing / notarization に入る前の確認項目**: 末尾の checklist は未完了。distribution lane へ進む前に別途確認する。
 
 ## 想定する production `helper_path()` の形
@@ -67,7 +67,7 @@ Rust supervisor は `binaries/hazakura-apple-assist-helper-<rust-triple>` を bu
 
 production 経路で helper が見つからなかった場合の error メッセージは次の形にする:
 
-- **現行 production 経路 (resolve_bundled_helper_path)**: `Err("Apple Assist helper is not configured for this build. Looked in <dir>.")`
+- **現行 production 経路 (resolve_bundled_helper_path)**: `Err("Hazakura Local Assist helper is not configured for this build. Looked in <dir>.")`
   - `current_exe().parent()` の絶対パスを含める。
   - Rust 側の `spawn_locked` は helper 自体が missing なら spawn 前にこの `Err` で return する。
 

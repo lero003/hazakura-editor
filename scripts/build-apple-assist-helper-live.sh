@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the Apple Local Assist helper in live Foundation Models mode.
+# Build the Hazakura Local Assist helper in live Foundation Models mode.
 #
 # This build does not define FIXTURE_MODE. The resulting sidecar
 # links FoundationModels and is bundled by Tauri's externalBin

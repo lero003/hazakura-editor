@@ -741,7 +741,7 @@
    floor so the side-by-side comparison has a comfortable
    minimum width on a normal-mode compare surface. The
    L Mode sheet is a narrower floating window (760px on
-   most screens, 36px padding) and Apple Local Assist
+   most screens, 36px padding) and Hazakura Local Assist
    candidates are often single long lines, so a 720px
    floor forces a horizontal scrollbar as soon as the
    sheet's content area drops below 720px. The cells

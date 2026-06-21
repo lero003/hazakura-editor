@@ -36,8 +36,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
     return {
       agentWindow: "Agent",
       agentWindowTitle: "Agent まどをひらく",
-      appleAssistWindow: "Apple Local Assist",
-      appleAssistWindowTitle: "Apple Local Assist まどを ひらく / かくす",
+      appleAssistWindow: "Hazakura Local Assist",
+      appleAssistWindowTitle: "Hazakura Local Assist まどを ひらく / かくす",
       diffTab: "ちがひ",
       diffTabTitle: "ちがひのまどをひらく",
       ebookReading: "ほんのやうに よむ (えーぼっく)",
@@ -69,8 +69,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
     ? {
         agentWindow: "Agent",
         agentWindowTitle: "Agent ウィンドウを開く",
-        appleAssistWindow: "Apple Local Assist",
-        appleAssistWindowTitle: "Apple Local Assist ウィンドウを表示 / 非表示",
+        appleAssistWindow: "Hazakura Local Assist",
+        appleAssistWindowTitle: "Hazakura Local Assist ウィンドウを表示 / 非表示",
         diffTab: "差分",
         diffTabTitle: "差分ペインを表示",
         ebookReading: "本のように読む（電子書籍）",
@@ -100,8 +100,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
     : {
         agentWindow: "Agent",
         agentWindowTitle: "Open Agent window",
-        appleAssistWindow: "Apple Local Assist",
-        appleAssistWindowTitle: "Show or hide Apple Local Assist window",
+        appleAssistWindow: "Hazakura Local Assist",
+        appleAssistWindowTitle: "Show or hide Hazakura Local Assist window",
         diffTab: "Diff",
         diffTabTitle: "Show diff pane",
         ebookReading: "Read as a book (e-book)",

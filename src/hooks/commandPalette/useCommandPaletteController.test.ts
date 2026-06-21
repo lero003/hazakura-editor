@@ -45,6 +45,7 @@ describe("useCommandPaletteController", () => {
         activeTab: null,
         activeTabId: null,
         appleLocalAssistAllowed: true,
+        assistSurfaceActive: "none",
         editorPaneRef: { current: null },
         lModeCopy: getLModeCopy("en"),
         setStatus: vi.fn(),
@@ -118,6 +119,7 @@ describe("useCommandPaletteController", () => {
         activeTab: null,
         activeTabId: null,
         appleLocalAssistAllowed: true,
+        assistSurfaceActive: "none",
         editorPaneRef: { current: editorPane },
         lModeCopy: getLModeCopy("en"),
         setStatus,
@@ -196,6 +198,7 @@ describe("useCommandPaletteController", () => {
         activeTab: null,
         activeTabId: null,
         appleLocalAssistAllowed: true,
+        assistSurfaceActive: "none",
         editorPaneRef: { current: null },
         lModeCopy: getLModeCopy("ja"),
         setStatus: vi.fn(),
@@ -257,6 +260,7 @@ describe("useCommandPaletteController", () => {
         activeTab: null,
         activeTabId: null,
         appleLocalAssistAllowed: true,
+        assistSurfaceActive: "none",
         editorPaneRef: { current: null },
         lModeCopy: getLModeCopy("en"),
         setStatus: vi.fn(),
@@ -282,7 +286,7 @@ describe("useCommandPaletteController", () => {
     expect(exportEpubBeta).toHaveBeenCalledTimes(1);
   });
 
-  it("does not expose retired selected-text Apple Local Assist commands", () => {
+  it("does not expose retired selected-text Hazakura Local Assist commands", () => {
     const { result } = renderHook(() =>
       useCommandPaletteController({
         actions: {
@@ -317,6 +321,7 @@ describe("useCommandPaletteController", () => {
         activeTab: null,
         activeTabId: null,
         appleLocalAssistAllowed: true,
+        assistSurfaceActive: "none",
         editorPaneRef: { current: null },
         lModeCopy: getLModeCopy("en"),
         setStatus: vi.fn(),
@@ -339,7 +344,7 @@ describe("useCommandPaletteController", () => {
     expect(rephrase).toBeUndefined();
   });
 
-  it("exposes the Apple Local Assist window command when allowed", () => {
+  it("exposes the Hazakura Local Assist window command when active", () => {
     const openAppleAssistWindow = vi.fn();
     const { result } = renderHook(() =>
       useCommandPaletteController({
@@ -375,6 +380,7 @@ describe("useCommandPaletteController", () => {
         activeTab: null,
         activeTabId: null,
         appleLocalAssistAllowed: true,
+        assistSurfaceActive: "apple-local",
         editorPaneRef: {
           current: {
             getSelectionText: () => "hello",
@@ -406,14 +412,70 @@ describe("useCommandPaletteController", () => {
     expect(summarize).toBeUndefined();
     expect(rephrase).toBeUndefined();
     expect(openWindow?.category).toBe("Writing Companion");
-    expect(openWindow?.label).toBe("Open Apple Local Assist Window");
+    expect(openWindow?.label).toBe("Open Hazakura Local Assist Window");
     act(() => {
       openWindow?.run();
     });
     expect(openAppleAssistWindow).toHaveBeenCalledWith("light");
   });
 
-  it("hides external Agent commands but exposes Apple Local Assist in the App Store distribution lane", () => {
+  it("hides the Hazakura Local Assist window command while the surface is off", () => {
+    const openAppleAssistWindow = vi.fn();
+    const { result } = renderHook(() =>
+      useCommandPaletteController({
+        actions: {
+          applyActiveMarkdownFormat: vi.fn(),
+          createNewFile: vi.fn(),
+          exportEpubBeta: vi.fn(),
+          exportHtml: vi.fn(),
+          exportPdf: vi.fn(),
+          focusAdjacentTab: vi.fn(),
+          handleSendSelectionToAgent: vi.fn(),
+          insertTable: vi.fn(),
+          openAgentWindow: vi.fn(),
+          openAppleAssistWindow,
+          openFile: vi.fn(),
+          openWorkspace: vi.fn(),
+          openWorkspaceFile: vi.fn(),
+          requestCloseTab: vi.fn(),
+          requestRestoreFromBackup: vi.fn(),
+          requestReviewTabAgainstDisk: vi.fn(),
+          requestWindowClose: vi.fn(),
+          saveActiveTab: vi.fn(),
+          saveActiveTabAs: vi.fn(),
+          setEditorSettings: vi.fn(),
+          setFindVisible: vi.fn(),
+          setPreferencesDialogMode: vi.fn(),
+          setPreviewVisible: vi.fn(),
+          toggleDiffPane: vi.fn(),
+          toggleLMode: vi.fn(),
+          toggleOutlinePane: vi.fn(),
+          toggleQuickOpen: vi.fn(),
+        },
+        activeTab: null,
+        activeTabId: null,
+        appleLocalAssistAllowed: true,
+        assistSurfaceActive: "none",
+        editorPaneRef: { current: null },
+        lModeCopy: getLModeCopy("en"),
+        setStatus: vi.fn(),
+        themePreference: "light",
+        workspaceRootPath: null,
+      }),
+    );
+
+    act(() => {
+      result.current.openCommandPalette();
+    });
+
+    expect(
+      result.current.filteredCommands.find(
+        (command) => command.id === "apple-assist.openWindow",
+      ),
+    ).toBeUndefined();
+  });
+
+  it("hides external Agent commands but exposes Hazakura Local Assist when active in the App Store distribution lane", () => {
     vi.stubEnv("VITE_HAZAKURA_DISTRIBUTION_LANE", "app-store");
     const openAppleAssistWindow = vi.fn();
     const setPreferencesDialogMode = vi.fn();
@@ -452,6 +514,7 @@ describe("useCommandPaletteController", () => {
         activeTab: null,
         activeTabId: null,
         appleLocalAssistAllowed: true,
+        assistSurfaceActive: "apple-local",
         editorPaneRef: { current: null },
         lModeCopy: getLModeCopy("en"),
         setStatus: vi.fn(),
@@ -477,7 +540,7 @@ describe("useCommandPaletteController", () => {
     const openWindow = result.current.filteredCommands.find(
       (command) => command.id === "apple-assist.openWindow",
     );
-    expect(openWindow?.label).toBe("Open Apple Local Assist Window");
+    expect(openWindow?.label).toBe("Open Hazakura Local Assist Window");
     act(() => {
       openWindow?.run();
     });
@@ -535,6 +598,7 @@ describe("useCommandPaletteController", () => {
         activeTab: null,
         activeTabId: null,
         appleLocalAssistAllowed: true,
+        assistSurfaceActive: "none",
         editorPaneRef: { current: null },
         lModeCopy: getLModeCopy("en"),
         setStatus: vi.fn(),
@@ -617,6 +681,7 @@ describe("useCommandPaletteController", () => {
         activeTab: null,
         activeTabId: null,
         appleLocalAssistAllowed: true,
+        assistSurfaceActive: "none",
         editorPaneRef: { current: null },
         lModeCopy: getLModeCopy("en"),
         setStatus: vi.fn(),

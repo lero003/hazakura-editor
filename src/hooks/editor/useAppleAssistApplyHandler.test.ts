@@ -9,7 +9,7 @@ import {
 } from "./useAppleAssistApplyHandler";
 import { APPLE_ASSIST_MAX_CONTEXT_CHARS } from "../../lib/tauri/appleAssist";
 
-// v0.12.x Apple Local Assist harness slice 1.
+// v0.12.x Hazakura Local Assist harness slice 1.
 //
 // `buildSurroundingDocumentContext` is the pure helper that
 // replaces the previous "first 8000 chars of the document"

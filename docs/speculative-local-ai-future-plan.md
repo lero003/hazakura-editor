@@ -73,7 +73,7 @@ Purpose:
 
 - validate whether local AI is useful for Markdown / text editing;
 - avoid model packaging and model-management complexity at the start;
-- keep the first experience close to the existing Apple Local Assist boundary.
+- keep the first experience close to the existing Hazakura Local Assist boundary.
 
 ### Whitelisted External `.aimodel` Later
 
@@ -196,7 +196,7 @@ For now, the practical product work remains closer to:
 - L Mode writing stability;
 - native-feeling macOS UI;
 - e-book / EPUB authoring exploration;
-- Apple Local Assist as a bounded, experimental document-assist surface.
+- Hazakura Local Assist as a bounded, experimental document-assist surface.
 
 The long-range model and image-generation ideas should stay documented, but
 should not become near-term implementation work until the existing editor and

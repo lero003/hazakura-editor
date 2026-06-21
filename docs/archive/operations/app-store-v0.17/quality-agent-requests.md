@@ -20,7 +20,7 @@ Prioritize evidence that the ordinary editor experience still works in the App S
 
 - user-selected file and workspace access survives sandbox assumptions or fails into a clear reauthorization path
 - App Store builds omit Agent Workbench behavior in both UI and backend command paths
-- local data and Apple Local Assist behavior can be explained clearly to App Review and users
+- local data and Hazakura Local Assist behavior can be explained clearly to App Review and users
 - save, restore, conflict, preview, export, and accessibility behavior have focused regression evidence
 
 Do not ask external agents to handle:
@@ -136,7 +136,7 @@ Goal: prepare clear local-data disclosure and in-app access to privacy informati
 
 Good outcomes:
 
-- user-facing copy explains local documents, backups, Apple Local Assist, and App Store Agent Workbench omission
+- user-facing copy explains local documents, backups, Hazakura Local Assist, and App Store Agent Workbench omission
 - no analytics, tracking, network fallback, or external upload is implied unless implementation proves it
 - Privacy / Local Data entry point is reachable from an appropriate app surface if implemented
 
@@ -157,7 +157,7 @@ Verification should include:
 Codex review focus:
 
 - copy matches `docs/security-boundary.md`
-- Apple Local Assist is described as explicit, local/on-device where available, reviewable, and unsaved until user save
+- Hazakura Local Assist is described as explicit, local/on-device where available, reviewable, and unsaved until user save
 - `.hazakura/backups/...` behavior is described carefully if mentioned
 - App Store lane does not imply Agent Workbench availability
 
@@ -168,8 +168,8 @@ Goal: create an internal App Review Notes draft that explains non-obvious behavi
 Good outcomes:
 
 - concise review notes explain the app as a Markdown/text editor, not an IDE or terminal
-- notes describe user-selected file access, sandbox-sensitive restore behavior, Apple Local Assist availability, AI edit review, and App Store Agent Workbench omission
-- reviewer smoke path is simple: Open Folder -> open Markdown/text -> edit/save -> preview/export -> optional Apple Local Assist availability check
+- notes describe user-selected file access, sandbox-sensitive restore behavior, Hazakura Local Assist availability, AI edit review, and App Store Agent Workbench omission
+- reviewer smoke path is simple: Open Folder -> open Markdown/text -> edit/save -> preview/export -> optional Hazakura Local Assist availability check
 
 Out of scope:
 
@@ -216,7 +216,7 @@ Target examples:
 - Preview / Wrap / Invisibles state
 - save-conflict dialog focus and labels
 - L Mode controls and task checkboxes
-- Apple Local Assist review controls
+- Hazakura Local Assist review controls
 - contrast and reduced-motion behavior
 
 Verification should include focused keyboard smoke and, where practical, VoiceOver notes. Do not claim VoiceOver smoke passed unless it was actually exercised.
@@ -241,7 +241,7 @@ Verification should include focused tests plus `npm run build:vite` and `git dif
 
 Goal: add a privacy-preserving support / diagnostics path.
 
-Good diagnostics include app version, macOS version, distribution lane, Apple Local Assist availability, sandbox / reauthorization state, and relevant feature flags.
+Good diagnostics include app version, macOS version, distribution lane, Hazakura Local Assist availability, sandbox / reauthorization state, and relevant feature flags.
 
 Diagnostics must not include document contents, full workspace listings, secret-looking values, provider transcripts, or unnecessary file paths.
 
@@ -252,7 +252,7 @@ Goal: measure before optimizing bundle size or L Mode performance.
 Target examples:
 
 - production chunk-size warning source
-- editor / preview / Apple Local Assist lazy-loading opportunities
+- editor / preview / Hazakura Local Assist lazy-loading opportunities
 - open, edit, L Mode toggle, search, and long-document scroll timing on fixed fixtures
 
 Do not split large chunks or rewrite L Mode architecture without measurement that justifies the slice.

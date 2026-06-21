@@ -10,7 +10,7 @@ describe("distributionLane", () => {
     vi.unstubAllEnvs();
   });
 
-  it("allows Apple Local Assist but not external CLI assist in the App Store lane", () => {
+  it("allows Hazakura Local Assist but not external CLI assist in the App Store lane", () => {
     vi.stubEnv("VITE_HAZAKURA_DISTRIBUTION_LANE", "app-store");
 
     expect(isAppleLocalAssistSurfaceAllowed()).toBe(true);

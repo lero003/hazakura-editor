@@ -43,7 +43,7 @@ const appStoreSubmitConfig = readFileSync(
 );
 const appStoreSubmitConfigJson = JSON.parse(appStoreSubmitConfig) as {
   build?: { frontendDist?: string };
-  bundle?: { macOS?: { bundleVersion?: string } };
+  bundle?: { externalBin?: string[]; macOS?: { bundleVersion?: string } };
 };
 const tauriConfig = JSON.parse(readFileSync("src-tauri/tauri.conf.json", "utf8")) as {
   app?: {
@@ -124,6 +124,9 @@ describe("macOS build scripts", () => {
     expect(viteConfig).toContain(
       '"apple-assist": resolve(__dirname, "apple-assist.html")',
     );
+    expect(viteConfig.indexOf('"apple-assist":')).toBeLessThan(
+      viteConfig.indexOf("...(appStoreLane"),
+    );
   });
 
   it("keeps the App Store submission command on a provisioning-profile config", () => {
@@ -149,9 +152,9 @@ describe("macOS build scripts", () => {
     expect(appStoreSubmitConfig).toContain(
       '"beforeBuildCommand": "npm run build:apple-assist-helper:live && npm run build:vite"',
     );
-    expect(appStoreSubmitConfig).toContain(
-      '"externalBin": ["../binaries/hazakura-apple-assist-helper"]',
-    );
+    expect(appStoreSubmitConfigJson.bundle?.externalBin).toEqual([
+      "../binaries/hazakura-apple-assist-helper",
+    ]);
     expect(appStoreSubmitConfig).toContain(
       '"entitlements": "./entitlements/mac-app-store.entitlements"',
     );
@@ -231,7 +234,7 @@ describe("macOS build scripts", () => {
     expect(dryRun).toContain("Tracked release docs: not updated");
   });
 
-  it("keeps the App Store surface smoke covering Apple Assist exposure and retired Review Desk exposure", () => {
+  it("keeps the App Store surface smoke covering Hazakura Local Assist exposure and retired Review Desk exposure", () => {
     const appStoreSurfaceSmoke = packageJson.scripts["smoke:app-store-surface"];
 
     expect(appStoreSurfaceSmoke).toContain(
@@ -311,7 +314,7 @@ describe("macOS build scripts", () => {
       'EXPECTED_DISTRIBUTION_LANE="${EXPECTED_DISTRIBUTION_LANE:-app-store}"',
     );
     expect(probeScript).toContain(
-      "App Store lane must bundle Apple Assist helper",
+      "App Store lane must bundle Hazakura Local Assist helper",
     );
     expect(probeScript).toContain(
       "helper inherit entitlement: missing",

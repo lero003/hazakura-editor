@@ -20,7 +20,7 @@ import type { ReviewDeskCopy } from "../../lib/locale";
 // The active tab is passed in as a minimal `AppleAssistTarget`
 // shape rather than the full `ActiveTab` type so the hook does
 // not become coupled to the editor's full state surface. Future
-// callers (a detached Apple Assist window, an L Mode quick
+// callers (a detached Hazakura Local Assist window, an L Mode quick
 // action) can pass a different target shape as long as the
 // four fields are present.
 //
@@ -29,7 +29,7 @@ import type { ReviewDeskCopy } from "../../lib/locale";
 // an `error` slot for the call site to surface a localized
 // message via the existing `setStatus` channel.
 //
-// v0.12+ direction (post-slice-18): the Apple Local Assist UX
+// v0.12+ direction (post-slice-18): the Hazakura Local Assist UX
 // is moving from "selected-text command palette helper" to an
 // external Writing Companion that updates the unsaved editor
 // buffer through an AI edit transaction. See
@@ -103,7 +103,7 @@ export function useAppleAssistCandidate({
         return { ok: false, error: message };
       }
       if (!APPLE_ASSIST_V0_12_OPERATIONS.includes(operation)) {
-        const message = `Apple Local Assist operation '${operation}' is not implemented in v0.12.`;
+        const message = `Hazakura Local Assist operation '${operation}' is not implemented in v0.12.`;
         setError(message);
         return { ok: false, error: message };
       }
@@ -189,16 +189,16 @@ function getStaleAppleAssistResultReason(
   latestTab: AppleAssistTarget | null,
 ): string | null {
   if (requestSeq !== latestRequestSeq) {
-    return "Apple Local Assist result ignored because a newer request is active.";
+    return "Hazakura Local Assist result ignored because a newer request is active.";
   }
   if (!latestTab) {
-    return "Apple Local Assist result ignored because there is no active editor tab.";
+    return "Hazakura Local Assist result ignored because there is no active editor tab.";
   }
   if (latestTab.id !== requestTab.id || latestTab.path !== requestTab.path) {
-    return "Apple Local Assist result ignored because the active editor tab changed.";
+    return "Hazakura Local Assist result ignored because the active editor tab changed.";
   }
   if (latestTab.contents !== requestTab.contents) {
-    return "Apple Local Assist result ignored because the editor buffer changed.";
+    return "Hazakura Local Assist result ignored because the editor buffer changed.";
   }
   return null;
 }

@@ -1,5 +1,9 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { MenuLanguage, ThemePreference } from "../../types";
+import type {
+  AssistSurfacePreference,
+  MenuLanguage,
+  ThemePreference,
+} from "../../types";
 import { isTauriRuntime } from "./_runtime";
 
 export type AppMenuRecentItem = {
@@ -20,6 +24,7 @@ export type AppMenuState = {
   recentFolders: AppMenuRecentItem[];
   agentWorkbenchActive: boolean;
   agentWorkbenchConsent: boolean;
+  assistSurfaceActive: AssistSurfacePreference;
 };
 
 export async function updateAppMenuState(state: AppMenuState): Promise<void> {

@@ -1,7 +1,7 @@
 // swift-tools-version:5.9
 //
 // `hazakura-apple-assist-helper` is the Swift sidecar binary
-// that owns the FoundationModels binding for Apple Local Assist.
+// that owns the FoundationModels binding for Hazakura Local Assist.
 //
 // It is built as a standalone executable so the Tauri / Rust
 // crate can stay cross-platform (non-macOS contributors do NOT

@@ -1,4 +1,4 @@
-# Apple Local Assist — UI Unavailable State 方針メモ
+# Hazakura Local Assist — UI Unavailable State 方針メモ
 
 Status: Planning (post-slice-7)
 Scope: v0.12+ で 4 状態 (`available` / `unavailable` / `disabled` / `unsupported`) をユーザーにどう見せるかの方針整理
@@ -7,7 +7,7 @@ Last reviewed: 2026-06-05
 
 ## 目的
 
-v0.12 の現状 (slice 6 時点) は `useCommandPaletteController` で「`availability.kind === "available"` のときだけ command palette entries を表示する」最小実装。ユーザーが「Apple Assist がない」理由をたどれない。
+v0.12 の現状 (slice 6 時点) は `useCommandPaletteController` で「`availability.kind === "available"` のときだけ command palette entries を表示する」最小実装。ユーザーが「Hazakura Local Assist がない」理由をたどれない。
 
 本スライスでは 4 状態を **ユーザーにどう提示するか** の設計を比較し、v0.12 では UI を増やさない方針を維持する。実装はしない。必要なら「次バージョン候補」として docs に残す。
 
@@ -40,20 +40,20 @@ v0.12 の現状 (slice 6 時点) は `useCommandPaletteController` で「`availa
   - ノイズがない。`available` のときだけ項目が出るので UX がクリーン
   - v0.12 の "gate-default-hidden" 契約と整合
 - **Cons**:
-  - 「なぜ Apple Assist が出ないのか」が分からない。`disabled` の人が System Settings で有効化できない、`unsupported` の人はハードウェアを買い替えるしかないので、提示する情報がないとも言える
-  - Apple Assist の存在をそもそも知らないユーザーには伝わらない
+  - 「なぜ Hazakura Local Assist が出ないのか」が分からない。`disabled` の人が System Settings で有効化できない、`unsupported` の人はハードウェアを買い替えるしかないので、提示する情報がないとも言える
+  - Hazakura Local Assist の存在をそもそも知らないユーザーには伝わらない
 
 ### 案 B: 無効状態で表示 (disabled palette item)
 
 - **動作**: 4 状態それぞれで command palette に disabled な項目を出す
-  - 例: `Apple Assist: Apple Intelligence がオフです (設定で有効化してください)` をグレーアウト表示
+  - 例: `Hazakura Local Assist: Apple Intelligence がオフです (設定で有効化してください)` をグレーアウト表示
   - 選択しても何も起こらない (もしくは "なぜ使えないか" ヘルプを開く)
 - **Pros**:
   - 機能存在の discoverability が高い
   - 理由がユーザーへの説明になる
   - 設定変更で復帰する余地を伝えられる (`disabled` / `unavailable`)
 - **Cons**:
-  - コマンドパレットが常に 2 行 Apple Assist で埋まる (Apple Intelligence がオンの人でも)
+  - コマンドパレットが常に 2 行 Hazakura Local Assist で埋まる (Apple Intelligence がオンの人でも)
   - 動的に件数が増えるのは設計の単純さを損なう
   - "disabled" と "unsupported" の違いを短いラベルで示すのが難しい
   - 4 状態それぞれで文言をメンテする必要がある (locale 込みで 3 言語 × 4 状態 × 2 operation = 24 種類)
@@ -61,7 +61,7 @@ v0.12 の現状 (slice 6 時点) は `useCommandPaletteController` で「`availa
 ### 案 C: ステータスバー項目 (persistent indicator)
 
 - **動作**: ステータスバーに小さい "🪄" アイコン (もしくは "AI" バッジ) を置き、hover / クリックで 4 状態を表示
-  - `available`: 緑、選択で command palette を Apple Assist カテゴリにフォーカス
+  - `available`: 緑、選択で command palette を Hazakura Local Assist カテゴリにフォーカス
   - `disabled`: 黄色、hover で "Apple Intelligence を有効化してください"
   - `unavailable`: オレンジ、hover で reason
   - `unsupported`: グレー、hover で "This Mac does not support Apple Intelligence"
@@ -74,7 +74,7 @@ v0.12 の現状 (slice 6 時点) は `useCommandPaletteController` で「`availa
   - ステータスバーは現在 L Mode の状態表示で精一杯
   - 実装コスト中 (状態管理 + chrome 追加 + locale + a11y)
 
-### 案 D: Preferences に "Apple Local Assist" セクション
+### 案 D: Preferences に "Hazakura Local Assist" セクション
 
 - **動作**: Preferences dialog に専用セクションを追加
   - 4 状態の表示 (色付きバッジ)
@@ -92,7 +92,7 @@ v0.12 の現状 (slice 6 時点) は `useCommandPaletteController` で「`availa
 
 ### 案 E: トースト / 最初の 1 回ヒント
 
-- **動作**: command palette を開いて "Apple Assist" で検索したのに何も出ないとき、1 回だけトーストで "Apple Local Assist は Apple Intelligence がオフのとき使えません" のようなヒント
+- **動作**: command palette を開いて "Hazakura Local Assist" で検索したのに何も出ないとき、1 回だけトーストで "Hazakura Local Assist は Apple Intelligence がオフのとき使えません" のようなヒント
 - **Pros**:
   - 1 度きりの説明で discoverability を確保
   - 永続的な chrome 増やさず
@@ -144,24 +144,24 @@ v0.12 の現状 (slice 6 時点) は `useCommandPaletteController` で「`availa
 
 `docs/apple-local-assist-distribution-plan.md` の "Official Information Confirmed" セクションで触れたとおり、App Store build には **Apple Intelligence を使う旨と acceptable use への同意を App Store build に組み込む文言** が必要 (item 1 / item 14 対策)。
 
-これは 4 状態の UI とは別の論点。Preferences の "Apple Local Assist" セクションに短い disclosure を置くのが自然。
+これは 4 状態の UI とは別の論点。Preferences の "Hazakura Local Assist" セクションに短い disclosure を置くのが自然。
 
 文案 (3 言語 / 暫定):
 
 | 言語 | 文案 |
 |---|---|
-| en | "Apple Local Assist uses Apple Intelligence and the Foundation Models framework on this Mac. Output is subject to Apple's acceptable use requirements. You are responsible for not using generated text in ways that violate them." |
-| ja | "Apple Local Assist はこの Mac の Apple Intelligence / Foundation Models framework を利用します。生成結果は Apple の acceptable use 要件の対象となります。要件に違反する用途で使わない責任はユーザーにあります。" |
-| kana | "Apple Local Assist は この Mac の Apple Intelligence / Foundation Models framework を りよう します。せいせい けっか は Apple の acceptable use ようけん の たいしょう と なります。ようけん に いはん する ようと で つかわない せきにん は ユーザー に あります。" |
+| en | "Hazakura Local Assist uses Apple Intelligence and the Foundation Models framework on this Mac. Output is subject to Apple's acceptable use requirements. You are responsible for not using generated text in ways that violate them." |
+| ja | "Hazakura Local Assist はこの Mac の Apple Intelligence / Foundation Models framework を利用します。生成結果は Apple の acceptable use 要件の対象となります。要件に違反する用途で使わない責任はユーザーにあります。" |
+| kana | "Hazakura Local Assist は この Mac の Apple Intelligence / Foundation Models framework を りよう します。せいせい けっか は Apple の acceptable use ようけん の たいしょう と なります。ようけん に いはん する ようと で つかわない せきにん は ユーザー に あります。" |
 
-**v0.12.0 リリース時点でこの disclosure を入れる必要はない** (live mode が着地していないので App Store build にも Apple Assist は含まれないため)。ただし live mode 着地 + App Store submission 時には必須なので、Preferences セクション実装 (案 D 採用時) と一緒に作る。
+**v0.12.0 リリース時点でこの disclosure を入れる必要はない** (live mode が着地していないので App Store build にも Hazakura Local Assist は含まれないため)。ただし live mode 着地 + App Store submission 時には必須なので、Preferences セクション実装 (案 D 採用時) と一緒に作る。
 
 ## 実装 plan
 
 | 順番 | 内容 | 影響範囲 |
 |---|---|---|
 | 1 | (v0.12.0) 何もしない。command palette 現状維持 | - |
-| 2 | (v0.12.1+ live mode 着地時) 案 D を採用するなら Preferences に "Apple Local Assist" セクション追加。availability の 4 状態を色付きバッジで表示。"Apple Intelligence を有効化" リンク、`HAZAKURA_APPLE_ASSIST_DISCLOSURE` 3 言語文言 | TS + locale |
+| 2 | (v0.12.1+ live mode 着地時) 案 D を採用するなら Preferences に "Hazakura Local Assist" セクション追加。availability の 4 状態を色付きバッジで表示。"Apple Intelligence を有効化" リンク、`HAZAKURA_APPLE_ASSIST_DISCLOSURE` 3 言語文言 | TS + locale |
 | 3 | (v0.12.1+) in-app disclosure 文言を Preferences セクション内に配置 | TS + locale |
 | 4 | (v0.13+) 案 B (disabled palette item) を再評価。ユーザーフィードバックを見てから | TS |
 | 5 | (v0.13+) 案 C (ステータスバー) は引き続き不採用。Safe Editor の chrome 哲学を優先 | - |

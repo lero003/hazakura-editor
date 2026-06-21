@@ -10,8 +10,8 @@ afterEach(cleanup);
 const copy: RightPaneToggleCopy = {
   agentWindow: "Agent",
   agentWindowTitle: "Open Agent Window",
-  appleAssistWindow: "Apple Local Assist",
-  appleAssistWindowTitle: "Open Apple Local Assist Window",
+  appleAssistWindow: "Hazakura Local Assist",
+  appleAssistWindowTitle: "Open Hazakura Local Assist Window",
   diffTab: "Diff",
   diffTabTitle: "Open Diff",
   ebookTab: "e-book",

@@ -1,4 +1,4 @@
-# Apple Local Assist — Rust Supervisor 設計メモ
+# Hazakura Local Assist — Rust Supervisor 設計メモ
 
 Status: Implemented (slice 8-18, v0.12.0 still gate-default-hidden)
 Scope: `src-tauri/src/commands/apple_assist_supervisor.rs` の helper sidecar 呼び出し層 (spawn / lifecycle / JSON 通信 / timeout / error mapping / fixture integration test)
@@ -23,18 +23,18 @@ Last reviewed: 2026-06-05
 
 ### Tauri command surface と supervisor の関係
 
-v0.12.0 の Tauri command surface は supervisor を **呼んでいない**。これは "gate-default-hidden" 契約 (design review section 10) の本体。supervisor 側だけが完成していても、command body は依然として `Unavailable { reason }` を返すので、UI 側 (command palette) は Apple Local Assist 項目を出さない。
+v0.12.0 の Tauri command surface は supervisor を **呼んでいない**。これは "gate-default-hidden" 契約 (design review section 10) の本体。supervisor 側だけが完成していても、command body は依然として `Unavailable { reason }` を返すので、UI 側 (command palette) は Hazakura Local Assist 項目を出さない。
 
 `AppleAssistHelperStore` は `tauri::Builder::manage(AppleAssistHelperStore::default())` で **登録済み** (`src-tauri/src/lib.rs` 参照)。登録しておいても無害な理由:
 - `Default::default()` は environment を一切読まない。env-var ベースの override は `store_with_helper_path` / `store_without_helper` という `cfg(test)` 専用 API のみで、production の `Default::default()` 経路には存在しない。これにより「将来 `*_FIXTURE` env var を立てると勝手に helper が spawn される」事故を構造的に防ぐ。
-- `helper_path()` は production 経路では常に `Err("Apple Assist helper is not configured for this build.")` を返す。store を `manage` した瞬間に何か spawn される事故は起きない (`spawn_locked` はこの `Err` をそのまま伝搬する)。
+- `helper_path()` は production 経路では常に `Err("Hazakura Local Assist helper is not configured for this build.")` を返す。store を `manage` した瞬間に何か spawn される事故は起きない (`spawn_locked` はこの `Err` をそのまま伝搬する)。
 - supervisor 経路を Tauri command body から呼び出すのは gate-flip スライスで、明示承認が必要。それまでは store は Tauri 状態として存在するが誰も触らない。
 
 ## 実装済み supervisor の設計
 
 ### 1. `AppleAssistHelperStore`
 
-`src-tauri/src/commands/apple_assist_supervisor.rs` に定義。`Default::default()` コンストラクタ。production の lib build 経路からは `helper_path()` が常に `Err("Apple Assist helper is not configured for this build.")` を返すので、store を `manage` した瞬間に何か spawn される事故は起きない。
+`src-tauri/src/commands/apple_assist_supervisor.rs` に定義。`Default::default()` コンストラクタ。production の lib build 経路からは `helper_path()` が常に `Err("Hazakura Local Assist helper is not configured for this build.")` を返すので、store を `manage` した瞬間に何か spawn される事故は起きない。
 
 ```rust
 pub(crate) struct AppleAssistHelperStore {
@@ -65,7 +65,7 @@ pub(crate) fn probe_availability_via_helper(
     store: &AppleAssistHelperStore,
 ) -> Result<WireEnvelope, String> {
     if store.is_in_cooldown() {
-        return Err("Apple Assist is currently unavailable. Try again in a moment.".to_string());
+        return Err("Hazakura Local Assist is currently unavailable. Try again in a moment.".to_string());
     }
     let mut guard = store.inner.lock().expect("helper store lock");
     if guard.is_none() {
@@ -89,7 +89,7 @@ pub(crate) fn probe_availability_via_helper(
 
 `generate_candidate_via_helper` も同じ構造で、`WireRequest::GenerateCandidate { operation, selected_text, document_context }` を送る。`Ok(WireEnvelope::Availability(_))` が返ったら protocol violation として reset+count。
 
-`is_in_cooldown()` は `consecutive_failures >= 5` かつ `cooldown_started_at` から 5 分以内なら `true`。cooldown 中の probe / generate は即時 `Err("Apple Assist is currently unavailable. Try again in a moment.")` を返し、helper には触らない。
+`is_in_cooldown()` は `consecutive_failures >= 5` かつ `cooldown_started_at` から 5 分以内なら `true`。cooldown 中の probe / generate は即時 `Err("Hazakura Local Assist is currently unavailable. Try again in a moment.")` を返し、helper には触らない。
 
 ### 4. Wire types
 
@@ -133,12 +133,12 @@ camelCase の `selectedText` / `documentContext` が Swift 側と一致する。
 - `const REQUEST_TIMEOUT: Duration = Duration::from_secs(15)` (fixture 動作は <100ms、live mode で数秒かかる想定に headroom)。
 - `round_trip_locked` 内で `Arc<(Mutex<bool>, Condvar)>` と `Arc<AtomicBool>` を共有し、別スレッド ("apple-assist-supervisor-watchdog") を `std::thread::Builder` で spawn。
 - main thread は `inner.stdout.read_line(&mut line)` で blocking。watchdog は `cvar.wait_timeout(lock, timeout)` で待機し、タイムアウト時に `timed_out.store(true)` + `kill_child(&child_arc)`。kill が `read_line` を `Ok(0)` (EOF) または `Err` で unblock する。
-- main thread は `read_line` 復帰後、`done = true` + `cvar.notify_all()` → `watchdog.join()`。`timed_out.load()` なら `Err(format!("Apple Assist helper timed out after {}s", timeout.as_secs()))` で即時 return。
+- main thread は `read_line` 復帰後、`done = true` + `cvar.notify_all()` → `watchdog.join()`。`timed_out.load()` なら `Err(format!("Hazakura Local Assist helper timed out after {}s", timeout.as_secs()))` で即時 return。
 - `child_arc: Arc<Mutex<Child>>` で outer mutex を保持したままでも watchdog が kill できる構造。`kill_child` 内部で `child.kill()` + `child.wait()` を best-effort で実行。
 
 **JSON line parsing**:
 - write: `serde_json::to_string(request)` + `write_all("\n")` + `flush`。`BufReader::read_line` は newline まで読んで消費する。
-- read: 1 リクエスト 1 ライン。`line.is_empty()` は EOF (helper 終了 / pipe 切断) → `Err("Apple Assist helper closed the response stream.")`。
+- read: 1 リクエスト 1 ライン。`line.is_empty()` は EOF (helper 終了 / pipe 切断) → `Err("Hazakura Local Assist helper closed the response stream.")`。
 - parse: `serde_json::from_str(&line)` の `Err` → `Err(format!("Failed to parse helper response: {e} (raw: {line:?})"))`。raw を含めるのは fixture と live の形状ずれをデバッグしやすくするため。
 
 **stderr handling**:
@@ -154,7 +154,7 @@ camelCase の `selectedText` / `documentContext` が Swift 側と一致する。
 ### 6. Concurrent request policy
 
 - `AppleAssistHelperStore.inner` の `Mutex<Option<...>>` でアクセス直列化。watchdog thread だけが outer mutex を bypass する (`Arc<Mutex<Child>>` 経由)。
-- busy 即時失敗 (案 A) は **未実装**。現状は Tauri command handler 内で 1 つずつ直列化される前提で、2 番目の呼び出しは 1 番目の完了 (or timeout) を待つ。busy 判定を追加したくなったら、`is_in_flight: AtomicBool` を store に足して即時 `Err("Apple Assist is busy.")` を返す拡張で済む。
+- busy 即時失敗 (案 A) は **未実装**。現状は Tauri command handler 内で 1 つずつ直列化される前提で、2 番目の呼び出しは 1 番目の完了 (or timeout) を待つ。busy 判定を追加したくなったら、`is_in_flight: AtomicBool` を store に足して即時 `Err("Hazakura Local Assist is busy.")` を返す拡張で済む。
 - 候補生成は fixture なら <100ms、live なら数秒程度を想定。timeout 15s に収まれば 2 番目も 2 周目で応答する想定。
 
 ### 7. Failure state / retry (実装済み)

@@ -3,7 +3,7 @@ import { probeAppleAssistAvailability, type AppleAssistAvailability } from "../.
 
 // `useAppleAssistAvailability` is the on-device counterpart to
 // `useAgentProviderAvailability`. It is intentionally a single
-// value rather than a list: Apple Local Assist is one provider
+// value rather than a list: Hazakura Local Assist is one provider
 // (the on-device Foundation Models binding), so the React side
 // only needs to know whether the feature is currently
 // addressable from this runtime, and if not, why.
@@ -25,7 +25,7 @@ export type UseAppleAssistAvailabilityResult = {
    * `unsupported` meaning the environment is genuinely
    * unsupported). The initial value is `false` so callers
    * can distinguish "probe in flight" from "probe settled
-   * on `unsupported`". The Apple Local Assist operation-
+   * on `unsupported`". The Hazakura Local Assist operation-
    * feedback panel uses this to avoid leaving the panel
    * empty when the probe stays at `unsupported` because
    * the environment is unsupported.
@@ -60,7 +60,7 @@ export function useAppleAssistAvailability(
         }
       })
       .catch((err: unknown) => {
-        console.warn("Failed to probe Apple Local Assist availability", err);
+        console.warn("Failed to probe Hazakura Local Assist availability", err);
         if (!disposed) {
           const reason = err instanceof Error ? err.message : String(err);
           // IPC / parse / network failure: safest UX is

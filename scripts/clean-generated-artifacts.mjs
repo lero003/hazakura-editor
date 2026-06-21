@@ -15,7 +15,7 @@ const allTargets = [
   },
   {
     path: "src-helpers/apple-assist/.build",
-    label: "SwiftPM Apple Assist helper build cache",
+    label: "SwiftPM Hazakura Local Assist helper build cache",
   },
   {
     path: "dist",

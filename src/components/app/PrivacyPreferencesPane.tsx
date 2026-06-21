@@ -4,7 +4,7 @@
 // pane is the in-app surface that explains, in evidence-
 // bounded copy, what the app's code does and does not do
 // with local documents, auto-backup snapshots, Markdown
-// preview / export, Apple Local Assist, and the App Store
+// preview / export, Hazakura Local Assist, and the App Store
 // distribution lane. It deliberately does not make strong
 // privacy claims that the implementation does not support;
 // every paragraph mirrors a contract already documented in

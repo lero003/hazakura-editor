@@ -10,7 +10,7 @@ import type {
   AppleAssistTargetSnapshot,
 } from "../../types";
 
-// Apple Local Assist rough-request instruction builder.
+// Hazakura Local Assist rough-request instruction builder.
 //
 // The presets below mirror the three-language preset list in
 // `getAppleAssistWindowCopy`. The tests pin:
@@ -148,7 +148,7 @@ describe("buildAssistantInstruction", () => {
 // piece of the user's rough request travels on the
 // user-facing `payload.request` versus the helper-side
 // `payload.instruction`. The AI edit transaction, the main
-// editor status message, and the Apple Assist review bar
+// editor status message, and the Hazakura Local Assist review bar
 // all read `payload.request`, so the original phrase must
 // not be replaced by the annotated version. Only the
 // helper (via `generateAppleAssistCandidate.instruction`)

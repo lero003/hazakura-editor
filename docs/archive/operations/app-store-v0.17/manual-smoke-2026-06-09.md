@@ -26,7 +26,7 @@
     `apple-assist.html, index.html, assets/, favicon.png` のみ。
 - PASS: 実機起動済みメニューに Agent Workbench 固有エントリが見えない
   - メニュー構成（`hazakura editor`, `ファイル`, `編集`, `表示`, `ウィンドウ`, `ヘルプ`）内の `表示` メニューは
-    `Apple Assist ウィンドウを開く`を確認。
+    `Hazakura Local Assist ウィンドウを開く`を確認。
   - `Open Agent Window` / `Send Selection to Agent` といった Agent Workbench 表示は未確認（不在）。
 
 ### 2) Safe Editor 基本操作
@@ -71,15 +71,15 @@
 - SKIPPED: Increase Contrast での UI 崩れ確認
   - 設定切替＋再読取りの手順を安全に実施できない環境条件のため。
 
-### 6) Apple Local Assist
+### 6) Hazakura Local Assist
 
 - PASS: availability の自然性
   - App Store lane で `build` 時の probe が `probe: {"value":{"kind":"available"},"kind":"availability"}` を返却。
   - 実行済み。
 - PASS: Agent Workbench 混在確認
   - ビルド・起動確認時に Agent Workbench 固有メニューが観測されず。
-- PASS: Apple Local Assist ウィンドウの起動可否
-  - `表示 > Apple Assist ウィンドウを開く` 実行で `hazakura apple assist` ウィンドウが立ち上がり。
+- PASS: Hazakura Local Assist ウィンドウの起動可否
+  - `表示 > Hazakura Local Assist ウィンドウを開く` 実行で `Hazakura Local Assist` ウィンドウが立ち上がり。
 - SKIPPED: 実際の生成
   - 方針どおり未実施。
 

@@ -140,10 +140,10 @@ pub(crate) fn open_agent_window<R: tauri::Runtime>(
         return Ok(());
     }
 
-    // Companion-slot mutual exclusion: the Apple Assist window
+    // Companion-slot mutual exclusion: the Hazakura Local Assist window
     // occupies the same outside-companion slot as the Agent window
     // (see `docs/apple-local-assist-writing-companion-plan.md`).
-    // Closing the Apple Assist window here keeps the two surfaces
+    // Closing the Hazakura Local Assist window here keeps the two surfaces
     // from coexisting as competing main companions; the main window
     // is the only ever-present surface.
     if let Some(apple_assist) = app.get_webview_window(APPLE_ASSIST_WINDOW_LABEL) {
@@ -263,8 +263,8 @@ pub(crate) fn open_apple_assist_window<R: tauri::Runtime>(
     app: tauri::AppHandle<R>,
     theme: Option<String>,
 ) -> Result<(), String> {
-    // v0.12+ Apple Local Assist Writing Companion mock (slice 2).
-    // The Apple Assist window is a separate outside-companion slot
+    // v0.12+ Hazakura Local Assist Writing Companion mock (slice 2).
+    // The Hazakura Local Assist window is a separate outside-companion slot
     // that replaces the Agent window in the same UX surface
     // (see `docs/apple-local-assist-writing-companion-plan.md`).
     // Unlike the Agent window it is NOT gated on
@@ -287,7 +287,7 @@ pub(crate) fn toggle_apple_assist_window<R: tauri::Runtime>(
     app: tauri::AppHandle<R>,
     theme: Option<String>,
 ) -> Result<(), String> {
-    // Main-window chrome uses Apple Assist as a visible companion
+    // Main-window chrome uses Hazakura Local Assist as a visible companion
     // slot toggle. Menu / command-palette "open" actions still
     // call `open_apple_assist_window` so they keep the predictable
     // "open or focus" behavior.
@@ -298,7 +298,7 @@ pub(crate) fn toggle_apple_assist_window<R: tauri::Runtime>(
         if existing.is_visible().unwrap_or(false) {
             existing
                 .hide()
-                .map_err(|err| format!("Cannot hide Apple Assist window: {err}"))?;
+                .map_err(|err| format!("Cannot hide Hazakura Local Assist window: {err}"))?;
             return Ok(());
         }
     }
@@ -307,7 +307,7 @@ pub(crate) fn toggle_apple_assist_window<R: tauri::Runtime>(
     show_or_create_apple_assist_window(&app, &theme)
 }
 
-// Label-only check used by the Apple Assist toggle boundary tests.
+// Label-only check used by the Hazakura Local Assist toggle boundary tests.
 // The actual hide/show path needs a real Tauri window, but the
 // trust boundary is worth pinning with the same shim pattern used
 // by the other window commands.
@@ -354,7 +354,7 @@ fn show_or_create_apple_assist_window<R: tauri::Runtime>(
         return Ok(());
     }
 
-    // Companion-slot mutual exclusion: the Apple Assist window
+    // Companion-slot mutual exclusion: the Hazakura Local Assist window
     // and the Agent window share the same outside-companion slot
     // and should not coexist as competing main companions.
     // Closing the Agent window here keeps the two surfaces
@@ -368,7 +368,7 @@ fn show_or_create_apple_assist_window<R: tauri::Runtime>(
         APPLE_ASSIST_WINDOW_LABEL,
         WebviewUrl::App("apple-assist.html".into()),
     )
-    .title("hazakura apple assist")
+    .title("Hazakura Local Assist")
     .title_bar_style(TitleBarStyle::Transparent)
     .background_color(agent_window_background_color(theme))
     .theme(Some(agent_window_os_theme(theme)))
@@ -380,7 +380,7 @@ fn show_or_create_apple_assist_window<R: tauri::Runtime>(
     .min_inner_size(420.0, 560.0)
     .center()
     .build()
-    .map_err(|err| format!("Cannot open Apple Assist window: {err}"))?;
+    .map_err(|err| format!("Cannot open Hazakura Local Assist window: {err}"))?;
 
     Ok(())
 }
@@ -391,7 +391,7 @@ pub(crate) fn set_apple_assist_window_theme<R: tauri::Runtime>(
     app: tauri::AppHandle<R>,
     theme: String,
 ) -> Result<(), String> {
-    // The Apple Assist window may legitimately update its own
+    // The Hazakura Local Assist window may legitimately update its own
     // background color / OS theme (e.g. when the user toggles
     // themes from the main window). Both labels are allowed so
     // the main window can also push a theme update, mirroring
@@ -404,10 +404,10 @@ pub(crate) fn set_apple_assist_window_theme<R: tauri::Runtime>(
     if let Some(apple_assist) = app.get_webview_window(APPLE_ASSIST_WINDOW_LABEL) {
         apple_assist
             .set_background_color(Some(bg))
-            .map_err(|err| format!("Cannot update Apple Assist window background color: {err}"))?;
+            .map_err(|err| format!("Cannot update Hazakura Local Assist window background color: {err}"))?;
         apple_assist
             .set_theme(Some(os_theme))
-            .map_err(|err| format!("Cannot update Apple Assist window OS theme: {err}"))?;
+            .map_err(|err| format!("Cannot update Hazakura Local Assist window OS theme: {err}"))?;
     }
 
     Ok(())
@@ -422,7 +422,7 @@ pub(crate) fn request_apply_ai_edit_transaction<R: tauri::Runtime>(
     ensure_apple_assist_window(&window)?;
     ensure_apple_assist_allowed_by_distribution()?;
     app.emit_to(MAIN_WINDOW_LABEL, APPLY_AI_EDIT_TRANSACTION_EVENT, payload)
-        .map_err(|err| format!("Cannot request Apple Assist edit: {err}"))?;
+        .map_err(|err| format!("Cannot request Hazakura Local Assist edit: {err}"))?;
     Ok(())
 }
 
@@ -486,7 +486,7 @@ pub(crate) fn request_app_restart<R: tauri::Runtime>(
 // flips this flag and THEN calls `app.exit(0)`. The
 // handler sees the flag, skips `prevent_exit()`, and
 // Tauri runs its normal shutdown sequence (Drop handlers
-// for `AgentWorkbenchSessionStore`, Apple Assist helper
+// for `AgentWorkbenchSessionStore`, Hazakura Local Assist helper
 // cleanup, etc.) before the process terminates. The flag
 // is checked BEFORE `api.prevent_exit()` so the
 // confirmed exit is a true pass-through.

@@ -143,6 +143,6 @@ function readStoredAssistSurfacePreference(): AssistSurfacePreference {
   // Agent Workbench preference before the shared companion-slot
   // setting existed.
   return normalizeAssistSurfacePreferenceForDistribution(
-    readStoredAgentWorkbenchEnabled() ? "external-cli" : "apple-local",
+    readStoredAgentWorkbenchEnabled() ? "external-cli" : "none",
   );
 }

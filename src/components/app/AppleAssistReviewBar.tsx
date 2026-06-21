@@ -5,9 +5,9 @@ import { DiffBody } from "../diff/DiffBody";
 import type { CompareCase, MenuLanguage } from "../../types";
 import { SparklesIcon } from "./Icons";
 
-// v0.12+ Apple Local Assist Writing Companion (slice 5).
+// v0.12+ Hazakura Local Assist Writing Companion (slice 5).
 // The diff / change review escape hatch. After the
-// detached Apple Assist window applies a transaction,
+// detached Hazakura Local Assist window applies a transaction,
 // the main window renders this floating bar to surface
 // a one-line summary (request + target kind + added /
 // removed counts) and three actions:

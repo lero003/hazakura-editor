@@ -61,7 +61,7 @@ git diff --check
 
 `npm run build` here means the **launchable helper-enabled local smoke lane** (`npm run build:app-store-preview`, producing `Hazakura Editor.app` with bundle identifier `dev.hazakura.editor`). Add `npm run smoke:macos-sandbox-preview` or the signed `npm run build:app-store-submit` lane when the release goal needs App Store sandbox entitlement evidence. Add `npm run build:macos-lanes` (or `npm run build:developer-preview`) when the source / local-app tag also needs to prove the Developer / GitHub lane (`Hazakura Editor Dev.app`, `lab.hazakura.note.dev`). Do not add `npm run build:dmg-preview`; that lane is governed by `docs/dmg-preview-checklist.md`.
 
-**Apple Local Assist helper verification**:
+**Hazakura Local Assist helper verification**:
 
 ```bash
 npm run build:apple-assist-helper:live

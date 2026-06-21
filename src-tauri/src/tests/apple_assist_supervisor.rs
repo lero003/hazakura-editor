@@ -1,4 +1,4 @@
-// Integration tests for the Apple Local Assist Rust supervisor.
+// Integration tests for the Hazakura Local Assist Rust supervisor.
 //
 // The supervisor is the future entry point for the live Foundation
 // Models binding. In v0.12.0 it is REACHABLE from these tests but
@@ -613,7 +613,7 @@ fn supervisor_treats_malformed_json_response_as_failure() {
 fn supervisor_treats_eof_response_as_failure() {
     // The helper reads the request and then exits without
     // writing a response. The supervisor's read_line sees EOF
-    // (0 bytes), returns "Apple Assist helper closed the
+    // (0 bytes), returns "Hazakura Local Assist helper closed the
     // response stream.", which is an Err and counts as a
     // failure.
     let script = std::env::temp_dir().join("hazakura-apple-assist-test-eof.sh");

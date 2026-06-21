@@ -26,8 +26,8 @@ describe("useAgentWorkbenchPreferences", () => {
     expect(result.current.agentWorkbenchConsent).toBe(false);
     expect(result.current.agentWorkbenchProvider).toBe("codex");
     expect(result.current.agentWorkbenchAvailable).toBe(false);
-    expect(result.current.assistSurfaceActive).toBe("apple-local");
-    expect(result.current.assistSurfacePreference).toBe("apple-local");
+    expect(result.current.assistSurfaceActive).toBe("none");
+    expect(result.current.assistSurfacePreference).toBe("none");
   });
 
   it("reads enabled / consent / provider from localStorage on mount", () => {
@@ -97,7 +97,7 @@ describe("useAgentWorkbenchPreferences", () => {
     expect(result.current.assistSurfaceActive).toBe("external-cli");
   });
 
-  it("keeps external CLI off but allows Apple Local Assist in the App Store distribution lane", () => {
+  it("keeps external CLI off but allows Hazakura Local Assist in the App Store distribution lane", () => {
     vi.stubEnv("VITE_HAZAKURA_DISTRIBUTION_LANE", "app-store");
     window.localStorage.setItem(AGENT_WORKBENCH_ENABLED_STORAGE_KEY, "true");
     window.localStorage.setItem(AGENT_WORKBENCH_CONSENT_STORAGE_KEY, "true");

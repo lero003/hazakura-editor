@@ -51,6 +51,7 @@ describe("useAppShellSideEffectsController", () => {
           activeTab: null,
           agentWorkbenchActive: false,
           agentWorkbenchConsent: false,
+          assistSurfaceActive: "none",
           discardingWindowCloseRef: { current: false },
           editorSettings: {
             wrapLines: true,

@@ -1,5 +1,5 @@
 /* === apple-assist-review.css === */
-/* v0.12+ Apple Local Assist Writing Companion (slice 5).
+/* v0.12+ Hazakura Local Assist Writing Companion (slice 5).
    Diff / change review escape hatch. The bar is rendered
    unconditionally in the AppShell and only surfaces when
    the `useAiEditTransaction` hook reports a pending

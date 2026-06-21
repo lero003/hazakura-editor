@@ -38,7 +38,7 @@ afterEach(() => {
 });
 
 describe("AgentWorkbenchPreferencesPane", () => {
-  it("shows Apple Local Assist notes when selected", () => {
+  it("shows Hazakura Local Assist notes when selected", () => {
     render(
       <AgentWorkbenchPreferencesPane
         {...baseProps}
@@ -47,13 +47,13 @@ describe("AgentWorkbenchPreferencesPane", () => {
     );
 
     expect(
-      screen.getByRole("heading", { name: "Apple Local Assist" }),
+      screen.getByRole("heading", { name: "Hazakura Local Assist" }),
     ).toBeTruthy();
     expect(screen.getByText("Alpha / Experimental")).toBeTruthy();
     expect(
       screen.getByText(/experimental on-device writing help/i),
     ).toBeTruthy();
-    expect(screen.getByText(/Apple Local Assist is not available yet/)).toBeTruthy();
+    expect(screen.getByText(/Hazakura Local Assist is not available yet/)).toBeTruthy();
     expect(
       screen.queryByLabelText("Agent Workbench provider"),
     ).toBeNull();
@@ -75,7 +75,7 @@ describe("AgentWorkbenchPreferencesPane", () => {
         "I understand the Agent Workbench responsibility boundary.",
       ),
     ).toBeTruthy();
-    expect(screen.queryByText(/Apple Local Assist is not available yet/)).toBeNull();
+    expect(screen.queryByText(/Hazakura Local Assist is not available yet/)).toBeNull();
   });
 
   it("emits assist surface preference changes from the selector", () => {
@@ -97,7 +97,7 @@ describe("AgentWorkbenchPreferencesPane", () => {
     );
   });
 
-  it("hides CLI Agent but keeps Apple Local Assist available in the App Store distribution lane", () => {
+  it("hides CLI Agent but keeps Hazakura Local Assist available in the App Store distribution lane", () => {
     vi.stubEnv("VITE_HAZAKURA_DISTRIBUTION_LANE", "app-store");
 
     render(
@@ -109,11 +109,11 @@ describe("AgentWorkbenchPreferencesPane", () => {
 
     expect(screen.queryByRole("option", { name: "CLI Agent" })).toBeNull();
     expect(
-      screen.getByRole("option", { name: "Apple Local Assist (Experimental)" }),
+      screen.getByRole("option", { name: "Hazakura Local Assist (Experimental)" }),
     ).toBeTruthy();
     expect(screen.getByRole("option", { name: "Off" })).toBeTruthy();
     expect(
-      screen.getByRole("heading", { name: "Apple Local Assist" }),
+      screen.getByRole("heading", { name: "Hazakura Local Assist" }),
     ).toBeTruthy();
     expect(
       screen.queryByLabelText("Agent Workbench provider"),

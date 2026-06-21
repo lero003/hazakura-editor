@@ -14,7 +14,7 @@ describe("useReviewDeskState candidate compare primitive", () => {
         documentLabel: "draft.md",
         leftColumnLabel: "Current buffer",
         rightColumnLabel: "AI candidate",
-        candidateSourceLabel: "Apple Local Assist",
+        candidateSourceLabel: "Hazakura Local Assist",
         candidateText: "# Draft\nnew line\n",
       });
       expect(compareResult).toEqual({ ok: true });
@@ -29,7 +29,7 @@ describe("useReviewDeskState candidate compare primitive", () => {
         documentLabel: "draft.md",
         leftColumnLabel: "Current buffer",
         rightColumnLabel: "AI candidate",
-        candidateSourceLabel: "Apple Local Assist",
+        candidateSourceLabel: "Hazakura Local Assist",
         candidateText: "# Draft\nnew line\n",
       }),
     );
@@ -49,7 +49,7 @@ describe("useReviewDeskState candidate compare primitive", () => {
         documentLabel: "draft.md",
         leftColumnLabel: "Current buffer",
         rightColumnLabel: "AI candidate",
-        candidateSourceLabel: "Apple Local Assist",
+        candidateSourceLabel: "Hazakura Local Assist",
         candidateText: "after\n",
       });
     });

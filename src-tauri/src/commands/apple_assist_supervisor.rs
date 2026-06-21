@@ -1,4 +1,4 @@
-// Apple Local Assist — Rust supervisor.
+// Hazakura Local Assist — Rust supervisor.
 //
 // This is the v0.12.1+ scaffolding for calling the Swift helper
 // sidecar bundled by Tauri's `bundle.externalBin`.
@@ -30,7 +30,7 @@ use std::time::Duration;
 
 /// Maximum number of consecutive helper failures before the
 /// supervisor enters cooldown. After this many failures, probe
-/// returns `Unavailable { reason: "Apple Assist is currently
+/// returns `Unavailable { reason: "Hazakura Local Assist is currently
 /// unavailable. Try again later." }` until the cooldown expires.
 const CONSECUTIVE_FAILURE_LIMIT: u32 = 5;
 /// How long the cooldown lasts once the failure limit is hit.
@@ -172,7 +172,7 @@ impl AppleAssistHelperStore {
                     return Ok(path.clone());
                 }
                 return Err(format!(
-                    "Apple Assist helper fixture path points at a missing file: {}",
+                    "Hazakura Local Assist helper fixture path points at a missing file: {}",
                     path.display()
                 ));
             }
@@ -215,15 +215,15 @@ impl AppleAssistHelperStore {
             .stderr(Stdio::piped());
         let mut child = command
             .spawn()
-            .map_err(|e| format!("Failed to spawn Apple Assist helper: {e}"))?;
+            .map_err(|e| format!("Failed to spawn Hazakura Local Assist helper: {e}"))?;
         let stdin = child
             .stdin
             .take()
-            .ok_or_else(|| "Apple Assist helper stdin is not piped.".to_string())?;
+            .ok_or_else(|| "Hazakura Local Assist helper stdin is not piped.".to_string())?;
         let stdout = child
             .stdout
             .take()
-            .ok_or_else(|| "Apple Assist helper stdout is not piped.".to_string())?;
+            .ok_or_else(|| "Hazakura Local Assist helper stdout is not piped.".to_string())?;
         // Drain stderr in a background thread. The Swift helper
         // reserves stderr for log lines only (encode failures,
         // diagnostic notices). The Rust supervisor never parses
@@ -338,13 +338,13 @@ impl AppleAssistHelperStore {
 
         if timed_out.load(Ordering::SeqCst) {
             return Err(format!(
-                "Apple Assist helper timed out after {}s",
+                "Hazakura Local Assist helper timed out after {}s",
                 timeout.as_secs()
             ));
         }
 
         if line.is_empty() {
-            return Err("Apple Assist helper closed the response stream.".to_string());
+            return Err("Hazakura Local Assist helper closed the response stream.".to_string());
         }
 
         if let Err(e) = read_result {
@@ -464,7 +464,7 @@ pub(crate) fn probe_availability_via_helper(
     store: &AppleAssistHelperStore,
 ) -> Result<WireEnvelope, String> {
     if store.is_in_cooldown() {
-        return Err("Apple Assist is currently unavailable. Try again in a moment.".to_string());
+        return Err("Hazakura Local Assist is currently unavailable. Try again in a moment.".to_string());
     }
 
     let mut guard = store.inner.lock().expect("helper store lock");
@@ -519,7 +519,7 @@ pub(crate) fn generate_candidate_via_helper(
     instruction: Option<&str>,
 ) -> Result<WireEnvelope, String> {
     if store.is_in_cooldown() {
-        return Err("Apple Assist is currently unavailable. Try again in a moment.".to_string());
+        return Err("Hazakura Local Assist is currently unavailable. Try again in a moment.".to_string());
     }
 
     let mut guard = store.inner.lock().expect("helper store lock");
@@ -617,7 +617,7 @@ pub(crate) fn store_without_helper() -> AppleAssistHelperStore {
 /// Returns one of the macOS Tauri sidecar triples
 /// (`aarch64-apple-darwin` / `x86_64-apple-darwin`) on supported
 /// hosts, or `"unknown-target"` on anything else. The latter is
-/// purely a placeholder — Apple Local Assist is macOS-only and
+/// purely a placeholder — Hazakura Local Assist is macOS-only and
 /// will not spawn a helper on an unknown host. The supervisor
 /// will return not-configured from `resolve_bundled_helper_path`
 /// regardless of what this function returns.
@@ -656,7 +656,7 @@ pub(crate) fn resolve_bundled_helper_path_from_dir(dir: &Path) -> Result<PathBuf
         }
     }
     Err(format!(
-        "Apple Assist helper is not configured for this build. Looked in {}.",
+        "Hazakura Local Assist helper is not configured for this build. Looked in {}.",
         dir.display()
     ))
 }

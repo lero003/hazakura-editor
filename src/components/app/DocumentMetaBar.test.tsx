@@ -10,8 +10,8 @@ afterEach(cleanup);
 const sidePaneCopy: RightPaneToggleCopy = {
   agentWindow: "Agent",
   agentWindowTitle: "Open Agent Window",
-  appleAssistWindow: "Apple Local Assist",
-  appleAssistWindowTitle: "Open Apple Local Assist Window",
+  appleAssistWindow: "Hazakura Local Assist",
+  appleAssistWindowTitle: "Open Hazakura Local Assist Window",
   diffTab: "Diff",
   diffTabTitle: "Open Diff",
   ebookTab: "e-book",
@@ -96,7 +96,7 @@ describe("DocumentMetaBar", () => {
     expect(screen.queryByRole("button", { name: "e-book" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Open Agent Window" })).toBeNull();
     expect(
-      screen.queryByRole("button", { name: "Open Apple Local Assist Window" }),
+      screen.queryByRole("button", { name: "Open Hazakura Local Assist Window" }),
     ).toBeNull();
   });
 
@@ -158,11 +158,11 @@ describe("DocumentMetaBar", () => {
     expect(actions.onToggleOutline).toHaveBeenCalledTimes(1);
   });
 
-  it("switches the companion button to Apple Local Assist", () => {
+  it("switches the companion button to Hazakura Local Assist", () => {
     renderMeta(false, "apple-local");
 
     expect(
-      screen.getByRole("button", { name: "Open Apple Local Assist Window" }),
+      screen.getByRole("button", { name: "Open Hazakura Local Assist Window" }),
     ).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Open Agent Window" })).toBeNull();
   });
@@ -172,7 +172,7 @@ describe("DocumentMetaBar", () => {
 
     expect(screen.queryByRole("button", { name: "Open Agent Window" })).toBeNull();
     expect(
-      screen.queryByRole("button", { name: "Open Apple Local Assist Window" }),
+      screen.queryByRole("button", { name: "Open Hazakura Local Assist Window" }),
     ).toBeNull();
   });
 });

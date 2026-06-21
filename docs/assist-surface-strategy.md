@@ -12,7 +12,7 @@ This document records the future direction for separating assist and agent featu
 The goal is not to build a general AI platform in `Hazakura Editor`. The goal is to keep the core editor safe and understandable while leaving a clean path to move optional assist features between:
 
 - the current External Agent Workbench model
-- a future Apple Local Assist model based on Apple's Foundation Models framework
+- a future Hazakura Local Assist model based on Apple's Foundation Models framework
 - future OS-provided assist surfaces, if they can fit the same boundary
 
 ## Decision
@@ -33,13 +33,13 @@ Assist Surface
 =
 optional, explicitly opened helper surface
 + may host allowlisted External Agent Workbench sessions
-+ may later host Apple Local Assist document helpers
++ may later host Hazakura Local Assist document helpers
 + must remain removable from the default Safe Editor experience
 ```
 
 This is an architectural direction, not approval to add a provider plugin system.
 
-For the post-v0.11 distribution plan, use [Apple Local Assist And Distribution Plan](apple-local-assist-distribution-plan.md) as the detailed planning memo. For the user-facing Apple Local Assist experience, use [Apple Local Assist Writing Companion Plan](apple-local-assist-writing-companion-plan.md).
+For the post-v0.11 distribution plan, use [Hazakura Local Assist And Distribution Plan](apple-local-assist-distribution-plan.md) as the detailed planning memo. For the user-facing Hazakura Local Assist experience, use [Hazakura Local Assist Writing Companion Plan](apple-local-assist-writing-companion-plan.md).
 
 ## Provider Shape
 
@@ -53,7 +53,7 @@ Initial conceptual provider classes:
 
 Do not add `local-http`, MCP, arbitrary executable paths, provider-add UI, or generic tool/plugin registration without a fresh boundary review.
 
-Implementation note (v0.12 work-in-progress): the Preferences dialog now exposes this as a restart-applied shared outside companion-slot choice (`Apple Local Assist (Experimental)` / `CLI Agent` / `Off`). Selecting `CLI Agent` continues to use the existing Agent Workbench restart-required mode gate, consent, and allowlisted provider selection. Selecting `Apple Local Assist` switches the normal companion button to the Apple Local Assist window after restart and shows alpha / availability disclosure; it does not enable CLI launch, provider selection, or Agent Workbench consent.
+Implementation note (v0.12 work-in-progress): the Preferences dialog now exposes this as a restart-applied shared outside companion-slot choice (`Hazakura Local Assist (Experimental)` / `CLI Agent` / `Off`). Selecting `CLI Agent` continues to use the existing Agent Workbench restart-required mode gate, consent, and allowlisted provider selection. Selecting `Hazakura Local Assist` switches the normal companion button to the Hazakura Local Assist window after restart and shows alpha / availability disclosure; it does not enable CLI launch, provider selection, or Agent Workbench consent.
 
 ## External Agent Workbench
 
@@ -76,9 +76,9 @@ Claude Code CLI is implemented as an additional `external-cli` provider, but onl
 
 Moving Agent Workbench into a detached window or separate surface does not weaken these requirements.
 
-## Apple Local Assist
+## Hazakura Local Assist
 
-Apple Local Assist is an **alpha / experimental** local writing-help surface. It is a possible replacement or alternative for some lightweight text-assist workflows after v0.11, but it is not the main AI feature and not a replacement for external agents or future local LLM runtimes.
+Hazakura Local Assist is an **alpha / experimental** local writing-help surface. It is a possible replacement or alternative for some lightweight text-assist workflows after v0.11, but it is not the main AI feature and not a replacement for external agents or future local LLM runtimes.
 
 Apple documents the Foundation Models framework as access to the on-device language model that powers Apple Intelligence, with support for text understanding and generation tasks such as summarization, extraction, classification, and refinement. Apple also documents that availability must be checked at runtime because it depends on Apple Intelligence support, user settings, and model readiness.
 
@@ -87,11 +87,11 @@ References:
 - [Foundation Models](https://developer.apple.com/documentation/foundationmodels/)
 - [Generating content and performing tasks with Foundation Models](https://developer.apple.com/documentation/foundationmodels/generating-content-and-performing-tasks-with-foundation-models)
 
-For `Hazakura Editor`, Apple Local Assist should start as a document-writing companion, not as an agent. The strongest product shape is an external Assist Window that uses the same broad "outside companion" slot as Agent Workbench, while keeping a different UI and trust boundary. The app should normally show either Apple Local Assist or External Agent Workbench, not both side by side.
+For `Hazakura Editor`, Hazakura Local Assist should start as a document-writing companion, not as an agent. The strongest product shape is an external Assist Window that uses the same broad "outside companion" slot as Agent Workbench, while keeping a different UI and trust boundary. The app should normally show either Hazakura Local Assist or External Agent Workbench, not both side by side.
 
 Short user-facing distinction:
 
-- **Apple Local Assist**: experimental on-device text help for selected text or the current writing context; useful for short summaries, rephrasing, heading / tag ideas, light cleanup, and small direct edits that remain unsaved and diff-reviewable.
+- **Hazakura Local Assist**: experimental on-device text help for selected text or the current writing context; useful for short summaries, rephrasing, heading / tag ideas, light cleanup, and small direct edits that remain unsaved and diff-reviewable.
 - **External Agent Workbench**: explicit CLI-agent boundary for allowlisted external tools such as Codex / OpenCode / pi / Claude Code in a selected workspace; useful for agent-led development work, but outside the default Safe Editor trust boundary.
 
 The companion should work naturally with L Mode and accept rough writing requests:
@@ -104,9 +104,9 @@ The companion should work naturally with L Mode and accept rough writing request
 
 The request target should stay bounded: selected text when present, otherwise the current paragraph / block / section, and only with explicit user choice a larger document excerpt.
 
-Because the current Apple model path is small and availability-gated, product claims should stay modest. Apple Local Assist is not intended for code review, multi-file understanding, long-document restructuring, autonomous agent work, broad design judgment, or advanced reasoning.
+Because the current Apple model path is small and availability-gated, product claims should stay modest. Hazakura Local Assist is not intended for code review, multi-file understanding, long-document restructuring, autonomous agent work, broad design judgment, or advanced reasoning.
 
-Apple Local Assist may update the unsaved editor buffer directly **only** as an AI edit transaction: explicit user request, before/after record, source label, no auto-save, and a path to Diff / change history. Manual Review Desk entry points are retired from the primary Apple Local Assist surface.
+Hazakura Local Assist may update the unsaved editor buffer directly **only** as an AI edit transaction: explicit user request, before/after record, source label, no auto-save, and a path to Diff / change history. Manual Review Desk entry points are retired from the primary Hazakura Local Assist surface.
 
 The companion may show compact operation feedback so users can
 understand alpha behaviour during real-app smoke.  This should be an
@@ -116,7 +116,7 @@ responses, hidden instructions, provider transcripts, or model
 reasoning.  It must not become a persistent log, diagnostics payload, or
 general chat history.
 
-Apple Local Assist must not start as:
+Hazakura Local Assist must not start as:
 
 - a general chat surface
 - a coding agent
@@ -129,7 +129,7 @@ Apple Local Assist must not start as:
 
 ## Implementation Boundary
 
-If Apple Local Assist is implemented, prefer a narrow macOS helper, sidecar, or similarly inspectable Swift boundary instead of mixing macOS-only model code into the cross-platform editor core.
+If Hazakura Local Assist is implemented, prefer a narrow macOS helper, sidecar, or similarly inspectable Swift boundary instead of mixing macOS-only model code into the cross-platform editor core.
 
 A possible shape:
 
@@ -146,13 +146,13 @@ AI edit transaction
 
 The helper must receive only the text needed for the selected task. It should not receive broad workspace context by default.
 
-Apple Local Assist may reuse Agent Workbench implementation patterns such as availability probes, active-vs-preference state, restart-required preference changes, and explicit consent. It must not inherit Agent Workbench's CLI trust boundary or become a tool-calling agent. In user-facing docs, describe it as an Assist Surface provider class rather than a CLI-agent provider.
+Hazakura Local Assist may reuse Agent Workbench implementation patterns such as availability probes, active-vs-preference state, restart-required preference changes, and explicit consent. It must not inherit Agent Workbench's CLI trust boundary or become a tool-calling agent. In user-facing docs, describe it as an Assist Surface provider class rather than a CLI-agent provider.
 
 ## Store And Distribution Variants
 
 Current submission work uses build-time variants rather than runtime settings alone:
 
-- App Store build: Safe Editor, L Mode, Diff / explicit change review, local export, and Apple Local Assist as an on-device, availability-gated writing companion; no External Agent Workbench, no CLI launch, no external AI/API calls, no arbitrary process execution, no provider-add UI, no network fallback, and no custom updater.
+- App Store build: Safe Editor, L Mode, Diff / explicit change review, local export, and Hazakura Local Assist as an on-device, availability-gated writing companion; no External Agent Workbench, no CLI launch, no external AI/API calls, no arbitrary process execution, no provider-add UI, no network fallback, and no custom updater.
 - Developer / GitHub build: Safe Editor feature set plus optional External Agent Workbench when its boundary remains explicit; this lane may carry warning-expected DMG previews until Developer ID signing and notarization are ready.
 
 Build-time separation is preferred for distribution trust because it is easier to explain and audit than hiding risky features behind settings.
@@ -161,15 +161,15 @@ Do not create a separate "official free build" by default. An official website c
 
 ## Shipped Assist Path And Current Lane
 
-v0.11 shipped L Mode WYSIWYG-tier polish without adding Apple Local Assist. Later assist work stayed narrow and tested the Writing Companion experience rather than treating selected-text command-palette entries as the final UX.
+v0.11 shipped L Mode WYSIWYG-tier polish without adding Hazakura Local Assist. Later assist work stayed narrow and tested the Writing Companion experience rather than treating selected-text command-palette entries as the final UX.
 
 Recommended sequence:
 
-1. v0.12 shipped Apple Local Assist planning and alpha live-helper foundation: availability detection, rough writing requests, AI edit transaction, unavailable-state UI, and Diff / discard escape hatches.
-2. v0.13 shipped the distribution probe: App Store / Developer build separation, sandbox / entitlement draft, and helper parent-spawn proof for the then-current Apple Local Assist experiment.
-3. v0.14 shipped L Mode stability plus bounded Apple Local Assist harness polish: target-centered document context, safer context snapping, L Mode review-sheet horizontal-scroll cleanup, and localized apply-error copy.
+1. v0.12 shipped Hazakura Local Assist planning and alpha live-helper foundation: availability detection, rough writing requests, AI edit transaction, unavailable-state UI, and Diff / discard escape hatches.
+2. v0.13 shipped the distribution probe: App Store / Developer build separation, sandbox / entitlement draft, and helper parent-spawn proof for the then-current Hazakura Local Assist experiment.
+3. v0.14 shipped L Mode stability plus bounded Hazakura Local Assist harness polish: target-centered document context, safer context snapping, L Mode review-sheet horizontal-scroll cleanup, and localized apply-error copy.
 4. v0.15-v0.17 carried user-test polish, App Store-quality request packets, and warning-expected DMG preview evidence. Treat those notes as historical background, not the active queue.
-5. For current UX and submission-prep work, start from `docs/current-work.md` and `docs/app-store-build.md`. Apple Local Assist may be exposed in the App Store lane only as a bounded on-device writing companion; External Agent Workbench remains out of that lane.
+5. For current UX and submission-prep work, start from `docs/current-work.md` and `docs/app-store-build.md`. Hazakura Local Assist may be exposed in the App Store lane only as a bounded on-device writing companion; External Agent Workbench remains out of that lane.
 6. Use v1.0 as the App Store Candidate only if the App Store build can keep External Agent Workbench, CLI launch, arbitrary command execution, external AI/API calls, and network fallback out cleanly.
 
 ## Non-Goals

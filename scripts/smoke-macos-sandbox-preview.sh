@@ -35,7 +35,7 @@ echo "==> copy app to temp sandbox smoke bundle"
 ditto "$APP_SRC" "$APP"
 
 if [ ! -x "$HELPER" ]; then
-    echo "error: App Store preview must bundle Apple Assist helper: $HELPER" >&2
+    echo "error: App Store preview must bundle Hazakura Local Assist helper: $HELPER" >&2
     exit 1
 fi
 

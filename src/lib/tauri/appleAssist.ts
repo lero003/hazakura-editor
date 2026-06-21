@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { isTauriRuntime } from "./_runtime";
 
-// Apple Local Assist is an Assist Surface provider class — NOT a
+// Hazakura Local Assist is an Assist Surface provider class — NOT a
 // CLI-agent provider. The types below describe the narrow
 // document-help surface (selected text in, candidate text out,
 // nothing else). They share the explicit review handoff pattern

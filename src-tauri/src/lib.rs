@@ -240,7 +240,7 @@ pub fn run() {
             // count was zero). Once that flag is set, we skip
             // `prevent_exit()` and let Tauri run its normal
             // shutdown — Drop handlers for managed state
-            // (`AgentWorkbenchSessionStore`, Apple Assist helpers)
+            // (`AgentWorkbenchSessionStore`, Hazakura Local Assist helpers)
             // fire, child processes are killed/waited, and
             // cleanup runs before the process terminates.
             tauri::RunEvent::ExitRequested { api, .. } => {

@@ -2,6 +2,7 @@ import type {
   DraftRecord,
   EditorSettings,
   EditorTab,
+  AssistSurfacePreference,
   ImagePreviewState,
   MenuLanguage,
   RecentEntry,
@@ -22,6 +23,7 @@ type UseAppShellSyncOptions = {
   activeTab: EditorTab | null;
   agentWorkbenchActive: boolean;
   agentWorkbenchConsent: boolean;
+  assistSurfaceActive: AssistSurfacePreference;
   discardingWindowCloseRef: RefValue<boolean>;
   editorSettings: EditorSettings;
   menuLanguage: MenuLanguage;
@@ -42,6 +44,7 @@ export function useAppShellSync({
   activeTab,
   agentWorkbenchActive,
   agentWorkbenchConsent,
+  assistSurfaceActive,
   discardingWindowCloseRef,
   editorSettings,
   menuLanguage,
@@ -68,6 +71,7 @@ export function useAppShellSync({
     activeTab,
     agentWorkbenchActive,
     agentWorkbenchConsent,
+    assistSurfaceActive,
     editorSettings,
     menuLanguage,
     onStatus,

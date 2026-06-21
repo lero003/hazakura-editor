@@ -27,10 +27,10 @@ This plan inherits the existing Safe Editor and AI Assistance boundary:
 - Ingest is user-initiated.
 - Review is explicit and Diff-centered.
 - Saving remains a normal user decision after review.
-- App Store lane may use Apple Local Assist transactions only through the
+- App Store lane may use Hazakura Local Assist transactions only through the
   explicit AI edit transaction boundary. File/paste ingest needs a fresh
   boundary decision before it re-enters the product surface.
-- Developer / GitHub lane may interoperate with Apple Local Assist or
+- Developer / GitHub lane may interoperate with Hazakura Local Assist or
   Agent Workbench only through their existing explicit boundaries.
 
 Do not add:
@@ -59,7 +59,7 @@ application.
 v0.28 selection as of 2026-06-21: the first primitive is the existing
 transaction / candidate review path, not a new import surface. The
 internal candidate-review primitive can build a source-preserving
-`candidate` CompareCase, and the detached Apple Local Assist Writing
+`candidate` CompareCase, and the detached Hazakura Local Assist Writing
 Companion records unsaved AI edit transactions with compact Diff /
 Discard review before save. Treat that as the foundation proof; defer
 explicit file import, richer paste ingest, multi-file proposal review,
@@ -68,13 +68,13 @@ a fresh v0.29+ boundary review reopens them.
 
 v0.29 correction as of 2026-06-21: the standalone Review Desk screen,
 manual candidate editor, and local Markdown / text file-import UI are
-retired before release. The visible near-term path is Apple Local Assist
+retired before release. The visible near-term path is Hazakura Local Assist
 transaction review plus source-level guards that prevent retired Review
 Desk entry points from reappearing accidentally.
 
 Start with the smallest reusable review primitive:
 
-- Review AI-proposed Markdown from an explicit Apple Local Assist
+- Review AI-proposed Markdown from an explicit Hazakura Local Assist
   transaction first.
 - Reopen selected-file or pasted-text proposal ingest only after a fresh
   boundary review.
@@ -85,7 +85,7 @@ Start with the smallest reusable review primitive:
 - Let the user apply accepted hunks or accepted files through explicit
   commands only.
 - Record enough source metadata to explain where the proposal came from:
-  Apple Local Assist transaction, future file import, future paste, or
+  Hazakura Local Assist transaction, future file import, future paste, or
   Agent Workbench external edit.
 
 ## App Store Lane
@@ -95,7 +95,7 @@ or files.
 
 Acceptable current shape:
 
-- Apple Local Assist transactions are explicit user actions.
+- Hazakura Local Assist transactions are explicit user actions.
 - Unsaved AI edits remain reviewable through compact Diff / Discard
   before save.
 - Retired Review Desk and candidate file-import entry points remain
@@ -111,7 +111,7 @@ companion with explicit review before save.
 The Developer / GitHub lane may connect this review path to existing
 experimental surfaces:
 
-- Apple Local Assist: unsaved AI edit transactions remain reviewable
+- Hazakura Local Assist: unsaved AI edit transactions remain reviewable
   before save.
 - Agent Workbench: provider-made file edits are ordinary on-disk changes
   and must still flow through explicit review before the user keeps them.

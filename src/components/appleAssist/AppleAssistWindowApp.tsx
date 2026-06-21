@@ -21,9 +21,9 @@ import {
   type ThemePreference,
 } from "../../types";
 
-// v0.12+ Apple Local Assist Writing Companion.
+// v0.12+ Hazakura Local Assist Writing Companion.
 // `AppleAssistWindowApp` is the root of the detached
-// `hazakura apple assist` window — the outside-companion slot
+// `Hazakura Local Assist` window — the outside-companion slot
 // that replaces the Agent window in the same UX surface
 // (see `docs/apple-local-assist-writing-companion-plan.md`).
 //
@@ -53,7 +53,7 @@ import {
 //
 // Companion-slot mutual exclusion is enforced server-side in
 // `open_apple_assist_window` / `open_agent_window`: opening
-// the Apple Assist window closes the Agent window, and vice
+// the Hazakura Local Assist window closes the Agent window, and vice
 // versa. The mock itself does not need to coordinate the
 // exclusion.
 //
@@ -227,7 +227,7 @@ export function AppleAssistWindowApp() {
     scrollOperationFeedbackToEnd(feedbackSectionRef.current);
   }, [feedback.length]);
 
-  // Apply theme to the Apple Assist window's document so the
+  // Apply theme to the Hazakura Local Assist window's document so the
   // CSS variable surface matches the main window. Mirrors the
   // detached Agent window's pattern. The `storage` event fires
   // only in OTHER windows, which is what we want — the Apple
@@ -238,7 +238,7 @@ export function AppleAssistWindowApp() {
     document.documentElement.dataset.theme = theme;
     document.documentElement.dataset.themePreference = theme;
     void setAppleAssistWindowTheme(theme).catch((err) => {
-      console.warn("Failed to update Apple Assist window OS theme", err);
+      console.warn("Failed to update Hazakura Local Assist window OS theme", err);
     });
   }, [theme]);
 
@@ -325,7 +325,7 @@ export function AppleAssistWindowApp() {
         unlisten = handle;
       })
       .catch((err) => {
-        console.warn("Failed to listen for Apple Assist apply status", err);
+        console.warn("Failed to listen for Hazakura Local Assist apply status", err);
         if (!disposed) {
           setError(copy.targetReadFailed);
         }
@@ -502,7 +502,7 @@ export function AppleAssistWindowApp() {
   return (
     <div className="apple-assist-window-shell" data-testid="apple-assist-shell">
       <header className="apple-assist-window-header">
-        <div className="apple-assist-window-title">Apple Local Assist</div>
+        <div className="apple-assist-window-title">Hazakura Local Assist</div>
         <div className="apple-assist-window-subtitle">
           {copy.subtitle}
           <span className="apple-assist-window-mode">{copy.modeLabel}</span>
@@ -768,7 +768,7 @@ function isMenuLanguage(value: string | null): value is MenuLanguage {
 // error strings, and the Foundation Models Swift helper
 // emits English debug descriptions, so without this
 // classification the user would see raw English text in a
-// Japanese (or kana) Apple Assist window. The classifier
+// Japanese (or kana) Hazakura Local Assist window. The classifier
 // matches on substrings, not on the exact string, because
 // the helper wraps the original error in `Foundation
 // Models generation failed: ...` and the Rust `validate_
@@ -817,7 +817,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       contextTooLongError:
         "しゅうへん ぶんしょ が ながすぎ ます。L Mode の たいしょう しゅうへん こんできすと の じょうげん (8000 もじ) を こえました。",
       disabledStatus:
-        "この せっしょで あっぷる ろーかる あしす とは むこうです。Preferences > Assist Surface で あっぷる ろーかる あしす と (じっけん) を えらび、あぷりを さいきどうして ください。",
+        "この せっしょで はざくら ろーかる あしす とは むこうです。Preferences > Assist Surface で はざくら ろーかる あしす と (じっけん) を えらび、あぷりを さいきどうして ください。",
       emptyRequestError:
         "まずは おねがいを かいてください。れい: ととのえて / しぜんに / つづきを / こうせい。",
       generatingButton: "おねがい中...",
@@ -828,9 +828,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       guardrailError:
         "あっぷる ふぁうんでーしょん もでるず が かーどれーる いはん として この おねがひを きょひ しました。べつ の おねがひ で さいしこう してください。",
       localRuntimeUnavailable: (reason) =>
-        `あっぷる ろーかる あしす とは つかえません: ${reason}。System Settings > Apple Intelligence & Siri で あっぷる いんてりじぇんす が ゆうこうか、げんざいの あぷり ことば が ふぁうんでーしょん もでるず に たいおうしているか を かくにん してください。`,
+        `はざくら ろーかる あしす とは つかえません: ${reason}。System Settings > Apple Intelligence & Siri で あっぷる いんてりじぇんす が ゆうこうか、げんざいの あぷり ことば が ふぁうんでーしょん もでるず に たいおうしているか を かくにん してください。`,
       longRunningStatus:
-        "あっぷる ろーかる あしす と は まだ さぎょう ちゅう。ふぁうんでーしょん もでるず は ふつう すうびょうで おうとうしますが、むこうの ときは めいん えでぃた の すてーたす を かくにんするか、うぃんどう を ひらきなおして ください。",
+        "はざくら ろーかる あしす と は まだ さぎょう ちゅう。ふぁうんでーしょん もでるず は ふつう すうびょうで おうとうしますが、むこうの ときは めいん えでぃた の すてーたす を かくにんするか、うぃんどう を ひらきなおして ください。",
       modeLabel: "Alpha",
       noActiveDocument:
         "めいん えでぃた に ひらいている ふみが ありません。Markdown / テキスト ふぁいる を ひらいて ください。",
@@ -858,7 +858,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       targetReadFailed:
         "たいしょう の よみこみ に しっぱい しました。めいん えでぃた で えらびなおしてから、もう いちど おねがいして ください。",
       tauriUnavailableError:
-        "あっぷる ろーかる あしす と うぃんどう が Tauri runtime の そとで うごいています。めいん えでぃた に とどけません。.app ばんどる から あぷり を さいきどうして ください。",
+        "はざくら ろーかる あしす と うぃんどう が Tauri runtime の そとで うごいています。めいん えでぃた に とどけません。.app ばんどる から あぷり を さいきどうして ください。",
       targetBlock: (chars) => `こーど ぶろっく (${chars} もじ)`,
       targetDocument: (chars) => `ふみ ぜんたい (${chars} もじ)`,
       targetLabel: (label) => `${label}`,
@@ -868,10 +868,10 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       throttledError:
         "あっぷる ふぁうんでーしょん もでるず が れーと せいげん ちゅう です。すこし まって から さいしこう してください。",
       unknownError: (raw) =>
-        `あっぷる ろーかる あしす と の せいせい に しっぱい しました: ${raw}`,
+        `はざくら ろーかる あしす と の せいせい に しっぱい しました: ${raw}`,
       unsupportedStatus:
-        "この はんきょうで あっぷる ろーかる あしす とは つかえません。macOS 26 いこう と、この Mac で ゆうこうかした あっぷる いんてりじぇんす と、ふぁうんでーしょん もでるず たいおう の ことば / ろけーる が ひつようです。",
-      workingLocally: "この Mac で ろーかる しょり ちゅう (ねっとわーく よびだし なし)",
+        "この はんきょうで はざくら ろーかる あしす とは つかえません。macOS 26 いこう と、この Mac で ゆうこうかした あっぷる いんてりじぇんす と、ふぁうんでーしょん もでるず たいおう の ことば / ろけーる が ひつようです。",
+      workingLocally: "この Mac で ろーかる しょり ちゅう (そとの AI さーびす は つかいません)",
       // v0.17 operation-feedback panel copy.
       feedbackHeading: "すすみぐあい",
       feedbackEmpty:
@@ -912,7 +912,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         if (kind === "failed") {
           return "うまく いきませんでした。下の すてーたす を みてください。";
         }
-        return "あっぷる ろーかる あしす とは この はんきょうで つかえません。";
+        return "はざくら ろーかる あしす とは この はんきょうで つかえません。";
       },
     };
   }
@@ -928,7 +928,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       contextTooLongError:
         "周辺の文書が長すぎます。L Mode の対象周辺コンテキスト上限（8000 文字）を超えました。",
       disabledStatus:
-        "このセッションでは Apple Local Assist は無効です。Preferences > Assist Surface で outside companion slot を「Apple Local Assist (Experimental)」に切り替え、アプリを再起動してください。",
+        "このセッションでは Hazakura Local Assist は無効です。Preferences > Assist Surface で outside companion slot を「Hazakura Local Assist (Experimental)」に切り替え、アプリを再起動してください。",
       emptyRequestError:
         "まずは依頼内容を入力してください。例: 「整えて」「自然にして」「続きを書いて」「校正して」。",
       generatingButton: "依頼中...",
@@ -939,9 +939,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       guardrailError:
         "Apple Foundation Models がこの依頼をガードレール違反として拒否しました。別の依頼文で再試行してください。",
       localRuntimeUnavailable: (reason) =>
-        `Apple Local Assist は使えません: ${reason}。System Settings > Apple Intelligence & Siri で Apple Intelligence が有効か、現在のアプリ言語が Foundation Models に対応しているかを確認してください。`,
+        `Hazakura Local Assist は使えません: ${reason}。System Settings > Apple Intelligence & Siri で Apple Intelligence が有効か、現在のアプリ言語が Foundation Models に対応しているかを確認してください。`,
       longRunningStatus:
-        "Apple Local Assist はまだ処理中です。Foundation Models は通常数秒で応答しますが、応答がない場合はメインエディタ下部のステータスを確認するか、Apple Assist ウィンドウを開き直してください。",
+        "Hazakura Local Assist はまだ処理中です。Foundation Models は通常数秒で応答しますが、応答がない場合はメインエディタ下部のステータスを確認するか、Hazakura Local Assist ウィンドウを開き直してください。",
       modeLabel: "Alpha",
       noActiveDocument:
         "メインエディタに開いている文書がありません。Markdown / テキストファイルを開いてください。",
@@ -965,11 +965,11 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       sendingRequest: "依頼を受け付けました...",
       subtitle: "軽量なオンデバイス文章補助",
       targetStaleError:
-        "対象が古くなっています。Apple Assist ウィンドウを開き直すか、メインエディタで対象を選び直してください。",
+        "対象が古くなっています。Hazakura Local Assist ウィンドウを開き直すか、メインエディタで対象を選び直してください。",
       targetReadFailed:
         "対象の読み込みに失敗しました。メインエディタで選び直してから、もう一度依頼してください。",
       tauriUnavailableError:
-        "Apple Local Assist ウィンドウが Tauri runtime の外で動作しており、メインエディタに到達できません。.app バンドルからアプリを再起動し、ウィンドウを Tauri 子プロセスとして起動してください。",
+        "Hazakura Local Assist ウィンドウが Tauri runtime の外で動作しており、メインエディタに到達できません。.app バンドルからアプリを再起動し、ウィンドウを Tauri 子プロセスとして起動してください。",
       targetBlock: (chars) => `コードブロック (${chars} 文字)`,
       targetDocument: (chars) => `文書全体 (${chars} 文字)`,
       targetLabel: (label) => `${label}`,
@@ -979,10 +979,10 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       throttledError:
         "Apple Foundation Models がレート制限中です。少し待ってから再試行してください。",
       unknownError: (raw) =>
-        `Apple Local Assist の生成に失敗しました: ${raw}`,
+        `Hazakura Local Assist の生成に失敗しました: ${raw}`,
       unsupportedStatus:
-        "この環境では Apple Local Assist は使えません。macOS 26 以降と、この Mac で有効化された Apple Intelligence、そして Foundation Models 対応の言語 / ロケールが必要です。",
-      workingLocally: "この Mac 上でローカル処理中（ネットワーク呼び出しなし）",
+        "この環境では Hazakura Local Assist は使えません。macOS 26 以降と、この Mac で有効化された Apple Intelligence、そして Foundation Models 対応の言語 / ロケールが必要です。",
+      workingLocally: "この Mac 上でローカル処理中（外部 AI サービスは使いません）",
       // v0.17 operation-feedback panel copy.
       feedbackHeading: "処理の流れ",
       feedbackEmpty:
@@ -1023,7 +1023,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         if (kind === "failed") {
           return "うまくいきませんでした。下のステータスを確認してください。";
         }
-        return "Apple Local Assist はこの環境では使えません。";
+        return "Hazakura Local Assist はこの環境では使えません。";
       },
     };
   }
@@ -1034,11 +1034,11 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       `Draft edit applied: ${request}. Review the diff before saving.`,
     applyButton: "Send request",
     availableDisclosure:
-      "Apple Local Assist helps revise the selected text or current paragraph on this Mac. Results land as an unsaved draft edit, so you can review the diff before saving.",
+      "Hazakura Local Assist helps revise the selected text or current paragraph on this Mac. Results land as an unsaved draft edit, so you can review the diff before saving.",
     contextTooLongError:
       "Document context is too long (L Mode harness caps surrounding text at 8000 characters). Pick a tighter target or break the change into smaller requests.",
     disabledStatus:
-      "Apple Local Assist is disabled in this app session. Open Preferences > Assist Surface and switch the outside companion slot to 'Apple Local Assist (Experimental)'. Restart the app to apply.",
+      "Hazakura Local Assist is disabled in this app session. Open Preferences > Assist Surface and switch the outside companion slot to 'Hazakura Local Assist (Experimental)'. Restart the app to apply.",
     emptyRequestError:
       "Type what you want changed first. Examples: 'Make it cleaner', 'Continue this', 'Proofread this'.",
     generatingButton: "Sending...",
@@ -1049,9 +1049,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     guardrailError:
       "Apple Foundation Models refused this request because it hit a guardrail. Try a different request.",
     localRuntimeUnavailable: (reason) =>
-      `Apple Local Assist is unavailable: ${reason}. Verify Apple Intelligence is on in System Settings > Apple Intelligence & Siri, and that the current app language is supported by Foundation Models.`,
+      `Hazakura Local Assist is unavailable: ${reason}. Verify Apple Intelligence is on in System Settings > Apple Intelligence & Siri, and that the current app language is supported by Foundation Models.`,
     longRunningStatus:
-      "Apple Local Assist is still working. Foundation Models usually returns in a few seconds; if it has not, check the main editor status line for the underlying error, or re-open the Apple Assist window.",
+      "Hazakura Local Assist is still working. Foundation Models usually returns in a few seconds; if it has not, check the main editor status line for the underlying error, or re-open the Hazakura Local Assist window.",
     modeLabel: "Alpha",
     noActiveDocument:
       "No active document is open in the main editor. Open a Markdown or text file first.",
@@ -1078,11 +1078,11 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     sendingRequest: "Request accepted...",
     subtitle: "Lightweight on-device writing help",
     targetStaleError:
-      "The active target has changed since the request was prepared. Re-open the Apple Assist window, or pick a new target in the main editor.",
+      "The active target has changed since the request was prepared. Re-open the Hazakura Local Assist window, or pick a new target in the main editor.",
     targetReadFailed:
       "Could not read the target. Pick the text again in the main editor, then send the request again.",
     tauriUnavailableError:
-      "Apple Local Assist window is running outside the Tauri runtime; it cannot reach the main editor. Restart the app from the .app bundle so the window launches as a Tauri child process.",
+      "Hazakura Local Assist window is running outside the Tauri runtime; it cannot reach the main editor. Restart the app from the .app bundle so the window launches as a Tauri child process.",
     targetBlock: (chars) => `Code block (${chars} chars)`,
     targetDocument: (chars) => `Whole document (${chars} chars)`,
     targetLabel: (label) => `${label}`,
@@ -1092,10 +1092,10 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     throttledError:
       "Apple Foundation Models is rate limited or busy with another request. Try again shortly.",
     unknownError: (raw) =>
-      `Apple Local Assist generation failed: ${raw}`,
+      `Hazakura Local Assist generation failed: ${raw}`,
     unsupportedStatus:
-      "Apple Local Assist is not supported in this environment. It needs macOS 26 or later and Apple Intelligence turned on for this Mac, with a Foundation Models-supported language and locale.",
-    workingLocally: "Working locally on this Mac (no network call)",
+      "Hazakura Local Assist is not supported in this environment. It needs macOS 26 or later and Apple Intelligence turned on for this Mac, with a Foundation Models-supported language and locale.",
+    workingLocally: "Working locally on this Mac (no third-party AI service)",
     // v0.17 operation-feedback panel copy.
     feedbackHeading: "Progress",
     feedbackEmpty:
@@ -1136,7 +1136,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       if (kind === "failed") {
         return "That did not work. Check the status below.";
       }
-      return "Apple Local Assist is unavailable in this environment.";
+      return "Hazakura Local Assist is unavailable in this environment.";
     },
   };
 }

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-06-12 (launchable local smoke build)
+Last reviewed: 2026-06-21 (v0.29 Hazakura Local Assist review triage)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -13,7 +13,7 @@ Historical smoke logs and old per-release notes are archived in `docs/archive/op
 
 Use Vite / browser smoke only for frontend-only rendering checks that do not require Tauri runtime APIs. The browser surface cannot prove native app behavior that depends on `@tauri-apps/api` `invoke`, native dialogs, window/menu integration, bundled sidecar helpers, filesystem permissions, app launch state, or macOS signing / bundle metadata.
 
-When a checklist item covers file open/save, workspace folders, app menus, close/quit handling, L Mode behavior, or Apple Local Assist behavior that must be judged inside the packaged desktop shell, run `npm run build` and launch `src-tauri/target/release/bundle/macos/Hazakura Editor.app`. This local smoke bundle is helper-enabled and launchable, but it is not the signed App Store sandbox submit artifact. Use the signed TestFlight build for App Store-lane proof, and use the Developer / GitHub bundle for Agent Workbench checks. If that environment is unavailable or blocked, report the smoke as blocked/skipped and keep automated checks limited to unit tests, Vite build, Tauri build, bundle metadata, and codesign evidence. Do not claim manual app smoke passed from browser-only evidence.
+When a checklist item covers file open/save, workspace folders, app menus, close/quit handling, L Mode behavior, or Hazakura Local Assist behavior that must be judged inside the packaged desktop shell, run `npm run build` and launch `src-tauri/target/release/bundle/macos/Hazakura Editor.app`. This local smoke bundle is helper-enabled and launchable, but it is not the signed App Store sandbox submit artifact. Use the signed TestFlight build for App Store-lane proof, and use the Developer / GitHub bundle for Agent Workbench checks. If that environment is unavailable or blocked, report the smoke as blocked/skipped and keep automated checks limited to unit tests, Vite build, Tauri build, bundle metadata, and codesign evidence. Do not claim manual app smoke passed from browser-only evidence.
 
 For a repeatable local packaged-app launch/window proof, run:
 
@@ -26,7 +26,7 @@ launches the Developer / GitHub `Hazakura Editor Dev.app` bundle, and
 uses `CoreGraphics` / `CGWindowListCopyWindowInfo` to confirm an
 onscreen layer-0 app window. It proves the built bundle can surface a
 visible app window on this Mac; it does not prove native dialog
-selection, Apple Local Assist transaction review, TestFlight, App Store
+selection, Hazakura Local Assist transaction review, TestFlight, App Store
 sandbox behavior, or notarization.
 
 ## v0.18 TestFlight Basic Smoke
@@ -67,7 +67,7 @@ npm run smoke:app-store-surface
 
 This lightweight smoke groups the source-level checks that the App
 Store lane hides Agent Workbench / CLI Agent commands and settings,
-allows the Apple Local Assist surface and helper configuration, avoids
+allows the Hazakura Local Assist surface and helper configuration, avoids
 visible developer-lane badges, and covers the retired Review Desk
 proposal-import path at source level. It does not prove signed
 bundle identity, sandbox behavior, native file-picker interaction,
@@ -98,10 +98,12 @@ submission:
 6. Network observation: record whether any external network
    communication appears. The expected App Store lane result is no
    app-data external network access.
-7. App Store surface omission: confirm the command palette, native menu,
+7. App Store surface boundary: confirm the command palette, native menu,
    Preferences, and visible chrome do not expose `Agent`, `CLI Agent`,
-   `Apple Local Assist`, `Assist Settings…`, dev mode, or arbitrary
-   command execution entry points.
+   dev mode, arbitrary command execution, or hidden Review Desk entry
+   points. For helper-enabled v0.29+ builds, Local Assist may be visible
+   only as the explicit writing companion surface and must not behave as
+   a CLI agent, external AI provider, or automatic rewrite path.
 8. Accessibility: complete live VoiceOver, keyboard-only traversal, and
    Increase Contrast checks for the tab bar, file tree, dirty dialogs,
    Preferences, Help, and status/error rows.
@@ -121,7 +123,7 @@ Passed:
 - Preview and HTML export.
 - Image paste and drag/drop under sandboxed file access.
 - App Store surface omission: Agent Workbench, CLI Agent, dev mode, and
-  Apple Local Assist were not visible.
+  Hazakura Local Assist were not visible.
 - Dirty-tab `Cmd+Q` and red-window-button close confirmation.
 - Move to Trash appeared to work normally in the tested App Store lane
   build.
@@ -295,7 +297,7 @@ Store surface visibility changes:
    Diff / Review changes route.
 6. Confirm auto-backup restore review still applies only to the compared
    document, leaves the file unsaved, and keeps Save explicit.
-7. Confirm Apple Local Assist edit review still exposes diff, discard, and
+7. Confirm Hazakura Local Assist edit review still exposes diff, discard, and
    close decisions without auto-saving.
 
 2026-06-21 local Developer / GitHub app note:
@@ -336,18 +338,22 @@ Run when Agent Workbench, provider availability, terminal sizing, or Agent Windo
 8. Stop the session and confirm UI state cleans up.
 9. Confirm provider-made file edits surface as ordinary external on-disk changes in Safe Editor.
 
-## Apple Local Assist (v0.12 live local preview)
+## Hazakura Local Assist (v0.12 live local preview)
 
-Run when `src/lib/tauri/appleAssist.ts`, `src-tauri/src/commands/apple_assist.rs`, `src-tauri/src/commands/apple_assist_supervisor.rs`, `src-helpers/apple-assist/`, `useAppleAssistAvailability`, `useAppleAssistCandidate`, `src/lib/locale/appleAssist.ts`, or the Apple Assist companion / command palette entries change.
+Run when `src/lib/tauri/appleAssist.ts`, `src-tauri/src/commands/apple_assist.rs`, `src-tauri/src/commands/apple_assist_supervisor.rs`, `src-helpers/apple-assist/`, `useAppleAssistAvailability`, `useAppleAssistCandidate`, `src/lib/locale/appleAssist.ts`, or the Hazakura Local Assist companion / command palette entries change.
 
 1. Build the live helper with `npm run build:apple-assist-helper:live`; confirm the probe smoke returns an availability envelope. On a Mac where Apple Foundation Models is available and `SystemLanguageModel.default.supportsLocale()` is true, optionally run `HAZAKURA_APPLE_ASSIST_LIVE_SMOKE_GENERATE=1 npm run build:apple-assist-helper:live` and confirm a candidate or honest error envelope.
-2. Confirm `npm run build:developer-preview` and `npm run build:app-store-preview` bundle `Contents/MacOS/hazakura-apple-assist-helper` and sign it with the local app bundle.
-3. Confirm the Settings / Agent Workbench Preferences surface does not list Apple Local Assist as a CLI agent provider — it is a separate Assist Surface provider class.
-4. Confirm no menu entry, status bar item, autosave path, or background timer runs Apple Local Assist generation without an explicit user request.
-5. In the built app, select `Apple Local Assist (Experimental)`, restart if prompted, open the companion from normal editor, issue a rough request, and confirm the buffer becomes dirty without auto-saving.
-6. Repeat item 5 in L Mode. Confirm the compact AI-change affordance appears and `差分を開く` / `差分を閉じる` works.
-7. Confirm Agent Window and Apple Assist Window still replace rather than coexist as the primary external companion.
-8. (Supervisor regression, optional) Build the fixture helper with `npm run build:apple-assist-helper:fixture` and run `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE=binaries/hazakura-apple-assist-helper-aarch64-apple-darwin cargo test apple_assist_supervisor --manifest-path src-tauri/Cargo.toml`.
+2. Confirm helper-enabled builds emit `dist/apple-assist.html` and that `npm run build:developer-preview` / `npm run build:app-store-preview` bundle `Contents/MacOS/hazakura-apple-assist-helper` and sign it with the local app bundle.
+3. Open the Hazakura Local Assist window in the built app and confirm it renders the Local Assist companion UI, not the Safe Editor shell/start panel. It must not expose `ファイルを開く`, `フォルダを開く`, `新規ファイル`, workspace browser, Preview/e-book controls, or other main-window file/workspace actions.
+4. Confirm clicking first-party UI in the Hazakura Local Assist window never shows `Command is not allowed from window 'apple-assist'.` If that message appears, record it as an entrypoint/capability isolation bug, not as an acceptable user-facing error.
+5. Confirm the Settings / Agent Workbench Preferences surface does not list Hazakura Local Assist as a CLI agent provider — it is a separate Assist Surface provider class.
+6. Launch the built app and confirm `hazakura-apple-assist-helper` is not running before the Local Assist surface is explicitly opened. Opening the command palette alone must not spawn the helper or show Foundation Models errors.
+7. Confirm no menu entry, status bar item, autosave path, or background timer runs Hazakura Local Assist generation without an explicit user request.
+8. In the built app, select `Hazakura Local Assist (Experimental)`, restart if prompted, open the companion from normal editor, issue a rough request, and confirm the buffer becomes dirty without auto-saving.
+9. Repeat item 8 in L Mode. Confirm the compact AI-change affordance appears and `差分を開く` / `差分を閉じる` works.
+10. Confirm Agent Window and Hazakura Local Assist Window still replace rather than coexist as the primary external companion.
+11. Confirm user-visible status/error copy does not expose raw helper error text, Foundation Models `debugDescription`, prompts, hidden instructions, broad document excerpts, file paths, secrets, or provider internals.
+12. (Supervisor regression, optional) Build the fixture helper with `npm run build:apple-assist-helper:fixture` and run `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE=binaries/hazakura-apple-assist-helper-aarch64-apple-darwin cargo test apple_assist_supervisor --manifest-path src-tauri/Cargo.toml`.
 
 ## Release Packaging
 

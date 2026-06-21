@@ -33,7 +33,7 @@ const target: AppleAssistTarget = {
 const copy = {
   candidateColumnLeft: "Current buffer",
   candidateColumnRight: "Candidate",
-  candidateSourceAppleAssist: "Apple Local Assist (on-device)",
+  candidateSourceAppleAssist: "Hazakura Local Assist (on-device)",
 } as unknown as Parameters<typeof useAppleAssistCandidate>[0]["copy"];
 
 function makeRunCandidateCompare(impl?: (params: never) => { ok: true } | { ok: false; error: string }) {

@@ -67,7 +67,7 @@ describe("useAppleAssistAvailability", () => {
   });
 
   it("flips `probed` to true even when the probe settles on `unsupported`", async () => {
-    // The Apple Local Assist operation-feedback panel
+    // The Hazakura Local Assist operation-feedback panel
     // depends on `probed` to distinguish "probe in flight"
     // from "the environment is genuinely unsupported".
     // If the probe stays at `unsupported` (no IPC call

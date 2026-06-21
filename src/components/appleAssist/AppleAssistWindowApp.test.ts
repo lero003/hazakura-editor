@@ -6,10 +6,10 @@ import {
   type OperationFeedbackKind,
 } from "./AppleAssistWindowApp";
 
-// v0.12.x Apple Local Assist copy + error classification.
+// v0.12.x Hazakura Local Assist copy + error classification.
 //
 // `getAppleAssistWindowCopy` is the single source of truth for
-// the 3-language UI strings the Apple Assist window renders,
+// the 3-language UI strings the Hazakura Local Assist window renders,
 // and `classifyApplyError` turns raw Rust / Foundation Models
 // error messages into localized, actionable text. The tests
 // below pin both: any rename, accidental English leak, or
@@ -178,6 +178,13 @@ describe("getAppleAssistWindowCopy", () => {
     });
   }
 
+  it("uses Hazakura Local Assist as the user-facing feature name", () => {
+    const combined = JSON.stringify(getAppleAssistWindowCopy("en"));
+
+    expect(combined).toContain("Hazakura Local Assist");
+    expect(combined).not.toContain("Apple Local Assist");
+  });
+
   it("uses different default apply buttons per language (no en bleed-through)", () => {
     const en = getAppleAssistWindowCopy("en").applyButton;
     const ja = getAppleAssistWindowCopy("ja").applyButton;
@@ -261,7 +268,7 @@ describe("classifyApplyError", () => {
 
   it("routes a stale-target message to targetStaleError", () => {
     const message = classifyApplyError(
-      new Error("Apple Assist target text no longer matches the active buffer."),
+      new Error("Hazakura Local Assist target text no longer matches the active buffer."),
       copy,
     );
     expect(message).toBe(copy.targetStaleError);

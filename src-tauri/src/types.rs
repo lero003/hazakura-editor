@@ -74,9 +74,9 @@ pub(crate) const OPEN_MAIN_AGENT_PANE_EVENT: &str = "hazakura-note://open-main-a
 // bypass the custom menu item. The TS mirror lives in
 // `src/types.ts`.
 pub(crate) const APP_EXIT_REQUESTED_EVENT: &str = "hazakura-note://app-exit-requested";
-// v0.12+ Apple Local Assist Writing Companion mock (slice 2+).
-// Companion slot: the Apple Assist window and the Agent window
-// normally replace each other. The Apple Assist window emits
+// v0.12+ Hazakura Local Assist Writing Companion mock (slice 2+).
+// Companion slot: the Hazakura Local Assist window and the Agent window
+// normally replace each other. The Hazakura Local Assist window emits
 // `APPLY_AI_EDIT_TRANSACTION_EVENT` to ask the main window to
 // apply an AI edit transaction. The main window answers the
 // `REQUEST_AI_EDIT_TARGET_EVENT` round-trip with a bounded
@@ -96,9 +96,9 @@ pub(crate) const REQUEST_AI_EDIT_TARGET_EVENT: &str = "hazakura-note://request-a
 #[allow(dead_code)]
 pub(crate) const AI_EDIT_TARGET_RESULT_EVENT: &str = "hazakura-note://ai-edit-target-result";
 // `MAIN_APPLE_ASSIST_TARGET_CHANGED_EVENT` is broadcast by the
-// main window whenever the inferred Apple Assist target moves
+// main window whenever the inferred Hazakura Local Assist target moves
 // (selection change, cursor move, document switch). The
-// detached Apple Assist window subscribes to keep its
+// detached Hazakura Local Assist window subscribes to keep its
 // "active target" panel live without polling. See
 // `commands/apple_assist_target.rs` and
 // `docs/apple-local-assist-writing-companion-plan.md`.
@@ -402,6 +402,7 @@ pub(crate) struct AppMenuState {
     pub(crate) recent_folders: Vec<AppMenuRecentItem>,
     pub(crate) agent_workbench_active: bool,
     pub(crate) agent_workbench_consent: bool,
+    pub(crate) assist_surface_active: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]

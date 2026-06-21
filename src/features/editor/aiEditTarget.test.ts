@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { inferAppleAssistTarget } from "./aiEditTarget";
 
 // Bounded target inference is the contract between the main
-// window's editor and the Apple Assist window. The cases
+// window's editor and the Hazakura Local Assist window. The cases
 // below pin the *order* of the inference (selection > paragraph
 // > block > section > document) and the label contract.
 

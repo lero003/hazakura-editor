@@ -8,11 +8,11 @@ import { setMainAppleAssistTarget } from "../../lib/tauri";
 import type { AppleAssistTargetSnapshot } from "../../types";
 import { inferAppleAssistTarget } from "../../features/editor/aiEditTarget";
 
-// v0.12+ Apple Local Assist Writing Companion (slice 3+).
+// v0.12+ Hazakura Local Assist Writing Companion (slice 3+).
 // `useAppleAssistTargetSync` keeps the Rust-side
 // `MainAppleAssistTargetCache` fresh on every selection /
 // cursor change in the main window's editor. The detached
-// Apple Assist window reads the cache via
+// Hazakura Local Assist window reads the cache via
 // `getMainAppleAssistTarget` and listens for
 // `MAIN_APPLE_ASSIST_TARGET_CHANGED_EVENT` for live updates.
 //

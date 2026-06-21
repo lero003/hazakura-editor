@@ -103,7 +103,7 @@ queue.
 
 ## Optional v0.17 Release-Candidate Polish
 
-One narrow Apple Local Assist polish slice may be attempted before the
+One narrow Hazakura Local Assist polish slice may be attempted before the
 v0.17 tag if the user wants more alpha smokeability:
 
 - `v0.17:apple-local-assist-operation-feedback`
@@ -158,7 +158,7 @@ preview unless a concrete blocker is reproduced.
 | P0 | `scripts/probe-macos-distribution.sh` checks helper `app-sandbox` instead of helper `inherit` | The helper is expected to use `com.apple.security.inherit`; the current probe can produce misleading "missing" output. | Update the read-only probe to report `helper inherit entitlement: present` for the helper and retain app sandbox checks for the app bundle. |
 | P1 | TabBar / auto-backup dirty detection does not include encoding-only changes | Shared dirty logic includes `encoding`, but local helpers in tab display and auto-backup compare only contents / line endings. | Use the shared `isDirty()` helper or include `encoding !== lastSavedEncoding` in local signatures, then add an encoding-only dirty indicator test. |
 | P1 | Manual accessibility smoke remains pending | Queue 3 is focused/unit coverage, not a full VoiceOver or keyboard-only audit. | Record Help readability, full keyboard-only traversal, VoiceOver tab-bar announcement, and Increase Contrast smoke before submission. |
-| P1 | App Review Notes need Assist Surface lane wording | App Store lane omits CLI Agent / Agent Workbench execution surfaces, while Assist Surface may still expose Apple Local Assist / Off. | Final copy should say CLI Agent / Agent Workbench execution surfaces are omitted; Assist Surface remains only for App Store-allowed assist choices. |
+| P1 | App Review Notes need Assist Surface lane wording | App Store lane omits CLI Agent / Agent Workbench execution surfaces, while Assist Surface may still expose Hazakura Local Assist / Off. | Final copy should say CLI Agent / Agent Workbench execution surfaces are omitted; Assist Surface remains only for App Store-allowed assist choices. |
 | P1 | Quit / dirty-close comments drift from `app.exit(0)` implementation | The behavior is important and the stale comments point at an older `std::process::exit(0)` description. | Correct comments only; do not change behavior unless a focused test fails. |
 | P1 | Source/config file associations are broad for a "not IDE" product | Opening source-like text is consistent with Safe Editor, but Store metadata should not make it look like an IDE. | Either narrow App Store file associations or explain that source-like files open as plain text only, without build, Git, LSP, terminal, or execution behavior. |
 | P2 | Help / Privacy / Local Data / Support copy overlaps | The current Help pages are honest but repetitive. | Final copy pass: make Privacy Policy the public/legal copy, Local Data Disclosure the technical local-data explanation, and Support Diagnostics the diagnostic JSON explanation. |

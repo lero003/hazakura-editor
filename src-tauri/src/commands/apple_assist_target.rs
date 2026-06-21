@@ -6,9 +6,9 @@ use std::sync::Mutex;
 use tauri::Emitter;
 use tauri::Manager;
 
-// v0.12+ Apple Local Assist Writing Companion (slice 3+).
+// v0.12+ Hazakura Local Assist Writing Companion (slice 3+).
 // Process-singleton cache of the main window's current Apple
-// Assist target. The detached Apple Assist window reads this
+// Assist target. The detached Hazakura Local Assist window reads this
 // on demand via `get_main_apple_assist_target` and subscribes
 // to `MAIN_APPLE_ASSIST_TARGET_CHANGED_EVENT` for live updates;
 // the main window writes here on selection / cursor change
@@ -56,7 +56,7 @@ pub(crate) fn get_main_apple_assist_target<R: tauri::Runtime>(
     window: tauri::WebviewWindow<R>,
     app: tauri::AppHandle<R>,
 ) -> Result<Option<AppleAssistTargetSnapshot>, String> {
-    // The detached Apple Assist window is the primary caller;
+    // The detached Hazakura Local Assist window is the primary caller;
     // the main window may also call it (for self-consistency).
     // The gate is intentionally permissive so the apple-assist
     // window can poll the cache without depending on the main

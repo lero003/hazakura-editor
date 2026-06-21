@@ -31,11 +31,11 @@ of this baseline.
 | `styles` (JS) | 214.47 | 66.57 | CodeMirror + editor theme JS |
 | `styles` (CSS) | 126.83 | 21.29 | App shell + L Mode + preview CSS |
 | `markdown` | 69.22 | 23.25 | **Lazy-loaded** (marked + DOMPurify). Only loaded when preview or export is used. |
-| `apple-assist` | 22.73 | 7.16 | Apple Local Assist window entry |
+| `apple-assist` | 22.73 | 7.16 | Hazakura Local Assist window entry |
 | `agent` (CSS) | 3.93 | 1.01 | Agent window CSS |
 | `useAgentProviderAvailability` | 4.45 | 1.88 | Provider availability probe |
 | `PreviewPane` | 0.78 | 0.51 | Preview pane lazy-load shell |
-| `useAppleAssistAvailability` | 0.42 | 0.30 | Apple Assist availability probe |
+| `useAppleAssistAvailability` | 0.42 | 0.30 | Hazakura Local Assist availability probe |
 | `hazakura-mark.png` | 307.18 | — | Static asset |
 
 ### Chunk-size Warning
@@ -64,7 +64,7 @@ in queue 5 — the baseline is the deliverable.
 
 | Candidate | Rationale | Size estimate |
 |---|---|---|
-| Apple Local Assist hook bundle | Only needed when the user invokes Apple Assist | ~22 kB (already separate entry) |
+| Hazakura Local Assist hook bundle | Only needed when the user invokes Hazakura Local Assist | ~22 kB (already separate entry) |
 | Agent Workbench hook bundle | Only needed when Agent Workbench is active | ~354 kB (already separate entry) |
 | Diff / Compare view | Only needed when the user opens the compare pane | Unknown |
 | Search / replace panel | Only needed when the user opens find | Unknown |

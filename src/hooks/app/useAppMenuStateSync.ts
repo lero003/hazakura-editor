@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { updateAppMenuState, type AppMenuRecentItem } from "../../lib/tauri";
 import type {
+  AssistSurfacePreference,
   EditorSettings,
   MenuLanguage,
   RecentEntry,
@@ -13,6 +14,7 @@ type UseAppMenuStateSyncOptions = {
   activeTab: unknown | null;
   agentWorkbenchActive: boolean;
   agentWorkbenchConsent: boolean;
+  assistSurfaceActive: AssistSurfacePreference;
   editorSettings: Pick<
     EditorSettings,
     "lModeEnabled" | "showInvisibles" | "spellcheckEnabled" | "wrapLines"
@@ -38,6 +40,7 @@ export function useAppMenuStateSync({
   activeTab,
   agentWorkbenchActive,
   agentWorkbenchConsent,
+  assistSurfaceActive,
   editorSettings,
   menuLanguage,
   onStatus,
@@ -80,6 +83,7 @@ export function useAppMenuStateSync({
       recentFolders: menuRecentFolders,
       agentWorkbenchActive,
       agentWorkbenchConsent,
+      assistSurfaceActive,
     }).catch((err) => {
       console.warn("Failed to update app menu state", err);
       onStatusRef.current?.("Failed to update app menu state");
@@ -89,6 +93,7 @@ export function useAppMenuStateSync({
     activeTab,
     agentWorkbenchActive,
     agentWorkbenchConsent,
+    assistSurfaceActive,
     editorSettings.lModeEnabled,
     editorSettings.showInvisibles,
     editorSettings.spellcheckEnabled,

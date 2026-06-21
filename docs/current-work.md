@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active v0.29 AI assist review API alignment and completed v0.28 foundation
 Authority: High
-Last reviewed: 2026-06-21 (v0.29 Review Desk retirement alignment)
+Last reviewed: 2026-06-21 (v0.29 Hazakura Local Assist review triage)
 
 ## Purpose
 
@@ -24,8 +24,8 @@ memo / historical phase boundary and
 `docs/post-v0.25-product-refinement-plan.md` as the
 broader lens. The active v0.29 lane is explicit AI assist review on top
 of the completed v0.28 review foundation: keep the App Store path limited
-to Apple Local Assist, retire the standalone Review Desk screen, and
-route visible AI assistance through the Apple Local Assist transaction /
+to Hazakura Local Assist, retire the standalone Review Desk screen, and
+route visible AI assistance through the Hazakura Local Assist transaction /
 Diff review surface before any broader ingest or Book Workspace work.
 
 ## Product Boundary
@@ -119,13 +119,50 @@ Implemented locally as of 2026-06-21:
 
 Next useful v0.29 slices, if needed:
 
-- Focused Apple Local Assist transaction review smoke: generate/apply an
-  AI edit transaction, verify the compact Diff / Discard bar is explicit,
-  and confirm no auto-save / auto-apply beyond the requested unsaved edit.
-- Source-level guard for retired Review Desk routes if command palette,
-  slash menu, View menu, or top chrome are touched again.
-- Broader file/paste/multi-file proposal ingest remains deferred until a
+The 2026-06-21 Hazakura Local Assist review note
+(`/Users/keisetsu/Downloads/apple-assist-review-fix-list-2.md`) is
+accepted as a real pre-submission triage input, with the source caveat
+that it was a static review and did not run the macOS app, live
+Foundation Models, signing, sandbox smoke, Transporter, or App Store
+Connect validation.
+
+Additional human-side built-app observation on 2026-06-21:
+
+- Opening the `apple-assist` window showed the Safe Editor start panel
+  instead of the Local Assist companion UI, and clicking a Safe Editor
+  action produced `Command is not allowed from window 'apple-assist'.`
+- Treat the server-side command denial as correct defense-in-depth, but
+  the user-visible state is a P0 bug: the `apple-assist` webview must
+  not render main-window Safe Editor UI or expose File / Folder / New
+  File actions.
+- One likely source-level risk is the App Store Vite build shape:
+  `vite.config.ts` currently omits the `apple-assist.html` Rollup input
+  when `VITE_HAZAKURA_DISTRIBUTION_LANE=app-store`, which conflicts
+  with the current helper-enabled App Store lane.
+
+Decision for the current v0.29 lane:
+
+- Keep the App Store lane helper-enabled for now. Do not revert to the
+  older helper-free App Store plan unless a signed TestFlight or App
+  Review blocker proves the helper-enabled lane is not viable.
+- Treat startup helper spawn / availability probe, implicit `apple-local`
+  defaults, `apple-assist` window entrypoint drift, raw helper error
+  exposure, preference/menu gating, and stale helper-free smoke
+  expectations as real pre-submission risks.
+- Keep broader file/paste/multi-file proposal ingest deferred until a
   fresh product boundary review reopens it.
+
+Next useful v0.29 slices, in order:
+
+| Priority | Slice | Acceptance |
+|---|---|---|
+| P0 done / smoke remaining | Hazakura Local Assist window entrypoint / capability isolation | Source-level fix is in place: App Store Vite builds include `apple-assist.html`, the helper window title / HTML title use `Hazakura Local Assist`, and tests pin the entrypoint outside the App Store-only `agent.html` exclusion. Still needs built-app smoke to confirm the `apple-assist` window renders only `AppleAssistWindowApp` and never shows `Command is not allowed from window 'apple-assist'.` |
+| P0 done / smoke remaining | No startup helper spawn | Source-level fix is in place: the main shell does not run `useAppleAssistAvailability` on launch or command-palette open; availability probing is deferred until the Assist settings pane is open while `apple-local` is active, and the detached companion still owns its own probe. Still needs process smoke that `hazakura-apple-assist-helper` is absent before explicit Local Assist use. |
+| P0 done | Safe default / preference gate | New installs default the shared assist surface to `none`; command palette and app menu Local Assist entries respect the active user setting, not only distribution allow. App Store lane still permits Local Assist, but permission to ship is separate from user activation. |
+| P0 | Probe timeout and error hygiene | Availability probe uses a short timeout distinct from generation; helper/Foundation Models failures surface as bounded user copy or structured error kinds, not raw `debugDescription` / provider internals. |
+| P1 | App Store lane docs / smoke alignment | `docs/app-store-build.md` and `docs/smoke-checklist.md` consistently describe the current helper-enabled lane: helper bundled and signed, no startup helper spawn, Local Assist explicit/opened only, no auto-save/auto-apply, no external AI/API or network fallback. |
+| P1 done | Network and naming wording | User/reviewer-facing labels now use `Hazakura Local Assist` while preserving internal `apple-local` / `apple-assist` compatibility identifiers. Visible "no network call" Local Assist wording was replaced with "no third-party AI service" / "no external AI/API provider" / "no network fallback" wording. |
+| P2 | Target sync and maintenance polish | Send document target snapshots to Rust only while Local Assist is active; update stale helper comments, helper platform metadata, locale wording, diagnostics version handling, and any remaining internal naming over time. |
 
 ## v0.20 Sakura Workspace Ergonomics
 
@@ -652,7 +689,7 @@ AI-proposal review foundation without becoming an agent platform.
 | P0 | L Mode image policy parity | L Mode follows the same external-image and `data:image` safety expectations as Preview / export. External `http:` / `https:` images are not rendered as a direct fetch path. Supported `data:image` MIME types, strict base64 validation, and the 2 MB inline cap match Preview's embedded-image policy. The 2 MB cap is only for Markdown-embedded `data:image` payloads; workspace image files and EPUB packaged images stay under the separate workspace/local image boundary and may need their own EPUB image policy later. Workspace images still resolve through the bounded workspace-image command, source text remains unchanged, and focused L Mode tests pin the behavior. |
 | P1 | Workspace search encoding parity | Workspace search uses the same practical decode assumptions as safe file open where possible: UTF-8 plus Shift-JIS / EUC-JP. Do not claim broader legacy-encoding parity unless file open supports it first. Binary-looking and oversized files remain skipped, and focused Rust tests cover UTF-8 plus Shift-JIS or EUC-JP. |
 | P2 | System handoff hardening | Fixed OS handoff routes such as external links, Finder reveal, and print/browser handoff are easier to audit as allowlisted OS handoff, not arbitrary command execution. Keep behavior user-initiated and bounded; prove normalization / allowlist behavior with existing or focused tests. |
-| P3 | AI proposal review foundation | Add only one reusable intake / review primitive: file, paste, or existing transaction input into explicit Diff / Review. App Store lane remains Apple Local Assist-only for AI assistance; Developer / GitHub integrations stay behind Apple Local Assist / Agent Workbench boundaries. No auto-apply, auto-save, auto-commit, generic chat, provider plugin, or hidden workspace rewrite. |
+| P3 | AI proposal review foundation | Add only one reusable intake / review primitive: file, paste, or existing transaction input into explicit Diff / Review. App Store lane remains Hazakura Local Assist-only for AI assistance; Developer / GitHub integrations stay behind Hazakura Local Assist / Agent Workbench boundaries. No auto-apply, auto-save, auto-commit, generic chat, provider plugin, or hidden workspace rewrite. |
 | Release gate | Golden-path smoke checklist | Before tagging a v0.28 source / local-app release, run or update a focused checklist for New File, Save / Save As, L Mode, e-book Mode, EPUB export, Diff / Recovery, and AI proposal review if the review primitive is included. |
 
 P0 is implemented locally as of 2026-06-21. L Mode no longer renders
@@ -695,7 +732,7 @@ P3 is accepted as an already-implemented foundation slice as of
 2026-06-21. The first reusable primitive is the existing transaction /
 candidate review path, not a new file-import workflow: the internal
 candidate-review primitive can still build a source-preserving
-`candidate` CompareCase, and the detached Apple Local Assist Writing
+`candidate` CompareCase, and the detached Hazakura Local Assist Writing
 Companion records unsaved AI edit transactions with compact Diff /
 Discard review before save. This closes the v0.28 foundation goal without
 adding broader provider plugins, generic chat, hidden
@@ -723,7 +760,7 @@ Pick one item at a time.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| P0 | Follow the v0.29 AI assist review API section above | Prefer one narrow Apple Local Assist / AI edit transaction review slice whose proof path is available. Keep App Store AI assistance limited to Apple Local Assist, explicit Diff / Review only, and do not reopen the standalone Review Desk screen without a fresh boundary decision. |
+| P0 | Follow the v0.29 AI assist review API section above | Prefer one narrow Hazakura Local Assist / AI edit transaction review slice whose proof path is available. Keep App Store AI assistance limited to Hazakura Local Assist, explicit Diff / Review only, and do not reopen the standalone Review Desk screen without a fresh boundary decision. |
 | P1 | Core Safe Editor quality probe | When concrete queue items are exhausted, inspect one basic high-risk surface instead of adding broad tests: open/save/close, restore/recovery, preview, diff/review, workspace file operations, standalone files, image handling, keyboard/IME, or error recovery. State the risk hypothesis, run a focused source/app inspection or smoke, then either fix the smallest issue found or close as `verified no-op`. |
 | P2 | Light accessibility sanity | Keep accessibility as a light sanity pass adjacent to core surfaces: keyboard reachability, focus escape/Tab behavior, readable labels, and obvious contrast. Do not prioritize broad accessibility audits over basic editor quality unless a concrete accessibility failure is observed. |
 | Separate lane | Native vibrancy via `window-vibrancy` + macOS 26 floor | Keep as an independent release-planning lane outside v0.27 refinement. It requires a macOS 26 floor decision, built `.app` smoke on macOS 26, and App Store lane judgment before becoming active work. |
@@ -1047,7 +1084,7 @@ App Store Connect evidence.
   App Store. The public listing is
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
   That published App Store build used the helper-free Safe Editor lane;
-  Agent Workbench, CLI Agent launch, Apple Local Assist helper, external
+  Agent Workbench, CLI Agent launch, Hazakura Local Assist helper, external
   AI/API calls, and arbitrary command execution surfaces stayed outside
   that published build.
 - 2026-06-13: The ignored internal App Review notes draft was refreshed
@@ -1056,7 +1093,7 @@ App Store Connect evidence.
   carries the public-safe reviewer-note answers for sandbox
   `network.client`, inert script-like file handling, native Move to
   Trash behavior, App Store lane omission of Agent Workbench / CLI Agent
-  / Apple Local Assist / external AI/API surfaces, and the TestFlight
+  / Hazakura Local Assist / external AI/API surfaces, and the TestFlight
   smoke points to verify. Final App Store Connect fields, screenshots,
   attachments, and account/contact-specific reviewer copy remain outside
   tracked docs.
@@ -1075,7 +1112,7 @@ App Store Connect evidence.
   split.
 - 2026-06-12: App Store lane command-palette assist omission is
   implemented. The command palette no longer exposes `agent.*`,
-  `appleAssist.*`, Apple Local Assist window, or `Assist Settings…`
+  `appleAssist.*`, Hazakura Local Assist window, or `Assist Settings…`
   commands when the App Store lane disables both CLI Agent and Apple
   Local Assist surfaces. `npm run smoke:app-store-surface` now groups
   the lightweight App Store surface-omission tests for repeatable

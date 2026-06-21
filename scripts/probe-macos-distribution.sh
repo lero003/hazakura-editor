@@ -148,7 +148,7 @@ if [ "$EXPECTED_DISTRIBUTION_LANE" = "app-store" ]; then
     fi
 
     if [ ! -x "$HELPER" ]; then
-        echo "error: App Store lane must bundle Apple Assist helper: $HELPER" >&2
+        echo "error: App Store lane must bundle Hazakura Local Assist helper: $HELPER" >&2
         failed=1
     fi
 

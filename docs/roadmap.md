@@ -72,7 +72,7 @@ These boundaries stay active across roadmap changes:
   explicit, consent-gated, allowlisted providers only, selected
   workspace root only, one active session, no restore, no auto-apply.
 - The standalone Review Desk screen is retired from the current product
-  surface. Apple Local Assist and other AI-assist paths must remain
+  surface. Hazakura Local Assist and other AI-assist paths must remain
   explicit, inspectable through Diff / change history or an equivalent
   review surface, and never auto-save or auto-apply without user action.
 - Workspace file operations stay bounded to the selected workspace and
@@ -137,7 +137,7 @@ Expected slices:
   v0.29 follow-up, the selected visible primitive is the Apple Local
   Assist transaction / compact Diff path; broader file / paste /
   multi-file ingest remains deferred work. Keep App Store AI assistance
-  limited to Apple Local Assist and separate from Agent Workbench.
+  limited to Hazakura Local Assist and separate from Agent Workbench.
 - **Golden-path smoke**: keep a repeatable release-quality path for New
   File, Save / Save As, L Mode, e-book Mode, EPUB export, Diff /
   Recovery, and AI proposal review once the first review primitive
@@ -164,14 +164,14 @@ boundary is manual review:
   and keeps only the internal candidate comparison primitive for AI assist
   plumbing.
 - Support Diff / Review for AI or external-agent output, starting with
-  the smallest reusable Apple Local Assist transaction review path.
+  the smallest reusable Hazakura Local Assist transaction review path.
 - Add explicit ingest for AI-proposed Markdown changes from selected
-  files, pasted text, Apple Local Assist transactions, or Agent Workbench
+  files, pasted text, Hazakura Local Assist transactions, or Agent Workbench
   external edits when those lanes are active.
 - Expand from the one v0.28 review primitive into broader ingest flows
   only after the first path proves source-preserving review, rejection,
   and explicit application.
-- Keep App Store lane ingestion limited to explicit Apple Local Assist
+- Keep App Store lane ingestion limited to explicit Hazakura Local Assist
   transactions unless a fresh boundary review opens file/paste ingest.
 - Keep Developer / GitHub lane integration separate, where Apple Local
   Assist or Agent Workbench may create external or unsaved edits under
@@ -298,7 +298,7 @@ user opens a different lane.
 The intended stable distribution shape remains two public binary lanes:
 
 - App Store build: Safe Editor + L Mode + Diff / explicit change review
-  plus Apple Local Assist as an on-device, availability-gated writing
+  plus Hazakura Local Assist as an on-device, availability-gated writing
   companion; without External Agent Workbench, CLI launch, arbitrary
   command execution, external AI/API calls, or network fallback.
 - Developer / GitHub build: the same base plus optional Agent Workbench
@@ -328,7 +328,7 @@ Keep future product work source-preserving and narrow:
 - Book Workspace: target v2.0 for structured, user-selected Markdown
   files as one book. Keep the scope explicit and avoid background
   project indexing or a hidden document model.
-- Apple Local Assist: keep it as an explicit, on-device, availability-
+- Hazakura Local Assist: keep it as an explicit, on-device, availability-
   gated writing companion with unsaved, diff-reviewable edits. Use
   `docs/assist-surface-strategy.md` and
   `docs/apple-local-assist-writing-companion-plan.md`.

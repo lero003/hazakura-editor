@@ -66,7 +66,7 @@ export const localDataDisclosure: HelpDoc = {
       title: "Auto-backup (.hazakura/backups/...)",
     },
     { testId: "help-doc-section-preview", title: "Preview and export" },
-    { testId: "help-doc-section-apple-assist", title: "Apple Local Assist" },
+    { testId: "help-doc-section-apple-assist", title: "Hazakura Local Assist" },
     { testId: "help-doc-section-app-store", title: "App Store build" },
     { testId: "help-doc-section-network", title: "Network and analytics" },
   ],
@@ -86,7 +86,7 @@ export const privacyPolicy: HelpDoc = {
     { testId: "help-doc-section-overview", title: "Overview" },
     { testId: "help-doc-section-files", title: "Files you choose" },
     { testId: "help-doc-section-local-data", title: "Local data" },
-    { testId: "help-doc-section-assist", title: "Apple Local Assist" },
+    { testId: "help-doc-section-assist", title: "Hazakura Local Assist" },
     {
       testId: "help-doc-section-network",
       title: "Network, analytics, and cloud services",

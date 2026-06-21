@@ -39,22 +39,22 @@ type LModeActionRailProps = {
   workspaceSidebarProps: LModeWorkspaceSidebarProps;
 };
 
-// v0.12+ Apple Local Assist Writing Companion mock (slice 3).
+// v0.12+ Hazakura Local Assist Writing Companion mock (slice 3).
 // The L Mode action rail gains a third button — "Apple
 // Assist" — that toggles the detached Writing Companion
 // window without leaving L Mode. L Mode is the canonical
-// "writing-time" surface, so the Apple Assist shortcut belongs
+// "writing-time" surface, so the Hazakura Local Assist shortcut belongs
 // here. The companion-slot mutual exclusion (closing the
-// Agent window when opening Apple Assist, and vice versa) is
+// Agent window when opening Hazakura Local Assist, and vice versa) is
 // enforced server-side by `toggle_apple_assist_window` /
 // `open_agent_window`.
 //
-// v0.15 polish: the Apple Assist button is hidden when the
+// v0.15 polish: the Hazakura Local Assist button is hidden when the
 // user has set the Assist Surface preference to anything
 // other than `apple-local` (e.g. `external-cli` or `none`).
 // Without this guard, a user who turned the Apple Local
 // Assist companion off in Preferences would still see a
-// working Apple Assist button inside L Mode — and clicking
+// working Hazakura Local Assist button inside L Mode — and clicking
 // it would silently toggle nothing. The L Mode action rail
 // now mirrors the `DocumentMetaBar` companion-section rule
 // (`assistSurfaceActive === "apple-local"`) so the rail

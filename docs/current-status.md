@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-21 (v0.29 Apple Local Assist App Store lane)
+Last reviewed: 2026-06-21 (v0.29 Hazakura Local Assist review triage)
 
 ## Current State
 
@@ -73,13 +73,21 @@ Last reviewed: 2026-06-21 (v0.29 Apple Local Assist App Store lane)
   Safety, Quality, and AI Review Foundation lane is implemented /
   accepted locally, and the current v0.29 shape retires the standalone
   Review Desk screen while preserving the internal candidate comparison
-  primitive for AI assist plumbing. Local pre-review
+  primitive for AI assist plumbing. A 2026-06-21 static review of the
+  Hazakura Local Assist App Store lane is now triaged in
+  `docs/current-work.md`. Source-level fixes now cover the
+  `apple-assist.html` App Store Vite entrypoint, safe default `none`
+  assist surface, command-palette/menu active-setting gate, no startup
+  main-shell availability probe, `Hazakura Local Assist` visible naming,
+  and softer Local Assist network wording. Remaining pre-submission risk
+  is signed/built-app smoke plus probe timeout / raw error hygiene. Local
+  pre-review
   regression, package, payload, dependency-audit, bundle metadata,
   license-resource, and bundle-size evidence remains archived under
   `docs/archive/operations/` or summarized in `docs/current-work.md`; it
   should no longer drive the main queue unless a new App Store build is
   prepared.
-- The current source App Store lane now reopens Apple Local Assist as a
+- The current source App Store lane now reopens Hazakura Local Assist as a
   narrow on-device writing companion. Agent Workbench, CLI Agent launch,
   arbitrary command execution, external AI/API calls, provider-add UI,
   and network fallback remain outside the App Store lane.
@@ -115,7 +123,7 @@ Last reviewed: 2026-06-21 (v0.29 Apple Local Assist App Store lane)
   selected workspace after restart-required enablement and
   responsibility-boundary consent.
 - The standalone Review Desk screen is retired from the current
-  App Store-safe surface. Diff, recovery review, and Apple Local Assist
+  App Store-safe surface. Diff, recovery review, and Hazakura Local Assist
   transaction review remain explicit; the internal candidate comparison
   primitive still must not auto-save, auto-apply, launch helpers, or call
   external AI/API by itself.
@@ -197,8 +205,8 @@ Last reviewed: 2026-06-21 (v0.29 Apple Local Assist App Store lane)
 - L Mode / えるモード as a source-preserving CodeMirror presentation
   layer, not a separate saved document model.
 - Diff / explicit change review for active editor changes, recovery
-  drafts, external-change conflicts, and Apple Local Assist edits.
-- Apple Local Assist alpha as an availability-gated, on-device assist
+  drafts, external-change conflicts, and Hazakura Local Assist edits.
+- Hazakura Local Assist alpha as an availability-gated, on-device assist
   surface with explicit unsaved AI edit transactions. The current source
   App Store lane may expose it; older published App Store builds may still
   omit the helper until a new build is uploaded, approved, and released.
@@ -254,8 +262,8 @@ baseline, and smoke evidence are archived under
 - `docs/assist-surface-strategy.md`: assist-surface direction.
 - `docs/post-v0.25-product-refinement-plan.md`: post-App-Store
   refinement lens.
-- `docs/apple-local-assist-distribution-plan.md`: Apple Local Assist and lane planning.
-- `docs/apple-local-assist-writing-companion-plan.md`: Apple Local Assist companion UX direction.
+- `docs/apple-local-assist-distribution-plan.md`: Hazakura Local Assist and lane planning.
+- `docs/apple-local-assist-writing-companion-plan.md`: Hazakura Local Assist companion UX direction.
 - `docs/app-store-build.md`: public-safe App Store build/signing boundary.
 
 ## Next Safe Actions
@@ -264,10 +272,12 @@ baseline, and smoke evidence are archived under
    and archive only completed version-specific material; canonical build
    and boundary docs stay live for future submissions.
 2. For the next product slice, start with `docs/current-work.md`. v0.29
-   is the selected AI assist review API lane. Continue only with a narrow
-   Apple Local Assist transaction review / retired Review Desk exposure
-   guard whose proof path is available. Keep the App Store path limited
-   to Apple Local Assist, with no external Agent surface; do not add Book Workspace Alpha, hidden multi-file book
+   is the selected AI assist review API lane. First prefer the accepted
+   Hazakura Local Assist pre-submission fixes still remaining in
+   `docs/current-work.md`: signed/built-app smoke for the corrected
+   `apple-assist` window, helper process absence before explicit Local
+   Assist use, short probe timeout, and raw error hygiene. Keep the App Store path limited to Hazakura Local Assist,
+   with no external Agent surface; do not add Book Workspace Alpha, hidden multi-file book
    manifests, structural book-workspace information architecture, Native
    Vibrancy Phase 2, cover editing, or an EPUB document model unless that
    lane is explicitly opened.
@@ -284,7 +294,7 @@ baseline, and smoke evidence are archived under
    explicit distribution-lane work. Do not update tracked release docs
    for every generated package; record public-safe evidence only when a
    package is uploaded, submitted, or selected as release evidence.
-4. For Apple Local Assist, use `docs/assist-surface-strategy.md`,
+4. For Hazakura Local Assist, use `docs/assist-surface-strategy.md`,
    `docs/apple-local-assist-distribution-plan.md`, and
    `docs/apple-local-assist-writing-companion-plan.md`; keep direct
    buffer edits as explicit AI edit transactions.

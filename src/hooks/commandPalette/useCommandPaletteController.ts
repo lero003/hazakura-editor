@@ -32,6 +32,7 @@ import type {
 import type { LModeCopy } from "../../lib/locale";
 import { isExternalCliAssistSurfaceAllowed } from "../../lib/distributionLane";
 import type {
+  AssistSurfacePreference,
   EditorSettings,
   EditorTab,
   PreferencesDialogMode,
@@ -80,6 +81,7 @@ type UseCommandPaletteControllerOptions = {
   activeTab: EditorTab | null;
   activeTabId: string | null;
   appleLocalAssistAllowed: boolean;
+  assistSurfaceActive: AssistSurfacePreference;
   editorPaneRef: RefObject<EditorPaneHandle | null>;
   lModeCopy: LModeCopy;
   setStatus: Dispatch<SetStateAction<string>>;
@@ -92,6 +94,7 @@ export function useCommandPaletteController({
   activeTab,
   activeTabId,
   appleLocalAssistAllowed,
+  assistSurfaceActive,
   editorPaneRef,
   lModeCopy,
   setStatus,
@@ -99,6 +102,8 @@ export function useCommandPaletteController({
   workspaceRootPath,
 }: UseCommandPaletteControllerOptions) {
   const externalCliAllowed = isExternalCliAssistSurfaceAllowed();
+  const appleLocalAssistActive =
+    appleLocalAssistAllowed && assistSurfaceActive === "apple-local";
   const handleOpenSearchMatch = useCallback(
     (row: GlobalSearchRow) => {
       void actions.openWorkspaceFile(row.file.path).then(() => {
@@ -423,7 +428,7 @@ export function useCommandPaletteController({
             },
           ]
         : []),
-      ...(appleLocalAssistAllowed
+      ...(appleLocalAssistActive
         ? [
             {
               category: "Writing Companion",
@@ -436,8 +441,9 @@ export function useCommandPaletteController({
                 "companion",
                 "foundation",
                 "models",
+                "hazakura",
               ],
-              label: "Open Apple Local Assist Window",
+              label: "Open Hazakura Local Assist Window",
               run: () => {
                 void actions.openAppleAssistWindow(themePreference);
               },
@@ -578,7 +584,9 @@ export function useCommandPaletteController({
       actions,
       activeTab,
       activeTabId,
+      appleLocalAssistActive,
       appleLocalAssistAllowed,
+      assistSurfaceActive,
       editorPaneRef,
       externalCliAllowed,
       lModeCopy,

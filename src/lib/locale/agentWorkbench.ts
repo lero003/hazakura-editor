@@ -52,25 +52,25 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
         surfaceSectionLabel: "外部アシストの種類",
         assistSurfaceControl: "外部アシスト",
         assistSurfaceNone: "使わない",
-        assistSurfaceApple: "Apple Local Assist (実験的)",
+        assistSurfaceApple: "Hazakura Local Assist (実験的)",
         assistSurfaceExternalCli: "CLI Agent",
         assistSurfaceRestartRequired:
           "アシストの種類は再起動後に切り替わります。",
-        appleHeading: "Apple Local Assist",
-        appleSectionLabel: "Apple Local Assist の状態と注意事項",
+        appleHeading: "Hazakura Local Assist",
+        appleSectionLabel: "Hazakura Local Assist の状態と注意事項",
         appleExperimentalLabel: "Alpha / Experimental",
         appleDescription:
           "Apple Intelligence 対応環境で利用できる実験的なオンデバイス文章補助です。短い要約、言い換え、見出し案、タグ候補、軽い整形を目的としています。",
         appleFixtureStatus:
-          "Apple Local Assist は現在利用できません。",
+          "Hazakura Local Assist は現在利用できません。",
         appleLiveStatus:
-          "この Mac では Apple Local Assist をアルファ機能として利用できます。",
+          "この Mac では Hazakura Local Assist をアルファ機能として利用できます。",
         appleUnavailablePrefix:
-          "この Mac では Apple Local Assist をまだ利用できません: ",
+          "この Mac では Hazakura Local Assist をまだ利用できません: ",
         appleUnsupportedStatus:
-          "この環境では Apple Local Assist はサポートされていません。",
+          "この環境では Hazakura Local Assist はサポートされていません。",
         appleNotes: [
-          "Apple Local Assist は軽い文章補助であり、外部 AI エージェントや高度なレビュー機能の代替ではありません。",
+          "Hazakura Local Assist は軽い文章補助であり、外部 AI エージェントや高度なレビュー機能の代替ではありません。",
           "コードレビュー、複数ファイルをまたぐ理解、長文全体の構成改善、専門的な推論には向きません。",
           "本文への変更は未保存の AI edit transaction として記録し、差分で確認できます。",
           "自動保存、背景での書き換え、ワークスペース全体の解析は行いません。",
@@ -117,25 +117,25 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
         surfaceSectionLabel: "External assist type",
         assistSurfaceControl: "External assist",
         assistSurfaceNone: "Off",
-        assistSurfaceApple: "Apple Local Assist (Experimental)",
+        assistSurfaceApple: "Hazakura Local Assist (Experimental)",
         assistSurfaceExternalCli: "CLI Agent",
         assistSurfaceRestartRequired:
           "The assist type changes after restarting Hazakura Editor.",
-        appleHeading: "Apple Local Assist",
-        appleSectionLabel: "Apple Local Assist status and notes",
+        appleHeading: "Hazakura Local Assist",
+        appleSectionLabel: "Hazakura Local Assist status and notes",
         appleExperimentalLabel: "Alpha / Experimental",
         appleDescription:
           "Experimental on-device writing help for Apple Intelligence-capable environments. It is intended for short summaries, rephrasing, heading ideas, tag suggestions, and light cleanup.",
         appleFixtureStatus:
-          "Apple Local Assist is not currently available.",
+          "Hazakura Local Assist is not currently available.",
         appleLiveStatus:
-          "Apple Local Assist is available on this Mac as an alpha feature.",
+          "Hazakura Local Assist is available on this Mac as an alpha feature.",
         appleUnavailablePrefix:
-          "Apple Local Assist is not available yet on this Mac: ",
+          "Hazakura Local Assist is not available yet on this Mac: ",
         appleUnsupportedStatus:
-          "Apple Local Assist is not supported in this environment.",
+          "Hazakura Local Assist is not supported in this environment.",
         appleNotes: [
-          "Apple Local Assist is lightweight text assistance, not a replacement for external AI agents or advanced review tools.",
+          "Hazakura Local Assist is lightweight text assistance, not a replacement for external AI agents or advanced review tools.",
           "It is not suited for code review, multi-file understanding, long-document restructuring, autonomous agent work, or advanced reasoning.",
           "Text changes are recorded as unsaved AI edit transactions and remain reviewable through diff.",
           "No auto-save, background rewriting, or broad workspace analysis is performed.",

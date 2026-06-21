@@ -45,7 +45,7 @@ Prefer work in this order:
    sandbox/review evidence, and `network.client` explanation. Use
    `npm run smoke:app-store-surface` for the lightweight source-level
    App Store surface check before escalating to signed TestFlight smoke.
-6. One concrete user-test friction point from Apple Local Assist,
+6. One concrete user-test friction point from Hazakura Local Assist,
    L Mode, theme, settings, status / error copy, export, or
    file/recovery workflows.
 7. Safety-boundary regression checks.
@@ -74,7 +74,7 @@ Prefer work in this order:
 ## Start Every Run
 
 1. Read `AGENTS.md`, `README.md`, `docs/README.md`, `docs/current-work.md`, `docs/current-status.md`, `docs/roadmap.md`, `docs/smoke-checklist.md`, and this document.
-   If the run touches Apple Local Assist, App Store distribution, or assist-provider shape, also read `docs/assist-surface-strategy.md`, `docs/apple-local-assist-distribution-plan.md`, `docs/security-boundary.md`, and `docs/agent-workbench-boundary.md`.
+   If the run touches Hazakura Local Assist, App Store distribution, or assist-provider shape, also read `docs/assist-surface-strategy.md`, `docs/apple-local-assist-distribution-plan.md`, `docs/security-boundary.md`, and `docs/agent-workbench-boundary.md`.
    Historical v0.17 App Store-quality request packets live under `docs/archive/operations/app-store-v0.17/`; read them only for background.
 2. Run `git status --short --branch`.
 3. Treat existing uncommitted changes as user or previous-agent work. Do not revert them.
@@ -102,7 +102,7 @@ Do not implement or imply:
 - Signing, notarization, updater, or installer completion without an explicit distribution lane.
 - Full E2E suite, privacy policy, support page, Sparkle updater, or automated release pipeline unless the user opens that lane explicitly. Small smoke harnesses, accessibility audits, and performance baselines are acceptable when they stay bounded.
 - Dependency or lockfile changes without explicit approval.
-- Apple Local Assist distribution-lane changes (`minimumSystemVersion`, App Store/TestFlight settings, signing, entitlements, sandbox assumptions, notarization, helper packaging shape, or network fallback) without explicit user approval. The live local helper is already on `main`; future work should harden quality, unavailable states, and distribution evidence without broadening the trust boundary.
+- Hazakura Local Assist distribution-lane changes (`minimumSystemVersion`, App Store/TestFlight settings, signing, entitlements, sandbox assumptions, notarization, helper packaging shape, or network fallback) without explicit user approval. The live local helper is already on `main`; future work should harden quality, unavailable states, and distribution evidence without broadening the trust boundary.
 
 Keep Agent Workbench explicit, allowlisted, one-session, no-restore, and no-auto-apply. Keep the standalone Review Desk retired unless the user explicitly reopens that product direction. Refactoring is acceptable when it is the smallest way to fix or verify a concrete polish issue, but do not turn the quality lane into a broad architecture rewrite.
 

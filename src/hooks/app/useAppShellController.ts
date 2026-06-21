@@ -391,7 +391,7 @@ export function useAppShellController() {
   // section: agent output buffer
   const { agentOutput, applyAgentOutput, resetAgentOutput } = foundation;
 
-  // v0.12+ Apple Local Assist Writing Companion (slice 3).
+  // v0.12+ Hazakura Local Assist Writing Companion (slice 3).
   // Keep the Rust-side `MainAppleAssistTargetCache` fresh on
   // every selection / cursor change. The hook is a no-op
   // outside the Tauri runtime (it short-circuits the
@@ -409,9 +409,9 @@ export function useAppShellController() {
     selectionInfo,
   });
 
-  // v0.12+ Apple Local Assist Writing Companion (slice 4).
+  // v0.12+ Hazakura Local Assist Writing Companion (slice 4).
   // Main-window listener for `APPLY_AI_EDIT_TRANSACTION_EVENT`.
-  // The detached Apple Assist window fires this when the user
+  // The detached Hazakura Local Assist window fires this when the user
   // clicks Apply; the hook runs the fixture transform, mutates
   // the active tab's unsaved buffer, and records the
   // transaction in the session-local store so the slice 5
@@ -957,8 +957,10 @@ export function useAppShellController() {
   });
 
   // section: command palette + global search
+  const appleLocalAssistActive =
+    appleLocalAssistAllowed && assistSurfaceActive === "apple-local";
   const { availability: appleAssistAvailability } = useAppleAssistAvailability(
-    appleLocalAssistAllowed,
+    appleLocalAssistActive && preferencesDialogMode === "agent",
   );
 
   const {
@@ -997,7 +999,7 @@ export function useAppShellController() {
         void openAgentWindow(theme);
       },
       openAppleAssistWindow: (theme) => {
-        if (!appleLocalAssistAllowed) {
+        if (!appleLocalAssistActive) {
           return;
         }
         void openAppleAssistWindow(theme);
@@ -1023,6 +1025,7 @@ export function useAppShellController() {
     activeTab,
     activeTabId,
     appleLocalAssistAllowed,
+    assistSurfaceActive,
     editorPaneRef,
     lModeCopy,
     setStatus,
@@ -1041,7 +1044,7 @@ export function useAppShellController() {
         void openAgentWindow(themePreference);
       },
       openAppleAssistWindow: () => {
-        if (!appleLocalAssistAllowed) {
+        if (!appleLocalAssistActive) {
           return;
         }
         void openAppleAssistWindow(themePreference);
@@ -1084,6 +1087,7 @@ export function useAppShellController() {
       activeTab,
       agentWorkbenchActive,
       agentWorkbenchConsent,
+      assistSurfaceActive,
       discardingWindowCloseRef,
       editorSettings,
       menuLanguage,
@@ -1173,7 +1177,7 @@ export function useAppShellController() {
     },
   });
 
-  // v0.12+ Apple Local Assist Writing Companion (slice 5).
+  // v0.12+ Hazakura Local Assist Writing Companion (slice 5).
   // The escape hatch's Discard button reverts the affected
   // tab's contents to the transaction's full-buffer snapshot
   // and clears the transaction via the store. The tab
@@ -1185,7 +1189,7 @@ export function useAppShellController() {
     (tabId: string, beforeBuffer: string) => {
       const targetTab = tabs.find((tab) => tab.id === tabId);
       if (!targetTab) {
-        setStatus("Apple Local Assist discard failed");
+        setStatus("Hazakura Local Assist discard failed");
         return;
       }
       setTabs((currentTabs) =>
@@ -1201,7 +1205,7 @@ export function useAppShellController() {
         ),
       );
       setActiveTabId(tabId);
-      setStatus("Apple Local Assist edit discarded");
+      setStatus("Hazakura Local Assist edit discarded");
     },
     [setActiveTabId, setStatus, setTabs, tabs],
   );
@@ -1353,8 +1357,8 @@ export function useAppShellController() {
     onExitLModeToWorkspace: exitLModeToWorkspace,
     onFinishTabPointerDrag: finishTabPointerDrag,
     onOpenAppleAssistFromLMode: () => {
-      // v0.12+ Apple Local Assist Writing Companion mock
-      // (slice 3). The L Mode action rail's Apple Assist
+      // v0.12+ Hazakura Local Assist Writing Companion mock
+      // (slice 3). The L Mode action rail's Hazakura Local Assist
       // button calls the visible companion-slot toggle used
       // by the main chrome. `exitLModeToWorkspace` is
       // intentionally NOT called: showing / hiding the Apple

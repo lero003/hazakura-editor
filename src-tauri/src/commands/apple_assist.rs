@@ -1,6 +1,6 @@
-// Tauri command surface for Apple Local Assist.
+// Tauri command surface for Hazakura Local Assist.
 //
-// Apple Local Assist is an Assist Surface provider class for
+// Hazakura Local Assist is an Assist Surface provider class for
 // on-device document help. It is NOT a CLI-agent provider and
 // does NOT share the External Agent Workbench trust boundary.
 // The commands here only:
@@ -11,11 +11,11 @@
 //
 // Candidate generation is gated to the main window only. The
 // read-only availability probe is also allowed from the detached
-// Apple Assist window so the companion can disable itself when
+// Hazakura Local Assist window so the companion can disable itself when
 // Foundation Models is unavailable. The `*_with_label` shim
 // pattern mirrors `commands::agent_workbench` for testability,
 // but neither command uses `..._or_agent` — the agent window must
-// not be able to invoke Apple Local Assist. v0.12 uses the
+// not be able to invoke Hazakura Local Assist. v0.12 uses the
 // bundled Swift helper supervisor for live Foundation Models
 // availability and candidate generation. The Rust-only stub
 // remains only as a pure test fixture.
@@ -74,7 +74,7 @@ impl AppleAssistOperation {
             "proofread" => Ok(AppleAssistOperation::Proofread),
             "explain_diff" => Ok(AppleAssistOperation::ExplainDiff),
             other => Err(format!(
-                "Apple Assist helper returned unknown operation: {other}"
+                "Hazakura Local Assist helper returned unknown operation: {other}"
             )),
         }
     }
@@ -139,7 +139,7 @@ pub(crate) fn probe_apple_assist_availability_with_helper(
                 reason: error.error,
             }),
             WireEnvelope::Candidate(_) => Err(
-                "Apple Assist helper returned a candidate envelope for an availability probe."
+                "Hazakura Local Assist helper returned a candidate envelope for an availability probe."
                     .to_string(),
             ),
         }
@@ -197,7 +197,7 @@ pub(crate) fn generate_apple_assist_candidate_with_label_for_lane(
 pub(crate) fn validate_request(request: &AppleAssistRequest) -> Result<(), String> {
     if !request.operation.is_implemented_in_v0_12() {
         return Err(format!(
-            "Apple Local Assist operation '{:?}' is not implemented in v0.12 (deferred).",
+            "Hazakura Local Assist operation '{:?}' is not implemented in v0.12 (deferred).",
             request.operation
         ));
     }
@@ -218,7 +218,7 @@ pub(crate) fn validate_request(request: &AppleAssistRequest) -> Result<(), Strin
     if let Some(instruction) = &request.instruction {
         if instruction.chars().count() > APPLE_ASSIST_MAX_INSTRUCTION_CHARS {
             return Err(format!(
-                "Apple Assist instruction exceeds the maximum length of {} characters.",
+                "Hazakura Local Assist instruction exceeds the maximum length of {} characters.",
                 APPLE_ASSIST_MAX_INSTRUCTION_CHARS
             ));
         }
@@ -242,7 +242,7 @@ pub(crate) fn generate_apple_assist_candidate_with_helper(
             WireEnvelope::Candidate(value) => map_helper_candidate(value),
             WireEnvelope::Error(error) => Err(error.error),
             WireEnvelope::Availability(_) => Err(
-                "Apple Assist helper returned an availability envelope for candidate generation."
+                "Hazakura Local Assist helper returned an availability envelope for candidate generation."
                     .to_string(),
             ),
         }
@@ -251,7 +251,7 @@ pub(crate) fn generate_apple_assist_candidate_with_helper(
     {
         let _ = helper_store;
         let _ = request;
-        Err("Apple Local Assist is supported on macOS only.".to_string())
+        Err("Hazakura Local Assist is supported on macOS only.".to_string())
     }
 }
 
@@ -263,10 +263,10 @@ pub(crate) fn map_helper_availability(value: HelperAvailability) -> AppleAssistA
         "unavailable" => AppleAssistAvailability::Unavailable {
             reason: value
                 .reason
-                .unwrap_or_else(|| "Apple Local Assist is unavailable.".to_string()),
+                .unwrap_or_else(|| "Hazakura Local Assist is unavailable.".to_string()),
         },
         other => AppleAssistAvailability::Unavailable {
-            reason: format!("Apple Assist helper returned unknown availability kind: {other}"),
+            reason: format!("Hazakura Local Assist helper returned unknown availability kind: {other}"),
         },
     }
 }

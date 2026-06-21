@@ -4,7 +4,7 @@
 // is exercised through `useOperationFeedback`, which is
 // the single piece of state that powers the bounded,
 // in-memory, never-persisted feedback trail inside the
-// detached Apple Local Assist window. The full component
+// detached Hazakura Local Assist window. The full component
 // depends on the Tauri runtime, the on-device Apple
 // Foundation Models availability probe, and the main-
 // window IPC channel; those are not unit-tested here, but

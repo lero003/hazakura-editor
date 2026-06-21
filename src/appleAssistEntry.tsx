@@ -4,7 +4,7 @@ import "./styles/index.css";
 
 const container = document.getElementById("root");
 if (!container) {
-  throw new Error("Apple Assist window root container not found");
+  throw new Error("Hazakura Local Assist window root container not found");
 }
 
 createRoot(container).render(<AppleAssistWindowApp />);

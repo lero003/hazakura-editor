@@ -38,8 +38,8 @@ or quality-polish slice.
 - `native-macos-appearance-plan.md`: v0.25 native-feeling Safe Editor chrome planning memo.
 - `post-v0.25-product-refinement-plan.md`: post-App-Store refinement lens for raising product grade without adding heavy surfaces.
 - `speculative-local-ai-future-plan.md`: changeable v1+ / v2+ / v3+ local AI direction.
-- `apple-local-assist-distribution-plan.md`: Apple Local Assist / App Store distribution planning memo.
-- `apple-local-assist-writing-companion-plan.md`: Apple Local Assist Writing Companion / external Assist Window UX direction.
+- `apple-local-assist-distribution-plan.md`: Hazakura Local Assist / App Store distribution planning memo.
+- `apple-local-assist-writing-companion-plan.md`: Hazakura Local Assist Writing Companion / external Assist Window UX direction.
 
 ## Local-Only Internal Notes
 

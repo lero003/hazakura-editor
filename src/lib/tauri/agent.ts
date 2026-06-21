@@ -209,13 +209,13 @@ export async function setAgentWindowTheme(theme: string): Promise<void> {
   }
 }
 
-// v0.12+ Apple Local Assist Writing Companion mock (slice 2+).
+// v0.12+ Hazakura Local Assist Writing Companion mock (slice 2+).
 // `openAppleAssistWindow` asks Rust to spawn the detached
-// `apple-assist` webview. The Apple Assist window is the
+// `apple-assist` webview. The Hazakura Local Assist window is the
 // outside-companion slot that replaces the Agent window (see
 // `docs/apple-local-assist-writing-companion-plan.md`). The
 // Rust side enforces companion-slot mutual exclusion: opening
-// the Apple Assist window closes the Agent window if it is
+// the Hazakura Local Assist window closes the Agent window if it is
 // open, and vice versa. The mock is a small form for rough
 // requests; the actual body editing happens in the main
 // window via the AI edit transaction channel.
@@ -227,11 +227,11 @@ export async function openAppleAssistWindow(theme?: string): Promise<void> {
   try {
     await invoke("open_apple_assist_window", { theme: theme ?? null });
   } catch (err) {
-    console.warn("Failed to open Apple Assist window", err);
+    console.warn("Failed to open Hazakura Local Assist window", err);
   }
 }
 
-// Main-window chrome uses Apple Assist as a visible companion-slot
+// Main-window chrome uses Hazakura Local Assist as a visible companion-slot
 // toggle: press once to show, press again to hide. Keep this separate
 // from `openAppleAssistWindow` so menu / command-palette "open"
 // actions remain open-or-focus.
@@ -243,7 +243,7 @@ export async function toggleAppleAssistWindow(theme?: string): Promise<void> {
   try {
     await invoke("toggle_apple_assist_window", { theme: theme ?? null });
   } catch (err) {
-    console.warn("Failed to toggle Apple Assist window", err);
+    console.warn("Failed to toggle Hazakura Local Assist window", err);
   }
 }
 
@@ -255,7 +255,7 @@ export async function setAppleAssistWindowTheme(theme: string): Promise<void> {
   try {
     await invoke("set_apple_assist_window_theme", { theme });
   } catch (err) {
-    console.warn("Failed to set Apple Assist window theme", err);
+    console.warn("Failed to set Hazakura Local Assist window theme", err);
   }
 }
 
@@ -269,11 +269,11 @@ export async function requestApplyAiEditTransaction(
   await invoke("request_apply_ai_edit_transaction", { payload });
 }
 
-// v0.12+ Apple Local Assist Writing Companion (slice 3+).
+// v0.12+ Hazakura Local Assist Writing Companion (slice 3+).
 // `getMainAppleAssistTarget` reads the latest inferred
 // target snapshot from the Rust-side cache. The main window
 // keeps this cache fresh on every selection / cursor
-// change via `setMainAppleAssistTarget`; the Apple Assist
+// change via `setMainAppleAssistTarget`; the Hazakura Local Assist
 // window can pull the value lazily on Apply or subscribe
 // to `MAIN_APPLE_ASSIST_TARGET_CHANGED_EVENT` for live
 // updates. See
