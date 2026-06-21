@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-06-22 (v0.29 build 29 delivery success)
+Last reviewed: 2026-06-22 (v0.29 build 30 local package)
 
 ## Purpose
 
@@ -44,9 +44,9 @@ Agent Workbench behind its existing boundary.
 - Published App Store version: `0.26.0` (reported released on 2026-06-20
   after App Review completion)
 - Current source / Developer version: `0.29.0`
-- Latest generated local App Store package evidence: `0.29.0` build `29`
-  (generated after the helper sandbox entitlement validation fix)
-- Current App Store submit config build counter: `29`
+- Latest generated local App Store package evidence: `0.29.0` build `30`
+  (generated after the helper executable rename)
+- Current App Store submit config build counter: `30`
   (the next package build will increment from this value)
 - App Store category: `Productivity`
 - Public Privacy Policy URL:
@@ -684,7 +684,7 @@ result. SHA-256:
 
 v0.29 package-candidate note: on 2026-06-22, Transporter rejected the
 first local `0.29.0` build `28` package because the bundled
-`hazakura-local-assist-helper` only carried
+Hazakura Local Assist helper only carried
 `com.apple.security.inherit` and lacked
 `com.apple.security.app-sandbox`. Codex updated the helper entitlement
 file and distribution probe, then generated a replacement local App
@@ -704,8 +704,9 @@ The signed submit-lane bundle reported `CFBundleIdentifier`
 `dev.hazakura.editor`, `CFBundleShortVersionString` `0.29.0`,
 `CFBundleVersion` `29`, and `LSMinimumSystemVersion` `26.0`. It had the
 expected App Sandbox, user-selected read/write, app-scoped bookmark, and
-network-client entitlements. The bundled Hazakura Local Assist helper
-was present, executable, Apple Distribution signed, and carried both
+network-client entitlements. The bundled Hazakura Local Assist helper was
+present, executable, Apple Distribution signed, still used the previous
+Apple-branded helper executable name, and carried both
 `com.apple.security.app-sandbox` and `com.apple.security.inherit`.
 `REQUIRE_APP_STORE_ENTITLEMENTS=1 npm run probe:macos-distribution -- <app>`
 passed for the generated app, and expanded-package payload inspection
@@ -718,4 +719,42 @@ result. SHA-256:
 
 ```txt
 37e8afb8e34520e760c4150565dfe0616498d4768a00e3ef3edafbc4291f27bd
+```
+
+v0.29 build 30 local package note: on 2026-06-22, Codex generated a new
+local App Store submit-lane package for user-visible version `0.29.0`
+after renaming the bundled helper executable to
+`hazakura-local-assist-helper`. The package was opened in Transporter
+GUI, but CLI delivery was not completed from Codex because App Store
+Connect authentication environment variables were not set. App Store
+Connect upload completion, processing, TestFlight, App Review, and
+release handling remain separate evidence unless the user records them.
+
+The local package generated for this lane is:
+
+```txt
+src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.29.0-build30-mas.pkg
+```
+
+The signed submit-lane bundle reported `CFBundleIdentifier`
+`dev.hazakura.editor`, `CFBundleShortVersionString` `0.29.0`,
+`CFBundleVersion` `30`, and `LSMinimumSystemVersion` `26.0`. It had the
+expected App Sandbox, user-selected read/write, app-scoped bookmark, and
+network-client entitlements. The bundled Hazakura Local Assist helper
+was present as `Contents/MacOS/hazakura-local-assist-helper`, executable,
+Apple Distribution signed, and carried both
+`com.apple.security.app-sandbox` and `com.apple.security.inherit`.
+The package payload expansion confirmed the same helper name and helper
+entitlements, and confirmed the previous Apple-branded helper executable
+was absent. The App Store entitlement-enforced macOS distribution probe
+passed for the generated app.
+`productbuild --synthesize` emitted a Distribution XML
+`allowed-os-versions` entry with `min="26.0"`.
+`pkgutil --check-signature` passed with the 3rd Party Mac Developer
+Installer certificate. `spctl` rejected the local package, so keep
+treating that as local trust-policy evidence rather than an App Store
+Connect validation result. SHA-256:
+
+```txt
+7170f4fb1aba3ad0e37d7aacf207408c38a92fb618678a01e1afc1d3030647f2
 ```

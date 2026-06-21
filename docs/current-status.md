@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-22 (v0.29 build 29 delivery success)
+Last reviewed: 2026-06-22 (v0.29 build 30 local package)
 
 ## Current State
 
@@ -82,9 +82,10 @@ Last reviewed: 2026-06-22 (v0.29 build 29 delivery success)
   softer Local Assist network wording, short probe timeout separation,
   and helper error hygiene that avoids Foundation Models
   `debugDescription` in user-facing error envelopes. Remaining
-  distribution risk is App Store Connect processing / TestFlight proof
-  after successful Transporter delivery of the corrected signed
-  submit-lane package. A
+  distribution risk is App Store Connect upload / processing /
+  TestFlight proof for the build `30` helper-rename package. Build `29`
+  delivery succeeded earlier on 2026-06-22, but it used the previous
+  Apple-branded helper executable name. A
   2026-06-21 user-side light built-app smoke confirmed the dedicated
   Local Assist UI opens, the helper is absent from Activity Monitor
   memory before opening the Local Assist window, and a simple request can
@@ -107,19 +108,21 @@ Last reviewed: 2026-06-22 (v0.29 build 29 delivery success)
   boundary markers. All presets follow the same explicit, unsaved,
   diff-reviewable AI edit transaction flow.
 - The latest generated helper-enabled App Store package candidate for
-  `0.29.0` is build `29`, generated on 2026-06-22 after Transporter
-  rejected build `28` because the bundled
-  `hazakura-local-assist-helper` lacked
-  `com.apple.security.app-sandbox`. The helper entitlement file now
-  carries both `com.apple.security.app-sandbox` and
-  `com.apple.security.inherit`, and the distribution probe checks both
-  values. Local package signature, signed app probe, and expanded pkg
-  payload entitlement checks passed. SHA-256:
-  `37e8afb8e34520e760c4150565dfe0616498d4768a00e3ef3edafbc4291f27bd`.
-  The user reported successful Transporter delivery for this corrected
-  package on 2026-06-22. App Store Connect processing, TestFlight, App
-  Review, and release handling are not tracked in this repository unless
-  separately recorded.
+  `0.29.0` is build `30`, generated on 2026-06-22 after the bundled
+  helper executable was renamed to `hazakura-local-assist-helper`.
+  Local App Store surface smoke, live helper build smoke, signed app
+  probe, package signature, package payload metadata, package payload
+  helper-name, and package payload helper-entitlement checks passed.
+  SHA-256:
+  `7170f4fb1aba3ad0e37d7aacf207408c38a92fb618678a01e1afc1d3030647f2`.
+  Codex opened the package in Transporter GUI, but CLI delivery was not
+  completed because App Store Connect authentication environment
+  variables were not set. Earlier build `29` was reported as delivered
+  through Transporter on 2026-06-22 after the helper sandbox entitlement
+  fix; build `30` supersedes it for the helper-name change. App Store
+  Connect upload completion, processing, TestFlight, App Review, and
+  release handling are not tracked in this repository unless separately
+  recorded.
 - The current source App Store lane now reopens Hazakura Local Assist as a
   narrow on-device writing companion. Agent Workbench, CLI Agent launch,
   arbitrary command execution, external AI/API calls, provider-add UI,
@@ -308,19 +311,22 @@ baseline, and smoke evidence are archived under
    and boundary docs stay live for future submissions.
 2. For the next product slice, start with `docs/current-work.md`. v0.29
    is the selected AI assist review API lane. The immediate App Store
-   lane follow-up is App Store Connect / TestFlight processing proof for
-   the delivered `0.29.0` build `29` package. Keep the App Store path
+   lane follow-up is upload completion / App Store Connect / TestFlight
+   processing proof for the `0.29.0` build `30` helper-rename package.
+   Keep the App Store path
    limited to Hazakura Local Assist, with no external
    Agent surface; do not add Book Workspace Alpha, hidden multi-file book
    manifests, structural book-workspace information architecture, Native
    Vibrancy Phase 2, cover editing, or an EPUB document model unless that
    lane is explicitly opened.
-3. For the current `0.29.0` source lane, build `29` is the latest local
-   App Store submit package evidence after the helper sandbox entitlement
-   validation fix, and the user reported successful Transporter delivery
-   for build `29` on 2026-06-22. Build `28` was rejected by Transporter
-   and should not be reused. User-side review work is outside this
-   repository unless new evidence is explicitly recorded.
+3. For the current `0.29.0` source lane, build `30` is the latest local
+   App Store submit package evidence after the helper executable rename.
+   Codex opened the package in Transporter GUI, but upload completion is
+   not recorded. Build `29` was reported as successfully delivered on
+   2026-06-22 after the helper sandbox entitlement fix; build `28` was
+   rejected by Transporter and should not be reused. User-side review
+   work is outside this repository unless new evidence is explicitly
+   recorded.
    For a future App Store submission, start with `docs/app-store-build.md`;
    use `npm run release:candidate -- --with-app-store-pkg` for local
    signed package checkpoints, keep account-specific notes under ignored

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-22 (v0.29 Local Assist helper rename)
+Last reviewed: 2026-06-22 (v0.29 build 30 local package)
 
 ## Current State
 
@@ -11,10 +11,14 @@ Last reviewed: 2026-06-22 (v0.29 Local Assist helper rename)
   release checkpoint. The published Mac App Store version remains
   `0.26.0` until a newer App Store build is processed, approved, and
   released. Current package/app metadata is `0.29.0`; helper-enabled
-  build `29` was generated and the user reported successful Transporter
-  delivery on 2026-06-22. App Store Connect processing, TestFlight, App
-  Review, and release handling are not tracked unless explicitly
-  recorded later.
+  build `30` is the latest generated local App Store package after the
+  helper executable rename. Codex opened the build `30` package in
+  Transporter GUI, but CLI delivery was not completed because App Store
+  Connect authentication environment variables were unset. Build `29`
+  was reported as successfully delivered on 2026-06-22 after the helper
+  sandbox entitlement fix. App Store Connect upload completion,
+  processing, TestFlight, App Review, and release handling are not
+  tracked unless explicitly recorded later.
 - User-facing app identity is capitalized as `Hazakura Editor`. The
   App Store preview bundle is `Hazakura Editor.app`; current docs and
   smoke paths should use that name rather than the older lowercase
@@ -499,6 +503,21 @@ open Active UX Queue slice and close it as `implemented`,
   `cargo test --manifest-path src-tauri/Cargo.toml resolver_bundled_helper_filename_uses_sidecar_convention -- --nocapture`,
   `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE="$PWD/binaries/hazakura-local-assist-helper-aarch64-apple-darwin" cargo test --manifest-path src-tauri/Cargo.toml apple_assist_supervisor -- --nocapture --test-threads=1`,
   `npm run test`, `npm run build:vite`, and `git diff --check`.
+- Latest v0.29 App Store package gate: build `30` was generated with
+  `npm run release:candidate -- --with-app-store-pkg` using the Apple
+  Distribution and 3rd Party Mac Developer Installer identities. The
+  package is
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.29.0-build30-mas.pkg`
+  with SHA-256
+  `7170f4fb1aba3ad0e37d7aacf207408c38a92fb618678a01e1afc1d3030647f2`.
+  Verified: App Store surface smoke, live helper build smoke, signed app
+  distribution probe with App Store entitlement enforcement,
+  `pkgutil --check-signature`, payload expansion showing only
+  `hazakura-local-assist-helper`, helper `app-sandbox` + `inherit`
+  entitlements, `allowed-os-versions min="26.0"`, and `git diff
+  --check`. `spctl --assess --type install` rejected the local pkg as
+  expected for this lane. Transporter GUI was opened with the package;
+  delivery completion is not recorded here.
 - Previous v0.29 Hazakura Local Assist App Store-lane gate: source tests and
   local build evidence now cover the prompt/preset boundary: UI labels
   are display-only, preset clicks insert visible editable request text,
