@@ -110,14 +110,16 @@ Implemented locally as of 2026-06-21:
 - `smoke:app-store-surface` now includes the source-level Review Desk /
   single-file proposal import tests, so App Store surface checks cover
   this helper-free path.
+- `smoke:macos-window` now gives a repeatable local packaged-app
+  launch/window proof for `Hazakura Editor Dev.app` via
+  `CoreGraphics` / `CGWindowListCopyWindowInfo`.
 
 Next useful v0.29 slices, if needed:
 
-- Built-app smoke for Review Desk file import in the App Store preview
-  lane; keep this separate from the source-level smoke above.
-  `npm run build:macos-lanes` now produces the separate
-  `Hazakura Editor Dev.app` again for local UI smoke setup, but the
-  actual Review Desk import flow still needs a visible app-window smoke.
+- Native-dialog Review Desk file-import smoke in a built app; keep this
+  separate from the source-level smoke and the packaged-app window smoke
+  above. Computer Use / AX capture can be blocked for Tauri windows, so
+  do not claim this interaction proof from CGWindow evidence alone.
 - Paste/source provenance polish that keeps provider metadata out of the
   core editor surface.
 - Multi-file proposal review remains deferred until single-file ingest

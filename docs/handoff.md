@@ -82,10 +82,13 @@ Last reviewed: 2026-06-21 (v0.29 proposal-ingest alignment)
   active text tab, can import a user-selected Markdown / text proposal
   file into the candidate input, records file-import source metadata, and
   renders an explicit Diff without auto-save, auto-apply, helper launch,
-  or external AI/API calls. Next useful work should stay narrow: built-app
-  smoke for this file-import path, paste/source provenance polish, or a
-  focused Review Desk quality fix if one is reproduced. Multi-file
-  proposal review remains deferred.
+  or external AI/API calls. A repeatable packaged-app window smoke is
+  available as `npm run smoke:macos-window`; it confirms the local
+  `Hazakura Editor Dev.app` shows an onscreen window via
+  `CoreGraphics`, but it is not native file-picker interaction proof.
+  Next useful work should stay narrow: native-dialog Review Desk smoke,
+  paste/source provenance polish, or a focused Review Desk quality fix if
+  one is reproduced. Multi-file proposal review remains deferred.
 - Latest docs cleanup keeps current entry points lighter: README now
   summarizes feature areas instead of listing every implemented behavior,
   roadmap keeps a short shipped-phase summary for v0.18-v0.26, and

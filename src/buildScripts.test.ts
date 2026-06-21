@@ -10,6 +10,10 @@ const macosLanesScript = readFileSync(
   "scripts/build-macos-lanes.sh",
   "utf8",
 );
+const macosWindowSmokeScript = readFileSync(
+  "scripts/smoke-macos-window.sh",
+  "utf8",
+);
 const appStorePkgScript = readFileSync(
   "scripts/build-app-store-pkg.mjs",
   "utf8",
@@ -244,6 +248,18 @@ describe("macOS build scripts", () => {
   it("keeps macOS lane ad-hoc signing compatible with nounset shells", () => {
     expect(macosLanesScript).toContain("sign_codesign_target");
     expect(macosLanesScript).not.toContain('"${timestamp_args[@]}"');
+  });
+
+  it("provides a built-app window smoke for the Developer preview bundle", () => {
+    expect(packageJson.scripts["smoke:macos-window"]).toBe(
+      "bash scripts/smoke-macos-window.sh",
+    );
+    expect(macosWindowSmokeScript).toContain(
+      "Hazakura Editor Dev.app",
+    );
+    expect(macosWindowSmokeScript).toContain("CGWindowListCopyWindowInfo");
+    expect(macosWindowSmokeScript).toContain("npm run build:macos-lanes");
+    expect(macosWindowSmokeScript).toContain("kCGWindowIsOnscreen");
   });
 
   it("keeps smoke/probe scripts on the current App Store preview bundle name", () => {

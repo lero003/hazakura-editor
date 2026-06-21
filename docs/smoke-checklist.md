@@ -15,6 +15,20 @@ Use Vite / browser smoke only for frontend-only rendering checks that do not req
 
 When a checklist item covers file open/save, workspace folders, app menus, close/quit handling, or L Mode behavior that must be judged inside the packaged desktop shell, run `npm run build` and launch `src-tauri/target/release/bundle/macos/Hazakura Editor.app`. This local smoke bundle is helper-free and launchable, but it is not the signed App Store sandbox submit artifact. Use the signed TestFlight build for App Store-lane proof, and use the Developer / GitHub bundle for Apple Local Assist or Agent Workbench checks. If that environment is unavailable or blocked, report the smoke as blocked/skipped and keep automated checks limited to unit tests, Vite build, Tauri build, bundle metadata, and codesign evidence. Do not claim manual app smoke passed from browser-only evidence.
 
+For a repeatable local packaged-app launch/window proof, run:
+
+```bash
+npm run smoke:macos-window
+```
+
+This builds the current macOS lanes unless `SKIP_BUILD=1` is set,
+launches the Developer / GitHub `Hazakura Editor Dev.app` bundle, and
+uses `CoreGraphics` / `CGWindowListCopyWindowInfo` to confirm an
+onscreen layer-0 app window. It proves the built bundle can surface a
+visible app window on this Mac; it does not prove native dialog
+selection, full Review Desk file-import interaction, TestFlight, App
+Store sandbox behavior, or notarization.
+
 ## v0.18 TestFlight Basic Smoke
 
 Observation on 2026-06-12 for helper-free App Store lane version
@@ -54,9 +68,11 @@ npm run smoke:app-store-surface
 This lightweight smoke groups the source-level checks that the App
 Store lane hides Agent Workbench / CLI Agent / Apple Local Assist
 commands and settings, keeps App Store-only build scripts helper-free,
-and avoids visible developer-lane badges. It does not prove signed
-bundle identity, sandbox behavior, external network absence, App Store
-Connect processing, or TestFlight user flows.
+avoids visible developer-lane badges, and covers the helper-free Review
+Desk proposal-import path at source level. It does not prove signed
+bundle identity, sandbox behavior, native file-picker interaction,
+external network absence, App Store Connect processing, or TestFlight
+user flows.
 
 ## v0.19 App Store Candidate Smoke Focus
 
