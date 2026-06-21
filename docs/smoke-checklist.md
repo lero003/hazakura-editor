@@ -343,18 +343,18 @@ Run when Agent Workbench, provider availability, terminal sizing, or Agent Windo
 Run when `src/lib/tauri/appleAssist.ts`, `src-tauri/src/commands/apple_assist.rs`, `src-tauri/src/commands/apple_assist_supervisor.rs`, `src-helpers/apple-assist/`, `useAppleAssistAvailability`, `useAppleAssistCandidate`, `src/lib/locale/appleAssist.ts`, or the Hazakura Local Assist companion / command palette entries change.
 
 1. Build the live helper with `npm run build:apple-assist-helper:live`; confirm the probe smoke returns an availability envelope. On a Mac where Apple Foundation Models is available and `SystemLanguageModel.default.supportsLocale()` is true, optionally run `HAZAKURA_APPLE_ASSIST_LIVE_SMOKE_GENERATE=1 npm run build:apple-assist-helper:live` and confirm a candidate or honest error envelope.
-2. Confirm helper-enabled builds emit `dist/apple-assist.html` and that `npm run build:developer-preview` / `npm run build:app-store-preview` bundle `Contents/MacOS/hazakura-apple-assist-helper` and sign it with the local app bundle.
+2. Confirm helper-enabled builds emit `dist/apple-assist.html` and that `npm run build:developer-preview` / `npm run build:app-store-preview` bundle `Contents/MacOS/hazakura-local-assist-helper` and sign it with the local app bundle.
 3. Open the Hazakura Local Assist window in the built app and confirm it renders the Local Assist companion UI, not the Safe Editor shell/start panel. It must not expose `ファイルを開く`, `フォルダを開く`, `新規ファイル`, workspace browser, Preview/e-book controls, or other main-window file/workspace actions.
 4. Confirm clicking first-party UI in the Hazakura Local Assist window never shows `Command is not allowed from window 'apple-assist'.` If that message appears, record it as an entrypoint/capability isolation bug, not as an acceptable user-facing error.
 5. Confirm the Settings / Agent Workbench Preferences surface does not list Hazakura Local Assist as a CLI agent provider — it is a separate Assist Surface provider class.
-6. Launch the built app and confirm `hazakura-apple-assist-helper` is not running before the Local Assist surface is explicitly opened. Opening the command palette alone must not spawn the helper or show Foundation Models errors.
+6. Launch the built app and confirm `hazakura-local-assist-helper` is not running before the Local Assist surface is explicitly opened. Opening the command palette alone must not spawn the helper or show Foundation Models errors.
 7. Confirm no menu entry, status bar item, autosave path, or background timer runs Hazakura Local Assist generation without an explicit user request.
 8. In the built app, select `Hazakura Local Assist (Preview)`, restart if prompted, open the companion from normal editor, choose a preset such as `校正だけ` or `読みやすく`, and confirm the preset inserts editable request text before sending.
 9. Repeat item 8 in L Mode. Confirm the compact AI-change affordance appears and `差分を開く` / `差分を閉じる` works.
 10. Choose `要約`, `続きの案`, or `章レビュー`; confirm it follows the same unsaved AI edit transaction / Diff review flow rather than a separate result-only display.
 11. Confirm Agent Window and Hazakura Local Assist Window still replace rather than coexist as the primary external companion.
 12. Confirm user-visible status/error copy does not expose raw helper error text, Foundation Models `debugDescription`, prompts, hidden instructions, broad document excerpts, file paths, secrets, or provider internals.
-13. (Supervisor regression, optional) Build the fixture helper with `npm run build:apple-assist-helper:fixture` and run `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE=binaries/hazakura-apple-assist-helper-aarch64-apple-darwin cargo test apple_assist_supervisor --manifest-path src-tauri/Cargo.toml`.
+13. (Supervisor regression, optional) Build the fixture helper with `npm run build:apple-assist-helper:fixture` and run `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE=binaries/hazakura-local-assist-helper-aarch64-apple-darwin cargo test apple_assist_supervisor --manifest-path src-tauri/Cargo.toml`.
 
 Latest light manual note: on 2026-06-21, user-side built-app smoke
 confirmed the dedicated Hazakura Local Assist UI opened, the helper was

@@ -78,12 +78,10 @@ const REQUIRED_KEYS: ReadonlyArray<keyof AppleAssistWindowCopy> = [
 
 const PRESET_IDS = [
   "proofread_only",
-  "rewrite_natural",
   "summarize",
   "translate",
   "continue_ideas",
   "shorten",
-  "review_section",
 ];
 
 const FEEDBACK_KINDS: ReadonlyArray<OperationFeedbackKind> = [
@@ -148,6 +146,19 @@ describe("getAppleAssistWindowCopy", () => {
       it("labels the mode as a preview instead of an experimental alpha", () => {
         expect(copy.modeLabel).toMatch(/Preview|プレビュー|ぷれびゅー/);
         expect(copy.modeLabel).not.toMatch(/Alpha|Experimental|実験/);
+      });
+
+      it("discloses that the helper is still a preview-quality writing aid", () => {
+        if (lang === "ja") {
+          expect(copy.availableDisclosure).toMatch(/試験的|プレビュー/);
+          expect(copy.availableDisclosure).toMatch(/結果|ぶれる|確認/);
+        }
+        if (lang === "kana") {
+          expect(copy.availableDisclosure).toMatch(/しけんてき|ぷれびゅー/);
+        }
+        if (lang === "en") {
+          expect(copy.availableDisclosure).toMatch(/preview|may vary/i);
+        }
       });
 
       // v0.17 operation-feedback panel: every lifecycle
@@ -226,10 +237,10 @@ describe("getAppleAssistWindowCopy", () => {
     expect(combined).not.toContain("Apple Local Assist");
   });
 
-  it("does not expose alpha or experimental wording in user-facing window copy", () => {
+  it("does not expose alpha wording in user-facing window copy", () => {
     for (const lang of ["en", "ja", "kana"] as const) {
       const combined = JSON.stringify(getAppleAssistWindowCopy(lang));
-      expect(combined).not.toMatch(/Alpha|Experimental|実験/);
+      expect(combined).not.toMatch(/Alpha/);
     }
   });
 

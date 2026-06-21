@@ -33,6 +33,9 @@ describe("apple-assist-window.css", () => {
   it("keeps the companion vertically compact for the smaller tool-window height", () => {
     const shell = ruleBody(css, ".apple-assist-window-shell");
     const header = ruleBody(css, ".apple-assist-window-header");
+    const title = ruleBody(css, ".apple-assist-window-title");
+    const subtitle = ruleBody(css, ".apple-assist-window-subtitle");
+    const disclosure = ruleBody(css, ".apple-assist-window-disclosure");
     const form = ruleBody(css, ".apple-assist-window-form");
     const textarea = ruleBody(css, ".apple-assist-window-textarea");
     const feedback = ruleBody(css, ".apple-assist-window-feedback");
@@ -42,6 +45,9 @@ describe("apple-assist-window.css", () => {
     expect(shell).toMatch(/gap:\s*8px/);
     expect(shell).toMatch(/align-content:\s*start/);
     expect(header).toMatch(/padding-bottom:\s*8px/);
+    expect(title).toMatch(/font-size:\s*15px/);
+    expect(subtitle).toMatch(/font-size:\s*11\.5px/);
+    expect(disclosure).toMatch(/font-size:\s*11\.5px/);
     expect(form).toMatch(/gap:\s*6px/);
     expect(textarea).toMatch(/min-height:\s*3\.4rem/);
     expect(textarea).toMatch(/max-height:\s*4\.6rem/);
@@ -63,6 +69,15 @@ describe("apple-assist-window.css", () => {
     expect(shokouShell).toMatch(/background:\s*#eef5fb/);
     expect(sakuraShell).not.toMatch(/gradient/);
     expect(shokouShell).not.toMatch(/gradient/);
+  });
+
+  it("keeps the request textarea on a flat surface instead of inheriting theme gradients", () => {
+    const textarea = ruleBody(css, ".apple-assist-window-textarea");
+
+    expect(textarea).toMatch(
+      /background:\s*var\(--surface-strong,\s*var\(--surface,\s*var\(--bg\)\)\)/,
+    );
+    expect(textarea).not.toMatch(/background:\s*var\(--bg-input,\s*var\(--bg\)\)/);
   });
 
   it("keeps the feedback log scrollable instead of expanding the whole window", () => {

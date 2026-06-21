@@ -6,6 +6,7 @@ import {
   APPLE_ASSIST_SELECTION_CONTEXT_PRE_CHARS,
   buildSurroundingDocumentContext,
   getAppleAssistContextWindow,
+  sanitizeAppleAssistCandidateText,
 } from "./useAppleAssistApplyHandler";
 import { APPLE_ASSIST_MAX_CONTEXT_CHARS } from "../../lib/tauri/appleAssist";
 
@@ -322,5 +323,33 @@ describe("getAppleAssistContextWindow", () => {
         postChars: APPLE_ASSIST_CONTEXT_POST_CHARS,
       });
     }
+  });
+});
+
+describe("sanitizeAppleAssistCandidateText", () => {
+  it("strips leaked Hazakura text boundary markers before applying the candidate", () => {
+    const candidate = [
+      "<<<HAZAKURA_TEXT_START",
+      "Translated body",
+      "HAZAKURA_TEXT_END>>>",
+    ].join("\n");
+
+    expect(sanitizeAppleAssistCandidateText(candidate)).toBe("Translated body");
+  });
+
+  it("strips leaked Hazakura context boundary markers if the model echoes the full prompt shape", () => {
+    const candidate = [
+      "<<<HAZAKURA_CONTEXT_START",
+      "Reference context",
+      "HAZAKURA_CONTEXT_END>>>",
+    ].join("\n");
+
+    expect(sanitizeAppleAssistCandidateText(candidate)).toBe("Reference context");
+  });
+
+  it("keeps normal Markdown content intact", () => {
+    const candidate = "# Heading\n\n- item\n";
+
+    expect(sanitizeAppleAssistCandidateText(candidate)).toBe(candidate);
   });
 });

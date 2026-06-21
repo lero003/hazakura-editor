@@ -46,7 +46,7 @@ case "$ARCH" in
         ;;
 esac
 
-DEST="$OUT_DIR/hazakura-apple-assist-helper-$TRIPLE"
+DEST="$OUT_DIR/hazakura-local-assist-helper-$TRIPLE"
 cp "$BUILT" "$DEST"
 chmod +x "$DEST"
 echo "==> wrote $DEST"

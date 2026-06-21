@@ -12,7 +12,7 @@ APP_SRC="$REPO_ROOT/src-tauri/target/release/bundle/macos/Hazakura Editor.app"
 APP_ENTITLEMENTS="$REPO_ROOT/src-tauri/entitlements/mac-app-store.entitlements"
 TMP_ROOT="$(mktemp -d)"
 APP="$TMP_ROOT/Hazakura Editor.app"
-HELPER="$APP/Contents/MacOS/hazakura-apple-assist-helper"
+HELPER="$APP/Contents/MacOS/hazakura-local-assist-helper"
 HELPER_ENTITLEMENTS="$REPO_ROOT/src-tauri/entitlements/app-store-helper.plist"
 
 cleanup() {

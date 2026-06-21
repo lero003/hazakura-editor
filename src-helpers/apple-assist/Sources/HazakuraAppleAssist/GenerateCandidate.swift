@@ -124,6 +124,7 @@ enum GenerateCandidate {
     - 原文の意味、主張、固有名詞を勝手に変えないでください。
     - 判断できない場合は本文を大きく変えず、注意点として返してください。
     - 返答には、依頼に対する結果本文だけを含めてください。内部説明、メタデータ、思考過程は含めないでください。
+    - 返答に HAZAKURA_TEXT_START / HAZAKURA_TEXT_END などの区切り文字を含めないでください。
     """
 
     private static func buildLivePrompt(for request: AppleAssistRequest) -> String {

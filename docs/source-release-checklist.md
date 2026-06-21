@@ -68,9 +68,9 @@ npm run build:apple-assist-helper:live
 ```
 
 This builds the Swift helper in live mode and runs the JSON-over-stdio smoke test (availability probe + candidate generation). Verify:
-- Helper binaries are produced under `binaries/hazakura-apple-assist-helper-<target-triple>`, including the `universal-apple-darwin` sidecar used by the App Store submit target.
+- Helper binaries are produced under `binaries/hazakura-local-assist-helper-<target-triple>`, including the `universal-apple-darwin` sidecar used by the App Store submit target.
 - Smoke test returns `availability: { kind: "available" }` (or `unavailable`/`unsupported` with reason on unsupported hardware)
-- Helper is bundled into the App Store and Developer / GitHub app bundles via `bundle.externalBin` (verify with `codesign -dv --verbose=2 <app>` and check `Contents/MacOS/hazakura-apple-assist-helper` exists). Ordinary Developer / GitHub lane builds remain local-preview builds. The GitHub Release DMG script opts into Developer ID Application signing; App Store submission still uses the separate Apple Distribution identity and provisioning lane.
+- Helper is bundled into the App Store and Developer / GitHub app bundles via `bundle.externalBin` (verify with `codesign -dv --verbose=2 <app>` and check `Contents/MacOS/hazakura-local-assist-helper` exists). Ordinary Developer / GitHub lane builds remain local-preview builds. The GitHub Release DMG script opts into Developer ID Application signing; App Store submission still uses the separate Apple Distribution identity and provisioning lane.
 - The App Store submit app is post-signed by `scripts/sign-app-store-submit-app.mjs` so the helper carries `com.apple.security.inherit` and the app bundle is sealed again before packaging.
 - Fixture mode smoke also passes: `npm run build:apple-assist-helper:fixture`
 

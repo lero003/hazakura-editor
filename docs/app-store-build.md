@@ -191,7 +191,7 @@ That config sets:
   `apple-assist` window to render Safe Editor UI and hit main-window
   command guards.
 - `frontendDist` to `../dist`
-- `bundle.externalBin` to `["../binaries/hazakura-apple-assist-helper"]`
+- `bundle.externalBin` to `["../binaries/hazakura-local-assist-helper"]`
 - base `bundle.resources` to include `LICENSE` and
   `THIRD_PARTY_NOTICES.md` inside `Contents/Resources`
 - `bundle.macOS.bundleVersion` to the current App Store Connect build number
@@ -296,8 +296,8 @@ warning 90886.
 Check helper sidecar signing:
 
 ```bash
-test -x "$APP/Contents/MacOS/hazakura-apple-assist-helper"
-codesign -dv --verbose=4 "$APP/Contents/MacOS/hazakura-apple-assist-helper"
+test -x "$APP/Contents/MacOS/hazakura-local-assist-helper"
+codesign -dv --verbose=4 "$APP/Contents/MacOS/hazakura-local-assist-helper"
 codesign --verify --deep --strict --verbose=2 "$APP"
 ```
 
@@ -332,7 +332,7 @@ Expected:
   App Store Connect build
 - `LSMinimumSystemVersion` is `26.0`
 - `hazakura-editor` is present
-- `hazakura-apple-assist-helper` is present, executable, signed, and
+- `hazakura-local-assist-helper` is present, executable, signed, and
   carries both `com.apple.security.app-sandbox` and
   `com.apple.security.inherit`
 
@@ -403,7 +403,7 @@ request headers, account metadata, or device identifiers.
 Run on the actual App Store lane build:
 
 - First launch succeeds.
-- Before opening Local Assist, `hazakura-apple-assist-helper` is not
+- Before opening Local Assist, `hazakura-local-assist-helper` is not
   spawned and no Foundation Models availability error is shown.
 - Opening Local Assist shows only the companion UI. It must not show the
   Safe Editor start panel, file/folder open buttons, workspace browser,
@@ -684,7 +684,7 @@ result. SHA-256:
 
 v0.29 package-candidate note: on 2026-06-22, Transporter rejected the
 first local `0.29.0` build `28` package because the bundled
-`hazakura-apple-assist-helper` only carried
+`hazakura-local-assist-helper` only carried
 `com.apple.security.inherit` and lacked
 `com.apple.security.app-sandbox`. Codex updated the helper entitlement
 file and distribution probe, then generated a replacement local App

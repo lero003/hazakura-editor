@@ -8,7 +8,7 @@ const appPath = resolve(
 );
 const helperPath = resolve(
   appPath,
-  "Contents/MacOS/hazakura-apple-assist-helper",
+  "Contents/MacOS/hazakura-local-assist-helper",
 );
 const appEntitlements = resolve(
   "src-tauri/entitlements/mac-app-store.entitlements",

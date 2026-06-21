@@ -8,8 +8,9 @@ import {
 import { useAppleAssistAvailability } from "../../hooks/agent/useAppleAssistAvailability";
 import type { AppleAssistAvailability } from "../../lib/tauri/appleAssist";
 import {
-  LOCAL_ASSIST_ACTIONS,
   buildApplyEvent,
+  getLocalAssistAction,
+  LOCAL_ASSIST_VISIBLE_PRESET_IDS,
   resolveLocalAssistActionId,
   type LocalAssistActionId,
   type LocalAssistPreset,
@@ -821,11 +822,14 @@ function isMenuLanguage(value: string | null): value is MenuLanguage {
 }
 
 function buildLocalAssistPresets(lang: MenuLanguage): LocalAssistPreset[] {
-  return LOCAL_ASSIST_ACTIONS.map((action) => ({
-    actionId: action.id,
-    label: action.label[lang],
-    requestText: action.requestText,
-  }));
+  return LOCAL_ASSIST_VISIBLE_PRESET_IDS.map((actionId) => {
+    const action = getLocalAssistAction(actionId);
+    return {
+      actionId: action.id,
+      label: action.label[lang],
+      requestText: action.requestText,
+    };
+  });
 }
 
 // `classifyApplyError` turns a raw catch-block error from the
@@ -880,7 +884,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         "へんしゅう あんを はんえいしました。ほぞん まえに さぶんで かくにん できます。",
       applyButton: "おねがいする",
       availableDisclosure:
-        "えらんだ ところ または いまの だんらくを、この Mac の Apple Intelligence たいおう きのうで ぶんしょう せいりします。ほんぶんを かえる けっかは ほぞん まえに さぶんで かくにんでき、ようやく・れびゅー は けっかとして ひょうじします。そとの AI さーびすには おくりません。",
+        "これは しけんてきな ぷれびゅー きのうです。この Mac の Apple Intelligence たいおう きのうで ぶんしょう せいりしますが、けっかは ぶれることがあります。ほんぶんを かえる けっかは ほぞん まえに さぶんで かくにんできます。そとの AI さーびすには おくりません。",
       contextTooLongError:
         "しゅうへん ぶんしょ が ながすぎ ます。L Mode の たいしょう しゅうへん こんできすと の じょうげん (8000 もじ) を こえました。",
       disabledStatus:
@@ -989,7 +993,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         "編集案を反映しました。保存前に差分で確認できます。",
       applyButton: "依頼する",
       availableDisclosure:
-        "選択範囲または現在の段落を、この Mac 上の Apple Intelligence 対応機能で文章整備します。本文変更系は未保存の本文に反映され、保存前に差分で確認できます。要約・レビューなどは結果として表示します。外部 AI サービスには送りません。",
+        "これは試験的なプレビュー機能です。この Mac 上の Apple Intelligence 対応機能で文章整備しますが、結果はぶれることがあります。本文を変える結果は未保存の本文に反映され、保存前に差分で確認できます。外部 AI サービスには送りません。",
       contextTooLongError:
         "周辺の文書が長すぎます。L Mode の対象周辺コンテキスト上限（8000 文字）を超えました。",
       disabledStatus:
@@ -1097,7 +1101,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       "Draft edit applied. Review the diff before saving.",
     applyButton: "Send request",
     availableDisclosure:
-      "Hazakura Local Assist tidies the selection or current paragraph with Apple Intelligence-capable features on this Mac. Document-changing results are applied to unsaved text for diff review; summaries and reviews are shown as results. Nothing is sent to an external AI service.",
+      "This is a preview-quality writing aid. Hazakura Local Assist uses Apple Intelligence-capable features on this Mac, and results may vary. Document-changing results are applied to unsaved text for diff review. Nothing is sent to an external AI service.",
     contextTooLongError:
       "Document context is too long (L Mode harness caps surrounding text at 8000 characters). Pick a tighter target or break the change into smaller requests.",
     disabledStatus:

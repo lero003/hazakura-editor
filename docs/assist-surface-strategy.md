@@ -136,7 +136,7 @@ A possible shape:
 ```txt
 Hazakura Editor
   -> structured request for selected text / current writing context
-hazakura-apple-assist-helper
+hazakura-local-assist-helper
   -> Foundation Models framework
 Hazakura Editor
   <- structured candidate output / edit proposal

@@ -12,7 +12,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 APP="${1:-$REPO_ROOT/src-tauri/target/release/bundle/macos/Hazakura Editor.app}"
 EXPECTED_DISTRIBUTION_LANE="${EXPECTED_DISTRIBUTION_LANE:-app-store}"
 REQUIRE_APP_STORE_ENTITLEMENTS="${REQUIRE_APP_STORE_ENTITLEMENTS:-0}"
-HELPER="$APP/Contents/MacOS/hazakura-apple-assist-helper"
+HELPER="$APP/Contents/MacOS/hazakura-local-assist-helper"
 PLIST="$APP/Contents/Info.plist"
 RESOURCES="$APP/Contents/Resources"
 

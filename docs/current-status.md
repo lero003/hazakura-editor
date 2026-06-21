@@ -99,12 +99,17 @@ Last reviewed: 2026-06-22 (v0.29 build 29 delivery success)
   preset labels from internal action IDs. Pressing a preset inserts its
   concrete request sentence into the editable request field, and the live
   helper receives a fixed base instruction plus separated action, visible
-  request text, target text, and surrounding context. All presets follow
-  the same explicit, unsaved, diff-reviewable AI edit transaction flow.
+  request text, target text, and surrounding context. The visible helper
+  presets are intentionally trimmed to the compact set (proofread,
+  summarize, translate, next ideas, shorten), while hidden action IDs can
+  still support free-form fallback and older payloads. Candidate text is
+  sanitized before application if a live model echoes Hazakura prompt
+  boundary markers. All presets follow the same explicit, unsaved,
+  diff-reviewable AI edit transaction flow.
 - The latest generated helper-enabled App Store package candidate for
   `0.29.0` is build `29`, generated on 2026-06-22 after Transporter
   rejected build `28` because the bundled
-  `hazakura-apple-assist-helper` lacked
+  `hazakura-local-assist-helper` lacked
   `com.apple.security.app-sandbox`. The helper entitlement file now
   carries both `com.apple.security.app-sandbox` and
   `com.apple.security.inherit`, and the distribution probe checks both

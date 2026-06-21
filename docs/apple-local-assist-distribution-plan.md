@@ -41,7 +41,7 @@ Adopted for the current lane:
 
 - Keep the App Store lane helper-enabled unless signed TestFlight or
   App Review evidence proves this shape is not viable.
-- Do not probe Foundation Models or spawn `hazakura-apple-assist-helper`
+- Do not probe Foundation Models or spawn `hazakura-local-assist-helper`
   at main app startup. Probe only after an explicit Local Assist user
   action.
 - The `apple-assist` window must load the Local Assist companion

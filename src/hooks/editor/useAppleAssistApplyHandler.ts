@@ -199,7 +199,7 @@ export function useAppleAssistApplyHandler({
         request: payload.request,
         target: payload.target,
         buffer: latestTab.contents,
-        afterText: response.candidateText,
+        afterText: sanitizeAppleAssistCandidateText(response.candidateText),
       });
       if (!result.ok) {
         const message = `Hazakura Local Assist apply failed: ${result.error}`;
@@ -241,6 +241,24 @@ export function useAppleAssistApplyHandler({
       void emitAppleAssistApplyStatus("failed", errorMessage, payload.request);
     }
   }
+}
+
+export function sanitizeAppleAssistCandidateText(candidateText: string): string {
+  const trimmed = candidateText.trim();
+  const boundaryPatterns = [
+    /<<<HAZAKURA_TEXT_START\s*\n([\s\S]*?)\n?HAZAKURA_TEXT_END>>>/,
+    /<<<HAZAKURA_CONTEXT_START\s*\n([\s\S]*?)\n?HAZAKURA_CONTEXT_END>>>/,
+  ];
+
+  for (const pattern of boundaryPatterns) {
+    const match = trimmed.match(pattern);
+    const inner = match?.[1]?.trim();
+    if (inner) {
+      return inner;
+    }
+  }
+
+  return candidateText;
 }
 
 async function emitAppleAssistApplyStatus(

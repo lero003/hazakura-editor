@@ -26,8 +26,20 @@ const appleAssistHelperLiveScript = readFileSync(
   "scripts/build-apple-assist-helper-live.sh",
   "utf8",
 );
+const appleAssistHelperFixtureScript = readFileSync(
+  "scripts/build-apple-assist-helper-fixture.sh",
+  "utf8",
+);
 const appleAssistGenerateCandidateSwift = readFileSync(
   "src-helpers/apple-assist/Sources/HazakuraAppleAssist/GenerateCandidate.swift",
+  "utf8",
+);
+const macosDistributionProbeScript = readFileSync(
+  "scripts/probe-macos-distribution.sh",
+  "utf8",
+);
+const macosSandboxPreviewSmokeScript = readFileSync(
+  "scripts/smoke-macos-sandbox-preview.sh",
   "utf8",
 );
 const releaseCandidateScript = readFileSync(
@@ -111,7 +123,7 @@ describe("macOS build scripts", () => {
       '"beforeBuildCommand": "npm run build:apple-assist-helper:live && npm run build:vite"',
     );
     expect(appStorePreviewConfig).toContain(
-      '"externalBin": ["../binaries/hazakura-apple-assist-helper"]',
+      '"externalBin": ["../binaries/hazakura-local-assist-helper"]',
     );
     expect(appStorePreviewConfig).not.toContain(
       '"entitlements": "./entitlements/mac-app-store.entitlements"',
@@ -157,7 +169,7 @@ describe("macOS build scripts", () => {
       '"beforeBuildCommand": "npm run build:apple-assist-helper:live && npm run build:vite"',
     );
     expect(appStoreSubmitConfigJson.bundle?.externalBin).toEqual([
-      "../binaries/hazakura-apple-assist-helper",
+      "../binaries/hazakura-local-assist-helper",
     ]);
     expect(appStoreSubmitConfig).toContain(
       '"entitlements": "./entitlements/mac-app-store.entitlements"',
@@ -167,14 +179,39 @@ describe("macOS build scripts", () => {
       "mac-app-store.entitlements",
     );
     expect(appleAssistHelperLiveScript).toContain(
-      "hazakura-apple-assist-helper-universal-apple-darwin",
+      "hazakura-local-assist-helper-universal-apple-darwin",
     );
     expect(appleAssistHelperLiveScript).toContain("lipo -create");
+  });
+
+  it("uses a review-neutral Local Assist helper executable name in shipping scripts", () => {
+    const shippingSurfaces = [
+      appStorePreviewConfig,
+      appStoreSubmitConfig,
+      appStoreSubmitSignScript,
+      appleAssistHelperLiveScript,
+      appleAssistHelperFixtureScript,
+      macosDistributionProbeScript,
+      macosSandboxPreviewSmokeScript,
+      macosLanesScript,
+    ].join("\n");
+
+    expect(shippingSurfaces).toContain("hazakura-local-assist-helper");
+    expect(shippingSurfaces).not.toContain("hazakura-apple-assist-helper");
   });
 
   it("keeps live helper errors free of Foundation Models debug descriptions", () => {
     expect(appleAssistGenerateCandidateSwift).not.toContain(
       "context.debugDescription",
+    );
+  });
+
+  it("tells the live helper not to echo Hazakura prompt boundary markers", () => {
+    expect(appleAssistGenerateCandidateSwift).toContain(
+      "HAZAKURA_TEXT_START / HAZAKURA_TEXT_END",
+    );
+    expect(appleAssistGenerateCandidateSwift).toContain(
+      "区切り文字",
     );
   });
 
@@ -308,40 +345,31 @@ describe("macOS build scripts", () => {
   });
 
   it("keeps smoke/probe scripts on the current App Store preview bundle name", () => {
-    const probeScript = readFileSync(
-      "scripts/probe-macos-distribution.sh",
-      "utf8",
-    );
-    const smokeScript = readFileSync(
-      "scripts/smoke-macos-sandbox-preview.sh",
-      "utf8",
-    );
-
-    expect(probeScript).toContain(
+    expect(macosDistributionProbeScript).toContain(
       "src-tauri/target/release/bundle/macos/Hazakura Editor.app",
     );
-    expect(probeScript).toContain(
+    expect(macosDistributionProbeScript).toContain(
       'EXPECTED_DISTRIBUTION_LANE="${EXPECTED_DISTRIBUTION_LANE:-app-store}"',
     );
-    expect(probeScript).toContain(
+    expect(macosDistributionProbeScript).toContain(
       "App Store lane must bundle Hazakura Local Assist helper",
     );
-    expect(probeScript).toContain(
+    expect(macosDistributionProbeScript).toContain(
       "helper inherit entitlement: missing",
     );
-    expect(smokeScript).toContain(
+    expect(macosSandboxPreviewSmokeScript).toContain(
       "helper-enabled App Store preview",
     );
-    expect(smokeScript).toContain(
+    expect(macosSandboxPreviewSmokeScript).toContain(
       "App Store preview helper must carry com.apple.security.inherit",
     );
-    expect(smokeScript).toContain(
+    expect(macosSandboxPreviewSmokeScript).toContain(
       "src-tauri/target/release/bundle/macos/Hazakura Editor.app",
     );
-    expect(probeScript).not.toContain(
+    expect(macosDistributionProbeScript).not.toContain(
       "src-tauri/target/release/bundle/macos/hazakura editor.app",
     );
-    expect(smokeScript).not.toContain(
+    expect(macosSandboxPreviewSmokeScript).not.toContain(
       "src-tauri/target/release/bundle/macos/hazakura editor.app",
     );
   });

@@ -719,17 +719,17 @@ fn resolver_rust_target_triple_matches_host() {
 #[test]
 fn resolver_bundled_helper_filename_uses_sidecar_convention() {
     // The production resolver will look for
-    // `hazakura-apple-assist-helper-<triple>` next to the running
+    // `hazakura-local-assist-helper-<triple>` next to the running
     // executable. Mirror `scripts/build-apple-assist-helper-fixture.sh`'s
     // DEST naming so the same filename works in fixture build,
     // test fixture, and packaged build paths.
     let filename = bundled_helper_filename();
     assert!(
-        filename.starts_with("hazakura-apple-assist-helper-"),
+        filename.starts_with("hazakura-local-assist-helper-"),
         "filename must use the sidecar convention, got: {filename}"
     );
     let suffix = filename
-        .strip_prefix("hazakura-apple-assist-helper-")
+        .strip_prefix("hazakura-local-assist-helper-")
         .expect("prefix stripped");
     assert!(
         suffix == "aarch64-apple-darwin"

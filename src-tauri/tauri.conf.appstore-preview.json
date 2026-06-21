@@ -6,7 +6,7 @@
   },
   "bundle": {
     "category": "Productivity",
-    "externalBin": ["../binaries/hazakura-apple-assist-helper"],
+    "externalBin": ["../binaries/hazakura-local-assist-helper"],
     "macOS": {
       "signingIdentity": "-"
     }

@@ -36,7 +36,7 @@ build_arch() {
         exit 1
     fi
 
-    local dest="$OUT_DIR/hazakura-apple-assist-helper-$triple"
+    local dest="$OUT_DIR/hazakura-local-assist-helper-$triple"
     cp "$built" "$dest"
     chmod +x "$dest"
     echo "==> wrote $dest"
@@ -45,11 +45,11 @@ build_arch() {
 build_arch arm64 aarch64-apple-darwin
 build_arch x86_64 x86_64-apple-darwin
 
-UNIVERSAL_DEST="$OUT_DIR/hazakura-apple-assist-helper-universal-apple-darwin"
+UNIVERSAL_DEST="$OUT_DIR/hazakura-local-assist-helper-universal-apple-darwin"
 echo "==> lipo universal helper"
 lipo -create \
-    "$OUT_DIR/hazakura-apple-assist-helper-aarch64-apple-darwin" \
-    "$OUT_DIR/hazakura-apple-assist-helper-x86_64-apple-darwin" \
+    "$OUT_DIR/hazakura-local-assist-helper-aarch64-apple-darwin" \
+    "$OUT_DIR/hazakura-local-assist-helper-x86_64-apple-darwin" \
     -output "$UNIVERSAL_DEST"
 chmod +x "$UNIVERSAL_DEST"
 echo "==> wrote $UNIVERSAL_DEST"
@@ -64,7 +64,7 @@ case "$ARCH" in
         ;;
 esac
 
-DEST="$OUT_DIR/hazakura-apple-assist-helper-$HOST_TRIPLE"
+DEST="$OUT_DIR/hazakura-local-assist-helper-$HOST_TRIPLE"
 
 echo "==> smoke test (probe)"
 PROBE_OUTPUT="$(printf '%s\n' '{"action":"probe_availability"}' | "$DEST")"

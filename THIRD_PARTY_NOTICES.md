@@ -276,7 +276,7 @@ Before App Store submission or broader commercial distribution, record the
 original design source file / generator / artist attribution if it exists
 outside this repository.
 
-### `hazakura-apple-assist-helper`
+### `hazakura-local-assist-helper`
 
 Known repository provenance:
 
@@ -284,10 +284,10 @@ Known repository provenance:
 - Swift package target: `HazakuraAppleAssist`.
 - Build script: `scripts/build-apple-assist-helper-live.sh`.
 - Output artifact pattern:
-  `binaries/hazakura-apple-assist-helper-<rust-target-triple>`.
+  `binaries/hazakura-local-assist-helper-<rust-target-triple>`.
 - Tauri bundle config: `bundle.externalBin` includes
-  `../binaries/hazakura-apple-assist-helper`, which packages the helper as
-  `Contents/MacOS/hazakura-apple-assist-helper`.
+  `../binaries/hazakura-local-assist-helper`, which packages the helper as
+  `Contents/MacOS/hazakura-local-assist-helper`.
 - The live helper links Apple `FoundationModels.framework` and communicates
   with the Tauri/Rust app over JSON lines on stdio.
 

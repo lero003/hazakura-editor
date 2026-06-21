@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-22 (v0.29 Local Assist prompt boundary)
+Last reviewed: 2026-06-22 (v0.29 Local Assist helper rename)
 
 ## Current State
 
@@ -107,7 +107,11 @@ Last reviewed: 2026-06-22 (v0.29 Local Assist prompt boundary)
   editable in the request field; the live helper receives a fixed base
   instruction plus separated action, visible request text, target text,
   and surrounding context. All presets follow the same explicit,
-  unsaved, diff-reviewable AI edit transaction flow. 2026-06-21
+  unsaved, diff-reviewable AI edit transaction flow. The bundled helper
+  executable is now named `hazakura-local-assist-helper` in active Tauri
+  configs, helper build outputs, signing/probe/smoke scripts, and
+  current docs; the old Apple-branded process name is retired from
+  active shipping surfaces. 2026-06-21
   user-side light built-app smoke confirmed
   the dedicated Local Assist UI opens, the helper is absent from Activity
   Monitor memory before opening the companion, and a simple request can be
@@ -484,7 +488,18 @@ open Active UX Queue slice and close it as `implemented`,
   Upload, App Store Connect processing, TestFlight, App Review, and
   manual signed-build smoke remain outside the repository unless new
   evidence is explicitly recorded.
-- Latest v0.29 Hazakura Local Assist App Store-lane gate: source tests and
+- Latest v0.29 Hazakura Local Assist helper rename gate: active Tauri
+  configs, helper build scripts, signing/probe/smoke scripts, Rust
+  bundled-helper resolver, third-party notices, and current docs now use
+  `hazakura-local-assist-helper`. The active source tree keeps the old
+  Apple-branded helper filename only in a regression assertion
+  that prevents it from returning to shipping scripts. Verified with
+  `npm run test -- src/buildScripts.test.ts`,
+  `npm run build:apple-assist-helper:fixture`,
+  `cargo test --manifest-path src-tauri/Cargo.toml resolver_bundled_helper_filename_uses_sidecar_convention -- --nocapture`,
+  `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE="$PWD/binaries/hazakura-local-assist-helper-aarch64-apple-darwin" cargo test --manifest-path src-tauri/Cargo.toml apple_assist_supervisor -- --nocapture --test-threads=1`,
+  `npm run test`, `npm run build:vite`, and `git diff --check`.
+- Previous v0.29 Hazakura Local Assist App Store-lane gate: source tests and
   local build evidence now cover the prompt/preset boundary: UI labels
   are display-only, preset clicks insert visible editable request text,
   the live helper prompt separates base instruction / action / visible

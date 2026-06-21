@@ -126,6 +126,15 @@ export const APPLY_LOCAL_ASSIST_ACTION_IDS: ReadonlyArray<LocalAssistActionId> =
     "review_section",
   ];
 
+export const LOCAL_ASSIST_VISIBLE_PRESET_IDS: ReadonlyArray<LocalAssistActionId> =
+  [
+    "proofread_only",
+    "summarize",
+    "translate",
+    "continue_ideas",
+    "shorten",
+  ];
+
 export function getLocalAssistAction(actionId: LocalAssistActionId): LocalAssistAction {
   const action = LOCAL_ASSIST_ACTIONS.find((candidate) => candidate.id === actionId);
   if (!action) {

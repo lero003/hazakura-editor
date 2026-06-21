@@ -638,7 +638,7 @@ pub(crate) fn store_without_helper() -> AppleAssistHelperStore {
 
 /// The Rust target triple this binary was built for. Used by
 /// `bundled_helper_filename` to construct the production
-/// sidecar filename (`hazakura-apple-assist-helper-<triple>`).
+/// sidecar filename (`hazakura-local-assist-helper-<triple>`).
 ///
 /// Returns one of the macOS Tauri sidecar triples
 /// (`aarch64-apple-darwin` / `x86_64-apple-darwin`) on supported
@@ -657,18 +657,18 @@ pub(crate) fn rust_target_triple() -> &'static str {
 
 /// The bundled helper filename the production resolver may look
 /// for next to the running executable.
-/// Format: `hazakura-apple-assist-helper-<rust-target-triple>`.
+/// Format: `hazakura-local-assist-helper-<rust-target-triple>`.
 ///
 /// Mirrors the DEST naming in
 /// `scripts/build-apple-assist-helper-fixture.sh` so the same
 /// filename works in fixture build, test fixture, and packaged
 /// build paths.
 pub(crate) fn bundled_helper_filename() -> String {
-    format!("hazakura-apple-assist-helper-{}", rust_target_triple())
+    format!("hazakura-local-assist-helper-{}", rust_target_triple())
 }
 
 pub(crate) fn bundled_helper_base_filename() -> &'static str {
-    "hazakura-apple-assist-helper"
+    "hazakura-local-assist-helper"
 }
 
 pub(crate) fn resolve_bundled_helper_path_from_dir(dir: &Path) -> Result<PathBuf, String> {
