@@ -379,7 +379,7 @@
 
 @media (max-width: 1040px) {
   .app-shell {
-    grid-template-rows: 70px min-content minmax(0, 1fr) 28px;
+    grid-template-rows: 74px min-content minmax(0, 1fr) 28px;
   }
 
   .workspace {

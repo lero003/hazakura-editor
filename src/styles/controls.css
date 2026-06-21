@@ -111,9 +111,9 @@
     calc(var(--titlebar-traffic-light-inset) - var(--titlebar-leading-control-width))
     minmax(0, 1fr)
     auto;
-  /* Keep tabs thin while giving the mode controls their own vertical air. */
-  grid-template-rows: 30px 40px;
-  height: 70px;
+  /* Keep tabs thin while giving native window controls and mode controls air. */
+  grid-template-rows: 34px 40px;
+  height: 74px;
   min-width: 0;
   padding: 0 14px 0 0;
 }
@@ -318,7 +318,7 @@
   overscroll-behavior-x: contain;
   scrollbar-width: none;
   gap: 4px;
-  padding-right: clamp(28px, 2.2vw, 40px);
+  padding-right: clamp(40px, 3vw, 56px);
 }
 
 .tab-list::-webkit-scrollbar {

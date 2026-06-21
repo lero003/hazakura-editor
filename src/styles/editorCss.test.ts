@@ -73,7 +73,7 @@ describe("editor tab close affordance CSS", () => {
     expect(tabList).toMatch(/flex:\s*1\s+1\s+auto/);
     expect(tabList).toMatch(/max-width:\s*none/);
     expect(tabList).toMatch(/overflow-x:\s*auto/);
-    expect(tabList).toMatch(/padding-right:\s*clamp\(28px,\s*2\.2vw,\s*40px\)/);
+    expect(tabList).toMatch(/padding-right:\s*clamp\(40px,\s*3vw,\s*56px\)/);
 
     expect(tabItem).toMatch(/flex-basis:\s*clamp\(140px,\s*18vw,\s*220px\)/);
     expect(tabItem).toMatch(/flex-grow:\s*1/);
@@ -142,7 +142,7 @@ describe("editor tab close affordance CSS", () => {
     const documentMeta = ruleBody(editorCss, ".document-meta");
 
     expect(tabsRow).toMatch(/display:\s*grid/);
-    expect(tabsRow).toMatch(/grid-template-rows:\s*30px\s+40px/);
+    expect(tabsRow).toMatch(/grid-template-rows:\s*34px\s+40px/);
     expect(tabsRow).toMatch(/-webkit-app-region:\s*drag/);
     expect(tabsRow).toMatch(/--titlebar-traffic-light-inset:\s*84px/);
     expect(tabsRow).toMatch(/--titlebar-leading-control-width:\s*44px/);
@@ -150,13 +150,13 @@ describe("editor tab close affordance CSS", () => {
       /grid-template-columns:\s*var\(--titlebar-leading-control-width\)\s+calc\(var\(--titlebar-traffic-light-inset\)\s+-\s+var\(--titlebar-leading-control-width\)\)\s+minmax\(0,\s*1fr\)\s+auto/,
     );
     expect(tabsRow).toMatch(/border-bottom:\s*0/);
-    expect(tabsRow).toMatch(/height:\s*70px/);
+    expect(tabsRow).toMatch(/height:\s*74px/);
     expect(tabsRow).toMatch(/padding:\s*0\s+14px\s+0\s+0/);
     expect(ruleBody(animationsCss, ".app-shell")).toMatch(
-      /grid-template-rows:\s*70px\s+min-content\s+minmax\(0,\s*1fr\)\s+28px/,
+      /grid-template-rows:\s*74px\s+min-content\s+minmax\(0,\s*1fr\)\s+28px/,
     );
     expect(dialogsCss).toMatch(
-      /@media \(max-width:\s*1040px\)\s*{[\s\S]*\.app-shell\s*{[^}]*grid-template-rows:\s*70px\s+min-content\s+minmax\(0,\s*1fr\)\s+28px/s,
+      /@media \(max-width:\s*1040px\)\s*{[\s\S]*\.app-shell\s*{[^}]*grid-template-rows:\s*74px\s+min-content\s+minmax\(0,\s*1fr\)\s+28px/s,
     );
 
     expect(dragStrip).toMatch(/grid-column:\s*3\s*\/\s*4/);
@@ -171,7 +171,7 @@ describe("editor tab close affordance CSS", () => {
     expect(tabList).toMatch(/grid-row:\s*2/);
     expect(documentMeta).toMatch(/grid-column:\s*4/);
     expect(documentMeta).toMatch(/grid-row:\s*1/);
-    expect(documentMeta).toMatch(/margin-right:\s*clamp\(12px,\s*1\.1vw,\s*20px\)/);
+    expect(documentMeta).toMatch(/margin-right:\s*clamp\(20px,\s*1\.6vw,\s*28px\)/);
 
     expect(controlsCss).toMatch(
       /\.tab-item,[\s\S]*\.editor-quick-settings,[\s\S]*\.document-meta,[\s\S]*\.distribution-badge,[\s\S]*\.tabs-row button,[\s\S]*\.tabs-row input,[\s\S]*\.tabs-row label,[\s\S]*\.tabs-row \[role="tab"\],[\s\S]*\.tabs-row \[role="menu"\],[\s\S]*\.tabs-row \[role="menuitem"\]\s*{[\s\S]*-webkit-app-region:\s*no-drag/s,
