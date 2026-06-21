@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-21 (v0.28 P3 AI proposal review foundation)
+Last reviewed: 2026-06-21 (v0.28 App Store package candidate)
 
 ## Current State
 
@@ -48,6 +48,17 @@ Last reviewed: 2026-06-21 (v0.28 P3 AI proposal review foundation)
   helper-absence, bundled-notice, and SHA checks passed on 2026-06-20.
   App Store Connect upload / processing / TestFlight / App Review work
   is handled outside this repository unless explicitly recorded later.
+- The latest generated helper-free App Store package evidence for `0.28.0` is build
+  `25`:
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.28.0-build25-mas.pkg`
+  with SHA-256
+  `ebbcf48da476c47c2a9874cfa91278429673a167189a00bea7887234f5c9099a`.
+  Local App Store surface smoke, package signature, app metadata,
+  required entitlement, helper-absence, bundled-notice, supported-OS,
+  and SHA checks passed on 2026-06-21. App Store Connect upload /
+  processing / TestFlight / App Review work is handled outside this
+  repository unless explicitly recorded later. Current source has a later
+  top-chrome quieting pass, so rebuild the signed package before upload.
 - Start from `docs/current-work.md`; v0.27 execution is complete for
   source-tag purposes and remains documented in
   `docs/archive/planning/v0.27-refinement-slice-plan.md`.
@@ -427,13 +438,26 @@ open Active UX Queue slice and close it as `implemented`,
   downloaded DMG checksum verification, `hdiutil verify`, mounted-app
   metadata, codesign verification, and mounted-app launch smoke all
   passed.
-- Latest App Store package gate: `0.25.0` build `18` local package
-  generation passed on 2026-06-19. Checks run:
+- Latest App Store package gate: `0.28.0` build `25` local package
+  generation passed on 2026-06-21. Checks run:
   `npm run smoke:app-store-surface`, `npm run build:app-store-pkg`,
-  `pkgutil --check-signature`, SHA-256, `codesign --verify --deep
-  --strict`, entitlements inspection, helper/resource checks,
+  `pkgutil --check-signature`, SHA-256, signed-app distribution probe,
+  entitlements inspection, helper/resource checks,
   `productbuild --synthesize`, Info.plist version/build/minimum-OS
-  inspection, and `git diff --check`.
+  inspection, `npm run test`, `cargo fmt --manifest-path
+  src-tauri/Cargo.toml -- --check`, and `git diff --check`.
+  Full `cargo test --manifest-path src-tauri/Cargo.toml` currently
+  fails in this local environment on three macOS OS-API tests:
+  `security_scoped_bookmark_accepts_direct_files`,
+  `move_workspace_entry_to_trash_clears_auto_backup_dir`, and
+  `move_workspace_entry_to_trash_removes_file_on_macos`. Re-running
+  those three individually still fails with Security Bookmark / Trash
+  API refusal; `cargo test --manifest-path src-tauri/Cargo.toml -- --skip
+  security_scoped_bookmark_accepts_direct_files --skip
+  move_workspace_entry_to_trash_clears_auto_backup_dir --skip
+  move_workspace_entry_to_trash_removes_file_on_macos` passes 291 tests.
+  Current source has a later top-chrome quieting pass; do not upload the
+  build `25` pkg without rebuilding.
 - Latest e-book Mode code gate: v0.23 pseudo-pagination passed on
   2026-06-19 with
   `npm run test -- src/components/editor/preview/EBookPane.test.tsx src/styles/previewCss.test.ts`,

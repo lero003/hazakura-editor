@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-06-20 (v0.27 source / App Store candidate prep)
+Last reviewed: 2026-06-21 (v0.28 App Store candidate prep)
 
 ## Purpose
 
@@ -33,8 +33,9 @@ Apple Local Assist and Agent Workbench behind their existing boundaries.
 - Bundle ID: `dev.hazakura.editor`
 - Published App Store version: `0.26.0` (reported released on 2026-06-20
   after App Review completion)
-- Current source / Developer version: `0.27.0`
-- Current local App Store package candidate: `0.27.0` build `22`
+- Current source / Developer version: `0.28.0`
+- Latest generated local App Store package evidence: `0.28.0` build `25`
+  (rebuild before upload after the later top-chrome quieting pass)
 - App Store category: `Productivity`
 - Public Privacy Policy URL:
   `https://hazakura.dev/hazakura-editor/privacy/`
@@ -277,7 +278,7 @@ find "$APP/Contents/MacOS" -maxdepth 1 -type f -print
 Expected:
 
 - `CFBundleIdentifier` is `dev.hazakura.editor`
-- `CFBundleShortVersionString` is the current package version (`0.27.0`
+- `CFBundleShortVersionString` is the current package version (`0.28.0`
   for the next candidate)
 - `CFBundleVersion` is a positive integer higher than the last uploaded
   App Store Connect build
@@ -582,4 +583,39 @@ Connect validation result. SHA-256:
 
 ```txt
 3cf8a09dcf4b3fd81d50ad330d552c0e7de30ec56713b2fc4b4f2a62ae913ff7
+```
+
+v0.28 package-candidate note: on 2026-06-21, Codex generated a local
+App Store submit-lane package for user-visible version `0.28.0` and
+App Store build counter `25` after the v0.28 safety / quality / AI
+review foundation slice plus the first compact top-chrome tab/menu
+spacing adjustment. A later source-only top-chrome quieting pass is not
+included in this package; rebuild before upload.
+Upload, App Store Connect processing,
+TestFlight, App Review, and release handling are outside this repository
+unless separately recorded.
+
+The local package generated for this lane is:
+
+```txt
+src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.28.0-build25-mas.pkg
+```
+
+The signed submit-lane bundle reported `CFBundleIdentifier`
+`dev.hazakura.editor`, `CFBundleShortVersionString` `0.28.0`,
+`CFBundleVersion` `25`, and `LSMinimumSystemVersion` `26.0`. It had the
+expected App Sandbox, user-selected read/write, app-scoped bookmark, and
+network-client entitlements; it omitted the Apple Local Assist helper
+and included bundled `LICENSE` / `THIRD_PARTY_NOTICES.md` resources.
+`REQUIRE_APP_STORE_ENTITLEMENTS=1 npm run probe:macos-distribution -- <app>`
+passed for the generated app. `productbuild --synthesize` emitted a
+Distribution XML `allowed-os-versions` entry with `min="26.0"`.
+`pkgutil --check-signature` passed with the 3rd Party Mac Developer
+Installer certificate. `spctl` rejected or returned inconclusive local
+assessment for the signed app, so keep treating that as local
+trust-policy evidence rather than an App Store Connect validation
+result. SHA-256:
+
+```txt
+ebbcf48da476c47c2a9874cfa91278429673a167189a00bea7887234f5c9099a
 ```

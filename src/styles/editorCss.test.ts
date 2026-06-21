@@ -73,12 +73,16 @@ describe("editor tab close affordance CSS", () => {
     expect(tabList).toMatch(/flex:\s*1\s+1\s+auto/);
     expect(tabList).toMatch(/max-width:\s*none/);
     expect(tabList).toMatch(/overflow-x:\s*auto/);
+    expect(tabList).toMatch(/padding-right:\s*clamp\(28px,\s*2\.2vw,\s*40px\)/);
 
     expect(tabItem).toMatch(/flex-basis:\s*clamp\(140px,\s*18vw,\s*220px\)/);
     expect(tabItem).toMatch(/flex-grow:\s*1/);
     expect(tabItem).toMatch(/flex-shrink:\s*1/);
     expect(tabItem).toMatch(/max-width:\s*clamp\(180px,\s*24vw,\s*240px\)/);
     expect(tabItem).toMatch(/min-width:\s*clamp\(96px,\s*12vw,\s*140px\)/);
+    expect(tabItem).toMatch(/height:\s*30px/);
+    expect(activeTabItem).toMatch(/box-shadow:\s*none/);
+    expect(activeTabItem).toMatch(/border:\s*1px solid color-mix\(in srgb,\s*var\(--border\) 30%,\s*transparent\)/);
 
     expect(activeTabItem).toMatch(/flex-basis:\s*clamp\(180px,\s*22vw,\s*280px\)/);
     expect(activeTabItem).toMatch(/flex-grow:\s*1\.25/);
@@ -138,7 +142,7 @@ describe("editor tab close affordance CSS", () => {
     const documentMeta = ruleBody(editorCss, ".document-meta");
 
     expect(tabsRow).toMatch(/display:\s*grid/);
-    expect(tabsRow).toMatch(/grid-template-rows:\s*26px\s+44px/);
+    expect(tabsRow).toMatch(/grid-template-rows:\s*30px\s+40px/);
     expect(tabsRow).toMatch(/-webkit-app-region:\s*drag/);
     expect(tabsRow).toMatch(/--titlebar-traffic-light-inset:\s*84px/);
     expect(tabsRow).toMatch(/--titlebar-leading-control-width:\s*44px/);
@@ -167,6 +171,7 @@ describe("editor tab close affordance CSS", () => {
     expect(tabList).toMatch(/grid-row:\s*2/);
     expect(documentMeta).toMatch(/grid-column:\s*4/);
     expect(documentMeta).toMatch(/grid-row:\s*1/);
+    expect(documentMeta).toMatch(/margin-right:\s*clamp\(12px,\s*1\.1vw,\s*20px\)/);
 
     expect(controlsCss).toMatch(
       /\.tab-item,[\s\S]*\.editor-quick-settings,[\s\S]*\.document-meta,[\s\S]*\.distribution-badge,[\s\S]*\.tabs-row button,[\s\S]*\.tabs-row input,[\s\S]*\.tabs-row label,[\s\S]*\.tabs-row \[role="tab"\],[\s\S]*\.tabs-row \[role="menu"\],[\s\S]*\.tabs-row \[role="menuitem"\]\s*{[\s\S]*-webkit-app-region:\s*no-drag/s,
@@ -177,20 +182,27 @@ describe("editor tab close affordance CSS", () => {
   });
 
   it("integrates right-pane mode controls into the top chrome", () => {
+    const cluster = ruleBody(editorCss, ".pane-control-cluster");
     const group = ruleBody(editorCss, ".pane-toggles");
     const toggle = ruleBody(editorCss, ".pane-toggle");
+    const reviewAction = ruleBody(editorCss, ".pane-review-action");
     const activeToggle = ruleBody(editorCss, ".pane-toggle.active");
+
+    expect(cluster).toMatch(/display:\s*flex/);
+    expect(cluster).toMatch(/gap:\s*10px/);
 
     expect(group).toMatch(/background:\s*color-mix/);
     expect(group).toMatch(/border:\s*1px solid/);
-    expect(group).toMatch(/border-radius:\s*8px/);
+    expect(group).toMatch(/border-radius:\s*999px/);
     expect(group).toMatch(/box-shadow:\s*inset 0 1px 0/);
-    expect(group).toMatch(/gap:\s*1px/);
-    expect(group).toMatch(/padding:\s*2px/);
+    expect(group).toMatch(/gap:\s*0/);
+    expect(group).toMatch(/padding:\s*1px/);
 
     expect(toggle).toMatch(/border:\s*0/);
-    expect(toggle).toMatch(/border-radius:\s*6px/);
-    expect(toggle).toMatch(/height:\s*28px/);
+    expect(toggle).toMatch(/border-radius:\s*999px/);
+    expect(toggle).toMatch(/height:\s*25px/);
+    expect(reviewAction).toMatch(/border:\s*1px solid/);
+    expect(reviewAction).toMatch(/padding:\s*0\s+9px/);
     expect(activeToggle).toMatch(/background:\s*color-mix/);
     expect(activeToggle).toMatch(/box-shadow:\s*inset 0 0 0 1px/);
   });

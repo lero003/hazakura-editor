@@ -157,6 +157,7 @@
   max-width: 70vw;
   font-weight: 500;
   margin-left: 0;
+  margin-right: clamp(12px, 1.1vw, 20px);
 }
 
 .chrome-section {
@@ -179,16 +180,24 @@
   width: 1px;
 }
 
-.pane-toggles {
+.pane-control-cluster {
   align-items: center;
-  background: color-mix(in srgb, var(--surface-muted) 46%, transparent);
-  border: 1px solid color-mix(in srgb, var(--border) 44%, transparent);
-  border-radius: 8px;
-  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--surface-strong) 42%, transparent);
   display: flex;
   flex: 0 0 auto;
-  gap: 1px;
-  padding: 2px;
+  gap: 10px;
+  min-width: 0;
+}
+
+.pane-toggles {
+  align-items: center;
+  background: color-mix(in srgb, var(--surface-muted) 58%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 26%, transparent);
+  border-radius: 999px;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--surface-strong) 28%, transparent);
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0;
+  padding: 1px;
 }
 
 .pane-toggle {
@@ -196,29 +205,29 @@
   align-items: center;
   background: transparent;
   border: 0;
-  border-radius: 6px;
+  border-radius: 999px;
   box-shadow: none;
   color: var(--text-muted);
   display: inline-flex;
-  font-size: 11.5px;
+  font-size: 11.25px;
   font-weight: 600;
-  gap: 5px;
-  height: 28px;
+  gap: 4px;
+  height: 25px;
   justify-content: center;
-  min-height: 28px;
-  padding: 0 8px;
+  min-height: 25px;
+  padding: 0 7px;
   transition: all 0.15s var(--ease-standard);
   white-space: nowrap;
 }
 
 .pane-toggle:hover {
-  background: color-mix(in srgb, var(--surface-strong) 48%, transparent);
+  background: color-mix(in srgb, var(--surface-strong) 36%, transparent);
   color: var(--text);
 }
 
 .pane-toggle.active {
-  background: color-mix(in srgb, var(--surface-strong) 70%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 46%, transparent);
+  background: color-mix(in srgb, var(--surface-strong) 62%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 26%, transparent);
   color: var(--text);
 }
 
@@ -234,9 +243,21 @@
 }
 
 .pane-toggle[aria-pressed="true"] {
-  background: color-mix(in srgb, var(--surface-strong) 70%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 46%, transparent);
+  background: color-mix(in srgb, var(--surface-strong) 62%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 26%, transparent);
   color: var(--text);
+}
+
+.pane-review-action {
+  background: color-mix(in srgb, var(--accent-soft) 34%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+  color: color-mix(in srgb, var(--accent) 76%, var(--text-muted));
+  padding: 0 9px;
+}
+
+.pane-review-action:hover {
+  background: color-mix(in srgb, var(--accent-soft) 48%, transparent);
+  color: color-mix(in srgb, var(--accent) 88%, var(--text));
 }
 
 .pane-toggle-icon {

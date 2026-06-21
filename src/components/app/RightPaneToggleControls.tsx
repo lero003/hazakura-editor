@@ -29,6 +29,7 @@ export interface RightPaneToggleCopy {
 type PaneToggleProps = {
   active?: boolean;
   caption: string;
+  className?: string;
   disabled?: boolean;
   icon: ReactNode;
   onClick: () => void;
@@ -38,6 +39,7 @@ type PaneToggleProps = {
 function PaneToggle({
   active,
   caption,
+  className,
   disabled,
   icon,
   onClick,
@@ -46,7 +48,7 @@ function PaneToggle({
   return (
     <button
       aria-pressed={active}
-      className={`pane-toggle${active ? " active" : ""}`}
+      className={`pane-toggle${active ? " active" : ""}${className ? ` ${className}` : ""}`}
       disabled={disabled}
       onClick={onClick}
       title={title}
@@ -102,52 +104,56 @@ export function RightPaneToggleControls({
   reviewChangesLabel: string;
 }) {
   return (
-    <div className="pane-toggles" aria-label={copy.sidePaneMode}>
-      <PaneToggle
-        active={previewActive}
-        caption={copy.previewTab}
-        icon={<PreviewIcon />}
-        onClick={onTogglePreview}
-        title={copy.previewTabTitle}
-      />
-      <PaneToggle
-        active={lModeActive}
-        caption={lModeLabel}
-        icon={<LModeIcon />}
-        onClick={onToggleLMode}
-        title={lModeTitle}
-      />
-      <PaneToggle
-        active={ebookAvailable && ebookActive}
-        caption={copy.ebookTab}
-        disabled={!ebookAvailable}
-        icon={<BookIcon />}
-        onClick={onToggleEbook}
-        title={copy.ebookTabTitle}
-      />
-      <PaneToggle
-        caption={copy.reviewMenu}
-        disabled={!reviewChangesAvailable}
-        icon={<ReviewDeskIcon />}
-        onClick={onReviewChanges}
-        title={reviewChangesLabel || copy.reviewMenuTitle}
-      />
-      <PaneToggle
-        active={diffActive}
-        caption={copy.diffTab}
-        disabled={!diffAvailable}
-        icon={<DiffIcon />}
-        onClick={onToggleDiff}
-        title={copy.diffTabTitle}
-      />
-      <PaneToggle
-        active={outlineAvailable && outlineActive}
-        caption={copy.outlineTab}
-        disabled={!outlineAvailable}
-        icon={<OutlineIcon />}
-        onClick={onToggleOutline}
-        title={copy.outlineTabTitle}
-      />
+    <div className="pane-control-cluster" aria-label={copy.sidePaneMode}>
+      {reviewChangesAvailable ? (
+        <PaneToggle
+          caption={copy.reviewMenu}
+          className="pane-review-action"
+          icon={<ReviewDeskIcon />}
+          onClick={onReviewChanges}
+          title={reviewChangesLabel || copy.reviewMenuTitle}
+        />
+      ) : null}
+      <div className="pane-toggles">
+        <PaneToggle
+          active={previewActive}
+          caption={copy.previewTab}
+          icon={<PreviewIcon />}
+          onClick={onTogglePreview}
+          title={copy.previewTabTitle}
+        />
+        <PaneToggle
+          active={lModeActive}
+          caption={lModeLabel}
+          icon={<LModeIcon />}
+          onClick={onToggleLMode}
+          title={lModeTitle}
+        />
+        <PaneToggle
+          active={ebookAvailable && ebookActive}
+          caption={copy.ebookTab}
+          disabled={!ebookAvailable}
+          icon={<BookIcon />}
+          onClick={onToggleEbook}
+          title={copy.ebookTabTitle}
+        />
+        <PaneToggle
+          active={outlineAvailable && outlineActive}
+          caption={copy.outlineTab}
+          disabled={!outlineAvailable}
+          icon={<OutlineIcon />}
+          onClick={onToggleOutline}
+          title={copy.outlineTabTitle}
+        />
+        <PaneToggle
+          active={diffActive}
+          caption={copy.diffTab}
+          disabled={!diffAvailable}
+          icon={<DiffIcon />}
+          onClick={onToggleDiff}
+          title={copy.diffTabTitle}
+        />
+      </div>
     </div>
   );
 }

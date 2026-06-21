@@ -82,7 +82,13 @@ describe("RightPaneToggleControls", () => {
     expect(onToggleEbook).not.toHaveBeenCalled();
   });
 
-  it("keeps review, Diff, and Outline controls visible as independent buttons", () => {
+  it("keeps review hidden until review changes are available", () => {
+    renderControls();
+
+    expect(screen.queryByRole("button", { name: "Review" })).toBeNull();
+  });
+
+  it("keeps review, Diff, and Outline controls available when relevant", () => {
     const { onReviewChanges, onToggleDiff, onToggleOutline } = renderControls({
       reviewChangesAvailable: true,
     });
@@ -102,5 +108,21 @@ describe("RightPaneToggleControls", () => {
     expect(outlineButton.getAttribute("aria-pressed")).toBe("false");
     outlineButton.click();
     expect(onToggleOutline).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps review separated to the left of stable mode controls", () => {
+    renderControls({ reviewChangesAvailable: true });
+
+    expect(
+      screen.getAllByRole("button").map((button) => button.textContent),
+    ).toEqual(["Review", "Preview", "L Mode", "e-book", "Outline", "Diff"]);
+  });
+
+  it("keeps the normal mode cluster shorter when review is unavailable", () => {
+    renderControls();
+
+    expect(
+      screen.getAllByRole("button").map((button) => button.textContent),
+    ).toEqual(["Preview", "L Mode", "e-book", "Outline", "Diff"]);
   });
 });

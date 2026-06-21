@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-06-20
+Last reviewed: 2026-06-21
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
@@ -23,10 +23,11 @@ Latest App Store status:
 
 - `0.25.0` has been reported as released on the Mac App Store.
 - `0.26.0` has been reported as released on the Mac App Store.
-- `0.27.0` build `22` is the current local App Store submit-lane package
-  candidate. App Store Connect upload, processing, TestFlight, App
-  Review, and release handling are outside this repository unless
-  separately recorded.
+- `0.28.0` build `25` is the latest generated local App Store
+  submit-lane package evidence. Current source has a later top-chrome
+  quieting pass, so rebuild before App Store Connect upload. Processing,
+  TestFlight, App Review, and release handling are outside this
+  repository unless separately recorded.
 - `0.25.0` build `18` is the tracked local App Store submit-lane
   package evidence. Raw App Store Connect, TestFlight, and App Review
   logs are not tracked in this repository.
@@ -34,6 +35,7 @@ Latest App Store status:
 
 Latest App Store submission-candidate note:
 
+- `0.28.0-app-store-submission-candidate.release.md`
 - `0.27.0-app-store-submission-candidate.release.md`
 - `0.26.0-app-store-submission-candidate.release.md`
 - `0.25.0-app-store-submission-candidate.release.md`

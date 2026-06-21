@@ -17,7 +17,7 @@ Current release state:
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
 - Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
-- Current package/app version: `0.27.0`.
+- Current package/app version: `0.28.0`.
 - Mac App Store published version: `0.26.0`, reported released on
   2026-06-20 after App Review completion.
 - Active lane: v0.28 Safety, Quality, and AI Review Foundation after

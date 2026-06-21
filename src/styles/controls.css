@@ -102,7 +102,7 @@
   --titlebar-traffic-light-inset: 84px;
   --titlebar-leading-control-width: 44px;
   -webkit-app-region: drag;
-  background: var(--surface-muted);
+  background: color-mix(in srgb, var(--surface-muted) 82%, var(--surface) 18%);
   border-bottom: 0;
   display: grid;
   gap: 0 8px;
@@ -111,7 +111,8 @@
     calc(var(--titlebar-traffic-light-inset) - var(--titlebar-leading-control-width))
     minmax(0, 1fr)
     auto;
-  grid-template-rows: 26px 44px;
+  /* Keep tabs thin while giving the mode controls their own vertical air. */
+  grid-template-rows: 30px 40px;
   height: 70px;
   min-width: 0;
   padding: 0 14px 0 0;
@@ -317,6 +318,7 @@
   overscroll-behavior-x: contain;
   scrollbar-width: none;
   gap: 4px;
+  padding-right: clamp(28px, 2.2vw, 40px);
 }
 
 .tab-list::-webkit-scrollbar {
@@ -372,7 +374,7 @@
   flex-shrink: 1;
   max-width: clamp(180px, 24vw, 240px);
   min-width: clamp(96px, 12vw, 140px);
-  height: 34px;
+  height: 30px;
   border-radius: 6px;
   margin: 0 2px;
   position: relative;
@@ -382,9 +384,9 @@
 }
 
 .tab-item.active {
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 88%, var(--surface-muted) 12%);
+  border: 1px solid color-mix(in srgb, var(--border) 30%, transparent);
+  box-shadow: none;
   flex-basis: clamp(180px, 22vw, 280px);
   flex-grow: 1.25;
   flex-shrink: 1;
@@ -398,17 +400,17 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
-  background: transparent;
+  height: 1px;
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
   transition: all 0.2s ease;
 }
 
 :root[data-theme="yakou"] .tab-item.active::before {
-  background: var(--accent-gradient);
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 :root[data-theme="shokou"] .tab-item.active::before {
-  background: var(--accent-gradient);
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 .tab-item:not(.active):hover {
@@ -416,7 +418,7 @@
 }
 
 .tab-item.active:hover {
-  background: color-mix(in srgb, var(--surface) 92%, var(--text) 8%);
+  background: color-mix(in srgb, var(--surface) 86%, var(--surface-muted) 14%);
 }
 
 :root[data-theme="dark"] .tab-item:not(.active):hover {
@@ -451,9 +453,9 @@
   display: flex;
   flex: 1;
   font-size: 12.5px;
-  gap: 6px;
+  gap: 5px;
   overflow: hidden;
-  padding: 0 4px 0 10px;
+  padding: 0 3px 0 9px;
   height: 100%;
   text-align: left;
   white-space: nowrap;
