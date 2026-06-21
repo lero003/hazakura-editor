@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-21 (v0.29 Review Desk retirement alignment)
+Last reviewed: 2026-06-22 (v0.29.01 Local Assist responsiveness split)
 
 ## Current Position
 
@@ -18,10 +18,15 @@ Current release state:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
 - Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
 - Current package/app version: `0.29.0`.
+- Local source baseline tag before `v0.29.01` development: `v0.29.0`
+  on 2026-06-22.
 - Mac App Store published version: `0.26.0`, reported released on
   2026-06-20 after App Review completion.
 - Active lane: v0.29 AI Proposal Ingest and Writing Flow on top of the
-  completed v0.28 safety / AI-review foundation.
+  completed v0.28 safety / AI-review foundation. The heavier Hazakura
+  Local Assist responsiveness work is split into `v0.29.01` planning so
+  it can be implemented and verified separately from the `0.29.0`
+  package evidence.
 - Current work queue: `docs/current-work.md`.
 
 North star for the next product arc:
@@ -46,10 +51,15 @@ Near-term phase order:
 2. v0.29 deepens writing / review flow from that foundation: Apple Local
    Assist transaction review, explicit Diff / Review, retired Review Desk
    exposure guards, and release-quality smoke.
-3. v1.0 should be a polished single-document Markdown book-writing
+3. v0.29.01 hardens Hazakura Local Assist responsiveness: separate heavy
+   Foundation Models generation from UI responsiveness, lock the target
+   editor while generation is in flight, show streaming progress in the
+   Assist Window, and keep the final result behind the existing unsaved
+   AI edit transaction / Diff review path.
+4. v1.0 should be a polished single-document Markdown book-writing
    surface with explicit export and review, not a full multi-file book
    workspace.
-4. v2.0 is the first appropriate target for Book Workspace Alpha:
+5. v2.0 is the first appropriate target for Book Workspace Alpha:
    treating user-selected, structurally related Markdown files as one
    book.
 
@@ -179,6 +189,38 @@ boundary is manual review:
 
 Do not add auto-apply, auto-save, auto-commit, hidden workspace
 rewriting, or general agent orchestration.
+
+## v0.29.01 Local Assist Responsiveness
+
+Goal: make Hazakura Local Assist feel alive during local Foundation
+Models generation without weakening the Safe Editor boundary.
+
+The target model is not "let the editor keep accepting edits while the
+model races it." The target is:
+
+- the Assist Window remains responsive and shows progress immediately;
+- the active target document is temporarily read-only while its AI edit
+  transaction is being generated;
+- streaming partial output is visible in the Assist Window as a preview;
+- only the final result updates the unsaved editor buffer through the
+  existing AI edit transaction and Diff / Discard path.
+
+This lane may change the helper / supervisor protocol from a final
+candidate-only JSON response to lifecycle events such as `started`,
+`partial`, `completed`, and `failed`. Keep those events bounded to
+app-known progress and generated candidate preview. Do not expose raw
+Foundation Models prompts, hidden instructions, provider transcript,
+reasoning, paths, secrets, or broad document excerpts.
+
+Do not include:
+
+- editor-buffer token streaming;
+- cancellation UI before real cancellation or request ignoring exists;
+- generic chat, network fallback, local HTTP providers, provider plugins,
+  tool calling, background workspace indexing, Agent Workbench changes,
+  auto-save, or auto-apply;
+- App Store upload, package rebuild, or metadata work unless the
+  distribution lane is explicitly reopened.
 
 ## Post-v0.25 Product Refinement
 

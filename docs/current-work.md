@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: Active v0.29 AI assist review API alignment and completed v0.28 foundation
+Scope: Active v0.29 AI assist review API alignment, v0.29.01 Local Assist responsiveness planning, and completed v0.28 foundation
 Authority: High
-Last reviewed: 2026-06-22 (v0.29 build 30 local package)
+Last reviewed: 2026-06-22 (v0.29.01 Local Assist responsiveness split)
 
 ## Purpose
 
@@ -27,6 +27,9 @@ of the completed v0.28 review foundation: keep the App Store path limited
 to Hazakura Local Assist, retire the standalone Review Desk screen, and
 route visible AI assistance through the Hazakura Local Assist transaction /
 Diff review surface before any broader ingest or Book Workspace work.
+The heavier Local Assist responsiveness work is split out as `v0.29.01`
+planning work so it can be implemented deliberately instead of being
+bundled into the existing `0.29.0` package evidence.
 
 ## Product Boundary
 
@@ -165,6 +168,68 @@ Next useful v0.29 slices, in order:
 | P1 done | Preview copy and companion UI polish | User-facing Local Assist copy uses `Preview` / `プレビュー` instead of `Alpha`, `Experimental`, or `実験的`; availability copy now gives light-user guidance for macOS 26+, M1+ Mac, Apple Intelligence enablement, supported language / region, and no external AI service. The detached companion now opens as a compact tool window, keeps the request form vertically tight, keeps the progress area fixed-height across request states, and separates request groups inside a short scrollable in-session progress log. |
 | P1 done | Local Assist preset / prompt boundary | UI labels are separated from internal `actionId`s, and pressing a preset inserts its concrete request sentence into the editable request field. The live helper prompt separates base instruction, action, visible request text, target text, and surrounding context. All presets now use the same unsaved AI edit transaction / Diff review flow so `要約`, `続きの案`, and `章レビュー` no longer behave like a separate result-only mode. |
 | P2 | Target sync and maintenance polish | Send document target snapshots to Rust only while Local Assist is active; update stale helper comments, helper platform metadata, diagnostics version handling, and any remaining internal naming over time. |
+
+## v0.29.01 Local Assist Responsiveness
+
+This is the next focused Local Assist engineering lane. It is intentionally
+heavier than copy / loading polish, so keep it separate from the current
+`0.29.0` package evidence and do not mix it with broader AI ingest,
+Book Workspace, Agent Workbench, or App Store metadata work.
+
+Observed product problem:
+
+- Local Foundation Models generation can make the app feel like it stopped
+  accepting input after a request.
+- A loading label that appears only after generation finishes is not useful
+  and can look broken in App Review or light user smoke.
+- Locking the target editor while AI generation is in flight is acceptable,
+  but the app shell, Assist Window, progress text, and generated preview
+  must remain responsive.
+
+Target behavior:
+
+- When the user sends a Hazakura Local Assist request, the Assist Window
+  shows a visible `started` state before the heavy generation path begins.
+- The active target document enters a bounded read-only / generation lock
+  so human edits, save/apply actions, and duplicate Local Assist requests
+  do not race the AI edit transaction.
+- Scrolling, window controls, the Assist Window, and progress display remain
+  interactive while generation is running.
+- Streaming partial output, when available, is shown inside the Assist
+  Window as a generation preview. It is not written into the editor buffer
+  token-by-token.
+- Only the final completed result creates an unsaved AI edit transaction,
+  records before/after text, and exposes Diff / Discard before save.
+
+Implementation order:
+
+| Priority | Slice | Acceptance |
+|---|---|---|
+| P0 | Separate generation wait from UI responsiveness | `started` progress is emitted and painted before the helper generation wait; long-running generation no longer clears `busy` early or allows duplicate requests. Add a focused regression around the slow path. |
+| P0 | Target document generation lock | The active target editor is read-only while its Local Assist request is running, with clear inline copy. Save, AI re-request, and apply-like actions are guarded for that target; unrelated app chrome remains usable. |
+| P1 | Streaming helper protocol | Extend the helper / supervisor boundary from final `candidate` only to lifecycle events such as `started`, `partial`, `completed`, and `failed`, preserving bounded error hygiene and no raw prompt / hidden instruction exposure. |
+| P1 | Streaming preview UI | Show partial generated text in the Assist Window as a preview while keeping editor source unchanged until completion. The final result still flows through the existing AI edit transaction and Diff review path. |
+| P2 | Cancel / stale request handling | Add request IDs and cancellation only when the helper process can actually stop or ignore the request safely. Do not show `Escでキャンセル` / `Esc to cancel` before that behavior is real. |
+
+Non-goals for `v0.29.01`:
+
+- No editor-buffer token streaming.
+- No auto-save, auto-apply, hidden file rewrite, or background document
+  rewrite.
+- No generic chat, tool calling, network model fallback, local HTTP provider,
+  provider plugins, broad workspace indexing, or Agent Workbench changes.
+- No App Store Connect upload / package rebuild unless the user explicitly
+  opens the distribution lane.
+
+Useful proof path:
+
+- Source regression for slow Local Assist lifecycle / duplicate-request guard.
+- Hook or component test for target lock and visible progress copy.
+- Swift helper / Rust supervisor test for streaming envelope parsing once
+  the protocol changes.
+- Built-app smoke on a real macOS 26 + Apple Intelligence environment for
+  first-run model warm-up, long prompt, partial preview, final Diff, discard,
+  and save-after-review behavior.
 
 ## v0.20 Sakura Workspace Ergonomics
 

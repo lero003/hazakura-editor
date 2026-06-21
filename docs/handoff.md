@@ -3,22 +3,31 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-22 (v0.29 build 30 local package)
+Last reviewed: 2026-06-22 (v0.29.01 Local Assist responsiveness split)
 
 ## Current State
 
-- `Hazakura Editor` is tagged at `v0.27.0` for the source / local-app
-  release checkpoint. The published Mac App Store version remains
-  `0.26.0` until a newer App Store build is processed, approved, and
-  released. Current package/app metadata is `0.29.0`; helper-enabled
-  build `30` is the latest generated local App Store package after the
-  helper executable rename. Codex opened the build `30` package in
-  Transporter GUI, but CLI delivery was not completed because App Store
-  Connect authentication environment variables were unset. Build `29`
-  was reported as successfully delivered on 2026-06-22 after the helper
-  sandbox entitlement fix. App Store Connect upload completion,
-  processing, TestFlight, App Review, and release handling are not
-  tracked unless explicitly recorded later.
+- `Hazakura Editor` now has a local `v0.29.0` baseline tag on the
+  current `0.29.0` source state before `v0.29.01` development. The
+  latest published GitHub preview remains `v0.20.0`, and the published
+  Mac App Store version remains `0.26.0` until a newer App Store build
+  is processed, approved, and released. Current package/app metadata is
+  `0.29.0`; helper-enabled build `30` is the latest generated local App
+  Store package after the helper executable rename. Codex opened the
+  build `30` package in Transporter GUI, but CLI delivery was not
+  completed because App Store Connect authentication environment
+  variables were unset. Build `29` was reported as successfully
+  delivered on 2026-06-22 after the helper sandbox entitlement fix. App
+  Store Connect upload completion, processing, TestFlight, App Review,
+  and release handling are not tracked unless explicitly recorded later.
+- The next product slice is `v0.29.01` Hazakura Local Assist
+  responsiveness hardening. Start from `docs/current-work.md`: separate
+  heavy Foundation Models generation from UI responsiveness, lock the
+  active target editor during generation, show streaming progress /
+  preview in the Assist Window, and keep final application behind the
+  existing unsaved AI edit transaction / Diff review path. Do not show
+  cancellation copy until real cancellation or safe stale-request
+  ignoring exists.
 - User-facing app identity is capitalized as `Hazakura Editor`. The
   App Store preview bundle is `Hazakura Editor.app`; current docs and
   smoke paths should use that name rather than the older lowercase
