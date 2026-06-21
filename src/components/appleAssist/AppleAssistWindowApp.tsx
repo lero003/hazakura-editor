@@ -75,13 +75,11 @@ const APPLE_ASSIST_GENERATION_FALLBACK_MS = 365_000;
 // state only and is intentionally not persisted to disk,
 // localStorage, logs, diagnostics, or Support Diagnostics.
 //
-// The cap (`OPERATION_FEEDBACK_MAX_ENTRIES = 6`) matches the
-// "latest 5-7 entries" guidance in the v0.17 request doc
-// and in `docs/apple-local-assist-writing-companion-plan.md`.
-// Older entries are dropped from the head when the cap is
-// exceeded so the panel never grows past a screen of
-// information.
-export const OPERATION_FEEDBACK_MAX_ENTRIES = 6;
+// Keep enough in-memory entries for several short requests in one
+// companion session while still bounding the React-only log. This is
+// UI state only: it is not persisted, exported, or copied into
+// diagnostics.
+export const OPERATION_FEEDBACK_MAX_ENTRIES = 48;
 
 export function scrollOperationFeedbackToEnd(element: HTMLElement | null): void {
   if (!element) {
@@ -572,7 +570,9 @@ export function AppleAssistWindowApp() {
         ref={feedbackSectionRef}
         className="apple-assist-window-feedback"
         aria-label={copy.feedbackHeading}
+        aria-live="polite"
         data-testid="apple-assist-feedback-section"
+        role="log"
       >
         <p
           className="apple-assist-feedback-heading"

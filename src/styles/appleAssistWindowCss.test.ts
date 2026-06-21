@@ -26,6 +26,32 @@ describe("apple-assist-window.css", () => {
     const feedback = ruleBody(css, ".apple-assist-window-feedback");
 
     expect(shell).not.toMatch(/grid-template-rows:[^;]*1fr/);
-    expect(feedback).toMatch(/max-height:\s*(1[4-9]|2[0-9])rem/);
+    expect(feedback).toMatch(/max-height:\s*8\.5rem/);
+  });
+
+  it("keeps the companion vertically compact for the smaller tool-window height", () => {
+    const shell = ruleBody(css, ".apple-assist-window-shell");
+    const header = ruleBody(css, ".apple-assist-window-header");
+    const form = ruleBody(css, ".apple-assist-window-form");
+    const textarea = ruleBody(css, ".apple-assist-window-textarea");
+    const feedback = ruleBody(css, ".apple-assist-window-feedback");
+
+    expect(shell).toMatch(/padding:\s*10px/);
+    expect(shell).toMatch(/gap:\s*8px/);
+    expect(shell).toMatch(/align-content:\s*start/);
+    expect(header).toMatch(/padding-bottom:\s*8px/);
+    expect(form).toMatch(/gap:\s*6px/);
+    expect(textarea).toMatch(/min-height:\s*3\.4rem/);
+    expect(textarea).toMatch(/max-height:\s*4\.6rem/);
+    expect(feedback).toMatch(/max-height:\s*8\.5rem/);
+  });
+
+  it("keeps the feedback log scrollable instead of expanding the whole window", () => {
+    const feedback = ruleBody(css, ".apple-assist-window-feedback");
+    const list = ruleBody(css, ".apple-assist-feedback-list");
+
+    expect(feedback).toMatch(/overflow-y:\s*auto/);
+    expect(feedback).toMatch(/scrollbar-width:\s*thin/);
+    expect(list).toMatch(/gap:\s*4px/);
   });
 });

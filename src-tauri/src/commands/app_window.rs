@@ -22,6 +22,10 @@ use tauri::WebviewWindowBuilder;
 // transparent macOS title bar / shell chrome, not for dense editor
 // content backgrounds.
 const THEME_BACKGROUND_COLORS_JSON: &str = include_str!("../../../src/lib/theme-palette.json");
+pub(crate) const APPLE_ASSIST_WINDOW_DEFAULT_WIDTH: f64 = 480.0;
+pub(crate) const APPLE_ASSIST_WINDOW_DEFAULT_HEIGHT: f64 = 560.0;
+pub(crate) const APPLE_ASSIST_WINDOW_MIN_WIDTH: f64 = 420.0;
+pub(crate) const APPLE_ASSIST_WINDOW_MIN_HEIGHT: f64 = 480.0;
 
 #[derive(serde::Deserialize)]
 struct ThemeBackgroundColors {
@@ -372,12 +376,17 @@ fn show_or_create_apple_assist_window<R: tauri::Runtime>(
     .title_bar_style(TitleBarStyle::Transparent)
     .background_color(agent_window_background_color(theme))
     .theme(Some(agent_window_os_theme(theme)))
-    // Same panel proportions as the Agent window so the two
-    // surfaces feel like interchangeable companion slots. The
-    // mock is intentionally a small form for rough requests; the
-    // actual body editing happens in the main window.
-    .inner_size(480.0, 800.0)
-    .min_inner_size(420.0, 560.0)
+    // Compact request-panel proportions: unlike the Agent window,
+    // Hazakura Local Assist is a small form plus a short session log.
+    // The actual body editing happens in the main window.
+    .inner_size(
+        APPLE_ASSIST_WINDOW_DEFAULT_WIDTH,
+        APPLE_ASSIST_WINDOW_DEFAULT_HEIGHT,
+    )
+    .min_inner_size(
+        APPLE_ASSIST_WINDOW_MIN_WIDTH,
+        APPLE_ASSIST_WINDOW_MIN_HEIGHT,
+    )
     .center()
     .build()
     .map_err(|err| format!("Cannot open Hazakura Local Assist window: {err}"))?;

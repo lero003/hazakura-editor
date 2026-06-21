@@ -14,7 +14,7 @@
 // The tests below pin:
 //   - the list starts empty,
 //   - `pushFeedback` appends entries in order,
-//   - the cap (6) drops the oldest entry when exceeded,
+//   - the cap is large enough for several requests in one session,
 //   - the safety payload contract: only `targetKind` and
 //     `targetChars` are accepted; `target.text`,
 //     `target.label`, document names, paths, and other
@@ -89,7 +89,24 @@ describe("useOperationFeedback", () => {
     expect(entry.payload).toEqual({ targetKind: "section", targetChars: 420 });
   });
 
-  it("caps the feedback list at OPERATION_FEEDBACK_MAX_ENTRIES (6) and drops the oldest entries", () => {
+  it("keeps several requests worth of session feedback before capping", () => {
+    expect(OPERATION_FEEDBACK_MAX_ENTRIES).toBeGreaterThanOrEqual(32);
+    const { result } = renderHook(() => useOperationFeedback());
+    act(() => {
+      for (let i = 0; i < 12; i += 1) {
+        result.current.pushFeedback({
+          kind: "request-sent",
+          payload: { targetChars: i },
+        });
+      }
+    });
+    const survivingChars = result.current.feedback.map(
+      (e) => (e.payload as { targetChars: number }).targetChars,
+    );
+    expect(survivingChars).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+  });
+
+  it("caps the feedback list at OPERATION_FEEDBACK_MAX_ENTRIES and drops the oldest entries only after the session log cap", () => {
     const { result } = renderHook(() => useOperationFeedback());
     act(() => {
       for (let i = 0; i < OPERATION_FEEDBACK_MAX_ENTRIES + 2; i += 1) {
@@ -106,11 +123,12 @@ describe("useOperationFeedback", () => {
     expect(entries).toHaveLength(OPERATION_FEEDBACK_MAX_ENTRIES);
     // The oldest two entries (chars 0 and 1) must have
     // been dropped from the head; the survivors start at
-    // chars 2 and end at chars 7.
+    // chars 2 and end at the cap + 1.
     const survivingChars = entries.map(
       (e) => (e.payload as { targetChars: number }).targetChars,
     );
-    expect(survivingChars).toEqual([2, 3, 4, 5, 6, 7]);
+    expect(survivingChars.at(0)).toBe(2);
+    expect(survivingChars.at(-1)).toBe(OPERATION_FEEDBACK_MAX_ENTRIES + 1);
   });
 
   it("emits the same kinds the request doc lists (ready, target-acquired, request-sent, generation-started, applied, failed)", () => {
@@ -120,9 +138,8 @@ describe("useOperationFeedback", () => {
     // OperationFeedbackKind union and the copy map; the
     // type system already rejects that change at compile
     // time. This test pins the public set. The list is
-    // capped at OPERATION_FEEDBACK_MAX_ENTRIES, so we
-    // push at most that many kinds and verify the full
-    // window-state set is present.
+    // The cap is now large enough to keep this whole
+    // lifecycle set together for a readable session log.
     const { result } = renderHook(() => useOperationFeedback());
     const expectedKinds: ReadonlyArray<
       "ready" | "target-acquired" | "request-sent" | "generation-started" | "applied" | "failed" | "unavailable"
@@ -135,30 +152,17 @@ describe("useOperationFeedback", () => {
       "failed",
       "unavailable",
     ];
-    // Push the first cap-many kinds so the list stays
-    // under the cap; the seventh kind ("unavailable") is
-    // covered by the targeted `unavailable` push test
-    // below.
     act(() => {
-      for (const kind of expectedKinds.slice(0, OPERATION_FEEDBACK_MAX_ENTRIES)) {
+      for (const kind of expectedKinds) {
         result.current.pushFeedback({ kind });
       }
     });
     expect(result.current.feedback.map((e) => e.kind)).toEqual(
-      expectedKinds.slice(0, OPERATION_FEEDBACK_MAX_ENTRIES),
+      expectedKinds,
     );
-
-    // The remaining kind still works when added directly.
-    act(() => {
-      result.current.pushFeedback({ kind: "unavailable" });
-    });
-    // The oldest entry ("ready") is dropped to make room
-    // for the new one, and the cap is preserved.
-    expect(result.current.feedback).toHaveLength(
-      OPERATION_FEEDBACK_MAX_ENTRIES,
-    );
+    expect(result.current.feedback).toHaveLength(expectedKinds.length);
     expect(result.current.feedback.at(-1)?.kind).toBe("unavailable");
-    expect(result.current.feedback.find((e) => e.kind === "ready")).toBeUndefined();
+    expect(result.current.feedback.find((e) => e.kind === "ready")).toBeDefined();
   });
 
   it("does not accept document text, label, or path fields in the payload (TypeScript-compile-time + runtime guard)", () => {

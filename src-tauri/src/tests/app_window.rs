@@ -33,6 +33,28 @@ fn agent_window_background_color_falls_back_to_dark_for_unknown_theme() {
 }
 
 #[test]
+fn apple_assist_window_uses_compact_vertical_tool_window_size() {
+    assert_eq!(APPLE_ASSIST_WINDOW_DEFAULT_WIDTH, 480.0);
+    assert_eq!(APPLE_ASSIST_WINDOW_DEFAULT_HEIGHT, 560.0);
+    assert_eq!(APPLE_ASSIST_WINDOW_MIN_WIDTH, 420.0);
+    assert_eq!(APPLE_ASSIST_WINDOW_MIN_HEIGHT, 480.0);
+
+    let source = include_str!("../commands/app_window.rs");
+    assert!(
+        source.contains(
+            ".inner_size(\n        APPLE_ASSIST_WINDOW_DEFAULT_WIDTH,\n        APPLE_ASSIST_WINDOW_DEFAULT_HEIGHT,\n    )",
+        ),
+        "apple-assist builder must use the compact default-size constants",
+    );
+    assert!(
+        source.contains(
+            ".min_inner_size(\n        APPLE_ASSIST_WINDOW_MIN_WIDTH,\n        APPLE_ASSIST_WINDOW_MIN_HEIGHT,\n    )"
+        ),
+        "apple-assist builder must use the compact min-size constants",
+    );
+}
+
+#[test]
 fn dock_reopen_without_visible_windows_should_restore_main_window() {
     assert!(should_restore_main_window_on_reopen(None, false));
 }

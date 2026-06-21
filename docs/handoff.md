@@ -97,8 +97,8 @@ Last reviewed: 2026-06-21 (v0.29 Hazakura Local Assist review triage)
   gating for command palette / app menu, visible `Hazakura Local Assist`
   naming, softer Local Assist network wording, short probe timeout
   separation, helper error hygiene, preview-oriented user copy, clearer
-  Apple Intelligence availability guidance, and a content-sized companion
-  progress panel. 2026-06-21 user-side light built-app smoke confirmed
+  Apple Intelligence availability guidance, a compact companion window,
+  and a short scrollable progress log. 2026-06-21 user-side light built-app smoke confirmed
   the dedicated Local Assist UI opens, the helper is absent from Activity
   Monitor memory before opening the companion, and a simple request can be
   generated/applied and checked through the diff/update flow. Next, keep
@@ -477,8 +477,9 @@ open Active UX Queue slice and close it as `implemented`,
 - Latest v0.29 Hazakura Local Assist App Store-lane gate: source tests and
   local build evidence now cover the v0.29 version bump, `Preview` /
   `プレビュー` Local Assist copy, light-user availability wording for
-  macOS 26+ / M1+ / Apple Intelligence / supported language-region, and
-  the companion progress-panel sizing. Commands run: `npm run test`,
+  macOS 26+ / M1+ / Apple Intelligence / supported language-region, a
+  compact 480 x 560 default companion window, and a short scrollable
+  in-session progress log. Commands run: `npm run test`,
   `npm run typecheck`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`,
   `cargo test --manifest-path src-tauri/Cargo.toml -- --test-threads=1`,
   `npm run smoke:app-store-surface`, `npm run build:vite`,
