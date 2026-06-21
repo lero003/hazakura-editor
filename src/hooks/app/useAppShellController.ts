@@ -103,11 +103,13 @@ export function useAppShellController() {
     candidateCompareCase,
     candidateCompareView,
     candidateErrorMessage,
+    candidateInputSource,
     candidateInputText,
     clearCandidate,
     resetReviewDesk,
     reviewDeskMode,
     runCandidateCompare,
+    setCandidateInputFromFile,
     setCandidateInputText,
   } = foundation;
 
@@ -1052,7 +1054,7 @@ export function useAppShellController() {
     activeTab: appleAssistTarget,
     copy: reviewDeskCopy,
     runCandidateCompare,
-    setCandidateInputText,
+    setCandidateInputFromFile,
   });
 
   const setCandidateInputTextAndClearImportError = useCallback(
@@ -1394,6 +1396,7 @@ export function useAppShellController() {
     candidateErrorMessage,
     candidateFileImportBusy,
     candidateFileImportError,
+    candidateInputSource,
     candidateInputText,
     clearCandidate: clearCandidateAndImportError,
     appCloseCancelButtonRef,

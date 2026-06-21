@@ -220,6 +220,9 @@ describe("macOS build scripts", () => {
     expect(appStoreSurfaceSmoke).toContain(
       "src/hooks/review/useCandidateFileImport.test.ts",
     );
+    expect(appStoreSurfaceSmoke).toContain(
+      "src/hooks/review/useReviewDeskState.test.ts",
+    );
   });
 
   it("uses the dedicated Developer lane script before copying the Dev bundle", () => {

@@ -86,12 +86,15 @@ Last reviewed: 2026-06-21 (v0.29 proposal-ingest alignment)
   available as `npm run smoke:macos-window`; it confirms the local
   `Hazakura Editor Dev.app` shows an onscreen window via
   `CoreGraphics`, but it is not native file-picker interaction proof.
+  Candidate input tracks manual paste, file import, and edited
+  file-import state so re-comparing an imported candidate preserves the
+  source label without exposing local paths or provider internals.
   Candidate file-import failures now use stable Review Desk messages,
   localize in the Review Desk and status bar, and remain clearable even
   when only the import error is visible.
   Next useful work should stay narrow: native-dialog Review Desk smoke,
-  paste/source provenance polish, or a focused Review Desk quality fix if
-  one is reproduced. Multi-file proposal review remains deferred.
+  a reproduced provenance edge case, or a focused Review Desk quality fix
+  if one is reproduced. Multi-file proposal review remains deferred.
 - Latest docs cleanup keeps current entry points lighter: README now
   summarizes feature areas instead of listing every implemented behavior,
   roadmap keeps a short shipped-phase summary for v0.18-v0.26, and

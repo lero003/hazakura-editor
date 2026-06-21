@@ -1,6 +1,7 @@
 import { useState, type ComponentProps } from "react";
 import type {
   AmbientIntensity,
+  CandidateInputSource,
   CompareCase,
   CompareViewState,
   EditorSettings,
@@ -39,6 +40,7 @@ export type AppShellProps = Omit<
     candidateErrorMessage: string | null;
     candidateFileImportBusy: boolean;
     candidateFileImportError: string | null;
+    candidateInputSource: CandidateInputSource;
     candidateInputText: string;
     clearCandidate: () => void;
     editorSettings: EditorSettings;
@@ -101,6 +103,7 @@ export function AppShell(props: AppShellProps) {
           candidateErrorMessage={props.candidateErrorMessage}
           candidateFileImportBusy={props.candidateFileImportBusy}
           candidateFileImportError={props.candidateFileImportError}
+          candidateInputSource={props.candidateInputSource}
           candidateInputText={props.candidateInputText}
           clearCandidate={props.clearCandidate}
           editorSettings={props.editorSettings}

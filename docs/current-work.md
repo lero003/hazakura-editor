@@ -105,6 +105,10 @@ Implemented locally as of 2026-06-21:
   candidate input, and render an explicit Diff against the active buffer.
 - Candidate preview metadata now shows the proposal source, so manual
   paste, Apple Local Assist, and file import remain distinguishable.
+- Candidate input now tracks manual paste, file import, and edited
+  file-import state. Re-comparing an imported candidate keeps the file
+  source label without exposing local paths, provider internals, or
+  auto-apply behavior.
 - The file-import path does not apply, save, auto-accept, call external
   AI/API, launch helpers, or modify workspace files.
 - `smoke:app-store-surface` now includes the source-level Review Desk /
@@ -123,8 +127,8 @@ Next useful v0.29 slices, if needed:
   separate from the source-level smoke and the packaged-app window smoke
   above. Computer Use / AX capture can be blocked for Tauri windows, so
   do not claim this interaction proof from CGWindow evidence alone.
-- Paste/source provenance polish that keeps provider metadata out of the
-  core editor surface.
+- Focused paste/source quality polish if another small provenance issue
+  is reproduced; keep provider metadata out of the core editor surface.
 - Multi-file proposal review remains deferred until single-file ingest
   feels trustworthy.
 

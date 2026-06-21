@@ -1,5 +1,10 @@
 import { useCallback, useState } from "react";
-import type { CompareCase, CompareViewState, ReviewDeskMode } from "../../types";
+import type {
+  CandidateInputSource,
+  CompareCase,
+  CompareViewState,
+  ReviewDeskMode,
+} from "../../types";
 import { buildLineDiff } from "../../features/diff/diff";
 
 // useReviewDeskState owns the v0.7 Review Desk state slots that
@@ -20,6 +25,8 @@ export function useReviewDeskState() {
   // string paired with a null compare view means the user has not
   // pressed Compare yet.
   const [candidateInputText, setCandidateInputTextState] = useState("");
+  const [candidateInputSource, setCandidateInputSource] =
+    useState<CandidateInputSource>({ kind: "manual" });
   // Compiled CompareCase for the manual candidate preview, or null
   // when no preview is being shown. Kept separate from
   // useCompareState so the right-pane compare route is not
@@ -40,10 +47,31 @@ export function useReviewDeskState() {
 
   const setCandidateInputText = useCallback((value: string) => {
     setCandidateInputTextState(value);
+    setCandidateInputSource((currentSource) =>
+      value.length === 0
+        ? { kind: "manual" }
+        : currentSource.kind === "file"
+          ? { ...currentSource, edited: true }
+          : { kind: "manual" },
+    );
     setCandidateCompareCaseState(null);
     setCandidateCompareViewState(null);
     setCandidateErrorMessageState(null);
   }, []);
+  const setCandidateInputFromFile = useCallback(
+    (value: string, sourceName: string) => {
+      setCandidateInputTextState(value);
+      setCandidateInputSource({
+        kind: "file",
+        name: sourceName,
+        edited: false,
+      });
+      setCandidateCompareCaseState(null);
+      setCandidateCompareViewState(null);
+      setCandidateErrorMessageState(null);
+    },
+    [],
+  );
 
   const setCandidateCompare = useCallback(
     (compareCase: CompareCase, view: CompareViewState) => {
@@ -106,6 +134,7 @@ export function useReviewDeskState() {
 
   const clearCandidate = useCallback(() => {
     setCandidateInputTextState("");
+    setCandidateInputSource({ kind: "manual" });
     setCandidateCompareCaseState(null);
     setCandidateCompareViewState(null);
     setCandidateErrorMessageState(null);
@@ -114,6 +143,7 @@ export function useReviewDeskState() {
   const resetReviewDesk = useCallback(() => {
     setReviewDeskMode("empty");
     setCandidateInputTextState("");
+    setCandidateInputSource({ kind: "manual" });
     setCandidateCompareCaseState(null);
     setCandidateCompareViewState(null);
     setCandidateErrorMessageState(null);
@@ -123,12 +153,14 @@ export function useReviewDeskState() {
     candidateCompareCase,
     candidateCompareView,
     candidateErrorMessage,
+    candidateInputSource,
     candidateInputText,
     clearCandidate,
     resetReviewDesk,
     reviewDeskMode,
     runCandidateCompare,
     setCandidateCompare,
+    setCandidateInputFromFile,
     setCandidateInputText,
     setReviewDeskMode,
   };

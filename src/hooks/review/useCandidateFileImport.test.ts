@@ -94,14 +94,14 @@ describe("useCandidateFileImport", () => {
   it("imports a selected text file into the candidate input and compares it without applying", async () => {
     pickCandidateTextFile.mockResolvedValueOnce("/tmp/proposal.md");
     openTextFile.mockResolvedValueOnce(makeTextFileDocument());
-    const setCandidateInputText = vi.fn();
+    const setCandidateInputFromFile = vi.fn();
     const runCandidateCompare = makeRunCandidateCompare();
     const { result } = renderHook(() =>
       useCandidateFileImport({
         activeTab: target,
         copy,
         runCandidateCompare,
-        setCandidateInputText,
+        setCandidateInputFromFile,
       }),
     );
 
@@ -116,7 +116,10 @@ describe("useCandidateFileImport", () => {
     });
     expect(pickCandidateTextFile).toHaveBeenCalledTimes(1);
     expect(openTextFile).toHaveBeenCalledWith("/tmp/proposal.md");
-    expect(setCandidateInputText).toHaveBeenCalledWith("# Draft\n\nnew body\n");
+    expect(setCandidateInputFromFile).toHaveBeenCalledWith(
+      "# Draft\n\nnew body\n",
+      "proposal.md",
+    );
     expect(runCandidateCompare).toHaveBeenCalledTimes(1);
     expect(
       (runCandidateCompare as unknown as ReturnType<typeof vi.fn>).mock
@@ -135,14 +138,14 @@ describe("useCandidateFileImport", () => {
 
   it("treats a canceled picker as a no-op", async () => {
     pickCandidateTextFile.mockResolvedValueOnce(null);
-    const setCandidateInputText = vi.fn();
+    const setCandidateInputFromFile = vi.fn();
     const runCandidateCompare = makeRunCandidateCompare();
     const { result } = renderHook(() =>
       useCandidateFileImport({
         activeTab: target,
         copy,
         runCandidateCompare,
-        setCandidateInputText,
+        setCandidateInputFromFile,
       }),
     );
 
@@ -154,7 +157,7 @@ describe("useCandidateFileImport", () => {
     expect(returned).toEqual({ ok: false, canceled: true });
     expect(result.current.error).toBeNull();
     expect(openTextFile).not.toHaveBeenCalled();
-    expect(setCandidateInputText).not.toHaveBeenCalled();
+    expect(setCandidateInputFromFile).not.toHaveBeenCalled();
     expect(runCandidateCompare).not.toHaveBeenCalled();
   });
 
@@ -164,7 +167,7 @@ describe("useCandidateFileImport", () => {
         activeTab: null,
         copy,
         runCandidateCompare: makeRunCandidateCompare(),
-        setCandidateInputText: vi.fn(),
+        setCandidateInputFromFile: vi.fn(),
       }),
     );
 
@@ -188,7 +191,7 @@ describe("useCandidateFileImport", () => {
           resolveOpen = resolve;
         }),
     );
-    const setCandidateInputText = vi.fn();
+    const setCandidateInputFromFile = vi.fn();
     const runCandidateCompare = makeRunCandidateCompare();
     const otherTarget: CandidateFileImportTarget = {
       id: "tab-2",
@@ -202,7 +205,7 @@ describe("useCandidateFileImport", () => {
           activeTab,
           copy,
           runCandidateCompare,
-          setCandidateInputText,
+          setCandidateInputFromFile,
         }),
       { initialProps: { activeTab: target } },
     );
@@ -225,21 +228,21 @@ describe("useCandidateFileImport", () => {
     expect(returned.ok).toBe(false);
     expect(returned.error).toBe(CANDIDATE_FILE_IMPORT_TAB_CHANGED_ERROR);
     expect(result.current.error).toBe(CANDIDATE_FILE_IMPORT_TAB_CHANGED_ERROR);
-    expect(setCandidateInputText).not.toHaveBeenCalled();
+    expect(setCandidateInputFromFile).not.toHaveBeenCalled();
     expect(runCandidateCompare).not.toHaveBeenCalled();
   });
 
   it("wraps file-open failures in a stable import error prefix", async () => {
     pickCandidateTextFile.mockResolvedValueOnce("/tmp/proposal.md");
     openTextFile.mockRejectedValueOnce(new Error("Cannot decode selected file"));
-    const setCandidateInputText = vi.fn();
+    const setCandidateInputFromFile = vi.fn();
     const runCandidateCompare = makeRunCandidateCompare();
     const { result } = renderHook(() =>
       useCandidateFileImport({
         activeTab: target,
         copy,
         runCandidateCompare,
-        setCandidateInputText,
+        setCandidateInputFromFile,
       }),
     );
 
@@ -255,14 +258,14 @@ describe("useCandidateFileImport", () => {
     expect(result.current.error).toBe(
       `${CANDIDATE_FILE_IMPORT_FAILED_PREFIX}Cannot decode selected file`,
     );
-    expect(setCandidateInputText).not.toHaveBeenCalled();
+    expect(setCandidateInputFromFile).not.toHaveBeenCalled();
     expect(runCandidateCompare).not.toHaveBeenCalled();
   });
 
   it("surfaces compare errors without clearing the imported candidate text", async () => {
     pickCandidateTextFile.mockResolvedValueOnce("/tmp/proposal.md");
     openTextFile.mockResolvedValueOnce(makeTextFileDocument());
-    const setCandidateInputText = vi.fn();
+    const setCandidateInputFromFile = vi.fn();
     const runCandidateCompare = makeRunCandidateCompare(() => ({
       ok: false,
       error: "buffer / candidate combination is too large",
@@ -272,7 +275,7 @@ describe("useCandidateFileImport", () => {
         activeTab: target,
         copy,
         runCandidateCompare,
-        setCandidateInputText,
+        setCandidateInputFromFile,
       }),
     );
 
@@ -284,6 +287,9 @@ describe("useCandidateFileImport", () => {
     expect(returned.ok).toBe(false);
     expect(returned.error).toContain("too large");
     expect(result.current.error).toContain("too large");
-    expect(setCandidateInputText).toHaveBeenCalledWith("# Draft\n\nnew body\n");
+    expect(setCandidateInputFromFile).toHaveBeenCalledWith(
+      "# Draft\n\nnew body\n",
+      "proposal.md",
+    );
   });
 });

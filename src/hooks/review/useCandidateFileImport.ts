@@ -40,7 +40,7 @@ export type UseCandidateFileImportOptions = {
     candidateSourceLabel: string;
     candidateText: string;
   }) => { ok: true } | { ok: false; error: string };
-  setCandidateInputText: (value: string) => void;
+  setCandidateInputFromFile: (value: string, sourceName: string) => void;
 };
 
 export type UseCandidateFileImportResult = {
@@ -58,7 +58,7 @@ export function useCandidateFileImport({
   activeTab,
   copy,
   runCandidateCompare,
-  setCandidateInputText,
+  setCandidateInputFromFile,
 }: UseCandidateFileImportOptions): UseCandidateFileImportResult {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -100,7 +100,7 @@ export function useCandidateFileImport({
           return { ok: false, error: staleReason };
         }
 
-        setCandidateInputText(document.contents);
+        setCandidateInputFromFile(document.contents, document.name);
         const compareResult = runCandidateCompare({
           bufferContents: requestTab.contents,
           documentTabId: requestTab.id,
@@ -137,7 +137,7 @@ export function useCandidateFileImport({
           setBusy(false);
         }
       }
-    }, [activeTab, copy, runCandidateCompare, setCandidateInputText]);
+    }, [activeTab, copy, runCandidateCompare, setCandidateInputFromFile]);
 
   const clearError = useCallback(() => {
     setError(null);

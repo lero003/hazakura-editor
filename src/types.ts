@@ -112,6 +112,10 @@ export type ReviewSurface = "review" | null;
 // docs/archive/reviews/v0.7-review-desk-design-decisions.md (R-4).
 export type ReviewDeskMode = "empty";
 
+export type CandidateInputSource =
+  | { kind: "manual" }
+  | { kind: "file"; name: string; edited: boolean };
+
 export type MenuLanguage = "en" | "ja" | "kana";
 
 export function isJapaneseMenuLanguage(language: MenuLanguage): boolean {

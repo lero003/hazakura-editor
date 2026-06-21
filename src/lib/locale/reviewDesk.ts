@@ -1,4 +1,8 @@
-import { isJapaneseMenuLanguage, type MenuLanguage } from "../../types";
+import {
+  isJapaneseMenuLanguage,
+  type CandidateInputSource,
+  type MenuLanguage,
+} from "../../types";
 import { isKanaStyle } from "./_helpers";
 
 export type ReviewDeskCopy = {
@@ -34,6 +38,7 @@ export type ReviewDeskCopy = {
   candidateSourceManual: string;
   candidateSourceAppleAssist: string;
   candidateSourceFile: (name: string) => string;
+  candidateSourceFileEdited: (name: string) => string;
   candidateStaleActionReCompare: string;
   candidateStaleHeading: string;
   candidateStaleReasonBufferEdited: string;
@@ -65,6 +70,18 @@ export const CANDIDATE_FILE_IMPORT_FAILED_PREFIX =
 
 export function formatCandidateFileImportFailure(detail: string): string {
   return `${CANDIDATE_FILE_IMPORT_FAILED_PREFIX}${detail}`;
+}
+
+export function formatCandidateInputSourceLabel(
+  source: CandidateInputSource,
+  copy: ReviewDeskCopy,
+): string {
+  if (source.kind === "file") {
+    return source.edited
+      ? copy.candidateSourceFileEdited(source.name)
+      : copy.candidateSourceFile(source.name);
+  }
+  return copy.candidateSourceManual;
 }
 
 export function localizeCandidateFileImportError(
@@ -168,6 +185,8 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
       candidateSourceManual: "手で貼り付け",
       candidateSourceAppleAssist: "あっぷる あしす と (この Mac のみ)",
       candidateSourceFile: (name) => `ふぁいる読みこみ: ${name}`,
+      candidateSourceFileEdited: (name) =>
+        `ふぁいる読みこみ（てなおし済み）: ${name}`,
       candidateStaleActionReCompare: "もういちどくらべる",
       candidateStaleHeading: "したみがふるくなっています",
       candidateStaleReasonBufferEdited:
@@ -239,6 +258,8 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
         candidateSourceManual: "手動貼り付け",
         candidateSourceAppleAssist: "Apple Local Assist (この Mac のみ)",
         candidateSourceFile: (name) => `ファイル読み込み: ${name}`,
+        candidateSourceFileEdited: (name) =>
+          `ファイル読み込み（編集済み）: ${name}`,
         candidateStaleActionReCompare: "再比較",
         candidateStaleHeading: "プレビューが古くなっています",
         candidateStaleReasonBufferEdited:
@@ -307,6 +328,7 @@ export function getReviewDeskCopy(lang: MenuLanguage): ReviewDeskCopy {
         candidateSourceManual: "Manual paste",
         candidateSourceAppleAssist: "Apple Local Assist (on-device)",
         candidateSourceFile: (name) => `File import: ${name}`,
+        candidateSourceFileEdited: (name) => `File import (edited): ${name}`,
         candidateStaleActionReCompare: "Re-run Compare",
         candidateStaleHeading: "Preview is out of date",
         candidateStaleReasonBufferEdited:

@@ -82,8 +82,13 @@ const emptyView: CompareViewState = {
   removals: 0,
 };
 
+type ReviewSurfaceProps = Parameters<typeof ReviewSurface>[0];
+type RunCandidateCompareParams = Parameters<
+  ReviewSurfaceProps["runCandidateCompare"]
+>[0];
+
 function renderSurface(
-  overrides: Partial<Parameters<typeof ReviewSurface>[0]> = {},
+  overrides: Partial<ReviewSurfaceProps> = {},
 ) {
   return render(
     <ReviewSurface
@@ -93,6 +98,7 @@ function renderSurface(
       candidateErrorMessage={null}
       candidateFileImportBusy={false}
       candidateFileImportError={null}
+      candidateInputSource={{ kind: "manual" }}
       candidateInputText=""
       clearCandidate={vi.fn()}
       editorSettings={editorSettings}
@@ -150,6 +156,44 @@ describe("ReviewSurface", () => {
 
     expect(screen.getByText("Source")).toBeTruthy();
     expect(screen.getByText("File import: proposal.md")).toBeTruthy();
+  });
+
+  it("uses the tracked file source when re-comparing an imported candidate", () => {
+    const runCandidateCompare = vi.fn(
+      (_params: RunCandidateCompareParams) => ({ ok: true as const }),
+    );
+    renderSurface({
+      candidateInputSource: {
+        kind: "file",
+        name: "proposal.md",
+        edited: false,
+      },
+      candidateInputText: "# Proposal\n",
+      runCandidateCompare,
+    });
+
+    expect(screen.getByText("File import: proposal.md")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Compare" }));
+
+    expect(runCandidateCompare).toHaveBeenCalledTimes(1);
+    expect(runCandidateCompare.mock.calls[0][0]).toMatchObject({
+      candidateSourceLabel: "File import: proposal.md",
+      candidateText: "# Proposal\n",
+    });
+  });
+
+  it("marks file-imported candidate text as edited when the source says so", () => {
+    renderSurface({
+      candidateInputSource: {
+        kind: "file",
+        name: "proposal.md",
+        edited: true,
+      },
+      candidateInputText: "# Edited proposal\n",
+    });
+
+    expect(screen.getByText("File import (edited): proposal.md")).toBeTruthy();
   });
 
   it("localizes candidate file import errors and allows clearing an error-only state", () => {

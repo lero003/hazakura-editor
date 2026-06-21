@@ -69,6 +69,7 @@ describe("useAppShellFoundation", () => {
     // review desk
     expect(result.current).toHaveProperty("reviewDeskMode");
     expect(result.current).toHaveProperty("candidateInputText");
+    expect(result.current).toHaveProperty("candidateInputSource");
     // side
     expect(result.current).toHaveProperty("quickOpenVisible");
     expect(result.current).toHaveProperty("workspaceContextMenu");

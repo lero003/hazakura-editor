@@ -1,5 +1,6 @@
 import type {
   BaseTheme,
+  CandidateInputSource,
   CompareCase,
   CompareViewState,
   EditorSettings,
@@ -10,6 +11,7 @@ import type {
 import { isJapaneseMenuLanguage } from "../../types";
 import { isKanaStyle } from "../../lib/locale/_helpers";
 import {
+  formatCandidateInputSourceLabel,
   localizeCandidateFileImportError,
   type ReviewDeskCopy,
 } from "../../lib/locale";
@@ -23,6 +25,7 @@ type ReviewSurfaceProps = {
   candidateErrorMessage: string | null;
   candidateFileImportBusy: boolean;
   candidateFileImportError: string | null;
+  candidateInputSource: CandidateInputSource;
   candidateInputText: string;
   clearCandidate: () => void;
   editorSettings: EditorSettings;
@@ -66,6 +69,7 @@ export function ReviewSurface({
   candidateErrorMessage,
   candidateFileImportBusy,
   candidateFileImportError,
+  candidateInputSource,
   candidateInputText,
   clearCandidate,
   editorSettings,
@@ -111,6 +115,7 @@ export function ReviewSurface({
           candidateErrorMessage={candidateErrorMessage}
           candidateFileImportBusy={candidateFileImportBusy}
           candidateFileImportError={candidateFileImportError}
+          candidateInputSource={candidateInputSource}
           candidateInputText={candidateInputText}
           clearCandidate={clearCandidate}
           copy={reviewDeskCopy}
@@ -144,6 +149,7 @@ type ReviewSurfaceCandidateSectionProps = {
   candidateErrorMessage: string | null;
   candidateFileImportBusy: boolean;
   candidateFileImportError: string | null;
+  candidateInputSource: CandidateInputSource;
   candidateInputText: string;
   clearCandidate: () => void;
   copy: ReviewDeskCopy;
@@ -176,6 +182,7 @@ function ReviewSurfaceCandidateSection({
   candidateErrorMessage,
   candidateFileImportBusy,
   candidateFileImportError,
+  candidateInputSource,
   candidateInputText,
   clearCandidate,
   copy,
@@ -196,6 +203,10 @@ function ReviewSurfaceCandidateSection({
     candidateFileImportError !== null;
   const candidateLabelId = "review-surface-candidate-editor-label";
   const candidateHintId = "review-surface-candidate-editor-hint";
+  const candidateSourceLabel = formatCandidateInputSourceLabel(
+    candidateInputSource,
+    copy,
+  );
 
   const handleCompare = () => {
     if (!activeTab) {
@@ -208,7 +219,7 @@ function ReviewSurfaceCandidateSection({
       documentLabel: activeTab.name,
       leftColumnLabel: copy.candidateColumnLeft,
       rightColumnLabel: copy.candidateColumnRight,
-      candidateSourceLabel: copy.candidateSourceManual,
+      candidateSourceLabel,
       candidateText: candidateInputText,
     });
   };
@@ -244,6 +255,15 @@ function ReviewSurfaceCandidateSection({
           wrapLines={editorSettings.wrapLines}
           onChange={setCandidateInputText}
         />
+        {candidateInputText.length > 0 ? (
+          <p
+            className="review-surface-candidate-source"
+            aria-label={copy.candidatePreviewSourceLabel}
+          >
+            <span>{copy.candidatePreviewSourceLabel}</span>
+            <strong>{candidateSourceLabel}</strong>
+          </p>
+        ) : null}
         {!hasActiveTab ? (
           <p className="review-surface-candidate-empty" role="note">
             <strong>{copy.candidateEmptyHeading}</strong>
