@@ -641,6 +641,22 @@ verification: `cargo test --manifest-path src-tauri/Cargo.toml search_finds_ -- 
 `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`;
 `git diff --check`.
 
+P2 is implemented locally as of 2026-06-21. External URL opening,
+Finder / file-manager reveal, and print-browser handoff now route
+through one fixed OS handoff helper with platform-specific static command
+templates. External URL scheme validation remains bounded to
+`http:` / `https:` / `mailto:` / `tel:`, and print handoff now rejects
+path-like or non-HTML file names on the Rust side before creating the
+temporary file. This does not add arbitrary command input, shell input,
+generic opener UI, or broader file-manager behavior. Focused
+verification: `cargo test --manifest-path src-tauri/Cargo.toml tests::os_handoff:: -- --nocapture`;
+`cargo test --manifest-path src-tauri/Cargo.toml tests::external_links:: -- --nocapture`;
+`cargo test --manifest-path src-tauri/Cargo.toml _rejects_agent_window_label -- --nocapture`;
+`cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`;
+`cargo test --manifest-path src-tauri/Cargo.toml -- --test-threads=1`;
+`npm run build:vite`;
+`git diff --check`.
+
 Deferred from v0.28:
 
 - Book Workspace Alpha, multi-file chapter ordering, saved book
@@ -671,9 +687,9 @@ over copy-heavy or product-voice-sensitive work.
 
 | Fit | Candidate | Scope |
 |---|---|---|
-| Done locally | v0.28 L Mode image policy parity | Implemented on 2026-06-21. Do not re-pick unless a regression appears; continue with system handoff hardening or the next v0.28 slice. |
-| Done locally | v0.28 workspace search encoding parity | Implemented on 2026-06-21. Do not re-pick unless a regression appears; continue with system handoff hardening or the next v0.28 slice. |
-| Good | v0.28 system handoff hardening | Organize external-link, Finder reveal, and print/browser handoff as user-initiated allowlisted OS handoff. Do not add arbitrary command input or generic shell behavior. |
+| Done locally | v0.28 L Mode image policy parity | Implemented on 2026-06-21. Do not re-pick unless a regression appears; continue with AI proposal review foundation or the release-gate smoke checklist. |
+| Done locally | v0.28 workspace search encoding parity | Implemented on 2026-06-21. Do not re-pick unless a regression appears; continue with AI proposal review foundation or the release-gate smoke checklist. |
+| Done locally | v0.28 system handoff hardening | Implemented on 2026-06-21. Do not re-pick unless a regression appears; continue with AI proposal review foundation or the release-gate smoke checklist. |
 | Good | v0.28 AI proposal review foundation | Implement one explicit proposal intake / review primitive only: file, paste, or existing transaction to Diff / Review. Leave broader ingest expansion for v0.29+. No auto-apply, auto-save, auto-commit, provider plugins, generic chat, or hidden workspace rewrite. |
 | Good | L Mode quality investigation | Pick one reproduced L Mode issue or one measurable quality gap only: caret, IME, Backspace/Delete, hidden markers, lists, dividers, links, tables, images, visual overlap, source preservation, or performance baseline. Do not add a new editing model or contenteditable surface. |
 | Good | Theme quality investigation | Pick one concrete theme issue only: contrast, focus visibility, status/error readability, dialog readability, or Increase Contrast behavior. Do not redesign palettes or add theme customization. |

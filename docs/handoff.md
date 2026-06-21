@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-21 (v0.28 P1 search encoding parity)
+Last reviewed: 2026-06-21 (v0.28 P2 system handoff hardening)
 
 ## Current State
 
@@ -61,8 +61,14 @@ Last reviewed: 2026-06-21 (v0.28 P1 search encoding parity)
   Workspace search now reuses the file-open decode helpers for UTF-8,
   UTF-8 BOM, Shift-JIS, and EUC-JP after the existing binary / size
   guards. Undecodable files still skip rather than broadening supported
-  encodings. Continue v0.28 from system handoff hardening unless a
-  higher-priority regression appears.
+  encodings.
+- v0.28 P2 system handoff hardening is implemented locally. External URL
+  opening, Finder / file-manager reveal, and print-browser handoff now
+  use one fixed OS handoff helper with static platform command templates.
+  Print handoff rejects path-like or non-HTML file names before creating
+  the temporary file. Continue v0.28 from AI proposal review foundation
+  or the release-gate smoke checklist unless a higher-priority regression
+  appears.
 - v0.27 Phase 1 large-document initial rendering stabilization is
   accepted as closed at `b2126c14` plus this docs-only follow-up.
   `PreviewPane` clears stale content before paint, shows a theme-bound

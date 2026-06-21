@@ -1,11 +1,11 @@
 use crate::auto_backup;
+use crate::os_handoff::{build_os_handoff_command, run_os_handoff, OsHandoffTarget};
 use crate::security::window_guard::*;
 use crate::types::*;
 use crate::util::*;
 
 use std::fs::{self, OpenOptions};
 use std::path::PathBuf;
-use std::process::Command;
 #[tauri::command]
 pub(crate) fn open_text_file<R: tauri::Runtime>(
     window: tauri::WebviewWindow<R>,
@@ -62,56 +62,8 @@ pub(crate) fn reveal_path_in_file_manager_with_label(
 
     fs::metadata(&path_buf).map_err(|err| format!("Cannot reveal path: {err}"))?;
 
-    #[cfg(target_os = "macos")]
-    {
-        let status = Command::new("/usr/bin/open")
-            .arg("-R")
-            .arg(&path_buf)
-            .status()
-            .map_err(|err| format!("Cannot open Finder: {err}"))?;
-
-        if status.success() {
-            return Ok(());
-        }
-
-        Err(format!("Finder reveal failed with status {status}."))
-    }
-
-    #[cfg(target_os = "windows")]
-    {
-        let status = Command::new("explorer")
-            .arg("/select,")
-            .arg(&path_buf)
-            .status()
-            .map_err(|err| format!("Cannot open file manager: {err}"))?;
-
-        if status.success() {
-            return Ok(());
-        }
-
-        return Err(format!("File manager reveal failed with status {status}."));
-    }
-
-    #[cfg(all(not(target_os = "macos"), not(target_os = "windows")))]
-    {
-        let directory = if path_buf.is_dir() {
-            path_buf.as_path()
-        } else {
-            path_buf
-                .parent()
-                .ok_or_else(|| "Cannot find containing folder.".to_string())?
-        };
-        let status = Command::new("xdg-open")
-            .arg(directory)
-            .status()
-            .map_err(|err| format!("Cannot open file manager: {err}"))?;
-
-        if status.success() {
-            return Ok(());
-        }
-
-        Err(format!("File manager open failed with status {status}."))
-    }
+    let command = build_os_handoff_command(OsHandoffTarget::RevealPath(&path_buf));
+    run_os_handoff(command, "reveal path in file manager")
 }
 
 #[tauri::command]

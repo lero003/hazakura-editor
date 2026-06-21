@@ -20,6 +20,7 @@ mod encoding;
 mod external_links;
 mod files;
 mod menu;
+mod os_handoff;
 mod search;
 mod security;
 mod util;

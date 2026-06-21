@@ -20,6 +20,7 @@ pub(crate) mod agent;
 pub(crate) mod auto_backup;
 pub(crate) mod distribution;
 pub(crate) mod menu;
+pub(crate) mod os_handoff;
 pub(crate) mod types;
 pub(crate) mod util;
 
@@ -104,6 +105,8 @@ use crate::commands::workspace_broadcast::*;
 use crate::distribution::*;
 #[allow(unused_imports)]
 use crate::menu::*;
+#[allow(unused_imports)]
+use crate::os_handoff::*;
 #[allow(unused_imports)]
 use crate::security::window_guard::*;
 #[allow(unused_imports)]
