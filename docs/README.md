@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-06-20
+Last reviewed: 2026-06-21
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
@@ -16,7 +16,7 @@ or quality-polish slice.
 - `security-boundary.md`: safety constraints for file handling and execution boundaries.
 - `agent-workbench-boundary.md`: optional CLI-agent workbench trust boundary.
 - `assist-surface-strategy.md`: future assist-surface direction.
-- `current-work.md`: active v0.26 polish, EPUB export, post-approval, and quality work queue.
+- `current-work.md`: active v0.28 quality / AI-review foundation routing, release-gate follow-up, and next-slice queue.
 - `roadmap.md`: active release sequence and phase boundaries.
 - `current-status.md`: current implementation and release state.
 
@@ -27,7 +27,6 @@ or quality-polish slice.
 - `source-release-checklist.md`: source-preview release readiness.
 - `dmg-preview-checklist.md`: warning-expected DMG preview readiness.
 - `app-store-build.md`: public-safe helper-free Mac App Store build, signing, and smoke boundary.
-- `pre-release-fix-plan.md`: review-derived code-quality fixes to complete before release, excluding smoke execution.
 - `smoke-checklist.md`: manual smoke checklist.
 - `handoff.md`: concise handoff for the next coding agent.
 
@@ -35,10 +34,9 @@ or quality-polish slice.
 
 - `l-mode-plan.md`: L Mode / えるモード source-preserving WYSIWYG Accuracy Ramp planning memo.
 - `ebook-mode-epub-export-plan.md`: v0.21+ e-bookモード / EPUB export planning memo.
-- `ai-markdown-ingest-plan.md`: v0.26+ explicit AI Markdown proposal ingest and Diff / Review planning memo.
+- `ai-markdown-ingest-plan.md`: v0.28+ explicit AI Markdown proposal ingest and Diff / Review planning memo.
 - `native-macos-appearance-plan.md`: v0.25 native-feeling Safe Editor chrome planning memo.
 - `post-v0.25-product-refinement-plan.md`: post-App-Store refinement lens for raising product grade without adding heavy surfaces.
-- `v0.27-refinement-slice-plan.md`: v0.27 refinement execution phases applying the post-v0.25 lens (large-document rendering, One Editing Space, flow-preserving editing, status bar cleanup).
 - `speculative-local-ai-future-plan.md`: changeable v1+ / v2+ / v3+ local AI direction.
 - `apple-local-assist-distribution-plan.md`: Apple Local Assist / App Store distribution planning memo.
 - `apple-local-assist-writing-companion-plan.md`: Apple Local Assist Writing Companion / external Assist Window UX direction.
@@ -56,4 +54,6 @@ git-ignored and should not be referenced from public-facing docs.
 - `releases/`: release-note bodies used for published or prepared GitHub Releases.
 - `archive/reviews/`: historical review gates and design decisions that may still be referenced from code comments.
 - `archive/operations/app-store-v0.17/`: v0.17 App Store-quality request packets, closeout, smoke, and performance evidence.
+- `archive/operations/pre-release-fix-plan-2026-06-13.md`: completed review-derived pre-release code-quality fix queue.
 - `archive/planning/`: older planning memos, including commercial-quality baseline, authoring-feature readiness, and product-copy drafts.
+- `archive/planning/v0.27-refinement-slice-plan.md`: completed v0.27 execution memo.

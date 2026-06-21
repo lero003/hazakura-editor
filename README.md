@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-06-20
+Last reviewed: 2026-06-21
 
 `Hazakura Editor` は、AI時代のメモ帳です。Markdownを中心に、安全にテキストを読む・書く・比べるための軽量なローカル作業場を目指します。
 
@@ -83,68 +83,30 @@ Example use case:
 
 ## Current Features
 
-- Markdown/text file creation, open, edit, save, and sanitized preview
-- EPUB export beta for the active Markdown document, with Title / Author /
-  Language metadata inputs and a minimal heading-navigable `.epub` output
-  without claiming reader-perfect pagination
-- Finder/app-icon open events for common UTF-8 text documents, including JSON, use the same safe text-open path as File > Open
-- Folder picker with a lazy, bounded file tree
-- File-tree, Open, and restored files unified into the same tab model
-- Multiple tabs with active-tab editor, preview, size, and save status
-- Active-tab metadata for UTF-8 encoding, approximate bytes, character count, LF / CRLF line-ending mode, and final-newline state
-- Explicit LF / CRLF conversion before save
-- Save As to a new common UTF-8 text file extension, with existing-file overwrite rejection
-- Native File menu entries for New File, Open, Open Folder, Save, Save As, and Recent Folders
-- Native app menu entries for Preferences and Assist Surface settings on macOS
-- Native View menu and Preferences dialog for Preview, Wrap, Invisibles, Theme, Font, Tab settings, menu language, ambient effects, and spellcheck toggle
-- Native macOS spellcheck toggle (Cmd+Option+;)
-- Window title reflects the active file and unsaved state
-- Tab-level unsaved state and Save / Discard / Cancel before closing dirty tabs
-- Keyboard shortcuts for New File, Open, Open Folder, Save, Find, previous/next tab focus, tab close, and table insertion
-- Markdown table insertion via toolbar button or Cmd+Shift+T
-- Auto-backup restore picker for the active workspace file, with backup-vs-buffer comparison and explicit apply-to-buffer action before Save
-- External-change save conflict detection with Reopen from disk / Close without saving / Keep editing actions
-- Non-conflict save failures keep local edits and show Try save again / Keep editing recovery actions
-- Workspace tree directory expansion loads direct children on demand, keeps heavy / hidden directory exclusions, and shows a partial-listing note instead of failing the whole workspace when one folder exceeds the entry cap
-- Left workspace sidebar can be collapsed and restored in normal Safe Editor mode without changing the file-tree model
-- In-file search for the active tab, with visible match highlights, active-match selection, and keyboard next / previous / return-to-editor flow
-- Search options for case-sensitive, whole-word, and regex matching with invalid-regex reporting
-- Explicit non-Git split Diff workbench for comparing workspace text files by choosing separate source/target slots, plus active editor changes versus disk, recoverable drafts, and external-change conflicts, without inspecting Git repository state
-- Explicit review routes for active editor changes versus disk, recoverable drafts, external-change conflicts, and Apple Local Assist edit transactions, without auto-saving or Git awareness
-- Slash menu commands for inserting a Markdown shortcut list, with keyboard execution via Enter or Tab
-- Markdown file comparisons show heading context before changed blocks when a nearby ATX heading is available
-- Current-file Markdown outline and current-position context with click-to-jump navigation, transient scroll position HUD, and a visible cap note for very large outlines, without workspace-wide indexing
-- Markdown preview can open relative links to supported text files inside the selected workspace, and explicit `http:` / `https:` / `mailto:` / `tel:` clicks are handed to the OS default browser/app instead of navigating the app WebView
-- Go to Line, cursor line/column status, and approximate selected character/line count
-- Editor display settings for line wrap, invisible characters, font size, and tab size, with persisted preference
-- Find-field and global shortcut handling ignores active IME composition so Japanese text conversion is not mistaken for editor commands
-- Light / Dark / Sakura / Yakou / Shokou theme switching with persisted selection
-- Theme switching reconfigures the active editor without recreating it, preserving the current editor session state during theme changes
-- Recent workspace, open tabs, and active tab restoration after restart
-- Explicit unsaved draft recovery after restart when the disk file still matches the draft's saved fingerprint
-- Rust-side binary-looking file rejection, large-file warning, editing size limit, and atomic save helper with temporary-file cleanup after failed replace attempts plus existing-temp-file overwrite protection
-- Existing LF / CRLF line endings are preserved on save
-- Existing final-newline presence is preserved on save; the app does not add or remove a trailing newline by policy
-- Markdown preview blocks external/out-of-workspace image references and allows small embedded `data:image` PNG/JPEG/GIF/WebP images under the preview/export inline cap
-- Markdown preview renders local workspace-relative images, including generated `assets/...` references and README-style `docs/images/...` screenshots, through the existing workspace-image validation path
-- Markdown preview gives lists, task checkboxes, horizontal rules, code blocks, blockquotes, and tables readable review-oriented spacing
-- Clipboard image paste (Cmd+V) saves supported decoded image data up to 20 MB to `assets/<hash>.<ext>`, inserts `![](assets/...)` Markdown syntax, with hash-based deduplication
-- Image drag-and-drop from Finder imports supported image files up to 20 MB into `assets/` and inserts Markdown image reference
-- Standalone HTML export via save dialog; local workspace images are inlined as data URIs
-- Print to PDF handoff via browser print fallback
-- Workspace image files and directly selected local image files up to 20 MB can be shown as read-only PNG/JPEG/GIF/WebP previews after a lightweight content-signature check, then closed back to the prior text tab when one is available
-- Image previews also appear as a closeable tab-row pseudo-tab, including in L Mode where the normal preview divider is hidden for a quieter surface
-- Window and dirty-tab close requests are stopped when open tabs have unsaved changes, with safe keyboard cancellation, Save / Discard choices, and editor focus restored after cancellation
-- Dirty-tab and app/window close dialogs keep Tab / Shift+Tab focus within the dialog while it is open
-- Failed or conflicted saves from the dirty-tab close dialog stop the close, select the failed tab, and return to the editor with the normal recovery actions visible
-- Failed or conflicted Save All from the app/window close dialog stops the close, selects the failed tab, and returns to the editor with the normal recovery actions visible
-- Discard All from the app/window close dialog clears matching unsaved recovery drafts so intentionally discarded edits are not offered after restart
-- Long file names are clipped or wrapped in tabs, the file tree, status/error rows, and close dialogs so core controls stay reachable
-- App bundle icon and start screen use the Hazakura Editor flower-and-leaf logo
-- Optional Agent Workbench mode can launch one allowlisted `codex`, `opencode`, `pi`, or `claude` provider session in the selected workspace after restart-required mode enablement and responsibility-boundary consent
-- Agent Workbench renders the selected allowlisted provider's TUI output in a scoped pane, sends keyboard input only to the running provider process, supports Copy full path / Send full path to Agent from existing workspace file rows, and continues to treat provider-made file edits as ordinary external on-disk changes
-- Assist Surface settings can switch the outside companion slot between Apple Local Assist, CLI Agent, and Off after restart in the Developer / GitHub lane. The App Store submission lane forces Assist Surface off and does not bundle the Apple Local Assist helper.
-- Apple Local Assist review requests build document context around the active target instead of blindly sending the document head, separate rough user requests from internal instructions, guard stale candidates, and localize common apply-error states before showing them to the user.
+Hazakura Editor currently focuses on these surfaces:
+
+- Markdown/text creation, open, multi-tab edit, safe save, Save As, restore,
+  conflict handling, CRLF/final-newline preservation, and bounded legacy
+  Japanese text decoding.
+- Sanitized Markdown preview, local workspace image rendering, safe image
+  paste/drag-drop into `assets/`, read-only image preview, standalone HTML
+  export, Print to PDF handoff, and initial EPUB export beta.
+- Workspace folder browsing with lazy bounded trees, recent workspace/tab
+  restoration, in-file search, current-file outline, Go to Line, and explicit
+  non-Git Diff / Review for file, disk, draft, conflict, recovery, and AI edit
+  transaction comparisons.
+- L Mode / えるモード as a source-preserving one-pane writing surface, with
+  quieter typography, Typewriter/IME hardening, task checkbox affordances, and
+  the same image-safety boundary as Preview.
+- Native macOS menus, Preferences, theme and editor display settings,
+  dirty-close protection, keyboard/focus guards, and localized Japanese-first
+  UI copy.
+- Developer / GitHub-only Assist surfaces: optional Agent Workbench with one
+  allowlisted provider session, and Apple Local Assist review/transaction
+  flows. The App Store lane remains helper-free and forces Assist Surface off.
+
+For the full implementation inventory and release state, see
+[`docs/current-status.md`](docs/current-status.md).
 
 ## Project Docs
 
@@ -158,7 +120,7 @@ Example use case:
 - [Roadmap](docs/roadmap.md): 段階的な開発順序
 - [L Mode Plan](docs/l-mode-plan.md): えるモードの source-preserving WYSIWYG Accuracy Ramp plan
 - [e-book Mode And EPUB Export Plan](docs/ebook-mode-epub-export-plan.md): v0.21+ e-bookモード / EPUB export planning memo
-- [AI Markdown Ingest Plan](docs/ai-markdown-ingest-plan.md): v0.26+ AI提案取込 / Diff Review planning memo
+- [AI Markdown Ingest Plan](docs/ai-markdown-ingest-plan.md): v0.28+ AI提案取込 / Diff Review planning memo
 - [Native macOS Appearance Plan](docs/native-macos-appearance-plan.md): v0.25 native-feeling Safe Editor chrome planning memo
 - [Post-v0.25 Product Refinement Plan](docs/post-v0.25-product-refinement-plan.md): App Store release後の完成度向上レンズ
 - [External Agent Review Workflow](docs/external-agent-review-workflow.md): external implementation agent + Codex review workflow
@@ -207,6 +169,23 @@ The DMG preview requires a local `Developer ID Application` signing
 identity and remains not notarized, so macOS security warnings can still
 appear. Set `HAZAKURA_DEVELOPER_ID_IDENTITY` if more than one Developer
 ID Application identity is installed.
+
+Inspect generated build artifacts without deleting them:
+
+```bash
+npm run clean:generated
+```
+
+Remove ignored generated artifacts such as `src-tauri/target`,
+`src-helpers/apple-assist/.build`, `dist`, `src-tauri/gen`, and `binaries`
+only when you intentionally want to reclaim local disk space:
+
+```bash
+npm run clean:generated:apply
+```
+
+To inspect or remove only the Rust / Tauri `target` tree, pass
+`-- --target-only`.
 
 Release-readiness gates for the source preview:
 

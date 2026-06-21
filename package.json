@@ -28,6 +28,8 @@
     "preview": "vite preview --host 127.0.0.1",
     "smoke:app-store-surface": "vitest run src/buildScripts.test.ts src/hooks/commandPalette/useCommandPaletteController.test.ts src/hooks/agent/useAgentWorkbenchPreferences.test.ts src/components/agent/AgentWorkbenchPreferencesPane.test.tsx src/components/app/SettingsPreferencesPane.test.tsx src/components/app/AppTopChrome.test.tsx",
     "smoke:macos-sandbox-preview": "bash scripts/smoke-macos-sandbox-preview.sh",
+    "clean:generated": "node scripts/clean-generated-artifacts.mjs",
+    "clean:generated:apply": "node scripts/clean-generated-artifacts.mjs --apply",
     "test": "vitest run",
     "test:watch": "vitest"
   },

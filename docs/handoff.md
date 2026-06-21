@@ -50,7 +50,7 @@ Last reviewed: 2026-06-21 (v0.28 P3 AI proposal review foundation)
   is handled outside this repository unless explicitly recorded later.
 - Start from `docs/current-work.md`; v0.27 execution is complete for
   source-tag purposes and remains documented in
-  `docs/v0.27-refinement-slice-plan.md`.
+  `docs/archive/planning/v0.27-refinement-slice-plan.md`.
 - v0.28 P0 L Mode image-policy parity is implemented locally. L Mode no
   longer renders `http:` / `https:` image URLs directly and now shares
   Preview's supported `data:image` MIME, strict base64, and 2 MB
@@ -79,6 +79,13 @@ Last reviewed: 2026-06-21 (v0.28 P3 AI proposal review foundation)
   v0.29+ unless explicitly reopened. Continue v0.28 from the release-gate
   smoke checklist or one narrow quality probe unless a higher-priority
   regression appears.
+- Latest docs cleanup keeps current entry points lighter: README now
+  summarizes feature areas instead of listing every implemented behavior,
+  roadmap keeps a short shipped-phase summary for v0.18-v0.26, and
+  completed v0.27 / pre-release fix plans live under `docs/archive/`.
+  Generated artifact cleanup is exposed as a dry-run-first npm script;
+  do not remove `src-tauri/target` unless disk cleanup is intentionally
+  requested.
 - v0.27 Phase 1 large-document initial rendering stabilization is
   accepted as closed at `b2126c14` plus this docs-only follow-up.
   `PreviewPane` clears stale content before paint, shows a theme-bound
@@ -129,11 +136,10 @@ Last reviewed: 2026-06-21 (v0.28 P3 AI proposal review foundation)
   preserving its quiet focused-writing surface. A follow-up also hides
   the developer-build badge from L Mode and exposes Review / Diff /
   Outline as independent right-pane controls.
-- A review-derived pre-release code-quality fix queue now lives in
-  `docs/pre-release-fix-plan.md`. A follow-up external quality review
-  has been triaged there as accepted vs deferred / not adopted items. It
-  intentionally excludes manual smoke, TestFlight, App Store Connect,
-  and reviewer-note work.
+- The completed review-derived pre-release code-quality fix queue now lives
+  in `docs/archive/operations/pre-release-fix-plan-2026-06-13.md`.
+  Manual smoke, TestFlight, App Store Connect, and reviewer-note work remain
+  outside that historical fix queue.
 - v0.20 Sakura workspace ergonomics P0 is implemented locally: the main
   chrome can collapse / restore the workspace sidebar, the central
   editor pane uses a thin bottom full-path copy bar instead of a top
@@ -363,7 +369,8 @@ open Active UX Queue slice and close it as `implemented`,
 ## Source Docs
 
 - Current work: `docs/current-work.md`
-- Pre-release code-quality fixes: `docs/pre-release-fix-plan.md`
+- Pre-release code-quality fixes:
+  `docs/archive/operations/pre-release-fix-plan-2026-06-13.md`
 - Current implementation state: `docs/current-status.md`
 - Phase boundaries: `docs/roadmap.md`
 - Product boundary: `docs/product-brief.md`
@@ -379,6 +386,10 @@ open Active UX Queue slice and close it as `implemented`,
 
 - v0.17 App Store-quality request packets and closeout evidence moved to
   `docs/archive/operations/app-store-v0.17/`.
+- Completed v0.27 execution planning moved to
+  `docs/archive/planning/v0.27-refinement-slice-plan.md`.
+- Completed pre-release fix planning moved to
+  `docs/archive/operations/pre-release-fix-plan-2026-06-13.md`.
 - Older commercial-quality, authoring-readiness, and product-copy drafts
   moved to `docs/archive/planning/`.
 - WorkspaceTree v0.17 accessibility decision moved to
@@ -397,8 +408,11 @@ open Active UX Queue slice and close it as `implemented`,
 
 ## Verification Guidance
 
-- Latest docs-refinement pass: v0.26 polish / EPUB export planning docs
-  were checked with `git diff --check` on 2026-06-20.
+- Latest docs-refinement pass: v0.28 documentation index / README /
+  roadmap cleanup, archive moves, and generated artifact cleanup script were
+  checked with `npm run clean:generated -- --target-only`,
+  `node --check scripts/clean-generated-artifacts.mjs`, and
+  `git diff --check` on 2026-06-21.
 - Latest docs closeout: App Store approval status was reflected in
   README, current status, current work, roadmap, App Store build notes,
   release-note index, and this handoff on 2026-06-18. Verification run:

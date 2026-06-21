@@ -19,8 +19,9 @@ v0.18 pre-review automation slices remain below as historical evidence.
 Keep every slice small, verifiable, and inside the Markdown-first Safe
 Editor boundary.
 The v0.27 refinement phases are complete for source-tag purposes. Keep
-`docs/v0.27-refinement-slice-plan.md` as the execution memo / historical
-phase boundary and `docs/post-v0.25-product-refinement-plan.md` as the
+`docs/archive/planning/v0.27-refinement-slice-plan.md` as the execution
+memo / historical phase boundary and
+`docs/post-v0.25-product-refinement-plan.md` as the
 broader lens. The active v0.28 lane is Safety, Quality, and AI Review
 Foundation: tighten implementation / safety-claim consistency and start
 the smallest reusable AI proposal review primitive before structural Book
@@ -473,7 +474,8 @@ Post-release pre-v0.27 quality follow-up as of 2026-06-20:
 
 ## v0.27 Refinement
 
-Use `docs/v0.27-refinement-slice-plan.md` as the execution memo.
+Use `docs/archive/planning/v0.27-refinement-slice-plan.md` as the
+historical execution memo.
 
 Phase 1 is implemented locally as of 2026-06-20 at code-regression
 level and accepted as the v0.27 Phase 1 result after human-side

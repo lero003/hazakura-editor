@@ -225,9 +225,9 @@ baseline, and smoke evidence are archived under
 
 - `docs/current-work.md`: current v0.28 quality / AI-review foundation
   queue and completed v0.27 refinement notes.
-- `docs/v0.27-refinement-slice-plan.md`: v0.27 execution phases for
-  large-document rendering, One Editing Space, flow-preserving editing,
-  and status bar cleanup.
+- `docs/archive/planning/v0.27-refinement-slice-plan.md`: historical v0.27
+  execution phases for large-document rendering, One Editing Space,
+  flow-preserving editing, and status bar cleanup.
 - `docs/roadmap.md`: phase order and future boundaries.
 - `docs/product-brief.md`: durable product direction and non-goals.
 - `docs/security-boundary.md`: safe editor constraints.
