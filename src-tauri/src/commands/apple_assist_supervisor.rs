@@ -35,15 +35,17 @@ use std::time::Duration;
 const CONSECUTIVE_FAILURE_LIMIT: u32 = 5;
 /// How long the cooldown lasts once the failure limit is hit.
 const COOLDOWN_DURATION: Duration = Duration::from_secs(300);
-/// Per-request timeout. The Swift helper in fixture mode returns
-/// in <100ms; live Foundation Models may take tens of seconds on
-/// first use while Apple Intelligence warms the local model. 360s
-/// keeps the UX bounded while avoiding false timeouts during that
-/// initial warm-up path in this alpha feature.
+/// Probe timeout. Availability checks should be quick and must not
+/// inherit the long generation budget.
+pub(crate) const PROBE_TIMEOUT: Duration = Duration::from_secs(10);
+/// Generation timeout. Live Foundation Models may take tens of
+/// seconds on first use while Apple Intelligence warms the local
+/// model. 360s keeps the UX bounded while avoiding false timeouts
+/// during that initial warm-up path in this alpha feature.
 /// Enforced by a watchdog thread that kills the helper child if
 /// `read_line` is still blocked after this duration; the kill is
 /// what unblocks the read.
-const REQUEST_TIMEOUT: Duration = Duration::from_secs(360);
+pub(crate) const GENERATE_TIMEOUT: Duration = Duration::from_secs(360);
 
 /// The store is held by Tauri via `tauri::Builder::manage(...)`.
 pub(crate) struct AppleAssistHelperStore {
@@ -187,17 +189,29 @@ impl AppleAssistHelperStore {
         resolve_bundled_helper_path()
     }
 
-    /// The timeout that the current call should use. Production
-    /// always uses `REQUEST_TIMEOUT`. Tests that build a store
+    /// The timeout that the current probe call should use. Production
+    /// always uses `PROBE_TIMEOUT`. Tests that build a store
     /// via `with_timeout_override` get their value.
-    fn effective_timeout(&self) -> Duration {
+    fn effective_probe_timeout(&self) -> Duration {
         #[cfg(test)]
         {
             if let Some(t) = self.timeout_override {
                 return t;
             }
         }
-        REQUEST_TIMEOUT
+        PROBE_TIMEOUT
+    }
+
+    /// The timeout that the current generation call should use.
+    /// Production always uses `GENERATE_TIMEOUT`; tests may override.
+    fn effective_generate_timeout(&self) -> Duration {
+        #[cfg(test)]
+        {
+            if let Some(t) = self.timeout_override {
+                return t;
+            }
+        }
+        GENERATE_TIMEOUT
     }
 
     fn reset_locked(&self, inner_slot: &mut Option<AppleAssistHelperInner>) {
@@ -464,7 +478,9 @@ pub(crate) fn probe_availability_via_helper(
     store: &AppleAssistHelperStore,
 ) -> Result<WireEnvelope, String> {
     if store.is_in_cooldown() {
-        return Err("Hazakura Local Assist is currently unavailable. Try again in a moment.".to_string());
+        return Err(
+            "Hazakura Local Assist is currently unavailable. Try again in a moment.".to_string(),
+        );
     }
 
     let mut guard = store.inner.lock().expect("helper store lock");
@@ -472,7 +488,7 @@ pub(crate) fn probe_availability_via_helper(
         store.spawn_locked(&mut guard)?;
     }
 
-    let timeout = store.effective_timeout();
+    let timeout = store.effective_probe_timeout();
     let result = AppleAssistHelperStore::round_trip_locked(
         guard.as_mut().expect("just spawned"),
         &WireRequest::ProbeAvailability,
@@ -519,7 +535,9 @@ pub(crate) fn generate_candidate_via_helper(
     instruction: Option<&str>,
 ) -> Result<WireEnvelope, String> {
     if store.is_in_cooldown() {
-        return Err("Hazakura Local Assist is currently unavailable. Try again in a moment.".to_string());
+        return Err(
+            "Hazakura Local Assist is currently unavailable. Try again in a moment.".to_string(),
+        );
     }
 
     let mut guard = store.inner.lock().expect("helper store lock");
@@ -527,7 +545,7 @@ pub(crate) fn generate_candidate_via_helper(
         store.spawn_locked(&mut guard)?;
     }
 
-    let timeout = store.effective_timeout();
+    let timeout = store.effective_generate_timeout();
     let result = AppleAssistHelperStore::round_trip_locked(
         guard.as_mut().expect("just spawned"),
         &WireRequest::GenerateCandidate {

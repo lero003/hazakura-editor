@@ -36,12 +36,22 @@
 use crate::commands::apple_assist_supervisor::{
     bundled_helper_filename, generate_candidate_via_helper, probe_availability_via_helper,
     resolve_bundled_helper_path, rust_target_triple, store_with_helper_path, store_without_helper,
-    AppleAssistHelperStore, HelperAvailability, HelperCandidate, WireEnvelope,
+    AppleAssistHelperStore, HelperAvailability, HelperCandidate, WireEnvelope, GENERATE_TIMEOUT,
+    PROBE_TIMEOUT,
 };
 
 // ----------------------------------------------------------------
 // Pure-store tests (no helper binary required).
 // ----------------------------------------------------------------
+
+#[test]
+fn supervisor_probe_timeout_is_shorter_than_generation_timeout() {
+    assert!(
+        PROBE_TIMEOUT < GENERATE_TIMEOUT,
+        "availability probe timeout must stay shorter than generation timeout"
+    );
+    assert_eq!(PROBE_TIMEOUT, std::time::Duration::from_secs(10));
+}
 
 #[test]
 fn supervisor_store_default_constructs_cleanly() {

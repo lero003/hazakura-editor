@@ -94,10 +94,10 @@ Last reviewed: 2026-06-21 (v0.29 Hazakura Local Assist review triage)
   `apple-assist.html` App Store entrypoint inclusion, no startup
   main-shell availability probe, safe default `none`, active preference
   gating for command palette / app menu, visible `Hazakura Local Assist`
-  naming, and softer Local Assist network wording. Next, run built-app
-  smoke for the `apple-assist` window and helper process absence, then
-  handle short probe timeout / raw error hygiene and Hazakura Local Assist
-  transaction review smoke. File/paste /
+  naming, softer Local Assist network wording, short probe timeout
+  separation, and helper error hygiene. Next, run built-app smoke for the
+  `apple-assist` window and helper process absence, then handle Hazakura
+  Local Assist transaction review smoke. File/paste /
   multi-file proposal ingest remains deferred until a fresh boundary
   review reopens it.
 - Latest docs cleanup keeps current entry points lighter: README now
@@ -469,6 +469,15 @@ open Active UX Queue slice and close it as `implemented`,
   manual signed-build smoke remain outside the repository unless new
   evidence is explicitly recorded.
 - Latest v0.29 Hazakura Local Assist App Store-lane gate: source tests and
+  P0 probe/error hygiene fixes landed after the entrypoint fix:
+  React marks a hanging availability probe unavailable after a short UI
+  timeout, Rust supervisor uses a shorter probe timeout than generation,
+  and the Swift helper strips Foundation Models `debugDescription` from
+  user-facing error envelopes. Verified with `npm run test`,
+  `npm run typecheck`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`,
+  `cargo test --manifest-path src-tauri/Cargo.toml -- --test-threads=1`,
+  and `npm run build:apple-assist-helper:live`.
+- Previous v0.29 Hazakura Local Assist App Store-lane gate: source tests and
   source-level entrypoint / naming / preference-gate fixes landed on
   2026-06-21 with `npm run test`, `npm run typecheck`,
   `cargo check --manifest-path src-tauri/Cargo.toml`, and

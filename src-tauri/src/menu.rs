@@ -180,7 +180,10 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
     let view_apple_assist_window = MenuItem::with_id(
         app,
         MENU_OPEN_APPLE_ASSIST_WINDOW,
-        label("Open Hazakura Local Assist Window", "Hazakura Local Assist ウィンドウを開く"),
+        label(
+            "Open Hazakura Local Assist Window",
+            "Hazakura Local Assist ウィンドウを開く",
+        ),
         apple_assist_active,
         None::<&str>,
     )?;

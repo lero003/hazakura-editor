@@ -266,7 +266,9 @@ pub(crate) fn map_helper_availability(value: HelperAvailability) -> AppleAssistA
                 .unwrap_or_else(|| "Hazakura Local Assist is unavailable.".to_string()),
         },
         other => AppleAssistAvailability::Unavailable {
-            reason: format!("Hazakura Local Assist helper returned unknown availability kind: {other}"),
+            reason: format!(
+                "Hazakura Local Assist helper returned unknown availability kind: {other}"
+            ),
         },
     }
 }

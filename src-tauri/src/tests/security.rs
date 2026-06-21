@@ -67,7 +67,8 @@ fn apple_assist_distribution_gate_allows_app_store_and_developer_lanes() {
         .expect("App Store lane may use Hazakura Local Assist");
     ensure_apple_assist_allowed_for_lane(Some("App-Store"))
         .expect("App Store lane detection is case-insensitive");
-    ensure_apple_assist_allowed_for_lane(None).expect("default lane must allow Hazakura Local Assist");
+    ensure_apple_assist_allowed_for_lane(None)
+        .expect("default lane must allow Hazakura Local Assist");
     ensure_apple_assist_allowed_for_lane(Some("developer"))
         .expect("developer lane must allow Hazakura Local Assist");
 }
@@ -854,8 +855,9 @@ fn toggle_apple_assist_window_accepts_main_window_only() {
         .expect_err("agent must not be allowed to toggle the Hazakura Local Assist window");
     assert!(agent_err.contains(AGENT_WINDOW_LABEL), "{agent_err}");
 
-    let unknown_err = toggle_apple_assist_window_with_label(UNKNOWN_WINDOW_LABEL)
-        .expect_err("unknown labels must not be allowed to toggle the Hazakura Local Assist window");
+    let unknown_err = toggle_apple_assist_window_with_label(UNKNOWN_WINDOW_LABEL).expect_err(
+        "unknown labels must not be allowed to toggle the Hazakura Local Assist window",
+    );
     assert!(unknown_err.contains(UNKNOWN_WINDOW_LABEL), "{unknown_err}");
 }
 

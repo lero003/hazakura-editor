@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest";
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import type { AppleAssistAvailability } from "../../lib/tauri";
 
 // Mock the Tauri runtime bridge. The mock is hoisted via
@@ -26,6 +26,7 @@ describe("useAppleAssistAvailability", () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -116,5 +117,26 @@ describe("useAppleAssistAvailability", () => {
       expect(result.current.availability.reason).toContain("ipc failed");
     }
     expect(result.current.available).toBe(false);
+  });
+
+  it("marks the probe unavailable after a short UI timeout", async () => {
+    vi.useFakeTimers();
+    probeAppleAssistAvailability.mockImplementation(
+      () => new Promise<AppleAssistAvailability>(() => {}),
+    );
+
+    const { result } = renderHook(() => useAppleAssistAvailability());
+
+    expect(result.current.probed).toBe(false);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5_000);
+    });
+
+    expect(result.current.probed).toBe(true);
+    expect(result.current.availability.kind).toBe("unavailable");
+    if (result.current.availability.kind === "unavailable") {
+      expect(result.current.availability.reason).toContain("timed out");
+    }
   });
 });

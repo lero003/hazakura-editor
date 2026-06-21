@@ -26,6 +26,10 @@ const appleAssistHelperLiveScript = readFileSync(
   "scripts/build-apple-assist-helper-live.sh",
   "utf8",
 );
+const appleAssistGenerateCandidateSwift = readFileSync(
+  "src-helpers/apple-assist/Sources/HazakuraAppleAssist/GenerateCandidate.swift",
+  "utf8",
+);
 const releaseCandidateScript = readFileSync(
   "scripts/prepare-release-candidate.mjs",
   "utf8",
@@ -166,6 +170,12 @@ describe("macOS build scripts", () => {
       "hazakura-apple-assist-helper-universal-apple-darwin",
     );
     expect(appleAssistHelperLiveScript).toContain("lipo -create");
+  });
+
+  it("keeps live helper errors free of Foundation Models debug descriptions", () => {
+    expect(appleAssistGenerateCandidateSwift).not.toContain(
+      "context.debugDescription",
+    );
   });
 
   it("provides an App Store build-version bump helper for repeated TestFlight uploads", () => {

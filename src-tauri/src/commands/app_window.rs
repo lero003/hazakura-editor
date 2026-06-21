@@ -402,9 +402,9 @@ pub(crate) fn set_apple_assist_window_theme<R: tauri::Runtime>(
     let os_theme = agent_window_os_theme(&theme);
 
     if let Some(apple_assist) = app.get_webview_window(APPLE_ASSIST_WINDOW_LABEL) {
-        apple_assist
-            .set_background_color(Some(bg))
-            .map_err(|err| format!("Cannot update Hazakura Local Assist window background color: {err}"))?;
+        apple_assist.set_background_color(Some(bg)).map_err(|err| {
+            format!("Cannot update Hazakura Local Assist window background color: {err}")
+        })?;
         apple_assist
             .set_theme(Some(os_theme))
             .map_err(|err| format!("Cannot update Hazakura Local Assist window OS theme: {err}"))?;

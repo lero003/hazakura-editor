@@ -209,49 +209,49 @@ enum GenerateCandidate {
     private static func classify(_ error: Error) -> AppleAssistErrorEnvelope {
         if let generationError = error as? LanguageModelSession.GenerationError {
             switch generationError {
-            case .exceededContextWindowSize(let context):
+            case .exceededContextWindowSize(_):
                 return AppleAssistErrorEnvelope(
-                    error: "Foundation Models input is too large for this request. Try a smaller selection. \(context.debugDescription)",
+                    error: "Foundation Models input is too large for this request. Try a smaller selection.",
                     kind: "validation"
                 )
-            case .assetsUnavailable(let context):
+            case .assetsUnavailable(_):
                 return AppleAssistErrorEnvelope(
-                    error: "Apple Foundation Models assets are unavailable. \(context.debugDescription)",
+                    error: "Apple Foundation Models assets are unavailable.",
                     kind: "unavailable"
                 )
-            case .guardrailViolation(let context):
+            case .guardrailViolation(_):
                 return AppleAssistErrorEnvelope(
-                    error: "Apple Foundation Models refused this request because it hit a guardrail. \(context.debugDescription)",
+                    error: "Apple Foundation Models refused this request because it hit a guardrail.",
                     kind: "guardrail"
                 )
-            case .unsupportedGuide(let context):
+            case .unsupportedGuide(_):
                 return AppleAssistErrorEnvelope(
-                    error: "Apple Foundation Models does not support this generation guide yet. \(context.debugDescription)",
+                    error: "Apple Foundation Models does not support this generation guide yet.",
                     kind: "validation"
                 )
-            case .unsupportedLanguageOrLocale(let context):
+            case .unsupportedLanguageOrLocale(_):
                 return AppleAssistErrorEnvelope(
-                    error: "Apple Foundation Models does not support this language or current locale for generation yet. Try a smaller English sample or check Apple Intelligence language settings. \(context.debugDescription)",
+                    error: "Apple Foundation Models does not support this language or current locale for generation yet. Try a smaller English sample or check Apple Intelligence language settings.",
                     kind: "unsupported_language"
                 )
-            case .decodingFailure(let context):
+            case .decodingFailure(_):
                 return AppleAssistErrorEnvelope(
-                    error: "Apple Foundation Models returned a response that could not be decoded. \(context.debugDescription)",
+                    error: "Apple Foundation Models returned a response that could not be decoded.",
                     kind: "internal"
                 )
-            case .rateLimited(let context):
+            case .rateLimited(_):
                 return AppleAssistErrorEnvelope(
-                    error: "Apple Foundation Models is rate limited. Try again shortly. \(context.debugDescription)",
+                    error: "Apple Foundation Models is rate limited. Try again shortly.",
                     kind: "throttled"
                 )
-            case .concurrentRequests(let context):
+            case .concurrentRequests(_):
                 return AppleAssistErrorEnvelope(
-                    error: "Apple Foundation Models is busy with another request. Try again shortly. \(context.debugDescription)",
+                    error: "Apple Foundation Models is busy with another request. Try again shortly.",
                     kind: "throttled"
                 )
-            case .refusal(_, let context):
+            case .refusal(_, _):
                 return AppleAssistErrorEnvelope(
-                    error: "Apple Foundation Models refused this request. \(context.debugDescription)",
+                    error: "Apple Foundation Models refused this request.",
                     kind: "guardrail"
                 )
             @unknown default:
@@ -273,7 +273,7 @@ enum GenerateCandidate {
             kind = "internal"
         }
         return AppleAssistErrorEnvelope(
-            error: "Foundation Models generation failed: \(description)",
+            error: "Foundation Models generation failed.",
             kind: kind
         )
     }

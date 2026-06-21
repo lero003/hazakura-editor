@@ -79,8 +79,10 @@ Last reviewed: 2026-06-21 (v0.29 Hazakura Local Assist review triage)
   `apple-assist.html` App Store Vite entrypoint, safe default `none`
   assist surface, command-palette/menu active-setting gate, no startup
   main-shell availability probe, `Hazakura Local Assist` visible naming,
-  and softer Local Assist network wording. Remaining pre-submission risk
-  is signed/built-app smoke plus probe timeout / raw error hygiene. Local
+  softer Local Assist network wording, short probe timeout separation,
+  and helper error hygiene that avoids Foundation Models
+  `debugDescription` in user-facing error envelopes. Remaining
+  pre-submission risk is signed/built-app smoke. Local
   pre-review
   regression, package, payload, dependency-audit, bundle metadata,
   license-resource, and bundle-size evidence remains archived under
@@ -275,8 +277,8 @@ baseline, and smoke evidence are archived under
    is the selected AI assist review API lane. First prefer the accepted
    Hazakura Local Assist pre-submission fixes still remaining in
    `docs/current-work.md`: signed/built-app smoke for the corrected
-   `apple-assist` window, helper process absence before explicit Local
-   Assist use, short probe timeout, and raw error hygiene. Keep the App Store path limited to Hazakura Local Assist,
+   `apple-assist` window and helper process absence before explicit Local
+   Assist use. Keep the App Store path limited to Hazakura Local Assist,
    with no external Agent surface; do not add Book Workspace Alpha, hidden multi-file book
    manifests, structural book-workspace information architecture, Native
    Vibrancy Phase 2, cover editing, or an EPUB document model unless that
