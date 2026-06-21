@@ -95,6 +95,12 @@ Last reviewed: 2026-06-22 (v0.29 build 29 delivery success)
   `docs/archive/operations/` or summarized in `docs/current-work.md`; it
   should no longer drive the main queue unless older App Store evidence
   is explicitly needed.
+- The current Hazakura Local Assist source surface separates visible
+  preset labels from internal action IDs. Pressing a preset inserts its
+  concrete request sentence into the editable request field, and the live
+  helper receives a fixed base instruction plus separated action, visible
+  request text, target text, and surrounding context. All presets follow
+  the same explicit, unsaved, diff-reviewable AI edit transaction flow.
 - The latest generated helper-enabled App Store package candidate for
   `0.29.0` is build `29`, generated on 2026-06-22 after Transporter
   rejected build `28` because the bundled
@@ -228,10 +234,12 @@ Last reviewed: 2026-06-22 (v0.29 build 29 delivery success)
   layer, not a separate saved document model.
 - Diff / explicit change review for active editor changes, recovery
   drafts, external-change conflicts, and Hazakura Local Assist edits.
-- Hazakura Local Assist alpha as an availability-gated, on-device assist
-  surface with explicit unsaved AI edit transactions. The current source
-  App Store lane may expose it; older published App Store builds may still
-  omit the helper until a new build is uploaded, approved, and released.
+- Hazakura Local Assist preview as an availability-gated, on-device
+  writing assist surface. Presets insert visible, editable request text
+  and generated results use explicit unsaved AI edit transactions. The
+  current source App Store lane may expose it; older published App Store
+  builds may still omit the helper until a new build is uploaded,
+  approved, and released.
 - Optional Developer / GitHub lane Agent Workbench, separated from and
   hidden in the App Store lane.
 - Help-readable Store-document drafts and Support Diagnostics UI.

@@ -19,9 +19,11 @@ use crate::commands::apple_assist_supervisor::{
 fn request_with(operation: AppleAssistOperation, text: &str) -> AppleAssistRequest {
     AppleAssistRequest {
         operation,
+        action_id: None,
         selected_text: text.to_string(),
         document_context: None,
         instruction: None,
+        additional_request: None,
     }
 }
 
@@ -170,16 +172,20 @@ fn apple_assist_validate_accepts_missing_document_context() {
 fn apple_assist_request_deserializes_frontend_camel_case_payload() {
     let request: AppleAssistRequest = serde_json::from_value(serde_json::json!({
         "operation": "rephrase",
+        "actionId": "rewrite_natural",
         "selectedText": "body",
         "documentContext": "surrounding",
-        "instruction": "整えて"
+        "instruction": "legacy instruction",
+        "additionalRequest": "もっと軽く"
     }))
     .expect("frontend camelCase payload should deserialize");
 
     assert_eq!(request.operation, AppleAssistOperation::Rephrase);
+    assert_eq!(request.action_id.as_deref(), Some("rewrite_natural"));
     assert_eq!(request.selected_text, "body");
     assert_eq!(request.document_context.as_deref(), Some("surrounding"));
-    assert_eq!(request.instruction.as_deref(), Some("整えて"));
+    assert_eq!(request.instruction.as_deref(), Some("legacy instruction"));
+    assert_eq!(request.additional_request.as_deref(), Some("もっと軽く"));
 }
 
 #[test]

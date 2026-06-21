@@ -428,6 +428,10 @@ enum WireRequest<'a> {
         document_context: Option<&'a str>,
         #[serde(skip_serializing_if = "Option::is_none")]
         instruction: Option<&'a str>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        action_id: Option<&'a str>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        additional_request: Option<&'a str>,
     },
 }
 
@@ -533,6 +537,8 @@ pub(crate) fn generate_candidate_via_helper(
     selected_text: &str,
     document_context: Option<&str>,
     instruction: Option<&str>,
+    action_id: Option<&str>,
+    additional_request: Option<&str>,
 ) -> Result<WireEnvelope, String> {
     if store.is_in_cooldown() {
         return Err(
@@ -553,6 +559,8 @@ pub(crate) fn generate_candidate_via_helper(
             selected_text,
             document_context,
             instruction,
+            action_id,
+            additional_request,
         },
         timeout,
     );

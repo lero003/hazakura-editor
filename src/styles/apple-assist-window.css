@@ -1,8 +1,8 @@
 /* === apple-assist-window.css === */
 /* ── Detached Hazakura Local Assist Window (v0.12+ mock, slice 2) ──
  * Tool-window-style chrome for the Hazakura Local Assist
- * window: a five-row layout (header / form / presets / feedback
- * / footer) that reads as a purpose-built functional surface,
+ * window: a compact layout (header / form / presets / feedback / footer)
+ * that reads as a purpose-built functional surface,
  * not a generic web popup. Mirrors the detached Agent
  * window's restrained palette — 1px borders, no shadows, no
  * gradients. See
@@ -16,7 +16,7 @@
   color: var(--text);
   display: grid;
   font-family: var(--app-font-family, system-ui, -apple-system, sans-serif);
-  /* Five rows: header / request form / presets / feedback / footer.
+  /* Header / request form / presets / feedback / footer.
    * The form and feedback log stay compact so the detached companion
    * reads as a focused request surface, not a mostly empty transcript
    * viewer. */
@@ -114,6 +114,12 @@
 
 .apple-assist-preset:hover {
   background: var(--bg-elev-hover, rgba(127, 127, 127, 0.16));
+}
+
+.apple-assist-preset-active {
+  border-color: var(--accent, rgba(127, 127, 127, 0.7));
+  color: var(--accent, var(--text));
+  font-weight: 650;
 }
 
 .apple-assist-preset:disabled {

@@ -1,126 +1,179 @@
-// Hazakura Local Assist rough-request instruction builder.
-//
-// The Hazakura Local Assist window's preset chips are short Japanese
-// phrases ("整えて" / "自然にして" / "続きを書いて" /
-// "校正して" / "この章を直して"), and the user can also type
-// any free-form request. The on-device Foundation Models
-// helper currently sees the short phrase plus the target text
-// and has to guess which "light cleanup vs. proofread vs.
-// rephrase vs. continue vs. rewrite" the user meant.
-//
-// This module annotates the request with a short, locale-
-// stable intent hint for each known preset id so the helper
-// sees both the user's rough phrase and a precise intent
-// label. The original phrase is preserved verbatim so the
-// model's response stays grounded in the Japanese context
-// and the textarea still shows exactly what the user typed.
-//
-// v0.15 payload split: `buildAssistantInstruction` is only
-// one half of the contract. The `AppleAssistApplyEvent`
-// payload carries `request` (the original phrase that ends
-// up in the AI edit transaction, the status message, and
-// the Hazakura Local Assist review bar) separately from `instruction`
-// (the helper-side annotated prompt). `buildApplyEvent`
-// keeps that split in one place so the Hazakura Local Assist window
-// cannot accidentally re-collapse the two fields and leak
-// internal prompt text into user-facing surfaces.
-
 import type {
   AppleAssistApplyEvent,
   AppleAssistTargetSnapshot,
+  MenuLanguage,
 } from "../../types";
+import type { AppleAssistOperation } from "../tauri/appleAssist";
 
-const ROUGH_INTENT_HINTS: Record<string, string> = {
-  "tidy":
-    "Light cleanup: keep the meaning, remove obvious noise, fix spacing; do not rephrase broadly.",
-  "natural":
-    "Rephrase for natural prose: keep the meaning, prefer natural sentence breaks; do not shorten or summarize.",
-  "continue":
-    "Continue writing 1-3 sentences in the same style and tone; do not summarize the existing text.",
-  "proofread":
-    "Proofread: fix typos, punctuation, spacing, and obvious kanji conversion; do not change wording.",
-  "rewrite-section":
-    "Rewrite this section to be clearer while keeping the original meaning; do not change the topic or scope.",
+export type LocalAssistActionId =
+  | "proofread_only"
+  | "rewrite_natural"
+  | "shorten"
+  | "summarize"
+  | "translate"
+  | "continue_ideas"
+  | "review_section";
+
+export type LocalAssistAction = {
+  id: LocalAssistActionId;
+  operation: AppleAssistOperation;
+  shouldApplyToDocument: boolean;
+  label: Record<MenuLanguage, string>;
+  requestText: string;
 };
 
-export type RoughPreset = { id: string; prompt: string };
+export type LocalAssistPreset = {
+  actionId: LocalAssistActionId;
+  label: string;
+  requestText: string;
+};
 
-/**
- * Match a rough request against the available presets. Returns
- * the matching preset id when the request equals one of the
- * preset prompts (after trimming), otherwise null. Free-form
- * requests return null.
- */
-export function resolveRoughIntent(
-  prompt: string,
-  presets: ReadonlyArray<RoughPreset>,
-): string | null {
-  const trimmed = prompt.trim();
-  if (trimmed.length === 0) {
-    return null;
+export const LOCAL_ASSIST_ACTIONS: ReadonlyArray<LocalAssistAction> = [
+  {
+    id: "proofread_only",
+    operation: "proofread",
+    shouldApplyToDocument: true,
+    label: {
+      en: "Proofread only",
+      ja: "校正だけ",
+      kana: "こうせいだけ",
+    },
+    requestText:
+      "誤字脱字、助詞、明らかな文法ミス、表記ゆれだけを修正してください。意味、文体、構成、Markdown構造は変えないでください。",
+  },
+  {
+    id: "rewrite_natural",
+    operation: "rephrase",
+    shouldApplyToDocument: true,
+    label: {
+      en: "Natural",
+      ja: "読みやすく",
+      kana: "よみやすく",
+    },
+    requestText:
+      "原文の意味と温度感を保ったまま、不自然な言い回し、冗長な表現、読みづらい文だけを軽く整えてください。新しい情報は追加しないでください。",
+  },
+  {
+    id: "summarize",
+    operation: "summarize",
+    shouldApplyToDocument: true,
+    label: {
+      en: "Summary",
+      ja: "要約",
+      kana: "ようやく",
+    },
+    requestText:
+      "本文の内容を3〜5行で要約してください。推測や新情報は追加しないでください。",
+  },
+  {
+    id: "translate",
+    operation: "rephrase",
+    shouldApplyToDocument: true,
+    label: {
+      en: "Translate",
+      ja: "翻訳",
+      kana: "ほんやく",
+    },
+    requestText:
+      "Markdown構造、リンク、コードブロック、引用、フロントマター、固有名詞を可能な限り保持したまま、自然な翻訳文を作成してください。意味を補いすぎないでください。翻訳先言語の指定がない場合は、日本語文なら英語、英語文なら日本語を候補にしてください。",
+  },
+  {
+    id: "continue_ideas",
+    operation: "rephrase",
+    shouldApplyToDocument: true,
+    label: {
+      en: "Next ideas",
+      ja: "続きの案",
+      kana: "つづきのあん",
+    },
+    requestText:
+      "本文に直接続けられる文章案を作成してください。原文の方向性から外れないでください。",
+  },
+  {
+    id: "shorten",
+    operation: "rephrase",
+    shouldApplyToDocument: true,
+    label: {
+      en: "Shorten",
+      ja: "短くする",
+      kana: "みじかく",
+    },
+    requestText:
+      "原文の主張と重要なニュアンスを保ったまま、全体を簡潔にしてください。Markdown構造、リンク、コード、引用は保持してください。",
+  },
+  {
+    id: "review_section",
+    operation: "rephrase",
+    shouldApplyToDocument: true,
+    label: {
+      en: "Section review",
+      ja: "章レビュー",
+      kana: "しょうれびゅー",
+    },
+    requestText:
+      "読みにくい箇所、重複、流れの悪さを直した章の改稿案を作成してください。原文の意味とMarkdown構造をできるだけ保持してください。",
+  },
+];
+
+export const APPLY_LOCAL_ASSIST_ACTION_IDS: ReadonlyArray<LocalAssistActionId> =
+  [
+    "proofread_only",
+    "rewrite_natural",
+    "summarize",
+    "translate",
+    "continue_ideas",
+    "shorten",
+    "review_section",
+  ];
+
+export function getLocalAssistAction(actionId: LocalAssistActionId): LocalAssistAction {
+  const action = LOCAL_ASSIST_ACTIONS.find((candidate) => candidate.id === actionId);
+  if (!action) {
+    throw new Error(`Unknown Hazakura Local Assist action: ${actionId}`);
   }
-  for (const preset of presets) {
-    if (preset.prompt === trimmed) {
-      return preset.id;
-    }
-  }
-  return null;
+  return action;
 }
 
-/**
- * Build the request string sent to the on-device helper. For
- * a preset match, the original phrase is preserved and a
- * short intent hint is prepended. For free-form requests, the
- * input is returned trimmed and unchanged. Empty input is
- * returned unchanged so the caller can still raise the empty
- * request error.
- */
-export function buildAssistantInstruction(
-  prompt: string,
-  presets: ReadonlyArray<RoughPreset>,
-): string {
-  const trimmed = prompt.trim();
-  if (trimmed.length === 0) {
-    return trimmed;
-  }
-  const intentId = resolveRoughIntent(trimmed, presets);
-  if (!intentId) {
-    return trimmed;
-  }
-  const hint = ROUGH_INTENT_HINTS[intentId];
-  if (!hint) {
-    return trimmed;
-  }
-  return `${hint}\n\nUser request: ${trimmed}`;
+export function isLocalAssistActionId(value: unknown): value is LocalAssistActionId {
+  return (
+    typeof value === "string" &&
+    LOCAL_ASSIST_ACTIONS.some((action) => action.id === value)
+  );
+}
+
+export function resolveLocalAssistActionId(
+  label: string,
+  presets: ReadonlyArray<LocalAssistPreset>,
+): LocalAssistActionId {
+  const trimmed = label.trim();
+  const preset = presets.find(
+    (candidate) =>
+      candidate.label === trimmed || candidate.requestText.trim() === trimmed,
+  );
+  return preset?.actionId ?? "rewrite_natural";
 }
 
 export type BuildApplyEventInput = {
-  request: string;
+  actionId: LocalAssistActionId;
+  requestText: string;
   target: AppleAssistTargetSnapshot | null;
   requestedAtMs: number;
-  presets: ReadonlyArray<RoughPreset>;
 };
 
-/**
- * Build the `AppleAssistApplyEvent` payload, keeping the
- * user-facing `request` (the original rough phrase) separate
- * from the helper-side `instruction` (the annotated version
- * with the preset intent hint). The receiver is expected to
- * feed `instruction` into `generateAppleAssistCandidate`
- * and to surface `request` in the AI edit transaction, the
- * main editor status message, and the Hazakura Local Assist review
- * bar so the user only ever sees the phrase they typed.
- */
 export function buildApplyEvent({
-  request,
+  actionId,
+  requestText,
   target,
   requestedAtMs,
-  presets,
 }: BuildApplyEventInput): AppleAssistApplyEvent {
+  const action = getLocalAssistAction(actionId);
+  const trimmedRequest = requestText.trim();
   return {
-    request,
-    instruction: buildAssistantInstruction(request, presets),
+    actionId,
+    additionalRequest: trimmedRequest,
+    request: trimmedRequest || action.requestText,
     requestedAtMs,
+    shouldApplyToDocument: action.shouldApplyToDocument,
     target,
   };
 }

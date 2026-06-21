@@ -93,9 +93,11 @@ pub enum AppleAssistAvailability {
 #[serde(rename_all = "camelCase")]
 pub struct AppleAssistRequest {
     pub operation: AppleAssistOperation,
+    pub action_id: Option<String>,
     pub selected_text: String,
     pub document_context: Option<String>,
     pub instruction: Option<String>,
+    pub additional_request: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -223,6 +225,14 @@ pub(crate) fn validate_request(request: &AppleAssistRequest) -> Result<(), Strin
             ));
         }
     }
+    if let Some(additional_request) = &request.additional_request {
+        if additional_request.chars().count() > APPLE_ASSIST_MAX_INSTRUCTION_CHARS {
+            return Err(format!(
+                "Hazakura Local Assist additional request exceeds the maximum length of {} characters.",
+                APPLE_ASSIST_MAX_INSTRUCTION_CHARS
+            ));
+        }
+    }
     Ok(())
 }
 
@@ -238,6 +248,8 @@ pub(crate) fn generate_apple_assist_candidate_with_helper(
             &request.selected_text,
             request.document_context.as_deref(),
             request.instruction.as_deref(),
+            request.action_id.as_deref(),
+            request.additional_request.as_deref(),
         )? {
             WireEnvelope::Candidate(value) => map_helper_candidate(value),
             WireEnvelope::Error(error) => Err(error.error),

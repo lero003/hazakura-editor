@@ -3,17 +3,19 @@ import Foundation
 // Request types — must stay byte-compatible with the Rust
 // `AppleAssistRequest` / Tauri-side serde structures defined in
 // `src-tauri/src/commands/apple_assist.rs`. The Rust side caps
-// `selectedText` (4000 chars) and `documentContext` (8000 chars)
-// and `instruction` (1000 chars)
+// `selectedText` (4000 chars), `documentContext` (8000 chars),
+// `instruction` (1000 chars), and `additionalRequest` (1000 chars)
 // before invocation; this helper trusts the caller did so and
 // does NOT re-validate sizes — the boundary check belongs to the
 // Rust side, not Swift.
 
 struct AppleAssistRequest: Codable {
     let operation: String
+    let actionId: String?
     let selectedText: String
     let documentContext: String?
     let instruction: String?
+    let additionalRequest: String?
 }
 
 // `IntentAllowlist` mirrors the v0.12 implemented-operations set

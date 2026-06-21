@@ -19,6 +19,11 @@ import {
   type AppleAssistTargetSnapshot,
   type CompareViewState,
 } from "../../types";
+import {
+  getLocalAssistAction,
+  isLocalAssistActionId,
+  type LocalAssistActionId,
+} from "../../lib/appleAssist/instruction";
 
 // Per-request window for the surrounding document context
 // that Hazakura Local Assist sees. `preChars` is taken before
@@ -163,8 +168,11 @@ export function useAppleAssistApplyHandler({
       setStatusRef.current?.(startMessage);
       void emitAppleAssistApplyStatus("started", startMessage, payload.request);
       const contextWindow = getAppleAssistContextWindow(targetSnapshot.kind);
+      const actionId = resolveApplyActionId(payload);
+      const action = getLocalAssistAction(actionId);
       const response = await generateAppleAssistCandidate({
-        operation: inferAppleAssistOperation(payload.request),
+        operation: action.operation,
+        actionId,
         selectedText: targetCheck.before,
         documentContext: buildSurroundingDocumentContext(
           tab.contents,
@@ -174,12 +182,7 @@ export function useAppleAssistApplyHandler({
           contextWindow.postChars,
           APPLE_ASSIST_MAX_CONTEXT_CHARS,
         ),
-        // Prefer the helper-side instruction when the caller
-        // provided one (e.g. the Hazakura Local Assist window annotates
-        // preset phrases with a short intent hint). The
-        // user-facing surfaces (status, transaction, review
-        // bar) still see the original `payload.request`.
-        instruction: payload.instruction ?? payload.request,
+        additionalRequest: payload.additionalRequest,
       });
 
       const latestTab = activeTabRef.current;
@@ -228,7 +231,9 @@ export function useAppleAssistApplyHandler({
       setActiveTabContentsRef.current(result.nextBuffer);
       const successMessage = `Hazakura Local Assist applied: ${result.transaction.request} (${result.transaction.target.kind})`;
       setStatusRef.current?.(successMessage);
-      void emitAppleAssistApplyStatus("completed", successMessage, payload.request);
+      void emitAppleAssistApplyStatus("completed", successMessage, payload.request, {
+        shouldApplyToDocument: true,
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       const errorMessage = `Hazakura Local Assist generation failed: ${message}`;
@@ -242,12 +247,17 @@ async function emitAppleAssistApplyStatus(
   phase: AppleAssistApplyStatusEvent["phase"],
   message: string,
   request: string,
+  options: Pick<
+    AppleAssistApplyStatusEvent,
+    "shouldApplyToDocument"
+  > = {},
 ): Promise<void> {
   try {
     await emitTo("apple-assist", APPLE_ASSIST_APPLY_STATUS_EVENT, {
       phase,
       message,
       request,
+      ...options,
       emittedAtMs: Date.now(),
     } satisfies AppleAssistApplyStatusEvent);
   } catch (err) {
@@ -255,15 +265,18 @@ async function emitAppleAssistApplyStatus(
   }
 }
 
-function inferAppleAssistOperation(request: string): AppleAssistOperation {
-  const lower = request.toLowerCase();
-  if (request.includes("校正") || lower.includes("proof")) {
-    return "proofread";
+function resolveApplyActionId(payload: AppleAssistApplyEvent): LocalAssistActionId {
+  if (isLocalAssistActionId(payload.actionId)) {
+    return payload.actionId;
   }
-  if (request.includes("要約") || lower.includes("summar")) {
+  const lower = payload.request.toLowerCase();
+  if (payload.request.includes("校正") || lower.includes("proof")) {
+    return "proofread_only";
+  }
+  if (payload.request.includes("要約") || lower.includes("summar")) {
     return "summarize";
   }
-  return "rephrase";
+  return "rewrite_natural";
 }
 
 function readTargetTextForGeneration(

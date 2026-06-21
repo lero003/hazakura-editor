@@ -7,7 +7,8 @@ import Foundation
 //     accepted, distinguished by the top-level `"action"` key:
 //       { "action": "probe_availability" }
 //       { "action": "generate_candidate", "operation": "...",
-//         "selectedText": "...", "documentContext": "..." }
+//         "actionId": "...", "selectedText": "...",
+//         "documentContext": "...", "additionalRequest": "..." }
 //   * Output: one JSON response per line on stdout. Each response
 //     also has a top-level discriminant `"kind"`:
 //       { "kind": "availability", "value": { ... } }
@@ -49,9 +50,11 @@ enum WireEnvelope: Encodable {
 struct IncomingRequest: Decodable {
     let action: String
     let operation: String?
+    let actionId: String?
     let selectedText: String?
     let documentContext: String?
     let instruction: String?
+    let additionalRequest: String?
 }
 
 func emit(_ envelope: WireEnvelope) {
@@ -108,9 +111,11 @@ func dispatch(_ raw: String) async {
         }
         let req = AppleAssistRequest(
             operation: operation,
+            actionId: request.actionId,
             selectedText: selectedText,
             documentContext: request.documentContext,
-            instruction: request.instruction
+            instruction: request.instruction,
+            additionalRequest: request.additionalRequest
         )
         switch await GenerateCandidate.run(req) {
         case .ok(let response):

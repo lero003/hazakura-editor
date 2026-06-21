@@ -34,11 +34,29 @@
 // skips the shared re-exports.
 
 use crate::commands::apple_assist_supervisor::{
-    bundled_helper_filename, generate_candidate_via_helper, probe_availability_via_helper,
-    resolve_bundled_helper_path, rust_target_triple, store_with_helper_path, store_without_helper,
-    AppleAssistHelperStore, HelperAvailability, HelperCandidate, WireEnvelope, GENERATE_TIMEOUT,
-    PROBE_TIMEOUT,
+    bundled_helper_filename, generate_candidate_via_helper as generate_candidate_via_helper_impl,
+    probe_availability_via_helper, resolve_bundled_helper_path, rust_target_triple,
+    store_with_helper_path, store_without_helper, AppleAssistHelperStore, HelperAvailability,
+    HelperCandidate, WireEnvelope, GENERATE_TIMEOUT, PROBE_TIMEOUT,
 };
+
+fn generate_candidate_via_helper(
+    store: &AppleAssistHelperStore,
+    operation: &str,
+    selected_text: &str,
+    document_context: Option<&str>,
+    instruction: Option<&str>,
+) -> Result<WireEnvelope, String> {
+    generate_candidate_via_helper_impl(
+        store,
+        operation,
+        selected_text,
+        document_context,
+        instruction,
+        None,
+        None,
+    )
+}
 
 // ----------------------------------------------------------------
 // Pure-store tests (no helper binary required).

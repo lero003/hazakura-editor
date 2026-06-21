@@ -206,24 +206,30 @@ export type AppleAssistTargetSnapshot = {
 
 export type AppleAssistApplyEvent = {
   /**
-   * The original rough request as shown in the textarea, the
-   * AI edit transaction, the main editor status message, and
-   * the Hazakura Local Assist review bar. This is the value the user
-   * actually sees end-to-end and is *not* the helper-side
-   * instruction.
+   * Internal fixed action id. UI labels and free-form text do
+   * not become system instructions; the receiver maps this id
+   * to a bounded operation.
+   */
+  actionId?: string;
+  /**
+   * Visible user-authored request text for the current request.
+   * The field name is kept for IPC compatibility; treat the
+   * value as prompt data, not system instruction.
+   */
+  additionalRequest?: string;
+  /**
+   * Whether the generated result may be applied to the active
+   * document buffer. Current Local Assist presets use the same
+   * diff-review document flow.
+   */
+  shouldApplyToDocument?: boolean;
+  /**
+   * User-facing request label for status, feedback, and AI edit
+   * transaction display. This is display copy, not the
+   * helper-side instruction.
    */
   request: string;
-  /**
-   * Optional helper-side instruction. When omitted, the
-   * receiver falls back to `request`. v0.15+ callers that
-   * annotate the rough request with a preset intent hint
-   * (see `buildAssistantInstruction` in
-   * `src/lib/appleAssist/instruction.ts`) should pass the
-   * annotated value here while keeping `request` set to the
-   * original phrase, so the helper sees a clearer intent
-   * label while the user-facing surfaces keep showing
-   * exactly what the user typed.
-   */
+  /** Legacy helper-side request text, kept only for old callers. */
   instruction?: string;
   requestedAtMs: number;
   target: AppleAssistTargetSnapshot | null;
@@ -233,6 +239,7 @@ export type AppleAssistApplyStatusEvent = {
   phase: "started" | "completed" | "failed";
   message: string;
   request: string;
+  shouldApplyToDocument?: boolean;
   emittedAtMs: number;
 };
 

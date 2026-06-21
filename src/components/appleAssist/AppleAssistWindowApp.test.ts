@@ -74,7 +74,15 @@ const REQUIRED_KEYS: ReadonlyArray<keyof AppleAssistWindowCopy> = [
   "feedbackEntry",
 ];
 
-const PRESET_IDS = ["tidy", "natural", "continue", "proofread", "rewrite-section"];
+const PRESET_IDS = [
+  "proofread_only",
+  "rewrite_natural",
+  "summarize",
+  "translate",
+  "continue_ideas",
+  "shorten",
+  "review_section",
+];
 
 const FEEDBACK_KINDS: ReadonlyArray<OperationFeedbackKind> = [
   "ready",
@@ -114,8 +122,15 @@ describe("getAppleAssistWindowCopy", () => {
       });
 
       it("exposes the same preset ids in every language", () => {
-        const ids = copy.presets.map((preset) => preset.id);
+        const ids = copy.presets.map((preset) => preset.actionId);
         expect(ids).toEqual(PRESET_IDS);
+      });
+
+      it("exposes visible request text for every preset", () => {
+        for (const preset of copy.presets) {
+          expect(preset.requestText).toMatch(/\S/);
+          expect(preset.requestText).not.toBe(preset.label);
+        }
       });
 
       it("uses the language's expected `applyButton`", () => {
@@ -240,9 +255,9 @@ describe("getAppleAssistWindowCopy", () => {
     const kana = getAppleAssistWindowCopy("kana").emptyRequestError;
     // `en` is expected to be English; `ja` and `kana` must
     // not start with the English lead-in.
-    expect(en).toMatch(/^Type what you want changed/);
-    expect(ja.startsWith("Type what you want changed")).toBe(false);
-    expect(kana.startsWith("Type what you want changed")).toBe(false);
+    expect(en).toMatch(/^Type a request/);
+    expect(ja.startsWith("Type a request")).toBe(false);
+    expect(kana.startsWith("Type a request")).toBe(false);
   });
 
   it("keeps the error copy actionable (mentions the cap or the recovery action)", () => {

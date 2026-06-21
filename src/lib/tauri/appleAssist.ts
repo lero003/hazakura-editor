@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { isTauriRuntime } from "./_runtime";
+import type { LocalAssistActionId } from "../appleAssist/instruction";
 
 // Hazakura Local Assist is an Assist Surface provider class — NOT a
 // CLI-agent provider. The types below describe the narrow
@@ -44,6 +45,7 @@ export const APPLE_ASSIST_MAX_INSTRUCTION_CHARS = 1000;
 
 export type AppleAssistRequest = {
   operation: AppleAssistOperation;
+  actionId?: LocalAssistActionId;
   // Selected text from the active editor. Capped at
   // APPLE_ASSIST_MAX_SELECTED_CHARS by the Rust side.
   selectedText: string;
@@ -53,9 +55,12 @@ export type AppleAssistRequest = {
   // shaped and a future intent (e.g. explain_diff) can pick it
   // up without an API break.
   documentContext?: string;
-  // Optional rough user request from the Writing Companion
-  // window. Capped by the Rust side.
+  // Legacy user request field. New callers use
+  // `additionalRequest` for the visible request text.
   instruction?: string;
+  // Visible user request text from the Writing Companion
+  // window. Capped by the Rust side.
+  additionalRequest?: string;
 };
 
 export type AppleAssistResponse = {

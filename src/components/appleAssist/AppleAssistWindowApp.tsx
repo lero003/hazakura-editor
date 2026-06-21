@@ -7,7 +7,13 @@ import {
 } from "../../lib/tauri";
 import { useAppleAssistAvailability } from "../../hooks/agent/useAppleAssistAvailability";
 import type { AppleAssistAvailability } from "../../lib/tauri/appleAssist";
-import { buildApplyEvent } from "../../lib/appleAssist/instruction";
+import {
+  LOCAL_ASSIST_ACTIONS,
+  buildApplyEvent,
+  resolveLocalAssistActionId,
+  type LocalAssistActionId,
+  type LocalAssistPreset,
+} from "../../lib/appleAssist/instruction";
 import {
   APPLE_ASSIST_APPLY_STATUS_EVENT,
   MAIN_APPLE_ASSIST_TARGET_CHANGED_EVENT,
@@ -27,25 +33,26 @@ import {
 // that replaces the Agent window in the same UX surface
 // (see `docs/apple-local-assist-writing-companion-plan.md`).
 //
-// The user types a rough request ("整えて" / "自然にして" / "続きを書いて" /
-// "校正して" / "この章を直して") into a textarea, picks the
-// active tab from the main window's broadcast, and clicks
-// the request button to emit `APPLY_AI_EDIT_TRANSACTION_EVENT` to the main
-// window. The main window is responsible for:
+// The user picks a bounded request preset, edits the visible
+// request text if needed, and clicks the request button to
+// emit `APPLY_AI_EDIT_TRANSACTION_EVENT` to the main window.
+// UI labels stay display-only; `actionId` only routes the
+// helper operation while the request text remains visible and
+// editable. The main window is responsible for:
 //   - inferring the bounded target (selection → paragraph →
 //     block → section) via `REQUEST_AI_EDIT_TARGET_EVENT` round
 //     trip (slice 3),
-//   - asking the bundled helper for a bounded replacement and
-//     applying it to the unsaved buffer,
-//     recording an AI edit transaction (slice 4),
-//   - showing the change in the Diff / change-review escape
-//     hatch (slice 5).
+//   - asking the bundled helper for a bounded result,
+//   - applying document-changing results to the unsaved
+//     buffer and recording an AI edit transaction,
+//   - showing document-changing results in the Diff /
+//     change-review escape hatch.
 //
 // The window only renders a thin shell with:
 //   - a header that names the companion and shows the current
 //     active document title (mirrored from the main window),
-//   - a rough-request textarea + a few preset chips for the
-//     common rough requests.
+//   - a request textarea + preset chips for the supported
+//     local writing actions.
 //
 // Status / error feedback is shown inline so the mock is
 // usable end-to-end without depending on the agent
@@ -183,7 +190,9 @@ export function AppleAssistWindowApp() {
     () => getAppleAssistWindowCopy(menuLanguage),
     [menuLanguage],
   );
-  const [roughRequest, setRoughRequest] = useState<string>("");
+  const [selectedActionId, setSelectedActionId] =
+    useState<LocalAssistActionId | null>(null);
+  const [requestText, setRequestText] = useState<string>("");
   const [status, setStatus] = useState<string>(
     () => getAppleAssistWindowCopy(readInitialMenuLanguage()).readyStatus,
   );
@@ -406,7 +415,7 @@ export function AppleAssistWindowApp() {
   }, []);
 
   const applyRoughRequest = useCallback(async () => {
-    const request = roughRequest.trim();
+    const request = requestText.trim();
     if (request.length === 0) {
       setError(copy.emptyRequestError);
       return;
@@ -450,21 +459,20 @@ export function AppleAssistWindowApp() {
         });
       }
       pushFeedback({ kind: "request-sent" });
-      // `buildApplyEvent` keeps the user-facing
-      // `payload.request` (the original rough phrase) and
-      // the helper-side `payload.instruction` (the preset
-      // intent hint) separate, so the AI edit transaction,
-      // the main editor status message, and the Apple
-      // Assist review bar only ever see what the user
-      // actually typed.
+      // `buildApplyEvent` keeps the display label, fixed
+      // `actionId`, and visible request text separate. The
+      // helper maps the action id to a bounded operation while
+      // the visible request text is passed as prompt data, not
+      // system instruction.
       const payload = buildApplyEvent({
-        request,
+        actionId:
+          selectedActionId ?? resolveLocalAssistActionId(request, copy.presets),
+        requestText: request,
         target: latestTarget,
         requestedAtMs: Date.now(),
-        presets: copy.presets,
       });
       await requestApplyAiEditTransaction(payload);
-      setStatus(copy.generatingInMain(request));
+      setStatus(copy.generatingInMain(payload.request));
     } catch (err: unknown) {
       clearGenerationFallback();
       setBusy(false);
@@ -487,13 +495,15 @@ export function AppleAssistWindowApp() {
     clearGenerationFallback,
     copy,
     pushFeedback,
-    roughRequest,
+    requestText,
     scheduleGenerationFallback,
+    selectedActionId,
     target,
   ]);
 
-  const onPickPreset = useCallback((prompt: string) => {
-    setRoughRequest(prompt);
+  const onPickPreset = useCallback((preset: LocalAssistPreset) => {
+    setSelectedActionId(preset.actionId);
+    setRequestText(preset.requestText);
     setError(null);
   }, []);
 
@@ -528,9 +538,9 @@ export function AppleAssistWindowApp() {
         <textarea
           id="apple-assist-rough-request"
           className="apple-assist-window-textarea"
-          value={roughRequest}
+          value={requestText}
           onChange={(event) => {
-            setRoughRequest(event.target.value);
+            setRequestText(event.target.value);
             setError(null);
           }}
           rows={3}
@@ -541,7 +551,7 @@ export function AppleAssistWindowApp() {
           type="button"
           className="apple-assist-window-apply"
           onClick={() => void applyRoughRequest()}
-          disabled={busy || !available || roughRequest.trim().length === 0}
+          disabled={busy || !available || requestText.trim().length === 0}
         >
           {busy ? copy.generatingButton : copy.applyButton}
         </button>
@@ -552,10 +562,15 @@ export function AppleAssistWindowApp() {
         <div className="apple-assist-presets-list">
           {copy.presets.map((preset) => (
             <button
-              key={preset.id}
+              key={preset.actionId}
               type="button"
-              className="apple-assist-preset"
-              onClick={() => onPickPreset(preset.prompt)}
+              className={
+                preset.actionId === selectedActionId
+                  && preset.requestText === requestText
+                  ? "apple-assist-preset apple-assist-preset-active"
+                  : "apple-assist-preset"
+              }
+              onClick={() => onPickPreset(preset)}
               disabled={busy || !available}
             >
               {preset.label}
@@ -653,12 +668,6 @@ export function AppleAssistWindowApp() {
   );
 }
 
-type AppleAssistWindowPreset = {
-  id: string;
-  label: string;
-  prompt: string;
-};
-
 export type AppleAssistWindowCopy = {
   activeDocument: (name: string) => string;
   appliedStatus: (request: string) => string;
@@ -677,7 +686,7 @@ export type AppleAssistWindowCopy = {
   noActiveDocument: string;
   noTarget: string;
   placeholder: string;
-  presets: AppleAssistWindowPreset[];
+  presets: LocalAssistPreset[];
   presetsLabel: string;
   readyStatus: string;
   roughRequestLabel: string;
@@ -790,6 +799,14 @@ function isMenuLanguage(value: string | null): value is MenuLanguage {
   return value === "en" || value === "ja" || value === "kana";
 }
 
+function buildLocalAssistPresets(lang: MenuLanguage): LocalAssistPreset[] {
+  return LOCAL_ASSIST_ACTIONS.map((action) => ({
+    actionId: action.id,
+    label: action.label[lang],
+    requestText: action.requestText,
+  }));
+}
+
 // `classifyApplyError` turns a raw catch-block error from the
 // `requestApplyAiEditTransaction` IPC call (or any exception
 // thrown by the listener) into a localized, actionable
@@ -842,16 +859,16 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         "へんしゅう あんを はんえいしました。ほぞん まえに さぶんで かくにん できます。",
       applyButton: "おねがいする",
       availableDisclosure:
-        "えらんだ ところ または いまの だんらくを、この Mac の Apple Intelligence たいおう きのうで したがき・てなおしします。けっかは ほぞん まえの ほんぶんに はいり、さぶんで かくにん できます。そとの AI さーびすには おくりません。",
+        "えらんだ ところ または いまの だんらくを、この Mac の Apple Intelligence たいおう きのうで ぶんしょう せいりします。ほんぶんを かえる けっかは ほぞん まえに さぶんで かくにんでき、ようやく・れびゅー は けっかとして ひょうじします。そとの AI さーびすには おくりません。",
       contextTooLongError:
         "しゅうへん ぶんしょ が ながすぎ ます。L Mode の たいしょう しゅうへん こんできすと の じょうげん (8000 もじ) を こえました。",
       disabledStatus:
         "この せっしょで はざくら ろーかる あしす とは むこうです。Preferences > Assist Surface で はざくら ろーかる あしす と (ぷれびゅー) を えらび、あぷりを さいきどうして ください。",
       emptyRequestError:
-        "まずは おねがいを かいてください。れい: ととのえて / しぜんに / つづきを / こうせい。",
+        "まずは おねがいの ぶんを かいてください。",
       generatingButton: "おねがい中...",
       generatingChange:
-        "この Mac で へんしゅう あんを つくっています。けっかは ほぞん まえの へんしゅう あんとして はいります。",
+        "この Mac で へんしゅう あんを つくっています。ほぞん まえに さぶんで かくにん できます。",
       generatingInMain: () =>
         "へんしゅう あんを つくっています。ほぞん まえに さぶんで かくにん できます。",
       guardrailError:
@@ -866,18 +883,12 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       noTarget:
         "たいしょう が まだ えらばれて いません。えでぃた に かーそる を おくか、L Mode を ひらいて たいしょう を せってい して ください。",
       placeholder:
-        "どう なおしたいかを かいてください",
-      presets: [
-        { id: "tidy", label: "ととのえて", prompt: "整えて" },
-        { id: "natural", label: "しぜんに", prompt: "自然にして" },
-        { id: "continue", label: "つづきを", prompt: "続きを書いて" },
-        { id: "proofread", label: "こうせい", prompt: "校正して" },
-        { id: "rewrite-section", label: "このしょうを", prompt: "この章を直して" },
-      ],
-      presetsLabel: "よくつかう おねがい",
+        "ここに おねがいの ぶんを かいてください",
+      presets: buildLocalAssistPresets("kana"),
+      presetsLabel: "ぷりせっと",
       readyStatus:
-        "じゅんび できました。たいしょうを えらび、おねがいを かいてください。",
-      roughRequestLabel: "おねがい",
+        "じゅんび できました。ぷりせっとを えらぶか、おねがいの ぶんを かいてください。",
+      roughRequestLabel: "おねがいの ぶん",
       selectionTooLongError:
         "えらんだ ところが ながすぎ ます（さいだい 4000 もじ）。あっぷる ふぁうんでーしょん もでるず の こんできすと まど に おさまらないため、もう すこし ちいさく えらんで ください。",
       sendingRequest: "おねがいを うけつけました...",
@@ -904,7 +915,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       // v0.17 operation-feedback panel copy.
       feedbackHeading: "すすみぐあい",
       feedbackDescription:
-        "おねがいごとに、たいしょうの かくにん、せいせい、はんえいまでを ここに きろくします。けっかは ほぞん まえに さぶんで みられます。",
+        "おねがいごとに、たいしょうの かくにん、せいせい、へんしゅう あんの はんえいまでを ここに きろくします。ほぞん まえに さぶんで かくにんできます。",
       feedbackEmpty:
         "まだ おねがいは ありません。たいしょうを えらび、おねがいを かいてください。",
       feedbackEntry: (kind, payload) => {
@@ -955,16 +966,16 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         "編集案を反映しました。保存前に差分で確認できます。",
       applyButton: "依頼する",
       availableDisclosure:
-        "選択範囲または現在の段落を、この Mac 上の Apple Intelligence 対応機能で下書き・手直しします。編集案は未保存の本文に反映され、保存前に差分で確認できます。外部 AI サービスには送りません。",
+        "選択範囲または現在の段落を、この Mac 上の Apple Intelligence 対応機能で文章整備します。本文変更系は未保存の本文に反映され、保存前に差分で確認できます。要約・レビューなどは結果として表示します。外部 AI サービスには送りません。",
       contextTooLongError:
         "周辺の文書が長すぎます。L Mode の対象周辺コンテキスト上限（8000 文字）を超えました。",
       disabledStatus:
         "このセッションでは Hazakura Local Assist は無効です。Preferences > Assist Surface で outside companion slot を「Hazakura Local Assist (プレビュー)」に切り替え、アプリを再起動してください。",
       emptyRequestError:
-        "まずは依頼内容を入力してください。例: 「整えて」「自然にして」「続きを書いて」「校正して」。",
+        "まずは依頼文を入力してください。",
       generatingButton: "依頼中...",
       generatingChange:
-        "この Mac 上で編集案を作っています。結果は未保存の編集案として反映されます。",
+        "この Mac 上で編集案を作っています。保存前に差分で確認できます。",
       generatingInMain: () =>
         "編集案を作っています。保存前に差分で確認できます。",
       guardrailError:
@@ -979,18 +990,12 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       noTarget:
         "対象がまだ選ばれていません。エディタにカーソルを置くか、L Mode を開いて対象を設定してください。",
       placeholder:
-        "どう直したいかを書いてください",
-      presets: [
-        { id: "tidy", label: "整えて", prompt: "整えて" },
-        { id: "natural", label: "自然にして", prompt: "自然にして" },
-        { id: "continue", label: "続きを書いて", prompt: "続きを書いて" },
-        { id: "proofread", label: "校正して", prompt: "校正して" },
-        { id: "rewrite-section", label: "この章を直して", prompt: "この章を直して" },
-      ],
-      presetsLabel: "よく使う依頼",
+        "ここに依頼文を入力してください",
+      presets: buildLocalAssistPresets("ja"),
+      presetsLabel: "プリセット",
       readyStatus:
-        "準備完了。対象を選び、依頼内容を入力してください。",
-      roughRequestLabel: "依頼内容",
+        "準備完了。プリセットを選ぶか、依頼文を入力してください。",
+      roughRequestLabel: "依頼文",
       selectionTooLongError:
         "選択範囲が大きすぎます（最大 4000 文字）。Apple Foundation Models のコンテキスト窓に収まらないため、もう少し小さく選択してください。",
       sendingRequest: "依頼を受け付けました...",
@@ -1017,7 +1022,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       // v0.17 operation-feedback panel copy.
       feedbackHeading: "処理の流れ",
       feedbackDescription:
-        "依頼ごとに、対象確認、生成、編集案の反映までをここに表示します。結果は未保存の本文に入り、保存前に差分で確認できます。",
+        "依頼ごとに、対象確認、生成、編集案の反映までをここに表示します。保存前に差分で確認できます。",
       feedbackEmpty:
         "まだ依頼はありません。対象を選び、依頼内容を入力してください。",
       feedbackEntry: (kind, payload) => {
@@ -1067,16 +1072,16 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       "Draft edit applied. Review the diff before saving.",
     applyButton: "Send request",
     availableDisclosure:
-      "Hazakura Local Assist drafts or revises the selection or current paragraph with Apple Intelligence-capable features on this Mac. The draft edit is applied to the unsaved text, can be reviewed in the diff before saving, and is not sent to an external AI service.",
+      "Hazakura Local Assist tidies the selection or current paragraph with Apple Intelligence-capable features on this Mac. Document-changing results are applied to unsaved text for diff review; summaries and reviews are shown as results. Nothing is sent to an external AI service.",
     contextTooLongError:
       "Document context is too long (L Mode harness caps surrounding text at 8000 characters). Pick a tighter target or break the change into smaller requests.",
     disabledStatus:
       "Hazakura Local Assist is disabled in this app session. Open Preferences > Assist Surface and switch the outside companion slot to 'Hazakura Local Assist (Preview)'. Restart the app to apply.",
     emptyRequestError:
-      "Type what you want changed first. Examples: 'Make it cleaner', 'Continue this', 'Proofread this'.",
+      "Type a request first.",
     generatingButton: "Sending...",
     generatingChange:
-      "Creating a draft edit on this Mac. The result lands as an unsaved draft edit in the main editor.",
+      "Creating a draft edit on this Mac. Review the diff before saving.",
     generatingInMain: () =>
       "Creating a draft edit. Review the diff before saving.",
     guardrailError:
@@ -1090,21 +1095,11 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       "No active document is open in the main editor. Open a Markdown or text file first.",
     noTarget:
       "No active target yet. Place the cursor inside the document, or open L Mode to get a target.",
-    placeholder: "Describe what you want changed",
-    presets: [
-      { id: "tidy", label: "Clean up", prompt: "Make it cleaner" },
-      { id: "natural", label: "Natural", prompt: "Make it sound natural" },
-      { id: "continue", label: "Continue", prompt: "Continue this" },
-      { id: "proofread", label: "Proofread", prompt: "Proofread this" },
-      {
-        id: "rewrite-section",
-        label: "Rewrite section",
-        prompt: "Rewrite this section",
-      },
-    ],
-    presetsLabel: "Common requests",
+    placeholder: "Type the request you want to send",
+    presets: buildLocalAssistPresets("en"),
+    presetsLabel: "Presets",
     readyStatus:
-      "Ready. Pick a target and type what you want changed.",
+      "Ready. Pick a preset or type a request.",
     roughRequestLabel: "Request",
     selectionTooLongError:
       "Selection is too long (max 4000 characters). Apple Foundation Models has a bounded context window; pick a smaller selection, or split the change into multiple requests.",
@@ -1132,7 +1127,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     // v0.17 operation-feedback panel copy.
     feedbackHeading: "Progress",
     feedbackDescription:
-      "Each request records target selection, local generation, and draft application here. Results stay unsaved until you review and save them.",
+      "Each request records target selection, local generation, and draft application here. Review the diff before saving.",
     feedbackEmpty:
       "No requests yet. Pick a target and describe what you want changed.",
     feedbackEntry: (kind, payload) => {

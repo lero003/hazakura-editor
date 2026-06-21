@@ -3,15 +3,18 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-21 (v0.29 Hazakura Local Assist review triage)
+Last reviewed: 2026-06-22 (v0.29 Local Assist prompt boundary)
 
 ## Current State
 
 - `Hazakura Editor` is tagged at `v0.27.0` for the source / local-app
   release checkpoint. The published Mac App Store version remains
-  `0.26.0` until a new App Store build is uploaded, approved, and
-  released. Current package/app metadata is `0.29.0`; no `0.29.0`
-  submit-lane pkg has been generated yet.
+  `0.26.0` until a newer App Store build is processed, approved, and
+  released. Current package/app metadata is `0.29.0`; helper-enabled
+  build `29` was generated and the user reported successful Transporter
+  delivery on 2026-06-22. App Store Connect processing, TestFlight, App
+  Review, and release handling are not tracked unless explicitly
+  recorded later.
 - User-facing app identity is capitalized as `Hazakura Editor`. The
   App Store preview bundle is `Hazakura Editor.app`; current docs and
   smoke paths should use that name rather than the older lowercase
@@ -99,7 +102,13 @@ Last reviewed: 2026-06-21 (v0.29 Hazakura Local Assist review triage)
   separation, helper error hygiene, preview-oriented user copy, clearer
   Apple Intelligence availability guidance, a compact companion window,
   and a fixed-height short scrollable progress log with request-group
-  separators. 2026-06-21 user-side light built-app smoke confirmed
+  separators. Local Assist presets now separate UI labels from internal
+  `actionId`s while keeping the concrete request sentence visible and
+  editable in the request field; the live helper receives a fixed base
+  instruction plus separated action, visible request text, target text,
+  and surrounding context. All presets follow the same explicit,
+  unsaved, diff-reviewable AI edit transaction flow. 2026-06-21
+  user-side light built-app smoke confirmed
   the dedicated Local Assist UI opens, the helper is absent from Activity
   Monitor memory before opening the companion, and a simple request can be
   generated/applied and checked through the diff/update flow. Next, keep
@@ -476,7 +485,16 @@ open Active UX Queue slice and close it as `implemented`,
   manual signed-build smoke remain outside the repository unless new
   evidence is explicitly recorded.
 - Latest v0.29 Hazakura Local Assist App Store-lane gate: source tests and
-  local build evidence now cover the v0.29 version bump, `Preview` /
+  local build evidence now cover the prompt/preset boundary: UI labels
+  are display-only, preset clicks insert visible editable request text,
+  the live helper prompt separates base instruction / action / visible
+  request text / target text / context, and all presets use the same
+  unsaved AI edit transaction / Diff review flow. Verified with `npm run typecheck`,
+  `npm run test -- src/lib/appleAssist/instruction.test.ts src/components/appleAssist/AppleAssistWindowApp.test.ts src/components/appleAssist/AppleAssistWindowApp.test.tsx src/hooks/editor/useAppleAssistApplyHandler.test.ts`,
+  `cargo test --manifest-path src-tauri/Cargo.toml apple_assist -- --nocapture`,
+  and `npm run build:apple-assist-helper:live`.
+- Previous v0.29 Hazakura Local Assist App Store-lane gate: source tests and
+  local build evidence cover the v0.29 version bump, `Preview` /
   `プレビュー` Local Assist copy, light-user availability wording for
   macOS 26+ / M1+ / Apple Intelligence / supported language-region, a
   compact 480 x 560 default companion window, and a short scrollable

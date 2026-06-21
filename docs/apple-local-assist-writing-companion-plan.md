@@ -3,7 +3,7 @@
 Status: Active live-preview implementation
 Scope: v0.12+ Hazakura Local Assist user experience direction
 Authority: Medium
-Last reviewed: 2026-06-10
+Last reviewed: 2026-06-22
 
 ## Purpose
 
@@ -30,18 +30,18 @@ The target experience is:
 
 1. The user writes in Safe Editor or L Mode.
 2. The user opens the Hazakura Local Assist companion.
-3. The user gives a rough request, such as "整えて", "続きを書いて", "自然にして", "校正して", or "この章を直して".
+3. The user chooses a bounded preset, such as proofread only, natural rewrite, summary, translation, next ideas, shorten, or section review. The preset inserts an editable request sentence into the request field so the concrete instruction is visible before sending.
 4. The app infers a bounded target from the current writing context:
    - selected text, if present
    - otherwise the current paragraph or block
    - otherwise the current section
    - only with explicit user choice, a larger document excerpt
-5. Hazakura Local Assist proposes or applies an edit as an **AI edit transaction**.
+5. Hazakura Local Assist writes the generated result as an **AI edit transaction** in the unsaved buffer.
 6. The user can inspect what changed through Diff / change history, then save explicitly.
 
-The product should be forgiving of vague instructions. Many writers cannot or will not describe the exact operation they want. The UI should make rough intent usable rather than requiring the user to know whether they need "summarize", "rephrase", "proofread", or "extract".
+The product should be forgiving of vague instructions, but the processing contract should not be the visible UI label. The app owns fixed action IDs for routing, while the concrete request text remains visible and editable before the user sends it.
 
-The alpha scope is intentionally modest. Favor short summaries, rephrasing, heading ideas, tag / title suggestions, light cleanup, and short explanations. Do not present Hazakura Local Assist as suitable for code review, multi-file understanding, long-document restructuring, autonomous agent work, advanced reasoning, or expert design judgment.
+The preview scope is intentionally modest. Favor proofreading, natural prose cleanup, short summaries, shortening, translation, next-writing ideas, and section review. Do not present Hazakura Local Assist as suitable for code review, multi-file understanding, long-document restructuring, autonomous agent work, advanced reasoning, factual verification, or expert design judgment.
 
 ## L Mode Priority
 
@@ -59,6 +59,7 @@ The old "no auto-apply" rule should not be read as "AI can never write into the 
 - no edits without an explicit user request
 - every AI-written buffer change must be recorded as an AI edit transaction
 - AI edits must remain reviewable through Diff / change history before the user saves
+- every preset follows the same explicit AI edit transaction and Diff review path, so the user does not have to learn separate apply/result modes
 
 An AI edit transaction should record at least:
 
@@ -104,16 +105,18 @@ The first external Writing Companion is now implemented on `main`:
 - Preferences now expose the shared outside companion slot as a restart-applied `Hazakura Local Assist (Preview)` / `CLI Agent` / `Off` choice, with CLI Agent retaining the existing Agent Workbench restart / consent / provider boundary
 - the normal top-chrome companion button switches between Hazakura Local Assist and Agent according to the active setting for the current app launch
 - L Mode can open the companion without leaving the focused writing surface
-- rough requests call the bundled Hazakura Local Assist helper when Apple Foundation Models is locally available
-- each generated edit records an AI edit transaction and exposes a compact Diff / Discard affordance
+- preset labels are separated from internal action IDs, and pressing a preset inserts its concrete request sentence into the editable request field
+- every live helper request includes the fixed Hazakura Local Assist base instruction, separates action ID, visible request text, target text, and surrounding context, and treats text-delimited content as editable data rather than instructions
+- all presets call the bundled Hazakura Local Assist helper when Apple Foundation Models is locally available
+- each generated result records an AI edit transaction and exposes a compact Diff / Discard affordance
 
 The fixture helper remains available for supervisor regression tests, but the production build path now uses the live helper. Live generation depends on macOS 26+ Apple Foundation Models availability, local Apple Intelligence state, and a Foundation Models-supported current app locale; when unavailable, Hazakura Local Assist must disclose the unavailable/disabled/unsupported state rather than falling back to a network model or hidden fixture output.
 
 ## Operation Feedback
 
 Hazakura Local Assist should be easier to smoke and understand while it
-remains alpha.  The Assist Window may therefore show a compact
-operation-feedback panel above the rough-request form.
+remains preview-quality.  The Assist Window may therefore show a compact
+operation-feedback panel above the request form.
 
 This panel should explain what the app is doing, not what the model is
 "thinking."  It can show a short, current-session trail such as:
@@ -136,9 +139,9 @@ The panel must stay bounded:
 - no file path, broad document excerpt, token dump, or secret-bearing
   data
 
-The existing rough-request textarea does not need to dominate the
-window.  Reducing it from three rows to two rows is acceptable if long
-requests remain scrollable and the preset buttons remain reachable.
+The request textarea does not need to dominate the window.  Reducing it
+from three rows to two rows is acceptable if long requests remain
+scrollable and the preset buttons remain reachable.
 The panel should not replace Diff / review; it only helps the user see
 the lifecycle before they inspect or discard the edit.
 

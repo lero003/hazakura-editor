@@ -349,11 +349,12 @@ Run when `src/lib/tauri/appleAssist.ts`, `src-tauri/src/commands/apple_assist.rs
 5. Confirm the Settings / Agent Workbench Preferences surface does not list Hazakura Local Assist as a CLI agent provider — it is a separate Assist Surface provider class.
 6. Launch the built app and confirm `hazakura-apple-assist-helper` is not running before the Local Assist surface is explicitly opened. Opening the command palette alone must not spawn the helper or show Foundation Models errors.
 7. Confirm no menu entry, status bar item, autosave path, or background timer runs Hazakura Local Assist generation without an explicit user request.
-8. In the built app, select `Hazakura Local Assist (Preview)`, restart if prompted, open the companion from normal editor, issue a rough request, and confirm the buffer becomes dirty without auto-saving.
+8. In the built app, select `Hazakura Local Assist (Preview)`, restart if prompted, open the companion from normal editor, choose a preset such as `校正だけ` or `読みやすく`, and confirm the preset inserts editable request text before sending.
 9. Repeat item 8 in L Mode. Confirm the compact AI-change affordance appears and `差分を開く` / `差分を閉じる` works.
-10. Confirm Agent Window and Hazakura Local Assist Window still replace rather than coexist as the primary external companion.
-11. Confirm user-visible status/error copy does not expose raw helper error text, Foundation Models `debugDescription`, prompts, hidden instructions, broad document excerpts, file paths, secrets, or provider internals.
-12. (Supervisor regression, optional) Build the fixture helper with `npm run build:apple-assist-helper:fixture` and run `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE=binaries/hazakura-apple-assist-helper-aarch64-apple-darwin cargo test apple_assist_supervisor --manifest-path src-tauri/Cargo.toml`.
+10. Choose `要約`, `続きの案`, or `章レビュー`; confirm it follows the same unsaved AI edit transaction / Diff review flow rather than a separate result-only display.
+11. Confirm Agent Window and Hazakura Local Assist Window still replace rather than coexist as the primary external companion.
+12. Confirm user-visible status/error copy does not expose raw helper error text, Foundation Models `debugDescription`, prompts, hidden instructions, broad document excerpts, file paths, secrets, or provider internals.
+13. (Supervisor regression, optional) Build the fixture helper with `npm run build:apple-assist-helper:fixture` and run `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE=binaries/hazakura-apple-assist-helper-aarch64-apple-darwin cargo test apple_assist_supervisor --manifest-path src-tauri/Cargo.toml`.
 
 Latest light manual note: on 2026-06-21, user-side built-app smoke
 confirmed the dedicated Hazakura Local Assist UI opened, the helper was
