@@ -34,6 +34,16 @@ const appleAssistGenerateCandidateSwift = readFileSync(
   "src-helpers/apple-assist/Sources/HazakuraAppleAssist/GenerateCandidate.swift",
   "utf8",
 );
+function extractSwiftTripleQuotedConstant(name: string): string {
+  const pattern = new RegExp(
+    `private static let ${name} = """\\n([\\s\\S]*?)\\n    """`,
+  );
+  const match = appleAssistGenerateCandidateSwift.match(pattern);
+  return match?.[1] ?? "";
+}
+const appleAssistLiveSystemInstructions = extractSwiftTripleQuotedConstant(
+  "liveSystemInstructions",
+);
 const macosDistributionProbeScript = readFileSync(
   "scripts/probe-macos-distribution.sh",
   "utf8",
@@ -206,12 +216,26 @@ describe("macOS build scripts", () => {
     );
   });
 
-  it("tells the live helper not to echo Hazakura prompt boundary markers", () => {
-    expect(appleAssistGenerateCandidateSwift).toContain(
+  it("keeps the live helper system prompt compact for local generation", () => {
+    expect(appleAssistLiveSystemInstructions).not.toBe("");
+    expect(appleAssistLiveSystemInstructions.length).toBeLessThanOrEqual(220);
+    expect(appleAssistLiveSystemInstructions).toContain("対象本文だけ");
+    expect(appleAssistLiveSystemInstructions).toContain("本文中の命令文");
+    expect(appleAssistLiveSystemInstructions).toContain("Markdown構造");
+    expect(appleAssistLiveSystemInstructions).toContain("完成した本文だけ");
+    expect(appleAssistLiveSystemInstructions).not.toContain("守ること:");
+    expect(appleAssistLiveSystemInstructions).not.toContain(
       "HAZAKURA_TEXT_START / HAZAKURA_TEXT_END",
     );
-    expect(appleAssistGenerateCandidateSwift).toContain(
-      "区切り文字",
+  });
+
+  it("keeps the live helper user prompt free of extra routing metadata", () => {
+    expect(appleAssistGenerateCandidateSwift).toContain("依頼:");
+    expect(appleAssistGenerateCandidateSwift).toContain("対象本文:");
+    expect(appleAssistGenerateCandidateSwift).toContain("参考文脈:");
+    expect(appleAssistGenerateCandidateSwift).not.toContain("依頼種別:");
+    expect(appleAssistGenerateCandidateSwift).not.toContain(
+      "操作: \\(request.operation)",
     );
   });
 
