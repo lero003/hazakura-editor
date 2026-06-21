@@ -53,7 +53,7 @@ Initial conceptual provider classes:
 
 Do not add `local-http`, MCP, arbitrary executable paths, provider-add UI, or generic tool/plugin registration without a fresh boundary review.
 
-Implementation note (v0.12 work-in-progress): the Preferences dialog now exposes this as a restart-applied shared outside companion-slot choice (`Hazakura Local Assist (Experimental)` / `CLI Agent` / `Off`). Selecting `CLI Agent` continues to use the existing Agent Workbench restart-required mode gate, consent, and allowlisted provider selection. Selecting `Hazakura Local Assist` switches the normal companion button to the Hazakura Local Assist window after restart and shows alpha / availability disclosure; it does not enable CLI launch, provider selection, or Agent Workbench consent.
+Implementation note (v0.29 pre-submission): the Preferences dialog now exposes this as a restart-applied shared outside companion-slot choice (`Hazakura Local Assist (Preview)` / `CLI Agent` / `Off`). Selecting `CLI Agent` continues to use the existing Agent Workbench restart-required mode gate, consent, and allowlisted provider selection. Selecting `Hazakura Local Assist` switches the normal companion button to the Hazakura Local Assist window after restart and shows preview / availability disclosure; it does not enable CLI launch, provider selection, or Agent Workbench consent.
 
 ## External Agent Workbench
 
@@ -78,7 +78,7 @@ Moving Agent Workbench into a detached window or separate surface does not weake
 
 ## Hazakura Local Assist
 
-Hazakura Local Assist is an **alpha / experimental** local writing-help surface. It is a possible replacement or alternative for some lightweight text-assist workflows after v0.11, but it is not the main AI feature and not a replacement for external agents or future local LLM runtimes.
+Hazakura Local Assist is a **preview** local writing-help surface. It is a possible replacement or alternative for some lightweight text-assist workflows after v0.11, but it is not the main AI feature and not a replacement for external agents or future local LLM runtimes.
 
 Apple documents the Foundation Models framework as access to the on-device language model that powers Apple Intelligence, with support for text understanding and generation tasks such as summarization, extraction, classification, and refinement. Apple also documents that availability must be checked at runtime because it depends on Apple Intelligence support, user settings, and model readiness.
 
@@ -91,7 +91,7 @@ For `Hazakura Editor`, Hazakura Local Assist should start as a document-writing 
 
 Short user-facing distinction:
 
-- **Hazakura Local Assist**: experimental on-device text help for selected text or the current writing context; useful for short summaries, rephrasing, heading / tag ideas, light cleanup, and small direct edits that remain unsaved and diff-reviewable.
+- **Hazakura Local Assist**: preview on-device text help for selected text or the current writing context; useful for short summaries, rephrasing, heading / tag ideas, light cleanup, and small direct edits that remain unsaved and diff-reviewable.
 - **External Agent Workbench**: explicit CLI-agent boundary for allowlisted external tools such as Codex / OpenCode / pi / Claude Code in a selected workspace; useful for agent-led development work, but outside the default Safe Editor trust boundary.
 
 The companion should work naturally with L Mode and accept rough writing requests:

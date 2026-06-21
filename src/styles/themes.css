@@ -175,11 +175,11 @@ html, body, #root, .app-shell,
 }
 
 /* 桜テーマ固有の微調整 / Sakura theme fine-tunes
-   preference-alpha-badge の "ALPHA / EXPERIMENTAL" は font-size
+   preference-preview-badge は font-size
    10px + uppercase で文字が詰まり気味。sakura の暖色背景上で
    呼吸を確保するため letter-spacing だけ広げる。repo の既存 CSS
    は基本 flat selector なので nested ではなくここで並べる。 */
-:root[data-theme="sakura"] .preference-alpha-badge {
+:root[data-theme="sakura"] .preference-preview-badge {
   letter-spacing: 0.08em;
 }
 

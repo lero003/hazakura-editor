@@ -10,7 +10,8 @@ Last reviewed: 2026-06-21 (v0.29 Hazakura Local Assist review triage)
 - `Hazakura Editor` is tagged at `v0.27.0` for the source / local-app
   release checkpoint. The published Mac App Store version remains
   `0.26.0` until a new App Store build is uploaded, approved, and
-  released.
+  released. Current package/app metadata is `0.29.0`; no `0.29.0`
+  submit-lane pkg has been generated yet.
 - User-facing app identity is capitalized as `Hazakura Editor`. The
   App Store preview bundle is `Hazakura Editor.app`; current docs and
   smoke paths should use that name rather than the older lowercase
@@ -95,12 +96,14 @@ Last reviewed: 2026-06-21 (v0.29 Hazakura Local Assist review triage)
   main-shell availability probe, safe default `none`, active preference
   gating for command palette / app menu, visible `Hazakura Local Assist`
   naming, softer Local Assist network wording, short probe timeout
-  separation, and helper error hygiene. 2026-06-21 user-side light
-  built-app smoke confirmed the dedicated Local Assist UI opens, the
-  helper is absent from Activity Monitor memory before opening the
-  companion, and a simple request can be generated/applied and checked
-  through the diff/update flow. Next, keep any remaining proof work on
-  formal signed submit-lane smoke and packaging boundaries. File/paste /
+  separation, helper error hygiene, preview-oriented user copy, clearer
+  Apple Intelligence availability guidance, and a content-sized companion
+  progress panel. 2026-06-21 user-side light built-app smoke confirmed
+  the dedicated Local Assist UI opens, the helper is absent from Activity
+  Monitor memory before opening the companion, and a simple request can be
+  generated/applied and checked through the diff/update flow. Next, keep
+  any remaining proof work on formal signed submit-lane smoke and
+  packaging boundaries. File/paste /
   multi-file proposal ingest remains deferred until a fresh boundary
   review reopens it.
 - Latest docs cleanup keeps current entry points lighter: README now
@@ -472,9 +475,17 @@ open Active UX Queue slice and close it as `implemented`,
   manual signed-build smoke remain outside the repository unless new
   evidence is explicitly recorded.
 - Latest v0.29 Hazakura Local Assist App Store-lane gate: source tests and
-  user-side light built-app smoke evidence is now recorded: dedicated
-  Local Assist UI, no helper in Activity Monitor before opening the
-  window, and simple request generation/apply with diff/update
+  local build evidence now cover the v0.29 version bump, `Preview` /
+  `プレビュー` Local Assist copy, light-user availability wording for
+  macOS 26+ / M1+ / Apple Intelligence / supported language-region, and
+  the companion progress-panel sizing. Commands run: `npm run test`,
+  `npm run typecheck`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`,
+  `cargo test --manifest-path src-tauri/Cargo.toml -- --test-threads=1`,
+  `npm run smoke:app-store-surface`, `npm run build:vite`,
+  `npm run build`, and Info.plist version inspection for the local
+  preview app. User-side light built-app smoke evidence is also recorded:
+  dedicated Local Assist UI, no helper in Activity Monitor before opening
+  the window, and simple request generation/apply with diff/update
   confirmation. This is useful pre-submission confidence, but it is not a
   substitute for formal signed submit-lane packaging / TestFlight /
   App Review proof.

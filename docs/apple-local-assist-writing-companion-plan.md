@@ -22,7 +22,7 @@ It is conceptually close to the detached Agent Window because it lives outside t
 
 not both at the same time. Treat this as a single external companion slot with different provider classes.
 
-Hazakura Local Assist is still document assistance, not a CLI agent. It is also an **alpha / experimental** lightweight text-assistance surface, not the main AI feature and not a replacement for External Agent Workbench, external AI agents, or future local LLM runtimes. It must not become command execution, tool calling, provider plugins, broad workspace indexing, or a general chat product.
+Hazakura Local Assist is still document assistance, not a CLI agent. It is also a **preview** lightweight text-assistance surface, not the main AI feature and not a replacement for External Agent Workbench, external AI agents, or future local LLM runtimes. It must not become command execution, tool calling, provider plugins, broad workspace indexing, or a general chat product.
 
 ## Experience Target
 
@@ -101,7 +101,7 @@ The first external Writing Companion is now implemented on `main`:
 
 - the detached Hazakura Local Assist window opens from the shared external companion slot
 - Agent Window and Hazakura Local Assist Window replace rather than coexist with each other
-- Preferences now expose the shared outside companion slot as a restart-applied `Hazakura Local Assist (Experimental)` / `CLI Agent` / `Off` choice, with CLI Agent retaining the existing Agent Workbench restart / consent / provider boundary
+- Preferences now expose the shared outside companion slot as a restart-applied `Hazakura Local Assist (Preview)` / `CLI Agent` / `Off` choice, with CLI Agent retaining the existing Agent Workbench restart / consent / provider boundary
 - the normal top-chrome companion button switches between Hazakura Local Assist and Agent according to the active setting for the current app launch
 - L Mode can open the companion without leaving the focused writing surface
 - rough requests call the bundled Hazakura Local Assist helper when Apple Foundation Models is locally available

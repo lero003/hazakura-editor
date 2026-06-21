@@ -43,9 +43,10 @@ Agent Workbench behind its existing boundary.
 - Bundle ID: `dev.hazakura.editor`
 - Published App Store version: `0.26.0` (reported released on 2026-06-20
   after App Review completion)
-- Current source / Developer version: `0.28.0`
+- Current source / Developer version: `0.29.0`
 - Latest generated local App Store package evidence: `0.28.0` build `26`
   (generated after the later top-chrome quieting pass)
+- Next App Store submit config build counter: `27`
 - App Store category: `Productivity`
 - Public Privacy Policy URL:
   `https://hazakura.dev/hazakura-editor/privacy/`
@@ -323,7 +324,7 @@ find "$APP/Contents/MacOS" -maxdepth 1 -type f -print
 Expected:
 
 - `CFBundleIdentifier` is `dev.hazakura.editor`
-- `CFBundleShortVersionString` is the current package version (`0.28.0`
+- `CFBundleShortVersionString` is the current package version (`0.29.0`
   for the next candidate)
 - `CFBundleVersion` is a positive integer higher than the last uploaded
   App Store Connect build

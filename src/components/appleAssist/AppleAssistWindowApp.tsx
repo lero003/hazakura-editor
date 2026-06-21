@@ -813,11 +813,11 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         `へんしゅう あんを はんえいしました: ${request}。ほぞん まえに さぶんで かくにん できます。`,
       applyButton: "おねがいする",
       availableDisclosure:
-        "この Mac だけで ぶんしょう の てなおしを てつだいます。えらんだ ところや いまの だんらくを たいしょうにし、けっかは ほぞん まえの へんしゅう あんとして はいります。",
+        "この Mac の なかで ぶんしょう の したがき や てなおしを てつだいます。けっかは ほぞん まえの へんしゅう あんとして はいり、さぶんで かくにん できます。",
       contextTooLongError:
         "しゅうへん ぶんしょ が ながすぎ ます。L Mode の たいしょう しゅうへん こんできすと の じょうげん (8000 もじ) を こえました。",
       disabledStatus:
-        "この せっしょで はざくら ろーかる あしす とは むこうです。Preferences > Assist Surface で はざくら ろーかる あしす と (じっけん) を えらび、あぷりを さいきどうして ください。",
+        "この せっしょで はざくら ろーかる あしす とは むこうです。Preferences > Assist Surface で はざくら ろーかる あしす と (ぷれびゅー) を えらび、あぷりを さいきどうして ください。",
       emptyRequestError:
         "まずは おねがいを かいてください。れい: ととのえて / しぜんに / つづきを / こうせい。",
       generatingButton: "おねがい中...",
@@ -828,10 +828,10 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       guardrailError:
         "あっぷる ふぁうんでーしょん もでるず が かーどれーる いはん として この おねがひを きょひ しました。べつ の おねがひ で さいしこう してください。",
       localRuntimeUnavailable: (reason) =>
-        `はざくら ろーかる あしす とは つかえません: ${reason}。System Settings > Apple Intelligence & Siri で あっぷる いんてりじぇんす が ゆうこうか、げんざいの あぷり ことば が ふぁうんでーしょん もでるず に たいおうしているか を かくにん してください。`,
+        `はざくら ろーかる あしす とは つかえません: ${reason}。めやすは macOS 26 いこう、M1 いこうの Mac、あっぷる いんてりじぇんす の ゆうこうか、たいおう げんご / ちいき です。くわしくは あっぷる こうしき の Apple Intelligence あんないを かくにん してください。`,
       longRunningStatus:
         "はざくら ろーかる あしす と は まだ さぎょう ちゅう。ふぁうんでーしょん もでるず は ふつう すうびょうで おうとうしますが、むこうの ときは めいん えでぃた の すてーたす を かくにんするか、うぃんどう を ひらきなおして ください。",
-      modeLabel: "Alpha",
+      modeLabel: "ぷれびゅー",
       noActiveDocument:
         "めいん えでぃた に ひらいている ふみが ありません。Markdown / テキスト ふぁいる を ひらいて ください。",
       noTarget:
@@ -852,7 +852,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       selectionTooLongError:
         "えらんだ ところが ながすぎ ます（さいだい 4000 もじ）。あっぷる ふぁうんでーしょん もでるず の こんできすと まど に おさまらないため、もう すこし ちいさく えらんで ください。",
       sendingRequest: "おねがいを うけつけました...",
-      subtitle: "けいりょう な おんではばいす ぶんしょう ほじょ",
+      subtitle: "この Mac で うごく ぶんしょう さぽーと",
       targetStaleError:
         "たいしょう が ふるく なって います。あっぷる あしす と うぃんどう を ひらきなおすか、めいん えでぃた で たいしょう を えらびなおして ください。",
       targetReadFailed:
@@ -870,7 +870,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       unknownError: (raw) =>
         `はざくら ろーかる あしす と の せいせい に しっぱい しました: ${raw}`,
       unsupportedStatus:
-        "この はんきょうで はざくら ろーかる あしす とは つかえません。macOS 26 いこう と、この Mac で ゆうこうかした あっぷる いんてりじぇんす と、ふぁうんでーしょん もでるず たいおう の ことば / ろけーる が ひつようです。",
+        "この はんきょうで はざくら ろーかる あしす とは つかえません。macOS 26 いこう、M1 いこうの Mac、この Mac で ゆうこうかした あっぷる いんてりじぇんす、たいおう げんご / ちいき が ひつようです。",
       workingLocally: "この Mac で ろーかる しょり ちゅう (そとの AI さーびす は つかいません)",
       // v0.17 operation-feedback panel copy.
       feedbackHeading: "すすみぐあい",
@@ -924,11 +924,11 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         `編集案を反映しました: ${request}。保存前に差分で確認できます。`,
       applyButton: "依頼する",
       availableDisclosure:
-        "この Mac 上で文章の手直しを手伝います。選択範囲や現在の段落を対象にし、結果は未保存の編集案として反映します。保存前に差分で確認できます。",
+        "このMac上で文章の下書きや手直しを支援します。結果は未保存の編集案として反映され、保存前に差分で確認できます。",
       contextTooLongError:
         "周辺の文書が長すぎます。L Mode の対象周辺コンテキスト上限（8000 文字）を超えました。",
       disabledStatus:
-        "このセッションでは Hazakura Local Assist は無効です。Preferences > Assist Surface で outside companion slot を「Hazakura Local Assist (Experimental)」に切り替え、アプリを再起動してください。",
+        "このセッションでは Hazakura Local Assist は無効です。Preferences > Assist Surface で outside companion slot を「Hazakura Local Assist (プレビュー)」に切り替え、アプリを再起動してください。",
       emptyRequestError:
         "まずは依頼内容を入力してください。例: 「整えて」「自然にして」「続きを書いて」「校正して」。",
       generatingButton: "依頼中...",
@@ -939,10 +939,10 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       guardrailError:
         "Apple Foundation Models がこの依頼をガードレール違反として拒否しました。別の依頼文で再試行してください。",
       localRuntimeUnavailable: (reason) =>
-        `Hazakura Local Assist は使えません: ${reason}。System Settings > Apple Intelligence & Siri で Apple Intelligence が有効か、現在のアプリ言語が Foundation Models に対応しているかを確認してください。`,
+        `Hazakura Local Assist は使えません: ${reason}。目安として macOS 26 以降、M1 以降の Mac、Apple Intelligence の有効化、対応言語 / 地域が必要です。詳しくは Apple 公式の Apple Intelligence 案内を確認してください。`,
       longRunningStatus:
         "Hazakura Local Assist はまだ処理中です。Foundation Models は通常数秒で応答しますが、応答がない場合はメインエディタ下部のステータスを確認するか、Hazakura Local Assist ウィンドウを開き直してください。",
-      modeLabel: "Alpha",
+      modeLabel: "プレビュー",
       noActiveDocument:
         "メインエディタに開いている文書がありません。Markdown / テキストファイルを開いてください。",
       noTarget:
@@ -963,7 +963,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       selectionTooLongError:
         "選択範囲が大きすぎます（最大 4000 文字）。Apple Foundation Models のコンテキスト窓に収まらないため、もう少し小さく選択してください。",
       sendingRequest: "依頼を受け付けました...",
-      subtitle: "軽量なオンデバイス文章補助",
+      subtitle: "このMacで動く文章サポート",
       targetStaleError:
         "対象が古くなっています。Hazakura Local Assist ウィンドウを開き直すか、メインエディタで対象を選び直してください。",
       targetReadFailed:
@@ -981,7 +981,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       unknownError: (raw) =>
         `Hazakura Local Assist の生成に失敗しました: ${raw}`,
       unsupportedStatus:
-        "この環境では Hazakura Local Assist は使えません。macOS 26 以降と、この Mac で有効化された Apple Intelligence、そして Foundation Models 対応の言語 / ロケールが必要です。",
+        "この環境では Hazakura Local Assist は使えません。macOS 26 以降、M1 以降の Mac、この Mac で有効化された Apple Intelligence、対応言語 / 地域が必要です。",
       workingLocally: "この Mac 上でローカル処理中（外部 AI サービスは使いません）",
       // v0.17 operation-feedback panel copy.
       feedbackHeading: "処理の流れ",
@@ -1034,11 +1034,11 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       `Draft edit applied: ${request}. Review the diff before saving.`,
     applyButton: "Send request",
     availableDisclosure:
-      "Hazakura Local Assist helps revise the selected text or current paragraph on this Mac. Results land as an unsaved draft edit, so you can review the diff before saving.",
+      "Hazakura Local Assist helps draft or revise writing on this Mac. Results land as an unsaved draft edit, so you can review the diff before saving.",
     contextTooLongError:
       "Document context is too long (L Mode harness caps surrounding text at 8000 characters). Pick a tighter target or break the change into smaller requests.",
     disabledStatus:
-      "Hazakura Local Assist is disabled in this app session. Open Preferences > Assist Surface and switch the outside companion slot to 'Hazakura Local Assist (Experimental)'. Restart the app to apply.",
+      "Hazakura Local Assist is disabled in this app session. Open Preferences > Assist Surface and switch the outside companion slot to 'Hazakura Local Assist (Preview)'. Restart the app to apply.",
     emptyRequestError:
       "Type what you want changed first. Examples: 'Make it cleaner', 'Continue this', 'Proofread this'.",
     generatingButton: "Sending...",
@@ -1049,10 +1049,10 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     guardrailError:
       "Apple Foundation Models refused this request because it hit a guardrail. Try a different request.",
     localRuntimeUnavailable: (reason) =>
-      `Hazakura Local Assist is unavailable: ${reason}. Verify Apple Intelligence is on in System Settings > Apple Intelligence & Siri, and that the current app language is supported by Foundation Models.`,
+      `Hazakura Local Assist is unavailable: ${reason}. As a guide, it needs macOS 26 or later, a Mac with M1 or later, Apple Intelligence turned on, and a supported language and region. Check Apple's Apple Intelligence support information for current requirements.`,
     longRunningStatus:
       "Hazakura Local Assist is still working. Foundation Models usually returns in a few seconds; if it has not, check the main editor status line for the underlying error, or re-open the Hazakura Local Assist window.",
-    modeLabel: "Alpha",
+    modeLabel: "Preview",
     noActiveDocument:
       "No active document is open in the main editor. Open a Markdown or text file first.",
     noTarget:
@@ -1094,7 +1094,7 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     unknownError: (raw) =>
       `Hazakura Local Assist generation failed: ${raw}`,
     unsupportedStatus:
-      "Hazakura Local Assist is not supported in this environment. It needs macOS 26 or later and Apple Intelligence turned on for this Mac, with a Foundation Models-supported language and locale.",
+      "Hazakura Local Assist is not supported in this environment. It needs macOS 26 or later, a Mac with M1 or later, Apple Intelligence turned on for this Mac, and a supported language and region.",
     workingLocally: "Working locally on this Mac (no third-party AI service)",
     // v0.17 operation-feedback panel copy.
     feedbackHeading: "Progress",

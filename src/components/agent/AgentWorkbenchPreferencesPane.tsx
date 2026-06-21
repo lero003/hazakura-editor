@@ -117,8 +117,8 @@ export function AgentWorkbenchPreferencesPane({
         >
           <div className="preference-section-title-row">
             <h3>{copy.appleHeading}</h3>
-            <span className="preference-alpha-badge">
-              {copy.appleExperimentalLabel}
+            <span className="preference-preview-badge">
+              {copy.applePreviewLabel}
             </span>
           </div>
           <p className="preference-note">{copy.appleDescription}</p>

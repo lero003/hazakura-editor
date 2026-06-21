@@ -14,7 +14,7 @@ Hazakura Local Assist has moved from fixture-only plumbing to a live local previ
 - **Live binding** — the helper uses `SystemLanguageModel.default.availability` for probe and `LanguageModelSession.respond` for bounded candidate generation when Apple Foundation Models is available on the current Mac.
 - **Writing Companion UX** — the current product direction is the external Writing Companion / Assist Window in [Hazakura Local Assist Writing Companion Plan](apple-local-assist-writing-companion-plan.md): useful in normal editor and L Mode, tolerant of rough writing requests, and able to make explicit unsaved AI edit transactions with Diff / history review.
 - **Safe Editor fallback** — live generation depends on macOS 26+ Apple Foundation Models availability and local Apple Intelligence state. Safe Editor remains usable when Hazakura Local Assist is unavailable or unsupported.
-- **Alpha positioning** — Hazakura Local Assist is an experimental lightweight text-assistance feature. It is not the main AI feature and not a replacement for External Agent Workbench, external AI agents, future local LLM runtimes, or advanced review tools.
+- **Preview positioning** — Hazakura Local Assist is a preview lightweight text-assistance feature. It is not the main AI feature and not a replacement for External Agent Workbench, external AI agents, future local LLM runtimes, or advanced review tools.
 
 What is **not** done yet:
 
@@ -181,7 +181,7 @@ or External Agent Workbench
 But the trust boundaries stay different:
 
 - **Safe Editor** remains the default text editor.
-- **Hazakura Local Assist** is experimental lightweight document-writing help only: current writing context in, candidate text or an AI edit transaction out.
+- **Hazakura Local Assist** is preview lightweight document-writing help only: current writing context in, candidate text or an AI edit transaction out.
 - **External Agent Workbench** remains the separate CLI-agent trust boundary.
 
 Implementation may reuse Agent Workbench patterns such as active-vs-preference state, restart-required changes, availability probes, and explicit consent. It must not describe Hazakura Local Assist as a CLI agent, tool-calling automation layer, shell, provider plugin, or automatic edit system.
@@ -191,19 +191,19 @@ Implementation may reuse Agent Workbench patterns such as active-vs-preference s
 Preferred labels:
 
 - primary display name: **Hazakura Local Assist**
-- settings option: **Hazakura Local Assist (Experimental)**
-- status / badge: **Alpha** or **Experimental**
+- settings option: **Hazakura Local Assist (Preview)**
+- status / badge: **Preview** / **プレビュー**
 
 Short settings explanation:
 
 ```txt
-Hazakura Local Assist is an experimental on-device writing helper for Apple Intelligence-capable environments. Use it for lightweight text assistance such as short summaries, rephrasing, heading ideas, tag suggestions, and light cleanup. Output quality may vary, and this feature may change or be removed.
+Hazakura Local Assist is a preview on-device writing helper for Macs that can use Apple Intelligence. As a guide, it needs macOS 26 or later, a Mac with M1 or later, Apple Intelligence turned on, and a supported language and region. Use it for lightweight text assistance such as short summaries, rephrasing, heading ideas, tag suggestions, and light cleanup.
 ```
 
 Japanese UI explanation:
 
 ```txt
-Hazakura Local Assist は、Apple Intelligence 対応環境で利用できる実験的なオンデバイス文章補助です。短い要約、言い換え、見出し案、タグ候補、軽い整形に利用できます。出力品質は安定しない場合があり、この機能は今後変更または削除される可能性があります。
+Hazakura Local Assist は、Apple Intelligence が使える Mac で動くプレビュー版の文章補助です。目安として macOS 26 以降、M1 以降の Mac、Apple Intelligence の有効化、対応言語 / 地域が必要です。短い要約、言い換え、見出し案、タグ候補、軽い整形に利用できます。
 ```
 
 Short distinction for users:
@@ -213,16 +213,16 @@ Short distinction for users:
 
 Do not use UI wording that implies Hazakura Local Assist is a general "AI Assistant", a coding agent, an autonomous reviewer, or a replacement for external agents.
 
-## Experimental Feature Contract
+## Preview Feature Contract
 
-Treat `apple-local` as an experimental Assist Surface provider:
+Treat `apple-local` as a preview Assist Surface provider:
 
 - It remains off unless selected in Assist Surface settings and restart-applied.
-- The settings UI must show `Alpha` / `Experimental` labeling and availability state.
+- The settings UI must show `Preview` / `プレビュー` labeling and availability state.
 - Availability must be probed at runtime; unavailable / unsupported / language-limited states must be shown in the settings and companion surfaces.
 - It must not fall back to network LLMs, hidden fixtures, external CLI agents, or future custom providers.
 - Candidate generation must stay user-initiated, bounded to the current writing context, and recorded as an unsaved AI edit transaction when it changes the buffer.
-- The feature may change or be removed while it remains alpha.
+- The feature may change while it remains preview.
 
 ## Initial Hazakura Local Assist Scope
 

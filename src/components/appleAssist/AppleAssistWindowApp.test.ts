@@ -127,8 +127,9 @@ describe("getAppleAssistWindowCopy", () => {
         }
       });
 
-      it("labels the mode as Alpha in every language", () => {
-        expect(copy.modeLabel).toBe("Alpha");
+      it("labels the mode as a preview instead of an experimental alpha", () => {
+        expect(copy.modeLabel).toMatch(/Preview|プレビュー|ぷれびゅー/);
+        expect(copy.modeLabel).not.toMatch(/Alpha|Experimental|実験/);
       });
 
       // v0.17 operation-feedback panel: every lifecycle
@@ -185,6 +186,13 @@ describe("getAppleAssistWindowCopy", () => {
     expect(combined).not.toContain("Apple Local Assist");
   });
 
+  it("does not expose alpha or experimental wording in user-facing window copy", () => {
+    for (const lang of ["en", "ja", "kana"] as const) {
+      const combined = JSON.stringify(getAppleAssistWindowCopy(lang));
+      expect(combined).not.toMatch(/Alpha|Experimental|実験/);
+    }
+  });
+
   it("uses different default apply buttons per language (no en bleed-through)", () => {
     const en = getAppleAssistWindowCopy("en").applyButton;
     const ja = getAppleAssistWindowCopy("ja").applyButton;
@@ -227,7 +235,7 @@ describe("getAppleAssistWindowCopy", () => {
     expect(ja.selectionTooLongError).toMatch(/4000/);
     expect(ja.contextTooLongError).toMatch(/8000/);
     expect(ja.disabledStatus).toMatch(/Preferences|Assist Surface/);
-    expect(ja.unsupportedStatus).toMatch(/macOS 26|Apple Intelligence/);
+    expect(ja.unsupportedStatus).toMatch(/macOS 26|M1|Apple Intelligence|対応言語/);
   });
 });
 

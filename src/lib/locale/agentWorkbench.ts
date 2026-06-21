@@ -11,7 +11,7 @@ export type AgentWorkbenchCopy = {
   assistSurfaceRestartRequired: string;
   appleHeading: string;
   appleSectionLabel: string;
-  appleExperimentalLabel: string;
+  applePreviewLabel: string;
   appleDescription: string;
   appleFixtureStatus: string;
   appleLiveStatus: string;
@@ -52,19 +52,19 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
         surfaceSectionLabel: "外部アシストの種類",
         assistSurfaceControl: "外部アシスト",
         assistSurfaceNone: "使わない",
-        assistSurfaceApple: "Hazakura Local Assist (実験的)",
+        assistSurfaceApple: "Hazakura Local Assist (プレビュー)",
         assistSurfaceExternalCli: "CLI Agent",
         assistSurfaceRestartRequired:
           "アシストの種類は再起動後に切り替わります。",
         appleHeading: "Hazakura Local Assist",
         appleSectionLabel: "Hazakura Local Assist の状態と注意事項",
-        appleExperimentalLabel: "Alpha / Experimental",
+        applePreviewLabel: "プレビュー",
         appleDescription:
-          "Apple Intelligence 対応環境で利用できる実験的なオンデバイス文章補助です。短い要約、言い換え、見出し案、タグ候補、軽い整形を目的としています。",
+          "Apple Intelligence が使える Mac で動くプレビュー版の文章補助です。目安として macOS 26 以降、M1 以降の Mac、Apple Intelligence の有効化、対応言語 / 地域が必要です。詳しい条件は Apple 公式の Apple Intelligence 案内を確認してください。",
         appleFixtureStatus:
           "Hazakura Local Assist は現在利用できません。",
         appleLiveStatus:
-          "この Mac では Hazakura Local Assist をアルファ機能として利用できます。",
+          "この Mac では Hazakura Local Assist をプレビュー機能として利用できます。",
         appleUnavailablePrefix:
           "この Mac では Hazakura Local Assist をまだ利用できません: ",
         appleUnsupportedStatus:
@@ -73,6 +73,7 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
           "Hazakura Local Assist は軽い文章補助であり、外部 AI エージェントや高度なレビュー機能の代替ではありません。",
           "コードレビュー、複数ファイルをまたぐ理解、長文全体の構成改善、専門的な推論には向きません。",
           "本文への変更は未保存の AI edit transaction として記録し、差分で確認できます。",
+          "Apple Intelligence の対応状況は macOS、Mac のモデル、言語、地域によって変わることがあります。",
           "自動保存、背景での書き換え、ワークスペース全体の解析は行いません。",
         ],
         modeHeading: "モード",
@@ -117,19 +118,19 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
         surfaceSectionLabel: "External assist type",
         assistSurfaceControl: "External assist",
         assistSurfaceNone: "Off",
-        assistSurfaceApple: "Hazakura Local Assist (Experimental)",
+        assistSurfaceApple: "Hazakura Local Assist (Preview)",
         assistSurfaceExternalCli: "CLI Agent",
         assistSurfaceRestartRequired:
           "The assist type changes after restarting Hazakura Editor.",
         appleHeading: "Hazakura Local Assist",
         appleSectionLabel: "Hazakura Local Assist status and notes",
-        appleExperimentalLabel: "Alpha / Experimental",
+        applePreviewLabel: "Preview",
         appleDescription:
-          "Experimental on-device writing help for Apple Intelligence-capable environments. It is intended for short summaries, rephrasing, heading ideas, tag suggestions, and light cleanup.",
+          "Preview on-device writing help for Macs that can use Apple Intelligence. As a guide, it needs macOS 26 or later, an Apple silicon Mac with M1 or later, Apple Intelligence turned on, and a supported language and region. Check Apple's Apple Intelligence support information for current requirements.",
         appleFixtureStatus:
           "Hazakura Local Assist is not currently available.",
         appleLiveStatus:
-          "Hazakura Local Assist is available on this Mac as an alpha feature.",
+          "Hazakura Local Assist is available on this Mac as a preview feature.",
         appleUnavailablePrefix:
           "Hazakura Local Assist is not available yet on this Mac: ",
         appleUnsupportedStatus:
@@ -138,6 +139,7 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
           "Hazakura Local Assist is lightweight text assistance, not a replacement for external AI agents or advanced review tools.",
           "It is not suited for code review, multi-file understanding, long-document restructuring, autonomous agent work, or advanced reasoning.",
           "Text changes are recorded as unsaved AI edit transactions and remain reviewable through diff.",
+          "Apple Intelligence availability may vary by macOS version, Mac model, language, and region.",
           "No auto-save, background rewriting, or broad workspace analysis is performed.",
         ],
         modeHeading: "Mode",

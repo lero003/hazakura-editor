@@ -49,10 +49,12 @@ describe("AgentWorkbenchPreferencesPane", () => {
     expect(
       screen.getByRole("heading", { name: "Hazakura Local Assist" }),
     ).toBeTruthy();
-    expect(screen.getByText("Alpha / Experimental")).toBeTruthy();
+    expect(screen.getByText("Preview")).toBeTruthy();
     expect(
-      screen.getByText(/experimental on-device writing help/i),
+      screen.getByText(/preview on-device writing help/i),
     ).toBeTruthy();
+    expect(screen.getByText(/macOS 26 or later/i)).toBeTruthy();
+    expect(screen.getByText(/Apple silicon Mac/i)).toBeTruthy();
     expect(screen.getByText(/Hazakura Local Assist is not available yet/)).toBeTruthy();
     expect(
       screen.queryByLabelText("Agent Workbench provider"),
@@ -109,7 +111,7 @@ describe("AgentWorkbenchPreferencesPane", () => {
 
     expect(screen.queryByRole("option", { name: "CLI Agent" })).toBeNull();
     expect(
-      screen.getByRole("option", { name: "Hazakura Local Assist (Experimental)" }),
+      screen.getByRole("option", { name: "Hazakura Local Assist (Preview)" }),
     ).toBeTruthy();
     expect(screen.getByRole("option", { name: "Off" })).toBeTruthy();
     expect(
@@ -134,5 +136,22 @@ describe("AgentWorkbenchPreferencesPane", () => {
         "The assist type changes after restarting Hazakura Editor.",
       ),
     ).toBeTruthy();
+  });
+
+  it("uses preview wording in Japanese without literal experimental copy", () => {
+    render(
+      <AgentWorkbenchPreferencesPane
+        {...baseProps}
+        assistSurfacePreference="apple-local"
+        copy={getAgentWorkbenchCopy("ja")}
+      />,
+    );
+
+    const text = document.body.textContent ?? "";
+    expect(text).toContain("Hazakura Local Assist (プレビュー)");
+    expect(text).toContain("macOS 26 以降");
+    expect(text).toContain("M1 以降");
+    expect(text).toContain("Apple Intelligence");
+    expect(text).not.toMatch(/実験的|Experimental|Alpha/);
   });
 });

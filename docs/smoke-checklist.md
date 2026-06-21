@@ -349,7 +349,7 @@ Run when `src/lib/tauri/appleAssist.ts`, `src-tauri/src/commands/apple_assist.rs
 5. Confirm the Settings / Agent Workbench Preferences surface does not list Hazakura Local Assist as a CLI agent provider — it is a separate Assist Surface provider class.
 6. Launch the built app and confirm `hazakura-apple-assist-helper` is not running before the Local Assist surface is explicitly opened. Opening the command palette alone must not spawn the helper or show Foundation Models errors.
 7. Confirm no menu entry, status bar item, autosave path, or background timer runs Hazakura Local Assist generation without an explicit user request.
-8. In the built app, select `Hazakura Local Assist (Experimental)`, restart if prompted, open the companion from normal editor, issue a rough request, and confirm the buffer becomes dirty without auto-saving.
+8. In the built app, select `Hazakura Local Assist (Preview)`, restart if prompted, open the companion from normal editor, issue a rough request, and confirm the buffer becomes dirty without auto-saving.
 9. Repeat item 8 in L Mode. Confirm the compact AI-change affordance appears and `差分を開く` / `差分を閉じる` works.
 10. Confirm Agent Window and Hazakura Local Assist Window still replace rather than coexist as the primary external companion.
 11. Confirm user-visible status/error copy does not expose raw helper error text, Foundation Models `debugDescription`, prompts, hidden instructions, broad document excerpts, file paths, secrets, or provider internals.

@@ -236,7 +236,7 @@
   gap: 8px;
 }
 
-.preference-alpha-badge {
+.preference-preview-badge {
   background: var(--accent-soft);
   border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
   border-radius: 999px;

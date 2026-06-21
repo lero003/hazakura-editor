@@ -6,13 +6,15 @@
   },
   "bundle": {
     "category": "Productivity",
-    "externalBin": ["../binaries/hazakura-apple-assist-helper"],
+    "externalBin": [
+      "../binaries/hazakura-apple-assist-helper"
+    ],
     "macOS": {
       "entitlements": "./entitlements/mac-app-store.entitlements",
       "files": {
         "embedded.provisionprofile": "./profiles/Hazakura_Editor_Mac_App_Store_Profile.provisionprofile"
       },
-      "bundleVersion": "26"
+      "bundleVersion": "27"
     }
   }
 }
