@@ -23,9 +23,9 @@ use tauri::WebviewWindowBuilder;
 // content backgrounds.
 const THEME_BACKGROUND_COLORS_JSON: &str = include_str!("../../../src/lib/theme-palette.json");
 pub(crate) const APPLE_ASSIST_WINDOW_DEFAULT_WIDTH: f64 = 480.0;
-pub(crate) const APPLE_ASSIST_WINDOW_DEFAULT_HEIGHT: f64 = 560.0;
+pub(crate) const APPLE_ASSIST_WINDOW_DEFAULT_HEIGHT: f64 = 640.0;
 pub(crate) const APPLE_ASSIST_WINDOW_MIN_WIDTH: f64 = 420.0;
-pub(crate) const APPLE_ASSIST_WINDOW_MIN_HEIGHT: f64 = 480.0;
+pub(crate) const APPLE_ASSIST_WINDOW_MIN_HEIGHT: f64 = 540.0;
 
 #[derive(serde::Deserialize)]
 struct ThemeBackgroundColors {

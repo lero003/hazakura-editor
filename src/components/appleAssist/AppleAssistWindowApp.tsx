@@ -313,15 +313,10 @@ export function AppleAssistWindowApp() {
         }
         clearGenerationFallback();
         setBusy(false);
-        setStatus(
-          payload.phase === "completed"
-            ? copy.appliedStatus(payload.request)
-            : payload.message,
-        );
-        setError(payload.phase === "failed" ? payload.message : null);
-        pushFeedback({
-          kind: payload.phase === "completed" ? "applied" : "failed",
-        });
+        const presentation = getApplyStatusPresentation(payload, copy);
+        setStatus(presentation.status);
+        setError(presentation.error);
+        pushFeedback({ kind: presentation.feedbackKind });
       },
     )
       .then((handle) => {
@@ -679,6 +674,7 @@ export type AppleAssistWindowCopy = {
   generatingButton: string;
   generatingChange: string;
   generatingInMain: (request: string) => string;
+  failedStatus: string;
   guardrailError: string;
   localRuntimeUnavailable: (reason: string) => string;
   longRunningStatus: string;
@@ -746,6 +742,31 @@ export type OperationFeedbackPayload = {
   targetKind?: AppleAssistTargetKind;
   targetChars?: number;
 };
+
+export type ApplyStatusPresentation = {
+  status: string;
+  error: string | null;
+  feedbackKind: Extract<OperationFeedbackKind, "applied" | "failed">;
+};
+
+export function getApplyStatusPresentation(
+  payload: AppleAssistApplyStatusEvent,
+  copy: AppleAssistWindowCopy,
+): ApplyStatusPresentation {
+  if (payload.phase === "completed") {
+    return {
+      status: copy.appliedStatus(payload.request),
+      error: null,
+      feedbackKind: "applied",
+    };
+  }
+
+  return {
+    status: copy.failedStatus,
+    error: payload.message,
+    feedbackKind: "failed",
+  };
+}
 
 function renderAvailabilityMessage(
   availability: AppleAssistAvailability,
@@ -871,6 +892,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         "この Mac で へんしゅう あんを つくっています。ほぞん まえに さぶんで かくにん できます。",
       generatingInMain: () =>
         "へんしゅう あんを つくっています。ほぞん まえに さぶんで かくにん できます。",
+      failedStatus:
+        "おねがいに しっぱいしました。下の めっせーじを みてください。",
       guardrailError:
         "あっぷる ふぁうんでーしょん もでるず が かーどれーる いはん として この おねがひを きょひ しました。べつ の おねがひ で さいしこう してください。",
       localRuntimeUnavailable: (reason) =>
@@ -978,6 +1001,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
         "この Mac 上で編集案を作っています。保存前に差分で確認できます。",
       generatingInMain: () =>
         "編集案を作っています。保存前に差分で確認できます。",
+      failedStatus:
+        "依頼に失敗しました。下のメッセージを確認してください。",
       guardrailError:
         "Apple Foundation Models がこの依頼をガードレール違反として拒否しました。別の依頼文で再試行してください。",
       localRuntimeUnavailable: (reason) =>
@@ -1084,6 +1109,8 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       "Creating a draft edit on this Mac. Review the diff before saving.",
     generatingInMain: () =>
       "Creating a draft edit. Review the diff before saving.",
+    failedStatus:
+      "Request failed. Check the message below.",
     guardrailError:
       "Apple Foundation Models refused this request because it hit a guardrail. Try a different request.",
     localRuntimeUnavailable: (reason) =>

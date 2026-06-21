@@ -49,6 +49,22 @@ describe("apple-assist-window.css", () => {
     expect(feedbackHeader).toMatch(/border-bottom:\s*1px solid/);
   });
 
+  it("uses flat helper backgrounds for Sakura and Shokou instead of inheriting strong app-shell gradients", () => {
+    const sakuraShell = ruleBody(
+      css,
+      ':root[data-theme="sakura"] .apple-assist-window-shell',
+    );
+    const shokouShell = ruleBody(
+      css,
+      ':root[data-theme="shokou"] .apple-assist-window-shell',
+    );
+
+    expect(sakuraShell).toMatch(/background:\s*#faeef2/);
+    expect(shokouShell).toMatch(/background:\s*#eef5fb/);
+    expect(sakuraShell).not.toMatch(/gradient/);
+    expect(shokouShell).not.toMatch(/gradient/);
+  });
+
   it("keeps the feedback log scrollable instead of expanding the whole window", () => {
     const feedback = ruleBody(css, ".apple-assist-window-feedback");
     const body = ruleBody(css, ".apple-assist-feedback-body");

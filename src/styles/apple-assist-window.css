@@ -28,6 +28,14 @@
   overflow-y: auto;
 }
 
+:root[data-theme="sakura"] .apple-assist-window-shell {
+  background: #faeef2;
+}
+
+:root[data-theme="shokou"] .apple-assist-window-shell {
+  background: #eef5fb;
+}
+
 .apple-assist-window-header {
   display: flex;
   flex-direction: column;

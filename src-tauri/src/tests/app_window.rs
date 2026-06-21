@@ -35,9 +35,9 @@ fn agent_window_background_color_falls_back_to_dark_for_unknown_theme() {
 #[test]
 fn apple_assist_window_uses_compact_vertical_tool_window_size() {
     assert_eq!(APPLE_ASSIST_WINDOW_DEFAULT_WIDTH, 480.0);
-    assert_eq!(APPLE_ASSIST_WINDOW_DEFAULT_HEIGHT, 560.0);
+    assert_eq!(APPLE_ASSIST_WINDOW_DEFAULT_HEIGHT, 640.0);
     assert_eq!(APPLE_ASSIST_WINDOW_MIN_WIDTH, 420.0);
-    assert_eq!(APPLE_ASSIST_WINDOW_MIN_HEIGHT, 480.0);
+    assert_eq!(APPLE_ASSIST_WINDOW_MIN_HEIGHT, 540.0);
 
     let source = include_str!("../commands/app_window.rs");
     assert!(

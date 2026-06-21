@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   classifyApplyError,
+  getApplyStatusPresentation,
   getAppleAssistWindowCopy,
   type AppleAssistWindowCopy,
   type OperationFeedbackKind,
@@ -34,6 +35,7 @@ const REQUIRED_KEYS: ReadonlyArray<keyof AppleAssistWindowCopy> = [
   "contextTooLongError",
   "disabledStatus",
   "emptyRequestError",
+  "failedStatus",
   "generatingButton",
   "generatingChange",
   "generatingInMain",
@@ -361,5 +363,46 @@ describe("classifyApplyError", () => {
     );
     expect(message).toBe(en.selectionTooLongError);
     expect(message).toMatch(/4000/);
+  });
+});
+
+describe("getApplyStatusPresentation", () => {
+  const copy = getAppleAssistWindowCopy("en");
+
+  it("keeps failed event detail in error only so the footer does not duplicate it", () => {
+    const raw =
+      "Hazakura Local Assist generation failed: Foundation Models input is too large for this request. Try a smaller selection.";
+
+    const presentation = getApplyStatusPresentation(
+      {
+        phase: "failed",
+        message: raw,
+        request: "Make this more natural.",
+        emittedAtMs: 1,
+      },
+      copy,
+    );
+
+    expect(presentation.status).toBe(copy.failedStatus);
+    expect(presentation.status).not.toBe(raw);
+    expect(presentation.error).toBe(raw);
+    expect(presentation.feedbackKind).toBe("failed");
+  });
+
+  it("keeps completed events as a short success status without an error", () => {
+    const presentation = getApplyStatusPresentation(
+      {
+        phase: "completed",
+        message: "Hazakura Local Assist applied: Rewrite",
+        request: "Rewrite",
+        emittedAtMs: 1,
+        shouldApplyToDocument: true,
+      },
+      copy,
+    );
+
+    expect(presentation.status).toBe(copy.appliedStatus("Rewrite"));
+    expect(presentation.error).toBeNull();
+    expect(presentation.feedbackKind).toBe("applied");
   });
 });
