@@ -76,13 +76,20 @@ describe("preview.css", () => {
     const body = ruleBody(".ebook-pane .ebook-reader-chrome");
     const buttonBody = ruleBody(".ebook-pane .ebook-reader-button");
     const statusBody = ruleBody(".ebook-pane .ebook-reader-status");
+    const floatingBody = ruleBody(".ebook-pane .ebook-reader-floating-action");
 
     expect(body).toMatch(/position:\s*sticky/);
     expect(body).toMatch(/height:\s*72px/);
     expect(body).toMatch(/grid-template-columns:\s*minmax\(104px,\s*128px\) minmax\(0,\s*1fr\) minmax\(104px,\s*128px\)/);
-    expect(ruleBody(".ebook-pane .ebook-reader-chrome-with-focus")).toMatch(/grid-template-columns:\s*minmax\(84px,\s*118px\) minmax\(0,\s*1fr\) minmax\(84px,\s*118px\) minmax\(96px,\s*128px\)/);
+    expect(ruleBody(".ebook-pane .ebook-reader-chrome-with-focus")).toBe("");
     expect(statusBody).toMatch(/align-self:\s*center/);
     expect(buttonBody).toMatch(/width:\s*100%/);
+    expect(floatingBody).toMatch(/position:\s*absolute/);
+    expect(floatingBody).toMatch(/bottom:\s*clamp/);
+    expect(floatingBody).toMatch(/left:\s*50%/);
+    expect(floatingBody).toMatch(/transform:\s*translateX\(-50%\)/);
+    expect(floatingBody).toMatch(/border-radius:\s*999px/);
+    expect(floatingBody).not.toMatch(/width:\s*100%/);
     expect(previewCss).not.toMatch(/(?:^|\n)\.ebook-reader-chrome\s*{/);
   });
 
@@ -168,9 +175,33 @@ describe("preview.css", () => {
     );
   });
 
-  it("caps long e-book code blocks inside the simulated page", () => {
+  it("caps large e-book media inside the simulated page", () => {
+    const imgBody = ruleBody(".ebook-chapter img");
     const preBody = ruleBody(".ebook-chapter pre");
+    const imageParagraphBody = ruleBody(
+      ".ebook-chapter .ebook-page-flow p:has(> img:only-child)",
+    );
+    const coverImageParagraphBody = ruleBody(
+      ".ebook-chapter-cover-image .ebook-page-flow p:has(> img:only-child)",
+    );
+    const coverImageBody = ruleBody(".ebook-chapter-cover-image img");
 
+    expect(imgBody).toMatch(/display:\s*block/);
+    expect(imgBody).toMatch(/height:\s*auto/);
+    expect(imgBody).toMatch(/margin:\s*0 auto 1em/);
+    expect(imgBody).toMatch(/max-width:\s*100%/);
+    expect(imgBody).toMatch(
+      /max-height:\s*min\(78%,\s*calc\(var\(--ebook-page-height-max\) - 96px\)\)/,
+    );
+    expect(imgBody).toMatch(/object-fit:\s*contain/);
+    expect(imageParagraphBody).toMatch(/break-inside:\s*avoid/);
+    expect(coverImageParagraphBody).toMatch(/display:\s*grid/);
+    expect(coverImageParagraphBody).toMatch(/height:\s*100%/);
+    expect(coverImageParagraphBody).toMatch(/line-height:\s*0/);
+    expect(coverImageParagraphBody).toMatch(/margin:\s*0/);
+    expect(coverImageParagraphBody).toMatch(/place-items:\s*center/);
+    expect(coverImageBody).toMatch(/margin:\s*0 auto/);
+    expect(coverImageBody).toMatch(/max-height:\s*100%/);
     expect(preBody).toMatch(/max-height:\s*72%/);
     expect(preBody).toMatch(/overflow:\s*auto/);
   });

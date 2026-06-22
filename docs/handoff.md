@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-23 (v0.31 reading focus first slice)
+Last reviewed: 2026-06-23 (v0.31 reading focus polish)
 
 ## Current State
 
@@ -51,6 +51,17 @@ Last reviewed: 2026-06-23 (v0.31 reading focus first slice)
   `git diff --check`. Remaining v0.31 proof should stay on built-app
   visual smoke, page-range display such as `ページ 5-6 / 61` when a spread
   is visible, and coarse navigation such as heading jump / slider.
+  A follow-up Reading Focus visual polish is also implemented:
+  `集中して読む` / `編集に戻る` now float outside the reader chrome grid near
+  the lower center, and large e-book images have tighter one-page
+  containment CSS (`max-width`, centered block display, auto height,
+  image-only paragraph `break-inside: avoid`, and a simulated-page
+  max-height cap). A leading Markdown image before the first heading is
+  treated as a standalone cover-image preamble page so the image can use
+  the full simulated-page height instead of spilling into an extra CSS
+  column. Focused `EBookPane` / preview CSS tests, full `npm run test`,
+  and `npm run build:vite` passed; Vite still reports the usual large
+  chunk warning. Reader font-size/display options remain deferred.
   After v1.0, do not rush straight into v2.0; use v1.x to deepen the
   single-document product first: EPUB export, Diff / Review ergonomics,
   provenance, movement between writing / reading layers, distribution

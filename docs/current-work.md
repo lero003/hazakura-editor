@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v0.30-v1.0 Reader UX Stabilization queue and post-v0.29.1 evidence
 Authority: High
-Last reviewed: 2026-06-23 (v0.31 reading focus first slice)
+Last reviewed: 2026-06-23 (v0.31 reading focus polish)
 
 ## Purpose
 
@@ -109,6 +109,22 @@ Verification passed with focused `EBookPane` / `AppWorkspace` /
 the usual Vite chunk-size warning), and `git diff --check`. Remaining
 v0.31 proof should focus on built-app visual smoke and coarse navigation
 such as heading jump / slider.
+
+v0.31 Reading Focus visual-smoke polish is implemented at code-regression
+level as of 2026-06-23: the `集中して読む` / `編集に戻る` action is no
+longer part of the reader chrome grid and is instead a quiet floating
+action near the reader's lower center, so previous / next / progress
+remain the visible book chrome. Large images in e-book Mode now have
+explicit `max-width`, auto height, centered block display, image-only
+paragraph `break-inside: avoid`, and a tighter simulated-page
+`max-height` cap so a single image is more likely to fit inside one page.
+When a leading Markdown image appears before the first heading, the
+first preamble chapter is treated as a standalone cover-image page and
+its image-only paragraph is given a full simulated-page height so it can
+fit as one page instead of spilling into a second CSS column. Display
+options such as reader font size remain deferred. Verification passed
+with focused `EBookPane` / preview CSS tests, full `npm run test`, and
+`npm run build:vite` (with the usual Vite chunk-size warning).
 
 Post-v1 guardrail: after v1.0, do not rush straight into v2.0. Use v1.x
 to deepen the single-document product first: EPUB export, Diff / Review

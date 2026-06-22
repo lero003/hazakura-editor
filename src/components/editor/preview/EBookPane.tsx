@@ -60,6 +60,7 @@ type RenderedChapter = {
   headingLevel: number | null;
   headingText: string | null;
   html: string;
+  isStandaloneImage: boolean;
 };
 
 type EBookReaderCopy = {
@@ -411,9 +412,7 @@ export default function EBookPane({
       onWheel={handleWheel}
       tabIndex={0}
     >
-      <header
-        className={`ebook-reader-chrome${focusAction ? " ebook-reader-chrome-with-focus" : ""}`}
-      >
+      <header className="ebook-reader-chrome">
         <button
           className="ebook-reader-button"
           disabled={previousDisabled}
@@ -441,25 +440,25 @@ export default function EBookPane({
         >
           {copy.nextPage}
         </button>
-        {focusAction ? (
-          <button
-            className="ebook-reader-button ebook-reader-focus-button"
-            onClick={() => {
-              if (readingFocusActive) {
-                onExitReadingFocus?.();
-              } else {
-                onEnterReadingFocus?.({
-                  chapterIndex: activeChapterIndexSafe,
-                  pageIndex: activePageIndexSafe,
-                });
-              }
-            }}
-            type="button"
-          >
-            {focusActionLabel}
-          </button>
-        ) : null}
       </header>
+      {focusAction ? (
+        <button
+          className="ebook-reader-floating-action"
+          onClick={() => {
+            if (readingFocusActive) {
+              onExitReadingFocus?.();
+            } else {
+              onEnterReadingFocus?.({
+                chapterIndex: activeChapterIndexSafe,
+                pageIndex: activePageIndexSafe,
+              });
+            }
+          }}
+          type="button"
+        >
+          {focusActionLabel}
+        </button>
+      ) : null}
       {activeChapterHtml ? (
         <section
           className={chapterClassName(
@@ -509,15 +508,23 @@ function renderEbookChapter(
   documentPath: string | null | undefined,
   workspaceRoot: string | null | undefined,
 ): RenderedChapter {
+  const html = renderMarkdown(applyEbookPageBreakMarkers(chapter.source), {
+    documentPath,
+    workspaceRoot,
+  });
+
   return {
     index: chapter.index,
     headingLevel: chapter.headingLevel,
     headingText: chapter.headingText,
-    html: renderMarkdown(applyEbookPageBreakMarkers(chapter.source), {
-      documentPath,
-      workspaceRoot,
-    }),
+    html,
+    isStandaloneImage:
+      chapter.headingLevel === null && isStandaloneMarkdownImage(chapter.source),
   };
+}
+
+function isStandaloneMarkdownImage(source: string): boolean {
+  return /^!\[[^\]\n]*\]\([^\n]+\)$/.test(source.trim());
 }
 
 function clampChapterIndex(index: number, totalChapters: number): number {
@@ -541,6 +548,9 @@ function chapterClassName(
   const classes = ["ebook-chapter"];
   if (position === 0) {
     classes.push("ebook-chapter-opener");
+    if (chapter.isStandaloneImage) {
+      classes.push("ebook-chapter-cover-image");
+    }
     if (chapter.headingLevel === 1 && chapter.headingText) {
       classes.push("ebook-chapter-cover");
     } else {

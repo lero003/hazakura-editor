@@ -97,12 +97,17 @@ describe("EBookPane chapter reader", () => {
     });
 
     fireEvent.click(screen.getByRole("button", { name: "次のページ" }));
-    fireEvent.click(screen.getByRole("button", { name: "集中して読む" }));
+    const focusButton = screen.getByRole("button", { name: "集中して読む" });
+    fireEvent.click(focusButton);
 
     expect(onEnterReadingFocus).toHaveBeenCalledWith({
       chapterIndex: 0,
       pageIndex: 1,
     });
+    expect(focusButton.classList.contains("ebook-reader-floating-action")).toBe(
+      true,
+    );
+    expect(focusButton.closest(".ebook-reader-chrome")).toBeNull();
   });
 
   it("uses a focused reader variant with a return action", () => {
@@ -120,9 +125,48 @@ describe("EBookPane chapter reader", () => {
     const article = screen.getByRole("article", { name: "本のように読む" });
     expect(article.classList.contains("ebook-pane-focus")).toBe(true);
 
-    fireEvent.click(screen.getByRole("button", { name: "編集に戻る" }));
+    const exitButton = screen.getByRole("button", { name: "編集に戻る" });
+    fireEvent.click(exitButton);
 
     expect(onExitReadingFocus).toHaveBeenCalledTimes(1);
+    expect(exitButton.classList.contains("ebook-reader-floating-action")).toBe(
+      true,
+    );
+    expect(exitButton.closest(".ebook-reader-chrome")).toBeNull();
+  });
+
+  it("treats a leading image before the first heading as a standalone cover image page", async () => {
+    vi.mocked(openWorkspaceImage).mockResolvedValue({
+      dataUrl: "data:image/jpeg;base64,COVER",
+    } as Awaited<ReturnType<typeof openWorkspaceImage>>);
+
+    render(
+      <EBookPane
+        documentPath="/workspace/ebook_chika_dokuhaku/book.md"
+        menuLanguage="ja"
+        source={
+          "![](../assets/cover.jpg)\n\n\n# 重さのないノート\n\n本文です。"
+        }
+        workspaceRoot="/workspace"
+      />,
+    );
+
+    const article = screen.getByRole("article", { name: "本のように読む" });
+    const chapter = article.querySelector(".ebook-chapter");
+    const image = article.querySelector(".ebook-page-flow p > img");
+
+    expect(chapter?.classList.contains("ebook-chapter-cover-image")).toBe(true);
+    expect(chapter?.classList.contains("ebook-chapter-frontmatter")).toBe(true);
+    expect(image).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "重さのないノート" })).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "次のページ" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("heading", { name: "重さのないノート" }),
+      ).toBeTruthy();
+    });
   });
 
   it("turns half-scroll vertical wheel gestures into page navigation while keeping the page frame", async () => {
