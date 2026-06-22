@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: Active v0.29 AI assist review API alignment, v0.29.01 Local Assist responsiveness planning, and completed v0.28 foundation
+Scope: Active v0.29.1 Local Assist responsiveness package candidate and completed v0.28 foundation
 Authority: High
-Last reviewed: 2026-06-22 (v0.29.01 Local Assist responsiveness split)
+Last reviewed: 2026-06-22 (v0.29.1 App Store package candidate)
 
 ## Purpose
 
@@ -27,9 +27,9 @@ of the completed v0.28 review foundation: keep the App Store path limited
 to Hazakura Local Assist, retire the standalone Review Desk screen, and
 route visible AI assistance through the Hazakura Local Assist transaction /
 Diff review surface before any broader ingest or Book Workspace work.
-The heavier Local Assist responsiveness work is split out as `v0.29.01`
-planning work so it can be implemented deliberately instead of being
-bundled into the existing `0.29.0` package evidence.
+The heavier Local Assist responsiveness work split out as `v0.29.01` is
+implemented and packaged into the `0.29.1` App Store candidate, rather
+than being folded into the earlier `0.29.0` package evidence.
 
 ## Product Boundary
 
@@ -163,18 +163,17 @@ Next useful v0.29 slices, in order:
 | P0 done / light smoke confirmed | No startup helper spawn | Source-level fix is in place: the main shell does not run `useAppleAssistAvailability` on launch or command-palette open; availability probing is deferred until the Assist settings pane is open while `apple-local` is active, and the detached companion still owns its own probe. 2026-06-21 user-side light smoke confirmed `hazakura-local-assist-helper` was not present in Activity Monitor memory before opening the Local Assist window. |
 | P0 done | Safe default / preference gate | New installs default the shared assist surface to `none`; command palette and app menu Local Assist entries respect the active user setting, not only distribution allow. App Store lane still permits Local Assist, but permission to ship is separate from user activation. |
 | P0 done | Probe timeout and error hygiene | Availability probe now uses a short UI timeout and the Rust helper supervisor has a shorter probe timeout distinct from the longer generation timeout. Swift helper Foundation Models errors no longer include `debugDescription` in user-facing error envelopes; failures stay bounded to structured copy/kinds. |
-| P1 done / upload pending | App Store lane docs / smoke alignment | `docs/app-store-build.md` and `docs/smoke-checklist.md` consistently describe the current helper-enabled lane: helper bundled and signed, no startup helper spawn, Local Assist explicit/opened only, no auto-save/auto-apply, no external AI/API or network fallback. 2026-06-21 user-side light smoke also confirmed a simple request could be generated/applied and reviewed through the diff/update flow. 2026-06-22 Transporter rejected `0.29.0` build `28` because the helper lacked `com.apple.security.app-sandbox`; build `29` signed the helper with both `com.apple.security.app-sandbox` and `com.apple.security.inherit`, and the user reported successful Transporter delivery. Build `30` supersedes it after the helper executable rename to `hazakura-local-assist-helper`; local package / payload checks passed and Transporter GUI was opened, but upload completion / App Store Connect processing / TestFlight proof remains separate. |
+| P1 done / upload pending | App Store lane docs / smoke alignment | `docs/app-store-build.md` and `docs/smoke-checklist.md` consistently describe the current helper-enabled lane: helper bundled and signed, no startup helper spawn, Local Assist explicit/opened only, no auto-save/auto-apply, no external AI/API or network fallback. 2026-06-21 user-side light smoke also confirmed a simple request could be generated/applied and reviewed through the diff/update flow. 2026-06-22 Transporter rejected `0.29.0` build `28` because the helper lacked `com.apple.security.app-sandbox`; build `29` signed the helper with both `com.apple.security.app-sandbox` and `com.apple.security.inherit`, and the user reported successful Transporter delivery. Build `30` superseded it after the helper executable rename to `hazakura-local-assist-helper`; build `31` now supersedes build `30` for the `0.29.1` Local Assist responsiveness package candidate. Upload completion / App Store Connect processing / TestFlight proof remains separate. |
 | P1 done | Network and naming wording | User/reviewer-facing labels now use `Hazakura Local Assist` while preserving internal `apple-local` / `apple-assist` compatibility identifiers. Visible "no network call" Local Assist wording was replaced with "no third-party AI service" / "no external AI/API provider" / "no network fallback" wording. |
 | P1 done | Preview copy and companion UI polish | User-facing Local Assist copy uses `Preview` / `プレビュー` instead of `Alpha`, `Experimental`, or `実験的`; availability copy now gives light-user guidance for macOS 26+, M1+ Mac, Apple Intelligence enablement, supported language / region, and no external AI service. The detached companion now opens as a compact tool window, keeps the request form vertically tight, keeps the progress area fixed-height across request states, and separates request groups inside a short scrollable in-session progress log. |
 | P1 done | Local Assist preset / prompt boundary | UI labels are separated from internal `actionId`s, and pressing a preset inserts its concrete request sentence into the editable request field. The live helper prompt separates base instruction, action, visible request text, target text, and surrounding context. All presets now use the same unsaved AI edit transaction / Diff review flow so `要約`, `続きの案`, and `章レビュー` no longer behave like a separate result-only mode. |
 | P2 | Target sync and maintenance polish | Send document target snapshots to Rust only while Local Assist is active; update stale helper comments, helper platform metadata, diagnostics version handling, and any remaining internal naming over time. |
 
-## v0.29.01 Local Assist Responsiveness
+## v0.29.1 / v0.29.01 Local Assist Responsiveness
 
-This is the next focused Local Assist engineering lane. It is intentionally
-heavier than copy / loading polish, so keep it separate from the current
-`0.29.0` package evidence and do not mix it with broader AI ingest,
-Book Workspace, Agent Workbench, or App Store metadata work.
+This focused Local Assist engineering lane is implemented and packaged as
+the `0.29.1` App Store candidate. It remains separate from broader AI
+ingest, Book Workspace, Agent Workbench, or App Store metadata work.
 
 Implementation state as of 2026-06-22:
 
@@ -193,7 +192,9 @@ Implementation state as of 2026-06-22:
   keeps the legacy final-only command for compatibility.
 - Verified locally with focused frontend tests, Rust `apple_assist` tests,
   fixture helper streaming smoke, live helper compile/probe smoke,
-  `npm run build:vite`, `cargo fmt --check`, and `git diff --check`.
+  `npm run build:vite`, `cargo fmt --check`, App Store submit-lane package
+  generation, signed bundle probe, package signature check, package SHA,
+  `productbuild --synthesize`, sandbox preview smoke, and `git diff --check`.
   Built-app long-generation smoke on macOS 26 + Apple Intelligence remains
   manual.
 

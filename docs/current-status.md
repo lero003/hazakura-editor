@@ -3,20 +3,18 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-22 (v0.29.01 Local Assist responsiveness split)
+Last reviewed: 2026-06-22 (v0.29.1 App Store package candidate)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: `0.29.0` across npm, Tauri, Cargo, and lockfile metadata.
+- Current package/app version: `0.29.1` across npm, Tauri, Cargo, and lockfile metadata.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
 - Published Mac App Store version: `0.26.0`, reported released on
   2026-06-20 after App Review completion.
-- Latest GitHub source / local-app tag: `v0.27.0`.
-- Latest local baseline tag before `v0.29.01` development: `v0.29.0`
-  on 2026-06-22. This tag fixes the current `0.29.0` source baseline
-  before the Local Assist responsiveness docs / implementation lane.
+- Latest GitHub source / local-app tag: `v0.29.1`, prepared for the
+  `0.29.1` App Store package candidate on 2026-06-22.
 - Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
 - `v0.18.0` is a Developer / GitHub lane preview, ad-hoc signed, not Developer ID signed, not notarized, and expected to show macOS security warnings.
 - The helper-free App Store lane delivered `0.18.0` build `4` to
@@ -72,23 +70,26 @@ Last reviewed: 2026-06-22 (v0.29.01 Local Assist responsiveness split)
   that checkpoint. A `Cmd+Shift+F` global-search result activation bug
   found during smoke has a focused code-level fix.
 - Older public tags and release assets remain immutable.
-- Current active work is v0.29 AI assist review API alignment. The v0.28
-  Safety, Quality, and AI Review Foundation lane is implemented /
-  accepted locally, and the current v0.29 shape retires the standalone
-  Review Desk screen while preserving the internal candidate comparison
-  primitive for AI assist plumbing. A 2026-06-21 static review of the
-  Hazakura Local Assist App Store lane is now triaged in
-  `docs/current-work.md`. Source-level fixes now cover the
+- Current active package candidate is `0.29.1` build `31`, carrying the
+  v0.29 AI assist review API alignment plus the v0.29.01 Hazakura Local
+  Assist responsiveness hardening. The v0.28 Safety, Quality, and AI
+  Review Foundation lane is implemented / accepted locally, and the
+  current v0.29 shape retires the standalone Review Desk screen while
+  preserving the internal candidate comparison primitive for AI assist
+  plumbing. A 2026-06-21 static review of the Hazakura Local Assist App
+  Store lane is triaged in `docs/current-work.md`. Source-level fixes now cover the
   `apple-assist.html` App Store Vite entrypoint, safe default `none`
   assist surface, command-palette/menu active-setting gate, no startup
   main-shell availability probe, `Hazakura Local Assist` visible naming,
   softer Local Assist network wording, short probe timeout separation,
   and helper error hygiene that avoids Foundation Models
-  `debugDescription` in user-facing error envelopes. Remaining
+  `debugDescription` in user-facing error envelopes. `0.29.1` also adds
+  request-scoped streaming preview, target-editor generation lock, shorter
+  user prompts, and clearer Local Assist availability settings. Remaining
   distribution risk is App Store Connect upload / processing /
-  TestFlight proof for the build `30` helper-rename package. Build `29`
-  delivery succeeded earlier on 2026-06-22, but it used the previous
-  Apple-branded helper executable name. A
+  TestFlight proof for the build `31` package. Build `30` is superseded by
+  `0.29.1`; build `29` delivery succeeded earlier on 2026-06-22, but it
+  used the previous Apple-branded helper executable name. A
   2026-06-21 user-side light built-app smoke confirmed the dedicated
   Local Assist UI opens, the helper is absent from Activity Monitor
   memory before opening the Local Assist window, and a simple request can
@@ -110,27 +111,27 @@ Last reviewed: 2026-06-22 (v0.29.01 Local Assist responsiveness split)
   sanitized before application if a live model echoes Hazakura prompt
   boundary markers. All presets follow the same explicit, unsaved,
   diff-reviewable AI edit transaction flow.
-- The next Hazakura Local Assist engineering lane is `v0.29.01`
-  responsiveness hardening, not a small loading-copy patch. The current
-  plan is to separate heavy Foundation Models generation from UI
-  responsiveness, lock the active target editor while generation is in
-  flight, show app-known progress and streaming preview in the Assist
-  Window, and apply only the final result through the existing unsaved AI
-  edit transaction / Diff review path. Do not show cancellation copy
-  until real request cancellation or safe stale-request ignoring exists.
+- The `v0.29.01` Hazakura Local Assist responsiveness lane is implemented
+  and packaged as `0.29.1`: heavy Foundation Models generation is
+  separated from UI responsiveness, the active target editor is locked
+  while generation is in flight, app-known progress and streaming preview
+  appear in the Assist Window, and only the final result enters the
+  existing unsaved AI edit transaction / Diff review path.
 - The latest generated helper-enabled App Store package candidate for
-  `0.29.0` is build `30`, generated on 2026-06-22 after the bundled
-  helper executable was renamed to `hazakura-local-assist-helper`.
+  `0.29.1` is build `31`, generated on 2026-06-22 after Local Assist
+  streaming responsiveness, prompt simplification, and review-facing
+  settings polish.
   Local App Store surface smoke, live helper build smoke, signed app
-  probe, package signature, package payload metadata, package payload
-  helper-name, and package payload helper-entitlement checks passed.
+  probe, package signature, package metadata, helper-name, helper
+  entitlement, `productbuild --synthesize`, and sandbox preview checks
+  passed.
   SHA-256:
-  `7170f4fb1aba3ad0e37d7aacf207408c38a92fb618678a01e1afc1d3030647f2`.
-  Codex opened the package in Transporter GUI, but CLI delivery was not
-  completed because App Store Connect authentication environment
-  variables were not set. Earlier build `29` was reported as delivered
-  through Transporter on 2026-06-22 after the helper sandbox entitlement
-  fix; build `30` supersedes it for the helper-name change. App Store
+  `40004f6a01c6bf8c26be72f191ebcacb6cc485762a9028ad29b4c91ec0f587df`.
+  Earlier build `29` was reported as delivered through Transporter on
+  2026-06-22 after the helper sandbox entitlement fix; build `30`
+  superseded it for the helper-name change, and build `31` supersedes
+  build `30` for the `0.29.1` Local Assist responsiveness candidate.
+  App Store
   Connect upload completion, processing, TestFlight, App Review, and
   release handling are not tracked in this repository unless separately
   recorded.
@@ -321,26 +322,25 @@ baseline, and smoke evidence are archived under
    and archive only completed version-specific material; canonical build
    and boundary docs stay live for future submissions.
 2. For the next product slice, start with `docs/current-work.md`.
-   `v0.29.01` is the selected Hazakura Local Assist responsiveness lane:
-   preserve UI responsiveness during local model generation, lock the
-   target editor rather than the whole app, show streaming progress in
-   the Assist Window, and keep final application behind Diff review. The
-   immediate App Store lane follow-up is upload completion / App Store
-   Connect / TestFlight processing proof for the `0.29.0` build `30`
-   helper-rename package. Keep the App Store path limited to Hazakura
+   `v0.29.1` packages the selected Hazakura Local Assist responsiveness
+   lane: UI responsiveness is preserved during local model generation,
+   the target editor is locked rather than the whole app, streaming
+   progress stays in the Assist Window, and final application remains
+   behind Diff review. The immediate App Store lane follow-up is upload
+   completion / App Store Connect / TestFlight processing proof for the
+   `0.29.1` build `31` package. Keep the App Store path limited to Hazakura
    Local Assist, with no external Agent surface; do not add Book
    Workspace Alpha, hidden multi-file book manifests, structural
    book-workspace information architecture, Native Vibrancy Phase 2,
    cover editing, or an EPUB document model unless that lane is
    explicitly opened.
-3. For the current `0.29.0` source lane, build `30` is the latest local
-   App Store submit package evidence after the helper executable rename.
-   Codex opened the package in Transporter GUI, but upload completion is
-   not recorded. Build `29` was reported as successfully delivered on
-   2026-06-22 after the helper sandbox entitlement fix; build `28` was
-   rejected by Transporter and should not be reused. User-side review
-   work is outside this repository unless new evidence is explicitly
-   recorded.
+3. For the current `0.29.1` source lane, build `31` is the latest local
+   App Store submit package evidence after Local Assist streaming
+   responsiveness and review polish. Upload completion is not recorded.
+   Build `29` was reported as successfully delivered on 2026-06-22 after
+   the helper sandbox entitlement fix; build `28` was rejected by
+   Transporter and should not be reused. User-side review work is outside
+   this repository unless new evidence is explicitly recorded.
    For a future App Store submission, start with `docs/app-store-build.md`;
    use `npm run release:candidate -- --with-app-store-pkg` for local
    signed package checkpoints, keep account-specific notes under ignored
