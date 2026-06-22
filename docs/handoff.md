@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-23 (v0.29.1 App Store approval)
+Last reviewed: 2026-06-23 (v1 roadmap alignment)
 
 ## Current State
 
@@ -16,11 +16,18 @@ Last reviewed: 2026-06-23 (v0.29.1 App Store approval)
   App Review logs remain outside this repository unless explicitly
   recorded later.
 - The next product slice should start from `docs/current-work.md` and
-  treat `0.29.1` as shipped. Good follow-up observations are Local Assist
-  availability states, first-run model latency, streaming preview / final
-  Diff review, and ordinary edit + Markdown preview responsiveness. Do
-  not reopen cancellation copy, Book Workspace, Agent Workbench, or
-  broader AI ingest unless the user explicitly opens that lane.
+  treat `0.29.1` as shipped. The active lane is `v0.30-v1.0 Reader UX
+  Stabilization`; the first product slice is v0.30 e-book Mode Flow View.
+  After v1.0, do not rush straight into v2.0; use v1.x to deepen the
+  single-document product first: EPUB export, Diff / Review ergonomics,
+  provenance, movement between writing / reading layers, distribution
+  polish when needed, and observation-driven Local Assist polish.
+  Hazakura Local Assist follow-up should be observation-driven unless a
+  concrete safety, review, App Store, availability, generation failure,
+  responsiveness, or transaction-boundary issue appears. Do not reopen
+  cancellation copy, Book Workspace, Agent Workbench, broader AI ingest,
+  external AI/API providers, or auto-apply behavior unless the user
+  explicitly opens that lane.
 - User-facing app identity is capitalized as `Hazakura Editor`. The
   App Store preview bundle is `Hazakura Editor.app`; current docs and
   smoke paths should use that name rather than the older lowercase
@@ -314,15 +321,22 @@ Last reviewed: 2026-06-23 (v0.29.1 App Store approval)
 
 ## Current Work Queue
 
-Use `docs/current-work.md` for the active queue. The current highest
-priority items after the v0.26 App Store release are:
+Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. Held residual: central-editor manual scrollbar / trackpad / wheel large
-   scrolling can misbehave after the first successful large movement.
-   Reopen only as a focused CodeMirror scrollbar / pointer / WebView
-   scrolling slice, or if it becomes release blocking.
-2. Core Safe Editor quality probe only when concrete v0.27 queue items
-   are exhausted.
+1. v0.30 e-book Mode Flow View: make e-book Mode a daily reading /
+   revision surface for long Japanese Markdown prose without relying on
+   page turns.
+2. v0.31 e-book Mode Spread View: add two-page book-like inspection with
+   single-page fallback and coarse navigation, without Preview DOM
+   editing.
+3. v0.32 Editor / Reader Position Bridge: make read, notice, return, fix
+   feel like one source-preserving revision cycle.
+4. v0.33 EPUB Export v1 Polish, then v0.34 v1.0 Release Candidate.
+5. v1.x deepens the single-document product before Book Scope / Book
+   Workspace or stronger AI expansion.
+6. Hazakura Local Assist post-release polish only for concrete safety,
+   review, App Store, availability, generation failure, responsiveness,
+   or transaction-boundary issues.
 
 Recently completed: v0.20 Sakura chrome / file-state clarity kept New
 File on existing non-tab-row paths, added the top chrome
@@ -461,6 +475,16 @@ open Active UX Queue slice and close it as `implemented`,
 
 ## Verification Guidance
 
+- Latest docs roadmap alignment: v0.30-v1.0 Reader UX Stabilization was
+  reflected in roadmap, current work, current status, docs index,
+  development automation guidance, e-book / AI planning notes, README,
+  and this handoff on 2026-06-23. Verification run: `git diff --check`.
+- Latest post-v1 planning alignment: v1.x single-document deepening,
+  Book Scope / Book Workspace v2.0, v2.x Book Scope practicalization, and
+  v3.x local AI re-evaluation were reflected in roadmap, current work,
+  current status, e-book / AI / speculative local-AI planning notes, docs
+  index, and this handoff on 2026-06-23. Verification run:
+  `git diff --check`.
 - Latest docs-refinement pass: v0.28 documentation index / README /
   roadmap cleanup, archive moves, and generated artifact cleanup script were
   checked with `npm run clean:generated -- --target-only`,

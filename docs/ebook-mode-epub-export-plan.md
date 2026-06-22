@@ -3,7 +3,7 @@
 Status: Proposal
 Scope: v0.21+ authoring and export planning
 Authority: Medium
-Last reviewed: 2026-06-20
+Last reviewed: 2026-06-23
 
 ## Summary
 
@@ -83,14 +83,65 @@ v0.21 PoC では、L Mode の CodeMirror decorations / widgets / CSS を
 - **進化系**: 既存L Mode資産を一部使い、新しい book-oriented
   surface として設計し直す。
 
+## v0.30-v1.0 Reader UX Direction
+
+2026-06-23 の v1 roadmap alignment では、v1.0 の主戦場を
+Hazakura Local Assist の追加機能ではなく、e-book Mode を中心にした
+Reader UX とする。
+
+v1.0 の製品像は次の通り。
+
+> Safe Markdown Book Editor with Local Assist Review
+
+日本語では次の価値に寄せる。
+
+> Markdownを、本として読みながら直す。AIの提案も、差分で受け取る。
+
+この方向では、e-book Mode は次の2つの読み方を持つ。
+
+- **Flow View**: 日常の推敲用。ページ送りを主導線にせず、縦スクロール
+  中心で長い日本語Markdownを読めるようにする。本文幅、行間、余白、
+  段落間、見出しジャンプ、スクロール位置保持、編集位置付近から開く
+  体験を重視する。
+- **Spread View**: 完成前確認用。見開きで本としての印象を確認する。
+  Flow View の代替ではなく、完成形チェック用の表示レイヤーとして扱う。
+  狭い幅では1ページ表示へフォールバックし、ページ移動だけでなく
+  見出しジャンプ、スライダー、または同等の粗い移動手段を用意する。
+
+以前の v0.24 では、通常の右ペイン内2-upは幅不足で価値が出にくいとして
+近い後続から外した。v0.31 Spread View はその判断を破棄するのではなく、
+見開き専用の表示レイヤーとして再検討する。実装形は右ペイン固定に限定せず、
+必要なら編集面を一時的に退ける occupied reading mode や adaptive layout
+として扱う。
+
+v0.30-v1.0 の順序:
+
+1. v0.30: e-book Mode Flow View。
+2. v0.31: e-book Mode Spread View。
+3. v0.32: Editor / Reader Position Bridge。
+4. v0.33: EPUB Export v1 Polish。
+5. v0.34: v1.0 Release Candidate。
+
+このレーンでも Markdown source remains the truth. Preview DOM editing、
+contenteditable、複数MarkdownファイルのBook Workspace、保存された
+book manifest、縦書き、高度なEPUB metadata / cover / navigation編集、
+外部EPUB validator起動、自動AI適用は v1.0 には含めない。
+
+v1.0 後も、すぐ Book Workspace / Book Scope へ急がない。v1.x ではまず
+単一Markdown文書の book-writing surface を日常利用に耐えるものへ深める。
+EPUB export では、metadata、cover、navigation、章構造確認、画像の扱い、
+出力前チェック、手動バリデーション導線を育てる。ただし外部 validator の
+自動起動、隠れたEPUB document model、Markdown source の自動書き換えは
+引き続き入れない。
+
 ## User Experience Target
 
-ユーザーは、原稿を書きながら次を確認できる。
+長期的には、ユーザーは原稿を書きながら次を確認できる。
 
 - EPUB化した時の本文幅、余白、行間、見出しの強さ
-- 横書きと縦書きの読み心地
+- 横書きの読み心地（縦書きは v1.x 以降）
 - 画像が本文内でどの程度重く、どの位置に見えるか
-- 改ページ、章区切り、表紙候補、目次候補のざっくりした状態
+- 改ページ、章区切り、将来の表紙候補、目次候補のざっくりした状態
 - EPUB export に進む前に直したいMarkdown構造
 
 このモードは「紙面編集」ではなく「EPUBシミュレーション」である。
@@ -718,15 +769,14 @@ v0.24 は単ページ読書面 polish として閉じた。v0.26 で EPUB export
 
 EPUB export は明示的な export action として実装する。
 
-期待する出力:
+v1.0で期待する初期出力:
 
 - `.epub` archive
 - metadata: title, author, language, identifier
 - XHTML content generated from Markdown source
-- stylesheet generated from selected EPUB style settings
+- small stylesheet generated from the export path
 - workspace-local images copied into EPUB assets
-- cover image candidate
-- navigation / table of contents
+- generated navigation / table of contents from headings
 - warnings for unresolved images or unsupported constructs
 
 生成はユーザー操作でのみ行い、外部アップロードや外部検証はしない。
@@ -734,17 +784,17 @@ EPUBCheck はドキュメント上の手動検証候補として扱う。
 
 v1.0 candidate では、EPUB export は「初期実装」でよい。高度な
 メタデータ編集、表紙管理、ナビゲーション調整、縦書き、OKF bundle
-対応は v1.x 以降へ回す。
+対応、reader-perfect pagination claims は v1.x 以降へ回す。
 
 ### v1.x: OKF, Vertical Writing, And Advanced EPUB
 
 e-book Mode が日常執筆面として安定した後に扱う。
 
+- EPUB export 高度化: metadata、cover、navigation、章構造確認、
+  画像の扱い、pre-export checks、manual validation guidance。
 - OKF bundle を本として読む: frontmatter 可読化、`index.md` /
   `log.md` 対応、簡易リンクグラフ。
 - 縦書き対応。
-- EPUB export 高度化: metadata、cover、navigation、manual
-  validation guidance。
 
 OKF対応前には、その時点のOKF仕様を再確認する。
 

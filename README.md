@@ -118,12 +118,12 @@ For the full implementation inventory and release state, see
 - [Security Boundary](docs/security-boundary.md): 安全性のために守る制約
 - [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
 - [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Hazakura Local Assist / Foundation Models planning
-- [Current Work](docs/current-work.md): active UX, post-approval, and next-slice queue
+- [Current Work](docs/current-work.md): v0.30-v1.0 Reader UX queue and post-0.29.1 release evidence
 - [Hazakura Local Assist Writing Companion Plan](docs/apple-local-assist-writing-companion-plan.md): post-v0.11 Hazakura Local Assist UX direction
 - [Roadmap](docs/roadmap.md): 段階的な開発順序
 - [L Mode Plan](docs/l-mode-plan.md): えるモードの source-preserving WYSIWYG Accuracy Ramp plan
 - [e-book Mode And EPUB Export Plan](docs/ebook-mode-epub-export-plan.md): v0.21+ e-bookモード / EPUB export planning memo
-- [AI Markdown Ingest Plan](docs/ai-markdown-ingest-plan.md): v0.28+ AI提案取込 / Diff Review planning memo
+- [AI Markdown Ingest Plan](docs/ai-markdown-ingest-plan.md): explicit AI proposal intake / Diff Review planning memo
 - [Native macOS Appearance Plan](docs/native-macos-appearance-plan.md): v0.25 native-feeling Safe Editor chrome planning memo
 - [Post-v0.25 Product Refinement Plan](docs/post-v0.25-product-refinement-plan.md): App Store release後の完成度向上レンズ
 - [External Agent Review Workflow](docs/external-agent-review-workflow.md): external implementation agent + Codex review workflow

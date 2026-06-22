@@ -1,9 +1,9 @@
 # Speculative Local AI Future Plan
 
 Status: Speculative
-Scope: v1.x+ / v2.x+ / v3.x+ long-range AI direction
+Scope: v3.x+ long-range AI re-evaluation after book / review maturity
 Authority: Low
-Last reviewed: 2026-06-15
+Last reviewed: 2026-06-23
 
 ## Summary
 
@@ -21,6 +21,14 @@ The durable direction is:
 - keep AI output explicit, reviewable, and unsaved until the user applies it;
 - avoid becoming a generic AI runtime, model playground, image-generation app,
   or autonomous agent platform.
+
+As of the v0.30-v1.0 roadmap alignment, stronger local AI is not a
+default v1.x or v2.x expansion. v1.x should deepen the single-document
+book-writing product, and v2.x should make an explicit Book Scope useful
+if v2.0 introduces one. v3.x is the earliest reasonable point to
+re-evaluate whether stronger local AI, OS-provided models, whitelisted
+`.aimodel` support, or much later local image generation belongs in the
+product.
 
 ## Boundary
 
@@ -66,8 +74,8 @@ Model adoption should be staged.
 
 ### OS-Provided Models First
 
-Start with models provided by the operating system, such as Apple Foundation
-Models, when available.
+If v3.x or later reopens stronger local AI, start with models provided by
+the operating system, such as Apple Foundation Models, when available.
 
 Purpose:
 
@@ -107,20 +115,34 @@ Required safety questions before any implementation:
 
 The labels below are illustrative. They are not release promises.
 
-### v1.x: AI-ready Editing Harness
+### v1.x: Review-ready Editing Harness
 
-Strengthen editing primitives that are useful even without AI:
+Strengthen editing primitives that are useful even without stronger AI:
 
 - selection-range editing actions;
 - diff display;
 - Apply / Reject;
 - review comments or review notes;
 - internal boundaries for receiving a candidate edit safely;
-- writing-assist entry points that can work manually or with AI later.
+- provenance display for AI proposals, manual edits, and Recovery changes;
+- writing-assist entry points that can work manually or with the existing
+  Hazakura Local Assist path.
 
-### v2.0: OS-Provided AI Integration
+### v2.x: Book / Review Maturity First
 
-Explore OS-provided local AI in the narrow document-assist shape:
+If v2.0 introduces Book Scope / Book Workspace Alpha, v2.x should make
+that source-preserving scope useful before widening AI:
+
+- explicit chapter scope;
+- book-level reading and export;
+- chapter-level Diff / Review;
+- small explicit manifests when needed;
+- no hidden whole-workspace indexing or automatic multi-file rewriting.
+
+### v3.x: OS-Provided AI Re-evaluation
+
+Explore OS-provided local AI only after book / review / export primitives
+are mature and only after a fresh product-boundary decision:
 
 - Apple Foundation Models or equivalent OS model availability;
 - selected-range rewrite suggestions;
@@ -128,7 +150,11 @@ Explore OS-provided local AI in the narrow document-assist shape:
 - structured output for safer candidate generation;
 - integration with existing Apply / Reject and diff review.
 
-### v2.x: Whitelisted External `.aimodel` Support
+Do not begin this work just because model APIs exist. The key test is
+whether the feature strengthens reading Markdown as a book and fixing it
+through explicit review.
+
+### Later: Whitelisted External `.aimodel` Support
 
 Explore a trusted model catalog:
 
@@ -196,8 +222,9 @@ For now, the practical product work remains closer to:
 - L Mode writing stability;
 - native-feeling macOS UI;
 - e-book / EPUB authoring exploration;
-- Hazakura Local Assist as a bounded, experimental document-assist surface.
+- Hazakura Local Assist as a bounded, preview document-assist surface.
 
 The long-range model and image-generation ideas should stay documented, but
-should not become near-term implementation work until the existing editor and
-distribution lanes are stable.
+should not become near-term implementation work until the single-document
+book-writing product, explicit review, Book Scope, and distribution lanes are
+stable enough to justify a fresh boundary decision.

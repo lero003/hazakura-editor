@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-23 (v0.29.1 App Store approval)
+Last reviewed: 2026-06-23 (v1 roadmap alignment)
 
 ## Current State
 
@@ -302,8 +302,8 @@ baseline, and smoke evidence are archived under
 
 ## Active Planning Sources
 
-- `docs/current-work.md`: current v0.29 AI assist review API queue plus
-  completed v0.28 foundation and v0.27 refinement notes.
+- `docs/current-work.md`: current `v0.30-v1.0 Reader UX Stabilization`
+  queue plus post-`0.29.1` release evidence.
 - `docs/archive/planning/v0.27-refinement-slice-plan.md`: historical v0.27
   execution phases for large-document rendering, One Editing Space,
   flow-preserving editing, and status bar cleanup.
@@ -312,6 +312,8 @@ baseline, and smoke evidence are archived under
 - `docs/security-boundary.md`: safe editor constraints.
 - `docs/agent-workbench-boundary.md`: implemented Agent Workbench trust boundary.
 - `docs/l-mode-plan.md`: L Mode source-preserving writing-surface direction.
+- `docs/ebook-mode-epub-export-plan.md`: e-book Mode / EPUB export
+  planning and source-preserving reader/export boundaries.
 - `docs/assist-surface-strategy.md`: assist-surface direction.
 - `docs/post-v0.25-product-refinement-plan.md`: post-App-Store
   refinement lens.
@@ -325,19 +327,22 @@ baseline, and smoke evidence are archived under
    and archive only completed version-specific material; canonical build
    and boundary docs stay live for future submissions.
 2. For the next product slice, start with `docs/current-work.md`.
-   `v0.29.1` packages the selected Hazakura Local Assist responsiveness
-   lane: UI responsiveness is preserved during local model generation,
-   the target editor is locked rather than the whole app, streaming
-   progress stays in the Assist Window, and final application remains
-   behind Diff review. The immediate App Store lane follow-up is
-   post-release observation for the published `0.29.1` build, especially
-   Local Assist availability states, first-run model latency, and preview
-   editing responsiveness. Keep the App Store path limited to Hazakura
-   Local Assist, with no external Agent surface; do not add Book
-   Workspace Alpha, hidden multi-file book manifests, structural
-   book-workspace information architecture, Native Vibrancy Phase 2,
-   cover editing, or an EPUB document model unless that lane is
-   explicitly opened.
+   The active lane is `v0.30-v1.0 Reader UX Stabilization`; the first
+   product slice is v0.30 e-book Mode Flow View. Keep the v1 path focused
+   on a single-document Safe Markdown Book Editor with Local Assist
+   Review: Flow View, Spread View, editor/reader position bridge, initial
+   EPUB export polish, and v1 RC smoke. Hazakura Local Assist follow-up
+   should be observation-driven unless a concrete safety, review,
+   App Store, availability, generation failure, responsiveness, or
+   transaction-boundary issue appears. Do not add Book Workspace Alpha,
+   hidden multi-file book manifests, structural book-workspace
+   information architecture, Native Vibrancy Phase 2, cover editing,
+   external AI/API providers, Agent Workbench in the App Store lane, or
+   an EPUB document model unless that lane is explicitly opened.
+   After v1.0, do not rush straight to v2.0; use v1.x to deepen the
+   single-document product, especially EPUB export, Diff / Review
+   ergonomics, provenance, movement between writing / reading layers,
+   and observation-driven Local Assist polish.
 3. For the current `0.29.1` App Store lane, build `33` is the latest local
    package evidence and the user-reported released build after Local
    Assist streaming responsiveness, review polish, and preview flicker

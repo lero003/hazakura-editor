@@ -3,7 +3,7 @@
 Status: Proposal; standalone Review Desk file-import slice retired
 Scope: v0.29+ explicit AI proposal intake and review
 Authority: Medium
-Last reviewed: 2026-06-21
+Last reviewed: 2026-06-23
 
 ## Summary
 
@@ -16,7 +16,22 @@ AI output safer to read, structure, diff, and apply.
 
 North-star fit:
 
-> AIが書いたMarkdownを、本として読み、差分で直す。
+> Markdownを、本として読みながら直す。AIの提案も、差分で受け取る。
+
+As of the v0.30-v1.0 roadmap alignment, this plan is not the immediate
+v0.30 product lane. The v1 path centers e-book Mode Reader UX first:
+Flow View, Spread View, editor/reader position bridging, EPUB export
+polish, and v1 RC smoke. Hazakura Local Assist remains part of the v1
+product promise through explicit unsaved Diff / Discard review, but
+broader file/paste/multi-file ingest should stay deferred unless a fresh
+boundary review reopens it.
+
+Post-v1, this plan should deepen Hazakura's review feel rather than turn
+the app into a generic AI chat or agent platform. Useful v1.x work is:
+clearer changed-area display, better readability for long prose diffs,
+provenance display, visible distinction between AI proposals / manual
+edits / Recovery changes, and partial Accept / Reject only where the
+interaction remains understandable and source-preserving.
 
 ## Product Boundary
 

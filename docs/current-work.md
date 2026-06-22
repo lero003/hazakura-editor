@@ -1,18 +1,21 @@
 # Current Work
 
 Status: Operational
-Scope: Post-v0.29.1 App Store release state and completed v0.28 foundation
+Scope: v0.30-v1.0 Reader UX Stabilization queue and post-v0.29.1 evidence
 Authority: High
-Last reviewed: 2026-06-23 (v0.29.1 App Store approval)
+Last reviewed: 2026-06-23 (v1 roadmap alignment)
 
 ## Purpose
 
 Start here when choosing the next small `Hazakura Editor` slice.
-This file is the current work queue. The `0.29.1` App Store update has
-been reported as approved and released on 2026-06-23, and Hazakura Local
-Assist is now public as a preview on-device writing companion;
-keep completed submission-prep material as evidence, not as the active
-queue.
+This file is the current work queue. After the `0.29.1` App Store update
+was reported approved and released on 2026-06-23, the active product lane
+is `v0.30-v1.0 Reader UX Stabilization`: make the shipped Safe Editor,
+L Mode, e-book Mode, EPUB export beta, Diff / Recovery, and Hazakura
+Local Assist review surfaces feel like one coherent single-document
+book-writing product.
+Keep completed submission-prep and v0.29 Local Assist material as
+evidence, not as the active queue.
 Older v0.17 App Store-quality request packets and closeout evidence live
 under `docs/archive/operations/app-store-v0.17/`, and the completed
 v0.18 pre-review automation slices remain below as historical evidence.
@@ -23,14 +26,11 @@ The v0.27 refinement phases are complete for source-tag purposes. Keep
 `docs/archive/planning/v0.27-refinement-slice-plan.md` as the execution
 memo / historical phase boundary and
 `docs/post-v0.25-product-refinement-plan.md` as the
-broader lens. The active v0.29 lane is explicit AI assist review on top
-of the completed v0.28 review foundation: keep the App Store path limited
-to Hazakura Local Assist, retire the standalone Review Desk screen, and
-route visible AI assistance through the Hazakura Local Assist transaction /
-Diff review surface before any broader ingest or Book Workspace work.
-The heavier Local Assist responsiveness work split out as `v0.29.01`
-shipped in the `0.29.1` App Store update, rather than being folded into
-the earlier `0.29.0` package evidence.
+broader lens. The completed v0.29 lane established Hazakura Local Assist
+transaction / Diff review as the visible AI assistance path. From here,
+Hazakura Local Assist work should be observation-driven polish unless a
+safety, review, App Store, availability, generation failure, or
+transaction-boundary issue appears.
 
 ## Product Boundary
 
@@ -41,12 +41,43 @@ the earlier `0.29.0` package evidence.
 - Workspace file operations stay bounded to the selected workspace.
 - Agent Workbench remains a separate, explicit Developer / GitHub lane
   trust boundary and is not part of the App Store lane.
+- e-book Mode, L Mode, Preview, Diff, Recovery, EPUB export, and
+  Hazakura Local Assist review remain source-preserving layers over one
+  Markdown document.
+- Do not add Book Workspace Alpha, saved multi-file book manifests,
+  Preview DOM editing, external AI/API providers, generic chat, or AI
+  auto-apply / auto-save behavior in the v1 lane.
+
+## Active UX Queue
+
+Pick one item at a time. The immediate next product slice is v0.30 Flow
+View unless a concrete post-release Local Assist safety or App Store lane
+issue appears.
+
+| Priority | Slice | Acceptance |
+|---|---|---|
+| P0 | v0.30 e-book Mode Flow View | e-book Mode can be used as a daily reading / revision surface for long Japanese Markdown prose without relying on page turns. The slice should reduce page-turn friction, improve reading layout, preserve nearby position across mode switches where practical, and verify large-document behavior. |
+| P1 | v0.31 e-book Mode Spread View | Two-page book-like inspection exists when window width allows, falls back to one page when narrow, has keyboard / button navigation plus coarse movement, and remains a display layer over Markdown source rather than Preview DOM editing. |
+| P2 | v0.32 Editor / Reader Position Bridge | Opening e-book Mode near the current editor cursor or visible heading and returning from reader position to Markdown editing feels reliable for normal, unsaved, and recovered documents. |
+| P3 | v0.33 EPUB Export v1 Polish | EPUB export remains an explicit user action and is polished enough for initial v1 use with Japanese text, headings, local images, links, code blocks, and clear failure messages. Advanced metadata, cover, navigation editing, and validation workflows stay deferred to v1.x. |
+| RC | v0.34 v1.0 Release Candidate | Feature work freezes and the golden path covers New File, Open, Save / Save As, L Mode, Preview, Flow View, Spread View, EPUB export, Local Assist, Diff / Discard, Recovery, relaunch, large documents, and App Store lane boundary checks. |
+| Observation only | Hazakura Local Assist post-release polish | Pick this before v0.30 only for a concrete safety, review, App Store, availability, generation failure, responsiveness, or transaction-boundary issue. Keep App Store AI assistance local, user-initiated, unsaved until accepted, and Diff / Discard reviewable. |
+| Fallback | Core Safe Editor quality probe | Use only when no concrete Reader UX slice is open or the run is a recurring quality pass. Inspect one high-risk basic surface with a named risk hypothesis, then either fix the smallest reproduced issue or close as `verified no-op`. |
+
+Post-v1 guardrail: after v1.0, do not rush straight into v2.0. Use v1.x
+to deepen the single-document product first: EPUB export, Diff / Review
+ergonomics, provenance, movement between writing / reading layers,
+distribution polish when needed, and observation-driven Local Assist
+polish. Book Scope / Book Workspace belongs after that footing is proven.
 
 ## Automation Slice Protocol
 
-Use this section for recurring or unattended pre-review automation.
+Use this section for recurring or unattended automation. For the current
+v1 lane, prefer the Active UX Queue above. Use the Pre-Review Automation
+Order table only when a future pre-review lane explicitly reopens it.
 
-- Pick exactly one slice from the Pre-Review Automation Order table.
+- Pick exactly one slice from the Active UX Queue, or from the Pre-Review
+  Automation Order table only when that lane is explicitly active again.
 - Prefer the first open slice whose required environment is available.
 - Keep the slice inside its named files/surface; do not bundle nearby
   polish.
@@ -96,11 +127,11 @@ The remaining signed-TestFlight-only proof notes are superseded by the
 App Store approval unless a future App Store build specifically reopens
 Trash, workspace restore, accessibility, or network-observation risk.
 The pre-review automation table is currently exhausted; the next
-recurring quality run should use the Active UX Queue, starting with one
-Core Safe Editor quality probe whose risk hypothesis can be inspected or
-smoked.
+recurring quality run should use the fallback item in the Active UX Queue
+only when no concrete Reader UX slice or post-release safety issue is
+open.
 
-## v0.29 AI Assist Review API
+## Historical v0.29 AI Assist Review API
 
 Implemented locally as of 2026-06-21:
 
@@ -121,7 +152,7 @@ Implemented locally as of 2026-06-21:
 - `Cmd+Shift+R` stays reserved only to avoid WebView reload; it no longer
   opens a hidden Review Desk surface.
 
-Next useful v0.29 slices, if needed:
+Historical v0.29 slices, if needed:
 
 The 2026-06-21 Hazakura Local Assist review note
 (`/Users/keisetsu/Downloads/apple-assist-review-fix-list-2.md`) is
@@ -144,7 +175,7 @@ Additional human-side built-app observation on 2026-06-21:
   when `VITE_HAZAKURA_DISTRIBUTION_LANE=app-store`, which conflicts
   with the current helper-enabled App Store lane.
 
-Decision for the current v0.29 lane:
+Historical v0.29 lane decision:
 
 - Keep the App Store lane helper-enabled for now. Do not revert to the
   older helper-free App Store plan unless a signed TestFlight or App
@@ -156,7 +187,7 @@ Decision for the current v0.29 lane:
 - Keep broader file/paste/multi-file proposal ingest deferred until a
   fresh product boundary review reopens it.
 
-Next useful v0.29 slices, in order:
+Historical v0.29 slice order:
 
 | Priority | Slice | Acceptance |
 |---|---|---|
@@ -170,7 +201,7 @@ Next useful v0.29 slices, in order:
 | P1 done | Local Assist preset / prompt boundary | UI labels are separated from internal `actionId`s, and pressing a preset inserts its concrete request sentence into the editable request field. The live helper prompt separates base instruction, action, visible request text, target text, and surrounding context. All presets now use the same unsaved AI edit transaction / Diff review flow so `要約`, `続きの案`, and `章レビュー` no longer behave like a separate result-only mode. |
 | P2 | Target sync and maintenance polish | Send document target snapshots to Rust only while Local Assist is active; update stale helper comments, helper platform metadata, diagnostics version handling, and any remaining internal naming over time. |
 
-## v0.29.1 / v0.29.01 Local Assist Responsiveness
+## Shipped v0.29.1 / v0.29.01 Local Assist Responsiveness
 
 This focused Local Assist engineering lane is implemented and shipped in
 the `0.29.1` App Store update. It remains separate from broader AI
@@ -763,7 +794,7 @@ v0.27 release-candidate closeout note as of 2026-06-20:
 - AI Markdown ingest, Workspace As Book, Native Vibrancy Phase 2, and
   EPUB document-model work remain outside the v0.27 source tag.
 
-## v0.28 Safety, Quality, And AI Review Foundation
+## Historical v0.28 Safety, Quality, And AI Review Foundation
 
 Use `docs/roadmap.md`, `docs/security-boundary.md`, and
 `docs/ai-markdown-ingest-plan.md` as the planning boundary. v0.28 may
@@ -844,17 +875,11 @@ Deferred from v0.28:
 - EPUB document-model work, cover editing, vertical writing, OKF, or
   reader-perfect pagination claims.
 
-## Active UX Queue
+## Historical v0.28 Active UX Queue
 
-Pick one item at a time.
-
-| Priority | Slice | Acceptance |
-|---|---|---|
-| P0 | Follow the v0.29 AI assist review API section above | Prefer one narrow Hazakura Local Assist / AI edit transaction review slice whose proof path is available. Keep App Store AI assistance limited to Hazakura Local Assist, explicit Diff / Review only, and do not reopen the standalone Review Desk screen without a fresh boundary decision. |
-| P1 | Core Safe Editor quality probe | When concrete queue items are exhausted, inspect one basic high-risk surface instead of adding broad tests: open/save/close, restore/recovery, preview, diff/review, workspace file operations, standalone files, image handling, keyboard/IME, or error recovery. State the risk hypothesis, run a focused source/app inspection or smoke, then either fix the smallest issue found or close as `verified no-op`. |
-| P2 | Light accessibility sanity | Keep accessibility as a light sanity pass adjacent to core surfaces: keyboard reachability, focus escape/Tab behavior, readable labels, and obvious contrast. Do not prioritize broad accessibility audits over basic editor quality unless a concrete accessibility failure is observed. |
-| Separate lane | Native vibrancy via `window-vibrancy` + macOS 26 floor | Keep as an independent release-planning lane outside v0.27 refinement. It requires a macOS 26 floor decision, built `.app` smoke on macOS 26, and App Store lane judgment before becoming active work. |
-| Deferred | Toolbar / bar architecture separation | Full top-bar rewrite, separate toolbar architecture, and Outline / Diff top-level routing remain later slices after v0.25 vibrancy proves the shell direction. |
+Superseded by the Active UX Queue near the top of this file. Retain these
+items as historical routing evidence only; do not select them as current
+work unless a regression or fresh boundary decision reopens the slice.
 
 ## External-Agent Friendly Queue
 

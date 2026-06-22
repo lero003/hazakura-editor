@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-06-23 (post-v0.29.1 App Store release)
+Last reviewed: 2026-06-23 (v1 roadmap alignment)
 
 ## Purpose
 
@@ -17,18 +17,21 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: post-v0.29.1 App Store release quality loop, unless a v0.29.1
-hotfix blocker appears.
+Phase: `v0.30-v1.0 Reader UX Stabilization` quality loop, unless a
+`0.29.1` hotfix blocker appears.
 
-For recurring automation, use the `Pre-Review Automation Order` in
-`docs/current-work.md` before the generic preference list below. Each
-run should pick the first open slice whose required environment is
-available and close it as `implemented`, `manual-blocked`, or
-`verified no-op`.
+For recurring automation, use the Active UX Queue in
+`docs/current-work.md`. The old pre-review automation table is exhausted
+and should be reused only when a future pre-review lane explicitly
+reopens it. Each run should pick the first open slice whose required
+environment is available and close it as `implemented`,
+`manual-blocked`, or `verified no-op`.
 
 Prefer work in this order:
 
-1. Pre-review automation order from `docs/current-work.md`.
+1. Active UX Queue from `docs/current-work.md`, starting with v0.30
+   e-book Mode Flow View unless a concrete post-release safety issue
+   takes priority.
 2. Stale or failing quality gates that block the selected slice.
 3. Core Safe Editor quality risks around open, edit, save, close/quit,
    restore, recovery, preview, diff/review, workspace file operations,
@@ -36,9 +39,9 @@ Prefer work in this order:
    copy. When the known queue is exhausted, pick one of these surfaces,
    state the risk hypothesis, inspect or smoke it, then either make the
    smallest justified fix or close as `verified no-op`.
-4. Submission-prep queue from `docs/current-work.md`, especially fuller
-   TestFlight smoke, reviewer notes, license packet review, About
-   metadata, and regression evidence.
+4. Submission-prep or App Store hotfix queue only when explicitly
+   reopened, especially fuller TestFlight smoke, reviewer notes, license
+   packet review, About metadata, and regression evidence.
 5. App Store / Developer lane separation drift, especially Agent
    Workbench omission, helper bundle/signing assumptions, external
    process appearance, command palette / Preferences visibility,
