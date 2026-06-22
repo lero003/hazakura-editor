@@ -50,7 +50,7 @@ import {
 //     change-review escape hatch.
 //
 // The window only renders a thin shell with:
-//   - a header that names the companion and shows the current
+//   - a header that shows the local-assist disclosure and current
 //     active document title (mirrored from the main window),
 //   - a request textarea + preset chips for the supported
 //     local writing actions.
@@ -552,7 +552,6 @@ export function AppleAssistWindowApp() {
   return (
     <div className="apple-assist-window-shell" data-testid="apple-assist-shell">
       <header className="apple-assist-window-header">
-        <div className="apple-assist-window-title">Hazakura Local Assist</div>
         <div className="apple-assist-window-subtitle">
           {copy.subtitle}
           <span className="apple-assist-window-mode">{copy.modeLabel}</span>

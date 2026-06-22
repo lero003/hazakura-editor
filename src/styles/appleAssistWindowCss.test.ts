@@ -33,7 +33,6 @@ describe("apple-assist-window.css", () => {
   it("keeps the companion vertically compact for the smaller tool-window height", () => {
     const shell = ruleBody(css, ".apple-assist-window-shell");
     const header = ruleBody(css, ".apple-assist-window-header");
-    const title = ruleBody(css, ".apple-assist-window-title");
     const subtitle = ruleBody(css, ".apple-assist-window-subtitle");
     const disclosure = ruleBody(css, ".apple-assist-window-disclosure");
     const form = ruleBody(css, ".apple-assist-window-form");
@@ -45,7 +44,6 @@ describe("apple-assist-window.css", () => {
     expect(shell).toMatch(/gap:\s*8px/);
     expect(shell).toMatch(/align-content:\s*start/);
     expect(header).toMatch(/padding-bottom:\s*8px/);
-    expect(title).toMatch(/font-size:\s*15px/);
     expect(subtitle).toMatch(/font-size:\s*11\.5px/);
     expect(disclosure).toMatch(/font-size:\s*11\.5px/);
     expect(form).toMatch(/gap:\s*6px/);
@@ -53,6 +51,10 @@ describe("apple-assist-window.css", () => {
     expect(textarea).toMatch(/max-height:\s*4\.6rem/);
     expect(feedback).toMatch(/height:\s*9\.5rem/);
     expect(feedbackHeader).toMatch(/border-bottom:\s*1px solid/);
+  });
+
+  it("does not reserve a duplicate in-window product title", () => {
+    expect(css).not.toContain(".apple-assist-window-title");
   });
 
   it("uses flat helper backgrounds for Sakura and Shokou instead of inheriting strong app-shell gradients", () => {

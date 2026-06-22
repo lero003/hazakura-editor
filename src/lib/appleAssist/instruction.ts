@@ -39,7 +39,7 @@ export const LOCAL_ASSIST_ACTIONS: ReadonlyArray<LocalAssistAction> = [
       kana: "こうせいだけ",
     },
     requestText:
-      "誤字脱字、助詞、明らかな文法ミス、表記ゆれだけを修正してください。意味、文体、構成、Markdown構造は変えないでください。",
+      "誤字脱字、助詞、文法ミス、表記ゆれだけ直してください。意味、文体、Markdown構造は保ってください。",
   },
   {
     id: "rewrite_natural",
@@ -51,7 +51,7 @@ export const LOCAL_ASSIST_ACTIONS: ReadonlyArray<LocalAssistAction> = [
       kana: "よみやすく",
     },
     requestText:
-      "原文の意味と温度感を保ったまま、不自然な言い回し、冗長な表現、読みづらい文だけを軽く整えてください。新しい情報は追加しないでください。",
+      "意味を変えずに、読みやすい自然な文にしてください。新しい情報は足さないでください。",
   },
   {
     id: "summarize",
@@ -63,7 +63,7 @@ export const LOCAL_ASSIST_ACTIONS: ReadonlyArray<LocalAssistAction> = [
       kana: "ようやく",
     },
     requestText:
-      "本文の内容を3〜5行で要約してください。推測や新情報は追加しないでください。",
+      "本文を3〜5行で要約してください。推測や新しい情報は足さないでください。",
   },
   {
     id: "translate",
@@ -75,7 +75,7 @@ export const LOCAL_ASSIST_ACTIONS: ReadonlyArray<LocalAssistAction> = [
       kana: "ほんやく",
     },
     requestText:
-      "Markdown構造、リンク、コードブロック、引用、フロントマター、固有名詞を可能な限り保持したまま、自然な翻訳文を作成してください。意味を補いすぎないでください。翻訳先言語の指定がない場合は、日本語文なら英語、英語文なら日本語を候補にしてください。",
+      "翻訳してください。Markdown構造、リンク、コードブロック、引用、フロントマター、固有名詞はできるだけ保持してください。",
   },
   {
     id: "continue_ideas",
@@ -87,7 +87,7 @@ export const LOCAL_ASSIST_ACTIONS: ReadonlyArray<LocalAssistAction> = [
       kana: "つづきのあん",
     },
     requestText:
-      "本文に直接続けられる文章案を作成してください。原文の方向性から外れないでください。",
+      "本文に自然に続く文章を書いてください。方向性を変えないでください。",
   },
   {
     id: "shorten",
@@ -99,7 +99,7 @@ export const LOCAL_ASSIST_ACTIONS: ReadonlyArray<LocalAssistAction> = [
       kana: "みじかく",
     },
     requestText:
-      "原文の主張と重要なニュアンスを保ったまま、全体を簡潔にしてください。Markdown構造、リンク、コード、引用は保持してください。",
+      "意味を保ったまま短くしてください。Markdown構造、リンク、コード、引用は保ってください。",
   },
   {
     id: "review_section",
@@ -111,7 +111,7 @@ export const LOCAL_ASSIST_ACTIONS: ReadonlyArray<LocalAssistAction> = [
       kana: "しょうれびゅー",
     },
     requestText:
-      "読みにくい箇所、重複、流れの悪さを直した章の改稿案を作成してください。原文の意味とMarkdown構造をできるだけ保持してください。",
+      "読みにくい箇所、重複、流れを直してください。意味とMarkdown構造は保ってください。",
   },
 ];
 

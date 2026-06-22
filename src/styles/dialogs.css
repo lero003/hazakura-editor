@@ -236,6 +236,10 @@
   gap: 8px;
 }
 
+.agent-workbench-settings .preference-section-title-row {
+  order: -2;
+}
+
 .preference-preview-badge {
   background: var(--accent-soft);
   border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
@@ -246,6 +250,50 @@
   line-height: 1;
   padding: 4px 8px;
   text-transform: uppercase;
+}
+
+.preference-availability-card {
+  --availability-accent: var(--accent);
+  background: color-mix(
+    in srgb,
+    var(--availability-accent) 10%,
+    var(--surface-muted)
+  );
+  border: 1px solid
+    color-mix(in srgb, var(--availability-accent) 42%, var(--border));
+  border-radius: 8px;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-weight: 700;
+  line-height: 1.4;
+  order: -1;
+  padding: 10px 12px;
+}
+
+.preference-availability-card-available {
+  --availability-accent: #2f7d57;
+}
+
+.preference-availability-card-unavailable {
+  --availability-accent: var(--danger, #c0392b);
+}
+
+.preference-availability-card-disabled,
+.preference-availability-card-unsupported {
+  --availability-accent: var(--danger, #c0392b);
+}
+
+.preference-availability-label {
+  color: var(--availability-accent);
+  font-size: 12px;
+}
+
+.preference-availability-detail {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .preference-note,

@@ -13,6 +13,10 @@ export type AgentWorkbenchCopy = {
   appleSectionLabel: string;
   applePreviewLabel: string;
   appleDescription: string;
+  appleAvailabilityAvailableLabel: string;
+  appleAvailabilityDisabledLabel: string;
+  appleAvailabilityUnavailableLabel: string;
+  appleAvailabilityUnsupportedLabel: string;
   appleFixtureStatus: string;
   appleLiveStatus: string;
   appleUnavailablePrefix: string;
@@ -61,6 +65,10 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
         applePreviewLabel: "プレビュー",
         appleDescription:
           "Apple Intelligence 対応の Mac で使える、プレビュー版のローカル AI 文章支援です。利用には目安として macOS 26 以降、M1 以降の Mac、Apple Intelligence の有効化、対応言語 / 地域が必要です。詳しい条件は Apple 公式の Apple Intelligence 案内を確認してください。",
+        appleAvailabilityAvailableLabel: "利用できます",
+        appleAvailabilityDisabledLabel: "無効です",
+        appleAvailabilityUnavailableLabel: "利用できません",
+        appleAvailabilityUnsupportedLabel: "この環境では使えません",
         appleFixtureStatus:
           "Hazakura Local Assist は現在利用できません。",
         appleLiveStatus:
@@ -128,6 +136,10 @@ export function getAgentWorkbenchCopy(lang: MenuLanguage): AgentWorkbenchCopy {
         applePreviewLabel: "Preview",
         appleDescription:
           "Preview local AI writing assistance for Macs that can use Apple Intelligence. As a guide, it needs macOS 26 or later, an Apple silicon Mac with M1 or later, Apple Intelligence turned on, and a supported language and region. Check Apple's Apple Intelligence support information for current requirements.",
+        appleAvailabilityAvailableLabel: "Available",
+        appleAvailabilityDisabledLabel: "Disabled",
+        appleAvailabilityUnavailableLabel: "Not available",
+        appleAvailabilityUnsupportedLabel: "Unsupported",
         appleFixtureStatus:
           "Hazakura Local Assist is not currently available.",
         appleLiveStatus:

@@ -18,43 +18,43 @@ const JA_PRESETS: ReadonlyArray<LocalAssistPreset> = [
     actionId: "proofread_only",
     label: "校正だけ",
     requestText:
-      "誤字脱字、助詞、明らかな文法ミス、表記ゆれだけを修正してください。意味、文体、構成、Markdown構造は変えないでください。",
+      "誤字脱字、助詞、文法ミス、表記ゆれだけ直してください。意味、文体、Markdown構造は保ってください。",
   },
   {
     actionId: "rewrite_natural",
     label: "読みやすく",
     requestText:
-      "原文の意味と温度感を保ったまま、不自然な言い回し、冗長な表現、読みづらい文だけを軽く整えてください。新しい情報は追加しないでください。",
+      "意味を変えずに、読みやすい自然な文にしてください。新しい情報は足さないでください。",
   },
   {
     actionId: "summarize",
     label: "要約",
     requestText:
-      "本文の内容を3〜5行で要約してください。推測や新情報は追加しないでください。",
+      "本文を3〜5行で要約してください。推測や新しい情報は足さないでください。",
   },
   {
     actionId: "translate",
     label: "翻訳",
     requestText:
-      "Markdown構造、リンク、コードブロック、引用、フロントマター、固有名詞を可能な限り保持したまま、自然な翻訳文を作成してください。意味を補いすぎないでください。翻訳先言語の指定がない場合は、日本語文なら英語、英語文なら日本語を候補にしてください。",
+      "翻訳してください。Markdown構造、リンク、コードブロック、引用、フロントマター、固有名詞はできるだけ保持してください。",
   },
   {
     actionId: "continue_ideas",
     label: "続きの案",
     requestText:
-      "本文に直接続けられる文章案を作成してください。原文の方向性から外れないでください。",
+      "本文に自然に続く文章を書いてください。方向性を変えないでください。",
   },
   {
     actionId: "shorten",
     label: "短くする",
     requestText:
-      "原文の主張と重要なニュアンスを保ったまま、全体を簡潔にしてください。Markdown構造、リンク、コード、引用は保持してください。",
+      "意味を保ったまま短くしてください。Markdown構造、リンク、コード、引用は保ってください。",
   },
   {
     actionId: "review_section",
     label: "章レビュー",
     requestText:
-      "読みにくい箇所、重複、流れの悪さを直した章の改稿案を作成してください。原文の意味とMarkdown構造をできるだけ保持してください。",
+      "読みにくい箇所、重複、流れを直してください。意味とMarkdown構造は保ってください。",
   },
 ];
 
@@ -107,7 +107,25 @@ describe("LOCAL_ASSIST_ACTIONS", () => {
 
     const review = getLocalAssistAction("review_section");
     expect(review.label.ja).toBe("章レビュー");
-    expect(review.requestText).toMatch(/改稿案/);
+    expect(review.requestText).toMatch(/流れ/);
+  });
+
+  it("keeps the translation preset simple instead of choosing a target language for the local model", () => {
+    const translate = getLocalAssistAction("translate");
+
+    expect(translate.requestText).toBe(
+      "翻訳してください。Markdown構造、リンク、コードブロック、引用、フロントマター、固有名詞はできるだけ保持してください。",
+    );
+    expect(translate.requestText).not.toMatch(/英語|指定がない場合|日本語文なら|英語文なら/);
+  });
+
+  it("keeps preset request text short enough for small local models", () => {
+    for (const action of LOCAL_ASSIST_ACTIONS) {
+      expect(action.requestText.length).toBeLessThanOrEqual(70);
+      expect(action.requestText).not.toMatch(
+        /可能な限り|温度感|補いすぎ|改稿案|自然な翻訳文|候補/,
+      );
+    }
   });
 });
 

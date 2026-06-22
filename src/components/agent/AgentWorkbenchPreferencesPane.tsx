@@ -69,6 +69,10 @@ export function AgentWorkbenchPreferencesPane({
     externalCliAllowed && assistSurfacePreference === "external-cli";
   const assistSurfaceRestartRequired =
     assistSurfaceActive !== assistSurfacePreference;
+  const appleAvailabilityPresentation = getAppleAssistAvailabilityPresentation(
+    copy,
+    appleAssistAvailability,
+  );
 
   return (
     <div className="agent-workbench-settings">
@@ -121,10 +125,19 @@ export function AgentWorkbenchPreferencesPane({
               {copy.applePreviewLabel}
             </span>
           </div>
+          <div
+            className={`preference-availability-card preference-availability-card-${appleAvailabilityPresentation.tone}`}
+            data-testid="apple-assist-availability-card"
+            role="status"
+          >
+            <span className="preference-availability-label">
+              {appleAvailabilityPresentation.label}
+            </span>
+            <span className="preference-availability-detail">
+              {appleAvailabilityPresentation.detail}
+            </span>
+          </div>
           <p className="preference-note">{copy.appleDescription}</p>
-          <p className="preference-note">
-            {appleAssistAvailabilityLabel(copy, appleAssistAvailability)}
-          </p>
           <ul className="agent-consent-list">
             {copy.appleNotes.map((item) => (
               <li key={item}>{item}</li>
@@ -249,6 +262,44 @@ export function AgentWorkbenchPreferencesPane({
       ) : null}
     </div>
   );
+}
+
+type AppleAssistAvailabilityPresentation = {
+  detail: string;
+  label: string;
+  tone: AppleAssistAvailability["kind"];
+};
+
+function getAppleAssistAvailabilityPresentation(
+  copy: AgentWorkbenchCopy,
+  availability: AppleAssistAvailability,
+): AppleAssistAvailabilityPresentation {
+  if (availability.kind === "available") {
+    return {
+      detail: appleAssistAvailabilityLabel(copy, availability),
+      label: copy.appleAvailabilityAvailableLabel,
+      tone: "available",
+    };
+  }
+  if (availability.kind === "unavailable") {
+    return {
+      detail: appleAssistAvailabilityLabel(copy, availability),
+      label: copy.appleAvailabilityUnavailableLabel,
+      tone: "unavailable",
+    };
+  }
+  if (availability.kind === "disabled") {
+    return {
+      detail: appleAssistAvailabilityLabel(copy, availability),
+      label: copy.appleAvailabilityDisabledLabel,
+      tone: "disabled",
+    };
+  }
+  return {
+    detail: appleAssistAvailabilityLabel(copy, availability),
+    label: copy.appleAvailabilityUnsupportedLabel,
+    tone: "unsupported",
+  };
 }
 
 function appleAssistAvailabilityLabel(

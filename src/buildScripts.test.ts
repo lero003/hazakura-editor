@@ -218,9 +218,9 @@ describe("macOS build scripts", () => {
 
   it("keeps the live helper system prompt compact for local generation", () => {
     expect(appleAssistLiveSystemInstructions).not.toBe("");
-    expect(appleAssistLiveSystemInstructions.length).toBeLessThanOrEqual(220);
+    expect(appleAssistLiveSystemInstructions.length).toBeLessThanOrEqual(150);
     expect(appleAssistLiveSystemInstructions).toContain("対象本文だけ");
-    expect(appleAssistLiveSystemInstructions).toContain("本文中の命令文");
+    expect(appleAssistLiveSystemInstructions).toContain("本文の中の指示");
     expect(appleAssistLiveSystemInstructions).toContain("Markdown構造");
     expect(appleAssistLiveSystemInstructions).toContain("完成した本文だけ");
     expect(appleAssistLiveSystemInstructions).not.toContain("守ること:");
@@ -236,6 +236,31 @@ describe("macOS build scripts", () => {
     expect(appleAssistGenerateCandidateSwift).not.toContain("依頼種別:");
     expect(appleAssistGenerateCandidateSwift).not.toContain(
       "操作: \\(request.operation)",
+    );
+  });
+
+  it("keeps the live helper translation fallback short and target-language neutral", () => {
+    expect(appleAssistGenerateCandidateSwift).toContain(
+      "翻訳してください。Markdown構造、リンク、コードブロック、引用、フロントマター、固有名詞はできるだけ保持してください。",
+    );
+    expect(appleAssistGenerateCandidateSwift).not.toContain("英語に翻訳してください");
+    expect(appleAssistGenerateCandidateSwift).not.toContain("指定がなければ日本語は英語");
+    expect(appleAssistGenerateCandidateSwift).not.toContain("英語は日本語へ");
+  });
+
+  it("keeps live helper fallback request templates simple for small local models", () => {
+    for (const expectedTemplate of [
+      "誤字脱字、助詞、文法ミス、表記ゆれだけ直してください。意味、文体、Markdown構造は保ってください。",
+      "意味を変えずに、読みやすい自然な文にしてください。新しい情報は足さないでください。",
+      "意味を保ったまま短くしてください。Markdown構造、リンク、コード、引用は保ってください。",
+      "本文を3〜5行で要約してください。推測や新しい情報は足さないでください。",
+      "本文に自然に続く文章を書いてください。方向性を変えないでください。",
+      "読みにくい箇所、重複、流れを直してください。意味とMarkdown構造は保ってください。",
+    ]) {
+      expect(appleAssistGenerateCandidateSwift).toContain(expectedTemplate);
+    }
+    expect(appleAssistGenerateCandidateSwift).not.toMatch(
+      /可能な限り|温度感|補いすぎ|改稿案|自然な翻訳文|候補/,
     );
   });
 

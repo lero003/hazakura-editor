@@ -99,6 +99,24 @@ describe("editor tab close affordance CSS", () => {
     );
   });
 
+  it("makes Hazakura Local Assist availability read as a primary status card", () => {
+    const card = ruleBody(dialogsCss, ".preference-availability-card");
+    const available = ruleBody(
+      dialogsCss,
+      ".preference-availability-card-available",
+    );
+    const unavailable = ruleBody(
+      dialogsCss,
+      ".preference-availability-card-unavailable",
+    );
+
+    expect(card).toMatch(/order:\s*-1/);
+    expect(card).toMatch(/border:\s*1px solid/);
+    expect(card).toMatch(/font-weight:\s*700/);
+    expect(available).toMatch(/--availability-accent:\s*#2f7d57/);
+    expect(unavailable).toMatch(/--availability-accent:\s*var\(--danger/);
+  });
+
   it("keeps Sakura ambient particles restrained", () => {
     const rule = ruleBody(appShellCss, ".ambient-sakura .ambient-particle");
 

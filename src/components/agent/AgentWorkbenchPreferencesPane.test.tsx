@@ -61,6 +61,28 @@ describe("AgentWorkbenchPreferencesPane", () => {
     ).toBeNull();
   });
 
+  it("puts the Hazakura Local Assist availability card above the descriptive copy", () => {
+    render(
+      <AgentWorkbenchPreferencesPane
+        {...baseProps}
+        appleAssistAvailability={{ kind: "available" }}
+        assistSurfacePreference="apple-local"
+      />,
+    );
+
+    const availability = screen.getByTestId("apple-assist-availability-card");
+    const description = screen.getByText(/preview local AI writing assistance/i);
+
+    expect(availability.className).toContain(
+      "preference-availability-card-available",
+    );
+    expect(availability.textContent).toContain("Available");
+    expect(
+      availability.compareDocumentPosition(description)
+        & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
   it("shows CLI Agent settings only when the CLI surface is selected", () => {
     render(
       <AgentWorkbenchPreferencesPane
