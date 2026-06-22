@@ -80,6 +80,7 @@ describe("preview.css", () => {
     expect(body).toMatch(/position:\s*sticky/);
     expect(body).toMatch(/height:\s*72px/);
     expect(body).toMatch(/grid-template-columns:\s*minmax\(104px,\s*128px\) minmax\(0,\s*1fr\) minmax\(104px,\s*128px\)/);
+    expect(ruleBody(".ebook-pane .ebook-reader-chrome-with-focus")).toMatch(/grid-template-columns:\s*minmax\(84px,\s*118px\) minmax\(0,\s*1fr\) minmax\(84px,\s*118px\) minmax\(96px,\s*128px\)/);
     expect(statusBody).toMatch(/align-self:\s*center/);
     expect(buttonBody).toMatch(/width:\s*100%/);
     expect(previewCss).not.toMatch(/(?:^|\n)\.ebook-reader-chrome\s*{/);

@@ -80,6 +80,51 @@ describe("EBookPane chapter reader", () => {
     expect(screen.queryByRole("heading", { name: "Chapter Two" })).toBeNull();
   });
 
+  it("offers a Japanese Reading Focus entry and reports the current reader location", async () => {
+    vi.mocked(measureEBookPageCount).mockReturnValue(3);
+    const onEnterReadingFocus = vi.fn();
+
+    render(
+      <EBookPane
+        menuLanguage="ja"
+        onEnterReadingFocus={onEnterReadingFocus}
+        source={"# Chapter One\n\nbody one"}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("ページ 1 / 3")).toBeTruthy();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "次のページ" }));
+    fireEvent.click(screen.getByRole("button", { name: "集中して読む" }));
+
+    expect(onEnterReadingFocus).toHaveBeenCalledWith({
+      chapterIndex: 0,
+      pageIndex: 1,
+    });
+  });
+
+  it("uses a focused reader variant with a return action", () => {
+    const onExitReadingFocus = vi.fn();
+
+    render(
+      <EBookPane
+        menuLanguage="ja"
+        onExitReadingFocus={onExitReadingFocus}
+        readingFocusActive
+        source={"# Chapter One\n\nbody one"}
+      />,
+    );
+
+    const article = screen.getByRole("article", { name: "本のように読む" });
+    expect(article.classList.contains("ebook-pane-focus")).toBe(true);
+
+    fireEvent.click(screen.getByRole("button", { name: "編集に戻る" }));
+
+    expect(onExitReadingFocus).toHaveBeenCalledTimes(1);
+  });
+
   it("turns half-scroll vertical wheel gestures into page navigation while keeping the page frame", async () => {
     vi.mocked(measureEBookPageCount).mockReturnValue(3);
 

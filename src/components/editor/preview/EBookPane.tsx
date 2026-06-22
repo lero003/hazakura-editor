@@ -41,8 +41,11 @@ type EBookPaneProps = {
   documentPath?: string | null;
   initialLocation?: EBookReaderLocation | null;
   menuLanguage?: MenuLanguage;
+  onEnterReadingFocus?: (location: EBookReaderLocation) => void;
+  onExitReadingFocus?: () => void;
   onLocationChange?: (location: EBookReaderLocation) => void;
   onOpenLocalLink?: (href: string) => void;
+  readingFocusActive?: boolean;
   source: string;
   workspaceRoot?: string | null;
 };
@@ -62,6 +65,8 @@ type RenderedChapter = {
 type EBookReaderCopy = {
   body: string;
   chapterProgress: string;
+  enterReadingFocus: string;
+  exitReadingFocus: string;
   footerChapter: string;
   footerPageProgress: string;
   frontMatter: string;
@@ -78,8 +83,11 @@ export default function EBookPane({
   documentPath,
   initialLocation,
   menuLanguage = "en",
+  onEnterReadingFocus,
+  onExitReadingFocus,
   onLocationChange,
   onOpenLocalLink,
+  readingFocusActive = false,
   source,
   workspaceRoot,
 }: EBookPaneProps) {
@@ -389,17 +397,23 @@ export default function EBookPane({
   const nextDisabled =
     activeChapterIndexSafe >= totalChapters - 1 &&
     activePageIndexSafe >= measuredPageCount - 1;
+  const focusAction = readingFocusActive ? onExitReadingFocus : onEnterReadingFocus;
+  const focusActionLabel = readingFocusActive
+    ? copy.exitReadingFocus
+    : copy.enterReadingFocus;
 
   return (
     <article
       aria-label={copy.readerLabel}
-      className="ebook-pane markdown-preview"
+      className={`ebook-pane markdown-preview${readingFocusActive ? " ebook-pane-focus" : ""}`}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       onWheel={handleWheel}
       tabIndex={0}
     >
-      <header className="ebook-reader-chrome">
+      <header
+        className={`ebook-reader-chrome${focusAction ? " ebook-reader-chrome-with-focus" : ""}`}
+      >
         <button
           className="ebook-reader-button"
           disabled={previousDisabled}
@@ -427,6 +441,24 @@ export default function EBookPane({
         >
           {copy.nextPage}
         </button>
+        {focusAction ? (
+          <button
+            className="ebook-reader-button ebook-reader-focus-button"
+            onClick={() => {
+              if (readingFocusActive) {
+                onExitReadingFocus?.();
+              } else {
+                onEnterReadingFocus?.({
+                  chapterIndex: activeChapterIndexSafe,
+                  pageIndex: activePageIndexSafe,
+                });
+              }
+            }}
+            type="button"
+          >
+            {focusActionLabel}
+          </button>
+        ) : null}
       </header>
       {activeChapterHtml ? (
         <section
@@ -547,6 +579,8 @@ function getEBookReaderCopy(
     return {
       body: "本文",
       chapterProgress: "章",
+      enterReadingFocus: "よむことに集中",
+      exitReadingFocus: "編集にもどる",
       footerChapter: "章",
       footerPageProgress: "章内ページ",
       frontMatter: "前付",
@@ -561,6 +595,8 @@ function getEBookReaderCopy(
     return {
       body: "本文",
       chapterProgress: "章",
+      enterReadingFocus: "集中して読む",
+      exitReadingFocus: "編集に戻る",
       footerChapter: "章",
       footerPageProgress: "章内ページ",
       frontMatter: "前付",
@@ -574,6 +610,8 @@ function getEBookReaderCopy(
   return {
     body: "Body",
     chapterProgress: "Chapter",
+    enterReadingFocus: "Focus reading",
+    exitReadingFocus: "Back to editor",
     footerChapter: "Chapter",
     footerPageProgress: "Chapter page",
     frontMatter: "Front matter",

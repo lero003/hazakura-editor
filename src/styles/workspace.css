@@ -10,6 +10,28 @@
   grid-template-columns: 42px minmax(0, 1fr);
 }
 
+.workspace.workspace-reading-focus {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.workspace-reading-focus .file-tree-pane,
+.workspace-reading-focus .workspace-sidebar-rail,
+.workspace-reading-focus .editor-preview-grid {
+  display: none;
+}
+
+.ebook-reading-focus-surface {
+  background: var(--surface-strong);
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.ebook-reading-focus-surface .ebook-pane {
+  flex: 1 1 auto;
+}
+
 .file-tree-pane {
   background: var(--surface-muted);
   border-right: 0;

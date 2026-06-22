@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-23 (v0.30 paged flow alignment)
+Last reviewed: 2026-06-23 (v0.31 reading focus alignment)
 
 ## Current Position
 
@@ -205,13 +205,18 @@ Mode / L Mode / Preview does not leave the user badly lost.
 Add book-like two-page inspection without making page-turning the only
 way to read.
 
-- Add a two-page spread layout.
-- Fall back to single-page layout on narrow windows.
+- Add a `集中して読む` Reading Focus entry for the e-book reader.
+- In Reading Focus, let workspace/sidebar/editor chrome recede so the
+  active Markdown document can use the main window as a book surface.
+- Add a two-page spread layout when the focused reader has enough width.
+- Fall back to single-page focused reading on narrow windows.
 - Add previous / next page controls.
 - Support keyboard navigation such as Left / Right and Space.
 - Show current page / total page or equivalent progress.
 - Add coarse navigation such as a page slider or heading-based jump.
 - Keep Markdown source canonical and avoid Preview DOM editing.
+- Keep a fully detached separate reader window as a later option, not
+  the first v0.31 path.
 
 Acceptance: the surface can feel book-like while paged flow remains the
 daily revision path.

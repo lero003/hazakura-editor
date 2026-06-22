@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-23 (v0.31 spread first slice)
+Last reviewed: 2026-06-23 (v0.31 reading focus first slice)
 
 ## Current State
 
@@ -40,9 +40,17 @@ Last reviewed: 2026-06-23 (v0.31 spread first slice)
   Shift+Space page movement. Verification passed with focused e-book /
   pagination / CSS tests, full `npm run test`, `npm run build:vite`
   (with the usual Vite chunk-size warning), and `git diff --check`.
-  Remaining v0.31 proof should stay on built-app visual smoke, one-page
-  versus one-spread page movement feel, and coarse navigation such as
-  heading jump / slider.
+  The v0.31 Reading Focus first slice is now implemented as the main
+  same-window path: `集中して読む` opens an occupied reader surface that
+  hides workspace/sidebar/editor chrome, reuses the read-only `EBookPane`
+  surface, and returns through `編集に戻る`. E-book location state is
+  lifted above `SidePane` so right-pane and Reading Focus share
+  chapter/page position. Verification passed with focused `EBookPane` /
+  `AppWorkspace` / `SidePane` / CSS tests, full `npm run test`,
+  `npm run build:vite` (with the usual Vite chunk-size warning), and
+  `git diff --check`. Remaining v0.31 proof should stay on built-app
+  visual smoke, page-range display such as `ページ 5-6 / 61` when a spread
+  is visible, and coarse navigation such as heading jump / slider.
   After v1.0, do not rush straight into v2.0; use v1.x to deepen the
   single-document product first: EPUB export, Diff / Review ergonomics,
   provenance, movement between writing / reading layers, distribution

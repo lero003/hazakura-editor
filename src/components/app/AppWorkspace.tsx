@@ -5,7 +5,8 @@ import type {
   PointerEvent as ReactPointerEvent,
   RefObject,
 } from "react";
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
+import type { EBookReaderLocation } from "../editor/preview/EBookPane";
 import type { EditorPaneHandle, EditorSelectionInfo } from "../editor/EditorPane";
 import { EditorMainPane } from "../editor/EditorMainPane";
 import { PaneResizer } from "../editor/PaneResizer";
@@ -46,6 +47,8 @@ import {
   MAX_PREVIEW_COLUMN_PERCENT,
   MIN_PREVIEW_COLUMN_PERCENT,
 } from "../../types";
+
+const EBookPane = lazy(() => import("../editor/preview/EBookPane"));
 
 type AppWorkspaceProps = {
   activeContents: string;
@@ -241,6 +244,11 @@ export function AppWorkspace({
 }: AppWorkspaceProps) {
   const [internalWorkspaceSidebarCollapsed, setInternalWorkspaceSidebarCollapsed] =
     useState(false);
+  const [ebookFocusOpen, setEbookFocusOpen] = useState(false);
+  const [ebookLocation, setEbookLocation] = useState<{
+    documentKey: string;
+    location: EBookReaderLocation;
+  } | null>(null);
   const workspaceSidebarCollapsed =
     workspaceSidebarCollapsedOverride ?? internalWorkspaceSidebarCollapsed;
   const setWorkspaceSidebarCollapsed = (collapsed: boolean) => {
@@ -251,10 +259,33 @@ export function AppWorkspace({
   };
   const isWorkspaceSidebarCollapsed =
     workspaceSidebarCollapsed && !editorSettings.lModeEnabled;
+  const activeEbookDocumentKey = activeTab ? ebookDocumentKey(activeTab) : null;
+  const activeEbookLocation =
+    activeEbookDocumentKey && ebookLocation?.documentKey === activeEbookDocumentKey
+      ? ebookLocation.location
+      : null;
+  const handleEbookLocationChange = (location: EBookReaderLocation) => {
+    if (!activeEbookDocumentKey) {
+      return;
+    }
+    setEbookLocation({
+      documentKey: activeEbookDocumentKey,
+      location,
+    });
+  };
+  const openEbookReadingFocus = (location: EBookReaderLocation) => {
+    handleEbookLocationChange(location);
+    setEbookFocusOpen(true);
+  };
+  const closeEbookReadingFocus = () => {
+    setEbookFocusOpen(false);
+  };
+  const ebookReadingFocusActive =
+    ebookFocusOpen && activeTab !== null && previewVisible && selectedImage === null;
 
   return (
     <section
-      className={`workspace${isWorkspaceSidebarCollapsed ? " workspace-sidebar-collapsed" : ""}`}
+      className={`workspace${isWorkspaceSidebarCollapsed ? " workspace-sidebar-collapsed" : ""}${ebookReadingFocusActive ? " workspace-reading-focus" : ""}`}
     >
       {isWorkspaceSidebarCollapsed ? (
         <div className="workspace-sidebar-rail">
@@ -375,6 +406,9 @@ export function AppWorkspace({
             onClearCompareTarget={clearCompareTarget}
             onApplyBackup={onApplyBackup}
             onCloseCompareView={closeCompareView}
+            ebookLocation={activeEbookLocation}
+            onEbookLocationChange={handleEbookLocationChange}
+            onOpenEbookReadingFocus={openEbookReadingFocus}
             onOpenPreviewLocalLink={openPreviewMarkdownLink}
             onPreviewScroll={syncEditorScroll}
             onRunSelectedFileCompare={runSelectedFileCompare}
@@ -387,6 +421,33 @@ export function AppWorkspace({
           />
         ) : null}
       </div>
+      {ebookReadingFocusActive && activeTab ? (
+        <div
+          aria-label={sidePaneCopy.ebookReading}
+          className="ebook-reading-focus-surface"
+        >
+          <Suspense fallback={null}>
+            <EBookPane
+              documentPath={activeTab.path}
+              initialLocation={activeEbookLocation}
+              menuLanguage={menuLanguage}
+              onExitReadingFocus={closeEbookReadingFocus}
+              onLocationChange={handleEbookLocationChange}
+              onOpenLocalLink={openPreviewMarkdownLink}
+              readingFocusActive
+              source={activeContents}
+              workspaceRoot={
+                workspaceRootPath ??
+                (activeTab.path ? activeTab.path.replace(/\/[^/]+$/, "") : null)
+              }
+            />
+          </Suspense>
+        </div>
+      ) : null}
     </section>
   );
+}
+
+function ebookDocumentKey(tab: EditorTab): string {
+  return tab.path || tab.id;
 }

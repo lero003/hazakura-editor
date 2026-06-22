@@ -78,6 +78,21 @@ describe("workspace.css", () => {
     expect(ruleBody(".preview-pane-ebook")).toMatch(/overflow:\s*hidden/);
   });
 
+  it("lets Reading Focus occupy the workspace without the editor grid", () => {
+    expect(ruleBody(".workspace.workspace-reading-focus")).toMatch(
+      /grid-template-columns:\s*minmax\(0,\s*1fr\)/,
+    );
+    expect(workspaceCss).toMatch(
+      /\.workspace-reading-focus \.file-tree-pane,\n\.workspace-reading-focus \.workspace-sidebar-rail,\n\.workspace-reading-focus \.editor-preview-grid\s*{[^}]*display:\s*none/s,
+    );
+
+    const surface = ruleBody(".ebook-reading-focus-surface");
+    expect(surface).toMatch(/background:\s*var\(--surface-strong\)/);
+    expect(surface).toMatch(/display:\s*flex/);
+    expect(surface).toMatch(/min-width:\s*0/);
+    expect(surface).toMatch(/overflow:\s*hidden/);
+  });
+
   it("keeps dark and Yakou diff rows high contrast", () => {
     expect(workspaceCss).toMatch(
       /:root\[data-theme="dark"\] \.diff-cell\.added,[^}]*:root\[data-theme="yakou"\] \.diff-line-number\.added\s*{[^}]*var\(--diff-added-row-bg\)/s,

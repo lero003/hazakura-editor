@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v0.30-v1.0 Reader UX Stabilization queue and post-v0.29.1 evidence
 Authority: High
-Last reviewed: 2026-06-23 (v0.31 spread first slice)
+Last reviewed: 2026-06-23 (v0.31 reading focus first slice)
 
 ## Purpose
 
@@ -51,13 +51,14 @@ transaction-boundary issue appears.
 ## Active UX Queue
 
 Pick one item at a time. The immediate next product slice is v0.31
-Spread View follow-up unless a concrete post-release Local Assist safety
-or App Store lane issue appears.
+Reading Focus visual-smoke / coarse-navigation follow-up unless a
+concrete post-release Local Assist safety or App Store lane issue
+appears.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
 | P0 | v0.30 e-book Mode Paged Flow | e-book Mode can be used as a daily reading / revision surface for long Japanese Markdown prose while still looking like a book page. The slice should reduce page-turn friction with wheel / trackpad / keyboard movement, preserve chapter/page location for the later editor bridge, and verify large-document behavior. |
-| P1 | v0.31 e-book Mode Spread View | Two-page book-like inspection exists when window width allows, falls back to one page when narrow, has keyboard / button navigation plus coarse movement, and remains a display layer over Markdown source rather than Preview DOM editing. |
+| P1 | v0.31 e-book Mode Reading Focus / Spread View | `集中して読む` opens an occupied same-window reading surface, two-page book-like inspection exists when width allows, it falls back to one page when narrow, has keyboard / button navigation plus coarse movement, and remains a display layer over Markdown source rather than Preview DOM editing. |
 | P2 | v0.32 Editor / Reader Position Bridge | Opening e-book Mode near the current editor cursor or visible heading and returning from reader position to Markdown editing feels reliable for normal, unsaved, and recovered documents. |
 | P3 | v0.33 EPUB Export v1 Polish | EPUB export remains an explicit user action and is polished enough for initial v1 use with Japanese text, headings, local images, links, code blocks, and clear failure messages. Advanced metadata, cover, navigation editing, and validation workflows stay deferred to v1.x. |
 | RC | v0.34 v1.0 Release Candidate | Feature work freezes and the golden path covers New File, Open, Save / Save As, L Mode, Preview, e-book paged flow, Spread View, EPUB export, Local Assist, Diff / Discard, Recovery, relaunch, large documents, and App Store lane boundary checks. |
@@ -85,14 +86,29 @@ of 2026-06-23: the e-book page sheet is spread-capable and uses a
 container query to widen to a two-page frame only when the reader column
 has enough width, otherwise it falls back to the existing single-page
 frame. Pagination measurement now treats CSS column width as the page
-unit, so a spread viewport does not turn two visible pages into one
-logical page. Reader keyboard handling now also supports Space /
-Shift+Space from the focused reader root. Verification passed with
-focused e-book / pagination / CSS tests, full `npm run test`,
-`npm run build:vite` (with the usual Vite chunk-size warning), and
-`git diff --check`. Remaining v0.31 proof should focus on built-app
-visual smoke, whether page movement should advance by one page or one
-spread when wide, and coarse navigation such as heading jump / slider.
+unit. Reader keyboard handling now also supports Space / Shift+Space
+from the focused reader root. Verification passed with focused e-book /
+pagination / CSS tests, full `npm run test`, `npm run build:vite` (with
+the usual Vite chunk-size warning), and `git diff --check`.
+
+v0.31 Reading Focus first slice is implemented at code-regression level
+as of 2026-06-23: the primary user-facing entry is `集中して読む`, not a
+narrow `見開きで読む` command. It opens an occupied reading mode in the
+same main window; workspace/sidebar/editor chrome recedes and the active
+Markdown document is rendered by the same read-only `EBookPane` surface
+with a focused `編集に戻る` action. On small windows this remains a
+focused single-page reader; on wide windows it can naturally become a
+spread. The e-book reader location is lifted above `SidePane` so the
+right pane and Reading Focus share the same chapter/page position. When
+a spread is visible, two-page movement is acceptable and should be
+displayed as a range such as `ページ 5-6 / 61` in a later polish slice.
+The fully detached separate-window reader remains plausible later, but
+v0.31 should first prove the same-window Reading Focus path.
+Verification passed with focused `EBookPane` / `AppWorkspace` /
+`SidePane` / CSS tests, full `npm run test`, `npm run build:vite` (with
+the usual Vite chunk-size warning), and `git diff --check`. Remaining
+v0.31 proof should focus on built-app visual smoke and coarse navigation
+such as heading jump / slider.
 
 Post-v1 guardrail: after v1.0, do not rush straight into v2.0. Use v1.x
 to deepen the single-document product first: EPUB export, Diff / Review

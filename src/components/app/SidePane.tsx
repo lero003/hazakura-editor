@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useState, type RefObject } from "react";
+import { lazy, Suspense, type RefObject } from "react";
 import type { SidePaneCopy } from "../../lib/locale";
 import type {
   CompareAnchor,
@@ -43,6 +43,8 @@ type SidePaneProps = {
   onClearCompareTarget: () => void;
   onApplyBackup?: (documentPath: string, backupContents: string) => void;
   onCloseCompareView: (options?: { returnToEditor?: boolean }) => void;
+  onEbookLocationChange: (location: EBookReaderLocation) => void;
+  onOpenEbookReadingFocus: (location: EBookReaderLocation) => void;
   onOpenPreviewLocalLink: (path: string) => void | Promise<void>;
   onPreviewScroll: () => void;
   onRunSelectedFileCompare: () => void;
@@ -50,6 +52,7 @@ type SidePaneProps = {
   outlineTruncated: boolean;
   previewPaneRef: RefObject<HTMLDivElement | null>;
   previewVisible: boolean;
+  ebookLocation: EBookReaderLocation | null;
   sidePaneMode: RightPaneMode;
   workspaceRootPath: string | null;
 };
@@ -69,6 +72,8 @@ export function SidePane({
   onClearCompareTarget,
   onApplyBackup,
   onCloseCompareView,
+  onEbookLocationChange,
+  onOpenEbookReadingFocus,
   onOpenPreviewLocalLink,
   onPreviewScroll,
   onRunSelectedFileCompare,
@@ -76,13 +81,10 @@ export function SidePane({
   outlineTruncated,
   previewPaneRef,
   previewVisible,
+  ebookLocation,
   sidePaneMode,
   workspaceRootPath,
 }: SidePaneProps) {
-  const [ebookLocation, setEbookLocation] = useState<{
-    documentKey: string;
-    location: EBookReaderLocation;
-  } | null>(null);
   const compareCase = compareView
     ? getCompareCaseByKey(compareView.caseKey) ?? null
     : null;
@@ -95,23 +97,7 @@ export function SidePane({
   const showMarkdownPreviewCard =
     sidePaneMode === "preview" && activeTab !== null && previewVisible;
   const activeEbookDocumentKey = activeTab ? ebookDocumentKey(activeTab) : null;
-  const initialEbookLocation =
-    activeEbookDocumentKey !== null &&
-    ebookLocation?.documentKey === activeEbookDocumentKey
-      ? ebookLocation.location
-      : null;
-  const handleEbookLocationChange = useCallback(
-    (location: EBookReaderLocation) => {
-      if (!activeEbookDocumentKey) {
-        return;
-      }
-      setEbookLocation({
-        documentKey: activeEbookDocumentKey,
-        location,
-      });
-    },
-    [activeEbookDocumentKey],
-  );
+  const initialEbookLocation = activeEbookDocumentKey ? ebookLocation : null;
 
   return (
     <div
@@ -156,7 +142,8 @@ export function SidePane({
             documentPath={activeTab.path}
             initialLocation={initialEbookLocation}
             menuLanguage={menuLanguage}
-            onLocationChange={handleEbookLocationChange}
+            onEnterReadingFocus={onOpenEbookReadingFocus}
+            onLocationChange={onEbookLocationChange}
             onOpenLocalLink={onOpenPreviewLocalLink}
             source={activeContents}
             workspaceRoot={

@@ -21,7 +21,38 @@ vi.mock("../editor/PaneResizer", () => ({
 }));
 
 vi.mock("./SidePane", () => ({
-  SidePane: () => <div data-testid="side-pane" />,
+  SidePane: (props: {
+    onOpenEbookReadingFocus?: (location: {
+      chapterIndex: number;
+      pageIndex: number;
+    }) => void;
+  }) => (
+    <div data-testid="side-pane">
+      <button
+        onClick={() =>
+          props.onOpenEbookReadingFocus?.({ chapterIndex: 1, pageIndex: 2 })
+        }
+        type="button"
+      >
+        Mock enter reading focus
+      </button>
+    </div>
+  ),
+}));
+
+vi.mock("../editor/preview/EBookPane", () => ({
+  default: (props: {
+    initialLocation?: { chapterIndex: number; pageIndex: number } | null;
+    onExitReadingFocus?: () => void;
+  }) => (
+    <div data-testid="ebook-focus-pane">
+      focus {props.initialLocation?.chapterIndex ?? 0}:
+      {props.initialLocation?.pageIndex ?? 0}
+      <button onClick={props.onExitReadingFocus} type="button">
+        Mock exit reading focus
+      </button>
+    </div>
+  ),
 }));
 
 afterEach(cleanup);
@@ -41,6 +72,26 @@ const editorSettings: EditorSettings = {
   workspaceFontSize: 13,
   wrapLines: true,
 };
+
+const bookTab = {
+  contents: "# Chapter\n\nbody",
+  encoding: "utf-8",
+  error: null,
+  externalFingerprint: null,
+  fingerprint: "book-fp",
+  ignoredExternalFingerprint: null,
+  id: "/workspace/book.md",
+  large_file_warning: false,
+  lastSavedContents: "# Chapter\n\nbody",
+  lastSavedEncoding: "utf-8",
+  lastSavedLineEnding: "lf",
+  line_ending: "lf",
+  modified_ms: null,
+  name: "book.md",
+  path: "/workspace/book.md",
+  saveStatus: "idle",
+  size: 15,
+} as const;
 
 function renderWorkspace(overrides: Partial<ComponentProps<typeof AppWorkspace>> = {}) {
   const props: ComponentProps<typeof AppWorkspace> = {
@@ -184,5 +235,30 @@ describe("AppWorkspace workspace sidebar collapse", () => {
 
     expect(onWorkspaceSidebarCollapsedChange).toHaveBeenCalledWith(true);
     expect(screen.getByLabelText("Workspace file tree")).toBeTruthy();
+  });
+
+  it("enters and exits same-window Reading Focus from the e-book pane", async () => {
+    const { container } = renderWorkspace({
+      activeContents: bookTab.contents,
+      activeTab: bookTab,
+      hasWorkspaceSelection: true,
+      sidePaneMode: "ebook",
+      sidePaneVisible: true,
+      workspaceRootPath: "/workspace",
+    });
+    const workspace = container.querySelector(".workspace");
+
+    expect(workspace?.classList.contains("workspace-reading-focus")).toBe(false);
+
+    fireEvent.click(screen.getByRole("button", { name: "Mock enter reading focus" }));
+
+    expect(workspace?.classList.contains("workspace-reading-focus")).toBe(true);
+    expect((await screen.findByTestId("ebook-focus-pane")).textContent).toContain(
+      "focus 1:2",
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Mock exit reading focus" }));
+
+    expect(workspace?.classList.contains("workspace-reading-focus")).toBe(false);
   });
 });

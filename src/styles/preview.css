@@ -538,6 +538,10 @@
   z-index: 1;
 }
 
+.ebook-pane .ebook-reader-chrome-with-focus {
+  grid-template-columns: minmax(84px, 118px) minmax(0, 1fr) minmax(84px, 118px) minmax(96px, 128px);
+}
+
 .ebook-pane .ebook-reader-button {
   align-self: center;
   background: color-mix(in srgb, var(--surface-muted, #f5f5f7) 75%, transparent);
@@ -552,6 +556,10 @@
   min-height: 30px;
   padding: 5px 10px;
   width: 100%;
+}
+
+.ebook-pane .ebook-reader-focus-button {
+  font-weight: 650;
 }
 
 .ebook-pane .ebook-reader-button:hover:not(:disabled) {

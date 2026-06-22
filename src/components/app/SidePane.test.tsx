@@ -1,4 +1,4 @@
-import { createRef } from "react";
+import { createRef, useState } from "react";
 import {
   cleanup,
   fireEvent,
@@ -8,7 +8,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getSidePaneCopy } from "../../lib/locale";
-import type { EditorTab } from "../../types";
+import type { EditorTab, RightPaneMode } from "../../types";
 import { SidePane } from "./SidePane";
 
 afterEach(cleanup);
@@ -57,6 +57,9 @@ function sidePaneProps(
     onClearCompareSource: vi.fn(),
     onClearCompareTarget: vi.fn(),
     onCloseCompareView: vi.fn(),
+    ebookLocation: null,
+    onEbookLocationChange: vi.fn(),
+    onOpenEbookReadingFocus: vi.fn(),
     onOpenPreviewLocalLink: vi.fn(),
     onPreviewScroll: vi.fn(),
     onRunSelectedFileCompare: vi.fn(),
@@ -89,11 +92,26 @@ describe("SidePane", () => {
       id: "/workspace/book.md",
       name: "book.md",
     };
-    const { rerender } = renderSidePane({
-      activeContents: source,
-      activeTab: bookTab,
-      sidePaneMode: "ebook",
-    });
+    function SidePaneHarness({ sidePaneMode }: { sidePaneMode: RightPaneMode }) {
+      const [location, setLocation] = useState<{
+        chapterIndex: number;
+        pageIndex: number;
+      } | null>(null);
+
+      return (
+        <SidePane
+          {...sidePaneProps({
+            activeContents: source,
+            activeTab: bookTab,
+            ebookLocation: location,
+            onEbookLocationChange: setLocation,
+            sidePaneMode,
+          })}
+        />
+      );
+    }
+
+    const { rerender } = render(<SidePaneHarness sidePaneMode="ebook" />);
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
@@ -104,13 +122,7 @@ describe("SidePane", () => {
     });
 
     rerender(
-      <SidePane
-        {...sidePaneProps({
-          activeContents: source,
-          activeTab: bookTab,
-          sidePaneMode: "preview",
-        })}
-      />,
+      <SidePaneHarness sidePaneMode="preview" />,
     );
 
     await waitFor(() => {
@@ -119,13 +131,7 @@ describe("SidePane", () => {
     });
 
     rerender(
-      <SidePane
-        {...sidePaneProps({
-          activeContents: source,
-          activeTab: bookTab,
-          sidePaneMode: "ebook",
-        })}
-      />,
+      <SidePaneHarness sidePaneMode="ebook" />,
     );
 
     await waitFor(() => {

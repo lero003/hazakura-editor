@@ -114,6 +114,14 @@ v1.0 の製品像は次の通り。
 必要なら編集面を一時的に退ける occupied reading mode や adaptive layout
 として扱う。
 
+2026-06-23 の v0.31 follow-up decision では、ユーザー向け入口を
+`見開きで読む` ではなく `集中して読む` とする。これは小さいウィンドウでも
+違和感なく成立する表現であり、幅が狭ければ単ページ集中、幅が広ければ
+見開き集中として振る舞える。まずは同じメインウィンドウ内の Reading Focus
+として実装し、workspace/sidebar/editor chrome を一時的に退ける。完全な
+別ウィンドウ reader は将来の派生として残すが、v0.31 の最初の体験芯には
+しない。
+
 v0.30-v1.0 の順序:
 
 1. v0.30: e-book Mode Flow View。
