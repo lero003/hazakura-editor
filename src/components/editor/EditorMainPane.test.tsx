@@ -187,6 +187,24 @@ describe("EditorMainPane", () => {
     expect(screen.getByTestId("mock-editor-pane")).toBeTruthy();
   });
 
+  it("shows a centered Local Assist read-only status while generation locks the editor", () => {
+    renderEditorMainPane({
+      generationLock: {
+        requestId: "request-1",
+        tabId: activeTab.id,
+        tabPath: activeTab.path,
+        request: "校正してください。",
+      },
+    });
+
+    const status = screen.getByRole("status");
+
+    expect(status.textContent).toContain("Hazakura Local Assist が生成中です");
+    expect(status.textContent).toContain(
+      "本文は表示できますが、編集は一時停止しています。",
+    );
+  });
+
   it("shows a themed restore loading surface before restored tabs are ready", () => {
     const { container } = renderEditorMainPane({
       activeContents: "",

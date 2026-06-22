@@ -521,20 +521,38 @@
 }
 
 .editor-apple-assist-lock {
-  align-self: flex-start;
-  background: color-mix(in srgb, var(--surface-strong) 88%, var(--accent) 12%);
-  border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--border));
-  border-radius: 6px;
-  bottom: 28px;
+  align-items: center;
+  background: color-mix(in srgb, var(--surface-strong) 92%, var(--accent) 8%);
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--border));
+  border-radius: 8px;
+  box-shadow: 0 16px 40px color-mix(in srgb, var(--shadow) 18%, transparent);
   color: var(--text);
-  font-size: 12px;
-  left: 12px;
-  line-height: 1.4;
-  max-width: min(460px, calc(100% - 24px));
-  padding: 6px 9px;
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  gap: 4px;
+  left: 50%;
+  line-height: 1.45;
+  max-width: min(420px, calc(100% - 48px));
+  padding: 14px 18px;
   pointer-events: none;
   position: absolute;
-  z-index: 4;
+  text-align: center;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: max-content;
+  z-index: 5;
+}
+
+.editor-apple-assist-lock strong {
+  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.editor-apple-assist-lock span {
+  color: color-mix(in srgb, var(--text-muted) 82%, var(--text));
+  font-size: 12px;
 }
 
 .editor-restore-loading {

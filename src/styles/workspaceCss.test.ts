@@ -93,6 +93,22 @@ describe("workspace.css", () => {
     );
   });
 
+  it("centers the Local Assist editor lock status without blocking read-only viewing", () => {
+    const lock = ruleBody(".editor-apple-assist-lock");
+    const lockTitle = ruleBody(".editor-apple-assist-lock strong");
+    const lockDetail = ruleBody(".editor-apple-assist-lock span");
+
+    expect(lock).toMatch(/position:\s*absolute/);
+    expect(lock).toMatch(/top:\s*50%/);
+    expect(lock).toMatch(/left:\s*50%/);
+    expect(lock).toMatch(/transform:\s*translate\(-50%, -50%\)/);
+    expect(lock).toMatch(/pointer-events:\s*none/);
+    expect(lock).toMatch(/padding:\s*14px\s+18px/);
+    expect(lock).toMatch(/border-radius:\s*8px/);
+    expect(lockTitle).toMatch(/font-weight:\s*700/);
+    expect(lockDetail).toMatch(/font-size:\s*12px/);
+  });
+
   it("routes diff row backgrounds through theme tokens", () => {
     expect(tokensCss).toMatch(/--diff-added-row-bg:\s*rgba\(46, 125, 85, 0\.08\)/);
     expect(tokensCss).toMatch(/--diff-removed-row-bg:\s*rgba\(158, 63, 67, 0\.08\)/);

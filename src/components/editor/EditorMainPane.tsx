@@ -128,8 +128,13 @@ export function EditorMainPane({
             onPasteImage={onPasteImage}
           />
           {appleAssistLocked ? (
-            <div className="editor-apple-assist-lock" role="status">
-              生成中のため、この文書の編集を一時停止しています
+            <div
+              aria-live="polite"
+              className="editor-apple-assist-lock"
+              role="status"
+            >
+              <strong>Hazakura Local Assist が生成中です</strong>
+              <span>本文は表示できますが、編集は一時停止しています。</span>
             </div>
           ) : null}
           {scrollHudVisible && scrollHudContext.current ? (
