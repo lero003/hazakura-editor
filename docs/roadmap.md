@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-22 (v0.29.1 App Store package candidate)
+Last reviewed: 2026-06-23 (v0.29.1 App Store approval)
 
 ## Current Position
 
@@ -18,13 +18,13 @@ Current release state:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
 - Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
 - Current package/app version: `0.29.1`.
-- Latest source / local-app tag: `v0.29.1`, prepared on 2026-06-22
-  for the App Store package candidate.
-- Mac App Store published version: `0.26.0`, reported released on
-  2026-06-20 after App Review completion.
-- Active lane: `v0.29.1` packages the Hazakura Local Assist
-  responsiveness hardening, prompt simplification, and App Store review
-  polish on top of the completed v0.28 safety / AI-review foundation.
+- Latest source / local-app tag: `v0.29.1`, prepared on 2026-06-22.
+- Mac App Store published version: `0.29.1`, reported approved and
+  released on 2026-06-23 with Hazakura Local Assist available as a
+  preview on-device writing companion.
+- Active lane: post-`0.29.1` observation and next-slice selection after
+  Hazakura Local Assist responsiveness hardening, prompt simplification,
+  App Store review polish, and preview editing flicker reduction shipped.
 - Current work queue: `docs/current-work.md`.
 
 North star for the next product arc:
@@ -49,11 +49,12 @@ Near-term phase order:
 2. v0.29 deepens writing / review flow from that foundation: Apple Local
    Assist transaction review, explicit Diff / Review, retired Review Desk
    exposure guards, and release-quality smoke.
-3. v0.29.1 packages the v0.29.01 Hazakura Local Assist responsiveness
+3. v0.29.1 shipped the v0.29.01 Hazakura Local Assist responsiveness
    hardening: separate heavy Foundation Models generation from UI
    responsiveness, lock the target editor while generation is in flight,
-   show streaming progress in the Assist Window, and keep the final result
-   behind the existing unsaved AI edit transaction / Diff review path.
+   show streaming progress in the Assist Window, keep the final result
+   behind the existing unsaved AI edit transaction / Diff review path, and
+   reduce Markdown preview flicker while editing.
 4. v1.0 should be a polished single-document Markdown book-writing
    surface with explicit export and review, not a full multi-file book
    workspace.

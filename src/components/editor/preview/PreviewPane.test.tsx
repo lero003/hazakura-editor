@@ -68,9 +68,12 @@ describe("PreviewPane local link routing", () => {
     expect(container.querySelector(".markdown-preview-loading")).toBeNull();
   });
 
-  it("clears stale preview content while the next document is waiting for its frame", async () => {
+  it("keeps the current preview visible while same-document edits wait for the next frame", async () => {
     const { container, rerender } = render(
-      <PreviewPane source={["# Previous Draft", "", "Body"].join("\n")} />,
+      <PreviewPane
+        documentKey="draft-1"
+        source={["# Previous Draft", "", "Body"].join("\n")}
+      />,
     );
     await flushPreviewFrame();
 
@@ -78,7 +81,57 @@ describe("PreviewPane local link routing", () => {
       screen.getByRole("heading", { name: "Previous Draft" }),
     ).toBeTruthy();
 
-    rerender(<PreviewPane source={["# Next Draft", "", "Body"].join("\n")} />);
+    rerender(
+      <PreviewPane
+        documentKey="draft-1"
+        source={["# Next Draft", "", "Body"].join("\n")}
+      />,
+    );
+
+    expect(
+      screen.getByRole("heading", { name: "Previous Draft" }),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole("heading", { name: "Next Draft" }),
+    ).toBeNull();
+    expect(container.querySelector(".markdown-preview-loading")).toBeNull();
+    expect(
+      container.querySelector(".markdown-preview")?.getAttribute("aria-busy"),
+    ).toBe("true");
+
+    await flushPreviewFrame();
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Next Draft" })).toBeTruthy();
+    });
+    expect(
+      screen.queryByRole("heading", { name: "Previous Draft" }),
+    ).toBeNull();
+    expect(container.querySelector(".markdown-preview-loading")).toBeNull();
+    expect(
+      container.querySelector(".markdown-preview")?.getAttribute("aria-busy"),
+    ).toBeNull();
+  });
+
+  it("clears stale preview content while the next document is waiting for its frame", async () => {
+    const { container, rerender } = render(
+      <PreviewPane
+        documentKey="draft-1"
+        source={["# Previous Draft", "", "Body"].join("\n")}
+      />,
+    );
+    await flushPreviewFrame();
+
+    expect(
+      screen.getByRole("heading", { name: "Previous Draft" }),
+    ).toBeTruthy();
+
+    rerender(
+      <PreviewPane
+        documentKey="draft-2"
+        source={["# Next Draft", "", "Body"].join("\n")}
+      />,
+    );
 
     expect(
       screen.queryByRole("heading", { name: "Previous Draft" }),

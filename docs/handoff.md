@@ -3,31 +3,24 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-22 (v0.29.01 Local Assist responsiveness split)
+Last reviewed: 2026-06-23 (v0.29.1 App Store approval)
 
 ## Current State
 
-- `Hazakura Editor` now has a local `v0.29.0` baseline tag on the
-  current `0.29.0` source state before `v0.29.01` development. The
-  latest published GitHub preview remains `v0.20.0`, and the published
-  Mac App Store version remains `0.26.0` until a newer App Store build
-  is processed, approved, and released. Current package/app metadata is
-  `0.29.0`; helper-enabled build `30` is the latest generated local App
-  Store package after the helper executable rename. Codex opened the
-  build `30` package in Transporter GUI, but CLI delivery was not
-  completed because App Store Connect authentication environment
-  variables were unset. Build `29` was reported as successfully
-  delivered on 2026-06-22 after the helper sandbox entitlement fix. App
-  Store Connect upload completion, processing, TestFlight, App Review,
-  and release handling are not tracked unless explicitly recorded later.
-- The next product slice is `v0.29.01` Hazakura Local Assist
-  responsiveness hardening. Start from `docs/current-work.md`: separate
-  heavy Foundation Models generation from UI responsiveness, lock the
-  active target editor during generation, show streaming progress /
-  preview in the Assist Window, and keep final application behind the
-  existing unsaved AI edit transaction / Diff review path. Do not show
-  cancellation copy until real cancellation or safe stale-request
-  ignoring exists.
+- `Hazakura Editor` `0.29.1` has been reported approved and released on
+  the Mac App Store on 2026-06-23. Hazakura Local Assist is now public as
+  a preview on-device writing companion. The latest local App Store
+  package evidence for that review cycle is build `33`, generated after
+  Local Assist responsiveness hardening, prompt/review polish, and the
+  Markdown preview flicker fix. Raw App Store Connect, TestFlight, and
+  App Review logs remain outside this repository unless explicitly
+  recorded later.
+- The next product slice should start from `docs/current-work.md` and
+  treat `0.29.1` as shipped. Good follow-up observations are Local Assist
+  availability states, first-run model latency, streaming preview / final
+  Diff review, and ordinary edit + Markdown preview responsiveness. Do
+  not reopen cancellation copy, Book Workspace, Agent Workbench, or
+  broader AI ingest unless the user explicitly opens that lane.
 - User-facing app identity is capitalized as `Hazakura Editor`. The
   App Store preview bundle is `Hazakura Editor.app`; current docs and
   smoke paths should use that name rather than the older lowercase
@@ -473,10 +466,14 @@ open Active UX Queue slice and close it as `implemented`,
   checked with `npm run clean:generated -- --target-only`,
   `node --check scripts/clean-generated-artifacts.mjs`, and
   `git diff --check` on 2026-06-21.
-- Latest docs closeout: App Store approval status was reflected in
+- Previous docs closeout: App Store approval status was reflected in
   README, current status, current work, roadmap, App Store build notes,
   release-note index, and this handoff on 2026-06-18. Verification run:
   `git diff --check`.
+- Latest docs closeout: `0.29.1` App Store approval / release status was
+  reflected in README, current status, current work, roadmap, App Store
+  build notes, release-note index, development automation guidance, and
+  this handoff on 2026-06-23. Verification run: `git diff --check`.
 - Latest release gate: v0.20.0 Developer / GitHub warning-expected DMG
   preview local verification passed on 2026-06-18. The DMG is Developer
   ID signed, not notarized, and has SHA-256
@@ -512,21 +509,21 @@ open Active UX Queue slice and close it as `implemented`,
   `cargo test --manifest-path src-tauri/Cargo.toml resolver_bundled_helper_filename_uses_sidecar_convention -- --nocapture`,
   `HAZAKURA_APPLE_ASSIST_HELPER_FIXTURE="$PWD/binaries/hazakura-local-assist-helper-aarch64-apple-darwin" cargo test --manifest-path src-tauri/Cargo.toml apple_assist_supervisor -- --nocapture --test-threads=1`,
   `npm run test`, `npm run build:vite`, and `git diff --check`.
-- Latest v0.29 App Store package gate: build `30` was generated with
-  `npm run release:candidate -- --with-app-store-pkg` using the Apple
-  Distribution and 3rd Party Mac Developer Installer identities. The
-  package is
-  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.29.0-build30-mas.pkg`
+- Latest v0.29.1 App Store package gate: build `33` was generated with
+  `npm run release:candidate -- --with-app-store-pkg --no-prune-pkgs`
+  using the Apple Distribution and 3rd Party Mac Developer Installer
+  identities. The package is
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.29.1-build33-mas.pkg`
   with SHA-256
-  `7170f4fb1aba3ad0e37d7aacf207408c38a92fb618678a01e1afc1d3030647f2`.
+  `f2ae163a61ab7b8ea0084c043c030f629b5bc39eba23b4d7d64e0b8769cd2ec4`.
   Verified: App Store surface smoke, live helper build smoke, signed app
   distribution probe with App Store entitlement enforcement,
-  `pkgutil --check-signature`, payload expansion showing only
-  `hazakura-local-assist-helper`, helper `app-sandbox` + `inherit`
-  entitlements, `allowed-os-versions min="26.0"`, and `git diff
-  --check`. `spctl --assess --type install` rejected the local pkg as
-  expected for this lane. Transporter GUI was opened with the package;
-  delivery completion is not recorded here.
+  `pkgutil --check-signature`, helper `app-sandbox` + `inherit`
+  entitlements, `allowed-os-versions min="26.0"`,
+  `SKIP_BUILD=1 npm run smoke:macos-sandbox-preview`, and
+  `git diff --check`. `spctl` remained local trust-policy noise for this
+  lane. The user reported `0.29.1` App Review approval and public release
+  on 2026-06-23.
 - Previous v0.29 Hazakura Local Assist App Store-lane gate: source tests and
   local build evidence now cover the prompt/preset boundary: UI labels
   are display-only, preset clicks insert visible editable request text,

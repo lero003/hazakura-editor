@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-06-21
+Last reviewed: 2026-06-23
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
@@ -23,18 +23,17 @@ Latest App Store status:
 
 - `0.25.0` has been reported as released on the Mac App Store.
 - `0.26.0` has been reported as released on the Mac App Store.
-- `0.28.0` build `25` is the latest generated local App Store
-  submit-lane package evidence. Current source has a later top-chrome
-  quieting pass, so rebuild before App Store Connect upload. Processing,
-  TestFlight, App Review, and release handling are outside this
-  repository unless separately recorded.
-- `0.25.0` build `18` is the tracked local App Store submit-lane
-  package evidence. Raw App Store Connect, TestFlight, and App Review
-  logs are not tracked in this repository.
+- `0.29.1` has been reported as approved and released on the Mac App
+  Store on 2026-06-23. The latest local package evidence for that review
+  cycle is build `33`:
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.29.1-build33-mas.pkg`.
+  Raw App Store Connect, TestFlight, and App Review logs are not tracked
+  in this repository.
   See `../current-status.md` for current distribution status.
 
 Latest App Store submission-candidate note:
 
+- `0.29.1-app-store-submission-candidate.release.md`
 - `0.28.0-app-store-submission-candidate.release.md`
 - `0.27.0-app-store-submission-candidate.release.md`
 - `0.26.0-app-store-submission-candidate.release.md`

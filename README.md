@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-06-21
+Last reviewed: 2026-06-23
 
 `Hazakura Editor` は、AI時代のメモ帳です。Markdownを中心に、安全にテキストを読む・書く・比べるための軽量なローカル作業場を目指します。
 
@@ -17,12 +17,12 @@ Last reviewed: 2026-06-21
 
 ## Mac App Store
 
-Hazakura Editor `0.26.0` is published on the Mac App Store:
+Hazakura Editor `0.29.1` is published on the Mac App Store:
 [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12).
 
 The App Store build is the Safe Editor lane. It omits Agent Workbench,
 CLI Agent launch, external AI/API calls, and arbitrary command execution
-surfaces. Hazakura Local Assist may be exposed as an on-device writing
+surfaces. Hazakura Local Assist is exposed as a preview on-device writing
 companion where Apple Foundation Models is available, with no network
 fallback, auto-save, tool calling, or workspace-wide indexing.
 
@@ -211,7 +211,7 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 Developer preview release boundary:
 
 - Current package/app version is `0.29.1` across npm, Tauri, Cargo, and lockfile metadata.
-- The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12), published from the helper-free App Store lane at `0.26.0`.
+- The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12), published at `0.29.1` with the helper-enabled Hazakura Local Assist preview lane.
 - The latest prepared GitHub source / local-app tag is [v0.29.1](https://github.com/lero003/hazakura-editor/tree/v0.29.1).
 - The current warning-expected DMG preview tag is `v0.20.0`; its release-note evidence lives in [0.20.0 Warning-expected DMG Preview](docs/releases/0.20.0-warning-expected-dmg-preview.release.md).
 - Source users build locally with `npm ci` and `npm run build`.

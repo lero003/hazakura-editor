@@ -168,6 +168,7 @@ export function SidePane({
       ) : activeTab && previewVisible ? (
         <Suspense fallback={null}>
           <PreviewPane
+            documentKey={activeTab.id}
             documentPath={activeTab.path}
             onOpenLocalLink={onOpenPreviewLocalLink}
             source={activeContents}

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-06-12 (v0.19 App Store submission candidate)
+Last reviewed: 2026-06-23 (post-v0.29.1 App Store release)
 
 ## Purpose
 
@@ -17,8 +17,8 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: v0.19 App Store submission-candidate smoke and submission prep,
-unless a v0.19 hotfix blocker appears.
+Phase: post-v0.29.1 App Store release quality loop, unless a v0.29.1
+hotfix blocker appears.
 
 For recurring automation, use the `Pre-Review Automation Order` in
 `docs/current-work.md` before the generic preference list below. Each
