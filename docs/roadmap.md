@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-23 (v1 roadmap alignment)
+Last reviewed: 2026-06-23 (v0.30 paged flow alignment)
 
 ## Current Position
 
@@ -44,8 +44,8 @@ flows.
 
 Near-term phase order:
 
-1. v0.30 makes e-book Mode a daily Flow View for reading and revising
-   long Markdown prose without page-turn friction.
+1. v0.30 makes e-book Mode a daily paged-flow surface for reading and
+   revising long Markdown prose while keeping the view book-like.
 2. v0.31 adds Spread View for book-like two-page inspection, with
    single-page fallback and coarse navigation.
 3. v0.32 connects editor and reader positions so the user can read,
@@ -161,8 +161,9 @@ failure, or transaction-boundary issue appears.
 
 - e-book Mode supports a comfortable daily reading / revision flow for
   single-document Japanese Markdown prose.
-- e-book Mode is not page-turn-only; it provides a low-friction reading
-  path for revision, such as a scroll-based Flow View.
+- e-book Mode is not button-only page-turning; it provides low-friction
+  wheel / trackpad / keyboard movement while keeping the simulated page
+  surface book-like.
 - e-book Mode provides a two-page Spread View for book-like inspection
   when the window size allows it, with a single-page fallback for narrow
   windows.
@@ -180,21 +181,24 @@ failure, or transaction-boundary issue appears.
 
 ### Suggested Slices
 
-#### v0.30: e-book Mode Flow View
+#### v0.30: e-book Mode Paged Flow
 
 Make e-book Mode usable as a daily reading and revision surface.
 
-- Add or redesign a scroll-first Flow View.
-- Reduce page-turn friction for normal reading.
-- Preserve scroll / reading position across mode switches.
-- Improve heading jump and document navigation.
+- Keep e-book Mode on a simulated book page rather than a Preview-like
+  continuous document.
+- Reduce page-turn friction for normal reading with wheel / trackpad /
+  keyboard movement.
+- Preserve chapter / page reading position across mode switches.
+- Preserve the reader location contract for the later editor / reader
+  position bridge.
 - Re-tune Japanese prose layout: width, line height, margins, paragraph
   rhythm, and empty states.
 - Confirm large-document behavior.
 
-Acceptance: long Markdown prose can be read naturally without page
-turning, and switching from Normal Mode / L Mode / Preview does not leave
-the user badly lost.
+Acceptance: long Markdown prose can be read naturally in a book-like
+page surface without relying only on buttons, and switching from Normal
+Mode / L Mode / Preview does not leave the user badly lost.
 
 #### v0.31: e-book Mode Spread View
 
@@ -209,7 +213,7 @@ way to read.
 - Add coarse navigation such as a page slider or heading-based jump.
 - Keep Markdown source canonical and avoid Preview DOM editing.
 
-Acceptance: the surface can feel book-like while Flow View remains the
+Acceptance: the surface can feel book-like while paged flow remains the
 daily revision path.
 
 #### v0.32: Editor / Reader Position Bridge
@@ -246,7 +250,7 @@ claiming to be a full EPUB production tool.
 Freeze features and verify product quality.
 
 - Run golden-path smoke for New File, Open, Save / Save As, L Mode,
-  Preview, e-book Mode Flow View, Spread View, EPUB export, Local Assist,
+  Preview, e-book Mode paged flow, Spread View, EPUB export, Local Assist,
   Diff / Discard, Recovery, relaunch, and large documents.
 - Update App Store screenshots, description, and release notes.
 - Verify the App Store lane excludes Agent Workbench, external AI/API

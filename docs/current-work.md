@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v0.30-v1.0 Reader UX Stabilization queue and post-v0.29.1 evidence
 Authority: High
-Last reviewed: 2026-06-23 (v1 roadmap alignment)
+Last reviewed: 2026-06-23 (v0.30 paged flow first slice)
 
 ## Purpose
 
@@ -50,19 +50,35 @@ transaction-boundary issue appears.
 
 ## Active UX Queue
 
-Pick one item at a time. The immediate next product slice is v0.30 Flow
-View unless a concrete post-release Local Assist safety or App Store lane
-issue appears.
+Pick one item at a time. The immediate next product slice is v0.30 paged
+flow operation unless a concrete post-release Local Assist safety or App
+Store lane issue appears.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| P0 | v0.30 e-book Mode Flow View | e-book Mode can be used as a daily reading / revision surface for long Japanese Markdown prose without relying on page turns. The slice should reduce page-turn friction, improve reading layout, preserve nearby position across mode switches where practical, and verify large-document behavior. |
+| P0 | v0.30 e-book Mode Paged Flow | e-book Mode can be used as a daily reading / revision surface for long Japanese Markdown prose while still looking like a book page. The slice should reduce page-turn friction with wheel / trackpad / keyboard movement, preserve chapter/page location for the later editor bridge, and verify large-document behavior. |
 | P1 | v0.31 e-book Mode Spread View | Two-page book-like inspection exists when window width allows, falls back to one page when narrow, has keyboard / button navigation plus coarse movement, and remains a display layer over Markdown source rather than Preview DOM editing. |
 | P2 | v0.32 Editor / Reader Position Bridge | Opening e-book Mode near the current editor cursor or visible heading and returning from reader position to Markdown editing feels reliable for normal, unsaved, and recovered documents. |
 | P3 | v0.33 EPUB Export v1 Polish | EPUB export remains an explicit user action and is polished enough for initial v1 use with Japanese text, headings, local images, links, code blocks, and clear failure messages. Advanced metadata, cover, navigation editing, and validation workflows stay deferred to v1.x. |
-| RC | v0.34 v1.0 Release Candidate | Feature work freezes and the golden path covers New File, Open, Save / Save As, L Mode, Preview, Flow View, Spread View, EPUB export, Local Assist, Diff / Discard, Recovery, relaunch, large documents, and App Store lane boundary checks. |
+| RC | v0.34 v1.0 Release Candidate | Feature work freezes and the golden path covers New File, Open, Save / Save As, L Mode, Preview, e-book paged flow, Spread View, EPUB export, Local Assist, Diff / Discard, Recovery, relaunch, large documents, and App Store lane boundary checks. |
 | Observation only | Hazakura Local Assist post-release polish | Pick this before v0.30 only for a concrete safety, review, App Store, availability, generation failure, responsiveness, or transaction-boundary issue. Keep App Store AI assistance local, user-initiated, unsaved until accepted, and Diff / Discard reviewable. |
 | Fallback | Core Safe Editor quality probe | Use only when no concrete Reader UX slice is open or the run is a recurring quality pass. Inspect one high-risk basic surface with a named risk hypothesis, then either fix the smallest reproduced issue or close as `verified no-op`. |
+
+v0.30 paged flow first slice is implemented at code-regression level as
+of 2026-06-23: e-book Mode stays on the simulated book page surface, has
+no Preview-like Flow/Page toggle, and turns vertical wheel / trackpad
+gestures into page movement while preserving chapter/page location for
+right-pane remounts and the future editor/reader bridge. Interpret
+`Flow` in this lane as lower-friction movement through book pages, not
+as one continuous scrolling Preview document. Human-side built-app
+observation accepted the general behavior and requested faster wheel
+response; the threshold was halved so a shorter vertical wheel /
+trackpad gesture advances the page. Remaining v0.30 proof should focus
+on real long Japanese Markdown reading feel, large-document behavior,
+and the v0.32 editor cursor / reader location bridge. Verification for
+this code slice passed with focused e-book / side-pane / CSS tests, full
+`npm run test`, `npm run build:vite` (with the usual Vite chunk-size
+warning), and `git diff --check`.
 
 Post-v1 guardrail: after v1.0, do not rush straight into v2.0. Use v1.x
 to deepen the single-document product first: EPUB export, Diff / Review

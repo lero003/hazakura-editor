@@ -14,6 +14,7 @@
 import {
   type KeyboardEvent,
   type MouseEvent,
+  type WheelEvent,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -70,6 +71,9 @@ type EBookReaderCopy = {
   readerLabel: string;
 };
 
+const WHEEL_PAGE_THRESHOLD = 40;
+const WHEEL_PAGE_COOLDOWN_MS = 220;
+
 export default function EBookPane({
   documentPath,
   initialLocation,
@@ -94,6 +98,8 @@ export default function EBookPane({
   const pendingPageTargetRef = useRef<"first" | "last" | null>(null);
   const flowRef = useRef<HTMLDivElement | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
+  const wheelDeltaRef = useRef(0);
+  const wheelCooldownRef = useRef<number | null>(null);
 
   useEffect(() => {
     pendingPageTargetRef.current = initialLocation ? null : "first";
@@ -123,15 +129,7 @@ export default function EBookPane({
       return null;
     }
 
-    return {
-      index: activeChapter.index,
-      headingLevel: activeChapter.headingLevel,
-      headingText: activeChapter.headingText,
-      html: renderMarkdown(applyEbookPageBreakMarkers(activeChapter.source), {
-        documentPath,
-        workspaceRoot,
-      }),
-    };
+    return renderEbookChapter(activeChapter, documentPath, workspaceRoot);
   }, [activeChapter, documentPath, workspaceRoot]);
 
   const [activeChapterHtml, setActiveChapterHtml] =
@@ -253,13 +251,22 @@ export default function EBookPane({
   useEffect(() => {
     onLocationChange?.({
       chapterIndex: activeChapterIndexSafe,
-      pageIndex: Math.max(activePageIndex, 0),
+      pageIndex: activePageIndexSafe,
     });
-  }, [activeChapterIndexSafe, activePageIndex, onLocationChange]);
+  }, [activeChapterIndexSafe, activePageIndexSafe, onLocationChange]);
 
   useLayoutEffect(() => {
     setPageOffset(getEBookPageOffset(activePageIndexSafe, flowRef.current));
   }, [activePageIndexSafe, activeChapterHtml, measuredPageCount]);
+
+  useEffect(
+    () => () => {
+      if (wheelCooldownRef.current !== null) {
+        window.clearTimeout(wheelCooldownRef.current);
+      }
+    },
+    [],
+  );
 
   const goToPreviousPage = () => {
     if (activePageIndex > 0) {
@@ -308,6 +315,41 @@ export default function EBookPane({
     }
   };
 
+  const handleWheel = (event: WheelEvent<HTMLElement>) => {
+    const target = event.target;
+    if (
+      target instanceof Element &&
+      target.closest("pre, .markdown-table-frame")
+    ) {
+      return;
+    }
+
+    if (event.deltaY === 0 || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) {
+      return;
+    }
+
+    event.preventDefault();
+    if (wheelCooldownRef.current !== null) {
+      return;
+    }
+
+    wheelDeltaRef.current += event.deltaY;
+    if (Math.abs(wheelDeltaRef.current) < WHEEL_PAGE_THRESHOLD) {
+      return;
+    }
+
+    if (wheelDeltaRef.current > 0) {
+      goToNextPage();
+    } else {
+      goToPreviousPage();
+    }
+    wheelDeltaRef.current = 0;
+    wheelCooldownRef.current = window.setTimeout(() => {
+      wheelCooldownRef.current = null;
+      wheelDeltaRef.current = 0;
+    }, WHEEL_PAGE_COOLDOWN_MS);
+  };
+
   const handleClick = (event: MouseEvent<HTMLElement>) => {
     if (!onOpenLocalLink) {
       return;
@@ -347,6 +389,7 @@ export default function EBookPane({
       className="ebook-pane markdown-preview"
       onClick={handleClick}
       onKeyDown={handleKeyDown}
+      onWheel={handleWheel}
       tabIndex={0}
     >
       <header className="ebook-reader-chrome">
@@ -417,6 +460,27 @@ export default function EBookPane({
   );
 }
 
+function renderEbookChapter(
+  chapter: {
+    headingLevel: number | null;
+    headingText: string | null;
+    index: number;
+    source: string;
+  },
+  documentPath: string | null | undefined,
+  workspaceRoot: string | null | undefined,
+): RenderedChapter {
+  return {
+    index: chapter.index,
+    headingLevel: chapter.headingLevel,
+    headingText: chapter.headingText,
+    html: renderMarkdown(applyEbookPageBreakMarkers(chapter.source), {
+      documentPath,
+      workspaceRoot,
+    }),
+  };
+}
+
 function clampChapterIndex(index: number, totalChapters: number): number {
   if (totalChapters <= 0) {
     return 0;
@@ -482,7 +546,7 @@ function getEBookReaderCopy(
       nextPage: "つぎのページ",
       pageProgress: "ページ",
       previousPage: "まへのページ",
-      readerLabel: "章送り",
+      readerLabel: "本のやうに読む",
     };
   }
 
@@ -496,7 +560,7 @@ function getEBookReaderCopy(
       nextPage: "次のページ",
       pageProgress: "ページ",
       previousPage: "前のページ",
-      readerLabel: "章送り",
+      readerLabel: "本のように読む",
     };
   }
 
@@ -509,6 +573,6 @@ function getEBookReaderCopy(
     nextPage: "Next page",
     pageProgress: "Page",
     previousPage: "Previous page",
-    readerLabel: "Chapter reader",
+    readerLabel: "Book reader",
   };
 }

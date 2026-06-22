@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-23 (v1 roadmap alignment)
+Last reviewed: 2026-06-23 (v0.30 paged flow first slice)
 
 ## Current State
 
@@ -17,7 +17,22 @@ Last reviewed: 2026-06-23 (v1 roadmap alignment)
   recorded later.
 - The next product slice should start from `docs/current-work.md` and
   treat `0.29.1` as shipped. The active lane is `v0.30-v1.0 Reader UX
-  Stabilization`; the first product slice is v0.30 e-book Mode Flow View.
+  Stabilization`. The first code-level v0.30 e-book Mode paged flow
+  slice is now implemented: e-book Mode stays on the simulated book page
+  surface, has no Preview-like Flow/Page toggle, and turns vertical
+  wheel / trackpad gestures into page movement while preserving
+  chapter/page location across right-pane switches. Treat `Flow` in
+  this lane as lower-friction movement through book pages, not as one
+  continuous scrolling Preview document. Human-side built-app
+  observation accepted the general behavior and requested faster wheel
+  response; the threshold was halved so a shorter vertical wheel /
+  trackpad gesture advances the page. Remaining v0.30 proof should
+  focus on real long Japanese Markdown reading feel, large-document
+  behavior, and the v0.32 editor cursor / reader location bridge.
+  Verification for this slice passed with focused e-book / side-pane /
+  CSS tests, full `npm run test`,
+  `npm run build:vite` (with the usual Vite chunk-size warning), and
+  `git diff --check`.
   After v1.0, do not rush straight into v2.0; use v1.x to deepen the
   single-document product first: EPUB export, Diff / Review ergonomics,
   provenance, movement between writing / reading layers, distribution
@@ -323,9 +338,10 @@ Last reviewed: 2026-06-23 (v1 roadmap alignment)
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. v0.30 e-book Mode Flow View: make e-book Mode a daily reading /
-   revision surface for long Japanese Markdown prose without relying on
-   page turns.
+1. v0.30 e-book Mode Paged Flow: make e-book Mode a daily reading /
+   revision surface for long Japanese Markdown prose while it still
+   looks like a book page. Wheel / trackpad movement should reduce
+   page-turn friction without becoming Preview-style continuous scroll.
 2. v0.31 e-book Mode Spread View: add two-page book-like inspection with
    single-page fallback and coarse navigation, without Preview DOM
    editing.
@@ -475,6 +491,16 @@ open Active UX Queue slice and close it as `implemented`,
 
 ## Verification Guidance
 
+- Latest v0.30 code slice: e-book Mode paged flow stays page-like,
+  removes the Flow/Page toggle, and maps vertical wheel / trackpad input
+  to page movement while keeping `chapterIndex` / `pageIndex` as the
+  reader location contract. A follow-up human built-app check accepted
+  the behavior and the wheel threshold was lowered from `80` to `40`.
+  Verification on 2026-06-23:
+  `npm run test -- src/components/editor/preview/EBookPane.test.tsx
+  src/components/app/SidePane.test.tsx src/styles/previewCss.test.ts`,
+  `npm run test`, `npm run build:vite` (passed with the usual Vite
+  chunk-size warning), and `git diff --check`.
 - Latest docs roadmap alignment: v0.30-v1.0 Reader UX Stabilization was
   reflected in roadmap, current work, current status, docs index,
   development automation guidance, e-book / AI planning notes, README,

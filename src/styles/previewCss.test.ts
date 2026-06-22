@@ -174,6 +174,8 @@ describe("preview.css", () => {
 
   it("removes the old multi-sheet e-book dependencies", () => {
     expect(previewCss).not.toMatch(/\.ebook-pane \.ebook-nav/);
+    expect(previewCss).not.toMatch(/\.ebook-flow-/);
+    expect(previewCss).not.toMatch(/\.ebook-reader-mode-toggle/);
     expect(previewCss).not.toMatch(/\.ebook-chapter \+ \.ebook-chapter::before/);
     expect(ruleBody(".ebook-chapter")).not.toMatch(/box-shadow:/);
     expect(previewCss).not.toMatch(/writing-mode:\s*vertical/);

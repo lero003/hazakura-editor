@@ -42,6 +42,49 @@ afterEach(() => {
 });
 
 describe("EBookPane chapter reader", () => {
+  it("opens as a paginated book reader without a Preview-like Flow toggle", () => {
+    render(
+      <EBookPane
+        menuLanguage="en"
+        source={"# Chapter One\n\nbody one\n\n# Chapter Two\n\nbody two"}
+      />,
+    );
+
+    const article = screen.getByRole("article", { name: "Book reader" });
+    expect(article.querySelector(".ebook-page-sheet")).toBeTruthy();
+    expect(article.querySelector(".ebook-flow-document")).toBeNull();
+    expect(article.querySelector(".ebook-reader-mode-toggle")).toBeNull();
+    expect(article.querySelectorAll(".ebook-chapter")).toHaveLength(1);
+    expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Chapter Two" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Flow" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Page" })).toBeNull();
+    expect(screen.getByText("Page 1 / 1")).toBeTruthy();
+  });
+
+  it("turns half-scroll vertical wheel gestures into page navigation while keeping the page frame", async () => {
+    vi.mocked(measureEBookPageCount).mockReturnValue(3);
+
+    render(
+      <EBookPane
+        menuLanguage="en"
+        source={"# Chapter One\n\nbody one\n\n# Chapter Two\n\nbody two"}
+      />,
+    );
+
+    const article = screen.getByRole("article", { name: "Book reader" });
+    await waitFor(() => {
+      expect(screen.getByText("Page 1 / 3")).toBeTruthy();
+    });
+
+    fireEvent.wheel(article, { deltaY: 40 });
+
+    expect(article.querySelector(".ebook-page-sheet")).toBeTruthy();
+    expect(article.querySelector(".ebook-flow-document")).toBeNull();
+    expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
+    expect(screen.getByText("Page 2 / 3")).toBeTruthy();
+  });
+
   it("renders only the active chapter and scopes pagination DOM to the chapter body", async () => {
     render(
       <EBookPane
@@ -50,7 +93,7 @@ describe("EBookPane chapter reader", () => {
       />,
     );
 
-    const article = screen.getByRole("article", { name: "章送り" });
+    const article = screen.getByRole("article", { name: "本のように読む" });
     expect(article.querySelectorAll(".ebook-chapter")).toHaveLength(1);
     expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
     expect(screen.getByText("body one")).toBeTruthy();
@@ -104,7 +147,7 @@ describe("EBookPane chapter reader", () => {
       expect(screen.getByText("Page 1 / 4")).toBeTruthy();
     });
 
-    const article = screen.getByRole("article", { name: "Chapter reader" });
+    const article = screen.getByRole("article", { name: "Book reader" });
     const sheet = article.querySelector(".ebook-page-sheet");
     const viewport = article.querySelector(".ebook-page-viewport");
     const flow = article.querySelector(".ebook-page-flow");
@@ -197,7 +240,7 @@ describe("EBookPane chapter reader", () => {
     fireEvent.click(nextPage);
     expect(
       screen
-        .getByRole("article", { name: "Chapter reader" })
+        .getByRole("article", { name: "Book reader" })
         .querySelector(".ebook-page-flow-transition-suppressed"),
     ).toBeNull();
 
@@ -209,7 +252,7 @@ describe("EBookPane chapter reader", () => {
     });
     expect(
       screen
-        .getByRole("article", { name: "Chapter reader" })
+        .getByRole("article", { name: "Book reader" })
         .querySelector(".ebook-page-flow-transition-suppressed"),
     ).toBeTruthy();
   });
@@ -272,7 +315,7 @@ describe("EBookPane chapter reader", () => {
       />,
     );
 
-    const article = screen.getByRole("article", { name: "Chapter reader" });
+    const article = screen.getByRole("article", { name: "Book reader" });
     const link = screen.getByRole("link", { name: "open" });
 
     fireEvent.keyDown(link, { key: "ArrowRight" });
@@ -420,7 +463,7 @@ describe("EBookPane chapter reader", () => {
     );
 
     const chapter = screen
-      .getByRole("article", { name: "Chapter reader" })
+      .getByRole("article", { name: "Book reader" })
       .querySelector(".ebook-chapter");
 
     expect(chapter?.classList.contains("ebook-chapter-cover")).toBe(true);
@@ -438,7 +481,7 @@ describe("EBookPane chapter reader", () => {
       />,
     );
 
-    const article = screen.getByRole("article", { name: "Chapter reader" });
+    const article = screen.getByRole("article", { name: "Book reader" });
     expect(article.querySelectorAll(".page-break")).toHaveLength(1);
     expect(screen.queryByRole("separator", { name: "Page break" })).toBeTruthy();
   });
