@@ -274,11 +274,11 @@
 
 .open-agent-window-button {
   align-items: center;
-  background: var(--accent-soft);
-  border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
-  border-radius: 6px;
-  box-shadow: none;
-  color: var(--accent);
+  background: color-mix(in srgb, var(--surface-muted) 58%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 28%, transparent);
+  border-radius: 999px;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--surface-strong) 24%, transparent);
+  color: color-mix(in srgb, var(--text) 78%, var(--text-muted));
   display: inline-flex;
   flex: 0 0 auto;
   font-size: 11.5px;
@@ -296,14 +296,14 @@
 }
 
 .open-agent-window-button:hover {
-  background: color-mix(in srgb, var(--accent) 14%, var(--accent-soft));
-  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
-  color: var(--accent);
+  background: color-mix(in srgb, var(--surface-strong) 42%, transparent);
+  border-color: color-mix(in srgb, var(--border) 42%, transparent);
+  color: var(--text);
 }
 
 .open-agent-window-button:focus-visible {
-  border-color: var(--accent);
-  outline: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 34%, var(--border));
+  outline: 2px solid color-mix(in srgb, var(--accent) 28%, transparent);
   outline-offset: 1px;
 }
 

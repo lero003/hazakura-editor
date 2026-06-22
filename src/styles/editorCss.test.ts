@@ -212,6 +212,11 @@ describe("editor tab close affordance CSS", () => {
     const toggle = ruleBody(editorCss, ".pane-toggle");
     const reviewAction = ruleBody(editorCss, ".pane-review-action");
     const activeToggle = ruleBody(editorCss, ".pane-toggle.active");
+    const companionButton = ruleBody(editorCss, ".open-agent-window-button");
+    const companionButtonHover = ruleBody(
+      editorCss,
+      ".open-agent-window-button:hover",
+    );
 
     expect(cluster).toMatch(/display:\s*flex/);
     expect(cluster).toMatch(/gap:\s*10px/);
@@ -230,6 +235,18 @@ describe("editor tab close affordance CSS", () => {
     expect(reviewAction).toMatch(/padding:\s*0\s+9px/);
     expect(activeToggle).toMatch(/background:\s*color-mix/);
     expect(activeToggle).toMatch(/box-shadow:\s*inset 0 0 0 1px/);
+
+    expect(companionButton).toMatch(
+      /background:\s*color-mix\(in srgb,\s*var\(--surface-muted\)/,
+    );
+    expect(companionButton).toMatch(
+      /border:\s*1px solid color-mix\(in srgb,\s*var\(--border\)/,
+    );
+    expect(companionButton).toMatch(/border-radius:\s*999px/);
+    expect(companionButton).toMatch(/box-shadow:\s*inset 0 1px 0/);
+    expect(companionButton).not.toMatch(/background:\s*var\(--accent-soft\)/);
+    expect(companionButtonHover).toMatch(/var\(--surface-strong\)/);
+    expect(companionButtonHover).not.toMatch(/var\(--accent-soft\)/);
   });
 
   it("keeps the editor full-path bar visually quiet", () => {
