@@ -62,6 +62,24 @@ describe("EBookPane chapter reader", () => {
     expect(screen.getByText("Page 1 / 1")).toBeTruthy();
   });
 
+  it("keeps the book page sheet spread-capable without rendering extra chapters", () => {
+    render(
+      <EBookPane
+        menuLanguage="en"
+        source={"# Chapter One\n\nbody one\n\n# Chapter Two\n\nbody two"}
+      />,
+    );
+
+    const article = screen.getByRole("article", { name: "Book reader" });
+    const sheet = article.querySelector(".ebook-page-sheet");
+
+    expect(sheet?.classList.contains("ebook-page-sheet-spread")).toBe(true);
+    expect(article.querySelector(".ebook-page-viewport")).toBeTruthy();
+    expect(article.querySelectorAll(".ebook-chapter")).toHaveLength(1);
+    expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Chapter Two" })).toBeNull();
+  });
+
   it("turns half-scroll vertical wheel gestures into page navigation while keeping the page frame", async () => {
     vi.mocked(measureEBookPageCount).mockReturnValue(3);
 
@@ -337,6 +355,34 @@ describe("EBookPane chapter reader", () => {
       expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
     });
     expect(screen.queryByRole("heading", { name: "Chapter Two" })).toBeNull();
+  });
+
+  it("handles Space and Shift+Space only from the focused reader root", async () => {
+    vi.mocked(measureEBookPageCount).mockReturnValue(3);
+
+    render(
+      <EBookPane
+        menuLanguage="en"
+        source={"# Chapter One\n\n[open](./other.md)\n\nbody one"}
+      />,
+    );
+
+    const article = screen.getByRole("article", { name: "Book reader" });
+    const link = screen.getByRole("link", { name: "open" });
+
+    await waitFor(() => {
+      expect(screen.getByText("Page 1 / 3")).toBeTruthy();
+    });
+
+    fireEvent.keyDown(link, { key: " " });
+    expect(screen.getByText("Page 1 / 3")).toBeTruthy();
+
+    article.focus();
+    fireEvent.keyDown(article, { key: " " });
+    expect(screen.getByText("Page 2 / 3")).toBeTruthy();
+
+    fireEvent.keyDown(article, { key: " ", shiftKey: true });
+    expect(screen.getByText("Page 1 / 3")).toBeTruthy();
   });
 
   it("resets to the first chapter and first page when the document path changes", async () => {

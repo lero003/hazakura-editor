@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-23 (v0.30 paged flow first slice)
+Last reviewed: 2026-06-23 (v0.31 spread first slice)
 
 ## Current State
 
@@ -33,6 +33,16 @@ Last reviewed: 2026-06-23 (v0.30 paged flow first slice)
   CSS tests, full `npm run test`,
   `npm run build:vite` (with the usual Vite chunk-size warning), and
   `git diff --check`.
+  The first code-level v0.31 Spread View slice is also implemented:
+  e-book page sheets are spread-capable through a container query, fall
+  back to one page when the reader column is narrow, keep CSS column
+  width as the logical page unit, and add focused-root Space /
+  Shift+Space page movement. Verification passed with focused e-book /
+  pagination / CSS tests, full `npm run test`, `npm run build:vite`
+  (with the usual Vite chunk-size warning), and `git diff --check`.
+  Remaining v0.31 proof should stay on built-app visual smoke, one-page
+  versus one-spread page movement feel, and coarse navigation such as
+  heading jump / slider.
   After v1.0, do not rush straight into v2.0; use v1.x to deepen the
   single-document product first: EPUB export, Diff / Review ergonomics,
   provenance, movement between writing / reading layers, distribution
@@ -342,9 +352,10 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    revision surface for long Japanese Markdown prose while it still
    looks like a book page. Wheel / trackpad movement should reduce
    page-turn friction without becoming Preview-style continuous scroll.
-2. v0.31 e-book Mode Spread View: add two-page book-like inspection with
-   single-page fallback and coarse navigation, without Preview DOM
-   editing.
+2. v0.31 e-book Mode Spread View follow-up: visually smoke the
+   container-gated two-page frame, decide whether wide movement advances
+   by one page or one spread, and add coarse navigation without Preview
+   DOM editing.
 3. v0.32 Editor / Reader Position Bridge: make read, notice, return, fix
    feel like one source-preserving revision cycle.
 4. v0.33 EPUB Export v1 Polish, then v0.34 v1.0 Release Candidate.
@@ -501,6 +512,16 @@ open Active UX Queue slice and close it as `implemented`,
   src/components/app/SidePane.test.tsx src/styles/previewCss.test.ts`,
   `npm run test`, `npm run build:vite` (passed with the usual Vite
   chunk-size warning), and `git diff --check`.
+- Latest v0.31 code slice: e-book Mode Spread View first slice uses a
+  container-gated `.ebook-page-sheet-spread`, keeps narrow readers on the
+  existing single-page frame, measures page offsets from CSS column width
+  rather than the wider spread viewport, and supports Space /
+  Shift+Space from the focused reader root. Verification on 2026-06-23:
+  `npm run test -- src/components/editor/preview/EBookPane.test.tsx
+  src/components/editor/preview/ebookPagination.test.ts
+  src/styles/previewCss.test.ts`, `npm run test`, `npm run build:vite`
+  (passed with the usual Vite chunk-size warning), and
+  `git diff --check`.
 - Latest docs roadmap alignment: v0.30-v1.0 Reader UX Stabilization was
   reflected in roadmap, current work, current status, docs index,
   development automation guidance, e-book / AI planning notes, README,

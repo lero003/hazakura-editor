@@ -117,6 +117,7 @@ describe("preview.css", () => {
     const chapterBody = ruleBody(".ebook-chapter");
 
     expect(chapterBody).not.toMatch(/100vh/);
+    expect(chapterBody).toMatch(/container-type:\s*inline-size/);
     expect(chapterBody).toMatch(/--ebook-page-height-max:\s*700px/);
     expect(chapterBody).toMatch(
       /--ebook-page-width:\s*min\(420px,\s*calc\(100vw - 56px\)\)/,
@@ -125,6 +126,16 @@ describe("preview.css", () => {
       /--ebook-page-gap:\s*clamp\(28px,\s*5vw,\s*44px\)/,
     );
     expect(chapterBody).toMatch(/--ebook-page-footer-height:\s*34px/);
+  });
+
+  it("gates the e-book spread frame on available reader width", () => {
+    expect(previewCss).toMatch(/@container\s*\(min-width:\s*920px\)/);
+    expect(previewCss).toMatch(
+      /\.ebook-page-sheet-spread\s*{[^}]*max-width:\s*var\(--ebook-spread-width\)/s,
+    );
+    expect(previewCss).toMatch(
+      /\.ebook-page-sheet-spread \.ebook-page-viewport\s*{[^}]*max-width:\s*var\(--ebook-spread-width\)/s,
+    );
   });
 
   it("keeps the e-book footer fixed outside the paginated flow", () => {

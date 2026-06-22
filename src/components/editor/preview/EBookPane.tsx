@@ -312,6 +312,13 @@ export default function EBookPane({
     } else if (event.key === "ArrowRight") {
       event.preventDefault();
       goToNextPage();
+    } else if (event.key === " " || event.key === "Spacebar") {
+      event.preventDefault();
+      if (event.shiftKey) {
+        goToPreviousPage();
+      } else {
+        goToNextPage();
+      }
     }
   };
 
@@ -428,7 +435,7 @@ export default function EBookPane({
             activeChapterIndexSafe,
           )}
         >
-          <div className="ebook-page-sheet">
+          <div className="ebook-page-sheet ebook-page-sheet-spread">
             <div className="ebook-page-viewport" ref={viewportRef}>
               <div
                 className={

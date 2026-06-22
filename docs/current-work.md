@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v0.30-v1.0 Reader UX Stabilization queue and post-v0.29.1 evidence
 Authority: High
-Last reviewed: 2026-06-23 (v0.30 paged flow first slice)
+Last reviewed: 2026-06-23 (v0.31 spread first slice)
 
 ## Purpose
 
@@ -50,9 +50,9 @@ transaction-boundary issue appears.
 
 ## Active UX Queue
 
-Pick one item at a time. The immediate next product slice is v0.30 paged
-flow operation unless a concrete post-release Local Assist safety or App
-Store lane issue appears.
+Pick one item at a time. The immediate next product slice is v0.31
+Spread View follow-up unless a concrete post-release Local Assist safety
+or App Store lane issue appears.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
@@ -79,6 +79,20 @@ and the v0.32 editor cursor / reader location bridge. Verification for
 this code slice passed with focused e-book / side-pane / CSS tests, full
 `npm run test`, `npm run build:vite` (with the usual Vite chunk-size
 warning), and `git diff --check`.
+
+v0.31 Spread View first slice is implemented at code-regression level as
+of 2026-06-23: the e-book page sheet is spread-capable and uses a
+container query to widen to a two-page frame only when the reader column
+has enough width, otherwise it falls back to the existing single-page
+frame. Pagination measurement now treats CSS column width as the page
+unit, so a spread viewport does not turn two visible pages into one
+logical page. Reader keyboard handling now also supports Space /
+Shift+Space from the focused reader root. Verification passed with
+focused e-book / pagination / CSS tests, full `npm run test`,
+`npm run build:vite` (with the usual Vite chunk-size warning), and
+`git diff --check`. Remaining v0.31 proof should focus on built-app
+visual smoke, whether page movement should advance by one page or one
+spread when wide, and coarse navigation such as heading jump / slider.
 
 Post-v1 guardrail: after v1.0, do not rush straight into v2.0. Use v1.x
 to deepen the single-document product first: EPUB export, Diff / Review

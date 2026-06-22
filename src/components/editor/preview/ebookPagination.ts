@@ -28,19 +28,27 @@ export function getEBookPageOffset(
 }
 
 function getEBookPageStep(element: HTMLElement): number {
-  const pageWidth = Math.max(0, element.clientWidth);
+  const pageWidth = getColumnWidth(element) || Math.max(0, element.clientWidth);
   if (pageWidth <= 0) {
     return 0;
   }
   return pageWidth + getColumnGap(element);
 }
 
+function getColumnWidth(element: HTMLElement): number {
+  const value = window.getComputedStyle(element).columnWidth;
+  return parseCssPixelValue(value);
+}
+
 function getColumnGap(element: HTMLElement): number {
   const value = window.getComputedStyle(element).columnGap;
-  if (!value || value === "normal") {
+  return parseCssPixelValue(value);
+}
+
+function parseCssPixelValue(value: string): number {
+  if (!value || value === "normal" || value === "auto") {
     return 0;
   }
-
   const parsed = Number.parseFloat(value);
   if (!Number.isFinite(parsed)) {
     return 0;

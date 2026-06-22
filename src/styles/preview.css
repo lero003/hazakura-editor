@@ -600,7 +600,9 @@
   --ebook-page-gap: clamp(28px, 5vw, 44px);
   --ebook-page-height-max: 700px;
   --ebook-page-width: min(420px, calc(100vw - 56px));
+  --ebook-spread-width: calc((var(--ebook-page-width) * 2) + var(--ebook-page-gap));
   box-sizing: border-box;
+  container-type: inline-size;
   display: flex;
   flex: 1 1 auto;
   justify-content: center;
@@ -629,6 +631,16 @@
   min-height: 0;
   overflow: hidden;
   width: 100%;
+}
+
+@container (min-width: 920px) {
+  .ebook-page-sheet-spread {
+    max-width: var(--ebook-spread-width);
+  }
+
+  .ebook-page-sheet-spread .ebook-page-viewport {
+    max-width: var(--ebook-spread-width);
+  }
 }
 
 .ebook-page-flow {
