@@ -122,6 +122,13 @@ v1.0 の製品像は次の通り。
 別ウィンドウ reader は将来の派生として残すが、v0.31 の最初の体験芯には
 しない。
 
+同日の Reading Focus coarse navigation decision では、粗い移動手段は
+ページスライダーよりも読書面に合う `目次` / Contents ドロワーを先に採用する。
+これは通常の右ペイン Outline ではなく、Reading Focus 内だけに出る軽い
+オーバーレイで、既存の ATX-heading 由来 e-book chapter list から選んだ章の
+1ページ目へ移動する。編集位置へ戻る橋渡しは v0.32 の責務として残し、v0.31
+では Markdown source を変更しない読書面内ジャンプに留める。
+
 v0.30-v1.0 の順序:
 
 1. v0.30: e-book Mode Flow View。

@@ -96,6 +96,26 @@ describe("preview.css", () => {
     expect(previewCss).not.toMatch(/(?:^|\n)\.ebook-reader-chrome\s*{/);
   });
 
+  it("keeps the Reading Focus table of contents as a quiet overlay drawer", () => {
+    const toggleBody = ruleBody(".ebook-pane .ebook-reader-toc-toggle");
+    const backdropBody = ruleBody(".ebook-pane .ebook-reader-toc-backdrop");
+    const panelBody = ruleBody(".ebook-pane .ebook-reader-toc-panel");
+    const listBody = ruleBody(".ebook-pane .ebook-reader-toc-list");
+    const itemBody = ruleBody(".ebook-pane .ebook-reader-toc-item");
+
+    expect(toggleBody).toMatch(/position:\s*absolute/);
+    expect(toggleBody).toMatch(/bottom:\s*clamp/);
+    expect(toggleBody).toMatch(/left:\s*clamp/);
+    expect(backdropBody).toMatch(/position:\s*absolute/);
+    expect(backdropBody).toMatch(/inset:\s*0/);
+    expect(panelBody).toMatch(/position:\s*absolute/);
+    expect(panelBody).toMatch(/left:\s*clamp/);
+    expect(panelBody).toMatch(/max-width:\s*min\(320px,\s*calc\(100% - 32px\)\)/);
+    expect(listBody).toMatch(/overflow:\s*auto/);
+    expect(itemBody).toMatch(/grid-template-columns:\s*2\.6em minmax\(0,\s*1fr\)/);
+    expect(previewCss).not.toMatch(/(?:^|\n)\.ebook-reader-toc-panel\s*{/);
+  });
+
   it("keeps e-book chapter header styling inside the e-book pane flow", () => {
     const body = ruleBody(".ebook-chapter .ebook-page-flow > h1:first-child");
 

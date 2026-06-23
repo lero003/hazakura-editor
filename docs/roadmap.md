@@ -216,7 +216,9 @@ way to read.
 - Add previous / next page controls.
 - Support keyboard navigation such as Left / Right and Space.
 - Show current page / total page or equivalent progress.
-- Add coarse navigation such as a page slider or heading-based jump.
+- Add coarse navigation; the current v0.31 path uses a Reading
+  Focus-only table-of-contents drawer for heading/chapter jumps, with
+  page sliders left as a later display-option candidate.
 - Keep Markdown source canonical and avoid Preview DOM editing.
 - Keep a fully detached separate reader window as a later option, not
   the first v0.31 path.

@@ -102,11 +102,15 @@ Last reviewed: 2026-06-23 (v0.31 TestFlight candidate)
   redundant blank simulated page when the next heading already starts a
   new reader chapter. These source-level margin, spread-navigation,
   page-offset, and redundant page-break tweaks need a later package
-  rebuild before they are present in TestFlight. Focused e-book
-  pagination / chapter / `EBookPane` / preview CSS tests, full
-  `npm run test`, and `npm run build:vite` passed; Vite still reports
-  the usual large chunk warning. Reader font-size/display options remain
-  deferred.
+  rebuild before they are present in TestFlight. Reading Focus now also
+  has a source-level `目次` / Contents drawer: it appears only in Reading
+  Focus when multiple e-book chapters exist, uses the existing
+  ATX-heading-derived chapter list, and jumps to the selected chapter's
+  first simulated page without touching the normal Outline pane or the
+  v0.32 editor/reader position bridge. Focused e-book pagination /
+  chapter / `EBookPane` / preview CSS tests, full `npm run test`, and
+  `npm run build:vite` passed; Vite still reports the usual large chunk
+  warning. Reader font-size/display options remain deferred.
   After v1.0, do not rush straight into v2.0; use v1.x to deepen the
   single-document product first: EPUB export, Diff / Review ergonomics,
   provenance, movement between writing / reading layers, distribution

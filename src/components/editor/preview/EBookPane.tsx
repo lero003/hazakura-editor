@@ -71,6 +71,7 @@ type EBookPageFlowStyle = CSSProperties & {
 type EBookReaderCopy = {
   body: string;
   chapterProgress: string;
+  closeTableOfContents: string;
   enterReadingFocus: string;
   exitReadingFocus: string;
   footerChapter: string;
@@ -80,6 +81,7 @@ type EBookReaderCopy = {
   pageProgress: string;
   previousPage: string;
   readerLabel: string;
+  tableOfContents: string;
 };
 
 const WHEEL_PAGE_THRESHOLD = 40;
@@ -112,6 +114,7 @@ export default function EBookPane({
   const [pageViewportHeight, setPageViewportHeight] = useState(0);
   const [pageTransitionSuppressed, setPageTransitionSuppressed] =
     useState(false);
+  const [tableOfContentsOpen, setTableOfContentsOpen] = useState(false);
   const pendingPageTargetRef = useRef<"first" | "last" | null>(null);
   const flowRef = useRef<HTMLDivElement | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
@@ -120,11 +123,18 @@ export default function EBookPane({
 
   useEffect(() => {
     pendingPageTargetRef.current = initialLocation ? null : "first";
+    setTableOfContentsOpen(false);
     setActiveChapterIndex(
       clampChapterIndex(initialLocation?.chapterIndex ?? 0, chapters.length),
     );
     setActivePageIndex(Math.max(initialLocation?.pageIndex ?? 0, 0));
   }, [documentPath]);
+
+  useEffect(() => {
+    if (!readingFocusActive) {
+      setTableOfContentsOpen(false);
+    }
+  }, [readingFocusActive]);
 
   useEffect(() => {
     setActiveChapterIndex((current) =>
@@ -337,6 +347,14 @@ export default function EBookPane({
     }
   };
 
+  const jumpToChapter = (chapterIndex: number) => {
+    pendingPageTargetRef.current = "first";
+    setPageTransitionSuppressed(true);
+    setActivePageIndex(0);
+    setActiveChapterIndex(clampChapterIndex(chapterIndex, chapters.length));
+    setTableOfContentsOpen(false);
+  };
+
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (event.target !== event.currentTarget) {
       return;
@@ -414,6 +432,11 @@ export default function EBookPane({
   };
 
   const totalChapters = chapters.length;
+  const tableOfContentsEntries = chapters.map((chapter) => ({
+    chapterIndex: chapter.index,
+    headingLevel: chapter.headingLevel,
+    label: chapterNavigationLabel(chapter, chapter.index, totalChapters, copy),
+  }));
   const chapterLabel = chapterNavigationLabel(
     activeChapter ?? null,
     activeChapterIndexSafe,
@@ -425,7 +448,9 @@ export default function EBookPane({
   const nextDisabled =
     activeChapterIndexSafe >= totalChapters - 1 &&
     activePageIndexSafe >= measuredPageCount - 1;
-  const focusAction = readingFocusActive ? onExitReadingFocus : onEnterReadingFocus;
+  const focusAction = readingFocusActive
+    ? onExitReadingFocus
+    : onEnterReadingFocus;
   const focusActionLabel = readingFocusActive
     ? copy.exitReadingFocus
     : copy.enterReadingFocus;
@@ -458,8 +483,12 @@ export default function EBookPane({
           <div className="ebook-reader-title" title={chapterLabel}>
             {chapterLabel}
           </div>
-          <div className="ebook-reader-progress" aria-label={copy.chapterProgress}>
-            {copy.chapterProgress} {activeChapterIndexSafe + 1} / {totalChapters}
+          <div
+            className="ebook-reader-progress"
+            aria-label={copy.chapterProgress}
+          >
+            {copy.chapterProgress} {activeChapterIndexSafe + 1} /{" "}
+            {totalChapters}
           </div>
           <div className="ebook-reader-progress" aria-label={copy.pageProgress}>
             {copy.pageProgress} {activePageIndexSafe + 1} / {measuredPageCount}
@@ -491,6 +520,76 @@ export default function EBookPane({
         >
           {focusActionLabel}
         </button>
+      ) : null}
+      {readingFocusActive && tableOfContentsEntries.length > 1 ? (
+        <button
+          aria-controls={
+            tableOfContentsOpen ? "ebook-reader-table-of-contents" : undefined
+          }
+          aria-expanded={tableOfContentsOpen}
+          className="ebook-reader-toc-toggle"
+          onClick={() => setTableOfContentsOpen((open) => !open)}
+          type="button"
+        >
+          {copy.tableOfContents}
+        </button>
+      ) : null}
+      {readingFocusActive && tableOfContentsOpen ? (
+        <>
+          <button
+            aria-label={copy.closeTableOfContents}
+            className="ebook-reader-toc-backdrop"
+            onClick={() => setTableOfContentsOpen(false)}
+            type="button"
+          />
+          <nav
+            aria-label={copy.tableOfContents}
+            className="ebook-reader-toc-panel"
+            id="ebook-reader-table-of-contents"
+          >
+            <div className="ebook-reader-toc-header">
+              <span>{copy.tableOfContents}</span>
+              <button
+                aria-label={copy.closeTableOfContents}
+                className="ebook-reader-toc-close"
+                onClick={() => setTableOfContentsOpen(false)}
+                type="button"
+              >
+                ×
+              </button>
+            </div>
+            <div className="ebook-reader-toc-list">
+              {tableOfContentsEntries.map((entry) => (
+                <button
+                  aria-current={
+                    entry.chapterIndex === activeChapterIndexSafe
+                      ? "location"
+                      : undefined
+                  }
+                  className={`ebook-reader-toc-item${
+                    entry.chapterIndex === activeChapterIndexSafe
+                      ? " current"
+                      : ""
+                  }`}
+                  key={`${entry.chapterIndex}-${entry.label}`}
+                  onClick={() => jumpToChapter(entry.chapterIndex)}
+                  style={{
+                    paddingLeft: `${
+                      12 + Math.max((entry.headingLevel ?? 1) - 1, 0) * 12
+                    }px`,
+                  }}
+                  title={entry.label}
+                  type="button"
+                >
+                  <span aria-hidden="true" className="ebook-reader-toc-index">
+                    {entry.chapterIndex + 1}
+                  </span>
+                  <span className="ebook-reader-toc-text">{entry.label}</span>
+                </button>
+              ))}
+            </div>
+          </nav>
+        </>
       ) : null}
       {activeChapterHtml ? (
         <section
@@ -713,6 +812,7 @@ function getEBookReaderCopy(
     return {
       body: "本文",
       chapterProgress: "章",
+      closeTableOfContents: "もくじを閉じる",
       enterReadingFocus: "よむことに集中",
       exitReadingFocus: "編集にもどる",
       footerChapter: "章",
@@ -722,6 +822,7 @@ function getEBookReaderCopy(
       pageProgress: "ページ",
       previousPage: "まへのページ",
       readerLabel: "本のやうに読む",
+      tableOfContents: "もくじ",
     };
   }
 
@@ -729,6 +830,7 @@ function getEBookReaderCopy(
     return {
       body: "本文",
       chapterProgress: "章",
+      closeTableOfContents: "目次を閉じる",
       enterReadingFocus: "集中して読む",
       exitReadingFocus: "編集に戻る",
       footerChapter: "章",
@@ -738,12 +840,14 @@ function getEBookReaderCopy(
       pageProgress: "ページ",
       previousPage: "前のページ",
       readerLabel: "本のように読む",
+      tableOfContents: "目次",
     };
   }
 
   return {
     body: "Body",
     chapterProgress: "Chapter",
+    closeTableOfContents: "Close contents",
     enterReadingFocus: "Focus reading",
     exitReadingFocus: "Back to editor",
     footerChapter: "Chapter",
@@ -753,5 +857,6 @@ function getEBookReaderCopy(
     pageProgress: "Page",
     previousPage: "Previous page",
     readerLabel: "Book reader",
+    tableOfContents: "Contents",
   };
 }

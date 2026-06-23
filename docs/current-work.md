@@ -155,10 +155,19 @@ horizontal rule, preventing a redundant blank simulated page when the
 next heading already starts a new reader chapter. These source-level
 margin, spread-navigation, page-offset, and redundant page-break tweaks
 require a later package rebuild before they appear in TestFlight.
-Display options such as reader font size remain deferred. Verification
-passed with focused e-book pagination / chapter / `EBookPane` / preview
-CSS tests, full `npm run test`, and `npm run build:vite` (with the usual
-Vite chunk-size warning).
+
+v0.31 Reading Focus now also has a source-level coarse navigation slice:
+when Reading Focus is active and the document has multiple e-book
+chapters, a quiet `目次` / Contents floating control opens a lightweight
+overlay drawer inspired by the L Mode workspace drawer. The drawer is
+owned by `EBookPane`, is shown only in Reading Focus, lists the existing
+ATX-heading-derived e-book chapters, and jumps to the selected chapter's
+first simulated page without touching Markdown source, the normal
+Outline pane, or the v0.32 editor/reader position bridge. Display options
+such as reader font size remain deferred. Verification passed with
+focused e-book pagination / chapter / `EBookPane` / preview CSS tests,
+full `npm run test`, and `npm run build:vite` (with the usual Vite
+chunk-size warning).
 
 v0.31 TestFlight candidate package evidence is generated as of
 2026-06-23: package/app metadata is aligned to `0.31.0`, the App Store

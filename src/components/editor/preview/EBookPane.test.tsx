@@ -135,6 +135,54 @@ describe("EBookPane chapter reader", () => {
     expect(exitButton.closest(".ebook-reader-chrome")).toBeNull();
   });
 
+  it("shows a Reading Focus table of contents drawer and jumps to a chapter", async () => {
+    const onLocationChange = vi.fn();
+
+    render(
+      <EBookPane
+        menuLanguage="ja"
+        onLocationChange={onLocationChange}
+        readingFocusActive
+        source={"# Chapter One\n\nbody one\n\n## Chapter Two\n\nbody two"}
+      />,
+    );
+
+    const tocButton = screen.getByRole("button", { name: "目次" });
+    expect(tocButton.classList.contains("ebook-reader-toc-toggle")).toBe(true);
+
+    fireEvent.click(tocButton);
+
+    const drawer = screen.getByRole("navigation", { name: "目次" });
+    expect(drawer.classList.contains("ebook-reader-toc-panel")).toBe(true);
+    expect(screen.getByRole("button", { name: "Chapter One" })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Chapter Two" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Chapter Two" })).toBeTruthy();
+    });
+    expect(screen.queryByRole("heading", { name: "Chapter One" })).toBeNull();
+    expect(screen.queryByRole("navigation", { name: "目次" })).toBeNull();
+    expect(screen.getByText("章 2 / 2")).toBeTruthy();
+    expect(screen.getByText("ページ 1 / 1")).toBeTruthy();
+    expect(onLocationChange).toHaveBeenLastCalledWith({
+      chapterIndex: 1,
+      pageIndex: 0,
+    });
+  });
+
+  it("keeps the table of contents drawer exclusive to Reading Focus", () => {
+    render(
+      <EBookPane
+        menuLanguage="ja"
+        source={"# Chapter One\n\nbody one\n\n# Chapter Two\n\nbody two"}
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: "目次" })).toBeNull();
+    expect(screen.queryByRole("navigation", { name: "目次" })).toBeNull();
+  });
+
   it("treats a leading image before the first heading as a standalone cover image page", async () => {
     vi.mocked(measureEBookPageCount).mockReturnValue(2);
     vi.mocked(openWorkspaceImage).mockResolvedValue({
