@@ -131,6 +131,7 @@ export function usePreviewScrollSync({
     const ratio =
       scrollableHeight <= 0 ? 0 : previewPane.scrollTop / scrollableHeight;
 
+    showScrollPositionHud(ratio);
     scrollSyncSourceRef.current = "preview";
     const didSync = editorPaneRef.current?.setScrollRatio(
       ratio,
@@ -147,7 +148,7 @@ export function usePreviewScrollSync({
     }
 
     scrollSyncSourceRef.current = null;
-  }, [editorPaneRef, previewPaneRef]);
+  }, [editorPaneRef, previewPaneRef, showScrollPositionHud]);
 
   return {
     scrollHudContext: scrollHudHeadingContext,

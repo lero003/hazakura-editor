@@ -24,6 +24,7 @@ import {
 } from "react";
 import {
   applyEbookPageBreakMarkers,
+  type EbookChapter,
   splitMarkdownIntoChapters,
 } from "../../../features/editor/ebookChapters";
 import {
@@ -39,11 +40,12 @@ import {
 } from "./ebookPagination";
 
 type EBookPaneProps = {
+  documentKey?: string;
   documentPath?: string | null;
   initialLocation?: EBookReaderLocation | null;
   menuLanguage?: MenuLanguage;
   onEnterReadingFocus?: (location: EBookReaderLocation) => void;
-  onExitReadingFocus?: () => void;
+  onExitReadingFocus?: (location: EBookReaderLocation) => void;
   onLocationChange?: (location: EBookReaderLocation) => void;
   onOpenLocalLink?: (href: string) => void;
   readingFocusActive?: boolean;
@@ -54,6 +56,7 @@ type EBookPaneProps = {
 export type EBookReaderLocation = {
   chapterIndex: number;
   pageIndex: number;
+  sourceLine?: number;
 };
 
 type RenderedChapter = {
@@ -90,6 +93,7 @@ const EBOOK_SPREAD_CONTAINER_MIN_WIDTH = 920;
 const EBOOK_SPREAD_WIDTH_TOLERANCE = 1;
 
 export default function EBookPane({
+  documentKey,
   documentPath,
   initialLocation,
   menuLanguage = "en",
@@ -120,6 +124,11 @@ export default function EBookPane({
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const wheelDeltaRef = useRef(0);
   const wheelCooldownRef = useRef<number | null>(null);
+  const documentLocationKey = documentKey ?? documentPath ?? "";
+  const lastNotifiedLocationRef = useRef<{
+    documentLocationKey: string;
+    location: EBookReaderLocation;
+  } | null>(null);
 
   useEffect(() => {
     pendingPageTargetRef.current = initialLocation ? null : "first";
@@ -128,7 +137,29 @@ export default function EBookPane({
       clampChapterIndex(initialLocation?.chapterIndex ?? 0, chapters.length),
     );
     setActivePageIndex(Math.max(initialLocation?.pageIndex ?? 0, 0));
-  }, [documentPath]);
+  }, [documentLocationKey]);
+
+  useEffect(() => {
+    if (!initialLocation) {
+      return;
+    }
+    const lastNotifiedLocation = lastNotifiedLocationRef.current;
+    if (
+      lastNotifiedLocation?.documentLocationKey === documentLocationKey &&
+      readerLocationsEqual(lastNotifiedLocation.location, initialLocation)
+    ) {
+      return;
+    }
+    setActiveChapterIndex(
+      clampChapterIndex(initialLocation.chapterIndex, chapters.length),
+    );
+    setActivePageIndex(Math.max(initialLocation.pageIndex, 0));
+  }, [
+    chapters.length,
+    documentLocationKey,
+    initialLocation?.chapterIndex,
+    initialLocation?.pageIndex,
+  ]);
 
   useEffect(() => {
     if (!readingFocusActive) {
@@ -151,6 +182,21 @@ export default function EBookPane({
     measuredPageCount,
   );
   const activeChapter = chapters[activeChapterIndexSafe] ?? chapters[0];
+  const activeReaderLocation = useMemo(
+    () =>
+      getEBookReaderLocation(
+        activeChapter,
+        activeChapterIndexSafe,
+        activePageIndexSafe,
+        measuredPageCount,
+      ),
+    [
+      activeChapter,
+      activeChapterIndexSafe,
+      activePageIndexSafe,
+      measuredPageCount,
+    ],
+  );
   const activeRenderedChapter = useMemo<RenderedChapter | null>(() => {
     if (!activeChapter) {
       return null;
@@ -293,14 +339,30 @@ export default function EBookPane({
   }, [measuredPageCount]);
 
   useEffect(() => {
-    onLocationChange?.({
-      chapterIndex: activeChapterIndexSafe,
-      pageIndex: activePageIndexSafe,
-    });
-  }, [activeChapterIndexSafe, activePageIndexSafe, onLocationChange]);
+    if (!onLocationChange) {
+      return;
+    }
+    const lastNotifiedLocation = lastNotifiedLocationRef.current;
+    if (
+      lastNotifiedLocation?.documentLocationKey === documentLocationKey &&
+      readerLocationsEqual(
+        lastNotifiedLocation.location,
+        activeReaderLocation,
+      )
+    ) {
+      return;
+    }
+    lastNotifiedLocationRef.current = {
+      documentLocationKey,
+      location: activeReaderLocation,
+    };
+    onLocationChange(activeReaderLocation);
+  }, [activeReaderLocation, documentLocationKey, onLocationChange]);
 
   useLayoutEffect(() => {
-    setPageOffset(getEBookPageOffset(activePageIndexSafe, flowRef.current));
+    setPageOffset(
+      measureRenderedChapterPageOffset(activePageIndexSafe, flowRef.current),
+    );
   }, [activePageIndexSafe, activeChapterHtml, measuredPageCount]);
 
   useEffect(
@@ -508,12 +570,9 @@ export default function EBookPane({
           className="ebook-reader-floating-action"
           onClick={() => {
             if (readingFocusActive) {
-              onExitReadingFocus?.();
+              onExitReadingFocus?.(activeReaderLocation);
             } else {
-              onEnterReadingFocus?.({
-                chapterIndex: activeChapterIndexSafe,
-                pageIndex: activePageIndexSafe,
-              });
+              onEnterReadingFocus?.(activeReaderLocation);
             }
           }}
           type="button"
@@ -637,7 +696,22 @@ function measureRenderedChapterPageCount(
   if (chapter?.isStandaloneImage) {
     return 1;
   }
-  return measureEBookPageCount(flow);
+  return normalizeEBookPageCount(measureEBookPageCount(flow));
+}
+
+function measureRenderedChapterPageOffset(
+  pageIndex: number,
+  flow: HTMLElement | null,
+): number {
+  const pageOffset = getEBookPageOffset(pageIndex, flow);
+  return Number.isFinite(pageOffset) ? Math.max(0, pageOffset) : 0;
+}
+
+function normalizeEBookPageCount(pageCount: number): number {
+  if (!Number.isFinite(pageCount)) {
+    return 1;
+  }
+  return Math.max(1, Math.trunc(pageCount));
 }
 
 function measurePageViewportHeight(viewport: HTMLElement | null): number {
@@ -676,6 +750,60 @@ function getVisiblePageStep(
     return 2;
   }
   return 1;
+}
+
+function getEBookReaderLocation(
+  chapter: EbookChapter | undefined,
+  chapterIndex: number,
+  pageIndex: number,
+  pageCount: number,
+): EBookReaderLocation {
+  const location = {
+    chapterIndex,
+    pageIndex,
+  };
+  const sourceLine = chapter
+    ? estimateChapterSourceLine(chapter, pageIndex, pageCount)
+    : null;
+
+  return sourceLine === null ? location : { ...location, sourceLine };
+}
+
+function readerLocationsEqual(
+  first: EBookReaderLocation,
+  second: EBookReaderLocation,
+): boolean {
+  return (
+    first.chapterIndex === second.chapterIndex &&
+    first.pageIndex === second.pageIndex &&
+    first.sourceLine === second.sourceLine
+  );
+}
+
+function estimateChapterSourceLine(
+  chapter: Pick<EbookChapter, "source" | "startLine">,
+  pageIndex: number,
+  pageCount: number,
+): number {
+  const lineCount = countMarkdownSourceLines(chapter.source);
+  const safePageCount = Math.max(1, Math.trunc(pageCount));
+  const safePageIndex = clampPageIndex(pageIndex, safePageCount);
+  if (lineCount <= 1 || safePageCount <= 1) {
+    return chapter.startLine;
+  }
+
+  const pageRatio = safePageIndex / (safePageCount - 1);
+  return chapter.startLine + Math.round((lineCount - 1) * pageRatio);
+}
+
+function countMarkdownSourceLines(source: string): number {
+  if (source.length === 0) {
+    return 1;
+  }
+  const lineCount = source.split(/\r\n|\n|\r/).length;
+  return /(?:\r\n|\n|\r)$/.test(source)
+    ? Math.max(1, lineCount - 1)
+    : lineCount;
 }
 
 function parseCssPixelValue(value: string): number {

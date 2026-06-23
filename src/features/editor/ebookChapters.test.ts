@@ -48,6 +48,24 @@ describe("splitMarkdownIntoChapters", () => {
     expect(chapters[2].source).toContain("Body of chapter two.");
   });
 
+  it("records one-based source start lines for the editor reader bridge", () => {
+    const source = [
+      "Intro paragraph before any heading.",
+      "",
+      "# Chapter One",
+      "",
+      "Body of chapter one.",
+      "",
+      "## Chapter Two",
+      "",
+      "Body of chapter two.",
+    ].join("\n");
+
+    const chapters = splitMarkdownIntoChapters(source);
+
+    expect(chapters.map((chapter) => chapter.startLine)).toEqual([1, 3, 7]);
+  });
+
   it("detects heading levels 1 through 6", () => {
     const source = ["# H1", "## H2", "### H3", "###### H6"].join("\n");
 

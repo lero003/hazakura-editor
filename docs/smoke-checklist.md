@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-06-21 (v0.29 Hazakura Local Assist review triage)
+Last reviewed: 2026-06-23 (v0.32 reader bridge smoke checklist)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -73,6 +73,45 @@ proposal-import path at source level. It does not prove signed
 bundle identity, sandbox behavior, native file-picker interaction,
 external network absence, App Store Connect processing, or TestFlight
 user flows.
+
+## v0.32 Editor / Reader Position Bridge Built-App Smoke
+
+Run this before treating the v0.32 editor / reader bridge as ready for
+App Store review. Use the latest built desktop bundle, not browser-only
+Preview, because this flow depends on the real editor surface, right-pane
+mode controls, Reading Focus, restored dirty buffers, and native focus.
+
+1. Open a saved multi-heading Markdown document in the built app.
+2. Put the editor caret or visible scroll position in a later chapter,
+   open e-book Mode, and confirm the reader opens near that chapter
+   rather than at the document start.
+3. Move within e-book Mode, enter `集中して読む`, then use `編集に戻る`.
+   Confirm the editor returns to the same chapter area or a nearby
+   source line; exact rendered-page coordinates are not expected.
+4. Move within the right-pane one-page reader and confirm the editor
+   area follows to the same chapter area or a nearby source line without
+   needing to enter Reading Focus.
+5. While moving between the right-pane one-page reader and the Reading
+   Focus spread reader, confirm the visible chapter/page remains linked
+   rather than each surface keeping a stale independent position.
+6. Create a new unsaved Markdown tab with at least two headings, move the
+   reader to a later chapter, then create or switch to another unsaved
+   Markdown tab. Confirm the second tab does not inherit the first
+   untitled tab's e-book chapter/page position. Switch back and confirm
+   the first tab's reader position is still coherent.
+7. Exercise one recovered dirty-buffer path: either restore an
+   auto-backup through the backup comparison flow or restore a saved
+   draft after relaunch. Open e-book Mode and return from Reading Focus.
+   Confirm the buffer remains dirty/unsaved, Save is still explicit, and
+   the reader/editor bridge follows the restored contents rather than a
+   stale disk copy.
+8. While in any of the above flows, confirm Preview, L Mode, Diff /
+   Review, and saved Markdown source remain source-preserving. The reader
+   must not rewrite Markdown, auto-save, or create a second document
+   model.
+9. Record the result as normal / unsaved / recovered separately. A local
+   window launch smoke, unit tests, or Vite build is useful evidence but
+   does not replace these interaction checks.
 
 ## v0.19 App Store Candidate Smoke Focus
 

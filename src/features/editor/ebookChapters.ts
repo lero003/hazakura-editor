@@ -22,6 +22,10 @@ const FENCE_MIN_LENGTH = 3;
 export type EbookChapter = {
   // Zero-based ordinal of the chapter among the returned segments.
   index: number;
+  // One-based source line where this chapter segment starts. For a
+  // heading chapter this is the ATX heading line; for a preamble chapter
+  // this is 1. This is display metadata only and never rewrites source.
+  startLine: number;
   // Detected ATX heading level (1-6), or null for the leading preamble
   // before the first heading.
   headingLevel: number | null;
@@ -36,6 +40,7 @@ type RawSegment = {
   // Half-open offset range into the original source string.
   start: number;
   end: number;
+  startLine: number;
   level: number | null;
   text: string | null;
 };
@@ -63,6 +68,7 @@ export function splitMarkdownIntoChapters(source: string): EbookChapter[] {
   let fenceLength = 0;
   const frontmatterEnd = yamlFrontmatterEndOffset(source);
   let currentStart = 0;
+  let currentStartLine = 1;
   let currentLevel: number | null = null;
   let currentText: string | null = null;
 
@@ -70,6 +76,7 @@ export function splitMarkdownIntoChapters(source: string): EbookChapter[] {
     segments.push({
       start: currentStart,
       end,
+      startLine: currentStartLine,
       level: currentLevel,
       text: currentText,
     });
@@ -82,6 +89,7 @@ export function splitMarkdownIntoChapters(source: string): EbookChapter[] {
   // is still captured because `lineStart <= source.length` at the last
   // iteration.
   let lineStart = 0;
+  let lineNumber = 1;
   for (let pos = 0; pos <= source.length; ) {
     const nlIndex = source.indexOf("\n", pos);
     const lineEnd = nlIndex === -1 ? source.length : nlIndex;
@@ -90,6 +98,7 @@ export function splitMarkdownIntoChapters(source: string): EbookChapter[] {
     if (frontmatterEnd !== null && lineStart < frontmatterEnd) {
       pos = nextLineStart(source, lineEnd);
       lineStart = pos;
+      lineNumber += 1;
       continue;
     }
 
@@ -108,6 +117,7 @@ export function splitMarkdownIntoChapters(source: string): EbookChapter[] {
       // Advance past this line including its terminator.
       pos = nextLineStart(source, lineEnd);
       lineStart = pos;
+      lineNumber += 1;
       continue;
     }
 
@@ -118,6 +128,7 @@ export function splitMarkdownIntoChapters(source: string): EbookChapter[] {
         // line. The heading line belongs to the new chapter.
         pushSegment(lineStart);
         currentStart = lineStart;
+        currentStartLine = lineNumber;
         currentLevel = heading.level;
         currentText = heading.text;
       }
@@ -125,6 +136,7 @@ export function splitMarkdownIntoChapters(source: string): EbookChapter[] {
 
     pos = nextLineStart(source, lineEnd);
     lineStart = pos;
+    lineNumber += 1;
   }
 
   // Final segment runs to the end of the document.
@@ -140,10 +152,11 @@ export function splitMarkdownIntoChapters(source: string): EbookChapter[] {
   const effectiveSegments =
     visibleSegments.length > 0
       ? visibleSegments
-      : [{ start: 0, end: 0, level: null, text: null }];
+      : [{ start: 0, end: 0, startLine: 1, level: null, text: null }];
 
   return effectiveSegments.map((segment, index) => ({
     index,
+    startLine: segment.startLine,
     headingLevel: segment.level,
     headingText: segment.text,
     source: source.slice(segment.start, segment.end),

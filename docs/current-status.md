@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-23 (v0.31 TestFlight candidate)
+Last reviewed: 2026-06-23 (v0.32 pre-review hygiene follow-up)
 
 ## Current State
 
@@ -28,6 +28,29 @@ Last reviewed: 2026-06-23 (v0.31 TestFlight candidate)
   Raw App Store Connect upload, processing, TestFlight install /
   launch, and App Review logs are not tracked in this repository unless
   separately recorded.
+- Source-level `v0.32` Editor / Reader Position Bridge work is in
+  progress after the user reported light `0.31` testing as problem-free.
+  The current implementation records e-book chapter start lines, opens
+  e-book Mode near the current editor / visible scroll position, keeps
+  stale stored reader pages from overriding the next entry point, and
+  returns from Reading Focus through an optional approximate `sourceLine`
+  before falling back to the chapter heading. The e-book reader now also
+  resets location by document key rather than only by path, so pathless
+  unsaved tabs do not inherit another untitled tab's reader position;
+  `AppWorkspace` regression coverage now pins this tab-id separation
+  through the parent reader-location state. Same-document reader
+  location updates are now also synced back into mounted `EBookPane`
+  instances, so the right-pane one-page reader and Reading Focus spread
+  reader stay on the same chapter/page state instead of drifting apart.
+  Right-pane one-page reader movement now also drives the editor to the
+  reader's approximate source line, so read, notice, and edit can happen
+  without entering Reading Focus first.
+  Local build and window-launch smoke passed for the generated preview
+  app; built-app interaction checks for normal, unsaved, and recovered
+  documents remain pending. A release-hygiene follow-up removed a
+  machine-local review-note path from the current docs; current
+  added-line greps for local paths, development-note markers, and
+  credential-like strings are empty.
 - Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
 - `v0.18.0` is a Developer / GitHub lane preview, ad-hoc signed, not Developer ID signed, not notarized, and expected to show macOS security warnings.
 - The helper-free App Store lane delivered `0.18.0` build `4` to
@@ -244,8 +267,9 @@ Last reviewed: 2026-06-23 (v0.31 TestFlight candidate)
   Markdown document. It uses the existing Preview safety pipeline,
   heading-based chapter splitting, CSS Columns pseudo-pagination for the
   active chapter, and a fixed reader footer with chapter-local page
-  progress. Markdown source remains canonical; right-pane 2-up and
-  whole-book page numbering remain deferred.
+  progress. Markdown source remains canonical; the reader/editor bridge
+  is source-line approximate rather than rendered-page exact. Whole-book
+  page numbering remains deferred.
 - EPUB export beta is available from the File menu and command palette
   as an explicit active-document export action. It writes a minimal
   `.epub` archive from the current Markdown source with XHTML content,
@@ -340,14 +364,15 @@ baseline, and smoke evidence are archived under
    and archive only completed version-specific material; canonical build
    and boundary docs stay live for future submissions.
 2. For the next product slice, start with `docs/current-work.md`.
-   The active lane is `v0.30-v1.0 Reader UX Stabilization`; the first
-   product slice is v0.30 e-book Mode Flow View. Keep the v1 path focused
-   on a single-document Safe Markdown Book Editor with Local Assist
-   Review: Flow View, Spread View, editor/reader position bridge, initial
-   EPUB export polish, and v1 RC smoke. Hazakura Local Assist follow-up
-   should be observation-driven unless a concrete safety, review,
-   App Store, availability, generation failure, responsiveness, or
-   transaction-boundary issue appears. Do not add Book Workspace Alpha,
+   The active lane is `v0.30-v1.0 Reader UX Stabilization`; the current
+   product slice is v0.32 Editor / Reader Position Bridge. Keep the v1
+   path focused on a single-document Safe Markdown Book Editor with
+   Local Assist Review: Flow View, Spread View, editor/reader position
+   bridge, initial EPUB export polish, and v1 RC smoke. Hazakura Local
+   Assist follow-up should be observation-driven unless a concrete
+   safety, review, App Store, availability, generation failure,
+   responsiveness, or transaction-boundary issue appears. Do not add
+   Book Workspace Alpha,
    hidden multi-file book manifests, structural book-workspace
    information architecture, Native Vibrancy Phase 2, cover editing,
    external AI/API providers, Agent Workbench in the App Store lane, or

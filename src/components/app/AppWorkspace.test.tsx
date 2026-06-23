@@ -22,12 +22,44 @@ vi.mock("../editor/PaneResizer", () => ({
 
 vi.mock("./SidePane", () => ({
   SidePane: (props: {
+    ebookLocation?: { chapterIndex: number; pageIndex: number } | null;
+    onEbookLocationChange?: (location: {
+      chapterIndex: number;
+      pageIndex: number;
+      sourceLine?: number;
+    }) => void;
     onOpenEbookReadingFocus?: (location: {
       chapterIndex: number;
       pageIndex: number;
     }) => void;
   }) => (
     <div data-testid="side-pane">
+      <span data-testid="side-ebook-location">
+        side location{" "}
+        {props.ebookLocation
+          ? `${props.ebookLocation.chapterIndex}:${props.ebookLocation.pageIndex}`
+          : "none"}
+      </span>
+      <button
+        onClick={() =>
+          props.onEbookLocationChange?.({ chapterIndex: 1, pageIndex: 2 })
+        }
+        type="button"
+      >
+        Mock store old reader location
+      </button>
+      <button
+        onClick={() =>
+          props.onEbookLocationChange?.({
+            chapterIndex: 1,
+            pageIndex: 2,
+            sourceLine: 6,
+          })
+        }
+        type="button"
+      >
+        Mock one-page reader location change
+      </button>
       <button
         onClick={() =>
           props.onOpenEbookReadingFocus?.({ chapterIndex: 1, pageIndex: 2 })
@@ -43,13 +75,49 @@ vi.mock("./SidePane", () => ({
 vi.mock("../editor/preview/EBookPane", () => ({
   default: (props: {
     initialLocation?: { chapterIndex: number; pageIndex: number } | null;
-    onExitReadingFocus?: () => void;
+    onExitReadingFocus?: (location: {
+      chapterIndex: number;
+      pageIndex: number;
+      sourceLine?: number;
+    }) => void;
+    onLocationChange?: (location: {
+      chapterIndex: number;
+      pageIndex: number;
+    }) => void;
   }) => (
     <div data-testid="ebook-focus-pane">
       focus {props.initialLocation?.chapterIndex ?? 0}:
       {props.initialLocation?.pageIndex ?? 0}
-      <button onClick={props.onExitReadingFocus} type="button">
+      <button
+        onClick={() =>
+          props.onLocationChange?.({ chapterIndex: 2, pageIndex: 3 })
+        }
+        type="button"
+      >
+        Mock focus location change
+      </button>
+      <button
+        onClick={() =>
+          props.onExitReadingFocus?.({
+            chapterIndex: props.initialLocation?.chapterIndex ?? 0,
+            pageIndex: props.initialLocation?.pageIndex ?? 0,
+          })
+        }
+        type="button"
+      >
         Mock exit reading focus
+      </button>
+      <button
+        onClick={() =>
+          props.onExitReadingFocus?.({
+            chapterIndex: props.initialLocation?.chapterIndex ?? 0,
+            pageIndex: props.initialLocation?.pageIndex ?? 0,
+            sourceLine: 6,
+          })
+        }
+        type="button"
+      >
+        Mock exit reading focus with source line
       </button>
     </div>
   ),
@@ -93,7 +161,9 @@ const bookTab = {
   size: 15,
 } as const;
 
-function renderWorkspace(overrides: Partial<ComponentProps<typeof AppWorkspace>> = {}) {
+function makeWorkspaceProps(
+  overrides: Partial<ComponentProps<typeof AppWorkspace>> = {},
+): ComponentProps<typeof AppWorkspace> {
   const props: ComponentProps<typeof AppWorkspace> = {
     activeContents: "",
     activeDocumentLineCount: 0,
@@ -182,7 +252,20 @@ function renderWorkspace(overrides: Partial<ComponentProps<typeof AppWorkspace>>
     ...overrides,
   };
 
-  return render(<AppWorkspace {...props} />);
+  return props;
+}
+
+function renderWorkspace(
+  overrides: Partial<ComponentProps<typeof AppWorkspace>> = {},
+) {
+  return render(<AppWorkspace {...makeWorkspaceProps(overrides)} />);
+}
+
+function rerenderWorkspace(
+  rerender: ReturnType<typeof render>["rerender"],
+  overrides: Partial<ComponentProps<typeof AppWorkspace>> = {},
+) {
+  rerender(<AppWorkspace {...makeWorkspaceProps(overrides)} />);
 }
 
 describe("AppWorkspace workspace sidebar collapse", () => {
@@ -260,5 +343,335 @@ describe("AppWorkspace workspace sidebar collapse", () => {
     fireEvent.click(screen.getByRole("button", { name: "Mock exit reading focus" }));
 
     expect(workspace?.classList.contains("workspace-reading-focus")).toBe(false);
+  });
+
+  it("opens the e-book pane near the current editor heading when no reader location exists", () => {
+    renderWorkspace({
+      activeContents: ["# Chapter One", "", "body", "", "## Chapter Two", "", "body"].join("\n"),
+      activeDocumentLineCount: 7,
+      activeTab: bookTab,
+      currentHeadingLine: 5,
+      documentHeadings: [
+        { level: 1, line: 1, text: "Chapter One" },
+        { level: 2, line: 5, text: "Chapter Two" },
+      ],
+      hasWorkspaceSelection: true,
+      sidePaneMode: "ebook",
+      sidePaneVisible: true,
+      workspaceRootPath: "/workspace",
+    });
+
+    expect(screen.getByTestId("side-ebook-location").textContent).toContain(
+      "side location 1:0",
+    );
+  });
+
+  it("uses the visible editor scroll heading when opening the e-book pane", () => {
+    renderWorkspace({
+      activeContents: ["# Chapter One", "", "body", "", "## Chapter Two", "", "body"].join("\n"),
+      activeDocumentLineCount: 7,
+      activeTab: bookTab,
+      currentHeadingLine: 1,
+      documentHeadings: [
+        { level: 1, line: 1, text: "Chapter One" },
+        { level: 2, line: 5, text: "Chapter Two" },
+      ],
+      hasWorkspaceSelection: true,
+      scrollHudLine: 5,
+      scrollHudVisible: true,
+      sidePaneMode: "ebook",
+      sidePaneVisible: true,
+      workspaceRootPath: "/workspace",
+    });
+
+    expect(screen.getByTestId("side-ebook-location").textContent).toContain(
+      "side location 1:0",
+    );
+  });
+
+  it("moves the editor to the one-page reader source line as the reader moves", () => {
+    const goToLine = vi.fn();
+    const editorPaneRef = {
+      current: {
+        applyMarkdownFormat: vi.fn(),
+        focus: vi.fn(),
+        getActiveDocument: vi.fn(() => null),
+        getSelectionText: vi.fn(() => ""),
+        goToLine,
+        insertTable: vi.fn(),
+        insertText: vi.fn(),
+        replaceAll: vi.fn(),
+        replaceCurrent: vi.fn(() => false),
+        setScrollRatio: vi.fn(() => false),
+      },
+    } as ComponentProps<typeof AppWorkspace>["editorPaneRef"];
+
+    renderWorkspace({
+      activeContents: [
+        "# Chapter One",
+        "",
+        "body",
+        "",
+        "## Chapter Two",
+        "line six",
+        "line seven",
+      ].join("\n"),
+      activeDocumentLineCount: 7,
+      activeTab: bookTab,
+      currentHeadingLine: 1,
+      documentHeadings: [
+        { level: 1, line: 1, text: "Chapter One" },
+        { level: 2, line: 5, text: "Chapter Two" },
+      ],
+      editorPaneRef,
+      hasWorkspaceSelection: true,
+      sidePaneMode: "ebook",
+      sidePaneVisible: true,
+      workspaceRootPath: "/workspace",
+    });
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Mock one-page reader location change",
+      }),
+    );
+
+    expect(goToLine).toHaveBeenCalledWith(6);
+  });
+
+  it("keeps the right-pane reader location linked to Reading Focus movement", async () => {
+    renderWorkspace({
+      activeContents: ["# Chapter One", "", "body", "", "## Chapter Two", "", "body"].join("\n"),
+      activeDocumentLineCount: 7,
+      activeTab: bookTab,
+      currentHeadingLine: 1,
+      documentHeadings: [
+        { level: 1, line: 1, text: "Chapter One" },
+        { level: 2, line: 5, text: "Chapter Two" },
+      ],
+      hasWorkspaceSelection: true,
+      sidePaneMode: "ebook",
+      sidePaneVisible: true,
+      workspaceRootPath: "/workspace",
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Mock enter reading focus" }));
+    await screen.findByTestId("ebook-focus-pane");
+    fireEvent.click(
+      screen.getByRole("button", { name: "Mock focus location change" }),
+    );
+
+    expect(screen.getByTestId("side-ebook-location").textContent).toContain(
+      "side location 2:3",
+    );
+  });
+
+  it("reanchors e-book entry to the current editor heading after leaving e-book mode", () => {
+    const contents = [
+      "# Chapter One",
+      "",
+      "body",
+      "",
+      "## Chapter Two",
+      "",
+      "body",
+    ].join("\n");
+    const headings = [
+      { level: 1, line: 1, text: "Chapter One" },
+      { level: 2, line: 5, text: "Chapter Two" },
+    ];
+    const { rerender } = renderWorkspace({
+      activeContents: contents,
+      activeDocumentLineCount: 7,
+      activeTab: bookTab,
+      currentHeadingLine: 5,
+      documentHeadings: headings,
+      hasWorkspaceSelection: true,
+      sidePaneMode: "ebook",
+      sidePaneVisible: true,
+      workspaceRootPath: "/workspace",
+    });
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Mock store old reader location" }),
+    );
+    expect(screen.getByTestId("side-ebook-location").textContent).toContain(
+      "side location 1:2",
+    );
+
+    rerenderWorkspace(rerender, {
+      activeContents: contents,
+      activeDocumentLineCount: 7,
+      activeTab: bookTab,
+      currentHeadingLine: 1,
+      documentHeadings: headings,
+      hasWorkspaceSelection: true,
+      sidePaneMode: "preview",
+      sidePaneVisible: true,
+      workspaceRootPath: "/workspace",
+    });
+    rerenderWorkspace(rerender, {
+      activeContents: contents,
+      activeDocumentLineCount: 7,
+      activeTab: bookTab,
+      currentHeadingLine: 1,
+      documentHeadings: headings,
+      hasWorkspaceSelection: true,
+      sidePaneMode: "ebook",
+      sidePaneVisible: true,
+      workspaceRootPath: "/workspace",
+    });
+
+    expect(screen.getByTestId("side-ebook-location").textContent).toContain(
+      "side location 0:0",
+    );
+  });
+
+  it("keeps pathless e-book reader locations isolated by tab id", () => {
+    const firstUntitledTab = {
+      ...bookTab,
+      id: "untitled:1",
+      name: "untitled.md",
+      path: "",
+    };
+    const secondUntitledTab = {
+      ...bookTab,
+      id: "untitled:2",
+      name: "untitled.md",
+      path: "",
+    };
+    const sharedProps = {
+      activeContents: bookTab.contents,
+      hasWorkspaceSelection: true,
+      sidePaneMode: "ebook" as const,
+      sidePaneVisible: true,
+      workspaceRootPath: "/workspace",
+    };
+    const { rerender } = renderWorkspace({
+      ...sharedProps,
+      activeTab: firstUntitledTab,
+    });
+
+    expect(screen.getByTestId("side-ebook-location").textContent).toContain(
+      "side location none",
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Mock store old reader location" }),
+    );
+    expect(screen.getByTestId("side-ebook-location").textContent).toContain(
+      "side location 1:2",
+    );
+
+    rerenderWorkspace(rerender, {
+      ...sharedProps,
+      activeTab: secondUntitledTab,
+    });
+    expect(screen.getByTestId("side-ebook-location").textContent).toContain(
+      "side location none",
+    );
+
+    rerenderWorkspace(rerender, {
+      ...sharedProps,
+      activeTab: firstUntitledTab,
+    });
+    expect(screen.getByTestId("side-ebook-location").textContent).toContain(
+      "side location 1:2",
+    );
+  });
+
+  it("returns from Reading Focus to the active reader chapter heading", async () => {
+    const goToLine = vi.fn();
+    const editorPaneRef = {
+      current: {
+        applyMarkdownFormat: vi.fn(),
+        focus: vi.fn(),
+        getActiveDocument: vi.fn(() => null),
+        getSelectionText: vi.fn(() => ""),
+        goToLine,
+        insertTable: vi.fn(),
+        insertText: vi.fn(),
+        replaceAll: vi.fn(),
+        replaceCurrent: vi.fn(() => false),
+        setScrollRatio: vi.fn(() => false),
+      },
+    } as ComponentProps<typeof AppWorkspace>["editorPaneRef"];
+
+    renderWorkspace({
+      activeContents: ["# Chapter One", "", "body", "", "## Chapter Two", "", "body"].join("\n"),
+      activeDocumentLineCount: 7,
+      activeTab: bookTab,
+      currentHeadingLine: 1,
+      documentHeadings: [
+        { level: 1, line: 1, text: "Chapter One" },
+        { level: 2, line: 5, text: "Chapter Two" },
+      ],
+      editorPaneRef,
+      hasWorkspaceSelection: true,
+      sidePaneMode: "ebook",
+      sidePaneVisible: true,
+      workspaceRootPath: "/workspace",
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Mock enter reading focus" }));
+    expect((await screen.findByTestId("ebook-focus-pane")).textContent).toContain(
+      "focus 1:2",
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Mock exit reading focus" }));
+
+    expect(goToLine).toHaveBeenCalledWith(5);
+  });
+
+  it("returns from Reading Focus to an estimated reader source line when available", async () => {
+    const goToLine = vi.fn();
+    const editorPaneRef = {
+      current: {
+        applyMarkdownFormat: vi.fn(),
+        focus: vi.fn(),
+        getActiveDocument: vi.fn(() => null),
+        getSelectionText: vi.fn(() => ""),
+        goToLine,
+        insertTable: vi.fn(),
+        insertText: vi.fn(),
+        replaceAll: vi.fn(),
+        replaceCurrent: vi.fn(() => false),
+        setScrollRatio: vi.fn(() => false),
+      },
+    } as ComponentProps<typeof AppWorkspace>["editorPaneRef"];
+
+    renderWorkspace({
+      activeContents: [
+        "# Chapter One",
+        "",
+        "body",
+        "",
+        "## Chapter Two",
+        "line six",
+        "line seven",
+      ].join("\n"),
+      activeDocumentLineCount: 7,
+      activeTab: bookTab,
+      currentHeadingLine: 1,
+      documentHeadings: [
+        { level: 1, line: 1, text: "Chapter One" },
+        { level: 2, line: 5, text: "Chapter Two" },
+      ],
+      editorPaneRef,
+      hasWorkspaceSelection: true,
+      sidePaneMode: "ebook",
+      sidePaneVisible: true,
+      workspaceRootPath: "/workspace",
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Mock enter reading focus" }));
+    await screen.findByTestId("ebook-focus-pane");
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Mock exit reading focus with source line",
+      }),
+    );
+
+    expect(goToLine).toHaveBeenCalledWith(6);
   });
 });

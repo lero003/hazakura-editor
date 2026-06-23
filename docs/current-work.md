@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v0.30-v1.0 Reader UX Stabilization queue and post-v0.29.1 evidence
 Authority: High
-Last reviewed: 2026-06-23 (v0.31 TestFlight candidate)
+Last reviewed: 2026-06-23 (v0.32 pre-review hygiene follow-up)
 
 ## Purpose
 
@@ -50,18 +50,20 @@ transaction-boundary issue appears.
 
 ## Active UX Queue
 
-Pick one item at a time. The immediate next product slice is v0.31
-Reading Focus TestFlight / built-app visual smoke unless a concrete
-post-release Local Assist safety or App Store lane issue appears.
+Pick one item at a time. The immediate next product slice is the next
+v0.32 Editor / Reader Position Bridge follow-up unless a concrete
+post-release Local Assist safety or App Store lane issue appears. The
+user reported light `0.31` testing as problem-free before opening the
+`0.32` development lane.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| P0 | v0.30 e-book Mode Paged Flow | e-book Mode can be used as a daily reading / revision surface for long Japanese Markdown prose while still looking like a book page. The slice should reduce page-turn friction with wheel / trackpad / keyboard movement, preserve chapter/page location for the later editor bridge, and verify large-document behavior. |
-| P1 | v0.31 e-book Mode Reading Focus / Spread View | `集中して読む` opens an occupied same-window reading surface, two-page book-like inspection exists when width allows, it falls back to one page when narrow, has keyboard / button navigation plus coarse movement, and remains a display layer over Markdown source rather than Preview DOM editing. |
-| P2 | v0.32 Editor / Reader Position Bridge | Opening e-book Mode near the current editor cursor or visible heading and returning from reader position to Markdown editing feels reliable for normal, unsaved, and recovered documents. |
-| P3 | v0.33 EPUB Export v1 Polish | EPUB export remains an explicit user action and is polished enough for initial v1 use with Japanese text, headings, local images, links, code blocks, and clear failure messages. Advanced metadata, cover, navigation editing, and validation workflows stay deferred to v1.x. |
+| Done | v0.30 e-book Mode Paged Flow | e-book Mode can be used as a daily reading / revision surface for long Japanese Markdown prose while still looking like a book page. The slice should reduce page-turn friction with wheel / trackpad / keyboard movement, preserve chapter/page location for the later editor bridge, and verify large-document behavior. |
+| Done | v0.31 e-book Mode Reading Focus / Spread View | `集中して読む` opens an occupied same-window reading surface, two-page book-like inspection exists when width allows, it falls back to one page when narrow, has keyboard / button navigation plus coarse movement, and remains a display layer over Markdown source rather than Preview DOM editing. |
+| Active | v0.32 Editor / Reader Position Bridge | Opening e-book Mode near the current editor cursor or visible heading and returning from reader position to Markdown editing feels reliable for normal, unsaved, and recovered documents. |
+| Next | v0.33 EPUB Export v1 Polish | EPUB export remains an explicit user action and is polished enough for initial v1 use with Japanese text, headings, local images, links, code blocks, and clear failure messages. Advanced metadata, cover, navigation editing, and validation workflows stay deferred to v1.x. |
 | RC | v0.34 v1.0 Release Candidate | Feature work freezes and the golden path covers New File, Open, Save / Save As, L Mode, Preview, e-book paged flow, Spread View, EPUB export, Local Assist, Diff / Discard, Recovery, relaunch, large documents, and App Store lane boundary checks. |
-| Observation only | Hazakura Local Assist post-release polish | Pick this before v0.30 only for a concrete safety, review, App Store, availability, generation failure, responsiveness, or transaction-boundary issue. Keep App Store AI assistance local, user-initiated, unsaved until accepted, and Diff / Discard reviewable. |
+| Observation only | Hazakura Local Assist post-release polish | Pick this before the active Reader UX slice only for a concrete safety, review, App Store, availability, generation failure, responsiveness, or transaction-boundary issue. Keep App Store AI assistance local, user-initiated, unsaved until accepted, and Diff / Discard reviewable. |
 | Fallback | Core Safe Editor quality probe | Use only when no concrete Reader UX slice is open or the run is a recurring quality pass. Inspect one high-risk basic surface with a named risk hypothesis, then either fix the smallest reproduced issue or close as `verified no-op`. |
 
 v0.30 paged flow first slice is implemented at code-regression level as
@@ -182,6 +184,58 @@ Upload, Apple processing, TestFlight install / launch, and real
 Reading Focus visual smoke remain outside the repository until the user
 records those results.
 
+v0.32 Editor / Reader Position Bridge first slice is implemented at
+code-regression level as of 2026-06-23: `splitMarkdownIntoChapters()`
+now records a one-based `startLine` for each chapter segment, opening
+the e-book pane without an existing reader location anchors to the
+current editor heading, and `編集に戻る` returns from Reading Focus to
+the active reader chapter's Markdown heading line through the existing
+editor `goToLine()` path. A follow-up now also re-anchors e-book pane
+entry to the current editor heading after leaving e-book mode, so a
+stale stored reader page does not override the user's current edit
+position on the next entry. Another follow-up uses the visible scroll
+HUD line as the entry anchor while the HUD is active, and Preview
+scrolling now refreshes that same HUD line before syncing the editor, so
+e-book Mode can open near what the user is looking at even if the cursor
+stayed behind. Returning from Reading Focus now also carries an optional
+`sourceLine` estimate based on the current chapter's measured page count
+and Markdown line span; `AppWorkspace` uses that estimate before falling
+back to the chapter heading. The estimate excludes a terminal virtual
+empty line at the chapter boundary so the last page of a chapter does
+not drift onto the next chapter heading. This is a source-line
+approximation, not an exact rendered-page coordinate. A later follow-up
+passes the active e-book document key into `EBookPane`, so pathless
+unsaved tabs reset to the new document's requested reader location
+instead of retaining another untitled tab's chapter/page state.
+`AppWorkspace` regression coverage also pins that pathless tab-id
+separation through the parent reader-location state. Same-document
+reader-location changes are now synced into mounted `EBookPane`
+instances too, so the right-pane one-page reader and Reading Focus
+spread reader stay linked by the same chapter/page state. Right-pane
+one-page reader movement now also drives the editor to the reader's
+approximate source line, so read, notice, and edit can happen without
+entering Reading Focus first. Local build and window-launch smoke now
+pass for the generated preview app, but built-app interaction checks for
+normal / unsaved / recovered documents remain later v0.32 work.
+`docs/smoke-checklist.md` now has a dedicated v0.32 built-app checklist
+for those normal / unsaved / recovered reader-bridge flows; use it
+before treating the bridge as review-ready.
+Verification passed with focused `ebookChapters`, `AppWorkspace`,
+`EBookPane`, `SidePane`, and preview-scroll-sync tests, full
+`npm run test`, `npm run build:vite` (with the usual Vite chunk-size
+warning), `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`,
+`cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build`,
+`SKIP_BUILD=1 HAZAKURA_SMOKE_APP=".../Hazakura Editor.app" npm run smoke:macos-window`,
+and `git diff --check`.
+A later release-hygiene pass removed a machine-local review-note path
+from the current docs. The current diff-scoped release-pre-check greps
+over added lines for local paths, development-note markers, and
+credential-like strings are empty; whole-repo local-path hits are limited to archive
+evidence and `docs/release-pre-check.md` examples.
+`npm run smoke:app-store-surface`,
+`npm run probe:macos-distribution -- "src-tauri/target/release/bundle/macos/Hazakura Editor.app"`,
+and `git diff --check` passed.
+
 Post-v1 guardrail: after v1.0, do not rush straight into v2.0. Use v1.x
 to deepen the single-document product first: EPUB export, Diff / Review
 ergonomics, provenance, movement between writing / reading layers,
@@ -272,12 +326,10 @@ Implemented locally as of 2026-06-21:
 
 Historical v0.29 slices, if needed:
 
-The 2026-06-21 Hazakura Local Assist review note
-(`/Users/keisetsu/Downloads/apple-assist-review-fix-list-2.md`) is
-accepted as a real pre-submission triage input, with the source caveat
-that it was a static review and did not run the macOS app, live
-Foundation Models, signing, sandbox smoke, Transporter, or App Store
-Connect validation.
+The 2026-06-21 Hazakura Local Assist review note is accepted as a real
+pre-submission triage input, with the source caveat that it was a static
+review and did not run the macOS app, live Foundation Models, signing,
+sandbox smoke, Transporter, or App Store Connect validation.
 
 Additional human-side built-app observation on 2026-06-21:
 

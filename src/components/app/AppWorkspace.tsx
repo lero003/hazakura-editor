@@ -5,7 +5,7 @@ import type {
   PointerEvent as ReactPointerEvent,
   RefObject,
 } from "react";
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import type { EBookReaderLocation } from "../editor/preview/EBookPane";
 import type { EditorPaneHandle, EditorSelectionInfo } from "../editor/EditorPane";
 import { EditorMainPane } from "../editor/EditorMainPane";
@@ -13,6 +13,7 @@ import { PaneResizer } from "../editor/PaneResizer";
 import { SidePane } from "./SidePane";
 import { WorkspaceSidebar } from "../workspace/WorkspaceSidebar";
 import { PanelLeftOpenIcon } from "./Icons";
+import { splitMarkdownIntoChapters } from "../../features/editor/ebookChapters";
 import type {
   LModeCopy,
   SafeEditorCopy,
@@ -249,6 +250,7 @@ export function AppWorkspace({
     documentKey: string;
     location: EBookReaderLocation;
   } | null>(null);
+  const previousSidePaneModeRef = useRef<RightPaneMode | null>(null);
   const workspaceSidebarCollapsed =
     workspaceSidebarCollapsedOverride ?? internalWorkspaceSidebarCollapsed;
   const setWorkspaceSidebarCollapsed = (collapsed: boolean) => {
@@ -264,6 +266,21 @@ export function AppWorkspace({
     activeEbookDocumentKey && ebookLocation?.documentKey === activeEbookDocumentKey
       ? ebookLocation.location
       : null;
+  const editorAnchorLine =
+    scrollHudVisible && scrollHudLine > 0 ? scrollHudLine : currentHeadingLine;
+  const editorAnchoredEbookLocation =
+    editorAnchorLine !== null
+      ? getEbookLocationForEditorLine(activeContents, editorAnchorLine)
+      : null;
+  const enteringEbookPane =
+    sidePaneMode === "ebook" && previousSidePaneModeRef.current !== "ebook";
+  const initialEbookLocation =
+    enteringEbookPane && editorAnchoredEbookLocation
+      ? editorAnchoredEbookLocation
+      : activeEbookLocation ?? editorAnchoredEbookLocation;
+  useEffect(() => {
+    previousSidePaneModeRef.current = sidePaneMode;
+  }, [sidePaneMode]);
   const handleEbookLocationChange = (location: EBookReaderLocation) => {
     if (!activeEbookDocumentKey) {
       return;
@@ -273,12 +290,32 @@ export function AppWorkspace({
       location,
     });
   };
+  const moveEditorToEbookLocation = (location: EBookReaderLocation | null) => {
+    if (!location) {
+      return;
+    }
+    const editorLine = getEditorLineForEbookLocation(activeContents, location);
+    if (editorLine !== null) {
+      editorPaneRef.current?.goToLine(editorLine);
+    }
+  };
+  const handleSidePaneEbookLocationChange = (
+    location: EBookReaderLocation,
+  ) => {
+    handleEbookLocationChange(location);
+    moveEditorToEbookLocation(location);
+  };
   const openEbookReadingFocus = (location: EBookReaderLocation) => {
     handleEbookLocationChange(location);
     setEbookFocusOpen(true);
   };
-  const closeEbookReadingFocus = () => {
+  const closeEbookReadingFocus = (location?: EBookReaderLocation) => {
+    const returnLocation = location ?? activeEbookLocation;
+    if (returnLocation) {
+      handleEbookLocationChange(returnLocation);
+    }
     setEbookFocusOpen(false);
+    moveEditorToEbookLocation(returnLocation);
   };
   const ebookReadingFocusActive =
     ebookFocusOpen && activeTab !== null && previewVisible && selectedImage === null;
@@ -406,8 +443,8 @@ export function AppWorkspace({
             onClearCompareTarget={clearCompareTarget}
             onApplyBackup={onApplyBackup}
             onCloseCompareView={closeCompareView}
-            ebookLocation={activeEbookLocation}
-            onEbookLocationChange={handleEbookLocationChange}
+            ebookLocation={initialEbookLocation}
+            onEbookLocationChange={handleSidePaneEbookLocationChange}
             onOpenEbookReadingFocus={openEbookReadingFocus}
             onOpenPreviewLocalLink={openPreviewMarkdownLink}
             onPreviewScroll={syncEditorScroll}
@@ -428,8 +465,9 @@ export function AppWorkspace({
         >
           <Suspense fallback={null}>
             <EBookPane
+              documentKey={activeEbookDocumentKey ?? undefined}
               documentPath={activeTab.path}
-              initialLocation={activeEbookLocation}
+              initialLocation={initialEbookLocation}
               menuLanguage={menuLanguage}
               onExitReadingFocus={closeEbookReadingFocus}
               onLocationChange={handleEbookLocationChange}
@@ -450,4 +488,41 @@ export function AppWorkspace({
 
 function ebookDocumentKey(tab: EditorTab): string {
   return tab.path || tab.id;
+}
+
+function getEbookLocationForEditorLine(
+  source: string,
+  line: number,
+): EBookReaderLocation {
+  const chapters = splitMarkdownIntoChapters(source);
+  let chapterIndex = 0;
+
+  for (const chapter of chapters) {
+    if (chapter.startLine > line) {
+      break;
+    }
+    chapterIndex = chapter.index;
+  }
+
+  return {
+    chapterIndex,
+    pageIndex: 0,
+  };
+}
+
+function getEditorLineForEbookLocation(
+  source: string,
+  location: EBookReaderLocation,
+): number | null {
+  if (
+    location.sourceLine !== undefined &&
+    Number.isFinite(location.sourceLine)
+  ) {
+    return Math.max(1, Math.trunc(location.sourceLine));
+  }
+
+  const chapters = splitMarkdownIntoChapters(source);
+  const chapter =
+    chapters[Math.min(Math.max(location.chapterIndex, 0), chapters.length - 1)];
+  return chapter?.startLine ?? null;
 }

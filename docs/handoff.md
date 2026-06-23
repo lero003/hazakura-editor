@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-23 (v0.31 TestFlight candidate)
+Last reviewed: 2026-06-23 (v0.32 pre-review hygiene follow-up)
 
 ## Current State
 
@@ -113,6 +113,57 @@ Last reviewed: 2026-06-23 (v0.31 TestFlight candidate)
   chapter / `EBookPane` / preview CSS tests, full `npm run test`, and
   `npm run build:vite` passed; Vite still reports the usual large chunk
   warning. Reader font-size/display options remain deferred.
+  The first v0.32 Editor / Reader Position Bridge slice is also
+  implemented at code-regression level: e-book chapters now carry
+  one-based source `startLine` metadata, opening the e-book pane without
+  a stored reader location uses the current editor heading as the
+  initial chapter, and `編集に戻る` from Reading Focus jumps back to the
+  active reader chapter's Markdown heading line through `goToLine()`.
+  A follow-up now also re-anchors e-book pane entry to the current
+  editor heading after leaving e-book mode, so a stale stored reader
+  page does not override the user's current edit position on the next
+  entry. Another follow-up uses the visible scroll HUD line as the entry
+  anchor while the HUD is active, and Preview scrolling now refreshes
+  that same HUD line before syncing the editor, so e-book Mode can open
+  near what the user is looking at even if the cursor stayed behind.
+  Returning from Reading Focus now also carries an optional `sourceLine`
+  estimate based on the current chapter's measured page count and
+  Markdown line span; `AppWorkspace` uses that estimate before falling
+  back to the chapter heading. The estimate excludes a terminal virtual
+  empty line at the chapter boundary so the last page of a chapter does
+  not drift onto the next chapter heading. This is a source-line
+  approximation, not an exact rendered-page coordinate. A later follow-up
+  passes the active e-book document key into `EBookPane`, so pathless
+  unsaved tabs reset to the new document's requested reader location
+  instead of retaining another untitled tab's chapter/page state.
+  `AppWorkspace` regression coverage also pins that pathless tab-id
+  separation through the parent reader-location state. Same-document
+  reader-location changes are now synced into mounted `EBookPane`
+  instances too, so the right-pane one-page reader and Reading Focus
+  spread reader stay linked by the same chapter/page state.
+  Right-pane one-page reader movement now also drives the editor to the
+  reader's approximate source line, so read, notice, and edit can happen
+  without entering Reading Focus first.
+  Local build and window-launch smoke now pass for the generated preview
+  app, but built-app interaction checks for normal / unsaved /
+  recovered documents remain later v0.32 work. `docs/smoke-checklist.md`
+  now includes a dedicated v0.32 built-app checklist for those
+  reader-bridge flows; use it before treating the bridge as review-ready.
+  Verification for this slice passed with focused `ebookChapters`,
+  `AppWorkspace`, `EBookPane`, `SidePane`, and preview-scroll-sync
+  tests, full `npm run test`, `npm run build:vite` (usual large chunk
+  warning), `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`,
+  `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build`,
+  `SKIP_BUILD=1 HAZAKURA_SMOKE_APP=".../Hazakura Editor.app" npm run smoke:macos-window`,
+  and `git diff --check`.
+  A later release-hygiene pass removed a machine-local review-note path
+  from current docs. The current diff-scoped release-pre-check greps
+  over added lines for local paths, development-note markers, and
+  credential-like strings are empty; whole-repo local-path hits are limited to archive
+  evidence and `docs/release-pre-check.md` examples.
+  `npm run smoke:app-store-surface`,
+  `npm run probe:macos-distribution -- "src-tauri/target/release/bundle/macos/Hazakura Editor.app"`,
+  and `git diff --check` passed.
   After v1.0, do not rush straight into v2.0; use v1.x to deepen the
   single-document product first: EPUB export, Diff / Review ergonomics,
   provenance, movement between writing / reading layers, distribution
@@ -418,20 +469,16 @@ Last reviewed: 2026-06-23 (v0.31 TestFlight candidate)
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. v0.30 e-book Mode Paged Flow: make e-book Mode a daily reading /
-   revision surface for long Japanese Markdown prose while it still
-   looks like a book page. Wheel / trackpad movement should reduce
-   page-turn friction without becoming Preview-style continuous scroll.
-2. v0.31 e-book Mode Spread View follow-up: visually smoke the
-   container-gated two-page frame, decide whether wide movement advances
-   by one page or one spread, and add coarse navigation without Preview
-   DOM editing.
-3. v0.32 Editor / Reader Position Bridge: make read, notice, return, fix
-   feel like one source-preserving revision cycle.
-4. v0.33 EPUB Export v1 Polish, then v0.34 v1.0 Release Candidate.
-5. v1.x deepens the single-document product before Book Scope / Book
+1. v0.32 Editor / Reader Position Bridge: continue built-app checks for
+   normal, unsaved, and recovered documents; unsaved pathless tab
+   separation and one-page reader -> editor movement are now covered at
+   source level, but still need real-app interaction proof alongside
+   normal / recovered flows. Use the v0.32 reader-bridge checklist in
+   `docs/smoke-checklist.md`.
+2. v0.33 EPUB Export v1 Polish, then v0.34 v1.0 Release Candidate.
+3. v1.x deepens the single-document product before Book Scope / Book
    Workspace or stronger AI expansion.
-6. Hazakura Local Assist post-release polish only for concrete safety,
+4. Hazakura Local Assist post-release polish only for concrete safety,
    review, App Store, availability, generation failure, responsiveness,
    or transaction-boundary issues.
 

@@ -139,6 +139,7 @@ export function SidePane({
       ) : sidePaneMode === "ebook" && activeTab && previewVisible ? (
         <Suspense fallback={null}>
           <EBookPane
+            documentKey={activeEbookDocumentKey ?? undefined}
             documentPath={activeTab.path}
             initialLocation={initialEbookLocation}
             menuLanguage={menuLanguage}

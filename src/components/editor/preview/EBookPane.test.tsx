@@ -100,10 +100,12 @@ describe("EBookPane chapter reader", () => {
     const focusButton = screen.getByRole("button", { name: "集中して読む" });
     fireEvent.click(focusButton);
 
-    expect(onEnterReadingFocus).toHaveBeenCalledWith({
-      chapterIndex: 0,
-      pageIndex: 1,
-    });
+    expect(onEnterReadingFocus).toHaveBeenCalledWith(
+      expect.objectContaining({
+        chapterIndex: 0,
+        pageIndex: 1,
+      }),
+    );
     expect(focusButton.classList.contains("ebook-reader-floating-action")).toBe(
       true,
     );
@@ -165,9 +167,143 @@ describe("EBookPane chapter reader", () => {
     expect(screen.queryByRole("navigation", { name: "目次" })).toBeNull();
     expect(screen.getByText("章 2 / 2")).toBeTruthy();
     expect(screen.getByText("ページ 1 / 1")).toBeTruthy();
-    expect(onLocationChange).toHaveBeenLastCalledWith({
-      chapterIndex: 1,
-      pageIndex: 0,
+    expect(onLocationChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        chapterIndex: 1,
+        pageIndex: 0,
+      }),
+    );
+  });
+
+  it("includes a source-line estimate with reader location updates", async () => {
+    vi.mocked(measureEBookPageCount).mockReturnValue(3);
+    const onEnterReadingFocus = vi.fn();
+
+    render(
+      <EBookPane
+        menuLanguage="ja"
+        onEnterReadingFocus={onEnterReadingFocus}
+        source={[
+          "# Chapter One",
+          "",
+          "line three",
+          "line four",
+          "line five",
+          "line six",
+        ].join("\n")}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("ページ 1 / 3")).toBeTruthy();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "次のページ" }));
+    fireEvent.click(screen.getByRole("button", { name: "集中して読む" }));
+
+    expect(onEnterReadingFocus).toHaveBeenCalledWith(
+      expect.objectContaining({
+        chapterIndex: 0,
+        pageIndex: 1,
+        sourceLine: 4,
+      }),
+    );
+  });
+
+  it("keeps a source-line estimate inside the active chapter before the next heading", async () => {
+    vi.mocked(measureEBookPageCount).mockReturnValue(3);
+    const onEnterReadingFocus = vi.fn();
+
+    render(
+      <EBookPane
+        menuLanguage="ja"
+        onEnterReadingFocus={onEnterReadingFocus}
+        source={[
+          "# Chapter One",
+          "",
+          "body",
+          "",
+          "# Chapter Two",
+          "",
+          "next",
+        ].join("\n")}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("ページ 1 / 3")).toBeTruthy();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "次のページ" }));
+    fireEvent.click(screen.getByRole("button", { name: "次のページ" }));
+    fireEvent.click(screen.getByRole("button", { name: "集中して読む" }));
+
+    expect(onEnterReadingFocus).toHaveBeenCalledWith(
+      expect.objectContaining({
+        chapterIndex: 0,
+        pageIndex: 2,
+        sourceLine: 4,
+      }),
+    );
+  });
+
+  it("resets to the next pathless document location when the document key changes", async () => {
+    const { rerender } = render(
+      <EBookPane
+        documentKey="untitled-1"
+        documentPath=""
+        initialLocation={{ chapterIndex: 0, pageIndex: 0 }}
+        menuLanguage="ja"
+        source={"# One\n\nbody\n\n# Two\n\nbody"}
+      />,
+    );
+
+    expect(screen.getByText("章 1 / 2")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "One" })).toBeTruthy();
+
+    rerender(
+      <EBookPane
+        documentKey="untitled-2"
+        documentPath=""
+        initialLocation={{ chapterIndex: 1, pageIndex: 0 }}
+        menuLanguage="ja"
+        source={"# Alpha\n\nbody\n\n# Beta\n\nbody"}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("章 2 / 2")).toBeTruthy();
+    });
+    expect(screen.getByRole("heading", { name: "Beta" })).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Alpha" })).toBeNull();
+  });
+
+  it("syncs to a newer reader location for the same document key", async () => {
+    vi.mocked(measureEBookPageCount).mockReturnValue(5);
+    const { rerender } = render(
+      <EBookPane
+        documentKey="book"
+        initialLocation={{ chapterIndex: 0, pageIndex: 0 }}
+        menuLanguage="ja"
+        source={"# Chapter One\n\nbody one"}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("ページ 1 / 5")).toBeTruthy();
+    });
+
+    rerender(
+      <EBookPane
+        documentKey="book"
+        initialLocation={{ chapterIndex: 0, pageIndex: 2 }}
+        menuLanguage="ja"
+        source={"# Chapter One\n\nbody one"}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("ページ 3 / 5")).toBeTruthy();
     });
   });
 
