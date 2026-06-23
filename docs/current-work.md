@@ -120,11 +120,14 @@ paragraph `break-inside: avoid`, and a tighter simulated-page
 `max-height` cap so a single image is more likely to fit inside one page.
 When a leading Markdown image appears before the first heading, the
 first preamble chapter is treated as a standalone cover-image page and
-its image-only paragraph is given a full simulated-page height so it can
-fit as one page instead of spilling into a second CSS column. Display
-options such as reader font size remain deferred. Verification passed
-with focused `EBookPane` / preview CSS tests, full `npm run test`, and
-`npm run build:vite` (with the usual Vite chunk-size warning).
+its measured page count is forced to one page so the next-page action
+moves to the first heading instead of an artificial second image column.
+Image-only paragraphs are also treated as full simulated-page blocks so
+an image behaves as one page unit in the spread rather than splitting
+across columns. Display options such as reader font size remain deferred.
+Verification passed with focused `EBookPane` / preview CSS tests, full
+`npm run test`, and `npm run build:vite` (with the usual Vite chunk-size
+warning).
 
 Post-v1 guardrail: after v1.0, do not rush straight into v2.0. Use v1.x
 to deepen the single-document product first: EPUB export, Diff / Review

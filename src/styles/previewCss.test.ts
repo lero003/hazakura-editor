@@ -90,6 +90,9 @@ describe("preview.css", () => {
     expect(floatingBody).toMatch(/transform:\s*translateX\(-50%\)/);
     expect(floatingBody).toMatch(/border-radius:\s*999px/);
     expect(floatingBody).not.toMatch(/width:\s*100%/);
+    expect(
+      ruleBody(".ebook-pane .ebook-reader-floating-action:hover,\n.ebook-pane .ebook-reader-floating-action:focus-visible"),
+    ).toMatch(/transform:\s*translateX\(-50%\)/);
     expect(previewCss).not.toMatch(/(?:^|\n)\.ebook-reader-chrome\s*{/);
   });
 
@@ -181,10 +184,9 @@ describe("preview.css", () => {
     const imageParagraphBody = ruleBody(
       ".ebook-chapter .ebook-page-flow p:has(> img:only-child)",
     );
-    const coverImageParagraphBody = ruleBody(
-      ".ebook-chapter-cover-image .ebook-page-flow p:has(> img:only-child)",
+    const imageParagraphImageBody = ruleBody(
+      ".ebook-chapter .ebook-page-flow p:has(> img:only-child) > img",
     );
-    const coverImageBody = ruleBody(".ebook-chapter-cover-image img");
 
     expect(imgBody).toMatch(/display:\s*block/);
     expect(imgBody).toMatch(/height:\s*auto/);
@@ -195,13 +197,13 @@ describe("preview.css", () => {
     );
     expect(imgBody).toMatch(/object-fit:\s*contain/);
     expect(imageParagraphBody).toMatch(/break-inside:\s*avoid/);
-    expect(coverImageParagraphBody).toMatch(/display:\s*grid/);
-    expect(coverImageParagraphBody).toMatch(/height:\s*100%/);
-    expect(coverImageParagraphBody).toMatch(/line-height:\s*0/);
-    expect(coverImageParagraphBody).toMatch(/margin:\s*0/);
-    expect(coverImageParagraphBody).toMatch(/place-items:\s*center/);
-    expect(coverImageBody).toMatch(/margin:\s*0 auto/);
-    expect(coverImageBody).toMatch(/max-height:\s*100%/);
+    expect(imageParagraphBody).toMatch(/display:\s*grid/);
+    expect(imageParagraphBody).toMatch(/height:\s*100%/);
+    expect(imageParagraphBody).toMatch(/line-height:\s*0/);
+    expect(imageParagraphBody).toMatch(/margin:\s*0/);
+    expect(imageParagraphBody).toMatch(/place-items:\s*center/);
+    expect(imageParagraphImageBody).toMatch(/margin:\s*0 auto/);
+    expect(imageParagraphImageBody).toMatch(/max-height:\s*100%/);
     expect(preBody).toMatch(/max-height:\s*72%/);
     expect(preBody).toMatch(/overflow:\s*auto/);
   });

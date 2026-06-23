@@ -136,6 +136,7 @@ describe("EBookPane chapter reader", () => {
   });
 
   it("treats a leading image before the first heading as a standalone cover image page", async () => {
+    vi.mocked(measureEBookPageCount).mockReturnValue(2);
     vi.mocked(openWorkspaceImage).mockResolvedValue({
       dataUrl: "data:image/jpeg;base64,COVER",
     } as Awaited<ReturnType<typeof openWorkspaceImage>>);
@@ -158,6 +159,7 @@ describe("EBookPane chapter reader", () => {
     expect(chapter?.classList.contains("ebook-chapter-cover-image")).toBe(true);
     expect(chapter?.classList.contains("ebook-chapter-frontmatter")).toBe(true);
     expect(image).toBeTruthy();
+    expect(screen.getByText("ページ 1 / 1")).toBeTruthy();
     expect(screen.queryByRole("heading", { name: "重さのないノート" })).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: "次のページ" }));

@@ -599,6 +599,7 @@
   color: var(--text, #1d1d1f);
   opacity: 1;
   outline: none;
+  transform: translateX(-50%);
 }
 
 .ebook-pane .ebook-reader-floating-action:focus-visible {
@@ -792,11 +793,6 @@
 
 .ebook-chapter .ebook-page-flow p:has(> img:only-child) {
   break-inside: avoid;
-  margin: 0 0 1em;
-}
-
-.ebook-chapter-cover-image .ebook-page-flow p:has(> img:only-child) {
-  break-inside: avoid;
   display: grid;
   height: 100%;
   line-height: 0;
@@ -804,7 +800,7 @@
   place-items: center;
 }
 
-.ebook-chapter-cover-image img {
+.ebook-chapter .ebook-page-flow p:has(> img:only-child) > img {
   margin: 0 auto;
   max-height: 100%;
 }

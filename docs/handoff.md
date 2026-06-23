@@ -57,11 +57,13 @@ Last reviewed: 2026-06-23 (v0.31 reading focus polish)
   containment CSS (`max-width`, centered block display, auto height,
   image-only paragraph `break-inside: avoid`, and a simulated-page
   max-height cap). A leading Markdown image before the first heading is
-  treated as a standalone cover-image preamble page so the image can use
-  the full simulated-page height instead of spilling into an extra CSS
-  column. Focused `EBookPane` / preview CSS tests, full `npm run test`,
-  and `npm run build:vite` passed; Vite still reports the usual large
-  chunk warning. Reader font-size/display options remain deferred.
+  treated as a standalone cover-image preamble page whose measured page
+  count is forced to one page, and image-only paragraphs now occupy a
+  full simulated page so the image behaves as a page unit in spread view
+  instead of splitting across columns. Focused `EBookPane` / preview CSS
+  tests, full `npm run test`, and `npm run build:vite` passed; Vite still
+  reports the usual large chunk warning. Reader font-size/display
+  options remain deferred.
   After v1.0, do not rush straight into v2.0; use v1.x to deepen the
   single-document product first: EPUB export, Diff / Review ergonomics,
   provenance, movement between writing / reading layers, distribution

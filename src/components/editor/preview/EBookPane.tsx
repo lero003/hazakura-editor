@@ -183,7 +183,10 @@ export default function EBookPane({
     }
 
     const flow = flowRef.current;
-    const nextPageCount = measureEBookPageCount(flow);
+    const nextPageCount = measureRenderedChapterPageCount(
+      activeChapterHtml,
+      flow,
+    );
     setMeasuredPageCount(nextPageCount);
     setActivePageIndex((current) => {
       const pendingTarget = pendingPageTargetRef.current;
@@ -205,7 +208,9 @@ export default function EBookPane({
     }
 
     const observer = new ResizeObserver(() => {
-      setMeasuredPageCount(measureEBookPageCount(flowRef.current));
+      setMeasuredPageCount(
+        measureRenderedChapterPageCount(activeChapterHtml, flowRef.current),
+      );
     });
     observer.observe(viewport);
     return () => {
@@ -220,7 +225,9 @@ export default function EBookPane({
 
     const root = document.documentElement;
     const observer = new MutationObserver(() => {
-      setMeasuredPageCount(measureEBookPageCount(flowRef.current));
+      setMeasuredPageCount(
+        measureRenderedChapterPageCount(activeChapterHtml, flowRef.current),
+      );
     });
     observer.observe(root, {
       attributeFilter: ["data-theme", "style"],
@@ -229,7 +236,7 @@ export default function EBookPane({
     return () => {
       observer.disconnect();
     };
-  }, []);
+  }, [activeChapterHtml]);
 
   useEffect(() => {
     const flow = flowRef.current;
@@ -238,7 +245,9 @@ export default function EBookPane({
     }
 
     const handleImageSettled = () => {
-      setMeasuredPageCount(measureEBookPageCount(flowRef.current));
+      setMeasuredPageCount(
+        measureRenderedChapterPageCount(activeChapterHtml, flowRef.current),
+      );
     };
     const images = Array.from(flow.querySelectorAll("img"));
     for (const image of images) {
@@ -496,6 +505,16 @@ export default function EBookPane({
       ) : null}
     </article>
   );
+}
+
+function measureRenderedChapterPageCount(
+  chapter: RenderedChapter | null,
+  flow: HTMLElement | null,
+): number {
+  if (chapter?.isStandaloneImage) {
+    return 1;
+  }
+  return measureEBookPageCount(flow);
 }
 
 function renderEbookChapter(
