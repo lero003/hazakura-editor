@@ -838,10 +838,37 @@
   min-height: 0;
   overflow: hidden;
   padding-bottom: var(--ebook-page-bottom-safe-area);
+  position: relative;
   width: 100%;
 }
 
+.ebook-next-chapter-preview {
+  display: none;
+}
+
+.ebook-next-chapter-preview-flow {
+  color: var(--text, #1d1d1f);
+  font-family: "Iowan Old Style", "Charter", Georgia, "Times New Roman", serif;
+  font-size: var(--preview-font-size, 17px);
+  height: 100%;
+  line-height: 1.9;
+  overflow: hidden;
+  text-wrap: pretty;
+  word-break: break-word;
+}
+
 @container (min-width: 920px) {
+  .ebook-page-sheet-spread .ebook-next-chapter-preview {
+    bottom: var(--ebook-page-bottom-safe-area);
+    box-sizing: border-box;
+    display: block;
+    left: calc(var(--ebook-page-width) + var(--ebook-page-gap));
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    width: var(--ebook-page-width);
+  }
+
   .ebook-page-sheet-spread {
     max-width: var(--ebook-spread-width);
   }
@@ -930,8 +957,27 @@
   text-align: center;
 }
 
+.ebook-next-chapter-preview-flow > h1:first-child,
+.ebook-next-chapter-preview-flow > h2:first-child {
+  border-bottom: 0;
+  margin: 0 auto clamp(32px, 4vw, 52px);
+  max-width: 18em;
+  padding-bottom: 0;
+  text-align: center;
+}
+
 .ebook-chapter .ebook-page-flow > h1:first-child::after,
 .ebook-chapter .ebook-page-flow > h2:first-child::after {
+  background: color-mix(in srgb, var(--accent) 62%, transparent);
+  content: "";
+  display: block;
+  height: 2px;
+  margin: clamp(14px, 2vw, 22px) auto 0;
+  width: clamp(44px, 7vw, 72px);
+}
+
+.ebook-next-chapter-preview-flow > h1:first-child::after,
+.ebook-next-chapter-preview-flow > h2:first-child::after {
   background: color-mix(in srgb, var(--accent) 62%, transparent);
   content: "";
   display: block;

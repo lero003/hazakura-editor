@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-23 (v0.32 pre-review hygiene follow-up)
+Last reviewed: 2026-06-23 (v0.32 reader spread follow-up)
 
 ## Current State
 
@@ -143,7 +143,10 @@ Last reviewed: 2026-06-23 (v0.32 pre-review hygiene follow-up)
   spread reader stay linked by the same chapter/page state.
   Right-pane one-page reader movement now also drives the editor to the
   reader's approximate source line, so read, notice, and edit can happen
-  without entering Reading Focus first.
+  without entering Reading Focus first. Reading Focus spread view can
+  also preview the next chapter on a spare right page at a chapter
+  boundary; this is visual only, and reader/editor location remains
+  anchored to the left / active chapter.
   Local build and window-launch smoke now pass for the generated preview
   app, but built-app interaction checks for normal / unsaved /
   recovered documents remain later v0.32 work. `docs/smoke-checklist.md`

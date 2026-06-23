@@ -80,6 +80,70 @@ describe("EBookPane chapter reader", () => {
     expect(screen.queryByRole("heading", { name: "Chapter Two" })).toBeNull();
   });
 
+  it("previews the next chapter on the spare right spread page while keeping location anchored to the left page", async () => {
+    vi.mocked(measureEBookPageCount).mockReturnValue(1);
+    const onExitReadingFocus = vi.fn();
+    const clientWidthGetter = vi
+      .spyOn(HTMLElement.prototype, "clientWidth", "get")
+      .mockImplementation(function getClientWidth(this: HTMLElement) {
+        return this.classList.contains("ebook-page-viewport") ? 884 : 0;
+      });
+    const getComputedStyleSpy = vi
+      .spyOn(window, "getComputedStyle")
+      .mockImplementation((element) => {
+        const isFlow =
+          element instanceof HTMLElement &&
+          element.classList.contains("ebook-page-flow");
+        return {
+          columnGap: isFlow ? "44px" : "normal",
+          columnWidth: isFlow ? "420px" : "auto",
+          display: "block",
+          getPropertyValue: () => "0px",
+          paddingBottom: "0px",
+          paddingTop: "0px",
+          visibility: "visible",
+        } as unknown as CSSStyleDeclaration;
+      });
+
+    try {
+      render(
+        <EBookPane
+          menuLanguage="ja"
+          onExitReadingFocus={onExitReadingFocus}
+          readingFocusActive
+          source={"# Chapter One\n\nbody one\n\n# Chapter Two\n\nbody two"}
+        />,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("ページ 1 / 1")).toBeTruthy();
+      });
+
+      const article = screen.getByRole("article", { name: "本のように読む" });
+      const nextPreview = article.querySelector(".ebook-next-chapter-preview");
+
+      expect(nextPreview).toBeTruthy();
+      expect(nextPreview?.textContent).toContain("Chapter Two");
+      expect(nextPreview?.textContent).toContain("body two");
+      expect(screen.getByText("章 1 / 2")).toBeTruthy();
+      expect(article.querySelector(".ebook-reader-footer")?.textContent).toContain(
+        "章: Chapter One",
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "編集に戻る" }));
+
+      expect(onExitReadingFocus).toHaveBeenCalledWith(
+        expect.objectContaining({
+          chapterIndex: 0,
+          pageIndex: 0,
+        }),
+      );
+    } finally {
+      getComputedStyleSpy.mockRestore();
+      clientWidthGetter.mockRestore();
+    }
+  });
+
   it("offers a Japanese Reading Focus entry and reports the current reader location", async () => {
     vi.mocked(measureEBookPageCount).mockReturnValue(3);
     const onEnterReadingFocus = vi.fn();

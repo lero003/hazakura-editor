@@ -7,8 +7,10 @@
 // `dangerouslySetInnerHTML` on sanitised HTML, with no input or
 // contenteditable surface).
 //
-// The reader keeps one active chapter in the DOM and pages the chapter
-// body with CSS Columns. Reader chrome, including the footer, stays
+// The reader keeps one active paginated chapter and pages that chapter
+// body with CSS Columns. Reading Focus can preview the next chapter on a
+// spare right spread page, but reader state and editor sync stay anchored
+// to the active left page. Reader chrome, including the footer, stays
 // outside the paginated flow so the columns never own navigation UI.
 
 import {
@@ -116,6 +118,7 @@ export default function EBookPane({
   const [measuredPageCount, setMeasuredPageCount] = useState(1);
   const [pageOffset, setPageOffset] = useState(0);
   const [pageViewportHeight, setPageViewportHeight] = useState(0);
+  const [visiblePageStep, setVisiblePageStep] = useState(1);
   const [pageTransitionSuppressed, setPageTransitionSuppressed] =
     useState(false);
   const [tableOfContentsOpen, setTableOfContentsOpen] = useState(false);
@@ -204,9 +207,19 @@ export default function EBookPane({
 
     return renderEbookChapter(activeChapter, documentPath, workspaceRoot);
   }, [activeChapter, documentPath, workspaceRoot]);
+  const nextChapter = chapters[activeChapterIndexSafe + 1];
+  const nextRenderedChapter = useMemo<RenderedChapter | null>(() => {
+    if (!readingFocusActive || !nextChapter) {
+      return null;
+    }
+
+    return renderEbookChapter(nextChapter, documentPath, workspaceRoot);
+  }, [documentPath, nextChapter, readingFocusActive, workspaceRoot]);
 
   const [activeChapterHtml, setActiveChapterHtml] =
     useState<RenderedChapter | null>(activeRenderedChapter);
+  const [nextChapterHtml, setNextChapterHtml] =
+    useState<RenderedChapter | null>(nextRenderedChapter);
 
   useEffect(() => {
     let cancelled = false;
@@ -241,6 +254,36 @@ export default function EBookPane({
     };
   }, [activeRenderedChapter, workspaceRoot]);
 
+  useEffect(() => {
+    let cancelled = false;
+    setNextChapterHtml(nextRenderedChapter);
+
+    if (!nextRenderedChapter || !workspaceRoot) {
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    void inlineWorkspaceAssetImages(
+      nextRenderedChapter.html,
+      async (path) => {
+        const image = await openWorkspaceImage(workspaceRoot, path);
+        return image.dataUrl;
+      },
+    ).then((inlined) => {
+      if (!cancelled) {
+        setNextChapterHtml({
+          ...nextRenderedChapter,
+          html: inlined,
+        });
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [nextRenderedChapter, workspaceRoot]);
+
   useLayoutEffect(() => {
     if (!activeChapterHtml || activeChapterHtml.index !== activeChapter?.index) {
       return;
@@ -252,6 +295,7 @@ export default function EBookPane({
       flow,
     );
     setPageViewportHeight(measurePageViewportHeight(viewportRef.current));
+    setVisiblePageStep(getVisiblePageStep(viewportRef.current, flow));
     setMeasuredPageCount(nextPageCount);
     setActivePageIndex((current) => {
       const pendingTarget = pendingPageTargetRef.current;
@@ -274,6 +318,7 @@ export default function EBookPane({
 
     const updateReaderMeasurements = () => {
       setPageViewportHeight(measurePageViewportHeight(viewport));
+      setVisiblePageStep(getVisiblePageStep(viewport, flowRef.current));
       setMeasuredPageCount(
         measureRenderedChapterPageCount(activeChapterHtml, flowRef.current),
       );
@@ -516,6 +561,11 @@ export default function EBookPane({
   const focusActionLabel = readingFocusActive
     ? copy.exitReadingFocus
     : copy.enterReadingFocus;
+  const hasSpareRightSpreadPage =
+    visiblePageStep > 1 &&
+    activePageIndexSafe + visiblePageStep > measuredPageCount;
+  const shouldShowNextChapterPreview =
+    readingFocusActive && hasSpareRightSpreadPage && nextChapterHtml !== null;
   const pageFlowStyle: EBookPageFlowStyle = {
     transform: `translateX(-${pageOffset}px)`,
   };
@@ -669,6 +719,16 @@ export default function EBookPane({
                 ref={flowRef}
                 style={pageFlowStyle}
               />
+              {shouldShowNextChapterPreview && nextChapterHtml ? (
+                <div className="ebook-next-chapter-preview">
+                  <div
+                    className="ebook-next-chapter-preview-flow"
+                    dangerouslySetInnerHTML={{
+                      __html: nextChapterHtml.html,
+                    }}
+                  />
+                </div>
+              ) : null}
             </div>
             <footer
               className="ebook-reader-footer"

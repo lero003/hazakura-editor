@@ -187,6 +187,19 @@ describe("preview.css", () => {
     );
   });
 
+  it("gates the next-chapter spread preview to the spare right page", () => {
+    const viewportBody = ruleBody(".ebook-page-viewport");
+    const previewBody = ruleBody(".ebook-next-chapter-preview");
+    const previewFlowBody = ruleBody(".ebook-next-chapter-preview-flow");
+
+    expect(viewportBody).toMatch(/position:\s*relative/);
+    expect(previewBody).toMatch(/display:\s*none/);
+    expect(previewFlowBody).toMatch(/overflow:\s*hidden/);
+    expect(previewCss).toMatch(
+      /@container\s*\(min-width:\s*920px\)\s*{[^}]*\.ebook-page-sheet-spread \.ebook-next-chapter-preview\s*{[^}]*display:\s*block[^}]*left:\s*calc\(var\(--ebook-page-width\) \+ var\(--ebook-page-gap\)\)[^}]*position:\s*absolute/s,
+    );
+  });
+
   it("keeps the e-book footer fixed outside the paginated flow", () => {
     const sheetBody = ruleBody(".ebook-page-sheet");
     const footerBody = ruleBody(".ebook-pane .ebook-reader-footer");
