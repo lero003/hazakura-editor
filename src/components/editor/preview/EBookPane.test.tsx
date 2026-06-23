@@ -660,6 +660,80 @@ describe("EBookPane chapter reader", () => {
     }
   });
 
+  it("does not restart a one-page next chapter on the left side of the next spread", async () => {
+    vi.mocked(measureEBookPageCount).mockImplementation((element) => {
+      const text = element?.textContent ?? "";
+      if (text.includes("body one")) {
+        return 3;
+      }
+      if (text.includes("Part Two")) {
+        return 1;
+      }
+      if (text.includes("body two")) {
+        return 3;
+      }
+      return 1;
+    });
+    const clientWidthGetter = vi
+      .spyOn(HTMLElement.prototype, "clientWidth", "get")
+      .mockImplementation(function getClientWidth(this: HTMLElement) {
+        return this.classList.contains("ebook-page-viewport") ? 884 : 0;
+      });
+    const getComputedStyleSpy = vi
+      .spyOn(window, "getComputedStyle")
+      .mockImplementation((element) => {
+        const isFlow =
+          element instanceof HTMLElement &&
+          (element.classList.contains("ebook-page-flow") ||
+            element.classList.contains("ebook-next-chapter-preview-flow"));
+        return {
+          columnGap: isFlow ? "44px" : "normal",
+          columnWidth: isFlow ? "420px" : "auto",
+          display: "block",
+          getPropertyValue: () => "0px",
+          paddingBottom: "0px",
+          paddingTop: "0px",
+          visibility: "visible",
+        } as unknown as CSSStyleDeclaration;
+      });
+
+    try {
+      render(
+        <EBookPane
+          menuLanguage="en"
+          readingFocusActive
+          source={
+            "# Chapter One\n\nbody one\n\n# Part Two\n\n# Chapter Two\n\nbody two"
+          }
+        />,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("Page 1 / 3")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Next page" }));
+      expect(screen.getByText("Page 3 / 3")).toBeTruthy();
+      expect(
+        screen
+          .getByRole("article", { name: "Book reader" })
+          .querySelector(".ebook-next-chapter-preview")?.textContent,
+      ).toContain("Part Two");
+
+      fireEvent.click(screen.getByRole("button", { name: "Next page" }));
+
+      await waitFor(() => {
+        expect(screen.getByRole("heading", { name: "Chapter Two" })).toBeTruthy();
+      });
+      expect(screen.getByText("Chapter 3 / 3")).toBeTruthy();
+      expect(screen.getByText("Page 1 / 3")).toBeTruthy();
+      expect(screen.queryByRole("heading", { name: "Part Two" })).toBeNull();
+    } finally {
+      getComputedStyleSpy.mockRestore();
+      clientWidthGetter.mockRestore();
+    }
+  });
+
   it("keeps one-page navigation when the viewport cannot show a spread", async () => {
     vi.mocked(measureEBookPageCount).mockReturnValue(5);
     const clientWidthGetter = vi

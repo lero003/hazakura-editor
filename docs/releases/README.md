@@ -49,6 +49,10 @@ Latest App Store submission-candidate note:
 - `0.20.0-app-store-submission-candidate.release.md`
 - `0.19.0-app-store-submission-candidate.release.md`
 
+Latest App Store release-note drafts:
+
+- `0.32.0-app-store-release-notes.md`
+
 Latest source / local-app tag notes:
 
 - `0.27.0-source-tag.release.md`

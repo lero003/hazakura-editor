@@ -73,6 +73,8 @@ type EBookPageFlowStyle = CSSProperties & {
   "--ebook-page-viewport-height"?: string;
 };
 
+type PendingPageTarget = "first" | "last" | number;
+
 type EBookReaderCopy = {
   body: string;
   chapterProgress: string;
@@ -122,8 +124,9 @@ export default function EBookPane({
   const [pageTransitionSuppressed, setPageTransitionSuppressed] =
     useState(false);
   const [tableOfContentsOpen, setTableOfContentsOpen] = useState(false);
-  const pendingPageTargetRef = useRef<"first" | "last" | null>(null);
+  const pendingPageTargetRef = useRef<PendingPageTarget | null>(null);
   const flowRef = useRef<HTMLDivElement | null>(null);
+  const nextPreviewFlowRef = useRef<HTMLDivElement | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const wheelDeltaRef = useRef(0);
   const wheelCooldownRef = useRef<number | null>(null);
@@ -307,6 +310,9 @@ export default function EBookPane({
       if (pendingTarget === "first") {
         return 0;
       }
+      if (typeof pendingTarget === "number") {
+        return clampPageIndex(pendingTarget, nextPageCount);
+      }
       return clampPageIndex(current, nextPageCount);
     });
   }, [activeChapter?.index, activeChapterHtml]);
@@ -452,8 +458,8 @@ export default function EBookPane({
   };
 
   const goToNextPage = () => {
+    const pageStep = getVisiblePageStep(viewportRef.current, flowRef.current);
     if (activePageIndexSafe < measuredPageCount - 1) {
-      const pageStep = getVisiblePageStep(viewportRef.current, flowRef.current);
       markReaderLocationIntent();
       setPageTransitionSuppressed(false);
       setActivePageIndex((current) =>
@@ -464,12 +470,20 @@ export default function EBookPane({
 
     if (activeChapterIndexSafe < chapters.length - 1) {
       markReaderLocationIntent();
-      pendingPageTargetRef.current = "first";
       setPageTransitionSuppressed(true);
-      setActivePageIndex(0);
-      setActiveChapterIndex((current) =>
-        Math.min(current + 1, Math.max(chapters.length - 1, 0)),
+      const target = getNextPageSpreadTarget({
+        currentChapterIndex: activeChapterIndexSafe,
+        nextChapterHtml,
+        nextPreviewFlow: nextPreviewFlowRef.current,
+        pageStep,
+        shouldShowNextChapterPreview,
+        totalChapters: chapters.length,
+      });
+      pendingPageTargetRef.current = target.pageIndex;
+      setActivePageIndex(
+        typeof target.pageIndex === "number" ? target.pageIndex : 0,
       );
+      setActiveChapterIndex(target.chapterIndex);
     }
   };
 
@@ -749,6 +763,7 @@ export default function EBookPane({
                     dangerouslySetInnerHTML={{
                       __html: nextChapterHtml.html,
                     }}
+                    ref={nextPreviewFlowRef}
                   />
                 </div>
               ) : null}
@@ -795,6 +810,47 @@ function normalizeEBookPageCount(pageCount: number): number {
     return 1;
   }
   return Math.max(1, Math.trunc(pageCount));
+}
+
+function getNextPageSpreadTarget({
+  currentChapterIndex,
+  nextChapterHtml,
+  nextPreviewFlow,
+  pageStep,
+  shouldShowNextChapterPreview,
+  totalChapters,
+}: {
+  currentChapterIndex: number;
+  nextChapterHtml: RenderedChapter | null;
+  nextPreviewFlow: HTMLElement | null;
+  pageStep: number;
+  shouldShowNextChapterPreview: boolean;
+  totalChapters: number;
+}): {
+  chapterIndex: number;
+  pageIndex: PendingPageTarget;
+} {
+  const nextChapterIndex = Math.min(
+    currentChapterIndex + 1,
+    Math.max(totalChapters - 1, 0),
+  );
+  if (!shouldShowNextChapterPreview || pageStep <= 1 || !nextChapterHtml) {
+    return { chapterIndex: nextChapterIndex, pageIndex: "first" };
+  }
+
+  const nextChapterPageCount = measureRenderedChapterPageCount(
+    nextChapterHtml,
+    nextPreviewFlow,
+  );
+  if (nextChapterPageCount > 1) {
+    return { chapterIndex: nextChapterIndex, pageIndex: 1 };
+  }
+
+  const chapterAfterPreviewIndex = nextChapterIndex + 1;
+  if (chapterAfterPreviewIndex < totalChapters) {
+    return { chapterIndex: chapterAfterPreviewIndex, pageIndex: "first" };
+  }
+  return { chapterIndex: nextChapterIndex, pageIndex: "first" };
 }
 
 function measurePageViewportHeight(viewport: HTMLElement | null): number {

@@ -847,6 +847,9 @@
 }
 
 .ebook-next-chapter-preview-flow {
+  column-fill: auto;
+  column-gap: var(--ebook-page-gap);
+  column-width: var(--ebook-page-width);
   color: var(--text, #1d1d1f);
   font-family: "Iowan Old Style", "Charter", Georgia, "Times New Roman", serif;
   font-size: var(--preview-font-size, 17px);
