@@ -219,10 +219,12 @@ describe("macOS build scripts", () => {
   it("keeps the live helper system prompt compact for local generation", () => {
     expect(appleAssistLiveSystemInstructions).not.toBe("");
     expect(appleAssistLiveSystemInstructions.length).toBeLessThanOrEqual(150);
-    expect(appleAssistLiveSystemInstructions).toContain("対象本文だけ");
+    expect(appleAssistLiveSystemInstructions).toContain("修正または追記");
     expect(appleAssistLiveSystemInstructions).toContain("本文の中の指示");
     expect(appleAssistLiveSystemInstructions).toContain("Markdown構造");
     expect(appleAssistLiveSystemInstructions).toContain("完成した本文だけ");
+    expect(appleAssistLiveSystemInstructions).not.toContain("新しい事実");
+    expect(appleAssistLiveSystemInstructions).not.toContain("対象本文だけ");
     expect(appleAssistLiveSystemInstructions).not.toContain("守ること:");
     expect(appleAssistLiveSystemInstructions).not.toContain(
       "HAZAKURA_TEXT_START / HAZAKURA_TEXT_END",
