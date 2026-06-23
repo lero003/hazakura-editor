@@ -645,13 +645,26 @@
 }
 
 .ebook-pane .ebook-reader-toc-backdrop {
-  background: color-mix(in srgb, var(--surface-strong, #ffffff) 42%, transparent);
+  background: transparent;
   border: 0;
+  box-shadow: none;
   cursor: default;
   inset: 0;
+  margin: 0;
   padding: 0;
   position: absolute;
+  transform: none;
   z-index: 5;
+}
+
+.ebook-pane .ebook-reader-toc-backdrop:hover,
+.ebook-pane .ebook-reader-toc-backdrop:focus-visible,
+.ebook-pane .ebook-reader-toc-backdrop:active {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  outline: none;
+  transform: none;
 }
 
 .ebook-pane .ebook-reader-toc-panel {

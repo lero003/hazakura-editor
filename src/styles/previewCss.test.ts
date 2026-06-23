@@ -108,6 +108,15 @@ describe("preview.css", () => {
     expect(toggleBody).toMatch(/left:\s*clamp/);
     expect(backdropBody).toMatch(/position:\s*absolute/);
     expect(backdropBody).toMatch(/inset:\s*0/);
+    expect(backdropBody).toMatch(/background:\s*transparent/);
+    expect(backdropBody).toMatch(/box-shadow:\s*none/);
+    expect(backdropBody).toMatch(/transform:\s*none/);
+    expect(
+      ruleBody(".ebook-pane .ebook-reader-toc-backdrop:hover,\n.ebook-pane .ebook-reader-toc-backdrop:focus-visible,\n.ebook-pane .ebook-reader-toc-backdrop:active"),
+    ).toMatch(/background:\s*transparent/);
+    expect(
+      ruleBody(".ebook-pane .ebook-reader-toc-backdrop:hover,\n.ebook-pane .ebook-reader-toc-backdrop:focus-visible,\n.ebook-pane .ebook-reader-toc-backdrop:active"),
+    ).toMatch(/transform:\s*none/);
     expect(panelBody).toMatch(/position:\s*absolute/);
     expect(panelBody).toMatch(/left:\s*clamp/);
     expect(panelBody).toMatch(/max-width:\s*min\(320px,\s*calc\(100% - 32px\)\)/);
