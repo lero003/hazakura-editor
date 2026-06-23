@@ -182,8 +182,14 @@ export function applyEbookPageBreakMarkers(source: string): string {
         return line.raw;
       }
 
-      if (!inFence && isPageBreakMarkerLine(lines, index)) {
-        return `${pageBreakMarkerHtml()}${line.ending}`;
+      if (!inFence) {
+        const pageBreakMarkerRole = classifyPageBreakMarkerLine(lines, index);
+        if (pageBreakMarkerRole === "page-break") {
+          return `${pageBreakMarkerHtml()}${line.ending}`;
+        }
+        if (pageBreakMarkerRole === "drop") {
+          return line.ending;
+        }
       }
 
       return line.raw;
@@ -195,21 +201,25 @@ function pageBreakMarkerHtml(): string {
   return '<div class="page-break" role="separator" aria-label="Page break"></div>';
 }
 
-function isPageBreakMarkerLine(
+function classifyPageBreakMarkerLine(
   lines: Array<{ text: string }>,
   index: number,
-): boolean {
+): "drop" | "page-break" | null {
   const marker = lines[index].text.trim();
   if (marker !== "---" && marker !== "===") {
-    return false;
+    return null;
   }
 
   const previous = lines[index - 1]?.text.trim() ?? null;
   const next = lines[index + 1]?.text.trim() ?? "";
+  if (previous !== "" || next !== "") {
+    return null;
+  }
+
   const hasFollowingContent = lines
     .slice(index + 1)
     .some((line) => line.text.trim() !== "");
-  return previous === "" && next === "" && hasFollowingContent;
+  return hasFollowingContent ? "page-break" : "drop";
 }
 
 function markdownLines(source: string): Array<{

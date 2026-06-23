@@ -28,11 +28,29 @@ export function getEBookPageOffset(
 }
 
 function getEBookPageStep(element: HTMLElement): number {
-  const pageWidth = getColumnWidth(element) || Math.max(0, element.clientWidth);
+  const pageWidth = getActualColumnWidth(element);
   if (pageWidth <= 0) {
     return 0;
   }
   return pageWidth + getColumnGap(element);
+}
+
+function getActualColumnWidth(element: HTMLElement): number {
+  const availableWidth = Math.max(0, element.clientWidth);
+  const idealWidth = getColumnWidth(element);
+  if (availableWidth <= 0 || idealWidth <= 0) {
+    return idealWidth || availableWidth;
+  }
+
+  const gap = getColumnGap(element);
+  const visibleColumns = Math.max(
+    1,
+    Math.floor((availableWidth + gap) / (idealWidth + gap)),
+  );
+  return Math.max(
+    0,
+    (availableWidth - gap * (visibleColumns - 1)) / visibleColumns,
+  );
 }
 
 function getColumnWidth(element: HTMLElement): number {

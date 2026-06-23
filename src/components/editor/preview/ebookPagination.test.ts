@@ -23,4 +23,15 @@ describe("ebookPagination", () => {
     expect(getEBookPageOffset(1, flow)).toBe(460);
     expect(measureEBookPageCount(flow)).toBe(4);
   });
+
+  it("uses the actual single-page column width when the viewport is wider than the ideal column width", () => {
+    const flow = document.createElement("div");
+    flow.style.columnWidth = "420px";
+    flow.style.columnGap = "44px";
+    setReadOnlyNumber(flow, "clientWidth", 620);
+    setReadOnlyNumber(flow, "scrollWidth", 1950);
+
+    expect(getEBookPageOffset(1, flow)).toBe(664);
+    expect(measureEBookPageCount(flow)).toBe(4);
+  });
 });

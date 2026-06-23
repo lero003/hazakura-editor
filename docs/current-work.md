@@ -146,16 +146,19 @@ footer rule, while reducing the outer top page padding so spreads do not
 feel overly top-heavy. The same post-build source layer now advances by
 two logical pages when the visible reader viewport can actually show a
 spread, while retaining one-page movement for narrow / single-page
-layouts. It also avoids turning a standalone `---` / `===` marker at the
-end of a heading-split chapter into a page break, preventing a redundant
-blank simulated page when the next heading already starts a new reader
-chapter. These source-level margin, spread-navigation, and redundant
-page-break tweaks require a later package rebuild before they appear in
-TestFlight.
+layouts. Page offsets now use the actual CSS multi-column width instead
+of the ideal `column-width`, so single-page readers do not land between
+columns when the visible page is wider than the ideal page width. It also
+avoids turning a standalone `---` / `===` marker at the
+end of a heading-split chapter into either a page break or a visible
+horizontal rule, preventing a redundant blank simulated page when the
+next heading already starts a new reader chapter. These source-level
+margin, spread-navigation, page-offset, and redundant page-break tweaks
+require a later package rebuild before they appear in TestFlight.
 Display options such as reader font size remain deferred. Verification
-passed with focused e-book chapter / `EBookPane` / preview CSS tests,
-full `npm run test`, and `npm run build:vite` (with the usual Vite
-chunk-size warning).
+passed with focused e-book pagination / chapter / `EBookPane` / preview
+CSS tests, full `npm run test`, and `npm run build:vite` (with the usual
+Vite chunk-size warning).
 
 v0.31 TestFlight candidate package evidence is generated as of
 2026-06-23: package/app metadata is aligned to `0.31.0`, the App Store

@@ -350,6 +350,8 @@ describe("applyEbookPageBreakMarkers", () => {
 
     expect(withoutTrailingNewline).not.toContain('class="page-break"');
     expect(withTrailingNewline).not.toContain('class="page-break"');
+    expect(withoutTrailingNewline).not.toContain("---");
+    expect(withTrailingNewline).not.toContain("---");
   });
 
   it("does not double a heading chapter boundary with a trailing marker", () => {
@@ -367,9 +369,9 @@ describe("applyEbookPageBreakMarkers", () => {
     const chapters = splitMarkdownIntoChapters(source);
 
     expect(chapters).toHaveLength(2);
-    expect(applyEbookPageBreakMarkers(chapters[0].source)).not.toContain(
-      'class="page-break"',
-    );
+    const marked = applyEbookPageBreakMarkers(chapters[0].source);
+    expect(marked).not.toContain('class="page-break"');
+    expect(marked).not.toContain("---");
   });
 
   it("does not convert frontmatter, fenced code, or non-blank-flanked rules", () => {
