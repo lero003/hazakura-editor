@@ -728,6 +728,19 @@ describe("EBookPane chapter reader", () => {
       expect(screen.getByText("Chapter 3 / 3")).toBeTruthy();
       expect(screen.getByText("Page 1 / 3")).toBeTruthy();
       expect(screen.queryByRole("heading", { name: "Part Two" })).toBeNull();
+
+      fireEvent.click(screen.getByRole("button", { name: "Previous page" }));
+
+      await waitFor(() => {
+        expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
+      });
+      expect(screen.getByText("Chapter 1 / 3")).toBeTruthy();
+      expect(screen.getByText("Page 3 / 3")).toBeTruthy();
+      expect(
+        screen
+          .getByRole("article", { name: "Book reader" })
+          .querySelector(".ebook-next-chapter-preview")?.textContent,
+      ).toContain("Part Two");
     } finally {
       getComputedStyleSpy.mockRestore();
       clientWidthGetter.mockRestore();

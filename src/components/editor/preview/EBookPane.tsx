@@ -75,6 +75,11 @@ type EBookPageFlowStyle = CSSProperties & {
 
 type PendingPageTarget = "first" | "last" | number;
 
+type ReaderPageTarget = {
+  chapterIndex: number;
+  pageIndex: PendingPageTarget;
+};
+
 type EBookReaderCopy = {
   body: string;
   chapterProgress: string;
@@ -125,6 +130,7 @@ export default function EBookPane({
     useState(false);
   const [tableOfContentsOpen, setTableOfContentsOpen] = useState(false);
   const pendingPageTargetRef = useRef<PendingPageTarget | null>(null);
+  const chapterPageCountsRef = useRef<Map<number, number>>(new Map());
   const flowRef = useRef<HTMLDivElement | null>(null);
   const nextPreviewFlowRef = useRef<HTMLDivElement | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
@@ -138,6 +144,7 @@ export default function EBookPane({
   } | null>(null);
 
   useEffect(() => {
+    chapterPageCountsRef.current.clear();
     pendingPageTargetRef.current = initialLocation ? null : "first";
     setTableOfContentsOpen(false);
     setActiveChapterIndex(
@@ -298,6 +305,10 @@ export default function EBookPane({
       activeChapterHtml,
       flow,
     );
+    chapterPageCountsRef.current.set(
+      activeChapterIndexSafe,
+      normalizeEBookPageCount(nextPageCount),
+    );
     setPageViewportHeight(measurePageViewportHeight(viewportRef.current));
     setVisiblePageStep(getVisiblePageStep(viewportRef.current, flow));
     setMeasuredPageCount(nextPageCount);
@@ -440,51 +451,72 @@ export default function EBookPane({
     pendingLocationNotificationRef.current = true;
   };
 
-  const goToPreviousPage = () => {
-    if (activePageIndexSafe > 0) {
-      const pageStep = getVisiblePageStep(viewportRef.current, flowRef.current);
-      markReaderLocationIntent();
-      setPageTransitionSuppressed(false);
-      setActivePageIndex((current) => Math.max(current - pageStep, 0));
+  const rememberChapterPageCount = (chapterIndex: number, pageCount: number) => {
+    if (chapterIndex < 0 || chapterIndex >= chapters.length) {
       return;
     }
-
-    if (activeChapterIndexSafe > 0) {
-      markReaderLocationIntent();
-      pendingPageTargetRef.current = "last";
-      setPageTransitionSuppressed(true);
-      setActiveChapterIndex((current) => Math.max(current - 1, 0));
-    }
+    chapterPageCountsRef.current.set(
+      chapterIndex,
+      normalizeEBookPageCount(pageCount),
+    );
   };
 
-  const goToNextPage = () => {
+  const getRememberedChapterPageCount = (chapterIndex: number) =>
+    chapterPageCountsRef.current.get(chapterIndex) ?? null;
+
+  const rememberNextChapterPreviewPageCount = () => {
+    if (!shouldShowNextChapterPreview || !nextChapterHtml) {
+      return;
+    }
+    rememberChapterPageCount(
+      activeChapterIndexSafe + 1,
+      measureRenderedChapterPageCount(nextChapterHtml, nextPreviewFlowRef.current),
+    );
+  };
+
+  const goToRelativePage = (direction: -1 | 1) => {
     const pageStep = getVisiblePageStep(viewportRef.current, flowRef.current);
-    if (activePageIndexSafe < measuredPageCount - 1) {
-      markReaderLocationIntent();
-      setPageTransitionSuppressed(false);
-      setActivePageIndex((current) =>
-        clampPageIndex(current + pageStep, measuredPageCount),
-      );
+    if (direction > 0) {
+      rememberNextChapterPreviewPageCount();
+    }
+    const target = getReaderPageTargetByDelta({
+      currentChapterIndex: activeChapterIndexSafe,
+      currentPageCount: measuredPageCount,
+      currentPageIndex: activePageIndexSafe,
+      getChapterPageCount: getRememberedChapterPageCount,
+      pageDelta: direction * pageStep,
+      totalChapters: chapters.length,
+    });
+    if (
+      target.chapterIndex === activeChapterIndexSafe &&
+      typeof target.pageIndex === "number" &&
+      target.pageIndex === activePageIndexSafe
+    ) {
       return;
     }
 
-    if (activeChapterIndexSafe < chapters.length - 1) {
-      markReaderLocationIntent();
-      setPageTransitionSuppressed(true);
-      const target = getNextPageSpreadTarget({
-        currentChapterIndex: activeChapterIndexSafe,
-        nextChapterHtml,
-        nextPreviewFlow: nextPreviewFlowRef.current,
-        pageStep,
-        shouldShowNextChapterPreview,
-        totalChapters: chapters.length,
-      });
+    markReaderLocationIntent();
+    setPageTransitionSuppressed(target.chapterIndex !== activeChapterIndexSafe);
+    if (target.chapterIndex !== activeChapterIndexSafe) {
       pendingPageTargetRef.current = target.pageIndex;
       setActivePageIndex(
         typeof target.pageIndex === "number" ? target.pageIndex : 0,
       );
       setActiveChapterIndex(target.chapterIndex);
+      return;
     }
+
+    if (typeof target.pageIndex === "number") {
+      setActivePageIndex(target.pageIndex);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    goToRelativePage(-1);
+  };
+
+  const goToNextPage = () => {
+    goToRelativePage(1);
   };
 
   const jumpToChapter = (chapterIndex: number) => {
@@ -812,45 +844,95 @@ function normalizeEBookPageCount(pageCount: number): number {
   return Math.max(1, Math.trunc(pageCount));
 }
 
-function getNextPageSpreadTarget({
+function getReaderPageTargetByDelta({
   currentChapterIndex,
-  nextChapterHtml,
-  nextPreviewFlow,
-  pageStep,
-  shouldShowNextChapterPreview,
+  currentPageCount,
+  currentPageIndex,
+  getChapterPageCount,
+  pageDelta,
   totalChapters,
 }: {
   currentChapterIndex: number;
-  nextChapterHtml: RenderedChapter | null;
-  nextPreviewFlow: HTMLElement | null;
-  pageStep: number;
-  shouldShowNextChapterPreview: boolean;
+  currentPageCount: number;
+  currentPageIndex: number;
+  getChapterPageCount: (chapterIndex: number) => number | null;
+  pageDelta: number;
   totalChapters: number;
-}): {
-  chapterIndex: number;
-  pageIndex: PendingPageTarget;
-} {
-  const nextChapterIndex = Math.min(
-    currentChapterIndex + 1,
-    Math.max(totalChapters - 1, 0),
-  );
-  if (!shouldShowNextChapterPreview || pageStep <= 1 || !nextChapterHtml) {
-    return { chapterIndex: nextChapterIndex, pageIndex: "first" };
+}): ReaderPageTarget {
+  const lastChapterIndex = Math.max(totalChapters - 1, 0);
+  const direction = Math.sign(pageDelta);
+  let remainingPages = Math.abs(Math.trunc(pageDelta));
+  let chapterIndex = clampChapterIndex(currentChapterIndex, totalChapters);
+  let pageIndex = clampPageIndex(currentPageIndex, currentPageCount);
+
+  if (direction === 0 || remainingPages === 0) {
+    return { chapterIndex, pageIndex };
   }
 
-  const nextChapterPageCount = measureRenderedChapterPageCount(
-    nextChapterHtml,
-    nextPreviewFlow,
-  );
-  if (nextChapterPageCount > 1) {
-    return { chapterIndex: nextChapterIndex, pageIndex: 1 };
+  if (direction > 0) {
+    while (remainingPages > 0) {
+      const pageCount = pageCountForNavigationTarget(
+        chapterIndex,
+        currentChapterIndex,
+        currentPageCount,
+        getChapterPageCount,
+      );
+      if (pageCount === null) {
+        return { chapterIndex, pageIndex };
+      }
+
+      const pagesAfterCurrent = Math.max(0, pageCount - 1 - pageIndex);
+      if (remainingPages <= pagesAfterCurrent) {
+        return { chapterIndex, pageIndex: pageIndex + remainingPages };
+      }
+
+      remainingPages -= pagesAfterCurrent + 1;
+      if (chapterIndex >= lastChapterIndex) {
+        return { chapterIndex, pageIndex: Math.max(pageCount - 1, 0) };
+      }
+
+      chapterIndex += 1;
+      pageIndex = 0;
+    }
+    return { chapterIndex, pageIndex };
   }
 
-  const chapterAfterPreviewIndex = nextChapterIndex + 1;
-  if (chapterAfterPreviewIndex < totalChapters) {
-    return { chapterIndex: chapterAfterPreviewIndex, pageIndex: "first" };
+  while (remainingPages > 0) {
+    if (remainingPages <= pageIndex) {
+      return { chapterIndex, pageIndex: pageIndex - remainingPages };
+    }
+
+    remainingPages -= pageIndex + 1;
+    if (chapterIndex <= 0) {
+      return { chapterIndex: 0, pageIndex: 0 };
+    }
+
+    chapterIndex -= 1;
+    const pageCount = pageCountForNavigationTarget(
+      chapterIndex,
+      currentChapterIndex,
+      currentPageCount,
+      getChapterPageCount,
+    );
+    if (pageCount === null) {
+      return { chapterIndex, pageIndex: "last" };
+    }
+    pageIndex = Math.max(pageCount - 1, 0);
   }
-  return { chapterIndex: nextChapterIndex, pageIndex: "first" };
+  return { chapterIndex, pageIndex };
+}
+
+function pageCountForNavigationTarget(
+  chapterIndex: number,
+  currentChapterIndex: number,
+  currentPageCount: number,
+  getChapterPageCount: (chapterIndex: number) => number | null,
+): number | null {
+  if (chapterIndex === currentChapterIndex) {
+    return normalizeEBookPageCount(currentPageCount);
+  }
+  const pageCount = getChapterPageCount(chapterIndex);
+  return pageCount === null ? null : normalizeEBookPageCount(pageCount);
 }
 
 function measurePageViewportHeight(viewport: HTMLElement | null): number {
