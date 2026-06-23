@@ -29,9 +29,9 @@ Latest App Store status:
   `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.29.1-build33-mas.pkg`.
   Raw App Store Connect, TestFlight, and App Review logs are not tracked
   in this repository.
-- `0.31.0` build `35` is the latest local App Store / TestFlight
-  package candidate for v0.31 Reading Focus / Spread View testing:
-  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.31.0-build35-mas.pkg`.
+- `0.32.0` build `36` is the latest local App Store / TestFlight
+  package candidate for v0.32 Editor / Reader Position Bridge testing:
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.32.0-build36-mas.pkg`.
   Raw App Store Connect upload, processing, TestFlight install / launch,
   and App Review logs are not tracked in this repository unless
   separately recorded.
@@ -39,6 +39,7 @@ Latest App Store status:
 
 Latest App Store submission-candidate note:
 
+- `0.32.0-app-store-submission-candidate.release.md`
 - `0.31.0-app-store-submission-candidate.release.md`
 - `0.29.1-app-store-submission-candidate.release.md`
 - `0.28.0-app-store-submission-candidate.release.md`

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-23 (v0.32 reader navigation follow-up)
+Last reviewed: 2026-06-23 (v0.32 candidate package)
 
 ## Current State
 
@@ -15,19 +15,18 @@ Last reviewed: 2026-06-23 (v0.32 reader navigation follow-up)
   Markdown preview flicker fix. Raw App Store Connect, TestFlight, and
   App Review logs remain outside this repository unless explicitly
   recorded later.
-- A new `0.31.0` App Store / TestFlight package candidate was generated
-  on 2026-06-23 after the v0.31 Reading Focus / Spread View image-page
-  hardening and contents-drawer polish. It advanced the App Store build
-  counter to `35` and produced
-  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.31.0-build35-mas.pkg`
+- A new `0.32.0` App Store / TestFlight package candidate was generated
+  on 2026-06-23 after the v0.32 Editor / Reader Position Bridge work.
+  It advanced the App Store build counter to `36` and produced
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.32.0-build36-mas.pkg`
   with SHA-256
-  `9ec936c7e092424986e737a855ce379453d7d9f7aaf61df260ff9e4d5c2971f6`.
+  `67111daae523027c4e1aca73fe39272116b342f3d71668a7050f4fa6a0f94981`.
   Full `npm run test`, local package generation, App Store surface
   smoke, signed app probe, package signature, metadata, supported-OS,
   package expansion / Distribution XML inspection, and sandbox preview
   checks passed. App Store Connect upload, Apple processing, TestFlight
-  install / launch, and real Reading Focus visual smoke remain user-side
-  proof.
+  install / launch, and normal / unsaved / recovered v0.32
+  reader-bridge built-app smoke remain user-side proof.
 - The next product slice should start from `docs/current-work.md` and
   treat `0.29.1` as shipped. The active lane is `v0.30-v1.0 Reader UX
   Stabilization`. The first code-level v0.30 e-book Mode paged flow

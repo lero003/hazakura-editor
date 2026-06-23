@@ -241,6 +241,20 @@ evidence and `docs/release-pre-check.md` examples.
 `npm run probe:macos-distribution -- "src-tauri/target/release/bundle/macos/Hazakura Editor.app"`,
 and `git diff --check` passed.
 
+v0.32 TestFlight candidate package evidence is refreshed as of
+2026-06-23: package/app metadata is aligned to `0.32.0`, the App Store
+build counter advanced to `36`, and the signed package is
+`src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.32.0-build36-mas.pkg`.
+Local proof passed with full `npm run test`,
+`npm run release:candidate -- --with-app-store-pkg --no-prune-pkgs`,
+`pkgutil --check-signature`, app metadata checks, package expansion /
+Distribution XML inspection, and
+`SKIP_BUILD=1 npm run smoke:macos-sandbox-preview`. SHA-256:
+`67111daae523027c4e1aca73fe39272116b342f3d71668a7050f4fa6a0f94981`.
+Upload, Apple processing, TestFlight install / launch, and the normal /
+unsaved / recovered v0.32 reader-bridge built-app smoke remain outside
+the repository until the user records those results.
+
 Post-v1 guardrail: after v1.0, do not rush straight into v2.0. Use v1.x
 to deepen the single-document product first: EPUB export, Diff / Review
 ergonomics, provenance, movement between writing / reading layers,

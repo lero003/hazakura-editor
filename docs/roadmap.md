@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-23 (v0.31 reading focus alignment)
+Last reviewed: 2026-06-23 (v0.32 candidate package)
 
 ## Current Position
 
@@ -17,14 +17,14 @@ Current release state:
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
 - Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
-- Current package/app version: `0.31.0`.
+- Current package/app version: `0.32.0`.
 - Latest source / local-app tag: `v0.29.1`, prepared on 2026-06-22.
 - Mac App Store published version: `0.29.1`, reported approved and
   released on 2026-06-23 with Hazakura Local Assist available as a
   preview on-device writing companion.
-- Latest local App Store / TestFlight package candidate: `0.31.0` build
-  `35`, generated on 2026-06-23 for v0.31 Reading Focus / Spread View
-  built-app testing after the Reading Focus contents-drawer polish.
+- Latest local App Store / TestFlight package candidate: `0.32.0` build
+  `36`, generated on 2026-06-23 for v0.32 Editor / Reader Position
+  Bridge built-app testing.
 - Active lane: `v0.30-v1.0 Reader UX Stabilization`, making the shipped
   Safe Editor, L Mode, e-book Mode, EPUB export beta, Diff / Recovery,
   and Hazakura Local Assist review surfaces feel like one coherent

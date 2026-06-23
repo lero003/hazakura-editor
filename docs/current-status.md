@@ -3,12 +3,12 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-23 (v0.32 reader navigation follow-up)
+Last reviewed: 2026-06-23 (v0.32 candidate package)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: `0.31.0` across npm, Tauri, Cargo, and lockfile metadata.
+- Current package/app version: `0.32.0` across npm, Tauri, Cargo, and lockfile metadata.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
 - Published Mac App Store version: `0.29.1`, reported approved and
@@ -16,15 +16,15 @@ Last reviewed: 2026-06-23 (v0.32 reader navigation follow-up)
   preview on-device writing companion.
 - Latest GitHub source / local-app tag: `v0.29.1`, prepared on
   2026-06-22.
-- Latest local App Store / TestFlight package candidate: `0.31.0` build
-  `35`, generated on 2026-06-23 for v0.31 Reading Focus / Spread View
-  built-app testing after the Reading Focus contents-drawer polish:
-  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.31.0-build35-mas.pkg`.
+- Latest local App Store / TestFlight package candidate: `0.32.0` build
+  `36`, generated on 2026-06-23 for v0.32 Editor / Reader Position
+  Bridge built-app testing:
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.32.0-build36-mas.pkg`.
   Local package generation, App Store surface smoke, signed app
   distribution probe, `pkgutil --check-signature`, package SHA-256,
   package expansion / Distribution XML inspection, and sandbox preview
   checks passed. SHA-256:
-  `9ec936c7e092424986e737a855ce379453d7d9f7aaf61df260ff9e4d5c2971f6`.
+  `67111daae523027c4e1aca73fe39272116b342f3d71668a7050f4fa6a0f94981`.
   Raw App Store Connect upload, processing, TestFlight install /
   launch, and App Review logs are not tracked in this repository unless
   separately recorded.
@@ -307,6 +307,7 @@ Last reviewed: 2026-06-23 (v0.32 reader navigation follow-up)
 
 Use release notes for detailed historical evidence:
 
+- `docs/releases/0.32.0-app-store-submission-candidate.release.md`
 - `docs/releases/0.31.0-app-store-submission-candidate.release.md`
 - `docs/releases/0.29.1-app-store-submission-candidate.release.md`
 - `docs/releases/0.27.0-source-tag.release.md`
@@ -382,17 +383,17 @@ baseline, and smoke evidence are archived under
    single-document product, especially EPUB export, Diff / Review
    ergonomics, provenance, movement between writing / reading layers,
    and observation-driven Local Assist polish.
-3. For the current `0.31.0` App Store / TestFlight candidate, build `35`
-   is the latest local package evidence. It includes the v0.31 Reading
-   Focus / Spread View work, image-page hardening, post-build margin /
-   spread-navigation / page-offset fixes, redundant page-break handling,
-   and Reading Focus contents-drawer polish for the built-app smoke
-   loop. Upload, Apple processing, TestFlight install / launch, and App
-   Review handling remain explicit distribution-lane work outside this
+3. For the current `0.32.0` App Store / TestFlight candidate, build `36`
+   is the latest local package evidence. It includes the v0.32 Editor /
+   Reader Position Bridge work, including right-pane reader navigation
+   syncing back to the editor while passive source edits and chapter
+   reclassification do not push the editor position from the reader.
+   Upload, Apple processing, TestFlight install / launch, and App Review
+   handling remain explicit distribution-lane work outside this
    repository unless public-safe evidence is recorded.
    The published `0.29.1` App Store lane remains the latest reported
    released version; its build `33` package is historical release
-   evidence and should not be confused with the new `0.31.0` candidate.
+   evidence and should not be confused with the new `0.32.0` candidate.
    For future App Store submissions, start with `docs/app-store-build.md`;
    use `npm run release:candidate -- --with-app-store-pkg` for local
    signed package checkpoints, keep account-specific notes under ignored
