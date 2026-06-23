@@ -17,15 +17,17 @@ Last reviewed: 2026-06-23 (v0.31 TestFlight candidate)
 - Latest GitHub source / local-app tag: `v0.29.1`, prepared on
   2026-06-22.
 - Latest local App Store / TestFlight package candidate: `0.31.0` build
-  `34`, generated on 2026-06-23 for v0.31 Reading Focus / Spread View
-  built-app testing:
-  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.31.0-build34-mas.pkg`.
+  `35`, generated on 2026-06-23 for v0.31 Reading Focus / Spread View
+  built-app testing after the Reading Focus contents-drawer polish:
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.31.0-build35-mas.pkg`.
   Local package generation, App Store surface smoke, signed app
   distribution probe, `pkgutil --check-signature`, package SHA-256,
-  `productbuild --synthesize`, and sandbox preview checks passed. Raw
-  App Store Connect upload, processing, TestFlight install / launch, and
-  App Review logs are not tracked in this repository unless separately
-  recorded.
+  package expansion / Distribution XML inspection, and sandbox preview
+  checks passed. SHA-256:
+  `9ec936c7e092424986e737a855ce379453d7d9f7aaf61df260ff9e4d5c2971f6`.
+  Raw App Store Connect upload, processing, TestFlight install /
+  launch, and App Review logs are not tracked in this repository unless
+  separately recorded.
 - Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
 - `v0.18.0` is a Developer / GitHub lane preview, ad-hoc signed, not Developer ID signed, not notarized, and expected to show macOS security warnings.
 - The helper-free App Store lane delivered `0.18.0` build `4` to
@@ -354,12 +356,14 @@ baseline, and smoke evidence are archived under
    single-document product, especially EPUB export, Diff / Review
    ergonomics, provenance, movement between writing / reading layers,
    and observation-driven Local Assist polish.
-3. For the current `0.31.0` App Store / TestFlight candidate, build `34`
+3. For the current `0.31.0` App Store / TestFlight candidate, build `35`
    is the latest local package evidence. It includes the v0.31 Reading
-   Focus / Spread View work and the image-page hardening for the
-   built-app smoke loop. Upload, Apple processing, TestFlight install /
-   launch, and App Review handling remain explicit distribution-lane
-   work outside this repository unless public-safe evidence is recorded.
+   Focus / Spread View work, image-page hardening, post-build margin /
+   spread-navigation / page-offset fixes, redundant page-break handling,
+   and Reading Focus contents-drawer polish for the built-app smoke
+   loop. Upload, Apple processing, TestFlight install / launch, and App
+   Review handling remain explicit distribution-lane work outside this
+   repository unless public-safe evidence is recorded.
    The published `0.29.1` App Store lane remains the latest reported
    released version; its build `33` package is historical release
    evidence and should not be confused with the new `0.31.0` candidate.

@@ -45,9 +45,9 @@ Agent Workbench behind its existing boundary.
   on 2026-06-23 with Hazakura Local Assist available as a preview
   on-device writing companion)
 - Current source / Developer version: `0.31.0`
-- Latest generated local App Store package evidence: `0.31.0` build `34`
-  (generated after v0.31 Reading Focus / Spread View image-page hardening)
-- Current App Store submit config build counter: `34`
+- Latest generated local App Store package evidence: `0.31.0` build `35`
+  (generated after v0.31 Reading Focus / Spread View contents-drawer polish)
+- Current App Store submit config build counter: `35`
   (the next package build will increment from this value)
 - App Store category: `Productivity`
 - Public Privacy Policy URL:
@@ -862,4 +862,38 @@ this lane. SHA-256:
 
 ```txt
 acc1c3f59ce7801d86689df888451d8c562e9c8b612b7368b7d0d5188dbd2353
+```
+
+v0.31.0 build 35 TestFlight candidate note: on 2026-06-23, Codex
+generated a new local App Store submit-lane package for user-visible
+version `0.31.0` after the v0.31 Reading Focus contents-drawer polish
+and the post-build margin / spread-navigation / page-offset fixes. This
+package supersedes build `34` as the latest local TestFlight candidate
+evidence. Raw App Store Connect upload, processing, TestFlight install /
+launch, and App Review logs are not tracked in this repository unless
+separately recorded.
+
+The local package generated for this lane is:
+
+```txt
+src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.31.0-build35-mas.pkg
+```
+
+The signed submit-lane bundle reported `CFBundleIdentifier`
+`dev.hazakura.editor`, `CFBundleShortVersionString` `0.31.0`,
+`CFBundleVersion` `35`, and `LSMinimumSystemVersion` `26.0`. It had the
+expected App Sandbox, user-selected read/write, app-scoped bookmark, and
+network-client entitlements. The bundled Hazakura Local Assist helper was
+present as `Contents/MacOS/hazakura-local-assist-helper`, executable,
+Apple Distribution signed, and carried both
+`com.apple.security.app-sandbox` and `com.apple.security.inherit`.
+The App Store entitlement-enforced macOS distribution probe and sandbox
+preview smoke passed for the generated app. `pkgutil --expand-full`
+exposed a Distribution XML `allowed-os-versions` entry with `min="26.0"`.
+`pkgutil --check-signature` passed with the 3rd Party Mac Developer
+Installer certificate. `spctl` remained local trust-policy noise for
+this lane. SHA-256:
+
+```txt
+9ec936c7e092424986e737a855ce379453d7d9f7aaf61df260ff9e4d5c2971f6
 ```

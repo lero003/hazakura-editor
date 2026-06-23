@@ -23,12 +23,38 @@ mkdir -p "$OUT_DIR"
 
 cd "$HELPER_DIR"
 
+swift_build_with_sandbox_fallback() {
+    local swift_arch="$1"
+    local log_file
+    log_file="$(mktemp "${TMPDIR:-/tmp}/hazakura-swift-build.XXXXXX.log")"
+
+    if swift build -c release --arch "$swift_arch" >"$log_file" 2>&1; then
+        cat "$log_file"
+        rm -f "$log_file"
+        return 0
+    fi
+
+    cat "$log_file" >&2
+
+    if grep -q "sandbox_apply: Operation not permitted" "$log_file"; then
+        echo "==> retry swift build with --disable-sandbox ($swift_arch)"
+        mkdir -p "$HELPER_DIR/.build/clang-module-cache"
+        CLANG_MODULE_CACHE_PATH="$HELPER_DIR/.build/clang-module-cache" \
+            swift build -c release --arch "$swift_arch" --disable-sandbox
+        rm -f "$log_file"
+        return 0
+    fi
+
+    rm -f "$log_file"
+    return 1
+}
+
 build_arch() {
     local swift_arch="$1"
     local triple="$2"
 
     echo "==> swift build (live Foundation Models mode, $swift_arch)"
-    swift build -c release --arch "$swift_arch"
+    swift_build_with_sandbox_fallback "$swift_arch"
 
     local built="$HELPER_DIR/.build/${swift_arch}-apple-macosx/release/HazakuraAppleAssist"
     if [ ! -x "$built" ]; then

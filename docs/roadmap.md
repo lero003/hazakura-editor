@@ -23,8 +23,8 @@ Current release state:
   released on 2026-06-23 with Hazakura Local Assist available as a
   preview on-device writing companion.
 - Latest local App Store / TestFlight package candidate: `0.31.0` build
-  `34`, generated on 2026-06-23 for v0.31 Reading Focus / Spread View
-  built-app testing.
+  `35`, generated on 2026-06-23 for v0.31 Reading Focus / Spread View
+  built-app testing after the Reading Focus contents-drawer polish.
 - Active lane: `v0.30-v1.0 Reader UX Stabilization`, making the shipped
   Safe Editor, L Mode, e-book Mode, EPUB export beta, Diff / Recovery,
   and Hazakura Local Assist review surfaces feel like one coherent

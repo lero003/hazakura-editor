@@ -17,15 +17,17 @@ Last reviewed: 2026-06-23 (v0.31 TestFlight candidate)
   recorded later.
 - A new `0.31.0` App Store / TestFlight package candidate was generated
   on 2026-06-23 after the v0.31 Reading Focus / Spread View image-page
-  hardening. It advanced the App Store build counter from `33` to `34`
-  and produced
-  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.31.0-build34-mas.pkg`
+  hardening and contents-drawer polish. It advanced the App Store build
+  counter to `35` and produced
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.31.0-build35-mas.pkg`
   with SHA-256
-  `acc1c3f59ce7801d86689df888451d8c562e9c8b612b7368b7d0d5188dbd2353`.
-  Local package generation, App Store surface smoke, signed app probe,
-  package signature, metadata, supported-OS, and sandbox preview checks
-  passed. App Store Connect upload, Apple processing, TestFlight install
-  / launch, and real Reading Focus visual smoke remain user-side proof.
+  `9ec936c7e092424986e737a855ce379453d7d9f7aaf61df260ff9e4d5c2971f6`.
+  Full `npm run test`, local package generation, App Store surface
+  smoke, signed app probe, package signature, metadata, supported-OS,
+  package expansion / Distribution XML inspection, and sandbox preview
+  checks passed. App Store Connect upload, Apple processing, TestFlight
+  install / launch, and real Reading Focus visual smoke remain user-side
+  proof.
 - The next product slice should start from `docs/current-work.md` and
   treat `0.29.1` as shipped. The active lane is `v0.30-v1.0 Reader UX
   Stabilization`. The first code-level v0.30 e-book Mode paged flow
@@ -101,8 +103,8 @@ Last reviewed: 2026-06-23 (v0.31 TestFlight candidate)
   into either a page break or a visible horizontal rule, preventing a
   redundant blank simulated page when the next heading already starts a
   new reader chapter. These source-level margin, spread-navigation,
-  page-offset, and redundant page-break tweaks need a later package
-  rebuild before they are present in TestFlight. Reading Focus now also
+  page-offset, and redundant page-break tweaks are included in the later
+  `0.31.0` build `35` package candidate. Reading Focus now also
   has a source-level `目次` / Contents drawer: it appears only in Reading
   Focus when multiple e-book chapters exist, uses the existing
   ATX-heading-derived chapter list, and jumps to the selected chapter's

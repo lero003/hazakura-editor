@@ -154,7 +154,7 @@ end of a heading-split chapter into either a page break or a visible
 horizontal rule, preventing a redundant blank simulated page when the
 next heading already starts a new reader chapter. These source-level
 margin, spread-navigation, page-offset, and redundant page-break tweaks
-require a later package rebuild before they appear in TestFlight.
+are included in the later `0.31.0` build `35` package candidate.
 
 v0.31 Reading Focus now also has a source-level coarse navigation slice:
 when Reading Focus is active and the document has multiple e-book
@@ -169,14 +169,15 @@ focused e-book pagination / chapter / `EBookPane` / preview CSS tests,
 full `npm run test`, and `npm run build:vite` (with the usual Vite
 chunk-size warning).
 
-v0.31 TestFlight candidate package evidence is generated as of
+v0.31 TestFlight candidate package evidence is refreshed as of
 2026-06-23: package/app metadata is aligned to `0.31.0`, the App Store
-build counter advanced from `33` to `34`, and the signed package is
-`src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.31.0-build34-mas.pkg`.
+build counter advanced to `35`, and the signed package is
+`src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.31.0-build35-mas.pkg`.
 Local proof passed with full `npm run test`,
 `npm run release:candidate -- --with-app-store-pkg --no-prune-pkgs`,
 `pkgutil --check-signature`, app metadata checks,
-`productbuild --synthesize`, and `SKIP_BUILD=1 npm run smoke:macos-sandbox-preview`.
+package expansion / Distribution XML inspection, and
+`SKIP_BUILD=1 npm run smoke:macos-sandbox-preview`.
 Upload, Apple processing, TestFlight install / launch, and real
 Reading Focus visual smoke remain outside the repository until the user
 records those results.
