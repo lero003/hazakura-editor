@@ -8,13 +8,14 @@ export function measureEBookPageCount(element: HTMLElement | null): number {
     return 1;
   }
 
-  const scrollWidth = Math.max(0, element.scrollWidth);
-  if (scrollWidth <= 0) {
+  const contentWidth = measureEBookContentWidth(element);
+  const measuredWidth = Math.max(0, contentWidth || element.scrollWidth);
+  if (measuredWidth <= 0) {
     return 1;
   }
 
   const gap = getColumnGap(element);
-  return Math.max(1, Math.ceil((scrollWidth + gap) / pageStep));
+  return Math.max(1, Math.ceil((measuredWidth + gap) / pageStep));
 }
 
 export function getEBookPageOffset(
@@ -61,6 +62,50 @@ function getColumnWidth(element: HTMLElement): number {
 function getColumnGap(element: HTMLElement): number {
   const value = window.getComputedStyle(element).columnGap;
   return parseCssPixelValue(value);
+}
+
+function measureEBookContentWidth(element: HTMLElement): number {
+  const flowRect = element.getBoundingClientRect();
+  if (!Number.isFinite(flowRect.left)) {
+    return 0;
+  }
+
+  let contentRight = 0;
+  for (const child of Array.from(element.children)) {
+    if (!(child instanceof HTMLElement)) {
+      continue;
+    }
+
+    const rects = Array.from(child.getClientRects());
+    let childRight = 0;
+    for (const rect of rects) {
+      childRight = Math.max(childRight, getRectRightOffset(rect, flowRect.left));
+    }
+
+    if (childRight <= 0) {
+      childRight = getRectRightOffset(
+        child.getBoundingClientRect(),
+        flowRect.left,
+      );
+    }
+
+    contentRight = Math.max(contentRight, childRight);
+  }
+
+  return contentRight;
+}
+
+function getRectRightOffset(
+  rect: DOMRect | DOMRectReadOnly,
+  flowLeft: number,
+): number {
+  if (
+    !Number.isFinite(rect.right) ||
+    (rect.width <= 0 && rect.height <= 0)
+  ) {
+    return 0;
+  }
+  return Math.max(0, rect.right - flowLeft);
 }
 
 function parseCssPixelValue(value: string): number {
