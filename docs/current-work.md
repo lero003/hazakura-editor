@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v0.30-v1.0 Reader UX Stabilization queue and post-v0.29.1 evidence
 Authority: High
-Last reviewed: 2026-06-23 (v0.32 reader spread follow-up)
+Last reviewed: 2026-06-23 (v0.32 reader navigation follow-up)
 
 ## Purpose
 
@@ -212,9 +212,11 @@ separation through the parent reader-location state. Same-document
 reader-location changes are now synced into mounted `EBookPane`
 instances too, so the right-pane one-page reader and Reading Focus
 spread reader stay linked by the same chapter/page state. Right-pane
-one-page reader movement now also drives the editor to the reader's
+one-page reader navigation now also drives the editor to the reader's
 approximate source line, so read, notice, and edit can happen without
-entering Reading Focus first. Reading Focus spread view can now use a
+entering Reading Focus first; passive source edits and chapter
+reclassification do not push the editor position back from the reader.
+Reading Focus spread view can now use a
 spare right page at a chapter boundary to preview the next chapter, but
 reader location and editor sync remain anchored to the left / active
 chapter for the current simple design. Local build and window-launch smoke now

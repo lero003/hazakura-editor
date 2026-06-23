@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-23 (v0.32 pre-review hygiene follow-up)
+Last reviewed: 2026-06-23 (v0.32 reader navigation follow-up)
 
 ## Current State
 
@@ -42,9 +42,10 @@ Last reviewed: 2026-06-23 (v0.32 pre-review hygiene follow-up)
   location updates are now also synced back into mounted `EBookPane`
   instances, so the right-pane one-page reader and Reading Focus spread
   reader stay on the same chapter/page state instead of drifting apart.
-  Right-pane one-page reader movement now also drives the editor to the
+  Right-pane one-page reader navigation now also drives the editor to the
   reader's approximate source line, so read, notice, and edit can happen
-  without entering Reading Focus first.
+  without entering Reading Focus first; passive source edits and chapter
+  reclassification do not push the editor position back from the reader.
   Local build and window-launch smoke passed for the generated preview
   app; built-app interaction checks for normal, unsaved, and recovered
   documents remain pending. A release-hygiene follow-up removed a

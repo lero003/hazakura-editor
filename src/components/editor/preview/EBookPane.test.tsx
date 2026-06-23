@@ -371,6 +371,39 @@ describe("EBookPane chapter reader", () => {
     });
   });
 
+  it("does not report passive reader location changes caused by source edits", async () => {
+    const onLocationChange = vi.fn();
+    const { rerender } = render(
+      <EBookPane
+        documentKey="book"
+        initialLocation={{ chapterIndex: 1, pageIndex: 0 }}
+        menuLanguage="ja"
+        onLocationChange={onLocationChange}
+        source={"# Chapter One\n\nbody one\n\n## Chapter Two\n\nbody two"}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("章 2 / 2")).toBeTruthy();
+    });
+    onLocationChange.mockClear();
+
+    rerender(
+      <EBookPane
+        documentKey="book"
+        initialLocation={{ chapterIndex: 1, pageIndex: 0 }}
+        menuLanguage="ja"
+        onLocationChange={onLocationChange}
+        source={"# Chapter One\n\nbody one\n\nChapter Two\n\nbody two"}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("章 1 / 1")).toBeTruthy();
+    });
+    expect(onLocationChange).not.toHaveBeenCalled();
+  });
+
   it("keeps the table of contents drawer exclusive to Reading Focus", () => {
     render(
       <EBookPane

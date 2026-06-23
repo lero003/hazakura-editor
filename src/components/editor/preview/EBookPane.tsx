@@ -127,6 +127,7 @@ export default function EBookPane({
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const wheelDeltaRef = useRef(0);
   const wheelCooldownRef = useRef<number | null>(null);
+  const pendingLocationNotificationRef = useRef(false);
   const documentLocationKey = documentKey ?? documentPath ?? "";
   const lastNotifiedLocationRef = useRef<{
     documentLocationKey: string;
@@ -385,8 +386,18 @@ export default function EBookPane({
 
   useEffect(() => {
     if (!onLocationChange) {
+      pendingLocationNotificationRef.current = false;
       return;
     }
+    if (!pendingLocationNotificationRef.current) {
+      lastNotifiedLocationRef.current = {
+        documentLocationKey,
+        location: activeReaderLocation,
+      };
+      return;
+    }
+    pendingLocationNotificationRef.current = false;
+
     const lastNotifiedLocation = lastNotifiedLocationRef.current;
     if (
       lastNotifiedLocation?.documentLocationKey === documentLocationKey &&
@@ -419,15 +430,21 @@ export default function EBookPane({
     [],
   );
 
+  const markReaderLocationIntent = () => {
+    pendingLocationNotificationRef.current = true;
+  };
+
   const goToPreviousPage = () => {
     if (activePageIndexSafe > 0) {
       const pageStep = getVisiblePageStep(viewportRef.current, flowRef.current);
+      markReaderLocationIntent();
       setPageTransitionSuppressed(false);
       setActivePageIndex((current) => Math.max(current - pageStep, 0));
       return;
     }
 
     if (activeChapterIndexSafe > 0) {
+      markReaderLocationIntent();
       pendingPageTargetRef.current = "last";
       setPageTransitionSuppressed(true);
       setActiveChapterIndex((current) => Math.max(current - 1, 0));
@@ -437,6 +454,7 @@ export default function EBookPane({
   const goToNextPage = () => {
     if (activePageIndexSafe < measuredPageCount - 1) {
       const pageStep = getVisiblePageStep(viewportRef.current, flowRef.current);
+      markReaderLocationIntent();
       setPageTransitionSuppressed(false);
       setActivePageIndex((current) =>
         clampPageIndex(current + pageStep, measuredPageCount),
@@ -445,6 +463,7 @@ export default function EBookPane({
     }
 
     if (activeChapterIndexSafe < chapters.length - 1) {
+      markReaderLocationIntent();
       pendingPageTargetRef.current = "first";
       setPageTransitionSuppressed(true);
       setActivePageIndex(0);
@@ -455,10 +474,14 @@ export default function EBookPane({
   };
 
   const jumpToChapter = (chapterIndex: number) => {
+    const nextChapterIndex = clampChapterIndex(chapterIndex, chapters.length);
+    if (nextChapterIndex !== activeChapterIndexSafe || activePageIndexSafe !== 0) {
+      markReaderLocationIntent();
+    }
     pendingPageTargetRef.current = "first";
     setPageTransitionSuppressed(true);
     setActivePageIndex(0);
-    setActiveChapterIndex(clampChapterIndex(chapterIndex, chapters.length));
+    setActiveChapterIndex(nextChapterIndex);
     setTableOfContentsOpen(false);
   };
 
