@@ -66,6 +66,22 @@ user reported light `0.31` testing as problem-free before opening the
 | Observation only | Hazakura Local Assist post-release polish | Pick this before the active Reader UX slice only for a concrete safety, review, App Store, availability, generation failure, responsiveness, or transaction-boundary issue. Keep App Store AI assistance local, user-initiated, unsaved until accepted, and Diff / Discard reviewable. |
 | Fallback | Core Safe Editor quality probe | Use only when no concrete Reader UX slice is open or the run is a recurring quality pass. Inspect one high-risk basic surface with a named risk hypothesis, then either fix the smallest reproduced issue or close as `verified no-op`. |
 
+## v1 Refactor Watchlist
+
+Do not schedule broad refactors before v1.0 just because a module is large.
+Refactor only when it reduces a direct release risk, fixes an observed
+user-facing problem, or lets a golden-path proof cover behavior that is
+otherwise too brittle to verify. Keep public behavior, Markdown source
+preservation, App Store lane boundaries, and ownership boundaries stable.
+
+| Area | v1 decision | Trigger |
+|---|---|---|
+| `EBookPane` reader / pagination state | Watch closely during v0.32 and v0.33. Extract measurement, navigation, or reader-location helpers only if bridge / export polish exposes drift or hard-to-test behavior. | Position bridge, Spread View, large-image pagination, or large-document smoke shows a reproducible reader problem. |
+| `epubExport` assembly | Allow a narrow split only during v0.33 if it improves fixture coverage for Japanese text, headings, local images, links, code blocks, or failure messages. | EPUB export proof fails or becomes unclear because metadata/package assembly and HTML cleanup are too coupled to test. |
+| `useAppShellController` orchestration | Keep intact for v1 unless one named app-shell flow breaks. Prefer focused leaf extraction or regression tests over splitting the top-level hook for size alone. | A concrete New/Open/Save/Recovery/reader-mode transition bug needs isolation. |
+| Hazakura Local Assist companion | Observation only. Split request/progress/review state only if built-app smoke exposes responsiveness, availability, or transaction-boundary instability. | Local Assist availability, generation, Diff / Discard, or unsaved-transaction behavior regresses. |
+| Large Rust / UI test files | Defer organization cleanup to v1.x unless it directly unblocks a failing v1 proof. | A golden-path check is failing or too slow/fragile because the test surface is hard to isolate. |
+
 v0.30 paged flow first slice is implemented at code-regression level as
 of 2026-06-23: e-book Mode stays on the simulated book page surface, has
 no Preview-like Flow/Page toggle, and turns vertical wheel / trackpad
