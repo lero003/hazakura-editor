@@ -344,12 +344,32 @@ describe("applyEbookPageBreakMarkers", () => {
     expect(marked).toContain("Third page");
   });
 
-  it("treats a document-ending standalone marker as blank-line-flanked", () => {
+  it("does not turn a document-ending standalone marker into a blank trailing page", () => {
     const withoutTrailingNewline = applyEbookPageBreakMarkers("Para\n\n---");
     const withTrailingNewline = applyEbookPageBreakMarkers("Para\n\n---\n");
 
-    expect(withoutTrailingNewline.match(/class="page-break"/g)).toHaveLength(1);
-    expect(withTrailingNewline.match(/class="page-break"/g)).toHaveLength(1);
+    expect(withoutTrailingNewline).not.toContain('class="page-break"');
+    expect(withTrailingNewline).not.toContain('class="page-break"');
+  });
+
+  it("does not double a heading chapter boundary with a trailing marker", () => {
+    const source = [
+      "# Title",
+      "",
+      "Title notes.",
+      "",
+      "---",
+      "",
+      "# Chapter",
+      "",
+      "Body.",
+    ].join("\n");
+    const chapters = splitMarkdownIntoChapters(source);
+
+    expect(chapters).toHaveLength(2);
+    expect(applyEbookPageBreakMarkers(chapters[0].source)).not.toContain(
+      'class="page-break"',
+    );
   });
 
   it("does not convert frontmatter, fenced code, or non-blank-flanked rules", () => {

@@ -93,12 +93,15 @@ Last reviewed: 2026-06-23 (v0.31 TestFlight candidate)
   top page padding so spreads do not feel overly top-heavy. The same
   post-build source layer also moves by two logical pages when the
   visible reader viewport can show a spread, while keeping one-page
-  movement for narrow / single-page layouts. These source-level margin
-  and spread-navigation tweaks need a later package rebuild before they
-  are present in TestFlight. Focused `EBookPane` /
-  preview CSS tests, full `npm run test`, and `npm run build:vite`
-  passed; Vite still reports the usual large chunk warning. Reader
-  font-size/display options remain deferred.
+  movement for narrow / single-page layouts. It also avoids converting a
+  standalone `---` / `===` marker at the end of a heading-split chapter
+  into a page break, preventing a redundant blank simulated page when the
+  next heading already starts a new reader chapter. These source-level
+  margin, spread-navigation, and redundant page-break tweaks need a later
+  package rebuild before they are present in TestFlight. Focused e-book
+  chapter / `EBookPane` / preview CSS tests, full `npm run test`, and
+  `npm run build:vite` passed; Vite still reports the usual large chunk
+  warning. Reader font-size/display options remain deferred.
   After v1.0, do not rush straight into v2.0; use v1.x to deepen the
   single-document product first: EPUB export, Diff / Review ergonomics,
   provenance, movement between writing / reading layers, distribution

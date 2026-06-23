@@ -206,7 +206,10 @@ function isPageBreakMarkerLine(
 
   const previous = lines[index - 1]?.text.trim() ?? null;
   const next = lines[index + 1]?.text.trim() ?? "";
-  return previous === "" && next === "";
+  const hasFollowingContent = lines
+    .slice(index + 1)
+    .some((line) => line.text.trim() !== "");
+  return previous === "" && next === "" && hasFollowingContent;
 }
 
 function markdownLines(source: string): Array<{
