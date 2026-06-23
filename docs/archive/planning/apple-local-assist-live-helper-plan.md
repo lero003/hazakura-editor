@@ -252,7 +252,7 @@ Rust 側 supervisor は案 B (long-lived helper) で実装済み。Swift 側の 
 - `docs/apple-local-assist-distribution-plan.md` — "Official Information Confirmed" セクション
 - `docs/apple-local-assist-v0.12-design-review.md` — "残った不確実性" / 設計選択
 - `docs/apple-local-assist-rust-supervisor-plan.md` — 実装済み Rust supervisor の詳細 (slice 8-18)
-- `docs/apple-local-assist-helper-path-design.md` — bundled helper path 設計 (slice 16)
+- `docs/archive/planning/apple-local-assist-helper-path-design.md` — bundled helper path 設計 (slice 16)
 - `src-helpers/apple-assist/Sources/HazakuraAppleAssist/*.swift` — 現状の fixture / live コード
 - `src-tauri/src/commands/apple_assist.rs` — Tauri command surface (slice 1-6 stub)
 - `src-tauri/src/commands/apple_assist_supervisor.rs` — 実装済み supervisor (slice 8-18)

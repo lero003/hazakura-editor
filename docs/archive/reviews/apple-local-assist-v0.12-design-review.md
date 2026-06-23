@@ -5,7 +5,7 @@ Scope: v0.12 Hazakura Local Assist スライス 1〜6 (型・境界 / probe / Re
 Authority: Medium
 Last reviewed: 2026-06-05 (post-slice-6 implementation, post-P1/P2 boundary fixes, post-slice-7 official info confirmation)
 
-Current-state note (2026-06-06): this is now a historical review record. The live helper gate has since been flipped on `main` via `bundle.externalBin`, Swift `LanguageModelSession`, and Rust supervisor command routing. Use `docs/current-status.md`, `docs/apple-local-assist-writing-companion-plan.md`, and `docs/apple-local-assist-helper-path-design.md` for current implementation state.
+Current-state note (2026-06-06): this is now a historical review record. The live helper gate has since been flipped on `main` via `bundle.externalBin`, Swift `LanguageModelSession`, and Rust supervisor command routing. Use `docs/current-status.md` and `docs/apple-local-assist-writing-companion-plan.md` for current implementation state; the old helper-path design memo now lives at `docs/archive/planning/apple-local-assist-helper-path-design.md`.
 
 ## 目的
 

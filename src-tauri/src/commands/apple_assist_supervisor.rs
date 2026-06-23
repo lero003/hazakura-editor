@@ -184,8 +184,9 @@ impl AppleAssistHelperStore {
         // function returns `Err("...not configured...")` to keep
         // gate-default-hidden; the gate-flip approval slice will
         // wire `current_exe().parent() / bundled_helper_filename()`
-        // there. See `docs/apple-local-assist-helper-path-design.md`
-        // for the resolved-path design.
+        // there. See
+        // `docs/archive/planning/apple-local-assist-helper-path-design.md`
+        // for the historical resolved-path design.
         resolve_bundled_helper_path()
     }
 
