@@ -3,12 +3,12 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-23 (v1 roadmap alignment)
+Last reviewed: 2026-06-23 (v0.31 TestFlight candidate)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: `0.29.1` across npm, Tauri, Cargo, and lockfile metadata.
+- Current package/app version: `0.31.0` across npm, Tauri, Cargo, and lockfile metadata.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
 - Published Mac App Store version: `0.29.1`, reported approved and
@@ -16,6 +16,16 @@ Last reviewed: 2026-06-23 (v1 roadmap alignment)
   preview on-device writing companion.
 - Latest GitHub source / local-app tag: `v0.29.1`, prepared on
   2026-06-22.
+- Latest local App Store / TestFlight package candidate: `0.31.0` build
+  `34`, generated on 2026-06-23 for v0.31 Reading Focus / Spread View
+  built-app testing:
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.31.0-build34-mas.pkg`.
+  Local package generation, App Store surface smoke, signed app
+  distribution probe, `pkgutil --check-signature`, package SHA-256,
+  `productbuild --synthesize`, and sandbox preview checks passed. Raw
+  App Store Connect upload, processing, TestFlight install / launch, and
+  App Review logs are not tracked in this repository unless separately
+  recorded.
 - Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
 - `v0.18.0` is a Developer / GitHub lane preview, ad-hoc signed, not Developer ID signed, not notarized, and expected to show macOS security warnings.
 - The helper-free App Store lane delivered `0.18.0` build `4` to
@@ -270,6 +280,7 @@ Last reviewed: 2026-06-23 (v1 roadmap alignment)
 
 Use release notes for detailed historical evidence:
 
+- `docs/releases/0.31.0-app-store-submission-candidate.release.md`
 - `docs/releases/0.29.1-app-store-submission-candidate.release.md`
 - `docs/releases/0.27.0-source-tag.release.md`
 - `docs/releases/0.28.0-app-store-submission-candidate.release.md`
@@ -343,22 +354,21 @@ baseline, and smoke evidence are archived under
    single-document product, especially EPUB export, Diff / Review
    ergonomics, provenance, movement between writing / reading layers,
    and observation-driven Local Assist polish.
-3. For the current `0.29.1` App Store lane, build `33` is the latest local
-   package evidence and the user-reported released build after Local
-   Assist streaming responsiveness, review polish, and preview flicker
-   reduction. Build `29` was reported as successfully delivered on
-   2026-06-22 after the helper sandbox entitlement fix; build `28` was
-   rejected by Transporter and should not be reused. User-side App Store
-   Connect / review evidence is outside this repository unless new
-   public-safe evidence is explicitly recorded.
-   For a future App Store submission, start with `docs/app-store-build.md`;
+3. For the current `0.31.0` App Store / TestFlight candidate, build `34`
+   is the latest local package evidence. It includes the v0.31 Reading
+   Focus / Spread View work and the image-page hardening for the
+   built-app smoke loop. Upload, Apple processing, TestFlight install /
+   launch, and App Review handling remain explicit distribution-lane
+   work outside this repository unless public-safe evidence is recorded.
+   The published `0.29.1` App Store lane remains the latest reported
+   released version; its build `33` package is historical release
+   evidence and should not be confused with the new `0.31.0` candidate.
+   For future App Store submissions, start with `docs/app-store-build.md`;
    use `npm run release:candidate -- --with-app-store-pkg` for local
    signed package checkpoints, keep account-specific notes under ignored
    `docs/internal/` files, and treat certificate, provisioning, signing,
    notarization, upload, TestFlight smoke, and review handling as
-   explicit distribution-lane work. Do not update tracked release docs
-   for every generated package; record public-safe evidence only when a
-   package is uploaded, submitted, or selected as release evidence.
+   explicit distribution-lane work.
 4. For Hazakura Local Assist, use `docs/assist-surface-strategy.md`,
    `docs/apple-local-assist-distribution-plan.md`, and
    `docs/apple-local-assist-writing-companion-plan.md`; keep direct

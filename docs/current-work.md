@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v0.30-v1.0 Reader UX Stabilization queue and post-v0.29.1 evidence
 Authority: High
-Last reviewed: 2026-06-23 (v0.31 reading focus polish)
+Last reviewed: 2026-06-23 (v0.31 TestFlight candidate)
 
 ## Purpose
 
@@ -51,9 +51,8 @@ transaction-boundary issue appears.
 ## Active UX Queue
 
 Pick one item at a time. The immediate next product slice is v0.31
-Reading Focus visual-smoke / coarse-navigation follow-up unless a
-concrete post-release Local Assist safety or App Store lane issue
-appears.
+Reading Focus TestFlight / built-app visual smoke unless a concrete
+post-release Local Assist safety or App Store lane issue appears.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
@@ -124,10 +123,46 @@ its measured page count is forced to one page so the next-page action
 moves to the first heading instead of an artificial second image column.
 Image-only paragraphs are also treated as full simulated-page blocks so
 an image behaves as one page unit in the spread rather than splitting
-across columns. Display options such as reader font size remain deferred.
-Verification passed with focused `EBookPane` / preview CSS tests, full
-`npm run test`, and `npm run build:vite` (with the usual Vite chunk-size
-warning).
+across columns. A follow-up hardening pass now marks rendered image-only
+paragraphs with an explicit `ebook-image-page` class instead of relying
+on selector inference, adds column breaks before and after those image
+pages, and remeasures already-loaded images immediately after listeners
+are attached so page counts update after workspace image inlining. Because
+WKWebView can still fragment percentage-height image boxes inside CSS
+columns, the page viewport's measured pixel height is now passed into the
+paginated flow as `--ebook-page-viewport-height`; image pages use that
+height plus WebKit column-break guards so chapter text should no longer
+flow over a carried-over image fragment. Image-page images also drop the
+shared Preview border / shadow and align to the page top, avoiding a
+small decorative overflow or vertical-centering gap from creating a
+sliver on the next simulated page. The image-only Markdown paragraph is
+now promoted to a dedicated `div.ebook-image-page`, and image pages no
+longer force `break-after`; their measured full-page height advances the
+following prose naturally to the next column without inserting an extra
+nearly-empty simulated page.
+After the first `0.31.0` build `34` real-app check, the source view also
+reserves a small bottom safe area between the paginated content and the
+footer rule, while reducing the outer top page padding so spreads do not
+feel overly top-heavy. The same post-build source layer now advances by
+two logical pages when the visible reader viewport can actually show a
+spread, while retaining one-page movement for narrow / single-page
+layouts. These source-level margin and spread-navigation tweaks require a
+later package rebuild before they appear in TestFlight.
+Display options such as reader font size remain deferred. Verification
+passed with focused `EBookPane` / preview CSS tests, full `npm run test`,
+and `npm run build:vite` (with the usual Vite chunk-size warning).
+
+v0.31 TestFlight candidate package evidence is generated as of
+2026-06-23: package/app metadata is aligned to `0.31.0`, the App Store
+build counter advanced from `33` to `34`, and the signed package is
+`src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.31.0-build34-mas.pkg`.
+Local proof passed with full `npm run test`,
+`npm run release:candidate -- --with-app-store-pkg --no-prune-pkgs`,
+`pkgutil --check-signature`, app metadata checks,
+`productbuild --synthesize`, and `SKIP_BUILD=1 npm run smoke:macos-sandbox-preview`.
+Upload, Apple processing, TestFlight install / launch, and real
+Reading Focus visual smoke remain outside the repository until the user
+records those results.
 
 Post-v1 guardrail: after v1.0, do not rush straight into v2.0. Use v1.x
 to deepen the single-document product first: EPUB export, Diff / Review

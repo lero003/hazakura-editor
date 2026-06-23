@@ -12,6 +12,7 @@
 // outside the paginated flow so the columns never own navigation UI.
 
 import {
+  type CSSProperties,
   type KeyboardEvent,
   type MouseEvent,
   type WheelEvent,
@@ -63,6 +64,10 @@ type RenderedChapter = {
   isStandaloneImage: boolean;
 };
 
+type EBookPageFlowStyle = CSSProperties & {
+  "--ebook-page-viewport-height"?: string;
+};
+
 type EBookReaderCopy = {
   body: string;
   chapterProgress: string;
@@ -79,6 +84,8 @@ type EBookReaderCopy = {
 
 const WHEEL_PAGE_THRESHOLD = 40;
 const WHEEL_PAGE_COOLDOWN_MS = 220;
+const EBOOK_SPREAD_CONTAINER_MIN_WIDTH = 920;
+const EBOOK_SPREAD_WIDTH_TOLERANCE = 1;
 
 export default function EBookPane({
   documentPath,
@@ -102,6 +109,7 @@ export default function EBookPane({
   );
   const [measuredPageCount, setMeasuredPageCount] = useState(1);
   const [pageOffset, setPageOffset] = useState(0);
+  const [pageViewportHeight, setPageViewportHeight] = useState(0);
   const [pageTransitionSuppressed, setPageTransitionSuppressed] =
     useState(false);
   const pendingPageTargetRef = useRef<"first" | "last" | null>(null);
@@ -187,6 +195,7 @@ export default function EBookPane({
       activeChapterHtml,
       flow,
     );
+    setPageViewportHeight(measurePageViewportHeight(viewportRef.current));
     setMeasuredPageCount(nextPageCount);
     setActivePageIndex((current) => {
       const pendingTarget = pendingPageTargetRef.current;
@@ -207,11 +216,15 @@ export default function EBookPane({
       return;
     }
 
-    const observer = new ResizeObserver(() => {
+    const updateReaderMeasurements = () => {
+      setPageViewportHeight(measurePageViewportHeight(viewport));
       setMeasuredPageCount(
         measureRenderedChapterPageCount(activeChapterHtml, flowRef.current),
       );
-    });
+    };
+    updateReaderMeasurements();
+
+    const observer = new ResizeObserver(updateReaderMeasurements);
     observer.observe(viewport);
     return () => {
       observer.disconnect();
@@ -253,6 +266,9 @@ export default function EBookPane({
     for (const image of images) {
       image.addEventListener("load", handleImageSettled);
       image.addEventListener("error", handleImageSettled);
+      if (image.complete) {
+        handleImageSettled();
+      }
     }
     return () => {
       for (const image of images) {
@@ -287,9 +303,10 @@ export default function EBookPane({
   );
 
   const goToPreviousPage = () => {
-    if (activePageIndex > 0) {
+    if (activePageIndexSafe > 0) {
+      const pageStep = getVisiblePageStep(viewportRef.current, flowRef.current);
       setPageTransitionSuppressed(false);
-      setActivePageIndex((current) => Math.max(current - 1, 0));
+      setActivePageIndex((current) => Math.max(current - pageStep, 0));
       return;
     }
 
@@ -301,10 +318,11 @@ export default function EBookPane({
   };
 
   const goToNextPage = () => {
-    if (activePageIndex < measuredPageCount - 1) {
+    if (activePageIndexSafe < measuredPageCount - 1) {
+      const pageStep = getVisiblePageStep(viewportRef.current, flowRef.current);
       setPageTransitionSuppressed(false);
       setActivePageIndex((current) =>
-        clampPageIndex(current + 1, measuredPageCount),
+        clampPageIndex(current + pageStep, measuredPageCount),
       );
       return;
     }
@@ -411,6 +429,12 @@ export default function EBookPane({
   const focusActionLabel = readingFocusActive
     ? copy.exitReadingFocus
     : copy.enterReadingFocus;
+  const pageFlowStyle: EBookPageFlowStyle = {
+    transform: `translateX(-${pageOffset}px)`,
+  };
+  if (pageViewportHeight > 0) {
+    pageFlowStyle["--ebook-page-viewport-height"] = `${pageViewportHeight}px`;
+  }
 
   return (
     <article
@@ -485,7 +509,7 @@ export default function EBookPane({
                 }
                 dangerouslySetInnerHTML={{ __html: activeChapterHtml.html }}
                 ref={flowRef}
-                style={{ transform: `translateX(-${pageOffset}px)` }}
+                style={pageFlowStyle}
               />
             </div>
             <footer
@@ -517,6 +541,49 @@ function measureRenderedChapterPageCount(
   return measureEBookPageCount(flow);
 }
 
+function measurePageViewportHeight(viewport: HTMLElement | null): number {
+  if (!viewport) {
+    return 0;
+  }
+  const style = window.getComputedStyle(viewport);
+  const verticalPadding =
+    parseCssPixelValue(style.paddingTop) + parseCssPixelValue(style.paddingBottom);
+  return Math.max(0, Math.round(viewport.clientHeight - verticalPadding));
+}
+
+function getVisiblePageStep(
+  viewport: HTMLElement | null,
+  flow: HTMLElement | null,
+): number {
+  if (!viewport || !flow) {
+    return 1;
+  }
+
+  const flowStyle = window.getComputedStyle(flow);
+  const pageWidth = parseCssPixelValue(flowStyle.columnWidth);
+  const pageGap = parseCssPixelValue(flowStyle.columnGap);
+  if (pageWidth > 0) {
+    const spreadWidth = pageWidth * 2 + pageGap;
+    return viewport.clientWidth + EBOOK_SPREAD_WIDTH_TOLERANCE >= spreadWidth
+      ? 2
+      : 1;
+  }
+
+  const chapter = viewport.closest(".ebook-chapter");
+  if (
+    chapter instanceof HTMLElement &&
+    chapter.clientWidth >= EBOOK_SPREAD_CONTAINER_MIN_WIDTH
+  ) {
+    return 2;
+  }
+  return 1;
+}
+
+function parseCssPixelValue(value: string): number {
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 function renderEbookChapter(
   chapter: {
     headingLevel: number | null;
@@ -527,10 +594,12 @@ function renderEbookChapter(
   documentPath: string | null | undefined,
   workspaceRoot: string | null | undefined,
 ): RenderedChapter {
-  const html = renderMarkdown(applyEbookPageBreakMarkers(chapter.source), {
-    documentPath,
-    workspaceRoot,
-  });
+  const html = markEbookImagePages(
+    renderMarkdown(applyEbookPageBreakMarkers(chapter.source), {
+      documentPath,
+      workspaceRoot,
+    }),
+  );
 
   return {
     index: chapter.index,
@@ -544,6 +613,42 @@ function renderEbookChapter(
 
 function isStandaloneMarkdownImage(source: string): boolean {
   return /^!\[[^\]\n]*\]\([^\n]+\)$/.test(source.trim());
+}
+
+function markEbookImagePages(html: string): string {
+  const template = document.createElement("template");
+  template.innerHTML = html;
+
+  for (const paragraph of Array.from(template.content.querySelectorAll("p"))) {
+    const image = imageOnlyParagraphImage(paragraph);
+    if (image) {
+      const page = document.createElement("div");
+      page.className = "ebook-image-page";
+      page.append(image);
+      paragraph.replaceWith(page);
+    }
+  }
+
+  return template.innerHTML;
+}
+
+function imageOnlyParagraphImage(
+  paragraph: HTMLParagraphElement,
+): HTMLImageElement | null {
+  const visibleNodes = Array.from(paragraph.childNodes).filter((node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      return (node.textContent ?? "").trim() !== "";
+    }
+    return true;
+  });
+
+  if (
+    visibleNodes.length === 1 &&
+    visibleNodes[0] instanceof HTMLImageElement
+  ) {
+    return visibleNodes[0];
+  }
+  return null;
 }
 
 function clampChapterIndex(index: number, totalChapters: number): number {

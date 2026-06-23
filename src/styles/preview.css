@@ -634,6 +634,7 @@
 }
 
 .ebook-chapter {
+  --ebook-page-bottom-safe-area: clamp(18px, 2.4vw, 26px);
   --ebook-page-footer-height: 34px;
   --ebook-page-gap: clamp(28px, 5vw, 44px);
   --ebook-page-height-max: 700px;
@@ -648,7 +649,7 @@
   max-width: 100%;
   min-height: 0;
   overflow: hidden;
-  padding: clamp(30px, 4vw, 54px) clamp(22px, 4vw, 48px) clamp(38px, 5vw, 60px);
+  padding: clamp(22px, 3vw, 42px) clamp(22px, 4vw, 48px) clamp(38px, 5vw, 60px);
   width: 100%;
 }
 
@@ -668,6 +669,7 @@
   max-width: var(--ebook-page-width);
   min-height: 0;
   overflow: hidden;
+  padding-bottom: var(--ebook-page-bottom-safe-area);
   width: 100%;
 }
 
@@ -791,18 +793,38 @@
   width: auto;
 }
 
-.ebook-chapter .ebook-page-flow p:has(> img:only-child) {
+.ebook-chapter .ebook-image-page {
+  -webkit-column-break-before: always;
+  -webkit-column-break-inside: avoid;
+  break-before: column;
   break-inside: avoid;
+  block-size: var(--ebook-page-viewport-height, 100%);
+  box-sizing: border-box;
+  contain: layout paint;
   display: grid;
-  height: 100%;
+  height: var(--ebook-page-viewport-height, 100%);
+  inline-size: 100%;
   line-height: 0;
   margin: 0;
-  place-items: center;
+  max-height: var(--ebook-page-viewport-height, 100%);
+  min-inline-size: 0;
+  overflow: hidden;
+  align-items: start;
+  justify-items: center;
 }
 
-.ebook-chapter .ebook-page-flow p:has(> img:only-child) > img {
+.ebook-chapter .ebook-page-flow > .ebook-image-page:first-child {
+  -webkit-column-break-before: auto;
+  break-before: auto;
+}
+
+.ebook-chapter .ebook-image-page > img {
+  border: 0;
+  box-shadow: none;
+  box-sizing: border-box;
   margin: 0 auto;
-  max-height: 100%;
+  max-height: min(100%, var(--ebook-page-viewport-height, var(--ebook-page-height-max)));
+  max-width: 100%;
 }
 
 .ebook-chapter pre {

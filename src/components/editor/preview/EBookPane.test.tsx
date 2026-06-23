@@ -154,11 +154,12 @@ describe("EBookPane chapter reader", () => {
 
     const article = screen.getByRole("article", { name: "本のように読む" });
     const chapter = article.querySelector(".ebook-chapter");
-    const image = article.querySelector(".ebook-page-flow p > img");
+    const image = article.querySelector(".ebook-page-flow .ebook-image-page > img");
 
     expect(chapter?.classList.contains("ebook-chapter-cover-image")).toBe(true);
     expect(chapter?.classList.contains("ebook-chapter-frontmatter")).toBe(true);
     expect(image).toBeTruthy();
+    expect(image?.closest("p")).toBeNull();
     expect(screen.getByText("ページ 1 / 1")).toBeTruthy();
     expect(screen.queryByRole("heading", { name: "重さのないノート" })).toBeNull();
 
@@ -329,6 +330,97 @@ describe("EBookPane chapter reader", () => {
     });
     expect(screen.getByText("章 2 / 2")).toBeTruthy();
     expect(screen.getByText("ページ 1 / 3")).toBeTruthy();
+  });
+
+  it("moves by the visible spread width when the viewport can show two pages", async () => {
+    vi.mocked(measureEBookPageCount).mockReturnValue(5);
+    const clientWidthGetter = vi
+      .spyOn(HTMLElement.prototype, "clientWidth", "get")
+      .mockImplementation(function getClientWidth(this: HTMLElement) {
+        return this.classList.contains("ebook-page-viewport") ? 884 : 0;
+      });
+    const getComputedStyleSpy = vi
+      .spyOn(window, "getComputedStyle")
+      .mockImplementation((element) => {
+        const isFlow =
+          element instanceof HTMLElement &&
+          element.classList.contains("ebook-page-flow");
+        return {
+          columnGap: isFlow ? "44px" : "normal",
+          columnWidth: isFlow ? "420px" : "auto",
+          display: "block",
+          getPropertyValue: () => "0px",
+          paddingBottom: "0px",
+          paddingTop: "0px",
+          visibility: "visible",
+        } as unknown as CSSStyleDeclaration;
+      });
+
+    try {
+      render(
+        <EBookPane
+          menuLanguage="ja"
+          source={"# Chapter One\n\nbody one"}
+        />,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("ページ 1 / 5")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "次のページ" }));
+      expect(screen.getByText("ページ 3 / 5")).toBeTruthy();
+
+      fireEvent.click(screen.getByRole("button", { name: "前のページ" }));
+      expect(screen.getByText("ページ 1 / 5")).toBeTruthy();
+    } finally {
+      getComputedStyleSpy.mockRestore();
+      clientWidthGetter.mockRestore();
+    }
+  });
+
+  it("keeps one-page navigation when the viewport cannot show a spread", async () => {
+    vi.mocked(measureEBookPageCount).mockReturnValue(5);
+    const clientWidthGetter = vi
+      .spyOn(HTMLElement.prototype, "clientWidth", "get")
+      .mockImplementation(function getClientWidth(this: HTMLElement) {
+        return this.classList.contains("ebook-page-viewport") ? 420 : 0;
+      });
+    const getComputedStyleSpy = vi
+      .spyOn(window, "getComputedStyle")
+      .mockImplementation((element) => {
+        const isFlow =
+          element instanceof HTMLElement &&
+          element.classList.contains("ebook-page-flow");
+        return {
+          columnGap: isFlow ? "44px" : "normal",
+          columnWidth: isFlow ? "420px" : "auto",
+          display: "block",
+          getPropertyValue: () => "0px",
+          paddingBottom: "0px",
+          paddingTop: "0px",
+          visibility: "visible",
+        } as unknown as CSSStyleDeclaration;
+      });
+
+    try {
+      render(
+        <EBookPane
+          menuLanguage="ja"
+          source={"# Chapter One\n\nbody one"}
+        />,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("ページ 1 / 5")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "次のページ" }));
+      expect(screen.getByText("ページ 2 / 5")).toBeTruthy();
+    } finally {
+      getComputedStyleSpy.mockRestore();
+      clientWidthGetter.mockRestore();
+    }
   });
 
   it("suppresses page-flow transition while resetting to the next chapter", async () => {
@@ -505,7 +597,7 @@ describe("EBookPane chapter reader", () => {
   });
 
   it("clamps the active chapter and page when source edits reduce available content", async () => {
-    vi.mocked(measureEBookPageCount).mockReturnValueOnce(3).mockReturnValue(1);
+    vi.mocked(measureEBookPageCount).mockReturnValue(3);
     const { rerender } = render(
       <EBookPane
         menuLanguage="en"
@@ -522,6 +614,7 @@ describe("EBookPane chapter reader", () => {
     fireEvent.click(screen.getByRole("button", { name: "Next page" }));
     expect(screen.getByText("Page 3 / 3")).toBeTruthy();
 
+    vi.mocked(measureEBookPageCount).mockReturnValue(1);
     rerender(
       <EBookPane
         menuLanguage="en"
@@ -641,7 +734,90 @@ describe("EBookPane pagination measurement", () => {
     await waitFor(() => {
       expect(screen.getByRole("img")).toBeTruthy();
     });
-    expect(measureEBookPageCount).toHaveBeenCalledTimes(2);
+    expect(
+      vi.mocked(measureEBookPageCount).mock.calls.length,
+    ).toBeGreaterThanOrEqual(2);
+  });
+
+  it("promotes image-only paragraphs to atomic page units and remeasures already loaded images", async () => {
+    const completeGetter = vi
+      .spyOn(HTMLImageElement.prototype, "complete", "get")
+      .mockReturnValue(true);
+    vi.mocked(openWorkspaceImage).mockResolvedValue({
+      dataUrl: "data:image/jpeg;base64,COVER",
+    } as Awaited<ReturnType<typeof openWorkspaceImage>>);
+
+    try {
+      render(
+        <EBookPane
+          documentPath="/workspace/book.md"
+          menuLanguage="ja"
+          source={"# はじめに\n\n![cover](./assets/cover.jpg)\n\n本文です。"}
+          workspaceRoot="/workspace"
+        />,
+      );
+
+      await waitFor(() => {
+        const image = screen.getByRole("img", { name: "cover" });
+        const imagePage = image.closest(".ebook-image-page");
+        expect(imagePage).toBeTruthy();
+        expect(imagePage?.tagName).toBe("DIV");
+        expect(image.closest("p")).toBeNull();
+        expect(image.getAttribute("src")).toBe("data:image/jpeg;base64,COVER");
+      });
+      await waitFor(() => {
+        expect(
+          vi.mocked(measureEBookPageCount).mock.calls.length,
+        ).toBeGreaterThanOrEqual(3);
+      });
+    } finally {
+      completeGetter.mockRestore();
+    }
+  });
+
+  it("passes the measured page content height to image page layout", () => {
+    const clientHeightGetter = vi
+      .spyOn(HTMLElement.prototype, "clientHeight", "get")
+      .mockImplementation(function getClientHeight(this: HTMLElement) {
+        return this.classList.contains("ebook-page-viewport") ? 700 : 0;
+      });
+    const getComputedStyleSpy = vi
+      .spyOn(window, "getComputedStyle")
+      .mockImplementation((element) => {
+        const paddingBottom =
+          element instanceof HTMLElement &&
+          element.classList.contains("ebook-page-viewport")
+            ? "24px"
+            : "0px";
+        return {
+          display: "block",
+          getPropertyValue: (property: string) =>
+            property === "padding-bottom" ? paddingBottom : "0px",
+          paddingBottom,
+          paddingTop: "0px",
+          visibility: "visible",
+        } as CSSStyleDeclaration;
+      });
+
+    try {
+      render(
+        <EBookPane
+          menuLanguage="ja"
+          source={"# はじめに\n\n![cover](./assets/cover.jpg)\n\n本文です。"}
+        />,
+      );
+
+      const flow = screen
+        .getByRole("article", { name: "本のように読む" })
+        .querySelector<HTMLElement>(".ebook-page-flow");
+
+      expect(flow?.style.getPropertyValue("--ebook-page-viewport-height")).toBe(
+        "676px",
+      );
+    } finally {
+      getComputedStyleSpy.mockRestore();
+      clientHeightGetter.mockRestore();
+    }
   });
 });
 

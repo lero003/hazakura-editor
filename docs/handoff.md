@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-23 (v0.31 reading focus polish)
+Last reviewed: 2026-06-23 (v0.31 TestFlight candidate)
 
 ## Current State
 
@@ -15,6 +15,17 @@ Last reviewed: 2026-06-23 (v0.31 reading focus polish)
   Markdown preview flicker fix. Raw App Store Connect, TestFlight, and
   App Review logs remain outside this repository unless explicitly
   recorded later.
+- A new `0.31.0` App Store / TestFlight package candidate was generated
+  on 2026-06-23 after the v0.31 Reading Focus / Spread View image-page
+  hardening. It advanced the App Store build counter from `33` to `34`
+  and produced
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.31.0-build34-mas.pkg`
+  with SHA-256
+  `acc1c3f59ce7801d86689df888451d8c562e9c8b612b7368b7d0d5188dbd2353`.
+  Local package generation, App Store surface smoke, signed app probe,
+  package signature, metadata, supported-OS, and sandbox preview checks
+  passed. App Store Connect upload, Apple processing, TestFlight install
+  / launch, and real Reading Focus visual smoke remain user-side proof.
 - The next product slice should start from `docs/current-work.md` and
   treat `0.29.1` as shipped. The active lane is `v0.30-v1.0 Reader UX
   Stabilization`. The first code-level v0.30 e-book Mode paged flow
@@ -60,10 +71,34 @@ Last reviewed: 2026-06-23 (v0.31 reading focus polish)
   treated as a standalone cover-image preamble page whose measured page
   count is forced to one page, and image-only paragraphs now occupy a
   full simulated page so the image behaves as a page unit in spread view
-  instead of splitting across columns. Focused `EBookPane` / preview CSS
-  tests, full `npm run test`, and `npm run build:vite` passed; Vite still
-  reports the usual large chunk warning. Reader font-size/display
-  options remain deferred.
+  instead of splitting across columns. A later hardening pass marks
+  rendered image-only paragraphs with `ebook-image-page`, uses explicit
+  column breaks before and after those image pages, and immediately
+  remeasures already-loaded images after workspace image inlining so
+  page counts can catch the real image dimensions. Since WKWebView can
+  still fragment percentage-height image boxes inside CSS columns, the
+  page viewport's measured pixel height is passed into the paginated
+  flow as `--ebook-page-viewport-height`, and image pages use that height
+  plus WebKit column-break guards to keep following text off carried-over
+  image fragments. Image-page images also remove the shared Preview
+  border / shadow and align to the page top so decorative overflow or
+  vertical-centering gaps do not create a sliver on the next simulated
+  page. Image-only Markdown paragraphs are promoted to dedicated
+  `div.ebook-image-page` blocks, and image pages no longer force
+  `break-after`; their measured full-page height advances following
+  prose naturally to the next column without inserting an extra
+  nearly-empty simulated page. After the first `0.31.0` build `34`
+  real-app check, the source view also reserves a small bottom safe area
+  between paginated content and the footer rule, while reducing the outer
+  top page padding so spreads do not feel overly top-heavy. The same
+  post-build source layer also moves by two logical pages when the
+  visible reader viewport can show a spread, while keeping one-page
+  movement for narrow / single-page layouts. These source-level margin
+  and spread-navigation tweaks need a later package rebuild before they
+  are present in TestFlight. Focused `EBookPane` /
+  preview CSS tests, full `npm run test`, and `npm run build:vite`
+  passed; Vite still reports the usual large chunk warning. Reader
+  font-size/display options remain deferred.
   After v1.0, do not rush straight into v2.0; use v1.x to deepen the
   single-document product first: EPUB export, Diff / Review ergonomics,
   provenance, movement between writing / reading layers, distribution

@@ -122,6 +122,9 @@ describe("preview.css", () => {
     expect(viewportBody).toMatch(/overflow:\s*hidden/);
     expect(viewportBody).toMatch(/height:/);
     expect(viewportBody).toMatch(/max-width:/);
+    expect(viewportBody).toMatch(
+      /padding-bottom:\s*var\(--ebook-page-bottom-safe-area\)/,
+    );
   });
 
   it("pins the single-page e-book reading frame dimensions", () => {
@@ -137,6 +140,12 @@ describe("preview.css", () => {
       /--ebook-page-gap:\s*clamp\(28px,\s*5vw,\s*44px\)/,
     );
     expect(chapterBody).toMatch(/--ebook-page-footer-height:\s*34px/);
+    expect(chapterBody).toMatch(
+      /--ebook-page-bottom-safe-area:\s*clamp\(18px,\s*2\.4vw,\s*26px\)/,
+    );
+    expect(chapterBody).toMatch(
+      /padding:\s*clamp\(22px,\s*3vw,\s*42px\) clamp\(22px,\s*4vw,\s*48px\) clamp\(38px,\s*5vw,\s*60px\)/,
+    );
   });
 
   it("gates the e-book spread frame on available reader width", () => {
@@ -181,12 +190,8 @@ describe("preview.css", () => {
   it("caps large e-book media inside the simulated page", () => {
     const imgBody = ruleBody(".ebook-chapter img");
     const preBody = ruleBody(".ebook-chapter pre");
-    const imageParagraphBody = ruleBody(
-      ".ebook-chapter .ebook-page-flow p:has(> img:only-child)",
-    );
-    const imageParagraphImageBody = ruleBody(
-      ".ebook-chapter .ebook-page-flow p:has(> img:only-child) > img",
-    );
+    const imagePageBody = ruleBody(".ebook-chapter .ebook-image-page");
+    const imagePageImageBody = ruleBody(".ebook-chapter .ebook-image-page > img");
 
     expect(imgBody).toMatch(/display:\s*block/);
     expect(imgBody).toMatch(/height:\s*auto/);
@@ -196,16 +201,48 @@ describe("preview.css", () => {
       /max-height:\s*min\(78%,\s*calc\(var\(--ebook-page-height-max\) - 96px\)\)/,
     );
     expect(imgBody).toMatch(/object-fit:\s*contain/);
-    expect(imageParagraphBody).toMatch(/break-inside:\s*avoid/);
-    expect(imageParagraphBody).toMatch(/display:\s*grid/);
-    expect(imageParagraphBody).toMatch(/height:\s*100%/);
-    expect(imageParagraphBody).toMatch(/line-height:\s*0/);
-    expect(imageParagraphBody).toMatch(/margin:\s*0/);
-    expect(imageParagraphBody).toMatch(/place-items:\s*center/);
-    expect(imageParagraphImageBody).toMatch(/margin:\s*0 auto/);
-    expect(imageParagraphImageBody).toMatch(/max-height:\s*100%/);
+    expect(imagePageBody).toMatch(/break-before:\s*column/);
+    expect(imagePageBody).not.toMatch(/break-after:/);
+    expect(imagePageBody).toMatch(/break-inside:\s*avoid/);
+    expect(imagePageBody).toMatch(/-webkit-column-break-before:\s*always/);
+    expect(imagePageBody).not.toMatch(/-webkit-column-break-after:/);
+    expect(imagePageBody).toMatch(/-webkit-column-break-inside:\s*avoid/);
+    expect(imagePageBody).toMatch(/contain:\s*layout paint/);
+    expect(imagePageBody).toMatch(/display:\s*grid/);
+    expect(imagePageBody).toMatch(
+      /block-size:\s*var\(--ebook-page-viewport-height,\s*100%\)/,
+    );
+    expect(imagePageBody).toMatch(
+      /height:\s*var\(--ebook-page-viewport-height,\s*100%\)/,
+    );
+    expect(imagePageBody).toMatch(/inline-size:\s*100%/);
+    expect(imagePageBody).toMatch(/line-height:\s*0/);
+    expect(imagePageBody).toMatch(/margin:\s*0/);
+    expect(imagePageBody).toMatch(/min-inline-size:\s*0/);
+    expect(imagePageBody).toMatch(/max-height:\s*var\(--ebook-page-viewport-height,\s*100%\)/);
+    expect(imagePageBody).toMatch(/overflow:\s*hidden/);
+    expect(imagePageBody).toMatch(/align-items:\s*start/);
+    expect(imagePageBody).toMatch(/justify-items:\s*center/);
+    expect(imagePageBody).not.toMatch(/place-items:\s*center/);
+    expect(imagePageImageBody).toMatch(/border:\s*0/);
+    expect(imagePageImageBody).toMatch(/box-shadow:\s*none/);
+    expect(imagePageImageBody).toMatch(/box-sizing:\s*border-box/);
+    expect(imagePageImageBody).toMatch(/margin:\s*0 auto/);
+    expect(imagePageImageBody).toMatch(
+      /max-height:\s*min\(100%,\s*var\(--ebook-page-viewport-height,\s*var\(--ebook-page-height-max\)\)\)/,
+    );
+    expect(imagePageImageBody).toMatch(/max-width:\s*100%/);
     expect(preBody).toMatch(/max-height:\s*72%/);
     expect(preBody).toMatch(/overflow:\s*auto/);
+  });
+
+  it("does not force a leading image-only page to start after a blank column", () => {
+    const firstImagePageBody = ruleBody(
+      ".ebook-chapter .ebook-page-flow > .ebook-image-page:first-child",
+    );
+
+    expect(firstImagePageBody).toMatch(/break-before:\s*auto/);
+    expect(firstImagePageBody).toMatch(/-webkit-column-break-before:\s*auto/);
   });
 
   it("scopes e-book page-break marker styling to the paginated flow", () => {
