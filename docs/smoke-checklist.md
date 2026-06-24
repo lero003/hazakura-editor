@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-06-23 (v0.32 reader bridge smoke checklist)
+Last reviewed: 2026-06-25 (v0.33.0 build 39 package candidate)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -307,6 +307,83 @@ Run when Markdown preview, image assets, export, or authoring helpers change:
 6. Export HTML and confirm local workspace images are inlined and the saved file uses the same preview CSS as the live preview pane (`.markdown-preview` rules, no theme-specific overrides inlined).
 7. Use Print to PDF handoff and confirm the print-ready layout matches what Export HTML produces (serif body, page-break controls, no theme colors leaking into print).
 8. Insert a Markdown table and confirm the app does not imply row/column table editing beyond the implemented helper.
+
+## v0.33 EPUB Export Smoke
+
+Run this before treating the v0.33 EPUB export polish as ready for
+TestFlight or v1 release-candidate claims. This is manual app proof, not
+an in-app EPUB validator workflow.
+
+1. Open a Japanese Markdown document with ATX headings, body prose,
+   a workspace-local image, an external image URL, an external link,
+   a code block, a table, and a blank-line-flanked standalone `---`
+   page-break hint.
+2. Choose the EPUB export action and confirm the metadata dialog is
+   labelled `EPUB書き出し` / `EPUB Export`, with editable title, author,
+   and language fields.
+3. Save the `.epub` and confirm a successful export status appears. If
+   the document includes an unavailable image, confirm the status says
+   the EPUB was saved with image warnings rather than silently claiming a
+   clean export.
+4. Inspect the generated archive outside the app. Confirm nav/content
+   XHTML exist, headings appear in navigation, the selected language is
+   reflected in `lang` / `xml:lang`, workspace-local images are packaged,
+   external images are replaced with an in-content warning, links remain
+   links, code blocks remain readable, tables keep basic borders, and
+   page-break hints appear as EPUB page-break blocks.
+5. Confirm the export does not rewrite Markdown source, create a second
+   document model, launch EPUBCheck, run external validators, or expose
+   cover / navigation editor / advanced metadata workflows.
+6. If `epubcheck` is used, run it manually outside the app and record the
+   result as external evidence. Do not treat the app as having launched
+   or automated validation.
+
+Latest external proof note: on 2026-06-25, a proof fixture EPUB was
+generated outside the app UI from Japanese Markdown containing headings,
+a local image, an external image, link, code block, table, task list, and
+page-break hint. Archive inspection confirmed nav/content XHTML,
+packaged local image, external-image warning output, `ja` XHTML language
+metadata, links, code, table, page-break output, and unchanged source
+hash. External `epubcheck` completed with 0 fatal errors / 0 errors /
+0 warnings. This does not replace built-app export dialog/status smoke.
+
+## v1 Workspace Marker / Right-click Slash Command Smoke
+
+Run this before treating the v1 workspace marker and right-click
+slash-command fit-and-finish as built-app proven. Use the packaged
+desktop app, because this checks actual CodeMirror focus, context-menu
+handling, and workspace-tree rendering.
+
+1. Open a workspace with at least two Markdown files, then open both
+   files as tabs.
+2. Confirm the active file remains visually distinct in the workspace
+   tree and both open files show a subtle open marker.
+3. Edit the inactive open tab without saving. Confirm the workspace tree
+   shows it as open and unsaved, matching the tab dirty dot. Repeat with
+   an encoding-only or line-ending-only dirty change when practical.
+4. Save the dirty file and confirm the unsaved marker clears while the
+   open marker remains.
+5. Open an untitled tab and a file outside the selected workspace.
+   Confirm neither creates a workspace-tree marker.
+6. In the editor, select text and right-click inside the selection.
+   Confirm the slash-command menu opens and a wrapper command such as
+   bold, italic, inline code, or link applies to the selected source text
+   without saving automatically.
+7. Right-click with no selection and run an insert command such as a
+   heading, task list, or table. Confirm the insertion happens at the
+   clicked editor position.
+8. Confirm `Escape`, running a command, and clicking outside the editor /
+   menu close the slash-command menu. The workspace tree and tab bar
+   context menus should keep their existing behavior.
+9. Repeat a light check in L Mode's workspace drawer. The marker state
+   should match the normal workspace sidebar and should not imply Git
+   status, background indexing, or a full file-manager model.
+
+Latest local app note: on 2026-06-25, `npm run build` produced the local
+preview bundle and distribution probe passed, but `smoke:macos-window`
+could not open the bundle through LaunchServices (`kLSNoExecutableErr`).
+Do not treat workspace marker / right-click slash-command UI smoke as
+passed until this checklist is exercised in a launchable desktop shell.
 
 ## Help Link Routing
 

@@ -12,7 +12,7 @@ have the final package reviewed.
 
 ## License Position
 
-hazakura editor itself is proprietary software:
+hazakura editor itself is source-available proprietary software:
 
 ```text
 Copyright (c) 2026 Hazakura Lab. All rights reserved.
@@ -22,7 +22,7 @@ The app is intentionally shipped with open source acknowledgements. Third-party
 components remain licensed by their own authors and rights holders. The
 project's intended posture is:
 
-- App body: proprietary commercial license / all rights reserved.
+- App body: source-available proprietary license / all rights reserved except for the permissions granted in `LICENSE`.
 - Dependency posture: open source attribution and notice preservation.
 - Distribution artifact: include this notice file or an equivalent in-app /
   package notice surface.

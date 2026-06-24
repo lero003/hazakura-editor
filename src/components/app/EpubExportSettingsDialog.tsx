@@ -99,7 +99,7 @@ function getEpubExportSettingsCopy(menuLanguage: MenuLanguage) {
       cancel: "キャンセル",
       export: "書き出す",
       languageField: "言語",
-      title: "EPUB β版",
+      title: "EPUB書き出し",
       titleField: "書名",
     };
   }
@@ -109,7 +109,7 @@ function getEpubExportSettingsCopy(menuLanguage: MenuLanguage) {
     cancel: "Cancel",
     export: "Export",
     languageField: "Language",
-    title: "EPUB Beta",
+    title: "EPUB Export",
     titleField: "Title",
   };
 }

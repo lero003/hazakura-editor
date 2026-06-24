@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-24 (v1 / v1.x planning alignment)
+Last reviewed: 2026-06-25 (v0.33.0 build 39 package candidate)
 
 ## Current State
 
@@ -15,18 +15,53 @@ Last reviewed: 2026-06-24 (v1 / v1.x planning alignment)
   Markdown preview flicker fix. Raw App Store Connect, TestFlight, and
   App Review logs remain outside this repository unless explicitly
   recorded later.
-- A new `0.32.0` App Store / TestFlight package candidate was generated
-  on 2026-06-23 after the v0.32 Editor / Reader Position Bridge work.
-  It advanced the App Store build counter to `36` and produced
-  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.32.0-build36-mas.pkg`
+- A new `0.33.0` App Store / TestFlight package candidate was generated
+  on 2026-06-25 after v0.33 EPUB Export v1 Polish and v1 fit-and-finish
+  source work. It advanced the App Store build counter to `39` and
+  produced
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.33.0-build39-mas.pkg`
   with SHA-256
-  `67111daae523027c4e1aca73fe39272116b342f3d71668a7050f4fa6a0f94981`.
-  Full `npm run test`, local package generation, App Store surface
-  smoke, signed app probe, package signature, metadata, supported-OS,
-  package expansion / Distribution XML inspection, and sandbox preview
-  checks passed. App Store Connect upload, Apple processing, TestFlight
-  install / launch, and normal / unsaved / recovered v0.32
-  reader-bridge built-app smoke remain user-side proof.
+  `69f6e50866fcefc107212eb96475e181ba25023b7ce9ebb2592a013b2d41e32f`.
+  App Store surface smoke, local package generation, signed app probe,
+  package signature, metadata, supported-OS, and sandbox preview checks
+  passed. App Store Connect upload, Apple processing, TestFlight install
+  / launch, v0.33 EPUB built-app smoke, v1 workspace/slash built-app
+  smoke, and normal / unsaved / recovered v0.32 reader-bridge built-app
+  smoke remain user-side proof.
+- `0.33.0` is now the source/package app version locally. The v0.33 EPUB
+  Export v1 Polish slice is implemented at source level: the export UI
+  says `EPUB書き出し` / `EPUB Export`, successful exports can report
+  non-fatal image replacement warnings through
+  `buildEpubBetaArchiveWithReport()`, and generated XHTML uses the
+  selected EPUB language metadata instead of hardcoded `ja`. No Book
+  Workspace, cover editor, navigation editor, advanced metadata,
+  in-app EPUBCheck, external validator launch, or second EPUB document
+  model was added. Use the v0.33 EPUB smoke checklist before v1/App
+  Store claims. A 2026-06-25 proof-close pass generated an external
+  fixture EPUB from Japanese Markdown and confirmed nav/content XHTML,
+  packaged local image, external-image warning output, links, code,
+  table, page-break output, unchanged source hash, and external
+  `epubcheck` with 0 fatal errors / 0 errors / 0 warnings. This was not
+  in-app EPUBCheck. Source/local proof passed with focused EPUB / export
+  hook / status tests, full `npm run test`, `npm run build:vite`,
+  `npm run build`, App Store surface smoke, local distribution probe,
+  and `git diff --check`. Built-app manual smoke remained blocked
+  because LaunchServices could not open the generated local preview
+  bundle (`kLSNoExecutableErr`) even though bundle inspection found the
+  executable, version `0.33.0`, bundled notices, helper executable, and
+  valid ad-hoc signature.
+- v1 workspace / slash-command fit-and-finish is source-implemented:
+  workspace tree open / dirty markers are derived from existing tab state
+  with `isDirty()`, limited to files inside the selected workspace, and
+  the editor content area opens the existing slash-command menu on
+  right-click. This surfaces the existing allowlisted Markdown wrappers
+  and insert helpers without adding a formatting toolbar, Git status,
+  background indexing, new Agent / Review commands, or a broader
+  workspace model. Verification passed with focused workspace / editor
+  slash tests, full `npm run test`, `npm run build:vite` (with the usual
+  Vite chunk-size warning), and `git diff --check`. Built-app visual
+  smoke remains blocked by the same local preview launch failure, not
+  passed.
 - The next product slice should start from `docs/current-work.md` and
   treat `0.29.1` as shipped. The active lane is `v0.30-v1.0 Reader UX
   Stabilization`. The first code-level v0.30 e-book Mode paged flow
@@ -477,16 +512,22 @@ Last reviewed: 2026-06-24 (v1 / v1.x planning alignment)
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. v0.32 Editor / Reader Position Bridge: continue built-app checks for
-   normal, unsaved, and recovered documents; unsaved pathless tab
-   separation and one-page reader -> editor movement are now covered at
-   source level, but still need real-app interaction proof alongside
-   normal / recovered flows. Use the v0.32 reader-bridge checklist in
+1. v0.33 EPUB Export v1 Polish: external archive / EPUBCheck proof and
+   signed build `39` package evidence now exist, but run manual built-app
+   EPUB smoke once the local preview app can launch. Keep EPUBCheck
+   manual and outside the app.
+2. v1 workspace marker / right-click slash-command fit-and-finish: run
+   the built-app smoke in `docs/smoke-checklist.md` once local preview
+   launch works before treating it as v1-ready UI proof.
+3. v0.32 Editor / Reader Position Bridge: continue built-app checks for
+   normal, unsaved, and recovered documents if that proof is still
+   needed. Use the v0.32 reader-bridge checklist in
    `docs/smoke-checklist.md`.
-2. v0.33 EPUB Export v1 Polish, then v0.34 v1.0 Release Candidate.
-3. v1.x deepens the single-document product before Book Scope / Book
+4. v0.34 v1.0 Release Candidate after the EPUB/package proof boundary is
+   clear.
+5. v1.x deepens the single-document product before Book Scope / Book
    Workspace or stronger AI expansion.
-4. Hazakura Local Assist post-release polish only for concrete safety,
+6. Hazakura Local Assist post-release polish only for concrete safety,
    review, App Store, availability, generation failure, responsiveness,
    or transaction-boundary issues.
 

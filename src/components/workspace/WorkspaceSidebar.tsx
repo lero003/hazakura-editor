@@ -23,6 +23,7 @@ type WorkspaceSidebarProps = {
   compareSourcePath: string | null;
   compareTargetPath: string | null;
   copy: SafeEditorCopy;
+  dirtyFilePaths: readonly string[];
   fileOpsCopy: WorkspaceFileOpsCopy;
   onCreateFile: () => void;
   onCreateFolder: () => void;
@@ -38,6 +39,7 @@ type WorkspaceSidebarProps = {
   onOpenRootContextMenu: (event: ReactMouseEvent<HTMLDivElement>) => void;
   onOpenFile: (path: string) => void | Promise<void>;
   onOpenWorkspace: () => void;
+  openFilePaths: readonly string[];
   onClearCompareSelection: () => void;
   onSelectCompareFile: (entry: WorkspaceTreeEntry) => void;
   onSubmitRename: (srcPath: string, newName: string) => void;
@@ -53,6 +55,7 @@ export function WorkspaceSidebar({
   compareSourcePath,
   compareTargetPath,
   copy,
+  dirtyFilePaths,
   fileOpsCopy,
   onCreateFile,
   onCreateFolder,
@@ -64,6 +67,7 @@ export function WorkspaceSidebar({
   onOpenRootContextMenu,
   onOpenFile,
   onOpenWorkspace,
+  openFilePaths,
   onClearCompareSelection,
   onSelectCompareFile,
   onSubmitRename,
@@ -219,6 +223,7 @@ export function WorkspaceSidebar({
           activePath={activePath}
           compareSourcePath={compareSourcePath}
           compareTargetPath={compareTargetPath}
+          dirtyFilePaths={dirtyFilePaths}
           entry={workspaceTree}
           compareSelectionEnabled={compareSelectionEnabled}
           onClearCompareSelection={onClearCompareSelection}
@@ -228,6 +233,7 @@ export function WorkspaceSidebar({
           onOpenFile={onOpenFile}
           onSelectCompareFile={onSelectCompareFile}
           onSubmitRename={onSubmitRename}
+          openFilePaths={openFilePaths}
           renamingPath={renamingPath}
           requestRename={requestRename}
         />

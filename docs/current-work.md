@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v0.30-v1.0 Reader UX Stabilization queue and post-v0.29.1 evidence
+Scope: v0.30-v1.0 Reader UX Stabilization queue and v1 proof-close evidence
 Authority: High
-Last reviewed: 2026-06-24 (v1 fit-and-finish candidates)
+Last reviewed: 2026-06-25 (v0.33.0 build 39 package candidate)
 
 ## Purpose
 
@@ -50,21 +50,23 @@ transaction-boundary issue appears.
 
 ## Active UX Queue
 
-Pick one item at a time. The immediate next product slice is the next
-v0.32 Editor / Reader Position Bridge follow-up unless a concrete
-post-release Local Assist safety or App Store lane issue appears. The
-user reported light `0.31` testing as problem-free before opening the
-`0.32` development lane.
+Pick one item at a time. The immediate next product slice is the v1 RC
+proof pass unless a concrete post-release Local Assist safety or App
+Store lane issue appears. The v0.33 EPUB source / external archive proof
+and build `39` package evidence exist, while v0.32 reader bridge,
+v0.33 EPUB, workspace markers, and right-click slash command still need
+built-app manual smoke where the local host can launch the app.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
 | Done | v0.30 e-book Mode Paged Flow | e-book Mode can be used as a daily reading / revision surface for long Japanese Markdown prose while still looking like a book page. The slice should reduce page-turn friction with wheel / trackpad / keyboard movement, preserve chapter/page location for the later editor bridge, and verify large-document behavior. |
 | Done | v0.31 e-book Mode Reading Focus / Spread View | `集中して読む` opens an occupied same-window reading surface, two-page book-like inspection exists when width allows, it falls back to one page when narrow, has keyboard / button navigation plus coarse movement, and remains a display layer over Markdown source rather than Preview DOM editing. |
-| Active | v0.32 Editor / Reader Position Bridge | Opening e-book Mode near the current editor cursor or visible heading and returning from reader position to Markdown editing feels reliable for normal, unsaved, and recovered documents. |
-| Next | v0.33 EPUB Export v1 Polish | EPUB export remains an explicit user action and is polished enough for initial v1 use with Japanese text, headings, local images, links, code blocks, and clear failure messages. Advanced metadata, cover, navigation editing, and validation workflows stay deferred to v1.x. |
-| Candidate | v1 Workspace open / dirty markers | The workspace tree can distinguish the active file, inactive open files, and open unsaved files using existing tab state. It must not imply Git status, background indexing, or a full file-manager model. |
-| Candidate | v1 Selection tag insertion | The editor can wrap or insert a small allowlisted set of Markdown / tag snippets around selected text through a simple affordance such as a button, context menu, or command. The source remains visible, undoable, and saved only by explicit Save. |
-| RC | v0.34 v1.0 Release Candidate | Feature work freezes and the golden path covers New File, Open, Save / Save As, L Mode, Preview, e-book paged flow, Spread View, EPUB export, Local Assist, Diff / Discard, Recovery, relaunch, large documents, and App Store lane boundary checks. |
+| Done / manual proof pending | v0.32 Editor / Reader Position Bridge | Opening e-book Mode near the current editor cursor or visible heading and returning from reader position to Markdown editing feels reliable for normal, unsaved, and recovered documents. Source-level and local package evidence exist; normal / unsaved / recovered built-app interaction smoke remains user-side proof. |
+| Done / manual proof pending | v0.33 EPUB Export v1 Polish | EPUB export remains an explicit user action and is polished enough for initial v1 use with Japanese text, headings, local images, links, code blocks, and clear failure messages. Advanced metadata, cover, navigation editing, and validation workflows stay deferred to v1.x. Source-level polish, external archive / EPUBCheck proof, and signed build `39` package evidence exist; built-app manual EPUB smoke remains blocked. |
+| Done / manual proof pending | v1 Workspace open / dirty markers | The workspace tree distinguishes active files, inactive open files, and open unsaved files using existing tab state. It does not imply Git status, background indexing, or a full file-manager model. Built-app visual smoke remains pending. |
+| Done / manual proof pending | v1 Selection tag insertion | The editor can open the existing slash-command menu from right-click inside the editor, including allowlisted Markdown wrappers such as bold, italic, inline code, links, images, and strikethrough. The source remains visible, undoable, and saved only by explicit Save. Built-app smoke remains pending. |
+| Active | v0.34 v1.0 Release Candidate / Golden Manuscript Smoke | Feature work freezes and one realistic Japanese long-form Markdown manuscript proves the golden path: New File, Open, Save / Save As, L Mode, Preview, e-book paged flow, Spread View, editor/reader return, EPUB export, Local Assist, Diff / Discard, Recovery, relaunch, large documents, and App Store lane boundary checks. |
+| Candidate | v1 Safe file intake polish | If RC proof exposes a small file-intake gap, consider one bounded slice for larger readable local images or additional text-open file extensions. Keep binary detection, file-size warnings, workspace boundary, no external image loading, and no project-indexing behavior intact. |
 | Observation only | Hazakura Local Assist post-release polish | Pick this before the active Reader UX slice only for a concrete safety, review, App Store, availability, generation failure, responsiveness, or transaction-boundary issue. Keep App Store AI assistance local, user-initiated, unsaved until accepted, and Diff / Discard reviewable. |
 | Fallback | Core Safe Editor quality probe | Use only when no concrete Reader UX slice is open or the run is a recurring quality pass. Inspect one high-risk basic surface with a named risk hypothesis, then either fix the smallest reproduced issue or close as `verified no-op`. |
 
@@ -272,6 +274,72 @@ Distribution XML inspection, and
 Upload, Apple processing, TestFlight install / launch, and the normal /
 unsaved / recovered v0.32 reader-bridge built-app smoke remain outside
 the repository until the user records those results.
+
+v0.33 EPUB Export v1 Polish is implemented at source level as of
+2026-06-24: the app/package version is aligned to `0.33.0`, the export
+dialog now presents the flow as `EPUB書き出し` / `EPUB Export` rather
+than beta copy, and the save dialog uses an `EPUB` filter. The EPUB
+archive builder keeps the compatible `buildEpubBetaArchive()` wrapper
+and adds `buildEpubBetaArchiveWithReport()` for hook callers that need
+non-fatal export warnings. The first report shape records
+`image-unavailable` warnings when an image is replaced with an in-content
+warning, so successful exports can tell the user that some images were
+not packaged without claiming total failure. Generated nav/content XHTML
+now follows the selected EPUB language metadata instead of hardcoding
+`ja`, while existing Japanese default metadata remains `ja`. Focused
+coverage now pins Japanese content with unavailable image reporting,
+language metadata on XHTML, links, local image loading through the hook,
+metadata propagation, and warning status localization. No Book Workspace,
+cover editor, advanced metadata, navigation editor, in-app EPUBCheck,
+external command launch, or second EPUB document model was added.
+Verification passed with focused EPUB / export hook / status tests, full
+`npm run test`, `npm run build:vite`, Rust format/test checks,
+`npm run build`, App Store surface smoke, local distribution probe,
+sandbox preview smoke, window launch smoke, and `git diff --check`.
+The Vite chunk-size warning and local preview Gatekeeper
+`Insufficient Context` result remain expected for this lane.
+The 2026-06-25 proof-close pass added external fixture evidence: a
+Japanese Markdown document with headings, local image, external image,
+external link, code block, table, task list, and page-break hint was
+converted to an EPUB artifact outside the app UI. Archive inspection
+confirmed nav/content XHTML, packaged local image, in-content warning
+for the external image, links, code, table, page-break output, `ja`
+XHTML language metadata, and unchanged Markdown source hash. External
+`epubcheck` completed with 0 fatal errors / 0 errors / 0 warnings. This
+is external proof only; the app did not launch EPUBCheck or automate an
+in-app validator workflow. Built-app manual smoke for v0.33 EPUB, v1
+workspace marker / right-click slash command, and v0.32 reader bridge
+remains blocked in this host: `npm run build` produced the local preview
+bundle and distribution probe passed, but `smoke:macos-window` could not
+open the bundle through LaunchServices (`kLSNoExecutableErr`) despite
+the executable, version `0.33.0`, bundled notices, helper executable,
+and ad-hoc signature inspecting correctly. A later same-day package pass
+generated the signed App Store / TestFlight candidate
+`src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.33.0-build39-mas.pkg`.
+The package SHA-256 is
+`69f6e50866fcefc107212eb96475e181ba25023b7ce9ebb2592a013b2d41e32f`;
+App Store surface smoke, signed app distribution probe,
+`pkgutil --check-signature`, and sandbox preview smoke passed. Upload,
+Apple processing, TestFlight install / launch, and App Review remain
+outside this repository state.
+
+v1 workspace / slash-command fit-and-finish is implemented at
+source level as of 2026-06-25: the workspace tree now derives open and
+dirty markers from existing editor tab state, reusing `isDirty()` so
+text, line-ending, and encoding-only dirty state match the tab bar. The
+markers are limited to files inside the selected workspace; pathless
+untitled tabs, workspace-external tabs, directories, and image-only
+preview state are not treated as workspace-file status. The editor
+content area now opens the existing slash-command menu on right-click,
+without adding a new formatting toolbar or broadening Agent / Review
+commands. Right-click preserves an existing selection when invoked
+inside it; otherwise it moves the cursor to the clicked editor position
+before running commands. This surfaces the already allowlisted Markdown
+wrappers and insert helpers while keeping Markdown source explicit and
+Save manual. Verification passed with focused workspace / editor slash
+tests, full `npm run test`, `npm run build:vite` (with the usual Vite
+chunk-size warning), and `git diff --check`. Built-app visual smoke
+remains blocked by the local preview launch failure described above.
 
 Post-v1 guardrail: after v1.0, do not rush straight into v2.0. Use v1.x
 to deepen the single-document product first: EPUB export, Diff / Review

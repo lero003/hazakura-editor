@@ -10,7 +10,8 @@ import {
   getWorkspaceFileOpsCopy,
 } from "../../lib/locale";
 import type { EditorPaneHandle } from "../editor/EditorPane";
-import type { EditorSettings } from "../../types";
+import type { WorkspaceTreeEntry } from "../../lib/tauri";
+import type { EditorSettings, EditorTab } from "../../types";
 
 vi.mock("../editor/EditorMainPane", () => ({
   EditorMainPane: () => <div data-testid="editor-main-pane" />,
@@ -161,6 +162,45 @@ const bookTab = {
   size: 15,
 } as const;
 
+function makeTab(overrides: Partial<EditorTab> = {}): EditorTab {
+  return {
+    contents: "saved",
+    encoding: "utf-8",
+    error: null,
+    externalFingerprint: null,
+    fingerprint: "fingerprint",
+    id: "/workspace/book.md",
+    ignoredExternalFingerprint: null,
+    large_file_warning: false,
+    lastSavedContents: "saved",
+    lastSavedEncoding: "utf-8",
+    lastSavedLineEnding: "lf",
+    line_ending: "lf",
+    modified_ms: null,
+    name: "book.md",
+    path: "/workspace/book.md",
+    saveStatus: "idle",
+    size: 5,
+    ...overrides,
+  };
+}
+
+function workspaceEntry(
+  name: string,
+  path: string,
+  kind: WorkspaceTreeEntry["kind"],
+  children: WorkspaceTreeEntry[] = [],
+): WorkspaceTreeEntry {
+  return {
+    children,
+    children_loaded: true,
+    children_truncated: false,
+    kind,
+    name,
+    path,
+  };
+}
+
 function makeWorkspaceProps(
   overrides: Partial<ComponentProps<typeof AppWorkspace>> = {},
 ): ComponentProps<typeof AppWorkspace> {
@@ -247,6 +287,7 @@ function makeWorkspaceProps(
     slashMenuCopy: getSlashMenuCopy("en"),
     syncEditorScroll: vi.fn(),
     syncPreviewScroll: vi.fn(),
+    tabs: [],
     workspaceRootPath: null,
     workspaceTree: null,
     ...overrides,
@@ -269,6 +310,42 @@ function rerenderWorkspace(
 }
 
 describe("AppWorkspace workspace sidebar collapse", () => {
+  it("passes open and dirty tab markers into the workspace tree", () => {
+    const dirtyTab = makeTab({
+      contents: "edited",
+      id: "/workspace/draft.md",
+      name: "draft.md",
+      path: "/workspace/draft.md",
+    });
+
+    renderWorkspace({
+      activeTab: makeTab({ path: "/workspace/book.md" }),
+      tabs: [
+        makeTab({ path: "/workspace/book.md" }),
+        dirtyTab,
+        makeTab({ id: "untitled:1", path: "" }),
+        makeTab({ id: "/outside/other.md", path: "/outside/other.md" }),
+      ],
+      workspaceRootPath: "/workspace",
+      workspaceTree: workspaceEntry("workspace", "/workspace", "directory", [
+        workspaceEntry("book.md", "/workspace/book.md", "file"),
+        workspaceEntry("draft.md", "/workspace/draft.md", "file"),
+      ]),
+    });
+
+    const bookRow = document.querySelector(
+      `button[title="/workspace/book.md"]`,
+    );
+    const draftRow = document.querySelector(
+      `button[title="/workspace/draft.md"]`,
+    );
+
+    expect(bookRow?.querySelector(".tree-open-marker")).not.toBeNull();
+    expect(bookRow?.querySelector(".tree-dirty-marker")).toBeNull();
+    expect(draftRow?.querySelector(".tree-open-marker")).not.toBeNull();
+    expect(draftRow?.querySelector(".tree-dirty-marker")).not.toBeNull();
+  });
+
   it("collapses and restores the normal workspace sidebar", () => {
     const { container } = renderWorkspace();
 

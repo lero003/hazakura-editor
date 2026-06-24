@@ -8,7 +8,7 @@ import {
   saveTextFileAs,
 } from "../../lib/tauri";
 import {
-  buildEpubBetaArchive,
+  buildEpubBetaArchiveWithReport,
   defaultEpubExportSettings,
   type EpubExportSettings,
 } from "../../features/document/epubExport";
@@ -350,7 +350,7 @@ ${bodyHtml}
     try {
       const destPath = await saveDialog({
         defaultPath: request.documentName.replace(/\.[^.]+$/, "") + ".epub",
-        filters: [{ name: "EPUB (Beta)", extensions: ["epub"] }],
+        filters: [{ name: "EPUB", extensions: ["epub"] }],
       });
       if (!destPath) return;
 
@@ -360,7 +360,7 @@ ${bodyHtml}
         return;
       }
 
-      const archive = await buildEpubBetaArchive({
+      const { archive, warnings } = await buildEpubBetaArchiveWithReport({
         documentPath: tabForExport.path,
         documentName: tabForExport.name,
         loadWorkspaceImage: workspaceRootPath
@@ -379,7 +379,11 @@ ${bodyHtml}
         workspaceRoot: workspaceRootPath,
       });
       await saveBinaryFileAs(destPath, archive);
-      setStatus(`Exported EPUB beta: ${destPath}`);
+      setStatus(
+        warnings.length > 0
+          ? `Exported EPUB with image warnings: ${destPath}`
+          : `Exported EPUB: ${destPath}`,
+      );
     } catch (err) {
       setGlobalError(`Export EPUB beta failed: ${String(err)}`);
       setStatus("Export EPUB beta failed");

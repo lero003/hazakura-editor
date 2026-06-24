@@ -22,6 +22,10 @@ const tauriApi = vi.hoisted(() => ({
 
 const epubApi = vi.hoisted(() => ({
   buildEpubBetaArchive: vi.fn(async () => new Uint8Array([1, 2, 3])),
+  buildEpubBetaArchiveWithReport: vi.fn(async () => ({
+    archive: new Uint8Array([1, 2, 3]),
+    warnings: [] as Array<{ label: string | null; type: "image-unavailable" }>,
+  })),
   defaultEpubExportSettings: vi.fn(() => ({
     author: "",
     language: "ja",
@@ -39,6 +43,7 @@ vi.mock("../../lib/tauri", () => ({
 
 vi.mock("../../features/document/epubExport", () => ({
   buildEpubBetaArchive: epubApi.buildEpubBetaArchive,
+  buildEpubBetaArchiveWithReport: epubApi.buildEpubBetaArchiveWithReport,
   defaultEpubExportSettings: epubApi.defaultEpubExportSettings,
 }));
 
@@ -106,6 +111,7 @@ describe("useDocumentExport", () => {
     markdownApi.inlineWorkspaceAssetImages.mockClear();
     markdownApi.renderMarkdown.mockClear();
     epubApi.buildEpubBetaArchive.mockClear();
+    epubApi.buildEpubBetaArchiveWithReport.mockClear();
     epubApi.defaultEpubExportSettings.mockClear();
     tauriApi.saveBinaryFileAs.mockReset();
     tauriApi.saveTextFileAs.mockReset();
@@ -273,13 +279,13 @@ describe("useDocumentExport", () => {
 
     expect(dialogApi.save).toHaveBeenCalledWith({
       defaultPath: "book.epub",
-      filters: [{ name: "EPUB (Beta)", extensions: ["epub"] }],
+      filters: [{ name: "EPUB", extensions: ["epub"] }],
     });
     expect(tauriApi.saveBinaryFileAs).toHaveBeenCalledWith(
       "/tmp/a.epub",
       new Uint8Array([1, 2, 3]),
     );
-    expect(setStatus).toHaveBeenCalledWith("Exported EPUB beta: /tmp/a.epub");
+    expect(setStatus).toHaveBeenCalledWith("Exported EPUB: /tmp/a.epub");
   });
 
   it("opens EPUB metadata settings before the save dialog", async () => {
@@ -332,7 +338,7 @@ describe("useDocumentExport", () => {
       });
     });
 
-    expect(epubApi.buildEpubBetaArchive).toHaveBeenCalledWith(
+    expect(epubApi.buildEpubBetaArchiveWithReport).toHaveBeenCalledWith(
       expect.objectContaining({
         metadata: {
           author: "Kaguya",
@@ -379,7 +385,7 @@ describe("useDocumentExport", () => {
       markdown: string;
       workspaceRoot: string;
     };
-    const buildCalls = epubApi.buildEpubBetaArchive.mock
+    const buildCalls = epubApi.buildEpubBetaArchiveWithReport.mock
       .calls as unknown as Array<[BuildEpubOptions]>;
     const options = buildCalls[0]?.[0];
     expect(options).toMatchObject({
@@ -455,6 +461,45 @@ describe("useDocumentExport", () => {
     expect(tauriApi.saveBinaryFileAs).not.toHaveBeenCalled();
     expect(setStatus).toHaveBeenCalledWith(
       "Export EPUB beta stopped; document changed",
+    );
+  });
+
+  it("reports image warnings after a successful EPUB export", async () => {
+    epubApi.buildEpubBetaArchiveWithReport.mockResolvedValueOnce({
+      archive: new Uint8Array([1, 2, 3]),
+      warnings: [{ label: "remote", type: "image-unavailable" }],
+    });
+    dialogApi.save.mockResolvedValue("/tmp/a.epub");
+    tauriApi.saveBinaryFileAs.mockResolvedValue(undefined);
+    const setStatus = vi.fn();
+
+    const { result } = renderHook(() =>
+      useDocumentExport({
+        activeContents: "# Book\n\n![remote](https://example.com/remote.png)",
+        activeTab: makeTab({ name: "book.md" }),
+        setGlobalError: vi.fn(),
+        setStatus,
+        workspaceRootPath: null,
+      }),
+    );
+
+    await act(async () => {
+      await result.current.exportEpubBeta();
+    });
+    await act(async () => {
+      await result.current.confirmEpubBetaExport({
+        author: "",
+        language: "ja",
+        title: "Book",
+      });
+    });
+
+    expect(tauriApi.saveBinaryFileAs).toHaveBeenCalledWith(
+      "/tmp/a.epub",
+      new Uint8Array([1, 2, 3]),
+    );
+    expect(setStatus).toHaveBeenCalledWith(
+      "Exported EPUB with image warnings: /tmp/a.epub",
     );
   });
 });

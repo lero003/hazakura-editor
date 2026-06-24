@@ -212,8 +212,8 @@ export function useCommandPaletteController({
       {
         category: "File",
         id: "file.exportEpubBeta",
-        keywords: ["export", "epub", "beta", "book"],
-        label: "Export EPUB (Beta)…",
+        keywords: ["export", "epub", "book"],
+        label: "Export EPUB…",
         run: () => {
           void actions.exportEpubBeta();
         },

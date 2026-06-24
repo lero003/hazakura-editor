@@ -3,12 +3,12 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-23 (v0.32 candidate package)
+Last reviewed: 2026-06-25 (v0.33.0 build 39 package candidate)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: `0.32.0` across npm, Tauri, Cargo, and lockfile metadata.
+- Current package/app version: `0.33.0` across npm, Tauri, Cargo, and lockfile metadata.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
 - Published Mac App Store version: `0.29.1`, reported approved and
@@ -16,18 +16,64 @@ Last reviewed: 2026-06-23 (v0.32 candidate package)
   preview on-device writing companion.
 - Latest GitHub source / local-app tag: `v0.29.1`, prepared on
   2026-06-22.
-- Latest local App Store / TestFlight package candidate: `0.32.0` build
-  `36`, generated on 2026-06-23 for v0.32 Editor / Reader Position
-  Bridge built-app testing:
-  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.32.0-build36-mas.pkg`.
+- Latest local App Store / TestFlight package candidate: `0.33.0` build
+  `39`, generated on 2026-06-25 after v0.33 EPUB Export v1 Polish and
+  v1 fit-and-finish source work:
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.33.0-build39-mas.pkg`.
   Local package generation, App Store surface smoke, signed app
   distribution probe, `pkgutil --check-signature`, package SHA-256,
-  package expansion / Distribution XML inspection, and sandbox preview
-  checks passed. SHA-256:
-  `67111daae523027c4e1aca73fe39272116b342f3d71668a7050f4fa6a0f94981`.
+  and sandbox preview checks passed. SHA-256:
+  `69f6e50866fcefc107212eb96475e181ba25023b7ce9ebb2592a013b2d41e32f`.
   Raw App Store Connect upload, processing, TestFlight install /
   launch, and App Review logs are not tracked in this repository unless
   separately recorded.
+- Source-level `v0.33` EPUB Export v1 Polish is implemented. EPUB export
+  remains an explicit active-document action over Markdown source, but
+  user-facing copy now presents it as `EPUB書き出し` / `EPUB Export`
+  instead of beta copy. The archive builder keeps the compatible
+  `buildEpubBetaArchive()` wrapper and adds
+  `buildEpubBetaArchiveWithReport()` so callers can distinguish a
+  successful archive from non-fatal image replacement warnings. The first
+  report type is `image-unavailable`; successful exports with replaced
+  images now report a warning status rather than a silent success. EPUB
+  nav/content XHTML now uses the selected language metadata instead of
+  hardcoding `ja`. No Book Workspace, cover editor, advanced metadata,
+  navigation editor, in-app EPUBCheck, external validator launch, or
+  second EPUB document model was added. A 2026-06-25 proof-close pass
+  generated an external fixture EPUB from Japanese Markdown with a local
+  image, external-image warning, links, code, table, task list, and
+  page-break hint; archive inspection confirmed nav/content XHTML,
+  packaged local image, `image-unavailable` warning output, `ja`
+  XHTML language metadata, and unchanged source hash. External
+  `epubcheck` completed with 0 fatal errors / 0 errors / 0 warnings.
+  The `0.33.0` App Store / TestFlight package candidate is now generated
+  as build `39`; upload, Apple processing, TestFlight install / launch,
+  and App Review remain outside this repository state. Source/local proof
+  passed with focused EPUB / export hook / status tests, full
+  `npm run test`, `npm run build:vite`, `npm run build`, App Store
+  surface smoke, local distribution probe, package signature check,
+  sandbox preview smoke, and `git diff --check`. Built-app manual EPUB
+  smoke remains blocked in this host because LaunchServices failed to
+  open the generated local preview bundle with `kLSNoExecutableErr`
+  even though bundle inspection found the executable, version `0.33.0`,
+  bundled notices, helper executable, and valid ad-hoc code signature.
+- Source-level v1 workspace / slash-command fit-and-finish is
+  implemented. The workspace tree now shows existing-tab-derived open
+  and dirty markers for files inside the selected workspace, reusing
+  `isDirty()` so unsaved content, line-ending, and encoding changes align
+  with the tab bar. Pathless untitled tabs, workspace-external tabs,
+  directories, and image-only preview state do not create workspace
+  markers. The editor content area now opens the existing slash-command
+  menu from right-click; it preserves selection when invoked inside the
+  selection, otherwise moves the cursor to the clicked editor position.
+  This surfaces the existing allowlisted Markdown wrappers and insert
+  helpers without adding a formatting toolbar, Git status, background
+  indexing, new Agent / Review commands, arbitrary command execution, or
+  a broader workspace model. Verification passed with focused workspace
+  / editor slash tests, full `npm run test`, `npm run build:vite` (with
+  the usual Vite chunk-size warning), and `git diff --check`. Built-app
+  visual smoke remains blocked by the same local preview launch failure
+  described above, not passed.
 - Source-level `v0.32` Editor / Reader Position Bridge work is in
   progress after the user reported light `0.31` testing as problem-free.
   The current implementation records e-book chapter start lines, opens
@@ -271,8 +317,8 @@ Last reviewed: 2026-06-23 (v0.32 candidate package)
   progress. Markdown source remains canonical; the reader/editor bridge
   is source-line approximate rather than rendered-page exact. Whole-book
   page numbering remains deferred.
-- EPUB export beta is available from the File menu and command palette
-  as an explicit active-document export action. It writes a minimal
+- EPUB export is available from the File menu and command palette as an
+  explicit active-document export action. It writes a minimal
   `.epub` archive from the current Markdown source with XHTML content,
   generated heading navigation, dialog-scoped Title / Author / Language
   metadata, workspace image resources where readable, allowed small
@@ -281,7 +327,9 @@ Last reviewed: 2026-06-23 (v0.32 candidate package)
   headings for navigation, ignores YAML frontmatter for export
   navigation/content, turns blank-line-flanked standalone `---` / `===`
   into explicit page-break hints, generates per-export UUID identifiers,
-  and writes `dcterms:modified` from export time. It is not a second
+  and writes `dcterms:modified` from export time. It reports non-fatal
+  image replacement warnings after successful export and uses the
+  selected language metadata on generated XHTML. It is not a second
   document model and does not claim reader-perfect pagination, vertical
   writing, cover asset management, multi-file book ordering, or in-app
   validator proof.
@@ -367,7 +415,12 @@ baseline, and smoke evidence are archived under
    and boundary docs stay live for future submissions.
 2. For the next product slice, start with `docs/current-work.md`.
    The active lane is `v0.30-v1.0 Reader UX Stabilization`; the current
-   product slice is v0.32 Editor / Reader Position Bridge. Keep the v1
+   product proof task is v0.34 v1.0 Release Candidate / Golden
+   Manuscript smoke after the v0.33 external archive / EPUBCheck proof
+   and build `39` package evidence; the v0.32 reader bridge, v0.33 EPUB,
+   workspace marker, and right-click slash-command fit-and-finish are
+   source-implemented but still need built-app interaction / visual smoke
+   where the local host can launch the app. Keep the v1
    path focused on a single-document Safe Markdown Book Editor with
    Local Assist Review: Flow View, Spread View, editor/reader position
    bridge, initial EPUB export polish, and v1 RC smoke. Hazakura Local
@@ -378,22 +431,27 @@ baseline, and smoke evidence are archived under
    hidden multi-file book manifests, structural book-workspace
    information architecture, Native Vibrancy Phase 2, cover editing,
    external AI/API providers, Agent Workbench in the App Store lane, or
-   an EPUB document model unless that lane is explicitly opened.
+   an EPUB document model unless that lane is explicitly opened. If RC
+   proof exposes a file-intake blocker, keep it to one bounded slice such
+   as larger readable local images or additional text-open file
+   extensions, preserving binary detection, file-size warnings, workspace
+   boundaries, and no background project indexing.
    After v1.0, do not rush straight to v2.0; use v1.x to deepen the
    single-document product, especially EPUB export, Diff / Review
    ergonomics, provenance, movement between writing / reading layers,
    and observation-driven Local Assist polish.
-3. For the current `0.32.0` App Store / TestFlight candidate, build `36`
-   is the latest local package evidence. It includes the v0.32 Editor /
-   Reader Position Bridge work, including right-pane reader navigation
-   syncing back to the editor while passive source edits and chapter
-   reclassification do not push the editor position from the reader.
+3. For the latest local App Store / TestFlight package candidate,
+   `0.33.0` build `39`
+   is the latest local package evidence. It includes v0.33 EPUB Export
+   v1 Polish plus the workspace marker and right-click slash-command
+   source work.
    Upload, Apple processing, TestFlight install / launch, and App Review
    handling remain explicit distribution-lane work outside this
    repository unless public-safe evidence is recorded.
    The published `0.29.1` App Store lane remains the latest reported
    released version; its build `33` package is historical release
-   evidence and should not be confused with the new `0.32.0` candidate.
+   evidence and should not be confused with the new `0.33.0` candidate.
+   Do upload / App Store Connect work only when explicitly requested.
    For future App Store submissions, start with `docs/app-store-build.md`;
    use `npm run release:candidate -- --with-app-store-pkg` for local
    signed package checkpoints, keep account-specific notes under ignored

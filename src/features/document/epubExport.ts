@@ -25,6 +25,16 @@ export type EpubExportSettings = Pick<
   "author" | "language" | "title"
 >;
 
+export type EpubExportWarning = {
+  label: string | null;
+  type: "image-unavailable";
+};
+
+export type EpubExportArchiveReport = {
+  archive: Uint8Array;
+  warnings: EpubExportWarning[];
+};
+
 type EpubEntry = {
   path: string;
   bytes: Uint8Array;
@@ -63,7 +73,26 @@ export async function buildEpubBetaArchive({
   markdown,
   workspaceRoot = null,
 }: BuildEpubBetaArchiveOptions): Promise<Uint8Array> {
-  const { body, headings, images, title } = await buildContent({
+  const { archive } = await buildEpubBetaArchiveWithReport({
+    documentPath,
+    documentName,
+    loadWorkspaceImage,
+    metadata,
+    markdown,
+    workspaceRoot,
+  });
+  return archive;
+}
+
+export async function buildEpubBetaArchiveWithReport({
+  documentPath = null,
+  documentName,
+  loadWorkspaceImage,
+  metadata,
+  markdown,
+  workspaceRoot = null,
+}: BuildEpubBetaArchiveOptions): Promise<EpubExportArchiveReport> {
+  const { body, headings, images, title, warnings } = await buildContent({
     documentName,
     documentPath,
     loadWorkspaceImage,
@@ -78,13 +107,22 @@ export async function buildEpubBetaArchive({
       "OEBPS/package.opf",
       packageOpf(epubMetadata, images, createEpubIdentifier()),
     ),
-    textEntry("OEBPS/nav.xhtml", navXhtml(epubMetadata.title, headings)),
-    textEntry("OEBPS/content.xhtml", contentXhtml(epubMetadata.title, body)),
+    textEntry(
+      "OEBPS/nav.xhtml",
+      navXhtml(epubMetadata.title, epubMetadata.language, headings),
+    ),
+    textEntry(
+      "OEBPS/content.xhtml",
+      contentXhtml(epubMetadata.title, epubMetadata.language, body),
+    ),
     textEntry("OEBPS/styles.css", epubCss()),
     ...images,
   ];
 
-  return buildStoredZip(entries);
+  return {
+    archive: buildStoredZip(entries),
+    warnings,
+  };
 }
 
 export function defaultEpubExportSettings({
@@ -126,8 +164,13 @@ async function buildContent({
   const template = document.createElement("template");
   template.innerHTML = rendered;
   const markdownHeadings = collectMarkdownHeadings(contentMarkdown);
-  const images = await packageWorkspaceImages(template, loadWorkspaceImage);
-  cleanupPreviewOnlyMarkup(template);
+  const warnings: EpubExportWarning[] = [];
+  const images = await packageWorkspaceImages(
+    template,
+    warnings,
+    loadWorkspaceImage,
+  );
+  cleanupPreviewOnlyMarkup(template, warnings);
   const headingElements = Array.from(
     template.content.querySelectorAll("h1, h2, h3, h4, h5, h6"),
   );
@@ -165,7 +208,7 @@ async function buildContent({
     .map((node) => serializer.serializeToString(node))
     .join("\n");
 
-  return { body, headings, images, title };
+  return { body, headings, images, title, warnings };
 }
 
 function collectMarkdownHeadings(markdown: string): HeadingEntry[] {
@@ -180,6 +223,7 @@ function collectMarkdownHeadings(markdown: string): HeadingEntry[] {
 
 async function packageWorkspaceImages(
   template: HTMLTemplateElement,
+  warnings: EpubExportWarning[],
   loadWorkspaceImage?: (absolutePath: string) => Promise<LoadedEpubImage>,
 ): Promise<ImageEntry[]> {
   const images: ImageEntry[] = [];
@@ -194,13 +238,13 @@ async function packageWorkspaceImages(
         const asset = imageAssetFromDataUrl(dataSrc);
         addImageAsset(image, images, asset);
       } catch {
-        image.replaceWith(epubWarningMessage(image.getAttribute("alt")?.trim()));
+        replaceImageWithWarning(image, warnings);
       }
       continue;
     }
 
     if (!workspacePath || !loadWorkspaceImage) {
-      image.replaceWith(epubWarningMessage(image.getAttribute("alt")?.trim()));
+      replaceImageWithWarning(image, warnings);
       continue;
     }
 
@@ -209,11 +253,23 @@ async function packageWorkspaceImages(
       const asset = normalizeLoadedImage(loaded);
       addImageAsset(image, images, asset);
     } catch {
-      image.replaceWith(epubWarningMessage(image.getAttribute("alt")?.trim()));
+      replaceImageWithWarning(image, warnings);
     }
   }
 
   return images;
+}
+
+function replaceImageWithWarning(
+  image: HTMLImageElement,
+  warnings: EpubExportWarning[],
+): void {
+  const label = image.getAttribute("alt")?.trim() || null;
+  warnings.push({
+    label,
+    type: "image-unavailable",
+  });
+  image.replaceWith(epubWarningMessage(label));
 }
 
 function addImageAsset(
@@ -237,7 +293,10 @@ function addImageAsset(
   });
 }
 
-function cleanupPreviewOnlyMarkup(template: HTMLTemplateElement): void {
+function cleanupPreviewOnlyMarkup(
+  template: HTMLTemplateElement,
+  warnings: EpubExportWarning[],
+): void {
   for (const frame of Array.from(
     template.content.querySelectorAll<HTMLElement>(".markdown-table-frame"),
   )) {
@@ -258,11 +317,13 @@ function cleanupPreviewOnlyMarkup(template: HTMLTemplateElement): void {
   for (const blocked of Array.from(
     template.content.querySelectorAll<HTMLElement>(".blocked-image"),
   )) {
-    blocked.replaceWith(
-      epubWarningMessage(
-        blocked.textContent?.replace(/^Image blocked:\s*/i, ""),
-      ),
-    );
+    const label =
+      blocked.textContent?.replace(/^Image blocked:\s*/i, "").trim() || null;
+    warnings.push({
+      label,
+      type: "image-unavailable",
+    });
+    blocked.replaceWith(epubWarningMessage(label));
   }
 }
 
@@ -463,7 +524,11 @@ function createUuid(): string {
   ].join("-");
 }
 
-function navXhtml(title: string, headings: HeadingEntry[]): string {
+function navXhtml(
+  title: string,
+  language: string,
+  headings: HeadingEntry[],
+): string {
   const navItems =
     headings.length > 0
       ? headings
@@ -478,7 +543,7 @@ function navXhtml(title: string, headings: HeadingEntry[]): string {
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="ja" xml:lang="ja">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="${escapeXml(language)}" xml:lang="${escapeXml(language)}">
 <head>
   <meta charset="utf-8"/>
   <title>${escapeXml(title)} - Navigation</title>
@@ -495,10 +560,10 @@ ${navItems}
 `;
 }
 
-function contentXhtml(title: string, body: string): string {
+function contentXhtml(title: string, language: string, body: string): string {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="ja" xml:lang="ja">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="${escapeXml(language)}" xml:lang="${escapeXml(language)}">
 <head>
   <meta charset="utf-8"/>
   <title>${escapeXml(title)}</title>

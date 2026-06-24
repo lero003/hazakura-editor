@@ -60,9 +60,9 @@ export function localizeStatusMessage(
     "Draft restored": "下書きを復元しました",
     "Enter a valid line number": "有効な行番号を入力してください",
     "Error dismissed": "エラー表示を閉じました",
-    "Export EPUB beta failed": "EPUB β版のエクスポートに失敗しました",
+    "Export EPUB beta failed": "EPUB書き出しに失敗しました",
     "Export EPUB beta stopped; document changed":
-      "文書の変更で EPUB β版エクスポートを停止しました",
+      "文書の変更で EPUB書き出しを停止しました",
     "Export HTML failed": "HTML のエクスポートに失敗しました",
     "Export HTML stopped; document changed":
       "文書の変更で HTML エクスポートを停止しました",
@@ -220,7 +220,7 @@ export function localizeStatusMessage(
   }
 
   if (message.startsWith("Export EPUB beta failed: ")) {
-    return `EPUB β版のエクスポートに失敗しました: ${message.slice(
+    return `EPUB書き出しに失敗しました: ${message.slice(
       "Export EPUB beta failed: ".length,
     )}`;
   }
@@ -291,9 +291,19 @@ export function localizeStatusMessage(
   }
 
   if (message.startsWith("Exported EPUB beta: ")) {
-    return `EPUB β版を保存しました: ${message.slice(
+    return `EPUBを保存しました: ${message.slice(
       "Exported EPUB beta: ".length,
     )}`;
+  }
+
+  if (message.startsWith("Exported EPUB with image warnings: ")) {
+    return `EPUBを保存しました（一部の画像は置き換えました）: ${message.slice(
+      "Exported EPUB with image warnings: ".length,
+    )}`;
+  }
+
+  if (message.startsWith("Exported EPUB: ")) {
+    return `EPUBを保存しました: ${message.slice("Exported EPUB: ".length)}`;
   }
 
   if (message.startsWith("Image saved: ")) {

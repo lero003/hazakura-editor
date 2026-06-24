@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-06-23 (v0.32.0 TestFlight package candidate)
+Last reviewed: 2026-06-25 (v0.33.0 build 39 package candidate)
 
 ## Purpose
 
@@ -44,10 +44,10 @@ Agent Workbench behind its existing boundary.
 - Published App Store version: `0.29.1` (reported approved and released
   on 2026-06-23 with Hazakura Local Assist available as a preview
   on-device writing companion)
-- Current source / Developer version: `0.32.0`
-- Latest generated local App Store package evidence: `0.32.0` build `36`
-  (generated for v0.32 Editor / Reader Position Bridge built-app testing)
-- Current App Store submit config build counter: `36`
+- Current source / Developer version: `0.33.0`
+- Latest generated local App Store package evidence: `0.33.0` build `39`
+  (generated after v0.33 EPUB Export v1 Polish and v1 fit-and-finish proof work)
+- Current App Store submit config build counter: `39`
   (the next package build will increment from this value)
 - App Store category: `Productivity`
 - Public Privacy Policy URL:
@@ -327,7 +327,7 @@ find "$APP/Contents/MacOS" -maxdepth 1 -type f -print
 Expected:
 
 - `CFBundleIdentifier` is `dev.hazakura.editor`
-- `CFBundleShortVersionString` is the current package version (`0.32.0`
+- `CFBundleShortVersionString` is the current package version (`0.33.0`
   for the current candidate)
 - `CFBundleVersion` is a positive integer higher than the last uploaded
   App Store Connect build
@@ -929,4 +929,34 @@ this lane. SHA-256:
 
 ```txt
 67111daae523027c4e1aca73fe39272116b342f3d71668a7050f4fa6a0f94981
+```
+
+v0.33.0 build 39 TestFlight candidate note: on 2026-06-25, Codex
+generated a new local App Store submit-lane package for user-visible
+version `0.33.0` after the v0.33 EPUB Export v1 Polish, workspace marker,
+and right-click slash-command source work. This package supersedes
+build `36` as the latest local package evidence. Raw App Store Connect
+upload, processing, TestFlight install / launch, and App Review logs are
+not tracked in this repository unless separately recorded.
+
+The local package generated for this lane is:
+
+```txt
+src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.33.0-build39-mas.pkg
+```
+
+The signed submit-lane bundle reported `CFBundleIdentifier`
+`dev.hazakura.editor`, `CFBundleShortVersionString` `0.33.0`,
+`CFBundleVersion` `39`, and `LSMinimumSystemVersion` `26.0`. It had the
+expected App Sandbox, user-selected read/write, app-scoped bookmark, and
+network-client entitlements. The bundled Hazakura Local Assist helper was
+present as `Contents/MacOS/hazakura-local-assist-helper`, executable,
+Apple Distribution signed, and carried both
+`com.apple.security.app-sandbox` and `com.apple.security.inherit`.
+The App Store surface smoke, macOS distribution probe, package signature
+check, and sandbox preview smoke passed for the generated app/package.
+`spctl` remained local trust-policy noise for this lane. SHA-256:
+
+```txt
+69f6e50866fcefc107212eb96475e181ba25023b7ce9ebb2592a013b2d41e32f
 ```

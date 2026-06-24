@@ -1,22 +1,114 @@
-hazakura editor License
+# Hazakura Editor Source-Available Proprietary License
 
 Copyright (c) 2026 Hazakura Lab. All rights reserved.
 
-hazakura editor is proprietary software.
-You may not copy, redistribute, modify, reverse engineer, decompile,
-disassemble, sublicense, resell, or otherwise exploit this software except as
-permitted by applicable app store terms or by written permission from
-Hazakura Lab.
+Hazakura Editor is source-available proprietary software.
 
-Access to this repository, source code, binaries, documentation, screenshots,
-or release artifacts does not grant an open source license to hazakura editor
-itself.
+This license governs the source code and repository materials made available by Hazakura Lab. It allows you to view, fork, clone, build, and run Hazakura Editor for personal, non-commercial use, evaluation, and development purposes only. It does not grant you an open source license, a commercial license, or any right to redistribute Hazakura Editor or derivative works.
 
-This software includes and depends on open source software. Those third-party
-components remain licensed by their respective authors and rights holders
-under their own licenses, including but not limited to MIT, Apache-2.0, BSD,
-MPL-2.0, CC0, BlueOak, ISC, Unicode, Unlicense, and Zlib-style licenses.
+## 1. Definitions
 
-We are grateful to the open source maintainers whose work makes this software
-possible. See THIRD_PARTY_NOTICES.md for the current draft of third-party
-license acknowledgements and provenance notes.
+“Software” means Hazakura Editor, including its source code, binaries, documentation, screenshots, release artifacts, build scripts, configuration files, and related materials provided by Hazakura Lab.
+
+“Hazakura Lab” means the copyright holder and maintainer of Hazakura Editor.
+
+“You” means any individual or entity accessing, viewing, downloading, cloning, building, running, or otherwise using the Software.
+
+“Derivative Work” means any modification, adaptation, translation, fork, customized version, port, compiled version, packaged version, or other work based on the Software.
+
+## 2. Permitted Use
+
+Subject to this license, you may:
+
+1. view the source code and documentation;
+2. fork the repository on GitHub or another Git hosting service solely for personal evaluation or contribution purposes;
+3. clone or download the repository;
+4. build the Software locally from source;
+5. run the Software locally on devices you personally control;
+6. inspect the Software for learning, evaluation, security review, or compatibility testing;
+7. submit issues, suggestions, feedback, or pull requests to Hazakura Lab.
+
+These permissions are granted solely for personal, non-commercial use, evaluation, and development purposes.
+
+## 3. Restrictions
+
+You may not, without prior written permission from Hazakura Lab:
+
+1. redistribute, publish, sublicense, sell, rent, lease, or otherwise provide the Software to any third party, except for repository forks permitted in Section 2 solely for personal evaluation or contribution purposes;
+2. distribute compiled binaries, packaged applications, installers, or release artifacts based on the Software;
+3. distribute modified versions, forks, ports, or other Derivative Works, except for repository forks permitted in Section 2 solely for personal evaluation or contribution purposes;
+4. use the Software or any Derivative Work for commercial purposes;
+5. offer the Software or any Derivative Work as a hosted service, paid product, bundled product, or commercial feature;
+6. submit, publish, or distribute the Software or any Derivative Work through any app store, package registry, marketplace, or software distribution platform;
+7. remove, obscure, or alter copyright notices, license notices, attribution notices, or third-party license notices;
+8. use the names “Hazakura Editor”, “Hazakura Lab”, or related logos, icons, product names, or branding in a way that implies endorsement, affiliation, or official status;
+9. use the Software to create a competing product that substantially reproduces the design, identity, user experience, or core functionality of Hazakura Editor;
+10. reverse engineer, decompile, or disassemble official binaries except to the extent such restriction is prohibited by applicable law.
+
+## 4. No Open Source License
+
+Access to this repository, source code, binaries, documentation, screenshots, or release artifacts does not grant an open source license to Hazakura Editor.
+
+Hazakura Editor is not licensed under MIT, Apache-2.0, GPL, MPL, BSD, or any other open source license unless explicitly stated in writing by Hazakura Lab.
+
+## 5. Third-Party Components
+
+The Software includes and depends on third-party open source software.
+
+Those third-party components remain licensed by their respective authors and rights holders under their own licenses, including but not limited to MIT, Apache-2.0, BSD, MPL-2.0, CC0, BlueOak, ISC, Unicode, Unlicense, and Zlib-style licenses.
+
+Nothing in this license changes, limits, or replaces the rights you may have under those third-party licenses.
+
+See `THIRD_PARTY_NOTICES.md` for current third-party license acknowledgements and provenance notes.
+
+## 6. Contributions
+
+By submitting issues, suggestions, feedback, patches, pull requests, code, documentation, designs, or other contributions to Hazakura Lab, you grant Hazakura Lab a perpetual, worldwide, non-exclusive, royalty-free, sublicensable license to use, reproduce, modify, adapt, publish, distribute, display, perform, and incorporate those contributions into Hazakura Editor or related projects.
+
+You represent that you have the right to submit the contribution and to grant the above license.
+
+You retain ownership of your contributions, but Hazakura Lab is not required to include, credit, maintain, or compensate any contribution unless separately agreed in writing.
+
+## 7. Official Distribution
+
+Official builds of Hazakura Editor may be distributed by Hazakura Lab through approved distribution channels, including app stores, official websites, or other release platforms.
+
+Official builds distributed by Hazakura Lab through the Mac App Store are licensed to end users under Apple's Standard Licensed Application End User License Agreement, unless Hazakura Lab provides a separate Custom EULA.
+
+Official builds distributed outside the Mac App Store may be subject to platform terms or additional terms provided by Hazakura Lab.
+
+In the event of a conflict between this license and mandatory app store terms, the app store terms apply only to the extent required for distribution through that app store.
+
+## 8. No Trademark License
+
+This license does not grant permission to use the trademarks, service marks, trade names, logos, icons, product names, or branding of Hazakura Lab, except as necessary to accurately refer to the Software in a non-misleading way.
+
+## 9. No Warranty
+
+The Software is provided “as is” and “as available”, without warranty of any kind, express or implied.
+
+To the maximum extent permitted by applicable law, Hazakura Lab disclaims all warranties, including but not limited to warranties of merchantability, fitness for a particular purpose, title, non-infringement, security, accuracy, and availability.
+
+## 10. Limitation of Liability
+
+To the maximum extent permitted by applicable law, Hazakura Lab shall not be liable for any direct, indirect, incidental, special, consequential, exemplary, or punitive damages, or any loss of profits, revenue, data, goodwill, or business opportunities, arising from or related to the Software or this license, even if advised of the possibility of such damages.
+
+## 11. Termination
+
+If you violate this license, your rights under this license terminate automatically.
+
+Upon termination, you must stop using the Software and delete any copies of the Software, binaries, modified versions, or Derivative Works in your possession or control, except for copies you are legally required to retain.
+
+Sections concerning ownership, restrictions, third-party components, contributions, trademarks, warranty disclaimers, limitation of liability, and termination survive termination.
+
+## 12. Written Permission
+
+Hazakura Lab may grant additional permissions, exceptions, or commercial licenses in writing.
+
+No permission is granted unless it is expressly stated in writing by Hazakura Lab.
+
+## 13. Ownership
+
+Hazakura Lab and its licensors retain all rights, title, and interest in and to the Software, except for third-party components governed by their respective licenses.
+
+All rights not expressly granted by this license are reserved.

@@ -1,4 +1,10 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import {
+  forwardRef,
+  type MouseEvent as ReactMouseEvent,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+} from "react";
 import {
   selectCharLeft,
   selectCharRight,
@@ -794,6 +800,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     activeIndex: slashActiveIndex,
     closeMenu: closeSlashMenu,
     commands: slashFiltered,
+    openMenuAtContext: openSlashMenuAtContext,
     runCommand: runSlashCommand,
     setActiveIndex: setSlashActiveIndex,
     state: slashState,
@@ -804,8 +811,38 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     viewRef,
   });
 
+  const handleEditorContextMenu = (event: ReactMouseEvent<HTMLDivElement>) => {
+    const view = viewRef.current;
+    if (!view || readOnly) {
+      return;
+    }
+    if (!(event.target instanceof Node) || !view.dom.contains(event.target)) {
+      return;
+    }
+
+    event.preventDefault();
+
+    const position = view.posAtCoords({
+      x: event.clientX,
+      y: event.clientY,
+    });
+    const selection = view.state.selection.main;
+    if (
+      position !== null &&
+      (selection.empty || position < selection.from || position > selection.to)
+    ) {
+      view.dispatch({ selection: { anchor: position } });
+    }
+
+    openSlashMenuAtContext(view, {
+      bottom: event.clientY,
+      left: event.clientX,
+      top: event.clientY,
+    });
+  };
+
   return (
-    <div className="editor-host">
+    <div className="editor-host" onContextMenu={handleEditorContextMenu}>
       <div className="editor-mount" ref={editorMountRef} />
       {lModeEnabled && isEffectivelyEmpty(value) ? (
         <div className={LModeClasses.emptyPlaceholder} aria-hidden="true">

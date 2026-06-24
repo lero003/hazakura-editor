@@ -55,6 +55,7 @@ function TreeEntry({
   compareTargetPath,
   compareSelectionEnabled,
   defaultExpanded = false,
+  dirtyFilePaths,
   entry,
   onLoadDirectory,
   onMoveEntry,
@@ -62,6 +63,7 @@ function TreeEntry({
   onOpenFile,
   onSelectCompareFile,
   onSubmitRename,
+  openFilePaths,
   renamingPath,
   requestRename,
   onClearRenaming,
@@ -71,6 +73,7 @@ function TreeEntry({
   compareTargetPath: string | null;
   compareSelectionEnabled: boolean;
   defaultExpanded?: boolean;
+  dirtyFilePaths: ReadonlySet<string>;
   entry: WorkspaceTreeEntry;
   renamingPath: string | null;
   requestRename: (path: string) => void;
@@ -85,6 +88,7 @@ function TreeEntry({
   onOpenFile: (path: string) => void | Promise<void>;
   onSelectCompareFile: (entry: WorkspaceTreeEntry) => void;
   onSubmitRename: (srcPath: string, newName: string) => void;
+  openFilePaths: ReadonlySet<string>;
 }) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [loading, setLoading] = useState(false);
@@ -128,6 +132,13 @@ function TreeEntry({
       entry.name.toLowerCase().endsWith(".md") ||
       entry.name.toLowerCase().endsWith(".markdown");
     const isImage = isSupportedImageFile(entry.name);
+    const isOpen = openFilePaths.has(entry.path);
+    const isDirtyOpen = dirtyFilePaths.has(entry.path);
+    const fileStateLabel = isDirtyOpen
+      ? `${entry.name}, open, unsaved`
+      : isOpen
+        ? `${entry.name}, open`
+        : entry.name;
     const handleFileClick = () => {
       cancelPendingSingleClick();
       singleClickTimeoutRef.current = window.setTimeout(() => {
@@ -156,7 +167,8 @@ function TreeEntry({
     if (isRenaming) {
       return (
         <div
-          className={`tree-file tree-file-rename${entry.path === activePath ? " active" : ""}${entry.path === compareSourcePath ? " compare-source" : ""}${entry.path === compareTargetPath ? " compare-target" : ""}`}
+          aria-label={fileStateLabel}
+          className={`tree-file tree-file-rename${entry.path === activePath ? " active" : ""}${isOpen ? " open" : ""}${isDirtyOpen ? " dirty" : ""}${entry.path === compareSourcePath ? " compare-source" : ""}${entry.path === compareTargetPath ? " compare-target" : ""}`}
           title={entry.path}
         >
           {isImage ? (
@@ -178,7 +190,8 @@ function TreeEntry({
     }
     return (
       <button
-        className={`tree-file${entry.path === activePath ? " active" : ""}${entry.path === compareSourcePath ? " compare-source" : ""}${entry.path === compareTargetPath ? " compare-target" : ""}`}
+        aria-label={fileStateLabel}
+        className={`tree-file${entry.path === activePath ? " active" : ""}${isOpen ? " open" : ""}${isDirtyOpen ? " dirty" : ""}${entry.path === compareSourcePath ? " compare-source" : ""}${entry.path === compareTargetPath ? " compare-target" : ""}`}
         draggable={!compareSelectionEnabled}
         onClick={handleFileClick}
         onContextMenu={(event) => onOpenContextMenu(entry, event, "file")}
@@ -197,6 +210,20 @@ function TreeEntry({
           <TextFileIcon />
         )}
         <span className="tree-name">{entry.name}</span>
+        {isOpen ? (
+          <span
+            aria-hidden="true"
+            className="tree-open-marker"
+            title="Open file"
+          />
+        ) : null}
+        {isDirtyOpen ? (
+          <span
+            aria-hidden="true"
+            className="tree-dirty-marker"
+            title="Unsaved open file"
+          />
+        ) : null}
       </button>
     );
   }
@@ -315,6 +342,7 @@ function TreeEntry({
               compareSourcePath={compareSourcePath}
               compareTargetPath={compareTargetPath}
               compareSelectionEnabled={compareSelectionEnabled}
+              dirtyFilePaths={dirtyFilePaths}
               entry={child}
               key={child.path}
               onLoadDirectory={onLoadDirectory}
@@ -323,6 +351,7 @@ function TreeEntry({
               onOpenFile={onOpenFile}
               onSelectCompareFile={onSelectCompareFile}
               onSubmitRename={onSubmitRename}
+              openFilePaths={openFilePaths}
               renamingPath={renamingPath}
               requestRename={requestRename}
               onClearRenaming={onClearRenaming}
@@ -407,6 +436,7 @@ export function WorkspaceTree({
   compareSourcePath,
   compareTargetPath,
   compareSelectionEnabled,
+  dirtyFilePaths,
   entry,
   onClearCompareSelection,
   onLoadDirectory,
@@ -415,6 +445,7 @@ export function WorkspaceTree({
   onOpenFile,
   onSelectCompareFile,
   onSubmitRename,
+  openFilePaths,
   renamingPath,
   requestRename,
 }: {
@@ -422,6 +453,7 @@ export function WorkspaceTree({
   compareSourcePath: string | null;
   compareTargetPath: string | null;
   compareSelectionEnabled: boolean;
+  dirtyFilePaths: readonly string[];
   entry: WorkspaceTreeEntry;
   onClearCompareSelection: () => void;
   onLoadDirectory: (path: string) => Promise<void>;
@@ -434,6 +466,7 @@ export function WorkspaceTree({
   onOpenFile: (path: string) => void | Promise<void>;
   onSelectCompareFile: (entry: WorkspaceTreeEntry) => void;
   onSubmitRename: (srcPath: string, newName: string) => void;
+  openFilePaths: readonly string[];
   renamingPath: string | null;
   requestRename: (path: string) => void;
 }) {
@@ -442,6 +475,8 @@ export function WorkspaceTree({
   // committed `onSubmitRename`.
   const hasCompareSelection =
     compareSourcePath !== null || compareTargetPath !== null;
+  const openPathSet = new Set(openFilePaths);
+  const dirtyPathSet = new Set(dirtyFilePaths);
   return (
     <div
       className={`workspace-tree${compareSelectionEnabled ? " compare-selection" : ""}`}
@@ -477,6 +512,7 @@ export function WorkspaceTree({
         compareTargetPath={compareTargetPath}
         compareSelectionEnabled={compareSelectionEnabled}
         defaultExpanded
+        dirtyFilePaths={dirtyPathSet}
         entry={entry}
         onLoadDirectory={onLoadDirectory}
         onMoveEntry={onMoveEntry}
@@ -484,6 +520,7 @@ export function WorkspaceTree({
         onOpenFile={onOpenFile}
         onSelectCompareFile={onSelectCompareFile}
         onSubmitRename={onSubmitRename}
+        openFilePaths={openPathSet}
         renamingPath={renamingPath}
         requestRename={requestRename}
         onClearRenaming={() => requestRename("")}

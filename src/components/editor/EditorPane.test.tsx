@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { readFileSync } from "node:fs";
 import { createRef } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -9,6 +9,7 @@ import {
 } from "./EditorPane";
 import EditorPane from "./EditorPane";
 import { getLModeCopy, getSlashMenuCopy } from "../../lib/locale";
+import type { SlashCommand } from "../../types/slash";
 
 const editorPaneSource = readFileSync(
   `${process.cwd()}/src/components/editor/EditorPane.tsx`,
@@ -107,6 +108,7 @@ describe("EditorPane", () => {
     onPasteImage,
     readOnly = false,
     ref,
+    slashCommands = [],
     value,
   }: {
     documentKey?: string;
@@ -120,6 +122,7 @@ describe("EditorPane", () => {
     ) => Promise<string | null>;
     readOnly?: boolean;
     ref?: React.Ref<EditorPaneHandle>;
+    slashCommands?: readonly SlashCommand[];
     value: string;
   }) {
     return (
@@ -138,7 +141,7 @@ describe("EditorPane", () => {
         onSelectionChange={vi.fn()}
         searchMatches={[]}
         showInvisibles={false}
-        slashCommands={[]}
+        slashCommands={slashCommands}
         slashMenuCopy={getSlashMenuCopy("en")}
         spellcheckEnabled={true}
         tabSize={2}
@@ -155,6 +158,76 @@ describe("EditorPane", () => {
     );
 
     expect(container.querySelector(".editor-mount")).not.toBeNull();
+  });
+
+  it("opens the slash command menu from the editor context menu", async () => {
+    const slashCommands: SlashCommand[] = [
+      {
+        category: "markdown",
+        hint: "#",
+        id: "heading-1",
+        insertText: "# ",
+        label: "Heading 1",
+        searchKeys: ["heading", "h1"],
+      },
+    ];
+    const { container } = render(
+      renderEditorPane({
+        slashCommands,
+        value: "body",
+      }),
+    );
+
+    await waitFor(() => {
+      expect(container.querySelector(".cm-content")).not.toBeNull();
+    });
+
+    fireEvent.contextMenu(container.querySelector(".cm-content") as Element, {
+      clientX: 48,
+      clientY: 64,
+    });
+
+    expect(await screen.findByRole("listbox", { name: "Slash command menu" }))
+      .toBeTruthy();
+    expect(screen.getByRole("option", { name: /Heading 1/ })).toBeTruthy();
+  });
+
+  it("closes the context slash command menu on outside click", async () => {
+    const slashCommands: SlashCommand[] = [
+      {
+        category: "markdown",
+        hint: "#",
+        id: "heading-1",
+        insertText: "# ",
+        label: "Heading 1",
+        searchKeys: ["heading", "h1"],
+      },
+    ];
+    const { container } = render(
+      renderEditorPane({
+        slashCommands,
+        value: "body",
+      }),
+    );
+
+    await waitFor(() => {
+      expect(container.querySelector(".cm-content")).not.toBeNull();
+    });
+
+    fireEvent.contextMenu(container.querySelector(".cm-content") as Element, {
+      clientX: 48,
+      clientY: 64,
+    });
+    expect(await screen.findByRole("listbox", { name: "Slash command menu" }))
+      .toBeTruthy();
+
+    fireEvent.mouseDown(document.body);
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("listbox", { name: "Slash command menu" }),
+      ).toBeNull();
+    });
   });
 
   it("marks CodeMirror content non-editable when readOnly is true and editable again when released", async () => {

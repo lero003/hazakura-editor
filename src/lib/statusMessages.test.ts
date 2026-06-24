@@ -125,6 +125,27 @@ describe("localizeStatusMessage: pasted image failures", () => {
   });
 });
 
+describe("localizeStatusMessage: EPUB export polish", () => {
+  it("localizes successful EPUB export without beta wording", () => {
+    expect(localizeStatusMessage("Exported EPUB: /tmp/book.epub", "ja"))
+      .toBe("EPUBを保存しました: /tmp/book.epub");
+  });
+
+  it("localizes successful EPUB export with image warnings", () => {
+    expect(
+      localizeStatusMessage(
+        "Exported EPUB with image warnings: /tmp/book.epub",
+        "ja",
+      ),
+    ).toBe("EPUBを保存しました（一部の画像は置き換えました）: /tmp/book.epub");
+  });
+
+  it("keeps the English EPUB export status unchanged", () => {
+    expect(localizeStatusMessage("Exported EPUB: /tmp/book.epub", "en"))
+      .toBe("Exported EPUB: /tmp/book.epub");
+  });
+});
+
 // v0.16 sandbox-file-restore: the workspace restore hook now
 // reports the count of tabs that could not be reopened on app
 // restart, because the OS no longer grants access to their
