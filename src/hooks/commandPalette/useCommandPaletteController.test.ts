@@ -224,7 +224,7 @@ describe("useCommandPaletteController", () => {
     expect(commandIds).toContain("review.tabAgainstDisk");
   });
 
-  it("runs the EPUB beta export command from the command palette", () => {
+  it("runs the EPUB export command from the command palette", () => {
     const exportEpubBeta = vi.fn(async () => {});
     const { result } = renderHook(() =>
       useCommandPaletteController({
@@ -277,7 +277,7 @@ describe("useCommandPaletteController", () => {
     const command = result.current.filteredCommands.find(
       (item) => item.id === "file.exportEpubBeta",
     );
-    expect(command?.label).toBe("Export EPUB (Beta)…");
+    expect(command?.label).toBe("Export EPUB…");
 
     act(() => {
       command?.run();
