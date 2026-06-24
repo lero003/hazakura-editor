@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v0.30-v1.0 Reader UX Stabilization queue and post-v0.29.1 evidence
+Scope: v0.30-v1.0 Reader UX Stabilization queue and v0.33 source evidence
 Authority: High
-Last reviewed: 2026-06-24 (v1 fit-and-finish candidates)
+Last reviewed: 2026-06-24 (v0.33 EPUB source polish)
 
 ## Purpose
 
@@ -50,18 +50,20 @@ transaction-boundary issue appears.
 
 ## Active UX Queue
 
-Pick one item at a time. The immediate next product slice is the next
-v0.32 Editor / Reader Position Bridge follow-up unless a concrete
-post-release Local Assist safety or App Store lane issue appears. The
-user reported light `0.31` testing as problem-free before opening the
-`0.32` development lane.
+Pick one item at a time. The immediate next product slice is v0.33 EPUB
+manual / package proof unless a concrete post-release Local Assist
+safety or App Store lane issue appears. The user reported light `0.31`
+testing as problem-free before opening the `0.32` development lane, and
+v0.32 now has source-level bridge work plus local package evidence while
+normal / unsaved / recovered built-app interaction smoke remains
+user-side proof.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
 | Done | v0.30 e-book Mode Paged Flow | e-book Mode can be used as a daily reading / revision surface for long Japanese Markdown prose while still looking like a book page. The slice should reduce page-turn friction with wheel / trackpad / keyboard movement, preserve chapter/page location for the later editor bridge, and verify large-document behavior. |
 | Done | v0.31 e-book Mode Reading Focus / Spread View | `集中して読む` opens an occupied same-window reading surface, two-page book-like inspection exists when width allows, it falls back to one page when narrow, has keyboard / button navigation plus coarse movement, and remains a display layer over Markdown source rather than Preview DOM editing. |
-| Active | v0.32 Editor / Reader Position Bridge | Opening e-book Mode near the current editor cursor or visible heading and returning from reader position to Markdown editing feels reliable for normal, unsaved, and recovered documents. |
-| Next | v0.33 EPUB Export v1 Polish | EPUB export remains an explicit user action and is polished enough for initial v1 use with Japanese text, headings, local images, links, code blocks, and clear failure messages. Advanced metadata, cover, navigation editing, and validation workflows stay deferred to v1.x. |
+| Done / manual proof pending | v0.32 Editor / Reader Position Bridge | Opening e-book Mode near the current editor cursor or visible heading and returning from reader position to Markdown editing feels reliable for normal, unsaved, and recovered documents. Source-level and local package evidence exist; normal / unsaved / recovered built-app interaction smoke remains user-side proof. |
+| Active | v0.33 EPUB Export v1 Polish | EPUB export remains an explicit user action and is polished enough for initial v1 use with Japanese text, headings, local images, links, code blocks, and clear failure messages. Advanced metadata, cover, navigation editing, and validation workflows stay deferred to v1.x. Source-level polish is implemented; signed candidate package and manual EPUB smoke still need proof. |
 | Candidate | v1 Workspace open / dirty markers | The workspace tree can distinguish the active file, inactive open files, and open unsaved files using existing tab state. It must not imply Git status, background indexing, or a full file-manager model. |
 | Candidate | v1 Selection tag insertion | The editor can wrap or insert a small allowlisted set of Markdown / tag snippets around selected text through a simple affordance such as a button, context menu, or command. The source remains visible, undoable, and saved only by explicit Save. |
 | RC | v0.34 v1.0 Release Candidate | Feature work freezes and the golden path covers New File, Open, Save / Save As, L Mode, Preview, e-book paged flow, Spread View, EPUB export, Local Assist, Diff / Discard, Recovery, relaunch, large documents, and App Store lane boundary checks. |
@@ -272,6 +274,35 @@ Distribution XML inspection, and
 Upload, Apple processing, TestFlight install / launch, and the normal /
 unsaved / recovered v0.32 reader-bridge built-app smoke remain outside
 the repository until the user records those results.
+
+v0.33 EPUB Export v1 Polish is implemented at source level as of
+2026-06-24: the app/package version is aligned to `0.33.0`, the export
+dialog now presents the flow as `EPUB書き出し` / `EPUB Export` rather
+than beta copy, and the save dialog uses an `EPUB` filter. The EPUB
+archive builder keeps the compatible `buildEpubBetaArchive()` wrapper
+and adds `buildEpubBetaArchiveWithReport()` for hook callers that need
+non-fatal export warnings. The first report shape records
+`image-unavailable` warnings when an image is replaced with an in-content
+warning, so successful exports can tell the user that some images were
+not packaged without claiming total failure. Generated nav/content XHTML
+now follows the selected EPUB language metadata instead of hardcoding
+`ja`, while existing Japanese default metadata remains `ja`. Focused
+coverage now pins Japanese content with unavailable image reporting,
+language metadata on XHTML, links, local image loading through the hook,
+metadata propagation, and warning status localization. No Book Workspace,
+cover editor, advanced metadata, navigation editor, in-app EPUBCheck,
+external command launch, or second EPUB document model was added.
+Verification passed with focused EPUB / export hook / status tests, full
+`npm run test`, `npm run build:vite`, Rust format/test checks,
+`npm run build`, App Store surface smoke, local distribution probe,
+sandbox preview smoke, window launch smoke, and `git diff --check`.
+The Vite chunk-size warning and local preview Gatekeeper
+`Insufficient Context` result remain expected for this lane.
+The `v0.32` built-app reader-bridge smoke remains user-side proof and
+was not completed by this source slice. The `0.33.0` App Store /
+TestFlight package was not generated in this run because
+`APPLE_SIGNING_IDENTITY` and `APPLE_INSTALLER_SIGNING_IDENTITY` were not
+available in the shell.
 
 Post-v1 guardrail: after v1.0, do not rush straight into v2.0. Use v1.x
 to deepen the single-document product first: EPUB export, Diff / Review

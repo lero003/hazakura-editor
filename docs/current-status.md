@@ -3,12 +3,12 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-23 (v0.32 candidate package)
+Last reviewed: 2026-06-24 (v0.33 EPUB source polish)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: `0.32.0` across npm, Tauri, Cargo, and lockfile metadata.
+- Current package/app version: `0.33.0` across npm, Tauri, Cargo, and lockfile metadata.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
 - Published Mac App Store version: `0.29.1`, reported approved and
@@ -28,6 +28,25 @@ Last reviewed: 2026-06-23 (v0.32 candidate package)
   Raw App Store Connect upload, processing, TestFlight install /
   launch, and App Review logs are not tracked in this repository unless
   separately recorded.
+- Source-level `v0.33` EPUB Export v1 Polish is implemented. EPUB export
+  remains an explicit active-document action over Markdown source, but
+  user-facing copy now presents it as `EPUB書き出し` / `EPUB Export`
+  instead of beta copy. The archive builder keeps the compatible
+  `buildEpubBetaArchive()` wrapper and adds
+  `buildEpubBetaArchiveWithReport()` so callers can distinguish a
+  successful archive from non-fatal image replacement warnings. The first
+  report type is `image-unavailable`; successful exports with replaced
+  images now report a warning status rather than a silent success. EPUB
+  nav/content XHTML now uses the selected language metadata instead of
+  hardcoding `ja`. No Book Workspace, cover editor, advanced metadata,
+  navigation editor, in-app EPUBCheck, external validator launch, or
+  second EPUB document model was added. The `0.33.0` App Store /
+  TestFlight package candidate has not been generated in this repository
+  state because the signing environment was unavailable in the shell.
+  Source proof passed with focused EPUB / export hook / status tests,
+  full `npm run test`, `npm run build:vite`, Rust format/test checks,
+  `npm run build`, App Store surface smoke, local distribution probe,
+  sandbox preview smoke, window launch smoke, and `git diff --check`.
 - Source-level `v0.32` Editor / Reader Position Bridge work is in
   progress after the user reported light `0.31` testing as problem-free.
   The current implementation records e-book chapter start lines, opens
@@ -271,8 +290,8 @@ Last reviewed: 2026-06-23 (v0.32 candidate package)
   progress. Markdown source remains canonical; the reader/editor bridge
   is source-line approximate rather than rendered-page exact. Whole-book
   page numbering remains deferred.
-- EPUB export beta is available from the File menu and command palette
-  as an explicit active-document export action. It writes a minimal
+- EPUB export is available from the File menu and command palette as an
+  explicit active-document export action. It writes a minimal
   `.epub` archive from the current Markdown source with XHTML content,
   generated heading navigation, dialog-scoped Title / Author / Language
   metadata, workspace image resources where readable, allowed small
@@ -281,7 +300,9 @@ Last reviewed: 2026-06-23 (v0.32 candidate package)
   headings for navigation, ignores YAML frontmatter for export
   navigation/content, turns blank-line-flanked standalone `---` / `===`
   into explicit page-break hints, generates per-export UUID identifiers,
-  and writes `dcterms:modified` from export time. It is not a second
+  and writes `dcterms:modified` from export time. It reports non-fatal
+  image replacement warnings after successful export and uses the
+  selected language metadata on generated XHTML. It is not a second
   document model and does not claim reader-perfect pagination, vertical
   writing, cover asset management, multi-file book ordering, or in-app
   validator proof.
@@ -367,7 +388,7 @@ baseline, and smoke evidence are archived under
    and boundary docs stay live for future submissions.
 2. For the next product slice, start with `docs/current-work.md`.
    The active lane is `v0.30-v1.0 Reader UX Stabilization`; the current
-   product slice is v0.32 Editor / Reader Position Bridge. Keep the v1
+   product slice is v0.33 EPUB Export v1 Polish. Keep the v1
    path focused on a single-document Safe Markdown Book Editor with
    Local Assist Review: Flow View, Spread View, editor/reader position
    bridge, initial EPUB export polish, and v1 RC smoke. Hazakura Local
@@ -383,7 +404,8 @@ baseline, and smoke evidence are archived under
    single-document product, especially EPUB export, Diff / Review
    ergonomics, provenance, movement between writing / reading layers,
    and observation-driven Local Assist polish.
-3. For the current `0.32.0` App Store / TestFlight candidate, build `36`
+3. For the latest local App Store / TestFlight package candidate,
+   `0.32.0` build `36`
    is the latest local package evidence. It includes the v0.32 Editor /
    Reader Position Bridge work, including right-pane reader navigation
    syncing back to the editor while passive source edits and chapter
@@ -394,6 +416,9 @@ baseline, and smoke evidence are archived under
    The published `0.29.1` App Store lane remains the latest reported
    released version; its build `33` package is historical release
    evidence and should not be confused with the new `0.32.0` candidate.
+   A `0.33.0` package has not been generated yet; run the submit-lane
+   candidate flow only when signing identities are available and upload /
+   App Store Connect work is explicitly requested.
    For future App Store submissions, start with `docs/app-store-build.md`;
    use `npm run release:candidate -- --with-app-store-pkg` for local
    signed package checkpoints, keep account-specific notes under ignored

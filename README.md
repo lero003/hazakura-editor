@@ -92,7 +92,7 @@ Hazakura Editor currently focuses on these surfaces:
   Japanese text decoding.
 - Sanitized Markdown preview, local workspace image rendering, safe image
   paste/drag-drop into `assets/`, read-only image preview, standalone HTML
-  export, Print to PDF handoff, and initial EPUB export beta.
+  export, Print to PDF handoff, and initial EPUB export.
 - Workspace folder browsing with lazy bounded trees, recent workspace/tab
   restoration, in-file search, current-file outline, Go to Line, and explicit
   non-Git Diff / Review for file, disk, draft, conflict, recovery, and AI edit
@@ -210,10 +210,10 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version is `0.32.0` across npm, Tauri, Cargo, and lockfile metadata.
+- Current package/app version is `0.33.0` across npm, Tauri, Cargo, and lockfile metadata.
 - The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12), published at `0.29.1` with the helper-enabled Hazakura Local Assist preview lane.
 - The latest prepared GitHub source / local-app tag is [v0.29.1](https://github.com/lero003/hazakura-editor/tree/v0.29.1).
-- The latest local App Store / TestFlight package candidate is `0.32.0` build `36`.
+- The latest local App Store / TestFlight package candidate is `0.32.0` build `36`; `0.33.0` has source-level EPUB export polish but no generated package evidence yet.
 - The current warning-expected DMG preview tag is `v0.20.0`; its release-note evidence lives in [0.20.0 Warning-expected DMG Preview](docs/releases/0.20.0-warning-expected-dmg-preview.release.md).
 - Source users build locally with `npm ci` and `npm run build`.
 - The generated local smoke `.app` declares macOS 26.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. The App Store submission lane can include Hazakura Local Assist as an on-device writing companion, but does not include Agent Workbench, CLI Agent, arbitrary command execution, or external AI/API calls. Developer / GitHub builds may still include Agent Workbench. GitHub Release DMG previews require Developer ID Application signing but are not notarized until the separate notarization lane is completed.

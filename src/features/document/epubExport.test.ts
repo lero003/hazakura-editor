@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import { buildEpubBetaArchive } from "./epubExport";
+import {
+  buildEpubBetaArchive,
+  buildEpubBetaArchiveWithReport,
+} from "./epubExport";
 
 function archiveText(bytes: Uint8Array): string {
   return new TextDecoder().decode(bytes);
@@ -71,6 +74,24 @@ describe("buildEpubBetaArchive", () => {
       '<meta property="dcterms:modified">2026-06-20T04:30:00Z</meta>',
     );
     expect(text).toContain("<title>Book &lt;Title&gt; - Navigation</title>");
+  });
+
+  it("uses the EPUB language metadata on generated XHTML documents", async () => {
+    const archive = await buildEpubBetaArchive({
+      markdown: "# English Draft\n\nBody with a [link](https://example.com).",
+      documentName: "source.md",
+      metadata: {
+        author: "",
+        language: "en",
+        modified: "2026-06-20T04:30:00Z",
+        title: "English Draft",
+      },
+    });
+    const text = archiveText(archive);
+
+    expect(text).toContain('<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="en" xml:lang="en">');
+    expect(text).toContain('<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">');
+    expect(text).toContain('<a href="https://example.com">link</a>');
   });
 
   it("omits EPUB creator metadata when author is blank", async () => {
@@ -241,5 +262,28 @@ describe("buildEpubBetaArchive", () => {
 
     expect(text).not.toContain('class="page-break"');
     expect(text).not.toContain("title: Draft");
+  });
+
+  it("reports unavailable images while preserving the EPUB archive output", async () => {
+    const archiveWithReport = await buildEpubBetaArchiveWithReport({
+      markdown: [
+        "# 画像つき原稿",
+        "",
+        "本文です。",
+        "",
+        "![remote](https://example.com/remote.png)",
+      ].join("\n"),
+      documentName: "images.md",
+    });
+    const text = archiveText(archiveWithReport.archive);
+
+    expect(text).toContain("Image unavailable: remote");
+    expect(text).not.toContain("https://example.com/remote.png");
+    expect(archiveWithReport.warnings).toEqual([
+      {
+        label: "remote",
+        type: "image-unavailable",
+      },
+    ]);
   });
 });

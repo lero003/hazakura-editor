@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-24 (v1 / v1.x planning alignment)
+Last reviewed: 2026-06-24 (v0.33 EPUB source polish)
 
 ## Current Position
 
@@ -17,14 +17,15 @@ Current release state:
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
 - Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
-- Current package/app version: `0.32.0`.
+- Current package/app version: `0.33.0`.
 - Latest source / local-app tag: `v0.29.1`, prepared on 2026-06-22.
 - Mac App Store published version: `0.29.1`, reported approved and
   released on 2026-06-23 with Hazakura Local Assist available as a
   preview on-device writing companion.
 - Latest local App Store / TestFlight package candidate: `0.32.0` build
   `36`, generated on 2026-06-23 for v0.32 Editor / Reader Position
-  Bridge built-app testing.
+  Bridge built-app testing. `0.33.0` is implemented at source level but
+  does not yet have generated package evidence.
 - Active lane: `v0.30-v1.0 Reader UX Stabilization`, making the shipped
   Safe Editor, L Mode, e-book Mode, EPUB export beta, Diff / Recovery,
   and Hazakura Local Assist review surfaces feel like one coherent
@@ -53,8 +54,11 @@ Near-term phase order:
    single-page fallback and coarse navigation.
 3. v0.32 connects editor and reader positions so the user can read,
    notice a problem, and return to the corresponding Markdown location.
+   Source-level and local package evidence exist; normal / unsaved /
+   recovered built-app interaction smoke remains user-side proof.
 4. v0.33 polishes EPUB export as an explicit initial-v1 workflow for a
-   single Markdown document.
+   single Markdown document. Source-level polish is implemented; signed
+   candidate package and manual EPUB smoke remain proof tasks.
 5. v0.34 freezes features as the v1.0 Release Candidate and verifies the
    product explanation, App Store lane boundary, and golden path. Only
    small v1-fit polish should enter here: clearer open / unsaved
@@ -256,6 +260,9 @@ Align initial EPUB export with the single-document book-writing promise.
 - Improve the explicit export flow.
 - Check Japanese text, headings, local images, links, code blocks, and
   failure messages.
+- Report non-fatal image replacement warnings after a successful export
+  and keep generated XHTML language metadata aligned with the export
+  settings.
 - Keep advanced metadata, cover, navigation editing, and validation
   workflow deferred to v1.x.
 - Document the difference between e-book Mode preview and final EPUB

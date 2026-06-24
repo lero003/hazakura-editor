@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-06-23 (v0.32 reader bridge smoke checklist)
+Last reviewed: 2026-06-24 (v0.33 EPUB export smoke checklist)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -307,6 +307,36 @@ Run when Markdown preview, image assets, export, or authoring helpers change:
 6. Export HTML and confirm local workspace images are inlined and the saved file uses the same preview CSS as the live preview pane (`.markdown-preview` rules, no theme-specific overrides inlined).
 7. Use Print to PDF handoff and confirm the print-ready layout matches what Export HTML produces (serif body, page-break controls, no theme colors leaking into print).
 8. Insert a Markdown table and confirm the app does not imply row/column table editing beyond the implemented helper.
+
+## v0.33 EPUB Export Smoke
+
+Run this before treating the v0.33 EPUB export polish as ready for
+TestFlight or v1 release-candidate claims. This is manual app proof, not
+an in-app EPUB validator workflow.
+
+1. Open a Japanese Markdown document with ATX headings, body prose,
+   a workspace-local image, an external image URL, an external link,
+   a code block, a table, and a blank-line-flanked standalone `---`
+   page-break hint.
+2. Choose the EPUB export action and confirm the metadata dialog is
+   labelled `EPUB書き出し` / `EPUB Export`, with editable title, author,
+   and language fields.
+3. Save the `.epub` and confirm a successful export status appears. If
+   the document includes an unavailable image, confirm the status says
+   the EPUB was saved with image warnings rather than silently claiming a
+   clean export.
+4. Inspect the generated archive outside the app. Confirm nav/content
+   XHTML exist, headings appear in navigation, the selected language is
+   reflected in `lang` / `xml:lang`, workspace-local images are packaged,
+   external images are replaced with an in-content warning, links remain
+   links, code blocks remain readable, tables keep basic borders, and
+   page-break hints appear as EPUB page-break blocks.
+5. Confirm the export does not rewrite Markdown source, create a second
+   document model, launch EPUBCheck, run external validators, or expose
+   cover / navigation editor / advanced metadata workflows.
+6. If `epubcheck` is used, run it manually outside the app and record the
+   result as external evidence. Do not treat the app as having launched
+   or automated validation.
 
 ## Help Link Routing
 

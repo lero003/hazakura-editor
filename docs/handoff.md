@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-24 (v1 / v1.x planning alignment)
+Last reviewed: 2026-06-24 (v0.33 EPUB source polish)
 
 ## Current State
 
@@ -27,6 +27,22 @@ Last reviewed: 2026-06-24 (v1 / v1.x planning alignment)
   checks passed. App Store Connect upload, Apple processing, TestFlight
   install / launch, and normal / unsaved / recovered v0.32
   reader-bridge built-app smoke remain user-side proof.
+- `0.33.0` is now the source/package app version locally. The v0.33 EPUB
+  Export v1 Polish slice is implemented at source level: the export UI
+  says `EPUB書き出し` / `EPUB Export`, successful exports can report
+  non-fatal image replacement warnings through
+  `buildEpubBetaArchiveWithReport()`, and generated XHTML uses the
+  selected EPUB language metadata instead of hardcoded `ja`. No Book
+  Workspace, cover editor, navigation editor, advanced metadata,
+  in-app EPUBCheck, external validator launch, or second EPUB document
+  model was added. A `0.33.0` signed App Store / TestFlight package has
+  not been generated yet because signing identities were unavailable in
+  the implementation shell; use the v0.33 EPUB smoke checklist before
+  v1/package claims. Source proof passed with focused EPUB / export hook
+  / status tests, full `npm run test`, `npm run build:vite`, Rust
+  format/test checks, `npm run build`, App Store surface smoke, local
+  distribution probe, sandbox preview smoke, window launch smoke, and
+  `git diff --check`.
 - The next product slice should start from `docs/current-work.md` and
   treat `0.29.1` as shipped. The active lane is `v0.30-v1.0 Reader UX
   Stabilization`. The first code-level v0.30 e-book Mode paged flow
@@ -477,16 +493,18 @@ Last reviewed: 2026-06-24 (v1 / v1.x planning alignment)
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. v0.32 Editor / Reader Position Bridge: continue built-app checks for
-   normal, unsaved, and recovered documents; unsaved pathless tab
-   separation and one-page reader -> editor movement are now covered at
-   source level, but still need real-app interaction proof alongside
-   normal / recovered flows. Use the v0.32 reader-bridge checklist in
+1. v0.33 EPUB Export v1 Polish: run manual built-app EPUB smoke and
+   package only when signing identities are available. Keep EPUBCheck
+   manual and outside the app.
+2. v0.32 Editor / Reader Position Bridge: continue built-app checks for
+   normal, unsaved, and recovered documents if that proof is still
+   needed. Use the v0.32 reader-bridge checklist in
    `docs/smoke-checklist.md`.
-2. v0.33 EPUB Export v1 Polish, then v0.34 v1.0 Release Candidate.
-3. v1.x deepens the single-document product before Book Scope / Book
+3. v0.34 v1.0 Release Candidate after the EPUB/package proof boundary is
+   clear.
+4. v1.x deepens the single-document product before Book Scope / Book
    Workspace or stronger AI expansion.
-4. Hazakura Local Assist post-release polish only for concrete safety,
+5. Hazakura Local Assist post-release polish only for concrete safety,
    review, App Store, availability, generation failure, responsiveness,
    or transaction-boundary issues.
 
