@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-25 (v1 proof-close attempt)
+Last reviewed: 2026-06-25 (v0.33.0 build 39 package candidate)
 
 ## Current State
 
@@ -15,18 +15,19 @@ Last reviewed: 2026-06-25 (v1 proof-close attempt)
   Markdown preview flicker fix. Raw App Store Connect, TestFlight, and
   App Review logs remain outside this repository unless explicitly
   recorded later.
-- A new `0.32.0` App Store / TestFlight package candidate was generated
-  on 2026-06-23 after the v0.32 Editor / Reader Position Bridge work.
-  It advanced the App Store build counter to `36` and produced
-  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.32.0-build36-mas.pkg`
+- A new `0.33.0` App Store / TestFlight package candidate was generated
+  on 2026-06-25 after v0.33 EPUB Export v1 Polish and v1 fit-and-finish
+  source work. It advanced the App Store build counter to `39` and
+  produced
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.33.0-build39-mas.pkg`
   with SHA-256
-  `67111daae523027c4e1aca73fe39272116b342f3d71668a7050f4fa6a0f94981`.
-  Full `npm run test`, local package generation, App Store surface
-  smoke, signed app probe, package signature, metadata, supported-OS,
-  package expansion / Distribution XML inspection, and sandbox preview
-  checks passed. App Store Connect upload, Apple processing, TestFlight
-  install / launch, and normal / unsaved / recovered v0.32
-  reader-bridge built-app smoke remain user-side proof.
+  `69f6e50866fcefc107212eb96475e181ba25023b7ce9ebb2592a013b2d41e32f`.
+  App Store surface smoke, local package generation, signed app probe,
+  package signature, metadata, supported-OS, and sandbox preview checks
+  passed. App Store Connect upload, Apple processing, TestFlight install
+  / launch, v0.33 EPUB built-app smoke, v1 workspace/slash built-app
+  smoke, and normal / unsaved / recovered v0.32 reader-bridge built-app
+  smoke remain user-side proof.
 - `0.33.0` is now the source/package app version locally. The v0.33 EPUB
   Export v1 Polish slice is implemented at source level: the export UI
   says `EPUB書き出し` / `EPUB Export`, successful exports can report
@@ -35,10 +36,8 @@ Last reviewed: 2026-06-25 (v1 proof-close attempt)
   selected EPUB language metadata instead of hardcoded `ja`. No Book
   Workspace, cover editor, navigation editor, advanced metadata,
   in-app EPUBCheck, external validator launch, or second EPUB document
-  model was added. A `0.33.0` signed App Store / TestFlight package has
-  not been generated yet because signing identities were unavailable in
-  the implementation shell; use the v0.33 EPUB smoke checklist before
-  v1/package claims. A 2026-06-25 proof-close pass generated an external
+  model was added. Use the v0.33 EPUB smoke checklist before v1/App
+  Store claims. A 2026-06-25 proof-close pass generated an external
   fixture EPUB from Japanese Markdown and confirmed nav/content XHTML,
   packaged local image, external-image warning output, links, code,
   table, page-break output, unchanged source hash, and external
@@ -513,10 +512,10 @@ Last reviewed: 2026-06-25 (v1 proof-close attempt)
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. v0.33 EPUB Export v1 Polish: external archive / EPUBCheck proof now
-   exists, but run manual built-app EPUB smoke once the local preview app
-   can launch. Package only when signing identities are available. Keep
-   EPUBCheck manual and outside the app.
+1. v0.33 EPUB Export v1 Polish: external archive / EPUBCheck proof and
+   signed build `39` package evidence now exist, but run manual built-app
+   EPUB smoke once the local preview app can launch. Keep EPUBCheck
+   manual and outside the app.
 2. v1 workspace marker / right-click slash-command fit-and-finish: run
    the built-app smoke in `docs/smoke-checklist.md` once local preview
    launch works before treating it as v1-ready UI proof.

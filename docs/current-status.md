@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-25 (v1 proof-close attempt)
+Last reviewed: 2026-06-25 (v0.33.0 build 39 package candidate)
 
 ## Current State
 
@@ -16,15 +16,14 @@ Last reviewed: 2026-06-25 (v1 proof-close attempt)
   preview on-device writing companion.
 - Latest GitHub source / local-app tag: `v0.29.1`, prepared on
   2026-06-22.
-- Latest local App Store / TestFlight package candidate: `0.32.0` build
-  `36`, generated on 2026-06-23 for v0.32 Editor / Reader Position
-  Bridge built-app testing:
-  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.32.0-build36-mas.pkg`.
+- Latest local App Store / TestFlight package candidate: `0.33.0` build
+  `39`, generated on 2026-06-25 after v0.33 EPUB Export v1 Polish and
+  v1 fit-and-finish source work:
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.33.0-build39-mas.pkg`.
   Local package generation, App Store surface smoke, signed app
   distribution probe, `pkgutil --check-signature`, package SHA-256,
-  package expansion / Distribution XML inspection, and sandbox preview
-  checks passed. SHA-256:
-  `67111daae523027c4e1aca73fe39272116b342f3d71668a7050f4fa6a0f94981`.
+  and sandbox preview checks passed. SHA-256:
+  `69f6e50866fcefc107212eb96475e181ba25023b7ce9ebb2592a013b2d41e32f`.
   Raw App Store Connect upload, processing, TestFlight install /
   launch, and App Review logs are not tracked in this repository unless
   separately recorded.
@@ -47,12 +46,13 @@ Last reviewed: 2026-06-25 (v1 proof-close attempt)
   packaged local image, `image-unavailable` warning output, `ja`
   XHTML language metadata, and unchanged source hash. External
   `epubcheck` completed with 0 fatal errors / 0 errors / 0 warnings.
-  The `0.33.0` App Store / TestFlight package candidate has not been
-  generated in this repository state because the signing environment was
-  unavailable in the shell. Source/local proof passed with focused EPUB
-  / export hook / status tests, full `npm run test`,
-  `npm run build:vite`, `npm run build`, App Store surface smoke, local
-  distribution probe, and `git diff --check`. Built-app manual EPUB
+  The `0.33.0` App Store / TestFlight package candidate is now generated
+  as build `39`; upload, Apple processing, TestFlight install / launch,
+  and App Review remain outside this repository state. Source/local proof
+  passed with focused EPUB / export hook / status tests, full
+  `npm run test`, `npm run build:vite`, `npm run build`, App Store
+  surface smoke, local distribution probe, package signature check,
+  sandbox preview smoke, and `git diff --check`. Built-app manual EPUB
   smoke remains blocked in this host because LaunchServices failed to
   open the generated local preview bundle with `kLSNoExecutableErr`
   even though bundle inspection found the executable, version `0.33.0`,
@@ -416,9 +416,10 @@ baseline, and smoke evidence are archived under
 2. For the next product slice, start with `docs/current-work.md`.
    The active lane is `v0.30-v1.0 Reader UX Stabilization`; the current
    product proof task is v0.33 EPUB Export v1 Polish built-app manual
-   smoke / package evidence after the external archive / EPUBCheck proof;
-   the workspace marker and right-click slash-command fit-and-finish is
-   source-implemented but still needs built-app visual smoke. Keep the v1
+   smoke after the external archive / EPUBCheck proof and build `39`
+   package evidence; the workspace marker and right-click slash-command
+   fit-and-finish is source-implemented but still needs built-app visual
+   smoke. Keep the v1
    path focused on a single-document Safe Markdown Book Editor with
    Local Assist Review: Flow View, Spread View, editor/reader position
    bridge, initial EPUB export polish, and v1 RC smoke. Hazakura Local
@@ -435,20 +436,17 @@ baseline, and smoke evidence are archived under
    ergonomics, provenance, movement between writing / reading layers,
    and observation-driven Local Assist polish.
 3. For the latest local App Store / TestFlight package candidate,
-   `0.32.0` build `36`
-   is the latest local package evidence. It includes the v0.32 Editor /
-   Reader Position Bridge work, including right-pane reader navigation
-   syncing back to the editor while passive source edits and chapter
-   reclassification do not push the editor position from the reader.
+   `0.33.0` build `39`
+   is the latest local package evidence. It includes v0.33 EPUB Export
+   v1 Polish plus the workspace marker and right-click slash-command
+   source work.
    Upload, Apple processing, TestFlight install / launch, and App Review
    handling remain explicit distribution-lane work outside this
    repository unless public-safe evidence is recorded.
    The published `0.29.1` App Store lane remains the latest reported
    released version; its build `33` package is historical release
-   evidence and should not be confused with the new `0.32.0` candidate.
-   A `0.33.0` package has not been generated yet; run the submit-lane
-   candidate flow only when signing identities are available and upload /
-   App Store Connect work is explicitly requested.
+   evidence and should not be confused with the new `0.33.0` candidate.
+   Do upload / App Store Connect work only when explicitly requested.
    For future App Store submissions, start with `docs/app-store-build.md`;
    use `npm run release:candidate -- --with-app-store-pkg` for local
    signed package checkpoints, keep account-specific notes under ignored

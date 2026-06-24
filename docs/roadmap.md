@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-25 (v1 proof-close attempt)
+Last reviewed: 2026-06-25 (v0.33.0 build 39 package candidate)
 
 ## Current Position
 
@@ -22,10 +22,9 @@ Current release state:
 - Mac App Store published version: `0.29.1`, reported approved and
   released on 2026-06-23 with Hazakura Local Assist available as a
   preview on-device writing companion.
-- Latest local App Store / TestFlight package candidate: `0.32.0` build
-  `36`, generated on 2026-06-23 for v0.32 Editor / Reader Position
-  Bridge built-app testing. `0.33.0` is implemented at source level but
-  does not yet have generated package evidence.
+- Latest local App Store / TestFlight package candidate: `0.33.0` build
+  `39`, generated on 2026-06-25 after v0.33 EPUB Export v1 Polish and
+  v1 fit-and-finish source work.
 - Active lane: `v0.30-v1.0 Reader UX Stabilization`, making the shipped
   Safe Editor, L Mode, e-book Mode, EPUB export beta, Diff / Recovery,
   and Hazakura Local Assist review surfaces feel like one coherent
@@ -59,14 +58,14 @@ Near-term phase order:
 4. v0.33 polishes EPUB export as an explicit initial-v1 workflow for a
    single Markdown document. Source-level polish is implemented and an
    external fixture EPUB passed archive inspection plus external
-   EPUBCheck; signed candidate package and built-app manual EPUB smoke
-   remain proof tasks.
+   EPUBCheck, and signed build `39` package evidence exists. Built-app
+   manual EPUB smoke remains a proof task.
 5. v0.34 freezes features as the v1.0 Release Candidate and verifies the
    product explanation, App Store lane boundary, and golden path. The
    small v1-fit polish for open / unsaved workspace-file state and
    source-preserving selection tag insertion is source-implemented; RC
-   work should focus on built-app manual smoke, remaining package proof
-   gaps, and release wording.
+   work should focus on built-app manual smoke, remaining TestFlight /
+   release proof gaps, and release wording.
 6. v1.x deepens the single-document product before any rush to v2:
    EPUB, Diff / Review, movement between writing / reading layers,
    distribution polish when needed, and observation-driven Local Assist

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v0.30-v1.0 Reader UX Stabilization queue and v1 proof-close evidence
 Authority: High
-Last reviewed: 2026-06-25 (v1 proof-close attempt)
+Last reviewed: 2026-06-25 (v0.33.0 build 39 package candidate)
 
 ## Purpose
 
@@ -63,7 +63,7 @@ user-side proof.
 | Done | v0.30 e-book Mode Paged Flow | e-book Mode can be used as a daily reading / revision surface for long Japanese Markdown prose while still looking like a book page. The slice should reduce page-turn friction with wheel / trackpad / keyboard movement, preserve chapter/page location for the later editor bridge, and verify large-document behavior. |
 | Done | v0.31 e-book Mode Reading Focus / Spread View | `集中して読む` opens an occupied same-window reading surface, two-page book-like inspection exists when width allows, it falls back to one page when narrow, has keyboard / button navigation plus coarse movement, and remains a display layer over Markdown source rather than Preview DOM editing. |
 | Done / manual proof pending | v0.32 Editor / Reader Position Bridge | Opening e-book Mode near the current editor cursor or visible heading and returning from reader position to Markdown editing feels reliable for normal, unsaved, and recovered documents. Source-level and local package evidence exist; normal / unsaved / recovered built-app interaction smoke remains user-side proof. |
-| Active | v0.33 EPUB Export v1 Polish | EPUB export remains an explicit user action and is polished enough for initial v1 use with Japanese text, headings, local images, links, code blocks, and clear failure messages. Advanced metadata, cover, navigation editing, and validation workflows stay deferred to v1.x. Source-level polish is implemented; signed candidate package and manual EPUB smoke still need proof. |
+| Active | v0.33 EPUB Export v1 Polish | EPUB export remains an explicit user action and is polished enough for initial v1 use with Japanese text, headings, local images, links, code blocks, and clear failure messages. Advanced metadata, cover, navigation editing, and validation workflows stay deferred to v1.x. Source-level polish, external archive / EPUBCheck proof, and signed build `39` package evidence exist; built-app manual EPUB smoke remains blocked. |
 | Done / manual proof pending | v1 Workspace open / dirty markers | The workspace tree distinguishes active files, inactive open files, and open unsaved files using existing tab state. It does not imply Git status, background indexing, or a full file-manager model. Built-app visual smoke remains pending. |
 | Done / manual proof pending | v1 Selection tag insertion | The editor can open the existing slash-command menu from right-click inside the editor, including allowlisted Markdown wrappers such as bold, italic, inline code, links, images, and strikethrough. The source remains visible, undoable, and saved only by explicit Save. Built-app smoke remains pending. |
 | RC | v0.34 v1.0 Release Candidate | Feature work freezes and the golden path covers New File, Open, Save / Save As, L Mode, Preview, e-book paged flow, Spread View, EPUB export, Local Assist, Diff / Discard, Recovery, relaunch, large documents, and App Store lane boundary checks. |
@@ -313,9 +313,15 @@ remains blocked in this host: `npm run build` produced the local preview
 bundle and distribution probe passed, but `smoke:macos-window` could not
 open the bundle through LaunchServices (`kLSNoExecutableErr`) despite
 the executable, version `0.33.0`, bundled notices, helper executable,
-and ad-hoc signature inspecting correctly. The `0.33.0` App Store /
-TestFlight package was not generated because `APPLE_SIGNING_IDENTITY`
-and `APPLE_INSTALLER_SIGNING_IDENTITY` were not available in the shell.
+and ad-hoc signature inspecting correctly. A later same-day package pass
+generated the signed App Store / TestFlight candidate
+`src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.33.0-build39-mas.pkg`.
+The package SHA-256 is
+`69f6e50866fcefc107212eb96475e181ba25023b7ce9ebb2592a013b2d41e32f`;
+App Store surface smoke, signed app distribution probe,
+`pkgutil --check-signature`, and sandbox preview smoke passed. Upload,
+Apple processing, TestFlight install / launch, and App Review remain
+outside this repository state.
 
 v1 workspace / slash-command fit-and-finish is implemented at
 source level as of 2026-06-25: the workspace tree now derives open and

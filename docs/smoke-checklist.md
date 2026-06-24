@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-06-25 (v1 proof-close attempt)
+Last reviewed: 2026-06-25 (v0.33.0 build 39 package candidate)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
