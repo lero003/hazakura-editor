@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-25 (v1 workspace / slash-command fit-and-finish)
+Last reviewed: 2026-06-25 (v1 proof-close attempt)
 
 ## Current State
 
@@ -38,11 +38,19 @@ Last reviewed: 2026-06-25 (v1 workspace / slash-command fit-and-finish)
   model was added. A `0.33.0` signed App Store / TestFlight package has
   not been generated yet because signing identities were unavailable in
   the implementation shell; use the v0.33 EPUB smoke checklist before
-  v1/package claims. Source proof passed with focused EPUB / export hook
-  / status tests, full `npm run test`, `npm run build:vite`, Rust
-  format/test checks, `npm run build`, App Store surface smoke, local
-  distribution probe, sandbox preview smoke, window launch smoke, and
-  `git diff --check`.
+  v1/package claims. A 2026-06-25 proof-close pass generated an external
+  fixture EPUB from Japanese Markdown and confirmed nav/content XHTML,
+  packaged local image, external-image warning output, links, code,
+  table, page-break output, unchanged source hash, and external
+  `epubcheck` with 0 fatal errors / 0 errors / 0 warnings. This was not
+  in-app EPUBCheck. Source/local proof passed with focused EPUB / export
+  hook / status tests, full `npm run test`, `npm run build:vite`,
+  `npm run build`, App Store surface smoke, local distribution probe,
+  and `git diff --check`. Built-app manual smoke remained blocked
+  because LaunchServices could not open the generated local preview
+  bundle (`kLSNoExecutableErr`) even though bundle inspection found the
+  executable, version `0.33.0`, bundled notices, helper executable, and
+  valid ad-hoc signature.
 - v1 workspace / slash-command fit-and-finish is source-implemented:
   workspace tree open / dirty markers are derived from existing tab state
   with `isDirty()`, limited to files inside the selected workspace, and
@@ -53,7 +61,8 @@ Last reviewed: 2026-06-25 (v1 workspace / slash-command fit-and-finish)
   workspace model. Verification passed with focused workspace / editor
   slash tests, full `npm run test`, `npm run build:vite` (with the usual
   Vite chunk-size warning), and `git diff --check`. Built-app visual
-  smoke remains pending.
+  smoke remains blocked by the same local preview launch failure, not
+  passed.
 - The next product slice should start from `docs/current-work.md` and
   treat `0.29.1` as shipped. The active lane is `v0.30-v1.0 Reader UX
   Stabilization`. The first code-level v0.30 e-book Mode paged flow
@@ -504,12 +513,13 @@ Last reviewed: 2026-06-25 (v1 workspace / slash-command fit-and-finish)
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. v0.33 EPUB Export v1 Polish: run manual built-app EPUB smoke and
-   package only when signing identities are available. Keep EPUBCheck
-   manual and outside the app.
+1. v0.33 EPUB Export v1 Polish: external archive / EPUBCheck proof now
+   exists, but run manual built-app EPUB smoke once the local preview app
+   can launch. Package only when signing identities are available. Keep
+   EPUBCheck manual and outside the app.
 2. v1 workspace marker / right-click slash-command fit-and-finish: run
-   the built-app smoke in `docs/smoke-checklist.md` before treating it as
-   v1-ready UI proof.
+   the built-app smoke in `docs/smoke-checklist.md` once local preview
+   launch works before treating it as v1-ready UI proof.
 3. v0.32 Editor / Reader Position Bridge: continue built-app checks for
    normal, unsaved, and recovered documents if that proof is still
    needed. Use the v0.32 reader-bridge checklist in

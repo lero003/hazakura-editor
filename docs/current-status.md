@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-25 (v1 workspace / slash-command fit-and-finish)
+Last reviewed: 2026-06-25 (v1 proof-close attempt)
 
 ## Current State
 
@@ -40,13 +40,23 @@ Last reviewed: 2026-06-25 (v1 workspace / slash-command fit-and-finish)
   nav/content XHTML now uses the selected language metadata instead of
   hardcoding `ja`. No Book Workspace, cover editor, advanced metadata,
   navigation editor, in-app EPUBCheck, external validator launch, or
-  second EPUB document model was added. The `0.33.0` App Store /
-  TestFlight package candidate has not been generated in this repository
-  state because the signing environment was unavailable in the shell.
-  Source proof passed with focused EPUB / export hook / status tests,
-  full `npm run test`, `npm run build:vite`, Rust format/test checks,
-  `npm run build`, App Store surface smoke, local distribution probe,
-  sandbox preview smoke, window launch smoke, and `git diff --check`.
+  second EPUB document model was added. A 2026-06-25 proof-close pass
+  generated an external fixture EPUB from Japanese Markdown with a local
+  image, external-image warning, links, code, table, task list, and
+  page-break hint; archive inspection confirmed nav/content XHTML,
+  packaged local image, `image-unavailable` warning output, `ja`
+  XHTML language metadata, and unchanged source hash. External
+  `epubcheck` completed with 0 fatal errors / 0 errors / 0 warnings.
+  The `0.33.0` App Store / TestFlight package candidate has not been
+  generated in this repository state because the signing environment was
+  unavailable in the shell. Source/local proof passed with focused EPUB
+  / export hook / status tests, full `npm run test`,
+  `npm run build:vite`, `npm run build`, App Store surface smoke, local
+  distribution probe, and `git diff --check`. Built-app manual EPUB
+  smoke remains blocked in this host because LaunchServices failed to
+  open the generated local preview bundle with `kLSNoExecutableErr`
+  even though bundle inspection found the executable, version `0.33.0`,
+  bundled notices, helper executable, and valid ad-hoc code signature.
 - Source-level v1 workspace / slash-command fit-and-finish is
   implemented. The workspace tree now shows existing-tab-derived open
   and dirty markers for files inside the selected workspace, reusing
@@ -62,7 +72,8 @@ Last reviewed: 2026-06-25 (v1 workspace / slash-command fit-and-finish)
   a broader workspace model. Verification passed with focused workspace
   / editor slash tests, full `npm run test`, `npm run build:vite` (with
   the usual Vite chunk-size warning), and `git diff --check`. Built-app
-  visual smoke remains pending.
+  visual smoke remains blocked by the same local preview launch failure
+  described above, not passed.
 - Source-level `v0.32` Editor / Reader Position Bridge work is in
   progress after the user reported light `0.31` testing as problem-free.
   The current implementation records e-book chapter start lines, opens
@@ -404,10 +415,10 @@ baseline, and smoke evidence are archived under
    and boundary docs stay live for future submissions.
 2. For the next product slice, start with `docs/current-work.md`.
    The active lane is `v0.30-v1.0 Reader UX Stabilization`; the current
-   product proof task is v0.33 EPUB Export v1 Polish manual smoke /
-   package evidence; the workspace marker and right-click slash-command
-   fit-and-finish is source-implemented but still needs built-app visual
-   smoke. Keep the v1
+   product proof task is v0.33 EPUB Export v1 Polish built-app manual
+   smoke / package evidence after the external archive / EPUBCheck proof;
+   the workspace marker and right-click slash-command fit-and-finish is
+   source-implemented but still needs built-app visual smoke. Keep the v1
    path focused on a single-document Safe Markdown Book Editor with
    Local Assist Review: Flow View, Spread View, editor/reader position
    bridge, initial EPUB export polish, and v1 RC smoke. Hazakura Local

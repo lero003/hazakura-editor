@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-06-25 (v1 workspace / slash-command fit-and-finish smoke)
+Last reviewed: 2026-06-25 (v1 proof-close attempt)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -338,6 +338,15 @@ an in-app EPUB validator workflow.
    result as external evidence. Do not treat the app as having launched
    or automated validation.
 
+Latest external proof note: on 2026-06-25, a proof fixture EPUB was
+generated outside the app UI from Japanese Markdown containing headings,
+a local image, an external image, link, code block, table, task list, and
+page-break hint. Archive inspection confirmed nav/content XHTML,
+packaged local image, external-image warning output, `ja` XHTML language
+metadata, links, code, table, page-break output, and unchanged source
+hash. External `epubcheck` completed with 0 fatal errors / 0 errors /
+0 warnings. This does not replace built-app export dialog/status smoke.
+
 ## v1 Workspace Marker / Right-click Slash Command Smoke
 
 Run this before treating the v1 workspace marker and right-click
@@ -369,6 +378,12 @@ handling, and workspace-tree rendering.
 9. Repeat a light check in L Mode's workspace drawer. The marker state
    should match the normal workspace sidebar and should not imply Git
    status, background indexing, or a full file-manager model.
+
+Latest local app note: on 2026-06-25, `npm run build` produced the local
+preview bundle and distribution probe passed, but `smoke:macos-window`
+could not open the bundle through LaunchServices (`kLSNoExecutableErr`).
+Do not treat workspace marker / right-click slash-command UI smoke as
+passed until this checklist is exercised in a launchable desktop shell.
 
 ## Help Link Routing
 

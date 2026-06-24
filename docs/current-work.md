@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v0.30-v1.0 Reader UX Stabilization queue and v1 fit-and-finish source evidence
+Scope: v0.30-v1.0 Reader UX Stabilization queue and v1 proof-close evidence
 Authority: High
-Last reviewed: 2026-06-25 (v1 workspace / slash-command fit-and-finish)
+Last reviewed: 2026-06-25 (v1 proof-close attempt)
 
 ## Purpose
 
@@ -298,11 +298,24 @@ Verification passed with focused EPUB / export hook / status tests, full
 sandbox preview smoke, window launch smoke, and `git diff --check`.
 The Vite chunk-size warning and local preview Gatekeeper
 `Insufficient Context` result remain expected for this lane.
-The `v0.32` built-app reader-bridge smoke remains user-side proof and
-was not completed by this source slice. The `0.33.0` App Store /
-TestFlight package was not generated in this run because
-`APPLE_SIGNING_IDENTITY` and `APPLE_INSTALLER_SIGNING_IDENTITY` were not
-available in the shell.
+The 2026-06-25 proof-close pass added external fixture evidence: a
+Japanese Markdown document with headings, local image, external image,
+external link, code block, table, task list, and page-break hint was
+converted to an EPUB artifact outside the app UI. Archive inspection
+confirmed nav/content XHTML, packaged local image, in-content warning
+for the external image, links, code, table, page-break output, `ja`
+XHTML language metadata, and unchanged Markdown source hash. External
+`epubcheck` completed with 0 fatal errors / 0 errors / 0 warnings. This
+is external proof only; the app did not launch EPUBCheck or automate an
+in-app validator workflow. Built-app manual smoke for v0.33 EPUB, v1
+workspace marker / right-click slash command, and v0.32 reader bridge
+remains blocked in this host: `npm run build` produced the local preview
+bundle and distribution probe passed, but `smoke:macos-window` could not
+open the bundle through LaunchServices (`kLSNoExecutableErr`) despite
+the executable, version `0.33.0`, bundled notices, helper executable,
+and ad-hoc signature inspecting correctly. The `0.33.0` App Store /
+TestFlight package was not generated because `APPLE_SIGNING_IDENTITY`
+and `APPLE_INSTALLER_SIGNING_IDENTITY` were not available in the shell.
 
 v1 workspace / slash-command fit-and-finish is implemented at
 source level as of 2026-06-25: the workspace tree now derives open and
@@ -320,7 +333,7 @@ wrappers and insert helpers while keeping Markdown source explicit and
 Save manual. Verification passed with focused workspace / editor slash
 tests, full `npm run test`, `npm run build:vite` (with the usual Vite
 chunk-size warning), and `git diff --check`. Built-app visual smoke
-remains pending.
+remains blocked by the local preview launch failure described above.
 
 Post-v1 guardrail: after v1.0, do not rush straight into v2.0. Use v1.x
 to deepen the single-document product first: EPUB export, Diff / Review

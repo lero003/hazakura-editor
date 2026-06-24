@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-25 (v1 workspace / slash-command fit-and-finish)
+Last reviewed: 2026-06-25 (v1 proof-close attempt)
 
 ## Current Position
 
@@ -57,13 +57,16 @@ Near-term phase order:
    Source-level and local package evidence exist; normal / unsaved /
    recovered built-app interaction smoke remains user-side proof.
 4. v0.33 polishes EPUB export as an explicit initial-v1 workflow for a
-   single Markdown document. Source-level polish is implemented; signed
-   candidate package and manual EPUB smoke remain proof tasks.
+   single Markdown document. Source-level polish is implemented and an
+   external fixture EPUB passed archive inspection plus external
+   EPUBCheck; signed candidate package and built-app manual EPUB smoke
+   remain proof tasks.
 5. v0.34 freezes features as the v1.0 Release Candidate and verifies the
    product explanation, App Store lane boundary, and golden path. The
    small v1-fit polish for open / unsaved workspace-file state and
    source-preserving selection tag insertion is source-implemented; RC
-   work should focus on manual smoke, proof gaps, and release wording.
+   work should focus on built-app manual smoke, remaining package proof
+   gaps, and release wording.
 6. v1.x deepens the single-document product before any rush to v2:
    EPUB, Diff / Review, movement between writing / reading layers,
    distribution polish when needed, and observation-driven Local Assist

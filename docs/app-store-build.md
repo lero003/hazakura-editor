@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-06-23 (v0.32.0 TestFlight package candidate)
+Last reviewed: 2026-06-25 (v0.33.0 source / package readiness)
 
 ## Purpose
 
@@ -44,7 +44,7 @@ Agent Workbench behind its existing boundary.
 - Published App Store version: `0.29.1` (reported approved and released
   on 2026-06-23 with Hazakura Local Assist available as a preview
   on-device writing companion)
-- Current source / Developer version: `0.32.0`
+- Current source / Developer version: `0.33.0`
 - Latest generated local App Store package evidence: `0.32.0` build `36`
   (generated for v0.32 Editor / Reader Position Bridge built-app testing)
 - Current App Store submit config build counter: `36`
@@ -327,8 +327,9 @@ find "$APP/Contents/MacOS" -maxdepth 1 -type f -print
 Expected:
 
 - `CFBundleIdentifier` is `dev.hazakura.editor`
-- `CFBundleShortVersionString` is the current package version (`0.32.0`
-  for the current candidate)
+- `CFBundleShortVersionString` is the current package version (`0.33.0`
+  for the current source; latest generated package evidence remains
+  `0.32.0` build `36` until the next signed candidate is generated)
 - `CFBundleVersion` is a positive integer higher than the last uploaded
   App Store Connect build
 - `LSMinimumSystemVersion` is `26.0`
