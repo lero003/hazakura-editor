@@ -5,7 +5,7 @@ import type {
   PointerEvent as ReactPointerEvent,
   RefObject,
 } from "react";
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import type { EBookReaderLocation } from "../editor/preview/EBookPane";
 import type { EditorPaneHandle, EditorSelectionInfo } from "../editor/EditorPane";
 import { EditorMainPane } from "../editor/EditorMainPane";
@@ -14,6 +14,7 @@ import { SidePane } from "./SidePane";
 import { WorkspaceSidebar } from "../workspace/WorkspaceSidebar";
 import { PanelLeftOpenIcon } from "./Icons";
 import { splitMarkdownIntoChapters } from "../../features/editor/ebookChapters";
+import { getWorkspaceTabMarkerPaths } from "../../features/editor/editorTabs";
 import type {
   LModeCopy,
   SafeEditorCopy,
@@ -141,6 +142,7 @@ type AppWorkspaceProps = {
   sidePaneVisible: boolean;
   syncEditorScroll: () => void;
   syncPreviewScroll: (ratio: number) => void;
+  tabs: readonly EditorTab[];
   onCheckAgentGate: () => void;
   onOpenAgentWindow: () => void;
   onResumeAgentUiRefresh: () => void;
@@ -231,6 +233,7 @@ export function AppWorkspace({
   sidePaneVisible,
   syncEditorScroll,
   syncPreviewScroll,
+  tabs,
   onCheckAgentGate,
   onOpenAgentWindow,
   onResumeAgentUiRefresh,
@@ -319,6 +322,10 @@ export function AppWorkspace({
   };
   const ebookReadingFocusActive =
     ebookFocusOpen && activeTab !== null && previewVisible && selectedImage === null;
+  const workspaceTabMarkers = useMemo(
+    () => getWorkspaceTabMarkerPaths(tabs, workspaceRootPath),
+    [tabs, workspaceRootPath],
+  );
 
   return (
     <section
@@ -343,6 +350,7 @@ export function AppWorkspace({
           compareSourcePath={compareAnchor?.path ?? null}
           compareTargetPath={compareTarget?.path ?? null}
           copy={safeEditorCopy}
+          dirtyFilePaths={workspaceTabMarkers.dirtyFilePaths}
           fileOpsCopy={fileOpsCopy}
           onCollapse={
             editorSettings.lModeEnabled
@@ -366,6 +374,7 @@ export function AppWorkspace({
           onOpenRootContextMenu={openRootWorkspaceContextMenu}
           onOpenFile={(path) => void openWorkspaceFile(path)}
           onOpenWorkspace={() => void openWorkspace()}
+          openFilePaths={workspaceTabMarkers.openFilePaths}
           onClearCompareSelection={() => {
             clearCompareSource();
             clearCompareTarget();

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-06-24 (v0.33 EPUB export smoke checklist)
+Last reviewed: 2026-06-25 (v1 workspace / slash-command fit-and-finish smoke)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -337,6 +337,38 @@ an in-app EPUB validator workflow.
 6. If `epubcheck` is used, run it manually outside the app and record the
    result as external evidence. Do not treat the app as having launched
    or automated validation.
+
+## v1 Workspace Marker / Right-click Slash Command Smoke
+
+Run this before treating the v1 workspace marker and right-click
+slash-command fit-and-finish as built-app proven. Use the packaged
+desktop app, because this checks actual CodeMirror focus, context-menu
+handling, and workspace-tree rendering.
+
+1. Open a workspace with at least two Markdown files, then open both
+   files as tabs.
+2. Confirm the active file remains visually distinct in the workspace
+   tree and both open files show a subtle open marker.
+3. Edit the inactive open tab without saving. Confirm the workspace tree
+   shows it as open and unsaved, matching the tab dirty dot. Repeat with
+   an encoding-only or line-ending-only dirty change when practical.
+4. Save the dirty file and confirm the unsaved marker clears while the
+   open marker remains.
+5. Open an untitled tab and a file outside the selected workspace.
+   Confirm neither creates a workspace-tree marker.
+6. In the editor, select text and right-click inside the selection.
+   Confirm the slash-command menu opens and a wrapper command such as
+   bold, italic, inline code, or link applies to the selected source text
+   without saving automatically.
+7. Right-click with no selection and run an insert command such as a
+   heading, task list, or table. Confirm the insertion happens at the
+   clicked editor position.
+8. Confirm `Escape`, running a command, and clicking outside the editor /
+   menu close the slash-command menu. The workspace tree and tab bar
+   context menus should keep their existing behavior.
+9. Repeat a light check in L Mode's workspace drawer. The marker state
+   should match the normal workspace sidebar and should not imply Git
+   status, background indexing, or a full file-manager model.
 
 ## Help Link Routing
 

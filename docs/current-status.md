@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-24 (v0.33 EPUB source polish)
+Last reviewed: 2026-06-25 (v1 workspace / slash-command fit-and-finish)
 
 ## Current State
 
@@ -47,6 +47,22 @@ Last reviewed: 2026-06-24 (v0.33 EPUB source polish)
   full `npm run test`, `npm run build:vite`, Rust format/test checks,
   `npm run build`, App Store surface smoke, local distribution probe,
   sandbox preview smoke, window launch smoke, and `git diff --check`.
+- Source-level v1 workspace / slash-command fit-and-finish is
+  implemented. The workspace tree now shows existing-tab-derived open
+  and dirty markers for files inside the selected workspace, reusing
+  `isDirty()` so unsaved content, line-ending, and encoding changes align
+  with the tab bar. Pathless untitled tabs, workspace-external tabs,
+  directories, and image-only preview state do not create workspace
+  markers. The editor content area now opens the existing slash-command
+  menu from right-click; it preserves selection when invoked inside the
+  selection, otherwise moves the cursor to the clicked editor position.
+  This surfaces the existing allowlisted Markdown wrappers and insert
+  helpers without adding a formatting toolbar, Git status, background
+  indexing, new Agent / Review commands, arbitrary command execution, or
+  a broader workspace model. Verification passed with focused workspace
+  / editor slash tests, full `npm run test`, `npm run build:vite` (with
+  the usual Vite chunk-size warning), and `git diff --check`. Built-app
+  visual smoke remains pending.
 - Source-level `v0.32` Editor / Reader Position Bridge work is in
   progress after the user reported light `0.31` testing as problem-free.
   The current implementation records e-book chapter start lines, opens
@@ -388,7 +404,10 @@ baseline, and smoke evidence are archived under
    and boundary docs stay live for future submissions.
 2. For the next product slice, start with `docs/current-work.md`.
    The active lane is `v0.30-v1.0 Reader UX Stabilization`; the current
-   product slice is v0.33 EPUB Export v1 Polish. Keep the v1
+   product proof task is v0.33 EPUB Export v1 Polish manual smoke /
+   package evidence; the workspace marker and right-click slash-command
+   fit-and-finish is source-implemented but still needs built-app visual
+   smoke. Keep the v1
    path focused on a single-document Safe Markdown Book Editor with
    Local Assist Review: Flow View, Spread View, editor/reader position
    bridge, initial EPUB export polish, and v1 RC smoke. Hazakura Local

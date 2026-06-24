@@ -43,6 +43,10 @@ type UseSlashMenuResult = {
   activeIndex: number;
   closeMenu: () => void;
   commands: SlashCommand[];
+  openMenuAtContext: (
+    view: EditorView,
+    rect: { top: number; left: number; bottom: number },
+  ) => void;
   runCommand: (command: SlashCommand) => void;
   setActiveIndex: (index: number) => void;
   state: SlashMenuState;
@@ -132,6 +136,7 @@ export function useSlashMenu({
   const [activeIndex, setActiveIndex] = useState(0);
   const activeIndexRef = useRef(0);
   const filteredCommandsRef = useRef<SlashCommand[]>([]);
+  const stateRef = useRef<SlashMenuState>(HIDDEN_SLASH_STATE);
 
   const commandList = useMemo(() => [...commands], [commands]);
 
@@ -161,17 +166,44 @@ export function useSlashMenu({
     filteredCommandsRef.current = filteredCommands;
   }, [filteredCommands]);
 
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
+  const setMenuState = useCallback((nextState: SlashMenuState) => {
+    stateRef.current = nextState;
+    setState(nextState);
+  }, []);
+
   const closeMenu = useCallback(() => {
-    setState((current) =>
-      current.visible
-        ? { ...current, query: "", rect: null, visible: false }
-        : current,
-    );
+    if (stateRef.current.visible) {
+      setMenuState(HIDDEN_SLASH_STATE);
+    }
     const view = viewRef.current;
     if (view) {
       view.focus();
     }
-  }, [viewRef]);
+  }, [setMenuState, viewRef]);
+
+  const openMenuAtContext = useCallback(
+    (
+      view: EditorView,
+      rect: { top: number; left: number; bottom: number },
+    ) => {
+      const selection = view.state.selection.main;
+      setActiveIndex(0);
+      setMenuState({
+        query: "",
+        rect,
+        slashFrom: selection.from,
+        slashTo: selection.to,
+        source: "context",
+        visible: true,
+      });
+      view.focus();
+    },
+    [setMenuState],
+  );
 
   const runCommand = useCallback(
     (command: SlashCommand) => {
@@ -179,11 +211,17 @@ export function useSlashMenu({
       if (!view) {
         return;
       }
+      const currentState = stateRef.current;
       if ("insertText" in command) {
-        const match = findSlashMatch(view);
-        if (!match) {
-          return;
-        }
+        const match =
+          currentState.source === "context" && currentState.visible
+            ? {
+                from: view.state.selection.main.from,
+                query: "",
+                to: view.state.selection.main.to,
+              }
+            : findSlashMatch(view);
+        if (!match) return;
         view.dispatch({
           changes: { from: match.from, to: match.to, insert: command.insertText },
           selection: {
@@ -192,7 +230,10 @@ export function useSlashMenu({
         });
         view.focus();
       } else {
-        const match = findSlashMatch(view);
+        const match =
+          currentState.source === "context" && currentState.visible
+            ? null
+            : findSlashMatch(view);
         if (match) {
           view.dispatch({
             changes: { from: match.from, to: match.to, insert: "" },
@@ -201,14 +242,14 @@ export function useSlashMenu({
         view.focus();
         command.action();
       }
-      setState(HIDDEN_SLASH_STATE);
+      setMenuState(HIDDEN_SLASH_STATE);
     },
-    [viewRef],
+    [setMenuState, viewRef],
   );
 
   useEffect(() => {
     if (!enabled) {
-      setState(HIDDEN_SLASH_STATE);
+      setMenuState(HIDDEN_SLASH_STATE);
       return;
     }
     const view = viewRef.current;
@@ -217,29 +258,34 @@ export function useSlashMenu({
     }
 
     const update = () => {
+      if (
+        stateRef.current.visible &&
+        stateRef.current.source === "context"
+      ) {
+        return;
+      }
       if (isComposing(view)) {
-        setState((current) =>
-          current.visible
-            ? { ...current, rect: null, visible: false }
-            : current,
-        );
+        const current = stateRef.current;
+        if (current.visible) {
+          setMenuState({ ...current, rect: null, visible: false });
+        }
         return;
       }
       const match = findSlashMatch(view);
       if (!match) {
-        setState((current) =>
-          current.visible
-            ? { ...current, query: "", rect: null, visible: false }
-            : current,
-        );
+        const current = stateRef.current;
+        if (current.visible) {
+          setMenuState({ ...current, query: "", rect: null, visible: false });
+        }
         return;
       }
       const rect = readCursorRect(view, match.to);
-      setState({
+      setMenuState({
         query: match.query,
         rect,
         slashFrom: match.from,
         slashTo: match.to,
+        source: "typed",
         visible: true,
       });
     };
@@ -247,11 +293,10 @@ export function useSlashMenu({
     update();
     const dom = view.contentDOM;
     const onCompositionStart = () => {
-      setState((current) =>
-        current.visible
-          ? { ...current, rect: null, visible: false }
-          : current,
-      );
+      const current = stateRef.current;
+      if (current.visible) {
+        setMenuState({ ...current, rect: null, visible: false });
+      }
     };
     const onCompositionEnd = () => {
       update();
@@ -260,7 +305,7 @@ export function useSlashMenu({
       update();
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (state.visible) {
+      if (stateRef.current.visible) {
         const consumeEvent = () => {
           event.preventDefault();
           event.stopImmediatePropagation();
@@ -302,24 +347,45 @@ export function useSlashMenu({
         setTimeout(update, 0);
       }
     };
+    const onWindowMouseDown = (event: MouseEvent) => {
+      if (!stateRef.current.visible) {
+        return;
+      }
+      const target = event.target;
+      if (!(target instanceof Node)) {
+        closeMenu();
+        return;
+      }
+      if (view.dom.contains(target)) {
+        return;
+      }
+      const menu = document.querySelector(".slash-menu");
+      if (menu?.contains(target)) {
+        return;
+      }
+      closeMenu();
+    };
     dom.addEventListener("compositionstart", onCompositionStart);
     dom.addEventListener("compositionend", onCompositionEnd);
     dom.addEventListener("input", onSelectionChange);
     dom.addEventListener("keyup", onSelectionChange);
     dom.addEventListener("keydown", onKeyDown, true);
+    window.addEventListener("mousedown", onWindowMouseDown, true);
     return () => {
       dom.removeEventListener("compositionstart", onCompositionStart);
       dom.removeEventListener("compositionend", onCompositionEnd);
       dom.removeEventListener("input", onSelectionChange);
       dom.removeEventListener("keyup", onSelectionChange);
       dom.removeEventListener("keydown", onKeyDown, true);
+      window.removeEventListener("mousedown", onWindowMouseDown, true);
     };
-  }, [closeMenu, enabled, runCommand, state.visible, viewKey, viewRef]);
+  }, [closeMenu, enabled, runCommand, setMenuState, viewKey, viewRef]);
 
   return {
     activeIndex,
     closeMenu,
     commands: filteredCommands,
+    openMenuAtContext,
     runCommand,
     setActiveIndex,
     state,

@@ -1,4 +1,4 @@
-import { useState, type ComponentProps } from "react";
+import { useMemo, useState, type ComponentProps } from "react";
 import type {
   AmbientIntensity,
   EditorSettings,
@@ -18,6 +18,7 @@ import { LModeActionRail } from "./LModeActionRail";
 import { LModeExitPill } from "./LModeExitPill";
 import { LModeWindowDragBand } from "./LModeWindowDragBand";
 import { AppleAssistReviewBar } from "./AppleAssistReviewBar";
+import { getWorkspaceTabMarkerPaths } from "../../features/editor/editorTabs";
 
 export type AppShellProps = Omit<
   ComponentProps<typeof AppTopChrome>,
@@ -45,6 +46,10 @@ export function AppShell(props: AppShellProps) {
   const ambientMode = isAmbientMode(props.resolvedTheme) ? props.resolvedTheme : null;
   const [workspaceSidebarCollapsed, setWorkspaceSidebarCollapsed] =
     useState(false);
+  const workspaceTabMarkers = useMemo(
+    () => getWorkspaceTabMarkerPaths(props.tabs, props.workspaceRootPath),
+    [props.tabs, props.workspaceRootPath],
+  );
 
   return (
     <main className="app-shell">
@@ -103,6 +108,7 @@ export function AppShell(props: AppShellProps) {
               compareSourcePath: props.compareAnchor?.path ?? null,
               compareTargetPath: props.compareTarget?.path ?? null,
               copy: props.safeEditorCopy,
+              dirtyFilePaths: workspaceTabMarkers.dirtyFilePaths,
               fileOpsCopy: props.fileOpsCopy,
               onCreateFile: () => {
                 if (props.workspaceRootPath) {
@@ -121,6 +127,7 @@ export function AppShell(props: AppShellProps) {
               onOpenRootContextMenu: props.openRootWorkspaceContextMenu,
               onOpenFile: (path) => void props.openWorkspaceFile(path),
               onOpenWorkspace: () => void props.openWorkspace(),
+              openFilePaths: workspaceTabMarkers.openFilePaths,
               onClearCompareSelection: () => {
                 props.clearCompareSource();
                 props.clearCompareTarget();

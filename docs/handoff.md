@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-24 (v0.33 EPUB source polish)
+Last reviewed: 2026-06-25 (v1 workspace / slash-command fit-and-finish)
 
 ## Current State
 
@@ -43,6 +43,17 @@ Last reviewed: 2026-06-24 (v0.33 EPUB source polish)
   format/test checks, `npm run build`, App Store surface smoke, local
   distribution probe, sandbox preview smoke, window launch smoke, and
   `git diff --check`.
+- v1 workspace / slash-command fit-and-finish is source-implemented:
+  workspace tree open / dirty markers are derived from existing tab state
+  with `isDirty()`, limited to files inside the selected workspace, and
+  the editor content area opens the existing slash-command menu on
+  right-click. This surfaces the existing allowlisted Markdown wrappers
+  and insert helpers without adding a formatting toolbar, Git status,
+  background indexing, new Agent / Review commands, or a broader
+  workspace model. Verification passed with focused workspace / editor
+  slash tests, full `npm run test`, `npm run build:vite` (with the usual
+  Vite chunk-size warning), and `git diff --check`. Built-app visual
+  smoke remains pending.
 - The next product slice should start from `docs/current-work.md` and
   treat `0.29.1` as shipped. The active lane is `v0.30-v1.0 Reader UX
   Stabilization`. The first code-level v0.30 e-book Mode paged flow
@@ -496,15 +507,18 @@ Use `docs/current-work.md` for the active queue. Current priority order:
 1. v0.33 EPUB Export v1 Polish: run manual built-app EPUB smoke and
    package only when signing identities are available. Keep EPUBCheck
    manual and outside the app.
-2. v0.32 Editor / Reader Position Bridge: continue built-app checks for
+2. v1 workspace marker / right-click slash-command fit-and-finish: run
+   the built-app smoke in `docs/smoke-checklist.md` before treating it as
+   v1-ready UI proof.
+3. v0.32 Editor / Reader Position Bridge: continue built-app checks for
    normal, unsaved, and recovered documents if that proof is still
    needed. Use the v0.32 reader-bridge checklist in
    `docs/smoke-checklist.md`.
-3. v0.34 v1.0 Release Candidate after the EPUB/package proof boundary is
+4. v0.34 v1.0 Release Candidate after the EPUB/package proof boundary is
    clear.
-4. v1.x deepens the single-document product before Book Scope / Book
+5. v1.x deepens the single-document product before Book Scope / Book
    Workspace or stronger AI expansion.
-5. Hazakura Local Assist post-release polish only for concrete safety,
+6. Hazakura Local Assist post-release polish only for concrete safety,
    review, App Store, availability, generation failure, responsiveness,
    or transaction-boundary issues.
 

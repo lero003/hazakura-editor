@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v0.30-v1.0 Reader UX Stabilization queue and v0.33 source evidence
+Scope: v0.30-v1.0 Reader UX Stabilization queue and v1 fit-and-finish source evidence
 Authority: High
-Last reviewed: 2026-06-24 (v0.33 EPUB source polish)
+Last reviewed: 2026-06-25 (v1 workspace / slash-command fit-and-finish)
 
 ## Purpose
 
@@ -64,8 +64,8 @@ user-side proof.
 | Done | v0.31 e-book Mode Reading Focus / Spread View | `集中して読む` opens an occupied same-window reading surface, two-page book-like inspection exists when width allows, it falls back to one page when narrow, has keyboard / button navigation plus coarse movement, and remains a display layer over Markdown source rather than Preview DOM editing. |
 | Done / manual proof pending | v0.32 Editor / Reader Position Bridge | Opening e-book Mode near the current editor cursor or visible heading and returning from reader position to Markdown editing feels reliable for normal, unsaved, and recovered documents. Source-level and local package evidence exist; normal / unsaved / recovered built-app interaction smoke remains user-side proof. |
 | Active | v0.33 EPUB Export v1 Polish | EPUB export remains an explicit user action and is polished enough for initial v1 use with Japanese text, headings, local images, links, code blocks, and clear failure messages. Advanced metadata, cover, navigation editing, and validation workflows stay deferred to v1.x. Source-level polish is implemented; signed candidate package and manual EPUB smoke still need proof. |
-| Candidate | v1 Workspace open / dirty markers | The workspace tree can distinguish the active file, inactive open files, and open unsaved files using existing tab state. It must not imply Git status, background indexing, or a full file-manager model. |
-| Candidate | v1 Selection tag insertion | The editor can wrap or insert a small allowlisted set of Markdown / tag snippets around selected text through a simple affordance such as a button, context menu, or command. The source remains visible, undoable, and saved only by explicit Save. |
+| Done / manual proof pending | v1 Workspace open / dirty markers | The workspace tree distinguishes active files, inactive open files, and open unsaved files using existing tab state. It does not imply Git status, background indexing, or a full file-manager model. Built-app visual smoke remains pending. |
+| Done / manual proof pending | v1 Selection tag insertion | The editor can open the existing slash-command menu from right-click inside the editor, including allowlisted Markdown wrappers such as bold, italic, inline code, links, images, and strikethrough. The source remains visible, undoable, and saved only by explicit Save. Built-app smoke remains pending. |
 | RC | v0.34 v1.0 Release Candidate | Feature work freezes and the golden path covers New File, Open, Save / Save As, L Mode, Preview, e-book paged flow, Spread View, EPUB export, Local Assist, Diff / Discard, Recovery, relaunch, large documents, and App Store lane boundary checks. |
 | Observation only | Hazakura Local Assist post-release polish | Pick this before the active Reader UX slice only for a concrete safety, review, App Store, availability, generation failure, responsiveness, or transaction-boundary issue. Keep App Store AI assistance local, user-initiated, unsaved until accepted, and Diff / Discard reviewable. |
 | Fallback | Core Safe Editor quality probe | Use only when no concrete Reader UX slice is open or the run is a recurring quality pass. Inspect one high-risk basic surface with a named risk hypothesis, then either fix the smallest reproduced issue or close as `verified no-op`. |
@@ -303,6 +303,24 @@ was not completed by this source slice. The `0.33.0` App Store /
 TestFlight package was not generated in this run because
 `APPLE_SIGNING_IDENTITY` and `APPLE_INSTALLER_SIGNING_IDENTITY` were not
 available in the shell.
+
+v1 workspace / slash-command fit-and-finish is implemented at
+source level as of 2026-06-25: the workspace tree now derives open and
+dirty markers from existing editor tab state, reusing `isDirty()` so
+text, line-ending, and encoding-only dirty state match the tab bar. The
+markers are limited to files inside the selected workspace; pathless
+untitled tabs, workspace-external tabs, directories, and image-only
+preview state are not treated as workspace-file status. The editor
+content area now opens the existing slash-command menu on right-click,
+without adding a new formatting toolbar or broadening Agent / Review
+commands. Right-click preserves an existing selection when invoked
+inside it; otherwise it moves the cursor to the clicked editor position
+before running commands. This surfaces the already allowlisted Markdown
+wrappers and insert helpers while keeping Markdown source explicit and
+Save manual. Verification passed with focused workspace / editor slash
+tests, full `npm run test`, `npm run build:vite` (with the usual Vite
+chunk-size warning), and `git diff --check`. Built-app visual smoke
+remains pending.
 
 Post-v1 guardrail: after v1.0, do not rush straight into v2.0. Use v1.x
 to deepen the single-document product first: EPUB export, Diff / Review

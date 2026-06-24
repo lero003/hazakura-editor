@@ -5,6 +5,7 @@ export type SlashMenuState = {
   query: string;
   slashFrom: number;
   slashTo: number;
+  source: "typed" | "context";
   rect: { top: number; left: number; bottom: number } | null;
 };
 
@@ -37,6 +38,7 @@ export const HIDDEN_SLASH_STATE: SlashMenuState = {
   rect: null,
   slashFrom: 0,
   slashTo: 0,
+  source: "typed",
   visible: false,
   query: "",
 };

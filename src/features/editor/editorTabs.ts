@@ -53,6 +53,38 @@ export function isDirty(tab: EditorTab): boolean {
   );
 }
 
+export function getWorkspaceTabMarkerPaths(
+  tabs: readonly EditorTab[],
+  workspaceRootPath: string | null,
+): { openFilePaths: string[]; dirtyFilePaths: string[] } {
+  if (!workspaceRootPath) {
+    return { openFilePaths: [], dirtyFilePaths: [] };
+  }
+
+  const root = workspaceRootPath.replace(/\/+$/, "");
+  const openFilePaths = new Set<string>();
+  const dirtyFilePaths = new Set<string>();
+
+  for (const tab of tabs) {
+    if (!tab.path || !isPathInWorkspace(tab.path, root)) {
+      continue;
+    }
+    openFilePaths.add(tab.path);
+    if (isDirty(tab)) {
+      dirtyFilePaths.add(tab.path);
+    }
+  }
+
+  return {
+    dirtyFilePaths: [...dirtyFilePaths],
+    openFilePaths: [...openFilePaths],
+  };
+}
+
+function isPathInWorkspace(path: string, workspaceRootPath: string): boolean {
+  return path === workspaceRootPath || path.startsWith(`${workspaceRootPath}/`);
+}
+
 export function isSaveFailureError(tab: EditorTab | null): boolean {
   return tab?.saveStatus === "error";
 }

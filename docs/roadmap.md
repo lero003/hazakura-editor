@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-24 (v0.33 EPUB source polish)
+Last reviewed: 2026-06-25 (v1 workspace / slash-command fit-and-finish)
 
 ## Current Position
 
@@ -60,9 +60,10 @@ Near-term phase order:
    single Markdown document. Source-level polish is implemented; signed
    candidate package and manual EPUB smoke remain proof tasks.
 5. v0.34 freezes features as the v1.0 Release Candidate and verifies the
-   product explanation, App Store lane boundary, and golden path. Only
-   small v1-fit polish should enter here: clearer open / unsaved
-   workspace-file state, and source-preserving selection tag insertion.
+   product explanation, App Store lane boundary, and golden path. The
+   small v1-fit polish for open / unsaved workspace-file state and
+   source-preserving selection tag insertion is source-implemented; RC
+   work should focus on manual smoke, proof gaps, and release wording.
 6. v1.x deepens the single-document product before any rush to v2:
    EPUB, Diff / Review, movement between writing / reading layers,
    distribution polish when needed, and observation-driven Local Assist
@@ -278,8 +279,8 @@ Freeze features and verify product quality.
 - Run golden-path smoke for New File, Open, Save / Save As, L Mode,
   Preview, e-book Mode paged flow, Spread View, EPUB export, Local Assist,
   Diff / Discard, Recovery, relaunch, and large documents.
-- If still small enough for v1, verify workspace-file open / dirty
-  markers and selection tag insertion as fit-and-finish items, not as a
+- Verify workspace-file open / dirty markers and right-click
+  slash-command selection insertion as fit-and-finish items, not as a
   new workspace model or formatting system.
 - Update App Store screenshots, description, and release notes.
 - Verify the App Store lane excludes Agent Workbench, external AI/API

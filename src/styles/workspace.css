@@ -421,6 +421,24 @@
   flex: 0 0 auto;
 }
 
+.tree-open-marker,
+.tree-dirty-marker {
+  border-radius: 999px;
+  flex: 0 0 auto;
+}
+
+.tree-open-marker {
+  background: color-mix(in srgb, var(--text-muted) 48%, transparent);
+  height: 5px;
+  width: 5px;
+}
+
+.tree-dirty-marker {
+  background: var(--accent);
+  height: 6px;
+  width: 6px;
+}
+
 .tree-partial {
   padding: 5px 10px 5px 32px;
   font-style: italic;

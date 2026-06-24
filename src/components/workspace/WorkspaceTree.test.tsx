@@ -39,6 +39,7 @@ afterEach(() => {
 
 const rootPath = "/workspace";
 const sourcePath = `${rootPath}/source/note.md`;
+const draftPath = `${rootPath}/source/draft.md`;
 const destPath = `${rootPath}/dest`;
 const sourceDirPath = `${rootPath}/source`;
 const internalMoveMime = "application/x-hazakura-workspace-move";
@@ -64,6 +65,7 @@ function makeTree(): WorkspaceTreeEntry {
   return entry("workspace", rootPath, "directory", [
     entry("source", sourceDirPath, "directory", [
       entry("note.md", sourcePath, "file"),
+      entry("draft.md", draftPath, "file"),
     ]),
     // `dest` is intentionally `children_loaded: false` so
     // the loading-state test below can drive the async
@@ -98,6 +100,8 @@ type RenderTreeOverrides = {
   onMoveEntry?: (srcPath: string, dstParentPath: string) => void;
   onOpenContextMenu?: ReturnType<typeof vi.fn>;
   onOpenFile?: (path: string) => void | Promise<void>;
+  openFilePaths?: readonly string[];
+  dirtyFilePaths?: readonly string[];
   onSelectCompareFile?: (entry: WorkspaceTreeEntry) => void;
   onSubmitRename?: (srcPath: string, newName: string) => void;
   renamingPath?: string | null;
@@ -135,6 +139,7 @@ function renderTree(overrides: RenderTreeOverrides = {}) {
       }
       compareSourcePath={overrides.compareSourcePath ?? null}
       compareTargetPath={overrides.compareTargetPath ?? null}
+      dirtyFilePaths={overrides.dirtyFilePaths ?? []}
       entry={makeTree()}
       onClearCompareSelection={onClearCompareSelection}
       onLoadDirectory={onLoadDirectory}
@@ -143,6 +148,7 @@ function renderTree(overrides: RenderTreeOverrides = {}) {
       onOpenFile={onOpenFile}
       onSelectCompareFile={onSelectCompareFile}
       onSubmitRename={onSubmitRename}
+      openFilePaths={overrides.openFilePaths ?? []}
       renamingPath={overrides.renamingPath ?? null}
       requestRename={requestRename}
     />,
@@ -183,6 +189,32 @@ function expandDirectory(
 }
 
 describe("WorkspaceTree", () => {
+  it("marks open and dirty workspace files without implying git state", () => {
+    vi.useFakeTimers();
+
+    const { view } = renderTree({
+      activePath: sourcePath,
+      dirtyFilePaths: [draftPath],
+      openFilePaths: [sourcePath, draftPath],
+    });
+
+    expandDirectory(view, sourceDirPath);
+
+    const activeOpenFile = view.container.querySelector(
+      `button[title="${sourcePath}"]`,
+    );
+    const dirtyOpenFile = view.container.querySelector(
+      `button[title="${draftPath}"]`,
+    );
+
+    expect(activeOpenFile?.classList.contains("active")).toBe(true);
+    expect(activeOpenFile?.querySelector(".tree-open-marker")).not.toBeNull();
+    expect(activeOpenFile?.querySelector(".tree-dirty-marker")).toBeNull();
+    expect(dirtyOpenFile?.querySelector(".tree-open-marker")).not.toBeNull();
+    expect(dirtyOpenFile?.querySelector(".tree-dirty-marker")).not.toBeNull();
+    expect(dirtyOpenFile?.getAttribute("aria-label")).toContain("unsaved");
+  });
+
   it("drops a workspace entry onto only the target directory", () => {
     const { onMoveEntry, view } = renderTree();
     const destButton = view.container.querySelector(
