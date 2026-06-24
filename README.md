@@ -133,7 +133,9 @@ For the full implementation inventory and release state, see
 
 ## License
 
-Hazakura Editor本体は商用プロプライエタリソフトウェアとして扱います。第三者OSSのライセンスと出自メモは [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) を参照してください。生成されるmacOS app bundleには、`LICENSE` と `THIRD_PARTY_NOTICES.md` が `Contents/Resources/` に同梱されます。
+Hazakura Editor本体は source-available proprietary software として扱います。ソースコードとリポジトリ資料は、個人の非商用利用・評価・開発目的に限り、閲覧、fork、clone、build、ローカル実行できます。再配布、改変版・fork・バイナリ・installerの配布、商用利用、別ストアやpackage registryでの公開は許諾していません。
+
+Mac App Storeで配布される公式buildは、別途Custom EULAが示されない限り、Apple Standard Licensed Application End User License Agreementに従います。第三者OSSのライセンスと出自メモは [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) を参照してください。生成されるmacOS app bundleには、`LICENSE` と `THIRD_PARTY_NOTICES.md` が `Contents/Resources/` に同梱されます。
 
 ## Run
 
