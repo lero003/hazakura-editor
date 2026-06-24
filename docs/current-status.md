@@ -415,11 +415,12 @@ baseline, and smoke evidence are archived under
    and boundary docs stay live for future submissions.
 2. For the next product slice, start with `docs/current-work.md`.
    The active lane is `v0.30-v1.0 Reader UX Stabilization`; the current
-   product proof task is v0.33 EPUB Export v1 Polish built-app manual
-   smoke after the external archive / EPUBCheck proof and build `39`
-   package evidence; the workspace marker and right-click slash-command
-   fit-and-finish is source-implemented but still needs built-app visual
-   smoke. Keep the v1
+   product proof task is v0.34 v1.0 Release Candidate / Golden
+   Manuscript smoke after the v0.33 external archive / EPUBCheck proof
+   and build `39` package evidence; the v0.32 reader bridge, v0.33 EPUB,
+   workspace marker, and right-click slash-command fit-and-finish are
+   source-implemented but still need built-app interaction / visual smoke
+   where the local host can launch the app. Keep the v1
    path focused on a single-document Safe Markdown Book Editor with
    Local Assist Review: Flow View, Spread View, editor/reader position
    bridge, initial EPUB export polish, and v1 RC smoke. Hazakura Local
@@ -430,7 +431,11 @@ baseline, and smoke evidence are archived under
    hidden multi-file book manifests, structural book-workspace
    information architecture, Native Vibrancy Phase 2, cover editing,
    external AI/API providers, Agent Workbench in the App Store lane, or
-   an EPUB document model unless that lane is explicitly opened.
+   an EPUB document model unless that lane is explicitly opened. If RC
+   proof exposes a file-intake blocker, keep it to one bounded slice such
+   as larger readable local images or additional text-open file
+   extensions, preserving binary detection, file-size warnings, workspace
+   boundaries, and no background project indexing.
    After v1.0, do not rush straight to v2.0; use v1.x to deepen the
    single-document product, especially EPUB export, Diff / Review
    ergonomics, provenance, movement between writing / reading layers,

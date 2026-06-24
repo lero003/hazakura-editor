@@ -61,11 +61,13 @@ Near-term phase order:
    EPUBCheck, and signed build `39` package evidence exists. Built-app
    manual EPUB smoke remains a proof task.
 5. v0.34 freezes features as the v1.0 Release Candidate and verifies the
-   product explanation, App Store lane boundary, and golden path. The
+   product explanation, App Store lane boundary, and golden path through
+   one realistic Japanese long-form "v1 Golden Manuscript" smoke. The
    small v1-fit polish for open / unsaved workspace-file state and
    source-preserving selection tag insertion is source-implemented; RC
    work should focus on built-app manual smoke, remaining TestFlight /
-   release proof gaps, and release wording.
+   release proof gaps, release wording, and only the smallest file-intake
+   polish that directly supports reading the manuscript.
 6. v1.x deepens the single-document product before any rush to v2:
    EPUB, Diff / Review, movement between writing / reading layers,
    distribution polish when needed, and observation-driven Local Assist
@@ -183,6 +185,10 @@ failure, or transaction-boundary issue appears.
   jump, and coarse navigation such as a slider or equivalent control.
 - The user can move between editor position and e-book reading position
   without getting lost.
+- One realistic Japanese long-form Markdown manuscript covers headings,
+  long prose, lists, images, links, code blocks, Local Assist review,
+  Diff / Discard, Recovery, relaunch, and EPUB export as the v1 proof
+  fixture.
 - The workspace tree makes open files legible even when they are not the
   active tab, without implying Git status or background indexing.
 - The workspace tree makes open but unsaved files legible by reusing the
@@ -194,9 +200,17 @@ failure, or transaction-boundary issue appears.
   review remain source-preserving layers over one Markdown document.
 - EPUB export remains an explicit user action and is polished enough for
   initial v1 use.
+- e-book Mode preview and final EPUB rendering are described as related
+  but not identical outputs, so the app does not imply reader-perfect
+  EPUB reproduction.
 - Hazakura Local Assist remains user-initiated, on-device,
   availability-gated, unsaved until accepted, and reviewable through
   Diff / Discard.
+- Any v1 file-intake polish stays bounded: larger local images may be
+  made readable only with explicit size / memory safeguards, and extra
+  text-open extensions may be added only while preserving binary
+  detection, file-size warnings, workspace boundaries, and no background
+  project indexing.
 
 ### Suggested Slices
 
@@ -278,12 +292,40 @@ claiming to be a full EPUB production tool.
 
 Freeze features and verify product quality.
 
-- Run golden-path smoke for New File, Open, Save / Save As, L Mode,
-  Preview, e-book Mode paged flow, Spread View, EPUB export, Local Assist,
-  Diff / Discard, Recovery, relaunch, and large documents.
+- Create or select one realistic Japanese long-form Markdown document as
+  the v1 Golden Manuscript. It should include headings, long paragraphs,
+  lists, images, links, code blocks, and text that makes Local Assist
+  review useful.
+- Run golden-path smoke against that manuscript for New File, Open, Save
+  / Save As, L Mode, Preview, e-book Mode paged flow, Spread View,
+  heading jump, editor/reader return, EPUB export, Local Assist, Diff /
+  Discard, Recovery, relaunch, and large documents.
 - Verify workspace-file open / dirty markers and right-click
   slash-command selection insertion as fit-and-finish items, not as a
   new workspace model or formatting system.
+- If the Golden Manuscript exposes a small blocker around local images or
+  plain-text file intake, allow one narrow v1 fit-and-finish slice:
+  larger readable local image handling or additional text-open file
+  extensions. Do not turn this into external image loading, a binary
+  viewer, log viewer, project indexer, or broad file manager.
+- Make the App Store and Help wording emphasize the user-facing roles:
+  write, read, compare, export, and review AI proposals before explicit
+  save.
+- Use App Store screenshots and release copy to show the product story in
+  order: write Markdown, read it like a book, inspect a spread, review an
+  AI proposal through Diff, then export EPUB.
+- Make first-run / empty-state / tooltip copy answer which surface is
+  for writing, reading, comparing, exporting, and reviewing proposals.
+- Keep Diff / Discard / Save-state copy strong enough that AI proposals,
+  Recovery, and manual edits remain visibly unsaved and reversible before
+  Save.
+- Document the expected difference between e-book Mode preview and final
+  EPUB reader output where the user could otherwise expect identical
+  rendering.
+- Set internal large-document expectations before RC judgment. A useful
+  starting line is: 10k Japanese characters feels comfortable, 30k is
+  practical, and 100k may wait but must not crash, lose source, or hide
+  that work is in progress.
 - Update App Store screenshots, description, and release notes.
 - Verify the App Store lane excludes Agent Workbench, external AI/API
   calls, CLI launch, arbitrary command execution, network fallback,
@@ -292,6 +334,10 @@ Freeze features and verify product quality.
 Acceptance: the product can be described without qualification as:
 
 > Safe Markdown Book Editor with Local Assist Review
+
+Golden Manuscript acceptance: the app can complete "write -> read ->
+notice -> return -> revise -> review -> export" without the user losing
+document position, source ownership, or save-state confidence.
 
 ### Deferred Beyond v1.0
 
@@ -324,6 +370,12 @@ the first daily-use surface is proven.
 
 Possible directions:
 
+- Keep the v1 Golden Manuscript as a reusable release fixture and expand
+  it only when a real regression or product claim needs coverage.
+- Deepen safe file intake after v1: additional text-open extensions,
+  better large local-image readability, and clearer warnings for files
+  that are too large or not safely editable. This must not become a
+  binary viewer, log viewer, project indexer, or broad file manager.
 - Improve AI proposal review, provenance display, and Diff / Review
   ergonomics without making Hazakura an agent platform: clearer changed
   areas, better large-prose diff readability, partial Accept / Reject
