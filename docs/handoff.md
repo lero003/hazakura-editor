@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-23 (v0.32 candidate package)
+Last reviewed: 2026-06-24 (v1 / v1.x planning alignment)
 
 ## Current State
 
@@ -170,7 +170,12 @@ Last reviewed: 2026-06-23 (v0.32 candidate package)
   After v1.0, do not rush straight into v2.0; use v1.x to deepen the
   single-document product first: EPUB export, Diff / Review ergonomics,
   provenance, movement between writing / reading layers, distribution
-  polish when needed, and observation-driven Local Assist polish.
+  polish when needed, observation-driven Local Assist polish, and
+  opt-in document expression such as a Hazakura-owned font for Preview /
+  e-book / export layers. Hard-to-read or cipher-like fonts are a visual
+  expression mode only, not a privacy or encryption feature. Small v1
+  fit-and-finish candidates now include workspace-file open / dirty
+  markers and source-preserving selection tag insertion.
   Hazakura Local Assist follow-up should be observation-driven unless a
   concrete safety, review, App Store, availability, generation failure,
   responsiveness, or transaction-boundary issue appears. Do not reopen
@@ -652,6 +657,12 @@ open Active UX Queue slice and close it as `implemented`,
   current status, e-book / AI / speculative local-AI planning notes, docs
   index, and this handoff on 2026-06-23. Verification run:
   `git diff --check`.
+- Latest v1 / v1.x planning alignment: `docs/roadmap.md` and
+  `docs/current-work.md` now classify workspace-file open / dirty
+  markers and selection tag insertion as small v1 fit-and-finish
+  candidates, while Hazakura-owned expression font, preview/export font
+  use, and tag-scoped font rendering are v1.x document-expression ideas.
+  Verification run: `git diff --check`.
 - Latest docs-refinement pass: v0.28 documentation index / README /
   roadmap cleanup, archive moves, and generated artifact cleanup script were
   checked with `npm run clean:generated -- --target-only`,

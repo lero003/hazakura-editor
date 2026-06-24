@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-23 (v0.32 candidate package)
+Last reviewed: 2026-06-24 (v1 / v1.x planning alignment)
 
 ## Current Position
 
@@ -56,7 +56,9 @@ Near-term phase order:
 4. v0.33 polishes EPUB export as an explicit initial-v1 workflow for a
    single Markdown document.
 5. v0.34 freezes features as the v1.0 Release Candidate and verifies the
-   product explanation, App Store lane boundary, and golden path.
+   product explanation, App Store lane boundary, and golden path. Only
+   small v1-fit polish should enter here: clearer open / unsaved
+   workspace-file state, and source-preserving selection tag insertion.
 6. v1.x deepens the single-document product before any rush to v2:
    EPUB, Diff / Review, movement between writing / reading layers,
    distribution polish when needed, and observation-driven Local Assist
@@ -174,6 +176,13 @@ failure, or transaction-boundary issue appears.
   jump, and coarse navigation such as a slider or equivalent control.
 - The user can move between editor position and e-book reading position
   without getting lost.
+- The workspace tree makes open files legible even when they are not the
+  active tab, without implying Git status or background indexing.
+- The workspace tree makes open but unsaved files legible by reusing the
+  existing tab dirty state; Save remains explicit.
+- The editor can wrap or insert a small allowlisted set of Markdown /
+  tag snippets around selected text through a simple user action. Source
+  text remains visible, undoable, and saved only by explicit Save.
 - L Mode, Preview, e-book Mode, Diff, Recovery, EPUB export, and AI
   review remain source-preserving layers over one Markdown document.
 - EPUB export remains an explicit user action and is polished enough for
@@ -262,6 +271,9 @@ Freeze features and verify product quality.
 - Run golden-path smoke for New File, Open, Save / Save As, L Mode,
   Preview, e-book Mode paged flow, Spread View, EPUB export, Local Assist,
   Diff / Discard, Recovery, relaunch, and large documents.
+- If still small enough for v1, verify workspace-file open / dirty
+  markers and selection tag insertion as fit-and-finish items, not as a
+  new workspace model or formatting system.
 - Update App Store screenshots, description, and release notes.
 - Verify the App Store lane excludes Agent Workbench, external AI/API
   calls, CLI launch, arbitrary command execution, network fallback,
@@ -311,6 +323,17 @@ Possible directions:
   clearer pre-export / manual validation guidance.
 - Improve movement between writing, reading, Preview, Recovery, and AI
   review layers without creating a second document model.
+- Explore a Hazakura-owned expression font as an opt-in document display
+  font, not as the default app UI font.
+- Explore preview and export output using that expression font, including
+  whether HTML / PDF / EPUB output can embed or hand off the font
+  cleanly.
+- Explore explicit source-visible tags that render only the wrapped span
+  in the expression font in Preview / e-book / export layers. The tags
+  must be allowlisted, reversible, and source-preserving.
+- Treat any intentionally hard-to-read or cipher-like typeface as a
+  visual expression mode only, not as a privacy, encryption, security, or
+  access-control feature.
 - Add vertical writing only after the horizontal e-book surface, Spread
   View, and EPUB export are already stable.
 - Improve Developer / GitHub distribution only when needed: Developer ID
