@@ -7,14 +7,17 @@ Last reviewed: 2026-06-25 (v0.33.0 build 39 package candidate)
 
 ## Current State
 
-- `Hazakura Editor` `0.29.1` has been reported approved and released on
-  the Mac App Store on 2026-06-23. Hazakura Local Assist is now public as
-  a preview on-device writing companion. The latest local App Store
-  package evidence for that review cycle is build `33`, generated after
-  Local Assist responsiveness hardening, prompt/review polish, and the
-  Markdown preview flicker fix. Raw App Store Connect, TestFlight, and
+- `Hazakura Editor` `0.32.0` is the latest published Mac App Store
+  version, shipping the v0.32 Editor / Reader Position Bridge as a public
+  update. Hazakura Local Assist remains available as a preview on-device
+  writing companion. The `0.32.0` build `36` package is the historical
+  release evidence for that cycle. Raw App Store Connect, TestFlight, and
   App Review logs remain outside this repository unless explicitly
   recorded later.
+- The earlier `0.29.1` App Store update established Hazakura Local Assist
+  as a public preview; its build `33` package remains historical release
+  evidence and should not be confused with the current `0.32.0` public
+  lane or the `0.33.0` candidate.
 - A new `0.33.0` App Store / TestFlight package candidate was generated
   on 2026-06-25 after v0.33 EPUB Export v1 Polish and v1 fit-and-finish
   source work. It advanced the App Store build counter to `39` and

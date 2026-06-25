@@ -18,10 +18,10 @@ Current release state:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
 - Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
 - Current package/app version: `0.33.0`.
-- Latest source / local-app tag: `v0.29.1`, prepared on 2026-06-22.
-- Mac App Store published version: `0.29.1`, reported approved and
-  released on 2026-06-23 with Hazakura Local Assist available as a
-  preview on-device writing companion.
+- Latest source / local-app tag: `v0.32.0`.
+- Mac App Store published version: `0.32.0`, with the v0.32 Editor /
+  Reader Position Bridge shipped as a public update. Hazakura Local
+  Assist remains available as a preview on-device writing companion.
 - Latest local App Store / TestFlight package candidate: `0.33.0` build
   `39`, generated on 2026-06-25 after v0.33 EPUB Export v1 Polish and
   v1 fit-and-finish source work.

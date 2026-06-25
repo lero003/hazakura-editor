@@ -102,9 +102,9 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
           return "はるらしい あわい さくらいろ の きせつ いろあひ。";
         }
         if (theme === "yakou") {
-          return "よるの よさめ の あたたかい いろの きせつ いろあひ。";
+          return "よるの よさめ むけ。ふかめの いろ と うごき の ある きせつ いろあひ。";
         }
-        return "あけがた の そら を 思わせる あけぼのいろ の きせつ いろあひ。";
+        return "あけがた の そら を 思わせる あけぼのいろ。えんしゅつ やや つよめ の きせつ いろあひ。";
       },
     };
   }
@@ -156,9 +156,9 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
             return "春らしい淡い桜色のアンビエントテーマ。";
           }
           if (theme === "yakou") {
-            return "夜長向けの深めの暖色アンビエントテーマ。";
+            return "夜長向け。深めの配色と、動きのある演出のアンビエントテーマ。";
           }
-          return "明け方向けの曙色アンビエントテーマ。";
+          return "明け方の空を思わせる曙色。演出やや強めのアンビエントテーマ。";
         },
       }
     : {
@@ -207,9 +207,9 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
             return "Soft cherry-blossom seasonal ambient theme.";
           }
           if (theme === "yakou") {
-            return "Deeper warm seasonal theme for late evenings.";
+            return "Deeper palette with animated effects. Late-evening seasonal theme.";
           }
-          return "Dawn-pastel seasonal theme for early mornings.";
+          return "Dawn pastels with stronger ambient effects. Early-morning seasonal theme.";
         },
       };
 }

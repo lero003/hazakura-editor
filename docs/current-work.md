@@ -8,12 +8,12 @@ Last reviewed: 2026-06-25 (v0.33.0 build 39 package candidate)
 ## Purpose
 
 Start here when choosing the next small `Hazakura Editor` slice.
-This file is the current work queue. After the `0.29.1` App Store update
-was reported approved and released on 2026-06-23, the active product lane
-is `v0.30-v1.0 Reader UX Stabilization`: make the shipped Safe Editor,
-L Mode, e-book Mode, EPUB export beta, Diff / Recovery, and Hazakura
-Local Assist review surfaces feel like one coherent single-document
-book-writing product.
+This file is the current work queue. After the `0.32.0` App Store update
+shipped the v0.32 Editor / Reader Position Bridge as a public release,
+the active product lane is `v0.30-v1.0 Reader UX Stabilization`: make
+the shipped Safe Editor, L Mode, e-book Mode, EPUB export beta, Diff /
+Recovery, and Hazakura Local Assist review surfaces feel like one
+coherent single-document book-writing product.
 Keep completed submission-prep and v0.29 Local Assist material as
 evidence, not as the active queue.
 Older v0.17 App Store-quality request packets and closeout evidence live

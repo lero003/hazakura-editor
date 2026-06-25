@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useDeferredValue, useMemo } from "react";
 import type {
   CompareCase,
   CompareViewState,
@@ -51,13 +51,19 @@ export function useDocumentStatus({
   selectionInfo,
   sidePaneMode,
 }: UseDocumentStatusParams) {
+  // v0.33: ステータスバーの行数・バイト数・文字数は即時性を要しない。
+  // useDeferredValue で activeContents を遅延させ、毎キーストロークの
+  // 全文スキャン(countDocumentLines / analyzeTextDocument)を入力の合間に
+  //ずらしてタイピングの引っ掛かりを減らす。React 19 の並行レンダリングが
+  // 適切なタイミングで再計算を差し込む。
+  const deferredContents = useDeferredValue(activeContents);
   const lineCount = useMemo(
-    () => countDocumentLines(activeContents),
-    [activeContents],
+    () => countDocumentLines(deferredContents),
+    [deferredContents],
   );
   const stats = useMemo(
-    () => analyzeTextDocument(activeContents, activeTab?.line_ending),
-    [activeContents, activeTab?.line_ending],
+    () => analyzeTextDocument(deferredContents, activeTab?.line_ending),
+    [deferredContents, activeTab?.line_ending],
   );
   const compareMeta = sidePaneMode === "compare" && compareView
     ? isKanaStyle(menuLanguage)

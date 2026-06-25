@@ -297,15 +297,18 @@ html, body, #root, .app-shell,
   --scrollbar-thumb: rgba(91, 117, 137, 0.2);
   --scrollbar-thumb-hover: rgba(91, 117, 137, 0.35);
 
-  /* CodeMirror 曙光用配色 / CodeMirror Shokou Colors */
+  /* CodeMirror 曙光用配色 / CodeMirror Shokou Colors
+     v0.33: 前景色を濃紺へ引き上げ、active-line と mark 系にメリハリを
+     付け、gutter の視認性も少し強めた。曙色の薄明背景でも本文がくっ
+     きり読めるようにする。 */
   --cm-bg: #f7faff;
-  --cm-fg: #1f3a5c;
+  --cm-fg: #14283f;
   --cm-caret: #3a82b8;
   --cm-gutter-bg: #e3edf6;
   --cm-gutter-border: #d2e0ec;
-  --cm-gutter-fg: #5b7589;
-  --cm-active-line-bg: rgba(58, 130, 184, 0.05);
-  --cm-active-gutter-bg: rgba(58, 130, 184, 0.05);
+  --cm-gutter-fg: #46627a;
+  --cm-active-line-bg: rgba(58, 130, 184, 0.09);
+  --cm-active-gutter-bg: rgba(58, 130, 184, 0.09);
   --cm-selection-bg: #aac3d6;
   --cm-search-match-bg: rgba(162, 111, 32, 0.22);
   --cm-search-match-active-bg: rgba(162, 111, 32, 0.55);
@@ -313,11 +316,11 @@ html, body, #root, .app-shell,
   --cm-invisible-space: radial-gradient(circle, #6c8aa0 1px, transparent 1px);
   --cm-invisible-tab: rgba(58, 130, 184, 0.12);
   --cm-trailing-space: rgba(198, 107, 110, 0.22);
-  --cm-mark-heading: #205b87;
-  --cm-mark-strong: #1f3a5c;
-  --cm-mark-link: #205b87;
-  --cm-mark-monospace: #205b87;
-  --cm-mark-quote: #5b7589;
+  --cm-mark-heading: #18456c;
+  --cm-mark-strong: #14283f;
+  --cm-mark-link: #1b5a92;
+  --cm-mark-monospace: #1b5a92;
+  --cm-mark-quote: #46627a;
 
   /* xterm 用配色 / xterm Shokou Colors */
   --xterm-bg: #1a3552;

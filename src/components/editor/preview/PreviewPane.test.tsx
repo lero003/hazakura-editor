@@ -13,37 +13,20 @@ vi.mock("../../../lib/tauri", () => ({
   openWorkspaceImage: vi.fn(),
 }));
 
-let pendingAnimationFrames: FrameRequestCallback[] = [];
-
 beforeEach(() => {
-  pendingAnimationFrames = [];
-  vi.stubGlobal(
-    "requestAnimationFrame",
-    vi.fn((callback: FrameRequestCallback) => {
-      pendingAnimationFrames.push(callback);
-      return pendingAnimationFrames.length;
-    }),
-  );
-  vi.stubGlobal(
-    "cancelAnimationFrame",
-    vi.fn((handle: number) => {
-      pendingAnimationFrames[handle - 1] = () => undefined;
-    }),
-  );
+  // v0.33: PreviewPane の再描画は debounce(200ms setTimeout)になったため、
+  // 偽タイマーで200ms進めて描画を確定させる。
+  vi.useFakeTimers({ shouldAdvanceTime: true });
 });
 
 afterEach(() => {
   cleanup();
-  vi.unstubAllGlobals();
+  vi.useRealTimers();
 });
 
 async function flushPreviewFrame() {
-  const callbacks = pendingAnimationFrames;
-  pendingAnimationFrames = [];
   await act(async () => {
-    for (const callback of callbacks) {
-      callback(performance.now());
-    }
+    vi.advanceTimersByTime(250);
   });
 }
 

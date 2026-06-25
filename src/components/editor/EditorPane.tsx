@@ -214,6 +214,9 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   const onSendToAgentRef = useRef<(text: string) => void>(() => {});
   const applyingExternalValueRef = useRef(false);
   const jumpScrollReportFrameRef = useRef<number | null>(null);
+  // v0.33: scroll イベントは高頻度で発火するため requestAnimationFrame で
+  // スロットルし、onScrollRatioChange / scroll HUD の更新を1フレームに1回に抑える。
+  const scrollReportFrameRef = useRef<number | null>(null);
   const themeCompartmentRef = useRef(new Compartment());
   const wrappingCompartmentRef = useRef(new Compartment());
   const invisiblesCompartmentRef = useRef(new Compartment());
@@ -565,7 +568,15 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       ],
     });
     const handleScroll = () => {
-      onScrollRatioChangeRef.current(readScrollRatio(view.scrollDOM));
+      // scroll イベントは高頻度なので1フレームに1回にまとめる。
+      if (scrollReportFrameRef.current !== null) {
+        return;
+      }
+      const win = view.dom.ownerDocument.defaultView ?? window;
+      scrollReportFrameRef.current = win.requestAnimationFrame(() => {
+        scrollReportFrameRef.current = null;
+        onScrollRatioChangeRef.current(readScrollRatio(view.scrollDOM));
+      });
     };
     const handleScrollerMouseDown = (event: MouseEvent) => {
       if (isScrollerPointerOnScrollbar(event, view.scrollDOM)) {
@@ -580,6 +591,11 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         const win = view.dom.ownerDocument.defaultView ?? window;
         win.cancelAnimationFrame(jumpScrollReportFrameRef.current);
         jumpScrollReportFrameRef.current = null;
+      }
+      if (scrollReportFrameRef.current !== null) {
+        const win = view.dom.ownerDocument.defaultView ?? window;
+        win.cancelAnimationFrame(scrollReportFrameRef.current);
+        scrollReportFrameRef.current = null;
       }
       view.scrollDOM.removeEventListener("mousedown", handleScrollerMouseDown);
       view.scrollDOM.removeEventListener("scroll", handleScroll);

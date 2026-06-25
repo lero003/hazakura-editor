@@ -11,11 +11,10 @@ Last reviewed: 2026-06-25 (v0.33.0 build 39 package candidate)
 - Current package/app version: `0.33.0` across npm, Tauri, Cargo, and lockfile metadata.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Published Mac App Store version: `0.29.1`, reported approved and
-  released on 2026-06-23 with Hazakura Local Assist available as a
-  preview on-device writing companion.
-- Latest GitHub source / local-app tag: `v0.29.1`, prepared on
-  2026-06-22.
+- Published Mac App Store version: `0.32.0`, with the v0.32 Editor /
+  Reader Position Bridge shipped as a public update. Hazakura Local
+  Assist remains available as a preview on-device writing companion.
+- Latest GitHub source / local-app tag: `v0.32.0`.
 - Latest local App Store / TestFlight package candidate: `0.33.0` build
   `39`, generated on 2026-06-25 after v0.33 EPUB Export v1 Polish and
   v1 fit-and-finish source work:
@@ -219,7 +218,7 @@ Last reviewed: 2026-06-25 (v0.33.0 build 39 package candidate)
   reported App Review approval and public release on 2026-06-23. Raw App
   Store Connect, TestFlight, and App Review logs are not tracked in this
   repository unless separately recorded.
-- The published `0.29.1` App Store lane includes Hazakura Local Assist as
+- The published `0.32.0` App Store lane includes Hazakura Local Assist as
   a narrow preview on-device writing companion. Agent Workbench, CLI
   Agent launch, arbitrary command execution, external AI/API calls,
   provider-add UI, and network fallback remain outside the App Store lane.
@@ -448,9 +447,9 @@ baseline, and smoke evidence are archived under
    Upload, Apple processing, TestFlight install / launch, and App Review
    handling remain explicit distribution-lane work outside this
    repository unless public-safe evidence is recorded.
-   The published `0.29.1` App Store lane remains the latest reported
-   released version; its build `33` package is historical release
-   evidence and should not be confused with the new `0.33.0` candidate.
+   The published `0.32.0` App Store lane is the latest released
+   version; its build `36` package is historical release evidence and
+   should not be confused with the new `0.33.0` candidate.
    Do upload / App Store Connect work only when explicitly requested.
    For future App Store submissions, start with `docs/app-store-build.md`;
    use `npm run release:candidate -- --with-app-store-pkg` for local

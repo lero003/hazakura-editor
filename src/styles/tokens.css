@@ -1,25 +1,28 @@
 /* === tokens.css === */
+/* ライト / Light 既定値: 中性グレイベースに緑の差し色を一点だけ載せる。
+   dark / sakura / yakou / shokou は themes.css 側で各変数を上書き済み。
+   ここは light 既定の単一ソース。差し色以外を極力ニュートラルに保つ。 */
 :root {
-  --bg: #f3f6f4;
+  --bg: #fafbfa;
   --surface: #ffffff;
   --surface-rgb: 255, 255, 255;
   --surface-strong: #ffffff;
   --surface-strong-rgb: 255, 255, 255;
-  --surface-muted: #e9f0eb;
-  --border: #e0e6e2;
-  --border-strong: #c2cfc7;
-  --text: #1d2521;
-  --text-muted: #627267;
-  --accent: #2e5c46;
-  --accent-soft: #e2ede6;
-  --accent-glass: rgba(46, 92, 70, 0.08);
+  --surface-muted: #f1f3f2;
+  --border: #e4e7e5;
+  --border-strong: #c8cfc9;
+  --text: #1a1f1d;
+  --text-muted: #6b7670;
+  --accent: #2e6b4f;
+  --accent-soft: #eef3f0;
+  --accent-glass: rgba(46, 107, 79, 0.08);
   --danger: #9e3f43;
   --conflict: #997838;
   --status-bg: #1c2420;
   --status-text: #f0f7f3;
-  --selection-bg: rgba(46, 92, 70, 0.15);
-  --scrollbar-thumb: rgba(98, 114, 103, 0.25);
-  --scrollbar-thumb-hover: rgba(98, 114, 103, 0.4);
+  --selection-bg: rgba(46, 107, 79, 0.15);
+  --scrollbar-thumb: rgba(107, 118, 112, 0.25);
+  --scrollbar-thumb-hover: rgba(107, 118, 112, 0.4);
 
   /* Diff カラー / Diff colors
      追加 / 削除の二色をテーマ横断で揃える土台。--*-bg と --*-fg は
@@ -39,22 +42,22 @@
 
   /* CodeMirror エディタ配色 / CodeMirror Editor Colors */
   --cm-bg: #ffffff;
-  --cm-fg: #1d2521;
-  --cm-caret: #2e5c46;
-  --cm-gutter-bg: #e9f0eb;
-  --cm-gutter-border: #e0e6e2;
-  --cm-gutter-fg: #627267;
-  --cm-active-line-bg: rgba(46, 92, 70, 0.05);
-  --cm-active-gutter-bg: rgba(46, 92, 70, 0.05);
-  --cm-selection-bg: #8fc7a5;
+  --cm-fg: #1a1f1d;
+  --cm-caret: #2e6b4f;
+  --cm-gutter-bg: #f4f6f5;
+  --cm-gutter-border: #e4e7e5;
+  --cm-gutter-fg: #6b7670;
+  --cm-active-line-bg: rgba(46, 107, 79, 0.05);
+  --cm-active-gutter-bg: rgba(46, 107, 79, 0.05);
+  --cm-selection-bg: #a8cdb8;
   --cm-search-match-bg: rgba(153, 120, 56, 0.2);
   --cm-search-match-active-bg: rgba(153, 120, 56, 0.5);
   --cm-search-match-active-shadow: 0 0 0 1px #997838;
   --cm-invisible-space: radial-gradient(circle, #7a8a81 1px, transparent 1px);
-  --cm-invisible-tab: rgba(46, 92, 70, 0.12);
+  --cm-invisible-tab: rgba(46, 107, 79, 0.12);
   --cm-trailing-space: rgba(158, 63, 67, 0.2);
-  --cm-mark-heading: #173b2b;
-  --cm-mark-strong: #1d2521;
+  --cm-mark-heading: #1a4536;
+  --cm-mark-strong: #1a1f1d;
   --cm-mark-link: #245d8a;
   --cm-mark-monospace: #245c40;
   --cm-mark-quote: #4f6659;

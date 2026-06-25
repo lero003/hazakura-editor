@@ -173,7 +173,9 @@ describe("EBookPane chapter reader", () => {
     expect(focusButton.classList.contains("ebook-reader-floating-action")).toBe(
       true,
     );
-    expect(focusButton.closest(".ebook-reader-chrome")).toBeNull();
+    // v0.33: 集中/戻るは進捗下の操作帯（chrome 内の toolbar）
+    expect(focusButton.closest(".ebook-reader-toolbar")).not.toBeNull();
+    expect(focusButton.closest(".ebook-reader-chrome")).not.toBeNull();
   });
 
   it("uses a focused reader variant with a return action", () => {
@@ -198,7 +200,8 @@ describe("EBookPane chapter reader", () => {
     expect(exitButton.classList.contains("ebook-reader-floating-action")).toBe(
       true,
     );
-    expect(exitButton.closest(".ebook-reader-chrome")).toBeNull();
+    expect(exitButton.closest(".ebook-reader-toolbar")).not.toBeNull();
+    expect(exitButton.closest(".ebook-reader-chrome")).not.toBeNull();
   });
 
   it("shows a Reading Focus table of contents drawer and jumps to a chapter", async () => {
@@ -215,6 +218,9 @@ describe("EBookPane chapter reader", () => {
 
     const tocButton = screen.getByRole("button", { name: "目次" });
     expect(tocButton.classList.contains("ebook-reader-toc-toggle")).toBe(true);
+    // v0.33: 目次ボタンも右上の浮遊ツール群
+    expect(tocButton.closest(".ebook-reader-toolbar")).not.toBeNull();
+    expect(tocButton.closest(".ebook-reader-chrome")).not.toBeNull();
 
     fireEvent.click(tocButton);
 

@@ -76,36 +76,50 @@ describe("preview.css", () => {
     const body = ruleBody(".ebook-pane .ebook-reader-chrome");
     const buttonBody = ruleBody(".ebook-pane .ebook-reader-button");
     const statusBody = ruleBody(".ebook-pane .ebook-reader-status");
-    const floatingBody = ruleBody(".ebook-pane .ebook-reader-floating-action");
+    const toolbarBody = ruleBody(".ebook-pane .ebook-reader-toolbar");
+    const floatingActionBody = ruleBody(".ebook-pane .ebook-reader-floating-action");
 
     expect(body).toMatch(/position:\s*sticky/);
-    expect(body).toMatch(/height:\s*72px/);
-    expect(body).toMatch(/grid-template-columns:\s*minmax\(104px,\s*128px\) minmax\(0,\s*1fr\) minmax\(104px,\s*128px\)/);
-    expect(ruleBody(".ebook-pane .ebook-reader-chrome-with-focus")).toBe("");
-    expect(statusBody).toMatch(/align-self:\s*center/);
-    expect(buttonBody).toMatch(/width:\s*100%/);
-    expect(floatingBody).toMatch(/position:\s*absolute/);
-    expect(floatingBody).toMatch(/bottom:\s*clamp/);
-    expect(floatingBody).toMatch(/left:\s*50%/);
-    expect(floatingBody).toMatch(/transform:\s*translateX\(-50%\)/);
-    expect(floatingBody).toMatch(/border-radius:\s*999px/);
-    expect(floatingBody).not.toMatch(/width:\s*100%/);
+    // v0.33: chrome は縦 flex（進捗テキスト常時＋その下の操作帯ホバー展開）
+    expect(body).toMatch(/display:\s*flex/);
+    expect(body).toMatch(/flex-direction:\s*column/);
+    expect(statusBody).toMatch(/justify-content:\s*center/);
+    expect(statusBody).toMatch(/text-align:\s*center/);
+    // ボタンはピル型（折り返さない）
+    expect(buttonBody).toMatch(/border-radius:\s*999px/);
+    expect(buttonBody).toMatch(/white-space:\s*nowrap/);
+    // 古い3列/5列グリッド構造は廃止
+    expect(previewCss).not.toMatch(/ebook-reader-chrome-focus/);
+    expect(previewCss).not.toMatch(/ebook-reader-floating-tools/);
+    expect(previewCss).not.toMatch(/ebook-reader-floating-button/);
+    // 操作帯は chrome 直下の浮遊レイヤー（本文に被さり高さを取らない）
+    expect(toolbarBody).toMatch(/position:\s*absolute/);
+    expect(toolbarBody).toMatch(/top:\s*100%/);
+    expect(toolbarBody).toMatch(/opacity:\s*0/);
+    expect(toolbarBody).toMatch(/pointer-events:\s*none/);
+    expect(toolbarBody).toMatch(/transition:/);
+    // 本文の改ページ計算を安定させるため高さを取らない
+    expect(toolbarBody).not.toMatch(/max-height:\s*0/);
+    expect(toolbarBody).not.toMatch(/min-height:\s*44px/);
     expect(
-      ruleBody(".ebook-pane .ebook-reader-floating-action:hover,\n.ebook-pane .ebook-reader-floating-action:focus-visible"),
-    ).toMatch(/transform:\s*translateX\(-50%\)/);
+      ruleBody(".ebook-pane:hover .ebook-reader-toolbar,\n.ebook-pane .ebook-reader-toolbar:focus-within"),
+    ).toMatch(/opacity:\s*1/);
+    // 集中/戻るは accent 色で主要導線を示す
+    expect(floatingActionBody).toMatch(/color:\s*var\(--accent/);
     expect(previewCss).not.toMatch(/(?:^|\n)\.ebook-reader-chrome\s*{/);
   });
 
   it("keeps the Reading Focus table of contents as a quiet overlay drawer", () => {
-    const toggleBody = ruleBody(".ebook-pane .ebook-reader-toc-toggle");
     const backdropBody = ruleBody(".ebook-pane .ebook-reader-toc-backdrop");
     const panelBody = ruleBody(".ebook-pane .ebook-reader-toc-panel");
     const listBody = ruleBody(".ebook-pane .ebook-reader-toc-list");
     const itemBody = ruleBody(".ebook-pane .ebook-reader-toc-item");
 
-    expect(toggleBody).toMatch(/position:\s*absolute/);
-    expect(toggleBody).toMatch(/bottom:\s*clamp/);
-    expect(toggleBody).toMatch(/left:\s*clamp/);
+    // v0.33: 目次トグルは右上浮遊ツールのピル（base は .ebook-reader-floating-button）
+    // 展開状態は複合セレクタで上書きされる
+    expect(
+      ruleBody('.ebook-pane .ebook-reader-toc-toggle[aria-expanded="true"]'),
+    ).toMatch(/color:\s*var\(--accent/);
     expect(backdropBody).toMatch(/position:\s*absolute/);
     expect(backdropBody).toMatch(/inset:\s*0/);
     expect(backdropBody).toMatch(/background:\s*transparent/);

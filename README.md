@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-06-23
+Last reviewed: 2026-06-25
 
 `Hazakura Editor` は、AI時代のメモ帳です。Markdownを中心に、安全にテキストを読む・書く・比べるための軽量なローカル作業場を目指します。
 
@@ -17,7 +17,7 @@ Last reviewed: 2026-06-23
 
 ## Mac App Store
 
-Hazakura Editor `0.29.1` is published on the Mac App Store:
+Hazakura Editor `0.32.0` is published on the Mac App Store:
 [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12).
 
 The App Store build is the Safe Editor lane. It omits Agent Workbench,

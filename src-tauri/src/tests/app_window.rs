@@ -20,7 +20,7 @@ fn agent_window_background_color_returns_palette_color_for_known_theme() {
     let shokou = agent_window_background_color("shokou");
     assert_eq!(shokou, tauri::window::Color(0xee, 0xf5, 0xfb, 0xff));
     let light = agent_window_background_color("light");
-    assert_eq!(light, tauri::window::Color(0xed, 0xf3, 0xef, 0xff));
+    assert_eq!(light, tauri::window::Color(0xfa, 0xfb, 0xfa, 0xff));
 }
 
 #[test]
