@@ -239,7 +239,7 @@
   border-radius: 6px;
   box-shadow: none;
   color: var(--text-muted);
-  transition: all 0.15s ease;
+  transition: background-color var(--dur-1) var(--ease-standard), color var(--dur-1) var(--ease-standard);
   display: inline-flex;
   flex: 0 0 auto;
   height: 28px;
@@ -276,7 +276,7 @@
   border-radius: 6px;
   box-shadow: none;
   color: var(--text-muted);
-  transition: all 0.15s ease;
+  transition: background-color var(--dur-1) var(--ease-standard), color var(--dur-1) var(--ease-standard);
   display: inline-flex;
   flex: 0 0 auto;
   height: 28px;
@@ -359,7 +359,7 @@
   color: var(--text-muted);
   font-weight: 500;
   box-shadow: none;
-  transition: all 0.15s ease;
+  transition: background-color var(--dur-1) var(--ease-standard), color var(--dur-1) var(--ease-standard);
 }
 
 .tree-directory-button:hover,
@@ -965,7 +965,7 @@
   border-radius: 6px;
   box-shadow: none;
   color: var(--text-muted);
-  transition: all 0.15s ease;
+  transition: background-color var(--dur-1) var(--ease-standard), color var(--dur-1) var(--ease-standard);
   justify-content: flex-start;
   min-width: 0;
   overflow: hidden;

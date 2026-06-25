@@ -86,7 +86,13 @@ input {
   font: inherit;
   font-size: 13px;
   box-shadow: var(--shadow-sm);
-  transition: all 0.2s var(--ease-emphasized);
+  /* v0.34: transition: all は再描画範囲が広く jank の原因になるため、
+     実際に変化するプロパティだけを明示する。 */
+  transition:
+    background-color var(--dur-2) var(--ease-standard),
+    border-color var(--dur-2) var(--ease-standard),
+    box-shadow var(--dur-2) var(--ease-standard),
+    color var(--dur-2) var(--ease-standard);
 }
 
 button {
@@ -105,7 +111,8 @@ button:hover:not(:disabled) {
   background: var(--surface-strong);
   border-color: var(--accent);
   box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
+  /* v0.34: translateY(-1px) の跳ねを削除。native の落ち着いた印象に寄せる。
+     派手な変形が必要なボタンは個別に指定する。 */
 }
 
 select:hover,
@@ -123,7 +130,9 @@ input:focus-visible {
 }
 
 button:active:not(:disabled) {
-  transform: scale(0.96) translateY(0);
+  /* v0.34: scale を 0.96→0.98 に穏やかに。translateY(0) は hover 側の
+     translateY 削除に伴い不要になったので除去。 */
+  transform: scale(0.98);
 }
 
 button:disabled {

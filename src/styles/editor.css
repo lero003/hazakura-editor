@@ -216,7 +216,7 @@
   justify-content: center;
   min-height: 25px;
   padding: 0 7px;
-  transition: all 0.15s var(--ease-standard);
+  transition: background-color var(--dur-1) var(--ease-standard), border-color var(--dur-1) var(--ease-standard), box-shadow var(--dur-1) var(--ease-standard), color var(--dur-1) var(--ease-standard);
   white-space: nowrap;
 }
 

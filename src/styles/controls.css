@@ -378,7 +378,7 @@
   border-radius: 6px;
   margin: 0 2px;
   position: relative;
-  transition: all 0.2s var(--ease-standard);
+  transition: background-color var(--dur-2) var(--ease-standard), border-color var(--dur-2) var(--ease-standard), box-shadow var(--dur-2) var(--ease-standard), color var(--dur-2) var(--ease-standard);
   overflow: hidden;
   touch-action: none;
 }
@@ -402,7 +402,7 @@
   right: 0;
   height: 1px;
   background: color-mix(in srgb, var(--accent) 24%, transparent);
-  transition: all 0.2s ease;
+  transition: background var(--dur-2) var(--ease-standard), opacity var(--dur-2) var(--ease-standard);
 }
 
 :root[data-theme="yakou"] .tab-item.active::before {

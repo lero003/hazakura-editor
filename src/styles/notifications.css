@@ -66,7 +66,7 @@
   padding: 6px 12px;
   box-shadow: none;
   font-weight: 550;
-  transition: all 0.15s ease;
+  transition: background-color var(--dur-1) var(--ease-standard), border-color var(--dur-1) var(--ease-standard), color var(--dur-1) var(--ease-standard);
 }
 
 .message-actions button:hover {

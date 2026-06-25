@@ -56,7 +56,7 @@
   color: var(--text-muted);
   min-width: unset;
   padding: 0;
-  transition: all 0.15s ease;
+  transition: background-color var(--dur-1) var(--ease-standard), border-color var(--dur-1) var(--ease-standard), color var(--dur-1) var(--ease-standard);
 }
 
 .find-close:hover {
@@ -140,7 +140,7 @@
   min-width: 48px;
   padding: 3px 8px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color var(--dur-1) var(--ease-standard), border-color var(--dur-1) var(--ease-standard), color var(--dur-1) var(--ease-standard);
 }
 
 .find-actions button:hover:not(:disabled) {
@@ -204,7 +204,7 @@
   min-width: 36px;
   padding: 2px 6px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color var(--dur-1) var(--ease-standard), border-color var(--dur-1) var(--ease-standard), color var(--dur-1) var(--ease-standard);
 }
 
 .find-panel__goto-button:hover {

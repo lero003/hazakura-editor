@@ -401,7 +401,7 @@
   margin: 0 1px;
   padding: 0 4px 0 6px;
   position: relative;
-  transition: all 0.15s var(--ease-standard);
+  transition: background-color var(--dur-1) var(--ease-standard), color var(--dur-1) var(--ease-standard);
 }
 
 .status-bar-format-chip:hover,
