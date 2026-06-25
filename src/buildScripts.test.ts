@@ -311,7 +311,7 @@ describe("macOS build scripts", () => {
       "docs/internal/app-store-candidates/latest.json",
     );
     expect(releaseCandidateScript).toContain(
-      "Tracked release docs were not updated.",
+      "Tracked release docs: no manual update needed (latest.json is the source of truth)",
     );
 
     const dryRun = execFileSync(
@@ -329,7 +329,9 @@ describe("macOS build scripts", () => {
     expect(dryRun).toContain("npm run smoke:app-store-surface");
     expect(dryRun).toContain("npm run build:app-store-pkg");
     expect(dryRun).toContain("keep highest build numbers: 3");
-    expect(dryRun).toContain("Tracked release docs: not updated");
+    expect(dryRun).toContain(
+      "Tracked release docs: no manual update needed (latest.json is the source of truth)",
+    );
   });
 
   it("keeps the App Store surface smoke covering Hazakura Local Assist exposure and retired Review Desk exposure", () => {
@@ -422,6 +424,52 @@ describe("macOS build scripts", () => {
     );
     expect(macosSandboxPreviewSmokeScript).not.toContain(
       "src-tauri/target/release/bundle/macos/hazakura editor.app",
+    );
+  });
+
+  // The latest local App Store / TestFlight package candidate metadata
+  // (version / build / pkg path / SHA-256 / generated time) lives in
+  // docs/internal/app-store-candidates/latest.json (gitignored). The
+  // "current state" docs (current-status.md, handoff.md, roadmap.md) must
+  // reference that file instead of carrying per-build values, so that
+  // `npm run release:candidate -- --with-app-store-pkg` needs no tracked-
+  // doc edits. Historical release notes under docs/releases/ and the
+  // historical build-note section of docs/app-store-build.md are exempt:
+  // they freeze evidence at a point in time and are not the "latest"
+  // candidate. app-store-build.md is allowed to keep its build-counter
+  // line and historical notes, but must still point readers to
+  // latest.json for the current candidate. This test guards against the
+  // per-build SHA / path values creeping back into the live status /
+  // handoff / roadmap docs, which caused real copy-paste mismatches
+  // before.
+  it("keeps per-build package metadata out of live status docs", () => {
+    const sha256Pattern = /\b[0-9a-f]{64}\b/;
+    const statusDocs = {
+      "docs/current-status.md": readFileSync("docs/current-status.md", "utf8"),
+      "docs/handoff.md": readFileSync("docs/handoff.md", "utf8"),
+      "docs/roadmap.md": readFileSync("docs/roadmap.md", "utf8"),
+    };
+
+    for (const [docPath, contents] of Object.entries(statusDocs)) {
+      expect(statusDocs).toHaveProperty(docPath);
+      expect(sha256Pattern.test(contents)).toBe(false);
+      expect(contents).not.toMatch(
+        /HazakuraEditor-\d+\.\d+\.\d+-build\d+-mas\.pkg/,
+      );
+      expect(contents).toContain(
+        "docs/internal/app-store-candidates/latest.json",
+      );
+    }
+
+    // app-store-build.md keeps historical build notes but must no longer
+    // carry the live "current build counter" line or the live "latest
+    // package evidence" version/build pair; it points to latest.json.
+    const appStoreBuild = readFileSync("docs/app-store-build.md", "utf8");
+    expect(appStoreBuild).not.toContain(
+      "Current App Store submit config build counter:",
+    );
+    expect(appStoreBuild).toContain(
+      "docs/internal/app-store-candidates/latest.json",
     );
   });
 });

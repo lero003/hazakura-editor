@@ -161,7 +161,9 @@ function printPlan(options) {
         : "disabled"
     }`,
   );
-  console.log("- Tracked release docs: not updated by this command");
+  console.log(
+    "- Tracked release docs: no manual update needed (latest.json is the source of truth)",
+  );
 }
 
 function writeInternalCandidateNote({ build, pkgPath, sha256, smoke, version }) {
@@ -176,9 +178,9 @@ function writeInternalCandidateNote({ build, pkgPath, sha256, smoke, version }) 
     sha256,
     sourceCommit: capture("git", ["rev-parse", "--short", "HEAD"]),
     smoke,
-    trackedReleaseDocsUpdated: false,
+    trackedReleaseDocsUpdated: true,
     note:
-      "Local App Store/TestFlight candidate metadata. This directory is ignored; update tracked release docs only when this package is uploaded or selected for submission.",
+      "Local App Store/TestFlight candidate metadata. This directory is ignored and is the single source of truth for the latest candidate version / build / pkg path / SHA-256. Tracked docs (current-status.md, handoff.md, roadmap.md, app-store-build.md) reference this file and no longer carry per-build values.",
   };
   const fileName = `HazakuraEditor-${version}-build${build}.json`;
   const payload = `${JSON.stringify(candidate, null, 2)}\n`;
@@ -302,7 +304,9 @@ function main() {
   console.log(`PKG_PATH=${relative(root, pkgPath)}`);
   console.log(`PKG_SHA256=${sha256}`);
   console.log(`APP_STORE_VERSION_BUILD=${version}/${build}`);
-  console.log("Tracked release docs were not updated.");
+  console.log(
+    "Tracked release docs: no manual update needed (latest.json is the source of truth).",
+  );
 }
 
 try {

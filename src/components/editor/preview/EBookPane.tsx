@@ -133,6 +133,7 @@ export default function EBookPane({
   const [tableOfContentsOpen, setTableOfContentsOpen] = useState(false);
   const pendingPageTargetRef = useRef<PendingPageTarget | null>(null);
   const chapterPageCountsRef = useRef<Map<number, number>>(new Map());
+  const articleRef = useRef<HTMLElement | null>(null);
   const flowRef = useRef<HTMLDivElement | null>(null);
   const nextPreviewFlowRef = useRef<HTMLDivElement | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
@@ -610,23 +611,39 @@ export default function EBookPane({
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
-    if (event.target !== event.currentTarget) {
+    // Focus can drift from the article root to a rendered child (e.g. a
+    // link) or be pulled back by the editor pane after a reflow. Once it
+    // leaves the article, the old `target === currentTarget` guard dropped
+    // the event entirely and the reader could not page with the keyboard
+    // again until the user re-clicked it. Treat any key handled here as a
+    // reader intent: prevent the default, keep the focus on the article,
+    // and continue paging so the reader can flip pages rapidly even on a
+    // single-page chapter where the page state does not change.
+    if (
+      event.key !== "ArrowLeft" &&
+      event.key !== "ArrowRight" &&
+      event.key !== " " &&
+      event.key !== "Spacebar"
+    ) {
       return;
     }
+    event.preventDefault();
 
     if (event.key === "ArrowLeft") {
-      event.preventDefault();
       goToPreviousPage();
     } else if (event.key === "ArrowRight") {
-      event.preventDefault();
       goToNextPage();
     } else if (event.key === " " || event.key === "Spacebar") {
-      event.preventDefault();
       if (event.shiftKey) {
         goToPreviousPage();
       } else {
         goToNextPage();
       }
+    }
+
+    const article = articleRef.current;
+    if (article && document.activeElement !== article) {
+      article.focus();
     }
   };
 
@@ -722,6 +739,7 @@ export default function EBookPane({
 
   return (
     <article
+      ref={articleRef}
       aria-label={copy.readerLabel}
       className={`ebook-pane markdown-preview${readingFocusActive ? " ebook-pane-focus" : ""}`}
       onClick={handleClick}

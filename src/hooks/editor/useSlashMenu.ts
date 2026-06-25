@@ -213,17 +213,27 @@ export function useSlashMenu({
       }
       const currentState = stateRef.current;
       if ("insertText" in command) {
+        // From the right-click context menu, insert in front of any active
+        // selection instead of replacing it. Block-start markers (headings,
+        // lists, quotes) and standalone blocks (code fence, divider, table)
+        // are not selection-wrapping commands, so replacing a stray
+        // selection silently deletes the user's text and jerks the scroll.
+        // Keeping the selection and inserting before it matches how these
+        // commands already behave on an empty selection.
         const match =
           currentState.source === "context" && currentState.visible
             ? {
                 from: view.state.selection.main.from,
                 query: "",
-                to: view.state.selection.main.to,
               }
             : findSlashMatch(view);
         if (!match) return;
         view.dispatch({
-          changes: { from: match.from, to: match.to, insert: command.insertText },
+          changes: {
+            from: match.from,
+            to: "to" in match ? match.to : match.from,
+            insert: command.insertText,
+          },
           selection: {
             anchor: match.from + command.insertText.length,
           },

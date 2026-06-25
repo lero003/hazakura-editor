@@ -914,7 +914,7 @@ describe("EBookPane chapter reader", () => {
     });
   });
 
-  it("handles ArrowLeft and ArrowRight only from the focused reader root", async () => {
+  it("handles ArrowLeft and ArrowRight from the reader root or a focused child", async () => {
     render(
       <EBookPane
         menuLanguage="en"
@@ -925,18 +925,17 @@ describe("EBookPane chapter reader", () => {
     const article = screen.getByRole("article", { name: "Book reader" });
     const link = screen.getByRole("link", { name: "open" });
 
+    // Focus can drift from the article root to a rendered child (e.g. a
+    // link). The reader must still page with the keyboard from there and
+    // refocus the article so further flips keep working.
+    link.focus();
     fireEvent.keyDown(link, { key: "ArrowRight" });
-
-    expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
-    expect(screen.queryByRole("heading", { name: "Chapter Two" })).toBeNull();
-
-    article.focus();
-    fireEvent.keyDown(article, { key: "ArrowRight" });
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "Chapter Two" })).toBeTruthy();
     });
     expect(screen.queryByRole("heading", { name: "Chapter One" })).toBeNull();
+    expect(document.activeElement).toBe(article);
 
     fireEvent.keyDown(article, { key: "ArrowLeft" });
 
@@ -946,7 +945,7 @@ describe("EBookPane chapter reader", () => {
     expect(screen.queryByRole("heading", { name: "Chapter Two" })).toBeNull();
   });
 
-  it("handles Space and Shift+Space only from the focused reader root", async () => {
+  it("handles Space and Shift+Space from the reader root or a focused child", async () => {
     vi.mocked(measureEBookPageCount).mockReturnValue(3);
 
     render(
@@ -963,15 +962,35 @@ describe("EBookPane chapter reader", () => {
       expect(screen.getByText("Page 1 / 3")).toBeTruthy();
     });
 
+    link.focus();
     fireEvent.keyDown(link, { key: " " });
-    expect(screen.getByText("Page 1 / 3")).toBeTruthy();
-
-    article.focus();
-    fireEvent.keyDown(article, { key: " " });
     expect(screen.getByText("Page 2 / 3")).toBeTruthy();
+    expect(document.activeElement).toBe(article);
 
     fireEvent.keyDown(article, { key: " ", shiftKey: true });
     expect(screen.getByText("Page 1 / 3")).toBeTruthy();
+  });
+
+  it("keeps flipping pages on repeated ArrowRight even on a single-page chapter", async () => {
+    render(
+      <EBookPane
+        menuLanguage="en"
+        source={"# Only Chapter\n\nsingle page body"}
+      />,
+    );
+
+    const article = screen.getByRole("article", { name: "Book reader" });
+    article.focus();
+
+    // On a single-page chapter the page state cannot advance, but the
+    // reader must stay focused so rapid key presses do not fall through
+    // to the editor pane.
+    fireEvent.keyDown(article, { key: "ArrowRight" });
+    fireEvent.keyDown(article, { key: "ArrowRight" });
+    fireEvent.keyDown(article, { key: "ArrowRight" });
+
+    expect(document.activeElement).toBe(article);
+    expect(screen.getByText("Chapter 1 / 1")).toBeTruthy();
   });
 
   it("resets to the first chapter and first page when the document path changes", async () => {

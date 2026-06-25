@@ -881,10 +881,13 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       y: event.clientY,
     });
     const selection = view.state.selection.main;
-    if (
-      position !== null &&
-      (selection.empty || position < selection.from || position > selection.to)
-    ) {
+    // Only move the cursor on context-menu open when there is no active
+    // selection. Moving the cursor to an out-of-viewport click point while
+    // the user has a (possibly accidental) selection jerks the scroll and,
+    // combined with the old replace-selection insert path, silently
+    // deleted the selected text. Keeping the selection intact also keeps
+    // the cursor in view so the menu open does not scroll.
+    if (position !== null && selection.empty) {
       view.dispatch({ selection: { anchor: position } });
     }
 
