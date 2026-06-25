@@ -611,14 +611,43 @@ fn reveal_path_in_file_manager_rejects_agent_window_label() {
 }
 
 #[test]
-fn open_temp_print_html_rejects_agent_window_label() {
-    let err = open_temp_print_html_with_label(
-        AGENT_WINDOW_LABEL,
-        "<html></html>".to_string(),
-        "label-gate-agent.html".to_string(),
-    )
-    .expect_err("open_temp_print_html must reject the agent window");
+fn print_html_rejects_agent_window_label() {
+    let err =
+        validate_print_html_request(AGENT_WINDOW_LABEL, "<html></html>", "label-gate-agent.html")
+            .expect_err("print_html must reject the agent window");
     assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
+}
+
+#[test]
+fn print_html_rejects_empty_content() {
+    let err = validate_print_html_request(MAIN_WINDOW_LABEL, "   ", "empty.html")
+        .expect_err("print_html must reject empty content");
+    assert!(err.contains("empty"), "{err}");
+}
+
+#[test]
+fn print_html_rejects_path_like_file_name() {
+    let err = validate_print_html_request(MAIN_WINDOW_LABEL, "<html></html>", "../print.html")
+        .expect_err("print_html must reject path-like file names");
+    assert!(err.contains("plain .html"), "{err}");
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn native_print_html_writes_temp_file_for_app_owned_webview() {
+    let path = write_native_print_html_file(987_654_321, "native-print.html", "<html>ok</html>")
+        .expect("native print HTML should be written");
+
+    assert_eq!(
+        path,
+        native_print_temp_path_for_test(987_654_321, "native-print.html")
+    );
+    assert_eq!(
+        fs::read_to_string(&path).expect("read native print HTML"),
+        "<html>ok</html>"
+    );
+
+    let _ = fs::remove_file(path);
 }
 
 #[test]

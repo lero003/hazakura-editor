@@ -3,30 +3,40 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-25 (v0.33.0 build 41 package candidate)
+Last reviewed: 2026-06-25 (v0.34.0 build 46 package candidate)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: `0.33.0` across npm, Tauri, Cargo, and lockfile metadata.
+- Current package/app version: `0.34.0` across npm, Tauri, Cargo, and lockfile metadata.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
 - Published Mac App Store version: `0.32.0`, with the v0.32 Editor /
   Reader Position Bridge shipped as a public update. Hazakura Local
   Assist remains available as a preview on-device writing companion.
 - Latest GitHub source / local-app tag: `v0.32.0`.
-- Latest local App Store / TestFlight package candidate: `0.33.0` build
-  `41`, generated on 2026-06-25 after v0.33 EPUB Export v1 Polish, v1
-  fit-and-finish source work, and the v1.0 RC pre-RC quality-slice
-  planning pass:
-  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.33.0-build41-mas.pkg`.
+- Latest local App Store / TestFlight package candidate: `0.34.0` build
+  `46`, generated on 2026-06-25 after the native PDF print fix and
+  v0.34 cleanup:
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.34.0-build46-mas.pkg`.
   Local package generation, App Store surface smoke, signed app
-  distribution probe, `pkgutil --check-signature`, package SHA-256,
-  and sandbox preview checks passed. SHA-256:
-  `e77d75ef2dd978d7129f68b87cdc11bc9502619059ccfe988236c40a1bdf5548`.
+  distribution probe, `pkgutil --check-signature`, strict `codesign`
+  verification, `Info.plist` version/build checks, package SHA-256, and
+  sandbox preview checks passed. SHA-256:
+  `78ce80cd1bcefd462241ec365679c5842a933dcd52ae3944b9d89b9467b5ec30`.
   Raw App Store Connect upload, processing, TestFlight install /
   launch, and App Review logs are not tracked in this repository unless
   separately recorded.
+- Source-level `v0.34` native PDF print fix is implemented. PDF print no
+  longer writes a browser-readable temporary file and opens it through
+  OS handoff; it now creates an app-owned native print webview, triggers
+  the system print panel from inside the app boundary, and keeps the
+  main-window / filename / HTML-content guards on the Rust side. The old
+  browser-based print command path and stale tests were removed. The
+  user reported the manual PDF print flow as working before this package
+  candidate was generated. This does not add a generic opener, shell
+  input, external browser dependency, or Agent Workbench surface to the
+  App Store lane.
 - Source-level `v0.33` EPUB Export v1 Polish is implemented. EPUB export
   remains an explicit active-document action over Markdown source, but
   user-facing copy now presents it as `EPUB書き出し` / `EPUB Export`
@@ -416,13 +426,12 @@ baseline, and smoke evidence are archived under
 2. For the next product slice, start with `docs/current-work.md`.
    The active lane is `v0.30-v1.0 Reader UX Stabilization`; the current
    product proof task is v0.34 v1.0 Release Candidate / Golden
-   Manuscript smoke after the v0.33 external archive / EPUBCheck proof
-   and build `41` package evidence; the v0.32 reader bridge, v0.33 EPUB,
-   workspace marker, and right-click slash-command fit-and-finish are
-   source-implemented but still need built-app interaction / visual smoke
-   where the local host can launch the app.
-   Before v0.34 RC, close the three pre-RC quality slices documented in
-   `docs/roadmap.md` (Pre-RC Quality Slices). A 2026-06-25 read of the
+   Manuscript smoke after the native PDF print fix and build `46`
+   package evidence; the native PDF print flow has user-side manual
+   smoke, while the v0.32 reader bridge, v0.33 EPUB, workspace marker,
+   and right-click slash-command fit-and-finish still need built-app
+   interaction / visual smoke where the local host can launch the app.
+   A 2026-06-25 read of the
    editor, preview, e-book reader, and stylesheet surfaced these gaps in
    what `v0.29.1` plus `v0.30-v0.33` already ship; they stay inside the
    Safe Editor boundary:
@@ -473,16 +482,17 @@ baseline, and smoke evidence are archived under
    ergonomics, provenance, movement between writing / reading layers,
    and observation-driven Local Assist polish.
 3. For the latest local App Store / TestFlight package candidate,
-   `0.33.0` build `41`
-   is the latest local package evidence. It includes v0.33 EPUB Export
-   v1 Polish, the workspace marker and right-click slash-command source
-   work, and the v1.0 RC pre-RC quality-slice planning pass.
+   `0.34.0` build `46`
+   is the latest local package evidence. It includes the v0.34 native
+   PDF print fix, v0.33 EPUB Export v1 Polish, the workspace marker and
+   right-click slash-command source work, and the v1.0 RC pre-RC
+   quality-slice planning pass.
    Upload, Apple processing, TestFlight install / launch, and App Review
    handling remain explicit distribution-lane work outside this
    repository unless public-safe evidence is recorded.
    The published `0.32.0` App Store lane is the latest released
    version; its build `36` package is historical release evidence and
-   should not be confused with the new `0.33.0` candidate.
+   should not be confused with the new `0.34.0` candidate.
    Do upload / App Store Connect work only when explicitly requested.
    For future App Store submissions, start with `docs/app-store-build.md`;
    use `npm run release:candidate -- --with-app-store-pkg` for local

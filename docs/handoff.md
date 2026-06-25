@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-25 (v0.33.0 build 41 package candidate)
+Last reviewed: 2026-06-25 (v0.34.0 build 46 package candidate)
 
 ## Current State
 
@@ -17,22 +17,27 @@ Last reviewed: 2026-06-25 (v0.33.0 build 41 package candidate)
 - The earlier `0.29.1` App Store update established Hazakura Local Assist
   as a public preview; its build `33` package remains historical release
   evidence and should not be confused with the current `0.32.0` public
-  lane or the `0.33.0` candidate.
-- A new `0.33.0` App Store / TestFlight package candidate was generated
-  on 2026-06-25 after v0.33 EPUB Export v1 Polish, v1 fit-and-finish
-  source work, and the v1.0 RC pre-RC quality-slice planning pass. It
-  advanced the App Store build counter to `41` and
+  lane or the `0.34.0` candidate.
+- A new `0.34.0` App Store / TestFlight package candidate was generated
+  on 2026-06-25 after the native PDF print fix and v0.34 cleanup. It
+  advanced the App Store build counter to `46` and
   produced
-  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.33.0-build41-mas.pkg`
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.34.0-build46-mas.pkg`
   with SHA-256
-  `e77d75ef2dd978d7129f68b87cdc11bc9502619059ccfe988236c40a1bdf5548`.
+  `78ce80cd1bcefd462241ec365679c5842a933dcd52ae3944b9d89b9467b5ec30`.
   App Store surface smoke, local package generation, signed app probe,
-  package signature, metadata, supported-OS, and sandbox preview checks
-  passed. App Store Connect upload, Apple processing, TestFlight install
-  / launch, v0.33 EPUB built-app smoke, v1 workspace/slash built-app
-  smoke, and normal / unsaved / recovered v0.32 reader-bridge built-app
-  smoke remain user-side proof.
-- `0.33.0` is now the source/package app version locally. The v0.33 EPUB
+  strict codesign, package signature, metadata, supported-OS, package
+  SHA, and sandbox preview checks passed. The user reported the manual
+  native PDF print flow as working before this package candidate was
+  generated. App Store Connect upload, Apple processing, TestFlight
+  install / launch, v0.33 EPUB built-app smoke, v1 workspace/slash
+  built-app smoke, and normal / unsaved / recovered v0.32 reader-bridge
+  built-app smoke remain user-side proof.
+- `0.34.0` is now the source/package app version locally. The v0.34
+  native PDF print fix replaces the old print-browser / OS handoff path
+  with an app-owned native print webview, removes stale handoff code and
+  tests, and keeps the Rust-side main-window / filename / HTML-content
+  guards. The v0.33 EPUB
   Export v1 Polish slice is implemented at source level: the export UI
   says `EPUB書き出し` / `EPUB Export`, successful exports can report
   non-fatal image replacement warnings through
@@ -282,11 +287,11 @@ Last reviewed: 2026-06-25 (v0.33.0 build 41 package candidate)
   UTF-8 BOM, Shift-JIS, and EUC-JP after the existing binary / size
   guards. Undecodable files still skip rather than broadening supported
   encodings.
-- v0.28 P2 system handoff hardening is implemented locally. External URL
-  opening, Finder / file-manager reveal, and print-browser handoff now
-  use one fixed OS handoff helper with static platform command templates.
-  Print handoff rejects path-like or non-HTML file names before creating
-  the temporary file.
+- v0.28 P2 system handoff hardening is implemented locally for external
+  URL opening and Finder / file-manager reveal, using one fixed OS
+  handoff helper with static platform command templates. The earlier
+  browser-based PDF print handoff from this slice is superseded by the
+  v0.34 app-owned native print webview.
 - v0.29 AI assist review API alignment is active on top of the completed
   v0.28 foundation. The standalone Review Desk screen, normal chrome
   entry point, manual candidate editor, and Markdown / text candidate

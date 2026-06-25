@@ -14,8 +14,8 @@ vi.mock("@tauri-apps/plugin-dialog", () => ({
 
 const tauriApi = vi.hoisted(() => ({
   isTauriRuntime: vi.fn(() => false),
-  openTempPrintHtml: vi.fn(),
   openWorkspaceImage: vi.fn(),
+  printHtml: vi.fn(),
   saveBinaryFileAs: vi.fn(),
   saveTextFileAs: vi.fn(),
 }));
@@ -35,8 +35,8 @@ const epubApi = vi.hoisted(() => ({
 
 vi.mock("../../lib/tauri", () => ({
   isTauriRuntime: tauriApi.isTauriRuntime,
-  openTempPrintHtml: tauriApi.openTempPrintHtml,
   openWorkspaceImage: tauriApi.openWorkspaceImage,
+  printHtml: tauriApi.printHtml,
   saveBinaryFileAs: tauriApi.saveBinaryFileAs,
   saveTextFileAs: tauriApi.saveTextFileAs,
 }));
@@ -116,6 +116,7 @@ describe("useDocumentExport", () => {
     tauriApi.saveBinaryFileAs.mockReset();
     tauriApi.saveTextFileAs.mockReset();
     tauriApi.openWorkspaceImage.mockReset();
+    tauriApi.printHtml.mockReset();
     document.documentElement.removeAttribute("style");
   });
 
@@ -249,6 +250,32 @@ describe("useDocumentExport", () => {
     expect(exportedHtml).toContain("  --status-text: #f6f1e8;");
     expect(exportedHtml).toContain("background: var(--status-bg)");
     expect(exportedHtml).toContain("color: var(--status-text)");
+  });
+
+  it("prints through native Tauri print instead of browser handoff", async () => {
+    tauriApi.isTauriRuntime.mockReturnValueOnce(true);
+    tauriApi.printHtml.mockResolvedValue(undefined);
+    const setStatus = vi.fn();
+
+    const { result } = renderHook(() =>
+      useDocumentExport({
+        activeContents: "# Print me",
+        activeTab: makeTab({ name: "print-me.md" }),
+        setGlobalError: vi.fn(),
+        setStatus,
+        workspaceRootPath: null,
+      }),
+    );
+
+    await act(async () => {
+      await result.current.exportPdf();
+    });
+
+    expect(tauriApi.printHtml).toHaveBeenCalledWith(
+      expect.stringContaining("<div class=\"markdown-preview\">"),
+      "print-me.html",
+    );
+    expect(setStatus).toHaveBeenCalledWith("Opening native print dialog...");
   });
 
   it("exports EPUB beta through an EPUB save dialog and binary file write", async () => {

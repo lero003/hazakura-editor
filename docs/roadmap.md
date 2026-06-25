@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-25 (v0.33.0 build 39 package candidate)
+Last reviewed: 2026-06-25 (v0.34.0 build 46 package candidate)
 
 ## Current Position
 
@@ -17,14 +17,14 @@ Current release state:
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
 - Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
-- Current package/app version: `0.33.0`.
+- Current package/app version: `0.34.0`.
 - Latest source / local-app tag: `v0.32.0`.
 - Mac App Store published version: `0.32.0`, with the v0.32 Editor /
   Reader Position Bridge shipped as a public update. Hazakura Local
   Assist remains available as a preview on-device writing companion.
-- Latest local App Store / TestFlight package candidate: `0.33.0` build
-  `39`, generated on 2026-06-25 after v0.33 EPUB Export v1 Polish and
-  v1 fit-and-finish source work.
+- Latest local App Store / TestFlight package candidate: `0.34.0` build
+  `46`, generated on 2026-06-25 after the native PDF print fix and
+  v0.34 cleanup.
 - Active lane: `v0.30-v1.0 Reader UX Stabilization`, making the shipped
   Safe Editor, L Mode, e-book Mode, EPUB export beta, Diff / Recovery,
   and Hazakura Local Assist review surfaces feel like one coherent
@@ -63,11 +63,12 @@ Near-term phase order:
 5. v0.34 freezes features as the v1.0 Release Candidate and verifies the
    product explanation, App Store lane boundary, and golden path through
    one realistic Japanese long-form "v1 Golden Manuscript" smoke. The
-   small v1-fit polish for open / unsaved workspace-file state and
-   source-preserving selection tag insertion is source-implemented; RC
-   work should focus on built-app manual smoke, remaining TestFlight /
-   release proof gaps, release wording, and only the smallest file-intake
-   polish that directly supports reading the manuscript.
+   v0.34 native PDF print fix, small v1-fit polish for open / unsaved
+   workspace-file state, and source-preserving selection tag insertion
+   are source-implemented; RC work should focus on built-app manual
+   smoke, remaining TestFlight / release proof gaps, release wording, and
+   only the smallest file-intake polish that directly supports reading
+   the manuscript.
 6. v1.x deepens the single-document product before any rush to v2:
    EPUB, Diff / Review, movement between writing / reading layers,
    distribution polish when needed, and observation-driven Local Assist

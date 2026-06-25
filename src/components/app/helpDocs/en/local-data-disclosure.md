@@ -28,4 +28,4 @@ The App Store build does not include Agent Workbench, a CLI agent, or an arbitra
 
 ## Network and analytics
 
-This app's App Store lane code does not include fetch, XHR, analytics, telemetry, crash reporting, or external AI/API calls. Hazakura Local Assist may use the bundled Hazakura Local Assist helper to call Apple's local Foundation Models framework, and enabled Agent Workbench in the Developer / GitHub lane can launch an allowlisted provider. Explicit actions such as Show in Finder, print handoff, and Move to Trash may pass the selected path or a temporary file to macOS utilities.
+This app's App Store lane code does not include fetch, XHR, analytics, telemetry, crash reporting, or external AI/API calls. Hazakura Local Assist may use the bundled Hazakura Local Assist helper to call Apple's local Foundation Models framework, and enabled Agent Workbench in the Developer / GitHub lane can launch an allowlisted provider. Explicit actions such as Show in Finder, native print, and Move to Trash may pass the selected path or temporary print content to macOS system services.

@@ -130,11 +130,11 @@ export async function revealPathInFileManager(path: string): Promise<void> {
   await invoke("reveal_path_in_file_manager", { path });
 }
 
-export async function openTempPrintHtml(
+export async function printHtml(
   htmlContent: string,
   fileName: string,
-): Promise<string> {
-  return invoke<string>("open_temp_print_html", {
+): Promise<void> {
+  await invoke("print_html", {
     htmlContent,
     fileName,
   });

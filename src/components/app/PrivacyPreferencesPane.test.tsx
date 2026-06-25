@@ -347,12 +347,13 @@ describe("PrivacyPreferencesPane", () => {
     expect(text).toContain(
       "Agent Workbench in the Developer / GitHub lane can launch an allowlisted provider",
     );
-    expect(text).toContain("macOS utilities");
+    expect(text).toContain("macOS system services");
+    expect(text).toContain("native print");
     expect(text).toContain("Show in Finder");
     // The App Store lane description must be honest: the
     // helper is launchable in every lane, Agent Workbench
-    // is Developer / GitHub-only, and explicit OS handoff
-    // actions can use macOS utilities. The old v0.16
+    // is Developer / GitHub-only, and explicit native /
+    // OS handoff actions can use macOS services. The old v0.16
     // first-pass copy used "The only local process" and
     // then "The only local processes"; both are too
     // narrow for the implementation.

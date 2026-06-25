@@ -14,7 +14,6 @@ pub(crate) struct OsHandoffCommand {
 pub(crate) enum OsHandoffTarget<'a> {
     ExternalUrl(&'a str),
     RevealPath(&'a Path),
-    PrintHtml(&'a Path),
 }
 
 pub(crate) fn normalize_external_url(url: &str) -> Result<String, String> {
@@ -51,43 +50,10 @@ pub(crate) fn normalize_external_url(url: &str) -> Result<String, String> {
     Ok(trimmed.to_string())
 }
 
-pub(crate) fn normalize_print_handoff_file_name(file_name: &str) -> Result<String, String> {
-    if file_name.is_empty() {
-        return Err("print handoff file name is empty.".to_string());
-    }
-
-    if file_name
-        .chars()
-        .any(|character| character.is_ascii_control() || matches!(character, '/' | '\\' | ':'))
-    {
-        return Err("print handoff file name must be a plain .html file name.".to_string());
-    }
-
-    let path = Path::new(file_name);
-    if path.file_name().and_then(|name| name.to_str()) != Some(file_name) {
-        return Err("print handoff file name must be a plain .html file name.".to_string());
-    }
-
-    let stem = path
-        .file_stem()
-        .and_then(|stem| stem.to_str())
-        .unwrap_or("");
-    let extension = path
-        .extension()
-        .and_then(|extension| extension.to_str())
-        .unwrap_or("");
-    if stem.is_empty() || !extension.eq_ignore_ascii_case("html") {
-        return Err("print handoff file name must be a plain .html file name.".to_string());
-    }
-
-    Ok(file_name.to_string())
-}
-
 pub(crate) fn build_os_handoff_command(target: OsHandoffTarget<'_>) -> OsHandoffCommand {
     match target {
         OsHandoffTarget::ExternalUrl(url) => build_external_url_command(url),
         OsHandoffTarget::RevealPath(path) => build_reveal_path_command(path),
-        OsHandoffTarget::PrintHtml(path) => build_print_html_command(path),
     }
 }
 
@@ -162,37 +128,6 @@ fn build_reveal_path_command(path: &Path) -> OsHandoffCommand {
         OsHandoffCommand {
             program: OsString::from("xdg-open"),
             args: vec![directory.as_os_str().to_os_string()],
-        }
-    }
-}
-
-fn build_print_html_command(path: &Path) -> OsHandoffCommand {
-    #[cfg(target_os = "macos")]
-    {
-        OsHandoffCommand {
-            program: OsString::from("/usr/bin/open"),
-            args: vec![path.as_os_str().to_os_string()],
-        }
-    }
-
-    #[cfg(target_os = "windows")]
-    {
-        OsHandoffCommand {
-            program: OsString::from("cmd"),
-            args: vec![
-                OsString::from("/C"),
-                OsString::from("start"),
-                OsString::from(""),
-                path.as_os_str().to_os_string(),
-            ],
-        }
-    }
-
-    #[cfg(all(not(target_os = "macos"), not(target_os = "windows")))]
-    {
-        OsHandoffCommand {
-            program: OsString::from("xdg-open"),
-            args: vec![path.as_os_str().to_os_string()],
         }
     }
 }

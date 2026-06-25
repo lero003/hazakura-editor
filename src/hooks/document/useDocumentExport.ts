@@ -2,8 +2,8 @@ import { useCallback, useRef, useState } from "react";
 import { save as saveDialog } from "@tauri-apps/plugin-dialog";
 import {
   isTauriRuntime,
-  openTempPrintHtml,
   openWorkspaceImage,
+  printHtml,
   saveBinaryFileAs,
   saveTextFileAs,
 } from "../../lib/tauri";
@@ -53,7 +53,7 @@ export function useDocumentExport({
       return;
     }
 
-    setStatus("Opening in browser for printing...");
+    setStatus("Preparing print layout...");
     try {
       let rendered = renderMarkdown(activeContents, {
         documentPath: activeTab.path,
@@ -139,18 +139,15 @@ export function useDocumentExport({
 <div class="markdown-preview">
 ${rendered}
 </div>
-<script>window.addEventListener("load", () => window.print());</script>
 </body>
 </html>`;
 
       if (isTauriRuntime()) {
-        const tempPath = await openTempPrintHtml(
+        await printHtml(
           standaloneHtml,
           activeTab.name.replace(/\.[^.]+$/, "") + ".html",
         );
-        if (tempPath) {
-          setStatus("Opening in browser for printing...");
-        }
+        setStatus("Opening native print dialog...");
         setTimeout(() => setStatus(""), 2000);
         return;
       }
@@ -163,6 +160,8 @@ ${rendered}
       printWindow.document.open();
       printWindow.document.write(standaloneHtml);
       printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
       setTimeout(() => setStatus(""), 2000);
     } catch (err) {
       console.warn("Print failed:", err);
