@@ -47,6 +47,12 @@ export const MAX_RESTORED_TABS = 12;
 export const MAX_STORED_DRAFTS = 20;
 export const MAX_RECENT_ITEMS = 8;
 export const SCROLL_SYNC_TOLERANCE_PX = 10;
+// v0.34: 慣性スクロール中の editor→preview 書き戻しとの衝突を防ぐため、
+// preview 発スクロールのガードを解除するまでの待機時間。トラックパッド慣性
+// スクロールのフレーム間隔（約16ms）より十分長く、かつ慣性停止後の切り替え
+// が鈍くならない値として 150ms に設定。syncEditorScroll が連続発火する間は
+// このタイマーが自己延長されるため、慣性継続中はガードが維持される。
+export const SCROLL_SYNC_GUARD_RELEASE_MS = 150;
 export const DEFAULT_PREVIEW_COLUMN_PERCENT = 42;
 export const MIN_PREVIEW_COLUMN_PERCENT = 25;
 export const MAX_PREVIEW_COLUMN_PERCENT = 75;
