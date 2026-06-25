@@ -60,8 +60,8 @@ Last reviewed: 2026-06-26 (v0.35.0 PDF export recovery)
   export / status / privacy tests passed; focused Rust `export_pdf`
   tests passed, including the follow-up that splits exported PDF content
   into A4-sized page rects instead of one long page; `npm run test`
-  passed (118 files / 1046 tests);
-  `npm run smoke:app-store-surface` passed (10 files / 90 tests);
+  passed (118 files / 1051 tests);
+  `npm run smoke:app-store-surface` passed (10 files / 91 tests);
   `npm run build:vite` passed with the usual large-chunk warning;
   `npm run build` produced the app-store-preview app bundle;
   `SKIP_BUILD=1 npm run smoke:macos-sandbox-preview` passed; full Rust
@@ -71,8 +71,11 @@ Last reviewed: 2026-06-26 (v0.35.0 PDF export recovery)
   full reruns);
   `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and
   `git diff --check` passed.
-  The remaining proof is user-side TestFlight install / launch and
-  confirming that the selected `.pdf` file is created.
+  Build `48` is the latest signed App Store / TestFlight pkg candidate;
+  per-build pkg path / SHA-256 values live in
+  `docs/internal/app-store-candidates/latest.json` as the single source
+  of truth. The remaining proof is user-side TestFlight install / launch
+  and confirming that the selected `.pdf` file is created.
 - v1 workspace / slash-command fit-and-finish is source-implemented:
   workspace tree open / dirty markers are derived from existing tab state
   with `isDirty()`, limited to files inside the selected workspace, and
