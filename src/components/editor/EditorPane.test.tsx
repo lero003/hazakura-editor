@@ -362,6 +362,10 @@ describe("EditorPane", () => {
       onScrollRatioChange.mockClear();
       editorRef.current?.goToLine(4);
       scroller.scrollTop = 400;
+      // v0.34: goToLine は double-rAF で報告するため、2フレーム分進める。
+      const firstPass = [...frameCallbacks];
+      frameCallbacks.length = 0;
+      firstPass.forEach((callback) => callback(0));
       frameCallbacks.forEach((callback) => callback(0));
 
       expect(onScrollRatioChange).not.toHaveBeenCalledWith(0.75);

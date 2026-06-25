@@ -269,19 +269,27 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         if (jumpScrollReportFrameRef.current !== null) {
           win.cancelAnimationFrame(jumpScrollReportFrameRef.current);
         }
+        // v0.34: CodeMirror の scrollIntoView は非同期(requestMeasure)で処理
+        // されるため、1フレーム後でも scrollTop が確定していないことがある。
+        // double-rAF (2フレーム待ち) でスクロール確定後に ratio を報告し、
+        // プレビュー/HUD の一拍ズレを防ぐ。
         jumpScrollReportFrameRef.current = win.requestAnimationFrame(() => {
-          jumpScrollReportFrameRef.current = null;
-          if (viewRef.current !== view) {
-            return;
-          }
-          onScrollRatioChangeRef.current(readScrollRatio(view.scrollDOM));
+          jumpScrollReportFrameRef.current = win.requestAnimationFrame(() => {
+            jumpScrollReportFrameRef.current = null;
+            if (viewRef.current !== view) {
+              return;
+            }
+            onScrollRatioChangeRef.current(
+              readScrollRatio(view.scrollDOM),
+            );
+          });
         });
         view.focus();
       },
       applyMarkdownFormat(format) {
         const view = viewRef.current;
 
-        if (!view) {
+        if (!view || readOnly) {
           return;
         }
 
@@ -290,13 +298,13 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       },
       insertTable(columns) {
         const view = viewRef.current;
-        if (!view) return;
+        if (!view || readOnly) return;
         insertTableAtCursor(view, columns);
         view.focus();
       },
       insertText(text) {
         const view = viewRef.current;
-        if (!view) return;
+        if (!view || readOnly) return;
         view.dispatch({
           changes: {
             from: view.state.selection.main.from,
@@ -374,7 +382,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         view.focus();
       },
     }),
-    [activeSearchMatchIndex, searchMatches],
+    [activeSearchMatchIndex, readOnly, searchMatches],
   );
 
   useEffect(() => {
