@@ -18,12 +18,14 @@
   border-radius: 50%;
   background: var(--accent);
   box-shadow: 0 0 6px color-mix(in srgb, var(--accent) 50%, transparent);
-  animation: agentPulse 2s ease-in-out infinite;
+  /* v0.34: 無限 pulse ではなく、登場時の1回の settle-in に変更。
+     "quiet book editor" のトーンに合わせて常時呼吸しない。 */
+  animation: agentSettle 320ms var(--ease-emphasized);
 }
 
-@keyframes agentPulse {
-  0%, 100% { opacity: 0.6; transform: scale(0.9); }
-  50% { opacity: 1; transform: scale(1.1); }
+@keyframes agentSettle {
+  0% { opacity: 0; transform: scale(0.6); }
+  100% { opacity: 1; transform: scale(1); }
 }
 
 :root[data-theme="yakou"] .status-agent-dot {
