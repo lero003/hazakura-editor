@@ -446,13 +446,12 @@ baseline, and smoke evidence are archived under
      `prefers-reduced-motion` is only partially covered; the global
      `button:hover` translateY lift reads as web-app bounce rather than
      book calm.
-   - Slice C Robustness: Save-As rekey forces a full editor remount,
-     losing scroll + undo history (`EditorPane.tsx:413`); `goToLine`
-     single-rAF reports scroll ratio before CodeMirror's async
-     `scrollIntoView` settles (`EditorPane.tsx:247`); the
-     `EditorPane` imperative handle deps omit `readOnly`; the assist
-     apply path closes over `activeTab.id` rather than a validated
-     `tabId`.
+   - Slice C Robustness: `goToLine` single-rAF reports scroll ratio
+     before CodeMirror's async `scrollIntoView` settles (fixed: double-rAF);
+     the `EditorPane` imperative handle deps omit `readOnly` (fixed:
+     insertText/applyMarkdownFormat/insertTable gated); the assist apply
+     path closes over `activeTab.id` rather than a validated `tabId`
+     (fixed: explicit tabId). Save-As rekey remount is deferred to v1.1.
    Keep the v1
    path focused on a single-document Safe Markdown Book Editor with
    Local Assist Review: Flow View, Spread View, editor/reader position

@@ -546,10 +546,12 @@ Use `docs/current-work.md` for the active queue. Current priority order:
      `--bg-elev`, `--font-editor`, `--font-ui`) in `tokens.css`, add a
      global `prefers-reduced-motion` reset, replace `transition: all` /
      bare `ease`, and drop the global `button:hover` translateY lift.
-   - Slice C Robustness: preserve editor session across Save-As rekey
-     (`EditorPane.tsx:413`), fix `goToLine` single-rAF scroll lag
-     (`EditorPane.tsx:247`), add `readOnly` to the imperative handle
-     deps, and pass an explicit `tabId` to the assist apply path.
+   - Slice C Robustness: fix `goToLine` single-rAF scroll lag
+     (`EditorPane.tsx:247`, done: double-rAF), add `readOnly` to the
+     imperative handle deps (done: insertText/applyMarkdownFormat/insertTable
+     gated), and pass an explicit `tabId` to the assist apply path (done).
+     Save-As rekey remount is deferred to v1.1 (needs editor session id
+     separate from documentKey).
 5. v0.34 v1.0 Release Candidate after Slice A-C and the EPUB/package
    proof boundary is clear.
 6. v1.x deepens the single-document product before Book Scope / Book

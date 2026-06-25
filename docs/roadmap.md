@@ -391,8 +391,10 @@ Correctness of Save-As, mode switching, and the assist-lock path.
 
 - Save-As rekey changes `documentKey` and forces a full editor remount,
   losing scroll position and undo history
-  (`src/components/editor/EditorPane.tsx:413-453`). Preserve the editor
-  session across a same-content rekey.
+  (`src/components/editor/EditorPane.tsx:413-453`). **Deferred to v1.1:**
+  a proper fix needs an editor session id separate from `documentKey`,
+  which touches tab state management beyond this slice. Save-As still
+  works; it just resets scroll/undo.
 - `goToLine` reports scroll ratio in a single `requestAnimationFrame`
   before CodeMirror's asynchronous `scrollIntoView` has settled
   (`EditorPane.tsx:247-275`), so the preview and scroll HUD misalign for
@@ -408,10 +410,13 @@ Correctness of Save-As, mode switching, and the assist-lock path.
   over `activeTab.id`, so a tab switch during generation writes to the
   validated target.
 
-Acceptance: Save-As keeps the user's place and undo history, heading
-jumps do not lag the preview, and the assist-lock and cross-tab apply
-paths are race-free. These slices do not change the v1 product
-definition; after Slice A-C, proceed to `v0.34` Golden Manuscript smoke.
+Acceptance: heading jumps do not lag the preview, and the assist-lock
+and cross-tab apply paths are race-free. Save-As rekey remount
+(preserving scroll + undo history) requires an editor session id
+separate from `documentKey`, so it is deferred to v1.1 — Save-As still
+works, it just resets scroll/undo. These slices do not change the v1
+product definition; after Slice A-C, proceed to `v0.34` Golden
+Manuscript smoke.
 
 #### v0.34: v1.0 Release Candidate
 
