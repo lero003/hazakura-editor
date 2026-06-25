@@ -179,7 +179,7 @@
   transition:
     background 0.18s ease,
     color 0.18s ease,
-    border-color 0.18s ease;
+    border-color 0.18s var(--ease-standard);
 }
 
 .agent-window-state-dot {
@@ -188,7 +188,7 @@
   display: inline-block;
   flex: 0 0 auto;
   height: 6px;
-  transition: background 0.18s ease;
+  transition: background 0.18s var(--ease-standard);
   width: 6px;
 }
 
@@ -326,7 +326,7 @@
   transition:
     background 0.15s ease,
     border-color 0.15s ease,
-    color 0.15s ease;
+    color 0.15s var(--ease-standard);
 }
 
 .agent-window-stop:hover:not(:disabled) {
@@ -345,7 +345,7 @@
   display: inline-block;
   flex: 0 0 auto;
   height: 7px;
-  transition: background 0.15s ease;
+  transition: background 0.15s var(--ease-standard);
   width: 7px;
 }
 
@@ -426,7 +426,7 @@
   transition:
     background 0.15s ease,
     border-color 0.15s ease,
-    opacity 0.15s ease;
+    opacity 0.15s var(--ease-standard);
 }
 
 .agent-window-start-button:hover:not(:disabled) {

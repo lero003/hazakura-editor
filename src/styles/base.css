@@ -12,7 +12,7 @@
   border-radius: 4px;
   border: 2px solid transparent;
   background-clip: content-box;
-  transition: background 0.2s ease;
+  transition: background 0.2s var(--ease-standard);
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--scrollbar-thumb-hover);

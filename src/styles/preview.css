@@ -883,7 +883,7 @@
   height: 100%;
   line-height: 1.9;
   text-wrap: pretty;
-  transition: transform 160ms ease;
+  transition: transform 160ms var(--ease-standard);
   will-change: transform;
   word-break: break-word;
 }
