@@ -16,15 +16,24 @@ export function renderMarkdown(
   options?: { documentPath?: string | null; workspaceRoot?: string | null },
 ): string {
   const rawHtml = marked.parse(source, { async: false }) as string;
-  const imageBoundedHtml = applyImagePreviewPolicy(
-    rawHtml,
+
+  // v0.34: 3つのポリシー(画像/テーブル/タスクリスト)をそれぞれ別の <template>
+  // で parse/シリアライズすると HTML が5回 parse されていた(各ポリシー1回ずつ +
+  // DOMPurify)。1つの template に1回 parse し、同じ DOM に全ポリシーを適用して
+  // から1回だけシリアライズ → DOMPurify に渡す。
+  const template = document.createElement("template");
+  template.innerHTML = rawHtml;
+  const fragment = template.content;
+
+  applyImagePreviewPolicyToFragment(
+    fragment,
     options?.workspaceRoot ?? null,
     options?.documentPath ?? null,
   );
-  const tableBoundedHtml = applyTablePreviewPolicy(imageBoundedHtml);
-  const taskListBoundedHtml = applyTaskListPreviewPolicy(tableBoundedHtml);
+  applyTablePreviewPolicyToFragment(fragment);
+  applyTaskListPreviewPolicyToFragment(fragment);
 
-  return DOMPurify.sanitize(taskListBoundedHtml, {
+  return DOMPurify.sanitize(template.innerHTML, {
     USE_PROFILES: { html: true },
     ALLOWED_URI_REGEXP:
       /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|matrix):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
@@ -94,8 +103,21 @@ function applyImagePreviewPolicy(
 ): string {
   const template = document.createElement("template");
   template.innerHTML = html;
+  applyImagePreviewPolicyToFragment(
+    template.content,
+    workspaceRoot,
+    documentPath,
+  );
+  return template.innerHTML;
+}
 
-  for (const image of Array.from(template.content.querySelectorAll("img"))) {
+// v0.34: 共通の fragment に直接適用する版（renderMarkdown の1パス化用）。
+function applyImagePreviewPolicyToFragment(
+  fragment: DocumentFragment,
+  workspaceRoot: string | null,
+  documentPath: string | null,
+): void {
+  for (const image of Array.from(fragment.querySelectorAll("img"))) {
     const src = image.getAttribute("src")?.trim() ?? "";
 
     if (isAllowedEmbeddedImageSource(src)) {
@@ -117,8 +139,6 @@ function applyImagePreviewPolicy(
 
     image.replaceWith(blockedImageMessage(image.getAttribute("alt")?.trim()));
   }
-
-  return template.innerHTML;
 }
 
 function blockedImageMessage(alt?: string | null): HTMLSpanElement {
@@ -134,8 +154,15 @@ function blockedImageMessage(alt?: string | null): HTMLSpanElement {
 function applyTablePreviewPolicy(html: string): string {
   const template = document.createElement("template");
   template.innerHTML = html;
+  applyTablePreviewPolicyToFragment(template.content);
+  return template.innerHTML;
+}
 
-  for (const table of Array.from(template.content.querySelectorAll("table"))) {
+// v0.34: 共通の fragment に直接適用する版（renderMarkdown の1パス化用）。
+function applyTablePreviewPolicyToFragment(
+  fragment: DocumentFragment,
+): void {
+  for (const table of Array.from(fragment.querySelectorAll("table"))) {
     if (table.parentElement?.classList.contains("markdown-table-frame")) {
       continue;
     }
@@ -147,16 +174,21 @@ function applyTablePreviewPolicy(html: string): string {
     table.replaceWith(frame);
     frame.append(table);
   }
-
-  return template.innerHTML;
 }
 
 function applyTaskListPreviewPolicy(html: string): string {
   const template = document.createElement("template");
   template.innerHTML = html;
+  applyTaskListPreviewPolicyToFragment(template.content);
+  return template.innerHTML;
+}
 
+// v0.34: 共通の fragment に直接適用する版（renderMarkdown の1パス化用）。
+function applyTaskListPreviewPolicyToFragment(
+  fragment: DocumentFragment,
+): void {
   for (const checkbox of Array.from(
-    template.content.querySelectorAll('li > input[type="checkbox"][disabled]'),
+    fragment.querySelectorAll('li > input[type="checkbox"][disabled]'),
   )) {
     const item = checkbox.parentElement;
     const checked = checkbox.hasAttribute("checked");
@@ -171,8 +203,6 @@ function applyTaskListPreviewPolicy(html: string): string {
     item?.classList.add("markdown-task-list-item");
     checkbox.replaceWith(replacement);
   }
-
-  return template.innerHTML;
 }
 
 function workspaceImagePath(
