@@ -90,8 +90,10 @@ type UseAppleAssistApplyHandlerOptions = {
   // Replaces the active tab's contents with the new
   // buffer. The orchestrator owns the tab state; this
   // callback is the only path through which the handler
-  // mutates the buffer.
-  setActiveTabContents: (next: string) => void;
+  // mutates the buffer. The `tabId` is passed explicitly so
+  // the write always targets the validated tab even if the
+  // orchestrator's render-time `activeTab` closure is stale.
+  setActiveTabContents: (next: string, tabId: string) => void;
   // Optional status surface for the main window. Called
   // on apply success / failure with a localized message
   // the orchestrator can pass through to its `setStatus`.
@@ -250,7 +252,7 @@ export function useAppleAssistApplyHandler({
         diff,
       };
       aiEditTransactionStore.record(stored);
-      setActiveTabContentsRef.current(result.nextBuffer);
+      setActiveTabContentsRef.current(result.nextBuffer, latestTab.id);
       const successMessage = `Hazakura Local Assist applied: ${result.transaction.request} (${result.transaction.target.kind})`;
       setStatusRef.current?.(successMessage);
       void emitAppleAssistApplyStatus("completed", successMessage, payload, {

@@ -447,11 +447,12 @@ export function useAppShellController() {
           contents: activeTab.contents,
         }
       : null,
-    setActiveTabContents: (next: string) => {
-      if (!activeTab) return;
+    setActiveTabContents: (next: string, tabId: string) => {
+      // v0.34: クロージャの activeTab.id ではなく、ハンドラが検証済みの
+      // tabId で書き込み先を決める。生成中に別タブへ切替しても誤爆しない。
       setTabs((currentTabs) =>
         currentTabs.map((tab) =>
-          tab.id === activeTab.id
+          tab.id === tabId
             ? {
                 ...tab,
                 contents: next,
