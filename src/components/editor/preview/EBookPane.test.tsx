@@ -1143,9 +1143,13 @@ describe("EBookPane pagination measurement", () => {
     await waitFor(() => {
       expect(screen.getByRole("img")).toBeTruthy();
     });
-    expect(
-      vi.mocked(measureEBookPageCount).mock.calls.length,
-    ).toBeGreaterThanOrEqual(2);
+    // v0.34: 画像インライン後の再計測は rAF coalesce 経由になったため、
+    // rAF が発火して measureEBookPageCount が呼ばれるまで待つ。
+    await waitFor(() => {
+      expect(
+        vi.mocked(measureEBookPageCount).mock.calls.length,
+      ).toBeGreaterThanOrEqual(2);
+    });
   });
 
   it("promotes image-only paragraphs to atomic page units and remeasures already loaded images", async () => {
