@@ -236,7 +236,7 @@
   align-items: center;
   background: transparent;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   box-shadow: none;
   color: var(--text-muted);
   transition: background-color var(--dur-1) var(--ease-standard), color var(--dur-1) var(--ease-standard);
@@ -273,7 +273,7 @@
   align-items: center;
   background: transparent;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   box-shadow: none;
   color: var(--text-muted);
   transition: background-color var(--dur-1) var(--ease-standard), color var(--dur-1) var(--ease-standard);
@@ -293,7 +293,7 @@
 .workspace-new-menu-popover {
   background: var(--surface-strong);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
@@ -302,13 +302,13 @@
   position: absolute;
   right: 0;
   top: calc(100% + 4px);
-  z-index: 60;
+  z-index: var(--z-sticky);
 }
 
 .workspace-new-menu-popover button {
   background: transparent;
   border: 0;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   box-shadow: none;
   color: var(--text);
   justify-content: flex-start;
@@ -343,7 +343,7 @@
 .tree-file {
   align-items: center;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   background: transparent;
   display: flex;
   gap: 8px;
@@ -423,7 +423,7 @@
 
 .tree-open-marker,
 .tree-dirty-marker {
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   flex: 0 0 auto;
 }
 
@@ -456,7 +456,7 @@
   background: var(--accent-soft);
   color: var(--text);
   font-weight: 600;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 
 :root[data-theme="sakura"] .tree-file.active {
@@ -490,7 +490,7 @@
 .workspace-context-menu {
   background: var(--surface-strong);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
@@ -498,13 +498,13 @@
   padding: 6px;
   position: fixed;
   width: min(240px, calc(100vw - 16px));
-  z-index: 120;
+  z-index: var(--z-dropdown);
 }
 
 .workspace-context-menu button {
   background: transparent;
   border: 0;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   box-shadow: none;
   color: var(--text);
   transition: background 0.15s var(--ease-standard);
@@ -564,7 +564,7 @@
   align-items: center;
   background: color-mix(in srgb, var(--surface-strong) 92%, var(--accent) 8%);
   border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--border));
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   box-shadow: 0 16px 40px color-mix(in srgb, var(--shadow) 18%, transparent);
   color: var(--text);
   display: flex;
@@ -581,7 +581,7 @@
   top: 50%;
   transform: translate(-50%, -50%);
   width: max-content;
-  z-index: 5;
+  z-index: var(--z-base);
 }
 
 .editor-apple-assist-lock strong {
@@ -609,7 +609,7 @@
 
 .editor-restore-loading-line {
   background: color-mix(in srgb, var(--text-muted) 16%, transparent);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   display: block;
   flex: 0 0 12px;
   max-width: 760px;
@@ -762,7 +762,7 @@
   backdrop-filter: blur(12px);
   background: color-mix(in srgb, var(--surface-strong) 68%, transparent);
   border: 1px solid color-mix(in srgb, var(--border-strong) 62%, transparent);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
   color: var(--text);
   display: grid;
@@ -774,7 +774,7 @@
   position: absolute;
   right: 20px;
   top: 18px;
-  z-index: 3;
+  z-index: var(--z-base);
 }
 
 .scroll-position-hud-current {
@@ -841,7 +841,7 @@
   aspect-ratio: 1;
   background: #ffffff;
   border: 1px solid rgba(154, 64, 87, 0.2);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   box-shadow: var(--shadow-sm);
   display: block;
   flex: 0 0 auto;
@@ -932,7 +932,7 @@
 .start-recent-row .start-recent-pin {
   background: transparent;
   border: 0;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   color: var(--text-muted);
   cursor: pointer;
   flex: 0 0 auto;
@@ -962,7 +962,7 @@
 .start-recent button {
   background: transparent;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   box-shadow: none;
   color: var(--text-muted);
   transition: background-color var(--dur-1) var(--ease-standard), color var(--dur-1) var(--ease-standard);
@@ -1054,7 +1054,7 @@
 .diff-setup-card {
   align-items: flex-start;
   border: 1px dashed var(--border-strong);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -1089,7 +1089,7 @@
 
 .diff-setup-note {
   background: var(--accent-soft);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   padding: 10px 12px;
   width: 100%;
 }
@@ -1104,7 +1104,7 @@
 .diff-selection-slot {
   background: var(--surface);
   border: 1px dashed var(--border-strong);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   display: grid;
   gap: 8px;
   min-width: 0;
@@ -1236,7 +1236,7 @@
 }
 
 .diff-summary span {
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 700;
@@ -1283,7 +1283,7 @@
   position: sticky;
   text-transform: uppercase;
   top: 0;
-  z-index: 1;
+  z-index: var(--z-base);
 }
 
 .diff-row-header,
@@ -1429,7 +1429,7 @@
   padding: 6px 10px;
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: var(--z-base);
 }
 
 .side-pane-tab {
@@ -1567,7 +1567,7 @@
 .tab-context-menu {
   background: var(--surface-strong);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
@@ -1575,13 +1575,13 @@
   padding: 6px;
   position: fixed;
   width: min(200px, calc(100vw - 16px));
-  z-index: 120;
+  z-index: var(--z-dropdown);
 }
 
 .tab-context-menu button {
   background: transparent;
   border: 0;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   box-shadow: none;
   color: var(--text);
   transition: background 0.15s var(--ease-standard);
@@ -1613,7 +1613,7 @@
   align-items: center;
   background: transparent;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   color: var(--text);
   display: flex;
   flex: 1 1 auto;

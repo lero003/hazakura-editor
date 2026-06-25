@@ -86,7 +86,7 @@ describe("preview.css", () => {
     expect(statusBody).toMatch(/justify-content:\s*center/);
     expect(statusBody).toMatch(/text-align:\s*center/);
     // ボタンはピル型（折り返さない）
-    expect(buttonBody).toMatch(/border-radius:\s*999px/);
+    expect(buttonBody).toMatch(/border-radius:\s*var\(--radius-pill\)/);
     expect(buttonBody).toMatch(/white-space:\s*nowrap/);
     // 古い3列/5列グリッド構造は廃止
     expect(previewCss).not.toMatch(/ebook-reader-chrome-focus/);

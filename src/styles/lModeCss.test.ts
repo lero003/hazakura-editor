@@ -166,7 +166,7 @@ describe("lMode.css", () => {
     expect(railRule).toMatch(/flex-direction:\s*column/);
     expect(railRule).toMatch(/right:\s*18px/);
     expect(railRule).toMatch(/width:\s*94px/);
-    expect(railRule).toMatch(/border-radius:\s*18px/);
+    expect(railRule).toMatch(/border-radius:\s*var\(--radius-lg\)/);
     expect(labelRule).toMatch(/display:\s*inline-block/);
     expect(labelRule).toMatch(/flex:\s*1 1 auto/);
     expect(labelRule).toMatch(/text-overflow:\s*ellipsis/);

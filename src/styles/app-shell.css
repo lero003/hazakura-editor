@@ -46,12 +46,12 @@
   overflow: hidden;
   pointer-events: none;
   position: fixed;
-  z-index: 2;
+  z-index: var(--z-base);
 }
 
 .tabs-row {
   position: relative;
-  z-index: 20;
+  z-index: var(--z-sticky);
 }
 
 .workspace,
@@ -61,7 +61,7 @@
 .lmode-exit-pill,
 .lmode-action-rail {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-base);
 }
 
 .ambient-particle {

@@ -19,7 +19,7 @@
   position: fixed;
   right: 18px;
   bottom: 64px;
-  z-index: 95;
+  z-index: var(--z-sticky);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -27,7 +27,7 @@
   max-height: min(60vh, 540px);
   padding: 8px 10px 8px 12px;
   border: 1px solid color-mix(in srgb, var(--border) 56%, transparent);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--surface) 78%, transparent);
   backdrop-filter: blur(18px) saturate(1.05);
   box-shadow: var(--shadow-md);
@@ -52,7 +52,7 @@
   width: 22px;
   height: 22px;
   flex: 0 0 22px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: color-mix(in srgb, var(--accent) 16%, transparent);
   color: var(--accent);
 }
@@ -84,7 +84,7 @@
   display: inline-block;
   min-width: 1.4em;
   padding: 0 4px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   text-align: center;
   font-weight: 600;
 }
@@ -115,7 +115,7 @@
   padding: 0 10px;
   margin: 0;
   border: 1px solid color-mix(in srgb, var(--border) 64%, transparent);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: color-mix(in srgb, var(--surface-strong, var(--surface)) 76%, transparent);
   color: color-mix(in srgb, var(--text) 88%, var(--text-muted));
   font: inherit;

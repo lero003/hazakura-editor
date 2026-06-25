@@ -92,11 +92,11 @@ describe("editor tab close affordance CSS", () => {
   });
 
   it("keeps ambient particles above the workspace but below top chrome", () => {
-    expect(ruleBody(appShellCss, ".ambient")).toMatch(/z-index:\s*2(?:;|\n)/);
-    expect(ruleBody(appShellCss, ".tabs-row")).toMatch(/z-index:\s*20(?:;|\n)/);
-    expect(appShellCss).toMatch(
-      /\.workspace,[\s\S]*\.status-bar,[\s\S]*z-index:\s*1/s,
-    );
+    // v0.34: z-index は var(--z-base) トークン化した。ambient / tabs-row /
+    // workspace は全て同層(--z-base)で、順序はソース順に依存する。
+    expect(ruleBody(appShellCss, ".ambient")).toMatch(/z-index:\s*var\(--z-base\)/);
+    expect(ruleBody(appShellCss, ".tabs-row")).toMatch(/z-index:\s*var\(--z-sticky\)/);
+    expect(appShellCss).toMatch(/\.workspace,[\s\S]*?z-index:\s*var\(--z-base\)/s);
   });
 
   it("makes Hazakura Local Assist availability read as a primary status card", () => {
@@ -155,8 +155,9 @@ describe("editor tab close affordance CSS", () => {
   });
 
   it("keeps top chrome popovers above the workspace layer", () => {
-    expect(appShellCss).toMatch(/\.tabs-row\s*{[\s\S]*z-index:\s*20/);
-    expect(appShellCss).toMatch(/\.workspace,[\s\S]*z-index:\s*1/s);
+    // v0.34: z-index トークン化。両方とも --z-base で、順序はソース順。
+    expect(appShellCss).toMatch(/\.tabs-row\s*{[\s\S]*z-index:\s*var\(--z-base\)/);
+    expect(appShellCss).toMatch(/\.workspace,[\s\S]*z-index:\s*var\(--z-base\)/s);
   });
 
   it("keeps the transparent titlebar draggable without swallowing controls", () => {
@@ -223,13 +224,13 @@ describe("editor tab close affordance CSS", () => {
 
     expect(group).toMatch(/background:\s*color-mix/);
     expect(group).toMatch(/border:\s*1px solid/);
-    expect(group).toMatch(/border-radius:\s*999px/);
+    expect(group).toMatch(/border-radius:\s*var\(--radius-pill\)/);
     expect(group).toMatch(/box-shadow:\s*inset 0 1px 0/);
     expect(group).toMatch(/gap:\s*0/);
     expect(group).toMatch(/padding:\s*1px/);
 
     expect(toggle).toMatch(/border:\s*0/);
-    expect(toggle).toMatch(/border-radius:\s*999px/);
+    expect(toggle).toMatch(/border-radius:\s*var\(--radius-pill\)/);
     expect(toggle).toMatch(/height:\s*25px/);
     expect(reviewAction).toMatch(/border:\s*1px solid/);
     expect(reviewAction).toMatch(/padding:\s*0\s+9px/);
@@ -242,7 +243,7 @@ describe("editor tab close affordance CSS", () => {
     expect(companionButton).toMatch(
       /border:\s*1px solid color-mix\(in srgb,\s*var\(--border\)/,
     );
-    expect(companionButton).toMatch(/border-radius:\s*999px/);
+    expect(companionButton).toMatch(/border-radius:\s*var\(--radius-pill\)/);
     expect(companionButton).toMatch(/box-shadow:\s*inset 0 1px 0/);
     expect(companionButton).not.toMatch(/background:\s*var\(--accent-soft\)/);
     expect(companionButtonHover).toMatch(/var\(--surface-strong\)/);

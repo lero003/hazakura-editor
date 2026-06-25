@@ -7,10 +7,10 @@
   right: 24px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   padding: 12px 36px 12px 16px;
-  z-index: 220;
+  z-index: var(--z-toast);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -52,7 +52,7 @@
   justify-content: center;
   width: 24px;
   height: 24px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   color: var(--text-muted);
   min-width: unset;
   padding: 0;
@@ -99,7 +99,7 @@
 .find-control input {
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   color: var(--text);
   flex: 1;
   font: inherit;
@@ -133,7 +133,7 @@
 .find-actions button {
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   color: var(--text);
   font: inherit;
   font-size: 12px;
@@ -197,7 +197,7 @@
 .find-panel__goto-button {
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   color: var(--text);
   font: inherit;
   font-size: 11px;

@@ -13,7 +13,7 @@
   right: 20px;
   width: 380px;
   max-width: calc(100vw - 40px);
-  z-index: 99;
+  z-index: var(--z-sticky);
   will-change: transform, opacity;
   animation: slideUpToast 0.25s var(--ease-emphasized) forwards;
   background: var(--danger);
@@ -22,7 +22,7 @@
   flex-direction: column;
   gap: 12px;
   padding: 16px;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   border-left: 4px solid color-mix(in srgb, var(--surface-strong) 40%, transparent);
 }
@@ -60,7 +60,7 @@
 .message-actions button {
   background: color-mix(in srgb, var(--surface-strong) 15%, transparent);
   border: 1px solid color-mix(in srgb, var(--surface-strong) 30%, transparent);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   color: var(--surface-strong);
   min-width: 0;
   padding: 6px 12px;

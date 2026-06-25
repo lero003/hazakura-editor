@@ -23,7 +23,7 @@
 .markdown-preview-loading::before,
 .markdown-preview-loading::after {
   background: color-mix(in srgb, var(--text-muted) 14%, transparent);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   content: "";
   display: block;
 }
@@ -79,7 +79,7 @@
 
 .markdown-preview code {
   background: var(--accent-soft);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-family:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.88em;
@@ -90,7 +90,7 @@
 
 .markdown-preview pre {
   background: var(--status-bg);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: var(--status-text);
   overflow: auto;
   padding: 16px;
@@ -172,7 +172,7 @@
 .markdown-table-frame {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
   margin: 20px 0 24px;
   max-width: 100%;
@@ -240,7 +240,7 @@
 
 .markdown-preview img {
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   display: block;
   height: auto;
   margin: 20px 0;
@@ -320,7 +320,7 @@
 .blocked-image {
   background: var(--surface-muted);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   color: var(--text-muted);
   display: inline-block;
   font-size: 0.8em;
@@ -342,7 +342,7 @@
   min-width: 0;
   overflow: hidden;
   padding: 0 10px;
-  z-index: 10;
+  z-index: var(--z-sticky);
   font-weight: 500;
 }
 
@@ -390,7 +390,7 @@
   align-items: center;
   background: color-mix(in srgb, var(--status-text) 8%, transparent);
   border: 1px solid color-mix(in srgb, var(--status-text) 16%, transparent);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   color: var(--status-text);
   display: inline-flex;
   flex: 0 0 auto;
@@ -536,7 +536,7 @@
   padding: 0 clamp(10px, 3vw, 24px);
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: var(--z-base);
 }
 
 .ebook-pane .ebook-reader-status {
@@ -579,7 +579,7 @@
   transition:
     opacity 0.2s var(--ease-standard, ease),
     transform 0.2s var(--ease-standard, ease);
-  z-index: 3;
+  z-index: var(--z-base);
 }
 
 /* ホバー時、または帯内のボタンがフォーカスを受けたときに表示 */
@@ -593,7 +593,7 @@
 .ebook-pane .ebook-reader-button {
   background: color-mix(in srgb, var(--surface-muted, #f5f5f7) 75%, transparent);
   border: 1px solid color-mix(in srgb, var(--border, #d2d2d7) 65%, transparent);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   color: var(--text, #1d1d1f);
   cursor: pointer;
   font-family: var(--font-ui, -apple-system, BlinkMacSystemFont, sans-serif);
@@ -652,7 +652,7 @@
   padding: 0;
   position: absolute;
   transform: none;
-  z-index: 5;
+  z-index: var(--z-base);
 }
 
 .ebook-pane .ebook-reader-toc-backdrop:hover,
@@ -668,7 +668,7 @@
 .ebook-pane .ebook-reader-toc-panel {
   background: color-mix(in srgb, var(--surface, #ffffff) 92%, transparent);
   border: 1px solid color-mix(in srgb, var(--border, #d2d2d7) 58%, transparent);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   box-shadow: 0 20px 48px color-mix(in srgb, var(--shadow, rgba(0, 0, 0, 0.2)) 16%, transparent);
   box-sizing: border-box;
   color: var(--text, #1d1d1f);
@@ -682,7 +682,7 @@
   position: absolute;
   top: clamp(92px, 14vh, 140px);
   width: min(320px, calc(100% - 32px));
-  z-index: 6;
+  z-index: var(--z-base);
 }
 
 .ebook-pane .ebook-reader-toc-header {
@@ -701,7 +701,7 @@
   align-items: center;
   background: transparent;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   color: var(--text-muted, #6e6e73);
   cursor: pointer;
   display: inline-flex;
@@ -734,7 +734,7 @@
   align-items: center;
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   color: var(--text, #1d1d1f);
   cursor: pointer;
   display: grid;
@@ -1067,7 +1067,7 @@
 
 .ebook-pane .blocked-image {
   background: color-mix(in srgb, var(--surface-muted, #f5f5f7) 70%, transparent);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   color: var(--text-muted, #6e6e73);
   display: inline-block;
   font-family: var(--font-ui, -apple-system, BlinkMacSystemFont, sans-serif);

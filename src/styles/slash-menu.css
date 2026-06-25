@@ -14,7 +14,7 @@
   animation: slashMenuEnter 0.14s var(--ease-emphasized) forwards;
   max-height: 320px;
   min-width: 240px;
-  z-index: 220;
+  z-index: var(--z-toast);
 }
 
 .slash-menu.reduced-motion {
@@ -24,7 +24,7 @@
 .slash-menu-inner {
   background: var(--surface-strong);
   border: 1px solid var(--border-strong);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
@@ -45,7 +45,7 @@
   align-items: center;
   background: transparent;
   border: 0;
-  border-radius: 7px;
+  border-radius: var(--radius-sm);
   box-shadow: none;
   color: var(--text);
   display: grid;
@@ -74,7 +74,7 @@
 
 .slash-menu-badge {
   align-items: center;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   display: inline-flex;
   font-size: 10px;
   font-weight: 700;

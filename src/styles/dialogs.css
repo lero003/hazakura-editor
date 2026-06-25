@@ -8,7 +8,7 @@
   inset: 0;
   justify-content: center;
   position: fixed;
-  z-index: 100;
+  z-index: var(--z-dropdown);
   animation: backdropFade 0.2s ease-out forwards;
 }
 
@@ -198,7 +198,7 @@
 .preference-feature {
   background: var(--surface-muted);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -243,7 +243,7 @@
 .preference-preview-badge {
   background: var(--accent-soft);
   border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   color: var(--accent);
   font-size: 10px;
   font-weight: 750;
@@ -261,7 +261,7 @@
   );
   border: 1px solid
     color-mix(in srgb, var(--availability-accent) 42%, var(--border));
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: var(--text);
   display: flex;
   flex-direction: column;
@@ -298,7 +298,7 @@
 
 .preference-note,
 .preference-warning {
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   line-height: 1.45;
   margin: 0;
@@ -334,7 +334,7 @@
 
 .agent-consent-list {
   background: var(--surface-muted);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   color: var(--text-muted);
   font-size: 12px;
   line-height: 1.45;
@@ -502,7 +502,7 @@
   align-items: center;
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   color: var(--text);
   cursor: pointer;
   display: flex;
@@ -573,7 +573,7 @@
 .privacy-boundary-note {
   background: var(--surface-muted);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   display: grid;
   gap: 4px;
   padding: 12px 14px;
@@ -673,7 +673,7 @@
 
 .help-doc code {
   background: var(--surface-muted);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   color: var(--text);
   font-family: var(--font-mono);
   font-size: 0.88em;
@@ -682,7 +682,7 @@
 
 .help-doc pre {
   background: var(--status-bg);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: var(--status-text);
   overflow-x: auto;
   padding: 12px 14px;
@@ -711,7 +711,7 @@
 .diagnostics-pane-actions button {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   color: var(--text);
   font-size: 12px;
   font-weight: 700;
@@ -744,7 +744,7 @@
 .diagnostics-pane-json {
   background: var(--status-bg);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: var(--status-text);
   font-family: var(--font-mono);
   font-size: 12px;

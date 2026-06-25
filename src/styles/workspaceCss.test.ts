@@ -119,7 +119,7 @@ describe("workspace.css", () => {
     expect(lock).toMatch(/transform:\s*translate\(-50%, -50%\)/);
     expect(lock).toMatch(/pointer-events:\s*none/);
     expect(lock).toMatch(/padding:\s*14px\s+18px/);
-    expect(lock).toMatch(/border-radius:\s*8px/);
+    expect(lock).toMatch(/border-radius:\s*var\(--radius-md\)/);
     expect(lockTitle).toMatch(/font-weight:\s*700/);
     expect(lockDetail).toMatch(/font-size:\s*12px/);
   });
