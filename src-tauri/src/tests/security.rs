@@ -634,19 +634,11 @@ fn export_pdf_rejects_non_pdf_destination() {
 #[cfg(target_os = "macos")]
 #[test]
 fn export_pdf_writes_webkit_pdf_bytes_to_destination() {
-    use objc2_foundation::NSData;
-
     let dir = unique_label_path("export_pdf_bytes");
     fs::create_dir_all(&dir).expect("create export dir");
     let path = dir.join("export.pdf");
-    let data = NSData::with_bytes(b"%PDF-1.7\n%hazakura-test\n");
 
-    write_pdf_data(
-        (&*data) as *const NSData as *mut NSData,
-        std::ptr::null_mut(),
-        &path,
-    )
-    .expect("PDF bytes should be written");
+    write_pdf_bytes(b"%PDF-1.7\n%hazakura-test\n", &path).expect("PDF bytes should be written");
 
     assert_eq!(
         fs::read(&path).expect("read PDF"),
@@ -654,6 +646,21 @@ fn export_pdf_writes_webkit_pdf_bytes_to_destination() {
     );
 
     let _ = fs::remove_dir_all(dir);
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn export_pdf_plans_a4_sized_pages_instead_of_one_tall_page() {
+    let pages = pdf_page_rects_for_content_height(PDF_A4_PAGE_HEIGHT_POINTS * 2.1)
+        .expect("page planning should succeed");
+
+    assert_eq!(pages.len(), 3);
+    for (index, page) in pages.iter().enumerate() {
+        assert_eq!(page.origin_x, 0.0);
+        assert_eq!(page.origin_y, PDF_A4_PAGE_HEIGHT_POINTS * index as f64);
+        assert_eq!(page.width, PDF_A4_PAGE_WIDTH_POINTS);
+        assert_eq!(page.height, PDF_A4_PAGE_HEIGHT_POINTS);
+    }
 }
 
 #[test]

@@ -2,28 +2,25 @@ use crate::security::window_guard::*;
 
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use std::fs;
 
 const PDF_EXPORT_TIMEOUT_SECONDS: u64 = 30;
+pub(crate) const PDF_A4_PAGE_WIDTH_POINTS: f64 = 595.0;
+pub(crate) const PDF_A4_PAGE_HEIGHT_POINTS: f64 = 842.0;
 const PDF_CAPTURE_SIZE_SCRIPT: &str = r#"
 JSON.stringify((() => {
   const body = document.body;
   const doc = document.documentElement;
-  const width = Math.max(
-    doc ? doc.scrollWidth : 0,
-    body ? body.scrollWidth : 0,
-    900
-  );
   const height = Math.max(
     doc ? doc.scrollHeight : 0,
     body ? body.scrollHeight : 0,
-    1200
+    842
   );
   return {
-    width: Math.ceil(width),
+    width: 595,
     height: Math.ceil(height)
   };
 })())
@@ -35,6 +32,14 @@ static PDF_EXPORT_WINDOW_COUNTER: AtomicU64 = AtomicU64::new(1);
 struct PdfCaptureSize {
     width: f64,
     height: f64,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct PdfPageRect {
+    pub(crate) origin_x: f64,
+    pub(crate) origin_y: f64,
+    pub(crate) width: f64,
+    pub(crate) height: f64,
 }
 
 #[tauri::command]
@@ -89,6 +94,24 @@ pub(crate) fn validate_export_pdf_request(
     Ok(destination_path)
 }
 
+pub(crate) fn pdf_page_rects_for_content_height(
+    content_height: f64,
+) -> Result<Vec<PdfPageRect>, String> {
+    if !content_height.is_finite() || content_height <= 0.0 {
+        return Err("Cannot measure PDF export layout.".to_string());
+    }
+
+    let page_count = (content_height / PDF_A4_PAGE_HEIGHT_POINTS).ceil().max(1.0) as usize;
+    Ok((0..page_count)
+        .map(|index| PdfPageRect {
+            origin_x: 0.0,
+            origin_y: PDF_A4_PAGE_HEIGHT_POINTS * index as f64,
+            width: PDF_A4_PAGE_WIDTH_POINTS,
+            height: PDF_A4_PAGE_HEIGHT_POINTS,
+        })
+        .collect())
+}
+
 #[cfg(target_os = "macos")]
 async fn export_pdf_file<R: tauri::Runtime>(
     app: tauri::AppHandle<R>,
@@ -126,7 +149,7 @@ async fn export_pdf_file<R: tauri::Runtime>(
     let pdf_window = WebviewWindowBuilder::new(&app, &label, WebviewUrl::External(export_url))
         .title(format!("Hazakura PDF Export - {title}"))
         .visible(false)
-        .inner_size(900.0, 1200.0)
+        .inner_size(PDF_A4_PAGE_WIDTH_POINTS, PDF_A4_PAGE_HEIGHT_POINTS)
         .on_page_load(move |export_window, payload| {
             if payload.event() != PageLoadEvent::Finished {
                 return;
@@ -247,6 +270,35 @@ unsafe fn create_pdf_from_webview(
     export_tx: std::sync::mpsc::Sender<Result<(), String>>,
     abandoned: Arc<std::sync::atomic::AtomicBool>,
 ) -> Result<(), String> {
+    if abandoned.load(Ordering::SeqCst) {
+        return Ok(());
+    }
+    if webview.is_null() {
+        return Err("PDF export webview is unavailable.".to_string());
+    }
+
+    let page_rects = Arc::new(pdf_page_rects_for_content_height(capture_size.height)?);
+    request_pdf_page_from_webview(
+        webview,
+        0,
+        page_rects,
+        Arc::new(Mutex::new(Vec::new())),
+        destination_path,
+        export_tx,
+        abandoned,
+    )
+}
+
+#[cfg(target_os = "macos")]
+unsafe fn request_pdf_page_from_webview(
+    webview: *mut objc2::runtime::AnyObject,
+    page_index: usize,
+    page_rects: Arc<Vec<PdfPageRect>>,
+    page_pdf_data: Arc<Mutex<Vec<Vec<u8>>>>,
+    destination_path: PathBuf,
+    export_tx: std::sync::mpsc::Sender<Result<(), String>>,
+    abandoned: Arc<std::sync::atomic::AtomicBool>,
+) -> Result<(), String> {
     use block2::RcBlock;
     use objc2::rc::Retained;
     use objc2::runtime::AnyObject;
@@ -259,11 +311,20 @@ unsafe fn create_pdf_from_webview(
     if webview.is_null() {
         return Err("PDF export webview is unavailable.".to_string());
     }
+    if page_index >= page_rects.len() {
+        let result = page_pdf_data
+            .lock()
+            .map_err(|_| "PDF export page storage failed.".to_string())
+            .and_then(|pages| write_pdf_pages_data(&pages, &destination_path));
+        let _ = export_tx.send(result);
+        return Ok(());
+    }
 
+    let page_rect = page_rects[page_index];
     let pdf_config: Retained<AnyObject> = unsafe { msg_send![class!(WKPDFConfiguration), new] };
     let capture_rect = NSRect::new(
-        NSPoint::new(0.0, 0.0),
-        NSSize::new(capture_size.width, capture_size.height),
+        NSPoint::new(page_rect.origin_x, page_rect.origin_y),
+        NSSize::new(page_rect.width, page_rect.height),
     );
     let _: () = unsafe { msg_send![&*pdf_config, setRect: capture_rect] };
 
@@ -272,8 +333,27 @@ unsafe fn create_pdf_from_webview(
             return;
         }
 
-        let result = write_pdf_data(pdf_data, error, &destination_path);
-        let _ = export_tx.send(result);
+        let result = pdf_data_to_bytes(pdf_data, error).and_then(|bytes| {
+            page_pdf_data
+                .lock()
+                .map_err(|_| "PDF export page storage failed.".to_string())?
+                .push(bytes);
+            unsafe {
+                request_pdf_page_from_webview(
+                    webview,
+                    page_index + 1,
+                    Arc::clone(&page_rects),
+                    Arc::clone(&page_pdf_data),
+                    destination_path.clone(),
+                    export_tx.clone(),
+                    Arc::clone(&abandoned),
+                )
+            }
+        });
+        if let Err(err) = result {
+            abandoned.store(true, Ordering::SeqCst);
+            let _ = export_tx.send(Err(err));
+        }
     });
 
     let _: () = unsafe {
@@ -311,11 +391,10 @@ fn pdf_capture_size_from_js_value(
 }
 
 #[cfg(target_os = "macos")]
-pub(crate) fn write_pdf_data(
+fn pdf_data_to_bytes(
     pdf_data: *mut objc2_foundation::NSData,
     error: *mut objc2_foundation::NSError,
-    destination_path: &Path,
-) -> Result<(), String> {
+) -> Result<Vec<u8>, String> {
     if !error.is_null() {
         return Err(format!(
             "WebKit PDF export failed: {}",
@@ -331,12 +410,98 @@ pub(crate) fn write_pdf_data(
         return Err("WebKit PDF export returned invalid PDF data.".to_string());
     }
 
+    Ok(bytes)
+}
+
+#[cfg(target_os = "macos")]
+fn write_pdf_pages_data(page_pdf_data: &[Vec<u8>], destination_path: &Path) -> Result<(), String> {
+    if page_pdf_data.is_empty() {
+        return Err("WebKit PDF export returned no pages.".to_string());
+    }
+
+    let bytes = if page_pdf_data.len() == 1 {
+        page_pdf_data[0].clone()
+    } else {
+        unsafe { merge_pdf_page_data(page_pdf_data)? }
+    };
+    write_pdf_bytes(&bytes, destination_path)
+}
+
+#[cfg(target_os = "macos")]
+pub(crate) fn write_pdf_bytes(bytes: &[u8], destination_path: &Path) -> Result<(), String> {
+    if !bytes.starts_with(b"%PDF") {
+        return Err("WebKit PDF export returned invalid PDF data.".to_string());
+    }
+
     fs::write(destination_path, bytes).map_err(|err| format!("Cannot write PDF export: {err}"))?;
     if !destination_path.is_file() {
         return Err("PDF export finished without writing a file.".to_string());
     }
 
     Ok(())
+}
+
+#[cfg(target_os = "macos")]
+unsafe fn merge_pdf_page_data(page_pdf_data: &[Vec<u8>]) -> Result<Vec<u8>, String> {
+    use objc2::msg_send;
+    use objc2::rc::{Allocated, Retained};
+    use objc2::runtime::{AnyClass, AnyObject};
+    use objc2_foundation::NSData;
+    use std::ffi::CString;
+    use std::os::raw::{c_char, c_int, c_void};
+
+    unsafe extern "C" {
+        fn dlopen(filename: *const c_char, flag: c_int) -> *mut c_void;
+    }
+
+    const RTLD_LAZY: c_int = 0x1;
+    let pdfkit_path = CString::new("/System/Library/Frameworks/PDFKit.framework/PDFKit")
+        .map_err(|err| format!("Cannot prepare PDFKit framework path: {err}"))?;
+    let pdfkit = unsafe { dlopen(pdfkit_path.as_ptr(), RTLD_LAZY) };
+    if pdfkit.is_null() {
+        return Err("PDFKit is unavailable.".to_string());
+    }
+
+    let document_class = AnyClass::get(c"PDFDocument")
+        .ok_or_else(|| "PDFKit PDFDocument is unavailable.".to_string())?;
+    let output_document: Retained<AnyObject> = unsafe { msg_send![document_class, new] };
+
+    for (index, page_data) in page_pdf_data.iter().enumerate() {
+        let input_data = NSData::with_bytes(page_data);
+        let input_alloc: Allocated<AnyObject> = unsafe { msg_send![document_class, alloc] };
+        let input_document: Option<Retained<AnyObject>> =
+            unsafe { msg_send![input_alloc, initWithData: &*input_data] };
+        let input_document =
+            input_document.ok_or_else(|| format!("Cannot read PDF export page {}.", index + 1))?;
+        let input_page_count: usize = unsafe { msg_send![&*input_document, pageCount] };
+        if input_page_count == 0 {
+            return Err(format!("PDF export page {} is empty.", index + 1));
+        }
+
+        let input_page: Option<Retained<AnyObject>> =
+            unsafe { msg_send![&*input_document, pageAtIndex: 0usize] };
+        let input_page =
+            input_page.ok_or_else(|| format!("Cannot read PDF export page {}.", index + 1))?;
+        let output_page_count: usize = unsafe { msg_send![&*output_document, pageCount] };
+        let _: () = unsafe {
+            msg_send![
+                &*output_document,
+                insertPage: &*input_page,
+                atIndex: output_page_count
+            ]
+        };
+    }
+
+    let output_data: Option<Retained<NSData>> =
+        unsafe { msg_send![&*output_document, dataRepresentation] };
+    let output_data =
+        output_data.ok_or_else(|| "Cannot create paginated PDF export data.".to_string())?;
+    let bytes = output_data.to_vec();
+    if !bytes.starts_with(b"%PDF") {
+        return Err("PDFKit returned invalid PDF data.".to_string());
+    }
+
+    Ok(bytes)
 }
 
 #[cfg(target_os = "macos")]

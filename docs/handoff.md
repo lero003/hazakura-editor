@@ -58,14 +58,17 @@ Last reviewed: 2026-06-26 (v0.35.0 PDF export recovery)
   valid ad-hoc signature.
 - v0.35 PDF export recovery verification so far: focused frontend PDF
   export / status / privacy tests passed; focused Rust `export_pdf`
-  tests passed; `npm run test` passed (118 files / 1046 tests);
+  tests passed, including the follow-up that splits exported PDF content
+  into A4-sized page rects instead of one long page; `npm run test`
+  passed (118 files / 1046 tests);
   `npm run smoke:app-store-surface` passed (10 files / 90 tests);
   `npm run build:vite` passed with the usual large-chunk warning;
   `npm run build` produced the app-store-preview app bundle;
   `SKIP_BUILD=1 npm run smoke:macos-sandbox-preview` passed; full Rust
   test passed with `cargo test --manifest-path src-tauri/Cargo.toml`
-  (298 tests; one Agent Workbench real-runtime test failed once during
-  parallel full run but passed on immediate single and full reruns);
+  (now 299 tests; one Agent Workbench real-runtime test failed once
+  during an earlier parallel full run but passed on immediate single and
+  full reruns);
   `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and
   `git diff --check` passed.
   The remaining proof is user-side TestFlight install / launch and
