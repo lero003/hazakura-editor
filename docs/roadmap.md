@@ -326,15 +326,30 @@ Performance and correctness of the daily editor + e-book reader path.
   template round-trips plus DOMPurify). Fold into one DOM mutation
   pass, then sanitize once.
 - rAF-throttle the preview->editor scroll-sync direction, which today
-  reads `scrollHeight` on every scroll event
+  reads `scrollHeight` synchronously on every scroll event
   (`src/hooks/editor/usePreviewScrollSync.ts:130`), to match the
-  editor->preview path that is already throttled.
+  editor->preview path that is already throttled. This is also the
+  cause of the reported trackpad / Magic Trackpad inertial-scroll jank
+  in Preview: `onPreviewScroll` -> `syncEditorScroll` forces the editor
+  scroll position, and the editor's scroll handler writes a different
+  `scrollTop` back into the preview pane every frame. Because
+  `scrollSyncSourceRef` clears after a fixed 80ms timeout, the guard
+  does not hold for the full duration of an inertial scroll, so the
+  OS-driven inertial position and the JS-driven sync position collide
+  every frame and the preview "stutters and does not move". A normal
+  mouse wheel does not reproduce it because its events are coarser.
+  Fix: rAF-throttle `syncEditorScroll`, and keep the sync-source guard
+  alive for the full duration of an active preview scroll (clear it on
+  the next editor-emitted scroll or on scroll-end, not a fixed timeout),
+  so the editor->preview write-back does not fight the OS inertia.
 - Per-image `load`/`error` listeners each trigger a full re-measurement
   (`EBookPane.tsx:379-391`); collapse them through the same dirty flag.
 
 Acceptance: a long Japanese manuscript (around 30k characters) types and
-scrolls without jank in Normal Mode, Preview, and e-book Mode, and
-scrollbar / wheel scrolling no longer sticks near the last caret line.
+scrolls without jank in Normal Mode, Preview, and e-book Mode; trackpad
+inertial scrolling in Preview is smooth and does not stutter or fight
+the OS-driven position; and scrollbar / wheel scrolling no longer sticks
+near the last caret line.
 
 #### Slice B: Token and Motion Coherence
 

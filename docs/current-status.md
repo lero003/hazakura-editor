@@ -435,7 +435,10 @@ baseline, and smoke evidence are archived under
      unconditional `contentDOM.blur()` on scrollbar `mousedown`
      (`EditorPane.tsx:581`); `renderMarkdown` does five sequential HTML
      parses (`markdown.ts:19`); the preview->editor scroll-sync reads
-     `scrollHeight` per event (`usePreviewScrollSync.ts:130`).
+     `scrollHeight` per event and its 80ms sync-source guard does not
+     cover a full trackpad inertial scroll, so the editor write-back
+     fights the OS inertia every frame and Preview stutters under
+     trackpad inertial scrolling (`usePreviewScrollSync.ts:130`).
    - Slice B Token / Motion Coherence: `tokens.css` is sound but
      execution above it leaks undefined tokens (Local Assist Apply
      button falls back to blue `#2f7eb8`; slash-menu badge references

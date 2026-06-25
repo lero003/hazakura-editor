@@ -534,8 +534,13 @@ Use `docs/current-work.md` for the active queue. Current priority order:
      reflow coalescing (`EBookPane.tsx:118,214,298`;
      `ebookPagination.ts:67`), the `contentDOM.blur()` scroll-stick bug
      (`EditorPane.tsx:581`), the 5-parse `renderMarkdown` pipeline
-     (`markdown.ts:19`), and rAF-throttling the preview->editor
-     scroll-sync (`usePreviewScrollSync.ts:130`).
+     (`markdown.ts:19`), and the preview->editor scroll-sync jank
+     (`usePreviewScrollSync.ts:130`). The last includes the reported
+     trackpad inertial-scroll stutter in Preview: the 80ms sync-source
+     guard does not cover a full inertial scroll, so the editor
+     write-back fights the OS inertia every frame. rAF-throttle
+     `syncEditorScroll` and keep the guard alive for the whole active
+     preview scroll.
    - Slice B Token / Motion Coherence: define missing tokens
      (`--info`, `--accent-hover`, `--accent-contrast`, `--error`,
      `--bg-elev`, `--font-editor`, `--font-ui`) in `tokens.css`, add a
