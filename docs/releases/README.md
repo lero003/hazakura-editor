@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-06-23
+Last reviewed: 2026-06-25
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
@@ -29,9 +29,9 @@ Latest App Store status:
   `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.29.1-build33-mas.pkg`.
   Raw App Store Connect, TestFlight, and App Review logs are not tracked
   in this repository.
-- `0.32.0` build `36` is the latest local App Store / TestFlight
-  package candidate for v0.32 Editor / Reader Position Bridge testing:
-  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.32.0-build36-mas.pkg`.
+- `0.33.0` build `41` is the latest local App Store / TestFlight
+  package candidate for v0.33 EPUB Export v1 Polish testing:
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.33.0-build41-mas.pkg`.
   Raw App Store Connect upload, processing, TestFlight install / launch,
   and App Review logs are not tracked in this repository unless
   separately recorded.
@@ -39,6 +39,7 @@ Latest App Store status:
 
 Latest App Store submission-candidate note:
 
+- `0.33.0-app-store-submission-candidate.release.md`
 - `0.32.0-app-store-submission-candidate.release.md`
 - `0.31.0-app-store-submission-candidate.release.md`
 - `0.29.1-app-store-submission-candidate.release.md`
@@ -51,6 +52,7 @@ Latest App Store submission-candidate note:
 
 Latest App Store release-note drafts:
 
+- `0.33.0-app-store-release-notes.md`
 - `0.32.0-app-store-release-notes.md`
 
 Latest source / local-app tag notes:

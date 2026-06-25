@@ -58,7 +58,7 @@ Near-term phase order:
 4. v0.33 polishes EPUB export as an explicit initial-v1 workflow for a
    single Markdown document. Source-level polish is implemented and an
    external fixture EPUB passed archive inspection plus external
-   EPUBCheck, and signed build `39` package evidence exists. Built-app
+   EPUBCheck, and signed build `41` package evidence exists. Built-app
    manual EPUB smoke remains a proof task.
 5. v0.34 freezes features as the v1.0 Release Candidate and verifies the
    product explanation, App Store lane boundary, and golden path through

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-25 (v0.33.0 build 39 package candidate)
+Last reviewed: 2026-06-25 (v0.33.0 build 41 package candidate)
 
 ## Current State
 
@@ -16,13 +16,14 @@ Last reviewed: 2026-06-25 (v0.33.0 build 39 package candidate)
   Assist remains available as a preview on-device writing companion.
 - Latest GitHub source / local-app tag: `v0.32.0`.
 - Latest local App Store / TestFlight package candidate: `0.33.0` build
-  `39`, generated on 2026-06-25 after v0.33 EPUB Export v1 Polish and
-  v1 fit-and-finish source work:
-  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.33.0-build39-mas.pkg`.
+  `41`, generated on 2026-06-25 after v0.33 EPUB Export v1 Polish, v1
+  fit-and-finish source work, and the v1.0 RC pre-RC quality-slice
+  planning pass:
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.33.0-build41-mas.pkg`.
   Local package generation, App Store surface smoke, signed app
   distribution probe, `pkgutil --check-signature`, package SHA-256,
   and sandbox preview checks passed. SHA-256:
-  `69f6e50866fcefc107212eb96475e181ba25023b7ce9ebb2592a013b2d41e32f`.
+  `e77d75ef2dd978d7129f68b87cdc11bc9502619059ccfe988236c40a1bdf5548`.
   Raw App Store Connect upload, processing, TestFlight install /
   launch, and App Review logs are not tracked in this repository unless
   separately recorded.
@@ -46,7 +47,7 @@ Last reviewed: 2026-06-25 (v0.33.0 build 39 package candidate)
   XHTML language metadata, and unchanged source hash. External
   `epubcheck` completed with 0 fatal errors / 0 errors / 0 warnings.
   The `0.33.0` App Store / TestFlight package candidate is now generated
-  as build `39`; upload, Apple processing, TestFlight install / launch,
+  as build `41`; upload, Apple processing, TestFlight install / launch,
   and App Review remain outside this repository state. Source/local proof
   passed with focused EPUB / export hook / status tests, full
   `npm run test`, `npm run build:vite`, `npm run build`, App Store
@@ -416,7 +417,7 @@ baseline, and smoke evidence are archived under
    The active lane is `v0.30-v1.0 Reader UX Stabilization`; the current
    product proof task is v0.34 v1.0 Release Candidate / Golden
    Manuscript smoke after the v0.33 external archive / EPUBCheck proof
-   and build `39` package evidence; the v0.32 reader bridge, v0.33 EPUB,
+   and build `41` package evidence; the v0.32 reader bridge, v0.33 EPUB,
    workspace marker, and right-click slash-command fit-and-finish are
    source-implemented but still need built-app interaction / visual smoke
    where the local host can launch the app.
@@ -470,10 +471,10 @@ baseline, and smoke evidence are archived under
    ergonomics, provenance, movement between writing / reading layers,
    and observation-driven Local Assist polish.
 3. For the latest local App Store / TestFlight package candidate,
-   `0.33.0` build `39`
+   `0.33.0` build `41`
    is the latest local package evidence. It includes v0.33 EPUB Export
-   v1 Polish plus the workspace marker and right-click slash-command
-   source work.
+   v1 Polish, the workspace marker and right-click slash-command source
+   work, and the v1.0 RC pre-RC quality-slice planning pass.
    Upload, Apple processing, TestFlight install / launch, and App Review
    handling remain explicit distribution-lane work outside this
    repository unless public-safe evidence is recorded.

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-25 (v0.33.0 build 39 package candidate)
+Last reviewed: 2026-06-25 (v0.33.0 build 41 package candidate)
 
 ## Current State
 
@@ -19,12 +19,13 @@ Last reviewed: 2026-06-25 (v0.33.0 build 39 package candidate)
   evidence and should not be confused with the current `0.32.0` public
   lane or the `0.33.0` candidate.
 - A new `0.33.0` App Store / TestFlight package candidate was generated
-  on 2026-06-25 after v0.33 EPUB Export v1 Polish and v1 fit-and-finish
-  source work. It advanced the App Store build counter to `39` and
+  on 2026-06-25 after v0.33 EPUB Export v1 Polish, v1 fit-and-finish
+  source work, and the v1.0 RC pre-RC quality-slice planning pass. It
+  advanced the App Store build counter to `41` and
   produced
-  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.33.0-build39-mas.pkg`
+  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.33.0-build41-mas.pkg`
   with SHA-256
-  `69f6e50866fcefc107212eb96475e181ba25023b7ce9ebb2592a013b2d41e32f`.
+  `e77d75ef2dd978d7129f68b87cdc11bc9502619059ccfe988236c40a1bdf5548`.
   App Store surface smoke, local package generation, signed app probe,
   package signature, metadata, supported-OS, and sandbox preview checks
   passed. App Store Connect upload, Apple processing, TestFlight install
@@ -516,7 +517,7 @@ Last reviewed: 2026-06-25 (v0.33.0 build 39 package candidate)
 Use `docs/current-work.md` for the active queue. Current priority order:
 
 1. v0.33 EPUB Export v1 Polish: external archive / EPUBCheck proof and
-   signed build `39` package evidence now exist, but run manual built-app
+   signed build `41` package evidence now exist, but run manual built-app
    EPUB smoke once the local preview app can launch. Keep EPUBCheck
    manual and outside the app.
 2. v1 workspace marker / right-click slash-command fit-and-finish: run
