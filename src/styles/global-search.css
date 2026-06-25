@@ -72,7 +72,7 @@
 }
 
 .global-search-status-error {
-  color: var(--danger, #c0392b);
+  color: var(--danger);
 }
 
 .global-search-results {

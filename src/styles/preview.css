@@ -496,7 +496,7 @@
  */
 
 .ebook-pane {
-  background: var(--surface, #ffffff);
+  background: var(--surface);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -527,8 +527,8 @@
    縦構造。非ホバー時は進捗だけ、ホバー時は帯がふわっと広がり前/次/目次/集中
    がまとめて押せる。前/次が常に（ホバーすれば）使えるので読書導線を切らない。 */
 .ebook-pane .ebook-reader-chrome {
-  background: color-mix(in srgb, var(--surface, #ffffff) 94%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--border, #d2d2d7) 55%, transparent);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -559,8 +559,8 @@
   align-items: center;
   background: linear-gradient(
     to bottom,
-    color-mix(in srgb, var(--surface, #ffffff) 96%, transparent) 0%,
-    color-mix(in srgb, var(--surface, #ffffff) 88%, transparent) 70%,
+    color-mix(in srgb, var(--surface) 96%, transparent) 0%,
+    color-mix(in srgb, var(--surface) 88%, transparent) 70%,
     transparent 100%
   );
   box-sizing: border-box;
@@ -591,12 +591,12 @@
 }
 
 .ebook-pane .ebook-reader-button {
-  background: color-mix(in srgb, var(--surface-muted, #f5f5f7) 75%, transparent);
-  border: 1px solid color-mix(in srgb, var(--border, #d2d2d7) 65%, transparent);
+  background: color-mix(in srgb, var(--surface-muted) 75%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
   border-radius: var(--radius-pill);
-  color: var(--text, #1d1d1f);
+  color: var(--text);
   cursor: pointer;
-  font-family: var(--font-ui, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-family: var(--font-ui);
   font-size: 12px;
   font-weight: 550;
   line-height: 1.3;
@@ -606,7 +606,7 @@
 }
 
 .ebook-pane .ebook-reader-button:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--accent-soft) 42%, var(--surface, #ffffff));
+  background: color-mix(in srgb, var(--accent-soft) 42%, var(--surface));
   border-color: color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
@@ -616,30 +616,30 @@
 }
 
 .ebook-pane .ebook-reader-button:disabled {
-  color: color-mix(in srgb, var(--text-muted, #6e6e73) 58%, transparent);
+  color: color-mix(in srgb, var(--text-muted) 58%, transparent);
   cursor: default;
   opacity: 0.64;
 }
 
 /* 集中/戻るは主要な導線なので、他の操作より一段目立たせる */
 .ebook-pane .ebook-reader-floating-action {
-  background: color-mix(in srgb, var(--accent-soft, #e2ede6) 78%, var(--surface, #ffffff));
-  border-color: color-mix(in srgb, var(--accent, #2e6b4f) 34%, transparent);
-  color: var(--accent, #2e6b4f);
+  background: color-mix(in srgb, var(--accent-soft) 78%, var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 34%, transparent);
+  color: var(--accent);
   font-weight: 680;
 }
 
 .ebook-pane .ebook-reader-floating-action:hover,
 .ebook-pane .ebook-reader-floating-action:focus-visible {
-  background: color-mix(in srgb, var(--accent-soft) 92%, var(--surface, #ffffff));
+  background: color-mix(in srgb, var(--accent-soft) 92%, var(--surface));
   border-color: color-mix(in srgb, var(--accent) 46%, transparent);
-  color: var(--accent, #2e6b4f);
+  color: var(--accent);
 }
 
 .ebook-pane .ebook-reader-toc-toggle[aria-expanded="true"] {
-  background: color-mix(in srgb, var(--accent-soft) 70%, var(--surface, #ffffff));
+  background: color-mix(in srgb, var(--accent-soft) 70%, var(--surface));
   border-color: color-mix(in srgb, var(--accent) 32%, transparent);
-  color: var(--accent, #2e6b4f);
+  color: var(--accent);
 }
 
 .ebook-pane .ebook-reader-toc-backdrop {
@@ -666,12 +666,12 @@
 }
 
 .ebook-pane .ebook-reader-toc-panel {
-  background: color-mix(in srgb, var(--surface, #ffffff) 92%, transparent);
-  border: 1px solid color-mix(in srgb, var(--border, #d2d2d7) 58%, transparent);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 58%, transparent);
   border-radius: var(--radius-lg);
-  box-shadow: 0 20px 48px color-mix(in srgb, var(--shadow, rgba(0, 0, 0, 0.2)) 16%, transparent);
+  box-shadow: 0 20px 48px color-mix(in srgb, var(--shadow) 16%, transparent);
   box-sizing: border-box;
-  color: var(--text, #1d1d1f);
+  color: var(--text);
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   left: clamp(18px, 4vw, 44px);
@@ -687,9 +687,9 @@
 
 .ebook-pane .ebook-reader-toc-header {
   align-items: center;
-  border-bottom: 1px solid color-mix(in srgb, var(--border, #d2d2d7) 52%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 52%, transparent);
   display: grid;
-  font-family: var(--font-ui, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-family: var(--font-ui);
   font-size: 12px;
   font-weight: 750;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -702,10 +702,10 @@
   background: transparent;
   border: 0;
   border-radius: var(--radius-pill);
-  color: var(--text-muted, #6e6e73);
+  color: var(--text-muted);
   cursor: pointer;
   display: inline-flex;
-  font-family: var(--font-ui, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-family: var(--font-ui);
   font-size: 16px;
   height: 24px;
   justify-content: center;
@@ -717,7 +717,7 @@
 .ebook-pane .ebook-reader-toc-close:hover,
 .ebook-pane .ebook-reader-toc-close:focus-visible {
   background: var(--accent-soft);
-  color: var(--text, #1d1d1f);
+  color: var(--text);
   outline: none;
 }
 
@@ -735,10 +735,10 @@
   background: transparent;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
-  color: var(--text, #1d1d1f);
+  color: var(--text);
   cursor: pointer;
   display: grid;
-  font-family: var(--font-ui, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-family: var(--font-ui);
   font-size: 12px;
   gap: 8px;
   grid-template-columns: 2.6em minmax(0, 1fr);
@@ -762,7 +762,7 @@
 }
 
 .ebook-pane .ebook-reader-toc-index {
-  color: var(--text-muted, #6e6e73);
+  color: var(--text-muted);
   font-family: var(--font-mono, monospace);
   font-size: 11px;
 }
@@ -775,8 +775,8 @@
 }
 
 .ebook-pane .ebook-reader-title {
-  color: var(--text, #1d1d1f);
-  font-family: var(--font-ui, -apple-system, BlinkMacSystemFont, sans-serif);
+  color: var(--text);
+  font-family: var(--font-ui);
   font-size: 13px;
   font-weight: 600;
   line-height: 1.25;
@@ -786,8 +786,8 @@
 }
 
 .ebook-pane .ebook-reader-progress {
-  color: var(--text-muted, #6e6e73);
-  font-family: var(--font-ui, -apple-system, BlinkMacSystemFont, sans-serif);
+  color: var(--text-muted);
+  font-family: var(--font-ui);
   font-size: 11px;
   line-height: 1.3;
   margin-top: 2px;
@@ -842,7 +842,7 @@
   column-fill: auto;
   column-gap: var(--ebook-page-gap);
   column-width: var(--ebook-page-width);
-  color: var(--text, #1d1d1f);
+  color: var(--text);
   font-family: "Iowan Old Style", "Charter", Georgia, "Times New Roman", serif;
   font-size: var(--preview-font-size, 17px);
   height: 100%;
@@ -877,7 +877,7 @@
   column-fill: auto;
   column-gap: var(--ebook-page-gap);
   column-width: var(--ebook-page-width);
-  color: var(--text, #1d1d1f);
+  color: var(--text);
   font-family: "Iowan Old Style", "Charter", Georgia, "Times New Roman", serif;
   font-size: var(--preview-font-size, 17px);
   height: 100%;
@@ -903,11 +903,11 @@
 .ebook-pane .ebook-reader-footer {
   align-items: center;
   border-top: 1px solid
-    color-mix(in srgb, var(--border, #d2d2d7) 38%, transparent);
+    color-mix(in srgb, var(--border) 38%, transparent);
   box-sizing: border-box;
-  color: color-mix(in srgb, var(--text-muted, #6e6e73) 84%, transparent);
+  color: color-mix(in srgb, var(--text-muted) 84%, transparent);
   display: grid;
-  font-family: var(--font-ui, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-family: var(--font-ui);
   font-size: 10.5px;
   gap: 12px;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -930,7 +930,7 @@
 
 .ebook-chapter h1,
 .ebook-chapter h2 {
-  color: var(--text, #1d1d1f);
+  color: var(--text);
   font-family: "Iowan Old Style", "Charter", Georgia, "Times New Roman", serif;
   letter-spacing: 0.01em;
   margin-top: 0;
@@ -1061,16 +1061,16 @@
 }
 
 .ebook-chapter-frontmatter .ebook-page-flow {
-  color: var(--text-muted, #6e6e73);
+  color: var(--text-muted);
   font-size: calc(var(--preview-font-size, 17px) * 0.94);
 }
 
 .ebook-pane .blocked-image {
-  background: color-mix(in srgb, var(--surface-muted, #f5f5f7) 70%, transparent);
+  background: color-mix(in srgb, var(--surface-muted) 70%, transparent);
   border-radius: var(--radius-sm);
-  color: var(--text-muted, #6e6e73);
+  color: var(--text-muted);
   display: inline-block;
-  font-family: var(--font-ui, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-family: var(--font-ui);
   font-size: 0.85em;
   font-style: italic;
   padding: 1px 8px;

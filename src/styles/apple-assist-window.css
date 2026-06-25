@@ -15,7 +15,7 @@
   background: var(--bg);
   color: var(--text);
   display: grid;
-  font-family: var(--app-font-family, system-ui, -apple-system, sans-serif);
+  font-family: var(--app-font-family);
   /* Header / request form / presets / feedback / footer.
    * The form and feedback log stay compact so the detached companion
    * reads as a focused request surface, not a mostly empty transcript
@@ -40,7 +40,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  border-bottom: 1px solid var(--border, rgba(127, 127, 127, 0.25));
+  border-bottom: 1px solid var(--border);
   padding-bottom: 8px;
 }
 
@@ -54,7 +54,7 @@
 }
 
 .apple-assist-window-mode {
-  border: 1px solid var(--border, rgba(127, 127, 127, 0.25));
+  border: 1px solid var(--border);
   border-radius: var(--radius-pill);
   font-size: 11px;
   line-height: 1;
@@ -62,7 +62,7 @@
 }
 
 .apple-assist-window-disclosure {
-  color: var(--text-muted, var(--text));
+  color: var(--text-muted);
   font-size: 11.5px;
   line-height: 1.45;
   margin-top: 2px;
@@ -84,7 +84,7 @@
 }
 
 .apple-assist-window-presets {
-  border-top: 1px solid var(--border, rgba(127, 127, 127, 0.2));
+  border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -92,7 +92,7 @@
 }
 
 .apple-assist-presets-heading {
-  color: var(--text-muted, var(--text));
+  color: var(--text-muted);
   font-size: 11px;
   font-weight: 650;
   letter-spacing: 0.02em;
@@ -106,8 +106,8 @@
 }
 
 .apple-assist-preset {
-  background: var(--bg-elev, rgba(127, 127, 127, 0.08));
-  border: 1px solid var(--border, rgba(127, 127, 127, 0.25));
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
   cursor: pointer;
@@ -116,11 +116,11 @@
 }
 
 .apple-assist-preset:hover {
-  background: var(--bg-elev-hover, rgba(127, 127, 127, 0.16));
+  background: var(--bg-elev-hover);
 }
 
 .apple-assist-preset-active {
-  border-color: var(--accent, rgba(127, 127, 127, 0.7));
+  border-color: var(--accent);
   color: var(--accent, var(--text));
   font-weight: 650;
 }
@@ -142,7 +142,7 @@
  * docs/archive/operations/app-store-v0.17/apple-local-assist-operation-feedback-request.md.
  */
 .apple-assist-window-feedback {
-  border: 1px solid var(--border, rgba(127, 127, 127, 0.25));
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   display: flex;
   flex-direction: column;
@@ -152,7 +152,7 @@
 }
 
 .apple-assist-window-stream-preview {
-  border: 1px solid var(--border, rgba(127, 127, 127, 0.25));
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   display: grid;
   gap: 6px;
@@ -164,7 +164,7 @@
 }
 
 .apple-assist-stream-preview-heading {
-  color: var(--text-muted, var(--text));
+  color: var(--text-muted);
   font-size: 10.5px;
   font-weight: 650;
   letter-spacing: 0.06em;
@@ -175,7 +175,7 @@
 
 .apple-assist-stream-preview-body {
   color: var(--text);
-  font-family: var(--font-editor, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-family: var(--font-editor);
   font-size: 12px;
   line-height: 1.55;
   margin: 0;
@@ -186,7 +186,7 @@
 }
 
 .apple-assist-stream-preview-placeholder {
-  color: var(--text-muted, var(--text));
+  color: var(--text-muted);
   font-size: 12px;
   line-height: 1.45;
   margin: 0;
@@ -195,7 +195,7 @@
 }
 
 .apple-assist-feedback-header {
-  border-bottom: 1px solid var(--border, rgba(127, 127, 127, 0.2));
+  border-bottom: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   padding: 7px 9px;
@@ -242,7 +242,7 @@
 }
 
 .apple-assist-feedback-entry-group-start {
-  border-top: 1px solid var(--border, rgba(127, 127, 127, 0.18));
+  border-top: 1px solid var(--border);
   margin-top: 3px;
   padding-top: 6px;
 }
@@ -260,7 +260,7 @@
 }
 
 .apple-assist-feedback-entry-kind-target-acquired {
-  color: var(--text-muted, var(--text));
+  color: var(--text-muted);
 }
 
 .apple-assist-feedback-entry-kind-target-acquired:first-child {
@@ -268,12 +268,12 @@
 }
 
 .apple-assist-feedback-entry-kind-applied {
-  color: var(--accent, rgba(127, 127, 127, 0.95));
+  color: var(--accent);
 }
 
 .apple-assist-feedback-entry-kind-failed,
 .apple-assist-feedback-entry-kind-unavailable {
-  color: var(--error, #c0392b);
+  color: var(--error);
 }
 
 .apple-assist-window-form {
@@ -289,7 +289,7 @@
 
 .apple-assist-window-textarea {
   background: var(--surface-strong, var(--surface, var(--bg)));
-  border: 1px solid var(--border-strong, var(--border, rgba(127, 127, 127, 0.35)));
+  border: 1px solid var(--border-strong, var(--border));
   border-radius: var(--radius-sm);
   color: var(--text);
   font-family: inherit;
@@ -304,10 +304,10 @@
 
 .apple-assist-window-apply {
   align-self: flex-end;
-  background: var(--accent, #2f7eb8);
-  border: 1px solid var(--accent, #2f7eb8);
+  background: var(--accent);
+  border: 1px solid var(--accent);
   border-radius: var(--radius-sm);
-  color: var(--accent-contrast, #ffffff);
+  color: var(--accent-contrast);
   cursor: pointer;
   font-size: 12.5px;
   font-weight: 650;
@@ -316,7 +316,7 @@
 }
 
 .apple-assist-window-apply:hover:not(:disabled) {
-  background: var(--accent-hover, var(--accent, #2f7eb8));
+  background: var(--accent-hover);
   filter: brightness(1.05);
 }
 
@@ -326,7 +326,7 @@
 }
 
 .apple-assist-window-footer {
-  border-top: 1px solid var(--border, rgba(127, 127, 127, 0.25));
+  border-top: 1px solid var(--border);
   padding-top: 7px;
   display: flex;
   flex-direction: column;
@@ -340,7 +340,7 @@
 
 .apple-assist-window-progress {
   align-items: center;
-  color: var(--text-muted, var(--text));
+  color: var(--text-muted);
   display: inline-flex;
   font-size: 12px;
   gap: 7px;
@@ -349,7 +349,7 @@
 
 .apple-assist-window-spinner {
   animation: apple-assist-spin 0.9s linear infinite;
-  border: 2px solid var(--border, rgba(127, 127, 127, 0.25));
+  border: 2px solid var(--border);
   border-top-color: var(--accent, currentColor);
   border-radius: 50%;
   display: inline-block;
@@ -364,6 +364,6 @@
 }
 
 .apple-assist-window-error {
-  color: var(--error, #c0392b);
+  color: var(--error);
   font-size: 12px;
 }

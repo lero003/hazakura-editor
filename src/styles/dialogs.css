@@ -277,12 +277,12 @@
 }
 
 .preference-availability-card-unavailable {
-  --availability-accent: var(--danger, #c0392b);
+  --availability-accent: var(--danger);
 }
 
 .preference-availability-card-disabled,
 .preference-availability-card-unsupported {
-  --availability-accent: var(--danger, #c0392b);
+  --availability-accent: var(--danger);
 }
 
 .preference-availability-label {
