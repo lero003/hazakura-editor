@@ -409,6 +409,47 @@ describe("EditorPane", () => {
     expect(blurSpy).toHaveBeenCalledTimes(1);
   });
 
+  it("restores editor focus after releasing the scrollbar drag", () => {
+    const { container } = render(
+      renderEditorPane({
+        value: Array.from({ length: 80 }, (_, index) => `line ${index + 1}`).join(
+          "\n",
+        ),
+      }),
+    );
+    const scroller = container.querySelector(".cm-scroller") as HTMLElement;
+    const content = container.querySelector(".cm-content") as HTMLElement;
+    Object.defineProperties(scroller, {
+      clientHeight: { configurable: true, value: 200 },
+      clientWidth: { configurable: true, value: 280 },
+      offsetHeight: { configurable: true, value: 215 },
+      offsetWidth: { configurable: true, value: 300 },
+      scrollHeight: { configurable: true, value: 1200 },
+      scrollWidth: { configurable: true, value: 280 },
+    });
+    scroller.getBoundingClientRect = () =>
+      ({
+        bottom: 215,
+        height: 215,
+        left: 0,
+        right: 300,
+        top: 0,
+        width: 300,
+      }) as DOMRect;
+
+    // まずフォーカスを当てておき、スクロールバードラッグで blur、
+    // mouseup でフォーカスが戻ることを検証する。
+    content.focus();
+    expect(document.activeElement).toBe(content);
+
+    fireEvent.mouseDown(scroller, { button: 0, clientX: 292, clientY: 50 });
+    expect(document.activeElement).not.toBe(content);
+
+    fireEvent.mouseUp(window, { button: 0, clientX: 292, clientY: 60 });
+    // v0.34: blur したままではなく、mouseup でフォーカスが戻る。
+    expect(document.activeElement).toBe(content);
+  });
+
   it("syncs the CodeMirror document when the same tab receives an external value reset", () => {
     const editorRef = createRef<EditorPaneHandle>();
     const onChange = vi.fn();

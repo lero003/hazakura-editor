@@ -217,6 +217,10 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   // v0.33: scroll イベントは高頻度で発火するため requestAnimationFrame で
   // スロットルし、onScrollRatioChange / scroll HUD の更新を1フレームに1回に抑える。
   const scrollReportFrameRef = useRef<number | null>(null);
+  // v0.34: スクロールバー操作中の mouseup ハンドラ。view 破棄時に確実に除去するため ref で保持。
+  const scrollbarMouseUpHandlerRef = useRef<
+    ((event: MouseEvent) => void) | null
+  >(null);
   const themeCompartmentRef = useRef(new Compartment());
   const wrappingCompartmentRef = useRef(new Compartment());
   const invisiblesCompartmentRef = useRef(new Compartment());
@@ -580,7 +584,26 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     };
     const handleScrollerMouseDown = (event: MouseEvent) => {
       if (isScrollerPointerOnScrollbar(event, view.scrollDOM)) {
+        // v0.34: スクロールバードラッグ中はフォーカスを外し、ドラッグ終了時に
+        // 戻す。blur したままにすると CodeMirror が選択アンカーを画面内に追従
+        // させようとし、ホイール/トラックパッドスクロールが「前のキャレット位置に
+        // 張り付く」症状の原因になる（handoff の既知バグ）。
         view.contentDOM.blur();
+        const win = view.dom.ownerDocument.defaultView ?? window;
+        const handleScrollEnd = () => {
+          win.removeEventListener("mouseup", handleScrollEnd, {
+            capture: true,
+          });
+          scrollbarMouseUpHandlerRef.current = null;
+          // ユーザーが別のクリッカブル要素を押したのでなければフォーカスを戻す。
+          if (
+            view.contentDOM.ownerDocument.activeElement !== view.contentDOM
+          ) {
+            view.focus();
+          }
+        };
+        scrollbarMouseUpHandlerRef.current = handleScrollEnd;
+        win.addEventListener("mouseup", handleScrollEnd, { capture: true });
       }
     };
 
@@ -596,6 +619,13 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         const win = view.dom.ownerDocument.defaultView ?? window;
         win.cancelAnimationFrame(scrollReportFrameRef.current);
         scrollReportFrameRef.current = null;
+      }
+      if (scrollbarMouseUpHandlerRef.current !== null) {
+        const win = view.dom.ownerDocument.defaultView ?? window;
+        win.removeEventListener("mouseup", scrollbarMouseUpHandlerRef.current, {
+          capture: true,
+        });
+        scrollbarMouseUpHandlerRef.current = null;
       }
       view.scrollDOM.removeEventListener("mousedown", handleScrollerMouseDown);
       view.scrollDOM.removeEventListener("scroll", handleScroll);
