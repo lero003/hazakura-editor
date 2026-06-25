@@ -87,7 +87,11 @@ type EditorPaneProps = {
 
 export type EditorPaneHandle = {
   focus: () => void;
-  goToLine: (line: number) => void;
+  // `focus` defaults to true. Pass `{ focus: false }` when the caller is
+  // syncing the editor scroll position from another focused surface (e.g.
+  // the e-book reader paging with the keyboard) so the editor does not
+  // steal focus on every page turn.
+  goToLine: (line: number, options?: { focus?: boolean }) => void;
   applyMarkdownFormat: (format: MarkdownFormat) => void;
   insertTable: (columns: number) => void;
   insertText: (text: string) => void;
@@ -248,7 +252,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       focus() {
         viewRef.current?.focus();
       },
-      goToLine(line) {
+      goToLine(line, options) {
         const view = viewRef.current;
 
         if (!view) {
@@ -284,7 +288,9 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
             );
           });
         });
-        view.focus();
+        if (options?.focus !== false) {
+          view.focus();
+        }
       },
       applyMarkdownFormat(format) {
         const view = viewRef.current;

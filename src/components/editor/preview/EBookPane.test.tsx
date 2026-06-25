@@ -829,7 +829,7 @@ describe("EBookPane chapter reader", () => {
     }
   });
 
-  it("suppresses page-flow transition while resetting to the next chapter", async () => {
+  it("suppresses page-flow transition while resetting to the next chapter then releases it", async () => {
     vi.mocked(measureEBookPageCount).mockReturnValue(3);
 
     render(
@@ -843,12 +843,12 @@ describe("EBookPane chapter reader", () => {
       expect(screen.getByText("Page 1 / 3")).toBeTruthy();
     });
 
+    const article = screen.getByRole("article", { name: "Book reader" });
     const nextPage = screen.getByRole("button", { name: "Next page" });
     fireEvent.click(nextPage);
+    // Within the same chapter the slide transition stays enabled.
     expect(
-      screen
-        .getByRole("article", { name: "Book reader" })
-        .querySelector(".ebook-page-flow-transition-suppressed"),
+      article.querySelector(".ebook-page-flow-transition-suppressed"),
     ).toBeNull();
 
     fireEvent.click(nextPage);
@@ -857,11 +857,14 @@ describe("EBookPane chapter reader", () => {
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "Chapter Two" })).toBeTruthy();
     });
-    expect(
-      screen
-        .getByRole("article", { name: "Book reader" })
-        .querySelector(".ebook-page-flow-transition-suppressed"),
-    ).toBeTruthy();
+    // Once the new chapter's HTML is measured and the page offset settled,
+    // the one-shot chapter-cross suppression is released so later
+    // in-chapter flips animate again. Previously it stayed on forever.
+    await waitFor(() => {
+      expect(
+        article.querySelector(".ebook-page-flow-transition-suppressed"),
+      ).toBeNull();
+    });
   });
 
   it("connects one-page chapters to the next chapter from the next-page action", async () => {
@@ -991,6 +994,65 @@ describe("EBookPane chapter reader", () => {
 
     expect(document.activeElement).toBe(article);
     expect(screen.getByText("Chapter 1 / 1")).toBeTruthy();
+  });
+
+  // Regression: the reader article and the editor CodeMirror are DOM
+  // siblings, so a keydown that fires while the editor (here simulated by
+  // an unrelated focusable element) owns focus never reaches the article
+  // via bubbling. A document-level capture-phase listener must intercept
+  // arrow-key paging regardless of where focus is, so the reader can flip
+  // pages without first clicking into the reader pane.
+  it("pages with arrow keys even when focus is outside the reader article", async () => {
+    render(
+      <EBookPane
+        menuLanguage="en"
+        source={"# Chapter One\n\nbody one\n\n# Chapter Two\n\nbody two"}
+      />,
+    );
+
+    const article = screen.getByRole("article", { name: "Book reader" });
+    // Simulate the editor still holding focus (a sibling focusable node).
+    const editorStandIn = document.createElement("div");
+    editorStandIn.tabIndex = 0;
+    document.body.append(editorStandIn);
+    editorStandIn.focus();
+    expect(document.activeElement).toBe(editorStandIn);
+
+    fireEvent.keyDown(editorStandIn, { key: "ArrowRight" });
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Chapter Two" })).toBeTruthy();
+    });
+    expect(document.activeElement).toBe(article);
+
+    fireEvent.keyDown(article, { key: "ArrowLeft" });
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Chapter One" })).toBeTruthy();
+    });
+  });
+
+  it("does not hijack arrow keys while composing or inside a form field", async () => {
+    render(
+      <EBookPane
+        menuLanguage="en"
+        source={"# Chapter One\n\nbody one\n\n# Chapter Two\n\nbody two"}
+      />,
+    );
+
+    const article = screen.getByRole("article", { name: "Book reader" });
+    article.focus();
+
+    // While IME is composing, the reader must not intercept the key.
+    fireEvent.keyDown(article, { key: "ArrowRight", isComposing: true });
+    expect(screen.queryByRole("heading", { name: "Chapter Two" })).toBeNull();
+
+    // While a form field owns focus, the reader must defer.
+    const field = document.createElement("input");
+    document.body.append(field);
+    field.focus();
+    fireEvent.keyDown(field, { key: "ArrowRight" });
+    expect(screen.queryByRole("heading", { name: "Chapter Two" })).toBeNull();
   });
 
   it("resets to the first chapter and first page when the document path changes", async () => {

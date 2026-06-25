@@ -293,13 +293,23 @@ export function AppWorkspace({
       location,
     });
   };
-  const moveEditorToEbookLocation = (location: EBookReaderLocation | null) => {
+  const moveEditorToEbookLocation = (
+    location: EBookReaderLocation | null,
+    options?: { focus?: boolean },
+  ) => {
     if (!location) {
       return;
     }
     const editorLine = getEditorLineForEbookLocation(activeContents, location);
     if (editorLine !== null) {
-      editorPaneRef.current?.goToLine(editorLine);
+      // While reading in the side pane, paging the e-book must not yank
+      // focus back to the editor on every turn; the reader keeps keyboard
+      // focus so arrow-key flipping stays responsive. Closing reading
+      // focus still focuses the editor (default) because the user is
+      // returning to edit.
+      editorPaneRef.current?.goToLine(editorLine, {
+        focus: options?.focus ?? false,
+      });
     }
   };
   const handleSidePaneEbookLocationChange = (
@@ -318,7 +328,7 @@ export function AppWorkspace({
       handleEbookLocationChange(returnLocation);
     }
     setEbookFocusOpen(false);
-    moveEditorToEbookLocation(returnLocation);
+    moveEditorToEbookLocation(returnLocation, { focus: true });
   };
   const ebookReadingFocusActive =
     ebookFocusOpen && activeTab !== null && previewVisible && selectedImage === null;

@@ -513,7 +513,7 @@ describe("AppWorkspace workspace sidebar collapse", () => {
       }),
     );
 
-    expect(goToLine).toHaveBeenCalledWith(6);
+    expect(goToLine).toHaveBeenCalledWith(6, { focus: false });
   });
 
   it("keeps the right-pane reader location linked to Reading Focus movement", async () => {
@@ -697,7 +697,7 @@ describe("AppWorkspace workspace sidebar collapse", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Mock exit reading focus" }));
 
-    expect(goToLine).toHaveBeenCalledWith(5);
+    expect(goToLine).toHaveBeenCalledWith(5, { focus: true });
   });
 
   it("returns from Reading Focus to an estimated reader source line when available", async () => {
@@ -749,6 +749,6 @@ describe("AppWorkspace workspace sidebar collapse", () => {
       }),
     );
 
-    expect(goToLine).toHaveBeenCalledWith(6);
+    expect(goToLine).toHaveBeenCalledWith(6, { focus: true });
   });
 });

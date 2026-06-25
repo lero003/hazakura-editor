@@ -149,6 +149,14 @@ export default function EBookPane({
     documentLocationKey: string;
     location: EBookReaderLocation;
   } | null>(null);
+  // The reader pane and the editor pane are DOM siblings, so a keydown on
+  // the editor's CodeMirror contentDOM never bubbles up to the reader
+  // article. To keep arrow-key / space paging responsive even while the
+  // editor still owns focus, the paging callbacks are also wired to a
+  // document-level capture-phase listener that intercepts the key before
+  // CodeMirror can consume it.
+  const goNextPageRef = useRef<() => void>(() => {});
+  const goPreviousPageRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     chapterPageCountsRef.current.clear();
@@ -390,6 +398,11 @@ export default function EBookPane({
       }
       return clampPageIndex(current, nextPageCount);
     });
+    // The new chapter's HTML is now measured and the page offset is
+    // settled, so the one-shot chapter-cross transition suppression can
+    // be released. Without this the transition stayed off permanently
+    // after the first chapter change.
+    setPageTransitionSuppressed(false);
   }, [activeChapter?.index, activeChapterHtml]);
 
   // v0.34: ResizeObserver / MutationObserver / 画像load からのページ再計測を
@@ -575,6 +588,13 @@ export default function EBookPane({
     }
 
     markReaderLocationIntent();
+    // Suppress the transform transition only when crossing into a new
+    // chapter (the content is swapped, so sliding would look wrong).
+    // Within the same chapter the slide animation should stay enabled.
+    // Previously this only set `true` on a chapter change and never reset
+    // to `false`, so once any chapter change happened the transition
+    // stayed off forever and later in-chapter flips snapped, then caught
+    // the restored transition mid-flight and flickered.
     setPageTransitionSuppressed(target.chapterIndex !== activeChapterIndexSafe);
     if (target.chapterIndex !== activeChapterIndexSafe) {
       pendingPageTargetRef.current = target.pageIndex;
@@ -597,6 +617,13 @@ export default function EBookPane({
   const goToNextPage = () => {
     goToRelativePage(1);
   };
+
+  // Keep the paging callbacks reachable from the document-level capture
+  // listener declared below without reopening it on every render. The
+  // assignment happens on every render after the callbacks are defined,
+  // so the listener always invokes the latest closure.
+  goNextPageRef.current = goToNextPage;
+  goPreviousPageRef.current = goToPreviousPage;
 
   const jumpToChapter = (chapterIndex: number) => {
     const nextChapterIndex = clampChapterIndex(chapterIndex, chapters.length);
@@ -646,6 +673,82 @@ export default function EBookPane({
       article.focus();
     }
   };
+
+  useEffect(() => {
+    const isReaderPagingKey = (
+      event: globalThis.KeyboardEvent,
+    ): -1 | 1 | null => {
+      if (event.isComposing) {
+        return null;
+      }
+      // Let typing happen when focus is inside a form field (search box,
+      // table-of-contents filter, etc.) so reader paging does not hijack
+      // text input.
+      const active = document.activeElement;
+      if (
+        active instanceof HTMLElement &&
+        (active.isContentEditable ||
+          active.tagName === "INPUT" ||
+          active.tagName === "TEXTAREA" ||
+          active.tagName === "SELECT")
+      ) {
+        return null;
+      }
+      // Avoid stealing the key while the user has a text selection that
+      // paging would discard.
+      const selection = window.getSelection();
+      if (selection && selection.toString().length > 0) {
+        return null;
+      }
+      if (event.metaKey || event.ctrlKey || event.altKey) {
+        return null;
+      }
+      if (event.key === "ArrowLeft") {
+        return -1;
+      }
+      if (event.key === "ArrowRight" || event.key === " " || event.key === "Spacebar") {
+        return event.shiftKey && event.key !== "ArrowRight" ? -1 : 1;
+      }
+      return null;
+    };
+
+    const handleCaptureKeyDown = (event: globalThis.KeyboardEvent) => {
+      // The reader article and the editor CodeMirror are DOM siblings, so
+      // a keydown that starts on the editor never bubbles to the article.
+      // Capture the event at the document level, before CodeMirror can
+      // consume it, so arrow-key / space paging keeps working even while
+      // the editor still owns focus (e.g. right after opening the e-book
+      // pane, or on a single-page chapter where repeated flips must not
+      // fall through to the editor).
+      if (!articleRef.current) {
+        return;
+      }
+      const direction = isReaderPagingKey(event);
+      if (direction === null) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      if (direction > 0) {
+        goNextPageRef.current();
+      } else {
+        goPreviousPageRef.current();
+      }
+      const article = articleRef.current;
+      if (article && document.activeElement !== article) {
+        article.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleCaptureKeyDown, {
+      capture: true,
+    });
+    return () => {
+      document.removeEventListener("keydown", handleCaptureKeyDown, {
+        capture: true,
+      });
+    };
+  }, []);
 
   const handleWheel = (event: WheelEvent<HTMLElement>) => {
     const target = event.target;
