@@ -526,11 +526,29 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    normal, unsaved, and recovered documents if that proof is still
    needed. Use the v0.32 reader-bridge checklist in
    `docs/smoke-checklist.md`.
-4. v0.34 v1.0 Release Candidate after the EPUB/package proof boundary is
-   clear.
-5. v1.x deepens the single-document product before Book Scope / Book
+4. Before v0.34 RC, close the three pre-RC quality slices documented in
+   `docs/roadmap.md` (Pre-RC Quality Slices). They stay inside the Safe
+   Editor boundary (no new surfaces, no dependencies, source-preserving):
+   - Slice A Reader Stability: `EBookPane` keystroke debounce + pagination
+     reflow coalescing (`EBookPane.tsx:118,214,298`;
+     `ebookPagination.ts:67`), the `contentDOM.blur()` scroll-stick bug
+     (`EditorPane.tsx:581`), the 5-parse `renderMarkdown` pipeline
+     (`markdown.ts:19`), and rAF-throttling the preview->editor
+     scroll-sync (`usePreviewScrollSync.ts:130`).
+   - Slice B Token / Motion Coherence: define missing tokens
+     (`--info`, `--accent-hover`, `--accent-contrast`, `--error`,
+     `--bg-elev`, `--font-editor`, `--font-ui`) in `tokens.css`, add a
+     global `prefers-reduced-motion` reset, replace `transition: all` /
+     bare `ease`, and drop the global `button:hover` translateY lift.
+   - Slice C Robustness: preserve editor session across Save-As rekey
+     (`EditorPane.tsx:413`), fix `goToLine` single-rAF scroll lag
+     (`EditorPane.tsx:247`), add `readOnly` to the imperative handle
+     deps, and pass an explicit `tabId` to the assist apply path.
+5. v0.34 v1.0 Release Candidate after Slice A-C and the EPUB/package
+   proof boundary is clear.
+6. v1.x deepens the single-document product before Book Scope / Book
    Workspace or stronger AI expansion.
-6. Hazakura Local Assist post-release polish only for concrete safety,
+7. Hazakura Local Assist post-release polish only for concrete safety,
    review, App Store, availability, generation failure, responsiveness,
    or transaction-boundary issues.
 

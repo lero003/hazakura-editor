@@ -419,7 +419,37 @@ baseline, and smoke evidence are archived under
    and build `39` package evidence; the v0.32 reader bridge, v0.33 EPUB,
    workspace marker, and right-click slash-command fit-and-finish are
    source-implemented but still need built-app interaction / visual smoke
-   where the local host can launch the app. Keep the v1
+   where the local host can launch the app.
+   Before v0.34 RC, close the three pre-RC quality slices documented in
+   `docs/roadmap.md` (Pre-RC Quality Slices). A 2026-06-25 read of the
+   editor, preview, e-book reader, and stylesheet surfaced these gaps in
+   what `v0.29.1` plus `v0.30-v0.33` already ship; they stay inside the
+   Safe Editor boundary:
+   - Slice A Reader Stability: E-book reader renders `marked` +
+     `DOMPurify` synchronously per keystroke with no debounce
+     (`EBookPane.tsx:118,214`) while `PreviewPane` debounces at 200ms;
+     pagination measurement forces a per-child reflow on every render,
+     resize, and image-load (`EBookPane.tsx:298,346,379`;
+     `ebookPagination.ts:67`); the known scroll-stick symptom traces to
+     unconditional `contentDOM.blur()` on scrollbar `mousedown`
+     (`EditorPane.tsx:581`); `renderMarkdown` does five sequential HTML
+     parses (`markdown.ts:19`); the preview->editor scroll-sync reads
+     `scrollHeight` per event (`usePreviewScrollSync.ts:130`).
+   - Slice B Token / Motion Coherence: `tokens.css` is sound but
+     execution above it leaks undefined tokens (Local Assist Apply
+     button falls back to blue `#2f7eb8`; slash-menu badge references
+     undefined `--info`), bare `ease` keywords, and `transition: all`;
+     `prefers-reduced-motion` is only partially covered; the global
+     `button:hover` translateY lift reads as web-app bounce rather than
+     book calm.
+   - Slice C Robustness: Save-As rekey forces a full editor remount,
+     losing scroll + undo history (`EditorPane.tsx:413`); `goToLine`
+     single-rAF reports scroll ratio before CodeMirror's async
+     `scrollIntoView` settles (`EditorPane.tsx:247`); the
+     `EditorPane` imperative handle deps omit `readOnly`; the assist
+     apply path closes over `activeTab.id` rather than a validated
+     `tabId`.
+   Keep the v1
    path focused on a single-document Safe Markdown Book Editor with
    Local Assist Review: Flow View, Spread View, editor/reader position
    bridge, initial EPUB export polish, and v1 RC smoke. Hazakura Local

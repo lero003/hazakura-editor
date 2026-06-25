@@ -288,6 +288,116 @@ Align initial EPUB export with the single-document book-writing promise.
 Acceptance: v1 can truthfully say it has an initial EPUB export without
 claiming to be a full EPUB production tool.
 
+### Pre-RC Quality Slices (v1 Polish)
+
+A 2026-06-25 read of the editor, preview, e-book reader, and stylesheet
+surfaced observation-driven quality gaps in what `v0.29.1` plus the
+`v0.30-v0.33` work already ship. Close three polish slices before
+freezing v1.0 at `v0.34`. Each stays inside the Safe Editor boundary:
+source-preserving, no new product surfaces, no arbitrary execution, no
+new dependencies. The token foundation is good; these slices finish the
+last coherence pass over it.
+
+#### Slice A: Reader Stability
+
+Performance and correctness of the daily editor + e-book reader path.
+
+- `EBookPane` runs `marked` + `DOMPurify` synchronously on every
+  keystroke with no debounce
+  (`src/components/editor/preview/EBookPane.tsx:118,214-220`), unlike
+  `PreviewPane` which debounces at 200ms
+  (`src/components/editor/preview/PreviewPane.tsx:135`). Add the same
+  debounce and stabilize the `activeRenderedChapter` memo deps so it
+  does not invalidate on every keystroke.
+- E-book pagination measurement forces a per-child reflow
+  (`getBoundingClientRect` + a `getClientRects()` loop over every child)
+  on every render, resize, and image-load
+  (`EBookPane.tsx:298,346,379`; `src/components/editor/preview/ebookPagination.ts:67`).
+  Coalesce into one `requestAnimationFrame`-throttled measurement guarded
+  by a dirty flag, and only re-measure when column geometry actually
+  changes.
+- The known "scroll stays near the previous focus / reads as text
+  selection" symptom traces to unconditional
+  `view.contentDOM.blur()` on scrollbar `mousedown` with no refocus
+  (`src/components/editor/EditorPane.tsx:581-585`). Remove the blur or
+  refocus on `pointerup`.
+- `renderMarkdown` does five sequential HTML parses per render
+  (`src/features/editor/markdown.ts:19-27`; three `apply*Policy`
+  template round-trips plus DOMPurify). Fold into one DOM mutation
+  pass, then sanitize once.
+- rAF-throttle the preview->editor scroll-sync direction, which today
+  reads `scrollHeight` on every scroll event
+  (`src/hooks/editor/usePreviewScrollSync.ts:130`), to match the
+  editor->preview path that is already throttled.
+- Per-image `load`/`error` listeners each trigger a full re-measurement
+  (`EBookPane.tsx:379-391`); collapse them through the same dirty flag.
+
+Acceptance: a long Japanese manuscript (around 30k characters) types and
+scrolls without jank in Normal Mode, Preview, and e-book Mode, and
+scrollbar / wheel scrolling no longer sticks near the last caret line.
+
+#### Slice B: Token and Motion Coherence
+
+The token system in `tokens.css` is sound, but execution above it leaks
+undefined tokens, keyword easings, and `transition: all`. One CSS pass
+to unify.
+
+- Define missing tokens: `--info`, `--accent-hover`, `--accent-contrast`,
+  `--error` (alias of `--danger`), `--bg-elev`, `--bg-elev-hover`,
+  `--font-editor`, `--font-ui`, `--app-font-family`. Remove inline
+  fallbacks; the Local Assist Apply button currently falls back to
+  `#2f7eb8` blue (`src/styles/apple-assist-window.css`) and the
+  slash-menu shortcut badge references undefined `--info`
+  (`src/styles/slash-menu.css:99`).
+- Add a single global `prefers-reduced-motion` reset in
+  `src/styles/base.css`. Today only two of fifteen stylesheets reference
+  it, so dialogs, toasts, the slash menu, and the agent pulse animate
+  unconditionally.
+- Add duration tokens (`--dur-1`..`--dur-4`) and a `--z-*` z-index scale;
+  sweep bare `ease` keywords to `var(--ease-standard)` and replace every
+  `transition: all` with an explicit property list (perf + consistency).
+- Drop the global `button:hover { transform: translateY(-1px) }` lift
+  (`src/styles/animations.css:104-109`). It reads as a bouncy web-app
+  hover for a quiet book editor and is the reason several components
+  carry `transform: none` overrides. Keep a subtle `:active` scale only.
+- Tame motion toward calm: reduce the save-affirmation spring overshoot
+  (`src/styles/save-affirmation.css:3-18`), and gate the perpetual agent
+  pulse (`src/styles/status.css:15-27`) and ambient background drift
+  (`src/styles/app-shell.css`) behind focus / reduced-motion.
+
+Acceptance: the Local Assist window, slash menu, notifications, and
+global controls render against the real token system rather than
+fallback literals; motion uses one easing / duration voice; and
+reduced-motion users get a calm, non-animated surface.
+
+#### Slice C: Robustness
+
+Correctness of Save-As, mode switching, and the assist-lock path.
+
+- Save-As rekey changes `documentKey` and forces a full editor remount,
+  losing scroll position and undo history
+  (`src/components/editor/EditorPane.tsx:413-453`). Preserve the editor
+  session across a same-content rekey.
+- `goToLine` reports scroll ratio in a single `requestAnimationFrame`
+  before CodeMirror's asynchronous `scrollIntoView` has settled
+  (`EditorPane.tsx:247-275`), so the preview and scroll HUD misalign for
+  one beat after a heading jump. Use a double-rAF or `requestMeasure`.
+- Add `readOnly` to the `EditorPane` `useImperativeHandle` dependency
+  list (`EditorPane.tsx:241-374`) so an assist lock gates imperative
+  `insertText` / `applyMarkdownFormat` instead of acting on a stale
+  lock state.
+- Pass an explicit `tabId` to `setActiveTabContents` in the Apple Assist
+  apply path
+  (`src/hooks/app/useAppShellController.ts:450-464`;
+  `src/hooks/editor/useAppleAssistApplyHandler.ts`) rather than closing
+  over `activeTab.id`, so a tab switch during generation writes to the
+  validated target.
+
+Acceptance: Save-As keeps the user's place and undo history, heading
+jumps do not lag the preview, and the assist-lock and cross-tab apply
+paths are race-free. These slices do not change the v1 product
+definition; after Slice A-C, proceed to `v0.34` Golden Manuscript smoke.
+
 #### v0.34: v1.0 Release Candidate
 
 Freeze features and verify product quality.
