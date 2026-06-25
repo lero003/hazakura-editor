@@ -18,6 +18,7 @@ import {
   type KeyboardEvent,
   type MouseEvent,
   type WheelEvent,
+  useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -138,6 +139,10 @@ export default function EBookPane({
   const wheelDeltaRef = useRef(0);
   const wheelCooldownRef = useRef<number | null>(null);
   const pendingLocationNotificationRef = useRef(false);
+  // v0.34: ページ計測（全子要素の getClientRects ループ = 強制リフロー）を
+  // 複数の発火源（レイアウト効果・ResizeObserver・MutationObserver・画像load）
+  // から rAF で1フレームに1回に coalesce する。
+  const measureFrameRef = useRef<number | null>(null);
   const documentLocationKey = documentKey ?? documentPath ?? "";
   const lastNotifiedLocationRef = useRef<{
     documentLocationKey: string;
@@ -234,6 +239,9 @@ export default function EBookPane({
 
   const [activeChapterHtml, setActiveChapterHtml] =
     useState<RenderedChapter | null>(null);
+  // v0.34: rAF コールバックから最新の activeChapterHtml を参照するための ref。
+  const activeChapterHtmlRef = useRef(activeChapterHtml);
+  activeChapterHtmlRef.current = activeChapterHtml;
   const [nextChapterHtml, setNextChapterHtml] =
     useState<RenderedChapter | null>(nextRenderedChapter);
 
@@ -375,27 +383,48 @@ export default function EBookPane({
     });
   }, [activeChapter?.index, activeChapterHtml]);
 
+  // v0.34: ResizeObserver / MutationObserver / 画像load からのページ再計測を
+  // rAF で1フレームに1回に coalesce する。連続リサイズや画像続読み込みでの
+  // 強制リフロー（全子要素 getClientRects ループ）の嵐を防ぐ。
+  const scheduleRemeasure = useCallback(() => {
+    if (measureFrameRef.current !== null) {
+      return;
+    }
+    measureFrameRef.current = window.requestAnimationFrame(() => {
+      measureFrameRef.current = null;
+      const flow = flowRef.current;
+      const chapter = activeChapterHtmlRef.current;
+      if (!flow || !chapter) {
+        return;
+      }
+      setPageViewportHeight(measurePageViewportHeight(viewportRef.current));
+      setVisiblePageStep(getVisiblePageStep(viewportRef.current, flow));
+      setMeasuredPageCount(measureRenderedChapterPageCount(chapter, flow));
+    });
+  }, []);
+
+  // v0.34: アンマウント時に保留中の計測 rAF をキャンセルする。
+  useEffect(() => {
+    return () => {
+      if (measureFrameRef.current !== null) {
+        window.cancelAnimationFrame(measureFrameRef.current);
+        measureFrameRef.current = null;
+      }
+    };
+  }, []);
+
   useEffect(() => {
     const viewport = viewportRef.current;
     if (!viewport || typeof ResizeObserver === "undefined") {
       return;
     }
 
-    const updateReaderMeasurements = () => {
-      setPageViewportHeight(measurePageViewportHeight(viewport));
-      setVisiblePageStep(getVisiblePageStep(viewport, flowRef.current));
-      setMeasuredPageCount(
-        measureRenderedChapterPageCount(activeChapterHtml, flowRef.current),
-      );
-    };
-    updateReaderMeasurements();
-
-    const observer = new ResizeObserver(updateReaderMeasurements);
+    const observer = new ResizeObserver(scheduleRemeasure);
     observer.observe(viewport);
     return () => {
       observer.disconnect();
     };
-  }, [activeChapterHtml]);
+  }, [scheduleRemeasure]);
 
   useEffect(() => {
     if (typeof MutationObserver === "undefined") {
@@ -403,11 +432,7 @@ export default function EBookPane({
     }
 
     const root = document.documentElement;
-    const observer = new MutationObserver(() => {
-      setMeasuredPageCount(
-        measureRenderedChapterPageCount(activeChapterHtml, flowRef.current),
-      );
-    });
+    const observer = new MutationObserver(scheduleRemeasure);
     observer.observe(root, {
       attributeFilter: ["data-theme", "style"],
       attributes: true,
@@ -415,7 +440,7 @@ export default function EBookPane({
     return () => {
       observer.disconnect();
     };
-  }, [activeChapterHtml]);
+  }, [scheduleRemeasure]);
 
   useEffect(() => {
     const flow = flowRef.current;
@@ -424,9 +449,7 @@ export default function EBookPane({
     }
 
     const handleImageSettled = () => {
-      setMeasuredPageCount(
-        measureRenderedChapterPageCount(activeChapterHtml, flowRef.current),
-      );
+      scheduleRemeasure();
     };
     const images = Array.from(flow.querySelectorAll("img"));
     for (const image of images) {
