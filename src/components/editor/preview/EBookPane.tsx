@@ -249,11 +249,18 @@ export default function EBookPane({
   // デバウンスする。これで e-book Mode を開いた直後の表示は速く、連続入力時
   // だけ marked + DOMPurify の重い同期処理を間引ける。
   const hasRenderedOnceRef = useRef(false);
+  // v0.34: activeRenderTarget はレンダー毎に新オブジェクトになるため、
+  // useEffect の依存に入れると inlineWorkspaceAssetImages の非同期処理が
+  // state 更新のたびにキャンセルされ、画像が透明GIFのままになる。
+  // ref で最新を参照し、依存は文字列キー(activeRenderKey)だけで制御する。
+  const activeRenderTargetRef = useRef(activeRenderTarget);
+  activeRenderTargetRef.current = activeRenderTarget;
 
   useEffect(() => {
     let cancelled = false;
+    const target = activeRenderTargetRef.current;
 
-    if (!activeRenderTarget) {
+    if (!target) {
       hasRenderedOnceRef.current = false;
       setActiveChapterHtml(null);
       return () => {
@@ -267,13 +274,13 @@ export default function EBookPane({
       }
 
       const rendered = renderEbookChapter(
-        activeRenderTarget.chapter,
-        activeRenderTarget.documentPath,
-        activeRenderTarget.workspaceRoot,
+        target.chapter,
+        target.documentPath,
+        target.workspaceRoot,
       );
       setActiveChapterHtml(rendered);
 
-      if (!activeRenderTarget.workspaceRoot) {
+      if (!target.workspaceRoot) {
         return;
       }
 
@@ -284,7 +291,7 @@ export default function EBookPane({
         rendered.html,
         async (path) => {
           const image = await openWorkspaceImage(
-            activeRenderTarget.workspaceRoot!,
+            target.workspaceRoot!,
             path,
           );
           return image.dataUrl;
@@ -311,10 +318,11 @@ export default function EBookPane({
       cancelled = true;
       cancelRender();
     };
-    // activeRenderKey は章インデックス・ソース・パス・ワークスペースの変更を
-    // 一意に表す文字列キー。
+    // v0.34: activeRenderTarget(レンダー毎に新オブジェクト)ではなく
+    // activeRenderKey(文字列)のみに依存し、非同期画像インライン処理が
+    // state 更新のたびにキャンセルされないようにする。
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeRenderKey, activeRenderTarget]);
+  }, [activeRenderKey]);
 
   useEffect(() => {
     let cancelled = false;
