@@ -1037,8 +1037,20 @@
 }
 
 .ebook-chapter pre {
+  /* Re-assert the code-block palette on the e-book flow. The base
+     `.markdown-preview pre` rule already uses these tokens, but inside
+     the CSS-columns page flow WebKit can drop the background paint of
+     a block with `overflow: auto` + `break-inside: avoid`, leaving the
+     light text on the pane surface (white-on-near-white). Pinning the
+     palette plus a stacking context (`position: relative` +
+     `isolation: isolate`) forces the background to render inside the
+     column. */
+  background: var(--status-bg);
+  color: var(--status-text);
+  isolation: isolate;
   max-height: 72%;
   overflow: auto;
+  position: relative;
 }
 
 .ebook-chapter-opener.ebook-chapter-cover {
