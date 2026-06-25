@@ -134,6 +134,10 @@
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
   --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
   --shadow-accent: 0 4px 16px rgba(46, 92, 70, 0.12);
+  /* v0.34: bare --shadow は color-mix の基点として各所から参照される。
+     --shadow-lg と同程度の無彩シャドウを既定値にする。themes.css 側で
+     テームごとに上書き可能。 */
+  --shadow: rgba(0, 0, 0, 0.2);
 
   /* トランジション / Transition */
   /* easing tokens: standard / emphasized / spring */
@@ -141,6 +145,37 @@
   --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --theme-transition: 0.35s var(--ease-standard);
+
+  /* v0.34: duration scale。hover/微細 = 120-160ms、overlay/toast = 200ms、
+     保存演出 = 320ms。全 transition はこの scale と --ease-* を組み合わせる。 */
+  --dur-1: 120ms;
+  --dur-2: 160ms;
+  --dur-3: 200ms;
+  --dur-4: 320ms;
+
+  /* v0.34: z-index scale。層ごとに明確な段を設け、マジックナンバーを排除。
+     base=通常 DOM、sticky=固定ヘッダ/タブ、dropdown=メニュー/ポップオーバー、
+     toast=通知、modal=ダイアログ、palette=コマンドパレット（最上位）。 */
+  --z-base: 1;
+  --z-sticky: 10;
+  --z-dropdown: 100;
+  --z-toast: 200;
+  --z-modal: 1000;
+  --z-palette: 1100;
+
+  /* v0.34: 派生アクセント / フォント / 情報色トークン。
+     これまで apple-assist-window / slash-menu / preview / agent-window が
+     インラインフォールバックで場当たり的に参照していた未定義トークンを
+     正式に定義。themes.css / lMode.css で上書き可能。 */
+  --accent-hover: color-mix(in srgb, var(--accent) 82%, #000 18%);
+  --accent-contrast: #ffffff;
+  --info: #3b7ea1;
+  --error: var(--danger);
+  --bg-elev: var(--surface-muted);
+  --bg-elev-hover: color-mix(in srgb, var(--surface-muted) 70%, var(--border) 30%);
+  --font-editor: var(--font-mono);
+  --font-ui: var(--font-sans);
+  --app-font-family: var(--font-sans);
 
   /* スペーシング / Spacing scale
      4 / 8 / 12 / 16 / 20 / 24 / 32 / 48 の 8 段。カード内 padding /

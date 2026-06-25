@@ -173,3 +173,19 @@ body {
   margin: 0;
   min-height: 100vh;
 }
+
+/* v0.34: prefers-reduced-motion グローバルガード。
+   これまで app-shell.css / save-affirmation.css の2箇所しか対応しておらず、
+   ダイアログ・トースト・スラッシュメニュー・エージェント pulse 等が無条件で
+   アニメーションしていた。WCAG 2.3.3 配慮として、OS が「動きを減らす」を
+   要求する場合は全要素のアニメーション・遷移を事実上無効化する。 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
