@@ -148,7 +148,7 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
             &MenuItem::with_id(
                 app,
                 MENU_EXPORT_PDF,
-                label("Print to PDF…", "PDFに印刷…"),
+                label("Export as PDF…", "PDFとして書き出す…"),
                 true,
                 Some("CmdOrCtrl+Alt+P"),
             )?,
@@ -502,7 +502,7 @@ fn kana_menu_label(japanese: &'static str) -> Option<&'static str> {
         "保存" => "たくはふ",
         "別名で保存..." => "なをかへてたくはふ...",
         "HTMLとして書き出す…" => "HTML としてしるしだす…",
-        "PDFに印刷…" => "PDF にうつす…",
+        "PDFとして書き出す…" => "PDF としてしるしだす…",
         "ウィンドウを閉じる" => "まどをとぢる",
         "表示" => "ながめ",
         "プレビュー" => "したみ",

@@ -749,8 +749,8 @@ describe("v0.25 L Mode floating chrome drag boundary", () => {
 // SCOPE: this describe block pins the `@media print`
 // block in `lMode.css`. That block only fires when the
 // live CodeMirror editor is sent to the browser print
-// dialog. It does NOT cover the user-facing Print to
-// PDF / Export HTML flows: those go through
+// dialog. It does NOT cover the user-facing PDF export /
+// Export HTML flows: those go through
 // `useDocumentExport`, which renders a standalone HTML
 // document from the saved Markdown source via
 // `renderMarkdown()` + `getMarkdownPreviewCss()` and

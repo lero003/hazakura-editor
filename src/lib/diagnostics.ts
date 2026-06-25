@@ -151,6 +151,7 @@ const SAFE_ERROR_CATEGORIES: ReadonlySet<string> = new Set([
   "Reopen failed",
   "Export EPUB beta failed",
   "Export HTML failed",
+  "PDF export unavailable",
   "Print unavailable",
   "Cannot read file",
   "Cannot create file",

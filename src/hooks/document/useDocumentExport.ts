@@ -2,8 +2,8 @@ import { useCallback, useRef, useState } from "react";
 import { save as saveDialog } from "@tauri-apps/plugin-dialog";
 import {
   isTauriRuntime,
+  exportPdfFile,
   openWorkspaceImage,
-  printHtml,
   saveBinaryFileAs,
   saveTextFileAs,
 } from "../../lib/tauri";
@@ -49,11 +49,11 @@ export function useDocumentExport({
 
   const exportPdf = useCallback(async () => {
     if (!activeContents || !activeTab) {
-      setStatus("No active document to print");
+      setStatus("No active document to export PDF");
       return;
     }
 
-    setStatus("Preparing print layout...");
+    setStatus("Preparing PDF export...");
     try {
       let rendered = renderMarkdown(activeContents, {
         documentPath: activeTab.path,
@@ -143,18 +143,30 @@ ${rendered}
 </html>`;
 
       if (isTauriRuntime()) {
-        await printHtml(
-          standaloneHtml,
-          activeTab.name.replace(/\.[^.]+$/, "") + ".html",
-        );
-        setStatus("Opening native print dialog...");
+        const destPath = await saveDialog({
+          defaultPath: activeTab.name.replace(/\.[^.]+$/, "") + ".pdf",
+          filters: [{ name: "PDF", extensions: ["pdf"] }],
+        });
+        if (!destPath) {
+          setStatus("");
+          return;
+        }
+
+        const tabForExport = activeTabRef.current;
+        if (!tabForExport || tabForExport.id !== activeTab.id) {
+          setStatus("PDF export stopped; document changed");
+          return;
+        }
+
+        await exportPdfFile(destPath, standaloneHtml);
+        setStatus("PDF exported");
         setTimeout(() => setStatus(""), 2000);
         return;
       }
 
       const printWindow = window.open("", "_blank");
       if (!printWindow) {
-        setStatus("Print unavailable");
+        setStatus("PDF export unavailable");
         return;
       }
       printWindow.document.open();
@@ -164,10 +176,11 @@ ${rendered}
       printWindow.print();
       setTimeout(() => setStatus(""), 2000);
     } catch (err) {
-      console.warn("Print failed:", err);
-      setStatus("Print unavailable");
+      console.warn("PDF export failed:", err);
+      setGlobalError(`PDF export failed: ${String(err)}`);
+      setStatus("PDF export unavailable");
     }
-  }, [activeContents, activeTab, setStatus, workspaceRootPath]);
+  }, [activeContents, activeTab, setGlobalError, setStatus, workspaceRootPath]);
 
   const exportHtml = useCallback(async () => {
     if (!activeTab || activeContents === undefined) {
@@ -250,7 +263,7 @@ ${getMarkdownPreviewCss()}
 /* The preview CSS above is screen-first; the print block
    below tightens type, hides backgrounds, and stops tables /
    code blocks from splitting across pages. Mirrors the
-   in-app "Print to PDF" path so a saved file printed later
+   in-app PDF export path so a saved file printed later
    matches what the user saw in the browser. */
 @media print {
   @page { margin: 18mm 16mm; }

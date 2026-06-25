@@ -112,6 +112,8 @@ export function localizeStatusMessage(
       "新規フォルダを作成しました。フォルダ更新には失敗しました",
     "New folder failed": "新規フォルダの作成に失敗しました",
     "No active document to export": "エクスポート対象のドキュメントがありません",
+    "No active document to export PDF":
+      "PDF書き出し対象のドキュメントがありません",
     "No active document to print": "印刷対象のドキュメントがありません",
     "No active tab to close": "閉じる対象のタブがありません",
     "No active tab to convert": "変換するアクティブタブがありません",
@@ -138,6 +140,11 @@ export function localizeStatusMessage(
       "ドキュメント変更により再読み込みをスキップしました",
     "Reopened from disk": "ディスクから再読み込みしました",
     "Reopening from disk...": "ディスクから再読み込み中...",
+    "PDF export stopped; document changed":
+      "ドキュメント変更によりPDF書き出しを停止しました",
+    "PDF export unavailable": "PDFを書き出せません",
+    "PDF exported": "PDFを書き出しました",
+    "Preparing PDF export...": "PDF書き出しを準備中...",
     "Print unavailable": "印刷できません",
     "Rename cancelled": "名前変更をキャンセルしました",
     "Rename failed": "名前変更に失敗しました",
@@ -328,6 +335,10 @@ export function localizeStatusMessage(
 
   if (message === "Print unavailable") {
     return "印刷できません";
+  }
+
+  if (message === "PDF export unavailable") {
+    return "PDFを書き出せません";
   }
 
   return message;

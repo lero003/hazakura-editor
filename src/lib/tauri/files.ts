@@ -130,13 +130,13 @@ export async function revealPathInFileManager(path: string): Promise<void> {
   await invoke("reveal_path_in_file_manager", { path });
 }
 
-export async function printHtml(
+export async function exportPdfFile(
+  path: string,
   htmlContent: string,
-  fileName: string,
 ): Promise<void> {
-  await invoke("print_html", {
+  await invoke("export_pdf", {
+    path,
     htmlContent,
-    fileName,
   });
 }
 

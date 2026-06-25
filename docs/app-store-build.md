@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-06-25 (v0.34.0 build 46 package candidate)
+Last reviewed: 2026-06-26 (v0.35.0 PDF export recovery)
 
 ## Purpose
 
@@ -44,9 +44,11 @@ Agent Workbench behind its existing boundary.
 - Published App Store version: `0.32.0` (reported approved and released
   with the v0.32 Editor / Reader Position Bridge and Hazakura Local
   Assist available as a preview on-device writing companion)
-- Current source / Developer version: `0.34.0`
+- Current source / Developer version: `0.35.0`
 - Latest generated local App Store package evidence: `0.34.0` build `46`
-  (generated after the v0.34 native PDF print fix and cleanup)
+  (generated after the v0.34 native PDF print fix and cleanup; superseded
+  for PDF output because TestFlight still showed macOS' print-unsupported
+  alert)
 - Current App Store submit config build counter: `46`
 - App Store category: `Productivity`
 - Public Privacy Policy URL:
@@ -326,7 +328,7 @@ find "$APP/Contents/MacOS" -maxdepth 1 -type f -print
 Expected:
 
 - `CFBundleIdentifier` is `dev.hazakura.editor`
-- `CFBundleShortVersionString` is the current package version (`0.34.0`
+- `CFBundleShortVersionString` is the current package version (`0.35.0`
   for the current candidate)
 - `CFBundleVersion` is a positive integer higher than the last uploaded
   App Store Connect build
@@ -964,10 +966,11 @@ v0.34.0 build 46 TestFlight candidate note: on 2026-06-25, Codex
 generated a new local App Store submit-lane package for user-visible
 version `0.34.0` after replacing the PDF print browser / OS handoff with
 an app-owned native print webview and removing the stale handoff path.
-This package supersedes the v0.33 build `41` candidate as the latest
-local package evidence. Raw App Store Connect upload, processing,
-TestFlight install / launch, and App Review logs are not tracked in this
-repository unless separately recorded.
+This package superseded the v0.33 build `41` candidate as local package
+evidence, but is itself superseded for PDF output because TestFlight
+still showed macOS' print-unsupported alert. Raw App Store Connect
+upload, processing, TestFlight install / launch, and App Review logs are
+not tracked in this repository unless separately recorded.
 
 The local package generated for this lane is:
 

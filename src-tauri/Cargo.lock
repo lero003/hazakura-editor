@@ -1192,8 +1192,9 @@ checksum = "ed5909b6e89a2db4456e54cd5f673791d7eca6732202bbf2a9cc504fe2f9b84a"
 
 [[package]]
 name = "hazakura-editor"
-version = "0.34.0"
+version = "0.35.0"
 dependencies = [
+ "block2",
  "encoding_rs",
  "objc2",
  "objc2-foundation",

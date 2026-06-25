@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-25 (v0.34.0 build 46 package candidate)
+Last reviewed: 2026-06-26 (v0.35.0 PDF export recovery)
 
 ## Current State
 
@@ -18,7 +18,7 @@ Last reviewed: 2026-06-25 (v0.34.0 build 46 package candidate)
   as a public preview; its build `33` package remains historical release
   evidence and should not be confused with the current `0.32.0` public
   lane or the `0.34.0` candidate.
-- A new `0.34.0` App Store / TestFlight package candidate was generated
+- A `0.34.0` App Store / TestFlight package candidate was generated
   on 2026-06-25 after the native PDF print fix and v0.34 cleanup. It
   advanced the App Store build counter to `46` and
   produced
@@ -27,17 +27,18 @@ Last reviewed: 2026-06-25 (v0.34.0 build 46 package candidate)
   `78ce80cd1bcefd462241ec365679c5842a933dcd52ae3944b9d89b9467b5ec30`.
   App Store surface smoke, local package generation, signed app probe,
   strict codesign, package signature, metadata, supported-OS, package
-  SHA, and sandbox preview checks passed. The user reported the manual
-  native PDF print flow as working before this package candidate was
-  generated. App Store Connect upload, Apple processing, TestFlight
-  install / launch, v0.33 EPUB built-app smoke, v1 workspace/slash
-  built-app smoke, and normal / unsaved / recovered v0.32 reader-bridge
-  built-app smoke remain user-side proof.
-- `0.34.0` is now the source/package app version locally. The v0.34
-  native PDF print fix replaces the old print-browser / OS handoff path
-  with an app-owned native print webview, removes stale handoff code and
-  tests, and keeps the Rust-side main-window / filename / HTML-content
-  guards. The v0.33 EPUB
+  SHA, and sandbox preview checks passed. This candidate is now
+  superseded for PDF output: local manual native-print smoke passed, but
+  the TestFlight build still showed macOS' "This application does not
+  support printing" alert. Do not revive the user-facing macOS print UI
+  path as the fix.
+- `0.35.0` is now the source/package app version locally. The active
+  recovery changes the user-facing PDF action from print UI to direct
+  PDF export: Save dialog chooses a `.pdf`, Rust validates main-window /
+  non-empty HTML / existing parent folder / `.pdf` destination, an
+  app-owned WebView renders the generated HTML, WebKit creates PDF data,
+  and Rust writes the selected file. The path does not use a browser,
+  shell, external opener, or macOS print dialog. The v0.33 EPUB
   Export v1 Polish slice is implemented at source level: the export UI
   says `EPUB書き出し` / `EPUB Export`, successful exports can report
   non-fatal image replacement warnings through
@@ -59,6 +60,20 @@ Last reviewed: 2026-06-25 (v0.34.0 build 46 package candidate)
   bundle (`kLSNoExecutableErr`) even though bundle inspection found the
   executable, version `0.33.0`, bundled notices, helper executable, and
   valid ad-hoc signature.
+- v0.35 PDF export recovery verification so far: focused frontend PDF
+  export / status / privacy tests passed; focused Rust `export_pdf`
+  tests passed; `npm run test` passed (118 files / 1046 tests);
+  `npm run smoke:app-store-surface` passed (10 files / 90 tests);
+  `npm run build:vite` passed with the usual large-chunk warning;
+  `npm run build` produced the app-store-preview app bundle;
+  `SKIP_BUILD=1 npm run smoke:macos-sandbox-preview` passed; full Rust
+  test passed with `cargo test --manifest-path src-tauri/Cargo.toml`
+  (298 tests; one Agent Workbench real-runtime test failed once during
+  parallel full run but passed on immediate single and full reruns);
+  `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and
+  `git diff --check` passed.
+  The remaining proof is user-side TestFlight install / launch and
+  confirming that the selected `.pdf` file is created.
 - v1 workspace / slash-command fit-and-finish is source-implemented:
   workspace tree open / dirty markers are derived from existing tab state
   with `isDirty()`, limited to files inside the selected workspace, and
@@ -290,8 +305,8 @@ Last reviewed: 2026-06-25 (v0.34.0 build 46 package candidate)
 - v0.28 P2 system handoff hardening is implemented locally for external
   URL opening and Finder / file-manager reveal, using one fixed OS
   handoff helper with static platform command templates. The earlier
-  browser-based PDF print handoff from this slice is superseded by the
-  v0.34 app-owned native print webview.
+  browser-based PDF print handoff and the v0.34 app-owned native print
+  webview are superseded by v0.35 direct PDF export.
 - v0.29 AI assist review API alignment is active on top of the completed
   v0.28 foundation. The standalone Review Desk screen, normal chrome
   entry point, manual candidate editor, and Markdown / text candidate

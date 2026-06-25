@@ -1654,13 +1654,13 @@
    IMPORTANT SCOPE: this `@media print` block fires only
    when the live CodeMirror editor is sent to the browser
    print dialog. It does NOT affect the user-facing
-   Print to PDF or Export HTML flows: those go through
+   PDF export or Export HTML flows: those go through
    `useDocumentExport`, which renders a standalone HTML
    document from the saved Markdown source via
    `renderMarkdown()` + `getMarkdownPreviewCss()` and
    does not carry L Mode's `.cm-*` classes. So the
    standalone preview / export pipeline is the canonical
-   print path; this block is the screen-side fallback
+   export path; this block is the screen-side fallback
    for "the user hit Cmd+P while the editor is open."
 
    Within that scoped role, the screen-print result of

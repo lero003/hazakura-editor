@@ -348,7 +348,7 @@ describe("PrivacyPreferencesPane", () => {
       "Agent Workbench in the Developer / GitHub lane can launch an allowlisted provider",
     );
     expect(text).toContain("macOS system services");
-    expect(text).toContain("native print");
+    expect(text).toContain("PDF export");
     expect(text).toContain("Show in Finder");
     // The App Store lane description must be honest: the
     // helper is launchable in every lane, Agent Workbench

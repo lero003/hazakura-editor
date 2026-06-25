@@ -611,43 +611,49 @@ fn reveal_path_in_file_manager_rejects_agent_window_label() {
 }
 
 #[test]
-fn print_html_rejects_agent_window_label() {
-    let err =
-        validate_print_html_request(AGENT_WINDOW_LABEL, "<html></html>", "label-gate-agent.html")
-            .expect_err("print_html must reject the agent window");
+fn export_pdf_rejects_agent_window_label() {
+    let err = validate_export_pdf_request(AGENT_WINDOW_LABEL, "<html></html>", "/tmp/export.pdf")
+        .expect_err("export_pdf must reject the agent window");
     assert!(err.contains(AGENT_WINDOW_LABEL), "{err}");
 }
 
 #[test]
-fn print_html_rejects_empty_content() {
-    let err = validate_print_html_request(MAIN_WINDOW_LABEL, "   ", "empty.html")
-        .expect_err("print_html must reject empty content");
+fn export_pdf_rejects_empty_content() {
+    let err = validate_export_pdf_request(MAIN_WINDOW_LABEL, "   ", "/tmp/export.pdf")
+        .expect_err("export_pdf must reject empty content");
     assert!(err.contains("empty"), "{err}");
 }
 
 #[test]
-fn print_html_rejects_path_like_file_name() {
-    let err = validate_print_html_request(MAIN_WINDOW_LABEL, "<html></html>", "../print.html")
-        .expect_err("print_html must reject path-like file names");
-    assert!(err.contains("plain .html"), "{err}");
+fn export_pdf_rejects_non_pdf_destination() {
+    let err = validate_export_pdf_request(MAIN_WINDOW_LABEL, "<html></html>", "/tmp/export.html")
+        .expect_err("export_pdf must reject non-PDF destinations");
+    assert!(err.contains(".pdf"), "{err}");
 }
 
 #[cfg(target_os = "macos")]
 #[test]
-fn native_print_html_writes_temp_file_for_app_owned_webview() {
-    let path = write_native_print_html_file(987_654_321, "native-print.html", "<html>ok</html>")
-        .expect("native print HTML should be written");
+fn export_pdf_writes_webkit_pdf_bytes_to_destination() {
+    use objc2_foundation::NSData;
+
+    let dir = unique_label_path("export_pdf_bytes");
+    fs::create_dir_all(&dir).expect("create export dir");
+    let path = dir.join("export.pdf");
+    let data = NSData::with_bytes(b"%PDF-1.7\n%hazakura-test\n");
+
+    write_pdf_data(
+        (&*data) as *const NSData as *mut NSData,
+        std::ptr::null_mut(),
+        &path,
+    )
+    .expect("PDF bytes should be written");
 
     assert_eq!(
-        path,
-        native_print_temp_path_for_test(987_654_321, "native-print.html")
-    );
-    assert_eq!(
-        fs::read_to_string(&path).expect("read native print HTML"),
-        "<html>ok</html>"
+        fs::read(&path).expect("read PDF"),
+        b"%PDF-1.7\n%hazakura-test\n"
     );
 
-    let _ = fs::remove_file(path);
+    let _ = fs::remove_dir_all(dir);
 }
 
 #[test]

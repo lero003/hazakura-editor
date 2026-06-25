@@ -3,12 +3,12 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-25 (v0.34.0 build 46 package candidate)
+Last reviewed: 2026-06-26 (v0.35.0 PDF export recovery)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: `0.34.0` across npm, Tauri, Cargo, and lockfile metadata.
+- Current package/app version: `0.35.0` across npm, Tauri, Cargo, and lockfile metadata.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
 - Published Mac App Store version: `0.32.0`, with the v0.32 Editor /
@@ -27,16 +27,18 @@ Last reviewed: 2026-06-25 (v0.34.0 build 46 package candidate)
   Raw App Store Connect upload, processing, TestFlight install /
   launch, and App Review logs are not tracked in this repository unless
   separately recorded.
-- Source-level `v0.34` native PDF print fix is implemented. PDF print no
-  longer writes a browser-readable temporary file and opens it through
-  OS handoff; it now creates an app-owned native print webview, triggers
-  the system print panel from inside the app boundary, and keeps the
-  main-window / filename / HTML-content guards on the Rust side. The old
-  browser-based print command path and stale tests were removed. The
-  user reported the manual PDF print flow as working before this package
-  candidate was generated. This does not add a generic opener, shell
-  input, external browser dependency, or Agent Workbench surface to the
-  App Store lane.
+- Source-level `v0.35` PDF export recovery is implemented locally. The v0.34
+  native print path is superseded because TestFlight still showed
+  macOS' "This application does not support printing" alert after a
+  local manual print smoke had passed. v0.35 moves the user-facing action
+  to direct PDF export: the user chooses a `.pdf` destination, Rust keeps
+  the main-window / non-empty HTML / `.pdf` destination guards, an
+  app-owned WebView renders the HTML, WebKit creates PDF data, and Rust
+  writes that data to the selected file. The user-facing path no longer
+  depends on a browser, shell, external opener, or macOS print dialog.
+  The legacy `print_html` command registration and frontend wrapper are
+  removed, and `export_pdf` waits off the command event path so WebView
+  load / PDF callbacks can complete.
 - Source-level `v0.33` EPUB Export v1 Polish is implemented. EPUB export
   remains an explicit active-document action over Markdown source, but
   user-facing copy now presents it as `EPUB書き出し` / `EPUB Export`
@@ -319,7 +321,7 @@ Last reviewed: 2026-06-25 (v0.34.0 build 46 package candidate)
   publisher `Hazakura Lab` and
   `Copyright (c) 2026 Hazakura Lab. All rights reserved.`.
 - Sanitized Markdown preview, local workspace image handling,
-  standalone HTML export, and Print to PDF handoff.
+  standalone HTML export, and direct PDF export.
 - e-book Mode is a display-only right-pane reading surface for the active
   Markdown document. It uses the existing Preview safety pipeline,
   heading-based chapter splitting, CSS Columns pseudo-pagination for the
@@ -425,10 +427,11 @@ baseline, and smoke evidence are archived under
    and boundary docs stay live for future submissions.
 2. For the next product slice, start with `docs/current-work.md`.
    The active lane is `v0.30-v1.0 Reader UX Stabilization`; the current
-   product proof task is v0.34 v1.0 Release Candidate / Golden
-   Manuscript smoke after the native PDF print fix and build `46`
-   package evidence; the native PDF print flow has user-side manual
-   smoke, while the v0.32 reader bridge, v0.33 EPUB, workspace marker,
+   product proof task is v0.35 PDF Export Recovery before resuming the
+   v1.0 Release Candidate / Golden Manuscript smoke; the v0.34 build
+   `46` native-print package evidence is superseded for PDF output
+   because TestFlight still rejected the print UI path, while the v0.32
+   reader bridge, v0.33 EPUB, workspace marker,
    and right-click slash-command fit-and-finish still need built-app
    interaction / visual smoke where the local host can launch the app.
    A 2026-06-25 read of the
@@ -483,16 +486,16 @@ baseline, and smoke evidence are archived under
    and observation-driven Local Assist polish.
 3. For the latest local App Store / TestFlight package candidate,
    `0.34.0` build `46`
-   is the latest local package evidence. It includes the v0.34 native
-   PDF print fix, v0.33 EPUB Export v1 Polish, the workspace marker and
-   right-click slash-command source work, and the v1.0 RC pre-RC
-   quality-slice planning pass.
+   is the latest local package evidence, but it is superseded for PDF
+   output. It includes the v0.34 native PDF print attempt, v0.33 EPUB
+   Export v1 Polish, the workspace marker and right-click slash-command
+   source work, and the v1.0 RC pre-RC quality-slice planning pass.
    Upload, Apple processing, TestFlight install / launch, and App Review
    handling remain explicit distribution-lane work outside this
    repository unless public-safe evidence is recorded.
    The published `0.32.0` App Store lane is the latest released
    version; its build `36` package is historical release evidence and
-   should not be confused with the new `0.34.0` candidate.
+   should not be confused with the superseded `0.34.0` candidate.
    Do upload / App Store Connect work only when explicitly requested.
    For future App Store submissions, start with `docs/app-store-build.md`;
    use `npm run release:candidate -- --with-app-store-pkg` for local

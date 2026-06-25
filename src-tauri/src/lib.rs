@@ -187,7 +187,7 @@ pub fn run() {
             set_main_apple_assist_target,
             save_pasted_image,
             import_image_from_path,
-            print_html,
+            export_pdf,
             open_external_url,
             save_auto_backup,
             list_auto_backups,

@@ -13,9 +13,9 @@ vi.mock("@tauri-apps/plugin-dialog", () => ({
 }));
 
 const tauriApi = vi.hoisted(() => ({
+  exportPdfFile: vi.fn(),
   isTauriRuntime: vi.fn(() => false),
   openWorkspaceImage: vi.fn(),
-  printHtml: vi.fn(),
   saveBinaryFileAs: vi.fn(),
   saveTextFileAs: vi.fn(),
 }));
@@ -34,9 +34,9 @@ const epubApi = vi.hoisted(() => ({
 }));
 
 vi.mock("../../lib/tauri", () => ({
+  exportPdfFile: tauriApi.exportPdfFile,
   isTauriRuntime: tauriApi.isTauriRuntime,
   openWorkspaceImage: tauriApi.openWorkspaceImage,
-  printHtml: tauriApi.printHtml,
   saveBinaryFileAs: tauriApi.saveBinaryFileAs,
   saveTextFileAs: tauriApi.saveTextFileAs,
 }));
@@ -116,7 +116,6 @@ describe("useDocumentExport", () => {
     tauriApi.saveBinaryFileAs.mockReset();
     tauriApi.saveTextFileAs.mockReset();
     tauriApi.openWorkspaceImage.mockReset();
-    tauriApi.printHtml.mockReset();
     document.documentElement.removeAttribute("style");
   });
 
@@ -252,9 +251,10 @@ describe("useDocumentExport", () => {
     expect(exportedHtml).toContain("color: var(--status-text)");
   });
 
-  it("prints through native Tauri print instead of browser handoff", async () => {
+  it("exports PDF through a save dialog instead of opening print UI", async () => {
     tauriApi.isTauriRuntime.mockReturnValueOnce(true);
-    tauriApi.printHtml.mockResolvedValue(undefined);
+    dialogApi.save.mockResolvedValue("/tmp/print-me.pdf");
+    tauriApi.exportPdfFile.mockResolvedValue(undefined);
     const setStatus = vi.fn();
 
     const { result } = renderHook(() =>
@@ -271,11 +271,42 @@ describe("useDocumentExport", () => {
       await result.current.exportPdf();
     });
 
-    expect(tauriApi.printHtml).toHaveBeenCalledWith(
+    expect(dialogApi.save).toHaveBeenCalledWith({
+      defaultPath: "print-me.pdf",
+      filters: [{ name: "PDF", extensions: ["pdf"] }],
+    });
+    expect(tauriApi.exportPdfFile).toHaveBeenCalledWith(
+      "/tmp/print-me.pdf",
       expect.stringContaining("<div class=\"markdown-preview\">"),
-      "print-me.html",
     );
-    expect(setStatus).toHaveBeenCalledWith("Opening native print dialog...");
+    expect(setStatus).toHaveBeenCalledWith("PDF exported");
+  });
+
+  it("surfaces native PDF export errors for diagnosis", async () => {
+    tauriApi.isTauriRuntime.mockReturnValueOnce(true);
+    dialogApi.save.mockResolvedValue("/tmp/print-me.pdf");
+    tauriApi.exportPdfFile.mockRejectedValue("PDF export timed out.");
+    const setGlobalError = vi.fn();
+    const setStatus = vi.fn();
+
+    const { result } = renderHook(() =>
+      useDocumentExport({
+        activeContents: "# Print me",
+        activeTab: makeTab({ name: "print-me.md" }),
+        setGlobalError,
+        setStatus,
+        workspaceRootPath: null,
+      }),
+    );
+
+    await act(async () => {
+      await result.current.exportPdf();
+    });
+
+    expect(setGlobalError).toHaveBeenCalledWith(
+      "PDF export failed: PDF export timed out.",
+    );
+    expect(setStatus).toHaveBeenCalledWith("PDF export unavailable");
   });
 
   it("exports EPUB beta through an EPUB save dialog and binary file write", async () => {

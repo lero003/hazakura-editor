@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-06-25
+Last reviewed: 2026-06-26
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
@@ -29,8 +29,9 @@ Latest App Store status:
   `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.29.1-build33-mas.pkg`.
   Raw App Store Connect, TestFlight, and App Review logs are not tracked
   in this repository.
-- `0.34.0` build `46` is the latest local App Store / TestFlight
-  package candidate for v0.34 native PDF print and v1 RC testing:
+- `0.34.0` build `46` is the latest generated local App Store /
+  TestFlight package candidate, but is superseded for PDF output because
+  TestFlight still showed macOS' print-unsupported alert:
   `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.34.0-build46-mas.pkg`.
   Raw App Store Connect upload, processing, TestFlight install / launch,
   and App Review logs are not tracked in this repository unless
@@ -53,6 +54,7 @@ Latest App Store submission-candidate note:
 
 Latest App Store release-note drafts:
 
+- `0.35.0-app-store-release-notes.md`
 - `0.34.0-app-store-release-notes.md`
 - `0.33.0-app-store-release-notes.md`
 - `0.32.0-app-store-release-notes.md`

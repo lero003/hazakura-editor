@@ -55,14 +55,16 @@ describe("localizeStatusMessage: window IPC failure keys (v0.15)", () => {
       .toBe("テーマメニューの状態更新に失敗しました");
   });
 
-  it("localizes the print unavailable status to Japanese", () => {
-    expect(localizeStatusMessage("Print unavailable", "ja"))
-      .toBe("印刷できません");
+  it("localizes the PDF export unavailable status to Japanese", () => {
+    expect(localizeStatusMessage("PDF export unavailable", "ja")).toBe(
+      "PDFを書き出せません",
+    );
   });
 
   it("returns the raw English key when menu language is English", () => {
-    expect(localizeStatusMessage("Print unavailable", "en"))
-      .toBe("Print unavailable");
+    expect(localizeStatusMessage("PDF export unavailable", "en")).toBe(
+      "PDF export unavailable",
+    );
   });
 
   it("mentions the failure noun (失敗) so the user sees the action did not take effect", () => {

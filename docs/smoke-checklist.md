@@ -305,7 +305,7 @@ Run when Markdown preview, image assets, export, or authoring helpers change:
 4. Click an external Markdown link such as `https://hazakura.dev/` and confirm the main app WebView does not navigate away; the link opens in the OS default browser/new external window.
 5. Paste or drag-drop an image and confirm `assets/<hash>.<ext>` is created and Markdown image syntax is inserted.
 6. Export HTML and confirm local workspace images are inlined and the saved file uses the same preview CSS as the live preview pane (`.markdown-preview` rules, no theme-specific overrides inlined).
-7. Use Print to PDF handoff and confirm the print-ready layout matches what Export HTML produces (serif body, page-break controls, no theme colors leaking into print).
+7. Export PDF and confirm the selected `.pdf` file is created without opening a browser or macOS print dialog, and that the rendered Markdown content is present.
 8. Insert a Markdown table and confirm the app does not imply row/column table editing beyond the implemented helper.
 
 ## v0.33 EPUB Export Smoke

@@ -46,7 +46,7 @@ Use this when you want to:
 - compare text files and review local changes without Git awareness
 - notice save conflicts and external changes before overwriting
 - paste or drag-drop images into `assets/` for inline Markdown references
-- export content as standalone HTML or use Print to PDF
+- export content as standalone HTML or PDF
 - use a command palette for existing safe app actions
 - run bounded workspace text search without background indexing
 - use えるモード / L Mode as a WYSIWYG-tier one-pane writing surface with magazine-feel typography, where Markdown source remains the truth
@@ -71,7 +71,7 @@ Example use case:
 4. Preview sanitized Markdown including local asset images.
 5. Compare files or review local changes before deciding what to keep.
 6. Apply reviewed recovery or assist changes only by explicit action, then save only when you are ready.
-7. Export to HTML or print to PDF.
+7. Export to HTML or PDF.
 8. Use another tool for Git, terminal, build, test, or commit.
 
 ## Current Decision
@@ -92,7 +92,7 @@ Hazakura Editor currently focuses on these surfaces:
   Japanese text decoding.
 - Sanitized Markdown preview, local workspace image rendering, safe image
   paste/drag-drop into `assets/`, read-only image preview, standalone HTML
-  export, Print to PDF handoff, and initial EPUB export.
+  export, direct PDF export, and initial EPUB export.
 - Workspace folder browsing with lazy bounded trees, recent workspace/tab
   restoration, in-file search, current-file outline, Go to Line, and explicit
   non-Git Diff / Review for file, disk, draft, conflict, recovery, and AI edit

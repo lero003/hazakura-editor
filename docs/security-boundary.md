@@ -3,7 +3,7 @@
 Status: Canonical
 Scope: Safety constraints for implementation
 Authority: High
-Last reviewed: 2026-06-10
+Last reviewed: 2026-06-26
 
 ## Core Rule
 
@@ -72,13 +72,14 @@ Safe Editor Mode は任意コマンド実行を持たない。ただし、ユー
 - `http:` / `https:` / `mailto:` / `tel:` の明示外部URLを、OSの既定
   ブラウザまたは既定アプリへ渡す
 - 既存の選択ファイルまたはフォルダを、OSのファイルマネージャで表示する
-- アプリが生成した印刷用HTMLを、アプリ内のnative print用WebViewで
-  macOSの印刷ダイアログへ渡す
+- アプリが生成したHTMLを、アプリ内のWebViewでPDFデータへ変換し、
+  ユーザーが保存ダイアログで選んだ `.pdf` へ書き出す
 
-これらはプラットフォームごとの固定コマンドテンプレートで実装し、
+外部URLとファイルマネージャ表示は、プラットフォームごとの固定コマンドテンプレートで実装し、
 フロントエンドから任意の実行ファイル名、任意引数、shell入力を受け取らない。
-Rust側でURL scheme、印刷用ファイル名、印刷用HTMLの空入力、ウィンドウラベルを
-検査し、危険なscheme、path-like な印刷ファイル名、Agent Window からの呼び出しを拒否する。
+PDF書き出しは外部コマンドや印刷UIへ渡さず、アプリ内WebViewとWebKit PDF生成APIで完結させる。
+Rust側でURL scheme、PDF保存先の拡張子、HTMLの空入力、ウィンドウラベルを
+検査し、危険なscheme、`.pdf` 以外の保存先、Agent Window からの呼び出しを拒否する。
 
 ## Diff
 
