@@ -1,6 +1,8 @@
 import { useCallback, useRef, useState } from "react";
 import { save as saveDialog } from "@tauri-apps/plugin-dialog";
 import {
+  isTauriRuntime,
+  openTempPrintHtml,
   openWorkspaceImage,
   saveBinaryFileAs,
   saveTextFileAs,
@@ -137,34 +139,30 @@ export function useDocumentExport({
 <div class="markdown-preview">
 ${rendered}
 </div>
+<script>window.addEventListener("load", () => window.print());</script>
 </body>
 </html>`;
 
-      // v0.34: サンドボックスコンテナ内の一時ファイルをブラウザで開くと
-      // NSURLErrorCannotOpenFile(-3001) になるため、hidden iframe の srcdoc に
-      // HTMLを流し込み print() を呼ぶ。ブラウザにもTauriにも依存しない。
-      const frame = document.createElement("iframe");
-      frame.style.position = "fixed";
-      frame.style.right = "0";
-      frame.style.bottom = "0";
-      frame.style.width = "0";
-      frame.style.height = "0";
-      frame.style.border = "0";
-      frame.srcdoc = standaloneHtml;
-      frame.addEventListener("load", () => {
-        try {
-          frame.contentWindow?.focus();
-          frame.contentWindow?.print();
-        } catch {
-          setStatus("Print unavailable");
+      if (isTauriRuntime()) {
+        const tempPath = await openTempPrintHtml(
+          standaloneHtml,
+          activeTab.name.replace(/\.[^.]+$/, "") + ".html",
+        );
+        if (tempPath) {
+          setStatus("Opening in browser for printing...");
         }
-      });
-      // 印刷ダイアログ終了後にframeを除去する。
-      frame.addEventListener("afterprint", () => {
-        document.body.removeChild(frame);
-      });
-      document.body.appendChild(frame);
-      setStatus("Opening print dialog...");
+        setTimeout(() => setStatus(""), 2000);
+        return;
+      }
+
+      const printWindow = window.open("", "_blank");
+      if (!printWindow) {
+        setStatus("Print unavailable");
+        return;
+      }
+      printWindow.document.open();
+      printWindow.document.write(standaloneHtml);
+      printWindow.document.close();
       setTimeout(() => setStatus(""), 2000);
     } catch (err) {
       console.warn("Print failed:", err);
