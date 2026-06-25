@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-06-25 (v0.33.0 build 39 package candidate)
+Last reviewed: 2026-06-25 (v0.34 Golden Manuscript smoke added)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -607,7 +607,97 @@ focus-management gap is now closed in code; only the live
 keyboard / VoiceOver observation on the user's Mac is
 still pending.
 
-## Reporting
+## v0.34 Golden Manuscript Smoke
+
+Run this before treating v0.34 as a v1.0 Release Candidate. The Golden
+Manuscript is `docs/samples/golden-manuscript.md` — a realistic Japanese
+long-form document that exercises every v1 surface in one pass. Use the
+latest built desktop app (or TestFlight build), not browser-only Preview,
+because this covers native file dialogs, e-book pagination, Local Assist
+transactions, recovery, and relaunch.
+
+### Preparation
+
+1. Copy `docs/samples/golden-manuscript.md` into a throwaway workspace
+   folder so workspace-relative image references resolve. Add a small
+   PNG image at `assets/sample.png` if you want to exercise image
+   display inline (the manuscript references it optionally).
+
+### Golden-path checklist
+
+Check each item against the Golden Manuscript. Record normal / unsaved /
+recovered state separately where relevant.
+
+1. **New File**: create a new Markdown tab, paste the Golden Manuscript
+   content. Confirm headings, paragraphs, lists, blockquote, table, code
+   block, and horizontal rule all render in the editor.
+2. **Open**: open the saved `golden-manuscript.md` from the workspace.
+   Confirm the content loads and the workspace tree shows it as open.
+3. **Save / Save As**: save the file. Use Save As to create a copy.
+   Confirm both files are coherent (known limitation: Save-As resets
+   scroll/undo in v0.34; deferred to v1.1).
+4. **L Mode**: enter L Mode (`Cmd+Shift+L`). Confirm headings render
+   hierarchically, paragraphs flow as serif prose, the blockquote shows
+   as a pull-quote, the table shows with borders, and the horizontal
+   rule shows as a divider. Exit L Mode and confirm source is unchanged.
+5. **Preview**: confirm the preview pane renders all elements. If a
+   workspace image was added, confirm it displays. Confirm the external
+   link is clickable and opens in the OS browser.
+6. **e-book Mode**: open e-book Mode. Confirm the manuscript paginates
+   across chapters, page navigation (next/prev) works, and the
+   horizontal rule acts as a chapter or page break. Confirm images
+   display if present (v0.34 fix: workspace images must not stay
+   transparent).
+7. **Spread View**: if the viewport is wide enough, confirm the
+   two-page spread renders and page navigation moves by the spread
+   width.
+8. **Heading jump**: in the editor, use heading navigation or outline
+   to jump to a later chapter. Confirm the preview / e-book reader
+   follows to the same area without a one-beat lag (v0.34 fix:
+   double-rAF).
+9. **Editor / reader return**: in e-book Mode, enter `集中して読む`
+   (Reading Focus), then use `編集に戻る`. Confirm the editor returns
+   to the same chapter area.
+10. **EPUB export**: export the manuscript as EPUB. Confirm the
+    metadata dialog, successful export status, and that all elements
+    (headings, table, code block, links, page-break hints) appear in
+    the generated archive. Run `epubcheck` manually outside the app.
+11. **Local Assist**: select a paragraph in Chapter 4 (the Local Assist
+    review text). Run a Local Assist action (`読みやすく` or `要約`).
+    Confirm the result opens in Diff review, can be discarded without
+    saving, and the editor returns to the original state. Confirm the
+    assist-lock prevents edits while a generation is in flight.
+12. **Diff / Discard**: after generating a Local Assist result, open
+    the diff view, confirm the before/after is correct, then discard.
+    Confirm the buffer is unchanged and the tab is not dirty.
+13. **Recovery**: edit the file to trigger an auto-backup. Relaunch the
+    app. Use Restore from Auto-Backup, confirm the backup-vs-buffer
+    comparison opens, apply the backup, confirm the tab is dirty and
+    Save is still explicit.
+14. **Relaunch**: quit the app with the workspace and multiple tabs
+    open. Relaunch. Confirm the workspace and tabs are restored.
+15. **Large document**: paste the Golden Manuscript content 10× into a
+    single tab. Confirm typing, scrolling (especially trackpad inertial
+    scroll in Preview), and heading jumps remain smooth (v0.34 Slice A
+    fixes).
+16. **Trackpad inertial scroll**: in Preview, use a trackpad to inertial-
+    scroll a tall document. Confirm smooth motion without stutter or
+    fighting (v0.34 fix: scroll-sync guard self-extension).
+17. **Scrollbar drag**: drag the editor scrollbar, release, then scroll
+    with wheel/trackpad. Confirm the editor does not stick near the
+    previous caret position (v0.34 fix: focus restore on mouseup).
+18. **prefers-reduced-motion**: enable "Reduce Motion" in System
+    Settings → Accessibility → Display. Confirm animations (dialog
+    open, toast, slash menu, save affirmation) are suppressed (v0.34
+    fix: global reduced-motion guard).
+
+### Reporting
+
+Record the build number, which items passed / failed / were skipped,
+and any v0.34-specific regression found. Do not claim the RC is ready
+until items 1-14 pass on a signed TestFlight build.
+
+
 
 When reporting smoke:
 
