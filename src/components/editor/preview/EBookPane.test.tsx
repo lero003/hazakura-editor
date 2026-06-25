@@ -5,6 +5,7 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
+import type { ReactElement } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { openWorkspaceImage } from "../../../lib/tauri";
 import {
@@ -21,6 +22,35 @@ vi.mock("./ebookPagination", () => ({
   getEBookPageOffset: vi.fn((pageIndex: number) => pageIndex * 320),
   measureEBookPageCount: vi.fn(() => 1),
 }));
+
+// v0.34: 本番では200msデバウンスで marked + DOMPurify を間引くが、テストでは
+// マイクロタスク遅延(setTimeout 0)で実行し、renderEBookPane で settle を待つ。
+vi.mock("../../../features/editor/previewRenderDebounce", () => ({
+  schedulePreviewRender: (callback: () => void) => {
+    const handle = setTimeout(callback, 0);
+    return () => clearTimeout(handle);
+  },
+}));
+
+// v0.34: render をラップし、デバウンスされた章レンダリングが settle するまで
+// 待つ。これにより以降の同期クエリがレンダリング済み DOM を参照できる。
+async function renderEBookPane(ui: React.ReactElement) {
+  const result = render(ui);
+  await waitFor(() => {
+    // 章コンテンツが描画されるか、空ソースで章なしになるまで待つ。
+    const flow = result.container.querySelector(".ebook-flow-document");
+    if (flow && flow.innerHTML.length > 0) return;
+    if (
+      !result.container.querySelector(".ebook-chapter") &&
+      !result.container.querySelector(".ebook-flow-document")
+    ) {
+      throw new Error("not settled");
+    }
+  }).catch(() => {
+    // 空ソース等で章が描画されない場合は続行。
+  });
+  return result;
+}
 
 class TestResizeObserver {
   observe = vi.fn();
@@ -344,7 +374,9 @@ describe("EBookPane chapter reader", () => {
     await waitFor(() => {
       expect(screen.getByText("章 2 / 2")).toBeTruthy();
     });
-    expect(screen.getByRole("heading", { name: "Beta" })).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Beta" })).toBeTruthy();
+    });
     expect(screen.queryByRole("heading", { name: "Alpha" })).toBeNull();
   });
 
@@ -1004,7 +1036,7 @@ describe("EBookPane chapter reader", () => {
     expect(screen.getByText("Chapter 1 / 1")).toBeTruthy();
   });
 
-  it("labels preamble and heading-less documents without breaking display", () => {
+  it("labels preamble and heading-less documents without breaking display", async () => {
     const { rerender } = render(
       <EBookPane
         menuLanguage="ja"
@@ -1022,8 +1054,11 @@ describe("EBookPane chapter reader", () => {
       />,
     );
 
-    expect(screen.getByText("Body")).toBeTruthy();
-    expect(screen.getByText("plain body without headings")).toBeTruthy();
+    // v0.34: rerender によるソース変更後はデバウンスされた再レンダリングを待つ。
+    await waitFor(() => {
+      expect(screen.getByText("Body")).toBeTruthy();
+      expect(screen.getByText("plain body without headings")).toBeTruthy();
+    });
   });
 
   it("localizes the minimal reader chrome for ja, en, and kana", () => {

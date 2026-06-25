@@ -8,6 +8,7 @@ import {
   inlineWorkspaceAssetImages,
   renderMarkdown,
 } from "../../../features/editor/markdown";
+import { schedulePreviewRender } from "../../../features/editor/previewRenderDebounce";
 import { openWorkspaceImage } from "../../../lib/tauri";
 
 type PreviewPaneProps = {
@@ -130,17 +131,4 @@ export default function PreviewPane({
       onClick={handleClick}
     />
   );
-}
-
-function schedulePreviewRender(callback: () => void): () => void {
-  // v0.33: プレビューの Markdown 再描画は編集と同時である必要がない。
-  // requestAnimationFrame(1フレ遅延)から debounce(200ms)に変更し、連続入力中の
-  // marked + DOMPurify + DOM 操作の同期実行を抑制してタイピングの引っ掛かりを減らす。
-  // ソースが止まると200ms後に必ず描画されるので、見かけの遅延は小さい。
-  const PREVIEW_RENDER_DEBOUNCE_MS = 200;
-
-  const handle = window.setTimeout(callback, PREVIEW_RENDER_DEBOUNCE_MS);
-  return () => {
-    window.clearTimeout(handle);
-  };
 }

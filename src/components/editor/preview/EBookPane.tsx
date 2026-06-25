@@ -33,6 +33,7 @@ import {
   inlineWorkspaceAssetImages,
   renderMarkdown,
 } from "../../../features/editor/markdown";
+import { schedulePreviewRender } from "../../../features/editor/previewRenderDebounce";
 import { openWorkspaceImage } from "../../../lib/tauri";
 import type { MenuLanguage } from "../../../types";
 import { isJapaneseMenuLanguage } from "../../../types";
@@ -211,13 +212,17 @@ export default function EBookPane({
       measuredPageCount,
     ],
   );
-  const activeRenderedChapter = useMemo<RenderedChapter | null>(() => {
-    if (!activeChapter) {
-      return null;
-    }
-
-    return renderEbookChapter(activeChapter, documentPath, workspaceRoot);
-  }, [activeChapter, documentPath, workspaceRoot]);
+  // v0.34: renderEbookChapter (marked + DOMPurify) は重い同期処理なので、
+  // useMemo で毎キー計算せず、下の debounce 付き useEffect で200ms間引いて
+  // state に保存する。ここではレンダリング対象の章と依存キーだけを確定する。
+  const activeRenderTarget = activeChapter
+    ? {
+        chapter: activeChapter,
+        documentPath,
+        workspaceRoot,
+      }
+    : null;
+  const activeRenderKey = `${activeChapterIndexSafe}\u0000${source}\u0000${documentPath ?? ""}\u0000${workspaceRoot ?? ""}`;
   const nextChapter = chapters[activeChapterIndexSafe + 1];
   const nextRenderedChapter = useMemo<RenderedChapter | null>(() => {
     if (!readingFocusActive || !nextChapter) {
@@ -228,42 +233,80 @@ export default function EBookPane({
   }, [documentPath, nextChapter, readingFocusActive, workspaceRoot]);
 
   const [activeChapterHtml, setActiveChapterHtml] =
-    useState<RenderedChapter | null>(activeRenderedChapter);
+    useState<RenderedChapter | null>(null);
   const [nextChapterHtml, setNextChapterHtml] =
     useState<RenderedChapter | null>(nextRenderedChapter);
 
+  // v0.34: 初回レンダリングは即時に行い、2回目以降（ソース変更時）のみ
+  // デバウンスする。これで e-book Mode を開いた直後の表示は速く、連続入力時
+  // だけ marked + DOMPurify の重い同期処理を間引ける。
+  const hasRenderedOnceRef = useRef(false);
+
   useEffect(() => {
     let cancelled = false;
-    setActiveChapterHtml(activeRenderedChapter);
 
-    if (!activeRenderedChapter || !workspaceRoot) {
+    if (!activeRenderTarget) {
+      hasRenderedOnceRef.current = false;
+      setActiveChapterHtml(null);
       return () => {
         cancelled = true;
       };
     }
 
-    // Inline workspace images for the visible chapter only. This keeps
-    // the Preview safety boundary while avoiding the v0.21 all-chapter
-    // rebuild cost.
-    void inlineWorkspaceAssetImages(
-      activeRenderedChapter.html,
-      async (path) => {
-        const image = await openWorkspaceImage(workspaceRoot, path);
-        return image.dataUrl;
-      },
-    ).then((inlined) => {
-      if (!cancelled) {
-        setActiveChapterHtml({
-          ...activeRenderedChapter,
-          html: inlined,
-        });
+    const renderChapter = () => {
+      if (cancelled) {
+        return;
       }
-    });
+
+      const rendered = renderEbookChapter(
+        activeRenderTarget.chapter,
+        activeRenderTarget.documentPath,
+        activeRenderTarget.workspaceRoot,
+      );
+      setActiveChapterHtml(rendered);
+
+      if (!activeRenderTarget.workspaceRoot) {
+        return;
+      }
+
+      // Inline workspace images for the visible chapter only. This keeps
+      // the Preview safety boundary while avoiding the v0.21 all-chapter
+      // rebuild cost.
+      void inlineWorkspaceAssetImages(
+        rendered.html,
+        async (path) => {
+          const image = await openWorkspaceImage(
+            activeRenderTarget.workspaceRoot!,
+            path,
+          );
+          return image.dataUrl;
+        },
+      ).then((inlined) => {
+        if (!cancelled) {
+          setActiveChapterHtml({ ...rendered, html: inlined });
+        }
+      });
+    };
+
+    // 初回は即時、2回目以降はデバウンス。
+    if (!hasRenderedOnceRef.current) {
+      hasRenderedOnceRef.current = true;
+      renderChapter();
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const cancelRender = schedulePreviewRender(renderChapter);
 
     return () => {
       cancelled = true;
+      cancelRender();
     };
-  }, [activeRenderedChapter, workspaceRoot]);
+    // activeRenderKey は章インデックス・ソース・パス・ワークスペースの変更を
+    // 一意に表す文字列キー。
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeRenderKey, activeRenderTarget]);
 
   useEffect(() => {
     let cancelled = false;
@@ -301,6 +344,10 @@ export default function EBookPane({
     }
 
     const flow = flowRef.current;
+    // v0.34: 初回レンダリング直後など flowRef が未設定のタイミングを弾く。
+    if (!flow) {
+      return;
+    }
     const nextPageCount = measureRenderedChapterPageCount(
       activeChapterHtml,
       flow,
@@ -839,6 +886,10 @@ function measureRenderedChapterPageOffset(
   pageIndex: number,
   flow: HTMLElement | null,
 ): number {
+  // v0.34: flow が未設定（初回レンダリング直後等）の場合は安全に0を返す。
+  if (!flow) {
+    return 0;
+  }
   const pageOffset = getEBookPageOffset(pageIndex, flow);
   return Number.isFinite(pageOffset) ? Math.max(0, pageOffset) : 0;
 }
