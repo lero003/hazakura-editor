@@ -578,6 +578,18 @@ Possible directions:
   proposals, manual edits, and Recovery changes.
 - Improve EPUB export with metadata, cover selection, navigation, and
   clearer pre-export / manual validation guidance.
+- Improve PDF export polish after v1. The v0.35 direct PDF export
+  already paginates into A4-sized pages, but the page rect is currently
+  margin-less at the PDF-generation layer
+  (`src-tauri/src/commands/export.rs`: `PDF_A4_PAGE_WIDTH_POINTS` /
+  `PDF_A4_PAGE_HEIGHT_POINTS` with `origin_x: 0.0`, content split only by
+  page height). Open design questions to resolve before implementing:
+  whether to expose a user-facing margin / page-size option (and how far
+  to go without turning Hazakura into a print-layout tool), whether
+  margins should live in the export HTML CSS or in the Rust page-rect
+  calculation, and how page-break markers (`---`) should interact with
+  PDF page boundaries (today only EPUB uses them). Keep this as an
+  explicit user consultation item, not a silent default change.
 - Improve movement between writing, reading, Preview, Recovery, and AI
   review layers without creating a second document model.
 - Explore a Hazakura-owned expression font as an opt-in document display
