@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-26 (v0.35.0 PDF export recovery)
+Last reviewed: 2026-06-26 (v0.36.0 e-book page-turn release candidate)
 
 ## Current Position
 
@@ -17,7 +17,7 @@ Current release state:
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
 - Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
-- Current package/app version: `0.35.0`.
+- Current package/app version: `0.36.0`.
 - Latest source / local-app tag: `v0.32.0`.
 - Mac App Store published version: `0.32.0`, with the v0.32 Editor /
   Reader Position Bridge shipped as a public update. Hazakura Local
@@ -72,11 +72,22 @@ Near-term phase order:
    on built-app manual smoke, remaining TestFlight / release proof gaps,
    release wording, and only the smallest file-intake polish that
    directly supports reading the manuscript.
-7. v1.x deepens the single-document product before any rush to v2:
+7. v0.36 stabilizes e-book reader page-turning for long illustrated
+   manuscripts. Long documents with many `###` subheadings no longer
+   fragment into dozens of one-screen chapters (only H1 / H2 are chapter
+   boundaries), chapter crosses no longer skip pages (one action moves
+   one spread and crosses at most one chapter, EPUB-like), keyboard
+   auto-repeat no longer outruns the page state, and image-decode no
+   longer shrinks the committed page count. EPUB export also splits the
+   body into separate XHTML content documents at explicit page-break
+   markers. Signed build `50` package evidence exists; built-app
+   long-manuscript and exported-EPUB page-break smoke remain user-side
+   proof.
+8. v1.x deepens the single-document product before any rush to v2:
    EPUB, Diff / Review, movement between writing / reading layers,
    distribution polish when needed, and observation-driven Local Assist
    refinement.
-8. v2.0 remains the first appropriate target for Book Scope / Book
+9. v2.0 remains the first appropriate target for Book Scope / Book
    Workspace Alpha: treating a user-selected, explicit set of
    structurally related Markdown files as one book.
 
@@ -389,6 +400,15 @@ global controls render against the real token system rather than
 fallback literals; motion uses one easing / duration voice; and
 reduced-motion users get a calm, non-animated surface.
 
+Status as of v0.36.0: token definitions, the global reduced-motion
+reset, duration / z-index tokens, the `transition: all` sweep, and the
+`button:hover` lift removal are all done. The remaining open item is
+the bare `ease` keyword sweep — `transition: all` is gone, but bare
+`ease` easing keywords still survive in `src/styles/lMode.css` (many
+sites), `src/styles/agent-window.css`, `src/styles/apple-assist-review.css`,
+and `src/styles/find.css`. Close this one CSS sweep (replace bare `ease`
+with `var(--ease-standard)`) before freezing v1.0.
+
 #### Slice C: Robustness
 
 Correctness of Save-As, mode switching, and the assist-lock path.
@@ -472,6 +492,47 @@ Acceptance: the product can be described without qualification as:
 Golden Manuscript acceptance: the app can complete "write -> read ->
 notice -> return -> revise -> review -> export" without the user losing
 document position, source ownership, or save-state confidence.
+
+#### Pre-v1.0 Close-out Checklist
+
+Status as of v0.36.0. These are the concrete items still open between
+the current source state and freezing v1.0. Each is small and stays
+inside the Safe Editor boundary.
+
+- **Golden Manuscript built-app smoke (blocked on real-app launch).**
+  The local preview bundle launch was long blocked by a LaunchServices
+  `kLSNoExecutableErr` even though the executable was present in bundle
+  inspection. Once a local preview launches (or via a TestFlight build),
+  run the golden-path smoke against one realistic long-form Japanese
+  manuscript: New File, Open, Save / Save As, L Mode, Preview, e-book
+  Mode paged flow, Spread View, heading jump, editor/reader return,
+  EPUB export, Local Assist, Diff / Discard, Recovery, and relaunch.
+- **v0.36 long illustrated manuscript page-turn proof.** The e-book
+  page-turn fixes (chapter-cross target, keyboard repeat guard,
+  provisional page-count floor, H1/H2 coalescing, stale-remeasure guard)
+  are verified at source-test level but need built-app confirmation that
+  a long illustrated document pages without skipping. Use the
+  `チカちゃん` 7000+ line sample or an equivalent image-heavy manuscript.
+- **v0.36 exported EPUB page-break proof.** The EPUB content-document
+  split is verified by archive-inspection tests, but needs confirmation
+  that `---` page-break markers produce real page boundaries in an
+  actual EPUB reader (Apple Books / Kindle Previewer).
+- **Slice B bare-`ease` sweep.** Replace the remaining bare `ease`
+  keywords (mostly in `src/styles/lMode.css`, plus `agent-window.css`,
+  `apple-assist-review.css`, `find.css`) with `var(--ease-standard)`.
+  This is the last open Slice B item.
+- **App Store screenshots / description / release notes update** for the
+  v1 story: write Markdown, read it like a book, inspect a spread,
+  review an AI proposal through Diff, then export EPUB.
+- **Slice C Save-As rekey remount stays deferred to v1.1.** Save-As
+  still works; it just resets scroll / undo because `documentKey`
+  change forces a remount. A proper fix needs an editor session id
+  separate from `documentKey`. This is an accepted v1 limitation, not a
+  v1.0 blocker, but should be noted in v1 release copy if noticed.
+
+When the Golden Manuscript smoke passes on a real app (local preview or
+TestFlight), the EPUB page-break proof is confirmed, and the bare-`ease`
+sweep lands, v1.0 can be frozen and tagged.
 
 ### Deferred Beyond v1.0
 
