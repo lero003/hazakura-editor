@@ -617,6 +617,57 @@ Possible directions:
 OKF remains a proposal-stage dependency. Re-check the latest OKF shape
 before treating it as an implementation contract.
 
+### Observation-driven Maintenance Backlog
+
+These are not v1.0 blockers and not scheduled releases. They are items
+worth picking up whenever a quiet moment or a related change makes one
+cheap to close. Each is a candidate, not a commitment. Keep them small
+and inside the Safe Editor boundary.
+
+- **Theme customization.** Today the theme is fixed (light/dark + Sakura
+  accent). Personal taste varies, so a light theme/accent adjustment
+  path may be worth it. Open question: how far to go without turning the
+  app into a theme editor. Start from observation, not from a settings
+  panel.
+- **UI review pass (post-v1).** The v0.27-v0.36 UI work settled a lot,
+  but "is the current shape actually best?" deserves a periodic read.
+  Revisit chrome density, L Mode / e-book / Preview layering, and
+  control placement against real daily use after v1 ships.
+- **e-book Mode table-of-contents drawer is too sparse.** The Reading
+  Focus contents drawer omits too much. Consider showing more chapter
+  context (subheadings, progress, or a denser entry) so navigation
+  does not feel like a bare chapter-number list.
+- **Long-document editor ↔ e-book simulation coupling feels unstable.**
+  At long lengths the editor cursor and the e-book simulated page
+  position can drift or jump. This overlaps the v0.32 position bridge;
+  treat it as observation-driven hardening of the bridge for very long
+  manuscripts rather than a new surface.
+- **PDF export A4 margin / page-size adjustment.** (Carried from the
+  PDF consultation item above.) Margin-less A4 page rects today; this is
+  likely a swamp, so keep it as an explicit consultation, not a silent
+  default change.
+- **Long-document performance.** Already partially addressed by the
+  Pre-RC Slice A work (debounce, rAF-coalesced measurement, single
+  renderMarkdown parse), but keep watching typing / scrolling /
+  page-turn latency on very long manuscripts and add narrow throttling
+  where observation finds jank.
+- **Code clarity / refactor for faster incident response.** When a bug
+  lands (like the e-book page-skip), deep call sites slow the fix. Keep
+  opportunistic readability / decoupling refactors on the backlog so the
+  next incident is cheaper to trace. No big-bang rewrite.
+- **Dead code sweep.** Periodically check for unused exports, stale
+  branches, retired-surface leftovers (e.g. Review Desk retire remnants,
+  old Apple-branded helper names), and unreachable CSS. Low-risk
+  housekeeping.
+- **Dependency updates.** Keep `npm` and Cargo dependencies current on a
+  cadence. Watch DOMPurify / marked / Tauri / React major bumps for
+  sanitizer or build-lane regressions. Treat as routine, not as a
+  feature.
+
+Pick one when a slice is small, verifiable, and does not reopen a
+product-boundary decision. None of these add arbitrary execution,
+plugins, Git/LSP/terminal, external AI/API, or a second document model.
+
 ## v2.0 Book Scope / Book Workspace Alpha
 
 Goal: introduce a user-selected Book Scope: a small, explicit set of
