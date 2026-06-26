@@ -96,22 +96,6 @@ export async function inlineWorkspaceAssetImages(
   return template.innerHTML;
 }
 
-function applyImagePreviewPolicy(
-  html: string,
-  workspaceRoot: string | null,
-  documentPath: string | null,
-): string {
-  const template = document.createElement("template");
-  template.innerHTML = html;
-  applyImagePreviewPolicyToFragment(
-    template.content,
-    workspaceRoot,
-    documentPath,
-  );
-  return template.innerHTML;
-}
-
-// v0.34: 共通の fragment に直接適用する版（renderMarkdown の1パス化用）。
 function applyImagePreviewPolicyToFragment(
   fragment: DocumentFragment,
   workspaceRoot: string | null,
@@ -151,13 +135,6 @@ function blockedImageMessage(alt?: string | null): HTMLSpanElement {
   return replacement;
 }
 
-function applyTablePreviewPolicy(html: string): string {
-  const template = document.createElement("template");
-  template.innerHTML = html;
-  applyTablePreviewPolicyToFragment(template.content);
-  return template.innerHTML;
-}
-
 // v0.34: 共通の fragment に直接適用する版（renderMarkdown の1パス化用）。
 function applyTablePreviewPolicyToFragment(
   fragment: DocumentFragment,
@@ -174,13 +151,6 @@ function applyTablePreviewPolicyToFragment(
     table.replaceWith(frame);
     frame.append(table);
   }
-}
-
-function applyTaskListPreviewPolicy(html: string): string {
-  const template = document.createElement("template");
-  template.innerHTML = html;
-  applyTaskListPreviewPolicyToFragment(template.content);
-  return template.innerHTML;
 }
 
 // v0.34: 共通の fragment に直接適用する版（renderMarkdown の1パス化用）。

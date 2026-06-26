@@ -562,17 +562,16 @@ Use `docs/current-work.md` for the active queue. Current priority order:
 4. Before v0.34 RC, close the three pre-RC quality slices documented in
    `docs/roadmap.md` (Pre-RC Quality Slices). They stay inside the Safe
    Editor boundary (no new surfaces, no dependencies, source-preserving):
-   - Slice A Reader Stability: `EBookPane` keystroke debounce + pagination
-     reflow coalescing (`EBookPane.tsx:118,214,298`;
-     `ebookPagination.ts:67`), the `contentDOM.blur()` scroll-stick bug
-     (`EditorPane.tsx:581`), the 5-parse `renderMarkdown` pipeline
-     (`markdown.ts:19`), and the preview->editor scroll-sync jank
-     (`usePreviewScrollSync.ts:130`). The last includes the reported
-     trackpad inertial-scroll stutter in Preview: the 80ms sync-source
-     guard does not cover a full inertial scroll, so the editor
-     write-back fights the OS inertia every frame. rAF-throttle
-     `syncEditorScroll` and keep the guard alive for the whole active
-     preview scroll.
+   - Slice A Reader Stability: `EBookPane` keystroke debounce (200ms
+     shared with PreviewPane, first render immediate), pagination
+     reflow coalescing into one `requestAnimationFrame` per frame
+     (`EBookPane.tsx`; `ebookPagination.ts`), the `contentDOM.blur()`
+     scroll-stick fix via `mouseup` refocus (`EditorPane.tsx`), the
+     5-parse `renderMarkdown` reduction to one DOM mutation pass plus
+     one sanitize (`markdown.ts`), and the rAF-throttled +
+     self-extending preview->editor scroll-sync guard that fixes the
+     trackpad inertial-scroll stutter in Preview are done and pinned by
+     focused tests.
    - Slice B Token / Motion Coherence: missing tokens, the global
      `prefers-reduced-motion` reset, `transition: all` replacement,
      transition-level bare `ease` tokenization, and the global

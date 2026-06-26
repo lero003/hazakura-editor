@@ -227,7 +227,7 @@ describe("renderMarkdown sanitization", () => {
   it("strips event-handler attributes from inline HTML elements", () => {
     // Use `<span>` rather than `<img>` so the assertion
     // is against DOMPurify's attribute removal, not a
-    // side effect of `applyImagePreviewPolicy` replacing
+    // side effect of `applyImagePreviewPolicyToFragment` replacing
     // the image node before DOMPurify runs. A `<span>`
     // survives both the image and table policies, so any
     // disappearance of `onclick` / `onmouseover` is

@@ -366,6 +366,22 @@ inertial scrolling in Preview is smooth and does not stutter or fight
 the OS-driven position; and scrollbar / wheel scrolling no longer sticks
 near the last caret line.
 
+Status as of v0.36.0: all six items are implemented and pinned by
+focused tests. `EBookPane` debounces rendering at 200ms through the
+shared `previewRenderDebounce` (same value as `PreviewPane`), with the
+first render immediate and subsequent renders debounced. Page
+measurement is coalesced into one `requestAnimationFrame` per frame
+through a dirty-flag `scheduleRemeasure`, driven by layout effect,
+`ResizeObserver`, `MutationObserver`, and per-image `load`/`error`
+listeners alike. The scrollbar `contentDOM.blur()` scroll-stick bug is
+fixed by restoring focus on `mouseup`. The five-HTML-parse
+`renderMarkdown` pipeline is folded into one DOM mutation pass plus one
+`DOMPurify.sanitize`. The preview->editor scroll-sync path is
+rAF-throttled and keeps the sync-source guard alive through the whole
+active preview scroll via a self-extending timer, so trackpad inertial
+scrolling no longer stutters. The legacy per-image re-measurement is
+collapsed through the same dirty flag.
+
 #### Slice B: Token and Motion Coherence
 
 The token system in `tokens.css` is sound, but execution above it leaks
@@ -438,6 +454,14 @@ separate from `documentKey`, so it is deferred to v1.1 — Save-As still
 works, it just resets scroll/undo. These slices do not change the v1
 product definition; after Slice A-C, proceed to `v0.34` Golden
 Manuscript smoke.
+
+Status as of v0.36.0: `goToLine` uses a double-rAF so the scroll ratio
+is reported after CodeMirror's asynchronous `scrollIntoView` settles;
+`readOnly` is in the `useImperativeHandle` dependency list and the
+`insertText` / `applyMarkdownFormat` / `insertTable` handlers guard on
+it; and the Apple Assist apply path passes a validated `tabId` rather
+than closing over `activeTab.id`. Only the Save-As rekey remount remains
+deferred to v1.1.
 
 #### v0.34: v1.0 Release Candidate
 
