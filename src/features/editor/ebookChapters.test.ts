@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   applyEbookPageBreakMarkers,
+  coalesceChaptersToTopLevel,
   splitMarkdownIntoChapters,
 } from "./ebookChapters";
 
@@ -346,6 +347,100 @@ describe("splitMarkdownIntoChapters", () => {
 
     expect(chapters).toHaveLength(1);
     expect(chapters[0].source).toContain("=============");
+  });
+});
+
+describe("coalesceChaptersToTopLevel", () => {
+  it("folds H3-and-below headings into the preceding H1/H2 chapter", () => {
+    const source = [
+      "# Chapter One",
+      "",
+      "intro",
+      "",
+      "### Subsection",
+      "",
+      "sub body",
+      "",
+      "#### Deeper",
+      "",
+      "# Chapter Two",
+      "",
+      "body two",
+    ].join("\n");
+
+    const chapters = coalesceChaptersToTopLevel(splitMarkdownIntoChapters(source));
+
+    // H1 and H1 are the only chapter boundaries; the H3/H4 stay inside
+    // Chapter One as in-chapter subheadings.
+    expect(chapters).toHaveLength(2);
+    expect(chapters.map((c) => c.headingText)).toEqual([
+      "Chapter One",
+      "Chapter Two",
+    ]);
+    expect(chapters[0].source).toContain("### Subsection");
+    expect(chapters[0].source).toContain("#### Deeper");
+    expect(chapters[0].source).toContain("sub body");
+  });
+
+  it("re-numbers the merged chapter indices contiguously", () => {
+    const source = [
+      "preamble",
+      "",
+      "# A",
+      "",
+      "### A1",
+      "",
+      "## B",
+      "",
+      "### B1",
+      "",
+      "### B2",
+    ].join("\n");
+
+    const chapters = coalesceChaptersToTopLevel(splitMarkdownIntoChapters(source));
+
+    expect(chapters.map((c) => c.index)).toEqual([0, 1, 2]);
+    expect(chapters.map((c) => c.headingText)).toEqual([null, "A", "B"]);
+  });
+
+  it("keeps a leading deep heading as its own chapter when nothing precedes it", () => {
+    // When the document opens with a deep heading before any H1/H2, there is
+    // no preceding chapter to fold it into, so it is kept as its own
+    // (preamble-like) chapter rather than dropped or relabeled.
+    const source = ["### Deep First", "", "# Real Chapter", "", "body"].join(
+      "\n",
+    );
+
+    const chapters = coalesceChaptersToTopLevel(splitMarkdownIntoChapters(source));
+
+    expect(chapters.map((c) => c.headingText)).toEqual([
+      "Deep First",
+      "Real Chapter",
+    ]);
+    expect(chapters[0].headingLevel).toBe(3);
+    expect(chapters[0].source).toContain("### Deep First");
+  });
+
+  it("keeps the merged chapter source as a verbatim concatenation", () => {
+    const source = [
+      "# Chapter One",
+      "",
+      "intro",
+      "",
+      "### Subsection",
+      "",
+      "body",
+    ].join("\n");
+
+    const chapters = coalesceChaptersToTopLevel(splitMarkdownIntoChapters(source));
+    // The H3 segment's source is appended verbatim, so the merged chapter
+    // source reconstructs the H1..end-of-document bytes exactly.
+    expect(chapters).toHaveLength(1);
+    expect(chapters[0].source).toBe(`${source}`);
+  });
+
+  it("returns the input unchanged for an empty list", () => {
+    expect(coalesceChaptersToTopLevel([])).toEqual([]);
   });
 });
 

@@ -163,6 +163,60 @@ export function splitMarkdownIntoChapters(source: string): EbookChapter[] {
   }));
 }
 
+/**
+ * Merge segments from `splitMarkdownIntoChapters` so that only H1 (`#`) and
+ * H2 (`##`) headings start a chapter. Deeper ATX headings (H3 `###` and
+ * below) are folded into the preceding H1/H2 chapter as in-chapter
+ * subheadings, and a leading run of deep headings before any H1/H2 is folded
+ * into the preamble.
+ *
+ * `splitMarkdownIntoChapters` is shared with EPUB export, whose navigation
+ * needs every heading level, so the level filter lives here in the reader
+ * path only. The merged `source` is the concatenation of the constituent
+ * verbatim slices, so the bytes that reach `renderMarkdown()` are unchanged
+ * from the canonical document model — only the chapter grouping changes.
+ * `index` is re-numbered over the merged list, and the merged chapter keeps
+ * the first constituent segment's heading metadata and start line.
+ */
+export function coalesceChaptersToTopLevel(
+  chapters: EbookChapter[],
+): EbookChapter[] {
+  if (chapters.length === 0) {
+    return chapters;
+  }
+
+  type Acc = {
+    index: number;
+    headingLevel: number | null;
+    headingText: string | null;
+    startLine: number;
+    source: string;
+  };
+
+  const merged: Acc[] = [];
+  for (const chapter of chapters) {
+    const isTopLevelBoundary =
+      chapter.headingLevel === null || chapter.headingLevel <= 2;
+    const current = merged[merged.length - 1];
+    if (isTopLevelBoundary || !current) {
+      merged.push({
+        index: merged.length,
+        headingLevel: chapter.headingLevel,
+        headingText: chapter.headingText,
+        startLine: chapter.startLine,
+        source: chapter.source,
+      });
+      continue;
+    }
+    // This H3-and-below segment folds into the current chapter. Keep the
+    // current chapter's heading metadata and start line; only its source
+    // grows by the verbatim slice of the folded segment.
+    current.source += chapter.source;
+  }
+
+  return merged.map((chapter) => ({ ...chapter }));
+}
+
 export function applyEbookPageBreakMarkers(source: string): string {
   const lines = markdownLines(source);
   if (lines.length === 0) {

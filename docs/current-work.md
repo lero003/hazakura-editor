@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v0.30-v1.0 Reader UX Stabilization queue and v1 proof-close evidence
 Authority: High
-Last reviewed: 2026-06-26 (v0.35.0 PDF export recovery)
+Last reviewed: 2026-06-26 (v0.36.0 e-book page-turn stabilization)
 
 ## Purpose
 
@@ -928,9 +928,9 @@ Title / Author / Language draft before Save As, generates `dcterms:modified`
 from export time, keeps per-export UUID identifiers, and omits
 `dc:creator` when Author is blank. Slice 4 adds blank-line-flanked
 standalone `---` / `===` page-break markers via a shared e-book helper:
-EPUB `content.xhtml` receives `.page-break` blocks and e-book Mode shows
-the same markers as page cues, while YAML frontmatter, fenced code, and
-non-blank-flanked rules stay unchanged. Markdown source remains
+EPUB export splits content XHTML / OPF spine at those markers and e-book
+Mode shows the same markers as page cues, while YAML frontmatter, fenced
+code, and non-blank-flanked rules stay unchanged. Markdown source remains
 canonical, and normal Preview / HTML export are unchanged.
 
 Post-release pre-v0.27 quality follow-up as of 2026-06-20:

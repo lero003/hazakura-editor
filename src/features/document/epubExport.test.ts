@@ -217,7 +217,7 @@ describe("buildEpubBetaArchive", () => {
     expect(text).toContain('href="content.xhtml#second"');
   });
 
-  it("writes standalone page-break markers as content.xhtml page-break blocks", async () => {
+  it("writes standalone page-break markers as separate XHTML spine documents", async () => {
     const archive = await buildEpubBetaArchive({
       markdown: [
         "# Chapter",
@@ -225,6 +225,8 @@ describe("buildEpubBetaArchive", () => {
         "Before break.",
         "",
         "---",
+        "",
+        "## After",
         "",
         "After break.",
         "",
@@ -237,9 +239,20 @@ describe("buildEpubBetaArchive", () => {
     });
     const text = archiveText(archive);
 
-    expect(text).toContain('class="page-break"');
-    expect(text.match(/class="page-break"/g)).toHaveLength(1);
-    expect(text).toContain("break-before: page");
+    expect(text).toContain("OEBPS/content.xhtml");
+    expect(text).toContain("OEBPS/content-2.xhtml");
+    expect(text).toContain(
+      '<item id="content-1" href="content.xhtml" media-type="application/xhtml+xml"/>',
+    );
+    expect(text).toContain(
+      '<item id="content-2" href="content-2.xhtml" media-type="application/xhtml+xml"/>',
+    );
+    expect(text).toContain(
+      '<itemref idref="content-1"/>\n    <itemref idref="content-2"/>',
+    );
+    expect(text).toContain('href="content.xhtml#chapter"');
+    expect(text).toContain('href="content-2.xhtml#after"');
+    expect(text).not.toContain('class="page-break"');
     expect(text).toContain("Before break.");
     expect(text).toContain("After break.");
     expect(text).toContain("---\n===");

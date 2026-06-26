@@ -330,7 +330,7 @@ an in-app EPUB validator workflow.
    reflected in `lang` / `xml:lang`, workspace-local images are packaged,
    external images are replaced with an in-content warning, links remain
    links, code blocks remain readable, tables keep basic borders, and
-   page-break hints appear as EPUB page-break blocks.
+   page-break hints split the content XHTML and OPF spine in reading order.
 5. Confirm the export does not rewrite Markdown source, create a second
    document model, launch EPUBCheck, run external validators, or expose
    cover / navigation editor / advanced metadata workflows.

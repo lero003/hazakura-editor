@@ -13,7 +13,10 @@ import { PaneResizer } from "../editor/PaneResizer";
 import { SidePane } from "./SidePane";
 import { WorkspaceSidebar } from "../workspace/WorkspaceSidebar";
 import { PanelLeftOpenIcon } from "./Icons";
-import { splitMarkdownIntoChapters } from "../../features/editor/ebookChapters";
+import {
+  coalesceChaptersToTopLevel,
+  splitMarkdownIntoChapters,
+} from "../../features/editor/ebookChapters";
 import { getWorkspaceTabMarkerPaths } from "../../features/editor/editorTabs";
 import type {
   LModeCopy,
@@ -513,7 +516,9 @@ function getEbookLocationForEditorLine(
   source: string,
   line: number,
 ): EBookReaderLocation {
-  const chapters = splitMarkdownIntoChapters(source);
+  // Use the same H1/H2 coalescing as the reader so chapter indices line up
+  // across the editor line bridge and the EBookPane.
+  const chapters = coalesceChaptersToTopLevel(splitMarkdownIntoChapters(source));
   let chapterIndex = 0;
 
   for (const chapter of chapters) {
@@ -540,7 +545,9 @@ function getEditorLineForEbookLocation(
     return Math.max(1, Math.trunc(location.sourceLine));
   }
 
-  const chapters = splitMarkdownIntoChapters(source);
+  // Use the same H1/H2 coalescing as the reader so chapter indices line up
+  // across the editor line bridge and the EBookPane.
+  const chapters = coalesceChaptersToTopLevel(splitMarkdownIntoChapters(source));
   const chapter =
     chapters[Math.min(Math.max(location.chapterIndex, 0), chapters.length - 1)];
   return chapter?.startLine ?? null;

@@ -41,9 +41,27 @@ type EpubEntry = {
 };
 
 type HeadingEntry = {
+  contentPath: string;
   id: string;
   level: number;
   text: string;
+};
+
+type MarkdownHeadingEntry = {
+  level: number;
+  text: string;
+};
+
+type ContentDocument = {
+  body: string;
+  id: string;
+  path: string;
+};
+
+type ContentDocumentNodes = {
+  id: string;
+  nodes: ChildNode[];
+  path: string;
 };
 
 type LoadedEpubImage =
@@ -92,28 +110,45 @@ export async function buildEpubBetaArchiveWithReport({
   markdown,
   workspaceRoot = null,
 }: BuildEpubBetaArchiveOptions): Promise<EpubExportArchiveReport> {
-  const { body, headings, images, title, warnings } = await buildContent({
-    documentName,
-    documentPath,
-    loadWorkspaceImage,
-    markdown,
-    workspaceRoot,
-  });
+  const { contentDocuments, headings, images, title, warnings } =
+    await buildContent({
+      documentName,
+      documentPath,
+      loadWorkspaceImage,
+      markdown,
+      workspaceRoot,
+    });
   const epubMetadata = normalizeEpubMetadata(metadata, title);
   const entries: EpubEntry[] = [
     textEntry("mimetype", "application/epub+zip"),
     textEntry("META-INF/container.xml", containerXml()),
     textEntry(
       "OEBPS/package.opf",
-      packageOpf(epubMetadata, images, createEpubIdentifier()),
+      packageOpf(
+        epubMetadata,
+        images,
+        createEpubIdentifier(),
+        contentDocuments,
+      ),
     ),
     textEntry(
       "OEBPS/nav.xhtml",
-      navXhtml(epubMetadata.title, epubMetadata.language, headings),
+      navXhtml(
+        epubMetadata.title,
+        epubMetadata.language,
+        headings,
+        contentDocuments[0]?.path ?? "content.xhtml",
+      ),
     ),
-    textEntry(
-      "OEBPS/content.xhtml",
-      contentXhtml(epubMetadata.title, epubMetadata.language, body),
+    ...contentDocuments.map((contentDocument) =>
+      textEntry(
+        `OEBPS/${contentDocument.path}`,
+        contentXhtml(
+          epubMetadata.title,
+          epubMetadata.language,
+          contentDocument.body,
+        ),
+      ),
     ),
     textEntry("OEBPS/styles.css", epubCss()),
     ...images,
@@ -174,7 +209,7 @@ async function buildContent({
   const headingElements = Array.from(
     template.content.querySelectorAll("h1, h2, h3, h4, h5, h6"),
   );
-  const headings: HeadingEntry[] = [];
+  const pendingHeadings: Omit<HeadingEntry, "contentPath">[] = [];
   const usedIds = new Set<string>();
 
   let sourceHeadingIndex = 0;
@@ -190,11 +225,11 @@ async function buildContent({
     }
 
     const id = uniqueId(
-      slugify(text) || `section-${headings.length + 1}`,
+      slugify(text) || `section-${pendingHeadings.length + 1}`,
       usedIds,
     );
     heading.setAttribute("id", id);
-    headings.push({
+    pendingHeadings.push({
       id,
       level: sourceHeading.level,
       text,
@@ -202,23 +237,142 @@ async function buildContent({
     sourceHeadingIndex += 1;
   });
 
+  const { contentDocuments, headingContentPaths } =
+    splitTemplateContentIntoDocuments(template.content);
+  const firstContentPath = contentDocuments[0]?.path ?? "content.xhtml";
+  const headings = pendingHeadings.map((heading) => ({
+    ...heading,
+    contentPath: headingContentPaths.get(heading.id) ?? firstContentPath,
+  }));
   const title = headings[0]?.text || titleFromDocumentName(documentName);
-  const serializer = new XMLSerializer();
-  const body = Array.from(template.content.childNodes)
-    .map((node) => serializer.serializeToString(node))
-    .join("\n");
 
-  return { body, headings, images, title, warnings };
+  return { contentDocuments, headings, images, title, warnings };
 }
 
-function collectMarkdownHeadings(markdown: string): HeadingEntry[] {
+function collectMarkdownHeadings(markdown: string): MarkdownHeadingEntry[] {
   return splitMarkdownIntoChapters(markdown)
     .filter((chapter) => chapter.headingLevel !== null)
     .map((chapter) => ({
-      id: "",
       level: chapter.headingLevel ?? 1,
       text: chapter.headingText ?? "Section",
     }));
+}
+
+function splitTemplateContentIntoDocuments(
+  fragment: DocumentFragment,
+): {
+  contentDocuments: ContentDocument[];
+  headingContentPaths: Map<string, string>;
+} {
+  const documents: ContentDocumentNodes[] = [];
+  let currentNodes: ChildNode[] = [];
+
+  const pushDocument = () => {
+    if (!hasSerializableContent(currentNodes)) {
+      currentNodes = [];
+      return;
+    }
+    const index = documents.length;
+    documents.push({
+      id: contentDocumentId(index),
+      nodes: currentNodes,
+      path: contentDocumentPath(index),
+    });
+    currentNodes = [];
+  };
+
+  for (const node of Array.from(fragment.childNodes)) {
+    if (isPageBreakElement(node)) {
+      pushDocument();
+      continue;
+    }
+    currentNodes.push(node);
+  }
+  pushDocument();
+
+  if (documents.length === 0) {
+    documents.push({
+      id: contentDocumentId(0),
+      nodes: [],
+      path: contentDocumentPath(0),
+    });
+  }
+
+  const serializer = new XMLSerializer();
+  const headingContentPaths = new Map<string, string>();
+  for (const contentDocument of documents) {
+    rememberHeadingContentPaths(
+      contentDocument.nodes,
+      contentDocument.path,
+      headingContentPaths,
+    );
+  }
+
+  return {
+    contentDocuments: documents.map((contentDocument) => ({
+      body: contentDocument.nodes
+        .map((node) => serializer.serializeToString(node))
+        .join("\n"),
+      id: contentDocument.id,
+      path: contentDocument.path,
+    })),
+    headingContentPaths,
+  };
+}
+
+function contentDocumentId(index: number): string {
+  return `content-${index + 1}`;
+}
+
+function contentDocumentPath(index: number): string {
+  return index === 0 ? "content.xhtml" : `content-${index + 1}.xhtml`;
+}
+
+function hasSerializableContent(nodes: ChildNode[]): boolean {
+  return nodes.some(
+    (node) => node.nodeType !== Node.TEXT_NODE || node.textContent?.trim(),
+  );
+}
+
+function isPageBreakElement(node: ChildNode): boolean {
+  return (
+    node instanceof HTMLElement &&
+    node.classList.contains("page-break") &&
+    node.getAttribute("role") === "separator" &&
+    node.getAttribute("aria-label") === "Page break"
+  );
+}
+
+function rememberHeadingContentPaths(
+  nodes: ChildNode[],
+  contentPath: string,
+  headingContentPaths: Map<string, string>,
+): void {
+  for (const node of nodes) {
+    if (!(node instanceof Element)) {
+      continue;
+    }
+    if (isHeadingElement(node)) {
+      const id = node.getAttribute("id");
+      if (id) {
+        headingContentPaths.set(id, contentPath);
+      }
+    }
+    for (const heading of Array.from(
+      node.querySelectorAll<HTMLElement>(
+        "h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]",
+      ),
+    )) {
+      const id = heading.getAttribute("id");
+      if (id) {
+        headingContentPaths.set(id, contentPath);
+      }
+    }
+  }
+}
+
+function isHeadingElement(element: Element): boolean {
+  return /^H[1-6]$/.test(element.tagName);
 }
 
 async function packageWorkspaceImages(
@@ -457,12 +611,21 @@ function packageOpf(
   metadata: EpubExportMetadata,
   images: ImageEntry[],
   identifier: string,
+  contentDocuments: ContentDocument[],
 ): string {
   const escapedTitle = escapeXml(metadata.title);
   const escapedIdentifier = escapeXml(identifier);
   const creator = metadata.author
     ? `    <dc:creator>${escapeXml(metadata.author)}</dc:creator>\n`
     : "";
+  const contentItems = contentDocuments
+    .map(
+      (contentDocument) =>
+        `    <item id="${escapeXml(contentDocument.id)}" href="${escapeXml(
+          contentDocument.path,
+        )}" media-type="application/xhtml+xml"/>`,
+    )
+    .join("\n");
   const imageItems = images
     .map(
       (image) =>
@@ -472,6 +635,12 @@ function packageOpf(
     )
     .join("\n");
   const manifestImageItems = imageItems.length > 0 ? `${imageItems}\n` : "";
+  const spineItems = contentDocuments
+    .map(
+      (contentDocument) =>
+        `    <itemref idref="${escapeXml(contentDocument.id)}"/>`,
+    )
+    .join("\n");
   return `<?xml version="1.0" encoding="UTF-8"?>
 <package version="3.0" unique-identifier="book-id" xmlns="http://www.idpf.org/2007/opf">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
@@ -482,11 +651,11 @@ ${creator}    <dc:language>${escapeXml(metadata.language)}</dc:language>
   </metadata>
   <manifest>
     <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
-    <item id="content" href="content.xhtml" media-type="application/xhtml+xml"/>
+${contentItems}
     <item id="style" href="styles.css" media-type="text/css"/>
 ${manifestImageItems}  </manifest>
   <spine>
-    <itemref idref="content"/>
+${spineItems}
   </spine>
 </package>
 `;
@@ -528,18 +697,19 @@ function navXhtml(
   title: string,
   language: string,
   headings: HeadingEntry[],
+  firstContentPath: string,
 ): string {
   const navItems =
     headings.length > 0
       ? headings
           .map(
             (heading) =>
-              `      <li><a href="content.xhtml#${escapeXml(heading.id)}">${escapeXml(
-                heading.text,
-              )}</a></li>`,
+              `      <li><a href="${escapeXml(
+                heading.contentPath,
+              )}#${escapeXml(heading.id)}">${escapeXml(heading.text)}</a></li>`,
           )
           .join("\n")
-      : '      <li><a href="content.xhtml">本文</a></li>';
+      : `      <li><a href="${escapeXml(firstContentPath)}">本文</a></li>`;
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>

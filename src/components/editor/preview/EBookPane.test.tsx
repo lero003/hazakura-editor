@@ -1,4 +1,5 @@
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -72,6 +73,34 @@ afterEach(() => {
 });
 
 describe("EBookPane chapter reader", () => {
+  it("treats only H1 and H2 as chapter boundaries, keeping H3 inline", async () => {
+    // A long document with many `###` entries must not fragment into dozens
+    // of one-screen chapters. H3 and below stay inside the preceding H1/H2
+    // chapter as in-chapter subheadings.
+    render(
+      <EBookPane
+        menuLanguage="en"
+        source={
+          "# Part One\n\nintro\n\n### Sub A\n\nbody a\n\n### Sub B\n\nbody b\n\n# Part Two\n\nbody two"
+        }
+      />,
+    );
+
+    expect(screen.getByRole("heading", { name: "Part One" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Sub A" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Sub B" })).toBeTruthy();
+    expect(screen.getByText("Chapter 1 / 2")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Next page" }));
+
+    // The two H3 subsections stayed inside Part One, so the next chapter is
+    // Part Two, not Sub A.
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Part Two" })).toBeTruthy();
+    });
+    expect(screen.getByText("Chapter 2 / 2")).toBeTruthy();
+  });
+
   it("opens as a paginated book reader without a Preview-like Flow toggle", () => {
     render(
       <EBookPane
@@ -698,7 +727,7 @@ describe("EBookPane chapter reader", () => {
     }
   });
 
-  it("does not restart a one-page next chapter on the left side of the next spread", async () => {
+  it("opens a previewed one-page next chapter without skipping it", async () => {
     vi.mocked(measureEBookPageCount).mockImplementation((element) => {
       const text = element?.textContent ?? "";
       if (text.includes("body one")) {
@@ -760,12 +789,34 @@ describe("EBookPane chapter reader", () => {
 
       fireEvent.click(screen.getByRole("button", { name: "Next page" }));
 
+      // The one-page Part Two was already previewed on the spare right
+      // spread page, so the turn lands on Part Two itself (page 1/1) rather
+      // than skipping over it to Chapter Two. Empty heading-only chapters
+      // are still shown, not skipped.
+      await waitFor(() => {
+        expect(screen.getByRole("heading", { name: "Part Two" })).toBeTruthy();
+      });
+      expect(screen.getByText("Chapter 2 / 3")).toBeTruthy();
+      expect(screen.getByText("Page 1 / 1")).toBeTruthy();
+
+      fireEvent.click(screen.getByRole("button", { name: "Next page" }));
+
       await waitFor(() => {
         expect(screen.getByRole("heading", { name: "Chapter Two" })).toBeTruthy();
       });
       expect(screen.getByText("Chapter 3 / 3")).toBeTruthy();
-      expect(screen.getByText("Page 1 / 3")).toBeTruthy();
-      expect(screen.queryByRole("heading", { name: "Part Two" })).toBeNull();
+      // Part Two is a one-page chapter, so while it was shown its spare right
+      // spread page previewed Chapter Two's opener. The turn therefore
+      // continues one page past that previewed opener (Page 2 / 3) instead of
+      // jumping back to Page 1 / 3 — no backwards jump, no skipped page.
+      expect(screen.getByText("Page 2 / 3")).toBeTruthy();
+
+      fireEvent.click(screen.getByRole("button", { name: "Previous page" }));
+
+      await waitFor(() => {
+        expect(screen.getByRole("heading", { name: "Part Two" })).toBeTruthy();
+      });
+      expect(screen.getByText("Chapter 2 / 3")).toBeTruthy();
 
       fireEvent.click(screen.getByRole("button", { name: "Previous page" }));
 
@@ -886,6 +937,73 @@ describe("EBookPane chapter reader", () => {
     });
     expect(screen.getByText("Chapter 2 / 2")).toBeTruthy();
     expect(screen.getByText("Page 1 / 1")).toBeTruthy();
+  });
+
+  it("opens an unseen multi-page next chapter from its first page in single-page mode", async () => {
+    // Without a spare right spread page there is no next-chapter preview, so
+    // a chapter cross must land on the next chapter's opener (pageIndex 0)
+    // even when the current chapter ends mid-step. This is the epub-like
+    // rule: an unseen chapter always opens from its first page.
+    vi.mocked(measureEBookPageCount).mockImplementation((element) =>
+      element?.textContent?.includes("body one") ? 3 : 4,
+    );
+
+    render(
+      <EBookPane
+        menuLanguage="en"
+        source={"# Chapter One\n\nbody one\n\n# Chapter Two\n\nbody two"}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Page 1 / 3")).toBeTruthy();
+    });
+
+    // Step through Chapter One to its last page, then cross into Chapter Two.
+    fireEvent.click(screen.getByRole("button", { name: "Next page" }));
+    expect(screen.getByText("Page 2 / 3")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Next page" }));
+    expect(screen.getByText("Page 3 / 3")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Next page" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Chapter Two" })).toBeTruthy();
+    });
+    expect(screen.getByText("Chapter 2 / 2")).toBeTruthy();
+    // No preview was shown, so Chapter Two opens from Page 1 / 4, not past it.
+    expect(screen.getByText("Page 1 / 4")).toBeTruthy();
+  });
+
+  it("does not advance pages while an arrow key is held (OS auto-repeat)", async () => {
+    vi.mocked(measureEBookPageCount).mockReturnValue(5);
+
+    render(
+      <EBookPane
+        menuLanguage="en"
+        source={"# Chapter One\n\nbody one"}
+      />,
+    );
+
+    const article = screen.getByRole("article", { name: "Book reader" });
+    await waitFor(() => {
+      expect(screen.getByText("Page 1 / 5")).toBeTruthy();
+    });
+
+    article.focus();
+    // A single physical press.
+    fireEvent.keyDown(article, { key: "ArrowRight" });
+    expect(screen.getByText("Page 2 / 5")).toBeTruthy();
+
+    // OS auto-repeat fires further keydowns with repeat: true while the key
+    // stays held. These must be ignored so the page does not outrun the
+    // state update and skip pages.
+    fireEvent.keyDown(article, { key: "ArrowRight", repeat: true });
+    fireEvent.keyDown(article, { key: "ArrowRight", repeat: true });
+    fireEvent.keyDown(article, { key: "ArrowRight", repeat: true });
+
+    expect(screen.getByText("Page 2 / 5")).toBeTruthy();
+    expect(document.activeElement).toBe(article);
   });
 
   it("returns to the previous chapter's last measured page from the first page", async () => {
@@ -1231,6 +1349,67 @@ describe("EBookPane pagination measurement", () => {
         vi.mocked(measureEBookPageCount).mock.calls.length,
       ).toBeGreaterThanOrEqual(2);
     });
+  });
+
+  it("ignores a pending image remeasure after moving to another chapter", async () => {
+    let chapterOneRemeasure = false;
+    const frameCallbacks: FrameRequestCallback[] = [];
+    const completeGetter = vi
+      .spyOn(HTMLImageElement.prototype, "complete", "get")
+      .mockReturnValue(false);
+    const requestFrameSpy = vi
+      .spyOn(window, "requestAnimationFrame")
+      .mockImplementation((callback) => {
+        frameCallbacks.push(callback);
+        return frameCallbacks.length;
+      });
+    const cancelFrameSpy = vi
+      .spyOn(window, "cancelAnimationFrame")
+      .mockImplementation(() => undefined);
+
+    vi.mocked(measureEBookPageCount).mockImplementation((element) => {
+      const text = element?.textContent ?? "";
+      if (text.includes("Chapter One")) {
+        return chapterOneRemeasure ? 7 : 1;
+      }
+      return 1;
+    });
+
+    try {
+      render(
+        <EBookPane
+          menuLanguage="en"
+          source={
+            "# Chapter One\n\n![cover](data:image/png;base64,iVBORw0KGgo=)\n\nbody one\n\n# Chapter Two\n\nbody two"
+          }
+        />,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("Page 1 / 1")).toBeTruthy();
+      });
+
+      const image = screen.getByRole("img", { name: "cover" });
+      chapterOneRemeasure = true;
+      fireEvent.load(image);
+      expect(frameCallbacks).toHaveLength(1);
+
+      fireEvent.click(screen.getByRole("button", { name: "Next page" }));
+      expect(screen.getByText("Chapter 2 / 2")).toBeTruthy();
+
+      await act(async () => {
+        for (const callback of frameCallbacks.splice(0)) {
+          callback(0);
+        }
+      });
+
+      expect(screen.getByText("Page 1 / 1")).toBeTruthy();
+      expect(screen.queryByText("Page 1 / 7")).toBeNull();
+    } finally {
+      cancelFrameSpy.mockRestore();
+      requestFrameSpy.mockRestore();
+      completeGetter.mockRestore();
+    }
   });
 
   it("promotes image-only paragraphs to atomic page units and remeasures already loaded images", async () => {

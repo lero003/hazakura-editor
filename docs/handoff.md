@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-26 (v0.35.0 PDF export recovery)
+Last reviewed: 2026-06-26 (v0.36.0 e-book page-turn release candidate)
 
 ## Current State
 
@@ -76,6 +76,29 @@ Last reviewed: 2026-06-26 (v0.35.0 PDF export recovery)
   `docs/internal/app-store-candidates/latest.json` as the single source
   of truth. The remaining proof is user-side TestFlight install / launch
   and confirming that the selected `.pdf` file is created.
+- 2026-06-26 e-book reader / EPUB follow-up: reader navigation now treats
+  H3+ as in-chapter subheadings, guards keyboard repeat, pending
+  chapter-cross turns, provisional image page-count shrinkage, and stale
+  image remeasure rAF callbacks whose `RenderedChapter.index` no longer
+  matches the active chapter. EPUB export now treats shared page-break
+  markers as content XHTML / OPF spine split points, updates nav links to
+  the resulting content document, and keeps normal Preview / HTML export
+  unchanged. Verification passed with `npm run typecheck`, `npm run test`
+  (118 files / 1060 tests), and `git diff --check`. Built-app/manual
+  long-manuscript smoke is still the next proof: image-heavy e-book page
+  turns and exported EPUB page breaks in a real reader.
+- `0.36.0` is now the source/package app version locally (App Store build
+  counter `49`). It bundles the e-book reader page-turn stabilization
+  (chapter-cross page target, keyboard auto-repeat guard, pending
+  chapter-cross guard, H1/H2 chapter coalescing, image-settle provisional
+  page-count floor, and stale-remeasure rAF guard) plus the EPUB export
+  content-document split. Verification passed with `npm run typecheck`,
+  `npm run test` (118 files / 1060 tests), and `git diff --check`; the
+  diff-scoped release-pre-check greps are empty. Per-build pkg path /
+  SHA-256 values live in
+  `docs/internal/app-store-candidates/latest.json` as the single source
+  of truth. The remaining proof is user-side TestFlight install / launch
+  and confirming long illustrated documents page without skipping.
 - v1 workspace / slash-command fit-and-finish is source-implemented:
   workspace tree open / dirty markers are derived from existing tab state
   with `isDirty()`, limited to files inside the selected workspace, and
@@ -610,11 +633,11 @@ identifiers, and omits `dc:creator` when Author is blank.
 
 Latest completed: v0.26 EPUB beta Slice 4 page-break markers.
 Blank-line-flanked standalone `---` / `===` lines are converted through
-the shared e-book helper into `.page-break` blocks for EPUB
-`content.xhtml` and e-book Mode visual cues. YAML frontmatter, fenced
-code blocks, Setext / non-blank-flanked rules, normal Preview, HTML
-export, and Markdown source are left unchanged. Local Data Disclosure now
-notes the beta compatibility risk for documents that used those
+the shared e-book helper into EPUB content document / OPF spine split
+points and e-book Mode visual cues. YAML frontmatter, fenced code blocks,
+Setext / non-blank-flanked rules, normal Preview, HTML export, and
+Markdown source are left unchanged. Local Data Disclosure now notes the
+beta compatibility risk for documents that used those
 standalone rules as ordinary horizontal rules.
 
 Earlier completed: v0.24 e-book single-page polish keeps Markdown source

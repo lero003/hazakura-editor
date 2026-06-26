@@ -584,9 +584,10 @@ e-book Mode / preview-style reading surface の表示にも関わる。
 - e-book Mode が page-break marker を visual cue として表示する場合も、
   Markdown source は書き換えず、export と同じ parser helper を使って
   semantics がずれないようにする。
-- v0.26 beta follow-up では single `content.xhtml` の中に
-  `.page-break` class を挿入する程度に留める。`h1` ごとの
-  `chapter-001.xhtml` 分割や spine 分割は後続の互換性確認後に扱う。
+- explicit page break marker は EPUB export では XHTML content document
+  の分割点として扱い、OPF spine に順番を反映する。`h1` ごとの
+  `chapter-001.xhtml` 分割や保存中の second editable EPUB document model
+  には広げない。
 - page break は「読書システムへの希望」であり、Kindle / Apple Books
   など各リーダーで同じページ数になる保証ではない。
 
@@ -723,9 +724,10 @@ standalone `---` / `===` だけを page-break marker として扱う。
 「Structure and page-break semantics」節の standalone 行 page-break
 marker を実装する。Slice 1 の frontmatter 認識の上に載せる。
 
-- 空行で挟まれた単独行 `---` / `===` を single `content.xhtml` 内の
-  `.page-break` class にする。fenced code block 内や frontmatter を
-  壊さないことをテストで証明してから導入する。
+- 空行で挟まれた単独行 `---` / `===` を EPUB export では
+  `content.xhtml` / `content-2.xhtml` ... の分割点にし、OPF spine と
+  nav のリンク先を分割後の content document に合わせる。fenced code
+  block 内や frontmatter を壊さないことをテストで証明してから導入する。
 - 見出しは引き続き navigation のみで、自動改ページしない。
 - e-book Mode が同じ helper で page-break を visual cue 表示する場合は、
   Markdown source を書き換えない。
@@ -736,8 +738,8 @@ marker を実装する。Slice 1 の frontmatter 認識の上に載せる。
   しないこと、通常水平線との互換性リスクを Help / docs で明示。
 - Focused tests: `ebookChapters.test.ts`, `epubExport.test.ts`,
   `EBookPane.test.tsx`, and `previewCss.test.ts` cover helper conversion,
-  EPUB `content.xhtml` / CSS output, e-book visual cue rendering, and scoped
-  CSS.
+  EPUB content document / OPF spine / nav output, e-book visual cue rendering,
+  and scoped CSS.
 
 #### Help 文書の EPUB 説明追加
 
