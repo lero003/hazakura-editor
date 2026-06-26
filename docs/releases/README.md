@@ -29,10 +29,10 @@ Latest App Store status:
   `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.29.1-build33-mas.pkg`.
   Raw App Store Connect, TestFlight, and App Review logs are not tracked
   in this repository.
-- `0.34.0` build `46` is the latest generated local App Store /
-  TestFlight package candidate, but is superseded for PDF output because
-  TestFlight still showed macOS' print-unsupported alert:
-  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.34.0-build46-mas.pkg`.
+- Latest local App Store / TestFlight package candidate metadata lives
+  in `../internal/app-store-candidates/latest.json`. At this sync point
+  it records `0.36.0` build `50`; tracked release notes do not carry the
+  current pkg path / SHA-256 as canonical values.
   Raw App Store Connect upload, processing, TestFlight install / launch,
   and App Review logs are not tracked in this repository unless
   separately recorded.
@@ -54,6 +54,7 @@ Latest App Store submission-candidate note:
 
 Latest App Store release-note drafts:
 
+- `0.36.0-app-store-release-notes.md`
 - `0.35.0-app-store-release-notes.md`
 - `0.34.0-app-store-release-notes.md`
 - `0.33.0-app-store-release-notes.md`

@@ -317,7 +317,7 @@ export function ChevronIcon({ expanded }: { expanded: boolean }) {
       xmlns="http://www.w3.org/2000/svg"
       style={{
         transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)',
-        transition: 'transform 0.15s ease',
+        transition: 'transform 0.15s var(--ease-standard)',
         opacity: 0.6
       }}
     >

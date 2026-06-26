@@ -298,7 +298,7 @@
   font-size: 11px;
   padding: 0 12px;
   transform: translateX(-50%);
-  transition: opacity 160ms ease, transform 160ms var(--ease-standard);
+  transition: opacity 160ms var(--ease-standard), transform 160ms var(--ease-standard);
   z-index: 90;
 }
 
@@ -348,7 +348,7 @@
   font-size: 11px;
   padding: 0 10px;
   text-shadow: none;
-  transition: opacity 160ms ease, transform 160ms var(--ease-standard);
+  transition: opacity 160ms var(--ease-standard), transform 160ms var(--ease-standard);
   transform: translateY(4px);
   z-index: 90;
 }
@@ -416,8 +416,8 @@
   border-radius: var(--radius-lg);
   opacity: 0.16;
   transition:
-    opacity 180ms ease,
-    transform 180ms ease,
+    opacity 180ms var(--ease-standard),
+    transform 180ms var(--ease-standard),
     border-color 180ms var(--ease-standard);
   transform: translateY(-2px);
 }
@@ -449,9 +449,9 @@
   letter-spacing: 0;
   cursor: pointer;
   transition:
-    background 140ms ease,
-    border-color 140ms ease,
-    color 140ms ease,
+    background 140ms var(--ease-standard),
+    border-color 140ms var(--ease-standard),
+    color 140ms var(--ease-standard),
     transform 140ms var(--ease-standard);
 }
 
@@ -510,9 +510,9 @@
   opacity: 0.18;
   cursor: pointer;
   transition:
-    opacity 180ms ease,
-    transform 180ms ease,
-    border-color 180ms ease,
+    opacity 180ms var(--ease-standard),
+    transform 180ms var(--ease-standard),
+    border-color 180ms var(--ease-standard),
     color 180ms var(--ease-standard);
 }
 
@@ -706,9 +706,9 @@
   line-height: 1;
   cursor: pointer;
   transition:
-    background 140ms ease,
-    border-color 140ms ease,
-    color 140ms ease,
+    background 140ms var(--ease-standard),
+    border-color 140ms var(--ease-standard),
+    color 140ms var(--ease-standard),
     transform 140ms var(--ease-standard);
 }
 
@@ -1324,7 +1324,7 @@
   color: var(--accent);
   text-decoration: none;
   border-bottom: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
-  transition: border-color 140ms ease, color 140ms var(--ease-standard);
+  transition: border-color 140ms var(--ease-standard), color 140ms var(--ease-standard);
 }
 
 :root[data-l-mode="on"] .cm-lmode-link:hover {
@@ -1400,7 +1400,7 @@
   line-height: 1;
   vertical-align: baseline;
   user-select: none;
-  transition: transform 120ms ease, color 120ms var(--ease-standard);
+  transition: transform 120ms var(--ease-standard), color 120ms var(--ease-standard);
 }
 
 :root[data-l-mode="on"] .cm-lmode-task-unchecked {
@@ -1443,8 +1443,8 @@
    makes the fade smooth as the cursor moves. */
 :root[data-l-mode="on"] .cm-line {
   transition:
-    opacity 220ms ease,
-    color 220ms ease,
+    opacity 220ms var(--ease-standard),
+    color 220ms var(--ease-standard),
     filter 220ms var(--ease-standard);
 }
 
@@ -1596,8 +1596,8 @@
   text-transform: uppercase;
   opacity: 0.32;
   transition:
-    opacity 200ms ease,
-    transform 200ms ease,
+    opacity 200ms var(--ease-standard),
+    transform 200ms var(--ease-standard),
     border-color 200ms var(--ease-standard);
   cursor: pointer;
 }

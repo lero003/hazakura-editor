@@ -81,6 +81,25 @@ PDF書き出しは外部コマンドや印刷UIへ渡さず、アプリ内WebVie
 Rust側でURL scheme、PDF保存先の拡張子、HTMLの空入力、ウィンドウラベルを
 検査し、危険なscheme、`.pdf` 以外の保存先、Agent Window からの呼び出しを拒否する。
 
+## Security Report Triage
+
+外部または自動生成されたセキュリティレポートを扱う場合は、まず現行ツリーと
+照合する。存在しないファイル、古いWebアプリ構成、または別プロジェクト由来の
+`fetch()` / `NEXT_PUBLIC_*` / `API_BASE` / 認証フォーム / token保存指摘は、
+そのまま実装リスクとして扱わない。
+
+2026-06-26時点の現行アプリでは、フロントエンドから任意のHTTP APIへ
+`fetch()`する経路は確認されていない。Safe Editor / Assist / Agent
+Workbench のフロントエンド境界は Tauri `invoke` と Rust 側コマンド検証で
+扱う。`localStorage` はテーマ、表示設定、最近使ったファイル、下書き、
+Agent Workbench の有効化希望・同意・allowlist provider などのローカル状態に
+限定し、API key、password、外部サービストークンの保存場所にしない。
+
+Agent Workbench に関するレポートは [Agent Workbench Boundary](agent-workbench-boundary.md)
+と照合する。UI 側の保存値だけで信頼せず、Rust 側で distribution lane、
+window label、mode gate、consent、provider allowlist、workspace root の
+検証が維持されているかを確認する。
+
 ## Diff
 
 Diffは2つのテキストを比較する機能に限定する。

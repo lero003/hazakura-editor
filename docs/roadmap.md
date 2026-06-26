@@ -401,13 +401,10 @@ fallback literals; motion uses one easing / duration voice; and
 reduced-motion users get a calm, non-animated surface.
 
 Status as of v0.36.0: token definitions, the global reduced-motion
-reset, duration / z-index tokens, the `transition: all` sweep, and the
-`button:hover` lift removal are all done. The remaining open item is
-the bare `ease` keyword sweep — `transition: all` is gone, but bare
-`ease` easing keywords still survive in `src/styles/lMode.css` (many
-sites), `src/styles/agent-window.css`, `src/styles/apple-assist-review.css`,
-and `src/styles/find.css`. Close this one CSS sweep (replace bare `ease`
-with `var(--ease-standard)`) before freezing v1.0.
+reset, duration / z-index tokens, the `transition: all` sweep, the
+`button:hover` lift removal, and the transition-level bare `ease` sweep
+are done. `ease-out` / `ease-in-out` animations intentionally remain
+where they carry specific entrance or ambient motion.
 
 #### Slice C: Robustness
 
@@ -517,10 +514,11 @@ inside the Safe Editor boundary.
   split is verified by archive-inspection tests, but needs confirmation
   that `---` page-break markers produce real page boundaries in an
   actual EPUB reader (Apple Books / Kindle Previewer).
-- **Slice B bare-`ease` sweep.** Replace the remaining bare `ease`
-  keywords (mostly in `src/styles/lMode.css`, plus `agent-window.css`,
-  `apple-assist-review.css`, `find.css`) with `var(--ease-standard)`.
-  This is the last open Slice B item.
+- **Slice B bare-`ease` sweep is done.** Remaining transition-level bare
+  `ease` keywords in `lMode.css`, `agent-window.css`,
+  `apple-assist-review.css`, `find.css`, and the matching inline icon
+  transition now use `var(--ease-standard)`. `ease-out` / `ease-in-out`
+  animations were intentionally left alone.
 - **App Store screenshots / description / release notes update** for the
   v1 story: write Markdown, read it like a book, inspect a spread,
   review an AI proposal through Diff, then export EPUB.
@@ -531,8 +529,8 @@ inside the Safe Editor boundary.
   v1.0 blocker, but should be noted in v1 release copy if noticed.
 
 When the Golden Manuscript smoke passes on a real app (local preview or
-TestFlight), the EPUB page-break proof is confirmed, and the bare-`ease`
-sweep lands, v1.0 can be frozen and tagged.
+TestFlight) and the EPUB page-break proof is confirmed, v1.0 can be
+frozen and tagged.
 
 ### Deferred Beyond v1.0
 

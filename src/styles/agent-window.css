@@ -177,8 +177,8 @@
   padding: 3px 10px 3px 8px;
   text-transform: uppercase;
   transition:
-    background 0.18s ease,
-    color 0.18s ease,
+    background 0.18s var(--ease-standard),
+    color 0.18s var(--ease-standard),
     border-color 0.18s var(--ease-standard);
 }
 
@@ -324,8 +324,8 @@
   gap: 7px;
   padding: 5px 12px 5px 10px;
   transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
+    background 0.15s var(--ease-standard),
+    border-color 0.15s var(--ease-standard),
     color 0.15s var(--ease-standard);
 }
 
@@ -424,8 +424,8 @@
   font-weight: 650;
   padding: 5px 12px;
   transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
+    background 0.15s var(--ease-standard),
+    border-color 0.15s var(--ease-standard),
     opacity 0.15s var(--ease-standard);
 }
 

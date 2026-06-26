@@ -50,17 +50,16 @@ transaction-boundary issue appears.
 
 ## Active UX Queue
 
-Pick one item at a time. The immediate next product slice is the v0.35
-PDF export recovery unless a more severe App Store lane issue appears.
-The v0.34 native PDF print fix and build `46` package evidence are now
-superseded: local manual print smoke passed, but TestFlight still showed
-macOS' "This application does not support printing" alert. v0.35 must
-avoid the print UI path and write a user-selected PDF file directly. The
-v0.33 EPUB source / external archive proof and build
-`41` package evidence remain historical v0.33 proof, while v0.32 reader
-bridge, v0.33 EPUB, workspace markers, and right-click slash command
-still need built-app manual smoke where the local host can launch the
-app.
+Pick one item at a time. The active v0.36 work is proof-close, not new
+feature expansion. Source-level e-book page-turn stabilization and EPUB
+page-break content-document splitting are implemented, and the latest
+local App Store / TestFlight candidate metadata lives in
+`docs/internal/app-store-candidates/latest.json`. The next work should
+record real-app / real-reader proof where possible: long illustrated
+manuscript page turns, exported EPUB page breaks in an actual reader,
+and the Golden Manuscript path. Keep App Store Connect upload,
+TestFlight install / launch, and App Review evidence separate unless the
+user explicitly opens that distribution lane.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
@@ -70,8 +69,12 @@ app.
 | Done / manual proof pending | v0.33 EPUB Export v1 Polish | EPUB export remains an explicit user action and is polished enough for initial v1 use with Japanese text, headings, local images, links, code blocks, and clear failure messages. Advanced metadata, cover, navigation editing, and validation workflows stay deferred to v1.x. Source-level polish, external archive / EPUBCheck proof, and signed build `41` package evidence exist; built-app manual EPUB smoke remains blocked. |
 | Done / manual proof pending | v1 Workspace open / dirty markers | The workspace tree distinguishes active files, inactive open files, and open unsaved files using existing tab state. It does not imply Git status, background indexing, or a full file-manager model. Built-app visual smoke remains pending. |
 | Done / manual proof pending | v1 Selection tag insertion | The editor can open the existing slash-command menu from right-click inside the editor, including allowlisted Markdown wrappers such as bold, italic, inline code, links, images, and strikethrough. The source remains visible, undoable, and saved only by explicit Save. Built-app smoke remains pending. |
-| Active / TestFlight proof pending | v0.35 PDF Export Recovery | Replace the broken TestFlight print UI path with direct PDF export: Save dialog chooses a `.pdf`, Rust validates main-window / non-empty HTML / `.pdf` destination, WebKit creates PDF data in-app, and no browser, shell, external opener, or macOS print dialog is used. Legacy `print_html` is removed from the callable surface. |
-| Next | v0.35 v1.0 Release Candidate / Golden Manuscript Smoke | Feature work freezes and one realistic Japanese long-form Markdown manuscript proves the golden path: New File, Open, Save / Save As, L Mode, Preview, direct PDF export, e-book paged flow, Spread View, editor/reader return, EPUB export, Local Assist, Diff / Discard, Recovery, relaunch, large documents, and App Store lane boundary checks. |
+| Done / TestFlight proof pending | v0.35 PDF Export Recovery | The broken TestFlight print UI path is replaced with direct PDF export: Save dialog chooses a `.pdf`, Rust validates main-window / non-empty HTML / `.pdf` destination, WebKit creates PDF data in-app, and no browser, shell, external opener, or macOS print dialog is used. Legacy `print_html` is removed from the callable surface. TestFlight install / launch and user-side PDF confirmation remain distribution proof. |
+| Done / manual proof pending | v0.36 e-book page-turn stabilization | Long documents with many H3+ subheadings stay in H1/H2 chapter groups, one page-turn action crosses at most one chapter boundary, keyboard auto-repeat no longer outruns page state, image decode no longer shrinks the committed page count, and EPUB export splits explicit page-break markers into separate XHTML content documents. Source tests and package metadata exist; built-app long illustrated manuscript smoke and real EPUB-reader page-break proof remain open. |
+| Next | v0.36 long illustrated manuscript page-turn proof | Use a real built app or TestFlight build with a long image-heavy manuscript. Confirm page turns do not skip pages or chapters, H3+ headings stay inside the current chapter, held arrow keys do not rapidly advance, and image loading does not jump the reader backward. |
+| Next | v0.36 exported EPUB page-break proof | Export a manuscript containing blank-line-flanked `---` / `===` page-break markers, then inspect it in an actual EPUB reader such as Apple Books or Kindle Previewer. Confirm the markers create real page boundaries and the reading order remains correct. |
+| Next | v1.0 Release Candidate / Golden Manuscript Smoke | Feature work freezes and one realistic Japanese long-form Markdown manuscript proves the golden path: New File, Open, Save / Save As, L Mode, Preview, direct PDF export, e-book paged flow, Spread View, editor/reader return, EPUB export, Local Assist, Diff / Discard, Recovery, relaunch, large documents, and App Store lane boundary checks. |
+| Done | Slice B bare-`ease` sweep | Remaining transition-level bare `ease` keywords in the named style files and the matching inline icon transition are routed through `var(--ease-standard)`. `ease-out` / `ease-in-out` animations stay untouched. |
 | Candidate | v1 Safe file intake polish | If RC proof exposes a small file-intake gap, consider one bounded slice for larger readable local images or additional text-open file extensions. Keep binary detection, file-size warnings, workspace boundary, no external image loading, and no project-indexing behavior intact. |
 | Observation only | Hazakura Local Assist post-release polish | Pick this before the active Reader UX slice only for a concrete safety, review, App Store, availability, generation failure, responsiveness, or transaction-boundary issue. Keep App Store AI assistance local, user-initiated, unsaved until accepted, and Diff / Discard reviewable. |
 | Fallback | Core Safe Editor quality probe | Use only when no concrete Reader UX slice is open or the run is a recurring quality pass. Inspect one high-risk basic surface with a named risk hypothesis, then either fix the smallest reproduced issue or close as `verified no-op`. |
