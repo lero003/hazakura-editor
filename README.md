@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-06-25
+Last reviewed: 2026-06-28
 
 `Hazakura Editor` は、AI時代のメモ帳です。Markdownを中心に、安全にテキストを読む・書く・比べるための軽量なローカル作業場を目指します。
 
@@ -17,7 +17,7 @@ Last reviewed: 2026-06-25
 
 ## Mac App Store
 
-Hazakura Editor `0.32.0` is published on the Mac App Store:
+Hazakura Editor `0.36.0` is published on the Mac App Store:
 [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12).
 
 The App Store build is the Safe Editor lane. It omits Agent Workbench,
@@ -212,10 +212,10 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version is `0.34.0` across npm, Tauri, Cargo, and lockfile metadata.
-- The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12), published at `0.32.0` with the helper-enabled Hazakura Local Assist preview lane.
-- The latest prepared GitHub source / local-app tag is [v0.32.0](https://github.com/lero003/hazakura-editor/tree/v0.32.0).
-- The latest local App Store / TestFlight package candidate is `0.34.0` build `46`; it has local signed package evidence but has not been uploaded to App Store Connect in this repository state.
+- Current package/app version is `0.36.0` across npm, Tauri, and Cargo metadata.
+- The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12), published at `0.36.0` with the e-book reader, direct PDF / EPUB export, and helper-enabled Hazakura Local Assist preview lane.
+- The latest prepared GitHub source / local-app tag is [v0.35.0](https://github.com/lero003/hazakura-editor/tree/v0.35.0).
+- The latest local App Store / TestFlight package candidate metadata lives in `docs/internal/app-store-candidates/latest.json`; tracked docs do not pin its build number or package hash.
 - The current warning-expected DMG preview tag is `v0.20.0`; its release-note evidence lives in [0.20.0 Warning-expected DMG Preview](docs/releases/0.20.0-warning-expected-dmg-preview.release.md).
 - Source users build locally with `npm ci` and `npm run build`.
 - The generated local smoke `.app` declares macOS 26.0 or later, matching the Rust binary's minimum deployment target, and is ad-hoc signed for local build validation. The App Store submission lane can include Hazakura Local Assist as an on-device writing companion, but does not include Agent Workbench, CLI Agent, arbitrary command execution, or external AI/API calls. Developer / GitHub builds may still include Agent Workbench. GitHub Release DMG previews require Developer ID Application signing but are not notarized until the separate notarization lane is completed.

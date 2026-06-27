@@ -3,15 +3,16 @@
 Status: Operational
 Scope: v0.30-v1.0 Reader UX Stabilization queue and v1 proof-close evidence
 Authority: High
-Last reviewed: 2026-06-26 (v0.36.0 e-book page-turn stabilization)
+Last reviewed: 2026-06-28 (0.36.0 App Store release reflected)
 
 ## Purpose
 
 Start here when choosing the next small `Hazakura Editor` slice.
-This file is the current work queue. After the `0.32.0` App Store update
-shipped the v0.32 Editor / Reader Position Bridge as a public release,
-the active product lane is `v0.30-v1.0 Reader UX Stabilization`: make
-the shipped Safe Editor, L Mode, e-book Mode, EPUB export beta, Diff /
+This file is the current work queue. The `0.36.0` App Store update has
+shipped the reader, export, workspace-marker, and Local Assist surfaces
+that form the v1 product. The active product lane is now v1 proof-close
+and communication: make the shipped Safe Editor, L Mode, e-book Mode,
+EPUB export, Diff /
 Recovery, and Hazakura Local Assist review surfaces feel like one
 coherent single-document book-writing product.
 Keep completed submission-prep and v0.29 Local Assist material as
@@ -50,9 +51,10 @@ transaction-boundary issue appears.
 
 ## Active UX Queue
 
-Pick one item at a time. The active v0.36 work is proof-close, not new
-feature expansion. Source-level e-book page-turn stabilization and EPUB
-page-break content-document splitting are implemented, and the latest
+Pick one item at a time. `0.36.0` is published, and the remaining v1
+work is proof-close and communication, not new feature expansion.
+Source-level e-book page-turn stabilization and EPUB page-break
+content-document splitting are implemented, and the latest
 local App Store / TestFlight candidate metadata lives in
 `docs/internal/app-store-candidates/latest.json`. The next work should
 record real-app / real-reader proof where possible: long illustrated
@@ -69,8 +71,8 @@ user explicitly opens that distribution lane.
 | Done / manual proof pending | v0.33 EPUB Export v1 Polish | EPUB export remains an explicit user action and is polished enough for initial v1 use with Japanese text, headings, local images, links, code blocks, and clear failure messages. Advanced metadata, cover, navigation editing, and validation workflows stay deferred to v1.x. Source-level polish, external archive / EPUBCheck proof, and signed build `41` package evidence exist; built-app manual EPUB smoke remains blocked. |
 | Done / manual proof pending | v1 Workspace open / dirty markers | The workspace tree distinguishes active files, inactive open files, and open unsaved files using existing tab state. It does not imply Git status, background indexing, or a full file-manager model. Built-app visual smoke remains pending. |
 | Done / manual proof pending | v1 Selection tag insertion | The editor can open the existing slash-command menu from right-click inside the editor, including allowlisted Markdown wrappers such as bold, italic, inline code, links, images, and strikethrough. The source remains visible, undoable, and saved only by explicit Save. Built-app smoke remains pending. |
-| Done / TestFlight proof pending | v0.35 PDF Export Recovery | The broken TestFlight print UI path is replaced with direct PDF export: Save dialog chooses a `.pdf`, Rust validates main-window / non-empty HTML / `.pdf` destination, WebKit creates PDF data in-app, and no browser, shell, external opener, or macOS print dialog is used. Legacy `print_html` is removed from the callable surface. TestFlight install / launch and user-side PDF confirmation remain distribution proof. |
-| Done / manual proof pending | v0.36 e-book page-turn stabilization | Long documents with many H3+ subheadings stay in H1/H2 chapter groups, one page-turn action crosses at most one chapter boundary, keyboard auto-repeat no longer outruns page state, image decode no longer shrinks the committed page count, and EPUB export splits explicit page-break markers into separate XHTML content documents. Source tests and package metadata exist; built-app long illustrated manuscript smoke and real EPUB-reader page-break proof remain open. |
+| Done / published | v0.35 PDF Export Recovery | The broken TestFlight print UI path is replaced with direct PDF export: Save dialog chooses a `.pdf`, Rust validates main-window / non-empty HTML / `.pdf` destination, WebKit creates PDF data in-app, and no browser, shell, external opener, or macOS print dialog is used. Legacy `print_html` is removed from the callable surface. The direct PDF path is included in the published `0.36.0` App Store build. |
+| Done / published, focused proof pending | v0.36 e-book page-turn stabilization | Long documents with many H3+ subheadings stay in H1/H2 chapter groups, one page-turn action crosses at most one chapter boundary, keyboard auto-repeat no longer outruns page state, image decode no longer shrinks the committed page count, and EPUB export splits explicit page-break markers into separate XHTML content documents. The code is included in the published `0.36.0` App Store build; built-app long illustrated manuscript smoke and real EPUB-reader page-break proof remain open as focused evidence. |
 | Next | v0.36 long illustrated manuscript page-turn proof | Use a real built app or TestFlight build with a long image-heavy manuscript. Confirm page turns do not skip pages or chapters, H3+ headings stay inside the current chapter, held arrow keys do not rapidly advance, and image loading does not jump the reader backward. |
 | Next | v0.36 exported EPUB page-break proof | Export a manuscript containing blank-line-flanked `---` / `===` page-break markers, then inspect it in an actual EPUB reader such as Apple Books or Kindle Previewer. Confirm the markers create real page boundaries and the reading order remains correct. |
 | Next | v1.0 Release Candidate / Golden Manuscript Smoke | Feature work freezes and one realistic Japanese long-form Markdown manuscript proves the golden path: New File, Open, Save / Save As, L Mode, Preview, direct PDF export, e-book paged flow, Spread View, editor/reader return, EPUB export, Local Assist, Diff / Discard, Recovery, relaunch, large documents, and App Store lane boundary checks. |

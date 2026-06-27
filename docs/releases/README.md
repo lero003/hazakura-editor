@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-06-26
+Last reviewed: 2026-06-28
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
@@ -21,6 +21,9 @@ Latest downloadable GitHub DMG Release body:
 
 Latest App Store status:
 
+- `0.36.0` has been reported as approved and released on the Mac App
+  Store. It is the current public version and carries the v1-equivalent
+  reader, export, workspace-marker, and Local Assist feature shape.
 - `0.25.0` has been reported as released on the Mac App Store.
 - `0.26.0` has been reported as released on the Mac App Store.
 - `0.29.1` has been reported as approved and released on the Mac App
@@ -30,9 +33,9 @@ Latest App Store status:
   Raw App Store Connect, TestFlight, and App Review logs are not tracked
   in this repository.
 - Latest local App Store / TestFlight package candidate metadata lives
-  in `../internal/app-store-candidates/latest.json`. At this sync point
-  it records `0.36.0` build `50`; tracked release notes do not carry the
-  current pkg path / SHA-256 as canonical values.
+  in `../internal/app-store-candidates/latest.json`; tracked release
+  notes do not carry the current build, pkg path, or SHA-256 as
+  canonical values.
   Raw App Store Connect upload, processing, TestFlight install / launch,
   and App Review logs are not tracked in this repository unless
   separately recorded.
@@ -52,7 +55,7 @@ Latest App Store submission-candidate note:
 - `0.20.0-app-store-submission-candidate.release.md`
 - `0.19.0-app-store-submission-candidate.release.md`
 
-Latest App Store release-note drafts:
+Latest App Store release-note evidence and drafts:
 
 - `0.36.0-app-store-release-notes.md`
 - `0.35.0-app-store-release-notes.md`

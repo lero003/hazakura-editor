@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-06-23 (v1 roadmap alignment)
+Last reviewed: 2026-06-28 (0.36.0 App Store release reflected)
 
 ## Purpose
 
@@ -17,8 +17,8 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: `v0.30-v1.0 Reader UX Stabilization` quality loop, unless a
-`0.29.1` hotfix blocker appears.
+Phase: v1 proof-close and product communication after the published
+`0.36.0` App Store build, unless a public-release hotfix blocker appears.
 
 For recurring automation, use the Active UX Queue in
 `docs/current-work.md`. The old pre-review automation table is exhausted
@@ -29,9 +29,9 @@ environment is available and close it as `implemented`,
 
 Prefer work in this order:
 
-1. Active UX Queue from `docs/current-work.md`, starting with v0.30
-   e-book Mode Flow View unless a concrete post-release safety issue
-   takes priority.
+1. Active UX Queue from `docs/current-work.md`, starting with remaining
+   v1 proof-close or communication work unless a concrete post-release
+   safety issue takes priority.
 2. Stale or failing quality gates that block the selected slice.
 3. Core Safe Editor quality risks around open, edit, save, close/quit,
    restore, recovery, preview, diff/review, workspace file operations,
