@@ -215,7 +215,7 @@ cargo test --manifest-path src-tauri/Cargo.toml
 npm run build
 git diff --check
 npm audit
-cargo audit
+cargo audit --file src-tauri/Cargo.lock
 ```
 
 Use `npm ci` when evaluating the source preview from the committed lockfile. Use `npm install` only during active dependency updates that intentionally change `package-lock.json`.

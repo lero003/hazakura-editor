@@ -82,7 +82,7 @@ Run before tagging:
 
 ```bash
 npm audit
-cargo audit
+cargo audit --file src-tauri/Cargo.lock
 ```
 
 `npm audit` and `cargo audit` must have no untriaged critical or high-severity issues in release-sensitive dependencies. `cargo audit` warnings such as unmaintained or unsound transitive dependencies require an explicit release-note or status triage before tag approval.
