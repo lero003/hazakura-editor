@@ -1,20 +1,19 @@
 # Current Work
 
 Status: Operational
-Scope: v0.30-v1.0 Reader UX Stabilization queue and v1 proof-close evidence
+Scope: v1.0 RC communication, packaging, and proof-close evidence
 Authority: High
-Last reviewed: 2026-06-28 (0.36.0 App Store release reflected)
+Last reviewed: 2026-06-28 (1.0.0 RC and product message)
 
 ## Purpose
 
 Start here when choosing the next small `Hazakura Editor` slice.
 This file is the current work queue. The `0.36.0` App Store update has
 shipped the reader, export, workspace-marker, and Local Assist surfaces
-that form the v1 product. The active product lane is now v1 proof-close
-and communication: make the shipped Safe Editor, L Mode, e-book Mode,
-EPUB export, Diff /
-Recovery, and Hazakura Local Assist review surfaces feel like one
-coherent single-document book-writing product.
+that form the v1 product. `1.0.0` freezes that feature shape and makes
+the product promise explicit: `Markdownで書き、本として読み、ローカルAIで整える。`
+The active lane is communication, packaging, and proof-close, not new
+feature expansion.
 Keep completed submission-prep and v0.29 Local Assist material as
 evidence, not as the active queue.
 Older v0.17 App Store-quality request packets and closeout evidence live
@@ -65,6 +64,8 @@ user explicitly opens that distribution lane.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
+| In progress | v1.0 product communication | README, Product Brief, App Store listing copy, release notes, screenshot captions, and current-state docs present one truthful `書く・読む・AI・書き出す` story. Local Assist availability and review boundaries remain adjacent to the AI claim. |
+| In progress | v1.0 signed App Store candidate | Version surfaces agree on `1.0.0`, release gates pass, and a locally verified signed App Store/TestFlight pkg is prepared without tag, push, upload, or submission. |
 | Done | v0.30 e-book Mode Paged Flow | e-book Mode can be used as a daily reading / revision surface for long Japanese Markdown prose while still looking like a book page. The slice should reduce page-turn friction with wheel / trackpad / keyboard movement, preserve chapter/page location for the later editor bridge, and verify large-document behavior. |
 | Done | v0.31 e-book Mode Reading Focus / Spread View | `集中して読む` opens an occupied same-window reading surface, two-page book-like inspection exists when width allows, it falls back to one page when narrow, has keyboard / button navigation plus coarse movement, and remains a display layer over Markdown source rather than Preview DOM editing. |
 | Done / manual proof pending | v0.32 Editor / Reader Position Bridge | Opening e-book Mode near the current editor cursor or visible heading and returning from reader position to Markdown editing feels reliable for normal, unsaved, and recovered documents. Source-level and local package evidence exist; normal / unsaved / recovered built-app interaction smoke remains user-side proof. |

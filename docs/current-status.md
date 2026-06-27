@@ -3,12 +3,15 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-28 (0.36.0 App Store release reflected)
+Last reviewed: 2026-06-28 (1.0.0 RC and product message)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: `0.36.0` across npm, Tauri, Cargo, and lockfile metadata.
+- Current package/app version: `1.0.0` across npm, Tauri, Cargo, and lockfile metadata.
+- `1.0.0` is a release-candidate re-baseline of the shipped `0.36.0`
+  product shape, not a new feature expansion. Its public message is:
+  `Markdownで書き、本として読み、ローカルAIで整える。`
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
 - Published Mac App Store version: `0.36.0`. It includes the v0.32

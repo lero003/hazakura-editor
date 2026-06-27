@@ -7,7 +7,11 @@ Last reviewed: 2026-06-28
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
-Latest GitHub source / local-app tag note:
+Latest GitHub source / local-app tag:
+
+- `v0.35.0` (no dedicated source-tag body is tracked for this tag)
+
+Latest stored source-tag note:
 
 - `0.27.0-source-tag.release.md`
 
@@ -57,6 +61,8 @@ Latest App Store submission-candidate note:
 
 Latest App Store release-note evidence and drafts:
 
+- `1.0.0-app-store-listing-copy.md`
+- `1.0.0-app-store-release-notes.md`
 - `0.36.0-app-store-release-notes.md`
 - `0.35.0-app-store-release-notes.md`
 - `0.34.0-app-store-release-notes.md`

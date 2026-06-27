@@ -3,10 +3,13 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-28 (0.36.0 App Store release reflected)
+Last reviewed: 2026-06-28 (1.0.0 RC and product message)
 
 ## Current State
 
+- Source/package metadata is being re-baselined to `1.0.0` without a
+  product-behavior change from the current `0.36.0` feature shape. The
+  v1 public promise is `Markdownで書き、本として読み、ローカルAIで整える。`
 - `Hazakura Editor` `0.36.0` is the latest published Mac App Store
   version. It carries the v1-equivalent reader, export, workspace-marker,
   Markdown insertion, and Local Assist feature shape. Raw App Store
@@ -27,7 +30,7 @@ Last reviewed: 2026-06-28 (0.36.0 App Store release reflected)
   the TestFlight build still showed macOS' "This application does not
   support printing" alert. Do not revive the user-facing macOS print UI
   path as the fix.
-- `0.36.0` is the source/package app version locally. The active
+- `1.0.0` is the source/package app version locally. The active
   recovery changes the user-facing PDF action from print UI to direct
   PDF export: Save dialog chooses a `.pdf`, Rust validates main-window /
   non-empty HTML / existing parent folder / `.pdf` destination, an

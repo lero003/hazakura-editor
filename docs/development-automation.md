@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-06-28 (0.36.0 App Store release reflected)
+Last reviewed: 2026-06-28 (1.0.0 RC)
 
 ## Purpose
 
@@ -17,8 +17,9 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: v1 proof-close and product communication after the published
-`0.36.0` App Store build, unless a public-release hotfix blocker appears.
+Phase: `1.0.0` RC proof-close, product communication, and packaging
+after the published `0.36.0` App Store build, unless a public-release
+hotfix blocker appears.
 
 For recurring automation, use the Active UX Queue in
 `docs/current-work.md`. The old pre-review automation table is exhausted

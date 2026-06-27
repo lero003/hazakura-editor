@@ -9,11 +9,22 @@ Scope: Project entry point
 Authority: High
 Last reviewed: 2026-06-28
 
-`Hazakura Editor` は、AI時代のメモ帳です。Markdownを中心に、安全にテキストを読む・書く・比べるための軽量なローカル作業場を目指します。
+`Hazakura Editor` は、Markdownで文章を書き、電子書籍のように読み返し、必要な部分だけをローカルAIと整えられるmacOS向け執筆エディタです。
+
+> Markdownで書き、本として読み、ローカルAIで整える。
 
 万能IDEではありません。拡張機能、LSP、Gitクライアント、汎用ターミナル、任意コマンド実行を持たないことで、信頼しきれないプロジェクト内のテキストを静かに扱うことを目的にします。
 
 > メモ帳より賢く、IDEより静か。
+
+## Write, Read, Refine, Export
+
+- **書く**: Markdown sourceを正本に、通常編集とL Modeで静かに書く。
+- **読む**: Preview、電子書籍モード、見開き表示で本として読み返す。
+- **整える**: 対応MacではHazakura Local Assistの提案をDiffで確認し、採用または破棄する。
+- **届ける**: 明示的な操作でHTML、PDF、EPUBへ書き出す。
+
+Local Assistは利用可能なMac上のオンデバイスモデルを使うプレビュー機能です。外部AIへのnetwork fallback、background rewriting、auto-save、tool calling、workspace-wide indexingは行いません。提案は保存前に差分を確認できます。
 
 ## Mac App Store
 
@@ -130,6 +141,7 @@ For the full implementation inventory and release state, see
 - [Source Release Checklist](docs/source-release-checklist.md): source-only developer previewの準備境界
 - [DMG Preview Checklist](docs/dmg-preview-checklist.md): warning-expected DMG preview laneの準備・検証境界
 - [App Store Build](docs/app-store-build.md): Mac App Store提出用 build / signing / smoke境界
+- [v1 App Store Listing Copy](docs/releases/1.0.0-app-store-listing-copy.md): App Store説明、更新文、スクリーンショット順の確定稿
 
 ## License
 
@@ -212,7 +224,7 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version is `0.36.0` across npm, Tauri, and Cargo metadata.
+- Current package/app version is `1.0.0` across npm, Tauri, and Cargo metadata.
 - The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12), published at `0.36.0` with the e-book reader, direct PDF / EPUB export, and helper-enabled Hazakura Local Assist preview lane.
 - The latest prepared GitHub source / local-app tag is [v0.35.0](https://github.com/lero003/hazakura-editor/tree/v0.35.0).
 - The latest local App Store / TestFlight package candidate metadata lives in `docs/internal/app-store-candidates/latest.json`; tracked docs do not pin its build number or package hash.
