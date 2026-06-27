@@ -10,6 +10,13 @@ Last reviewed: 2026-06-28 (1.0.0 RC and product message)
 - Source/package metadata is being re-baselined to `1.0.0` without a
   product-behavior change from the current `0.36.0` feature shape. The
   v1 public promise is `Markdownで書き、本として読み、ローカルAIで整える。`
+- The signed local `1.0.0` App Store / TestFlight candidate passed the
+  release gates, package signature and checksum verification, enforced
+  App Store entitlement probe, and sandbox-preview smoke. Its current
+  local artifact details live only in
+  `docs/internal/app-store-candidates/latest.json`. No tag, push,
+  upload, TestFlight distribution, App Review, or public `1.0.0`
+  release has been performed.
 - `Hazakura Editor` `0.36.0` is the latest published Mac App Store
   version. It carries the v1-equivalent reader, export, workspace-marker,
   Markdown insertion, and Local Assist feature shape. Raw App Store

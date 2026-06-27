@@ -14,7 +14,7 @@
       "files": {
         "embedded.provisionprofile": "./profiles/Hazakura_Editor_Mac_App_Store_Profile.provisionprofile"
       },
-      "bundleVersion": "52"
+      "bundleVersion": "53"
     }
   }
 }

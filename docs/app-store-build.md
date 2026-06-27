@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-06-28 (1.0.0 RC)
+Last reviewed: 2026-06-28 (1.0.0 signed local candidate)
 
 ## Purpose
 
