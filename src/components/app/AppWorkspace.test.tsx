@@ -63,6 +63,18 @@ vi.mock("./SidePane", () => ({
       </button>
       <button
         onClick={() =>
+          props.onEbookLocationChange?.({
+            chapterIndex: 2,
+            pageIndex: 3,
+            sourceLine: 7,
+          })
+        }
+        type="button"
+      >
+        Mock reader location chapter 2 page 3
+      </button>
+      <button
+        onClick={() =>
           props.onOpenEbookReadingFocus?.({ chapterIndex: 1, pageIndex: 2 })
         }
         type="button"
@@ -750,5 +762,138 @@ describe("AppWorkspace workspace sidebar collapse", () => {
     );
 
     expect(goToLine).toHaveBeenCalledWith(6, { focus: true });
+  });
+
+  // v1.1 position-continuity: `ebookLocation` was a single slot keyed by
+  // documentKey; the single-slot fix (#2) changed it to a per-documentKey Map
+  // so each tab keeps its own reader location. These tests verify the fixed
+  // behavior against the old single-slot baseline.
+  describe("v1.1 position-continuity pins", () => {
+    const pinContents = [
+      "# Chapter One",
+      "",
+      "body one",
+      "",
+      "# Chapter Two",
+      "",
+      "body two",
+    ].join("\n");
+    const pinHeadings = [
+      { level: 1, line: 1, text: "Chapter One" },
+      { level: 2, line: 5, text: "Chapter Two" },
+    ];
+    const firstBookTab = {
+      ...bookTab,
+      id: "/workspace/book-a.md",
+      name: "book-a.md",
+      path: "/workspace/book-a.md",
+    };
+    const secondBookTab = {
+      ...bookTab,
+      id: "/workspace/book-b.md",
+      name: "book-b.md",
+      path: "/workspace/book-b.md",
+    };
+    const sharedPinProps = {
+      activeContents: pinContents,
+      activeDocumentLineCount: 7,
+      documentHeadings: pinHeadings,
+      hasWorkspaceSelection: true,
+      sidePaneMode: "ebook" as const,
+      sidePaneVisible: true,
+      workspaceRootPath: "/workspace",
+    };
+
+    it("keeps each tab's reader location independently (single-slot fix)", () => {
+      // A and B store DISTINCT reader locations (A: 1:2, B: 2:3). A test where
+      // both shared the same visible value would pass even for a future global
+      // last-location regression, so distinct values are required.
+      // 1. Open tab A, move its reader location to chapter 1 / page 2.
+      const { rerender } = renderWorkspace({
+        ...sharedPinProps,
+        activeTab: firstBookTab,
+        currentHeadingLine: 1,
+      });
+      fireEvent.click(
+        screen.getByRole("button", { name: "Mock store old reader location" }),
+      );
+      expect(screen.getByTestId("side-ebook-location").textContent).toContain(
+        "side location 1:2",
+      );
+
+      // 2. Switch to tab B. A's location is preserved in the per-key Map, so
+      //    B (which has no stored location yet) falls back to the editor
+      //    heading anchor (currentHeadingLine:1 -> Chapter One -> 0:0).
+      rerenderWorkspace(rerender, {
+        ...sharedPinProps,
+        activeTab: secondBookTab,
+        currentHeadingLine: 1,
+      });
+      expect(screen.getByTestId("side-ebook-location").textContent).toContain(
+        "side location 0:0",
+      );
+
+      // 3. Move B's reader location to a DIFFERENT value (chapter 2 / page 3).
+      //    The Map now holds A's 1:2 and B's 2:3.
+      fireEvent.click(
+        screen.getByRole("button", {
+          name: "Mock reader location chapter 2 page 3",
+        }),
+      );
+
+      // 4. Return to tab A. The reader position IS A's 1:2, not B's 2:3 and
+      //    not the editor anchor. This is the per-documentKey Map behavior
+      //    (single-slot baseline returned 0:0; a global last-location
+      //    regression would return 2:3 here).
+      rerenderWorkspace(rerender, {
+        ...sharedPinProps,
+        activeTab: firstBookTab,
+        currentHeadingLine: 1,
+      });
+      expect(screen.getByTestId("side-ebook-location").textContent).toContain(
+        "side location 1:2",
+      );
+
+      // 5. Return to tab B. Its own 2:3 is restored, proving both slots are
+      //    independent rather than a single shared value.
+      rerenderWorkspace(rerender, {
+        ...sharedPinProps,
+        activeTab: secondBookTab,
+        currentHeadingLine: 1,
+      });
+      expect(screen.getByTestId("side-ebook-location").textContent).toContain(
+        "side location 2:3",
+      );
+    });
+
+    it("restores an unmoved tab's reader location after switching away and back", () => {
+      // Contrast case: when B does NOT move, the Map still holds A's
+      // location, so returning to A restores it. This is the optimistic path
+      // that worked under single-slot too; keep it as a regression guard.
+      const { rerender } = renderWorkspace({
+        ...sharedPinProps,
+        activeTab: firstBookTab,
+        currentHeadingLine: 1,
+      });
+      fireEvent.click(
+        screen.getByRole("button", { name: "Mock store old reader location" }),
+      );
+
+      rerenderWorkspace(rerender, {
+        ...sharedPinProps,
+        activeTab: secondBookTab,
+        currentHeadingLine: 1,
+      });
+
+      rerenderWorkspace(rerender, {
+        ...sharedPinProps,
+        activeTab: firstBookTab,
+        currentHeadingLine: 1,
+      });
+
+      expect(screen.getByTestId("side-ebook-location").textContent).toContain(
+        "side location 1:2",
+      );
+    });
   });
 });

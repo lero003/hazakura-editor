@@ -25,6 +25,17 @@ type PreviewState = {
   pending: boolean;
 };
 
+// v1.1 position-continuity observation: PreviewPane does not own scroll
+// position. The scroll container is the shared SidePane wrapper div (held by
+// `previewPaneRef`), which SidePane renders in every mode — so the div and its
+// `scrollTop` persist across a side-pane mode switch in jsdom even though this
+// leaf component unmounts. The user-visible "Preview reopen starts at the top"
+// symptom (see docs/v1.1-v1.2-followup.md) is therefore not caused by
+// PreviewPane state loss; it needs real-layout reproduction (e.g. HTML
+// replacement collapsing scrollHeight, or the editor-sync path resetting
+// scrollTop). Any save/restore contract keyed by document identity belongs at
+// the parent (SidePane / AppWorkspace), not inside this unmounted leaf.
+
 export default function PreviewPane({
   documentKey,
   documentPath,
