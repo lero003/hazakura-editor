@@ -252,17 +252,14 @@ export function AppWorkspace({
   const [internalWorkspaceSidebarCollapsed, setInternalWorkspaceSidebarCollapsed] =
     useState(false);
   const [ebookFocusOpen, setEbookFocusOpen] = useState(false);
-  // v1.1 position-continuity pin: `ebookLocation` is a single slot keyed by
-  // `documentKey`, not a per-tab Map. When the active tab changes, the stored
-  // reader location is overwritten or masked (see `activeEbookLocation` below),
-  // so switching A -> B -> A loses A's last reader position once B moves. This
-  // is the documented single-document position-continuity limitation. A future
-  // fix would key reader locations by tab id / documentKey in a Map while
-  // keeping the Safe Editor / Markdown-canonical boundaries intact.
-  const [ebookLocation, setEbookLocation] = useState<{
-    documentKey: string;
-    location: EBookReaderLocation;
-  } | null>(null);
+  // v1.1 position-continuity: reader locations are keyed by `documentKey` so
+  // switching A -> B -> A keeps each tab's last reader position. A tab's slot
+  // is created on first reader movement and replaced on subsequent moves; it
+  // is never cleared on tab switch, so returning to a tab restores its own
+  // location instead of falling back to the editor anchor or another tab's.
+  const [ebookLocations, setEbookLocations] = useState<
+    Record<string, EBookReaderLocation>
+  >({});
   const previousSidePaneModeRef = useRef<RightPaneMode | null>(null);
   const workspaceSidebarCollapsed =
     workspaceSidebarCollapsedOverride ?? internalWorkspaceSidebarCollapsed;
@@ -276,8 +273,8 @@ export function AppWorkspace({
     workspaceSidebarCollapsed && !editorSettings.lModeEnabled;
   const activeEbookDocumentKey = activeTab ? ebookDocumentKey(activeTab) : null;
   const activeEbookLocation =
-    activeEbookDocumentKey && ebookLocation?.documentKey === activeEbookDocumentKey
-      ? ebookLocation.location
+    activeEbookDocumentKey != null
+      ? ebookLocations[activeEbookDocumentKey] ?? null
       : null;
   const editorAnchorLine =
     scrollHudVisible && scrollHudLine > 0 ? scrollHudLine : currentHeadingLine;
@@ -298,10 +295,10 @@ export function AppWorkspace({
     if (!activeEbookDocumentKey) {
       return;
     }
-    setEbookLocation({
-      documentKey: activeEbookDocumentKey,
-      location,
-    });
+    setEbookLocations((current) => ({
+      ...current,
+      [activeEbookDocumentKey]: location,
+    }));
   };
   const moveEditorToEbookLocation = (
     location: EBookReaderLocation | null,

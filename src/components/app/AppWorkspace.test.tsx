@@ -752,10 +752,10 @@ describe("AppWorkspace workspace sidebar collapse", () => {
     expect(goToLine).toHaveBeenCalledWith(6, { focus: true });
   });
 
-  // v1.1 position-continuity pin: `ebookLocation` in AppWorkspace is a single
-  // slot keyed by documentKey, not a per-tab Map. These tests pin the current
-  // behavior so the smallest future ownership change has a regression
-  // baseline. They intentionally make no behavior change.
+  // v1.1 position-continuity: `ebookLocation` was a single slot keyed by
+  // documentKey; the single-slot fix (#2) changed it to a per-documentKey Map
+  // so each tab keeps its own reader location. These tests verify the fixed
+  // behavior against the old single-slot baseline.
   describe("v1.1 position-continuity pins", () => {
     const pinContents = [
       "# Chapter One",
@@ -792,7 +792,7 @@ describe("AppWorkspace workspace sidebar collapse", () => {
       workspaceRootPath: "/workspace",
     };
 
-    it("pins single-slot limitation: A location is lost once B moves", () => {
+    it("keeps tab A reader location after tab B moves (single-slot fix)", () => {
       // 1. Open tab A, move its reader location to chapter 1 / page 2.
       const { rerender } = renderWorkspace({
         ...sharedPinProps,
@@ -806,11 +806,9 @@ describe("AppWorkspace workspace sidebar collapse", () => {
         "side location 1:2",
       );
 
-      // 2. Switch to tab B. The single slot is keyed by documentKey, so A's
-      //    stored location is masked. Because no B location exists, the
-      //    initial location falls back to the editor heading anchor
-      //    (currentHeadingLine:1 -> Chapter One -> 0:0). This fallback is the
-      //    correct current behavior, not a regression.
+      // 2. Switch to tab B. A's location is preserved in the per-key Map, so
+      //    B (which has no stored location yet) falls back to the editor
+      //    heading anchor (currentHeadingLine:1 -> Chapter One -> 0:0).
       rerenderWorkspace(rerender, {
         ...sharedPinProps,
         activeTab: secondBookTab,
@@ -820,33 +818,29 @@ describe("AppWorkspace workspace sidebar collapse", () => {
         "side location 0:0",
       );
 
-      // 3. Move B's reader location (single slot now holds B's documentKey).
+      // 3. Move B's reader location. The Map now holds both A's and B's.
       fireEvent.click(
         screen.getByRole("button", { name: "Mock one-page reader location change" }),
       );
 
-      // 4. Return to tab A. The reader position is NOT A's last 1:2; the
-      //    single slot holds B's location so A falls back to the editor
-      //    anchor again. This is the documented single-slot limitation a
-      //    future per-tab Map would fix.
+      // 4. Return to tab A. The reader position IS A's last 1:2; the
+      //    per-documentKey Map restores it instead of falling back to the
+      //    editor anchor. This is the fixed behavior (single-slot baseline
+      //    returned 0:0 here).
       rerenderWorkspace(rerender, {
         ...sharedPinProps,
         activeTab: firstBookTab,
         currentHeadingLine: 1,
       });
       expect(screen.getByTestId("side-ebook-location").textContent).toContain(
-        "side location 0:0",
-      );
-      expect(screen.getByTestId("side-ebook-location").textContent).not.toContain(
         "side location 1:2",
       );
     });
 
-    it("pins that returning to an unmoved tab restores its reader location", () => {
-      // Contrast case: when B does NOT move, the single slot still holds A's
-      // location because documentKey masks restore A's stored value. This is
-      // the optimistic path the existing tests already cover; pin it next to
-      // the limitation above so both sides of the rule are explicit.
+    it("restores an unmoved tab's reader location after switching away and back", () => {
+      // Contrast case: when B does NOT move, the Map still holds A's
+      // location, so returning to A restores it. This is the optimistic path
+      // that worked under single-slot too; keep it as a regression guard.
       const { rerender } = renderWorkspace({
         ...sharedPinProps,
         activeTab: firstBookTab,

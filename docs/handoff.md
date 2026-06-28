@@ -53,9 +53,13 @@ Last reviewed: 2026-06-29 (1.0.0 public release and v1.1 kickoff)
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. Reproduce the v1.1 Reader / Editor / Preview Position Continuity
-   transitions independently and pin current behavior before changing
-   the shared bridge.
+1. The v1.1 Reader / Editor / Preview Position Continuity pin baseline is
+   committed on branch `v1.1/position-continuity-pin`. The single-slot
+   reader-location fix (#2) is implemented: `ebookLocation` is now a
+   per-`documentKey` Map, so A -> B move -> A keeps each tab's reader
+   location. Remaining continuity work: editor remount reset (#5 tab),
+   external-link reset (#5 link, separate slice), and Preview real-layout
+   top-reset reproduction (#4). See `docs/v1.1-v1.2-followup.md`.
 2. Take forced-termination Recovery in local and Google Drive folders
    next, unless a source-loss signal promotes it to hotfix priority.
 3. Follow with one image, Diff action, context-menu, or `.bak` case at a
