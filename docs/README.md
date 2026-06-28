@@ -55,6 +55,7 @@ git-ignored and should not be referenced from public-facing docs.
 - `releases/`: release-note bodies used for published or prepared GitHub Releases.
 - `archive/reviews/`: historical review gates and design decisions that may still be referenced from code comments.
 - `archive/operations/app-store-v0.17/`: v0.17 App Store-quality request packets, closeout, smoke, and performance evidence.
+- `archive/operations/current-work-through-v1.0.md`: completed v0.18-v0.36 implementation logs and pre-v1.0 submission-prep evidence moved out of `current-work.md` during the v1.1 slim-down.
 - `archive/operations/pre-release-fix-plan-2026-06-13.md`: completed review-derived pre-release code-quality fix queue.
 - `archive/planning/`: older planning memos, including commercial-quality baseline, authoring-feature readiness, and product-copy drafts.
 - `archive/planning/v0.27-refinement-slice-plan.md`: completed v0.27 execution memo.

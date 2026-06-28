@@ -3,7 +3,7 @@
 Status: Archive
 Scope: Retired planning, operational prompts, and historical evidence
 Authority: Low
-Last reviewed: 2026-06-21
+Last reviewed: 2026-06-29
 
 This directory preserves old material without letting it guide current implementation by accident.
 
@@ -13,7 +13,8 @@ Use current docs in `docs/` for decisions. Read archived files only when you nee
 
 - `planning/`: initial product plans, completed phase execution memos, early MVP scope, old setup notes, deferred RPC exploration, post-v0.5 memo material, older commercial-quality baseline, authoring-readiness notes, Local Assist helper-path design history, and product-copy drafts.
 - `operations/`: superseded goal prompts, automation prompt collections, completed fix plans, and local evidence notes.
-- `operations/app-store-v0.17/`: v0.17 App Store-quality request packets, closeout, smoke, and performance evidence. Use `docs/current-work.md` for current v0.19 work instead.
+- `operations/current-work-through-v1.0.md`: completed v0.18-v0.36 implementation logs and pre-v1.0 submission-prep evidence moved out of `docs/current-work.md` during the v1.1 slim-down. Use `docs/current-work.md` for the active queue.
+- `operations/app-store-v0.17/`: v0.17 App Store-quality request packets, closeout, smoke, and performance evidence. Use `docs/current-work.md` for current work instead.
 - `releases/`: old release review briefs or release proposals that are not current release bodies.
 - `roadmaps/`: superseded roadmap sequences.
 - `reviews/`: historical review gates and design decisions.
