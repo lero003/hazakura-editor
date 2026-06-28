@@ -3,33 +3,35 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-28 (1.0.0 RC and product message)
+Last reviewed: 2026-06-29 (1.0.0 public release and v1.1 kickoff)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
 - Current package/app version: `1.0.0` across npm, Tauri, Cargo, and lockfile metadata.
-- `1.0.0` is a release-candidate re-baseline of the shipped `0.36.0`
-  product shape, not a new feature expansion. Its public message is:
+- `1.0.0` was approved and released on the Mac App Store. It is a
+  semantic and product-message re-baseline of the feature shape first
+  shipped through `0.36.0`, not a new feature expansion. Its public message is:
   `Markdownで書き、本として読み、ローカルAIで整える。`
-- A signed local App Store / TestFlight `1.0.0` candidate has been
-  generated and passed source, build, audit, signature, entitlement,
-  checksum, distribution-probe, and sandbox-preview gates. Consult
-  `docs/internal/app-store-candidates/latest.json` for the current local
-  build and artifact details. Upload, TestFlight distribution, App
-  Review, and public `1.0.0` release are not claimed.
+- The prepared signed App Store / TestFlight `1.0.0` candidate passed
+  source, build, audit, signature, entitlement, checksum,
+  distribution-probe, and sandbox-preview gates. Its local provenance
+  remains in `docs/internal/app-store-candidates/latest.json`; the public
+  listing confirms version `1.0.0`, while raw App Store Connect,
+  TestFlight, and App Review logs are not tracked in this repository.
 - A 2026-06-28 user-side pre-v1 pass accepted the Golden Manuscript flow,
   long-form e-book page-turning, EPUB page breaks in Apple Books, Local
   Assist success / failure / apply / discard, and the App Store safety
   boundary. No v1 No-Go condition was reported. Unchecked boxes are not
   treated as automatic blockers; commented observations are classified
   in `docs/v1.1-v1.2-followup.md`.
-- The remaining v1.0 work is the five-image App Store screenshot story
-  and a final visual/copy comparison against the actual UI. Feature work
-  stays frozen unless that pass reveals a No-Go regression.
+- No public-release hotfix blocker has been reported. The active lane is
+  now v1.1 daily-use continuity and trust. The first slice will isolate
+  reader / editor / Preview position ownership before changing behavior;
+  Recovery reliability remains the next priority.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Published Mac App Store version: `0.36.0`. It includes the v0.32
+- Published Mac App Store version: `1.0.0`. It includes the v0.32
   Editor / Reader Position Bridge, direct PDF export, EPUB export,
   e-book reader page-turn stabilization, workspace open / dirty markers,
   right-click Markdown insertion, and Hazakura Local Assist as a preview
@@ -421,8 +423,8 @@ baseline, and smoke evidence are archived under
 
 ## Active Planning Sources
 
-- `docs/current-work.md`: current `v0.30-v1.0 Reader UX Stabilization`
-  queue plus post-`0.29.1` release evidence.
+- `docs/current-work.md`: current v1.1 daily-use continuity queue plus
+  v1.0 release evidence.
 - `docs/archive/planning/v0.27-refinement-slice-plan.md`: historical v0.27
   execution phases for large-document rendering, One Editing Space,
   flow-preserving editing, and status bar cleanup.
@@ -442,26 +444,29 @@ baseline, and smoke evidence are archived under
 
 ## Next Safe Actions
 
-1. Capture and review the five v1 App Store screenshots in the order
-   defined by `docs/releases/1.0.0-app-store-listing-copy.md`. Adjust only
-   small visual or wording mismatches found by that review.
-2. Keep feature work frozen for v1.0. Treat the user-side Golden
-   Manuscript evidence as sufficient unless a release-visual pass
-   reproduces a No-Go condition.
-3. For the latest local App Store / TestFlight package candidate, see
+1. Start the first v1.1 slice from reader / editor / Preview position
+   continuity. Reproduce explicit reader entry, passive reader remount,
+   return-to-edit, Preview reopen, and tab/external-link transitions
+   independently before changing the shared bridge.
+2. Take Recovery forced-termination and cloud-folder behavior next,
+   unless a source-loss or public-release hotfix signal raises its
+   priority. Keep image-heavy layout and Diff action polish behind those
+   continuity checks.
+3. Keep source/package metadata at the released `1.0.0` baseline until
+   a concrete v1.1 change is accepted and a new candidate lane is opened.
+4. For the latest local App Store / TestFlight package candidate, see
    `docs/internal/app-store-candidates/latest.json` for version / build
    counter / pkg path / SHA-256 / generated time. At this sync point it
    records the active artifact. App Store Connect and TestFlight logs
    remain outside this repository unless public-safe evidence is
    recorded. Do upload / App Store Connect work only when explicitly
    requested.
-4. For Hazakura Local Assist, use `docs/assist-surface-strategy.md`,
+5. For Hazakura Local Assist, use `docs/assist-surface-strategy.md`,
    `docs/apple-local-assist-distribution-plan.md`, and
    `docs/apple-local-assist-writing-companion-plan.md`; keep direct
    buffer edits as explicit AI edit transactions.
-5. For future release checkpoints, use the version-specific release
+6. For future release checkpoints, use the version-specific release
    note plus the release checklists. Do not tag or publish without
    explicit approval.
-6. After v1.0 release, take one item at a time from
-   `docs/v1.1-v1.2-followup.md`, starting with Recovery and position
-   continuity before cosmetic polish.
+7. Keep the full observation queue in `docs/v1.1-v1.2-followup.md` and
+   close one reproducible item at a time.

@@ -3,35 +3,35 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-28 (1.0.0 RC and product message)
+Last reviewed: 2026-06-29 (1.0.0 public release and v1.1 kickoff)
 
 ## Current State
 
-- A 2026-06-28 user-side pre-v1 checklist produced a Go decision. Golden
-  Manuscript flow, long-form e-book reading, EPUB page breaks in Apple
-  Books, Local Assist apply/discard/failure behavior, and the App Store
-  boundary were accepted. No No-Go condition was reported. The remaining
-  v1 work is the five-image App Store screenshot story and final visual /
-  copy comparison; all commented observations are routed to
+- `1.0.0` passed App Review and was released on the Mac App Store. The
+  public listing confirms version `1.0.0`; raw App Store Connect,
+  TestFlight, App Review, and public build-number logs remain outside
+  this repository. The v1 public promise is
+  `Markdownで書き、本として読み、ローカルAIで整える。`
+- The 2026-06-28 user-side pre-v1 checklist remains the accepted Golden
+  Manuscript baseline. No public-release hotfix blocker has been
+  reported. All commented observations are routed to
   `docs/v1.1-v1.2-followup.md`.
-- Source/package metadata is being re-baselined to `1.0.0` without a
-  product-behavior change from the current `0.36.0` feature shape. The
-  v1 public promise is `Markdownで書き、本として読み、ローカルAIで整える。`
+- Source/package metadata remains at the released `1.0.0` baseline. Do
+  not bump to `1.1.0` until the first v1.1 change is accepted and a
+  candidate lane is deliberately opened.
 - The signed local `1.0.0` App Store / TestFlight candidate passed the
   release gates, package signature and checksum verification, enforced
   App Store entitlement probe, and sandbox-preview smoke. Its current
   local artifact details live only in
-  `docs/internal/app-store-candidates/latest.json`. No tag, push,
-  upload, TestFlight distribution, App Review, or public `1.0.0`
-  release has been performed.
-- `Hazakura Editor` `0.36.0` is the latest published Mac App Store
-  version. It carries the v1-equivalent reader, export, workspace-marker,
-  Markdown insertion, and Local Assist feature shape. Raw App Store
-  Connect, TestFlight, and App Review logs remain outside this repository
-  unless explicitly recorded later.
+  `docs/internal/app-store-candidates/latest.json`. Treat this as local
+  package provenance, not proof of the public build number.
+- `Hazakura Editor` `1.0.0` is the latest published Mac App Store
+  version. `0.36.0` remains historical proof of the same v1-equivalent
+  reader, export, workspace-marker, Markdown insertion, and Local Assist
+  feature shape.
 - The earlier `0.29.1` App Store update established Hazakura Local Assist
   as a public preview; its build `33` package remains historical release
-  evidence and should not be confused with the current `0.36.0` public
+  evidence and should not be confused with the current `1.0.0` public
   lane.
 - Local App Store / TestFlight package candidate metadata (version,
   build counter, pkg path, SHA-256, generated time, source commit,
@@ -103,9 +103,10 @@ Last reviewed: 2026-06-28 (1.0.0 RC and product message)
   (118 files / 1060 tests), and `git diff --check`. Built-app/manual
   long-manuscript smoke is still the next proof: image-heavy e-book page
   turns and exported EPUB page breaks in a real reader.
-- `0.36.0` is published on the Mac App Store. The latest local App Store /
-  TestFlight candidate details remain in the ignored candidate metadata.
-  It bundles the e-book reader page-turn stabilization
+- `0.36.0` was the previous Mac App Store version and is now historical
+  evidence for the feature shape published as `1.0.0`. The latest local
+  App Store / TestFlight candidate details remain in the ignored candidate
+  metadata. That feature shape bundles the e-book reader page-turn stabilization
   (chapter-cross page target, keyboard auto-repeat guard, pending
   chapter-cross guard, H1/H2 chapter coalescing, image-settle provisional
   page-count floor, and stale-remeasure rAF guard) plus the EPUB export
@@ -562,15 +563,16 @@ Last reviewed: 2026-06-28 (1.0.0 RC and product message)
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. Capture the v1 App Store screenshots in the canonical five-image
-   order and compare them with the prepared listing copy and actual UI.
-2. Make only small visual or wording corrections revealed by that pass.
-   Do not reopen feature work unless a No-Go regression appears.
-3. Keep tag, push, App Store Connect upload, TestFlight distribution,
-   review, and publication as separate explicitly approved actions.
-4. After release, take one item at a time from
-   `docs/v1.1-v1.2-followup.md`: Recovery and position continuity first,
-   then image/review behavior, then export/Local Assist/menu polish.
+1. Reproduce the v1.1 Reader / Editor / Preview Position Continuity
+   transitions independently and pin current behavior before changing
+   the shared bridge.
+2. Take forced-termination Recovery in local and Google Drive folders
+   next, unless a source-loss signal promotes it to hotfix priority.
+3. Follow with one image, Diff action, context-menu, or `.bak` case at a
+   time; do not bundle unrelated polish.
+4. Keep the version at `1.0.0`, and keep tag, push, App Store Connect,
+   TestFlight, review, and publication closed until a v1.1 candidate is
+   deliberately opened.
 
 Recently completed: v0.20 Sakura chrome / file-state clarity kept New
 File on existing non-tab-row paths, added the top chrome

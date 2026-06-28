@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-06-28
+Last reviewed: 2026-06-29
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
@@ -25,9 +25,13 @@ Latest downloadable GitHub DMG Release body:
 
 Latest App Store status:
 
-- `0.36.0` has been reported as approved and released on the Mac App
-  Store. It is the current public version and carries the v1-equivalent
-  reader, export, workspace-marker, and Local Assist feature shape.
+- `1.0.0` has been reported as approved and released on the Mac App
+  Store. The public listing confirms it as the current version. It is
+  the formal product/message baseline for the reader, export,
+  workspace-marker, and Local Assist feature shape first completed by
+  `0.36.0`.
+- `0.36.0` was the previous public version and remains historical proof
+  of the v1-equivalent feature shape.
 - `0.25.0` has been reported as released on the Mac App Store.
 - `0.26.0` has been reported as released on the Mac App Store.
 - `0.29.1` has been reported as approved and released on the Mac App

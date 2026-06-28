@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-06-28
+Last reviewed: 2026-06-29
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
@@ -16,8 +16,8 @@ or quality-polish slice.
 - `security-boundary.md`: safety constraints for file handling and execution boundaries.
 - `agent-workbench-boundary.md`: optional CLI-agent workbench trust boundary.
 - `assist-surface-strategy.md`: future assist-surface direction.
-- `current-work.md`: v1.0 release-close queue and current evidence.
-- `roadmap.md`: active v1 release sequence and future phase boundaries.
+- `current-work.md`: active v1.1 daily-use continuity queue and release evidence.
+- `roadmap.md`: active v1.1 sequence and future phase boundaries.
 - `current-status.md`: current implementation and release state.
 
 ## Current Operational Docs

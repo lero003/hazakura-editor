@@ -1,19 +1,19 @@
 # Current Work
 
 Status: Operational
-Scope: v1.0 RC communication, packaging, and proof-close evidence
+Scope: v1.1 daily-use continuity and trust
 Authority: High
-Last reviewed: 2026-06-28 (1.0.0 RC and product message)
+Last reviewed: 2026-06-29 (1.0.0 public release and v1.1 kickoff)
 
 ## Purpose
 
 Start here when choosing the next small `Hazakura Editor` slice.
-This file is the current work queue. The `0.36.0` App Store update has
-shipped the reader, export, workspace-marker, and Local Assist surfaces
-that form the v1 product. `1.0.0` freezes that feature shape and makes
-the product promise explicit: `Markdownで書き、本として読み、ローカルAIで整える。`
-The active lane is communication, packaging, and proof-close, not new
-feature expansion.
+This file is the current work queue. `1.0.0` is approved and published
+on the Mac App Store with the product promise
+`Markdownで書き、本として読み、ローカルAIで整える。` The active lane is
+v1.1 daily-use continuity: improve confidence in moving between writing,
+reading, review, and recovery without expanding into v2 book-workspace
+features.
 Keep completed submission-prep and v0.29 Local Assist material as
 evidence, not as the active queue.
 Older v0.17 App Store-quality request packets and closeout evidence live
@@ -50,21 +50,21 @@ transaction-boundary issue appears.
 
 ## Active UX Queue
 
-Pick one item at a time. `0.36.0` is published, and the remaining v1
-work is visual release-close, not new feature expansion. The 2026-06-28
-user-side checklist accepted the Golden Manuscript flow, long-form
-e-book page-turning, EPUB page breaks in Apple Books, Local Assist review,
-and the App Store safety boundary. The latest local App Store / TestFlight
-candidate metadata lives in `docs/internal/app-store-candidates/latest.json`.
-The next work is the five-image App Store story and final copy/UI check.
-Keep upload, TestFlight distribution, App Review, and publication
-separate unless the user explicitly opens that lane.
+Pick one item at a time. `1.0.0` is published, and no hotfix blocker has
+been reported. The 2026-06-28 user-side checklist remains the v1 Golden
+Manuscript baseline. v1.1 begins with position continuity because it is
+central to `読んで、気づいて、戻って、直す` and can be reproduced in a
+bounded source/test slice. Keep v1.1 packaging, upload, review, and
+publication closed until a concrete accepted change opens that lane.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
+| Next | v1.1 Reader / Editor / Preview Position Continuity | Reproduce explicit e-book entry, passive reader remount, `編集に戻る`, Preview reopen, and tab/external-link transitions independently. Pin the current behavior in focused tests, then make the smallest ownership change: an explicit editor/Preview entry uses the current visible source position, passive reader remount preserves the active reader location, and return-to-edit uses the active reader source estimate. No source, save-state, or unrelated tab behavior changes. |
+| P1 | v1.1 Recovery Reliability | Reproduce forced termination in a local folder and a Google Drive folder separately. Record backup-write timing, workspace-bookmark restoration, and candidate suppression when reopening the same document. Escalate ahead of position work only if source loss or a public hotfix condition is observed. |
+| P2 | v1.1 Image / Review Edge Cases | Take one case at a time: consecutive e-book images, L Mode first-line/nested-path images, PDF page breaks through a large image, explicit Diff `採用` / `破棄`, context-menu viewport containment, or unexpected `.bak` files in Trash. Do not bundle these into the continuity slice. |
+| Done / published | v1.0 App Store release | `1.0.0` was approved and released on the Mac App Store. The public listing confirms the version; raw App Store Connect, TestFlight, App Review, and build-number logs remain outside the repository. |
 | Done | v1.0 product communication | README, Product Brief, App Store listing copy, release notes, screenshot captions, and current-state docs present one truthful `書く・読む・AI・書き出す` story. Local Assist availability and review boundaries remain adjacent to the AI claim. |
-| Done / local candidate prepared | v1.0 signed App Store candidate | Version surfaces agree on `1.0.0`; source, build, audit, signature, entitlement, checksum, distribution-probe, and sandbox-preview gates passed; and the signed pkg is recorded in ignored candidate metadata. No tag, push, upload, or submission was performed. |
-| Next / release visual | v1.0 App Store screenshot set | Capture the agreed five-image story: write Markdown, read as a book, inspect/return, review Local Assist through Diff, and export EPUB/PDF. Compare the final images with the listing copy and actual UI. |
+| Done / local evidence | v1.0 signed App Store candidate | Version surfaces agree on `1.0.0`; source, build, audit, signature, entitlement, checksum, distribution-probe, and sandbox-preview gates passed; and the signed pkg is recorded in ignored candidate metadata. Public release state is tracked separately from this local artifact evidence. |
 | Done | v0.30 e-book Mode Paged Flow | e-book Mode can be used as a daily reading / revision surface for long Japanese Markdown prose while still looking like a book page. The slice should reduce page-turn friction with wheel / trackpad / keyboard movement, preserve chapter/page location for the later editor bridge, and verify large-document behavior. |
 | Done | v0.31 e-book Mode Reading Focus / Spread View | `集中して読む` opens an occupied same-window reading surface, two-page book-like inspection exists when width allows, it falls back to one page when narrow, has keyboard / button navigation plus coarse movement, and remains a display layer over Markdown source rather than Preview DOM editing. |
 | Done / follow-up recorded | v0.32 Editor / Reader Position Bridge | Built-app use confirmed return-to-editor, heading jumps, unsaved documents, and recovered documents. Stored e-book position versus current editor entry and Preview top-reset behavior move to the v1.1 continuity queue. |
@@ -78,13 +78,13 @@ separate unless the user explicitly opens that lane.
 | Done | Slice A Reader Stability | `EBookPane` render debounce (200ms shared with PreviewPane), rAF-coalesced pagination measurement, the scrollbar `contentDOM.blur()` refocus-on-mouseup fix, the `renderMarkdown` parse reduction (one DOM mutation pass + one sanitize), the rAF-throttled + self-extending preview->editor scroll-sync guard (fixes trackpad inertial-scroll stutter), and the per-image re-measurement collapse are implemented and pinned by focused tests. |
 | Done | Slice C Robustness | `goToLine` double-rAF, `readOnly` in the `useImperativeHandle` deps (insertText / applyMarkdownFormat / insertTable gated), and the validated `tabId` Apple Assist apply path are done. Only Save-As rekey remount (needs editor session id separate from `documentKey`) stays deferred to v1.1. |
 | Done | Slice B bare-`ease` sweep | Remaining transition-level bare `ease` keywords in the named style files and the matching inline icon transition are routed through `var(--ease-standard)`. `ease-out` / `ease-in-out` animations stay untouched. |
-| Candidate | v1 Safe file intake polish | If RC proof exposes a small file-intake gap, consider one bounded slice for larger readable local images or additional text-open file extensions. Keep binary detection, file-size warnings, workspace boundary, no external image loading, and no project-indexing behavior intact. |
+| Backlog | v1.x Safe file intake polish | Consider one bounded slice only when a concrete user case shows a gap for larger readable local images or additional text-open file extensions. Keep binary detection, file-size warnings, workspace boundary, no external image loading, and no project-indexing behavior intact. |
 | Observation only | Hazakura Local Assist post-release polish | Pick this before the active Reader UX slice only for a concrete safety, review, App Store, availability, generation failure, responsiveness, or transaction-boundary issue. Keep App Store AI assistance local, user-initiated, unsaved until accepted, and Diff / Discard reviewable. |
 | Fallback | Core Safe Editor quality probe | Use only when no concrete Reader UX slice is open or the run is a recurring quality pass. Inspect one high-risk basic surface with a named risk hypothesis, then either fix the smallest reproduced issue or close as `verified no-op`. |
 
 ## v1 Refactor Watchlist
 
-Do not schedule broad refactors before v1.0 just because a module is large.
+Do not schedule broad v1.x refactors just because a module is large.
 Refactor only when it reduces a direct release risk, fixes an observed
 user-facing problem, or lets a golden-path proof cover behavior that is
 otherwise too brittle to verify. Keep public behavior, Markdown source

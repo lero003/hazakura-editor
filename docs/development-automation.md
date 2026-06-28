@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-06-28 (1.0.0 RC)
+Last reviewed: 2026-06-29 (v1.1 kickoff)
 
 ## Purpose
 
@@ -17,9 +17,8 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: `1.0.0` RC proof-close, product communication, and packaging
-after the published `0.36.0` App Store build, unless a public-release
-hotfix blocker appears.
+Phase: v1.1 Daily-use Continuity And Trust after the published `1.0.0`
+App Store release, unless a public-release hotfix blocker appears.
 
 For recurring automation, use the Active UX Queue in
 `docs/current-work.md`. The old pre-review automation table is exhausted
@@ -30,9 +29,9 @@ environment is available and close it as `implemented`,
 
 Prefer work in this order:
 
-1. Active UX Queue from `docs/current-work.md`, starting with remaining
-   v1 proof-close or communication work unless a concrete post-release
-   safety issue takes priority.
+1. Active UX Queue from `docs/current-work.md`, starting with the bounded
+   reader / editor / Preview position-continuity reproduction unless a
+   concrete source-loss or public hotfix signal takes priority.
 2. Stale or failing quality gates that block the selected slice.
 3. Core Safe Editor quality risks around open, edit, save, close/quit,
    restore, recovery, preview, diff/review, workspace file operations,
@@ -40,40 +39,42 @@ Prefer work in this order:
    copy. When the known queue is exhausted, pick one of these surfaces,
    state the risk hypothesis, inspect or smoke it, then either make the
    smallest justified fix or close as `verified no-op`.
-4. Submission-prep or App Store hotfix queue only when explicitly
+4. Recovery forced-termination and local/cloud-folder evidence after the
+   position slice, unless its risk is escalated by reproduced source loss.
+5. Submission-prep or App Store hotfix queue only when explicitly
    reopened, especially fuller TestFlight smoke, reviewer notes, license
    packet review, About metadata, and regression evidence.
-5. App Store / Developer lane separation drift, especially Agent
+6. App Store / Developer lane separation drift, especially Agent
    Workbench omission, helper bundle/signing assumptions, external
    process appearance, command palette / Preferences visibility,
    sandbox/review evidence, and `network.client` explanation. Use
    `npm run smoke:app-store-surface` for the lightweight source-level
    App Store surface check before escalating to signed TestFlight smoke.
-6. One concrete user-test friction point from Hazakura Local Assist,
+7. One concrete user-test friction point from Hazakura Local Assist,
    L Mode, theme, settings, status / error copy, export, or
    file/recovery workflows.
-7. Safety-boundary regression checks.
-8. Lightweight accessibility sanity checks only when they are adjacent
+8. Safety-boundary regression checks.
+9. Lightweight accessibility sanity checks only when they are adjacent
    to a selected core surface or cheap to verify: focus reachability,
    keyboard escape/Tab behavior, readable labels, and obvious contrast.
    Do not make broad accessibility audits the default automation work.
-9. Release-prep gaps in Developer / GitHub DMG wording, checksum flow,
+10. Release-prep gaps in Developer / GitHub DMG wording, checksum flow,
    cross-machine smoke guidance, or expected macOS warning instructions.
-10. Performance and bundle-size measurement before chunk-splitting,
+11. Performance and bundle-size measurement before chunk-splitting,
    L Mode decoration-cache work, or broad CSS splitting.
-11. Post-release docs/version drift.
-12. One reproduced bug in implemented L Mode WYSIWYG behavior,
+12. Post-release docs/version drift.
+13. One reproduced bug in implemented L Mode WYSIWYG behavior,
    especially caret, IME, Backspace/Delete, hidden markers, lists,
    dividers, links, tables, images, visual overlap, source preservation,
    or a measured performance baseline.
-13. One concrete theme-quality issue, especially focus visibility,
+14. One concrete theme-quality issue, especially focus visibility,
    contrast, status/error readability, dialog readability, or Increase
    Contrast behavior.
-14. Focused refactor only when it directly supports a verified
+15. Focused refactor only when it directly supports a verified
    user-facing polish fix; do not split a large file for architecture
    aesthetics alone.
-15. Documentation drift.
-16. Verified no-op after inspection when no useful small slice is safe.
+16. Documentation drift.
+17. Verified no-op after inspection when no useful small slice is safe.
 
 ## Start Every Run
 
