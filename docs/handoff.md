@@ -7,6 +7,13 @@ Last reviewed: 2026-06-28 (1.0.0 RC and product message)
 
 ## Current State
 
+- A 2026-06-28 user-side pre-v1 checklist produced a Go decision. Golden
+  Manuscript flow, long-form e-book reading, EPUB page breaks in Apple
+  Books, Local Assist apply/discard/failure behavior, and the App Store
+  boundary were accepted. No No-Go condition was reported. The remaining
+  v1 work is the five-image App Store screenshot story and final visual /
+  copy comparison; all commented observations are routed to
+  `docs/v1.1-v1.2-followup.md`.
 - Source/package metadata is being re-baselined to `1.0.0` without a
   product-behavior change from the current `0.36.0` feature shape. The
   v1 public promise is `Markdownで書き、本として読み、ローカルAIで整える。`
@@ -555,48 +562,15 @@ Last reviewed: 2026-06-28 (1.0.0 RC and product message)
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. v0.33 EPUB Export v1 Polish: external archive / EPUBCheck proof and
-   signed build `41` package evidence now exist, but run manual built-app
-   EPUB smoke once the local preview app can launch. Keep EPUBCheck
-   manual and outside the app.
-2. v1 workspace marker / right-click slash-command fit-and-finish: run
-   the built-app smoke in `docs/smoke-checklist.md` once local preview
-   launch works before treating it as v1-ready UI proof.
-3. v0.32 Editor / Reader Position Bridge: continue built-app checks for
-   normal, unsaved, and recovered documents if that proof is still
-   needed. Use the v0.32 reader-bridge checklist in
-   `docs/smoke-checklist.md`.
-4. Before v0.34 RC, close the three pre-RC quality slices documented in
-   `docs/roadmap.md` (Pre-RC Quality Slices). They stay inside the Safe
-   Editor boundary (no new surfaces, no dependencies, source-preserving):
-   - Slice A Reader Stability: `EBookPane` keystroke debounce (200ms
-     shared with PreviewPane, first render immediate), pagination
-     reflow coalescing into one `requestAnimationFrame` per frame
-     (`EBookPane.tsx`; `ebookPagination.ts`), the `contentDOM.blur()`
-     scroll-stick fix via `mouseup` refocus (`EditorPane.tsx`), the
-     5-parse `renderMarkdown` reduction to one DOM mutation pass plus
-     one sanitize (`markdown.ts`), and the rAF-throttled +
-     self-extending preview->editor scroll-sync guard that fixes the
-     trackpad inertial-scroll stutter in Preview are done and pinned by
-     focused tests.
-   - Slice B Token / Motion Coherence: missing tokens, the global
-     `prefers-reduced-motion` reset, `transition: all` replacement,
-     transition-level bare `ease` tokenization, and the global
-     `button:hover` translateY lift removal are done. `ease-out` /
-     `ease-in-out` animations remain intentional.
-   - Slice C Robustness: fix `goToLine` single-rAF scroll lag
-     (`EditorPane.tsx:247`, done: double-rAF), add `readOnly` to the
-     imperative handle deps (done: insertText/applyMarkdownFormat/insertTable
-     gated), and pass an explicit `tabId` to the assist apply path (done).
-     Save-As rekey remount is deferred to v1.1 (needs editor session id
-     separate from documentKey).
-5. v0.34 v1.0 Release Candidate after Slice A-C and the EPUB/package
-   proof boundary is clear.
-6. v1.x deepens the single-document product before Book Scope / Book
-   Workspace or stronger AI expansion.
-7. Hazakura Local Assist post-release polish only for concrete safety,
-   review, App Store, availability, generation failure, responsiveness,
-   or transaction-boundary issues.
+1. Capture the v1 App Store screenshots in the canonical five-image
+   order and compare them with the prepared listing copy and actual UI.
+2. Make only small visual or wording corrections revealed by that pass.
+   Do not reopen feature work unless a No-Go regression appears.
+3. Keep tag, push, App Store Connect upload, TestFlight distribution,
+   review, and publication as separate explicitly approved actions.
+4. After release, take one item at a time from
+   `docs/v1.1-v1.2-followup.md`: Recovery and position continuity first,
+   then image/review behavior, then export/Local Assist/menu polish.
 
 Recently completed: v0.20 Sakura chrome / file-state clarity kept New
 File on existing non-tab-row paths, added the top chrome

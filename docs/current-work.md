@@ -51,32 +51,30 @@ transaction-boundary issue appears.
 ## Active UX Queue
 
 Pick one item at a time. `0.36.0` is published, and the remaining v1
-work is proof-close and communication, not new feature expansion.
-Source-level e-book page-turn stabilization and EPUB page-break
-content-document splitting are implemented, and the latest
-local App Store / TestFlight candidate metadata lives in
-`docs/internal/app-store-candidates/latest.json`. The next work should
-record real-app / real-reader proof where possible: long illustrated
-manuscript page turns, exported EPUB page breaks in an actual reader,
-and the Golden Manuscript path. Keep App Store Connect upload,
-TestFlight install / launch, and App Review evidence separate unless the
-user explicitly opens that distribution lane.
+work is visual release-close, not new feature expansion. The 2026-06-28
+user-side checklist accepted the Golden Manuscript flow, long-form
+e-book page-turning, EPUB page breaks in Apple Books, Local Assist review,
+and the App Store safety boundary. The latest local App Store / TestFlight
+candidate metadata lives in `docs/internal/app-store-candidates/latest.json`.
+The next work is the five-image App Store story and final copy/UI check.
+Keep upload, TestFlight distribution, App Review, and publication
+separate unless the user explicitly opens that lane.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
 | Done | v1.0 product communication | README, Product Brief, App Store listing copy, release notes, screenshot captions, and current-state docs present one truthful `書く・読む・AI・書き出す` story. Local Assist availability and review boundaries remain adjacent to the AI claim. |
 | Done / local candidate prepared | v1.0 signed App Store candidate | Version surfaces agree on `1.0.0`; source, build, audit, signature, entitlement, checksum, distribution-probe, and sandbox-preview gates passed; and the signed pkg is recorded in ignored candidate metadata. No tag, push, upload, or submission was performed. |
+| Next / release visual | v1.0 App Store screenshot set | Capture the agreed five-image story: write Markdown, read as a book, inspect/return, review Local Assist through Diff, and export EPUB/PDF. Compare the final images with the listing copy and actual UI. |
 | Done | v0.30 e-book Mode Paged Flow | e-book Mode can be used as a daily reading / revision surface for long Japanese Markdown prose while still looking like a book page. The slice should reduce page-turn friction with wheel / trackpad / keyboard movement, preserve chapter/page location for the later editor bridge, and verify large-document behavior. |
 | Done | v0.31 e-book Mode Reading Focus / Spread View | `集中して読む` opens an occupied same-window reading surface, two-page book-like inspection exists when width allows, it falls back to one page when narrow, has keyboard / button navigation plus coarse movement, and remains a display layer over Markdown source rather than Preview DOM editing. |
-| Done / manual proof pending | v0.32 Editor / Reader Position Bridge | Opening e-book Mode near the current editor cursor or visible heading and returning from reader position to Markdown editing feels reliable for normal, unsaved, and recovered documents. Source-level and local package evidence exist; normal / unsaved / recovered built-app interaction smoke remains user-side proof. |
-| Done / manual proof pending | v0.33 EPUB Export v1 Polish | EPUB export remains an explicit user action and is polished enough for initial v1 use with Japanese text, headings, local images, links, code blocks, and clear failure messages. Advanced metadata, cover, navigation editing, and validation workflows stay deferred to v1.x. Source-level polish, external archive / EPUBCheck proof, and signed build `41` package evidence exist; built-app manual EPUB smoke remains blocked. |
-| Done / manual proof pending | v1 Workspace open / dirty markers | The workspace tree distinguishes active files, inactive open files, and open unsaved files using existing tab state. It does not imply Git status, background indexing, or a full file-manager model. Built-app visual smoke remains pending. |
-| Done / manual proof pending | v1 Selection tag insertion | The editor can open the existing slash-command menu from right-click inside the editor, including allowlisted Markdown wrappers such as bold, italic, inline code, links, images, and strikethrough. The source remains visible, undoable, and saved only by explicit Save. Built-app smoke remains pending. |
+| Done / follow-up recorded | v0.32 Editor / Reader Position Bridge | Built-app use confirmed return-to-editor, heading jumps, unsaved documents, and recovered documents. Stored e-book position versus current editor entry and Preview top-reset behavior move to the v1.1 continuity queue. |
+| Done / Apple Books proof | v0.33 EPUB Export v1 Polish | EPUB export succeeded with Japanese text, structure, local images, links, code, and page-break behavior confirmed in Apple Books. Advanced production features and Kindle Previewer remain deferred or optional. |
+| Done | v1 Workspace open / dirty markers | The workspace tree distinguishes active files, inactive open files, and open unsaved files without implying Git status or background indexing. Experimental drag/drop Move remains de-emphasized. |
+| Done / follow-up recorded | v1 Selection tag insertion | The existing allowlisted Markdown insertion menu works without adding a formatting toolbar or arbitrary commands. Viewport clipping and command-palette parity move to the v1.1-v1.2 queue. |
 | Done / published | v0.35 PDF Export Recovery | The broken TestFlight print UI path is replaced with direct PDF export: Save dialog chooses a `.pdf`, Rust validates main-window / non-empty HTML / `.pdf` destination, WebKit creates PDF data in-app, and no browser, shell, external opener, or macOS print dialog is used. Legacy `print_html` is removed from the callable surface. The direct PDF path is included in the published `0.36.0` App Store build. |
-| Done / published, focused proof pending | v0.36 e-book page-turn stabilization | Long documents with many H3+ subheadings stay in H1/H2 chapter groups, one page-turn action crosses at most one chapter boundary, keyboard auto-repeat no longer outruns page state, image decode no longer shrinks the committed page count, and EPUB export splits explicit page-break markers into separate XHTML content documents. The code is included in the published `0.36.0` App Store build; built-app long illustrated manuscript smoke and real EPUB-reader page-break proof remain open as focused evidence. |
-| Next | v0.36 long illustrated manuscript page-turn proof | Use a real built app or TestFlight build with a long image-heavy manuscript. Confirm page turns do not skip pages or chapters, H3+ headings stay inside the current chapter, held arrow keys do not rapidly advance, and image loading does not jump the reader backward. |
-| Next | v0.36 exported EPUB page-break proof | Export a manuscript containing blank-line-flanked `---` / `===` page-break markers, then inspect it in an actual EPUB reader such as Apple Books or Kindle Previewer. Confirm the markers create real page boundaries and the reading order remains correct. |
-| Next | v1.0 Release Candidate / Golden Manuscript Smoke | Feature work freezes and one realistic Japanese long-form Markdown manuscript proves the golden path: New File, Open, Save / Save As, L Mode, Preview, direct PDF export, e-book paged flow, Spread View, editor/reader return, EPUB export, Local Assist, Diff / Discard, Recovery, relaunch, large documents, and App Store lane boundary checks. |
+| Done / edge cases deferred | v0.36 e-book page-turn stabilization | User-side smoke accepted long-form reading, H1/H2 grouping, keyboard repeat, page counts, and spread behavior. 100k-character comfort and consecutive-image layouts remain bounded v1.1 observations rather than v1 blockers. |
+| Done | v0.36 exported EPUB page-break proof | Blank-line-flanked page-break markers were confirmed in Apple Books. Kindle Previewer is optional compatibility proof, not a v1 gate. |
+| Done / Go | v1.0 Release Candidate / Golden Manuscript Smoke | The user-side checklist accepted the core write -> read -> notice -> return -> revise -> review -> export flow and reported no No-Go condition. Remaining commented observations are recorded in `docs/v1.1-v1.2-followup.md`. |
 | Done | Slice A Reader Stability | `EBookPane` render debounce (200ms shared with PreviewPane), rAF-coalesced pagination measurement, the scrollbar `contentDOM.blur()` refocus-on-mouseup fix, the `renderMarkdown` parse reduction (one DOM mutation pass + one sanitize), the rAF-throttled + self-extending preview->editor scroll-sync guard (fixes trackpad inertial-scroll stutter), and the per-image re-measurement collapse are implemented and pinned by focused tests. |
 | Done | Slice C Robustness | `goToLine` double-rAF, `readOnly` in the `useImperativeHandle` deps (insertText / applyMarkdownFormat / insertTable gated), and the validated `tabId` Apple Assist apply path are done. Only Save-As rekey remount (needs editor session id separate from `documentKey`) stays deferred to v1.1. |
 | Done | Slice B bare-`ease` sweep | Remaining transition-level bare `ease` keywords in the named style files and the matching inline icon transition are routed through `var(--ease-standard)`. `ease-out` / `ease-in-out` animations stay untouched. |

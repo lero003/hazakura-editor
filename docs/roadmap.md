@@ -517,45 +517,23 @@ document position, source ownership, or save-state confidence.
 
 #### Pre-v1.0 Close-out Checklist
 
-Status as of v0.36.0. These are the concrete items still open between
-the current source state and freezing v1.0. Each is small and stays
-inside the Safe Editor boundary.
+Status as of 2026-06-28: product proof is accepted and v1.0 is Go,
+subject to visual release-close. The user-side checklist confirmed the
+Golden Manuscript path, practical long-form e-book page-turning, EPUB
+page breaks in Apple Books, Local Assist success/failure/apply/discard,
+and the App Store safety boundary. No No-Go condition was reported.
 
-- **Golden Manuscript built-app smoke (blocked on real-app launch).**
-  The local preview bundle launch was long blocked by a LaunchServices
-  `kLSNoExecutableErr` even though the executable was present in bundle
-  inspection. Once a local preview launches (or via a TestFlight build),
-  run the golden-path smoke against one realistic long-form Japanese
-  manuscript: New File, Open, Save / Save As, L Mode, Preview, e-book
-  Mode paged flow, Spread View, heading jump, editor/reader return,
-  EPUB export, Local Assist, Diff / Discard, Recovery, and relaunch.
-- **v0.36 long illustrated manuscript page-turn proof.** The e-book
-  page-turn fixes (chapter-cross target, keyboard repeat guard,
-  provisional page-count floor, H1/H2 coalescing, stale-remeasure guard)
-  are verified at source-test level but need built-app confirmation that
-  a long illustrated document pages without skipping. Use the
-  `チカちゃん` 7000+ line sample or an equivalent image-heavy manuscript.
-- **v0.36 exported EPUB page-break proof.** The EPUB content-document
-  split is verified by archive-inspection tests, but needs confirmation
-  that `---` page-break markers produce real page boundaries in an
-  actual EPUB reader (Apple Books / Kindle Previewer).
-- **Slice B bare-`ease` sweep is done.** Remaining transition-level bare
-  `ease` keywords in `lMode.css`, `agent-window.css`,
-  `apple-assist-review.css`, `find.css`, and the matching inline icon
-  transition now use `var(--ease-standard)`. `ease-out` / `ease-in-out`
-  animations were intentionally left alone.
-- **App Store screenshots / description / release notes update** for the
-  v1 story: write Markdown, read it like a book, inspect a spread,
-  review an AI proposal through Diff, then export EPUB.
-- **Slice C Save-As rekey remount stays deferred to v1.1.** Save-As
-  still works; it just resets scroll / undo because `documentKey`
-  change forces a remount. A proper fix needs an editor session id
-  separate from `documentKey`. This is an accepted v1 limitation, not a
-  v1.0 blocker, but should be noted in v1 release copy if noticed.
+Unchecked boxes are not automatic blockers. Commented observations are
+preserved in `docs/v1.1-v1.2-followup.md`. The only active v1.0 work is:
 
-When the Golden Manuscript smoke passes on a real app (local preview or
-TestFlight) and the EPUB page-break proof is confirmed, v1.0 can be
-frozen and tagged.
+- capture the five-image App Store screenshot story;
+- compare screenshots, listing copy, and release notes with the actual UI;
+- make only small visual or wording corrections found by that review;
+- keep feature work frozen until release.
+
+Save-As session continuity, 100k-character comfort, consecutive-image
+layout, Recovery edge cases, and detailed review/export polish are
+accepted post-v1 work unless they reproduce a No-Go condition.
 
 ### Deferred Beyond v1.0
 

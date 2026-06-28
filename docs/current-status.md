@@ -18,6 +18,15 @@ Last reviewed: 2026-06-28 (1.0.0 RC and product message)
   `docs/internal/app-store-candidates/latest.json` for the current local
   build and artifact details. Upload, TestFlight distribution, App
   Review, and public `1.0.0` release are not claimed.
+- A 2026-06-28 user-side pre-v1 pass accepted the Golden Manuscript flow,
+  long-form e-book page-turning, EPUB page breaks in Apple Books, Local
+  Assist success / failure / apply / discard, and the App Store safety
+  boundary. No v1 No-Go condition was reported. Unchecked boxes are not
+  treated as automatic blockers; commented observations are classified
+  in `docs/v1.1-v1.2-followup.md`.
+- The remaining v1.0 work is the five-image App Store screenshot story
+  and a final visual/copy comparison against the actual UI. Feature work
+  stays frozen unless that pass reveals a No-Go regression.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
 - Published Mac App Store version: `0.36.0`. It includes the v0.32
@@ -433,20 +442,12 @@ baseline, and smoke evidence are archived under
 
 ## Next Safe Actions
 
-1. For the next product slice, start with `docs/current-work.md`.
-   The active lane remains `v0.30-v1.0 Reader UX Stabilization`; the
-   current task is proof-close, not feature expansion. Close v0.36 by
-   recording built-app long illustrated manuscript page-turn smoke,
-   actual EPUB-reader page-break proof, and the Golden Manuscript path
-   when a local preview or TestFlight build is available.
-2. Keep the v1 path focused on a single-document Safe Markdown Book
-   Editor with Local Assist Review: read, notice, return, revise, review
-   AI proposals through Diff / Discard, and export. Do not add Book
-   Workspace Alpha, hidden multi-file book manifests, Preview DOM
-   editing, external AI/API providers, Agent Workbench in the App Store
-   lane, or an EPUB document model unless that lane is explicitly
-   opened. The `bare ease` CSS sweep is now closed as a small v1
-   motion-token cleanup, not a new feature surface.
+1. Capture and review the five v1 App Store screenshots in the order
+   defined by `docs/releases/1.0.0-app-store-listing-copy.md`. Adjust only
+   small visual or wording mismatches found by that review.
+2. Keep feature work frozen for v1.0. Treat the user-side Golden
+   Manuscript evidence as sufficient unless a release-visual pass
+   reproduces a No-Go condition.
 3. For the latest local App Store / TestFlight package candidate, see
    `docs/internal/app-store-candidates/latest.json` for version / build
    counter / pkg path / SHA-256 / generated time. At this sync point it
@@ -461,3 +462,6 @@ baseline, and smoke evidence are archived under
 5. For future release checkpoints, use the version-specific release
    note plus the release checklists. Do not tag or publish without
    explicit approval.
+6. After v1.0 release, take one item at a time from
+   `docs/v1.1-v1.2-followup.md`, starting with Recovery and position
+   continuity before cosmetic polish.
