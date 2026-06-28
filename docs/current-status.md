@@ -8,16 +8,19 @@ Last reviewed: 2026-06-29 (1.0.0 public release and v1.1 kickoff)
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current package/app version: `1.0.0` across npm, Tauri, Cargo, and lockfile metadata.
+- Current development package/app version: `1.1.0` across npm, Tauri, Cargo,
+  and lockfile metadata. The v1.1 candidate lane was opened 2026-06-29; the
+  published Mac App Store version remains `1.0.0` until a v1.1 candidate is
+  uploaded, reviewed, and released.
 - `1.0.0` was approved and released on the Mac App Store. It is a
   semantic and product-message re-baseline of the feature shape first
   shipped through `0.36.0`, not a new feature expansion. Its public message is:
   `Markdownで書き、本として読み、ローカルAIで整える。`
-- The prepared signed App Store / TestFlight `1.0.0` candidate passed
-  source, build, audit, signature, entitlement, checksum,
+- The prepared signed App Store / TestFlight `1.1.0` candidate (build 54)
+  passed source, build, audit, signature, entitlement, checksum,
   distribution-probe, and sandbox-preview gates. Its local provenance
-  remains in `docs/internal/app-store-candidates/latest.json`; the public
-  listing confirms version `1.0.0`, while raw App Store Connect,
+  is in `docs/internal/app-store-candidates/latest.json`; the public
+  listing still confirms `1.0.0`, while raw App Store Connect,
   TestFlight, and App Review logs are not tracked in this repository.
 - A 2026-06-28 user-side pre-v1 pass accepted the Golden Manuscript flow,
   long-form e-book page-turning, EPUB page breaks in Apple Books, Local
@@ -26,9 +29,11 @@ Last reviewed: 2026-06-29 (1.0.0 public release and v1.1 kickoff)
   treated as automatic blockers; commented observations are classified
   in `docs/v1.1-v1.2-followup.md`.
 - No public-release hotfix blocker has been reported. The active lane is
-  now v1.1 daily-use continuity and trust. The first slice will isolate
-  reader / editor / Preview position ownership before changing behavior;
-  Recovery reliability remains the next priority.
+  now v1.1 daily-use continuity and trust. The reader-side single-slot
+  position fix (#2) is implemented; the signed `1.1.0` / build 54
+  candidate is the first TestFlight candidate for this lane. Editor
+  remount reset (#5 tab), external-link reset (#5 link), and Preview
+  real-layout top-reset (#4) remain as separate slices.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
 - Published Mac App Store version: `1.0.0`. It includes the v0.32

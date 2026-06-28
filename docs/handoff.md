@@ -16,10 +16,12 @@ Last reviewed: 2026-06-29 (1.0.0 public release and v1.1 kickoff)
   Manuscript baseline. No public-release hotfix blocker has been
   reported. All commented observations are routed to
   `docs/v1.1-v1.2-followup.md`.
-- Source/package metadata remains at the released `1.0.0` baseline. Do
-  not bump to `1.1.0` until the first v1.1 change is accepted and a
-  candidate lane is deliberately opened.
-- The signed local `1.0.0` App Store / TestFlight candidate passed the
+- The v1.1 candidate lane was opened 2026-06-29. Source/package metadata
+  is now at `1.1.0` after the reader-side single-slot position fix (#2)
+  was accepted. The signed local `1.1.0` / build 54 App Store candidate
+  is the first TestFlight candidate for this lane; do not tag, push, or
+  publish until the user confirms upload and review.
+- The signed local `1.1.0` App Store / TestFlight candidate passed the
   release gates, package signature and checksum verification, enforced
   App Store entitlement probe, and sandbox-preview smoke. Its current
   local artifact details live only in
@@ -64,9 +66,10 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    next, unless a source-loss signal promotes it to hotfix priority.
 3. Follow with one image, Diff action, context-menu, or `.bak` case at a
    time; do not bundle unrelated polish.
-4. Keep the version at `1.0.0`, and keep tag, push, App Store Connect,
-   TestFlight, review, and publication closed until a v1.1 candidate is
-   deliberately opened.
+4. The version is now `1.1.0` and the signed build 54 candidate is the
+   active TestFlight candidate. Keep tag, push, App Store Connect upload,
+   TestFlight, review, and publication closed until the user confirms the
+   upload path; do not treat the local candidate as published.
 
 Detailed v0.18-v1.0 completed-slice history and per-version verification
 records moved to `docs/archive/operations/handoff-detail-through-v1.0.md`.
