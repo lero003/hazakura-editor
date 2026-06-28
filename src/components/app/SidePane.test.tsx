@@ -139,4 +139,84 @@ describe("SidePane", () => {
     });
     expect(screen.queryByRole("heading", { name: "Chapter One" })).toBeNull();
   });
+
+  // v1.1 position-continuity pin (#4): the Preview scroll container is the
+  // shared SidePane wrapper div held by `previewPaneRef`. This outer div is
+  // NOT unmounted on a side-pane mode switch — only the inner leaf
+  // (PreviewPane / EBookPane / DiffPane) is swapped — so the div identity and
+  // its scrollTop persist across mode switches in jsdom. This pins that
+  // boundary: scroll *container* ownership lives in SidePane, and a naive
+  // "PreviewPane state lost scrollTop" model is wrong. The real-world
+  // "Preview reopen starts at the top" symptom observed by users is therefore
+  // driven by something else (e.g. the rendered HTML being replaced and the
+  // scroll height collapsing, then the editor-sync path resetting scrollTop),
+  // and must be reproduced separately before any fix. A future contract that
+  // saves/restores scrollTop keyed by document identity belongs at the
+  // SidePane / AppWorkspace level, not inside the PreviewPane leaf.
+  it("keeps the shared scroll container (and its scrollTop) across a side-pane mode switch in jsdom", async () => {
+    const source = "# Heading One\n\nbody\n\n# Heading Two\n\nbody";
+    const bookTab = {
+      ...activeTab,
+      contents: source,
+      path: "/workspace/book.md",
+      id: "/workspace/book.md",
+      name: "book.md",
+    };
+    const previewPaneRef = createRef<HTMLDivElement>();
+
+    function SidePaneHarness({ sidePaneMode }: { sidePaneMode: RightPaneMode }) {
+      return (
+        <SidePane
+          {...sidePaneProps({
+            activeContents: source,
+            activeTab: bookTab,
+            previewPaneRef,
+            sidePaneMode,
+          })}
+        />
+      );
+    }
+
+    const { rerender } = render(<SidePaneHarness sidePaneMode="preview" />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Heading One" })).toBeTruthy();
+    });
+
+    const previewContainer = previewPaneRef.current;
+    expect(previewContainer).not.toBeNull();
+    if (!previewContainer) {
+      // Unreachable in jsdom (the ref attaches in preview mode), but
+      // narrows the type for the property assignments below.
+      throw new Error("preview scroll container was not attached");
+    }
+    Object.defineProperty(previewContainer, "scrollHeight", {
+      configurable: true,
+      value: 1000,
+    });
+    Object.defineProperty(previewContainer, "clientHeight", {
+      configurable: true,
+      value: 200,
+    });
+    previewContainer.scrollTop = 600;
+
+    // Pin: the scroll container div identity survives a mode switch because
+    // SidePane always renders this outer wrapper; only the inner leaf changes.
+    const firstContainer = previewPaneRef.current;
+    rerender(<SidePaneHarness sidePaneMode="ebook" />);
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Heading One" })).toBeTruthy();
+    });
+
+    rerender(<SidePaneHarness sidePaneMode="preview" />);
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Heading One" })).toBeTruthy();
+    });
+
+    // Pin: in jsdom the same div is reused, so scrollTop persists. This
+    // documents the container-ownership boundary, not the user-visible
+    // top-reset symptom (which needs real-layout reproduction).
+    expect(previewPaneRef.current).toBe(firstContainer);
+    expect(previewPaneRef.current?.scrollTop ?? 0).toBe(600);
+  });
 });

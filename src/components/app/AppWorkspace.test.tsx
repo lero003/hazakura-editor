@@ -751,4 +751,126 @@ describe("AppWorkspace workspace sidebar collapse", () => {
 
     expect(goToLine).toHaveBeenCalledWith(6, { focus: true });
   });
+
+  // v1.1 position-continuity pin: `ebookLocation` in AppWorkspace is a single
+  // slot keyed by documentKey, not a per-tab Map. These tests pin the current
+  // behavior so the smallest future ownership change has a regression
+  // baseline. They intentionally make no behavior change.
+  describe("v1.1 position-continuity pins", () => {
+    const pinContents = [
+      "# Chapter One",
+      "",
+      "body one",
+      "",
+      "# Chapter Two",
+      "",
+      "body two",
+    ].join("\n");
+    const pinHeadings = [
+      { level: 1, line: 1, text: "Chapter One" },
+      { level: 2, line: 5, text: "Chapter Two" },
+    ];
+    const firstBookTab = {
+      ...bookTab,
+      id: "/workspace/book-a.md",
+      name: "book-a.md",
+      path: "/workspace/book-a.md",
+    };
+    const secondBookTab = {
+      ...bookTab,
+      id: "/workspace/book-b.md",
+      name: "book-b.md",
+      path: "/workspace/book-b.md",
+    };
+    const sharedPinProps = {
+      activeContents: pinContents,
+      activeDocumentLineCount: 7,
+      documentHeadings: pinHeadings,
+      hasWorkspaceSelection: true,
+      sidePaneMode: "ebook" as const,
+      sidePaneVisible: true,
+      workspaceRootPath: "/workspace",
+    };
+
+    it("pins single-slot limitation: A location is lost once B moves", () => {
+      // 1. Open tab A, move its reader location to chapter 1 / page 2.
+      const { rerender } = renderWorkspace({
+        ...sharedPinProps,
+        activeTab: firstBookTab,
+        currentHeadingLine: 1,
+      });
+      fireEvent.click(
+        screen.getByRole("button", { name: "Mock store old reader location" }),
+      );
+      expect(screen.getByTestId("side-ebook-location").textContent).toContain(
+        "side location 1:2",
+      );
+
+      // 2. Switch to tab B. The single slot is keyed by documentKey, so A's
+      //    stored location is masked. Because no B location exists, the
+      //    initial location falls back to the editor heading anchor
+      //    (currentHeadingLine:1 -> Chapter One -> 0:0). This fallback is the
+      //    correct current behavior, not a regression.
+      rerenderWorkspace(rerender, {
+        ...sharedPinProps,
+        activeTab: secondBookTab,
+        currentHeadingLine: 1,
+      });
+      expect(screen.getByTestId("side-ebook-location").textContent).toContain(
+        "side location 0:0",
+      );
+
+      // 3. Move B's reader location (single slot now holds B's documentKey).
+      fireEvent.click(
+        screen.getByRole("button", { name: "Mock one-page reader location change" }),
+      );
+
+      // 4. Return to tab A. The reader position is NOT A's last 1:2; the
+      //    single slot holds B's location so A falls back to the editor
+      //    anchor again. This is the documented single-slot limitation a
+      //    future per-tab Map would fix.
+      rerenderWorkspace(rerender, {
+        ...sharedPinProps,
+        activeTab: firstBookTab,
+        currentHeadingLine: 1,
+      });
+      expect(screen.getByTestId("side-ebook-location").textContent).toContain(
+        "side location 0:0",
+      );
+      expect(screen.getByTestId("side-ebook-location").textContent).not.toContain(
+        "side location 1:2",
+      );
+    });
+
+    it("pins that returning to an unmoved tab restores its reader location", () => {
+      // Contrast case: when B does NOT move, the single slot still holds A's
+      // location because documentKey masks restore A's stored value. This is
+      // the optimistic path the existing tests already cover; pin it next to
+      // the limitation above so both sides of the rule are explicit.
+      const { rerender } = renderWorkspace({
+        ...sharedPinProps,
+        activeTab: firstBookTab,
+        currentHeadingLine: 1,
+      });
+      fireEvent.click(
+        screen.getByRole("button", { name: "Mock store old reader location" }),
+      );
+
+      rerenderWorkspace(rerender, {
+        ...sharedPinProps,
+        activeTab: secondBookTab,
+        currentHeadingLine: 1,
+      });
+
+      rerenderWorkspace(rerender, {
+        ...sharedPinProps,
+        activeTab: firstBookTab,
+        currentHeadingLine: 1,
+      });
+
+      expect(screen.getByTestId("side-ebook-location").textContent).toContain(
+        "side location 1:2",
+      );
+    });
+  });
 });

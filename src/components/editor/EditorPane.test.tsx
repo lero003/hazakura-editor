@@ -330,6 +330,50 @@ describe("EditorPane", () => {
     expect(editorRef.current?.getActiveDocument()?.from).toBeGreaterThan(0);
   });
 
+  // v1.1 position-continuity pin (#5): a documentKey change (= tab switch)
+  // remounts the CodeMirror editor, so the cursor/scroll position of the
+  // previous tab is NOT preserved. This pins the current limitation — a
+  // future per-tab position-restore layer would flip this expectation.
+  // Contrast with the L Mode toggles above, which keep documentKey and so
+  // keep the cursor.
+  it("resets the cursor when the documentKey changes (tab switch)", async () => {
+    const editorRef = createRef<EditorPaneHandle>();
+    const { rerender } = render(
+      renderEditorPane({
+        documentKey: "/workspace/a.md",
+        ref: editorRef,
+        value: "line 1\nline 2\nline 3\n",
+      }),
+    );
+
+    editorRef.current?.goToLine(3);
+    expect(editorRef.current?.getActiveDocument()?.from).toBeGreaterThan(0);
+
+    rerender(
+      renderEditorPane({
+        documentKey: "/workspace/b.md",
+        ref: editorRef,
+        value: "other content\n",
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    // Pin: switching tabs remounts the editor; the cursor resets to the
+    // document start (from === 0), not the previous tab's line-3 position.
+    expect(editorRef.current?.getActiveDocument()?.from).toBe(0);
+
+    // Pin: returning to the first tab remounts it again, also from the top.
+    rerender(
+      renderEditorPane({
+        documentKey: "/workspace/a.md",
+        ref: editorRef,
+        value: "line 1\nline 2\nline 3\n",
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(editorRef.current?.getActiveDocument()?.from).toBe(0);
+  });
+
   it("reports the settled editor scroll position when jumping to a line", () => {
     const editorRef = createRef<EditorPaneHandle>();
     const onScrollRatioChange = vi.fn();

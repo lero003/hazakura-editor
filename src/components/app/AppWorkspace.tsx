@@ -252,6 +252,13 @@ export function AppWorkspace({
   const [internalWorkspaceSidebarCollapsed, setInternalWorkspaceSidebarCollapsed] =
     useState(false);
   const [ebookFocusOpen, setEbookFocusOpen] = useState(false);
+  // v1.1 position-continuity pin: `ebookLocation` is a single slot keyed by
+  // `documentKey`, not a per-tab Map. When the active tab changes, the stored
+  // reader location is overwritten or masked (see `activeEbookLocation` below),
+  // so switching A -> B -> A loses A's last reader position once B moves. This
+  // is the documented single-document position-continuity limitation. A future
+  // fix would key reader locations by tab id / documentKey in a Map while
+  // keeping the Safe Editor / Markdown-canonical boundaries intact.
   const [ebookLocation, setEbookLocation] = useState<{
     documentKey: string;
     location: EBookReaderLocation;
