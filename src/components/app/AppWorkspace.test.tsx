@@ -63,6 +63,18 @@ vi.mock("./SidePane", () => ({
       </button>
       <button
         onClick={() =>
+          props.onEbookLocationChange?.({
+            chapterIndex: 2,
+            pageIndex: 3,
+            sourceLine: 7,
+          })
+        }
+        type="button"
+      >
+        Mock reader location chapter 2 page 3
+      </button>
+      <button
+        onClick={() =>
           props.onOpenEbookReadingFocus?.({ chapterIndex: 1, pageIndex: 2 })
         }
         type="button"
@@ -792,7 +804,10 @@ describe("AppWorkspace workspace sidebar collapse", () => {
       workspaceRootPath: "/workspace",
     };
 
-    it("keeps tab A reader location after tab B moves (single-slot fix)", () => {
+    it("keeps each tab's reader location independently (single-slot fix)", () => {
+      // A and B store DISTINCT reader locations (A: 1:2, B: 2:3). A test where
+      // both shared the same visible value would pass even for a future global
+      // last-location regression, so distinct values are required.
       // 1. Open tab A, move its reader location to chapter 1 / page 2.
       const { rerender } = renderWorkspace({
         ...sharedPinProps,
@@ -818,15 +833,18 @@ describe("AppWorkspace workspace sidebar collapse", () => {
         "side location 0:0",
       );
 
-      // 3. Move B's reader location. The Map now holds both A's and B's.
+      // 3. Move B's reader location to a DIFFERENT value (chapter 2 / page 3).
+      //    The Map now holds A's 1:2 and B's 2:3.
       fireEvent.click(
-        screen.getByRole("button", { name: "Mock one-page reader location change" }),
+        screen.getByRole("button", {
+          name: "Mock reader location chapter 2 page 3",
+        }),
       );
 
-      // 4. Return to tab A. The reader position IS A's last 1:2; the
-      //    per-documentKey Map restores it instead of falling back to the
-      //    editor anchor. This is the fixed behavior (single-slot baseline
-      //    returned 0:0 here).
+      // 4. Return to tab A. The reader position IS A's 1:2, not B's 2:3 and
+      //    not the editor anchor. This is the per-documentKey Map behavior
+      //    (single-slot baseline returned 0:0; a global last-location
+      //    regression would return 2:3 here).
       rerenderWorkspace(rerender, {
         ...sharedPinProps,
         activeTab: firstBookTab,
@@ -834,6 +852,17 @@ describe("AppWorkspace workspace sidebar collapse", () => {
       });
       expect(screen.getByTestId("side-ebook-location").textContent).toContain(
         "side location 1:2",
+      );
+
+      // 5. Return to tab B. Its own 2:3 is restored, proving both slots are
+      //    independent rather than a single shared value.
+      rerenderWorkspace(rerender, {
+        ...sharedPinProps,
+        activeTab: secondBookTab,
+        currentHeadingLine: 1,
+      });
+      expect(screen.getByTestId("side-ebook-location").textContent).toContain(
+        "side location 2:3",
       );
     });
 
