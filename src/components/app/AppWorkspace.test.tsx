@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { createRef, type ComponentProps } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AppWorkspace } from "./AppWorkspace";
@@ -12,9 +12,23 @@ import {
 import type { EditorPaneHandle } from "../editor/EditorPane";
 import type { WorkspaceTreeEntry } from "../../lib/tauri";
 import type { EditorSettings, EditorTab } from "../../types";
+import type {
+  EditorViewState,
+  EditorViewStatePatch,
+} from "../../features/editor/documentViewState";
+
+const editorMainPaneMock = vi.hoisted(() => ({
+  props: null as null | {
+    editorViewState?: EditorViewState | null;
+    onEditorViewStateChange?: (patch: EditorViewStatePatch) => void;
+  },
+}));
 
 vi.mock("../editor/EditorMainPane", () => ({
-  EditorMainPane: () => <div data-testid="editor-main-pane" />,
+  EditorMainPane: (props: NonNullable<typeof editorMainPaneMock.props>) => {
+    editorMainPaneMock.props = props;
+    return <div data-testid="editor-main-pane" />;
+  },
 }));
 
 vi.mock("../editor/PaneResizer", () => ({
@@ -634,6 +648,7 @@ describe("AppWorkspace workspace sidebar collapse", () => {
       hasWorkspaceSelection: true,
       sidePaneMode: "ebook" as const,
       sidePaneVisible: true,
+      tabs: [firstUntitledTab, secondUntitledTab],
       workspaceRootPath: "/workspace",
     };
     const { rerender } = renderWorkspace({
@@ -801,8 +816,67 @@ describe("AppWorkspace workspace sidebar collapse", () => {
       hasWorkspaceSelection: true,
       sidePaneMode: "ebook" as const,
       sidePaneVisible: true,
+      tabs: [firstBookTab, secondBookTab],
       workspaceRootPath: "/workspace",
     };
+
+    it("keeps each tab's editor position independently", () => {
+      const tabs = [firstBookTab, secondBookTab];
+      const { rerender } = renderWorkspace({
+        ...sharedPinProps,
+        activeTab: firstBookTab,
+        documentKey: firstBookTab.id,
+        tabs,
+      });
+
+      expect(editorMainPaneMock.props?.editorViewState).toBeNull();
+      act(() => {
+        editorMainPaneMock.props?.onEditorViewStateChange?.({
+          anchor: 12,
+          head: 12,
+          scrollRatio: 0.6,
+        });
+      });
+
+      rerenderWorkspace(rerender, {
+        ...sharedPinProps,
+        activeTab: secondBookTab,
+        documentKey: secondBookTab.id,
+        tabs,
+      });
+      expect(editorMainPaneMock.props?.editorViewState).toBeNull();
+      act(() => {
+        editorMainPaneMock.props?.onEditorViewStateChange?.({
+          anchor: 3,
+          head: 3,
+          scrollRatio: 0.1,
+        });
+      });
+
+      rerenderWorkspace(rerender, {
+        ...sharedPinProps,
+        activeTab: firstBookTab,
+        documentKey: firstBookTab.id,
+        tabs,
+      });
+      expect(editorMainPaneMock.props?.editorViewState).toEqual({
+        anchor: 12,
+        head: 12,
+        scrollRatio: 0.6,
+      });
+
+      rerenderWorkspace(rerender, {
+        ...sharedPinProps,
+        activeTab: secondBookTab,
+        documentKey: secondBookTab.id,
+        tabs,
+      });
+      expect(editorMainPaneMock.props?.editorViewState).toEqual({
+        anchor: 3,
+        head: 3,
+        scrollRatio: 0.1,
+      });
+    });
 
     it("keeps each tab's reader location independently (single-slot fix)", () => {
       // A and B store DISTINCT reader locations (A: 1:2, B: 2:3). A test where

@@ -10,9 +10,23 @@ import {
 } from "../../lib/locale";
 import type { EditorPaneHandle } from "./EditorPane";
 import type { EditorSettings, EditorTab } from "../../types";
+import type {
+  EditorViewState,
+  EditorViewStatePatch,
+} from "../../features/editor/documentViewState";
+
+const editorPaneMock = vi.hoisted(() => ({
+  props: null as null | {
+    editorViewState?: EditorViewState | null;
+    onEditorViewStateChange?: (patch: EditorViewStatePatch) => void;
+  },
+}));
 
 vi.mock("./EditorPane", () => ({
-  default: () => <div data-testid="mock-editor-pane" />,
+  default: (props: NonNullable<typeof editorPaneMock.props>) => {
+    editorPaneMock.props = props;
+    return <div data-testid="mock-editor-pane" />;
+  },
 }));
 
 vi.mock("./ScrollPositionHud", () => ({
@@ -88,10 +102,12 @@ function renderEditorMainPane(
       editorPaneRef={createRef<EditorPaneHandle | null>()}
       editorSettings={editorSettings}
       editorTheme="light"
+      editorViewState={null}
       imagePreviewTitle="Image preview"
       lModeCopy={getLModeCopy("en")}
       menuLanguage="en"
       onChange={vi.fn()}
+      onEditorViewStateChange={vi.fn()}
       onNewFile={vi.fn()}
       onOpenFile={vi.fn()}
       onOpenFolder={vi.fn()}
@@ -114,6 +130,17 @@ function renderEditorMainPane(
 }
 
 describe("EditorMainPane", () => {
+  it("passes the controlled editor view state through to EditorPane", () => {
+    const editorViewState = { anchor: 4, head: 7, scrollRatio: 0.35 };
+    const onEditorViewStateChange = vi.fn();
+
+    renderEditorMainPane({ editorViewState, onEditorViewStateChange });
+
+    expect(editorPaneMock.props?.editorViewState).toBe(editorViewState);
+    editorPaneMock.props?.onEditorViewStateChange?.({ scrollRatio: 0.8 });
+    expect(onEditorViewStateChange).toHaveBeenCalledWith({ scrollRatio: 0.8 });
+  });
+
   it("shows the active full path in a thin bar below the editor", () => {
     renderEditorMainPane();
 
