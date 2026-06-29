@@ -250,6 +250,13 @@ function buildMarkdownPaletteCommands(
       return [
         {
           ...paletteCommand,
+          keywords: Array.from(
+            new Set([
+              ...(paletteCommand.keywords ?? []),
+              sourceCommand.label,
+              ...sourceCommand.searchKeys,
+            ]),
+          ),
           run: () => {
             if ("insertText" in sourceCommand) {
               editorPaneRef.current?.insertText(sourceCommand.insertText);

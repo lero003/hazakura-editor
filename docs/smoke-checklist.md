@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-06-26 (v1 / v0.36 Golden Manuscript smoke)
+Last reviewed: 2026-06-30 (1.2.0 candidate smoke intake)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -28,6 +28,74 @@ onscreen layer-0 app window. It proves the built bundle can surface a
 visible app window on this Mac; it does not prove native dialog
 selection, Hazakura Local Assist transaction review, TestFlight, App Store
 sandbox behavior, or notarization.
+
+## 1.2.0 Candidate Test Intake
+
+`1.2.0` is the v1.2 Polish And Expectation Setting candidate. It does
+not add a new product surface; it deepens command discovery, context-menu
+containment, and EPUB export expectations. Run the items below before
+treating `1.2.0` as built-app proven. Detailed steps live in the named
+sections that follow this intake.
+
+### Automated gates (source level)
+
+These must pass before any manual interaction smoke:
+
+1. `npm test` — full Vitest suite (121 files / 1083 tests).
+2. `cargo test --manifest-path src-tauri/Cargo.toml` — full Rust suite.
+3. `npm run build:vite` — TypeScript + Vite build (chunk-size warning is known).
+4. `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`.
+5. `npm run build` — launchable helper-enabled local smoke lane.
+6. `git diff --check`.
+7. `npm audit` (0 vulnerabilities) and `cargo audit` (triaged warnings only).
+8. Focused regression tests: `src/components/editor/SlashMenu.test.tsx`
+   (viewport containment) and
+   `src/hooks/commandPalette/useCommandPaletteController.test.ts`
+   (localized `みだし` search).
+
+### Manual interaction smoke (built app)
+
+Use the latest built desktop app, not browser-only Preview. Grouped by
+the v1.2 change area; full step detail is in the sections below.
+
+9. **Command discovery (v1.2).** See "v1 Workspace Marker / Right-click
+   Slash Command Smoke", items 6, 7, and 10: open the command palette
+   (`Cmd+Shift+P`), confirm the same safe Markdown actions as the
+   right-click slash menu, confirm a selected range is preserved on
+   table insertion, and confirm Japanese / kana search (`見出し` /
+   `みだし`) finds the English-labelled heading command.
+10. **Context-menu viewport containment (v1.2).** See the same section,
+    item 8: right-click near the bottom edge (opens upward), near the
+    right edge (aligns from the right), and near the left edge (stays
+    inside the 8px inset). Confirm `Escape`, running a command, and
+    clicking outside close the menu.
+11. **EPUB export scope note (v1.2).** See "v0.33 EPUB Export Smoke":
+    open the EPUB export action and confirm the metadata dialog carries
+    the in-app scope note (e-book Mode is a reading preview, the EPUB
+    targets a single Markdown document, Hazakura is not a full EPUB
+    production tool) in both Japanese and English.
+12. **No-regression surface.** Confirm the command palette and slash
+    menu expose only the existing allowlisted Markdown insertion /
+    wrapper actions. Confirm no arbitrary command execution, formatting
+    toolbar, Git status, background indexing, or new Agent / Review
+    surface appears. Confirm Markdown source stays canonical and Save
+    remains explicit after every action above.
+
+### Local package evidence
+
+13. The signed `1.2.0` App Store / TestFlight candidate pkg passes
+    package signature and checksum verification, enforced App Store
+    entitlement probe, and sandbox-preview smoke. Per-build pkg path /
+    SHA-256 live in `docs/internal/app-store-candidates/latest.json`.
+14. `npm run smoke:macos-window` confirms an onscreen packaged window.
+    It does not replace manual interaction smoke.
+
+### Built-app smoke status note
+
+As of this intake, built-app right-click / command-palette / EPUB-dialog
+interaction smoke (items 9-11) has not been exercised end-to-end on a
+`1.2.0` candidate; only window-launch smoke passed. Treat items 9-14 as
+open release checks, not as passed.
 
 ## App Store Surface Auto Smoke
 
@@ -252,7 +320,9 @@ handling, and workspace-tree rendering.
    clicked editor position.
 8. Confirm `Escape`, running a command, and clicking outside the editor /
    menu close the slash-command menu. The workspace tree and tab bar
-   context menus should keep their existing behavior.
+   context menus should keep their existing behavior. Right-click near the
+   bottom edge and confirm the menu opens upward; repeat near the left and
+   right edges and confirm it remains inside an 8px viewport inset.
 9. Repeat a light check in L Mode's workspace drawer. The marker state
    should match the normal workspace sidebar and should not imply Git
    status, background indexing, or a full file-manager model.
@@ -263,13 +333,15 @@ handling, and workspace-tree rendering.
     image, strikethrough, bold, italic, inline code, link, and the
     3-column table plus today's date / current time. With a selected range,
     confirm table insertion does not delete the selection. The palette is a
-    single command surface for these actions, not a second system.
+    single command surface for these actions, not a second system. With the
+    menu language set to Japanese or kana, search for `見出し` / `みだし`
+    and confirm the English-labelled heading command is discoverable.
 
-Latest local app note: on 2026-06-25, `npm run build` produced the local
-preview bundle and distribution probe passed, but `smoke:macos-window`
-could not open the bundle through LaunchServices (`kLSNoExecutableErr`).
-Do not treat workspace marker / right-click slash-command UI smoke as
-passed until this checklist is exercised in a launchable desktop shell.
+Latest local app note: on 2026-06-30, `npm run smoke:macos-window` rebuilt
+the App Store preview and Developer / GitHub lanes, launched `Hazakura
+Editor Dev.app`, confirmed an onscreen 1280x820 window, and quit it. This
+proves packaged window launch only; the right-click containment and
+localized Command Palette interaction steps above remain manual smoke.
 
 ## Help Link Routing
 

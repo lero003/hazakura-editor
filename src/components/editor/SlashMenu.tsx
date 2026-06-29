@@ -37,6 +37,11 @@ const BADGE_LABEL: Record<SlashCommand["category"], keyof SlashMenuCopy> = {
   shortcut: "shortcutBadge",
 };
 
+const SLASH_MENU_GAP = 6;
+const SLASH_MENU_MAX_HEIGHT = 320;
+const SLASH_MENU_MIN_WIDTH = 240;
+const VIEWPORT_INSET = 8;
+
 function prefersReducedMotion(): boolean {
   if (typeof window === "undefined" || !window.matchMedia) {
     return false;
@@ -72,12 +77,25 @@ export function SlashMenu({
 
   const viewportHeight =
     typeof window === "undefined" ? 0 : window.innerHeight;
+  const viewportWidth = typeof window === "undefined" ? 0 : window.innerWidth;
   const flipUp =
-    viewportHeight > 0 && state.rect.bottom + 240 > viewportHeight;
-  const top = flipUp
-    ? Math.max(8, state.rect.top - 8)
-    : state.rect.bottom + 6;
-  const left = state.rect.left;
+    viewportHeight > 0 &&
+    state.rect.bottom + SLASH_MENU_MAX_HEIGHT + VIEWPORT_INSET >
+      viewportHeight;
+  const alignRight =
+    viewportWidth > 0 &&
+    state.rect.left + SLASH_MENU_MIN_WIDTH + VIEWPORT_INSET > viewportWidth;
+  const bottom = flipUp
+    ? Math.max(
+        VIEWPORT_INSET,
+        viewportHeight - state.rect.top + SLASH_MENU_GAP,
+      )
+    : undefined;
+  const left = alignRight
+    ? undefined
+    : Math.max(VIEWPORT_INSET, state.rect.left);
+  const right = alignRight ? VIEWPORT_INSET : undefined;
+  const top = flipUp ? undefined : state.rect.bottom + SLASH_MENU_GAP;
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === "ArrowDown") {
@@ -105,7 +123,7 @@ export function SlashMenu({
       aria-label="Slash command menu"
       className={`slash-menu${reduceMotion ? " reduced-motion" : ""}`}
       role="listbox"
-      style={{ left, position: "fixed", top }}
+      style={{ bottom, left, position: "fixed", right, top }}
       tabIndex={-1}
       onKeyDown={handleKeyDown}
     >

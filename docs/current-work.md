@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v1.2 polish and expectation setting
 Authority: High
-Last reviewed: 2026-06-30 (1.1.0 public release and v1.2 polish)
+Last reviewed: 2026-06-30 (1.1.0 public release; 1.2.0 candidate)
 
 ## Purpose
 
@@ -11,9 +11,12 @@ Start here when choosing the next small `Hazakura Editor` slice.
 This file is the current work queue. `1.1.0` is approved and published
 on the Mac App Store with the product promise
 `Markdownで書き、本として読み、ローカルAIで整える。` The active lane is v1.2
-polish and expectation setting: improve export expectations, command
+Polish And Expectation Setting: improve export expectations, command
 discovery, and one observed quality issue at a time without expanding into
-v2 book-workspace features.
+v2 book-workspace features. The `1.2.0` candidate (command discovery,
+context-menu containment, EPUB scope note) is prepared locally; App Store
+Connect upload, TestFlight, and App Review remain gated on explicit user
+approval.
 
 Keep every slice small, verifiable, and inside the Markdown-first Safe
 Editor boundary. The v0.27 refinement phases are complete for source-tag
@@ -50,17 +53,19 @@ evidence live under `docs/archive/operations/app-store-v0.17/`.
 ## Active UX Queue
 
 Pick one item at a time. `1.1.0` is published, and no hotfix blocker has
-been reported. The position-continuity lane is closed; v1.2 follows the
-observation-driven queue in `docs/v1.1-v1.2-followup.md`. Keep version bump,
-candidate generation, upload, review, and publication closed until they are
-explicitly requested.
+been reported. The position-continuity lane is closed. The `1.2.0`
+candidate (command discovery, context-menu containment, EPUB scope note)
+is prepared locally with a signed pkg; App Store Connect upload,
+TestFlight, App Review, and publication remain gated on explicit user
+approval. After `1.2.0`, v1.2 follows the observation-driven queue in
+`docs/v1.1-v1.2-followup.md`.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| Implemented / source verified | v1.2 Export UX and Command Discovery | The EPUB dialog explains the single-Markdown / reading-preview boundary. The command palette derives Markdown command behavior from the right-click slash-command registry, including date/time insertion, while palette-specific labels remain English. Built-app interaction smoke remains required before an RC claim. |
+| Implemented / source verified / 1.2.0 candidate pkg prepared | v1.2 Export UX and Command Discovery | The EPUB dialog explains the single-Markdown / reading-preview boundary. The command palette derives Markdown command behavior and localized search vocabulary from the right-click slash-command registry, including date/time insertion, while palette labels remain English. The slash menu stays within 8px viewport insets and opens upward near the lower edge. A signed `1.2.0` candidate pkg passed local gates, audit, signature, checksum, entitlement, and sandbox-preview smoke; built-app interaction smoke and App Store Connect upload remain open checks. |
 | Done / built-app verified | v1.1 Reader / Editor / Preview Position Continuity | `AppWorkspace` owns one per-document view-state registry for Editor, e-book Mode, and Preview. A -> B -> A restores each editor selection/scroll and reader location. Preview restores only after replacement HTML has rendered, avoiding the real-layout top reset. A safe local Markdown-link transition and Preview -> e-book -> Preview were verified in the built app without source/save-state changes. See `docs/v1.1-v1.2-followup.md`. |
 | Observation / Google Drive manual-blocked | v1.2 Recovery Reliability | Local-folder forced termination passed: with Auto Backup explicitly enabled, a timed `.bak` preserved the unsaved marker, the saved source stayed unchanged, relaunch restored the workspace and exposed the draft, and explicit Restore returned it as a dirty buffer. Auto Backup was returned to its prior off state. Google Drive remains `manual-blocked` because no dedicated test fixture existed; do not create or scan user cloud content implicitly. |
-| Observation | v1.2 Image / Review Edge Cases | Take one case at a time: consecutive e-book images, L Mode first-line/nested-path images, PDF page breaks through a large image, explicit Diff `採用` / `破棄`, context-menu viewport containment, or unexpected `.bak` files in Trash. Do not bundle these into a polish slice. |
+| Observation | v1.2 Image / Review Edge Cases | Take one case at a time: consecutive e-book images, L Mode first-line/nested-path images, PDF page breaks through a large image, explicit Diff `採用` / `破棄`, or unexpected `.bak` files in Trash. Do not bundle these into a polish slice. |
 | Done / published | v1.1 App Store release | `1.1.0` shipped the Reader / Editor / Preview position-continuity slice and was approved and released on the Mac App Store. Raw App Store Connect, TestFlight, App Review, and public build-number logs remain outside the repository. |
 | Done / published | v1.0 App Store release | `1.0.0` was approved and released on the Mac App Store. The public listing confirms the version; raw App Store Connect, TestFlight, App Review, and build-number logs remain outside the repository. |
 | Done | v1.0 product communication | README, Product Brief, App Store listing copy, release notes, screenshot captions, and current-state docs present one truthful `書く・読む・AI・書き出す` story. Local Assist availability and review boundaries remain adjacent to the AI claim. |

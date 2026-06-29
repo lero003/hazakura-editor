@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-30 (1.1.0 public release and v1.2 polish)
+Last reviewed: 2026-06-30 (1.1.0 public release; 1.2.0 candidate)
 
 ## Current State
 
@@ -16,22 +16,27 @@ Last reviewed: 2026-06-30 (1.1.0 public release and v1.2 polish)
   Manuscript baseline. No public-release hotfix blocker has been
   reported. All commented observations are routed to
   `docs/v1.1-v1.2-followup.md`.
-- The v1.1 lane is closed and published. Source/package metadata remains at
-  `1.1.0`. Reader, Editor cursor/scroll, Preview reopen, tab, and
+- The v1.1 lane is closed and published. Source/package metadata is now
+  `1.2.0`. Reader, Editor cursor/scroll, Preview reopen, tab, and
   safe local Markdown-link position continuity are implemented through
-  one `AppWorkspace`-owned per-document registry. The active source lane is
-  v1.2 Polish; no v1.2 candidate or version bump has been opened.
+  one `AppWorkspace`-owned per-document registry. The v1.2 Polish lane
+  (command discovery, context-menu containment, EPUB scope note) is
+  prepared as the `1.2.0` local candidate; App Store Connect upload,
+  TestFlight, App Review, and publication remain gated on explicit user
+  approval.
 - The signed local `1.1.0` App Store / TestFlight candidate passed the
   release gates, package signature and checksum verification, enforced
   App Store entitlement probe, and sandbox-preview smoke. Its current
   local artifact details live only in
   `docs/internal/app-store-candidates/latest.json`. Treat this as local
   package provenance, not proof of the public build number.
-- Current v1.2 source verification: `npm test` (120 files / 1080 tests),
+- Current v1.2 source verification: `npm test` (121 files / 1083 tests),
   `cargo test` (299 tests), `npm run build:vite`, `npm run build`,
   `cargo fmt --check`, and `git diff --check`. The Vite chunk-size warning
-  remains known. Built-app right-click / command-palette / EPUB-dialog
-  interaction smoke was not exercised in this slice and remains an RC check.
+  remains known. `npm run smoke:macos-window` rebuilt both macOS lanes and
+  confirmed an onscreen Developer bundle window. Right-click /
+  command-palette / EPUB-dialog interaction smoke was not exercised in this
+  slice and remains an RC check.
 - `Hazakura Editor` `1.1.0` is the latest published Mac App Store
   version. `0.36.0` remains historical proof of the same v1-equivalent
   reader, export, workspace-marker, Markdown insertion, and Local Assist
@@ -60,18 +65,22 @@ Last reviewed: 2026-06-30 (1.1.0 public release and v1.2 polish)
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. The active source lane is v1.2 Polish. EPUB expectation copy and
-   command-palette / slash-command parity are implemented at source level;
-   built-app interaction smoke remains pending before an RC claim. See
-   `docs/v1.1-v1.2-followup.md`.
+1. The active source lane is v1.2 Polish, open as the `1.2.0` candidate.
+   Command discovery, context-menu containment, and the EPUB scope note
+   are implemented and packaged. Localized slash vocabulary is searchable
+   from the palette, and the slash menu is viewport-contained. Built-app
+   interaction smoke remains an open RC check; App Store Connect upload,
+   TestFlight, and App Review remain gated on explicit user approval.
+   See `docs/v1.1-v1.2-followup.md`.
 2. Local forced-termination Recovery passed. Google Drive is
    `manual-blocked` until a dedicated fixture is available; do not scan or
    create content in the user's cloud folders implicitly.
-3. Follow with one image, Diff action, context-menu, or `.bak` case at a
-   time; do not bundle unrelated polish.
-4. The version remains `1.1.0`. Keep version bump, candidate generation,
-   tag, push, App Store Connect upload, TestFlight, review, and publication
-   closed until the user explicitly opens the v1.2 release lane.
+3. Follow with one image, Diff action, or `.bak` case at a time; do not
+   bundle unrelated polish.
+4. The version is `1.2.0` as a prepared local candidate; the published
+   Mac App Store version remains `1.1.0`. Keep tag creation, App Store
+   Connect upload, TestFlight, review, and publication gated on explicit
+   user approval.
 
 Detailed v0.18-v1.0 completed-slice history and per-version verification
 records moved to `docs/archive/operations/handoff-detail-through-v1.0.md`.

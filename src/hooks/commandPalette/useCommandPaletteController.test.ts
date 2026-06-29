@@ -756,7 +756,7 @@ describe("useCommandPaletteController", () => {
         agentWorkbenchActive: false,
         editorPaneRef,
         handleSendSelectionToAgent: vi.fn(),
-        menuLanguage: "en",
+        menuLanguage: "kana",
         requestReviewDraftAgainstDisk: vi.fn(),
         requestReviewTabAgainstDisk: vi.fn(),
         setStatus: vi.fn(),
@@ -873,5 +873,13 @@ describe("useCommandPaletteController", () => {
     expect(insertText).toHaveBeenCalledWith(
       expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
     );
+
+    act(() => {
+      result.current.setCommandPaletteQuery("みだし");
+    });
+    const localizedHeading = result.current.filteredCommands.find(
+      (command) => command.id === "insert.heading1",
+    );
+    expect(localizedHeading?.label).toBe("Insert Heading 1");
   });
 });

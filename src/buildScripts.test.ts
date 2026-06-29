@@ -477,7 +477,8 @@ describe("macOS build scripts", () => {
     const expectedSnippets = {
       "README.md": [
         "Hazakura Editor `1.1.0` is published",
-        "Current package/app version is `1.1.0`",
+        "Current package/app version is `1.2.0`",
+        "The published App Store version is `1.1.0`",
       ],
       "docs/app-store-build.md": ["Published App Store version: `1.1.0`"],
       "docs/current-status.md": [
@@ -494,7 +495,7 @@ describe("macOS build scripts", () => {
         "The active source lane is v1.2 Polish",
       ],
       "docs/roadmap.md": [
-        "Current package/app version: `1.1.0` released baseline",
+        "Current package/app version: `1.2.0` candidate baseline",
         "Active lane: v1.2 Polish",
       ],
     };

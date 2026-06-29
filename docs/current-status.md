@@ -3,14 +3,16 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-30 (1.1.0 public release and v1.2 polish)
+Last reviewed: 2026-06-30 (1.1.0 public release; 1.2.0 candidate)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current development package/app version: `1.1.0` across npm, Tauri, Cargo,
-  and lockfile metadata. `1.1.0` was approved and released on the Mac App
-  Store; the active source lane is v1.2 polish and expectation setting.
+- Current development package/app version: `1.2.0` across npm, Tauri, Cargo,
+  and lockfile metadata. `1.2.0` is the v1.2 Polish And Expectation Setting
+  candidate (command discovery, context-menu containment, EPUB scope note);
+  it is a prepared local candidate, not yet uploaded to App Store Connect.
+  `1.1.0` remains the published Mac App Store version.
 - `1.0.0` was approved and released on the Mac App Store. It is a
   semantic and product-message re-baseline of the feature shape first
   shipped through `0.36.0`, not a new feature expansion. Its public message is:
@@ -105,11 +107,12 @@ Last reviewed: 2026-06-30 (1.1.0 public release and v1.2 polish)
   passed with focused EPUB / export hook / status tests, full
   `npm run test`, `npm run build:vite`, `npm run build`, App Store
   surface smoke, local distribution probe, package signature check,
-  sandbox preview smoke, and `git diff --check`. Built-app manual EPUB
-  smoke remains blocked in this host because LaunchServices failed to
-  open the generated local preview bundle with `kLSNoExecutableErr`
-  even though bundle inspection found the executable, version `0.33.0`,
-  bundled notices, helper executable, and valid ad-hoc code signature.
+  sandbox preview smoke, and `git diff --check`. At that checkpoint,
+  built-app manual EPUB smoke was blocked because LaunchServices failed
+  with `kLSNoExecutableErr` even though bundle inspection passed. A later
+  2026-06-30 v1.2 `smoke:macos-window` run successfully launched an
+  onscreen Developer bundle window; manual EPUB interaction smoke has not
+  been rerun.
 - Source-level v1 workspace / slash-command fit-and-finish is
   implemented. The workspace tree now shows existing-tab-derived open
   and dirty markers for files inside the selected workspace, reusing
@@ -455,14 +458,17 @@ baseline, and smoke evidence are archived under
    view state; do not expand it into workspace indexing.
 2. Complete the Google Drive Recovery smoke only with a dedicated user-
    approved fixture. The local-folder forced-termination path has passed.
-3. Treat the signed `1.1.0` pkg metadata as local provenance for the released
-   lane, not proof of the public build number. Do not open a v1.2 candidate or
-   App Store Connect lane until explicitly requested.
+3. The v1.2 Polish lane is open. The signed `1.2.0` App Store /
+   TestFlight candidate pkg is local provenance for the prepared
+   candidate, not proof of a public build. Treat the `1.1.0` pkg
+   metadata as the released-lane provenance. Do not upload to App Store
+   Connect, submit to TestFlight / App Review, or publish until the user
+   explicitly opens that lane.
 4. For the latest local App Store / TestFlight package candidate, see
    `docs/internal/app-store-candidates/latest.json` for version / build
    counter / pkg path / SHA-256 / generated time. At this sync point it
-   records the active artifact. App Store Connect and TestFlight logs
-   remain outside this repository unless public-safe evidence is
+   records the active `1.2.0` artifact. App Store Connect and TestFlight
+   logs remain outside this repository unless public-safe evidence is
    recorded. Do upload / App Store Connect work only when explicitly
    requested.
 5. For Hazakura Local Assist, use `docs/assist-surface-strategy.md`,
