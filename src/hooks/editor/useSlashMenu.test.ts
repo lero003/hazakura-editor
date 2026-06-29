@@ -134,4 +134,73 @@ describe("useSlashMenu", () => {
     expect(view.state.doc.toString()).toBe("# hello world");
     expect(result.current.state.visible).toBe(false);
   });
+
+  // Regression: the right-click context menu must close on a plain left
+  // click inside the editor, like any popover. Previously the context
+  // menu never closed on an editor click because the early `return` for
+  // `view.dom.contains(target)` skipped the close path, and the `update`
+  // path also early-returns for `source === "context"`. A right click is
+  // left to the following contextmenu event (which reopens the menu), so
+  // it must not close here.
+  function dispatchEditorMouseDown(view: EditorView, button: number) {
+    const event = new MouseEvent("mousedown", {
+      bubbles: true,
+      button,
+      cancelable: true,
+    });
+    Object.defineProperty(event, "target", { value: view.dom });
+    window.dispatchEvent(event);
+  }
+
+  it("closes the context menu on a left click inside the editor", () => {
+    const view = makeEditorView();
+    const { result } = renderHook(() =>
+      useSlashMenu({
+        commands: [],
+        enabled: true,
+        viewKey: "doc",
+        viewRef: { current: view },
+      }),
+    );
+
+    act(() => {
+      result.current.openMenuAtContext(view, {
+        bottom: 64,
+        left: 48,
+        top: 64,
+      });
+    });
+    expect(result.current.state.visible).toBe(true);
+
+    act(() => {
+      dispatchEditorMouseDown(view, 0);
+    });
+    expect(result.current.state.visible).toBe(false);
+  });
+
+  it("keeps the context menu open on a right click inside the editor", () => {
+    const view = makeEditorView();
+    const { result } = renderHook(() =>
+      useSlashMenu({
+        commands: [],
+        enabled: true,
+        viewKey: "doc",
+        viewRef: { current: view },
+      }),
+    );
+
+    act(() => {
+      result.current.openMenuAtContext(view, {
+        bottom: 64,
+        left: 48,
+        top: 64,
+      });
+    });
+    expect(result.current.state.visible).toBe(true);
+
+    act(() => {
+      dispatchEditorMouseDown(view, 2);
+    });
+    expect(result.current.state.visible).toBe(true);
+  });
 });

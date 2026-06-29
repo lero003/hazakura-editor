@@ -367,6 +367,19 @@ export function useSlashMenu({
         return;
       }
       if (view.dom.contains(target)) {
+        // The right-click context menu stays open until the user either picks
+        // a command, presses Escape, or clicks elsewhere. A left click inside
+        // the editor dismisses it like any other popover; a right click is
+        // left to the following contextmenu event, which reopens the menu at
+        // the new position instead of flashing it closed then open. The
+        // typed (`/`) menu is closed by the selection-change `update` path,
+        // so an editor click here must not double-process it.
+        if (
+          stateRef.current.source === "context" &&
+          event.button === 0
+        ) {
+          closeMenu();
+        }
         return;
       }
       const menu = document.querySelector(".slash-menu");
