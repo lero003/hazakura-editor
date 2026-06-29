@@ -13,4 +13,5 @@ HazakuraEditor-*-mas.pkg
 .DS_Store
 habitat-report/
 .superpowers/
+.worktrees/
 .hazakura/
