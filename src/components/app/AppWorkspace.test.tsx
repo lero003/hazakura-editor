@@ -38,6 +38,7 @@ vi.mock("../editor/PaneResizer", () => ({
 vi.mock("./SidePane", () => ({
   SidePane: (props: {
     ebookLocation?: { chapterIndex: number; pageIndex: number } | null;
+    previewViewState?: { scrollRatio: number } | null;
     onEbookLocationChange?: (location: {
       chapterIndex: number;
       pageIndex: number;
@@ -47,6 +48,7 @@ vi.mock("./SidePane", () => ({
       chapterIndex: number;
       pageIndex: number;
     }) => void;
+    onPreviewViewStateChange?: (state: { scrollRatio: number }) => void;
   }) => (
     <div data-testid="side-pane">
       <span data-testid="side-ebook-location">
@@ -55,6 +57,17 @@ vi.mock("./SidePane", () => ({
           ? `${props.ebookLocation.chapterIndex}:${props.ebookLocation.pageIndex}`
           : "none"}
       </span>
+      <span data-testid="side-preview-location">
+        preview location {props.previewViewState?.scrollRatio ?? "none"}
+      </span>
+      <button
+        onClick={() =>
+          props.onPreviewViewStateChange?.({ scrollRatio: 0.75 })
+        }
+        type="button"
+      >
+        Mock store preview location
+      </button>
       <button
         onClick={() =>
           props.onEbookLocationChange?.({ chapterIndex: 1, pageIndex: 2 })
@@ -876,6 +889,46 @@ describe("AppWorkspace workspace sidebar collapse", () => {
         head: 3,
         scrollRatio: 0.1,
       });
+    });
+
+    it("keeps each tab's Preview position independently", () => {
+      const tabs = [firstBookTab, secondBookTab];
+      const { rerender } = renderWorkspace({
+        ...sharedPinProps,
+        activeTab: firstBookTab,
+        documentKey: firstBookTab.id,
+        sidePaneMode: "preview",
+        tabs,
+      });
+
+      fireEvent.click(
+        screen.getByRole("button", { name: "Mock store preview location" }),
+      );
+      expect(screen.getByTestId("side-preview-location").textContent).toContain(
+        "preview location 0.75",
+      );
+
+      rerenderWorkspace(rerender, {
+        ...sharedPinProps,
+        activeTab: secondBookTab,
+        documentKey: secondBookTab.id,
+        sidePaneMode: "preview",
+        tabs,
+      });
+      expect(screen.getByTestId("side-preview-location").textContent).toContain(
+        "preview location none",
+      );
+
+      rerenderWorkspace(rerender, {
+        ...sharedPinProps,
+        activeTab: firstBookTab,
+        documentKey: firstBookTab.id,
+        sidePaneMode: "preview",
+        tabs,
+      });
+      expect(screen.getByTestId("side-preview-location").textContent).toContain(
+        "preview location 0.75",
+      );
     });
 
     it("keeps each tab's reader location independently (single-slot fix)", () => {

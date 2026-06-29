@@ -15,6 +15,7 @@ type PreviewPaneProps = {
   documentKey?: string | null;
   documentPath?: string | null;
   onOpenLocalLink?: (href: string) => void;
+  onRenderComplete?: () => void;
   source: string;
   workspaceRoot?: string | null;
 };
@@ -40,6 +41,7 @@ export default function PreviewPane({
   documentKey,
   documentPath,
   onOpenLocalLink,
+  onRenderComplete,
   source,
   workspaceRoot,
 }: PreviewPaneProps) {
@@ -106,6 +108,16 @@ export default function PreviewPane({
       cancelRender();
     };
   }, [documentPath, previewIdentity, source, workspaceRoot]);
+
+  useEffect(() => {
+    if (
+      !preview.pending &&
+      preview.identity === previewIdentity &&
+      preview.html.length > 0
+    ) {
+      onRenderComplete?.();
+    }
+  }, [onRenderComplete, preview.html.length, preview.identity, preview.pending, previewIdentity]);
 
   const handleClick = (event: MouseEvent<HTMLElement>) => {
     if (!onOpenLocalLink) {

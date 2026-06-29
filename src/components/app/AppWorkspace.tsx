@@ -22,6 +22,7 @@ import {
   pruneDocumentViewStates,
   type DocumentViewStateRegistry,
   type EditorViewStatePatch,
+  type PreviewViewState,
 } from "../../features/editor/documentViewState";
 import { getWorkspaceTabMarkerPaths } from "../../features/editor/editorTabs";
 import type {
@@ -327,6 +328,16 @@ export function AppWorkspace({
       }),
     );
   };
+  const handlePreviewViewStateChange = (state: PreviewViewState) => {
+    if (!activeDocumentKey) {
+      return;
+    }
+    setDocumentViewStates((current) =>
+      patchDocumentViewState(current, activeDocumentKey, {
+        preview: state,
+      }),
+    );
+  };
   const moveEditorToEbookLocation = (
     location: EBookReaderLocation | null,
     options?: { focus?: boolean },
@@ -503,10 +514,12 @@ export function AppWorkspace({
             onOpenEbookReadingFocus={openEbookReadingFocus}
             onOpenPreviewLocalLink={openPreviewMarkdownLink}
             onPreviewScroll={syncEditorScroll}
+            onPreviewViewStateChange={handlePreviewViewStateChange}
             onRunSelectedFileCompare={runSelectedFileCompare}
             onSelectHeading={jumpToHeading}
             outlineTruncated={outlineTruncated}
             previewPaneRef={previewPaneRef}
+            previewViewState={activeDocumentViewState?.preview ?? null}
             previewVisible={previewVisible}
             sidePaneMode={sidePaneMode}
             workspaceRootPath={workspaceRootPath}
