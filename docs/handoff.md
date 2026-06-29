@@ -27,6 +27,10 @@ Last reviewed: 2026-06-29 (1.0.0 public release and v1.1 kickoff)
   local artifact details live only in
   `docs/internal/app-store-candidates/latest.json`. Treat this as local
   package provenance, not proof of the public build number.
+- Latest verification: 69 focused position/link tests, 299 Rust tests,
+  91 App Store surface tests, `build:vite`, npm/Rust audits, package
+  signature and SHA-256, distribution probe, and sandbox-preview smoke.
+  Rust audit reports only the 17 existing allowed transitive warnings.
 - `Hazakura Editor` `1.0.0` is the latest published Mac App Store
   version. `0.36.0` remains historical proof of the same v1-equivalent
   reader, export, workspace-marker, Markdown insertion, and Local Assist
