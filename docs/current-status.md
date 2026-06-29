@@ -16,8 +16,9 @@ Last reviewed: 2026-06-29 (1.0.0 public release and v1.1 kickoff)
   semantic and product-message re-baseline of the feature shape first
   shipped through `0.36.0`, not a new feature expansion. Its public message is:
   `Markdownで書き、本として読み、ローカルAIで整える。`
-- The previously prepared signed App Store / TestFlight `1.1.0` candidate (build 54)
-  passed source, build, audit, signature, entitlement, checksum,
+- A fresh signed App Store / TestFlight `1.1.0` candidate containing the
+  completed position-continuity slice passed source, build, audit, signature,
+  entitlement, checksum,
   distribution-probe, and sandbox-preview gates. Its local provenance
   is in `docs/internal/app-store-candidates/latest.json`; the public
   listing still confirms `1.0.0`, while raw App Store Connect,
@@ -455,9 +456,9 @@ baseline, and smoke evidence are archived under
    source-preserving view state; do not expand it into workspace indexing.
 2. Complete the Google Drive Recovery smoke only with a dedicated user-
    approved fixture. The local-folder forced-termination path has passed.
-3. Build and locally verify the signed `1.1.0` App Store pkg from the
-   accepted continuity source. Upload and App Store Connect work remain
-   closed until explicitly requested.
+3. Treat the freshly generated signed `1.1.0` pkg as local candidate
+   evidence only. Upload and App Store Connect work remain closed until
+   explicitly requested.
 4. For the latest local App Store / TestFlight package candidate, see
    `docs/internal/app-store-candidates/latest.json` for version / build
    counter / pkg path / SHA-256 / generated time. At this sync point it

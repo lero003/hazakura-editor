@@ -19,8 +19,8 @@ Last reviewed: 2026-06-29 (1.0.0 public release and v1.1 kickoff)
 - The v1.1 candidate lane was opened 2026-06-29. Source/package metadata
   is at `1.1.0`. Reader, Editor cursor/scroll, Preview reopen, tab, and
   safe local Markdown-link position continuity are implemented through
-  one `AppWorkspace`-owned per-document registry. Build 54 predates the
-  completed slice and must not be treated as its package proof.
+  one `AppWorkspace`-owned per-document registry. A fresh signed candidate
+  containing the completed slice is recorded in the ignored latest metadata.
 - The signed local `1.1.0` App Store / TestFlight candidate passed the
   release gates, package signature and checksum verification, enforced
   App Store entitlement probe, and sandbox-preview smoke. Its current
@@ -64,8 +64,9 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    create content in the user's cloud folders implicitly.
 3. Follow with one image, Diff action, context-menu, or `.bak` case at a
    time; do not bundle unrelated polish.
-4. The version is `1.1.0`; generate a fresh signed candidate after the
-   completed continuity slice. Keep tag, push, App Store Connect upload,
+4. The version is `1.1.0`; a fresh signed candidate was generated and
+   locally verified after the completed continuity slice. Keep tag, push,
+   App Store Connect upload,
    TestFlight, review, and publication closed until the user confirms the
    upload path; do not treat the local candidate as published.
 
