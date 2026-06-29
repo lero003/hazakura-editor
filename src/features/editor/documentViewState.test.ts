@@ -1,0 +1,45 @@
+import { describe, expect, it } from "vitest";
+import {
+  clampEditorViewState,
+  patchDocumentViewState,
+  pruneDocumentViewStates,
+} from "./documentViewState";
+
+describe("document view state", () => {
+  it("patches one surface without dropping the others", () => {
+    const current = {
+      "/a.md": {
+        ebook: { chapterIndex: 2, pageIndex: 1 },
+        editor: { anchor: 8, head: 8, scrollRatio: 0.4 },
+      },
+    };
+
+    expect(
+      patchDocumentViewState(current, "/a.md", {
+        editor: { scrollRatio: 0.7 },
+      }),
+    ).toEqual({
+      "/a.md": {
+        ebook: { chapterIndex: 2, pageIndex: 1 },
+        editor: { anchor: 8, head: 8, scrollRatio: 0.7 },
+      },
+    });
+  });
+
+  it("clamps stale selection offsets and scroll ratio", () => {
+    expect(
+      clampEditorViewState({ anchor: 40, head: -2, scrollRatio: 2 }, 12),
+    ).toEqual({ anchor: 12, head: 0, scrollRatio: 1 });
+  });
+
+  it("prunes closed documents without changing kept entries", () => {
+    const a = { editor: { anchor: 1, head: 1, scrollRatio: 0.2 } };
+
+    expect(
+      pruneDocumentViewStates(
+        { a, b: { ebook: { chapterIndex: 1, pageIndex: 0 } } },
+        ["a"],
+      ),
+    ).toEqual({ a });
+  });
+});

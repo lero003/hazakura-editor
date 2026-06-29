@@ -17,6 +17,13 @@ import {
   coalesceChaptersToTopLevel,
   splitMarkdownIntoChapters,
 } from "../../features/editor/ebookChapters";
+import {
+  patchDocumentViewState,
+  pruneDocumentViewStates,
+  type DocumentViewStateRegistry,
+  type EditorViewStatePatch,
+  type PreviewViewState,
+} from "../../features/editor/documentViewState";
 import { getWorkspaceTabMarkerPaths } from "../../features/editor/editorTabs";
 import type {
   LModeCopy,
@@ -252,14 +259,11 @@ export function AppWorkspace({
   const [internalWorkspaceSidebarCollapsed, setInternalWorkspaceSidebarCollapsed] =
     useState(false);
   const [ebookFocusOpen, setEbookFocusOpen] = useState(false);
-  // v1.1 position-continuity: reader locations are keyed by `documentKey` so
-  // switching A -> B -> A keeps each tab's last reader position. A tab's slot
-  // is created on first reader movement and replaced on subsequent moves; it
-  // is never cleared on tab switch, so returning to a tab restores its own
-  // location instead of falling back to the editor anchor or another tab's.
-  const [ebookLocations, setEbookLocations] = useState<
-    Record<string, EBookReaderLocation>
-  >({});
+  // v1.1 position-continuity: AppWorkspace owns the per-document view state
+  // shared by Editor, e-book, and (when real-layout evidence requires it)
+  // Preview. Individual panes report patches without owning a parallel map.
+  const [documentViewStates, setDocumentViewStates] =
+    useState<DocumentViewStateRegistry>({});
   const previousSidePaneModeRef = useRef<RightPaneMode | null>(null);
   const workspaceSidebarCollapsed =
     workspaceSidebarCollapsedOverride ?? internalWorkspaceSidebarCollapsed;
@@ -271,11 +275,12 @@ export function AppWorkspace({
   };
   const isWorkspaceSidebarCollapsed =
     workspaceSidebarCollapsed && !editorSettings.lModeEnabled;
-  const activeEbookDocumentKey = activeTab ? ebookDocumentKey(activeTab) : null;
-  const activeEbookLocation =
-    activeEbookDocumentKey != null
-      ? ebookLocations[activeEbookDocumentKey] ?? null
+  const activeDocumentKey = activeTab ? documentViewStateKey(activeTab) : null;
+  const activeDocumentViewState =
+    activeDocumentKey != null
+      ? documentViewStates[activeDocumentKey] ?? null
       : null;
+  const activeEbookLocation = activeDocumentViewState?.ebook ?? null;
   const editorAnchorLine =
     scrollHudVisible && scrollHudLine > 0 ? scrollHudLine : currentHeadingLine;
   const editorAnchoredEbookLocation =
@@ -291,14 +296,47 @@ export function AppWorkspace({
   useEffect(() => {
     previousSidePaneModeRef.current = sidePaneMode;
   }, [sidePaneMode]);
+  useEffect(() => {
+    const keepDocumentKeys = tabs.map(documentViewStateKey);
+    if (
+      activeDocumentKey &&
+      !keepDocumentKeys.includes(activeDocumentKey)
+    ) {
+      keepDocumentKeys.push(activeDocumentKey);
+    }
+    setDocumentViewStates((current) =>
+      pruneDocumentViewStates(current, keepDocumentKeys),
+    );
+  }, [activeDocumentKey, tabs]);
   const handleEbookLocationChange = (location: EBookReaderLocation) => {
-    if (!activeEbookDocumentKey) {
+    if (!activeDocumentKey) {
       return;
     }
-    setEbookLocations((current) => ({
-      ...current,
-      [activeEbookDocumentKey]: location,
-    }));
+    setDocumentViewStates((current) =>
+      patchDocumentViewState(current, activeDocumentKey, {
+        ebook: location,
+      }),
+    );
+  };
+  const handleEditorViewStateChange = (patch: EditorViewStatePatch) => {
+    if (!activeDocumentKey) {
+      return;
+    }
+    setDocumentViewStates((current) =>
+      patchDocumentViewState(current, activeDocumentKey, {
+        editor: patch,
+      }),
+    );
+  };
+  const handlePreviewViewStateChange = (state: PreviewViewState) => {
+    if (!activeDocumentKey) {
+      return;
+    }
+    setDocumentViewStates((current) =>
+      patchDocumentViewState(current, activeDocumentKey, {
+        preview: state,
+      }),
+    );
   };
   const moveEditorToEbookLocation = (
     location: EBookReaderLocation | null,
@@ -419,11 +457,13 @@ export function AppWorkspace({
           editorPaneRef={editorPaneRef}
           editorSettings={editorSettings}
           editorTheme={editorTheme}
+          editorViewState={activeDocumentViewState?.editor ?? null}
           generationLock={appleAssistGenerationLock}
           imagePreviewTitle={sidePaneCopy.imagePreview}
           lModeCopy={lModeCopy}
           menuLanguage={menuLanguage}
           onChange={handleEditorChange}
+          onEditorViewStateChange={handleEditorViewStateChange}
           onNewFile={() => void createNewFile()}
           onOpenFile={() => void openFile()}
           onOpenFolder={() => void openWorkspace()}
@@ -474,10 +514,12 @@ export function AppWorkspace({
             onOpenEbookReadingFocus={openEbookReadingFocus}
             onOpenPreviewLocalLink={openPreviewMarkdownLink}
             onPreviewScroll={syncEditorScroll}
+            onPreviewViewStateChange={handlePreviewViewStateChange}
             onRunSelectedFileCompare={runSelectedFileCompare}
             onSelectHeading={jumpToHeading}
             outlineTruncated={outlineTruncated}
             previewPaneRef={previewPaneRef}
+            previewViewState={activeDocumentViewState?.preview ?? null}
             previewVisible={previewVisible}
             sidePaneMode={sidePaneMode}
             workspaceRootPath={workspaceRootPath}
@@ -491,7 +533,7 @@ export function AppWorkspace({
         >
           <Suspense fallback={null}>
             <EBookPane
-              documentKey={activeEbookDocumentKey ?? undefined}
+              documentKey={activeDocumentKey ?? undefined}
               documentPath={activeTab.path}
               initialLocation={initialEbookLocation}
               menuLanguage={menuLanguage}
@@ -512,7 +554,7 @@ export function AppWorkspace({
   );
 }
 
-function ebookDocumentKey(tab: EditorTab): string {
+function documentViewStateKey(tab: EditorTab): string {
   return tab.path || tab.id;
 }
 

@@ -1,4 +1,12 @@
-import { lazy, Suspense, type RefObject } from "react";
+import {
+  lazy,
+  Suspense,
+  type RefObject,
+  useCallback,
+  useEffect,
+  useRef,
+} from "react";
+import type { PreviewViewState } from "../../features/editor/documentViewState";
 import type { SidePaneCopy } from "../../lib/locale";
 import type {
   CompareAnchor,
@@ -47,10 +55,12 @@ type SidePaneProps = {
   onOpenEbookReadingFocus: (location: EBookReaderLocation) => void;
   onOpenPreviewLocalLink: (path: string) => void | Promise<void>;
   onPreviewScroll: () => void;
+  onPreviewViewStateChange: (state: PreviewViewState) => void;
   onRunSelectedFileCompare: () => void;
   onSelectHeading: (heading: MarkdownHeading) => void;
   outlineTruncated: boolean;
   previewPaneRef: RefObject<HTMLDivElement | null>;
+  previewViewState: PreviewViewState | null;
   previewVisible: boolean;
   ebookLocation: EBookReaderLocation | null;
   sidePaneMode: RightPaneMode;
@@ -76,15 +86,66 @@ export function SidePane({
   onOpenEbookReadingFocus,
   onOpenPreviewLocalLink,
   onPreviewScroll,
+  onPreviewViewStateChange,
   onRunSelectedFileCompare,
   onSelectHeading,
   outlineTruncated,
   previewPaneRef,
+  previewViewState,
   previewVisible,
   ebookLocation,
   sidePaneMode,
   workspaceRootPath,
 }: SidePaneProps) {
+  const previewRestoreFrameRef = useRef<number | null>(null);
+  const previewViewStateRef = useRef(previewViewState);
+  const activePreviewDocumentKeyRef = useRef(activeTab?.id ?? null);
+  previewViewStateRef.current = previewViewState;
+  activePreviewDocumentKeyRef.current = activeTab?.id ?? null;
+  useEffect(() => {
+    return () => {
+      if (previewRestoreFrameRef.current !== null) {
+        window.cancelAnimationFrame(previewRestoreFrameRef.current);
+      }
+    };
+  }, []);
+  const handlePreviewScroll = useCallback(() => {
+    onPreviewScroll();
+    const previewPane = previewPaneRef.current;
+    if (!previewPane) {
+      return;
+    }
+    const scrollableHeight =
+      previewPane.scrollHeight - previewPane.clientHeight;
+    const scrollRatio =
+      scrollableHeight <= 0 ? 0 : previewPane.scrollTop / scrollableHeight;
+    onPreviewViewStateChange({
+      scrollRatio: Math.min(1, Math.max(0, scrollRatio)),
+    });
+  }, [onPreviewScroll, onPreviewViewStateChange, previewPaneRef]);
+  const restorePreviewScroll = useCallback(() => {
+    const restoreDocumentKey = activePreviewDocumentKeyRef.current;
+    if (previewRestoreFrameRef.current !== null) {
+      window.cancelAnimationFrame(previewRestoreFrameRef.current);
+    }
+    previewRestoreFrameRef.current = window.requestAnimationFrame(() => {
+      previewRestoreFrameRef.current = null;
+      if (activePreviewDocumentKeyRef.current !== restoreDocumentKey) {
+        return;
+      }
+      const previewPane = previewPaneRef.current;
+      const savedState = previewViewStateRef.current;
+      if (!previewPane || !savedState) {
+        return;
+      }
+      const scrollableHeight =
+        previewPane.scrollHeight - previewPane.clientHeight;
+      previewPane.scrollTop =
+        scrollableHeight <= 0
+          ? 0
+          : scrollableHeight * savedState.scrollRatio;
+    });
+  }, [previewPaneRef]);
   const compareCase = compareView
     ? getCompareCaseByKey(compareView.caseKey) ?? null
     : null;
@@ -104,7 +165,7 @@ export function SidePane({
       className={`pane preview-pane preview-pane-${sidePaneMode}${showMarkdownPreviewCard ? " preview-pane-card" : ""}`}
       ref={sidePaneMode === "preview" ? previewPaneRef : null}
       aria-label={sidePaneAriaLabel(sidePaneMode, copy)}
-      onScroll={sidePaneMode === "preview" ? onPreviewScroll : undefined}
+      onScroll={sidePaneMode === "preview" ? handlePreviewScroll : undefined}
     >
       {sidePaneMode === "compare" && compareView && rightPaneCompareCase ? (
         <DiffPane
@@ -159,6 +220,7 @@ export function SidePane({
             documentKey={activeTab.id}
             documentPath={activeTab.path}
             onOpenLocalLink={onOpenPreviewLocalLink}
+            onRenderComplete={restorePreviewScroll}
             source={activeContents}
             workspaceRoot={
               workspaceRootPath ??

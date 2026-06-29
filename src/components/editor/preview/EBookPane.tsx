@@ -31,6 +31,7 @@ import {
   type EbookChapter,
   splitMarkdownIntoChapters,
 } from "../../../features/editor/ebookChapters";
+import type { EBookViewState } from "../../../features/editor/documentViewState";
 import {
   inlineWorkspaceAssetImages,
   renderMarkdown,
@@ -58,11 +59,7 @@ type EBookPaneProps = {
   workspaceRoot?: string | null;
 };
 
-export type EBookReaderLocation = {
-  chapterIndex: number;
-  pageIndex: number;
-  sourceLine?: number;
-};
+export type EBookReaderLocation = EBookViewState;
 
 type RenderedChapter = {
   index: number;

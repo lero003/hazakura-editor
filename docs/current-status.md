@@ -16,7 +16,7 @@ Last reviewed: 2026-06-29 (1.0.0 public release and v1.1 kickoff)
   semantic and product-message re-baseline of the feature shape first
   shipped through `0.36.0`, not a new feature expansion. Its public message is:
   `Markdownで書き、本として読み、ローカルAIで整える。`
-- The prepared signed App Store / TestFlight `1.1.0` candidate (build 54)
+- The previously prepared signed App Store / TestFlight `1.1.0` candidate (build 54)
   passed source, build, audit, signature, entitlement, checksum,
   distribution-probe, and sandbox-preview gates. Its local provenance
   is in `docs/internal/app-store-candidates/latest.json`; the public
@@ -29,11 +29,12 @@ Last reviewed: 2026-06-29 (1.0.0 public release and v1.1 kickoff)
   treated as automatic blockers; commented observations are classified
   in `docs/v1.1-v1.2-followup.md`.
 - No public-release hotfix blocker has been reported. The active lane is
-  now v1.1 daily-use continuity and trust. The reader-side single-slot
-  position fix (#2) is implemented; the signed `1.1.0` / build 54
-  candidate is the first TestFlight candidate for this lane. Editor
-  remount reset (#5 tab), external-link reset (#5 link), and Preview
-  real-layout top-reset (#4) remain as separate slices.
+  now v1.1 daily-use continuity and trust. `AppWorkspace` owns a shared
+  per-document view-state registry: reader, Editor cursor/scroll, Preview
+  reopen, tab transitions, and safe local Markdown-link transitions now
+  preserve the relevant document position. The local forced-termination
+  Recovery smoke passed; Google Drive remains `manual-blocked` because no
+  dedicated fixture existed and user cloud content was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
 - Published Mac App Store version: `1.0.0`. It includes the v0.32
@@ -449,16 +450,14 @@ baseline, and smoke evidence are archived under
 
 ## Next Safe Actions
 
-1. Start the first v1.1 slice from reader / editor / Preview position
-   continuity. Reproduce explicit reader entry, passive reader remount,
-   return-to-edit, Preview reopen, and tab/external-link transitions
-   independently before changing the shared bridge.
-2. Take Recovery forced-termination and cloud-folder behavior next,
-   unless a source-loss or public-release hotfix signal raises its
-   priority. Keep image-heavy layout and Diff action polish behind those
-   continuity checks.
-3. Keep source/package metadata at the released `1.0.0` baseline until
-   a concrete v1.1 change is accepted and a new candidate lane is opened.
+1. Treat the v1.1 Reader / Editor / Preview position-continuity slice as
+   implemented and built-app verified. Keep the shared registry scoped to
+   source-preserving view state; do not expand it into workspace indexing.
+2. Complete the Google Drive Recovery smoke only with a dedicated user-
+   approved fixture. The local-folder forced-termination path has passed.
+3. Build and locally verify the signed `1.1.0` App Store pkg from the
+   accepted continuity source. Upload and App Store Connect work remain
+   closed until explicitly requested.
 4. For the latest local App Store / TestFlight package candidate, see
    `docs/internal/app-store-candidates/latest.json` for version / build
    counter / pkg path / SHA-256 / generated time. At this sync point it

@@ -10,6 +10,10 @@ import {
 import EditorPane from "./EditorPane";
 import { getLModeCopy, getSlashMenuCopy } from "../../lib/locale";
 import type { SlashCommand } from "../../types/slash";
+import type {
+  EditorViewState,
+  EditorViewStatePatch,
+} from "../../features/editor/documentViewState";
 
 const editorPaneSource = readFileSync(
   `${process.cwd()}/src/components/editor/EditorPane.tsx`,
@@ -101,9 +105,11 @@ describe("isScrollerPointerOnScrollbar", () => {
 describe("EditorPane", () => {
   function renderEditorPane({
     documentKey = "/workspace/note.md",
+    editorViewState = null,
     lModeEnabled = false,
     lModeTypewriter = false,
     onChange = vi.fn(),
+    onEditorViewStateChange = vi.fn(),
     onScrollRatioChange = vi.fn(),
     onPasteImage,
     readOnly = false,
@@ -112,9 +118,11 @@ describe("EditorPane", () => {
     value,
   }: {
     documentKey?: string;
+    editorViewState?: EditorViewState | null;
     lModeEnabled?: boolean;
     lModeTypewriter?: boolean;
     onChange?: (nextValue: string) => void;
+    onEditorViewStateChange?: (patch: EditorViewStatePatch) => void;
     onScrollRatioChange?: (ratio: number) => void;
     onPasteImage?: (
       dataBase64: string,
@@ -130,11 +138,13 @@ describe("EditorPane", () => {
         ref={ref}
         activeSearchMatchIndex={-1}
         documentKey={documentKey}
+        editorViewState={editorViewState}
         fontSize={15}
         lModeCopy={getLModeCopy("en")}
         lModeEnabled={lModeEnabled}
         lModeTypewriter={lModeTypewriter}
         onChange={onChange}
+        onEditorViewStateChange={onEditorViewStateChange}
         onPasteImage={onPasteImage}
         onScrollRatioChange={onScrollRatioChange}
         readOnly={readOnly}
@@ -330,48 +340,116 @@ describe("EditorPane", () => {
     expect(editorRef.current?.getActiveDocument()?.from).toBeGreaterThan(0);
   });
 
-  // v1.1 position-continuity pin (#5): a documentKey change (= tab switch)
-  // remounts the CodeMirror editor, so the cursor/scroll position of the
-  // previous tab is NOT preserved. This pins the current limitation — a
-  // future per-tab position-restore layer would flip this expectation.
-  // Contrast with the L Mode toggles above, which keep documentKey and so
-  // keep the cursor.
-  it("resets the cursor when the documentKey changes (tab switch)", async () => {
+  it("restores the controlled cursor when switching back to a tab", async () => {
     const editorRef = createRef<EditorPaneHandle>();
     const { rerender } = render(
       renderEditorPane({
         documentKey: "/workspace/a.md",
+        editorViewState: { anchor: 14, head: 14, scrollRatio: 0.5 },
         ref: editorRef,
         value: "line 1\nline 2\nline 3\n",
       }),
     );
 
-    editorRef.current?.goToLine(3);
-    expect(editorRef.current?.getActiveDocument()?.from).toBeGreaterThan(0);
+    expect(editorRef.current?.getActiveDocument()?.from).toBe(14);
 
     rerender(
       renderEditorPane({
         documentKey: "/workspace/b.md",
+        editorViewState: null,
         ref: editorRef,
         value: "other content\n",
       }),
     );
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    // Pin: switching tabs remounts the editor; the cursor resets to the
-    // document start (from === 0), not the previous tab's line-3 position.
     expect(editorRef.current?.getActiveDocument()?.from).toBe(0);
 
-    // Pin: returning to the first tab remounts it again, also from the top.
     rerender(
       renderEditorPane({
         documentKey: "/workspace/a.md",
+        editorViewState: { anchor: 14, head: 14, scrollRatio: 0.5 },
         ref: editorRef,
         value: "line 1\nline 2\nline 3\n",
       }),
     );
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(editorRef.current?.getActiveDocument()?.from).toBe(0);
+    expect(editorRef.current?.getActiveDocument()?.from).toBe(14);
+  });
+
+  it("clamps a stale controlled selection to the current document", () => {
+    const editorRef = createRef<EditorPaneHandle>();
+    render(
+      renderEditorPane({
+        editorViewState: { anchor: 999, head: -4, scrollRatio: 2 },
+        ref: editorRef,
+        value: "short",
+      }),
+    );
+
+    expect(editorRef.current?.getActiveDocument()).toMatchObject({
+      from: 0,
+      to: 5,
+    });
+  });
+
+  it("restores the controlled scroll ratio after the editor layout settles", () => {
+    const frameCallbacks: FrameRequestCallback[] = [];
+    const requestAnimationFrameSpy = vi
+      .spyOn(window, "requestAnimationFrame")
+      .mockImplementation((callback) => {
+        frameCallbacks.push(callback);
+        return frameCallbacks.length;
+      });
+
+    try {
+      const { container } = render(
+        renderEditorPane({
+          editorViewState: { anchor: 0, head: 0, scrollRatio: 0.5 },
+          value: Array.from({ length: 80 }, (_, index) => `line ${index + 1}`).join(
+            "\n",
+          ),
+        }),
+      );
+      const scroller = container.querySelector(".cm-scroller") as HTMLElement;
+      Object.defineProperty(scroller, "scrollHeight", {
+        configurable: true,
+        value: 1000,
+      });
+      Object.defineProperty(scroller, "clientHeight", {
+        configurable: true,
+        value: 200,
+      });
+
+      for (let pass = 0; pass < 4 && frameCallbacks.length > 0; pass += 1) {
+        const pending = frameCallbacks.splice(0);
+        pending.forEach((callback) => callback(0));
+      }
+
+      expect(scroller.scrollTop).toBe(400);
+    } finally {
+      requestAnimationFrameSpy.mockRestore();
+    }
+  });
+
+  it("reports selection changes as an editor view-state patch", () => {
+    const editorRef = createRef<EditorPaneHandle>();
+    const onEditorViewStateChange = vi.fn();
+    render(
+      renderEditorPane({
+        onEditorViewStateChange,
+        ref: editorRef,
+        value: "line 1\nline 2\nline 3\n",
+      }),
+    );
+
+    onEditorViewStateChange.mockClear();
+    editorRef.current?.goToLine(3);
+
+    expect(onEditorViewStateChange).toHaveBeenCalledWith({
+      anchor: 14,
+      head: 14,
+    });
   });
 
   it("reports the settled editor scroll position when jumping to a line", () => {

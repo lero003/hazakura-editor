@@ -17,10 +17,10 @@ Last reviewed: 2026-06-29 (1.0.0 public release and v1.1 kickoff)
   reported. All commented observations are routed to
   `docs/v1.1-v1.2-followup.md`.
 - The v1.1 candidate lane was opened 2026-06-29. Source/package metadata
-  is now at `1.1.0` after the reader-side single-slot position fix (#2)
-  was accepted. The signed local `1.1.0` / build 54 App Store candidate
-  is the first TestFlight candidate for this lane; do not tag, push, or
-  publish until the user confirms upload and review.
+  is at `1.1.0`. Reader, Editor cursor/scroll, Preview reopen, tab, and
+  safe local Markdown-link position continuity are implemented through
+  one `AppWorkspace`-owned per-document registry. Build 54 predates the
+  completed slice and must not be treated as its package proof.
 - The signed local `1.1.0` App Store / TestFlight candidate passed the
   release gates, package signature and checksum verification, enforced
   App Store entitlement probe, and sandbox-preview smoke. Its current
@@ -55,19 +55,17 @@ Last reviewed: 2026-06-29 (1.0.0 public release and v1.1 kickoff)
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. The v1.1 Reader / Editor / Preview Position Continuity pin baseline is
-   committed on branch `v1.1/position-continuity-pin`. The single-slot
-   reader-location fix (#2) is implemented: `ebookLocation` is now a
-   per-`documentKey` Map, so A -> B move -> A keeps each tab's reader
-   location. Remaining continuity work: editor remount reset (#5 tab),
-   external-link reset (#5 link, separate slice), and Preview real-layout
-   top-reset reproduction (#4). See `docs/v1.1-v1.2-followup.md`.
-2. Take forced-termination Recovery in local and Google Drive folders
-   next, unless a source-loss signal promotes it to hotfix priority.
+1. The v1.1 Reader / Editor / Preview Position Continuity slice is
+   implemented and built-app verified. Preview restoration waits for the
+   current document HTML to render; Editor and reader state stay keyed by
+   document. See `docs/v1.1-v1.2-followup.md`.
+2. Local forced-termination Recovery passed. Google Drive is
+   `manual-blocked` until a dedicated fixture is available; do not scan or
+   create content in the user's cloud folders implicitly.
 3. Follow with one image, Diff action, context-menu, or `.bak` case at a
    time; do not bundle unrelated polish.
-4. The version is now `1.1.0` and the signed build 54 candidate is the
-   active TestFlight candidate. Keep tag, push, App Store Connect upload,
+4. The version is `1.1.0`; generate a fresh signed candidate after the
+   completed continuity slice. Keep tag, push, App Store Connect upload,
    TestFlight, review, and publication closed until the user confirms the
    upload path; do not treat the local candidate as published.
 

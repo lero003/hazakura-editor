@@ -62,10 +62,12 @@ function sidePaneProps(
     onOpenEbookReadingFocus: vi.fn(),
     onOpenPreviewLocalLink: vi.fn(),
     onPreviewScroll: vi.fn(),
+    onPreviewViewStateChange: vi.fn(),
     onRunSelectedFileCompare: vi.fn(),
     onSelectHeading: vi.fn(),
     outlineTruncated: false,
     previewPaneRef: createRef<HTMLDivElement>(),
+    previewViewState: null,
     previewVisible: true,
     sidePaneMode: "ebook",
     workspaceRootPath: "/workspace",
@@ -74,6 +76,76 @@ function sidePaneProps(
 }
 
 describe("SidePane", () => {
+  it("reports and restores Preview scroll through the controlled view state", async () => {
+    const previewPaneRef = createRef<HTMLDivElement>();
+    const onPreviewScroll = vi.fn();
+    const onPreviewViewStateChange = vi.fn();
+    const firstTab = {
+      ...activeTab,
+      contents: "# First\n\nbody\n\n## More\n\nbody",
+      id: "/workspace/first.md",
+      name: "first.md",
+      path: "/workspace/first.md",
+    };
+    const secondTab = {
+      ...firstTab,
+      contents: "# Second\n\nbody\n\n## More\n\nbody",
+      id: "/workspace/second.md",
+      name: "second.md",
+      path: "/workspace/second.md",
+    };
+    const { rerender } = renderSidePane({
+      activeContents: firstTab.contents,
+      activeTab: firstTab,
+      onPreviewScroll,
+      onPreviewViewStateChange,
+      previewPaneRef,
+      previewViewState: null,
+      sidePaneMode: "preview",
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "First" })).toBeTruthy();
+    });
+    const previewContainer = previewPaneRef.current;
+    expect(previewContainer).not.toBeNull();
+    if (!previewContainer) throw new Error("preview container missing");
+    Object.defineProperty(previewContainer, "scrollHeight", {
+      configurable: true,
+      value: 1000,
+    });
+    Object.defineProperty(previewContainer, "clientHeight", {
+      configurable: true,
+      value: 200,
+    });
+    previewContainer.scrollTop = 600;
+    fireEvent.scroll(previewContainer);
+
+    expect(onPreviewScroll).toHaveBeenCalledTimes(1);
+    expect(onPreviewViewStateChange).toHaveBeenCalledWith({
+      scrollRatio: 0.75,
+    });
+
+    rerender(
+      <SidePane
+        {...sidePaneProps({
+          activeContents: secondTab.contents,
+          activeTab: secondTab,
+          onPreviewScroll,
+          onPreviewViewStateChange,
+          previewPaneRef,
+          previewViewState: { scrollRatio: 0.25 },
+          sidePaneMode: "preview",
+        })}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Second" })).toBeTruthy();
+      expect(previewContainer.scrollTop).toBe(200);
+    });
+  });
+
   it("shows a clear empty state for e-book mode when preview content is unavailable", () => {
     renderSidePane({ previewVisible: false });
 

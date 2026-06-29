@@ -20,6 +20,10 @@ import type {
   TextMatch,
 } from "../../types";
 import type { SlashCommand } from "../../types/slash";
+import type {
+  EditorViewState,
+  EditorViewStatePatch,
+} from "../../features/editor/documentViewState";
 
 type EditorMainPaneProps = {
   activeContents: string;
@@ -31,11 +35,13 @@ type EditorMainPaneProps = {
   editorPaneRef: RefObject<EditorPaneHandle | null>;
   editorSettings: EditorSettings;
   editorTheme: BaseTheme;
+  editorViewState: EditorViewState | null;
   generationLock?: AppleAssistGenerationLock | null;
   imagePreviewTitle: string;
   lModeCopy: LModeCopy;
   menuLanguage: MenuLanguage;
   onChange: (nextValue: string) => void;
+  onEditorViewStateChange: (patch: EditorViewStatePatch) => void;
   onNewFile: () => void | Promise<void>;
   onOpenFile: () => void | Promise<void>;
   onOpenFolder: () => void | Promise<void>;
@@ -67,11 +73,13 @@ export function EditorMainPane({
   editorPaneRef,
   editorSettings,
   editorTheme,
+  editorViewState,
   generationLock = null,
   imagePreviewTitle,
   lModeCopy,
   menuLanguage,
   onChange,
+  onEditorViewStateChange,
   onNewFile,
   onOpenFile,
   onOpenFolder,
@@ -106,11 +114,13 @@ export function EditorMainPane({
             ref={editorPaneRef}
             activeSearchMatchIndex={activeSearchMatchIndex}
             documentKey={documentKey}
+            editorViewState={editorViewState}
             fontSize={editorSettings.editorFontSize}
             lModeEnabled={editorSettings.lModeEnabled}
             lModeCopy={lModeCopy}
             lModeTypewriter={editorSettings.lModeTypewriter}
             onChange={onChange}
+            onEditorViewStateChange={onEditorViewStateChange}
             onScrollRatioChange={onScrollRatioChange}
             readOnly={appleAssistLocked}
             onSelectionChange={onSelectionChange}

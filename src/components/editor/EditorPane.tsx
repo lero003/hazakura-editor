@@ -37,6 +37,11 @@ import {
   pickEditorLanguage,
   type EditorLanguageKind,
 } from "../../features/editor/codeMirrorTheme";
+import {
+  clampEditorViewState,
+  type EditorViewState,
+  type EditorViewStatePatch,
+} from "../../features/editor/documentViewState";
 import { lModeExtension, LModeClasses } from "../../features/editor/lMode";
 import type { LModeCopy } from "../../lib/locale";
 import type { SlashCommand } from "../../types/slash";
@@ -59,6 +64,7 @@ export type MarkdownFormat =
 
 type EditorPaneProps = {
   documentKey: string;
+  editorViewState?: EditorViewState | null;
   value: string;
   theme: "light" | "dark";
   fontSize: number;
@@ -81,6 +87,7 @@ type EditorPaneProps = {
   ) => Promise<string | null>;
   onSendToAgent?: (text: string) => void;
   onChange: (nextValue: string) => void;
+  onEditorViewStateChange?: (patch: EditorViewStatePatch) => void;
   onScrollRatioChange: (ratio: number) => void;
   onSelectionChange: (selection: EditorSelectionInfo) => void;
 };
@@ -185,6 +192,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     {
       activeSearchMatchIndex,
       documentKey,
+      editorViewState = null,
       fontSize,
       lModeEnabled,
       lModeCopy,
@@ -200,6 +208,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       value,
       wrapLines,
       onChange,
+      onEditorViewStateChange,
       onScrollRatioChange,
       onSelectionChange,
       workspaceRoot,
@@ -214,10 +223,12 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   const onChangeRef = useRef(onChange);
   const onScrollRatioChangeRef = useRef(onScrollRatioChange);
   const onSelectionChangeRef = useRef(onSelectionChange);
+  const onEditorViewStateChangeRef = useRef(onEditorViewStateChange);
   const onPasteImageRef = useRef(onPasteImage);
   const onSendToAgentRef = useRef<(text: string) => void>(() => {});
   const applyingExternalValueRef = useRef(false);
   const jumpScrollReportFrameRef = useRef<number | null>(null);
+  const restoreScrollFrameRef = useRef<number | null>(null);
   // v0.33: scroll イベントは高頻度で発火するため requestAnimationFrame で
   // スロットルし、onScrollRatioChange / scroll HUD の更新を1フレームに1回に抑える。
   const scrollReportFrameRef = useRef<number | null>(null);
@@ -286,6 +297,9 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
             onScrollRatioChangeRef.current(
               readScrollRatio(view.scrollDOM),
             );
+            onEditorViewStateChangeRef.current?.({
+              scrollRatio: readScrollRatio(view.scrollDOM),
+            });
           });
         });
         if (options?.focus !== false) {
@@ -404,6 +418,10 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   }, [onSelectionChange]);
 
   useEffect(() => {
+    onEditorViewStateChangeRef.current = onEditorViewStateChange;
+  }, [onEditorViewStateChange]);
+
+  useEffect(() => {
     onPasteImageRef.current = onPasteImage;
   }, [onPasteImage]);
 
@@ -469,10 +487,19 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     mountedKindRef.current = picked.kind;
     currentHighlightRef.current = picked.highlight;
     const { language, highlight } = picked;
+    const restoredViewState = editorViewState
+      ? clampEditorViewState(editorViewState, value.length)
+      : null;
 
     const view = new EditorView({
       doc: value,
       parent: editorMountRef.current,
+      selection: restoredViewState
+        ? {
+            anchor: restoredViewState.anchor,
+            head: restoredViewState.head,
+          }
+        : undefined,
       extensions: [
         basicSetup,
         rectangularSelection(),
@@ -582,6 +609,13 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
           if (update.docChanged || update.selectionSet) {
             onSelectionChangeRef.current(readSelectionInfo(update.state));
           }
+          if (update.selectionSet) {
+            const selection = update.state.selection.main;
+            onEditorViewStateChangeRef.current?.({
+              anchor: selection.anchor,
+              head: selection.head,
+            });
+          }
         }),
       ],
     });
@@ -593,7 +627,9 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       const win = view.dom.ownerDocument.defaultView ?? window;
       scrollReportFrameRef.current = win.requestAnimationFrame(() => {
         scrollReportFrameRef.current = null;
-        onScrollRatioChangeRef.current(readScrollRatio(view.scrollDOM));
+        const scrollRatio = readScrollRatio(view.scrollDOM);
+        onScrollRatioChangeRef.current(scrollRatio);
+        onEditorViewStateChangeRef.current?.({ scrollRatio });
       });
     };
     const handleScrollerMouseDown = (event: MouseEvent) => {
@@ -629,6 +665,11 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         win.cancelAnimationFrame(jumpScrollReportFrameRef.current);
         jumpScrollReportFrameRef.current = null;
       }
+      if (restoreScrollFrameRef.current !== null) {
+        const win = view.dom.ownerDocument.defaultView ?? window;
+        win.cancelAnimationFrame(restoreScrollFrameRef.current);
+        restoreScrollFrameRef.current = null;
+      }
       if (scrollReportFrameRef.current !== null) {
         const win = view.dom.ownerDocument.defaultView ?? window;
         win.cancelAnimationFrame(scrollReportFrameRef.current);
@@ -650,7 +691,28 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     };
     viewRef.current = view;
     onSelectionChangeRef.current(readSelectionInfo(view.state));
-    handleScroll();
+    if (restoredViewState) {
+      const win = view.dom.ownerDocument.defaultView ?? window;
+      restoreScrollFrameRef.current = win.requestAnimationFrame(() => {
+        restoreScrollFrameRef.current = win.requestAnimationFrame(() => {
+          restoreScrollFrameRef.current = null;
+          if (viewRef.current !== view) {
+            return;
+          }
+          const scrollableHeight =
+            view.scrollDOM.scrollHeight - view.scrollDOM.clientHeight;
+          view.scrollDOM.scrollTop =
+            scrollableHeight <= 0
+              ? 0
+              : scrollableHeight * restoredViewState.scrollRatio;
+          const scrollRatio = readScrollRatio(view.scrollDOM);
+          onScrollRatioChangeRef.current(scrollRatio);
+          onEditorViewStateChangeRef.current?.({ scrollRatio });
+        });
+      });
+    } else {
+      handleScroll();
+    }
 
     // NB: no cleanup return here. The mount useEffect re-runs
     // on every `documentKey` / `lModeEnabled` change, but
