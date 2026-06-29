@@ -3,25 +3,24 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-29 (1.0.0 public release and v1.1 kickoff)
+Last reviewed: 2026-06-30 (1.1.0 public release and v1.2 polish)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
 - Current development package/app version: `1.1.0` across npm, Tauri, Cargo,
-  and lockfile metadata. The v1.1 candidate lane was opened 2026-06-29; the
-  published Mac App Store version remains `1.0.0` until a v1.1 candidate is
-  uploaded, reviewed, and released.
+  and lockfile metadata. `1.1.0` was approved and released on the Mac App
+  Store; the active source lane is v1.2 polish and expectation setting.
 - `1.0.0` was approved and released on the Mac App Store. It is a
   semantic and product-message re-baseline of the feature shape first
   shipped through `0.36.0`, not a new feature expansion. Its public message is:
   `Markdownで書き、本として読み、ローカルAIで整える。`
-- A fresh signed App Store / TestFlight `1.1.0` candidate containing the
+- The signed App Store / TestFlight `1.1.0` candidate containing the
   completed position-continuity slice passed source, build, audit, signature,
   entitlement, checksum,
   distribution-probe, and sandbox-preview gates. Its local provenance
   is in `docs/internal/app-store-candidates/latest.json`; the public
-  listing still confirms `1.0.0`, while raw App Store Connect,
+  listing now confirms `1.1.0`, while raw App Store Connect,
   TestFlight, and App Review logs are not tracked in this repository.
 - A 2026-06-28 user-side pre-v1 pass accepted the Golden Manuscript flow,
   long-form e-book page-turning, EPUB page breaks in Apple Books, Local
@@ -29,8 +28,8 @@ Last reviewed: 2026-06-29 (1.0.0 public release and v1.1 kickoff)
   boundary. No v1 No-Go condition was reported. Unchecked boxes are not
   treated as automatic blockers; commented observations are classified
   in `docs/v1.1-v1.2-followup.md`.
-- No public-release hotfix blocker has been reported. The active lane is
-  now v1.1 daily-use continuity and trust. `AppWorkspace` owns a shared
+- No public-release hotfix blocker has been reported. The active lane is now v1.2
+  polish and expectation setting. `AppWorkspace` owns a shared
   per-document view-state registry: reader, Editor cursor/scroll, Preview
   reopen, tab transitions, and safe local Markdown-link transitions now
   preserve the relevant document position. The local forced-termination
@@ -38,8 +37,8 @@ Last reviewed: 2026-06-29 (1.0.0 public release and v1.1 kickoff)
   dedicated fixture existed and user cloud content was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Published Mac App Store version: `1.0.0`. It includes the v0.32
-  Editor / Reader Position Bridge, direct PDF export, EPUB export,
+- Published Mac App Store version: `1.1.0`. It includes per-document Editor /
+  Reader / Preview position continuity, direct PDF export, EPUB export,
   e-book reader page-turn stabilization, workspace open / dirty markers,
   right-click Markdown insertion, and Hazakura Local Assist as a preview
   on-device writing companion.
@@ -430,8 +429,8 @@ baseline, and smoke evidence are archived under
 
 ## Active Planning Sources
 
-- `docs/current-work.md`: current v1.1 daily-use continuity queue plus
-  v1.0 release evidence.
+- `docs/current-work.md`: current v1.2 polish queue plus v1.0-v1.1 release
+  evidence.
 - `docs/archive/planning/v0.27-refinement-slice-plan.md`: historical v0.27
   execution phases for large-document rendering, One Editing Space,
   flow-preserving editing, and status bar cleanup.
@@ -452,13 +451,13 @@ baseline, and smoke evidence are archived under
 ## Next Safe Actions
 
 1. Treat the v1.1 Reader / Editor / Preview position-continuity slice as
-   implemented and built-app verified. Keep the shared registry scoped to
-   source-preserving view state; do not expand it into workspace indexing.
+   published and closed. Keep the shared registry scoped to source-preserving
+   view state; do not expand it into workspace indexing.
 2. Complete the Google Drive Recovery smoke only with a dedicated user-
    approved fixture. The local-folder forced-termination path has passed.
-3. Treat the freshly generated signed `1.1.0` pkg as local candidate
-   evidence only. Upload and App Store Connect work remain closed until
-   explicitly requested.
+3. Treat the signed `1.1.0` pkg metadata as local provenance for the released
+   lane, not proof of the public build number. Do not open a v1.2 candidate or
+   App Store Connect lane until explicitly requested.
 4. For the latest local App Store / TestFlight package candidate, see
    `docs/internal/app-store-candidates/latest.json` for version / build
    counter / pkg path / SHA-256 / generated time. At this sync point it

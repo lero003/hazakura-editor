@@ -388,6 +388,13 @@
   gap: 12px;
 }
 
+.close-dialog .epub-export-settings-note {
+  font-size: 12px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+  opacity: 0.85;
+}
+
 .epub-export-settings-form .dialog-actions {
   margin-top: 4px;
 }

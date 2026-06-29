@@ -117,6 +117,16 @@ describe("editor tab close affordance CSS", () => {
     expect(unavailable).toMatch(/--availability-accent:\s*var\(--danger/);
   });
 
+  it("keeps the EPUB scope note more specific than generic dialog paragraphs", () => {
+    const note = ruleBody(
+      dialogsCss,
+      ".close-dialog .epub-export-settings-note",
+    );
+
+    expect(note).toMatch(/font-size:\s*12px/);
+    expect(note).toMatch(/margin-bottom:\s*16px/);
+  });
+
   it("keeps Sakura ambient particles restrained", () => {
     const rule = ruleBody(appShellCss, ".ambient-sakura .ambient-particle");
 

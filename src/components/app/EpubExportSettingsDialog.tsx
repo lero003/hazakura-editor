@@ -42,6 +42,9 @@ export function EpubExportSettingsDialog({
         <p id="epub-export-settings-description" title={documentName}>
           {documentName}
         </p>
+        <p className="epub-export-settings-note">
+          {copy.scopeNote}
+        </p>
         <form
           className="epub-export-settings-form"
           onSubmit={(event) => {
@@ -99,6 +102,8 @@ function getEpubExportSettingsCopy(menuLanguage: MenuLanguage) {
       cancel: "キャンセル",
       export: "書き出す",
       languageField: "言語",
+      scopeNote:
+        "電子書籍モードは読むためのプレビューです。書き出されるEPUBは単一Markdown文書を対象とし、Hazakuraは完全なEPUB制作ツールではありません。",
       title: "EPUB書き出し",
       titleField: "書名",
     };
@@ -109,6 +114,8 @@ function getEpubExportSettingsCopy(menuLanguage: MenuLanguage) {
     cancel: "Cancel",
     export: "Export",
     languageField: "Language",
+    scopeNote:
+      "E-book Mode is a reading preview. The exported EPUB targets a single Markdown document, and Hazakura is not a full EPUB production tool.",
     title: "EPUB Export",
     titleField: "Title",
   };

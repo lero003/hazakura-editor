@@ -3,12 +3,12 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-29 (1.0.0 public release and v1.1 kickoff)
+Last reviewed: 2026-06-30 (1.1.0 public release and v1.2 polish)
 
 ## Current State
 
-- `1.0.0` passed App Review and was released on the Mac App Store. The
-  public listing confirms version `1.0.0`; raw App Store Connect,
+- `1.1.0` passed App Review and was released on the Mac App Store. The
+  public listing confirms version `1.1.0`; raw App Store Connect,
   TestFlight, App Review, and public build-number logs remain outside
   this repository. The v1 public promise is
   `Markdownで書き、本として読み、ローカルAIで整える。`
@@ -16,28 +16,29 @@ Last reviewed: 2026-06-29 (1.0.0 public release and v1.1 kickoff)
   Manuscript baseline. No public-release hotfix blocker has been
   reported. All commented observations are routed to
   `docs/v1.1-v1.2-followup.md`.
-- The v1.1 candidate lane was opened 2026-06-29. Source/package metadata
-  is at `1.1.0`. Reader, Editor cursor/scroll, Preview reopen, tab, and
+- The v1.1 lane is closed and published. Source/package metadata remains at
+  `1.1.0`. Reader, Editor cursor/scroll, Preview reopen, tab, and
   safe local Markdown-link position continuity are implemented through
-  one `AppWorkspace`-owned per-document registry. A fresh signed candidate
-  containing the completed slice is recorded in the ignored latest metadata.
+  one `AppWorkspace`-owned per-document registry. The active source lane is
+  v1.2 Polish; no v1.2 candidate or version bump has been opened.
 - The signed local `1.1.0` App Store / TestFlight candidate passed the
   release gates, package signature and checksum verification, enforced
   App Store entitlement probe, and sandbox-preview smoke. Its current
   local artifact details live only in
   `docs/internal/app-store-candidates/latest.json`. Treat this as local
   package provenance, not proof of the public build number.
-- Latest verification: 69 focused position/link tests, 299 Rust tests,
-  91 App Store surface tests, `build:vite`, npm/Rust audits, package
-  signature and SHA-256, distribution probe, and sandbox-preview smoke.
-  Rust audit reports only the 17 existing allowed transitive warnings.
-- `Hazakura Editor` `1.0.0` is the latest published Mac App Store
+- Current v1.2 source verification: `npm test` (120 files / 1080 tests),
+  `cargo test` (299 tests), `npm run build:vite`, `npm run build`,
+  `cargo fmt --check`, and `git diff --check`. The Vite chunk-size warning
+  remains known. Built-app right-click / command-palette / EPUB-dialog
+  interaction smoke was not exercised in this slice and remains an RC check.
+- `Hazakura Editor` `1.1.0` is the latest published Mac App Store
   version. `0.36.0` remains historical proof of the same v1-equivalent
   reader, export, workspace-marker, Markdown insertion, and Local Assist
   feature shape.
 - The earlier `0.29.1` App Store update established Hazakura Local Assist
   as a public preview; its build `33` package remains historical release
-  evidence and should not be confused with the current `1.0.0` public
+  evidence and should not be confused with the current `1.1.0` public
   lane.
 - Local App Store / TestFlight package candidate metadata (version,
   build counter, pkg path, SHA-256, generated time, source commit,
@@ -59,20 +60,18 @@ Last reviewed: 2026-06-29 (1.0.0 public release and v1.1 kickoff)
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. The v1.1 Reader / Editor / Preview Position Continuity slice is
-   implemented and built-app verified. Preview restoration waits for the
-   current document HTML to render; Editor and reader state stay keyed by
-   document. See `docs/v1.1-v1.2-followup.md`.
+1. The active source lane is v1.2 Polish. EPUB expectation copy and
+   command-palette / slash-command parity are implemented at source level;
+   built-app interaction smoke remains pending before an RC claim. See
+   `docs/v1.1-v1.2-followup.md`.
 2. Local forced-termination Recovery passed. Google Drive is
    `manual-blocked` until a dedicated fixture is available; do not scan or
    create content in the user's cloud folders implicitly.
 3. Follow with one image, Diff action, context-menu, or `.bak` case at a
    time; do not bundle unrelated polish.
-4. The version is `1.1.0`; a fresh signed candidate was generated and
-   locally verified after the completed continuity slice. Keep tag, push,
-   App Store Connect upload,
-   TestFlight, review, and publication closed until the user confirms the
-   upload path; do not treat the local candidate as published.
+4. The version remains `1.1.0`. Keep version bump, candidate generation,
+   tag, push, App Store Connect upload, TestFlight, review, and publication
+   closed until the user explicitly opens the v1.2 release lane.
 
 Detailed v0.18-v1.0 completed-slice history and per-version verification
 records moved to `docs/archive/operations/handoff-detail-through-v1.0.md`.

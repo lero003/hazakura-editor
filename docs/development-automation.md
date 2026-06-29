@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-06-29 (v1.1 kickoff)
+Last reviewed: 2026-06-30 (1.1.0 public release and v1.2 polish)
 
 ## Purpose
 
@@ -17,7 +17,7 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: v1.1 Daily-use Continuity And Trust after the published `1.0.0`
+Phase: v1.2 Polish And Expectation Setting after the published `1.1.0`
 App Store release, unless a public-release hotfix blocker appears.
 
 For recurring automation, use the Active UX Queue in
@@ -29,9 +29,9 @@ environment is available and close it as `implemented`,
 
 Prefer work in this order:
 
-1. Active UX Queue from `docs/current-work.md`, starting with the bounded
-   reader / editor / Preview position-continuity reproduction unless a
-   concrete source-loss or public hotfix signal takes priority.
+1. Active UX Queue from `docs/current-work.md`, starting with one bounded
+   v1.2 observation or manual-smoke gap unless a concrete source-loss or
+   public hotfix signal takes priority.
 2. Stale or failing quality gates that block the selected slice.
 3. Core Safe Editor quality risks around open, edit, save, close/quit,
    restore, recovery, preview, diff/review, workspace file operations,
@@ -39,8 +39,9 @@ Prefer work in this order:
    copy. When the known queue is exhausted, pick one of these surfaces,
    state the risk hypothesis, inspect or smoke it, then either make the
    smallest justified fix or close as `verified no-op`.
-4. Recovery forced-termination and local/cloud-folder evidence after the
-   position slice, unless its risk is escalated by reproduced source loss.
+4. Recovery forced-termination and local/cloud-folder evidence only when a
+   dedicated fixture exists, unless its risk is escalated by reproduced
+   source loss.
 5. Submission-prep or App Store hotfix queue only when explicitly
    reopened, especially fuller TestFlight smoke, reviewer notes, license
    packet review, About metadata, and regression evidence.

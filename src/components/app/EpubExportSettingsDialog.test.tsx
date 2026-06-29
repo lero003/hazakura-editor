@@ -72,6 +72,58 @@ describe("EpubExportSettingsDialog", () => {
     );
   });
 
+  it("renders the e-book / EPUB scope note in Japanese and English", () => {
+    const { rerender } = render(
+      <EpubExportSettingsDialog
+        cancelButtonRef={createRef()}
+        dialogRef={createRef()}
+        documentName="book.md"
+        initialSettings={{
+          author: "",
+          language: "ja",
+          title: "Initial Title",
+        }}
+        menuLanguage="ja"
+        onCancel={vi.fn()}
+        onConfirm={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByText((_, node) => {
+        if (!node) {
+          return false;
+        }
+        return node.classList.contains("epub-export-settings-note");
+      }).textContent,
+    ).toContain("電子書籍モードは読むためのプレビューです");
+
+    rerender(
+      <EpubExportSettingsDialog
+        cancelButtonRef={createRef()}
+        dialogRef={createRef()}
+        documentName="book.md"
+        initialSettings={{
+          author: "",
+          language: "ja",
+          title: "Initial Title",
+        }}
+        menuLanguage="en"
+        onCancel={vi.fn()}
+        onConfirm={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByText((_, node) => {
+        if (!node) {
+          return false;
+        }
+        return node.classList.contains("epub-export-settings-note");
+      }).textContent,
+    ).toContain("E-book Mode is a reading preview");
+  });
+
   it("exposes dialog and cancel button refs to the modal keyboard guard", () => {
     const cancelButtonRef = createRef<HTMLButtonElement | null>();
     const dialogRef = createRef<HTMLElement | null>();

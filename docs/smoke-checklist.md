@@ -195,7 +195,10 @@ an in-app EPUB validator workflow.
    page-break hint.
 2. Choose the EPUB export action and confirm the metadata dialog is
    labelled `EPUB書き出し` / `EPUB Export`, with editable title, author,
-   and language fields.
+   and language fields. Confirm the scope note states that e-book Mode is
+   a reading preview, the exported EPUB targets a single Markdown
+   document, and Hazakura is not a full EPUB production tool (Japanese
+   and English copy both present).
 3. Save the `.epub` and confirm a successful export status appears. If
    the document includes an unavailable image, confirm the status says
    the EPUB was saved with image warnings rather than silently claiming a
@@ -253,6 +256,14 @@ handling, and workspace-tree rendering.
 9. Repeat a light check in L Mode's workspace drawer. The marker state
    should match the normal workspace sidebar and should not imply Git
    status, background indexing, or a full file-manager model.
+10. v1.2 command discovery alignment: open the command palette
+    (`Cmd+Shift+P`) and confirm the same safe Markdown actions reachable
+    from the right-click slash menu are also in the palette — at minimum
+    headings, bullet / numbered / task lists, quote, code block, divider,
+    image, strikethrough, bold, italic, inline code, link, and the
+    3-column table plus today's date / current time. With a selected range,
+    confirm table insertion does not delete the selection. The palette is a
+    single command surface for these actions, not a second system.
 
 Latest local app note: on 2026-06-25, `npm run build` produced the local
 preview bundle and distribution probe passed, but `smoke:macos-window`

@@ -4,6 +4,7 @@ import { useCommandPaletteController } from "./useCommandPaletteController";
 import type { GlobalSearchRow } from "../globalSearch/useGlobalSearch";
 import type { EditorPaneHandle } from "../../components/editor/EditorPane";
 import { getLModeCopy } from "../../lib/locale";
+import { useEditorCommands } from "../editor/useEditorCommands";
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -730,5 +731,147 @@ describe("useCommandPaletteController", () => {
     });
     expect(setPreferencesDialogMode).toHaveBeenCalledWith("about");
     vi.unstubAllEnvs();
+  });
+
+  it("aligns the palette Markdown commands with the slash menu safe actions", () => {
+    // v1.2 command discovery: the command palette (Cmd+Shift+P) and
+    // the right-click slash menu must expose the same set of safe
+    // Markdown actions. The palette previously carried only
+    // bold / italic / inline-code / link / table; this asserts the
+    // headline/list/quote/code-block/divider/image/strikethrough/date/time
+    // actions are now reachable from the palette too.
+    const insertText = vi.fn();
+    const insertTable = vi.fn();
+    const editorPaneRef = {
+      current: {
+        insertTable,
+        insertText,
+      } as unknown as EditorPaneHandle,
+    };
+    const { result } = renderHook(() => {
+      const { slashCommands } = useEditorCommands({
+        activeDraft: null,
+        activeTab: null,
+        activeTabId: null,
+        agentWorkbenchActive: false,
+        editorPaneRef,
+        handleSendSelectionToAgent: vi.fn(),
+        menuLanguage: "en",
+        requestReviewDraftAgainstDisk: vi.fn(),
+        requestReviewTabAgainstDisk: vi.fn(),
+        setStatus: vi.fn(),
+        setTabs: vi.fn(),
+      });
+
+      const controller = useCommandPaletteController({
+        actions: {
+          applyActiveMarkdownFormat: vi.fn(),
+          createNewFile: vi.fn(),
+          exportEpubBeta: vi.fn(),
+          exportHtml: vi.fn(),
+          exportPdf: vi.fn(),
+          focusAdjacentTab: vi.fn(),
+          handleSendSelectionToAgent: vi.fn(),
+          insertTable,
+          openAgentWindow: vi.fn(),
+          openAppleAssistWindow: vi.fn(),
+          openFile: vi.fn(),
+          openWorkspace: vi.fn(),
+          openWorkspaceFile: vi.fn(),
+          requestCloseTab: vi.fn(),
+          requestRestoreFromBackup: vi.fn(),
+          requestReviewTabAgainstDisk: vi.fn(),
+          requestWindowClose: vi.fn(),
+          saveActiveTab: vi.fn(),
+          saveActiveTabAs: vi.fn(),
+          setEditorSettings: vi.fn(),
+          setFindVisible: vi.fn(),
+          setPreferencesDialogMode: vi.fn(),
+          setPreviewVisible: vi.fn(),
+          toggleDiffPane: vi.fn(),
+          toggleLMode: vi.fn(),
+          toggleOutlinePane: vi.fn(),
+          toggleQuickOpen: vi.fn(),
+        },
+        activeTab: null,
+        activeTabId: null,
+        appleLocalAssistAllowed: false,
+        assistSurfaceActive: "none",
+        editorPaneRef,
+        lModeCopy: getLModeCopy("en"),
+        setStatus: vi.fn(),
+        slashCommands,
+        themePreference: "light",
+        workspaceRootPath: null,
+      });
+      return { ...controller, slashCommands };
+    });
+
+    act(() => {
+      result.current.openCommandPalette();
+    });
+
+    const expectedIdBySlashId: Record<string, string> = {
+      "heading-1": "insert.heading1",
+      "heading-2": "insert.heading2",
+      "heading-3": "insert.heading3",
+      "bullet-list": "insert.bulletList",
+      "numbered-list": "insert.numberedList",
+      "task-list": "insert.taskList",
+      quote: "insert.quote",
+      "code-block": "insert.codeBlock",
+      divider: "insert.divider",
+      table: "edit.insertTable",
+      link: "edit.link",
+      image: "edit.image",
+      bold: "edit.bold",
+      italic: "edit.italic",
+      "inline-code": "edit.code",
+      strikethrough: "edit.strikethrough",
+      "today-date": "insert.todayDate",
+      "now-time": "insert.nowTime",
+    };
+    const slashMarkdownIds = result.current.slashCommands
+      .filter((command) => command.category === "markdown")
+      .map((command) => command.id);
+    expect(new Set(slashMarkdownIds)).toEqual(
+      new Set(Object.keys(expectedIdBySlashId)),
+    );
+    const commandIds = result.current.filteredCommands.map(
+      (command) => command.id,
+    );
+    for (const slashId of slashMarkdownIds) {
+      expect(commandIds).toContain(expectedIdBySlashId[slashId]);
+    }
+
+    const heading = result.current.filteredCommands.find(
+      (command) => command.id === "insert.heading1",
+    );
+    expect(heading?.label).toBe("Insert Heading 1");
+    act(() => {
+      heading?.run();
+    });
+    expect(insertText).toHaveBeenCalledWith("# ");
+
+    const table = result.current.filteredCommands.find(
+      (command) => command.id === "edit.insertTable",
+    );
+    act(() => {
+      table?.run();
+    });
+    expect(insertText).toHaveBeenCalledWith(
+      "| Col 1 | Col 2 | Col 3 |\n| --- | --- | --- |\n|     |     |     |\n",
+    );
+    expect(insertTable).not.toHaveBeenCalled();
+
+    const today = result.current.filteredCommands.find(
+      (command) => command.id === "insert.todayDate",
+    );
+    act(() => {
+      today?.run();
+    });
+    expect(insertText).toHaveBeenCalledWith(
+      expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+    );
   });
 });

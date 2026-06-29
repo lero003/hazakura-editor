@@ -472,4 +472,40 @@ describe("macOS build scripts", () => {
       "docs/internal/app-store-candidates/latest.json",
     );
   });
+
+  it("keeps living docs aligned on the published version and active lane", () => {
+    const expectedSnippets = {
+      "README.md": [
+        "Hazakura Editor `1.1.0` is published",
+        "Current package/app version is `1.1.0`",
+      ],
+      "docs/app-store-build.md": ["Published App Store version: `1.1.0`"],
+      "docs/current-status.md": [
+        "Published Mac App Store version: `1.1.0`",
+        "active lane is now v1.2",
+      ],
+      "docs/current-work.md": [
+        "Scope: v1.2 polish and expectation setting",
+        "The active lane is v1.2",
+      ],
+      "docs/development-automation.md": ["Phase: v1.2 Polish"],
+      "docs/handoff.md": [
+        "`Hazakura Editor` `1.1.0` is the latest published Mac App Store",
+        "The active source lane is v1.2 Polish",
+      ],
+      "docs/roadmap.md": [
+        "Current package/app version: `1.1.0` released baseline",
+        "Active lane: v1.2 Polish",
+      ],
+    };
+
+    for (const [docPath, snippets] of Object.entries(expectedSnippets)) {
+      const contents = readFileSync(docPath, "utf8");
+      for (const snippet of snippets) {
+        expect(contents, `${docPath} should contain ${snippet}`).toContain(
+          snippet,
+        );
+      }
+    }
+  });
 });

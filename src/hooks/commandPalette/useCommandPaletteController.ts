@@ -38,6 +38,7 @@ import type {
   PreferencesDialogMode,
   ThemePreference,
 } from "../../types";
+import type { SlashCommand } from "../../types/slash";
 import { useCommandPalette, type Command } from "./useCommandPalette";
 import {
   useGlobalSearch,
@@ -85,9 +86,182 @@ type UseCommandPaletteControllerOptions = {
   editorPaneRef: RefObject<EditorPaneHandle | null>;
   lModeCopy: LModeCopy;
   setStatus: Dispatch<SetStateAction<string>>;
+  slashCommands?: readonly SlashCommand[];
   themePreference: ThemePreference;
   workspaceRootPath: string | null;
 };
+
+type MarkdownPaletteCommandSpec = Omit<Command, "run"> & {
+  sourceId: string;
+};
+
+const MARKDOWN_PALETTE_COMMAND_SPECS: readonly MarkdownPaletteCommandSpec[] = [
+  {
+    category: "Edit",
+    id: "edit.bold",
+    keywords: ["bold", "strong", "format", "markdown"],
+    label: "Apply Bold",
+    shortcut: "⌘B",
+    sourceId: "bold",
+  },
+  {
+    category: "Edit",
+    id: "edit.italic",
+    keywords: ["italic", "emphasis", "format", "markdown"],
+    label: "Apply Italic",
+    shortcut: "⌘I",
+    sourceId: "italic",
+  },
+  {
+    category: "Edit",
+    id: "edit.code",
+    keywords: ["code", "inline", "format", "markdown"],
+    label: "Apply Inline Code",
+    shortcut: "⌘E",
+    sourceId: "inline-code",
+  },
+  {
+    category: "Edit",
+    id: "edit.link",
+    keywords: ["link", "url", "format", "markdown"],
+    label: "Apply Link",
+    shortcut: "⌘K",
+    sourceId: "link",
+  },
+  {
+    category: "Edit",
+    id: "edit.image",
+    keywords: ["image", "picture", "insert", "markdown"],
+    label: "Insert Image",
+    sourceId: "image",
+  },
+  {
+    category: "Edit",
+    id: "edit.strikethrough",
+    keywords: ["strikethrough", "strike", "format", "markdown"],
+    label: "Apply Strikethrough",
+    sourceId: "strikethrough",
+  },
+  {
+    category: "Insert",
+    id: "insert.heading1",
+    keywords: ["heading", "h1", "markdown", "insert"],
+    label: "Insert Heading 1",
+    sourceId: "heading-1",
+  },
+  {
+    category: "Insert",
+    id: "insert.heading2",
+    keywords: ["heading", "h2", "markdown", "insert"],
+    label: "Insert Heading 2",
+    sourceId: "heading-2",
+  },
+  {
+    category: "Insert",
+    id: "insert.heading3",
+    keywords: ["heading", "h3", "markdown", "insert"],
+    label: "Insert Heading 3",
+    sourceId: "heading-3",
+  },
+  {
+    category: "Insert",
+    id: "insert.bulletList",
+    keywords: ["bullet", "list", "unordered", "markdown", "insert"],
+    label: "Insert Bullet List",
+    sourceId: "bullet-list",
+  },
+  {
+    category: "Insert",
+    id: "insert.numberedList",
+    keywords: ["numbered", "ordered", "list", "markdown", "insert"],
+    label: "Insert Numbered List",
+    sourceId: "numbered-list",
+  },
+  {
+    category: "Insert",
+    id: "insert.taskList",
+    keywords: ["task", "todo", "checklist", "markdown", "insert"],
+    label: "Insert Task List",
+    sourceId: "task-list",
+  },
+  {
+    category: "Insert",
+    id: "insert.quote",
+    keywords: ["quote", "blockquote", "markdown", "insert"],
+    label: "Insert Quote",
+    sourceId: "quote",
+  },
+  {
+    category: "Insert",
+    id: "insert.codeBlock",
+    keywords: ["code", "block", "fence", "markdown", "insert"],
+    label: "Insert Code Block",
+    sourceId: "code-block",
+  },
+  {
+    category: "Insert",
+    id: "insert.divider",
+    keywords: ["divider", "horizontal", "rule", "markdown", "insert"],
+    label: "Insert Divider",
+    sourceId: "divider",
+  },
+  {
+    category: "Insert",
+    description:
+      "Insert a 3-column Markdown table skeleton. Edit cells manually — no row, column, or alignment commands yet.",
+    id: "edit.insertTable",
+    keywords: ["table", "insert", "grid", "3", "columns"],
+    label: "Insert 3-Column Table",
+    shortcut: "⇧⌘T",
+    sourceId: "table",
+  },
+  {
+    category: "Insert",
+    id: "insert.todayDate",
+    keywords: ["date", "today", "now", "markdown", "insert"],
+    label: "Insert Today's Date",
+    sourceId: "today-date",
+  },
+  {
+    category: "Insert",
+    id: "insert.nowTime",
+    keywords: ["time", "now", "timestamp", "markdown", "insert"],
+    label: "Insert Current Time",
+    sourceId: "now-time",
+  },
+];
+
+function buildMarkdownPaletteCommands(
+  slashCommands: readonly SlashCommand[],
+  editorPaneRef: RefObject<EditorPaneHandle | null>,
+): Command[] {
+  const commandsById = new Map(
+    slashCommands
+      .filter((command) => command.category === "markdown")
+      .map((command) => [command.id, command]),
+  );
+
+  return MARKDOWN_PALETTE_COMMAND_SPECS.flatMap(
+    ({ sourceId, ...paletteCommand }) => {
+      const sourceCommand = commandsById.get(sourceId);
+      if (!sourceCommand) {
+        return [];
+      }
+      return [
+        {
+          ...paletteCommand,
+          run: () => {
+            if ("insertText" in sourceCommand) {
+              editorPaneRef.current?.insertText(sourceCommand.insertText);
+              return;
+            }
+            sourceCommand.action();
+          },
+        },
+      ];
+    },
+  );
+}
 
 export function useCommandPaletteController({
   actions,
@@ -98,6 +272,7 @@ export function useCommandPaletteController({
   editorPaneRef,
   lModeCopy,
   setStatus,
+  slashCommands = [],
   themePreference,
   workspaceRootPath,
 }: UseCommandPaletteControllerOptions) {
@@ -114,6 +289,10 @@ export function useCommandPaletteController({
       });
     },
     [actions, editorPaneRef, setStatus],
+  );
+  const markdownPaletteCommands = useMemo(
+    () => buildMarkdownPaletteCommands(slashCommands, editorPaneRef),
+    [editorPaneRef, slashCommands],
   );
 
   const commandCommands = useMemo<Command[]>(
@@ -256,63 +435,7 @@ export function useCommandPaletteController({
         },
         shortcut: "⇧⌘F",
       },
-      {
-        category: "Edit",
-        id: "edit.bold",
-        keywords: ["bold", "strong", "format", "markdown"],
-        label: "Apply Bold",
-        run: () => {
-          actions.applyActiveMarkdownFormat("bold");
-        },
-        shortcut: "⌘B",
-      },
-      {
-        category: "Edit",
-        id: "edit.italic",
-        keywords: ["italic", "emphasis", "format", "markdown"],
-        label: "Apply Italic",
-        run: () => {
-          actions.applyActiveMarkdownFormat("italic");
-        },
-        shortcut: "⌘I",
-      },
-      {
-        category: "Edit",
-        id: "edit.code",
-        keywords: ["code", "inline", "format", "markdown"],
-        label: "Apply Inline Code",
-        run: () => {
-          actions.applyActiveMarkdownFormat("code");
-        },
-        shortcut: "⌘E",
-      },
-      {
-        category: "Edit",
-        id: "edit.link",
-        keywords: ["link", "url", "format", "markdown"],
-        label: "Apply Link",
-        run: () => {
-          actions.applyActiveMarkdownFormat("link");
-        },
-        shortcut: "⌘K",
-      },
-      {
-        category: "Edit",
-        id: "edit.insertTable",
-        keywords: ["table", "insert", "grid", "3", "columns"],
-        // The current insertTable only emits a fixed 3-column
-        // skeleton. The label names the column count so the user
-        // does not assume a full WYSIWYG editor is behind the
-        // command; row / column / alignment editing is not
-        // implemented yet (see docs/current-work.md for the active queue).
-        label: "Insert 3-Column Table",
-        description:
-          "Insert a 3-column Markdown table skeleton. Edit cells manually — no row, column, or alignment commands yet.",
-        run: () => {
-          actions.insertTable();
-        },
-        shortcut: "⇧⌘T",
-      },
+      ...markdownPaletteCommands,
       {
         category: "View",
         id: "view.preview",
@@ -590,6 +713,7 @@ export function useCommandPaletteController({
       editorPaneRef,
       externalCliAllowed,
       lModeCopy,
+      markdownPaletteCommands,
       themePreference,
     ],
   );
