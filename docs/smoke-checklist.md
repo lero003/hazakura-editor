@@ -460,6 +460,20 @@ recovered state separately where relevant.
     press advances the reader until the key is released and pressed
     again.
 
+### v1.1 Continuity Evidence (2026-06-29)
+
+- Built app: README -> AGENTS -> README restored the Editor cursor/scroll
+  and Preview region independently.
+- Built app: Preview -> e-book Mode -> Preview restored the Preview region.
+- Built app: a safe local Markdown link opened the documentation index;
+  returning to README restored the prior Editor and Preview areas.
+- Local Recovery: with Auto Backup explicitly enabled, the timed `.bak`
+  captured an unsaved marker, forced termination left the saved source
+  unchanged, relaunch restored the workspace/draft, and explicit Restore
+  produced a dirty buffer. Auto Backup was returned to its prior off state.
+- Google Drive Recovery: `manual-blocked`; no dedicated disposable fixture
+  existed, so user cloud content was not created or scanned.
+
 ### Reporting
 
 Record the build number, which items passed / failed / were skipped,
