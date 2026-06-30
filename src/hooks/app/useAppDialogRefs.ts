@@ -23,11 +23,13 @@ export function useAppDialogRefs({
   const closeTabDialogRef = useRef<HTMLElement | null>(null);
   const appCloseDialogRef = useRef<HTMLElement | null>(null);
   const epubExportDialogRef = useRef<HTMLElement | null>(null);
+  const pdfExportDialogRef = useRef<HTMLElement | null>(null);
   const moveTrashDialogRef = useRef<HTMLElement | null>(null);
   const preferencesDialogRef = useRef<HTMLElement | null>(null);
   const closeTabCancelButtonRef = useRef<HTMLButtonElement | null>(null);
   const appCloseCancelButtonRef = useRef<HTMLButtonElement | null>(null);
   const epubExportCancelButtonRef = useRef<HTMLButtonElement | null>(null);
+  const pdfExportCancelButtonRef = useRef<HTMLButtonElement | null>(null);
   const moveTrashCancelButtonRef = useRef<HTMLButtonElement | null>(null);
   const preferencesCloseButtonRef = useRef<HTMLButtonElement | null>(null);
   const allowWindowCloseRef = useRef(false);
@@ -52,6 +54,8 @@ export function useAppDialogRefs({
     moveTrashCancelButtonRef,
     moveTrashDialogRef,
     pendingCloseTabOpen,
+    pdfExportCancelButtonRef,
+    pdfExportDialogRef,
     preferencesCloseButtonRef,
     preferencesDialogRef,
     preferencesOpen,

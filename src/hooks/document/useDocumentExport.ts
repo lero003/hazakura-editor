@@ -12,6 +12,11 @@ import {
   defaultEpubExportSettings,
   type EpubExportSettings,
 } from "../../features/document/epubExport";
+import {
+  DEFAULT_PDF_MARGIN_PRESET,
+  pdfMarginCss,
+  type PdfMarginPreset,
+} from "../../features/document/pdfExport";
 import { getMarkdownPreviewCss } from "../../features/document/markdownExportCss";
 import {
   inlineWorkspaceAssetImages,
@@ -33,6 +38,12 @@ export type EpubExportRequest = {
   tabId: string;
 };
 
+export type PdfExportRequest = {
+  documentName: string;
+  preset: PdfMarginPreset;
+  tabId: string;
+};
+
 export function useDocumentExport({
   activeContents,
   activeTab,
@@ -46,6 +57,8 @@ export function useDocumentExport({
   activeTabRef.current = activeTab;
   const [epubExportRequest, setEpubExportRequest] =
     useState<EpubExportRequest | null>(null);
+  const [pdfExportRequest, setPdfExportRequest] =
+    useState<PdfExportRequest | null>(null);
 
   const exportPdf = useCallback(async () => {
     if (!activeContents || !activeTab) {
@@ -53,10 +66,34 @@ export function useDocumentExport({
       return;
     }
 
+    setPdfExportRequest({
+      documentName: activeTab.name,
+      preset: DEFAULT_PDF_MARGIN_PRESET,
+      tabId: activeTab.id,
+    });
+  }, [activeContents, activeTab, setStatus]);
+
+  const cancelPdfExport = useCallback(() => {
+    setPdfExportRequest(null);
+  }, []);
+
+  const confirmPdfExport = useCallback(async (preset: PdfMarginPreset) => {
+    const request = pdfExportRequest;
+    if (!request) {
+      return;
+    }
+
+    setPdfExportRequest(null);
+    const tabForExport = activeTabRef.current;
+    if (!tabForExport || tabForExport.id !== request.tabId) {
+      setStatus("PDF export stopped; document changed");
+      return;
+    }
+
     setStatus("Preparing PDF export...");
     try {
-      let rendered = renderMarkdown(activeContents, {
-        documentPath: activeTab.path,
+      let rendered = renderMarkdown(activeContentsRef.current, {
+        documentPath: tabForExport.path,
         workspaceRoot: workspaceRootPath ?? undefined,
       });
       if (workspaceRootPath) {
@@ -71,7 +108,7 @@ export function useDocumentExport({
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${escapeHtml(activeTab.name)}</title>
+<title>${escapeHtml(tabForExport.name)}</title>
 <style>
   :root {
     --bg: #ffffff;
@@ -97,7 +134,7 @@ export function useDocumentExport({
   }
   ${getMarkdownPreviewCss()}
   @media print {
-    @page { margin: 18mm 16mm; }
+    @page { margin: ${pdfMarginCss(preset)}; }
     body { background: #ffffff; color: #000000; margin: 0; padding: 0; }
     .markdown-preview {
       color: #000000;
@@ -144,7 +181,7 @@ ${rendered}
 
       if (isTauriRuntime()) {
         const destPath = await saveDialog({
-          defaultPath: activeTab.name.replace(/\.[^.]+$/, "") + ".pdf",
+          defaultPath: request.documentName.replace(/\.[^.]+$/, "") + ".pdf",
           filters: [{ name: "PDF", extensions: ["pdf"] }],
         });
         if (!destPath) {
@@ -152,8 +189,8 @@ ${rendered}
           return;
         }
 
-        const tabForExport = activeTabRef.current;
-        if (!tabForExport || tabForExport.id !== activeTab.id) {
+        const currentTab = activeTabRef.current;
+        if (!currentTab || currentTab.id !== request.tabId) {
           setStatus("PDF export stopped; document changed");
           return;
         }
@@ -180,7 +217,7 @@ ${rendered}
       setGlobalError(`PDF export failed: ${String(err)}`);
       setStatus("PDF export unavailable");
     }
-  }, [activeContents, activeTab, setGlobalError, setStatus, workspaceRootPath]);
+  }, [pdfExportRequest, setGlobalError, setStatus, workspaceRootPath]);
 
   const exportHtml = useCallback(async () => {
     if (!activeTab || activeContents === undefined) {
@@ -403,12 +440,15 @@ ${bodyHtml}
   }, [epubExportRequest, setGlobalError, setStatus, workspaceRootPath]);
 
   return {
+    cancelPdfExport,
     cancelEpubBetaExport,
+    confirmPdfExport,
     confirmEpubBetaExport,
     epubExportRequest,
     exportEpubBeta,
     exportHtml,
     exportPdf,
+    pdfExportRequest,
   };
 }
 

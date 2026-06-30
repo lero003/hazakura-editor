@@ -116,6 +116,9 @@ describe("useDocumentExport", () => {
     tauriApi.saveBinaryFileAs.mockReset();
     tauriApi.saveTextFileAs.mockReset();
     tauriApi.openWorkspaceImage.mockReset();
+    tauriApi.exportPdfFile.mockReset();
+    tauriApi.isTauriRuntime.mockReset();
+    tauriApi.isTauriRuntime.mockReturnValue(false);
     document.documentElement.removeAttribute("style");
   });
 
@@ -251,8 +254,8 @@ describe("useDocumentExport", () => {
     expect(exportedHtml).toContain("color: var(--status-text)");
   });
 
-  it("exports PDF through a save dialog instead of opening print UI", async () => {
-    tauriApi.isTauriRuntime.mockReturnValueOnce(true);
+  it("opens PDF settings before exporting with the selected margin", async () => {
+    tauriApi.isTauriRuntime.mockReturnValue(true);
     dialogApi.save.mockResolvedValue("/tmp/print-me.pdf");
     tauriApi.exportPdfFile.mockResolvedValue(undefined);
     const setStatus = vi.fn();
@@ -271,19 +274,30 @@ describe("useDocumentExport", () => {
       await result.current.exportPdf();
     });
 
+    expect(result.current.pdfExportRequest).toMatchObject({
+      documentName: "print-me.md",
+      preset: "standard",
+      tabId: "/workspace/a.md",
+    });
+    expect(dialogApi.save).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await result.current.confirmPdfExport("wide");
+    });
+
     expect(dialogApi.save).toHaveBeenCalledWith({
       defaultPath: "print-me.pdf",
       filters: [{ name: "PDF", extensions: ["pdf"] }],
     });
     expect(tauriApi.exportPdfFile).toHaveBeenCalledWith(
       "/tmp/print-me.pdf",
-      expect.stringContaining("<div class=\"markdown-preview\">"),
+      expect.stringContaining("@page { margin: 25mm 22mm; }"),
     );
     expect(setStatus).toHaveBeenCalledWith("PDF exported");
   });
 
   it("surfaces native PDF export errors for diagnosis", async () => {
-    tauriApi.isTauriRuntime.mockReturnValueOnce(true);
+    tauriApi.isTauriRuntime.mockReturnValue(true);
     dialogApi.save.mockResolvedValue("/tmp/print-me.pdf");
     tauriApi.exportPdfFile.mockRejectedValue("PDF export timed out.");
     const setGlobalError = vi.fn();
@@ -302,11 +316,71 @@ describe("useDocumentExport", () => {
     await act(async () => {
       await result.current.exportPdf();
     });
+    await act(async () => {
+      await result.current.confirmPdfExport("standard");
+    });
 
     expect(setGlobalError).toHaveBeenCalledWith(
       "PDF export failed: PDF export timed out.",
     );
     expect(setStatus).toHaveBeenCalledWith("PDF export unavailable");
+  });
+
+  it("cancels PDF settings without opening the save dialog", async () => {
+    const { result } = renderHook(() =>
+      useDocumentExport({
+        activeContents: "# Print me",
+        activeTab: makeTab({ name: "print-me.md" }),
+        setGlobalError: vi.fn(),
+        setStatus: vi.fn(),
+        workspaceRootPath: null,
+      }),
+    );
+
+    await act(async () => {
+      await result.current.exportPdf();
+    });
+    act(() => result.current.cancelPdfExport());
+
+    expect(result.current.pdfExportRequest).toBeNull();
+    expect(dialogApi.save).not.toHaveBeenCalled();
+    expect(tauriApi.exportPdfFile).not.toHaveBeenCalled();
+  });
+
+  it("stops PDF export when the active tab changes before confirmation", async () => {
+    tauriApi.isTauriRuntime.mockReturnValue(true);
+    const setStatus = vi.fn();
+    const firstTab = makeTab({ id: "first", name: "first.md" });
+    const secondTab = makeTab({
+      id: "second",
+      name: "second.md",
+      path: "/workspace/second.md",
+    });
+    const { result, rerender } = renderHook(
+      ({ activeTab }) =>
+        useDocumentExport({
+          activeContents: activeTab.contents,
+          activeTab,
+          setGlobalError: vi.fn(),
+          setStatus,
+          workspaceRootPath: null,
+        }),
+      { initialProps: { activeTab: firstTab } },
+    );
+
+    await act(async () => {
+      await result.current.exportPdf();
+    });
+    rerender({ activeTab: secondTab });
+    await act(async () => {
+      await result.current.confirmPdfExport("standard");
+    });
+
+    expect(setStatus).toHaveBeenCalledWith(
+      "PDF export stopped; document changed",
+    );
+    expect(dialogApi.save).not.toHaveBeenCalled();
+    expect(tauriApi.exportPdfFile).not.toHaveBeenCalled();
   });
 
   it("exports EPUB beta through an EPUB save dialog and binary file write", async () => {

@@ -243,6 +243,8 @@ export function useAppShellController() {
     discardingWindowCloseRef,
     epubExportCancelButtonRef,
     epubExportDialogRef,
+    pdfExportCancelButtonRef,
+    pdfExportDialogRef,
     modalOpen,
     moveTrashCancelButtonRef,
     moveTrashDialogRef,
@@ -770,12 +772,15 @@ export function useAppShellController() {
 
   // section: document IO controller
   const {
+    cancelPdfExport,
     cancelEpubBetaExport,
+    confirmPdfExport,
     confirmEpubBetaExport,
     epubExportRequest,
     exportEpubBeta,
     exportHtml,
     exportPdf,
+    pdfExportRequest,
     saveActiveTab: saveActiveTabUnsafe,
     saveActiveTabAs: saveActiveTabAsUnsafe,
     saveTabById: saveTabByIdUnsafe,
@@ -841,8 +846,12 @@ export function useAppShellController() {
     ],
   );
   const epubExportSettingsOpen = epubExportRequest !== null;
+  const pdfExportSettingsOpen = pdfExportRequest !== null;
   const modalOpenWithBlockingDialogs =
-    modalOpen || pendingTrashOpen || epubExportSettingsOpen;
+    modalOpen ||
+    pendingTrashOpen ||
+    epubExportSettingsOpen ||
+    pdfExportSettingsOpen;
 
   // L Mode (えるモード) toggle. Wraps a simple
   // setEditorSettings flip so the command palette and the
@@ -1212,6 +1221,8 @@ export function useAppShellController() {
       closeTabDialogRef,
       epubExportDialogRef,
       epubExportSettingsOpen,
+      pdfExportDialogRef,
+      pdfExportSettingsOpen,
       moveTrashCancelButtonRef,
       moveTrashDialogRef,
       commandPaletteVisible,
@@ -1244,6 +1255,7 @@ export function useAppShellController() {
       onSaveActiveTab: saveActiveTab,
       onSaveActiveTabAs: saveActiveTabAs,
       onCancelEpubBetaExport: cancelEpubBetaExport,
+      onCancelPdfExport: cancelPdfExport,
       pendingAppClose,
       pendingCloseTabOpen,
       pendingTrashOpen,
@@ -1382,6 +1394,9 @@ export function useAppShellController() {
     epubExportCancelButtonRef,
     epubExportDialogRef,
     epubExportRequest,
+    pdfExportCancelButtonRef,
+    pdfExportDialogRef,
+    pdfExportRequest,
     lModeCopy,
     lModeEnabled: editorSettings.lModeEnabled,
     emptyTabsLabel: safeEditorCopy.emptyTabs,
@@ -1488,6 +1503,8 @@ export function useAppShellController() {
     outlineTruncated: documentOutline?.truncated ?? false,
     onCancelEpubBetaExport: cancelEpubBetaExport,
     onConfirmEpubBetaExport: confirmEpubBetaExport,
+    onCancelPdfExport: cancelPdfExport,
+    onConfirmPdfExport: confirmPdfExport,
     pendingAppClose,
     pendingCloseTab,
     preferencesCloseButtonRef,

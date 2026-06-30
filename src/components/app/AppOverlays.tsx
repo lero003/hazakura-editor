@@ -48,12 +48,17 @@ import { AgentWorkbenchPreferencesPane } from "../agent/AgentWorkbenchPreference
 import { RenameWarnDialog, type RenameWarningKind } from "./RenameWarnDialog";
 import { MoveToTrashConfirmDialog } from "./MoveToTrashConfirmDialog";
 import { EpubExportSettingsDialog } from "./EpubExportSettingsDialog";
+import { PdfExportSettingsDialog } from "./PdfExportSettingsDialog";
 import { RestoreFromBackupDialog } from "../backup/RestoreFromBackupDialog";
 import type { AutoBackupEntry } from "../../lib/tauri/autoBackup";
 import type { AutoBackupRestoreCopy } from "../../lib/locale/autoBackup";
 import type { WorkspaceFileOpsCopy } from "../../lib/locale/workspaceFileOps";
 import type { EpubExportSettings } from "../../features/document/epubExport";
-import type { EpubExportRequest } from "../../hooks/document/useDocumentExport";
+import type { PdfMarginPreset } from "../../features/document/pdfExport";
+import type {
+  EpubExportRequest,
+  PdfExportRequest,
+} from "../../hooks/document/useDocumentExport";
 
 type AppOverlaysProps = {
   activeAgentSession: boolean;
@@ -118,11 +123,16 @@ type AppOverlaysProps = {
   epubExportCancelButtonRef: RefObject<HTMLButtonElement | null>;
   epubExportDialogRef: RefObject<HTMLElement | null>;
   epubExportRequest: EpubExportRequest | null;
+  pdfExportCancelButtonRef: RefObject<HTMLButtonElement | null>;
+  pdfExportDialogRef: RefObject<HTMLElement | null>;
+  pdfExportRequest: PdfExportRequest | null;
   fileOpsCopy: WorkspaceFileOpsCopy;
   filteredCommands: Command[];
   menuLanguage: MenuLanguage;
   onCancelEpubBetaExport: () => void;
+  onCancelPdfExport: () => void;
   onConfirmEpubBetaExport: (settings: EpubExportSettings) => void | Promise<void>;
+  onConfirmPdfExport: (preset: PdfMarginPreset) => void | Promise<void>;
   onOpenCommandPalette: () => void;
   onRunCommand: (command: Command) => void;
   openWorkspaceFile: (path: string) => void | Promise<void>;
@@ -237,11 +247,16 @@ export function AppOverlays({
   epubExportCancelButtonRef,
   epubExportDialogRef,
   epubExportRequest,
+  pdfExportCancelButtonRef,
+  pdfExportDialogRef,
+  pdfExportRequest,
   fileOpsCopy,
   filteredCommands,
   menuLanguage,
   onCancelEpubBetaExport,
+  onCancelPdfExport,
   onConfirmEpubBetaExport,
+  onConfirmPdfExport,
   onOpenCommandPalette,
   onRunCommand,
   openWorkspaceFile,
@@ -392,6 +407,18 @@ export function AppOverlays({
           menuLanguage={menuLanguage}
           onCancel={onCancelEpubBetaExport}
           onConfirm={(settings) => void onConfirmEpubBetaExport(settings)}
+        />
+      ) : null}
+
+      {pdfExportRequest ? (
+        <PdfExportSettingsDialog
+          cancelButtonRef={pdfExportCancelButtonRef}
+          dialogRef={pdfExportDialogRef}
+          documentName={pdfExportRequest.documentName}
+          initialPreset={pdfExportRequest.preset}
+          menuLanguage={menuLanguage}
+          onCancel={onCancelPdfExport}
+          onConfirm={(preset) => void onConfirmPdfExport(preset)}
         />
       ) : null}
 

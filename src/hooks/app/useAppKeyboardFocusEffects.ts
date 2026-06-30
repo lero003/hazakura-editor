@@ -31,6 +31,8 @@ type UseAppKeyboardFocusEffectsOptions = {
   closeTabDialogRef: RefValue<HTMLElement>;
   epubExportDialogRef: RefValue<HTMLElement>;
   epubExportSettingsOpen: boolean;
+  pdfExportDialogRef: RefValue<HTMLElement>;
+  pdfExportSettingsOpen: boolean;
   // v0.18 accessibility follow-up: the move-to-trash dialog
   // joins the central focus and keyboard guard alongside the
   // dirty-tab / app-close / preferences dialogs. `modalOpen`
@@ -50,6 +52,7 @@ type UseAppKeyboardFocusEffectsOptions = {
   onApplyMarkdownFormat: (format: MarkdownFormat) => void;
   onCancelAppClose: () => void;
   onCancelEpubBetaExport: () => void;
+  onCancelPdfExport: () => void;
   onCancelPendingTrash: () => void;
   onCancelTabClose: () => void;
   onCheckTabForExternalChange: (tabId: string) => unknown;
@@ -95,6 +98,8 @@ export function useAppKeyboardFocusEffects({
   closeTabDialogRef,
   epubExportDialogRef,
   epubExportSettingsOpen,
+  pdfExportDialogRef,
+  pdfExportSettingsOpen,
   moveTrashCancelButtonRef,
   moveTrashDialogRef,
   commandPaletteVisible,
@@ -107,6 +112,7 @@ export function useAppKeyboardFocusEffects({
   onApplyMarkdownFormat,
   onCancelAppClose,
   onCancelEpubBetaExport,
+  onCancelPdfExport,
   onCancelPendingTrash,
   onCancelTabClose,
   onCheckTabForExternalChange,
@@ -170,11 +176,14 @@ export function useAppKeyboardFocusEffects({
     commandPaletteVisible,
     epubExportDialogRef,
     epubExportSettingsOpen,
+    pdfExportDialogRef,
+    pdfExportSettingsOpen,
     globalSearchVisible,
     modalOpen: anyModalOpen,
     moveTrashDialogRef,
     onCancelAppClose,
     onCancelEpubBetaExport,
+    onCancelPdfExport,
     onCancelPendingTrash,
     onCancelTabClose,
     onCloseCommandPalette,

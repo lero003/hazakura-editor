@@ -12,6 +12,8 @@ type UseModalKeyboardGuardOptions = {
   commandPaletteVisible: boolean;
   epubExportDialogRef: RefValue<HTMLElement>;
   epubExportSettingsOpen: boolean;
+  pdfExportDialogRef: RefValue<HTMLElement>;
+  pdfExportSettingsOpen: boolean;
   globalSearchVisible: boolean;
   modalOpen: boolean;
   // v0.18 accessibility follow-up: the move-to-trash dialog
@@ -22,6 +24,7 @@ type UseModalKeyboardGuardOptions = {
   moveTrashDialogRef: RefValue<HTMLElement>;
   onCancelAppClose: () => void;
   onCancelEpubBetaExport: () => void;
+  onCancelPdfExport: () => void;
   onCancelPendingTrash: () => void;
   onCancelTabClose: () => void;
   onCloseCommandPalette: () => void;
@@ -40,11 +43,14 @@ export function useModalKeyboardGuard({
   commandPaletteVisible,
   epubExportDialogRef,
   epubExportSettingsOpen,
+  pdfExportDialogRef,
+  pdfExportSettingsOpen,
   globalSearchVisible,
   modalOpen,
   moveTrashDialogRef,
   onCancelAppClose,
   onCancelEpubBetaExport,
+  onCancelPdfExport,
   onCancelPendingTrash,
   onCancelTabClose,
   onCloseCommandPalette,
@@ -90,6 +96,8 @@ export function useModalKeyboardGuard({
           onCancelAppClose();
         } else if (pendingTrashOpen) {
           onCancelPendingTrash();
+        } else if (pdfExportSettingsOpen) {
+          onCancelPdfExport();
         } else if (epubExportSettingsOpen) {
           onCancelEpubBetaExport();
         } else if (preferencesOpen) {
@@ -105,6 +113,8 @@ export function useModalKeyboardGuard({
               ? appCloseDialogRef.current
               : pendingTrashOpen
                 ? moveTrashDialogRef.current
+                : pdfExportSettingsOpen
+                  ? pdfExportDialogRef.current
                 : epubExportSettingsOpen
                   ? epubExportDialogRef.current
                   : preferencesDialogRef.current,
@@ -129,6 +139,7 @@ export function useModalKeyboardGuard({
     moveTrashDialogRef,
     onCancelAppClose,
     onCancelEpubBetaExport,
+    onCancelPdfExport,
     onCancelPendingTrash,
     onCancelTabClose,
     onCloseCommandPalette,
@@ -137,6 +148,8 @@ export function useModalKeyboardGuard({
     pendingAppClose,
     pendingCloseTabOpen,
     pendingTrashOpen,
+    pdfExportDialogRef,
+    pdfExportSettingsOpen,
     preferencesDialogRef,
     preferencesOpen,
   ]);

@@ -36,17 +36,20 @@ function renderGuard(overrides: {
   appCloseDialogRef?: RefValue<HTMLElement>;
   closeTabDialogRef?: RefValue<HTMLElement>;
   epubExportDialogRef?: RefValue<HTMLElement>;
+  pdfExportDialogRef?: RefValue<HTMLElement>;
   moveTrashDialogRef?: RefValue<HTMLElement>;
   preferencesDialogRef?: RefValue<HTMLElement>;
   pendingAppClose?: boolean;
   pendingCloseTabOpen?: boolean;
   epubExportSettingsOpen?: boolean;
+  pdfExportSettingsOpen?: boolean;
   pendingTrashOpen?: boolean;
   preferencesOpen?: boolean;
   commandPaletteVisible?: boolean;
   globalSearchVisible?: boolean;
   onCancelAppClose?: () => void;
   onCancelEpubBetaExport?: () => void;
+  onCancelPdfExport?: () => void;
   onCancelPendingTrash?: () => void;
   onCancelTabClose?: () => void;
   onCloseCommandPalette?: () => void;
@@ -55,6 +58,7 @@ function renderGuard(overrides: {
 }) {
   const onCancelAppClose = overrides.onCancelAppClose ?? vi.fn();
   const onCancelEpubBetaExport = overrides.onCancelEpubBetaExport ?? vi.fn();
+  const onCancelPdfExport = overrides.onCancelPdfExport ?? vi.fn();
   const onCancelPendingTrash = overrides.onCancelPendingTrash ?? vi.fn();
   const onCancelTabClose = overrides.onCancelTabClose ?? vi.fn();
   const onCloseCommandPalette = overrides.onCloseCommandPalette ?? vi.fn();
@@ -67,6 +71,9 @@ function renderGuard(overrides: {
     current: null,
   };
   const epubExportDialogRef = overrides.epubExportDialogRef ?? {
+    current: null,
+  };
+  const pdfExportDialogRef = overrides.pdfExportDialogRef ?? {
     current: null,
   };
   const moveTrashDialogRef = overrides.moveTrashDialogRef ?? {
@@ -83,11 +90,14 @@ function renderGuard(overrides: {
       commandPaletteVisible: overrides.commandPaletteVisible ?? false,
       epubExportDialogRef,
       epubExportSettingsOpen: overrides.epubExportSettingsOpen ?? false,
+      pdfExportDialogRef,
+      pdfExportSettingsOpen: overrides.pdfExportSettingsOpen ?? false,
       globalSearchVisible: overrides.globalSearchVisible ?? false,
       modalOpen: overrides.modalOpen ?? true,
       moveTrashDialogRef,
       onCancelAppClose,
       onCancelEpubBetaExport,
+      onCancelPdfExport,
       onCancelPendingTrash,
       onCancelTabClose,
       onCloseCommandPalette,
@@ -108,9 +118,11 @@ function renderGuard(overrides: {
     appCloseDialogRef,
     closeTabDialogRef,
     epubExportDialogRef,
+    pdfExportDialogRef,
     moveTrashDialogRef,
     onCancelAppClose,
     onCancelEpubBetaExport,
+    onCancelPdfExport,
     onCancelPendingTrash,
     onCancelTabClose,
     onCloseCommandPalette,
@@ -159,6 +171,14 @@ describe("useModalKeyboardGuard v0.7 modal Escape routing", () => {
     expect(utils.onCancelTabClose).not.toHaveBeenCalled();
     expect(utils.onCancelAppClose).not.toHaveBeenCalled();
     expect(utils.onCancelPendingTrash).not.toHaveBeenCalled();
+    expect(utils.onClosePreferences).not.toHaveBeenCalled();
+  });
+
+  it("routes Escape to onCancelPdfExport when the PDF settings dialog is open", () => {
+    const utils = renderGuard({ pdfExportSettingsOpen: true });
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(utils.onCancelPdfExport).toHaveBeenCalledTimes(1);
+    expect(utils.onCancelEpubBetaExport).not.toHaveBeenCalled();
     expect(utils.onClosePreferences).not.toHaveBeenCalled();
   });
 
@@ -359,7 +379,7 @@ describe("useModalKeyboardGuard v0.18 move-to-trash Tab trap", () => {
   });
 });
 
-describe("useModalKeyboardGuard EPUB export settings Tab trap", () => {
+describe("useModalKeyboardGuard export settings Tab trap", () => {
   function setupDialog() {
     const section = document.createElement("section");
     section.setAttribute("role", "dialog");
@@ -395,6 +415,24 @@ describe("useModalKeyboardGuard EPUB export settings Tab trap", () => {
     });
     expect(document.activeElement).toBe(cancelButton);
 
+    fireEvent.keyDown(window, { key: "Tab" });
+
+    expect(document.activeElement).toBe(titleInput);
+
+    utils.unmount();
+    cleanup();
+  });
+
+  it("wraps Tab inside the PDF settings dialog", async () => {
+    const { cancelButton, cleanup, dialogRef, titleInput } = setupDialog();
+    const utils = renderGuard({
+      pdfExportDialogRef: dialogRef,
+      pdfExportSettingsOpen: true,
+    });
+
+    await act(async () => {
+      cancelButton.focus();
+    });
     fireEvent.keyDown(window, { key: "Tab" });
 
     expect(document.activeElement).toBe(titleInput);
