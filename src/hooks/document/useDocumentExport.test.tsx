@@ -293,6 +293,16 @@ describe("useDocumentExport", () => {
       "/tmp/print-me.pdf",
       expect.stringContaining("@page { margin: 25mm 22mm; }"),
     );
+    const exportedPdfHtml = tauriApi.exportPdfFile.mock.calls[0]?.[1] ?? "";
+    expect(exportedPdfHtml).toContain("--pdf-page-width: 595px;");
+    expect(exportedPdfHtml).toContain("--pdf-page-height: 842px;");
+    expect(exportedPdfHtml).toContain("--pdf-margin-block: 70.866px;");
+    expect(exportedPdfHtml).toContain("--pdf-margin-inline: 62.362px;");
+    expect(exportedPdfHtml).toContain("--pdf-content-width: 470.276px;");
+    expect(exportedPdfHtml).toContain("--pdf-content-height: 700.268px;");
+    expect(exportedPdfHtml).toContain("--pdf-column-gap: 124.724px;");
+    expect(exportedPdfHtml).toContain("column-fill: auto;");
+    expect(exportedPdfHtml).toContain("column-width: var(--pdf-content-width);");
     expect(setStatus).toHaveBeenCalledWith("PDF exported");
   });
 

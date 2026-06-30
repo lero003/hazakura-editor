@@ -14,7 +14,11 @@ import {
 } from "../../features/document/epubExport";
 import {
   DEFAULT_PDF_MARGIN_PRESET,
+  formatPdfPointValue,
+  PDF_A4_PAGE_HEIGHT_POINTS,
+  PDF_A4_PAGE_WIDTH_POINTS,
   pdfMarginCss,
+  pdfScreenPageLayout,
   type PdfMarginPreset,
 } from "../../features/document/pdfExport";
 import { getMarkdownPreviewCss } from "../../features/document/markdownExportCss";
@@ -103,6 +107,9 @@ export function useDocumentExport({
         });
       }
 
+      const pdfLayout = pdfScreenPageLayout(preset);
+      const pdfPoint = formatPdfPointValue;
+
       const standaloneHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -124,25 +131,100 @@ export function useDocumentExport({
     --status-text: #f0f7f3;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --pdf-page-width: ${PDF_A4_PAGE_WIDTH_POINTS}px;
+    --pdf-page-height: ${PDF_A4_PAGE_HEIGHT_POINTS}px;
+    --pdf-margin-block: ${pdfPoint(pdfLayout.marginBlockPoints)}px;
+    --pdf-margin-inline: ${pdfPoint(pdfLayout.marginInlinePoints)}px;
+    --pdf-content-width: ${pdfPoint(pdfLayout.contentWidthPoints)}px;
+    --pdf-content-height: ${pdfPoint(pdfLayout.contentHeightPoints)}px;
+    --pdf-column-gap: ${pdfPoint(pdfLayout.columnGapPoints)}px;
+  }
+  html {
+    min-height: var(--pdf-page-height);
+    min-width: var(--pdf-page-width);
   }
   body {
     background: var(--bg);
     color: var(--text);
     font-family: var(--font-ui);
     margin: 0;
+    min-height: var(--pdf-page-height);
     padding: 0;
+    width: var(--pdf-page-width);
   }
   ${getMarkdownPreviewCss()}
+  /* WKWebView.createPDF captures the screen layout rather than paged-media
+     @page rules. A one-page-high multi-column flow makes every 595-point
+     horizontal slice an A4 page with the selected margins already present. */
+  .markdown-preview {
+    background: #ffffff;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    box-sizing: content-box;
+    color: #000000;
+    column-fill: auto;
+    column-gap: var(--pdf-column-gap);
+    column-width: var(--pdf-content-width);
+    font-family: "Iowan Old Style", "Charter", Georgia, "Times New Roman", serif;
+    font-size: 11pt;
+    height: var(--pdf-content-height);
+    line-height: 1.45;
+    margin: var(--pdf-margin-block) var(--pdf-margin-inline);
+    max-width: none;
+    overflow: visible;
+    padding: 0;
+    width: var(--pdf-content-width);
+  }
+  .markdown-preview h1,
+  .markdown-preview h2,
+  .markdown-preview h3,
+  .markdown-preview h4 {
+    break-after: avoid;
+    color: #000000;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  .markdown-preview pre,
+  .markdown-preview blockquote,
+  .markdown-preview .markdown-table-frame,
+  .markdown-preview img { break-inside: avoid; }
+  .markdown-preview pre,
+  .markdown-preview code,
+  .markdown-preview .markdown-table-frame th { background: transparent; }
+  .markdown-preview pre {
+    border-left: 2px solid #999999;
+    padding: 0 0 0 8px;
+  }
+  .markdown-preview a { color: inherit; text-decoration: underline; }
+  .markdown-preview a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    color: #555555;
+    font-size: 0.85em;
+  }
   @media print {
     @page { margin: ${pdfMarginCss(preset)}; }
-    body { background: #ffffff; color: #000000; margin: 0; padding: 0; }
+    html { min-height: 0; min-width: 0; }
+    body {
+      background: #ffffff;
+      color: #000000;
+      margin: 0;
+      min-height: 0;
+      padding: 0;
+      width: auto;
+    }
     .markdown-preview {
       color: #000000;
+      column-fill: balance;
+      column-gap: normal;
+      column-width: auto;
       font-family: "Iowan Old Style", "Charter", Georgia, "Times New Roman", serif;
       font-size: 11pt;
+      height: auto;
       line-height: 1.45;
+      margin: 0;
       max-width: none;
       padding: 0;
+      width: auto;
     }
     .markdown-preview h1,
     .markdown-preview h2,

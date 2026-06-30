@@ -14,13 +14,18 @@ const PDF_CAPTURE_SIZE_SCRIPT: &str = r#"
 JSON.stringify((() => {
   const body = document.body;
   const doc = document.documentElement;
+  const width = Math.max(
+    doc ? doc.scrollWidth : 0,
+    body ? body.scrollWidth : 0,
+    595
+  );
   const height = Math.max(
     doc ? doc.scrollHeight : 0,
     body ? body.scrollHeight : 0,
     842
   );
   return {
-    width: 595,
+    width: Math.ceil(width),
     height: Math.ceil(height)
   };
 })())
@@ -94,22 +99,32 @@ pub(crate) fn validate_export_pdf_request(
     Ok(destination_path)
 }
 
-pub(crate) fn pdf_page_rects_for_content_height(
+pub(crate) fn pdf_page_rects_for_content_size(
+    content_width: f64,
     content_height: f64,
 ) -> Result<Vec<PdfPageRect>, String> {
-    if !content_height.is_finite() || content_height <= 0.0 {
+    if !content_width.is_finite()
+        || !content_height.is_finite()
+        || content_width <= 0.0
+        || content_height <= 0.0
+    {
         return Err("Cannot measure PDF export layout.".to_string());
     }
 
-    let page_count = (content_height / PDF_A4_PAGE_HEIGHT_POINTS).ceil().max(1.0) as usize;
-    Ok((0..page_count)
-        .map(|index| PdfPageRect {
-            origin_x: 0.0,
-            origin_y: PDF_A4_PAGE_HEIGHT_POINTS * index as f64,
-            width: PDF_A4_PAGE_WIDTH_POINTS,
-            height: PDF_A4_PAGE_HEIGHT_POINTS,
-        })
-        .collect())
+    let column_count = (content_width / PDF_A4_PAGE_WIDTH_POINTS).ceil().max(1.0) as usize;
+    let row_count = (content_height / PDF_A4_PAGE_HEIGHT_POINTS).ceil().max(1.0) as usize;
+    let mut pages = Vec::with_capacity(column_count * row_count);
+    for row in 0..row_count {
+        for column in 0..column_count {
+            pages.push(PdfPageRect {
+                origin_x: PDF_A4_PAGE_WIDTH_POINTS * column as f64,
+                origin_y: PDF_A4_PAGE_HEIGHT_POINTS * row as f64,
+                width: PDF_A4_PAGE_WIDTH_POINTS,
+                height: PDF_A4_PAGE_HEIGHT_POINTS,
+            });
+        }
+    }
+    Ok(pages)
 }
 
 #[cfg(target_os = "macos")]
@@ -277,7 +292,10 @@ unsafe fn create_pdf_from_webview(
         return Err("PDF export webview is unavailable.".to_string());
     }
 
-    let page_rects = Arc::new(pdf_page_rects_for_content_height(capture_size.height)?);
+    let page_rects = Arc::new(pdf_page_rects_for_content_size(
+        capture_size.width,
+        capture_size.height,
+    )?);
     request_pdf_page_from_webview(
         webview,
         0,
