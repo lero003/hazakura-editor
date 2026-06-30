@@ -99,6 +99,7 @@ function renderEditorMainPane(
       activeTab={activeTab}
       copy={getSafeEditorCopy("en")}
       documentKey={activeTab.path}
+      editorSessionKey={activeTab.id}
       editorPaneRef={createRef<EditorPaneHandle | null>()}
       editorSettings={editorSettings}
       editorTheme="light"

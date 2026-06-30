@@ -695,6 +695,19 @@ describe("AppWorkspace workspace sidebar collapse", () => {
     expect(screen.getByTestId("side-ebook-location").textContent).toContain(
       "side location 1:2",
     );
+
+    const savedFirstTab = {
+      ...firstUntitledTab,
+      path: "/workspace/untitled.md",
+    };
+    rerenderWorkspace(rerender, {
+      ...sharedProps,
+      activeTab: savedFirstTab,
+      tabs: [savedFirstTab, secondUntitledTab],
+    });
+    expect(screen.getByTestId("side-ebook-location").textContent).toContain(
+      "side location 1:2",
+    );
   });
 
   it("returns from Reading Focus to the active reader chapter heading", async () => {

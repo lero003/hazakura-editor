@@ -20,6 +20,7 @@ import {
 import {
   patchDocumentViewState,
   pruneDocumentViewStates,
+  rekeyDocumentViewState,
   type DocumentViewStateRegistry,
   type EditorViewStatePatch,
   type PreviewViewState,
@@ -264,6 +265,10 @@ export function AppWorkspace({
   // Preview. Individual panes report patches without owning a parallel map.
   const [documentViewStates, setDocumentViewStates] =
     useState<DocumentViewStateRegistry>({});
+  const previousDocumentIdentityRef = useRef<{
+    documentKey: string;
+    tabId: string;
+  } | null>(null);
   const previousSidePaneModeRef = useRef<RightPaneMode | null>(null);
   const workspaceSidebarCollapsed =
     workspaceSidebarCollapsedOverride ?? internalWorkspaceSidebarCollapsed;
@@ -276,9 +281,20 @@ export function AppWorkspace({
   const isWorkspaceSidebarCollapsed =
     workspaceSidebarCollapsed && !editorSettings.lModeEnabled;
   const activeDocumentKey = activeTab ? documentViewStateKey(activeTab) : null;
+  const previousDocumentIdentity = previousDocumentIdentityRef.current;
+  const saveAsPreviousKey =
+    activeTab &&
+    activeDocumentKey &&
+    previousDocumentIdentity?.tabId === activeTab.id &&
+    previousDocumentIdentity.documentKey !== activeDocumentKey
+      ? previousDocumentIdentity.documentKey
+      : null;
   const activeDocumentViewState =
     activeDocumentKey != null
-      ? documentViewStates[activeDocumentKey] ?? null
+      ? documentViewStates[activeDocumentKey] ??
+        (saveAsPreviousKey
+          ? documentViewStates[saveAsPreviousKey] ?? null
+          : null)
       : null;
   const activeEbookLocation = activeDocumentViewState?.ebook ?? null;
   const editorAnchorLine =
@@ -293,6 +309,26 @@ export function AppWorkspace({
     enteringEbookPane && editorAnchoredEbookLocation
       ? editorAnchoredEbookLocation
       : activeEbookLocation ?? editorAnchoredEbookLocation;
+  useEffect(() => {
+    if (activeTab && activeDocumentKey) {
+      if (saveAsPreviousKey) {
+        setDocumentViewStates((current) =>
+          rekeyDocumentViewState(
+            current,
+            saveAsPreviousKey,
+            activeDocumentKey,
+          ),
+        );
+      }
+      previousDocumentIdentityRef.current = {
+        documentKey: activeDocumentKey,
+        tabId: activeTab.id,
+      };
+      return;
+    }
+
+    previousDocumentIdentityRef.current = null;
+  }, [activeDocumentKey, activeTab, saveAsPreviousKey]);
   useEffect(() => {
     previousSidePaneModeRef.current = sidePaneMode;
   }, [sidePaneMode]);
@@ -454,6 +490,7 @@ export function AppWorkspace({
           activeTab={activeTab}
           copy={safeEditorCopy}
           documentKey={documentKey}
+          editorSessionKey={activeTab?.id ?? documentKey}
           editorPaneRef={editorPaneRef}
           editorSettings={editorSettings}
           editorTheme={editorTheme}

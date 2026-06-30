@@ -64,6 +64,7 @@ export type MarkdownFormat =
 
 type EditorPaneProps = {
   documentKey: string;
+  editorSessionKey: string;
   editorViewState?: EditorViewState | null;
   value: string;
   theme: "light" | "dark";
@@ -192,6 +193,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     {
       activeSearchMatchIndex,
       documentKey,
+      editorSessionKey,
       editorViewState = null,
       fontSize,
       lModeEnabled,
@@ -255,7 +257,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   // file) must NOT re-mount, otherwise the cursor position
   // test breaks.
   const mountedKindRef = useRef<EditorLanguageKind | null>(null);
-  const mountedDocumentKeyRef = useRef<string | null>(null);
+  const mountedEditorSessionKeyRef = useRef<string | null>(null);
 
   useImperativeHandle(
     ref,
@@ -448,14 +450,11 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     // in an inconsistent state.
     const picked = pickEditorLanguage(documentKey, { lModeEnabled });
 
-    // We re-mount the editor when the document changes OR
-    // when the language family (`kind`) changes. The
-    // same-document Markdown → Markdown case — e.g. toggling
-    // L Mode on/off while editing a `.md` file — must NOT
-    // re-mount, otherwise the cursor position is lost. But a
-    // different Markdown document is a different editor
-    // session: it should not inherit selection, history, or
-    // plugin state from the previous tab.
+    // We re-mount the editor when the open-tab session changes OR when the
+    // language family (`kind`) changes. The path can change inside one
+    // session after Save As without losing selection, history, or plugin
+    // state. A different tab receives a different editorSessionKey and must
+    // not inherit those values.
     //
     // For `.css` / `.html`, the kind flips between Markdown
     // (L Mode ON) and the file's family (L Mode OFF), so a
@@ -466,7 +465,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     // editing.
     const shouldRemount =
       mountedKindRef.current === null ||
-      mountedDocumentKeyRef.current !== documentKey ||
+      mountedEditorSessionKeyRef.current !== editorSessionKey ||
       mountedKindRef.current !== picked.kind;
     if (!shouldRemount) {
       currentHighlightRef.current = picked.highlight;
@@ -483,7 +482,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     destroyMountedViewRef.current?.();
     destroyMountedViewRef.current = null;
     viewRef.current = null;
-    mountedDocumentKeyRef.current = documentKey;
+    mountedEditorSessionKeyRef.current = editorSessionKey;
     mountedKindRef.current = picked.kind;
     currentHighlightRef.current = picked.highlight;
     const { language, highlight } = picked;
@@ -715,14 +714,14 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     }
 
     // NB: no cleanup return here. The mount useEffect re-runs
-    // on every `documentKey` / `lModeEnabled` change, but
+    // on every document/session/lMode identity change, but
     // re-mounting should only happen when the language
     // `kind` changes (the early-return above). When the kind
     // stays the same (e.g. L Mode toggle on a `.md` file)
     // we must NOT destroy the view, otherwise the cursor
     // position is lost. `destroyMountedViewRef` is called
     // only on actual remount or component unmount.
-  }, [documentKey, lModeEnabled]);
+  }, [documentKey, editorSessionKey, lModeEnabled]);
 
   useEffect(() => {
     const view = viewRef.current;
@@ -741,14 +740,14 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   // Unmount-only effect: destroy the editor when the
   // component goes away. Lives in its own effect with empty
   // deps so the cleanup fires only on real unmount, not on
-  // every render where `documentKey` or `lModeEnabled`
+  // every render where document/session/lMode identity
   // change.
   useEffect(() => {
     return () => {
       destroyMountedViewRef.current?.();
       destroyMountedViewRef.current = null;
       viewRef.current = null;
-      mountedDocumentKeyRef.current = null;
+      mountedEditorSessionKeyRef.current = null;
       mountedKindRef.current = null;
     };
   }, []);

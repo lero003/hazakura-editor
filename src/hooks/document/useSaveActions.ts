@@ -93,7 +93,13 @@ export function useSaveActions({
           latestTab.encoding,
           workspaceRootPath,
         );
-        const nextTab = createEditorTab(savedFile);
+        const nextTab: EditorTab = {
+          ...createEditorTab(savedFile),
+          // The open-tab id is the lifetime identity of the current editor
+          // session. Save As changes the document path, not the open tab, so
+          // preserving this id keeps CodeMirror history and selection alive.
+          id: latestTab.id,
+        };
 
         setTabs((currentTabs) =>
           currentTabs.map((tab) => (tab.id === latestTab.id ? nextTab : tab)),

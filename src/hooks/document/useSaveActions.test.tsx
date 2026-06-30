@@ -300,12 +300,12 @@ describe("useSaveActions", () => {
     );
     expect(getTabs()[0]).toMatchObject({
       contents: "# Unsaved draft",
-      id: "/tmp/untitled.md",
+      id: "untitled:1",
       lastSavedContents: "# Unsaved draft",
       path: "/tmp/untitled.md",
       saveStatus: "idle",
     });
-    expect(options.setActiveTabId).toHaveBeenCalledWith("/tmp/untitled.md");
+    expect(options.setActiveTabId).toHaveBeenCalledWith("untitled:1");
     expect(removeStoredDraft).not.toHaveBeenCalledWith("");
   });
 });

@@ -32,6 +32,7 @@ type EditorMainPaneProps = {
   activeTab: EditorTab | null;
   copy: SafeEditorCopy;
   documentKey: string;
+  editorSessionKey: string;
   editorPaneRef: RefObject<EditorPaneHandle | null>;
   editorSettings: EditorSettings;
   editorTheme: BaseTheme;
@@ -70,6 +71,7 @@ export function EditorMainPane({
   activeTab,
   copy,
   documentKey,
+  editorSessionKey,
   editorPaneRef,
   editorSettings,
   editorTheme,
@@ -114,6 +116,7 @@ export function EditorMainPane({
             ref={editorPaneRef}
             activeSearchMatchIndex={activeSearchMatchIndex}
             documentKey={documentKey}
+            editorSessionKey={editorSessionKey}
             editorViewState={editorViewState}
             fontSize={editorSettings.editorFontSize}
             lModeEnabled={editorSettings.lModeEnabled}

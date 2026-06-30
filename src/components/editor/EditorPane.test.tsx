@@ -105,6 +105,7 @@ describe("isScrollerPointerOnScrollbar", () => {
 describe("EditorPane", () => {
   function renderEditorPane({
     documentKey = "/workspace/note.md",
+    editorSessionKey = documentKey,
     editorViewState = null,
     lModeEnabled = false,
     lModeTypewriter = false,
@@ -118,6 +119,7 @@ describe("EditorPane", () => {
     value,
   }: {
     documentKey?: string;
+    editorSessionKey?: string;
     editorViewState?: EditorViewState | null;
     lModeEnabled?: boolean;
     lModeTypewriter?: boolean;
@@ -138,6 +140,7 @@ describe("EditorPane", () => {
         ref={ref}
         activeSearchMatchIndex={-1}
         documentKey={documentKey}
+        editorSessionKey={editorSessionKey}
         editorViewState={editorViewState}
         fontSize={15}
         lModeCopy={getLModeCopy("en")}
@@ -634,6 +637,53 @@ describe("EditorPane", () => {
     });
 
     expect(container.querySelector(".cm-editor")).not.toBe(firstEditor);
+  });
+
+  it("keeps the editor session when Save As changes only the Markdown path", async () => {
+    const editorRef = createRef<EditorPaneHandle>();
+    const onChange = vi.fn();
+    const { container, rerender } = render(
+      renderEditorPane({
+        documentKey: "untitled:1",
+        editorSessionKey: "untitled:1",
+        onChange,
+        ref: editorRef,
+        value: "first line\nsecond line\n",
+      }),
+    );
+
+    editorRef.current?.goToLine(2);
+    editorRef.current?.insertText("draft ");
+    const firstEditor = container.querySelector(".cm-editor");
+    const firstScroller = container.querySelector(".cm-scroller");
+    if (firstScroller instanceof HTMLElement) {
+      firstScroller.scrollTop = 120;
+    }
+    const selectionBeforeSaveAs = editorRef.current?.getActiveDocument()?.from;
+
+    rerender(
+      renderEditorPane({
+        documentKey: "/tmp/saved.md",
+        editorSessionKey: "untitled:1",
+        onChange,
+        ref: editorRef,
+        value: "first line\ndraft second line\n",
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(container.querySelector(".cm-editor")).toBe(firstEditor);
+    expect(container.querySelector(".cm-scroller")).toBe(firstScroller);
+    expect((firstScroller as HTMLElement | null)?.scrollTop).toBe(120);
+    expect(editorRef.current?.getActiveDocument()?.from).toBe(
+      selectionBeforeSaveAs,
+    );
+
+    fireEvent.keyDown(container.querySelector(".cm-content") as Element, {
+      ctrlKey: true,
+      key: "z",
+    });
+    expect(onChange).toHaveBeenLastCalledWith("first line\nsecond line\n");
   });
 
   it("removes the old scroll listener when remounting the editor session", async () => {

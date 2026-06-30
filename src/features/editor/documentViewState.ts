@@ -89,6 +89,25 @@ export function pruneDocumentViewStates(
   return Object.fromEntries(nextEntries);
 }
 
+export function rekeyDocumentViewState(
+  current: DocumentViewStateRegistry,
+  previousKey: string,
+  nextKey: string,
+): DocumentViewStateRegistry {
+  if (previousKey === nextKey || current[previousKey] === undefined) {
+    return current;
+  }
+
+  const { [previousKey]: previous, ...rest } = current;
+  return {
+    ...rest,
+    [nextKey]: {
+      ...(rest[nextKey] ?? {}),
+      ...previous,
+    },
+  };
+}
+
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }

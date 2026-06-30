@@ -3,6 +3,7 @@ import {
   clampEditorViewState,
   patchDocumentViewState,
   pruneDocumentViewStates,
+  rekeyDocumentViewState,
 } from "./documentViewState";
 
 describe("document view state", () => {
@@ -41,5 +42,27 @@ describe("document view state", () => {
         ["a"],
       ),
     ).toEqual({ a });
+  });
+
+  it("moves every surface to the saved path key", () => {
+    expect(
+      rekeyDocumentViewState(
+        {
+          "untitled:1": {
+            ebook: { chapterIndex: 1, pageIndex: 2 },
+            editor: { anchor: 4, head: 4, scrollRatio: 0.5 },
+            preview: { scrollRatio: 0.25 },
+          },
+        },
+        "untitled:1",
+        "/tmp/note.md",
+      ),
+    ).toEqual({
+      "/tmp/note.md": {
+        ebook: { chapterIndex: 1, pageIndex: 2 },
+        editor: { anchor: 4, head: 4, scrollRatio: 0.5 },
+        preview: { scrollRatio: 0.25 },
+      },
+    });
   });
 });
