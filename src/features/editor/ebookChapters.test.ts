@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   applyEbookPageBreakMarkers,
+  collectEbookChapterSubheadings,
   coalesceChaptersToTopLevel,
   splitMarkdownIntoChapters,
 } from "./ebookChapters";
@@ -441,6 +442,52 @@ describe("coalesceChaptersToTopLevel", () => {
 
   it("returns the input unchanged for an empty list", () => {
     expect(coalesceChaptersToTopLevel([])).toEqual([]);
+  });
+
+  it("collects deeper headings as context for their H1 or H2 chapter", () => {
+    const raw = splitMarkdownIntoChapters(
+      [
+        "# 第一章",
+        "intro",
+        "### 場面A",
+        "A",
+        "#### 場面B",
+        "B",
+        "### 場面C",
+        "C",
+        "## 第二章",
+        "end",
+      ].join("\n"),
+    );
+
+    expect(
+      collectEbookChapterSubheadings(
+        raw,
+        coalesceChaptersToTopLevel(raw),
+      ),
+    ).toEqual([["場面A", "場面B", "場面C"], []]);
+  });
+
+  it("does not invent subheadings from frontmatter or fenced code", () => {
+    const raw = splitMarkdownIntoChapters(
+      [
+        "---",
+        "# metadata",
+        "---",
+        "# 本文",
+        "```md",
+        "### code sample",
+        "```",
+        "### 実際の小見出し",
+      ].join("\n"),
+    );
+
+    expect(
+      collectEbookChapterSubheadings(
+        raw,
+        coalesceChaptersToTopLevel(raw),
+      ),
+    ).toEqual([[], ["実際の小見出し"]]);
   });
 });
 

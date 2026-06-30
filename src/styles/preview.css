@@ -768,10 +768,32 @@
 }
 
 .ebook-pane .ebook-reader-toc-text {
+  display: block;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.ebook-pane .ebook-reader-toc-context {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ebook-pane .ebook-reader-toc-subheadings,
+.ebook-pane .ebook-reader-toc-progress {
+  color: var(--text-muted);
+  display: block;
+  font-size: 10px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ebook-pane .ebook-reader-toc-item.current .ebook-reader-toc-progress {
+  color: var(--accent);
 }
 
 .ebook-pane .ebook-reader-title {

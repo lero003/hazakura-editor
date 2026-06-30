@@ -217,6 +217,25 @@ export function coalesceChaptersToTopLevel(
   return merged.map((chapter) => ({ ...chapter }));
 }
 
+export function collectEbookChapterSubheadings(
+  rawChapters: EbookChapter[],
+  topLevelChapters: EbookChapter[],
+): string[][] {
+  return topLevelChapters.map((chapter, index) => {
+    const nextStartLine = topLevelChapters[index + 1]?.startLine ?? Infinity;
+
+    return rawChapters
+      .filter(
+        (candidate) =>
+          candidate.startLine > chapter.startLine &&
+          candidate.startLine < nextStartLine &&
+          (candidate.headingLevel ?? 0) >= 3 &&
+          candidate.headingText !== null,
+      )
+      .map((candidate) => candidate.headingText as string);
+  });
+}
+
 export function applyEbookPageBreakMarkers(source: string): string {
   const lines = markdownLines(source);
   if (lines.length === 0) {

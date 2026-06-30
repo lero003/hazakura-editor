@@ -27,6 +27,7 @@ import {
 } from "react";
 import {
   applyEbookPageBreakMarkers,
+  collectEbookChapterSubheadings,
   coalesceChaptersToTopLevel,
   type EbookChapter,
   splitMarkdownIntoChapters,
@@ -123,9 +124,14 @@ export default function EBookPane({
   // top-level sections one at a time and keeps subsections inline, and it
   // stops a long document with dozens of `###` entries from fragmenting
   // into one-screen chapters.
+  const rawChapters = useMemo(() => splitMarkdownIntoChapters(source), [source]);
   const chapters = useMemo(
-    () => coalesceChaptersToTopLevel(splitMarkdownIntoChapters(source)),
-    [source],
+    () => coalesceChaptersToTopLevel(rawChapters),
+    [rawChapters],
+  );
+  const chapterSubheadings = useMemo(
+    () => collectEbookChapterSubheadings(rawChapters, chapters),
+    [chapters, rawChapters],
   );
   const [activeChapterIndex, setActiveChapterIndex] = useState(
     () => initialLocation?.chapterIndex ?? 0,
@@ -925,11 +931,20 @@ export default function EBookPane({
   };
 
   const totalChapters = chapters.length;
-  const tableOfContentsEntries = chapters.map((chapter) => ({
-    chapterIndex: chapter.index,
-    headingLevel: chapter.headingLevel,
-    label: chapterNavigationLabel(chapter, chapter.index, totalChapters, copy),
-  }));
+  const tableOfContentsEntries = chapters.map((chapter) => {
+    const subheadings = chapterSubheadings[chapter.index] ?? [];
+    const isCurrent = chapter.index === activeChapterIndexSafe;
+    return {
+      chapterIndex: chapter.index,
+      headingLevel: chapter.headingLevel,
+      label: chapterNavigationLabel(chapter, chapter.index, totalChapters, copy),
+      pageProgress: isCurrent
+        ? `${copy.pageProgress} ${activePageIndexSafe + 1} / ${measuredPageCount}`
+        : null,
+      remainingSubheadingCount: Math.max(0, subheadings.length - 2),
+      subheadingPreview: subheadings.slice(0, 2),
+    };
+  });
   const chapterLabel = chapterNavigationLabel(
     activeChapter ?? null,
     activeChapterIndexSafe,
@@ -1063,6 +1078,7 @@ export default function EBookPane({
             <div className="ebook-reader-toc-list">
               {tableOfContentsEntries.map((entry) => (
                 <button
+                  aria-label={entry.label}
                   aria-current={
                     entry.chapterIndex === activeChapterIndexSafe
                       ? "location"
@@ -1086,7 +1102,22 @@ export default function EBookPane({
                   <span aria-hidden="true" className="ebook-reader-toc-index">
                     {entry.chapterIndex + 1}
                   </span>
-                  <span className="ebook-reader-toc-text">{entry.label}</span>
+                  <span className="ebook-reader-toc-context">
+                    <span className="ebook-reader-toc-text">{entry.label}</span>
+                    {entry.subheadingPreview.length > 0 ? (
+                      <span className="ebook-reader-toc-subheadings">
+                        {entry.subheadingPreview.join("・")}
+                        {entry.remainingSubheadingCount > 0
+                          ? `・${moreSubheadingsLabel(entry.remainingSubheadingCount, menuLanguage)}`
+                          : ""}
+                      </span>
+                    ) : null}
+                    {entry.pageProgress ? (
+                      <span className="ebook-reader-toc-progress">
+                        {entry.pageProgress}
+                      </span>
+                    ) : null}
+                  </span>
                 </button>
               ))}
             </div>
@@ -1530,6 +1561,16 @@ function chapterNavigationLabel(
     return copy.frontMatter;
   }
   return `${position + 1} / ${totalChapters}`;
+}
+
+function moreSubheadingsLabel(count: number, menuLanguage: MenuLanguage): string {
+  if (menuLanguage === "en") {
+    return `${count} more`;
+  }
+  if (menuLanguage === "kana") {
+    return `ほか${count}けん`;
+  }
+  return `ほか${count}件`;
 }
 
 function getEBookReaderCopy(

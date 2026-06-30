@@ -304,6 +304,43 @@ describe("EBookPane chapter reader", () => {
     );
   });
 
+  it("adds bounded subheading context and measured progress to the current TOC chapter", async () => {
+    vi.mocked(measureEBookPageCount).mockReturnValue(3);
+    await renderEBookPane(
+      <EBookPane
+        menuLanguage="ja"
+        readingFocusActive
+        source={[
+          "# 第一章",
+          "intro",
+          "### 場面A",
+          "A",
+          "#### 場面B",
+          "B",
+          "### 場面C",
+          "C",
+          "## 第二章",
+          "end",
+        ].join("\n")}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "目次" }));
+
+    const firstChapter = screen.getByRole("button", { name: "第一章" });
+    expect(
+      firstChapter.querySelector(".ebook-reader-toc-subheadings")?.textContent,
+    ).toContain("場面A・場面B・ほか1件");
+    expect(
+      firstChapter.querySelector(".ebook-reader-toc-progress")?.textContent,
+    ).toBe("ページ 1 / 3");
+
+    const secondChapter = screen.getByRole("button", { name: "第二章" });
+    expect(
+      secondChapter.querySelector(".ebook-reader-toc-progress"),
+    ).toBeNull();
+  });
+
   it("includes a source-line estimate with reader location updates", async () => {
     vi.mocked(measureEBookPageCount).mockReturnValue(3);
     const onEnterReadingFocus = vi.fn();
