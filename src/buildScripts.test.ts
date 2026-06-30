@@ -483,20 +483,21 @@ describe("macOS build scripts", () => {
       "docs/app-store-build.md": ["Published App Store version: `1.1.0`"],
       "docs/current-status.md": [
         "Published Mac App Store version: `1.1.0`",
-        "active lane is now v1.2",
+        "active main-branch source lane is v1.3 Daily Trust",
       ],
       "docs/current-work.md": [
-        "Scope: v1.2 polish and expectation setting",
-        "The active lane is v1.2",
+        "Scope: v1.3 daily-use trust and bounded polish",
+        "The active source lane is",
+        "v1.3 Daily Trust",
       ],
-      "docs/development-automation.md": ["Phase: v1.2 Polish"],
+      "docs/development-automation.md": ["Phase: v1.3 Daily Trust"],
       "docs/handoff.md": [
         "`Hazakura Editor` `1.1.0` is the latest published Mac App Store",
-        "The active source lane is v1.2 Polish",
+        "The active main-branch source lane is v1.3 Daily Trust",
       ],
       "docs/roadmap.md": [
         "Current package/app version: `1.2.0` candidate baseline",
-        "Active lane: v1.2 Polish",
+        "Active source lane: v1.3 Daily Trust",
       ],
     };
 

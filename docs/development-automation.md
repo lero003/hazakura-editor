@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-06-30 (1.1.0 public release and v1.2 polish)
+Last reviewed: 2026-07-01 (v1.3 Daily Trust source lane)
 
 ## Purpose
 
@@ -17,8 +17,8 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: v1.2 Polish And Expectation Setting after the published `1.1.0`
-App Store release, unless a public-release hotfix blocker appears.
+Phase: v1.3 Daily Trust after the prepared `1.2.0` candidate and published
+`1.1.0` App Store release, unless a public-release hotfix blocker appears.
 
 For recurring automation, use the Active UX Queue in
 `docs/current-work.md`. The old pre-review automation table is exhausted
@@ -30,7 +30,7 @@ environment is available and close it as `implemented`,
 Prefer work in this order:
 
 1. Active UX Queue from `docs/current-work.md`, starting with one bounded
-   v1.2 observation or manual-smoke gap unless a concrete source-loss or
+   v1.3 observation or manual-smoke gap unless a concrete source-loss or
    public hotfix signal takes priority.
 2. Stale or failing quality gates that block the selected slice.
 3. Core Safe Editor quality risks around open, edit, save, close/quit,
