@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-06-30 (1.1.0 public release; 1.2.0 candidate)
+Last reviewed: 2026-07-01 (v1.3 source lane; 1.2.0 package baseline)
 
 `Hazakura Editor` は、Markdownで文章を書き、電子書籍のように読み返し、必要な部分だけをローカルAIと整えられるmacOS向け執筆エディタです。
 
@@ -129,7 +129,8 @@ For the full implementation inventory and release state, see
 - [Security Boundary](docs/security-boundary.md): 安全性のために守る制約
 - [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
 - [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Hazakura Local Assist / Foundation Models planning
-- [Current Work](docs/current-work.md): v1.2 polish queue and release evidence
+- [Current Work](docs/current-work.md): v1.3 Daily Trust queue and release evidence
+- [v1.3 Daily Trust Follow-up](docs/v1.3-followup.md): source evidence and remaining built-app/PDF smoke
 - [Hazakura Local Assist Writing Companion Plan](docs/apple-local-assist-writing-companion-plan.md): post-v0.11 Hazakura Local Assist UX direction
 - [Roadmap](docs/roadmap.md): 段階的な開発順序
 - [L Mode Plan](docs/l-mode-plan.md): えるモードの source-preserving WYSIWYG Accuracy Ramp plan

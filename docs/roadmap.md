@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-06-30 (1.1.0 public release; 1.2.0 candidate)
+Last reviewed: 2026-07-01 (v1.3 source lane; manual smoke pending)
 
 ## Current Position
 
@@ -30,10 +30,11 @@ Current release state:
   `1.2.0` candidate passed the local release gates; App Store Connect
   upload, TestFlight, and App Review remain outside this repository
   until the user explicitly opens that lane.
-- Active lane: v1.2 Polish And Expectation Setting. Improve export
-  expectations, safe command discovery, and observation-driven quality one
-  reproducible issue at a time without adding a new surface or entering v2
-  Book Scope.
+- Active source lane: v1.3 Daily Trust. Preserve the editing session through
+  Save As, make Local Assist review decisions explicit, add bounded e-book
+  TOC context, and offer allowlisted A4 PDF margin presets without adding a
+  new surface or entering v2 Book Scope. Package/version work remains a
+  separate decision.
 - Current work queue: `docs/current-work.md`.
 
 North star for the next product arc:
@@ -88,12 +89,17 @@ Near-term phase order:
    `書く・読む・整える・書き出す` message. This release is complete.
 9. v1.1 shipped daily-use continuity and trust: position ownership across
    editor / Preview / reader. This release is complete.
-10. v1.2 is the active expectation-setting and lower-risk polish lane around
+10. v1.2 is the prepared expectation-setting and lower-risk polish lane around
    Local Assist quality, export UX, safe command discovery, and empty states.
    The `1.2.0` candidate (command discovery, context-menu containment, EPUB
    scope note) is prepared locally with a signed pkg; upload and publication
    remain gated on explicit user approval.
-11. v2.0 remains the first appropriate target for Book Scope / Book
+11. v1.3 is the active source-only Daily Trust lane: Save As session
+   continuity, explicit Local Assist `採用` / `破棄`, richer Reading Focus TOC
+   context, and fixed A4 PDF margin presets. Focused source proof exists;
+   full gates, built-app interactions, and rendered PDF comparison remain
+   pending. See `docs/v1.3-followup.md`.
+12. v2.0 remains the first appropriate target for Book Scope / Book
    Workspace Alpha: treating a user-selected, explicit set of
    structurally related Markdown files as one book.
 

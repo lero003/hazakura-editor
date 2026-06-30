@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-06-30 (1.2.0 candidate smoke intake)
+Last reviewed: 2026-07-01 (v1.3 Daily Trust smoke intake)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -28,6 +28,52 @@ onscreen layer-0 app window. It proves the built bundle can surface a
 visible app window on this Mac; it does not prove native dialog
 selection, Hazakura Local Assist transaction review, TestFlight, App Store
 sandbox behavior, or notarization.
+
+## v1.3 Daily Trust Test Intake
+
+v1.3 is currently a source lane over the `1.2.0` package baseline. Run the
+full automated gates before treating any manual result as release evidence.
+
+### Automated gates
+
+1. `npm run test`.
+2. `npm run build:vite`.
+3. `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`.
+4. `cargo test --manifest-path src-tauri/Cargo.toml`.
+5. `npm run build`.
+6. `git diff --check`.
+7. Focused Save As, Local Assist review, e-book TOC, PDF preset/dialog/request,
+   and modal keyboard tests listed in `docs/v1.3-followup.md`.
+
+### Built-app interaction smoke
+
+8. **Save As continuity.** Open a pathless Markdown tab, enter enough text to
+   scroll, place a non-empty selection, and make at least two edits. Use Save
+   As to save as `.md`. Confirm the selection and scroll position remain,
+   Undo reverses the latest pre-save edit, and Redo restores it. Repeat Save
+   As cancellation and confirm the session is unchanged. A real extension
+   change such as `.md` to `.html` may remount for parser correctness.
+9. **Local Assist review decision.** Apply a Local Assist proposal. Confirm
+   the review bar shows `採用` and `破棄`, Diff still opens/closes, `採用`
+   retains a dirty unsaved buffer without writing the file, and `破棄`
+   restores the complete before-buffer. Open ordinary File Diff and Recovery
+   review once to confirm their read-only/restore actions were not relabeled.
+10. **Reading Focus TOC context.** Use a document with H1/H2 chapters and at
+    least three H3/H4 subheadings in one chapter. Confirm the TOC shows the
+    first two names plus `ほか1件`, shows measured page progress only for the
+    current chapter, and still jumps to the chapter opener rather than an
+    estimated H3 page.
+11. **A4 PDF margin presets.** Export the same multi-page manuscript with
+    `狭い`, `標準`, and `広い`. Render at least pages 1 and 2 of each PDF.
+    Confirm all pages remain A4, the content inset visibly increases from
+    narrow to wide on every inspected page, normal images/tables/code remain
+    readable, and canceling either dialog writes no file. File creation alone
+    does not pass this item.
+
+### Current v1.3 smoke status
+
+Focused source tests and typecheck pass. Full gates and items 8-11 are open
+until actually run; do not infer them from unit tests or window-launch smoke.
 
 ## 1.2.0 Candidate Test Intake
 

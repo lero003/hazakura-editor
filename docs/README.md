@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-06-29
+Last reviewed: 2026-07-01
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
@@ -16,8 +16,8 @@ or quality-polish slice.
 - `security-boundary.md`: safety constraints for file handling and execution boundaries.
 - `agent-workbench-boundary.md`: optional CLI-agent workbench trust boundary.
 - `assist-surface-strategy.md`: future assist-surface direction.
-- `current-work.md`: active v1.1 daily-use continuity queue and release evidence.
-- `roadmap.md`: active v1.1 sequence and future phase boundaries.
+- `current-work.md`: active v1.3 Daily Trust queue and release evidence.
+- `roadmap.md`: active v1.3 sequence and future phase boundaries.
 - `current-status.md`: current implementation and release state.
 
 ## Current Operational Docs
@@ -38,6 +38,8 @@ or quality-polish slice.
 - `native-macos-appearance-plan.md`: v0.25 native-feeling Safe Editor chrome planning memo.
 - `post-v0.25-product-refinement-plan.md`: post-App-Store refinement lens for raising product grade without adding heavy surfaces.
 - `v1.1-v1.2-followup.md`: user-observed post-v1 continuity, review, image, export, and polish queue.
+- `v1.3-followup.md`: current Daily Trust source evidence, boundaries, and
+  remaining built-app/PDF smoke.
 - `speculative-local-ai-future-plan.md`: v3.x-or-later local AI re-evaluation after book / review maturity.
 - `apple-local-assist-distribution-plan.md`: Hazakura Local Assist / App Store distribution planning memo.
 - `apple-local-assist-writing-companion-plan.md`: Hazakura Local Assist Writing Companion / external Assist Window UX direction.

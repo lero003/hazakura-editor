@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-06-30 (1.1.0 public release; 1.2.0 candidate)
+Last reviewed: 2026-07-01 (v1.3 source lane; manual smoke pending)
 
 ## Current State
 
@@ -24,6 +24,13 @@ Last reviewed: 2026-06-30 (1.1.0 public release; 1.2.0 candidate)
   prepared as the `1.2.0` local candidate; App Store Connect upload,
   TestFlight, App Review, and publication remain gated on explicit user
   approval.
+- The active main-branch source lane is v1.3 Daily Trust, while package/app
+  metadata remains `1.2.0`. Four independent source slices are implemented:
+  Save As preserves the same-language CodeMirror session and rekeys view
+  state; Local Assist review uses explicit `採用` / `破棄` without auto-save;
+  Reading Focus TOC shows bounded H3+ context and current measured page
+  progress; PDF export offers request-scoped A4 `狭い` / `標準` / `広い`
+  margin presets. See `docs/v1.3-followup.md`.
 - The signed local `1.1.0` App Store / TestFlight candidate passed the
   release gates, package signature and checksum verification, enforced
   App Store entitlement probe, and sandbox-preview smoke. Its current
@@ -37,6 +44,12 @@ Last reviewed: 2026-06-30 (1.1.0 public release; 1.2.0 candidate)
   confirmed an onscreen Developer bundle window. Right-click /
   command-palette / EPUB-dialog interaction smoke was not exercised in this
   slice and remains an RC check.
+- Current v1.3 evidence is focused/source-only: the pre-change baseline
+  `npm run test` passed (121 files / 1085 tests), each of the four slices has
+  passing focused tests, `npm run typecheck` passes, and `git diff --check`
+  passed at completed commit boundaries. Full Vitest/Vite/Rust/app-build
+  gates, built-app interaction, and rendered multi-page PDF comparison have
+  not yet run and must not be reported as passed.
 - `Hazakura Editor` `1.1.0` is the latest published Mac App Store
   version. `0.36.0` remains historical proof of the same v1-equivalent
   reader, export, workspace-marker, Markdown insertion, and Local Assist
@@ -65,19 +78,18 @@ Last reviewed: 2026-06-30 (1.1.0 public release; 1.2.0 candidate)
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. The active source lane is v1.2 Polish, open as the `1.2.0` candidate.
-   Command discovery, context-menu containment, and the EPUB scope note
-   are implemented and packaged. Localized slash vocabulary is searchable
-   from the palette, and the slash menu is viewport-contained. Built-app
-   interaction smoke remains an open RC check; App Store Connect upload,
-   TestFlight, and App Review remain gated on explicit user approval.
-   See `docs/v1.1-v1.2-followup.md`.
-2. Local forced-termination Recovery passed. Google Drive is
+1. Finish the v1.3 full gates and the four built-app cases in
+   `docs/v1.3-followup.md`. The PDF case requires rendered multi-page output
+   for all three presets; file creation alone is not proof of margin behavior.
+2. The v1.2 `1.2.0` candidate remains prepared local provenance. Do not mix
+   v1.3 source work with upload, TestFlight, review, or publication without
+   explicit user approval.
+3. Local forced-termination Recovery passed. Google Drive is
    `manual-blocked` until a dedicated fixture is available; do not scan or
    create content in the user's cloud folders implicitly.
-3. Follow with one image, Diff action, or `.bak` case at a time; do not
+4. Follow with one image or `.bak` case at a time; do not
    bundle unrelated polish.
-4. The version is `1.2.0` as a prepared local candidate; the published
+5. The version is `1.2.0` as a prepared local candidate; the published
    Mac App Store version remains `1.1.0`. Keep tag creation, App Store
    Connect upload, TestFlight, review, and publication gated on explicit
    user approval.

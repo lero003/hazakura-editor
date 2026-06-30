@@ -1,22 +1,21 @@
 # Current Work
 
 Status: Operational
-Scope: v1.2 polish and expectation setting
+Scope: v1.3 daily-use trust and bounded polish
 Authority: High
-Last reviewed: 2026-06-30 (1.1.0 public release; 1.2.0 candidate)
+Last reviewed: 2026-07-01 (v1.3 source lane; manual smoke pending)
 
 ## Purpose
 
 Start here when choosing the next small `Hazakura Editor` slice.
 This file is the current work queue. `1.1.0` is approved and published
 on the Mac App Store with the product promise
-`Markdownで書き、本として読み、ローカルAIで整える。` The active lane is v1.2
-Polish And Expectation Setting: improve export expectations, command
-discovery, and one observed quality issue at a time without expanding into
-v2 book-workspace features. The `1.2.0` candidate (command discovery,
-context-menu containment, EPUB scope note) is prepared locally; App Store
-Connect upload, TestFlight, and App Review remain gated on explicit user
-approval.
+`Markdownで書き、本として読み、ローカルAIで整える。` The active source lane is
+v1.3 Daily Trust: preserve the editing session through Save As, make Local
+Assist review decisions explicit, add bounded context to the e-book TOC, and
+offer three allowlisted A4 PDF margin presets. The package/app version remains
+`1.2.0`; v1.3 packaging, upload, TestFlight, and App Review are separate,
+explicitly gated work.
 
 Keep every slice small, verifiable, and inside the Markdown-first Safe
 Editor boundary. The v0.27 refinement phases are complete for source-tag
@@ -52,16 +51,14 @@ evidence live under `docs/archive/operations/app-store-v0.17/`.
 
 ## Active UX Queue
 
-Pick one item at a time. `1.1.0` is published, and no hotfix blocker has
-been reported. The position-continuity lane is closed. The `1.2.0`
-candidate (command discovery, context-menu containment, EPUB scope note)
-is prepared locally with a signed pkg; App Store Connect upload,
-TestFlight, App Review, and publication remain gated on explicit user
-approval. After `1.2.0`, v1.2 follows the observation-driven queue in
-`docs/v1.1-v1.2-followup.md`.
+Pick one item at a time. The four v1.3 source slices are implemented with
+focused regression coverage. Full gates, built-app interaction, and rendered
+multi-page PDF comparison remain open before v1.3 can be called fully proven.
+See `docs/v1.3-followup.md`.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
+| Implemented / focused source verified / manual smoke pending | v1.3 Daily Trust | Save As keeps the same-language Editor session and migrates view state; Local Assist exposes explicit `採用` / `破棄` without auto-save; Reading Focus TOC shows bounded H3+ context and current measured page progress; PDF export offers allowlisted A4 `狭い` / `標準` / `広い` margins. Full gates and built-app/PDF artifact smoke remain open. See `docs/v1.3-followup.md`. |
 | Implemented / source verified / 1.2.0 candidate pkg prepared | v1.2 Export UX and Command Discovery | The EPUB dialog explains the single-Markdown / reading-preview boundary. The command palette derives Markdown command behavior and localized search vocabulary from the right-click slash-command registry, including date/time insertion, while palette labels remain English. The slash menu stays within 8px viewport insets and opens upward near the lower edge. A signed `1.2.0` candidate pkg passed local gates, audit, signature, checksum, entitlement, and sandbox-preview smoke; built-app interaction smoke and App Store Connect upload remain open checks. |
 | Done / built-app verified | v1.1 Reader / Editor / Preview Position Continuity | `AppWorkspace` owns one per-document view-state registry for Editor, e-book Mode, and Preview. A -> B -> A restores each editor selection/scroll and reader location. Preview restores only after replacement HTML has rendered, avoiding the real-layout top reset. A safe local Markdown-link transition and Preview -> e-book -> Preview were verified in the built app without source/save-state changes. See `docs/v1.1-v1.2-followup.md`. |
 | Observation / Google Drive manual-blocked | v1.2 Recovery Reliability | Local-folder forced termination passed: with Auto Backup explicitly enabled, a timed `.bak` preserved the unsaved marker, the saved source stayed unchanged, relaunch restored the workspace and exposed the draft, and explicit Restore returned it as a dirty buffer. Auto Backup was returned to its prior off state. Google Drive remains `manual-blocked` because no dedicated test fixture existed; do not create or scan user cloud content implicitly. |
@@ -81,7 +78,7 @@ approval. After `1.2.0`, v1.2 follows the observation-driven queue in
 | Done | v0.36 exported EPUB page-break proof | Blank-line-flanked page-break markers were confirmed in Apple Books. Kindle Previewer is optional compatibility proof, not a v1 gate. |
 | Done / Go | v1.0 Release Candidate / Golden Manuscript Smoke | The user-side checklist accepted the core write -> read -> notice -> return -> revise -> review -> export flow and reported no No-Go condition. Remaining commented observations are recorded in `docs/v1.1-v1.2-followup.md`. |
 | Done | Slice A Reader Stability | `EBookPane` render debounce (200ms shared with PreviewPane), rAF-coalesced pagination measurement, the scrollbar `contentDOM.blur()` refocus-on-mouseup fix, the `renderMarkdown` parse reduction (one DOM mutation pass + one sanitize), the rAF-throttled + self-extending preview->editor scroll-sync guard (fixes trackpad inertial-scroll stutter), and the per-image re-measurement collapse are implemented and pinned by focused tests. |
-| Done | Slice C Robustness | `goToLine` double-rAF, `readOnly` in the `useImperativeHandle` deps (insertText / applyMarkdownFormat / insertTable gated), and the validated `tabId` Apple Assist apply path are done. Only Save-As rekey remount (needs editor session id separate from `documentKey`) stays deferred to v1.1. |
+| Done | Slice C Robustness | `goToLine` double-rAF, `readOnly` in the `useImperativeHandle` deps (insertText / applyMarkdownFormat / insertTable gated), and the validated `tabId` Apple Assist apply path are done. The former Save-As rekey/remount follow-up is implemented in the v1.3 Daily Trust slice. |
 | Done | Slice B bare-`ease` sweep | Remaining transition-level bare `ease` keywords in the named style files and the matching inline icon transition are routed through `var(--ease-standard)`. `ease-out` / `ease-in-out` animations stay untouched. |
 | Backlog | v1.x Safe file intake polish | Consider one bounded slice only when a concrete user case shows a gap for larger readable local images or additional text-open file extensions. Keep binary detection, file-size warnings, workspace boundary, no external image loading, and no project-indexing behavior intact. |
 | Observation only | Hazakura Local Assist post-release polish | Pick this before the active Reader UX slice only for a concrete safety, review, App Store, availability, generation failure, responsiveness, or transaction-boundary issue. Keep App Store AI assistance local, user-initiated, unsaved until accepted, and Diff / Discard reviewable. |

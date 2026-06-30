@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-06-30 (1.1.0 public release; 1.2.0 candidate)
+Last reviewed: 2026-07-01 (v1.3 source lane; manual smoke pending)
 
 ## Current State
 
@@ -13,6 +13,15 @@ Last reviewed: 2026-06-30 (1.1.0 public release; 1.2.0 candidate)
   candidate (command discovery, context-menu containment, EPUB scope note);
   it is a prepared local candidate, not yet uploaded to App Store Connect.
   `1.1.0` remains the published Mac App Store version.
+- The active main-branch source lane is v1.3 Daily Trust. Four bounded
+  source slices are implemented: Save As keeps the same-language open-tab /
+  CodeMirror session and migrates per-document view state; Local Assist
+  review uses explicit `採用` / `破棄` without auto-save; Reading Focus TOC
+  shows bounded H3+ context plus current measured page progress; and direct
+  PDF export offers request-scoped A4 `狭い` / `標準` / `広い` margin
+  presets. Focused tests and typecheck pass. Full gates, built-app
+  interaction, and rendered multi-page PDF comparison are still pending;
+  see `docs/v1.3-followup.md`.
 - `1.0.0` was approved and released on the Mac App Store. It is a
   semantic and product-message re-baseline of the feature shape first
   shipped through `0.36.0`, not a new feature expansion. Its public message is:
@@ -30,8 +39,9 @@ Last reviewed: 2026-06-30 (1.1.0 public release; 1.2.0 candidate)
   boundary. No v1 No-Go condition was reported. Unchecked boxes are not
   treated as automatic blockers; commented observations are classified
   in `docs/v1.1-v1.2-followup.md`.
-- No public-release hotfix blocker has been reported. The active lane is now v1.2
-  polish and expectation setting. `AppWorkspace` owns a shared
+- No public-release hotfix blocker has been reported. v1.2 remains the latest
+  prepared package baseline while v1.3 is an unversioned source lane.
+  `AppWorkspace` owns a shared
   per-document view-state registry: reader, Editor cursor/scroll, Preview
   reopen, tab transitions, and safe local Markdown-link transitions now
   preserve the relevant document position. The local forced-termination
@@ -432,8 +442,10 @@ baseline, and smoke evidence are archived under
 
 ## Active Planning Sources
 
-- `docs/current-work.md`: current v1.2 polish queue plus v1.0-v1.1 release
+- `docs/current-work.md`: current v1.3 Daily Trust queue plus earlier release
   evidence.
+- `docs/v1.3-followup.md`: v1.3 boundary, source evidence, and remaining
+  built-app/PDF smoke.
 - `docs/archive/planning/v0.27-refinement-slice-plan.md`: historical v0.27
   execution phases for large-document rendering, One Editing Space,
   flow-preserving editing, and status bar cleanup.
@@ -458,25 +470,30 @@ baseline, and smoke evidence are archived under
    view state; do not expand it into workspace indexing.
 2. Complete the Google Drive Recovery smoke only with a dedicated user-
    approved fixture. The local-folder forced-termination path has passed.
-3. The v1.2 Polish lane is open. The signed `1.2.0` App Store /
+3. Finish the v1.3 full source/build gates and built-app smoke in
+   `docs/v1.3-followup.md`. In particular, render multi-page PDF outputs for
+   all three presets before claiming the margins are product-proven.
+4. The signed `1.2.0` App Store /
    TestFlight candidate pkg is local provenance for the prepared
    candidate, not proof of a public build. Treat the `1.1.0` pkg
    metadata as the released-lane provenance. Do not upload to App Store
    Connect, submit to TestFlight / App Review, or publish until the user
    explicitly opens that lane.
-4. For the latest local App Store / TestFlight package candidate, see
+5. For the latest local App Store / TestFlight package candidate, see
    `docs/internal/app-store-candidates/latest.json` for version / build
    counter / pkg path / SHA-256 / generated time. At this sync point it
    records the active `1.2.0` artifact. App Store Connect and TestFlight
    logs remain outside this repository unless public-safe evidence is
    recorded. Do upload / App Store Connect work only when explicitly
    requested.
-5. For Hazakura Local Assist, use `docs/assist-surface-strategy.md`,
+6. For Hazakura Local Assist, use `docs/assist-surface-strategy.md`,
    `docs/apple-local-assist-distribution-plan.md`, and
    `docs/apple-local-assist-writing-companion-plan.md`; keep direct
    buffer edits as explicit AI edit transactions.
-6. For future release checkpoints, use the version-specific release
+7. For future release checkpoints, use the version-specific release
    note plus the release checklists. Do not tag or publish without
    explicit approval.
-7. Keep the full observation queue in `docs/v1.1-v1.2-followup.md` and
+8. Keep historical v1.1-v1.2 observations in
+   `docs/v1.1-v1.2-followup.md` and active v1.3 proof in
+   `docs/v1.3-followup.md`; continue to
    close one reproducible item at a time.
