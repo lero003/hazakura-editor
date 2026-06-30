@@ -16,8 +16,8 @@ import { SparklesIcon } from "./Icons";
 //     preview sourced from `transaction.diff`.
 //   * "Discard" reverts the buffer to `transaction.beforeBuffer`
 //     and clears the pending review.
-//   * "Close" dismisses the bar without reverting; the
-//     AI edit stays in the buffer.
+//   * "Accept" dismisses the review without reverting; the
+//     AI edit stays in the unsaved buffer.
 //
 // The bar reuses the existing `DiffBody` rendering
 // pipeline by constructing a synthetic `changes` case
@@ -52,7 +52,7 @@ export function AppleAssistReviewBar({
     setShowDiff((current) => !current);
   }, []);
 
-  const handleClose = useCallback(() => {
+  const handleAccept = useCallback(() => {
     setShowDiff(false);
     clearLatest();
   }, [clearLatest]);
@@ -142,13 +142,12 @@ export function AppleAssistReviewBar({
             {copy.appleAssistReviewBarDiscardLabel}
           </button>
           <button
-            aria-label={copy.appleAssistReviewBarCloseLabel}
-            className="apple-assist-review-bar-button close"
-            onClick={handleClose}
-            title={copy.appleAssistReviewBarCloseTitle}
+            className="apple-assist-review-bar-button"
+            onClick={handleAccept}
+            title={copy.appleAssistReviewBarAcceptTitle}
             type="button"
           >
-            ×
+            {copy.appleAssistReviewBarAcceptLabel}
           </button>
         </div>
       </div>

@@ -115,7 +115,7 @@ describe("AppleAssistReviewBar", () => {
     expect(onDiscard).toHaveBeenCalledWith("tabA", "prefix\nhello\nsuffix");
   });
 
-  it("close button dismisses the bar without calling onDiscard", () => {
+  it("accept keeps the buffer and dismisses the review without discarding", () => {
     recordPending("tabA", "整えて");
     const onDiscard = vi.fn();
     render(
@@ -127,7 +127,7 @@ describe("AppleAssistReviewBar", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+    fireEvent.click(screen.getByRole("button", { name: "Accept" }));
     expect(onDiscard).not.toHaveBeenCalled();
     expect(
       screen.queryByText(/Hazakura Local Assist changed your text/),
@@ -218,6 +218,23 @@ describe("AppleAssistReviewBar", () => {
       screen.getByText(/Hazakura Local Assist が本文を変更しました/),
     ).toBeTruthy();
     expect(screen.getByRole("button", { name: "差分を開く" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "取り消す" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "採用" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "破棄" })).toBeTruthy();
+  });
+
+  it("explains that accepting does not save the buffer", () => {
+    recordPending("tabA", "整えて");
+    render(
+      <AppleAssistReviewBar
+        activeTabId="tabA"
+        copy={getLModeCopy("ja")}
+        menuLanguage="ja"
+        onDiscard={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "採用" }).title).toContain(
+      "保存はまだ行われません",
+    );
   });
 });
