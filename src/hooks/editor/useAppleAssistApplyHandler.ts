@@ -326,7 +326,17 @@ export function isSameAppleAssistTargetTab(
   initial: ActiveTab,
   latest: ActiveTab,
 ): boolean {
-  return initial.id === latest.id && initial.path === latest.path;
+  // The open editor session is now identified by `sessionId`
+  // (id follows the path). A document can be closed and
+  // reopened under the same path, which swaps the session,
+  // so the guard must also reject a session change —
+  // otherwise a stale generation result from the old session
+  // would land in the freshly reopened document.
+  return (
+    initial.id === latest.id &&
+    initial.path === latest.path &&
+    initial.sessionId === latest.sessionId
+  );
 }
 
 export async function yieldBeforeAppleAssistGeneration(): Promise<void> {

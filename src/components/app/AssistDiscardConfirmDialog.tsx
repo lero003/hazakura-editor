@@ -1,8 +1,11 @@
+import type { RefObject } from "react";
 import type { MenuLanguage } from "../../types";
 import { isJapaneseMenuLanguage } from "../../types";
 import { isKanaStyle } from "../../lib/locale/_helpers";
 
 type AssistDiscardConfirmDialogProps = {
+  cancelButtonRef: RefObject<HTMLButtonElement | null>;
+  dialogRef: RefObject<HTMLElement | null>;
   menuLanguage: MenuLanguage;
   onCancel: () => void;
   onConfirm: () => void;
@@ -13,11 +16,17 @@ type AssistDiscardConfirmDialogProps = {
 // When the user hand-edits the buffer after an assist apply, a blind
 // "Discard" revert to the transaction's `beforeBuffer` would destroy those
 // hand-edits along with the assist change. This dialog asks the user to
-// confirm before reverting the whole buffer. It follows the existing
-// lightweight dialog pattern (modal-backdrop + role="dialog") so it reads
-// as part of the same dialog family without pulling in the full
-// refs / keyboard-guard pool.
+// confirm before reverting the whole buffer.
+//
+// The dialog exposes the same `dialogRef` + `cancelButtonRef` shape the
+// move-to-trash / close / app-close dialogs use, so the central
+// `useDialogInitialFocus` lands focus on Cancel (the safe default for a
+// destructive action) and `useModalKeyboardGuard` traps Tab / Shift+Tab
+// inside the dialog and routes Escape back to the cancel handler, on the
+// same footing as the other blocking confirmations.
 export function AssistDiscardConfirmDialog({
+  cancelButtonRef,
+  dialogRef,
   menuLanguage,
   onCancel,
   onConfirm,
@@ -27,6 +36,7 @@ export function AssistDiscardConfirmDialog({
   return (
     <div className="modal-backdrop" role="presentation">
       <section
+        ref={dialogRef}
         aria-describedby="assist-discard-description"
         aria-labelledby="assist-discard-title"
         aria-modal="true"
@@ -43,7 +53,7 @@ export function AssistDiscardConfirmDialog({
           >
             {copy.confirm}
           </button>
-          <button onClick={onCancel} type="button">
+          <button ref={cancelButtonRef} onClick={onCancel} type="button">
             {copy.cancel}
           </button>
         </div>

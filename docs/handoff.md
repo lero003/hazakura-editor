@@ -44,7 +44,7 @@ Last reviewed: 2026-07-01 (v1.3 implemented and core-smoke verified)
   command-palette / EPUB-dialog interaction smoke was not exercised in this
   slice and remains an RC check.
 - Current v1.3 evidence includes focused tests plus final `npm run test`
-  (123 files / 1105 tests), `cargo test` (301 tests), `npm run build:vite`,
+  (123 files / 1109 tests), `cargo test` (301 tests), `npm run build:vite`,
   `cargo fmt --check`, and `npm run build`. Representative built-app checks
   passed for Save As Undo continuity, explicit Local Assist acceptance with
   a dirty buffer, Reading Focus TOC context, distinct margins across all three

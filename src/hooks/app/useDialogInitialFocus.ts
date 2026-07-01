@@ -6,6 +6,7 @@ type FocusableRef = {
 
 type UseDialogInitialFocusOptions = {
   appCloseCancelButtonRef: FocusableRef;
+  assistDiscardCancelButtonRef: FocusableRef;
   closeTabCancelButtonRef: FocusableRef;
   // v0.18 accessibility follow-up: the move-to-trash dialog
   // also gets initial focus on its Cancel button. The trash
@@ -15,6 +16,7 @@ type UseDialogInitialFocusOptions = {
   // v0.7 dirty-tab / app-close dialogs use.
   moveTrashCancelButtonRef: FocusableRef;
   pendingAppClose: boolean;
+  pendingAssistDiscardOpen: boolean;
   pendingCloseTabOpen: boolean;
   pendingTrashOpen: boolean;
   preferencesCloseButtonRef: FocusableRef;
@@ -23,9 +25,11 @@ type UseDialogInitialFocusOptions = {
 
 export function useDialogInitialFocus({
   appCloseCancelButtonRef,
+  assistDiscardCancelButtonRef,
   closeTabCancelButtonRef,
   moveTrashCancelButtonRef,
   pendingAppClose,
+  pendingAssistDiscardOpen,
   pendingCloseTabOpen,
   pendingTrashOpen,
   preferencesCloseButtonRef,
@@ -53,14 +57,25 @@ export function useDialogInitialFocus({
       return;
     }
 
+    // The Local Assist discard confirmation is destructive in
+    // the same sense (Confirm reverts hand edits alongside the
+    // assist change), so it lands on Cancel for the same safe
+    // default as the move-to-trash flow.
+    if (pendingAssistDiscardOpen) {
+      assistDiscardCancelButtonRef.current?.focus();
+      return;
+    }
+
     if (preferencesOpen) {
       preferencesCloseButtonRef.current?.focus();
     }
   }, [
     appCloseCancelButtonRef,
+    assistDiscardCancelButtonRef,
     closeTabCancelButtonRef,
     moveTrashCancelButtonRef,
     pendingAppClose,
+    pendingAssistDiscardOpen,
     pendingCloseTabOpen,
     pendingTrashOpen,
     preferencesCloseButtonRef,

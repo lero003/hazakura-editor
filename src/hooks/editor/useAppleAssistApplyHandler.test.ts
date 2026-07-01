@@ -381,6 +381,19 @@ describe("isSameAppleAssistTargetTab", () => {
       }),
     ).toBe(false);
   });
+
+  it("rejects a candidate whose editor session changed even at the same path (v1.3)", () => {
+    // sessionId is the open-editor-session identity. Closing and
+    // reopening a file at the same path assigns a fresh session,
+    // so a generation started in the old session must not apply
+    // to the reopened document.
+    expect(
+      isSameAppleAssistTargetTab(tab, {
+        ...tab,
+        sessionId: "session:tab-2",
+      }),
+    ).toBe(false);
+  });
 });
 
 // Integration coverage for the full apply path. The pure

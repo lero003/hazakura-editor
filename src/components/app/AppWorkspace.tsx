@@ -267,7 +267,7 @@ export function AppWorkspace({
     useState<DocumentViewStateRegistry>({});
   const previousDocumentIdentityRef = useRef<{
     documentKey: string;
-    tabId: string;
+    tabSessionId: string;
   } | null>(null);
   const previousSidePaneModeRef = useRef<RightPaneMode | null>(null);
   const workspaceSidebarCollapsed =
@@ -285,7 +285,7 @@ export function AppWorkspace({
   const saveAsPreviousKey =
     activeTab &&
     activeDocumentKey &&
-    previousDocumentIdentity?.tabId === activeTab.id &&
+    previousDocumentIdentity?.tabSessionId === activeTab.sessionId &&
     previousDocumentIdentity.documentKey !== activeDocumentKey
       ? previousDocumentIdentity.documentKey
       : null;
@@ -322,7 +322,7 @@ export function AppWorkspace({
       }
       previousDocumentIdentityRef.current = {
         documentKey: activeDocumentKey,
-        tabId: activeTab.id,
+        tabSessionId: activeTab.sessionId,
       };
       return;
     }

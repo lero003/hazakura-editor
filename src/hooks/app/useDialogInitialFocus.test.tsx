@@ -18,18 +18,22 @@ function makeHookArgs(overrides: Partial<{
   pendingCloseTabOpen: boolean;
   pendingAppClose: boolean;
   pendingTrashOpen: boolean;
+  pendingAssistDiscardOpen: boolean;
   preferencesOpen: boolean;
 }> = {}) {
   const closeTabCancelButtonRef = makeRef();
   const appCloseCancelButtonRef = makeRef();
   const moveTrashCancelButtonRef = makeRef();
+  const assistDiscardCancelButtonRef = makeRef();
   const preferencesCloseButtonRef = makeRef();
   return {
     args: {
       appCloseCancelButtonRef,
+      assistDiscardCancelButtonRef,
       closeTabCancelButtonRef,
       moveTrashCancelButtonRef,
       pendingAppClose: false,
+      pendingAssistDiscardOpen: false,
       pendingCloseTabOpen: false,
       pendingTrashOpen: false,
       preferencesCloseButtonRef,
@@ -38,6 +42,7 @@ function makeHookArgs(overrides: Partial<{
     },
     refs: {
       appCloseCancelButtonRef,
+      assistDiscardCancelButtonRef,
       closeTabCancelButtonRef,
       moveTrashCancelButtonRef,
       preferencesCloseButtonRef,
@@ -81,6 +86,21 @@ describe("useDialogInitialFocus", () => {
     expect(refs.moveTrashCancelButtonRef.current?.focus).toHaveBeenCalledTimes(1);
     expect(refs.closeTabCancelButtonRef.current?.focus).not.toHaveBeenCalled();
     expect(refs.appCloseCancelButtonRef.current?.focus).not.toHaveBeenCalled();
+    expect(refs.assistDiscardCancelButtonRef.current?.focus).not.toHaveBeenCalled();
+    expect(refs.preferencesCloseButtonRef.current?.focus).not.toHaveBeenCalled();
+  });
+
+  it("focuses the assist-discard Cancel button when the discard dialog is pending (v1.3)", () => {
+    // v1.3: the Local Assist discard confirmation is a
+    // destructive confirmation (Confirm reverts hand edits
+    // alongside the assist change), so it lands focus on
+    // Cancel for the same safe default as move-to-trash.
+    const { args, refs } = makeHookArgs({ pendingAssistDiscardOpen: true });
+    renderHook(() => useDialogInitialFocus(args));
+    expect(refs.assistDiscardCancelButtonRef.current?.focus).toHaveBeenCalledTimes(1);
+    expect(refs.closeTabCancelButtonRef.current?.focus).not.toHaveBeenCalled();
+    expect(refs.appCloseCancelButtonRef.current?.focus).not.toHaveBeenCalled();
+    expect(refs.moveTrashCancelButtonRef.current?.focus).not.toHaveBeenCalled();
     expect(refs.preferencesCloseButtonRef.current?.focus).not.toHaveBeenCalled();
   });
 
@@ -113,9 +133,11 @@ describe("useDialogInitialFocus", () => {
       const cancelButtonRef = createRef<HTMLButtonElement | null>();
       useDialogInitialFocus({
         appCloseCancelButtonRef: { current: null },
+        assistDiscardCancelButtonRef: { current: null },
         closeTabCancelButtonRef: { current: null },
         moveTrashCancelButtonRef: cancelButtonRef,
         pendingAppClose: false,
+        pendingAssistDiscardOpen: false,
         pendingCloseTabOpen: false,
         pendingTrashOpen: true,
         preferencesCloseButtonRef: { current: null },

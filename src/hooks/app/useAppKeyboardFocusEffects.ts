@@ -27,6 +27,7 @@ type UseAppKeyboardFocusEffectsOptions = {
   allowWindowCloseRef: BooleanRef;
   appCloseCancelButtonRef: RefValue<{ focus: () => void }>;
   appCloseDialogRef: RefValue<HTMLElement>;
+  assistDiscardDialogRef: RefValue<HTMLElement>;
   closeTabCancelButtonRef: RefValue<{ focus: () => void }>;
   closeTabDialogRef: RefValue<HTMLElement>;
   epubExportDialogRef: RefValue<HTMLElement>;
@@ -42,6 +43,7 @@ type UseAppKeyboardFocusEffectsOptions = {
   // and route Esc back to `cancelPendingTrash`.
   moveTrashCancelButtonRef: RefValue<{ focus: () => void }>;
   moveTrashDialogRef: RefValue<HTMLElement>;
+  assistDiscardCancelButtonRef: RefValue<{ focus: () => void }>;
   commandPaletteVisible: boolean;
   dirtyTabCount: number;
   editorPaneRef: RefValue<EditorPaneHandle>;
@@ -51,6 +53,7 @@ type UseAppKeyboardFocusEffectsOptions = {
   modalOpen: boolean;
   onApplyMarkdownFormat: (format: MarkdownFormat) => void;
   onCancelAppClose: () => void;
+  onCancelAssistDiscard: () => void;
   onCancelEpubBetaExport: () => void;
   onCancelPdfExport: () => void;
   onCancelPendingTrash: () => void;
@@ -74,6 +77,7 @@ type UseAppKeyboardFocusEffectsOptions = {
   onSaveActiveTab: () => unknown;
   onSaveActiveTabAs: () => unknown;
   pendingAppClose: boolean;
+  pendingAssistDiscardOpen: boolean;
   pendingCloseTabOpen: boolean;
   pendingTrashOpen: boolean;
   preferencesCloseButtonRef: RefValue<{ focus: () => void }>;
@@ -94,6 +98,7 @@ export function useAppKeyboardFocusEffects({
   allowWindowCloseRef,
   appCloseCancelButtonRef,
   appCloseDialogRef,
+  assistDiscardDialogRef,
   closeTabCancelButtonRef,
   closeTabDialogRef,
   epubExportDialogRef,
@@ -102,6 +107,7 @@ export function useAppKeyboardFocusEffects({
   pdfExportSettingsOpen,
   moveTrashCancelButtonRef,
   moveTrashDialogRef,
+  assistDiscardCancelButtonRef,
   commandPaletteVisible,
   dirtyTabCount,
   editorPaneRef,
@@ -111,6 +117,7 @@ export function useAppKeyboardFocusEffects({
   modalOpen,
   onApplyMarkdownFormat,
   onCancelAppClose,
+  onCancelAssistDiscard,
   onCancelEpubBetaExport,
   onCancelPdfExport,
   onCancelPendingTrash,
@@ -134,6 +141,7 @@ export function useAppKeyboardFocusEffects({
   onSaveActiveTab,
   onSaveActiveTabAs,
   pendingAppClose,
+  pendingAssistDiscardOpen,
   pendingCloseTabOpen,
   pendingTrashOpen,
   preferencesCloseButtonRef,
@@ -172,6 +180,7 @@ export function useAppKeyboardFocusEffects({
 
   useModalKeyboardGuard({
     appCloseDialogRef,
+    assistDiscardDialogRef,
     closeTabDialogRef,
     commandPaletteVisible,
     epubExportDialogRef,
@@ -182,6 +191,7 @@ export function useAppKeyboardFocusEffects({
     modalOpen: anyModalOpen,
     moveTrashDialogRef,
     onCancelAppClose,
+    onCancelAssistDiscard,
     onCancelEpubBetaExport,
     onCancelPdfExport,
     onCancelPendingTrash,
@@ -190,6 +200,7 @@ export function useAppKeyboardFocusEffects({
     onCloseGlobalSearch,
     onClosePreferences,
     pendingAppClose,
+    pendingAssistDiscardOpen,
     pendingCloseTabOpen,
     pendingTrashOpen,
     preferencesDialogRef,
@@ -227,9 +238,11 @@ export function useAppKeyboardFocusEffects({
 
   useDialogInitialFocus({
     appCloseCancelButtonRef,
+    assistDiscardCancelButtonRef,
     closeTabCancelButtonRef,
     moveTrashCancelButtonRef,
     pendingAppClose,
+    pendingAssistDiscardOpen,
     pendingCloseTabOpen,
     pendingTrashOpen,
     preferencesCloseButtonRef,

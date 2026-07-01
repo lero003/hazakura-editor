@@ -150,6 +150,8 @@ type AppOverlaysProps = {
   pendingAssistDiscard: { sessionId: string; beforeBuffer: string } | null;
   onConfirmPendingAssistDiscard: () => void;
   onCancelPendingAssistDiscard: () => void;
+  assistDiscardCancelButtonRef: RefObject<HTMLButtonElement | null>;
+  assistDiscardDialogRef: RefObject<HTMLElement | null>;
   preferencesCloseButtonRef: RefObject<HTMLButtonElement | null>;
   preferencesCopy: PreferencesCopy;
   preferencesDialogMode: PreferencesDialogMode | null;
@@ -313,6 +315,8 @@ export function AppOverlays({
   pendingAssistDiscard,
   onConfirmPendingAssistDiscard,
   onCancelPendingAssistDiscard,
+  assistDiscardCancelButtonRef,
+  assistDiscardDialogRef,
 }: AppOverlaysProps) {
   const activeHelpDoc =
     preferencesDialogMode && isHelpDocumentDialogMode(preferencesDialogMode)
@@ -369,6 +373,8 @@ export function AppOverlays({
 
       {pendingAssistDiscard ? (
         <AssistDiscardConfirmDialog
+          cancelButtonRef={assistDiscardCancelButtonRef}
+          dialogRef={assistDiscardDialogRef}
           menuLanguage={menuLanguage}
           onCancel={onCancelPendingAssistDiscard}
           onConfirm={onConfirmPendingAssistDiscard}

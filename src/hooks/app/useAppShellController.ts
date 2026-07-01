@@ -253,6 +253,8 @@ export function useAppShellController() {
     modalOpen,
     moveTrashCancelButtonRef,
     moveTrashDialogRef,
+    assistDiscardCancelButtonRef,
+    assistDiscardDialogRef,
     pendingCloseTabOpen,
     preferencesCloseButtonRef,
     preferencesDialogRef,
@@ -533,6 +535,12 @@ export function useAppShellController() {
   // cancel button ref so the dialog itself stays structurally
   // aligned with the v0.7-era close / app-close dialogs.
   const pendingTrashOpen = pendingTrash !== null;
+  // v1.3: the Local Assist discard confirmation is another
+  // destructive confirm-style dialog, so it is composed into
+  // the shared modal surface the same way `pendingTrashOpen`
+  // is. This keeps global shortcuts suppressed and routes the
+  // dialog through the central focus / keyboard-guard pool.
+  const pendingAssistDiscardOpen = pendingAssistDiscard !== null;
   // section: window dialog actions
   const {
     cancelPendingAppClose,
@@ -856,6 +864,7 @@ export function useAppShellController() {
   const modalOpenWithBlockingDialogs =
     modalOpen ||
     pendingTrashOpen ||
+    pendingAssistDiscardOpen ||
     epubExportSettingsOpen ||
     pdfExportSettingsOpen;
 
@@ -1130,6 +1139,73 @@ export function useAppShellController() {
     workspaceRootPath,
   });
 
+  // v1.3 Hazakura Local Assist discard handling is defined here,
+  // ahead of the `useAppShellSideEffectsController` call below, so
+  // the `keyboardFocus` object can reference `cancelDiscardAppleAssistEdit`
+  // for the Escape route without a use-before-declaration error.
+  //
+  // When the user hand-edits the buffer after an assist apply
+  // (current contents differ from the transaction's
+  // `afterBuffer`), a blind revert to `beforeBuffer` would
+  // destroy those edits. In that case we open a confirmation
+  // dialog instead of reverting immediately; only a confirmed
+  // discard reverts all the way back to `beforeBuffer`.
+  const confirmDiscardAppleAssistEdit = useCallback(
+    (sessionId: string, beforeBuffer: string) => {
+      setTabs((currentTabs) =>
+        currentTabs.map((tab) =>
+          tab.sessionId === sessionId
+            ? {
+                ...tab,
+                contents: beforeBuffer,
+                saveStatus: "idle",
+                error: null,
+              }
+            : tab,
+        ),
+      );
+      const targetTab = tabs.find((tab) => tab.sessionId === sessionId);
+      if (targetTab) {
+        setActiveTabId(targetTab.id);
+      }
+      aiEditTransactionStore.clear(sessionId);
+      setStatus("Hazakura Local Assist edit discarded");
+    },
+    [setActiveTabId, setStatus, setTabs, tabs],
+  );
+
+  const discardAppleAssistEdit = useCallback(
+    (sessionId: string, beforeBuffer: string, afterBuffer: string) => {
+      const targetTab = tabs.find((tab) => tab.sessionId === sessionId);
+      if (!targetTab) {
+        setStatus("Hazakura Local Assist discard failed");
+        return;
+      }
+      // No hand-edits since the assist was applied: safe to revert now.
+      if (targetTab.contents === afterBuffer) {
+        confirmDiscardAppleAssistEdit(sessionId, beforeBuffer);
+        return;
+      }
+      // The buffer changed after the apply. Confirm before discarding so
+      // the user does not silently lose hand-edits along with the assist.
+      setPendingAssistDiscard({ sessionId, beforeBuffer });
+    },
+    [confirmDiscardAppleAssistEdit, setStatus, tabs],
+  );
+
+  const cancelDiscardAppleAssistEdit = useCallback(() => {
+    setPendingAssistDiscard(null);
+  }, []);
+
+  const confirmPendingAssistDiscard = useCallback(() => {
+    if (!pendingAssistDiscard) return;
+    confirmDiscardAppleAssistEdit(
+      pendingAssistDiscard.sessionId,
+      pendingAssistDiscard.beforeBuffer,
+    );
+    setPendingAssistDiscard(null);
+  }, [confirmDiscardAppleAssistEdit, pendingAssistDiscard]);
+
   // section: app side effects (menu integration + runtime effects)
   useAppShellSideEffectsController({
     actions: {
@@ -1223,6 +1299,7 @@ export function useAppShellController() {
       allowWindowCloseRef,
       appCloseCancelButtonRef,
       appCloseDialogRef,
+      assistDiscardDialogRef,
       closeTabCancelButtonRef,
       closeTabDialogRef,
       epubExportDialogRef,
@@ -1231,6 +1308,7 @@ export function useAppShellController() {
       pdfExportSettingsOpen,
       moveTrashCancelButtonRef,
       moveTrashDialogRef,
+      assistDiscardCancelButtonRef,
       commandPaletteVisible,
       dirtyTabCount,
       editorPaneRef,
@@ -1240,6 +1318,7 @@ export function useAppShellController() {
       modalOpen: modalOpenWithBlockingDialogs,
       onApplyMarkdownFormat: applyActiveMarkdownFormat,
       onCancelAppClose: cancelPendingAppClose,
+      onCancelAssistDiscard: cancelDiscardAppleAssistEdit,
       onCancelPendingTrash: cancelPendingTrash,
       onCancelTabClose: cancelPendingTabClose,
       onCheckTabForExternalChange: checkTabForExternalChange,
@@ -1263,6 +1342,7 @@ export function useAppShellController() {
       onCancelEpubBetaExport: cancelEpubBetaExport,
       onCancelPdfExport: cancelPdfExport,
       pendingAppClose,
+      pendingAssistDiscardOpen,
       pendingCloseTabOpen,
       pendingTrashOpen,
       preferencesCloseButtonRef,
@@ -1285,68 +1365,6 @@ export function useAppShellController() {
   // handler uses so save status / error are
   // consistent regardless of which direction the buffer
   // was edited.
-  //
-  // When the user has hand-edited the buffer after the assist
-  // apply (current contents differ from the transaction's
-  // `afterBuffer`), a blind revert to `beforeBuffer` would
-  // destroy those edits. In that case we open a confirmation
-  // dialog instead of reverting immediately; only a confirmed
-  // discard reverts all the way back to `beforeBuffer`.
-  const confirmDiscardAppleAssistEdit = useCallback(
-    (sessionId: string, beforeBuffer: string) => {
-      setTabs((currentTabs) =>
-        currentTabs.map((tab) =>
-          tab.sessionId === sessionId
-            ? {
-                ...tab,
-                contents: beforeBuffer,
-                saveStatus: "idle",
-                error: null,
-              }
-            : tab,
-        ),
-      );
-      const targetTab = tabs.find((tab) => tab.sessionId === sessionId);
-      if (targetTab) {
-        setActiveTabId(targetTab.id);
-      }
-      aiEditTransactionStore.clear(sessionId);
-      setStatus("Hazakura Local Assist edit discarded");
-    },
-    [setActiveTabId, setStatus, setTabs, tabs],
-  );
-
-  const discardAppleAssistEdit = useCallback(
-    (sessionId: string, beforeBuffer: string, afterBuffer: string) => {
-      const targetTab = tabs.find((tab) => tab.sessionId === sessionId);
-      if (!targetTab) {
-        setStatus("Hazakura Local Assist discard failed");
-        return;
-      }
-      // No hand-edits since the assist was applied: safe to revert now.
-      if (targetTab.contents === afterBuffer) {
-        confirmDiscardAppleAssistEdit(sessionId, beforeBuffer);
-        return;
-      }
-      // The buffer changed after the apply. Confirm before discarding so
-      // the user does not silently lose hand-edits along with the assist.
-      setPendingAssistDiscard({ sessionId, beforeBuffer });
-    },
-    [confirmDiscardAppleAssistEdit, setStatus, tabs],
-  );
-
-  const cancelDiscardAppleAssistEdit = useCallback(() => {
-    setPendingAssistDiscard(null);
-  }, []);
-
-  const confirmPendingAssistDiscard = useCallback(() => {
-    if (!pendingAssistDiscard) return;
-    confirmDiscardAppleAssistEdit(
-      pendingAssistDiscard.sessionId,
-      pendingAssistDiscard.beforeBuffer,
-    );
-    setPendingAssistDiscard(null);
-  }, [confirmDiscardAppleAssistEdit, pendingAssistDiscard]);
 
   return {
     activeAgentSession,
@@ -1401,6 +1419,8 @@ export function useAppShellController() {
     closeWorkspaceContextMenu,
     moveTrashCancelButtonRef,
     moveTrashDialogRef,
+    assistDiscardCancelButtonRef,
+    assistDiscardDialogRef,
     closeCommandPalette,
     commandPaletteActiveIndex,
     confirmPendingRename,

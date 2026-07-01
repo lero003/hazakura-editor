@@ -34,12 +34,14 @@ type RefValue<T> = { current: T | null };
 function renderGuard(overrides: {
   modalOpen?: boolean;
   appCloseDialogRef?: RefValue<HTMLElement>;
+  assistDiscardDialogRef?: RefValue<HTMLElement>;
   closeTabDialogRef?: RefValue<HTMLElement>;
   epubExportDialogRef?: RefValue<HTMLElement>;
   pdfExportDialogRef?: RefValue<HTMLElement>;
   moveTrashDialogRef?: RefValue<HTMLElement>;
   preferencesDialogRef?: RefValue<HTMLElement>;
   pendingAppClose?: boolean;
+  pendingAssistDiscardOpen?: boolean;
   pendingCloseTabOpen?: boolean;
   epubExportSettingsOpen?: boolean;
   pdfExportSettingsOpen?: boolean;
@@ -48,6 +50,7 @@ function renderGuard(overrides: {
   commandPaletteVisible?: boolean;
   globalSearchVisible?: boolean;
   onCancelAppClose?: () => void;
+  onCancelAssistDiscard?: () => void;
   onCancelEpubBetaExport?: () => void;
   onCancelPdfExport?: () => void;
   onCancelPendingTrash?: () => void;
@@ -57,6 +60,7 @@ function renderGuard(overrides: {
   onClosePreferences?: () => void;
 }) {
   const onCancelAppClose = overrides.onCancelAppClose ?? vi.fn();
+  const onCancelAssistDiscard = overrides.onCancelAssistDiscard ?? vi.fn();
   const onCancelEpubBetaExport = overrides.onCancelEpubBetaExport ?? vi.fn();
   const onCancelPdfExport = overrides.onCancelPdfExport ?? vi.fn();
   const onCancelPendingTrash = overrides.onCancelPendingTrash ?? vi.fn();
@@ -65,6 +69,9 @@ function renderGuard(overrides: {
   const onCloseGlobalSearch = overrides.onCloseGlobalSearch ?? vi.fn();
   const onClosePreferences = overrides.onClosePreferences ?? vi.fn();
   const appCloseDialogRef = overrides.appCloseDialogRef ?? {
+    current: null,
+  };
+  const assistDiscardDialogRef = overrides.assistDiscardDialogRef ?? {
     current: null,
   };
   const closeTabDialogRef = overrides.closeTabDialogRef ?? {
@@ -86,6 +93,7 @@ function renderGuard(overrides: {
   function Host() {
     useModalKeyboardGuard({
       appCloseDialogRef,
+      assistDiscardDialogRef,
       closeTabDialogRef,
       commandPaletteVisible: overrides.commandPaletteVisible ?? false,
       epubExportDialogRef,
@@ -96,6 +104,7 @@ function renderGuard(overrides: {
       modalOpen: overrides.modalOpen ?? true,
       moveTrashDialogRef,
       onCancelAppClose,
+      onCancelAssistDiscard,
       onCancelEpubBetaExport,
       onCancelPdfExport,
       onCancelPendingTrash,
@@ -104,6 +113,7 @@ function renderGuard(overrides: {
       onCloseGlobalSearch,
       onClosePreferences,
       pendingAppClose: overrides.pendingAppClose ?? false,
+      pendingAssistDiscardOpen: overrides.pendingAssistDiscardOpen ?? false,
       pendingCloseTabOpen: overrides.pendingCloseTabOpen ?? false,
       pendingTrashOpen: overrides.pendingTrashOpen ?? false,
       preferencesDialogRef,
@@ -116,11 +126,13 @@ function renderGuard(overrides: {
   return {
     ...utils,
     appCloseDialogRef,
+    assistDiscardDialogRef,
     closeTabDialogRef,
     epubExportDialogRef,
     pdfExportDialogRef,
     moveTrashDialogRef,
     onCancelAppClose,
+    onCancelAssistDiscard,
     onCancelEpubBetaExport,
     onCancelPdfExport,
     onCancelPendingTrash,
@@ -208,6 +220,19 @@ describe("useModalKeyboardGuard v0.18 move-to-trash Escape routing", () => {
     expect(utils.onCancelPendingTrash).toHaveBeenCalledTimes(1);
     expect(utils.onCancelTabClose).not.toHaveBeenCalled();
     expect(utils.onCancelAppClose).not.toHaveBeenCalled();
+    expect(utils.onClosePreferences).not.toHaveBeenCalled();
+  });
+
+  it("routes Escape to onCancelAssistDiscard when the assist discard dialog is pending", () => {
+    // v1.3: the Local Assist discard confirmation is a
+    // destructive confirmation, so Escape must route to the
+    // same cancel handler the Cancel button uses.
+    const utils = renderGuard({ pendingAssistDiscardOpen: true });
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(utils.onCancelAssistDiscard).toHaveBeenCalledTimes(1);
+    expect(utils.onCancelTabClose).not.toHaveBeenCalled();
+    expect(utils.onCancelAppClose).not.toHaveBeenCalled();
+    expect(utils.onCancelPendingTrash).not.toHaveBeenCalled();
     expect(utils.onClosePreferences).not.toHaveBeenCalled();
   });
 

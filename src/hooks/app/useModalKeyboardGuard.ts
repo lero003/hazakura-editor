@@ -8,6 +8,7 @@ type RefValue<T> = {
 
 type UseModalKeyboardGuardOptions = {
   appCloseDialogRef: RefValue<HTMLElement>;
+  assistDiscardDialogRef: RefValue<HTMLElement>;
   closeTabDialogRef: RefValue<HTMLElement>;
   commandPaletteVisible: boolean;
   epubExportDialogRef: RefValue<HTMLElement>;
@@ -23,6 +24,7 @@ type UseModalKeyboardGuardOptions = {
   // route to the same cancel handler the Cancel button uses.
   moveTrashDialogRef: RefValue<HTMLElement>;
   onCancelAppClose: () => void;
+  onCancelAssistDiscard: () => void;
   onCancelEpubBetaExport: () => void;
   onCancelPdfExport: () => void;
   onCancelPendingTrash: () => void;
@@ -31,6 +33,7 @@ type UseModalKeyboardGuardOptions = {
   onCloseGlobalSearch: () => void;
   onClosePreferences: () => void;
   pendingAppClose: boolean;
+  pendingAssistDiscardOpen: boolean;
   pendingCloseTabOpen: boolean;
   pendingTrashOpen: boolean;
   preferencesDialogRef: RefValue<HTMLElement>;
@@ -39,6 +42,7 @@ type UseModalKeyboardGuardOptions = {
 
 export function useModalKeyboardGuard({
   appCloseDialogRef,
+  assistDiscardDialogRef,
   closeTabDialogRef,
   commandPaletteVisible,
   epubExportDialogRef,
@@ -49,6 +53,7 @@ export function useModalKeyboardGuard({
   modalOpen,
   moveTrashDialogRef,
   onCancelAppClose,
+  onCancelAssistDiscard,
   onCancelEpubBetaExport,
   onCancelPdfExport,
   onCancelPendingTrash,
@@ -57,6 +62,7 @@ export function useModalKeyboardGuard({
   onCloseGlobalSearch,
   onClosePreferences,
   pendingAppClose,
+  pendingAssistDiscardOpen,
   pendingCloseTabOpen,
   pendingTrashOpen,
   preferencesDialogRef,
@@ -96,6 +102,8 @@ export function useModalKeyboardGuard({
           onCancelAppClose();
         } else if (pendingTrashOpen) {
           onCancelPendingTrash();
+        } else if (pendingAssistDiscardOpen) {
+          onCancelAssistDiscard();
         } else if (pdfExportSettingsOpen) {
           onCancelPdfExport();
         } else if (epubExportSettingsOpen) {
@@ -113,11 +121,13 @@ export function useModalKeyboardGuard({
               ? appCloseDialogRef.current
               : pendingTrashOpen
                 ? moveTrashDialogRef.current
-                : pdfExportSettingsOpen
-                  ? pdfExportDialogRef.current
-                : epubExportSettingsOpen
-                  ? epubExportDialogRef.current
-                  : preferencesDialogRef.current,
+                : pendingAssistDiscardOpen
+                  ? assistDiscardDialogRef.current
+                  : pdfExportSettingsOpen
+                    ? pdfExportDialogRef.current
+                  : epubExportSettingsOpen
+                    ? epubExportDialogRef.current
+                    : preferencesDialogRef.current,
           event,
         );
       }
@@ -130,6 +140,7 @@ export function useModalKeyboardGuard({
     };
   }, [
     appCloseDialogRef,
+    assistDiscardDialogRef,
     closeTabDialogRef,
     commandPaletteVisible,
     epubExportDialogRef,
@@ -138,6 +149,7 @@ export function useModalKeyboardGuard({
     modalOpen,
     moveTrashDialogRef,
     onCancelAppClose,
+    onCancelAssistDiscard,
     onCancelEpubBetaExport,
     onCancelPdfExport,
     onCancelPendingTrash,
@@ -146,6 +158,7 @@ export function useModalKeyboardGuard({
     onCloseGlobalSearch,
     onClosePreferences,
     pendingAppClose,
+    pendingAssistDiscardOpen,
     pendingCloseTabOpen,
     pendingTrashOpen,
     pdfExportDialogRef,

@@ -651,12 +651,14 @@ describe("AppWorkspace workspace sidebar collapse", () => {
       id: "untitled:1",
       name: "untitled.md",
       path: "",
+      sessionId: "session:untitled-1",
     };
     const secondUntitledTab = {
       ...bookTab,
       id: "untitled:2",
       name: "untitled.md",
       path: "",
+      sessionId: "session:untitled-2",
     };
     const sharedProps = {
       activeContents: bookTab.contents,
@@ -700,6 +702,15 @@ describe("AppWorkspace workspace sidebar collapse", () => {
 
     const savedFirstTab = {
       ...firstUntitledTab,
+      // A real Save As rewrites `id` to follow the new path
+      // (id === path is the invariant), while `sessionId` stays
+      // stable so the editor session (CodeMirror history) and
+      // the per-document view state carry over. The previous
+      // identity is matched by `sessionId`, so the e-book
+      // reader location keyed under "untitled:1" must migrate
+      // to the new "/workspace/untitled.md" key.
+      id: "/workspace/untitled.md",
+      name: "untitled.md",
       path: "/workspace/untitled.md",
     };
     rerenderWorkspace(rerender, {
@@ -830,12 +841,14 @@ describe("AppWorkspace workspace sidebar collapse", () => {
       id: "/workspace/book-a.md",
       name: "book-a.md",
       path: "/workspace/book-a.md",
+      sessionId: "session:book-a",
     };
     const secondBookTab = {
       ...bookTab,
       id: "/workspace/book-b.md",
       name: "book-b.md",
       path: "/workspace/book-b.md",
+      sessionId: "session:book-b",
     };
     const sharedPinProps = {
       activeContents: pinContents,
