@@ -24,7 +24,11 @@ Last reviewed: 2026-07-01 (v1.3 implemented and core-smoke verified)
   built-app checks passed for Save As Undo continuity, Local Assist acceptance
   remaining dirty, Reading Focus TOC context, distinct margins across all three
   PDF presets, and a standard-margin export with three content pages and no
-  trailing blank row. Extended RC interaction breadth remains in
+  trailing blank row. A focused PDF regression follow-up also restored fenced
+  code contrast and replaced native table layout only inside export HTML with
+  row-level CSS grid layout; a standard-margin five-page fixture kept a six-column
+  table and all 30 rows of a long table readable in macOS Preview. Extended RC
+  interaction breadth remains in
   `docs/v1.3-followup.md`.
 - `1.0.0` was approved and released on the Mac App Store. It is a
   semantic and product-message re-baseline of the feature shape first

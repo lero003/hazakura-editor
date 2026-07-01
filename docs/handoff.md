@@ -44,14 +44,20 @@ Last reviewed: 2026-07-01 (v1.3 implemented and core-smoke verified)
   command-palette / EPUB-dialog interaction smoke was not exercised in this
   slice and remains an RC check.
 - Current v1.3 evidence includes focused tests plus final `npm run test`
-  (123 files / 1101 tests), `cargo test` (301 tests), `npm run build:vite`,
+  (123 files / 1102 tests), `cargo test` (301 tests), `npm run build:vite`,
   `cargo fmt --check`, and `npm run build`. Representative built-app checks
   passed for Save As Undo continuity, explicit Local Assist acceptance with
   a dirty buffer, Reading Focus TOC context, distinct margins across all three
   PDF presets, and a standard-margin PDF reduced from three content plus three
-  blank pages to three content pages. PDF capture treats the generated layout
+  blank pages to three content pages. A later standard-margin table/code fixture
+  caught and fixed a v1.3 CSS-column regression: fenced code now keeps its dark
+  high-contrast block, and export-only tables use row-level CSS grid layout with
+  an annotated column count. macOS Preview showed a six-column table, inline and
+  fenced code, all 30 rows of a long table across five A4 pages, and the ending
+  sentence. PDF capture treats the generated layout
   as one A4-high horizontal row and counts occupied text/media columns; do not
-  restore document-wide scroll height/width as the normal measurement. The
+  restore document-wide scroll height/width as the normal measurement or native
+  table fragmentation inside those columns. The
   known Vite chunk-size warning remains warning-only. Extended RC interaction
   breadth is recorded separately in `docs/v1.3-followup.md`.
 - `Hazakura Editor` `1.1.0` is the latest published Mac App Store
@@ -84,7 +90,9 @@ Use `docs/current-work.md` for the active queue. Current priority order:
 
 1. Keep v1.3 closed unless an extended RC check in `docs/v1.3-followup.md`
    reproduces a gap. Full gates and representative built-app proof already
-   pass, including rendered multi-page output for all three PDF presets.
+   pass, including rendered multi-page output for all three PDF presets and the
+   focused standard-margin table/code regression fixture. PDF images and dialog
+   cancellation remain useful RC breadth.
 2. The v1.3 `1.3.0` candidate is the prepared package baseline, but its
    signed pkg has not been built yet; the last built candidate remains the
    v1.2 `1.2.0` build `57` artifact. Do not mix v1.3 work with pkg build,

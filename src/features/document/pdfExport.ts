@@ -46,6 +46,25 @@ export function formatPdfPointValue(value: number): string {
   return value.toFixed(3).replace(/\.000$/, "");
 }
 
+export function preparePdfExportTables(html: string): string {
+  if (!html.includes("<table")) {
+    return html;
+  }
+
+  const template = document.createElement("template");
+  template.innerHTML = html;
+
+  for (const table of Array.from(template.content.querySelectorAll("table"))) {
+    const columnCount = Math.max(
+      1,
+      ...Array.from(table.querySelectorAll("tr"), (row) => row.children.length),
+    );
+    table.style.setProperty("--pdf-table-columns", String(columnCount));
+  }
+
+  return template.innerHTML;
+}
+
 function millimetersToPdfPoints(value: number): number {
   return (value * 72) / 25.4;
 }

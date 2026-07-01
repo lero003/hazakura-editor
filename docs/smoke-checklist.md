@@ -78,8 +78,11 @@ checks passed for Save As Undo continuity, Local Assist `採用` with a dirty
 buffer, Reading Focus TOC context, and rendered pages 1 and 2 from all three
 six-page A4 PDF presets. The exact remaining edges in items 8-11 (selection /
 scroll / Redo / cancel, Local Assist discard and ordinary review labels,
-`ほか1件` plus chapter-opener click, and PDF images/tables/code plus cancel)
-remain extended RC smoke and must not be inferred from the representative run.
+`ほか1件` plus chapter-opener click, and PDF images plus cancel) remain extended
+RC smoke and must not be inferred from the representative run. A later focused
+standard-margin fixture verified a six-column table, readable fenced/inline code,
+all 30 rows of a long table across five A4 pages, and the final sentence in macOS
+Preview after the export-only table/code regression fix.
 
 ## 1.2.0 Candidate Test Intake
 

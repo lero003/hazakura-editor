@@ -258,6 +258,16 @@ describe("useDocumentExport", () => {
     tauriApi.isTauriRuntime.mockReturnValue(true);
     dialogApi.save.mockResolvedValue("/tmp/print-me.pdf");
     tauriApi.exportPdfFile.mockResolvedValue(undefined);
+    markdownApi.renderMarkdown.mockImplementationOnce(
+      () => `
+        <div class="markdown-table-frame">
+          <table>
+            <thead><tr><th>章</th><th>場面</th></tr></thead>
+            <tbody><tr><td>第一章</td><td>図書室</td></tr></tbody>
+          </table>
+        </div>
+      `,
+    );
     const setStatus = vi.fn();
 
     const { result } = renderHook(() =>
@@ -303,6 +313,55 @@ describe("useDocumentExport", () => {
     expect(exportedPdfHtml).toContain("--pdf-column-gap: 124.724px;");
     expect(exportedPdfHtml).toContain("column-fill: auto;");
     expect(exportedPdfHtml).toContain("column-width: var(--pdf-content-width);");
+    expect(exportedPdfHtml).toContain(`
+  .markdown-preview pre {
+    background: var(--status-bg);
+    border-left: 2px solid #999999;
+    box-sizing: border-box;
+    color: var(--status-text);
+    display: inline-block;
+    max-width: 100%;
+    overflow: visible;
+    padding: 16px;
+    white-space: pre-wrap;
+    width: 100%;
+  }`);
+    expect(exportedPdfHtml).toContain(`
+  .markdown-preview .markdown-table-frame {
+    break-inside: auto;
+    max-width: 100%;
+    overflow: visible;
+  }`);
+    expect(exportedPdfHtml).toContain(`
+  .markdown-preview .markdown-table-frame table {
+    display: block;
+    min-width: 0;
+    width: 100%;
+  }`);
+    expect(exportedPdfHtml).toContain(`
+  .markdown-preview .markdown-table-frame thead,
+  .markdown-preview .markdown-table-frame tbody {
+    display: block;
+  }`);
+    expect(exportedPdfHtml).toContain(`
+  .markdown-preview .markdown-table-frame tr {
+    break-inside: avoid;
+    display: grid;
+    grid-template-columns: repeat(var(--pdf-table-columns), minmax(0, 1fr));
+  }`);
+    expect(exportedPdfHtml).toContain(`
+  .markdown-preview .markdown-table-frame th,
+  .markdown-preview .markdown-table-frame td {
+    box-sizing: border-box;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }`);
+    expect(exportedPdfHtml).toContain('style="--pdf-table-columns: 2;"');
+    expect(exportedPdfHtml).not.toContain(`
+  .markdown-preview pre,
+  .markdown-preview code,
+  .markdown-preview .markdown-table-frame th { background: transparent; }`);
     expect(setStatus).toHaveBeenCalledWith("PDF exported");
   });
 

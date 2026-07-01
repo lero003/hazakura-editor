@@ -54,7 +54,9 @@ evidence live under `docs/archive/operations/app-store-v0.17/`.
 Pick one item at a time. The four v1.3 slices are implemented with focused and
 full regression coverage. The helper-enabled built app passed representative
 Save As, Local Assist, Reading Focus TOC, and rendered multi-page PDF checks.
-Extended release-candidate interaction breadth remains listed in
+The focused standard-margin PDF table/code regression fixture also passed in
+macOS Preview; PDF images and dialog cancellation remain in the extended
+release-candidate interaction breadth listed in
 `docs/v1.3-followup.md`.
 
 | Priority | Slice | Acceptance |

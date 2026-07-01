@@ -19,6 +19,7 @@ import {
   PDF_A4_PAGE_WIDTH_POINTS,
   pdfMarginCss,
   pdfScreenPageLayout,
+  preparePdfExportTables,
   type PdfMarginPreset,
 } from "../../features/document/pdfExport";
 import { getMarkdownPreviewCss } from "../../features/document/markdownExportCss";
@@ -106,6 +107,7 @@ export function useDocumentExport({
           return image.dataUrl;
         });
       }
+      rendered = preparePdfExportTables(rendered);
 
       const pdfLayout = pdfScreenPageLayout(preset);
       const pdfPoint = formatPdfPointValue;
@@ -186,14 +188,48 @@ export function useDocumentExport({
   }
   .markdown-preview pre,
   .markdown-preview blockquote,
-  .markdown-preview .markdown-table-frame,
   .markdown-preview img { break-inside: avoid; }
-  .markdown-preview pre,
-  .markdown-preview code,
-  .markdown-preview .markdown-table-frame th { background: transparent; }
   .markdown-preview pre {
+    background: var(--status-bg);
     border-left: 2px solid #999999;
-    padding: 0 0 0 8px;
+    box-sizing: border-box;
+    color: var(--status-text);
+    display: inline-block;
+    max-width: 100%;
+    overflow: visible;
+    padding: 16px;
+    white-space: pre-wrap;
+    width: 100%;
+  }
+  .markdown-preview pre code {
+    background: transparent;
+    color: inherit;
+  }
+  .markdown-preview .markdown-table-frame {
+    break-inside: auto;
+    max-width: 100%;
+    overflow: visible;
+  }
+  .markdown-preview .markdown-table-frame table {
+    display: block;
+    min-width: 0;
+    width: 100%;
+  }
+  .markdown-preview .markdown-table-frame thead,
+  .markdown-preview .markdown-table-frame tbody {
+    display: block;
+  }
+  .markdown-preview .markdown-table-frame tr {
+    break-inside: avoid;
+    display: grid;
+    grid-template-columns: repeat(var(--pdf-table-columns), minmax(0, 1fr));
+  }
+  .markdown-preview .markdown-table-frame th,
+  .markdown-preview .markdown-table-frame td {
+    box-sizing: border-box;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    white-space: normal;
   }
   .markdown-preview a { color: inherit; text-decoration: underline; }
   .markdown-preview a[href^="http"]::after {
@@ -236,15 +272,24 @@ export function useDocumentExport({
     }
     .markdown-preview pre,
     .markdown-preview blockquote,
-    .markdown-preview .markdown-table-frame,
     .markdown-preview img { page-break-inside: avoid; }
-    .markdown-preview pre,
-    .markdown-preview code,
-    .markdown-preview .markdown-table-frame th { background: transparent; }
     .markdown-preview pre {
+      background: var(--status-bg);
       border-left: 2px solid #999999;
-      padding: 0 0 0 8px;
+      box-sizing: border-box;
+      color: var(--status-text);
+      display: inline-block;
+      max-width: 100%;
+      overflow: visible;
+      padding: 16px;
+      white-space: pre-wrap;
+      width: 100%;
     }
+    .markdown-preview pre code {
+      background: transparent;
+      color: inherit;
+    }
+    .markdown-preview .markdown-table-frame { page-break-inside: auto; }
     .markdown-preview a { color: inherit; text-decoration: underline; }
     .markdown-preview a[href^="http"]::after {
       content: " (" attr(href) ")";
