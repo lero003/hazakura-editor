@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-01 (v1.3 source lane; manual smoke pending)
+Last reviewed: 2026-07-01 (v1.3 implemented and core-smoke verified)
 
 ## Current Position
 
@@ -94,11 +94,11 @@ Near-term phase order:
    The `1.2.0` candidate (command discovery, context-menu containment, EPUB
    scope note) is prepared locally with a signed pkg; upload and publication
    remain gated on explicit user approval.
-11. v1.3 is the active source-only Daily Trust lane: Save As session
+11. v1.3 Daily Trust is implemented: Save As session
    continuity, explicit Local Assist `採用` / `破棄`, richer Reading Focus TOC
-   context, and fixed A4 PDF margin presets. Focused source proof exists;
-   full gates, built-app interactions, and rendered PDF comparison remain
-   pending. See `docs/v1.3-followup.md`.
+   context, and fixed A4 PDF margin presets. Full gates and representative
+   built-app interaction/rendered-PDF proof pass. Extended RC interaction
+   breadth remains in `docs/v1.3-followup.md`.
 12. v2.0 remains the first appropriate target for Book Scope / Book
    Workspace Alpha: treating a user-selected, explicit set of
    structurally related Markdown files as one book.

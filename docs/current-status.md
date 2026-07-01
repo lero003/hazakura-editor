@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-01 (v1.3 source lane; manual smoke pending)
+Last reviewed: 2026-07-01 (v1.3 implemented and core-smoke verified)
 
 ## Current State
 
@@ -19,9 +19,11 @@ Last reviewed: 2026-07-01 (v1.3 source lane; manual smoke pending)
   review uses explicit `採用` / `破棄` without auto-save; Reading Focus TOC
   shows bounded H3+ context plus current measured page progress; and direct
   PDF export offers request-scoped A4 `狭い` / `標準` / `広い` margin
-  presets. Focused tests and typecheck pass. Full gates, built-app
-  interaction, and rendered multi-page PDF comparison are still pending;
-  see `docs/v1.3-followup.md`.
+  presets. Full frontend/Rust gates and the app build pass. Representative
+  built-app checks passed for Save As Undo continuity, Local Assist acceptance
+  remaining dirty, Reading Focus TOC context, and rendered pages 1 and 2 from
+  all three six-page A4 PDF outputs. Extended RC interaction breadth remains
+  in `docs/v1.3-followup.md`.
 - `1.0.0` was approved and released on the Mac App Store. It is a
   semantic and product-message re-baseline of the feature shape first
   shipped through `0.36.0`, not a new feature expansion. Its public message is:
@@ -470,9 +472,11 @@ baseline, and smoke evidence are archived under
    view state; do not expand it into workspace indexing.
 2. Complete the Google Drive Recovery smoke only with a dedicated user-
    approved fixture. The local-folder forced-termination path has passed.
-3. Finish the v1.3 full source/build gates and built-app smoke in
-   `docs/v1.3-followup.md`. In particular, render multi-page PDF outputs for
-   all three presets before claiming the margins are product-proven.
+3. Treat the v1.3 implementation and core built-app proof in
+   `docs/v1.3-followup.md` as complete. Before a release candidate, finish the
+   listed extended interaction breadth; do not reopen the implementation
+   without a reproduced gap. Reuse the recorded multi-page PDF comparison as
+   the core margin proof instead of treating file creation alone as evidence.
 4. The signed `1.2.0` App Store /
    TestFlight candidate pkg is local provenance for the prepared
    candidate, not proof of a public build. Treat the `1.1.0` pkg

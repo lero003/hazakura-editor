@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v1.3 daily-use trust and bounded polish
 Authority: High
-Last reviewed: 2026-07-01 (v1.3 source lane; manual smoke pending)
+Last reviewed: 2026-07-01 (v1.3 implemented and core-smoke verified)
 
 ## Purpose
 
@@ -51,14 +51,15 @@ evidence live under `docs/archive/operations/app-store-v0.17/`.
 
 ## Active UX Queue
 
-Pick one item at a time. The four v1.3 source slices are implemented with
-focused regression coverage. Full gates, built-app interaction, and rendered
-multi-page PDF comparison remain open before v1.3 can be called fully proven.
-See `docs/v1.3-followup.md`.
+Pick one item at a time. The four v1.3 slices are implemented with focused and
+full regression coverage. The helper-enabled built app passed representative
+Save As, Local Assist, Reading Focus TOC, and rendered multi-page PDF checks.
+Extended release-candidate interaction breadth remains listed in
+`docs/v1.3-followup.md`.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| Implemented / focused source verified / manual smoke pending | v1.3 Daily Trust | Save As keeps the same-language Editor session and migrates view state; Local Assist exposes explicit `採用` / `破棄` without auto-save; Reading Focus TOC shows bounded H3+ context and current measured page progress; PDF export offers allowlisted A4 `狭い` / `標準` / `広い` margins. Full gates and built-app/PDF artifact smoke remain open. See `docs/v1.3-followup.md`. |
+| Done / full gates and core built-app smoke passed | v1.3 Daily Trust | Save As keeps the same-language Editor session and migrates view state; Local Assist exposes explicit `採用` / `破棄` without auto-save; Reading Focus TOC shows bounded H3+ context and current measured page progress; PDF export applies allowlisted A4 `狭い` / `標準` / `広い` margins to every page. Extended RC interaction breadth remains in `docs/v1.3-followup.md`. |
 | Implemented / source verified / 1.2.0 candidate pkg prepared | v1.2 Export UX and Command Discovery | The EPUB dialog explains the single-Markdown / reading-preview boundary. The command palette derives Markdown command behavior and localized search vocabulary from the right-click slash-command registry, including date/time insertion, while palette labels remain English. The slash menu stays within 8px viewport insets and opens upward near the lower edge. A signed `1.2.0` candidate pkg passed local gates, audit, signature, checksum, entitlement, and sandbox-preview smoke; built-app interaction smoke and App Store Connect upload remain open checks. |
 | Done / built-app verified | v1.1 Reader / Editor / Preview Position Continuity | `AppWorkspace` owns one per-document view-state registry for Editor, e-book Mode, and Preview. A -> B -> A restores each editor selection/scroll and reader location. Preview restores only after replacement HTML has rendered, avoiding the real-layout top reset. A safe local Markdown-link transition and Preview -> e-book -> Preview were verified in the built app without source/save-state changes. See `docs/v1.1-v1.2-followup.md`. |
 | Observation / Google Drive manual-blocked | v1.2 Recovery Reliability | Local-folder forced termination passed: with Auto Backup explicitly enabled, a timed `.bak` preserved the unsaved marker, the saved source stayed unchanged, relaunch restored the workspace and exposed the draft, and explicit Restore returned it as a dirty buffer. Auto Backup was returned to its prior off state. Google Drive remains `manual-blocked` because no dedicated test fixture existed; do not create or scan user cloud content implicitly. |

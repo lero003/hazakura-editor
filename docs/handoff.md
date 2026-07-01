@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-07-01 (v1.3 source lane; manual smoke pending)
+Last reviewed: 2026-07-01 (v1.3 implemented and core-smoke verified)
 
 ## Current State
 
@@ -44,12 +44,14 @@ Last reviewed: 2026-07-01 (v1.3 source lane; manual smoke pending)
   confirmed an onscreen Developer bundle window. Right-click /
   command-palette / EPUB-dialog interaction smoke was not exercised in this
   slice and remains an RC check.
-- Current v1.3 evidence is focused/source-only: the pre-change baseline
-  `npm run test` passed (121 files / 1085 tests), each of the four slices has
-  passing focused tests, `npm run typecheck` passes, and `git diff --check`
-  passed at completed commit boundaries. Full Vitest/Vite/Rust/app-build
-  gates, built-app interaction, and rendered multi-page PDF comparison have
-  not yet run and must not be reported as passed.
+- Current v1.3 evidence includes focused tests plus final `npm run test`
+  (123 files / 1100 tests), `cargo test` (300 tests), `npm run build:vite`,
+  `cargo fmt --check`, and `npm run build`. Representative built-app checks
+  passed for Save As Undo continuity, explicit Local Assist acceptance with
+  a dirty buffer, Reading Focus TOC context, and rendered pages 1 and 2 from
+  all three six-page A4 PDF presets. The known Vite chunk-size warning remains
+  warning-only. Extended RC interaction breadth is recorded separately in
+  `docs/v1.3-followup.md`.
 - `Hazakura Editor` `1.1.0` is the latest published Mac App Store
   version. `0.36.0` remains historical proof of the same v1-equivalent
   reader, export, workspace-marker, Markdown insertion, and Local Assist
@@ -78,9 +80,9 @@ Last reviewed: 2026-07-01 (v1.3 source lane; manual smoke pending)
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. Finish the v1.3 full gates and the four built-app cases in
-   `docs/v1.3-followup.md`. The PDF case requires rendered multi-page output
-   for all three presets; file creation alone is not proof of margin behavior.
+1. Keep v1.3 closed unless an extended RC check in `docs/v1.3-followup.md`
+   reproduces a gap. Full gates and representative built-app proof already
+   pass, including rendered multi-page output for all three PDF presets.
 2. The v1.2 `1.2.0` candidate remains prepared local provenance. Do not mix
    v1.3 source work with upload, TestFlight, review, or publication without
    explicit user approval.

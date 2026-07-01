@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-07-01 (v1.3 Daily Trust smoke intake)
+Last reviewed: 2026-07-01 (v1.3 core smoke complete)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -72,8 +72,14 @@ full automated gates before treating any manual result as release evidence.
 
 ### Current v1.3 smoke status
 
-Focused source tests and typecheck pass. Full gates and items 8-11 are open
-until actually run; do not infer them from unit tests or window-launch smoke.
+Full automated gates pass: Vitest 123 files / 1100 tests, Rust 300 tests,
+Vite, Rust format, and the helper-enabled app build. Representative built-app
+checks passed for Save As Undo continuity, Local Assist `採用` with a dirty
+buffer, Reading Focus TOC context, and rendered pages 1 and 2 from all three
+six-page A4 PDF presets. The exact remaining edges in items 8-11 (selection /
+scroll / Redo / cancel, Local Assist discard and ordinary review labels,
+`ほか1件` plus chapter-opener click, and PDF images/tables/code plus cancel)
+remain extended RC smoke and must not be inferred from the representative run.
 
 ## 1.2.0 Candidate Test Intake
 
