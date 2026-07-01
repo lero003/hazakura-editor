@@ -34,6 +34,7 @@ function makeTab(overrides: Partial<EditorTab> = {}): EditorTab {
     externalFingerprint: null,
     fingerprint: "saved-fingerprint",
     id: "/tmp/a.md",
+    sessionId: "session:a",
     ignoredExternalFingerprint: null,
     large_file_warning: false,
     lastSavedContents: "saved",
@@ -300,12 +301,16 @@ describe("useSaveActions", () => {
     );
     expect(getTabs()[0]).toMatchObject({
       contents: "# Unsaved draft",
-      id: "untitled:1",
+      id: "/tmp/untitled.md",
       lastSavedContents: "# Unsaved draft",
       path: "/tmp/untitled.md",
       saveStatus: "idle",
     });
-    expect(options.setActiveTabId).toHaveBeenCalledWith("untitled:1");
+    // Save As preserves the editor session (CodeMirror history / selection)
+    // through sessionId, while id follows the new path so id === path stays
+    // intact for rename / move / external refresh.
+    expect(getTabs()[0].sessionId).toBe("session:a");
+    expect(options.setActiveTabId).toHaveBeenCalledWith("/tmp/untitled.md");
     expect(removeStoredDraft).not.toHaveBeenCalledWith("");
   });
 });

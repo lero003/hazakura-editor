@@ -72,7 +72,7 @@ full automated gates before treating any manual result as release evidence.
 
 ### Current v1.3 smoke status
 
-Full automated gates pass: Vitest 123 files / 1100 tests, Rust 300 tests,
+Full automated gates pass: Vitest 123 files / 1105 tests, Rust 301 tests,
 Vite, Rust format, and the helper-enabled app build. Representative built-app
 checks passed for Save As Undo continuity, Local Assist `採用` with a dirty
 buffer, Reading Focus TOC context, and rendered pages 1 and 2 from all three

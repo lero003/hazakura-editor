@@ -47,6 +47,7 @@ import { helpDocsByMode, isHelpDocumentDialogMode } from "./helpDocs";
 import { AgentWorkbenchPreferencesPane } from "../agent/AgentWorkbenchPreferencesPane";
 import { RenameWarnDialog, type RenameWarningKind } from "./RenameWarnDialog";
 import { MoveToTrashConfirmDialog } from "./MoveToTrashConfirmDialog";
+import { AssistDiscardConfirmDialog } from "./AssistDiscardConfirmDialog";
 import { EpubExportSettingsDialog } from "./EpubExportSettingsDialog";
 import { PdfExportSettingsDialog } from "./PdfExportSettingsDialog";
 import { RestoreFromBackupDialog } from "../backup/RestoreFromBackupDialog";
@@ -146,6 +147,9 @@ type AppOverlaysProps = {
     name: string;
     isDirectory: boolean;
   } | null;
+  pendingAssistDiscard: { sessionId: string; beforeBuffer: string } | null;
+  onConfirmPendingAssistDiscard: () => void;
+  onCancelPendingAssistDiscard: () => void;
   preferencesCloseButtonRef: RefObject<HTMLButtonElement | null>;
   preferencesCopy: PreferencesCopy;
   preferencesDialogMode: PreferencesDialogMode | null;
@@ -306,6 +310,9 @@ export function AppOverlays({
   confirmPendingTrash,
   pendingRenameWarning,
   pendingTrash,
+  pendingAssistDiscard,
+  onConfirmPendingAssistDiscard,
+  onCancelPendingAssistDiscard,
 }: AppOverlaysProps) {
   const activeHelpDoc =
     preferencesDialogMode && isHelpDocumentDialogMode(preferencesDialogMode)
@@ -357,6 +364,14 @@ export function AppOverlays({
           name={pendingTrash.name}
           onCancel={cancelPendingTrash}
           onConfirm={() => void confirmPendingTrash()}
+        />
+      ) : null}
+
+      {pendingAssistDiscard ? (
+        <AssistDiscardConfirmDialog
+          menuLanguage={menuLanguage}
+          onCancel={onCancelPendingAssistDiscard}
+          onConfirm={onConfirmPendingAssistDiscard}
         />
       ) : null}
 

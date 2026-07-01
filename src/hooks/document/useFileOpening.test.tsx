@@ -177,6 +177,7 @@ describe("useFileOpening", () => {
     const { options, result } = setup({
       activeTab: {
         id: "/workspace/docs/source.md",
+        sessionId: "/workspace/docs/source.md",
         path: "/workspace/docs/source.md",
         name: "source.md",
         contents: "[linked](linked.md)",

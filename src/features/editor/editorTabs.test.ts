@@ -16,6 +16,7 @@ function makeTab(overrides: Partial<EditorTab> = {}): EditorTab {
     externalFingerprint: null,
     fingerprint: "fp",
     id: "/workspace/note.md",
+    sessionId: "/workspace/note.md",
     ignoredExternalFingerprint: null,
     large_file_warning: false,
     lastSavedContents: "saved",
@@ -84,6 +85,38 @@ describe("createEditorTab", () => {
     expect(tab.lastSavedEncoding).toBe("shift-jis");
     expect(tab.lastSavedLineEnding).toBe("crlf");
     expect(isDirty(tab)).toBe(false);
+  });
+
+  it("assigns a sessionId independent of the path and increments it per tab", () => {
+    const tabA = createEditorTab({
+      contents: "a",
+      encoding: "utf-8",
+      fingerprint: "fp-a",
+      large_file_warning: false,
+      line_ending: "lf",
+      modified_ms: 1,
+      name: "a.md",
+      path: "/workspace/a.md",
+      size: 1,
+    });
+    const tabB = createEditorTab({
+      contents: "b",
+      encoding: "utf-8",
+      fingerprint: "fp-b",
+      large_file_warning: false,
+      line_ending: "lf",
+      modified_ms: 2,
+      name: "b.md",
+      path: "/workspace/b.md",
+      size: 1,
+    });
+
+    expect(tabA.sessionId).toBeTruthy();
+    expect(tabA.sessionId).not.toBe(tabA.path);
+    expect(tabB.sessionId).not.toBe(tabA.sessionId);
+    // id still follows the path so rename / move can keep id === path.
+    expect(tabA.id).toBe("/workspace/a.md");
+    expect(tabB.id).toBe("/workspace/b.md");
   });
 });
 

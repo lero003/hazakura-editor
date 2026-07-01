@@ -35,6 +35,7 @@ function setup(
         externalFingerprint: null,
         fingerprint: "fingerprint",
         id: "tab-1",
+        sessionId: "session:tab-1",
         ignoredExternalFingerprint: null,
         large_file_warning: false,
         lastSavedContents: "# note",

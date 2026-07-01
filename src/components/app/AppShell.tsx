@@ -34,7 +34,14 @@ export type AppShellProps = Omit<
     lModeCopy: LModeCopy;
     lModeEnabled: boolean;
     menuLanguage: MenuLanguage;
-    onDiscardAppleAssistEdit: (tabId: string, before: string) => void;
+    onDiscardAppleAssistEdit: (
+      tabId: string,
+      before: string,
+      after: string,
+    ) => void;
+    onConfirmPendingAssistDiscard: () => void;
+    onCancelPendingAssistDiscard: () => void;
+    pendingAssistDiscard: { sessionId: string; beforeBuffer: string } | null;
     onExitLModeToWorkspace: () => void;
     onOpenAppleAssistFromLMode: () => void;
     onReviewChangesFromLMode: () => Promise<ChangeReviewSnapshot | null>;
@@ -72,7 +79,7 @@ export function AppShell(props: AppShellProps) {
       <AppStatusBar {...props} />
       <AppOverlays {...props} />
       <AppleAssistReviewBar
-        activeTabId={props.activeTabId}
+        activeTabSessionId={props.activeTab?.sessionId ?? null}
         copy={props.lModeCopy}
         diffInitiallyOpen={props.editorSettings.appleAssistDiffInitiallyOpen}
         menuLanguage={props.menuLanguage}

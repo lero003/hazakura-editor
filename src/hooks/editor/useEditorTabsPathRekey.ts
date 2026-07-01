@@ -1,11 +1,11 @@
 // `useEditorTabsPathRekey` returns a small set of helpers that
 // rewrite all editor-related state when a file's path changes
 // (rename, move, or the bulk rekey in a future cross-directory
-// move). Editor state has `id === path` and `name === fileName(path)`
-// invariants everywhere — tabs, drafts, recents, compare anchors —
-// so a path change has to fan out to every store that references
-// the old path; doing it once here keeps the rename and move code
-// paths from drifting.
+// move). Editor tabs keep `id === path` and `name === fileName(path)`
+// invariants — Save As preserves CodeMirror history through a separate
+// `sessionId`, not by decoupling `id` from `path` — so a path change
+// has to fan out to every store that references the old path; doing
+// it once here keeps the rename and move code paths from drifting.
 //
 // `rekeyPath` handles single-entry path swaps (file rename, file
 // move). `rekeyPathPrefix` walks every store and remaps any path
@@ -55,7 +55,7 @@ export function useEditorTabsPathRekey({
 
       setTabs((currentTabs) =>
         currentTabs.map((tab) =>
-          tab.id === oldPath
+          tab.path === oldPath
             ? {
                 ...tab,
                 id: newPath,
@@ -135,7 +135,7 @@ export function useEditorTabsPathRekey({
 
       setTabs((currentTabs) =>
         currentTabs.map((tab) => {
-          if (!tab.id.startsWith(oldPrefixWithSlash)) {
+          if (!tab.path.startsWith(oldPrefixWithSlash)) {
             return tab;
           }
           const newPath = remap(tab.path);

@@ -58,7 +58,7 @@ describe("AppleAssistReviewBar", () => {
   it("renders nothing when no transaction is pending for the active tab", () => {
     const { container } = render(
       <AppleAssistReviewBar
-        activeTabId="tabA"
+        activeTabSessionId="tabA"
         copy={getLModeCopy("en")}
         menuLanguage="en"
         onDiscard={vi.fn()}
@@ -71,7 +71,7 @@ describe("AppleAssistReviewBar", () => {
     recordPending("tabA", "整えて");
     render(
       <AppleAssistReviewBar
-        activeTabId="tabA"
+        activeTabSessionId="tabA"
         copy={getLModeCopy("en")}
         menuLanguage="en"
         onDiscard={vi.fn()}
@@ -89,7 +89,7 @@ describe("AppleAssistReviewBar", () => {
     recordPending("tabA", "整えて");
     const { container } = render(
       <AppleAssistReviewBar
-        activeTabId="tabB"
+        activeTabSessionId="tabB"
         copy={getLModeCopy("en")}
         menuLanguage="en"
         onDiscard={vi.fn()}
@@ -98,12 +98,12 @@ describe("AppleAssistReviewBar", () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it("invokes onDiscard with the tab id and the full before-buffer snapshot", () => {
+  it("invokes onDiscard with the tab id and the full before/after-buffer snapshot", () => {
     recordPending("tabA", "整えて");
     const onDiscard = vi.fn();
     render(
       <AppleAssistReviewBar
-        activeTabId="tabA"
+        activeTabSessionId="tabA"
         copy={getLModeCopy("en")}
         menuLanguage="en"
         onDiscard={onDiscard}
@@ -112,7 +112,11 @@ describe("AppleAssistReviewBar", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Discard" }));
     expect(onDiscard).toHaveBeenCalledTimes(1);
-    expect(onDiscard).toHaveBeenCalledWith("tabA", "prefix\nhello\nsuffix");
+    expect(onDiscard).toHaveBeenCalledWith(
+      "tabA",
+      "prefix\nhello\nsuffix",
+      "prefix\n【整え】\nhello\n【/整え】\nsuffix",
+    );
   });
 
   it("accept keeps the buffer and dismisses the review without discarding", () => {
@@ -120,7 +124,7 @@ describe("AppleAssistReviewBar", () => {
     const onDiscard = vi.fn();
     render(
       <AppleAssistReviewBar
-        activeTabId="tabA"
+        activeTabSessionId="tabA"
         copy={getLModeCopy("en")}
         menuLanguage="en"
         onDiscard={onDiscard}
@@ -138,7 +142,7 @@ describe("AppleAssistReviewBar", () => {
     recordPending("tabA", "整えて");
     render(
       <AppleAssistReviewBar
-        activeTabId="tabA"
+        activeTabSessionId="tabA"
         copy={getLModeCopy("en")}
         diffInitiallyOpen={false}
         menuLanguage="en"
@@ -158,7 +162,7 @@ describe("AppleAssistReviewBar", () => {
     recordPending("tabA", "整えて");
     render(
       <AppleAssistReviewBar
-        activeTabId="tabA"
+        activeTabSessionId="tabA"
         copy={getLModeCopy("en")}
         menuLanguage="en"
         onDiscard={vi.fn()}
@@ -174,7 +178,7 @@ describe("AppleAssistReviewBar", () => {
     recordPending("tabA", "整えて");
     render(
       <AppleAssistReviewBar
-        activeTabId="tabA"
+        activeTabSessionId="tabA"
         copy={getLModeCopy("en")}
         diffInitiallyOpen={false}
         menuLanguage="en"
@@ -190,7 +194,7 @@ describe("AppleAssistReviewBar", () => {
     recordPending("tabA", "整えて");
     render(
       <AppleAssistReviewBar
-        activeTabId="tabA"
+        activeTabSessionId="tabA"
         copy={getLModeCopy("en")}
         menuLanguage="en"
         onDiscard={vi.fn()}
@@ -206,7 +210,7 @@ describe("AppleAssistReviewBar", () => {
     recordPending("tabA", "整えて");
     render(
       <AppleAssistReviewBar
-        activeTabId="tabA"
+        activeTabSessionId="tabA"
         copy={getLModeCopy("ja")}
         diffInitiallyOpen={false}
         menuLanguage="ja"
@@ -226,7 +230,7 @@ describe("AppleAssistReviewBar", () => {
     recordPending("tabA", "整えて");
     render(
       <AppleAssistReviewBar
-        activeTabId="tabA"
+        activeTabSessionId="tabA"
         copy={getLModeCopy("ja")}
         menuLanguage="ja"
         onDiscard={vi.fn()}

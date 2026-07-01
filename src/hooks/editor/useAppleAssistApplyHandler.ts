@@ -76,6 +76,7 @@ export function getAppleAssistContextWindow(
 
 type ActiveTab = {
   id: string;
+  sessionId: string;
   name: string;
   path: string;
   contents: string;
@@ -216,7 +217,7 @@ export function useAppleAssistApplyHandler({
         return;
       }
       const result = applyAiEditTransaction({
-        tabId: latestTab.id,
+        tabId: latestTab.sessionId,
         tabName: latestTab.name,
         tabPath: latestTab.path,
         request: payload.request,

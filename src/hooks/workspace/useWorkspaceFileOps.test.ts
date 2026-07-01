@@ -35,6 +35,7 @@ function makeTab(path: string): EditorTab {
     externalFingerprint: null,
     fingerprint: "fingerprint",
     id: path,
+    sessionId: path,
     ignoredExternalFingerprint: null,
     large_file_warning: false,
     lastSavedContents: "# note",

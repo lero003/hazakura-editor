@@ -285,9 +285,9 @@ describe("EBookPane chapter reader", () => {
 
     const drawer = screen.getByRole("navigation", { name: "目次" });
     expect(drawer.classList.contains("ebook-reader-toc-panel")).toBe(true);
-    expect(screen.getByRole("button", { name: "Chapter One" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^Chapter One/ })).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("button", { name: "Chapter Two" }));
+    fireEvent.click(screen.getByRole("button", { name: /^Chapter Two/ }));
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "Chapter Two" })).toBeTruthy();
@@ -327,7 +327,7 @@ describe("EBookPane chapter reader", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "目次" }));
 
-    const firstChapter = screen.getByRole("button", { name: "第一章" });
+    const firstChapter = screen.getByRole("button", { name: /^第一章/ });
     expect(
       firstChapter.querySelector(".ebook-reader-toc-subheadings")?.textContent,
     ).toContain("場面A・場面B・ほか1件");
@@ -335,7 +335,7 @@ describe("EBookPane chapter reader", () => {
       firstChapter.querySelector(".ebook-reader-toc-progress")?.textContent,
     ).toBe("ページ 1 / 3");
 
-    const secondChapter = screen.getByRole("button", { name: "第二章" });
+    const secondChapter = screen.getByRole("button", { name: /^第二章/ });
     expect(
       secondChapter.querySelector(".ebook-reader-toc-progress"),
     ).toBeNull();

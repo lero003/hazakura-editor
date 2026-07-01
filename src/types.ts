@@ -309,6 +309,11 @@ export type AgentTerminalSize = {
 
 export type EditorTab = TextFileDocument & {
   id: string;
+  // Lifetime identity of the open editor session, independent of the
+  // document path. `id` stays equal to `path` so rename / move / external
+  // refresh can keep matching on `id === path`, while `sessionId` lets
+  // Save As preserve CodeMirror history / selection across a path change.
+  sessionId: string;
   contents: string;
   lastSavedContents: string;
   lastSavedLineEnding: EditableLineEnding;

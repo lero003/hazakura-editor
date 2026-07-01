@@ -3,6 +3,12 @@ import type { EditorTab } from "../../types";
 import { normalizeTextLineEndings } from "../../lib/utils";
 
 let untitledTabCounter = 0;
+let sessionCounter = 0;
+
+function nextSessionId(): string {
+  sessionCounter += 1;
+  return `session:${sessionCounter}`;
+}
 
 export function createEditorTab(file: TextFileDocument): EditorTab {
   const editorContents = normalizeTextLineEndings(file.contents, "lf");
@@ -10,6 +16,7 @@ export function createEditorTab(file: TextFileDocument): EditorTab {
   return {
     ...file,
     id: file.path,
+    sessionId: nextSessionId(),
     contents: editorContents,
     lastSavedContents: editorContents,
     lastSavedLineEnding: file.line_ending,
@@ -26,6 +33,7 @@ export function createUntitledEditorTab(): EditorTab {
 
   return {
     id: `untitled:${untitledTabCounter}`,
+    sessionId: nextSessionId(),
     path: "",
     name: "untitled.md",
     contents: "",

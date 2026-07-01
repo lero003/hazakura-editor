@@ -358,6 +358,7 @@ describe("sanitizeAppleAssistCandidateText", () => {
 describe("isSameAppleAssistTargetTab", () => {
   const tab = {
     id: "tab-1",
+    sessionId: "session:tab-1",
     name: "note.md",
     path: "/workspace/note.md",
     contents: "body",

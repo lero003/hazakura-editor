@@ -1,0 +1,81 @@
+import type { MenuLanguage } from "../../types";
+import { isJapaneseMenuLanguage } from "../../types";
+import { isKanaStyle } from "../../lib/locale/_helpers";
+
+type AssistDiscardConfirmDialogProps = {
+  menuLanguage: MenuLanguage;
+  onCancel: () => void;
+  onConfirm: () => void;
+};
+
+// v1.3 Hazakura Local Assist discard confirmation.
+//
+// When the user hand-edits the buffer after an assist apply, a blind
+// "Discard" revert to the transaction's `beforeBuffer` would destroy those
+// hand-edits along with the assist change. This dialog asks the user to
+// confirm before reverting the whole buffer. It follows the existing
+// lightweight dialog pattern (modal-backdrop + role="dialog") so it reads
+// as part of the same dialog family without pulling in the full
+// refs / keyboard-guard pool.
+export function AssistDiscardConfirmDialog({
+  menuLanguage,
+  onCancel,
+  onConfirm,
+}: AssistDiscardConfirmDialogProps) {
+  const copy = getAssistDiscardCopy(menuLanguage);
+
+  return (
+    <div className="modal-backdrop" role="presentation">
+      <section
+        aria-describedby="assist-discard-description"
+        aria-labelledby="assist-discard-title"
+        aria-modal="true"
+        className="close-dialog"
+        role="dialog"
+      >
+        <h2 id="assist-discard-title">{copy.title}</h2>
+        <p id="assist-discard-description">{copy.description}</p>
+        <div className="dialog-actions">
+          <button
+            className="danger"
+            onClick={onConfirm}
+            type="button"
+          >
+            {copy.confirm}
+          </button>
+          <button onClick={onCancel} type="button">
+            {copy.cancel}
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function getAssistDiscardCopy(lang: MenuLanguage) {
+  if (isKanaStyle(lang)) {
+    return {
+      title: "てあての へんこうも すてます",
+      description:
+        "Hazakura Local Assist の ていあんを すてると、その あとに てで なおした ぶんしょうも いっしょに もとに もどります。てあての へんこうは のこりますか？",
+      confirm: "ていあんも いっしょに すてる",
+      cancel: "キャンセル",
+    };
+  }
+  if (isJapaneseMenuLanguage(lang)) {
+    return {
+      title: "手編集も破棄されます",
+      description:
+        "Hazakura Local Assistの提案を破棄すると、提案後に手で編集した文章も一緒に元に戻ります。手編集を残しますか？",
+      confirm: "提案も一緒に破棄",
+      cancel: "キャンセル",
+    };
+  }
+  return {
+    title: "Hand edits will be discarded",
+    description:
+      "Discarding the Hazakura Local Assist proposal also reverts any hand edits made after it was applied. Keep your hand edits instead?",
+    confirm: "Discard proposal too",
+    cancel: "Cancel",
+  };
+}

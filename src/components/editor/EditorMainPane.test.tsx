@@ -74,6 +74,7 @@ const activeTab: EditorTab = {
   fingerprint: "fp",
   ignoredExternalFingerprint: null,
   id: "/workspace/docs/draft.md",
+  sessionId: "/workspace/docs/draft.md",
   large_file_warning: false,
   lastSavedContents: "# Draft",
   lastSavedEncoding: "utf-8",

@@ -27,21 +27,21 @@ import { SparklesIcon } from "./Icons";
 // component's render only.
 
 type AppleAssistReviewBarProps = {
-  activeTabId: string | null;
+  activeTabSessionId: string | null;
   copy: LModeCopy;
   diffInitiallyOpen?: boolean;
   menuLanguage: MenuLanguage;
-  onDiscard: (tabId: string, beforeBuffer: string) => void;
+  onDiscard: (tabId: string, beforeBuffer: string, afterBuffer: string) => void;
 };
 
 export function AppleAssistReviewBar({
-  activeTabId,
+  activeTabSessionId,
   copy,
   diffInitiallyOpen = true,
   menuLanguage,
   onDiscard,
 }: AppleAssistReviewBarProps) {
-  const { latest, clearLatest } = useAiEditTransaction(activeTabId);
+  const { latest, clearLatest } = useAiEditTransaction(activeTabSessionId);
   const [showDiff, setShowDiff] = useState(diffInitiallyOpen);
 
   useEffect(() => {
@@ -59,9 +59,8 @@ export function AppleAssistReviewBar({
 
   const handleDiscard = useCallback(() => {
     if (!latest) return;
-    onDiscard(latest.tabId, latest.beforeBuffer);
+    onDiscard(latest.tabId, latest.beforeBuffer, latest.afterBuffer);
     setShowDiff(false);
-    clearLatest();
   }, [clearLatest, latest, onDiscard]);
 
   const summary = useMemo(() => {

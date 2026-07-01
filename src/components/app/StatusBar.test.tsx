@@ -13,6 +13,7 @@ const activeTab: EditorTab = {
   fingerprint: "fp",
   ignoredExternalFingerprint: null,
   id: "/workspace/note.md",
+  sessionId: "/workspace/note.md",
   large_file_warning: false,
   lastSavedContents: "# Note\n",
   lastSavedEncoding: "utf-8",

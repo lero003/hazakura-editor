@@ -21,6 +21,7 @@ const activeTab: EditorTab = {
   fingerprint: "fp",
   ignoredExternalFingerprint: null,
   id: "/workspace/plain.txt",
+  sessionId: "/workspace/plain.txt",
   large_file_warning: false,
   lastSavedContents: "plain text\n",
   lastSavedEncoding: "utf-8",

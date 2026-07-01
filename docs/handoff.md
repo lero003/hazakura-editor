@@ -44,7 +44,7 @@ Last reviewed: 2026-07-01 (v1.3 implemented and core-smoke verified)
   command-palette / EPUB-dialog interaction smoke was not exercised in this
   slice and remains an RC check.
 - Current v1.3 evidence includes focused tests plus final `npm run test`
-  (123 files / 1102 tests), `cargo test` (301 tests), `npm run build:vite`,
+  (123 files / 1105 tests), `cargo test` (301 tests), `npm run build:vite`,
   `cargo fmt --check`, and `npm run build`. Representative built-app checks
   passed for Save As Undo continuity, explicit Local Assist acceptance with
   a dirty buffer, Reading Focus TOC context, distinct margins across all three
@@ -103,10 +103,11 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    create content in the user's cloud folders implicitly.
 4. Follow with one image or `.bak` case at a time; do not
    bundle unrelated polish.
-5. The version is `1.2.0` as a prepared local candidate; the published
-   Mac App Store version remains `1.1.0`. Keep tag creation, App Store
-   Connect upload, TestFlight, review, and publication gated on explicit
-   user approval.
+5. The version is `1.3.0` as a prepared local candidate; the published
+   Mac App Store version remains `1.1.0`. The signed `1.3.0` pkg has not
+   been built yet; the last built candidate remains `1.2.0` build `57`.
+   Keep tag creation, App Store Connect upload, TestFlight, review, and
+   publication gated on explicit user approval.
 
 Detailed v0.18-v1.0 completed-slice history and per-version verification
 records moved to `docs/archive/operations/handoff-detail-through-v1.0.md`.

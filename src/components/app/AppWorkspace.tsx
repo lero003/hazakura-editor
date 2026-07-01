@@ -490,7 +490,7 @@ export function AppWorkspace({
           activeTab={activeTab}
           copy={safeEditorCopy}
           documentKey={documentKey}
-          editorSessionKey={activeTab?.id ?? documentKey}
+          editorSessionKey={activeTab?.sessionId ?? documentKey}
           editorPaneRef={editorPaneRef}
           editorSettings={editorSettings}
           editorTheme={editorTheme}

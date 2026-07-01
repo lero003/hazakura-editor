@@ -1076,50 +1076,72 @@ export default function EBookPane({
               </button>
             </div>
             <div className="ebook-reader-toc-list">
-              {tableOfContentsEntries.map((entry) => (
-                <button
-                  aria-label={entry.label}
-                  aria-current={
-                    entry.chapterIndex === activeChapterIndexSafe
-                      ? "location"
-                      : undefined
-                  }
-                  className={`ebook-reader-toc-item${
-                    entry.chapterIndex === activeChapterIndexSafe
-                      ? " current"
-                      : ""
-                  }`}
-                  key={`${entry.chapterIndex}-${entry.label}`}
-                  onClick={() => jumpToChapter(entry.chapterIndex)}
-                  style={{
-                    paddingLeft: `${
-                      12 + Math.max((entry.headingLevel ?? 1) - 1, 0) * 12
-                    }px`,
-                  }}
-                  title={entry.label}
-                  type="button"
-                >
-                  <span aria-hidden="true" className="ebook-reader-toc-index">
-                    {entry.chapterIndex + 1}
-                  </span>
-                  <span className="ebook-reader-toc-context">
-                    <span className="ebook-reader-toc-text">{entry.label}</span>
-                    {entry.subheadingPreview.length > 0 ? (
-                      <span className="ebook-reader-toc-subheadings">
-                        {entry.subheadingPreview.join("・")}
-                        {entry.remainingSubheadingCount > 0
-                          ? `・${moreSubheadingsLabel(entry.remainingSubheadingCount, menuLanguage)}`
-                          : ""}
+              {tableOfContentsEntries.map((entry) => {
+                const subheadingText =
+                  entry.subheadingPreview.length > 0
+                    ? [
+                        entry.subheadingPreview.join("・"),
+                        entry.remainingSubheadingCount > 0
+                          ? moreSubheadingsLabel(
+                              entry.remainingSubheadingCount,
+                              menuLanguage,
+                            )
+                          : "",
+                      ]
+                        .filter(Boolean)
+                        .join("・")
+                    : "";
+                return (
+                  <button
+                    aria-label={composeTocAccessibleName(
+                      entry.label,
+                      subheadingText,
+                      entry.pageProgress,
+                    )}
+                    aria-current={
+                      entry.chapterIndex === activeChapterIndexSafe
+                        ? "location"
+                        : undefined
+                    }
+                    className={`ebook-reader-toc-item${
+                      entry.chapterIndex === activeChapterIndexSafe
+                        ? " current"
+                        : ""
+                    }`}
+                    key={`${entry.chapterIndex}-${entry.label}`}
+                    onClick={() => jumpToChapter(entry.chapterIndex)}
+                    style={{
+                      paddingLeft: `${
+                        12 + Math.max((entry.headingLevel ?? 1) - 1, 0) * 12
+                      }px`,
+                    }}
+                    title={entry.label}
+                    type="button"
+                  >
+                    <span aria-hidden="true" className="ebook-reader-toc-index">
+                      {entry.chapterIndex + 1}
+                    </span>
+                    <span className="ebook-reader-toc-context">
+                      <span className="ebook-reader-toc-text">
+                        {entry.label}
                       </span>
-                    ) : null}
-                    {entry.pageProgress ? (
-                      <span className="ebook-reader-toc-progress">
-                        {entry.pageProgress}
-                      </span>
-                    ) : null}
-                  </span>
-                </button>
-              ))}
+                      {entry.subheadingPreview.length > 0 ? (
+                        <span className="ebook-reader-toc-subheadings">
+                          {entry.subheadingPreview.join("・")}
+                          {entry.remainingSubheadingCount > 0
+                            ? `・${moreSubheadingsLabel(entry.remainingSubheadingCount, menuLanguage)}`
+                            : ""}
+                        </span>
+                      ) : null}
+                      {entry.pageProgress ? (
+                        <span className="ebook-reader-toc-progress">
+                          {entry.pageProgress}
+                        </span>
+                      ) : null}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </nav>
         </>
@@ -1571,6 +1593,21 @@ function moreSubheadingsLabel(count: number, menuLanguage: MenuLanguage): string
     return `ほか${count}けん`;
   }
   return `ほか${count}件`;
+}
+
+// Compose a single accessible name for a TOC entry button. Without an
+// explicit `aria-label`, the button's accessible name is derived from its
+// child text, but a flat `aria-label={entry.label}` overrides that and
+// hides the subheading preview and page progress from assistive tech.
+// This helper combines all three into one label so a screen reader
+// announces the heading, its subheading context, and the page progress
+// in one pass.
+function composeTocAccessibleName(
+  label: string,
+  subheadingText: string,
+  pageProgress: string | null,
+): string {
+  return [label, subheadingText, pageProgress].filter(Boolean).join("、");
 }
 
 function getEBookReaderCopy(

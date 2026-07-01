@@ -38,6 +38,7 @@ import { useDocumentPreviewController } from "../document/useDocumentPreviewCont
 import { useEditorSurfaceController } from "../document/useEditorSurfaceController";
 import { useAppleAssistTargetSync } from "../editor/useAppleAssistTargetSync";
 import { useAppleAssistApplyHandler } from "../editor/useAppleAssistApplyHandler";
+import { aiEditTransactionStore } from "../../features/editor/aiEditTransactions";
 import { useEditorCommands } from "../editor/useEditorCommands";
 import { useEditorFindController } from "../editor/useEditorFindController";
 import { useTabBarController } from "../editor/useTabBarController";
@@ -109,6 +110,10 @@ export function useAppShellController() {
   const { activeTabId, setActiveTabId, setTabs, tabs } = foundation;
   const [appleAssistGenerationLock, setAppleAssistGenerationLock] =
     useState<AppleAssistGenerationLock | null>(null);
+  const [pendingAssistDiscard, setPendingAssistDiscard] = useState<{
+    sessionId: string;
+    beforeBuffer: string;
+  } | null>(null);
   const appleAssistLockMessage =
     "生成中のため、この文書の編集を一時停止しています";
   const isAppleAssistTabLocked = useCallback(
@@ -444,17 +449,18 @@ export function useAppShellController() {
     activeTab: activeTab
       ? {
           id: activeTab.id,
+          sessionId: activeTab.sessionId,
           name: activeTab.name,
           path: activeTab.path,
           contents: activeTab.contents,
         }
       : null,
     setActiveTabContents: (next: string, tabId: string) => {
-      // v0.34: クロージャの activeTab.id ではなく、ハンドラが検証済みの
+      // v0.34: クロージャの activeTab.sessionId ではなく、ハンドラが検証済みの
       // tabId で書き込み先を決める。生成中に別タブへ切替しても誤爆しない。
       setTabs((currentTabs) =>
         currentTabs.map((tab) =>
-          tab.id === tabId
+          tab.sessionId === tabId
             ? {
                 ...tab,
                 contents: next,
@@ -1275,20 +1281,22 @@ export function useAppShellController() {
   // The escape hatch's Discard button reverts the affected
   // tab's contents to the transaction's full-buffer snapshot
   // and clears the transaction via the store. The tab
-  // mutation goes through the same `setTabs` path the
-  // apply handler uses so save status / error are
+  // mutation goes through the same `setTabs` path the apply
+  // handler uses so save status / error are
   // consistent regardless of which direction the buffer
   // was edited.
-  const discardAppleAssistEdit = useCallback(
-    (tabId: string, beforeBuffer: string) => {
-      const targetTab = tabs.find((tab) => tab.id === tabId);
-      if (!targetTab) {
-        setStatus("Hazakura Local Assist discard failed");
-        return;
-      }
+  //
+  // When the user has hand-edited the buffer after the assist
+  // apply (current contents differ from the transaction's
+  // `afterBuffer`), a blind revert to `beforeBuffer` would
+  // destroy those edits. In that case we open a confirmation
+  // dialog instead of reverting immediately; only a confirmed
+  // discard reverts all the way back to `beforeBuffer`.
+  const confirmDiscardAppleAssistEdit = useCallback(
+    (sessionId: string, beforeBuffer: string) => {
       setTabs((currentTabs) =>
         currentTabs.map((tab) =>
-          tab.id === tabId
+          tab.sessionId === sessionId
             ? {
                 ...tab,
                 contents: beforeBuffer,
@@ -1298,11 +1306,47 @@ export function useAppShellController() {
             : tab,
         ),
       );
-      setActiveTabId(tabId);
+      const targetTab = tabs.find((tab) => tab.sessionId === sessionId);
+      if (targetTab) {
+        setActiveTabId(targetTab.id);
+      }
+      aiEditTransactionStore.clear(sessionId);
       setStatus("Hazakura Local Assist edit discarded");
     },
     [setActiveTabId, setStatus, setTabs, tabs],
   );
+
+  const discardAppleAssistEdit = useCallback(
+    (sessionId: string, beforeBuffer: string, afterBuffer: string) => {
+      const targetTab = tabs.find((tab) => tab.sessionId === sessionId);
+      if (!targetTab) {
+        setStatus("Hazakura Local Assist discard failed");
+        return;
+      }
+      // No hand-edits since the assist was applied: safe to revert now.
+      if (targetTab.contents === afterBuffer) {
+        confirmDiscardAppleAssistEdit(sessionId, beforeBuffer);
+        return;
+      }
+      // The buffer changed after the apply. Confirm before discarding so
+      // the user does not silently lose hand-edits along with the assist.
+      setPendingAssistDiscard({ sessionId, beforeBuffer });
+    },
+    [confirmDiscardAppleAssistEdit, setStatus, tabs],
+  );
+
+  const cancelDiscardAppleAssistEdit = useCallback(() => {
+    setPendingAssistDiscard(null);
+  }, []);
+
+  const confirmPendingAssistDiscard = useCallback(() => {
+    if (!pendingAssistDiscard) return;
+    confirmDiscardAppleAssistEdit(
+      pendingAssistDiscard.sessionId,
+      pendingAssistDiscard.beforeBuffer,
+    );
+    setPendingAssistDiscard(null);
+  }, [confirmDiscardAppleAssistEdit, pendingAssistDiscard]);
 
   return {
     activeAgentSession,
@@ -1439,6 +1483,9 @@ export function useAppShellController() {
     menuLanguage,
     onCheckAgentGate: requestAgentLaunchGateCheck,
     onDiscardAppleAssistEdit: discardAppleAssistEdit,
+    onConfirmPendingAssistDiscard: confirmPendingAssistDiscard,
+    onCancelPendingAssistDiscard: cancelDiscardAppleAssistEdit,
+    pendingAssistDiscard,
     onOpenAgentWindow: () => {
       void openAgentWindow(themePreference);
     },

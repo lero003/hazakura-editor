@@ -13,6 +13,7 @@ import type {
 function makeTab(path: string, name: string, overrides: Partial<EditorTab> = {}): EditorTab {
   return {
     id: path,
+    sessionId: `session:${path}`,
     path,
     name,
     contents: "hello",
@@ -439,6 +440,78 @@ describe("useEditorTabsPathRekey", () => {
         removals: 0,
       }),
     ).toMatchObject({ caseKey: "unrelated-case" });
+  });
+
+  // Regression: after Save As, a tab's `id` follows the new path while
+  // `sessionId` preserves the original editor session. When the user later
+  // renames the saved file, rekeyPath must match on `tab.path` (not the
+  // stale `tab.id`), otherwise the tab's id/path/name drift apart and the
+  // active tab can disappear. This test pins the path-match behavior.
+  it("rekeys a tab by path even when id was reset by a prior Save As", () => {
+    const setTabs = vi.fn();
+    const { result } = renderHook(() =>
+      useEditorTabsPathRekey(makeOptions({ setTabs })),
+    );
+
+    // Save As moved this tab from /root/old.md to /root/saved.md. The tab's
+    // id is now the saved path, but the original sessionId is preserved.
+    const savedAsTab = makeTab("/root/saved.md", "saved.md", {
+      sessionId: "session:original",
+    });
+    const unrelatedTab = makeTab("/root/other.md", "other.md");
+    setTabs.mockImplementationOnce(
+      (updater: (current: EditorTab[]) => EditorTab[]) =>
+        updater([savedAsTab, unrelatedTab]),
+    );
+
+    act(() => {
+      result.current.rekeyPath("/root/saved.md", "/root/renamed.md");
+    });
+
+    const update = setTabs.mock.calls[0][0] as (
+      current: EditorTab[],
+    ) => EditorTab[];
+    const next = update([savedAsTab, unrelatedTab]);
+    expect(next[0]).toMatchObject({
+      id: "/root/renamed.md",
+      path: "/root/renamed.md",
+      name: "renamed.md",
+      sessionId: "session:original",
+    });
+    expect(next[1]).toBe(unrelatedTab);
+  });
+
+  it("rekeys a folder prefix by path even when a descendant id was reset by Save As", () => {
+    const setTabs = vi.fn();
+    const { result } = renderHook(() =>
+      useEditorTabsPathRekey(makeOptions({ setTabs })),
+    );
+
+    // This tab was saved-as into the /root/notes/ folder, so its id no
+    // longer matches whatever path it was opened from. The prefix rekey
+    // must still catch it through `tab.path`.
+    const savedAsTab = makeTab("/root/notes/saved.md", "saved.md", {
+      sessionId: "session:moved",
+    });
+    setTabs.mockImplementationOnce(
+      (updater: (current: EditorTab[]) => EditorTab[]) =>
+        updater([savedAsTab]),
+    );
+
+    act(() => {
+      result.current.rekeyPathPrefix("/root/notes", "/root/archive");
+    });
+
+    const update = setTabs.mock.calls[0][0] as (
+      current: EditorTab[],
+    ) => EditorTab[];
+    const next = update([savedAsTab]);
+    expect(next[0]).toMatchObject({
+      id: "/root/archive/saved.md",
+      path: "/root/archive/saved.md",
+      name: "saved.md",
+      sessionId: "session:moved",
+    });
   });
 });
 

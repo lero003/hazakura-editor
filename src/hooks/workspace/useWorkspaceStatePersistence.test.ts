@@ -32,6 +32,7 @@ function makeTab(overrides: Partial<EditorTab> = {}): EditorTab {
     externalFingerprint: null,
     fingerprint: "fp",
     id: "/old/root/note.md",
+    sessionId: "/old/root/note.md",
     ignoredExternalFingerprint: null,
     large_file_warning: false,
     lastSavedContents: "body",
