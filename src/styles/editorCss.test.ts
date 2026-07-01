@@ -127,6 +127,21 @@ describe("editor tab close affordance CSS", () => {
     expect(note).toMatch(/margin-bottom:\s*16px/);
   });
 
+  it("keeps PDF export dialog actions stationary on hover", () => {
+    const hover = ruleBody(
+      dialogsCss,
+      ".pdf-export-settings-dialog .dialog-actions button:hover:not(:disabled)",
+    );
+    const pointerHover = ruleBody(
+      dialogsCss,
+      ".pdf-export-settings-dialog .dialog-actions button:hover:not(:disabled):not(:focus-visible)",
+    );
+
+    expect(hover).toMatch(/transform:\s*none/);
+    expect(hover).toMatch(/opacity:\s*1/);
+    expect(pointerHover).toMatch(/box-shadow:\s*var\(--shadow-sm\)/);
+  });
+
   it("keeps Sakura ambient particles restrained", () => {
     const rule = ruleBody(appShellCss, ".ambient-sakura .ambient-particle");
 

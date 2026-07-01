@@ -478,6 +478,17 @@
   transform: translateY(-1px);
 }
 
+/* PDF export is a short confirmation step. Keep pointer hover feedback flat so
+   the action row does not look as if it shifts or rerasterizes under the mouse. */
+.pdf-export-settings-dialog .dialog-actions button:hover:not(:disabled) {
+  opacity: 1;
+  transform: none;
+}
+
+.pdf-export-settings-dialog .dialog-actions button:hover:not(:disabled):not(:focus-visible) {
+  box-shadow: var(--shadow-sm);
+}
+
 :root[data-theme="yakou"] .dialog-actions button:first-child {
   background: var(--accent-gradient);
   border: 0;
