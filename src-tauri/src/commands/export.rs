@@ -10,20 +10,50 @@ use std::fs;
 const PDF_EXPORT_TIMEOUT_SECONDS: u64 = 30;
 pub(crate) const PDF_A4_PAGE_WIDTH_POINTS: f64 = 595.0;
 pub(crate) const PDF_A4_PAGE_HEIGHT_POINTS: f64 = 842.0;
-const PDF_CAPTURE_SIZE_SCRIPT: &str = r#"
+pub(crate) const PDF_CAPTURE_SIZE_SCRIPT: &str = r#"
 JSON.stringify((() => {
   const body = document.body;
   const doc = document.documentElement;
-  const width = Math.max(
+  const fallbackWidth = Math.max(
     doc ? doc.scrollWidth : 0,
     body ? body.scrollWidth : 0,
     595
   );
-  const height = Math.max(
-    doc ? doc.scrollHeight : 0,
-    body ? body.scrollHeight : 0,
-    842
-  );
+  const preview = document.querySelector(".markdown-preview");
+  let width = fallbackWidth;
+  if (preview) {
+    let occupiedColumnCount = 0;
+    const includeRects = (rects) => {
+      for (const rect of rects) {
+        const columnIndex = Math.max(
+          0,
+          Math.floor((rect.left + window.scrollX) / 595)
+        );
+        occupiedColumnCount = Math.max(occupiedColumnCount, columnIndex + 1);
+      }
+    };
+    const walker = document.createTreeWalker(preview, NodeFilter.SHOW_TEXT);
+    const range = document.createRange();
+    let textNode = walker.nextNode();
+    while (textNode) {
+      if (textNode.textContent.trim()) {
+        range.selectNodeContents(textNode);
+        includeRects(range.getClientRects());
+      }
+      textNode = walker.nextNode();
+    }
+    for (const element of preview.querySelectorAll("img, svg, canvas, video, hr")) {
+      includeRects(element.getClientRects());
+    }
+    width = Math.max(1, occupiedColumnCount) * 595;
+  }
+  const height = preview
+    ? 842
+    : Math.max(
+        doc ? doc.scrollHeight : 0,
+        body ? body.scrollHeight : 0,
+        842
+      );
   return {
     width: Math.ceil(width),
     height: Math.ceil(height)

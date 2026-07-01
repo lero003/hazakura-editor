@@ -21,9 +21,10 @@ Last reviewed: 2026-07-01 (v1.3 implemented and core-smoke verified)
   PDF export offers request-scoped A4 `狭い` / `標準` / `広い` margin
   presets. Full frontend/Rust gates and the app build pass. Representative
   built-app checks passed for Save As Undo continuity, Local Assist acceptance
-  remaining dirty, Reading Focus TOC context, and rendered pages 1 and 2 from
-  all three six-page A4 PDF outputs. Extended RC interaction breadth remains
-  in `docs/v1.3-followup.md`.
+  remaining dirty, Reading Focus TOC context, distinct margins across all three
+  PDF presets, and a standard-margin export with three content pages and no
+  trailing blank row. Extended RC interaction breadth remains in
+  `docs/v1.3-followup.md`.
 - `1.0.0` was approved and released on the Mac App Store. It is a
   semantic and product-message re-baseline of the feature shape first
   shipped through `0.36.0`, not a new feature expansion. Its public message is:

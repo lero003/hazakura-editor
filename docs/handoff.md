@@ -45,13 +45,16 @@ Last reviewed: 2026-07-01 (v1.3 implemented and core-smoke verified)
   command-palette / EPUB-dialog interaction smoke was not exercised in this
   slice and remains an RC check.
 - Current v1.3 evidence includes focused tests plus final `npm run test`
-  (123 files / 1100 tests), `cargo test` (300 tests), `npm run build:vite`,
+  (123 files / 1101 tests), `cargo test` (301 tests), `npm run build:vite`,
   `cargo fmt --check`, and `npm run build`. Representative built-app checks
   passed for Save As Undo continuity, explicit Local Assist acceptance with
-  a dirty buffer, Reading Focus TOC context, and rendered pages 1 and 2 from
-  all three six-page A4 PDF presets. The known Vite chunk-size warning remains
-  warning-only. Extended RC interaction breadth is recorded separately in
-  `docs/v1.3-followup.md`.
+  a dirty buffer, Reading Focus TOC context, distinct margins across all three
+  PDF presets, and a standard-margin PDF reduced from three content plus three
+  blank pages to three content pages. PDF capture treats the generated layout
+  as one A4-high horizontal row and counts occupied text/media columns; do not
+  restore document-wide scroll height/width as the normal measurement. The
+  known Vite chunk-size warning remains warning-only. Extended RC interaction
+  breadth is recorded separately in `docs/v1.3-followup.md`.
 - `Hazakura Editor` `1.1.0` is the latest published Mac App Store
   version. `0.36.0` remains historical proof of the same v1-equivalent
   reader, export, workspace-marker, Markdown insertion, and Local Assist

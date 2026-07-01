@@ -680,6 +680,29 @@ fn export_pdf_plans_horizontal_a4_pages_for_css_columns() {
     }
 }
 
+#[cfg(target_os = "macos")]
+#[test]
+fn export_pdf_measures_rendered_content_instead_of_trailing_scroll_area() {
+    assert!(
+        PDF_CAPTURE_SIZE_SCRIPT.contains(".markdown-preview"),
+        "PDF capture must locate the rendered Markdown content"
+    );
+    assert!(
+        PDF_CAPTURE_SIZE_SCRIPT.contains("createTreeWalker")
+            && PDF_CAPTURE_SIZE_SCRIPT.contains("SHOW_TEXT"),
+        "PDF capture must measure rendered text fragments instead of column containers"
+    );
+    assert!(
+        PDF_CAPTURE_SIZE_SCRIPT.contains("rect.left")
+            && !PDF_CAPTURE_SIZE_SCRIPT.contains("rect.right"),
+        "horizontal overflow inside one column must not create trailing pages"
+    );
+    assert!(
+        PDF_CAPTURE_SIZE_SCRIPT.contains("const height = preview\n    ? 842"),
+        "the horizontal A4 layout must not create a second blank row"
+    );
+}
+
 #[test]
 fn agent_session_state_allows_main_and_agent_labels() {
     let store = AgentWorkbenchSessionStore::default();
