@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   APPLE_ASSIST_CONTEXT_POST_CHARS,
   APPLE_ASSIST_CONTEXT_PRE_CHARS,
@@ -380,5 +380,135 @@ describe("isSameAppleAssistTargetTab", () => {
         path: "/workspace/other.md",
       }),
     ).toBe(false);
+  });
+});
+
+// Integration coverage for the full apply path. The pure
+// helper tests above do not exercise the hook itself, which
+// is how the `id`-vs-`sessionId` regression slipped through:
+// the apply handler silently no-op'd the buffer write because
+// `setActiveTabContents` matches by `sessionId`. These tests
+// render the hook, fire the apply event, and assert that the
+// buffer write targets the tab by `sessionId` (not `id`).
+import { renderHook } from "@testing-library/react";
+import { emitTo, listen } from "@tauri-apps/api/event";
+import { useAppleAssistApplyHandler } from "./useAppleAssistApplyHandler";
+import { aiEditTransactionStore } from "../../features/editor/aiEditTransactions";
+import type {
+  AppleAssistApplyEvent,
+  AppleAssistTargetSnapshot,
+} from "../../types";
+
+type ApplyListener = Parameters<typeof listen<AppleAssistApplyEvent>>[1];
+
+const applyListeners: ApplyListener[] = [];
+
+vi.mock("@tauri-apps/api/event", () => ({
+  emitTo: vi.fn(async () => {}),
+  listen: vi.fn(async (_eventName: string, handler: ApplyListener) => {
+    applyListeners.push(handler);
+    return () => {};
+  }),
+}));
+
+vi.mock("../../lib/tauri/appleAssist", () => ({
+  APPLE_ASSIST_MAX_CONTEXT_CHARS: 8000,
+  generateAppleAssistCandidateStreaming: vi.fn(async () => ({
+    candidateText: "整えた本文",
+  })),
+}));
+
+function targetSnapshot(
+  text: string,
+  contents: string,
+): AppleAssistTargetSnapshot {
+  const start = contents.indexOf(text);
+  return {
+    kind: "paragraph",
+    start,
+    end: start + text.length,
+    text,
+    label: "",
+    activeDocumentPath: "/workspace/note.md",
+    activeDocumentName: "note.md",
+    capturedAtMs: 0,
+  };
+}
+
+describe("useAppleAssistApplyHandler apply path", () => {
+  const originalRAF = window.requestAnimationFrame;
+
+  beforeEach(() => {
+    // The handler yields to `requestAnimationFrame` before
+    // generating. jsdom's rAF is tied to a frame clock the
+    // test never advances, so the generation promise would
+    // hang and the buffer write would never run. Route the
+    // frame callback through `setTimeout` so a timer pump
+    // flushes it deterministically.
+    window.requestAnimationFrame = ((cb: FrameRequestCallback) =>
+      window.setTimeout(() => cb(0), 0)) as unknown as typeof window.requestAnimationFrame;
+  });
+
+  afterEach(() => {
+    applyListeners.length = 0;
+    vi.mocked(listen).mockClear();
+    vi.mocked(emitTo).mockClear();
+    window.requestAnimationFrame = originalRAF;
+    aiEditTransactionStore.clear("session:tab-1");
+  });
+
+  it("writes the generated text back to the tab matched by sessionId", async () => {
+    const contents = "hello world";
+    const target = targetSnapshot("hello world", contents);
+    const setActiveTabContents = vi.fn();
+
+    renderHook(() =>
+      useAppleAssistApplyHandler({
+        activeTab: {
+          // `id` (path) and `sessionId` are deliberately
+          // distinct values. The buffer write must key off
+          // `sessionId`; passing `id` would never match.
+          id: "/workspace/note.md",
+          sessionId: "session:tab-1",
+          name: "note.md",
+          path: "/workspace/note.md",
+          contents,
+        },
+        setActiveTabContents,
+        setStatus: vi.fn(),
+      }),
+    );
+
+    const payload: AppleAssistApplyEvent = {
+      requestId: "req-1",
+      request: "整えて",
+      target,
+      additionalRequest: undefined,
+      actionId: "proofread_only",
+      requestedAtMs: 0,
+    };
+    // The listener fires the apply on `void` (the handler does
+    // not return the inner promise), so awaiting the listener
+    // alone does not drain the generation chain. Pump the timer
+    // queue repeatedly to flush the `requestAnimationFrame`
+    // yield and the mocked streaming generation.
+    applyListeners[0]?.({ payload } as never);
+    for (let i = 0; i < 10; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+
+    expect(setActiveTabContents).toHaveBeenCalledTimes(1);
+    // The write MUST be addressed by `sessionId`, not by `id`.
+    // If the handler passes `id` ("/workspace/note.md"), the
+    // real `setTabs((tabs) => tabs.map((t) => t.sessionId === tabId ...))`
+    // finds no tab and the buffer never updates.
+    expect(setActiveTabContents).toHaveBeenCalledWith(
+      expect.any(String),
+      "session:tab-1",
+    );
+    expect(setActiveTabContents).not.toHaveBeenCalledWith(
+      expect.any(String),
+      "/workspace/note.md",
+    );
   });
 });

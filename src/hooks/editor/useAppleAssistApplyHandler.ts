@@ -253,7 +253,12 @@ export function useAppleAssistApplyHandler({
         diff,
       };
       aiEditTransactionStore.record(stored);
-      setActiveTabContentsRef.current(result.nextBuffer, latestTab.id);
+      // `setActiveTabContents` matches by `tab.sessionId`, so the
+      // buffer write must pass `latestTab.sessionId` (not `.id`).
+      // Passing `.id` would never match after the session-based
+      // rework and the apply would silently no-op (the generated
+      // text never reached the buffer).
+      setActiveTabContentsRef.current(result.nextBuffer, latestTab.sessionId);
       const successMessage = `Hazakura Local Assist applied: ${result.transaction.request} (${result.transaction.target.kind})`;
       setStatusRef.current?.(successMessage);
       void emitAppleAssistApplyStatus("completed", successMessage, payload, {
