@@ -10,12 +10,12 @@ Last reviewed: 2026-07-01 (v1.3 implemented and core-smoke verified)
 Start here when choosing the next small `Hazakura Editor` slice.
 This file is the current work queue. `1.1.0` is approved and published
 on the Mac App Store with the product promise
-`Markdownで書き、本として読み、ローカルAIで整える。` The active source lane is
+`Markdownで書き、本として読み、ローカルAIで整える。` The active release lane is
 v1.3 Daily Trust: preserve the editing session through Save As, make Local
 Assist review decisions explicit, add bounded context to the e-book TOC, and
-offer three allowlisted A4 PDF margin presets. The package/app version remains
-`1.2.0`; v1.3 packaging, upload, TestFlight, and App Review are separate,
-explicitly gated work.
+offer three allowlisted A4 PDF margin presets. The package/app version is now
+`1.3.0` as the prepared candidate; the signed `1.3.0` pkg build, upload,
+TestFlight, and App Review are separate, explicitly gated work.
 
 Keep every slice small, verifiable, and inside the Markdown-first Safe
 Editor boundary. The v0.27 refinement phases are complete for source-tag
@@ -59,7 +59,7 @@ Extended release-candidate interaction breadth remains listed in
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| Done / full gates and core built-app smoke passed | v1.3 Daily Trust | Save As keeps the same-language Editor session and migrates view state; Local Assist exposes explicit `採用` / `破棄` without auto-save; Reading Focus TOC shows bounded H3+ context and current measured page progress; PDF export applies allowlisted A4 `狭い` / `標準` / `広い` margins to every page. Extended RC interaction breadth remains in `docs/v1.3-followup.md`. |
+| Done / full gates and core built-app smoke passed / `1.3.0` candidate prepared | v1.3 Daily Trust | Save As keeps the same-language Editor session and migrates view state; Local Assist exposes explicit `採用` / `破棄` without auto-save; Reading Focus TOC shows bounded H3+ context and current measured page progress; PDF export applies allowlisted A4 `狭い` / `標準` / `広い` margins to every page. Package metadata now reads `1.3.0`; the signed pkg build, upload, and publication remain gated on explicit approval. Extended RC interaction breadth remains in `docs/v1.3-followup.md`. |
 | Implemented / source verified / 1.2.0 candidate pkg prepared | v1.2 Export UX and Command Discovery | The EPUB dialog explains the single-Markdown / reading-preview boundary. The command palette derives Markdown command behavior and localized search vocabulary from the right-click slash-command registry, including date/time insertion, while palette labels remain English. The slash menu stays within 8px viewport insets and opens upward near the lower edge. A signed `1.2.0` candidate pkg passed local gates, audit, signature, checksum, entitlement, and sandbox-preview smoke; built-app interaction smoke and App Store Connect upload remain open checks. |
 | Done / built-app verified | v1.1 Reader / Editor / Preview Position Continuity | `AppWorkspace` owns one per-document view-state registry for Editor, e-book Mode, and Preview. A -> B -> A restores each editor selection/scroll and reader location. Preview restores only after replacement HTML has rendered, avoiding the real-layout top reset. A safe local Markdown-link transition and Preview -> e-book -> Preview were verified in the built app without source/save-state changes. See `docs/v1.1-v1.2-followup.md`. |
 | Observation / Google Drive manual-blocked | v1.2 Recovery Reliability | Local-folder forced termination passed: with Auto Backup explicitly enabled, a timed `.bak` preserved the unsaved marker, the saved source stayed unchanged, relaunch restored the workspace and exposed the draft, and explicit Restore returned it as a dirty buffer. Auto Backup was returned to its prior off state. Google Drive remains `manual-blocked` because no dedicated test fixture existed; do not create or scan user cloud content implicitly. |

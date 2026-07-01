@@ -16,21 +16,20 @@ Last reviewed: 2026-07-01 (v1.3 implemented and core-smoke verified)
   Manuscript baseline. No public-release hotfix blocker has been
   reported. All commented observations are routed to
   `docs/v1.1-v1.2-followup.md`.
-- The v1.1 lane is closed and published. Source/package metadata is now
-  `1.2.0`. Reader, Editor cursor/scroll, Preview reopen, tab, and
-  safe local Markdown-link position continuity are implemented through
-  one `AppWorkspace`-owned per-document registry. The v1.2 Polish lane
-  (command discovery, context-menu containment, EPUB scope note) is
-  prepared as the `1.2.0` local candidate; App Store Connect upload,
-  TestFlight, App Review, and publication remain gated on explicit user
-  approval.
-- The active main-branch source lane is v1.3 Daily Trust, while package/app
-  metadata remains `1.2.0`. Four independent source slices are implemented:
+- The v1.1 lane is closed and published. Reader, Editor cursor/scroll,
+  Preview reopen, tab, and safe local Markdown-link position continuity
+  are implemented through one `AppWorkspace`-owned per-document registry.
+  The v1.2 Polish lane (command discovery, context-menu containment,
+  EPUB scope note) was prepared as the `1.2.0` local candidate (build
+  `57`); it remains historical now that `1.3.0` is the active candidate.
+- The active main-branch release lane is v1.3 Daily Trust, and package/app
+  metadata now reads `1.3.0`. Four independent slices are implemented:
   Save As preserves the same-language CodeMirror session and rekeys view
   state; Local Assist review uses explicit `採用` / `破棄` without auto-save;
   Reading Focus TOC shows bounded H3+ context and current measured page
   progress; PDF export offers request-scoped A4 `狭い` / `標準` / `広い`
-  margin presets. See `docs/v1.3-followup.md`.
+  margin presets. The signed `1.3.0` pkg has not been built yet; the last
+  built candidate remains `1.2.0` build `57`. See `docs/v1.3-followup.md`.
 - The signed local `1.1.0` App Store / TestFlight candidate passed the
   release gates, package signature and checksum verification, enforced
   App Store entitlement probe, and sandbox-preview smoke. Its current
@@ -86,9 +85,11 @@ Use `docs/current-work.md` for the active queue. Current priority order:
 1. Keep v1.3 closed unless an extended RC check in `docs/v1.3-followup.md`
    reproduces a gap. Full gates and representative built-app proof already
    pass, including rendered multi-page output for all three PDF presets.
-2. The v1.2 `1.2.0` candidate remains prepared local provenance. Do not mix
-   v1.3 source work with upload, TestFlight, review, or publication without
-   explicit user approval.
+2. The v1.3 `1.3.0` candidate is the prepared package baseline, but its
+   signed pkg has not been built yet; the last built candidate remains the
+   v1.2 `1.2.0` build `57` artifact. Do not mix v1.3 work with pkg build,
+   upload, TestFlight, review, or publication without explicit user
+   approval.
 3. Local forced-termination Recovery passed. Google Drive is
    `manual-blocked` until a dedicated fixture is available; do not scan or
    create content in the user's cloud folders implicitly.

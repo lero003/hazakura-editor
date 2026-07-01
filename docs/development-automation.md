@@ -17,8 +17,9 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: v1.3 Daily Trust after the prepared `1.2.0` candidate and published
-`1.1.0` App Store release, unless a public-release hotfix blocker appears.
+Phase: v1.3 Daily Trust as the prepared `1.3.0` candidate after the
+published `1.1.0` App Store release, unless a public-release hotfix blocker
+appears.
 
 For recurring automation, use the Active UX Queue in
 `docs/current-work.md`. The old pre-review automation table is exhausted
