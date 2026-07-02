@@ -248,7 +248,10 @@ export type AppleAssistApplyEvent = {
 };
 
 export type AppleAssistApplyStatusEvent = {
-  phase: "started" | "partial" | "completed" | "failed";
+  // "cancelled" is emitted when the user stops an in-flight
+  // generation (cancel UI or window/tab close). It clears the
+  // busy state without applying any partial result.
+  phase: "started" | "partial" | "completed" | "failed" | "cancelled";
   requestId: string;
   message: string;
   request: string;

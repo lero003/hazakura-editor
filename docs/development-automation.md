@@ -17,9 +17,8 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: v1.3 Daily Trust as the prepared `1.3.0` candidate after the
-published `1.1.0` App Store release, unless a public-release hotfix blocker
-appears.
+Phase: v1.4 after the published `1.3.0` App Store release, unless a
+public-release hotfix blocker appears.
 
 For recurring automation, use the Active UX Queue in
 `docs/current-work.md`. The old pre-review automation table is exhausted
@@ -31,8 +30,8 @@ environment is available and close it as `implemented`,
 Prefer work in this order:
 
 1. Active UX Queue from `docs/current-work.md`, starting with one bounded
-   v1.3 observation or manual-smoke gap unless a concrete source-loss or
-   public hotfix signal takes priority.
+   v1.4 slice unless a concrete source-loss or public hotfix signal
+   takes priority.
 2. Stale or failing quality gates that block the selected slice.
 3. Core Safe Editor quality risks around open, edit, save, close/quit,
    restore, recovery, preview, diff/review, workspace file operations,

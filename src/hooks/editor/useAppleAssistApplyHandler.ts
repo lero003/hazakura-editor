@@ -266,9 +266,17 @@ export function useAppleAssistApplyHandler({
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      const errorMessage = `Hazakura Local Assist generation failed: ${message}`;
-      setStatusRef.current?.(errorMessage);
-      void emitAppleAssistApplyStatus("failed", errorMessage, payload);
+      // A user-initiated cancel (stop command or window/tab close)
+      // surfaces a distinct "cancelled" phase so the companion window
+      // shows the cancel message instead of a failure.
+      if (message.includes("cancelled by user")) {
+        setStatusRef.current?.(message);
+        void emitAppleAssistApplyStatus("cancelled", message, payload);
+      } else {
+        const errorMessage = `Hazakura Local Assist generation failed: ${message}`;
+        setStatusRef.current?.(errorMessage);
+        void emitAppleAssistApplyStatus("failed", errorMessage, payload);
+      }
     } finally {
       clearGenerationLock(payload.requestId);
     }

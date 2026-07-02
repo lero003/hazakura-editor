@@ -4,6 +4,7 @@ import {
   getMainAppleAssistTarget,
   requestApplyAiEditTransaction,
   setAppleAssistWindowTheme,
+  stopAppleAssistGeneration,
 } from "../../lib/tauri";
 import { useAppleAssistAvailability } from "../../hooks/agent/useAppleAssistAvailability";
 import type { AppleAssistAvailability } from "../../lib/tauri/appleAssist";
@@ -213,6 +214,11 @@ export function AppleAssistWindowApp() {
   );
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<boolean>(false);
+  // True between the user clicking Cancel and the "cancelled" status
+  // arriving. Disables the Cancel button so a user cannot fire
+  // multiple stop commands in a row (the Rust path is idempotent, but
+  // repeated clicks read as a stuck UI).
+  const [cancelling, setCancelling] = useState<boolean>(false);
   const [target, setTarget] = useState<AppleAssistTargetSnapshot | null>(null);
   const { availability, available, probed } = useAppleAssistAvailability();
   const { feedback, pushFeedback } = useOperationFeedback();
@@ -329,6 +335,7 @@ export function AppleAssistWindowApp() {
         }
         if (payload.phase === "started") {
           setBusy(true);
+          setCancelling(false);
           setError(null);
           setStreamPreview("");
           setStatus(copy.generatingChange);
@@ -344,6 +351,7 @@ export function AppleAssistWindowApp() {
         }
         clearGenerationFallback();
         setBusy(false);
+        setCancelling(false);
         setActiveRequestId(null);
         activeRequestIdRef.current = null;
         setStreamPreview("");
@@ -543,6 +551,25 @@ export function AppleAssistWindowApp() {
     setRequestText(preset.requestText);
     setError(null);
   }, []);
+
+  // Cancel an in-flight generation. The Rust stop command kills the
+  // helper child; the main window's apply handler then emits a
+  // "cancelled" status that clears busy and the active request.
+  // Until that status arrives, show a cancelling state so the user
+  // sees the click registered.
+  const cancelGeneration = useCallback(async () => {
+    if (!busy || cancelling) {
+      return;
+    }
+    setCancelling(true);
+    setStatus(copy.cancellingStatus);
+    try {
+      await stopAppleAssistGeneration();
+    } catch {
+      // Best-effort: the status listener still clears busy when
+      // the in-flight generation settles.
+    }
+  }, [busy, cancelling, copy.cancellingStatus]);
   const streamPreviewPresentation = getStreamPreviewPresentation(
     streamPreview,
     busy,
@@ -595,6 +622,14 @@ export function AppleAssistWindowApp() {
           disabled={busy || !available || requestText.trim().length === 0}
         >
           {busy ? copy.generatingButton : copy.applyButton}
+        </button>
+        <button
+          type="button"
+          className="apple-assist-window-cancel"
+          onClick={() => void cancelGeneration()}
+          disabled={!busy || cancelling}
+        >
+          {cancelling ? copy.cancellingStatus : copy.cancelButton}
         </button>
       </section>
 
@@ -726,6 +761,9 @@ export type AppleAssistWindowCopy = {
   appliedStatus: (request: string) => string;
   applyButton: string;
   availableDisclosure: string;
+  cancelButton: string;
+  cancelledStatus: string;
+  cancellingStatus: string;
   contextTooLongError: string;
   disabledStatus: string;
   emptyRequestError: string;
@@ -818,6 +856,14 @@ export function getApplyStatusPresentation(
       status: copy.appliedStatus(payload.request),
       error: null,
       feedbackKind: "applied",
+    };
+  }
+
+  if (payload.phase === "cancelled") {
+    return {
+      status: copy.cancelledStatus,
+      error: null,
+      feedbackKind: "failed",
     };
   }
 
@@ -989,6 +1035,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       appliedStatus: () =>
         "へんしゅう あんを はんえいしました。ほぞん まえに さぶんで かくにん できます。",
       applyButton: "おねがいする",
+      cancelButton: "とりけす",
+      cancelledStatus: "いらいを とりけしました。",
+      cancellingStatus: "とりけし ちゅう...",
       availableDisclosure:
         "これは ぷれびゅーばんの ろーかる AI ぶんしょう しえんです。この Mac の Apple Intelligence たいおう きのうで ぶんしょうを ととのえますが、しゅつりょく ひんしつは あんてい しないことがあります。へんしゅう あんは ほぞん まえに さぶんで かくにんできます。そとの AI さーびすには おくりません。",
       contextTooLongError:
@@ -1101,6 +1150,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
       appliedStatus: () =>
         "編集案を反映しました。保存前に差分で確認できます。",
       applyButton: "依頼する",
+      cancelButton: "取り消す",
+      cancelledStatus: "依頼を取り消しました。",
+      cancellingStatus: "取り消し中...",
       availableDisclosure:
         "これはプレビュー版のローカル AI 文章支援です。この Mac の Apple Intelligence 対応機能で文章を整えますが、出力品質は安定しないことがあります。編集案は未保存の変更として扱い、保存前に差分で確認できます。外部 AI サービスには情報を送りません。",
       contextTooLongError:
@@ -1212,6 +1264,9 @@ export function getAppleAssistWindowCopy(lang: MenuLanguage): AppleAssistWindowC
     appliedStatus: () =>
       "Draft edit applied. Review the diff before saving.",
     applyButton: "Send request",
+    cancelButton: "Cancel",
+    cancelledStatus: "Request cancelled.",
+    cancellingStatus: "Cancelling...",
     availableDisclosure:
       "This is a preview-quality writing aid. Hazakura Local Assist uses Apple Intelligence-capable features on this Mac, and results may vary. Document-changing results are applied to unsaved text for diff review. Nothing is sent to an external AI service.",
     contextTooLongError:

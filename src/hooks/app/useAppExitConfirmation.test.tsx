@@ -94,7 +94,7 @@ describe("useAppExitConfirmation", () => {
     expect(tauriWindow.exitApp).not.toHaveBeenCalled();
   });
 
-  it("exits the app immediately when no tabs are dirty", () => {
+  it("exits the app immediately when no tabs are dirty", async () => {
     const appExitInProgressRef = { current: false };
     const onBeforeExit = vi.fn();
     const onNeedsConfirmation = vi.fn();
@@ -107,6 +107,11 @@ describe("useAppExitConfirmation", () => {
     void result;
 
     void exitListeners[0]?.({} as never);
+
+    // `onBeforeExit` may be async (e.g. stopping an in-flight Local
+    // Assist generation before exit); let the microtask queue drain
+    // before asserting `exitApp` fired.
+    await Promise.resolve();
 
     // Clean path: the user explicitly asked to quit, no
     // unsaved buffer to lose. The ref stays false (no
@@ -121,7 +126,7 @@ describe("useAppExitConfirmation", () => {
     expect(tauriWindow.exitApp).toHaveBeenCalledTimes(1);
   });
 
-  it("uses the latest dirty count without re-registering the native listener", () => {
+  it("uses the latest dirty count without re-registering the native listener", async () => {
     const appExitInProgressRef = { current: false };
     const onNeedsConfirmation = vi.fn();
     const props = {
@@ -142,6 +147,10 @@ describe("useAppExitConfirmation", () => {
 
     rerender({ ...props, dirtyTabCount: 0 });
     void exitListeners[0]?.({} as never);
+
+    // `onBeforeExit` is awaited before `exitApp`; flush the
+    // microtask queue before asserting.
+    await Promise.resolve();
 
     // The native listener is wired up exactly once across
     // the dirty-count re-render. If a future refactor

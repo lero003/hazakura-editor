@@ -68,6 +68,10 @@ type UseAppKeyboardFocusEffectsOptions = {
   onFocusAdjacentTab: (direction: TabFocusDirection) => void;
   onFocusEditorSoon: () => void;
   onNeedsWindowCloseConfirmation: () => void;
+  // Stops an in-flight Hazakura Local Assist generation before the
+  // window hides on the clean close path. Optional because the
+  // App Store lane and non-Tauri runtimes have no generation to stop.
+  stopActiveAppleAssistGeneration?: () => Promise<void>;
   onOpenCommandPalette: () => void;
   onOpenFile: () => unknown;
   onOpenGlobalSearch: () => void;
@@ -132,6 +136,7 @@ export function useAppKeyboardFocusEffects({
   onFocusAdjacentTab,
   onFocusEditorSoon,
   onNeedsWindowCloseConfirmation,
+  stopActiveAppleAssistGeneration,
   onOpenCommandPalette,
   onOpenFile,
   onOpenGlobalSearch,
@@ -169,6 +174,7 @@ export function useAppKeyboardFocusEffects({
     allowWindowCloseRef,
     dirtyTabCount,
     onNeedsConfirmation: onNeedsWindowCloseConfirmation,
+    onBeforeHide: stopActiveAppleAssistGeneration,
   });
 
   useExternalChangeChecks({

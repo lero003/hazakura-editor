@@ -476,28 +476,28 @@ describe("macOS build scripts", () => {
   it("keeps living docs aligned on the published version and active lane", () => {
     const expectedSnippets = {
       "README.md": [
-        "Hazakura Editor `1.1.0` is published",
+        "Hazakura Editor `1.3.0` is published",
         "Current package/app version is `1.3.0`",
-        "The published App Store version is `1.1.0`",
+        "The published App Store version is `1.3.0`",
       ],
-      "docs/app-store-build.md": ["Published App Store version: `1.1.0`"],
+      "docs/app-store-build.md": ["Published App Store version: `1.3.0`"],
       "docs/current-status.md": [
-        "Published Mac App Store version: `1.1.0`",
-        "active main-branch release lane is v1.3 Daily Trust",
+        "Published Mac App Store version: `1.3.0`",
+        "v1.3 Daily Trust is approved and published",
       ],
       "docs/current-work.md": [
         "Scope: v1.3 daily-use trust and bounded polish",
         "The active release lane is",
-        "v1.3 Daily Trust",
+        "v1.4",
       ],
-      "docs/development-automation.md": ["Phase: v1.3 Daily Trust"],
+      "docs/development-automation.md": ["Phase: v1.4"],
       "docs/handoff.md": [
-        "`Hazakura Editor` `1.1.0` is the latest published Mac App Store",
-        "The active main-branch release lane is v1.3 Daily Trust",
+        "`Hazakura Editor` `1.3.0` is the latest published Mac App Store",
+        "The active main-branch release lane is v1.4",
       ],
       "docs/roadmap.md": [
-        "Current package/app version: `1.3.0` candidate baseline",
-        "Active release lane: v1.3 Daily Trust",
+        "Current package/app version: `1.3.0`",
+        "Active release lane: v1.4",
       ],
     };
 

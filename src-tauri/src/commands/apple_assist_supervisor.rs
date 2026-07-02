@@ -52,6 +52,12 @@ pub(crate) struct AppleAssistHelperStore {
     inner: Mutex<Option<AppleAssistHelperInner>>,
     consecutive_failures: AtomicU32,
     cooldown_started_at: Mutex<Option<std::time::Instant>>,
+    // The active generation's cancel handle. Set when a round-trip
+    // starts, cleared when it ends. `stop_apple_assist_candidate`
+    // reads this without touching `inner` so it cannot deadlock with
+    // the in-flight blocking read. Only one generation runs at a time
+    // (the `inner` mutex serializes them), so a single slot suffices.
+    active_cancel: Mutex<Option<ActiveCancelHandle>>,
     // Test-only override slot. Production `Default` never reads
     // the environment. It resolves only the bundled helper next
     // to the app executable. Tests use
@@ -85,12 +91,25 @@ struct AppleAssistHelperInner {
     stdout: BufReader<ChildStdout>,
 }
 
+/// A live generation's cancel handle. Held outside `inner` so a
+/// `stop_apple_assist_candidate` call can kill the active child
+/// without acquiring the `inner` mutex (which is held for the
+/// whole blocking `read_line`). Mirrors the watchdog's kill path:
+/// `cancel_flag` lets the round-trip distinguish a user cancel
+/// from a timeout or an EOF, and `child` is the same shared
+/// `Arc<Mutex<Child>>` the watchdog already kills through.
+struct ActiveCancelHandle {
+    cancel_flag: Arc<AtomicBool>,
+    child: Arc<Mutex<Child>>,
+}
+
 impl Default for AppleAssistHelperStore {
     fn default() -> Self {
         Self {
             inner: Mutex::new(None),
             consecutive_failures: AtomicU32::new(0),
             cooldown_started_at: Mutex::new(None),
+            active_cancel: Mutex::new(None),
             #[cfg(test)]
             helper_path_override: None,
             #[cfg(test)]
@@ -268,6 +287,7 @@ impl AppleAssistHelperStore {
     }
 
     fn round_trip_locked(
+        store: &AppleAssistHelperStore,
         inner: &mut AppleAssistHelperInner,
         request: &WireRequest<'_>,
         timeout: Duration,
@@ -286,6 +306,11 @@ impl AppleAssistHelperStore {
             .stdin
             .flush()
             .map_err(|e| format!("Failed to flush helper stdin: {e}"))?;
+
+        // Arm the cancel handle before the blocking read so a
+        // concurrent `cancel_active` call can kill this child and
+        // unblock `read_line` without touching `inner`.
+        let _cancel_flag = store.arm_cancel_locked(Arc::clone(&inner.child));
 
         // Spawn a watchdog that will kill the child if the main
         // thread is still blocked on `read_line` after `timeout`.
@@ -351,6 +376,15 @@ impl AppleAssistHelperStore {
         // before we return.
         let _ = watchdog.join();
 
+        // Disarm the cancel handle. If `cancel_active` killed the
+        // child during the read, surface a distinct cancel error so
+        // the caller can skip the failure-count / cooldown path.
+        let cancelled = store.disarm_cancel_locked();
+
+        if cancelled {
+            return Err("Hazakura Local Assist generation cancelled by user.".to_string());
+        }
+
         if timed_out.load(Ordering::SeqCst) {
             return Err(format!(
                 "Hazakura Local Assist helper timed out after {}s",
@@ -373,6 +407,7 @@ impl AppleAssistHelperStore {
     fn read_envelope_locked(
         inner: &mut AppleAssistHelperInner,
         timeout: Duration,
+        cancel_flag: &AtomicBool,
     ) -> Result<WireEnvelope, String> {
         let done_pair = Arc::new((Mutex::new(false), Condvar::new()));
         let done_pair_w = done_pair.clone();
@@ -409,6 +444,12 @@ impl AppleAssistHelperStore {
         }
         let _ = watchdog.join();
 
+        // A user cancel kills the child through the shared handle,
+        // unblocking this read. Surface it as a distinct error so the
+        // streaming loop and the caller skip the failure-count path.
+        if cancel_flag.load(Ordering::SeqCst) {
+            return Err("Hazakura Local Assist generation cancelled by user.".to_string());
+        }
         if timed_out.load(Ordering::SeqCst) {
             return Err(format!(
                 "Hazakura Local Assist helper timed out after {}s",
@@ -426,6 +467,7 @@ impl AppleAssistHelperStore {
     }
 
     fn round_trip_stream_locked<F>(
+        store: &AppleAssistHelperStore,
         inner: &mut AppleAssistHelperInner,
         request: &WireRequest<'_>,
         timeout: Duration,
@@ -449,13 +491,29 @@ impl AppleAssistHelperStore {
             .flush()
             .map_err(|e| format!("Failed to flush helper stdin: {e}"))?;
 
-        loop {
-            let envelope = Self::read_envelope_locked(inner, timeout)?;
+        // Arm once for the whole streaming round-trip. Each envelope
+        // read checks the shared flag so a cancel between partials or
+        // during the final read surfaces as the cancel error.
+        let cancel_flag = store.arm_cancel_locked(Arc::clone(&inner.child));
+
+        let result = loop {
+            let envelope_result = Self::read_envelope_locked(inner, timeout, &cancel_flag);
+            let envelope = match envelope_result {
+                Ok(envelope) => envelope,
+                Err(err) => break Err(err),
+            };
             match envelope {
                 WireEnvelope::CandidatePartial(partial) => on_partial(partial),
-                other => return Ok(other),
+                other => break Ok(other),
             }
-        }
+        };
+
+        // Always disarm so the cancel slot is cleared whether the loop
+        // exited via success, a read error, or a cancel. Without this,
+        // an early `?` return would leave the slot set and the next
+        // generation's arm would race with a stale handle.
+        let _ = store.disarm_cancel_locked();
+        result
     }
 
     fn is_in_cooldown(&self) -> bool {
@@ -493,6 +551,63 @@ impl AppleAssistHelperStore {
             self.consecutive_failures_for_test
                 .store(0, Ordering::SeqCst);
         }
+    }
+
+    /// Cancel any in-flight generation. Acquires only the lightweight
+    /// `active_cancel` mutex (never `inner`), so it cannot deadlock
+    /// with the blocking `read_line` the in-flight call is stuck on.
+    /// Sets `cancel_flag` so the round-trip can distinguish a user
+    /// cancel from a timeout, then kills the child through the same
+    /// shared `Arc<Mutex<Child>>` the watchdog uses. Killing closes
+    /// the child's stdout pipe, which unblocks `read_line`.
+    ///
+    /// Does NOT take the handle out of the slot — the round-trip
+    /// owns the disarm/clear so it can detect the cancel after
+    /// `read_line` unblocks. Returns `true` if an active generation
+    /// was signalled to cancel, `false` if no generation was in
+    /// flight (idempotent no-op).
+    pub(crate) fn cancel_active(&self) -> bool {
+        let cancelled = match self.active_cancel.lock() {
+            Ok(guard) => match guard.as_ref() {
+                Some(handle) => {
+                    handle.cancel_flag.store(true, Ordering::SeqCst);
+                    Self::kill_child(&handle.child);
+                    true
+                }
+                None => false,
+            },
+            Err(_) => false,
+        };
+        cancelled
+    }
+
+    /// Set the active cancel handle for an in-flight round-trip.
+    /// Called inside `inner`'s lock right before the blocking read,
+    /// so the handle's `child` is the same `Arc` the watchdog and
+    /// the read both see.
+    fn arm_cancel_locked(&self, child: Arc<Mutex<Child>>) -> Arc<AtomicBool> {
+        let cancel_flag = Arc::new(AtomicBool::new(false));
+        if let Ok(mut guard) = self.active_cancel.lock() {
+            *guard = Some(ActiveCancelHandle {
+                cancel_flag: Arc::clone(&cancel_flag),
+                child,
+            });
+        }
+        cancel_flag
+    }
+
+    /// Clear the active cancel handle at the end of a round-trip.
+    /// If `cancel_flag` was set, the caller maps the result to a
+    /// `"cancelled by user"` error instead of a failure.
+    fn disarm_cancel_locked(&self) -> bool {
+        let cancelled = match self.active_cancel.lock() {
+            Ok(mut guard) => match guard.take() {
+                Some(handle) => handle.cancel_flag.load(Ordering::SeqCst),
+                None => false,
+            },
+            Err(_) => false,
+        };
+        cancelled
     }
 }
 
@@ -603,6 +718,7 @@ pub(crate) fn probe_availability_via_helper(
 
     let timeout = store.effective_probe_timeout();
     let result = AppleAssistHelperStore::round_trip_locked(
+        store,
         guard.as_mut().expect("just spawned"),
         &WireRequest::ProbeAvailability,
         timeout,
@@ -620,6 +736,11 @@ pub(crate) fn probe_availability_via_helper(
         Ok(WireEnvelope::Candidate(_)) | Ok(WireEnvelope::CandidatePartial(_)) => {
             store.reset_locked(&mut guard);
             store.record_failure();
+        }
+        // A user cancel already reset the slot inside the round-trip;
+        // it must not count toward cooldown.
+        Err(err) if err.contains("cancelled by user") => {
+            store.reset_locked(&mut guard);
         }
         Err(_) => {
             store.reset_locked(&mut guard);
@@ -662,6 +783,7 @@ pub(crate) fn generate_candidate_via_helper(
 
     let timeout = store.effective_generate_timeout();
     let result = AppleAssistHelperStore::round_trip_locked(
+        store,
         guard.as_mut().expect("just spawned"),
         &WireRequest::GenerateCandidate {
             operation,
@@ -687,6 +809,11 @@ pub(crate) fn generate_candidate_via_helper(
         Ok(WireEnvelope::Availability(_)) | Ok(WireEnvelope::CandidatePartial(_)) => {
             store.reset_locked(&mut guard);
             store.record_failure();
+        }
+        // A user cancel already reset the slot inside the round-trip;
+        // it must not count toward cooldown.
+        Err(err) if err.contains("cancelled by user") => {
+            store.reset_locked(&mut guard);
         }
         Err(_) => {
             store.reset_locked(&mut guard);
@@ -722,6 +849,7 @@ where
 
     let timeout = store.effective_generate_timeout();
     let result = AppleAssistHelperStore::round_trip_stream_locked(
+        store,
         guard.as_mut().expect("just spawned"),
         &WireRequest::GenerateCandidateStreaming {
             operation,
@@ -741,6 +869,11 @@ where
         Ok(WireEnvelope::Availability(_)) | Ok(WireEnvelope::CandidatePartial(_)) => {
             store.reset_locked(&mut guard);
             store.record_failure();
+        }
+        // A user cancel already reset the slot inside the round-trip;
+        // it must not count toward cooldown.
+        Err(err) if err.contains("cancelled by user") => {
+            store.reset_locked(&mut guard);
         }
         Err(_) => {
             store.reset_locked(&mut guard);
@@ -763,6 +896,7 @@ pub(crate) fn store_with_helper_path(path: std::path::PathBuf) -> AppleAssistHel
         inner: Mutex::new(None),
         consecutive_failures: AtomicU32::new(0),
         cooldown_started_at: Mutex::new(None),
+        active_cancel: Mutex::new(None),
         helper_path_override: Some(path),
         timeout_override: None,
         consecutive_failures_for_test: AtomicU32::new(0),
@@ -779,6 +913,7 @@ pub(crate) fn store_without_helper() -> AppleAssistHelperStore {
         inner: Mutex::new(None),
         consecutive_failures: AtomicU32::new(0),
         cooldown_started_at: Mutex::new(None),
+        active_cancel: Mutex::new(None),
         helper_path_override: None,
         timeout_override: None,
         consecutive_failures_for_test: AtomicU32::new(0),

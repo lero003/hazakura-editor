@@ -3,12 +3,12 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-07-01 (v1.3 implemented and core-smoke verified)
+Last reviewed: 2026-07-03 (v1.3 approved and published on the Mac App Store; active lane moved to v1.4)
 
 ## Current State
 
-- `1.1.0` passed App Review and was released on the Mac App Store. The
-  public listing confirms version `1.1.0`; raw App Store Connect,
+- `1.3.0` passed App Review and is published on the Mac App Store. The
+  public listing confirms version `1.3.0`; raw App Store Connect,
   TestFlight, App Review, and public build-number logs remain outside
   this repository. The v1 public promise is
   `Markdownで書き、本として読み、ローカルAIで整える。`
@@ -22,14 +22,13 @@ Last reviewed: 2026-07-01 (v1.3 implemented and core-smoke verified)
   The v1.2 Polish lane (command discovery, context-menu containment,
   EPUB scope note) was prepared as the `1.2.0` local candidate (build
   `57`); it remains historical now that `1.3.0` is the active candidate.
-- The active main-branch release lane is v1.3 Daily Trust, and package/app
-  metadata now reads `1.3.0`. Four independent slices are implemented:
-  Save As preserves the same-language CodeMirror session and rekeys view
-  state; Local Assist review uses explicit `採用` / `破棄` without auto-save;
-  Reading Focus TOC shows bounded H3+ context and current measured page
-  progress; PDF export offers request-scoped A4 `狭い` / `標準` / `広い`
-  margin presets. The signed `1.3.0` pkg has not been built yet; the last
-  built candidate remains `1.2.0` build `57`. See `docs/v1.3-followup.md`.
+- The active main-branch release lane is v1.4. v1.3 Daily Trust
+  (`1.3.0`) is approved and published: Save As preserves the
+  same-language CodeMirror session and rekeys view state; Local Assist
+  review uses explicit `採用` / `破棄` without auto-save; Reading Focus
+  TOC shows bounded H3+ context and current measured page progress;
+  PDF export offers request-scoped A4 `狭い` / `標準` / `広い` margin
+  presets. See `docs/v1.3-followup.md` for historical evidence.
 - The signed local `1.1.0` App Store / TestFlight candidate passed the
   release gates, package signature and checksum verification, enforced
   App Store entitlement probe, and sandbox-preview smoke. Its current
@@ -60,13 +59,13 @@ Last reviewed: 2026-07-01 (v1.3 implemented and core-smoke verified)
   table fragmentation inside those columns. The
   known Vite chunk-size warning remains warning-only. Extended RC interaction
   breadth is recorded separately in `docs/v1.3-followup.md`.
-- `Hazakura Editor` `1.1.0` is the latest published Mac App Store
-  version. `0.36.0` remains historical proof of the same v1-equivalent
-  reader, export, workspace-marker, Markdown insertion, and Local Assist
-  feature shape.
+- `Hazakura Editor` `1.3.0` is the latest published Mac App Store
+  version. `0.36.0` and `1.1.0` remain historical proof of the same
+  v1-equivalent reader, export, workspace-marker, Markdown insertion,
+  and Local Assist feature shape.
 - The earlier `0.29.1` App Store update established Hazakura Local Assist
   as a public preview; its build `33` package remains historical release
-  evidence and should not be confused with the current `1.1.0` public
+  evidence and should not be confused with the current `1.3.0` public
   lane.
 - Local App Store / TestFlight package candidate metadata (version,
   build counter, pkg path, SHA-256, generated time, source commit,
@@ -103,11 +102,10 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    create content in the user's cloud folders implicitly.
 4. Follow with one image or `.bak` case at a time; do not
    bundle unrelated polish.
-5. The version is `1.3.0` as a prepared local candidate; the published
-   Mac App Store version remains `1.1.0`. The signed `1.3.0` pkg has not
-   been built yet; the last built candidate remains `1.2.0` build `57`.
-   Keep tag creation, App Store Connect upload, TestFlight, review, and
-   publication gated on explicit user approval.
+5. The version is `1.3.0` and is published on the Mac App Store. The
+   next active lane is v1.4; pick the next slice from
+   `docs/current-work.md`. Do not tag or publish a new release without
+   explicit user approval.
 
 Detailed v0.18-v1.0 completed-slice history and per-version verification
 records moved to `docs/archive/operations/handoff-detail-through-v1.0.md`.

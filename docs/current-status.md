@@ -3,20 +3,19 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-02 (v1.3 submitted to TestFlight / App Review; outcome pending)
+Last reviewed: 2026-07-03 (v1.3 approved and published on the Mac App Store; next lane v1.4)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
 - Current development package/app version: `1.3.0` across npm, Tauri, Cargo,
-  and lockfile metadata. `1.3.0` is the v1.3 Daily Trust candidate (Save As
-  session continuity, explicit Local Assist `採用` / `破棄`, Reading Focus
-  TOC context, A4 PDF margin presets). The signed `1.3.0` pkg has been built,
-  uploaded to App Store Connect, and submitted to TestFlight / App Review;
-  Apple processing / review outcome and public release remain pending. `1.1.0`
-  remains the published Mac App Store version.
-- The active main-branch release lane is v1.3 Daily Trust. Four bounded
-  slices are implemented: Save As keeps the same-language open-tab /
+  and lockfile metadata. `1.3.0` is the published Mac App Store version (v1.3
+  Daily Trust: Save As session continuity, explicit Local Assist `採用` /
+  `破棄`, Reading Focus TOC context, A4 PDF margin presets). It passed App
+  Review and is now public on the Mac App Store. The next active lane is
+  v1.4.
+- v1.3 Daily Trust is approved and published. Four bounded slices ship
+  in `1.3.0`: Save As keeps the same-language open-tab /
   CodeMirror session and migrates per-document view state; Local Assist
   review uses explicit `採用` / `破棄` without auto-save; Reading Focus TOC
   shows bounded H3+ context plus current measured page progress; and direct
@@ -48,11 +47,9 @@ Last reviewed: 2026-07-02 (v1.3 submitted to TestFlight / App Review; outcome pe
   boundary. No v1 No-Go condition was reported. Unchecked boxes are not
   treated as automatic blockers; commented observations are classified
   in `docs/v1.1-v1.2-followup.md`.
-- No public-release hotfix blocker has been reported. v1.3 (`1.3.0`) has been
-  built, uploaded to App Store Connect, and submitted to TestFlight / App
-  Review; Apple processing / review outcome remains pending. The previous
-  `1.2.0` candidate remains historical and the published App Store version is
-  still `1.1.0`.
+- No public-release hotfix blocker has been reported. v1.3 (`1.3.0`) passed
+  App Review and is published on the Mac App Store. The previous `1.2.0`
+  candidate remains historical and unreleased; the active next lane is v1.4.
   `AppWorkspace` owns a shared
   per-document view-state registry: reader, Editor cursor/scroll, Preview
   reopen, tab transitions, and safe local Markdown-link transitions now
@@ -61,11 +58,13 @@ Last reviewed: 2026-07-02 (v1.3 submitted to TestFlight / App Review; outcome pe
   dedicated fixture existed and user cloud content was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Published Mac App Store version: `1.1.0`. It includes per-document Editor /
+- Published Mac App Store version: `1.3.0`. It includes per-document Editor /
   Reader / Preview position continuity, direct PDF export, EPUB export,
   e-book reader page-turn stabilization, workspace open / dirty markers,
-  right-click Markdown insertion, and Hazakura Local Assist as a preview
-  on-device writing companion.
+  right-click Markdown insertion, Hazakura Local Assist as a preview
+  on-device writing companion, plus the v1.3 Daily Trust slice: Save As
+  session continuity, explicit Local Assist `採用` / `破棄`, Reading Focus
+  TOC context, and A4 PDF margin presets.
 - Latest GitHub source / local-app tag: `v0.35.0`.
 - Latest local App Store / TestFlight package candidate metadata
   (version, build counter, pkg path, SHA-256, generated time, source
@@ -487,16 +486,11 @@ baseline, and smoke evidence are archived under
    listed extended interaction breadth; do not reopen the implementation
    without a reproduced gap. Reuse the recorded multi-page PDF comparison as
    the core margin proof instead of treating file creation alone as evidence.
-4. The `1.3.0` candidate is the prepared package baseline. The signed
-   `1.3.0` App Store / TestFlight pkg has been built, uploaded to App
-   Store Connect, and submitted to TestFlight / App Review; Apple
-   processing / review outcome and public release remain pending, so do
-   not claim it is published until the public listing confirms `1.3.0`.
-   The latest local candidate metadata lives in
-   `docs/internal/app-store-candidates/latest.json`; treat the `1.1.0`
-   pkg metadata as the released-lane provenance. Do not publish or tag
-   without explicit approval, and do not reopen the implementation
-   without a reproduced gap.
+4. `1.3.0` passed App Review and is published on the Mac App Store. Treat the
+   `1.3.0` lane as released and closed; do not reopen the implementation
+   without a reproduced gap. The latest local candidate metadata lives in
+   `docs/internal/app-store-candidates/latest.json`. Move the active lane to
+   v1.4 and pick the next slice from `docs/current-work.md`.
 5. For the latest local App Store / TestFlight package candidate, see
    `docs/internal/app-store-candidates/latest.json` for version / build
    counter / pkg path / SHA-256 / generated time. App Store Connect,

@@ -9,6 +9,11 @@ type UseWindowCloseConfirmationOptions = {
   allowWindowCloseRef: RefValue<boolean>;
   dirtyTabCount: number;
   onNeedsConfirmation: () => void;
+  // Called right before the window is hidden on the clean close
+  // path. Used to stop an in-flight Hazakura Local Assist
+  // generation so the helper is not left running behind a hidden
+  // window. Best-effort: if it throws, the hide still proceeds.
+  onBeforeHide?: () => Promise<void> | void;
 };
 
 // v0.15 macOS close-flow fix (round 3).
@@ -35,14 +40,17 @@ export function useWindowCloseConfirmation({
   allowWindowCloseRef,
   dirtyTabCount,
   onNeedsConfirmation,
+  onBeforeHide,
 }: UseWindowCloseConfirmationOptions) {
   const dirtyTabCountRef = useRef(dirtyTabCount);
   const onNeedsConfirmationRef = useRef(onNeedsConfirmation);
+  const onBeforeHideRef = useRef(onBeforeHide);
 
   useEffect(() => {
     dirtyTabCountRef.current = dirtyTabCount;
     onNeedsConfirmationRef.current = onNeedsConfirmation;
-  }, [dirtyTabCount, onNeedsConfirmation]);
+    onBeforeHideRef.current = onBeforeHide;
+  }, [dirtyTabCount, onNeedsConfirmation, onBeforeHide]);
 
   useEffect(() => {
     let cancelled = false;
@@ -60,7 +68,10 @@ export function useWindowCloseConfirmation({
       if (allowWindowCloseRef.current || dirtyTabCountRef.current === 0) {
         // Clean state, or the user already confirmed a
         // Save / Discard choice in the dialog and a follow-up
-        // close request arrived: hide the window.
+        // close request arrived: hide the window. Stop any
+        // in-flight Local Assist generation first so the
+        // helper is not left running behind a hidden window.
+        await onBeforeHideRef.current?.();
         await hideMainWindow();
         return;
       }

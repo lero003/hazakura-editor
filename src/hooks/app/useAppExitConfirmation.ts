@@ -26,7 +26,7 @@ type UseAppExitConfirmationOptions = {
   // window-close path uses, with the ref deciding whether
   // the final action is `exitApp` or `hideMainWindow`.
   onNeedsConfirmation: () => void;
-  onBeforeExit?: () => void;
+  onBeforeExit?: () => void | Promise<void>;
 };
 
 // v0.17 app-store-quality: save-restore-regression slice 1.4
@@ -82,9 +82,11 @@ export function useAppExitConfirmation({
       if (dirtyTabCountRef.current === 0) {
         // Clean state: the user explicitly chose to quit
         // the app, nothing in the buffer would be lost.
-        // Go straight to the Rust `exit_app` command.
-        onBeforeExitRef.current?.();
-        void exitApp();
+        // Run any before-exit hook (e.g. stopping an in-flight
+        // Local Assist generation) before the process exits.
+        void Promise.resolve(onBeforeExitRef.current?.()).then(() => {
+          void exitApp();
+        });
         return;
       }
 

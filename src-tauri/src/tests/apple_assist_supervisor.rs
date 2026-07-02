@@ -552,6 +552,69 @@ fn supervisor_timeout_does_not_pile_up_zombie_children() {
     );
 }
 
+// A user cancel (stop_apple_assist_candidate) must kill the active
+// helper child without acquiring `inner`, surface a "cancelled by
+// user" error, leave the failure counter untouched (cancel is a user
+// intent, not a helper failure), and leave the inner slot empty so
+// the next call respawns. The probe path is used because it is the
+// simplest blocking entry point; generate/stream share the same
+// cancel plumbing inside `round_trip_locked`.
+#[test]
+fn supervisor_cancel_kills_active_helper_without_counting_failure() {
+    let Some(slow) = sleep_helper_script_or_skip("cancel") else {
+        return;
+    };
+    let store =
+        store_with_helper_path(slow).with_timeout_override(std::time::Duration::from_secs(30));
+    let store = std::sync::Arc::new(store);
+    let store_for_cancel = std::sync::Arc::clone(&store);
+
+    // The probe blocks on the slow helper's read_line. Cancel from a
+    // separate thread shortly after the probe starts so the main
+    // thread is actually blocked on the read when cancel fires. The
+    // 300ms margin covers spawn + write + arm_cancel on slow CI; the
+    // helper's own `read` + `sleep 5` keeps the probe blocked well
+    // past this point.
+    let cancel_thread = std::thread::spawn(move || {
+        std::thread::sleep(std::time::Duration::from_millis(300));
+        store_for_cancel.cancel_active()
+    });
+
+    let err = probe_availability_via_helper(&store)
+        .expect_err("a cancelled probe must return an error, not succeed");
+    let cancelled = cancel_thread.join().expect("cancel thread panicked");
+
+    assert!(
+        cancelled,
+        "cancel_active must report it cancelled an active generation"
+    );
+    assert!(
+        err.contains("cancelled by user"),
+        "error should mention 'cancelled by user', got: {err}"
+    );
+    // Cancel must NOT count toward cooldown.
+    assert_eq!(
+        store.consecutive_failures_for_test(),
+        0,
+        "user cancel must not increment the failure counter"
+    );
+    assert!(
+        store.inner_is_empty(),
+        "inner slot must be None after cancel (helper was killed and the slot cleared)"
+    );
+}
+
+// A cancel with no active generation must be an idempotent no-op.
+#[test]
+fn supervisor_cancel_with_no_active_generation_is_noop() {
+    let store = store_without_helper();
+    let cancelled = store.cancel_active();
+    assert!(
+        !cancelled,
+        "cancel with no active generation must return false"
+    );
+}
+
 // ----------------------------------------------------------------
 // Protocol-shape tests (slice 12).
 // ----------------------------------------------------------------

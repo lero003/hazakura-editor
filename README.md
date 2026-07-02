@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-07-02 (v1.3 candidate submitted to TestFlight / App Review; outcome pending)
+Last reviewed: 2026-07-03 (v1.3 approved and published on the Mac App Store as 1.3.0)
 
 `Hazakura Editor` は、Markdownで文章を書き、電子書籍のように読み返し、必要な部分だけをローカルAIと整えられるmacOS向け執筆エディタです。
 
@@ -28,7 +28,7 @@ Local Assistは利用可能なMac上のオンデバイスモデルを使うプ�
 
 ## Mac App Store
 
-Hazakura Editor `1.1.0` is published on the Mac App Store:
+Hazakura Editor `1.3.0` is published on the Mac App Store:
 [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12).
 
 The App Store build is the Safe Editor lane. It omits Agent Workbench,
@@ -225,8 +225,8 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version is `1.3.0` across npm, Tauri, and Cargo metadata. `1.3.0` is the v1.3 Daily Trust candidate (Save As session continuity, explicit Local Assist `採用` / `破棄`, Reading Focus TOC context, A4 PDF margin presets). The signed `1.3.0` pkg has been built, uploaded to App Store Connect, and submitted to TestFlight / App Review; Apple processing / review outcome and public release remain pending.
-- The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `1.1.0` with per-document Editor / Reader / Preview position continuity, direct PDF / EPUB export, and the helper-enabled Hazakura Local Assist preview lane; `1.3.0` has been submitted to TestFlight / App Review but is not yet published.
+- Current package/app version is `1.3.0` across npm, Tauri, and Cargo metadata. `1.3.0` is the published Mac App Store version (v1.3 Daily Trust: Save As session continuity, explicit Local Assist `採用` / `破棄`, Reading Focus TOC context, A4 PDF margin presets). It passed App Review and is public on the Mac App Store.
+- The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `1.3.0` with per-document Editor / Reader / Preview position continuity, direct PDF / EPUB export, the helper-enabled Hazakura Local Assist preview lane, plus the v1.3 Daily Trust slice (Save As session continuity, explicit Local Assist `採用` / `破棄`, Reading Focus TOC context, A4 PDF margin presets).
 - The latest prepared GitHub source / local-app tag is [v0.35.0](https://github.com/lero003/hazakura-editor/tree/v0.35.0).
 - The latest local App Store / TestFlight package candidate metadata lives in `docs/internal/app-store-candidates/latest.json`; tracked docs do not pin its build number or package hash.
 - The current warning-expected DMG preview tag is `v0.20.0`; its release-note evidence lives in [0.20.0 Warning-expected DMG Preview](docs/releases/0.20.0-warning-expected-dmg-preview.release.md).

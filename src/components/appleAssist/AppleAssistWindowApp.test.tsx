@@ -30,6 +30,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   OPERATION_FEEDBACK_MAX_ENTRIES,
+  getApplyStatusPresentation,
   isApplyStatusForActiveRequest,
   scrollOperationFeedbackToEnd,
   useOperationFeedback,
@@ -58,6 +59,52 @@ describe("isApplyStatusForActiveRequest", () => {
     expect(isApplyStatusForActiveRequest("req-current", matching)).toBe(true);
     expect(isApplyStatusForActiveRequest("req-current", stale)).toBe(false);
     expect(isApplyStatusForActiveRequest(null, matching)).toBe(false);
+  });
+});
+
+describe("getApplyStatusPresentation", () => {
+  // A minimal copy stub: only the fields the function reads.
+  const copy = {
+    appliedStatus: (request: string) => `applied: ${request}`,
+    cancelledStatus: "cancelled-status",
+    failedStatus: "failed-status",
+  } as unknown as Parameters<typeof getApplyStatusPresentation>[1];
+
+  const basePayload = {
+    requestId: "req-1",
+    request: "校正",
+    message: "",
+    emittedAtMs: 1,
+  };
+
+  it("maps a completed phase to the applied status with no error", () => {
+    const presentation = getApplyStatusPresentation(
+      { ...basePayload, phase: "completed" },
+      copy,
+    );
+    expect(presentation.status).toBe("applied: 校正");
+    expect(presentation.error).toBeNull();
+    expect(presentation.feedbackKind).toBe("applied");
+  });
+
+  it("maps a cancelled phase to the cancelled status with no error", () => {
+    const presentation = getApplyStatusPresentation(
+      { ...basePayload, phase: "cancelled", message: "cancelled by user" },
+      copy,
+    );
+    expect(presentation.status).toBe("cancelled-status");
+    expect(presentation.error).toBeNull();
+    expect(presentation.feedbackKind).toBe("failed");
+  });
+
+  it("maps a failed phase to the failed status with the message as error", () => {
+    const presentation = getApplyStatusPresentation(
+      { ...basePayload, phase: "failed", message: "boom" },
+      copy,
+    );
+    expect(presentation.status).toBe("failed-status");
+    expect(presentation.error).toBe("boom");
+    expect(presentation.feedbackKind).toBe("failed");
   });
 });
 

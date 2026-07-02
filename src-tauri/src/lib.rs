@@ -165,6 +165,7 @@ pub fn run() {
             probe_apple_assist_availability,
             generate_apple_assist_candidate,
             generate_apple_assist_candidate_streaming,
+            stop_apple_assist_candidate,
             drain_opened_files,
             request_app_restart,
             exit_app,

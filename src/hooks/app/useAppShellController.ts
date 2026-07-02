@@ -19,7 +19,15 @@
 // function lets the React hook order stay obvious and the
 // dependency wiring stay in one place.
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import {
   openAgentWindow,
   openAppleAssistWindow,
@@ -38,6 +46,7 @@ import { useDocumentPreviewController } from "../document/useDocumentPreviewCont
 import { useEditorSurfaceController } from "../document/useEditorSurfaceController";
 import { useAppleAssistTargetSync } from "../editor/useAppleAssistTargetSync";
 import { useAppleAssistApplyHandler } from "../editor/useAppleAssistApplyHandler";
+import { stopAppleAssistGeneration } from "../../lib/tauri";
 import { aiEditTransactionStore } from "../../features/editor/aiEditTransactions";
 import { useEditorCommands } from "../editor/useEditorCommands";
 import { useEditorFindController } from "../editor/useEditorFindController";
@@ -110,6 +119,39 @@ export function useAppShellController() {
   const { activeTabId, setActiveTabId, setTabs, tabs } = foundation;
   const [appleAssistGenerationLock, setAppleAssistGenerationLock] =
     useState<AppleAssistGenerationLock | null>(null);
+  // Mirror the generation lock into a ref so the window/tab close
+  // paths can read "is any generation in flight?" synchronously
+  // without depending on the React render cycle. `appleAssistGenerationLock`
+  // (the public value) is scoped to the active tab; this ref tracks
+  // any in-flight generation regardless of which tab started it.
+  const appleAssistGenerationActiveRef = useRef<boolean>(false);
+  const setAppleAssistGenerationLockWithMirror = useCallback<Dispatch<SetStateAction<AppleAssistGenerationLock | null>>>(
+    (next) => {
+      setAppleAssistGenerationLock((prev) => {
+        const resolved =
+          typeof next === "function" ? next(prev) : next;
+        appleAssistGenerationActiveRef.current = resolved !== null;
+        return resolved;
+      });
+    },
+    [],
+  );
+  // Stop an in-flight Hazakura Local Assist generation, if any. Used
+  // by the window/tab close paths so no helper process is orphaned
+  // and the in-flight Promise resolves with a cancel. Idempotent.
+  const stopActiveAppleAssistGeneration = useCallback(async () => {
+    if (!appleAssistGenerationActiveRef.current) {
+      return;
+    }
+    try {
+      await stopAppleAssistGeneration();
+    } catch {
+      // The Rust cancel path is best-effort. If it fails (helper
+      // already gone, distribution lane mismatch, etc.), the lock
+      // still clears via the apply handler's finally block when the
+      // in-flight Promise settles.
+    }
+  }, []);
   const [pendingAssistDiscard, setPendingAssistDiscard] = useState<{
     sessionId: string;
     beforeBuffer: string;
@@ -474,7 +516,7 @@ export function useAppShellController() {
       );
     },
     setStatus,
-    setGenerationLock: setAppleAssistGenerationLock,
+    setGenerationLock: setAppleAssistGenerationLockWithMirror,
   });
 
   // section: workspace file opening
@@ -612,12 +654,28 @@ export function useAppShellController() {
     requestAppCloseConfirmation,
   ]);
 
+  // Stop any in-flight Local Assist generation before the app exits
+  // or the window closes through the save/discard dialog flow. The
+  // persist step stays synchronous; the shutdown runs first.
+  const onBeforeExitWithAssistShutdown = useCallback(async () => {
+    await stopActiveAppleAssistGeneration();
+    persistWorkspaceSession();
+  }, [persistWorkspaceSession, stopActiveAppleAssistGeneration]);
+
   useAppExitConfirmation({
     appExitInProgressRef,
     dirtyTabCount,
-    onBeforeExit: persistWorkspaceSession,
+    onBeforeExit: onBeforeExitWithAssistShutdown,
     onNeedsConfirmation: onAppExitNeedsConfirmation,
   });
+
+  // Same shutdown-before-persist hook for the save/discard → close
+  // dialog flow (window hide, not app exit). Distinct from the exit
+  // path so the two close destinations stay explicit.
+  const onBeforeWindowCloseWithAssistShutdown = useCallback(async () => {
+    await stopActiveAppleAssistGeneration();
+    persistWorkspaceSession();
+  }, [persistWorkspaceSession, stopActiveAppleAssistGeneration]);
 
   // section: tab bar controller
   const {
@@ -949,7 +1007,7 @@ export function useAppShellController() {
     dirtyTabs,
     discardingWindowCloseRef,
     focusEditorSoon,
-    onBeforeWindowClose: persistWorkspaceSession,
+    onBeforeWindowClose: onBeforeWindowCloseWithAssistShutdown,
     pendingCloseTabId,
     saveTabById,
     setActiveTabId,
@@ -1331,6 +1389,7 @@ export function useAppShellController() {
       onFocusAdjacentTab: focusAdjacentTab,
       onFocusEditorSoon: focusEditorSoon,
       onNeedsWindowCloseConfirmation: requestAppCloseConfirmation,
+      stopActiveAppleAssistGeneration,
       onOpenCommandPalette: openCommandPalette,
       onOpenFile: openFile,
       onOpenGlobalSearch: openGlobalSearch,

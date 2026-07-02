@@ -34,7 +34,7 @@ type UseTabCloseFlowOptions = {
   dirtyTabs: EditorTab[];
   discardingWindowCloseRef: RefValue<boolean>;
   focusEditorSoon: () => void;
-  onBeforeWindowClose?: () => void;
+  onBeforeWindowClose?: () => void | Promise<void>;
   pendingCloseTabId: string | null;
   saveTabById: (tabId: string) => Promise<boolean>;
   setActiveTabId: Dispatch<SetStateAction<string | null>>;
@@ -182,7 +182,7 @@ export function useTabCloseFlow({
       allowWindowCloseRef.current = true;
       setPendingAppClose(false);
       try {
-        onBeforeWindowClose?.();
+        await onBeforeWindowClose?.();
         if (exitAfter) {
           await exitApp();
         } else {
@@ -227,7 +227,7 @@ export function useTabCloseFlow({
     allowWindowCloseRef.current = true;
     setPendingAppClose(false);
     try {
-      onBeforeWindowClose?.();
+      await onBeforeWindowClose?.();
       if (exitAfter) {
         await exitApp();
       } else {
@@ -282,7 +282,7 @@ export function useTabCloseFlow({
           discardedTabIds.has(tab.id) ? resetDiscardedTab(tab) : tab,
         ),
       );
-      onBeforeWindowClose?.();
+      await onBeforeWindowClose?.();
       if (exitAfter) {
         await exitApp();
       } else {

@@ -209,6 +209,25 @@ pub(crate) async fn generate_apple_assist_candidate_streaming<R: tauri::Runtime>
     .map_err(|e| format!("Hazakura Local Assist streaming task failed: {e}"))?
 }
 
+/// Stop any in-flight Hazakura Local Assist generation. Kills the
+/// helper child through the shared cancel handle so the blocking
+/// `spawn_blocking` generation unblocks and resolves with a cancel
+/// error. Idempotent: a no-op when no generation is active.
+///
+/// Gated to the main window only (the same surface that owns the
+/// generation lock). The detached Hazakura Local Assist window
+/// reaches the stop path via an event to the main window, not via
+/// this command directly.
+#[tauri::command]
+pub(crate) fn stop_apple_assist_candidate<R: tauri::Runtime>(
+    window: tauri::WebviewWindow<R>,
+    helper_store: tauri::State<'_, Arc<AppleAssistHelperStore>>,
+) -> Result<bool, String> {
+    ensure_label_is_main(window.label())?;
+    ensure_apple_assist_allowed_by_distribution()?;
+    Ok(helper_store.inner().cancel_active())
+}
+
 #[cfg(desktop)]
 #[cfg_attr(not(test), allow(dead_code))]
 pub(crate) fn probe_apple_assist_availability_with_label_for_lane(

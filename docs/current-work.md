@@ -3,21 +3,19 @@
 Status: Operational
 Scope: v1.3 daily-use trust and bounded polish
 Authority: High
-Last reviewed: 2026-07-02 (v1.3 submitted to TestFlight / App Review; outcome pending)
+Last reviewed: 2026-07-03 (v1.3 approved and published on the Mac App Store; active lane moved to v1.4)
 
 ## Purpose
 
 Start here when choosing the next small `Hazakura Editor` slice.
-This file is the current work queue. `1.1.0` is approved and published
+This file is the current work queue. `1.3.0` is approved and published
 on the Mac App Store with the product promise
 `Markdownで書き、本として読み、ローカルAIで整える。` The active release lane is
-v1.3 Daily Trust: preserve the editing session through Save As, make Local
-Assist review decisions explicit, add bounded context to the e-book TOC, and
-offer three allowlisted A4 PDF margin presets. The package/app version is now
-`1.3.0`; the signed pkg has been built, uploaded to App Store Connect, and
-submitted to TestFlight / App Review. Apple processing / review outcome and
-public release remain pending, so v1.4 work can proceed in parallel without
-blocking on that outcome.
+v1.4. v1.3 Daily Trust (`1.3.0`) is approved and published: Save As session
+continuity, explicit Local Assist `採用` / `破棄`, bounded e-book TOC context,
+and three allowlisted A4 PDF margin presets are all live. The package/app
+version is `1.3.0`. Pick the next v1.4 slice from the Active UX Queue below;
+do not reopen v1.3 without a reproduced gap.
 
 Keep every slice small, verifiable, and inside the Markdown-first Safe
 Editor boundary. The v0.27 refinement phases are complete for source-tag
@@ -63,7 +61,7 @@ release-candidate interaction breadth listed in
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| Done / full gates and core built-app smoke passed / `1.3.0` in TestFlight + App Review | v1.3 Daily Trust | Save As keeps the same-language Editor session and migrates view state; Local Assist exposes explicit `採用` / `破棄` without auto-save; Reading Focus TOC shows bounded H3+ context and current measured page progress; PDF export applies allowlisted A4 `狭い` / `標準` / `広い` margins to every page. Package metadata reads `1.3.0`; the signed pkg has been built, uploaded, and submitted to TestFlight / App Review. Apple outcome and public publication remain pending. Extended RC interaction breadth remains in `docs/v1.3-followup.md`. |
+| Done / published on the Mac App Store as `1.3.0` | v1.3 Daily Trust | Save As keeps the same-language Editor session and migrates view state; Local Assist exposes explicit `採用` / `破棄` without auto-save; Reading Focus TOC shows bounded H3+ context and current measured page progress; PDF export applies allowlisted A4 `狭い` / `標準` / `広い` margins to every page. `1.3.0` passed App Review and is public on the Mac App Store. Extended RC interaction breadth remains in `docs/v1.3-followup.md` as historical evidence. |
 | Implemented / source verified / 1.2.0 candidate pkg prepared | v1.2 Export UX and Command Discovery | The EPUB dialog explains the single-Markdown / reading-preview boundary. The command palette derives Markdown command behavior and localized search vocabulary from the right-click slash-command registry, including date/time insertion, while palette labels remain English. The slash menu stays within 8px viewport insets and opens upward near the lower edge. A signed `1.2.0` candidate pkg passed local gates, audit, signature, checksum, entitlement, and sandbox-preview smoke; built-app interaction smoke and App Store Connect upload remain open checks. |
 | Done / built-app verified | v1.1 Reader / Editor / Preview Position Continuity | `AppWorkspace` owns one per-document view-state registry for Editor, e-book Mode, and Preview. A -> B -> A restores each editor selection/scroll and reader location. Preview restores only after replacement HTML has rendered, avoiding the real-layout top reset. A safe local Markdown-link transition and Preview -> e-book -> Preview were verified in the built app without source/save-state changes. See `docs/v1.1-v1.2-followup.md`. |
 | Observation / Google Drive manual-blocked | v1.2 Recovery Reliability | Local-folder forced termination passed: with Auto Backup explicitly enabled, a timed `.bak` preserved the unsaved marker, the saved source stayed unchanged, relaunch restored the workspace and exposed the draft, and explicit Restore returned it as a dirty buffer. Auto Backup was returned to its prior off state. Google Drive remains `manual-blocked` because no dedicated test fixture existed; do not create or scan user cloud content implicitly. |
@@ -85,7 +83,7 @@ release-candidate interaction breadth listed in
 | Done | Slice A Reader Stability | `EBookPane` render debounce (200ms shared with PreviewPane), rAF-coalesced pagination measurement, the scrollbar `contentDOM.blur()` refocus-on-mouseup fix, the `renderMarkdown` parse reduction (one DOM mutation pass + one sanitize), the rAF-throttled + self-extending preview->editor scroll-sync guard (fixes trackpad inertial-scroll stutter), and the per-image re-measurement collapse are implemented and pinned by focused tests. |
 | Done | Slice C Robustness | `goToLine` double-rAF, `readOnly` in the `useImperativeHandle` deps (insertText / applyMarkdownFormat / insertTable gated), and the validated `tabId` Apple Assist apply path are done. The former Save-As rekey/remount follow-up is implemented in the v1.3 Daily Trust slice. |
 | Done | Slice B bare-`ease` sweep | Remaining transition-level bare `ease` keywords in the named style files and the matching inline icon transition are routed through `var(--ease-standard)`. `ease-out` / `ease-in-out` animations stay untouched. |
-| Candidate / durability | v1.x Local Assist helper lifecycle | While Local Assist is active, closing the main window (or closing the tab mid-transaction) does not route through a deterministic helper teardown. Acceptance: window-close and tab-close-during-transaction call an explicit helper shutdown / cancel path, no orphan helper process remains after exit, and a focused test pins the teardown. The slice stays inside the on-device, no-external-API boundary and adds no background keep-alive, auto-retry, or auto-apply. Scheduled only when no open safety / review / App Store issue takes priority. |
+| Done / v1.4 | Local Assist helper lifecycle (close path + cancel UI) | While Local Assist is active, closing the main window or a tab mid-transaction now routes through an explicit helper teardown. The Rust `stop_apple_assist_candidate` command kills the in-flight helper child through a shared cancel handle (mirrors the watchdog kill path, never deadlocks on `inner`); the clean window-close, app-exit, save/discard-close, and tab-close paths all await it before hiding/exiting. A new "取り消す" / Cancel button in the Local Assist window stops an active generation and surfaces a `"cancelled"` status. Cancel is a user intent, not a failure: it does not count toward cooldown. Focused Rust tests pin the kill + zero-failure-count + empty-slot behavior and the no-op-when-idle path; TS tests pin the `cancelled` phase presentation. The slice stays inside the on-device, no-external-API boundary and adds no background keep-alive, auto-retry, or auto-apply. |
 | Candidate / refactor (trigger-driven) | v1.x Preview / render performance structural review | Target redundant re-parse, unnecessary DOM passes, and measurement churn on long manuscripts so Preview and e-book Mode scroll and re-render more smoothly. Acceptance: a named long-manuscript fixture shows reduced parse passes / DOM mutations or a smoother measured frame budget without changing the source-preserving render pipeline or adding Preview DOM editing. Pick only when a concrete long-document perf case or the observability slice gives a measurable baseline. |
 | Candidate / refactor (trigger-driven) | v1.x Observability refactor for diagnosability | Concentrate `useAppShellController` state, Local Assist transaction state, and the render / measurement path behind named seams so a reproduced issue localizes faster and focused regression tests / error traces cover them. Acceptance: one previously hard-to-isolate flow gains a focused test or a named error trace without changing public behavior, Markdown source preservation, or App Store lane boundaries. Refactor-for-debuggability only; do not bundle unrelated cleanup. |
 | Candidate / reading surface | v1.x Vertical writing (縦書き) | Add vertical-text reading to e-book Mode and export layers after the horizontal e-book surface, Spread View, and EPUB export are stable (the pre-existing trigger). Acceptance: a named long-form manuscript renders as vertical writing in e-book Mode with correct column flow, ruby/annotation handling does not corrupt source, and a focused test pins the writing-mode path. Markdown source stays canonical; vertical writing is a render / export layer, not a second saved model. Pick only after the horizontal e-book surface is confirmed stable and no open safety / review / App Store issue takes priority. |
