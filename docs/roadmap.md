@@ -101,9 +101,58 @@ Near-term phase order:
    publication remain gated on explicit user approval. Full gates and
    representative built-app interaction/rendered-PDF proof pass. Extended RC
    interaction breadth remains in `docs/v1.3-followup.md`.
-12. v2.0 remains the first appropriate target for Book Scope / Book
+12. v1.x durability and quality lane (observation- and trigger-driven,
+   no fixed version slot yet). Four bounded areas can be picked as
+   small independent slices before v2.0, each scheduled only when no
+   open safety / review / App Store issue takes priority:
+   - **Local Assist helper lifecycle.** While Local Assist is in use,
+     the main window can still be closed without an explicit helper
+     teardown step. A future slice should make window-close (or tab
+     close during an active transaction) route through a deterministic
+     helper shutdown / cancel path so no orphan helper process remains.
+     This stays inside the existing on-device, no-external-API Local
+     Assist boundary; it does not add background keep-alive, auto-retry,
+     or auto-apply.
+   - **Preview / render performance.** Preview and e-book Mode share
+     debounce / rAF coalescing today, but a structural review can target
+     redundant re-parse, unnecessary DOM passes, and measurement churn
+     on long manuscripts. The goal is smoother scroll and faster
+     re-render without changing the source-preserving render pipeline or
+     adding Preview DOM editing.
+   - **Observability refactor.** Refactor for diagnosability so a
+     reproduced issue is easier to localize: concentrated state in
+     `useAppShellController`, Local Assist transaction state, and the
+     render / measurement path should expose enough named seams for
+     focused regression tests and error traces. This is refactor-for-
+     debuggability only; it must not change public behavior, Markdown
+     source preservation, or App Store lane boundaries.
+   - **Vertical writing (縦書き).** Add vertical-text reading to e-book
+     Mode and export layers. This was already recorded in
+     `docs/ebook-mode-epub-export-plan.md` as a v1.x item gated on the
+     horizontal e-book surface, Spread View, and EPUB export being
+     stable; it carries over as a v1.x candidate here. Markdown source
+     stays canonical; vertical writing is a render / export layer, not a
+     second saved model.
+   See `docs/current-work.md` (Active UX Queue and v1 Refactor
+   Watchlist) for the trigger conditions and acceptance shape of each.
+13. v2.0 remains the first appropriate target for Book Scope / Book
    Workspace Alpha: treating a user-selected, explicit set of
-   structurally related Markdown files as one book.
+   structurally related Markdown files as one book. The v2 design —
+   including OKF as a structural foundation, the Workspace As Book
+   direction, the Safe Editor boundary that carries into v2, the open
+   UI questions, and UI candidates that are not yet decided — lives in
+   `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`. Treat
+   that spec as the single source of truth for v2 Book Scope design;
+   the scattered Book / Workspace As Book / OKF notes elsewhere are
+   historical context.
+14. Import Assist (PDF / 画像 → Markdown, local Vision OCR) is a
+   proposal-stage feature spanning the tail of v1.x and v2. Its Phase 1
+   (Vision OCR foundation: image / PDF import, OCR, Markdown
+   normalization, review UI) is a gated v1.x candidate that keeps the
+   on-device, no-cloud-OCR, edit-before-save, no-auto-save boundary.
+   Its Book Project generation connects to v2 Book Scope. The full
+   design — boundary, out-of-scope, phased roadmap, and v2 connection —
+   lives in `docs/superpowers/specs/2026-07-02-import-assist-design.md`.
 
 Historical phase details now live in release notes and archive files:
 
@@ -626,7 +675,9 @@ Possible directions:
   Recovery as layers over the same Markdown source.
 
 OKF remains a proposal-stage dependency. Re-check the latest OKF shape
-before treating it as an implementation contract.
+before treating it as an implementation contract. OKF as a structural
+foundation for v2 Book Scope is assessed in
+`docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
 
 ### Observation-driven Maintenance Backlog
 
