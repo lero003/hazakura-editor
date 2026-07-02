@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-01 (v1.3 implemented and core-smoke verified)
+Last reviewed: 2026-07-02 (v1.3 submitted to TestFlight / App Review; outcome pending)
 
 ## Current State
 
@@ -11,9 +11,10 @@ Last reviewed: 2026-07-01 (v1.3 implemented and core-smoke verified)
 - Current development package/app version: `1.3.0` across npm, Tauri, Cargo,
   and lockfile metadata. `1.3.0` is the v1.3 Daily Trust candidate (Save As
   session continuity, explicit Local Assist `採用` / `破棄`, Reading Focus
-  TOC context, A4 PDF margin presets); it is a prepared local candidate, not
-  yet uploaded to App Store Connect. `1.1.0` remains the published Mac App
-  Store version.
+  TOC context, A4 PDF margin presets). The signed `1.3.0` pkg has been built,
+  uploaded to App Store Connect, and submitted to TestFlight / App Review;
+  Apple processing / review outcome and public release remain pending. `1.1.0`
+  remains the published Mac App Store version.
 - The active main-branch release lane is v1.3 Daily Trust. Four bounded
   slices are implemented: Save As keeps the same-language open-tab /
   CodeMirror session and migrates per-document view state; Local Assist
@@ -47,9 +48,11 @@ Last reviewed: 2026-07-01 (v1.3 implemented and core-smoke verified)
   boundary. No v1 No-Go condition was reported. Unchecked boxes are not
   treated as automatic blockers; commented observations are classified
   in `docs/v1.1-v1.2-followup.md`.
-- No public-release hotfix blocker has been reported. v1.3 is the latest
-  prepared package baseline (`1.3.0`), while the previous `1.2.0` candidate
-  remains historical and the published App Store version is still `1.1.0`.
+- No public-release hotfix blocker has been reported. v1.3 (`1.3.0`) has been
+  built, uploaded to App Store Connect, and submitted to TestFlight / App
+  Review; Apple processing / review outcome remains pending. The previous
+  `1.2.0` candidate remains historical and the published App Store version is
+  still `1.1.0`.
   `AppWorkspace` owns a shared
   per-document view-state registry: reader, Editor cursor/scroll, Preview
   reopen, tab transitions, and safe local Markdown-link transitions now
@@ -484,22 +487,21 @@ baseline, and smoke evidence are archived under
    listed extended interaction breadth; do not reopen the implementation
    without a reproduced gap. Reuse the recorded multi-page PDF comparison as
    the core margin proof instead of treating file creation alone as evidence.
-4. The `1.3.0` candidate is the prepared package baseline, but the signed
-   `1.3.0` App Store / TestFlight pkg has not been built yet. The last
-   built candidate metadata remains the `1.2.0` build `57` artifact in
-   `docs/internal/app-store-candidates/latest.json`, which is local
-   provenance for the prepared candidate, not proof of a public build.
-   Treat the `1.1.0` pkg metadata as the released-lane provenance. Do not
-   upload to App Store Connect, submit to TestFlight / App Review, or
-   publish until the user explicitly opens that lane.
+4. The `1.3.0` candidate is the prepared package baseline. The signed
+   `1.3.0` App Store / TestFlight pkg has been built, uploaded to App
+   Store Connect, and submitted to TestFlight / App Review; Apple
+   processing / review outcome and public release remain pending, so do
+   not claim it is published until the public listing confirms `1.3.0`.
+   The latest local candidate metadata lives in
+   `docs/internal/app-store-candidates/latest.json`; treat the `1.1.0`
+   pkg metadata as the released-lane provenance. Do not publish or tag
+   without explicit approval, and do not reopen the implementation
+   without a reproduced gap.
 5. For the latest local App Store / TestFlight package candidate, see
    `docs/internal/app-store-candidates/latest.json` for version / build
-   counter / pkg path / SHA-256 / generated time. At this sync point it
-   still records the active `1.2.0` artifact; the `1.3.0` signed pkg
-   build is a separate explicitly gated step. App Store Connect and
-   TestFlight logs remain outside this repository unless public-safe
-   evidence is recorded. Do upload / App Store Connect work only when
-   explicitly requested.
+   counter / pkg path / SHA-256 / generated time. App Store Connect,
+   TestFlight, and App Review logs remain outside this repository
+   unless public-safe evidence is recorded.
 6. For Hazakura Local Assist, use `docs/assist-surface-strategy.md`,
    `docs/apple-local-assist-distribution-plan.md`, and
    `docs/apple-local-assist-writing-companion-plan.md`; keep direct
