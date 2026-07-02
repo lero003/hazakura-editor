@@ -303,6 +303,13 @@ export function AppleAssistWindowApp() {
     availabilityReportedRef.current = true;
   }, [availability.kind, probed, pushFeedback]);
 
+  // Note: the detached window's system close button relies on the
+  // default Tauri close behavior — no `onCloseRequested` handler is
+  // registered here. Stopping an in-flight Local Assist generation on
+  // window close is handled on the Rust side (`on_window_event` in
+  // `lib.rs`) so it does not depend on this window's JS event loop
+  // and does not block the close.
+
   useEffect(() => {
     const onStorage = (event: StorageEvent) => {
       if (event.key === THEME_STORAGE_KEY && event.newValue) {

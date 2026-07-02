@@ -139,6 +139,35 @@ pub fn run() {
         Ok(())
     });
 
+    // When the detached Hazakura Local Assist (`apple-assist`) window is
+    // closed while a generation is in flight, stop the helper so the
+    // `spawn_blocking` task unblocks and releases the supervisor `inner`
+    // lock. Without this, reopening the window and starting a new
+    // generation would block forever on that lock.
+    //
+    // Handled on the Rust side (not in the window's JS) so it does not
+    // depend on the detached window's event loop and does not block the
+    // close: `cancel_active` kills the shared child without acquiring
+    // `inner`, which unblocks the in-flight read immediately. The close
+    // itself is not prevented — `api.prevent_close()` is never called.
+    // Best-effort: if no store is reachable or no generation is active,
+    // `cancel_active` is a no-op. Other windows are unaffected.
+    let builder = builder.on_window_event(|window, event| {
+        if !matches!(event, tauri::WindowEvent::CloseRequested { .. }) {
+            return;
+        }
+        if window.label() != APPLE_ASSIST_WINDOW_LABEL {
+            return;
+        }
+        let Some(store) = window
+            .app_handle()
+            .try_state::<std::sync::Arc<AppleAssistHelperStore>>()
+        else {
+            return;
+        };
+        let _ = store.cancel_active();
+    });
+
     builder
         .invoke_handler(tauri::generate_handler![
             open_text_file,

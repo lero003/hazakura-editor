@@ -214,16 +214,18 @@ pub(crate) async fn generate_apple_assist_candidate_streaming<R: tauri::Runtime>
 /// `spawn_blocking` generation unblocks and resolves with a cancel
 /// error. Idempotent: a no-op when no generation is active.
 ///
-/// Gated to the main window only (the same surface that owns the
-/// generation lock). The detached Hazakura Local Assist window
-/// reaches the stop path via an event to the main window, not via
-/// this command directly.
+/// Allowed from both the main window and the detached Hazakura Local
+/// Assist (`apple-assist`) window: the cancel button lives in the
+/// companion window, while the window/tab-close shutdown paths fire
+/// from the main window. The agent window and any other label are
+/// rejected. `ensure_apple_assist_allowed_by_distribution` still
+/// gates the App Store lane boundary.
 #[tauri::command]
 pub(crate) fn stop_apple_assist_candidate<R: tauri::Runtime>(
     window: tauri::WebviewWindow<R>,
     helper_store: tauri::State<'_, Arc<AppleAssistHelperStore>>,
 ) -> Result<bool, String> {
-    ensure_label_is_main(window.label())?;
+    ensure_label_is_main_or_apple_assist(window.label())?;
     ensure_apple_assist_allowed_by_distribution()?;
     Ok(helper_store.inner().cancel_active())
 }
