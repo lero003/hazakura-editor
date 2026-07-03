@@ -8,7 +8,8 @@ import {
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getSidePaneCopy } from "../../lib/locale";
-import type { EditorTab, RightPaneMode } from "../../types";
+import { captureChangeReviewSnapshot } from "../../features/diff/changeReviewStale";
+import type { CompareCase, EditorTab, RightPaneMode } from "../../types";
 import { SidePane } from "./SidePane";
 
 afterEach(cleanup);
@@ -291,5 +292,53 @@ describe("SidePane", () => {
     // top-reset symptom (which needs real-layout reproduction).
     expect(previewPaneRef.current).toBe(firstContainer);
     expect(previewPaneRef.current?.scrollTop ?? 0).toBe(600);
+  });
+
+  it("shows the stale banner when the reviewed buffer changed after a tab switch", () => {
+    const compared = {
+      ...activeTab,
+      contents: "captured",
+      id: "/workspace/compared.txt",
+      name: "compared.txt",
+      path: "/workspace/compared.txt",
+      sessionId: "session:compared",
+    };
+    const compareCase: Extract<CompareCase, { kind: "changes" }> = {
+      kind: "changes",
+      key: "review-case",
+      scope: "buffer-vs-disk",
+      documentPath: compared.path,
+      documentLabel: compared.name,
+      leftColumnLabel: "Disk",
+      rightColumnLabel: "Editor",
+      capturedSnapshot: captureChangeReviewSnapshot(compared),
+    };
+
+    // The active tab now differs (different session id) from the one the
+    // diff was captured against, so the stale banner should render.
+    const switchedTab: EditorTab = {
+      ...activeTab,
+      contents: "switched",
+      id: "/workspace/other.txt",
+      name: "other.txt",
+      path: "/workspace/other.txt",
+      sessionId: "session:other",
+    };
+
+    renderSidePane({
+      activeContents: switchedTab.contents,
+      activeTab: switchedTab,
+      compareView: {
+        caseKey: compareCase.key,
+        lines: [],
+        additions: 0,
+        removals: 0,
+      },
+      getCompareCaseByKey: () => compareCase,
+      sidePaneMode: "compare",
+    });
+
+    expect(screen.getByText("This diff is stale")).toBeTruthy();
+    expect(screen.getByText("A different file became active")).toBeTruthy();
   });
 });

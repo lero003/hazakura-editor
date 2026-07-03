@@ -69,6 +69,16 @@ describe("buildTabAgainstDiskChangeReview", () => {
 
     expect(snapshot?.compareCase.documentPath).toBe("/workspace/a.md");
     expect(snapshot?.compareView.additions).toBeGreaterThan(0);
+    // The stale-detection snapshot is captured from the latest tab so
+    // the view can detect a later buffer change.
+    expect(snapshot?.compareCase.capturedSnapshot).toEqual({
+      tabId: "/workspace/a.md",
+      sessionId: "/workspace/a.md",
+      contents: "latest draft",
+      lineEnding: "lf",
+      encoding: "utf-8",
+      dirty: true,
+    });
   });
 });
 
