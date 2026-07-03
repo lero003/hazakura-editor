@@ -277,7 +277,24 @@
 
 .crt-boot {
   align-items: center;
-  background: #000;
+  background:
+    /* TV 砂嵐風の粗いノイズ: 細かい repeating-gradient を重ねて疑似ノイズ */
+    repeating-conic-gradient(
+      from 0deg at 50% 50%,
+      rgba(155, 224, 164, 0.03) 0deg,
+      transparent 1deg 3deg
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(155, 224, 164, 0.02) 0,
+      transparent 1px 3px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(155, 224, 164, 0.015) 0,
+      transparent 1px 4px
+    ),
+    #000;
   color: #9be0a4;
   display: flex;
   flex-direction: column;
@@ -287,10 +304,30 @@
   overflow: hidden;
   pointer-events: none;
   position: fixed;
-  text-shadow: 0 0 6px rgba(95, 224, 106, 0.55);
+  /* テキストの色収差 (RGB 分割) + グロー。綺麗すぎないよう CRT 台形補正の味。 */
+  text-shadow:
+    1.5px 0 rgba(255, 40, 40, 0.45),
+    -1.5px 0 rgba(40, 140, 255, 0.4),
+    0 0 8px rgba(95, 224, 106, 0.5);
   /* 前景スキャンライン (.crt-overlay = --z-crt-top) よりも上に確実に
      置くため、一段高い z-index にする (DOM 順序との二重の安全策)。 */
   z-index: calc(var(--z-crt-top) + 100);
+}
+
+/* 起動シーケンス中は全面に走査線を濃く上乗せ。背景の砂嵐と重ねて
+   ノイズ多めに。 .crt-boot の ::before で全面覆う。 */
+.crt-boot::before {
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 1px,
+    rgba(0, 0, 0, 0.35) 2px,
+    transparent 3px
+  );
+  content: "";
+  inset: 0;
+  position: absolute;
+  z-index: 1;
 }
 
 /* 電源 ON の中央フラッシュ。power-on phase で円形に広がる。 */
@@ -314,13 +351,15 @@
   animation: crtBootFlash 0.2s ease-out forwards;
 }
 
-/* 起動メッセージ。signal / ready phase で順にタイプライター表示。 */
+/* 起動メッセージ。signal / ready phase で順にタイプライター表示。
+   ::before の走査線 (z-index:1) より上に置く。 */
 .crt-boot-lines {
   display: flex;
   flex-direction: column;
   gap: 8px;
   opacity: 0;
   position: relative;
+  z-index: 2;
 }
 
 .crt-boot-signal .crt-boot-lines,
