@@ -288,7 +288,9 @@
   pointer-events: none;
   position: fixed;
   text-shadow: 0 0 6px rgba(95, 224, 106, 0.55);
-  z-index: var(--z-crt-top);
+  /* 前景スキャンライン (.crt-overlay = --z-crt-top) よりも上に確実に
+     置くため、一段高い z-index にする (DOM 順序との二重の安全策)。 */
+  z-index: calc(var(--z-crt-top) + 100);
 }
 
 /* 電源 ON の中央フラッシュ。power-on phase で円形に広がる。 */

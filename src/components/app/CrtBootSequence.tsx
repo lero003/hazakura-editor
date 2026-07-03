@@ -9,10 +9,10 @@ import type { AmbientIntensity } from "../../types";
  * サイバーパンク調の純オリジナル文体で、実 BIOS / Ghostty の文言を避ける。
  *
  * phase 構成:
- *   power-on (0〜0.2s)  : 中央の横線 → 円形フラッシュ
- *   signal   (0.2〜0.7s): 1 行目タイプライター表示
- *   ready    (0.7〜1.2s): 2 行目タイプライター表示
- *   collapse (1.2〜1.5s): 縦線に縮んで消える (ブラウン管 OFF 風)
+ *   power-on (0〜0.35s) : 中央の横線 → 円形フラッシュ
+ *   signal   (0.35〜1.1s): 1 行目タイプライター表示
+ *   ready    (1.1〜2.0s) : 2 行目タイプライター表示
+ *   collapse (2.0〜2.5s) : 縦線に縮んで消える (ブラウン管 OFF 風)
  *
  * ガード:
  *   - prefers-reduced-motion: reduce → 即 done (演出スキップ)
@@ -30,10 +30,10 @@ type Phase = "power-on" | "signal" | "ready" | "collapse" | "done";
 
 const PHASE_TIMINGS: { phase: Phase; at: number }[] = [
   { phase: "power-on", at: 0 },
-  { phase: "signal", at: 200 },
-  { phase: "ready", at: 700 },
-  { phase: "collapse", at: 1200 },
-  { phase: "done", at: 1500 },
+  { phase: "signal", at: 350 },
+  { phase: "ready", at: 1100 },
+  { phase: "collapse", at: 2000 },
+  { phase: "done", at: 2500 },
 ];
 
 export function CrtBootSequence({ intensity, trigger }: CrtBootSequenceProps) {

@@ -128,12 +128,14 @@ export function AppShell(props: AppShellProps) {
       ) : null}
       {crtMode ? (
         <>
+          <CrtShaderOverlay intensity={props.ambientIntensity} />
+          <div className="crt-overlay" aria-hidden="true" />
+          {/* 起動シーケンスは前景スキャンライン (.crt-overlay) の上に
+              重ねるため最後に置く。同じ z-index でも DOM 順でこちらが勝つ。 */}
           <CrtBootSequence
             intensity={props.ambientIntensity}
             trigger={crtMode}
           />
-          <CrtShaderOverlay intensity={props.ambientIntensity} />
-          <div className="crt-overlay" aria-hidden="true" />
         </>
       ) : null}
       <AppTopChrome

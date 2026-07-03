@@ -53,27 +53,27 @@ describe("CrtBootSequence", () => {
     // 発火直後は power-on phase
     expect(container.querySelector(".crt-boot-power-on")).not.toBeNull();
 
-    // signal phase (200ms)
+    // signal phase (350ms)
     act(() => {
-      vi.advanceTimersByTime(200);
+      vi.advanceTimersByTime(350);
     });
     expect(container.querySelector(".crt-boot-signal")).not.toBeNull();
 
-    // ready phase (700ms)
+    // ready phase (1100ms)
     act(() => {
-      vi.advanceTimersByTime(500);
+      vi.advanceTimersByTime(750);
     });
     expect(container.querySelector(".crt-boot-ready")).not.toBeNull();
 
-    // collapse phase (1200ms)
+    // collapse phase (2000ms)
     act(() => {
-      vi.advanceTimersByTime(500);
+      vi.advanceTimersByTime(900);
     });
     expect(container.querySelector(".crt-boot-collapse")).not.toBeNull();
 
-    // done phase (1500ms) でオーバーレイが消える
+    // done phase (2500ms) でオーバーレイが消える
     act(() => {
-      vi.advanceTimersByTime(300);
+      vi.advanceTimersByTime(500);
     });
     expect(container.querySelector(".crt-boot")).toBeNull();
   });
@@ -94,7 +94,7 @@ describe("CrtBootSequence", () => {
 
     // 一度 done まで進める
     act(() => {
-      vi.advanceTimersByTime(2000);
+      vi.advanceTimersByTime(3000);
     });
     expect(container.querySelector(".crt-boot")).toBeNull();
 
