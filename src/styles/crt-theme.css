@@ -1,0 +1,388 @@
+/* === crt-theme.css ===
+   CRT ジョークテーマの CSS を1ファイルに集約したもの。
+   themes.css / app-shell.css / animations.css から分離した。
+
+   次のジョークテーマを追加する時は、このファイルをコピーして
+   `<new>-theme.css` を作り、index.css に @import を追加すればよい。
+
+   構成:
+     1. パレット定義 (themes.css から)
+     2. .app-shell 背景 (app-shell.css から)
+     3. 背景シェーダー canvas / 前景スキャンライン
+     4. 文字色収差・明滅・マウス連動 (演出)
+     5. 起動シーケンス (.crt-boot*)
+     6. reduced-motion ガード
+     7. @keyframes (animations.css から含む全 crt* keyframes)
+
+   すべて :root[data-theme="crt"] にスコープし、他テーマへ影響しない。
+   base.css の prefers-reduced-motion ガードが * 向けに keyframes を止める。 */
+
+/* 1. パレット定義 / CRT palette */
+:root[data-theme="crt"] {
+  --bg: #040a06;
+  --surface: #08120c;
+  --surface-rgb: 8, 18, 12;
+  --surface-strong: #0d1a11;
+  --surface-strong-rgb: 13, 26, 17;
+  --surface-muted: #050d08;
+  --border: #143020;
+  --border-strong: #1f4a32;
+  --text: #9be0a4;
+  --text-muted: #5a8a64;
+  --accent: #5fe06a;
+  --accent-soft: #0e2417;
+  --accent-glass: rgba(95, 224, 106, 0.1);
+  --danger: #c66b6f;
+  --conflict: #b59045;
+  --status-bg: #03070a;
+  --status-text: #9be0a4;
+  --selection-bg: rgba(95, 224, 106, 0.2);
+  --scrollbar-thumb: rgba(120, 170, 130, 0.15);
+  --scrollbar-thumb-hover: rgba(120, 170, 130, 0.3);
+
+  /* Diff カラー: dark と同等のコントラストを保持 */
+  --diff-added-fg: #91d7ad;
+  --diff-added-row-bg: color-mix(in srgb, var(--diff-added-fg) 18%, transparent);
+  --diff-removed-row-bg: color-mix(in srgb, var(--diff-removed-fg) 20%, transparent);
+  --diff-blank-row-bg: color-mix(in srgb, var(--text-muted) 10%, transparent);
+
+  /* CodeMirror CRT 用配色 / CodeMirror CRT Colors */
+  --cm-bg: #08120c;
+  --cm-fg: #9be0a4;
+  --cm-caret: #5fe06a;
+  --cm-gutter-bg: #050d08;
+  --cm-gutter-border: #143020;
+  --cm-gutter-fg: #5a8a64;
+  --cm-active-line-bg: rgba(95, 224, 106, 0.06);
+  --cm-active-gutter-bg: rgba(95, 224, 106, 0.08);
+  --cm-selection-bg: #2a5a38;
+  --cm-search-match-bg: rgba(181, 144, 69, 0.3);
+  --cm-search-match-active-bg: rgba(181, 144, 69, 0.7);
+  --cm-search-match-active-shadow: 0 0 0 1px #b59045;
+  --cm-invisible-space: radial-gradient(circle, #4a6a52 1px, transparent 1px);
+  --cm-invisible-tab: rgba(95, 224, 106, 0.1);
+  --cm-trailing-space: rgba(198, 107, 111, 0.3);
+  --cm-mark-heading: #6fce80;
+  --cm-mark-strong: #b8e8c0;
+  --cm-mark-link: #8de8a0;
+  --cm-mark-monospace: #7de090;
+  --cm-mark-quote: #6a9a74;
+
+  /* xterm 用配色 / xterm CRT Colors */
+  --xterm-bg: #03070a;
+  --xterm-fg: #9be0a4;
+  --xterm-cursor: #5fe06a;
+  --xterm-selection-bg: #1f3a28;
+  --xterm-black: #08120c;
+  --xterm-red: #e89691;
+  --xterm-green: #8bc89a;
+  --xterm-yellow: #ddd27f;
+  --xterm-blue: #8db3ff;
+  --xterm-magenta: #cfa4df;
+  --xterm-cyan: #80c4c8;
+  --xterm-white: #9be0a4;
+  --xterm-bright-black: #5a8a64;
+  --xterm-bright-red: #ffb5ac;
+  --xterm-bright-green: #a8ddb4;
+  --xterm-bright-yellow: #eee6a4;
+  --xterm-bright-blue: #b5ccff;
+  --xterm-bright-magenta: #d9b7ee;
+  --xterm-bright-cyan: #9ad8dc;
+  --xterm-bright-white: #c8f0d0;
+
+  /* CRT 用シャドウ / CRT Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.28);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.38), 0 1px 3px rgba(0, 0, 0, 0.24);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.52), 0 2px 8px rgba(0, 0, 0, 0.24);
+  --shadow-accent: 0 4px 20px rgba(95, 224, 106, 0.18);
+
+  /* マウス連動の既定値 (中央)。JS 未起動時でも色収差が乗る。 */
+  --crt-mx: 0.5;
+  --crt-my: 0.5;
+}
+
+/* 2. .app-shell 背景 / CRT: near-black base */
+:root[data-theme="crt"] .app-shell {
+  background: #040a06;
+}
+
+/* 3. 背景シェーダー canvas / 前景スキャンライン */
+.crt-canvas {
+  animation: crtBgGlitch 7s steps(3, end) infinite;
+  display: block;
+  height: 100%;
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+  width: 100%;
+  z-index: var(--z-base);
+}
+
+/* CRT 前景: スキャンラインとビネット。全 UI の最前面に置いて文字の上
+   にも乗るようにする。pointer-events: none で操作は妨げない。
+   / CRT foreground scanlines + vignette overlay (top layer) */
+.crt-overlay {
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0) 0,
+      rgba(0, 0, 0, 0) 2px,
+      rgba(0, 0, 0, 0.28) 3px,
+      rgba(0, 0, 0, 0) 4px
+    ),
+    radial-gradient(
+      ellipse at center,
+      transparent 52%,
+      rgba(0, 0, 0, 0.46) 100%
+    );
+  inset: 0;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  position: fixed;
+  z-index: var(--z-crt-top);
+}
+
+/* 4. 文字色収差・明滅・マウス連動 (演出)
+   Layer 2: 文字 RGB 分割 (text-shadow 色収差) は常時
+   Layer 3: 明滅・スキャンラインドリフト は限定的 (フォーカス/ホバー時のみ)
+   Layer 4: マウス連動 (useCrtMouseTracking が --crt-mx / --crt-my を 0..1 で書き込む) */
+
+/* CodeMirror 本文: 色収差 text-shadow は常時。明滅はエディタにフォーカス/
+   ホバーがあるときだけ発火。行単位ではなく .cm-content 単位にかけることで
+   スクロール位置と干渉しない (scroll-safe)。 */
+:root[data-theme="crt"] .cm-content {
+  /* マウス X を赤/青のオフセット量に反映。動かすほど色収差が広がる。 */
+  text-shadow:
+    calc((var(--crt-mx) - 0.5) * 1.6px) 0 rgba(255, 40, 40, 0.55),
+    calc((0.5 - var(--crt-mx)) * 1.6px) 0 rgba(40, 140, 255, 0.5);
+}
+
+:root[data-theme="crt"] .cm-editor:focus-within .cm-content,
+:root[data-theme="crt"] .cm-editor:hover .cm-content {
+  animation: crtFlicker 5.5s linear infinite;
+}
+
+/* プレビュー本文: 同様。色収差は常時、明滅はホバー時のみ。 */
+:root[data-theme="crt"] .markdown-preview :is(p, h1, h2, h3, h4, h5, h6, li, a) {
+  text-shadow:
+    calc((var(--crt-mx) - 0.5) * 1.6px) 0 rgba(255, 40, 40, 0.5),
+    calc((0.5 - var(--crt-mx)) * 1.6px) 0 rgba(40, 140, 255, 0.45);
+}
+
+:root[data-theme="crt"] .markdown-preview:hover :is(p, h1, h2, h3, h4, h5, h6, li, a) {
+  animation: crtFlicker 6.2s linear infinite;
+}
+
+:root[data-theme="crt"] .markdown-preview :is(code, pre) {
+  text-shadow:
+    calc((var(--crt-mx) - 0.5) * 1.2px) 0 rgba(255, 40, 40, 0.45),
+    calc((0.5 - var(--crt-mx)) * 1.2px) 0 rgba(40, 140, 255, 0.4);
+}
+
+/* UI テキスト (タブ・ツリー・ステータスバー・サイドバー): 薄く色収差。 */
+:root[data-theme="crt"]
+  :is(.tabs-row, .file-tree-pane, .status-bar, .workspace-sidebar-rail)
+  :is(span, button, a, label, input, .tab-button, .tree-name, .status-bar-segment) {
+  text-shadow:
+    calc((var(--crt-mx) - 0.5) * 0.8px) 0 rgba(255, 40, 40, 0.35),
+    calc((0.5 - var(--crt-mx)) * 0.8px) 0 rgba(40, 140, 255, 0.3);
+}
+
+/* 前景スキャンラインのドリフト。画面全体の注目領域 (フォーカス内) がある
+   ときだけ走査線が流れる。常時ではなく限定的な演出。 */
+:root[data-theme="crt"] .app-shell:focus-within .crt-overlay {
+  animation: crtScanDrift 8s linear infinite;
+}
+
+/* 前景層にマウス Y を反映: ビネット中心をずらして「視線を追う」演出。 */
+:root[data-theme="crt"] .crt-overlay {
+  background-position:
+    0 0,
+    calc((var(--crt-mx) - 0.5) * 40px) calc((var(--crt-my) - 0.5) * 40px);
+}
+
+/* 5. 起動シーケンス (.crt-boot*)
+   テーマ切替 (false → true) で 2.5 秒流れる全画面オーバーレイ。
+   ブラウン管 TV の電源 ON → 起動メッセージ → 収縮。サイバーパンク調。
+   base.css の prefers-reduced-motion ガードが keyframes を止めるほか、
+   JS 側でも reduce 時は発火そのものをスキップする。 */
+
+.crt-boot {
+  align-items: center;
+  background:
+    /* TV 砂嵐風の粗いノイズ: 細かい repeating-gradient を重ねて疑似ノイズ */
+    repeating-conic-gradient(
+      from 0deg at 50% 50%,
+      rgba(155, 224, 164, 0.03) 0deg,
+      transparent 1deg 3deg
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(155, 224, 164, 0.02) 0,
+      transparent 1px 3px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(155, 224, 164, 0.015) 0,
+      transparent 1px 4px
+    ),
+    #000;
+  color: #9be0a4;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-mono);
+  inset: 0;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none;
+  position: fixed;
+  /* テキストの色収差 (RGB 分割) + グロー。綺麗すぎないよう CRT 台形補正の味。 */
+  text-shadow:
+    1.5px 0 rgba(255, 40, 40, 0.45),
+    -1.5px 0 rgba(40, 140, 255, 0.4),
+    0 0 8px rgba(95, 224, 106, 0.5);
+  /* 前景スキャンライン (.crt-overlay = --z-crt-top) よりも上に確実に
+     置くため、一段高い z-index にする (DOM 順序との二重の安全策)。 */
+  z-index: calc(var(--z-crt-top) + 100);
+}
+
+/* 起動シーケンス中は全面に走査線を濃く上乗せ。背景の砂嵐と重ねて
+   ノイズ多めに。 .crt-boot の ::before で全面覆う。 */
+.crt-boot::before {
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 1px,
+    rgba(0, 0, 0, 0.35) 2px,
+    transparent 3px
+  );
+  content: "";
+  inset: 0;
+  position: absolute;
+  z-index: 1;
+}
+
+/* 電源 ON の中央フラッシュ。power-on phase で円形に広がる。 */
+.crt-boot-flash {
+  background: radial-gradient(
+    circle,
+    rgba(155, 224, 164, 0.9) 0%,
+    rgba(95, 224, 106, 0.4) 30%,
+    transparent 70%
+  );
+  height: 4px;
+  left: 50%;
+  opacity: 0;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 0;
+}
+
+.crt-boot-power-on .crt-boot-flash {
+  animation: crtBootFlash 0.2s ease-out forwards;
+}
+
+/* 起動メッセージ。signal / ready phase で順にタイプライター表示。
+   ::before の走査線 (z-index:1) より上に置く。 */
+.crt-boot-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  opacity: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.crt-boot-signal .crt-boot-lines,
+.crt-boot-ready .crt-boot-lines {
+  animation: crtBootFadeIn 0.25s ease-out forwards;
+}
+
+.crt-boot-line {
+  letter-spacing: 0.06em;
+  opacity: 0;
+  white-space: nowrap;
+}
+
+.crt-boot-signal .crt-boot-line-1 {
+  animation: crtBootType 0.45s steps(24, end) forwards;
+}
+
+.crt-boot-ready .crt-boot-line-1 {
+  opacity: 1;
+}
+
+.crt-boot-ready .crt-boot-line-2 {
+  animation: crtBootType 0.4s steps(22, end) forwards;
+  animation-delay: 0.05s;
+}
+
+/* collapse phase: 全体を縦線に縮めてブラウン管 OFF 風に消える。 */
+.crt-boot-collapse {
+  animation: crtBootCollapse 0.3s steps(4, end) forwards;
+}
+
+/* 6. reduced-motion ガード
+   base.css のグローバルガードが keyframes を止めるが、canvas 描画自体は
+   JS の rAF ループで動くため、CSS で display: none にして完全停止させる。 */
+@media (prefers-reduced-motion: reduce) {
+  /* CRT シェーダーアニメーションも止める。前景スキャンライン自体は
+     静止画なので残す。/ Keep static scanlines, drop shader motion */
+  .crt-canvas {
+    display: none;
+  }
+}
+
+/* 7. @keyframes (animations.css から移行 + 起動シーケンス用) */
+
+/* 管の明滅。画面全体ではなく本文レイヤに薄くかける。 */
+@keyframes crtFlicker {
+  0%, 100% { opacity: 1; }
+  3% { opacity: 0.86; }
+  6% { opacity: 0.98; }
+  47% { opacity: 0.92; }
+  50% { opacity: 0.78; }
+  53% { opacity: 0.95; }
+  77% { opacity: 0.88; }
+}
+
+/* 前景スキャンラインの縦方向ドリフト。background-position を動かして
+   走査線がゆっくり流れるように見せる。 */
+@keyframes crtScanDrift {
+  0% { background-position: 0 0, 0 0; }
+  100% { background-position: 0 100vh, 0 0; }
+}
+
+/* 背景シェーダー (.crt-canvas) の「壊れた感じ」演出。文字は動かさず、
+   背景ノイズが不定期に明滅・色ズレする。steps でカクつかせ、管が劣化
+   している印象を出す。 */
+@keyframes crtBgGlitch {
+  0%, 92%, 100% { opacity: 1; filter: none; }
+  93% { opacity: 0.7; filter: hue-rotate(18deg) brightness(1.25); }
+  94% { opacity: 0.92; filter: hue-rotate(-12deg); }
+  96% { opacity: 0.78; filter: hue-rotate(24deg) saturate(1.4); }
+  97% { opacity: 1; filter: none; }
+}
+
+/* 起動シーケンス用 keyframes */
+@keyframes crtBootFlash {
+  0% { width: 0; height: 4px; opacity: 0; }
+  35% { width: 70vw; height: 4px; opacity: 1; }
+  100% { width: 180vh; height: 180vh; opacity: 0; }
+}
+
+@keyframes crtBootFadeIn {
+  to { opacity: 1; }
+}
+
+@keyframes crtBootType {
+  from { opacity: 1; clip-path: inset(0 100% 0 0); }
+  to { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+
+@keyframes crtBootCollapse {
+  0% { transform: scaleY(1); opacity: 1; }
+  60% { transform: scaleY(0.004); opacity: 1; }
+  100% { transform: scaleY(0); opacity: 0; }
+}
