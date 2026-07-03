@@ -1253,6 +1253,28 @@
   color: var(--diff-removed-fg);
 }
 
+.diff-stale-banner {
+  align-items: center;
+  background: color-mix(in srgb, var(--warning, var(--accent)) 12%, transparent);
+  border-left: 3px solid var(--warning, var(--accent));
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px;
+}
+
+.diff-stale-banner strong {
+  color: var(--warning, var(--accent));
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.diff-stale-banner span {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
 .diff-table {
   font-family: var(--font-mono);
   font-size: 12.5px;

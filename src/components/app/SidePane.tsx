@@ -171,6 +171,7 @@ export function SidePane({
         <DiffPane
           menuLanguage={menuLanguage}
           compareCase={rightPaneCompareCase}
+          documentTab={activeTab}
           onApplyBackup={onApplyBackup}
           view={compareView}
           onClose={() =>

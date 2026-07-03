@@ -1,4 +1,9 @@
-import type { CompareCase, CompareViewState, MenuLanguage } from "../../types";
+import type {
+  CompareCase,
+  CompareViewState,
+  EditorTab,
+  MenuLanguage,
+} from "../../types";
 import { ChangeReviewView } from "../review/ChangeReviewView";
 import { FileCompareView } from "./FileCompareView";
 
@@ -11,6 +16,7 @@ type RightPaneCompareCase = Extract<CompareCase, { kind: "file" | "changes" }>;
 
 type DiffPaneProps = {
   compareCase: RightPaneCompareCase;
+  documentTab?: EditorTab | null;
   menuLanguage: MenuLanguage;
   onApplyBackup?: (documentPath: string, backupContents: string) => void;
   onClose: () => void;
@@ -19,6 +25,7 @@ type DiffPaneProps = {
 
 export function DiffPane({
   compareCase,
+  documentTab = null,
   menuLanguage,
   onApplyBackup,
   onClose,
@@ -38,6 +45,7 @@ export function DiffPane({
   return (
     <ChangeReviewView
       compareCase={compareCase}
+      documentTab={documentTab}
       menuLanguage={menuLanguage}
       onApplyBackup={onApplyBackup}
       onClose={onClose}

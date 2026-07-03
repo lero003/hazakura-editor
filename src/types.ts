@@ -503,6 +503,11 @@ export type CompareCase = {
     backupName: string;
     backupContents: string;
   };
+  // Stale detection snapshot for buffer-backed scopes
+  // (`buffer-vs-disk`, `backup-vs-buffer`). Captured when the diff is
+  // built so the view can warn when the buffer changed by another
+  // path after capture. Fixed-snapshot scopes leave this unset.
+  capturedSnapshot?: ChangeReviewSnapshot;
 } | {
   // Manual candidate paste review: the right column is a
   // user-typed candidate snapshot, never a path on disk. The
@@ -526,4 +531,17 @@ export type CompareViewState = {
   lines: DiffLine[];
   additions: number;
   removals: number;
+};
+
+// Stale-detection snapshot for buffer-backed change-review scopes.
+// Captured when the diff is built so the view can warn when the
+// buffer changed by another path after capture. See
+// `features/diff/changeReviewStale.ts`.
+export type ChangeReviewSnapshot = {
+  tabId: string;
+  sessionId: string;
+  contents: string;
+  lineEnding: string;
+  encoding: string;
+  dirty: boolean;
 };

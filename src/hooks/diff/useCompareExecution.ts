@@ -21,6 +21,7 @@ import {
   compareMissingSelectionMessage,
   compareSameFileMessage,
 } from "../../lib/locale/review";
+import { captureChangeReviewSnapshot } from "../../features/diff/changeReviewStale";
 
 type UseCompareExecutionOptions = {
   activeTab: EditorTab | null;
@@ -66,6 +67,7 @@ export async function buildTabAgainstDiskChangeReview(
     documentLabel: latestTab.name,
     leftColumnLabel: diskLabel,
     rightColumnLabel: editorLabel,
+    capturedSnapshot: captureChangeReviewSnapshot(latestTab),
   };
 
   return {
@@ -247,6 +249,7 @@ export function useCompareExecution({
           leftColumnLabel: backupLabel,
           rightColumnLabel: bufferLabel,
           backupApplyAction: { backupName, backupContents },
+          capturedSnapshot: captureChangeReviewSnapshot(tab),
         };
 
         setCompareCaseEntry(compareCase);

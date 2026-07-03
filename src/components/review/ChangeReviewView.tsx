@@ -1,15 +1,21 @@
 import type {
   CompareCase,
   CompareViewState,
+  EditorTab,
   MenuLanguage,
 } from "../../types";
 import { getReviewCopy } from "../../lib/locale/review";
+import {
+  getChangeReviewStaleReason,
+  isStaleAwareScope,
+} from "../../features/diff/changeReviewStale";
 import { DiffBody } from "../diff/DiffBody";
 
 type ChangeReviewCase = Extract<CompareCase, { kind: "changes" }>;
 
 type ChangeReviewViewProps = {
   compareCase: ChangeReviewCase;
+  documentTab?: EditorTab | null;
   menuLanguage: MenuLanguage;
   onApplyBackup?: (documentPath: string, backupContents: string) => void;
   onClose: () => void;
@@ -18,12 +24,29 @@ type ChangeReviewViewProps = {
 
 export function ChangeReviewView({
   compareCase,
+  documentTab = null,
   menuLanguage,
   onApplyBackup,
   onClose,
   view,
 }: ChangeReviewViewProps) {
   const labels = getReviewCopy(menuLanguage);
+
+  // Stale detection only applies to buffer-backed scopes whose right
+  // column is the live editor buffer. Draft and AI-edit scopes compare
+  // against a fixed snapshot and never go stale.
+  const staleReason =
+    compareCase.capturedSnapshot && isStaleAwareScope(compareCase.scope)
+      ? getChangeReviewStaleReason(compareCase.capturedSnapshot, documentTab)
+      : null;
+
+  const staleDetail = staleReason
+    ? staleReason === "buffer-edited"
+      ? labels.staleReasonBufferEdited
+      : staleReason === "tab-switched"
+        ? labels.staleReasonTabSwitched
+        : labels.staleReasonTabClosed
+    : null;
 
   // The apply button is only meaningful for the auto-backup
   // restore scope — disk / draft / conflict diffs are read-only.
@@ -76,6 +99,16 @@ export function ChangeReviewView({
           </button>
         </div>
       </div>
+      {staleReason ? (
+        <div
+          className="diff-stale-banner"
+          role="status"
+          aria-live="polite"
+        >
+          <strong>{labels.staleHeading}</strong>
+          <span>{staleDetail}</span>
+        </div>
+      ) : null}
       <div className="diff-table" role="table" aria-label={labels.table}>
         <div className="diff-split-row diff-row-header" role="row">
           <span className="diff-line-number" role="columnheader" />

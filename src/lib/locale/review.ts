@@ -32,6 +32,11 @@ export type ReviewCopy = {
   close: string;
   applyBackup: string;
   table: string;
+  // Stale-review banner (change-review right pane).
+  staleHeading: string;
+  staleReasonBufferEdited: string;
+  staleReasonTabSwitched: string;
+  staleReasonTabClosed: string;
 };
 
 export type CompareColumnKey =
@@ -159,6 +164,10 @@ export function getReviewCopy(lang: MenuLanguage): ReviewCopy {
       close: "とぢる",
       applyBackup: "この ばっくあっぷに もどす",
       table: "へんこう かくにん",
+      staleHeading: "この さぶんは ふるい です",
+      staleReasonBufferEdited: "さぶんを ひらいてから ほんぶんが かわりました",
+      staleReasonTabSwitched: "べつの ふみに きりかわりました",
+      staleReasonTabClosed: "この ふみは とぢられました",
     };
   }
 
@@ -184,6 +193,10 @@ export function getReviewCopy(lang: MenuLanguage): ReviewCopy {
         close: "閉じる",
         applyBackup: "このバックアップを復元",
         table: "変更確認",
+        staleHeading: "この差分は古くなっています",
+        staleReasonBufferEdited: "差分を開いてから本文が変更されました",
+        staleReasonTabSwitched: "別のファイルに切り替わりました",
+        staleReasonTabClosed: "このファイルは閉じられました",
       }
     : {
         appleAssistReviewBarLabel: "Hazakura Local Assist changed your text",
@@ -206,5 +219,10 @@ export function getReviewCopy(lang: MenuLanguage): ReviewCopy {
         close: "Close",
         applyBackup: "Restore this backup",
         table: "Change review",
+        staleHeading: "This diff is stale",
+        staleReasonBufferEdited:
+          "The document changed after this diff was opened",
+        staleReasonTabSwitched: "A different file became active",
+        staleReasonTabClosed: "This file was closed",
       };
 }
