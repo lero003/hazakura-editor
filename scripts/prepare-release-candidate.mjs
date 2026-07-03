@@ -150,7 +150,7 @@ function printPlan(options) {
   console.log(
     `- Internal candidate note: ${
       options.writeInternalNote
-        ? "docs/internal/app-store-candidates/latest.json"
+        ? `docs/internal/app-store-candidates/latest.json (keep highest build notes: ${options.keepPkgs})`
         : "disabled by --no-internal-note"
     }`,
   );
@@ -166,7 +166,14 @@ function printPlan(options) {
   );
 }
 
-function writeInternalCandidateNote({ build, pkgPath, sha256, smoke, version }) {
+function writeInternalCandidateNote({
+  build,
+  pkgPath,
+  sha256,
+  smoke,
+  version,
+  keepNotes,
+}) {
   mkdirSync(internalCandidateDir, { recursive: true });
 
   const relativePkgPath = relative(root, pkgPath);
@@ -188,6 +195,8 @@ function writeInternalCandidateNote({ build, pkgPath, sha256, smoke, version }) 
   writeFileSync(join(internalCandidateDir, fileName), payload);
   writeFileSync(join(internalCandidateDir, "latest.json"), payload);
 
+  pruneInternalCandidateNotes(fileName, keepNotes);
+
   console.log(
     `INTERNAL_CANDIDATE_NOTE=${join(
       "docs",
@@ -196,6 +205,52 @@ function writeInternalCandidateNote({ build, pkgPath, sha256, smoke, version }) 
       fileName,
     )}`,
   );
+}
+
+function pruneInternalCandidateNotes(currentFileName, keepNotes) {
+  if (!Number.isInteger(keepNotes) || keepNotes < 1) {
+    return;
+  }
+
+  const notePattern =
+    /^HazakuraEditor-.+-build([1-9]\d*)\.json$/;
+  const candidates = readdirSync(internalCandidateDir)
+    .map((name) => {
+      const match = name.match(notePattern);
+      return match
+        ? { build: Number(match[1]), name, path: join(internalCandidateDir, name) }
+        : null;
+    })
+    .filter((candidate) => candidate !== null)
+    .map((candidate) => ({
+      ...candidate,
+      mtimeMs: statSync(candidate.path).mtimeMs,
+    }))
+    .sort(
+      (left, right) =>
+        right.build - left.build || right.mtimeMs - left.mtimeMs,
+    );
+
+  const keep = new Set([currentFileName]);
+  for (const candidate of candidates) {
+    if (keep.size >= keepNotes) break;
+    keep.add(candidate.name);
+  }
+
+  const removed = [];
+  for (const candidate of candidates) {
+    if (keep.has(candidate.name)) continue;
+    rmSync(candidate.path, { force: true });
+    removed.push(candidate.name);
+  }
+
+  if (removed.length > 0) {
+    console.log(
+      `Pruned old internal candidate notes: ${removed.join(", ")}`,
+    );
+  } else {
+    console.log("No old internal candidate notes pruned.");
+  }
 }
 
 function pruneGeneratedPackages(currentPkgPath, keepPkgs) {
@@ -294,6 +349,7 @@ function main() {
       sha256,
       smoke: options.skipSmoke ? "skipped" : "passed",
       version,
+      keepNotes: options.keepPkgs,
     });
   }
 
