@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-06-29
+Last reviewed: 2026-07-03
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
@@ -25,29 +25,31 @@ Latest downloadable GitHub DMG Release body:
 
 Latest App Store status:
 
-- `1.0.0` has been reported as approved and released on the Mac App
-  Store. The public listing confirms it as the current version. It is
-  the formal product/message baseline for the reader, export,
-  workspace-marker, and Local Assist feature shape first completed by
-  `0.36.0`.
-- `0.36.0` was the previous public version and remains historical proof
-  of the v1-equivalent feature shape.
-- `0.25.0` has been reported as released on the Mac App Store.
-- `0.26.0` has been reported as released on the Mac App Store.
-- `0.29.1` has been reported as approved and released on the Mac App
-  Store on 2026-06-23. The latest local package evidence for that review
-  cycle is build `33`:
-  `src-tauri/target/universal-apple-darwin/release/bundle/pkg/HazakuraEditor-0.29.1-build33-mas.pkg`.
-  Raw App Store Connect, TestFlight, and App Review logs are not tracked
-  in this repository.
-- Latest local App Store / TestFlight package candidate metadata lives
-  in `../internal/app-store-candidates/latest.json`; tracked release
-  notes do not carry the current build, pkg path, or SHA-256 as
-  canonical values.
+- `1.4.0` is the prepared v1.4 Observability And Testability candidate.
+  The signed `1.4.0` App Store / TestFlight package has not been built yet;
+  upload and publication remain gated on explicit user approval. See
+  `1.4.0-app-store-release-notes.md`.
+- `1.3.0` is approved and published on the Mac App Store: Save As session
+  continuity, explicit Local Assist `採用` / `破棄`, Reading Focus TOC
+  context, and A4 PDF margin presets.
+- `1.2.0` was prepared as a local signed candidate (command discovery,
+  context-menu containment, EPUB scope note); its upload lane was not
+  opened, and its content rolled forward into the published `1.3.0`.
+- `1.1.0` was approved and released on the Mac App Store: per-document
+  Reader / Editor / Preview position continuity.
+- `1.0.0` was approved and released on the Mac App Store. It is the formal
+  product/message baseline for the reader, export, workspace-marker, and
+  Local Assist feature shape first completed by `0.36.0`.
+- `0.36.0` was the previous public version and remains historical proof of
+  the v1-equivalent feature shape.
+- `0.25.0` / `0.26.0` / `0.29.1` were released on the Mac App Store earlier
+  in the v0.x cycle.
+- Latest local App Store / TestFlight package candidate metadata lives in
+  `../internal/app-store-candidates/latest.json`; tracked release notes do
+  not carry the current build, pkg path, or SHA-256 as canonical values.
   Raw App Store Connect upload, processing, TestFlight install / launch,
-  and App Review logs are not tracked in this repository unless
-  separately recorded.
-  See `../current-status.md` for current distribution status.
+  and App Review logs are not tracked in this repository unless separately
+  recorded. See `../current-status.md` for current distribution status.
 
 Latest App Store submission-candidate note:
 
@@ -65,6 +67,9 @@ Latest App Store submission-candidate note:
 
 Latest App Store release-note evidence and drafts:
 
+- `1.4.0-app-store-release-notes.md`
+- `1.3.0-app-store-release-notes.md`
+- `1.2.0-app-store-release-notes.md`
 - `1.0.0-app-store-listing-copy.md`
 - `1.0.0-app-store-release-notes.md`
 - `0.36.0-app-store-release-notes.md`

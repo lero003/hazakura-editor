@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-03 (v1.3 approved and published on the Mac App Store; active lane moved to v1.4)
+Last reviewed: 2026-07-03 (v1.3 approved and published on the Mac App Store; v1.4 candidate prepared as `1.4.0`)
 
 ## Current Position
 
@@ -17,9 +17,9 @@ Current release state:
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
 - Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
-- Current package/app version: `1.3.0` (v1.3 Daily Trust), now published on
-  the Mac App Store.
-- Latest source / local-app tag: `v0.35.0`.
+- Current package/app version: `1.4.0` (v1.4 Observability And Testability
+  candidate). The published Mac App Store version remains `1.3.0`.
+  - Latest source / local-app tag: `v0.35.0`.
 - Mac App Store published version: `1.3.0`, carrying the completed v1 feature
   shape, per-document Editor / Reader / Preview position continuity, and the
   v1.3 Daily Trust slice (Save As session continuity, explicit Local Assist
@@ -31,8 +31,10 @@ Current release state:
   pkg passed App Review and is published on the Mac App Store; raw App Store
   Connect, TestFlight, and App Review logs are not tracked in this repository.
 - Active release lane: v1.4. v1.3 Daily Trust (`1.3.0`) is approved and
-  published; the next lane deepens the single-document product. Candidate
-  slices are listed in `docs/current-work.md`.
+  published; v1.4 lifts previously module-private pure logic (e-book
+  page-commit / navigation, reader-location, PDF layout, EPUB text helpers)
+  into named seams with focused tests. Candidate slices are listed in
+  `docs/current-work.md`.
   new surface or entering v2 Book Scope. The `1.3.0` candidate is now in
   TestFlight / App Review; tagging and public publication remain a separate
   explicit decision pending the Apple outcome.
@@ -100,6 +102,17 @@ Near-term phase order:
    `破棄`, richer Reading Focus TOC context, and fixed A4 PDF margin
    presets. Full gates and representative built-app interaction/rendered-PDF
    proof pass. This lane is closed; the next lane is v1.4.
+12. v1.4 Observability And Testability is the active lane, prepared as
+   `1.4.0`. It lifts previously module-private pure logic into named seams
+   with focused tests: e-book page-commit / navigation (`ebookPageTarget.ts`),
+   reader-location (`ebookReaderLocation.ts`), PDF screen-page-layout tests,
+   and EPUB text helpers (`epubTextHelpers.ts`). It adds no new product
+   surface, no behavior change, and no App Store lane boundary change. The
+   remaining `useAppShellController` and Local Assist transaction seams stay
+   trigger-driven candidates under item 13.
+13. v1.x durability and quality lane (observation- and trigger-driven,
+   no fixed version slot yet). Four bounded areas can be picked as
+   small independent slices before v2.0, each scheduled only when no
 12. v1.x durability and quality lane (observation- and trigger-driven,
    no fixed version slot yet). Four bounded areas can be picked as
    small independent slices before v2.0, each scheduled only when no
@@ -139,7 +152,7 @@ Near-term phase order:
      second saved model.
    See `docs/current-work.md` (Active UX Queue and v1 Refactor
    Watchlist) for the trigger conditions and acceptance shape of each.
-13. v2.0 remains the first appropriate target for Book Scope / Book
+14. v2.0 remains the first appropriate target for Book Scope / Book
    Workspace Alpha: treating a user-selected, explicit set of
    structurally related Markdown files as one book. The v2 design —
    including OKF as a structural foundation, the Workspace As Book
@@ -149,7 +162,7 @@ Near-term phase order:
    that spec as the single source of truth for v2 Book Scope design;
    the scattered Book / Workspace As Book / OKF notes elsewhere are
    historical context.
-14. Import Assist (PDF / 画像 → Markdown, local Vision OCR) is a
+15. Import Assist (PDF / 画像 → Markdown, local Vision OCR) is a
    proposal-stage feature spanning the tail of v1.x and v2. Its Phase 1
    (Vision OCR foundation: image / PDF import, OCR, Markdown
    normalization, review UI) is a gated v1.x candidate that keeps the
