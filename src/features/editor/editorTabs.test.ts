@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { EditorTab } from "../../types";
-import { createEditorTab, isDirty, isSaveFailureError } from "./editorTabs";
+import {
+  createEditorTab,
+  isDirty,
+  isSaveFailureError,
+  replaceTabBufferForReview,
+} from "./editorTabs";
 
 // Shared dirty logic is the contract that all dirty-aware
 // surfaces (TabBar, auto-backup, status messages, save
@@ -125,5 +130,26 @@ describe("isSaveFailureError", () => {
     expect(isSaveFailureError(makeTab({ saveStatus: "error" }))).toBe(true);
     expect(isSaveFailureError(makeTab({ saveStatus: "idle" }))).toBe(false);
     expect(isSaveFailureError(null)).toBe(false);
+  });
+});
+
+describe("replaceTabBufferForReview", () => {
+  it("keeps saved baselines intact and marks different restored contents dirty", () => {
+    const tab = makeTab({ contents: "edited", saveStatus: "saving", error: "boom" });
+    const replaced = replaceTabBufferForReview(tab, "restored backup");
+
+    expect(replaced.contents).toBe("restored backup");
+    expect(replaced.saveStatus).toBe("idle");
+    expect(replaced.error).toBeNull();
+    // Saved baselines are untouched so the restored buffer is dirty.
+    expect(replaced.lastSavedContents).toBe("saved");
+    expect(isDirty(replaced)).toBe(true);
+  });
+
+  it("stays clean when the restored contents equal the saved baseline", () => {
+    const replaced = replaceTabBufferForReview(makeTab(), "saved");
+
+    expect(replaced.contents).toBe("saved");
+    expect(isDirty(replaced)).toBe(false);
   });
 });

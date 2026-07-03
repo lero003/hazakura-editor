@@ -48,6 +48,7 @@ import { useAppleAssistTargetSync } from "../editor/useAppleAssistTargetSync";
 import { useAppleAssistApplyHandler } from "../editor/useAppleAssistApplyHandler";
 import { stopAppleAssistGeneration } from "../../lib/tauri";
 import { aiEditTransactionStore } from "../../features/editor/aiEditTransactions";
+import { replaceTabBufferForReview } from "../../features/editor/editorTabs";
 import { useEditorCommands } from "../editor/useEditorCommands";
 import { useEditorFindController } from "../editor/useEditorFindController";
 import { useTabBarController } from "../editor/useTabBarController";
@@ -826,12 +827,7 @@ export function useAppShellController() {
       setTabs((currentTabs) =>
         currentTabs.map((tab) =>
           tab.path === documentPath
-            ? {
-                ...tab,
-                contents: backupContents,
-                saveStatus: "idle",
-                error: null,
-              }
+            ? replaceTabBufferForReview(tab, backupContents)
             : tab,
         ),
       );
@@ -1213,12 +1209,7 @@ export function useAppShellController() {
       setTabs((currentTabs) =>
         currentTabs.map((tab) =>
           tab.sessionId === sessionId
-            ? {
-                ...tab,
-                contents: beforeBuffer,
-                saveStatus: "idle",
-                error: null,
-              }
+            ? replaceTabBufferForReview(tab, beforeBuffer)
             : tab,
         ),
       );

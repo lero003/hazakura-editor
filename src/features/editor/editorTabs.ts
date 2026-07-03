@@ -61,6 +61,18 @@ export function isDirty(tab: EditorTab): boolean {
   );
 }
 
+// Replace the editor buffer for a review-driven revert/restore (backup
+// restore or AI edit discard). Saved baselines (`lastSaved*`) stay
+// untouched, so a restored buffer that differs from the last save is
+// dirty and one that matches it is clean. `saveStatus` is reset to
+// "idle" and any error is cleared; no silent disk write happens.
+export function replaceTabBufferForReview(
+  tab: EditorTab,
+  contents: string,
+): EditorTab {
+  return { ...tab, contents, saveStatus: "idle", error: null };
+}
+
 export function getWorkspaceTabMarkerPaths(
   tabs: readonly EditorTab[],
   workspaceRootPath: string | null,
