@@ -175,6 +175,33 @@ Update only docs whose truth changed:
 
 Do not add new historical logs to current docs. Preserve historical evidence under `docs/archive/` or `docs/releases/` as appropriate.
 
+## Documentation Pruning
+
+After an App Store version is published, prune or archive accumulated
+documentation so current docs stay small:
+
+- `superpowers/` plan or spec whose target version shipped and is no
+  longer cited from current docs: move to `docs/archive/superpowers/`
+  with `git mv` (keep the active, still-cited specs in place). See
+  `docs/archive/README.md` for the lifecycle rule.
+- `docs/internal/app-store-candidates/` per-build JSON: no manual
+  pruning. `scripts/prepare-release-candidate.mjs` keeps the newest
+  `--keep-pkgs` (default 5) build notes plus `latest.json` on every run.
+- `docs/releases/` published release bodies are kept as historical
+  evidence; do not prune them. Draft proposals belong in
+  `docs/archive/releases/`.
+
+## Worktree Hygiene
+
+Use a git worktree only for an explicit review or verification lane.
+
+- Remove the worktree with `git worktree remove` once the target version
+  is published and its working tree is clean. The branch itself is kept
+  for history; only the checked-out copy and its `target/` are removed.
+- If a worktree accumulates a large `src-tauri/target/`, remove the
+  worktree or clean its `target/` rather than keeping stale builds on
+  disk.
+
 ## Final Report
 
 Report:

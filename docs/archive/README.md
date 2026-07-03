@@ -3,7 +3,7 @@
 Status: Archive
 Scope: Retired planning, operational prompts, and historical evidence
 Authority: Low
-Last reviewed: 2026-06-29
+Last reviewed: 2026-07-03
 
 This directory preserves old material without letting it guide current implementation by accident.
 
@@ -22,5 +22,10 @@ Use current docs in `docs/` for decisions. Read archived files only when you nee
 - `roadmaps/`: superseded roadmap sequences.
 - `reviews/`: historical review gates and design decisions.
 - `status/`: long-form historical current-status logs.
+- `superpowers/`: completed `plans/` and `specs/` from `docs/superpowers/`
+  for versions that are already published on the App Store and no longer
+  referenced from current docs. Move a `superpowers/` plan or spec here
+  when its target version ships and current docs no longer cite it;
+  keep the active (still-cited) specs under `docs/superpowers/`.
 
 Do not move archived content back into current docs unless the current roadmap or implementation has made it active again.
