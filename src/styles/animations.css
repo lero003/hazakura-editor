@@ -76,19 +76,9 @@
 }
 
 /* === CRT ジョークテーマ用 keyframes ===
-   常時グリッチ・明滅・スキャンラインドリフト。いずれも infinite で、
-   base.css の prefers-reduced-motion ガードが * 向けに自動停止させる。 */
-
-/* 本文の微細な位置抖れ (jitter)。上下揺れは行の視認性を下げすぎるので
-   X 軸のみ。scroll-safe にするため適用先は .cm-content / .markdown-preview
-   単位 (行単位ではない)。 */
-@keyframes crtGlitch {
-  0%, 100% { transform: translate3d(0, 0, 0); }
-  20% { transform: translate3d(-0.6px, 0, 0); }
-  40% { transform: translate3d(0.8px, 0, 0); }
-  60% { transform: translate3d(-0.4px, 0, 0); }
-  80% { transform: translate3d(0.5px, 0, 0); }
-}
+   明滅・スキャンラインドリフト。いずれも infinite で、
+   base.css の prefers-reduced-motion ガードが * 向けに自動停止させる。
+   本文の位置移動 (jitter) は実機確認で却下したため使わない。 */
 
 /* 管の明滅。画面全体ではなく本文レイヤに薄くかける。 */
 @keyframes crtFlicker {
@@ -106,6 +96,17 @@
 @keyframes crtScanDrift {
   0% { background-position: 0 0, 0 0; }
   100% { background-position: 0 100vh, 0 0; }
+}
+
+/* 背景シェーダー (.crt-canvas) の「壊れた感じ」演出。文字は動かさず、
+   背景ノイズが不定期に明滅・色ズレする。steps でカクつかせ、管が劣化
+   している印象を出す。 */
+@keyframes crtBgGlitch {
+  0%, 92%, 100% { opacity: 1; filter: none; }
+  93% { opacity: 0.7; filter: hue-rotate(18deg) brightness(1.25); }
+  94% { opacity: 0.92; filter: hue-rotate(-12deg); }
+  96% { opacity: 0.78; filter: hue-rotate(24deg) saturate(1.4); }
+  97% { opacity: 1; filter: none; }
 }
 
 /* コントロール要素の洗練 / Control Styles */

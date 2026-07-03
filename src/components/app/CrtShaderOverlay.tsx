@@ -172,10 +172,17 @@ const INTENSITY_VALUE: Record<AmbientIntensity, number> = {
 
 export function CrtShaderOverlay({ intensity }: CrtShaderOverlayProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  // intensity を ref で保持し、effect はマウント時 1 回だけ走らせる。
+  // 依存配列を [intensity] にすると、intensity 変更のたびに GL コンテキストを
+  // 再構築することになり、WKWebView で描画が止まることがあるため。
+  const intensityRef = useRef(intensity);
+  useEffect(() => {
+    intensityRef.current = intensity;
+  }, [intensity]);
 
   useEffect(() => {
     // intensity === "off" ではシェーダーを描画しない (AmbientBackground と同じガード)
-    if (intensity === "off") {
+    if (intensityRef.current === "off") {
       return;
     }
 
@@ -224,8 +231,6 @@ export function CrtShaderOverlay({ intensity }: CrtShaderOverlayProps) {
     const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
     const intensityLocation = gl.getUniformLocation(program, "u_intensity");
 
-    const intensityValue = INTENSITY_VALUE[intensity];
-
     // devicePixelRatio を 2 に cap (Retina 26インチ想定の負荷対策)
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -240,7 +245,7 @@ export function CrtShaderOverlay({ intensity }: CrtShaderOverlayProps) {
     resize();
     window.addEventListener("resize", resize);
 
-    const startTime = performance.now();
+    let startTime = performance.now();
     let frameId = 0;
     let running = true;
 
@@ -255,29 +260,45 @@ export function CrtShaderOverlay({ intensity }: CrtShaderOverlayProps) {
       gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
       gl.uniform1f(timeLocation, time);
       gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
-      gl.uniform1f(intensityLocation, intensityValue);
+      // 描画ごとに最新の intensity を ref から読む
+      gl.uniform1f(intensityLocation, INTENSITY_VALUE[intensityRef.current]);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
       frameId = window.requestAnimationFrame(render);
     };
     frameId = window.requestAnimationFrame(render);
 
+    // タブ切り替え等で非表示になった後、戻ったときに rAF を再開する。
+    // WKWebView では非表示中に rAF が止まり、戻っても再開しないことがある。
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible" && running && frameId === 0) {
+        startTime = performance.now();
+        frameId = window.requestAnimationFrame(render);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
     const handleContextLoss = () => {
       running = false;
-      window.cancelAnimationFrame(frameId);
+      frameId = 0;
     };
     canvas.addEventListener("webglcontextlost", handleContextLoss);
 
     return () => {
       running = false;
-      window.cancelAnimationFrame(frameId);
+      if (frameId !== 0) {
+        window.cancelAnimationFrame(frameId);
+        frameId = 0;
+      }
       window.removeEventListener("resize", resize);
+      document.removeEventListener("visibilitychange", handleVisibility);
       canvas.removeEventListener("webglcontextlost", handleContextLoss);
-      const lossExtension = gl.getExtension("WEBGL_lose_context");
+      // 注: WEBGL_lose_context による明示的な loseContext() は行わない。
+      // WKWebView で canvas の描画が永続的に止まることがあるため、
+      // リソース削除だけにとどめる。
       gl.deleteProgram(program);
       gl.deleteBuffer(positionBuffer);
-      lossExtension?.loseContext();
     };
-  }, [intensity]);
+  }, []);
 
   // intensity === "off" のときは canvas を描かない (CSS も非表示になる)
   if (intensity === "off") {

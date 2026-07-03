@@ -58,6 +58,7 @@
 /* CRT 背景: WebGL シェーダーを描く canvas。.app-shell の背景の上、
    コンテンツの下に置く。/ CRT background shader canvas */
 .crt-canvas {
+  animation: crtBgGlitch 7s steps(3, end) infinite;
   display: block;
   height: 100%;
   inset: 0;
@@ -226,11 +227,10 @@
 
 :root[data-theme="crt"] .cm-editor:focus-within .cm-content,
 :root[data-theme="crt"] .cm-editor:hover .cm-content {
-  animation: crtGlitch 2.6s steps(2, end) infinite,
-    crtFlicker 5.5s linear infinite;
+  animation: crtFlicker 5.5s linear infinite;
 }
 
-/* プレビュー本文: 同様。色収差は常時、jitter/flicker はホバー時のみ。 */
+/* プレビュー本文: 同様。色収差は常時、明滅はホバー時のみ。 */
 :root[data-theme="crt"] .markdown-preview :is(p, h1, h2, h3, h4, h5, h6, li, a) {
   text-shadow:
     calc((var(--crt-mx) - 0.5) * 1.6px) 0 rgba(255, 40, 40, 0.5),
@@ -238,8 +238,7 @@
 }
 
 :root[data-theme="crt"] .markdown-preview:hover :is(p, h1, h2, h3, h4, h5, h6, li, a) {
-  animation: crtGlitch 3.1s steps(2, end) infinite,
-    crtFlicker 6.2s linear infinite;
+  animation: crtFlicker 6.2s linear infinite;
 }
 
 :root[data-theme="crt"] .markdown-preview :is(code, pre) {
