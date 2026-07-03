@@ -27,7 +27,7 @@ function ruleBody(selector: string): string {
 
 describe("workspace.css", () => {
   it("lets native vibrancy drive every theme shell surface", () => {
-    for (const theme of ["dark", "light", "sakura", "yakou", "shokou"]) {
+    for (const theme of ["dark", "light", "sakura", "yakou", "shokou", "crt"]) {
       expect(
         ruleBody(`:root[data-theme="${theme}"] .file-tree-pane`),
       ).toMatch(/background:\s*var\(--native-shell-tint\)/);
@@ -40,7 +40,7 @@ describe("workspace.css", () => {
     }
 
     expect(workspaceCss).not.toMatch(
-      /:root\[data-theme="(?:dark|light|sakura|yakou|shokou)"\] \.(?:file-tree-pane|workspace-sidebar-rail|tabs-row)\s*{[^}]*backdrop-filter/s,
+      /:root\[data-theme="(?:dark|light|sakura|yakou|shokou|crt)"\] \.(?:file-tree-pane|workspace-sidebar-rail|tabs-row)\s*{[^}]*backdrop-filter/s,
     );
     expect(workspaceCss).toMatch(
       /:root\[data-theme="dark"\]\s*{[^}]*--native-shell-tint:\s*rgba\(14, 19, 17, 0\.12\)/s,

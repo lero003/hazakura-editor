@@ -170,6 +170,9 @@ export function useAppMenuActionListener({
         case "theme-shokou":
           setThemePreference("shokou");
           break;
+        case "theme-crt":
+          setThemePreference("crt");
+          break;
         case "preferences":
           setPreferencesDialogMode("settings");
           break;

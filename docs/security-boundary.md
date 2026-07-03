@@ -95,6 +95,12 @@ Workbench のフロントエンド境界は Tauri `invoke` と Rust 側コマン
 Agent Workbench の有効化希望・同意・allowlist provider などのローカル状態に
 限定し、API key、password、外部サービストークンの保存場所にしない。
 
+テーマの視覚演出（季節アンビエント、`crt` ジョークテーマの WebGL シェーダー
+など）は、すべてプロシージャル（外部テクスチャ fetch なし、`blob:` URL 生成
+なし）でアプリバンドル内に完結し、既定の CSP を変えない。ジョークテーマは
+「あえて読みにくい」演出を許容するが、既存の安全境界（任意コマンド実行、外部
+通信、Preview の sanitize 等）を壊さない範囲で追加してよい。
+
 Agent Workbench に関するレポートは [Agent Workbench Boundary](agent-workbench-boundary.md)
 と照合する。UI 側の保存値だけで信頼せず、Rust 側で distribution lane、
 window label、mode gate、consent、provider allowlist、workspace root の

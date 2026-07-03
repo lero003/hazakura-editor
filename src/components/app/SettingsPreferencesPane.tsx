@@ -287,6 +287,9 @@ export function SettingsPreferencesPane({
             <option value="shokou" title={copy.themeHint("shokou")}>
               {copy.shokou}
             </option>
+            <option value="crt" title={copy.themeHint("crt")}>
+              {copy.crt}
+            </option>
           </select>
           <span className="field-hint" data-testid="theme-hint">
             {copy.themeHint(themePreference)}

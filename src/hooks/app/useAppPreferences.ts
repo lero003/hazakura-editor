@@ -57,7 +57,9 @@ export function useAppPreferences(options: UseAppPreferencesOptions = {}) {
 
   const resolvedTheme = themePreference;
   const editorTheme: BaseTheme =
-    resolvedTheme === "dark" || resolvedTheme === "yakou" ? "dark" : "light";
+    resolvedTheme === "dark" || resolvedTheme === "yakou" || resolvedTheme === "crt"
+      ? "dark"
+      : "light";
 
   useEffect(() => {
     document.documentElement.dataset.theme = resolvedTheme;
@@ -106,7 +108,9 @@ export function useAppPreferences(options: UseAppPreferencesOptions = {}) {
 
   useEffect(() => {
     const windowTheme: BaseTheme =
-      themePreference === "dark" || themePreference === "yakou"
+      themePreference === "dark" ||
+      themePreference === "yakou" ||
+      themePreference === "crt"
         ? "dark"
         : "light";
 
@@ -180,7 +184,8 @@ function readStoredThemePreference(): ThemePreference {
     value === "dark" ||
     value === "sakura" ||
     value === "yakou" ||
-    value === "shokou"
+    value === "shokou" ||
+    value === "crt"
   ) {
     return value;
   }

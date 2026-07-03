@@ -40,6 +40,7 @@ function setup() {
     saveActiveTab: vi.fn(),
     saveActiveTabAs: vi.fn(),
   };
+  const setThemePreference = vi.fn();
 
   renderHook(() =>
     useAppMenuActionListener({
@@ -50,11 +51,11 @@ function setup() {
       setEditorSettings: vi.fn(),
       setPreferencesDialogMode: vi.fn(),
       setPreviewVisible: vi.fn(),
-      setThemePreference: vi.fn(),
+      setThemePreference,
     }),
   );
 
-  return actions;
+  return { actions, setThemePreference };
 }
 
 describe("useAppMenuActionListener", () => {
@@ -64,7 +65,7 @@ describe("useAppMenuActionListener", () => {
   });
 
   it("routes the custom quit menu action through the app quit confirmation flow", () => {
-    const actions = setup();
+    const { actions } = setup();
 
     void menuListeners[0]?.({ payload: "quit-app" } as never);
 
@@ -73,12 +74,20 @@ describe("useAppMenuActionListener", () => {
   });
 
   it("routes the EPUB beta export menu action", () => {
-    const actions = setup();
+    const { actions } = setup();
 
     void menuListeners[0]?.({ payload: "export-epub-beta" } as never);
 
     expect(actions.exportEpubBeta).toHaveBeenCalledTimes(1);
     expect(actions.exportHtml).not.toHaveBeenCalled();
     expect(actions.exportPdf).not.toHaveBeenCalled();
+  });
+
+  it("routes the CRT theme menu action to setThemePreference", () => {
+    const { setThemePreference } = setup();
+
+    void menuListeners[0]?.({ payload: "theme-crt" } as never);
+
+    expect(setThemePreference).toHaveBeenCalledWith("crt");
   });
 });

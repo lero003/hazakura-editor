@@ -128,6 +128,7 @@ pub(crate) const MENU_THEME_DARK: &str = "theme-dark";
 pub(crate) const MENU_THEME_SAKURA: &str = "theme-sakura";
 pub(crate) const MENU_THEME_YAKOU: &str = "theme-yakou";
 pub(crate) const MENU_THEME_SHOKOU: &str = "theme-shokou";
+pub(crate) const MENU_THEME_CRT: &str = "theme-crt";
 pub(crate) const MENU_PREFERENCES: &str = "preferences";
 pub(crate) const MENU_AGENT_WORKBENCH: &str = "agent-workbench";
 pub(crate) const MENU_LOCAL_DATA_DISCLOSURE: &str = "local-data-disclosure";

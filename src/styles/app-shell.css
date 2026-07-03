@@ -32,6 +32,12 @@
   animation: bgDrift 25s ease-in-out infinite;
 }
 
+/* CRT: ほぼ黒のベース。上に WebGL シェーダー (.crt-canvas) と前景
+   スキャンライン (.crt-overlay) が重なる。/ CRT: near-black base */
+:root[data-theme="crt"] .app-shell {
+  background: #040a06;
+}
+
 /* スペシャルテーマ: ステータスバーの装飾 / Status Bar Accent */
 :root[data-theme="yakou"] .status-bar {
   border-top: 1px solid color-mix(in srgb, var(--accent) 12%, transparent);
@@ -47,6 +53,42 @@
   pointer-events: none;
   position: fixed;
   z-index: var(--z-base);
+}
+
+/* CRT 背景: WebGL シェーダーを描く canvas。.app-shell の背景の上、
+   コンテンツの下に置く。/ CRT background shader canvas */
+.crt-canvas {
+  display: block;
+  height: 100%;
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+  width: 100%;
+  z-index: var(--z-base);
+}
+
+/* CRT 前景: スキャンラインとビネット。全 UI の最前面に置いて文字の上
+   にも乗るようにする。pointer-events: none で操作は妨げない。
+   / CRT foreground scanlines + vignette overlay (top layer) */
+.crt-overlay {
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0) 0,
+      rgba(0, 0, 0, 0) 2px,
+      rgba(0, 0, 0, 0.28) 3px,
+      rgba(0, 0, 0, 0) 4px
+    ),
+    radial-gradient(
+      ellipse at center,
+      transparent 52%,
+      rgba(0, 0, 0, 0.46) 100%
+    );
+  inset: 0;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  position: fixed;
+  z-index: var(--z-crt-top);
 }
 
 .tabs-row {
@@ -132,6 +174,11 @@
     animation: none;
     display: none;
   }
+  /* CRT シェーダーアニメーションも止める。前景スキャンライン自体は
+     静止画なので残す。/ Keep static scanlines, drop shader motion */
+  .crt-canvas {
+    display: none;
+  }
 }
 
 .tabs-row,
@@ -152,4 +199,73 @@
 
 .toggle-control input {
   margin: 0;
+}
+
+/* === CRT ジョークテーマ: 演出の全開 ===
+   Layer 2: 文字 RGB 分割 (text-shadow 色収差) は常時
+   Layer 3: グリッチ・明滅・スキャンラインドリフト は限定的 (フォーカス/ホバー時のみ)
+   Layer 4: マウス連動 (AppShell が --crt-mx / --crt-my を 0..1 で書き込む)
+   すべて :root[data-theme="crt"] にスコープし、他テーマへ影響しない。
+   base.css の prefers-reduced-motion ガードが * 向けに keyframes を止める。 */
+
+:root[data-theme="crt"] {
+  /* マウス連動の既定値 (中央)。JS 未起動時でも色収差が乗る。 */
+  --crt-mx: 0.5;
+  --crt-my: 0.5;
+}
+
+/* CodeMirror 本文: 色収差 text-shadow は常時。jitter/flicker は
+   エディタにフォーカス/ホバーがあるときだけ発火。行単位ではなく
+   .cm-content 単位にかけることでスクロール位置と干渉しない (scroll-safe)。 */
+:root[data-theme="crt"] .cm-content {
+  /* マウス X を赤/青のオフセット量に反映。動かすほど色収差が広がる。 */
+  text-shadow:
+    calc((var(--crt-mx) - 0.5) * 1.6px) 0 rgba(255, 40, 40, 0.55),
+    calc((0.5 - var(--crt-mx)) * 1.6px) 0 rgba(40, 140, 255, 0.5);
+}
+
+:root[data-theme="crt"] .cm-editor:focus-within .cm-content,
+:root[data-theme="crt"] .cm-editor:hover .cm-content {
+  animation: crtGlitch 2.6s steps(2, end) infinite,
+    crtFlicker 5.5s linear infinite;
+}
+
+/* プレビュー本文: 同様。色収差は常時、jitter/flicker はホバー時のみ。 */
+:root[data-theme="crt"] .markdown-preview :is(p, h1, h2, h3, h4, h5, h6, li, a) {
+  text-shadow:
+    calc((var(--crt-mx) - 0.5) * 1.6px) 0 rgba(255, 40, 40, 0.5),
+    calc((0.5 - var(--crt-mx)) * 1.6px) 0 rgba(40, 140, 255, 0.45);
+}
+
+:root[data-theme="crt"] .markdown-preview:hover :is(p, h1, h2, h3, h4, h5, h6, li, a) {
+  animation: crtGlitch 3.1s steps(2, end) infinite,
+    crtFlicker 6.2s linear infinite;
+}
+
+:root[data-theme="crt"] .markdown-preview :is(code, pre) {
+  text-shadow:
+    calc((var(--crt-mx) - 0.5) * 1.2px) 0 rgba(255, 40, 40, 0.45),
+    calc((0.5 - var(--crt-mx)) * 1.2px) 0 rgba(40, 140, 255, 0.4);
+}
+
+/* UI テキスト (タブ・ツリー・ステータスバー・サイドバー): 薄く色収差。 */
+:root[data-theme="crt"]
+  :is(.tabs-row, .file-tree-pane, .status-bar, .workspace-sidebar-rail)
+  :is(span, button, a, label, input, .tab-button, .tree-name, .status-bar-segment) {
+  text-shadow:
+    calc((var(--crt-mx) - 0.5) * 0.8px) 0 rgba(255, 40, 40, 0.35),
+    calc((0.5 - var(--crt-mx)) * 0.8px) 0 rgba(40, 140, 255, 0.3);
+}
+
+/* 前景スキャンラインのドリフト。画面全体の注目領域 (フォーカス内) がある
+   ときだけ走査線が流れる。常時ではなく限定的な演出。 */
+:root[data-theme="crt"] .app-shell:focus-within .crt-overlay {
+  animation: crtScanDrift 8s linear infinite;
+}
+
+/* 前景層にマウス Y を反映: ビネット中心をずらして「視線を追う」演出。 */
+:root[data-theme="crt"] .crt-overlay {
+  background-position:
+    0 0,
+    calc((var(--crt-mx) - 0.5) * 40px) calc((var(--crt-my) - 0.5) * 40px);
 }

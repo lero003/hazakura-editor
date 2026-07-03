@@ -162,6 +162,10 @@
   --z-toast: 200;
   --z-modal: 1000;
   --z-palette: 1100;
+  /* CRT ジョークテーマ専用: 前景スキャンラインを全要素の上に置く。
+     コマンドパレット等を含む全 UI の上に被るが、pointer-events: none
+     なので操作は妨げない。/ CRT-only top layer for scanline overlay. */
+  --z-crt-top: 1200;
 
   /* v0.34: 派生アクセント / フォント / 情報色トークン。
      これまで apple-assist-window / slash-menu / preview / agent-window が

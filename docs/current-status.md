@@ -412,6 +412,15 @@ Last reviewed: 2026-07-03 (v1.3 approved and published on the Mac App Store; nex
 - Optional Developer / GitHub lane Agent Workbench, separated from and
   hidden in the App Store lane.
 - Help-readable Store-document drafts and Support Diagnostics UI.
+- Theme selection (`light`, `dark`, `sakura`, `yakou`, `shokou`, and the
+  `crt` joke theme) from the native View menu and the Preferences pane.
+  `sakura` / `yakou` / `shokou` are seasonal ambient themes with particle
+  effects; `crt` is a deliberately hard-to-read joke theme that overlays a
+  WebGL CRT shader, scanlines, chromatic-aberration text, and
+  mouse-reactive glitch on top of the editor. The shader is fully
+  procedural (no external texture fetch, no `blob:` URL) and stays inside
+  the existing CSP. Theme choice and ambient intensity are stored in
+  `localStorage` alongside other display settings.
 
 ## Release Evidence
 

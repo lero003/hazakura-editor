@@ -26,6 +26,7 @@ const ALL_THEMES: ReadonlyArray<ThemePreference> = [
   "sakura",
   "yakou",
   "shokou",
+  "crt",
 ];
 
 describe("getPreferencesCopy.themeHint", () => {
