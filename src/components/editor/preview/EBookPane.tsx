@@ -29,10 +29,8 @@ import {
   applyEbookPageBreakMarkers,
   collectEbookChapterSubheadings,
   coalesceChaptersToTopLevel,
-  type EbookChapter,
   splitMarkdownIntoChapters,
 } from "../../../features/editor/ebookChapters";
-import type { EBookViewState } from "../../../features/editor/documentViewState";
 import {
   inlineWorkspaceAssetImages,
   renderMarkdown,
@@ -45,6 +43,27 @@ import {
   getEBookPageOffset,
   measureEBookPageCount,
 } from "./ebookPagination";
+import {
+  clampChapterIndex,
+  clampPageIndex,
+  commitPageCount,
+  getReaderPageTargetByDelta,
+  normalizeEBookPageCount,
+  type PendingPageTarget,
+  type ReaderPageTarget,
+} from "./ebookPageTarget";
+import {
+  countMarkdownSourceLines,
+  estimateChapterSourceLine,
+  getEBookReaderLocation,
+  readerLocationsEqual,
+  type EBookReaderLocation,
+} from "./ebookReaderLocation";
+
+// Re-export the reader-location type so existing callers that imported it
+// from EBookPane keep compiling. The implementation now lives in
+// ./ebookReaderLocation.
+export type { EBookReaderLocation };
 
 type EBookPaneProps = {
   documentKey?: string;
@@ -60,8 +79,6 @@ type EBookPaneProps = {
   workspaceRoot?: string | null;
 };
 
-export type EBookReaderLocation = EBookViewState;
-
 type RenderedChapter = {
   index: number;
   headingLevel: number | null;
@@ -72,13 +89,6 @@ type RenderedChapter = {
 
 type EBookPageFlowStyle = CSSProperties & {
   "--ebook-page-viewport-height"?: string;
-};
-
-type PendingPageTarget = "first" | "last" | number;
-
-type ReaderPageTarget = {
-  chapterIndex: number;
-  pageIndex: PendingPageTarget;
 };
 
 type EBookReaderCopy = {
@@ -1237,18 +1247,8 @@ function allFlowImagesComplete(flow: HTMLElement | null): boolean {
 // passed as `null` right after a chapter change, so a short new chapter is
 // never padded up to the old chapter's page count (which would create blank
 // pages and `Page 1 / 12`-style ghost totals). Once images settle, the
-// freshly measured count is trusted as final.
-function commitPageCount(
-  next: number,
-  prev: number | null,
-  imagesSettled: boolean,
-): number {
-  const normalizedNext = normalizeEBookPageCount(next);
-  if (imagesSettled || prev === null) {
-    return normalizedNext;
-  }
-  return Math.max(normalizedNext, normalizeEBookPageCount(prev));
-}
+// freshly measured count is trusted as final. The pure commit decision lives
+// in `./ebookPageTarget` so the floor behavior gains focused coverage.
 
 function measureRenderedChapterPageOffset(
   pageIndex: number,
@@ -1262,109 +1262,11 @@ function measureRenderedChapterPageOffset(
   return Number.isFinite(pageOffset) ? Math.max(0, pageOffset) : 0;
 }
 
-function normalizeEBookPageCount(pageCount: number): number {
-  if (!Number.isFinite(pageCount)) {
-    return 1;
-  }
-  return Math.max(1, Math.trunc(pageCount));
-}
-
 // epub-like page-break rule. One user action moves by one spread (pageStep
 // pages, 2 in spread mode / 1 in single-page mode) and crosses at most one
-// chapter boundary.
-//
-// Crossing into the next chapter lands on the continuation when the next
-// chapter is already previewed on the spare right spread page (so the reader
-// does not see a backwards jump), otherwise on the chapter opener (pageIndex
-// 0). This mirrors how an EPUB reader keeps a spread continuous across a
-// chapter break the reader has already glimpsed, but still opens an unseen
-// chapter from its first page.
-function getReaderPageTargetByDelta({
-  currentChapterIndex,
-  currentPageCount,
-  currentPageIndex,
-  getChapterPageCount,
-  pageDelta,
-  totalChapters,
-  hasVisibleNextChapterPreview,
-}: {
-  currentChapterIndex: number;
-  currentPageCount: number;
-  currentPageIndex: number;
-  getChapterPageCount: (chapterIndex: number) => number | null;
-  pageDelta: number;
-  totalChapters: number;
-  hasVisibleNextChapterPreview: boolean;
-}): ReaderPageTarget {
-  const lastChapterIndex = Math.max(totalChapters - 1, 0);
-  const step = Math.abs(Math.trunc(pageDelta));
-  const direction = Math.sign(pageDelta);
-  const chapterIndex = clampChapterIndex(currentChapterIndex, totalChapters);
-  const pageIndex = clampPageIndex(currentPageIndex, currentPageCount);
-
-  if (direction === 0 || step === 0) {
-    return { chapterIndex, pageIndex };
-  }
-
-  if (direction > 0) {
-    const pageCount = normalizeEBookPageCount(currentPageCount);
-    const lastIndex = Math.max(pageCount - 1, 0);
-    const nextInChapter = pageIndex + step;
-    if (nextInChapter <= lastIndex) {
-      return { chapterIndex, pageIndex: nextInChapter };
-    }
-    // The step would run past the last page of this chapter. If there is no
-    // following chapter, clamp to the final page here.
-    if (chapterIndex >= lastChapterIndex) {
-      return { chapterIndex, pageIndex: lastIndex };
-    }
-    // Cross at most one chapter boundary. When the next chapter's first
-    // page is already previewed on the spare right spread page, the turn
-    // continues just past that previewed page (so the spread stays
-    // continuous and the reader sees no backwards jump) — that is
-    // `step - 1` pages into the next chapter, because pageIndex 0 was the
-    // previewed page. When the next chapter is unseen, open it from its
-    // opener (pageIndex 0). The continuation is clamped back to the opener
-    // when the next chapter is too short to hold it, so a turn never skips
-    // pages (e.g. a heading-only single page chapter whose preview already
-    // showed everything).
-    const nextChapterPageCount = getChapterPageCount(chapterIndex + 1);
-    const nextLastIndex =
-      nextChapterPageCount === null
-        ? null
-        : Math.max(normalizeEBookPageCount(nextChapterPageCount) - 1, 0);
-    const continuationIndex = hasVisibleNextChapterPreview
-      ? Math.max(step - 1, 0)
-      : 0;
-    const nextPageIndex =
-      nextLastIndex !== null && continuationIndex > nextLastIndex
-        ? 0
-        : continuationIndex;
-    return {
-      chapterIndex: chapterIndex + 1,
-      pageIndex: nextPageIndex,
-    };
-  }
-
-  // direction < 0. Move backward by the step within the chapter, and when
-  // that crosses the chapter opener, return to the previous chapter's last
-  // page. One user action crosses at most one chapter boundary.
-  const previousInChapter = pageIndex - step;
-  if (previousInChapter >= 0) {
-    return { chapterIndex, pageIndex: previousInChapter };
-  }
-  if (chapterIndex <= 0) {
-    return { chapterIndex: 0, pageIndex: 0 };
-  }
-  const previousChapterPageCount = getChapterPageCount(chapterIndex - 1);
-  if (previousChapterPageCount === null) {
-    return { chapterIndex: chapterIndex - 1, pageIndex: "last" };
-  }
-  return {
-    chapterIndex: chapterIndex - 1,
-    pageIndex: Math.max(normalizeEBookPageCount(previousChapterPageCount) - 1, 0),
-  };
-}
+// chapter boundary. The pure target computation lives in `./ebookPageTarget`
+// (`getReaderPageTargetByDelta`) so the chapter-cross decisions gain focused
+// coverage.
 
 function measurePageViewportHeight(viewport: HTMLElement | null): number {
   if (!viewport) {
@@ -1402,60 +1304,6 @@ function getVisiblePageStep(
     return 2;
   }
   return 1;
-}
-
-function getEBookReaderLocation(
-  chapter: EbookChapter | undefined,
-  chapterIndex: number,
-  pageIndex: number,
-  pageCount: number,
-): EBookReaderLocation {
-  const location = {
-    chapterIndex,
-    pageIndex,
-  };
-  const sourceLine = chapter
-    ? estimateChapterSourceLine(chapter, pageIndex, pageCount)
-    : null;
-
-  return sourceLine === null ? location : { ...location, sourceLine };
-}
-
-function readerLocationsEqual(
-  first: EBookReaderLocation,
-  second: EBookReaderLocation,
-): boolean {
-  return (
-    first.chapterIndex === second.chapterIndex &&
-    first.pageIndex === second.pageIndex &&
-    first.sourceLine === second.sourceLine
-  );
-}
-
-function estimateChapterSourceLine(
-  chapter: Pick<EbookChapter, "source" | "startLine">,
-  pageIndex: number,
-  pageCount: number,
-): number {
-  const lineCount = countMarkdownSourceLines(chapter.source);
-  const safePageCount = Math.max(1, Math.trunc(pageCount));
-  const safePageIndex = clampPageIndex(pageIndex, safePageCount);
-  if (lineCount <= 1 || safePageCount <= 1) {
-    return chapter.startLine;
-  }
-
-  const pageRatio = safePageIndex / (safePageCount - 1);
-  return chapter.startLine + Math.round((lineCount - 1) * pageRatio);
-}
-
-function countMarkdownSourceLines(source: string): number {
-  if (source.length === 0) {
-    return 1;
-  }
-  const lineCount = source.split(/\r\n|\n|\r/).length;
-  return /(?:\r\n|\n|\r)$/.test(source)
-    ? Math.max(1, lineCount - 1)
-    : lineCount;
 }
 
 function parseCssPixelValue(value: string): number {
@@ -1528,20 +1376,6 @@ function imageOnlyParagraphImage(
     return visibleNodes[0];
   }
   return null;
-}
-
-function clampChapterIndex(index: number, totalChapters: number): number {
-  if (totalChapters <= 0) {
-    return 0;
-  }
-  return Math.min(Math.max(index, 0), totalChapters - 1);
-}
-
-function clampPageIndex(index: number, totalPages: number): number {
-  if (totalPages <= 0) {
-    return 0;
-  }
-  return Math.min(Math.max(index, 0), totalPages - 1);
 }
 
 function chapterClassName(

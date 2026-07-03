@@ -3,6 +3,14 @@ import {
   applyEbookPageBreakMarkers,
   splitMarkdownIntoChapters,
 } from "../editor/ebookChapters";
+import {
+  escapeXml,
+  extensionFromMediaType,
+  normalizeImageMediaType,
+  slugify,
+  stripYamlFrontmatter,
+  titleFromDocumentName,
+} from "./epubTextHelpers";
 
 type BuildEpubBetaArchiveOptions = {
   documentPath?: string | null;
@@ -543,48 +551,6 @@ function imageAssetFromDataUrl(dataUrl: string): {
   };
 }
 
-function normalizeImageMediaType(mediaType: string): string {
-  return mediaType.toLowerCase() === "image/jpg"
-    ? "image/jpeg"
-    : mediaType.toLowerCase();
-}
-
-function extensionFromMediaType(mediaType: string): string {
-  switch (mediaType.toLowerCase()) {
-    case "image/jpeg":
-    case "image/jpg":
-      return "jpg";
-    case "image/gif":
-      return "gif";
-    case "image/webp":
-      return "webp";
-    case "image/png":
-    default:
-      return "png";
-  }
-}
-
-function stripYamlFrontmatter(markdown: string): string {
-  const firstLineEnd = markdown.indexOf("\n");
-  const firstLine = firstLineEnd === -1 ? markdown : markdown.slice(0, firstLineEnd);
-  if (firstLine.trim() !== "---") {
-    return markdown;
-  }
-
-  let lineStart = firstLineEnd === -1 ? markdown.length : firstLineEnd + 1;
-  while (lineStart < markdown.length) {
-    const lineEnd = markdown.indexOf("\n", lineStart);
-    const effectiveLineEnd = lineEnd === -1 ? markdown.length : lineEnd;
-    const line = markdown.slice(lineStart, effectiveLineEnd);
-    if (line.trim() === "---") {
-      return lineEnd === -1 ? "" : markdown.slice(lineEnd + 1);
-    }
-    lineStart = lineEnd === -1 ? markdown.length : lineEnd + 1;
-  }
-
-  return markdown;
-}
-
 function containerXml(): string {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
@@ -931,25 +897,4 @@ function uniqueId(base: string, usedIds: Set<string>): string {
 
   usedIds.add(candidate);
   return candidate;
-}
-
-function slugify(text: string): string {
-  return text
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9\u3040-\u30ff\u3400-\u9fff]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
-function titleFromDocumentName(name: string): string {
-  return name.replace(/\.[^.]+$/, "") || "Untitled";
-}
-
-function escapeXml(text: string): string {
-  return text
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&apos;");
 }
