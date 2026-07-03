@@ -9,6 +9,7 @@ import type {
 import type { ChangeReviewSnapshot } from "../../hooks/diff/useCompareExecution";
 import type { LModeCopy } from "../../lib/locale";
 import { AmbientBackground, type AmbientMode } from "./AmbientBackground";
+import { CrtBootSequence } from "./CrtBootSequence";
 import { CrtShaderOverlay } from "./CrtShaderOverlay";
 import { AppDocumentFeedback } from "./AppDocumentFeedback";
 import { AppOverlays } from "./AppOverlays";
@@ -127,6 +128,10 @@ export function AppShell(props: AppShellProps) {
       ) : null}
       {crtMode ? (
         <>
+          <CrtBootSequence
+            intensity={props.ambientIntensity}
+            trigger={crtMode}
+          />
           <CrtShaderOverlay intensity={props.ambientIntensity} />
           <div className="crt-overlay" aria-hidden="true" />
         </>

@@ -268,3 +268,105 @@
     0 0,
     calc((var(--crt-mx) - 0.5) * 40px) calc((var(--crt-my) - 0.5) * 40px);
 }
+
+/* === CRT ジョークテーマ: 起動シーケンス ===
+   テーマ切替 (false → true) で 1.5 秒流れる全画面オーバーレイ。
+   ブラウン管 TV の電源 ON → 起動メッセージ → 収縮。サイバーパンク調。
+   base.css の prefers-reduced-motion ガードが keyframes を止めるほか、
+   JS 側でも reduce 時は発火そのものをスキップする。 */
+
+.crt-boot {
+  align-items: center;
+  background: #000;
+  color: #9be0a4;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-mono);
+  inset: 0;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none;
+  position: fixed;
+  text-shadow: 0 0 6px rgba(95, 224, 106, 0.55);
+  z-index: var(--z-crt-top);
+}
+
+/* 電源 ON の中央フラッシュ。power-on phase で円形に広がる。 */
+.crt-boot-flash {
+  background: radial-gradient(
+    circle,
+    rgba(155, 224, 164, 0.9) 0%,
+    rgba(95, 224, 106, 0.4) 30%,
+    transparent 70%
+  );
+  height: 4px;
+  left: 50%;
+  opacity: 0;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 0;
+}
+
+.crt-boot-power-on .crt-boot-flash {
+  animation: crtBootFlash 0.2s ease-out forwards;
+}
+
+/* 起動メッセージ。signal / ready phase で順にタイプライター表示。 */
+.crt-boot-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  opacity: 0;
+  position: relative;
+}
+
+.crt-boot-signal .crt-boot-lines,
+.crt-boot-ready .crt-boot-lines {
+  animation: crtBootFadeIn 0.25s ease-out forwards;
+}
+
+.crt-boot-line {
+  letter-spacing: 0.06em;
+  opacity: 0;
+  white-space: nowrap;
+}
+
+.crt-boot-signal .crt-boot-line-1 {
+  animation: crtBootType 0.45s steps(24, end) forwards;
+}
+
+.crt-boot-ready .crt-boot-line-1 {
+  opacity: 1;
+}
+
+.crt-boot-ready .crt-boot-line-2 {
+  animation: crtBootType 0.4s steps(22, end) forwards;
+  animation-delay: 0.05s;
+}
+
+/* collapse phase: 全体を縦線に縮めてブラウン管 OFF 風に消える。 */
+.crt-boot-collapse {
+  animation: crtBootCollapse 0.3s steps(4, end) forwards;
+}
+
+@keyframes crtBootFlash {
+  0% { width: 0; height: 4px; opacity: 0; }
+  35% { width: 70vw; height: 4px; opacity: 1; }
+  100% { width: 180vh; height: 180vh; opacity: 0; }
+}
+
+@keyframes crtBootFadeIn {
+  to { opacity: 1; }
+}
+
+@keyframes crtBootType {
+  from { opacity: 1; clip-path: inset(0 100% 0 0); }
+  to { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+
+@keyframes crtBootCollapse {
+  0% { transform: scaleY(1); opacity: 1; }
+  60% { transform: scaleY(0.004); opacity: 1; }
+  100% { transform: scaleY(0); opacity: 0; }
+}
