@@ -3,8 +3,7 @@ import type {
   CompareViewState,
   MenuLanguage,
 } from "../../types";
-import { isJapaneseMenuLanguage } from "../../types";
-import { isKanaStyle } from "../../lib/locale/_helpers";
+import { getReviewCopy } from "../../lib/locale/review";
 import { DiffBody } from "../diff/DiffBody";
 
 type ChangeReviewCase = Extract<CompareCase, { kind: "changes" }>;
@@ -24,38 +23,7 @@ export function ChangeReviewView({
   onClose,
   view,
 }: ChangeReviewViewProps) {
-  const labels = isKanaStyle(menuLanguage)
-    ? {
-        additions: "ついかぎょう",
-        changesTitle: "へんこう かくにん",
-        close: "とぢる",
-        applyBackup: "この ばっくあっぷに もどす",
-        removed: "さくじょぎょう",
-        summary: "くらべの がいよう",
-        to: "と",
-        table: "へんこう かくにん",
-      }
-    : isJapaneseMenuLanguage(menuLanguage)
-      ? {
-          additions: "追加行",
-          changesTitle: "変更確認",
-          close: "閉じる",
-          applyBackup: "このバックアップを復元",
-          removed: "削除行",
-          summary: "比較の概要",
-          to: "と",
-          table: "変更確認",
-        }
-      : {
-          additions: "Added lines",
-          changesTitle: "Change review",
-          close: "Close",
-          applyBackup: "Restore this backup",
-          removed: "Removed lines",
-          summary: "Comparison summary",
-          to: "to",
-          table: "Change review",
-        };
+  const labels = getReviewCopy(menuLanguage);
 
   // The apply button is only meaningful for the auto-backup
   // restore scope — disk / draft / conflict diffs are read-only.

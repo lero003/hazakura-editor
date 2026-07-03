@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { LModeCopy } from "../../lib/locale";
+import { getReviewCopy } from "../../lib/locale/review";
 import { useAiEditTransaction } from "../../hooks/editor/useAiEditTransaction";
 import { DiffBody } from "../diff/DiffBody";
 import type { CompareCase, MenuLanguage } from "../../types";
@@ -28,7 +28,6 @@ import { SparklesIcon } from "./Icons";
 
 type AppleAssistReviewBarProps = {
   activeTabSessionId: string | null;
-  copy: LModeCopy;
   diffInitiallyOpen?: boolean;
   menuLanguage: MenuLanguage;
   onDiscard: (tabId: string, beforeBuffer: string, afterBuffer: string) => void;
@@ -36,11 +35,11 @@ type AppleAssistReviewBarProps = {
 
 export function AppleAssistReviewBar({
   activeTabSessionId,
-  copy,
   diffInitiallyOpen = true,
   menuLanguage,
   onDiscard,
 }: AppleAssistReviewBarProps) {
+  const copy = getReviewCopy(menuLanguage);
   const { latest, clearLatest } = useAiEditTransaction(activeTabSessionId);
   const [showDiff, setShowDiff] = useState(diffInitiallyOpen);
 
@@ -84,8 +83,8 @@ export function AppleAssistReviewBar({
     scope: "ai-edit-vs-buffer",
     documentPath: latest.tabPath,
     documentLabel: latest.tabName,
-    leftColumnLabel: leftColumnLabel(menuLanguage),
-    rightColumnLabel: rightColumnLabel(menuLanguage),
+    leftColumnLabel: copy.appleAssistReviewBarBeforeLabel,
+    rightColumnLabel: copy.appleAssistReviewBarAfterLabel,
   };
 
   return (
@@ -176,16 +175,4 @@ export function AppleAssistReviewBar({
       ) : null}
     </div>
   );
-}
-
-function leftColumnLabel(lang: string): string {
-  if (lang === "kana") return "もとの ぶん";
-  if (lang === "ja") return "変更前";
-  return "Before";
-}
-
-function rightColumnLabel(lang: string): string {
-  if (lang === "kana") return "へんこうご";
-  if (lang === "ja") return "変更後";
-  return "After";
 }

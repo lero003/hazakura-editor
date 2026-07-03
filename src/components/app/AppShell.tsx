@@ -80,7 +80,6 @@ export function AppShell(props: AppShellProps) {
       <AppOverlays {...props} />
       <AppleAssistReviewBar
         activeTabSessionId={props.activeTab?.sessionId ?? null}
-        copy={props.lModeCopy}
         diffInitiallyOpen={props.editorSettings.appleAssistDiffInitiallyOpen}
         menuLanguage={props.menuLanguage}
         onDiscard={props.onDiscardAppleAssistEdit}

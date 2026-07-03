@@ -16,8 +16,11 @@ import type {
   MenuLanguage,
   RightPaneMode,
 } from "../../types";
-import { isJapaneseMenuLanguage } from "../../types";
-import { isKanaStyle } from "../../lib/locale/_helpers";
+import {
+  compareColumnLabel,
+  compareMissingSelectionMessage,
+  compareSameFileMessage,
+} from "../../lib/locale/review";
 
 type UseCompareExecutionOptions = {
   activeTab: EditorTab | null;
@@ -417,105 +420,4 @@ export function useCompareExecution({
     requestReviewTabAgainstDisk,
     runSelectedFileCompare,
   };
-}
-
-type CompareColumnKey =
-  | "disk"
-  | "editor"
-  | "draft"
-  | "buffer"
-  | "backup"
-  | "center"
-  | "right"
-  | "source"
-  | "target";
-
-function compareColumnLabel(
-  menuLanguage: MenuLanguage,
-  key: CompareColumnKey,
-): string {
-  if (isKanaStyle(menuLanguage)) {
-    switch (key) {
-      case "disk":
-        return "でぃすく";
-      case "editor":
-        return "えでぃた";
-      case "draft":
-        return "したがき";
-      case "buffer":
-        return "えでぃた";
-      case "backup":
-        return "ばっくあっぷ";
-      case "center":
-        return "まんなか";
-      case "right":
-        return "みぎ";
-      case "source":
-        return "くらべもと";
-      case "target":
-        return "くらべさき";
-    }
-  }
-  if (isJapaneseMenuLanguage(menuLanguage)) {
-    switch (key) {
-      case "disk":
-        return "ディスク";
-      case "editor":
-        return "エディタ";
-      case "draft":
-        return "下書き";
-      case "buffer":
-        return "エディタ";
-      case "backup":
-        return "バックアップ";
-      case "center":
-        return "中央";
-      case "right":
-        return "右";
-      case "source":
-        return "比較元";
-      case "target":
-        return "比較先";
-    }
-  }
-  switch (key) {
-    case "disk":
-      return "Disk";
-    case "editor":
-      return "Editor";
-    case "draft":
-      return "Draft";
-    case "buffer":
-      return "Editor";
-    case "backup":
-      return "Backup";
-    case "center":
-      return "Center";
-    case "right":
-      return "Right";
-    case "source":
-      return "Source";
-    case "target":
-      return "Target";
-  }
-}
-
-function compareMissingSelectionMessage(menuLanguage: MenuLanguage): string {
-  if (isKanaStyle(menuLanguage)) {
-    return "くらべもとと くらべさき ふたつの ふみを えらんで ください。";
-  }
-  if (isJapaneseMenuLanguage(menuLanguage)) {
-    return "比較元と比較先の2つのテキストファイルを選んでください。";
-  }
-  return "Choose both a source and target text file before comparing.";
-}
-
-function compareSameFileMessage(menuLanguage: MenuLanguage): string {
-  if (isKanaStyle(menuLanguage)) {
-    return "くらべもとと くらべさきには べつの ふみを えらんで ください。";
-  }
-  if (isJapaneseMenuLanguage(menuLanguage)) {
-    return "比較元と比較先には別のファイルを選んでください。";
-  }
-  return "Choose different files for the source and target.";
 }

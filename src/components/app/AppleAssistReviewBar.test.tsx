@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { AppleAssistReviewBar } from "./AppleAssistReviewBar";
-import { getLModeCopy } from "../../lib/locale/lMode";
 import { aiEditTransactionStore } from "../../features/editor/aiEditTransactions";
 import type { AppleAssistTargetSnapshot } from "../../types";
 
@@ -59,7 +58,6 @@ describe("AppleAssistReviewBar", () => {
     const { container } = render(
       <AppleAssistReviewBar
         activeTabSessionId="tabA"
-        copy={getLModeCopy("en")}
         menuLanguage="en"
         onDiscard={vi.fn()}
       />,
@@ -72,7 +70,6 @@ describe("AppleAssistReviewBar", () => {
     render(
       <AppleAssistReviewBar
         activeTabSessionId="tabA"
-        copy={getLModeCopy("en")}
         menuLanguage="en"
         onDiscard={vi.fn()}
       />,
@@ -90,7 +87,6 @@ describe("AppleAssistReviewBar", () => {
     const { container } = render(
       <AppleAssistReviewBar
         activeTabSessionId="tabB"
-        copy={getLModeCopy("en")}
         menuLanguage="en"
         onDiscard={vi.fn()}
       />,
@@ -104,7 +100,6 @@ describe("AppleAssistReviewBar", () => {
     render(
       <AppleAssistReviewBar
         activeTabSessionId="tabA"
-        copy={getLModeCopy("en")}
         menuLanguage="en"
         onDiscard={onDiscard}
       />,
@@ -125,7 +120,6 @@ describe("AppleAssistReviewBar", () => {
     render(
       <AppleAssistReviewBar
         activeTabSessionId="tabA"
-        copy={getLModeCopy("en")}
         menuLanguage="en"
         onDiscard={onDiscard}
       />,
@@ -143,7 +137,6 @@ describe("AppleAssistReviewBar", () => {
     render(
       <AppleAssistReviewBar
         activeTabSessionId="tabA"
-        copy={getLModeCopy("en")}
         diffInitiallyOpen={false}
         menuLanguage="en"
         onDiscard={vi.fn()}
@@ -163,7 +156,6 @@ describe("AppleAssistReviewBar", () => {
     render(
       <AppleAssistReviewBar
         activeTabSessionId="tabA"
-        copy={getLModeCopy("en")}
         menuLanguage="en"
         onDiscard={vi.fn()}
       />,
@@ -179,7 +171,6 @@ describe("AppleAssistReviewBar", () => {
     render(
       <AppleAssistReviewBar
         activeTabSessionId="tabA"
-        copy={getLModeCopy("en")}
         diffInitiallyOpen={false}
         menuLanguage="en"
         onDiscard={vi.fn()}
@@ -195,7 +186,6 @@ describe("AppleAssistReviewBar", () => {
     render(
       <AppleAssistReviewBar
         activeTabSessionId="tabA"
-        copy={getLModeCopy("en")}
         menuLanguage="en"
         onDiscard={vi.fn()}
       />,
@@ -211,7 +201,6 @@ describe("AppleAssistReviewBar", () => {
     render(
       <AppleAssistReviewBar
         activeTabSessionId="tabA"
-        copy={getLModeCopy("ja")}
         diffInitiallyOpen={false}
         menuLanguage="ja"
         onDiscard={vi.fn()}
@@ -231,7 +220,6 @@ describe("AppleAssistReviewBar", () => {
     render(
       <AppleAssistReviewBar
         activeTabSessionId="tabA"
-        copy={getLModeCopy("ja")}
         menuLanguage="ja"
         onDiscard={vi.fn()}
       />,

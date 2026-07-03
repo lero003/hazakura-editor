@@ -10,6 +10,7 @@ export * from "./editorChrome";
 export * from "./lMode";
 export * from "./preferences";
 export * from "./recovery";
+export * from "./review";
 export * from "./reviewDesk";
 export * from "./safeEditor";
 export * from "./sidePane";

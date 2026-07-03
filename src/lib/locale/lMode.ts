@@ -32,22 +32,6 @@ export type LModeCopy = {
   changeReviewSheetTitle: string;
   changeReviewSheetCloseLabel: string;
   changeReviewSheetCloseTitle: string;
-  // v0.12+ Hazakura Local Assist Writing Companion (slice 5).
-  // The escape-hatch bar shows a one-line summary of a
-  // pending AI edit and offers explicit Accept / Discard actions.
-  // Labels live on `LModeCopy` because the bar's chrome
-  // borrows the L Mode palette and tone; reusing the
-  // shape avoids creating a new locale module for a
-  // single component.
-  appleAssistReviewBarLabel: string;
-  appleAssistReviewBarTitle: string;
-  appleAssistReviewBarOpenDiffLabel: string;
-  appleAssistReviewBarCloseDiffLabel: string;
-  appleAssistReviewBarAcceptLabel: string;
-  appleAssistReviewBarAcceptTitle: string;
-  appleAssistReviewBarDiscardLabel: string;
-  appleAssistReviewBarDiscardTitle: string;
-  appleAssistReviewBarEmptyDiffLabel: string;
   emptyPlaceholderText: string;
   emptyPlaceholderHint: string;
 };
@@ -89,16 +73,6 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
       changeReviewSheetTitle: "ディスクとの差分",
       changeReviewSheetCloseLabel: "とぢる",
       changeReviewSheetCloseTitle: "へんこうの かくにんを とぢる",
-      appleAssistReviewBarLabel: "Hazakura Local Assist が ほんぶんを へんこうしました",
-      appleAssistReviewBarTitle: "さぶんを かくにんして さいよう か はき を えらんでください",
-      appleAssistReviewBarOpenDiffLabel: "さぶんを ひらく",
-      appleAssistReviewBarCloseDiffLabel: "さぶんを とぢる",
-      appleAssistReviewBarAcceptLabel: "さいよう",
-      appleAssistReviewBarAcceptTitle:
-        "へんこうを のこして れびゅーを おえます。ほぞんは まだ おこないません",
-      appleAssistReviewBarDiscardLabel: "はき",
-      appleAssistReviewBarDiscardTitle: "へんこうを もとに もどして はきします",
-      appleAssistReviewBarEmptyDiffLabel: "さぶんが ありません",
       emptyPlaceholderText: "かきはじめる…",
       emptyPlaceholderHint: "Cmd+Shift+L で いつもの もーどへ もどります",
     };
@@ -140,16 +114,6 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
         changeReviewSheetTitle: "ディスクとの差分",
         changeReviewSheetCloseLabel: "閉じる",
         changeReviewSheetCloseTitle: "変更の確認を閉じる",
-        appleAssistReviewBarLabel: "Hazakura Local Assist が本文を変更しました",
-        appleAssistReviewBarTitle: "差分を確認して採用または破棄を選んでください",
-        appleAssistReviewBarOpenDiffLabel: "差分を開く",
-        appleAssistReviewBarCloseDiffLabel: "差分を閉じる",
-        appleAssistReviewBarAcceptLabel: "採用",
-        appleAssistReviewBarAcceptTitle:
-          "変更を残してレビューを終了します。保存はまだ行われません",
-        appleAssistReviewBarDiscardLabel: "破棄",
-        appleAssistReviewBarDiscardTitle: "変更を元に戻して破棄します",
-        appleAssistReviewBarEmptyDiffLabel: "差分がありません",
         emptyPlaceholderText: "書き始める…",
         emptyPlaceholderHint: "Cmd+Shift+L で通常モードへ戻ります",
       }
@@ -189,16 +153,6 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
         changeReviewSheetTitle: "Changes against disk",
         changeReviewSheetCloseLabel: "Close",
         changeReviewSheetCloseTitle: "Close change review",
-        appleAssistReviewBarLabel: "Hazakura Local Assist changed your text",
-        appleAssistReviewBarTitle: "Review or discard the pending AI edit",
-        appleAssistReviewBarOpenDiffLabel: "Open diff",
-        appleAssistReviewBarCloseDiffLabel: "Close diff",
-        appleAssistReviewBarAcceptLabel: "Accept",
-        appleAssistReviewBarAcceptTitle:
-          "Keep the edit and finish review. The document is not saved yet",
-        appleAssistReviewBarDiscardLabel: "Discard",
-        appleAssistReviewBarDiscardTitle: "Revert the buffer and clear the review",
-        appleAssistReviewBarEmptyDiffLabel: "No diff to show",
         emptyPlaceholderText: "Start writing…",
         emptyPlaceholderHint: "Press Cmd+Shift+L to return to normal mode",
       };

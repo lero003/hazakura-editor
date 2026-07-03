@@ -34,15 +34,6 @@ describe("getLModeCopy", () => {
         "actionRailReviewChangesTooltip",
         "actionRailTypewriterShortLabel",
         "actionRailTypewriterTooltip",
-        "appleAssistReviewBarAcceptLabel",
-        "appleAssistReviewBarAcceptTitle",
-        "appleAssistReviewBarCloseDiffLabel",
-        "appleAssistReviewBarDiscardLabel",
-        "appleAssistReviewBarDiscardTitle",
-        "appleAssistReviewBarEmptyDiffLabel",
-        "appleAssistReviewBarLabel",
-        "appleAssistReviewBarOpenDiffLabel",
-        "appleAssistReviewBarTitle",
         "changeReviewSheetCloseLabel",
         "changeReviewSheetCloseTitle",
         "changeReviewSheetLabel",
@@ -70,21 +61,6 @@ describe("getLModeCopy", () => {
         "workspaceToggleTitle",
       ]);
     }
-  });
-
-  it("uses explicit accept and discard decisions for Local Assist review", () => {
-    expect(getLModeCopy("en")).toMatchObject({
-      appleAssistReviewBarAcceptLabel: "Accept",
-      appleAssistReviewBarDiscardLabel: "Discard",
-    });
-    expect(getLModeCopy("ja")).toMatchObject({
-      appleAssistReviewBarAcceptLabel: "採用",
-      appleAssistReviewBarDiscardLabel: "破棄",
-    });
-    expect(getLModeCopy("kana")).toMatchObject({
-      appleAssistReviewBarAcceptLabel: "さいよう",
-      appleAssistReviewBarDiscardLabel: "はき",
-    });
   });
 
   it("returns the typewriter preference label and hint for each language", () => {
