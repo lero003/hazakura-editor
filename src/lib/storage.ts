@@ -124,32 +124,6 @@ export function upsertRecentEntry(
   ].slice(0, MAX_RECENT_ITEMS);
 }
 
-// `pinRecentEntry` sets the `pinnedAt` field on the entry that
-// matches `path`. If no entry exists yet, the caller is expected
-// to have already inserted one through `upsertRecentEntry` so
-// the path can flow through the standard open path. The hook
-// callers do exactly that: pin / unpin only fire for entries
-// the user has already opened.
-export function pinRecentEntry(
-  entries: RecentEntry[],
-  path: string,
-): RecentEntry[] {
-  return entries.map((entry) =>
-    entry.path === path
-      ? { ...entry, pinnedAt: entry.pinnedAt ?? Date.now() }
-      : entry,
-  );
-}
-
-export function unpinRecentEntry(
-  entries: RecentEntry[],
-  path: string,
-): RecentEntry[] {
-  return entries.map((entry) =>
-    entry.path === path ? { ...entry, pinnedAt: null } : entry,
-  );
-}
-
 export function readPersistedWorkspaceState(): PersistedWorkspaceState | null {
   const value = window.localStorage.getItem(WORKSPACE_STATE_STORAGE_KEY);
 
