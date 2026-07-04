@@ -19,7 +19,7 @@
         "minHeight": 640,
         "theme": "Dark",
         "titleBarStyle": "Overlay",
-        "trafficLightPosition": { "x": 24, "y": 24 },
+        "trafficLightPosition": { "x": 12, "y": 12 },
         "hiddenTitle": true,
         "transparent": true,
         "backgroundColor": "#101613"
