@@ -8,12 +8,20 @@ html {
 }
 
 html, body, #root, .app-shell,
-.tabs-row, .file-tree-pane, .editor-pane, .preview-pane,
+.file-tree-pane, .editor-pane, .preview-pane,
 .status-bar, .modal-backdrop, .close-dialog, .preferences-dialog {
   transition:
     background var(--theme-transition),
     border-color var(--theme-transition),
     box-shadow var(--theme-transition);
+}
+
+/* .tabs-row は macOS トラフィックライトの直下に位置する。背景・ボーダー・
+   シャドウを transition させると、テーマ読込直後にその変化が 350ms かけて
+   アニメーションし、トラフィックライトの「位置がズレた」ように見える
+   錯視を生む。タブバーは即時切り替えで問題ないため transition 対象から外す。 */
+.tabs-row {
+  transition: none;
 }
 
 /* 森の夜 / Dark – deep moss-black with luminous sage accent */
