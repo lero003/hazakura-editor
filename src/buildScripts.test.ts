@@ -486,9 +486,9 @@ describe("macOS build scripts", () => {
         "v1.3 Daily Trust is approved and published",
       ],
       "docs/current-work.md": [
-        "Scope: v1.4 observability and testability polish",
+        "Scope: v1.5 stabilization and reading polish",
         "The active release lane is",
-        "v1.4",
+        "v1.5",
       ],
       "docs/development-automation.md": ["Phase: v1.4"],
       "docs/handoff.md": [
@@ -497,7 +497,7 @@ describe("macOS build scripts", () => {
       ],
       "docs/roadmap.md": [
         "Mac App Store published version: `1.3.0`",
-        "Active release lane: v1.4",
+        "Active release lane: **v1.5**",
       ],
     };
 
