@@ -259,17 +259,23 @@ const INTENSITY_VALUE: Record<AmbientIntensity, number> = {
 
 export function ShinkaiShaderOverlay({ intensity }: ShinkaiShaderOverlayProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  // intensity を ref で保持し、effect はマウント時 1 回だけ走らせる。
-  // 依存配列を [intensity] にすると、intensity 変更のたびに GL コンテキストを
-  // 再構築することになり、WKWebView で描画が止まることがあるため。
+  // intensity を ref で保持し、描画ループ内で毎フレーム読む。
+  // subtle/normal/dramatic 間の切替は ref 経由で即時反映し、GL コンテキストの
+  // 再構築を避ける (WKWebView で再構築すると描画が止まることがあるため)。
   const intensityRef = useRef(intensity);
   useEffect(() => {
     intensityRef.current = intensity;
   }, [intensity]);
 
+  // off↔on の境界だけ effect を再実行する。subtle/normal/dramatic 間の変化では
+  // 再構築しない。かつて effect 依存を [] にしていたため、初回 intensity === "off"
+  // で一度も GL 初期化が走らず、その後 off→on で canvas は出ても描画ループが
+  // 始まらない不具合があった (実機で深海/CRT 演出が復帰しない)。
+  const isActive = intensity !== "off";
+
   useEffect(() => {
     // intensity === "off" ではシェーダーを描画しない (AmbientBackground と同じガード)
-    if (intensityRef.current === "off") {
+    if (!isActive) {
       return;
     }
 
@@ -436,10 +442,10 @@ export function ShinkaiShaderOverlay({ intensity }: ShinkaiShaderOverlayProps) {
       gl.deleteProgram(program);
       gl.deleteBuffer(positionBuffer);
     };
-  }, []);
+  }, [isActive]);
 
   // intensity === "off" のときは canvas を描かない (CSS も非表示になる)
-  if (intensity === "off") {
+  if (!isActive) {
     return null;
   }
 

@@ -1,6 +1,6 @@
 import { cleanup, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi, beforeEach, type Mock } from "vitest";
-import { CrtShaderOverlay } from "./CrtShaderOverlay";
+import { ShinkaiShaderOverlay } from "./ShinkaiShaderOverlay";
 
 afterEach(() => {
   cleanup();
@@ -39,21 +39,21 @@ function mockMatchMedia(matches: boolean): Mock {
   return fn;
 }
 
-describe("CrtShaderOverlay", () => {
+describe("ShinkaiShaderOverlay", () => {
   it("renders no canvas when ambient intensity is off", () => {
     mockMatchMedia(false);
-    const { container } = render(<CrtShaderOverlay intensity="off" />);
+    const { container } = render(<ShinkaiShaderOverlay intensity="off" />);
 
-    expect(container.querySelector(".crt-canvas")).toBeNull();
+    expect(container.querySelector(".shinkai-canvas")).toBeNull();
   });
 
   it("renders the shader canvas when intensity is enabled and WebGL is unavailable", () => {
     mockMatchMedia(false);
     // WebGL2 が取れなくても canvas 要素自体は描画する。実際のシェーダー描画は
     // 実機 (WKWebView) でのみ走るので、ここではフォールバック要素の存在だけ固定。
-    const { container } = render(<CrtShaderOverlay intensity="normal" />);
+    const { container } = render(<ShinkaiShaderOverlay intensity="normal" />);
 
-    const canvas = container.querySelector<HTMLCanvasElement>(".crt-canvas");
+    const canvas = container.querySelector<HTMLCanvasElement>(".shinkai-canvas");
     expect(canvas).not.toBeNull();
     expect(canvas?.getAttribute("aria-hidden")).toBe("true");
   });
@@ -62,7 +62,7 @@ describe("CrtShaderOverlay", () => {
     const matchMedia = mockMatchMedia(true);
     const rafSpy = vi.spyOn(window, "requestAnimationFrame");
 
-    render(<CrtShaderOverlay intensity="normal" />);
+    render(<ShinkaiShaderOverlay intensity="normal" />);
 
     expect(matchMedia).toHaveBeenCalledWith("(prefers-reduced-motion: reduce)");
     // reduced-motion では effect が早期 return するので rAF は発火しない
@@ -78,13 +78,13 @@ describe("CrtShaderOverlay", () => {
     getContextSpy.mockClear();
 
     // off でマウント: canvas は描かれず、getContext も呼ばれない
-    const { rerender } = render(<CrtShaderOverlay intensity="off" />);
+    const { rerender } = render(<ShinkaiShaderOverlay intensity="off" />);
     expect(getContextSpy).not.toHaveBeenCalled();
 
     // off -> normal へ切り替え: canvas が mount され、effect が再実行されて
     // GL コンテキストの取得が再試行される。かつて effect 依存が [] だった時は
     // ここで getContext が呼ばれず、実機で演出が復帰しない不具合があった。
-    rerender(<CrtShaderOverlay intensity="normal" />);
+    rerender(<ShinkaiShaderOverlay intensity="normal" />);
     expect(getContextSpy).toHaveBeenCalledWith(
       "webgl2",
       expect.objectContaining({ antialias: false }),
