@@ -259,14 +259,20 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
     let theme_crt = MenuItem::with_id(
         app,
         MENU_THEME_CRT,
-        selected_theme_label(label("CRT (joke)", "CRT（お遊び）"), theme_preference == "crt"),
+        selected_theme_label(
+            label("CRT (joke)", "CRT（お遊び）"),
+            theme_preference == "crt",
+        ),
         true,
         None::<&str>,
     )?;
     let theme_shinkai = MenuItem::with_id(
         app,
         MENU_THEME_SHINKAI,
-        selected_theme_label(label("Shinkai (joke)", "深海（お遊び）"), theme_preference == "shinkai"),
+        selected_theme_label(
+            label("Shinkai (joke)", "深海（お遊び）"),
+            theme_preference == "shinkai",
+        ),
         true,
         None::<&str>,
     )?;

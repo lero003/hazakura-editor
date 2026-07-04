@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-03 (v1.3 approved and published on the Mac App Store; v1.4 candidate prepared as `1.4.0`)
+Last reviewed: 2026-07-04 (v1.3 published on the Mac App Store; v1.4 candidate prepared as `1.4.0`)
 
 ## Current Position
 
@@ -17,8 +17,8 @@ Current release state:
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
 - Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
-- Current package/app version: `1.4.0` (v1.4 Observability And Testability
-  candidate). The published Mac App Store version remains `1.3.0`.
+- Current package/app version: `1.4.0` (v1.4 candidate). The published Mac
+  App Store version remains `1.3.0`.
   - Latest source / local-app tag: `v0.35.0`.
 - Mac App Store published version: `1.3.0`, carrying the completed v1 feature
   shape, per-document Editor / Reader / Preview position continuity, and the
@@ -31,13 +31,14 @@ Current release state:
   pkg passed App Review and is published on the Mac App Store; raw App Store
   Connect, TestFlight, and App Review logs are not tracked in this repository.
 - Active release lane: v1.4. v1.3 Daily Trust (`1.3.0`) is approved and
-  published; v1.4 lifts previously module-private pure logic (e-book
-  page-commit / navigation, reader-location, PDF layout, EPUB text helpers)
-  into named seams with focused tests. Candidate slices are listed in
-  `docs/current-work.md`.
-  new surface or entering v2 Book Scope. The `1.3.0` candidate is now in
-  TestFlight / App Review; tagging and public publication remain a separate
-  explicit decision pending the Apple outcome.
+  published; v1.4 adds two opt-in joke themes (CRT, Shinkai), a review
+  stale-diff warning, and a window-close / assist-cancel reconciliation,
+  alongside the Observability And Testability pure-logic seams (e-book
+  page-commit / navigation, reader-location, PDF layout, EPUB text helpers).
+  Candidate slices are listed in `docs/current-work.md`. The signed `1.4.0`
+  App Store / TestFlight package has not been built yet; tagging and public
+  publication remain a separate explicit decision pending the build and the
+  Apple outcome.
 - Current work queue: `docs/current-work.md`.
 
 North star for the next product arc:
@@ -102,12 +103,16 @@ Near-term phase order:
    `破棄`, richer Reading Focus TOC context, and fixed A4 PDF margin
    presets. Full gates and representative built-app interaction/rendered-PDF
    proof pass. This lane is closed; the next lane is v1.4.
-12. v1.4 Observability And Testability is the active lane, prepared as
-   `1.4.0`. It lifts previously module-private pure logic into named seams
-   with focused tests: e-book page-commit / navigation (`ebookPageTarget.ts`),
-   reader-location (`ebookReaderLocation.ts`), PDF screen-page-layout tests,
-   and EPUB text helpers (`epubTextHelpers.ts`). It adds no new product
-   surface, no behavior change, and no App Store lane boundary change. The
+12. v1.4 is the active lane, prepared as `1.4.0`. It adds two opt-in joke
+   themes (CRT, Shinkai) as presentation-only WebGL overlays, a review
+   stale-diff warning for Local Assist proposals, and a window-close /
+   assist-cancel reconciliation, alongside the Observability And Testability
+   pure-logic seams with focused tests: e-book page-commit / navigation
+   (`ebookPageTarget.ts`), reader-location (`ebookReaderLocation.ts`), PDF
+   screen-page-layout tests, and EPUB text helpers (`epubTextHelpers.ts`).
+   The joke themes add no new product surface beyond a visual overlay; the
+   safe editor surfaces, Markdown source contract, and export paths are
+   unchanged when they are off. No App Store lane boundary change. The
    remaining `useAppShellController` and Local Assist transaction seams stay
    trigger-driven candidates under item 13.
 13. v1.x durability and quality lane (observation- and trigger-driven,

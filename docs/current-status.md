@@ -3,17 +3,16 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-03 (v1.3 approved and published on the Mac App Store; next lane v1.4)
+Last reviewed: 2026-07-04 (v1.3 published on the Mac App Store; v1.4 candidate prepared as `1.4.0`)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current development package/app version: `1.3.0` across npm, Tauri, Cargo,
-  and lockfile metadata. `1.3.0` is the published Mac App Store version (v1.3
-  Daily Trust: Save As session continuity, explicit Local Assist `採用` /
-  `破棄`, Reading Focus TOC context, A4 PDF margin presets). It passed App
-  Review and is now public on the Mac App Store. The next active lane is
-  v1.4.
+- Current development package/app version: `1.4.0` across npm, Tauri, Cargo,
+  and lockfile metadata. `1.4.0` is the v1.4 candidate (CRT and Shinkai joke
+  themes, review stale-diff warning, window-close / assist-cancel
+  reconciliation, plus the Observability And Testability pure-logic seams).
+  The published Mac App Store version remains `1.3.0`.
 - v1.3 Daily Trust is approved and published. Four bounded slices ship
   in `1.3.0`: Save As keeps the same-language open-tab /
   CodeMirror session and migrates per-document view state; Local Assist
