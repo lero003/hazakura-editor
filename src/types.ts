@@ -83,14 +83,16 @@ export type ThemePreference =
   | "sakura"
   | "yakou"
   | "shokou"
-  | "crt";
+  | "crt"
+  | "shinkai";
 
 export type ResolvedTheme =
   | BaseTheme
   | "sakura"
   | "yakou"
   | "shokou"
-  | "crt";
+  | "crt"
+  | "shinkai";
 
 export type EditableLineEnding = "lf" | "crlf";
 

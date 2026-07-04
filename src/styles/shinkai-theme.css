@@ -1,0 +1,362 @@
+/* === shinkai-theme.css ===
+   深海ジョークテーマの CSS を1ファイルに集約したもの。
+   crt-theme.css と同じ 7 セクション構成。
+
+   構成:
+     1. パレット定義 (themes.css から)
+     2. .app-shell 背景 (app-shell.css から)
+     3. 背景シェーダー canvas / 前景オーバーレイ
+     4. 文字グロー (演出)
+     5. 起動シーケンス (.shinkai-boot*)
+     6. reduced-motion ガード
+     7. @keyframes (animations.css から含む全 shinkai* keyframes)
+
+   すべて :root[data-theme="shinkai"] にスコープし、他テーマへ影響しない。
+   base.css の prefers-reduced-motion ガードが * 向けに keyframes を止める。
+
+   演出の軸 (ノイズ感・デジタル感を排除した有機的な水):
+   - 背景は curl noise の水流 + 漂うチリ (ShinkaiShaderOverlay)
+   - 前景は縞 (ストライプ) を持たず、ビネットと薄い光の滲みのみ
+   - 文字は常時の静かなグローのみ (フリッカー廃止)
+   - 起動は滑らかな光の満ちとチリの点灯 (タイプライター文字なし) */
+
+/* 1. パレット定義 / Shinkai palette
+   水中に漂うチリと水流。青緑 (teal/cyan) 基調で、暗すぎず透明感を残す。
+   アクセントは水中光を帯びた暖い砂色。CRT (near-black, phosphor green) の真逆で、
+   「静かで有機な水中」を目指す。 */
+:root[data-theme="shinkai"] {
+  --bg: #0a2a38;
+  /* surface 系を半透明にし、背景の水中シェーダー (canvas) を各所で透かす。
+     エディタ (CodeMirror)・プレビュー・サイドバー等で水流・チリが見える。 */
+  --surface: rgba(15, 53, 72, 0.72);
+  --surface-rgb: 15, 53, 72;
+  --surface-strong: rgba(20, 64, 86, 0.72);
+  --surface-strong-rgb: 20, 64, 86;
+  --surface-muted: rgba(8, 34, 46, 0.72);
+  --border: #1d4a60;
+  --border-strong: #2a6480;
+  --text: #d4ecf2;
+  --text-muted: #7ba8bc;
+  --accent: #f2d8a0;
+  --accent-secondary: #7dd3e0;
+  --accent-gradient: linear-gradient(135deg, #f2d8a0 0%, #7dd3e0 100%);
+  --accent-soft: #14384a;
+  --accent-glass: rgba(125, 211, 224, 0.1);
+  --danger: #d27a7e;
+  --conflict: #d0a055;
+  --status-bg: #052030;
+  --status-text: #d4ecf2;
+  --selection-bg: rgba(125, 211, 224, 0.22);
+  --scrollbar-thumb: rgba(140, 200, 218, 0.18);
+  --scrollbar-thumb-hover: rgba(140, 200, 218, 0.34);
+
+  /* Diff カラー: dark と同等のコントラストを保持。
+     --diff-removed-fg は tokens.css で var(--danger) を参照しており、
+     shinkai は --danger を上書き済みなので引き継ぐ (dark/yakou と同じ運用)。 */
+  --diff-added-fg: #9dd9c8;
+  --diff-added-row-bg: color-mix(in srgb, var(--diff-added-fg) 18%, transparent);
+  --diff-removed-row-bg: color-mix(in srgb, var(--diff-removed-fg) 20%, transparent);
+  --diff-blank-row-bg: color-mix(in srgb, var(--text-muted) 10%, transparent);
+
+  /* CodeMirror 深海用配色 / CodeMirror Shinkai Colors
+     --cm-bg / --cm-gutter-bg を半透明にし、背景の水中シェーダー (canvas) を
+     エディタ領域でも透かす。これによりファイルを開いていても水流・チリが見える。 */
+  --cm-bg: rgba(15, 53, 72, 0.55);
+  --cm-fg: #d4ecf2;
+  --cm-caret: #f2d8a0;
+  --cm-gutter-bg: rgba(8, 34, 46, 0.6);
+  --cm-gutter-border: #1d4a60;
+  --cm-gutter-fg: #7ba8bc;
+  --cm-active-line-bg: rgba(125, 211, 224, 0.07);
+  --cm-active-gutter-bg: rgba(125, 211, 224, 0.09);
+  --cm-selection-bg: #2a6480;
+  --cm-search-match-bg: rgba(208, 160, 85, 0.32);
+  --cm-search-match-active-bg: rgba(208, 160, 85, 0.7);
+  --cm-search-match-active-shadow: 0 0 0 1px #d0a055;
+  --cm-invisible-space: radial-gradient(circle, #5a8095 1px, transparent 1px);
+  --cm-invisible-tab: rgba(125, 211, 224, 0.12);
+  --cm-trailing-space: rgba(210, 122, 126, 0.3);
+  --cm-mark-heading: #8de0ee;
+  --cm-mark-strong: #d4ecf2;
+  --cm-mark-link: #9dd8ec;
+  --cm-mark-monospace: #8ed8e6;
+  --cm-mark-quote: #8aaabc;
+
+  /* xterm 用配色 / xterm Shinkai Colors */
+  --xterm-bg: #052030;
+  --xterm-fg: #d4ecf2;
+  --xterm-cursor: #f2d8a0;
+  --xterm-selection-bg: #1f4a60;
+  --xterm-black: #0f3548;
+  --xterm-red: #e8a094;
+  --xterm-green: #9dd9c8;
+  --xterm-yellow: #e2d68a;
+  --xterm-blue: #95c0f0;
+  --xterm-magenta: #d4ade8;
+  --xterm-cyan: #88d4e2;
+  --xterm-white: #d4ecf2;
+  --xterm-bright-black: #7ba8bc;
+  --xterm-bright-red: #f5b8ac;
+  --xterm-bright-green: #b5e4d4;
+  --xterm-bright-yellow: #f0e6a8;
+  --xterm-bright-blue: #b5d4f5;
+  --xterm-bright-magenta: #e2c2f0;
+  --xterm-bright-cyan: #a8e4ee;
+  --xterm-bright-white: #e8f6fa;
+
+  /* 深海用シャドウ / Shinkai Shadows
+     水中の光の拡散を模して、やや青みのある柔らかい影にする。 */
+  --shadow-sm: 0 1px 2px rgba(0, 20, 35, 0.28);
+  --shadow-md: 0 4px 12px rgba(0, 20, 35, 0.36), 0 1px 3px rgba(0, 20, 35, 0.22);
+  --shadow-lg: 0 12px 32px rgba(0, 20, 35, 0.48), 0 2px 8px rgba(0, 20, 35, 0.22);
+  --shadow-accent: 0 4px 20px rgba(125, 211, 224, 0.24);
+}
+
+/* 2. .app-shell 背景 / Shinkai: deep water base */
+:root[data-theme="shinkai"] .app-shell {
+  background: #0a2a38;
+}
+
+/* 3. 背景シェーダー canvas / 前景オーバーレイ */
+.shinkai-canvas {
+  animation: shinkaiBgPulse 13s ease-in-out infinite;
+  display: block;
+  height: 100%;
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+  width: 100%;
+  z-index: var(--z-base);
+}
+
+/* 起動シーケンス中の canvas 扱い。
+   ブート (.shinkai-boot) は phase !== "done" の間だけ DOM に存在する。
+   still/flow/drift 中は canvas を隠し (opacity:0)、前面のブート (不透明全面覆い)
+   で水中チリが薄洩れするのを防ぐ。settle 中はブートがフェードアウトするため、
+   canvas の opacity を戻して背面が自然に現れるようにする。
+   ただし canvas の opacity をアニメーションさせると shinkaiBgPulse
+   (同じく opacity を操作) と競合してギザギザが生じるため、
+   切り替えは transition なしの即時とする。 */
+:root[data-theme="shinkai"] .app-shell:has(.shinkai-boot:not(.shinkai-boot-settle))
+  .shinkai-canvas {
+  opacity: 0;
+}
+
+/* 深海前景: ビネットと薄い水中光の滲み。縞 (ストライプ) は持たない。
+   ノイズ感・デジタル感を避け、滑らかな光の広がりにする。
+   缓やかに位置をずらす水流アニメで、画面全体が呼吸するように見せる。
+   全 UI の最局面に置いて文字の上にも乗る。pointer-events: none で操作は妨げない。
+   / Shinkai foreground soft glow + vignette overlay (top layer) */
+.shinkai-overlay {
+  background:
+    /* 上端の柔らかな水中光の滲み (水面近くで明るくなる自然な減衰) */
+    radial-gradient(
+      ellipse 120% 60% at 50% 0%,
+      rgba(180, 230, 240, 0.09) 0%,
+      transparent 60%
+    ),
+    /* 中心は透明、端へ静かに暗くなるビネット (視線を中央へ) */
+    radial-gradient(
+      ellipse at center,
+      transparent 62%,
+      rgba(0, 16, 28, 0.32) 100%
+    );
+  inset: 0;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  position: fixed;
+  z-index: var(--z-crt-top);
+}
+
+/* 前景の缓やかな水流ドリフト。background-position を X 方向にゆっくり揺らし、
+   水中の光が静かに流れるように見せる。デジタルな縞ではなく滑らかな光の滲みが動く。
+   フォーカス時のみ発火し、常時ではない (限定的な演出)。 */
+:root[data-theme="shinkai"] .app-shell:focus-within .shinkai-overlay {
+  animation: shinkaiFlow 18s ease-in-out infinite;
+}
+
+/* 4. 文字グロー (演出)
+   水中の光の拡散グロー (text-shadow) は常時・静か。薄く穏やかに。
+   フリッカー (揺らぎアニメーション) はデジタル感の元になるため持たない。
+   マウス連動は次段階 (MVP 外) で u_mouse を追加予定。 */
+
+/* CodeMirror 本文: 水中の光の拡散グローは常時。scroll-safe に .cm-content 単位。 */
+:root[data-theme="shinkai"] .cm-content {
+  text-shadow: 0 0 7px rgba(125, 211, 224, 0.22);
+}
+
+/* プレビュー本文: 同様に常時の静かなグロー。 */
+:root[data-theme="shinkai"] .markdown-preview :is(p, h1, h2, h3, h4, h5, h6, li, a) {
+  text-shadow: 0 0 7px rgba(125, 211, 224, 0.2);
+}
+
+:root[data-theme="shinkai"] .markdown-preview :is(code, pre) {
+  text-shadow: 0 0 6px rgba(125, 211, 224, 0.16);
+}
+
+/* UI テキスト (タブ・ツリー・ステータスバー・サイドバー): 薄くグロー。 */
+:root[data-theme="shinkai"]
+  :is(.tabs-row, .file-tree-pane, .status-bar, .workspace-sidebar-rail)
+  :is(span, button, a, label, input, .tab-button, .tree-name, .status-bar-segment) {
+  text-shadow: 0 0 5px rgba(125, 211, 224, 0.14);
+}
+
+/* ファイルツリー行のホバー色を深海色調へ上書き。
+   ベース (workspace.css) のホバーは黒 rgba(0,0,0,0.03) で、深海の青緑背景には
+   逆方向 (暗くなる) ため、半透明パネル (Layer A) の上に遅れて載る黒フィルムが
+   二重に見えてしまう。シアン系の低アルファで上書きし、単一レイヤに揃える。 */
+:root[data-theme="shinkai"] .tree-file:hover,
+:root[data-theme="shinkai"] .tree-directory-button:hover {
+  background: rgba(125, 211, 224, 0.06);
+}
+
+/* 5. 起動シーケンス (.shinkai-boot*)
+   テーマ切替 (false → true) で流れる全画面オーバーレイ。
+   静寂 → 水流が満ちる → チリが光を帯びる → 静かに落ち着く。
+   タイプライター文字も縞も持たず、滑らかな光の勾配だけで描く。
+   base.css の prefers-reduced-motion ガードが keyframes を止めるほか、
+   JS 側でも reduce 時は発火そのものをスキップする。 */
+
+.shinkai-boot {
+  background:
+    /* 水中光の滑らかな明滅: 緩やかな radial 重ね刷りで有機的な明暗 */
+    radial-gradient(
+      ellipse 80% 60% at 50% 0%,
+      rgba(190, 235, 245, 0.16) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 60% 40% at 30% 30%,
+      rgba(150, 220, 235, 0.09) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 70% 50% at 70% 40%,
+      rgba(130, 210, 230, 0.07) 0%,
+      transparent 60%
+    ),
+    #02101a;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: fixed;
+  /* 前景オーバーレイ (.shinkai-overlay = --z-crt-top) よりも上に確実に
+     置くため、一段高い z-index にする (DOM 順序との二重の安全措置)。 */
+  z-index: calc(var(--z-crt-top) + 100);
+}
+
+/* 起動シーケンス中、全面に縞ではなくごく薄い光の面を置く。
+   デジタル感を避けるため ::before は滑らかなグラデのみ。 */
+.shinkai-boot::before {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(150, 220, 235, 0.04) 0%,
+    transparent 70%
+  );
+  content: "";
+  inset: 0;
+  position: absolute;
+  z-index: 1;
+}
+
+/* 上端から静かに満ちる水中光の勾配。still→flow phase で上から広がる。
+   筋ではなく、緩やかに下方へ滲む光の「明るさ」を描く。 */
+.shinkai-boot-ray {
+  background: radial-gradient(
+    ellipse 90% 70% at 50% 0%,
+    rgba(225, 245, 250, 0.5) 0%,
+    rgba(175, 225, 238, 0.26) 25%,
+    rgba(135, 210, 230, 0.1) 55%,
+    transparent 85%
+  );
+  height: 0;
+  left: 0;
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 2;
+}
+
+.shinkai-boot-still .shinkai-boot-ray,
+.shinkai-boot-flow .shinkai-boot-ray {
+  animation: shinkaiBootRay 0.7s ease-out forwards;
+}
+
+/* 水中へ広がる光の満ち。flow/drift phase で中心から満ちる。 */
+.shinkai-boot-glow {
+  background: radial-gradient(
+    ellipse 50% 40% at 50% 45%,
+    rgba(175, 230, 242, 0.22) 0%,
+    rgba(135, 215, 232, 0.09) 50%,
+    transparent 80%
+  );
+  inset: 0;
+  opacity: 0;
+  position: absolute;
+  z-index: 2;
+}
+
+.shinkai-boot-flow .shinkai-boot-glow,
+.shinkai-boot-drift .shinkai-boot-glow {
+  animation: shinkaiBootGlow 0.9s ease-out forwards;
+}
+
+/* settle phase: ブート全体がフェードアウト (opacity 1→0)。
+   この間 canvas の opacity:0 は解除され (上記 :not(.shinkai-boot-settle))、
+   ブートが薄れるにつれて背面 canvas が自然に現れる。 */
+.shinkai-boot-settle {
+  animation: shinkaiBootSettle 0.6s linear forwards;
+}
+
+/* 6. reduced-motion ガード
+   base.css のグローバルガードが keyframes を止めるが、canvas 描画自体は
+   JS の rAF ループで動くため、CSS で display: none にして完全停止させる。 */
+@media (prefers-reduced-motion: reduce) {
+  /* 深海シェーダーアニメーションも止める。前景オーバーレイ自体は
+     静止画なので残す。/ Keep static overlay, drop shader motion */
+  .shinkai-canvas {
+    display: none;
+  }
+}
+
+/* 7. @keyframes */
+
+/* 前景オーバーレイの缓やかな水流ドリフト。background-position を X 方向に
+   ゆっくり往復させ、水中の光が静かに流れるように見せる。
+   縞ではなく滑らかな radial-gradient が動くのでデジタル感がない。 */
+@keyframes shinkaiFlow {
+  0%, 100% { background-position: 0% 0%, 0 0; }
+  50% { background-position: 8% 0%, 0 0; }
+}
+
+/* 背景シェーダー (.shinkai-canvas) の「水中の息吹」演出。
+   光の強さがゆったりと明滅する。緩やかで有機的な周期。
+   文字のフリッカー (shinkaiShimmer) はデジタル感の元になるため廃止。 */
+@keyframes shinkaiBgPulse {
+  0%, 100% { opacity: 1; filter: none; }
+  50% { opacity: 0.95; filter: brightness(1.05); }
+}
+
+/* 起動シーケンス用 keyframes */
+
+/* 上端から満ちる水中光の勾配。縦に広がるのではなく、
+   opacity を上げて「明るさ」が満ちるように見せる。 */
+@keyframes shinkaiBootRay {
+  0% { opacity: 0; }
+  100% { height: 100%; opacity: 1; }
+}
+
+/* 水中へ広がる光の満ち。中心から満ちる有機的な明滅。 */
+@keyframes shinkaiBootGlow {
+  0% { opacity: 0; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* ブート全体のフェードアウト。settle フェーズで前面ブートが薄れ、
+   背面の canvas (常に描画中) が自然に現れる。canvas 側は opacity を固定し、
+   shinkaiBgPulse アニメーションとの競合を避ける (ギザギザ防止)。 */
+@keyframes shinkaiBootSettle {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}

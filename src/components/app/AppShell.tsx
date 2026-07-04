@@ -11,6 +11,8 @@ import type { LModeCopy } from "../../lib/locale";
 import { AmbientBackground, type AmbientMode } from "./AmbientBackground";
 import { CrtBootSequence } from "./CrtBootSequence";
 import { CrtShaderOverlay } from "./CrtShaderOverlay";
+import { ShinkaiBootSequence } from "./ShinkaiBootSequence";
+import { ShinkaiShaderOverlay } from "./ShinkaiShaderOverlay";
 import { AppDocumentFeedback } from "./AppDocumentFeedback";
 import { AppOverlays } from "./AppOverlays";
 import { AppStatusBar } from "./AppStatusBar";
@@ -55,6 +57,7 @@ export type AppShellProps = Omit<
 export function AppShell(props: AppShellProps) {
   const ambientMode = isAmbientMode(props.resolvedTheme) ? props.resolvedTheme : null;
   const crtMode = props.resolvedTheme === "crt";
+  const shinkaiMode = props.resolvedTheme === "shinkai";
   useCrtMouseTracking(crtMode);
   const [workspaceSidebarCollapsed, setWorkspaceSidebarCollapsed] =
     useState(false);
@@ -80,6 +83,18 @@ export function AppShell(props: AppShellProps) {
           <CrtBootSequence
             intensity={props.ambientIntensity}
             trigger={crtMode}
+          />
+        </>
+      ) : null}
+      {shinkaiMode ? (
+        <>
+          <ShinkaiShaderOverlay intensity={props.ambientIntensity} />
+          <div className="shinkai-overlay" aria-hidden="true" />
+          {/* 起動シーケンスは前景オーバーレイ (.shinkai-overlay) の上に
+              重ねるため最後に置く。同じ z-index でも DOM 順でこちらが勝つ。 */}
+          <ShinkaiBootSequence
+            intensity={props.ambientIntensity}
+            trigger={shinkaiMode}
           />
         </>
       ) : null}

@@ -90,4 +90,12 @@ describe("useAppMenuActionListener", () => {
 
     expect(setThemePreference).toHaveBeenCalledWith("crt");
   });
+
+  it("routes the Shinkai theme menu action to setThemePreference", () => {
+    const { setThemePreference } = setup();
+
+    void menuListeners[0]?.({ payload: "theme-shinkai" } as never);
+
+    expect(setThemePreference).toHaveBeenCalledWith("shinkai");
+  });
 });

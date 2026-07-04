@@ -37,6 +37,7 @@ export type PreferencesCopy = {
   yakou: string;
   shokou: string;
   crt: string;
+  shinkai: string;
   settingsTitle: string;
   showInvisibles: string;
   tabSize: string;
@@ -81,6 +82,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
       yakou: "よるひかり",
       shokou: "あけぼのひかり",
       crt: "しびえる",
+      shinkai: "しんかい",
       settingsTitle: "おこのみ",
       showInvisibles: "みえぬもじをしめす",
       tabSize: "いんでんとはば",
@@ -91,7 +93,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
       ambientIntensitySubtle: "ほのか",
       ambientIntensityNormal: "つね",
       ambientIntensityDramatic: "あざやか",
-      ambientIntensityHint: "さくら / よるひかり / あけぼのひかり / しびれる の いろあひ で つかへます。",
+      ambientIntensityHint: "さくら / よるひかり / あけぼのひかり / しびれる / しんかい の いろあひ で つかへます。",
       menuLanguageHint: "あぷり の ひょうじ げんご を きりかへ る。かなふみ は ひらがな ちゅうしん の やさしい ひょうき。",
       themeHint: (theme) => {
         if (theme === "light") {
@@ -108,6 +110,9 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         }
         if (theme === "crt") {
           return "むかしの でんしき ぶらうんかん の よう な えんしゅつ。あえて よみにく い じょうけ ん て ま す。";
+        }
+        if (theme === "shinkai") {
+          return "すいちゅう の よう な えんしゅつ。ちり が ながれ に ただよ い、て で かきまわす と みず が うごく じょうけ ん て ま す。";
         }
         return "あけがた の そら を 思わせる あけぼのいろ。えんしゅつ やや つよめ の きせつ いろあひ。";
       },
@@ -140,6 +145,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         yakou: "夜光",
         shokou: "曙光",
         crt: "CRT（お遊び）",
+        shinkai: "深海（お遊び）",
         settingsTitle: "設定",
         showInvisibles: "不可視文字を表示",
         tabSize: "インデント幅",
@@ -150,7 +156,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         ambientIntensitySubtle: "控えめ",
         ambientIntensityNormal: "標準",
         ambientIntensityDramatic: "鮮やか",
-        ambientIntensityHint: "sakura / yakou / shokou / crt テーマの時に有効です。",
+        ambientIntensityHint: "sakura / yakou / shokou / crt / shinkai テーマの時に有効です。",
         themeHint: (theme) => {
           if (theme === "light") {
             return "日中や印刷向けの明るい基本テーマ。";
@@ -166,6 +172,9 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
           }
           if (theme === "crt") {
             return "旧式ブラウン管のような演出。あえて読みにくい冗談テーマです。";
+          }
+          if (theme === "shinkai") {
+            return "水中のような演出。チリが流れに漂い、手でかき回すと水が動く冗談テーマです。";
           }
           return "明け方の空を思わせる曙色。演出やや強めのアンビエントテーマ。";
         },
@@ -195,6 +204,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         yakou: "Yakou",
         shokou: "Shokou",
         crt: "CRT (joke)",
+        shinkai: "Shinkai (joke)",
         settingsTitle: "Preferences",
         showInvisibles: "Show invisibles",
         tabSize: "Indent size",
@@ -205,7 +215,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         ambientIntensitySubtle: "Subtle",
         ambientIntensityNormal: "Normal",
         ambientIntensityDramatic: "Vivid",
-        ambientIntensityHint: "Applies when using sakura, yakou, shokou, or crt themes.",
+        ambientIntensityHint: "Applies when using sakura, yakou, shokou, crt, or shinkai themes.",
         themeHint: (theme) => {
           if (theme === "light") {
             return "Bright, neutral base theme for daytime and print.";
@@ -221,6 +231,9 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
           }
           if (theme === "crt") {
             return "Old-school CRT look. A deliberately hard-to-read joke theme.";
+          }
+          if (theme === "shinkai") {
+            return "Underwater look. Drifting dust in gentle currents; stir the water with your cursor. Joke theme.";
           }
           return "Dawn pastels with stronger ambient effects. Early-morning seasonal theme.";
         },
