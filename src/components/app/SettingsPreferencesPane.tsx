@@ -85,6 +85,21 @@ export function SettingsPreferencesPane({
           <span className="slider"></span>
           <span>{copy.showInvisibles}</span>
         </label>
+        <label className="toggle-switch">
+          <input
+            type="checkbox"
+            checked={editorSettings.spellcheckEnabled}
+            onChange={() => {
+              const spellcheckEnabled = !editorSettings.spellcheckEnabled;
+              onEditorSettingsChange((current) => ({
+                ...current,
+                spellcheckEnabled,
+              }));
+            }}
+          />
+          <span className="slider"></span>
+          <span>{copy.spellcheck}</span>
+        </label>
         <label className="field-control">
           <span>{copy.editorFontSize}</span>
           <input

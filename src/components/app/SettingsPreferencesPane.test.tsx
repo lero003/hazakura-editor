@@ -219,4 +219,49 @@ describe("SettingsPreferencesPane", () => {
     }
   });
 
+  it("toggles spellcheckEnabled from the preferences pane", () => {
+    // Spellcheck はエディタ Quick Settings だけでなく設定ペインからも切り替えられる。
+    // 表示/編集系の設定が一箇所に集約されていることを固定する。
+    const onEditorSettingsChange = vi.fn();
+    const { container } = render(
+      <SettingsPreferencesPane
+        copy={getPreferencesCopy("en")}
+        editorSettings={editorSettings({ spellcheckEnabled: true })}
+        lModeCopy={getLModeCopy("en")}
+        menuLanguage="en"
+        onEditorSettingsChange={onEditorSettingsChange}
+        onMenuLanguageChange={vi.fn()}
+        onPreviewVisibleChange={vi.fn()}
+        onThemePreferenceChange={vi.fn()}
+        previewVisible={true}
+        themePreference="light"
+      />,
+    );
+
+    const labels = container.querySelectorAll("label.toggle-switch");
+    let spellcheckLabel: HTMLLabelElement | null = null;
+    for (const label of Array.from(labels)) {
+      if (label.textContent?.includes("Spellcheck")) {
+        spellcheckLabel = label as HTMLLabelElement;
+        break;
+      }
+    }
+    expect(spellcheckLabel).not.toBeNull();
+    const input = spellcheckLabel!.querySelector(
+      "input[type=checkbox]",
+    ) as HTMLInputElement;
+    expect(input.checked).toBe(true);
+
+    // spellcheck の onChange は現在の editorSettings.spellcheckEnabled を
+    // 反転させる (autoBackup トグルと同じ実装)。input を直接 click する。
+    fireEvent.click(input);
+
+    expect(onEditorSettingsChange).toHaveBeenCalledTimes(1);
+    const updater = onEditorSettingsChange.mock.calls[0][0];
+    // 現在 spellcheckEnabled: true → トグルで false に反転する
+    expect(updater(editorSettings({ spellcheckEnabled: true }))).toEqual(
+      editorSettings({ spellcheckEnabled: false }),
+    );
+  });
+
 });
