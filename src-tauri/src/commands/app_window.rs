@@ -35,6 +35,7 @@ struct ThemeBackgroundColors {
     shokou: String,
     yakou: String,
     crt: String,
+    shinkai: String,
 }
 
 fn theme_background_colors() -> &'static ThemeBackgroundColors {
@@ -64,6 +65,7 @@ pub(crate) fn agent_window_background_color(theme: &str) -> Color {
         "yakou" => &palette.yakou,
         "shokou" => &palette.shokou,
         "crt" => &palette.crt,
+        "shinkai" => &palette.shinkai,
         "light" => &palette.light,
         _ => &palette.dark,
     };
@@ -73,10 +75,10 @@ pub(crate) fn agent_window_background_color(theme: &str) -> Color {
 // Map the in-app theme preference to the agent window's OS chrome
 // `Theme` (controls whether the title-bar / traffic-lights paint
 // light or dark). Matches the `BaseTheme` derivation in
-// `useAppPreferences.ts`: `dark` / `yakou` / `crt` → Dark, everything else → Light.
+// `useAppPreferences.ts`: `dark` / `yakou` / `crt` / `shinkai` → Dark, everything else → Light.
 pub(crate) fn agent_window_os_theme(theme: &str) -> Theme {
     match theme {
-        "dark" | "yakou" | "crt" => Theme::Dark,
+        "dark" | "yakou" | "crt" | "shinkai" => Theme::Dark,
         _ => Theme::Light,
     }
 }

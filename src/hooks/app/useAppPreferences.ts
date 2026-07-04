@@ -57,7 +57,10 @@ export function useAppPreferences(options: UseAppPreferencesOptions = {}) {
 
   const resolvedTheme = themePreference;
   const editorTheme: BaseTheme =
-    resolvedTheme === "dark" || resolvedTheme === "yakou" || resolvedTheme === "crt"
+    resolvedTheme === "dark" ||
+    resolvedTheme === "yakou" ||
+    resolvedTheme === "crt" ||
+    resolvedTheme === "shinkai"
       ? "dark"
       : "light";
 
@@ -110,7 +113,8 @@ export function useAppPreferences(options: UseAppPreferencesOptions = {}) {
     const windowTheme: BaseTheme =
       themePreference === "dark" ||
       themePreference === "yakou" ||
-      themePreference === "crt"
+      themePreference === "crt" ||
+      themePreference === "shinkai"
         ? "dark"
         : "light";
 
@@ -185,7 +189,8 @@ function readStoredThemePreference(): ThemePreference {
     value === "sakura" ||
     value === "yakou" ||
     value === "shokou" ||
-    value === "crt"
+    value === "crt" ||
+    value === "shinkai"
   ) {
     return value;
   }

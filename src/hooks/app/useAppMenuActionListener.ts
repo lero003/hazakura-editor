@@ -173,6 +173,9 @@ export function useAppMenuActionListener({
         case "theme-crt":
           setThemePreference("crt");
           break;
+        case "theme-shinkai":
+          setThemePreference("shinkai");
+          break;
         case "preferences":
           setPreferencesDialogMode("settings");
           break;
