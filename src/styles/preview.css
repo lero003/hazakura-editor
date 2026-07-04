@@ -675,13 +675,13 @@
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   left: clamp(18px, 4vw, 44px);
-  max-height: min(52vh, 420px);
-  max-width: min(320px, calc(100% - 32px));
+  max-height: min(64vh, 520px);
+  max-width: min(340px, calc(100% - 32px));
   min-height: 180px;
   overflow: hidden;
   position: absolute;
   top: clamp(92px, 14vh, 140px);
-  width: min(320px, calc(100% - 32px));
+  width: min(340px, calc(100% - 32px));
   z-index: var(--z-base);
 }
 
@@ -786,7 +786,21 @@
   color: var(--text-muted);
   display: block;
   font-size: 10px;
+  line-height: 1.4;
   min-width: 0;
+}
+
+.ebook-pane .ebook-reader-toc-subheadings {
+  /* 小見出しプレビューは最大4件。dense な目次にするため 2 行まで許容し、
+     それを超える場合は末尾を省略する。1 行 ellipsis だと情報量が足りず
+     「章番号だけのリスト」のように見えてしまうため。 */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.ebook-pane .ebook-reader-toc-progress {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
