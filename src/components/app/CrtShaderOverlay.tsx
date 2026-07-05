@@ -85,9 +85,11 @@ const float LINE_THRESH   = 0.78;   // これを超えるとバースト発生
 const float LINE_DECAY    = 9.0;    // 帯の本数/減衰傾き
 const float LINE_BRIGHT   = 0.22;   // 帯の最大輝度 (noiseAmp で増幅)
 const float LINE_WOBBLE   = 35.0;   // 帯の y 座標の揺らぎ周波数
-// 全体フリッカー (管の明滅)。CSS の crtFlicker と重複しすぎないよう穏やか。
+// 全体フリッカー (管の明滅)。背景レイヤ常時。本文レイヤには CSS の
+// crtFlicker (ホバー/フォーカス時・深め) が別系統で載るため、背景側は
+// 重複時の過剰な明滅を避けるよう一段穏やかに抑える。
 const float FLICKER_RATE  = 4.7;
-const float FLICKER_AMP   = 0.06;   // u_intensity で増幅
+const float FLICKER_AMP   = 0.05;   // u_intensity で増幅
 
 // 2D ハッシュ / value noise (プロシージャル、外部テクスチャ不要)
 float hash21(vec2 p) {

@@ -253,7 +253,8 @@ describe("SettingsPreferencesPane", () => {
     expect(input.checked).toBe(true);
 
     // spellcheck の onChange は現在の editorSettings.spellcheckEnabled を
-    // 反転させる (autoBackup トグルと同じ実装)。input を直接 click する。
+    // 反転させる (useAppMenuActionListener のメニュー経由トグルと同じ実装)。
+    // input を直接 click する。
     fireEvent.click(input);
 
     expect(onEditorSettingsChange).toHaveBeenCalledTimes(1);
