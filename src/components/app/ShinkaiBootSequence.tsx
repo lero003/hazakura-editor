@@ -50,6 +50,13 @@ const PHASE_TIMINGS: { phase: Phase; at: number }[] = [
 
 const TOTAL_MS = PHASE_TIMINGS[PHASE_TIMINGS.length - 1].at; // 2400
 
+// === 深度グラデ配色 (ShinkaiShaderOverlay と共有) ===
+// shallow/deep を両シェーダーで同一に保ち、ブート終了時に edit 画面へ
+// 連続的に繋がるようにする。変更時は ShinkaiShaderOverlay.tsx 側も更新すること
+// (両ファイルに同名定数として保持。ズレは diff で検出可能)。
+const SHALLOW_WATER_COLOR = "vec3(0.12, 0.38, 0.46)";
+const DEEP_WATER_COLOR = "vec3(0.015, 0.09, 0.16)";
+
 function computeInitialPhase(
   intensity: AmbientIntensity,
   trigger: boolean,
@@ -147,8 +154,9 @@ void main() {
   float fadeAlpha = 1.0 - smoothstep(0.6, 1.0, p);
 
   // 深度グラデ: edit画面 (ShinkaiShaderOverlay) と同一値で配色を合わせる。
-  vec3 shallow = vec3(0.12, 0.38, 0.46);
-  vec3 deep = vec3(0.015, 0.09, 0.16);
+  // SHALLOW/DEEP_WATER_COLOR は JS 定数 (シェーダー文字列の外) から補間。
+  vec3 shallow = ${SHALLOW_WATER_COLOR};
+  vec3 deep = ${DEEP_WATER_COLOR};
   vec3 water = mix(deep, shallow, pow(uv.y, 0.55));
 
   vec3 col = water;
@@ -175,7 +183,12 @@ void main() {
 }
 `;
 
-const INTENSITY_MAP: Record<AmbientIntensity, number> = {
+// ShinkaiShaderOverlay の INTENSITY_VALUE と対になるブート演出用の強度。
+// subtle を Overlay (0.85) より控えめ (0.7) にしているのは意図: ブートは全面を
+// 覆う不透明レイヤで、Overlay のように下地が透けて軽減されることがないため。
+// 明るすぎると水面の光柱が刺さるので、一段落としている。normal/dramatic は共通。
+// 名称は Overlay に合わせ INTENSITY_VALUE で統一 (値は用途ごとに調整可)。
+const INTENSITY_VALUE: Record<AmbientIntensity, number> = {
   off: 0,
   subtle: 0.7,
   normal: 1.2,
@@ -322,7 +335,7 @@ export function ShinkaiBootSequence({ intensity, trigger }: ShinkaiBootSequenceP
     const u_intensity = gl.getUniformLocation(program, "u_intensity");
     const u_progress = gl.getUniformLocation(program, "u_progress");
 
-    const intensityValue = INTENSITY_MAP[intensityRef.current] ?? 1.2;
+    const intensityValue = INTENSITY_VALUE[intensityRef.current] ?? 1.2;
 
     // devicePixelRatio は 2 に cap (Retina 大画面での負荷抑制)
     const resize = () => {
@@ -342,7 +355,11 @@ export function ShinkaiBootSequence({ intensity, trigger }: ShinkaiBootSequenceP
     // startTimeRef は trigger effect で発火時に設定済み。再マウント時は現在時刻。
     const startTime = startTimeRef.current || performance.now();
     let rafId: number | null = null;
+    let running = true;
     const render = () => {
+      if (!running) {
+        return;
+      }
       const elapsed = performance.now() - startTime;
       const progress = Math.min(1, Math.max(0, elapsed / TOTAL_MS));
 
@@ -354,21 +371,42 @@ export function ShinkaiBootSequence({ intensity, trigger }: ShinkaiBootSequenceP
       // progress >= 1 でループ停止。done への遷移は最後の phase タイマーが担当。
       if (progress < 1) {
         rafId = requestAnimationFrame(render);
+      } else {
+        rafId = null;
       }
     };
     rafId = requestAnimationFrame(render);
 
+    // WebGL コンテキストロスト時は即停止する。lost 後の gl.* は no-op なので
+    // エラーにはならないが、2.4 秒の無駄な drawArrays を省いてバッテリ負荷を
+    // 抑える。ShinkaiShaderOverlay と同じ running フラグ方式で対称性を保つ。
+    const handleContextLoss = () => {
+      running = false;
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+    };
+    canvas.addEventListener("webglcontextlost", handleContextLoss);
+
     return () => {
+      running = false;
       if (rafId !== null) {
         cancelAnimationFrame(rafId);
       }
       window.removeEventListener("resize", resize);
+      canvas.removeEventListener("webglcontextlost", handleContextLoss);
       gl.deleteProgram(program);
       gl.deleteShader(vs);
       gl.deleteShader(fs);
       if (positionBuffer) {
         gl.deleteBuffer(positionBuffer);
       }
+      // 明示的に loseContext() するのは意図。Boot は 2.4 秒で終わる使い捨て canvas
+      // (phase==="done" で DOM から消える) なので、確実に GPU コンテキストを解放
+      // してよい。一方 ShinkaiShaderOverlay は常駐 canvas で、WKWebView で loseContext
+      // すると再マウント時に描画が止まることがあるため呼ばない (同ファイルの
+      // cleanup コメント参照)。短命な Boot と常駐の Overlay で方針を分けている。
       const loseCtx = gl.getExtension("WEBGL_lose_context");
       loseCtx?.loseContext();
     };

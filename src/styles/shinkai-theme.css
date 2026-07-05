@@ -218,9 +218,10 @@
    テーマ切替 (false → true) / アプリ起動時に流れる全画面オーバーレイ。
    v1.5: ShinkaiShaderOverlay と同じ WebGL 語彙 (4本の湾曲する光の柱・
    深度グラデ・前景粒子・Reinhard) で「海へ潜る」ストーリーを描く。
-   descend → awaken → rise → surface → done (3.3秒)。
+   descend → awaken → rise → surface → done (2.4秒)。
    CSS は WebGL canvas のコンテナと、canvas 描画開始前の frame-0
-   マスク用の深海色ベタのみを担う。描画ロジックはすべてシェーダー側。 */
+   マスク用の深海色ベタのみを担う。描画ロジックはすべてシェーダー側。
+   (TOTAL_MS = 2400 は ShinkaiBootSequence.tsx 側で定義。変更時は両方を更新) */
 
 .shinkai-boot {
   /* canvas 描画開始前 (frame 0) の暗転・チラつきを防ぐため、深海色で

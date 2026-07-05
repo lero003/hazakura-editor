@@ -44,6 +44,13 @@ type ShinkaiShaderOverlayProps = {
   intensity: AmbientIntensity;
 };
 
+// === 深度グラデ配色 (ShinkaiBootSequence と共有) ===
+// shallow/deep を両シェーダーで同一に保ち、ブート終了時に edit 画面へ
+// 連続的に繋がるようにする。変更時は ShinkaiBootSequence.tsx 側も更新すること。
+// FRAGMENT_SHADER より前に定義 (シェーダー文字列から補間参照するため)。
+const SHALLOW_WATER_COLOR = "vec3(0.12, 0.38, 0.46)";
+const DEEP_WATER_COLOR = "vec3(0.015, 0.09, 0.16)";
+
 const VERTEX_SHADER = `#version 300 es
 in vec2 a_position;
 out vec2 v_uv;
@@ -259,8 +266,9 @@ void main() {
   // 深度グラデ: 上 (水面側) は青白い水中色、下 (暗い底) へ静かに暗転。
   // 滑らかな pow で、境界を作らない。
   // shallow を上げて水面付近により明るい場所を持たせる。
-  vec3 shallow = vec3(0.12, 0.38, 0.46);
-  vec3 deep = vec3(0.015, 0.09, 0.16);
+  // SHALLOW/DEEP_WATER_COLOR は JS 定数 (シェーダー文字列の外) から補間。
+  vec3 shallow = ${SHALLOW_WATER_COLOR};
+  vec3 deep = ${DEEP_WATER_COLOR};
   vec3 water = mix(deep, shallow, pow(uv.y, 0.55));
 
   // 光の届きやすさ: 上ほど強く、下へ減衰するが、底でも最低限の輝きを残す。
@@ -387,6 +395,8 @@ function createProgram(
 const INTENSITY_VALUE: Record<AmbientIntensity, number> = {
   off: 0,
   // 爽やかさを優先し、CRT よりやや高めに。
+  // NOTE: ブート演出 (ShinkaiBootSequence) 側は全面覆いレイヤのため、
+  // subtle を 0.7 に控えている。normal/dramatic は共通。
   subtle: 0.85,
   normal: 1.2,
   dramatic: 1.6,
