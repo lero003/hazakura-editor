@@ -13,6 +13,7 @@
 - ドキュメント判断は `README.md` と `docs/` 配下を優先し、`docs/markdown-safe-editor-plan.md` は発想の原本として扱う
 - テストまたは確認コマンドを実行してから完了報告する
 - リリース前は `docs/release-pre-check.md` を参照して、ローカルパス・GitHub 不適切内容・セキュリティ懸念の 3 観点を確認する
+- 改善には、スクラップアンドビルドの精神を持つ
 
 ## Reporting
 
