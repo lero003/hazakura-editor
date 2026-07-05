@@ -133,7 +133,8 @@ describe("preview.css", () => {
     ).toMatch(/transform:\s*none/);
     expect(panelBody).toMatch(/position:\s*absolute/);
     expect(panelBody).toMatch(/left:\s*clamp/);
-    expect(panelBody).toMatch(/max-width:\s*min\(320px,\s*calc\(100% - 32px\)\)/);
+    // v1.5 dense 化: 目次パネルを 320px → 340px に広げた
+    expect(panelBody).toMatch(/max-width:\s*min\(340px,\s*calc\(100% - 32px\)\)/);
     expect(listBody).toMatch(/overflow:\s*auto/);
     expect(itemBody).toMatch(/grid-template-columns:\s*2\.6em minmax\(0,\s*1fr\)/);
     expect(previewCss).not.toMatch(/(?:^|\n)\.ebook-reader-toc-panel\s*{/);
