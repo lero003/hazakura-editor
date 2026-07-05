@@ -40,6 +40,9 @@ export type PreferencesCopy = {
   shinkai: string;
   settingsTitle: string;
   showInvisibles: string;
+  // スペルチェックトグル。エディタ Quick Settings にも同じ設定があるが、
+  // 設定ペインからも切り替えられるように表示/編集系の設定を一箇所に集約する。
+  spellcheck: string;
   tabSize: string;
   theme: string;
   themeHint: (theme: ThemePreference) => string;
@@ -85,6 +88,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
       shinkai: "しんかい",
       settingsTitle: "おこのみ",
       showInvisibles: "みえぬもじをしめす",
+      spellcheck: "つづりを かくにん",
       tabSize: "いんでんとはば",
       theme: "いろあひ",
       wrapLines: "くだりををる",
@@ -148,6 +152,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         shinkai: "深海（お遊び）",
         settingsTitle: "設定",
         showInvisibles: "不可視文字を表示",
+        spellcheck: "スペルチェック",
         tabSize: "インデント幅",
         theme: "テーマ",
         wrapLines: "行を折り返す",
@@ -207,6 +212,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         shinkai: "Shinkai (joke)",
         settingsTitle: "Preferences",
         showInvisibles: "Show invisibles",
+        spellcheck: "Spellcheck",
         tabSize: "Indent size",
         theme: "Theme",
         wrapLines: "Wrap lines",
