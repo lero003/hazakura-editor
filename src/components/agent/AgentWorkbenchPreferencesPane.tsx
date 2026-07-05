@@ -12,6 +12,7 @@ import {
   AGENT_WORKBENCH_PROVIDERS,
   type AssistSurfacePreference,
 } from "../../types";
+import { ToggleSwitch } from "../common/ToggleSwitch";
 
 type AgentWorkbenchPreferencesPaneProps = {
   active: boolean;
@@ -153,17 +154,11 @@ export function AgentWorkbenchPreferencesPane({
             className="preference-section"
           >
             <h3>{copy.modeHeading}</h3>
-            <label className="toggle-switch">
-              <input
-                type="checkbox"
-                checked={modePreference}
-                onChange={(event) =>
-                  onModePreferenceChange(event.target.checked)
-                }
-              />
-              <span className="slider"></span>
-              <span>{copy.enableAfterRestart}</span>
-            </label>
+            <ToggleSwitch
+              checked={modePreference}
+              label={copy.enableAfterRestart}
+              onChange={onModePreferenceChange}
+            />
             <p className="preference-note">
               {active ? copy.activeSessionMode : copy.safeSessionMode}
             </p>
@@ -247,16 +242,12 @@ export function AgentWorkbenchPreferencesPane({
                 <li key={item}>{item}</li>
               ))}
             </ul>
-            <label className="toggle-switch">
-              <input
-                type="checkbox"
-                checked={consent}
-                disabled={!active}
-                onChange={(event) => onConsentChange(event.target.checked)}
-              />
-              <span className="slider"></span>
-              <span>{copy.consent}</span>
-            </label>
+            <ToggleSwitch
+              checked={consent}
+              disabled={!active}
+              label={copy.consent}
+              onChange={onConsentChange}
+            />
           </section>
         </>
       ) : null}

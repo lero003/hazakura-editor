@@ -7,6 +7,7 @@ import type {
 } from "../../types";
 import { AUTO_BACKUP_USER_CHOICE_STORAGE_KEY as AUTO_BACKUP_CHOICE_KEY } from "../../types";
 import { isAppleLocalAssistSurfaceAllowed } from "../../lib/distributionLane";
+import { ToggleSwitch } from "../common/ToggleSwitch";
 
 type SettingsPreferencesPaneProps = {
   copy: PreferencesCopy;
@@ -57,49 +58,33 @@ export function SettingsPreferencesPane({
     <div className="preferences-sections settings-preferences">
       <section className="preference-section" aria-label={copy.editorDisplay}>
         <h3>{copy.editor}</h3>
-        <label className="toggle-switch">
-          <input
-            type="checkbox"
-            checked={editorSettings.wrapLines}
-            onChange={(event) =>
-              onEditorSettingsChange((current) => ({
-                ...current,
-                wrapLines: event.target.checked,
-              }))
-            }
-          />
-          <span className="slider"></span>
-          <span>{copy.wrapLines}</span>
-        </label>
-        <label className="toggle-switch">
-          <input
-            type="checkbox"
-            checked={editorSettings.showInvisibles}
-            onChange={(event) =>
-              onEditorSettingsChange((current) => ({
-                ...current,
-                showInvisibles: event.target.checked,
-              }))
-            }
-          />
-          <span className="slider"></span>
-          <span>{copy.showInvisibles}</span>
-        </label>
-        <label className="toggle-switch">
-          <input
-            type="checkbox"
-            checked={editorSettings.spellcheckEnabled}
-            onChange={() => {
-              const spellcheckEnabled = !editorSettings.spellcheckEnabled;
-              onEditorSettingsChange((current) => ({
-                ...current,
-                spellcheckEnabled,
-              }));
-            }}
-          />
-          <span className="slider"></span>
-          <span>{copy.spellcheck}</span>
-        </label>
+        <ToggleSwitch
+          checked={editorSettings.wrapLines}
+          label={copy.wrapLines}
+          onChange={(wrapLines) =>
+            onEditorSettingsChange((current) => ({ ...current, wrapLines }))
+          }
+        />
+        <ToggleSwitch
+          checked={editorSettings.showInvisibles}
+          label={copy.showInvisibles}
+          onChange={(showInvisibles) =>
+            onEditorSettingsChange((current) => ({
+              ...current,
+              showInvisibles,
+            }))
+          }
+        />
+        <ToggleSwitch
+          checked={editorSettings.spellcheckEnabled}
+          label={copy.spellcheck}
+          onChange={(spellcheckEnabled) =>
+            onEditorSettingsChange((current) => ({
+              ...current,
+              spellcheckEnabled,
+            }))
+          }
+        />
         <label className="field-control">
           <span>{copy.editorFontSize}</span>
           <input
@@ -208,52 +193,39 @@ export function SettingsPreferencesPane({
       </section>
       <section className="preference-section" aria-label={copy.application}>
         <h3>{copy.application}</h3>
-        <label className="toggle-switch">
-          <input
-            type="checkbox"
-            checked={previewVisible}
-            onChange={(event) => onPreviewVisibleChange(event.target.checked)}
-          />
-          <span className="slider"></span>
-          <span>{copy.previewPane}</span>
-        </label>
-        <label className="toggle-switch">
-          <input
-            data-testid="auto-backup-toggle"
-            type="checkbox"
-            checked={editorSettings.autoBackupEnabled}
-            onChange={() => {
-              const autoBackupEnabled = !editorSettings.autoBackupEnabled;
-              window.localStorage.setItem(AUTO_BACKUP_CHOICE_KEY, "true");
+        <ToggleSwitch
+          checked={previewVisible}
+          label={copy.previewPane}
+          onChange={onPreviewVisibleChange}
+        />
+        <ToggleSwitch
+          checked={editorSettings.autoBackupEnabled}
+          hint={copy.autoBackupHint}
+          label={copy.autoBackup}
+          testId="auto-backup-toggle"
+          onChange={(autoBackupEnabled) => {
+            // autoBackup はユーザーが明示的に選択したことを localStorage に記録し、
+            // 初回起動時の「バックアップを有効にするか」プロンプトを二度と出さない。
+            // この副作用は ToggleSwitch には持ち込まず、呼び出し側で処理する。
+            window.localStorage.setItem(AUTO_BACKUP_CHOICE_KEY, "true");
+            onEditorSettingsChange((current) => ({
+              ...current,
+              autoBackupEnabled,
+            }));
+          }}
+        />
+        {appleLocalAssistAllowed ? (
+          <ToggleSwitch
+            checked={editorSettings.appleAssistDiffInitiallyOpen}
+            hint={copy.appleAssistDiffInitiallyOpenHint}
+            label={copy.appleAssistDiffInitiallyOpen}
+            onChange={(appleAssistDiffInitiallyOpen) =>
               onEditorSettingsChange((current) => ({
                 ...current,
-                autoBackupEnabled,
-              }));
-            }}
+                appleAssistDiffInitiallyOpen,
+              }))
+            }
           />
-          <span className="slider"></span>
-          <span>{copy.autoBackup}</span>
-          <span className="field-hint">{copy.autoBackupHint}</span>
-        </label>
-        {appleLocalAssistAllowed ? (
-          <label className="toggle-switch">
-            <input
-              type="checkbox"
-              checked={editorSettings.appleAssistDiffInitiallyOpen}
-              onChange={(event) => {
-                const appleAssistDiffInitiallyOpen = event.currentTarget.checked;
-                onEditorSettingsChange((current) => ({
-                  ...current,
-                  appleAssistDiffInitiallyOpen,
-                }));
-              }}
-            />
-            <span className="slider"></span>
-            <span>{copy.appleAssistDiffInitiallyOpen}</span>
-            <span className="field-hint">
-              {copy.appleAssistDiffInitiallyOpenHint}
-            </span>
-          </label>
         ) : null}
         <label className="field-control">
           <span>{copy.menuLanguage}</span>
@@ -342,43 +314,30 @@ export function SettingsPreferencesPane({
               {lModeCopy.featureDescription}
             </span>
           </p>
-          <label className="toggle-switch">
-            <input
-              type="checkbox"
-              checked={editorSettings.lModeEnabled}
-              onChange={(event) =>
-                onEditorSettingsChange((current) => ({
-                  ...current,
-                  lModeEnabled: event.target.checked,
-                }))
-              }
-            />
-            <span className="slider"></span>
-            <span>{lModeCopy.preferenceLabel}</span>
-            <span className="field-hint">{lModeCopy.preferenceHint}</span>
-          </label>
-          <label
-            className={`toggle-switch toggle-switch-nested${
-              editorSettings.lModeEnabled ? "" : " toggle-switch-disabled"
-            }`}
-          >
-            <input
-              type="checkbox"
-              disabled={!editorSettings.lModeEnabled}
-              checked={editorSettings.lModeTypewriter}
-              onChange={(event) =>
-                onEditorSettingsChange((current) => ({
-                  ...current,
-                  lModeTypewriter: event.target.checked,
-                }))
-              }
-            />
-            <span className="slider"></span>
-            <span>{lModeCopy.typewriterPreferenceLabel}</span>
-            <span className="field-hint">
-              {lModeCopy.typewriterPreferenceHint}
-            </span>
-          </label>
+          <ToggleSwitch
+            checked={editorSettings.lModeEnabled}
+            hint={lModeCopy.preferenceHint}
+            label={lModeCopy.preferenceLabel}
+            onChange={(lModeEnabled) =>
+              onEditorSettingsChange((current) => ({
+                ...current,
+                lModeEnabled,
+              }))
+            }
+          />
+          <ToggleSwitch
+            checked={editorSettings.lModeTypewriter}
+            className={`toggle-switch-nested`}
+            disabled={!editorSettings.lModeEnabled}
+            hint={lModeCopy.typewriterPreferenceHint}
+            label={lModeCopy.typewriterPreferenceLabel}
+            onChange={(lModeTypewriter) =>
+              onEditorSettingsChange((current) => ({
+                ...current,
+                lModeTypewriter,
+              }))
+            }
+          />
         </div>
       </section>
     </div>

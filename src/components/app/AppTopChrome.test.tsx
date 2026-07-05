@@ -6,7 +6,8 @@ import {
   getRecoveryCopy,
   getSidePaneCopy,
 } from "../../lib/locale";
-import type { EditorSettings, EditorTab } from "../../types";
+import { defaultEditorSettings } from "../../lib/editorSettingsDefaults";
+import type { EditorTab } from "../../types";
 
 const windowMocks = vi.hoisted(() => ({
   startDragging: vi.fn().mockResolvedValue(undefined),
@@ -732,24 +733,3 @@ describe("AppTopChrome", () => {
     }
   });
 });
-
-function defaultEditorSettings(
-  overrides: Partial<EditorSettings> = {},
-): EditorSettings {
-  return {
-    ambientIntensity: "normal",
-    appleAssistDiffInitiallyOpen: true,
-    autoBackupEnabled: false,
-    editorFontSize: 14,
-    lModeEnabled: false,
-    lModeFontSize: 15,
-    lModeTypewriter: false,
-    previewFontSize: 15,
-    showInvisibles: false,
-    spellcheckEnabled: true,
-    tabSize: 2,
-    workspaceFontSize: 13,
-    wrapLines: true,
-    ...overrides,
-  };
-}
