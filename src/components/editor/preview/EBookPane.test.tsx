@@ -328,13 +328,19 @@ describe("EBookPane chapter reader", () => {
     fireEvent.click(screen.getByRole("button", { name: "目次" }));
 
     const firstChapter = screen.getByRole("button", { name: /^第一章/ });
+    // v1.5 dense 化: 小見出しプレビューが最大 4 件になったため、
+    // 場面A/B/C はすべて表示され「ほかN件」は出ない。
     expect(
       firstChapter.querySelector(".ebook-reader-toc-subheadings")?.textContent,
-    ).toContain("場面A・場面B・ほか1件");
+    ).toContain("場面A・場面B・場面C");
+    expect(
+      firstChapter.querySelector(".ebook-reader-toc-subheadings")?.textContent,
+    ).not.toContain("ほか");
     expect(
       firstChapter.querySelector(".ebook-reader-toc-progress")?.textContent,
     ).toBe("ページ 1 / 3");
 
+    // 非現章はまだページ計測が走っていないため進捗は null。
     const secondChapter = screen.getByRole("button", { name: /^第二章/ });
     expect(
       secondChapter.querySelector(".ebook-reader-toc-progress"),

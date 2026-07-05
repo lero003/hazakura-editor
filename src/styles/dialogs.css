@@ -519,13 +519,6 @@
     grid-template-columns: 1fr;
   }
 
-  .start-recent {
-    border-left: 0;
-    border-top: 1px solid var(--border);
-    padding-left: 0;
-    padding-top: 20px;
-  }
-
   .preferences-sections,
   .agent-workbench-settings {
     grid-template-columns: 1fr;

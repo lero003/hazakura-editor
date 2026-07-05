@@ -1,24 +1,29 @@
 # Current Work
 
 Status: Operational
-Scope: v1.4 observability and testability polish
+Scope: v1.5 stabilization and reading polish
 Authority: High
-Last reviewed: 2026-07-03 (v1.3 approved and published on the Mac App Store; v1.4 candidate prepared as `1.4.0`)
+Last reviewed: 2026-07-05 (v1.4 candidate prepared as `1.4.0`; v1.5 lane opened as the next stabilization and reading-polish arc)
 
 ## Purpose
 
 Start here when choosing the next small `Hazakura Editor` slice.
 This file is the current work queue. `1.3.0` is approved and published
 on the Mac App Store with the product promise
-`Markdownで書き、本として読み、ローカルAIで整える。` The active release lane is
-v1.4. v1.4 lifts previously module-private pure logic (e-book page-commit /
-navigation, reader-location, PDF layout, EPUB text helpers) into named seams
-with focused tests; it adds no new product surface. The package/app version
-is now `1.4.0` (candidate). v1.3 Daily Trust (`1.3.0`) is approved and
-published: Save As session continuity, explicit Local Assist `採用` /
-`破棄`, bounded e-book TOC context, and three allowlisted A4 PDF margin
-presets are all live. Pick the next slice from the Active UX Queue below;
-do not reopen v1.3 without a reproduced gap.
+`Markdownで書き、本として読み、ローカルAIで整える。` v1.4 is the prepared
+candidate lane (`1.4.0`): observability and testability pure-logic seams
+plus two opt-in joke themes (CRT, Shinkai), a review stale-diff warning,
+and a window-close / assist-cancel reconciliation. The active release lane is
+v1.5, a stabilization and reading-polish arc built from
+the small/medium items in the Observation-driven Maintenance Backlog
+(`docs/roadmap.md`): Settings surface consistency (Spellcheck toggle),
+dead-code sweep, dependency updates (DOMPurify / marked / Tauri / React),
+and Reading Focus TOC density, with Preview / render performance and
+long-document editor↔e-book position bridging as observation-triggered
+candidates. Import Assist Phase 1 (Vision OCR) moves to the **v1.6**
+lane; OKF-based structural work and vertical writing (縦書き) move to
+**v2**. Pick the next slice from the Active UX Queue below; do not reopen
+v1.3 or v1.4 without a reproduced gap.
 
 Keep every slice small, verifiable, and inside the Markdown-first Safe
 Editor boundary. The v0.27 refinement phases are complete for source-tag
@@ -54,6 +59,40 @@ evidence live under `docs/archive/operations/app-store-v0.17/`.
 
 ## Active UX Queue
 
+### v1.5 lane (stabilization and reading polish)
+
+The v1.5 lane collects the small/medium items from the Observation-driven
+Maintenance Backlog into one stabilization arc. Each is an independent
+slice; pick one at a time. None adds a new product surface, a second
+document model, or any arbitrary-execution / Git / LSP / terminal /
+plugin behavior. Acceptance for each is the existing focused regression
+suite plus the slice's named check.
+
+| Priority | Slice | Acceptance |
+|---|---|---|
+| Candidate / small UX alignment | Settings surface consistency (Spellcheck toggle) | The Spellcheck toggle that today lives only in the editor Quick Settings popover (`src/components/app/EditorQuickSettingsMenu.tsx`) is also available in the main Settings preferences pane (`src/components/app/SettingsPreferencesPane.tsx`), reusing the existing `spellcheckEnabled` setting. Display / editing preferences are in one place. No new editor behavior. |
+| Candidate / housekeeping | Dead code sweep | Unused exports, stale branches, retired-surface leftovers (Review Desk retire remnants, old Apple-branded helper names), and unreachable CSS are removed or documented as intentionally retained. Focused tests stay green. |
+| Candidate / dependency hygiene | Dependency updates (DOMPurify / marked / Tauri / React) | `npm` and Cargo dependencies are brought current on a cadence. DOMPurify / marked / Tauri / React major bumps pass the sanitizer regression suite (`src/features/editor/markdown.ts` parse → sanitize → DOM pipeline) and the build lane. Routine maintenance, not a feature. |
+| Candidate / reading polish | Reading Focus TOC density | The Reading Focus contents drawer shows denser chapter context (subheadings, progress, or a denser entry) instead of a bare chapter-number list. Navigation feels less sparse on long manuscripts. |
+| Candidate / refactor (trigger-driven) | Preview / render performance structural review | A named long-manuscript fixture shows reduced parse passes / DOM mutations or a smoother measured frame budget without changing the source-preserving render pipeline or adding Preview DOM editing. Pick only when a concrete long-document perf case gives a measurable baseline. *(Carried from the v1.x durability lane.)* |
+| Candidate / observation-driven | Long-document editor ↔ e-book position bridge | Drift or jump between the editor cursor and the e-book simulated page position on very long manuscripts is hardened. Pick only when a concrete reproduced case appears. *(Carried from the v1.x durability lane.)* |
+| Done / v1.5 | Toggle test stability refactor | The toggle switches in `SettingsPreferencesPane` and `AgentWorkbenchPreferencesPane` now share one `ToggleSwitch` component (`src/components/common/ToggleSwitch.tsx`) with a single `onChange(checked) => void` contract, replacing the previous mix of `event.target.checked`, closure-inversion, and `updateSetting` helper patterns that made tests fragile (jsdom `fireEvent.click` does not reliably flip `checked`, which had forced the closure-inversion workaround). `SettingsPreferencesPane.test.tsx` now drives toggles through `getByRole("checkbox", { name })` and verifies the final `EditorSettings` via a real `useState` wrapper instead of executing the `onEditorSettingsChange` updater directly. A shared `defaultEditorSettings()` factory (`src/lib/editorSettingsDefaults.ts`) replaces the two duplicate local factories whose `autoBackupEnabled` default disagreed. No public behavior, CSS, or Markdown source change. |
+
+Post-v1.5 lanes (do not start inside v1.5):
+
+- **v1.6 — Import Assist Phase 1 (Vision OCR).** PDF / 画像 → Markdown via
+  on-device Vision OCR, edit-before-save, no auto-save. Boundary, phased
+  roadmap, and v2 Book Project connection live in
+  `docs/superpowers/specs/2026-07-02-import-assist-design.md`. Start only
+  after the v1.5 lane is closed and the boundary review is passed.
+- **v2 — OKF-based structural foundation and vertical writing.** OKF
+  (Open Knowledge Format) as a structural foundation for Book Scope, then
+  vertical writing (縦書き) as a render / export layer. The v2 Book Scope
+  design is the single source of truth at
+  `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
+
+### Historical queue (v1.4 and earlier)
+
 Pick one item at a time. The four v1.3 slices are implemented with focused and
 full regression coverage. The helper-enabled built app passed representative
 Save As, Local Assist, Reading Focus TOC, and rendered multi-page PDF checks.
@@ -87,13 +126,12 @@ release-candidate interaction breadth listed in
 | Done | Slice C Robustness | `goToLine` double-rAF, `readOnly` in the `useImperativeHandle` deps (insertText / applyMarkdownFormat / insertTable gated), and the validated `tabId` Apple Assist apply path are done. The former Save-As rekey/remount follow-up is implemented in the v1.3 Daily Trust slice. |
 | Done | Slice B bare-`ease` sweep | Remaining transition-level bare `ease` keywords in the named style files and the matching inline icon transition are routed through `var(--ease-standard)`. `ease-out` / `ease-in-out` animations stay untouched. |
 | Done / v1.4 | Local Assist helper lifecycle (close path + cancel UI) | While Local Assist is active, closing the main window or a tab mid-transaction now routes through an explicit helper teardown. The Rust `stop_apple_assist_candidate` command kills the in-flight helper child through a shared cancel handle (mirrors the watchdog kill path, never deadlocks on `inner`); the clean window-close, app-exit, save/discard-close, and tab-close paths all await it before hiding/exiting. A new "取り消す" / Cancel button in the Local Assist window stops an active generation and surfaces a `"cancelled"` status. Cancel is a user intent, not a failure: it does not count toward cooldown. Focused Rust tests pin the kill + zero-failure-count + empty-slot behavior and the no-op-when-idle path; TS tests pin the `cancelled` phase presentation. The slice stays inside the on-device, no-external-API boundary and adds no background keep-alive, auto-retry, or auto-apply. |
-| Candidate / refactor (trigger-driven) | v1.x Preview / render performance structural review | Target redundant re-parse, unnecessary DOM passes, and measurement churn on long manuscripts so Preview and e-book Mode scroll and re-render more smoothly. Acceptance: a named long-manuscript fixture shows reduced parse passes / DOM mutations or a smoother measured frame budget without changing the source-preserving render pipeline or adding Preview DOM editing. Pick only when a concrete long-document perf case or the observability slice gives a measurable baseline. |
-| Candidate / refactor (trigger-driven) | v1.x Observability refactor for diagnosability | Concentrate `useAppShellController` state, Local Assist transaction state, and the render / measurement path behind named seams so a reproduced issue localizes faster and focused regression tests / error traces cover them. Acceptance: one previously hard-to-isolate flow gains a focused test or a named error trace without changing public behavior, Markdown source preservation, or App Store lane boundaries. Refactor-for-debuggability only; do not bundle unrelated cleanup. The v1.4 seam extraction (below) covered the EBookPane page-commit, reader-location, PDF layout, and EPUB text-helper clusters; `useAppShellController` and Local Assist transaction state remain open trigger-driven candidates. |
+| Candidate / refactor (trigger-driven) | Observability refactor for diagnosability | Concentrate `useAppShellController` state, Local Assist transaction state, and the render / measurement path behind named seams so a reproduced issue localizes faster and focused regression tests / error traces cover them. Acceptance: one previously hard-to-isolate flow gains a focused test or a named error trace without changing public behavior, Markdown source preservation, or App Store lane boundaries. Refactor-for-debuggability only; do not bundle unrelated cleanup. The v1.4 seam extraction (below) covered the EBookPane page-commit, reader-location, PDF layout, and EPUB text-helper clusters; `useAppShellController` and Local Assist transaction state remain open trigger-driven candidates. |
 | Done / v1.4 | v1.4 E-book reader navigation seam | The page-commit decision (`commitPageCount`: same-chapter floor vs. chapter-change no-floor) and the chapter-cross page-target computation (`getReaderPageTargetByDelta`) were pure functions living privately in `EBookPane.tsx`. They now live in `ebookPageTarget.ts` with focused tests covering the floor, continuation clamp, and last-chapter clamp edge cases. No behavior change; the existing `EBookPane.test.tsx` suite passes unchanged. |
 | Done / v1.4 | v1.4 E-book reader-location seam | The reader-location assembly, location equality, page-to-source-line interpolation, and markdown line-counting helpers moved to `ebookReaderLocation.ts` with focused coverage for trailing-newline / CRLF / CR / single-line edge cases. `EBookReaderLocation` stays re-exported from `EBookPane` so existing callers compile unchanged. No behavior change. |
 | Done / v1.4 | v1.4 PDF layout and EPUB text-helper tests | The A4 screen-page-layout calculation (`pdfScreenPageLayout`) and point formatter (`formatPdfPointValue`) gained fixed-value coverage. The EPUB `slugify`, YAML-frontmatter stripper, XML escaper, title fallback, and image media-type mappers moved to `epubTextHelpers.ts` with focused coverage for Japanese-heading and frontmatter edge cases. No export-output or behavior change. |
-| Candidate / reading surface | v1.x Vertical writing (縦書き) | Add vertical-text reading to e-book Mode and export layers after the horizontal e-book surface, Spread View, and EPUB export are stable (the pre-existing trigger). Acceptance: a named long-form manuscript renders as vertical writing in e-book Mode with correct column flow, ruby/annotation handling does not corrupt source, and a focused test pins the writing-mode path. Markdown source stays canonical; vertical writing is a render / export layer, not a second saved model. Pick only after the horizontal e-book surface is confirmed stable and no open safety / review / App Store issue takes priority. |
-| Candidate / intake (gated) | v1.x Import Assist Phase 1 (Vision OCR) | PDF / 画像から Vision OCR で Markdown 下書きを生成し、レビュー UI を通じて編集前提で取り込む。Acceptance: 画像1枚→Markdown、PDFページ画像化→OCR→1 Markdown、PDFKit 埋め込みテキスト抽出優先、レビュー UI（原画像と Markdown 左右表示、低信頼度マーキング）。オンデバイス・外部送信なし・編集前提・自動保存しない。Book Project 生成は v2 Book Scope と協調。設計は `docs/superpowers/specs/2026-07-02-import-assist-design.md`。着手は v1.3 リリースレーン安定後かつ境界審査を通った場合のみ。 |
+| Candidate / reading surface | v2 Vertical writing (縦書き) | Add vertical-text reading to e-book Mode and export layers after the horizontal e-book surface, Spread View, and EPUB export are stable (the pre-existing trigger). Acceptance: a named long-form manuscript renders as vertical writing in e-book Mode with correct column flow, ruby/annotation handling does not corrupt source, and a focused test pins the writing-mode path. Markdown source stays canonical; vertical writing is a render / export layer, not a second saved model. **Moved to v2:** picked up after the OKF-based structural foundation for Book Scope, not inside v1.x. |
+| Candidate / intake (gated) | v1.6 Import Assist Phase 1 (Vision OCR) | PDF / 画像から Vision OCR で Markdown 下書きを生成し、レビュー UI を通じて編集前提で取り込む。Acceptance: 画像1枚→Markdown、PDFページ画像化→OCR→1 Markdown、PDFKit 埋め込みテキスト抽出優先、レビュー UI（原画像と Markdown 左右表示、低信頼度マーキング）。オンデバイス・外部送信なし・編集前提・自動保存しない。Book Project 生成は v2 Book Scope と協調。設計は `docs/superpowers/specs/2026-07-02-import-assist-design.md`。着手は v1.5 lane クローズ後かつ境界審査を通った場合のみ。 |
 | Backlog | v1.x Safe file intake polish | Consider one bounded slice only when a concrete user case shows a gap for larger readable local images or additional text-open file extensions. Keep binary detection, file-size warnings, workspace boundary, no external image loading, and no project-indexing behavior intact. |
 | Observation only | Hazakura Local Assist post-release polish | Pick this before the active Reader UX slice only for a concrete safety, review, App Store, availability, generation failure, responsiveness, or transaction-boundary issue. Keep App Store AI assistance local, user-initiated, unsaved until accepted, and Diff / Discard reviewable. |
 | Fallback | Core Safe Editor quality probe | Use only when no concrete Reader UX slice is open or the run is a recurring quality pass. Inspect one high-risk basic surface with a named risk hypothesis, then either fix the smallest reproduced issue or close as `verified no-op`. |

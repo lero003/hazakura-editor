@@ -37,15 +37,17 @@ function renderDialog(
 
 describe("MoveToTrashConfirmDialog v0.18 focus management", () => {
   it("renders the dialog with role/aria-modal and an English description", () => {
-    const { container } = renderDialog({
+    renderDialog({
       isDirectory: false,
       name: "draft.md",
     });
 
-    const section = container.querySelector("section");
-    expect(section).not.toBeNull();
-    expect(section?.getAttribute("role")).toBe("dialog");
-    expect(section?.getAttribute("aria-modal")).toBe("true");
+    // container.querySelector("section") で拾って role を属性検証するより、
+    // getByRole("dialog") で取得すればアクセシブルな役割の存在自体を検証できる。
+    // クラス名や要素種 (section) に依存しないため、リファクタで要素が変わっても
+    // 「dialog 役割があること」は保たれる。
+    const dialog = screen.getByRole("dialog");
+    expect(dialog.getAttribute("aria-modal")).toBe("true");
     expect(screen.getByText(/Move the file.+to the Trash/)).toBeTruthy();
   });
 
@@ -55,15 +57,15 @@ describe("MoveToTrashConfirmDialog v0.18 focus management", () => {
   });
 
   it("wires dialogRef to the dialog section and cancelButtonRef to Cancel", () => {
-    const { cancelButtonRef, container, dialogRef } = renderDialog();
-    const section = container.querySelector("section");
+    const { cancelButtonRef, dialogRef } = renderDialog();
+    const dialog = screen.getByRole("dialog");
     const cancelButton = screen.getByRole("button", { name: "Cancel" });
 
-    // The same DOM node the section renders must be reachable
+    // The same DOM node the dialog renders must be reachable
     // through `dialogRef.current`, otherwise the central focus
     // trap (`useModalKeyboardGuard`) cannot confine Tab to the
     // dialog.
-    expect(dialogRef.current).toBe(section);
+    expect(dialogRef.current).toBe(dialog);
     // The same DOM node the Cancel button renders must be
     // reachable through `cancelButtonRef.current`, otherwise
     // the central initial-focus hook
@@ -90,8 +92,13 @@ describe("MoveToTrashConfirmDialog v0.18 focus management", () => {
     // element order being stable. Confirm first, Cancel last
     // is the existing v0.7 close-dialog layout and the
     // move-to-trash dialog adopts the same order.
-    const { container } = renderDialog();
-    const buttons = container.querySelectorAll(".dialog-actions button");
+    renderDialog();
+    // dialog 内のボタンを role で取得する。.dialog-actions クラス配下の
+    // button という階層依存ではなく、dialog ロール配下の button 順序で検証する。
+    const dialog = screen.getByRole("dialog");
+    const buttons = Array.from(
+      dialog.querySelectorAll<HTMLButtonElement>("button"),
+    );
     expect(buttons[0]?.textContent).toBe("Move to Trash");
     expect(buttons[1]?.textContent).toBe("Cancel");
   });

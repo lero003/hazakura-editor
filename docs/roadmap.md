@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-04 (v1.3 published on the Mac App Store; v1.4 candidate prepared as `1.4.0`)
+Last reviewed: 2026-07-05 (v1.5 candidate prepared as `1.5.0`; v1.4 candidate remains `1.4.0` pending upload)
 
 ## Current Position
 
@@ -17,7 +17,7 @@ Current release state:
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
 - Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
-- Current package/app version: `1.4.0` (v1.4 candidate). The published Mac
+- Current package/app version: `1.5.0` (v1.5 candidate). The published Mac
   App Store version remains `1.3.0`.
   - Latest source / local-app tag: `v0.35.0`.
 - Mac App Store published version: `1.3.0`, carrying the completed v1 feature
@@ -30,15 +30,29 @@ Current release state:
   `npm run release:candidate -- --with-app-store-pkg`. The `1.3.0` signed
   pkg passed App Review and is published on the Mac App Store; raw App Store
   Connect, TestFlight, and App Review logs are not tracked in this repository.
-- Active release lane: v1.4. v1.3 Daily Trust (`1.3.0`) is approved and
-  published; v1.4 adds two opt-in joke themes (CRT, Shinkai), a review
-  stale-diff warning, and a window-close / assist-cancel reconciliation,
-  alongside the Observability And Testability pure-logic seams (e-book
-  page-commit / navigation, reader-location, PDF layout, EPUB text helpers).
-  Candidate slices are listed in `docs/current-work.md`. The signed `1.4.0`
-  App Store / TestFlight package has not been built yet; tagging and public
-  publication remain a separate explicit decision pending the build and the
-  Apple outcome.
+- Active release lane: **v1.5**, a stabilization and reading-polish arc.
+  v1.4 is the prepared candidate lane (`1.4.0`): two opt-in joke themes
+  (CRT, Shinkai), a review stale-diff warning, a window-close / assist-cancel
+  reconciliation, and the Observability And Testability pure-logic seams
+  (e-book page-commit / navigation, reader-location, PDF layout, EPUB text
+  helpers). v1.5 collects the small/medium items from the Observation-driven
+  Maintenance Backlog into one arc: Settings surface consistency (Spellcheck
+  toggle), dead-code sweep, dependency updates (DOMPurify / marked / Tauri /
+  React), and Reading Focus TOC density, with Preview / render performance
+  and long-document editor↔e-book position bridging as observation-triggered
+  candidates. Candidate slices are listed in `docs/current-work.md`. The
+  signed `1.4.0` App Store / TestFlight package has not been built yet;
+  tagging and public publication remain a separate explicit decision pending
+  the build and the Apple outcome.
+- Post-v1.5 lanes (explicit ordering, do not start inside v1.5):
+  - **v1.6 — Import Assist Phase 1 (Vision OCR).** On-device, edit-before-
+    save, no-auto-save intake. Boundary and phased roadmap live in
+    `docs/superpowers/specs/2026-07-02-import-assist-design.md`.
+  - **v2 — OKF-based structural foundation and vertical writing.** OKF
+    (Open Knowledge Format) as a structural foundation for Book Scope,
+    then vertical writing (縦書き) as a render / export layer. The v2 Book
+    Scope design is the single source of truth at
+    `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
 - Current work queue: `docs/current-work.md`.
 
 North star for the next product arc:
@@ -103,78 +117,87 @@ Near-term phase order:
    `破棄`, richer Reading Focus TOC context, and fixed A4 PDF margin
    presets. Full gates and representative built-app interaction/rendered-PDF
    proof pass. This lane is closed; the next lane is v1.4.
-12. v1.4 is the active lane, prepared as `1.4.0`. It adds two opt-in joke
-   themes (CRT, Shinkai) as presentation-only WebGL overlays, a review
-   stale-diff warning for Local Assist proposals, and a window-close /
-   assist-cancel reconciliation, alongside the Observability And Testability
-   pure-logic seams with focused tests: e-book page-commit / navigation
-   (`ebookPageTarget.ts`), reader-location (`ebookReaderLocation.ts`), PDF
-   screen-page-layout tests, and EPUB text helpers (`epubTextHelpers.ts`).
-   The joke themes add no new product surface beyond a visual overlay; the
-   safe editor surfaces, Markdown source contract, and export paths are
-   unchanged when they are off. No App Store lane boundary change. The
-   remaining `useAppShellController` and Local Assist transaction seams stay
-   trigger-driven candidates under item 13.
-13. v1.x durability and quality lane (observation- and trigger-driven,
-   no fixed version slot yet). Four bounded areas can be picked as
-   small independent slices before v2.0, each scheduled only when no
-12. v1.x durability and quality lane (observation- and trigger-driven,
-   no fixed version slot yet). Four bounded areas can be picked as
-   small independent slices before v2.0, each scheduled only when no
-   open safety / review / App Store issue takes priority:
-   - **Local Assist helper lifecycle.** *(Done in v1.4.)* While Local
-     Assist is in use, the main window can still be closed without an
-     explicit helper teardown step. A future slice should make
-     window-close (or tab close during an active transaction) route
-     through a deterministic helper shutdown / cancel path so no orphan
-     helper process remains. This stays inside the existing on-device,
-     no-external-API Local Assist boundary; it does not add background
-     keep-alive, auto-retry, or auto-apply. — *Implemented: the
-     `stop_apple_assist_candidate` command kills the in-flight helper
-     via a shared cancel handle; window-close, app-exit,
-     save/discard-close, and tab-close all await it; a Cancel button in
-     the Local Assist window surfaces a `"cancelled"` status without
-     counting toward cooldown.*
-   - **Preview / render performance.** Preview and e-book Mode share
-     debounce / rAF coalescing today, but a structural review can target
-     redundant re-parse, unnecessary DOM passes, and measurement churn
-     on long manuscripts. The goal is smoother scroll and faster
-     re-render without changing the source-preserving render pipeline or
-     adding Preview DOM editing.
-   - **Observability refactor.** Refactor for diagnosability so a
-     reproduced issue is easier to localize: concentrated state in
-     `useAppShellController`, Local Assist transaction state, and the
-     render / measurement path should expose enough named seams for
-     focused regression tests and error traces. This is refactor-for-
-     debuggability only; it must not change public behavior, Markdown
-     source preservation, or App Store lane boundaries.
+12. v1.4 is the prepared candidate lane, prepared as `1.4.0`. It adds two
+   opt-in joke themes (CRT, Shinkai) as presentation-only WebGL overlays, a
+   review stale-diff warning for Local Assist proposals, and a window-close
+   / assist-cancel reconciliation, alongside the Observability And
+   Testability pure-logic seams with focused tests: e-book page-commit /
+   navigation (`ebookPageTarget.ts`), reader-location
+   (`ebookReaderLocation.ts`), PDF screen-page-layout tests, and EPUB text
+   helpers (`epubTextHelpers.ts`). The joke themes add no new product
+   surface beyond a visual overlay; the safe editor surfaces, Markdown
+   source contract, and export paths are unchanged when they are off. No
+   App Store lane boundary change. The remaining `useAppShellController`
+   and Local Assist transaction seams stay trigger-driven candidates under
+   the Observation-driven Maintenance Backlog.
+13. v1.5 is the active lane: a stabilization and reading-polish arc built
+   from the small/medium items in the Observation-driven Maintenance
+   Backlog. Each is an independent slice; none adds a new product surface,
+   a second document model, or any arbitrary-execution / Git / LSP /
+   terminal / plugin behavior. The v1.5 slices are:
+   - **Settings surface consistency.** Bring the Spellcheck toggle (today
+     only in the editor Quick Settings popover,
+     `src/components/app/EditorQuickSettingsMenu.tsx`) into the main
+     Settings preferences pane
+     (`src/components/app/SettingsPreferencesPane.tsx`), reusing the
+     existing `spellcheckEnabled` setting. Small UX alignment, not a new
+     feature.
+   - **Dead code sweep.** Remove unused exports, stale branches,
+     retired-surface leftovers (Review Desk retire remnants, old
+     Apple-branded helper names), and unreachable CSS. Low-risk
+     housekeeping.
+   - **Dependency updates.** Keep `npm` and Cargo dependencies current on
+     a cadence. Watch DOMPurify / marked / Tauri / React major bumps for
+     sanitizer or build-lane regressions. Routine maintenance, not a
+     feature.
+   - **Reading Focus TOC density.** Show denser chapter context
+     (subheadings, progress, or a denser entry) in the Reading Focus
+     contents drawer instead of a bare chapter-number list.
+   - **Preview / render performance** *(trigger-driven)*. A structural
+     review can target redundant re-parse, unnecessary DOM passes, and
+     measurement churn on long manuscripts. Pick only when a concrete
+     long-document perf case gives a measurable baseline. The goal is
+     smoother scroll and faster re-render without changing the
+     source-preserving render pipeline or adding Preview DOM editing.
+   - **Observability refactor** *(trigger-driven)*. Refactor for
+     diagnosability so a reproduced issue is easier to localize:
+     concentrated state in `useAppShellController`, Local Assist
+     transaction state, and the render / measurement path should expose
+     enough named seams for focused regression tests and error traces.
+     Refactor-for-debuggability only; no public-behavior change, no
+     Markdown source change, no App Store lane change.
+   - **Long-document editor ↔ e-book position bridge** *(trigger-driven)*.
+     Harden drift or jump between the editor cursor and the e-book
+     simulated page position on very long manuscripts. Pick only when a
+     concrete reproduced case appears.
+   See `docs/current-work.md` (Active UX Queue) for the acceptance shape of
+   each.
+14. v1.6 is the Import Assist Phase 1 lane (Vision OCR). PDF / 画像 →
+   Markdown via on-device Vision OCR, edit-before-save, no-cloud-OCR,
+   no-auto-save. Its Book Project generation connects to v2 Book Scope.
+   Start only after the v1.5 lane is closed and the boundary review is
+   passed. The full design — boundary, out-of-scope, phased roadmap, and
+   v2 connection — lives in
+   `docs/superpowers/specs/2026-07-02-import-assist-design.md`.
+15. v2.0 is the OKF-based structural foundation and vertical writing
+   target. Two pillars, in order:
+   - **OKF as a structural foundation for Book Scope.** Treat a
+     user-selected, explicit set of structurally related Markdown files
+     as one book, with OKF (Open Knowledge Format) as the structural
+     foundation. The v2 Book Scope design — including the Workspace As
+     Book direction, the Safe Editor boundary that carries into v2, the
+     open UI questions, and UI candidates that are not yet decided —
+     lives in `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
+     Treat that spec as the single source of truth for v2 Book Scope
+     design; the scattered Book / Workspace As Book / OKF notes elsewhere
+     are historical context. Re-check the latest OKF shape before
+     treating it as an implementation contract.
    - **Vertical writing (縦書き).** Add vertical-text reading to e-book
-     Mode and export layers. This was already recorded in
-     `docs/ebook-mode-epub-export-plan.md` as a v1.x item gated on the
-     horizontal e-book surface, Spread View, and EPUB export being
-     stable; it carries over as a v1.x candidate here. Markdown source
-     stays canonical; vertical writing is a render / export layer, not a
-     second saved model.
-   See `docs/current-work.md` (Active UX Queue and v1 Refactor
-   Watchlist) for the trigger conditions and acceptance shape of each.
-14. v2.0 remains the first appropriate target for Book Scope / Book
-   Workspace Alpha: treating a user-selected, explicit set of
-   structurally related Markdown files as one book. The v2 design —
-   including OKF as a structural foundation, the Workspace As Book
-   direction, the Safe Editor boundary that carries into v2, the open
-   UI questions, and UI candidates that are not yet decided — lives in
-   `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`. Treat
-   that spec as the single source of truth for v2 Book Scope design;
-   the scattered Book / Workspace As Book / OKF notes elsewhere are
-   historical context.
-15. Import Assist (PDF / 画像 → Markdown, local Vision OCR) is a
-   proposal-stage feature spanning the tail of v1.x and v2. Its Phase 1
-   (Vision OCR foundation: image / PDF import, OCR, Markdown
-   normalization, review UI) is a gated v1.x candidate that keeps the
-   on-device, no-cloud-OCR, edit-before-save, no-auto-save boundary.
-   Its Book Project generation connects to v2 Book Scope. The full
-   design — boundary, out-of-scope, phased roadmap, and v2 connection —
-   lives in `docs/superpowers/specs/2026-07-02-import-assist-design.md`.
+     Mode and export layers after the horizontal e-book surface, Spread
+     View, and EPUB export are stable (the pre-existing trigger), and
+     after the OKF-based structural foundation is in place. Markdown
+     source stays canonical; vertical writing is a render / export layer,
+     not a second saved model.
 
 Historical phase details now live in release notes and archive files:
 
@@ -686,7 +709,9 @@ Possible directions:
   visual expression mode only, not as a privacy, encryption, security, or
   access-control feature.
 - Add vertical writing only after the horizontal e-book surface, Spread
-  View, and EPUB export are already stable.
+  View, and EPUB export are already stable, and after the OKF-based
+  structural foundation for v2 Book Scope is in place. Vertical writing is
+  a v2 target, not a v1.x slice.
 - Improve Developer / GitHub distribution only when needed: Developer ID
   signing, notarization, updater, DMG stability, and clear App Store vs
   Developer-lane feature differences. Keep Agent Workbench Developer /

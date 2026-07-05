@@ -27,21 +27,8 @@ export const APPLE_ASSIST_V0_12_OPERATIONS: ReadonlyArray<AppleAssistOperation> 
   "proofread",
 ];
 
-// All five operations, in display order, for UI enumeration and
-// tests. Adding an operation here is the only TS-side change
-// needed for the UI to start showing the new command; the Rust
-// side still needs to lift the v0.12 allowlist.
-export const APPLE_ASSIST_ALL_OPERATIONS: ReadonlyArray<AppleAssistOperation> = [
-  "summarize",
-  "rephrase",
-  "extract",
-  "proofread",
-  "explain_diff",
-];
-
 export const APPLE_ASSIST_MAX_SELECTED_CHARS = 4000;
 export const APPLE_ASSIST_MAX_CONTEXT_CHARS = 8000;
-export const APPLE_ASSIST_MAX_INSTRUCTION_CHARS = 1000;
 
 export type AppleAssistRequest = {
   operation: AppleAssistOperation;
@@ -86,12 +73,6 @@ export type AppleAssistAvailability =
   | { kind: "unavailable"; reason: string }
   | { kind: "disabled" }
   | { kind: "unsupported" };
-
-export function isAppleAssistAvailable(
-  availability: AppleAssistAvailability,
-): boolean {
-  return availability.kind === "available";
-}
 
 export async function probeAppleAssistAvailability(): Promise<AppleAssistAvailability> {
   if (!isTauriRuntime()) {

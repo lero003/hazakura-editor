@@ -944,15 +944,27 @@ export default function EBookPane({
   const tableOfContentsEntries = chapters.map((chapter) => {
     const subheadings = chapterSubheadings[chapter.index] ?? [];
     const isCurrent = chapter.index === activeChapterIndexSafe;
+    // 現在の章は実測値から「ページ N / M」を、他章はキャッシュされた
+    // ページ数(まだ読んでいない章は未計測なので null)から組み立てる。
+    // 全章に進捗を出すことで、目次が「章番号だけのリスト」ではなく
+    // 原稿の全体像をつかめる dense な案内になる。非現章は「ページ N」
+    // (= N ページ構成) という簡易表示にする。
+    const rememberedPageCount = isCurrent
+      ? measuredPageCount
+      : (getRememberedChapterPageCount(chapter.index) ?? 0);
+    const pageProgress =
+      rememberedPageCount > 0
+        ? isCurrent
+          ? `${copy.pageProgress} ${activePageIndexSafe + 1} / ${measuredPageCount}`
+          : `${copy.pageProgress} ${rememberedPageCount}`
+        : null;
     return {
       chapterIndex: chapter.index,
       headingLevel: chapter.headingLevel,
       label: chapterNavigationLabel(chapter, chapter.index, totalChapters, copy),
-      pageProgress: isCurrent
-        ? `${copy.pageProgress} ${activePageIndexSafe + 1} / ${measuredPageCount}`
-        : null,
-      remainingSubheadingCount: Math.max(0, subheadings.length - 2),
-      subheadingPreview: subheadings.slice(0, 2),
+      pageProgress,
+      remainingSubheadingCount: Math.max(0, subheadings.length - 4),
+      subheadingPreview: subheadings.slice(0, 4),
     };
   });
   const chapterLabel = chapterNavigationLabel(

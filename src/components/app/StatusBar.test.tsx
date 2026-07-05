@@ -72,9 +72,11 @@ describe("StatusBar", () => {
     // The status text must be exposed as a live region so
     // screen readers announce status changes (e.g. "Saved",
     // "Close stopped", "External change detected").
-    const statusSegment = container.querySelector(".status-bar-status");
-    expect(statusSegment?.getAttribute("role")).toBe("status");
-    expect(statusSegment?.getAttribute("aria-live")).toBe("polite");
+    // getByRole("status") で取得できれば role="status" の存在自体が検証できる。
+    // クラス名 (.status-bar-status) に依存しないため、リファクタでクラス名が
+    // 変わってもライブリージョン契約は保たれる。
+    const statusSegment = screen.getByRole("status");
+    expect(statusSegment.getAttribute("aria-live")).toBe("polite");
   });
 
   it("shortens the passive detail in normal mode while keeping the full title", () => {
@@ -178,9 +180,8 @@ describe("StatusBar", () => {
     // `role="status"` must be present even in L Mode —
     // status messages (dirty, save, conflict) still need
     // to be surfaced to assistive technology.
-    const statusSegment = container.querySelector(".status-bar-status");
-    expect(statusSegment?.getAttribute("role")).toBe("status");
-    expect(statusSegment?.getAttribute("aria-live")).toBe("polite");
+    const statusSegment = screen.getByRole("status");
+    expect(statusSegment.getAttribute("aria-live")).toBe("polite");
   });
 
   it("renders the unsaved pill when dirtyLabel is provided", () => {

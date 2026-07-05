@@ -100,7 +100,7 @@ describe("macOS build scripts", () => {
     expect(mainWindow?.titleBarStyle).toBe("Overlay");
     expect(mainWindow?.hiddenTitle).toBe(true);
     expect(mainWindow?.transparent).toBe(true);
-    expect(mainWindow?.trafficLightPosition).toEqual({ x: 18, y: 18 });
+    expect(mainWindow?.trafficLightPosition).toEqual({ x: 9, y: 18 });
   });
 
   it("allows the main window to start native dragging from custom chrome", () => {
@@ -486,18 +486,18 @@ describe("macOS build scripts", () => {
         "v1.3 Daily Trust is approved and published",
       ],
       "docs/current-work.md": [
-        "Scope: v1.4 observability and testability polish",
+        "Scope: v1.5 stabilization and reading polish",
         "The active release lane is",
-        "v1.4",
+        "v1.5",
       ],
-      "docs/development-automation.md": ["Phase: v1.4"],
+      "docs/development-automation.md": ["Phase: v1.5"],
       "docs/handoff.md": [
         "`Hazakura Editor` `1.3.0` is the latest published Mac App Store",
-        "The active main-branch release lane is v1.4",
+        "The active main-branch release lane is v1.5",
       ],
       "docs/roadmap.md": [
         "Mac App Store published version: `1.3.0`",
-        "Active release lane: v1.4",
+        "Active release lane: **v1.5**",
       ],
     };
 
