@@ -343,6 +343,40 @@ describe("EditorPane", () => {
     expect(editorRef.current?.getActiveDocument()?.from).toBeGreaterThan(0);
   });
 
+  it("remounts the editor on L Mode toggle while restoring the cursor position", async () => {
+    // CodeMirror 6.43.3/6.43.4 の tile tree（行仮想化）破損を回避するため、
+    // .md でも L Mode 切替時は EditorView を作り直す。その代わりカーソル位置と
+    // スクロール比は直前の View から復元する。このテストは「再マウントされる
+    // こと」と「カーソル位置が戻ること」を両方検証する。
+    const editorRef = createRef<EditorPaneHandle>();
+    const { container, rerender } = render(
+      renderEditorPane({
+        ref: editorRef,
+        value: "line 1\nline 2\nline 3\n",
+      }),
+    );
+
+    editorRef.current?.goToLine(2);
+    const beforeEditor = container.querySelector(".cm-editor");
+    const beforeFrom = editorRef.current?.getActiveDocument()?.from;
+    expect(beforeFrom).toBeGreaterThan(0);
+
+    rerender(
+      renderEditorPane({
+        ref: editorRef,
+        value: "line 1\nline 2\nline 3\n",
+        lModeEnabled: true,
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    // EditorView は作り直される（別 DOM ノード）
+    const afterEditor = container.querySelector(".cm-editor");
+    expect(afterEditor).not.toBe(beforeEditor);
+    // カーソル位置は復元される
+    expect(editorRef.current?.getActiveDocument()?.from).toBe(beforeFrom);
+  });
+
   it("restores the controlled cursor when switching back to a tab", async () => {
     const editorRef = createRef<EditorPaneHandle>();
     const { rerender } = render(

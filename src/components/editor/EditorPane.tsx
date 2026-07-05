@@ -258,6 +258,11 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   // test breaks.
   const mountedKindRef = useRef<EditorLanguageKind | null>(null);
   const mountedEditorSessionKeyRef = useRef<string | null>(null);
+  // L Mode ON/OFF の変化で再マウントを駆動する。CodeMirror 6.43.3/6.43.4 で
+  // 入った tile tree（行仮想化・描画範囲計算の中核）破損問題を回避するため、
+  // L Mode 切替時は EditorView を作り直して tile tree を新規構築する。
+  // 詳細は docs/current-work.md の当該事象記録を参照。
+  const mountedLModeEnabledRef = useRef<boolean | null>(null);
 
   useImperativeHandle(
     ref,
@@ -450,11 +455,11 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     // in an inconsistent state.
     const picked = pickEditorLanguage(documentKey, { lModeEnabled });
 
-    // We re-mount the editor when the open-tab session changes OR when the
-    // language family (`kind`) changes. The path can change inside one
-    // session after Save As without losing selection, history, or plugin
-    // state. A different tab receives a different editorSessionKey and must
-    // not inherit those values.
+    // We re-mount the editor when the open-tab session changes, when the
+    // language family (`kind`) changes, OR when L Mode is toggled. The path
+    // can change inside one session after Save As without losing selection,
+    // history, or plugin state. A different tab receives a different
+    // editorSessionKey and must not inherit those values.
     //
     // For `.css` / `.html`, the kind flips between Markdown
     // (L Mode ON) and the file's family (L Mode OFF), so a
@@ -463,10 +468,22 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     // a known and accepted trade-off, since L Mode is meant
     // for the Markdown writing surface, not for CSS / HTML
     // editing.
+    //
+    // For `.md` (kind stays `markdown`), we ALSO re-mount on L Mode toggle.
+    // CodeMirror 6.43.3/6.43.4 introduced content DOM update / tile tree
+    // fixes that corrupt the tile tree (行仮想化・描画範囲計算) when L Mode's
+    // heavy block/replace decoration set is swapped via Compartment
+    // reconfigure, which manifests as "特定行より下が描画されない" and, under
+    // repeated toggles, a hard webview hang. Re-creating the EditorView
+    // rebuilds the tile tree from scratch and avoids the corruption. The
+    // cursor position and scroll ratio are preserved across the remount
+    // (see `preservedViewState` below), so the visible trade-off is only
+    // that undo history resets on each L Mode toggle.
     const shouldRemount =
       mountedKindRef.current === null ||
       mountedEditorSessionKeyRef.current !== editorSessionKey ||
-      mountedKindRef.current !== picked.kind;
+      mountedKindRef.current !== picked.kind ||
+      mountedLModeEnabledRef.current !== lModeEnabled;
     if (!shouldRemount) {
       currentHighlightRef.current = picked.highlight;
       return;
@@ -479,15 +496,36 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     // need an explicit destroy here when `shouldRemount` is
     // true to clear the DOM, listeners, and `viewRef` before
     // the new EditorView attaches.
+    //
+    // 直前の EditorView から selection とスクロール比を吸い上げる。L Mode
+    // 切替で再マウントする際、外部 prop (editorViewState) より直近の実状態を
+    // 優先して復元する。そうしないと L Mode 切替のたびにカーソル・スクロール
+    // が editorViewState prop の（古い）値へ飛んでしまう。
+    //
+    // ただしタブ切替（editorSessionKey 変化）では別文書の editorViewState prop
+    // を優先する必要があるため、その場合は吸い上げた状態を使わない。
+    const currentView = viewRef.current;
+    const isSessionSwitch =
+      mountedEditorSessionKeyRef.current !== editorSessionKey;
+    const preservedViewState: EditorViewState | null =
+      currentView && !isSessionSwitch
+        ? {
+            anchor: currentView.state.selection.main.anchor,
+            head: currentView.state.selection.main.head,
+            scrollRatio: readScrollRatio(currentView.scrollDOM),
+          }
+        : null;
     destroyMountedViewRef.current?.();
     destroyMountedViewRef.current = null;
     viewRef.current = null;
     mountedEditorSessionKeyRef.current = editorSessionKey;
     mountedKindRef.current = picked.kind;
+    mountedLModeEnabledRef.current = lModeEnabled;
     currentHighlightRef.current = picked.highlight;
     const { language, highlight } = picked;
-    const restoredViewState = editorViewState
-      ? clampEditorViewState(editorViewState, value.length)
+    const sourceViewState = preservedViewState ?? editorViewState ?? null;
+    const restoredViewState = sourceViewState
+      ? clampEditorViewState(sourceViewState, value.length)
       : null;
 
     const view = new EditorView({
@@ -714,13 +752,13 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     }
 
     // NB: no cleanup return here. The mount useEffect re-runs
-    // on every document/session/lMode identity change, but
-    // re-mounting should only happen when the language
-    // `kind` changes (the early-return above). When the kind
-    // stays the same (e.g. L Mode toggle on a `.md` file)
-    // we must NOT destroy the view, otherwise the cursor
-    // position is lost. `destroyMountedViewRef` is called
-    // only on actual remount or component unmount.
+    // on every document/session/lMode identity change. Re-mounting
+    // happens when the language `kind` changes OR when L Mode is
+    // toggled (see `shouldRemount`); in both cases the cursor position
+    // and scroll ratio are preserved across the remount via
+    // `preservedViewState`, so the only visible trade-off is that undo
+    // history resets on each L Mode toggle. `destroyMountedViewRef` is
+    // called only on actual remount or component unmount.
   }, [documentKey, editorSessionKey, lModeEnabled]);
 
   useEffect(() => {

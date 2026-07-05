@@ -137,7 +137,7 @@
    ただし canvas の opacity をアニメーションさせると shinkaiBgPulse
    (同じく opacity を操作) と競合してギザギザが生じるため、
    切り替えは transition なしの即時とする。 */
-:root[data-theme="shinkai"] .app-shell:has(.shinkai-boot:not(.shinkai-boot-settle))
+:root[data-theme="shinkai"] .app-shell:has(.shinkai-boot:not(.shinkai-boot-surface))
   .shinkai-canvas {
   opacity: 0;
 }
@@ -215,31 +215,18 @@
 }
 
 /* 5. 起動シーケンス (.shinkai-boot*)
-   テーマ切替 (false → true) で流れる全画面オーバーレイ。
-   静寂 → 水流が満ちる → チリが光を帯びる → 静かに落ち着く。
-   タイプライター文字も縞も持たず、滑らかな光の勾配だけで描く。
-   base.css の prefers-reduced-motion ガードが keyframes を止めるほか、
-   JS 側でも reduce 時は発火そのものをスキップする。 */
+   テーマ切替 (false → true) / アプリ起動時に流れる全画面オーバーレイ。
+   v1.5: ShinkaiShaderOverlay と同じ WebGL 語彙 (4本の湾曲する光の柱・
+   深度グラデ・前景粒子・Reinhard) で「海へ潜る」ストーリーを描く。
+   descend → awaken → rise → surface → done (3.3秒)。
+   CSS は WebGL canvas のコンテナと、canvas 描画開始前の frame-0
+   マスク用の深海色ベタのみを担う。描画ロジックはすべてシェーダー側。 */
 
 .shinkai-boot {
-  background:
-    /* 水中光の滑らかな明滅: 緩やかな radial 重ね刷りで有機的な明暗 */
-    radial-gradient(
-      ellipse 80% 60% at 50% 0%,
-      rgba(190, 235, 245, 0.16) 0%,
-      transparent 70%
-    ),
-    radial-gradient(
-      ellipse 60% 40% at 30% 30%,
-      rgba(150, 220, 235, 0.09) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 70% 50% at 70% 40%,
-      rgba(130, 210, 230, 0.07) 0%,
-      transparent 60%
-    ),
-    #02101a;
+  /* canvas 描画開始前 (frame 0) の暗転・チラつきを防ぐため、深海色で
+     ベタ塗りしておく。シェーダーが立ち上がった後は canvas が覆い隠す。
+     WebGL2 が取れない環境 (jsdom 等) ではこのベタが fallback として働く。 */
+  background: #02101a;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
@@ -249,84 +236,15 @@
   z-index: calc(var(--z-crt-top) + 100);
 }
 
-/* 起動シーケンス中、全面に縞ではなくごく薄い光の面を置く。
-   デジタル感を避けるため ::before は滑らかなグラデのみ。 */
-.shinkai-boot::before {
-  background: radial-gradient(
-    ellipse at center,
-    rgba(150, 220, 235, 0.04) 0%,
-    transparent 70%
-  );
-  content: "";
-  inset: 0;
-  position: absolute;
-  z-index: 1;
-}
-
-/* 上端から静かに満ちる水中光の勾配。still→flow phase で上から広がる。
-   筋ではなく、緩やかに下方へ滲む光の「明るさ」を描く。
-   v1.5: 中央の光に加え、左右に薄い光の柱 (god ray) を模した
-   垂直に細長い滲みを2本重ね、起動時から柱の世界観を示唆する。 */
-.shinkai-boot-ray {
-  background:
-    /* 左寄りの光の柱 (細長い vertical gradient) */
-    radial-gradient(
-      ellipse 14% 90% at 32% 0%,
-      rgba(205, 240, 248, 0.22) 0%,
-      transparent 70%
-    ),
-    /* 右寄りの光の柱 */
-    radial-gradient(
-      ellipse 16% 90% at 68% 0%,
-      rgba(195, 238, 246, 0.18) 0%,
-      transparent 70%
-    ),
-    /* 中央の太い満ちる光 (従来) */
-    radial-gradient(
-      ellipse 90% 70% at 50% 0%,
-      rgba(225, 245, 250, 0.5) 0%,
-      rgba(175, 225, 238, 0.26) 25%,
-      rgba(135, 210, 230, 0.1) 55%,
-      transparent 85%
-    );
-  height: 0;
+/* 起動演出用 WebGL canvas。全面を覆い、シェーダー出力を描く。 */
+.shinkai-boot-canvas {
+  display: block;
+  height: 100%;
   left: 0;
-  opacity: 0;
   position: absolute;
   top: 0;
   width: 100%;
-  z-index: 2;
-}
-
-.shinkai-boot-still .shinkai-boot-ray,
-.shinkai-boot-flow .shinkai-boot-ray {
-  animation: shinkaiBootRay 0.7s ease-out forwards;
-}
-
-/* 水中へ広がる光の満ち。flow/drift phase で中心から満ちる。 */
-.shinkai-boot-glow {
-  background: radial-gradient(
-    ellipse 50% 40% at 50% 45%,
-    rgba(175, 230, 242, 0.22) 0%,
-    rgba(135, 215, 232, 0.09) 50%,
-    transparent 80%
-  );
-  inset: 0;
-  opacity: 0;
-  position: absolute;
-  z-index: 2;
-}
-
-.shinkai-boot-flow .shinkai-boot-glow,
-.shinkai-boot-drift .shinkai-boot-glow {
-  animation: shinkaiBootGlow 0.9s ease-out forwards;
-}
-
-/* settle phase: ブート全体がフェードアウト (opacity 1→0)。
-   この間 canvas の opacity:0 は解除され (上記 :not(.shinkai-boot-settle))、
-   ブートが薄れるにつれて背面 canvas が自然に現れる。 */
-.shinkai-boot-settle {
-  animation: shinkaiBootSettle 0.6s linear forwards;
+  z-index: 1;
 }
 
 /* 6. reduced-motion ガード
@@ -358,25 +276,8 @@
   50% { opacity: 0.95; filter: brightness(1.05); }
 }
 
-/* 起動シーケンス用 keyframes */
+/* 起動シーケンス用 keyframes は廃止。
+   v1.5 で ShinkaiBootSequence が WebGL ベースになり、光の柱の伸長・
+   粒子の灯り・深度の上昇・フェードアウトはすべてシェーダー側の
+   u_progress で駆動する。CSS アニメーションは不要。 */
 
-/* 上端から満ちる水中光の勾配。縦に広がるのではなく、
-   opacity を上げて「明るさ」が満ちるように見せる。 */
-@keyframes shinkaiBootRay {
-  0% { opacity: 0; }
-  100% { height: 100%; opacity: 1; }
-}
-
-/* 水中へ広がる光の満ち。中心から満ちる有機的な明滅。 */
-@keyframes shinkaiBootGlow {
-  0% { opacity: 0; transform: scale(0.8); }
-  100% { opacity: 1; transform: scale(1); }
-}
-
-/* ブート全体のフェードアウト。settle フェーズで前面ブートが薄れ、
-   背面の canvas (常に描画中) が自然に現れる。canvas 側は opacity を固定し、
-   shinkaiBgPulse アニメーションとの競合を避ける (ギザギザ防止)。 */
-@keyframes shinkaiBootSettle {
-  0% { opacity: 1; }
-  100% { opacity: 0; }
-}
