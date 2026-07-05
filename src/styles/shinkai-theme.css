@@ -146,13 +146,17 @@
    ノイズ感・デジタル感を避け、滑らかな光の広がりにする。
    缓やかに位置をずらす水流アニメで、画面全体が呼吸するように見せる。
    全 UI の最局面に置いて文字の上にも乗る。pointer-events: none で操作は妨げない。
+   v1.5: 上端の滲みを薄くし、背景シェーダーの光の柱 (god rays) が
+   screen 合成で潰れずに透けて見えるようにした。柱の青白い光と
+   重なって明るくなりすぎないよう、前景側は控えめに残す。
    / Shinkai foreground soft glow + vignette overlay (top layer) */
 .shinkai-overlay {
   background:
-    /* 上端の柔らかな水中光の滲み (水面近くで明るくなる自然な減衰) */
+    /* 上端の柔らかな水中光の滲み (水面近くで明るくなる自然な減衰)。
+       光の柱が透けるよう、従来より薄く (0.09 → 0.05)。 */
     radial-gradient(
       ellipse 120% 60% at 50% 0%,
-      rgba(180, 230, 240, 0.09) 0%,
+      rgba(180, 230, 240, 0.05) 0%,
       transparent 60%
     ),
     /* 中心は透明、端へ静かに暗くなるビネット (視線を中央へ) */
@@ -260,15 +264,31 @@
 }
 
 /* 上端から静かに満ちる水中光の勾配。still→flow phase で上から広がる。
-   筋ではなく、緩やかに下方へ滲む光の「明るさ」を描く。 */
+   筋ではなく、緩やかに下方へ滲む光の「明るさ」を描く。
+   v1.5: 中央の光に加え、左右に薄い光の柱 (god ray) を模した
+   垂直に細長い滲みを2本重ね、起動時から柱の世界観を示唆する。 */
 .shinkai-boot-ray {
-  background: radial-gradient(
-    ellipse 90% 70% at 50% 0%,
-    rgba(225, 245, 250, 0.5) 0%,
-    rgba(175, 225, 238, 0.26) 25%,
-    rgba(135, 210, 230, 0.1) 55%,
-    transparent 85%
-  );
+  background:
+    /* 左寄りの光の柱 (細長い vertical gradient) */
+    radial-gradient(
+      ellipse 14% 90% at 32% 0%,
+      rgba(205, 240, 248, 0.22) 0%,
+      transparent 70%
+    ),
+    /* 右寄りの光の柱 */
+    radial-gradient(
+      ellipse 16% 90% at 68% 0%,
+      rgba(195, 238, 246, 0.18) 0%,
+      transparent 70%
+    ),
+    /* 中央の太い満ちる光 (従来) */
+    radial-gradient(
+      ellipse 90% 70% at 50% 0%,
+      rgba(225, 245, 250, 0.5) 0%,
+      rgba(175, 225, 238, 0.26) 25%,
+      rgba(135, 210, 230, 0.1) 55%,
+      transparent 85%
+    );
   height: 0;
   left: 0;
   opacity: 0;
