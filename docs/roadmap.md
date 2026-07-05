@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-05 (v1.4 candidate prepared as `1.4.0`; v1.5 lane opened as the next stabilization and reading-polish arc)
+Last reviewed: 2026-07-05 (v1.5 candidate prepared as `1.5.0`; v1.4 candidate remains `1.4.0` pending upload)
 
 ## Current Position
 
@@ -17,7 +17,7 @@ Current release state:
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
 - Latest published downloadable preview: `v0.20.0` warning-expected DMG preview.
-- Current package/app version: `1.4.0` (v1.4 candidate). The published Mac
+- Current package/app version: `1.5.0` (v1.5 candidate). The published Mac
   App Store version remains `1.3.0`.
   - Latest source / local-app tag: `v0.35.0`.
 - Mac App Store published version: `1.3.0`, carrying the completed v1 feature

@@ -490,10 +490,10 @@ describe("macOS build scripts", () => {
         "The active release lane is",
         "v1.5",
       ],
-      "docs/development-automation.md": ["Phase: v1.4"],
+      "docs/development-automation.md": ["Phase: v1.5"],
       "docs/handoff.md": [
         "`Hazakura Editor` `1.3.0` is the latest published Mac App Store",
-        "The active main-branch release lane is v1.4",
+        "The active main-branch release lane is v1.5",
       ],
       "docs/roadmap.md": [
         "Mac App Store published version: `1.3.0`",
