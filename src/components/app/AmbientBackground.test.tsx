@@ -5,7 +5,7 @@ import { AmbientBackground } from "./AmbientBackground";
 afterEach(cleanup);
 
 function renderAmbient(
-  mode: "sakura" | "yakou" | "shokou",
+  mode: "yakou" | "shokou",
   intensity: "normal" | "dramatic" = "normal",
 ) {
   const { container } = render(
@@ -15,21 +15,6 @@ function renderAmbient(
 }
 
 describe("AmbientBackground", () => {
-  it("keeps Sakura calmer than the other special themes", () => {
-    expect(renderAmbient("sakura")).toHaveLength(24);
-  });
-
-  it("renders Sakura particles as small round falling dots", () => {
-    const particles = renderAmbient("sakura");
-    const firstParticle = particles[0];
-
-    expect(firstParticle.style.getPropertyValue("--ambient-w")).toBe(
-      firstParticle.style.getPropertyValue("--ambient-h"),
-    );
-    expect(Number.parseFloat(firstParticle.style.getPropertyValue("--ambient-h")))
-      .toBeLessThan(5);
-  });
-
   it("makes Yakou ambient particles dense enough to read", () => {
     expect(renderAmbient("yakou")).toHaveLength(52);
   });

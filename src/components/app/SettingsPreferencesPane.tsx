@@ -265,8 +265,8 @@ export function SettingsPreferencesPane({
             <option value="dark" title={copy.themeHint("dark")}>
               {copy.dark}
             </option>
-            <option value="sakura" title={copy.themeHint("sakura")}>
-              {copy.sakura}
+            <option value="edohigan" title={copy.themeHint("edohigan")}>
+              {copy.edohigan}
             </option>
             <option value="yakou" title={copy.themeHint("yakou")}>
               {copy.yakou}

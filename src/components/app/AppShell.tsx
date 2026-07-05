@@ -11,6 +11,8 @@ import type { LModeCopy } from "../../lib/locale";
 import { AmbientBackground, type AmbientMode } from "./AmbientBackground";
 import { CrtBootSequence } from "./CrtBootSequence";
 import { CrtShaderOverlay } from "./CrtShaderOverlay";
+import { EdohiganBootSequence } from "./EdohiganBootSequence";
+import { EdohiganShaderOverlay } from "./EdohiganShaderOverlay";
 import { ShinkaiBootSequence } from "./ShinkaiBootSequence";
 import { ShinkaiShaderOverlay } from "./ShinkaiShaderOverlay";
 import { AppDocumentFeedback } from "./AppDocumentFeedback";
@@ -58,6 +60,7 @@ export function AppShell(props: AppShellProps) {
   const ambientMode = isAmbientMode(props.resolvedTheme) ? props.resolvedTheme : null;
   const crtMode = props.resolvedTheme === "crt";
   const shinkaiMode = props.resolvedTheme === "shinkai";
+  const edohiganMode = props.resolvedTheme === "edohigan";
   useCrtMouseTracking(crtMode);
   const [workspaceSidebarCollapsed, setWorkspaceSidebarCollapsed] =
     useState(false);
@@ -95,6 +98,18 @@ export function AppShell(props: AppShellProps) {
           <ShinkaiBootSequence
             intensity={props.ambientIntensity}
             trigger={shinkaiMode}
+          />
+        </>
+      ) : null}
+      {edohiganMode ? (
+        <>
+          <EdohiganShaderOverlay intensity={props.ambientIntensity} />
+          <div className="edohigan-overlay" aria-hidden="true" />
+          {/* 起動シーケンスは前景オーバーレイ (.edohigan-overlay) の上に
+              重ねるため最後に置く。同じ z-index でも DOM 順でこちらが勝つ。 */}
+          <EdohiganBootSequence
+            intensity={props.ambientIntensity}
+            trigger={edohiganMode}
           />
         </>
       ) : null}
@@ -185,5 +200,5 @@ export function AppShell(props: AppShellProps) {
 }
 
 function isAmbientMode(theme: ResolvedTheme): theme is AmbientMode {
-  return theme === "sakura" || theme === "yakou" || theme === "shokou";
+  return theme === "yakou" || theme === "shokou";
 }

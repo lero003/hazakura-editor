@@ -19,7 +19,7 @@
   :root,
   :root[data-theme="light"],
   :root[data-theme="dark"],
-  :root[data-theme="sakura"],
+  :root[data-theme="edohigan"],
   :root[data-theme="yakou"],
   :root[data-theme="shokou"] {
     --border: color-mix(in srgb, var(--text) 38%, var(--surface));
@@ -127,7 +127,7 @@
      は通常環境では維持し、prefers-contrast:more 環境でのみ
      キーボードフォーカス位置を明確にする。
      ヤコウ/曙光テーマには box-shadow リング 4-5px が a11y で
-     5px に太くなる仕組みが既にあるが、 dark / sakura / shokou /
+     5px に太くなる仕組みが既にあるが、 dark / edohigan / shokou /
      light ではリングが background 10-12% のみで薄いため、
      outline を上乗せしてフォーカス位置を補強する。 */
   :root[data-l-mode="on"] :is(

@@ -15,26 +15,6 @@
   to { transform: translateY(0); opacity: 1; }
 }
 
-@keyframes petalFall {
-  0% {
-    opacity: 0;
-    transform: translate3d(0, -12vh, 0) scale(0.86);
-  }
-  10% {
-    opacity: 0.62;
-  }
-  30% {
-    opacity: 0.5;
-  }
-  75% {
-    opacity: 0.28;
-  }
-  100% {
-    opacity: 0;
-    transform: translate3d(var(--ambient-drift, 10vw), 112vh, 0) scale(1.08);
-  }
-}
-
 @keyframes starRise {
   0% {
     opacity: 0;

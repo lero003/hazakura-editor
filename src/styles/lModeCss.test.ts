@@ -537,7 +537,7 @@ describe("v0.15 L Mode floating controls focus visibility", () => {
   });
 
   it("drives floating-control :focus-visible from the same accent tokens across themes", () => {
-    // Theme cross-check: dark / sakura / yakou / shokou all
+    // Theme cross-check: dark / edohigan / yakou / shokou all
     // define a distinct `--accent` value. The L Mode floating
     // controls read `var(--accent)` directly (no hard-coded
     // color), so the focus tint shifts with the active theme

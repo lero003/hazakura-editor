@@ -2,15 +2,15 @@ import { describe, expect, it } from "vitest";
 import { getPreferencesCopy } from "./preferences";
 import type { ThemePreference } from "../../types";
 
-// v0.15 theme select polish.
+// v0.15 theme select polish (v1.6 で江戸彼岸をジョークテーマへ格上げ)。
 //
-// The Preferences dialog exposes five theme options
-// (light / dark / sakura / yakou / shokou). The Japanese
-// labels (ライト / ダーク / 桜 / 夜光 / 曙光) hint at intent,
-// but the English labels (Light / Dark / Sakura / Yakou /
-// Shokou) do not. The `themeHint` copy function supplies a
-// short per-theme description that the Preferences dialog
-// surfaces through each option's `title` tooltip.
+// The Preferences dialog exposes seven theme options
+// (light / dark / edohigan / yakou / shokou / crt / shinkai).
+// edohigan・crt・shinkai は演出優先のジョークテーマ。
+// yakou・shokou は季節アンビエントテーマ。
+// The `themeHint` copy function supplies a short per-theme description
+// that the Preferences dialog surfaces through each option's `title`
+// tooltip.
 //
 // The tests below pin:
 //   - `themeHint` is defined for every language,
@@ -23,10 +23,11 @@ import type { ThemePreference } from "../../types";
 const ALL_THEMES: ReadonlyArray<ThemePreference> = [
   "light",
   "dark",
-  "sakura",
+  "edohigan",
   "yakou",
   "shokou",
   "crt",
+  "shinkai",
 ];
 
 describe("getPreferencesCopy.themeHint", () => {
@@ -61,9 +62,8 @@ describe("getPreferencesCopy.themeHint", () => {
         }
       });
 
-      it("marks the seasonal themes (sakura, yakou, shokou) as seasonal", () => {
+      it("marks the seasonal themes (yakou, shokou) as seasonal", () => {
         const seasonalHints = [
-          copy.themeHint("sakura"),
           copy.themeHint("yakou"),
           copy.themeHint("shokou"),
         ];

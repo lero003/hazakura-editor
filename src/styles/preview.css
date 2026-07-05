@@ -248,7 +248,7 @@
   box-shadow: var(--shadow-sm);
 }
 
-:root[data-theme="sakura"] .markdown-preview {
+:root[data-theme="edohigan"] .markdown-preview {
   border-color: color-mix(in srgb, var(--accent) 22%, var(--border));
   background:
     linear-gradient(
@@ -261,12 +261,12 @@
     0 0 0 1px color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
-:root[data-theme="sakura"] .markdown-preview h1,
-:root[data-theme="sakura"] .markdown-preview h2 {
+:root[data-theme="edohigan"] .markdown-preview h1,
+:root[data-theme="edohigan"] .markdown-preview h2 {
   color: color-mix(in srgb, var(--text) 86%, var(--accent));
 }
 
-:root[data-theme="sakura"] .markdown-preview blockquote {
+:root[data-theme="edohigan"] .markdown-preview blockquote {
   background: linear-gradient(
     135deg,
     color-mix(in srgb, var(--accent-soft) 74%, var(--surface-strong)) 0%,

@@ -181,12 +181,20 @@ export function useAppPreferences(options: UseAppPreferencesOptions = {}) {
 }
 
 function readStoredThemePreference(): ThemePreference {
-  const value = window.localStorage.getItem(THEME_STORAGE_KEY);
+  const raw = window.localStorage.getItem(THEME_STORAGE_KEY);
+  // migrate: v1.5 では桜テーマの ID を "sakura" と保存していた。
+  // v1.6 でジョークテーマ「江戸彼岸」へ格上げし、ID を "edohigan" に
+  // 変更した。既存ユーザーの設定をそのまま引き継ぐため、読み取り時に
+  // "sakura" → "edohigan" へ変換する (readStoredEditorSettings の fontSize
+  // マイグレーションと同じ読み取り時変換パターン)。次フレームの useEffect で
+  // 変換後の "edohigan" が localStorage へ上書き保存されるため、2回目以降は
+  // 変換不要になる。
+  const value = raw === "sakura" ? "edohigan" : raw;
 
   if (
     value === "light" ||
     value === "dark" ||
-    value === "sakura" ||
+    value === "edohigan" ||
     value === "yakou" ||
     value === "shokou" ||
     value === "crt" ||

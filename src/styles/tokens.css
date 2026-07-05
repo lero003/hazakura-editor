@@ -1,6 +1,7 @@
 /* === tokens.css === */
 /* ライト / Light 既定値: 中性グレイベースに緑の差し色を一点だけ載せる。
-   dark / sakura / yakou / shokou は themes.css 側で各変数を上書き済み。
+   dark / edohigan / yakou / shokou / crt / shinkai は themes.css 側（または
+   各ジョークテーマ専用 CSS）で各変数を上書き済み。
    ここは light 既定の単一ソース。差し色以外を極力ニュートラルに保つ。 */
 :root {
   --bg: #fafbfa;
@@ -28,7 +29,7 @@
      追加 / 削除の二色をテーマ横断で揃える土台。--*-bg と --*-fg は
      **独立したトークン**(背景を color-mix で fg から派生はしない):
      背景は固定 rgba 13% の薄彩、fg だけ themes.css 側でテーマごとに
-     上書きする(default / sakura は既定値のまま、dark / yakou は
+     上書きする(default / light は既定値のまま、dark / yakou は
      明色化してコントラスト確保)。将来テーマを足す人は、
      「背景を変えずに fg だけ明色化する」運用が基本線。レビュー・バー・
      差分・比較ビュー全てが同じトークンを参照する。 */

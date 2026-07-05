@@ -235,10 +235,13 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
         true,
         None::<&str>,
     )?;
-    let theme_sakura = MenuItem::with_id(
+    let theme_edohigan = MenuItem::with_id(
         app,
-        MENU_THEME_SAKURA,
-        selected_theme_label(label("Sakura", "桜"), theme_preference == "sakura"),
+        MENU_THEME_EDOHIGAN,
+        selected_theme_label(
+            label("Edohigan (joke)", "江戸彼岸（お遊び）"),
+            theme_preference == "edohigan",
+        ),
         true,
         None::<&str>,
     )?;
@@ -283,7 +286,7 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
         &[
             &theme_light,
             &theme_dark,
-            &theme_sakura,
+            &theme_edohigan,
             &theme_yakou,
             &theme_shokou,
             &theme_crt,
@@ -537,7 +540,7 @@ fn kana_menu_label(japanese: &'static str) -> Option<&'static str> {
         "テーマ" => "いろあひ",
         "ライト" => "ひかり",
         "ダーク" => "やみ",
-        "桜" => "さくら",
+        "江戸彼岸（お遊び）" => "えどひがん（おあそび）",
         "夜光" => "よるひかり",
         "曙光" => "あけぼのひかり",
         "フルスクリーンにする" => "まどをみちみちにす",
@@ -641,7 +644,7 @@ pub(crate) fn emit_app_menu_event<R: tauri::Runtime>(
                 | MENU_TOGGLE_SPELLCHECK
                 | MENU_THEME_LIGHT
                 | MENU_THEME_DARK
-                | MENU_THEME_SAKURA
+                | MENU_THEME_EDOHIGAN
                 | MENU_THEME_YAKOU
                 | MENU_THEME_SHOKOU
                 | MENU_THEME_CRT
@@ -666,7 +669,7 @@ fn theme_preference_for_menu_action(action: &str) -> Option<&'static str> {
     match action {
         MENU_THEME_LIGHT => Some("light"),
         MENU_THEME_DARK => Some("dark"),
-        MENU_THEME_SAKURA => Some("sakura"),
+        MENU_THEME_EDOHIGAN => Some("edohigan"),
         MENU_THEME_YAKOU => Some("yakou"),
         MENU_THEME_SHOKOU => Some("shokou"),
         MENU_THEME_CRT => Some("crt"),

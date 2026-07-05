@@ -17,13 +17,9 @@
   animation: bgDrift 20s ease-in-out infinite;
 }
 
-/* 桜: 薄紅に葉色を混ぜた静かなグラデーション / Sakura: Petal and Leaf Gradient */
-:root[data-theme="sakura"] .app-shell {
-  background:
-    radial-gradient(circle at 10% 0%, rgba(237, 151, 175, 0.24), transparent 32%),
-    radial-gradient(circle at 94% 10%, rgba(133, 178, 126, 0.16), transparent 34%),
-    linear-gradient(145deg, #fffaf6 0%, #f8edf1 48%, #edf7eb 100%);
-}
+/* 江戸彼岸は edohigan-theme.css 側で背景シェーダーを描くため、
+   ここでは .app-shell の静的背景は持たない（v1.6 で DOM 粒子から
+   フルスクリーン WebGL ジョークテーマへスクラップ&ビルド）。 */
 
 /* 曙光: ゆっくりと変化する曙のグラデーション / Shokou: Slow Dawn Shift */
 :root[data-theme="shokou"] .app-shell {
@@ -68,25 +64,6 @@
   display: block;
   position: absolute;
   will-change: transform, opacity;
-}
-
-.ambient-sakura .ambient-particle {
-  animation: petalFall var(--ambient-duration, 14s) linear infinite;
-  animation-delay: var(--ambient-delay, 0s);
-  background:
-    radial-gradient(
-      circle,
-      hsl(var(--ambient-hue, 345), 72%, 82%) 0%,
-      hsl(var(--ambient-hue, 345), 68%, 70%) 52%,
-      transparent 100%
-    );
-  border-radius: 50%;
-  filter: saturate(0.95);
-  height: var(--ambient-h, 14px);
-  opacity: 0.56;
-  top: -24px;
-  transform-origin: 50% 80%;
-  width: var(--ambient-w, 10px);
 }
 
 .ambient-yakou .ambient-particle {

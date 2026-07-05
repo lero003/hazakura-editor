@@ -148,7 +148,7 @@ describe("DiagnosticsPane", () => {
       autoBackupEnabled: true,
       lModeEnabled: true,
       wrapLines: false,
-      theme: "sakura",
+      theme: "edohigan",
     });
     const json = parseJson();
     expect(json.app.version).toBe("0.18.0");
@@ -157,7 +157,7 @@ describe("DiagnosticsPane", () => {
     expect(json.features.autoBackupEnabled).toBe(true);
     expect(json.features.lModeEnabled).toBe(true);
     expect(json.features.wrapLines).toBe(false);
-    expect(json.features.theme).toBe("sakura");
+    expect(json.features.theme).toBe("edohigan");
     expect(json.errors.recentCategories).toEqual([]);
     expect(typeof json.collectedAtMs).toBe("number");
   });
