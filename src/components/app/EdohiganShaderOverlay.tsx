@@ -19,7 +19,9 @@ import type { AmbientIntensity } from "../../types";
  *
  * 演出の骨子:
  * - 背景: 花見の空 = 青空 (上) から薄桃 (下) へのグラデ + 白い雲
- * - 花吹雪: curl noise の風で運ばれる桜色の粒 (FBM smoothstep)
+ * - 遠景の霞: curl noise の風で運ばれる桜色の FBM モヤ (既存の「チリ」層。残す)
+ * - 花吹雪: グリッド反復 SDF で描く「形のある花びら」を上乗せ
+ *   (白基調 + 根部に薄ピンク。v1.6 残課題を解決)
  * - 3層 depth 分離: 手前ほど大きく流れる、奥は穏やか
  *
  * 安全上の前提 (docs/security-boundary.md):
@@ -27,9 +29,11 @@ import type { AmbientIntensity } from "../../types";
  * - `blob:` を生成しないので CSP 変更不要。
  * - `prefers-reduced-motion: reduce` と `intensity === "off"` では描画しない。
  *
- * v1.6 残課題: FBM 粒は明背景 (青空) では「モヤ」になり花びらとして認識しにくい。
- * 次スライスで花びらの形を明示的に描く方式 (ポイントスプライトまたは別手法) へ
- * 改善する。現状は青空 + 雲 + 桜色の粒の土台としてコミットする。
+ * 花びら描画方式 (v1.6 改善):
+ *   旧来の FBM smoothstep 粒は明背景 (青空) では桜色の「モヤ」になり花びらとして
+ *   認識されにくかった (テクスチャ / gl.POINTS を避ける代わりの簡易表現だった)。
+ *   現在はフルスクリーンクアッド1枚のフラグメントシェーダー内でグリッド反復による
+ *   離散花びら SDF を描き、形を明示。遠景の FBM モヤは霞として残している。
  */
 
 type EdohiganShaderOverlayProps = {
@@ -46,7 +50,8 @@ void main() {
 `;
 
 // 江戸彼岸フラグメントシェーダ (青空を舞う桜の花吹雪 + 雲 + マウス風)。
-// EdohiganBootSequence と同じ FBM/curl 構造。テクスチャを使わない。
+// 背景の FBM モヤ (遠景の霞) は既存のまま残し、その上にグリッド反復で
+// 「形のある花びら」を上乗せする。テクスチャを使わない。
 const FRAGMENT_SHADER = `#version 300 es
 precision highp float;
 in vec2 v_uv;
@@ -62,6 +67,18 @@ float hash21(vec2 p) {
   p = fract(p * vec2(123.34, 456.21));
   p += dot(p, p + 45.32);
   return fract(p.x * p.y);
+}
+
+// セル ID を 0..1 の乱数へ。グリッド反復で花びらの位置・回転・サイズをばらけさせる。
+float hashCell(vec2 id) {
+  return hash21(id * 1.37 + vec2(7.1, 3.3));
+}
+
+// 2D 回転行列。花びらを風で回す。
+mat2 rot2(float a) {
+  float c = cos(a);
+  float s = sin(a);
+  return mat2(c, -s, s, c);
 }
 
 float valueNoise(vec2 p) {
@@ -97,6 +114,124 @@ vec2 curl(vec2 p) {
   float dx = (n_x_p - n_x_m) / (2.0 * eps);
   float dy = (n_y_p - n_y_m) / (2.0 * eps);
   return vec2(dy, -dx);
+}
+
+// 花びら1枚の SDF (Signed Distance Function)。
+// 単純な楕円 + 先端の浅いV字の欠けで桜花弁のシルエットを表現する。
+// pos は花びら中心からのローカル座標 (上が先端 +y、下が根部 -y)。
+// 戻り値: 負=花びら内、正=花びら外。
+float petalSdf(vec2 pos) {
+  // 縦長の丸みのある葉形。根部 (-y) は細く、先端 (+y) は丸く広がる。
+  // y を基準に幅を絞ることで自然な花弁形を作る。
+  float y = pos.y;
+  // 幅の分布: 根部で狭く、中央〜先端で広い。0.5..1.0 に正規化。
+  float widthFactor = mix(0.35, 1.0, smoothstep(-1.0, 0.55, y));
+  float halfW = 0.62 * widthFactor;
+  float halfH = 1.0;
+  // 楕円距離 (近似的): 各軸で正規化して最大半径からの距離
+  vec2 n = vec2(pos.x / halfW, y / halfH);
+  float d = (length(n) - 1.0) * min(halfW, halfH);
+  // 先端の浅いV字の欠け (桜花弁先端の特徴)。
+  // +y 側の先端付近だけ、中央の U 字形に削る。
+  if (y > 0.35) {
+    float notch = (y - 0.35) / (halfH - 0.35); // 0..1
+    float centerX = abs(pos.x) / max(halfW, 0.001);
+    // 中央ほど深く削る。notchWidth は先端で広い。
+    float carve = smoothstep(0.0, 0.45, centerX);
+    d = max(d, -(notch * 0.35 * (1.0 - carve)));
+  }
+  return d;
+}
+
+// グリッド反復で1層分の花びらを描く。
+// scale: グリッドの細かさ (大きいほど花びらが小さい)。
+// sizeBase: 花びらの基本サイズ (セルに対する比率)。
+// density: 0..1 出現率 (ハッシュで間引く)。
+// baseColor: 花びらの先端色 (白寄り)
+// rootColor: 花びらの根部色 (薄ピンク)
+// tFlow: 風で流す時間成分
+vec3 drawPetals(
+  vec2 uv,
+  float aspect,
+  float motion,
+  vec2 mouseVel,
+  float mouseWake,
+  float scale,
+  float sizeBase,
+  float density,
+  float fallSpeed,
+  vec3 baseColor,
+  vec3 rootColor,
+  out float alpha
+) {
+  alpha = 0.0;
+  vec3 col = vec3(0.0);
+
+  float t = u_time;
+
+  // アスペクト補正した UV 上でグリッドを引く。
+  // 落下は「グリッド空間全体を時間で下へシフト」で表現する:
+  // p.y を時間で増やすと floor(p) のセル ID が変わるため、セルに紐付いた
+  // 花びらが画面全体を流れ落ちて見える (セル内揺動ではなくグローバル落下)。
+  vec2 p = uv * vec2(aspect, 1.0) * scale;
+  p.y += t * fallSpeed * motion * scale;
+  // 横方向の緩い全体流れ (花びらが風で斜めに流れる)
+  p.x += sin(t * 0.3) * 0.5;
+  vec2 cell = floor(p);
+  vec2 f = fract(p) - 0.5; // セル中心基準
+
+  // 近傍 3x3 を走査してエッジの花びらも拾う (画面外にはみ出る分)
+  for (int j = -1; j <= 1; j++) {
+    for (int i = -1; i <= 1; i++) {
+      vec2 offset = vec2(float(i), float(j));
+      vec2 id = cell + offset;
+
+      // ハッシュで出現・位置・回転・サイズを決定
+      float r0 = hashCell(id);
+      if (r0 > density) continue; // 間引き
+
+      float r1 = hashCell(id + 7.7);
+      float r2 = hashCell(id + 13.3);
+      float r3 = hashCell(id + 21.1);
+      float r4 = hashCell(id + 29.7);
+
+      // セル内のランダムな位置へ
+      vec2 local = (f - offset) + (vec2(r1, r2) - 0.5) * 0.8;
+
+      // 個体ごとの横揺らぎ (curl 的な簡易揺らぎ)。落下はグローバル側で処理済み。
+      local.x += sin(t * 0.9 + id.x * 1.7 + id.y * 0.9) * 0.12 * motion;
+      local.x += sin(t * 0.4 + r4 * 6.28) * 0.08 * motion;
+
+      // マウス風: カーソル周辺で花びらが流れる。
+      // mouseVel は UV 空間 (0..1) なので scale 倍してグリッド空間へ揃える。
+      local += mouseVel * mouseWake * scale * 1.4;
+
+      // サイズ (花びらの基本半径、セル単位)
+      float sz = sizeBase * (0.7 + r3 * 0.6);
+
+      // 花びらの向きは固定 (根部を下へ)。花びらの「形」は回転で表現せず、
+      // 代わりに風で花びら全体が回転しているように見えるよう、個体ごとの
+      // 回転角を SDF 入力へ掛ける。根部ピンクは常に花びらローカルの -y 側。
+      float angle = r1 * 6.28 + t * (0.6 + r2 * 1.2) * motion;
+      vec2 petalLocal = rot2(angle) * (local / sz);
+
+      float d = petalSdf(petalLocal) * sz;
+
+      // アンチエイリアス縁
+      float mask = 1.0 - smoothstep(-1.0, 1.0, d);
+      if (mask <= 0.001) continue;
+
+      // 色: 花びらローカル座標 (回転後) で先端 (+y) 白、根部 (-y) 薄ピンク。
+      // これで花びらが回転しても根部のピンクが花びらと一体に回る (自然)。
+      float rootMix = clamp(-petalLocal.y * 0.5 + 0.5, 0.0, 1.0);
+      vec3 petalCol = mix(baseColor, rootColor, rootMix * 0.7);
+
+      // 手前の花びらを優先 (奥は薄く)
+      col += petalCol * mask;
+      alpha = max(alpha, mask);
+    }
+  }
+  return col;
 }
 
 void main() {
@@ -184,6 +319,31 @@ void main() {
   col = mix(col, petalFgColor * lightReach, particleFg * 0.85);
   col = mix(col, petalNearColor * lightReach, particleNear * 0.6);
   col = mix(col, petalFarColor * lightReach, particleFar * 0.35);
+
+  // === 形のある花びら (グリッド反復 SDF) ===
+  // FBM モヤは「遠景の桜色の霞」として残し、その手前に白基調の形のある
+  // 花びらを浮かべる。ユーザー要件: 白基調 + 根部に薄ピンク。
+  // 手前層 (大きく速い) と奥層 (小さく淡い) の 2 層。
+  vec3 petalWhite = vec3(1.0, 0.98, 0.96);
+  vec3 petalPink  = vec3(0.95, 0.75, 0.82);
+
+  float fgAlpha = 0.0;
+  vec3 fgPetals = drawPetals(
+    uv, aspect, motion, u_mouseVel, mouseWake,
+    2.4, 0.40, 0.62, 0.18,
+    petalWhite, petalPink, fgAlpha
+  );
+  float nearAlpha = 0.0;
+  vec3 nearPetals = drawPetals(
+    uv, aspect, motion, u_mouseVel, mouseWake,
+    4.0, 0.28, 0.55, 0.12,
+    petalWhite, petalPink, nearAlpha
+  );
+
+  // 花びらは背景 (青空 + モヤ) の上に不透明に近い形で乗る。
+  // 手前を優先し、奥は半透明で霞む。
+  col = mix(col, nearPetals, clamp(nearAlpha, 0.0, 1.0) * 0.55);
+  col = mix(col, fgPetals,  clamp(fgAlpha, 0.0, 1.0) * 0.9);
 
   // カーソル周辺の柔らかな明るみ (春の陽光)
   col += vec3(1.0, 0.95, 0.88) * mouseWake * 0.15 * u_intensity;
