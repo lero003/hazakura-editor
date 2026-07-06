@@ -117,30 +117,18 @@ vec2 curl(vec2 p) {
 }
 
 // 花びら1枚の SDF (Signed Distance Function)。
-// 単純な楕円 + 先端の浅いV字の欠けで桜花弁のシルエットを表現する。
+// 座標変形ベースの楕円で、距離場を壊さずに桜花弁らしい縦長シルエットを作る。
 // pos は花びら中心からのローカル座標 (上が先端 +y、下が根部 -y)。
-// 戻り値: 負=花びら内、正=花びら外。
+// 戻り値: 負=花びら内、正=花びら外。おおむね [-1, 1] の範囲。
 float petalSdf(vec2 pos) {
-  // 縦長の丸みのある葉形。根部 (-y) は細く、先端 (+y) は丸く広がる。
-  // y を基準に幅を絞ることで自然な花弁形を作る。
-  float y = pos.y;
-  // 幅の分布: 根部で狭く、中央〜先端で広い。0.5..1.0 に正規化。
-  float widthFactor = mix(0.35, 1.0, smoothstep(-1.0, 0.55, y));
-  float halfW = 0.62 * widthFactor;
-  float halfH = 1.0;
-  // 楕円距離 (近似的): 各軸で正規化して最大半径からの距離
-  vec2 n = vec2(pos.x / halfW, y / halfH);
-  float d = (length(n) - 1.0) * min(halfW, halfH);
-  // 先端の浅いV字の欠け (桜花弁先端の特徴)。
-  // +y 側の先端付近だけ、中央の U 字形に削る。
-  if (y > 0.35) {
-    float notch = (y - 0.35) / (halfH - 0.35); // 0..1
-    float centerX = abs(pos.x) / max(halfW, 0.001);
-    // 中央ほど深く削る。notchWidth は先端で広い。
-    float carve = smoothstep(0.0, 0.45, centerX);
-    d = max(d, -(notch * 0.35 * (1.0 - carve)));
-  }
-  return d;
+  vec2 p = pos;
+  // 先端 (+y) でわずかに広がり、根部 (-y) で細くなる。
+  // アフィン変形なので距離場の連続性を保つ (sin/0除算で破綻しない)。
+  float widen = 1.0 + 0.3 * p.y; // 0.7 (根部) ~ 1.3 (先端)
+  p.x /= widen;
+  // 縦長 (花びららしさ)
+  p.y *= 1.2;
+  return length(p) - 0.7;
 }
 
 // グリッド反復で1層分の花びらを描く。
@@ -217,8 +205,12 @@ vec3 drawPetals(
 
       float d = petalSdf(petalLocal) * sz;
 
-      // アンチエイリアス縁
-      float mask = 1.0 - smoothstep(-1.0, 1.0, d);
+      // アンチエイリアス縁。
+      // fwidth(d) は WebGL2 core 機能で、画面1px 相当の d の変化幅を返す。
+      // これにより花びらサイズに依存せず常に正確な1px AAになる
+      // (sz が小さい花びらでも、ふわふわした大きなシャドウが出ない)。
+      float aa = fwidth(d);
+      float mask = 1.0 - smoothstep(-aa, aa, d);
       if (mask <= 0.001) continue;
 
       // 色: 花びらローカル座標 (回転後) で先端 (+y) 白、根部 (-y) 薄ピンク。
@@ -330,20 +322,21 @@ void main() {
   float fgAlpha = 0.0;
   vec3 fgPetals = drawPetals(
     uv, aspect, motion, u_mouseVel, mouseWake,
-    2.4, 0.40, 0.62, 0.18,
+    9.0, 0.15, 0.55, 0.18,
     petalWhite, petalPink, fgAlpha
   );
   float nearAlpha = 0.0;
   vec3 nearPetals = drawPetals(
     uv, aspect, motion, u_mouseVel, mouseWake,
-    4.0, 0.28, 0.55, 0.12,
+    16.0, 0.12, 0.50, 0.12,
     petalWhite, petalPink, nearAlpha
   );
 
-  // 花びらは背景 (青空 + モヤ) の上に不透明に近い形で乗る。
-  // 手前を優先し、奥は半透明で霞む。
-  col = mix(col, nearPetals, clamp(nearAlpha, 0.0, 1.0) * 0.55);
-  col = mix(col, fgPetals,  clamp(fgAlpha, 0.0, 1.0) * 0.9);
+  // 花びらは背景 (青空 + モヤ) の上に半透明で乗る。
+  // 完全に不透明にすると背景のチリ (FBM 粒) を隠してしまうため、
+  // 手前でも 0.7 留まり、奥はさらに薄くしてチリと層になる。
+  col = mix(col, nearPetals, clamp(nearAlpha, 0.0, 1.0) * 0.35);
+  col = mix(col, fgPetals,  clamp(fgAlpha, 0.0, 1.0) * 0.7);
 
   // カーソル周辺の柔らかな明るみ (春の陽光)
   col += vec3(1.0, 0.95, 0.88) * mouseWake * 0.15 * u_intensity;
