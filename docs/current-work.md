@@ -37,8 +37,9 @@ Published Mac App Store history through v1.3 remains documented in `current-stat
 |---|---|---|
 | Done / gate | Boundary review | `docs/import-assist-boundary-review.md` approved; v1.5 closed before edohigan. |
 | Done / spike | PDFKit + Vision helper spike | Fixture + live Swift helper for `extract_pdf_text` / `ocr_image` / `probe`; pure Rust draft assembly tests. |
-| Done / MVP slice | Unsaved Markdown draft open | Command palette: Import PDF / Image as Markdown Draft → dirty untitled tab. PDFKit text for PDF; Vision OCR for images. No auto-save. Helper must be built (`npm run build:import-assist-helper:fixture`). |
-| Next | Review UI | Source page/image vs Markdown; low-confidence marks. |
+| Done / MVP slice | Unsaved Markdown draft open | File menu + command palette. PDFKit text preferred; pdf-extract fallback; scan PDF page OCR; image Vision OCR. Dirty untitled tab, no auto-save. |
+| Done / TF packaging | Helper externalBin | `hazakura-import-assist-helper` in all tauri confs; `beforeBuild` builds live helper (arm64+x64+universal). |
+| Next / post-TF | Review UI | Source page/image vs Markdown; low-confidence marks. |
 | Next | Review UI | Source page/image vs Markdown; low-confidence marks. |
 | Later | PDF text-layer prefer + OCR fill | PDFKit first; Vision only when needed. |
 | Deferred v2 | Book Project split | chapters/ + hazakura.import.json. |

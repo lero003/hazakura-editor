@@ -1264,6 +1264,7 @@ export function useAppShellController() {
       exportEpubBeta,
       exportHtml,
       exportPdf,
+      importSourceAsMarkdownDraft,
       openAgentWindow: () => {
         void openAgentWindow(themePreference);
       },

@@ -156,6 +156,8 @@ export type MarkdownHeadingContext = {
 
 // Mirror of the Rust MENU_OPEN_AGENT_WINDOW constant. See
 // src-tauri/src/types.rs and docs/assist-surface-strategy.md.
+export const MENU_IMPORT_PDF_IMAGE = "import-pdf-image";
+
 export const MENU_OPEN_AGENT_WINDOW = "open-agent-window";
 
 // Mirror of the Rust MENU_OPEN_APPLE_ASSIST_WINDOW constant. See

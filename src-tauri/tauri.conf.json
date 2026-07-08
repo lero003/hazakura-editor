@@ -6,7 +6,7 @@
   "build": {
     "beforeDevCommand": "npm run dev:vite",
     "devUrl": "http://127.0.0.1:1420",
-    "beforeBuildCommand": "npm run build:apple-assist-helper:live && npm run build:vite",
+    "beforeBuildCommand": "npm run build:apple-assist-helper:live && npm run build:import-assist-helper:live && npm run build:vite",
     "frontendDist": "../dist"
   },
   "app": {
@@ -35,7 +35,10 @@
     "publisher": "Hazakura Lab",
     "copyright": "Copyright (c) 2026 Hazakura Lab. All rights reserved.",
     "icon": ["icons/icon.icns"],
-    "externalBin": ["../binaries/hazakura-local-assist-helper"],
+    "externalBin": [
+      "../binaries/hazakura-local-assist-helper",
+      "../binaries/hazakura-import-assist-helper"
+    ],
     "resources": {
       "../LICENSE": "LICENSE",
       "../THIRD_PARTY_NOTICES.md": "THIRD_PARTY_NOTICES.md"

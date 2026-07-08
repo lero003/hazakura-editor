@@ -81,6 +81,16 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
             )?,
             &MenuItem::with_id(
                 app,
+                MENU_IMPORT_PDF_IMAGE,
+                label(
+                    "Import PDF / Image as Markdown Draft...",
+                    "PDF / 画像を Markdown 下書きとして取り込む...",
+                ),
+                true,
+                None::<&str>,
+            )?,
+            &MenuItem::with_id(
+                app,
                 MENU_OPEN_FOLDER,
                 label("Open Folder...", "フォルダを開く..."),
                 true,
@@ -630,6 +640,7 @@ pub(crate) fn emit_app_menu_event<R: tauri::Runtime>(
             action,
             MENU_NEW_FILE
                 | MENU_OPEN_FILE
+                | MENU_IMPORT_PDF_IMAGE
                 | MENU_OPEN_FOLDER
                 | MENU_SAVE
                 | MENU_SAVE_AS

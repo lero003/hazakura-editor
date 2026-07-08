@@ -110,6 +110,7 @@ pub(crate) const MAIN_APPLE_ASSIST_TARGET_CHANGED_EVENT: &str =
 pub(crate) const MAIN_WORKSPACE_CHANGED_EVENT: &str = "hazakura-note://main-workspace-changed";
 pub(crate) const MENU_NEW_FILE: &str = "new-file";
 pub(crate) const MENU_OPEN_FILE: &str = "open-file";
+pub(crate) const MENU_IMPORT_PDF_IMAGE: &str = "import-pdf-image";
 pub(crate) const MENU_OPEN_FOLDER: &str = "open-folder";
 pub(crate) const MENU_SAVE: &str = "save";
 pub(crate) const MENU_SAVE_AS: &str = "save-as";

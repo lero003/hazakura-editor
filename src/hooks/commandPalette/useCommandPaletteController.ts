@@ -338,7 +338,7 @@ export function useCommandPaletteController({
           "draft",
           "scan",
         ],
-        label: "Import PDF / Image as Markdown Draft…",
+        label: "PDF / 画像を Markdown 下書きとして取り込む…",
         run: () => {
           void actions.importSourceAsMarkdownDraft();
         },

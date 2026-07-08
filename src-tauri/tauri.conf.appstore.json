@@ -1,13 +1,14 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "build": {
-    "beforeBuildCommand": "npm run build:apple-assist-helper:live && npm run build:vite",
+    "beforeBuildCommand": "npm run build:apple-assist-helper:live && npm run build:import-assist-helper:live && npm run build:vite",
     "frontendDist": "../dist"
   },
   "bundle": {
     "category": "Productivity",
     "externalBin": [
-      "../binaries/hazakura-local-assist-helper"
+      "../binaries/hazakura-local-assist-helper",
+      "../binaries/hazakura-import-assist-helper"
     ],
     "macOS": {
       "entitlements": "./entitlements/mac-app-store.entitlements",
