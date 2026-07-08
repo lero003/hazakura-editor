@@ -53,6 +53,24 @@ export function createUntitledEditorTab(): EditorTab {
   };
 }
 
+/**
+ * Unsaved Import Assist draft tab. `lastSavedContents` stays empty so
+ * the buffer is dirty until the user explicitly saves (edit-before-save).
+ */
+export function createUntitledImportDraftTab(
+  name: string,
+  contents: string,
+): EditorTab {
+  const tab = createUntitledEditorTab();
+  const safeName = name.trim() || "import-draft.md";
+  const normalized = normalizeTextLineEndings(contents, "lf");
+  return {
+    ...tab,
+    name: safeName.endsWith(".md") ? safeName : `${safeName}.md`,
+    contents: normalized,
+  };
+}
+
 export function isDirty(tab: EditorTab): boolean {
   return (
     tab.contents !== tab.lastSavedContents ||

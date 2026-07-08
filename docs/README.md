@@ -16,9 +16,11 @@ or quality-polish slice.
 - `security-boundary.md`: safety constraints for file handling and execution boundaries.
 - `agent-workbench-boundary.md`: optional CLI-agent workbench trust boundary.
 - `assist-surface-strategy.md`: future assist-surface direction.
-- `current-work.md`: active v1.3 Daily Trust queue and release evidence.
-- `roadmap.md`: active v1.3 sequence and future phase boundaries.
+- `current-work.md`: active queue (v1.6 Import Assist; v1.5 closed before edohigan).
+- `roadmap.md`: active lane and future phase boundaries.
 - `current-status.md`: current implementation and release state.
+- `import-assist-boundary-review.md`: v1.6 Import Assist Phase 1 boundary sign-off.
+- `edohigan-theme-plan.md`: post-v1.5 江戸彼岸 theme notes (not part of v1.5 release).
 
 ## Current Operational Docs
 

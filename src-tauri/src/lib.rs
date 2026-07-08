@@ -11,6 +11,7 @@ pub(crate) mod commands {
     pub(crate) mod external_links;
     pub(crate) mod files;
     pub(crate) mod images;
+    pub(crate) mod import_assist;
     pub(crate) mod search;
     pub(crate) mod security_bookmarks;
     pub(crate) mod workspace;
@@ -19,6 +20,7 @@ pub(crate) mod commands {
 pub(crate) mod agent;
 pub(crate) mod auto_backup;
 pub(crate) mod distribution;
+pub(crate) mod import_assist;
 pub(crate) mod menu;
 pub(crate) mod os_handoff;
 pub(crate) mod types;
@@ -93,6 +95,8 @@ use crate::commands::external_links::*;
 use crate::commands::files::*;
 #[allow(unused_imports)]
 use crate::commands::images::*;
+#[allow(unused_imports)]
+use crate::commands::import_assist::*;
 #[allow(unused_imports)]
 use crate::commands::search::*;
 #[allow(unused_imports)]
@@ -217,6 +221,7 @@ pub fn run() {
             set_main_apple_assist_target,
             save_pasted_image,
             import_image_from_path,
+            import_source_to_markdown,
             export_pdf,
             open_external_url,
             save_auto_backup,

@@ -13,6 +13,7 @@ export * from "./autoBackup";
 export * from "./dialog";
 export * from "./external";
 export * from "./files";
+export * from "./importAssist";
 export * from "./menu";
 export * from "./theme";
 export * from "./window";

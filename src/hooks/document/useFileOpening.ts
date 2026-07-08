@@ -6,14 +6,17 @@ import {
 import {
   createSecurityScopedBookmark,
   createTextFile,
+  importSourceToMarkdown,
   openExternalUrl,
   openTextFile,
+  pickImportSourceFile,
   pickMarkdownFile,
   pickNewMarkdownFilePath,
 } from "../../lib/tauri";
 import {
   createEditorTab,
   createUntitledEditorTab,
+  createUntitledImportDraftTab,
 } from "../../features/editor/editorTabs";
 import {
   readStoredDrafts,
@@ -329,8 +332,55 @@ export function useFileOpening({
     }
   }, [openFilePath, openImagePreview, setGlobalError, setStatus]);
 
+  /**
+   * Import Assist MVP: pick PDF/image → on-device extract/OCR →
+   * open as dirty untitled Markdown (never auto-saved).
+   */
+  const importSourceAsMarkdownDraft = useCallback(async () => {
+    setGlobalError(null);
+    setStatus("Choosing PDF or image to import…");
+
+    try {
+      const path = await pickImportSourceFile();
+      if (!path) {
+        setStatus("Import cancelled");
+        return;
+      }
+
+      setStatus("Importing to Markdown draft…");
+      const result = await importSourceToMarkdown(path);
+      const baseName =
+        path.split(/[/\\]/).pop()?.replace(/\.[^.]+$/, "") || "import-draft";
+      const tab = createUntitledImportDraftTab(
+        `${baseName}-import.md`,
+        result.markdown,
+      );
+
+      setTabs((currentTabs) => [...currentTabs, tab]);
+      setActiveTabId(tab.id);
+      clearImagePreview();
+      setCompareView(null);
+      setStatus(
+        result.usedOcr
+          ? `Imported OCR draft (${result.pageCount} page${result.pageCount === 1 ? "" : "s"})`
+          : `Imported text draft (${result.pageCount} page${result.pageCount === 1 ? "" : "s"})`,
+      );
+    } catch (err) {
+      setGlobalError(String(err));
+      setStatus("Import failed");
+    }
+  }, [
+    clearImagePreview,
+    setActiveTabId,
+    setCompareView,
+    setGlobalError,
+    setStatus,
+    setTabs,
+  ]);
+
   return {
     createNewFile,
+    importSourceAsMarkdownDraft,
     openExternalFilePaths,
     openFile,
     openFilePath,

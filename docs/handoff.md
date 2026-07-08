@@ -3,14 +3,17 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-07-05 (v1.3 approved and published on the Mac App Store; v1.5 candidate prepared as `1.5.0`)
+Last reviewed: 2026-07-09 (v1.5 released before edohigan; v1.6 Import Assist active)
 
 ## Current State
 
-- `1.3.0` passed App Review and is published on the Mac App Store. The
-  public listing confirms version `1.3.0`; raw App Store Connect,
-  TestFlight, App Review, and public build-number logs remain outside
-  this repository. The v1 public promise is
+- Package version **`1.6.0`** / App Store **bundleVersion 74**.
+- **v1.5 (`1.5.0`) closed before 江戸彼岸.** Active: **v1.6 Import Assist** —
+  `docs/import-assist-boundary-review.md`, `docs/current-work.md`.
+- Keep `@codemirror/view` at **6.43.2**. Import helper must ship via
+  `externalBin` (`npm run build:import-assist-helper:live`).
+- Historical: `1.3.0` Daily Trust remains a published MAS baseline. Raw App
+  Store Connect logs stay outside the repo. The v1 public promise is
   `Markdownで書き、本として読み、ローカルAIで整える。`
 - The 2026-06-28 user-side pre-v1 checklist remains the accepted Golden
   Manuscript baseline. No public-release hotfix blocker has been
@@ -22,19 +25,9 @@ Last reviewed: 2026-07-05 (v1.3 approved and published on the Mac App Store; v1.
   The v1.2 Polish lane (command discovery, context-menu containment,
   EPUB scope note) was prepared as the `1.2.0` local candidate (build
   `57`); it remains historical now that `1.3.0` is the active candidate.
-- The active main-branch release lane is v1.5. v1.5 is a stabilization and
-  reading-polish arc prepared as `1.5.0` (bundleVersion 70): Spellcheck
-  toggle in the Settings preferences pane, Reading Focus TOC density (4
-  subheadings + all-chapter page progress), CRT noise intensification, dead
-  code sweep, dependency updates, and a traffic light position alignment
-  fix. The signed `1.5.0` App Store / TestFlight package has not been built
-  yet. v1.3 Daily Trust (`1.3.0`) remains the published Mac App Store
-  version: Save As preserves the same-language CodeMirror session and rekeys
-  view state; Local Assist review uses explicit `採用` / `破棄` without
-  auto-save; Reading Focus TOC shows bounded H3+ context and current
-  measured page progress; PDF export offers request-scoped A4 `狭い` /
-  `標準` / `広い` margin presets. See `docs/v1.3-followup.md` for historical
-  evidence.
+- Active main-branch lane is **v1.6 Import Assist Phase 1** (PDFKit / Vision
+  spike landed; product UI next). Keep `@codemirror/view` at **6.43.2**.
+  Do not treat edohigan as a v1.5 feature.
 - The signed local `1.1.0` App Store / TestFlight candidate passed the
   release gates, package signature and checksum verification, enforced
   App Store entitlement probe, and sandbox-preview smoke. Its current
@@ -108,10 +101,10 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    create content in the user's cloud folders implicitly.
 4. Follow with one image or `.bak` case at a time; do not
    bundle unrelated polish.
-5. The version is `1.5.0` and is the prepared v1.5 candidate. The published
-   Mac App Store version remains `1.3.0`. The next active lane is v1.5; pick
-   the next slice from `docs/current-work.md`. Do not tag or publish a new
-   release without explicit user approval.
+5. v1.5 (`1.5.0`) is closed/released **before** edohigan. Active lane is
+   **v1.6 Import Assist** (`docs/import-assist-boundary-review.md`,
+   `docs/current-work.md`). Keep `@codemirror/view` at 6.43.2. Do not tag
+   or publish without explicit user approval.
 
 Detailed v0.18-v1.0 completed-slice history and per-version verification
 records moved to `docs/archive/operations/handoff-detail-through-v1.0.md`.

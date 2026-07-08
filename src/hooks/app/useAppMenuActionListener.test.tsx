@@ -27,6 +27,7 @@ vi.mock("@tauri-apps/api/event", () => ({
 function setup() {
   const actions = {
     createNewFile: vi.fn(),
+    importSourceAsMarkdownDraft: vi.fn(),
     exportEpubBeta: vi.fn(),
     exportHtml: vi.fn(),
     exportPdf: vi.fn(),

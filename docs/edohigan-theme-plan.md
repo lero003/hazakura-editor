@@ -1,8 +1,12 @@
 # Edohigan Theme Plan (v1.6) — 深海越え
 
-Status: 深海越え実装 (彼岸の春風)
+Status: 深海越え実装 (彼岸の春風) — **post-v1.5 / not in v1.5 release**
 Authority: Reference
 Last reviewed: 2026-07-09
+
+**Lane note:** 江戸彼岸は **v1.5 (`1.5.0`) リリース後** に main へ入った。
+v1.5 のリリース説明や changelog に混ぜない。製品レーン上は v1.6 期の
+テーマ/演出作業。
 
 ## North Star
 

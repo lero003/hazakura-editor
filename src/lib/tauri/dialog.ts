@@ -93,6 +93,22 @@ export async function pickMarkdownFile(): Promise<string | null> {
   return typeof selected === "string" ? selected : null;
 }
 
+/** User-selected PDF or image for Import Assist (absolute path). */
+export async function pickImportSourceFile(): Promise<string | null> {
+  const selected = await open({
+    multiple: false,
+    directory: false,
+    filters: [
+      {
+        name: "PDF / Image",
+        extensions: ["pdf", "png", "jpg", "jpeg", "tif", "tiff", "heic", "heif"],
+      },
+    ],
+  });
+
+  return typeof selected === "string" ? selected : null;
+}
+
 export async function pickNewMarkdownFilePath(
   defaultPath: string | null,
 ): Promise<string | null> {

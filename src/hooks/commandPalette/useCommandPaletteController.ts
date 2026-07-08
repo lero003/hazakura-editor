@@ -53,6 +53,7 @@ type UseCommandPaletteControllerActions = {
   exportPdf: () => Promise<void>;
   focusAdjacentTab: (direction: "next" | "previous") => void;
   handleSendSelectionToAgent: (text: string) => void;
+  importSourceAsMarkdownDraft: () => Promise<void>;
   insertTable: () => void;
   openAgentWindow: (themePreference: ThemePreference) => void;
   openAppleAssistWindow: (themePreference: ThemePreference) => void;
@@ -323,6 +324,24 @@ export function useCommandPaletteController({
           void actions.openFile();
         },
         shortcut: "⌘O",
+      },
+      {
+        category: "File",
+        id: "file.importPdfImageDraft",
+        keywords: [
+          "import",
+          "pdf",
+          "image",
+          "ocr",
+          "vision",
+          "markdown",
+          "draft",
+          "scan",
+        ],
+        label: "PDF / 画像を Markdown 下書きとして取り込む…",
+        run: () => {
+          void actions.importSourceAsMarkdownDraft();
+        },
       },
       {
         category: "File",
