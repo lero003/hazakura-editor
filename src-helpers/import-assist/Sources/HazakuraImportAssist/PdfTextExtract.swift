@@ -62,7 +62,7 @@ func extractPdfText(path: String) throws -> PdfTextValue {
     }
     var pages: [PdfPageText] = []
     for index in 0 ..< document.pageCount {
-        let text = document.page(at: index)?.string ?? ""
+        let text = extractPageText(document.page(at: index))
         pages.append(
             PdfPageText(
                 index: index,
@@ -77,3 +77,26 @@ func extractPdfText(path: String) throws -> PdfTextValue {
     #endif
     #endif
 }
+
+#if canImport(PDFKit) && !FIXTURE_MODE
+/// Prefer several PDFKit text APIs — some text-layer PDFs return empty
+/// from `page.string` alone (CID fonts, odd encodings) but still expose
+/// text via selection / attributed string.
+func extractPageText(_ page: PDFPage?) -> String {
+    guard let page else { return "" }
+    if let s = page.string?.trimmingCharacters(in: .whitespacesAndNewlines), !s.isEmpty {
+        return page.string ?? s
+    }
+    if let attributed = page.attributedString?.string,
+       !attributed.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        return attributed
+    }
+    let bounds = page.bounds(for: .mediaBox)
+    if let selection = page.selection(for: bounds),
+       let s = selection.string,
+       !s.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        return s
+    }
+    return page.string ?? ""
+}
+#endif

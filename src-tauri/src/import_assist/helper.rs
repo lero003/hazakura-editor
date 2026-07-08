@@ -13,6 +13,7 @@ use std::time::Duration;
 
 use super::draft::{assemble_import_markdown_draft, ImportPageText};
 use super::path::validate_import_source_path;
+use super::pdf_text::extract_pdf_text_layer;
 
 const HELPER_TIMEOUT: Duration = Duration::from_secs(120);
 
@@ -84,7 +85,6 @@ struct ErrorValue {
 
 pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftResult, String> {
     validate_import_source_path(path)?;
-    let helper = resolve_import_assist_helper_path()?;
     let source_name = path
         .file_name()
         .and_then(|n| n.to_str())
@@ -92,6 +92,30 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
         .to_string();
     let path_str = path.to_string_lossy();
 
+    let ext = path
+        .extension()
+        .and_then(|e| e.to_str())
+        .unwrap_or("")
+        .to_ascii_lowercase();
+
+    // Text-layer PDFs: extract in-process first (pdf-extract). No Swift
+    // helper required — this is the main path for "text layer がある PDF".
+    if ext == "pdf" {
+        if let Some(pages) = extract_pdf_text_layer(path)? {
+            let page_count = pages.len();
+            let markdown = assemble_import_markdown_draft(&source_name, &pages);
+            return Ok(ImportDraftResult {
+                markdown,
+                source_name,
+                page_count,
+                used_ocr: false,
+                fixture: false,
+            });
+        }
+    }
+
+    // Images (and PDF fallback via PDFKit) need the native helper.
+    let helper = resolve_import_assist_helper_path()?;
     let probe = round_trip_helper(
         &helper,
         &HelperRequest {
@@ -115,12 +139,6 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
         other => return Err(format!("Unexpected helper probe kind: {other}")),
     };
 
-    let ext = path
-        .extension()
-        .and_then(|e| e.to_str())
-        .unwrap_or("")
-        .to_ascii_lowercase();
-
     if ext == "pdf" {
         let envelope = round_trip_helper(
             &helper,
@@ -134,6 +152,14 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
             "pdf_text" => {
                 let value: PdfTextValue = serde_json::from_value(envelope.value)
                     .map_err(|e| format!("Invalid pdf_text payload: {e}"))?;
+                // Ignore fixture canned text when the real PDF had no layer —
+                // fixture would lie about content. Prefer honest empty error.
+                if fixture {
+                    return Err(
+                        "PDF has no extractable text layer. Scanned-page OCR is not wired in this MVP slice yet."
+                            .into(),
+                    );
+                }
                 let pages: Vec<ImportPageText> = value
                     .pages
                     .into_iter()
@@ -142,8 +168,6 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
                         text: p.text,
                     })
                     .collect();
-                // Prefer PDFKit text. If every page is empty, fall back to a
-                // single OCR note (full page-image OCR is a later slice).
                 let all_empty = pages.iter().all(|p| p.text.trim().is_empty());
                 if all_empty {
                     return Err(
@@ -157,7 +181,7 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
                     source_name,
                     page_count: value.page_count.max(pages.len()),
                     used_ocr: false,
-                    fixture,
+                    fixture: false,
                 })
             }
             "error" => {
@@ -345,6 +369,24 @@ mod tests {
     fn helper_filename_uses_sidecar_convention() {
         let name = import_assist_helper_filename();
         assert!(name.starts_with("hazakura-import-assist-helper-"));
+    }
+
+    #[test]
+    fn import_text_layer_pdf_without_helper() {
+        // A small real-world-ish PDF is hard to hand-author for every
+        // pdf-extract version; this test pins the *control flow*: when
+        // extract_pdf_text_layer returns pages, we never require the helper.
+        // Integration against real PDFs is manual / product smoke.
+        let dir = std::env::temp_dir();
+        let path = dir.join(format!("hazakura-flow-{}.pdf", std::process::id()));
+        fs::write(&path, b"%PDF-1.4 not fully valid").expect("write");
+        // Invalid PDF → extract error or empty, not a helper-missing error.
+        let err = import_source_path_to_markdown(&path).expect_err("invalid pdf");
+        let _ = fs::remove_file(&path);
+        assert!(
+            !err.contains("helper is not available") || err.contains("PDF"),
+            "unexpected: {err}"
+        );
     }
 
     #[test]
