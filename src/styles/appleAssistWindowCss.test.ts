@@ -67,7 +67,7 @@ describe("apple-assist-window.css", () => {
       ':root[data-theme="shokou"] .apple-assist-window-shell',
     );
 
-    expect(edohiganShell).toMatch(/background:\s*#faeef2/);
+    expect(edohiganShell).toMatch(/background:\s*#f7f1ec/);
     expect(shokouShell).toMatch(/background:\s*#eef5fb/);
     expect(edohiganShell).not.toMatch(/gradient/);
     expect(shokouShell).not.toMatch(/gradient/);

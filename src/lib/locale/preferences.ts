@@ -81,7 +81,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
       closeDialog: "といをとぢる",
       menuLanguage: "ことば",
       previewPane: "したみのまど",
-      edohigan: "えどひがん",
+      edohigan: "えどひがん（しじま）",
       yakou: "よるひかり",
       shokou: "あけぼのひかり",
       crt: "しびれる",
@@ -107,7 +107,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
           return "よるや ひくい しど むけの おちついた きほん いろあひ。";
         }
         if (theme === "edohigan") {
-          return "はるの ひがん の はかな さ と あでやか さ。さくら ふぶき の せかい へ つれていく じょうけ ん て ま す。";
+          return "はるの ひがん の ような、しずかで じょうひんな かく ば。えんしゅつ は ひかえめ、けいさん は おもい じょうけ ん て ま す。";
         }
         if (theme === "yakou") {
           return "よるの よさめ むけ。ふかめの いろ と うごき の ある きせつ いろあひ。";
@@ -145,7 +145,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         menuLanguage: "メニュー言語",
         menuLanguageHint: "UI の表示言語を切り替えます。かなふみはひらがな中心のやさしい表記です。",
         previewPane: "プレビュー表示",
-        edohigan: "江戸彼岸（お遊び）",
+        edohigan: "江戸彼岸（静謐）",
         yakou: "夜光",
         shokou: "曙光",
         crt: "CRT（お遊び）",
@@ -170,7 +170,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
             return "夜間や低照度向けの落ち着いた基本テーマ。";
           }
           if (theme === "edohigan") {
-            return "春の彼岸の、はかなくもあでやかな桜吹雪の世界。演出優先の冗談テーマです。";
+            return "春の彼岸のような、静かで上質な執筆空間。演出は控えめですが、計算は重い冗談テーマです。";
           }
           if (theme === "yakou") {
             return "夜長向け。深めの配色と、動きのある演出のアンビエントテーマ。";
@@ -205,7 +205,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         menuLanguage: "Menu language",
         menuLanguageHint: "Switch the UI display language. Kana mode uses gentle hiragana-centered wording.",
         previewPane: "Preview pane",
-        edohigan: "Edohigan (joke)",
+        edohigan: "Edohigan (Quietude)",
         yakou: "Yakou",
         shokou: "Shokou",
         crt: "CRT (joke)",
@@ -230,7 +230,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
             return "Calm, low-light base theme for nighttime use.";
           }
           if (theme === "edohigan") {
-            return "Fleeting yet radiant cherry-blossom storm of spring equinox. An effect-first joke theme.";
+            return "A quiet, refined writing space like spring equinox light. Subtle ambience; a heavyweight joke theme.";
           }
           if (theme === "yakou") {
             return "Deeper palette with animated effects. Late-evening seasonal theme.";

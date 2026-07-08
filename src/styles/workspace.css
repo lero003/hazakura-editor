@@ -72,11 +72,9 @@
 }
 
 :root[data-theme="edohigan"] {
-  /* v1.6: 半透明にして背景の花吹雪を各シェルサーフェスでも薄く透かす。
-     shinkai (0.18 程度の薄塗り) よりやや濃いめ (0.5) で、ライトテーマとして
-     の明るさを保ちつつ桜吹雪が感じられる。 */
-  --native-shell-tint: rgba(253, 246, 248, 0.5);
-  --native-shell-border: color-mix(in srgb, var(--accent) 16%, transparent);
+  /* 静謐: 和紙トーンの厚い半透明。背景の気配は透かすが騒がしくしない。 */
+  --native-shell-tint: rgba(252, 248, 245, 0.72);
+  --native-shell-border: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 :root[data-theme="yakou"] {
@@ -1371,8 +1369,8 @@
 :root[data-theme="edohigan"] .preview-pane-card {
   background: linear-gradient(
     145deg,
-    rgba(253, 246, 248, 0.78) 0%,
-    rgba(252, 240, 245, 0.82) 100%
+    rgba(252, 248, 245, 0.9) 0%,
+    rgba(245, 238, 233, 0.92) 100%
   );
 }
 

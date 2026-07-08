@@ -1,131 +1,111 @@
 /* === edohigan-theme.css ===
-   江戸彼岸ジョークテーマの CSS を1ファイルに集約したもの。
+   江戸彼岸 — 最上級・静謐エディタテーマ。
    shinkai-theme.css と同じ 7 セクション構成。
 
    構成:
-     1. パレット定義 (themes.css 相当)
-     2. .app-shell 背景 (app-shell.css 相当)
+     1. パレット定義 (和紙の書斎)
+     2. .app-shell 背景
      3. 背景シェーダー canvas / 前景オーバーレイ
-     4. 文字グロー (演出)
+     4. 文字 (グローなし — 安っぽさの主因だった)
      5. 起動シーケンス (.edohigan-boot*)
      6. reduced-motion ガード
-     7. @keyframes
+     7. @keyframes (最小)
 
-   すべて :root[data-theme="edohigan"] にスコープし、他テーマへ影響しない。
-   base.css の prefers-reduced-motion ガードが * 向けに keyframes を止める。
+   すべて :root[data-theme="edohigan"] にスコープ。
+   演出の軸: 彼岸の書斎 — 和紙の上にごく薄い春の気配だけ。 */
 
-   演出の軸 (春の彼岸のはかなさとあでやかさ):
-   - 背景は curl noise の風 + 舞い散る桜の花吹雪 (EdohiganShaderOverlay)
-   - 前景は縞を持たず、ビネットと薄い桃色の光の滲みのみ
-   - 文字は常時の静かな桜色グローのみ (フリッカー廃止)
-   - 起動は滑らかな満開→散華 (タイプライター文字なし) */
-
-/* 1. パレット定義 / Edohigan palette
-   舞い散る桜の花吹雪と桃色の陽光。薄桃〜藤色の春の空基調で、
-   透明感を残す。アクセントは薔薇色の桜色。shinkai (水中) の真逆で、
-   「はかなくもあでやかな春の彼岸」を目指す。 */
+/* 1. パレット定義 / Edohigan palette — washi study */
 :root[data-theme="edohigan"] {
-  --bg: #f5e0e8;
-  /* surface 系を半透明にし、背景の花吹雪シェーダー (canvas) を各所で透かす。
-     shinkai と同じ設計: editエリアでも花びらと青空が薄く見える。
-     背景が青空ベース (明色) なので、白寄りの半透明 surface でも文字は読める。 */
-  --surface: rgba(253, 246, 248, 0.82);
-  --surface-rgb: 253, 246, 248;
-  --surface-strong: rgba(255, 249, 251, 0.86);
-  --surface-strong-rgb: 255, 249, 251;
-  --surface-muted: rgba(248, 234, 240, 0.82);
-  --border: #e8c5d2;
-  --border-strong: #d8a0b6;
-  --text: #2a1822;
-  --text-muted: #7a5868;
-  --accent: #a8415f;
-  --accent-secondary: #6f8f63;
-  --accent-gradient: linear-gradient(135deg, #a8415f 0%, #d78398 46%, #6f8f63 100%);
-  --accent-soft: #f6d8df;
-  --accent-glass: rgba(168, 65, 95, 0.1);
-  --danger: #b85056;
-  --conflict: #8d7040;
-  --status-bg: #3a2632;
-  --status-text: #fff7f5;
-  --selection-bg: rgba(168, 65, 95, 0.16);
-  --scrollbar-thumb: rgba(168, 65, 95, 0.2);
-  --scrollbar-thumb-hover: rgba(168, 65, 95, 0.34);
+  --bg: #f3ebe6;
+  /* surface は厚めに。背景の気配は透かすが、執筆の可読性を最優先。 */
+  --surface: rgba(252, 248, 245, 0.92);
+  --surface-rgb: 252, 248, 245;
+  --surface-strong: rgba(255, 252, 250, 0.95);
+  --surface-strong-rgb: 255, 252, 250;
+  --surface-muted: rgba(245, 238, 233, 0.92);
+  --border: #e0d4cc;
+  --border-strong: #c9b8ae;
+  --text: #1c1418;
+  --text-muted: #6e5c62;
+  --accent: #8b3a4a;
+  --accent-secondary: #6a7a62;
+  --accent-gradient: linear-gradient(135deg, #8b3a4a 0%, #a85a6a 55%, #6a7a62 100%);
+  --accent-soft: #f0e4e2;
+  --accent-glass: rgba(139, 58, 74, 0.08);
+  --danger: #a84848;
+  --conflict: #8a7340;
+  --status-bg: #2a2226;
+  --status-text: #f7f2ef;
+  --selection-bg: rgba(139, 58, 74, 0.14);
+  --scrollbar-thumb: rgba(139, 58, 74, 0.16);
+  --scrollbar-thumb-hover: rgba(139, 58, 74, 0.28);
 
-  /* Diff カラー: 桜色系で明色化し、半透明背景上でも判読可能に。 */
-  --diff-added-fg: #5a8a4a;
-  --diff-added-row-bg: color-mix(in srgb, var(--diff-added-fg) 18%, transparent);
-  --diff-removed-row-bg: color-mix(in srgb, var(--diff-removed-fg) 20%, transparent);
-  --diff-blank-row-bg: color-mix(in srgb, var(--text-muted) 10%, transparent);
+  --diff-added-fg: #4f7a48;
+  --diff-added-row-bg: color-mix(in srgb, var(--diff-added-fg) 16%, transparent);
+  --diff-removed-row-bg: color-mix(in srgb, var(--diff-removed-fg) 18%, transparent);
+  --diff-blank-row-bg: color-mix(in srgb, var(--text-muted) 8%, transparent);
 
-  /* CodeMirror 江戸彼岸用配色 / CodeMirror Edohigan Colors
-     --cm-bg / --cm-gutter-bg を半透明にし、背景の花吹雪シェーダーを透かす。
-     shinkai と同じ設計。背景が青空 (明色) なので文字の読みやすさは保たれる。
-     text色を濃くして (0.55→0.2a) コントラストを確保。 */
-  --cm-bg: rgba(253, 246, 248, 0.72);
-  --cm-fg: #2a1822;
-  --cm-caret: #a8415f;
-  --cm-gutter-bg: rgba(248, 234, 240, 0.78);
-  --cm-gutter-border: #e8c5d2;
-  --cm-gutter-fg: #7a5868;
-  --cm-active-line-bg: rgba(168, 65, 95, 0.06);
-  --cm-active-gutter-bg: rgba(168, 65, 95, 0.08);
-  --cm-selection-bg: #d7aeb9;
-  --cm-search-match-bg: rgba(141, 112, 64, 0.22);
-  --cm-search-match-active-bg: rgba(141, 112, 64, 0.55);
-  --cm-search-match-active-shadow: 0 0 0 1px #8d7040;
-  --cm-invisible-space: radial-gradient(circle, #b89098 1px, transparent 1px);
-  --cm-invisible-tab: rgba(168, 65, 95, 0.14);
-  --cm-trailing-space: rgba(184, 80, 86, 0.24);
-  --cm-mark-heading: #751e34;
-  --cm-mark-strong: #3a2632;
-  --cm-mark-link: #933a4a;
-  --cm-mark-monospace: #751e34;
-  --cm-mark-quote: #8a6878;
+  /* CodeMirror: 厚い半透明和紙。墨色テキスト。 */
+  --cm-bg: rgba(252, 248, 245, 0.90);
+  --cm-fg: #1c1418;
+  --cm-caret: #8b3a4a;
+  --cm-gutter-bg: rgba(245, 238, 233, 0.92);
+  --cm-gutter-border: #e0d4cc;
+  --cm-gutter-fg: #6e5c62;
+  --cm-active-line-bg: rgba(139, 58, 74, 0.04);
+  --cm-active-gutter-bg: rgba(139, 58, 74, 0.05);
+  --cm-selection-bg: #e4c8cc;
+  --cm-search-match-bg: rgba(138, 115, 64, 0.18);
+  --cm-search-match-active-bg: rgba(138, 115, 64, 0.42);
+  --cm-search-match-active-shadow: 0 0 0 1px #8a7340;
+  --cm-invisible-space: radial-gradient(circle, #a89898 1px, transparent 1px);
+  --cm-invisible-tab: rgba(139, 58, 74, 0.1);
+  --cm-trailing-space: rgba(168, 72, 72, 0.2);
+  --cm-mark-heading: #5c2432;
+  --cm-mark-strong: #1c1418;
+  --cm-mark-link: #7a3544;
+  --cm-mark-monospace: #5c2432;
+  --cm-mark-quote: #6e5c62;
 
-  /* xterm 用配色 / xterm Edohigan Colors */
-  --xterm-bg: #3a2632;
-  --xterm-fg: #f0e0e4;
-  --xterm-cursor: #a8415f;
-  --xterm-selection-bg: rgba(168, 65, 95, 0.3);
-  --xterm-black: #3a2632;
-  --xterm-red: #d68288;
-  --xterm-green: #8eb078;
-  --xterm-yellow: #c9ab60;
-  --xterm-blue: #b89fd6;
-  --xterm-magenta: #d9a9c0;
-  --xterm-cyan: #c4a2b2;
-  --xterm-white: #ead4d9;
-  --xterm-bright-black: #8a6878;
-  --xterm-bright-red: #f2aab0;
-  --xterm-bright-green: #aac898;
-  --xterm-bright-yellow: #ead3a0;
-  --xterm-bright-blue: #d4beee;
-  --xterm-bright-magenta: #eac2d5;
-  --xterm-bright-cyan: #ddbcc9;
-  --xterm-bright-white: #fff7f5;
+  --xterm-bg: #2a2226;
+  --xterm-fg: #efe8e4;
+  --xterm-cursor: #8b3a4a;
+  --xterm-selection-bg: rgba(139, 58, 74, 0.28);
+  --xterm-black: #2a2226;
+  --xterm-red: #c88890;
+  --xterm-green: #8eab84;
+  --xterm-yellow: #c4b070;
+  --xterm-blue: #a89ec4;
+  --xterm-magenta: #c8a8b4;
+  --xterm-cyan: #b8a4a8;
+  --xterm-white: #e8ddd8;
+  --xterm-bright-black: #6e5c62;
+  --xterm-bright-red: #e0a8b0;
+  --xterm-bright-green: #a8c49e;
+  --xterm-bright-yellow: #ddd0a0;
+  --xterm-bright-blue: #c4b8de;
+  --xterm-bright-magenta: #dec0cc;
+  --xterm-bright-cyan: #d0bcbe;
+  --xterm-bright-white: #f7f2ef;
 
-  /* 江戸彼岸用シャドウ / Edohigan Shadows
-     桜色の光の拡散を模して、やや桃みのある柔らかい影にする。 */
-  --shadow-sm: 0 1px 2px rgba(110, 54, 72, 0.1);
-  --shadow-md: 0 4px 12px rgba(110, 54, 72, 0.14), 0 1px 3px rgba(110, 54, 72, 0.08);
-  --shadow-lg: 0 12px 32px rgba(110, 54, 72, 0.2), 0 2px 8px rgba(110, 54, 72, 0.1);
-  --shadow-accent: 0 4px 20px rgba(168, 65, 95, 0.18);
-
-  /* preference-preview-badge は font-size 10px + uppercase で文字が詰まり気味。
-     桃色背景上で呼吸を確保するため letter-spacing だけ広げる。 */
+  /* 薄い影。桃みを抑え、紙の上の静かな奥行きだけ。 */
+  --shadow-sm: 0 1px 2px rgba(40, 28, 32, 0.06);
+  --shadow-md: 0 4px 14px rgba(40, 28, 32, 0.08), 0 1px 3px rgba(40, 28, 32, 0.04);
+  --shadow-lg: 0 12px 28px rgba(40, 28, 32, 0.1), 0 2px 6px rgba(40, 28, 32, 0.05);
+  --shadow-accent: 0 4px 16px rgba(139, 58, 74, 0.12);
 }
 :root[data-theme="edohigan"] .preference-preview-badge {
   letter-spacing: 0.08em;
 }
 
-/* 2. .app-shell 背景 / Edohigan: spring sky base */
+/* 2. .app-shell 背景 — 和紙トーン (shader 下地) */
 :root[data-theme="edohigan"] .app-shell {
-  background: #f5e0e8;
+  background: #f3ebe6;
 }
 
 /* 3. 背景シェーダー canvas / 前景オーバーレイ */
 .edohigan-canvas {
-  animation: edohiganBgPulse 13s ease-in-out infinite;
+  /* 明滅アニメは安っぽいので廃止。静かに常時表示。 */
   display: block;
   height: 100%;
   inset: 0;
@@ -135,106 +115,66 @@
   z-index: var(--z-base);
 }
 
-/* 起動シーケンス中の canvas 扱い。
-   ブート (.edohigan-boot) は phase !== "done" の間だけ DOM に存在する。
-   bud/bloom/fullbloom 中は canvas を隠し (opacity:0)、前面のブート (不透明全面覆い)
-   で花吹雪が薄洩れするのを防ぐ。scatter 中はブートがフェードアウトするため、
-   canvas の opacity を戻して背面が自然に現れるようにする。
-   ただし canvas の opacity をアニメーションさせると edohiganBgPulse
-   (同じく opacity を操作) と競合してギザギザが生じるため、
-   切り替えは transition なしの即時とする。 */
 :root[data-theme="edohigan"] .app-shell:has(.edohigan-boot:not(.edohigan-boot-scatter))
   .edohigan-canvas {
   opacity: 0;
 }
 
-/* 江戸彼岸前景: ビネットと薄い桃色の光の滲み。縞 (ストライプ) は持たない。
-   緩やかに位置をずらす風アニメで、画面全体が呼吸するように見せる。
-   全 UI の最局面に置いて文字の上にも乗る。pointer-events: none で操作は妨げない。 */
+/* 前景: ごく薄いビネットのみ。screen の桃色滲みは廃止。 */
 .edohigan-overlay {
   background:
-    /* 上端の柔らかな桃色の光の滲み (上空近くで明るくなる自然な減衰)。 */
-    radial-gradient(
-      ellipse 120% 60% at 50% 0%,
-      rgba(255, 220, 230, 0.12) 0%,
-      transparent 60%
-    ),
-    /* 中心は透明、端へ静かに暗くなるビネット (視線を中央へ) */
     radial-gradient(
       ellipse at center,
-      transparent 62%,
-      rgba(90, 50, 70, 0.18) 100%
+      transparent 68%,
+      rgba(40, 28, 32, 0.08) 100%
     );
   inset: 0;
-  mix-blend-mode: screen;
+  mix-blend-mode: multiply;
   pointer-events: none;
   position: fixed;
   z-index: var(--z-crt-top);
 }
 
-/* 前景の緩やかな風ドリフト。background-position を X 方向にゆっくり揺らし、
-   桜色の光が静かに流れるように見せる。
-   フォーカス時のみ発火し、常時ではない (限定的な演出)。 */
+/* フォーカス時の微かな風も、派手に動かさない */
 :root[data-theme="edohigan"] .app-shell:focus-within .edohigan-overlay {
-  animation: edohiganFlow 18s ease-in-out infinite;
+  animation: none;
 }
 
-/* 4. 文字グロー (演出)
-   桜色の光の拡散グロー (text-shadow) は常時・静か。薄く穏やかに。
-   フリッカー (揺らぎアニメーション) はデジタル感の元になるため持たない。 */
-
-/* CodeMirror 本文: 桜色の光の拡散グローは常時。scroll-safe に .cm-content 単位。 */
+/* 4. 文字 — グローなし (墨が紙に乗る) */
 :root[data-theme="edohigan"] .cm-content {
-  text-shadow: 0 0 7px rgba(168, 65, 95, 0.16);
+  text-shadow: none;
 }
 
-/* プレビュー本文: 同様に常時の静かなグロー。 */
 :root[data-theme="edohigan"] .markdown-preview :is(p, h1, h2, h3, h4, h5, h6, li, a) {
-  text-shadow: 0 0 7px rgba(215, 131, 152, 0.16);
+  text-shadow: none;
 }
 
 :root[data-theme="edohigan"] .markdown-preview :is(code, pre) {
-  text-shadow: 0 0 6px rgba(168, 65, 95, 0.12);
+  text-shadow: none;
 }
 
-/* UI テキスト (タブ・ツリー・ステータスバー・サイドバー): 薄くグロー。 */
 :root[data-theme="edohigan"]
   :is(.tabs-row, .file-tree-pane, .status-bar, .workspace-sidebar-rail)
   :is(span, button, a, label, input, .tab-button, .tree-name, .status-bar-segment) {
-  text-shadow: 0 0 5px rgba(168, 65, 95, 0.1);
+  text-shadow: none;
 }
 
-/* ファイルツリー行のホバー色を桜色調へ上書き。
-   ベース (workspace.css) のホバーは黒 rgba(0,0,0,0.03) で、桜色の薄桃背景には
-   逆方向 (暗くなる) ため、桃色系の低アルファで上書きし、単一レイヤに揃える。 */
 :root[data-theme="edohigan"] .tree-file:hover,
 :root[data-theme="edohigan"] .tree-directory-button:hover {
-  background: rgba(168, 65, 95, 0.06);
+  background: rgba(139, 58, 74, 0.05);
 }
 
-/* 5. 起動シーケンス (.edohigan-boot*)
-   テーマ切替 (false → true) / アプリ起動時に流れる全画面オーバーレイ。
-   EdohiganShaderOverlay と同じ WebGL 語彙 (桃色の光の柱・花吹雪・深度グラデ・
-   Reinhard) で「満開 → 散華」ストーリーを描く。
-   bud → bloom → fullbloom → scatter → done (2.6秒)。
-   CSS は WebGL canvas のコンテナと、canvas 描画開始前の frame-0
-   マスク用の暮れ桃色ベタのみを担う。描画ロジックはすべてシェーダー側。 */
-
+/* 5. 起動シーケンス */
 .edohigan-boot {
-  /* canvas 描画開始前 (frame 0) の暗転・チラつきを防ぐため、暮れ桃色で
-     ベタ塗りしておく。シェーダーが立ち上がった後は canvas が覆い隠す。
-     WebGL2 が取れない環境 (jsdom 等) ではこのベタが fallback として働く。 */
-  background: #e8c8d2;
+  /* frame-0: 和紙トーン。派手な春空ベタにしない。 */
+  background: #efe6e0;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
   position: fixed;
-  /* 前景オーバーレイ (.edohigan-overlay = --z-crt-top) よりも上に確実に
-     置くため、一段高い z-index にする (DOM 順序との二重の安全措置)。 */
   z-index: calc(var(--z-crt-top) + 100);
 }
 
-/* 起動演出用 WebGL canvas。全面を覆い、シェーダー出力を描く。 */
 .edohigan-boot-canvas {
   display: block;
   height: 100%;
@@ -245,36 +185,11 @@
   z-index: 1;
 }
 
-/* 6. reduced-motion ガード
-   base.css のグローバルガードが keyframes を止めるが、canvas 描画自体は
-   JS の rAF ループで動くため、CSS で display: none にして完全停止させる。 */
+/* 6. reduced-motion */
 @media (prefers-reduced-motion: reduce) {
-  /* 花吹雪シェーダーアニメーションも止める。前景オーバーレイ自体は
-     静止画なので残す。/ Keep static overlay, drop shader motion */
   .edohigan-canvas {
     display: none;
   }
 }
 
-/* 7. @keyframes */
-
-/* 前景オーバーレイの緩やかな風ドリフト。background-position を X 方向に
-   ゆっくり往復させ、桜色の光が静かに流れるように見せる。
-   縞ではなく滑らかな radial-gradient が動くのでデジタル感がない。 */
-@keyframes edohiganFlow {
-  0%, 100% { background-position: 0% 0%, 0 0; }
-  50% { background-position: 8% 0%, 0 0; }
-}
-
-/* 背景シェーダー (.edohigan-canvas) の「春の息吹」演出。
-   光の強さがゆったりと明滅する。緩やかで有機的な周期。
-   文字のフリッカーはデジタル感の元になるため廃止。 */
-@keyframes edohiganBgPulse {
-  0%, 100% { opacity: 1; filter: none; }
-  50% { opacity: 0.95; filter: brightness(1.05); }
-}
-
-/* 起動シーケンス用 keyframes は不要。
-   EdohiganBootSequence が WebGL ベースであり、光の柱の伸長・
-   花吹雪の灯りと散華・フェードアウトはすべてシェーダー側の
-   u_progress で駆動する。CSS アニメーションは不要。 */
+/* 7. @keyframes — 残さない (静謐のため) */

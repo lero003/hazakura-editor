@@ -235,16 +235,6 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
         true,
         None::<&str>,
     )?;
-    let theme_edohigan = MenuItem::with_id(
-        app,
-        MENU_THEME_EDOHIGAN,
-        selected_theme_label(
-            label("Edohigan (joke)", "江戸彼岸（お遊び）"),
-            theme_preference == "edohigan",
-        ),
-        true,
-        None::<&str>,
-    )?;
     let theme_yakou = MenuItem::with_id(
         app,
         MENU_THEME_YAKOU,
@@ -279,6 +269,17 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
         true,
         None::<&str>,
     )?;
+    // 江戸彼岸は最上級・静謐テーマとして一覧の末尾に置く
+    let theme_edohigan = MenuItem::with_id(
+        app,
+        MENU_THEME_EDOHIGAN,
+        selected_theme_label(
+            label("Edohigan (Quietude)", "江戸彼岸（静謐）"),
+            theme_preference == "edohigan",
+        ),
+        true,
+        None::<&str>,
+    )?;
     let theme_menu = Submenu::with_items(
         app,
         label("Theme", "テーマ"),
@@ -286,11 +287,11 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
         &[
             &theme_light,
             &theme_dark,
-            &theme_edohigan,
             &theme_yakou,
             &theme_shokou,
             &theme_crt,
             &theme_shinkai,
+            &theme_edohigan,
         ],
     )?;
     let view_separator_before_fullscreen = PredefinedMenuItem::separator(app)?;
