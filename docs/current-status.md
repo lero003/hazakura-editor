@@ -8,16 +8,15 @@ Last reviewed: 2026-07-09 (v1.5 released before edohigan; v1.6 Import Assist ope
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current development package/app version: `1.5.0` across npm, Tauri, Cargo,
-  and lockfile metadata.
-- **v1.5 is closed and released as `1.5.0`** (Spellcheck in Settings, Reading
-  Focus TOC density, CRT/Shinkai joke themes lineage, dead-code sweep,
-  dependency hygiene, traffic-light polish, L Mode remount for CM tile tree).
-  **That release preceded the 江戸彼岸 (edohigan) theme merge** — edohigan and
-  the later CodeMirror display pin are **post-v1.5 / v1.6-era main work**, not
-  part of the v1.5 release story.
-- **Active lane: v1.6 Import Assist Phase 1** (PDFKit / Vision OCR → Markdown
-  draft). Boundary review: `docs/import-assist-boundary-review.md`.
+- Current development package/app version: **`1.6.0`** across npm, Tauri, Cargo,
+  and lockfile metadata (App Store `bundleVersion` **74**).
+- **v1.5 (`1.5.0`) is closed and was released before 江戸彼岸 (edohigan).**
+  v1.5 covered Spellcheck settings, Reading Focus TOC density, CRT/Shinkai
+  lineage polish, dead-code, deps hygiene, traffic-light, L Mode remount.
+- **v1.6 (`1.6.0`) active candidate:** Import Assist Phase 1 (PDF / image →
+  Markdown draft, on-device PDFKit + Vision), edohigan theme, CodeMirror
+  `@codemirror/view` **6.43.2** pin. Boundary:
+  `docs/import-assist-boundary-review.md`.
 - Historical Mac App Store baseline: `1.3.0` Daily Trust (and earlier) remains
   documented below. Treat listing/build counters in Connect as authoritative
   for store facts; this file tracks product-lane truth for agents.

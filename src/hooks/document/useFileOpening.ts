@@ -362,8 +362,8 @@ export function useFileOpening({
       setCompareView(null);
       setStatus(
         result.usedOcr
-          ? `Imported OCR draft (${result.pageCount} page)`
-          : `Imported text draft (${result.pageCount} pages)`,
+          ? `Imported OCR draft (${result.pageCount} page${result.pageCount === 1 ? "" : "s"})`
+          : `Imported text draft (${result.pageCount} page${result.pageCount === 1 ? "" : "s"})`,
       );
     } catch (err) {
       setGlobalError(String(err));

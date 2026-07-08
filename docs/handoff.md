@@ -7,10 +7,11 @@ Last reviewed: 2026-07-09 (v1.5 released before edohigan; v1.6 Import Assist act
 
 ## Current State
 
-- **v1.5 (`1.5.0`) is closed and released before 江戸彼岸 (edohigan) merged.**
-  Post-v1.5 main includes edohigan + CodeMirror view **6.43.2** pin / editor
-  display fixes. **Active lane: v1.6 Import Assist** — see
-  `docs/import-assist-boundary-review.md` and `docs/current-work.md`.
+- Package version **`1.6.0`** / App Store **bundleVersion 74**.
+- **v1.5 (`1.5.0`) closed before 江戸彼岸.** Active: **v1.6 Import Assist** —
+  `docs/import-assist-boundary-review.md`, `docs/current-work.md`.
+- Keep `@codemirror/view` at **6.43.2**. Import helper must ship via
+  `externalBin` (`npm run build:import-assist-helper:live`).
 - Historical: `1.3.0` Daily Trust remains a published MAS baseline. Raw App
   Store Connect logs stay outside the repo. The v1 public promise is
   `Markdownで書き、本として読み、ローカルAIで整える。`

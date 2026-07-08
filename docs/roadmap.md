@@ -15,12 +15,10 @@ Current release state:
 
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
-- Package/app version in tree: `1.5.0`.
-- **v1.5 (`1.5.0`) is closed and released** — stabilization / reading polish
-  (Spellcheck settings, Reading Focus TOC density, dead-code, deps hygiene,
-  etc.). **Released before 江戸彼岸 (edohigan) was merged to main.**
-- **Post-v1.5 main (not v1.5):** edohigan theme; `@codemirror/view` **6.43.2**
-  pin and editor display quality work. Do not describe these as v1.5 features.
+- Package/app version in tree: **`1.6.0`** (bundleVersion **74**).
+- **v1.5 (`1.5.0`) is closed and was released before 江戸彼岸 (edohigan).**
+- **v1.6 (`1.6.0`) candidate:** Import Assist Phase 1 + edohigan + CodeMirror
+  view pin. Do not describe edohigan as a v1.5 feature.
 - Historical MAS baseline: `1.3.0` Daily Trust (and earlier releases) remain
   part of the public product history; store Connect is authoritative for
   listing numbers.

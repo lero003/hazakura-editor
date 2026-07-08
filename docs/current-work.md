@@ -1,7 +1,7 @@
 # Current Work
 
 Status: Operational
-Scope: v1.6 Import Assist Phase 1 (post-v1.5)
+Scope: v1.6 Import Assist Phase 1 (package `1.6.0` / bundleVersion 74)
 Authority: High
 Last reviewed: 2026-07-09
 

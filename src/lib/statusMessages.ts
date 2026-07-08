@@ -83,6 +83,12 @@ export function localizeStatusMessage(
       "テーマメニューの状態更新に失敗しました",
     "Image markup inserted": "画像の Markdown を適用しました",
     "Image paste failed": "画像の貼り付けに失敗しました",
+    "Choosing PDF or image to import…": "取り込む PDF / 画像を選択中…",
+    "Import cancelled": "取り込みをキャンセルしました",
+    "Importing to Markdown draft…": "Markdown 下書きを作成中…",
+    "Import failed": "取り込みに失敗しました",
+    "Imported text draft": "テキスト抽出の下書きを開きました",
+    "Imported OCR draft": "OCR 下書きを開きました",
     "Image preview closed": "画像プレビューを閉じました",
     "Image preview failed": "画像プレビューに失敗しました",
     "Image preview opened": "画像プレビューを開きました",
@@ -325,6 +331,16 @@ export function localizeStatusMessage(
 
   if (message.startsWith("Imported: ")) {
     return `画像を取り込みました: ${message.slice("Imported: ".length)}`;
+  }
+
+  if (message.startsWith("Imported text draft (")) {
+    return `テキスト抽出の下書きを開きました（${message.slice(
+      "Imported text draft (".length,
+    )}`;
+  }
+
+  if (message.startsWith("Imported OCR draft (")) {
+    return `OCR 下書きを開きました（${message.slice("Imported OCR draft (".length)}`;
   }
 
   if (message.startsWith("Failed to import image: ")) {
