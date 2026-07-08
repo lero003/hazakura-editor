@@ -98,16 +98,14 @@ float fbm(vec2 p, int octaves) {
   return v;
 }
 
+// Overlay と同形: 柔らかい雫形 (無理な切れ込みなし)
 float petalSdf(vec2 pos) {
   vec2 p = pos;
-  float tip = smoothstep(0.0, 0.85, p.y);
-  p.x = abs(p.x) + tip * tip * 0.16;
-  float mid = 1.0 + 0.32 * clamp(p.y, -0.4, 0.75);
-  p.x /= max(mid, 0.5);
-  p.y *= 1.22;
-  p.y += 0.05;
-  float d = length(p) - 0.58;
-  d += max(-pos.y - 0.48, 0.0) * 0.62;
+  float widen = 0.72 + 0.28 * clamp(p.y * 0.55 + 0.45, 0.0, 1.0);
+  p.x /= max(widen, 0.4);
+  p.y = p.y * 1.15 + 0.06;
+  float d = length(p) - 0.5;
+  d += smoothstep(0.15, -0.65, pos.y) * 0.22;
   return d;
 }
 
@@ -146,20 +144,20 @@ vec3 drawPetals(
       float r2 = hashCell(id + 13.3);
       float r3 = hashCell(id + 21.1);
       float r4 = hashCell(id + 29.7);
-      vec2 local = (f - offset) + (vec2(r1, r2) - 0.5) * 0.65;
-      float phase = t * (0.55 + r4 * 0.7) + id.x * 1.2;
-      local.x += sin(phase) * 0.18 * motion;
-      local.x += windX * 0.4;
-      float sz = sizeBase * (0.78 + r3 * 0.5);
-      float angle = r1 * 6.28 + t * (0.15 + r2 * 0.22) * motion + windX * 1.2;
+      vec2 local = (f - offset) + (vec2(r1, r2) - 0.5) * 0.55;
+      float phase = t * (0.35 + r4 * 0.4) + id.x * 1.1;
+      local.x += sin(phase) * 0.10 * motion;
+      local.x += windX * 0.25;
+      float sz = sizeBase * (0.82 + r3 * 0.4);
+      float angle = r1 * 6.28 + t * (0.06 + r2 * 0.08) * motion + windX * 0.5;
       vec2 petalLocal = rot2(angle) * (local / max(sz, 1e-4));
       float d = petalSdf(petalLocal) * sz;
       float mask = 1.0 - smoothstep(-aa, aa, d);
       if (mask <= 0.001) continue;
-      float rootMix = clamp(-petalLocal.y * 0.55 + 0.4, 0.0, 1.0);
-      vec3 petalCol = mix(tipCol, rootCol, rootMix * 0.78);
+      float rootMix = clamp(-petalLocal.y * 0.45 + 0.35, 0.0, 1.0);
+      vec3 petalCol = mix(tipCol, rootCol, rootMix * 0.65);
       col = mix(col, petalCol, mask);
-      alpha = max(alpha, mask * 0.92);
+      alpha = max(alpha, mask * 0.9);
     }
   }
   return col;
@@ -206,22 +204,31 @@ void main() {
   col = mix(col, vec3(0.88, 0.78, 0.82), c1 * 0.5 * reveal);
 
   // 花弁
-  vec3 tip = vec3(0.98, 0.9, 0.92);
-  vec3 root = vec3(0.88, 0.55, 0.65);
+  vec3 tip = vec3(0.99, 0.94, 0.95);
+  vec3 root = vec3(0.9, 0.62, 0.7);
+  // 彼岸の風の帯 (Overlay と同系の異質演出)
+  vec2 flowDir = normalize(vec2(0.35 + windX, -0.12));
+  float along = dot((uv - 0.5) * vec2(aspect, 1.0), flowDir);
+  float across = dot((uv - 0.5) * vec2(aspect, 1.0), vec2(-flowDir.y, flowDir.x));
+  float ribbon = smoothstep(0.55, 0.82, fbm(uv * vec2(aspect, 1.0) * 3.2 + t * 0.05, 4));
+  ribbon *= exp(-across * across * 28.0) * 0.5;
+  ribbon *= 0.5 + 0.5 * sin(along * 9.0 + t * 0.4);
+  col += vec3(0.95, 0.65, 0.72) * ribbon * 0.22 * density;
+
   float aFar = 0.0;
   vec3 farP = drawPetals(
-    uv, aspect, motion, t * 0.5,
-    11.0, 0.13, 0.26 * density, 0.04, 0.05, windX,
-    mix(tip, root, 0.2), mix(root, tip, 0.25), aFar
+    uv, aspect, motion, t * 0.45,
+    9.5, 0.14, 0.16 * density, 0.03, 0.04, windX,
+    mix(tip, root, 0.15), mix(root, tip, 0.3), aFar
   );
   float aFg = 0.0;
   vec3 fgP = drawPetals(
-    uv, aspect, motion, t * 0.85,
-    4.4, 0.24, 0.2 * density, 0.07, 0.08, windX,
+    uv, aspect, motion, t * 0.65,
+    5.2, 0.2, 0.12 * density, 0.045, 0.055, windX,
     tip, root, aFg
   );
-  col = mix(col, farP, clamp(aFar, 0.0, 1.0) * 0.55 * density);
-  col = mix(col, fgP,  clamp(aFg, 0.0, 1.0) * 0.88 * density);
+  col = mix(col, farP, clamp(aFar, 0.0, 1.0) * 0.5 * density);
+  col = mix(col, fgP,  clamp(aFg, 0.0, 1.0) * 0.78 * density);
 
   // full 付近で光を少し強める
   float fullGlow = smoothstep(0.4, 0.55, p) * (1.0 - scatter);

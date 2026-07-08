@@ -97,17 +97,17 @@ vec2 curl(vec2 p) {
   return vec2(dy, -dx);
 }
 
-// 桜花弁 SDF
+// 桜花弁 SDF — 無理な切れ込みは使わない。
+// 柔らかい雫形 (先端やや広く、根部へ細る)。回転しても破綻しないアフィンのみ。
 float petalSdf(vec2 pos) {
   vec2 p = pos;
-  float tip = smoothstep(0.0, 0.85, p.y);
-  p.x = abs(p.x) + tip * tip * 0.16;
-  float mid = 1.0 + 0.32 * clamp(p.y, -0.4, 0.75);
-  p.x /= max(mid, 0.5);
-  p.y *= 1.22;
-  p.y += 0.05;
-  float d = length(p) - 0.58;
-  d += max(-pos.y - 0.48, 0.0) * 0.62;
+  // 縦長 + 先端 (+y) でわずかに広がる (0除算なし)
+  float widen = 0.72 + 0.28 * clamp(p.y * 0.55 + 0.45, 0.0, 1.0);
+  p.x /= max(widen, 0.4);
+  p.y = p.y * 1.15 + 0.06;
+  float d = length(p) - 0.5;
+  // 根部を自然に細く (距離場を壊さない緩いバイアス)
+  d += smoothstep(0.15, -0.65, pos.y) * 0.22;
   return d;
 }
 
@@ -184,36 +184,35 @@ vec3 drawPetals(
       float r4 = hashCell(id + 29.7);
       float r5 = hashCell(id + 41.3);
 
-      vec2 local = (f - offset) + (vec2(r1, r2) - 0.5) * 0.65;
-      float phase = t * (0.55 + r4 * 0.7) + id.x * 1.2 + id.y * 0.8;
-      local.x += sin(phase) * 0.18 * motion;
-      local.y += cos(phase * 0.8 + r5) * 0.09 * motion;
+      vec2 local = (f - offset) + (vec2(r1, r2) - 0.5) * 0.55;
+      float phase = t * (0.35 + r4 * 0.4) + id.x * 1.1 + id.y * 0.7;
+      // ひらひら (形を壊さない程度)
+      local.x += sin(phase) * 0.10 * motion;
+      local.y += cos(phase * 0.75 + r5) * 0.05 * motion;
 
-      // 風場をセル空間へ
-      local += baseFlow * flowMul * scale * 0.85;
-      // マウス瞬間速度
-      local += mouseVel * mouseWake * scale * flowMul * (1.4 + velMag * 8.0);
+      // 位置移動のみ。ローカルへ強い flow を足すと形が歪んで見えるので抑える
+      local += baseFlow * flowMul * scale * 0.25;
+      local += mouseVel * mouseWake * scale * flowMul * (0.6 + velMag * 4.0);
 
-      float sz = sizeBase * (0.78 + r3 * 0.5);
-      float spin = (0.15 + r2 * 0.22) * motion;
-      spin += flowMag * 1.8 * flowMul + velMag * mouseWake * 2.2;
-      float angle = r1 * 6.28 + t * spin + sin(phase * 0.5) * 0.4;
+      float sz = sizeBase * (0.82 + r3 * 0.4);
+      // ゆっくり翻る (高速スピンは変なシルエットの元)
+      float spin = (0.06 + r2 * 0.08) * motion;
+      spin += flowMag * 0.35 * flowMul + velMag * mouseWake * 0.6;
+      float angle = r1 * 6.28 + t * spin + sin(phase * 0.4) * 0.2;
       vec2 petalLocal = rot2(angle) * (local / max(sz, 1e-4));
 
       float d = petalSdf(petalLocal) * sz;
       float mask = 1.0 - smoothstep(-aa, aa, d);
       if (mask <= 0.001) continue;
 
-      float rootMix = clamp(-petalLocal.y * 0.55 + 0.4, 0.0, 1.0);
-      vec3 petalCol = mix(tipCol, rootCol, rootMix * 0.78);
-      float shade = smoothstep(-0.15, 0.5, d / max(sz, 1e-4));
-      petalCol *= mix(0.88, 1.05, shade);
-      // 薄い縁光 (キラキラ連発ではなく輪郭の存在感)
-      float rim = smoothstep(0.15, 0.0, abs(d) / max(sz, 1e-4));
-      petalCol += vec3(1.0, 0.92, 0.94) * rim * 0.12;
+      // 先端白寄り・根部薄紅 (グラデは穏やか)
+      float rootMix = clamp(-petalLocal.y * 0.45 + 0.35, 0.0, 1.0);
+      vec3 petalCol = mix(tipCol, rootCol, rootMix * 0.65);
+      float shade = smoothstep(-0.1, 0.45, d / max(sz, 1e-4));
+      petalCol *= mix(0.92, 1.02, shade);
 
       col = mix(col, petalCol, mask);
-      alpha = max(alpha, mask * 0.92);
+      alpha = max(alpha, mask * 0.9);
     }
   }
   return col;
@@ -315,38 +314,51 @@ void main() {
   vec2 pFar = uv + baseFlow * 0.5 * 0.04;
   float pollenFar = smoothstep(0.48, 0.65, fbm(pFar * vec2(aspect, 1.0) * 7.0 - t * 0.02, 3));
 
-  col += vec3(0.95, 0.72, 0.78) * pollenFg * 0.22 * u_intensity;
-  col += vec3(0.88, 0.62, 0.7) * pollenNear * 0.14 * u_intensity;
-  col += vec3(0.7, 0.48, 0.55) * pollenFar * 0.08 * u_intensity;
+  col += vec3(0.95, 0.72, 0.78) * pollenFg * 0.18 * u_intensity;
+  col += vec3(0.88, 0.62, 0.7) * pollenNear * 0.11 * u_intensity;
+  col += vec3(0.7, 0.48, 0.55) * pollenFar * 0.06 * u_intensity;
 
-  // === 4. 花弁 3 層 ===
-  vec3 tip = vec3(0.98, 0.9, 0.92);
-  vec3 root = vec3(0.88, 0.55, 0.65);
+  // === 4. 彼岸の風の帯 (異質な演出の核) ===
+  // 花弁の代わりに「形を無理に作らない」桜色の絹筋。flow に沿って流れる。
+  // 深海のチリとも雪とも違う、江戸彼岸固有の気配。
+  vec2 ribbonUv = uv + baseFlow * 0.1;
+  float ribbonNoise = fbm(ribbonUv * vec2(aspect, 1.0) * 3.2 + t * 0.05, 4);
+  // flow 方向へ座標を伸ばして筋にする
+  vec2 flowDir = normalize(baseFlow + vec2(0.2, -0.05));
+  float along = dot((uv - 0.5) * vec2(aspect, 1.0), flowDir);
+  float across = dot((uv - 0.5) * vec2(aspect, 1.0), vec2(-flowDir.y, flowDir.x));
+  float ribbon = smoothstep(0.55, 0.82, ribbonNoise);
+  ribbon *= exp(-across * across * 28.0) * 0.55; // 細い帯
+  ribbon *= 0.5 + 0.5 * sin(along * 9.0 + t * 0.4 + ribbonNoise * 4.0);
+  ribbon *= smoothstep(0.1, 0.5, uv.y) * smoothstep(1.0, 0.35, uv.y);
+  // 第2の帯 (位相ずらし)
+  float ribbon2 = smoothstep(0.5, 0.78, fbm(ribbonUv * vec2(aspect, 1.0) * 4.5 + 3.0, 3));
+  ribbon2 *= exp(-pow(across + 0.08, 2.0) * 40.0) * 0.35;
+  ribbon2 *= 0.5 + 0.5 * sin(along * 12.0 - t * 0.5);
+  float ribbons = (ribbon + ribbon2) * (0.7 + flowMag * 0.8 + mouseWake * 0.4);
+  col += vec3(0.95, 0.65, 0.72) * ribbons * 0.28 * u_intensity;
+
+  // === 5. 花弁 2 層 — 雫形・少なめ・ゆっくり (形が読める枚数) ===
+  vec3 tip = vec3(0.99, 0.94, 0.95);
+  vec3 root = vec3(0.9, 0.62, 0.7);
 
   float aFar = 0.0;
   vec3 farP = drawPetals(
     uv, aspect, motion, baseFlow, u_mouseVel, mouseWake,
-    11.0, 0.13, 0.26, 0.035, 0.04, 0.7, 0.5,
-    mix(tip, root, 0.2), mix(root, tip, 0.25), aFar
-  );
-  float aMid = 0.0;
-  vec3 midP = drawPetals(
-    uv, aspect, motion, baseFlow, u_mouseVel, mouseWake,
-    7.0, 0.17, 0.22, 0.05, 0.055, 1.15, 0.7,
-    tip, root, aMid
+    9.5, 0.14, 0.16, 0.03, 0.035, 0.55, 0.45,
+    mix(tip, root, 0.15), mix(root, tip, 0.3), aFar
   );
   float aFg = 0.0;
   vec3 fgP = drawPetals(
     uv, aspect, motion, baseFlow, u_mouseVel, mouseWake,
-    4.4, 0.24, 0.18, 0.065, 0.07, 1.7, 0.95,
+    5.2, 0.2, 0.12, 0.045, 0.05, 1.0, 0.65,
     tip, root, aFg
   );
 
-  col = mix(col, farP, clamp(aFar, 0.0, 1.0) * 0.55);
-  col = mix(col, midP, clamp(aMid, 0.0, 1.0) * 0.7);
-  col = mix(col, fgP,  clamp(aFg, 0.0, 1.0) * 0.88);
+  col = mix(col, farP, clamp(aFar, 0.0, 1.0) * 0.5);
+  col = mix(col, fgP,  clamp(aFg, 0.0, 1.0) * 0.78);
 
-  // === 5. 手の陽光 ===
+  // === 6. 手の陽光 ===
   vec3 wake = mix(vec3(1.0, 0.9, 0.85), vec3(1.0, 0.8, 0.85), 0.4);
   col += wake * mouseWake * (0.1 + velMag * 0.45 + flowMag * 0.15) * u_intensity;
 
