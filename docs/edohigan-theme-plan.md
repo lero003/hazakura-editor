@@ -1,73 +1,48 @@
-# Edohigan Theme Plan (v1.6)
+# Edohigan Theme Plan (v1.6) — 深海越え
 
-Status: 最上級・静謐エディタ化
-Scope: 江戸彼岸テーマの方針と実装メモ
+Status: 深海越え実装 (彼岸の春風)
 Authority: Reference
 Last reviewed: 2026-07-09
 
-## 目的
+## North Star
 
-彼岸の書斎 — 和紙の上に、ごく薄い春の気配だけがある。
-他テーマより **高級感ある静かな執筆空間** としての最上級テーマ。
-処理コストはジョーク枠として度外視してよいが、見た目は抑制する。
+深海が「水」なら江戸彼岸は「風」。  
+空・雲・光・花粉・花弁が **同じ baseFlow** に乗り、手で払うと世界全体が流れて戻る。
 
-## テーマ一覧での位置
+## 勝ち筋 vs 深海
 
-**末尾**（設定 UI / ネイティブメニュー共通）:
-
-```
-light → dark → yakou → shokou → crt → shinkai → edohigan
-```
-
-## コンセプト
-
-**静かだが、追随を許さないほど凝る。**  
-派手さでなく **層の数と計算の丁寧さ** で最上級を作る。
-
-| 安い (排除) | 最上級・静謐 |
-|---|---|
-| キラキラ / 強グロー / 太陽ディスク / 多条 rays | 低コントラスト多層・遠方の光の気配 |
-| 縦落ちの雪粒 | ひらひら花弁 3 層 + 微粒子 + 空気層 |
-| 桃ベタ・「お遊び」 | 和紙・墨・ラベル「江戸彼岸（静謐）」 |
-
-ラベル: `江戸彼岸（静謐）` / `Edohigan (Quietude)` / `えどひがん（しじま）`
+| | 深海 | 江戸彼岸 |
+|---|---|---|
+| 媒体 | 水 + curl + velocity field | **春風** + curl + velocity field |
+| 形 | FBM 粒 | **SDF 花弁** + 雲 |
+| 色 | 暗 teal | **薄暮 藍紫〜薄紅** |
+| 起動 | 潜る | **彼岸へ渡る** (空が開く→満開→散華) |
 
 ## 構成
 
-- `src/styles/edohigan-theme.css` — 和紙パレット、グローなし
-- `EdohiganShaderOverlay.tsx` — 静謐背景 + 手の春風
-- `EdohiganBootSequence.tsx` — 淡い起動 (2.6s)
-- 設定 / `menu.rs` — 表示順末尾、ラベル「江戸彼岸」
+- `EdohiganShaderOverlay.tsx` — flow field + 全層が風に乗る
+- `EdohiganBootSequence.tsx` — 2.6s 彼岸渡り
+- `edohigan-theme.css` — 薄暮パレット・半透明 surface
+- テーマ一覧 **末尾**、ラベル **江戸彼岸（静謐）**
 
-## シェーダー語彙 (Boot / Overlay 同期)
-
-```
-多帯域春霞空 + 色温度うねり
-→ 遠方ソフトハロー + 単軸の極薄光筋
-→ 三重ドメインワープ雲 (縁に極薄桜・下影)
-→ パララックス空気 2 層 + 水平霞帯
-→ 浮遊微粒子 (暖白、雪ではない)
-→ 花弁 SDF 3 層 (ゆっくりひらひら)
-→ 手の春風 (控えめだが確実)
-→ 紙の繊維 + 極薄 grain
-```
-
-### 花弁パラメータ (目安)
+## Flow field (深海パターン参照)
 
 ```
-far: scale≈12, sizeBase≈0.12, density≈0.22
-mid: scale≈7.2, sizeBase≈0.17, density≈0.18
-fg:  scale≈4.5, sizeBase≈0.23, density≈0.14
+48×27 RG8, FORCE_BOOST≈9.5, RADIUS≈3.5
+DAMPING 0.005 (余韻長め), DIFFUSE 0.13, ADVECT 0.55
 ```
 
-## 解決済みメモ
+## シェーダー層
 
-- pnpm-lock 混入による CodeMirror クラッシュ (`ad0ec3e0`)
-- 分岐内 fwidth による罫線
-- ピンク霧 / 雪見え / 安い派手演出の排除
+```
+薄暮空 → 春光ハロー/shaft(風で歪む)
+→ 雲3層(flow ドリフト・裂け)
+→ 霞・花粉3層
+→ 花弁 SDF 3層
+→ マウス陽光
+```
 
 ## 残課題
 
-- 実機での密度・雲の見え方の好み微調整
-- docs/roadmap・current-status の sakura → edohigan 表記
-- origin への push
+- 実機での force / density 微調整
+- roadmap / current-status の sakura 表記

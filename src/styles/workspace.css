@@ -72,9 +72,9 @@
 }
 
 :root[data-theme="edohigan"] {
-  /* 静謐: 和紙トーンの厚い半透明。背景の気配は透かすが騒がしくしない。 */
-  --native-shell-tint: rgba(252, 248, 245, 0.72);
-  --native-shell-border: color-mix(in srgb, var(--accent) 12%, transparent);
+  /* 薄暮: 背景の春風シェーダーを透かす (深海と同思想) */
+  --native-shell-tint: rgba(42, 28, 40, 0.55);
+  --native-shell-border: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 :root[data-theme="yakou"] {
@@ -1369,8 +1369,8 @@
 :root[data-theme="edohigan"] .preview-pane-card {
   background: linear-gradient(
     145deg,
-    rgba(252, 248, 245, 0.9) 0%,
-    rgba(245, 238, 233, 0.92) 100%
+    rgba(42, 28, 40, 0.72) 0%,
+    rgba(52, 34, 48, 0.78) 100%
   );
 }
 
