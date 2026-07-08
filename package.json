@@ -22,6 +22,7 @@
     "build:macos-lanes": "bash scripts/build-macos-lanes.sh",
     "build:apple-assist-helper:fixture": "bash scripts/build-apple-assist-helper-fixture.sh",
     "build:apple-assist-helper:live": "bash scripts/build-apple-assist-helper-live.sh",
+    "build:import-assist-helper:fixture": "bash scripts/build-import-assist-helper-fixture.sh",
     "build:dmg-preview": "bash scripts/build-warning-dmg-preview.sh",
     "build:vite": "tsc --noEmit && vite build",
     "probe:macos-distribution": "bash scripts/probe-macos-distribution.sh",

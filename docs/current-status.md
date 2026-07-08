@@ -3,16 +3,24 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-05 (v1.3 published on the Mac App Store; v1.5 candidate prepared as `1.5.0`)
+Last reviewed: 2026-07-09 (v1.5 released before edohigan; v1.6 Import Assist opened)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
 - Current development package/app version: `1.5.0` across npm, Tauri, Cargo,
-  and lockfile metadata. `1.5.0` is the v1.5 candidate (Spellcheck toggle in
-  Settings, Reading Focus TOC density, CRT noise intensification, dead code
-  sweep, dependency updates, traffic light position alignment). The published
-  Mac App Store version remains `1.3.0`.
+  and lockfile metadata.
+- **v1.5 is closed and released as `1.5.0`** (Spellcheck in Settings, Reading
+  Focus TOC density, CRT/Shinkai joke themes lineage, dead-code sweep,
+  dependency hygiene, traffic-light polish, L Mode remount for CM tile tree).
+  **That release preceded the 江戸彼岸 (edohigan) theme merge** — edohigan and
+  the later CodeMirror display pin are **post-v1.5 / v1.6-era main work**, not
+  part of the v1.5 release story.
+- **Active lane: v1.6 Import Assist Phase 1** (PDFKit / Vision OCR → Markdown
+  draft). Boundary review: `docs/import-assist-boundary-review.md`.
+- Historical Mac App Store baseline: `1.3.0` Daily Trust (and earlier) remains
+  documented below. Treat listing/build counters in Connect as authoritative
+  for store facts; this file tracks product-lane truth for agents.
 - v1.3 Daily Trust is approved and published. Four bounded slices ship
   in `1.3.0`: Save As keeps the same-language open-tab /
   CodeMirror session and migrates per-document view state; Local Assist
@@ -46,9 +54,10 @@ Last reviewed: 2026-07-05 (v1.3 published on the Mac App Store; v1.5 candidate p
   boundary. No v1 No-Go condition was reported. Unchecked boxes are not
   treated as automatic blockers; commented observations are classified
   in `docs/v1.1-v1.2-followup.md`.
-- No public-release hotfix blocker has been reported. v1.3 (`1.3.0`) passed
-  App Review and is published on the Mac App Store. The previous `1.2.0`
-  candidate remains historical and unreleased; the active next lane is v1.5.
+- No public-release hotfix blocker has been reported. v1.3 (`1.3.0`) remains
+  a published Mac App Store baseline; v1.5 (`1.5.0`) is the closed
+  stabilization line released before edohigan. The active next lane is **v1.6
+  Import Assist**.
   `AppWorkspace` owns a shared
   per-document view-state registry: reader, Editor cursor/scroll, Preview
   reopen, tab transitions, and safe local Markdown-link transitions now

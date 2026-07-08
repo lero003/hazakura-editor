@@ -1,0 +1,26 @@
+{
+  "": {
+    "swift-dependencies": "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/primary.swiftdeps"
+  },
+  "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/Sources/HazakuraImportAssist/ImageOcr.swift": {
+    "dependencies": "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/ImageOcr.d",
+    "object": "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/ImageOcr.swift.o",
+    "swiftmodule": "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/ImageOcr~partial.swiftmodule",
+    "swift-dependencies": "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/ImageOcr.swiftdeps",
+    "diagnostics": "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/ImageOcr.dia"
+  },
+  "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/Sources/HazakuraImportAssist/PdfTextExtract.swift": {
+    "dependencies": "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/PdfTextExtract.d",
+    "object": "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/PdfTextExtract.swift.o",
+    "swiftmodule": "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/PdfTextExtract~partial.swiftmodule",
+    "swift-dependencies": "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/PdfTextExtract.swiftdeps",
+    "diagnostics": "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/PdfTextExtract.dia"
+  },
+  "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/Sources/HazakuraImportAssist/main.swift": {
+    "dependencies": "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/main.d",
+    "object": "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/main.swift.o",
+    "swiftmodule": "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/main~partial.swiftmodule",
+    "swift-dependencies": "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/main.swiftdeps",
+    "diagnostics": "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/main.dia"
+  }
+}

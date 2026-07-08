@@ -1,0 +1,291 @@
+{
+  "builtTestProducts" : [
+
+  ],
+  "copyCommands" : {
+
+  },
+  "explicitTargetDependencyImportCheckingMode" : {
+    "none" : {
+
+    }
+  },
+  "generatedSourceTargetSet" : [
+
+  ],
+  "pluginDescriptions" : [
+
+  ],
+  "swiftCommands" : {
+    "C.HazakuraImportAssist-arm64-apple-macosx-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/sources",
+      "importPath" : "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/Sources/HazakuraImportAssist/ImageOcr.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/Sources/HazakuraImportAssist/PdfTextExtract.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/Sources/HazakuraImportAssist/main.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/sources"
+        }
+      ],
+      "isLibrary" : false,
+      "moduleName" : "HazakuraImportAssist",
+      "moduleOutputPath" : "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/Modules/HazakuraImportAssist.swiftmodule",
+      "objects" : [
+        "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/ImageOcr.swift.o",
+        "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/PdfTextExtract.swift.o",
+        "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/main.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx13.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j16",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-Xfrontend",
+        "-entry-point-function-name",
+        "-Xfrontend",
+        "HazakuraImportAssist_main",
+        "-swift-version",
+        "5",
+        "-DFIXTURE_MODE",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "import_assist"
+      ],
+      "outputFileMapPath" : "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/ImageOcr.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/PdfTextExtract.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/main.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/Modules/HazakuraImportAssist.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/Sources/HazakuraImportAssist/ImageOcr.swift",
+        "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/Sources/HazakuraImportAssist/PdfTextExtract.swift",
+        "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/Sources/HazakuraImportAssist/main.swift"
+      ],
+      "tempsPath" : "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build",
+      "wholeModuleOptimization" : false
+    }
+  },
+  "swiftFrontendCommands" : {
+
+  },
+  "swiftTargetScanArgs" : {
+    "HazakuraImportAssist" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "HazakuraImportAssist",
+      "-package-name",
+      "import_assist",
+      "-c",
+      "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/Sources/HazakuraImportAssist/ImageOcr.swift",
+      "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/Sources/HazakuraImportAssist/PdfTextExtract.swift",
+      "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/Sources/HazakuraImportAssist/main.swift",
+      "-I",
+      "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx13.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j16",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-Xfrontend",
+      "-entry-point-function-name",
+      "-Xfrontend",
+      "HazakuraImportAssist_main",
+      "-swift-version",
+      "5",
+      "-DFIXTURE_MODE",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "import_assist",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ]
+  },
+  "targetDependencyMap" : {
+    "HazakuraImportAssist" : [
+
+    ]
+  },
+  "testDiscoveryCommands" : {
+
+  },
+  "testEntryPointCommands" : {
+
+  },
+  "traitConfiguration" : {
+    "default" : {
+
+    }
+  },
+  "writeCommands" : {
+    "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist-entitlement.plist" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<entitlement-plist>"
+        },
+        {
+          "kind" : "virtual",
+          "name" : "<com.apple.security.get-task-allow>"
+        }
+      ],
+      "outputFilePath" : "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist-entitlement.plist"
+    },
+    "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/Sources/HazakuraImportAssist/ImageOcr.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/Sources/HazakuraImportAssist/PdfTextExtract.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/Sources/HazakuraImportAssist/main.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/sources"
+    },
+    "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/ImageOcr.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/PdfTextExtract.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.build/main.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/HazakuraImportAssist.product/Objects.LinkFileList"
+    },
+    "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt" : {
+      "alwaysOutOfDate" : true,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<swift-get-version>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+        }
+      ],
+      "outputFilePath" : "/Users/keisetsu/Projects/hazakura-editor/src-helpers/import-assist/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+    }
+  }
+}
