@@ -161,8 +161,8 @@ export function useAppMenuActionListener({
         case "theme-dark":
           setThemePreference("dark");
           break;
-        case "theme-sakura":
-          setThemePreference("sakura");
+        case "theme-edohigan":
+          setThemePreference("edohigan");
           break;
         case "theme-yakou":
           setThemePreference("yakou");

@@ -47,6 +47,7 @@ import {
   EditorView,
   ViewPlugin,
 } from "@codemirror/view";
+import { syntaxTree } from "@codemirror/language";
 import { refreshImagesEffect, lModeImageResolverPlugin } from "./imageWidget";
 import { lModeTaskClickPlugin } from "./taskWidget";
 import { lModeTableEditingPlugin } from "./tableEditing";
@@ -121,8 +122,18 @@ const lModeField = StateField.define<DecorationSet>({
     // Recompute when the doc changes, when the selection
     // changes (so Live Source lines follow the cursor),
     // when the L Mode context facet changes (different
-    // workspace / document path), or when an async image
-    // resolution lands (refreshImagesEffect).
+    // workspace / document path), when an async image
+    // resolution lands (refreshImagesEffect), or when the
+    // Lezer syntax tree advances.
+    //
+    // CodeMirror's language field only fully parses the first
+    // ~3000 characters on init; the rest arrives via later
+    // transactions that do not change the document or
+    // selection. L Mode decorations are derived from that tree
+    // (heading markers, tables, HR widgets, …), so without a
+    // tree-change trigger the mid-document "tags" stay missing
+    // until the next focus/selection recompute — matching the
+    // machine-dependent "focus fixes it" symptom on longer notes.
     const contextChanged =
       transaction.startState.facet(lModeContextFacet) !==
       transaction.state.facet(lModeContextFacet);
@@ -133,12 +144,15 @@ const lModeField = StateField.define<DecorationSet>({
       e.is(lModeFocusChangedEffect),
     );
     const selectionChanged = didSelectionChange(transaction);
+    const treeChanged =
+      syntaxTree(transaction.startState) !== syntaxTree(transaction.state);
     if (
       transaction.docChanged ||
       selectionChanged ||
       contextChanged ||
       refreshFired ||
-      focusChanged
+      focusChanged ||
+      treeChanged
     ) {
       const state = transaction.state;
       const editorFocused = state.field(lModeFocusField);
@@ -395,6 +409,8 @@ export const __test__ = {
   computeTypewriterScrollTop,
   didSelectionChange,
   lModeFocusChangedEffect,
+  /** Exposed so tests can read the live decoration set after parse progress. */
+  lModeField,
 };
 
 /**

@@ -43,6 +43,7 @@ or quality-polish slice.
 - `speculative-local-ai-future-plan.md`: v3.x-or-later local AI re-evaluation after book / review maturity.
 - `apple-local-assist-distribution-plan.md`: Hazakura Local Assist / App Store distribution planning memo.
 - `apple-local-assist-writing-companion-plan.md`: Hazakura Local Assist Writing Companion / external Assist Window UX direction.
+- `edohigan-theme-plan.md`: v1.6 江戸彼岸ジョークテーマの実装メモと残課題 (花びらシェーダー調整中)。
 
 ## Local-Only Internal Notes
 

@@ -142,14 +142,6 @@ describe("editor tab close affordance CSS", () => {
     expect(pointerHover).toMatch(/box-shadow:\s*var\(--shadow-sm\)/);
   });
 
-  it("keeps Sakura ambient particles restrained", () => {
-    const rule = ruleBody(appShellCss, ".ambient-sakura .ambient-particle");
-
-    expect(rule).toMatch(/border-radius:\s*50%/);
-    expect(rule).toMatch(/opacity:\s*0\.56/);
-    expect(rule).toMatch(/filter:\s*saturate\(0\.95\)/);
-  });
-
   it("keeps Shokou ambient particles as quiet shadow particles", () => {
     const rule = ruleBody(appShellCss, ".ambient-shokou .ambient-particle");
 
@@ -164,12 +156,11 @@ describe("editor tab close affordance CSS", () => {
   });
 
   it("keeps special theme app shell gradients visible behind native chrome", () => {
-    const sakuraShell = ruleBody(appShellCss, ':root[data-theme="sakura"] .app-shell');
+    // edohigan (v1.6: ジョークテーマへ格上げ) の .app-shell 背景は
+    // edohigan-theme.css へ移管したため、ここでは yakou / shokou のみ検証する。
     const yakouShell = ruleBody(appShellCss, ':root[data-theme="yakou"] .app-shell');
     const shokouShell = ruleBody(appShellCss, ':root[data-theme="shokou"] .app-shell');
 
-    expect(sakuraShell).toMatch(/background:\s*radial-gradient/);
-    expect(sakuraShell).toMatch(/linear-gradient\(145deg/);
     expect(yakouShell).toMatch(/background:\s*radial-gradient/);
     expect(yakouShell).toMatch(/circle at 0% 0%/);
     expect(yakouShell).toMatch(/rgba\(62,\s*119,\s*190,\s*0\.4\)/);
@@ -282,9 +273,9 @@ describe("editor tab close affordance CSS", () => {
       ".editor-document-path-bar:hover,\n.editor-document-path-bar:focus-visible",
     );
     const pathBarActive = ruleBody(workspaceCss, ".editor-document-path-bar:active");
-    const sakuraPathBar = ruleBody(
+    const edohiganPathBar = ruleBody(
       workspaceCss,
-      ':root[data-theme="sakura"] .editor-document-path-bar',
+      ':root[data-theme="edohigan"] .editor-document-path-bar',
     );
 
     expect(pathBar).toMatch(/background:\s*var\(--cm-bg\)/);
@@ -301,9 +292,9 @@ describe("editor tab close affordance CSS", () => {
     expect(pathBarActive).toMatch(/box-shadow:\s*none/);
     expect(pathBarActive).toMatch(/transform:\s*none/);
 
-    expect(sakuraPathBar).toMatch(/background:\s*linear-gradient/);
-    expect(sakuraPathBar).toMatch(/var\(--cm-bg\) 0%/);
-    expect(sakuraPathBar).toMatch(/var\(--accent-secondary\)/);
+    expect(edohiganPathBar).toMatch(/background:\s*linear-gradient/);
+    expect(edohiganPathBar).toMatch(/var\(--cm-bg\) 0%/);
+    expect(edohiganPathBar).toMatch(/var\(--accent-secondary\)/);
   });
 
   it("keeps the startup restore loading surface bound to editor theme tokens", () => {

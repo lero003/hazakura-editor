@@ -57,19 +57,19 @@ describe("apple-assist-window.css", () => {
     expect(css).not.toContain(".apple-assist-window-title");
   });
 
-  it("uses flat helper backgrounds for Sakura and Shokou instead of inheriting strong app-shell gradients", () => {
-    const sakuraShell = ruleBody(
+  it("uses flat helper backgrounds for Edohigan and Shokou instead of inheriting strong app-shell gradients", () => {
+    const edohiganShell = ruleBody(
       css,
-      ':root[data-theme="sakura"] .apple-assist-window-shell',
+      ':root[data-theme="edohigan"] .apple-assist-window-shell',
     );
     const shokouShell = ruleBody(
       css,
       ':root[data-theme="shokou"] .apple-assist-window-shell',
     );
 
-    expect(sakuraShell).toMatch(/background:\s*#faeef2/);
+    expect(edohiganShell).toMatch(/background:\s*#322438/);
     expect(shokouShell).toMatch(/background:\s*#eef5fb/);
-    expect(sakuraShell).not.toMatch(/gradient/);
+    expect(edohiganShell).not.toMatch(/gradient/);
     expect(shokouShell).not.toMatch(/gradient/);
   });
 

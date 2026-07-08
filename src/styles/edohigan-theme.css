@@ -1,0 +1,187 @@
+/* === edohigan-theme.css ===
+   江戸彼岸（静謐）— 薄暮の彼岸空。演出が透ける半透明 UI。
+   和紙固定は捨て、深海と同思想の「背景が見える surface」で最上級を取る。
+
+   構成:
+     1. パレット (薄暮インク + 桜アクセント)
+     2. .app-shell 背景
+     3. canvas / 前景オーバーレイ
+     4. 文字 (ごく弱いグロー)
+     5. 起動シーケンス
+     6. reduced-motion
+     7. (keyframes なし)
+*/
+
+/* 1. パレット */
+:root[data-theme="edohigan"] {
+  --bg: #2a2030;
+  /* 背景シェーダーを透かす (深海級の透過思想) */
+  --surface: rgba(42, 28, 40, 0.68);
+  --surface-rgb: 42, 28, 40;
+  --surface-strong: rgba(52, 34, 48, 0.72);
+  --surface-strong-rgb: 52, 34, 48;
+  --surface-muted: rgba(32, 22, 34, 0.7);
+  --border: #4a3548;
+  --border-strong: #6a4a62;
+  --text: #f2e4e8;
+  --text-muted: #b898a4;
+  --accent: #e8a0b0;
+  --accent-secondary: #c8b070;
+  --accent-gradient: linear-gradient(135deg, #e8a0b0 0%, #c8b070 50%, #a080b8 100%);
+  --accent-soft: #3a2838;
+  --accent-glass: rgba(232, 160, 176, 0.12);
+  --danger: #e08088;
+  --conflict: #d0a860;
+  --status-bg: #1a121c;
+  --status-text: #f2e4e8;
+  --selection-bg: rgba(232, 160, 176, 0.22);
+  --scrollbar-thumb: rgba(232, 160, 176, 0.18);
+  --scrollbar-thumb-hover: rgba(232, 160, 176, 0.32);
+
+  --diff-added-fg: #9dd4a8;
+  --diff-added-row-bg: color-mix(in srgb, var(--diff-added-fg) 16%, transparent);
+  --diff-removed-row-bg: color-mix(in srgb, var(--diff-removed-fg) 18%, transparent);
+  --diff-blank-row-bg: color-mix(in srgb, var(--text-muted) 10%, transparent);
+
+  --cm-bg: rgba(38, 26, 38, 0.58);
+  --cm-fg: #f2e4e8;
+  --cm-caret: #e8a0b0;
+  --cm-gutter-bg: rgba(28, 18, 30, 0.62);
+  --cm-gutter-border: #4a3548;
+  --cm-gutter-fg: #b898a4;
+  --cm-active-line-bg: rgba(232, 160, 176, 0.07);
+  --cm-active-gutter-bg: rgba(232, 160, 176, 0.09);
+  --cm-selection-bg: #5a3a50;
+  --cm-search-match-bg: rgba(208, 168, 96, 0.28);
+  --cm-search-match-active-bg: rgba(208, 168, 96, 0.55);
+  --cm-search-match-active-shadow: 0 0 0 1px #d0a860;
+  --cm-invisible-space: radial-gradient(circle, #886878 1px, transparent 1px);
+  --cm-invisible-tab: rgba(232, 160, 176, 0.12);
+  --cm-trailing-space: rgba(224, 128, 136, 0.28);
+  --cm-mark-heading: #f0b8c4;
+  --cm-mark-strong: #f2e4e8;
+  --cm-mark-link: #e8a0b0;
+  --cm-mark-monospace: #d8a0b8;
+  --cm-mark-quote: #b898a4;
+
+  --xterm-bg: #1a121c;
+  --xterm-fg: #f2e4e8;
+  --xterm-cursor: #e8a0b0;
+  --xterm-selection-bg: rgba(232, 160, 176, 0.28);
+  --xterm-black: #1a121c;
+  --xterm-red: #e0a0a8;
+  --xterm-green: #a0c8a8;
+  --xterm-yellow: #d8c080;
+  --xterm-blue: #b0a0d0;
+  --xterm-magenta: #d8a0b8;
+  --xterm-cyan: #c0a8b0;
+  --xterm-white: #e8d8dc;
+  --xterm-bright-black: #886878;
+  --xterm-bright-red: #f0b8c0;
+  --xterm-bright-green: #b8d8c0;
+  --xterm-bright-yellow: #e8d8a0;
+  --xterm-bright-blue: #c8b8e0;
+  --xterm-bright-magenta: #e8c0d0;
+  --xterm-bright-cyan: #d8c0c8;
+  --xterm-bright-white: #f8f0f2;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.2);
+  --shadow-accent: 0 4px 18px rgba(232, 160, 176, 0.2);
+}
+:root[data-theme="edohigan"] .preference-preview-badge {
+  letter-spacing: 0.08em;
+}
+
+/* 2. app-shell — 薄暮下地 */
+:root[data-theme="edohigan"] .app-shell {
+  background: #2a2030;
+}
+
+/* 3. canvas / overlay */
+.edohigan-canvas {
+  display: block;
+  height: 100%;
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+  width: 100%;
+  z-index: var(--z-base);
+}
+
+:root[data-theme="edohigan"] .app-shell:has(.edohigan-boot:not(.edohigan-boot-scatter))
+  .edohigan-canvas {
+  opacity: 0;
+}
+
+/* 前景: 薄いビネットのみ (screen 桃は廃止) */
+.edohigan-overlay {
+  background:
+    radial-gradient(
+      ellipse 100% 50% at 50% 0%,
+      rgba(232, 160, 176, 0.06) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse at center,
+      transparent 65%,
+      rgba(10, 6, 14, 0.35) 100%
+    );
+  inset: 0;
+  mix-blend-mode: normal;
+  pointer-events: none;
+  position: fixed;
+  z-index: var(--z-crt-top);
+}
+
+/* 4. 文字 — 深海級の静かなグローのみ */
+:root[data-theme="edohigan"] .cm-content {
+  text-shadow: 0 0 8px rgba(232, 160, 176, 0.12);
+}
+
+:root[data-theme="edohigan"] .markdown-preview :is(p, h1, h2, h3, h4, h5, h6, li, a) {
+  text-shadow: 0 0 8px rgba(232, 160, 176, 0.1);
+}
+
+:root[data-theme="edohigan"] .markdown-preview :is(code, pre) {
+  text-shadow: none;
+}
+
+:root[data-theme="edohigan"]
+  :is(.tabs-row, .file-tree-pane, .status-bar, .workspace-sidebar-rail)
+  :is(span, button, a, label, input, .tab-button, .tree-name, .status-bar-segment) {
+  text-shadow: none;
+}
+
+:root[data-theme="edohigan"] .tree-file:hover,
+:root[data-theme="edohigan"] .tree-directory-button:hover {
+  background: rgba(232, 160, 176, 0.08);
+}
+
+/* 5. 起動 */
+.edohigan-boot {
+  background: #1a121c;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: fixed;
+  z-index: calc(var(--z-crt-top) + 100);
+}
+
+.edohigan-boot-canvas {
+  display: block;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 1;
+}
+
+/* 6. reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .edohigan-canvas {
+    display: none;
+  }
+}

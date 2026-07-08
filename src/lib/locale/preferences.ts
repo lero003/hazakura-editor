@@ -33,7 +33,7 @@ export type PreferencesCopy = {
   menuLanguage: string;
   menuLanguageHint: string;
   previewPane: string;
-  sakura: string;
+  edohigan: string;
   yakou: string;
   shokou: string;
   crt: string;
@@ -81,10 +81,10 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
       closeDialog: "といをとぢる",
       menuLanguage: "ことば",
       previewPane: "したみのまど",
-      sakura: "さくら",
+      edohigan: "えどひがん（しじま）",
       yakou: "よるひかり",
       shokou: "あけぼのひかり",
-      crt: "しびえる",
+      crt: "しびれる",
       shinkai: "しんかい",
       settingsTitle: "おこのみ",
       showInvisibles: "みえぬもじをしめす",
@@ -97,7 +97,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
       ambientIntensitySubtle: "ほのか",
       ambientIntensityNormal: "つね",
       ambientIntensityDramatic: "あざやか",
-      ambientIntensityHint: "さくら / よるひかり / あけぼのひかり / しびれる / しんかい の いろあひ で つかへます。",
+      ambientIntensityHint: "えどひがん / よるひかり / あけぼのひかり / しびれる / しんかい の いろあひ で つかへます。",
       menuLanguageHint: "あぷり の ひょうじ げんご を きりかへ る。かなふみ は ひらがな ちゅうしん の やさしい ひょうき。",
       themeHint: (theme) => {
         if (theme === "light") {
@@ -106,8 +106,8 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         if (theme === "dark") {
           return "よるや ひくい しど むけの おちついた きほん いろあひ。";
         }
-        if (theme === "sakura") {
-          return "はるらしい あわい さくらいろ の きせつ いろあひ。";
+        if (theme === "edohigan") {
+          return "はるの ひがん の ような、しずかで じょうひんな かく ば。えんしゅつ は ひかえめ、けいさん は おもい じょうけ ん て ま す。";
         }
         if (theme === "yakou") {
           return "よるの よさめ むけ。ふかめの いろ と うごき の ある きせつ いろあひ。";
@@ -145,7 +145,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         menuLanguage: "メニュー言語",
         menuLanguageHint: "UI の表示言語を切り替えます。かなふみはひらがな中心のやさしい表記です。",
         previewPane: "プレビュー表示",
-        sakura: "桜",
+        edohigan: "江戸彼岸（静謐）",
         yakou: "夜光",
         shokou: "曙光",
         crt: "CRT（お遊び）",
@@ -161,7 +161,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         ambientIntensitySubtle: "控えめ",
         ambientIntensityNormal: "標準",
         ambientIntensityDramatic: "鮮やか",
-        ambientIntensityHint: "sakura / yakou / shokou / crt / shinkai テーマの時に有効です。",
+        ambientIntensityHint: "edohigan / yakou / shokou / crt / shinkai テーマの時に有効です。",
         themeHint: (theme) => {
           if (theme === "light") {
             return "日中や印刷向けの明るい基本テーマ。";
@@ -169,8 +169,8 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
           if (theme === "dark") {
             return "夜間や低照度向けの落ち着いた基本テーマ。";
           }
-          if (theme === "sakura") {
-            return "春らしい淡い桜色のアンビエントテーマ。";
+          if (theme === "edohigan") {
+            return "春の彼岸のような、静かで上質な執筆空間。演出は控えめですが、計算は重い冗談テーマです。";
           }
           if (theme === "yakou") {
             return "夜長向け。深めの配色と、動きのある演出のアンビエントテーマ。";
@@ -205,7 +205,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         menuLanguage: "Menu language",
         menuLanguageHint: "Switch the UI display language. Kana mode uses gentle hiragana-centered wording.",
         previewPane: "Preview pane",
-        sakura: "Sakura",
+        edohigan: "Edohigan (Quietude)",
         yakou: "Yakou",
         shokou: "Shokou",
         crt: "CRT (joke)",
@@ -221,7 +221,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         ambientIntensitySubtle: "Subtle",
         ambientIntensityNormal: "Normal",
         ambientIntensityDramatic: "Vivid",
-        ambientIntensityHint: "Applies when using sakura, yakou, shokou, crt, or shinkai themes.",
+        ambientIntensityHint: "Applies when using edohigan, yakou, shokou, crt, or shinkai themes.",
         themeHint: (theme) => {
           if (theme === "light") {
             return "Bright, neutral base theme for daytime and print.";
@@ -229,8 +229,8 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
           if (theme === "dark") {
             return "Calm, low-light base theme for nighttime use.";
           }
-          if (theme === "sakura") {
-            return "Soft cherry-blossom seasonal ambient theme.";
+          if (theme === "edohigan") {
+            return "A quiet, refined writing space like spring equinox light. Subtle ambience; a heavyweight joke theme.";
           }
           if (theme === "yakou") {
             return "Deeper palette with animated effects. Late-evening seasonal theme.";

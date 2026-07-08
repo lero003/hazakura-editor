@@ -107,89 +107,10 @@ html, body, #root, .app-shell,
   --shadow-accent: 0 4px 20px rgba(135, 203, 168, 0.15);
 }
 
-/* 桜 / Sakura – luminous cream-pink with vibrant rose-cherry accent */
-:root[data-theme="sakura"] {
-  --bg: linear-gradient(145deg, #fffaf6 0%, #f8eef2 48%, #edf5ea 100%);
-  --surface: #fffdfb;
-  --surface-rgb: 255, 250, 251;
-  --surface-strong: #fffefe;
-  --surface-strong-rgb: 255, 252, 253;
-  --surface-muted: #f5ebe7;
-  --border: #ead8d0;
-  --border-strong: #d8aca9;
-  --text: #322830;
-  --text-muted: #806878;
-  --accent: #a8415f;
-  --accent-secondary: #6f8f63;
-  --accent-gradient: linear-gradient(135deg, #a8415f 0%, #d78398 46%, #6f8f63 100%);
-  --accent-soft: #f6d8df;
-  --accent-glass: rgba(168, 65, 95, 0.08);
-  --danger: #b85056;
-  --conflict: #8d7040;
-  --status-bg: #32242a;
-  --status-text: #fff7f5;
-  --selection-bg: rgba(168, 65, 95, 0.12);
-  --scrollbar-thumb: rgba(128, 104, 120, 0.25);
-  --scrollbar-thumb-hover: rgba(128, 104, 120, 0.4);
-
-  /* CodeMirror 桜用配色 / CodeMirror Sakura Colors */
-  --cm-bg: #fffafb;
-  --cm-fg: #322830;
-  --cm-caret: #a8415f;
-  --cm-gutter-bg: #f8e8eb;
-  --cm-gutter-border: #ead4d9;
-  --cm-gutter-fg: #806878;
-  --cm-active-line-bg: rgba(168, 65, 95, 0.05);
-  --cm-active-gutter-bg: rgba(168, 65, 95, 0.05);
-  --cm-selection-bg: #d7aeb9;
-  --cm-search-match-bg: rgba(141, 112, 64, 0.22);
-  --cm-search-match-active-bg: rgba(141, 112, 64, 0.55);
-  --cm-search-match-active-shadow: 0 0 0 1px #8d7040;
-  --cm-invisible-space: radial-gradient(circle, #a89098 1px, transparent 1px);
-  --cm-invisible-tab: rgba(168, 65, 95, 0.12);
-  --cm-trailing-space: rgba(184, 80, 86, 0.22);
-  --cm-mark-heading: #751e34;
-  --cm-mark-strong: #322830;
-  --cm-mark-link: #933a4a;
-  --cm-mark-monospace: #751e34;
-  --cm-mark-quote: #806878;
-
-  /* xterm 用配色 / xterm Sakura Colors */
-  --xterm-bg: #32242a;
-  --xterm-fg: #f0e6e8;
-  --xterm-cursor: #a8415f;
-  --xterm-selection-bg: rgba(168, 65, 95, 0.25);
-  --xterm-black: #322830;
-  --xterm-red: #d68288;
-  --xterm-green: #a3c495;
-  --xterm-yellow: #c9ab60;
-  --xterm-blue: #b89fd6;
-  --xterm-magenta: #d9a9c0;
-  --xterm-cyan: #c4a2b2;
-  --xterm-white: #ead4d9;
-  --xterm-bright-black: #806878;
-  --xterm-bright-red: #f2aab0;
-  --xterm-bright-green: #c9dbba;
-  --xterm-bright-yellow: #ead3a0;
-  --xterm-bright-blue: #d4beee;
-  --xterm-bright-magenta: #eac2d5;
-  --xterm-bright-cyan: #ddbcc9;
-  --xterm-bright-white: #fff7f5;
-
-  --shadow-sm: 0 1px 2px rgba(110, 54, 72, 0.08);
-  --shadow-md: 0 4px 12px rgba(110, 54, 72, 0.1), 0 1px 3px rgba(110, 54, 72, 0.06);
-  --shadow-lg: 0 12px 32px rgba(110, 54, 72, 0.16), 0 2px 8px rgba(110, 54, 72, 0.08);
-  --shadow-accent: 0 4px 20px rgba(168, 65, 95, 0.12);
-}
-
-/* 桜テーマ固有の微調整 / Sakura theme fine-tunes
-   preference-preview-badge は font-size
-   10px + uppercase で文字が詰まり気味。sakura の暖色背景上で
-   呼吸を確保するため letter-spacing だけ広げる。repo の既存 CSS
-   は基本 flat selector なので nested ではなくここで並べる。 */
-:root[data-theme="sakura"] .preference-preview-badge {
-  letter-spacing: 0.08em;
-}
+/* 江戸彼岸 (Edohigan) のパレット定義は edohigan-theme.css へ移管。
+   v1.6 でジョークテーマ（shinkai/crt と同列の WebGL 演出）へ
+   スクラップ&ビルドしたため、半透明 surface 設計を必要とし、
+   themes.css の不透明ベース定義ではなく専用ファイルで一元管理する。 */
 
 /* 夜光 / Yakou – deep cosmic indigo with luminous purple-teal accent */
 :root[data-theme="yakou"] {

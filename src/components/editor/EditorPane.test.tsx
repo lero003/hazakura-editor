@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { readFileSync } from "node:fs";
 import { createRef } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { EditorView } from "@codemirror/view";
 import {
   getEditorWrappingExtensions,
   isScrollerPointerOnScrollbar,
@@ -851,5 +852,95 @@ describe("EditorPane", () => {
     expect(onChange).not.toHaveBeenCalledWith(
       "![](assets/figure.png)\nalpha\nbeta\n",
     );
+  });
+
+  it("pins ResizeObserver-driven remeasure for preview/split width changes", () => {
+    // Source pin so a future refactor cannot drop the width-change
+    // remeasure path without failing a test. Runtime coverage is in
+    // the ResizeObserver mock test below.
+    expect(editorPaneSource).toMatch(/new ResizeObserver/);
+    expect(editorPaneSource).toMatch(/requestMeasure/);
+    expect(editorPaneSource).toMatch(/lastObservedWidth/);
+  });
+
+  it("requests a measure when the editor mount width changes after the baseline", async () => {
+    type ResizeCallback = (entries: ResizeObserverEntry[]) => void;
+    const observers: Array<{
+      callback: ResizeCallback;
+      targets: Element[];
+    }> = [];
+    const OriginalResizeObserver = globalThis.ResizeObserver;
+
+    class MockResizeObserver {
+      callback: ResizeCallback;
+      targets: Element[] = [];
+      constructor(callback: ResizeCallback) {
+        this.callback = callback;
+        observers.push(this);
+      }
+      observe(target: Element) {
+        this.targets.push(target);
+      }
+      unobserve() {}
+      disconnect() {
+        this.targets = [];
+      }
+    }
+
+    globalThis.ResizeObserver =
+      MockResizeObserver as unknown as typeof ResizeObserver;
+
+    try {
+      const { container, unmount } = render(
+        renderEditorPane({
+          value: "# Note\n\n" + "long line ".repeat(40) + "\n",
+        }),
+      );
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(observers.length).toBeGreaterThan(0);
+      const observer = observers[observers.length - 1];
+      expect(observer.targets.some((t) => t.classList.contains("editor-mount"))).toBe(
+        true,
+      );
+
+      // Baseline observation — must not remeasure yet.
+      observer.callback([
+        {
+          contentRect: { width: 800, height: 400 } as DOMRectReadOnly,
+        } as ResizeObserverEntry,
+      ]);
+
+      const scroller = container.querySelector(".cm-scroller");
+      expect(scroller).not.toBeNull();
+      const viewDom = container.querySelector(".cm-editor");
+      expect(viewDom).not.toBeNull();
+
+      // Spy requestMeasure on EditorView so a width shrink (preview
+      // open) is observable without reading private CM fields.
+      const requestMeasureSpy = vi.spyOn(
+        EditorView.prototype,
+        "requestMeasure",
+      );
+
+      // Preview-open style width shrink.
+      observer.callback([
+        {
+          contentRect: { width: 420, height: 400 } as DOMRectReadOnly,
+        } as ResizeObserverEntry,
+      ]);
+
+      await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(requestMeasureSpy).toHaveBeenCalled();
+      requestMeasureSpy.mockRestore();
+
+      unmount();
+      // After unmount the observer should be disconnected (no targets).
+      expect(observer.targets).toHaveLength(0);
+    } finally {
+      globalThis.ResizeObserver = OriginalResizeObserver;
+    }
   });
 });

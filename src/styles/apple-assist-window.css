@@ -28,8 +28,8 @@
   overflow-y: auto;
 }
 
-:root[data-theme="sakura"] .apple-assist-window-shell {
-  background: #faeef2;
+:root[data-theme="edohigan"] .apple-assist-window-shell {
+  background: #322438;
 }
 
 :root[data-theme="shokou"] .apple-assist-window-shell {

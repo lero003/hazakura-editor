@@ -30,13 +30,13 @@ import {
   rectangularSelection,
   crosshairCursor,
 } from "@codemirror/view";
-import { basicSetup } from "codemirror";
 import { SlashMenu, type SlashMenuCopy } from "./SlashMenu";
 import { useSlashMenu } from "../../hooks/editor/useSlashMenu";
 import {
   pickEditorLanguage,
   type EditorLanguageKind,
 } from "../../features/editor/codeMirrorTheme";
+import { editorBaseSetup } from "../../features/editor/editorBaseSetup";
 import {
   clampEditorViewState,
   type EditorViewState,
@@ -258,9 +258,11 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   // test breaks.
   const mountedKindRef = useRef<EditorLanguageKind | null>(null);
   const mountedEditorSessionKeyRef = useRef<string | null>(null);
-  // L Mode ON/OFF の変化で再マウントを駆動する。CodeMirror 6.43.3/6.43.4 で
-  // 入った tile tree（行仮想化・描画範囲計算の中核）破損問題を回避するため、
-  // L Mode 切替時は EditorView を作り直して tile tree を新規構築する。
+  // L Mode ON/OFF の変化で再マウントを駆動する。CodeMirror 6.43.3+ で
+  // 入った tile tree（行仮想化・描画範囲計算の中核）破損問題への二重防御。
+  // 通常 edit での入力・選択中の破損は @codemirror/view を 6.43.2 に
+  // pin して根を止める（package.json overrides）。L Mode 切替は重い
+  // decoration 差し替え経路なので、pin 後も remount を維持する。
   // 詳細は docs/current-work.md の当該事象記録を参照。
   const mountedLModeEnabledRef = useRef<boolean | null>(null);
 
@@ -470,15 +472,13 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     // editing.
     //
     // For `.md` (kind stays `markdown`), we ALSO re-mount on L Mode toggle.
-    // CodeMirror 6.43.3/6.43.4 introduced content DOM update / tile tree
-    // fixes that corrupt the tile tree (行仮想化・描画範囲計算) when L Mode's
-    // heavy block/replace decoration set is swapped via Compartment
-    // reconfigure, which manifests as "特定行より下が描画されない" and, under
-    // repeated toggles, a hard webview hang. Re-creating the EditorView
-    // rebuilds the tile tree from scratch and avoids the corruption. The
-    // cursor position and scroll ratio are preserved across the remount
-    // (see `preservedViewState` below), so the visible trade-off is only
-    // that undo history resets on each L Mode toggle.
+    // Even with @codemirror/view pinned to 6.43.2 (see package.json),
+    // swapping L Mode's heavy decoration set via Compartment reconfigure
+    // remains a high-risk path for tile-tree corruption
+    // ("特定行より下が描画されない" / wrong caret / lines vanishing on type).
+    // Re-creating the EditorView rebuilds the tile tree from scratch.
+    // Cursor and scroll ratio are preserved (see `preservedViewState`);
+    // the visible trade-off is that undo history resets on each toggle.
     const shouldRemount =
       mountedKindRef.current === null ||
       mountedEditorSessionKeyRef.current !== editorSessionKey ||
@@ -538,7 +538,8 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
           }
         : undefined,
       extensions: [
-        basicSetup,
+        // Writing-surface base (no foldGutter — see editorBaseSetup.ts).
+        editorBaseSetup,
         rectangularSelection(),
         crosshairCursor(),
         editorKeyboardShortcuts,
@@ -696,6 +697,49 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
 
     view.scrollDOM.addEventListener("mousedown", handleScrollerMouseDown);
     view.scrollDOM.addEventListener("scroll", handleScroll, { passive: true });
+
+    // Preview open/close and workspace splits change the editor
+    // width without a document transaction. With line wrapping on
+    // (default), that invalidates estimated line heights. If the
+    // height map does not fully remeasure, mid-document tiles can
+    // stay blank ("途中から行が消える") while the doc and preview
+    // remain intact. Observe the mount box and remeasure on real
+    // width changes.
+    const mountEl = editorMountRef.current;
+    let lastObservedWidth = -1;
+    let resizeMeasureFrame: number | null = null;
+    const scheduleResizeRemeasure = () => {
+      if (resizeMeasureFrame !== null) {
+        return;
+      }
+      const win = view.dom.ownerDocument.defaultView ?? window;
+      resizeMeasureFrame = win.requestAnimationFrame(() => {
+        resizeMeasureFrame = null;
+        if (viewRef.current !== view) {
+          return;
+        }
+        view.requestMeasure();
+      });
+    };
+    const resizeObserver =
+      typeof ResizeObserver !== "undefined" && mountEl
+        ? new ResizeObserver((entries) => {
+            const width = entries[0]?.contentRect.width ?? 0;
+            if (lastObservedWidth < 0) {
+              // First callback: record baseline. CodeMirror already
+              // measures on mount; avoid a redundant pass.
+              lastObservedWidth = width;
+              return;
+            }
+            if (Math.abs(width - lastObservedWidth) < 1) {
+              return;
+            }
+            lastObservedWidth = width;
+            scheduleResizeRemeasure();
+          })
+        : null;
+    resizeObserver?.observe(mountEl);
+
     destroyMountedViewRef.current = () => {
       if (jumpScrollReportFrameRef.current !== null) {
         const win = view.dom.ownerDocument.defaultView ?? window;
@@ -712,6 +756,12 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         win.cancelAnimationFrame(scrollReportFrameRef.current);
         scrollReportFrameRef.current = null;
       }
+      if (resizeMeasureFrame !== null) {
+        const win = view.dom.ownerDocument.defaultView ?? window;
+        win.cancelAnimationFrame(resizeMeasureFrame);
+        resizeMeasureFrame = null;
+      }
+      resizeObserver?.disconnect();
       if (scrollbarMouseUpHandlerRef.current !== null) {
         const win = view.dom.ownerDocument.defaultView ?? window;
         win.removeEventListener("mouseup", scrollbarMouseUpHandlerRef.current, {
@@ -826,6 +876,9 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         getEditorWrappingExtensions(wrapLines, lModeEnabled),
       ),
     });
+    // Wrapping changes the height of every long line; force a
+    // measure so the height map does not keep pre-wrap estimates.
+    view.requestMeasure();
   }, [wrapLines, lModeEnabled]);
 
   useEffect(() => {

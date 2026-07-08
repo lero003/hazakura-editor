@@ -32,7 +32,7 @@ fn app_menu_event_emits_all_theme_actions() {
     for theme in [
         "MENU_THEME_LIGHT",
         "MENU_THEME_DARK",
-        "MENU_THEME_SAKURA",
+        "MENU_THEME_EDOHIGAN",
         "MENU_THEME_YAKOU",
         "MENU_THEME_SHOKOU",
         "MENU_THEME_CRT",

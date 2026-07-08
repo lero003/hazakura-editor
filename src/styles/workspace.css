@@ -71,9 +71,10 @@
   --native-shell-border: color-mix(in srgb, var(--border) 40%, transparent);
 }
 
-:root[data-theme="sakura"] {
-  --native-shell-tint: rgba(248, 230, 236, 0.26);
-  --native-shell-border: color-mix(in srgb, var(--accent) 16%, transparent);
+:root[data-theme="edohigan"] {
+  /* 薄暮: 背景の春風シェーダーを透かす (深海と同思想) */
+  --native-shell-tint: rgba(42, 28, 40, 0.55);
+  --native-shell-border: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 :root[data-theme="yakou"] {
@@ -106,7 +107,7 @@
   border-right-color: var(--native-shell-border);
 }
 
-:root[data-theme="sakura"] .file-tree-pane {
+:root[data-theme="edohigan"] .file-tree-pane {
   background: var(--native-shell-tint);
   border-right-color: var(--native-shell-border);
 }
@@ -131,7 +132,7 @@
   border-bottom-color: var(--native-shell-border);
 }
 
-:root[data-theme="sakura"] .tabs-row {
+:root[data-theme="edohigan"] .tabs-row {
   background: var(--native-shell-tint);
   border-bottom-color: var(--native-shell-border);
 }
@@ -171,7 +172,7 @@
   border-right-color: var(--native-shell-border);
 }
 
-:root[data-theme="sakura"] .workspace-sidebar-rail {
+:root[data-theme="edohigan"] .workspace-sidebar-rail {
   background: var(--native-shell-tint);
   border-right-color: var(--native-shell-border);
 }
@@ -479,7 +480,7 @@
   border-radius: var(--radius-sm);
 }
 
-:root[data-theme="sakura"] .tree-file.active {
+:root[data-theme="edohigan"] .tree-file.active {
   background: linear-gradient(
     90deg,
     color-mix(in srgb, var(--accent-soft) 72%, var(--surface-strong)) 0%,
@@ -721,7 +722,7 @@
   transform: none;
 }
 
-:root[data-theme="sakura"] .editor-document-path-bar {
+:root[data-theme="edohigan"] .editor-document-path-bar {
   background: linear-gradient(
     90deg,
     var(--cm-bg) 0%,
@@ -1365,11 +1366,11 @@
   background: var(--surface-muted);
 }
 
-:root[data-theme="sakura"] .preview-pane-card {
+:root[data-theme="edohigan"] .preview-pane-card {
   background: linear-gradient(
     145deg,
-    color-mix(in srgb, var(--surface-muted) 72%, var(--accent-soft)) 0%,
-    color-mix(in srgb, var(--surface-strong) 86%, var(--accent-secondary)) 100%
+    rgba(42, 28, 40, 0.72) 0%,
+    rgba(52, 34, 48, 0.78) 100%
   );
 }
 

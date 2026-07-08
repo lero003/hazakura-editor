@@ -123,14 +123,14 @@ describe("SettingsPreferencesPane", () => {
         onPreviewVisibleChange={vi.fn()}
         onThemePreferenceChange={vi.fn()}
         previewVisible={true}
-        themePreference="sakura"
+        themePreference="edohigan"
       />,
     );
 
     // testid は実装側に明示的に埋められているのでクラス名より安定だが、
     // screen.getByTestId を使うことでクエリも簡潔にする。
     const hint = screen.getByTestId("theme-hint");
-    expect(hint.textContent).toBe(copy.themeHint("sakura"));
+    expect(hint.textContent).toBe(copy.themeHint("edohigan"));
   });
 
   it("renders theme select for all three languages", () => {

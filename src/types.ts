@@ -80,7 +80,7 @@ export type BaseTheme = "light" | "dark";
 
 export type ThemePreference =
   | BaseTheme
-  | "sakura"
+  | "edohigan"
   | "yakou"
   | "shokou"
   | "crt"
@@ -88,7 +88,7 @@ export type ThemePreference =
 
 export type ResolvedTheme =
   | BaseTheme
-  | "sakura"
+  | "edohigan"
   | "yakou"
   | "shokou"
   | "crt"

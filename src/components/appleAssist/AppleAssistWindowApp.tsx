@@ -187,7 +187,11 @@ function readInitialTheme(): ThemePreference {
     return "dark";
   }
   const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-  return (stored as ThemePreference) ?? "dark";
+  // migrate: v1.5 "sakura" → v1.6 "edohigan" (メイン窓の readStoredThemePreference
+  // と同じ読み取り時変換)。メイン窓の effect が localStorage を上書きするまでの
+  // 過渡期に、分離窓でも正しいテーマが適用されるようにする。
+  const migrated = stored === "sakura" ? "edohigan" : stored;
+  return (migrated as ThemePreference) ?? "dark";
 }
 
 function readInitialMenuLanguage(): MenuLanguage {

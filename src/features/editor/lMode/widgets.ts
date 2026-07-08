@@ -19,15 +19,25 @@ import { LModeClasses } from "./classes";
  * Renders a single thin divider line; the line keeps its
  * own height (driven by the editor's line-height) so the
  * rule sits with comfortable whitespace above and below.
+ *
+ * Uses an inline `<span>` (not a block `<div>`) so the
+ * CodeMirror height map treats the replacement as an
+ * ordinary inline widget. Block-level DOM inside an inline
+ * replace decoration can desync estimated vs measured
+ * heights, especially in line-wrapped Japanese prose.
  * Exported for tests that verify the right widget is
  * attached to the right range.
  */
 export class LModeHorizontalRuleWidget extends WidgetType {
   toDOM(): HTMLElement {
-    const el = document.createElement("div");
+    const el = document.createElement("span");
     el.className = LModeClasses.hr;
     el.setAttribute("aria-hidden", "true");
     return el;
+  }
+
+  eq(other: LModeHorizontalRuleWidget): boolean {
+    return other instanceof LModeHorizontalRuleWidget;
   }
 }
 
@@ -44,6 +54,10 @@ export class LModeTableDelimiterWidget extends WidgetType {
     el.setAttribute("aria-hidden", "true");
     return el;
   }
+
+  eq(other: LModeTableDelimiterWidget): boolean {
+    return other instanceof LModeTableDelimiterWidget;
+  }
 }
 
 /**
@@ -57,5 +71,9 @@ export class LModeTableCellBreakWidget extends WidgetType {
     const el = document.createElement("br");
     el.setAttribute("aria-hidden", "true");
     return el;
+  }
+
+  eq(other: LModeTableCellBreakWidget): boolean {
+    return other instanceof LModeTableCellBreakWidget;
   }
 }

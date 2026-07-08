@@ -31,7 +31,7 @@ pub(crate) const APPLE_ASSIST_WINDOW_MIN_HEIGHT: f64 = 540.0;
 struct ThemeBackgroundColors {
     dark: String,
     light: String,
-    sakura: String,
+    edohigan: String,
     shokou: String,
     yakou: String,
     crt: String,
@@ -61,7 +61,7 @@ pub(crate) fn agent_window_background_color(theme: &str) -> Color {
     let palette = theme_background_colors();
     let hex = match theme {
         "dark" => &palette.dark,
-        "sakura" => &palette.sakura,
+        "edohigan" => &palette.edohigan,
         "yakou" => &palette.yakou,
         "shokou" => &palette.shokou,
         "crt" => &palette.crt,

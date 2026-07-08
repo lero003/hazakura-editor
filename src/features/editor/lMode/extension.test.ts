@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import { EditorState, StateEffect } from "@codemirror/state";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
+import {
+  forceParsing,
+  syntaxTree,
+} from "@codemirror/language";
 import { EditorView, type DecorationSet } from "@codemirror/view";
 import {
   __test__ as lModeExtensionInternals,
@@ -1554,6 +1558,150 @@ describe("v0.14 recompute trigger", () => {
 
     view.destroy();
     parent.remove();
+  });
+});
+
+// --- Syntax-tree recompute ---
+//
+// LanguageState only fully parses the first ~3000 characters on
+// init. L Mode decorations walk that tree, so content past the
+// frontier stays undecorated until something triggers a field
+// recompute. Focus used to be the accidental fix; the field now
+// recomputes when the tree identity advances.
+
+describe("syntax-tree recompute trigger", () => {
+  function buildLongFixturePastInitViewport(): string {
+    // Keep the body plain prose so the late heading / table are
+    // the only structural nodes past the init parse frontier.
+    const padLine =
+      "これは初期パース範囲を超えるための埋め草です。マーカーは置きません。\n";
+    let pad = "";
+    while (pad.length < 3200) {
+      pad += padLine;
+    }
+    return (
+      pad +
+      "\n## Late heading for tree sync\n\n" +
+      "| 列A | 列B |\n" +
+      "| --- | --- |\n" +
+      "| 値1 | 値2 |\n\n" +
+      "---\n\n" +
+      "trailing prose\n"
+    );
+  }
+
+  function decorationCount(set: DecorationSet, docLength: number): number {
+    let count = 0;
+    set.between(0, docLength, () => {
+      count += 1;
+    });
+    return count;
+  }
+
+  it("leaves content past the init viewport undecorated until the tree catches up", () => {
+    // Pure-state check: without an EditorView parse worker, the
+    // language field stays at the init frontier and late structure
+    // must not yet carry L Mode line classes.
+    const source = buildLongFixturePastInitViewport();
+    const state = makeState(source, 0);
+    const tree = syntaxTree(state);
+    expect(state.doc.length).toBeGreaterThan(3000);
+    expect(tree.length).toBeLessThan(state.doc.length);
+
+    const lateHeadingFrom = state.doc.lineAt(
+      source.indexOf("## Late heading for tree sync"),
+    ).from;
+    const set = computeLModeDecorations(state);
+    expect(hasLineClass(set, lateHeadingFrom, "cm-lmode-heading-2")).toBe(
+      false,
+    );
+  });
+
+  it("recomputes L Mode decorations when forceParsing advances the tree without focus or selection changes", () => {
+    const source = buildLongFixturePastInitViewport();
+    const lateHeadingIndex = source.indexOf("## Late heading for tree sync");
+    const hrIndex = source.lastIndexOf("\n---\n");
+    const parent = document.createElement("div");
+    document.body.append(parent);
+
+    const view = new EditorView({
+      parent,
+      state: EditorState.create({
+        doc: source,
+        extensions: [
+          markdown({ base: markdownLanguage }),
+          lModeExtension(true, { workspaceRoot: null, documentPath: null }),
+        ],
+        // Keep the caret at the start so no selection-driven
+        // recompute can accidentally cover for a missing tree trigger.
+        selection: { anchor: 0 },
+      }),
+    });
+
+    const initialTreeLen = syntaxTree(view.state).length;
+    expect(view.state.doc.length).toBeGreaterThan(3000);
+    expect(initialTreeLen).toBeLessThan(view.state.doc.length);
+
+    const initialSet = view.state.field(lModeExtensionInternals.lModeField);
+    const lateHeadingFrom = view.state.doc.lineAt(lateHeadingIndex).from;
+    const initialHadLateHeading = hasLineClass(
+      initialSet,
+      lateHeadingFrom,
+      "cm-lmode-heading-2",
+    );
+    const initialCount = decorationCount(initialSet, view.state.doc.length);
+
+    // Advance the language tree only. No selection, focus, or
+    // document rewrite — this is the transaction class that used
+    // to leave L Mode decorations stuck on the partial tree.
+    const finished = forceParsing(view, view.state.doc.length, 5000);
+    expect(finished).toBe(true);
+    expect(syntaxTree(view.state).length).toBeGreaterThanOrEqual(
+      view.state.doc.length,
+    );
+    expect(syntaxTree(view.state).length).toBeGreaterThan(initialTreeLen);
+
+    const updatedSet = view.state.field(lModeExtensionInternals.lModeField);
+    const updatedCount = decorationCount(updatedSet, view.state.doc.length);
+
+    expect(hasLineClass(updatedSet, lateHeadingFrom, "cm-lmode-heading-2")).toBe(
+      true,
+    );
+    // Table row past the frontier should pick up structural classes too.
+    const tableRowFrom = view.state.doc.lineAt(source.indexOf("| 値1 |")).from;
+    expect(hasLineClass(updatedSet, tableRowFrom, "cm-lmode-table-row")).toBe(
+      true,
+    );
+    // HR replace widget past the frontier.
+    expect(
+      hasReplaceWithWidget(
+        updatedSet,
+        hrIndex + 1,
+        hrIndex + 4,
+        LModeHorizontalRuleWidget,
+      ),
+    ).toBe(true);
+
+    // Either the late heading was missing initially (typical), or
+    // a faster environment already painted it — but after parse
+    // progress the decoration set must not shrink, and the late
+    // structure must be present.
+    if (!initialHadLateHeading) {
+      expect(updatedCount).toBeGreaterThan(initialCount);
+    } else {
+      expect(updatedCount).toBeGreaterThanOrEqual(initialCount);
+    }
+
+    view.destroy();
+    parent.remove();
+  });
+
+  it("renders the HR widget as an inline span", () => {
+    const widget = new LModeHorizontalRuleWidget();
+    const el = widget.toDOM();
+    expect(el.tagName.toLowerCase()).toBe("span");
+    expect(el.className).toContain("cm-lmode-hr");
+    expect(widget.eq(new LModeHorizontalRuleWidget())).toBe(true);
   });
 });
 
