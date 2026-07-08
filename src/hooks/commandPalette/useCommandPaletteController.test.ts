@@ -17,6 +17,7 @@ describe("useCommandPaletteController", () => {
         actions: {
           applyActiveMarkdownFormat: vi.fn(),
           createNewFile: vi.fn(),
+          importSourceAsMarkdownDraft: vi.fn(),
           exportEpubBeta: vi.fn(),
           exportHtml: vi.fn(),
           exportPdf: vi.fn(),
@@ -91,6 +92,7 @@ describe("useCommandPaletteController", () => {
         actions: {
           applyActiveMarkdownFormat: vi.fn(),
           createNewFile: vi.fn(),
+          importSourceAsMarkdownDraft: vi.fn(),
           exportEpubBeta: vi.fn(),
           exportHtml: vi.fn(),
           exportPdf: vi.fn(),
@@ -170,6 +172,7 @@ describe("useCommandPaletteController", () => {
         actions: {
           applyActiveMarkdownFormat: vi.fn(),
           createNewFile: vi.fn(),
+          importSourceAsMarkdownDraft: vi.fn(),
           exportEpubBeta: vi.fn(),
           exportHtml: vi.fn(),
           exportPdf: vi.fn(),
@@ -232,6 +235,7 @@ describe("useCommandPaletteController", () => {
         actions: {
           applyActiveMarkdownFormat: vi.fn(),
           createNewFile: vi.fn(),
+          importSourceAsMarkdownDraft: vi.fn(),
           exportEpubBeta,
           exportHtml: vi.fn(),
           exportPdf: vi.fn(),
@@ -293,6 +297,7 @@ describe("useCommandPaletteController", () => {
         actions: {
           applyActiveMarkdownFormat: vi.fn(),
           createNewFile: vi.fn(),
+          importSourceAsMarkdownDraft: vi.fn(),
           exportEpubBeta: vi.fn(),
           exportHtml: vi.fn(),
           exportPdf: vi.fn(),
@@ -352,6 +357,7 @@ describe("useCommandPaletteController", () => {
         actions: {
           applyActiveMarkdownFormat: vi.fn(),
           createNewFile: vi.fn(),
+          importSourceAsMarkdownDraft: vi.fn(),
           exportEpubBeta: vi.fn(),
           exportHtml: vi.fn(),
           exportPdf: vi.fn(),
@@ -427,6 +433,7 @@ describe("useCommandPaletteController", () => {
         actions: {
           applyActiveMarkdownFormat: vi.fn(),
           createNewFile: vi.fn(),
+          importSourceAsMarkdownDraft: vi.fn(),
           exportEpubBeta: vi.fn(),
           exportHtml: vi.fn(),
           exportPdf: vi.fn(),
@@ -486,6 +493,7 @@ describe("useCommandPaletteController", () => {
         actions: {
           applyActiveMarkdownFormat: vi.fn(),
           createNewFile: vi.fn(),
+          importSourceAsMarkdownDraft: vi.fn(),
           exportEpubBeta: vi.fn(),
           exportHtml: vi.fn(),
           exportPdf: vi.fn(),
@@ -570,6 +578,7 @@ describe("useCommandPaletteController", () => {
         actions: {
           applyActiveMarkdownFormat: vi.fn(),
           createNewFile: vi.fn(),
+          importSourceAsMarkdownDraft: vi.fn(),
           exportEpubBeta: vi.fn(),
           exportHtml: vi.fn(),
           exportPdf: vi.fn(),
@@ -653,6 +662,7 @@ describe("useCommandPaletteController", () => {
         actions: {
           applyActiveMarkdownFormat: vi.fn(),
           createNewFile: vi.fn(),
+          importSourceAsMarkdownDraft: vi.fn(),
           exportEpubBeta: vi.fn(),
           exportHtml: vi.fn(),
           exportPdf: vi.fn(),
@@ -767,6 +777,7 @@ describe("useCommandPaletteController", () => {
         actions: {
           applyActiveMarkdownFormat: vi.fn(),
           createNewFile: vi.fn(),
+          importSourceAsMarkdownDraft: vi.fn(),
           exportEpubBeta: vi.fn(),
           exportHtml: vi.fn(),
           exportPdf: vi.fn(),

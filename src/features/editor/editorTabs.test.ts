@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { EditorTab } from "../../types";
 import {
   createEditorTab,
+  createUntitledImportDraftTab,
   isDirty,
   isSaveFailureError,
   replaceTabBufferForReview,
@@ -66,6 +67,20 @@ describe("isDirty", () => {
         }),
       ),
     ).toBe(true);
+  });
+});
+
+describe("createUntitledImportDraftTab", () => {
+  it("opens a dirty unsaved tab with import contents", () => {
+    const tab = createUntitledImportDraftTab(
+      "scan-import.md",
+      "# Draft\n\nbody\n",
+    );
+    expect(tab.path).toBe("");
+    expect(tab.name).toBe("scan-import.md");
+    expect(tab.contents).toBe("# Draft\n\nbody\n");
+    expect(tab.lastSavedContents).toBe("");
+    expect(isDirty(tab)).toBe(true);
   });
 });
 

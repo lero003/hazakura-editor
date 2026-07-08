@@ -527,6 +527,7 @@ export function useAppShellController() {
     createFile,
     createFolder,
     createNewFile,
+    importSourceAsMarkdownDraft,
     loadWorkspaceDirectory,
     moveWorkspacePath,
     openExternalFilePaths,
@@ -1153,6 +1154,7 @@ export function useAppShellController() {
       exportPdf,
       focusAdjacentTab,
       handleSendSelectionToAgent,
+      importSourceAsMarkdownDraft,
       insertTable,
       openAgentWindow: (theme) => {
         void openAgentWindow(theme);
