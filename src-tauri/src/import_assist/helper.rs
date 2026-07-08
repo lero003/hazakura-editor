@@ -13,7 +13,9 @@ use std::time::Duration;
 
 use super::draft::{assemble_import_markdown_draft, ImportPageText};
 use super::path::validate_import_source_path;
-use super::pdf_text::extract_pdf_text_layer;
+use super::pdf_text::{
+    extract_pdf_text_layer, pages_have_meaningful_text, prefer_better_pages,
+};
 
 const HELPER_TIMEOUT: Duration = Duration::from_secs(120);
 
@@ -98,23 +100,55 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
         .unwrap_or("")
         .to_ascii_lowercase();
 
-    // Text-layer PDFs: extract in-process first (pdf-extract). No Swift
-    // helper required — this is the main path for "text layer がある PDF".
     if ext == "pdf" {
-        if let Some(pages) = extract_pdf_text_layer(path)? {
-            let page_count = pages.len();
-            let markdown = assemble_import_markdown_draft(&source_name, &pages);
-            return Ok(ImportDraftResult {
-                markdown,
-                source_name,
-                page_count,
-                used_ocr: false,
-                fixture: false,
-            });
+        // Prefer PDFKit (live helper) for Japanese text-layer quality.
+        // pdf-extract is fallback only — it often drops CJK and collapses pages.
+        let mut best: Option<Vec<ImportPageText>> = None;
+
+        match try_pdfkit_text_pages(path_str.as_ref()) {
+            Ok(Some(pages)) if pages_have_meaningful_text(&pages) => {
+                best = Some(pages);
+            }
+            Ok(_) => {}
+            Err(err) => {
+                // Keep going to pure-Rust fallback; surface only if both fail.
+                let _ = err;
+            }
         }
+
+        match extract_pdf_text_layer(path) {
+            Ok(Some(pages)) => {
+                best = Some(match best.take() {
+                    Some(existing) => prefer_better_pages(existing, pages),
+                    None => pages,
+                });
+            }
+            Ok(None) => {}
+            Err(err) => {
+                if best.is_none() {
+                    return Err(err);
+                }
+            }
+        }
+
+        let Some(pages) = best else {
+            return Err(
+                "PDF has no extractable text layer. Scanned-page OCR is not wired in this MVP slice yet."
+                    .into(),
+            );
+        };
+        let page_count = pages.len();
+        let markdown = assemble_import_markdown_draft(&source_name, &pages);
+        return Ok(ImportDraftResult {
+            markdown,
+            source_name,
+            page_count,
+            used_ocr: false,
+            fixture: false,
+        });
     }
 
-    // Images (and PDF fallback via PDFKit) need the native helper.
+    // Images need Vision OCR via the native helper.
     let helper = resolve_import_assist_helper_path()?;
     let probe = round_trip_helper(
         &helper,
@@ -139,62 +173,7 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
         other => return Err(format!("Unexpected helper probe kind: {other}")),
     };
 
-    if ext == "pdf" {
-        let envelope = round_trip_helper(
-            &helper,
-            &HelperRequest {
-                action: "extract_pdf_text",
-                path: Some(path_str.as_ref()),
-                languages: None,
-            },
-        )?;
-        match envelope.kind.as_str() {
-            "pdf_text" => {
-                let value: PdfTextValue = serde_json::from_value(envelope.value)
-                    .map_err(|e| format!("Invalid pdf_text payload: {e}"))?;
-                // Ignore fixture canned text when the real PDF had no layer —
-                // fixture would lie about content. Prefer honest empty error.
-                if fixture {
-                    return Err(
-                        "PDF has no extractable text layer. Scanned-page OCR is not wired in this MVP slice yet."
-                            .into(),
-                    );
-                }
-                let pages: Vec<ImportPageText> = value
-                    .pages
-                    .into_iter()
-                    .map(|p| ImportPageText {
-                        index: p.index,
-                        text: p.text,
-                    })
-                    .collect();
-                let all_empty = pages.iter().all(|p| p.text.trim().is_empty());
-                if all_empty {
-                    return Err(
-                        "PDF has no extractable text layer. Scanned-page OCR is not wired in this MVP slice yet."
-                            .into(),
-                    );
-                }
-                let markdown = assemble_import_markdown_draft(&source_name, &pages);
-                Ok(ImportDraftResult {
-                    markdown,
-                    source_name,
-                    page_count: value.page_count.max(pages.len()),
-                    used_ocr: false,
-                    fixture: false,
-                })
-            }
-            "error" => {
-                let err: ErrorValue = serde_json::from_value(envelope.value)
-                    .unwrap_or(ErrorValue {
-                        error: "PDF extract failed.".into(),
-                        kind: "failed".into(),
-                    });
-                Err(err.error)
-            }
-            other => Err(format!("Unexpected helper kind: {other}")),
-        }
-    } else {
+    {
         // Image → Vision OCR
         let envelope = round_trip_helper(
             &helper,
@@ -232,6 +211,110 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
             other => Err(format!("Unexpected helper kind: {other}")),
         }
     }
+}
+
+/// PDFKit extract via live helper only. Fixture helpers are skipped so we
+/// never invent canned English for a real Japanese PDF.
+fn try_pdfkit_text_pages(path: &str) -> Result<Option<Vec<ImportPageText>>, String> {
+    let helper = match resolve_import_assist_helper_path() {
+        Ok(path) => path,
+        Err(_) => return Ok(None),
+    };
+
+    let probe = round_trip_helper(
+        &helper,
+        &HelperRequest {
+            action: "probe",
+            path: None,
+            languages: None,
+        },
+    )?;
+    let fixture = match probe.kind.as_str() {
+        "probe" => serde_json::from_value::<ProbeValue>(probe.value)
+            .map(|v| v.fixture)
+            .unwrap_or(true),
+        _ => true,
+    };
+    if fixture {
+        // Try release/live binary next to the fixture if present.
+        if let Some(live) = resolve_live_import_assist_helper_path_excluding(&helper) {
+            return pdfkit_pages_from_helper(&live, path);
+        }
+        return Ok(None);
+    }
+
+    pdfkit_pages_from_helper(&helper, path)
+}
+
+fn pdfkit_pages_from_helper(
+    helper: &Path,
+    path: &str,
+) -> Result<Option<Vec<ImportPageText>>, String> {
+    let envelope = round_trip_helper(
+        helper,
+        &HelperRequest {
+            action: "extract_pdf_text",
+            path: Some(path),
+            languages: None,
+        },
+    )?;
+    match envelope.kind.as_str() {
+        "pdf_text" => {
+            let value: PdfTextValue = serde_json::from_value(envelope.value)
+                .map_err(|e| format!("Invalid pdf_text payload: {e}"))?;
+            let pages: Vec<ImportPageText> = value
+                .pages
+                .into_iter()
+                .map(|p| ImportPageText {
+                    index: p.index,
+                    text: p.text,
+                })
+                .collect();
+            if pages_have_meaningful_text(&pages) {
+                Ok(Some(pages))
+            } else {
+                Ok(None)
+            }
+        }
+        "error" => {
+            let err: ErrorValue = serde_json::from_value(envelope.value).unwrap_or(ErrorValue {
+                error: "PDFKit extract failed.".into(),
+                kind: "failed".into(),
+            });
+            Err(err.error)
+        }
+        other => Err(format!("Unexpected helper kind: {other}")),
+    }
+}
+
+/// Prefer a non-fixture helper binary when the first candidate is fixture.
+fn resolve_live_import_assist_helper_path_excluding(
+    exclude: &Path,
+) -> Option<PathBuf> {
+    let candidates = import_assist_helper_candidates();
+    for candidate in candidates {
+        if candidate == *exclude || !candidate.exists() {
+            continue;
+        }
+        // Probe quickly; accept only non-fixture.
+        if let Ok(env) = round_trip_helper(
+            &candidate,
+            &HelperRequest {
+                action: "probe",
+                path: None,
+                languages: None,
+            },
+        ) {
+            if env.kind == "probe" {
+                if let Ok(v) = serde_json::from_value::<ProbeValue>(env.value) {
+                    if !v.fixture {
+                        return Some(candidate);
+                    }
+                }
+            }
+        }
+    }
+    None
 }
 
 fn round_trip_helper(helper: &Path, request: &HelperRequest<'_>) -> Result<HelperEnvelope, String> {
@@ -303,8 +386,45 @@ fn rust_target_triple() -> &'static str {
     }
 }
 
+fn import_assist_helper_candidates() -> Vec<PathBuf> {
+    let filename = import_assist_helper_filename();
+    let base = "hazakura-import-assist-helper";
+    let mut candidates: Vec<PathBuf> = Vec::new();
+
+    // Prefer release live builds from the Swift package when present.
+    candidates.push(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("..")
+            .join("src-helpers/import-assist/.build/release/HazakuraImportAssist"),
+    );
+
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(dir) = exe.parent() {
+            candidates.push(dir.join(&filename));
+            candidates.push(dir.join(base));
+        }
+    }
+
+    candidates.push(PathBuf::from("binaries").join(&filename));
+    candidates.push(PathBuf::from("binaries").join(base));
+    candidates.push(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("..")
+            .join("binaries")
+            .join(&filename),
+    );
+    candidates.push(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("..")
+            .join("binaries")
+            .join(base),
+    );
+    candidates
+}
+
 /// Resolve the fixed Import Assist helper binary.
 /// Never accepts a path from the frontend.
+/// Prefers a **live** (non-fixture) binary when multiple candidates exist.
 pub(crate) fn resolve_import_assist_helper_path() -> Result<PathBuf, String> {
     #[cfg(test)]
     {
@@ -320,43 +440,47 @@ pub(crate) fn resolve_import_assist_helper_path() -> Result<PathBuf, String> {
         }
     }
 
-    let filename = import_assist_helper_filename();
-    let base = "hazakura-import-assist-helper";
-    let mut candidates: Vec<PathBuf> = Vec::new();
-
-    if let Ok(exe) = std::env::current_exe() {
-        if let Some(dir) = exe.parent() {
-            candidates.push(dir.join(&filename));
-            candidates.push(dir.join(base));
-        }
-    }
-
-    // Local dev: `npm run build:import-assist-helper:fixture` writes to repo binaries/.
-    candidates.push(PathBuf::from("binaries").join(&filename));
-    candidates.push(PathBuf::from("binaries").join(base));
-    candidates.push(
-        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("..")
-            .join("binaries")
-            .join(&filename),
-    );
-    candidates.push(
-        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("..")
-            .join("binaries")
-            .join(base),
-    );
+    let candidates = import_assist_helper_candidates();
+    let mut fixture_fallback: Option<PathBuf> = None;
 
     for candidate in &candidates {
-        if candidate.exists() {
-            return Ok(candidate.clone());
+        if !candidate.exists() {
+            continue;
+        }
+        match round_trip_helper(
+            candidate,
+            &HelperRequest {
+                action: "probe",
+                path: None,
+                languages: None,
+            },
+        ) {
+            Ok(env) if env.kind == "probe" => {
+                let fixture = serde_json::from_value::<ProbeValue>(env.value)
+                    .map(|v| v.fixture)
+                    .unwrap_or(true);
+                if !fixture {
+                    return Ok(candidate.clone());
+                }
+                if fixture_fallback.is_none() {
+                    fixture_fallback = Some(candidate.clone());
+                }
+            }
+            // Unprobeable but exists — keep as last-resort later.
+            _ => {
+                if fixture_fallback.is_none() {
+                    fixture_fallback = Some(candidate.clone());
+                }
+            }
         }
     }
 
-    Err(format!(
-        "Import Assist helper is not available. Build it with `npm run build:import-assist-helper:fixture` (looked for {}).",
-        filename
-    ))
+    fixture_fallback.ok_or_else(|| {
+        format!(
+            "Import Assist helper is not available. Build live with `npm run build:import-assist-helper:live` or fixture with `npm run build:import-assist-helper:fixture` (looked for {}).",
+            import_assist_helper_filename()
+        )
+    })
 }
 
 #[cfg(test)]
@@ -391,20 +515,19 @@ mod tests {
 
     #[test]
     fn import_image_via_fixture_helper_when_available() {
-        let helper = match resolve_import_assist_helper_path() {
-            Ok(path) => path,
-            Err(_) => {
-                // Helper not built in this environment — skip.
-                return;
-            }
-        };
-        // Ensure executable bit for scripts that copy without +x in some envs.
+        // Explicit fixture binary (debug + FIXTURE_MODE). Live helpers
+        // will reject the non-image temp file used here.
+        let helper = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(
+            "../src-helpers/import-assist/.build/debug/HazakuraImportAssist",
+        );
+        if !helper.exists() {
+            return;
+        }
         let _ = fs::set_permissions(&helper, fs::Permissions::from_mode(0o755));
 
         let dir = std::env::temp_dir();
         let path = dir.join(format!("hazakura-import-mvp-{}.png", std::process::id()));
         fs::write(&path, b"png-fixture").expect("write temp image");
-        // Point resolver via env for isolation.
         std::env::set_var("HAZAKURA_IMPORT_ASSIST_HELPER", &helper);
         let result = import_source_path_to_markdown(&path);
         let _ = fs::remove_file(&path);
@@ -415,5 +538,25 @@ mod tests {
         assert!(draft.markdown.contains("Fixture OCR") || draft.fixture);
         assert!(draft.markdown.contains("hazakura:import"));
         assert_ne!(draft.markdown.trim(), "");
+    }
+
+    #[test]
+    fn prefers_pdfkit_quality_on_real_memo_pdf_when_helper_live() {
+        let pdf = PathBuf::from("/Users/keisetsu/マイドライブ/アプリメモ2.pdf");
+        if !pdf.exists() {
+            return;
+        }
+        let draft = import_source_path_to_markdown(&pdf).expect("import memo pdf");
+        assert!(
+            draft.page_count >= 2,
+            "expected multi-page extract, got {}",
+            draft.page_count
+        );
+        assert!(
+            draft.markdown.contains("Homebrew") && draft.markdown.contains("セットアップ"),
+            "Japanese text layer missing; sample: {}",
+            draft.markdown.chars().take(400).collect::<String>()
+        );
+        assert!(!draft.used_ocr);
     }
 }

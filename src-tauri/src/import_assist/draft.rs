@@ -73,9 +73,10 @@ fn sanitize_attr(value: &str) -> String {
 }
 
 fn normalize_page_text(text: &str) -> String {
+    let reflowed = reflow_soft_wrapped_lines(text);
     let mut out = String::new();
     let mut blank_run = 0usize;
-    for line in text.lines() {
+    for line in reflowed.lines() {
         let trimmed_end = line.trim_end();
         if trimmed_end.is_empty() {
             blank_run += 1;
@@ -89,6 +90,157 @@ fn normalize_page_text(text: &str) -> String {
         out.push('\n');
     }
     out.trim_end().to_string()
+}
+
+/// Rejoin PDF soft line-breaks that split URLs, paths, and shell lines.
+/// Conservative: never joins across blank lines or obvious new list/heading starts.
+fn reflow_soft_wrapped_lines(text: &str) -> String {
+    let lines: Vec<&str> = text.lines().collect();
+    if lines.is_empty() {
+        return String::new();
+    }
+    let mut out: Vec<String> = Vec::new();
+    let mut i = 0usize;
+    while i < lines.len() {
+        let mut current = lines[i].trim_end().to_string();
+        i += 1;
+        while i < lines.len() {
+            let next = lines[i].trim_end();
+            if next.is_empty() || current.is_empty() {
+                break;
+            }
+            if !should_join_soft_wrap(&current, next) {
+                break;
+            }
+            // Join with no space for path/URL fragments; space for prose.
+            if should_join_without_space(&current, next) {
+                current.push_str(next.trim_start());
+            } else {
+                current.push(' ');
+                current.push_str(next.trim_start());
+            }
+            i += 1;
+        }
+        out.push(current);
+    }
+    out.join("\n")
+}
+
+fn should_join_soft_wrap(prev: &str, next: &str) -> bool {
+    if looks_like_block_start(next) {
+        return false;
+    }
+    let prev_t = prev.trim_end();
+    let next_t = next.trim_start();
+    if prev_t.is_empty() || next_t.is_empty() {
+        return false;
+    }
+    // Incomplete URL / path continued on next line.
+    if prev_t.contains("http://") || prev_t.contains("https://") || prev_t.ends_with('/') {
+        if next_t.starts_with("http") {
+            return false;
+        }
+        return true;
+    }
+    // Shell / code continuation.
+    if prev_t.ends_with('\\')
+        || prev_t.ends_with('|')
+        || prev_t.ends_with("&&")
+        || prev_t.ends_with("||")
+        || prev_t.ends_with('`')
+        || prev_t.ends_with('"')
+        || prev_t.ends_with('\'')
+        || prev_t.ends_with('(')
+        || prev_t.ends_with('$')
+    {
+        return true;
+    }
+    // Hyphenated wrap (English).
+    if prev_t.ends_with('-')
+        && next_t
+            .chars()
+            .next()
+            .is_some_and(|c| c.is_ascii_alphanumeric())
+    {
+        return true;
+    }
+    // Japanese soft wrap: previous lacks sentence terminator, next is CJK.
+    let last = prev_t.chars().last().unwrap_or(' ');
+    let first = next_t.chars().next().unwrap_or(' ');
+    if is_cjk(first) && !is_jp_sentence_end(last) && !looks_like_block_start(prev_t) {
+        // Avoid joining short heading-like lines (e.g. "5. Gemini").
+        if prev_t.chars().count() <= 40 && is_cjk(last) {
+            return true;
+        }
+    }
+    false
+}
+
+fn should_join_without_space(prev: &str, next: &str) -> bool {
+    let prev_t = prev.trim_end();
+    let next_t = next.trim_start();
+    if prev_t.ends_with('/') || prev_t.ends_with('-') || prev_t.ends_with('_') {
+        return true;
+    }
+    if prev_t.contains("http://") || prev_t.contains("https://") {
+        return true;
+    }
+    if next_t.starts_with('/') || next_t.starts_with('-') || next_t.starts_with('_') {
+        return true;
+    }
+    let last = prev_t.chars().last().unwrap_or(' ');
+    let first = next_t.chars().next().unwrap_or(' ');
+    is_cjk(last) && is_cjk(first)
+}
+
+fn looks_like_block_start(line: &str) -> bool {
+    let t = line.trim_start();
+    if t.is_empty() {
+        return true;
+    }
+    if t.starts_with('#')
+        || t.starts_with("- ")
+        || t.starts_with("* ")
+        || t.starts_with("・")
+        || t.starts_with("```")
+        || t.starts_with('|')
+    {
+        return true;
+    }
+    // Numbered list: "1. " / "12. "
+    let mut chars = t.chars().peekable();
+    let mut saw_digit = false;
+    while let Some(c) = chars.peek().copied() {
+        if c.is_ascii_digit() {
+            saw_digit = true;
+            chars.next();
+            continue;
+        }
+        break;
+    }
+    if saw_digit {
+        if matches!(chars.next(), Some('.' | '．' | ')' | '、')) {
+            if matches!(chars.next(), Some(' ' | '\t') | None) {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+fn is_jp_sentence_end(c: char) -> bool {
+    matches!(c, '。' | '．' | '！' | '？' | '!' | '?' | '」' | '』' | '）' | ')')
+}
+
+fn is_cjk(c: char) -> bool {
+    matches!(
+        c,
+        '\u{3040}'..='\u{30ff}'
+            | '\u{3400}'..='\u{4dbf}'
+            | '\u{4e00}'..='\u{9fff}'
+            | '\u{f900}'..='\u{faff}'
+            | '\u{ff66}'..='\u{ff9d}'
+    )
 }
 
 #[cfg(test)]
@@ -133,5 +285,22 @@ mod tests {
         assert!(md.contains("source=a_b_script_"));
         assert!(!md.contains("source=a\"b"));
         assert!(!md.contains("source=a\"b<script>"));
+    }
+
+    #[test]
+    fn rejoins_soft_wrapped_urls_and_paths() {
+        let text = "https://raw.githubusercontent.com/Homebrew/install/HEAD/\ninstall.sh)\necho hi\n";
+        let out = normalize_page_text(text);
+        assert!(out.contains(
+            "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        ));
+        assert!(out.contains("echo hi"));
+    }
+
+    #[test]
+    fn does_not_join_across_list_items() {
+        let text = "1. Homebrew\n2. アプリ一覧\n";
+        let out = normalize_page_text(text);
+        assert!(out.contains("1. Homebrew\n2. アプリ一覧"));
     }
 }
