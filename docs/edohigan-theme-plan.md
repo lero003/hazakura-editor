@@ -1,9 +1,9 @@
 # Edohigan Theme Plan (v1.6 WIP)
 
-Status: Planning / In-progress
+Status: In-progress (クラッシュ修正済 / 花びら見た目を再調整中)
 Scope: 江戸彼岸ジョークテーマ v1.6 の実装メモと残課題
 Authority: Reference (作業再開用のメモ。発想の原本として扱う)
-Last reviewed: 2026-07-06
+Last reviewed: 2026-07-09
 
 ## 目的
 
@@ -50,64 +50,45 @@ are loaded, breaking instanceof checks.
 `EdohiganBootSequence` の WebGL 初期化失敗時に `setPhase("done")` せず
 `return` している問題。ただし timer が確実に done へ遷移させるため、
 「永遠にベタ塗りが残る」症状の原因ではなかった。観測性改善
-(console.warn 追加) は有用だが未適用のまま残っている。
+(console.warn 追加) は `EdohiganShaderOverlay` 側へ適用済み。
 
-## 残課題: 花びらシェーダーの見た目調整 (未解決)
+### 花びら SDF の「回転する罫線」(2026-07-09 修正)
 
-### 現状の症状 (2026-07-06 実機確認)
+**症状**: SDF 花びらが巨大な縁だけ回転する罫線に見え、FBM 粒と干渉。
 
-SDF花びら (`petalSdf` / `drawPetals`) と FBM粒 (チリ) の4層が混在し、
-複雑に干渉している:
+**原因**:
+1. 分岐ループ (density 間引き / mask continue) 内で `fwidth(d)` を使うと、
+   隣接ピクセルの制御フロー差で微分が壊れ AA が線になる
+2. scale 9 / sizeBase 0.15 で花びらが大きすぎた
+3. FBM モヤ 3 層が強すぎて SDF と干渉
 
-| レイヤー | 正体 | 状態 |
-|---|---|---|
-| 歪んだ丸 x3 | FBM粒 (チリ) 3層 (fg/near/far) | チリとして復活、良い |
-| 回転する罫線 | SDF花びら fg層、巨大すぎて縁が線に見える | 要調整 |
-| 縦の光 | SDF花びら near層、干渉 | 要調整 |
-| 花びら x2 | SDF花びら fg+near の合成 | サイズ大きすぎ |
+**修正**:
+- AA を解像度ベース固定幅へ (`1.2 * scale / u_resolution.y`)
+- 花びらを小さく 2 層へ (fg scale 18 / far scale 28)
+- FBM モヤの不透明度を霞レベルまで下げる
+- 重なりは加算ではなく `mix` の over 合成
+- シェーダー compile / link 失敗時に `console.warn`
 
-### 修正履歴
-
-1. **AA縁の幅修正**: `smoothstep(-1.0, 1.0, d)` → `fwidth(d)` (画面1px相当)
-   - 「四角い薄い大きい背景」→「ふわふわしたシャドウ」→「シャドウ解消」と段階改善
-2. **petalSdf 再設計**: `sin` プロファイル → アフィン変形ベース
-   - 距離場の破綻を解消。ただしまだ「回転する罫線」が残る
-3. **サイズ・密度調整**: scale 4.5→9.0, sizeBase 0.22→0.15, density 0.35→0.55
-   - まだ大きい。ユーザー感覚で「10分の1以下」が必要かも
-
-### 推奨される次のアプローチ (スクラップアンドビルド)
-
-**MVP方針**: 複雑な4層混在を一旦解き、単純な状態から積み上げる。
-
-1. **SDF花びらを一旦完全に無効化**し、FBM粒 (チリ) だけの状態を確認
-2. チリ単体の見た目が良好なら、そこへSDF花びらを1層だけ少しずつ足す
-3. 花びらサイズをさらに小さく (scale 20-30 程度、sizeBase 0.05-0.08 程度)
-4. 密度を調整してチリと花びらの層を分離
-
-### シェーダーの現状パラメータ (参考)
+## 現状パラメータ (参考)
 
 `drawPetals` 呼び出し (`main()` 内):
 ```
-fg層:   scale=9.0,  sizeBase=0.15, density=0.55, fallSpeed=0.18
-near層: scale=16.0, sizeBase=0.12, density=0.50, fallSpeed=0.12
+far層: scale=28.0, sizeBase=0.055, density=0.38, fallSpeed=0.10, alpha*0.55
+fg層:  scale=18.0, sizeBase=0.075, density=0.42, fallSpeed=0.16, alpha*0.88
 ```
 
-`petalSdf` (アフィン変形ベース):
-```glsl
-float petalSdf(vec2 pos) {
-  vec2 p = pos;
-  float widen = 1.0 + 0.3 * p.y;  // 根部細く、先端広い
-  p.x /= widen;
-  p.y *= 1.2;                      // 縦長
-  return length(p) - 0.7;
-}
+FBM 霞:
+```
+fg * 0.28 / near * 0.20 / far * 0.14
 ```
 
-AA縁:
-```glsl
-float aa = fwidth(d);
-float mask = 1.0 - smoothstep(-aa, aa, d);
-```
+## 残課題
+
+- 実機で花びらサイズ・密度・落下速度の微調整 (好みの問題)
+- BootSequence 側は FBM のみ。常時シェーダーと視覚トーンを揃えるかは任意
+- `docs/roadmap.md` / `docs/current-status.md` の `sakura` → `edohigan` 表記更新
+- リモート `origin/feat/edohigan-theme-v1.6` はローカルより 3+ コミット遅れ
+  (pnpm-lock 削除を含む)。push 前に `npm ci` 済みであることを確認
 
 ## 参照
 
