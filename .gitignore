@@ -15,3 +15,6 @@ habitat-report/
 .superpowers/
 .worktrees/
 .hazakura/
+
+# Import Assist Swift package build output
+src-helpers/import-assist/.build/
