@@ -1380,13 +1380,17 @@
 }
 
 /* Horizontal rule — a thin divider line, full width of the
-   editor content area. The widget is a `<div>` so it can
-   carry its own border without inheriting inline `display`. */
+   editor content area. Rendered as an inline-block span (not a
+   block div) so CodeMirror's height map treats the replace
+   widget as ordinary inline content. `width: 100%` still
+   stretches the rule across the content column. */
 :root[data-l-mode="on"] .cm-lmode-hr {
+  display: inline-block;
   border-top: 1px solid color-mix(in srgb, var(--text-muted) 38%, var(--border));
   margin: 1.1em 0;
   height: 0;
   width: 100%;
+  vertical-align: middle;
 }
 
 /* Task list checkboxes. The widget is a single inline `<span>`
