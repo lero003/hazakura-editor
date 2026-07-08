@@ -131,21 +131,38 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
             }
         }
 
-        let Some(pages) = best else {
-            return Err(
-                "PDF has no extractable text layer. Scanned-page OCR is not wired in this MVP slice yet."
-                    .into(),
-            );
-        };
-        let page_count = pages.len();
-        let markdown = assemble_import_markdown_draft(&source_name, &pages);
-        return Ok(ImportDraftResult {
-            markdown,
-            source_name,
-            page_count,
-            used_ocr: false,
-            fixture: false,
-        });
+        if let Some(pages) = best {
+            let page_count = pages.len();
+            let markdown = assemble_import_markdown_draft(&source_name, &pages);
+            return Ok(ImportDraftResult {
+                markdown,
+                source_name,
+                page_count,
+                used_ocr: false,
+                fixture: false,
+            });
+        }
+
+        // No usable text layer → page-image OCR (scans).
+        match try_pdf_page_ocr(path_str.as_ref()) {
+            Ok(Some(pages)) if pages_have_meaningful_text(&pages) => {
+                let page_count = pages.len();
+                let markdown = assemble_import_markdown_draft(&source_name, &pages);
+                return Ok(ImportDraftResult {
+                    markdown,
+                    source_name,
+                    page_count,
+                    used_ocr: true,
+                    fixture: false,
+                });
+            }
+            Ok(_) => {
+                return Err(
+                    "PDF has no extractable text and page OCR returned empty text.".into(),
+                );
+            }
+            Err(err) => return Err(err),
+        }
     }
 
     // Images need Vision OCR via the native helper.
@@ -250,12 +267,35 @@ fn pdfkit_pages_from_helper(
     helper: &Path,
     path: &str,
 ) -> Result<Option<Vec<ImportPageText>>, String> {
+    pages_from_helper_action(helper, "extract_pdf_text", path, None)
+}
+
+fn try_pdf_page_ocr(path: &str) -> Result<Option<Vec<ImportPageText>>, String> {
+    let helper = match resolve_import_assist_helper_path() {
+        Ok(path) => path,
+        Err(err) => return Err(err),
+    };
+    // Allow fixture for CI; live uses Vision on rendered pages.
+    pages_from_helper_action(
+        &helper,
+        "ocr_pdf_pages",
+        path,
+        Some(&["ja-JP", "en-US"]),
+    )
+}
+
+fn pages_from_helper_action(
+    helper: &Path,
+    action: &str,
+    path: &str,
+    languages: Option<&[&str]>,
+) -> Result<Option<Vec<ImportPageText>>, String> {
     let envelope = round_trip_helper(
         helper,
         &HelperRequest {
-            action: "extract_pdf_text",
+            action,
             path: Some(path),
-            languages: None,
+            languages,
         },
     )?;
     match envelope.kind.as_str() {
@@ -278,7 +318,7 @@ fn pdfkit_pages_from_helper(
         }
         "error" => {
             let err: ErrorValue = serde_json::from_value(envelope.value).unwrap_or(ErrorValue {
-                error: "PDFKit extract failed.".into(),
+                error: format!("{action} failed."),
                 kind: "failed".into(),
             });
             Err(err.error)

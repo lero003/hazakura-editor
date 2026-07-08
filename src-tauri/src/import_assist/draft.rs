@@ -92,8 +92,9 @@ fn normalize_page_text(text: &str) -> String {
     out.trim_end().to_string()
 }
 
-/// Rejoin PDF soft line-breaks that split URLs, paths, and shell lines.
-/// Conservative: never joins across blank lines or obvious new list/heading starts.
+/// Rejoin PDF soft line-breaks that split URLs / paths / shell continuations.
+/// Intentionally conservative: over-joining (install.shecho) is worse than
+/// leaving a soft wrap.
 fn reflow_soft_wrapped_lines(text: &str) -> String {
     let lines: Vec<&str> = text.lines().collect();
     if lines.is_empty() {
@@ -112,7 +113,6 @@ fn reflow_soft_wrapped_lines(text: &str) -> String {
             if !should_join_soft_wrap(&current, next) {
                 break;
             }
-            // Join with no space for path/URL fragments; space for prose.
             if should_join_without_space(&current, next) {
                 current.push_str(next.trim_start());
             } else {
@@ -127,7 +127,7 @@ fn reflow_soft_wrapped_lines(text: &str) -> String {
 }
 
 fn should_join_soft_wrap(prev: &str, next: &str) -> bool {
-    if looks_like_block_start(next) {
+    if looks_like_block_start(next) || looks_like_shell_or_prose_start(next) {
         return false;
     }
     let prev_t = prev.trim_end();
@@ -135,27 +135,75 @@ fn should_join_soft_wrap(prev: &str, next: &str) -> bool {
     if prev_t.is_empty() || next_t.is_empty() {
         return false;
     }
-    // Incomplete URL / path continued on next line.
-    if prev_t.contains("http://") || prev_t.contains("https://") || prev_t.ends_with('/') {
-        if next_t.starts_with("http") {
-            return false;
-        }
-        return true;
+    // Completed URL/path line: do not glue the next statement.
+    if looks_like_completed_url_or_path(prev_t) {
+        return false;
     }
-    // Shell / code continuation.
+
+    // Incomplete URL continued on the next line only.
+    if looks_like_incomplete_url(prev_t) {
+        return !next_t.starts_with("http://") && !next_t.starts_with("https://");
+    }
+
+    // Explicit shell / code line continuation.
     if prev_t.ends_with('\\')
         || prev_t.ends_with('|')
         || prev_t.ends_with("&&")
         || prev_t.ends_with("||")
-        || prev_t.ends_with('`')
-        || prev_t.ends_with('"')
-        || prev_t.ends_with('\'')
         || prev_t.ends_with('(')
         || prev_t.ends_with('$')
     {
         return true;
     }
-    // Hyphenated wrap (English).
+    // Open quote / backtick: only when the line has unbalanced quotes.
+    if unbalanced_quotes(prev_t) {
+        return true;
+    }
+
+    // Hyphenated English wrap.
+    if prev_t.ends_with('-')
+        && next_t
+            .chars()
+            .next()
+            .is_some_and(|c| c.is_ascii_alphanumeric())
+        && !looks_like_shell_or_prose_start(next_t)
+    {
+        return true;
+    }
+
+    // Path fragment: previous ends with `/` and next continues the path
+    // (not a new absolute path command argument that is a full word command).
+    if prev_t.ends_with('/')
+        && next_t
+            .chars()
+            .next()
+            .is_some_and(|c| c.is_ascii_alphanumeric() || c == '.' || c == '_' || c == '-')
+        && !looks_like_shell_or_prose_start(next_t)
+    {
+        return true;
+    }
+
+    // Japanese mid-sentence wrap: only when previous ends with a connective
+    // and the line is reasonably long (avoids "するパス" style merges).
+    let last = prev_t.chars().last().unwrap_or(' ');
+    let first = next_t.chars().next().unwrap_or(' ');
+    if is_cjk(first)
+        && is_jp_connective_end(last)
+        && prev_t.chars().count() >= 18
+        && !looks_like_block_start(prev_t)
+    {
+        return true;
+    }
+
+    false
+}
+
+fn should_join_without_space(prev: &str, next: &str) -> bool {
+    let prev_t = prev.trim_end();
+    let next_t = next.trim_start();
+    if looks_like_incomplete_url(prev_t) || prev_t.ends_with('/') {
+        return true;
+    }
     if prev_t.ends_with('-')
         && next_t
             .chars()
@@ -164,33 +212,122 @@ fn should_join_soft_wrap(prev: &str, next: &str) -> bool {
     {
         return true;
     }
-    // Japanese soft wrap: previous lacks sentence terminator, next is CJK.
     let last = prev_t.chars().last().unwrap_or(' ');
     let first = next_t.chars().next().unwrap_or(' ');
-    if is_cjk(first) && !is_jp_sentence_end(last) && !looks_like_block_start(prev_t) {
-        // Avoid joining short heading-like lines (e.g. "5. Gemini").
-        if prev_t.chars().count() <= 40 && is_cjk(last) {
+    is_cjk(last) && is_cjk(first) && is_jp_connective_end(last)
+}
+
+fn looks_like_incomplete_url(line: &str) -> bool {
+    let t = line.trim_end();
+    let Some(idx) = t.rfind("https://").or_else(|| t.rfind("http://")) else {
+        return false;
+    };
+    let url = &t[idx..];
+    // Still incomplete if it ends with scheme slash, single path segment
+    // slash, or no TLD-ish end, and does not end with a common terminator.
+    if looks_like_completed_url_or_path(url) {
+        return false;
+    }
+    url.ends_with('/')
+        || url.ends_with("://")
+        || url.ends_with('=')
+        || url.ends_with('?')
+        || url.ends_with('&')
+        || !url.contains('.')
+}
+
+fn looks_like_completed_url_or_path(line: &str) -> bool {
+    let t = line.trim_end().trim_end_matches([')', ']', '"', '\'', '>', '」']);
+    if t.ends_with(".sh")
+        || t.ends_with(".md")
+        || t.ends_with(".json")
+        || t.ends_with(".txt")
+        || t.ends_with(".pdf")
+        || t.ends_with(".html")
+        || t.ends_with(".htm")
+        || t.ends_with(".zsh")
+        || t.ends_with(".bash")
+        || t.ends_with(".py")
+        || t.ends_with(".js")
+        || t.ends_with(".ts")
+        || t.ends_with(".rs")
+        || t.ends_with(".app")
+        || t.ends_with(".com")
+        || t.ends_with(".org")
+        || t.ends_with(".net")
+        || t.ends_with(".jp")
+        || t.ends_with(".io")
+    {
+        return true;
+    }
+    // Full http(s) URL without trailing slash often ends with a path segment
+    // that has a file-like extension or a complete host/path token.
+    if (t.starts_with("http://") || t.starts_with("https://"))
+        && !t.ends_with('/')
+        && t.chars().filter(|c| *c == '/').count() >= 3
+        && t
+            .chars()
+            .last()
+            .is_some_and(|c| c.is_ascii_alphanumeric())
+    {
+        // Prefer complete when the last segment looks finished (no trailing -).
+        if !t.ends_with('-') && !t.ends_with('_') {
             return true;
         }
     }
     false
 }
 
-fn should_join_without_space(prev: &str, next: &str) -> bool {
-    let prev_t = prev.trim_end();
-    let next_t = next.trim_start();
-    if prev_t.ends_with('/') || prev_t.ends_with('-') || prev_t.ends_with('_') {
-        return true;
-    }
-    if prev_t.contains("http://") || prev_t.contains("https://") {
-        return true;
-    }
-    if next_t.starts_with('/') || next_t.starts_with('-') || next_t.starts_with('_') {
-        return true;
-    }
-    let last = prev_t.chars().last().unwrap_or(' ');
-    let first = next_t.chars().next().unwrap_or(' ');
-    is_cjk(last) && is_cjk(first)
+fn looks_like_shell_or_prose_start(line: &str) -> bool {
+    let t = line.trim_start();
+    let first = t.split_whitespace().next().unwrap_or("");
+    matches!(
+        first,
+        "echo"
+            | "export"
+            | "eval"
+            | "defaults"
+            | "killall"
+            | "brew"
+            | "npm"
+            | "npx"
+            | "cd"
+            | "python"
+            | "python3"
+            | "claude"
+            | "lms"
+            | "hermes"
+            | "curl"
+            | "git"
+            | "cargo"
+            | "source"
+            | "true"
+            | "false"
+            | "備考:"
+            | "メモ:"
+            | "ステップ1："
+            | "ステップ2："
+            | "ステップ3："
+            | "パス:"
+    ) || t.starts_with("ステップ")
+        || t.starts_with("備考")
+        || t.starts_with("メモ")
+        || t.starts_with("パス")
+        || t.starts_with("カテゴリ")
+}
+
+fn unbalanced_quotes(line: &str) -> bool {
+    let double = line.chars().filter(|c| *c == '"').count();
+    let single = line.chars().filter(|c| *c == '\'').count();
+    let ticks = line.chars().filter(|c| *c == '`').count();
+    double % 2 == 1 || single % 2 == 1 || ticks % 2 == 1
+}
+
+fn is_jp_connective_end(c: char) -> bool {
+    matches!(
+        c,
+        'の' | 'て' | 'で' | 'を' | 'に' | 'は' | 'が' | 'と' | 'も' | 'へ' | 'や' | '、' | '，' | '・'
+    )
 }
 
 fn looks_like_block_start(line: &str) -> bool {
@@ -226,10 +363,6 @@ fn looks_like_block_start(line: &str) -> bool {
         }
     }
     false
-}
-
-fn is_jp_sentence_end(c: char) -> bool {
-    matches!(c, '。' | '．' | '！' | '？' | '!' | '?' | '」' | '』' | '）' | ')')
 }
 
 fn is_cjk(c: char) -> bool {
@@ -295,6 +428,25 @@ mod tests {
             "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
         ));
         assert!(out.contains("echo hi"));
+        assert!(!out.contains("install.shecho"));
+    }
+
+    #[test]
+    fn does_not_glue_shell_after_completed_script_url() {
+        let text = concat!(
+            "/bin/bash -c \"$(curl -fsSL\n",
+            "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh\n",
+            "echo >> /Users/keisetsu/.zprofile\n",
+            "echo 'eval \"$(/opt/homebrew/bin/brew shellenv zsh)\"' >>\n",
+            "/Users/keisetsu/.zprofile\n",
+            "eval \"$(/opt/homebrew/bin/brew shellenv zsh)\"\n",
+        );
+        let out = normalize_page_text(text);
+        assert!(out.contains("install.sh"));
+        assert!(!out.contains("install.shecho"));
+        assert!(!out.contains("zprofileecho"));
+        assert!(out.contains("echo >>"));
+        assert!(out.lines().any(|l| l.trim_start().starts_with("eval ")));
     }
 
     #[test]
@@ -302,5 +454,12 @@ mod tests {
         let text = "1. Homebrew\n2. アプリ一覧\n";
         let out = normalize_page_text(text);
         assert!(out.contains("1. Homebrew\n2. アプリ一覧"));
+    }
+
+    #[test]
+    fn does_not_overjoin_short_japanese_clauses() {
+        let text = "ファイアウォールをオンにする\nパス: 「システム設定」→「ネットワーク」\n";
+        let out = normalize_page_text(text);
+        assert!(out.contains("オンにする\nパス:"));
     }
 }

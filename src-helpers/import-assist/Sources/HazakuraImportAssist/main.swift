@@ -137,6 +137,18 @@ func dispatch(_ raw: String) {
         } catch {
             emitError(error.localizedDescription, kind: "ocr_failed")
         }
+    case "ocr_pdf_pages":
+        guard let path = request.path, !path.isEmpty else {
+            emitError("path is required for ocr_pdf_pages.", kind: "invalid_request")
+            return
+        }
+        let languages = request.languages ?? ["ja-JP", "en-US"]
+        do {
+            let value = try ocrPdfPages(path: path, languages: languages)
+            emit(.pdfText(value))
+        } catch {
+            emitError(error.localizedDescription, kind: "ocr_failed")
+        }
     default:
         emitError("Unknown action: \(request.action)", kind: "invalid_request")
     }

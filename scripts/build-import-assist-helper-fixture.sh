@@ -49,10 +49,11 @@ echo "%PDF-1.4 fixture" > "$TMP_PDF"
 echo "png" > "$TMP_IMG"
 
 echo "==> smoke test"
-SMOKE_OUTPUT="$(printf '%s\n%s\n%s\n' \
+SMOKE_OUTPUT="$(printf '%s\n%s\n%s\n%s\n' \
     '{"action":"probe"}' \
     "{\"action\":\"extract_pdf_text\",\"path\":\"$TMP_PDF\"}" \
     "{\"action\":\"ocr_image\",\"path\":\"$TMP_IMG\",\"languages\":[\"ja-JP\"]}" \
+    "{\"action\":\"ocr_pdf_pages\",\"path\":\"$TMP_PDF\",\"languages\":[\"ja-JP\"]}" \
     | "$DEST")"
 
 rm -f "$TMP_PDF" "$TMP_IMG"
@@ -61,5 +62,6 @@ echo "$SMOKE_OUTPUT"
 echo "$SMOKE_OUTPUT" | grep -q '"kind":"probe"'
 echo "$SMOKE_OUTPUT" | grep -q '"kind":"pdf_text"'
 echo "$SMOKE_OUTPUT" | grep -q '"kind":"ocr_text"'
+echo "$SMOKE_OUTPUT" | grep -q 'Fixture OCR PDF page'
 echo "$SMOKE_OUTPUT" | grep -q '"fixture":true'
 echo "==> import-assist fixture helper smoke ok"
