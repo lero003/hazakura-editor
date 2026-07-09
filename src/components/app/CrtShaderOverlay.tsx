@@ -1,5 +1,9 @@
 import { useEffect, useRef } from "react";
 import type { AmbientIntensity } from "../../types";
+import {
+  ambientMinFrameIntervalMs,
+  resolveAmbientDevicePixelRatio,
+} from "../../features/theme/ambientRenderBudget";
 
 /**
  * CrtShaderOverlay
@@ -16,7 +20,8 @@ import type { AmbientIntensity } from "../../types";
  *
  * パフォーマンス:
  * - rAF ループは crt テーマ時のみ稼働。アンマウントで cancel + context loss を処理。
- * - devicePixelRatio は 2 に cap し、Retina 大画面での負荷を抑える。
+ * - devicePixelRatio は intensity 別 cap (Q-THM-1)。
+ * - rAF は subtle/normal で間引き、dramatic のみフル rAF。
  */
 
 type CrtShaderOverlayProps = {
@@ -304,9 +309,9 @@ export function CrtShaderOverlay({ intensity }: CrtShaderOverlayProps) {
     const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
     const intensityLocation = gl.getUniformLocation(program, "u_intensity");
 
-    // devicePixelRatio を 2 に cap (Retina 26インチ想定の負荷対策)
+    // Q-THM-1: intensity に応じた DPR cap
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = resolveAmbientDevicePixelRatio(intensityRef.current);
       const width = Math.floor(window.innerWidth * dpr);
       const height = Math.floor(window.innerHeight * dpr);
       if (canvas.width !== width || canvas.height !== height) {
@@ -321,12 +326,20 @@ export function CrtShaderOverlay({ intensity }: CrtShaderOverlayProps) {
     let startTime = performance.now();
     let frameId = 0;
     let running = true;
+    let lastDrawMs = 0;
 
     const render = () => {
       if (!running) {
         return;
       }
-      const time = (performance.now() - startTime) / 1000;
+      const now = performance.now();
+      const minInterval = ambientMinFrameIntervalMs(intensityRef.current);
+      if (minInterval > 0 && now - lastDrawMs < minInterval) {
+        frameId = window.requestAnimationFrame(render);
+        return;
+      }
+      lastDrawMs = now;
+      const time = (now - startTime) / 1000;
       gl.useProgram(program);
       gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
       gl.enableVertexAttribArray(positionLocation);

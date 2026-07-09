@@ -360,12 +360,13 @@
 /* 背景シェーダー (.crt-canvas) の「壊れた感じ」演出。文字は動かさず、
    背景ノイズが不定期に明滅・色ズレする。steps でカクつかせ、管が劣化
    している印象を出す。 */
+/* Q-THM-1: opacity-only glitch (no CSS filter / hue-rotate loops). */
 @keyframes crtBgGlitch {
-  0%, 92%, 100% { opacity: 1; filter: none; }
-  93% { opacity: 0.7; filter: hue-rotate(18deg) brightness(1.25); }
-  94% { opacity: 0.92; filter: hue-rotate(-12deg); }
-  96% { opacity: 0.78; filter: hue-rotate(24deg) saturate(1.4); }
-  97% { opacity: 1; filter: none; }
+  0%, 92%, 100% { opacity: 1; }
+  93% { opacity: 0.72; }
+  94% { opacity: 0.94; }
+  96% { opacity: 0.8; }
+  97% { opacity: 1; }
 }
 
 /* 起動シーケンス用 keyframes */

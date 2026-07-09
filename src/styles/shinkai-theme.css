@@ -272,9 +272,10 @@
 /* 背景シェーダー (.shinkai-canvas) の「水中の息吹」演出。
    光の強さがゆったりと明滅する。緩やかで有機的な周期。
    文字のフリッカー (shinkaiShimmer) はデジタル感の元になるため廃止。 */
+/* Q-THM-1: opacity-only pulse (no CSS filter compositing). */
 @keyframes shinkaiBgPulse {
-  0%, 100% { opacity: 1; filter: none; }
-  50% { opacity: 0.95; filter: brightness(1.05); }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.95; }
 }
 
 /* 起動シーケンス用 keyframes は廃止。

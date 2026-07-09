@@ -1,5 +1,9 @@
 import { useEffect, useRef } from "react";
 import type { AmbientIntensity } from "../../types";
+import {
+  ambientMinFrameIntervalMs,
+  resolveAmbientDevicePixelRatio,
+} from "../../features/theme/ambientRenderBudget";
 
 /**
  * ShinkaiShaderOverlay
@@ -36,7 +40,8 @@ import type { AmbientIntensity } from "../../types";
  *
  * パフォーマンス:
  * - rAF ループは shinkai テーマ時のみ稼働。アンマウントで cancel + context loss を処理。
- * - devicePixelRatio は 2 に cap し、Retina 大画面での負荷を抑える。
+ * - devicePixelRatio は intensity 別 cap (Q-THM-1: subtle 1.25 / normal 1.5 / dramatic 2)。
+ * - rAF は subtle/normal で ~24–30fps に間引き、dramatic のみフル rAF。
  * - curl 計算は 3 オクターブ FBM (負荷抑止)。粒密度は 4 オクターブ。層を増やすと GPU 負荷が増す。
  */
 
@@ -589,9 +594,9 @@ export function ShinkaiShaderOverlay({ intensity }: ShinkaiShaderOverlayProps) {
     };
     window.addEventListener("mousemove", onMouseMove, { passive: true });
 
-    // devicePixelRatio を 2 に cap (Retina 26インチ想定の負荷対策)
+    // Q-THM-1: intensity に応じた DPR cap (dramatic のみ 2x)
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = resolveAmbientDevicePixelRatio(intensityRef.current);
       const width = Math.floor(window.innerWidth * dpr);
       const height = Math.floor(window.innerHeight * dpr);
       if (canvas.width !== width || canvas.height !== height) {
@@ -606,6 +611,7 @@ export function ShinkaiShaderOverlay({ intensity }: ShinkaiShaderOverlayProps) {
     let startTime = performance.now();
     let frameId = 0;
     let running = true;
+    let lastDrawMs = 0;
 
     // 速度場の更新 (アドベクション + 減衰 + 隣接拡散)。
     // flowRead → flowWrite へ書き込み、ping-pong で入れ替える。
@@ -762,6 +768,13 @@ export function ShinkaiShaderOverlay({ intensity }: ShinkaiShaderOverlayProps) {
       if (flowFieldLocation) {
         gl.uniform1i(flowFieldLocation, 0);
       }
+      const now = performance.now();
+      const minInterval = ambientMinFrameIntervalMs(intensityRef.current);
+      if (minInterval > 0 && now - lastDrawMs < minInterval) {
+        frameId = window.requestAnimationFrame(render);
+        return;
+      }
+      lastDrawMs = now;
       gl.drawArrays(gl.TRIANGLES, 0, 6);
       frameId = window.requestAnimationFrame(render);
     };
