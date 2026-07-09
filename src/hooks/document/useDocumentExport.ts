@@ -24,11 +24,9 @@ import {
   preparePdfExportTables,
   type PdfMarginPreset,
 } from "../../features/document/pdfExport";
+import { embedAndStampPdfImages } from "../../features/document/pdfExportImages";
 import { getMarkdownPreviewCss } from "../../features/document/markdownExportCss";
-import {
-  inlineWorkspaceAssetImages,
-  renderMarkdown,
-} from "../../features/editor/markdown";
+import { renderMarkdown } from "../../features/editor/markdown";
 import type { EditorTab } from "../../types";
 
 type UseDocumentExportOptions = {
@@ -102,23 +100,8 @@ export function useDocumentExport({
       let rendered = renderMarkdown(activeContentsRef.current, {
         documentPath: tabForExport.path,
         workspaceRoot: workspaceRootPath ?? undefined,
-        // Document-relative `../assets/…` must embed even when the open
-        // workspace folder is a subfolder of the manuscript tree.
+        // Document-relative `../assets/…` even when workspace is a subfolder.
         allowDocumentRelativeOutsideWorkspace: true,
-      });
-      // PDF export embeds images as data: URLs before createPDF — the
-      // destination folder of the .pdf never participates in image lookup.
-      rendered = await inlineWorkspaceAssetImages(rendered, async (path) => {
-        if (workspaceRootPath) {
-          try {
-            const image = await openWorkspaceImage(workspaceRootPath, path);
-            return image.dataUrl;
-          } catch {
-            // Path may be document-relative outside the workspace root.
-          }
-        }
-        const image = await openImageFile(path);
-        return image.dataUrl;
       });
       rendered = preparePdfExportTables(rendered);
 
@@ -130,16 +113,43 @@ export function useDocumentExport({
           PDF_A4_PAGE_HEIGHT_POINTS - pdfLayout.marginBlockPoints * 2 - 24,
         ),
       );
+      const imageMaxHeightPx = Math.max(
+        200,
+        Math.floor(pdfLayout.contentHeightPoints * 0.72),
+      );
+
+      // Embed every local image as data: URL, then stamp createPDF-safe
+      // sizes. Save destination is never used for lookup; sandbox may still
+      // block reads outside the open workspace (App Store) — we try workspace
+      // first, then openImageFile.
+      const embedResult = await embedAndStampPdfImages(
+        rendered,
+        async (path) => {
+          if (workspaceRootPath) {
+            try {
+              const image = await openWorkspaceImage(workspaceRootPath, path);
+              return image.dataUrl;
+            } catch {
+              // outside workspace or unreadable via workspace helper
+            }
+          }
+          const image = await openImageFile(path);
+          return image.dataUrl;
+        },
+        { bodyMaxHeightPx: Math.max(coverMaxHeightPx, imageMaxHeightPx) },
+      );
+      rendered = embedResult.html;
+      if (embedResult.failedPaths.length > 0) {
+        setStatus(
+          `PDF: ${embedResult.embeddedCount} image(s) embedded, ${embedResult.failedPaths.length} skipped (access/path)`,
+        );
+      }
+
       const { coverHtml, bodyHtml } = extractPdfLeadingCoverHtml(
         rendered,
         coverMaxHeightPx,
       );
       const hasCover = coverHtml.length > 0;
-      // Body images only (cover is on its own page).
-      const imageMaxHeightPx = Math.max(
-        200,
-        Math.floor(pdfLayout.contentHeightPoints * 0.72),
-      );
 
       const standaloneHtml = `<!DOCTYPE html>
 <html lang="en">
@@ -265,10 +275,12 @@ export function useDocumentExport({
   .markdown-preview blockquote {
     break-inside: avoid;
   }
+  /* Body images: prefer inline styles stamped after embed. Keep CSS as
+     fallback; break-inside:auto so tall images do not vanish in multicol. */
   .markdown-preview img {
     border: 0;
     border-radius: 0;
-    break-inside: avoid;
+    break-inside: auto;
     box-shadow: none;
     display: block;
     height: auto;
@@ -464,13 +476,25 @@ ${bodyHtml}
       let bodyHtml = renderMarkdown(contentsForExport, {
         documentPath: tabForExport.path,
         workspaceRoot: workspaceRootPath,
+        allowDocumentRelativeOutsideWorkspace: true,
       });
-      if (workspaceRootPath) {
-        bodyHtml = await inlineWorkspaceAssetImages(bodyHtml, async (path) => {
-          const image = await openWorkspaceImage(workspaceRootPath, path);
+      const htmlEmbed = await embedAndStampPdfImages(
+        bodyHtml,
+        async (path) => {
+          if (workspaceRootPath) {
+            try {
+              const image = await openWorkspaceImage(workspaceRootPath, path);
+              return image.dataUrl;
+            } catch {
+              // fall through
+            }
+          }
+          const image = await openImageFile(path);
           return image.dataUrl;
-        });
-      }
+        },
+        { bodyMaxHeightPx: 1200 },
+      );
+      bodyHtml = htmlEmbed.html;
 
       const root = document.documentElement;
       const cs = getComputedStyle(root);

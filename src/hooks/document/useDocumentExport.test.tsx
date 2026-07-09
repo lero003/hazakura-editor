@@ -15,6 +15,7 @@ vi.mock("@tauri-apps/plugin-dialog", () => ({
 const tauriApi = vi.hoisted(() => ({
   exportPdfFile: vi.fn(),
   isTauriRuntime: vi.fn(() => false),
+  openImageFile: vi.fn(),
   openWorkspaceImage: vi.fn(),
   saveBinaryFileAs: vi.fn(),
   saveTextFileAs: vi.fn(),
@@ -36,6 +37,7 @@ const epubApi = vi.hoisted(() => ({
 vi.mock("../../lib/tauri", () => ({
   exportPdfFile: tauriApi.exportPdfFile,
   isTauriRuntime: tauriApi.isTauriRuntime,
+  openImageFile: tauriApi.openImageFile,
   openWorkspaceImage: tauriApi.openWorkspaceImage,
   saveBinaryFileAs: tauriApi.saveBinaryFileAs,
   saveTextFileAs: tauriApi.saveTextFileAs,
@@ -61,12 +63,10 @@ vi.mock("../../features/document/markdownExportCss", () => ({
 }));
 
 const markdownApi = vi.hoisted(() => ({
-  inlineWorkspaceAssetImages: vi.fn(async (html: string) => html),
   renderMarkdown: vi.fn((contents: string) => `<p>${contents}</p>`),
 }));
 
 vi.mock("../../features/editor/markdown", () => ({
-  inlineWorkspaceAssetImages: markdownApi.inlineWorkspaceAssetImages,
   renderMarkdown: markdownApi.renderMarkdown,
 }));
 
