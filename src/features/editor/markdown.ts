@@ -11,9 +11,22 @@ const WORKSPACE_IMAGE_PATH_ATTR = "data-hazakura-image-path";
 const TRANSPARENT_IMAGE_SRC =
   "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
 
+export type RenderMarkdownOptions = {
+  documentPath?: string | null;
+  workspaceRoot?: string | null;
+  /**
+   * PDF/HTML export: allow document-relative paths (including `../assets/…`)
+   * that resolve outside the open workspace root. Preview stays workspace-bound.
+   * Absolute paths written in Markdown are still rejected unless under the
+   * workspace. Resolved paths are embedded as data URLs at export time — the
+   * PDF destination folder is never used for lookup.
+   */
+  allowDocumentRelativeOutsideWorkspace?: boolean;
+};
+
 export function renderMarkdown(
   source: string,
-  options?: { documentPath?: string | null; workspaceRoot?: string | null },
+  options?: RenderMarkdownOptions,
 ): string {
   const rawHtml = marked.parse(source, { async: false }) as string;
 
@@ -29,6 +42,7 @@ export function renderMarkdown(
     fragment,
     options?.workspaceRoot ?? null,
     options?.documentPath ?? null,
+    options?.allowDocumentRelativeOutsideWorkspace === true,
   );
   applyTablePreviewPolicyToFragment(fragment);
   applyTaskListPreviewPolicyToFragment(fragment);
@@ -100,6 +114,7 @@ function applyImagePreviewPolicyToFragment(
   fragment: DocumentFragment,
   workspaceRoot: string | null,
   documentPath: string | null,
+  allowDocumentRelativeOutsideWorkspace = false,
 ): void {
   for (const image of Array.from(fragment.querySelectorAll("img"))) {
     const src = image.getAttribute("src")?.trim() ?? "";
@@ -111,7 +126,9 @@ function applyImagePreviewPolicyToFragment(
       continue;
     }
 
-    const imagePath = workspaceImagePath(src, workspaceRoot, documentPath);
+    const imagePath = resolveLocalImagePath(src, workspaceRoot, documentPath, {
+      allowDocumentRelativeOutsideWorkspace,
+    });
     if (imagePath) {
       image.setAttribute("src", TRANSPARENT_IMAGE_SRC);
       image.setAttribute(WORKSPACE_IMAGE_PATH_ATTR, imagePath);
@@ -177,15 +194,18 @@ function applyTaskListPreviewPolicyToFragment(
   }
 }
 
-function workspaceImagePath(
+/**
+ * Resolve a local Markdown image src to an absolute POSIX path.
+ * Preview: workspace-contained only.
+ * Export (`allowDocumentRelativeOutsideWorkspace`): also allow relative
+ * paths resolved from the open document directory (e.g. `../assets/cover.jpg`).
+ */
+function resolveLocalImagePath(
   src: string,
   workspaceRoot: string | null,
   documentPath: string | null,
+  options?: { allowDocumentRelativeOutsideWorkspace?: boolean },
 ): string | null {
-  if (!workspaceRoot) {
-    return null;
-  }
-
   let decodedSrc: string;
   try {
     decodedSrc = decodeURIComponent(src);
@@ -203,14 +223,42 @@ function workspaceImagePath(
     return null;
   }
 
-  const normalizedRoot = normalizeWorkspaceRoot(workspaceRoot);
-  const resolved = isAbsolutePosix(decodedSrc)
-    ? normalizePosix(decodedSrc)
-    : resolvePosix(documentBaseDir(documentPath, normalizedRoot), decodedSrc);
+  const srcIsAbsolute = isAbsolutePosix(decodedSrc);
+  const documentDir =
+    documentPath && isAbsolutePosix(documentPath)
+      ? dirnamePosix(documentPath)
+      : null;
 
+  let resolved: string;
+  if (srcIsAbsolute) {
+    resolved = normalizePosix(decodedSrc);
+  } else {
+    // Prefer the real document directory for relative links so `../assets`
+    // is not forced through the workspace root alone.
+    const baseDir =
+      documentDir ??
+      (workspaceRoot ? normalizeWorkspaceRoot(workspaceRoot) : null);
+    if (!baseDir) {
+      return null;
+    }
+    resolved = resolvePosix(baseDir, decodedSrc);
+  }
+
+  if (workspaceRoot) {
+    const normalizedRoot = normalizeWorkspaceRoot(workspaceRoot);
+    if (
+      resolved === normalizedRoot ||
+      resolved.startsWith(`${normalizedRoot}/`)
+    ) {
+      return resolved;
+    }
+  }
+
+  // Export-only: document-relative (non-absolute) escapes such as ../assets.
   if (
-    resolved === normalizedRoot ||
-    resolved.startsWith(normalizedRoot + "/")
+    options?.allowDocumentRelativeOutsideWorkspace &&
+    documentDir &&
+    !srcIsAbsolute
   ) {
     return resolved;
   }

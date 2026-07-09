@@ -73,6 +73,31 @@ describe("renderMarkdown image policy", () => {
     expect(html).not.toContain("data-hazakura-image-path");
   });
 
+  it("export mode allows document-relative images outside the workspace root", () => {
+    // Manuscript in a subfolder; cover lives next to the parent (../assets).
+    const html = renderMarkdown("![cover](../assets/cover.jpg)", {
+      documentPath: "/ws/book/chapter.md",
+      workspaceRoot: "/ws/book",
+      allowDocumentRelativeOutsideWorkspace: true,
+    });
+
+    expect(html).toContain(
+      'data-hazakura-image-path="/ws/assets/cover.jpg"',
+    );
+    expect(html).not.toContain("画像を表示できません");
+  });
+
+  it("export mode still blocks absolute paths outside the workspace", () => {
+    const html = renderMarkdown("![x](/etc/passwd)", {
+      documentPath: "/ws/book/chapter.md",
+      workspaceRoot: "/ws/book",
+      allowDocumentRelativeOutsideWorkspace: true,
+    });
+
+    expect(html).toContain("画像を表示できません");
+    expect(html).not.toContain("data-hazakura-image-path");
+  });
+
   it("continues to block external images", () => {
     const html = renderMarkdown("![remote](https://example.com/shot.png)", {
       documentPath: "/ws/README.md",

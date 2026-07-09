@@ -102,6 +102,9 @@ export function useDocumentExport({
       let rendered = renderMarkdown(activeContentsRef.current, {
         documentPath: tabForExport.path,
         workspaceRoot: workspaceRootPath ?? undefined,
+        // Document-relative `../assets/…` must embed even when the open
+        // workspace folder is a subfolder of the manuscript tree.
+        allowDocumentRelativeOutsideWorkspace: true,
       });
       // PDF export embeds images as data: URLs before createPDF — the
       // destination folder of the .pdf never participates in image lookup.
@@ -111,8 +114,7 @@ export function useDocumentExport({
             const image = await openWorkspaceImage(workspaceRootPath, path);
             return image.dataUrl;
           } catch {
-            // Fall through: document-relative paths that preview could
-            // still resolve via openImageFile (user-selected open path).
+            // Path may be document-relative outside the workspace root.
           }
         }
         const image = await openImageFile(path);
