@@ -129,12 +129,22 @@ describe("extractPdfLeadingCoverHtml", () => {
     const html =
       '<p><img src="data:image/png;base64,aaa" alt="cover"></p>\n' +
       "<h1>Title</h1>\n<p>Body</p>";
-    const { coverHtml, bodyHtml } = extractPdfLeadingCoverHtml(html);
+    const { coverHtml, bodyHtml } = extractPdfLeadingCoverHtml(html, 640);
     expect(coverHtml).toContain("<img");
     expect(coverHtml).toContain("data:image/png;base64,aaa");
+    expect(coverHtml).toMatch(/max-height:\s*640px/i);
     expect(bodyHtml).toContain("<h1>Title</h1>");
     expect(bodyHtml).toContain("<p>Body</p>");
     expect(bodyHtml).not.toContain("data:image/png;base64,aaa");
+  });
+
+  it("does not treat a transparent policy placeholder as an embedded cover", () => {
+    const html =
+      '<p><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt=""></p>' +
+      "<h1>Title</h1>";
+    const { coverHtml, bodyHtml } = extractPdfLeadingCoverHtml(html, 640);
+    expect(coverHtml).toBe("");
+    expect(bodyHtml).toContain("data:image/gif");
   });
 
   it("leaves documents without a leading image unchanged", () => {

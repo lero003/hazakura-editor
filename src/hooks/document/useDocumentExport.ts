@@ -3,6 +3,7 @@ import { save as saveDialog } from "@tauri-apps/plugin-dialog";
 import {
   isTauriRuntime,
   exportPdfFile,
+  openImageFile,
   openWorkspaceImage,
   saveBinaryFileAs,
   saveTextFileAs,
@@ -102,18 +103,36 @@ export function useDocumentExport({
         documentPath: tabForExport.path,
         workspaceRoot: workspaceRootPath ?? undefined,
       });
-      if (workspaceRootPath) {
-        rendered = await inlineWorkspaceAssetImages(rendered, async (path) => {
-          const image = await openWorkspaceImage(workspaceRootPath, path);
-          return image.dataUrl;
-        });
-      }
+      // PDF export embeds images as data: URLs before createPDF — the
+      // destination folder of the .pdf never participates in image lookup.
+      rendered = await inlineWorkspaceAssetImages(rendered, async (path) => {
+        if (workspaceRootPath) {
+          try {
+            const image = await openWorkspaceImage(workspaceRootPath, path);
+            return image.dataUrl;
+          } catch {
+            // Fall through: document-relative paths that preview could
+            // still resolve via openImageFile (user-selected open path).
+          }
+        }
+        const image = await openImageFile(path);
+        return image.dataUrl;
+      });
       rendered = preparePdfExportTables(rendered);
-      const { coverHtml, bodyHtml } = extractPdfLeadingCoverHtml(rendered);
-      const hasCover = coverHtml.length > 0;
 
       const pdfLayout = pdfScreenPageLayout(preset);
       const pdfPoint = formatPdfPointValue;
+      const coverMaxHeightPx = Math.max(
+        320,
+        Math.floor(
+          PDF_A4_PAGE_HEIGHT_POINTS - pdfLayout.marginBlockPoints * 2 - 24,
+        ),
+      );
+      const { coverHtml, bodyHtml } = extractPdfLeadingCoverHtml(
+        rendered,
+        coverMaxHeightPx,
+      );
+      const hasCover = coverHtml.length > 0;
       // Body images only (cover is on its own page).
       const imageMaxHeightPx = Math.max(
         200,
@@ -191,7 +210,8 @@ export function useDocumentExport({
     display: block;
     height: auto;
     margin: 0 auto;
-    max-height: calc(var(--pdf-page-height) - 2 * var(--pdf-margin-block));
+    /* Numeric px also set inline on the cover <img>; keep a CSS fallback. */
+    max-height: ${coverMaxHeightPx}px;
     max-width: 100%;
     object-fit: contain;
     width: auto;

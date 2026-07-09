@@ -92,8 +92,15 @@ export type PdfCoverSplit = {
  *
  * Matches a leading bare `<img>` or a `<p>` whose only meaningful content
  * is one image (typical of `![](cover.jpg)` at the top of a manuscript).
+ *
+ * `coverMaxHeightPx` is applied as an **inline style** so WebKit createPDF
+ * does not depend on CSS `calc(var(--…))`, which has dropped cover images
+ * on device (blank first page while data URL was already embedded).
  */
-export function extractPdfLeadingCoverHtml(html: string): PdfCoverSplit {
+export function extractPdfLeadingCoverHtml(
+  html: string,
+  coverMaxHeightPx?: number,
+): PdfCoverSplit {
   if (typeof document === "undefined") {
     return { coverHtml: "", bodyHtml: html };
   }
@@ -132,15 +139,33 @@ export function extractPdfLeadingCoverHtml(html: string): PdfCoverSplit {
     return { coverHtml: "", bodyHtml: html };
   }
 
-  // Need a real image payload (data URL or remaining path). Blocked
-  // placeholders are spans, not imgs, so they never match above.
+  // Need a real embedded payload. Policy placeholders stay as transparent
+  // GIF until inlined; blocked images become spans (never reach here).
   const src = img.getAttribute("src")?.trim() ?? "";
   if (!src || src.startsWith("data:image/gif")) {
-    // Transparent policy placeholder not yet inlined — keep in body.
+    return { coverHtml: "", bodyHtml: html };
+  }
+  // Prefer embedded data URLs for PDF (no file:// / relative lookup at capture).
+  if (!src.startsWith("data:image/")) {
     return { coverHtml: "", bodyHtml: html };
   }
 
   const coverClone = coverNode.cloneNode(true) as Element;
+  const coverImg =
+    coverClone instanceof HTMLImageElement
+      ? coverClone
+      : coverClone.querySelector("img");
+  if (coverImg && coverMaxHeightPx && coverMaxHeightPx > 0) {
+    coverImg.style.display = "block";
+    coverImg.style.width = "auto";
+    coverImg.style.height = "auto";
+    coverImg.style.maxWidth = "100%";
+    coverImg.style.maxHeight = `${Math.floor(coverMaxHeightPx)}px`;
+    coverImg.style.objectFit = "contain";
+    coverImg.style.margin = "0 auto";
+    coverImg.removeAttribute("width");
+    coverImg.removeAttribute("height");
+  }
   coverNode.remove();
 
   const bodyWrap = document.createElement("div");
