@@ -386,13 +386,10 @@ See matrix rows and **v1.6 recommended pack**. Implementation notes:
 
 ## Suggested order when quality work resumes
 
-1. **Pack C:** Device-verify Q-PDF-1 (already coded).
-2. **Pack A:** Q-STR-1 → Q-STR-2 → Q-STR-3 → Q-STR-4 (behavior-preserving wiring).
-3. **Pack B:** Q-IMP-8; then Q-IMP-2 if TF image import still errors; Q-IMP-1 UX.
-4. **Q-STR-5** path helper unify (good with any workspace/images touch).
-5. **Q-THM-1** only if users still report heat/fan on shinkai/crt.
-6. Leave Book Project, embedded PDF images, review UI, and deep PDF/EBook
-   refactors on feature / deferred tracks — not this pack list.
+1. **v1.6 lane:** Import Assist + shipped quality packs (A/B/STR/PDF text tail).
+2. **Q-IMG-1 is parked** — resume only after choosing design option A–D.
+3. TF re-verify Q-IMP-2 (standalone image OCR) if still open on device.
+4. Q-THM-2 / Q-IMP-6 / Book Project stay on their tracks in `current-work.md`.
 
 ## Explicit non-goals for this inventory
 
@@ -402,6 +399,7 @@ See matrix rows and **v1.6 recommended pack**. Implementation notes:
 - Do not bump CodeMirror view “for quality” without the pin matrix.
 - Do not restore PDF `scrollHeight` measurement to chase completeness.
 - Do not start Q-STR-8/9 or EditorPane rewrites without a reproduced wiring pain.
+- **Do not thrash Q-IMG-1** with more one-off path/CSS patches without a design pick.
 
 ## Change log
 
