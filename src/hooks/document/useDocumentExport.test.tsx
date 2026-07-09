@@ -167,6 +167,7 @@ describe("useDocumentExport", () => {
     });
 
     expect(markdownApi.renderMarkdown).toHaveBeenCalledWith("after dialog", {
+      allowDocumentRelativeOutsideWorkspace: true,
       documentPath: "/workspace/a.md",
       workspaceRoot: null,
     });
