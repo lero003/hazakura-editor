@@ -49,9 +49,11 @@ Published Mac App Store history through v1.3 remains documented in `current-stat
 | Done / quality | Q-IMP-8 import helper timeout | Wall-clock watchdog kills hanging helper (`round_trip_helper_with_timeout`). |
 | Done / quality | Q-IMP-2 sandbox OCR staging | Container temp copy before nested helper (images + PDF helper paths). TF re-verify open. |
 | Done / quality | Q-IMP-1 import image honesty | Draft note when `![](...)` present; Preview blocked-image copy is Japanese. |
-| Rec / v1.6 quality | Pack C | Q-PDF-1 device re-verify (code already has bottom safety). |
-| Rec / v1.6 quality | Import reliability pack | Q-IMP-8 helper wall timeout; Q-IMP-2 sandbox OCR if TF repro; optional Q-IMP-1 messaging (**Pack B**). |
-| Deferred | Other quality backlog | Theme cost, deeper STR, … — same inventory; not default next. |
+| Done / quality | Q-IMP-4 empty OCR | Fail hard — no empty-marker tab for blank image OCR. |
+| Done / quality | Q-THM-1 theme cost | Shinkai/CRT intensity DPR + rAF budget; CSS filter pulses → opacity only. |
+| Done / quality | Q-PDF-2 export timeout | Default 60s wall budget (+ scale helper, cap 120). |
+| In tree / verify | Pack C | Q-PDF-1 device re-export (bottom safety in code). TF re-verify Q-IMP-2. |
+| Deferred | Other quality | Q-THM-2 edohigan polish, Q-IMP-6 review UI, … |
 | Done / UX | Import discoverability | Confirm dialog; workspace right-click “Markdown 下書きとして取り込む…”; menu/palette keywords. |
 | Next / post-TF | Review UI | Source page/image vs Markdown; low-confidence marks. |
 | Later | PDF text-layer prefer + OCR fill | PDFKit first; Vision only when needed. |

@@ -45,7 +45,7 @@ Last reviewed: 2026-07-09 (structural audit + v1.6 recommended slices)
 | P1 | Q-IMP-2 | Image file OCR may fail under App Sandbox when helper opens user path | Correctness (TF) | **Done in source** (device TF re-verify open) | Stage user file to container temp before nested helper |
 | P1 | Q-IMP-8 | Import helper `read_line` blocks without effective wall timeout | Reliability | **Done in source** | Watchdog kill in `round_trip_helper_with_timeout` (120s production) |
 | P1 | Q-THM-1 | Shinkai / CRT feel heavier than edohigan for similar “showy” intent | Perf / perception | **Done in source** | intensity DPR/rAF budget + opacity-only CSS pulses |
-| P2 | Q-PDF-2 | PDF export 30s wall timeout on very long multi-page captures | Reliability | Open | Timeout scale with page count or raise modestly |
+| P2 | Q-PDF-2 | PDF export 30s wall timeout on very long multi-page captures | Reliability | **Done in source** | Default 60s + page-scale helper (cap 120s); clearer timeout message |
 | P2 | Q-IMP-3 | Scan PDF OCR capped at 40 pages; 40 MB source cap | Limit | By design | Document in UI; raise only with progress UI |
 | P2 | Q-IMP-4 | Empty OCR still opens a draft with empty-page markers | UX | **Done in source** | Fail hard on empty image OCR; stronger empty assemble copy |
 | P2 | Q-EXP-1 | PDF export does not embed document images reliably in all cases | Completeness | Historical RC | v1.3-followup breadth; not v1.6 blocker |
@@ -359,3 +359,4 @@ See matrix rows and **v1.6 recommended pack**. Implementation notes:
 | 2026-07-09 | Q-IMP-1 shipped: import draft image honesty note + Japanese blocked-image preview copy. |
 | 2026-07-09 | Q-IMP-4 shipped: empty image OCR fails hard (no empty-marker tab). |
 | 2026-07-09 | Q-THM-1 shipped: ambient DPR/rAF budget for Shinkai/CRT; CSS filter pulses removed. |
+| 2026-07-09 | Q-PDF-2 shipped: PDF export timeout default 60s + scale helper (cap 120). |

@@ -7,7 +7,10 @@ use std::time::Duration;
 
 use std::fs;
 
-const PDF_EXPORT_TIMEOUT_SECONDS: u64 = 30;
+/// Default wall budget when page count is unknown (Q-PDF-2).
+/// Sequential per-page `createPDF` on long manuscripts needs more than 30s.
+const PDF_EXPORT_TIMEOUT_SECONDS_DEFAULT: u64 = 60;
+const PDF_EXPORT_TIMEOUT_SECONDS_MAX: u64 = 120;
 pub(crate) const PDF_A4_PAGE_WIDTH_POINTS: f64 = 595.0;
 pub(crate) const PDF_A4_PAGE_HEIGHT_POINTS: f64 = 842.0;
 pub(crate) const PDF_CAPTURE_SIZE_SCRIPT: &str = r#"
@@ -129,6 +132,18 @@ pub(crate) fn validate_export_pdf_request(
     Ok(destination_path)
 }
 
+/// Wall-clock timeout for PDF export (Q-PDF-2).
+/// When `page_count` is known, scales modestly; otherwise uses a safer default.
+pub(crate) fn pdf_export_timeout_seconds(page_count: Option<usize>) -> u64 {
+    let pages = page_count.unwrap_or(1).max(1) as u64;
+    if pages <= 1 {
+        return PDF_EXPORT_TIMEOUT_SECONDS_DEFAULT;
+    }
+    PDF_EXPORT_TIMEOUT_SECONDS_DEFAULT
+        .saturating_add((pages - 1).saturating_mul(3))
+        .min(PDF_EXPORT_TIMEOUT_SECONDS_MAX)
+}
+
 pub(crate) fn pdf_page_rects_for_content_size(
     content_width: f64,
     content_height: f64,
@@ -228,8 +243,12 @@ async fn export_pdf_file<R: tauri::Runtime>(
             format!("Cannot create PDF export webview: {err}")
         })?;
 
+    // Page count is measured inside the WebView after load; use the scaled
+    // default wall budget here (Q-PDF-2). Long captures still abort cleanly.
+    let timeout_secs = pdf_export_timeout_seconds(None);
+    let timeout_for_wait = timeout_secs;
     let wait_result = tauri::async_runtime::spawn_blocking(move || {
-        export_rx.recv_timeout(Duration::from_secs(PDF_EXPORT_TIMEOUT_SECONDS))
+        export_rx.recv_timeout(Duration::from_secs(timeout_for_wait))
     })
     .await
     .map_err(|err| format!("PDF export wait failed: {err}"))?;
@@ -237,7 +256,9 @@ async fn export_pdf_file<R: tauri::Runtime>(
         Ok(result) => result,
         Err(_) => {
             abandoned.store(true, Ordering::SeqCst);
-            Err("PDF export timed out.".to_string())
+            Err(format!(
+                "PDF export timed out after {timeout_secs}s. Try a shorter document or split chapters."
+            ))
         }
     };
     let _ = pdf_window.close();
@@ -588,4 +609,21 @@ async fn export_pdf_file<R: tauri::Runtime>(
     _destination_path: PathBuf,
 ) -> Result<(), String> {
     Err("PDF export is only available on macOS.".to_string())
+}
+
+#[cfg(test)]
+mod pdf_timeout_tests {
+    use super::pdf_export_timeout_seconds;
+
+    #[test]
+    fn default_budget_is_sixty_seconds() {
+        assert_eq!(pdf_export_timeout_seconds(None), 60);
+        assert_eq!(pdf_export_timeout_seconds(Some(1)), 60);
+    }
+
+    #[test]
+    fn scales_with_page_count_and_caps() {
+        assert_eq!(pdf_export_timeout_seconds(Some(5)), 60 + 4 * 3);
+        assert_eq!(pdf_export_timeout_seconds(Some(100)), 120);
+    }
 }

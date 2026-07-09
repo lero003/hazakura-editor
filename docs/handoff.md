@@ -13,11 +13,11 @@ Last reviewed: 2026-07-09 (v1.6 quality inventory: structural audit + packs)
 - Quality backlog + **structural audit** (dual buffer, sessionId, mega
   controller, PDF/import helpers) and **v1.6 recommended packs**:
   **`docs/quality-inventory-v1.6.md`**.
-  - Pack A: Q-STR-1…4 **shipped**
-  - Q-STR-5 path containment **shipped**
-  - Pack B: Q-IMP-8 / Q-IMP-2 / Q-IMP-1 **shipped** (TF image OCR re-verify still useful)
-  - Pack C: Q-PDF-1 code has bottom safety; **device re-export still open** + CM pin
-  Run packs with normal `npm test` / `cargo test` when touching these slices.
+  - Pack A: Q-STR-1…4 **shipped**; Q-STR-5 **shipped**
+  - Pack B: Q-IMP-8 / 2 / 1 / 4 **shipped** (TF image OCR re-verify still useful)
+  - Q-THM-1 theme cost + Q-PDF-2 export timeout **shipped**
+  - Pack C: Q-PDF-1 bottom safety in code; **device re-export still open** + CM pin 6.43.2
+  See `docs/quality-inventory-v1.6.md`.
 - Keep `@codemirror/view` at **6.43.2**. Import helper must ship via
   `externalBin` (`npm run build:import-assist-helper:live`). Both nested
   helpers need App Store inherit re-sign (`sign-app-store-submit-app.mjs`).
