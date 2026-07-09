@@ -28,6 +28,9 @@ JSON.stringify((() => {
     let occupiedColumnCount = 0;
     const includeRects = (rects) => {
       for (const rect of rects) {
+        // Prefer left edge so a wide unbreakable run inside one column does
+        // not invent a trailing page. Multicol line fragments already have
+        // their left at the start of each column.
         const columnIndex = Math.max(
           0,
           Math.floor((rect.left + window.scrollX) / 595)

@@ -7,13 +7,15 @@ export const PDF_A4_PAGE_HEIGHT_POINTS = 842;
 
 /**
  * Multi-column PDF capture uses a fixed one-page-high content box.
- * WebKit createPDF clips to the A4 rect, so line boxes / descenders that
- * sit flush against the column bottom can lose trailing lines of the
- * document (worse on long JP manuscripts). Reserve several body lines
- * (~11pt × 1.45 line-height) so content wraps into the next column
- * instead of painting past the capture. Do not restore scrollHeight.
+ * WebKit createPDF clips to the A4 rect, so trailing line boxes that sit
+ * near the column bottom can be lost (worse on long JP manuscripts).
+ *
+ * Reserve ~6–8 body lines at 11pt / 1.45 so content wraps into the next
+ * A4 column instead of painting past the capture. Device reports after
+ * 16→48 still showed ~10 missing lines on 4000+ line docs, so keep this
+ * larger. Do not restore document scrollHeight (reintroduces blank pages).
  */
-export const PDF_CONTENT_BOTTOM_SAFETY_POINTS = 48;
+export const PDF_CONTENT_BOTTOM_SAFETY_POINTS = 112;
 
 export const PDF_MARGIN_PRESETS = {
   narrow: { blockMm: 10, inlineMm: 10 },

@@ -165,7 +165,9 @@ export function useDocumentExport({
     border: 0;
     border-radius: 0;
     box-shadow: none;
-    box-sizing: content-box;
+    /* border-box so bottom padding shrinks column flow height (content-box
+       put padding *outside* the multicol box and did not force wrap). */
+    box-sizing: border-box;
     color: #000000;
     column-fill: auto;
     column-gap: var(--pdf-column-gap);
@@ -177,10 +179,17 @@ export function useDocumentExport({
     margin: var(--pdf-margin-block) var(--pdf-margin-inline);
     max-width: none;
     overflow: visible;
-    /* Extra bottom slack inside the column box so the final line boxes of
-       long manuscripts wrap to the next A4 column instead of clipping. */
-    padding: 0 0 1.75em;
+    /* Inside the fixed height: reduces usable column height so last lines
+       of long manuscripts wrap to the next horizontal A4 page. */
+    padding: 0 0 3em;
     width: var(--pdf-content-width);
+  }
+  .markdown-preview .pdf-export-tail-guard {
+    display: block;
+    height: 4em;
+    margin: 0;
+    padding: 0;
+    visibility: hidden;
   }
   .markdown-preview h1,
   .markdown-preview h2,
@@ -306,6 +315,7 @@ export function useDocumentExport({
 <body>
 <div class="markdown-preview">
 ${rendered}
+<p class="pdf-export-tail-guard" aria-hidden="true">&#8203;</p>
 </div>
 </body>
 </html>`;
