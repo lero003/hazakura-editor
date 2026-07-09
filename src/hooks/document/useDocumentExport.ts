@@ -157,7 +157,9 @@ export function useDocumentExport({
   ${getMarkdownPreviewCss()}
   /* WKWebView.createPDF captures the screen layout rather than paged-media
      @page rules. A one-page-high multi-column flow makes every 595-point
-     horizontal slice an A4 page with the selected margins already present. */
+     horizontal slice an A4 page with the selected margins already present.
+     --pdf-content-height already reserves bottom safety so the last line
+     boxes stay inside the capture rect (see PDF_CONTENT_BOTTOM_SAFETY_POINTS). */
   .markdown-preview {
     background: #ffffff;
     border: 0;

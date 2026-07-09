@@ -5,6 +5,15 @@ export const DEFAULT_PDF_MARGIN_PRESET: PdfMarginPreset = "standard";
 export const PDF_A4_PAGE_WIDTH_POINTS = 595;
 export const PDF_A4_PAGE_HEIGHT_POINTS = 842;
 
+/**
+ * Multi-column PDF capture uses a fixed one-page-high content box.
+ * WebKit createPDF clips to the A4 rect, so line boxes / descenders that
+ * sit flush against the column bottom can lose the last 1–2 lines of the
+ * document. Reserve ~one body line inside the content height so those
+ * lines wrap into the next column instead of painting past the capture.
+ */
+export const PDF_CONTENT_BOTTOM_SAFETY_POINTS = 16;
+
 export const PDF_MARGIN_PRESETS = {
   narrow: { blockMm: 10, inlineMm: 10 },
   standard: { blockMm: 18, inlineMm: 16 },
@@ -35,7 +44,10 @@ export function pdfScreenPageLayout(
   const marginInlinePoints = millimetersToPdfPoints(value.inlineMm);
   return {
     columnGapPoints: marginInlinePoints * 2,
-    contentHeightPoints: PDF_A4_PAGE_HEIGHT_POINTS - marginBlockPoints * 2,
+    contentHeightPoints:
+      PDF_A4_PAGE_HEIGHT_POINTS -
+      marginBlockPoints * 2 -
+      PDF_CONTENT_BOTTOM_SAFETY_POINTS,
     contentWidthPoints: PDF_A4_PAGE_WIDTH_POINTS - marginInlinePoints * 2,
     marginBlockPoints,
     marginInlinePoints,

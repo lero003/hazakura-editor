@@ -17,6 +17,7 @@ or quality-polish slice.
 - `agent-workbench-boundary.md`: optional CLI-agent workbench trust boundary.
 - `assist-surface-strategy.md`: future assist-surface direction.
 - `current-work.md`: active queue (v1.6 Import Assist; v1.5 closed before edohigan).
+- `quality-inventory-v1.6.md`: cross-cutting quality gaps and deferred items for the v1.6 lane.
 - `roadmap.md`: active lane and future phase boundaries.
 - `current-status.md`: current implementation and release state.
 - `import-assist-boundary-review.md`: v1.6 Import Assist Phase 1 boundary sign-off.

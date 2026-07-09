@@ -3,6 +3,7 @@ import {
   DEFAULT_PDF_MARGIN_PRESET,
   PDF_A4_PAGE_HEIGHT_POINTS,
   PDF_A4_PAGE_WIDTH_POINTS,
+  PDF_CONTENT_BOTTOM_SAFETY_POINTS,
   PDF_MARGIN_PRESETS,
   formatPdfPointValue,
   pdfMarginCss,
@@ -59,7 +60,9 @@ describe("pdfScreenPageLayout", () => {
       3,
     );
     expect(layout.contentHeightPoints).toBeCloseTo(
-      PDF_A4_PAGE_HEIGHT_POINTS - marginBlock * 2,
+      PDF_A4_PAGE_HEIGHT_POINTS -
+        marginBlock * 2 -
+        PDF_CONTENT_BOTTOM_SAFETY_POINTS,
       3,
     );
   });
@@ -78,7 +81,9 @@ describe("pdfScreenPageLayout", () => {
       3,
     );
     expect(layout.contentHeightPoints).toBeCloseTo(
-      PDF_A4_PAGE_HEIGHT_POINTS - marginBlock * 2,
+      PDF_A4_PAGE_HEIGHT_POINTS -
+        marginBlock * 2 -
+        PDF_CONTENT_BOTTOM_SAFETY_POINTS,
       3,
     );
   });
@@ -95,6 +100,24 @@ describe("pdfScreenPageLayout", () => {
     expect(standard.marginBlockPoints).toBeGreaterThan(
       narrow.marginBlockPoints,
     );
+  });
+
+  it("reserves bottom safety so last line boxes stay inside the A4 capture", () => {
+    expect(PDF_CONTENT_BOTTOM_SAFETY_POINTS).toBeGreaterThanOrEqual(12);
+    expect(PDF_CONTENT_BOTTOM_SAFETY_POINTS).toBeLessThanOrEqual(24);
+
+    for (const preset of ["narrow", "standard", "wide"] as const) {
+      const layout = pdfScreenPageLayout(preset);
+      const occupied =
+        layout.marginBlockPoints * 2 + layout.contentHeightPoints;
+      // Margins + content fit strictly inside one A4 page; the reserved
+      // strip stays empty so descenders are not clipped by createPDF.
+      expect(occupied).toBeLessThan(PDF_A4_PAGE_HEIGHT_POINTS);
+      expect(occupied).toBeCloseTo(
+        PDF_A4_PAGE_HEIGHT_POINTS - PDF_CONTENT_BOTTOM_SAFETY_POINTS,
+        3,
+      );
+    }
   });
 });
 

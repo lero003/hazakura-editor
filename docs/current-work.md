@@ -1,7 +1,7 @@
 # Current Work
 
 Status: Operational
-Scope: v1.6 Import Assist Phase 1 (package `1.6.0` / bundleVersion 74)
+Scope: v1.6 Import Assist Phase 1 (package `1.6.0` / bundleVersion 76)
 Authority: High
 Last reviewed: 2026-07-09
 
@@ -39,10 +39,18 @@ Published Mac App Store history through v1.3 remains documented in `current-stat
 | Done / spike | PDFKit + Vision helper spike | Fixture + live Swift helper for `extract_pdf_text` / `ocr_image` / `probe`; pure Rust draft assembly tests. |
 | Done / MVP slice | Unsaved Markdown draft open | File menu + command palette. PDFKit text preferred; pdf-extract fallback; scan PDF page OCR; image Vision OCR. Dirty untitled tab, no auto-save. |
 | Done / TF packaging | Helper externalBin | `hazakura-import-assist-helper` in all tauri confs; `beforeBuild` builds live helper (arm64+x64+universal). |
+| Done / TF packaging | Nested helper App Store re-sign | Both local-assist and import-assist helpers inherit re-sign (TF 90885). |
+| In tree / verify | PDF export last-line clip | `PDF_CONTENT_BOTTOM_SAFETY_POINTS` — device re-export still useful. |
+| Deferred | Quality backlog | See `docs/quality-inventory-v1.6.md` (import image UX, sandbox OCR path, theme cost, …). |
 | Next / post-TF | Review UI | Source page/image vs Markdown; low-confidence marks. |
-| Next | Review UI | Source page/image vs Markdown; low-confidence marks. |
 | Later | PDF text-layer prefer + OCR fill | PDFKit first; Vision only when needed. |
 | Deferred v2 | Book Project split | chapters/ + hazakura.import.json. |
+
+### Quality inventory
+
+Cross-cutting quality notes (priority matrix, deferred items, durable pins)
+live in **`docs/quality-inventory-v1.6.md`**. Do not reopen deferred rows without
+user priority; prefer one verifiable slice at a time.
 
 ### CodeMirror pin (durable)
 

@@ -3,15 +3,18 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-07-09 (v1.5 released before edohigan; v1.6 Import Assist active)
+Last reviewed: 2026-07-09 (v1.6 TF; quality inventory added)
 
 ## Current State
 
-- Package version **`1.6.0`** / App Store **bundleVersion 74**.
+- Package version **`1.6.0`** / App Store **bundleVersion 76** (TF delivered).
 - **v1.5 (`1.5.0`) closed before 江戸彼岸.** Active: **v1.6 Import Assist** —
   `docs/import-assist-boundary-review.md`, `docs/current-work.md`.
+- Quality backlog (import image UX, PDF last-line verify, theme cost, …):
+  **`docs/quality-inventory-v1.6.md`**.
 - Keep `@codemirror/view` at **6.43.2**. Import helper must ship via
-  `externalBin` (`npm run build:import-assist-helper:live`).
+  `externalBin` (`npm run build:import-assist-helper:live`). Both nested
+  helpers need App Store inherit re-sign (`sign-app-store-submit-app.mjs`).
 - Historical: `1.3.0` Daily Trust remains a published MAS baseline. Raw App
   Store Connect logs stay outside the repo. The v1 public promise is
   `Markdownで書き、本として読み、ローカルAIで整える。`
@@ -113,6 +116,7 @@ Read it only for historical context.
 ## Source Docs
 
 - Current work: `docs/current-work.md`
+- Quality inventory (v1.6): `docs/quality-inventory-v1.6.md`
 - Current implementation state: `docs/current-status.md`
 - Phase boundaries: `docs/roadmap.md`
 - Product boundary: `docs/product-brief.md`
