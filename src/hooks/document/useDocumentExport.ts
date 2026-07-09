@@ -177,7 +177,9 @@ export function useDocumentExport({
     margin: var(--pdf-margin-block) var(--pdf-margin-inline);
     max-width: none;
     overflow: visible;
-    padding: 0;
+    /* Extra bottom slack inside the column box so the final line boxes of
+       long manuscripts wrap to the next A4 column instead of clipping. */
+    padding: 0 0 1.75em;
     width: var(--pdf-content-width);
   }
   .markdown-preview h1,

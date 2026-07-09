@@ -40,7 +40,7 @@ Last reviewed: 2026-07-09 (structural audit + v1.6 recommended slices)
 
 | Pri | ID | Item | Severity | Status | Suggested slice |
 |-----|-----|------|----------|--------|-----------------|
-| P0 | Q-PDF-1 | PDF export drops last few lines of document | Correctness | **Fixed in source** (16pt bottom safety). Confirm on device. | Device re-export smoke only |
+| P0 | Q-PDF-1 | PDF export drops last few lines of document | Correctness | **Fixed in source** (48pt bottom safety + export padding). Re-verify long JP. | Device re-export smoke |
 | P1 | Q-IMP-1 | PDF import leaves Markdown image paths that Preview blocks | UX / expectation | **Done in source** | Import draft image note + JP blocked-image preview copy |
 | P1 | Q-IMP-2 | Image file OCR may fail under App Sandbox when helper opens user path | Correctness (TF) | **Done in source** (device TF re-verify open) | Stage user file to container temp before nested helper |
 | P1 | Q-IMP-8 | Import helper `read_line` blocks without effective wall timeout | Reliability | **Done in source** | Watchdog kill in `round_trip_helper_with_timeout` (120s production) |

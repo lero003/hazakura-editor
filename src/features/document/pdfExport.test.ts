@@ -103,8 +103,9 @@ describe("pdfScreenPageLayout", () => {
   });
 
   it("reserves bottom safety so last line boxes stay inside the A4 capture", () => {
-    expect(PDF_CONTENT_BOTTOM_SAFETY_POINTS).toBeGreaterThanOrEqual(12);
-    expect(PDF_CONTENT_BOTTOM_SAFETY_POINTS).toBeLessThanOrEqual(24);
+    // ~3 body lines at 11pt / 1.45 for long JP multi-column exports.
+    expect(PDF_CONTENT_BOTTOM_SAFETY_POINTS).toBeGreaterThanOrEqual(36);
+    expect(PDF_CONTENT_BOTTOM_SAFETY_POINTS).toBeLessThanOrEqual(72);
 
     for (const preset of ["narrow", "standard", "wide"] as const) {
       const layout = pdfScreenPageLayout(preset);

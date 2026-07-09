@@ -33,6 +33,13 @@ export function useExternalChangeActions({
         return;
       }
 
+      // Pathless tabs (untitled / Import Assist drafts) are not on disk.
+      // getFileMetadata("") fails and used to paint a false "save failed"
+      // banner right after PDF import.
+      if (!tab.path) {
+        return;
+      }
+
       try {
         const metadata = await getFileMetadata(tab.path);
 

@@ -310,8 +310,8 @@ describe("useDocumentExport", () => {
     expect(exportedPdfHtml).toContain("--pdf-margin-block: 70.866px;");
     expect(exportedPdfHtml).toContain("--pdf-margin-inline: 62.362px;");
     expect(exportedPdfHtml).toContain("--pdf-content-width: 470.276px;");
-    // wide margins minus PDF_CONTENT_BOTTOM_SAFETY_POINTS (16)
-    expect(exportedPdfHtml).toContain("--pdf-content-height: 684.268px;");
+    // wide margins minus PDF_CONTENT_BOTTOM_SAFETY_POINTS (48)
+    expect(exportedPdfHtml).toContain("--pdf-content-height: 652.268px;");
     expect(exportedPdfHtml).toContain("--pdf-column-gap: 124.724px;");
     expect(exportedPdfHtml).toContain("column-fill: auto;");
     expect(exportedPdfHtml).toContain("column-width: var(--pdf-content-width);");

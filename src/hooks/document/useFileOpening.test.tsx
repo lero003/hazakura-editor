@@ -265,7 +265,7 @@ describe("useFileOpening", () => {
     expect(nextTabs[0]?.contents).toBe("# draft\n");
     expect(nextTabs[0]?.name).toBe("scan-import.md");
     expect(options.setStatus).toHaveBeenLastCalledWith(
-      "Imported text draft (2 pages)",
+      "Imported text draft (2 pages, unsaved)",
     );
   });
 
@@ -288,7 +288,7 @@ describe("useFileOpening", () => {
     expect(pickImportSourceFile).toHaveBeenCalled();
     expect(importSourceToMarkdown).toHaveBeenCalledWith("/tmp/page.png");
     expect(options.setStatus).toHaveBeenLastCalledWith(
-      "Imported OCR draft (1 page)",
+      "Imported OCR draft (1 page, unsaved)",
     );
   });
 });

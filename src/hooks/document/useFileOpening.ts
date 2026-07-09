@@ -368,10 +368,13 @@ export function useFileOpening({
         setActiveTabId(tab.id);
         clearImagePreview();
         setCompareView(null);
+        // Unsaved by design (edit-before-save). Do not imply a failed disk write.
+        const pageLabel =
+          result.pageCount === 1 ? "1 page" : `${result.pageCount} pages`;
         setStatus(
           result.usedOcr
-            ? `Imported OCR draft (${result.pageCount} page${result.pageCount === 1 ? "" : "s"})`
-            : `Imported text draft (${result.pageCount} page${result.pageCount === 1 ? "" : "s"})`,
+            ? `Imported OCR draft (${pageLabel}, unsaved)`
+            : `Imported text draft (${pageLabel}, unsaved)`,
         );
       } catch (err) {
         setGlobalError(String(err));

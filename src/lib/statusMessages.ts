@@ -334,13 +334,15 @@ export function localizeStatusMessage(
   }
 
   if (message.startsWith("Imported text draft (")) {
-    return `テキスト抽出の下書きを開きました（${message.slice(
-      "Imported text draft (".length,
+    return `テキスト抽出の下書きを開きました（${formatImportedDraftTail(
+      message.slice("Imported text draft (".length),
     )}`;
   }
 
   if (message.startsWith("Imported OCR draft (")) {
-    return `OCR 下書きを開きました（${message.slice("Imported OCR draft (".length)}`;
+    return `OCR 下書きを開きました（${formatImportedDraftTail(
+      message.slice("Imported OCR draft (".length),
+    )}`;
   }
 
   if (message.startsWith("Failed to import image: ")) {
@@ -358,6 +360,19 @@ export function localizeStatusMessage(
   }
 
   return message;
+}
+
+/** Tail after `Imported … draft (` — e.g. `2 pages, unsaved)` or `1 page)`. */
+function formatImportedDraftTail(tail: string): string {
+  const match = tail.match(/^(\d+)\s+pages?(?:,\s*unsaved)?\)$/);
+  if (!match) {
+    return tail;
+  }
+  const pages = match[1];
+  const unsaved = tail.includes("unsaved");
+  return unsaved
+    ? `${pages}ページ・未保存）`
+    : `${pages}ページ）`;
 }
 
 export function markdownFormatStatus(format: MarkdownFormat): string {
