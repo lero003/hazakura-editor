@@ -21,7 +21,7 @@ Do not re-open v1.5 feature work unless a release hotfix is required.
 
 Phase 1 value:
 
-> PDF や画像から「編集できる Markdown 下書き」をローカルで作る。  
+> PDF や画像から「編集できる Markdown 下書き」をローカルで作る。
 > 完全自動変換・クラウド OCR・自動保存はしない。
 
 ## Invariants (must hold)
