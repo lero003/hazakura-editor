@@ -109,13 +109,13 @@ describe("useDocumentExport", () => {
   beforeEach(() => {
     vi.useRealTimers();
     dialogApi.save.mockReset();
-    markdownApi.inlineWorkspaceAssetImages.mockClear();
     markdownApi.renderMarkdown.mockClear();
     epubApi.buildEpubBetaArchive.mockClear();
     epubApi.buildEpubBetaArchiveWithReport.mockClear();
     epubApi.defaultEpubExportSettings.mockClear();
     tauriApi.saveBinaryFileAs.mockReset();
     tauriApi.saveTextFileAs.mockReset();
+    tauriApi.openImageFile.mockReset();
     tauriApi.openWorkspaceImage.mockReset();
     tauriApi.exportPdfFile.mockReset();
     tauriApi.isTauriRuntime.mockReset();
