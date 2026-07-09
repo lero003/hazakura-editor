@@ -197,7 +197,8 @@ That config sets:
   `apple-assist` window to render Safe Editor UI and hit main-window
   command guards.
 - `frontendDist` to `../dist`
-- `bundle.externalBin` to `["../binaries/hazakura-local-assist-helper"]`
+- `bundle.externalBin` to both nested helpers:
+  `hazakura-local-assist-helper` and `hazakura-import-assist-helper`
 - base `bundle.resources` to include `LICENSE` and
   `THIRD_PARTY_NOTICES.md` inside `Contents/Resources`
 - `bundle.macOS.bundleVersion` to the current App Store Connect build number
@@ -205,11 +206,12 @@ That config sets:
 - `bundle.macOS.files.embedded.provisionprofile` to the local profile path
 
 After Tauri finishes the submit app bundle, `npm run build:app-store-submit`
-runs `scripts/sign-app-store-submit-app.mjs`. That post-sign step gives
-the helper the inherited sandbox entitlement, re-signs the app bundle,
-and verifies the deep signature. `scripts/build-apple-assist-helper-live.sh`
-also emits `aarch64`, `x86_64`, and `universal-apple-darwin` helper
-sidecars so Tauri's universal App Store target can bundle the helper.
+runs `scripts/sign-app-store-submit-app.mjs`. That post-sign step re-signs
+each nested helper with the inherited sandbox entitlement
+(`app-store-helper.plist`), re-seals the app bundle, and verifies the deep
+signature. Live helper build scripts also emit `aarch64`, `x86_64`, and
+`universal-apple-darwin` sidecars so Tauri's universal App Store target can
+bundle both helpers.
 
 The preview config uses the same helper-enabled build shape, but deliberately
 skips the App Store sandbox entitlements and provisioning profile so
@@ -299,11 +301,15 @@ on `com.apple.application-identifier`; otherwise App Store Connect can
 accept the upload but mark the build ineligible for TestFlight with
 warning 90886.
 
-Check helper sidecar signing:
+Check nested helper sidecar signing (both must carry sandbox + inherit):
 
 ```bash
-test -x "$APP/Contents/MacOS/hazakura-local-assist-helper"
-codesign -dv --verbose=4 "$APP/Contents/MacOS/hazakura-local-assist-helper"
+for helper in hazakura-local-assist-helper hazakura-import-assist-helper; do
+  test -x "$APP/Contents/MacOS/$helper"
+  codesign -dv --verbose=4 "$APP/Contents/MacOS/$helper"
+  codesign -d --entitlements - "$APP/Contents/MacOS/$helper" 2>/dev/null \
+    | grep -q com.apple.security.inherit
+done
 codesign --verify --deep --strict --verbose=2 "$APP"
 ```
 
@@ -337,9 +343,9 @@ Expected:
   App Store Connect build
 - `LSMinimumSystemVersion` is `26.0`
 - `hazakura-editor` is present
-- `hazakura-local-assist-helper` is present, executable, signed, and
-  carries both `com.apple.security.app-sandbox` and
-  `com.apple.security.inherit`
+- `hazakura-local-assist-helper` and `hazakura-import-assist-helper` are
+  present, executable, signed, and each carries both
+  `com.apple.security.app-sandbox` and `com.apple.security.inherit`
 
 ## Transporter Package For Internal TestFlight
 

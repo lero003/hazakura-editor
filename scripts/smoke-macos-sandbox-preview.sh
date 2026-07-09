@@ -12,7 +12,10 @@ APP_SRC="$REPO_ROOT/src-tauri/target/release/bundle/macos/Hazakura Editor.app"
 APP_ENTITLEMENTS="$REPO_ROOT/src-tauri/entitlements/mac-app-store.entitlements"
 TMP_ROOT="$(mktemp -d)"
 APP="$TMP_ROOT/Hazakura Editor.app"
-HELPER="$APP/Contents/MacOS/hazakura-local-assist-helper"
+HELPERS=(
+    "$APP/Contents/MacOS/hazakura-local-assist-helper"
+    "$APP/Contents/MacOS/hazakura-import-assist-helper"
+)
 HELPER_ENTITLEMENTS="$REPO_ROOT/src-tauri/entitlements/app-store-helper.plist"
 
 cleanup() {
@@ -34,18 +37,22 @@ fi
 echo "==> copy app to temp sandbox smoke bundle"
 ditto "$APP_SRC" "$APP"
 
-if [ ! -x "$HELPER" ]; then
-    echo "error: App Store preview must bundle Hazakura Local Assist helper: $HELPER" >&2
-    exit 1
-fi
+for helper in "${HELPERS[@]}"; do
+    if [ ! -x "$helper" ]; then
+        echo "error: App Store preview must bundle nested helper: $helper" >&2
+        exit 1
+    fi
+done
 
-echo "==> ad-hoc sign helper with inherited sandbox entitlement"
-codesign \
-    --force \
-    --sign - \
-    --options runtime \
-    --entitlements "$HELPER_ENTITLEMENTS" \
-    "$HELPER"
+for helper in "${HELPERS[@]}"; do
+    echo "==> ad-hoc sign helper with inherited sandbox entitlement: $helper"
+    codesign \
+        --force \
+        --sign - \
+        --options runtime \
+        --entitlements "$HELPER_ENTITLEMENTS" \
+        "$helper"
+done
 
 echo "==> ad-hoc sign app with draft App Store sandbox entitlements"
 codesign \
@@ -62,13 +69,15 @@ echo
 echo "== app entitlements =="
 codesign -d --entitlements - "$APP" 2>/dev/null
 
-echo
-echo "== helper entitlements =="
-codesign -d --entitlements - "$HELPER" 2>/dev/null
-if ! codesign -d --entitlements - "$HELPER" 2>/dev/null | grep -q "com.apple.security.inherit"; then
-    echo "error: App Store preview helper must carry com.apple.security.inherit" >&2
-    exit 1
-fi
+for helper in "${HELPERS[@]}"; do
+    echo
+    echo "== helper entitlements ($helper) =="
+    codesign -d --entitlements - "$helper" 2>/dev/null
+    if ! codesign -d --entitlements - "$helper" 2>/dev/null | grep -q "com.apple.security.inherit"; then
+        echo "error: App Store preview helper must carry com.apple.security.inherit: $helper" >&2
+        exit 1
+    fi
+done
 
 echo
 echo "== app identity =="

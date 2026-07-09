@@ -88,6 +88,7 @@ sign_app_bundle() {
   fi
 
   sign_codesign_target "${app_path}/Contents/MacOS/hazakura-local-assist-helper" 0 "$timestamp_enabled"
+  sign_codesign_target "${app_path}/Contents/MacOS/hazakura-import-assist-helper" 0 "$timestamp_enabled"
   sign_codesign_target "${app_path}/Contents/MacOS/hazakura-editor" 0 "$timestamp_enabled"
   sign_codesign_target "$app_path" 1 "$timestamp_enabled"
   codesign --verify --deep --strict --verbose=2 "$app_path"
