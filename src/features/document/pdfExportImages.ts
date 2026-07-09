@@ -2,9 +2,9 @@
  * PDF export image embedding helpers.
  *
  * Images are always inlined as `data:` URLs before WebKit createPDF —
- * the PDF save destination is never used for lookup. Sandbox may still
- * block reads outside the open workspace; callers should try workspace
- * then openImageFile.
+ * the PDF save destination is never used for lookup. Callers must provide
+ * a workspace-contained loader; do not add an `openImageFile` fallback,
+ * because Preview, HTML, and PDF share the same containment policy.
  */
 
 const WORKSPACE_IMAGE_PATH_ATTR = "data-hazakura-image-path";

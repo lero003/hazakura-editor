@@ -53,7 +53,7 @@ Published Mac App Store history through v1.3 remains documented in `current-stat
 | Done / quality | Q-THM-1 theme cost | Shinkai/CRT intensity DPR + rAF budget; CSS filter pulses → opacity only. |
 | Done / quality | Q-PDF-2 export timeout | Default 60s wall budget (+ scale helper, cap 120). |
 | Mostly done | Q-PDF-1 text tail | Long JP colophon verified after safety/cover work. |
-| **Parked** | **Q-IMG-1 local images** | Preview/PDF/sandbox/workspace path matrix — **do not thrash**. See `docs/quality-inventory-v1.6.md` § Q-IMG-1. Prefer workspace that contains both md + assets until redesign. |
+| In tree / App Store smoke | **Q-IMG-1 local images** | A+D: Preview/HTML/PDF share document-relative containment and workspace-only loading. Verify the parent/child/assets/missing matrix in an App Store sandbox build; do not add multi-root scope without that evidence. |
 | Deferred | Other quality | Q-THM-2 edohigan polish, Q-IMP-6 review UI, … |
 | Done / UX | Import discoverability | Confirm dialog; workspace right-click “Markdown 下書きとして取り込む…”; menu/palette keywords. |
 | Next / post-TF | Review UI | Source page/image vs Markdown; low-confidence marks. |

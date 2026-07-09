@@ -3,7 +3,6 @@ import { save as saveDialog } from "@tauri-apps/plugin-dialog";
 import {
   isTauriRuntime,
   exportPdfFile,
-  openImageFile,
   openWorkspaceImage,
   saveBinaryFileAs,
   saveTextFileAs,
@@ -100,8 +99,6 @@ export function useDocumentExport({
       let rendered = renderMarkdown(activeContentsRef.current, {
         documentPath: tabForExport.path,
         workspaceRoot: workspaceRootPath ?? undefined,
-        // Document-relative `../assets/…` even when workspace is a subfolder.
-        allowDocumentRelativeOutsideWorkspace: true,
       });
       rendered = preparePdfExportTables(rendered);
 
@@ -118,25 +115,23 @@ export function useDocumentExport({
         Math.floor(pdfLayout.contentHeightPoints * 0.72),
       );
 
-      // Embed every local image as data: URL, then stamp createPDF-safe
-      // sizes. Save destination is never used for lookup; sandbox may still
-      // block reads outside the open workspace (App Store) — we try workspace
-      // first, then openImageFile.
+      // Embed every workspace-contained local image as a data: URL, then stamp
+      // createPDF-safe sizes. The shared Markdown image policy has already
+      // blocked paths outside the selected workspace, so Preview, HTML, and
+      // PDF share one document-relative containment boundary.
       const embedResult = await embedAndStampPdfImages(
         rendered,
         async (path) => {
-          if (workspaceRootPath) {
-            try {
-              const image = await openWorkspaceImage(workspaceRootPath, path);
-              return image.dataUrl;
-            } catch {
-              // outside workspace or unreadable via workspace helper
-            }
+          if (!workspaceRootPath) {
+            throw new Error("Workspace image access requires an open workspace");
           }
-          const image = await openImageFile(path);
+          const image = await openWorkspaceImage(workspaceRootPath, path);
           return image.dataUrl;
         },
-        { bodyMaxHeightPx: Math.max(coverMaxHeightPx, imageMaxHeightPx) },
+        // The leading cover is split and resized below. Keep every body image
+        // within the shortened multicolumn flow so its inline style cannot
+        // override the body CSS safety limit.
+        { bodyMaxHeightPx: imageMaxHeightPx },
       );
       rendered = embedResult.html;
       if (embedResult.failedPaths.length > 0) {
@@ -476,20 +471,14 @@ ${bodyHtml}
       let bodyHtml = renderMarkdown(contentsForExport, {
         documentPath: tabForExport.path,
         workspaceRoot: workspaceRootPath,
-        allowDocumentRelativeOutsideWorkspace: true,
       });
       const htmlEmbed = await embedAndStampPdfImages(
         bodyHtml,
         async (path) => {
-          if (workspaceRootPath) {
-            try {
-              const image = await openWorkspaceImage(workspaceRootPath, path);
-              return image.dataUrl;
-            } catch {
-              // fall through
-            }
+          if (!workspaceRootPath) {
+            throw new Error("Workspace image access requires an open workspace");
           }
-          const image = await openImageFile(path);
+          const image = await openWorkspaceImage(workspaceRootPath, path);
           return image.dataUrl;
         },
         { bodyMaxHeightPx: 1200 },

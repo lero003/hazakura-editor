@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-09 (v1.5 released before edohigan; v1.6 Import Assist opened)
+Last reviewed: 2026-07-10 (v1.5 released before edohigan; Q-IMG-1 A+D source coverage added)
 
 ## Current State
 
@@ -18,6 +18,11 @@ Last reviewed: 2026-07-09 (v1.5 released before edohigan; v1.6 Import Assist ope
   `@codemirror/view` **6.43.2** pin. Boundary:
   `docs/import-assist-boundary-review.md`. Cross-cutting quality notes:
   `docs/quality-inventory-v1.6.md`.
+- PDF image paths now use the same document-relative and workspace-contained
+  policy in Preview, HTML export, and PDF export. Open the project parent that
+  owns both manuscript and images; child-workspace `../assets` references are
+  blocked with an explicit parent-workspace hint. Packaged App Store smoke for
+  the parent/child/drag-drop/missing matrix remains pending.
 - Historical Mac App Store baseline: `1.3.0` Daily Trust (and earlier) remains
   documented below. Treat listing/build counters in Connect as authoritative
   for store facts; this file tracks product-lane truth for agents.

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-07-09 (v1.6: quality packs shipped; Q-IMG-1 parked)
+Last reviewed: 2026-07-10 (PDF本文画像高さと Q-IMG-1 A+D を修正)
 
 ## Current State
 
@@ -12,11 +12,20 @@ Last reviewed: 2026-07-09 (v1.6: quality packs shipped; Q-IMG-1 parked)
   `docs/import-assist-boundary-review.md`, `docs/current-work.md`.
 - Quality packs A/B + PDF tail/theme/timeout mostly **shipped**. See
   **`docs/quality-inventory-v1.6.md`**.
-- **Parked (do not thrash):** **Q-IMG-1** — local image path /
-  workspace root / App Sandbox / Preview vs PDF embed inconsistencies
-  (incl. drag-drop `assets/` and `../assets`). Usage until redesign:
-  open a workspace that contains **both** the manuscript and its images.
-  Design options A–D are listed under Q-IMG-1 in the inventory.
+- PDF export now caps **in-body** embedded images to the shortened column
+  height; the larger leading-cover bound applies only after the cover is split
+  onto its own A4 page. The source regression test pins this distinction.
+- **Q-IMG-1 A+D shipped:** the parent workspace owns both manuscript and
+  images; Preview, HTML, and PDF now share document-relative containment and
+  workspace-only data-URL loading. Child-workspace `../assets` references are
+  blocked with parent-workspace guidance; drag-drop `assets/` remains allowed.
+  The packaged App Store parent/child/missing-image smoke is still pending.
+- Latest source checks for the PDF/Q-IMG-1 work passed: `npm test` (145 files
+  / 1293 tests), `cargo fmt --check`, `cargo test` (329 tests), `npm run
+  build:vite`, App Store preview `npm run build`, and
+  `npm run smoke:app-store-surface` (94 tests). The Agent Workbench PATH-shim
+  test was intermittent on its first Rust full run, then passed a focused retry
+  and the final full run; keep it separate from image-path work.
 - Keep `@codemirror/view` at **6.43.2**. Import helper must ship via
   `externalBin` (`npm run build:import-assist-helper:live`). Both nested
   helpers need App Store inherit re-sign (`sign-app-store-submit-app.mjs`).

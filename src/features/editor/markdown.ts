@@ -14,14 +14,6 @@ const TRANSPARENT_IMAGE_SRC =
 export type RenderMarkdownOptions = {
   documentPath?: string | null;
   workspaceRoot?: string | null;
-  /**
-   * PDF/HTML export: allow document-relative paths (including `../assets/…`)
-   * that resolve outside the open workspace root. Preview stays workspace-bound.
-   * Absolute paths written in Markdown are still rejected unless under the
-   * workspace. Resolved paths are embedded as data URLs at export time — the
-   * PDF destination folder is never used for lookup.
-   */
-  allowDocumentRelativeOutsideWorkspace?: boolean;
 };
 
 export function renderMarkdown(
@@ -42,7 +34,6 @@ export function renderMarkdown(
     fragment,
     options?.workspaceRoot ?? null,
     options?.documentPath ?? null,
-    options?.allowDocumentRelativeOutsideWorkspace === true,
   );
   applyTablePreviewPolicyToFragment(fragment);
   applyTaskListPreviewPolicyToFragment(fragment);
@@ -114,7 +105,6 @@ function applyImagePreviewPolicyToFragment(
   fragment: DocumentFragment,
   workspaceRoot: string | null,
   documentPath: string | null,
-  allowDocumentRelativeOutsideWorkspace = false,
 ): void {
   for (const image of Array.from(fragment.querySelectorAll("img"))) {
     const src = image.getAttribute("src")?.trim() ?? "";
@@ -126,28 +116,41 @@ function applyImagePreviewPolicyToFragment(
       continue;
     }
 
-    const imagePath = resolveLocalImagePath(src, workspaceRoot, documentPath, {
-      allowDocumentRelativeOutsideWorkspace,
-    });
-    if (imagePath) {
+    const resolution = resolveLocalImagePath(src, workspaceRoot, documentPath);
+    if (resolution.kind === "allowed") {
       image.setAttribute("src", TRANSPARENT_IMAGE_SRC);
-      image.setAttribute(WORKSPACE_IMAGE_PATH_ATTR, imagePath);
+      image.setAttribute(WORKSPACE_IMAGE_PATH_ATTR, resolution.path);
       image.removeAttribute("srcset");
       image.setAttribute("loading", "lazy");
       image.setAttribute("decoding", "async");
       continue;
     }
 
-    image.replaceWith(blockedImageMessage(image.getAttribute("alt")?.trim()));
+    image.replaceWith(
+      blockedImageMessage(
+        image.getAttribute("alt")?.trim(),
+        resolution.kind === "outside-workspace",
+      ),
+    );
   }
 }
 
-function blockedImageMessage(alt?: string | null): HTMLSpanElement {
+function blockedImageMessage(
+  alt?: string | null,
+  outsideWorkspace = false,
+): HTMLSpanElement {
   const replacement = document.createElement("span");
   replacement.className = "blocked-image";
   replacement.setAttribute("role", "note");
   // Japanese-first (Q-IMP-1 / product locale). Class stays `blocked-image`
   // for export / CSS. Do not silently load remote or outside-workspace files.
+  if (outsideWorkspace) {
+    replacement.textContent = alt
+      ? `画像を表示できません: ${alt}（画像を含む親フォルダをワークスペースとして開いてください）`
+      : "画像を表示できません（画像を含む親フォルダをワークスペースとして開いてください）";
+    return replacement;
+  }
+
   replacement.textContent = alt
     ? `画像を表示できません: ${alt}`
     : "画像を表示できません（ワークスペース外・未配置・リモートは読み込みません）";
@@ -194,23 +197,22 @@ function applyTaskListPreviewPolicyToFragment(
   }
 }
 
-/**
- * Resolve a local Markdown image src to an absolute POSIX path.
- * Preview: workspace-contained only.
- * Export (`allowDocumentRelativeOutsideWorkspace`): also allow relative
- * paths resolved from the open document directory (e.g. `../assets/cover.jpg`).
- */
+type LocalImagePathResolution =
+  | { kind: "allowed"; path: string }
+  | { kind: "outside-workspace" }
+  | { kind: "blocked" };
+
+/** Resolve a document-relative local image under the selected workspace. */
 function resolveLocalImagePath(
   src: string,
   workspaceRoot: string | null,
   documentPath: string | null,
-  options?: { allowDocumentRelativeOutsideWorkspace?: boolean },
-): string | null {
+): LocalImagePathResolution {
   let decodedSrc: string;
   try {
     decodedSrc = decodeURIComponent(src);
   } catch {
-    return null;
+    return { kind: "blocked" };
   }
 
   if (
@@ -220,7 +222,7 @@ function resolveLocalImagePath(
     decodedSrc.includes("#") ||
     /^[a-z][a-z0-9+.-]*:/i.test(decodedSrc)
   ) {
-    return null;
+    return { kind: "blocked" };
   }
 
   const srcIsAbsolute = isAbsolutePosix(decodedSrc);
@@ -239,7 +241,7 @@ function resolveLocalImagePath(
       documentDir ??
       (workspaceRoot ? normalizeWorkspaceRoot(workspaceRoot) : null);
     if (!baseDir) {
-      return null;
+      return { kind: "blocked" };
     }
     resolved = resolvePosix(baseDir, decodedSrc);
   }
@@ -250,39 +252,23 @@ function resolveLocalImagePath(
       resolved === normalizedRoot ||
       resolved.startsWith(`${normalizedRoot}/`)
     ) {
-      return resolved;
+      return { kind: "allowed", path: resolved };
     }
   }
 
-  // Export-only: document-relative (non-absolute) escapes such as ../assets.
-  if (
-    options?.allowDocumentRelativeOutsideWorkspace &&
-    documentDir &&
-    !srcIsAbsolute
-  ) {
-    return resolved;
+  // Keep Preview, HTML, and PDF on the same document-relative containment
+  // rule. An escaped relative path is useful feedback: opening the project
+  // parent as the workspace grants the same image access in all three views.
+  if (workspaceRoot && !srcIsAbsolute) {
+    return { kind: "outside-workspace" };
   }
 
-  return null;
+  return { kind: "blocked" };
 }
 
 function normalizeWorkspaceRoot(root: string): string {
   const withoutTrailingSlash = root.replace(/\/+$/, "");
   return withoutTrailingSlash || "/";
-}
-
-function documentBaseDir(
-  documentPath: string | null,
-  normalizedRoot: string,
-): string {
-  if (
-    documentPath &&
-    (documentPath === normalizedRoot ||
-      documentPath.startsWith(normalizedRoot + "/"))
-  ) {
-    return dirnamePosix(documentPath);
-  }
-  return normalizedRoot;
 }
 
 function isAbsolutePosix(path: string): boolean {

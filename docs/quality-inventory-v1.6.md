@@ -41,7 +41,7 @@ Last reviewed: 2026-07-09 (structural audit + v1.6 recommended slices)
 | Pri | ID | Item | Severity | Status | Suggested slice |
 |-----|-----|------|----------|--------|-----------------|
 | P0 | Q-PDF-1 | PDF export drops last few lines of document | Correctness | **Mostly fixed** (safety 148 + cover page + tail). Long JP colophon verified OK | Device smoke on other fixtures if needed |
-| P1 | **Q-IMG-1** | **Local image path / sandbox / PDF embed inconsistency** | Correctness / UX | **Open — deferred (parked)** | See detail section; do not thrash without a design slice |
+| P1 | **Q-IMG-1** | **Local image path / sandbox / PDF embed inconsistency** | Correctness / UX | **Source fixed; App Store device smoke pending** | A+D parent-workspace policy and shared loader; see detail section |
 | P1 | Q-IMP-1 | PDF import leaves Markdown image paths that Preview blocks | UX / expectation | **Done in source** | Import draft image note + JP blocked-image preview copy |
 | P1 | Q-IMP-2 | Image file OCR may fail under App Sandbox when helper opens user path | Correctness (TF) | **Done in source** (device TF re-verify open) | Stage user file to container temp before nested helper |
 | P1 | Q-IMP-8 | Import helper `read_line` blocks without effective wall timeout | Reliability | **Done in source** | Watchdog kill in `round_trip_helper_with_timeout` (120s production) |
@@ -192,13 +192,14 @@ PDF device re-export and TF image import remain **outside** unit tests; record p
 
 ## Detail — open and recent
 
-### Q-IMG-1 — Local image paths, sandbox, Preview, PDF embed (parked)
+### Q-IMG-1 — Local image paths, sandbox, Preview, PDF embed (A+D implemented; device smoke pending)
 
-**Status:** Open concern for v1.6 closeout. **No further implementation
-slice without an explicit design decision.** Partial mitigations already
-shipped (document-relative export allowlist, data-URL embed + stamp,
-dedicated cover page, openImageFile fallback). Device still reports
-inconsistent results.
+**Decision:** **A + D.** The workspace is the project root that owns both
+the manuscript tree and images. Preview, HTML export, and PDF export now share
+one document-relative → workspace-containment → data-URL loading path. A
+relative escape from a child workspace is blocked before loading, with guidance
+to open the image-owning parent workspace. App Store device smoke is still
+needed to prove the resulting security-scoped access in the packaged build.
 
 **Symptoms (user, 2026-07-09):**
 
@@ -221,34 +222,37 @@ inconsistent results.
 | PDF export | Resolve → read file → **embed data URL** → createPDF (no live path) |
 | Multicol createPDF | Tall / constrained images still layout-sensitive |
 
-**What already shipped (do not re-invent casually):**
+**What shipped (do not re-invent casually):**
 
-- Export: `allowDocumentRelativeOutsideWorkspace` for `../…` resolution
-- Export: `embedAndStampPdfImages` (workspace open then `openImageFile`)
+- Preview / HTML / PDF: one workspace-contained document-relative resolution
+  rule; no export-only `../…` exception and no ambient `openImageFile` fallback
+- Export: `embedAndStampPdfImages` through `openWorkspaceImage` only
 - Export: leading cover split to its own A4 page (`extractPdfLeadingCoverHtml`)
 - Export: bottom safety / tail guard for trailing text clip (Q-PDF-1)
 - Import Assist: blocked-image honesty copy (Q-IMP-1)
 
-**Recommended usage until redesigned (document, not “bugfix”):**
+**Current usage:**
 
 1. Open a **workspace that contains both** the `.md` tree **and** its
    images (prefer parent of `assets/` if the manuscript uses `../assets`).
 2. Prefer **`assets/…` under the workspace** for drag-and-drop paste
    targets (app already writes pasted images into workspace `assets/`).
-3. Avoid relying on `../` escapes across the workspace boundary for MAS
-   builds — sandbox may deny the read even when resolution is correct.
-4. Treat PDF image completeness as **best-effort** until Q-IMG-1 redesign.
+3. If Preview, HTML, or PDF says to open the parent workspace, reopen the
+   folder that contains both the manuscript and the referenced image.
+4. Missing or unreadable files still show an honest placeholder; this is not a
+   permission escalation path. Resolution/containment is shared, while final
+   load-failure copy is surface-specific: Preview says `画像を表示できません`, and
+   HTML/PDF says `画像を埋め込めませんでした`.
 
-**Future design options (pick one later; not v1.6 thrash):**
+**Selected design:**
 
-- A. Always open/recommend workspace = project root that owns assets
-- B. On document open, security-scope **document dir + known asset dirs**
-- C. Export-only: copy resolved images into temp container before read
-- D. Unify Preview + Export on one “document-relative + sandbox” matrix
-  with fixtures (parent workspace / child workspace / drag-drop asset)
+- A. Open/recommend the workspace project root that owns assets.
+- D. Keep Preview + Export on the same document-relative + containment matrix
+  (parent workspace / child workspace / drag-drop asset / missing image).
 
-**Explicit park rule:** do not ship more ad-hoc CSS or path special cases
-for images without a short written decision among A–D and a fixture matrix.
+**Not selected:** B would need explicit multi-directory security-scoped
+bookmark lifecycle. C cannot grant a read permission that the app does not
+already have. Do not add path or CSS exceptions without extending the matrix.
 
 ### Q-PDF-1 — PDF export last lines clipped
 
@@ -387,7 +391,8 @@ See matrix rows and **v1.6 recommended pack**. Implementation notes:
 ## Suggested order when quality work resumes
 
 1. **v1.6 lane:** Import Assist + shipped quality packs (A/B/STR/PDF text tail).
-2. **Q-IMG-1 is parked** — resume only after choosing design option A–D.
+2. Run the Q-IMG-1 parent/child workspace matrix in a packaged App Store build;
+   do not add multi-root scope until that proof identifies a concrete gap.
 3. TF re-verify Q-IMP-2 (standalone image OCR) if still open on device.
 4. Q-THM-2 / Q-IMP-6 / Book Project stay on their tracks in `current-work.md`.
 
@@ -419,3 +424,6 @@ See matrix rows and **v1.6 recommended pack**. Implementation notes:
 | 2026-07-09 | Q-THM-1 shipped: ambient DPR/rAF budget for Shinkai/CRT; CSS filter pulses removed. |
 | 2026-07-09 | Q-PDF-2 shipped: PDF export timeout default 60s + scale helper (cap 120). |
 | 2026-07-09 | Q-IMG-1 parked: workspace/sandbox/preview/PDF image path matrix; no more ad-hoc thrash. |
+| 2026-07-10 | PDF body-image regression fixed: inline max-height now uses the shortened body column; only a split leading cover receives the larger cover bound. |
+| 2026-07-10 | Q-IMG-1 A+D shipped: parent workspace owns images; Preview/HTML/PDF share document-relative containment and workspace-only data-URL loading. Parent/child/drag-drop/missing fixtures are source-covered; packaged App Store smoke remains. |
+| 2026-07-10 | Q-IMG-1 review hardening: export integration pins child-workspace block → no loader; loader comment forbids `openImageFile` fallback; surface-specific missing-image copy documented. |

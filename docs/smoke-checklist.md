@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-07-01 (v1.3 core smoke complete)
+Last reviewed: 2026-07-10 (Q-IMG-1 parent/child workspace matrix added)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -298,13 +298,14 @@ Run when the file tree or workspace commands change:
 Run when Markdown preview, image assets, export, or authoring helpers change:
 
 1. Confirm sanitized Markdown preview renders headings, lists, tables, code blocks, blockquotes, task checkboxes (`- [ ]` / `- [x]` as display-only checkbox glyphs, not raw marker text), and local workspace-relative images such as `assets/...` and `docs/images/...`.
-2. Confirm external image URLs and unsafe local image paths are blocked.
-3. Click a workspace-relative Markdown link to a supported text file and confirm it opens as an app tab without leaving the current app shell.
-4. Click an external Markdown link such as `https://hazakura.dev/` and confirm the main app WebView does not navigate away; the link opens in the OS default browser/new external window.
-5. Paste or drag-drop an image and confirm `assets/<hash>.<ext>` is created and Markdown image syntax is inserted.
-6. Export HTML and confirm local workspace images are inlined and the saved file uses the same preview CSS as the live preview pane (`.markdown-preview` rules, no theme-specific overrides inlined).
-7. Export PDF and confirm the selected `.pdf` file is created without opening a browser or macOS print dialog, and that the rendered Markdown content is present.
-8. Insert a Markdown table and confirm the app does not imply row/column table editing beyond the implemented helper.
+2. For a manuscript in a child folder with `../assets/cover.png`, open the project parent as the workspace and confirm the image appears in Preview, exported HTML, and PDF. Reopen only the child folder and confirm all three surfaces block it with the same parent-workspace guidance. Also confirm a drag-dropped `assets/...` image loads and a missing workspace image shows an honest placeholder.
+3. Confirm external image URLs and unsafe local image paths are blocked.
+4. Click a workspace-relative Markdown link to a supported text file and confirm it opens as an app tab without leaving the current app shell.
+5. Click an external Markdown link such as `https://hazakura.dev/` and confirm the main app WebView does not navigate away; the link opens in the OS default browser/new external window.
+6. Paste or drag-drop an image and confirm `assets/<hash>.<ext>` is created and Markdown image syntax is inserted.
+7. Export HTML and confirm local workspace images are inlined and the saved file uses the same preview CSS as the live preview pane (`.markdown-preview` rules, no theme-specific overrides inlined).
+8. Export PDF and confirm the selected `.pdf` file is created without opening a browser or macOS print dialog, and that the rendered Markdown content is present.
+9. Insert a Markdown table and confirm the app does not imply row/column table editing beyond the implemented helper.
 
 ## v0.33 EPUB Export Smoke
 

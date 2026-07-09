@@ -15,7 +15,6 @@ vi.mock("@tauri-apps/plugin-dialog", () => ({
 const tauriApi = vi.hoisted(() => ({
   exportPdfFile: vi.fn(),
   isTauriRuntime: vi.fn(() => false),
-  openImageFile: vi.fn(),
   openWorkspaceImage: vi.fn(),
   saveBinaryFileAs: vi.fn(),
   saveTextFileAs: vi.fn(),
@@ -37,7 +36,6 @@ const epubApi = vi.hoisted(() => ({
 vi.mock("../../lib/tauri", () => ({
   exportPdfFile: tauriApi.exportPdfFile,
   isTauriRuntime: tauriApi.isTauriRuntime,
-  openImageFile: tauriApi.openImageFile,
   openWorkspaceImage: tauriApi.openWorkspaceImage,
   saveBinaryFileAs: tauriApi.saveBinaryFileAs,
   saveTextFileAs: tauriApi.saveTextFileAs,
@@ -115,7 +113,6 @@ describe("useDocumentExport", () => {
     epubApi.defaultEpubExportSettings.mockClear();
     tauriApi.saveBinaryFileAs.mockReset();
     tauriApi.saveTextFileAs.mockReset();
-    tauriApi.openImageFile.mockReset();
     tauriApi.openWorkspaceImage.mockReset();
     tauriApi.exportPdfFile.mockReset();
     tauriApi.isTauriRuntime.mockReset();
@@ -167,7 +164,6 @@ describe("useDocumentExport", () => {
     });
 
     expect(markdownApi.renderMarkdown).toHaveBeenCalledWith("after dialog", {
-      allowDocumentRelativeOutsideWorkspace: true,
       documentPath: "/workspace/a.md",
       workspaceRoot: null,
     });
@@ -260,8 +256,13 @@ describe("useDocumentExport", () => {
     tauriApi.isTauriRuntime.mockReturnValue(true);
     dialogApi.save.mockResolvedValue("/tmp/print-me.pdf");
     tauriApi.exportPdfFile.mockResolvedValue(undefined);
+    tauriApi.openWorkspaceImage.mockResolvedValue({
+      dataUrl: "data:image/png;base64,AAAA",
+    });
     markdownApi.renderMarkdown.mockImplementationOnce(
       () => `
+        <h1>本文画像の前</h1>
+        <p><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" data-hazakura-image-path="/workspace/assets/body.png" alt="本文画像"></p>
         <div class="markdown-table-frame">
           <table>
             <thead><tr><th>章</th><th>場面</th></tr></thead>
@@ -278,7 +279,7 @@ describe("useDocumentExport", () => {
         activeTab: makeTab({ name: "print-me.md" }),
         setGlobalError: vi.fn(),
         setStatus,
-        workspaceRootPath: null,
+        workspaceRootPath: "/workspace",
       }),
     );
 
@@ -297,6 +298,10 @@ describe("useDocumentExport", () => {
       await result.current.confirmPdfExport("wide");
     });
 
+    expect(markdownApi.renderMarkdown).toHaveBeenCalledWith("# Print me", {
+      documentPath: "/workspace/a.md",
+      workspaceRoot: "/workspace",
+    });
     expect(dialogApi.save).toHaveBeenCalledWith({
       defaultPath: "print-me.pdf",
       filters: [{ name: "PDF", extensions: ["pdf"] }],
@@ -317,6 +322,17 @@ describe("useDocumentExport", () => {
     expect(exportedPdfHtml).toContain("pdf-export-tail-guard");
     // Fixed px max-height for in-body images (cover page uses its own rules).
     expect(exportedPdfHtml).toMatch(/max-height:\s*\d+px/);
+    const bodyImage =
+      exportedPdfHtml.match(/<img[^>]*alt="本文画像"[^>]*>/)?.[0] ?? "";
+    // `style` wins over the body CSS. The leading-cover size (676px for
+    // this preset) would overflow the 552px body column, so body images must
+    // keep their dedicated 72%-of-content-height bound (397px).
+    expect(bodyImage).toContain("max-height: 397px");
+    expect(bodyImage).not.toContain("max-height: 676px");
+    expect(tauriApi.openWorkspaceImage).toHaveBeenCalledWith(
+      "/workspace",
+      "/workspace/assets/body.png",
+    );
     expect(exportedPdfHtml).toContain("--pdf-column-gap: 124.724px;");
     expect(exportedPdfHtml).toContain("column-fill: auto;");
     expect(exportedPdfHtml).toContain("column-width: var(--pdf-content-width);");
@@ -370,6 +386,46 @@ describe("useDocumentExport", () => {
   .markdown-preview code,
   .markdown-preview .markdown-table-frame th { background: transparent; }`);
     expect(setStatus).toHaveBeenCalledWith("PDF exported");
+  });
+
+  it("does not call an export image loader for a child-workspace escape", async () => {
+    tauriApi.isTauriRuntime.mockReturnValue(true);
+    dialogApi.save.mockResolvedValue("/tmp/child-workspace.pdf");
+    tauriApi.exportPdfFile.mockResolvedValue(undefined);
+    // Use the unmocked renderer for the resolver half of this thin export
+    // integration: its blocked result must reach the PDF builder unchanged.
+    const { renderMarkdown: actualRenderMarkdown } = await vi.importActual<
+      typeof import("../../features/editor/markdown")
+    >("../../features/editor/markdown");
+    markdownApi.renderMarkdown.mockImplementationOnce(() =>
+      actualRenderMarkdown("![cover](../assets/cover.jpg)", {
+        documentPath: "/project/book/chapter.md",
+        workspaceRoot: "/project/book",
+      }),
+    );
+
+    const { result } = renderHook(() =>
+      useDocumentExport({
+        activeContents: "![cover](../assets/cover.jpg)",
+        activeTab: makeTab({ path: "/project/book/chapter.md" }),
+        setGlobalError: vi.fn(),
+        setStatus: vi.fn(),
+        workspaceRootPath: "/project/book",
+      }),
+    );
+
+    await act(async () => {
+      await result.current.exportPdf();
+    });
+    await act(async () => {
+      await result.current.confirmPdfExport("standard");
+    });
+
+    expect(tauriApi.openWorkspaceImage).not.toHaveBeenCalled();
+    expect(useDocumentExportSource).not.toContain("openImageFile");
+    expect(tauriApi.exportPdfFile.mock.calls[0]?.[1]).toContain(
+      "画像を含む親フォルダをワークスペースとして開いてください",
+    );
   });
 
   it("surfaces native PDF export errors for diagnosis", async () => {

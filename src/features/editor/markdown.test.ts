@@ -73,25 +73,57 @@ describe("renderMarkdown image policy", () => {
     expect(html).not.toContain("data-hazakura-image-path");
   });
 
-  it("export mode allows document-relative images outside the workspace root", () => {
-    // Manuscript in a subfolder; cover lives next to the parent (../assets).
-    const html = renderMarkdown("![cover](../assets/cover.jpg)", {
-      documentPath: "/ws/book/chapter.md",
-      workspaceRoot: "/ws/book",
-      allowDocumentRelativeOutsideWorkspace: true,
-    });
+  it("shares the parent-workspace image matrix across Preview, HTML, and PDF", () => {
+    const manuscriptPath = "/project/book/chapter.md";
 
-    expect(html).toContain(
-      'data-hazakura-image-path="/ws/assets/cover.jpg"',
+    const parentWorkspace = renderMarkdown("![cover](../assets/cover.jpg)", {
+      documentPath: manuscriptPath,
+      workspaceRoot: "/project",
+    });
+    expect(parentWorkspace).toContain(
+      'data-hazakura-image-path="/project/assets/cover.jpg"',
     );
-    expect(html).not.toContain("画像を表示できません");
+
+    const childWorkspace = renderMarkdown("![cover](../assets/cover.jpg)", {
+      documentPath: manuscriptPath,
+      workspaceRoot: "/project/book",
+    });
+    expect(childWorkspace).toContain("画像を表示できません: cover");
+    expect(childWorkspace).toContain(
+      "画像を含む親フォルダをワークスペースとして開いてください",
+    );
+    expect(childWorkspace).not.toContain("data-hazakura-image-path");
+
+    // Drag-and-drop writes to the selected workspace's `assets/` directory.
+    const draggedAsset = renderMarkdown("![dropped](assets/drop.png)", {
+      documentPath: manuscriptPath,
+      workspaceRoot: "/project/book",
+    });
+    expect(draggedAsset).toContain(
+      'data-hazakura-image-path="/project/book/assets/drop.png"',
+    );
   });
 
-  it("export mode still blocks absolute paths outside the workspace", () => {
+  it("keeps a missing workspace image on the shared loader path", async () => {
+    const html = renderMarkdown("![missing](assets/missing.png)", {
+      documentPath: "/project/book/chapter.md",
+      workspaceRoot: "/project",
+    });
+    expect(html).toContain(
+      'data-hazakura-image-path="/project/book/assets/missing.png"',
+    );
+
+    const preview = await inlineWorkspaceAssetImages(html, async () => {
+      throw new Error("missing fixture");
+    });
+    expect(preview).toContain("画像を表示できません: missing");
+    expect(preview).not.toContain("data-hazakura-image-path");
+  });
+
+  it("blocks absolute paths outside the workspace", () => {
     const html = renderMarkdown("![x](/etc/passwd)", {
       documentPath: "/ws/book/chapter.md",
       workspaceRoot: "/ws/book",
-      allowDocumentRelativeOutsideWorkspace: true,
     });
 
     expect(html).toContain("画像を表示できません");
