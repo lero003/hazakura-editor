@@ -103,10 +103,10 @@ describe("pdfScreenPageLayout", () => {
   });
 
   it("reserves bottom safety so last line boxes stay inside the A4 capture", () => {
-    // Moderate reserve: large enough for wrap, not so large that cover
-    // images overflow the first column and collapse multicol flow.
-    expect(PDF_CONTENT_BOTTOM_SAFETY_POINTS).toBeGreaterThanOrEqual(48);
-    expect(PDF_CONTENT_BOTTOM_SAFETY_POINTS).toBeLessThanOrEqual(96);
+    // Device: 72pt still clipped the last colophon paragraph; keep ~148pt.
+    // Cover images must use a fixed max-height that fits this column.
+    expect(PDF_CONTENT_BOTTOM_SAFETY_POINTS).toBeGreaterThanOrEqual(120);
+    expect(PDF_CONTENT_BOTTOM_SAFETY_POINTS).toBeLessThanOrEqual(180);
 
     for (const preset of ["narrow", "standard", "wide"] as const) {
       const layout = pdfScreenPageLayout(preset);

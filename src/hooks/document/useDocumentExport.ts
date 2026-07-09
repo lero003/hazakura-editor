@@ -111,6 +111,13 @@ export function useDocumentExport({
 
       const pdfLayout = pdfScreenPageLayout(preset);
       const pdfPoint = formatPdfPointValue;
+      // Fixed px max height for cover/body images so multicol stays stable.
+      // Prefer numeric px over CSS calc() — WebKit createPDF was dropping
+      // images when only max-height: calc(var(--pdf-content-height) - …).
+      const imageMaxHeightPx = Math.max(
+        240,
+        Math.floor(pdfLayout.contentHeightPoints * 0.78),
+      );
 
       const standaloneHtml = `<!DOCTYPE html>
 <html lang="en">
@@ -178,12 +185,12 @@ export function useDocumentExport({
     margin: var(--pdf-margin-block) var(--pdf-margin-inline);
     max-width: none;
     overflow: visible;
-    padding: 0 0 1.5em;
+    padding: 0 0 2.25em;
     width: var(--pdf-content-width);
   }
   .markdown-preview .pdf-export-tail-guard {
     display: block;
-    height: 2em;
+    height: 3em;
     margin: 0;
     padding: 0;
     visibility: hidden;
@@ -196,24 +203,24 @@ export function useDocumentExport({
     color: #000000;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
-  /* Do not force images to stay unbroken: a cover taller than the column
-     with break-inside:avoid overflows, collides with following text, and
-     destabilizes the whole multicol flow (missing tail on long docs). */
   .markdown-preview pre,
   .markdown-preview blockquote {
     break-inside: avoid;
   }
+  /* Cover/body images: scale to fit the column, then avoid breaking so the
+     multicol flow stays stable (no overlap, no zero-size createPDF quirk). */
   .markdown-preview img {
     border: 0;
     border-radius: 0;
-    break-inside: auto;
+    break-inside: avoid;
     box-shadow: none;
     display: block;
     height: auto;
-    margin: 12px auto;
-    max-height: calc(var(--pdf-content-height) - 3em);
+    margin: 10px auto 16px;
+    max-height: ${imageMaxHeightPx}px;
     max-width: 100%;
     object-fit: contain;
+    width: auto;
   }
   .markdown-preview pre {
     background: var(--status-bg);

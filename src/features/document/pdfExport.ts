@@ -7,16 +7,14 @@ export const PDF_A4_PAGE_HEIGHT_POINTS = 842;
 
 /**
  * Multi-column PDF capture uses a fixed one-page-high content box.
- * WebKit createPDF clips to the A4 rect, so trailing line boxes that sit
- * near the column bottom can be lost (worse on long JP manuscripts).
+ * WebKit createPDF clips the A4 rect, so trailing line boxes near the
+ * column bottom can be lost (device: full colophon minus last paragraph).
  *
- * Reserve several body lines so content wraps into the next A4 column.
- * Keep this moderate: too large shortens the first column and, combined
- * with `break-inside: avoid` on cover images, collapses the multicol flow
- * (image/text overlap + missing tail). Pair with max-height images and
- * scrollWidth-based column measure. Do not restore scrollHeight.
+ * Reserve ~9–10 body lines (11pt × 1.45). Cover images must use a fixed
+ * max-height (px) that fits this shortened column — do not use
+ * break-inside:avoid without a fit constraint. Do not restore scrollHeight.
  */
-export const PDF_CONTENT_BOTTOM_SAFETY_POINTS = 72;
+export const PDF_CONTENT_BOTTOM_SAFETY_POINTS = 148;
 
 export const PDF_MARGIN_PRESETS = {
   narrow: { blockMm: 10, inlineMm: 10 },
