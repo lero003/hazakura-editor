@@ -3,21 +3,20 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-07-09 (v1.6 quality inventory: structural audit + packs)
+Last reviewed: 2026-07-09 (v1.6: quality packs shipped; Q-IMG-1 parked)
 
 ## Current State
 
 - Package version **`1.6.0`** / App Store **bundleVersion 76** (TF delivered).
 - **v1.5 (`1.5.0`) closed before 江戸彼岸.** Active: **v1.6 Import Assist** —
   `docs/import-assist-boundary-review.md`, `docs/current-work.md`.
-- Quality backlog + **structural audit** (dual buffer, sessionId, mega
-  controller, PDF/import helpers) and **v1.6 recommended packs**:
+- Quality packs A/B + PDF tail/theme/timeout mostly **shipped**. See
   **`docs/quality-inventory-v1.6.md`**.
-  - Pack A: Q-STR-1…4 **shipped**; Q-STR-5 **shipped**
-  - Pack B: Q-IMP-8 / 2 / 1 / 4 **shipped** (TF image OCR re-verify still useful)
-  - Q-THM-1 theme cost + Q-PDF-2 export timeout **shipped**
-  - Pack C: Q-PDF-1 bottom safety in code; **device re-export still open** + CM pin 6.43.2
-  See `docs/quality-inventory-v1.6.md`.
+- **Parked (do not thrash):** **Q-IMG-1** — local image path /
+  workspace root / App Sandbox / Preview vs PDF embed inconsistencies
+  (incl. drag-drop `assets/` and `../assets`). Usage until redesign:
+  open a workspace that contains **both** the manuscript and its images.
+  Design options A–D are listed under Q-IMG-1 in the inventory.
 - Keep `@codemirror/view` at **6.43.2**. Import helper must ship via
   `externalBin` (`npm run build:import-assist-helper:live`). Both nested
   helpers need App Store inherit re-sign (`sign-app-store-submit-app.mjs`).

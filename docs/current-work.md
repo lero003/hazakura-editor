@@ -52,7 +52,8 @@ Published Mac App Store history through v1.3 remains documented in `current-stat
 | Done / quality | Q-IMP-4 empty OCR | Fail hard — no empty-marker tab for blank image OCR. |
 | Done / quality | Q-THM-1 theme cost | Shinkai/CRT intensity DPR + rAF budget; CSS filter pulses → opacity only. |
 | Done / quality | Q-PDF-2 export timeout | Default 60s wall budget (+ scale helper, cap 120). |
-| In tree / verify | Pack C | Q-PDF-1 device re-export (bottom safety in code). TF re-verify Q-IMP-2. |
+| Mostly done | Q-PDF-1 text tail | Long JP colophon verified after safety/cover work. |
+| **Parked** | **Q-IMG-1 local images** | Preview/PDF/sandbox/workspace path matrix — **do not thrash**. See `docs/quality-inventory-v1.6.md` § Q-IMG-1. Prefer workspace that contains both md + assets until redesign. |
 | Deferred | Other quality | Q-THM-2 edohigan polish, Q-IMP-6 review UI, … |
 | Done / UX | Import discoverability | Confirm dialog; workspace right-click “Markdown 下書きとして取り込む…”; menu/palette keywords. |
 | Next / post-TF | Review UI | Source page/image vs Markdown; low-confidence marks. |

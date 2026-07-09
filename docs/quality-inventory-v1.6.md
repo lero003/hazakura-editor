@@ -40,7 +40,8 @@ Last reviewed: 2026-07-09 (structural audit + v1.6 recommended slices)
 
 | Pri | ID | Item | Severity | Status | Suggested slice |
 |-----|-----|------|----------|--------|-----------------|
-| P0 | Q-PDF-1 | PDF export drops last few lines of document | Correctness | **Fixed in source** (48pt bottom safety + export padding). Re-verify long JP. | Device re-export smoke |
+| P0 | Q-PDF-1 | PDF export drops last few lines of document | Correctness | **Mostly fixed** (safety 148 + cover page + tail). Long JP colophon verified OK | Device smoke on other fixtures if needed |
+| P1 | **Q-IMG-1** | **Local image path / sandbox / PDF embed inconsistency** | Correctness / UX | **Open — deferred (parked)** | See detail section; do not thrash without a design slice |
 | P1 | Q-IMP-1 | PDF import leaves Markdown image paths that Preview blocks | UX / expectation | **Done in source** | Import draft image note + JP blocked-image preview copy |
 | P1 | Q-IMP-2 | Image file OCR may fail under App Sandbox when helper opens user path | Correctness (TF) | **Done in source** (device TF re-verify open) | Stage user file to container temp before nested helper |
 | P1 | Q-IMP-8 | Import helper `read_line` blocks without effective wall timeout | Reliability | **Done in source** | Watchdog kill in `round_trip_helper_with_timeout` (120s production) |
@@ -48,7 +49,7 @@ Last reviewed: 2026-07-09 (structural audit + v1.6 recommended slices)
 | P2 | Q-PDF-2 | PDF export 30s wall timeout on very long multi-page captures | Reliability | **Done in source** | Default 60s + page-scale helper (cap 120s); clearer timeout message |
 | P2 | Q-IMP-3 | Scan PDF OCR capped at 40 pages; 40 MB source cap | Limit | By design | Document in UI; raise only with progress UI |
 | P2 | Q-IMP-4 | Empty OCR still opens a draft with empty-page markers | UX | **Done in source** | Fail hard on empty image OCR; stronger empty assemble copy |
-| P2 | Q-EXP-1 | PDF export does not embed document images reliably in all cases | Completeness | Historical RC | v1.3-followup breadth; not v1.6 blocker |
+| P2 | Q-EXP-1 | PDF export does not embed document images reliably in all cases | Completeness | **Superseded by Q-IMG-1** | Park under Q-IMG-1 |
 | P2 | Q-DOC-1 | Handoff / status still mention stale bundleVersion in places | Docs drift | Partial | Keep this inventory + `current-work` authoritative |
 | Durable | Q-CM-1 | CodeMirror view ≥6.43.3 tile-tree line vanish / caret bugs | Correctness | Mitigated by pin | Never bump without long JP + wrap + L Mode matrix |
 | Deferred | Q-IMP-5 | Extract embedded PDF images into workspace assets | Feature | Out of Phase 1 | Book / asset pipeline later |
@@ -191,21 +192,80 @@ PDF device re-export and TF image import remain **outside** unit tests; record p
 
 ## Detail — open and recent
 
+### Q-IMG-1 — Local image paths, sandbox, Preview, PDF embed (parked)
+
+**Status:** Open concern for v1.6 closeout. **No further implementation
+slice without an explicit design decision.** Partial mitigations already
+shipped (document-relative export allowlist, data-URL embed + stamp,
+dedicated cover page, openImageFile fallback). Device still reports
+inconsistent results.
+
+**Symptoms (user, 2026-07-09):**
+
+- Preview: image sometimes shows, sometimes not; sometimes only alt /
+  “画像を表示できません”.
+- PDF export: cover may appear after dedicated-page work; **in-body
+  images** (including drag-and-drop into `assets/`) often missing.
+- Behavior depends heavily on **which folder was opened as workspace**
+  (`../assets` vs `assets/…` vs workspace subfolder vs parent folder).
+- Easy to misread as “export destination path” — it is **not**. PDF
+  writes use embedded data URLs only; the save location is irrelevant.
+
+**Layers involved (why it feels like a “spec bug”):**
+
+| Layer | Rule |
+|-------|------|
+| Markdown `![](…)` | Relative to **document directory** when document has a path |
+| Preview policy | Prefer paths **inside open workspace root** (Safe Editor) |
+| App Sandbox (MAS) | Read only container + **user-granted** security-scoped trees |
+| PDF export | Resolve → read file → **embed data URL** → createPDF (no live path) |
+| Multicol createPDF | Tall / constrained images still layout-sensitive |
+
+**What already shipped (do not re-invent casually):**
+
+- Export: `allowDocumentRelativeOutsideWorkspace` for `../…` resolution
+- Export: `embedAndStampPdfImages` (workspace open then `openImageFile`)
+- Export: leading cover split to its own A4 page (`extractPdfLeadingCoverHtml`)
+- Export: bottom safety / tail guard for trailing text clip (Q-PDF-1)
+- Import Assist: blocked-image honesty copy (Q-IMP-1)
+
+**Recommended usage until redesigned (document, not “bugfix”):**
+
+1. Open a **workspace that contains both** the `.md` tree **and** its
+   images (prefer parent of `assets/` if the manuscript uses `../assets`).
+2. Prefer **`assets/…` under the workspace** for drag-and-drop paste
+   targets (app already writes pasted images into workspace `assets/`).
+3. Avoid relying on `../` escapes across the workspace boundary for MAS
+   builds — sandbox may deny the read even when resolution is correct.
+4. Treat PDF image completeness as **best-effort** until Q-IMG-1 redesign.
+
+**Future design options (pick one later; not v1.6 thrash):**
+
+- A. Always open/recommend workspace = project root that owns assets
+- B. On document open, security-scope **document dir + known asset dirs**
+- C. Export-only: copy resolved images into temp container before read
+- D. Unify Preview + Export on one “document-relative + sandbox” matrix
+  with fixtures (parent workspace / child workspace / drag-drop asset)
+
+**Explicit park rule:** do not ship more ad-hoc CSS or path special cases
+for images without a short written decision among A–D and a fixture matrix.
+
 ### Q-PDF-1 — PDF export last lines clipped
 
-**Symptom (user):** Full document mostly exports; **last few lines** missing.
+**Symptom (user):** Full document mostly exports; **last section / lines**
+missing (e.g. colophon second paragraph).
 
-**Cause (code):** Horizontal multi-column A4 capture (`height` fixed to one
-page). Content box was flush with the column bottom; WebKit `createPDF`
-clips the A4 rect, so final line boxes / descenders can fall outside.
+**Cause (code):** Horizontal multi-column A4 capture; WebKit `createPDF`
+clips near column bottom; large cover images with `break-inside: avoid`
+could also destabilize multicol (addressed separately via cover page).
 
-**Fix (source):** `PDF_CONTENT_BOTTOM_SAFETY_POINTS = 16` reserved from
-`contentHeightPoints` in `src/features/document/pdfExport.ts`. Capture size
-script still uses height `842` and column occupancy (do **not** restore
-document `scrollHeight` as the normal measure — reintroduces blank pages).
+**Fix (source, iterative):** `PDF_CONTENT_BOTTOM_SAFETY_POINTS` raised
+(now **148**), border-box bottom padding, tail guard, dedicated cover
+page. Capture height stays one A4 row; do **not** restore document
+`scrollHeight`.
 
-**Verify:** Re-export the long manuscript that failed; check final page in
-macOS Preview. If still clipped, raise safety to 20–24pt.
+**Verify:** Long JP manuscript (`重さのないノート_KDP本文.md`) — text tail
+OK on device after 148pt + cover split. Image completeness → **Q-IMG-1**.
 
 ### Q-IMP-1 — Image paths after PDF import
 
@@ -360,3 +420,4 @@ See matrix rows and **v1.6 recommended pack**. Implementation notes:
 | 2026-07-09 | Q-IMP-4 shipped: empty image OCR fails hard (no empty-marker tab). |
 | 2026-07-09 | Q-THM-1 shipped: ambient DPR/rAF budget for Shinkai/CRT; CSS filter pulses removed. |
 | 2026-07-09 | Q-PDF-2 shipped: PDF export timeout default 60s + scale helper (cap 120). |
+| 2026-07-09 | Q-IMG-1 parked: workspace/sandbox/preview/PDF image path matrix; no more ad-hoc thrash. |
