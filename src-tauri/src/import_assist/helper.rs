@@ -212,6 +212,13 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
                     index: 0,
                     text: value.text,
                 }];
+                // Q-IMP-4: do not open an empty-marker draft when OCR found nothing.
+                if !pages_have_meaningful_text(&pages) {
+                    return Err(
+                        "文字を抽出できませんでした。画像が不鮮明か、テキストが含まれていない可能性があります。"
+                            .into(),
+                    );
+                }
                 let markdown = assemble_import_markdown_draft(&source_name, &pages);
                 Ok(ImportDraftResult {
                     markdown,
@@ -595,6 +602,19 @@ mod tests {
     fn helper_filename_uses_sidecar_convention() {
         let name = import_assist_helper_filename();
         assert!(name.starts_with("hazakura-import-assist-helper-"));
+    }
+
+    #[test]
+    fn empty_ocr_pages_are_not_meaningful() {
+        assert!(!pages_have_meaningful_text(&[]));
+        assert!(!pages_have_meaningful_text(&[ImportPageText {
+            index: 0,
+            text: "  \n\t".into(),
+        }]));
+        assert!(pages_have_meaningful_text(&[ImportPageText {
+            index: 0,
+            text: "あ".into(),
+        }]));
     }
 
     /// Q-IMP-8: hanging helper must not block past the wall-clock budget.

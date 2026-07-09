@@ -31,8 +31,13 @@ pub fn assemble_import_markdown_draft(source_label: &str, pages: &[ImportPageTex
     let _ = writeln!(out);
 
     if pages.is_empty() {
+        // Kept for pure unit tests / tooling; product import fails hard on empty
+        // OCR (Q-IMP-4) before opening a tab.
         let _ = writeln!(out, "<!-- hazakura:import-empty -->");
-        let _ = writeln!(out, "_（抽出結果が空でした）_");
+        let _ = writeln!(
+            out,
+            "_（抽出結果が空でした。別のファイルを試すか、解像度の高い画像を選んでください。）_"
+        );
         return out;
     }
 
