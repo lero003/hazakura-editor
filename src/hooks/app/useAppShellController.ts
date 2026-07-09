@@ -514,12 +514,11 @@ export function useAppShellController() {
           contents: activeTab.contents,
         }
       : null,
-    setActiveTabContents: (next: string, tabId: string) => {
-      // v0.34: クロージャの activeTab.sessionId ではなく、ハンドラが検証済みの
-      // sessionId（引数名は歴史的に tabId）で書き込み先を決める。
-      // 生成中に別タブへ切替しても誤爆しない。Q-STR-1: list helper.
+    setActiveTabContents: (next: string, sessionId: string) => {
+      // Match by sessionId (Q-STR-1/3): survives Save As path rekey and
+      // tab switch during generation without writing the wrong buffer.
       setTabs((currentTabs) =>
-        replaceTabsBufferBySessionId(currentTabs, tabId, next),
+        replaceTabsBufferBySessionId(currentTabs, sessionId, next),
       );
     },
     setStatus,

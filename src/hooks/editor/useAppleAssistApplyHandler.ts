@@ -88,13 +88,14 @@ type UseAppleAssistApplyHandlerOptions = {
   // is null (the Hazakura Local Assist window would not be sending
   // an apply with no active tab on the main side).
   activeTab: ActiveTab | null;
-  // Replaces the active tab's contents with the new
-  // buffer. The orchestrator owns the tab state; this
-  // callback is the only path through which the handler
-  // mutates the buffer. The `tabId` is passed explicitly so
-  // the write always targets the validated tab even if the
-  // orchestrator's render-time `activeTab` closure is stale.
-  setActiveTabContents: (next: string, tabId: string) => void;
+  // Replaces the target tab's contents with the new buffer.
+  // The orchestrator owns the tab state; this callback is the
+  // only path through which the handler mutates the buffer.
+  // The second argument is **sessionId** (not path/id) so the
+  // write stays on the validated CodeMirror/Assist session even
+  // after Save As rekeys id/path, and even if the render-time
+  // `activeTab` closure is stale (Q-STR-3).
+  setActiveTabContents: (next: string, sessionId: string) => void;
   // Optional status surface for the main window. Called
   // on apply success / failure with a localized message
   // the orchestrator can pass through to its `setStatus`.
@@ -253,11 +254,7 @@ export function useAppleAssistApplyHandler({
         diff,
       };
       aiEditTransactionStore.record(stored);
-      // `setActiveTabContents` matches by `tab.sessionId`, so the
-      // buffer write must pass `latestTab.sessionId` (not `.id`).
-      // Passing `.id` would never match after the session-based
-      // rework and the apply would silently no-op (the generated
-      // text never reached the buffer).
+      // Second arg is sessionId (Q-STR-3); path/id would miss after Save As.
       setActiveTabContentsRef.current(result.nextBuffer, latestTab.sessionId);
       const successMessage = `Hazakura Local Assist applied: ${result.transaction.request} (${result.transaction.target.kind})`;
       setStatusRef.current?.(successMessage);

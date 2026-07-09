@@ -512,9 +512,9 @@ describe("useAppleAssistApplyHandler apply path", () => {
 
     expect(setActiveTabContents).toHaveBeenCalledTimes(1);
     // The write MUST be addressed by `sessionId`, not by `id`.
-    // If the handler passes `id` ("/workspace/note.md"), the
-    // real `setTabs((tabs) => tabs.map((t) => t.sessionId === tabId ...))`
-    // finds no tab and the buffer never updates.
+    // If the handler passes `id` ("/workspace/note.md"),
+    // `replaceTabsBufferBySessionId` finds no tab and the buffer
+    // never updates (Q-STR-3).
     expect(setActiveTabContents).toHaveBeenCalledWith(
       expect.any(String),
       "session:tab-1",

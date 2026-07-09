@@ -67,7 +67,7 @@ Last reviewed: 2026-07-09 (structural audit + v1.6 recommended slices)
 |-----|-----|------|----------|--------|-----------------|-------------|
 | P1 | Q-STR-1 | Tab mutation helpers unified (`id` vs `sessionId`) | Maintainability | **Done in source** | `editorTabs.ts` helpers + Assist/editor/backup/discard/recovery migration | `editorTabs.test` + full `npm test` when shipping |
 | P1 | Q-STR-2 | Single Assist “editable” guard on all buffer mutators | Correctness | **Done in source** | `appleAssistEditGuard.ts` + controller rejects save/edit/encoding/backup | unit tests + Assist lock smoke |
-| P2 | Q-STR-3 | Rename misleading `tabId` params that are actually `sessionId` | Maintainability | Open / **v1.6 rec** | e.g. `setActiveTabContents(next, sessionId)` rename only | typecheck + same tests as Q-STR-1 |
+| P2 | Q-STR-3 | Rename misleading `tabId` params that are actually `sessionId` | Maintainability | **Done in source** | `setActiveTabContents(next, sessionId)` naming + comments | Assist apply sessionId test |
 | P2 | Q-STR-4 | Menu actions and Command Palette actions share one map | Maintainability | Open / **v1.6 rec** | `useAppShellController`: one `shellActions` object | palette + native menu smoke for open/save/import |
 | P2 | Q-STR-5 | Workspace path containment uses one Rust helper | Security consistency | Open / **v1.6 rec** | `images` / `list_workspace_directory` / `auto_backup` → `ensure_path_inside_workspace_root` | `cargo test` security + workspace + images |
 | P3 | Q-STR-6 | Import / Local Assist helper path resolver shared | Maintainability | Deferred | production: exe-adjacent + bundle only | helper probe tests |
@@ -351,3 +351,4 @@ See matrix rows and **v1.6 recommended pack**. Implementation notes:
 | 2026-07-09 | Structural audit + Q-STR / Q-IMP-8 rows; v1.6 recommended packs A/B/C for combined testing. |
 | 2026-07-09 | Q-STR-1 shipped: list helpers in `editorTabs.ts`; Assist/editor/backup/discard/recovery callers migrated. |
 | 2026-07-09 | Q-STR-2 shipped: `appleAssistEditGuard` + controller wraps save/edit/encoding/backup apply. |
+| 2026-07-09 | Q-STR-3 shipped: `setActiveTabContents` second arg renamed to `sessionId`. |
