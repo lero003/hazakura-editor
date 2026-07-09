@@ -1121,6 +1121,36 @@ export function useAppShellController() {
     appleLocalAssistActive && preferencesDialogMode === "agent",
   );
 
+  // Q-STR-4: shared open/save/export/import actions for menu + palette.
+  // Surface-specific keys stay on each consumer (palette has more editor
+  // commands; menu has quit / openWorkspacePath / theme-less window open).
+  const sharedShellDocumentActions = useMemo(
+    () => ({
+      createNewFile,
+      exportEpubBeta,
+      exportHtml,
+      exportPdf,
+      importSourceAsMarkdownDraft,
+      openFile,
+      openWorkspace,
+      requestWindowClose,
+      saveActiveTab,
+      saveActiveTabAs,
+    }),
+    [
+      createNewFile,
+      exportEpubBeta,
+      exportHtml,
+      exportPdf,
+      importSourceAsMarkdownDraft,
+      openFile,
+      openWorkspace,
+      requestWindowClose,
+      saveActiveTab,
+      saveActiveTabAs,
+    ],
+  );
+
   const {
     closeCommandPalette,
     closeGlobalSearch,
@@ -1145,14 +1175,10 @@ export function useAppShellController() {
     setGlobalSearchQuery,
   } = useCommandPaletteController({
     actions: {
+      ...sharedShellDocumentActions,
       applyActiveMarkdownFormat,
-      createNewFile,
-      exportEpubBeta,
-      exportHtml,
-      exportPdf,
       focusAdjacentTab,
       handleSendSelectionToAgent,
-      importSourceAsMarkdownDraft,
       insertTable,
       openAgentWindow: (theme) => {
         void openAgentWindow(theme);
@@ -1163,15 +1189,10 @@ export function useAppShellController() {
         }
         void openAppleAssistWindow(theme);
       },
-      openFile,
-      openWorkspace,
       openWorkspaceFile,
       requestCloseTab,
       requestRestoreFromBackup,
       requestReviewTabAgainstDisk,
-      requestWindowClose,
-      saveActiveTab,
-      saveActiveTabAs,
       setEditorSettings,
       setFindVisible,
       setPreferencesDialogMode,
@@ -1254,11 +1275,7 @@ export function useAppShellController() {
   // section: app side effects (menu integration + runtime effects)
   useAppShellSideEffectsController({
     actions: {
-      createNewFile,
-      exportEpubBeta,
-      exportHtml,
-      exportPdf,
-      importSourceAsMarkdownDraft,
+      ...sharedShellDocumentActions,
       openAgentWindow: () => {
         void openAgentWindow(themePreference);
       },
@@ -1268,13 +1285,8 @@ export function useAppShellController() {
         }
         void openAppleAssistWindow(themePreference);
       },
-      openFile,
-      openWorkspace,
       openWorkspacePath,
       requestAppQuit,
-      requestWindowClose,
-      saveActiveTab,
-      saveActiveTabAs,
     },
     listener: {
       onOpenRecentFile: openFilePath,
