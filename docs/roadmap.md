@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-09 (v1.5 closed/released before edohigan; v1.6 Import Assist active)
+Last reviewed: 2026-07-10 (`pdf-extract` security update; v1.6 fresh candidate pending)
 
 ## Current Position
 
@@ -15,10 +15,13 @@ Current release state:
 
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
-- Package/app version in tree: **`1.6.0`** (bundleVersion **74**).
+- Package/app version in tree: **`1.6.0`** (App Store config bundleVersion
+  **81**; build 81 predates the PDF dependency security update, so a fresh
+  submission candidate is required before re-review).
 - **v1.5 (`1.5.0`) is closed and was released before 江戸彼岸 (edohigan).**
 - **v1.6 (`1.6.0`) candidate:** Import Assist Phase 1 + edohigan + CodeMirror
-  view pin. Do not describe edohigan as a v1.5 feature.
+  view pin, plus the `pdf-extract` 0.12.0 / `lopdf` 0.42.0 security update.
+  Do not describe edohigan as a v1.5 feature.
 - Historical MAS baseline: `1.3.0` Daily Trust (and earlier releases) remain
   part of the public product history; store Connect is authoritative for
   listing numbers.

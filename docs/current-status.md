@@ -3,13 +3,16 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-10 (v1.5 released before edohigan; Q-IMG-1 A+D source coverage added)
+Last reviewed: 2026-07-10 (`pdf-extract` security update; fresh App Store candidate pending)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
 - Current development package/app version: **`1.6.0`** across npm, Tauri, Cargo,
-  and lockfile metadata (App Store `bundleVersion` **76**; TF delivered).
+  and lockfile metadata (App Store config `bundleVersion` **81**). The local
+  build 81 package predates the `pdf-extract` security update and must not be
+  reused for re-review; generate a fresh submission candidate after this source
+  change.
 - **v1.5 (`1.5.0`) is closed and was released before 江戸彼岸 (edohigan).**
   v1.5 covered Spellcheck settings, Reading Focus TOC density, CRT/Shinkai
   lineage polish, dead-code, deps hygiene, traffic-light, L Mode remount.
@@ -18,6 +21,10 @@ Last reviewed: 2026-07-10 (v1.5 released before edohigan; Q-IMG-1 A+D source cov
   `@codemirror/view` **6.43.2** pin. Boundary:
   `docs/import-assist-boundary-review.md`. Cross-cutting quality notes:
   `docs/quality-inventory-v1.6.md`.
+- The Pure-Rust PDF text fallback now uses `pdf-extract` **0.12.0** and
+  `lopdf` **0.42.0**, replacing the vulnerable `lopdf` 0.34 dependency reported
+  by `RUSTSEC-2026-0187`. The PDFKit-first import behavior and all Safe Editor
+  boundaries are unchanged.
 - PDF image paths now use the same document-relative and workspace-contained
   policy in Preview, HTML export, and PDF export. Open the project parent that
   owns both manuscript and images; child-workspace `../assets` references are
@@ -59,10 +66,11 @@ Last reviewed: 2026-07-10 (v1.5 released before edohigan; Q-IMG-1 A+D source cov
   boundary. No v1 No-Go condition was reported. Unchecked boxes are not
   treated as automatic blockers; commented observations are classified
   in `docs/v1.1-v1.2-followup.md`.
-- No public-release hotfix blocker has been reported. v1.3 (`1.3.0`) remains
-  a published Mac App Store baseline; v1.5 (`1.5.0`) is the closed
-  stabilization line released before edohigan. The active next lane is **v1.6
-  Import Assist**.
+- No remaining source-level release blocker is known after the PDF dependency
+  update. v1.3 (`1.3.0`) remains a published Mac App Store baseline; v1.5
+  (`1.5.0`) is the closed stabilization line released before edohigan. The
+  active next lane is **v1.6 Import Assist**; App Store re-review requires a
+  fresh submission candidate and separate upload / processing proof.
   `AppWorkspace` owns a shared
   per-document view-state registry: reader, Editor cursor/scroll, Preview
   reopen, tab transitions, and safe local Markdown-link transitions now

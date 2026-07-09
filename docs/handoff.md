@@ -3,14 +3,16 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-07-10 (PDF画像境界を修正、App Store local pkg build 81 を生成)
+Last reviewed: 2026-07-10 (`pdf-extract` security update; fresh App Store candidate pending)
 
 ## Current State
 
-- Package version **`1.6.0`** / App Store config **bundleVersion 81**. A
-  signed local submit candidate was generated for build 81; it has **not**
-  been uploaded. Ignored `docs/internal/app-store-candidates/latest.json`
-  is the local artifact record; App Store Connect remains authoritative.
+- Package version **`1.6.0`** / App Store config **bundleVersion 81**. The
+  signed local build 81 candidate predates the `pdf-extract` 0.12.0 / `lopdf`
+  0.42.0 security update and must not be reused for re-review. Generate a
+  fresh submission candidate after this source change. Ignored
+  `docs/internal/app-store-candidates/latest.json` is the local artifact
+  record; App Store Connect remains authoritative.
 - **v1.5 (`1.5.0`) closed before 江戸彼岸.** Active: **v1.6 Import Assist** —
   `docs/import-assist-boundary-review.md`, `docs/current-work.md`.
 - Quality packs A/B + PDF tail/theme/timeout mostly **shipped**. See

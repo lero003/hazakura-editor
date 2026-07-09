@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v1.6 Import Assist Phase 1 (package `1.6.0` / bundleVersion 76)
+Scope: v1.6 Import Assist Phase 1 (package `1.6.0` / bundleVersion 81; fresh submission candidate pending)
 Authority: High
-Last reviewed: 2026-07-09
+Last reviewed: 2026-07-10 (`pdf-extract` security update; App Store re-review preparation)
 
 ## Purpose
 
@@ -36,6 +36,7 @@ Published Mac App Store history through v1.3 remains documented in `current-stat
 | Priority | Slice | Acceptance |
 |---|---|---|
 | Done / gate | Boundary review | `docs/import-assist-boundary-review.md` approved; v1.5 closed before edohigan. |
+| Done / security | PDF text fallback dependency | `pdf-extract` 0.12.0 / `lopdf` 0.42.0 replaces vulnerable `lopdf` 0.34 (`RUSTSEC-2026-0187`). Build 81 predates this source; create a fresh submission candidate before re-review. |
 | Done / spike | PDFKit + Vision helper spike | Fixture + live Swift helper for `extract_pdf_text` / `ocr_image` / `probe`; pure Rust draft assembly tests. |
 | Done / MVP slice | Unsaved Markdown draft open | File menu + command palette. PDFKit text preferred; pdf-extract fallback; scan PDF page OCR; image Vision OCR. Dirty untitled tab, no auto-save. |
 | Done / TF packaging | Helper externalBin | `hazakura-import-assist-helper` in all tauri confs; `beforeBuild` builds live helper (arm64+x64+universal). |

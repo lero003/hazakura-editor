@@ -4,7 +4,7 @@ Status: Operational
 Scope: Cross-cutting quality notes for the active v1.6 lane (Import Assist,
 edohigan, PDF export, joke themes, durable editor pins, structural debt)
 Authority: High for prioritization; does not override `security-boundary.md`
-Last reviewed: 2026-07-09 (structural audit + v1.6 recommended slices)
+Last reviewed: 2026-07-10 (`pdf-extract` / `lopdf` security update)
 
 ## Purpose
 
@@ -24,7 +24,8 @@ Last reviewed: 2026-07-09 (structural audit + v1.6 recommended slices)
 
 | Area | State |
 |------|--------|
-| Package | `1.6.0` / App Store `bundleVersion` **77** (TF proven on **76**) |
+| Package | `1.6.0` / App Store config `bundleVersion` **81** (build 81 predates the dependency update; fresh candidate pending) |
+| PDF fallback dependency | `pdf-extract` **0.12.0** / `lopdf` **0.42.0**; `RUSTSEC-2026-0187` cleared |
 | Import Assist | MVP shipped to TF; text-layer PDF usable on long JP docs |
 | Nested helpers App Store sign | Fixed (local + import helpers both inherit re-sign) |
 | PDF export blank trailing pages | Fixed earlier (column occupancy measure, height 842) |
