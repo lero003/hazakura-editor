@@ -12,7 +12,12 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 APP="${1:-$REPO_ROOT/src-tauri/target/release/bundle/macos/Hazakura Editor.app}"
 EXPECTED_DISTRIBUTION_LANE="${EXPECTED_DISTRIBUTION_LANE:-app-store}"
 REQUIRE_APP_STORE_ENTITLEMENTS="${REQUIRE_APP_STORE_ENTITLEMENTS:-0}"
-HELPER="$APP/Contents/MacOS/hazakura-local-assist-helper"
+HELPERS=(
+    "$APP/Contents/MacOS/hazakura-local-assist-helper"
+    "$APP/Contents/MacOS/hazakura-import-assist-helper"
+)
+# Back-compat alias for the original Local Assist helper path checks.
+HELPER="${HELPERS[0]}"
 PLIST="$APP/Contents/Info.plist"
 RESOURCES="$APP/Contents/Resources"
 
@@ -54,12 +59,14 @@ for notice in LICENSE THIRD_PARTY_NOTICES.md; do
 done
 
 echo
-echo "== nested helper =="
-if [ -x "$HELPER" ]; then
-    echo "helper: executable"
-else
-    echo "helper: missing or not executable"
-fi
+echo "== nested helpers =="
+for helper in "${HELPERS[@]}"; do
+    if [ -x "$helper" ]; then
+        echo "$(basename "$helper"): executable"
+    else
+        echo "$(basename "$helper"): missing or not executable"
+    fi
+done
 
 echo
 echo "== codesign verify =="
@@ -69,13 +76,15 @@ echo
 echo "== app signature details =="
 codesign -dvvv --entitlements - "$APP" 2>&1 || true
 
-echo
-echo "== helper signature details =="
-if [ -x "$HELPER" ]; then
-    codesign -dvvv --entitlements - "$HELPER" 2>&1 || true
-else
-    echo "(helper unavailable)"
-fi
+for helper in "${HELPERS[@]}"; do
+    echo
+    echo "== helper signature details ($(basename "$helper")) =="
+    if [ -x "$helper" ]; then
+        codesign -dvvv --entitlements - "$helper" 2>&1 || true
+    else
+        echo "(helper unavailable)"
+    fi
+done
 
 echo
 has_entitlement() {
@@ -126,31 +135,34 @@ if [ "$EXPECTED_DISTRIBUTION_LANE" = "app-store" ]; then
     done
 fi
 
-if [ ! -e "$HELPER" ]; then
-    echo "helper sandbox entitlement: unavailable (helper absent)"
-    echo "helper inherit entitlement: unavailable (helper absent)"
-elif [ ! -x "$HELPER" ]; then
-    echo "helper sandbox entitlement: unavailable (helper not executable)"
-    echo "helper inherit entitlement: unavailable (helper not executable)"
-else
-    if has_entitlement "$HELPER" "com.apple.security.app-sandbox"; then
-        echo "helper sandbox entitlement: present"
+for helper in "${HELPERS[@]}"; do
+    helper_name="$(basename "$helper")"
+    if [ ! -e "$helper" ]; then
+        echo "$helper_name sandbox entitlement: unavailable (helper absent)"
+        echo "$helper_name inherit entitlement: unavailable (helper absent)"
+    elif [ ! -x "$helper" ]; then
+        echo "$helper_name sandbox entitlement: unavailable (helper not executable)"
+        echo "$helper_name inherit entitlement: unavailable (helper not executable)"
     else
-        echo "helper sandbox entitlement: missing"
-        if [ "$REQUIRE_APP_STORE_ENTITLEMENTS" = "1" ]; then
-            missing_required_entitlement=1
+        if has_entitlement "$helper" "com.apple.security.app-sandbox"; then
+            echo "$helper_name sandbox entitlement: present"
+        else
+            echo "$helper_name sandbox entitlement: missing"
+            if [ "$REQUIRE_APP_STORE_ENTITLEMENTS" = "1" ]; then
+                missing_required_entitlement=1
+            fi
         fi
-    fi
 
-    if has_entitlement "$HELPER" "com.apple.security.inherit"; then
-        echo "helper inherit entitlement: present"
-    else
-        echo "helper inherit entitlement: missing"
-        if [ "$REQUIRE_APP_STORE_ENTITLEMENTS" = "1" ]; then
-            missing_required_entitlement=1
+        if has_entitlement "$helper" "com.apple.security.inherit"; then
+            echo "$helper_name inherit entitlement: present"
+        else
+            echo "$helper_name inherit entitlement: missing"
+            if [ "$REQUIRE_APP_STORE_ENTITLEMENTS" = "1" ]; then
+                missing_required_entitlement=1
+            fi
         fi
     fi
-fi
+done
 
 if [ "$EXPECTED_DISTRIBUTION_LANE" = "app-store" ]; then
     failed=0
@@ -160,10 +172,12 @@ if [ "$EXPECTED_DISTRIBUTION_LANE" = "app-store" ]; then
         failed=1
     fi
 
-    if [ ! -x "$HELPER" ]; then
-        echo "error: App Store lane must bundle Hazakura Local Assist helper: $HELPER" >&2
-        failed=1
-    fi
+    for helper in "${HELPERS[@]}"; do
+        if [ ! -x "$helper" ]; then
+            echo "error: App Store lane must bundle nested helper: $helper" >&2
+            failed=1
+        fi
+    done
 
     if [ "$(print_plist_value CFBundleIdentifier)" != "dev.hazakura.editor" ]; then
         echo "error: App Store lane bundle identifier must be dev.hazakura.editor" >&2
