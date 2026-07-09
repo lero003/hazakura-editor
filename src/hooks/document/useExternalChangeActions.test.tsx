@@ -1,4 +1,8 @@
 import { renderHook, act } from "@testing-library/react";
+import {
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { useExternalChangeActions } from "./useExternalChangeActions";
 import { getFileMetadata } from "../../lib/tauri";
@@ -40,8 +44,9 @@ describe("useExternalChangeActions pathless import drafts", () => {
   it("does not mark pathless tabs as save-failed after import", async () => {
     const tabs = [makeUntitledImportTab()];
     const tabsRef = { current: tabs };
-    const setTabs = vi.fn((updater: (current: EditorTab[]) => EditorTab[]) => {
-      tabsRef.current = updater(tabsRef.current);
+    const setTabs = vi.fn<Dispatch<SetStateAction<EditorTab[]>>>((value) => {
+      tabsRef.current =
+        typeof value === "function" ? value(tabsRef.current) : value;
     });
     const setStatus = vi.fn();
 
