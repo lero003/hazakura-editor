@@ -15,10 +15,7 @@ pub struct ImportPageText {
 ///
 /// Empty pages still get a page comment so the user can see skips.
 /// Consecutive blank lines inside a page are collapsed to at most two.
-pub fn assemble_import_markdown_draft(
-    source_label: &str,
-    pages: &[ImportPageText],
-) -> String {
+pub fn assemble_import_markdown_draft(source_label: &str, pages: &[ImportPageText]) -> String {
     let mut out = String::new();
     let _ = writeln!(
         out,
@@ -40,11 +37,7 @@ pub fn assemble_import_markdown_draft(
     }
 
     for page in pages {
-        let _ = writeln!(
-            out,
-            "<!-- hazakura:import-page index={} -->",
-            page.index
-        );
+        let _ = writeln!(out, "<!-- hazakura:import-page index={} -->", page.index);
         let _ = writeln!(out);
         let body = normalize_page_text(&page.text);
         if body.is_empty() {
@@ -237,7 +230,9 @@ fn looks_like_incomplete_url(line: &str) -> bool {
 }
 
 fn looks_like_completed_url_or_path(line: &str) -> bool {
-    let t = line.trim_end().trim_end_matches([')', ']', '"', '\'', '>', '」']);
+    let t = line
+        .trim_end()
+        .trim_end_matches([')', ']', '"', '\'', '>', '」']);
     if t.ends_with(".sh")
         || t.ends_with(".md")
         || t.ends_with(".json")
@@ -265,10 +260,7 @@ fn looks_like_completed_url_or_path(line: &str) -> bool {
     if (t.starts_with("http://") || t.starts_with("https://"))
         && !t.ends_with('/')
         && t.chars().filter(|c| *c == '/').count() >= 3
-        && t
-            .chars()
-            .last()
-            .is_some_and(|c| c.is_ascii_alphanumeric())
+        && t.chars().last().is_some_and(|c| c.is_ascii_alphanumeric())
     {
         // Prefer complete when the last segment looks finished (no trailing -).
         if !t.ends_with('-') && !t.ends_with('_') {
@@ -326,7 +318,19 @@ fn unbalanced_quotes(line: &str) -> bool {
 fn is_jp_connective_end(c: char) -> bool {
     matches!(
         c,
-        'の' | 'て' | 'で' | 'を' | 'に' | 'は' | 'が' | 'と' | 'も' | 'へ' | 'や' | '、' | '，' | '・'
+        'の' | 'て'
+            | 'で'
+            | 'を'
+            | 'に'
+            | 'は'
+            | 'が'
+            | 'と'
+            | 'も'
+            | 'へ'
+            | 'や'
+            | '、'
+            | '，'
+            | '・'
     )
 }
 
@@ -422,11 +426,10 @@ mod tests {
 
     #[test]
     fn rejoins_soft_wrapped_urls_and_paths() {
-        let text = "https://raw.githubusercontent.com/Homebrew/install/HEAD/\ninstall.sh)\necho hi\n";
+        let text =
+            "https://raw.githubusercontent.com/Homebrew/install/HEAD/\ninstall.sh)\necho hi\n";
         let out = normalize_page_text(text);
-        assert!(out.contains(
-            "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-        ));
+        assert!(out.contains("https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"));
         assert!(out.contains("echo hi"));
         assert!(!out.contains("install.shecho"));
     }

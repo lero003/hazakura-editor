@@ -72,10 +72,7 @@ fn is_cjk(c: char) -> bool {
 }
 
 /// Choose the higher-quality page extract.
-pub fn prefer_better_pages(
-    a: Vec<ImportPageText>,
-    b: Vec<ImportPageText>,
-) -> Vec<ImportPageText> {
+pub fn prefer_better_pages(a: Vec<ImportPageText>, b: Vec<ImportPageText>) -> Vec<ImportPageText> {
     if page_text_quality_score(&a) >= page_text_quality_score(&b) {
         a
     } else {
@@ -91,10 +88,8 @@ mod tests {
 
     #[test]
     fn rejects_non_pdf_bytes() {
-        let path: PathBuf = std::env::temp_dir().join(format!(
-            "hazakura-not-pdf-{}.pdf",
-            std::process::id()
-        ));
+        let path: PathBuf =
+            std::env::temp_dir().join(format!("hazakura-not-pdf-{}.pdf", std::process::id()));
         fs::write(&path, b"not a pdf").expect("write");
         let err = extract_pdf_text_layer(&path).expect_err("must fail");
         let _ = fs::remove_file(&path);

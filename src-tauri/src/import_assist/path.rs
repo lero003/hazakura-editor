@@ -11,9 +11,8 @@ use std::path::Path;
 pub const MAX_IMPORT_SOURCE_BYTES: u64 = 40 * 1024 * 1024;
 
 /// Extensions accepted for Import Assist Phase 1.
-pub const ALLOWED_IMPORT_EXTENSIONS: &[&str] = &[
-    "pdf", "png", "jpg", "jpeg", "tif", "tiff", "heic", "heif",
-];
+pub const ALLOWED_IMPORT_EXTENSIONS: &[&str] =
+    &["pdf", "png", "jpg", "jpeg", "tif", "tiff", "heic", "heif"];
 
 pub fn is_allowed_import_extension(path: &Path) -> bool {
     path.extension()

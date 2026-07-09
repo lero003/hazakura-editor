@@ -13,9 +13,7 @@ use std::time::Duration;
 
 use super::draft::{assemble_import_markdown_draft, ImportPageText};
 use super::path::validate_import_source_path;
-use super::pdf_text::{
-    extract_pdf_text_layer, pages_have_meaningful_text, prefer_better_pages,
-};
+use super::pdf_text::{extract_pdf_text_layer, pages_have_meaningful_text, prefer_better_pages};
 
 const HELPER_TIMEOUT: Duration = Duration::from_secs(120);
 
@@ -157,9 +155,7 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
                 });
             }
             Ok(_) => {
-                return Err(
-                    "PDF has no extractable text and page OCR returned empty text.".into(),
-                );
+                return Err("PDF has no extractable text and page OCR returned empty text.".into());
             }
             Err(err) => return Err(err),
         }
@@ -180,11 +176,10 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
             .map(|v| v.fixture)
             .unwrap_or(false),
         "error" => {
-            let err: ErrorValue = serde_json::from_value(probe.value)
-                .unwrap_or(ErrorValue {
-                    error: "Helper probe failed.".into(),
-                    kind: "failed".into(),
-                });
+            let err: ErrorValue = serde_json::from_value(probe.value).unwrap_or(ErrorValue {
+                error: "Helper probe failed.".into(),
+                kind: "failed".into(),
+            });
             return Err(err.error);
         }
         other => return Err(format!("Unexpected helper probe kind: {other}")),
@@ -218,8 +213,8 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
                 })
             }
             "error" => {
-                let err: ErrorValue = serde_json::from_value(envelope.value)
-                    .unwrap_or(ErrorValue {
+                let err: ErrorValue =
+                    serde_json::from_value(envelope.value).unwrap_or(ErrorValue {
                         error: "OCR failed.".into(),
                         kind: "failed".into(),
                     });
@@ -276,12 +271,7 @@ fn try_pdf_page_ocr(path: &str) -> Result<Option<Vec<ImportPageText>>, String> {
         Err(err) => return Err(err),
     };
     // Allow fixture for CI; live uses Vision on rendered pages.
-    pages_from_helper_action(
-        &helper,
-        "ocr_pdf_pages",
-        path,
-        Some(&["ja-JP", "en-US"]),
-    )
+    pages_from_helper_action(&helper, "ocr_pdf_pages", path, Some(&["ja-JP", "en-US"]))
 }
 
 fn pages_from_helper_action(
@@ -328,9 +318,7 @@ fn pages_from_helper_action(
 }
 
 /// Prefer a non-fixture helper binary when the first candidate is fixture.
-fn resolve_live_import_assist_helper_path_excluding(
-    exclude: &Path,
-) -> Option<PathBuf> {
+fn resolve_live_import_assist_helper_path_excluding(exclude: &Path) -> Option<PathBuf> {
     let candidates = import_assist_helper_candidates();
     for candidate in candidates {
         if candidate == *exclude || !candidate.exists() {
@@ -557,9 +545,8 @@ mod tests {
     fn import_image_via_fixture_helper_when_available() {
         // Explicit fixture binary (debug + FIXTURE_MODE). Live helpers
         // will reject the non-image temp file used here.
-        let helper = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(
-            "../src-helpers/import-assist/.build/debug/HazakuraImportAssist",
-        );
+        let helper = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../src-helpers/import-assist/.build/debug/HazakuraImportAssist");
         if !helper.exists() {
             return;
         }
