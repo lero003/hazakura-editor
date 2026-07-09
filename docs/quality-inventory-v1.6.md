@@ -24,7 +24,7 @@ Last reviewed: 2026-07-10 (`pdf-extract` / `lopdf` security update)
 
 | Area | State |
 |------|--------|
-| Package | `1.6.0` / App Store config `bundleVersion` **81** (build 81 predates the dependency update; fresh candidate pending) |
+| Package | `1.6.0` / App Store config `bundleVersion` **83** (signed local candidate build 83 includes the dependency update; upload pending) |
 | PDF fallback dependency | `pdf-extract` **0.12.0** / `lopdf` **0.42.0**; `RUSTSEC-2026-0187` cleared |
 | Import Assist | MVP shipped to TF; text-layer PDF usable on long JP docs |
 | Nested helpers App Store sign | Fixed (local + import helpers both inherit re-sign) |

@@ -3,16 +3,15 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-10 (`pdf-extract` security update; fresh App Store candidate pending)
+Last reviewed: 2026-07-10 (`pdf-extract` security update; local App Store candidate build 83 prepared)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
 - Current development package/app version: **`1.6.0`** across npm, Tauri, Cargo,
-  and lockfile metadata (App Store config `bundleVersion` **81**). The local
-  build 81 package predates the `pdf-extract` security update and must not be
-  reused for re-review; generate a fresh submission candidate after this source
-  change.
+  and lockfile metadata (App Store config `bundleVersion` **83**). Signed local
+  candidate build 83 includes the `pdf-extract` security update; upload,
+  processing, and re-review remain separate explicit steps.
 - **v1.5 (`1.5.0`) is closed and was released before 江戸彼岸 (edohigan).**
   v1.5 covered Spellcheck settings, Reading Focus TOC density, CRT/Shinkai
   lineage polish, dead-code, deps hygiene, traffic-light, L Mode remount.

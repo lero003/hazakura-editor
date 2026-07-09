@@ -3,16 +3,15 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-07-10 (`pdf-extract` security update; fresh App Store candidate pending)
+Last reviewed: 2026-07-10 (`pdf-extract` security update; App Store local pkg build 83 prepared)
 
 ## Current State
 
-- Package version **`1.6.0`** / App Store config **bundleVersion 81**. The
-  signed local build 81 candidate predates the `pdf-extract` 0.12.0 / `lopdf`
-  0.42.0 security update and must not be reused for re-review. Generate a
-  fresh submission candidate after this source change. Ignored
-  `docs/internal/app-store-candidates/latest.json` is the local artifact
-  record; App Store Connect remains authoritative.
+- Package version **`1.6.0`** / App Store config **bundleVersion 83**. Signed
+  local candidate build 83 includes the `pdf-extract` 0.12.0 / `lopdf` 0.42.0
+  security update. Its SHA-256 and source commit are recorded in ignored
+  `docs/internal/app-store-candidates/latest.json`; App Store Connect upload,
+  processing, and re-review remain separate steps.
 - **v1.5 (`1.5.0`) closed before 江戸彼岸.** Active: **v1.6 Import Assist** —
   `docs/import-assist-boundary-review.md`, `docs/current-work.md`.
 - Quality packs A/B + PDF tail/theme/timeout mostly **shipped**. See
