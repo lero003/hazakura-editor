@@ -314,7 +314,7 @@ describe("useDocumentExport", () => {
     expect(exportedPdfHtml).toContain("--pdf-content-height: 552.268px;");
     expect(exportedPdfHtml).toContain("box-sizing: border-box;");
     expect(exportedPdfHtml).toContain("pdf-export-tail-guard");
-    // Fixed px max-height derived from layout (not CSS calc on the var).
+    // Fixed px max-height for in-body images (cover page uses its own rules).
     expect(exportedPdfHtml).toMatch(/max-height:\s*\d+px/);
     expect(exportedPdfHtml).toContain("--pdf-column-gap: 124.724px;");
     expect(exportedPdfHtml).toContain("column-fill: auto;");

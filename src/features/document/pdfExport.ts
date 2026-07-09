@@ -79,6 +79,98 @@ export function preparePdfExportTables(html: string): string {
   return template.innerHTML;
 }
 
+export type PdfCoverSplit = {
+  /** Outer HTML for a dedicated cover page (empty when no leading image). */
+  coverHtml: string;
+  /** Remaining Markdown HTML for the multicol body. */
+  bodyHtml: string;
+};
+
+/**
+ * Pull a leading cover image out of rendered Markdown HTML so PDF export
+ * can place it on its own A4 page (outside the multicol flow).
+ *
+ * Matches a leading bare `<img>` or a `<p>` whose only meaningful content
+ * is one image (typical of `![](cover.jpg)` at the top of a manuscript).
+ */
+export function extractPdfLeadingCoverHtml(html: string): PdfCoverSplit {
+  if (typeof document === "undefined") {
+    return { coverHtml: "", bodyHtml: html };
+  }
+
+  const template = document.createElement("template");
+  template.innerHTML = html;
+
+  let first: ChildNode | null = template.content.firstChild;
+  while (
+    first &&
+    first.nodeType === Node.TEXT_NODE &&
+    !(first.textContent ?? "").trim()
+  ) {
+    first = first.nextSibling;
+  }
+
+  let coverNode: Element | null = null;
+  if (first instanceof HTMLImageElement) {
+    coverNode = first;
+  } else if (first instanceof HTMLParagraphElement) {
+    const images = Array.from(first.querySelectorAll("img"));
+    if (images.length === 1 && paragraphIsImageOnly(first)) {
+      coverNode = first;
+    }
+  }
+
+  if (!coverNode) {
+    return { coverHtml: "", bodyHtml: html };
+  }
+
+  const img =
+    coverNode instanceof HTMLImageElement
+      ? coverNode
+      : coverNode.querySelector("img");
+  if (!img) {
+    return { coverHtml: "", bodyHtml: html };
+  }
+
+  // Need a real image payload (data URL or remaining path). Blocked
+  // placeholders are spans, not imgs, so they never match above.
+  const src = img.getAttribute("src")?.trim() ?? "";
+  if (!src || src.startsWith("data:image/gif")) {
+    // Transparent policy placeholder not yet inlined — keep in body.
+    return { coverHtml: "", bodyHtml: html };
+  }
+
+  const coverClone = coverNode.cloneNode(true) as Element;
+  coverNode.remove();
+
+  const bodyWrap = document.createElement("div");
+  bodyWrap.append(...Array.from(template.content.childNodes));
+
+  return {
+    coverHtml: coverClone.outerHTML,
+    bodyHtml: bodyWrap.innerHTML,
+  };
+}
+
+function paragraphIsImageOnly(paragraph: HTMLParagraphElement): boolean {
+  for (const node of Array.from(paragraph.childNodes)) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      if ((node.textContent ?? "").trim()) {
+        return false;
+      }
+      continue;
+    }
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      const el = node as Element;
+      if (el.tagName === "IMG" || el.tagName === "BR") {
+        continue;
+      }
+      return false;
+    }
+  }
+  return paragraph.querySelector("img") !== null;
+}
+
 function millimetersToPdfPoints(value: number): number {
   return (value * 72) / 25.4;
 }

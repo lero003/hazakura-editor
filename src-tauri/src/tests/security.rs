@@ -698,8 +698,13 @@ fn export_pdf_measures_rendered_content_instead_of_trailing_scroll_area() {
         "PDF capture should use fragment left edges plus multicol scrollWidth"
     );
     assert!(
-        PDF_CAPTURE_SIZE_SCRIPT.contains("const height = preview\n    ? 842"),
-        "when a preview exists, capture height must stay one A4 row (not scrollHeight)"
+        PDF_CAPTURE_SIZE_SCRIPT.contains("const height = 842")
+            || PDF_CAPTURE_SIZE_SCRIPT.contains("height = 842"),
+        "capture height must stay one A4 row (842), not document scrollHeight"
+    );
+    assert!(
+        PDF_CAPTURE_SIZE_SCRIPT.contains("pdf-export-cover-page"),
+        "capture width must account for an optional dedicated cover page"
     );
 }
 

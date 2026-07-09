@@ -14,6 +14,7 @@ import {
 } from "../../features/document/epubExport";
 import {
   DEFAULT_PDF_MARGIN_PRESET,
+  extractPdfLeadingCoverHtml,
   formatPdfPointValue,
   PDF_A4_PAGE_HEIGHT_POINTS,
   PDF_A4_PAGE_WIDTH_POINTS,
@@ -108,15 +109,15 @@ export function useDocumentExport({
         });
       }
       rendered = preparePdfExportTables(rendered);
+      const { coverHtml, bodyHtml } = extractPdfLeadingCoverHtml(rendered);
+      const hasCover = coverHtml.length > 0;
 
       const pdfLayout = pdfScreenPageLayout(preset);
       const pdfPoint = formatPdfPointValue;
-      // Fixed px max height for cover/body images so multicol stays stable.
-      // Prefer numeric px over CSS calc() — WebKit createPDF was dropping
-      // images when only max-height: calc(var(--pdf-content-height) - …).
+      // Body images only (cover is on its own page).
       const imageMaxHeightPx = Math.max(
-        240,
-        Math.floor(pdfLayout.contentHeightPoints * 0.78),
+        200,
+        Math.floor(pdfLayout.contentHeightPoints * 0.72),
       );
 
       const standaloneHtml = `<!DOCTYPE html>
@@ -150,16 +151,50 @@ export function useDocumentExport({
   }
   html {
     min-height: var(--pdf-page-height);
-    min-width: var(--pdf-page-width);
+    /* Grow horizontally with cover + multicol columns for createPDF. */
+    min-width: max-content;
   }
   body {
     background: var(--bg);
     color: var(--text);
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
     font-family: var(--font-ui);
     margin: 0;
     min-height: var(--pdf-page-height);
+    height: var(--pdf-page-height);
     padding: 0;
+    width: max-content;
+  }
+  /* Dedicated first A4 page for leading cover image (outside multicol). */
+  .pdf-export-cover-page {
+    background: #ffffff;
+    box-sizing: border-box;
+    display: flex;
+    flex: 0 0 var(--pdf-page-width);
+    align-items: center;
+    justify-content: center;
+    height: var(--pdf-page-height);
+    margin: 0;
+    padding: var(--pdf-margin-block) var(--pdf-margin-inline);
     width: var(--pdf-page-width);
+  }
+  .pdf-export-cover-page p {
+    margin: 0;
+    width: 100%;
+  }
+  .pdf-export-cover-page img {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    display: block;
+    height: auto;
+    margin: 0 auto;
+    max-height: calc(var(--pdf-page-height) - 2 * var(--pdf-margin-block));
+    max-width: 100%;
+    object-fit: contain;
+    width: auto;
   }
   ${getMarkdownPreviewCss()}
   /* WKWebView.createPDF captures the screen layout rather than paged-media
@@ -178,6 +213,7 @@ export function useDocumentExport({
     column-fill: auto;
     column-gap: var(--pdf-column-gap);
     column-width: var(--pdf-content-width);
+    flex: 0 0 auto;
     font-family: "Iowan Old Style", "Charter", Georgia, "Times New Roman", serif;
     font-size: 11pt;
     height: var(--pdf-content-height);
@@ -207,8 +243,6 @@ export function useDocumentExport({
   .markdown-preview blockquote {
     break-inside: avoid;
   }
-  /* Cover/body images: scale to fit the column, then avoid breaking so the
-     multicol flow stays stable (no overlap, no zero-size createPDF quirk). */
   .markdown-preview img {
     border: 0;
     border-radius: 0;
@@ -333,8 +367,13 @@ export function useDocumentExport({
 </style>
 </head>
 <body>
+${
+  hasCover
+    ? `<div class="pdf-export-cover-page">${coverHtml}</div>`
+    : ""
+}
 <div class="markdown-preview">
-${rendered}
+${bodyHtml}
 <p class="pdf-export-tail-guard" aria-hidden="true">&#8203;</p>
 </div>
 </body>

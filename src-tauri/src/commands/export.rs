@@ -17,21 +17,20 @@ pub(crate) const PDF_CAPTURE_SIZE_SCRIPT: &str = r#"
 JSON.stringify((() => {
   const body = document.body;
   const doc = document.documentElement;
-  const fallbackWidth = Math.max(
+  const cover = document.querySelector(".pdf-export-cover-page");
+  const preview = document.querySelector(".markdown-preview");
+  // Prefer body.scrollWidth so a dedicated cover page (flex row) + multicol
+  // columns are both included. Snap up to whole A4 columns.
+  let width = Math.max(
     doc ? doc.scrollWidth : 0,
     body ? body.scrollWidth : 0,
     595
   );
-  const preview = document.querySelector(".markdown-preview");
-  let width = fallbackWidth;
   if (preview) {
     let occupiedColumnCount = 0;
     let maxRight = 0;
     const includeRects = (rects) => {
       for (const rect of rects) {
-        // Prefer left edge so a wide unbreakable run inside one column does
-        // not invent a trailing page. Multicol line fragments already have
-        // their left at the start of each column.
         const left = rect.left + window.scrollX;
         const right = left + rect.width;
         const columnIndex = Math.max(0, Math.floor(left / 595));
@@ -52,22 +51,22 @@ JSON.stringify((() => {
     for (const element of preview.querySelectorAll("img, svg, canvas, video, hr")) {
       includeRects(element.getClientRects());
     }
-    // scrollWidth catches multicol overflow that fragment walks can miss
-    // when layout is unstable; take the max of all three signals.
     const fromRects = Math.max(1, occupiedColumnCount);
     const fromRight = Math.max(1, Math.ceil(maxRight / 595));
     const fromScroll = Math.max(1, Math.ceil(preview.scrollWidth / 595));
-    width = Math.max(fromRects, fromRight, fromScroll) * 595;
+    const previewColumns = Math.max(fromRects, fromRight, fromScroll);
+    const coverPages = cover ? 1 : 0;
+    // Cover is a separate flex item at x=0; multicol starts after it.
+    // Absolute left-edge column index already includes the cover offset,
+    // so fromRects/fromRight count total pages. Prefer the max of that
+    // and coverPages + preview-local columns.
+    const fromPreviewLocal = coverPages + Math.max(1, Math.ceil(preview.scrollWidth / 595));
+    width = Math.max(width, fromRects * 595, fromRight * 595, fromScroll * 595, fromPreviewLocal * 595, previewColumns * 595);
   }
-  const height = preview
-    ? 842
-    : Math.max(
-        doc ? doc.scrollHeight : 0,
-        body ? body.scrollHeight : 0,
-        842
-      );
+  width = Math.ceil(width / 595) * 595;
+  const height = 842;
   return {
-    width: Math.ceil(width),
+    width: Math.max(595, width),
     height: Math.ceil(height)
   };
 })())

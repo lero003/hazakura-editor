@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_PDF_MARGIN_PRESET,
+  extractPdfLeadingCoverHtml,
   PDF_A4_PAGE_HEIGHT_POINTS,
   PDF_A4_PAGE_WIDTH_POINTS,
   PDF_CONTENT_BOTTOM_SAFETY_POINTS,
@@ -120,6 +121,27 @@ describe("pdfScreenPageLayout", () => {
         3,
       );
     }
+  });
+});
+
+describe("extractPdfLeadingCoverHtml", () => {
+  it("pulls a leading image paragraph out for a dedicated cover page", () => {
+    const html =
+      '<p><img src="data:image/png;base64,aaa" alt="cover"></p>\n' +
+      "<h1>Title</h1>\n<p>Body</p>";
+    const { coverHtml, bodyHtml } = extractPdfLeadingCoverHtml(html);
+    expect(coverHtml).toContain("<img");
+    expect(coverHtml).toContain("data:image/png;base64,aaa");
+    expect(bodyHtml).toContain("<h1>Title</h1>");
+    expect(bodyHtml).toContain("<p>Body</p>");
+    expect(bodyHtml).not.toContain("data:image/png;base64,aaa");
+  });
+
+  it("leaves documents without a leading image unchanged", () => {
+    const html = "<h1>Title</h1><p>Body</p>";
+    const { coverHtml, bodyHtml } = extractPdfLeadingCoverHtml(html);
+    expect(coverHtml).toBe("");
+    expect(bodyHtml).toContain("<h1>Title</h1>");
   });
 });
 
