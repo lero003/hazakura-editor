@@ -8,7 +8,9 @@
 use serde::{Deserialize, Serialize};
 use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
+use std::process::{Child, Command, Stdio};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Condvar, Mutex};
 use std::time::Duration;
 
 use super::draft::{assemble_import_markdown_draft, ImportPageText};
@@ -346,6 +348,20 @@ fn resolve_live_import_assist_helper_path_excluding(exclude: &Path) -> Option<Pa
 }
 
 fn round_trip_helper(helper: &Path, request: &HelperRequest<'_>) -> Result<HelperEnvelope, String> {
+    round_trip_helper_with_timeout(helper, request, HELPER_TIMEOUT)
+}
+
+/// One-shot helper RPC with a **wall-clock** watchdog (Q-IMP-8).
+///
+/// A naive loop that only checks elapsed time *between* `read_line`
+/// calls cannot unbound a blocked read. Mirror Local Assist: a
+/// watchdog thread kills the child after `timeout`, which unblocks
+/// `read_line` via closed pipes.
+fn round_trip_helper_with_timeout(
+    helper: &Path,
+    request: &HelperRequest<'_>,
+    timeout: Duration,
+) -> Result<HelperEnvelope, String> {
     let serialized = serde_json::to_string(request)
         .map_err(|e| format!("Failed to serialize helper request: {e}"))?;
     let mut child = Command::new(helper)
@@ -364,9 +380,7 @@ fn round_trip_helper(helper: &Path, request: &HelperRequest<'_>) -> Result<Helpe
             .write_all(serialized.as_bytes())
             .and_then(|_| stdin.write_all(b"\n"))
             .map_err(|e| format!("Failed to write helper request: {e}"))?;
-        // Drop stdin by ending this block so the helper sees EOF after one line.
     }
-    // Close stdin explicitly so the helper loop ends after one request.
     drop(child.stdin.take());
 
     let stdout = child
@@ -374,20 +388,51 @@ fn round_trip_helper(helper: &Path, request: &HelperRequest<'_>) -> Result<Helpe
         .take()
         .ok_or_else(|| "Import Assist helper stdout is not piped.".to_string())?;
     let mut reader = BufReader::new(stdout);
-    let mut line = String::new();
+    let child = Arc::new(Mutex::new(child));
 
-    let start = std::time::Instant::now();
-    loop {
-        if start.elapsed() > HELPER_TIMEOUT {
-            let _ = child.kill();
-            return Err("Import Assist helper timed out.".into());
+    let done_pair = Arc::new((Mutex::new(false), Condvar::new()));
+    let done_pair_w = done_pair.clone();
+    let child_w = child.clone();
+    let timed_out = Arc::new(AtomicBool::new(false));
+    let timed_out_w = timed_out.clone();
+
+    let watchdog = std::thread::Builder::new()
+        .name("import-assist-helper-watchdog".to_string())
+        .spawn(move || {
+            let (lock, cvar) = &*done_pair_w;
+            let mut done = lock.lock().expect("import assist watchdog lock");
+            if !*done {
+                let (next_done, _) = cvar
+                    .wait_timeout(done, timeout)
+                    .expect("import assist watchdog wait_timeout");
+                done = next_done;
+            }
+            if !*done {
+                timed_out_w.store(true, Ordering::SeqCst);
+                kill_import_helper_child(&child_w);
+            }
+        })
+        .map_err(|e| format!("Failed to spawn Import Assist watchdog: {e}"))?;
+
+    let mut line = String::new();
+    let outcome = (|| loop {
+        if timed_out.load(Ordering::SeqCst) {
+            return Err(format!(
+                "Import Assist helper timed out after {}s.",
+                timeout.as_secs()
+            ));
         }
         line.clear();
         let n = reader
             .read_line(&mut line)
             .map_err(|e| format!("Failed to read helper response: {e}"))?;
+        if timed_out.load(Ordering::SeqCst) {
+            return Err(format!(
+                "Import Assist helper timed out after {}s.",
+                timeout.as_secs()
+            ));
+        }
         if n == 0 {
-            let _ = child.wait();
             return Err("Import Assist helper closed without a response.".into());
         }
         let trimmed = line.trim();
@@ -396,9 +441,31 @@ fn round_trip_helper(helper: &Path, request: &HelperRequest<'_>) -> Result<Helpe
         }
         let envelope: HelperEnvelope = serde_json::from_str(trimmed)
             .map_err(|e| format!("Invalid helper JSON: {e}: {trimmed}"))?;
-        let _ = child.kill();
-        let _ = child.wait();
         return Ok(envelope);
+    })();
+
+    {
+        let (lock, cvar) = &*done_pair;
+        let mut done = lock.lock().expect("import assist watchdog signal lock");
+        *done = true;
+        cvar.notify_all();
+    }
+    let _ = watchdog.join();
+    kill_import_helper_child(&child);
+
+    if timed_out.load(Ordering::SeqCst) {
+        return Err(format!(
+            "Import Assist helper timed out after {}s.",
+            timeout.as_secs()
+        ));
+    }
+    outcome
+}
+
+fn kill_import_helper_child(child: &Arc<Mutex<Child>>) {
+    if let Ok(mut guard) = child.lock() {
+        let _ = guard.kill();
+        let _ = guard.wait();
     }
 }
 
@@ -521,6 +588,44 @@ mod tests {
     fn helper_filename_uses_sidecar_convention() {
         let name = import_assist_helper_filename();
         assert!(name.starts_with("hazakura-import-assist-helper-"));
+    }
+
+    /// Q-IMP-8: hanging helper must not block past the wall-clock budget.
+    #[test]
+    fn round_trip_helper_watchdog_kills_hanging_child() {
+        let dir = std::env::temp_dir().join(format!("hazakura-import-hang-{}", std::process::id()));
+        let _ = fs::create_dir_all(&dir);
+        let script = dir.join("hang.sh");
+        // Read one request line, then hang without writing a response.
+        // `exec sleep` so the helper is a single process: killing the
+        // child closes stdout. A bare `sleep` under sh can leave the
+        // pipe open and keep `read_line` blocked.
+        fs::write(&script, "#!/bin/sh\nread _line || true\nexec sleep 120\n")
+            .expect("write hang script");
+        let _ = fs::set_permissions(&script, fs::Permissions::from_mode(0o755));
+
+        let started = std::time::Instant::now();
+        let err = round_trip_helper_with_timeout(
+            &script,
+            &HelperRequest {
+                action: "probe",
+                path: None,
+                languages: None,
+            },
+            Duration::from_millis(400),
+        )
+        .expect_err("hanging helper must time out");
+        let elapsed = started.elapsed();
+        let _ = fs::remove_dir_all(&dir);
+
+        assert!(
+            err.contains("timed out"),
+            "expected timeout error, got: {err}"
+        );
+        assert!(
+            elapsed < Duration::from_secs(5),
+            "watchdog took too long: {elapsed:?}"
+        );
     }
 
     #[test]
