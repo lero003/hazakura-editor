@@ -480,7 +480,11 @@ function cleanupPreviewOnlyMarkup(
     template.content.querySelectorAll<HTMLElement>(".blocked-image"),
   )) {
     const label =
-      blocked.textContent?.replace(/^Image blocked:\s*/i, "").trim() || null;
+      blocked.textContent
+        ?.replace(/^Image blocked:\s*/i, "")
+        .replace(/^画像を表示できません:\s*/u, "")
+        .replace(/^画像を表示できません（.*）$/u, "")
+        .trim() || null;
     warnings.push({
       label,
       type: "image-unavailable",

@@ -36,22 +36,61 @@ pub fn assemble_import_markdown_draft(source_label: &str, pages: &[ImportPageTex
         return out;
     }
 
+    let mut body_buf = String::new();
     for page in pages {
-        let _ = writeln!(out, "<!-- hazakura:import-page index={} -->", page.index);
-        let _ = writeln!(out);
+        let _ = writeln!(
+            body_buf,
+            "<!-- hazakura:import-page index={} -->",
+            page.index
+        );
+        let _ = writeln!(body_buf);
         let body = normalize_page_text(&page.text);
         if body.is_empty() {
-            let _ = writeln!(out, "_（このページのテキストは空です）_");
+            let _ = writeln!(body_buf, "_（このページのテキストは空です）_");
         } else {
-            out.push_str(&body);
+            body_buf.push_str(&body);
             if !body.ends_with('\n') {
-                out.push('\n');
+                body_buf.push('\n');
             }
         }
+        let _ = writeln!(body_buf);
+    }
+
+    // Q-IMP-1: PDF text layer often leaves Markdown image paths that Preview
+    // cannot load (import is text-only). Be honest in the draft itself.
+    if markdown_contains_image_reference(&body_buf) {
+        let _ = writeln!(out, "<!-- hazakura:import-images-not-extracted -->");
+        let _ = writeln!(
+            out,
+            "> **画像について:** 取り込みはテキストのみです。元文書に含まれていた画像参照（`![](...)`）は Preview では表示されません。ワークスペースの `assets/` に画像を置いてパスを直せば表示できます。"
+        );
         let _ = writeln!(out);
     }
 
+    out.push_str(&body_buf);
     out
+}
+
+/// Detect Markdown image syntax `![alt](url)` left in extracted text.
+pub fn markdown_contains_image_reference(text: &str) -> bool {
+    let bytes = text.as_bytes();
+    let mut i = 0usize;
+    while i + 1 < bytes.len() {
+        if bytes[i] == b'!' && bytes[i + 1] == b'[' {
+            if let Some(close_bracket) = text[i + 2..].find(']') {
+                let after = i + 2 + close_bracket + 1;
+                if after < bytes.len() && bytes[after] == b'(' {
+                    if let Some(close_paren) = text[after + 1..].find(')') {
+                        if close_paren > 0 {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        i += 1;
+    }
+    false
 }
 
 fn sanitize_attr(value: &str) -> String {
@@ -412,6 +451,24 @@ mod tests {
     fn empty_pages_still_produce_draft() {
         let md = assemble_import_markdown_draft("x.png", &[]);
         assert!(md.contains("import-empty"));
+    }
+
+    #[test]
+    fn annotates_when_extracted_text_contains_image_markdown() {
+        let md = assemble_import_markdown_draft(
+            "doc.pdf",
+            &[ImportPageText {
+                index: 0,
+                text: "図1\n\n![図](assets/fig1.png)\n\n続き".into(),
+            }],
+        );
+        assert!(md.contains("hazakura:import-images-not-extracted"));
+        assert!(md.contains("画像について"));
+        assert!(md.contains("![図](assets/fig1.png)"));
+        assert!(markdown_contains_image_reference("see ![a](b.png) here"));
+        assert!(!markdown_contains_image_reference(
+            "no images, just [link](x)"
+        ));
     }
 
     #[test]

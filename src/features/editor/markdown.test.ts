@@ -9,7 +9,7 @@ describe("renderMarkdown image policy", () => {
     });
 
     expect(html).toContain('data-hazakura-image-path="/ws/docs/images/shot.png"');
-    expect(html).not.toContain("Image blocked");
+    expect(html).not.toContain("画像を表示できません");
   });
 
   it("keeps existing assets image references allowed", () => {
@@ -19,7 +19,7 @@ describe("renderMarkdown image policy", () => {
     });
 
     expect(html).toContain('data-hazakura-image-path="/ws/assets/pic.png"');
-    expect(html).not.toContain("Image blocked");
+    expect(html).not.toContain("画像を表示できません");
   });
 
   it("allows README raw HTML image tags inside the workspace", () => {
@@ -35,7 +35,7 @@ describe("renderMarkdown image policy", () => {
       'data-hazakura-image-path="/ws/src/assets/hazakura-mark.png"',
     );
     expect(html).toContain('alt="logo"');
-    expect(html).not.toContain("Image blocked");
+    expect(html).not.toContain("画像を表示できません");
   });
 
   it("inlines workspace image placeholders through the preview loader", async () => {
@@ -60,7 +60,7 @@ describe("renderMarkdown image policy", () => {
     });
 
     expect(html).toContain('data-hazakura-image-path="/ws/docs/images/figure 1.png"');
-    expect(html).not.toContain("Image blocked");
+    expect(html).not.toContain("画像を表示できません");
   });
 
   it("blocks relative images that escape the workspace", () => {
@@ -69,7 +69,7 @@ describe("renderMarkdown image policy", () => {
       workspaceRoot: "/ws",
     });
 
-    expect(html).toContain("Image blocked: secret");
+    expect(html).toContain("画像を表示できません: secret");
     expect(html).not.toContain("data-hazakura-image-path");
   });
 
@@ -79,7 +79,7 @@ describe("renderMarkdown image policy", () => {
       workspaceRoot: "/ws",
     });
 
-    expect(html).toContain("Image blocked: remote");
+    expect(html).toContain("画像を表示できません: remote");
     expect(html).not.toContain("https://example.com/shot.png");
   });
 
@@ -100,7 +100,7 @@ describe("renderMarkdown image policy", () => {
       "![svg](data:image/svg+xml;base64,PHN2ZyBvbmxvYWQ9YWxlcnQoMSk+PC9zdmc+)",
     );
 
-    expect(html).toContain("Image blocked");
+    expect(html).toContain("画像を表示できません");
     expect(html).not.toContain("data:image/svg+xml");
   });
 
@@ -109,7 +109,7 @@ describe("renderMarkdown image policy", () => {
       "![html](data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==)",
     );
 
-    expect(html).toContain("Image blocked");
+    expect(html).toContain("画像を表示できません");
     expect(html).not.toContain("data:text/html");
   });
 
@@ -122,7 +122,7 @@ describe("renderMarkdown image policy", () => {
       '![bad](data:image/png;base64,iVBORw0KGgo=;alert(1))',
     );
 
-    expect(html).toContain("Image blocked");
+    expect(html).toContain("画像を表示できません");
     expect(html).not.toContain("alert(1)");
   });
 
@@ -141,7 +141,7 @@ describe("renderMarkdown image policy", () => {
 
     const html = renderMarkdown(oversized);
 
-    expect(html).toContain("Image blocked");
+    expect(html).toContain("画像を表示できません");
     expect(html).not.toContain("data:image/png");
   });
 
@@ -150,7 +150,7 @@ describe("renderMarkdown image policy", () => {
       "![icon](data:image/png;base64,iVBORw0KGgo=)",
     );
 
-    expect(html).not.toContain("Image blocked");
+    expect(html).not.toContain("画像を表示できません");
     expect(html).toContain("data:image/png;base64,iVBORw0KGgo=");
   });
 });

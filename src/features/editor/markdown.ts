@@ -129,9 +129,11 @@ function blockedImageMessage(alt?: string | null): HTMLSpanElement {
   const replacement = document.createElement("span");
   replacement.className = "blocked-image";
   replacement.setAttribute("role", "note");
+  // Japanese-first (Q-IMP-1 / product locale). Class stays `blocked-image`
+  // for export / CSS. Do not silently load remote or outside-workspace files.
   replacement.textContent = alt
-    ? `Image blocked: ${alt}`
-    : "Image blocked: external and local image loading is disabled.";
+    ? `画像を表示できません: ${alt}`
+    : "画像を表示できません（ワークスペース外・未配置・リモートは読み込みません）";
   return replacement;
 }
 

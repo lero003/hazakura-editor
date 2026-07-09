@@ -1573,7 +1573,7 @@ describe("EBookPane safety boundary (renderMarkdown reuse)", () => {
 
     const article = screen.getByRole("article");
     expect(article.querySelectorAll("img")).toHaveLength(0);
-    expect(article.textContent).toContain("Image blocked");
+    expect(article.textContent).toContain("画像を表示できません");
   });
 
   it("resolves a workspace-relative image through inlineWorkspaceAssetImages", async () => {
@@ -1614,7 +1614,7 @@ describe("EBookPane safety boundary (renderMarkdown reuse)", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/Image blocked/)).toBeTruthy();
+      expect(screen.getByText(/画像を表示できません/)).toBeTruthy();
     });
     expect(screen.queryByRole("img")).toBeNull();
   });
