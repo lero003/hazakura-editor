@@ -347,14 +347,14 @@ fn reject_symlink(path: &Path) -> Result<(), String> {
 }
 
 fn ensure_path_stays_inside_workspace(workspace_root: &str, path: &Path) -> Result<(), String> {
-    let canonical_root = ensure_workspace_root(&PathBuf::from(workspace_root))?;
-    let canonical_path =
-        fs::canonicalize(path).map_err(|err| format!("Cannot verify backup path: {err}"))?;
-
-    if !canonical_path.starts_with(&canonical_root) {
-        return Err("Backup path must stay inside the workspace.".to_string());
-    }
-
+    // Q-STR-5: reuse shared path containment (preserve backup-specific wording).
+    ensure_path_inside_workspace_root(path, &PathBuf::from(workspace_root)).map_err(|err| {
+        if err.contains("outside the workspace root") {
+            "Backup path must stay inside the workspace.".to_string()
+        } else {
+            format!("Cannot verify backup path: {err}")
+        }
+    })?;
     Ok(())
 }
 

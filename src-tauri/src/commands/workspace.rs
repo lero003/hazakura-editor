@@ -40,13 +40,13 @@ pub(crate) fn list_workspace_directory_with_label(
     ensure_label_is_main(label)?;
     let root_path = PathBuf::from(&root);
     let directory_path = PathBuf::from(&directory);
-    let canonical_root = ensure_workspace_root(&root_path)?;
-    let canonical_directory = fs::canonicalize(&directory_path)
-        .map_err(|err| format!("Cannot read workspace folder: {err}"))?;
-
-    if !canonical_directory.starts_with(&canonical_root) {
-        return Err("Selected folder is outside the workspace root.".to_string());
-    }
+    ensure_path_inside_workspace_root(&directory_path, &root_path).map_err(|err| {
+        if err.contains("outside the workspace root") {
+            "Selected folder is outside the workspace root.".to_string()
+        } else {
+            format!("Cannot read workspace folder: {err}")
+        }
+    })?;
 
     let metadata = fs::metadata(&directory_path)
         .map_err(|err| format!("Cannot read workspace folder: {err}"))?;

@@ -29,13 +29,13 @@ pub(crate) fn open_workspace_image_with_label(
     ensure_label_is_main(label)?;
     let root_path = PathBuf::from(&root);
     let image_path = PathBuf::from(&path);
-    let canonical_root = ensure_workspace_root(&root_path)?;
-    let canonical_image =
-        fs::canonicalize(&image_path).map_err(|err| format!("Cannot read image: {err}"))?;
-
-    if !canonical_image.starts_with(&canonical_root) {
-        return Err("Selected image is outside the workspace root.".to_string());
-    }
+    ensure_path_inside_workspace_root(&image_path, &root_path).map_err(|err| {
+        if err.contains("outside the workspace root") {
+            "Selected image is outside the workspace root.".to_string()
+        } else {
+            format!("Cannot read image: {err}")
+        }
+    })?;
 
     read_image_preview_document(path, image_path)
 }
@@ -127,15 +127,17 @@ pub(crate) fn save_pasted_image_with_label(
     let hash_hex = format!("{:016x}", hash);
     let safe_name = format!("{hash_hex}.{ext}");
 
-    // Create assets directory
+    // Create assets directory and confirm it stays inside the workspace.
     let assets_dir = canonical_root.join("assets");
     fs::create_dir_all(&assets_dir).map_err(|e| format!("Cannot create assets folder: {e}"))?;
     let canonical_assets =
-        fs::canonicalize(&assets_dir).map_err(|e| format!("Cannot verify assets folder: {e}"))?;
-
-    if !canonical_assets.starts_with(&canonical_root) {
-        return Err("Assets folder is outside the workspace root.".to_string());
-    }
+        ensure_path_inside_workspace_root(&assets_dir, &root).map_err(|err| {
+            if err.contains("outside the workspace root") {
+                "Assets folder is outside the workspace root.".to_string()
+            } else {
+                format!("Cannot verify assets folder: {err}")
+            }
+        })?;
 
     let dest = canonical_assets.join(&safe_name);
 
@@ -210,11 +212,13 @@ pub(crate) fn import_image_from_path_with_label(
     let assets_dir = canonical_root.join("assets");
     fs::create_dir_all(&assets_dir).map_err(|e| format!("Cannot create assets folder: {e}"))?;
     let canonical_assets =
-        fs::canonicalize(&assets_dir).map_err(|e| format!("Cannot verify assets folder: {e}"))?;
-
-    if !canonical_assets.starts_with(&canonical_root) {
-        return Err("Assets folder is outside the workspace root.".to_string());
-    }
+        ensure_path_inside_workspace_root(&assets_dir, &root).map_err(|err| {
+            if err.contains("outside the workspace root") {
+                "Assets folder is outside the workspace root.".to_string()
+            } else {
+                format!("Cannot verify assets folder: {err}")
+            }
+        })?;
 
     let dest = canonical_assets.join(&safe_name);
 

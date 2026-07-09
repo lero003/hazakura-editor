@@ -45,7 +45,8 @@ Published Mac App Store history through v1.3 remains documented in `current-stat
 | Done / quality | Q-STR-2 Assist editable guard | `appleAssistEditGuard` + save/edit/encoding/backup reject while generating. |
 | Done / quality | Q-STR-3 sessionId naming | `setActiveTabContents(next, sessionId)` rename. |
 | Done / quality | Q-STR-4 menu/palette share | `sharedShellDocumentActions` in controller. |
-| Rec / v1.6 quality | Pack B / C / Q-STR-5 | Import timeout, PDF device verify, path helper unify — see inventory. |
+| Done / quality | Q-STR-5 path containment | images / workspace list / auto_backup use shared helper. |
+| Rec / v1.6 quality | Pack B / C | Q-IMP-8 timeout, Q-IMP-2, Q-PDF-1 device verify — see inventory. |
 | Rec / v1.6 quality | Import reliability pack | Q-IMP-8 helper wall timeout; Q-IMP-2 sandbox OCR if TF repro; optional Q-IMP-1 messaging (**Pack B**). |
 | Deferred | Other quality backlog | Theme cost, deeper STR, … — same inventory; not default next. |
 | Done / UX | Import discoverability | Confirm dialog; workspace right-click “Markdown 下書きとして取り込む…”; menu/palette keywords. |
