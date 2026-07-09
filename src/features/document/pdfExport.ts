@@ -10,12 +10,13 @@ export const PDF_A4_PAGE_HEIGHT_POINTS = 842;
  * WebKit createPDF clips to the A4 rect, so trailing line boxes that sit
  * near the column bottom can be lost (worse on long JP manuscripts).
  *
- * Reserve ~6–8 body lines at 11pt / 1.45 so content wraps into the next
- * A4 column instead of painting past the capture. Device reports after
- * 16→48 still showed ~10 missing lines on 4000+ line docs, so keep this
- * larger. Do not restore document scrollHeight (reintroduces blank pages).
+ * Reserve several body lines so content wraps into the next A4 column.
+ * Keep this moderate: too large shortens the first column and, combined
+ * with `break-inside: avoid` on cover images, collapses the multicol flow
+ * (image/text overlap + missing tail). Pair with max-height images and
+ * scrollWidth-based column measure. Do not restore scrollHeight.
  */
-export const PDF_CONTENT_BOTTOM_SAFETY_POINTS = 112;
+export const PDF_CONTENT_BOTTOM_SAFETY_POINTS = 72;
 
 export const PDF_MARGIN_PRESETS = {
   narrow: { blockMm: 10, inlineMm: 10 },

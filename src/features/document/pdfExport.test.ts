@@ -103,9 +103,10 @@ describe("pdfScreenPageLayout", () => {
   });
 
   it("reserves bottom safety so last line boxes stay inside the A4 capture", () => {
-    // Device: 16→48 still left ~10 lines off long JP docs; keep a large reserve.
-    expect(PDF_CONTENT_BOTTOM_SAFETY_POINTS).toBeGreaterThanOrEqual(80);
-    expect(PDF_CONTENT_BOTTOM_SAFETY_POINTS).toBeLessThanOrEqual(160);
+    // Moderate reserve: large enough for wrap, not so large that cover
+    // images overflow the first column and collapse multicol flow.
+    expect(PDF_CONTENT_BOTTOM_SAFETY_POINTS).toBeGreaterThanOrEqual(48);
+    expect(PDF_CONTENT_BOTTOM_SAFETY_POINTS).toBeLessThanOrEqual(96);
 
     for (const preset of ["narrow", "standard", "wide"] as const) {
       const layout = pdfScreenPageLayout(preset);

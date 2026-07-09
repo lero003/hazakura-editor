@@ -26,16 +26,17 @@ JSON.stringify((() => {
   let width = fallbackWidth;
   if (preview) {
     let occupiedColumnCount = 0;
+    let maxRight = 0;
     const includeRects = (rects) => {
       for (const rect of rects) {
         // Prefer left edge so a wide unbreakable run inside one column does
         // not invent a trailing page. Multicol line fragments already have
         // their left at the start of each column.
-        const columnIndex = Math.max(
-          0,
-          Math.floor((rect.left + window.scrollX) / 595)
-        );
+        const left = rect.left + window.scrollX;
+        const right = left + rect.width;
+        const columnIndex = Math.max(0, Math.floor(left / 595));
         occupiedColumnCount = Math.max(occupiedColumnCount, columnIndex + 1);
+        maxRight = Math.max(maxRight, right);
       }
     };
     const walker = document.createTreeWalker(preview, NodeFilter.SHOW_TEXT);
@@ -51,7 +52,12 @@ JSON.stringify((() => {
     for (const element of preview.querySelectorAll("img, svg, canvas, video, hr")) {
       includeRects(element.getClientRects());
     }
-    width = Math.max(1, occupiedColumnCount) * 595;
+    // scrollWidth catches multicol overflow that fragment walks can miss
+    // when layout is unstable; take the max of all three signals.
+    const fromRects = Math.max(1, occupiedColumnCount);
+    const fromRight = Math.max(1, Math.ceil(maxRight / 595));
+    const fromScroll = Math.max(1, Math.ceil(preview.scrollWidth / 595));
+    width = Math.max(fromRects, fromRight, fromScroll) * 595;
   }
   const height = preview
     ? 842

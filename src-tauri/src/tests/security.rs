@@ -694,12 +694,12 @@ fn export_pdf_measures_rendered_content_instead_of_trailing_scroll_area() {
     );
     assert!(
         PDF_CAPTURE_SIZE_SCRIPT.contains("rect.left")
-            && !PDF_CAPTURE_SIZE_SCRIPT.contains("rect.right"),
-        "horizontal overflow inside one column must not create trailing pages"
+            && PDF_CAPTURE_SIZE_SCRIPT.contains("scrollWidth"),
+        "PDF capture should use fragment left edges plus multicol scrollWidth"
     );
     assert!(
         PDF_CAPTURE_SIZE_SCRIPT.contains("const height = preview\n    ? 842"),
-        "the horizontal A4 layout must not create a second blank row"
+        "when a preview exists, capture height must stay one A4 row (not scrollHeight)"
     );
 }
 

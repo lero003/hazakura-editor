@@ -165,8 +165,7 @@ export function useDocumentExport({
     border: 0;
     border-radius: 0;
     box-shadow: none;
-    /* border-box so bottom padding shrinks column flow height (content-box
-       put padding *outside* the multicol box and did not force wrap). */
+    /* border-box so bottom padding shrinks column flow height. */
     box-sizing: border-box;
     color: #000000;
     column-fill: auto;
@@ -179,14 +178,12 @@ export function useDocumentExport({
     margin: var(--pdf-margin-block) var(--pdf-margin-inline);
     max-width: none;
     overflow: visible;
-    /* Inside the fixed height: reduces usable column height so last lines
-       of long manuscripts wrap to the next horizontal A4 page. */
-    padding: 0 0 3em;
+    padding: 0 0 1.5em;
     width: var(--pdf-content-width);
   }
   .markdown-preview .pdf-export-tail-guard {
     display: block;
-    height: 4em;
+    height: 2em;
     margin: 0;
     padding: 0;
     visibility: hidden;
@@ -199,9 +196,25 @@ export function useDocumentExport({
     color: #000000;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
+  /* Do not force images to stay unbroken: a cover taller than the column
+     with break-inside:avoid overflows, collides with following text, and
+     destabilizes the whole multicol flow (missing tail on long docs). */
   .markdown-preview pre,
-  .markdown-preview blockquote,
-  .markdown-preview img { break-inside: avoid; }
+  .markdown-preview blockquote {
+    break-inside: avoid;
+  }
+  .markdown-preview img {
+    border: 0;
+    border-radius: 0;
+    break-inside: auto;
+    box-shadow: none;
+    display: block;
+    height: auto;
+    margin: 12px auto;
+    max-height: calc(var(--pdf-content-height) - 3em);
+    max-width: 100%;
+    object-fit: contain;
+  }
   .markdown-preview pre {
     background: var(--status-bg);
     border-left: 2px solid #999999;
