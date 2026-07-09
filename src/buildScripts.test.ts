@@ -61,14 +61,15 @@ const appStorePreviewConfig = readFileSync(
   "utf8",
 );
 const appStorePreviewConfigJson = JSON.parse(appStorePreviewConfig) as {
-  build?: { frontendDist?: string };
+  build?: { beforeBuildCommand?: string; frontendDist?: string };
+  bundle?: { externalBin?: string[] };
 };
 const appStoreSubmitConfig = readFileSync(
   "src-tauri/tauri.conf.appstore.json",
   "utf8",
 );
 const appStoreSubmitConfigJson = JSON.parse(appStoreSubmitConfig) as {
-  build?: { frontendDist?: string };
+  build?: { beforeBuildCommand?: string; frontendDist?: string };
   bundle?: { externalBin?: string[]; macOS?: { bundleVersion?: string } };
 };
 const tauriConfig = JSON.parse(readFileSync("src-tauri/tauri.conf.json", "utf8")) as {
@@ -129,12 +130,13 @@ describe("macOS build scripts", () => {
       "--config src-tauri/tauri.conf.appstore-preview.json",
     );
     expect(appStorePreviewConfigJson.build?.frontendDist).toBe("../dist");
-    expect(appStorePreviewConfig).toContain(
-      '"beforeBuildCommand": "npm run build:apple-assist-helper:live && npm run build:vite"',
+    expect(appStorePreviewConfigJson.build?.beforeBuildCommand).toBe(
+      "npm run build:apple-assist-helper:live && npm run build:import-assist-helper:live && npm run build:vite",
     );
-    expect(appStorePreviewConfig).toContain(
-      '"externalBin": ["../binaries/hazakura-local-assist-helper"]',
-    );
+    expect(appStorePreviewConfigJson.bundle?.externalBin).toEqual([
+      "../binaries/hazakura-local-assist-helper",
+      "../binaries/hazakura-import-assist-helper",
+    ]);
     expect(appStorePreviewConfig).not.toContain(
       '"entitlements": "./entitlements/mac-app-store.entitlements"',
     );
@@ -175,11 +177,12 @@ describe("macOS build scripts", () => {
       '"embedded.provisionprofile": "./profiles/Hazakura_Editor_Mac_App_Store_Profile.provisionprofile"',
     );
     expect(appStoreSubmitConfigJson.build?.frontendDist).toBe("../dist");
-    expect(appStoreSubmitConfig).toContain(
-      '"beforeBuildCommand": "npm run build:apple-assist-helper:live && npm run build:vite"',
+    expect(appStoreSubmitConfigJson.build?.beforeBuildCommand).toBe(
+      "npm run build:apple-assist-helper:live && npm run build:import-assist-helper:live && npm run build:vite",
     );
     expect(appStoreSubmitConfigJson.bundle?.externalBin).toEqual([
       "../binaries/hazakura-local-assist-helper",
+      "../binaries/hazakura-import-assist-helper",
     ]);
     expect(appStoreSubmitConfig).toContain(
       '"entitlements": "./entitlements/mac-app-store.entitlements"',
@@ -405,10 +408,10 @@ describe("macOS build scripts", () => {
       'EXPECTED_DISTRIBUTION_LANE="${EXPECTED_DISTRIBUTION_LANE:-app-store}"',
     );
     expect(macosDistributionProbeScript).toContain(
-      "App Store lane must bundle Hazakura Local Assist helper",
+      "App Store lane must bundle nested helper:",
     );
     expect(macosDistributionProbeScript).toContain(
-      "helper inherit entitlement: missing",
+      "inherit entitlement: missing",
     );
     expect(macosSandboxPreviewSmokeScript).toContain(
       "helper-enabled App Store preview",
@@ -486,18 +489,17 @@ describe("macOS build scripts", () => {
         "v1.3 Daily Trust is approved and published",
       ],
       "docs/current-work.md": [
-        "Scope: v1.5 stabilization and reading polish",
-        "The active release lane is",
-        "v1.5",
+        "Scope: v1.6 Import Assist Phase 1",
+        "Active UX Queue — v1.6 Import Assist",
       ],
       "docs/development-automation.md": ["Phase: v1.5"],
       "docs/handoff.md": [
         "`Hazakura Editor` `1.3.0` is the latest published Mac App Store",
-        "The active main-branch release lane is v1.5",
+        "Active main-branch lane is **v1.6 Import Assist Phase 1**",
       ],
       "docs/roadmap.md": [
-        "Mac App Store published version: `1.3.0`",
-        "Active release lane: **v1.5**",
+        "Historical MAS baseline: `1.3.0` Daily Trust",
+        "Active release lane: v1.6 — Import Assist Phase 1",
       ],
     };
 
