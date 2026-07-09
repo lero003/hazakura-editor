@@ -40,8 +40,11 @@ Published Mac App Store history through v1.3 remains documented in `current-stat
 | Done / MVP slice | Unsaved Markdown draft open | File menu + command palette. PDFKit text preferred; pdf-extract fallback; scan PDF page OCR; image Vision OCR. Dirty untitled tab, no auto-save. |
 | Done / TF packaging | Helper externalBin | `hazakura-import-assist-helper` in all tauri confs; `beforeBuild` builds live helper (arm64+x64+universal). |
 | Done / TF packaging | Nested helper App Store re-sign | Both local-assist and import-assist helpers inherit re-sign (TF 90885). |
-| In tree / verify | PDF export last-line clip | `PDF_CONTENT_BOTTOM_SAFETY_POINTS` — device re-export still useful. |
-| Deferred | Quality backlog | See `docs/quality-inventory-v1.6.md` (import image UX, sandbox OCR path, theme cost, …). |
+| In tree / verify | PDF export last-line clip | `PDF_CONTENT_BOTTOM_SAFETY_POINTS` — device re-export still useful (**Pack C**). |
+| Done / quality | Q-STR-1 tab mutation helpers | `editorTabs` list helpers + Assist/editor/recovery migration. |
+| Rec / v1.6 quality | Structural wiring pack (rest) | Q-STR-2…4 in inventory (**Pack A** rest): assist editable guard, sessionId rename, menu/palette dedupe. |
+| Rec / v1.6 quality | Import reliability pack | Q-IMP-8 helper wall timeout; Q-IMP-2 sandbox OCR if TF repro; optional Q-IMP-1 messaging (**Pack B**). |
+| Deferred | Other quality backlog | Theme cost, deeper STR, … — same inventory; not default next. |
 | Done / UX | Import discoverability | Confirm dialog; workspace right-click “Markdown 下書きとして取り込む…”; menu/palette keywords. |
 | Next / post-TF | Review UI | Source page/image vs Markdown; low-confidence marks. |
 | Later | PDF text-layer prefer + OCR fill | PDFKit first; Vision only when needed. |
@@ -49,9 +52,11 @@ Published Mac App Store history through v1.3 remains documented in `current-stat
 
 ### Quality inventory
 
-Cross-cutting quality notes (priority matrix, deferred items, durable pins)
-live in **`docs/quality-inventory-v1.6.md`**. Do not reopen deferred rows without
-user priority; prefer one verifiable slice at a time.
+Cross-cutting quality notes (symptom matrix, **structural audit**, v1.6
+recommended **Packs A/B/C**, durable pins) live in
+**`docs/quality-inventory-v1.6.md`**. Prefer one verifiable slice at a time;
+when testing, run Pack A/B/C checks together with the normal
+`npm test` / `cargo test` gates.
 
 ### CodeMirror pin (durable)
 

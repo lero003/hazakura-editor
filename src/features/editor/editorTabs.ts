@@ -91,6 +91,107 @@ export function replaceTabBufferForReview(
   return { ...tab, contents, saveStatus: "idle", error: null };
 }
 
+/**
+ * Tab list mutation helpers (Q-STR-1).
+ *
+ * Identity rules callers must respect:
+ * - `id` / `path` (named files): rekey on rename / Save As path change
+ * - `sessionId`: stable CodeMirror / Assist / view session across Save As
+ *
+ * Prefer these over ad-hoc `tabs.map(...)` so new mutators cannot silently
+ * mix `id` and `sessionId` matching.
+ */
+export function updateTabsById(
+  tabs: readonly EditorTab[],
+  tabId: string,
+  update: (tab: EditorTab) => EditorTab,
+): EditorTab[] {
+  return mapMatchingTabs(tabs, (tab) => tab.id === tabId, update);
+}
+
+export function updateTabsBySessionId(
+  tabs: readonly EditorTab[],
+  sessionId: string,
+  update: (tab: EditorTab) => EditorTab,
+): EditorTab[] {
+  return mapMatchingTabs(tabs, (tab) => tab.sessionId === sessionId, update);
+}
+
+export function updateTabsByPath(
+  tabs: readonly EditorTab[],
+  path: string,
+  update: (tab: EditorTab) => EditorTab,
+): EditorTab[] {
+  if (!path) {
+    return tabs as EditorTab[];
+  }
+  return mapMatchingTabs(tabs, (tab) => tab.path === path, update);
+}
+
+/** Review / Assist / backup-style full buffer replace; baselines unchanged. */
+export function replaceTabsBufferBySessionId(
+  tabs: readonly EditorTab[],
+  sessionId: string,
+  contents: string,
+): EditorTab[] {
+  return updateTabsBySessionId(tabs, sessionId, (tab) =>
+    replaceTabBufferForReview(tab, contents),
+  );
+}
+
+export function replaceTabsBufferById(
+  tabs: readonly EditorTab[],
+  tabId: string,
+  contents: string,
+): EditorTab[] {
+  return updateTabsById(tabs, tabId, (tab) =>
+    replaceTabBufferForReview(tab, contents),
+  );
+}
+
+export function replaceTabsBufferByPath(
+  tabs: readonly EditorTab[],
+  path: string,
+  contents: string,
+): EditorTab[] {
+  return updateTabsByPath(tabs, path, (tab) =>
+    replaceTabBufferForReview(tab, contents),
+  );
+}
+
+/**
+ * Live typing path: clear error, keep `saving` if a save is in flight so the
+ * UI does not flash idle mid-write.
+ */
+export function applyLiveEditorContentsById(
+  tabs: readonly EditorTab[],
+  tabId: string,
+  contents: string,
+): EditorTab[] {
+  return updateTabsById(tabs, tabId, (tab) => ({
+    ...tab,
+    contents,
+    saveStatus: tab.saveStatus === "saving" ? "saving" : "idle",
+    error: null,
+  }));
+}
+
+function mapMatchingTabs(
+  tabs: readonly EditorTab[],
+  match: (tab: EditorTab) => boolean,
+  update: (tab: EditorTab) => EditorTab,
+): EditorTab[] {
+  let changed = false;
+  const next = tabs.map((tab) => {
+    if (!match(tab)) {
+      return tab;
+    }
+    changed = true;
+    return update(tab);
+  });
+  return changed ? next : (tabs as EditorTab[]);
+}
+
 export function getWorkspaceTabMarkerPaths(
   tabs: readonly EditorTab[],
   workspaceRootPath: string | null,

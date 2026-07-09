@@ -4,7 +4,11 @@ import {
   useCallback,
 } from "react";
 import { openTextFile } from "../../lib/tauri";
-import { createEditorTab } from "../../features/editor/editorTabs";
+import {
+  createEditorTab,
+  updateTabsById,
+  updateTabsByPath,
+} from "../../features/editor/editorTabs";
 import { removeStoredDraft } from "../../lib/storage";
 import type { DraftRecord, EditorTab } from "../../types";
 
@@ -48,9 +52,7 @@ export function useRecoveryActions({
         const reopenedTab = createEditorTab(file);
 
         setTabs((currentTabs) =>
-          currentTabs.map((candidate) =>
-            candidate.id === tabId ? reopenedTab : candidate,
-          ),
+          updateTabsById(currentTabs, tabId, () => reopenedTab),
         );
         setActiveTabId(reopenedTab.id);
         setStatus("Reopened from disk");
@@ -63,15 +65,11 @@ export function useRecoveryActions({
           return;
         }
         setTabs((currentTabs) =>
-          currentTabs.map((candidate) =>
-            candidate.id === tabId
-              ? {
-                  ...candidate,
-                  error: `Reopen failed: ${String(err)}`,
-                  saveStatus: "conflict",
-                }
-              : candidate,
-          ),
+          updateTabsById(currentTabs, tabId, (candidate) => ({
+            ...candidate,
+            error: `Reopen failed: ${String(err)}`,
+            saveStatus: "conflict",
+          })),
         );
         setStatus("Reopen failed");
       }
@@ -82,17 +80,13 @@ export function useRecoveryActions({
   const keepEditingAfterConflict = useCallback(
     (tabId: string) => {
       setTabs((currentTabs) =>
-        currentTabs.map((tab) =>
-          tab.id === tabId
-            ? {
-                ...tab,
-                ignoredExternalFingerprint:
-                  tab.externalFingerprint ?? tab.ignoredExternalFingerprint,
-                saveStatus: "idle",
-                error: null,
-              }
-            : tab,
-        ),
+        updateTabsById(currentTabs, tabId, (tab) => ({
+          ...tab,
+          ignoredExternalFingerprint:
+            tab.externalFingerprint ?? tab.ignoredExternalFingerprint,
+          saveStatus: "idle",
+          error: null,
+        })),
       );
       setStatus("Keeping local edits");
     },
@@ -102,9 +96,11 @@ export function useRecoveryActions({
   const clearSaveError = useCallback(
     (tabId: string) => {
       setTabs((currentTabs) =>
-        currentTabs.map((tab) =>
-          tab.id === tabId ? { ...tab, saveStatus: "idle", error: null } : tab,
-        ),
+        updateTabsById(currentTabs, tabId, (tab) => ({
+          ...tab,
+          saveStatus: "idle",
+          error: null,
+        })),
       );
       setStatus("Keeping local edits");
     },
@@ -114,17 +110,13 @@ export function useRecoveryActions({
   const restoreDraft = useCallback(
     (draft: DraftRecord) => {
       setTabs((currentTabs) =>
-        currentTabs.map((tab) =>
-          tab.path === draft.path
-            ? {
-                ...tab,
-                contents: draft.contents,
-                line_ending: draft.line_ending,
-                saveStatus: "idle",
-                error: null,
-              }
-            : tab,
-        ),
+        updateTabsByPath(currentTabs, draft.path, (tab) => ({
+          ...tab,
+          contents: draft.contents,
+          line_ending: draft.line_ending,
+          saveStatus: "idle",
+          error: null,
+        })),
       );
       setPendingDrafts((currentDrafts) =>
         currentDrafts.filter((candidate) => candidate.path !== draft.path),

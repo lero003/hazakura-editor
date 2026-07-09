@@ -1,11 +1,15 @@
 import { describe, expect, it } from "vitest";
 import type { EditorTab } from "../../types";
 import {
+  applyLiveEditorContentsById,
   createEditorTab,
   createUntitledImportDraftTab,
   isDirty,
   isSaveFailureError,
   replaceTabBufferForReview,
+  replaceTabsBufferBySessionId,
+  updateTabsById,
+  updateTabsBySessionId,
 } from "./editorTabs";
 
 // Shared dirty logic is the contract that all dirty-aware
@@ -166,5 +170,75 @@ describe("replaceTabBufferForReview", () => {
 
     expect(replaced.contents).toBe("saved");
     expect(isDirty(replaced)).toBe(false);
+  });
+});
+
+describe("tab list mutation helpers (Q-STR-1)", () => {
+  const other = makeTab({
+    id: "/workspace/other.md",
+    path: "/workspace/other.md",
+    sessionId: "session:other",
+    contents: "other",
+    lastSavedContents: "other",
+  });
+
+  it("updateTabsById only mutates the matching id", () => {
+    const target = makeTab({ sessionId: "session:target" });
+    const next = updateTabsById([target, other], target.id, (tab) => ({
+      ...tab,
+      contents: "typed",
+    }));
+    expect(next[0].contents).toBe("typed");
+    expect(next[1]).toBe(other);
+  });
+
+  it("updateTabsBySessionId matches session, not path/id", () => {
+    // After Save As, id/path can change while sessionId stays fixed.
+    const target = makeTab({
+      id: "/workspace/new-name.md",
+      path: "/workspace/new-name.md",
+      sessionId: "session:stable",
+    });
+    const next = updateTabsBySessionId(
+      [target, other],
+      "session:stable",
+      (tab) => ({ ...tab, contents: "from-assist" }),
+    );
+    expect(next[0].contents).toBe("from-assist");
+    expect(next[0].sessionId).toBe("session:stable");
+    expect(next[1].contents).toBe("other");
+  });
+
+  it("replaceTabsBufferBySessionId uses review replace (idle + clear error)", () => {
+    const target = makeTab({
+      sessionId: "session:assist",
+      contents: "after",
+      saveStatus: "saving",
+      error: "stale",
+    });
+    const next = replaceTabsBufferBySessionId(
+      [target, other],
+      "session:assist",
+      "before",
+    );
+    expect(next[0].contents).toBe("before");
+    expect(next[0].saveStatus).toBe("idle");
+    expect(next[0].error).toBeNull();
+    expect(next[0].lastSavedContents).toBe("saved");
+    expect(next[1]).toBe(other);
+  });
+
+  it("applyLiveEditorContentsById preserves saving status", () => {
+    const target = makeTab({ saveStatus: "saving", error: "x" });
+    const next = applyLiveEditorContentsById([target], target.id, "live");
+    expect(next[0].contents).toBe("live");
+    expect(next[0].saveStatus).toBe("saving");
+    expect(next[0].error).toBeNull();
+  });
+
+  it("returns the same array reference when no tab matches", () => {
+    const tabs = [other];
+    expect(updateTabsById(tabs, "missing", (t) => t)).toBe(tabs);
+    expect(updateTabsBySessionId(tabs, "missing", (t) => t)).toBe(tabs);
   });
 });

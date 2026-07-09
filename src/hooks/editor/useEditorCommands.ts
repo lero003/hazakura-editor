@@ -23,6 +23,10 @@ import type { SlashCommand } from "../../types/slash";
 import { normalizeTextLineEndings } from "../../lib/utils";
 import { formatLineEndingKind } from "../../lib/format";
 import { markdownFormatStatus } from "../../lib/statusMessages";
+import {
+  applyLiveEditorContentsById,
+  updateTabsById,
+} from "../../features/editor/editorTabs";
 
 function pad2(n: number): string {
   return n.toString().padStart(2, "0");
@@ -72,16 +76,7 @@ export function useEditorCommands({
       }
 
       setTabs((currentTabs) =>
-        currentTabs.map((tab) =>
-          tab.id === activeTabId
-            ? {
-                ...tab,
-                contents: nextValue,
-                saveStatus: tab.saveStatus === "saving" ? "saving" : "idle",
-                error: null,
-              }
-            : tab,
-        ),
+        applyLiveEditorContentsById(currentTabs, activeTabId, nextValue),
       );
     },
     [activeTabId, setTabs],
@@ -120,17 +115,13 @@ export function useEditorCommands({
       );
 
       setTabs((currentTabs) =>
-        currentTabs.map((tab) =>
-          tab.id === activeTab.id
-            ? {
-                ...tab,
-                contents: nextContents,
-                line_ending: lineEnding,
-                saveStatus: "idle",
-                error: null,
-              }
-            : tab,
-        ),
+        updateTabsById(currentTabs, activeTab.id, (tab) => ({
+          ...tab,
+          contents: nextContents,
+          line_ending: lineEnding,
+          saveStatus: "idle",
+          error: null,
+        })),
       );
       setStatus(`Line endings set to ${formatLineEndingKind(lineEnding)}`);
     },
@@ -150,16 +141,12 @@ export function useEditorCommands({
       // re-encoding in src-tauri/src/util.rs (encode_text). The
       // actual byte rewrite happens on the next save.
       setTabs((currentTabs) =>
-        currentTabs.map((tab) =>
-          tab.id === activeTab.id
-            ? {
-                ...tab,
-                encoding,
-                saveStatus: "idle",
-                error: null,
-              }
-            : tab,
-        ),
+        updateTabsById(currentTabs, activeTab.id, (tab) => ({
+          ...tab,
+          encoding,
+          saveStatus: "idle",
+          error: null,
+        })),
       );
       setStatus(`Encoding set to ${encoding}`);
     },

@@ -48,7 +48,11 @@ import { useAppleAssistTargetSync } from "../editor/useAppleAssistTargetSync";
 import { useAppleAssistApplyHandler } from "../editor/useAppleAssistApplyHandler";
 import { stopAppleAssistGeneration } from "../../lib/tauri";
 import { aiEditTransactionStore } from "../../features/editor/aiEditTransactions";
-import { replaceTabBufferForReview } from "../../features/editor/editorTabs";
+import {
+  replaceTabsBufferByPath,
+  replaceTabsBufferBySessionId,
+  updateTabsById,
+} from "../../features/editor/editorTabs";
 import { useEditorCommands } from "../editor/useEditorCommands";
 import { useEditorFindController } from "../editor/useEditorFindController";
 import { useTabBarController } from "../editor/useTabBarController";
@@ -502,18 +506,10 @@ export function useAppShellController() {
       : null,
     setActiveTabContents: (next: string, tabId: string) => {
       // v0.34: クロージャの activeTab.sessionId ではなく、ハンドラが検証済みの
-      // tabId で書き込み先を決める。生成中に別タブへ切替しても誤爆しない。
+      // sessionId（引数名は歴史的に tabId）で書き込み先を決める。
+      // 生成中に別タブへ切替しても誤爆しない。Q-STR-1: list helper.
       setTabs((currentTabs) =>
-        currentTabs.map((tab) =>
-          tab.sessionId === tabId
-            ? {
-                ...tab,
-                contents: next,
-                saveStatus: "idle",
-                error: null,
-              }
-            : tab,
-        ),
+        replaceTabsBufferBySessionId(currentTabs, tabId, next),
       );
     },
     setStatus,
@@ -827,11 +823,7 @@ export function useAppShellController() {
         return;
       }
       setTabs((currentTabs) =>
-        currentTabs.map((tab) =>
-          tab.path === documentPath
-            ? replaceTabBufferForReview(tab, backupContents)
-            : tab,
-        ),
+        replaceTabsBufferByPath(currentTabs, documentPath, backupContents),
       );
       setActiveTabId(targetTab.id);
       closeCompareView();
@@ -1022,8 +1014,7 @@ export function useAppShellController() {
   const dismissActiveError = useCallback(() => {
     if (activeTabId !== null) {
       setTabs((currentTabs) =>
-        currentTabs.map((tab) =>
-          tab.id === activeTabId &&
+        updateTabsById(currentTabs, activeTabId, (tab) =>
           tab.error &&
           tab.saveStatus !== "conflict" &&
           tab.saveStatus !== "error"
@@ -1210,11 +1201,7 @@ export function useAppShellController() {
   const confirmDiscardAppleAssistEdit = useCallback(
     (sessionId: string, beforeBuffer: string) => {
       setTabs((currentTabs) =>
-        currentTabs.map((tab) =>
-          tab.sessionId === sessionId
-            ? replaceTabBufferForReview(tab, beforeBuffer)
-            : tab,
-        ),
+        replaceTabsBufferBySessionId(currentTabs, sessionId, beforeBuffer),
       );
       const targetTab = tabs.find((tab) => tab.sessionId === sessionId);
       if (targetTab) {

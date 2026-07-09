@@ -3,15 +3,20 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-07-09 (v1.6 TF; quality inventory added)
+Last reviewed: 2026-07-09 (v1.6 quality inventory: structural audit + packs)
 
 ## Current State
 
 - Package version **`1.6.0`** / App Store **bundleVersion 76** (TF delivered).
 - **v1.5 (`1.5.0`) closed before 江戸彼岸.** Active: **v1.6 Import Assist** —
   `docs/import-assist-boundary-review.md`, `docs/current-work.md`.
-- Quality backlog (import image UX, PDF last-line verify, theme cost, …):
+- Quality backlog + **structural audit** (dual buffer, sessionId, mega
+  controller, PDF/import helpers) and **v1.6 recommended packs**:
   **`docs/quality-inventory-v1.6.md`**.
+  - Pack A: Q-STR-1…4 wiring (tab helpers, assist guard, sessionId name, menu/palette)
+  - Pack B: Q-IMP-8 timeout, Q-IMP-2 sandbox OCR, optional Q-IMP-1
+  - Pack C: Q-PDF-1 device re-verify + CM pin
+  Run packs with normal `npm test` / `cargo test` when touching these slices.
 - Keep `@codemirror/view` at **6.43.2**. Import helper must ship via
   `externalBin` (`npm run build:import-assist-helper:live`). Both nested
   helpers need App Store inherit re-sign (`sign-app-store-submit-app.mjs`).
@@ -106,8 +111,10 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    bundle unrelated polish.
 5. v1.5 (`1.5.0`) is closed/released **before** edohigan. Active lane is
    **v1.6 Import Assist** (`docs/import-assist-boundary-review.md`,
-   `docs/current-work.md`). Keep `@codemirror/view` at 6.43.2. Do not tag
-   or publish without explicit user approval.
+   `docs/current-work.md`). Quality structure/refactor recommendations
+   and combined test packs: `docs/quality-inventory-v1.6.md`. Keep
+   `@codemirror/view` at 6.43.2. Do not tag or publish without explicit
+   user approval.
 
 Detailed v0.18-v1.0 completed-slice history and per-version verification
 records moved to `docs/archive/operations/handoff-detail-through-v1.0.md`.
