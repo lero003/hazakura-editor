@@ -13,3 +13,4 @@ pub mod draft;
 pub mod helper;
 pub mod path;
 pub mod pdf_text;
+pub mod stage;

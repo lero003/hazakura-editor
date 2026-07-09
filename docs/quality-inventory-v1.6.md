@@ -42,7 +42,7 @@ Last reviewed: 2026-07-09 (structural audit + v1.6 recommended slices)
 |-----|-----|------|----------|--------|-----------------|
 | P0 | Q-PDF-1 | PDF export drops last few lines of document | Correctness | **Fixed in source** (16pt bottom safety). Confirm on device. | Device re-export smoke only |
 | P1 | Q-IMP-1 | PDF import leaves Markdown image paths that Preview blocks | UX / expectation | Open | Draft banner or Japanese blocked-image copy |
-| P1 | Q-IMP-2 | Image file OCR may fail under App Sandbox when helper opens user path | Correctness (TF) | Open / needs repro | Parent copies to container temp, then helper OCRs |
+| P1 | Q-IMP-2 | Image file OCR may fail under App Sandbox when helper opens user path | Correctness (TF) | **Done in source** (device TF re-verify open) | Stage user file to container temp before nested helper |
 | P1 | Q-IMP-8 | Import helper `read_line` blocks without effective wall timeout | Reliability | **Done in source** | Watchdog kill in `round_trip_helper_with_timeout` (120s production) |
 | P1 | Q-THM-1 | Shinkai / CRT feel heavier than edohigan for similar “showy” intent | Perf / perception | Open | DPR cap, rAF throttle, reduce CSS `filter` animations |
 | P2 | Q-PDF-2 | PDF export 30s wall timeout on very long multi-page captures | Reliability | Open | Timeout scale with page count or raise modestly |
@@ -355,3 +355,4 @@ See matrix rows and **v1.6 recommended pack**. Implementation notes:
 | 2026-07-09 | Q-STR-4 shipped: `sharedShellDocumentActions` for menu + command palette. |
 | 2026-07-09 | Q-STR-5 shipped: workspace path containment via `ensure_path_inside_workspace_root`. |
 | 2026-07-09 | Q-IMP-8 shipped: Import helper wall-clock watchdog (kill on timeout). |
+| 2026-07-09 | Q-IMP-2 shipped: stage import source to container temp before helper (images + PDF helper paths). |

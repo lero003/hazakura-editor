@@ -47,7 +47,8 @@ Published Mac App Store history through v1.3 remains documented in `current-stat
 | Done / quality | Q-STR-4 menu/palette share | `sharedShellDocumentActions` in controller. |
 | Done / quality | Q-STR-5 path containment | images / workspace list / auto_backup use shared helper. |
 | Done / quality | Q-IMP-8 import helper timeout | Wall-clock watchdog kills hanging helper (`round_trip_helper_with_timeout`). |
-| Rec / v1.6 quality | Pack B rest / Pack C | Q-IMP-2 sandbox OCR, Q-IMP-1 messaging, Q-PDF-1 device verify. |
+| Done / quality | Q-IMP-2 sandbox OCR staging | Container temp copy before nested helper (images + PDF helper paths). TF re-verify open. |
+| Rec / v1.6 quality | Pack B rest / Pack C | Q-IMP-1 messaging, Q-PDF-1 device verify. |
 | Rec / v1.6 quality | Import reliability pack | Q-IMP-8 helper wall timeout; Q-IMP-2 sandbox OCR if TF repro; optional Q-IMP-1 messaging (**Pack B**). |
 | Deferred | Other quality backlog | Theme cost, deeper STR, … — same inventory; not default next. |
 | Done / UX | Import discoverability | Confirm dialog; workspace right-click “Markdown 下書きとして取り込む…”; menu/palette keywords. |

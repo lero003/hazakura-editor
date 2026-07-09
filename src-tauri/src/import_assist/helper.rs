@@ -16,6 +16,7 @@ use std::time::Duration;
 use super::draft::{assemble_import_markdown_draft, ImportPageText};
 use super::path::validate_import_source_path;
 use super::pdf_text::{extract_pdf_text_layer, pages_have_meaningful_text, prefer_better_pages};
+use super::stage::stage_import_source_for_helper;
 
 const HELPER_TIMEOUT: Duration = Duration::from_secs(120);
 
@@ -92,7 +93,6 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
         .and_then(|n| n.to_str())
         .unwrap_or("import")
         .to_string();
-    let path_str = path.to_string_lossy();
 
     let ext = path
         .extension()
@@ -105,7 +105,11 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
         // pdf-extract is fallback only — it often drops CJK and collapses pages.
         let mut best: Option<Vec<ImportPageText>> = None;
 
-        match try_pdfkit_text_pages(path_str.as_ref()) {
+        // Q-IMP-2: stage into container temp before nested helper paths.
+        let staged = stage_import_source_for_helper(path)?;
+        let staged_str = staged.path().to_string_lossy();
+
+        match try_pdfkit_text_pages(staged_str.as_ref()) {
             Ok(Some(pages)) if pages_have_meaningful_text(&pages) => {
                 best = Some(pages);
             }
@@ -116,6 +120,7 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
             }
         }
 
+        // In-process pdf-extract can still read the original user path.
         match extract_pdf_text_layer(path) {
             Ok(Some(pages)) => {
                 best = Some(match best.take() {
@@ -143,8 +148,8 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
             });
         }
 
-        // No usable text layer → page-image OCR (scans).
-        match try_pdf_page_ocr(path_str.as_ref()) {
+        // No usable text layer → page-image OCR (scans) on staged path.
+        match try_pdf_page_ocr(staged_str.as_ref()) {
             Ok(Some(pages)) if pages_have_meaningful_text(&pages) => {
                 let page_count = pages.len();
                 let markdown = assemble_import_markdown_draft(&source_name, &pages);
@@ -163,7 +168,9 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
         }
     }
 
-    // Images need Vision OCR via the native helper.
+    // Images need Vision OCR via the native helper (staged for sandbox inherit).
+    let staged = stage_import_source_for_helper(path)?;
+    let staged_str = staged.path().to_string_lossy();
     let helper = resolve_import_assist_helper_path()?;
     let probe = round_trip_helper(
         &helper,
@@ -193,7 +200,7 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
             &helper,
             &HelperRequest {
                 action: "ocr_image",
-                path: Some(path_str.as_ref()),
+                path: Some(staged_str.as_ref()),
                 languages: Some(&["ja-JP", "en-US"]),
             },
         )?;
