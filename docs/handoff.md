@@ -3,11 +3,14 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-07-10 (PDF本文画像高さと Q-IMG-1 A+D を修正)
+Last reviewed: 2026-07-10 (PDF画像境界を修正、App Store local pkg build 81 を生成)
 
 ## Current State
 
-- Package version **`1.6.0`** / App Store **bundleVersion 76** (TF delivered).
+- Package version **`1.6.0`** / App Store config **bundleVersion 81**. A
+  signed local submit candidate was generated for build 81; it has **not**
+  been uploaded. Ignored `docs/internal/app-store-candidates/latest.json`
+  is the local artifact record; App Store Connect remains authoritative.
 - **v1.5 (`1.5.0`) closed before 江戸彼岸.** Active: **v1.6 Import Assist** —
   `docs/import-assist-boundary-review.md`, `docs/current-work.md`.
 - Quality packs A/B + PDF tail/theme/timeout mostly **shipped**. See
@@ -26,6 +29,10 @@ Last reviewed: 2026-07-10 (PDF本文画像高さと Q-IMG-1 A+D を修正)
   `npm run smoke:app-store-surface` (94 tests). The Agent Workbench PATH-shim
   test was intermittent on its first Rust full run, then passed a focused retry
   and the final full run; keep it separate from image-path work.
+- Build 81 package checks passed: App Store surface smoke, submit-lane app
+  build, package signature, deep app signature, helper inherited entitlements,
+  distribution probe, sandbox-preview smoke, and bundle metadata. No
+  Transporter/App Store Connect action was taken.
 - Keep `@codemirror/view` at **6.43.2**. Import helper must ship via
   `externalBin` (`npm run build:import-assist-helper:live`). Both nested
   helpers need App Store inherit re-sign (`sign-app-store-submit-app.mjs`).
