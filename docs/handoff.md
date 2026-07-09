@@ -13,10 +13,10 @@ Last reviewed: 2026-07-09 (v1.6 quality inventory: structural audit + packs)
 - Quality backlog + **structural audit** (dual buffer, sessionId, mega
   controller, PDF/import helpers) and **v1.6 recommended packs**:
   **`docs/quality-inventory-v1.6.md`**.
-  - Pack A: Q-STR-1…4 **shipped** (tab helpers, assist guard, sessionId name, menu/palette)
-  - Pack B next: Q-IMP-8 timeout, Q-IMP-2 sandbox OCR, optional Q-IMP-1
+  - Pack A: Q-STR-1…4 **shipped**
+  - Q-STR-5 path containment **shipped**
+  - Pack B: Q-IMP-8 timeout **shipped**; still open Q-IMP-2 sandbox OCR, Q-IMP-1 messaging
   - Pack C: Q-PDF-1 device re-verify + CM pin
-  - Also open: Q-STR-5 path helper unify
   Run packs with normal `npm test` / `cargo test` when touching these slices.
 - Keep `@codemirror/view` at **6.43.2**. Import helper must ship via
   `externalBin` (`npm run build:import-assist-helper:live`). Both nested
