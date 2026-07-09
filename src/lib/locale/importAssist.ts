@@ -14,38 +14,41 @@ export function importAssistConfirmCopy(
 ): ImportAssistConfirmCopy {
   if (isKanaStyle(menuLanguage)) {
     return {
-      title: "Markdown したがきとして とりこむ",
+      title: "もじを よみとって したがきを つくる",
       message: [
-        `「${fileName}」を Markdown の したがきとして とりこみますか？`,
+        `「${fileName}」のなかの もじを よみとって、へんしゅうできる したがきを つくります。`,
         "",
-        "・みほぞんの たぶで ひらきます（もと ファイルは かえません）",
-        "・てきすと ちゅうしゅつを ゆうせんし、ひつようなら たんまつない OCR を つかいます",
-        "・かんぜんな へんかんではなく、へんしゅうようの したがきです",
+        "・あたらしい たぶに、まだ ほぞんしていない したがきとして ひらきます",
+        "・もとの ファイルは そのままです（かきかえません）",
+        "・この Mac のなかだけで 処理します（ネットには おくりません）",
+        "・うまく よめない ところも あるので、あとから なおせる したがきです",
       ].join("\n"),
     };
   }
 
   if (isJapaneseMenuLanguage(menuLanguage)) {
     return {
-      title: "Markdown 下書きとして取り込む",
+      title: "文字を読み取って下書きを作る",
       message: [
-        `「${fileName}」を Markdown 下書きとして取り込みますか？`,
+        `「${fileName}」のなかの文字を読み取って、編集できる下書きを作ります。`,
         "",
-        "・未保存のタブで開きます（元ファイルは変更しません）",
-        "・テキスト抽出を優先し、必要なら端末内 OCR を使います",
-        "・完全な変換ではなく、編集用の下書きです",
+        "・新しいタブに、まだ保存していない下書きとして開きます",
+        "・もとのファイルはそのままです（書き換えません）",
+        "・この Mac の中だけで処理します（インターネットには送りません）",
+        "・うまく読めないところもあるので、あとから直せる下書きです",
       ].join("\n"),
     };
   }
 
   return {
-    title: "Import as Markdown draft",
+    title: "Read text into a draft",
     message: [
-      `Import “${fileName}” as a Markdown draft?`,
+      `Read the text in “${fileName}” and open it as an editable draft?`,
       "",
-      "• Opens in an unsaved tab (the original file is not modified)",
-      "• Prefers embedded text; uses on-device OCR only when needed",
-      "• This is an editable draft, not a perfect conversion",
+      "• Opens in a new tab as an unsaved draft",
+      "• Your original file stays as-is (nothing is overwritten)",
+      "• Processing stays on this Mac (nothing is sent online)",
+      "• Some parts may not read perfectly — you can edit the draft afterward",
     ].join("\n"),
   };
 }

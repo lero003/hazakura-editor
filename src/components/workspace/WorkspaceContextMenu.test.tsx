@@ -60,7 +60,7 @@ describe("WorkspaceContextMenu Import Assist", () => {
   it("offers Markdown draft import for PDF files", () => {
     const { onImportAsMarkdownDraft } = renderMenu();
     const item = screen.getByRole("menuitem", {
-      name: "Markdown 下書きとして取り込む…",
+      name: "下書きを作る…",
     });
     fireEvent.click(item);
     expect(onImportAsMarkdownDraft).toHaveBeenCalledTimes(1);
@@ -79,7 +79,7 @@ describe("WorkspaceContextMenu Import Assist", () => {
     });
     expect(
       screen.queryByRole("menuitem", {
-        name: "Markdown 下書きとして取り込む…",
+        name: "下書きを作る…",
       }),
     ).toBeNull();
   });
@@ -98,7 +98,7 @@ describe("WorkspaceContextMenu Import Assist", () => {
     });
     expect(
       screen.queryByRole("menuitem", {
-        name: "Markdown 下書きとして取り込む…",
+        name: "下書きを作る…",
       }),
     ).toBeNull();
   });

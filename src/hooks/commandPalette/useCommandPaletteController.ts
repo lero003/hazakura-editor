@@ -343,7 +343,7 @@ export function useCommandPaletteController({
           "したがき",
           "プレビュー",
         ],
-        label: "PDF / 画像を Markdown 下書きとして取り込む…",
+        label: "PDF / 画像から下書きを作る…",
         run: () => {
           void actions.importSourceAsMarkdownDraft();
         },
