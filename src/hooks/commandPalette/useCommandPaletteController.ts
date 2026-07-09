@@ -337,6 +337,11 @@ export function useCommandPaletteController({
           "markdown",
           "draft",
           "scan",
+          "取り込み",
+          "とりこみ",
+          "下書き",
+          "したがき",
+          "プレビュー",
         ],
         label: "PDF / 画像を Markdown 下書きとして取り込む…",
         run: () => {

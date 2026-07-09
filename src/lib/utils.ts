@@ -124,6 +124,27 @@ export function isSupportedImageFile(path: string): boolean {
   return ["png", "jpg", "jpeg", "gif", "webp"].includes(extension);
 }
 
+/** Extensions accepted by Import Assist (PDF / image → Markdown draft). */
+export const IMPORT_ASSIST_SOURCE_EXTENSIONS = [
+  "pdf",
+  "png",
+  "jpg",
+  "jpeg",
+  "tif",
+  "tiff",
+  "heic",
+  "heif",
+] as const;
+
+/** True when a workspace file name/path can be offered Import Assist. */
+export function isImportAssistSourceFile(pathOrName: string): boolean {
+  const base = pathOrName.split(/[/\\]/).pop() ?? pathOrName;
+  const extension = base.split(".").at(-1)?.toLowerCase() ?? "";
+  return (IMPORT_ASSIST_SOURCE_EXTENSIONS as readonly string[]).includes(
+    extension,
+  );
+}
+
 
 // ── Line Ending Helpers ──
 

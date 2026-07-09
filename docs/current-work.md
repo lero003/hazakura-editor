@@ -42,6 +42,7 @@ Published Mac App Store history through v1.3 remains documented in `current-stat
 | Done / TF packaging | Nested helper App Store re-sign | Both local-assist and import-assist helpers inherit re-sign (TF 90885). |
 | In tree / verify | PDF export last-line clip | `PDF_CONTENT_BOTTOM_SAFETY_POINTS` — device re-export still useful. |
 | Deferred | Quality backlog | See `docs/quality-inventory-v1.6.md` (import image UX, sandbox OCR path, theme cost, …). |
+| Done / UX | Import discoverability | Confirm dialog; workspace right-click “Markdown 下書きとして取り込む…”; menu/palette keywords. |
 | Next / post-TF | Review UI | Source page/image vs Markdown; low-confidence marks. |
 | Later | PDF text-layer prefer + OCR fill | PDFKit first; Vision only when needed. |
 | Deferred v2 | Book Project split | chapters/ + hazakura.import.json. |

@@ -83,8 +83,8 @@ pub(crate) fn build_app_menu_with_state<R: tauri::Runtime>(
                 app,
                 MENU_IMPORT_PDF_IMAGE,
                 label(
-                    "Import PDF / Image as Markdown Draft...",
-                    "PDF / 画像を Markdown 下書きとして取り込む...",
+                    "Import PDF / Image as Markdown Draft…",
+                    "PDF / 画像を Markdown 下書きとして取り込む…",
                 ),
                 true,
                 None::<&str>,

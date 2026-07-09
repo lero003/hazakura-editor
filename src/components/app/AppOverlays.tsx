@@ -137,6 +137,7 @@ type AppOverlaysProps = {
   onOpenCommandPalette: () => void;
   onRunCommand: (command: Command) => void;
   openWorkspaceFile: (path: string) => void | Promise<void>;
+  importSourcePathAsMarkdownDraft: (path: string) => void | Promise<void>;
   pendingAppClose: boolean;
   pendingCloseTab: EditorTab | null;
   pendingRenameWarning: RenameWarningKind | null;
@@ -266,6 +267,7 @@ export function AppOverlays({
   onOpenCommandPalette,
   onRunCommand,
   openWorkspaceFile,
+  importSourcePathAsMarkdownDraft,
   pendingAppClose,
   pendingCloseTab,
   preferencesCloseButtonRef,
@@ -528,6 +530,7 @@ export function AppOverlays({
           canSendToAgent={activeAgentSession}
           compareSource={compareAnchor}
           fileOpsCopy={fileOpsCopy}
+          kind={workspaceContextMenu.kind}
           menuLanguage={menuLanguage}
           onClearCompareSource={clearCompareSource}
           onClose={closeWorkspaceContextMenu}
@@ -541,6 +544,11 @@ export function AppOverlays({
             const parent = workspaceContextMenu.path;
             closeWorkspaceContextMenu();
             void createFolder(parent);
+          }}
+          onImportAsMarkdownDraft={() => {
+            const path = workspaceContextMenu.path;
+            closeWorkspaceContextMenu();
+            void importSourcePathAsMarkdownDraft(path);
           }}
           onOpen={() => {
             closeWorkspaceContextMenu();

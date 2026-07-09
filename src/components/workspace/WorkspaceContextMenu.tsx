@@ -2,6 +2,7 @@ import type { CompareAnchor, MenuLanguage, WorkspaceContextMenuEntryKind, Worksp
 import { isJapaneseMenuLanguage } from "../../types";
 import { isKanaStyle } from "../../lib/locale/_helpers";
 import type { WorkspaceFileOpsCopy } from "../../lib/locale/workspaceFileOps";
+import { isImportAssistSourceFile } from "../../lib/utils";
 
 export function WorkspaceContextMenu({
   activeTabPath,
@@ -17,6 +18,7 @@ export function WorkspaceContextMenu({
   onCopyFullPath,
   onCreateFileHere,
   onCreateFolderHere,
+  onImportAsMarkdownDraft,
   onMoveToTrash,
   onOpen,
   onRename,
@@ -38,6 +40,7 @@ export function WorkspaceContextMenu({
   onCopyFullPath: () => void;
   onCreateFileHere: () => void;
   onCreateFolderHere: () => void;
+  onImportAsMarkdownDraft: () => void;
   onMoveToTrash: () => void;
   onOpen: () => void;
   onRename: () => void;
@@ -57,11 +60,15 @@ export function WorkspaceContextMenu({
   // security anchor for the workspace tree and trashing it
   // would orphan every other entry.
   const canTrash = kind === "file" || kind === "directory";
+  // Import Assist: only user-selected PDF / image files (not dirs/root).
+  const canImport =
+    kind === "file" && isImportAssistSourceFile(anchor.name);
   const itemCount =
     7 +
     (canSendToAgent ? 1 : 0) +
     (compareSource ? 1 : 0) +
     (canCreateHere ? 2 : 0) +
+    (canImport ? 1 : 0) +
     (canRename ? 1 : 0) +
     (canTrash ? 1 : 0);
   const estimatedWidth = 240;
@@ -81,6 +88,7 @@ export function WorkspaceContextMenu({
         compareActive: "ひらいてゐる ふみと くらべる",
         compare: "せんたくちゅうの くらべもとと くらべる",
         copyFullPath: "ふるぱすを こぴー",
+        importAsMarkdownDraft: "Markdown したがきとして とりこむ…",
         menu: "ふぉるだ こうもくの さばき",
         open: "ひらく",
         revealInFinder: "ファインダーで ひらく",
@@ -95,6 +103,7 @@ export function WorkspaceContextMenu({
           compareActive: "開いているファイルと比較",
           compare: "選択中の比較元と比較",
           copyFullPath: "フルパスをコピー",
+          importAsMarkdownDraft: "Markdown 下書きとして取り込む…",
           menu: "ワークスペース項目の操作",
           open: "開く",
           revealInFinder: "Finderで表示",
@@ -108,6 +117,7 @@ export function WorkspaceContextMenu({
           compareActive: "Compare with open file",
           compare: "Compare with selected source",
           copyFullPath: "Copy full path",
+          importAsMarkdownDraft: "Import as Markdown draft…",
           menu: "Workspace item actions",
           open: "Open",
           revealInFinder: "Show in Finder",
@@ -138,6 +148,15 @@ export function WorkspaceContextMenu({
       <button type="button" role="menuitem" onClick={onOpen}>
         {labels.open}
       </button>
+      {canImport ? (
+        <button
+          type="button"
+          role="menuitem"
+          onClick={onImportAsMarkdownDraft}
+        >
+          {labels.importAsMarkdownDraft}
+        </button>
+      ) : null}
       <button type="button" role="menuitem" onClick={onCopyFullPath}>
         {labels.copyFullPath}
       </button>

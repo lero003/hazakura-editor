@@ -154,6 +154,18 @@ export async function confirmDiscardUnsavedChanges(): Promise<boolean> {
   );
 }
 
+/** Confirm before Import Assist creates an unsaved Markdown draft. */
+export async function confirmImportMarkdownDraft(options: {
+  fileName: string;
+  message: string;
+  title: string;
+}): Promise<boolean> {
+  return confirm(options.message, {
+    title: options.title,
+    kind: "info",
+  });
+}
+
 // macOS save-as dialogs sometimes append a duplicate extension
 // when the user types "foo.md" against a filter that lists
 // ".md" (the OS sees "foo.md.md"). Strip the duplicate only

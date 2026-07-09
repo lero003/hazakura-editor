@@ -48,6 +48,7 @@ Last reviewed: 2026-07-09
 | Durable | Q-CM-1 | CodeMirror view ≥6.43.3 tile-tree line vanish / caret bugs | Correctness | Mitigated by pin | Never bump without long JP + wrap + L Mode matrix |
 | Deferred | Q-IMP-5 | Extract embedded PDF images into workspace assets | Feature | Out of Phase 1 | Book / asset pipeline later |
 | Deferred | Q-IMP-6 | Import review UI (source vs draft, low-confidence) | Feature | Planned post-TF | `current-work.md` |
+| Done | Q-IMP-7 | Import discoverability (menu confirm + workspace right-click) | UX | Shipped in source | Confirm before OCR; context menu on PDF/image |
 | Deferred | Q-THM-2 | Edohigan force/density on-device polish | Polish | Open | `edohigan-theme-plan.md` |
 | Historical | Q-RC-1 | v1.3 extended RC edges (Save As cancel, PDF dialog cancel, …) | Breadth | Not blockers | `v1.3-followup.md` |
 | Historical | Q-ENV-1 | Google Drive recovery fixture | Ops | manual-blocked | Do not touch user cloud |

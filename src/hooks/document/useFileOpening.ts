@@ -4,6 +4,7 @@ import {
   useCallback,
 } from "react";
 import {
+  confirmImportMarkdownDraft,
   createSecurityScopedBookmark,
   createTextFile,
   importSourceToMarkdown,
@@ -41,6 +42,7 @@ import type {
 } from "../../types";
 import { isJapaneseMenuLanguage } from "../../types";
 import { isKanaStyle } from "../../lib/locale/_helpers";
+import { importAssistConfirmCopy } from "../../lib/locale/importAssist";
 
 type UseFileOpeningOptions = {
   activeTab: EditorTab | null;
@@ -333,8 +335,62 @@ export function useFileOpening({
   }, [openFilePath, openImagePreview, setGlobalError, setStatus]);
 
   /**
-   * Import Assist MVP: pick PDF/image → on-device extract/OCR →
-   * open as dirty untitled Markdown (never auto-saved).
+   * Import Assist: confirm → on-device extract/OCR → dirty untitled Markdown.
+   * Used by the file picker path and workspace context menu.
+   */
+  const importSourcePathAsMarkdownDraft = useCallback(
+    async (path: string) => {
+      setGlobalError(null);
+      const fileName =
+        path.split(/[/\\]/).pop()?.trim() || "import-source";
+      const confirmCopy = importAssistConfirmCopy(menuLanguage, fileName);
+      const confirmed = await confirmImportMarkdownDraft({
+        fileName,
+        message: confirmCopy.message,
+        title: confirmCopy.title,
+      });
+      if (!confirmed) {
+        setStatus("Import cancelled");
+        return;
+      }
+
+      setStatus("Importing to Markdown draft…");
+      try {
+        const result = await importSourceToMarkdown(path);
+        const baseName =
+          fileName.replace(/\.[^.]+$/, "") || "import-draft";
+        const tab = createUntitledImportDraftTab(
+          `${baseName}-import.md`,
+          result.markdown,
+        );
+
+        setTabs((currentTabs) => [...currentTabs, tab]);
+        setActiveTabId(tab.id);
+        clearImagePreview();
+        setCompareView(null);
+        setStatus(
+          result.usedOcr
+            ? `Imported OCR draft (${result.pageCount} page${result.pageCount === 1 ? "" : "s"})`
+            : `Imported text draft (${result.pageCount} page${result.pageCount === 1 ? "" : "s"})`,
+        );
+      } catch (err) {
+        setGlobalError(String(err));
+        setStatus("Import failed");
+      }
+    },
+    [
+      clearImagePreview,
+      menuLanguage,
+      setActiveTabId,
+      setCompareView,
+      setGlobalError,
+      setStatus,
+      setTabs,
+    ],
+  );
+
+  /**
+   * File menu / command palette: pick PDF/image, then confirm + import.
    */
   const importSourceAsMarkdownDraft = useCallback(async () => {
     setGlobalError(null);
@@ -346,41 +402,17 @@ export function useFileOpening({
         setStatus("Import cancelled");
         return;
       }
-
-      setStatus("Importing to Markdown draft…");
-      const result = await importSourceToMarkdown(path);
-      const baseName =
-        path.split(/[/\\]/).pop()?.replace(/\.[^.]+$/, "") || "import-draft";
-      const tab = createUntitledImportDraftTab(
-        `${baseName}-import.md`,
-        result.markdown,
-      );
-
-      setTabs((currentTabs) => [...currentTabs, tab]);
-      setActiveTabId(tab.id);
-      clearImagePreview();
-      setCompareView(null);
-      setStatus(
-        result.usedOcr
-          ? `Imported OCR draft (${result.pageCount} page${result.pageCount === 1 ? "" : "s"})`
-          : `Imported text draft (${result.pageCount} page${result.pageCount === 1 ? "" : "s"})`,
-      );
+      await importSourcePathAsMarkdownDraft(path);
     } catch (err) {
       setGlobalError(String(err));
       setStatus("Import failed");
     }
-  }, [
-    clearImagePreview,
-    setActiveTabId,
-    setCompareView,
-    setGlobalError,
-    setStatus,
-    setTabs,
-  ]);
+  }, [importSourcePathAsMarkdownDraft, setGlobalError, setStatus]);
 
   return {
     createNewFile,
     importSourceAsMarkdownDraft,
+    importSourcePathAsMarkdownDraft,
     openExternalFilePaths,
     openFile,
     openFilePath,

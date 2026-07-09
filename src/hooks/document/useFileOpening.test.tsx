@@ -1,10 +1,13 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  confirmImportMarkdownDraft,
   createTextFile,
   createSecurityScopedBookmark,
+  importSourceToMarkdown,
   openExternalUrl,
   openTextFile,
+  pickImportSourceFile,
   pickMarkdownFile,
   pickNewMarkdownFilePath,
 } from "../../lib/tauri";
@@ -12,10 +15,13 @@ import { writePersistedFileBookmark } from "../../lib/storage";
 import { useFileOpening } from "./useFileOpening";
 
 vi.mock("../../lib/tauri", () => ({
+  confirmImportMarkdownDraft: vi.fn(),
   createTextFile: vi.fn(),
   createSecurityScopedBookmark: vi.fn(),
+  importSourceToMarkdown: vi.fn(),
   openExternalUrl: vi.fn(),
   openTextFile: vi.fn(),
+  pickImportSourceFile: vi.fn(),
   pickMarkdownFile: vi.fn(),
   pickNewMarkdownFilePath: vi.fn(),
 }));
@@ -55,10 +61,13 @@ function setup(
 
 describe("useFileOpening", () => {
   beforeEach(() => {
+    vi.mocked(confirmImportMarkdownDraft).mockReset();
     vi.mocked(createTextFile).mockReset();
     vi.mocked(createSecurityScopedBookmark).mockReset();
+    vi.mocked(importSourceToMarkdown).mockReset();
     vi.mocked(openExternalUrl).mockReset();
     vi.mocked(openTextFile).mockReset();
+    vi.mocked(pickImportSourceFile).mockReset();
     vi.mocked(pickMarkdownFile).mockReset();
     vi.mocked(pickNewMarkdownFilePath).mockReset();
     vi.mocked(writePersistedFileBookmark).mockReset();
@@ -217,5 +226,69 @@ describe("useFileOpening", () => {
     expect(openExternalUrl).not.toHaveBeenCalled();
     expect(openTextFile).not.toHaveBeenCalled();
     expect(options.setStatus).toHaveBeenLastCalledWith("External link blocked");
+  });
+
+  it("cancels path import when the user declines the confirm dialog", async () => {
+    vi.mocked(confirmImportMarkdownDraft).mockResolvedValueOnce(false);
+    const { options, result } = setup({ menuLanguage: "ja" });
+
+    await act(async () => {
+      await result.current.importSourcePathAsMarkdownDraft("/ws/scan.pdf");
+    });
+
+    expect(confirmImportMarkdownDraft).toHaveBeenCalledTimes(1);
+    expect(importSourceToMarkdown).not.toHaveBeenCalled();
+    expect(options.setStatus).toHaveBeenLastCalledWith("Import cancelled");
+  });
+
+  it("imports a confirmed path into an unsaved Markdown draft tab", async () => {
+    vi.mocked(confirmImportMarkdownDraft).mockResolvedValueOnce(true);
+    vi.mocked(importSourceToMarkdown).mockResolvedValueOnce({
+      markdown: "# draft\n",
+      sourceName: "scan.pdf",
+      pageCount: 2,
+      usedOcr: false,
+      fixture: false,
+    });
+    const { options, result } = setup({ menuLanguage: "en" });
+
+    await act(async () => {
+      await result.current.importSourcePathAsMarkdownDraft("/ws/scan.pdf");
+    });
+
+    expect(importSourceToMarkdown).toHaveBeenCalledWith("/ws/scan.pdf");
+    const setTabsArg = vi.mocked(options.setTabs).mock.calls.at(-1)?.[0];
+    expect(typeof setTabsArg).toBe("function");
+    const nextTabs =
+      typeof setTabsArg === "function" ? setTabsArg([]) : [];
+    expect(nextTabs).toHaveLength(1);
+    expect(nextTabs[0]?.contents).toBe("# draft\n");
+    expect(nextTabs[0]?.name).toBe("scan-import.md");
+    expect(options.setStatus).toHaveBeenLastCalledWith(
+      "Imported text draft (2 pages)",
+    );
+  });
+
+  it("picks a file then runs the confirmed import path", async () => {
+    vi.mocked(pickImportSourceFile).mockResolvedValueOnce("/tmp/page.png");
+    vi.mocked(confirmImportMarkdownDraft).mockResolvedValueOnce(true);
+    vi.mocked(importSourceToMarkdown).mockResolvedValueOnce({
+      markdown: "ocr",
+      sourceName: "page.png",
+      pageCount: 1,
+      usedOcr: true,
+      fixture: false,
+    });
+    const { options, result } = setup();
+
+    await act(async () => {
+      await result.current.importSourceAsMarkdownDraft();
+    });
+
+    expect(pickImportSourceFile).toHaveBeenCalled();
+    expect(importSourceToMarkdown).toHaveBeenCalledWith("/tmp/page.png");
+    expect(options.setStatus).toHaveBeenLastCalledWith(
+      "Imported OCR draft (1 page)",
+    );
   });
 });
