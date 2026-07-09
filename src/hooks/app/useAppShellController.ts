@@ -53,6 +53,10 @@ import {
   replaceTabsBufferBySessionId,
   updateTabsById,
 } from "../../features/editor/editorTabs";
+import {
+  assertTabEditable,
+  isAppleAssistTabLocked,
+} from "../../features/editor/appleAssistEditGuard";
 import { useEditorCommands } from "../editor/useEditorCommands";
 import { useEditorFindController } from "../editor/useEditorFindController";
 import { useTabBarController } from "../editor/useTabBarController";
@@ -68,7 +72,7 @@ import {
   shouldPersistWorkspaceSessionOnQuit,
 } from "../workspace/useWorkspaceStatePersistence";
 import { exitApp } from "../../lib/tauri/window";
-import type { AppleAssistGenerationLock } from "../../types";
+import type { AppleAssistGenerationLock, EditorTab } from "../../types";
 
 export function useAppShellController() {
   const appleLocalAssistAllowed = isAppleLocalAssistSurfaceAllowed();
@@ -161,16 +165,17 @@ export function useAppShellController() {
     sessionId: string;
     beforeBuffer: string;
   } | null>(null);
-  const appleAssistLockMessage =
-    "生成中のため、この文書の編集を一時停止しています";
-  const isAppleAssistTabLocked = useCallback(
-    (tabId: string | null | undefined, tabPath: string | null | undefined) =>
-      Boolean(
-        appleAssistGenerationLock &&
-          (appleAssistGenerationLock.tabId === tabId ||
-            appleAssistGenerationLock.tabPath === tabPath),
-      ),
-    [appleAssistGenerationLock],
+  // Q-STR-2: single editability gate for Local Assist generation.
+  const rejectIfAppleAssistLocksTab = useCallback(
+    (tab: Pick<EditorTab, "id" | "path"> | null | undefined): boolean => {
+      const result = assertTabEditable(appleAssistGenerationLock, tab);
+      if (!result.editable) {
+        setStatus(result.statusMessage);
+        return true;
+      }
+      return false;
+    },
+    [appleAssistGenerationLock, setStatus],
   );
   // section: editor selection
   const { selectionInfo, setSelectionInfo } = foundation;
@@ -277,7 +282,12 @@ export function useAppShellController() {
     workspaceRootPath,
   });
   const activeAppleAssistGenerationLock =
-    activeTab && isAppleAssistTabLocked(activeTab.id, activeTab.path)
+    activeTab &&
+    isAppleAssistTabLocked(
+      appleAssistGenerationLock,
+      activeTab.id,
+      activeTab.path,
+    )
       ? appleAssistGenerationLock
       : null;
 
@@ -822,6 +832,9 @@ export function useAppShellController() {
         setStatus("Backup apply failed");
         return;
       }
+      if (rejectIfAppleAssistLocksTab(targetTab)) {
+        return;
+      }
       setTabs((currentTabs) =>
         replaceTabsBufferByPath(currentTabs, documentPath, backupContents),
       );
@@ -829,7 +842,14 @@ export function useAppShellController() {
       closeCompareView();
       setStatus("Backup applied — save to keep changes");
     },
-    [closeCompareView, setActiveTabId, setStatus, setTabs, tabs],
+    [
+      closeCompareView,
+      rejectIfAppleAssistLocksTab,
+      setActiveTabId,
+      setStatus,
+      setTabs,
+      tabs,
+    ],
   );
 
   // section: document IO controller
@@ -862,50 +882,26 @@ export function useAppShellController() {
     workspaceRootPath,
   });
   const saveActiveTab = useCallback(async () => {
-    if (activeTab && isAppleAssistTabLocked(activeTab.id, activeTab.path)) {
-      setStatus(appleAssistLockMessage);
+    if (rejectIfAppleAssistLocksTab(activeTab)) {
       return;
     }
     await saveActiveTabUnsafe();
-  }, [
-    activeTab,
-    appleAssistLockMessage,
-    isAppleAssistTabLocked,
-    saveActiveTabUnsafe,
-    setStatus,
-  ]);
+  }, [activeTab, rejectIfAppleAssistLocksTab, saveActiveTabUnsafe]);
   const saveActiveTabAs = useCallback(async () => {
-    if (activeTab && isAppleAssistTabLocked(activeTab.id, activeTab.path)) {
-      setStatus(appleAssistLockMessage);
+    if (rejectIfAppleAssistLocksTab(activeTab)) {
       return;
     }
     await saveActiveTabAsUnsafe();
-  }, [
-    activeTab,
-    appleAssistLockMessage,
-    isAppleAssistTabLocked,
-    saveActiveTabAsUnsafe,
-    setStatus,
-  ]);
+  }, [activeTab, rejectIfAppleAssistLocksTab, saveActiveTabAsUnsafe]);
   const saveTabById = useCallback(
     async (tabId: string): Promise<boolean> => {
       const targetTab = tabs.find((tab) => tab.id === tabId) ?? null;
-      if (
-        targetTab &&
-        isAppleAssistTabLocked(targetTab.id, targetTab.path)
-      ) {
-        setStatus(appleAssistLockMessage);
+      if (rejectIfAppleAssistLocksTab(targetTab)) {
         return false;
       }
       return saveTabByIdUnsafe(tabId);
     },
-    [
-      appleAssistLockMessage,
-      isAppleAssistTabLocked,
-      saveTabByIdUnsafe,
-      setStatus,
-      tabs,
-    ],
+    [rejectIfAppleAssistLocksTab, saveTabByIdUnsafe, tabs],
   );
   const epubExportSettingsOpen = epubExportRequest !== null;
   const pdfExportSettingsOpen = pdfExportRequest !== null;
@@ -1093,19 +1089,30 @@ export function useAppShellController() {
   });
   const handleEditorChange = useCallback(
     (nextValue: string) => {
-      if (activeTab && isAppleAssistTabLocked(activeTab.id, activeTab.path)) {
-        setStatus(appleAssistLockMessage);
+      if (rejectIfAppleAssistLocksTab(activeTab)) {
         return;
       }
       handleEditorChangeUnsafe(nextValue);
     },
-    [
-      activeTab,
-      appleAssistLockMessage,
-      handleEditorChangeUnsafe,
-      isAppleAssistTabLocked,
-      setStatus,
-    ],
+    [activeTab, handleEditorChangeUnsafe, rejectIfAppleAssistLocksTab],
+  );
+  const onConvertLineEnding = useCallback(
+    (lineEnding: Parameters<typeof convertActiveLineEnding>[0]) => {
+      if (rejectIfAppleAssistLocksTab(activeTab)) {
+        return;
+      }
+      convertActiveLineEnding(lineEnding);
+    },
+    [activeTab, convertActiveLineEnding, rejectIfAppleAssistLocksTab],
+  );
+  const onConvertEncoding = useCallback(
+    (encoding: Parameters<typeof convertActiveEncoding>[0]) => {
+      if (rejectIfAppleAssistLocksTab(activeTab)) {
+        return;
+      }
+      convertActiveEncoding(encoding);
+    },
+    [activeTab, convertActiveEncoding, rejectIfAppleAssistLocksTab],
   );
 
   // section: command palette + global search
@@ -1558,8 +1565,8 @@ export function useAppShellController() {
     },
     onCloseSelectedImagePreview: closeSelectedImagePreview,
     onCloseTab: requestCloseTab,
-    onConvertEncoding: convertActiveEncoding,
-    onConvertLineEnding: convertActiveLineEnding,
+    onConvertEncoding: onConvertEncoding,
+    onConvertLineEnding: onConvertLineEnding,
     onExitLModeToWorkspace: exitLModeToWorkspace,
     onFinishTabPointerDrag: finishTabPointerDrag,
     onOpenAppleAssistFromLMode: () => {

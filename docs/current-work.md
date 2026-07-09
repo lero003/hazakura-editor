@@ -42,7 +42,8 @@ Published Mac App Store history through v1.3 remains documented in `current-stat
 | Done / TF packaging | Nested helper App Store re-sign | Both local-assist and import-assist helpers inherit re-sign (TF 90885). |
 | In tree / verify | PDF export last-line clip | `PDF_CONTENT_BOTTOM_SAFETY_POINTS` — device re-export still useful (**Pack C**). |
 | Done / quality | Q-STR-1 tab mutation helpers | `editorTabs` list helpers + Assist/editor/recovery migration. |
-| Rec / v1.6 quality | Structural wiring pack (rest) | Q-STR-2…4 in inventory (**Pack A** rest): assist editable guard, sessionId rename, menu/palette dedupe. |
+| Done / quality | Q-STR-2 Assist editable guard | `appleAssistEditGuard` + save/edit/encoding/backup reject while generating. |
+| Rec / v1.6 quality | Structural wiring pack (rest) | Q-STR-3…4: sessionId rename, menu/palette dedupe. |
 | Rec / v1.6 quality | Import reliability pack | Q-IMP-8 helper wall timeout; Q-IMP-2 sandbox OCR if TF repro; optional Q-IMP-1 messaging (**Pack B**). |
 | Deferred | Other quality backlog | Theme cost, deeper STR, … — same inventory; not default next. |
 | Done / UX | Import discoverability | Confirm dialog; workspace right-click “Markdown 下書きとして取り込む…”; menu/palette keywords. |
