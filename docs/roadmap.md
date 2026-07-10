@@ -30,7 +30,8 @@ Current release state:
 - **Active product lane: v1.7 — Reference Compare.** One read-only
   PDF/image/text reference beside one editable Markdown document, including
   automatic source pairing after Import Assist. Design:
-  `docs/v1.7-reference-compare-design.md`. Implementation starts at R0.
+  `docs/v1.7-reference-compare-design.md`. **R0–R4 source landed**; remaining
+  work is review polish, optional packaged smoke, then version bump.
 - **Next major structural lane: v2** — OKF Book Scope, then vertical writing
   (縦書き). Design:
   `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.

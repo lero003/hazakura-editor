@@ -320,6 +320,7 @@ function makeWorkspaceProps(
     referenceCopy: {
       closeReference: "Close reference",
       emptyEditorHint: "Open Markdown to edit",
+      externalChangeNotice: "The reference file has changed on disk.",
       fitPage: "Fit page",
       fitWidth: "Fit width",
       followActive: "Following",
@@ -332,6 +333,7 @@ function makeWorkspaceProps(
       previousReview: "Previous to review",
       readOnly: "Read-only",
       referenceLabel: "Reference",
+      reloadReference: "Reload",
       replaceReference: "Replace reference…",
       resumeFollow: "Resume follow",
       retryRender: "Retry",

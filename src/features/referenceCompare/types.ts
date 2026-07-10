@@ -38,6 +38,13 @@ export type ReferenceCompareState = {
   /** Import Assist page-follow only; null for manual references. */
   linkedEditorSessionId: string | null;
   followMode: ReferenceFollowMode;
+  /**
+   * Disk fingerprint captured when the reference was opened/reloaded.
+   * Used to detect external changes without auto-refreshing the view.
+   */
+  sourceFingerprint: string | null;
+  /** True when disk fingerprint diverged; user must explicitly reload. */
+  externalChangePending: boolean;
 };
 
 /** Narrow-window single-pane focus when both columns cannot fit. */

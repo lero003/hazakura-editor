@@ -479,27 +479,27 @@ describe("macOS build scripts", () => {
   it("keeps living docs aligned on the published version and active lane", () => {
     const expectedSnippets = {
       "README.md": [
-        "Hazakura Editor `1.3.0` is published",
-        "Current package/app version is `1.3.0`",
-        "The published App Store version is `1.3.0`",
+        "Hazakura Editor `1.6.0` is published",
+        "Current package/app version is `1.6.0`",
+        "The published App Store version is `1.6.0`",
       ],
-      "docs/app-store-build.md": ["Published App Store version: `1.3.0`"],
+      "docs/app-store-build.md": ["Published App Store version: `1.6.0`"],
       "docs/current-status.md": [
-        "Published Mac App Store version: `1.3.0`",
-        "v1.3 Daily Trust is approved and published",
+        "Published Mac App Store version: **`1.6.0`",
+        "Active product lane: v1.7 — Reference Compare",
       ],
       "docs/current-work.md": [
-        "Scope: v1.6 Import Assist Phase 1",
-        "Active UX Queue — v1.6 Import Assist",
+        "Scope: v1.7 Reference Compare",
+        "Active UX Queue — v1.7 Reference Compare",
       ],
-      "docs/development-automation.md": ["Phase: v1.5"],
+      "docs/development-automation.md": ["Phase: **v1.7 Reference Compare**"],
       "docs/handoff.md": [
-        "`Hazakura Editor` `1.3.0` is the latest published Mac App Store",
-        "Active main-branch lane is **v1.6 Import Assist Phase 1**",
+        "Published Mac App Store version is **`1.6.0`",
+        "Active lane: v1.7 Reference Compare",
       ],
       "docs/roadmap.md": [
-        "Historical MAS baseline: `1.3.0` Daily Trust",
-        "Active release lane: v1.6 — Import Assist Phase 1",
+        "Historical MAS baselines (`1.3.0` Daily Trust",
+        "Active product lane: v1.7 — Reference Compare",
       ],
     };
 

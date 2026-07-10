@@ -228,6 +228,7 @@ pub fn run() {
             open_pdf_reference,
             render_pdf_reference_page,
             close_pdf_reference,
+            get_reference_file_metadata,
             export_pdf,
             open_external_url,
             save_auto_backup,
@@ -287,6 +288,10 @@ pub fn run() {
             // cleanup runs before the process terminates.
             tauri::RunEvent::ExitRequested { api, .. } => {
                 if EXIT_CONFIRMED_BY_FRONTEND.load(Ordering::SeqCst) {
+                    // Confirmed quit: drop staged PDF reference copy before
+                    // process teardown so hazakura-import-assist-stage does
+                    // not retain a confidential PDF after close.
+                    import_assist::pdf_reference::release_active_pdf_reference();
                     return;
                 }
                 api.prevent_exit();

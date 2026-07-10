@@ -7,11 +7,11 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
 import type { ReferenceCompareCopy } from "../../lib/locale/referenceCompare";
-import { PDF_REFERENCE_DEFAULT_MAX_PIXELS } from "../../features/referenceCompare/referenceCompare";
 import { nextReviewPage } from "../../features/referenceCompare/importPageMarkers";
 import type { ReferenceDocument } from "../../features/referenceCompare/types";
 import {
-  pdfPageImageToDataUrl,
+  localizePdfReferenceError,
+  pdfPageImageToObjectUrl,
   renderPdfReferencePage,
   type PdfReferencePageImage,
 } from "../../lib/tauri/pdfReference";
@@ -32,17 +32,24 @@ type ReferencePdfPaneProps = {
    */
   reviewPageIndices?: number[];
   reference: PdfRef;
+  /** Prefer ja localization for render errors. */
+  errorLanguage?: "ja" | "en";
 };
 
 type ZoomMode = "fit-width" | "fit-page" | "100" | "150";
 
 type PageCacheEntry = {
-  dataUrl: string;
+  objectUrl: string;
   zoom: ZoomMode;
+  /** Pixel width of the raster (used for true 150% CSS display). */
+  width: number;
+  height: number;
+  referenceId: string;
 };
 
 const PAGE_CACHE_MAX = 3;
 
+/** Shared render budget so 100% / 150% differ only by CSS scale. */
 function maxPixelsForZoom(mode: ZoomMode): number {
   switch (mode) {
     case "fit-page":
@@ -50,12 +57,23 @@ function maxPixelsForZoom(mode: ZoomMode): number {
     case "fit-width":
       return 2_500_000;
     case "100":
-      return 3_000_000;
     case "150":
-      return PDF_REFERENCE_DEFAULT_MAX_PIXELS;
+      return 3_000_000;
     default:
       return 2_500_000;
   }
+}
+
+function revokeCacheEntry(entry: PageCacheEntry | undefined) {
+  if (!entry) return;
+  URL.revokeObjectURL(entry.objectUrl);
+}
+
+function clearPageCache(cache: Map<number, PageCacheEntry>) {
+  for (const entry of cache.values()) {
+    revokeCacheEntry(entry);
+  }
+  cache.clear();
 }
 
 /**
@@ -70,14 +88,20 @@ export function ReferencePdfPane({
   onResumeFollow,
   reviewPageIndices = [],
   reference,
+  errorLanguage = "ja",
 }: ReferencePdfPaneProps) {
   const statusId = useId();
   const [zoom, setZoom] = useState<ZoomMode>("fit-width");
-  const [dataUrl, setDataUrl] = useState<string | null>(null);
+  const [pageUrl, setPageUrl] = useState<string | null>(null);
+  const [pageSize, setPageSize] = useState<{ width: number; height: number } | null>(
+    null,
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
   const cacheRef = useRef<Map<number, PageCacheEntry>>(new Map());
+  /** Bumped on reference change / unmount so in-flight prefetch cannot poison cache. */
+  const generationRef = useRef(0);
 
   const pageCount = Math.max(1, reference.pageCount);
   const safePage = Math.min(Math.max(0, pageIndex), pageCount - 1);
@@ -85,16 +109,43 @@ export function ReferencePdfPane({
 
   useEffect(() => {
     setZoom("fit-width");
-    cacheRef.current.clear();
+    clearPageCache(cacheRef.current);
+    generationRef.current += 1;
+    setPageUrl(null);
+    setPageSize(null);
+    setError(null);
   }, [reference.referenceId]);
 
   useEffect(() => {
+    return () => {
+      generationRef.current += 1;
+      clearPageCache(cacheRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
+    const generation = generationRef.current;
     const cached = cacheRef.current.get(safePage);
-    if (cached && cached.zoom === zoom) {
-      setDataUrl(cached.dataUrl);
+    if (
+      cached &&
+      cached.zoom === zoom &&
+      cached.referenceId === reference.referenceId
+    ) {
+      setPageUrl(cached.objectUrl);
+      setPageSize({ width: cached.width, height: cached.height });
       setError(null);
       setLoading(false);
+      void prefetchAdjacent({
+        referenceId: reference.referenceId,
+        page: safePage,
+        pageCount,
+        zoom,
+        cache: cacheRef.current,
+        generation,
+        isCurrent: () =>
+          !cancelled && generationRef.current === generation,
+      });
       return () => {
         cancelled = true;
       };
@@ -110,23 +161,34 @@ export function ReferencePdfPane({
           safePage,
           maxPixelsForZoom(zoom),
         );
-        if (cancelled) return;
-        const url = pdfPageImageToDataUrl(image);
-        rememberPage(cacheRef.current, safePage, { dataUrl: url, zoom });
-        setDataUrl(url);
+        if (cancelled || generationRef.current !== generation) return;
+        if (image.referenceId !== reference.referenceId) return;
+        const objectUrl = pdfPageImageToObjectUrl(image);
+        rememberPage(cacheRef.current, safePage, {
+          objectUrl,
+          zoom,
+          width: image.width,
+          height: image.height,
+          referenceId: reference.referenceId,
+        });
+        setPageUrl(objectUrl);
+        setPageSize({ width: image.width, height: image.height });
         setLoading(false);
-        // Soft-prefetch adjacent pages without blocking UI (long PDFs stay lazy).
-        void prefetchAdjacent(
-          reference.referenceId,
-          safePage,
+        void prefetchAdjacent({
+          referenceId: reference.referenceId,
+          page: safePage,
           pageCount,
           zoom,
-          cacheRef.current,
-        );
+          cache: cacheRef.current,
+          generation,
+          isCurrent: () =>
+            !cancelled && generationRef.current === generation,
+        });
       } catch (err) {
-        if (cancelled) return;
-        setDataUrl(null);
-        setError(String(err));
+        if (cancelled || generationRef.current !== generation) return;
+        setPageUrl(null);
+        setPageSize(null);
+        setError(localizePdfReferenceError(err, errorLanguage));
         setLoading(false);
       }
     })();
@@ -134,7 +196,14 @@ export function ReferencePdfPane({
     return () => {
       cancelled = true;
     };
-  }, [reference.referenceId, safePage, zoom, reloadToken, pageCount]);
+  }, [
+    reference.referenceId,
+    safePage,
+    zoom,
+    reloadToken,
+    pageCount,
+    errorLanguage,
+  ]);
 
   const goPrev = useCallback(() => {
     onPageIndexChange(Math.max(0, safePage - 1), "user");
@@ -167,6 +236,15 @@ export function ReferencePdfPane({
   const reviewStatus = hasReview
     ? `${copy.reviewLabel} ${reviewPageIndices.indexOf(safePage) >= 0 ? reviewPageIndices.indexOf(safePage) + 1 : "–"} / ${reviewPageIndices.length}`
     : null;
+
+  const imageStyle =
+    zoom === "150" && pageSize
+      ? {
+          width: `${Math.round(pageSize.width * 1.5)}px`,
+          height: "auto" as const,
+          maxWidth: "none" as const,
+        }
+      : undefined;
 
   return (
     <div
@@ -300,12 +378,13 @@ export function ReferencePdfPane({
             </button>
           </div>
         ) : null}
-        {dataUrl && !error ? (
+        {pageUrl && !error ? (
           <img
-            src={dataUrl}
+            src={pageUrl}
             alt={`${reference.name} — ${pageStatus}`}
             className="reference-pdf-image"
             draggable={false}
+            style={imageStyle}
           />
         ) : null}
       </div>
@@ -318,35 +397,60 @@ function rememberPage(
   page: number,
   entry: PageCacheEntry,
 ) {
+  const previous = cache.get(page);
+  if (previous && previous.objectUrl !== entry.objectUrl) {
+    revokeCacheEntry(previous);
+  }
   cache.delete(page);
   cache.set(page, entry);
   while (cache.size > PAGE_CACHE_MAX) {
     const oldest = cache.keys().next().value;
     if (oldest === undefined) break;
+    revokeCacheEntry(cache.get(oldest));
     cache.delete(oldest);
   }
 }
 
-async function prefetchAdjacent(
-  referenceId: string,
-  page: number,
-  pageCount: number,
-  zoom: ZoomMode,
-  cache: Map<number, PageCacheEntry>,
-) {
-  const neighbors = [page - 1, page + 1].filter(
-    (p) => p >= 0 && p < pageCount && !cache.has(p),
-  );
+async function prefetchAdjacent(options: {
+  referenceId: string;
+  page: number;
+  pageCount: number;
+  zoom: ZoomMode;
+  cache: Map<number, PageCacheEntry>;
+  generation: number;
+  isCurrent: () => boolean;
+}) {
+  const { referenceId, page, pageCount, zoom, cache, isCurrent } = options;
+  const neighbors = [page - 1, page + 1].filter((p) => {
+    if (p < 0 || p >= pageCount) return false;
+    const existing = cache.get(p);
+    return !(
+      existing &&
+      existing.zoom === zoom &&
+      existing.referenceId === referenceId
+    );
+  });
   for (const neighbor of neighbors) {
+    if (!isCurrent()) return;
     try {
       const image: PdfReferencePageImage = await renderPdfReferencePage(
         referenceId,
         neighbor,
         maxPixelsForZoom(zoom),
       );
+      if (!isCurrent()) return;
+      if (image.referenceId !== referenceId) return;
+      const objectUrl = pdfPageImageToObjectUrl(image);
+      if (!isCurrent()) {
+        URL.revokeObjectURL(objectUrl);
+        return;
+      }
       rememberPage(cache, neighbor, {
-        dataUrl: pdfPageImageToDataUrl(image),
+        objectUrl,
         zoom,
+        width: image.width,
+        height: image.height,
+        referenceId,
       });
     } catch {
       // Prefetch is best-effort.

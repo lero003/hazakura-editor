@@ -20,6 +20,11 @@ use super::stage::stage_import_source_for_helper;
 
 const HELPER_TIMEOUT: Duration = Duration::from_secs(120);
 
+/// Serializes tests that temporarily set `HAZAKURA_IMPORT_ASSIST_HELPER`.
+/// Process environment is process-global; parallel tests must not race it.
+#[cfg(test)]
+pub(crate) static IMPORT_ASSIST_HELPER_ENV_LOCK: Mutex<()> = Mutex::new(());
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ImportDraftResult {
@@ -186,9 +191,7 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
                 });
             }
             Ok(_) => {
-                return Err(
-                    "PDF has no extractable text and page OCR returned empty text.".into(),
-                );
+                return Err("PDF has no extractable text and page OCR returned empty text.".into());
             }
             Err(err) => return Err(err),
         }
@@ -706,7 +709,9 @@ mod tests {
     #[test]
     fn empty_ocr_pages_are_not_meaningful() {
         assert!(!pages_have_meaningful_text(&[]));
-        assert!(!pages_have_meaningful_text(&[ImportPageText::new(0, "  \n\t")]));
+        assert!(!pages_have_meaningful_text(&[ImportPageText::new(
+            0, "  \n\t"
+        )]));
         assert!(pages_have_meaningful_text(&[ImportPageText::new(0, "あ")]));
     }
 
@@ -782,10 +787,21 @@ mod tests {
         let dir = std::env::temp_dir();
         let path = dir.join(format!("hazakura-import-mvp-{}.png", std::process::id()));
         fs::write(&path, b"png-fixture").expect("write temp image");
-        std::env::set_var("HAZAKURA_IMPORT_ASSIST_HELPER", &helper);
+
+        let _env_guard = super::IMPORT_ASSIST_HELPER_ENV_LOCK
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        // SAFETY: held under IMPORT_ASSIST_HELPER_ENV_LOCK so parallel tests
+        // cannot race this process-global override.
+        unsafe {
+            std::env::set_var("HAZAKURA_IMPORT_ASSIST_HELPER", &helper);
+        }
         let result = import_source_path_to_markdown(&path);
         let _ = fs::remove_file(&path);
-        std::env::remove_var("HAZAKURA_IMPORT_ASSIST_HELPER");
+        unsafe {
+            std::env::remove_var("HAZAKURA_IMPORT_ASSIST_HELPER");
+        }
+        drop(_env_guard);
 
         let draft = result.expect("import should succeed with fixture helper");
         assert!(draft.used_ocr);

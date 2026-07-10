@@ -53,4 +53,30 @@ describe("ReferenceTextPane", () => {
     fireEvent.click(screen.getByRole("button", { name: "差分を見る" }));
     expect(onShowDiff).toHaveBeenCalledTimes(1);
   });
+
+  it("shows external-change notice with explicit reload", () => {
+    const onReloadReference = vi.fn();
+    render(
+      <ReferenceTextPane
+        copy={referenceCompareCopy("ja")}
+        externalChangePending
+        menuLanguage="ja"
+        onClose={vi.fn()}
+        onReloadReference={onReloadReference}
+        reference={{
+          kind: "text",
+          path: "/ws/a.md",
+          name: "a.md",
+          contents: "a",
+          encoding: "utf-8",
+        }}
+      />,
+    );
+
+    expect(screen.getByTestId("reference-external-change").textContent).toContain(
+      "参照ファイルが変更されました",
+    );
+    fireEvent.click(screen.getByTestId("reference-reload"));
+    expect(onReloadReference).toHaveBeenCalledTimes(1);
+  });
 });

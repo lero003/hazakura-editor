@@ -210,12 +210,17 @@ pub fn close_pdf_reference(reference_id: &str) -> Result<(), String> {
     }
 }
 
-/// Test / cleanup helper: drop any active reference without an id check.
-#[cfg(test)]
-pub fn clear_pdf_reference_for_tests() {
+/// Drop any active PDF reference without an id check (shutdown / tests).
+pub fn release_active_pdf_reference() {
     if let Ok(mut guard) = ACTIVE.lock() {
         *guard = None;
     }
+}
+
+/// Test / cleanup helper: drop any active reference without an id check.
+#[cfg(test)]
+pub fn clear_pdf_reference_for_tests() {
+    release_active_pdf_reference();
 }
 
 #[cfg(test)]
@@ -299,7 +304,6 @@ mod tests {
             eprintln!("skip: import assist helper not available");
             return;
         };
-        std::env::set_var("HAZAKURA_IMPORT_ASSIST_HELPER", &helper);
 
         // Minimal one-page PDF body so live PDFKit can open it; fixture mode
         // only requires an existing path.
@@ -318,9 +322,19 @@ trailer<< /Size 4 /Root 1 0 R >>\n\
             .expect("write pdf");
         }
 
+        let _env_guard = crate::import_assist::helper::IMPORT_ASSIST_HELPER_ENV_LOCK
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        // SAFETY: held under IMPORT_ASSIST_HELPER_ENV_LOCK.
+        unsafe {
+            std::env::set_var("HAZAKURA_IMPORT_ASSIST_HELPER", &helper);
+        }
+
         let opened = open_pdf_reference(&path).unwrap_or_else(|err| {
             let _ = std::fs::remove_file(&path);
-            std::env::remove_var("HAZAKURA_IMPORT_ASSIST_HELPER");
+            unsafe {
+                std::env::remove_var("HAZAKURA_IMPORT_ASSIST_HELPER");
+            }
             clear_pdf_reference_for_tests();
             panic!("open_pdf_reference failed with pinned helper: {err}");
         });
@@ -345,7 +359,10 @@ trailer<< /Size 4 /Root 1 0 R >>\n\
         );
 
         let _ = std::fs::remove_file(&path);
-        std::env::remove_var("HAZAKURA_IMPORT_ASSIST_HELPER");
+        unsafe {
+            std::env::remove_var("HAZAKURA_IMPORT_ASSIST_HELPER");
+        }
+        drop(_env_guard);
         clear_pdf_reference_for_tests();
     }
 }

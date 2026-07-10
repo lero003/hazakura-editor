@@ -506,10 +506,12 @@ baseline, and smoke evidence are archived under
 1. Treat **v1.6 (`1.6.0`) as published and closed** after App Review passed
    without issues (2026-07-10). Do not reopen Import Assist Phase 1 without a
    reproduced hotfix need.
-2. **Active lane is v1.7 Reference Compare.** Start with **R0** (PDFKit
-   bounded-raster spike) from `docs/v1.7-reference-compare-design.md` and
-   `docs/current-work.md`. Keep one read-only reference + one editable
-   Markdown buffer; do not build a generic split editor.
+2. **Active lane is v1.7 Reference Compare.** **R0–R4 source is landed**
+   (paired shell, PDF/image/text readers, Import Assist pair + follow,
+   advisory 要確認 nav). Prefer review-polish and optional packaged App Store
+   smoke over new scope. Keep one read-only reference + one editable Markdown
+   buffer; do not build a generic split editor. See
+   `docs/v1.7-reference-compare-design.md` and `docs/current-work.md`.
 3. Keep position-continuity and v1.3 Daily Trust closed unless a gap
    reproduces. Historical notes remain in `docs/v1.1-v1.2-followup.md` and
    `docs/v1.3-followup.md`.
@@ -523,4 +525,5 @@ baseline, and smoke evidence are archived under
    `docs/apple-local-assist-distribution-plan.md`, and
    `docs/apple-local-assist-writing-companion-plan.md`; keep direct
    buffer edits as explicit AI edit transactions.
-7. Do not tag or publish without explicit approval.
+7. Do not tag or publish without explicit approval. Version remains `1.6.0`
+   until an explicit v1.7 bump + release notes.

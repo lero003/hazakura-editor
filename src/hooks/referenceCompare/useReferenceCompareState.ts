@@ -29,6 +29,7 @@ export function useReferenceCompareState() {
         origin?: ReferenceCompareState["origin"];
         linkedEditorSessionId?: string | null;
         followMode?: ReferenceFollowMode;
+        sourceFingerprint?: string | null;
       } = {},
     ) => {
       setReferenceCompare({
@@ -40,6 +41,8 @@ export function useReferenceCompareState() {
           (options.linkedEditorSessionId && reference.kind === "pdf"
             ? "following"
             : "off"),
+        sourceFingerprint: options.sourceFingerprint ?? null,
+        externalChangePending: false,
       });
       setReferenceNarrowFocus("reference");
       setPdfPageIndex(0);
@@ -53,8 +56,15 @@ export function useReferenceCompareState() {
     );
   }, []);
 
+  const markReferenceExternalChange = useCallback((pending: boolean) => {
+    setReferenceCompare((current) =>
+      current ? { ...current, externalChangePending: pending } : current,
+    );
+  }, []);
+
   return {
     clearReferenceCompare,
+    markReferenceExternalChange,
     pdfPageIndex,
     referenceColumnPercent,
     referenceCompare,

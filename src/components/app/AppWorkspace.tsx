@@ -84,7 +84,9 @@ type AppWorkspaceProps = {
   closeCompareView: (options?: { returnToEditor?: boolean }) => void;
   closeReferenceCompare: () => void;
   onPdfPageIndexChange: (page: number, source: "user" | "system") => void;
+  onReloadReference?: () => void;
   onResumeReferenceFollow: () => void;
+  onShowReferenceDiff?: () => void;
   pdfPageIndex: number;
   referenceFollowPaused: boolean;
   compareAnchor: CompareAnchor | null;
@@ -200,7 +202,9 @@ export function AppWorkspace({
   closeCompareView,
   closeReferenceCompare,
   onPdfPageIndexChange,
+  onReloadReference,
   onResumeReferenceFollow,
+  onShowReferenceDiff,
   pdfPageIndex,
   referenceFollowPaused,
   compareAnchor,
@@ -541,16 +545,29 @@ export function AppWorkspace({
             <div className="reference-compare-pane">
               <ReferenceTextPane
                 copy={referenceCopy}
+                externalChangePending={referenceCompare.externalChangePending}
                 followPaused={referenceFollowPaused}
                 menuLanguage={menuLanguage}
                 onClose={closeReferenceCompare}
                 onPdfPageIndexChange={onPdfPageIndexChange}
+                onReloadReference={
+                  onReloadReference
+                    ? () => void onReloadReference()
+                    : undefined
+                }
                 onReplace={() => void openReferenceFile()}
                 onResumeFollow={onResumeReferenceFollow}
+                onShowDiff={onShowReferenceDiff}
                 pdfPageIndex={pdfPageIndex}
                 reference={referenceCompare.reference}
                 reviewPageIndices={importReviewPageIndices}
-                showDiffEnabled={false}
+                showDiffEnabled={
+                  Boolean(
+                    onShowReferenceDiff &&
+                      referenceCompare.reference.kind === "text" &&
+                      activeTab,
+                  )
+                }
               />
             </div>
             <PaneResizer

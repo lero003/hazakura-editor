@@ -108,7 +108,10 @@ mod tests {
 
     #[test]
     fn prefers_cjk_rich_extract() {
-        let weak = vec![ImportPageText::new(0, "1. Homebrew\n/bin/bash -c\n2.\nAntigravity")];
+        let weak = vec![ImportPageText::new(
+            0,
+            "1. Homebrew\n/bin/bash -c\n2.\nAntigravity",
+        )];
         let strong = vec![
             ImportPageText::new(0, "新マシンセットアップメモ\n1. Homebrew インストール"),
             ImportPageText::new(1, "3. macOS セキュリティ設定"),

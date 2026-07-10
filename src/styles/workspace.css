@@ -601,6 +601,19 @@
   padding: 4px 8px 4px 12px;
 }
 
+.reference-external-change {
+  align-items: center;
+  background: color-mix(in srgb, var(--warning, #b54708) 12%, transparent);
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 12px;
+  gap: 8px;
+  justify-content: space-between;
+  padding: 6px 12px;
+}
+
 .reference-pane-titles {
   align-items: baseline;
   display: flex;
@@ -771,11 +784,16 @@
   width: auto;
 }
 
-.reference-pdf-stage--100 .reference-pdf-image,
-.reference-pdf-stage--150 .reference-pdf-image {
+.reference-pdf-stage--100 .reference-pdf-image {
   height: auto;
   max-width: none;
   width: auto;
+}
+
+/* 150% display scale is applied via inline width (natural width * 1.5). */
+.reference-pdf-stage--150 .reference-pdf-image {
+  height: auto;
+  max-width: none;
 }
 
 .reference-pdf-image {

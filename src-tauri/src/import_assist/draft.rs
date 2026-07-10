@@ -504,7 +504,10 @@ mod tests {
     fn annotates_when_extracted_text_contains_image_markdown() {
         let md = assemble_import_markdown_draft(
             "doc.pdf",
-            &[ImportPageText::new(0, "図1\n\n![図](assets/fig1.png)\n\n続き")],
+            &[ImportPageText::new(
+                0,
+                "図1\n\n![図](assets/fig1.png)\n\n続き",
+            )],
         );
         assert!(md.contains("hazakura:import-images-not-extracted"));
         assert!(md.contains("画像について"));

@@ -51,6 +51,8 @@ describe("useImportPageFollow", () => {
       origin: "import-assist",
       linkedEditorSessionId: "sess-import",
       followMode: "following",
+      sourceFingerprint: "fp",
+      externalChangePending: false,
     };
 
     renderHook(() =>
@@ -82,6 +84,8 @@ describe("useImportPageFollow", () => {
       origin: "import-assist",
       linkedEditorSessionId: "sess-import",
       followMode: "following",
+      sourceFingerprint: "fp",
+      externalChangePending: false,
     };
 
     renderHook(() =>
@@ -112,6 +116,8 @@ describe("useImportPageFollow", () => {
       origin: "import-assist",
       linkedEditorSessionId: "sess-import",
       followMode: "following",
+      sourceFingerprint: "fp",
+      externalChangePending: false,
     };
 
     renderHook(() =>

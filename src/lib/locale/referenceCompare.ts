@@ -5,6 +5,7 @@ import { isKanaStyle } from "./_helpers";
 export type ReferenceCompareCopy = {
   closeReference: string;
   emptyEditorHint: string;
+  externalChangeNotice: string;
   fitPage: string;
   fitWidth: string;
   followActive: string;
@@ -17,6 +18,7 @@ export type ReferenceCompareCopy = {
   previousReview: string;
   readOnly: string;
   referenceLabel: string;
+  reloadReference: string;
   replaceReference: string;
   resumeFollow: string;
   retryRender: string;
@@ -37,6 +39,7 @@ export function referenceCompareCopy(
     return {
       closeReference: "さんしょうを とぢる",
       emptyEditorHint: "へんしゅうする Markdown を ひらくか つくってください",
+      externalChangeNotice: "さんしょうファイルが へんこうされました",
       fitPage: "ページにあわせる",
       fitWidth: "はばにあわせる",
       followActive: "ついじゅう ちゅう",
@@ -49,6 +52,7 @@ export function referenceCompareCopy(
       previousReview: "まえの ようかくにん",
       readOnly: "よみとりせんよう",
       referenceLabel: "さんしょう",
+      reloadReference: "さいど よみこむ",
       replaceReference: "さんしょうを いれかえる…",
       resumeFollow: "ついじゅうを さいかい",
       retryRender: "さいど ひょうじ",
@@ -66,6 +70,7 @@ export function referenceCompareCopy(
     return {
       closeReference: "参照を閉じる",
       emptyEditorHint: "編集する Markdown を開くか作成してください",
+      externalChangeNotice: "参照ファイルが変更されました",
       fitPage: "ページに合わせる",
       fitWidth: "幅に合わせる",
       followActive: "追従中",
@@ -78,6 +83,7 @@ export function referenceCompareCopy(
       previousReview: "前の要確認",
       readOnly: "読み取り専用",
       referenceLabel: "参照",
+      reloadReference: "再読み込み",
       replaceReference: "参照を入れ替え…",
       resumeFollow: "追従を再開",
       retryRender: "再表示",
@@ -95,6 +101,7 @@ export function referenceCompareCopy(
     closeReference: "Close reference",
     emptyEditorHint:
       "Open or create a Markdown file to edit beside the reference.",
+    externalChangeNotice: "The reference file has changed on disk.",
     fitPage: "Fit page",
     fitWidth: "Fit width",
     followActive: "Following",
@@ -107,6 +114,7 @@ export function referenceCompareCopy(
     previousReview: "Previous to review",
     readOnly: "Read-only",
     referenceLabel: "Reference",
+    reloadReference: "Reload",
     replaceReference: "Replace reference…",
     resumeFollow: "Resume follow",
     retryRender: "Retry",

@@ -16,7 +16,7 @@ Start here when choosing the next small `Hazakura Editor` slice.
 | **v1.5** | **Closed / released as `1.5.0`** | Stabilization + reading polish. **Released before 江戸彼岸 (edohigan) was merged.** Do not reopen unless hotfix. |
 | **Post-v1.5 main (not v1.5)** | Merged after v1.5 release | 江戸彼岸 theme; CodeMirror `@codemirror/view` **6.43.2** pin + editor display quality (syntax-tree recompute, resize remeasure, fold gutter removed). |
 | **v1.6** | **Closed / published as `1.6.0`** | Import Assist Phase 1 + edohigan + quality packs. **App Review passed without issues (2026-07-10).** Boundary: `docs/import-assist-boundary-review.md`. Release notes: `docs/releases/1.6.0-app-store-release-notes.md`. Do not reopen unless hotfix. |
-| **v1.7** | **Active (design accepted; implementation not started)** | Reference Compare: one read-only PDF/image/text reference beside one editable Markdown tab. Design: `docs/v1.7-reference-compare-design.md`. Start with **R0** PDFKit bounded-raster spike. |
+| **v1.7** | **Active (R0–R4 source landed; review polish)** | Reference Compare: one read-only PDF/image/text reference beside one editable Markdown tab. Design: `docs/v1.7-reference-compare-design.md`. Next: package smoke + any remaining review fixes before version bump. |
 | **v2** | Later | OKF Book Scope, then 縦書き. |
 
 Published Mac App Store version is **`1.6.0`**. See `current-status.md` for lane truth; treat Connect as authoritative for store counters.

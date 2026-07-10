@@ -42,6 +42,11 @@ import { useCommandPaletteController } from "../commandPalette/useCommandPalette
 import { useCompareController } from "../diff/useCompareController";
 import { useReferenceCompareActions } from "../referenceCompare/useReferenceCompareActions";
 import { useImportPageFollow } from "../referenceCompare/useImportPageFollow";
+import { useReferenceExternalChange } from "../referenceCompare/useReferenceExternalChange";
+import { buildLineDiff } from "../../features/diff/diff";
+import { compareColumnLabel } from "../../lib/locale/review";
+import { localizeCompareError } from "../../lib/utils";
+import type { CompareCase } from "../../types";
 import { useDocumentSafetyActions } from "../document/useDocumentSafetyActions";
 import { useDocumentIoController } from "../document/useDocumentIoController";
 import { useDocumentCoreController } from "../document/useDocumentCoreController";
@@ -198,6 +203,7 @@ export function useAppShellController() {
   // section: v1.7 Reference Compare (read-only reference beside editor)
   const {
     clearReferenceCompare,
+    markReferenceExternalChange,
     pdfPageIndex,
     referenceColumnPercent,
     referenceCompare,
@@ -781,6 +787,7 @@ export function useAppShellController() {
     pairImportAssistReference,
     pauseReferenceFollow,
     referenceCopy,
+    reloadReferenceFromDisk,
     resumeReferenceFollow,
   } = useReferenceCompareActions({
     activeTab,
@@ -804,6 +811,78 @@ export function useAppShellController() {
     setPdfPageIndex,
     setReferenceFollowMode,
   });
+
+  useReferenceExternalChange({
+    referenceCompare,
+    onExternalChange: () => {
+      markReferenceExternalChange(true);
+      setStatus("Reference file changed on disk");
+    },
+  });
+
+  /**
+   * Text reference → existing Diff workbench (left = reference snapshot,
+   * right = editor buffer). Closes the reference pair so the Diff side pane
+   * can show; visual side-by-side remains the default until this action.
+   */
+  const showReferenceTextDiff = useCallback(() => {
+    const reference = referenceCompare?.reference;
+    if (!reference || reference.kind !== "text" || !activeTab) {
+      return;
+    }
+    setGlobalError(null);
+    try {
+      const diff = buildLineDiff(reference.contents, activeTab.contents);
+      const caseKey = crypto.randomUUID();
+      const sourceLabel = compareColumnLabel(menuLanguage, "source");
+      const editorLabel = compareColumnLabel(menuLanguage, "editor");
+      const compareCase: CompareCase = {
+        kind: "file",
+        key: caseKey,
+        leftPath: reference.path,
+        rightPath: activeTab.path || `session:${activeTab.sessionId}`,
+        anchor: {
+          path: reference.path,
+          name: reference.name,
+          label: sourceLabel,
+        },
+        target: {
+          path: activeTab.path || "",
+          name: activeTab.name,
+          label: editorLabel,
+        },
+      };
+      setCompareCaseEntry(compareCase);
+      setCompareView({
+        caseKey,
+        ...diff,
+      });
+      // Text references hold no PDF handle; clear pair so Diff side pane can show.
+      clearReferenceCompare();
+      setRightPaneMode("compare");
+      setSidePaneOpen(true);
+      setStatus("Compare ready");
+    } catch (err) {
+      const message = String(err);
+      setGlobalError(
+        menuLanguage !== "en"
+          ? localizeCompareError(message, menuLanguage)
+          : message,
+      );
+      setStatus("Compare failed");
+    }
+  }, [
+    activeTab,
+    clearReferenceCompare,
+    menuLanguage,
+    referenceCompare,
+    setCompareCaseEntry,
+    setCompareView,
+    setGlobalError,
+    setRightPaneMode,
+    setSidePaneOpen,
+    setStatus,
+  ]);
 
   const handlePdfPageIndexChange = useCallback(
     (page: number, source: "user" | "system") => {
@@ -1718,7 +1797,9 @@ export function useAppShellController() {
     openRootWorkspaceContextMenu,
     pdfPageIndex,
     onPdfPageIndexChange: handlePdfPageIndexChange,
+    onReloadReference: reloadReferenceFromDisk,
     onResumeReferenceFollow: resumeReferenceFollow,
+    onShowReferenceDiff: showReferenceTextDiff,
     referenceColumnPercent,
     referenceCompare,
     referenceCopy,

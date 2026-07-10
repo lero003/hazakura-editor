@@ -24,6 +24,28 @@ pub(crate) fn readable_text_metadata(path: &Path) -> Result<fs::Metadata, String
     Ok(metadata)
 }
 
+/// Regular-file metadata without the text/binary gate.
+/// Used by Reference Compare external-change checks for PDF/image/text.
+pub(crate) fn readable_regular_file_metadata(
+    path: &Path,
+    max_bytes: u64,
+) -> Result<fs::Metadata, String> {
+    let metadata = fs::metadata(path).map_err(|err| format!("Cannot read file: {err}"))?;
+
+    if !metadata.is_file() {
+        return Err("Selected path is not a file.".to_string());
+    }
+
+    if metadata.len() > max_bytes {
+        return Err(format!(
+            "File exceeds the {} MB size limit.",
+            max_bytes / (1024 * 1024)
+        ));
+    }
+
+    Ok(metadata)
+}
+
 pub(crate) fn image_mime_type(path: &Path, bytes: &[u8]) -> Option<&'static str> {
     let extension = path
         .extension()

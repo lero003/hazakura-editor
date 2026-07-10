@@ -14,10 +14,12 @@ import { ReferencePdfPane } from "./ReferencePdfPane";
 
 type ReferenceTextPaneProps = {
   copy: ReferenceCompareCopy;
+  externalChangePending?: boolean;
   followPaused?: boolean;
   menuLanguage: MenuLanguage;
   onClose: () => void;
   onPdfPageIndexChange?: (page: number, source: "user" | "system") => void;
+  onReloadReference?: () => void;
   onReplace?: () => void;
   onResumeFollow?: () => void;
   onShowDiff?: () => void;
@@ -34,10 +36,12 @@ type ReferenceTextPaneProps = {
  */
 export function ReferenceTextPane({
   copy,
+  externalChangePending = false,
   followPaused = false,
   menuLanguage,
   onClose,
   onPdfPageIndexChange,
+  onReloadReference,
   onReplace,
   onResumeFollow,
   onShowDiff,
@@ -79,6 +83,7 @@ export function ReferenceTextPane({
               type="button"
               className="reference-pane-action"
               onClick={onShowDiff}
+              data-testid="reference-show-diff"
             >
               {copy.showDiff}
             </button>
@@ -103,6 +108,25 @@ export function ReferenceTextPane({
           </button>
         </div>
       </header>
+      {externalChangePending ? (
+        <div
+          className="reference-external-change"
+          role="status"
+          data-testid="reference-external-change"
+        >
+          <span>{copy.externalChangeNotice}</span>
+          {onReloadReference ? (
+            <button
+              type="button"
+              className="reference-pane-action"
+              onClick={onReloadReference}
+              data-testid="reference-reload"
+            >
+              {copy.reloadReference}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
       <div className="reference-pane-body">
         {isTextReference(reference) ? (
           <pre
@@ -124,6 +148,7 @@ export function ReferenceTextPane({
         {isPdfReference(reference) ? (
           <ReferencePdfPane
             copy={copy}
+            errorLanguage={language}
             followPaused={followPaused}
             onPageIndexChange={onPdfPageIndexChange ?? (() => undefined)}
             onResumeFollow={onResumeFollow}
