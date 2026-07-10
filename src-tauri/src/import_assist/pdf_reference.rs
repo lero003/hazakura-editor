@@ -7,9 +7,9 @@ use super::helper::{helper_pdf_info, helper_render_pdf_page, HelperPdfInfo, Help
 use super::path::MAX_IMPORT_SOURCE_BYTES;
 use super::stage::{stage_import_source_for_helper, StagedImportFile};
 use serde::{Deserialize, Serialize};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 /// Hard ceiling for rendered page width * height (matches helper).
 pub const PDF_RENDER_MAX_PIXELS: u64 = 4_000_000;
@@ -41,9 +41,9 @@ pub struct PdfReferencePageImage {
 
 struct ActivePdfReference {
     id: String,
-    /// Keeps the container-temp staged copy alive for helper access.
-    _staged: StagedImportFile,
-    staged_path: PathBuf,
+    /// Shared so in-flight renders keep the staged copy alive even if
+    /// close/replace drops the active session first.
+    staged: Arc<StagedImportFile>,
     page_count: usize,
     name: String,
 }
@@ -100,9 +100,8 @@ pub fn open_pdf_reference(path: &Path) -> Result<PdfReferenceOpenResult, String>
         .unwrap_or("document.pdf")
         .to_string();
 
-    let staged = stage_import_source_for_helper(path)?;
-    let staged_path = staged.path().to_path_buf();
-    let info: HelperPdfInfo = helper_pdf_info(&staged_path)?;
+    let staged = Arc::new(stage_import_source_for_helper(path)?);
+    let info: HelperPdfInfo = helper_pdf_info(staged.path())?;
     if info.page_count == 0 {
         return Err("PDF has no pages.".to_string());
     }
@@ -117,11 +116,10 @@ pub fn open_pdf_reference(path: &Path) -> Result<PdfReferenceOpenResult, String>
     let mut guard = ACTIVE
         .lock()
         .map_err(|_| "PDF reference store is unavailable.".to_string())?;
-    // Replacing drops the previous staged copy via RAII.
+    // Replacing drops the previous staged copy when its last Arc releases.
     *guard = Some(ActivePdfReference {
         id,
-        _staged: staged,
-        staged_path,
+        staged,
         page_count: info.page_count,
         name,
     });
@@ -138,7 +136,8 @@ pub fn render_pdf_reference_page(
     }
     let max_pixels = clamp_render_max_pixels(max_pixels);
 
-    let (staged_path, page_count) = {
+    // Clone Arc so close/replace during helper work cannot delete the path.
+    let staged = {
         let guard = ACTIVE
             .lock()
             .map_err(|_| "PDF reference store is unavailable.".to_string())?;
@@ -154,11 +153,25 @@ pub fn render_pdf_reference_page(
                 active.page_count
             ));
         }
-        (active.staged_path.clone(), active.page_count)
+        active.staged.clone()
     };
-    let _ = page_count;
 
-    let image: HelperPdfPageImage = helper_render_pdf_page(&staged_path, page_index, max_pixels)?;
+    let image: HelperPdfPageImage = helper_render_pdf_page(staged.path(), page_index, max_pixels)?;
+    // Keep staged alive until after helper response validation.
+    let _staged_alive = staged;
+
+    if image.page != page_index {
+        return Err(format!(
+            "Helper returned page {} but {} was requested.",
+            image.page, page_index
+        ));
+    }
+    if image.mime != "image/png" {
+        return Err(format!(
+            "Unsupported PDF page image mime type: {}.",
+            image.mime
+        ));
+    }
     if image.data_base64.len() > PDF_PAGE_IMAGE_MAX_BASE64_CHARS {
         return Err("Rendered PDF page exceeds the response size limit.".to_string());
     }
@@ -172,7 +185,7 @@ pub fn render_pdf_reference_page(
 
     Ok(PdfReferencePageImage {
         reference_id: reference_id.to_string(),
-        page: image.page,
+        page: page_index,
         width: image.width,
         height: image.height,
         mime: image.mime,
@@ -209,6 +222,7 @@ pub fn clear_pdf_reference_for_tests() {
 mod tests {
     use super::*;
     use std::io::Write;
+    use std::path::PathBuf;
 
     #[test]
     fn validates_pdf_only_absolute_paths() {

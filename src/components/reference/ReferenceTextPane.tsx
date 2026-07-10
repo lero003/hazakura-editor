@@ -92,6 +92,7 @@ export function ReferenceTextPane({
       <div className="reference-pane-body">
         {isTextReference(reference) ? (
           <pre
+            aria-readonly="true"
             className="reference-text-surface"
             data-testid="reference-text-surface"
             tabIndex={0}

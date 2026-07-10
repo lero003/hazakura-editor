@@ -511,9 +511,7 @@ export function AppWorkspace({
       >
         {referenceCompare ? (
           <>
-            <div
-              className={`reference-compare-pane${referenceNarrowFocus === "editor" ? " is-collapsed-narrow" : ""}`}
-            >
+            <div className="reference-compare-pane">
               <ReferenceTextPane
                 copy={referenceCopy}
                 menuLanguage={menuLanguage}
@@ -601,9 +599,7 @@ export function AppWorkspace({
             ) : null}
           </>
         ) : null}
-        <div
-          className={`reference-editor-host${referenceCompare && referenceNarrowFocus === "reference" ? " is-collapsed-narrow" : ""}`}
-        >
+        <div className="reference-editor-host">
           <EditorMainPane
             activeContents={activeContents}
             activeDocumentLineCount={activeDocumentLineCount}

@@ -19,11 +19,12 @@ Last reviewed: 2026-07-10 (v1.6 App Review passed; active lane → v1.7 Referenc
   image path trust polish, and the `pdf-extract` security update. Boundary:
   `docs/import-assist-boundary-review.md`. Quality notes (historical for this
   lane): `docs/quality-inventory-v1.6.md`.
-- **Active next product lane: v1.7 — Reference Compare.** One read-only PDF /
+- **Active product lane: v1.7 — Reference Compare.** One read-only PDF /
   image / Markdown / text reference beside one editable Markdown document,
   including automatic source pairing after Import Assist. Design:
-  `docs/v1.7-reference-compare-design.md`. Implementation not started; start
-  with the R0 PDFKit bounded-raster spike.
+  `docs/v1.7-reference-compare-design.md`. **R0** (PDF helper + opaque handle)
+  and **R1** (text/MD paired shell + palette/context entry) are in source.
+  Next is **R2** (image + PDF page UI).
 - **v1.5 (`1.5.0`) is closed and was released before 江戸彼岸 (edohigan).**
   v1.5 covered Spellcheck settings, Reading Focus TOC density, CRT/Shinkai
   lineage polish, dead-code, deps hygiene, traffic-light, L Mode remount.
