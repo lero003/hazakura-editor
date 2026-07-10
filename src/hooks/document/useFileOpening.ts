@@ -25,6 +25,7 @@ import {
   writePersistedFileBookmark,
 } from "../../lib/storage";
 import { isComparableTextFile } from "../../features/diff/diff";
+import { importDraftTabName } from "../../lib/locale/referenceCompare";
 import {
   hasUnsafeMarkdownLinkScheme,
   normalizeExternalMarkdownLink,
@@ -366,7 +367,7 @@ export function useFileOpening({
         const baseName =
           fileName.replace(/\.[^.]+$/, "") || "import-draft";
         const tab = createUntitledImportDraftTab(
-          `${baseName}-import.md`,
+          importDraftTabName(baseName, menuLanguage),
           result.markdown,
         );
 

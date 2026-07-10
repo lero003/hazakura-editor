@@ -263,7 +263,7 @@ describe("useFileOpening", () => {
       typeof setTabsArg === "function" ? setTabsArg([]) : [];
     expect(nextTabs).toHaveLength(1);
     expect(nextTabs[0]?.contents).toBe("# draft\n");
-    expect(nextTabs[0]?.name).toBe("scan-import.md");
+    expect(nextTabs[0]?.name).toBe("scan-draft.md");
     expect(options.setStatus).toHaveBeenLastCalledWith(
       "Imported text draft (2 pages, unsaved)",
     );

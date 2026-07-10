@@ -542,6 +542,15 @@ export function AppWorkspace({
       >
         {referenceCompare ? (
           <>
+            {referenceCompare.origin === "import-assist" ? (
+              <p
+                className="reference-import-workflow-hint"
+                role="note"
+                data-testid="reference-import-workflow-hint"
+              >
+                {referenceCopy.importWorkflowHint}
+              </p>
+            ) : null}
             <div className="reference-compare-pane">
               <ReferenceTextPane
                 copy={referenceCopy}

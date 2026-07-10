@@ -614,6 +614,17 @@
   padding: 6px 12px;
 }
 
+.reference-import-workflow-hint {
+  background: color-mix(in srgb, var(--accent, #3b6ea5) 10%, transparent);
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-size: 12px;
+  grid-column: 1 / -1;
+  line-height: 1.45;
+  margin: 0;
+  padding: 8px 12px;
+}
+
 .reference-pane-titles {
   align-items: baseline;
   display: flex;

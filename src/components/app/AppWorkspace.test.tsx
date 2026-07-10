@@ -324,6 +324,8 @@ function makeWorkspaceProps(
       fitPage: "Fit page",
       fitWidth: "Fit width",
       followActive: "Following",
+      importWorkflowHint:
+        "Left is the source, right is an editable draft. Fix it, then save.",
       nextPage: "Next page",
       nextReview: "Next to review",
       openAsReference: "Open as reference",
@@ -340,7 +342,7 @@ function makeWorkspaceProps(
       reviewAdvisory: "Advisory only",
       reviewLabel: "Review",
       showDiff: "View diff",
-      showEditor: "Edit",
+      showEditor: "Draft (editable)",
       showReference: "Reference",
       unsupportedType: "Unsupported",
       zoomIn: "Zoom in",

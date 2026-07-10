@@ -9,6 +9,8 @@ export type ReferenceCompareCopy = {
   fitPage: string;
   fitWidth: string;
   followActive: string;
+  /** Short how-to after Import Assist pairs source + draft. */
+  importWorkflowHint: string;
   nextPage: string;
   nextReview: string;
   openAsReference: string;
@@ -43,6 +45,8 @@ export function referenceCompareCopy(
       fitPage: "ページにあわせる",
       fitWidth: "はばにあわせる",
       followActive: "ついじゅう ちゅう",
+      importWorkflowHint:
+        "ひだりが げんぽん、みぎが したがきです。なおしてから ほぞんしてください。",
       nextPage: "つぎの ページ",
       nextReview: "つぎの ようかくにん",
       openAsReference: "さんしょうとして ひらく",
@@ -59,7 +63,7 @@ export function referenceCompareCopy(
       reviewAdvisory: "めやす（せいかく とは かぎりません）",
       reviewLabel: "ようかくにん",
       showDiff: "さぶんを みる",
-      showEditor: "へんしゅう",
+      showEditor: "したがき（へんしゅうか）",
       showReference: "さんしょう",
       unsupportedType: "この しゅるいは さんしょうできません",
       zoomIn: "拡大",
@@ -74,6 +78,8 @@ export function referenceCompareCopy(
       fitPage: "ページに合わせる",
       fitWidth: "幅に合わせる",
       followActive: "追従中",
+      importWorkflowHint:
+        "左が原本、右が下書きです。内容を直してから保存してください。",
       nextPage: "次のページ",
       nextReview: "次の要確認",
       openAsReference: "参照として開く",
@@ -90,7 +96,7 @@ export function referenceCompareCopy(
       reviewAdvisory: "目安です（正確とは限りません）",
       reviewLabel: "要確認",
       showDiff: "差分を見る",
-      showEditor: "編集",
+      showEditor: "下書き（編集可）",
       showReference: "参照",
       unsupportedType: "この種類は参照として開けません",
       zoomIn: "拡大",
@@ -105,6 +111,8 @@ export function referenceCompareCopy(
     fitPage: "Fit page",
     fitWidth: "Fit width",
     followActive: "Following",
+    importWorkflowHint:
+      "Left is the source, right is an editable draft. Fix it, then save.",
     nextPage: "Next page",
     nextReview: "Next to review",
     openAsReference: "Open as reference",
@@ -121,10 +129,25 @@ export function referenceCompareCopy(
     reviewAdvisory: "Advisory only — not a correctness claim",
     reviewLabel: "Review",
     showDiff: "View diff",
-    showEditor: "Edit",
+    showEditor: "Draft (editable)",
     showReference: "Reference",
     unsupportedType: "This file type cannot be opened as a reference.",
     zoomIn: "Zoom in",
     zoomOut: "Zoom out",
   };
+}
+
+/** Tab title for an Import Assist unsaved draft (localized). */
+export function importDraftTabName(
+  sourceBaseName: string,
+  menuLanguage: MenuLanguage,
+): string {
+  const base = sourceBaseName.trim() || "import";
+  if (isKanaStyle(menuLanguage)) {
+    return `${base}-したがき.md`;
+  }
+  if (isJapaneseMenuLanguage(menuLanguage)) {
+    return `${base}-下書き.md`;
+  }
+  return `${base}-draft.md`;
 }
