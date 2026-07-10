@@ -3,50 +3,51 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-10 (`pdf-extract` security update; local App Store candidate build 83 prepared)
+Last reviewed: 2026-07-10 (v1.6 App Review passed; active lane → v1.7 Reference Compare)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
 - Current development package/app version: **`1.6.0`** across npm, Tauri, Cargo,
-  and lockfile metadata (App Store config `bundleVersion` **83**). Signed local
-  candidate build 83 includes the `pdf-extract` security update; upload,
-  processing, and re-review remain separate explicit steps.
+  and lockfile metadata. Local package provenance (build counter, pkg path,
+  SHA-256) lives in ignored `docs/internal/app-store-candidates/latest.json`.
+- **v1.6 (`1.6.0`) is closed and published.** Mac App Store App Review passed
+  without issues (user-reported 2026-07-10). Release note:
+  `docs/releases/1.6.0-app-store-release-notes.md`. Product scope: Import
+  Assist Phase 1 (PDF / image → unsaved Markdown draft, on-device PDFKit +
+  Vision), 江戸彼岸 theme, CodeMirror `@codemirror/view` **6.43.2** pin, PDF /
+  image path trust polish, and the `pdf-extract` security update. Boundary:
+  `docs/import-assist-boundary-review.md`. Quality notes (historical for this
+  lane): `docs/quality-inventory-v1.6.md`.
+- **Active next product lane: v1.7 — Reference Compare.** One read-only PDF /
+  image / Markdown / text reference beside one editable Markdown document,
+  including automatic source pairing after Import Assist. Design:
+  `docs/v1.7-reference-compare-design.md`. Implementation not started; start
+  with the R0 PDFKit bounded-raster spike.
 - **v1.5 (`1.5.0`) is closed and was released before 江戸彼岸 (edohigan).**
   v1.5 covered Spellcheck settings, Reading Focus TOC density, CRT/Shinkai
   lineage polish, dead-code, deps hygiene, traffic-light, L Mode remount.
-- **v1.6 (`1.6.0`) active candidate:** Import Assist Phase 1 (PDF / image →
-  Markdown draft, on-device PDFKit + Vision), edohigan theme, CodeMirror
-  `@codemirror/view` **6.43.2** pin. Boundary:
-  `docs/import-assist-boundary-review.md`. Cross-cutting quality notes:
-  `docs/quality-inventory-v1.6.md`.
-- The Pure-Rust PDF text fallback now uses `pdf-extract` **0.12.0** and
+- The Pure-Rust PDF text fallback uses `pdf-extract` **0.12.0** and
   `lopdf` **0.42.0**, replacing the vulnerable `lopdf` 0.34 dependency reported
   by `RUSTSEC-2026-0187`. The PDFKit-first import behavior and all Safe Editor
   boundaries are unchanged.
-- PDF image paths now use the same document-relative and workspace-contained
+- PDF image paths use the same document-relative and workspace-contained
   policy in Preview, HTML export, and PDF export. Open the project parent that
   owns both manuscript and images; child-workspace `../assets` references are
-  blocked with an explicit parent-workspace hint. Packaged App Store smoke for
-  the parent/child/drag-drop/missing matrix remains pending.
-- Historical Mac App Store baseline: `1.3.0` Daily Trust (and earlier) remains
-  documented below. Treat listing/build counters in Connect as authoritative
-  for store facts; this file tracks product-lane truth for agents.
-- v1.3 Daily Trust is approved and published. Four bounded slices ship
-  in `1.3.0`: Save As keeps the same-language open-tab /
+  blocked with an explicit parent-workspace hint. Optional packaged App Store
+  re-smoke of the parent/child/drag-drop/missing matrix remains useful
+  regression breadth, not a v1.6 reopen trigger.
+- Historical Mac App Store baselines (`1.3.0` Daily Trust and earlier) remain
+  part of product history. Treat listing/build counters in Connect as
+  authoritative for store facts; this file tracks product-lane truth for
+  agents.
+- v1.3 Daily Trust remains an approved historical baseline. Four bounded
+  slices ship in `1.3.0`: Save As keeps the same-language open-tab /
   CodeMirror session and migrates per-document view state; Local Assist
   review uses explicit `採用` / `破棄` without auto-save; Reading Focus TOC
   shows bounded H3+ context plus current measured page progress; and direct
   PDF export offers request-scoped A4 `狭い` / `標準` / `広い` margin
-  presets. Full frontend/Rust gates and the app build pass. Representative
-  built-app checks passed for Save As Undo continuity, Local Assist acceptance
-  remaining dirty, Reading Focus TOC context, distinct margins across all three
-  PDF presets, and a standard-margin export with three content pages and no
-  trailing blank row. A focused PDF regression follow-up also restored fenced
-  code contrast and replaced native table layout only inside export HTML with
-  row-level CSS grid layout; a standard-margin five-page fixture kept a six-column
-  table and all 30 rows of a long table readable in macOS Preview. Extended RC
-  interaction breadth remains in
+  presets. Extended RC interaction breadth remains in
   `docs/v1.3-followup.md`.
 - `1.0.0` was approved and released on the Mac App Store. It is a
   semantic and product-message re-baseline of the feature shape first
@@ -57,7 +58,7 @@ Last reviewed: 2026-07-10 (`pdf-extract` security update; local App Store candid
   entitlement, checksum,
   distribution-probe, and sandbox-preview gates. Its local provenance
   is in `docs/internal/app-store-candidates/latest.json`; the public
-  listing now confirms `1.1.0`, while raw App Store Connect,
+  listing later confirmed `1.1.0`, while raw App Store Connect,
   TestFlight, and App Review logs are not tracked in this repository.
 - A 2026-06-28 user-side pre-v1 pass accepted the Golden Manuscript flow,
   long-form e-book page-turning, EPUB page breaks in Apple Books, Local
@@ -65,11 +66,9 @@ Last reviewed: 2026-07-10 (`pdf-extract` security update; local App Store candid
   boundary. No v1 No-Go condition was reported. Unchecked boxes are not
   treated as automatic blockers; commented observations are classified
   in `docs/v1.1-v1.2-followup.md`.
-- No remaining source-level release blocker is known after the PDF dependency
-  update. v1.3 (`1.3.0`) remains a published Mac App Store baseline; v1.5
-  (`1.5.0`) is the closed stabilization line released before edohigan. The
-  active next lane is **v1.6 Import Assist**; App Store re-review requires a
-  fresh submission candidate and separate upload / processing proof.
+- No remaining source-level release blocker is known for the closed v1.6
+  line. Do not reopen v1.6 implementation without a reproduced gap. The
+  active implementation lane is **v1.7 Reference Compare**.
   `AppWorkspace` owns a shared
   per-document view-state registry: reader, Editor cursor/scroll, Preview
   reopen, tab transitions, and safe local Markdown-link transitions now
@@ -78,13 +77,10 @@ Last reviewed: 2026-07-10 (`pdf-extract` security update; local App Store candid
   dedicated fixture existed and user cloud content was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Published Mac App Store version: `1.3.0`. It includes per-document Editor /
-  Reader / Preview position continuity, direct PDF export, EPUB export,
-  e-book reader page-turn stabilization, workspace open / dirty markers,
-  right-click Markdown insertion, Hazakura Local Assist as a preview
-  on-device writing companion, plus the v1.3 Daily Trust slice: Save As
-  session continuity, explicit Local Assist `採用` / `破棄`, Reading Focus
-  TOC context, and A4 PDF margin presets.
+- Published Mac App Store version: **`1.6.0`** (App Review passed without
+  issues, 2026-07-10). It includes Import Assist Phase 1, 江戸彼岸 theme,
+  prior v1 continuity / export / Local Assist surfaces, and the quality packs
+  shipped with the 1.6 candidate line.
 - Latest GitHub source / local-app tag: `v0.35.0`.
 - Latest local App Store / TestFlight package candidate metadata
   (version, build counter, pkg path, SHA-256, generated time, source
@@ -505,34 +501,24 @@ baseline, and smoke evidence are archived under
 
 ## Next Safe Actions
 
-1. Treat the v1.1 Reader / Editor / Preview position-continuity slice as
-   published and closed. Keep the shared registry scoped to source-preserving
-   view state; do not expand it into workspace indexing.
-2. Complete the Google Drive Recovery smoke only with a dedicated user-
-   approved fixture. The local-folder forced-termination path has passed.
-3. Treat the v1.3 implementation and core built-app proof in
-   `docs/v1.3-followup.md` as complete. Before a release candidate, finish the
-   listed extended interaction breadth; do not reopen the implementation
-   without a reproduced gap. Reuse the recorded multi-page PDF comparison as
-   the core margin proof instead of treating file creation alone as evidence.
-4. `1.3.0` passed App Review and is published on the Mac App Store. Treat the
-   `1.3.0` lane as released and closed; do not reopen the implementation
-   without a reproduced gap. The latest local candidate metadata lives in
-   `docs/internal/app-store-candidates/latest.json`. Move the active lane to
-   v1.5 and pick the next slice from `docs/current-work.md`.
-5. For the latest local App Store / TestFlight package candidate, see
-   `docs/internal/app-store-candidates/latest.json` for version / build
-   counter / pkg path / SHA-256 / generated time. App Store Connect,
-   TestFlight, and App Review logs remain outside this repository
-   unless public-safe evidence is recorded.
+1. Treat **v1.6 (`1.6.0`) as published and closed** after App Review passed
+   without issues (2026-07-10). Do not reopen Import Assist Phase 1 without a
+   reproduced hotfix need.
+2. **Active lane is v1.7 Reference Compare.** Start with **R0** (PDFKit
+   bounded-raster spike) from `docs/v1.7-reference-compare-design.md` and
+   `docs/current-work.md`. Keep one read-only reference + one editable
+   Markdown buffer; do not build a generic split editor.
+3. Keep position-continuity and v1.3 Daily Trust closed unless a gap
+   reproduces. Historical notes remain in `docs/v1.1-v1.2-followup.md` and
+   `docs/v1.3-followup.md`.
+4. Complete Google Drive Recovery smoke only with a dedicated user-approved
+   fixture. The local-folder forced-termination path has passed.
+5. Local package provenance for any future candidate lives in
+   `docs/internal/app-store-candidates/latest.json`. App Store Connect,
+   TestFlight, and App Review logs remain outside this repository unless
+   public-safe evidence is recorded.
 6. For Hazakura Local Assist, use `docs/assist-surface-strategy.md`,
    `docs/apple-local-assist-distribution-plan.md`, and
    `docs/apple-local-assist-writing-companion-plan.md`; keep direct
    buffer edits as explicit AI edit transactions.
-7. For future release checkpoints, use the version-specific release
-   note plus the release checklists. Do not tag or publish without
-   explicit approval.
-8. Keep historical v1.1-v1.2 observations in
-   `docs/v1.1-v1.2-followup.md` and active v1.3 proof in
-   `docs/v1.3-followup.md`; continue to
-   close one reproducible item at a time.
+7. Do not tag or publish without explicit approval.

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-10 (`pdf-extract` security update; v1.6 local candidate build 83)
+Last reviewed: 2026-07-10 (v1.6 App Review passed; active lane → v1.7 Reference Compare)
 
 ## Current Position
 
@@ -15,22 +15,22 @@ Current release state:
 
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
-- Package/app version in tree: **`1.6.0`** (App Store config bundleVersion
-  **83**; signed local candidate build 83 includes the PDF dependency security
-  update. Upload and re-review remain separate).
-- **v1.5 (`1.5.0`) is closed and was released before 江戸彼岸 (edohigan).**
-- **v1.6 (`1.6.0`) candidate:** Import Assist Phase 1 + edohigan + CodeMirror
-  view pin, plus the `pdf-extract` 0.12.0 / `lopdf` 0.42.0 security update.
-  Do not describe edohigan as a v1.5 feature.
-- Historical MAS baseline: `1.3.0` Daily Trust (and earlier releases) remain
-  part of the public product history; store Connect is authoritative for
-  listing numbers.
-- Latest local App Store / TestFlight package candidate metadata lives in
+- Package/app version in tree: **`1.6.0`**. Local package provenance lives in
   `docs/internal/app-store-candidates/latest.json`.
-- **Active release lane: v1.6 — Import Assist Phase 1 (Vision OCR / PDFKit).**
-  On-device, edit-before-save, no-auto-save. Boundary review:
-  `docs/import-assist-boundary-review.md`. Design:
-  `docs/superpowers/specs/2026-07-02-import-assist-design.md`.
+- **Published Mac App Store version: `1.6.0`.** App Review passed without
+  issues (user-reported 2026-07-10). Release notes:
+  `docs/releases/1.6.0-app-store-release-notes.md`.
+- **v1.5 (`1.5.0`) is closed and was released before 江戸彼岸 (edohigan).**
+- **v1.6 (`1.6.0`) is closed / published:** Import Assist Phase 1 + edohigan +
+  CodeMirror view pin + quality packs + `pdf-extract` security update.
+  Do not describe edohigan as a v1.5 feature. Do not reopen v1.6 without a
+  reproduced hotfix need.
+- Historical MAS baselines (`1.3.0` Daily Trust and earlier) remain part of
+  public product history; store Connect is authoritative for listing numbers.
+- **Active product lane: v1.7 — Reference Compare.** One read-only
+  PDF/image/text reference beside one editable Markdown document, including
+  automatic source pairing after Import Assist. Design:
+  `docs/v1.7-reference-compare-design.md`. Implementation starts at R0.
 - **Next major structural lane: v2** — OKF Book Scope, then vertical writing
   (縦書き). Design:
   `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
@@ -156,10 +156,22 @@ Near-term phase order:
 14. v1.6 is the Import Assist Phase 1 lane (Vision OCR). PDF / 画像 →
    Markdown via on-device Vision OCR, edit-before-save, no-cloud-OCR,
    no-auto-save. Its Book Project generation connects to v2 Book Scope.
-   **v1.5 is closed/released (before edohigan); boundary review is passed**
-   (`docs/import-assist-boundary-review.md`). The full design lives in
-   `docs/superpowers/specs/2026-07-02-import-assist-design.md`.
-15. v2.0 is the OKF-based structural foundation and vertical writing
+   **v1.6 is closed and published as `1.6.0`** after App Review passed without
+   issues (2026-07-10). Boundary review:
+   `docs/import-assist-boundary-review.md`. Design:
+   `docs/superpowers/specs/2026-07-02-import-assist-design.md`. Release notes:
+   `docs/releases/1.6.0-app-store-release-notes.md`.
+15. v1.7 is the **active** Reference Compare lane. It generalizes the
+   post-import review need into one safe model: a read-only PDF, image,
+   Markdown, or text Reference Tab beside one ordinary editable Markdown
+   Editor Tab. Import Assist opens its source and unsaved draft as a linked
+   pair; ordinary text files may also be opened explicitly as manual
+   references (PDF↔MD and MD↔MD visual compare). It is not a generic split
+   editor, does not create two editable buffers, and does not revive
+   standalone Review Desk. The accepted interaction, security boundary,
+   PDF rendering spike, and implementation slices live in
+   `docs/v1.7-reference-compare-design.md`.
+16. v2.0 is the OKF-based structural foundation and vertical writing
    target. Two pillars, in order:
    - **OKF as a structural foundation for Book Scope.** Treat a
      user-selected, explicit set of structurally related Markdown files

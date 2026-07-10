@@ -1,9 +1,9 @@
 # Import Assist Phase 1 — Boundary Review
 
-Status: Approved for spike / Phase 1 foundation
+Status: Shipped with `1.6.0` (App Review passed 2026-07-10)
 Scope: v1.6 Import Assist (PDF / image → Markdown draft)
-Authority: High for Phase 1 intake decisions
-Last reviewed: 2026-07-09
+Authority: High for Phase 1 intake decisions (historical; do not reopen without hotfix)
+Last reviewed: 2026-07-10
 
 ## Lane Timeline (must not confuse)
 
@@ -11,9 +11,10 @@ Last reviewed: 2026-07-09
 |------|------|
 | **v1.5 released** | Stabilization / reading polish (`1.5.0`) — Spellcheck settings, Reading Focus TOC density, dead-code sweep, dependency hygiene, traffic-light polish, editor CM remount for L Mode toggle. **Closed and released before 江戸彼岸 (edohigan) landed.** |
 | **Post-v1.5 on main** | 江戸彼岸 theme, CodeMirror `@codemirror/view` **6.43.2** pin + display quality (syntax-tree recompute, resize remeasure, no fold gutter). These are **not** part of the v1.5 release tag/story. |
-| **Active now** | **v1.6 Import Assist Phase 1** (this review). Design: `docs/superpowers/specs/2026-07-02-import-assist-design.md`. |
+| **v1.6 shipped** | **Import Assist Phase 1** (this review) — published as `1.6.0`; App Review passed without issues (2026-07-10). Design: `docs/superpowers/specs/2026-07-02-import-assist-design.md`. |
+| **Active now** | **v1.7 Reference Compare** — `docs/v1.7-reference-compare-design.md`. |
 
-Do not re-open v1.5 feature work unless a release hotfix is required.
+Do not re-open v1.5 or v1.6 feature work unless a release hotfix is required.
 
 ## Decision
 

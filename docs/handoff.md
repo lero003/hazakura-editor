@@ -3,101 +3,49 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-07-10 (`pdf-extract` security update; App Store local pkg build 83 prepared)
+Last reviewed: 2026-07-10 (v1.6 App Review passed; active lane → v1.7 Reference Compare)
 
 ## Current State
 
-- Package version **`1.6.0`** / App Store config **bundleVersion 83**. Signed
-  local candidate build 83 includes the `pdf-extract` 0.12.0 / `lopdf` 0.42.0
-  security update. Its SHA-256 and source commit are recorded in ignored
-  `docs/internal/app-store-candidates/latest.json`; App Store Connect upload,
-  processing, and re-review remain separate steps.
-- **v1.5 (`1.5.0`) closed before 江戸彼岸.** Active: **v1.6 Import Assist** —
-  `docs/import-assist-boundary-review.md`, `docs/current-work.md`.
-- Quality packs A/B + PDF tail/theme/timeout mostly **shipped**. See
-  **`docs/quality-inventory-v1.6.md`**.
-- PDF export now caps **in-body** embedded images to the shortened column
+- Package version **`1.6.0`**. Local package provenance lives in ignored
+  `docs/internal/app-store-candidates/latest.json`.
+- **v1.6 (`1.6.0`) closed and published.** Mac App Store App Review passed
+  without issues (user-reported 2026-07-10). Release notes:
+  `docs/releases/1.6.0-app-store-release-notes.md`. Do not reopen unless hotfix.
+- **Active lane: v1.7 Reference Compare** — design accepted, implementation
+  not started. Start with **R0** PDFKit bounded-raster spike.
+  Source: `docs/v1.7-reference-compare-design.md`, queue: `docs/current-work.md`.
+- **v1.5 (`1.5.0`) closed before 江戸彼岸.** Import Assist boundary remains
+  historical for v1.6: `docs/import-assist-boundary-review.md`.
+- Quality packs A/B + PDF tail/theme/timeout shipped with v1.6. See
+  **`docs/quality-inventory-v1.6.md`** (historical).
+- PDF export caps **in-body** embedded images to the shortened column
   height; the larger leading-cover bound applies only after the cover is split
-  onto its own A4 page. The source regression test pins this distinction.
-- **Q-IMG-1 A+D shipped:** the parent workspace owns both manuscript and
-  images; Preview, HTML, and PDF now share document-relative containment and
-  workspace-only data-URL loading. Child-workspace `../assets` references are
-  blocked with parent-workspace guidance; drag-drop `assets/` remains allowed.
-  The packaged App Store parent/child/missing-image smoke is still pending.
-- Latest source checks for the PDF/Q-IMG-1 work passed: `npm test` (145 files
-  / 1293 tests), `cargo fmt --check`, `cargo test` (329 tests), `npm run
-  build:vite`, App Store preview `npm run build`, and
-  `npm run smoke:app-store-surface` (94 tests). The Agent Workbench PATH-shim
-  test was intermittent on its first Rust full run, then passed a focused retry
-  and the final full run; keep it separate from image-path work.
-- Build 81 package checks passed: App Store surface smoke, submit-lane app
-  build, package signature, deep app signature, helper inherited entitlements,
-  distribution probe, sandbox-preview smoke, and bundle metadata. No
-  Transporter/App Store Connect action was taken.
+  onto its own A4 page.
+- **Q-IMG-1 A+D shipped** with v1.6: parent workspace owns manuscript and
+  images; Preview/HTML/PDF share document-relative containment. Optional
+  packaged re-smoke is regression breadth, not a v1.6 reopen trigger.
 - Keep `@codemirror/view` at **6.43.2**. Import helper must ship via
   `externalBin` (`npm run build:import-assist-helper:live`). Both nested
   helpers need App Store inherit re-sign (`sign-app-store-submit-app.mjs`).
-- Historical: `1.3.0` Daily Trust remains a published MAS baseline. Raw App
-  Store Connect logs stay outside the repo. The v1 public promise is
+- Published Mac App Store version is **`1.6.0`**. Raw App Store Connect logs
+  stay outside the repo. The v1 public promise is
   `Markdownで書き、本として読み、ローカルAIで整える。`
 - The 2026-06-28 user-side pre-v1 checklist remains the accepted Golden
   Manuscript baseline. No public-release hotfix blocker has been
   reported. All commented observations are routed to
   `docs/v1.1-v1.2-followup.md`.
-- The v1.1 lane is closed and published. Reader, Editor cursor/scroll,
-  Preview reopen, tab, and safe local Markdown-link position continuity
-  are implemented through one `AppWorkspace`-owned per-document registry.
-  The v1.2 Polish lane (command discovery, context-menu containment,
-  EPUB scope note) was prepared as the `1.2.0` local candidate (build
-  `57`); it remains historical now that `1.3.0` is the active candidate.
-- Active main-branch lane is **v1.6 Import Assist Phase 1** (PDFKit / Vision
-  spike landed; product UI next). Keep `@codemirror/view` at **6.43.2**.
-  Do not treat edohigan as a v1.5 feature.
-- The signed local `1.1.0` App Store / TestFlight candidate passed the
-  release gates, package signature and checksum verification, enforced
-  App Store entitlement probe, and sandbox-preview smoke. Its current
-  local artifact details live only in
-  `docs/internal/app-store-candidates/latest.json`. Treat this as local
-  package provenance, not proof of the public build number.
-- Current v1.2 source verification: `npm test` (121 files / 1083 tests),
-  `cargo test` (299 tests), `npm run build:vite`, `npm run build`,
-  `cargo fmt --check`, and `git diff --check`. The Vite chunk-size warning
-  remains known. `npm run smoke:macos-window` rebuilt both macOS lanes and
-  confirmed an onscreen Developer bundle window. Right-click /
-  command-palette / EPUB-dialog interaction smoke was not exercised in this
-  slice and remains an RC check.
-- Current v1.3 evidence includes focused tests plus final `npm run test`
-  (123 files / 1109 tests), `cargo test` (301 tests), `npm run build:vite`,
-  `cargo fmt --check`, and `npm run build`. Representative built-app checks
-  passed for Save As Undo continuity, explicit Local Assist acceptance with
-  a dirty buffer, Reading Focus TOC context, distinct margins across all three
-  PDF presets, and a standard-margin PDF reduced from three content plus three
-  blank pages to three content pages. A later standard-margin table/code fixture
-  caught and fixed a v1.3 CSS-column regression: fenced code now keeps its dark
-  high-contrast block, and export-only tables use row-level CSS grid layout with
-  an annotated column count. macOS Preview showed a six-column table, inline and
-  fenced code, all 30 rows of a long table across five A4 pages, and the ending
-  sentence. PDF capture treats the generated layout
-  as one A4-high horizontal row and counts occupied text/media columns; do not
-  restore document-wide scroll height/width as the normal measurement or native
-  table fragmentation inside those columns. The
-  known Vite chunk-size warning remains warning-only. Extended RC interaction
-  breadth is recorded separately in `docs/v1.3-followup.md`.
-- `Hazakura Editor` `1.3.0` is the latest published Mac App Store
-  version. `0.36.0` and `1.1.0` remain historical proof of the same
-  v1-equivalent reader, export, workspace-marker, Markdown insertion,
-  and Local Assist feature shape.
-- The earlier `0.29.1` App Store update established Hazakura Local Assist
-  as a public preview; its build `33` package remains historical release
-  evidence and should not be confused with the current `1.3.0` public
-  lane.
-- Local App Store / TestFlight package candidate metadata (version,
-  build counter, pkg path, SHA-256, generated time, source commit,
-  smoke status) lives in
+- Earlier v1 lanes (1.0–1.5, Local Assist preview, position continuity,
+  Daily Trust) remain historical product history. Detailed verification
+  notes live in release notes and `docs/archive/`.
+- PDF capture treats export layout as one A4-high horizontal row and counts
+  occupied text/media columns; do not restore document-wide scroll
+  height/width as the normal measurement.
+- Local App Store / TestFlight package candidate metadata lives in
   `docs/internal/app-store-candidates/latest.json`, regenerated by
   `npm run release:candidate -- --with-app-store-pkg`. Tracked docs no
   longer carry per-build SHA / pkg path values; consult `latest.json`
-  for the active artifact.
+  for local artifact provenance, not as proof of the public build number.
 - The user-facing PDF action is direct PDF export, not print UI: Save
   dialog chooses a `.pdf`, Rust validates main-window / non-empty HTML /
   existing parent folder / `.pdf` destination, an app-owned WebView
@@ -111,27 +59,21 @@ Last reviewed: 2026-07-10 (`pdf-extract` security update; App Store local pkg bu
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. Keep v1.3 closed unless an extended RC check in `docs/v1.3-followup.md`
-   reproduces a gap. Full gates and representative built-app proof already
-   pass, including rendered multi-page output for all three PDF presets and the
-   focused standard-margin table/code regression fixture. PDF images and dialog
-   cancellation remain useful RC breadth.
-2. The v1.3 `1.3.0` candidate is the prepared package baseline, but its
-   signed pkg has not been built yet; the last built candidate remains the
-   v1.2 `1.2.0` build `57` artifact. Do not mix v1.3 work with pkg build,
-   upload, TestFlight, review, or publication without explicit user
-   approval.
-3. Local forced-termination Recovery passed. Google Drive is
+1. **v1.7 R0 — PDF reference spike.** Prove PDFKit document info + one-page
+   bounded raster through the fixed helper and App Store-shaped command
+   boundary. No complete UI. Source:
+   `docs/v1.7-reference-compare-design.md`.
+2. Then R1 (paired shell + text/MD reference), R2 (image + PDF readers),
+   R3 (Import Assist automatic pair + page follow), R4 (confidence nav).
+3. Keep v1.6 closed unless a reproduced gap needs a hotfix. Historical quality
+   notes: `docs/quality-inventory-v1.6.md`.
+4. Keep `@codemirror/view` at **6.43.2**. Do not tag, upload, or publish
+   without explicit user approval.
+5. Local forced-termination Recovery passed. Google Drive remains
    `manual-blocked` until a dedicated fixture is available; do not scan or
    create content in the user's cloud folders implicitly.
-4. Follow with one image or `.bak` case at a time; do not
-   bundle unrelated polish.
-5. v1.5 (`1.5.0`) is closed/released **before** edohigan. Active lane is
-   **v1.6 Import Assist** (`docs/import-assist-boundary-review.md`,
-   `docs/current-work.md`). Quality structure/refactor recommendations
-   and combined test packs: `docs/quality-inventory-v1.6.md`. Keep
-   `@codemirror/view` at 6.43.2. Do not tag or publish without explicit
-   user approval.
+6. Do not expand into two editable panes, Review Desk revival, Book Scope,
+   cloud OCR, or Git-aware merge.
 
 Detailed v0.18-v1.0 completed-slice history and per-version verification
 records moved to `docs/archive/operations/handoff-detail-through-v1.0.md`.
@@ -141,6 +83,7 @@ Read it only for historical context.
 
 - Current work: `docs/current-work.md`
 - Quality inventory (v1.6): `docs/quality-inventory-v1.6.md`
+- v1.7 Reference Compare design: `docs/v1.7-reference-compare-design.md`
 - Current implementation state: `docs/current-status.md`
 - Phase boundaries: `docs/roadmap.md`
 - Product boundary: `docs/product-brief.md`

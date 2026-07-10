@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-07-03
+Last reviewed: 2026-07-10
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
@@ -25,13 +25,16 @@ Latest downloadable GitHub DMG Release body:
 
 Latest App Store status:
 
-- `1.4.0` is the prepared v1.4 Observability And Testability candidate.
-  The signed `1.4.0` App Store / TestFlight package has not been built yet;
-  upload and publication remain gated on explicit user approval. See
+- **`1.6.0` is approved and published** on the Mac App Store (App Review
+  passed without issues, 2026-07-10): Import Assist Phase 1, 江戸彼岸 theme,
+  quality packs. See `1.6.0-app-store-release-notes.md`.
+- `1.5.0` was the closed stabilization line released before 江戸彼岸. See
+  `1.5.0-app-store-release-notes.md`.
+- `1.4.0` Observability / joke-theme candidate notes remain historical. See
   `1.4.0-app-store-release-notes.md`.
-- `1.3.0` is approved and published on the Mac App Store: Save As session
-  continuity, explicit Local Assist `採用` / `破棄`, Reading Focus TOC
-  context, and A4 PDF margin presets.
+- `1.3.0` Daily Trust remains historical: Save As session continuity,
+  explicit Local Assist `採用` / `破棄`, Reading Focus TOC context, and A4
+  PDF margin presets.
 - `1.2.0` was prepared as a local signed candidate (command discovery,
   context-menu containment, EPUB scope note); its upload lane was not
   opened, and its content rolled forward into the published `1.3.0`.

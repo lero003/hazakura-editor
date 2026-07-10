@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-07-01
+Last reviewed: 2026-07-10 (v1.6 published; v1.7 Reference Compare active design)
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
@@ -16,11 +16,14 @@ or quality-polish slice.
 - `security-boundary.md`: safety constraints for file handling and execution boundaries.
 - `agent-workbench-boundary.md`: optional CLI-agent workbench trust boundary.
 - `assist-surface-strategy.md`: future assist-surface direction.
-- `current-work.md`: active queue (v1.6 Import Assist; v1.5 closed before edohigan).
-- `quality-inventory-v1.6.md`: cross-cutting quality gaps and deferred items for the v1.6 lane.
+- `current-work.md`: active queue (v1.7 Reference Compare; v1.6 closed / published).
+- `quality-inventory-v1.6.md`: historical quality inventory for the closed v1.6 lane.
 - `roadmap.md`: active lane and future phase boundaries.
 - `current-status.md`: current implementation and release state.
-- `import-assist-boundary-review.md`: v1.6 Import Assist Phase 1 boundary sign-off.
+- `import-assist-boundary-review.md`: v1.6 Import Assist Phase 1 boundary sign-off (shipped).
+- `v1.7-reference-compare-design.md`: accepted active-lane design — read-only
+  reference + editable Markdown paired-tab (PDF↔MD / MD↔MD), slices R0–R4.
+- `releases/1.6.0-app-store-release-notes.md`: v1.6 App Store copy and published position.
 - `edohigan-theme-plan.md`: post-v1.5 江戸彼岸 theme notes (not part of v1.5 release).
 
 ## Current Operational Docs

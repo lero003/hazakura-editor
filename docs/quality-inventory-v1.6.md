@@ -1,4 +1,4 @@
-# Quality Inventory — v1.6 / package 1.6.0
+# Quality Inventory — v1.6 / package 1.6.0 (lane closed / published)
 
 Status: Operational
 Scope: Cross-cutting quality notes for the active v1.6 lane (Import Assist,
@@ -24,7 +24,7 @@ Last reviewed: 2026-07-10 (`pdf-extract` / `lopdf` security update)
 
 | Area | State |
 |------|--------|
-| Package | `1.6.0` / App Store config `bundleVersion` **83** (signed local candidate build 83 includes the dependency update; upload pending) |
+| Package | `1.6.0` — **App Review passed without issues (2026-07-10)**; lane closed / published. Local build provenance in ignored `latest.json` |
 | PDF fallback dependency | `pdf-extract` **0.12.0** / `lopdf` **0.42.0**; `RUSTSEC-2026-0187` cleared |
 | Import Assist | MVP shipped to TF; text-layer PDF usable on long JP docs |
 | Nested helpers App Store sign | Fixed (local + import helpers both inherit re-sign) |
@@ -391,8 +391,10 @@ See matrix rows and **v1.6 recommended pack**. Implementation notes:
 
 ## Suggested order when quality work resumes
 
-1. **v1.6 lane:** Import Assist + shipped quality packs (A/B/STR/PDF text tail).
-2. Run the Q-IMG-1 parent/child workspace matrix in a packaged App Store build;
+1. **v1.6 lane closed / published** (App Review passed 2026-07-10). Do not
+   reopen without a reproduced hotfix need. Active product work is **v1.7
+   Reference Compare** (`docs/v1.7-reference-compare-design.md`).
+2. Optional: re-run the Q-IMG-1 parent/child workspace matrix in a packaged App Store build;
    do not add multi-root scope until that proof identifies a concrete gap.
 3. TF re-verify Q-IMP-2 (standalone image OCR) if still open on device.
 4. Q-THM-2 / Q-IMP-6 / Book Project stay on their tracks in `current-work.md`.
@@ -427,4 +429,5 @@ See matrix rows and **v1.6 recommended pack**. Implementation notes:
 | 2026-07-09 | Q-IMG-1 parked: workspace/sandbox/preview/PDF image path matrix; no more ad-hoc thrash. |
 | 2026-07-10 | PDF body-image regression fixed: inline max-height now uses the shortened body column; only a split leading cover receives the larger cover bound. |
 | 2026-07-10 | Q-IMG-1 A+D shipped: parent workspace owns images; Preview/HTML/PDF share document-relative containment and workspace-only data-URL loading. Parent/child/drag-drop/missing fixtures are source-covered; packaged App Store smoke remains. |
+| 2026-07-10 | **v1.6 App Review passed without issues.** Lane closed / published as `1.6.0`. Active product lane moves to v1.7 Reference Compare (`docs/v1.7-reference-compare-design.md`). |
 | 2026-07-10 | Q-IMG-1 review hardening: export integration pins child-workspace block → no loader; loader comment forbids `openImageFile` fallback; surface-specific missing-image copy documented. |
