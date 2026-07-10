@@ -12,8 +12,9 @@ Last reviewed: 2026-07-10 (v1.6 App Review passed; active lane → v1.7 Referenc
 - **v1.6 (`1.6.0`) closed and published.** Mac App Store App Review passed
   without issues (user-reported 2026-07-10). Release notes:
   `docs/releases/1.6.0-app-store-release-notes.md`. Do not reopen unless hotfix.
-- **Active lane: v1.7 Reference Compare** — design accepted, implementation
-  not started. Start with **R0** PDFKit bounded-raster spike.
+- **Active lane: v1.7 Reference Compare** — **R0 source landed** (helper
+  `pdf_info` / `render_pdf_page`, Tauri open/render/close handle, tests).
+  Next: **R1** paired shell + text reference.
   Source: `docs/v1.7-reference-compare-design.md`, queue: `docs/current-work.md`.
 - **v1.5 (`1.5.0`) closed before 江戸彼岸.** Import Assist boundary remains
   historical for v1.6: `docs/import-assist-boundary-review.md`.
@@ -59,12 +60,11 @@ Last reviewed: 2026-07-10 (v1.6 App Review passed; active lane → v1.7 Referenc
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. **v1.7 R0 — PDF reference spike.** Prove PDFKit document info + one-page
-   bounded raster through the fixed helper and App Store-shaped command
-   boundary. No complete UI. Source:
+1. **v1.7 R0 is in source** (helper + Tauri handle + tests). Next is **R1 —
+   paired shell + text/MD reference**. Source:
    `docs/v1.7-reference-compare-design.md`.
-2. Then R1 (paired shell + text/MD reference), R2 (image + PDF readers),
-   R3 (Import Assist automatic pair + page follow), R4 (confidence nav).
+2. Then R2 (image + PDF readers), R3 (Import Assist automatic pair + page
+   follow), R4 (confidence nav).
 3. Keep v1.6 closed unless a reproduced gap needs a hotfix. Historical quality
    notes: `docs/quality-inventory-v1.6.md`.
 4. Keep `@codemirror/view` at **6.43.2**. Do not tag, upload, or publish

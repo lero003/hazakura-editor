@@ -6,14 +6,18 @@ import Foundation
 //   {"action":"probe"}
 //   {"action":"extract_pdf_text","path":"/abs/file.pdf"}
 //   {"action":"ocr_image","path":"/abs/image.png","languages":["ja-JP","en-US"]}
+//   {"action":"pdf_info","path":"/abs/file.pdf"}
+//   {"action":"render_pdf_page","path":"/abs/file.pdf","page":0,"maxPixels":4000000}
 //
 // Responses (one JSON object per line), top-level "kind":
-//   probe | pdf_text | ocr_text | error
+//   probe | pdf_text | ocr_text | pdf_info | pdf_page_image | error
 
 enum WireEnvelope: Encodable {
     case probe(ProbeValue)
     case pdfText(PdfTextValue)
     case ocrText(OcrTextValue)
+    case pdfInfo(PdfInfoValue)
+    case pdfPageImage(PdfPageImageValue)
     case error(ErrorValue)
 
     private enum CodingKeys: String, CodingKey {
@@ -31,6 +35,12 @@ enum WireEnvelope: Encodable {
             try container.encode(value, forKey: .value)
         case .ocrText(let value):
             try container.encode("ocr_text", forKey: .kind)
+            try container.encode(value, forKey: .value)
+        case .pdfInfo(let value):
+            try container.encode("pdf_info", forKey: .kind)
+            try container.encode(value, forKey: .value)
+        case .pdfPageImage(let value):
+            try container.encode("pdf_page_image", forKey: .kind)
             try container.encode(value, forKey: .value)
         case .error(let value):
             try container.encode("error", forKey: .kind)
@@ -70,6 +80,8 @@ struct IncomingRequest: Decodable {
     let action: String
     let path: String?
     let languages: [String]?
+    let page: Int?
+    let maxPixels: Int?
 }
 
 func emit(_ envelope: WireEnvelope) {
@@ -148,6 +160,36 @@ func dispatch(_ raw: String) {
             emit(.pdfText(value))
         } catch {
             emitError(error.localizedDescription, kind: "ocr_failed")
+        }
+    case "pdf_info":
+        guard let path = request.path, !path.isEmpty else {
+            emitError("path is required for pdf_info.", kind: "invalid_request")
+            return
+        }
+        do {
+            let value = try pdfInfo(path: path)
+            emit(.pdfInfo(value))
+        } catch {
+            emitError(error.localizedDescription, kind: "pdf_info_failed")
+        }
+    case "render_pdf_page":
+        guard let path = request.path, !path.isEmpty else {
+            emitError("path is required for render_pdf_page.", kind: "invalid_request")
+            return
+        }
+        guard let page = request.page else {
+            emitError("page is required for render_pdf_page.", kind: "invalid_request")
+            return
+        }
+        do {
+            let value = try renderPdfPageImage(
+                path: path,
+                page: page,
+                maxPixels: request.maxPixels
+            )
+            emit(.pdfPageImage(value))
+        } catch {
+            emitError(error.localizedDescription, kind: "pdf_render_failed")
         }
     default:
         emitError("Unknown action: \(request.action)", kind: "invalid_request")

@@ -12,6 +12,7 @@ pub(crate) mod commands {
     pub(crate) mod files;
     pub(crate) mod images;
     pub(crate) mod import_assist;
+    pub(crate) mod reference_compare;
     pub(crate) mod search;
     pub(crate) mod security_bookmarks;
     pub(crate) mod workspace;
@@ -97,6 +98,8 @@ use crate::commands::files::*;
 use crate::commands::images::*;
 #[allow(unused_imports)]
 use crate::commands::import_assist::*;
+#[allow(unused_imports)]
+use crate::commands::reference_compare::*;
 #[allow(unused_imports)]
 use crate::commands::search::*;
 #[allow(unused_imports)]
@@ -222,6 +225,9 @@ pub fn run() {
             save_pasted_image,
             import_image_from_path,
             import_source_to_markdown,
+            open_pdf_reference,
+            render_pdf_reference_page,
+            close_pdf_reference,
             export_pdf,
             open_external_url,
             save_auto_backup,

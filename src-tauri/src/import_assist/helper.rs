@@ -37,6 +37,28 @@ struct HelperRequest<'a> {
     path: Option<&'a str>,
     #[serde(skip_serializing_if = "Option::is_none")]
     languages: Option<&'a [&'a str]>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    page: Option<usize>,
+    #[serde(skip_serializing_if = "Option::is_none", rename = "maxPixels")]
+    max_pixels: Option<u64>,
+}
+
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct HelperPdfInfo {
+    pub page_count: usize,
+    #[allow(dead_code)]
+    pub file_name: String,
+}
+
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct HelperPdfPageImage {
+    pub page: usize,
+    pub width: u32,
+    pub height: u32,
+    pub mime: String,
+    pub data_base64: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -178,6 +200,8 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
             action: "probe",
             path: None,
             languages: None,
+            page: None,
+            max_pixels: None,
         },
     )?;
     let fixture = match probe.kind.as_str() {
@@ -202,6 +226,8 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
                 action: "ocr_image",
                 path: Some(staged_str.as_ref()),
                 languages: Some(&["ja-JP", "en-US"]),
+                page: None,
+                max_pixels: None,
             },
         )?;
         match envelope.kind.as_str() {
@@ -255,6 +281,8 @@ fn try_pdfkit_text_pages(path: &str) -> Result<Option<Vec<ImportPageText>>, Stri
             action: "probe",
             path: None,
             languages: None,
+            page: None,
+            max_pixels: None,
         },
     )?;
     let fixture = match probe.kind.as_str() {
@@ -302,6 +330,8 @@ fn pages_from_helper_action(
             action,
             path: Some(path),
             languages,
+            page: None,
+            max_pixels: None,
         },
     )?;
     match envelope.kind.as_str() {
@@ -347,6 +377,8 @@ fn resolve_live_import_assist_helper_path_excluding(exclude: &Path) -> Option<Pa
                 action: "probe",
                 path: None,
                 languages: None,
+                page: None,
+                max_pixels: None,
             },
         ) {
             if env.kind == "probe" {
@@ -483,6 +515,66 @@ fn kill_import_helper_child(child: &Arc<Mutex<Child>>) {
     }
 }
 
+/// v1.7 R0: PDFKit page count / file name via the fixed helper.
+pub(crate) fn helper_pdf_info(path: &Path) -> Result<HelperPdfInfo, String> {
+    let helper = resolve_import_assist_helper_path()?;
+    let path_str = path.to_string_lossy();
+    let envelope = round_trip_helper(
+        &helper,
+        &HelperRequest {
+            action: "pdf_info",
+            path: Some(path_str.as_ref()),
+            languages: None,
+            page: None,
+            max_pixels: None,
+        },
+    )?;
+    match envelope.kind.as_str() {
+        "pdf_info" => serde_json::from_value::<HelperPdfInfo>(envelope.value)
+            .map_err(|e| format!("Invalid pdf_info payload: {e}")),
+        "error" => {
+            let err: ErrorValue = serde_json::from_value(envelope.value).unwrap_or(ErrorValue {
+                error: "pdf_info failed.".into(),
+                kind: "failed".into(),
+            });
+            Err(err.error)
+        }
+        other => Err(format!("Unexpected helper kind: {other}")),
+    }
+}
+
+/// v1.7 R0: one-page bounded PNG raster via the fixed helper.
+pub(crate) fn helper_render_pdf_page(
+    path: &Path,
+    page: usize,
+    max_pixels: u64,
+) -> Result<HelperPdfPageImage, String> {
+    let helper = resolve_import_assist_helper_path()?;
+    let path_str = path.to_string_lossy();
+    let envelope = round_trip_helper(
+        &helper,
+        &HelperRequest {
+            action: "render_pdf_page",
+            path: Some(path_str.as_ref()),
+            languages: None,
+            page: Some(page),
+            max_pixels: Some(max_pixels),
+        },
+    )?;
+    match envelope.kind.as_str() {
+        "pdf_page_image" => serde_json::from_value::<HelperPdfPageImage>(envelope.value)
+            .map_err(|e| format!("Invalid pdf_page_image payload: {e}")),
+        "error" => {
+            let err: ErrorValue = serde_json::from_value(envelope.value).unwrap_or(ErrorValue {
+                error: "render_pdf_page failed.".into(),
+                kind: "failed".into(),
+            });
+            Err(err.error)
+        }
+        other => Err(format!("Unexpected helper kind: {other}")),
+    }
+}
+
 pub(crate) fn import_assist_helper_filename() -> String {
     format!("hazakura-import-assist-helper-{}", rust_target_triple())
 }
@@ -562,6 +654,8 @@ pub(crate) fn resolve_import_assist_helper_path() -> Result<PathBuf, String> {
                 action: "probe",
                 path: None,
                 languages: None,
+                page: None,
+                max_pixels: None,
             },
         ) {
             Ok(env) if env.kind == "probe" => {
@@ -638,6 +732,8 @@ mod tests {
                 action: "probe",
                 path: None,
                 languages: None,
+                page: None,
+                max_pixels: None,
             },
             Duration::from_millis(400),
         )

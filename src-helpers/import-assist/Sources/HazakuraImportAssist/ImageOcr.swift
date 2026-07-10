@@ -76,34 +76,15 @@ func loadCGImage(url: URL) throws -> CGImage {
 }
 
 #if canImport(PDFKit)
+/// OCR-oriented page render (~2x media box). Preview/reference rendering
+/// uses the sized overload in `PdfReference.swift`.
 func renderPdfPage(_ page: PDFPage) throws -> CGImage {
     let bounds = page.bounds(for: .mediaBox)
     // ~150–200 DPI equivalent for body text OCR.
     let scale: CGFloat = 2.0
     let width = max(1, Int(bounds.width * scale))
     let height = max(1, Int(bounds.height * scale))
-    let colorSpace = CGColorSpaceCreateDeviceRGB()
-    guard let ctx = CGContext(
-        data: nil,
-        width: width,
-        height: height,
-        bitsPerComponent: 8,
-        bytesPerRow: 0,
-        space: colorSpace,
-        bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-    ) else {
-        throw ImportAssistError.ocrFailed("Cannot create bitmap context for PDF page.")
-    }
-    ctx.setFillColor(NSColor.white.cgColor)
-    ctx.fill(CGRect(x: 0, y: 0, width: width, height: height))
-    ctx.saveGState()
-    ctx.scaleBy(x: scale, y: scale)
-    page.draw(with: .mediaBox, to: ctx)
-    ctx.restoreGState()
-    guard let image = ctx.makeImage() else {
-        throw ImportAssistError.ocrFailed("Cannot render PDF page image.")
-    }
-    return image
+    return try renderPdfPage(page, width: width, height: height)
 }
 #endif
 

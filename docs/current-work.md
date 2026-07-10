@@ -57,8 +57,8 @@ v1.7 deepens Import Assist into a general reference workflow. Product story:
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| **Next** | **R0 — PDF reference spike** | PDFKit document info + one-page bounded raster through fixed helper / App Store-shaped command boundary. No complete UI. See design. |
-| Next | R1 — Paired shell + text reference | Dedicated Reference Compare state; Markdown/text manual reference; only Editor Tab is dirty/editable. |
+| **Done / source** | **R0 — PDF reference spike** | Helper `pdf_info` / `render_pdf_page`; Rust opaque handle (`open_pdf_reference` / `render_pdf_reference_page` / `close_pdf_reference`); main-window gate; path/page/pixel bounds; fixture+live helper smoke. No complete UI. |
+| **Next** | **R1 — Paired shell + text reference** | Dedicated Reference Compare state; Markdown/text manual reference; only Editor Tab is dirty/editable. |
 | Next | R2 — Image + PDF reference readers | Reuse image preview; bounded PDF page reader from R0; sandbox access matrix. |
 | Next | R3 — Import Assist automatic pair + page follow | After import, source reference + unsaved draft; `sessionId` link; page markers drive follow. |
 | Later | R4 — Confidence navigation + reliability | Honest `要確認` only after bounded confidence ranges exist; packaged smoke. |
