@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { WorkspaceContextMenu } from "./WorkspaceContextMenu";
 import type { WorkspaceFileOpsCopy } from "../../lib/locale/workspaceFileOps";
+import { referenceCompareCopy } from "../../lib/locale/referenceCompare";
 
 afterEach(() => {
   cleanup();
@@ -21,6 +22,7 @@ function renderMenu(
   overrides: Partial<Parameters<typeof WorkspaceContextMenu>[0]> = {},
 ) {
   const onImportAsMarkdownDraft = vi.fn();
+  const onOpenAsReference = vi.fn();
   const props: Parameters<typeof WorkspaceContextMenu>[0] = {
     activeTabPath: null,
     anchor: {
@@ -45,15 +47,17 @@ function renderMenu(
     onImportAsMarkdownDraft,
     onMoveToTrash: vi.fn(),
     onOpen: vi.fn(),
+    onOpenAsReference,
     onRename: vi.fn(),
     onRevealInFinder: vi.fn(),
     onSendFullPathToAgent: vi.fn(),
     onSetCompareSource: vi.fn(),
     onSetCompareTarget: vi.fn(),
+    referenceCopy: referenceCompareCopy("ja"),
     ...overrides,
   };
   render(<WorkspaceContextMenu {...props} />);
-  return { onImportAsMarkdownDraft, props };
+  return { onImportAsMarkdownDraft, onOpenAsReference, props };
 }
 
 describe("WorkspaceContextMenu Import Assist", () => {
@@ -80,6 +84,33 @@ describe("WorkspaceContextMenu Import Assist", () => {
     expect(
       screen.queryByRole("menuitem", {
         name: "下書きを作る…",
+      }),
+    ).toBeNull();
+  });
+
+  it("offers open-as-reference for Markdown files", () => {
+    const { onOpenAsReference } = renderMenu({
+      anchor: {
+        path: "/ws/note.md",
+        name: "note.md",
+        x: 40,
+        y: 40,
+        canCompare: true,
+        kind: "file",
+      },
+    });
+    const item = screen.getByRole("menuitem", {
+      name: "参照として開く",
+    });
+    fireEvent.click(item);
+    expect(onOpenAsReference).toHaveBeenCalledTimes(1);
+  });
+
+  it("hides open-as-reference for PDF until R2", () => {
+    renderMenu();
+    expect(
+      screen.queryByRole("menuitem", {
+        name: "参照として開く",
       }),
     ).toBeNull();
   });

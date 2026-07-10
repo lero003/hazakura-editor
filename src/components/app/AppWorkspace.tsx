@@ -60,6 +60,10 @@ import {
   MAX_PREVIEW_COLUMN_PERCENT,
   MIN_PREVIEW_COLUMN_PERCENT,
 } from "../../types";
+import { ReferenceTextPane } from "../reference/ReferenceTextPane";
+import type { ReferenceCompareState } from "../../features/referenceCompare/types";
+import type { ReferenceCompareCopy } from "../../lib/locale/referenceCompare";
+import type { ReferenceNarrowFocus } from "../../features/referenceCompare/types";
 
 const EBookPane = lazy(() => import("../editor/preview/EBookPane"));
 
@@ -77,6 +81,7 @@ type AppWorkspaceProps = {
   clearCompareSource: () => void;
   clearCompareTarget: () => void;
   closeCompareView: (options?: { returnToEditor?: boolean }) => void;
+  closeReferenceCompare: () => void;
   compareAnchor: CompareAnchor | null;
   compareTarget: CompareAnchor | null;
   compareView: CompareViewState | null;
@@ -126,6 +131,7 @@ type AppWorkspaceProps = {
   openFile: () => unknown;
   openFilePath: (path: string) => unknown;
   openPreviewMarkdownLink: (path: string) => void | Promise<void>;
+  openReferenceFile: () => void | Promise<void>;
   openWorkspace: () => unknown;
   openWorkspaceContextMenu: (
     entry: WorkspaceTreeEntry,
@@ -137,9 +143,15 @@ type AppWorkspaceProps = {
   previewColumnPercent: number;
   previewPaneRef: RefObject<HTMLDivElement | null>;
   previewVisible: boolean;
+  referenceColumnPercent: number;
+  referenceCompare: ReferenceCompareState | null;
+  referenceCopy: ReferenceCompareCopy;
+  referenceNarrowFocus: ReferenceNarrowFocus;
   resolvedTheme: ResolvedTheme;
   runSelectedFileCompare: () => void;
   safeEditorCopy: SafeEditorCopy;
+  setReferenceColumnPercent: (value: number) => void;
+  setReferenceNarrowFocus: (focus: ReferenceNarrowFocus) => void;
   scrollHudContext: MarkdownHeadingContext;
   scrollHudLine: number;
   scrollHudVisible: boolean;
@@ -181,6 +193,7 @@ export function AppWorkspace({
   clearCompareSource,
   clearCompareTarget,
   closeCompareView,
+  closeReferenceCompare,
   compareAnchor,
   compareTarget,
   compareView,
@@ -221,6 +234,7 @@ export function AppWorkspace({
   openFile,
   openFilePath,
   openPreviewMarkdownLink,
+  openReferenceFile,
   openWorkspace,
   openWorkspaceContextMenu,
   openRootWorkspaceContextMenu,
@@ -228,9 +242,15 @@ export function AppWorkspace({
   previewColumnPercent,
   previewPaneRef,
   previewVisible,
+  referenceColumnPercent,
+  referenceCompare,
+  referenceCopy,
+  referenceNarrowFocus,
   resolvedTheme,
   runSelectedFileCompare,
   safeEditorCopy,
+  setReferenceColumnPercent,
+  setReferenceNarrowFocus,
   scrollHudContext,
   scrollHudLine,
   scrollHudVisible,
@@ -480,45 +500,152 @@ export function AppWorkspace({
       )}
       <div
         ref={editorPreviewGridRef}
-        className={`editor-preview-grid${sidePaneVisible ? "" : " preview-hidden"}${hasWorkspaceSelection ? "" : " empty-session"}${sidePaneMode === "compare" ? " diff-workbench" : ""}`}
-        style={editorPreviewGridStyle}
+        className={`editor-preview-grid${sidePaneVisible && !referenceCompare ? "" : " preview-hidden"}${hasWorkspaceSelection ? "" : " empty-session"}${sidePaneMode === "compare" ? " diff-workbench" : ""}${referenceCompare ? " reference-compare" : ""}${referenceCompare && referenceNarrowFocus === "reference" ? " reference-focus-ref" : ""}${referenceCompare && referenceNarrowFocus === "editor" ? " reference-focus-editor" : ""}`}
+        style={
+          referenceCompare
+            ? {
+                gridTemplateColumns: `minmax(240px, ${referenceColumnPercent}%) 6px minmax(280px, ${100 - referenceColumnPercent}%)`,
+              }
+            : editorPreviewGridStyle
+        }
       >
-        <EditorMainPane
-          activeContents={activeContents}
-          activeDocumentLineCount={activeDocumentLineCount}
-          activeSearchMatchIndex={activeMatchIndex}
-          activeTab={activeTab}
-          copy={safeEditorCopy}
-          documentKey={documentKey}
-          editorSessionKey={activeTab?.sessionId ?? documentKey}
-          editorPaneRef={editorPaneRef}
-          editorSettings={editorSettings}
-          editorTheme={editorTheme}
-          editorViewState={activeDocumentViewState?.editor ?? null}
-          generationLock={appleAssistGenerationLock}
-          imagePreviewTitle={sidePaneCopy.imagePreview}
-          lModeCopy={lModeCopy}
-          menuLanguage={menuLanguage}
-          onChange={handleEditorChange}
-          onEditorViewStateChange={handleEditorViewStateChange}
-          onNewFile={() => void createNewFile()}
-          onOpenFile={() => void openFile()}
-          onOpenFolder={() => void openWorkspace()}
-          onPasteImage={handlePasteImage}
-          onScrollRatioChange={syncPreviewScroll}
-          onSelectionChange={setSelectionInfo}
-          onSendToAgent={handleSendSelectionToAgent}
-          restoreComplete={restoreComplete}
-          scrollHudContext={scrollHudContext}
-          scrollHudLine={scrollHudLine}
-          scrollHudVisible={scrollHudVisible}
-          searchMatches={findMatches}
-          selectedImage={selectedImage}
-          slashCommands={slashCommands}
-          slashMenuCopy={slashMenuCopy}
-          workspaceRootPath={workspaceRootPath}
-        />
-        {sidePaneVisible ? (
+        {referenceCompare ? (
+          <>
+            <div
+              className={`reference-compare-pane${referenceNarrowFocus === "editor" ? " is-collapsed-narrow" : ""}`}
+            >
+              <ReferenceTextPane
+                copy={referenceCopy}
+                menuLanguage={menuLanguage}
+                onClose={closeReferenceCompare}
+                onReplace={() => void openReferenceFile()}
+                reference={referenceCompare.reference}
+                showDiffEnabled={false}
+              />
+            </div>
+            <PaneResizer
+              label={referenceCopy.referenceLabel}
+              max={MAX_PREVIEW_COLUMN_PERCENT}
+              min={MIN_PREVIEW_COLUMN_PERCENT}
+              onKeyDown={(event) => {
+                if (event.key === "ArrowLeft") {
+                  event.preventDefault();
+                  setReferenceColumnPercent(
+                    Math.max(
+                      MIN_PREVIEW_COLUMN_PERCENT,
+                      referenceColumnPercent - 2,
+                    ),
+                  );
+                } else if (event.key === "ArrowRight") {
+                  event.preventDefault();
+                  setReferenceColumnPercent(
+                    Math.min(
+                      MAX_PREVIEW_COLUMN_PERCENT,
+                      referenceColumnPercent + 2,
+                    ),
+                  );
+                }
+              }}
+              onPointerDown={(event) => {
+                event.currentTarget.setPointerCapture(event.pointerId);
+                const grid = editorPreviewGridRef.current;
+                if (!grid) return;
+                const rect = grid.getBoundingClientRect();
+                const percent = ((event.clientX - rect.left) / rect.width) * 100;
+                setReferenceColumnPercent(
+                  Math.min(
+                    MAX_PREVIEW_COLUMN_PERCENT,
+                    Math.max(MIN_PREVIEW_COLUMN_PERCENT, percent),
+                  ),
+                );
+              }}
+              onPointerMove={(event) => {
+                if (!event.currentTarget.hasPointerCapture(event.pointerId)) {
+                  return;
+                }
+                const grid = editorPreviewGridRef.current;
+                if (!grid) return;
+                const rect = grid.getBoundingClientRect();
+                const percent = ((event.clientX - rect.left) / rect.width) * 100;
+                setReferenceColumnPercent(
+                  Math.min(
+                    MAX_PREVIEW_COLUMN_PERCENT,
+                    Math.max(MIN_PREVIEW_COLUMN_PERCENT, percent),
+                  ),
+                );
+              }}
+              title={referenceCopy.referenceLabel}
+              value={referenceColumnPercent}
+            />
+            {referenceCompare ? (
+              <div className="reference-narrow-switch" role="toolbar">
+                <button
+                  type="button"
+                  className={
+                    referenceNarrowFocus === "reference" ? "is-active" : ""
+                  }
+                  onClick={() => setReferenceNarrowFocus("reference")}
+                >
+                  {referenceCopy.showReference}
+                </button>
+                <button
+                  type="button"
+                  className={
+                    referenceNarrowFocus === "editor" ? "is-active" : ""
+                  }
+                  onClick={() => setReferenceNarrowFocus("editor")}
+                >
+                  {referenceCopy.showEditor}
+                </button>
+              </div>
+            ) : null}
+          </>
+        ) : null}
+        <div
+          className={`reference-editor-host${referenceCompare && referenceNarrowFocus === "reference" ? " is-collapsed-narrow" : ""}`}
+        >
+          <EditorMainPane
+            activeContents={activeContents}
+            activeDocumentLineCount={activeDocumentLineCount}
+            activeSearchMatchIndex={activeMatchIndex}
+            activeTab={activeTab}
+            copy={safeEditorCopy}
+            documentKey={documentKey}
+            editorSessionKey={activeTab?.sessionId ?? documentKey}
+            editorPaneRef={editorPaneRef}
+            editorSettings={editorSettings}
+            editorTheme={editorTheme}
+            editorViewState={activeDocumentViewState?.editor ?? null}
+            generationLock={appleAssistGenerationLock}
+            imagePreviewTitle={sidePaneCopy.imagePreview}
+            lModeCopy={lModeCopy}
+            menuLanguage={menuLanguage}
+            onChange={handleEditorChange}
+            onEditorViewStateChange={handleEditorViewStateChange}
+            onNewFile={() => void createNewFile()}
+            onOpenFile={() => void openFile()}
+            onOpenFolder={() => void openWorkspace()}
+            onPasteImage={handlePasteImage}
+            onScrollRatioChange={syncPreviewScroll}
+            onSelectionChange={setSelectionInfo}
+            onSendToAgent={handleSendSelectionToAgent}
+            restoreComplete={restoreComplete}
+            scrollHudContext={scrollHudContext}
+            scrollHudLine={scrollHudLine}
+            scrollHudVisible={scrollHudVisible}
+            searchMatches={findMatches}
+            selectedImage={selectedImage}
+            slashCommands={slashCommands}
+            slashMenuCopy={slashMenuCopy}
+            workspaceRootPath={workspaceRootPath}
+          />
+          {!activeTab && referenceCompare ? (
+            <p className="reference-empty-editor-hint" role="status">
+              {referenceCopy.emptyEditorHint}
+            </p>
+          ) : null}
+        </div>
+        {sidePaneVisible && !referenceCompare ? (
           <PaneResizer
             label={sidePaneCopy.resizeColumns}
             max={MAX_PREVIEW_COLUMN_PERCENT}
@@ -530,7 +657,7 @@ export function AppWorkspace({
             value={previewColumnPercent}
           />
         ) : null}
-        {sidePaneMode ? (
+        {sidePaneMode && !referenceCompare ? (
           <SidePane
             activeContents={activeContents}
             activeTab={activeTab}

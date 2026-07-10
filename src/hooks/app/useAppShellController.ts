@@ -39,6 +39,7 @@ import { useAppExitConfirmation } from "./useAppExitConfirmation";
 import { useAppleAssistAvailability } from "../agent/useAppleAssistAvailability";
 import { useCommandPaletteController } from "../commandPalette/useCommandPaletteController";
 import { useCompareController } from "../diff/useCompareController";
+import { useReferenceCompareActions } from "../referenceCompare/useReferenceCompareActions";
 import { useDocumentSafetyActions } from "../document/useDocumentSafetyActions";
 import { useDocumentIoController } from "../document/useDocumentIoController";
 import { useDocumentCoreController } from "../document/useDocumentCoreController";
@@ -190,6 +191,17 @@ export function useAppShellController() {
     setCompareCaseEntry,
     setCompareTarget,
     setCompareView,
+  } = foundation;
+
+  // section: v1.7 Reference Compare (read-only reference beside editor)
+  const {
+    clearReferenceCompare,
+    referenceColumnPercent,
+    referenceCompare,
+    referenceNarrowFocus,
+    setReferenceColumnPercent,
+    setReferenceDocument,
+    setReferenceNarrowFocus,
   } = foundation;
 
   // section: workspace shell state
@@ -741,6 +753,21 @@ export function useAppShellController() {
     setStatus,
   });
 
+  const {
+    closeReferenceCompare,
+    openReferenceFile,
+    openTextPathAsReference,
+    referenceCopy,
+  } = useReferenceCompareActions({
+    activeTab,
+    clearReferenceCompare,
+    menuLanguage,
+    requestReviewTabAgainstDisk,
+    setGlobalError,
+    setReferenceDocument,
+    setStatus,
+  });
+
   // section: auto-backup restore flow
   //
   // Open the picker dialog and load the active tab's backup
@@ -1132,6 +1159,7 @@ export function useAppShellController() {
       exportPdf,
       importSourceAsMarkdownDraft,
       openFile,
+      openReferenceFile,
       openWorkspace,
       requestWindowClose,
       saveActiveTab,
@@ -1144,6 +1172,7 @@ export function useAppShellController() {
       exportPdf,
       importSourceAsMarkdownDraft,
       openFile,
+      openReferenceFile,
       openWorkspace,
       requestWindowClose,
       saveActiveTab,
@@ -1467,6 +1496,7 @@ export function useAppShellController() {
     clearCompareSource,
     clearCompareTarget,
     clearSaveError,
+    closeReferenceCompare,
     closeCompareView,
     closeFindAndFocusEditor,
     closePreferencesFromKeyboard,
@@ -1621,7 +1651,15 @@ export function useAppShellController() {
     openFile,
     openFilePath,
     openPreviewMarkdownLink,
+    openReferenceFile,
+    openTextPathAsReference,
     openRootWorkspaceContextMenu,
+    referenceColumnPercent,
+    referenceCompare,
+    referenceCopy,
+    referenceNarrowFocus,
+    setReferenceColumnPercent,
+    setReferenceNarrowFocus,
     openTabContextMenu,
     openWorkspace,
     openWorkspaceContextMenu,

@@ -23,6 +23,7 @@ import { useSaveAffirmation } from "../document/useSaveAffirmation";
 import { useEditorSelectionState } from "../editor/useEditorSelectionState";
 import { useEditorTabsState } from "../editor/useEditorTabsState";
 import { useTabContextMenu } from "../editor/useTabContextMenu";
+import { useReferenceCompareState } from "../referenceCompare/useReferenceCompareState";
 import { useReviewDeskState } from "../review/useReviewDeskState";
 import { useAutoBackupRestoreDialogState } from "../workspace/useAutoBackupRestoreDialogState";
 import { useQuickOpenState } from "../workspace/useQuickOpenState";
@@ -44,6 +45,7 @@ export function useAppShellFoundation() {
   const editorTabs = useEditorTabsState();
   const editorSelection = useEditorSelectionState();
   const diffState = useCompareState();
+  const referenceCompareState = useReferenceCompareState();
   const workspaceShell = useWorkspaceShellState();
   const recentEntries = useRecentEntries();
   const draftRecovery = useDraftRecoveryState();
@@ -71,6 +73,7 @@ export function useAppShellFoundation() {
     ...editorTabs,
     ...editorSelection,
     ...diffState,
+    ...referenceCompareState,
     ...workspaceShell,
     ...recentEntries,
     ...draftRecovery,

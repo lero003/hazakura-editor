@@ -3,6 +3,8 @@ import { isJapaneseMenuLanguage } from "../../types";
 import { isKanaStyle } from "../../lib/locale/_helpers";
 import type { WorkspaceFileOpsCopy } from "../../lib/locale/workspaceFileOps";
 import { isImportAssistSourceFile } from "../../lib/utils";
+import { isTextReferencePath } from "../../features/referenceCompare/referenceCompare";
+import type { ReferenceCompareCopy } from "../../lib/locale/referenceCompare";
 
 export function WorkspaceContextMenu({
   activeTabPath,
@@ -21,11 +23,13 @@ export function WorkspaceContextMenu({
   onImportAsMarkdownDraft,
   onMoveToTrash,
   onOpen,
+  onOpenAsReference,
   onRename,
   onRevealInFinder,
   onSendFullPathToAgent,
   onSetCompareSource,
   onSetCompareTarget,
+  referenceCopy,
 }: {
   activeTabPath: string | null;
   anchor: WorkspaceContextMenuState;
@@ -43,11 +47,13 @@ export function WorkspaceContextMenu({
   onImportAsMarkdownDraft: () => void;
   onMoveToTrash: () => void;
   onOpen: () => void;
+  onOpenAsReference: () => void;
   onRename: () => void;
   onRevealInFinder: () => void;
   onSendFullPathToAgent: () => void;
   onSetCompareSource: () => void;
   onSetCompareTarget: () => void;
+  referenceCopy: ReferenceCompareCopy;
 }) {
   const canCompareWithActiveTab =
     activeTabPath !== null && activeTabPath !== anchor.path;
@@ -63,12 +69,16 @@ export function WorkspaceContextMenu({
   // Import Assist: only user-selected PDF / image files (not dirs/root).
   const canImport =
     kind === "file" && isImportAssistSourceFile(anchor.name);
+  // v1.7 R1: Markdown/text as read-only reference (PDF/image in R2).
+  const canOpenAsReference =
+    kind === "file" && isTextReferencePath(anchor.name);
   const itemCount =
     7 +
     (canSendToAgent ? 1 : 0) +
     (compareSource ? 1 : 0) +
     (canCreateHere ? 2 : 0) +
     (canImport ? 1 : 0) +
+    (canOpenAsReference ? 1 : 0) +
     (canRename ? 1 : 0) +
     (canTrash ? 1 : 0);
   const estimatedWidth = 240;
@@ -155,6 +165,11 @@ export function WorkspaceContextMenu({
           onClick={onImportAsMarkdownDraft}
         >
           {labels.importAsMarkdownDraft}
+        </button>
+      ) : null}
+      {canOpenAsReference ? (
+        <button type="button" role="menuitem" onClick={onOpenAsReference}>
+          {referenceCopy.openAsReference}
         </button>
       ) : null}
       <button type="button" role="menuitem" onClick={onCopyFullPath}>

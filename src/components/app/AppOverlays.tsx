@@ -138,6 +138,8 @@ type AppOverlaysProps = {
   onRunCommand: (command: Command) => void;
   openWorkspaceFile: (path: string) => void | Promise<void>;
   importSourcePathAsMarkdownDraft: (path: string) => void | Promise<void>;
+  openTextPathAsReference: (path: string) => void | Promise<void | boolean>;
+  referenceCopy: import("../../lib/locale/referenceCompare").ReferenceCompareCopy;
   pendingAppClose: boolean;
   pendingCloseTab: EditorTab | null;
   pendingRenameWarning: RenameWarningKind | null;
@@ -268,6 +270,8 @@ export function AppOverlays({
   onRunCommand,
   openWorkspaceFile,
   importSourcePathAsMarkdownDraft,
+  openTextPathAsReference,
+  referenceCopy,
   pendingAppClose,
   pendingCloseTab,
   preferencesCloseButtonRef,
@@ -554,6 +558,12 @@ export function AppOverlays({
             closeWorkspaceContextMenu();
             void openWorkspaceFile(workspaceContextMenu.path);
           }}
+          onOpenAsReference={() => {
+            const path = workspaceContextMenu.path;
+            closeWorkspaceContextMenu();
+            void openTextPathAsReference(path);
+          }}
+          referenceCopy={referenceCopy}
           onCopyFullPath={() => void copyWorkspaceFullPath(workspaceContextMenu)}
           onRename={() => {
             const path = workspaceContextMenu.path;

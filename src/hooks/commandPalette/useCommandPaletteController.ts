@@ -58,6 +58,7 @@ type UseCommandPaletteControllerActions = {
   openAgentWindow: (themePreference: ThemePreference) => void;
   openAppleAssistWindow: (themePreference: ThemePreference) => void;
   openFile: () => Promise<void>;
+  openReferenceFile: () => Promise<void>;
   openWorkspace: () => Promise<void>;
   openWorkspaceFile: (path: string) => Promise<void>;
   requestCloseTab: (id: string) => void;
@@ -346,6 +347,24 @@ export function useCommandPaletteController({
         label: "PDF / 画像から下書きを作る…",
         run: () => {
           void actions.importSourceAsMarkdownDraft();
+        },
+      },
+      {
+        category: "File",
+        id: "file.openReference",
+        keywords: [
+          "reference",
+          "compare",
+          "side-by-side",
+          "readonly",
+          "参照",
+          "さんしょう",
+          "見比べ",
+          "みくらべ",
+        ],
+        label: "参照ファイルを開く…",
+        run: () => {
+          void actions.openReferenceFile();
         },
       },
       {
