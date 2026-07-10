@@ -699,6 +699,103 @@
   padding: 16px;
 }
 
+.reference-pdf-pane {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  outline: none;
+}
+
+.reference-pdf-toolbar {
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px 8px;
+}
+
+.reference-pdf-page-label {
+  color: var(--text);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  min-width: 7em;
+  text-align: center;
+}
+
+.reference-pdf-toolbar-spacer {
+  flex: 1;
+}
+
+.reference-pane-action.is-active {
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 36%, var(--border));
+  font-weight: 600;
+}
+
+.reference-pdf-stage {
+  align-items: flex-start;
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px;
+}
+
+.reference-pdf-stage--fit-width .reference-pdf-image {
+  height: auto;
+  max-width: 100%;
+  width: 100%;
+}
+
+.reference-pdf-stage--fit-page .reference-pdf-image {
+  height: auto;
+  max-height: 100%;
+  max-width: 100%;
+  width: auto;
+}
+
+.reference-pdf-stage--100 .reference-pdf-image,
+.reference-pdf-stage--150 .reference-pdf-image {
+  height: auto;
+  max-width: none;
+  width: auto;
+}
+
+.reference-pdf-image {
+  background: #fff;
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--shadow) 22%, transparent);
+  display: block;
+  user-select: none;
+}
+
+.reference-pdf-error {
+  color: var(--danger, #b42318);
+  font-size: 13px;
+  padding: 16px;
+  text-align: center;
+}
+
+.reference-image-stage {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px;
+}
+
+.reference-image {
+  height: auto;
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  user-select: none;
+}
+
 .reference-empty-editor-hint {
   background: color-mix(in srgb, var(--surface-strong) 88%, var(--accent) 6%);
   border-top: 1px solid var(--border);

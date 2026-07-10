@@ -1,6 +1,12 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { openTextFile, pickMarkdownFile } from "../../lib/tauri";
+import {
+  closePdfReference,
+  openImageFile,
+  openPdfReference,
+  openTextFile,
+  pickReferenceFile,
+} from "../../lib/tauri";
 import { useReferenceCompareActions } from "./useReferenceCompareActions";
 import type { EditorTab } from "../../types";
 
@@ -11,6 +17,11 @@ vi.mock("../../lib/tauri", async () => {
   return {
     ...actual,
     openTextFile: vi.fn(),
+    openImageFile: vi.fn(),
+    openWorkspaceImage: vi.fn(),
+    openPdfReference: vi.fn(),
+    closePdfReference: vi.fn().mockResolvedValue(undefined),
+    pickReferenceFile: vi.fn(),
     pickMarkdownFile: vi.fn(),
     createSecurityScopedBookmark: vi.fn().mockResolvedValue(null),
   };
@@ -39,10 +50,25 @@ function makeTab(path: string): EditorTab {
   };
 }
 
+const baseOptions = () => ({
+  activeTab: makeTab("/ws/draft.md") as EditorTab,
+  clearReferenceCompare: vi.fn(),
+  menuLanguage: "ja" as const,
+  referenceCompare: null,
+  requestReviewTabAgainstDisk: vi.fn(),
+  setGlobalError: vi.fn(),
+  setReferenceDocument: vi.fn(),
+  setStatus: vi.fn(),
+  workspaceRootPath: "/ws" as string | null,
+});
+
 describe("useReferenceCompareActions", () => {
   beforeEach(() => {
     vi.mocked(openTextFile).mockReset();
-    vi.mocked(pickMarkdownFile).mockReset();
+    vi.mocked(openImageFile).mockReset();
+    vi.mocked(openPdfReference).mockReset();
+    vi.mocked(closePdfReference).mockReset().mockResolvedValue(undefined);
+    vi.mocked(pickReferenceFile).mockReset();
   });
 
   it("opens a text file as a manual reference", async () => {
@@ -59,23 +85,15 @@ describe("useReferenceCompareActions", () => {
     });
 
     const setReferenceDocument = vi.fn();
-    const setStatus = vi.fn();
-    const setGlobalError = vi.fn();
-
     const { result } = renderHook(() =>
       useReferenceCompareActions({
-        activeTab: makeTab("/ws/draft.md"),
-        clearReferenceCompare: vi.fn(),
-        menuLanguage: "ja",
-        requestReviewTabAgainstDisk: vi.fn(),
-        setGlobalError,
+        ...baseOptions(),
         setReferenceDocument,
-        setStatus,
       }),
     );
 
     await act(async () => {
-      await result.current.openTextPathAsReference("/ws/style.md");
+      await result.current.openPathAsReference("/ws/style.md");
     });
 
     expect(setReferenceDocument).toHaveBeenCalledWith(
@@ -88,7 +106,71 @@ describe("useReferenceCompareActions", () => {
       },
       { origin: "manual", linkedEditorSessionId: null },
     );
-    expect(setGlobalError).toHaveBeenCalledWith(null);
+  });
+
+  it("opens a PDF via the opaque reference handle", async () => {
+    vi.mocked(openPdfReference).mockResolvedValueOnce({
+      referenceId: "pdf-ref-1",
+      pageCount: 3,
+      name: "scan.pdf",
+    });
+    const setReferenceDocument = vi.fn();
+
+    const { result } = renderHook(() =>
+      useReferenceCompareActions({
+        ...baseOptions(),
+        setReferenceDocument,
+      }),
+    );
+
+    await act(async () => {
+      await result.current.openPathAsReference("/ws/scan.pdf");
+    });
+
+    expect(openPdfReference).toHaveBeenCalledWith("/ws/scan.pdf");
+    expect(setReferenceDocument).toHaveBeenCalledWith(
+      {
+        kind: "pdf",
+        path: "/ws/scan.pdf",
+        name: "scan.pdf",
+        pageCount: 3,
+        referenceId: "pdf-ref-1",
+      },
+      { origin: "manual", linkedEditorSessionId: null },
+    );
+  });
+
+  it("opens an image as a reference without switching editor tab", async () => {
+    vi.mocked(openImageFile).mockResolvedValueOnce({
+      path: "/tmp/cover.png",
+      name: "cover.png",
+      dataUrl: "data:image/png;base64,aaa",
+      size: 12,
+    });
+    const setReferenceDocument = vi.fn();
+
+    const { result } = renderHook(() =>
+      useReferenceCompareActions({
+        ...baseOptions(),
+        workspaceRootPath: null,
+        setReferenceDocument,
+      }),
+    );
+
+    await act(async () => {
+      await result.current.openPathAsReference("/tmp/cover.png");
+    });
+
+    expect(setReferenceDocument).toHaveBeenCalledWith(
+      {
+        kind: "image",
+        path: "/tmp/cover.png",
+        name: "cover.png",
+        url: "data:image/png;base64,aaa",
+        size: 12,
+      },
+      { origin: "manual", linkedEditorSessionId: null },
+    );
   });
 
   it("routes same-file open to buffer-vs-disk review", async () => {
@@ -98,18 +180,15 @@ describe("useReferenceCompareActions", () => {
 
     const { result } = renderHook(() =>
       useReferenceCompareActions({
+        ...baseOptions(),
         activeTab: tab,
-        clearReferenceCompare: vi.fn(),
-        menuLanguage: "ja",
         requestReviewTabAgainstDisk,
-        setGlobalError: vi.fn(),
         setReferenceDocument,
-        setStatus: vi.fn(),
       }),
     );
 
     await act(async () => {
-      await result.current.openTextPathAsReference("/ws/a.md");
+      await result.current.openPathAsReference("/ws/a.md");
     });
 
     expect(requestReviewTabAgainstDisk).toHaveBeenCalledWith(tab);
@@ -117,24 +196,50 @@ describe("useReferenceCompareActions", () => {
     expect(openTextFile).not.toHaveBeenCalled();
   });
 
-  it("rejects non-text reference types in R1", async () => {
+  it("releases the PDF handle when closing a PDF reference", async () => {
+    const clearReferenceCompare = vi.fn();
+    const { result } = renderHook(() =>
+      useReferenceCompareActions({
+        ...baseOptions(),
+        clearReferenceCompare,
+        referenceCompare: {
+          reference: {
+            kind: "pdf",
+            path: "/ws/a.pdf",
+            name: "a.pdf",
+            pageCount: 2,
+            referenceId: "pdf-ref-9",
+          },
+          origin: "manual",
+          linkedEditorSessionId: null,
+          followMode: "off",
+        },
+      }),
+    );
+
+    await act(async () => {
+      result.current.closeReferenceCompare();
+      await Promise.resolve();
+    });
+
+    expect(closePdfReference).toHaveBeenCalledWith("pdf-ref-9");
+    expect(clearReferenceCompare).toHaveBeenCalled();
+  });
+
+  it("rejects unsupported types", async () => {
     const setGlobalError = vi.fn();
     const setReferenceDocument = vi.fn();
 
     const { result } = renderHook(() =>
       useReferenceCompareActions({
-        activeTab: null,
-        clearReferenceCompare: vi.fn(),
-        menuLanguage: "ja",
-        requestReviewTabAgainstDisk: vi.fn(),
+        ...baseOptions(),
         setGlobalError,
         setReferenceDocument,
-        setStatus: vi.fn(),
       }),
     );
 
     await act(async () => {
-      await result.current.openTextPathAsReference("/ws/scan.pdf");
+      await result.current.openPathAsReference("/ws/a.docx");
     });
 
     expect(setReferenceDocument).not.toHaveBeenCalled();
@@ -142,7 +247,7 @@ describe("useReferenceCompareActions", () => {
   });
 
   it("opens a picker path as reference", async () => {
-    vi.mocked(pickMarkdownFile).mockResolvedValueOnce("/tmp/note.md");
+    vi.mocked(pickReferenceFile).mockResolvedValueOnce("/tmp/note.md");
     vi.mocked(openTextFile).mockResolvedValueOnce({
       path: "/tmp/note.md",
       name: "note.md",
@@ -158,13 +263,10 @@ describe("useReferenceCompareActions", () => {
 
     const { result } = renderHook(() =>
       useReferenceCompareActions({
+        ...baseOptions(),
         activeTab: null,
-        clearReferenceCompare: vi.fn(),
         menuLanguage: "en",
-        requestReviewTabAgainstDisk: vi.fn(),
-        setGlobalError: vi.fn(),
         setReferenceDocument,
-        setStatus: vi.fn(),
       }),
     );
 
@@ -172,7 +274,7 @@ describe("useReferenceCompareActions", () => {
       await result.current.openReferenceFile();
     });
 
-    expect(pickMarkdownFile).toHaveBeenCalled();
+    expect(pickReferenceFile).toHaveBeenCalled();
     expect(setReferenceDocument).toHaveBeenCalled();
   });
 });

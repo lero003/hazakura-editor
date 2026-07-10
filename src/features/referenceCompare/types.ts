@@ -2,7 +2,7 @@ import type { TextEncoding } from "../../types";
 
 /**
  * v1.7 Reference Compare — one read-only reference beside the editable editor.
- * R1 supports text/Markdown only; pdf/image kinds land in R2.
+ * R1: text/Markdown. R2: pdf (opaque handle + page raster) and image.
  */
 export type ReferenceDocument =
   | {
@@ -17,6 +17,8 @@ export type ReferenceDocument =
       path: string;
       name: string;
       pageCount: number;
+      /** Opaque Rust handle; frontend never sees staged paths. */
+      referenceId: string;
     }
   | {
       kind: "image";

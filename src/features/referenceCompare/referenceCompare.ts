@@ -1,10 +1,31 @@
 import { isComparableTextFile } from "../diff/diff";
-import { fileNameFromPath } from "../../lib/utils";
+import {
+  fileNameFromPath,
+  isSupportedImageFile,
+} from "../../lib/utils";
 import type { ReferenceDocument } from "./types";
 
-/** Text/Markdown extensions accepted as a read-only reference in R1. */
+/** Text/Markdown extensions accepted as a read-only reference. */
 export function isTextReferencePath(path: string): boolean {
   return isComparableTextFile(path);
+}
+
+export function isPdfReferencePath(path: string): boolean {
+  const ext = fileNameFromPath(path).split(".").at(-1)?.toLowerCase() ?? "";
+  return ext === "pdf";
+}
+
+export function isImageReferencePath(path: string): boolean {
+  return isSupportedImageFile(path);
+}
+
+/** Any type R2 can open as a reference (text, pdf, image). */
+export function isReferencePath(path: string): boolean {
+  return (
+    isTextReferencePath(path) ||
+    isPdfReferencePath(path) ||
+    isImageReferencePath(path)
+  );
 }
 
 /**
@@ -18,7 +39,10 @@ export function isSameFileAsActiveEditor(
   if (!activeEditorPath) {
     return false;
   }
-  return normalizePathForCompare(referencePath) === normalizePathForCompare(activeEditorPath);
+  return (
+    normalizePathForCompare(referencePath) ===
+    normalizePathForCompare(activeEditorPath)
+  );
 }
 
 export function normalizePathForCompare(path: string): string {
@@ -46,3 +70,18 @@ export function isTextReference(
 ): reference is Extract<ReferenceDocument, { kind: "text" }> {
   return reference.kind === "text";
 }
+
+export function isPdfReference(
+  reference: ReferenceDocument,
+): reference is Extract<ReferenceDocument, { kind: "pdf" }> {
+  return reference.kind === "pdf";
+}
+
+export function isImageReference(
+  reference: ReferenceDocument,
+): reference is Extract<ReferenceDocument, { kind: "image" }> {
+  return reference.kind === "image";
+}
+
+/** Default maxPixels budget for a page render (matches helper ceiling). */
+export const PDF_REFERENCE_DEFAULT_MAX_PIXELS = 4_000_000;

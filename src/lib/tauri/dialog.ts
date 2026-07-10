@@ -109,6 +109,34 @@ export async function pickImportSourceFile(): Promise<string | null> {
   return typeof selected === "string" ? selected : null;
 }
 
+/** User-selected text / PDF / image for Reference Compare (absolute path). */
+export async function pickReferenceFile(): Promise<string | null> {
+  const selected = await open({
+    multiple: false,
+    directory: false,
+    filters: [
+      {
+        name: "Reference",
+        extensions: [
+          "md",
+          "markdown",
+          "mdown",
+          "txt",
+          "text",
+          "pdf",
+          "png",
+          "jpg",
+          "jpeg",
+          "gif",
+          "webp",
+        ],
+      },
+    ],
+  });
+
+  return typeof selected === "string" ? selected : null;
+}
+
 export async function pickNewMarkdownFilePath(
   defaultPath: string | null,
 ): Promise<string | null> {

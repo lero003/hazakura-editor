@@ -12,9 +12,9 @@ Last reviewed: 2026-07-10 (v1.6 App Review passed; active lane → v1.7 Referenc
 - **v1.6 (`1.6.0`) closed and published.** Mac App Store App Review passed
   without issues (user-reported 2026-07-10). Release notes:
   `docs/releases/1.6.0-app-store-release-notes.md`. Do not reopen unless hotfix.
-- **Active lane: v1.7 Reference Compare** — **R0 + R1 source landed**.
-  R1: text/MD read-only reference beside editor (menu/palette/context).
-  Next: **R2** image + PDF reference readers using R0 raster.
+- **Active lane: v1.7 Reference Compare** — **R0–R2 source landed**.
+  Text/MD + PDF page reader + image reference beside editor.
+  Next: **R3** Import Assist automatic pair + page follow.
   Source: `docs/v1.7-reference-compare-design.md`, queue: `docs/current-work.md`.
 - **v1.5 (`1.5.0`) closed before 江戸彼岸.** Import Assist boundary remains
   historical for v1.6: `docs/import-assist-boundary-review.md`.
@@ -60,10 +60,10 @@ Last reviewed: 2026-07-10 (v1.6 App Review passed; active lane → v1.7 Referenc
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. **v1.7 R2 — image + PDF reference readers** using R0 `render_pdf_reference_page`
-   and existing image preview. Source:
+1. **v1.7 R3 — Import Assist automatic pair + page follow** after successful
+   import (sessionId link, page markers). Source:
    `docs/v1.7-reference-compare-design.md`.
-2. Then R3 (Import Assist automatic pair + page follow), R4 (confidence nav).
+2. Then R4 (confidence navigation + reliability / packaged smoke).
 3. Keep v1.6 closed unless a reproduced gap needs a hotfix. Historical quality
    notes: `docs/quality-inventory-v1.6.md`.
 4. Keep `@codemirror/view` at **6.43.2**. Do not tag, upload, or publish

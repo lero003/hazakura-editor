@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  isImageReferencePath,
+  isPdfReferencePath,
+  isReferencePath,
   isSameFileAsActiveEditor,
   isTextReferencePath,
   normalizePathForCompare,
@@ -9,11 +12,17 @@ import {
 import type { ReferenceDocument } from "./types";
 
 describe("referenceCompare helpers", () => {
-  it("accepts comparable text paths for R1 text references", () => {
+  it("classifies text, pdf, and image reference paths", () => {
     expect(isTextReferencePath("/ws/a.md")).toBe(true);
     expect(isTextReferencePath("/ws/note.TXT")).toBe(true);
-    expect(isTextReferencePath("/ws/a.pdf")).toBe(false);
-    expect(isTextReferencePath("/ws/photo.png")).toBe(false);
+    expect(isPdfReferencePath("/ws/a.pdf")).toBe(true);
+    expect(isPdfReferencePath("/ws/a.PDF")).toBe(true);
+    expect(isImageReferencePath("/ws/photo.png")).toBe(true);
+    expect(isImageReferencePath("/ws/a.webp")).toBe(true);
+    expect(isReferencePath("/ws/a.md")).toBe(true);
+    expect(isReferencePath("/ws/a.pdf")).toBe(true);
+    expect(isReferencePath("/ws/a.png")).toBe(true);
+    expect(isReferencePath("/ws/a.docx")).toBe(false);
   });
 
   it("detects same-file self-reference", () => {

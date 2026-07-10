@@ -106,13 +106,13 @@ describe("WorkspaceContextMenu Import Assist", () => {
     expect(onOpenAsReference).toHaveBeenCalledTimes(1);
   });
 
-  it("hides open-as-reference for PDF until R2", () => {
-    renderMenu();
-    expect(
-      screen.queryByRole("menuitem", {
-        name: "参照として開く",
-      }),
-    ).toBeNull();
+  it("offers open-as-reference for PDF files", () => {
+    const { onOpenAsReference } = renderMenu();
+    const item = screen.getByRole("menuitem", {
+      name: "参照として開く",
+    });
+    fireEvent.click(item);
+    expect(onOpenAsReference).toHaveBeenCalledTimes(1);
   });
 
   it("hides import for directories", () => {

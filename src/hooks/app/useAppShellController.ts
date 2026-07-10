@@ -762,10 +762,12 @@ export function useAppShellController() {
     activeTab,
     clearReferenceCompare,
     menuLanguage,
+    referenceCompare,
     requestReviewTabAgainstDisk,
     setGlobalError,
     setReferenceDocument,
     setStatus,
+    workspaceRootPath,
   });
 
   // section: auto-backup restore flow

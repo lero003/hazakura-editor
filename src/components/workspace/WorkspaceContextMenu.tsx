@@ -3,7 +3,7 @@ import { isJapaneseMenuLanguage } from "../../types";
 import { isKanaStyle } from "../../lib/locale/_helpers";
 import type { WorkspaceFileOpsCopy } from "../../lib/locale/workspaceFileOps";
 import { isImportAssistSourceFile } from "../../lib/utils";
-import { isTextReferencePath } from "../../features/referenceCompare/referenceCompare";
+import { isReferencePath } from "../../features/referenceCompare/referenceCompare";
 import type { ReferenceCompareCopy } from "../../lib/locale/referenceCompare";
 
 export function WorkspaceContextMenu({
@@ -69,9 +69,8 @@ export function WorkspaceContextMenu({
   // Import Assist: only user-selected PDF / image files (not dirs/root).
   const canImport =
     kind === "file" && isImportAssistSourceFile(anchor.name);
-  // v1.7 R1: Markdown/text as read-only reference (PDF/image in R2).
-  const canOpenAsReference =
-    kind === "file" && isTextReferencePath(anchor.name);
+  // v1.7 R2: Markdown/text, PDF, and common images as read-only reference.
+  const canOpenAsReference = kind === "file" && isReferencePath(anchor.name);
   const itemCount =
     7 +
     (canSendToAgent ? 1 : 0) +

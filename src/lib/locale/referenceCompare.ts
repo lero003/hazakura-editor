@@ -5,15 +5,23 @@ import { isKanaStyle } from "./_helpers";
 export type ReferenceCompareCopy = {
   closeReference: string;
   emptyEditorHint: string;
+  fitPage: string;
+  fitWidth: string;
+  nextPage: string;
   openAsReference: string;
   openReferenceFile: string;
+  pageLabel: string;
+  previousPage: string;
   readOnly: string;
   referenceLabel: string;
   replaceReference: string;
+  retryRender: string;
   showDiff: string;
   showEditor: string;
   showReference: string;
   unsupportedType: string;
+  zoomIn: string;
+  zoomOut: string;
 };
 
 export function referenceCompareCopy(
@@ -23,43 +31,68 @@ export function referenceCompareCopy(
     return {
       closeReference: "さんしょうを とぢる",
       emptyEditorHint: "へんしゅうする Markdown を ひらくか つくってください",
+      fitPage: "ページにあわせる",
+      fitWidth: "はばにあわせる",
+      nextPage: "つぎの ページ",
       openAsReference: "さんしょうとして ひらく",
       openReferenceFile: "さんしょうファイルを ひらく…",
+      pageLabel: "ページ",
+      previousPage: "まえの ページ",
       readOnly: "よみとりせんよう",
       referenceLabel: "さんしょう",
       replaceReference: "さんしょうを いれかえる…",
+      retryRender: "さいど ひょうじ",
       showDiff: "さぶんを みる",
       showEditor: "へんしゅう",
       showReference: "さんしょう",
-      unsupportedType: "この しゅるいは まだ さんしょうできません",
+      unsupportedType: "この しゅるいは さんしょうできません",
+      zoomIn: "拡大",
+      zoomOut: "縮小",
     };
   }
   if (isJapaneseMenuLanguage(menuLanguage)) {
     return {
       closeReference: "参照を閉じる",
       emptyEditorHint: "編集する Markdown を開くか作成してください",
+      fitPage: "ページに合わせる",
+      fitWidth: "幅に合わせる",
+      nextPage: "次のページ",
       openAsReference: "参照として開く",
       openReferenceFile: "参照ファイルを開く…",
+      pageLabel: "ページ",
+      previousPage: "前のページ",
       readOnly: "読み取り専用",
       referenceLabel: "参照",
       replaceReference: "参照を入れ替え…",
+      retryRender: "再表示",
       showDiff: "差分を見る",
       showEditor: "編集",
       showReference: "参照",
-      unsupportedType: "この種類はまだ参照として開けません",
+      unsupportedType: "この種類は参照として開けません",
+      zoomIn: "拡大",
+      zoomOut: "縮小",
     };
   }
   return {
     closeReference: "Close reference",
-    emptyEditorHint: "Open or create a Markdown file to edit beside the reference.",
+    emptyEditorHint:
+      "Open or create a Markdown file to edit beside the reference.",
+    fitPage: "Fit page",
+    fitWidth: "Fit width",
+    nextPage: "Next page",
     openAsReference: "Open as reference",
     openReferenceFile: "Open reference file…",
+    pageLabel: "Page",
+    previousPage: "Previous page",
     readOnly: "Read-only",
     referenceLabel: "Reference",
     replaceReference: "Replace reference…",
+    retryRender: "Retry",
     showDiff: "View diff",
     showEditor: "Edit",
     showReference: "Reference",
-    unsupportedType: "This file type cannot be opened as a reference yet.",
+    unsupportedType: "This file type cannot be opened as a reference.",
+    zoomIn: "Zoom in",
+    zoomOut: "Zoom out",
   };
 }

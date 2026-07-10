@@ -1,6 +1,8 @@
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import type { ReferenceCompareCopy } from "../../lib/locale/referenceCompare";
 import {
+  isImageReference,
+  isPdfReference,
   isTextReference,
   referenceDisplayName,
   referenceRoleLabel,
@@ -8,6 +10,7 @@ import {
 import type { ReferenceDocument } from "../../features/referenceCompare/types";
 import type { MenuLanguage } from "../../types";
 import { isJapaneseMenuLanguage } from "../../types";
+import { ReferencePdfPane } from "./ReferencePdfPane";
 
 type ReferenceTextPaneProps = {
   copy: ReferenceCompareCopy;
@@ -20,8 +23,7 @@ type ReferenceTextPaneProps = {
 };
 
 /**
- * R1 read-only text reference surface. PDF/image kinds show a placeholder
- * until R2 readers land.
+ * Read-only reference surface: text (R1), PDF page reader and image (R2).
  */
 export function ReferenceTextPane({
   copy,
@@ -60,7 +62,7 @@ export function ReferenceTextPane({
           <span className="reference-pane-readonly">{copy.readOnly}</span>
         </div>
         <div className="reference-pane-actions">
-          {showDiffEnabled && onShowDiff ? (
+          {showDiffEnabled && onShowDiff && isTextReference(reference) ? (
             <button
               type="button"
               className="reference-pane-action"
@@ -106,11 +108,30 @@ export function ReferenceTextPane({
               </div>
             ))}
           </pre>
-        ) : (
+        ) : null}
+        {isPdfReference(reference) ? (
+          <ReferencePdfPane copy={copy} reference={reference} />
+        ) : null}
+        {isImageReference(reference) ? (
+          <div
+            className="reference-image-stage"
+            data-testid="reference-image-stage"
+          >
+            <img
+              src={reference.url}
+              alt={name}
+              className="reference-image"
+              draggable={false}
+            />
+          </div>
+        ) : null}
+        {!isTextReference(reference) &&
+        !isPdfReference(reference) &&
+        !isImageReference(reference) ? (
           <div className="reference-placeholder" role="status">
             {copy.unsupportedType}
           </div>
-        )}
+        ) : null}
       </div>
     </section>
   );
