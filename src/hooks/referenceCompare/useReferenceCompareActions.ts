@@ -7,7 +7,10 @@ import {
   isSameFileAsActiveEditor,
   isTextReferencePath,
 } from "../../features/referenceCompare/referenceCompare";
-import type { ReferenceCompareState } from "../../features/referenceCompare/types";
+import type {
+  ReferenceCompareState,
+  ReferenceFollowMode,
+} from "../../features/referenceCompare/types";
 import {
   closePdfReference,
   createSecurityScopedBookmark,
@@ -21,6 +24,15 @@ import { fileNameFromPath, isPathInsideDirectory } from "../../lib/utils";
 import { referenceCompareCopy } from "../../lib/locale/referenceCompare";
 import type { EditorTab, MenuLanguage } from "../../types";
 
+type SetReferenceDocument = (
+  reference: ReferenceCompareState["reference"],
+  options?: {
+    origin?: ReferenceCompareState["origin"];
+    linkedEditorSessionId?: string | null;
+    followMode?: ReferenceFollowMode;
+  },
+) => void;
+
 type UseReferenceCompareActionsOptions = {
   activeTab: EditorTab | null;
   clearReferenceCompare: () => void;
@@ -28,13 +40,8 @@ type UseReferenceCompareActionsOptions = {
   referenceCompare: ReferenceCompareState | null;
   requestReviewTabAgainstDisk: (tab: EditorTab) => void;
   setGlobalError: Dispatch<SetStateAction<string | null>>;
-  setReferenceDocument: (
-    reference: ReferenceCompareState["reference"],
-    options?: {
-      origin?: ReferenceCompareState["origin"];
-      linkedEditorSessionId?: string | null;
-    },
-  ) => void;
+  setReferenceDocument: SetReferenceDocument;
+  setReferenceFollowMode: (mode: ReferenceFollowMode) => void;
   setStatus: Dispatch<SetStateAction<string>>;
   workspaceRootPath: string | null;
 };
@@ -58,6 +65,7 @@ export function useReferenceCompareActions({
   requestReviewTabAgainstDisk,
   setGlobalError,
   setReferenceDocument,
+  setReferenceFollowMode,
   setStatus,
   workspaceRootPath,
 }: UseReferenceCompareActionsOptions) {
@@ -191,11 +199,107 @@ export function useReferenceCompareActions({
     });
   }, [clearReferenceCompare, referenceCompare, setStatus]);
 
+  /**
+   * R3: After Import Assist succeeds, open the source as a linked reference
+   * beside the unsaved draft. Link key is editor sessionId.
+   */
+  const pairImportAssistReference = useCallback(
+    async (sourcePath: string, editorSessionId: string) => {
+      setGlobalError(null);
+      try {
+        await createSecurityScopedBookmark(sourcePath).catch(() => null);
+
+        if (isPdfReferencePath(sourcePath)) {
+          await releasePdfHandle(referenceCompare);
+          const opened = await openPdfReference(sourcePath);
+          setReferenceDocument(
+            {
+              kind: "pdf",
+              path: sourcePath,
+              name: opened.name || fileNameFromPath(sourcePath),
+              pageCount: opened.pageCount,
+              referenceId: opened.referenceId,
+            },
+            {
+              origin: "import-assist",
+              linkedEditorSessionId: editorSessionId,
+              followMode: "following",
+            },
+          );
+          setStatus(
+            `Import paired with reference: ${opened.name || fileNameFromPath(sourcePath)}`,
+          );
+          return true;
+        }
+
+        if (isImageReferencePath(sourcePath)) {
+          await releasePdfHandle(referenceCompare);
+          const image =
+            workspaceRootPath &&
+            isPathInsideDirectory(sourcePath, workspaceRootPath)
+              ? await openWorkspaceImage(workspaceRootPath, sourcePath)
+              : await openImageFile(sourcePath);
+          setReferenceDocument(
+            {
+              kind: "image",
+              path: image.path,
+              name: image.name || fileNameFromPath(image.path),
+              url: image.dataUrl,
+              size: image.size,
+            },
+            {
+              origin: "import-assist",
+              linkedEditorSessionId: editorSessionId,
+              followMode: "off",
+            },
+          );
+          setStatus(
+            `Import paired with reference: ${image.name || fileNameFromPath(image.path)}`,
+          );
+          return true;
+        }
+
+        // Non-pdf/image import sources: skip pairing without failing import.
+        return false;
+      } catch (err) {
+        // Import draft already exists — surface pairing failure without rollback.
+        setGlobalError(String(err));
+        setStatus("Import draft opened; reference pairing failed");
+        return false;
+      }
+    },
+    [
+      referenceCompare,
+      setGlobalError,
+      setReferenceDocument,
+      setStatus,
+      workspaceRootPath,
+    ],
+  );
+
+  const pauseReferenceFollow = useCallback(() => {
+    if (referenceCompare?.followMode === "following") {
+      setReferenceFollowMode("paused");
+    }
+  }, [referenceCompare?.followMode, setReferenceFollowMode]);
+
+  const resumeReferenceFollow = useCallback(() => {
+    if (
+      referenceCompare?.linkedEditorSessionId &&
+      referenceCompare.reference.kind === "pdf"
+    ) {
+      setReferenceFollowMode("following");
+    }
+  }, [referenceCompare, setReferenceFollowMode]);
+
   return {
     closeReferenceCompare,
     openPathAsReference,
     openReferenceFile,
     openTextPathAsReference,
+    pairImportAssistReference,
+    pauseReferenceFollow,
     referenceCopy: copy,
+    resumeReferenceFollow,
   };
 }

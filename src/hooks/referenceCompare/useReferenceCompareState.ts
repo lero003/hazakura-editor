@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import type {
   ReferenceCompareState,
   ReferenceDocument,
+  ReferenceFollowMode,
   ReferenceNarrowFocus,
 } from "../../features/referenceCompare/types";
 
@@ -12,10 +13,13 @@ export function useReferenceCompareState() {
     useState<ReferenceNarrowFocus>("editor");
   /** Share of the editor-preview grid width for the reference column (percent). */
   const [referenceColumnPercent, setReferenceColumnPercent] = useState(42);
+  /** Current PDF page (0-based) for the active PDF reference. */
+  const [pdfPageIndex, setPdfPageIndex] = useState(0);
 
   const clearReferenceCompare = useCallback(() => {
     setReferenceCompare(null);
     setReferenceNarrowFocus("editor");
+    setPdfPageIndex(0);
   }, []);
 
   const setReferenceDocument = useCallback(
@@ -24,27 +28,42 @@ export function useReferenceCompareState() {
       options: {
         origin?: ReferenceCompareState["origin"];
         linkedEditorSessionId?: string | null;
+        followMode?: ReferenceFollowMode;
       } = {},
     ) => {
       setReferenceCompare({
         reference,
         origin: options.origin ?? "manual",
         linkedEditorSessionId: options.linkedEditorSessionId ?? null,
-        followMode: "off",
+        followMode:
+          options.followMode ??
+          (options.linkedEditorSessionId && reference.kind === "pdf"
+            ? "following"
+            : "off"),
       });
       setReferenceNarrowFocus("reference");
+      setPdfPageIndex(0);
     },
     [],
   );
 
+  const setReferenceFollowMode = useCallback((followMode: ReferenceFollowMode) => {
+    setReferenceCompare((current) =>
+      current ? { ...current, followMode } : current,
+    );
+  }, []);
+
   return {
     clearReferenceCompare,
+    pdfPageIndex,
     referenceColumnPercent,
     referenceCompare,
     referenceNarrowFocus,
+    setPdfPageIndex,
     setReferenceColumnPercent,
     setReferenceCompare,
     setReferenceDocument,
+    setReferenceFollowMode,
     setReferenceNarrowFocus,
   };
 }

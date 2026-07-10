@@ -17,6 +17,12 @@ type PdfRef = Extract<ReferenceDocument, { kind: "pdf" }>;
 
 type ReferencePdfPaneProps = {
   copy: ReferenceCompareCopy;
+  /** 0-based controlled page index (parent owns follow + user nav). */
+  pageIndex: number;
+  onPageIndexChange: (page: number, source: "user" | "system") => void;
+  /** When true, show resume-follow control (user paused follow). */
+  followPaused?: boolean;
+  onResumeFollow?: () => void;
   reference: PdfRef;
 };
 
@@ -38,11 +44,18 @@ function maxPixelsForZoom(mode: ZoomMode): number {
 }
 
 /**
- * R2 read-only PDF page reader. Uses the R0 opaque handle + bounded PNG raster.
+ * R2/R3 read-only PDF page reader. Page index is controlled by the parent
+ * so Import Assist follow can drive it without fighting local state.
  */
-export function ReferencePdfPane({ copy, reference }: ReferencePdfPaneProps) {
+export function ReferencePdfPane({
+  copy,
+  pageIndex,
+  onPageIndexChange,
+  followPaused = false,
+  onResumeFollow,
+  reference,
+}: ReferencePdfPaneProps) {
   const statusId = useId();
-  const [pageIndex, setPageIndex] = useState(0);
   const [zoom, setZoom] = useState<ZoomMode>("fit-width");
   const [dataUrl, setDataUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -53,8 +66,6 @@ export function ReferencePdfPane({ copy, reference }: ReferencePdfPaneProps) {
   const safePage = Math.min(Math.max(0, pageIndex), pageCount - 1);
 
   useEffect(() => {
-    // Reset to first page when the reference handle changes.
-    setPageIndex(0);
     setZoom("fit-width");
   }, [reference.referenceId]);
 
@@ -87,12 +98,12 @@ export function ReferencePdfPane({ copy, reference }: ReferencePdfPaneProps) {
   }, [reference.referenceId, safePage, zoom, reloadToken]);
 
   const goPrev = useCallback(() => {
-    setPageIndex((current) => Math.max(0, current - 1));
-  }, []);
+    onPageIndexChange(Math.max(0, safePage - 1), "user");
+  }, [onPageIndexChange, safePage]);
 
   const goNext = useCallback(() => {
-    setPageIndex((current) => Math.min(pageCount - 1, current + 1));
-  }, [pageCount]);
+    onPageIndexChange(Math.min(pageCount - 1, safePage + 1), "user");
+  }, [onPageIndexChange, pageCount, safePage]);
 
   const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.key === "ArrowLeft" || event.key === "PageUp") {
@@ -144,6 +155,16 @@ export function ReferencePdfPane({ copy, reference }: ReferencePdfPaneProps) {
         >
           →
         </button>
+        {followPaused && onResumeFollow ? (
+          <button
+            type="button"
+            className="reference-pane-action is-active"
+            onClick={onResumeFollow}
+            data-testid="reference-resume-follow"
+          >
+            {copy.resumeFollow}
+          </button>
+        ) : null}
         <span className="reference-pdf-toolbar-spacer" />
         <button
           type="button"

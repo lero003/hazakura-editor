@@ -23,28 +23,22 @@ describe("ReferencePdfPane", () => {
     });
   });
 
-  it("renders page 1 and advances with next", async () => {
-    vi.mocked(renderPdfReferencePage)
-      .mockResolvedValueOnce({
-        referenceId: "pdf-ref-1",
-        page: 0,
-        width: 10,
-        height: 10,
-        mime: "image/png",
-        dataBase64: "page0",
-      })
-      .mockResolvedValueOnce({
-        referenceId: "pdf-ref-1",
-        page: 1,
-        width: 10,
-        height: 10,
-        mime: "image/png",
-        dataBase64: "page1",
-      });
+  it("renders the controlled page and reports user navigation", async () => {
+    const onPageIndexChange = vi.fn();
+    vi.mocked(renderPdfReferencePage).mockResolvedValue({
+      referenceId: "pdf-ref-1",
+      page: 0,
+      width: 10,
+      height: 10,
+      mime: "image/png",
+      dataBase64: "page0",
+    });
 
     render(
       <ReferencePdfPane
         copy={referenceCompareCopy("ja")}
+        pageIndex={0}
+        onPageIndexChange={onPageIndexChange}
         reference={{
           kind: "pdf",
           path: "/ws/a.pdf",
@@ -65,15 +59,33 @@ describe("ReferencePdfPane", () => {
     expect(screen.getByText(/ページ 1 \/ 2/)).toBeTruthy();
 
     fireEvent.click(screen.getByLabelText("次のページ"));
+    expect(onPageIndexChange).toHaveBeenCalledWith(1, "user");
+  });
+
+  it("shows resume follow when paused", async () => {
+    const onResumeFollow = vi.fn();
+    render(
+      <ReferencePdfPane
+        copy={referenceCompareCopy("ja")}
+        pageIndex={0}
+        onPageIndexChange={vi.fn()}
+        followPaused
+        onResumeFollow={onResumeFollow}
+        reference={{
+          kind: "pdf",
+          path: "/ws/a.pdf",
+          name: "a.pdf",
+          pageCount: 1,
+          referenceId: "pdf-ref-1",
+        }}
+      />,
+    );
 
     await waitFor(() => {
-      expect(renderPdfReferencePage).toHaveBeenCalledWith(
-        "pdf-ref-1",
-        1,
-        expect.any(Number),
-      );
+      expect(renderPdfReferencePage).toHaveBeenCalled();
     });
-    expect(screen.getByText(/ページ 2 \/ 2/)).toBeTruthy();
+    fireEvent.click(screen.getByTestId("reference-resume-follow"));
+    expect(onResumeFollow).toHaveBeenCalledTimes(1);
   });
 
   it("shows retry when render fails", async () => {
@@ -84,6 +96,8 @@ describe("ReferencePdfPane", () => {
     render(
       <ReferencePdfPane
         copy={referenceCompareCopy("ja")}
+        pageIndex={0}
+        onPageIndexChange={vi.fn()}
         reference={{
           kind: "pdf",
           path: "/ws/a.pdf",

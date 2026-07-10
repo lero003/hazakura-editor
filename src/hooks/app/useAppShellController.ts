@@ -40,6 +40,7 @@ import { useAppleAssistAvailability } from "../agent/useAppleAssistAvailability"
 import { useCommandPaletteController } from "../commandPalette/useCommandPaletteController";
 import { useCompareController } from "../diff/useCompareController";
 import { useReferenceCompareActions } from "../referenceCompare/useReferenceCompareActions";
+import { useImportPageFollow } from "../referenceCompare/useImportPageFollow";
 import { useDocumentSafetyActions } from "../document/useDocumentSafetyActions";
 import { useDocumentIoController } from "../document/useDocumentIoController";
 import { useDocumentCoreController } from "../document/useDocumentCoreController";
@@ -196,13 +197,26 @@ export function useAppShellController() {
   // section: v1.7 Reference Compare (read-only reference beside editor)
   const {
     clearReferenceCompare,
+    pdfPageIndex,
     referenceColumnPercent,
     referenceCompare,
     referenceNarrowFocus,
+    setPdfPageIndex,
     setReferenceColumnPercent,
     setReferenceDocument,
+    setReferenceFollowMode,
     setReferenceNarrowFocus,
   } = foundation;
+
+  // Filled after useReferenceCompareActions; Import Assist pairs through this ref
+  // so file-opening can run earlier in the hook order.
+  const pairImportAssistReferenceRef = useRef<
+    | ((
+        sourcePath: string,
+        editorSessionId: string,
+      ) => Promise<boolean | void>)
+    | null
+  >(null);
 
   // section: workspace shell state
   const {
@@ -567,6 +581,12 @@ export function useAppShellController() {
   } = useWorkspaceFileOpening({
     activeTab,
     clearImagePreview,
+    pairImportAssistReference: async (sourcePath, editorSessionId) => {
+      const pair = pairImportAssistReferenceRef.current;
+      if (pair) {
+        await pair(sourcePath, editorSessionId);
+      }
+    },
     menuLanguage,
     openImagePreview,
     rememberRecentFile,
@@ -757,7 +777,10 @@ export function useAppShellController() {
     closeReferenceCompare,
     openReferenceFile,
     openTextPathAsReference,
+    pairImportAssistReference,
+    pauseReferenceFollow,
     referenceCopy,
+    resumeReferenceFollow,
   } = useReferenceCompareActions({
     activeTab,
     clearReferenceCompare,
@@ -766,9 +789,30 @@ export function useAppShellController() {
     requestReviewTabAgainstDisk,
     setGlobalError,
     setReferenceDocument,
+    setReferenceFollowMode,
     setStatus,
     workspaceRootPath,
   });
+  pairImportAssistReferenceRef.current = pairImportAssistReference;
+
+  useImportPageFollow({
+    activeContents: activeTab?.contents ?? "",
+    activeTab,
+    cursorLine: selectionInfo.line,
+    referenceCompare,
+    setPdfPageIndex,
+    setReferenceFollowMode,
+  });
+
+  const handlePdfPageIndexChange = useCallback(
+    (page: number, source: "user" | "system") => {
+      setPdfPageIndex(page);
+      if (source === "user") {
+        pauseReferenceFollow();
+      }
+    },
+    [pauseReferenceFollow, setPdfPageIndex],
+  );
 
   // section: auto-backup restore flow
   //
@@ -1656,9 +1700,13 @@ export function useAppShellController() {
     openReferenceFile,
     openTextPathAsReference,
     openRootWorkspaceContextMenu,
+    pdfPageIndex,
+    onPdfPageIndexChange: handlePdfPageIndexChange,
+    onResumeReferenceFollow: resumeReferenceFollow,
     referenceColumnPercent,
     referenceCompare,
     referenceCopy,
+    referenceFollowPaused: referenceCompare?.followMode === "paused",
     referenceNarrowFocus,
     setReferenceColumnPercent,
     setReferenceNarrowFocus,

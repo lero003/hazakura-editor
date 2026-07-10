@@ -23,8 +23,8 @@ Last reviewed: 2026-07-10 (v1.6 App Review passed; active lane → v1.7 Referenc
   image / Markdown / text reference beside one editable Markdown document,
   including automatic source pairing after Import Assist. Design:
   `docs/v1.7-reference-compare-design.md`. **R0** (PDF helper + opaque handle)
-  **R0–R2** are in source (text/MD + PDF page reader + image reference).
-  Next is **R3** (Import Assist automatic pair + page follow).
+  **R0–R3** are in source (text/MD + PDF/image reference + Import Assist
+  pair/page-follow). Next is **R4** (confidence navigation, if ranges exist).
 - **v1.5 (`1.5.0`) is closed and was released before 江戸彼岸 (edohigan).**
   v1.5 covered Spellcheck settings, Reading Focus TOC density, CRT/Shinkai
   lineage polish, dead-code, deps hygiene, traffic-light, L Mode remount.

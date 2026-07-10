@@ -60,8 +60,8 @@ v1.7 deepens Import Assist into a general reference workflow. Product story:
 | **Done / source** | **R0 — PDF reference spike** | Helper `pdf_info` / `render_pdf_page`; Rust opaque handle (`open_pdf_reference` / `render_pdf_reference_page` / `close_pdf_reference`); main-window gate; path/page/pixel bounds; fixture+live helper smoke. No complete UI. |
 | **Done / source** | **R1 — Paired shell + text reference** | Reference state + left/right shell; Markdown/text open as read-only reference; context menu / palette entry; same-file → buffer-vs-disk; narrow-window 参照/編集 switch. |
 | **Done / source** | **R2 — Image + PDF reference readers** | PDF page UI via R0 handle; image reference via existing safe loaders; context/palette accept PDF+image; close releases PDF handle. Packaged sandbox matrix remains optional smoke. |
-| **Next** | **R3 — Import Assist automatic pair + page follow** | After import, source reference + unsaved draft; `sessionId` link; page markers drive follow. |
-| Later | R4 — Confidence navigation + reliability | Honest `要確認` only after bounded confidence ranges exist; packaged smoke. |
+| **Done / source** | **R3 — Import Assist automatic pair + page follow** | Import success opens linked PDF/image reference; follow keyed by `sessionId`; cursor → page; manual page pauses; resume control; missing markers → follow off. |
+| **Next** | **R4 — Confidence navigation + reliability** | Honest `要確認` only after bounded confidence ranges exist; packaged smoke. |
 
 Full interaction, security boundary, and non-goals:
 `docs/v1.7-reference-compare-design.md`.

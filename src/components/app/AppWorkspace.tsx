@@ -82,6 +82,10 @@ type AppWorkspaceProps = {
   clearCompareTarget: () => void;
   closeCompareView: (options?: { returnToEditor?: boolean }) => void;
   closeReferenceCompare: () => void;
+  onPdfPageIndexChange: (page: number, source: "user" | "system") => void;
+  onResumeReferenceFollow: () => void;
+  pdfPageIndex: number;
+  referenceFollowPaused: boolean;
   compareAnchor: CompareAnchor | null;
   compareTarget: CompareAnchor | null;
   compareView: CompareViewState | null;
@@ -194,6 +198,10 @@ export function AppWorkspace({
   clearCompareTarget,
   closeCompareView,
   closeReferenceCompare,
+  onPdfPageIndexChange,
+  onResumeReferenceFollow,
+  pdfPageIndex,
+  referenceFollowPaused,
   compareAnchor,
   compareTarget,
   compareView,
@@ -514,9 +522,13 @@ export function AppWorkspace({
             <div className="reference-compare-pane">
               <ReferenceTextPane
                 copy={referenceCopy}
+                followPaused={referenceFollowPaused}
                 menuLanguage={menuLanguage}
                 onClose={closeReferenceCompare}
+                onPdfPageIndexChange={onPdfPageIndexChange}
                 onReplace={() => void openReferenceFile()}
+                onResumeFollow={onResumeReferenceFollow}
+                pdfPageIndex={pdfPageIndex}
                 reference={referenceCompare.reference}
                 showDiffEnabled={false}
               />

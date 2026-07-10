@@ -7,6 +7,7 @@ export type ReferenceCompareCopy = {
   emptyEditorHint: string;
   fitPage: string;
   fitWidth: string;
+  followActive: string;
   nextPage: string;
   openAsReference: string;
   openReferenceFile: string;
@@ -15,6 +16,7 @@ export type ReferenceCompareCopy = {
   readOnly: string;
   referenceLabel: string;
   replaceReference: string;
+  resumeFollow: string;
   retryRender: string;
   showDiff: string;
   showEditor: string;
@@ -33,6 +35,7 @@ export function referenceCompareCopy(
       emptyEditorHint: "へんしゅうする Markdown を ひらくか つくってください",
       fitPage: "ページにあわせる",
       fitWidth: "はばにあわせる",
+      followActive: "ついじゅう ちゅう",
       nextPage: "つぎの ページ",
       openAsReference: "さんしょうとして ひらく",
       openReferenceFile: "さんしょうファイルを ひらく…",
@@ -41,6 +44,7 @@ export function referenceCompareCopy(
       readOnly: "よみとりせんよう",
       referenceLabel: "さんしょう",
       replaceReference: "さんしょうを いれかえる…",
+      resumeFollow: "ついじゅうを さいかい",
       retryRender: "さいど ひょうじ",
       showDiff: "さぶんを みる",
       showEditor: "へんしゅう",
@@ -56,6 +60,7 @@ export function referenceCompareCopy(
       emptyEditorHint: "編集する Markdown を開くか作成してください",
       fitPage: "ページに合わせる",
       fitWidth: "幅に合わせる",
+      followActive: "追従中",
       nextPage: "次のページ",
       openAsReference: "参照として開く",
       openReferenceFile: "参照ファイルを開く…",
@@ -64,6 +69,7 @@ export function referenceCompareCopy(
       readOnly: "読み取り専用",
       referenceLabel: "参照",
       replaceReference: "参照を入れ替え…",
+      resumeFollow: "追従を再開",
       retryRender: "再表示",
       showDiff: "差分を見る",
       showEditor: "編集",
@@ -79,6 +85,7 @@ export function referenceCompareCopy(
       "Open or create a Markdown file to edit beside the reference.",
     fitPage: "Fit page",
     fitWidth: "Fit width",
+    followActive: "Following",
     nextPage: "Next page",
     openAsReference: "Open as reference",
     openReferenceFile: "Open reference file…",
@@ -87,6 +94,7 @@ export function referenceCompareCopy(
     readOnly: "Read-only",
     referenceLabel: "Reference",
     replaceReference: "Replace reference…",
+    resumeFollow: "Resume follow",
     retryRender: "Retry",
     showDiff: "View diff",
     showEditor: "Edit",

@@ -58,6 +58,7 @@ const baseOptions = () => ({
   requestReviewTabAgainstDisk: vi.fn(),
   setGlobalError: vi.fn(),
   setReferenceDocument: vi.fn(),
+  setReferenceFollowMode: vi.fn(),
   setStatus: vi.fn(),
   workspaceRootPath: "/ws" as string | null,
 });
@@ -244,6 +245,44 @@ describe("useReferenceCompareActions", () => {
 
     expect(setReferenceDocument).not.toHaveBeenCalled();
     expect(String(setGlobalError.mock.calls.at(-1)?.[0])).toContain("参照");
+  });
+
+  it("pairs an import source PDF with the draft sessionId", async () => {
+    vi.mocked(openPdfReference).mockResolvedValueOnce({
+      referenceId: "pdf-ref-pair",
+      pageCount: 4,
+      name: "scan.pdf",
+    });
+    const setReferenceDocument = vi.fn();
+
+    const { result } = renderHook(() =>
+      useReferenceCompareActions({
+        ...baseOptions(),
+        setReferenceDocument,
+      }),
+    );
+
+    await act(async () => {
+      await result.current.pairImportAssistReference(
+        "/ws/scan.pdf",
+        "sess-import-1",
+      );
+    });
+
+    expect(setReferenceDocument).toHaveBeenCalledWith(
+      {
+        kind: "pdf",
+        path: "/ws/scan.pdf",
+        name: "scan.pdf",
+        pageCount: 4,
+        referenceId: "pdf-ref-pair",
+      },
+      {
+        origin: "import-assist",
+        linkedEditorSessionId: "sess-import-1",
+        followMode: "following",
+      },
+    );
   });
 
   it("opens a picker path as reference", async () => {

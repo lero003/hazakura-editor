@@ -49,6 +49,11 @@ type UseFileOpeningOptions = {
   clearImagePreview: () => void;
   menuLanguage: MenuLanguage;
   openImagePreview: (path: string) => Promise<unknown>;
+  /** R3: pair Import Assist source as a linked reference after draft open. */
+  pairImportAssistReference?: (
+    sourcePath: string,
+    editorSessionId: string,
+  ) => Promise<boolean | void>;
   refreshWorkspaceTree: () => Promise<void>;
   rememberRecentFile: (path: string) => void;
   setActiveTabId: Dispatch<SetStateAction<string | null>>;
@@ -66,6 +71,7 @@ export function useFileOpening({
   clearImagePreview,
   menuLanguage,
   openImagePreview,
+  pairImportAssistReference,
   refreshWorkspaceTree,
   rememberRecentFile,
   setActiveTabId,
@@ -368,6 +374,10 @@ export function useFileOpening({
         setActiveTabId(tab.id);
         clearImagePreview();
         setCompareView(null);
+        // R3: open source PDF/image as a linked read-only reference.
+        if (pairImportAssistReference) {
+          await pairImportAssistReference(path, tab.sessionId);
+        }
         // Unsaved by design (edit-before-save). Do not imply a failed disk write.
         const pageLabel =
           result.pageCount === 1 ? "1 page" : `${result.pageCount} pages`;
@@ -384,6 +394,7 @@ export function useFileOpening({
     [
       clearImagePreview,
       menuLanguage,
+      pairImportAssistReference,
       setActiveTabId,
       setCompareView,
       setGlobalError,

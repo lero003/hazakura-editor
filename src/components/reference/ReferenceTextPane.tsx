@@ -14,23 +14,31 @@ import { ReferencePdfPane } from "./ReferencePdfPane";
 
 type ReferenceTextPaneProps = {
   copy: ReferenceCompareCopy;
+  followPaused?: boolean;
   menuLanguage: MenuLanguage;
   onClose: () => void;
+  onPdfPageIndexChange?: (page: number, source: "user" | "system") => void;
   onReplace?: () => void;
+  onResumeFollow?: () => void;
   onShowDiff?: () => void;
+  pdfPageIndex?: number;
   reference: ReferenceDocument;
   showDiffEnabled?: boolean;
 };
 
 /**
- * Read-only reference surface: text (R1), PDF page reader and image (R2).
+ * Read-only reference surface: text (R1), PDF/image (R2), import follow (R3).
  */
 export function ReferenceTextPane({
   copy,
+  followPaused = false,
   menuLanguage,
   onClose,
+  onPdfPageIndexChange,
   onReplace,
+  onResumeFollow,
   onShowDiff,
+  pdfPageIndex = 0,
   reference,
   showDiffEnabled = false,
 }: ReferenceTextPaneProps) {
@@ -110,7 +118,14 @@ export function ReferenceTextPane({
           </pre>
         ) : null}
         {isPdfReference(reference) ? (
-          <ReferencePdfPane copy={copy} reference={reference} />
+          <ReferencePdfPane
+            copy={copy}
+            followPaused={followPaused}
+            onPageIndexChange={onPdfPageIndexChange ?? (() => undefined)}
+            onResumeFollow={onResumeFollow}
+            pageIndex={pdfPageIndex}
+            reference={reference}
+          />
         ) : null}
         {isImageReference(reference) ? (
           <div
