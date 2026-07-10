@@ -19,6 +19,9 @@ Last reviewed: 2026-07-10 (v1.6 App Review passed; active lane → v1.7 Referenc
   `参照ファイルを横に開く…`; workspace and open-tab context menus use
   `参照として横に開く`. The open-tab route reuses the existing read-only
   reference action and does not add a second editable buffer.
+  PDF page rasters use the existing CSP-allowed bounded `data:image/png` route;
+  do not restore `blob:` object URLs unless the app CSP is deliberately
+  re-reviewed, because the prior mismatch rendered only the image alt text.
   Source: `docs/v1.7-reference-compare-design.md`, queue: `docs/current-work.md`.
 - **v1.5 (`1.5.0`) closed before 江戸彼岸.** Import Assist boundary remains
   historical for v1.6: `docs/import-assist-boundary-review.md`.
@@ -131,7 +134,10 @@ Read it only for historical context.
 - Latest Reference Compare discovery slice passed `npm run test` (153 files /
   1335 tests), `cargo fmt --check`, `cargo test` (one unrelated PATH-sensitive
   Agent Workbench test passed on immediate isolated rerun), `npm run build`,
-  and `git diff --check`. Manual interaction smoke remains unclaimed.
+  and `git diff --check`. The PDF raster CSP fix is included in the latest
+  built `.app`; focused tests assert `data:image/png` and reject `blob:`.
+  Manual post-relaunch PDF image smoke remains unclaimed because the running
+  app had an unsaved import draft and was not terminated.
 - For docs-only work, run `git diff --check`.
 - For code changes, follow `docs/development-automation.md`.
 - For UI behavior changes, update or exercise `docs/smoke-checklist.md`.

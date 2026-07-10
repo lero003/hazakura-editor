@@ -11,7 +11,7 @@ import { nextReviewPage } from "../../features/referenceCompare/importPageMarker
 import type { ReferenceDocument } from "../../features/referenceCompare/types";
 import {
   localizePdfReferenceError,
-  pdfPageImageToObjectUrl,
+  pdfPageImageToDataUrl,
   renderPdfReferencePage,
   type PdfReferencePageImage,
 } from "../../lib/tauri/pdfReference";
@@ -39,7 +39,7 @@ type ReferencePdfPaneProps = {
 type ZoomMode = "fit-width" | "fit-page" | "100" | "150";
 
 type PageCacheEntry = {
-  objectUrl: string;
+  imageUrl: string;
   zoom: ZoomMode;
   /** Pixel width of the raster (used for true 150% CSS display). */
   width: number;
@@ -64,15 +64,7 @@ function maxPixelsForZoom(mode: ZoomMode): number {
   }
 }
 
-function revokeCacheEntry(entry: PageCacheEntry | undefined) {
-  if (!entry) return;
-  URL.revokeObjectURL(entry.objectUrl);
-}
-
 function clearPageCache(cache: Map<number, PageCacheEntry>) {
-  for (const entry of cache.values()) {
-    revokeCacheEntry(entry);
-  }
   cache.clear();
 }
 
@@ -132,7 +124,7 @@ export function ReferencePdfPane({
       cached.zoom === zoom &&
       cached.referenceId === reference.referenceId
     ) {
-      setPageUrl(cached.objectUrl);
+      setPageUrl(cached.imageUrl);
       setPageSize({ width: cached.width, height: cached.height });
       setError(null);
       setLoading(false);
@@ -163,15 +155,15 @@ export function ReferencePdfPane({
         );
         if (cancelled || generationRef.current !== generation) return;
         if (image.referenceId !== reference.referenceId) return;
-        const objectUrl = pdfPageImageToObjectUrl(image);
+        const imageUrl = pdfPageImageToDataUrl(image);
         rememberPage(cacheRef.current, safePage, {
-          objectUrl,
+          imageUrl,
           zoom,
           width: image.width,
           height: image.height,
           referenceId: reference.referenceId,
         });
-        setPageUrl(objectUrl);
+        setPageUrl(imageUrl);
         setPageSize({ width: image.width, height: image.height });
         setLoading(false);
         void prefetchAdjacent({
@@ -397,16 +389,11 @@ function rememberPage(
   page: number,
   entry: PageCacheEntry,
 ) {
-  const previous = cache.get(page);
-  if (previous && previous.objectUrl !== entry.objectUrl) {
-    revokeCacheEntry(previous);
-  }
   cache.delete(page);
   cache.set(page, entry);
   while (cache.size > PAGE_CACHE_MAX) {
     const oldest = cache.keys().next().value;
     if (oldest === undefined) break;
-    revokeCacheEntry(cache.get(oldest));
     cache.delete(oldest);
   }
 }
@@ -440,13 +427,10 @@ async function prefetchAdjacent(options: {
       );
       if (!isCurrent()) return;
       if (image.referenceId !== referenceId) return;
-      const objectUrl = pdfPageImageToObjectUrl(image);
-      if (!isCurrent()) {
-        URL.revokeObjectURL(objectUrl);
-        return;
-      }
+      const imageUrl = pdfPageImageToDataUrl(image);
+      if (!isCurrent()) return;
       rememberPage(cache, neighbor, {
-        objectUrl,
+        imageUrl,
         zoom,
         width: image.width,
         height: image.height,

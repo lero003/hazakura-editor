@@ -17,11 +17,11 @@ vi.mock("../../lib/tauri/pdfReference", async () => {
   return {
     ...actual,
     renderPdfReferencePage: vi.fn(),
-    pdfPageImageToObjectUrl: (image: {
+    pdfPageImageToDataUrl: (image: {
       mime: string;
       dataBase64: string;
       referenceId: string;
-    }) => `blob:mock-${image.referenceId}-${image.dataBase64}`,
+    }) => `data:${image.mime};base64,${image.dataBase64}`,
   };
 });
 
@@ -214,7 +214,9 @@ describe("ReferencePdfPane", () => {
     );
 
     await waitFor(() => {
-      expect(getByRole("img")).toBeTruthy();
+      const image = getByRole("img") as HTMLImageElement;
+      expect(image.src).toContain("data:image/png;base64,page-0");
+      expect(image.src).not.toContain("blob:");
     });
 
     fireEvent.click(getByRole("button", { name: "拡大" }));

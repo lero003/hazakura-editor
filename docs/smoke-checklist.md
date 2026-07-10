@@ -603,6 +603,10 @@ recovered state separately where relevant.
     supported workspace file and an open text tab; confirm both show
     `参照として横に開く` and open the selected file as the read-only left
     reference without replacing the active editable Markdown.
+21. **Reference PDF raster**: import a multi-page PDF and confirm the left
+    reference shows the actual page image rather than only the filename/page
+    alt text. Exercise next/previous page, fit width, fit page, and 150%; keep
+    the existing CSP unchanged (`data:` allowed, `blob:` not required).
 
 ### v1.1 Continuity Evidence (2026-06-29)
 
