@@ -61,7 +61,7 @@ v1.7 deepens Import Assist into a general reference workflow. Product story:
 | **Done / source** | **R1 — Paired shell + text reference** | Reference state + left/right shell; Markdown/text open as read-only reference; context menu / palette entry; same-file → buffer-vs-disk; narrow-window 参照/編集 switch. |
 | **Done / source** | **R2 — Image + PDF reference readers** | PDF page UI via R0 handle; image reference via existing safe loaders; context/palette accept PDF+image; close releases PDF handle. Packaged sandbox matrix remains optional smoke. |
 | **Done / source** | **R3 — Import Assist automatic pair + page follow** | Import success opens linked PDF/image reference; follow keyed by `sessionId`; cursor → page; manual page pauses; resume control; missing markers → follow off. |
-| **Next** | **R4 — Confidence navigation + reliability** | Honest `要確認` only after bounded confidence ranges exist; packaged smoke. |
+| **Done / source** | **R4 — Confidence navigation + reliability** | Page-level OCR confidence markers (advisory only, not char ranges); 要確認 prev/next; empty pages flagged; adjacent-page cache (no full preload); PDF handle cleanup on shell unmount. |
 
 Full interaction, security boundary, and non-goals:
 `docs/v1.7-reference-compare-design.md`.

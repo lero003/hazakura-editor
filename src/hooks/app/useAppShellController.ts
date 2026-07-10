@@ -29,6 +29,7 @@ import {
   type SetStateAction,
 } from "react";
 import {
+  closePdfReference,
   openAgentWindow,
   openAppleAssistWindow,
   toggleAppleAssistWindow,
@@ -813,6 +814,21 @@ export function useAppShellController() {
     },
     [pauseReferenceFollow, setPdfPageIndex],
   );
+
+  // R4 reliability: release the PDF helper handle if the shell unmounts
+  // without an explicit close (app quit / route teardown).
+  const referenceCompareRef = useRef(referenceCompare);
+  referenceCompareRef.current = referenceCompare;
+  useEffect(() => {
+    return () => {
+      const current = referenceCompareRef.current;
+      if (current?.reference.kind === "pdf") {
+        void closePdfReference(current.reference.referenceId).catch(() => {
+          // Best-effort cleanup on unmount.
+        });
+      }
+    };
+  }, []);
 
   // section: auto-backup restore flow
   //

@@ -5,10 +5,30 @@
 
 use std::fmt::Write as _;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ImportPageText {
     pub index: usize,
     pub text: String,
+    /// Per-page OCR confidence when known (0.0–1.0). None for text-layer extract.
+    pub confidence: Option<f64>,
+}
+
+impl ImportPageText {
+    pub fn new(index: usize, text: impl Into<String>) -> Self {
+        Self {
+            index,
+            text: text.into(),
+            confidence: None,
+        }
+    }
+
+    pub fn with_confidence(index: usize, text: impl Into<String>, confidence: f64) -> Self {
+        Self {
+            index,
+            text: text.into(),
+            confidence: Some(confidence.clamp(0.0, 1.0)),
+        }
+    }
 }
 
 /// Build a Markdown draft from ordered page texts.
@@ -43,13 +63,31 @@ pub fn assemble_import_markdown_draft(source_label: &str, pages: &[ImportPageTex
 
     let mut body_buf = String::new();
     for page in pages {
-        let _ = writeln!(
-            body_buf,
-            "<!-- hazakura:import-page index={} -->",
-            page.index
-        );
-        let _ = writeln!(body_buf);
+        // R4: optional page-level confidence is advisory only (not char ranges).
+        // Empty pages get confidence=0 so they surface in 要確認 navigation.
         let body = normalize_page_text(&page.text);
+        let confidence = if body.is_empty() {
+            Some(0.0)
+        } else {
+            page.confidence
+        };
+        match confidence {
+            Some(c) => {
+                let _ = writeln!(
+                    body_buf,
+                    "<!-- hazakura:import-page index={} confidence={:.3} -->",
+                    page.index, c
+                );
+            }
+            None => {
+                let _ = writeln!(
+                    body_buf,
+                    "<!-- hazakura:import-page index={} -->",
+                    page.index
+                );
+            }
+        }
+        let _ = writeln!(body_buf);
         if body.is_empty() {
             let _ = writeln!(body_buf, "_（このページのテキストは空です）_");
         } else {
@@ -433,23 +471,27 @@ mod tests {
         let md = assemble_import_markdown_draft(
             "scan.pdf",
             &[
-                ImportPageText {
-                    index: 0,
-                    text: "Hello\n\n\n\nWorld".into(),
-                },
-                ImportPageText {
-                    index: 1,
-                    text: String::new(),
-                },
+                ImportPageText::new(0, "Hello\n\n\n\nWorld"),
+                ImportPageText::new(1, ""),
             ],
         );
         assert!(md.contains("hazakura:import source=scan.pdf pages=2"));
         assert!(md.contains("hazakura:import-page index=0"));
+        assert!(md.contains("hazakura:import-page index=1 confidence=0.000"));
         assert!(md.contains("Hello"));
         assert!(md.contains("World"));
         assert!(md.contains("このページのテキストは空"));
         // Collapse excessive blank lines inside a page.
         assert!(!md.contains("Hello\n\n\n\nWorld"));
+    }
+
+    #[test]
+    fn emits_ocr_confidence_on_page_markers() {
+        let md = assemble_import_markdown_draft(
+            "scan.pdf",
+            &[ImportPageText::with_confidence(0, "low conf text", 0.41)],
+        );
+        assert!(md.contains("hazakura:import-page index=0 confidence=0.410"));
     }
 
     #[test]
@@ -462,10 +504,7 @@ mod tests {
     fn annotates_when_extracted_text_contains_image_markdown() {
         let md = assemble_import_markdown_draft(
             "doc.pdf",
-            &[ImportPageText {
-                index: 0,
-                text: "図1\n\n![図](assets/fig1.png)\n\n続き".into(),
-            }],
+            &[ImportPageText::new(0, "図1\n\n![図](assets/fig1.png)\n\n続き")],
         );
         assert!(md.contains("hazakura:import-images-not-extracted"));
         assert!(md.contains("画像について"));

@@ -62,6 +62,35 @@ describe("ReferencePdfPane", () => {
     expect(onPageIndexChange).toHaveBeenCalledWith(1, "user");
   });
 
+  it("offers advisory review navigation without claiming correctness", async () => {
+    const onPageIndexChange = vi.fn();
+    render(
+      <ReferencePdfPane
+        copy={referenceCompareCopy("ja")}
+        pageIndex={0}
+        onPageIndexChange={onPageIndexChange}
+        reviewPageIndices={[1, 2]}
+        reference={{
+          kind: "pdf",
+          path: "/ws/a.pdf",
+          name: "a.pdf",
+          pageCount: 3,
+          referenceId: "pdf-ref-1",
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(renderPdfReferencePage).toHaveBeenCalled();
+    });
+    expect(screen.getByTestId("reference-review-status").textContent).toContain(
+      "要確認",
+    );
+    expect(screen.getByText(/目安です/)).toBeTruthy();
+    fireEvent.click(screen.getByTestId("reference-next-review"));
+    expect(onPageIndexChange).toHaveBeenCalledWith(1, "user");
+  });
+
   it("shows resume follow when paused", async () => {
     const onResumeFollow = vi.fn();
     render(

@@ -81,6 +81,8 @@ struct PdfPageValue {
     text: String,
     #[allow(dead_code)]
     char_count: usize,
+    /// Optional per-page OCR confidence from the helper.
+    confidence: Option<f64>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -184,7 +186,9 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
                 });
             }
             Ok(_) => {
-                return Err("PDF has no extractable text and page OCR returned empty text.".into());
+                return Err(
+                    "PDF has no extractable text and page OCR returned empty text.".into(),
+                );
             }
             Err(err) => return Err(err),
         }
@@ -234,10 +238,11 @@ pub(crate) fn import_source_path_to_markdown(path: &Path) -> Result<ImportDraftR
             "ocr_text" => {
                 let value: OcrTextValue = serde_json::from_value(envelope.value)
                     .map_err(|e| format!("Invalid ocr_text payload: {e}"))?;
-                let pages = [ImportPageText {
-                    index: 0,
-                    text: value.text,
-                }];
+                let pages = [ImportPageText::with_confidence(
+                    0,
+                    value.text,
+                    value.confidence,
+                )];
                 // Q-IMP-4: do not open an empty-marker draft when OCR found nothing.
                 if !pages_have_meaningful_text(&pages) {
                     return Err(
@@ -341,9 +346,9 @@ fn pages_from_helper_action(
             let pages: Vec<ImportPageText> = value
                 .pages
                 .into_iter()
-                .map(|p| ImportPageText {
-                    index: p.index,
-                    text: p.text,
+                .map(|p| match p.confidence {
+                    Some(c) => ImportPageText::with_confidence(p.index, p.text, c),
+                    None => ImportPageText::new(p.index, p.text),
                 })
                 .collect();
             if pages_have_meaningful_text(&pages) {
@@ -701,14 +706,8 @@ mod tests {
     #[test]
     fn empty_ocr_pages_are_not_meaningful() {
         assert!(!pages_have_meaningful_text(&[]));
-        assert!(!pages_have_meaningful_text(&[ImportPageText {
-            index: 0,
-            text: "  \n\t".into(),
-        }]));
-        assert!(pages_have_meaningful_text(&[ImportPageText {
-            index: 0,
-            text: "あ".into(),
-        }]));
+        assert!(!pages_have_meaningful_text(&[ImportPageText::new(0, "  \n\t")]));
+        assert!(pages_have_meaningful_text(&[ImportPageText::new(0, "あ")]));
     }
 
     /// Q-IMP-8: hanging helper must not block past the wall-clock budget.

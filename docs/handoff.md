@@ -12,10 +12,9 @@ Last reviewed: 2026-07-10 (v1.6 App Review passed; active lane → v1.7 Referenc
 - **v1.6 (`1.6.0`) closed and published.** Mac App Store App Review passed
   without issues (user-reported 2026-07-10). Release notes:
   `docs/releases/1.6.0-app-store-release-notes.md`. Do not reopen unless hotfix.
-- **Active lane: v1.7 Reference Compare** — **R0–R3 source landed**.
-  Text/MD + PDF/image reference; Import Assist auto-pairs source with draft
-  and PDF page-follow via `sessionId` + import-page markers.
-  Next: **R4** confidence navigation + reliability.
+- **Active lane: v1.7 Reference Compare** — **R0–R4 source landed**.
+  Text/MD + PDF/image reference; Import Assist pair/follow; page-level
+  advisory 要確認 from OCR confidence (never per-char claims).
   Source: `docs/v1.7-reference-compare-design.md`, queue: `docs/current-work.md`.
 - **v1.5 (`1.5.0`) closed before 江戸彼岸.** Import Assist boundary remains
   historical for v1.6: `docs/import-assist-boundary-review.md`.
@@ -61,10 +60,11 @@ Last reviewed: 2026-07-10 (v1.6 App Review passed; active lane → v1.7 Referenc
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. **v1.7 R4 — confidence navigation + reliability** (only with real
-   bounded confidence ranges; packaged smoke). Source:
-   `docs/v1.7-reference-compare-design.md`.
-2. Do not invent per-range confidence from aggregate OCR scores.
+1. Packaged App Store smoke for Reference Compare (PDF/image open, import
+   pair, follow, 要確認) remains useful product proof.
+2. Do not invent per-character confidence highlights from aggregate scores.
+3. Optional polish: File メニュー entry for 参照, virtualized long text
+   reference, `差分を見る` wiring for text↔text.
 3. Keep v1.6 closed unless a reproduced gap needs a hotfix. Historical quality
    notes: `docs/quality-inventory-v1.6.md`.
 4. Keep `@codemirror/view` at **6.43.2**. Do not tag, upload, or publish

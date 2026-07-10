@@ -30,9 +30,11 @@ pub fn split_pdf_text_into_pages(raw: &str) -> Vec<ImportPageText> {
     chunks
         .into_iter()
         .enumerate()
-        .map(|(index, chunk)| ImportPageText {
-            index,
-            text: chunk.trim_matches(|c| c == '\n' || c == ' ').to_string(),
+        .map(|(index, chunk)| {
+            ImportPageText::new(
+                index,
+                chunk.trim_matches(|c| c == '\n' || c == ' ').to_string(),
+            )
         })
         .collect()
 }
@@ -106,19 +108,10 @@ mod tests {
 
     #[test]
     fn prefers_cjk_rich_extract() {
-        let weak = vec![ImportPageText {
-            index: 0,
-            text: "1. Homebrew\n/bin/bash -c\n2.\nAntigravity".into(),
-        }];
+        let weak = vec![ImportPageText::new(0, "1. Homebrew\n/bin/bash -c\n2.\nAntigravity")];
         let strong = vec![
-            ImportPageText {
-                index: 0,
-                text: "新マシンセットアップメモ\n1. Homebrew インストール".into(),
-            },
-            ImportPageText {
-                index: 1,
-                text: "3. macOS セキュリティ設定".into(),
-            },
+            ImportPageText::new(0, "新マシンセットアップメモ\n1. Homebrew インストール"),
+            ImportPageText::new(1, "3. macOS セキュリティ設定"),
         ];
         let chosen = prefer_better_pages(weak.clone(), strong.clone());
         assert_eq!(chosen.len(), 2);

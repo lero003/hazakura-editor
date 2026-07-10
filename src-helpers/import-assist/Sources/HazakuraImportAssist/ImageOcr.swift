@@ -24,8 +24,18 @@ func ocrPdfPages(path: String, languages: [String]) throws -> PdfTextValue {
     #if FIXTURE_MODE
     _ = try requireExistingFile(path: path)
     let pages = [
-        PdfPageText(index: 0, text: "Fixture OCR PDF page 1.", charCount: 24),
-        PdfPageText(index: 1, text: "Fixture OCR PDF page 2.", charCount: 24),
+        PdfPageText(
+            index: 0,
+            text: "Fixture OCR PDF page 1.",
+            charCount: 24,
+            confidence: 0.99
+        ),
+        PdfPageText(
+            index: 1,
+            text: "Fixture OCR PDF page 2.",
+            charCount: 24,
+            confidence: 0.40
+        ),
     ]
     return PdfTextValue(pages: pages, pageCount: pages.count)
     #else
@@ -39,7 +49,9 @@ func ocrPdfPages(path: String, languages: [String]) throws -> PdfTextValue {
     let maxPages = min(document.pageCount, 40)
     for index in 0 ..< maxPages {
         guard let page = document.page(at: index) else {
-            pages.append(PdfPageText(index: index, text: "", charCount: 0))
+            pages.append(
+                PdfPageText(index: index, text: "", charCount: 0, confidence: 0)
+            )
             continue
         }
         let cgImage = try renderPdfPage(page)
@@ -48,7 +60,8 @@ func ocrPdfPages(path: String, languages: [String]) throws -> PdfTextValue {
             PdfPageText(
                 index: index,
                 text: ocr.text,
-                charCount: ocr.text.count
+                charCount: ocr.text.count,
+                confidence: ocr.confidence
             )
         )
     }

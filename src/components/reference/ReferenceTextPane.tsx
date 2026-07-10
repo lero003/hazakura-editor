@@ -23,11 +23,14 @@ type ReferenceTextPaneProps = {
   onShowDiff?: () => void;
   pdfPageIndex?: number;
   reference: ReferenceDocument;
+  /** R4 advisory review pages (0-based); empty when no confidence data. */
+  reviewPageIndices?: number[];
   showDiffEnabled?: boolean;
 };
 
 /**
- * Read-only reference surface: text (R1), PDF/image (R2), import follow (R3).
+ * Read-only reference surface: text (R1), PDF/image (R2), import follow (R3),
+ * advisory review nav (R4).
  */
 export function ReferenceTextPane({
   copy,
@@ -40,6 +43,7 @@ export function ReferenceTextPane({
   onShowDiff,
   pdfPageIndex = 0,
   reference,
+  reviewPageIndices = [],
   showDiffEnabled = false,
 }: ReferenceTextPaneProps) {
   const language = isJapaneseMenuLanguage(menuLanguage) ? "ja" : "en";
@@ -125,6 +129,7 @@ export function ReferenceTextPane({
             onResumeFollow={onResumeFollow}
             pageIndex={pdfPageIndex}
             reference={reference}
+            reviewPageIndices={reviewPageIndices}
           />
         ) : null}
         {isImageReference(reference) ? (

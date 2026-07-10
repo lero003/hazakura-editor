@@ -64,6 +64,7 @@ import { ReferenceTextPane } from "../reference/ReferenceTextPane";
 import type { ReferenceCompareState } from "../../features/referenceCompare/types";
 import type { ReferenceCompareCopy } from "../../lib/locale/referenceCompare";
 import type { ReferenceNarrowFocus } from "../../features/referenceCompare/types";
+import { reviewPageIndices as collectReviewPageIndices } from "../../features/referenceCompare/importPageMarkers";
 
 const EBookPane = lazy(() => import("../editor/preview/EBookPane"));
 
@@ -309,6 +310,24 @@ export function AppWorkspace({
   const isWorkspaceSidebarCollapsed =
     workspaceSidebarCollapsed && !editorSettings.lModeEnabled;
   const activeDocumentKey = activeTab ? documentViewStateKey(activeTab) : null;
+  // R4: advisory page-level review targets only when OCR confidence is present.
+  const importReviewPageIndices = useMemo(() => {
+    if (!referenceCompare || referenceCompare.origin !== "import-assist") {
+      return [] as number[];
+    }
+    if (referenceCompare.reference.kind !== "pdf") {
+      return [] as number[];
+    }
+    if (
+      referenceCompare.linkedEditorSessionId &&
+      activeTab?.sessionId !== referenceCompare.linkedEditorSessionId
+    ) {
+      // Still allow review nav on the draft contents when user switched tabs?
+      // Keep list from active contents only when linked tab is active.
+      return [] as number[];
+    }
+    return collectReviewPageIndices(activeContents);
+  }, [activeContents, activeTab?.sessionId, referenceCompare]);
   const previousDocumentIdentity = previousDocumentIdentityRef.current;
   const saveAsPreviousKey =
     activeTab &&
@@ -530,6 +549,7 @@ export function AppWorkspace({
                 onResumeFollow={onResumeReferenceFollow}
                 pdfPageIndex={pdfPageIndex}
                 reference={referenceCompare.reference}
+                reviewPageIndices={importReviewPageIndices}
                 showDiffEnabled={false}
               />
             </div>

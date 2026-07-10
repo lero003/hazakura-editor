@@ -9,15 +9,19 @@ export type ReferenceCompareCopy = {
   fitWidth: string;
   followActive: string;
   nextPage: string;
+  nextReview: string;
   openAsReference: string;
   openReferenceFile: string;
   pageLabel: string;
   previousPage: string;
+  previousReview: string;
   readOnly: string;
   referenceLabel: string;
   replaceReference: string;
   resumeFollow: string;
   retryRender: string;
+  reviewAdvisory: string;
+  reviewLabel: string;
   showDiff: string;
   showEditor: string;
   showReference: string;
@@ -37,15 +41,19 @@ export function referenceCompareCopy(
       fitWidth: "はばにあわせる",
       followActive: "ついじゅう ちゅう",
       nextPage: "つぎの ページ",
+      nextReview: "つぎの ようかくにん",
       openAsReference: "さんしょうとして ひらく",
       openReferenceFile: "さんしょうファイルを ひらく…",
       pageLabel: "ページ",
       previousPage: "まえの ページ",
+      previousReview: "まえの ようかくにん",
       readOnly: "よみとりせんよう",
       referenceLabel: "さんしょう",
       replaceReference: "さんしょうを いれかえる…",
       resumeFollow: "ついじゅうを さいかい",
       retryRender: "さいど ひょうじ",
+      reviewAdvisory: "めやす（せいかく とは かぎりません）",
+      reviewLabel: "ようかくにん",
       showDiff: "さぶんを みる",
       showEditor: "へんしゅう",
       showReference: "さんしょう",
@@ -62,15 +70,19 @@ export function referenceCompareCopy(
       fitWidth: "幅に合わせる",
       followActive: "追従中",
       nextPage: "次のページ",
+      nextReview: "次の要確認",
       openAsReference: "参照として開く",
       openReferenceFile: "参照ファイルを開く…",
       pageLabel: "ページ",
       previousPage: "前のページ",
+      previousReview: "前の要確認",
       readOnly: "読み取り専用",
       referenceLabel: "参照",
       replaceReference: "参照を入れ替え…",
       resumeFollow: "追従を再開",
       retryRender: "再表示",
+      reviewAdvisory: "目安です（正確とは限りません）",
+      reviewLabel: "要確認",
       showDiff: "差分を見る",
       showEditor: "編集",
       showReference: "参照",
@@ -87,15 +99,19 @@ export function referenceCompareCopy(
     fitWidth: "Fit width",
     followActive: "Following",
     nextPage: "Next page",
+    nextReview: "Next to review",
     openAsReference: "Open as reference",
     openReferenceFile: "Open reference file…",
     pageLabel: "Page",
     previousPage: "Previous page",
+    previousReview: "Previous to review",
     readOnly: "Read-only",
     referenceLabel: "Reference",
     replaceReference: "Replace reference…",
     resumeFollow: "Resume follow",
     retryRender: "Retry",
+    reviewAdvisory: "Advisory only — not a correctness claim",
+    reviewLabel: "Review",
     showDiff: "View diff",
     showEditor: "Edit",
     showReference: "Reference",

@@ -59,6 +59,27 @@ struct PdfPageText: Encodable {
     let index: Int
     let text: String
     let charCount: Int
+    /// Per-page Vision OCR confidence when known. Nil for text-layer extract.
+    let confidence: Double?
+
+    init(index: Int, text: String, charCount: Int, confidence: Double? = nil) {
+        self.index = index
+        self.text = text
+        self.charCount = charCount
+        self.confidence = confidence
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case index, text, charCount, confidence
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(index, forKey: .index)
+        try container.encode(text, forKey: .text)
+        try container.encode(charCount, forKey: .charCount)
+        try container.encodeIfPresent(confidence, forKey: .confidence)
+    }
 }
 
 struct PdfTextValue: Encodable {

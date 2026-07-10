@@ -724,6 +724,20 @@
   text-align: center;
 }
 
+.reference-pdf-review-label {
+  color: var(--muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.reference-pdf-review-hint {
+  border-bottom: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 11px;
+  margin: 0;
+  padding: 4px 10px 6px;
+}
+
 .reference-pdf-toolbar-spacer {
   flex: 1;
 }

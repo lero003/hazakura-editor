@@ -2,15 +2,18 @@ import {
   useCallback,
   useEffect,
   useId,
+  useRef,
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
 import type { ReferenceCompareCopy } from "../../lib/locale/referenceCompare";
 import { PDF_REFERENCE_DEFAULT_MAX_PIXELS } from "../../features/referenceCompare/referenceCompare";
+import { nextReviewPage } from "../../features/referenceCompare/importPageMarkers";
 import type { ReferenceDocument } from "../../features/referenceCompare/types";
 import {
   pdfPageImageToDataUrl,
   renderPdfReferencePage,
+  type PdfReferencePageImage,
 } from "../../lib/tauri/pdfReference";
 
 type PdfRef = Extract<ReferenceDocument, { kind: "pdf" }>;
@@ -23,10 +26,22 @@ type ReferencePdfPaneProps = {
   /** When true, show resume-follow control (user paused follow). */
   followPaused?: boolean;
   onResumeFollow?: () => void;
+  /**
+   * Zero-based page indices for advisory 要確認 navigation (R4).
+   * Empty when no page-level confidence is available.
+   */
+  reviewPageIndices?: number[];
   reference: PdfRef;
 };
 
 type ZoomMode = "fit-width" | "fit-page" | "100" | "150";
+
+type PageCacheEntry = {
+  dataUrl: string;
+  zoom: ZoomMode;
+};
+
+const PAGE_CACHE_MAX = 3;
 
 function maxPixelsForZoom(mode: ZoomMode): number {
   switch (mode) {
@@ -44,8 +59,8 @@ function maxPixelsForZoom(mode: ZoomMode): number {
 }
 
 /**
- * R2/R3 read-only PDF page reader. Page index is controlled by the parent
- * so Import Assist follow can drive it without fighting local state.
+ * R2–R4 read-only PDF page reader. Page index is controlled by the parent.
+ * R4: adjacent-page cache (no full preload) + advisory review-page nav.
  */
 export function ReferencePdfPane({
   copy,
@@ -53,6 +68,7 @@ export function ReferencePdfPane({
   onPageIndexChange,
   followPaused = false,
   onResumeFollow,
+  reviewPageIndices = [],
   reference,
 }: ReferencePdfPaneProps) {
   const statusId = useId();
@@ -61,16 +77,29 @@ export function ReferencePdfPane({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
+  const cacheRef = useRef<Map<number, PageCacheEntry>>(new Map());
 
   const pageCount = Math.max(1, reference.pageCount);
   const safePage = Math.min(Math.max(0, pageIndex), pageCount - 1);
+  const hasReview = reviewPageIndices.length > 0;
 
   useEffect(() => {
     setZoom("fit-width");
+    cacheRef.current.clear();
   }, [reference.referenceId]);
 
   useEffect(() => {
     let cancelled = false;
+    const cached = cacheRef.current.get(safePage);
+    if (cached && cached.zoom === zoom) {
+      setDataUrl(cached.dataUrl);
+      setError(null);
+      setLoading(false);
+      return () => {
+        cancelled = true;
+      };
+    }
+
     setLoading(true);
     setError(null);
 
@@ -82,8 +111,18 @@ export function ReferencePdfPane({
           maxPixelsForZoom(zoom),
         );
         if (cancelled) return;
-        setDataUrl(pdfPageImageToDataUrl(image));
+        const url = pdfPageImageToDataUrl(image);
+        rememberPage(cacheRef.current, safePage, { dataUrl: url, zoom });
+        setDataUrl(url);
         setLoading(false);
+        // Soft-prefetch adjacent pages without blocking UI (long PDFs stay lazy).
+        void prefetchAdjacent(
+          reference.referenceId,
+          safePage,
+          pageCount,
+          zoom,
+          cacheRef.current,
+        );
       } catch (err) {
         if (cancelled) return;
         setDataUrl(null);
@@ -95,7 +134,7 @@ export function ReferencePdfPane({
     return () => {
       cancelled = true;
     };
-  }, [reference.referenceId, safePage, zoom, reloadToken]);
+  }, [reference.referenceId, safePage, zoom, reloadToken, pageCount]);
 
   const goPrev = useCallback(() => {
     onPageIndexChange(Math.max(0, safePage - 1), "user");
@@ -104,6 +143,15 @@ export function ReferencePdfPane({
   const goNext = useCallback(() => {
     onPageIndexChange(Math.min(pageCount - 1, safePage + 1), "user");
   }, [onPageIndexChange, pageCount, safePage]);
+
+  const goReview = useCallback(
+    (direction: 1 | -1) => {
+      const target = nextReviewPage(reviewPageIndices, safePage, direction);
+      if (target == null) return;
+      onPageIndexChange(target, "user");
+    },
+    [onPageIndexChange, reviewPageIndices, safePage],
+  );
 
   const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.key === "ArrowLeft" || event.key === "PageUp") {
@@ -116,6 +164,9 @@ export function ReferencePdfPane({
   };
 
   const pageStatus = `${copy.pageLabel} ${safePage + 1} / ${pageCount}`;
+  const reviewStatus = hasReview
+    ? `${copy.reviewLabel} ${reviewPageIndices.indexOf(safePage) >= 0 ? reviewPageIndices.indexOf(safePage) + 1 : "–"} / ${reviewPageIndices.length}`
+    : null;
 
   return (
     <div
@@ -155,6 +206,37 @@ export function ReferencePdfPane({
         >
           →
         </button>
+        {hasReview ? (
+          <>
+            <button
+              type="button"
+              className="reference-pane-action"
+              onClick={() => goReview(-1)}
+              aria-label={copy.previousReview}
+              title={copy.reviewAdvisory}
+              data-testid="reference-prev-review"
+            >
+              ‹ {copy.reviewLabel}
+            </button>
+            <span
+              className="reference-pdf-review-label"
+              title={copy.reviewAdvisory}
+              data-testid="reference-review-status"
+            >
+              {reviewStatus}
+            </span>
+            <button
+              type="button"
+              className="reference-pane-action"
+              onClick={() => goReview(1)}
+              aria-label={copy.nextReview}
+              title={copy.reviewAdvisory}
+              data-testid="reference-next-review"
+            >
+              {copy.reviewLabel} ›
+            </button>
+          </>
+        ) : null}
         {followPaused && onResumeFollow ? (
           <button
             type="button"
@@ -192,6 +274,11 @@ export function ReferencePdfPane({
           150%
         </button>
       </div>
+      {hasReview ? (
+        <p className="reference-pdf-review-hint" role="note">
+          {copy.reviewAdvisory}
+        </p>
+      ) : null}
       <div
         className={`reference-pdf-stage reference-pdf-stage--${zoom}`}
         data-testid="reference-pdf-stage"
@@ -224,4 +311,45 @@ export function ReferencePdfPane({
       </div>
     </div>
   );
+}
+
+function rememberPage(
+  cache: Map<number, PageCacheEntry>,
+  page: number,
+  entry: PageCacheEntry,
+) {
+  cache.delete(page);
+  cache.set(page, entry);
+  while (cache.size > PAGE_CACHE_MAX) {
+    const oldest = cache.keys().next().value;
+    if (oldest === undefined) break;
+    cache.delete(oldest);
+  }
+}
+
+async function prefetchAdjacent(
+  referenceId: string,
+  page: number,
+  pageCount: number,
+  zoom: ZoomMode,
+  cache: Map<number, PageCacheEntry>,
+) {
+  const neighbors = [page - 1, page + 1].filter(
+    (p) => p >= 0 && p < pageCount && !cache.has(p),
+  );
+  for (const neighbor of neighbors) {
+    try {
+      const image: PdfReferencePageImage = await renderPdfReferencePage(
+        referenceId,
+        neighbor,
+        maxPixelsForZoom(zoom),
+      );
+      rememberPage(cache, neighbor, {
+        dataUrl: pdfPageImageToDataUrl(image),
+        zoom,
+      });
+    } catch {
+      // Prefetch is best-effort.
+    }
+  }
 }
