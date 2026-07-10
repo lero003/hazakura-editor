@@ -163,14 +163,14 @@ Near-term phase order:
    `docs/superpowers/specs/2026-07-02-import-assist-design.md`. Release notes:
    `docs/releases/1.6.0-app-store-release-notes.md`.
 15. v1.7 is the **active** Reference Compare lane. It generalizes the
-   post-import review need into one safe model: a read-only PDF, image,
-   Markdown, or text Reference Tab beside one ordinary editable Markdown
-   Editor Tab. Import Assist opens its source and unsaved draft as a linked
-   pair; ordinary text files may also be opened explicitly as manual
-   references (PDF↔MD and MD↔MD visual compare). It is not a generic split
-   editor, does not create two editable buffers, and does not revive
-   standalone Review Desk. The accepted interaction, security boundary,
-   PDF rendering spike, and implementation slices live in
+   post-import review need into one safe model: editable Markdown stays
+   center/primary; one read-only PDF, image, Markdown, or text reference
+   opens on the **right as a preview-like pane** (not Diff). Import Assist
+   pairs its source (right) with the unsaved draft (center); ordinary
+   workspace files may also open as right-hand reference while editing
+   (PDF↔MD and MD↔MD visual reference). It is not a generic split editor,
+   does not create two editable buffers, does not open PDFs as dirty tabs,
+   and does not revive standalone Review Desk. Design:
    `docs/v1.7-reference-compare-design.md`.
 16. v2.0 is the OKF-based structural foundation and vertical writing
    target. Two pillars, in order:

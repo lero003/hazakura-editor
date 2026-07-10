@@ -133,7 +133,7 @@ For the full implementation inventory and release state, see
 - [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
 - [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Hazakura Local Assist / Foundation Models planning
 - [Current Work](docs/current-work.md): active queue (v1.7 Reference Compare)
-- [v1.7 Reference Compare Design](docs/v1.7-reference-compare-design.md): PDF/image/text reference beside editable Markdown
+- [v1.7 Reference Compare Design](docs/v1.7-reference-compare-design.md): editable Markdown center + read-only PDF/image/text reference on the right (preview-like, not Diff)
 - [v1.6 App Store Release Notes](docs/releases/1.6.0-app-store-release-notes.md): published Import Assist release
 - [Hazakura Local Assist Writing Companion Plan](docs/apple-local-assist-writing-companion-plan.md): post-v0.11 Hazakura Local Assist UX direction
 - [Roadmap](docs/roadmap.md): 段階的な開発順序

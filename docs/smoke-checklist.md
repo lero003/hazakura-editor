@@ -601,12 +601,14 @@ recovered state separately where relevant.
 20. **Reference Compare discovery**: confirm `参照ファイルを横に開く…` is
     available from the native File menu and Command Palette. Right-click a
     supported workspace file and an open text tab; confirm both show
-    `参照として横に開く` and open the selected file as the read-only left
-    reference without replacing the active editable Markdown.
-21. **Reference PDF raster**: import a multi-page PDF and confirm the left
+    `参照として横に開く` and open the selected file as the read-only **right**
+    reference preview without replacing the active editable Markdown in the
+    center. Confirm this is not Diff layout.
+21. **Reference PDF raster**: import a multi-page PDF and confirm the **right**
     reference shows the actual page image rather than only the filename/page
-    alt text. Exercise next/previous page, fit width, fit page, and 150%; keep
-    the existing CSP unchanged (`data:` allowed, `blob:` not required).
+    alt text, while the draft remains editable in the center. Exercise
+    next/previous page, fit width, fit page, and 150%; keep the existing CSP
+    unchanged (`data:` allowed, `blob:` not required).
 
 ### v1.1 Continuity Evidence (2026-06-29)
 

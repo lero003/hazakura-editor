@@ -1,7 +1,8 @@
 import type { TextEncoding } from "../../types";
 
 /**
- * v1.7 Reference Compare — one read-only reference beside the editable editor.
+ * v1.7 Reference Compare — one read-only reference in the right preview-like
+ * pane while the editable Markdown stays center/primary. Not Diff.
  * R1: text/Markdown. R2: pdf (opaque handle + page raster) and image.
  */
 export type ReferenceDocument =

@@ -565,9 +565,9 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
-/* v1.7 Reference Compare: left reference | resizer | editor */
+/* v1.7 Reference Compare: editor (primary) | resizer | reference (right, preview-like) */
 .editor-preview-grid.reference-compare {
-  grid-template-columns: minmax(240px, 42%) 6px minmax(280px, 1fr);
+  grid-template-columns: minmax(280px, 1fr) 6px minmax(240px, 42%);
   position: relative;
 }
 

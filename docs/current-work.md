@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v1.7 Reference Compare (package remains `1.6.0` until a v1.7 version bump)
 Authority: High
-Last reviewed: 2026-07-10 (v1.6 App Review passed; active lane → v1.7)
+Last reviewed: 2026-07-11 (Reference Compare: editor center / reference right)
 
 ## Purpose
 
@@ -58,7 +58,7 @@ v1.7 deepens Import Assist into a general reference workflow. Product story:
 | Priority | Slice | Acceptance |
 |---|---|---|
 | **Done / source** | **R0 — PDF reference spike** | Helper `pdf_info` / `render_pdf_page`; Rust opaque handle (`open_pdf_reference` / `render_pdf_reference_page` / `close_pdf_reference`); main-window gate; path/page/pixel bounds; fixture+live helper smoke. No complete UI. |
-| **Done / source** | **R1 — Paired shell + text reference** | Reference state + left/right shell; Markdown/text open as read-only reference; workspace/tab context menu + File menu + palette entry; same-file → buffer-vs-disk; narrow-window 参照/編集 switch. |
+| **Done / source** | **R1 — Paired shell + text reference** | Reference state + **editor center-left / reference right (preview-like)** shell; Markdown/text open as read-only right reference; workspace/tab context menu + File menu + palette entry; same-file → buffer-vs-disk; narrow-window 編集/参照 switch. Not Diff. |
 | **Done / source** | **R2 — Image + PDF reference readers** | PDF page UI via R0 handle; CSP-compatible bounded `data:image/png` page display; image reference via existing safe loaders; context/palette accept PDF+image; close releases PDF handle. Packaged sandbox matrix remains optional smoke. |
 | **Done / source** | **R3 — Import Assist automatic pair + page follow** | Import success opens linked PDF/image reference; follow keyed by `sessionId`; cursor → page; manual page pauses; resume control; missing markers → follow off. |
 | **Done / source** | **R4 — Confidence navigation + reliability** | Page-level OCR confidence markers (advisory only, not char ranges); 要確認 prev/next; empty pages flagged; adjacent-page cache (no full preload); PDF handle cleanup on shell unmount. |
@@ -68,13 +68,17 @@ Full interaction, security boundary, and non-goals:
 
 Key product rules for this lane:
 
-- open PDF, image, Markdown, or text as **one** read-only Reference Tab;
-- keep one ordinary editable Markdown Editor Tab visible beside it;
-- automatically pair an Import Assist source with its unsaved Markdown draft;
+- open PDF, image, Markdown, or text as **one** read-only right-hand reference
+  preview (workspace opens are preview/reference treatment, not edit tabs);
+- keep one ordinary editable Markdown Editor Tab in the **center/primary**
+  column;
+- automatically pair an Import Assist source (right) with its unsaved Markdown
+  draft (center);
 - use source-visible page markers for explicit PDF-page follow;
-- allow manual Markdown-to-Markdown **visual** comparison; existing Diff stays
-  a separate explicit text comparison action (`差分を見る`);
-- never two editable panes, never auto-apply, never revive Review Desk.
+- allow manual Markdown-to-Markdown **visual reference** while editing;
+  existing Diff stays a separate explicit text comparison action (`差分を見る`);
+- never two editable panes, never auto-apply, never revive Review Desk, never
+  treat Reference Compare as Diff layout.
 
 ### Quality inventory (v1.6 historical)
 

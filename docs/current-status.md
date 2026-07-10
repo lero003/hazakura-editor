@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-10 (v1.6 App Review passed; active lane → v1.7 Reference Compare)
+Last reviewed: 2026-07-11 (Reference Compare: editor center / reference right)
 
 ## Current State
 
@@ -19,13 +19,14 @@ Last reviewed: 2026-07-10 (v1.6 App Review passed; active lane → v1.7 Referenc
   image path trust polish, and the `pdf-extract` security update. Boundary:
   `docs/import-assist-boundary-review.md`. Quality notes (historical for this
   lane): `docs/quality-inventory-v1.6.md`.
-- **Active product lane: v1.7 — Reference Compare.** One read-only PDF /
-  image / Markdown / text reference beside one editable Markdown document,
+- **Active product lane: v1.7 — Reference Compare.** Editable Markdown stays
+  center/primary; one read-only PDF / image / Markdown / text reference opens
+  on the **right as a preview-like pane** (not Diff, not a second edit tab),
   including automatic source pairing after Import Assist. Design:
-  `docs/v1.7-reference-compare-design.md`. **R0** (PDF helper + opaque handle)
-  **R0–R4** are in source (Reference Compare feature arc: pair/follow +
-  page-level advisory 要確認 + reliability). Packaged smoke remains optional
-  product proof; no per-character confidence claims.
+  `docs/v1.7-reference-compare-design.md`. **R0–R4** are in source
+  (pair/follow + page-level advisory 要確認 + reliability; side order fixed
+  2026-07-11). Packaged smoke remains optional product proof; no
+  per-character confidence claims.
 - **v1.5 (`1.5.0`) is closed and was released before 江戸彼岸 (edohigan).**
   v1.5 covered Spellcheck settings, Reading Focus TOC density, CRT/Shinkai
   lineage polish, dead-code, deps hygiene, traffic-light, L Mode remount.

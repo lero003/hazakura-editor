@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-07-10 (v1.6 App Review passed; active lane → v1.7 Reference Compare)
+Last reviewed: 2026-07-11 (Reference Compare layout: editor center, reference right)
 
 ## Current State
 
@@ -13,15 +13,14 @@ Last reviewed: 2026-07-10 (v1.6 App Review passed; active lane → v1.7 Referenc
   without issues (user-reported 2026-07-10). Release notes:
   `docs/releases/1.6.0-app-store-release-notes.md`. Do not reopen unless hotfix.
 - **Active lane: v1.7 Reference Compare** — **R0–R4 source landed**.
-  Text/MD + PDF/image reference; Import Assist pair/follow; page-level
-  advisory 要確認 from OCR confidence (never per-char claims).
-  Discovery polish is also landed: File menu / Command Palette use
-  `参照ファイルを横に開く…`; workspace and open-tab context menus use
-  `参照として横に開く`. The open-tab route reuses the existing read-only
-  reference action and does not add a second editable buffer.
-  PDF page rasters use the existing CSP-allowed bounded `data:image/png` route;
-  do not restore `blob:` object URLs unless the app CSP is deliberately
-  re-reviewed, because the prior mismatch rendered only the image alt text.
+  Layout: **editor center-left (primary), reference right (preview-like)**.
+  Not Diff — reference while editing. Text/MD + PDF/image open as read-only
+  right reference; workspace PDF/text “beside” opens are preview treatment,
+  not dirty editor tabs. Import Assist pair/follow; page-level advisory 要確認
+  from OCR confidence (never per-char claims). Discovery: File menu /
+  Command Palette `参照ファイルを横に開く…`; workspace and open-tab context
+  menus `参照として横に開く`. PDF page rasters use CSP-allowed bounded
+  `data:image/png` (do not restore `blob:` without CSP re-review).
   Source: `docs/v1.7-reference-compare-design.md`, queue: `docs/current-work.md`.
 - **v1.5 (`1.5.0`) closed before 江戸彼岸.** Import Assist boundary remains
   historical for v1.6: `docs/import-assist-boundary-review.md`.

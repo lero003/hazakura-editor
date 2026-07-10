@@ -325,7 +325,7 @@ function makeWorkspaceProps(
       fitWidth: "Fit width",
       followActive: "Following",
       importWorkflowHint:
-        "Left is the source, right is an editable draft. Fix it, then save.",
+        "Center is the editable draft; right is the source reference. Fix it, then save.",
       nextPage: "Next page",
       nextReview: "Next to review",
       openAsReference: "Open as reference",
@@ -1092,5 +1092,51 @@ describe("AppWorkspace workspace sidebar collapse", () => {
         "side location 1:2",
       );
     });
+  });
+});
+
+describe("AppWorkspace reference compare layout", () => {
+  it("places the editor before the right-hand reference pane (preview-like)", () => {
+    const tab = makeTab({
+      contents: "# draft",
+      id: "/workspace/draft.md",
+      name: "draft.md",
+      path: "/workspace/draft.md",
+    });
+
+    const { container } = renderWorkspace({
+      activeContents: tab.contents,
+      activeTab: tab,
+      hasWorkspaceSelection: true,
+      referenceCompare: {
+        externalChangePending: false,
+        followMode: "off",
+        linkedEditorSessionId: null,
+        origin: "manual",
+        reference: {
+          contents: "# style guide",
+          encoding: "utf-8",
+          kind: "text",
+          name: "guide.md",
+          path: "/workspace/guide.md",
+        },
+        sourceFingerprint: null,
+      },
+      tabs: [tab],
+      workspaceRootPath: "/workspace",
+    });
+
+    const grid = container.querySelector(".editor-preview-grid.reference-compare");
+    expect(grid).not.toBeNull();
+
+    const editorHost = grid?.querySelector(".reference-editor-host");
+    const referencePane = grid?.querySelector(".reference-compare-pane");
+    expect(editorHost).not.toBeNull();
+    expect(referencePane).not.toBeNull();
+
+    const position = editorHost!.compareDocumentPosition(referencePane!);
+    // REFERENCE is FOLLOWING the editor (editor comes first in DOM / layout).
+    expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(grid?.className).not.toContain("diff-workbench");
   });
 });

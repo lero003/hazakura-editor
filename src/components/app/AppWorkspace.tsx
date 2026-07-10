@@ -535,127 +535,41 @@ export function AppWorkspace({
         style={
           referenceCompare
             ? {
-                gridTemplateColumns: `minmax(240px, ${referenceColumnPercent}%) 6px minmax(280px, ${100 - referenceColumnPercent}%)`,
+                // Editor (center/primary) | resizer | reference (right, preview-like).
+                // referenceColumnPercent is the right-pane width, matching Markdown Preview.
+                gridTemplateColumns: `minmax(280px, ${100 - referenceColumnPercent}%) 6px minmax(240px, ${referenceColumnPercent}%)`,
               }
             : editorPreviewGridStyle
         }
       >
+        {referenceCompare?.origin === "import-assist" ? (
+          <p
+            className="reference-import-workflow-hint"
+            role="note"
+            data-testid="reference-import-workflow-hint"
+          >
+            {referenceCopy.importWorkflowHint}
+          </p>
+        ) : null}
         {referenceCompare ? (
-          <>
-            {referenceCompare.origin === "import-assist" ? (
-              <p
-                className="reference-import-workflow-hint"
-                role="note"
-                data-testid="reference-import-workflow-hint"
-              >
-                {referenceCopy.importWorkflowHint}
-              </p>
-            ) : null}
-            <div className="reference-compare-pane">
-              <ReferenceTextPane
-                copy={referenceCopy}
-                externalChangePending={referenceCompare.externalChangePending}
-                followPaused={referenceFollowPaused}
-                menuLanguage={menuLanguage}
-                onClose={closeReferenceCompare}
-                onPdfPageIndexChange={onPdfPageIndexChange}
-                onReloadReference={
-                  onReloadReference
-                    ? () => void onReloadReference()
-                    : undefined
-                }
-                onReplace={() => void openReferenceFile()}
-                onResumeFollow={onResumeReferenceFollow}
-                onShowDiff={onShowReferenceDiff}
-                pdfPageIndex={pdfPageIndex}
-                reference={referenceCompare.reference}
-                reviewPageIndices={importReviewPageIndices}
-                showDiffEnabled={
-                  Boolean(
-                    onShowReferenceDiff &&
-                      referenceCompare.reference.kind === "text" &&
-                      activeTab,
-                  )
-                }
-              />
-            </div>
-            <PaneResizer
-              label={referenceCopy.referenceLabel}
-              max={MAX_PREVIEW_COLUMN_PERCENT}
-              min={MIN_PREVIEW_COLUMN_PERCENT}
-              onKeyDown={(event) => {
-                if (event.key === "ArrowLeft") {
-                  event.preventDefault();
-                  setReferenceColumnPercent(
-                    Math.max(
-                      MIN_PREVIEW_COLUMN_PERCENT,
-                      referenceColumnPercent - 2,
-                    ),
-                  );
-                } else if (event.key === "ArrowRight") {
-                  event.preventDefault();
-                  setReferenceColumnPercent(
-                    Math.min(
-                      MAX_PREVIEW_COLUMN_PERCENT,
-                      referenceColumnPercent + 2,
-                    ),
-                  );
-                }
-              }}
-              onPointerDown={(event) => {
-                event.currentTarget.setPointerCapture(event.pointerId);
-                const grid = editorPreviewGridRef.current;
-                if (!grid) return;
-                const rect = grid.getBoundingClientRect();
-                const percent = ((event.clientX - rect.left) / rect.width) * 100;
-                setReferenceColumnPercent(
-                  Math.min(
-                    MAX_PREVIEW_COLUMN_PERCENT,
-                    Math.max(MIN_PREVIEW_COLUMN_PERCENT, percent),
-                  ),
-                );
-              }}
-              onPointerMove={(event) => {
-                if (!event.currentTarget.hasPointerCapture(event.pointerId)) {
-                  return;
-                }
-                const grid = editorPreviewGridRef.current;
-                if (!grid) return;
-                const rect = grid.getBoundingClientRect();
-                const percent = ((event.clientX - rect.left) / rect.width) * 100;
-                setReferenceColumnPercent(
-                  Math.min(
-                    MAX_PREVIEW_COLUMN_PERCENT,
-                    Math.max(MIN_PREVIEW_COLUMN_PERCENT, percent),
-                  ),
-                );
-              }}
-              title={referenceCopy.referenceLabel}
-              value={referenceColumnPercent}
-            />
-            {referenceCompare ? (
-              <div className="reference-narrow-switch" role="toolbar">
-                <button
-                  type="button"
-                  className={
-                    referenceNarrowFocus === "reference" ? "is-active" : ""
-                  }
-                  onClick={() => setReferenceNarrowFocus("reference")}
-                >
-                  {referenceCopy.showReference}
-                </button>
-                <button
-                  type="button"
-                  className={
-                    referenceNarrowFocus === "editor" ? "is-active" : ""
-                  }
-                  onClick={() => setReferenceNarrowFocus("editor")}
-                >
-                  {referenceCopy.showEditor}
-                </button>
-              </div>
-            ) : null}
-          </>
+          <div className="reference-narrow-switch" role="toolbar">
+            <button
+              type="button"
+              className={referenceNarrowFocus === "editor" ? "is-active" : ""}
+              onClick={() => setReferenceNarrowFocus("editor")}
+            >
+              {referenceCopy.showEditor}
+            </button>
+            <button
+              type="button"
+              className={
+                referenceNarrowFocus === "reference" ? "is-active" : ""
+              }
+              onClick={() => setReferenceNarrowFocus("reference")}
+            >
+              {referenceCopy.showReference}
+            </button>
+          </div>
         ) : null}
         <div className="reference-editor-host">
           <EditorMainPane
@@ -699,6 +613,95 @@ export function AppWorkspace({
             </p>
           ) : null}
         </div>
+        {referenceCompare ? (
+          <>
+            <PaneResizer
+              label={referenceCopy.referenceLabel}
+              max={MAX_PREVIEW_COLUMN_PERCENT}
+              min={MIN_PREVIEW_COLUMN_PERCENT}
+              onKeyDown={(event) => {
+                // Match Markdown Preview: ArrowLeft widens the right reference pane.
+                if (event.key === "ArrowLeft") {
+                  event.preventDefault();
+                  setReferenceColumnPercent(
+                    Math.min(
+                      MAX_PREVIEW_COLUMN_PERCENT,
+                      referenceColumnPercent + 2,
+                    ),
+                  );
+                } else if (event.key === "ArrowRight") {
+                  event.preventDefault();
+                  setReferenceColumnPercent(
+                    Math.max(
+                      MIN_PREVIEW_COLUMN_PERCENT,
+                      referenceColumnPercent - 2,
+                    ),
+                  );
+                }
+              }}
+              onPointerDown={(event) => {
+                event.currentTarget.setPointerCapture(event.pointerId);
+                const grid = editorPreviewGridRef.current;
+                if (!grid) return;
+                const rect = grid.getBoundingClientRect();
+                const percent =
+                  ((rect.right - event.clientX) / rect.width) * 100;
+                setReferenceColumnPercent(
+                  Math.min(
+                    MAX_PREVIEW_COLUMN_PERCENT,
+                    Math.max(MIN_PREVIEW_COLUMN_PERCENT, percent),
+                  ),
+                );
+              }}
+              onPointerMove={(event) => {
+                if (!event.currentTarget.hasPointerCapture(event.pointerId)) {
+                  return;
+                }
+                const grid = editorPreviewGridRef.current;
+                if (!grid) return;
+                const rect = grid.getBoundingClientRect();
+                const percent =
+                  ((rect.right - event.clientX) / rect.width) * 100;
+                setReferenceColumnPercent(
+                  Math.min(
+                    MAX_PREVIEW_COLUMN_PERCENT,
+                    Math.max(MIN_PREVIEW_COLUMN_PERCENT, percent),
+                  ),
+                );
+              }}
+              title={referenceCopy.referenceLabel}
+              value={referenceColumnPercent}
+            />
+            <div className="reference-compare-pane">
+              <ReferenceTextPane
+                copy={referenceCopy}
+                externalChangePending={referenceCompare.externalChangePending}
+                followPaused={referenceFollowPaused}
+                menuLanguage={menuLanguage}
+                onClose={closeReferenceCompare}
+                onPdfPageIndexChange={onPdfPageIndexChange}
+                onReloadReference={
+                  onReloadReference
+                    ? () => void onReloadReference()
+                    : undefined
+                }
+                onReplace={() => void openReferenceFile()}
+                onResumeFollow={onResumeReferenceFollow}
+                onShowDiff={onShowReferenceDiff}
+                pdfPageIndex={pdfPageIndex}
+                reference={referenceCompare.reference}
+                reviewPageIndices={importReviewPageIndices}
+                showDiffEnabled={
+                  Boolean(
+                    onShowReferenceDiff &&
+                      referenceCompare.reference.kind === "text" &&
+                      activeTab,
+                  )
+                }
+              />
+            </div>
+          </>
+        ) : null}
         {sidePaneVisible && !referenceCompare ? (
           <PaneResizer
             label={sidePaneCopy.resizeColumns}

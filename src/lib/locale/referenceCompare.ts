@@ -46,7 +46,7 @@ export function referenceCompareCopy(
       fitWidth: "はばにあわせる",
       followActive: "ついじゅう ちゅう",
       importWorkflowHint:
-        "ひだりが げんぽん、みぎが したがきです。なおしてから ほぞんしてください。",
+        "まんなかが したがき（へんしゅう）、みぎが げんぽん（さんしょう）です。なおしてから ほぞんしてください。",
       nextPage: "つぎの ページ",
       nextReview: "つぎの ようかくにん",
       openAsReference: "さんしょうとして よこに ひらく",
@@ -79,7 +79,7 @@ export function referenceCompareCopy(
       fitWidth: "幅に合わせる",
       followActive: "追従中",
       importWorkflowHint:
-        "左が原本、右が下書きです。内容を直してから保存してください。",
+        "中央が下書き（編集）、右が原本（参照）です。内容を直してから保存してください。",
       nextPage: "次のページ",
       nextReview: "次の要確認",
       openAsReference: "参照として横に開く",
@@ -112,7 +112,7 @@ export function referenceCompareCopy(
     fitWidth: "Fit width",
     followActive: "Following",
     importWorkflowHint:
-      "Left is the source, right is an editable draft. Fix it, then save.",
+      "Center is the editable draft; right is the source reference. Fix it, then save.",
     nextPage: "Next page",
     nextReview: "Next to review",
     openAsReference: "Open beside editor as reference",
