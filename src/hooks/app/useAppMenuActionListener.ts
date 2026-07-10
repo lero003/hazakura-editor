@@ -8,6 +8,7 @@ import {
   MENU_EXPORT_EPUB_BETA,
   MENU_LOCAL_DATA_DISCLOSURE,
   MENU_IMPORT_PDF_IMAGE,
+  MENU_OPEN_REFERENCE,
   MENU_OPEN_AGENT_WINDOW,
   MENU_OPEN_APPLE_ASSIST_WINDOW,
   MENU_OPEN_SOURCE_ACKNOWLEDGEMENTS,
@@ -29,6 +30,7 @@ export type AppMenuActionHandlers = {
   openAgentWindow: () => void | Promise<unknown>;
   openAppleAssistWindow: () => void | Promise<unknown>;
   openFile: () => void | Promise<unknown>;
+  openReferenceFile: () => void | Promise<unknown>;
   openWorkspace: () => void | Promise<unknown>;
   openWorkspacePath: (path: string) => void | Promise<unknown>;
   requestAppQuit: () => void | Promise<unknown>;
@@ -109,6 +111,9 @@ export function useAppMenuActionListener({
         case MENU_IMPORT_PDF_IMAGE:
         case "import-pdf-image":
           void actions.importSourceAsMarkdownDraft();
+          break;
+        case MENU_OPEN_REFERENCE:
+          void actions.openReferenceFile();
           break;
         case "open-folder":
           void actions.openWorkspace();

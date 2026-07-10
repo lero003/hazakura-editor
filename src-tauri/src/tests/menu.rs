@@ -22,6 +22,22 @@ fn app_menu_event_allows_epub_beta_export_action() {
 }
 
 #[test]
+fn file_menu_exposes_reference_beside_editor_action() {
+    let source = include_str!("../menu.rs");
+
+    assert_eq!(MENU_OPEN_REFERENCE, "open-reference");
+    assert!(source.contains("MENU_OPEN_REFERENCE"));
+    assert!(source.contains("Open Reference Beside Editor…"));
+    assert!(source.contains("参照ファイルを横に開く…"));
+
+    let emit_match = source
+        .split("matches!(")
+        .find(|section| section.contains("MENU_OPEN_FILE"))
+        .expect("find menu action allowlist");
+    assert!(emit_match.contains("MENU_OPEN_REFERENCE"));
+}
+
+#[test]
 fn app_menu_event_emits_all_theme_actions() {
     let source = include_str!("../menu.rs");
     let emit_match = source

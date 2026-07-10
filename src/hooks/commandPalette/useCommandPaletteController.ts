@@ -362,7 +362,7 @@ export function useCommandPaletteController({
           "見比べ",
           "みくらべ",
         ],
-        label: "参照ファイルを開く…",
+        label: "参照ファイルを横に開く…",
         run: () => {
           void actions.openReferenceFile();
         },

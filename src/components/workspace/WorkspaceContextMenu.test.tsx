@@ -100,7 +100,7 @@ describe("WorkspaceContextMenu Import Assist", () => {
       },
     });
     const item = screen.getByRole("menuitem", {
-      name: "参照として開く",
+      name: "参照として横に開く",
     });
     fireEvent.click(item);
     expect(onOpenAsReference).toHaveBeenCalledTimes(1);
@@ -109,7 +109,7 @@ describe("WorkspaceContextMenu Import Assist", () => {
   it("offers open-as-reference for PDF files", () => {
     const { onOpenAsReference } = renderMenu();
     const item = screen.getByRole("menuitem", {
-      name: "参照として開く",
+      name: "参照として横に開く",
     });
     fireEvent.click(item);
     expect(onOpenAsReference).toHaveBeenCalledTimes(1);

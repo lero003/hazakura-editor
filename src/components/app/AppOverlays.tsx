@@ -594,6 +594,11 @@ export function AppOverlays({
           anchor={tabContextMenu}
           menuLanguage={menuLanguage}
           onClose={closeTabContextMenu}
+          onOpenAsReference={() => {
+            const path = tabContextMenu.path;
+            closeTabContextMenu();
+            void openTextPathAsReference(path);
+          }}
           onRename={() => {
             const path = tabContextMenu.path;
             closeTabContextMenu();
@@ -603,6 +608,7 @@ export function AppOverlays({
             // matching file row into the rename input state.
             requestRename(path);
           }}
+          openAsReferenceLabel={referenceCopy.openAsReference}
         />
       ) : null}
     </>

@@ -15,6 +15,10 @@ Last reviewed: 2026-07-10 (v1.6 App Review passed; active lane → v1.7 Referenc
 - **Active lane: v1.7 Reference Compare** — **R0–R4 source landed**.
   Text/MD + PDF/image reference; Import Assist pair/follow; page-level
   advisory 要確認 from OCR confidence (never per-char claims).
+  Discovery polish is also landed: File menu / Command Palette use
+  `参照ファイルを横に開く…`; workspace and open-tab context menus use
+  `参照として横に開く`. The open-tab route reuses the existing read-only
+  reference action and does not add a second editable buffer.
   Source: `docs/v1.7-reference-compare-design.md`, queue: `docs/current-work.md`.
 - **v1.5 (`1.5.0`) closed before 江戸彼岸.** Import Assist boundary remains
   historical for v1.6: `docs/import-assist-boundary-review.md`.
@@ -63,16 +67,17 @@ Use `docs/current-work.md` for the active queue. Current priority order:
 1. Packaged App Store smoke for Reference Compare (PDF/image open, import
    pair, follow, 要確認) remains useful product proof.
 2. Do not invent per-character confidence highlights from aggregate scores.
-3. Optional polish: File メニュー entry for 参照, virtualized long text
-   reference, `差分を見る` wiring for text↔text.
-3. Keep v1.6 closed unless a reproduced gap needs a hotfix. Historical quality
+3. Optional polish: virtualized long text reference. File メニュー、タブ右クリック、
+   ワークスペース右クリックの `参照として横に開く` 導線と、text↔text の
+   `差分を見る` wiring は source landed。
+4. Keep v1.6 closed unless a reproduced gap needs a hotfix. Historical quality
    notes: `docs/quality-inventory-v1.6.md`.
-4. Keep `@codemirror/view` at **6.43.2**. Do not tag, upload, or publish
+5. Keep `@codemirror/view` at **6.43.2**. Do not tag, upload, or publish
    without explicit user approval.
-5. Local forced-termination Recovery passed. Google Drive remains
+6. Local forced-termination Recovery passed. Google Drive remains
    `manual-blocked` until a dedicated fixture is available; do not scan or
    create content in the user's cloud folders implicitly.
-6. Do not expand into two editable panes, Review Desk revival, Book Scope,
+7. Do not expand into two editable panes, Review Desk revival, Book Scope,
    cloud OCR, or Git-aware merge.
 
 Detailed v0.18-v1.0 completed-slice history and per-version verification
@@ -123,6 +128,10 @@ Read it only for historical context.
 
 ## Verification Guidance
 
+- Latest Reference Compare discovery slice passed `npm run test` (153 files /
+  1335 tests), `cargo fmt --check`, `cargo test` (one unrelated PATH-sensitive
+  Agent Workbench test passed on immediate isolated rerun), `npm run build`,
+  and `git diff --check`. Manual interaction smoke remains unclaimed.
 - For docs-only work, run `git diff --check`.
 - For code changes, follow `docs/development-automation.md`.
 - For UI behavior changes, update or exercise `docs/smoke-checklist.md`.

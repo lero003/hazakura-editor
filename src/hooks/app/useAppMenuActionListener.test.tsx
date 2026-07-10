@@ -34,6 +34,7 @@ function setup() {
     openAgentWindow: vi.fn(),
     openAppleAssistWindow: vi.fn(),
     openFile: vi.fn(),
+    openReferenceFile: vi.fn(),
     openWorkspace: vi.fn(),
     openWorkspacePath: vi.fn(),
     requestAppQuit: vi.fn(),
@@ -82,6 +83,14 @@ describe("useAppMenuActionListener", () => {
     expect(actions.exportEpubBeta).toHaveBeenCalledTimes(1);
     expect(actions.exportHtml).not.toHaveBeenCalled();
     expect(actions.exportPdf).not.toHaveBeenCalled();
+  });
+
+  it("routes the reference beside editor menu action", () => {
+    const { actions } = setup();
+
+    void menuListeners[0]?.({ payload: "open-reference" } as never);
+
+    expect(actions.openReferenceFile).toHaveBeenCalledTimes(1);
   });
 
   it("routes the CRT theme menu action to setThemePreference", () => {

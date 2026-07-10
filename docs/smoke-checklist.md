@@ -598,6 +598,11 @@ recovered state separately where relevant.
     long enough for OS key repeat to fire. Confirm only the first key
     press advances the reader until the key is released and pressed
     again.
+20. **Reference Compare discovery**: confirm `参照ファイルを横に開く…` is
+    available from the native File menu and Command Palette. Right-click a
+    supported workspace file and an open text tab; confirm both show
+    `参照として横に開く` and open the selected file as the read-only left
+    reference without replacing the active editable Markdown.
 
 ### v1.1 Continuity Evidence (2026-06-29)
 

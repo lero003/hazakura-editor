@@ -15,6 +15,7 @@ describe("useAppShellSideEffectsController", () => {
           openAgentWindow: vi.fn(),
           openAppleAssistWindow: vi.fn(),
           openFile: vi.fn(),
+          openReferenceFile: vi.fn(),
           openWorkspace: vi.fn(),
           openWorkspacePath: vi.fn(),
           requestAppQuit: vi.fn(),

@@ -17,14 +17,18 @@ type TabContextMenuProps = {
   anchor: TabContextMenuState;
   menuLanguage: MenuLanguage;
   onClose: () => void;
+  onOpenAsReference: () => void;
   onRename: () => void;
+  openAsReferenceLabel: string;
 };
 
 export function TabContextMenu({
   anchor,
   menuLanguage,
   onClose,
+  onOpenAsReference,
   onRename,
+  openAsReferenceLabel,
 }: TabContextMenuProps) {
   // Dismiss on outside click / Esc, mirroring the workspace
   // context menu's outside-dismissal pattern.
@@ -48,7 +52,7 @@ export function TabContextMenu({
     };
   }, [onClose]);
 
-  const itemCount = 2;
+  const itemCount = 3;
   const estimatedHeight = CLOSE_LABEL_HEIGHT + itemCount * ITEM_HEIGHT;
   const menuLeft = Math.min(
     Math.max(anchor.x, 8),
@@ -79,6 +83,9 @@ export function TabContextMenu({
       onClick={handleClick}
       onContextMenu={(event) => event.preventDefault()}
     >
+      <button type="button" role="menuitem" onClick={onOpenAsReference}>
+        {openAsReferenceLabel}
+      </button>
       <button type="button" role="menuitem" onClick={onRename}>
         {labels.rename}
       </button>
