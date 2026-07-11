@@ -650,6 +650,16 @@ recovered state separately where relevant.
 - Google Drive Recovery: `manual-blocked`; no dedicated disposable fixture
   existed, so user cloud content was not created or scanned.
 
+### v1.8 Daily Trust Evidence (2026-07-12)
+
+- `SKIP_BUILD=1 npm run smoke:macos-sandbox-preview` passed against the latest
+  source-built App Store preview. Deep signature verification succeeded; the
+  app carried sandbox, user-selected read/write, and app-scoped bookmark
+  entitlements; both bundled helpers carried sandbox + inherit entitlements.
+- Window launch smoke was intentionally not run because the script first quits
+  an existing app with the same bundle ID. This pass did not interrupt the
+  user's running Hazakura Editor and does not claim picker interaction.
+
 ### Reporting
 
 Record the build number, which items passed / failed / were skipped,

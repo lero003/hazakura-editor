@@ -40,6 +40,9 @@ Last reviewed: 2026-07-12 (v1.7 published; v1.8 Daily Trust active)
   VoiceOver navigation. Inline file/folder rename inputs use the active
   English / Japanese / kana label rather than an English-only accessible name;
   packaged VoiceOver smoke remains required.
+  The latest source-built App Store sandbox preview passed deep-signature,
+  app-sandbox, user-selected read/write, app-scoped bookmark, and inherited
+  helper entitlement checks on 2026-07-12. Picker interaction was not claimed.
   No per-character confidence claims.
   The top chrome now separates L Mode from right-pane selection and exposes an
   explicit `参照` item beside Preview / e-book / Outline / Diff. Switching pane

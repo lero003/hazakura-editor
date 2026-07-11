@@ -170,6 +170,12 @@ Read it only for historical context.
 
 ## Verification Guidance
 
+- 2026-07-12 v1.8 sandbox preview proof:
+  `SKIP_BUILD=1 npm run smoke:macos-sandbox-preview` passed against the latest
+  source-built app. Deep signature, app sandbox, user-selected read/write,
+  app-scoped bookmark, and both helpers' inherit entitlements were verified.
+  Window smoke was skipped because its script would quit the user's existing
+  same-bundle-ID app; picker and VoiceOver interaction remain manual.
 - 2026-07-12 v1.8 localized rename VoiceOver name: focused WorkspaceTree
   tests passed (**17/17**); `npm run test` passed (**159/159 files / 1369
   tests**); `npm run typecheck`, `npm run build:vite`, `npm run build`, Rust
