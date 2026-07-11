@@ -178,7 +178,10 @@ pub(crate) fn wait_for_agent_state(
     let mut state =
         get_agent_workbench_session_state_with_store(store).expect("read agent session state");
 
-    for _ in 0..80 {
+    // Full-suite process scheduling can be noticeably slower than a focused
+    // run. Keep polling bounded, but allow enough time for the provider child
+    // to start and flush its final output under parallel test load.
+    for _ in 0..200 {
         if predicate(&state) {
             return state;
         }

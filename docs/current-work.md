@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v1.7 Reference Compare (in-tree package `1.7.0` TestFlight candidate; published App Store version stays `1.6.0`)
+Scope: v1.8 Daily Trust Completion (published package remains `1.7.0`)
 Authority: High
-Last reviewed: 2026-07-11 (v1.7.0 TestFlight candidate prepared)
+Last reviewed: 2026-07-12 (v1.7.0 published; v1.8 active)
 
 ## Purpose
 
@@ -16,10 +16,11 @@ Start here when choosing the next small `Hazakura Editor` slice.
 | **v1.5** | **Closed / released as `1.5.0`** | Stabilization + reading polish. **Released before 江戸彼岸 (edohigan) was merged.** Do not reopen unless hotfix. |
 | **Post-v1.5 main (not v1.5)** | Merged after v1.5 release | 江戸彼岸 theme; CodeMirror `@codemirror/view` **6.43.2** pin + editor display quality (syntax-tree recompute, resize remeasure, fold gutter removed). |
 | **v1.6** | **Closed / published as `1.6.0`** | Import Assist Phase 1 + edohigan + quality packs. **App Review passed without issues (2026-07-10).** Boundary: `docs/import-assist-boundary-review.md`. Release notes: `docs/releases/1.6.0-app-store-release-notes.md`. Do not reopen unless hotfix. |
-| **v1.7** | **Active (R0–R4 source landed; trust / daily-use hardening)** | Reference Compare: one read-only PDF/image/text reference beside one editable Markdown tab. Scope brief: `docs/v1.7-scope-brief.md`; feature design: `docs/v1.7-reference-compare-design.md`; hardening plan: `docs/v1.7-trust-scale-plan.md`. Next: complete the scope gate, then version-bump discussion. |
+| **v1.7** | **Closed / published as `1.7.0`** | Reference Compare plus trust / daily-use hardening. App Review passed and the release was published (user-reported 2026-07-12). Extended smoke continues in v1.8; do not reopen without a reproduced hotfix. |
+| **v1.8** | **Active — Daily Trust Completion** | Make the shipped v1.7 experience deterministic and distribution-proven. First source slice: full Rust suite host-sensitive test stabilization. No version bump in this slice. |
 | **v2** | Later | OKF Book Scope, then 縦書き. |
 
-Published Mac App Store version is **`1.6.0`**. See `current-status.md` for lane truth; treat Connect as authoritative for store counters.
+Published Mac App Store version is **`1.7.0`**. See `current-status.md` for lane truth; treat Connect as authoritative for store counters.
 
 ## Product Boundary
 
@@ -49,7 +50,7 @@ git history and `docs/quality-inventory-v1.6.md`.
 | Absorbed by v1.7 | Post-import review UI, PDF/source side-by-side, low-confidence navigation |
 | Deferred v2 | Book Project split (`chapters/` + `hazakura.import.json`) |
 
-## Active UX Queue — v1.7 Reference Compare
+## Closed UX Lane — v1.7 Reference Compare
 
 v1.7 deepens Import Assist into a general reference workflow. Product story:
 
@@ -87,10 +88,10 @@ Key product rules for this lane:
 - never two editable panes, never auto-apply, never revive Review Desk, never
   treat Reference Compare as Diff layout.
 
-## Active Trust / Daily-use Queue — v1.7
+## Active Trust / Daily-use Queue — v1.8
 
-The feature arc is source-landed, but the product is not ready to widen scope
-until the following user-visible guarantees are proven. Priority is ordered;
+The v1.7 feature arc is published. v1.8 carries the following extended trust
+and distribution proof without reopening the released lane. Priority is ordered;
 each slice should remain independently verifiable.
 
 | Priority | Slice | Why now | Acceptance anchor |
@@ -99,13 +100,26 @@ each slice should remain independently verifiable.
 | **Source / review-fix** | **Pathless draft recovery (T-2)** | UUID `recoveryId`; restore always opens a new pathless tab; pathless-only TTL/size; Save / Save As / restore / discard / close の storage failure status。 | Forced-termination smoke still required; cleanup failure時も編集・明示closeは止めず、再表示リスクをstatusで通知する。 |
 | **Basic packaged smoke passed / extended partial** | **Reference Compare packaged proof (T-3)** | Signed build 85 metadata/signature/helpers verified; user-reported basic packaged testing found no issue. | Keep the extended picker/sandbox, recovery, long-reference boundary, and a11y matrix as submission/publication follow-up evidence. |
 | **Partial / source** | **Processing budgets (S-1)** | Pathless budgets + visible storage failure; Diff/export caps remain. | Further Diff/search/raster failure UX as needed. |
-| **Partial / source** | **Root recovery (S-2)** | `RootErrorRecovery` wraps the app shell. | PATH-sensitive Rust full-suite flake; integration path open. |
+| **Done / source** | **Deterministic Rust suite (S-2)** | Host-only bookmark / Trash checks are explicit ignored integration tests; Trash cleanup uses an injected unit fixture; process polling tolerates parallel suite load. | Keep the ignored macOS integration checks available for a suitable interactive host. |
 | **Source / review-fix** | **Long reference + rename a11y (S-3)** | Body scroller + wrap-safe full rendering; text reference専用の150万文字 / 5万行 budget; rename inputs named. | 5k-line / wrap / budget超過のmanual smoke; variable-height windowingは不要になるまでdefer; rename label i18n is P2. |
 | **Partial / source** | **Purpose-led discovery (S-4)** | Start Panel write / read / verify pitch. | Contextual first-use tooltips remain light polish. |
 | **P2** | **Export/theme polish** | After trust gates. | EPUB/PDF preflight, Preferences parity, measured shader/reduced-motion. |
 
 Book Scope Alpha is **not** part of this queue. It remains a v2 decision after
 the single-document and Reference Compare loop is proven.
+
+### Active post-v1.7 direction
+
+After v1.7, do not jump directly to v2. Two-digit minor versions such as
+`v1.10` are normal and accepted. The planned order is v1.8 Daily Trust,
+v1.9 Writing Loop Clarity, v1.10 single-document structure, then a larger
+packaged distribution-confidence gate in v1.11+ before multi-file Book Scope.
+
+The v1.10 structure lane stays inside one Markdown source: shared heading /
+frontmatter / page-break / navigation interpretation, structure overview, and
+only bounded explicit Undo-able edits in the active buffer. It does not add a
+Book manifest, hidden database, background workspace scan, or second editable
+document model. Full rationale: `docs/v1.8-plus-product-review-roadmap.md`.
 
 ### Quality inventory (v1.6 historical)
 
@@ -119,14 +133,12 @@ time; keep normal `npm test` / `cargo test` gates.
 - 6.43.3+ tile-tree regressions caused vanishing lines / wrong caret.
 - Do not bump view without re-verifying long Japanese Markdown + wrap + L Mode.
 
-### v1.7 completion gate
+### v1.7 publication closeout / v1.8 carry-forward
 
-`1.7.0` is fixed by the source tag and signed build 85 submission candidate;
-it is not yet published. Basic packaged testing was user-reported without an
-issue. Continue the extended Reference Compare, pathless recovery, bounded
-large-data, keyboard/a11y, and deterministic Rust test matrix as submission /
-publication evidence. The published Mac App Store version stays `1.6.0` until
-App Review passes.
+`1.7.0` passed App Review and was published (user-reported 2026-07-12).
+Continue extended Reference Compare, pathless recovery, bounded large-data,
+and keyboard/a11y checks as v1.8 Daily Trust evidence. These are follow-up
+quality checks, not reasons to mutate the published tag or reopen v1.7.
 
 ### 江戸彼岸 (post-v1.5)
 

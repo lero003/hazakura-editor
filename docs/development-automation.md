@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-07-10 (v1.6 published; active lane v1.7 Reference Compare)
+Last reviewed: 2026-07-12 (v1.7 published; active lane v1.8 Daily Trust)
 
 ## Purpose
 
@@ -17,11 +17,11 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **v1.7 Reference Compare** after the published `1.6.0` App Store
-release, unless a public-release hotfix blocker appears. Design:
-`docs/v1.7-reference-compare-design.md`.
+Phase: **v1.8 Daily Trust Completion** after the published `1.7.0` App Store
+release, unless a public-release hotfix blocker appears. Direction:
+`docs/v1.8-plus-product-review-roadmap.md`.
 
-For recurring automation, use the Active UX Queue in
+For recurring automation, use the Active Trust / Daily-use Queue in
 `docs/current-work.md`. The old pre-review automation table is exhausted
 and should be reused only when a future pre-review lane explicitly
 reopens it. Each run should pick the first open slice whose required

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-07-11 (v1.6 published; v1.7 trust / daily-use hardening)
+Last reviewed: 2026-07-12 (v1.7 published; v1.8 Daily Trust active)
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
@@ -28,6 +28,9 @@ or quality-polish slice.
 - `v1.7-trust-scale-plan.md`: review-derived v1.7 continuity, recovery,
   bounded-scale, accessibility, and discovery hardening plan; Book Scope Alpha
   remains v2.
+- `v1.8-plus-product-review-roadmap.md`: accepted post-v1.7 product review and
+  sequencing for v1.8 Daily Trust, v1.9 UX clarity, v1.10 single-document
+  structure, a later distribution-confidence gate, and the v2 entry criteria.
 - `releases/1.6.0-app-store-release-notes.md`: v1.6 App Store copy and published position.
 - `edohigan-theme-plan.md`: post-v1.5 江戸彼岸 theme notes (not part of v1.5 release).
 

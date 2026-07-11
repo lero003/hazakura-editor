@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-11 (v1.7 TestFlight candidate; published App Store version stays 1.6.0)
+Last reviewed: 2026-07-12 (v1.7 published; v1.8 Daily Trust active)
 
 ## Current State
 
@@ -19,7 +19,11 @@ Last reviewed: 2026-07-11 (v1.7 TestFlight candidate; published App Store versio
   image path trust polish, and the `pdf-extract` security update. Boundary:
   `docs/import-assist-boundary-review.md`. Quality notes (historical for this
   lane): `docs/quality-inventory-v1.6.md`.
-- **Active product lane: v1.7 — Reference Compare + trust/daily-use hardening.**
+- **v1.7 (`1.7.0`) is closed and published.** App Review passed and the Mac
+  App Store release was published (user-reported 2026-07-12). Reference Compare
+  keeps one editable Markdown buffer beside one read-only reference. Release
+  note: `docs/releases/1.7.0-app-store-release-notes.md`.
+- **Active product lane: v1.8 — Daily Trust Completion.**
   Editable Markdown stays center/primary; one read-only PDF / image / Markdown /
   text reference opens on the **right as a preview-like pane** (not Diff, not a
   second edit tab), including automatic source pairing after Import Assist.
@@ -28,12 +32,9 @@ Last reviewed: 2026-07-11 (v1.7 TestFlight candidate; published App Store versio
   recovery / S-3 wrap-safe long-reference rendering+rename a11y / S-4 Start Panel** source landed
   2026-07-11. Recovery cleanup failures are now surfaced across Save / Save As /
   restore / discard / close, and text references have a separate 1.5M-character /
-  50,000-line DOM budget. **v1.7.0 is a TestFlight candidate for real-device
-  testing; the published Mac App Store version remains `1.6.0`** until `1.7.0`
-  passes App Review. Packaged Reference Compare proof (T-3), forced-termination
-  pathless recovery, budget-boundary smoke, and full a11y smoke remain before
-  publication. Basic packaged behavior was user-tested without a reported
-  issue on 2026-07-11; extended boundary and accessibility smoke remains.
+  50,000-line DOM budget. Packaged Reference Compare proof (T-3),
+  forced-termination pathless recovery, budget-boundary smoke, and full a11y
+  smoke remain v1.8 follow-up evidence rather than v1.7 publication blockers.
   No per-character confidence claims.
   The top chrome now separates L Mode from right-pane selection and exposes an
   explicit `参照` item beside Preview / e-book / Outline / Diff. Switching pane
@@ -83,7 +84,7 @@ Last reviewed: 2026-07-11 (v1.7 TestFlight candidate; published App Store versio
   in `docs/v1.1-v1.2-followup.md`.
 - No remaining source-level release blocker is known for the closed v1.6
   line. Do not reopen v1.6 implementation without a reproduced gap. The
-  active implementation lane is **v1.7 Reference Compare**.
+  active implementation lane is **v1.8 Daily Trust Completion**.
   `AppWorkspace` owns a shared
   per-document view-state registry: reader, Editor cursor/scroll, Preview
   reopen, tab transitions, and safe local Markdown-link transitions now
@@ -93,10 +94,9 @@ Last reviewed: 2026-07-11 (v1.7 TestFlight candidate; published App Store versio
   fixture existed and user cloud content was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Published Mac App Store version: **`1.6.0`** (App Review passed without
-  issues, 2026-07-10). It includes Import Assist Phase 1, 江戸彼岸 theme,
-  prior v1 continuity / export / Local Assist surfaces, and the quality packs
-  shipped with the 1.6 candidate line.
+- Published Mac App Store version: **`1.7.0`** (App Review passed and release
+  published, user-reported 2026-07-12). It adds Reference Compare and the v1.7
+  trust / daily-use hardening to the earlier v1 surfaces.
 - Latest GitHub source / local-app tag: `v0.35.0`.
 - Latest local App Store / TestFlight package candidate metadata
   (version, build counter, pkg path, SHA-256, generated time, source
@@ -523,33 +523,39 @@ baseline, and smoke evidence are archived under
 
 ## Next Safe Actions
 
-1. Treat **v1.6 (`1.6.0`) as published and closed** after App Review passed
-   without issues (2026-07-10). Do not reopen Import Assist Phase 1 without a
-   reproduced hotfix need.
-2. **Active lane is v1.7 Reference Compare plus trust / daily-use hardening.**
+1. Treat **v1.7 (`1.7.0`) as published and closed** after App Review passed
+   (user-reported 2026-07-12). Do not move its public tag or reopen it without
+   a reproduced hotfix need.
+2. **Active lane is v1.8 Daily Trust Completion.**
    **R0–R4 source is landed** (paired shell, PDF/image/text readers, Import
    Assist pair + follow, advisory 要確認 nav). Prioritize L Mode continuity,
    pathless draft recovery, packaged Reference Compare proof, bounded
    large-data failure states, deterministic tests, a11y, and purpose-led
-   discovery before adding breadth. Keep one read-only reference + one
+   discovery before adding breadth. The full Rust suite host-sensitive tests
+   are now isolated from the default suite; keep one read-only reference + one
    editable Markdown buffer; do not build a generic split editor. See
    `docs/v1.7-reference-compare-design.md`,
    `docs/v1.7-scope-brief.md`,
    `docs/v1.7-trust-scale-plan.md`, and `docs/current-work.md`.
-3. Keep position-continuity and v1.3 Daily Trust closed unless a gap
+3. The active post-v1.7 direction is **v1.8+ before v2**. Two-digit minor
+   versions such as `v1.10` are allowed. Close Daily Trust, clarify the writing
+   loop, add a single-document structure model and bounded structure editing,
+   then run a larger packaged distribution test before multi-file Book Scope.
+   See `docs/v1.8-plus-product-review-roadmap.md`. This does not authorize a
+   version bump, tag, upload, or release publication.
+4. Keep position-continuity and v1.3 Daily Trust closed unless a gap
    reproduces. Historical notes remain in `docs/v1.1-v1.2-followup.md` and
    `docs/v1.3-followup.md`.
-4. Complete Google Drive Recovery smoke only with a dedicated user-approved
+5. Complete Google Drive Recovery smoke only with a dedicated user-approved
    fixture. The local-folder path-backed forced-termination path has passed;
    the pathless T-2 recovery path remains unclaimed.
-5. Local package provenance for any future candidate lives in
+6. Local package provenance for any future candidate lives in
    `docs/internal/app-store-candidates/latest.json`. App Store Connect,
    TestFlight, and App Review logs remain outside this repository unless
    public-safe evidence is recorded.
-6. For Hazakura Local Assist, use `docs/assist-surface-strategy.md`,
+7. For Hazakura Local Assist, use `docs/assist-surface-strategy.md`,
    `docs/apple-local-assist-distribution-plan.md`, and
    `docs/apple-local-assist-writing-companion-plan.md`; keep direct
    buffer edits as explicit AI edit transactions.
-7. Do not tag or publish without explicit approval. In-tree version is `1.7.0`
-   as a TestFlight candidate; the published Mac App Store version remains
-   `1.6.0` until `1.7.0` passes App Review.
+8. Do not tag or publish without explicit approval. In-tree and published
+   version remain `1.7.0`; the v1.8 lane starts without a version bump.

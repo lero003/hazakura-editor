@@ -591,10 +591,15 @@ fn move_workspace_entry_to_trash_clears_auto_backup_dir() {
     let backup_dir = root.join(".hazakura").join("backups").join("doomed.md");
     assert!(backup_dir.is_dir());
 
-    move_workspace_entry_to_trash_with_label(
-        MAIN_WINDOW_LABEL,
-        &path.to_string_lossy(),
+    let canonical_path = fs::canonicalize(&path).expect("canonicalize doomed file");
+    let canonical_root = fs::canonicalize(&root).expect("canonicalize root");
+    move_workspace_entry_to_trash_with_operation(
+        &path,
         &root.to_string_lossy(),
+        true,
+        Some(canonical_path),
+        Some(canonical_root),
+        |entry| fs::remove_file(entry).map_err(|err| err.to_string()),
     )
     .expect("trash should clear backup dir");
 
@@ -885,6 +890,7 @@ fn move_workspace_entry_to_trash_rejects_missing_path() {
 
 #[cfg(target_os = "macos")]
 #[test]
+#[ignore = "requires an unsandboxed interactive macOS session with Trash access"]
 fn move_workspace_entry_to_trash_removes_file_on_macos() {
     // macOS-only happy path: hand a real file to the native
     // Trash API and assert it disappears from the workspace

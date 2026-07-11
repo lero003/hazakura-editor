@@ -146,7 +146,25 @@ pub(crate) fn move_workspace_entry_to_trash_with_label(
     } else {
         None
     };
-    move_to_macos_trash(&src_path)?;
+    move_workspace_entry_to_trash_with_operation(
+        &src_path,
+        workspace_root,
+        was_file,
+        src_canon,
+        canonical_root,
+        move_to_macos_trash,
+    )
+}
+
+pub(crate) fn move_workspace_entry_to_trash_with_operation(
+    src_path: &std::path::Path,
+    workspace_root: &str,
+    was_file: bool,
+    src_canon: Option<std::path::PathBuf>,
+    canonical_root: Option<std::path::PathBuf>,
+    trash_operation: impl FnOnce(&std::path::Path) -> Result<(), String>,
+) -> Result<(), String> {
+    trash_operation(src_path)?;
 
     // For a single-file trash, drop the auto-backup dir so the
     // entry doesn't linger in `.hazakura/backups/` after the

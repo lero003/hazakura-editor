@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-11 (v1.6 App Review passed; active lane → v1.7 Reference Compare)
+Last reviewed: 2026-07-12 (v1.7 published; v1.8 Daily Trust active)
 
 ## Current Position
 
@@ -15,14 +15,11 @@ Current release state:
 
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
-- Package/app version in tree: **`1.7.0`** (TestFlight candidate; published
-  Mac App Store version stays `1.6.0` until `1.7.0` passes App Review). Local
+- Package/app version in tree: **`1.7.0`** (also the published Mac App Store
+  version; v1.8 begins without a version bump). Local
   package provenance lives in `docs/internal/app-store-candidates/latest.json`.
-- **Published Mac App Store version: `1.6.0`.** App Review passed without
-  issues (user-reported 2026-07-10). Release notes:
-  `docs/releases/1.6.0-app-store-release-notes.md`.
-- **v1.7 TestFlight candidate: `1.7.0`.** Reference Compare plus trust /
-  daily-use hardening. Not yet submitted for App Review. Release notes:
+- **Published Mac App Store version: `1.7.0`.** App Review passed and the
+  release was published (user-reported 2026-07-12). Release notes:
   `docs/releases/1.7.0-app-store-release-notes.md`.
 - **v1.5 (`1.5.0`) is closed and was released before 江戸彼岸 (edohigan).**
 - **v1.6 (`1.6.0`) is closed / published:** Import Assist Phase 1 + edohigan +
@@ -31,18 +28,22 @@ Current release state:
   reproduced hotfix need.
 - Historical MAS baselines (`1.3.0` Daily Trust and earlier) remain part of
   public product history; store Connect is authoritative for listing numbers.
-- **Active product lane: v1.7 — Reference Compare + trust/daily-use.** One
+- **v1.7 is closed / published.** Reference Compare keeps one
   read-only PDF/image/text reference beside one editable Markdown document,
   including automatic source pairing after Import Assist. Design:
   `docs/v1.7-reference-compare-design.md`. Scope brief:
   `docs/v1.7-scope-brief.md`. **R0–R4 source landed.** Trust slices (L Mode
   continuity, pathless recovery, wrap-safe long-reference rendering, root recovery)
-  are in source. **`1.7.0` is a TestFlight candidate** for real-device testing;
-  **packaged Reference Compare smoke is required before publication** (not
-  optional). The published Mac App Store version stays `1.6.0` until `1.7.0`
-  passes App Review. See `docs/current-work.md`.
-- **Next major structural lane: v2** — OKF Book Scope, then vertical writing
-  (縦書き). Design:
+  are in source. Extended recovery, long-reference, and accessibility checks
+  continue in v1.8 rather than reopening the published lane.
+- **Active product lane: v1.8 Daily Trust Completion.** Stabilize deterministic
+  tests and complete distribution evidence without adding a large surface.
+- **Accepted post-v1.7 sequence:** continue through `v1.8`, `v1.9`, `v1.10`,
+  and additional `v1.xx` releases as useful. Close daily trust and UX clarity,
+  add single-document structure, then run a larger packaged distribution test
+  before v2. Detail: `docs/v1.8-plus-product-review-roadmap.md`.
+- **Next major structural boundary: v2** — explicit multi-file Book Scope,
+  then vertical writing (縦書き). Design:
   `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
 - Current work queue: `docs/current-work.md`.
 
@@ -121,7 +122,7 @@ Near-term phase order:
    App Store lane boundary change. The remaining `useAppShellController`
    and Local Assist transaction seams stay trigger-driven candidates under
    the Observation-driven Maintenance Backlog.
-13. v1.5 is the active lane: a stabilization and reading-polish arc built
+13. v1.5 was the stabilization and reading-polish arc built
    from the small/medium items in the Observation-driven Maintenance
    Backlog. Each is an independent slice; none adds a new product surface,
    a second document model, or any arbitrary-execution / Git / LSP /
@@ -161,8 +162,8 @@ Near-term phase order:
      Harden drift or jump between the editor cursor and the e-book
      simulated page position on very long manuscripts. Pick only when a
      concrete reproduced case appears.
-   See `docs/current-work.md` (Active UX Queue) for the acceptance shape of
-   each.
+   The lane is closed as `1.5.0`; its acceptance history remains in release
+   notes and git history.
 14. v1.6 is the Import Assist Phase 1 lane (Vision OCR). PDF / 画像 →
    Markdown via on-device Vision OCR, edit-before-save, no-cloud-OCR,
    no-auto-save. Its Book Project generation connects to v2 Book Scope.
@@ -181,7 +182,23 @@ Near-term phase order:
    does not create two editable buffers, does not open PDFs as dirty tabs,
    and does not revive standalone Review Desk. Design:
    `docs/v1.7-reference-compare-design.md`.
-16. v2.0 is the OKF-based structural foundation and vertical writing
+16. v1.8+ is the deliberate bridge from the mature single-document editor to
+   v2. Two-digit minor versions such as `v1.10` are valid; version numbering
+   must not force a premature major boundary. The accepted sequence is:
+   - **v1.8 Daily Trust Completion:** deterministic full tests, pathless
+     recovery proof, packaged Reference Compare, long-reference and a11y gates.
+   - **v1.9 Writing Loop Clarity:** organize Preview / Reference / e-book /
+     Outline / Diff / L Mode around `書く・読む・確かめる`, without adding chrome.
+   - **v1.10 Single-document Structure Foundation:** interpret headings,
+     frontmatter, page-break markers, and navigation candidates through one
+     shared structure model; show structure and allow only bounded, explicit,
+     undoable single-buffer structure edits. No multi-file Book Scope.
+   - **v1.11+ Distribution Confidence:** run a larger packaged / signed matrix
+     across structure, long documents, recovery, Reference, Assist, export,
+     accessibility, sandbox, and failure boundaries before v2 implementation.
+   Detailed rationale, acceptance, and v2 entry gate:
+   `docs/v1.8-plus-product-review-roadmap.md`.
+17. v2.0 is the OKF-reviewed multi-file structural foundation and vertical writing
    target. Two pillars, in order:
    - **OKF as a structural foundation for Book Scope.** Treat a
      user-selected, explicit set of structurally related Markdown files
@@ -190,7 +207,7 @@ Near-term phase order:
      Book direction, the Safe Editor boundary that carries into v2, the
      open UI questions, and UI candidates that are not yet decided —
      lives in `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.
-     Treat that spec as the single source of truth for v2 Book Scope
+     Treat that spec as the single source of truth for v2 multi-file Book Scope
      design; the scattered Book / Workspace As Book / OKF notes elsewhere
      are historical context. Re-check the latest OKF shape before
      treating it as an implementation contract.
@@ -822,17 +839,20 @@ plugins, Git/LSP/terminal, external AI/API, or a second document model.
 
 ## v2.0 Book Scope / Book Workspace Alpha
 
-Book Scope Alpha remains explicitly deferred beyond v1.7. It is not required
-to close the current Reference Compare or trust / daily-use lane.
+Book Scope Alpha remains explicitly deferred until the v1.10
+single-document-structure bridge and v1.11+ distribution-confidence gate are
+complete. It is not required to close the current Reference Compare or trust /
+daily-use lane. The entry criteria live in
+`docs/v1.8-plus-product-review-roadmap.md`.
 
 Goal: introduce a user-selected Book Scope: a small, explicit set of
 Markdown files treated as one book without turning Hazakura into a
 project analyzer, Obsidian-like workspace system, or full file manager.
 
-This is the right place for the difficult part of `Workspace = Book`:
+This is the right place for the difficult multi-file part of `Workspace = Book`:
 several Markdown files, explicit order, chapter metadata, and book-level
 reading / export. It should build on the single-document e-book, EPUB,
-and AI review primitives instead of arriving before them.
+AI review, and v1.10 shared structure primitives instead of arriving before them.
 
 Possible first shape:
 
@@ -927,9 +947,10 @@ Keep future product work source-preserving and narrow:
 - AI proposal ingest: keep AI output explicit, file-based or
   transaction-based, and Diff / Review centered. Use
   `docs/ai-markdown-ingest-plan.md`.
-- Book Scope / Book Workspace: target v2.0 only after v1.x proves the
-  single-document product. Treat a small, explicit, user-selected set of
-  Markdown files as one book. Keep the scope reversible and avoid
+- Book Scope / Book Workspace: target v2.0 only after v1.10 proves the
+  single-document structure model and v1.11+ records the larger packaged test
+  matrix. Treat a small, explicit, user-selected set of Markdown files as one
+  book. Keep the scope reversible and avoid
   background project indexing, hidden chapter inference, or a hidden
   document model.
 - Hazakura Local Assist: keep it as an explicit, on-device, availability-

@@ -3,21 +3,21 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-07-11 (v1.7.0 TestFlight candidate; published App Store stays 1.6.0)
+Last reviewed: 2026-07-12 (v1.7 published; v1.8 Daily Trust active)
 
 ## Current State
 
-- Package version **`1.7.0`** (TestFlight candidate; published Mac App Store
-  version stays **`1.6.0`** until `1.7.0` passes App Review). Local package
+- Package and published Mac App Store version are **`1.7.0`**. App Review
+  passed and publication was user-reported on 2026-07-12. Local package
   provenance lives in ignored `docs/internal/app-store-candidates/latest.json`.
-- `v1.7.0` is the source / submission-candidate tag. The selected signed pkg is
+- `v1.7.0` is the immutable published source tag. The selected signed pkg is
   **`1.7.0` build `85`**; static signature, metadata, entitlement, and helper
   checks passed. The user reported basic packaged testing with no issue on
-  2026-07-11. App Review submission and publication remain separate actions.
+  2026-07-11. Do not move the tag or mutate published assets.
 - **v1.6 (`1.6.0`) closed and published.** Mac App Store App Review passed
   without issues (user-reported 2026-07-10). Release notes:
   `docs/releases/1.6.0-app-store-release-notes.md`. Do not reopen unless hotfix.
-- **Active lane: v1.7 Reference Compare** — **R0–R4 source landed**.
+- **v1.7 Reference Compare is closed and published** — **R0–R4 source landed**.
   Layout: **editor center-left (primary), reference right (preview-like)**.
   Not Diff — reference while editing. Text/MD + PDF/image open as read-only
   right reference; workspace PDF/text “beside” opens are preview treatment,
@@ -44,7 +44,7 @@ Last reviewed: 2026-07-11 (v1.7.0 TestFlight candidate; published App Store stay
 - Keep `@codemirror/view` at **6.43.2**. Import helper must ship via
   `externalBin` (`npm run build:import-assist-helper:live`). Both nested
   helpers need App Store inherit re-sign (`sign-app-store-submit-app.mjs`).
-- Published Mac App Store version is **`1.6.0`**. Raw App Store Connect logs
+- Published Mac App Store version is **`1.7.0`**. Raw App Store Connect logs
   stay outside the repo. The v1 public promise is
   `Markdownで書き、本として読み、ローカルAIで整える。`
 - The 2026-06-28 user-side pre-v1 checklist remains the accepted Golden
@@ -75,10 +75,9 @@ Last reviewed: 2026-07-11 (v1.7.0 TestFlight candidate; published App Store stay
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. **Submission candidate:** Basic packaged testing was user-reported with no
-   issue. Keep the extended Reference Compare, recovery, long-reference, and
-   accessibility matrix as post-submission / publication evidence rather than
-   claiming it fully completed.
+1. **Active v1.8 Daily Trust:** Keep the extended Reference Compare, recovery,
+   long-reference, and accessibility matrix as follow-up evidence rather than
+   reopening the published v1.7 lane.
 2. **Review fixes (2026-07-11):** pathless `recoveryId` is UUID (not
    `session:N`); pathless restore always opens a new pathless tab; reference
    text scrolls on `.reference-pane-body` with wrap-safe full rendering
@@ -93,20 +92,29 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    before replacing the existing reference. The exact packaged status copy,
    forced-termination recovery, narrow Japanese wrapping, and budget boundary
    remain manual proof rather than source-complete claims.
-3. **Still open:** Deterministic full Rust suite flake, manual a11y matrix,
-   P2 export/theme polish, rename VoiceOver i18n.
+3. **Rust suite stabilized:** host-only bookmark / native Trash integration
+   checks are explicit ignored tests; Trash backup cleanup uses an injected
+   unit fixture; provider-process polling tolerates full-suite parallel load.
+   Still open: manual a11y matrix, P2 export/theme polish, rename VoiceOver i18n.
 4. Keep v1.6 closed unless a reproduced gap needs a hotfix. Historical quality
    notes: `docs/quality-inventory-v1.6.md`.
-5. Keep `@codemirror/view` at **6.43.2**. Do not tag, upload, or publish
-   without explicit user approval. In-tree version is **`1.7.0`** as a
-   TestFlight candidate; the published Mac App Store version stays `1.6.0`
-   until `1.7.0` passes App Review.
+5. Keep `@codemirror/view` at **6.43.2**. Do not bump, tag, upload, or publish
+   without explicit user approval. In-tree and published version remain
+   **`1.7.0`** while v1.8 work begins.
 6. Earlier path-backed workspace Recovery forced-termination smoke passed.
    The pathless T-2 recovery smoke remains unclaimed. Google Drive remains
    `manual-blocked` until a dedicated fixture is available; do not scan or
    create content in the user's cloud folders implicitly.
 7. Do not expand into two editable panes, Review Desk revival, Book Scope,
    cloud OCR, or Git-aware merge. **Book Scope Alpha remains v2.**
+8. **Accepted post-v1.7 direction:** two-digit minor versions such as `v1.10`
+   are valid. Sequence v1.8 Daily Trust → v1.9 Writing Loop Clarity → v1.10
+   single-document structure → v1.11+ larger packaged distribution test, then
+   decide v2 multi-file Book Scope. The v1.10 bridge may interpret headings,
+   frontmatter, page-breaks, and navigation through one shared model and apply
+   only bounded explicit Undo-able edits to the active buffer. It must not add
+   a manifest/database, background scan, or second editable model. Source:
+   `docs/v1.8-plus-product-review-roadmap.md`.
 
 Detailed v0.18-v1.0 completed-slice history and per-version verification
 records moved to `docs/archive/operations/handoff-detail-through-v1.0.md`.
@@ -117,6 +125,7 @@ Read it only for historical context.
 - Current work: `docs/current-work.md`
 - v1.7 scope brief: `docs/v1.7-scope-brief.md`
 - v1.7 hardening plan: `docs/v1.7-trust-scale-plan.md`
+- v1.8+ product review / v2 bridge: `docs/v1.8-plus-product-review-roadmap.md`
 - Quality inventory (v1.6): `docs/quality-inventory-v1.6.md`
 - v1.7 Reference Compare design: `docs/v1.7-reference-compare-design.md`
 - Current implementation state: `docs/current-status.md`
@@ -158,19 +167,30 @@ Read it only for historical context.
 
 ## Verification Guidance
 
+- 2026-07-12 v1.7 publication / v1.8 Rust stabilization: Rust format passed;
+  focused Trash cleanup passed; focused Agent Workbench PATH process test
+  passed repeatedly; full `cargo test` passed three consecutive confirmation
+  runs (**338 passed / 2 explicit host-integration ignored / 0 failed** each).
+  `npm run typecheck`, `npm run test` (**158/158 files / 1365 tests**),
+  `npm run build:vite`, and `npm run build` passed. The local app build used
+  the expected SwiftPM `--disable-sandbox` fallback and completed with the
+  existing chunk-size and not-notarized warnings. `git diff --check` passed.
+- 2026-07-11 v1.8+ / v2 bridge docs sync: `git diff --check` passed;
+  focused drift and referenced-file checks passed. No code or packaged-app
+  tests were run because this slice changes planning docs only.
 - 2026-07-11 top-chrome / Reference pane follow-up: `npm run typecheck`,
   `npm run test` (**158/158 files / 1365 tests**), `npm run build:vite`,
-  `npm run build`, Rust format, and `git diff --check` passed. Full
-  `cargo test` reached **336/340**; unrelated host-sensitive bookmark, Trash,
-  and Agent Workbench PATH tests failed. The bookmark test reproduced alone;
-  Reference Compare Rust tests passed. Do not treat the full Rust suite as
-  green until those environment-sensitive failures are resolved or rerun in
-  the expected host context.
+  `npm run build`, Rust format, and `git diff --check` passed.
+  The earlier `cargo test` run reached **336/340** because bookmark / Trash
+  require host permissions and the Agent Workbench process test timed out
+  under parallel load. v1.8 isolates the two host integrations, unit-tests
+  Trash cleanup, and widens bounded process polling; the current green
+  verification is recorded above.
   `npm audit` (0 vulnerabilities) and `cargo audit` (18 allowed warnings,
   exit 0) passed. App Store surface smoke was 10 files / 95 tests; signed build
   85 checksum, metadata, entitlements, helpers, and signatures passed. Basic
   packaged behavior was user-tested without a reported issue; the extended
-  matrix remains follow-up evidence. `1.7.0` is not yet published.
+  matrix remains v1.8 follow-up evidence. `1.7.0` is published.
 - For docs-only work, run `git diff --check`.
 - For code changes, follow `docs/development-automation.md`.
 - For UI behavior changes, update or exercise `docs/smoke-checklist.md`.

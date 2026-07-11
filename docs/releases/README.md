@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-07-10
+Last reviewed: 2026-07-12
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
@@ -25,6 +25,9 @@ Latest downloadable GitHub DMG Release body:
 
 Latest App Store status:
 
+- **`1.7.0` is approved and published** on the Mac App Store (user-reported
+  2026-07-12): Reference Compare plus trust / daily-use hardening. See
+  `1.7.0-app-store-release-notes.md`.
 - **`1.6.0` is approved and published** on the Mac App Store (App Review
   passed without issues, 2026-07-10): Import Assist Phase 1, 江戸彼岸 theme,
   quality packs. See `1.6.0-app-store-release-notes.md`.

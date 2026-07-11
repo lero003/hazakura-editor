@@ -990,6 +990,7 @@ fn security_scoped_bookmark_requires_started_access() {
 
 #[cfg(target_os = "macos")]
 #[test]
+#[ignore = "requires a macOS session that permits security-scoped bookmark creation"]
 fn security_scoped_bookmark_accepts_direct_files() {
     let dir = unique_test_dir("security_bookmark_file");
     fs::create_dir_all(&dir).expect("create test dir");
