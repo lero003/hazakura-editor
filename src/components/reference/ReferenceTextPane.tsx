@@ -1,4 +1,11 @@
-import type { KeyboardEvent as ReactKeyboardEvent } from "react";
+import {
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type UIEvent,
+} from "react";
 import type { ReferenceCompareCopy } from "../../lib/locale/referenceCompare";
 import {
   isImageReference,
@@ -11,6 +18,7 @@ import type { ReferenceDocument } from "../../features/referenceCompare/types";
 import type { MenuLanguage } from "../../types";
 import { isJapaneseMenuLanguage } from "../../types";
 import { ReferencePdfPane } from "./ReferencePdfPane";
+import { computeWindowedLineRange } from "./windowedTextLines";
 
 type ReferenceTextPaneProps = {
   copy: ReferenceCompareCopy;
@@ -53,6 +61,38 @@ export function ReferenceTextPane({
   const language = isJapaneseMenuLanguage(menuLanguage) ? "ja" : "en";
   const ariaLabel = referenceRoleLabel(language, reference);
   const name = referenceDisplayName(reference);
+  const textLines = useMemo(
+    () =>
+      isTextReference(reference) ? reference.contents.split("\n") : ([] as string[]),
+    [reference],
+  );
+  const lineHeight = 22;
+  const scrollerRef = useRef<HTMLPreElement | null>(null);
+  const [scrollTop, setScrollTop] = useState(0);
+  const [viewportHeight, setViewportHeight] = useState(480);
+  const windowed = useMemo(
+    () =>
+      computeWindowedLineRange(
+        textLines.length,
+        scrollTop,
+        viewportHeight,
+        lineHeight,
+      ),
+    [scrollTop, textLines.length, viewportHeight],
+  );
+
+  const onTextScroll = useCallback((event: UIEvent<HTMLPreElement>) => {
+    const target = event.currentTarget;
+    setScrollTop(target.scrollTop);
+    setViewportHeight(target.clientHeight);
+  }, []);
+
+  const onScrollerRef = useCallback((node: HTMLPreElement | null) => {
+    scrollerRef.current = node;
+    if (node) {
+      setViewportHeight(node.clientHeight);
+    }
+  }, []);
 
   const onHeaderKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
     if (event.key === "Escape") {
@@ -133,16 +173,47 @@ export function ReferenceTextPane({
             aria-readonly="true"
             className="reference-text-surface"
             data-testid="reference-text-surface"
+            onScroll={onTextScroll}
+            ref={onScrollerRef}
             tabIndex={0}
           >
-            {reference.contents.split("\n").map((line, index) => (
-              <div className="reference-text-line" key={`ref-line-${index}`}>
-                <span className="reference-text-gutter" aria-hidden="true">
-                  {index + 1}
-                </span>
-                <span className="reference-text-content">{line || " "}</span>
+            <div
+              className="reference-text-window"
+              style={{
+                height: `${Math.max(textLines.length, 1) * lineHeight}px`,
+                position: "relative",
+              }}
+            >
+              <div
+                className="reference-text-window-inner"
+                style={{
+                  position: "absolute",
+                  top: `${windowed.start * lineHeight}px`,
+                  left: 0,
+                  right: 0,
+                }}
+              >
+                {textLines
+                  .slice(windowed.start, windowed.end)
+                  .map((line, offset) => {
+                    const index = windowed.start + offset;
+                    return (
+                      <div
+                        className="reference-text-line"
+                        key={`ref-line-${index}`}
+                        style={{ height: `${lineHeight}px` }}
+                      >
+                        <span className="reference-text-gutter" aria-hidden="true">
+                          {index + 1}
+                        </span>
+                        <span className="reference-text-content">
+                          {line || " "}
+                        </span>
+                      </div>
+                    );
+                  })}
               </div>
-            ))}
+            </div>
           </pre>
         ) : null}
         {isPdfReference(reference) ? (

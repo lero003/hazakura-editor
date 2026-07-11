@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
   draftRecordFromTab,
   upsertDraftRecord,
   writeStoredDrafts,
 } from "../../lib/storage";
+import { tabsEligibleForDraftPersistence } from "../../features/document/pathlessDraftRecovery";
 import type { DraftRecord, EditorTab } from "../../types";
-import { isDirty } from "../../features/editor/editorTabs";
 
 type RefValue<T> = {
   current: T;
@@ -18,12 +18,16 @@ type UseDraftPersistenceOptions = {
   tabs: EditorTab[];
 };
 
+const DRAFT_PERSIST_DEBOUNCE_MS = 400;
+
 export function useDraftPersistence({
   discardingWindowCloseRef,
   pendingDrafts,
   restoreComplete,
   tabs,
 }: UseDraftPersistenceOptions) {
+  const timerRef = useRef<number | null>(null);
+
   useEffect(() => {
     if (!restoreComplete) {
       return;
@@ -33,15 +37,34 @@ export function useDraftPersistence({
       return;
     }
 
-    const dirtyDrafts = tabs
-      .filter((tab) => tab.path.length > 0 && isDirty(tab))
-      .map(draftRecordFromTab);
+    const persist = () => {
+      if (discardingWindowCloseRef.current) {
+        return;
+      }
 
-    writeStoredDrafts(
-      [...pendingDrafts, ...dirtyDrafts].reduce<DraftRecord[]>(
-        (records, draft) => upsertDraftRecord(records, draft),
-        [],
-      ),
-    );
+      const dirtyDrafts = tabsEligibleForDraftPersistence(tabs).map(
+        draftRecordFromTab,
+      );
+
+      // Pending candidates first, then live dirty tabs so later upserts win.
+      writeStoredDrafts(
+        [...pendingDrafts, ...dirtyDrafts].reduce<DraftRecord[]>(
+          (records, draft) => upsertDraftRecord(records, draft),
+          [],
+        ),
+      );
+    };
+
+    if (timerRef.current !== null) {
+      window.clearTimeout(timerRef.current);
+    }
+    timerRef.current = window.setTimeout(persist, DRAFT_PERSIST_DEBOUNCE_MS);
+
+    return () => {
+      if (timerRef.current !== null) {
+        window.clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
   }, [discardingWindowCloseRef, pendingDrafts, restoreComplete, tabs]);
 }

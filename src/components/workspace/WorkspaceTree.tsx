@@ -179,6 +179,7 @@ function TreeEntry({
             <TextFileIcon />
           )}
           <RenameInput
+            ariaLabel={`Rename ${entry.name}`}
             draft={renameDraft}
             inputRef={renameInputRef}
             onChange={setRenameDraft}
@@ -302,6 +303,7 @@ function TreeEntry({
       <ChevronIcon expanded={expanded} />
       {expanded ? <FolderOpenIcon /> : <FolderIcon />}
       <RenameInput
+        ariaLabel={`Rename ${entry.name}`}
         draft={renameDraft}
         inputRef={renameInputRef}
         onChange={setRenameDraft}
@@ -369,12 +371,14 @@ function TreeEntry({
 }
 
 function RenameInput({
+  ariaLabel,
   draft,
   inputRef,
   onCancel,
   onChange,
   onCommit,
 }: {
+  ariaLabel: string;
   draft: string | null;
   inputRef: React.RefObject<HTMLInputElement | null>;
   onCancel: () => void;
@@ -418,6 +422,7 @@ function RenameInput({
 
   return (
     <input
+      aria-label={ariaLabel}
       autoComplete="off"
       className="tree-rename-input"
       onBlur={handleBlur}

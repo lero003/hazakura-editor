@@ -1,4 +1,11 @@
 import {
+  draftRecordFromTab as draftRecordFromTabCore,
+  draftStorageKey,
+  pruneDraftRecords,
+  removeDraftMatching,
+  upsertDraftRecordByKey,
+} from "../features/document/pathlessDraftRecovery";
+import {
   DRAFT_STATE_STORAGE_KEY,
   MAX_RECENT_ITEMS,
   MAX_STORED_DRAFTS,
@@ -26,8 +33,7 @@ export function readStoredDrafts(): DraftRecord[] {
       return [];
     }
 
-    return parsed
-      .filter(isDraftRecord)
+    return pruneDraftRecords(parsed.filter(isDraftRecord))
       .sort((a, b) => b.updatedAt - a.updatedAt)
       .slice(0, MAX_STORED_DRAFTS);
   } catch {
@@ -36,7 +42,7 @@ export function readStoredDrafts(): DraftRecord[] {
 }
 
 export function writeStoredDrafts(drafts: DraftRecord[]) {
-  const normalizedDrafts = drafts
+  const normalizedDrafts = pruneDraftRecords(drafts)
     .sort((a, b) => b.updatedAt - a.updatedAt)
     .slice(0, MAX_STORED_DRAFTS);
 
@@ -45,45 +51,48 @@ export function writeStoredDrafts(drafts: DraftRecord[]) {
     return;
   }
 
-  window.localStorage.setItem(
-    DRAFT_STATE_STORAGE_KEY,
-    JSON.stringify(normalizedDrafts),
-  );
+  try {
+    window.localStorage.setItem(
+      DRAFT_STATE_STORAGE_KEY,
+      JSON.stringify(normalizedDrafts),
+    );
+  } catch {
+    // Quota / private mode: keep editing; recovery is best-effort only.
+  }
 }
 
-export function removeStoredDraft(path: string) {
-  writeStoredDrafts(readStoredDrafts().filter((draft) => draft.path !== path));
+export function removeStoredDraft(pathOrKey: string) {
+  writeStoredDrafts(removeDraftMatching(readStoredDrafts(), pathOrKey));
 }
 
-export function removeStoredDrafts(paths: string[]) {
-  if (paths.length === 0) {
+export function removeStoredDrafts(pathsOrKeys: string[]) {
+  if (pathsOrKeys.length === 0) {
     return;
   }
 
-  writeStoredDrafts(
-    readStoredDrafts().filter((draft) => !paths.includes(draft.path)),
-  );
+  let next = readStoredDrafts();
+  for (const key of pathsOrKeys) {
+    next = removeDraftMatching(next, key);
+  }
+  writeStoredDrafts(next);
+}
+
+export function removeStoredDraftRecord(draft: DraftRecord) {
+  writeStoredDrafts(removeDraftMatching(readStoredDrafts(), draft));
 }
 
 export function draftRecordFromTab(tab: EditorTab): DraftRecord {
-  return {
-    path: tab.path,
-    contents: tab.contents,
-    line_ending: tab.line_ending,
-    savedFingerprint: tab.fingerprint,
-    updatedAt: Date.now(),
-  };
+  return draftRecordFromTabCore(tab);
 }
 
 export function upsertDraftRecord(
   drafts: DraftRecord[],
   nextDraft: DraftRecord,
 ): DraftRecord[] {
-  return [
-    nextDraft,
-    ...drafts.filter((draft) => draft.path !== nextDraft.path),
-  ].slice(0, MAX_STORED_DRAFTS);
+  return upsertDraftRecordByKey(drafts, nextDraft).slice(0, MAX_STORED_DRAFTS);
 }
+
+export { draftStorageKey };
 
 export function readStoredRecentFiles(): RecentEntry[] {
   window.localStorage.removeItem(RECENT_FILES_STORAGE_KEY);
@@ -513,11 +522,20 @@ function isDraftRecord(value: unknown): value is DraftRecord {
 
   const candidate = value as Partial<DraftRecord>;
 
-  return (
-    typeof candidate.path === "string" &&
-    typeof candidate.contents === "string" &&
-    (candidate.line_ending === "lf" || candidate.line_ending === "crlf") &&
-    typeof candidate.savedFingerprint === "string" &&
-    typeof candidate.updatedAt === "number"
-  );
+  if (
+    typeof candidate.path !== "string" ||
+    typeof candidate.contents !== "string" ||
+    (candidate.line_ending !== "lf" && candidate.line_ending !== "crlf") ||
+    typeof candidate.savedFingerprint !== "string" ||
+    typeof candidate.updatedAt !== "number"
+  ) {
+    return false;
+  }
+
+  // Pathless recovery requires a stable recoveryId.
+  if (candidate.path.length === 0) {
+    return typeof candidate.recoveryId === "string" && candidate.recoveryId.length > 0;
+  }
+
+  return true;
 }

@@ -58,15 +58,45 @@ describe("useDraftPersistence", () => {
     window.localStorage.clear();
   });
 
-  it("does not persist dirty pathless untitled tabs as recovery drafts", async () => {
+  it("persists dirty pathless untitled tabs as recovery candidates", async () => {
     renderDraftPersistence({
       tabs: [
         makeTab({
           contents: "# Untitled draft",
           id: "untitled:1",
+          sessionId: "session:pathless-1",
           lastSavedContents: "",
           name: "untitled.md",
           path: "",
+          fingerprint: "",
+        }),
+      ],
+    });
+
+    await waitFor(() => {
+      expect(readStoredDrafts()).toHaveLength(1);
+    });
+
+    expect(readStoredDrafts()[0]).toMatchObject({
+      contents: "# Untitled draft",
+      path: "",
+      recoveryId: "session:pathless-1",
+      name: "untitled.md",
+      origin: "untitled",
+    });
+  });
+
+  it("does not persist empty pathless buffers", async () => {
+    renderDraftPersistence({
+      tabs: [
+        makeTab({
+          contents: "",
+          id: "untitled:1",
+          sessionId: "session:empty",
+          lastSavedContents: "",
+          name: "untitled.md",
+          path: "",
+          fingerprint: "",
         }),
       ],
     });
@@ -74,8 +104,6 @@ describe("useDraftPersistence", () => {
     await waitFor(() => {
       expect(window.localStorage.getItem(DRAFT_STATE_STORAGE_KEY)).toBeNull();
     });
-
-    expect(readStoredDrafts()).toEqual([]);
   });
 
   it("keeps persisting dirty tabs that have a file path", async () => {

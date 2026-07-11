@@ -19,7 +19,7 @@ type AppDocumentFeedbackProps = {
   closeFindAndFocusEditor: () => void;
   closeTabNow: (tabId: string) => void;
   clearSaveError: (tabId: string) => void;
-  discardDraft: (draftPath: string) => void;
+  discardDraft: (draftPathOrKey: string) => void;
   dismissActiveError: () => void;
   editorChromeCopy: EditorChromeCopy;
   findInputRef: RefObject<HTMLInputElement | null>;
@@ -36,6 +36,7 @@ type AppDocumentFeedbackProps = {
   invalidRegex: boolean;
   keepEditingAfterConflict: (tabId: string) => void;
   lModeEnabled: boolean;
+  orphanPathlessDrafts?: DraftRecord[];
   recoveryCopy: RecoveryCopy;
   reopenTabFromDisk: (tabId: string) => void;
   replaceAll: () => void;
@@ -79,6 +80,7 @@ export function AppDocumentFeedback({
   invalidRegex,
   keepEditingAfterConflict,
   lModeEnabled,
+  orphanPathlessDrafts = [],
   recoveryCopy,
   reopenTabFromDisk,
   replaceAll,
@@ -133,6 +135,7 @@ export function AppDocumentFeedback({
         activeTab={activeTab}
         copy={recoveryCopy}
         draftReviewAvailable={!lModeEnabled}
+        orphanPathlessDrafts={orphanPathlessDrafts}
         onClearSaveError={clearSaveError}
         onCloseTabWithoutSaving={closeTabNow}
         onDiscardDraft={discardDraft}

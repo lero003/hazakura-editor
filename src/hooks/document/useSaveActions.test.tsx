@@ -312,5 +312,6 @@ describe("useSaveActions", () => {
     expect(getTabs()[0].sessionId).toBe("session:a");
     expect(options.setActiveTabId).toHaveBeenCalledWith("/tmp/untitled.md");
     expect(removeStoredDraft).not.toHaveBeenCalledWith("");
+    expect(removeStoredDraft).toHaveBeenCalledWith("pathless:session:a");
   });
 });

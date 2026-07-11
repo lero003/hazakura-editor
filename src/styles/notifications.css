@@ -74,3 +74,56 @@
   border-color: color-mix(in srgb, var(--surface-strong) 60%, transparent);
 }
 
+
+/* root error recovery (v1.7 S-2) */
+.root-error-recovery {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: color-mix(in srgb, var(--bg, #111) 88%, transparent);
+  color: var(--text, #f5f5f5);
+}
+.root-error-recovery-card {
+  max-width: 36rem;
+  width: 100%;
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: var(--surface-strong, #1c1c1c);
+  border: 1px solid color-mix(in srgb, var(--text, #fff) 16%, transparent);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+}
+.root-error-recovery-card h1 {
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+}
+.root-error-recovery-detail {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+  opacity: 0.85;
+  word-break: break-word;
+}
+.root-error-recovery-stack pre {
+  max-height: 10rem;
+  overflow: auto;
+  font-size: 0.75rem;
+  white-space: pre-wrap;
+}
+.root-error-recovery-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+.root-error-recovery-en {
+  margin: 0;
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+.message-detail-note {
+  display: block;
+  margin-top: 0.25rem;
+  opacity: 0.9;
+}

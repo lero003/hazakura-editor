@@ -95,13 +95,13 @@ each slice should remain independently verifiable.
 
 | Priority | Slice | Why now | Acceptance anchor |
 |---|---|---|---|
-| **P0** | **L Mode continuity** | A presentation toggle must not discard Undo, the prior side pane, or comparison context. | L Mode → normal restores the prior surface; edits remain undoable; cursor/IME/long-wrap state stays stable. |
-| **P0** | **Pathless draft recovery** | “No auto-save” must not mean losing a new or Import Assist draft after a crash. | App-private, TTL/size-bounded recovery candidate; no source-file write or silent apply. |
-| **P0** | **Reference Compare packaged proof** | R0–R4 source tests do not prove native helper, picker, sandbox, CSP, and close/replace behavior together. | PDF/image/text, Import pair/follow, 要確認, Save As, deletion, narrow/keyboard/App Store smoke matrix. |
-| **P1** | **Processing budgets** | Draft persistence, Diff, search, PDF export, and reference raster need independent byte/time/DOM limits. | Bounded fallback, cancellation where applicable, and an honest truncation/error state. |
-| **P1** | **Failure containment / deterministic tests** | A frontend exception should not strand the editing session; the Rust suite currently has a PATH-sensitive full-run flake. | Root recovery surface; deterministic full-suite signal; integration coverage across open → edit → Save As → Assist/Reference → close. |
-| **P1** | **Long reference + accessibility** | Full-line text reference DOM and unnamed rename input weaken long-document and VoiceOver use. | Windowed reference rendering, accessible rename field, keyboard/VoiceOver/contrast/Reduce Motion smoke. |
-| **P1** | **Purpose-led discovery** | Preview/L Mode/e-book/Outline/Diff/Reference are easier to understand by task than by feature name. | Small first-use Start Panel and contextual hints for write / read / verify, without adding chrome. |
+| **Done / source** | **L Mode continuity (T-1)** | Side-pane mode restored on exit; compare anchors kept; undo preserved via `historyField` remount path. | L Mode → normal restores prior pane mode; undo survives same-kind remount (unit proof). |
+| **Done / source** | **Pathless draft recovery (T-2)** | App-private recovery for new/Import Assist drafts (`recoveryId`, TTL/size, explicit banner). | No source write; restore/discard explicit; Save As clears pathless key. |
+| **P0 remaining** | **Reference Compare packaged proof (T-3)** | R0–R4 source tests do not prove native helper, picker, sandbox, CSP, and close/replace together. | Packaged smoke matrix still required before v1.7 version-bump discussion. |
+| **Partial / source** | **Processing budgets (S-1)** | Pathless draft debounce + TTL/size; existing Diff/export caps remain. | Further Diff/search/raster budget UX polish as needed. |
+| **Done / source** | **Root recovery surface (S-2 partial)** | `RootErrorRecovery` wraps the app shell. | PATH-sensitive Rust full-suite flake and full integration path remain open. |
+| **Done / source** | **Long reference + rename a11y (S-3 partial)** | Windowed text reference DOM; rename inputs have accessible names. | Manual keyboard/VoiceOver/contrast/Reduce Motion smoke still open. |
+| **Done / source** | **Purpose-led discovery (S-4 partial)** | Start Panel write / read / verify pitch + short hints. | Optional contextual first-use tooltips for modes remain light polish. |
 | **P2** | **Export/theme polish** | Export confidence and theme cost can improve after trust gates pass. | Concise EPUB/PDF preflight, Preferences parity, measured shader/reduced-motion behavior. |
 
 Book Scope Alpha is **not** part of this queue. It remains a v2 decision after

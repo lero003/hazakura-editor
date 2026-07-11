@@ -16,6 +16,9 @@ export type RecoveryCopy = {
   draftAvailable: (name: string) => string;
   errorActions: string;
   keepEditing: string;
+  pathlessDraftAvailable: (name: string) => string;
+  pathlessDraftDetail: string;
+  pathlessDraftFallbackName: string;
   reopenFromDisk: string;
   reviewChanges: string;
   restoreDraft: string;
@@ -39,6 +42,11 @@ export function getRecoveryCopy(lang: MenuLanguage): RecoveryCopy {
         draftAvailable: (name: string) => `${name} の未保存下書きがあります。`,
         errorActions: "エラーの操作",
         keepEditing: "編集を続ける",
+        pathlessDraftAvailable: (name: string) =>
+          `パスのない未保存下書き「${name}」を復旧できます。`,
+        pathlessDraftDetail:
+          "ソースファイルには書き込みません。復元するか破棄するかを選んでください。",
+        pathlessDraftFallbackName: "新規下書き",
         reopenFromDisk: "ディスクから再読み込み",
         reviewChanges: "変更を確認",
         restoreDraft: "下書きを復元",
@@ -61,6 +69,11 @@ export function getRecoveryCopy(lang: MenuLanguage): RecoveryCopy {
           `Unsaved draft available for ${name}.`,
         errorActions: "Error actions",
         keepEditing: "Keep editing",
+        pathlessDraftAvailable: (name: string) =>
+          `Recoverable unsaved draft “${name}” is available.`,
+        pathlessDraftDetail:
+          "This never writes a source file. Restore it or discard it.",
+        pathlessDraftFallbackName: "Untitled draft",
         reopenFromDisk: "Reopen from disk",
         reviewChanges: "Review changes",
         restoreDraft: "Restore draft",

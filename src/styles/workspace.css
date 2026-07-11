@@ -1205,6 +1205,26 @@
   font-weight: 700;
 }
 
+.start-value-pitch {
+  margin: 0.35rem 0 0.75rem;
+  color: var(--text-muted, color-mix(in srgb, var(--text) 72%, transparent));
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+}
+
+.start-purpose-hints {
+  margin: 0 0 1.25rem;
+  padding-left: 1.15rem;
+  color: var(--text-muted, color-mix(in srgb, var(--text) 68%, transparent));
+  font-size: 0.85rem;
+  line-height: 1.55;
+  max-width: 28rem;
+}
+
+.start-purpose-hints li {
+  margin: 0.15rem 0;
+}
+
 .start-panel h1 {
   color: var(--text);
   font-size: clamp(28px, 3.2vw, 40px);

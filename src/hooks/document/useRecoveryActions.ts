@@ -6,10 +6,19 @@ import {
 import { openTextFile } from "../../lib/tauri";
 import {
   createEditorTab,
+  createUntitledEditorTab,
   updateTabsById,
   updateTabsByPath,
 } from "../../features/editor/editorTabs";
-import { removeStoredDraft } from "../../lib/storage";
+import {
+  draftMatchesTab,
+  draftStorageKey,
+  isPathlessDraft,
+} from "../../features/document/pathlessDraftRecovery";
+import {
+  removeStoredDraft,
+  removeStoredDraftRecord,
+} from "../../lib/storage";
 import type { DraftRecord, EditorTab } from "../../types";
 
 type UseRecoveryActionsOptions = {
@@ -109,6 +118,44 @@ export function useRecoveryActions({
 
   const restoreDraft = useCallback(
     (draft: DraftRecord) => {
+      if (isPathlessDraft(draft)) {
+        const existing = tabsRef.current.find((tab) =>
+          draftMatchesTab(draft, tab),
+        );
+        if (existing) {
+          setTabs((currentTabs) =>
+            updateTabsById(currentTabs, existing.id, (tab) => ({
+              ...tab,
+              contents: draft.contents,
+              line_ending: draft.line_ending,
+              name: draft.name ?? tab.name,
+              saveStatus: "idle",
+              error: null,
+            })),
+          );
+          setActiveTabId(existing.id);
+        } else {
+          const created = createUntitledEditorTab();
+          const restored: EditorTab = {
+            ...created,
+            name: draft.name ?? created.name,
+            contents: draft.contents,
+            line_ending: draft.line_ending,
+          };
+          setTabs((currentTabs) => [...currentTabs, restored]);
+          setActiveTabId(restored.id);
+        }
+        setPendingDrafts((currentDrafts) =>
+          currentDrafts.filter(
+            (candidate) => draftStorageKey(candidate) !== draftStorageKey(draft),
+          ),
+        );
+        removeStoredDraftRecord(draft);
+        setStatus("Draft restored");
+        focusEditorSoon();
+        return;
+      }
+
       setTabs((currentTabs) =>
         updateTabsByPath(currentTabs, draft.path, (tab) => ({
           ...tab,
@@ -119,20 +166,38 @@ export function useRecoveryActions({
         })),
       );
       setPendingDrafts((currentDrafts) =>
-        currentDrafts.filter((candidate) => candidate.path !== draft.path),
+        currentDrafts.filter(
+          (candidate) => draftStorageKey(candidate) !== draftStorageKey(draft),
+        ),
       );
+      removeStoredDraftRecord(draft);
       setStatus("Draft restored");
       focusEditorSoon();
     },
-    [focusEditorSoon, setPendingDrafts, setStatus, setTabs],
+    [
+      focusEditorSoon,
+      setActiveTabId,
+      setPendingDrafts,
+      setStatus,
+      setTabs,
+      tabsRef,
+    ],
   );
 
   const discardDraft = useCallback(
-    (draftPath: string) => {
+    (draftPathOrKey: string) => {
       setPendingDrafts((currentDrafts) =>
-        currentDrafts.filter((candidate) => candidate.path !== draftPath),
+        currentDrafts.filter((candidate) => {
+          if (draftStorageKey(candidate) === draftPathOrKey) {
+            return false;
+          }
+          if (candidate.path.length > 0 && candidate.path === draftPathOrKey) {
+            return false;
+          }
+          return true;
+        }),
       );
-      removeStoredDraft(draftPath);
+      removeStoredDraft(draftPathOrKey);
       setStatus("Draft discarded");
     },
     [setPendingDrafts, setStatus],

@@ -6,6 +6,7 @@ import {
   useRef,
 } from "react";
 import {
+  historyField,
   selectCharLeft,
   selectCharRight,
   selectLineDown,
@@ -507,6 +508,11 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     const currentView = viewRef.current;
     const isSessionSwitch =
       mountedEditorSessionKeyRef.current !== editorSessionKey;
+    const isLModeOnlyRemount =
+      currentView !== null &&
+      !isSessionSwitch &&
+      mountedLModeEnabledRef.current !== lModeEnabled &&
+      mountedKindRef.current === picked.kind;
     const preservedViewState: EditorViewState | null =
       currentView && !isSessionSwitch
         ? {
@@ -515,6 +521,18 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
             scrollRatio: readScrollRatio(currentView.scrollDOM),
           }
         : null;
+    // T-1: preserve undo/redo across L Mode remount (same session + kind).
+    let preservedHistory: unknown;
+    if (isLModeOnlyRemount && currentView) {
+      try {
+        const json = currentView.state.toJSON({ history: historyField }) as {
+          history?: unknown;
+        };
+        preservedHistory = json.history;
+      } catch {
+        preservedHistory = undefined;
+      }
+    }
     destroyMountedViewRef.current?.();
     destroyMountedViewRef.current = null;
     viewRef.current = null;
@@ -528,135 +546,164 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       ? clampEditorViewState(sourceViewState, value.length)
       : null;
 
-    const view = new EditorView({
-      doc: value,
-      parent: editorMountRef.current,
-      selection: restoredViewState
-        ? {
-            anchor: restoredViewState.anchor,
-            head: restoredViewState.head,
+    const editorExtensions: Extension[] = [
+      // Writing-surface base (no foldGutter — see editorBaseSetup.ts).
+      editorBaseSetup,
+      rectangularSelection(),
+      crosshairCursor(),
+      editorKeyboardShortcuts,
+      editorTabIndentation,
+      language,
+      searchHighlightField,
+      wrappingCompartmentRef.current.of(
+        getEditorWrappingExtensions(wrapLines, lModeEnabled),
+      ),
+      invisiblesCompartmentRef.current.of(
+        showInvisibles ? invisibleCharactersField : [],
+      ),
+      tabSizeCompartmentRef.current.of(EditorState.tabSize.of(tabSize)),
+      spellcheckCompartmentRef.current.of(
+        EditorView.contentAttributes.of({
+          spellcheck: spellcheckEnabled ? "true" : "false",
+        }),
+      ),
+      themeCompartmentRef.current.of([editorTheme(theme, fontSize), highlight]),
+      lModeCompartmentRef.current.of(
+        lModeExtension(
+          lModeEnabled,
+          {
+            workspaceRoot: workspaceRoot ?? null,
+            documentPath: documentKey,
+          },
+          { typewriterMode: lModeTypewriter },
+        ),
+      ),
+      readOnlyCompartmentRef.current.of(EditorView.editable.of(!readOnly)),
+      EditorView.domEventHandlers({
+        keydown(event, view) {
+          if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key === "Enter") {
+            const sel = view.state.selection.main;
+            const text = sel.empty ? view.state.sliceDoc(0) : view.state.sliceDoc(sel.from, sel.to);
+            if (text.trim()) {
+              event.preventDefault();
+              onSendToAgentRef.current(text);
+              return true;
+            }
           }
-        : undefined,
-      extensions: [
-        // Writing-surface base (no foldGutter — see editorBaseSetup.ts).
-        editorBaseSetup,
-        rectangularSelection(),
-        crosshairCursor(),
-        editorKeyboardShortcuts,
-        editorTabIndentation,
-        language,
-        searchHighlightField,
-        wrappingCompartmentRef.current.of(
-          getEditorWrappingExtensions(wrapLines, lModeEnabled),
-        ),
-        invisiblesCompartmentRef.current.of(
-          showInvisibles ? invisibleCharactersField : [],
-        ),
-        tabSizeCompartmentRef.current.of(EditorState.tabSize.of(tabSize)),
-        spellcheckCompartmentRef.current.of(
-          EditorView.contentAttributes.of({
-            spellcheck: spellcheckEnabled ? "true" : "false",
-          }),
-        ),
-        themeCompartmentRef.current.of([
-          editorTheme(theme, fontSize),
-          highlight,
-        ]),
-        lModeCompartmentRef.current.of(
-          lModeExtension(
-            lModeEnabled,
-            {
-              workspaceRoot: workspaceRoot ?? null,
-              documentPath: documentKey,
+          return false;
+        },
+        paste(event, view) {
+          const handler = onPasteImageRef.current;
+          if (!handler) return false;
+
+          const items = event.clipboardData?.items;
+          if (!items) return false;
+
+          let imageItem: DataTransferItem | null = null;
+          let imageType = "";
+          for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            if (item.type.startsWith("image/")) {
+              imageItem = item;
+              imageType = item.type;
+              break;
+            }
+          }
+          if (!imageItem) return false;
+
+          event.preventDefault();
+
+          const pasteSelection = view.state.selection.main;
+          const docAtPaste = view.state.doc;
+          const file = imageItem.getAsFile();
+          if (!file) return false;
+
+          const reader = new FileReader();
+          reader.onload = async () => {
+            const base64 = reader.result as string;
+            const commaIndex = base64.indexOf(",");
+            const rawBase64 = commaIndex >= 0 ? base64.slice(commaIndex + 1) : base64;
+            const ext = imageType.split("/")[1] ?? "png";
+            const fileName = `pasted-${Date.now()}.${ext}`;
+
+            try {
+              const relativePath = await handler(rawBase64, fileName);
+              if (!relativePath) return;
+              if (view.state.doc !== docAtPaste) return;
+              view.dispatch({
+                changes: {
+                  from: pasteSelection.from,
+                  to: pasteSelection.to,
+                  insert: `![](${relativePath})\n`,
+                },
+              });
+            } catch {
+              // Paste image insertion failed silently
+            }
+          };
+          reader.readAsDataURL(file);
+          return true;
+        },
+      }),
+      EditorView.updateListener.of((update) => {
+        if (update.docChanged && !applyingExternalValueRef.current) {
+          onChangeRef.current(update.state.doc.toString());
+        }
+
+        if (update.docChanged || update.selectionSet) {
+          onSelectionChangeRef.current(readSelectionInfo(update.state));
+        }
+        if (update.selectionSet) {
+          const selection = update.state.selection.main;
+          onEditorViewStateChangeRef.current?.({
+            anchor: selection.anchor,
+            head: selection.head,
+          });
+        }
+      }),
+    ];
+
+    let startState: EditorState | null = null;
+    if (preservedHistory !== undefined && restoredViewState) {
+      try {
+        startState = EditorState.fromJSON(
+          {
+            doc: value,
+            selection: {
+              main: 0,
+              ranges: [
+                {
+                  anchor: restoredViewState.anchor,
+                  head: restoredViewState.head,
+                },
+              ],
             },
-            { typewriterMode: lModeTypewriter },
-          ),
-        ),
-        readOnlyCompartmentRef.current.of(EditorView.editable.of(!readOnly)),
-        EditorView.domEventHandlers({
-          keydown(event, view) {
-            if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key === "Enter") {
-              const sel = view.state.selection.main;
-              const text = sel.empty ? view.state.sliceDoc(0) : view.state.sliceDoc(sel.from, sel.to);
-              if (text.trim()) {
-                event.preventDefault();
-                onSendToAgentRef.current(text);
-                return true;
-              }
-            }
-            return false;
+            history: preservedHistory,
           },
-          paste(event, view) {
-            const handler = onPasteImageRef.current;
-            if (!handler) return false;
+          { extensions: editorExtensions },
+          { history: historyField },
+        );
+      } catch {
+        startState = null;
+      }
+    }
 
-            const items = event.clipboardData?.items;
-            if (!items) return false;
-
-            let imageItem: DataTransferItem | null = null;
-            let imageType = "";
-            for (let i = 0; i < items.length; i++) {
-              const item = items[i];
-              if (item.type.startsWith("image/")) {
-                imageItem = item;
-                imageType = item.type;
-                break;
+    const view = startState
+      ? new EditorView({
+          state: startState,
+          parent: editorMountRef.current,
+        })
+      : new EditorView({
+          doc: value,
+          parent: editorMountRef.current,
+          selection: restoredViewState
+            ? {
+                anchor: restoredViewState.anchor,
+                head: restoredViewState.head,
               }
-            }
-            if (!imageItem) return false;
-
-            event.preventDefault();
-
-            const pasteSelection = view.state.selection.main;
-            const docAtPaste = view.state.doc;
-            const file = imageItem.getAsFile();
-            if (!file) return false;
-
-            const reader = new FileReader();
-            reader.onload = async () => {
-              const base64 = reader.result as string;
-              const commaIndex = base64.indexOf(",");
-              const rawBase64 = commaIndex >= 0 ? base64.slice(commaIndex + 1) : base64;
-              const ext = imageType.split("/")[1] ?? "png";
-              const fileName = `pasted-${Date.now()}.${ext}`;
-
-              try {
-                const relativePath = await handler(rawBase64, fileName);
-                if (!relativePath) return;
-                if (view.state.doc !== docAtPaste) return;
-                view.dispatch({
-                  changes: {
-                    from: pasteSelection.from,
-                    to: pasteSelection.to,
-                    insert: `![](${relativePath})\n`,
-                  },
-                });
-              } catch {
-                // Paste image insertion failed silently
-              }
-            };
-            reader.readAsDataURL(file);
-            return true;
-          },
-        }),
-        EditorView.updateListener.of((update) => {
-          if (update.docChanged && !applyingExternalValueRef.current) {
-            onChangeRef.current(update.state.doc.toString());
-          }
-
-          if (update.docChanged || update.selectionSet) {
-            onSelectionChangeRef.current(readSelectionInfo(update.state));
-          }
-          if (update.selectionSet) {
-            const selection = update.state.selection.main;
-            onEditorViewStateChangeRef.current?.({
-              anchor: selection.anchor,
-              head: selection.head,
-            });
-          }
-        }),
-      ],
-    });
+            : undefined,
+          extensions: editorExtensions,
+        });
     const handleScroll = () => {
       // scroll イベントは高頻度なので1フレームに1回にまとめる。
       if (scrollReportFrameRef.current !== null) {
@@ -804,11 +851,9 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     // NB: no cleanup return here. The mount useEffect re-runs
     // on every document/session/lMode identity change. Re-mounting
     // happens when the language `kind` changes OR when L Mode is
-    // toggled (see `shouldRemount`); in both cases the cursor position
-    // and scroll ratio are preserved across the remount via
-    // `preservedViewState`, so the only visible trade-off is that undo
-    // history resets on each L Mode toggle. `destroyMountedViewRef` is
-    // called only on actual remount or component unmount.
+    // toggled (see `shouldRemount`). Cursor, scroll ratio, and (for
+    // same-kind L Mode toggles) undo history are restored when possible.
+    // `destroyMountedViewRef` runs only on actual remount or unmount.
   }, [documentKey, editorSessionKey, lModeEnabled]);
 
   useEffect(() => {

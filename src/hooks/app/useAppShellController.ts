@@ -303,6 +303,7 @@ export function useAppShellController() {
     dirtyTabCount,
     dirtyTabs,
     handlePasteImage,
+    orphanPathlessDrafts,
     pendingCloseTab,
   } = useDocumentCoreController({
     activeTabId,
@@ -1110,35 +1111,40 @@ export function useAppShellController() {
     exitLMode();
   }, [exitLMode]);
 
-  // When L Mode turns on, force the side pane closed. The CSS hides
-  // the toggles in L Mode so the user cannot re-open them from chrome
-  // alone; this effect keeps the state consistent so the next time the
-  // user toggles L Mode off, the workspace is in a clean state.
+  // T-1 L Mode continuity: snapshot side-pane mode on entry and restore
+  // on exit. Compare anchors are intentionally kept in memory (not
+  // cleared) so returning from L Mode does not discard a review setup.
+  const lModeSurfaceSnapshotRef = useRef<{
+    sidePaneOpen: boolean;
+    rightPaneMode: typeof rightPaneMode;
+  } | null>(null);
+  const wasLModeEnabledRef = useRef(editorSettings.lModeEnabled);
+  const sidePaneOpenRef = useRef(sidePaneOpen);
+  const rightPaneModeRef = useRef(rightPaneMode);
+  sidePaneOpenRef.current = sidePaneOpen;
+  rightPaneModeRef.current = rightPaneMode;
+
   useEffect(() => {
-    if (!editorSettings.lModeEnabled) {
-      return;
+    const wasEnabled = wasLModeEnabledRef.current;
+    const isEnabled = editorSettings.lModeEnabled;
+
+    if (!wasEnabled && isEnabled) {
+      lModeSurfaceSnapshotRef.current = {
+        sidePaneOpen: sidePaneOpenRef.current,
+        rightPaneMode: rightPaneModeRef.current,
+      };
+      setSidePaneOpen(false);
+    } else if (wasEnabled && !isEnabled) {
+      const snapshot = lModeSurfaceSnapshotRef.current;
+      lModeSurfaceSnapshotRef.current = null;
+      if (snapshot) {
+        setSidePaneOpen(snapshot.sidePaneOpen);
+        setRightPaneMode(snapshot.rightPaneMode);
+      }
     }
-    setSidePaneOpen(false);
-    // Compare selection is invisible in L Mode (the workspace
-    // tree and the compare panel are both hidden), but the
-    // source/target anchors persist in state. If we leave them
-    // set, the user re-entering normal mode finds the slots
-    // pre-filled with files they no longer remember choosing.
-    // Clear both slots on entry so the user starts fresh.
-    if (compareAnchor !== null) {
-      clearCompareSource();
-    }
-    if (compareTarget !== null) {
-      clearCompareTarget();
-    }
-  }, [
-    clearCompareSource,
-    clearCompareTarget,
-    compareAnchor,
-    compareTarget,
-    editorSettings.lModeEnabled,
-    setSidePaneOpen,
-  ]);
+
+    wasLModeEnabledRef.current = isEnabled;
+  }, [editorSettings.lModeEnabled, setRightPaneMode, setSidePaneOpen]);
 
   // section: document safety actions
   const {
@@ -1606,6 +1612,7 @@ export function useAppShellController() {
     activeMatchIndex,
     activeSaveError,
     ambientIntensity: editorSettings.ambientIntensity,
+    orphanPathlessDrafts,
     activeTab,
     activeTabId,
     agentLaunchGate,

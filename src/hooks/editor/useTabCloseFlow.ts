@@ -88,9 +88,18 @@ export function useTabCloseFlow({
         const nextTabs = currentTabs.filter((tab) => tab.id !== tabId);
 
         if (closingTab) {
-          removeStoredDrafts([closingTab.path]);
+          const draftKey =
+            closingTab.path.length > 0
+              ? closingTab.path
+              : `pathless:${closingTab.sessionId}`;
+          removeStoredDrafts([draftKey]);
           setPendingDrafts((currentDrafts) =>
-            currentDrafts.filter((draft) => draft.path !== closingTab.path),
+            currentDrafts.filter((draft) => {
+              if (closingTab.path.length > 0) {
+                return draft.path !== closingTab.path;
+              }
+              return draft.recoveryId !== closingTab.sessionId;
+            }),
           );
         }
 
@@ -257,7 +266,17 @@ export function useTabCloseFlow({
   ]);
 
   const discardAllAndCloseWindow = useCallback(async () => {
-    const discardedDraftPaths = dirtyTabs.map((tab) => tab.path);
+    const discardedDraftKeys = dirtyTabs.map((tab) =>
+      tab.path.length > 0 ? tab.path : `pathless:${tab.sessionId}`,
+    );
+    const discardedPaths = new Set(
+      dirtyTabs.map((tab) => tab.path).filter((path) => path.length > 0),
+    );
+    const discardedSessionIds = new Set(
+      dirtyTabs
+        .filter((tab) => tab.path.length === 0)
+        .map((tab) => tab.sessionId),
+    );
     const dirtyTabById = new Map(dirtyTabs.map((tab) => [tab.id, tab]));
     const discardedTabIds = new Set(dirtyTabs.map((tab) => tab.id));
     // v0.17 slice 1.4: see the matching dispatch in
@@ -267,11 +286,14 @@ export function useTabCloseFlow({
     const exitAfter = appExitInProgressRef?.current === true;
 
     discardingWindowCloseRef.current = true;
-    removeStoredDrafts(discardedDraftPaths);
+    removeStoredDrafts(discardedDraftKeys);
     setPendingDrafts((currentDrafts) =>
-      currentDrafts.filter(
-        (draft) => !discardedDraftPaths.includes(draft.path),
-      ),
+      currentDrafts.filter((draft) => {
+        if (draft.path.length > 0) {
+          return !discardedPaths.has(draft.path);
+        }
+        return !draft.recoveryId || !discardedSessionIds.has(draft.recoveryId);
+      }),
     );
     allowWindowCloseRef.current = true;
 

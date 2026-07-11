@@ -20,6 +20,12 @@ export function StartPanel({
           <span className="start-kicker">Hazakura Editor</span>
         </div>
         <h1>{copy.startHeading}</h1>
+        <p className="start-value-pitch">{copy.startValuePitch}</p>
+        <ul className="start-purpose-hints" aria-label={copy.startValuePitch}>
+          <li>{copy.startHintWrite}</li>
+          <li>{copy.startHintRead}</li>
+          <li>{copy.startHintVerify}</li>
+        </ul>
         <div className="start-actions" aria-label={copy.startActions}>
           <button type="button" onClick={() => void onOpenFile()}>
             {copy.openFile}

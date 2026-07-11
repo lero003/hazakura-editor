@@ -1,3 +1,4 @@
+import { draftStorageKey } from "../../features/document/pathlessDraftRecovery";
 import type { RecoveryCopy } from "../../lib/locale";
 import type { DraftRecord, EditorTab } from "../../types";
 
@@ -9,9 +10,11 @@ type RecoveryMessagesProps = {
   activeTab: EditorTab | null;
   copy: RecoveryCopy;
   draftReviewAvailable?: boolean;
+  /** Pathless recovery candidates without a matching open tab. */
+  orphanPathlessDrafts?: DraftRecord[];
   onClearSaveError: (tabId: string) => void;
   onCloseTabWithoutSaving: (tabId: string) => void;
-  onDiscardDraft: (draftPath: string) => void;
+  onDiscardDraft: (draftPathOrKey: string) => void;
   onDismissError: () => void;
   onKeepEditingAfterConflict: (tabId: string) => void;
   onReopenTabFromDisk: (tabId: string) => void;
@@ -29,6 +32,7 @@ export function RecoveryMessages({
   activeTab,
   copy,
   draftReviewAvailable = true,
+  orphanPathlessDrafts = [],
   onClearSaveError,
   onCloseTabWithoutSaving,
   onDiscardDraft,
@@ -42,6 +46,7 @@ export function RecoveryMessages({
 }: RecoveryMessagesProps) {
   const hasMessage =
     (activeDraft !== null && activeTab !== null) ||
+    orphanPathlessDrafts.length > 0 ||
     activeError !== null;
 
   if (!hasMessage) {
@@ -59,7 +64,7 @@ export function RecoveryMessages({
             </span>
           </span>
           <div className="message-actions" aria-label={copy.draftActions}>
-            {draftReviewAvailable ? (
+            {draftReviewAvailable && activeDraft.path.length > 0 ? (
               <button
                 type="button"
                 onClick={() => onReviewDraftAgainstDisk(activeTab, activeDraft)}
@@ -72,13 +77,44 @@ export function RecoveryMessages({
             </button>
             <button
               type="button"
-              onClick={() => onDiscardDraft(activeDraft.path)}
+              onClick={() => onDiscardDraft(draftStorageKey(activeDraft))}
             >
               {copy.discardDraft}
             </button>
           </div>
         </div>
       ) : null}
+      {orphanPathlessDrafts.map((draft) => {
+        const label = draft.name?.trim() || copy.pathlessDraftFallbackName;
+        return (
+          <div
+            className="draft-banner"
+            data-testid="pathless-draft-recovery"
+            key={draftStorageKey(draft)}
+          >
+            <span className="message-copy">
+              {copy.pathlessDraftAvailable(label)}
+              <span className="message-detail">
+                {copy.savedLocally(draft.updatedAt)}
+                <span className="message-detail-note">
+                  {copy.pathlessDraftDetail}
+                </span>
+              </span>
+            </span>
+            <div className="message-actions" aria-label={copy.draftActions}>
+              <button type="button" onClick={() => onRestoreDraft(draft)}>
+                {copy.restoreDraft}
+              </button>
+              <button
+                type="button"
+                onClick={() => onDiscardDraft(draftStorageKey(draft))}
+              >
+                {copy.discardDraft}
+              </button>
+            </div>
+          </div>
+        );
+      })}
       {activeError ? (
         <div className={activeConflict ? "conflict-banner" : "error-banner"}>
           <span className="message-copy">

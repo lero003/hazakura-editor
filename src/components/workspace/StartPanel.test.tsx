@@ -21,4 +21,22 @@ describe("StartPanel recent file surface", () => {
     expect(screen.queryByRole("button", { name: "Pin file" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Unpin file" })).toBeNull();
   });
+
+  it("shows purpose-led write / read / verify hints", () => {
+    render(
+      <StartPanel
+        copy={getSafeEditorCopy("en")}
+        onNewFile={vi.fn()}
+        onOpenFile={vi.fn()}
+        onOpenFolder={vi.fn()}
+      />,
+    );
+
+    const panel = document.querySelector(".start-panel");
+    expect(panel?.textContent).toContain("Write, read, and verify.");
+    expect(panel?.textContent).toMatch(/Write/);
+    expect(panel?.textContent).toMatch(/Read/);
+    expect(panel?.textContent).toMatch(/Verify/);
+    expect(panel?.querySelectorAll(".start-purpose-hints li").length).toBe(3);
+  });
 });

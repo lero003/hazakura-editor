@@ -389,12 +389,26 @@ export type EditorSettings = {
 
 export type AmbientIntensity = "off" | "subtle" | "normal" | "dramatic";
 
+export type DraftOrigin = "file" | "untitled" | "import-assist";
+
+/**
+ * App-private recovery candidate. Path-backed drafts use `path` as identity.
+ * Pathless new / Import Assist drafts use empty `path` + `recoveryId`
+ * (typically the tab sessionId) and never write a source file on their own.
+ */
 export type DraftRecord = {
   path: string;
   contents: string;
   line_ending: EditableLineEnding;
   savedFingerprint: string;
   updatedAt: number;
+  /** Stable id for pathless drafts (`sessionId` of the source tab). */
+  recoveryId?: string;
+  /** Display name when path is empty. */
+  name?: string;
+  origin?: DraftOrigin;
+  /** Monotonic-ish revision for conflict-aware UI (ms timestamp). */
+  revision?: number;
 };
 
 export type RecentEntry = {

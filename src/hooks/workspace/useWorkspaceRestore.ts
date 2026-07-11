@@ -76,6 +76,18 @@ export function useWorkspaceRestore({
       const persistedState = readPersistedWorkspaceState();
 
       if (!persistedState) {
+        // Still surface pathless recovery when no workspace session exists.
+        const pathlessOnly = readStoredDrafts().filter(
+          (candidate) =>
+            candidate.path.length === 0 &&
+            typeof candidate.recoveryId === "string" &&
+            candidate.recoveryId.length > 0 &&
+            candidate.contents.length > 0,
+        );
+        if (pathlessOnly.length > 0) {
+          setPendingDrafts(pathlessOnly);
+          onStatus("Unsaved draft recovery available");
+        }
         setRestoreComplete(true);
         return;
       }
@@ -169,9 +181,10 @@ export function useWorkspaceRestore({
           restoredTabs.length +
           (skippedWorkspaceRootRestore ? 1 : 0);
         const storedDrafts = readStoredDrafts();
-        const recoverableDrafts = restoredTabs.flatMap((tab) => {
+        const pathRecoverableDrafts = restoredTabs.flatMap((tab) => {
           const draft = storedDrafts.find(
             (candidate) =>
+              candidate.path.length > 0 &&
               candidate.path === tab.path &&
               candidate.savedFingerprint === tab.fingerprint &&
               candidate.contents !== tab.contents,
@@ -179,6 +192,19 @@ export function useWorkspaceRestore({
 
           return draft ? [draft] : [];
         });
+        // Pathless new / Import Assist drafts: explicit startup candidates.
+        // Never auto-open as tabs; user must restore or discard.
+        const pathlessRecoverableDrafts = storedDrafts.filter(
+          (candidate) =>
+            candidate.path.length === 0 &&
+            typeof candidate.recoveryId === "string" &&
+            candidate.recoveryId.length > 0 &&
+            candidate.contents.length > 0,
+        );
+        const recoverableDrafts = [
+          ...pathRecoverableDrafts,
+          ...pathlessRecoverableDrafts,
+        ];
 
         if (!cancelled) {
           setTabs(restoredTabs);

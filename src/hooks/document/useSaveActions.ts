@@ -109,6 +109,9 @@ export function useSaveActions({
         rememberRecentFile(nextTab.path);
         if (latestTab.path) {
           removeStoredDraft(latestTab.path);
+        } else if (latestTab.sessionId) {
+          // Pathless recovery is keyed by sessionId, not by empty path.
+          removeStoredDraft(`pathless:${latestTab.sessionId}`);
         }
 
         if (workspaceRootPath) {

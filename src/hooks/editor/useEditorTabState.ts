@@ -1,4 +1,8 @@
 import { useMemo } from "react";
+import {
+  draftMatchesTab,
+  isPathlessDraft,
+} from "../../features/document/pathlessDraftRecovery";
 import { isDirty, isSaveFailureError } from "../../features/editor/editorTabs";
 import { localizeStatusMessage } from "../../lib/statusMessages";
 import type { DraftRecord, EditorTab } from "../../types";
@@ -30,12 +34,23 @@ export function useEditorTabState({
     [pendingCloseTabId, tabs],
   );
   const dirtyTabs = useMemo(() => tabs.filter(isDirty), [tabs]);
-  const activeDraft = useMemo(
+  const activeDraft = useMemo(() => {
+    if (!activeTab) {
+      return null;
+    }
+    return (
+      pendingDrafts.find((draft) => draftMatchesTab(draft, activeTab)) ?? null
+    );
+  }, [activeTab, pendingDrafts]);
+  /** Pathless recovery candidates with no matching open tab (startup). */
+  const orphanPathlessDrafts = useMemo(
     () =>
-      activeTab
-        ? pendingDrafts.find((draft) => draft.path === activeTab.path) ?? null
-        : null,
-    [activeTab, pendingDrafts],
+      pendingDrafts.filter(
+        (draft) =>
+          isPathlessDraft(draft) &&
+          !tabs.some((tab) => draftMatchesTab(draft, tab)),
+      ),
+    [pendingDrafts, tabs],
   );
   const activeContents = activeTab?.contents ?? "";
   const activeDirty = activeTab ? isDirty(activeTab) : false;
@@ -56,6 +71,7 @@ export function useEditorTabState({
     activeTab,
     dirtyTabCount: dirtyTabs.length,
     dirtyTabs,
+    orphanPathlessDrafts,
     pendingCloseTab,
   };
 }
