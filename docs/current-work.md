@@ -16,7 +16,7 @@ Start here when choosing the next small `Hazakura Editor` slice.
 | **v1.5** | **Closed / released as `1.5.0`** | Stabilization + reading polish. **Released before 江戸彼岸 (edohigan) was merged.** Do not reopen unless hotfix. |
 | **Post-v1.5 main (not v1.5)** | Merged after v1.5 release | 江戸彼岸 theme; CodeMirror `@codemirror/view` **6.43.2** pin + editor display quality (syntax-tree recompute, resize remeasure, fold gutter removed). |
 | **v1.6** | **Closed / published as `1.6.0`** | Import Assist Phase 1 + edohigan + quality packs. **App Review passed without issues (2026-07-10).** Boundary: `docs/import-assist-boundary-review.md`. Release notes: `docs/releases/1.6.0-app-store-release-notes.md`. Do not reopen unless hotfix. |
-| **v1.7** | **Active (R0–R4 source landed; review polish)** | Reference Compare: one read-only PDF/image/text reference beside one editable Markdown tab. Design: `docs/v1.7-reference-compare-design.md`. Next: package smoke + any remaining review fixes before version bump. |
+| **v1.7** | **Active (R0–R4 source landed; trust / daily-use hardening)** | Reference Compare: one read-only PDF/image/text reference beside one editable Markdown tab. Scope brief: `docs/v1.7-scope-brief.md`; feature design: `docs/v1.7-reference-compare-design.md`; hardening plan: `docs/v1.7-trust-scale-plan.md`. Next: complete the scope gate, then version-bump discussion. |
 | **v2** | Later | OKF Book Scope, then 縦書き. |
 
 Published Mac App Store version is **`1.6.0`**. See `current-status.md` for lane truth; treat Connect as authoritative for store counters.
@@ -66,6 +66,13 @@ v1.7 deepens Import Assist into a general reference workflow. Product story:
 Full interaction, security boundary, and non-goals:
 `docs/v1.7-reference-compare-design.md`.
 
+The scope-based brief for a separate v1.7 implementation request is
+**`docs/v1.7-scope-brief.md`**. It defines the whole v1.7 product boundary and
+completion criteria without making individual slices the user-facing scope.
+The review-derived **`docs/v1.7-trust-scale-plan.md`** remains the operational
+breakdown for execution; it keeps Book Scope Alpha in v2 and does not widen
+Safe Editor into an IDE, terminal, Git client, or generic AI surface.
+
 Key product rules for this lane:
 
 - open PDF, image, Markdown, or text as **one** read-only right-hand reference
@@ -80,6 +87,26 @@ Key product rules for this lane:
 - never two editable panes, never auto-apply, never revive Review Desk, never
   treat Reference Compare as Diff layout.
 
+## Active Trust / Daily-use Queue — v1.7
+
+The feature arc is source-landed, but the product is not ready to widen scope
+until the following user-visible guarantees are proven. Priority is ordered;
+each slice should remain independently verifiable.
+
+| Priority | Slice | Why now | Acceptance anchor |
+|---|---|---|---|
+| **P0** | **L Mode continuity** | A presentation toggle must not discard Undo, the prior side pane, or comparison context. | L Mode → normal restores the prior surface; edits remain undoable; cursor/IME/long-wrap state stays stable. |
+| **P0** | **Pathless draft recovery** | “No auto-save” must not mean losing a new or Import Assist draft after a crash. | App-private, TTL/size-bounded recovery candidate; no source-file write or silent apply. |
+| **P0** | **Reference Compare packaged proof** | R0–R4 source tests do not prove native helper, picker, sandbox, CSP, and close/replace behavior together. | PDF/image/text, Import pair/follow, 要確認, Save As, deletion, narrow/keyboard/App Store smoke matrix. |
+| **P1** | **Processing budgets** | Draft persistence, Diff, search, PDF export, and reference raster need independent byte/time/DOM limits. | Bounded fallback, cancellation where applicable, and an honest truncation/error state. |
+| **P1** | **Failure containment / deterministic tests** | A frontend exception should not strand the editing session; the Rust suite currently has a PATH-sensitive full-run flake. | Root recovery surface; deterministic full-suite signal; integration coverage across open → edit → Save As → Assist/Reference → close. |
+| **P1** | **Long reference + accessibility** | Full-line text reference DOM and unnamed rename input weaken long-document and VoiceOver use. | Windowed reference rendering, accessible rename field, keyboard/VoiceOver/contrast/Reduce Motion smoke. |
+| **P1** | **Purpose-led discovery** | Preview/L Mode/e-book/Outline/Diff/Reference are easier to understand by task than by feature name. | Small first-use Start Panel and contextual hints for write / read / verify, without adding chrome. |
+| **P2** | **Export/theme polish** | Export confidence and theme cost can improve after trust gates pass. | Concise EPUB/PDF preflight, Preferences parity, measured shader/reduced-motion behavior. |
+
+Book Scope Alpha is **not** part of this queue. It remains a v2 decision after
+the single-document and Reference Compare loop is proven.
+
 ### Quality inventory (v1.6 historical)
 
 Cross-cutting quality notes for the closed v1.6 line live in
@@ -91,6 +118,14 @@ time; keep normal `npm test` / `cargo test` gates.
 - Keep `@codemirror/view` at **6.43.2** (`package.json` + overrides).
 - 6.43.3+ tile-tree regressions caused vanishing lines / wrong caret.
 - Do not bump view without re-verifying long Japanese Markdown + wrap + L Mode.
+
+### v1.7 completion gate
+
+Before discussing a v1.7 version bump, confirm the packaged Reference Compare
+matrix, L Mode continuity, pathless draft recovery, bounded large-data failure
+states, keyboard/a11y smoke, and deterministic Rust test signal. Keep the
+published version at `1.6.0` until that proof exists and release approval is
+explicit.
 
 ### 江戸彼岸 (post-v1.5)
 

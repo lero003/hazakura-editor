@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-07-10 (v1.6 published; v1.7 Reference Compare active design)
+Last reviewed: 2026-07-11 (v1.6 published; v1.7 trust / daily-use hardening)
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
@@ -23,6 +23,11 @@ or quality-polish slice.
 - `import-assist-boundary-review.md`: v1.6 Import Assist Phase 1 boundary sign-off (shipped).
 - `v1.7-reference-compare-design.md`: accepted active-lane design — read-only
   reference + editable Markdown paired-tab (PDF↔MD / MD↔MD), slices R0–R4.
+- `v1.7-scope-brief.md`: scope-based brief for separate v1.7 implementation
+  requests; defines the complete product boundary and completion criteria.
+- `v1.7-trust-scale-plan.md`: review-derived v1.7 continuity, recovery,
+  bounded-scale, accessibility, and discovery hardening plan; Book Scope Alpha
+  remains v2.
 - `releases/1.6.0-app-store-release-notes.md`: v1.6 App Store copy and published position.
 - `edohigan-theme-plan.md`: post-v1.5 江戸彼岸 theme notes (not part of v1.5 release).
 

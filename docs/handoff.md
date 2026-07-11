@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-07-11 (Reference Compare layout: editor center, reference right)
+Last reviewed: 2026-07-11 (v1.7 trust / daily-use hardening plan)
 
 ## Current State
 
@@ -66,21 +66,29 @@ Last reviewed: 2026-07-11 (Reference Compare layout: editor center, reference ri
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. Packaged App Store smoke for Reference Compare (PDF/image open, import
-   pair, follow, 要確認) remains useful product proof.
-2. Do not invent per-character confidence highlights from aggregate scores.
-3. Optional polish: virtualized long text reference. File メニュー、タブ右クリック、
-   ワークスペース右クリックの `参照として横に開く` 導線と、text↔text の
-   `差分を見る` wiring は source landed。
-4. Keep v1.6 closed unless a reproduced gap needs a hotfix. Historical quality
+1. **P0:** L Mode continuity — restore prior side-pane/review context and
+   preserve Undo across the presentation toggle.
+2. **P0:** Explicit app-private recovery for pathless new / Import Assist drafts;
+   keep source-file auto-save prohibited.
+3. **P0:** Packaged Reference Compare smoke — PDF/image/text, Import Assist
+   pair/follow, 要確認, Save As, deletion, narrow window, keyboard, and App Store
+   sandbox picker.
+4. **P1:** Processing budgets and failure clarity for draft persistence, Diff,
+   workspace search, PDF export, and reference raster; add root recovery UI.
+5. **P1:** Deterministic Rust test signal, long-reference windowing, rename-field
+   a11y, and keyboard / VoiceOver / contrast / Reduce Motion smoke.
+6. **P1:** Purpose-led Start Panel and contextual hints for write / read / verify;
+   keep chrome and Safe Editor scope bounded.
+7. **P2:** Export preflight, Preferences parity, and measured theme polish.
+8. Keep v1.6 closed unless a reproduced gap needs a hotfix. Historical quality
    notes: `docs/quality-inventory-v1.6.md`.
-5. Keep `@codemirror/view` at **6.43.2**. Do not tag, upload, or publish
+9. Keep `@codemirror/view` at **6.43.2**. Do not tag, upload, or publish
    without explicit user approval.
-6. Local forced-termination Recovery passed. Google Drive remains
-   `manual-blocked` until a dedicated fixture is available; do not scan or
-   create content in the user's cloud folders implicitly.
-7. Do not expand into two editable panes, Review Desk revival, Book Scope,
-   cloud OCR, or Git-aware merge.
+10. Local forced-termination Recovery passed. Google Drive remains
+    `manual-blocked` until a dedicated fixture is available; do not scan or
+    create content in the user's cloud folders implicitly.
+11. Do not expand into two editable panes, Review Desk revival, Book Scope,
+    cloud OCR, or Git-aware merge. **Book Scope Alpha remains v2.**
 
 Detailed v0.18-v1.0 completed-slice history and per-version verification
 records moved to `docs/archive/operations/handoff-detail-through-v1.0.md`.
@@ -89,6 +97,8 @@ Read it only for historical context.
 ## Source Docs
 
 - Current work: `docs/current-work.md`
+- v1.7 scope brief: `docs/v1.7-scope-brief.md`
+- v1.7 hardening plan: `docs/v1.7-trust-scale-plan.md`
 - Quality inventory (v1.6): `docs/quality-inventory-v1.6.md`
 - v1.7 Reference Compare design: `docs/v1.7-reference-compare-design.md`
 - Current implementation state: `docs/current-status.md`
@@ -130,13 +140,13 @@ Read it only for historical context.
 
 ## Verification Guidance
 
-- Latest Reference Compare discovery slice passed `npm run test` (153 files /
-  1335 tests), `cargo fmt --check`, `cargo test` (one unrelated PATH-sensitive
-  Agent Workbench test passed on immediate isolated rerun), `npm run build`,
-  and `git diff --check`. The PDF raster CSP fix is included in the latest
-  built `.app`; focused tests assert `data:image/png` and reject `blob:`.
-  Manual post-relaunch PDF image smoke remains unclaimed because the running
-  app had an unsaved import draft and was not terminated.
+- The latest review pass ran `npm run typecheck`, `npm run test` (153 files /
+  1336 tests), `cargo fmt --check`, and `git diff --check` successfully.
+  A full `cargo test` run had one PATH-sensitive Agent Workbench failure;
+  the named test passed on immediate isolated rerun, so the Rust suite is not
+  currently a clean deterministic pass. The PDF raster CSP fix is included in
+  the latest built `.app`; focused tests assert `data:image/png` and reject
+  `blob:`. Manual post-relaunch PDF image smoke remains unclaimed.
 - For docs-only work, run `git diff --check`.
 - For code changes, follow `docs/development-automation.md`.
 - For UI behavior changes, update or exercise `docs/smoke-checklist.md`.

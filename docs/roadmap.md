@@ -661,6 +661,36 @@ If the answer is not clearly yes, keep the idea out of the active lane.
 Goal: deepen the single-document writing / review / export model after
 the first daily-use surface is proven.
 
+### v1.7 Trust And Daily Use Hardening
+
+The active v1.7 lane is now **Reference Compare plus trust / daily-use
+hardening**, not another broad feature arc. R0–R4 are source-landed, so the
+next work should prove that the user can keep one editable Markdown source,
+refer to one read-only source, move between reading and writing, and recover
+from failure without losing context or data.
+
+Use [`docs/v1.7-scope-brief.md`](v1.7-scope-brief.md) when making a separate
+v1.7 implementation request. It is the scope-level source for the product
+boundary and completion criteria. Use
+[`docs/v1.7-trust-scale-plan.md`](v1.7-trust-scale-plan.md) only for the
+operational breakdown and verification order.
+
+The scope-level themes are:
+
+1. L Mode continuity: restore prior reading/review context and preserve Undo.
+2. Explicit recovery for pathless new / Import Assist drafts without
+   auto-saving to the source file.
+3. Packaged Reference Compare proof across PDF/image/text, Import Assist,
+   narrow-window, keyboard, deletion, and App Store sandbox paths.
+4. Bounded processing for draft persistence, Diff, search, PDF export, and
+   reference raster; failure containment; deterministic test signal.
+5. Long-reference accessibility, purpose-led discovery, export confidence,
+   and measured theme polish.
+
+These are planned v1.7 scope even when older backlog text below calls them
+observation-driven. Book Scope Alpha is the deliberate exception: it remains
+v2 and must not be pulled forward by this hardening plan.
+
 Possible directions:
 
 - Keep the v1 Golden Manuscript as a reusable release fixture and expand
@@ -724,7 +754,9 @@ foundation for v2 Book Scope is assessed in
 These are not v1.0 blockers and not scheduled releases. They are items
 worth picking up whenever a quiet moment or a related change makes one
 cheap to close. Each is a candidate, not a commitment. Keep them small
-and inside the Safe Editor boundary.
+and inside the Safe Editor boundary. The v1.7 items promoted into
+`docs/v1.7-trust-scale-plan.md` are no longer merely optional candidates;
+the remaining bullets below retain this observation-driven status.
 
 - **Theme customization.** Today the app ships five themes
   (`light` / `dark` / `sakura` / `yakou` / `shokou`; the earlier
@@ -780,6 +812,9 @@ product-boundary decision. None of these add arbitrary execution,
 plugins, Git/LSP/terminal, external AI/API, or a second document model.
 
 ## v2.0 Book Scope / Book Workspace Alpha
+
+Book Scope Alpha remains explicitly deferred beyond v1.7. It is not required
+to close the current Reference Compare or trust / daily-use lane.
 
 Goal: introduce a user-selected Book Scope: a small, explicit set of
 Markdown files treated as one book without turning Hazakura into a
