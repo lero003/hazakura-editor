@@ -35,6 +35,9 @@ Last reviewed: 2026-07-12 (v1.7 published; v1.8 Daily Trust active)
   50,000-line DOM budget. Packaged Reference Compare proof (T-3),
   forced-termination pathless recovery, budget-boundary smoke, and full a11y
   smoke remain v1.8 follow-up evidence rather than v1.7 publication blockers.
+  Quick Open, Command Palette, and Global Search now expose dialog,
+  combobox/listbox, active-option, and search-status semantics for keyboard and
+  VoiceOver navigation; packaged VoiceOver smoke remains required.
   No per-character confidence claims.
   The top chrome now separates L Mode from right-pane selection and exposes an
   explicit `参照` item beside Preview / e-book / Outline / Diff. Switching pane
@@ -494,7 +497,7 @@ baseline, and smoke evidence are archived under
 
 ## Active Planning Sources
 
-- `docs/current-work.md`: current v1.7 Reference Compare plus trust / daily-use
+- `docs/current-work.md`: current v1.8 Daily Trust Completion queue
   hardening queue.
 - `docs/v1.7-scope-brief.md`: scope-based brief for separate v1.7 requests;
   defines the full boundary and completion criteria without treating slices as

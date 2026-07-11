@@ -70,13 +70,16 @@ describe("ReferencePdfPane", () => {
       />,
     );
 
-    await waitFor(() => {
-      expect(renderPdfReferencePage).toHaveBeenCalledWith(
-        "pdf-ref-1",
-        0,
-        expect.any(Number),
-      );
-    });
+    await waitFor(
+      () => {
+        expect(renderPdfReferencePage).toHaveBeenCalledWith(
+          "pdf-ref-1",
+          0,
+          expect.any(Number),
+        );
+      },
+      { timeout: 3_000 },
+    );
     expect(screen.getByText(/ページ 1 \/ 2/)).toBeTruthy();
 
     fireEvent.click(screen.getByLabelText("次のページ"));

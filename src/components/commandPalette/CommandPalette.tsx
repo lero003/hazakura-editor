@@ -27,6 +27,9 @@ export function CommandPalette({
   const activeIndexRef = useRef(activeIndex);
   activeIndexRef.current = activeIndex;
   const commandsRef = useLatestValueRef(commands);
+  const activeOptionId = commands[activeIndex]
+    ? `command-palette-option-${activeIndex}`
+    : undefined;
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -74,31 +77,47 @@ export function CommandPalette({
   return (
     <div className="command-palette-overlay" onPointerDown={onClose}>
       <div
+        aria-label="Command palette"
+        aria-modal="true"
         className="command-palette-dialog"
         onPointerDown={(event) => event.stopPropagation()}
+        role="dialog"
       >
         <input
           ref={inputRef}
+          aria-activedescendant={activeOptionId}
+          aria-controls="command-palette-results"
+          aria-expanded="true"
+          aria-haspopup="listbox"
           aria-label="Command palette"
           className="command-palette-input"
           onChange={(event) => onSetQuery(event.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Type a command..."
+          role="combobox"
           type="text"
           value={query}
         />
-        <div className="command-palette-results" ref={listRef}>
+        <div
+          className="command-palette-results"
+          id="command-palette-results"
+          ref={listRef}
+          role="listbox"
+        >
           {commands.length === 0 ? (
             <div className="command-palette-empty">No matching commands</div>
           ) : (
             commands.map((command, index) => (
               <button
                 key={command.id}
+                aria-selected={index === activeIndex}
                 className={`command-palette-item${
                   index === activeIndex ? " active" : ""
                 }`}
+                id={`command-palette-option-${index}`}
                 onMouseEnter={() => onSetActiveIndex(index)}
                 onPointerDown={() => onRun(command)}
+                role="option"
                 type="button"
               >
                 <span className="command-palette-label">{command.label}</span>

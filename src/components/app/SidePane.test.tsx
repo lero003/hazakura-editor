@@ -106,9 +106,12 @@ describe("SidePane", () => {
       sidePaneMode: "preview",
     });
 
-    await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "First" })).toBeTruthy();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByRole("heading", { name: "First" })).toBeTruthy();
+      },
+      { timeout: 3_000 },
+    );
     const previewContainer = previewPaneRef.current;
     expect(previewContainer).not.toBeNull();
     if (!previewContainer) throw new Error("preview container missing");
@@ -142,10 +145,13 @@ describe("SidePane", () => {
       />,
     );
 
-    await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Second" })).toBeTruthy();
-      expect(previewContainer.scrollTop).toBe(200);
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByRole("heading", { name: "Second" })).toBeTruthy();
+        expect(previewContainer.scrollTop).toBe(200);
+      },
+      { timeout: 3_000 },
+    );
   });
 
   it("shows a clear empty state for e-book mode when preview content is unavailable", () => {

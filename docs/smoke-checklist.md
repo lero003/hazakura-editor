@@ -625,6 +625,12 @@ recovered state separately where relevant.
     over 50,000 logical lines. Confirm both fail with the localized size reason,
     the editable buffer is unchanged, and an already-open reference is not
     replaced.
+24. **Search-surface keyboard / VoiceOver semantics**: open Quick Open,
+    Command Palette, and Global Search. Confirm VoiceOver announces each as a
+    modal search surface, reports the active result while Arrow Up / Down keeps
+    focus in the text field, and announces Global Search progress / summary.
+    Confirm Enter runs the active result, Escape closes the surface, and IME
+    conversion Enter / arrows are not intercepted.
 
 ### v1.1 Continuity Evidence (2026-06-29)
 

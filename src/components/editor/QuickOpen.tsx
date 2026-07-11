@@ -165,32 +165,59 @@ export function QuickOpen({
       : menuLanguage === "ja"
         ? "一致するファイルがありません"
         : "No matching files";
+  const dialogLabel =
+    menuLanguage === "kana"
+      ? "ふみを すぐひらく"
+      : menuLanguage === "ja"
+        ? "クイックオープン"
+        : "Quick Open";
+  const activeOptionId = results[activeIndex]
+    ? `quick-open-option-${activeIndex}`
+    : undefined;
 
   return (
     <div className="quick-open-overlay" onPointerDown={onClose}>
       <div
+        aria-label={dialogLabel}
+        aria-modal="true"
         className="quick-open-dialog"
         onPointerDown={(e) => e.stopPropagation()}
+        role="dialog"
       >
         <input
           ref={inputRef}
+          aria-activedescendant={activeOptionId}
+          aria-controls="quick-open-results"
+          aria-expanded="true"
+          aria-label={dialogLabel}
+          aria-haspopup="listbox"
           className="quick-open-input"
           type="text"
           placeholder={placeholder}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
+          role="combobox"
         />
-        <div className="quick-open-results" ref={listRef}>
+        <div
+          className="quick-open-results"
+          id="quick-open-results"
+          ref={listRef}
+          role="listbox"
+        >
           {results.length === 0 ? (
             <div className="quick-open-empty">{emptyMsg}</div>
           ) : (
             results.map((file, i) => (
               <button
                 key={file.path}
+                aria-selected={i === activeIndex}
                 className={`quick-open-item${i === activeIndex ? " active" : ""}`}
+                id={`quick-open-option-${i}`}
                 onPointerDown={() => openSelected(i)}
                 onMouseEnter={() => setActiveIndex(i)}
+                role="option"
+                type="button"
               >
                 <span className="quick-open-name">{file.name}</span>
                 <span className="quick-open-path">{file.path}</span>

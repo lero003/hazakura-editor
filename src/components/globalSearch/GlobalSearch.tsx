@@ -113,6 +113,9 @@ export function GlobalSearch({
   const rowsRef = useLatestValueRef(rows);
   const activeIndexRef = useRef(activeIndex);
   activeIndexRef.current = activeIndex;
+  const activeOptionId = rows[activeIndex]
+    ? `global-search-option-${activeIndex}`
+    : undefined;
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -161,20 +164,29 @@ export function GlobalSearch({
   return (
     <div className="global-search-overlay" onPointerDown={onClose}>
       <div
+        aria-label="Find in files"
+        aria-modal="true"
         className="global-search-dialog"
         onPointerDown={(event) => event.stopPropagation()}
+        role="dialog"
       >
         <input
           ref={inputRef}
+          aria-activedescendant={activeOptionId}
+          aria-controls="global-search-results"
+          aria-expanded="true"
+          aria-haspopup="listbox"
           aria-label="Find in files"
+          aria-busy={searching}
           className="global-search-input"
           onChange={(event) => onSetQuery(event.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholderText(menuLanguage)}
+          role="combobox"
           type="text"
           value={query}
         />
-        <div className="global-search-status">
+        <div aria-live="polite" className="global-search-status" role="status">
           {searchError ? (
             <span className="global-search-status-error">{searchError}</span>
           ) : !workspaceOpen ? (
@@ -195,7 +207,12 @@ export function GlobalSearch({
             </span>
           ) : null}
         </div>
-        <div className="global-search-results" ref={listRef}>
+        <div
+          className="global-search-results"
+          id="global-search-results"
+          ref={listRef}
+          role="listbox"
+        >
           {!query.trim() ? null : rows.length === 0 && !searching ? (
             <div className="global-search-empty">{emptyText(menuLanguage)}</div>
           ) : (
@@ -212,11 +229,14 @@ export function GlobalSearch({
                     </div>
                   ) : null}
                   <button
+                    aria-selected={index === activeIndex}
                     className={`global-search-item${
                       index === activeIndex ? " active" : ""
                     }`}
+                    id={`global-search-option-${index}`}
                     onMouseEnter={() => onSetActiveIndex(index)}
                     onPointerDown={() => onRun(row)}
+                    role="option"
                     type="button"
                   >
                     <span className="global-search-line-number">

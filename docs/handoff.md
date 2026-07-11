@@ -92,10 +92,13 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    before replacing the existing reference. The exact packaged status copy,
    forced-termination recovery, narrow Japanese wrapping, and budget boundary
    remain manual proof rather than source-complete claims.
-3. **Rust suite stabilized:** host-only bookmark / native Trash integration
+3. **v1.8 source slices:** host-only bookmark / native Trash integration
    checks are explicit ignored tests; Trash backup cleanup uses an injected
    unit fixture; provider-process polling tolerates full-suite parallel load.
-   Still open: manual a11y matrix, P2 export/theme polish, rename VoiceOver i18n.
+   Quick Open, Command Palette, and Global Search now expose modal dialog,
+   combobox/listbox, active-option, and live search-status semantics. Still
+   open: packaged/manual a11y matrix, P2 export/theme polish, rename VoiceOver
+   i18n.
 4. Keep v1.6 closed unless a reproduced gap needs a hotfix. Historical quality
    notes: `docs/quality-inventory-v1.6.md`.
 5. Keep `@codemirror/view` at **6.43.2**. Do not bump, tag, upload, or publish
@@ -167,6 +170,14 @@ Read it only for historical context.
 
 ## Verification Guidance
 
+- 2026-07-12 v1.8 search-surface accessibility: focused semantics tests
+  passed (**3/3**); `npm run test` passed (**159/159 files / 1368 tests**)
+  under a high-load 68-second run; `npm run typecheck`, `npm run build:vite`,
+  `npm run build`, Rust format, full `cargo test` (**338 passed / 2 explicit
+  host-integration ignored / 0 failed**), and `git diff --check` passed. The
+  local app build used the expected SwiftPM `--disable-sandbox` fallback and
+  completed with existing chunk-size and not-notarized warnings. Packaged
+  VoiceOver interaction remains manual.
 - 2026-07-12 v1.7 publication / v1.8 Rust stabilization: Rust format passed;
   focused Trash cleanup passed; focused Agent Workbench PATH process test
   passed repeatedly; full `cargo test` passed three consecutive confirmation
