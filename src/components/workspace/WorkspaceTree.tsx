@@ -64,6 +64,7 @@ function TreeEntry({
   onSelectCompareFile,
   onSubmitRename,
   openFilePaths,
+  renameLabel,
   renamingPath,
   requestRename,
   onClearRenaming,
@@ -89,6 +90,7 @@ function TreeEntry({
   onSelectCompareFile: (entry: WorkspaceTreeEntry) => void;
   onSubmitRename: (srcPath: string, newName: string) => void;
   openFilePaths: ReadonlySet<string>;
+  renameLabel: string;
 }) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [loading, setLoading] = useState(false);
@@ -179,7 +181,7 @@ function TreeEntry({
             <TextFileIcon />
           )}
           <RenameInput
-            ariaLabel={`Rename ${entry.name}`}
+            ariaLabel={`${renameLabel}: ${entry.name}`}
             draft={renameDraft}
             inputRef={renameInputRef}
             onChange={setRenameDraft}
@@ -303,7 +305,7 @@ function TreeEntry({
       <ChevronIcon expanded={expanded} />
       {expanded ? <FolderOpenIcon /> : <FolderIcon />}
       <RenameInput
-        ariaLabel={`Rename ${entry.name}`}
+        ariaLabel={`${renameLabel}: ${entry.name}`}
         draft={renameDraft}
         inputRef={renameInputRef}
         onChange={setRenameDraft}
@@ -354,6 +356,7 @@ function TreeEntry({
               onSelectCompareFile={onSelectCompareFile}
               onSubmitRename={onSubmitRename}
               openFilePaths={openFilePaths}
+              renameLabel={renameLabel}
               renamingPath={renamingPath}
               requestRename={requestRename}
               onClearRenaming={onClearRenaming}
@@ -451,6 +454,7 @@ export function WorkspaceTree({
   onSelectCompareFile,
   onSubmitRename,
   openFilePaths,
+  renameLabel,
   renamingPath,
   requestRename,
 }: {
@@ -472,6 +476,7 @@ export function WorkspaceTree({
   onSelectCompareFile: (entry: WorkspaceTreeEntry) => void;
   onSubmitRename: (srcPath: string, newName: string) => void;
   openFilePaths: readonly string[];
+  renameLabel: string;
   renamingPath: string | null;
   requestRename: (path: string) => void;
 }) {
@@ -526,6 +531,7 @@ export function WorkspaceTree({
         onSelectCompareFile={onSelectCompareFile}
         onSubmitRename={onSubmitRename}
         openFilePaths={openPathSet}
+        renameLabel={renameLabel}
         renamingPath={renamingPath}
         requestRename={requestRename}
         onClearRenaming={() => requestRename("")}

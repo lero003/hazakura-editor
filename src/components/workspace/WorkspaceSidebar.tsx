@@ -234,6 +234,7 @@ export function WorkspaceSidebar({
           onSelectCompareFile={onSelectCompareFile}
           onSubmitRename={onSubmitRename}
           openFilePaths={openFilePaths}
+          renameLabel={fileOpsCopy.rename}
           renamingPath={renamingPath}
           requestRename={requestRename}
         />

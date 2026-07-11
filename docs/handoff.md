@@ -96,9 +96,9 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    checks are explicit ignored tests; Trash backup cleanup uses an injected
    unit fixture; provider-process polling tolerates full-suite parallel load.
    Quick Open, Command Palette, and Global Search now expose modal dialog,
-   combobox/listbox, active-option, and live search-status semantics. Still
-   open: packaged/manual a11y matrix, P2 export/theme polish, rename VoiceOver
-   i18n.
+   combobox/listbox, active-option, and live search-status semantics. Inline
+   rename accessible names now follow English / Japanese / kana UI copy.
+   Still open: packaged/manual a11y matrix and P2 export/theme polish.
 4. Keep v1.6 closed unless a reproduced gap needs a hotfix. Historical quality
    notes: `docs/quality-inventory-v1.6.md`.
 5. Keep `@codemirror/view` at **6.43.2**. Do not bump, tag, upload, or publish
@@ -170,6 +170,14 @@ Read it only for historical context.
 
 ## Verification Guidance
 
+- 2026-07-12 v1.8 localized rename VoiceOver name: focused WorkspaceTree
+  tests passed (**17/17**); `npm run test` passed (**159/159 files / 1369
+  tests**); `npm run typecheck`, `npm run build:vite`, `npm run build`, Rust
+  format, full `cargo test` (**338 passed / 2 explicit host-integration ignored
+  / 0 failed**), and `git diff --check` passed. The local app build used the
+  expected SwiftPM fallback and completed with existing chunk-size and
+  not-notarized warnings. Packaged multilingual VoiceOver interaction remains
+  manual.
 - 2026-07-12 v1.8 search-surface accessibility: focused semantics tests
   passed (**3/3**); `npm run test` passed (**159/159 files / 1368 tests**)
   under a high-load 68-second run; `npm run typecheck`, `npm run build:vite`,

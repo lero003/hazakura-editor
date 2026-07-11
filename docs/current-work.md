@@ -102,7 +102,7 @@ each slice should remain independently verifiable.
 | **Partial / source** | **Processing budgets (S-1)** | Pathless budgets + visible storage failure; Diff/export caps remain. | Further Diff/search/raster failure UX as needed. |
 | **Done / source** | **Deterministic Rust suite (S-2)** | Host-only bookmark / Trash checks are explicit ignored integration tests; Trash cleanup uses an injected unit fixture; process polling tolerates parallel suite load. | Keep the ignored macOS integration checks available for a suitable interactive host. |
 | **Partial / source** | **Keyboard / VoiceOver semantics** | Quick Open, Command Palette, and Global Search expose modal dialog + combobox/listbox + active-option relationships; Global Search announces status changes. | Run packaged keyboard/VoiceOver smoke across these surfaces plus rename, pane controls, and native menus. |
-| **Source / review-fix** | **Long reference + rename a11y (S-3)** | Body scroller + wrap-safe full rendering; text reference専用の150万文字 / 5万行 budget; rename inputs named. | 5k-line / wrap / budget超過のmanual smoke; variable-height windowingは不要になるまでdefer; rename label i18n is P2. |
+| **Source / review-fix** | **Long reference + rename a11y (S-3)** | Body scroller + wrap-safe full rendering; text reference専用の150万文字 / 5万行 budget; rename inputs use the active English / Japanese / kana label. | 5k-line / wrap / budget超過のmanual smoke; variable-height windowingは不要になるまでdefer. |
 | **Partial / source** | **Purpose-led discovery (S-4)** | Start Panel write / read / verify pitch. | Contextual first-use tooltips remain light polish. |
 | **P2** | **Export/theme polish** | After trust gates. | EPUB/PDF preflight, Preferences parity, measured shader/reduced-motion. |
 

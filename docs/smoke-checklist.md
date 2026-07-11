@@ -631,6 +631,10 @@ recovered state separately where relevant.
     focus in the text field, and announces Global Search progress / summary.
     Confirm Enter runs the active result, Escape closes the surface, and IME
     conversion Enter / arrows are not intercepted.
+25. **Localized rename VoiceOver name**: switch the menu language through
+    English, Japanese, and kana. Start inline rename for both a file and a
+    folder; confirm VoiceOver announces the localized rename action together
+    with the original entry name, while Enter commits and Escape cancels.
 
 ### v1.1 Continuity Evidence (2026-06-29)
 

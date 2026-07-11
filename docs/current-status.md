@@ -37,7 +37,9 @@ Last reviewed: 2026-07-12 (v1.7 published; v1.8 Daily Trust active)
   smoke remain v1.8 follow-up evidence rather than v1.7 publication blockers.
   Quick Open, Command Palette, and Global Search now expose dialog,
   combobox/listbox, active-option, and search-status semantics for keyboard and
-  VoiceOver navigation; packaged VoiceOver smoke remains required.
+  VoiceOver navigation. Inline file/folder rename inputs use the active
+  English / Japanese / kana label rather than an English-only accessible name;
+  packaged VoiceOver smoke remains required.
   No per-character confidence claims.
   The top chrome now separates L Mode from right-pane selection and exposes an
   explicit `参照` item beside Preview / e-book / Outline / Diff. Switching pane

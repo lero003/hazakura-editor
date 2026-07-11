@@ -106,6 +106,7 @@ type RenderTreeOverrides = {
   onSubmitRename?: (srcPath: string, newName: string) => void;
   renamingPath?: string | null;
   requestRename?: (path: string) => void;
+  renameLabel?: string;
 };
 
 function renderTree(overrides: RenderTreeOverrides = {}) {
@@ -149,6 +150,7 @@ function renderTree(overrides: RenderTreeOverrides = {}) {
       onSelectCompareFile={onSelectCompareFile}
       onSubmitRename={onSubmitRename}
       openFilePaths={overrides.openFilePaths ?? []}
+      renameLabel={overrides.renameLabel ?? "Rename"}
       renamingPath={overrides.renamingPath ?? null}
       requestRename={requestRename}
     />,
@@ -350,6 +352,25 @@ describe("WorkspaceTree", () => {
       const renameRow = input.closest(".tree-file-rename");
       expect(renameRow).toBeTruthy();
       expect(renameRow?.tagName.toLowerCase()).toBe("div");
+    });
+
+    it("uses the localized rename label for VoiceOver", () => {
+      vi.useFakeTimers();
+
+      const { view } = renderTree({
+        renameLabel: "名前を変更",
+        renamingPath: sourcePath,
+        requestRename: vi.fn(),
+      });
+
+      expandDirectory(view, sourceDirPath);
+
+      const input = view.container.querySelector(
+        ".tree-rename-input",
+      ) as HTMLInputElement | null;
+      expect(input?.getAttribute("aria-label")).toBe(
+        "名前を変更: note.md",
+      );
     });
 
     it("renders the directory rename input outside any row <button>", () => {
