@@ -54,6 +54,8 @@ type UseAppMenuActionListenerOptions = {
   >;
   setPreviewVisible: Dispatch<SetStateAction<boolean>>;
   setThemePreference: Dispatch<SetStateAction<ThemePreference>>;
+  /** Markdown-only L Mode gate; preferred over flipping settings directly. */
+  onToggleLMode?: () => void;
 };
 
 export function useAppMenuActionListener({
@@ -65,6 +67,7 @@ export function useAppMenuActionListener({
   setPreferencesDialogMode,
   setPreviewVisible,
   setThemePreference,
+  onToggleLMode,
 }: UseAppMenuActionListenerOptions) {
   useEffect(() => {
     if (!isTauriRuntime()) {
@@ -161,10 +164,14 @@ export function useAppMenuActionListener({
           }));
           break;
         case "toggle-l-mode":
-          setEditorSettings((current) => ({
-            ...current,
-            lModeEnabled: !current.lModeEnabled,
-          }));
+          if (onToggleLMode) {
+            onToggleLMode();
+          } else {
+            setEditorSettings((current) => ({
+              ...current,
+              lModeEnabled: !current.lModeEnabled,
+            }));
+          }
           break;
         case "theme-light":
           setThemePreference("light");
@@ -237,6 +244,7 @@ export function useAppMenuActionListener({
   }, [
     actionsRef,
     onOpenRecentFile,
+    onToggleLMode,
     recentFilesRef,
     recentFoldersRef,
     setEditorSettings,

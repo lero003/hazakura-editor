@@ -107,12 +107,11 @@ export function useSaveActions({
         );
         setActiveTabId(nextTab.id);
         rememberRecentFile(nextTab.path);
-        if (latestTab.path) {
-          removeStoredDraft(latestTab.path);
-        } else if (latestTab.sessionId) {
-          // Pathless recovery is keyed by sessionId, not by empty path.
-          removeStoredDraft(`pathless:${latestTab.sessionId}`);
-        }
+        const recoveryCleanup = latestTab.path
+          ? removeStoredDraft(latestTab.path)
+          : latestTab.recoveryId
+            ? removeStoredDraft(`pathless:${latestTab.recoveryId}`)
+            : { ok: true as const };
 
         if (workspaceRootPath) {
           try {
@@ -124,7 +123,11 @@ export function useSaveActions({
           }
         }
 
-        setStatus("Saved as");
+        setStatus(
+          recoveryCleanup.ok
+            ? "Saved as"
+            : "Saved as; draft recovery cleanup unavailable",
+        );
         return true;
       } catch (err) {
         const message = String(err);
@@ -220,10 +223,15 @@ export function useSaveActions({
               : candidate,
           ),
         );
-        setStatus("Saved");
+        let recoveryCleanupOk = true;
         if (savedTabIsClean) {
-          removeStoredDraft(tab.path);
+          recoveryCleanupOk = removeStoredDraft(tab.path).ok;
         }
+        setStatus(
+          recoveryCleanupOk
+            ? "Saved"
+            : "Saved; draft recovery cleanup unavailable",
+        );
         return true;
       } catch (err) {
         const message = String(err);

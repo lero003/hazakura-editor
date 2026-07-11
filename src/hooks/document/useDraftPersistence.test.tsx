@@ -59,12 +59,14 @@ describe("useDraftPersistence", () => {
   });
 
   it("persists dirty pathless untitled tabs as recovery candidates", async () => {
+    const recoveryId = "550e8400-e29b-41d4-a716-446655440000";
     renderDraftPersistence({
       tabs: [
         makeTab({
           contents: "# Untitled draft",
           id: "untitled:1",
           sessionId: "session:pathless-1",
+          recoveryId,
           lastSavedContents: "",
           name: "untitled.md",
           path: "",
@@ -80,7 +82,7 @@ describe("useDraftPersistence", () => {
     expect(readStoredDrafts()[0]).toMatchObject({
       contents: "# Untitled draft",
       path: "",
-      recoveryId: "session:pathless-1",
+      recoveryId,
       name: "untitled.md",
       origin: "untitled",
     });
@@ -93,6 +95,7 @@ describe("useDraftPersistence", () => {
           contents: "",
           id: "untitled:1",
           sessionId: "session:empty",
+          recoveryId: "550e8400-e29b-41d4-a716-446655440001",
           lastSavedContents: "",
           name: "untitled.md",
           path: "",

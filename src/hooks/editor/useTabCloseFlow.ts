@@ -82,26 +82,35 @@ export function useTabCloseFlow({
 }: UseTabCloseFlowOptions) {
   const closeTabNow = useCallback(
     (tabId: string) => {
+      const closingTab = tabsRef.current.find((tab) => tab.id === tabId) ?? null;
+      const draftKey = closingTab
+        ? closingTab.path.length > 0
+          ? closingTab.path
+          : closingTab.recoveryId
+            ? `pathless:${closingTab.recoveryId}`
+            : null
+        : null;
+      const cleanupUnavailable = draftKey
+        ? !removeStoredDrafts([draftKey]).ok
+        : false;
+
+      if (closingTab) {
+        setPendingDrafts((currentDrafts) =>
+          currentDrafts.filter((draft) => {
+            if (closingTab.path.length > 0) {
+              return draft.path !== closingTab.path;
+            }
+            return (
+              !closingTab.recoveryId ||
+              draft.recoveryId !== closingTab.recoveryId
+            );
+          }),
+        );
+      }
+
       setTabs((currentTabs) => {
         const closingIndex = currentTabs.findIndex((tab) => tab.id === tabId);
-        const closingTab = currentTabs[closingIndex] ?? null;
         const nextTabs = currentTabs.filter((tab) => tab.id !== tabId);
-
-        if (closingTab) {
-          const draftKey =
-            closingTab.path.length > 0
-              ? closingTab.path
-              : `pathless:${closingTab.sessionId}`;
-          removeStoredDrafts([draftKey]);
-          setPendingDrafts((currentDrafts) =>
-            currentDrafts.filter((draft) => {
-              if (closingTab.path.length > 0) {
-                return draft.path !== closingTab.path;
-              }
-              return draft.recoveryId !== closingTab.sessionId;
-            }),
-          );
-        }
 
         if (activeTabId === tabId) {
           const nextActive =
@@ -112,7 +121,11 @@ export function useTabCloseFlow({
         return nextTabs;
       });
       setPendingCloseTabId(null);
-      setStatus("Tab closed");
+      setStatus(
+        cleanupUnavailable
+          ? "Tab closed; recovery cleanup unavailable"
+          : "Tab closed",
+      );
     },
     [
       activeTabId,
@@ -121,6 +134,7 @@ export function useTabCloseFlow({
       setPendingDrafts,
       setStatus,
       setTabs,
+      tabsRef,
     ],
   );
 
@@ -266,16 +280,22 @@ export function useTabCloseFlow({
   ]);
 
   const discardAllAndCloseWindow = useCallback(async () => {
-    const discardedDraftKeys = dirtyTabs.map((tab) =>
-      tab.path.length > 0 ? tab.path : `pathless:${tab.sessionId}`,
-    );
+    const discardedDraftKeys = dirtyTabs
+      .map((tab) =>
+        tab.path.length > 0
+          ? tab.path
+          : tab.recoveryId
+            ? `pathless:${tab.recoveryId}`
+            : null,
+      )
+      .filter((key): key is string => key !== null);
     const discardedPaths = new Set(
       dirtyTabs.map((tab) => tab.path).filter((path) => path.length > 0),
     );
-    const discardedSessionIds = new Set(
+    const discardedRecoveryIds = new Set(
       dirtyTabs
-        .filter((tab) => tab.path.length === 0)
-        .map((tab) => tab.sessionId),
+        .filter((tab) => tab.path.length === 0 && tab.recoveryId)
+        .map((tab) => tab.recoveryId as string),
     );
     const dirtyTabById = new Map(dirtyTabs.map((tab) => [tab.id, tab]));
     const discardedTabIds = new Set(dirtyTabs.map((tab) => tab.id));
@@ -286,13 +306,18 @@ export function useTabCloseFlow({
     const exitAfter = appExitInProgressRef?.current === true;
 
     discardingWindowCloseRef.current = true;
-    removeStoredDrafts(discardedDraftKeys);
+    const cleanup = removeStoredDrafts(discardedDraftKeys);
+    if (!cleanup.ok) {
+      setStatus("Closing; recovery cleanup unavailable");
+    }
     setPendingDrafts((currentDrafts) =>
       currentDrafts.filter((draft) => {
         if (draft.path.length > 0) {
           return !discardedPaths.has(draft.path);
         }
-        return !draft.recoveryId || !discardedSessionIds.has(draft.recoveryId);
+        return (
+          !draft.recoveryId || !discardedRecoveryIds.has(draft.recoveryId)
+        );
       }),
     );
     allowWindowCloseRef.current = true;
@@ -315,7 +340,7 @@ export function useTabCloseFlow({
       setTabs((currentTabs) =>
         currentTabs.map((tab) => dirtyTabById.get(tab.id) ?? tab),
       );
-      writeStoredDrafts(
+      const recoveryRestore = writeStoredDrafts(
         [
           ...readStoredDrafts(),
           ...dirtyTabs.map(draftRecordFromTab),
@@ -325,8 +350,16 @@ export function useTabCloseFlow({
         ),
       );
       setPendingAppClose(false);
-      setGlobalError(`Close failed: ${String(err)}`);
-      setStatus("Close failed");
+      setGlobalError(
+        recoveryRestore.ok
+          ? `Close failed: ${String(err)}`
+          : `Close failed: ${String(err)}; recovery storage unavailable`,
+      );
+      setStatus(
+        recoveryRestore.ok
+          ? "Close failed"
+          : "Close failed; recovery storage unavailable",
+      );
     } finally {
       allowWindowCloseRef.current = false;
       discardingWindowCloseRef.current = false;

@@ -65,6 +65,10 @@ import {
   assertTabEditable,
   isAppleAssistTabLocked,
 } from "../../features/editor/appleAssistEditGuard";
+import {
+  isLModeEnabledForDocument,
+  isLModeSupportedDocument,
+} from "../../features/editor/lMode/documentSupport";
 import { useEditorCommands } from "../editor/useEditorCommands";
 import { useEditorFindController } from "../editor/useEditorFindController";
 import { useTabBarController } from "../editor/useTabBarController";
@@ -324,6 +328,18 @@ export function useAppShellController() {
     )
       ? appleAssistGenerationLock
       : null;
+  // Render L Mode only when the active document supports it. The preference
+  // reset below is intentionally asynchronous, but this value reaches
+  // EditorPane in the same render as a tab switch so CSS/HTML never mounts
+  // with the forced Markdown parser.
+  const activeLModeEnabled = isLModeEnabledForDocument(
+    editorSettings.lModeEnabled,
+    activeTab?.path || activeTab?.name,
+  );
+  const activeEditorSettings =
+    activeLModeEnabled === editorSettings.lModeEnabled
+      ? editorSettings
+      : { ...editorSettings, lModeEnabled: false };
 
   // section: refs (editor + dialog; depends on tabs + editor tab state)
   const {
@@ -1080,15 +1096,23 @@ export function useAppShellController() {
     epubExportSettingsOpen ||
     pdfExportSettingsOpen;
 
-  // L Mode (えるモード) toggle. Wraps a simple
-  // setEditorSettings flip so the command palette and the
-  // Cmd+Shift+L shortcut can share one code path.
+  // L Mode (えるモード) is Markdown-only. CSS/HTML remount switches the
+  // parser and drops undo history; refuse non-Markdown with a status note.
   const toggleLMode = useCallback(() => {
-    setEditorSettings((current) => ({
-      ...current,
-      lModeEnabled: !current.lModeEnabled,
-    }));
-  }, [setEditorSettings]);
+    setEditorSettings((current) => {
+      if (current.lModeEnabled) {
+        return { ...current, lModeEnabled: false };
+      }
+      const key = activeTab?.path || activeTab?.name || "";
+      if (!isLModeSupportedDocument(key)) {
+        setStatus(
+          "L Mode is for Markdown writing. Open a .md file to use L Mode.",
+        );
+        return current;
+      }
+      return { ...current, lModeEnabled: true };
+    });
+  }, [activeTab?.name, activeTab?.path, setEditorSettings, setStatus]);
 
   const exitLMode = useCallback(() => {
     setEditorSettings((current) => ({
@@ -1096,6 +1120,27 @@ export function useAppShellController() {
       lModeEnabled: false,
     }));
   }, [setEditorSettings]);
+
+  // Leave L Mode when the active document is not Markdown so CSS/HTML
+  // never remount through the Markdown parser while L Mode stays on.
+  useEffect(() => {
+    if (!editorSettings.lModeEnabled) {
+      return;
+    }
+    const key = activeTab?.path || activeTab?.name || "";
+    if (!isLModeSupportedDocument(key)) {
+      setEditorSettings((current) =>
+        current.lModeEnabled ? { ...current, lModeEnabled: false } : current,
+      );
+      setStatus("L Mode left because this file is not Markdown.");
+    }
+  }, [
+    activeTab?.name,
+    activeTab?.path,
+    editorSettings.lModeEnabled,
+    setEditorSettings,
+    setStatus,
+  ]);
 
   // Escape hatch surfaced in the L Mode action rail. This
   // returns a local diff snapshot so L Mode can show a small
@@ -1472,6 +1517,7 @@ export function useAppShellController() {
       setPreferencesDialogMode,
       setPreviewVisible,
       setThemePreference,
+      onToggleLMode: toggleLMode,
     },
     activity: {
       onResumeAgentUiRefresh: resumeAgentUiRefresh,
@@ -1574,6 +1620,7 @@ export function useAppShellController() {
       onRequestWindowClose: requestWindowClose,
       onSaveActiveTab: saveActiveTab,
       onSaveActiveTabAs: saveActiveTabAs,
+      onToggleLMode: toggleLMode,
       onCancelEpubBetaExport: cancelEpubBetaExport,
       onCancelPdfExport: cancelPdfExport,
       pendingAppClose,
@@ -1690,7 +1737,7 @@ export function useAppShellController() {
     editorPaneRef,
     editorPreviewGridRef,
     editorPreviewGridStyle,
-    editorSettings,
+    editorSettings: activeEditorSettings,
     editorTheme,
     epubExportCancelButtonRef,
     epubExportDialogRef,
@@ -1699,7 +1746,7 @@ export function useAppShellController() {
     pdfExportDialogRef,
     pdfExportRequest,
     lModeCopy,
-    lModeEnabled: editorSettings.lModeEnabled,
+    lModeEnabled: activeLModeEnabled,
     emptyTabsLabel: safeEditorCopy.emptyTabs,
     fileOpsCopy,
     encodingAriaLabel: editorChromeCopy.encodings,

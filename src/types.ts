@@ -324,6 +324,12 @@ export type EditorTab = TextFileDocument & {
   // refresh can keep matching on `id === path`, while `sessionId` lets
   // Save As preserve CodeMirror history / selection across a path change.
   sessionId: string;
+  /**
+   * Stable app-private recovery key for pathless tabs only (UUID).
+   * Never reuse process-local counters (`session:N`) — those collide after relaunch.
+   * Path-backed tabs leave this undefined.
+   */
+  recoveryId?: string;
   contents: string;
   lastSavedContents: string;
   lastSavedLineEnding: EditableLineEnding;

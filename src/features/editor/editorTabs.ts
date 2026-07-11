@@ -10,6 +10,14 @@ function nextSessionId(): string {
   return `session:${sessionCounter}`;
 }
 
+/** Cross-relaunch unique id for pathless draft recovery (not session:N). */
+export function createPathlessRecoveryId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `recovery:${Date.now().toString(36)}:${Math.random().toString(36).slice(2, 12)}`;
+}
+
 export function createEditorTab(file: TextFileDocument): EditorTab {
   const editorContents = normalizeTextLineEndings(file.contents, "lf");
 
@@ -17,6 +25,8 @@ export function createEditorTab(file: TextFileDocument): EditorTab {
     ...file,
     id: file.path,
     sessionId: nextSessionId(),
+    // Path-backed tabs never carry recoveryId — pathless recovery must not
+    // match them after relaunch.
     contents: editorContents,
     lastSavedContents: editorContents,
     lastSavedLineEnding: file.line_ending,
@@ -34,6 +44,7 @@ export function createUntitledEditorTab(): EditorTab {
   return {
     id: `untitled:${untitledTabCounter}`,
     sessionId: nextSessionId(),
+    recoveryId: createPathlessRecoveryId(),
     path: "",
     name: "untitled.md",
     contents: "",

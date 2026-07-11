@@ -689,19 +689,25 @@
   overflow: auto;
 }
 
+/* Body is the only scroller; the pre must not create a nested overflow. */
 .reference-text-surface {
+  display: block;
   font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
   font-size: 12.5px;
   line-height: 1.55;
   margin: 0;
+  min-height: 100%;
+  overflow: visible;
   padding: 8px 0 24px;
   user-select: text;
-  white-space: pre;
+  white-space: normal;
 }
 
 .reference-text-line {
   display: grid;
   grid-template-columns: 48px minmax(0, 1fr);
+  /* Natural height so wrapped Japanese lines never overlap. */
+  min-height: 0;
 }
 
 .reference-text-gutter {
@@ -714,6 +720,7 @@
 .reference-text-content {
   padding-right: 12px;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
   word-break: break-word;
 }
 

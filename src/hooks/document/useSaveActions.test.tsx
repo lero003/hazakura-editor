@@ -119,6 +119,7 @@ describe("useSaveActions", () => {
     fileApi.saveTextFile.mockReset();
     fileApi.saveTextFileAs.mockReset();
     storage.removeStoredDraft.mockReset();
+    storage.removeStoredDraft.mockReturnValue({ ok: true });
   });
 
   it("marks a clean successful save as saved and removes its recovery draft", async () => {
@@ -275,6 +276,7 @@ describe("useSaveActions", () => {
       name: "untitled.md",
       path: "",
       size: 0,
+      recoveryId: "550e8400-e29b-41d4-a716-446655440099",
     });
     fileApi.pickSaveAsTextFilePath.mockResolvedValueOnce("/tmp/untitled.md");
     fileApi.saveTextFileAs.mockResolvedValue(
@@ -312,6 +314,40 @@ describe("useSaveActions", () => {
     expect(getTabs()[0].sessionId).toBe("session:a");
     expect(options.setActiveTabId).toHaveBeenCalledWith("/tmp/untitled.md");
     expect(removeStoredDraft).not.toHaveBeenCalledWith("");
-    expect(removeStoredDraft).toHaveBeenCalledWith("pathless:session:a");
+    expect(removeStoredDraft).toHaveBeenCalledWith(
+      "pathless:550e8400-e29b-41d4-a716-446655440099",
+    );
+  });
+
+  it("keeps a completed Save As successful when recovery cleanup is unavailable", async () => {
+    const tab = makeTab({
+      contents: "# Unsaved draft",
+      id: "untitled:1",
+      lastSavedContents: "",
+      name: "untitled.md",
+      path: "",
+      recoveryId: "550e8400-e29b-41d4-a716-446655440077",
+    });
+    fileApi.pickSaveAsTextFilePath.mockResolvedValueOnce("/tmp/untitled.md");
+    fileApi.saveTextFileAs.mockResolvedValue(
+      makeTextFileDocument({ path: "/tmp/untitled.md" }),
+    );
+    storage.removeStoredDraft.mockReturnValue({
+      ok: false,
+      reason: "quota",
+      message: "unavailable",
+    });
+    const { getTabs, options, result } = setup([tab]);
+
+    let saved = false;
+    await act(async () => {
+      saved = await result.current.saveTabById(tab.id);
+    });
+
+    expect(saved).toBe(true);
+    expect(getTabs()[0]?.path).toBe("/tmp/untitled.md");
+    expect(options.setStatus).toHaveBeenCalledWith(
+      "Saved as; draft recovery cleanup unavailable",
+    );
   });
 });

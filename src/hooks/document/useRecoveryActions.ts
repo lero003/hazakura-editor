@@ -11,7 +11,6 @@ import {
   updateTabsByPath,
 } from "../../features/editor/editorTabs";
 import {
-  draftMatchesTab,
   draftStorageKey,
   isPathlessDraft,
 } from "../../features/document/pathlessDraftRecovery";
@@ -119,39 +118,30 @@ export function useRecoveryActions({
   const restoreDraft = useCallback(
     (draft: DraftRecord) => {
       if (isPathlessDraft(draft)) {
-        const existing = tabsRef.current.find((tab) =>
-          draftMatchesTab(draft, tab),
-        );
-        if (existing) {
-          setTabs((currentTabs) =>
-            updateTabsById(currentTabs, existing.id, (tab) => ({
-              ...tab,
-              contents: draft.contents,
-              line_ending: draft.line_ending,
-              name: draft.name ?? tab.name,
-              saveStatus: "idle",
-              error: null,
-            })),
-          );
-          setActiveTabId(existing.id);
-        } else {
-          const created = createUntitledEditorTab();
-          const restored: EditorTab = {
-            ...created,
-            name: draft.name ?? created.name,
-            contents: draft.contents,
-            line_ending: draft.line_ending,
-          };
-          setTabs((currentTabs) => [...currentTabs, restored]);
-          setActiveTabId(restored.id);
-        }
+        // Always open a fresh pathless tab. Never apply into an existing
+        // path-backed or pathless buffer — recoveryId must not collide
+        // with process-local session counters after relaunch.
+        const created = createUntitledEditorTab();
+        const restored: EditorTab = {
+          ...created,
+          // New UUID on the open tab; stored candidate is discarded below.
+          name: draft.name ?? created.name,
+          contents: draft.contents,
+          line_ending: draft.line_ending,
+        };
+        setTabs((currentTabs) => [...currentTabs, restored]);
+        setActiveTabId(restored.id);
         setPendingDrafts((currentDrafts) =>
           currentDrafts.filter(
             (candidate) => draftStorageKey(candidate) !== draftStorageKey(draft),
           ),
         );
-        removeStoredDraftRecord(draft);
-        setStatus("Draft restored");
+        const cleanup = removeStoredDraftRecord(draft);
+        setStatus(
+          cleanup.ok
+            ? "Draft restored"
+            : "Draft restored; recovery cleanup unavailable",
+        );
         focusEditorSoon();
         return;
       }
@@ -170,8 +160,12 @@ export function useRecoveryActions({
           (candidate) => draftStorageKey(candidate) !== draftStorageKey(draft),
         ),
       );
-      removeStoredDraftRecord(draft);
-      setStatus("Draft restored");
+      const cleanup = removeStoredDraftRecord(draft);
+      setStatus(
+        cleanup.ok
+          ? "Draft restored"
+          : "Draft restored; recovery cleanup unavailable",
+      );
       focusEditorSoon();
     },
     [
@@ -197,8 +191,12 @@ export function useRecoveryActions({
           return true;
         }),
       );
-      removeStoredDraft(draftPathOrKey);
-      setStatus("Draft discarded");
+      const cleanup = removeStoredDraft(draftPathOrKey);
+      setStatus(
+        cleanup.ok
+          ? "Draft discarded"
+          : "Draft discarded; recovery cleanup unavailable",
+      );
     },
     [setPendingDrafts, setStatus],
   );

@@ -14,10 +14,12 @@ vi.mock("../../lib/tauri", () => ({
 
 const storage = vi.hoisted(() => ({
   removeStoredDraft: vi.fn(),
+  removeStoredDraftRecord: vi.fn(),
 }));
 
 vi.mock("../../lib/storage", () => ({
   removeStoredDraft: storage.removeStoredDraft,
+  removeStoredDraftRecord: storage.removeStoredDraftRecord,
 }));
 
 function makeTab(overrides: Partial<EditorTab> = {}): EditorTab {
@@ -99,6 +101,9 @@ describe("useRecoveryActions", () => {
   beforeEach(() => {
     tauriApi.openTextFile.mockReset();
     storage.removeStoredDraft.mockReset();
+    storage.removeStoredDraftRecord.mockReset();
+    storage.removeStoredDraft.mockReturnValue({ ok: true });
+    storage.removeStoredDraftRecord.mockReturnValue({ ok: true });
   });
 
   it("reopens from disk when the tab still points at the same path", async () => {
@@ -185,6 +190,49 @@ describe("useRecoveryActions", () => {
     });
     expect(options.setStatus).toHaveBeenLastCalledWith(
       "Reopen skipped; document changed",
+    );
+  });
+
+  it("warns when a restored draft cannot be removed from recovery storage", () => {
+    storage.removeStoredDraftRecord.mockReturnValueOnce({
+      ok: false,
+      reason: "quota",
+      message: "unavailable",
+    });
+    const { options } = makeOptions([]);
+    const { result } = renderHook(() => useRecoveryActions(options));
+
+    act(() => {
+      result.current.restoreDraft({
+        contents: "restored",
+        line_ending: "lf",
+        path: "",
+        recoveryId: "recovery-1",
+        savedFingerprint: "",
+        updatedAt: 1,
+      });
+    });
+
+    expect(options.setStatus).toHaveBeenLastCalledWith(
+      "Draft restored; recovery cleanup unavailable",
+    );
+  });
+
+  it("warns when a discarded draft cannot be removed from recovery storage", () => {
+    storage.removeStoredDraft.mockReturnValueOnce({
+      ok: false,
+      reason: "quota",
+      message: "unavailable",
+    });
+    const { options } = makeOptions([]);
+    const { result } = renderHook(() => useRecoveryActions(options));
+
+    act(() => {
+      result.current.discardDraft("pathless:recovery-1");
+    });
+
+    expect(options.setStatus).toHaveBeenLastCalledWith(
+      "Draft discarded; recovery cleanup unavailable",
     );
   });
 });

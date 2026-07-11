@@ -344,6 +344,7 @@ function makeWorkspaceProps(
       showDiff: "View diff",
       showEditor: "Draft (editable)",
       showReference: "Reference",
+      textBudgetExceeded: "Reference is too large",
       unsupportedType: "Unsupported",
       zoomIn: "Zoom in",
       zoomOut: "Zoom out",

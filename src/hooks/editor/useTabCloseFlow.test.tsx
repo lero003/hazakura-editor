@@ -112,8 +112,33 @@ describe("useTabCloseFlow", () => {
     storage.draftRecordFromTab.mockClear();
     storage.readStoredDrafts.mockClear();
     storage.removeStoredDrafts.mockClear();
+    storage.removeStoredDrafts.mockReturnValue({ ok: true });
     storage.upsertDraftRecord.mockClear();
     storage.writeStoredDrafts.mockClear();
+  });
+
+  it("warns when closing a tab cannot remove its recovery draft", () => {
+    storage.removeStoredDrafts.mockReturnValueOnce({
+      ok: false,
+      reason: "quota",
+      message: "unavailable",
+    });
+    const dirtyTab = makeTab();
+    const setStatus = vi.fn();
+    const setTabs = vi.fn((next) => {
+      if (typeof next === "function") {
+        next([dirtyTab]);
+      }
+    });
+    const { result } = setup({ setStatus, setTabs });
+
+    act(() => {
+      result.current.closeTabNow(dirtyTab.id);
+    });
+
+    expect(setStatus).toHaveBeenLastCalledWith(
+      "Tab closed; recovery cleanup unavailable",
+    );
   });
 
   it("clears the app-close dialog state after saving all dirty tabs", async () => {

@@ -1,7 +1,11 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { referenceCompareCopy } from "../../lib/locale/referenceCompare";
 import { ReferenceTextPane } from "./ReferenceTextPane";
+
+afterEach(() => {
+  cleanup();
+});
 
 describe("ReferenceTextPane", () => {
   it("shows read-only text with line numbers and closes on request", () => {
@@ -78,5 +82,28 @@ describe("ReferenceTextPane", () => {
     );
     fireEvent.click(screen.getByTestId("reference-reload"));
     expect(onReloadReference).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps long wrapped text fully mounted for scroll and full-document copy", () => {
+    const lines = Array.from({ length: 5000 }, (_, i) => `line-${i + 1}`);
+    render(
+      <ReferenceTextPane
+        copy={referenceCompareCopy("en")}
+        menuLanguage="en"
+        onClose={vi.fn()}
+        reference={{
+          kind: "text",
+          path: "/ws/long.txt",
+          name: "long.txt",
+          contents: lines.join("\n"),
+          encoding: "utf-8",
+        }}
+      />,
+    );
+
+    const surface = screen.getByTestId("reference-text-surface");
+    expect(surface.getAttribute("data-windowed")).toBe("false");
+    expect(screen.getByText("line-5000")).toBeTruthy();
+    expect(screen.getByText("line-1")).toBeTruthy();
   });
 });

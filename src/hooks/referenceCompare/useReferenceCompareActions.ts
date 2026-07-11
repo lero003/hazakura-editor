@@ -21,6 +21,9 @@ import {
   openWorkspaceImage,
   pickReferenceFile,
 } from "../../lib/tauri";
+import {
+  isTextReferenceWithinBudget,
+} from "../../features/referenceCompare/textReferenceBudget";
 import { fileNameFromPath, isPathInsideDirectory } from "../../lib/utils";
 import { referenceCompareCopy } from "../../lib/locale/referenceCompare";
 import type { EditorTab, MenuLanguage } from "../../types";
@@ -239,6 +242,11 @@ export function useReferenceCompareActions({
         if (generation !== operationGenerationRef.current) {
           return false;
         }
+        if (!isTextReferenceWithinBudget(file.contents)) {
+          setGlobalError(copy.textBudgetExceeded);
+          setStatus("Reference open failed");
+          return false;
+        }
         // Prefer openTextFile fingerprint; fall back to regular-file metadata.
         const fingerprint =
           file.fingerprint || (await fingerprintForPath(file.path));
@@ -280,6 +288,7 @@ export function useReferenceCompareActions({
     [
       activeTab,
       copy.unsupportedType,
+      copy.textBudgetExceeded,
       referenceCompare,
       requestReviewTabAgainstDisk,
       setGlobalError,

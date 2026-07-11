@@ -80,6 +80,7 @@ type UseAppKeyboardFocusEffectsOptions = {
   onRequestWindowClose: () => unknown;
   onSaveActiveTab: () => unknown;
   onSaveActiveTabAs: () => unknown;
+  onToggleLMode?: () => void;
   pendingAppClose: boolean;
   pendingAssistDiscardOpen: boolean;
   pendingCloseTabOpen: boolean;
@@ -145,6 +146,7 @@ export function useAppKeyboardFocusEffects({
   onRequestWindowClose,
   onSaveActiveTab,
   onSaveActiveTabAs,
+  onToggleLMode,
   pendingAppClose,
   pendingAssistDiscardOpen,
   pendingCloseTabOpen,
@@ -234,6 +236,7 @@ export function useAppKeyboardFocusEffects({
     onRequestWindowClose,
     onSaveActiveTab,
     onSaveActiveTabAs,
+    onToggleLMode,
     selectedImageOpen,
     setEditorSettings,
     setFindVisible,

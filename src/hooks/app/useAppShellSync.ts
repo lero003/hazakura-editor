@@ -95,5 +95,6 @@ export function useAppShellSync({
     pendingDrafts,
     restoreComplete,
     tabs,
+    onRecoveryStoreFailure: onStatus,
   });
 }

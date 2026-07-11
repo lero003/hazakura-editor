@@ -1,14 +1,15 @@
 import {
   draftRecordFromTab as draftRecordFromTabCore,
   draftStorageKey,
+  isPathlessDraftOversized,
   pruneDraftRecords,
   removeDraftMatching,
   upsertDraftRecordByKey,
+  type DraftWriteResult,
 } from "../features/document/pathlessDraftRecovery";
 import {
   DRAFT_STATE_STORAGE_KEY,
   MAX_RECENT_ITEMS,
-  MAX_STORED_DRAFTS,
   RECENT_FILES_STORAGE_KEY,
   RECENT_FOLDERS_STORAGE_KEY,
   WORKSPACE_STATE_STORAGE_KEY,
@@ -19,36 +20,80 @@ import {
 } from "../types";
 import { isPathInsideDirectory, normalizeAbsolutePath } from "./utils";
 
-export function readStoredDrafts(): DraftRecord[] {
-  const value = window.localStorage.getItem(DRAFT_STATE_STORAGE_KEY);
+type StoredDraftReadResult = {
+  drafts: DraftRecord[];
+  failure?: DraftWriteResult;
+};
+
+function recoveryStorageFailure(): DraftWriteResult {
+  return {
+    ok: false,
+    reason: "quota",
+    message:
+      "Draft recovery storage is full or unavailable. Editing continues; recovery may not survive a crash until space is free.",
+  };
+}
+
+function readStoredDraftsResult(): StoredDraftReadResult {
+  let value: string | null;
+
+  try {
+    value = window.localStorage.getItem(DRAFT_STATE_STORAGE_KEY);
+  } catch {
+    return { drafts: [], failure: recoveryStorageFailure() };
+  }
 
   if (!value) {
-    return [];
+    return { drafts: [] };
   }
 
   try {
     const parsed = JSON.parse(value) as unknown;
 
     if (!Array.isArray(parsed)) {
-      return [];
+      return { drafts: [] };
     }
 
-    return pruneDraftRecords(parsed.filter(isDraftRecord))
-      .sort((a, b) => b.updatedAt - a.updatedAt)
-      .slice(0, MAX_STORED_DRAFTS);
+    return {
+      drafts: pruneDraftRecords(parsed.filter(isDraftRecord)).sort(
+        (a, b) => b.updatedAt - a.updatedAt,
+      ),
+    };
   } catch {
-    return [];
+    return { drafts: [] };
   }
 }
 
-export function writeStoredDrafts(drafts: DraftRecord[]) {
-  const normalizedDrafts = pruneDraftRecords(drafts)
-    .sort((a, b) => b.updatedAt - a.updatedAt)
-    .slice(0, MAX_STORED_DRAFTS);
+export function readStoredDrafts(): DraftRecord[] {
+  return readStoredDraftsResult().drafts;
+}
+
+/**
+ * Persist recovery candidates. Does not interrupt typing; returns a result
+ * so callers can surface quota / pathless-size failures.
+ */
+export function writeStoredDrafts(drafts: DraftRecord[]): DraftWriteResult {
+  const oversizedPathless = drafts.find(isPathlessDraftOversized);
+  if (oversizedPathless) {
+    return {
+      ok: false,
+      reason: "oversized-pathless",
+      message:
+        "Pathless draft recovery skipped: content exceeds the recovery size limit. Editing continues; Save As to keep the file.",
+    };
+  }
+
+  const normalizedDrafts = pruneDraftRecords(drafts).sort(
+    (a, b) => b.updatedAt - a.updatedAt,
+  );
 
   if (normalizedDrafts.length === 0) {
-    window.localStorage.removeItem(DRAFT_STATE_STORAGE_KEY);
-    return;
+    try {
+      window.localStorage.removeItem(DRAFT_STATE_STORAGE_KEY);
+    } catch {
+      return recoveryStorageFailure();
+    }
+    return { ok: true };
   }
 
   try {
@@ -56,29 +101,42 @@ export function writeStoredDrafts(drafts: DraftRecord[]) {
       DRAFT_STATE_STORAGE_KEY,
       JSON.stringify(normalizedDrafts),
     );
+    return { ok: true };
   } catch {
-    // Quota / private mode: keep editing; recovery is best-effort only.
+    return recoveryStorageFailure();
   }
 }
 
 export function removeStoredDraft(pathOrKey: string) {
-  writeStoredDrafts(removeDraftMatching(readStoredDrafts(), pathOrKey));
+  const stored = readStoredDraftsResult();
+  if (stored.failure) {
+    return stored.failure;
+  }
+  return writeStoredDrafts(removeDraftMatching(stored.drafts, pathOrKey));
 }
 
 export function removeStoredDrafts(pathsOrKeys: string[]) {
   if (pathsOrKeys.length === 0) {
-    return;
+    return { ok: true } as DraftWriteResult;
   }
 
-  let next = readStoredDrafts();
+  const stored = readStoredDraftsResult();
+  if (stored.failure) {
+    return stored.failure;
+  }
+  let next = stored.drafts;
   for (const key of pathsOrKeys) {
     next = removeDraftMatching(next, key);
   }
-  writeStoredDrafts(next);
+  return writeStoredDrafts(next);
 }
 
 export function removeStoredDraftRecord(draft: DraftRecord) {
-  writeStoredDrafts(removeDraftMatching(readStoredDrafts(), draft));
+  const stored = readStoredDraftsResult();
+  if (stored.failure) {
+    return stored.failure;
+  }
+  return writeStoredDrafts(removeDraftMatching(stored.drafts, draft));
 }
 
 export function draftRecordFromTab(tab: EditorTab): DraftRecord {
@@ -89,7 +147,7 @@ export function upsertDraftRecord(
   drafts: DraftRecord[],
   nextDraft: DraftRecord,
 ): DraftRecord[] {
-  return upsertDraftRecordByKey(drafts, nextDraft).slice(0, MAX_STORED_DRAFTS);
+  return upsertDraftRecordByKey(drafts, nextDraft);
 }
 
 export { draftStorageKey };

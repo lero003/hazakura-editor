@@ -29,6 +29,7 @@ export type ReferenceCompareCopy = {
   showDiff: string;
   showEditor: string;
   showReference: string;
+  textBudgetExceeded: string;
   unsupportedType: string;
   zoomIn: string;
   zoomOut: string;
@@ -65,6 +66,8 @@ export function referenceCompareCopy(
       showDiff: "さぶんを みる",
       showEditor: "したがき（へんしゅうか）",
       showReference: "さんしょう",
+      textBudgetExceeded:
+        "この テキストは おおきすぎるため さんしょうひょうじ できません",
       unsupportedType: "この しゅるいは さんしょうできません",
       zoomIn: "拡大",
       zoomOut: "縮小",
@@ -98,6 +101,8 @@ export function referenceCompareCopy(
       showDiff: "差分を見る",
       showEditor: "下書き（編集可）",
       showReference: "参照",
+      textBudgetExceeded:
+        "このテキストは大きすぎるため参照表示できません（150万文字または5万行まで）",
       unsupportedType: "この種類は参照として開けません",
       zoomIn: "拡大",
       zoomOut: "縮小",
@@ -131,6 +136,8 @@ export function referenceCompareCopy(
     showDiff: "View diff",
     showEditor: "Draft (editable)",
     showReference: "Reference",
+    textBudgetExceeded:
+      "This text is too large for reference view (limit: 1.5M characters or 50,000 lines).",
     unsupportedType: "This file type cannot be opened as a reference.",
     zoomIn: "Zoom in",
     zoomOut: "Zoom out",

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-07-10 (Q-IMG-1 parent/child workspace matrix added)
+Last reviewed: 2026-07-11 (v1.7 recovery cleanup + text-reference budget)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -609,6 +609,18 @@ recovered state separately where relevant.
     alt text, while the draft remains editable in the center. Exercise
     next/previous page, fit width, fit page, and 150%; keep the existing CSP
     unchanged (`data:` allowed, `blob:` not required).
+22. **Pathless recovery cleanup failure**: with a disposable localStorage
+    failure fixture, exercise Save As, Restore, Discard, dirty-tab close, and
+    Discard All. Confirm the requested edit/close action still completes, the
+    status says recovery cleanup/storage is unavailable instead of plain
+    success, and a stale candidate is treated as possible on relaunch. Then
+    repeat with storage available and confirm the candidate is removed.
+23. **Text-reference DOM budget**: open a 5,000-line Japanese text reference in
+    a narrow pane and confirm wrapping, scrolling, selection, and copy remain
+    correct. Then open disposable fixtures just over 1.5M characters and just
+    over 50,000 logical lines. Confirm both fail with the localized size reason,
+    the editable buffer is unchanged, and an already-open reference is not
+    replaced.
 
 ### v1.1 Continuity Evidence (2026-06-29)
 

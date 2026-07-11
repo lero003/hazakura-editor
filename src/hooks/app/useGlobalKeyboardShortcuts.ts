@@ -37,6 +37,8 @@ type UseGlobalKeyboardShortcutsOptions = {
   onRequestWindowClose: () => unknown;
   onSaveActiveTab: () => unknown;
   onSaveActiveTabAs: () => unknown;
+  /** Prefer this over flipping lModeEnabled directly (Markdown-only gate). */
+  onToggleLMode?: () => void;
   selectedImageOpen: boolean;
   setEditorSettings: Dispatch<SetStateAction<EditorSettings>>;
   setFindVisible: Dispatch<SetStateAction<boolean>>;
@@ -66,6 +68,7 @@ export function useGlobalKeyboardShortcuts({
   onRequestWindowClose,
   onSaveActiveTab,
   onSaveActiveTabAs,
+  onToggleLMode,
   selectedImageOpen,
   setEditorSettings,
   setFindVisible,
@@ -155,12 +158,17 @@ export function useGlobalKeyboardShortcuts({
       if (isCommandShiftShortcut(event, "l")) {
         // L Mode (えるモード) toggle. Cmd+Shift+L was free in the
         // existing map. IME composition and modal open are already
-        // bailed out at the top of this handler.
+        // bailed out at the top of this handler. Markdown-only gate
+        // lives in onToggleLMode when provided.
         event.preventDefault();
-        setEditorSettings((current) => ({
-          ...current,
-          lModeEnabled: !current.lModeEnabled,
-        }));
+        if (onToggleLMode) {
+          onToggleLMode();
+        } else {
+          setEditorSettings((current) => ({
+            ...current,
+            lModeEnabled: !current.lModeEnabled,
+          }));
+        }
         return;
       }
 

@@ -133,6 +133,41 @@ describe("useReferenceCompareActions", () => {
     );
   });
 
+  it("rejects text that exceeds the reference DOM budget", async () => {
+    vi.mocked(openTextFile).mockResolvedValueOnce({
+      path: "/ws/huge.md",
+      name: "huge.md",
+      contents: "a".repeat(1_500_001),
+      line_ending: "lf",
+      encoding: "utf-8",
+      size: 1_500_001,
+      modified_ms: null,
+      fingerprint: "fp-huge",
+      large_file_warning: false,
+    });
+    const setGlobalError = vi.fn();
+    const setReferenceDocument = vi.fn();
+    const setStatus = vi.fn();
+    const { result } = renderHook(() =>
+      useReferenceCompareActions({
+        ...baseOptions(),
+        setGlobalError,
+        setReferenceDocument,
+        setStatus,
+      }),
+    );
+
+    await act(async () => {
+      await result.current.openPathAsReference("/ws/huge.md");
+    });
+
+    expect(setReferenceDocument).not.toHaveBeenCalled();
+    expect(setGlobalError).toHaveBeenCalledWith(
+      expect.stringContaining("150万文字"),
+    );
+    expect(setStatus).toHaveBeenLastCalledWith("Reference open failed");
+  });
+
   it("opens a PDF via the opaque reference handle", async () => {
     vi.mocked(openPdfReference).mockResolvedValueOnce({
       referenceId: "pdf-ref-1",

@@ -8,6 +8,8 @@ import {
   pruneDraftRecords,
   tabsEligibleForDraftPersistence,
   PATHLESS_DRAFT_TTL_MS,
+  PATHLESS_DRAFT_MAX_CHARS,
+  PATHLESS_DRAFT_STORE_MAX_RECORDS,
 } from "./pathlessDraftRecovery";
 
 function makeTab(overrides: Partial<EditorTab> = {}): EditorTab {
@@ -19,6 +21,7 @@ function makeTab(overrides: Partial<EditorTab> = {}): EditorTab {
     fingerprint: "",
     id: "untitled:1",
     sessionId: "session:1",
+    recoveryId: "550e8400-e29b-41d4-a716-446655440010",
     ignoredExternalFingerprint: null,
     large_file_warning: false,
     lastSavedContents: "",
@@ -35,10 +38,10 @@ function makeTab(overrides: Partial<EditorTab> = {}): EditorTab {
 }
 
 describe("pathlessDraftRecovery", () => {
-  it("keys pathless drafts by recoveryId", () => {
+  it("keys pathless drafts by recovery UUID, not session counters", () => {
     const draft: DraftRecord = {
       path: "",
-      recoveryId: "session:9",
+      recoveryId: "550e8400-e29b-41d4-a716-446655440010",
       contents: "x",
       line_ending: "lf",
       savedFingerprint: "",
@@ -47,35 +50,60 @@ describe("pathlessDraftRecovery", () => {
       origin: "untitled",
     };
     expect(isPathlessDraft(draft)).toBe(true);
-    expect(draftStorageKey(draft)).toBe("pathless:session:9");
+    expect(draftStorageKey(draft)).toBe(
+      "pathless:550e8400-e29b-41d4-a716-446655440010",
+    );
   });
 
-  it("builds a pathless recovery record from a dirty untitled tab", () => {
+  it("builds a pathless recovery record from tab.recoveryId", () => {
     const record = draftRecordFromTab(
       makeTab({
         contents: "# draft",
-        sessionId: "session:abc",
+        recoveryId: "550e8400-e29b-41d4-a716-446655440011",
         name: "import-scan.md",
       }),
     );
     expect(record).toMatchObject({
       path: "",
-      recoveryId: "session:abc",
+      recoveryId: "550e8400-e29b-41d4-a716-446655440011",
       origin: "import-assist",
       contents: "# draft",
     });
   });
 
-  it("matches pathless drafts to open tabs by sessionId", () => {
-    const draft = draftRecordFromTab(makeTab({ sessionId: "session:z" }));
-    const tab = makeTab({ sessionId: "session:z", id: "untitled:99" });
-    expect(draftMatchesTab(draft, tab)).toBe(true);
+  it("never matches pathless drafts to path-backed tabs", () => {
+    const draft = draftRecordFromTab(
+      makeTab({ recoveryId: "550e8400-e29b-41d4-a716-446655440012" }),
+    );
+    // After relaunch, a path tab might get session:1 — must not match.
+    const pathTab = makeTab({
+      id: "/workspace/note.md",
+      path: "/workspace/note.md",
+      sessionId: "session:1",
+      recoveryId: undefined,
+      name: "note.md",
+    });
+    expect(draftMatchesTab(draft, pathTab)).toBe(false);
+  });
+
+  it("matches pathless drafts only by recoveryId on pathless tabs", () => {
+    const recoveryId = "550e8400-e29b-41d4-a716-446655440013";
+    const draft = draftRecordFromTab(makeTab({ recoveryId }));
     expect(
-      draftMatchesTab(draft, makeTab({ sessionId: "session:other" })),
+      draftMatchesTab(draft, makeTab({ recoveryId, sessionId: "session:99" })),
+    ).toBe(true);
+    expect(
+      draftMatchesTab(
+        draft,
+        makeTab({
+          recoveryId: "550e8400-e29b-41d4-a716-446655440099",
+          sessionId: "session:1",
+        }),
+      ),
     ).toBe(false);
   });
 
-  it("skips empty pathless buffers and oversized content", () => {
+  it("skips empty pathless buffers", () => {
     expect(tabsEligibleForDraftPersistence([makeTab({ contents: "" })])).toEqual(
       [],
     );
@@ -86,7 +114,7 @@ describe("pathlessDraftRecovery", () => {
     ).toHaveLength(1);
   });
 
-  it("prunes expired recovery candidates", () => {
+  it("prunes expired pathless candidates but not path-backed by TTL", () => {
     const now = Date.now();
     const kept = pruneDraftRecords(
       [
@@ -96,6 +124,13 @@ describe("pathlessDraftRecovery", () => {
           contents: "stale",
           line_ending: "lf",
           savedFingerprint: "",
+          updatedAt: now - PATHLESS_DRAFT_TTL_MS - 1,
+        },
+        {
+          path: "/workspace/note.md",
+          contents: "path-old",
+          line_ending: "lf",
+          savedFingerprint: "fp",
           updatedAt: now - PATHLESS_DRAFT_TTL_MS - 1,
         },
         {
@@ -109,6 +144,53 @@ describe("pathlessDraftRecovery", () => {
       ],
       now,
     );
-    expect(kept.map((d) => d.recoveryId)).toEqual(["new"]);
+    expect(kept.map((d) => d.recoveryId ?? d.path).sort()).toEqual([
+      "/workspace/note.md",
+      "new",
+    ]);
+  });
+
+  it("drops oversized pathless drafts during prune", () => {
+    const now = Date.now();
+    const kept = pruneDraftRecords(
+      [
+        {
+          path: "",
+          recoveryId: "big",
+          contents: "x".repeat(PATHLESS_DRAFT_MAX_CHARS + 1),
+          line_ending: "lf",
+          savedFingerprint: "",
+          updatedAt: now,
+        },
+      ],
+      now,
+    );
+    expect(kept).toEqual([]);
+  });
+
+  it("keeps path-backed recovery capacity separate from pathless record count", () => {
+    const now = Date.now();
+    const pathless = Array.from(
+      { length: PATHLESS_DRAFT_STORE_MAX_RECORDS },
+      (_, index): DraftRecord => ({
+        path: "",
+        recoveryId: `pathless-${index}`,
+        contents: "draft",
+        line_ending: "lf",
+        savedFingerprint: "",
+        updatedAt: now - index,
+      }),
+    );
+    const pathBacked: DraftRecord = {
+      path: "/workspace/older.md",
+      contents: "changed",
+      line_ending: "lf",
+      savedFingerprint: "fp",
+      updatedAt: now - 10_000,
+    };
+
+    expect(pruneDraftRecords([...pathless, pathBacked], now)).toContainEqual(
+      pathBacked,
+    );
   });
 });

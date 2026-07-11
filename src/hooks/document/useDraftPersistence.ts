@@ -4,7 +4,10 @@ import {
   upsertDraftRecord,
   writeStoredDrafts,
 } from "../../lib/storage";
-import { tabsEligibleForDraftPersistence } from "../../features/document/pathlessDraftRecovery";
+import {
+  isPathlessDraftOversized,
+  tabsEligibleForDraftPersistence,
+} from "../../features/document/pathlessDraftRecovery";
 import type { DraftRecord, EditorTab } from "../../types";
 
 type RefValue<T> = {
@@ -16,6 +19,8 @@ type UseDraftPersistenceOptions = {
   pendingDrafts: DraftRecord[];
   restoreComplete: boolean;
   tabs: EditorTab[];
+  /** Surface recovery-store failures without blocking typing. */
+  onRecoveryStoreFailure?: (message: string) => void;
 };
 
 const DRAFT_PERSIST_DEBOUNCE_MS = 400;
@@ -25,8 +30,12 @@ export function useDraftPersistence({
   pendingDrafts,
   restoreComplete,
   tabs,
+  onRecoveryStoreFailure,
 }: UseDraftPersistenceOptions) {
   const timerRef = useRef<number | null>(null);
+  const lastFailureRef = useRef<string | null>(null);
+  const onFailureRef = useRef(onRecoveryStoreFailure);
+  onFailureRef.current = onRecoveryStoreFailure;
 
   useEffect(() => {
     if (!restoreComplete) {
@@ -46,13 +55,37 @@ export function useDraftPersistence({
         draftRecordFromTab,
       );
 
-      // Pending candidates first, then live dirty tabs so later upserts win.
-      writeStoredDrafts(
-        [...pendingDrafts, ...dirtyDrafts].reduce<DraftRecord[]>(
+      const oversized = dirtyDrafts.find(isPathlessDraftOversized);
+      if (oversized) {
+        const message =
+          "Pathless draft recovery skipped: content exceeds the recovery size limit. Editing continues; Save As to keep the file.";
+        if (lastFailureRef.current !== message) {
+          lastFailureRef.current = message;
+          onFailureRef.current?.(message);
+        }
+        // Still persist other (path / smaller) drafts without the oversized one.
+      }
+
+      const writableDirty = dirtyDrafts.filter(
+        (draft) => !isPathlessDraftOversized(draft),
+      );
+
+      const result = writeStoredDrafts(
+        [...pendingDrafts, ...writableDirty].reduce<DraftRecord[]>(
           (records, draft) => upsertDraftRecord(records, draft),
           [],
         ),
       );
+
+      if (!result.ok) {
+        if (lastFailureRef.current !== result.message) {
+          lastFailureRef.current = result.message;
+          onFailureRef.current?.(result.message);
+        }
+        return;
+      }
+
+      lastFailureRef.current = null;
     };
 
     if (timerRef.current !== null) {

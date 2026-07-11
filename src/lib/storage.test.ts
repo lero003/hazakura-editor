@@ -18,15 +18,19 @@
 //    state always wins (the caller is asserting "I want this
 //    cleared").
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  DRAFT_STATE_STORAGE_KEY,
   RECENT_FILES_STORAGE_KEY,
   WORKSPACE_STATE_STORAGE_KEY,
   type PersistedWorkspaceState,
 } from "../types";
 import {
+  readStoredDrafts,
   readStoredRecentFiles,
   readPersistedWorkspaceState,
+  removeStoredDraft,
+  removeStoredDrafts,
   writePersistedFileBookmark,
   writeStoredRecentFiles,
   writePersistedWorkspaceState,
@@ -395,5 +399,35 @@ describe("recent file storage removal", () => {
     ]);
 
     expect(window.localStorage.getItem(RECENT_FILES_STORAGE_KEY)).toBeNull();
+  });
+});
+
+describe("draft recovery storage failures", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("does not throw when localStorage reads are unavailable", () => {
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new DOMException("Storage unavailable", "SecurityError");
+    });
+
+    expect(readStoredDrafts()).toEqual([]);
+    expect(removeStoredDraft("/workspace/note.md")).toMatchObject({
+      ok: false,
+      reason: "quota",
+    });
+  });
+
+  it("returns a write failure when bulk removal cannot update storage", () => {
+    window.localStorage.setItem(DRAFT_STATE_STORAGE_KEY, "[]");
+    vi.spyOn(Storage.prototype, "removeItem").mockImplementation(() => {
+      throw new DOMException("Storage unavailable", "QuotaExceededError");
+    });
+
+    expect(removeStoredDrafts(["/workspace/note.md"])).toMatchObject({
+      ok: false,
+      reason: "quota",
+    });
   });
 });
