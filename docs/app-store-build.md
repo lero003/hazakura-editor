@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-07-10 (1.6.0 approved and published; next lane v1.7)
+Last reviewed: 2026-07-11 (1.7.0 build 85 submission candidate; published version stays 1.6.0)
 
 ## Purpose
 
@@ -45,8 +45,8 @@ Agent Workbench behind its existing boundary.
   2026-07-10; Import Assist Phase 1, 江戸彼岸 theme, prior v1 continuity /
   export / Local Assist surfaces). See
   `docs/releases/1.6.0-app-store-release-notes.md`.
-- Current source / Developer version: `1.6.0`. The next active product lane
-  is v1.7 Reference Compare; see `docs/current-work.md` and
+- Current source / Developer version: `1.7.0`. The active product lane is
+  v1.7 Reference Compare; see `docs/current-work.md` and
   `docs/v1.7-reference-compare-design.md`.
 - Latest local App Store package candidate metadata (version, build
   counter, pkg path, SHA-256, generated time, source commit): see

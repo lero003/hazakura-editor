@@ -10,6 +10,10 @@ Last reviewed: 2026-07-11 (v1.7.0 TestFlight candidate; published App Store stay
 - Package version **`1.7.0`** (TestFlight candidate; published Mac App Store
   version stays **`1.6.0`** until `1.7.0` passes App Review). Local package
   provenance lives in ignored `docs/internal/app-store-candidates/latest.json`.
+- `v1.7.0` is the source / submission-candidate tag. The selected signed pkg is
+  **`1.7.0` build `85`**; static signature, metadata, entitlement, and helper
+  checks passed. The user reported basic packaged testing with no issue on
+  2026-07-11. App Review submission and publication remain separate actions.
 - **v1.6 (`1.6.0`) closed and published.** Mac App Store App Review passed
   without issues (user-reported 2026-07-10). Release notes:
   `docs/releases/1.6.0-app-store-release-notes.md`. Do not reopen unless hotfix.
@@ -71,9 +75,10 @@ Last reviewed: 2026-07-11 (v1.7.0 TestFlight candidate; published App Store stay
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. **P0 for publication:** Packaged Reference Compare smoke (T-3) — required
-   before treating `1.7.0` as App Store-ready. `1.7.0` is now a TestFlight
-   candidate for real-device testing (roadmap/current-work aligned).
+1. **Submission candidate:** Basic packaged testing was user-reported with no
+   issue. Keep the extended Reference Compare, recovery, long-reference, and
+   accessibility matrix as post-submission / publication evidence rather than
+   claiming it fully completed.
 2. **Review fixes (2026-07-11):** pathless `recoveryId` is UUID (not
    `session:N`); pathless restore always opens a new pathless tab; reference
    text scrolls on `.reference-pane-body` with wrap-safe full rendering
@@ -161,9 +166,11 @@ Read it only for historical context.
   Reference Compare Rust tests passed. Do not treat the full Rust suite as
   green until those environment-sensitive failures are resolved or rerun in
   the expected host context.
-  `npm audit` (0 vulnerabilities) and `cargo audit` (18 allowed unmaintained
-  warnings, exit 0) passed. Packaged Reference Compare interaction smoke
-  remains unclaimed; `1.7.0` is a TestFlight candidate, not yet published.
+  `npm audit` (0 vulnerabilities) and `cargo audit` (18 allowed warnings,
+  exit 0) passed. App Store surface smoke was 10 files / 95 tests; signed build
+  85 checksum, metadata, entitlements, helpers, and signatures passed. Basic
+  packaged behavior was user-tested without a reported issue; the extended
+  matrix remains follow-up evidence. `1.7.0` is not yet published.
 - For docs-only work, run `git diff --check`.
 - For code changes, follow `docs/development-automation.md`.
 - For UI behavior changes, update or exercise `docs/smoke-checklist.md`.

@@ -97,7 +97,7 @@ each slice should remain independently verifiable.
 |---|---|---|---|
 | **Source / review-fix** | **L Mode continuity (T-1)** | Side-pane restore; Markdown-only L Mode; `historyField` undo on same-kind remount. | Needs packaged/manual smoke; CSS/HTML cannot enter L Mode. |
 | **Source / review-fix** | **Pathless draft recovery (T-2)** | UUID `recoveryId`; restore always opens a new pathless tab; pathless-only TTL/size; Save / Save As / restore / discard / close の storage failure status。 | Forced-termination smoke still required; cleanup failure時も編集・明示closeは止めず、再表示リスクをstatusで通知する。 |
-| **P0 required for bump** | **Reference Compare packaged proof (T-3)** | R0–R4 source tests do not prove helper/picker/sandbox/CSP together. | **Required** before v1.7 version-bump discussion (not optional). |
+| **Basic packaged smoke passed / extended partial** | **Reference Compare packaged proof (T-3)** | Signed build 85 metadata/signature/helpers verified; user-reported basic packaged testing found no issue. | Keep the extended picker/sandbox, recovery, long-reference boundary, and a11y matrix as submission/publication follow-up evidence. |
 | **Partial / source** | **Processing budgets (S-1)** | Pathless budgets + visible storage failure; Diff/export caps remain. | Further Diff/search/raster failure UX as needed. |
 | **Partial / source** | **Root recovery (S-2)** | `RootErrorRecovery` wraps the app shell. | PATH-sensitive Rust full-suite flake; integration path open. |
 | **Source / review-fix** | **Long reference + rename a11y (S-3)** | Body scroller + wrap-safe full rendering; text reference専用の150万文字 / 5万行 budget; rename inputs named. | 5k-line / wrap / budget超過のmanual smoke; variable-height windowingは不要になるまでdefer; rename label i18n is P2. |
@@ -121,12 +121,12 @@ time; keep normal `npm test` / `cargo test` gates.
 
 ### v1.7 completion gate
 
-`1.7.0` is a TestFlight candidate for real-device testing of the source-landed
-v1.7 work; it is not yet published. Before treating `1.7.0` as App Store-ready,
-confirm the packaged Reference Compare matrix, L Mode continuity, pathless
-draft recovery, bounded large-data failure states, keyboard/a11y smoke, and
-deterministic Rust test signal. The published Mac App Store version stays
-`1.6.0` until that proof exists and App Review passes.
+`1.7.0` is fixed by the source tag and signed build 85 submission candidate;
+it is not yet published. Basic packaged testing was user-reported without an
+issue. Continue the extended Reference Compare, pathless recovery, bounded
+large-data, keyboard/a11y, and deterministic Rust test matrix as submission /
+publication evidence. The published Mac App Store version stays `1.6.0` until
+App Review passes.
 
 ### 江戸彼岸 (post-v1.5)
 
