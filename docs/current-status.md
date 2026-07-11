@@ -3,12 +3,12 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-11 (Reference Compare: editor center / reference right)
+Last reviewed: 2026-07-11 (v1.7 TestFlight candidate; published App Store version stays 1.6.0)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current development package/app version: **`1.6.0`** across npm, Tauri, Cargo,
+- Current development package/app version: **`1.7.0`** across npm, Tauri, Cargo,
   and lockfile metadata. Local package provenance (build counter, pkg path,
   SHA-256) lives in ignored `docs/internal/app-store-candidates/latest.json`.
 - **v1.6 (`1.6.0`) is closed and published.** Mac App Store App Review passed
@@ -25,9 +25,14 @@ Last reviewed: 2026-07-11 (Reference Compare: editor center / reference right)
   second edit tab), including automatic source pairing after Import Assist.
   Design: `docs/v1.7-reference-compare-design.md`. Scope brief:
   `docs/v1.7-scope-brief.md`. **R0–R4** are in source. **T-1 / T-2 / S-2 root
-  recovery / S-3 windowing+rename a11y / S-4 Start Panel** source landed
-  2026-07-11. Packaged Reference Compare proof (T-3) and full a11y smoke remain
-  before a v1.7 version bump. No per-character confidence claims.
+  recovery / S-3 wrap-safe long-reference rendering+rename a11y / S-4 Start Panel** source landed
+  2026-07-11. Recovery cleanup failures are now surfaced across Save / Save As /
+  restore / discard / close, and text references have a separate 1.5M-character /
+  50,000-line DOM budget. **v1.7.0 is a TestFlight candidate for real-device
+  testing; the published Mac App Store version remains `1.6.0`** until `1.7.0`
+  passes App Review. Packaged Reference Compare proof (T-3), forced-termination
+  pathless recovery, budget-boundary smoke, and full a11y smoke remain before
+  publication. No per-character confidence claims.
 - **v1.5 (`1.5.0`) is closed and was released before 江戸彼岸 (edohigan).**
   v1.5 covered Spellcheck settings, Reading Focus TOC density, CRT/Shinkai
   lineage polish, dead-code, deps hygiene, traffic-light, L Mode remount.
@@ -76,9 +81,10 @@ Last reviewed: 2026-07-11 (Reference Compare: editor center / reference right)
   `AppWorkspace` owns a shared
   per-document view-state registry: reader, Editor cursor/scroll, Preview
   reopen, tab transitions, and safe local Markdown-link transitions now
-  preserve the relevant document position. The local forced-termination
-  Recovery smoke passed; Google Drive remains `manual-blocked` because no
-  dedicated fixture existed and user cloud content was not touched.
+  preserve the relevant document position. Earlier path-backed workspace
+  Recovery forced-termination smoke passed; the pathless T-2 recovery smoke
+  remains unclaimed. Google Drive remains `manual-blocked` because no dedicated
+  fixture existed and user cloud content was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
 - Published Mac App Store version: **`1.6.0`** (App Review passed without
@@ -528,7 +534,8 @@ baseline, and smoke evidence are archived under
    reproduces. Historical notes remain in `docs/v1.1-v1.2-followup.md` and
    `docs/v1.3-followup.md`.
 4. Complete Google Drive Recovery smoke only with a dedicated user-approved
-   fixture. The local-folder forced-termination path has passed.
+   fixture. The local-folder path-backed forced-termination path has passed;
+   the pathless T-2 recovery path remains unclaimed.
 5. Local package provenance for any future candidate lives in
    `docs/internal/app-store-candidates/latest.json`. App Store Connect,
    TestFlight, and App Review logs remain outside this repository unless
@@ -537,6 +544,6 @@ baseline, and smoke evidence are archived under
    `docs/apple-local-assist-distribution-plan.md`, and
    `docs/apple-local-assist-writing-companion-plan.md`; keep direct
    buffer edits as explicit AI edit transactions.
-7. Do not tag or publish without explicit approval. Version remains `1.6.0`
-   until the v1.7 completion gate is proven and an explicit v1.7 bump +
-   release notes are approved.
+7. Do not tag or publish without explicit approval. In-tree version is `1.7.0`
+   as a TestFlight candidate; the published Mac App Store version remains
+   `1.6.0` until `1.7.0` passes App Review.

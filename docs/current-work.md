@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v1.7 Reference Compare (package remains `1.6.0` until a v1.7 version bump)
+Scope: v1.7 Reference Compare (in-tree package `1.7.0` TestFlight candidate; published App Store version stays `1.6.0`)
 Authority: High
-Last reviewed: 2026-07-11 (Reference Compare: editor center / reference right)
+Last reviewed: 2026-07-11 (v1.7.0 TestFlight candidate prepared)
 
 ## Purpose
 
@@ -95,14 +95,14 @@ each slice should remain independently verifiable.
 
 | Priority | Slice | Why now | Acceptance anchor |
 |---|---|---|---|
-| **Done / source** | **L Mode continuity (T-1)** | Side-pane mode restored on exit; compare anchors kept; undo preserved via `historyField` remount path. | L Mode → normal restores prior pane mode; undo survives same-kind remount (unit proof). |
-| **Done / source** | **Pathless draft recovery (T-2)** | App-private recovery for new/Import Assist drafts (`recoveryId`, TTL/size, explicit banner). | No source write; restore/discard explicit; Save As clears pathless key. |
-| **P0 remaining** | **Reference Compare packaged proof (T-3)** | R0–R4 source tests do not prove native helper, picker, sandbox, CSP, and close/replace together. | Packaged smoke matrix still required before v1.7 version-bump discussion. |
-| **Partial / source** | **Processing budgets (S-1)** | Pathless draft debounce + TTL/size; existing Diff/export caps remain. | Further Diff/search/raster budget UX polish as needed. |
-| **Done / source** | **Root recovery surface (S-2 partial)** | `RootErrorRecovery` wraps the app shell. | PATH-sensitive Rust full-suite flake and full integration path remain open. |
-| **Done / source** | **Long reference + rename a11y (S-3 partial)** | Windowed text reference DOM; rename inputs have accessible names. | Manual keyboard/VoiceOver/contrast/Reduce Motion smoke still open. |
-| **Done / source** | **Purpose-led discovery (S-4 partial)** | Start Panel write / read / verify pitch + short hints. | Optional contextual first-use tooltips for modes remain light polish. |
-| **P2** | **Export/theme polish** | Export confidence and theme cost can improve after trust gates pass. | Concise EPUB/PDF preflight, Preferences parity, measured shader/reduced-motion behavior. |
+| **Source / review-fix** | **L Mode continuity (T-1)** | Side-pane restore; Markdown-only L Mode; `historyField` undo on same-kind remount. | Needs packaged/manual smoke; CSS/HTML cannot enter L Mode. |
+| **Source / review-fix** | **Pathless draft recovery (T-2)** | UUID `recoveryId`; restore always opens a new pathless tab; pathless-only TTL/size; Save / Save As / restore / discard / close の storage failure status。 | Forced-termination smoke still required; cleanup failure時も編集・明示closeは止めず、再表示リスクをstatusで通知する。 |
+| **P0 required for bump** | **Reference Compare packaged proof (T-3)** | R0–R4 source tests do not prove helper/picker/sandbox/CSP together. | **Required** before v1.7 version-bump discussion (not optional). |
+| **Partial / source** | **Processing budgets (S-1)** | Pathless budgets + visible storage failure; Diff/export caps remain. | Further Diff/search/raster failure UX as needed. |
+| **Partial / source** | **Root recovery (S-2)** | `RootErrorRecovery` wraps the app shell. | PATH-sensitive Rust full-suite flake; integration path open. |
+| **Source / review-fix** | **Long reference + rename a11y (S-3)** | Body scroller + wrap-safe full rendering; text reference専用の150万文字 / 5万行 budget; rename inputs named. | 5k-line / wrap / budget超過のmanual smoke; variable-height windowingは不要になるまでdefer; rename label i18n is P2. |
+| **Partial / source** | **Purpose-led discovery (S-4)** | Start Panel write / read / verify pitch. | Contextual first-use tooltips remain light polish. |
+| **P2** | **Export/theme polish** | After trust gates. | EPUB/PDF preflight, Preferences parity, measured shader/reduced-motion. |
 
 Book Scope Alpha is **not** part of this queue. It remains a v2 decision after
 the single-document and Reference Compare loop is proven.
@@ -121,11 +121,12 @@ time; keep normal `npm test` / `cargo test` gates.
 
 ### v1.7 completion gate
 
-Before discussing a v1.7 version bump, confirm the packaged Reference Compare
-matrix, L Mode continuity, pathless draft recovery, bounded large-data failure
-states, keyboard/a11y smoke, and deterministic Rust test signal. Keep the
-published version at `1.6.0` until that proof exists and release approval is
-explicit.
+`1.7.0` is a TestFlight candidate for real-device testing of the source-landed
+v1.7 work; it is not yet published. Before treating `1.7.0` as App Store-ready,
+confirm the packaged Reference Compare matrix, L Mode continuity, pathless
+draft recovery, bounded large-data failure states, keyboard/a11y smoke, and
+deterministic Rust test signal. The published Mac App Store version stays
+`1.6.0` until that proof exists and App Review passes.
 
 ### 江戸彼岸 (post-v1.5)
 

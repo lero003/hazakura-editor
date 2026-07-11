@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-10 (v1.6 App Review passed; active lane → v1.7 Reference Compare)
+Last reviewed: 2026-07-11 (v1.6 App Review passed; active lane → v1.7 Reference Compare)
 
 ## Current Position
 
@@ -15,11 +15,15 @@ Current release state:
 
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
-- Package/app version in tree: **`1.6.0`**. Local package provenance lives in
-  `docs/internal/app-store-candidates/latest.json`.
+- Package/app version in tree: **`1.7.0`** (TestFlight candidate; published
+  Mac App Store version stays `1.6.0` until `1.7.0` passes App Review). Local
+  package provenance lives in `docs/internal/app-store-candidates/latest.json`.
 - **Published Mac App Store version: `1.6.0`.** App Review passed without
   issues (user-reported 2026-07-10). Release notes:
   `docs/releases/1.6.0-app-store-release-notes.md`.
+- **v1.7 TestFlight candidate: `1.7.0`.** Reference Compare plus trust /
+  daily-use hardening. Not yet submitted for App Review. Release notes:
+  `docs/releases/1.7.0-app-store-release-notes.md`.
 - **v1.5 (`1.5.0`) is closed and was released before 江戸彼岸 (edohigan).**
 - **v1.6 (`1.6.0`) is closed / published:** Import Assist Phase 1 + edohigan +
   CodeMirror view pin + quality packs + `pdf-extract` security update.
@@ -27,11 +31,16 @@ Current release state:
   reproduced hotfix need.
 - Historical MAS baselines (`1.3.0` Daily Trust and earlier) remain part of
   public product history; store Connect is authoritative for listing numbers.
-- **Active product lane: v1.7 — Reference Compare.** One read-only
-  PDF/image/text reference beside one editable Markdown document, including
-  automatic source pairing after Import Assist. Design:
-  `docs/v1.7-reference-compare-design.md`. **R0–R4 source landed**; remaining
-  work is review polish, optional packaged smoke, then version bump.
+- **Active product lane: v1.7 — Reference Compare + trust/daily-use.** One
+  read-only PDF/image/text reference beside one editable Markdown document,
+  including automatic source pairing after Import Assist. Design:
+  `docs/v1.7-reference-compare-design.md`. Scope brief:
+  `docs/v1.7-scope-brief.md`. **R0–R4 source landed.** Trust slices (L Mode
+  continuity, pathless recovery, wrap-safe long-reference rendering, root recovery)
+  are in source. **`1.7.0` is a TestFlight candidate** for real-device testing;
+  **packaged Reference Compare smoke is required before publication** (not
+  optional). The published Mac App Store version stays `1.6.0` until `1.7.0`
+  passes App Review. See `docs/current-work.md`.
 - **Next major structural lane: v2** — OKF Book Scope, then vertical writing
   (縦書き). Design:
   `docs/superpowers/specs/2026-07-02-v2-book-scope-design.md`.

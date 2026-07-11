@@ -7,7 +7,7 @@
 Status: Operational
 Scope: Project entry point
 Authority: High
-Last reviewed: 2026-07-10 (v1.6 approved and published on the Mac App Store as 1.6.0)
+Last reviewed: 2026-07-11 (v1.7 TestFlight candidate `1.7.0`; published App Store version stays `1.6.0`)
 
 `Hazakura Editor` は、Markdownで文章を書き、電子書籍のように読み返し、必要な部分だけをローカルAIと整えられるmacOS向け執筆エディタです。
 
@@ -136,6 +136,7 @@ For the full implementation inventory and release state, see
 - [Current Work](docs/current-work.md): active queue (v1.7 Reference Compare + trust / daily-use hardening)
 - [v1.7 Reference Compare Design](docs/v1.7-reference-compare-design.md): editable Markdown center + read-only PDF/image/text reference on the right (preview-like, not Diff)
 - [v1.6 App Store Release Notes](docs/releases/1.6.0-app-store-release-notes.md): published Import Assist release
+- [v1.7 App Store Release Notes](docs/releases/1.7.0-app-store-release-notes.md): TestFlight candidate (Reference Compare + trust hardening)
 - [Hazakura Local Assist Writing Companion Plan](docs/apple-local-assist-writing-companion-plan.md): post-v0.11 Hazakura Local Assist UX direction
 - [Roadmap](docs/roadmap.md): 段階的な開発順序
 - [L Mode Plan](docs/l-mode-plan.md): えるモードの source-preserving WYSIWYG Accuracy Ramp plan
@@ -230,7 +231,7 @@ Use `npm ci` when evaluating the source preview from the committed lockfile. Use
 
 Developer preview release boundary:
 
-- Current package/app version is `1.6.0` across npm, Tauri, and Cargo metadata. `1.6.0` is the published Mac App Store version (v1.6 Import Assist Phase 1: on-device PDF/image → unsaved Markdown draft, 江戸彼岸 theme, prior continuity / export / Local Assist surfaces). It passed App Review without issues and is public on the Mac App Store.
+- Current package/app version is `1.7.0` across npm, Tauri, and Cargo metadata. `1.7.0` is a TestFlight candidate for real-device testing of v1.7 Reference Compare plus trust / daily-use hardening; it is not yet published. The published Mac App Store version remains `1.6.0` (v1.6 Import Assist Phase 1: on-device PDF/image → unsaved Markdown draft, 江戸彼岸 theme, prior continuity / export / Local Assist surfaces), which passed App Review without issues.
 - The Mac App Store listing is [Hazakura Editor](https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12). The published App Store version is `1.6.0` with Import Assist, direct PDF / EPUB export, Hazakura Local Assist as an on-device writing companion, and the earlier v1 continuity / Daily Trust surfaces.
 - The latest prepared GitHub source / local-app tag is [v0.35.0](https://github.com/lero003/hazakura-editor/tree/v0.35.0).
 - The latest local App Store / TestFlight package candidate metadata lives in `docs/internal/app-store-candidates/latest.json`; tracked docs do not pin its build number or package hash.

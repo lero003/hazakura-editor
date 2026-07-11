@@ -3,12 +3,13 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-07-11 (v1.7 trust source slice: L Mode, pathless recovery, budgets partial)
+Last reviewed: 2026-07-11 (v1.7.0 TestFlight candidate; published App Store stays 1.6.0)
 
 ## Current State
 
-- Package version **`1.6.0`**. Local package provenance lives in ignored
-  `docs/internal/app-store-candidates/latest.json`.
+- Package version **`1.7.0`** (TestFlight candidate; published Mac App Store
+  version stays **`1.6.0`** until `1.7.0` passes App Review). Local package
+  provenance lives in ignored `docs/internal/app-store-candidates/latest.json`.
 - **v1.6 (`1.6.0`) closed and published.** Mac App Store App Review passed
   without issues (user-reported 2026-07-10). Release notes:
   `docs/releases/1.6.0-app-store-release-notes.md`. Do not reopen unless hotfix.
@@ -66,22 +67,33 @@ Last reviewed: 2026-07-11 (v1.7 trust source slice: L Mode, pathless recovery, b
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. **P0 remaining:** Packaged Reference Compare smoke (T-3) — PDF/image/text,
-   Import Assist pair/follow, 要確認, Save As, deletion, narrow window, keyboard,
-   and App Store sandbox picker. Source R0–R4 already landed.
-2. **Source landed (2026-07-11):** L Mode continuity (side-pane restore, history
-   via `historyField`), pathless draft recovery (TTL/size, explicit banner),
-   root error recovery surface, windowed text references, rename a11y, Start
-   Panel write/read/verify hints. See `docs/v1.7-trust-scale-plan.md`.
-3. **Still open:** Deterministic full Rust suite (PATH-sensitive Agent Workbench
-   flake), broader processing-budget UX, manual a11y smoke matrix, P2 export/
-   theme polish.
+1. **P0 for publication:** Packaged Reference Compare smoke (T-3) — required
+   before treating `1.7.0` as App Store-ready. `1.7.0` is now a TestFlight
+   candidate for real-device testing (roadmap/current-work aligned).
+2. **Review fixes (2026-07-11):** pathless `recoveryId` is UUID (not
+   `session:N`); pathless restore always opens a new pathless tab; reference
+   text scrolls on `.reference-pane-body` with wrap-safe full rendering
+   (variable-height windowing is deferred); pathless
+   budgets separate from path drafts + storage failure status; L Mode is
+   Markdown-only. Do not claim T-2/S-3 fully done without forced-termination /
+   long-reference smoke. Follow-up self-review fixes now propagate bulk draft
+   removal results and surface cleanup failure for Save / Save As / restore /
+   discard / tab close / window close without blocking editing or an explicit
+   close. Text Reference keeps wrap-safe full rendering only inside a separate
+   1.5M-character / 50,000-line DOM budget; over-budget input fails visibly
+   before replacing the existing reference. The exact packaged status copy,
+   forced-termination recovery, narrow Japanese wrapping, and budget boundary
+   remain manual proof rather than source-complete claims.
+3. **Still open:** Deterministic full Rust suite flake, manual a11y matrix,
+   P2 export/theme polish, rename VoiceOver i18n.
 4. Keep v1.6 closed unless a reproduced gap needs a hotfix. Historical quality
    notes: `docs/quality-inventory-v1.6.md`.
 5. Keep `@codemirror/view` at **6.43.2**. Do not tag, upload, or publish
-   without explicit user approval. Package remains **`1.6.0`** until a v1.7
-   version bump is explicitly approved.
-6. Local forced-termination Recovery passed. Google Drive remains
+   without explicit user approval. In-tree version is **`1.7.0`** as a
+   TestFlight candidate; the published Mac App Store version stays `1.6.0`
+   until `1.7.0` passes App Review.
+6. Earlier path-backed workspace Recovery forced-termination smoke passed.
+   The pathless T-2 recovery smoke remains unclaimed. Google Drive remains
    `manual-blocked` until a dedicated fixture is available; do not scan or
    create content in the user's cloud folders implicitly.
 7. Do not expand into two editable panes, Review Desk revival, Book Scope,
@@ -137,12 +149,15 @@ Read it only for historical context.
 
 ## Verification Guidance
 
-- 2026-07-11 trust source slice: `npm run typecheck` passed; `npm run test`
-  was 155/156 files green (1 flaky `SidePane.test` timing failure; isolated
-  rerun passed); focused pathless/L Mode/windowing/Start Panel tests green;
-  `npm run build:vite` and `git diff --check` passed. Full `cargo test` was
-  not re-run this slice; prior PATH-sensitive Agent Workbench flake still
-  applies. Packaged Reference Compare smoke remains unclaimed.
+- 2026-07-11 review-fix + self-review follow-up: `npm run typecheck` passed;
+  `npm run test` was **157/157 files / 1361 tests** green; focused recovery /
+  close / text-reference-budget tests were **6 files / 68 tests** green;
+  `npm run build:vite`, `npm run build`, Rust format, and `git diff --check`
+  passed. Full `cargo test` was **340/340** green on the v1.7.0 TestFlight
+  candidate (the known PATH-sensitive Agent Workbench flake did not reproduce).
+  `npm audit` (0 vulnerabilities) and `cargo audit` (18 allowed unmaintained
+  warnings, exit 0) passed. Packaged Reference Compare interaction smoke
+  remains unclaimed; `1.7.0` is a TestFlight candidate, not yet published.
 - For docs-only work, run `git diff --check`.
 - For code changes, follow `docs/development-automation.md`.
 - For UI behavior changes, update or exercise `docs/smoke-checklist.md`.
