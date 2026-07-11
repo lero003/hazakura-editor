@@ -188,6 +188,7 @@
   min-width: 0;
 }
 
+.editing-mode-control,
 .pane-toggles {
   align-items: center;
   background: color-mix(in srgb, var(--surface-muted) 58%, transparent);
@@ -198,6 +199,10 @@
   flex: 0 0 auto;
   gap: 0;
   padding: 1px;
+}
+
+.editing-mode-control {
+  flex: 0 0 auto;
 }
 
 .pane-toggle {

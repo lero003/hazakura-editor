@@ -153,6 +153,16 @@ export function PreviewIcon() {
   );
 }
 
+export function ReferenceIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2.5 2.5H9.5C10.0523 2.5 10.5 2.94772 10.5 3.5V13.5H3.5C2.94772 13.5 2.5 13.0523 2.5 12.5V2.5Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+      <path d="M5.5 5H8M5.5 7.5H8M5.5 10H7" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
+      <path d="M10.5 5H12.5C13.0523 5 13.5 5.44772 13.5 6V12.5C13.5 13.0523 13.0523 13.5 12.5 13.5H10.5" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
 export function DiffIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">

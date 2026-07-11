@@ -317,6 +317,7 @@ function makeWorkspaceProps(
     previewVisible: true,
     referenceColumnPercent: 42,
     referenceCompare: null,
+    referencePaneVisible: false,
     referenceCopy: {
       closeReference: "Close reference",
       emptyEditorHint: "Open Markdown to edit",
@@ -1123,6 +1124,7 @@ describe("AppWorkspace reference compare layout", () => {
         },
         sourceFingerprint: null,
       },
+      referencePaneVisible: true,
       tabs: [tab],
       workspaceRootPath: "/workspace",
     });
@@ -1139,5 +1141,38 @@ describe("AppWorkspace reference compare layout", () => {
     // REFERENCE is FOLLOWING the editor (editor comes first in DOM / layout).
     expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(grid?.className).not.toContain("diff-workbench");
+  });
+
+  it("keeps a loaded reference hidden while another right pane is selected", () => {
+    const tab = makeTab({ contents: "# draft" });
+    const { container } = renderWorkspace({
+      activeContents: tab.contents,
+      activeTab: tab,
+      hasWorkspaceSelection: true,
+      referenceCompare: {
+        externalChangePending: false,
+        followMode: "off",
+        linkedEditorSessionId: null,
+        origin: "manual",
+        reference: {
+          contents: "# style guide",
+          encoding: "utf-8",
+          kind: "text",
+          name: "guide.md",
+          path: "/workspace/guide.md",
+        },
+        sourceFingerprint: null,
+      },
+      referencePaneVisible: false,
+      sidePaneMode: "preview",
+      sidePaneVisible: true,
+      tabs: [tab],
+      workspaceRootPath: "/workspace",
+    });
+
+    expect(container.querySelector(".reference-compare-pane")).toBeNull();
+    expect(container.querySelector(".editor-preview-grid")?.className).not.toContain(
+      "reference-compare",
+    );
   });
 });

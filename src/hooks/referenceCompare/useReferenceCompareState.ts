@@ -11,6 +11,7 @@ export function useReferenceCompareState() {
     useState<ReferenceCompareState | null>(null);
   const [referenceNarrowFocus, setReferenceNarrowFocus] =
     useState<ReferenceNarrowFocus>("editor");
+  const [referencePaneVisible, setReferencePaneVisible] = useState(false);
   /** Share of the editor-preview grid width for the reference column (percent). */
   const [referenceColumnPercent, setReferenceColumnPercent] = useState(42);
   /** Current PDF page (0-based) for the active PDF reference. */
@@ -18,6 +19,7 @@ export function useReferenceCompareState() {
 
   const clearReferenceCompare = useCallback(() => {
     setReferenceCompare(null);
+    setReferencePaneVisible(false);
     setReferenceNarrowFocus("editor");
     setPdfPageIndex(0);
   }, []);
@@ -44,6 +46,7 @@ export function useReferenceCompareState() {
         sourceFingerprint: options.sourceFingerprint ?? null,
         externalChangePending: false,
       });
+      setReferencePaneVisible(true);
       setReferenceNarrowFocus("reference");
       setPdfPageIndex(0);
     },
@@ -69,11 +72,13 @@ export function useReferenceCompareState() {
     referenceColumnPercent,
     referenceCompare,
     referenceNarrowFocus,
+    referencePaneVisible,
     setPdfPageIndex,
     setReferenceColumnPercent,
     setReferenceCompare,
     setReferenceDocument,
     setReferenceFollowMode,
     setReferenceNarrowFocus,
+    setReferencePaneVisible,
   };
 }

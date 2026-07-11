@@ -212,11 +212,13 @@ export function useAppShellController() {
     referenceColumnPercent,
     referenceCompare,
     referenceNarrowFocus,
+    referencePaneVisible,
     setPdfPageIndex,
     setReferenceColumnPercent,
     setReferenceDocument,
     setReferenceFollowMode,
     setReferenceNarrowFocus,
+    setReferencePaneVisible,
   } = foundation;
 
   // Filled after useReferenceCompareActions; Import Assist pairs through this ref
@@ -464,10 +466,10 @@ export function useAppShellController() {
     sidePaneVisible,
     syncEditorScroll,
     syncPreviewScroll,
-    toggleDiffPane,
-    toggleEbookPane,
-    toggleOutlinePane,
-    togglePreviewPane,
+    toggleDiffPane: toggleDiffPaneBase,
+    toggleEbookPane: toggleEbookPaneBase,
+    toggleOutlinePane: toggleOutlinePaneBase,
+    togglePreviewPane: togglePreviewPaneBase,
   } = useEditorSurfaceController({
     activeContents,
     activeDirty,
@@ -488,6 +490,36 @@ export function useAppShellController() {
     setSidePaneOpen,
     sidePaneOpen,
   });
+
+  const switchFromReference = useCallback(
+    (togglePane: () => void) => {
+      setReferencePaneVisible(false);
+      togglePane();
+    },
+    [setReferencePaneVisible],
+  );
+  const toggleDiffPane = useCallback(
+    () => switchFromReference(toggleDiffPaneBase),
+    [switchFromReference, toggleDiffPaneBase],
+  );
+  const toggleEbookPane = useCallback(
+    () => switchFromReference(toggleEbookPaneBase),
+    [switchFromReference, toggleEbookPaneBase],
+  );
+  const toggleOutlinePane = useCallback(
+    () => switchFromReference(toggleOutlinePaneBase),
+    [switchFromReference, toggleOutlinePaneBase],
+  );
+  const togglePreviewPane = useCallback(
+    () => switchFromReference(togglePreviewPaneBase),
+    [switchFromReference, togglePreviewPaneBase],
+  );
+
+  useEffect(() => {
+    if (referencePaneVisible) {
+      setSidePaneOpen(false);
+    }
+  }, [referencePaneVisible, setSidePaneOpen]);
 
   // section: find / replace + go to line
   const {
@@ -819,6 +851,20 @@ export function useAppShellController() {
     workspaceRootPath,
   });
   pairImportAssistReferenceRef.current = pairImportAssistReference;
+
+  const toggleReferencePane = useCallback(() => {
+    if (!referenceCompare) {
+      void openReferenceFile();
+      return;
+    }
+    setReferencePaneVisible((current) => !current);
+    setSidePaneOpen(false);
+  }, [
+    openReferenceFile,
+    referenceCompare,
+    setReferencePaneVisible,
+    setSidePaneOpen,
+  ]);
 
   useImportPageFollow({
     activeContents: activeTab?.contents ?? "",
@@ -1838,6 +1884,7 @@ export function useAppShellController() {
     onToggleLMode: toggleLMode,
     onToggleOutline: toggleOutlinePane,
     onTogglePreview: togglePreviewPane,
+    onToggleReference: toggleReferencePane,
     onCloseGlobalSearch: closeGlobalSearch,
     onOpenGlobalSearch: openGlobalSearch,
     onRunGlobalSearchMatch: runGlobalSearchMatch,
@@ -1859,6 +1906,7 @@ export function useAppShellController() {
     referenceCopy,
     referenceFollowPaused: referenceCompare?.followMode === "paused",
     referenceNarrowFocus,
+    referencePaneVisible,
     setReferenceColumnPercent,
     setReferenceNarrowFocus,
     openTabContextMenu,

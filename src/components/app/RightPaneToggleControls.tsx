@@ -5,6 +5,7 @@ import {
   LModeIcon,
   OutlineIcon,
   PreviewIcon,
+  ReferenceIcon,
   ReviewDeskIcon,
 } from "./Icons";
 
@@ -21,6 +22,8 @@ export interface RightPaneToggleCopy {
   outlineTabTitle: string;
   previewTab: string;
   previewTabTitle: string;
+  referenceTab: string;
+  referenceTabTitle: string;
   reviewMenu: string;
   reviewMenuTitle: string;
   sidePaneMode: string;
@@ -68,40 +71,36 @@ export function RightPaneToggleControls({
   diffAvailable,
   ebookActive,
   ebookAvailable,
-  lModeActive,
-  lModeLabel,
-  lModeTitle,
   onReviewChanges,
   onToggleDiff,
   onToggleEbook,
-  onToggleLMode,
   onToggleOutline,
   onTogglePreview,
   outlineActive,
   outlineAvailable,
   previewActive,
+  referenceActive,
   reviewChangesAvailable,
   reviewChangesLabel,
+  onToggleReference,
 }: {
   copy: RightPaneToggleCopy;
   diffActive: boolean;
   diffAvailable: boolean;
   ebookActive: boolean;
   ebookAvailable: boolean;
-  lModeActive: boolean;
-  lModeLabel: string;
-  lModeTitle: string;
   onReviewChanges: () => void;
   onToggleDiff: () => void;
   onToggleEbook: () => void;
-  onToggleLMode: () => void;
   onToggleOutline: () => void;
   onTogglePreview: () => void;
   outlineActive: boolean;
   outlineAvailable: boolean;
   previewActive: boolean;
+  referenceActive: boolean;
   reviewChangesAvailable: boolean;
   reviewChangesLabel: string;
+  onToggleReference: () => void;
 }) {
   return (
     <div className="pane-control-cluster" aria-label={copy.sidePaneMode}>
@@ -123,11 +122,11 @@ export function RightPaneToggleControls({
           title={copy.previewTabTitle}
         />
         <PaneToggle
-          active={lModeActive}
-          caption={lModeLabel}
-          icon={<LModeIcon />}
-          onClick={onToggleLMode}
-          title={lModeTitle}
+          active={referenceActive}
+          caption={copy.referenceTab}
+          icon={<ReferenceIcon />}
+          onClick={onToggleReference}
+          title={copy.referenceTabTitle}
         />
         <PaneToggle
           active={ebookAvailable && ebookActive}
@@ -154,6 +153,30 @@ export function RightPaneToggleControls({
           title={copy.diffTabTitle}
         />
       </div>
+    </div>
+  );
+}
+
+export function EditingModeControl({
+  active,
+  label,
+  onToggle,
+  title,
+}: {
+  active: boolean;
+  label: string;
+  onToggle: () => void;
+  title: string;
+}) {
+  return (
+    <div className="editing-mode-control" aria-label={title}>
+      <PaneToggle
+        active={active}
+        caption={label}
+        icon={<LModeIcon />}
+        onClick={onToggle}
+        title={title}
+      />
     </div>
   );
 }

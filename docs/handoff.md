@@ -22,6 +22,10 @@ Last reviewed: 2026-07-11 (v1.7.0 TestFlight candidate; published App Store stay
   Command Palette `参照ファイルを横に開く…`; workspace and open-tab context
   menus `参照として横に開く`. PDF page rasters use CSP-allowed bounded
   `data:image/png` (do not restore `blob:` without CSP re-review).
+  Top chrome separates L Mode (editing presentation) from right-pane content;
+  `参照` is an explicit right-pane toggle. Switching to Preview / e-book /
+  Outline / Diff hides but retains the loaded reference; only its in-pane close
+  action ends the session.
   Source: `docs/v1.7-reference-compare-design.md`, queue: `docs/current-work.md`.
 - **v1.5 (`1.5.0`) closed before 江戸彼岸.** Import Assist boundary remains
   historical for v1.6: `docs/import-assist-boundary-review.md`.
@@ -149,12 +153,14 @@ Read it only for historical context.
 
 ## Verification Guidance
 
-- 2026-07-11 review-fix + self-review follow-up: `npm run typecheck` passed;
-  `npm run test` was **157/157 files / 1361 tests** green; focused recovery /
-  close / text-reference-budget tests were **6 files / 68 tests** green;
-  `npm run build:vite`, `npm run build`, Rust format, and `git diff --check`
-  passed. Full `cargo test` was **340/340** green on the v1.7.0 TestFlight
-  candidate (the known PATH-sensitive Agent Workbench flake did not reproduce).
+- 2026-07-11 top-chrome / Reference pane follow-up: `npm run typecheck`,
+  `npm run test` (**158/158 files / 1365 tests**), `npm run build:vite`,
+  `npm run build`, Rust format, and `git diff --check` passed. Full
+  `cargo test` reached **336/340**; unrelated host-sensitive bookmark, Trash,
+  and Agent Workbench PATH tests failed. The bookmark test reproduced alone;
+  Reference Compare Rust tests passed. Do not treat the full Rust suite as
+  green until those environment-sensitive failures are resolved or rerun in
+  the expected host context.
   `npm audit` (0 vulnerabilities) and `cargo audit` (18 allowed unmaintained
   warnings, exit 0) passed. Packaged Reference Compare interaction smoke
   remains unclaimed; `1.7.0` is a TestFlight candidate, not yet published.

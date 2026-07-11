@@ -62,11 +62,13 @@ function renderTopChrome(
       onToggleLMode={vi.fn()}
       onToggleOutline={vi.fn()}
       onTogglePreview={vi.fn()}
+      onToggleReference={vi.fn()}
       recoveryCopy={getRecoveryCopy("en")}
       shouldSuppressTabClick={() => false}
       selectedImage={null}
       sidePaneCopy={getSidePaneCopy("en")}
       sidePaneMode="preview"
+      referencePaneVisible={false}
       tabs={[]}
       {...overrides}
     />,

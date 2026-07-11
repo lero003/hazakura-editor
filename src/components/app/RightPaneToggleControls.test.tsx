@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import {
+  EditingModeControl,
   RightPaneToggleControls,
   type RightPaneToggleCopy,
 } from "./RightPaneToggleControls";
@@ -20,6 +21,8 @@ const copy: RightPaneToggleCopy = {
   outlineTabTitle: "Open Outline",
   previewTab: "Preview",
   previewTabTitle: "Open Preview",
+  referenceTab: "Reference",
+  referenceTabTitle: "Open Reference",
   reviewMenu: "Review",
   reviewMenuTitle: "Open review tools",
   sidePaneMode: "Side pane",
@@ -39,20 +42,18 @@ function renderControls(
       diffAvailable
       ebookActive={false}
       ebookAvailable
-      lModeActive={false}
-      lModeLabel="L Mode"
-      lModeTitle="Toggle L Mode"
       onReviewChanges={onReviewChanges}
       onToggleDiff={onToggleDiff}
       onToggleEbook={onToggleEbook}
-      onToggleLMode={vi.fn()}
       onToggleOutline={onToggleOutline}
       onTogglePreview={vi.fn()}
       outlineActive={false}
       outlineAvailable
       previewActive={false}
+      referenceActive={false}
       reviewChangesAvailable={false}
       reviewChangesLabel="Review changes"
+      onToggleReference={vi.fn()}
       {...overrides}
     />,
   );
@@ -66,8 +67,15 @@ function renderControls(
 }
 
 describe("RightPaneToggleControls", () => {
-  it("reflects L Mode active state on the L Mode toggle", () => {
-    renderControls({ lModeActive: true });
+  it("keeps L Mode in a separate editing-mode control", () => {
+    render(
+      <EditingModeControl
+        active
+        label="L Mode"
+        onToggle={vi.fn()}
+        title="Toggle L Mode"
+      />,
+    );
 
     const lModeButton = screen.getByRole("button", { name: "L Mode" });
 
@@ -128,7 +136,7 @@ describe("RightPaneToggleControls", () => {
     ).toEqual([
       "Review",
       "Preview",
-      "L Mode",
+      "Reference",
       "e-book",
       "Outline",
       "Diff",
@@ -140,6 +148,14 @@ describe("RightPaneToggleControls", () => {
 
     expect(
       screen.getAllByRole("button").map((button) => button.textContent),
-    ).toEqual(["Preview", "L Mode", "e-book", "Outline", "Diff"]);
+    ).toEqual(["Preview", "Reference", "e-book", "Outline", "Diff"]);
+  });
+
+  it("marks Reference as the active right pane", () => {
+    renderControls({ referenceActive: true });
+
+    expect(
+      screen.getByRole("button", { name: "Reference" }).getAttribute("aria-pressed"),
+    ).toBe("true");
   });
 });

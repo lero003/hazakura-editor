@@ -23,6 +23,8 @@ export type SidePaneCopy = {
   previewDisabled: string;
   previewTab: string;
   previewTabTitle: string;
+  referenceTab: string;
+  referenceTabTitle: string;
   previewUnavailable: string;
   reviewMenu: string;
   reviewMenuTitle: string;
@@ -56,6 +58,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
       previewDisabled: "したみのまどは、おこのみにて無効です。",
       previewTab: "したみ",
       previewTabTitle: "したみのまどをしめす",
+      referenceTab: "さんしょう",
+      referenceTabTitle: "さんしょうのまどを ひらく",
       previewUnavailable: "したみをしめせません",
       reviewMenu: "かくにん",
       reviewMenuTitle: "へんこうをかくにん",
@@ -89,6 +93,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         previewDisabled: "プレビューは設定で無効です。",
         previewTab: "プレビュー",
         previewTabTitle: "プレビューペインを表示",
+        referenceTab: "参照",
+        referenceTabTitle: "参照ペインを表示",
         previewUnavailable: "プレビューを表示できません",
         reviewMenu: "確認",
         reviewMenuTitle: "変更を確認",
@@ -120,6 +126,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         previewDisabled: "Preview pane is disabled in Preferences.",
         previewTab: "Preview",
         previewTabTitle: "Show preview pane",
+        referenceTab: "Reference",
+        referenceTabTitle: "Show reference pane",
         previewUnavailable: "Preview unavailable",
         reviewMenu: "Review",
         reviewMenuTitle: "Review changes",

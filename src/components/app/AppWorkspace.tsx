@@ -152,6 +152,7 @@ type AppWorkspaceProps = {
   previewVisible: boolean;
   referenceColumnPercent: number;
   referenceCompare: ReferenceCompareState | null;
+  referencePaneVisible: boolean;
   referenceCopy: ReferenceCompareCopy;
   referenceNarrowFocus: ReferenceNarrowFocus;
   resolvedTheme: ResolvedTheme;
@@ -257,6 +258,7 @@ export function AppWorkspace({
   previewVisible,
   referenceColumnPercent,
   referenceCompare,
+  referencePaneVisible,
   referenceCopy,
   referenceNarrowFocus,
   resolvedTheme,
@@ -469,6 +471,8 @@ export function AppWorkspace({
     [tabs, workspaceRootPath],
   );
 
+  const visibleReferenceCompare = referencePaneVisible ? referenceCompare : null;
+
   return (
     <section
       className={`workspace${isWorkspaceSidebarCollapsed ? " workspace-sidebar-collapsed" : ""}${ebookReadingFocusActive ? " workspace-reading-focus" : ""}`}
@@ -531,9 +535,9 @@ export function AppWorkspace({
       )}
       <div
         ref={editorPreviewGridRef}
-        className={`editor-preview-grid${sidePaneVisible && !referenceCompare ? "" : " preview-hidden"}${hasWorkspaceSelection ? "" : " empty-session"}${sidePaneMode === "compare" ? " diff-workbench" : ""}${referenceCompare ? " reference-compare" : ""}${referenceCompare && referenceNarrowFocus === "reference" ? " reference-focus-ref" : ""}${referenceCompare && referenceNarrowFocus === "editor" ? " reference-focus-editor" : ""}`}
+        className={`editor-preview-grid${sidePaneVisible && !visibleReferenceCompare ? "" : " preview-hidden"}${hasWorkspaceSelection ? "" : " empty-session"}${sidePaneMode === "compare" ? " diff-workbench" : ""}${visibleReferenceCompare ? " reference-compare" : ""}${visibleReferenceCompare && referenceNarrowFocus === "reference" ? " reference-focus-ref" : ""}${visibleReferenceCompare && referenceNarrowFocus === "editor" ? " reference-focus-editor" : ""}`}
         style={
-          referenceCompare
+          visibleReferenceCompare
             ? {
                 // Editor (center/primary) | resizer | reference (right, preview-like).
                 // referenceColumnPercent is the right-pane width, matching Markdown Preview.
@@ -542,7 +546,7 @@ export function AppWorkspace({
             : editorPreviewGridStyle
         }
       >
-        {referenceCompare?.origin === "import-assist" ? (
+        {visibleReferenceCompare?.origin === "import-assist" ? (
           <p
             className="reference-import-workflow-hint"
             role="note"
@@ -551,7 +555,7 @@ export function AppWorkspace({
             {referenceCopy.importWorkflowHint}
           </p>
         ) : null}
-        {referenceCompare ? (
+        {visibleReferenceCompare ? (
           <div className="reference-narrow-switch" role="toolbar">
             <button
               type="button"
@@ -607,13 +611,13 @@ export function AppWorkspace({
             slashMenuCopy={slashMenuCopy}
             workspaceRootPath={workspaceRootPath}
           />
-          {!activeTab && referenceCompare ? (
+          {!activeTab && visibleReferenceCompare ? (
             <p className="reference-empty-editor-hint" role="status">
               {referenceCopy.emptyEditorHint}
             </p>
           ) : null}
         </div>
-        {referenceCompare ? (
+        {visibleReferenceCompare ? (
           <>
             <PaneResizer
               label={referenceCopy.referenceLabel}
@@ -675,7 +679,7 @@ export function AppWorkspace({
             <div className="reference-compare-pane">
               <ReferenceTextPane
                 copy={referenceCopy}
-                externalChangePending={referenceCompare.externalChangePending}
+                externalChangePending={visibleReferenceCompare.externalChangePending}
                 followPaused={referenceFollowPaused}
                 menuLanguage={menuLanguage}
                 onClose={closeReferenceCompare}
@@ -689,12 +693,12 @@ export function AppWorkspace({
                 onResumeFollow={onResumeReferenceFollow}
                 onShowDiff={onShowReferenceDiff}
                 pdfPageIndex={pdfPageIndex}
-                reference={referenceCompare.reference}
+                reference={visibleReferenceCompare.reference}
                 reviewPageIndices={importReviewPageIndices}
                 showDiffEnabled={
                   Boolean(
                     onShowReferenceDiff &&
-                      referenceCompare.reference.kind === "text" &&
+                      visibleReferenceCompare.reference.kind === "text" &&
                       activeTab,
                   )
                 }
@@ -702,7 +706,7 @@ export function AppWorkspace({
             </div>
           </>
         ) : null}
-        {sidePaneVisible && !referenceCompare ? (
+        {sidePaneVisible && !visibleReferenceCompare ? (
           <PaneResizer
             label={sidePaneCopy.resizeColumns}
             max={MAX_PREVIEW_COLUMN_PERCENT}
@@ -714,7 +718,7 @@ export function AppWorkspace({
             value={previewColumnPercent}
           />
         ) : null}
-        {sidePaneMode && !referenceCompare ? (
+        {sidePaneMode && !visibleReferenceCompare ? (
           <SidePane
             activeContents={activeContents}
             activeTab={activeTab}

@@ -33,6 +33,10 @@ Last reviewed: 2026-07-11 (v1.7 TestFlight candidate; published App Store versio
   passes App Review. Packaged Reference Compare proof (T-3), forced-termination
   pathless recovery, budget-boundary smoke, and full a11y smoke remain before
   publication. No per-character confidence claims.
+  The top chrome now separates L Mode from right-pane selection and exposes an
+  explicit `参照` item beside Preview / e-book / Outline / Diff. Switching pane
+  content retains the loaded reference; the in-pane close action remains the
+  explicit end of the reference session.
 - **v1.5 (`1.5.0`) is closed and was released before 江戸彼岸 (edohigan).**
   v1.5 covered Spellcheck settings, Reading Focus TOC density, CRT/Shinkai
   lineage polish, dead-code, deps hygiene, traffic-light, L Mode remount.

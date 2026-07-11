@@ -1,4 +1,5 @@
 import {
+  EditingModeControl,
   RightPaneToggleControls,
   type RightPaneToggleCopy,
 } from "./RightPaneToggleControls";
@@ -24,8 +25,10 @@ type DocumentMetaBarProps = {
   onToggleLMode: () => void;
   onToggleOutline: () => void;
   onTogglePreview: () => void;
+  onToggleReference: () => void;
   outlinePaneActive: boolean;
   previewPaneActive: boolean;
+  referencePaneActive: boolean;
   recoveryReviewChangesLabel: string;
   sidePaneCopy: RightPaneToggleCopy;
 };
@@ -48,8 +51,10 @@ export function DocumentMetaBar({
   onToggleLMode,
   onToggleOutline,
   onTogglePreview,
+  onToggleReference,
   outlinePaneActive,
   previewPaneActive,
+  referencePaneActive,
   recoveryReviewChangesLabel,
   sidePaneCopy,
 }: DocumentMetaBarProps) {
@@ -75,33 +80,42 @@ export function DocumentMetaBar({
   return (
     <div className="document-meta">
       {!lModeEnabled ? (
-        <section className="chrome-section" aria-label={sidePaneCopy.sidePaneMode}>
-          <RightPaneToggleControls
-            copy={sidePaneCopy}
-            diffActive={diffPaneActive}
-            diffAvailable
-            ebookActive={ebookPaneActive}
-            ebookAvailable={ebookAvailable}
-            lModeActive={lModeEnabled}
-            lModeLabel={lModeCopy.preferenceLabel}
-            lModeTitle={lModeCopy.paletteCommand}
-            onReviewChanges={() => {
-              if (activeTab) {
-                onReviewChanges(activeTab);
-              }
-            }}
-            onToggleDiff={onToggleDiff}
-            onToggleEbook={onToggleEbook}
-            onToggleLMode={onToggleLMode}
-            onToggleOutline={onToggleOutline}
-            onTogglePreview={onTogglePreview}
-            outlineActive={outlinePaneActive}
-            outlineAvailable={activeTab !== null}
-            previewActive={previewPaneActive}
-            reviewChangesAvailable={activeDirty && activeTab !== null}
-            reviewChangesLabel={recoveryReviewChangesLabel}
-          />
-        </section>
+        <>
+          <section className="chrome-section" aria-label={lModeCopy.paletteCommand}>
+            <EditingModeControl
+              active={lModeEnabled}
+              label={lModeCopy.preferenceLabel}
+              onToggle={onToggleLMode}
+              title={lModeCopy.paletteCommand}
+            />
+          </section>
+          <span className="chrome-divider" aria-hidden="true" />
+          <section className="chrome-section" aria-label={sidePaneCopy.sidePaneMode}>
+            <RightPaneToggleControls
+              copy={sidePaneCopy}
+              diffActive={diffPaneActive}
+              diffAvailable
+              ebookActive={ebookPaneActive}
+              ebookAvailable={ebookAvailable}
+              onReviewChanges={() => {
+                if (activeTab) {
+                  onReviewChanges(activeTab);
+                }
+              }}
+              onToggleDiff={onToggleDiff}
+              onToggleEbook={onToggleEbook}
+              onToggleOutline={onToggleOutline}
+              onTogglePreview={onTogglePreview}
+              onToggleReference={onToggleReference}
+              outlineActive={outlinePaneActive}
+              outlineAvailable={activeTab !== null}
+              previewActive={previewPaneActive}
+              referenceActive={referencePaneActive}
+              reviewChangesAvailable={activeDirty && activeTab !== null}
+              reviewChangesLabel={recoveryReviewChangesLabel}
+            />
+          </section>
+        </>
       ) : null}
       {showCompanionSection ? (
         <>

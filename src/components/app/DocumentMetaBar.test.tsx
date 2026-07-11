@@ -20,6 +20,8 @@ const sidePaneCopy: RightPaneToggleCopy = {
   outlineTabTitle: "Open Outline",
   previewTab: "Preview",
   previewTabTitle: "Open Preview",
+  referenceTab: "Reference",
+  referenceTabTitle: "Open Reference",
   reviewMenu: "Review",
   reviewMenuTitle: "Open review tools",
   sidePaneMode: "Side pane",
@@ -59,6 +61,7 @@ function renderMeta(
     onToggleLMode: vi.fn(),
     onToggleOutline: vi.fn(),
     onTogglePreview: vi.fn(),
+    onToggleReference: vi.fn(),
   };
   render(
     <DocumentMetaBar
@@ -78,8 +81,10 @@ function renderMeta(
       onToggleLMode={actions.onToggleLMode}
       onToggleOutline={actions.onToggleOutline}
       onTogglePreview={actions.onTogglePreview}
+      onToggleReference={actions.onToggleReference}
       outlinePaneActive={false}
       previewPaneActive={false}
+      referencePaneActive={false}
       recoveryReviewChangesLabel="変更を確認"
       sidePaneCopy={sidePaneCopy}
       {...overrides}

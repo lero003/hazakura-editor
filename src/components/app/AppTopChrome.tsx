@@ -57,10 +57,12 @@ type AppTopChromeProps = {
   onToggleLMode: () => void;
   onToggleOutline: () => void;
   onTogglePreview: () => void;
+  onToggleReference: () => void;
   recoveryCopy: RecoveryCopy;
   shouldSuppressTabClick: () => boolean;
   sidePaneCopy: SidePaneCopy;
   sidePaneMode: RightPaneMode | null;
+  referencePaneVisible: boolean;
   selectedImage: ImagePreviewState | null;
   tabs: EditorTab[];
 };
@@ -95,10 +97,12 @@ export function AppTopChrome({
   onToggleLMode,
   onToggleOutline,
   onTogglePreview,
+  onToggleReference,
   recoveryCopy,
   shouldSuppressTabClick,
   sidePaneCopy,
   sidePaneMode,
+  referencePaneVisible,
   selectedImage,
   tabs,
 }: AppTopChromeProps) {
@@ -144,9 +148,9 @@ export function AppTopChrome({
         activeTab={activeTab}
         agentWorkbenchAvailable={agentWorkbenchAvailable}
         assistSurfaceActive={assistSurfaceActive}
-        diffPaneActive={sidePaneMode === "compare"}
+        diffPaneActive={!referencePaneVisible && sidePaneMode === "compare"}
         ebookAvailable={activeTab !== null && selectedImage === null}
-        ebookPaneActive={sidePaneMode === "ebook"}
+        ebookPaneActive={!referencePaneVisible && sidePaneMode === "ebook"}
         lModeCopy={lModeCopy}
         lModeEnabled={lModeEnabled}
         onOpenAgentWindow={onOpenAgentWindow}
@@ -157,8 +161,10 @@ export function AppTopChrome({
         onToggleLMode={onToggleLMode}
         onToggleOutline={onToggleOutline}
         onTogglePreview={onTogglePreview}
-        outlinePaneActive={sidePaneMode === "outline"}
-        previewPaneActive={sidePaneMode === "preview"}
+        onToggleReference={onToggleReference}
+        outlinePaneActive={!referencePaneVisible && sidePaneMode === "outline"}
+        previewPaneActive={!referencePaneVisible && sidePaneMode === "preview"}
+        referencePaneActive={referencePaneVisible}
         recoveryReviewChangesLabel={recoveryCopy.reviewChanges}
         sidePaneCopy={sidePaneCopy}
       />

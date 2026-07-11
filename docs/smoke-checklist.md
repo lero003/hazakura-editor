@@ -604,6 +604,10 @@ recovered state separately where relevant.
     `参照として横に開く` and open the selected file as the read-only **right**
     reference preview without replacing the active editable Markdown in the
     center. Confirm this is not Diff layout.
+    Confirm L Mode is visually separated from the right-pane controls and
+    `参照` is selected while the reference is visible. Switch from `参照` to
+    Preview, then back to `参照`; confirm the same reference returns without a
+    picker. Use the in-pane close action and confirm the reference session ends.
 21. **Reference PDF raster**: import a multi-page PDF and confirm the **right**
     reference shows the actual page image rather than only the filename/page
     alt text, while the draft remains editable in the center. Exercise
