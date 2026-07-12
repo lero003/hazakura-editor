@@ -82,7 +82,11 @@ describe("ReferencePdfPane", () => {
     );
     expect(screen.getByText(/ページ 1 \/ 2/)).toBeTruthy();
 
-    fireEvent.click(screen.getByLabelText("次のページ"));
+    const nextPage = screen.getByLabelText("次のページ") as HTMLButtonElement;
+    await waitFor(() => {
+      expect(nextPage.disabled).toBe(false);
+    });
+    fireEvent.click(nextPage);
     expect(onPageIndexChange).toHaveBeenCalledWith(1, "user");
   });
 

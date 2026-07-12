@@ -1,5 +1,9 @@
 import { useEffect, useRef } from "react";
 import type { AmbientIntensity } from "../../types";
+import {
+  ambientMinFrameIntervalMs,
+  resolveAmbientDevicePixelRatio,
+} from "../../features/theme/ambientRenderBudget";
 
 /**
  * EdohiganShaderOverlay
@@ -571,8 +575,11 @@ export function EdohiganShaderOverlay({ intensity }: EdohiganShaderOverlayProps)
     };
     window.addEventListener("mousemove", onMouseMove, { passive: true });
 
+    // Q-THM-1: share the same intensity-aware DPR cap as the other
+    // resident WebGL overlays. Edohigan is calm, but it is still a
+    // full-screen canvas and must not bypass the common budget.
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = resolveAmbientDevicePixelRatio(intensityRef.current);
       const width = Math.floor(window.innerWidth * dpr);
       const height = Math.floor(window.innerHeight * dpr);
       if (canvas.width !== width || canvas.height !== height) {
@@ -587,6 +594,7 @@ export function EdohiganShaderOverlay({ intensity }: EdohiganShaderOverlayProps)
     let startTime = performance.now();
     let frameId = 0;
     let running = true;
+    let lastDrawMs = 0;
 
     // 余韻は深海より長め (減衰弱め)
     const FLOW_DAMPING = 0.005;
@@ -670,7 +678,14 @@ export function EdohiganShaderOverlay({ intensity }: EdohiganShaderOverlayProps)
 
     const render = () => {
       if (!running) return;
-      const time = (performance.now() - startTime) / 1000;
+      const now = performance.now();
+      const minInterval = ambientMinFrameIntervalMs(intensityRef.current);
+      if (minInterval > 0 && now - lastDrawMs < minInterval) {
+        frameId = window.requestAnimationFrame(render);
+        return;
+      }
+      lastDrawMs = now;
+      const time = (now - startTime) / 1000;
       stepFlowField();
 
       const velX = mouseTargetRef.x - mousePrevRawRef.x;

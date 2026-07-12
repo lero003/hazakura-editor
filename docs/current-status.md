@@ -69,6 +69,13 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   line preview length with explicit truncation; Diff and PDF raster paths keep
   bounded failure messages and retry/stop behavior. Focused source checks pass;
   packaged injected-failure interaction remains unverified.
+- **v1.8 P2 theme budget hardening is source + Developer smoke verified.** The
+  resident Edohigan WebGL overlay now uses the shared intensity-aware DPR cap
+  and frame throttle already used by CRT/Shinkai, so it no longer bypasses the
+  ambient render budget. Focused theme tests, full source gates, and Developer
+  theme switching (CRT / Edohigan / Shinkai) kept the editor and Preview
+  content intact after boot animations. Signed TestFlight visual/accessibility
+  breadth and a measured device FPS baseline remain open.
 - **v1.8 P2 export preflight and Developer output proof are complete locally.** EPUB
   and PDF settings now state whether current unsaved changes are included,
   explain that unavailable workspace images are reported as warnings, and say

@@ -113,13 +113,17 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    budget rejection paths have Developer packaged proof; full-reference copy was
    verified by paste-back of the `END-MARKER-5000` tail into a disposable editor
    buffer on 2026-07-13. Still open: signed TestFlight breadth, packaged/manual a11y matrix,
-   Japanese-font export inspection, and measured theme/shader polish. P2 now
+   Japanese-font export inspection, spoken VoiceOver, and measured device FPS
+   baseline. P2 now
    has a shared pre-export summary in both dialogs plus local Developer
    PDF/EPUB output proof; Spellcheck Preferences parity and reduced-motion
    source guards were already present. S-1 bounded failure UX is source-verified:
    focused Global Search / Diff / PDF tests and Rust search/export tests passed
    on 2026-07-13. Packaged injected-failure interaction remains an evidence gap,
-   not a source defect.
+   not a source defect. Edohigan's resident WebGL overlay now uses the shared
+   intensity-aware DPR cap and frame throttle used by CRT/Shinkai; focused theme
+   tests and Developer CRT / Edohigan / Shinkai switching kept the editor and
+   Preview content intact after each boot animation.
 4. Keep v1.6 closed unless a reproduced gap needs a hotfix. Historical quality
    notes: `docs/quality-inventory-v1.6.md`.
 5. Keep `@codemirror/view` at **6.43.2**. Do not bump, tag, upload, or publish
@@ -266,6 +270,14 @@ Read it only for historical context.
   files / 16 tests**); Rust workspace-search caps and PDF export failure/limit
   checks passed (**14 + 7 tests**). No reproducible source defect was found;
   packaged injected-failure interaction remains open.
+- 2026-07-13 v1.8 P2 theme budget hardening: `EdohiganShaderOverlay` was the
+  remaining resident WebGL path bypassing the shared DPR/frame budget. It now
+  uses `resolveAmbientDevicePixelRatio` and `ambientMinFrameIntervalMs`, with
+  focused theme tests (**7/7**), full Vitest (**159/159 files / 1378 tests**),
+  Rust (**338 passed / 2 ignored**), typecheck, Vite, `npm run build`, and
+  `npm run build:macos-lanes` passing. Developer theme switching through CRT,
+  Edohigan, and Shinkai preserved editor/Preview markers after boot; this is
+  not a signed TestFlight or measured device-FPS claim.
 - 2026-07-12 v1.8 P2 Developer output proof: unsaved ASCII markers were exported
   to PDF and EPUB while the source SHA-256 remained unchanged. The EPUB archive
   contained `mimetype`, container, OPF, navigation, stylesheet, and two spine

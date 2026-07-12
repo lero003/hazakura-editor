@@ -1,6 +1,12 @@
+import { readFileSync } from "node:fs";
 import { cleanup, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi, beforeEach, type Mock } from "vitest";
 import { EdohiganShaderOverlay } from "./EdohiganShaderOverlay";
+
+const edohiganShaderOverlaySource = readFileSync(
+  "src/components/app/EdohiganShaderOverlay.tsx",
+  "utf8",
+);
 
 afterEach(() => {
   cleanup();
@@ -40,6 +46,21 @@ function mockMatchMedia(matches: boolean): Mock {
 }
 
 describe("EdohiganShaderOverlay", () => {
+  it("keeps the resident canvas on the shared ambient render budget", () => {
+    expect(edohiganShaderOverlaySource).toContain(
+      "resolveAmbientDevicePixelRatio",
+    );
+    expect(edohiganShaderOverlaySource).toContain(
+      "ambientMinFrameIntervalMs",
+    );
+    expect(edohiganShaderOverlaySource).toContain(
+      "const dpr = resolveAmbientDevicePixelRatio(intensityRef.current)",
+    );
+    expect(edohiganShaderOverlaySource).toContain(
+      "const minInterval = ambientMinFrameIntervalMs(intensityRef.current)",
+    );
+  });
+
   it("renders no canvas when ambient intensity is off", () => {
     mockMatchMedia(false);
     const { container } = render(<EdohiganShaderOverlay intensity="off" />);

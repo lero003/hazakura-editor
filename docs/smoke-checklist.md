@@ -716,6 +716,13 @@ recovered state separately where relevant.
   search cap/error checks (**14 tests**), and PDF export bounded-failure checks
   (**7 tests**). No source defect was reproduced; packaged injected-failure
   interaction is still not claimed.
+- P2 theme budget smoke on 2026-07-13 rebuilt the Developer bundle after
+  connecting Edohigan's resident WebGL overlay to the shared intensity-aware
+  DPR/frame budget. CRT, Edohigan, and Shinkai menu switches were exercised;
+  after each boot animation the editor and Preview still exposed the original
+  `EDITOR-BUFFER-MARKER`. CRT's intentionally low-readability appearance is
+  expected. This proves local Developer behavior, not signed TestFlight,
+  spoken VoiceOver, or measured device FPS.
 
 ### Reporting
 
