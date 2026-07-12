@@ -695,6 +695,11 @@ recovered state separately where relevant.
   exposed the `Find in files…` combobox plus `Open a workspace to search its
   files`, without a false zero-match message. Injected runtime-failure
   interaction is still unverified.
+- App Store sandbox preview recheck on 2026-07-13: `SKIP_BUILD=1 npm run
+  smoke:macos-sandbox-preview` passed on current HEAD. The app and both helper
+  deep signatures were valid; app sandbox, user-selected read/write,
+  app-scoped bookmark, and helper sandbox + inherit entitlements were verified.
+  Picker interaction and signed TestFlight behavior remain separate evidence.
 - S-3 used the deterministic `smoke:fixtures:v1.8-reference` output in the
   separate-ID Developer app. The 5,000-line Japanese reference wrapped in the
   narrow pane, scrolled through `END-MARKER-5000`, and allowed marker selection.

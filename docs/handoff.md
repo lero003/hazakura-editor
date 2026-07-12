@@ -205,6 +205,11 @@ Read it only for historical context.
   app-scoped bookmark, and both helpers' inherit entitlements were verified.
   Window smoke was skipped because its script would quit the user's existing
   same-bundle-ID app; picker and VoiceOver interaction remain manual.
+- 2026-07-13 sandbox preview recheck: `SKIP_BUILD=1
+  npm run smoke:macos-sandbox-preview` passed on current HEAD. App and helper
+  deep signatures were valid; app sandbox, user-selected read/write,
+  app-scoped bookmark, and both helpers' sandbox + inherit entitlements were
+  present. This remains bundle-shape evidence, not picker or TestFlight proof.
 - 2026-07-12 v1.8 disposable packaged interaction: `npm run build:macos-lanes`
   produced the separate-ID `Hazakura Editor Dev.app`; window smoke passed, and
   the native picker opened `/private/tmp/hazakura-v1.8-smoke`. A Markdown editor

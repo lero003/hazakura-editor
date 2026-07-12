@@ -68,6 +68,10 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   claim picker interaction; separate-ID Developer picker evidence is recorded
   in `docs/smoke-checklist.md`.
   No per-character confidence claims.
+  A current-HEAD recheck of `SKIP_BUILD=1 npm run smoke:macos-sandbox-preview`
+  passed on 2026-07-13 with valid app/helper signatures, app sandbox,
+  user-selected read/write, app-scoped bookmark, and sandbox + inherit
+  entitlements on both helpers.
   The top chrome now separates L Mode from right-pane selection and exposes an
   explicit `参照` item beside Preview / e-book / Outline / Diff. Switching pane
   content retains the loaded reference; the in-pane close action remains the
