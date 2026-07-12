@@ -303,8 +303,13 @@ Read it only for historical context.
   nine-page `/private/tmp/hazakura-v1.8-export-proof-20260712-fixed.pdf`.
   Page 2/9, fit-page, and 150% controls worked while the center marker stayed
   intact; narrowing the Reference column to 25% kept the image contained and
-  the center marker intact. Source-deletion, signed TestFlight, and spoken
-  VoiceOver checks remain open.
+  the center marker intact. Signed TestFlight and spoken VoiceOver checks
+  remain open.
+- 2026-07-13 v1.8 T-3 external-change follow-up: a separate-ID Developer bundle
+  temporarily moved `reference-image.png` out of the disposable workspace.
+  The Reference pane surfaced `The reference file has changed on disk.` with
+  an explicit Reload action; restoring the path and reloading returned the
+  read-only image. The fixture was restored afterward.
 - The PDF Reference source contract also has a focused race regression: a
   raster that resolves after the Reference ID changes is ignored, so the old
   page cannot replace the current Reference.

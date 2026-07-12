@@ -757,8 +757,13 @@ recovered state separately where relevant.
   the center `EDITOR-BUFFER-MARKER` remained intact. The Reference column was
   then narrowed to 25%; the image stayed contained and the marker remained
   intact. This extends local
-  image/PDF matrix evidence only; source-deletion, narrow-window, signed
-  TestFlight, and spoken VoiceOver checks remain open.
+  image/PDF matrix evidence only; signed TestFlight and spoken VoiceOver checks
+  remain open.
+- T-3 external-change follow-up on 2026-07-13 temporarily moved
+  `reference-image.png` out of the disposable workspace without deleting it.
+  The Reference pane showed `The reference file has changed on disk.` and an
+  explicit `Reload`; restoring the path and reloading returned the read-only
+  image. This closes the local source-deletion/reload behavior boundary only.
 - P2 theme budget smoke on 2026-07-13 rebuilt the Developer bundle after
   connecting Edohigan's resident WebGL overlay to the shared intensity-aware
   DPR/frame budget. CRT, Edohigan, and Shinkai menu switches were exercised;

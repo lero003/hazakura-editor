@@ -93,6 +93,10 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   page after the Reference ID changes.
   `AppWorkspace` also pins that closing or replacing the visible reference
   leaves the center editor buffer and its change callback untouched.
+  A separate-ID Developer pass temporarily moved the referenced image out of
+  the fixture, surfaced `The reference file has changed on disk.` with an
+  explicit Reload action, and restored the image after the fixture path was
+  returned.
 - **v1.8 S-1 bounded failure UX is source + packaged smoke verified.** Global Search
   preserves diagnostic details while suppressing the false zero-match state;
   workspace search caps per-file matches, total matches, visited files, and
