@@ -332,8 +332,9 @@ Read it only for historical context.
   VoiceOver speech remain unverified.
 - 2026-07-13 v1.8 S-1 failure/limit review: focused frontend checks passed (**3
   files / 16 tests**); Rust workspace-search caps and PDF export failure/limit
-  checks passed (**14 + 7 tests**). No reproducible source defect was found;
-  packaged injected-failure interaction remains open.
+  checks passed (**14 + 7 tests**). No reproducible source defect was found at
+  that source-only checkpoint; later isolated packaged missing-workspace and
+  workspace-path failure smoke is recorded above.
 - 2026-07-13 v1.8 P2 theme budget hardening: `EdohiganShaderOverlay` was the
   remaining resident WebGL path bypassing the shared DPR/frame budget. It now
   uses `resolveAmbientDevicePixelRatio` and `ambientMinFrameIntervalMs`, with

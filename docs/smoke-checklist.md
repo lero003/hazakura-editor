@@ -733,8 +733,9 @@ recovered state separately where relevant.
 - S-1 source-level failure/limit review on 2026-07-13 passed the Global Search
   accessibility/error checks (**3 frontend files / 16 tests**), Rust workspace
   search cap/error checks (**14 tests**), and PDF export bounded-failure checks
-  (**7 tests**). No source defect was reproduced; packaged injected-failure
-  interaction is still not claimed.
+  (**7 tests**). No source defect was reproduced at that source-only checkpoint;
+  the later isolated packaged missing-workspace and workspace-path failure
+  smoke is recorded above.
 - T-2 source-level cleanup review on 2026-07-13 added a pathless `Discard All`
   regression (**12 tests** in `useTabCloseFlow.test.tsx`). A failed recovery
   cleanup emits the explicit status and still completes the close; relaunch
