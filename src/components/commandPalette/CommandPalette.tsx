@@ -2,10 +2,12 @@ import { useEffect, useRef } from "react";
 import { isImeComposing } from "../../lib/keyboard";
 import { useLatestValueRef } from "../../hooks/app/useLatestValueRef";
 import type { Command } from "../../hooks/commandPalette/useCommandPalette";
+import type { MenuLanguage } from "../../types";
 
 type CommandPaletteProps = {
   activeIndex: number;
   commands: Command[];
+  menuLanguage: MenuLanguage;
   query: string;
   onClose: () => void;
   onRun: (command: Command) => void;
@@ -16,12 +18,31 @@ type CommandPaletteProps = {
 export function CommandPalette({
   activeIndex,
   commands,
+  menuLanguage,
   query,
   onClose,
   onRun,
   onSetActiveIndex,
   onSetQuery,
 }: CommandPaletteProps) {
+  const copy =
+    menuLanguage === "kana"
+      ? {
+          dialogLabel: "こまんどを さがす",
+          empty: "ぴったりのこまんどはありません",
+          placeholder: "こまんどを いれてください...",
+        }
+      : menuLanguage === "ja"
+        ? {
+            dialogLabel: "コマンドパレット",
+            empty: "一致するコマンドがありません",
+            placeholder: "コマンドを入力...",
+          }
+        : {
+            dialogLabel: "Command palette",
+            empty: "No matching commands",
+            placeholder: "Type a command...",
+          };
   const inputRef = useRef<HTMLInputElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const activeIndexRef = useRef(activeIndex);
@@ -77,7 +98,7 @@ export function CommandPalette({
   return (
     <div className="command-palette-overlay" onPointerDown={onClose}>
       <div
-        aria-label="Command palette"
+        aria-label={copy.dialogLabel}
         aria-modal="true"
         className="command-palette-dialog"
         onPointerDown={(event) => event.stopPropagation()}
@@ -89,11 +110,11 @@ export function CommandPalette({
           aria-controls="command-palette-results"
           aria-expanded="true"
           aria-haspopup="listbox"
-          aria-label="Command palette"
+          aria-label={copy.dialogLabel}
           className="command-palette-input"
           onChange={(event) => onSetQuery(event.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Type a command..."
+          placeholder={copy.placeholder}
           role="combobox"
           type="text"
           value={query}
@@ -105,7 +126,7 @@ export function CommandPalette({
           role="listbox"
         >
           {commands.length === 0 ? (
-            <div className="command-palette-empty">No matching commands</div>
+            <div className="command-palette-empty">{copy.empty}</div>
           ) : (
             commands.map((command, index) => (
               <button

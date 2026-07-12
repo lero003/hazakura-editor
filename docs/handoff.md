@@ -104,7 +104,10 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    rename accessible names now follow English / Japanese / kana UI copy.
    Global Search missing-workspace and runtime failure status now follows the
    active language, retains raw diagnostic detail, and suppresses the false
-   zero-match message on failure.
+   zero-match message on failure. Command Palette and Global Search
+   dialog/combobox names, placeholders, and empty states now follow English /
+   Japanese / kana. A latest-HEAD Developer bundle AX pass confirmed the
+   Japanese and kana names; actual VoiceOver speech remains manual.
    L Mode Reference hide/restore now has an AppWorkspace regression test and
    Developer packaged proof. S-3 long-reference wrap/scroll/selection and both
    budget rejection paths have Developer packaged proof. Still open: Reference
@@ -223,6 +226,18 @@ Read it only for historical context.
   failed**), and `git diff --check` passed. Missing-workspace and injected
   runtime failures are covered at component level; packaged failure injection
   was not performed, so no packaged interaction claim is made.
+- 2026-07-12 v1.8 packaged search-surface AX follow-up: the latest-HEAD
+  separate-ID Developer bundle opened Quick Open, Command Palette, and Global
+  Search from their keyboard shortcuts; Escape returned to the editor and the
+  accessibility tree retained combobox focus/active-result semantics. The
+  fixed bundle exposed `コマンドパレット` / `ファイル内検索` and
+  `こまんどを さがす` / `ふみのなかを さがす` as matching dialog and
+  combobox names. Japanese pane toggles and the editor/pane splitter also had
+  localized AX labels. Focused tests passed (**8/8**); `npm run test` passed
+  (**159/159 files / 1376 tests**); `npm run build:macos-lanes`, Rust format,
+  full `cargo test` (**338 passed / 2 explicit host-integration ignored / 0
+  failed**), and `git diff --check` passed. This is keyboard + AX-tree evidence,
+  not a claim that actual VoiceOver speech or signed TestFlight breadth passed.
 - 2026-07-12 v1.8 localized rename VoiceOver name: focused WorkspaceTree
   tests passed (**17/17**); `npm run test` passed (**159/159 files / 1369
   tests**); `npm run typecheck`, `npm run build:vite`, `npm run build`, Rust

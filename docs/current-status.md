@@ -45,8 +45,11 @@ Last reviewed: 2026-07-12 (v1.7 published; v1.8 Daily Trust active)
   combobox/listbox, active-option, and search-status semantics for keyboard and
   VoiceOver navigation. Global Search also localizes missing-workspace and
   runtime failure status while preserving the underlying diagnostic, without
-  showing the zero-match state for a failed search. Inline file/folder rename
-  inputs use the active English / Japanese / kana label rather than an
+  showing the zero-match state for a failed search. Command Palette and Global
+  Search dialog/combobox names, placeholders, and empty states now follow
+  English / Japanese / kana; the latest Developer bundle exposed the expected
+  Japanese and kana names in the macOS accessibility tree. Inline file/folder
+  rename inputs use the active English / Japanese / kana label rather than an
   English-only accessible name; packaged VoiceOver smoke remains required.
   The latest source-built App Store sandbox preview passed deep-signature,
   app-sandbox, user-selected read/write, app-scoped bookmark, and inherited

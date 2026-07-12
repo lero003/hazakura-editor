@@ -77,6 +77,7 @@ describe("search surface accessibility semantics", () => {
             run: vi.fn(),
           },
         ]}
+        menuLanguage="en"
         onClose={vi.fn()}
         onRun={vi.fn()}
         onSetActiveIndex={vi.fn()}
@@ -94,6 +95,55 @@ describe("search surface accessibility semantics", () => {
     const option = screen.getByRole("option", { name: /Save/ });
     expect(combobox.getAttribute("aria-activedescendant")).toBe(option.id);
     expect(option.getAttribute("aria-selected")).toBe("true");
+  });
+
+  it("localizes Command Palette semantics and empty copy", () => {
+    render(
+      <CommandPalette
+        activeIndex={0}
+        commands={[]}
+        menuLanguage="ja"
+        onClose={vi.fn()}
+        onRun={vi.fn()}
+        onSetActiveIndex={vi.fn()}
+        onSetQuery={vi.fn()}
+        query="なし"
+      />,
+    );
+
+    expect(
+      screen.getByRole("dialog", { name: "コマンドパレット" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("combobox", { name: "コマンドパレット" }),
+    ).toBeTruthy();
+    expect(screen.getByText("一致するコマンドがありません")).toBeTruthy();
+  });
+
+  it("localizes Global Search semantics in kana", () => {
+    render(
+      <GlobalSearch
+        activeIndex={0}
+        menuLanguage="kana"
+        onClose={vi.fn()}
+        onRun={vi.fn()}
+        onSetActiveIndex={vi.fn()}
+        onSetQuery={vi.fn()}
+        query=""
+        rows={[]}
+        searchError={null}
+        searching={false}
+        summary={null}
+        workspaceOpen
+      />,
+    );
+
+    expect(
+      screen.getByRole("dialog", { name: "ふみのなかを さがす" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("combobox", { name: "ふみのなかを さがす" }),
+    ).toBeTruthy();
   });
 
   it("announces Global Search progress and active result semantics", () => {

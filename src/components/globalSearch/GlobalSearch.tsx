@@ -52,6 +52,12 @@ function placeholderText(menuLanguage: MenuLanguage): string {
   return "Find in files…";
 }
 
+function dialogLabelText(menuLanguage: MenuLanguage): string {
+  if (menuLanguage === "kana") return "ふみのなかを さがす";
+  if (menuLanguage === "ja") return "ファイル内検索";
+  return "Find in files";
+}
+
 function emptyText(menuLanguage: MenuLanguage): string {
   if (menuLanguage === "kana") return "ぴったりのふみはありません";
   if (menuLanguage === "ja") return "一致するファイルがありません";
@@ -121,6 +127,7 @@ export function GlobalSearch({
   summary,
   workspaceOpen,
 }: GlobalSearchProps) {
+  const dialogLabel = dialogLabelText(menuLanguage);
   const canShowSearchResults = Boolean(
     query.trim() && workspaceOpen && !searchError,
   );
@@ -180,7 +187,7 @@ export function GlobalSearch({
   return (
     <div className="global-search-overlay" onPointerDown={onClose}>
       <div
-        aria-label="Find in files"
+        aria-label={dialogLabel}
         aria-modal="true"
         className="global-search-dialog"
         onPointerDown={(event) => event.stopPropagation()}
@@ -192,7 +199,7 @@ export function GlobalSearch({
           aria-controls="global-search-results"
           aria-expanded="true"
           aria-haspopup="listbox"
-          aria-label="Find in files"
+          aria-label={dialogLabel}
           aria-busy={searching}
           className="global-search-input"
           onChange={(event) => onSetQuery(event.target.value)}

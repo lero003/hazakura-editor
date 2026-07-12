@@ -400,6 +400,7 @@ export function AppOverlays({
         <CommandPalette
           activeIndex={commandPaletteActiveIndex}
           commands={filteredCommands}
+          menuLanguage={menuLanguage}
           query={commandPaletteQuery}
           onClose={closeCommandPalette}
           onRun={onRunCommand}

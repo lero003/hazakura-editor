@@ -687,6 +687,13 @@ recovered state separately where relevant.
   English/Japanese limit reason while `EDITOR-BUFFER-MARKER` and the original
   reference remained unchanged. Clipboard contents were not read; repeat copy
   verification and signed TestFlight breadth before a v1.8 candidate.
+- The latest-HEAD separate-ID Developer bundle opened Quick Open, Command
+  Palette, and Global Search by keyboard. Its macOS accessibility tree exposed
+  localized Japanese and kana dialog/combobox names for Command Palette and
+  Global Search, plus localized Japanese pane toggle and splitter labels.
+  Focus/active-result semantics and Escape dismissal remained intact. This was
+  an AX-tree inspection, not actual VoiceOver speech; repeat the spoken flow and
+  native-menu traversal on signed TestFlight before a v1.8 candidate.
 
 ### Reporting
 
