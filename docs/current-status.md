@@ -43,9 +43,11 @@ Last reviewed: 2026-07-12 (v1.7 published; v1.8 Daily Trust active)
   rather than v1.7 publication blockers.
   Quick Open, Command Palette, and Global Search now expose dialog,
   combobox/listbox, active-option, and search-status semantics for keyboard and
-  VoiceOver navigation. Inline file/folder rename inputs use the active
-  English / Japanese / kana label rather than an English-only accessible name;
-  packaged VoiceOver smoke remains required.
+  VoiceOver navigation. Global Search also localizes missing-workspace and
+  runtime failure status while preserving the underlying diagnostic, without
+  showing the zero-match state for a failed search. Inline file/folder rename
+  inputs use the active English / Japanese / kana label rather than an
+  English-only accessible name; packaged VoiceOver smoke remains required.
   The latest source-built App Store sandbox preview passed deep-signature,
   app-sandbox, user-selected read/write, app-scoped bookmark, and inherited
   helper entitlement checks on 2026-07-12. That App Store preview pass did not

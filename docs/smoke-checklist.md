@@ -631,6 +631,9 @@ recovered state separately where relevant.
     Command Palette, and Global Search. Confirm VoiceOver announces each as a
     modal search surface, reports the active result while Arrow Up / Down keeps
     focus in the text field, and announces Global Search progress / summary.
+    Switch through English, Japanese, and kana; confirm the missing-workspace
+    hint and a runtime search failure follow the active language, retain useful
+    diagnostic detail, and do not also announce the zero-match state.
     Confirm Enter runs the active result, Escape closes the surface, and IME
     conversion Enter / arrows are not intercepted.
 25. **Localized rename VoiceOver name**: switch the menu language through

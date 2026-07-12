@@ -74,6 +74,19 @@ function workspaceHintText(menuLanguage: MenuLanguage): string {
   return "Open a workspace to search its files";
 }
 
+function searchErrorText(
+  error: string,
+  menuLanguage: MenuLanguage,
+): string {
+  if (menuLanguage === "kana") {
+    return `さがせませんでした。${error}`;
+  }
+  if (menuLanguage === "ja") {
+    return `検索に失敗しました。${error}`;
+  }
+  return error;
+}
+
 function searchingText(menuLanguage: MenuLanguage): string {
   if (menuLanguage === "kana") return "さがしもの…";
   if (menuLanguage === "ja") return "検索中…";
@@ -108,6 +121,9 @@ export function GlobalSearch({
   summary,
   workspaceOpen,
 }: GlobalSearchProps) {
+  const canShowSearchResults = Boolean(
+    query.trim() && workspaceOpen && !searchError,
+  );
   const inputRef = useRef<HTMLInputElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const rowsRef = useLatestValueRef(rows);
@@ -187,11 +203,13 @@ export function GlobalSearch({
           value={query}
         />
         <div aria-live="polite" className="global-search-status" role="status">
-          {searchError ? (
-            <span className="global-search-status-error">{searchError}</span>
-          ) : !workspaceOpen ? (
+          {!workspaceOpen ? (
             <span className="global-search-status-hint">
               {workspaceHintText(menuLanguage)}
+            </span>
+          ) : searchError ? (
+            <span className="global-search-status-error">
+              {searchErrorText(searchError, menuLanguage)}
             </span>
           ) : !query.trim() ? (
             <span className="global-search-status-hint">
@@ -213,7 +231,7 @@ export function GlobalSearch({
           ref={listRef}
           role="listbox"
         >
-          {!query.trim() ? null : rows.length === 0 && !searching ? (
+          {!canShowSearchResults ? null : rows.length === 0 && !searching ? (
             <div className="global-search-empty">{emptyText(menuLanguage)}</div>
           ) : (
             rows.map((row, index) => {

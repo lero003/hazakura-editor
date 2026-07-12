@@ -102,6 +102,9 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    Quick Open, Command Palette, and Global Search now expose modal dialog,
    combobox/listbox, active-option, and live search-status semantics. Inline
    rename accessible names now follow English / Japanese / kana UI copy.
+   Global Search missing-workspace and runtime failure status now follows the
+   active language, retains raw diagnostic detail, and suppresses the false
+   zero-match message on failure.
    L Mode Reference hide/restore now has an AppWorkspace regression test and
    Developer packaged proof. S-3 long-reference wrap/scroll/selection and both
    budget rejection paths have Developer packaged proof. Still open: Reference
@@ -213,6 +216,13 @@ Read it only for historical context.
   intentionally not read, so copy remains a manual follow-up. Focused tests
   passed (**37/37**); full frontend passed (**159/159 files / 1371 tests**) and
   Rust passed (**338 passed / 2 explicit host-integration ignored / 0 failed**).
+- 2026-07-12 v1.8 S-1 Global Search failure UX: focused search-surface tests
+  passed (**6/6**); `npm run test` passed (**159/159 files / 1374 tests**).
+  `npm run typecheck`, `npm run build:vite`, `npm run build`, Rust format,
+  full `cargo test` (**338 passed / 2 explicit host-integration ignored / 0
+  failed**), and `git diff --check` passed. Missing-workspace and injected
+  runtime failures are covered at component level; packaged failure injection
+  was not performed, so no packaged interaction claim is made.
 - 2026-07-12 v1.8 localized rename VoiceOver name: focused WorkspaceTree
   tests passed (**17/17**); `npm run test` passed (**159/159 files / 1369
   tests**); `npm run typecheck`, `npm run build:vite`, `npm run build`, Rust

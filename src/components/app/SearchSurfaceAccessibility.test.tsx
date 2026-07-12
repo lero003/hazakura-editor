@@ -1,5 +1,13 @@
-import { render, screen } from "@testing-library/react";
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { CommandPalette } from "../commandPalette/CommandPalette";
 import { QuickOpen } from "../editor/QuickOpen";
 import { GlobalSearch } from "../globalSearch/GlobalSearch";
@@ -9,6 +17,10 @@ describe("search surface accessibility semantics", () => {
 
   beforeAll(() => {
     HTMLElement.prototype.scrollIntoView = vi.fn();
+  });
+
+  afterEach(() => {
+    cleanup();
   });
 
   afterAll(() => {
@@ -123,5 +135,76 @@ describe("search surface accessibility semantics", () => {
     const option = screen.getByRole("option", { name: /hazakura/ });
     expect(combobox.getAttribute("aria-activedescendant")).toBe(option.id);
     expect(screen.getByRole("status").textContent).toContain("1 match");
+  });
+
+  it("localizes the missing-workspace state instead of exposing the hook error", () => {
+    render(
+      <GlobalSearch
+        activeIndex={0}
+        menuLanguage="ja"
+        onClose={vi.fn()}
+        onRun={vi.fn()}
+        onSetActiveIndex={vi.fn()}
+        onSetQuery={vi.fn()}
+        query="hazakura"
+        rows={[]}
+        searchError="Open a workspace to search its files."
+        searching={false}
+        summary={null}
+        workspaceOpen={false}
+      />,
+    );
+
+    expect(screen.getByRole("status").textContent).toBe(
+      "ワークスペースを開いてから検索してください",
+    );
+    expect(screen.queryByText("一致するファイルがありません")).toBeNull();
+  });
+
+  it("adds localized context while preserving a search failure detail", () => {
+    render(
+      <GlobalSearch
+        activeIndex={0}
+        menuLanguage="ja"
+        onClose={vi.fn()}
+        onRun={vi.fn()}
+        onSetActiveIndex={vi.fn()}
+        onSetQuery={vi.fn()}
+        query="hazakura"
+        rows={[]}
+        searchError="Workspace folder is unavailable."
+        searching={false}
+        summary={null}
+        workspaceOpen
+      />,
+    );
+
+    expect(screen.getByRole("status").textContent).toBe(
+      "検索に失敗しました。Workspace folder is unavailable.",
+    );
+    expect(screen.queryByText("一致するファイルがありません")).toBeNull();
+  });
+
+  it("uses gentle kana copy for a search failure", () => {
+    render(
+      <GlobalSearch
+        activeIndex={0}
+        menuLanguage="kana"
+        onClose={vi.fn()}
+        onRun={vi.fn()}
+        onSetActiveIndex={vi.fn()}
+        onSetQuery={vi.fn()}
+        query="はざくら"
+        rows={[]}
+        searchError="Workspace folder is unavailable."
+        searching={false}
+        summary={null}
+        workspaceOpen
+      />,
+    );
+
+    expect(screen.getByRole("status").textContent).toBe(
+      "さがせませんでした。Workspace folder is unavailable.",
+    );
   });
 });
