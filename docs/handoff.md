@@ -83,15 +83,17 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    text scrolls on `.reference-pane-body` with wrap-safe full rendering
    (variable-height windowing is deferred); pathless
    budgets separate from path drafts + storage failure status; L Mode is
-   Markdown-only. Do not claim T-2/S-3 fully done without forced-termination /
-   long-reference smoke. Follow-up self-review fixes now propagate bulk draft
+   Markdown-only. Local Developer packaged T-2 forced-termination recovery has
+   passed; do not claim signed TestFlight T-2 or S-3 fully done without its
+   packaged recovery / long-reference smoke. Follow-up self-review fixes now
+   propagate bulk draft
    removal results and surface cleanup failure for Save / Save As / restore /
    discard / tab close / window close without blocking editing or an explicit
    close. Text Reference keeps wrap-safe full rendering only inside a separate
    1.5M-character / 50,000-line DOM budget; over-budget input fails visibly
-   before replacing the existing reference. The exact packaged status copy,
-   forced-termination recovery, narrow Japanese wrapping, and budget boundary
-   remain manual proof rather than source-complete claims.
+   before replacing the existing reference. The exact signed-TestFlight status
+   copy, narrow Japanese wrapping, and budget boundary remain manual proof
+   rather than source-complete claims.
 3. **v1.8 source slices:** host-only bookmark / native Trash integration
    checks are explicit ignored tests; Trash backup cleanup uses an injected
    unit fixture; provider-process polling tolerates full-suite parallel load.
@@ -104,10 +106,11 @@ Use `docs/current-work.md` for the active queue. Current priority order:
 5. Keep `@codemirror/view` at **6.43.2**. Do not bump, tag, upload, or publish
    without explicit user approval. In-tree and published version remain
    **`1.7.0`** while v1.8 work begins.
-6. Earlier path-backed workspace Recovery forced-termination smoke passed.
-   The pathless T-2 recovery smoke remains unclaimed. Google Drive remains
-   `manual-blocked` until a dedicated fixture is available; do not scan or
-   create content in the user's cloud folders implicitly.
+6. Earlier path-backed workspace Recovery forced-termination smoke passed. A
+   disposable separate-bundle Developer app also restored a force-terminated
+   pathless T-2 draft on 2026-07-12. Signed TestFlight proof remains open.
+   Google Drive remains `manual-blocked` until a dedicated fixture is available;
+   do not scan or create content in the user's cloud folders implicitly.
 7. Do not expand into two editable panes, Review Desk revival, Book Scope,
    cloud OCR, or Git-aware merge. **Book Scope Alpha remains v2.**
 8. **Accepted post-v1.7 direction:** two-digit minor versions such as `v1.10`
@@ -176,6 +179,15 @@ Read it only for historical context.
   app-scoped bookmark, and both helpers' inherit entitlements were verified.
   Window smoke was skipped because its script would quit the user's existing
   same-bundle-ID app; picker and VoiceOver interaction remain manual.
+- 2026-07-12 v1.8 disposable packaged interaction: `npm run build:macos-lanes`
+  produced the separate-ID `Hazakura Editor Dev.app`; window smoke passed, and
+  the native picker opened `/private/tmp/hazakura-v1.8-smoke`. A Markdown editor
+  remained editable while `reference.txt` opened read-only at right; switching
+  Preview -> Reference preserved that reference session. A second ad-hoc,
+  separate-ID copy was force-terminated with an unsaved pathless draft; relaunch
+  offered `Restore draft`, restored it as a new `untitled.md` unsaved tab, and
+  preserved `RECOVERY-MARKER-2026-07-12`. This is Developer/ad-hoc local evidence,
+  not App Store sandbox or signed TestFlight interaction proof.
 - 2026-07-12 v1.8 localized rename VoiceOver name: focused WorkspaceTree
   tests passed (**17/17**); `npm run test` passed (**159/159 files / 1369
   tests**); `npm run typecheck`, `npm run build:vite`, `npm run build`, Rust

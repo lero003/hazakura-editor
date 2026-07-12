@@ -97,9 +97,12 @@ Last reviewed: 2026-07-12 (v1.7 published; v1.8 Daily Trust active)
   per-document view-state registry: reader, Editor cursor/scroll, Preview
   reopen, tab transitions, and safe local Markdown-link transitions now
   preserve the relevant document position. Earlier path-backed workspace
-  Recovery forced-termination smoke passed; the pathless T-2 recovery smoke
-  remains unclaimed. Google Drive remains `manual-blocked` because no dedicated
-  fixture existed and user cloud content was not touched.
+  Recovery forced-termination smoke passed. On 2026-07-12, a disposable
+  separate-bundle Developer app also restored a force-terminated pathless T-2
+  draft into a new unsaved tab with its marker intact. This is local packaged
+  interaction evidence, not signed TestFlight proof. Google Drive remains
+  `manual-blocked` because no dedicated fixture existed and user cloud content
+  was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
 - Published Mac App Store version: **`1.7.0`** (App Review passed and release
@@ -555,8 +558,9 @@ baseline, and smoke evidence are archived under
    reproduces. Historical notes remain in `docs/v1.1-v1.2-followup.md` and
    `docs/v1.3-followup.md`.
 5. Complete Google Drive Recovery smoke only with a dedicated user-approved
-   fixture. The local-folder path-backed forced-termination path has passed;
-   the pathless T-2 recovery path remains unclaimed.
+   fixture. The local-folder path-backed and disposable local packaged pathless
+   forced-termination paths have passed; signed TestFlight pathless recovery
+   remains follow-up evidence.
 6. Local package provenance for any future candidate lives in
    `docs/internal/app-store-candidates/latest.json`. App Store Connect,
    TestFlight, and App Review logs remain outside this repository unless

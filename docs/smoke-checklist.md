@@ -659,6 +659,16 @@ recovered state separately where relevant.
 - Window launch smoke was intentionally not run because the script first quits
   an existing app with the same bundle ID. This pass did not interrupt the
   user's running Hazakura Editor and does not claim picker interaction.
+- `npm run build:macos-lanes` produced the separate-ID Developer bundle, and
+  `SKIP_BUILD=1 npm run smoke:macos-window` confirmed its `1280x820` window.
+  Using a disposable `/private/tmp/hazakura-v1.8-smoke` fixture, the native
+  picker opened a workspace; `reference.txt` opened read-only beside the active
+  Markdown editor, and Preview -> Reference preserved the reference session.
+- A second disposable, ad-hoc separate-ID app was force-terminated with an
+  unsaved pathless `untitled.md`. Relaunch offered `Restore draft`; restoring
+  opened a new unsaved tab and preserved `RECOVERY-MARKER-2026-07-12`. This
+  proves the local Developer/ad-hoc interaction path only; signed TestFlight
+  picker, pathless recovery, and VoiceOver interaction remain follow-up proof.
 
 ### Reporting
 
