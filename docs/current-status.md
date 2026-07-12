@@ -75,7 +75,9 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   workspace `reference-image.png` as a read-only image on 2026-07-13 while the
   center `EDITOR-BUFFER-MARKER` remained unchanged. This extends local PDF /
   image Reference evidence; additional matrix cases and signed TestFlight
-  interaction remain open.
+  interaction remain open. `ReferenceTextPane` also now directly asserts the
+  image alt name, data URL, read-only copy, and absence of an editable text
+  surface.
 - **v1.8 S-1 bounded failure UX is source-level verified.** Global Search
   preserves diagnostic details while suppressing the false zero-match state;
   workspace search caps per-file matches, total matches, visited files, and

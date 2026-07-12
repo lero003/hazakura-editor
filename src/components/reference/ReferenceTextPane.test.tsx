@@ -35,6 +35,28 @@ describe("ReferenceTextPane", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it("renders an image reference as read-only media with an accessible name", () => {
+    render(
+      <ReferenceTextPane
+        copy={referenceCompareCopy("ja")}
+        menuLanguage="ja"
+        onClose={vi.fn()}
+        reference={{
+          kind: "image",
+          path: "/ws/cover.png",
+          name: "cover.png",
+          url: "data:image/png;base64,aaa",
+          size: 12,
+        }}
+      />,
+    );
+
+    const image = screen.getByRole("img", { name: "cover.png" });
+    expect(image.getAttribute("src")).toBe("data:image/png;base64,aaa");
+    expect(screen.getByText("読み取り専用")).toBeTruthy();
+    expect(screen.queryByTestId("reference-text-surface")).toBeNull();
+  });
+
   it("offers diff action when both sides are text-capable", () => {
     const onShowDiff = vi.fn();
     render(

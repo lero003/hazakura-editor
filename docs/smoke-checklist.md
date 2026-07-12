@@ -728,8 +728,9 @@ recovered state separately where relevant.
   and opened workspace `reference-image.png` through the file-tree context
   menu. The right Reference pane showed read-only PDF page controls and the
   image while the center `EDITOR-BUFFER-MARKER` remained intact. This proves
-  local PDF/image handling only; additional matrix cases and signed TestFlight
-  interaction remain open.
+  local PDF/image handling only; `ReferenceTextPane.test.tsx` and
+  `useReferenceCompareActions.test.ts` focused checks passed (**19 tests**).
+  Additional matrix cases and signed TestFlight interaction remain open.
 - P2 theme budget smoke on 2026-07-13 rebuilt the Developer bundle after
   connecting Edohigan's resident WebGL overlay to the shared intensity-aware
   DPR/frame budget. CRT, Edohigan, and Shinkai menu switches were exercised;
