@@ -70,6 +70,11 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   explicit `参照` item beside Preview / e-book / Outline / Diff. Switching pane
   content retains the loaded reference; the in-pane close action remains the
   explicit end of the reference session.
+  A rebuilt separate-ID Developer bundle opened the disposable
+  `/private/tmp/hazakura-valid-text.pdf` as a read-only right-side page image on
+  2026-07-13 while the center `EDITOR-BUFFER-MARKER` remained unchanged. This
+  extends local PDF Reference evidence only; image breadth and signed
+  TestFlight interaction remain open.
 - **v1.8 S-1 bounded failure UX is source-level verified.** Global Search
   preserves diagnostic details while suppressing the false zero-match state;
   workspace search caps per-file matches, total matches, visited files, and

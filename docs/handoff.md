@@ -268,6 +268,12 @@ Read it only for historical context.
   `Closing; recovery cleanup unavailable`, still resets the close dialog, and
   continues the window close. This is source evidence; signed TestFlight and
   stale-candidate relaunch behavior remain manual.
+- 2026-07-13 v1.8 T-3 PDF Reference proof: the separate-ID Developer bundle
+  selected `/private/tmp/hazakura-valid-text.pdf` through the native picker and
+  showed a page image in the right-side read-only Reference pane. The center
+  `EDITOR-BUFFER-MARKER` stayed intact and the Reference toolbar exposed the
+  page 1/1 controls. This is local PDF evidence only; image breadth, signed
+  TestFlight interaction, and the full a11y matrix remain open.
 - 2026-07-12 v1.8 P2 EPUB/PDF preflight: both settings dialogs now summarize
   unsaved-source inclusion, image-warning handling, and the next Save-dialog
   destination step in English / Japanese / kana. PDF success retains the final
