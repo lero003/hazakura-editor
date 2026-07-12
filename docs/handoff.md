@@ -112,7 +112,9 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    Developer packaged proof. S-3 long-reference wrap/scroll/selection and both
    budget rejection paths have Developer packaged proof. Still open: Reference
    copy verification, signed TestFlight breadth, packaged/manual a11y matrix,
-   and P2 export/theme polish.
+   actual EPUB/PDF output inspection, and measured theme/shader polish. P2 now
+   has a shared pre-export summary in both dialogs; Spellcheck Preferences
+   parity and reduced-motion source guards were already present.
 4. Keep v1.6 closed unless a reproduced gap needs a hotfix. Historical quality
    notes: `docs/quality-inventory-v1.6.md`.
 5. Keep `@codemirror/view` at **6.43.2**. Do not bump, tag, upload, or publish
@@ -238,6 +240,17 @@ Read it only for historical context.
   full `cargo test` (**338 passed / 2 explicit host-integration ignored / 0
   failed**), and `git diff --check` passed. This is keyboard + AX-tree evidence,
   not a claim that actual VoiceOver speech or signed TestFlight breadth passed.
+- 2026-07-12 v1.8 P2 EPUB/PDF preflight: both settings dialogs now summarize
+  unsaved-source inclusion, image-warning handling, and the next Save-dialog
+  destination step in English / Japanese / kana. PDF success retains the final
+  image-warning count instead of replacing it with generic success. The
+  latest-HEAD separate-ID Developer bundle displayed both summaries; both were
+  cancelled before Save, so no destination was selected and no output file was
+  written. Focused tests passed (**22/22**); `npm run test` passed (**159/159
+  files / 1377 tests**); `npm run build:macos-lanes`, Rust format, full
+  `cargo test` (**338 passed / 2 explicit host-integration ignored / 0
+  failed**), and `git diff --check` passed. Actual output inspection and signed
+  TestFlight breadth remain open.
 - 2026-07-12 v1.8 localized rename VoiceOver name: focused WorkspaceTree
   tests passed (**17/17**); `npm run test` passed (**159/159 files / 1369
   tests**); `npm run typecheck`, `npm run build:vite`, `npm run build`, Rust

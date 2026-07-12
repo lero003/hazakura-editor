@@ -289,6 +289,7 @@ describe("useDocumentExport", () => {
 
     expect(result.current.pdfExportRequest).toMatchObject({
       documentName: "print-me.md",
+      hasUnsavedChanges: true,
       preset: "standard",
       tabId: "/workspace/a.md",
     });
@@ -386,6 +387,39 @@ describe("useDocumentExport", () => {
   .markdown-preview code,
   .markdown-preview .markdown-table-frame th { background: transparent; }`);
     expect(setStatus).toHaveBeenCalledWith("PDF exported");
+  });
+
+  it("preserves PDF image warnings in the final success status", async () => {
+    tauriApi.isTauriRuntime.mockReturnValue(true);
+    dialogApi.save.mockResolvedValue("/tmp/image-warning.pdf");
+    tauriApi.exportPdfFile.mockResolvedValue(undefined);
+    tauriApi.openWorkspaceImage.mockRejectedValue(new Error("missing image"));
+    markdownApi.renderMarkdown.mockReturnValueOnce(
+      '<p><img data-hazakura-image-path="/workspace/assets/missing.png" alt="missing"></p>',
+    );
+    const setStatus = vi.fn();
+
+    const { result } = renderHook(() =>
+      useDocumentExport({
+        activeContents: "![missing](assets/missing.png)",
+        activeTab: makeTab(),
+        setGlobalError: vi.fn(),
+        setStatus,
+        workspaceRootPath: "/workspace",
+      }),
+    );
+
+    await act(async () => {
+      await result.current.exportPdf();
+    });
+    await act(async () => {
+      await result.current.confirmPdfExport("standard");
+    });
+
+    expect(tauriApi.exportPdfFile).toHaveBeenCalledTimes(1);
+    expect(setStatus).toHaveBeenLastCalledWith(
+      "PDF exported with 1 image warning(s)",
+    );
   });
 
   it("does not call an export image loader for a child-workspace escape", async () => {

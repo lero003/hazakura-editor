@@ -431,6 +431,7 @@ export function AppOverlays({
           cancelButtonRef={epubExportCancelButtonRef}
           dialogRef={epubExportDialogRef}
           documentName={epubExportRequest.documentName}
+          hasUnsavedChanges={epubExportRequest.hasUnsavedChanges}
           initialSettings={epubExportRequest.settings}
           menuLanguage={menuLanguage}
           onCancel={onCancelEpubBetaExport}
@@ -443,6 +444,7 @@ export function AppOverlays({
           cancelButtonRef={pdfExportCancelButtonRef}
           dialogRef={pdfExportDialogRef}
           documentName={pdfExportRequest.documentName}
+          hasUnsavedChanges={pdfExportRequest.hasUnsavedChanges}
           initialPreset={pdfExportRequest.preset}
           menuLanguage={menuLanguage}
           onCancel={onCancelPdfExport}

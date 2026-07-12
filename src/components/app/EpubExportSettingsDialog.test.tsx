@@ -15,6 +15,7 @@ describe("EpubExportSettingsDialog", () => {
         cancelButtonRef={createRef()}
         dialogRef={createRef()}
         documentName="book.md"
+        hasUnsavedChanges
         initialSettings={{
           author: "",
           language: "ja",
@@ -43,6 +44,12 @@ describe("EpubExportSettingsDialog", () => {
       title: "Edited Title",
     });
     expect(onCancel).not.toHaveBeenCalled();
+    expect(
+      screen.getByText("Current unsaved changes are included in the export."),
+    ).toBeTruthy();
+    expect(
+      screen.getByText("Choose the .epub destination in the next Save dialog."),
+    ).toBeTruthy();
   });
 
   it("disables Export while the title is blank", () => {
@@ -51,6 +58,7 @@ describe("EpubExportSettingsDialog", () => {
         cancelButtonRef={createRef()}
         dialogRef={createRef()}
         documentName="book.md"
+        hasUnsavedChanges={false}
         initialSettings={{
           author: "",
           language: "ja",
@@ -78,6 +86,7 @@ describe("EpubExportSettingsDialog", () => {
         cancelButtonRef={createRef()}
         dialogRef={createRef()}
         documentName="book.md"
+        hasUnsavedChanges={false}
         initialSettings={{
           author: "",
           language: "ja",
@@ -103,6 +112,7 @@ describe("EpubExportSettingsDialog", () => {
         cancelButtonRef={createRef()}
         dialogRef={createRef()}
         documentName="book.md"
+        hasUnsavedChanges={false}
         initialSettings={{
           author: "",
           language: "ja",
@@ -133,6 +143,7 @@ describe("EpubExportSettingsDialog", () => {
         cancelButtonRef={cancelButtonRef}
         dialogRef={dialogRef}
         documentName="book.md"
+        hasUnsavedChanges={false}
         initialSettings={{
           author: "",
           language: "ja",

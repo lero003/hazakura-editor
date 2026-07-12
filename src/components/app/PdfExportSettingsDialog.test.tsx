@@ -13,6 +13,7 @@ describe("PdfExportSettingsDialog", () => {
         cancelButtonRef={createRef()}
         dialogRef={createRef()}
         documentName="book.md"
+        hasUnsavedChanges
         initialPreset="standard"
         menuLanguage="ja"
         onCancel={vi.fn()}
@@ -23,6 +24,10 @@ describe("PdfExportSettingsDialog", () => {
     expect(screen.getByLabelText(/狭い/)).toBeTruthy();
     expect(screen.getByLabelText(/標準/)).toHaveProperty("checked", true);
     expect(screen.getByLabelText(/広い/)).toBeTruthy();
+    expect(screen.getByText("現在の未保存の変更も書き出しに含めます。")).toBeTruthy();
+    expect(
+      screen.getByText("次の保存ダイアログで .pdf の保存先を選びます。"),
+    ).toBeTruthy();
 
     fireEvent.click(screen.getByLabelText(/広い/));
     fireEvent.click(screen.getByRole("button", { name: "書き出す" }));
@@ -39,6 +44,7 @@ describe("PdfExportSettingsDialog", () => {
         cancelButtonRef={cancelButtonRef}
         dialogRef={dialogRef}
         documentName="book.md"
+        hasUnsavedChanges={false}
         initialPreset="standard"
         menuLanguage="en"
         onCancel={onCancel}
@@ -49,6 +55,7 @@ describe("PdfExportSettingsDialog", () => {
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
     expect(onCancel).toHaveBeenCalledTimes(1);
     expect(onConfirm).not.toHaveBeenCalled();
+    expect(screen.getByText("No unsaved changes are currently detected.")).toBeTruthy();
     expect(dialogRef.current).toBe(screen.getByRole("dialog"));
     expect(cancelButtonRef.current).toBe(
       screen.getByRole("button", { name: "Cancel" }),

@@ -412,6 +412,39 @@
   opacity: 0.85;
 }
 
+.export-preflight-summary {
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  display: grid;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 10px 12px;
+}
+
+.export-preflight-summary div {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(72px, max-content) minmax(0, 1fr);
+}
+
+.export-preflight-summary dt,
+.export-preflight-summary dd {
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.export-preflight-summary dt {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.export-preflight-summary dd {
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
 .pdf-margin-presets {
   border: 0;
   display: grid;

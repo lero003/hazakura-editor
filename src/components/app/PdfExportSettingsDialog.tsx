@@ -4,12 +4,14 @@ import {
   type PdfMarginPreset,
 } from "../../features/document/pdfExport";
 import { isJapaneseMenuLanguage, type MenuLanguage } from "../../types";
+import { ExportPreflightSummary } from "./ExportPreflightSummary";
 
 type PdfExportSettingsDialogProps = {
   cancelButtonRef: RefObject<HTMLButtonElement | null>;
   dialogRef: RefObject<HTMLElement | null>;
   documentName: string;
   initialPreset: PdfMarginPreset;
+  hasUnsavedChanges: boolean;
   menuLanguage: MenuLanguage;
   onCancel: () => void;
   onConfirm: (preset: PdfMarginPreset) => void;
@@ -20,6 +22,7 @@ export function PdfExportSettingsDialog({
   dialogRef,
   documentName,
   initialPreset,
+  hasUnsavedChanges,
   menuLanguage,
   onCancel,
   onConfirm,
@@ -42,6 +45,11 @@ export function PdfExportSettingsDialog({
           {documentName}
         </p>
         <p className="pdf-export-settings-note">{copy.scopeNote}</p>
+        <ExportPreflightSummary
+          format="PDF"
+          hasUnsavedChanges={hasUnsavedChanges}
+          menuLanguage={menuLanguage}
+        />
         <form
           className="pdf-export-settings-form"
           onSubmit={(event) => {

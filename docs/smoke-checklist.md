@@ -65,6 +65,9 @@ full automated gates before treating any manual result as release evidence.
     estimated H3 page.
 11. **A4 PDF margin presets.** Export the same multi-page manuscript with
     `狭い`, `標準`, and `広い`. Render at least pages 1 and 2 of each PDF.
+    Before choosing a preset, confirm the dialog states whether unsaved changes
+    are included, how unavailable images are reported, and that the concrete
+    `.pdf` destination is chosen in the next Save dialog.
     Confirm all pages remain A4, the content inset visibly increases from
     narrow to wide on every inspected page, normal images/tables/code remain
     readable, and canceling either dialog writes no file. File creation alone
@@ -323,6 +326,9 @@ an in-app EPUB validator workflow.
    a reading preview, the exported EPUB targets a single Markdown
    document, and Hazakura is not a full EPUB production tool (Japanese
    and English copy both present).
+   Confirm the same dialog states whether unsaved changes are included, how
+   unavailable images are reported, and that the concrete `.epub` destination
+   is chosen in the next Save dialog.
 3. Save the `.epub` and confirm a successful export status appears. If
    the document includes an unavailable image, confirm the status says
    the EPUB was saved with image warnings rather than silently claiming a
@@ -694,6 +700,11 @@ recovered state separately where relevant.
   Focus/active-result semantics and Escape dismissal remained intact. This was
   an AX-tree inspection, not actual VoiceOver speech; repeat the spoken flow and
   native-menu traversal on signed TestFlight before a v1.8 candidate.
+- The latest-HEAD separate-ID Developer bundle displayed the shared
+  source/image/destination preflight summary in both PDF and EPUB settings.
+  Both dialogs were cancelled before Save; this proves dialog layout and copy,
+  not generated output. Repeat actual PDF/EPUB creation and inspection on a
+  signed TestFlight candidate.
 
 ### Reporting
 

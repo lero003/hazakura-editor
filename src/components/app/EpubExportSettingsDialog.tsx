@@ -2,12 +2,14 @@ import { useState, type RefObject } from "react";
 import type { EpubExportSettings } from "../../features/document/epubExport";
 import type { MenuLanguage } from "../../types";
 import { isJapaneseMenuLanguage } from "../../types";
+import { ExportPreflightSummary } from "./ExportPreflightSummary";
 
 type EpubExportSettingsDialogProps = {
   cancelButtonRef: RefObject<HTMLButtonElement | null>;
   dialogRef: RefObject<HTMLElement | null>;
   documentName: string;
   initialSettings: EpubExportSettings;
+  hasUnsavedChanges: boolean;
   menuLanguage: MenuLanguage;
   onCancel: () => void;
   onConfirm: (settings: EpubExportSettings) => void;
@@ -18,6 +20,7 @@ export function EpubExportSettingsDialog({
   dialogRef,
   documentName,
   initialSettings,
+  hasUnsavedChanges,
   menuLanguage,
   onCancel,
   onConfirm,
@@ -45,6 +48,11 @@ export function EpubExportSettingsDialog({
         <p className="epub-export-settings-note">
           {copy.scopeNote}
         </p>
+        <ExportPreflightSummary
+          format="EPUB"
+          hasUnsavedChanges={hasUnsavedChanges}
+          menuLanguage={menuLanguage}
+        />
         <form
           className="epub-export-settings-form"
           onSubmit={(event) => {

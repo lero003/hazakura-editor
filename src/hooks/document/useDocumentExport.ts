@@ -38,12 +38,14 @@ type UseDocumentExportOptions = {
 
 export type EpubExportRequest = {
   documentName: string;
+  hasUnsavedChanges: boolean;
   settings: EpubExportSettings;
   tabId: string;
 };
 
 export type PdfExportRequest = {
   documentName: string;
+  hasUnsavedChanges: boolean;
   preset: PdfMarginPreset;
   tabId: string;
 };
@@ -72,6 +74,7 @@ export function useDocumentExport({
 
     setPdfExportRequest({
       documentName: activeTab.name,
+      hasUnsavedChanges: activeTab.contents !== activeTab.lastSavedContents,
       preset: DEFAULT_PDF_MARGIN_PRESET,
       tabId: activeTab.id,
     });
@@ -425,7 +428,11 @@ ${bodyHtml}
         }
 
         await exportPdfFile(destPath, standaloneHtml);
-        setStatus("PDF exported");
+        setStatus(
+          embedResult.failedPaths.length > 0
+            ? `PDF exported with ${embedResult.failedPaths.length} image warning(s)`
+            : "PDF exported",
+        );
         setTimeout(() => setStatus(""), 2000);
         return;
       }
@@ -611,6 +618,7 @@ ${bodyHtml}
 
     setEpubExportRequest({
       documentName: activeTab.name,
+      hasUnsavedChanges: activeTab.contents !== activeTab.lastSavedContents,
       settings: defaultEpubExportSettings({
         documentName: activeTab.name,
         markdown: activeContents,
