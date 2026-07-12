@@ -706,6 +706,9 @@ recovered state separately where relevant.
   contract to the Reference Compare empty-editor hint. Focused AppWorkspace
   coverage and the full frontend suite passed; this improves the source
   announcement path but does not claim spoken VoiceOver or signed TestFlight.
+- App Store surface smoke on 2026-07-13: `npm run smoke:app-store-surface`
+  passed (**10 files / 96 tests**) for pane controls, Command Palette, settings,
+  review-state, and distribution-lane contracts.
 - S-3 used the deterministic `smoke:fixtures:v1.8-reference` output in the
   separate-ID Developer app. The 5,000-line Japanese reference wrapped in the
   narrow pane, scrolled through `END-MARKER-5000`, and allowed marker selection.
