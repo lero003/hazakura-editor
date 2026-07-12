@@ -1,4 +1,5 @@
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -109,6 +110,111 @@ describe("ReferencePdfPane", () => {
     await waitFor(() => {
       expect(
         screen.getByRole("img", { name: "a.pdf — ページ 1 / 1" }),
+      ).toBeTruthy();
+    });
+  });
+
+  it("ignores a stale raster when the reference changes mid-render", async () => {
+    let resolveFirst: ((image: {
+      referenceId: string;
+      page: number;
+      width: number;
+      height: number;
+      mime: string;
+      dataBase64: string;
+    }) => void) | null = null;
+    let resolveSecond: ((image: {
+      referenceId: string;
+      page: number;
+      width: number;
+      height: number;
+      mime: string;
+      dataBase64: string;
+    }) => void) | null = null;
+    vi.mocked(renderPdfReferencePage).mockImplementation((referenceId) => {
+      if (referenceId === "pdf-ref-a") {
+        return new Promise((resolve) => {
+          resolveFirst = resolve;
+        });
+      }
+      return new Promise((resolve) => {
+        resolveSecond = resolve;
+      });
+    });
+
+    const firstReference = {
+      kind: "pdf" as const,
+      path: "/ws/a.pdf",
+      name: "a.pdf",
+      pageCount: 1,
+      referenceId: "pdf-ref-a",
+    };
+    const secondReference = {
+      ...firstReference,
+      name: "b.pdf",
+      path: "/ws/b.pdf",
+      referenceId: "pdf-ref-b",
+    };
+    const { rerender } = render(
+      <ReferencePdfPane
+        copy={referenceCompareCopy("ja")}
+        pageIndex={0}
+        onPageIndexChange={vi.fn()}
+        reference={firstReference}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(renderPdfReferencePage).toHaveBeenCalledWith(
+        "pdf-ref-a",
+        0,
+        expect.any(Number),
+      );
+    });
+
+    rerender(
+      <ReferencePdfPane
+        copy={referenceCompareCopy("ja")}
+        pageIndex={0}
+        onPageIndexChange={vi.fn()}
+        reference={secondReference}
+      />,
+    );
+    await waitFor(() => {
+      expect(renderPdfReferencePage).toHaveBeenCalledWith(
+        "pdf-ref-b",
+        0,
+        expect.any(Number),
+      );
+    });
+
+    await act(async () => {
+      resolveFirst?.({
+        referenceId: "pdf-ref-a",
+        page: 0,
+        width: 200,
+        height: 100,
+        mime: "image/png",
+        dataBase64: "stale",
+      });
+      await Promise.resolve();
+    });
+    expect(screen.queryByRole("img", { name: /a\.pdf/ })).toBeNull();
+
+    await act(async () => {
+      resolveSecond?.({
+        referenceId: "pdf-ref-b",
+        page: 0,
+        width: 200,
+        height: 100,
+        mime: "image/png",
+        dataBase64: "current",
+      });
+      await Promise.resolve();
+    });
+    await waitFor(() => {
+      expect(
+        screen.getByRole("img", { name: "b.pdf — ページ 1 / 1" }),
       ).toBeTruthy();
     });
   });

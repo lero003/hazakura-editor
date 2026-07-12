@@ -110,8 +110,8 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    Japanese and kana names; actual VoiceOver speech remains manual.
    L Mode Reference hide/restore now has an AppWorkspace regression test, and
    T-3 close/replace wiring now has an AppWorkspace regression test that keeps
-   the center editor change path untouched. Developer packaged proof for these
-   source contracts remains separate from signed TestFlight evidence. S-3
+  the center editor change path untouched. Developer packaged proof for these
+  source contracts remains separate from signed TestFlight evidence. S-3
    long-reference wrap/scroll/selection and both
    budget rejection paths have Developer packaged proof; full-reference copy was
    verified by paste-back of the `END-MARKER-5000` tail into a disposable editor
@@ -288,6 +288,9 @@ Read it only for historical context.
   intact; narrowing the Reference column to 25% kept the image contained and
   the center marker intact. Source-deletion, signed TestFlight, and spoken
   VoiceOver checks remain open.
+- The PDF Reference source contract also has a focused race regression: a
+  raster that resolves after the Reference ID changes is ignored, so the old
+  page cannot replace the current Reference.
 - 2026-07-12 v1.8 P2 EPUB/PDF preflight: both settings dialogs now summarize
   unsaved-source inclusion, image-warning handling, and the next Save-dialog
   destination step in English / Japanese / kana. PDF success retains the final

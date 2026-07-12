@@ -730,7 +730,8 @@ recovered state separately where relevant.
   image while the center `EDITOR-BUFFER-MARKER` remained intact. This proves
   local PDF/image handling only; `ReferenceTextPane.test.tsx`,
   `ReferencePdfPane.test.tsx`, `useReferenceCompareActions.test.ts`, and
-  `AppWorkspace.test.tsx` close/replace wiring checks passed (**47 tests** in
+  `AppWorkspace.test.tsx` close/replace wiring and stale-raster checks passed
+  (**48 tests** in
   the combined focused pass).
   Additional matrix cases and signed TestFlight interaction remain open.
 - T-3 packaged Reference replacement follow-up on 2026-07-13 closed and
