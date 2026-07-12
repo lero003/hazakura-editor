@@ -285,7 +285,8 @@ Read it only for historical context.
   closed and reopened `reference-image.png`, then replaced it with the
   nine-page `/private/tmp/hazakura-v1.8-export-proof-20260712-fixed.pdf`.
   Page 2/9, fit-page, and 150% controls worked while the center marker stayed
-  intact. Source-deletion, narrow-window, signed TestFlight, and spoken
+  intact; narrowing the Reference column to 25% kept the image contained and
+  the center marker intact. Source-deletion, signed TestFlight, and spoken
   VoiceOver checks remain open.
 - 2026-07-12 v1.8 P2 EPUB/PDF preflight: both settings dialogs now summarize
   unsaved-source inclusion, image-warning handling, and the next Save-dialog

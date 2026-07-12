@@ -77,7 +77,8 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   image Reference evidence; additional matrix cases and signed TestFlight
   interaction remain open. A second Developer pass closed and reopened the
   image, replaced it with a nine-page PDF, moved to page 2, and exercised
-  fit-page plus 150% controls while the center marker stayed intact.
+  fit-page plus 150% controls. The Reference column was also narrowed to 25%
+  and kept the image contained while the center marker stayed intact.
   `ReferenceTextPane` also now directly asserts the
   image alt name, data URL, read-only copy, and absence of an editable text
   surface. `ReferencePdfPane` now also asserts a file-and-page accessible name

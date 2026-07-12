@@ -737,7 +737,9 @@ recovered state separately where relevant.
   reopened `reference-image.png`, then replaced it with the nine-page
   `/private/tmp/hazakura-v1.8-export-proof-20260712-fixed.pdf`. Page 2/9,
   fit-page, and 150% controls all worked in the separate-ID Developer bundle;
-  the center `EDITOR-BUFFER-MARKER` remained intact. This extends local
+  the center `EDITOR-BUFFER-MARKER` remained intact. The Reference column was
+  then narrowed to 25%; the image stayed contained and the marker remained
+  intact. This extends local
   image/PDF matrix evidence only; source-deletion, narrow-window, signed
   TestFlight, and spoken VoiceOver checks remain open.
 - P2 theme budget smoke on 2026-07-13 rebuilt the Developer bundle after
