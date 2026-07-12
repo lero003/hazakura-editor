@@ -43,6 +43,10 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   `END-MARKER-5000` tail; clipboard contents were not read directly. Signed
   TestFlight interaction and full a11y smoke remain v1.8 follow-up evidence
   rather than v1.7 publication blockers.
+  T-2's pathless `Discard All` cleanup-failure path is now pinned by a focused
+  regression: the user-visible warning is emitted and the close still
+  continues. Signed TestFlight coverage and stale-candidate cleanup remain
+  manual follow-up evidence.
   Quick Open, Command Palette, and Global Search now expose dialog,
   combobox/listbox, active-option, and search-status semantics for keyboard and
   VoiceOver navigation. Global Search also localizes missing-workspace and

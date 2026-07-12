@@ -141,6 +141,43 @@ describe("useTabCloseFlow", () => {
     );
   });
 
+  it("still completes Discard All when pathless recovery cleanup is unavailable", async () => {
+    storage.removeStoredDrafts.mockReturnValueOnce({
+      ok: false,
+      reason: "quota",
+      message: "unavailable",
+    });
+    const dirtyTab = makeTab({
+      id: "untitled:1",
+      path: "",
+      recoveryId: "550e8400-e29b-41d4-a716-446655440077",
+      sessionId: "session:untitled-1",
+    });
+    const setPendingAppClose = vi.fn();
+    const setStatus = vi.fn();
+    const { result } = setup({
+      activeTabId: dirtyTab.id,
+      dirtyTabs: [dirtyTab],
+      setPendingAppClose,
+      setStatus,
+      tabs: [dirtyTab],
+      tabsRef: { current: [dirtyTab] },
+    });
+
+    await act(async () => {
+      await result.current.discardAllAndCloseWindow();
+    });
+
+    expect(storage.removeStoredDrafts).toHaveBeenCalledWith([
+      "pathless:550e8400-e29b-41d4-a716-446655440077",
+    ]);
+    expect(setStatus).toHaveBeenCalledWith(
+      "Closing; recovery cleanup unavailable",
+    );
+    expect(setPendingAppClose).toHaveBeenCalledWith(false);
+    expect(tauriWindow.hideMainWindow).toHaveBeenCalledTimes(1);
+  });
+
   it("clears the app-close dialog state after saving all dirty tabs", async () => {
     const allowWindowCloseRef = { current: false };
     const onBeforeWindowClose = vi.fn();

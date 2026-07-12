@@ -719,6 +719,10 @@ recovered state separately where relevant.
   search cap/error checks (**14 tests**), and PDF export bounded-failure checks
   (**7 tests**). No source defect was reproduced; packaged injected-failure
   interaction is still not claimed.
+- T-2 source-level cleanup review on 2026-07-13 added a pathless `Discard All`
+  regression (**12 tests** in `useTabCloseFlow.test.tsx`). A failed recovery
+  cleanup emits the explicit status and still completes the close; relaunch
+  with a stale candidate and signed TestFlight interaction remain manual.
 - P2 theme budget smoke on 2026-07-13 rebuilt the Developer bundle after
   connecting Edohigan's resident WebGL overlay to the shared intensity-aware
   DPR/frame budget. CRT, Edohigan, and Shinkai menu switches were exercised;

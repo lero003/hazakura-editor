@@ -263,6 +263,11 @@ Read it only for historical context.
   checks passed (**2/2**), and the rebuilt separate-ID Developer bundle's AX
   tree exposed the localized Help strings for all five controls. This is
   packaged AX evidence, not spoken VoiceOver or signed TestFlight evidence.
+- 2026-07-13 v1.8 T-2 cleanup-failure regression: pathless `Discard All` now has
+  a focused hook test proving that a failed `removeStoredDrafts` call emits
+  `Closing; recovery cleanup unavailable`, still resets the close dialog, and
+  continues the window close. This is source evidence; signed TestFlight and
+  stale-candidate relaunch behavior remain manual.
 - 2026-07-12 v1.8 P2 EPUB/PDF preflight: both settings dialogs now summarize
   unsaved-source inclusion, image-warning handling, and the next Save-dialog
   destination step in English / Japanese / kana. PDF success retains the final
