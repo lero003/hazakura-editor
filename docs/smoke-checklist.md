@@ -723,11 +723,13 @@ recovered state separately where relevant.
   regression (**12 tests** in `useTabCloseFlow.test.tsx`). A failed recovery
   cleanup emits the explicit status and still completes the close; relaunch
   with a stale candidate and signed TestFlight interaction remain manual.
-- T-3 PDF Reference smoke on 2026-07-13 selected the disposable
-  `/private/tmp/hazakura-valid-text.pdf` in the separate-ID Developer bundle.
-  The right Reference pane showed its page image, read-only label, and page
-  controls while the center `EDITOR-BUFFER-MARKER` remained intact. This does
-  not claim image-reference breadth or signed TestFlight interaction.
+- T-3 PDF/image Reference smoke on 2026-07-13 selected the disposable
+  `/private/tmp/hazakura-valid-text.pdf` in the separate-ID Developer bundle
+  and opened workspace `reference-image.png` through the file-tree context
+  menu. The right Reference pane showed read-only PDF page controls and the
+  image while the center `EDITOR-BUFFER-MARKER` remained intact. This proves
+  local PDF/image handling only; additional matrix cases and signed TestFlight
+  interaction remain open.
 - P2 theme budget smoke on 2026-07-13 rebuilt the Developer bundle after
   connecting Edohigan's resident WebGL overlay to the shared intensity-aware
   DPR/frame budget. CRT, Edohigan, and Shinkai menu switches were exercised;
