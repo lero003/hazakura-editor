@@ -79,6 +79,13 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   theme switching (CRT / Edohigan / Shinkai) kept the editor and Preview
   content intact after boot animations. Signed TestFlight visual/accessibility
   breadth and a measured device FPS baseline remain open.
+- **v1.8 S-4 purpose-led discovery is source + Developer smoke verified.** The
+  existing Start Panel keeps its write / read / verify pitch, and the five
+  right-pane controls now explain their task in English / Japanese / kana
+  tooltips instead of repeating only the feature name. Focused locale checks
+  passed (**2/2**); the latest separate-ID Developer AX tree exposed those
+  localized Help strings. Signed TestFlight breadth and spoken VoiceOver
+  remain follow-up evidence.
 - **v1.8 P2 export preflight and Developer output proof are complete locally.** EPUB
   and PDF settings now state whether current unsaved changes are included,
   explain that unavailable workspace images are reported as warnings, and say

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-07-13 (v1.8 long-reference copy proof)
+Last reviewed: 2026-07-13 (v1.8 purpose-led discovery / long-reference copy proof)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -726,6 +726,12 @@ recovered state separately where relevant.
   `EDITOR-BUFFER-MARKER`. CRT's intentionally low-readability appearance is
   expected. This proves local Developer behavior, not signed TestFlight,
   spoken VoiceOver, or measured device FPS.
+- S-4 purpose-led discovery smoke on 2026-07-13 rebuilt the separate-ID
+  Developer bundle and inspected its macOS accessibility tree in kana. The
+  five Preview / Reference / e-book / Outline / Diff controls exposed
+  localized task-oriented Help strings, while the editor, reference, and
+  Preview markers remained intact. This proves the packaged tooltip/AX copy;
+  signed TestFlight breadth and spoken VoiceOver remain open.
 
 ### Reporting
 

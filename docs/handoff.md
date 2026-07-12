@@ -257,6 +257,12 @@ Read it only for historical context.
   Spellcheck, theme, and fullscreen items. This closes the native-menu
   traversal evidence gap for the public build only; spoken VoiceOver and
   signed TestFlight breadth remain open.
+- 2026-07-13 v1.8 S-4 purpose-led discovery: Preview / Reference / e-book /
+  Outline / Diff pane titles now describe the user task in English / Japanese /
+  kana while keeping the existing controls and boundaries. Focused locale
+  checks passed (**2/2**), and the rebuilt separate-ID Developer bundle's AX
+  tree exposed the localized Help strings for all five controls. This is
+  packaged AX evidence, not spoken VoiceOver or signed TestFlight evidence.
 - 2026-07-12 v1.8 P2 EPUB/PDF preflight: both settings dialogs now summarize
   unsaved-source inclusion, image-warning handling, and the next Save-dialog
   destination step in English / Japanese / kana. PDF success retains the final
