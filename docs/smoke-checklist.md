@@ -709,6 +709,10 @@ recovered state separately where relevant.
 - App Store surface smoke on 2026-07-13: `npm run smoke:app-store-surface`
   passed (**10 files / 96 tests**) for pane controls, Command Palette, settings,
   review-state, and distribution-lane contracts.
+- Local PDF visual follow-up on 2026-07-13 rendered pages 1–3 of the existing
+  nine-page export with Poppler. No clipping was visible and all four sampled
+  page corners were white; the fixture body is English, so Japanese-glyph
+  visual inspection remains open for a signed/distribution candidate.
 - S-3 used the deterministic `smoke:fixtures:v1.8-reference` output in the
   separate-ID Developer app. The 5,000-line Japanese reference wrapped in the
   narrow pane, scrolled through `END-MARKER-5000`, and allowed marker selection.

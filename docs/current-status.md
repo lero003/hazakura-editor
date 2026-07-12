@@ -67,6 +67,9 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   The installed public `1.7.0` build `85` also passed `⌘⇧P` Command Palette,
   `⌘⇧F` Global Search, and native 表示-menu traversal on 2026-07-13; this is
   keyboard/menu evidence, not spoken VoiceOver or signed TestFlight evidence.
+  A local Poppler render review of the existing nine-page PDF inspected pages
+  1–3 with no clipping and white edge samples on all four corners; the fixture
+  body is English, so Japanese-glyph visual inspection remains open.
   The latest source-built App Store sandbox preview passed deep-signature,
   app-sandbox, user-selected read/write, app-scoped bookmark, and inherited
   helper entitlement checks on 2026-07-12. That App Store preview pass did not
