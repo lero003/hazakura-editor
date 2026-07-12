@@ -68,8 +68,12 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   `⌘⇧F` Global Search, and native 表示-menu traversal on 2026-07-13; this is
   keyboard/menu evidence, not spoken VoiceOver or signed TestFlight evidence.
   A local Poppler render review of the existing nine-page PDF inspected pages
-  1–3 with no clipping and white edge samples on all four corners; the fixture
-  body is English, so Japanese-glyph visual inspection remains open.
+  1–3 with no clipping and white edge samples on all four corners. Poppler
+  reported a local `Adobe-Japan1` language-pack limitation, so the disposable
+  Japanese fixture was exported separately and opened in macOS Preview on
+  2026-07-13: Japanese glyphs were visible within the A4 margins and Preview's
+  accessibility tree exposed the same Japanese text. This closes the local
+  Developer visual check; signed TestFlight export breadth remains open.
   The latest source-built App Store sandbox preview passed deep-signature,
   app-sandbox, user-selected read/write, app-scoped bookmark, and inherited
   helper entitlement checks on 2026-07-12. That App Store preview pass did not
@@ -139,8 +143,8 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   retained Japanese metadata, spine order, and the unavailable-image warning;
   the PDF rendered as nine A4 pages. That inspection exposed a transparent
   trailing-page background, now fixed by an explicit white export layer and
-  covered by regression assertions. Signed TestFlight breadth and final
-  Japanese-font visual inspection remain open.
+  covered by regression assertions. Signed TestFlight breadth remains open;
+  the local Developer Japanese glyph check is recorded above.
 - **v1.5 (`1.5.0`) is closed and was released before 江戸彼岸 (edohigan).**
   v1.5 covered Spellcheck settings, Reading Focus TOC density, CRT/Shinkai
   lineage polish, dead-code, deps hygiene, traffic-light, L Mode remount.

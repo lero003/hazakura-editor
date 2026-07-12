@@ -711,8 +711,11 @@ recovered state separately where relevant.
   review-state, and distribution-lane contracts.
 - Local PDF visual follow-up on 2026-07-13 rendered pages 1–3 of the existing
   nine-page export with Poppler. No clipping was visible and all four sampled
-  page corners were white; the fixture body is English, so Japanese-glyph
-  visual inspection remains open for a signed/distribution candidate.
+  page corners were white. Poppler reported a local `Adobe-Japan1` language-
+  pack limitation, so a Japanese Markdown fixture was exported separately and
+  opened in macOS Preview; Japanese glyphs were visible within the A4 margins,
+  and Preview's accessibility tree exposed the same text. This closes the local
+  Developer visual check; signed TestFlight export breadth remains open.
 - S-3 used the deterministic `smoke:fixtures:v1.8-reference` output in the
   separate-ID Developer app. The 5,000-line Japanese reference wrapped in the
   narrow pane, scrolled through `END-MARKER-5000`, and allowed marker selection.
@@ -738,9 +741,9 @@ recovered state separately where relevant.
   changing the source file. The EPUB archive retained Japanese metadata, two
   ordered content documents, and the unavailable-image replacement. The PDF
   background fix rendered nine A4 pages with white sampled edges on every page.
-  Poppler substituted a local Japanese font during this proof, so repeat
-  Japanese-glyph visual inspection and both exports on a signed TestFlight
-  candidate.
+  Poppler reported a local `Adobe-Japan1` language-pack limitation during this
+  proof; the local Developer Japanese-glyph check is recorded above. Repeat
+  both exports on a signed TestFlight candidate.
 - S-1 source-level failure/limit review on 2026-07-13 passed the Global Search
   accessibility/error checks (**3 frontend files / 16 tests**), Rust workspace
   search cap/error checks (**14 tests**), and PDF export bounded-failure checks

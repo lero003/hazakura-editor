@@ -115,8 +115,12 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    tests**); this is source/App Store-lane surface evidence, not signed
    TestFlight or spoken VoiceOver evidence.
    Local Poppler rendering of PDF pages 1–3 found no clipping and white four-
-   corner edge samples; the fixture body was English, so Japanese-glyph visual
-   inspection remains a separate open item.
+   corner edge samples, but reported a local `Adobe-Japan1` language-pack
+   limitation. A disposable Japanese Markdown fixture was exported to a
+   one-page A4 PDF and opened in macOS Preview on 2026-07-13; Japanese glyphs
+   were visible without clipping and Preview's accessibility tree exposed the
+   same text. This closes the local Developer glyph check; signed TestFlight
+   export breadth remains separate evidence.
    L Mode Reference hide/restore now has an AppWorkspace regression test, and
    T-3 close/replace wiring now has an AppWorkspace regression test that keeps
   the center editor change path untouched. Developer packaged proof for these
@@ -125,8 +129,7 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    budget rejection paths have Developer packaged proof; full-reference copy was
    verified by paste-back of the `END-MARKER-5000` tail into a disposable editor
    buffer on 2026-07-13. Still open: signed TestFlight breadth, packaged/manual a11y matrix,
-   Japanese-font export inspection, spoken VoiceOver, and measured device FPS
-   baseline. P2 now
+   spoken VoiceOver, and measured device FPS baseline. P2 now
    has a shared pre-export summary in both dialogs plus local Developer
    PDF/EPUB output proof; Spellcheck Preferences parity and reduced-motion
    source guards were already present. S-1 bounded failure UX is source +
@@ -352,6 +355,13 @@ Read it only for historical context.
   `npm run build:macos-lanes` passing. Developer theme switching through CRT,
   Edohigan, and Shinkai preserved editor/Preview markers after boot; this is
   not a signed TestFlight or measured device-FPS claim.
+- 2026-07-13 v1.8 P2 Japanese PDF visual proof: a Japanese Markdown fixture was
+  exported to `/private/tmp/hazakura-v1.8-japanese-export.pdf` through the
+  Developer bundle. macOS Preview displayed the Japanese glyphs within the A4
+  page without clipping, and its accessibility tree exposed the Japanese text.
+  Poppler's local `Adobe-Japan1` warning is therefore a local rasterizer
+  limitation, not a demonstrated export defect; signed TestFlight export
+  breadth remains open.
 - 2026-07-12 v1.8 P2 Developer output proof: unsaved ASCII markers were exported
   to PDF and EPUB while the source SHA-256 remained unchanged. The EPUB archive
   contained `mimetype`, container, OPF, navigation, stylesheet, and two spine
@@ -359,8 +369,8 @@ Read it only for historical context.
   present. The first PDF exposed a black rendered tail caused by transparent
   page background. An explicit white background layer fixed it; the replacement
   rendered as nine A4 pages, and all five sampled edge pixels on every page were
-  white. Poppler's local Japanese font substitution means final Japanese-glyph
-  fidelity and signed TestFlight breadth remain manual follow-up evidence.
+  white. The local Developer Japanese-glyph check is recorded above; signed
+  TestFlight breadth remains manual follow-up evidence.
   Focused export-hook tests passed (**16/16**); `npm run test` passed (**159/159
   files / 1377 tests**); `npm run typecheck`, `npm run build:macos-lanes`, Rust
   format, full `cargo test` (**338 passed / 2 explicit host-integration ignored /
