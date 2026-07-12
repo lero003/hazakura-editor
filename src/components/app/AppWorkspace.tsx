@@ -617,7 +617,11 @@ export function AppWorkspace({
             workspaceRootPath={workspaceRootPath}
           />
           {!activeTab && visibleReferenceCompare ? (
-            <p className="reference-empty-editor-hint" role="status">
+            <p
+              aria-live="polite"
+              className="reference-empty-editor-hint"
+              role="status"
+            >
               {referenceCopy.emptyEditorHint}
             </p>
           ) : null}

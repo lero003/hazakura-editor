@@ -59,7 +59,9 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   Japanese and kana names in the macOS accessibility tree. Inline file/folder
   rename inputs use the active English / Japanese / kana label rather than an
   English-only accessible name; packaged VoiceOver smoke remains required. The
-  installed public `1.7.0` build `85` also passed `⌘⇧P` Command Palette,
+  Reference Compare empty-editor hint now carries an explicit polite live-region
+  contract, with a focused AppWorkspace regression.
+  The installed public `1.7.0` build `85` also passed `⌘⇧P` Command Palette,
   `⌘⇧F` Global Search, and native 表示-menu traversal on 2026-07-13; this is
   keyboard/menu evidence, not spoken VoiceOver or signed TestFlight evidence.
   The latest source-built App Store sandbox preview passed deep-signature,

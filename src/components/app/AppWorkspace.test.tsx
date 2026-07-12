@@ -1154,6 +1154,37 @@ describe("AppWorkspace reference compare layout", () => {
     );
   });
 
+  it("announces the empty editor hint as a polite status", () => {
+    const { container } = renderWorkspace({
+      activeContents: "",
+      activeTab: null,
+      hasWorkspaceSelection: true,
+      referenceCompare: {
+        externalChangePending: false,
+        followMode: "off",
+        linkedEditorSessionId: null,
+        origin: "manual",
+        reference: {
+          contents: "# style guide",
+          encoding: "utf-8",
+          kind: "text",
+          name: "guide.md",
+          path: "/workspace/guide.md",
+        },
+        sourceFingerprint: null,
+      },
+      referencePaneVisible: true,
+      tabs: [],
+      workspaceRootPath: "/workspace",
+    });
+
+    const hint = container.querySelector(
+      ".reference-empty-editor-hint[role='status']",
+    );
+    expect(hint?.textContent).toContain("Open Markdown to edit");
+    expect(hint?.getAttribute("aria-live")).toBe("polite");
+  });
+
   it("places the editor before the right-hand reference pane (preview-like)", () => {
     const tab = makeTab({
       contents: "# draft",

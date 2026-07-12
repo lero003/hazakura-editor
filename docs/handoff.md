@@ -108,6 +108,9 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    dialog/combobox names, placeholders, and empty states now follow English /
    Japanese / kana. A latest-HEAD Developer bundle AX pass confirmed the
    Japanese and kana names; actual VoiceOver speech remains manual.
+   The Reference Compare empty-editor hint now has an explicit polite live
+   region and an AppWorkspace regression test, while packaged spoken VoiceOver
+   remains a separate proof boundary.
    L Mode Reference hide/restore now has an AppWorkspace regression test, and
    T-3 close/replace wiring now has an AppWorkspace regression test that keeps
   the center editor change path untouched. Developer packaged proof for these

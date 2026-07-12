@@ -702,6 +702,10 @@ recovered state separately where relevant.
   deep signatures were valid; app sandbox, user-selected read/write,
   app-scoped bookmark, and helper sandbox + inherit entitlements were verified.
   Picker interaction and signed TestFlight behavior remain separate evidence.
+- Source a11y follow-up on 2026-07-13 added an explicit `aria-live="polite"`
+  contract to the Reference Compare empty-editor hint. Focused AppWorkspace
+  coverage and the full frontend suite passed; this improves the source
+  announcement path but does not claim spoken VoiceOver or signed TestFlight.
 - S-3 used the deterministic `smoke:fixtures:v1.8-reference` output in the
   separate-ID Developer app. The 5,000-line Japanese reference wrapped in the
   narrow pane, scrolled through `END-MARKER-5000`, and allowed marker selection.
