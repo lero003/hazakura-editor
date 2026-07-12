@@ -700,8 +700,11 @@ recovered state separately where relevant.
   localized Japanese and kana dialog/combobox names for Command Palette and
   Global Search, plus localized Japanese pane toggle and splitter labels.
   Focus/active-result semantics and Escape dismissal remained intact. This was
-  an AX-tree inspection, not actual VoiceOver speech; repeat the spoken flow and
-  native-menu traversal on signed TestFlight before a v1.8 candidate.
+  an AX-tree inspection, not actual VoiceOver speech. On 2026-07-13, the
+  installed public `1.7.0` build `85` repeated `⌘⇧P` / `⌘⇧F` and native
+  `表示`-menu traversal successfully; this is public-build keyboard/menu
+  evidence only. Repeat the spoken flow and signed TestFlight breadth before
+  a v1.8 candidate.
 - The latest-HEAD separate-ID Developer bundle displayed the shared
   source/image/destination preflight summary in both PDF and EPUB settings.
   A follow-up export included unsaved markers in both generated formats without

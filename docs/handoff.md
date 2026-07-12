@@ -249,6 +249,14 @@ Read it only for historical context.
   full `cargo test` (**338 passed / 2 explicit host-integration ignored / 0
   failed**), and `git diff --check` passed. This is keyboard + AX-tree evidence,
   not a claim that actual VoiceOver speech or signed TestFlight breadth passed.
+- 2026-07-13 v1.8 public-build keyboard/menu follow-up: the installed
+  `/Applications/Hazakura Editor.app` reported `1.7.0` build `85` with Apple
+  Mac OS Application Signing. `⌘⇧P` opened the Command Palette, `⌘⇧F` opened
+  Global Search with the Japanese placeholder and no-workspace hint, and the
+  native `表示` menu exposed localized L Mode, wrap, invisible characters,
+  Spellcheck, theme, and fullscreen items. This closes the native-menu
+  traversal evidence gap for the public build only; spoken VoiceOver and
+  signed TestFlight breadth remain open.
 - 2026-07-12 v1.8 P2 EPUB/PDF preflight: both settings dialogs now summarize
   unsaved-source inclusion, image-warning handling, and the next Save-dialog
   destination step in English / Japanese / kana. PDF success retains the final
