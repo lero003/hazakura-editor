@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-07-12 (v1.7 published; v1.8 Daily Trust active)
+Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
 
 ## Current State
 
@@ -110,8 +110,9 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    Japanese and kana names; actual VoiceOver speech remains manual.
    L Mode Reference hide/restore now has an AppWorkspace regression test and
    Developer packaged proof. S-3 long-reference wrap/scroll/selection and both
-   budget rejection paths have Developer packaged proof. Still open: Reference
-   copy verification, signed TestFlight breadth, packaged/manual a11y matrix,
+   budget rejection paths have Developer packaged proof; full-reference copy was
+   verified by paste-back of the `END-MARKER-5000` tail into a disposable editor
+   buffer on 2026-07-13. Still open: signed TestFlight breadth, packaged/manual a11y matrix,
    Japanese-font export inspection, and measured theme/shader polish. P2 now
    has a shared pre-export summary in both dialogs plus local Developer
    PDF/EPUB output proof; Spellcheck Preferences parity and reduced-motion
@@ -252,6 +253,12 @@ Read it only for historical context.
   `cargo test` (**338 passed / 2 explicit host-integration ignored / 0
   failed**), and `git diff --check` passed. Signed TestFlight breadth remains
   open.
+- 2026-07-13 v1.8 S-3 packaged copy proof: the separate-ID Developer bundle
+  selected and copied the complete 5,000-line Japanese reference, pasted it into
+  a disposable editor buffer, and exposed the `END-MARKER-5000` tail. The
+  fixture was restored to its original SHA-256 and the Developer app was quit;
+  clipboard contents were not read directly. Signed TestFlight and actual
+  VoiceOver speech remain unverified.
 - 2026-07-12 v1.8 P2 Developer output proof: unsaved ASCII markers were exported
   to PDF and EPUB while the source SHA-256 remained unchanged. The EPUB archive
   contained `mimetype`, container, OPF, navigation, stylesheet, and two spine

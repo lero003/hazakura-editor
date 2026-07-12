@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-07-11 (v1.7 recovery cleanup + text-reference budget)
+Last reviewed: 2026-07-13 (v1.8 long-reference copy proof)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -691,8 +691,10 @@ recovered state separately where relevant.
   narrow pane, scrolled through `END-MARKER-5000`, and allowed marker selection.
   The 1,500,001-character and 50,001-line fixtures both failed with the localized
   English/Japanese limit reason while `EDITOR-BUFFER-MARKER` and the original
-  reference remained unchanged. Clipboard contents were not read; repeat copy
-  verification and signed TestFlight breadth before a v1.8 candidate.
+  reference remained unchanged. A full-reference copy was then pasted into a
+  disposable editor buffer and the `END-MARKER-5000` tail was confirmed; the
+  fixture was restored to its original SHA-256 without reading clipboard contents
+  directly. Repeat this breadth on signed TestFlight before a v1.8 candidate.
 - The latest-HEAD separate-ID Developer bundle opened Quick Open, Command
   Palette, and Global Search by keyboard. Its macOS accessibility tree exposed
   localized Japanese and kana dialog/combobox names for Command Palette and

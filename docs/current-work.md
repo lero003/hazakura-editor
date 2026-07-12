@@ -3,7 +3,7 @@
 Status: Operational
 Scope: v1.8 Daily Trust Completion (published package remains `1.7.0`)
 Authority: High
-Last reviewed: 2026-07-12 (v1.7.0 published; v1.8 active)
+Last reviewed: 2026-07-13 (v1.7.0 published; v1.8 active)
 
 ## Purpose
 
@@ -102,7 +102,7 @@ each slice should remain independently verifiable.
 | **Partial / source** | **Processing budgets (S-1)** | Pathless budgets + visible storage failure; Diff/export caps remain. Global Search now localizes missing-workspace and runtime failure status, preserves diagnostic detail, and does not misreport either failure as zero matches. | Keep further Diff/search/raster failure UX observation-driven; packaged injected-failure interaction is not yet claimed. |
 | **Done / source** | **Deterministic Rust suite (S-2)** | Host-only bookmark / Trash checks are explicit ignored integration tests; Trash cleanup uses an injected unit fixture; process polling tolerates parallel suite load. | Keep the ignored macOS integration checks available for a suitable interactive host. |
 | **Developer packaged AX smoke partial** | **Keyboard / VoiceOver semantics** | Quick Open, Command Palette, and Global Search expose modal dialog + combobox/listbox + active-option relationships; Global Search announces status changes. Command Palette and Global Search names/placeholders/empty copy now follow English / Japanese / kana. | latest-HEAD Developer AX tree passed localized search-surface names plus pane toggle/splitter labels on 2026-07-12. Keep actual VoiceOver speech, native menus, and signed TestFlight breadth as follow-up. |
-| **Developer packaged smoke passed / copy follow-up** | **Long reference + rename a11y (S-3)** | Body scroller + wrap-safe full rendering; text reference専用の150万文字 / 5万行 budget; deterministic `smoke:fixtures:v1.8-reference`; rename inputs use the active English / Japanese / kana label. | 5,000-line narrow-pane wrap/scroll/selection and both over-budget rejection paths passed in a separate-ID Developer app on 2026-07-12. Clipboard contents were not read; keep copy and signed TestFlight breadth as follow-up. |
+| **Developer packaged smoke passed / signed follow-up** | **Long reference + rename a11y (S-3)** | Body scroller + wrap-safe full rendering; text reference専用の150万文字 / 5万行 budget; deterministic `smoke:fixtures:v1.8-reference`; rename inputs use the active English / Japanese / kana label. | 5,000-line narrow-pane wrap/scroll/selection, full-reference copy via paste-back marker, and both over-budget rejection paths passed in a separate-ID Developer app on 2026-07-13. Keep signed TestFlight breadth and spoken VoiceOver follow-up. |
 | **Partial / source** | **Purpose-led discovery (S-4)** | Start Panel write / read / verify pitch. | Contextual first-use tooltips remain light polish. |
 | **Developer packaged output smoke passed / partial** | **Export/theme polish (P2)** | EPUB/PDF dialogs summarize unsaved-source inclusion, image-warning policy, and the next Save-dialog destination step; PDF final success preserves image-warning count. A Developer export proved EPUB structure/warnings and nine-page A4 PDF output without changing the source file; an explicit white PDF background now prevents transparent trailing-page regions. Spellcheck already lives in Preferences and reduced-motion source guards are present. | Keep signed TestFlight breadth, Japanese-font visual inspection, and measured shader/theme work as follow-up. |
 
