@@ -733,6 +733,13 @@ recovered state separately where relevant.
   `AppWorkspace.test.tsx` close/replace wiring checks passed (**47 tests** in
   the combined focused pass).
   Additional matrix cases and signed TestFlight interaction remain open.
+- T-3 packaged Reference replacement follow-up on 2026-07-13 closed and
+  reopened `reference-image.png`, then replaced it with the nine-page
+  `/private/tmp/hazakura-v1.8-export-proof-20260712-fixed.pdf`. Page 2/9,
+  fit-page, and 150% controls all worked in the separate-ID Developer bundle;
+  the center `EDITOR-BUFFER-MARKER` remained intact. This extends local
+  image/PDF matrix evidence only; source-deletion, narrow-window, signed
+  TestFlight, and spoken VoiceOver checks remain open.
 - P2 theme budget smoke on 2026-07-13 rebuilt the Developer bundle after
   connecting Edohigan's resident WebGL overlay to the shared intensity-aware
   DPR/frame budget. CRT, Edohigan, and Shinkai menu switches were exercised;

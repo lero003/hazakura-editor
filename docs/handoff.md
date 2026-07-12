@@ -281,6 +281,12 @@ Read it only for historical context.
   now pins the image alt name/data URL, confirms no editable text surface is
   rendered for image references, and checks the PDF raster file-and-page
   accessible name.
+- 2026-07-13 v1.8 T-3 replacement follow-up: the separate-ID Developer bundle
+  closed and reopened `reference-image.png`, then replaced it with the
+  nine-page `/private/tmp/hazakura-v1.8-export-proof-20260712-fixed.pdf`.
+  Page 2/9, fit-page, and 150% controls worked while the center marker stayed
+  intact. Source-deletion, narrow-window, signed TestFlight, and spoken
+  VoiceOver checks remain open.
 - 2026-07-12 v1.8 P2 EPUB/PDF preflight: both settings dialogs now summarize
   unsaved-source inclusion, image-warning handling, and the next Save-dialog
   destination step in English / Japanese / kana. PDF success retains the final
