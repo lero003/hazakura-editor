@@ -711,6 +711,11 @@ recovered state separately where relevant.
   Poppler substituted a local Japanese font during this proof, so repeat
   Japanese-glyph visual inspection and both exports on a signed TestFlight
   candidate.
+- S-1 source-level failure/limit review on 2026-07-13 passed the Global Search
+  accessibility/error checks (**3 frontend files / 16 tests**), Rust workspace
+  search cap/error checks (**14 tests**), and PDF export bounded-failure checks
+  (**7 tests**). No source defect was reproduced; packaged injected-failure
+  interaction is still not claimed.
 
 ### Reporting
 

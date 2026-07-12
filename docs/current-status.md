@@ -63,6 +63,12 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   explicit `参照` item beside Preview / e-book / Outline / Diff. Switching pane
   content retains the loaded reference; the in-pane close action remains the
   explicit end of the reference session.
+- **v1.8 S-1 bounded failure UX is source-level verified.** Global Search
+  preserves diagnostic details while suppressing the false zero-match state;
+  workspace search caps per-file matches, total matches, visited files, and
+  line preview length with explicit truncation; Diff and PDF raster paths keep
+  bounded failure messages and retry/stop behavior. Focused source checks pass;
+  packaged injected-failure interaction remains unverified.
 - **v1.8 P2 export preflight and Developer output proof are complete locally.** EPUB
   and PDF settings now state whether current unsaved changes are included,
   explain that unavailable workspace images are reported as warnings, and say

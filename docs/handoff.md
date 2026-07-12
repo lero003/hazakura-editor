@@ -116,7 +116,10 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    Japanese-font export inspection, and measured theme/shader polish. P2 now
    has a shared pre-export summary in both dialogs plus local Developer
    PDF/EPUB output proof; Spellcheck Preferences parity and reduced-motion
-   source guards were already present.
+   source guards were already present. S-1 bounded failure UX is source-verified:
+   focused Global Search / Diff / PDF tests and Rust search/export tests passed
+   on 2026-07-13. Packaged injected-failure interaction remains an evidence gap,
+   not a source defect.
 4. Keep v1.6 closed unless a reproduced gap needs a hotfix. Historical quality
    notes: `docs/quality-inventory-v1.6.md`.
 5. Keep `@codemirror/view` at **6.43.2**. Do not bump, tag, upload, or publish
@@ -259,6 +262,10 @@ Read it only for historical context.
   fixture was restored to its original SHA-256 and the Developer app was quit;
   clipboard contents were not read directly. Signed TestFlight and actual
   VoiceOver speech remain unverified.
+- 2026-07-13 v1.8 S-1 failure/limit review: focused frontend checks passed (**3
+  files / 16 tests**); Rust workspace-search caps and PDF export failure/limit
+  checks passed (**14 + 7 tests**). No reproducible source defect was found;
+  packaged injected-failure interaction remains open.
 - 2026-07-12 v1.8 P2 Developer output proof: unsaved ASCII markers were exported
   to PDF and EPUB while the source SHA-256 remained unchanged. The EPUB archive
   contained `mimetype`, container, OPF, navigation, stylesheet, and two spine
