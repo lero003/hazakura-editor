@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, rmSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const packageJson = JSON.parse(
@@ -50,6 +51,10 @@ const macosDistributionProbeScript = readFileSync(
 );
 const macosSandboxPreviewSmokeScript = readFileSync(
   "scripts/smoke-macos-sandbox-preview.sh",
+  "utf8",
+);
+const textReferenceBudgetSource = readFileSync(
+  "src/features/referenceCompare/textReferenceBudget.ts",
   "utf8",
 );
 const releaseCandidateScript = readFileSync(
@@ -398,6 +403,48 @@ describe("macOS build scripts", () => {
     expect(macosWindowSmokeScript).toContain("CGWindowListCopyWindowInfo");
     expect(macosWindowSmokeScript).toContain("npm run build:macos-lanes");
     expect(macosWindowSmokeScript).toContain("kCGWindowIsOnscreen");
+  });
+
+  it("generates deterministic v1.8 text-reference budget fixtures", () => {
+    expect(packageJson.scripts["smoke:fixtures:v1.8-reference"]).toBe(
+      "node scripts/generate-v1.8-reference-smoke.mjs",
+    );
+    expect(textReferenceBudgetSource).toContain(
+      "MAX_TEXT_REFERENCE_CHARS = 1_500_000",
+    );
+    expect(textReferenceBudgetSource).toContain(
+      "MAX_TEXT_REFERENCE_LINES = 50_000",
+    );
+    const outputDirectory = join(
+      "src-tauri",
+      "target",
+      `v1.8-reference-smoke-test-${process.pid}`,
+    );
+
+    try {
+      const result = JSON.parse(
+        execFileSync(
+          process.execPath,
+          ["scripts/generate-v1.8-reference-smoke.mjs", outputDirectory],
+          { encoding: "utf8" },
+        ),
+      ) as {
+        files: Array<{ name: string; chars: number; lines: number }>;
+      };
+      const byName = new Map(result.files.map((file) => [file.name, file]));
+      const longReference = readFileSync(
+        join(outputDirectory, "reference-5000-lines.txt"),
+        "utf8",
+      );
+
+      expect(byName.get("reference-5000-lines.txt")?.lines).toBe(5_000);
+      expect(byName.get("reference-over-chars.txt")?.chars).toBe(1_500_001);
+      expect(byName.get("reference-over-lines.txt")?.lines).toBe(50_001);
+      expect(longReference).toContain("WRAP-SELECTION-MARKER-2500");
+      expect(longReference).toContain("END-MARKER-5000");
+    } finally {
+      rmSync(outputDirectory, { force: true, recursive: true });
+    }
   });
 
   it("keeps smoke/probe scripts on the current App Store preview bundle name", () => {

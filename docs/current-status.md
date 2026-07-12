@@ -35,9 +35,12 @@ Last reviewed: 2026-07-12 (v1.7 published; v1.8 Daily Trust active)
   50,000-line DOM budget. T-1 now also keeps a loaded Reference session while
   hiding its pane in L Mode, then restores the pane on return. A separate-ID
   Developer bundle passed Reference hide/restore and post-remount Undo on
-  2026-07-12. Signed TestFlight interaction, budget-boundary smoke, and full
-  a11y smoke remain v1.8 follow-up evidence rather than v1.7 publication
-  blockers.
+  2026-07-12. S-3 now has a deterministic fixture generator; a separate-ID
+  Developer bundle passed 5,000-line Japanese wrap/scroll/selection and both
+  1.5M-character / 50,000-line rejection paths while preserving the editor and
+  existing reference. Clipboard contents were not read, so copy plus signed
+  TestFlight interaction and full a11y smoke remain v1.8 follow-up evidence
+  rather than v1.7 publication blockers.
   Quick Open, Command Palette, and Global Search now expose dialog,
   combobox/listbox, active-option, and search-status semantics for keyboard and
   VoiceOver navigation. Inline file/folder rename inputs use the active

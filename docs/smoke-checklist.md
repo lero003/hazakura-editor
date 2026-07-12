@@ -624,7 +624,9 @@ recovered state separately where relevant.
     correct. Then open disposable fixtures just over 1.5M characters and just
     over 50,000 logical lines. Confirm both fail with the localized size reason,
     the editable buffer is unchanged, and an already-open reference is not
-    replaced.
+    replaced. Generate the deterministic disposable set with
+    `npm run smoke:fixtures:v1.8-reference`; it writes only to the OS temporary
+    directory unless an explicit output directory is supplied.
 24. **Search-surface keyboard / VoiceOver semantics**: open Quick Open,
     Command Palette, and Global Search. Confirm VoiceOver announces each as a
     modal search surface, reports the active result while Arrow Up / Down keeps
@@ -675,6 +677,13 @@ recovered state separately where relevant.
   restored the same read-only reference, and `Command-Z` removed only the edit
   made before the L Mode remount. This is local Developer evidence; repeat the
   Markdown/non-Markdown and signed TestFlight breadth before a v1.8 candidate.
+- S-3 used the deterministic `smoke:fixtures:v1.8-reference` output in the
+  separate-ID Developer app. The 5,000-line Japanese reference wrapped in the
+  narrow pane, scrolled through `END-MARKER-5000`, and allowed marker selection.
+  The 1,500,001-character and 50,001-line fixtures both failed with the localized
+  English/Japanese limit reason while `EDITOR-BUFFER-MARKER` and the original
+  reference remained unchanged. Clipboard contents were not read; repeat copy
+  verification and signed TestFlight breadth before a v1.8 candidate.
 
 ### Reporting
 

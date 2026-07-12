@@ -31,6 +31,7 @@
     "smoke:app-store-surface": "vitest run src/buildScripts.test.ts src/lib/distributionLane.test.ts src/hooks/commandPalette/useCommandPaletteController.test.ts src/hooks/agent/useAgentWorkbenchPreferences.test.ts src/components/agent/AgentWorkbenchPreferencesPane.test.tsx src/components/app/SettingsPreferencesPane.test.tsx src/components/app/AppTopChrome.test.tsx src/components/app/RightPaneToggleControls.test.tsx src/components/app/DocumentMetaBar.test.tsx src/hooks/review/useReviewDeskState.test.ts",
     "smoke:macos-window": "bash scripts/smoke-macos-window.sh",
     "smoke:macos-sandbox-preview": "bash scripts/smoke-macos-sandbox-preview.sh",
+    "smoke:fixtures:v1.8-reference": "node scripts/generate-v1.8-reference-smoke.mjs",
     "clean:generated": "node scripts/clean-generated-artifacts.mjs",
     "clean:generated:apply": "node scripts/clean-generated-artifacts.mjs --apply",
     "test": "vitest run",
