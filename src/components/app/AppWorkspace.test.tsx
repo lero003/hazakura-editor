@@ -19,6 +19,7 @@ import type {
 
 const editorMainPaneMock = vi.hoisted(() => ({
   props: null as null | {
+    activeContents?: string;
     editorViewState?: EditorViewState | null;
     onEditorViewStateChange?: (patch: EditorViewStatePatch) => void;
   },
@@ -1098,6 +1099,61 @@ describe("AppWorkspace workspace sidebar collapse", () => {
 });
 
 describe("AppWorkspace reference compare layout", () => {
+  it("keeps the editor buffer untouched when closing or replacing a reference", () => {
+    const tab = makeTab({
+      contents: "EDITOR-BUFFER-MARKER",
+      id: "/workspace/draft.md",
+      name: "draft.md",
+      path: "/workspace/draft.md",
+    });
+    const closeReferenceCompare = vi.fn();
+    const handleEditorChange = vi.fn();
+    const openReferenceFile = vi.fn();
+
+    renderWorkspace({
+      activeContents: tab.contents,
+      activeTab: tab,
+      closeReferenceCompare,
+      handleEditorChange,
+      hasWorkspaceSelection: true,
+      openReferenceFile,
+      referenceCompare: {
+        externalChangePending: false,
+        followMode: "off",
+        linkedEditorSessionId: null,
+        origin: "manual",
+        reference: {
+          contents: "# style guide",
+          encoding: "utf-8",
+          kind: "text",
+          name: "guide.md",
+          path: "/workspace/guide.md",
+        },
+        sourceFingerprint: null,
+      },
+      referencePaneVisible: true,
+      tabs: [tab],
+      workspaceRootPath: "/workspace",
+    });
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Replace reference…" }),
+    );
+    expect(openReferenceFile).toHaveBeenCalledTimes(1);
+    expect(closeReferenceCompare).not.toHaveBeenCalled();
+    expect(handleEditorChange).not.toHaveBeenCalled();
+    expect(editorMainPaneMock.props?.activeContents).toBe(
+      "EDITOR-BUFFER-MARKER",
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Close reference" }));
+    expect(closeReferenceCompare).toHaveBeenCalledTimes(1);
+    expect(handleEditorChange).not.toHaveBeenCalled();
+    expect(editorMainPaneMock.props?.activeContents).toBe(
+      "EDITOR-BUFFER-MARKER",
+    );
+  });
+
   it("places the editor before the right-hand reference pane (preview-like)", () => {
     const tab = makeTab({
       contents: "# draft",

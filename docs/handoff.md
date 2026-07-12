@@ -108,8 +108,11 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    dialog/combobox names, placeholders, and empty states now follow English /
    Japanese / kana. A latest-HEAD Developer bundle AX pass confirmed the
    Japanese and kana names; actual VoiceOver speech remains manual.
-   L Mode Reference hide/restore now has an AppWorkspace regression test and
-   Developer packaged proof. S-3 long-reference wrap/scroll/selection and both
+   L Mode Reference hide/restore now has an AppWorkspace regression test, and
+   T-3 close/replace wiring now has an AppWorkspace regression test that keeps
+   the center editor change path untouched. Developer packaged proof for these
+   source contracts remains separate from signed TestFlight evidence. S-3
+   long-reference wrap/scroll/selection and both
    budget rejection paths have Developer packaged proof; full-reference copy was
    verified by paste-back of the `END-MARKER-5000` tail into a disposable editor
    buffer on 2026-07-13. Still open: signed TestFlight breadth, packaged/manual a11y matrix,

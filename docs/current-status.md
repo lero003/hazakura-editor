@@ -79,6 +79,8 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   image alt name, data URL, read-only copy, and absence of an editable text
   surface. `ReferencePdfPane` now also asserts a file-and-page accessible name
   for rendered PDF rasters, alongside the image-reference alt/read-only test.
+  `AppWorkspace` also pins that closing or replacing the visible reference
+  leaves the center editor buffer and its change callback untouched.
 - **v1.8 S-1 bounded failure UX is source-level verified.** Global Search
   preserves diagnostic details while suppressing the false zero-match state;
   workspace search caps per-file matches, total matches, visited files, and

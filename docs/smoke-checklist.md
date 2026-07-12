@@ -729,8 +729,9 @@ recovered state separately where relevant.
   menu. The right Reference pane showed read-only PDF page controls and the
   image while the center `EDITOR-BUFFER-MARKER` remained intact. This proves
   local PDF/image handling only; `ReferenceTextPane.test.tsx`,
-  `ReferencePdfPane.test.tsx`, and `useReferenceCompareActions.test.ts`
-  focused checks passed (**26 tests**).
+  `ReferencePdfPane.test.tsx`, `useReferenceCompareActions.test.ts`, and
+  `AppWorkspace.test.tsx` close/replace wiring checks passed (**47 tests** in
+  the combined focused pass).
   Additional matrix cases and signed TestFlight interaction remain open.
 - P2 theme budget smoke on 2026-07-13 rebuilt the Developer bundle after
   connecting Edohigan's resident WebGL overlay to the shared intensity-aware
