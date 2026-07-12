@@ -669,6 +669,12 @@ recovered state separately where relevant.
   opened a new unsaved tab and preserved `RECOVERY-MARKER-2026-07-12`. This
   proves the local Developer/ad-hoc interaction path only; signed TestFlight
   picker, pathless recovery, and VoiceOver interaction remain follow-up proof.
+- T-1 L Mode continuity was exercised in the rebuilt separate-ID Developer app.
+  With `reference.txt` loaded and a fresh unsaved edit in `manuscript.md`, L Mode
+  hid the Reference pane without closing its session. Returning to edit mode
+  restored the same read-only reference, and `Command-Z` removed only the edit
+  made before the L Mode remount. This is local Developer evidence; repeat the
+  Markdown/non-Markdown and signed TestFlight breadth before a v1.8 candidate.
 
 ### Reporting
 

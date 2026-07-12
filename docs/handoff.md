@@ -83,11 +83,12 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    text scrolls on `.reference-pane-body` with wrap-safe full rendering
    (variable-height windowing is deferred); pathless
    budgets separate from path drafts + storage failure status; L Mode is
-   Markdown-only. Local Developer packaged T-2 forced-termination recovery has
-   passed; do not claim signed TestFlight T-2 or S-3 fully done without its
-   packaged recovery / long-reference smoke. Follow-up self-review fixes now
-   propagate bulk draft
-   removal results and surface cleanup failure for Save / Save As / restore /
+   Markdown-only and now hides a loaded Reference pane without clearing its
+   session. Local Developer packaged T-1 continuity and T-2 forced-termination
+   recovery have passed. Signed TestFlight T-1/T-2 breadth and S-3
+   long-reference smoke remain open. Follow-up self-review fixes now propagate
+   bulk draft removal results and surface cleanup failure for Save / Save As /
+   restore /
    discard / tab close / window close without blocking editing or an explicit
    close. Text Reference keeps wrap-safe full rendering only inside a separate
    1.5M-character / 50,000-line DOM budget; over-budget input fails visibly
@@ -100,7 +101,9 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    Quick Open, Command Palette, and Global Search now expose modal dialog,
    combobox/listbox, active-option, and live search-status semantics. Inline
    rename accessible names now follow English / Japanese / kana UI copy.
-   Still open: packaged/manual a11y matrix and P2 export/theme polish.
+   L Mode Reference hide/restore now has an AppWorkspace regression test and
+   Developer packaged proof. Still open: signed TestFlight breadth,
+   packaged/manual a11y matrix, and P2 export/theme polish.
 4. Keep v1.6 closed unless a reproduced gap needs a hotfix. Historical quality
    notes: `docs/quality-inventory-v1.6.md`.
 5. Keep `@codemirror/view` at **6.43.2**. Do not bump, tag, upload, or publish
@@ -188,6 +191,15 @@ Read it only for historical context.
   offered `Restore draft`, restored it as a new `untitled.md` unsaved tab, and
   preserved `RECOVERY-MARKER-2026-07-12`. This is Developer/ad-hoc local evidence,
   not App Store sandbox or signed TestFlight interaction proof.
+- 2026-07-12 v1.8 T-1 packaged continuity: the separate-ID Developer app first
+  reproduced a loaded Reference pane remaining visible in L Mode. The fix keeps
+  the Reference session but omits its pane while L Mode owns the writing surface.
+  After rebuilding, L Mode hid `reference.txt`, edit mode restored the same
+  read-only reference, and `Command-Z` removed only the edit made before the
+  L Mode remount. Focused tests passed (**21/21**); the full frontend suite
+  passed (**159/159 files / 1370 tests**) and Rust passed (**338 passed / 2
+  explicit host-integration ignored / 0 failed**). Signed TestFlight breadth
+  remains open.
 - 2026-07-12 v1.8 localized rename VoiceOver name: focused WorkspaceTree
   tests passed (**17/17**); `npm run test` passed (**159/159 files / 1369
   tests**); `npm run typecheck`, `npm run build:vite`, `npm run build`, Rust

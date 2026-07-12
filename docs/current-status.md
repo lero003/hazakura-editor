@@ -32,9 +32,12 @@ Last reviewed: 2026-07-12 (v1.7 published; v1.8 Daily Trust active)
   recovery / S-3 wrap-safe long-reference rendering+rename a11y / S-4 Start Panel** source landed
   2026-07-11. Recovery cleanup failures are now surfaced across Save / Save As /
   restore / discard / close, and text references have a separate 1.5M-character /
-  50,000-line DOM budget. Packaged Reference Compare proof (T-3),
-  forced-termination pathless recovery, budget-boundary smoke, and full a11y
-  smoke remain v1.8 follow-up evidence rather than v1.7 publication blockers.
+  50,000-line DOM budget. T-1 now also keeps a loaded Reference session while
+  hiding its pane in L Mode, then restores the pane on return. A separate-ID
+  Developer bundle passed Reference hide/restore and post-remount Undo on
+  2026-07-12. Signed TestFlight interaction, budget-boundary smoke, and full
+  a11y smoke remain v1.8 follow-up evidence rather than v1.7 publication
+  blockers.
   Quick Open, Command Palette, and Global Search now expose dialog,
   combobox/listbox, active-option, and search-status semantics for keyboard and
   VoiceOver navigation. Inline file/folder rename inputs use the active
@@ -42,7 +45,9 @@ Last reviewed: 2026-07-12 (v1.7 published; v1.8 Daily Trust active)
   packaged VoiceOver smoke remains required.
   The latest source-built App Store sandbox preview passed deep-signature,
   app-sandbox, user-selected read/write, app-scoped bookmark, and inherited
-  helper entitlement checks on 2026-07-12. Picker interaction was not claimed.
+  helper entitlement checks on 2026-07-12. That App Store preview pass did not
+  claim picker interaction; separate-ID Developer picker evidence is recorded
+  in `docs/smoke-checklist.md`.
   No per-character confidence claims.
   The top chrome now separates L Mode from right-pane selection and exposes an
   explicit `参照` item beside Preview / e-book / Outline / Diff. Switching pane

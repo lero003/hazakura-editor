@@ -1175,4 +1175,53 @@ describe("AppWorkspace reference compare layout", () => {
       "reference-compare",
     );
   });
+
+  it("hides a loaded reference in L Mode and restores it on return", () => {
+    const tab = makeTab({ contents: "# draft" });
+    const referenceCompare = {
+      externalChangePending: false,
+      followMode: "off" as const,
+      linkedEditorSessionId: null,
+      origin: "manual" as const,
+      reference: {
+        contents: "# style guide",
+        encoding: "utf-8" as const,
+        kind: "text" as const,
+        name: "guide.md",
+        path: "/workspace/guide.md",
+      },
+      sourceFingerprint: null,
+    };
+    const { container, rerender } = renderWorkspace({
+      activeContents: tab.contents,
+      activeTab: tab,
+      editorSettings: { ...editorSettings, lModeEnabled: true },
+      hasWorkspaceSelection: true,
+      referenceCompare,
+      referencePaneVisible: true,
+      tabs: [tab],
+      workspaceRootPath: "/workspace",
+    });
+
+    expect(container.querySelector(".reference-compare-pane")).toBeNull();
+    expect(container.querySelector(".editor-preview-grid")?.className).not.toContain(
+      "reference-compare",
+    );
+
+    rerenderWorkspace(rerender, {
+      activeContents: tab.contents,
+      activeTab: tab,
+      editorSettings: { ...editorSettings, lModeEnabled: false },
+      hasWorkspaceSelection: true,
+      referenceCompare,
+      referencePaneVisible: true,
+      tabs: [tab],
+      workspaceRootPath: "/workspace",
+    });
+
+    expect(container.querySelector(".reference-compare-pane")).not.toBeNull();
+    expect(container.querySelector(".editor-preview-grid")?.className).toContain(
+      "reference-compare",
+    );
+  });
 });

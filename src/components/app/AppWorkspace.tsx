@@ -471,7 +471,12 @@ export function AppWorkspace({
     [tabs, workspaceRootPath],
   );
 
-  const visibleReferenceCompare = referencePaneVisible ? referenceCompare : null;
+  // T-1: L Mode owns the full writing surface. Keep the loaded reference
+  // session in state, but do not render its pane until normal edit mode returns.
+  const visibleReferenceCompare =
+    referencePaneVisible && !editorSettings.lModeEnabled
+      ? referenceCompare
+      : null;
 
   return (
     <section
