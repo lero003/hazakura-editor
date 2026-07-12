@@ -179,6 +179,7 @@ export function useDocumentExport({
     --pdf-column-gap: ${pdfPoint(pdfLayout.columnGapPoints)}px;
   }
   html {
+    background: #ffffff;
     min-height: var(--pdf-page-height);
     /* Grow horizontally with cover + multicol columns for createPDF. */
     min-width: max-content;
@@ -194,7 +195,17 @@ export function useDocumentExport({
     min-height: var(--pdf-page-height);
     height: var(--pdf-page-height);
     padding: 0;
+    position: relative;
     width: max-content;
+  }
+  .pdf-export-background {
+    background: #ffffff;
+    height: 100%;
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+    width: 100%;
+    z-index: 0;
   }
   /* Dedicated first A4 page for leading cover image (outside multicol). */
   .pdf-export-cover-page {
@@ -207,7 +218,9 @@ export function useDocumentExport({
     height: var(--pdf-page-height);
     margin: 0;
     padding: var(--pdf-margin-block) var(--pdf-margin-inline);
+    position: relative;
     width: var(--pdf-page-width);
+    z-index: 1;
   }
   .pdf-export-cover-page p {
     margin: 0;
@@ -252,7 +265,9 @@ export function useDocumentExport({
     max-width: none;
     overflow: visible;
     padding: 0 0 2.25em;
+    position: relative;
     width: var(--pdf-content-width);
+    z-index: 1;
   }
   .markdown-preview .pdf-export-tail-guard {
     display: block;
@@ -399,6 +414,7 @@ export function useDocumentExport({
 </style>
 </head>
 <body>
+<div class="pdf-export-background" aria-hidden="true"></div>
 ${
   hasCover
     ? `<div class="pdf-export-cover-page">${coverHtml}</div>`

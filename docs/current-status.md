@@ -61,14 +61,18 @@ Last reviewed: 2026-07-12 (v1.7 published; v1.8 Daily Trust active)
   explicit `参照` item beside Preview / e-book / Outline / Diff. Switching pane
   content retains the loaded reference; the in-pane close action remains the
   explicit end of the reference session.
-- **v1.8 P2 export preflight is partial/source + Developer-dialog proven.** EPUB
+- **v1.8 P2 export preflight and Developer output proof are complete locally.** EPUB
   and PDF settings now state whether current unsaved changes are included,
   explain that unavailable workspace images are reported as warnings, and say
   that the concrete `.epub` / `.pdf` destination is selected in the next Save
   dialog. PDF export no longer overwrites an image-warning success status with
-  a generic success message. The latest separate-ID Developer bundle displayed
-  both summaries and cancelled without opening Save or writing output. Actual
-  output inspection and signed TestFlight breadth remain open.
+  a generic success message. A separate-ID Developer bundle exported unsaved
+  content to both formats without changing the source file: the EPUB archive
+  retained Japanese metadata, spine order, and the unavailable-image warning;
+  the PDF rendered as nine A4 pages. That inspection exposed a transparent
+  trailing-page background, now fixed by an explicit white export layer and
+  covered by regression assertions. Signed TestFlight breadth and final
+  Japanese-font visual inspection remain open.
 - **v1.5 (`1.5.0`) is closed and was released before 江戸彼岸 (edohigan).**
   v1.5 covered Spellcheck settings, Reading Focus TOC density, CRT/Shinkai
   lineage polish, dead-code, deps hygiene, traffic-light, L Mode remount.

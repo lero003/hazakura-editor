@@ -319,6 +319,13 @@ describe("useDocumentExport", () => {
     expect(exportedPdfHtml).toContain("--pdf-content-width: 470.276px;");
     // wide margins minus PDF_CONTENT_BOTTOM_SAFETY_POINTS (148)
     expect(exportedPdfHtml).toContain("--pdf-content-height: 552.268px;");
+    expect(exportedPdfHtml).toContain(`html {
+    background: #ffffff;`);
+    expect(exportedPdfHtml).toContain(
+      '<div class="pdf-export-background" aria-hidden="true"></div>',
+    );
+    expect(exportedPdfHtml).toContain(`.pdf-export-background {
+    background: #ffffff;`);
     expect(exportedPdfHtml).toContain("box-sizing: border-box;");
     expect(exportedPdfHtml).toContain("pdf-export-tail-guard");
     // Fixed px max-height for in-body images (cover page uses its own rules).

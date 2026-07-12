@@ -702,9 +702,13 @@ recovered state separately where relevant.
   native-menu traversal on signed TestFlight before a v1.8 candidate.
 - The latest-HEAD separate-ID Developer bundle displayed the shared
   source/image/destination preflight summary in both PDF and EPUB settings.
-  Both dialogs were cancelled before Save; this proves dialog layout and copy,
-  not generated output. Repeat actual PDF/EPUB creation and inspection on a
-  signed TestFlight candidate.
+  A follow-up export included unsaved markers in both generated formats without
+  changing the source file. The EPUB archive retained Japanese metadata, two
+  ordered content documents, and the unavailable-image replacement. The PDF
+  background fix rendered nine A4 pages with white sampled edges on every page.
+  Poppler substituted a local Japanese font during this proof, so repeat
+  Japanese-glyph visual inspection and both exports on a signed TestFlight
+  candidate.
 
 ### Reporting
 

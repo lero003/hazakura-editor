@@ -112,9 +112,10 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    Developer packaged proof. S-3 long-reference wrap/scroll/selection and both
    budget rejection paths have Developer packaged proof. Still open: Reference
    copy verification, signed TestFlight breadth, packaged/manual a11y matrix,
-   actual EPUB/PDF output inspection, and measured theme/shader polish. P2 now
-   has a shared pre-export summary in both dialogs; Spellcheck Preferences
-   parity and reduced-motion source guards were already present.
+   Japanese-font export inspection, and measured theme/shader polish. P2 now
+   has a shared pre-export summary in both dialogs plus local Developer
+   PDF/EPUB output proof; Spellcheck Preferences parity and reduced-motion
+   source guards were already present.
 4. Keep v1.6 closed unless a reproduced gap needs a hotfix. Historical quality
    notes: `docs/quality-inventory-v1.6.md`.
 5. Keep `@codemirror/view` at **6.43.2**. Do not bump, tag, upload, or publish
@@ -249,8 +250,21 @@ Read it only for historical context.
   written. Focused tests passed (**22/22**); `npm run test` passed (**159/159
   files / 1377 tests**); `npm run build:macos-lanes`, Rust format, full
   `cargo test` (**338 passed / 2 explicit host-integration ignored / 0
-  failed**), and `git diff --check` passed. Actual output inspection and signed
-  TestFlight breadth remain open.
+  failed**), and `git diff --check` passed. Signed TestFlight breadth remains
+  open.
+- 2026-07-12 v1.8 P2 Developer output proof: unsaved ASCII markers were exported
+  to PDF and EPUB while the source SHA-256 remained unchanged. The EPUB archive
+  contained `mimetype`, container, OPF, navigation, stylesheet, and two spine
+  documents; Japanese metadata and the unavailable-image replacement were
+  present. The first PDF exposed a black rendered tail caused by transparent
+  page background. An explicit white background layer fixed it; the replacement
+  rendered as nine A4 pages, and all five sampled edge pixels on every page were
+  white. Poppler's local Japanese font substitution means final Japanese-glyph
+  fidelity and signed TestFlight breadth remain manual follow-up evidence.
+  Focused export-hook tests passed (**16/16**); `npm run test` passed (**159/159
+  files / 1377 tests**); `npm run typecheck`, `npm run build:macos-lanes`, Rust
+  format, full `cargo test` (**338 passed / 2 explicit host-integration ignored /
+  0 failed**), and `git diff --check` passed.
 - 2026-07-12 v1.8 localized rename VoiceOver name: focused WorkspaceTree
   tests passed (**17/17**); `npm run test` passed (**159/159 files / 1369
   tests**); `npm run typecheck`, `npm run build:vite`, `npm run build`, Rust
