@@ -690,6 +690,11 @@ recovered state separately where relevant.
   serially on current HEAD. Each run passed **338 tests / 2 explicit
   host-integration ignored / 0 failed**; this does not replace the interactive
   bookmark/Trash host checks.
+- S-1 packaged missing-workspace smoke on 2026-07-13 used a fresh isolated-ID
+  Developer bundle with no restored workspace. `⌘⇧F` opened Global Search and
+  exposed the `Find in files…` combobox plus `Open a workspace to search its
+  files`, without a false zero-match message. Injected runtime-failure
+  interaction is still unverified.
 - S-3 used the deterministic `smoke:fixtures:v1.8-reference` output in the
   separate-ID Developer app. The 5,000-line Japanese reference wrapped in the
   narrow pane, scrolled through `END-MARKER-5000`, and allowed marker selection.

@@ -275,6 +275,10 @@ Read it only for historical context.
   serial `cargo test --manifest-path src-tauri/Cargo.toml --quiet` runs, each
   with **338 passed / 2 ignored / 0 failed**. The ignored bookmark/Trash cases
   still require a suitable interactive host.
+- 2026-07-13 v1.8 S-1 packaged missing-workspace smoke: a fresh isolated-ID
+  Developer bundle opened Global Search with `⌘⇧F`; the combobox exposed
+  `Open a workspace to search its files` and no false zero-match result.
+  Injected runtime-failure interaction remains unverified.
 - 2026-07-13 v1.8 T-3 PDF/image Reference proof: the separate-ID Developer
   bundle selected `/private/tmp/hazakura-valid-text.pdf` through the native
   picker and opened workspace `reference-image.png` through its context menu.

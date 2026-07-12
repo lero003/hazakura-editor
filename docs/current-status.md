@@ -94,7 +94,9 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   workspace search caps per-file matches, total matches, visited files, and
   line preview length with explicit truncation; Diff and PDF raster paths keep
   bounded failure messages and retry/stop behavior. Focused source checks pass;
-  packaged injected-failure interaction remains unverified.
+  packaged injected-failure interaction remains unverified. A fresh isolated
+  Developer bundle with no workspace showed the Global Search combobox and
+  `Open a workspace to search its files` without a false zero-match message.
 - **v1.8 P2 theme budget hardening is source + Developer smoke verified.** The
   resident Edohigan WebGL overlay now uses the shared intensity-aware DPR cap
   and frame throttle already used by CRT/Shinkai, so it no longer bypasses the
