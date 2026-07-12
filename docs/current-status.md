@@ -93,14 +93,16 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   page after the Reference ID changes.
   `AppWorkspace` also pins that closing or replacing the visible reference
   leaves the center editor buffer and its change callback untouched.
-- **v1.8 S-1 bounded failure UX is source-level verified.** Global Search
+- **v1.8 S-1 bounded failure UX is source + packaged smoke verified.** Global Search
   preserves diagnostic details while suppressing the false zero-match state;
   workspace search caps per-file matches, total matches, visited files, and
   line preview length with explicit truncation; Diff and PDF raster paths keep
   bounded failure messages and retry/stop behavior. Focused source checks pass;
-  packaged injected-failure interaction remains unverified. A fresh isolated
-  Developer bundle with no workspace showed the Global Search combobox and
-  `Open a workspace to search its files` without a false zero-match message.
+  A fresh isolated Developer bundle with no workspace showed the Global Search
+  combobox and `Open a workspace to search its files` without a false zero-match
+  message. Replacing that disposable workspace path with a regular file then
+  surfaced `Selected workspace path is not a folder.` without a false zero-match
+  result; the original fixture was restored afterward.
 - **v1.8 P2 theme budget hardening is source + Developer smoke verified.** The
   resident Edohigan WebGL overlay now uses the shared intensity-aware DPR cap
   and frame throttle already used by CRT/Shinkai, so it no longer bypasses the

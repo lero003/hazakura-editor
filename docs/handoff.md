@@ -120,10 +120,11 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    baseline. P2 now
    has a shared pre-export summary in both dialogs plus local Developer
    PDF/EPUB output proof; Spellcheck Preferences parity and reduced-motion
-   source guards were already present. S-1 bounded failure UX is source-verified:
-   focused Global Search / Diff / PDF tests and Rust search/export tests passed
-   on 2026-07-13. Packaged injected-failure interaction remains an evidence gap,
-   not a source defect. Edohigan's resident WebGL overlay now uses the shared
+   source guards were already present. S-1 bounded failure UX is source +
+   packaged smoke verified: focused Global Search / Diff / PDF tests and Rust
+   search/export tests passed on 2026-07-13, and an isolated Developer bundle
+   covered missing-workspace plus workspace-path failure without a false
+   zero-match result. Edohigan's resident WebGL overlay now uses the shared
    intensity-aware DPR cap and frame throttle used by CRT/Shinkai; focused theme
    tests and Developer CRT / Edohigan / Shinkai switching kept the editor and
    Preview content intact after each boot animation.
@@ -283,7 +284,10 @@ Read it only for historical context.
 - 2026-07-13 v1.8 S-1 packaged missing-workspace smoke: a fresh isolated-ID
   Developer bundle opened Global Search with `⌘⇧F`; the combobox exposed
   `Open a workspace to search its files` and no false zero-match result.
-  Injected runtime-failure interaction remains unverified.
+-  A disposable workspace-path failure injection then exposed
+  `Selected workspace path is not a folder.` without a false zero-match result;
+  the original fixture path was restored. S-1 packaged failure coverage is now
+  complete for these two bounded search states.
 - 2026-07-13 v1.8 T-3 PDF/image Reference proof: the separate-ID Developer
   bundle selected `/private/tmp/hazakura-valid-text.pdf` through the native
   picker and opened workspace `reference-image.png` through its context menu.

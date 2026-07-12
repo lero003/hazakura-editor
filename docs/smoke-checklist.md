@@ -693,8 +693,10 @@ recovered state separately where relevant.
 - S-1 packaged missing-workspace smoke on 2026-07-13 used a fresh isolated-ID
   Developer bundle with no restored workspace. `⌘⇧F` opened Global Search and
   exposed the `Find in files…` combobox plus `Open a workspace to search its
-  files`, without a false zero-match message. Injected runtime-failure
-  interaction is still unverified.
+  files`, without a false zero-match message. With the workspace path then
+  replaced by a regular file in a disposable fixture, searching `marker`
+  surfaced `Selected workspace path is not a folder.` without a false
+  zero-match result; the fixture directory was restored afterward.
 - App Store sandbox preview recheck on 2026-07-13: `SKIP_BUILD=1 npm run
   smoke:macos-sandbox-preview` passed on current HEAD. The app and both helper
   deep signatures were valid; app sandbox, user-selected read/write,
