@@ -47,6 +47,8 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   regression: the user-visible warning is emitted and the close still
   continues. Signed TestFlight coverage and stale-candidate cleanup remain
   manual follow-up evidence.
+  S-2 was rechecked on current HEAD with three serial full Rust-suite runs;
+  each passed 338 tests with the two explicit host-integration cases ignored.
   Quick Open, Command Palette, and Global Search now expose dialog,
   combobox/listbox, active-option, and search-status semantics for keyboard and
   VoiceOver navigation. Global Search also localizes missing-workspace and

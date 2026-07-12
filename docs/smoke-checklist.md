@@ -686,6 +686,10 @@ recovered state separately where relevant.
   restored the same read-only reference, and `Command-Z` removed only the edit
   made before the L Mode remount. This is local Developer evidence; repeat the
   Markdown/non-Markdown and signed TestFlight breadth before a v1.8 candidate.
+- S-2 deterministic Rust recheck on 2026-07-13 ran the full suite three times
+  serially on current HEAD. Each run passed **338 tests / 2 explicit
+  host-integration ignored / 0 failed**; this does not replace the interactive
+  bookmark/Trash host checks.
 - S-3 used the deterministic `smoke:fixtures:v1.8-reference` output in the
   separate-ID Developer app. The 5,000-line Japanese reference wrapped in the
   narrow pane, scrolled through `END-MARKER-5000`, and allowed marker selection.

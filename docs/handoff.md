@@ -271,6 +271,10 @@ Read it only for historical context.
   `Closing; recovery cleanup unavailable`, still resets the close dialog, and
   continues the window close. This is source evidence; signed TestFlight and
   stale-candidate relaunch behavior remain manual.
+- 2026-07-13 v1.8 S-2 deterministic Rust recheck: current HEAD passed three
+  serial `cargo test --manifest-path src-tauri/Cargo.toml --quiet` runs, each
+  with **338 passed / 2 ignored / 0 failed**. The ignored bookmark/Trash cases
+  still require a suitable interactive host.
 - 2026-07-13 v1.8 T-3 PDF/image Reference proof: the separate-ID Developer
   bundle selected `/private/tmp/hazakura-valid-text.pdf` through the native
   picker and opened workspace `reference-image.png` through its context menu.
