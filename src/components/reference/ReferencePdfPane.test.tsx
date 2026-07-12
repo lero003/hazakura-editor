@@ -90,6 +90,29 @@ describe("ReferencePdfPane", () => {
     expect(onPageIndexChange).toHaveBeenCalledWith(1, "user");
   });
 
+  it("gives the rendered PDF page an accessible file-and-page name", async () => {
+    render(
+      <ReferencePdfPane
+        copy={referenceCompareCopy("ja")}
+        pageIndex={0}
+        onPageIndexChange={vi.fn()}
+        reference={{
+          kind: "pdf",
+          path: "/ws/a.pdf",
+          name: "a.pdf",
+          pageCount: 1,
+          referenceId: "pdf-ref-1",
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("img", { name: "a.pdf — ページ 1 / 1" }),
+      ).toBeTruthy();
+    });
+  });
+
   it("offers advisory review navigation without claiming correctness", async () => {
     const onPageIndexChange = vi.fn();
     render(

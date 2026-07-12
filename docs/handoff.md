@@ -275,8 +275,9 @@ Read it only for historical context.
   controls and the center `EDITOR-BUFFER-MARKER` stayed intact. This is local
   PDF/image evidence only; additional matrix cases, signed TestFlight
   interaction, and the full a11y matrix remain open. A focused component test
-  now pins the image alt name/data URL and confirms no editable text surface is
-  rendered for image references.
+  now pins the image alt name/data URL, confirms no editable text surface is
+  rendered for image references, and checks the PDF raster file-and-page
+  accessible name.
 - 2026-07-12 v1.8 P2 EPUB/PDF preflight: both settings dialogs now summarize
   unsaved-source inclusion, image-warning handling, and the next Save-dialog
   destination step in English / Japanese / kana. PDF success retains the final
