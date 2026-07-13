@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-13 (v1.8.0 TestFlight candidate preparation)
+Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
 
 ## Current Position
 
@@ -15,10 +15,12 @@ Current release state:
 
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
-- Package/app version in tree: **`1.8.0`** (TestFlight candidate). The
-  published Mac App Store version remains `1.7.0`. Local
+- Package/app version in tree: **`1.8.0`** (published). Local
   package provenance lives in `docs/internal/app-store-candidates/latest.json`.
-- **Published Mac App Store version: `1.7.0`.** App Review passed and the
+- **Published Mac App Store version: `1.8.0`.** App Review passed and the
+  release was published (user-reported 2026-07-14). Release notes:
+  `docs/releases/1.8.0-app-store-release-notes.md`.
+- **v1.7 (`1.7.0`) is closed and published.** App Review passed and the
   release was published (user-reported 2026-07-12). Release notes:
   `docs/releases/1.7.0-app-store-release-notes.md`.
 - **v1.5 (`1.5.0`) is closed and was released before 江戸彼岸 (edohigan).**
@@ -34,13 +36,20 @@ Current release state:
   `docs/v1.7-reference-compare-design.md`. Scope brief:
   `docs/v1.7-scope-brief.md`. **R0–R4 source landed.** Trust slices (L Mode
   continuity, pathless recovery, wrap-safe long-reference rendering, root recovery)
-  are in source. Extended recovery, long-reference, and accessibility checks
-  continue in v1.8 rather than reopening the published lane.
-- **Active product lane: v1.8 Daily Trust Completion.** `1.8.0` candidate
-  preparation is active: stabilize deterministic tests and complete signed
-  TestFlight distribution evidence without adding a large surface.
-- **Accepted post-v1.7 sequence:** continue through `v1.8`, `v1.9`, `v1.10`,
-  and additional `v1.xx` releases as useful. Close daily trust and UX clarity,
+  shipped with v1.8. Extended recovery, long-reference, and accessibility
+  checks remain v1.8 follow-up evidence rather than reasons to reopen the
+  published lane.
+- **v1.8 is closed / published as `1.8.0`** (App Review passed, release
+  published, user-reported 2026-07-14). It completes the Daily Trust hardening
+  on top of v1.7: deterministic Rust suite isolation, bounded long-reference
+  rendering, L Mode Reference continuity, keyboard / VoiceOver semantics, kana
+  UI copy, export preflight, theme cost, and failure-state messaging. No new
+  product surface. Do not reopen without a reproduced hotfix.
+- **Active product lane: v1.9 Writing Loop Clarity.** Organize Preview /
+  Reference / e-book / Outline / Diff / L Mode around `書く・読む・確かめる`
+  without adding chrome or a new document model.
+- **Accepted post-v1.7 sequence:** continue through `v1.9`, `v1.10`,
+  and additional `v1.xx` releases as useful. Clarify the writing loop,
   add single-document structure, then run a larger packaged distribution test
   before v2. Detail: `docs/v1.8-plus-product-review-roadmap.md`.
 - **Next major structural boundary: v2** — explicit multi-file Book Scope,
@@ -186,10 +195,13 @@ Near-term phase order:
 16. v1.8+ is the deliberate bridge from the mature single-document editor to
    v2. Two-digit minor versions such as `v1.10` are valid; version numbering
    must not force a premature major boundary. The accepted sequence is:
-   - **v1.8 Daily Trust Completion:** deterministic full tests, pathless
-     recovery proof, packaged Reference Compare, long-reference and a11y gates.
-   - **v1.9 Writing Loop Clarity:** organize Preview / Reference / e-book /
-     Outline / Diff / L Mode around `書く・読む・確かめる`, without adding chrome.
+   - **v1.8 Daily Trust Completion (closed / published as `1.8.0`):**
+     deterministic full tests, pathless recovery proof, packaged Reference
+     Compare, long-reference and a11y gates shipped. Extended TestFlight and
+     spoken VoiceOver breadth remain follow-up evidence.
+   - **v1.9 Writing Loop Clarity (active):** organize Preview / Reference /
+     e-book / Outline / Diff / L Mode around `書く・読む・確かめる`, without
+     adding chrome.
    - **v1.10 Single-document Structure Foundation:** interpret headings,
      frontmatter, page-break markers, and navigation candidates through one
      shared structure model; show structure and allow only bounded, explicit,

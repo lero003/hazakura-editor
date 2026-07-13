@@ -3,28 +3,30 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-13 (v1.8.0 TestFlight candidate preparation)
+Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current development package/app version: **`1.8.0`** across npm, Tauri, Cargo,
+- Current package/app version: **`1.8.0`** across npm, Tauri, Cargo,
   and lockfile metadata. Local package provenance (build counter, pkg path,
   SHA-256) lives in ignored `docs/internal/app-store-candidates/latest.json`.
-- **`1.8.0` build `89` is the selected signed local TestFlight candidate.**
-  App/package signatures, sandbox and helper entitlements, version/build,
+- **`1.8.0` build `89` is published on the Mac App Store.** App Review passed
+  and the release was published (user-reported 2026-07-14). App/package
+  signatures, sandbox and helper entitlements, version/build,
   minimum macOS version, and checksum provenance passed local verification on
-  2026-07-13. App Store Connect upload, Apple processing, internal-group
-  assignment, and signed TestFlight interaction remain unverified.
-- **The v1.8 PDF-reference zoom adjustment is included in signed build `89`.**
-  The duplicate-looking fit-page control was removed;
+  2026-07-13 before upload. Extended TestFlight interaction breadth and
+  spoken VoiceOver remain v1.8 follow-up evidence rather than publication
+  blockers.
+- **The v1.8 PDF-reference zoom adjustment is included in published
+  build `89`.** The duplicate-looking fit-page control was removed;
   PDF reference display now offers fit width plus a raster-independent 150%
   view. The zoomed page is a native two-axis scroll region and supports Arrow
   key / Page Up / Page Down panning without changing pages. Package/app
-  signatures and candidate provenance passed; hands-on panning with a real PDF
-  remains manual before Transporter upload.
-- **The v1.8 structured-Markdown preparation is included in signed build
-  `89`.** Outline, e-book chapter splitting, and EPUB export now share one
+  signatures and publication provenance passed; hands-on panning with a real
+  PDF is user-side follow-up evidence.
+- **The v1.8 structured-Markdown preparation is included in published
+  build `89`.** Outline, e-book chapter splitting, and EPUB export now share one
   leading YAML frontmatter boundary. Heading-like metadata is no longer shown
   as an Outline heading; CRLF and unclosed-frontmatter behavior is pinned by
   tests. This is interpretation-only hardening: it adds no hidden document
@@ -41,7 +43,16 @@ Last reviewed: 2026-07-13 (v1.8.0 TestFlight candidate preparation)
   App Store release was published (user-reported 2026-07-12). Reference Compare
   keeps one editable Markdown buffer beside one read-only reference. Release
   note: `docs/releases/1.7.0-app-store-release-notes.md`.
-- **Active product lane: v1.8 — Daily Trust Completion.**
+- **v1.8 (`1.8.0`) is closed and published.** App Review passed and the Mac
+  App Store release was published (user-reported 2026-07-14) as build `89`.
+  It hardens the v1.7 Reference Compare plus trust / daily-use experience:
+  L Mode continuity with a hidden Reference session, bounded long-reference
+  rendering, deterministic Rust suite isolation, keyboard / VoiceOver
+  semantics, kana UI copy, export preflight, theme cost, and failure-state
+  messaging. Release note:
+  `docs/releases/1.8.0-app-store-release-notes.md`. Do not reopen without a
+  reproduced hotfix.
+- **v1.8 implementation evidence (shipped in `1.8.0`).**
   Editable Markdown stays center/primary; one read-only PDF / image / Markdown /
   text reference opens on the **right as a preview-like pane** (not Diff, not a
   second edit tab), including automatic source pairing after Import Assist.
@@ -246,9 +257,9 @@ Last reviewed: 2026-07-13 (v1.8.0 TestFlight candidate preparation)
   boundary. No v1 No-Go condition was reported. Unchecked boxes are not
   treated as automatic blockers; commented observations are classified
   in `docs/v1.1-v1.2-followup.md`.
-- No remaining source-level release blocker is known for the closed v1.6
-  line. Do not reopen v1.6 implementation without a reproduced gap. The
-  active implementation lane is **v1.8 Daily Trust Completion**.
+- No remaining source-level release blocker is known for the closed v1.6,
+  v1.7, or v1.8 lines. Do not reopen them without a reproduced gap. The
+  active implementation lane is **v1.9 Writing Loop Clarity**.
   `AppWorkspace` owns a shared
   per-document view-state registry: reader, Editor cursor/scroll, Preview
   reopen, tab transitions, and safe local Markdown-link transitions now
@@ -261,10 +272,10 @@ Last reviewed: 2026-07-13 (v1.8.0 TestFlight candidate preparation)
   was not touched.
 - Mac App Store listing: `Hazakura Editor`
   (`https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`).
-- Published Mac App Store version: **`1.7.0`** (App Review passed and release
-  published, user-reported 2026-07-12). It adds Reference Compare and the v1.7
-  trust / daily-use hardening to the earlier v1 surfaces.
-- Latest GitHub source / local-app tag: `v0.35.0`.
+- Published Mac App Store version: **`1.8.0`** (App Review passed and release
+  published, user-reported 2026-07-14). It adds the v1.8 Daily Trust Completion
+  hardening on top of the v1.7 Reference Compare and earlier v1 surfaces.
+- Latest GitHub source / local-app tag: `v1.8.0`.
 - Latest local App Store / TestFlight package candidate metadata
   (version, build counter, pkg path, SHA-256, generated time, source
   commit, smoke status) lives in
@@ -690,30 +701,22 @@ baseline, and smoke evidence are archived under
 
 ## Next Safe Actions
 
-1. Treat **v1.7 (`1.7.0`) as published and closed** after App Review passed
-   (user-reported 2026-07-12). Do not move its public tag or reopen it without
+1. Treat **v1.8 (`1.8.0`) as published and closed** after App Review passed
+   (user-reported 2026-07-14). Do not move its public tag or reopen it without
    a reproduced hotfix need.
-2. **Active lane is v1.8 Daily Trust Completion.**
-   **R0–R4 source is landed** (paired shell, PDF/image/text readers, Import
-   Assist pair + follow, advisory 要確認 nav). Prioritize L Mode continuity,
-   pathless draft recovery, packaged Reference Compare proof, bounded
-   large-data failure states, deterministic tests, a11y, and purpose-led
-   discovery before adding breadth. The full Rust suite host-sensitive tests
-   are now isolated from the default suite; keep one read-only reference + one
-   editable Markdown buffer; do not build a generic split editor. See
-   `docs/v1.7-reference-compare-design.md`,
-   `docs/v1.7-scope-brief.md`,
-   `docs/v1.7-trust-scale-plan.md`, and `docs/current-work.md`.
-3. The active post-v1.7 direction is **v1.8+ before v2**. Two-digit minor
-   versions such as `v1.10` are allowed. Close Daily Trust, clarify the writing
-   loop, add a single-document structure model and bounded structure editing,
-   then run a larger packaged distribution test before multi-file Book Scope.
-   See `docs/v1.8-plus-product-review-roadmap.md`. The `1.8.0` TestFlight
-   candidate version bump is now approved; tag and public release publication
-   remain separate actions.
-4. Keep position-continuity and v1.3 Daily Trust closed unless a gap
-   reproduces. Historical notes remain in `docs/v1.1-v1.2-followup.md` and
-   `docs/v1.3-followup.md`.
+2. **Active lane is v1.9 Writing Loop Clarity.** Organize Preview / Reference
+   / e-book / Outline / Diff / L Mode around `書く・読む・確かめる` without
+   adding chrome. Keep one read-only reference + one editable Markdown buffer;
+   do not build a generic split editor. See `docs/current-work.md` and
+   `docs/v1.8-plus-product-review-roadmap.md`.
+3. The active post-v1.8 direction is **v1.9+ before v2**. Two-digit minor
+   versions such as `v1.10` are allowed. Clarify the writing loop, add a
+   single-document structure model and bounded structure editing, then run a
+   larger packaged distribution test before multi-file Book Scope.
+   See `docs/v1.8-plus-product-review-roadmap.md`.
+4. Keep position-continuity, v1.3 Daily Trust, and v1.7 Reference Compare
+   closed unless a gap reproduces. Historical notes remain in
+   `docs/v1.1-v1.2-followup.md` and `docs/v1.3-followup.md`.
 5. Complete Google Drive Recovery smoke only with a dedicated user-approved
    fixture. The local-folder path-backed and disposable local packaged pathless
    forced-termination paths have passed; signed TestFlight pathless recovery
@@ -727,5 +730,4 @@ baseline, and smoke evidence are archived under
    `docs/apple-local-assist-writing-companion-plan.md`; keep direct
    buffer edits as explicit AI edit transactions.
 8. Do not tag or publish without explicit approval. In-tree version is
-   `1.8.0`; published Mac App Store version remains `1.7.0` until App Store
-   Connect processing, TestFlight smoke, review, and publication are complete.
+   `1.8.0`; the published Mac App Store version is also `1.8.0`.

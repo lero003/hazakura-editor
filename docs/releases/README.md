@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Release-note bodies for prepared or published releases
 Authority: Medium
-Last reviewed: 2026-07-12
+Last reviewed: 2026-07-14
 
 This directory stores GitHub Release body drafts and published release-note evidence.
 
@@ -25,6 +25,11 @@ Latest downloadable GitHub DMG Release body:
 
 Latest App Store status:
 
+- **`1.8.0` is approved and published** on the Mac App Store (user-reported
+  2026-07-14): Daily Trust Completion — L Mode Reference continuity, bounded
+  long-reference rendering, deterministic Rust suite isolation, keyboard /
+  VoiceOver semantics, kana UI copy, export preflight, theme cost, and
+  failure-state messaging. See `1.8.0-app-store-release-notes.md`.
 - **`1.7.0` is approved and published** on the Mac App Store (user-reported
   2026-07-12): Reference Compare plus trust / daily-use hardening. See
   `1.7.0-app-store-release-notes.md`.
@@ -73,6 +78,10 @@ Latest App Store submission-candidate note:
 
 Latest App Store release-note evidence and drafts:
 
+- `1.8.0-app-store-release-notes.md`
+- `1.7.0-app-store-release-notes.md`
+- `1.6.0-app-store-release-notes.md`
+- `1.5.0-app-store-release-notes.md`
 - `1.4.0-app-store-release-notes.md`
 - `1.3.0-app-store-release-notes.md`
 - `1.2.0-app-store-release-notes.md`

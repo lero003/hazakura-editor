@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v1.8 Daily Trust Completion (`1.8.0` TestFlight candidate)
+Scope: v1.9 Writing Loop Clarity (active); v1.8 Daily Trust Completion closed / published
 Authority: High
-Last reviewed: 2026-07-13 (v1.7.0 published; v1.8 active)
+Last reviewed: 2026-07-14 (v1.8.0 published; v1.9 active)
 
 ## Purpose
 
@@ -16,12 +16,13 @@ Start here when choosing the next small `Hazakura Editor` slice.
 | **v1.5** | **Closed / released as `1.5.0`** | Stabilization + reading polish. **Released before 江戸彼岸 (edohigan) was merged.** Do not reopen unless hotfix. |
 | **Post-v1.5 main (not v1.5)** | Merged after v1.5 release | 江戸彼岸 theme; CodeMirror `@codemirror/view` **6.43.2** pin + editor display quality (syntax-tree recompute, resize remeasure, fold gutter removed). |
 | **v1.6** | **Closed / published as `1.6.0`** | Import Assist Phase 1 + edohigan + quality packs. **App Review passed without issues (2026-07-10).** Boundary: `docs/import-assist-boundary-review.md`. Release notes: `docs/releases/1.6.0-app-store-release-notes.md`. Do not reopen unless hotfix. |
-| **v1.7** | **Closed / published as `1.7.0`** | Reference Compare plus trust / daily-use hardening. App Review passed and the release was published (user-reported 2026-07-12). Extended smoke continues in v1.8; do not reopen without a reproduced hotfix. |
-| **v1.8** | **Active — `1.8.0` TestFlight candidate preparation** | Make the shipped v1.7 experience deterministic and distribution-proven. Source review and automated gates precede signed package generation and TestFlight smoke. |
+| **v1.7** | **Closed / published as `1.7.0`** | Reference Compare plus trust / daily-use hardening. App Review passed and the release was published (user-reported 2026-07-12). Extended smoke continues as v1.8 follow-up; do not reopen without a reproduced hotfix. |
+| **v1.8** | **Closed / published as `1.8.0`** | Daily Trust Completion. App Review passed and the release was published (user-reported 2026-07-14, build `89`). Deterministic Rust suite isolation, bounded long-reference, L Mode Reference continuity, a11y / kana UI, export preflight, theme cost, failure-state messaging. Release notes: `docs/releases/1.8.0-app-store-release-notes.md`. Extended TestFlight and spoken VoiceOver breadth remain follow-up evidence. |
+| **v1.9** | **Active — Writing Loop Clarity** | Organize Preview / Reference / e-book / Outline / Diff / L Mode around `書く・読む・確かめる` without adding chrome or a new document model. |
 | **v2** | Later | OKF Book Scope, then 縦書き. |
 
 Package/app version in tree is **`1.8.0`**; published Mac App Store version is
-still **`1.7.0`**. See `current-status.md` for lane truth; treat Connect as
+also **`1.8.0`**. See `current-status.md` for lane truth; treat Connect as
 authoritative for store counters.
 
 ## Product Boundary
@@ -90,11 +91,11 @@ Key product rules for this lane:
 - never two editable panes, never auto-apply, never revive Review Desk, never
   treat Reference Compare as Diff layout.
 
-## Active Trust / Daily-use Queue — v1.8
+## Closed Trust / Daily-use Queue — v1.8
 
-The v1.7 feature arc is published. v1.8 carries the following extended trust
-and distribution proof without reopening the released lane. Priority is ordered;
-each slice should remain independently verifiable.
+The v1.7 feature arc is published. v1.8 carried the following extended trust
+and distribution proof without reopening the released lane, and shipped as
+`1.8.0`. Priority is ordered; each slice remained independently verifiable.
 
 | Priority | Slice | Why now | Acceptance anchor |
 |---|---|---|---|
@@ -117,12 +118,12 @@ v1.10 work.
 Book Scope Alpha is **not** part of this queue. It remains a v2 decision after
 the single-document and Reference Compare loop is proven.
 
-### Active post-v1.7 direction
+### Active post-v1.8 direction
 
-After v1.7, do not jump directly to v2. Two-digit minor versions such as
-`v1.10` are normal and accepted. The planned order is v1.8 Daily Trust,
-v1.9 Writing Loop Clarity, v1.10 single-document structure, then a larger
-packaged distribution-confidence gate in v1.11+ before multi-file Book Scope.
+After v1.8, do not jump directly to v2. Two-digit minor versions such as
+`v1.10` are normal and accepted. The planned order is v1.9 Writing Loop
+Clarity, v1.10 single-document structure, then a larger packaged
+distribution-confidence gate in v1.11+ before multi-file Book Scope.
 
 The v1.10 structure lane stays inside one Markdown source: shared heading /
 frontmatter / page-break / navigation interpretation, structure overview, and
@@ -142,12 +143,14 @@ time; keep normal `npm test` / `cargo test` gates.
 - 6.43.3+ tile-tree regressions caused vanishing lines / wrong caret.
 - Do not bump view without re-verifying long Japanese Markdown + wrap + L Mode.
 
-### v1.7 publication closeout / v1.8 carry-forward
+### v1.7 / v1.8 publication closeout
 
 `1.7.0` passed App Review and was published (user-reported 2026-07-12).
-Continue extended Reference Compare, pathless recovery, bounded large-data,
-and keyboard/a11y checks as v1.8 Daily Trust evidence. These are follow-up
-quality checks, not reasons to mutate the published tag or reopen v1.7.
+`1.8.0` passed App Review and was published (user-reported 2026-07-14).
+Extended Reference Compare, pathless recovery, bounded large-data,
+keyboard/a11y checks, signed TestFlight breadth, and spoken VoiceOver remain
+follow-up quality evidence, not reasons to mutate the published tags or
+reopen v1.7 / v1.8.
 
 ### 江戸彼岸 (post-v1.5)
 

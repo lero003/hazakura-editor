@@ -3,32 +3,31 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-07-13 (v1.8.0 TestFlight candidate preparation)
+Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
 
 ## Current State
 
-- Package/app version in tree is **`1.8.0`** for the active TestFlight
-  candidate. Published Mac App Store version remains **`1.7.0`**; App Review
-  passed and publication was user-reported on 2026-07-12. Local package
-  provenance lives in ignored `docs/internal/app-store-candidates/latest.json`.
-- Selected local candidate is **`1.8.0` build `89`** from source commit
+- Package/app version in tree is **`1.8.0`** and is the published Mac App
+  Store version. App Review passed and publication was user-reported on
+  2026-07-14 (build `89`). Local package provenance lives in ignored
+  `docs/internal/app-store-candidates/latest.json`.
+- Selected and published candidate is **`1.8.0` build `89`** from source commit
   `4f4abaf7`. App/package signatures, sandbox and both helpers' inherited
   entitlements, version/build/minimum-OS metadata, package XML, and checksum
-  provenance passed. It is ready for Transporter but was not uploaded in this
-  pass; Apple processing and signed TestFlight interaction are still open.
+  provenance passed on 2026-07-13 before upload. Apple processing completed and
+  the release was published; extended signed TestFlight interaction and spoken
+  VoiceOver remain follow-up evidence.
 - Build `89` contains the PDF-reference zoom simplification: fit-page was
   removed, 150% now means 1.5 times the fitted pane width, and the zoomed page
   supports native two-axis scrolling plus keyboard panning. Static package
-  verification passed; hands-on panning with a real PDF remains manual before
-  Transporter upload.
+  verification passed; hands-on panning with a real PDF is user-side follow-up.
 - Build `89` also contains the v1.8 structured-Markdown preparation:
   `findYamlFrontmatter` is the shared leading-frontmatter boundary for Outline,
   e-book chapter splitting, and EPUB export. It is interpretation-only and does
   not add a structure UI, hidden model, or source rewrite.
-- `v1.7.0` is the immutable published source tag. The selected signed pkg is
-  **`1.7.0` build `85`**; static signature, metadata, entitlement, and helper
-  checks passed. The user reported basic packaged testing with no issue on
-  2026-07-11. Do not move the tag or mutate published assets.
+- `v1.8.0` is the immutable published source tag. The published signed pkg is
+  **`1.8.0` build `89`**; static signature, metadata, entitlement, and helper
+  checks passed before upload. Do not move the tag or mutate published assets.
 - **v1.6 (`1.6.0`) closed and published.** Mac App Store App Review passed
   without issues (user-reported 2026-07-10). Release notes:
   `docs/releases/1.6.0-app-store-release-notes.md`. Do not reopen unless hotfix.
@@ -59,7 +58,7 @@ Last reviewed: 2026-07-13 (v1.8.0 TestFlight candidate preparation)
 - Keep `@codemirror/view` at **6.43.2**. Import helper must ship via
   `externalBin` (`npm run build:import-assist-helper:live`). Both nested
   helpers need App Store inherit re-sign (`sign-app-store-submit-app.mjs`).
-- Published Mac App Store version is **`1.7.0`**. Raw App Store Connect logs
+- Published Mac App Store version is **`1.8.0`**. Raw App Store Connect logs
   stay outside the repo. The v1 public promise is
   `Markdownで書き、本として読み、ローカルAIで整える。`
 - The 2026-06-28 user-side pre-v1 checklist remains the accepted Golden
@@ -194,9 +193,10 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    Preview content intact after each boot animation.
 4. Keep v1.6 closed unless a reproduced gap needs a hotfix. Historical quality
    notes: `docs/quality-inventory-v1.6.md`.
-5. Keep `@codemirror/view` at **6.43.2**. The user approved `1.8.0` candidate
-   preparation and push. Tag/publication remain separate; published version
-   stays **`1.7.0`** until the App Store lane completes.
+5. Keep `@codemirror/view` at **6.43.2**. `1.8.0` passed App Review and is
+   published on the Mac App Store (build `89`). The active lane is v1.9 Writing
+   Loop Clarity; extended TestFlight and spoken VoiceOver breadth remain
+   follow-up evidence.
 6. Earlier path-backed workspace Recovery forced-termination smoke passed. A
    disposable separate-bundle Developer app also restored a force-terminated
    pathless T-2 draft on 2026-07-12. Signed TestFlight proof remains open.
