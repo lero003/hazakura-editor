@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-07-14 (v1.8 published; active lane v1.9 Writing Loop)
+Last reviewed: 2026-07-14 (v1.8 published; active lane v1.10 structure)
 
 ## Purpose
 
@@ -17,7 +17,8 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **v1.9 Writing Loop Clarity** after the published `1.8.0` App Store
+Phase: **v1.10 Single-document Structure Foundation** after v1.9 W1–W4 source
+completion and the published `1.8.0` App Store
 release, unless a public-release hotfix blocker appears. Direction:
 `docs/v1.8-plus-product-review-roadmap.md`.
 
@@ -30,7 +31,7 @@ environment is available and close it as `implemented`,
 
 Prefer work in this order:
 
-1. Active v1.9 Writing Loop Clarity queue from `docs/current-work.md` unless a
+1. Active v1.10 single-document structure queue from `docs/current-work.md` unless a
    concrete source-loss or public hotfix signal takes priority.
 2. Stale or failing quality gates that block the selected slice.
 3. Core Safe Editor quality risks around open, edit, save, close/quit,

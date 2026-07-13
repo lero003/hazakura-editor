@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v1.9 Writing Loop Clarity (active); v1.8 Daily Trust Completion closed / published
+Scope: v1.10 Single-document Structure Foundation (active); v1.9 source complete
 Authority: High
-Last reviewed: 2026-07-14 (v1.8.0 published; v1.9 active)
+Last reviewed: 2026-07-14 (v1.9 source reviewed; v1.10 S1 active)
 
 ## Purpose
 
@@ -18,25 +18,32 @@ Start here when choosing the next small `Hazakura Editor` slice.
 | **v1.6** | **Closed / published as `1.6.0`** | Import Assist Phase 1 + edohigan + quality packs. **App Review passed without issues (2026-07-10).** Boundary: `docs/archive/reviews/import-assist-boundary-review-v1.6.md`. Release notes: `docs/releases/1.6.0-app-store-release-notes.md`. Do not reopen unless hotfix. |
 | **v1.7** | **Closed / published as `1.7.0`** | Reference Compare plus trust / daily-use hardening. App Review passed and the release was published (user-reported 2026-07-12). Extended smoke continues as v1.8 follow-up; do not reopen without a reproduced hotfix. |
 | **v1.8** | **Closed / published as `1.8.0`** | Daily Trust Completion. App Review passed and the release was published (user-reported 2026-07-14, build `89`). Deterministic Rust suite isolation, bounded long-reference, L Mode Reference continuity, a11y / kana UI, export preflight, theme cost, failure-state messaging. Release notes: `docs/releases/1.8.0-app-store-release-notes.md`. Extended TestFlight and spoken VoiceOver breadth remain follow-up evidence. |
-| **v1.9** | **Active — Writing Loop Clarity** | Organize Preview / Reference / e-book / Outline / Diff / L Mode around `書く・読む・確かめる` without adding chrome or a new document model. |
+| **v1.9** | **Source complete / release not prepared** | W1–W4 organize Preview / Reference / e-book / Outline / Diff / L Mode around `書く・読む・確かめる`. Review fixes include live locale refresh and kana copy. Version remains `1.8.0`. |
+| **v1.10** | **Active — Single-document Structure Foundation** | Share one source-offset structure interpretation across Outline, e-book, and EPUB before adding read-only overview or bounded edits. |
 | **v2** | Later | OKF Book Scope, then 縦書き. |
 
 Package/app version in tree is **`1.8.0`**; published Mac App Store version is
 also **`1.8.0`**. See `current-status.md` for lane truth; treat Connect as
 authoritative for store counters.
 
-## Active Queue — v1.9 Writing Loop Clarity
+## Active Queue — v1.10 Single-document Structure Foundation
 
-Goal: 「機能を知っている人だけが使える」状態から、書く・読む・確かめる流れで
-理解できる状態へ進める。 Non-goal: toolbar 増築、汎用 split、設定の大量追加。
-Source: `docs/v1.8-plus-product-review-roadmap.md`.
+Goal: 一つの Markdown source の構造を、sourceを書き換えず同じ規則で読み取り、
+必要な場合だけ明示的に整えられる基盤へ進める。Source:
+`docs/v1.10-single-document-structure-design.md`.
 
 | Priority | Slice | Acceptance |
 |---|---|---|
-| **Done / source** | **W1 — Returning Start Panel** | Start Panel を first-use / returning に分ける。前回 workspace 再開（path → bookmark → picker）と pathless 復旧候補を Start Panel 上に表示（en/ja/kana）。空エディタ時は上部 Recovery banner と二重表示しない。 |
-| **Done / source** | **W2 — Pane state copy** | Preview / e-book / Outline / Diff / Reference の show/hide/retained をトグル title と status で説明。参照は非表示でも保持、L Mode 中は一時的に隠す。空状態コピーを目的語へ更新。 |
-| **Done / source** | **W3 — Context continuity** | Editor / e-book / Preview view state を `sessionId` でキー化し、Save As の path rekey レースを除去。tab 切替・Save As・L Mode 参照 hide/restore は既存ピンで固定。 |
-| **Done / source** | **W4 — Palette discoverability** | Command Palette のカテゴリを書く/読む/確かめるへ整理し、主要コマンドの label / keywords を en/ja/kana で揃えた。 |
+| **Done / source** | **S1 — Shared read-only model** | frontmatter、ATX heading、page-break、EPUB navigation候補をsource位置付きで解釈し、Outline / e-book / EPUBで共有。fence length/type、CRLF、空見出しnavigation除外をテスト固定。 |
+| **Next** | **S2 — Structure overview** | 既存Outline surface内でhierarchyとpage-breakを読み取り専用表示し、選択でEditorへ移動。新しいpane/chromeは追加しない。 |
+| **Later** | **S3 — Advisory checks** | skipped level、空見出し、重複navigation label、極端に長いsectionを非blocking助言として示す。 |
+| **Later / proof only** | **S4 — One bounded edit** | heading level change またはsection moveの片方だけを明示的なUndo-able単一-buffer transactionとして実証する。 |
+
+### Closed Source Queue — v1.9 Writing Loop Clarity
+
+W1 Returning Start Panel、W2 pane state copy、W3 `sessionId` view continuity、
+W4 Command Palette ja/kana discoverability は source 実装と再レビューを完了した。
+Package/app versionはまだ `1.8.0` であり、v1.9 release preparationは未実施。
 
 ## Product Boundary
 
@@ -147,7 +154,7 @@ document model. Full rationale: `docs/v1.8-plus-product-review-roadmap.md`.
 ### Quality inventory (v1.6 historical)
 
 Cross-cutting quality notes for the closed v1.6 line live in
-**`docs/archive/operations/quality-inventory-v1.6.md`**. Prefer one verifiable v1.9 slice at a
+**`docs/archive/operations/quality-inventory-v1.6.md`**. Prefer one verifiable v1.10 slice at a
 time; keep normal `npm test` / `cargo test` gates.
 
 ### CodeMirror pin (durable)

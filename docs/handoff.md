@@ -25,6 +25,15 @@ Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
   `findYamlFrontmatter` is the shared leading-frontmatter boundary for Outline,
   e-book chapter splitting, and EPUB export. It is interpretation-only and does
   not add a structure UI, hidden model, or source rewrite.
+- v1.9 Writing Loop Clarity W1–W4 are source complete and reviewed. The review
+  fixed Command Palette labels staying stale when locale changed while open,
+  aligned the kana returning CTA, and repaired living-doc release/lane checks.
+  Package/app version remains `1.8.0`; no v1.9 release preparation has run.
+- **v1.10 is active.** S1 adds `parseMarkdownStructure`, a read-only,
+  source-offset model shared by Outline, e-book chapters/page-breaks, and EPUB
+  navigation. Empty headings stay structural but do not become EPUB navigation
+  labels. No structure UI, source rewrite, edit transaction, or Book Scope was
+  added. Contract: `docs/v1.10-single-document-structure-design.md`.
 - `v1.8.0` is the immutable published source tag. The published signed pkg is
   **`1.8.0` build `89`**; static signature, metadata, entitlement, and helper
   checks passed before upload. Do not move the tag or mutate published assets.
@@ -89,11 +98,10 @@ Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. **Active v1.9 Writing Loop Clarity:** Start from `docs/current-work.md` and
-   organize Preview / Reference / e-book / Outline / Diff / L Mode around
-   `書く・読む・確かめる` without adding chrome or a second editable model.
-   Keep the remaining v1.8 packaged, TestFlight, and VoiceOver breadth as
-   follow-up evidence rather than reopening the published lane.
+1. **Active v1.10 Single-document Structure Foundation:** S1 shared read-only
+   parsing is landed. Next is S2: show hierarchy and page-breaks inside the
+   existing Outline surface and jump to Editor source positions. Do not add a
+   new pane, automatic correction, source rewrite, or edit transaction in S2.
 2. **Review fixes (2026-07-11):** pathless `recoveryId` is UUID (not
    `session:N`); pathless restore always opens a new pathless tab; reference
    text scrolls on `.reference-pane-body` with wrap-safe full rendering
@@ -196,9 +204,9 @@ Use `docs/current-work.md` for the active queue. Current priority order:
 4. Keep v1.6 closed unless a reproduced gap needs a hotfix. Historical quality
    notes: `docs/archive/operations/quality-inventory-v1.6.md`.
 5. Keep `@codemirror/view` at **6.43.2**. `1.8.0` passed App Review and is
-   published on the Mac App Store (build `89`). The active lane is v1.9 Writing
-   Loop Clarity; extended TestFlight and spoken VoiceOver breadth remain
-   follow-up evidence.
+   published on the Mac App Store (build `89`). The active lane is v1.10
+   Single-document Structure Foundation; extended TestFlight and spoken
+   VoiceOver breadth remain follow-up evidence.
 6. Earlier path-backed workspace Recovery forced-termination smoke passed. A
    disposable separate-bundle Developer app also restored a force-terminated
    pathless T-2 draft on 2026-07-12. Signed TestFlight proof remains open.
@@ -225,6 +233,7 @@ Read it only for historical context.
 - v1.7 scope brief: `docs/archive/planning/v1.7-scope-brief.md`
 - v1.7 hardening plan: `docs/archive/operations/v1.7-trust-scale-plan.md`
 - v1.8+ product review / v2 bridge: `docs/v1.8-plus-product-review-roadmap.md`
+- v1.10 structure contract: `docs/v1.10-single-document-structure-design.md`
 - Quality inventory (v1.6): `docs/archive/operations/quality-inventory-v1.6.md`
 - v1.7 Reference Compare design: `docs/archive/planning/v1.7-reference-compare-design.md`
 - Current implementation state: `docs/current-status.md`

@@ -217,6 +217,17 @@ describe("buildEpubBetaArchive", () => {
     expect(text).toContain('href="content.xhtml#second"');
   });
 
+  it("keeps empty headings out of navigation without losing later headings", async () => {
+    const archive = await buildEpubBetaArchive({
+      markdown: ["#", "", "## Real Section"].join("\n"),
+      documentName: "empty-heading.md",
+    });
+    const text = archiveText(archive);
+
+    expect(text).toContain('href="content.xhtml#real-section"');
+    expect(text).not.toContain(">Section</a>");
+  });
+
   it("writes standalone page-break markers as separate XHTML spine documents", async () => {
     const archive = await buildEpubBetaArchive({
       markdown: [

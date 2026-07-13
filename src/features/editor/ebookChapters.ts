@@ -1,4 +1,4 @@
-import { findYamlFrontmatter } from "./markdownFrontmatter";
+import { parseMarkdownStructure } from "./markdownStructure";
 
 // v0.21 e-book Mode PoC — chapter splitting for a single Markdown source.
 //
@@ -18,8 +18,6 @@ import { findYamlFrontmatter } from "./markdownFrontmatter";
 // because they are easy to mis-detect with a line scan and because the
 // L Mode plan keeps Setext as a visual-divider concern rather than a
 // structural one.
-
-const FENCE_MIN_LENGTH = 3;
 
 export type EbookChapter = {
   // Zero-based ordinal of the chapter among the returned segments.
@@ -65,10 +63,6 @@ type RawSegment = {
  */
 export function splitMarkdownIntoChapters(source: string): EbookChapter[] {
   const segments: RawSegment[] = [];
-  let inFence = false;
-  let fenceChar = "";
-  let fenceLength = 0;
-  const frontmatterEnd = findYamlFrontmatter(source)?.bodyOffset ?? null;
   let currentStart = 0;
   let currentStartLine = 1;
   let currentLevel: number | null = null;
@@ -84,61 +78,14 @@ export function splitMarkdownIntoChapters(source: string): EbookChapter[] {
     });
   };
 
-  // Walk the source by line, but track offsets into the original string
-  // rather than rebuilding it from split lines. `lineStart` is the
-  // offset of the current line's first character; `pos` advances past
-  // the line and its terminator. A final line without a trailing "\n"
-  // is still captured because `lineStart <= source.length` at the last
-  // iteration.
-  let lineStart = 0;
-  let lineNumber = 1;
-  for (let pos = 0; pos <= source.length; ) {
-    const nlIndex = source.indexOf("\n", pos);
-    const lineEnd = nlIndex === -1 ? source.length : nlIndex;
-    const line = source.slice(lineStart, lineEnd);
-
-    if (frontmatterEnd !== null && lineStart < frontmatterEnd) {
-      pos = nextLineStart(source, lineEnd);
-      lineStart = pos;
-      lineNumber += 1;
-      continue;
-    }
-
-    const fence = matchFence(line);
-    if (fence) {
-      const role = classifyFence(fence, inFence, fenceChar, fenceLength);
-      if (role === "open") {
-        inFence = true;
-        fenceChar = fence.char;
-        fenceLength = fence.length;
-      } else if (role === "close") {
-        inFence = false;
-        fenceChar = "";
-        fenceLength = 0;
-      }
-      // Advance past this line including its terminator.
-      pos = nextLineStart(source, lineEnd);
-      lineStart = pos;
-      lineNumber += 1;
-      continue;
-    }
-
-    if (!inFence) {
-      const heading = matchAtxHeading(line);
-      if (heading) {
-        // Close the previous segment up to (but not including) this
-        // line. The heading line belongs to the new chapter.
-        pushSegment(lineStart);
-        currentStart = lineStart;
-        currentStartLine = lineNumber;
-        currentLevel = heading.level;
-        currentText = heading.text;
-      }
-    }
-
-    pos = nextLineStart(source, lineEnd);
-    lineStart = pos;
-    lineNumber += 1;
+  for (const heading of parseMarkdownStructure(source).headings) {
+    // Close the previous segment up to (but not including) this line. The
+    // heading line belongs to the new chapter, and the offsets remain exact.
+    pushSegment(heading.startOffset);
+    currentStart = heading.startOffset;
+    currentStartLine = heading.line;
+    currentLevel = heading.level;
+    currentText = heading.text;
   }
 
   // Final segment runs to the end of the document.
@@ -172,9 +119,9 @@ export function splitMarkdownIntoChapters(source: string): EbookChapter[] {
  * subheadings, and a leading run of deep headings before any H1/H2 is folded
  * into the preamble.
  *
- * `splitMarkdownIntoChapters` is shared with EPUB export, whose navigation
- * needs every heading level, so the level filter lives here in the reader
- * path only. The merged `source` is the concatenation of the constituent
+ * The shared Markdown structure model also feeds EPUB navigation, which needs
+ * every heading level, so the level filter lives here in the reader path only.
+ * The merged `source` is the concatenation of the constituent
  * verbatim slices, so the bytes that reach `renderMarkdown()` are unchanged
  * from the canonical document model — only the chapter grouping changes.
  * `index` is re-numbered over the merged list, and the merged chapter keeps
@@ -239,206 +186,30 @@ export function collectEbookChapterSubheadings(
 }
 
 export function applyEbookPageBreakMarkers(source: string): string {
-  const lines = markdownLines(source);
-  if (lines.length === 0) {
+  const pageBreaks = parseMarkdownStructure(source).pageBreaks;
+  if (pageBreaks.length === 0) {
     return source;
   }
 
-  let inFence = false;
-  let fenceChar = "";
-  let fenceLength = 0;
-  const frontmatterEnd = findYamlFrontmatter(source)?.bodyOffset ?? null;
-
-  return lines
-    .map((line, index) => {
-      if (frontmatterEnd !== null && line.start < frontmatterEnd) {
-        return line.raw;
-      }
-
-      const fence = matchFence(line.text);
-      if (fence) {
-        const role = classifyFence(fence, inFence, fenceChar, fenceLength);
-        if (role === "open") {
-          inFence = true;
-          fenceChar = fence.char;
-          fenceLength = fence.length;
-        } else if (role === "close") {
-          inFence = false;
-          fenceChar = "";
-          fenceLength = 0;
-        }
-        return line.raw;
-      }
-
-      if (!inFence) {
-        const pageBreakMarkerRole = classifyPageBreakMarkerLine(lines, index);
-        if (pageBreakMarkerRole === "page-break") {
-          return `${pageBreakMarkerHtml()}${line.ending}`;
-        }
-        if (pageBreakMarkerRole === "drop") {
-          return line.ending;
-        }
-      }
-
-      return line.raw;
-    })
-    .join("");
+  const output: string[] = [];
+  let cursor = 0;
+  for (const pageBreak of pageBreaks) {
+    output.push(source.slice(cursor, pageBreak.startOffset));
+    const ending = source.slice(
+      pageBreak.contentEndOffset,
+      pageBreak.endOffset,
+    );
+    output.push(
+      pageBreak.role === "page-break"
+        ? `${pageBreakMarkerHtml()}${ending}`
+        : ending,
+    );
+    cursor = pageBreak.endOffset;
+  }
+  output.push(source.slice(cursor));
+  return output.join("");
 }
 
 function pageBreakMarkerHtml(): string {
   return '<div class="page-break" role="separator" aria-label="Page break"></div>';
-}
-
-function classifyPageBreakMarkerLine(
-  lines: Array<{ text: string }>,
-  index: number,
-): "drop" | "page-break" | null {
-  const marker = lines[index].text.trim();
-  if (marker !== "---" && marker !== "===") {
-    return null;
-  }
-
-  const previous = lines[index - 1]?.text.trim() ?? null;
-  const next = lines[index + 1]?.text.trim() ?? "";
-  if (previous !== "" || next !== "") {
-    return null;
-  }
-
-  const hasFollowingContent = lines
-    .slice(index + 1)
-    .some((line) => line.text.trim() !== "");
-  return hasFollowingContent ? "page-break" : "drop";
-}
-
-function markdownLines(source: string): Array<{
-  ending: string;
-  raw: string;
-  start: number;
-  text: string;
-}> {
-  const lines: Array<{
-    ending: string;
-    raw: string;
-    start: number;
-    text: string;
-  }> = [];
-
-  let start = 0;
-  while (start < source.length) {
-    const nlIndex = source.indexOf("\n", start);
-    const end = nlIndex === -1 ? source.length : nlIndex;
-    const ending = nlIndex === -1 ? "" : "\n";
-    const text = source.slice(start, end);
-    lines.push({
-      ending,
-      raw: source.slice(start, end) + ending,
-      start,
-      text,
-    });
-    start = nlIndex === -1 ? source.length : nlIndex + 1;
-  }
-
-  return lines;
-}
-
-function matchAtxHeading(
-  line: string,
-): { level: number; text: string } | null {
-  // ATX heading: 1-6 `#`, then a space or end-of-line. The text is the
-  // remainder after the `#` run and a single optional space, with a
-  // trailing `#` sequence (closing sequence) stripped.
-  const match = /^(#{1,6})(?:[ \t]+(.*))?$/.exec(line);
-  if (!match) {
-    return null;
-  }
-  const level = match[1].length;
-  let text = match[2] ?? "";
-  // Strip an optional closing sequence of `#` with no preceding content
-  // requirement, matching CommonMark's ATX closing.
-  text = text.replace(/[ \t]+#*[ \t]*$/, "").trim();
-  return { level, text };
-}
-
-type FenceMatch = {
-  char: string;
-  length: number;
-  // The full line, kept so `classifyFence` can read the remainder after
-  // the fence run without re-parsing it.
-  line: string;
-  // Offset in `line` where the fence run starts (after leading
-  // indentation), and the offset just past the run.
-  runStart: number;
-  runEnd: number;
-};
-
-type FenceRole = "open" | "close" | "none";
-
-// Classify a line's fence role against the current fence state. The
-// line must already match `matchFence` (a run of at least three
-// backticks or tildes at the start, after up to three spaces of
-// indentation).
-//
-// CommonMark 4.6 (open) / 4.7 (close): a closing code fence may be
-// indented up to three spaces and may be followed only by spaces / tabs
-// — an "info string" after the run makes it an opener, not a closer.
-// So a line like ``` ```not close ``` inside a code block is treated as
-// fenced content (close: "none"), exactly like `marked` does, and any
-// `#` on the following line stays inside the block instead of starting
-// a chapter.
-function classifyFence(
-  fence: FenceMatch,
-  inFence: boolean,
-  fenceChar: string,
-  fenceLength: number,
-): FenceRole {
-  if (!inFence) {
-    return "open";
-  }
-  if (fence.char !== fenceChar || fence.length < fenceLength) {
-    return "none";
-  }
-  // A closer must be a fence run plus only trailing whitespace: any
-  // non-whitespace after the run means this is content inside the
-  // block, not the closing fence. `runEnd` is the offset just past the
-  // matched run, so everything from there to the line end is the
-  // remainder we must check.
-  const line = fence.line;
-  const afterRun = line.slice(fence.runEnd);
-  return /^[ \t]*$/.test(afterRun) ? "close" : "none";
-}
-
-function matchFence(line: string): FenceMatch | null {
-  // CommonMark fenced code block: a line of three or more backticks or
-  // tildes, optionally indented up to three spaces, optionally followed
-  // by an info string. We capture both the fence character and the run
-  // length so a close fence must match the opener's character and be at
-  // least as long (CommonMark 4.5: "The closing code fence must be at
-  // least as long as the opening fence").
-  const match = /^[ \t]{0,3}([`~])(\1*)/.exec(line);
-  if (!match) {
-    return null;
-  }
-  const length = match[1].length + (match[2]?.length ?? 0);
-  if (length < FENCE_MIN_LENGTH) {
-    return null;
-  }
-  const runStart = match.index + match[0].length - length;
-  return {
-    char: match[1],
-    length,
-    line,
-    runStart,
-    runEnd: runStart + length,
-  };
-}
-
-function nextLineStart(source: string, lineEnd: number): number {
-  // `lineEnd` points at either a "\n" or the end of the string. Skip
-  // past a single "\n" so the next line starts at the right offset;
-  // never consume a trailing "\r\n" partially (offset correctness only
-  // needs the "\n" boundary, and "\r" stays attached to its line).
-  if (lineEnd < source.length && source[lineEnd] === "\n") {
-    return lineEnd + 1;
-  }
-  return lineEnd + 1;
 }

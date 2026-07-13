@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-07-14 (v1.8 published; v1.9 Writing Loop Clarity active)
+Last reviewed: 2026-07-14 (v1.9 source complete; v1.10 structure active)
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
@@ -16,10 +16,11 @@ or quality-polish slice.
 - `security-boundary.md`: safety constraints for file handling and execution boundaries.
 - `agent-workbench-boundary.md`: optional CLI-agent workbench trust boundary.
 - `assist-surface-strategy.md`: future assist-surface direction.
-- `current-work.md`: active queue (v1.9 Writing Loop Clarity; v1.8 closed / published).
+- `current-work.md`: active queue (v1.10 Single-document Structure Foundation).
 - `roadmap.md`: active lane and future phase boundaries.
 - `current-status.md`: current implementation and release state.
 - `v1.8-plus-product-review-roadmap.md`: accepted v1.9, v1.10, distribution-confidence, and v2 sequencing.
+- `v1.10-single-document-structure-design.md`: active v1.10 implementation contract.
 - `l-mode-plan.md`: active source-preserving L Mode writing-surface direction.
 - `ebook-mode-epub-export-plan.md`: active single-document e-book and EPUB planning detail.
 
@@ -37,7 +38,8 @@ or quality-polish slice.
 ## Current Planning Docs
 
 The active planning surface is intentionally small: `v1.8-plus-product-review-roadmap.md`,
-`l-mode-plan.md`, and `ebook-mode-epub-export-plan.md`. Completed lane plans,
+`v1.10-single-document-structure-design.md`, `l-mode-plan.md`, and
+`ebook-mode-epub-export-plan.md`. Completed lane plans,
 retired proposals, and speculative future notes live under `archive/`.
 
 ## Local-Only Internal Notes

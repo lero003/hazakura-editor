@@ -1,8 +1,6 @@
 import { renderMarkdown } from "../editor/markdown";
-import {
-  applyEbookPageBreakMarkers,
-  splitMarkdownIntoChapters,
-} from "../editor/ebookChapters";
+import { applyEbookPageBreakMarkers } from "../editor/ebookChapters";
+import { parseMarkdownStructure } from "../editor/markdownStructure";
 import {
   escapeXml,
   extensionFromMediaType,
@@ -58,6 +56,7 @@ type HeadingEntry = {
 type MarkdownHeadingEntry = {
   level: number;
   text: string;
+  navigationLabel: string | null;
 };
 
 type ContentDocument = {
@@ -176,7 +175,9 @@ export function defaultEpubExportSettings({
   markdown: string;
 }): EpubExportSettings {
   const contentMarkdown = stripYamlFrontmatter(markdown);
-  const firstHeading = collectMarkdownHeadings(contentMarkdown)[0];
+  const firstHeading = collectMarkdownHeadings(contentMarkdown).find(
+    (heading) => heading.navigationLabel !== null,
+  );
   const title = firstHeading
     ? markdownInlineText(firstHeading.text)
     : titleFromDocumentName(documentName);
@@ -232,6 +233,11 @@ async function buildContent({
       return;
     }
 
+    sourceHeadingIndex += 1;
+    if (sourceHeading.navigationLabel === null) {
+      return;
+    }
+
     const id = uniqueId(
       slugify(text) || `section-${pendingHeadings.length + 1}`,
       usedIds,
@@ -242,7 +248,6 @@ async function buildContent({
       level: sourceHeading.level,
       text,
     });
-    sourceHeadingIndex += 1;
   });
 
   const { contentDocuments, headingContentPaths } =
@@ -258,12 +263,11 @@ async function buildContent({
 }
 
 function collectMarkdownHeadings(markdown: string): MarkdownHeadingEntry[] {
-  return splitMarkdownIntoChapters(markdown)
-    .filter((chapter) => chapter.headingLevel !== null)
-    .map((chapter) => ({
-      level: chapter.headingLevel ?? 1,
-      text: chapter.headingText ?? "Section",
-    }));
+  return parseMarkdownStructure(markdown).headings.map((heading) => ({
+    level: heading.level,
+    text: heading.text,
+    navigationLabel: heading.navigationLabel,
+  }));
 }
 
 function splitTemplateContentIntoDocuments(

@@ -5,11 +5,8 @@ import {
   type MarkdownHeadingContext,
   type MarkdownOutline,
 } from "../../types";
-import {
-  findCurrentMarkdownHeading,
-  parseMarkdownHeadingLine,
-} from "../../lib/utils";
-import { findYamlFrontmatter } from "../../features/editor/markdownFrontmatter";
+import { findCurrentMarkdownHeading } from "../../lib/utils";
+import { parseMarkdownStructure } from "../../features/editor/markdownStructure";
 
 type UseDocumentOutlineOptions = {
   activeContents: string;
@@ -50,48 +47,18 @@ export function useMarkdownHeadingContext(
 }
 
 function extractMarkdownOutline(source: string): MarkdownOutline {
-  const headings: MarkdownHeading[] = [];
-  const lines = source.split(/\r\n|\n|\r/);
-  const frontmatterEndLine = findYamlFrontmatter(source)?.endLine ?? 0;
-  let fenceMarker: "`" | "~" | null = null;
-  let truncated = false;
-
-  for (let index = 0; index < lines.length; index += 1) {
-    if (index + 1 <= frontmatterEndLine) {
-      continue;
-    }
-
-    const line = lines[index];
-    const trimmedStart = line.trimStart();
-    const fenceMatch = trimmedStart.match(/^(```+|~~~+)/);
-
-    if (fenceMatch) {
-      const marker = fenceMatch[1].startsWith("`") ? "`" : "~";
-
-      if (fenceMarker === marker) {
-        fenceMarker = null;
-      } else if (fenceMarker === null) {
-        fenceMarker = marker;
-      }
-
-      continue;
-    }
-
-    if (fenceMarker !== null) {
-      continue;
-    }
-
-    const heading = parseMarkdownHeadingLine(line, index + 1);
-
-    if (heading) {
-      if (headings.length < MARKDOWN_OUTLINE_MAX_HEADINGS) {
-        headings.push(heading);
-      } else {
-        truncated = true;
-        break;
-      }
-    }
-  }
+  const navigationHeadings = parseMarkdownStructure(source).headings.filter(
+    (heading) => heading.navigationLabel !== null,
+  );
+  const truncated =
+    navigationHeadings.length > MARKDOWN_OUTLINE_MAX_HEADINGS;
+  const headings: MarkdownHeading[] = navigationHeadings
+    .slice(0, MARKDOWN_OUTLINE_MAX_HEADINGS)
+    .map((heading) => ({
+      level: heading.level,
+      line: heading.line,
+      text: heading.navigationLabel as string,
+    }));
 
   return {
     headings,

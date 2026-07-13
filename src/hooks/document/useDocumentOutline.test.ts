@@ -166,6 +166,29 @@ describe("useDocumentOutline", () => {
     ]);
   });
 
+  it("does not close a longer fence with a shorter run", () => {
+    const source = [
+      "# Outside",
+      "````",
+      "```",
+      "## Still fenced",
+      "````",
+      "## Outside again",
+    ].join("\n");
+
+    const { result } = renderHook(() =>
+      useDocumentOutline({
+        activeContents: source,
+        hasActiveDocument: true,
+        selectionLine: 0,
+      }),
+    );
+
+    expect(
+      result.current.documentHeadings.map((heading) => heading.text),
+    ).toEqual(["Outside", "Outside again"]);
+  });
+
   it("truncates the outline past MARKDOWN_OUTLINE_MAX_HEADINGS and flags truncation", () => {
     const lines: string[] = [];
     for (let i = 1; i <= MARKDOWN_OUTLINE_MAX_HEADINGS + 5; i += 1) {

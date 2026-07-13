@@ -132,9 +132,10 @@ For the full implementation inventory and release state, see
 - [Security Boundary](docs/security-boundary.md): 安全性のために守る制約
 - [Agent Workbench Boundary](docs/agent-workbench-boundary.md): optional CLI-agent workbench direction and responsibility boundary
 - [Assist Surface Strategy](docs/assist-surface-strategy.md): future detachable assist direction, including Hazakura Local Assist / Foundation Models planning
-- [Current Work](docs/current-work.md): active v1.9 Writing Loop Clarity queue
+- [Current Work](docs/current-work.md): active v1.10 single-document structure queue
 - [Roadmap](docs/roadmap.md): current phase boundaries and future direction
 - [v1.8+ Product Review / v2 Bridge](docs/v1.8-plus-product-review-roadmap.md): accepted v1.9, v1.10, and v2 sequencing
+- [v1.10 Single-document Structure Design](docs/v1.10-single-document-structure-design.md): shared read-only model and bounded follow-up slices
 - [v1.6 App Store Release Notes](docs/releases/1.6.0-app-store-release-notes.md): published Import Assist release
 - [v1.7 App Store Release Notes](docs/releases/1.7.0-app-store-release-notes.md): published Reference Compare + trust hardening release
 - [v1.8 App Store Release Notes](docs/releases/1.8.0-app-store-release-notes.md): published Daily Trust Completion release

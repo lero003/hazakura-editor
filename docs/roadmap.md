@@ -45,9 +45,12 @@ Current release state:
   rendering, L Mode Reference continuity, keyboard / VoiceOver semantics, kana
   UI copy, export preflight, theme cost, and failure-state messaging. No new
   product surface. Do not reopen without a reproduced hotfix.
-- **Active product lane: v1.9 Writing Loop Clarity.** Organize Preview /
-  Reference / e-book / Outline / Diff / L Mode around `書く・読む・確かめる`
-  without adding chrome or a new document model.
+- **v1.9 Writing Loop Clarity is source complete; release preparation is not
+  started.** W1–W4 organize Preview / Reference / e-book / Outline / Diff /
+  L Mode around `書く・読む・確かめる` without adding chrome or a new model.
+- **Active product lane: v1.10 Single-document Structure Foundation.** Share
+  one source-offset interpretation across Outline, e-book, and EPUB before a
+  read-only structure overview or any bounded explicit edit.
 - **Accepted post-v1.7 sequence:** continue through `v1.9`, `v1.10`,
   and additional `v1.xx` releases as useful. Clarify the writing loop,
   add single-document structure, then run a larger packaged distribution test
@@ -199,10 +202,10 @@ Near-term phase order:
      deterministic full tests, pathless recovery proof, packaged Reference
      Compare, long-reference and a11y gates shipped. Extended TestFlight and
      spoken VoiceOver breadth remain follow-up evidence.
-   - **v1.9 Writing Loop Clarity (active):** organize Preview / Reference /
+   - **v1.9 Writing Loop Clarity (source complete):** organize Preview / Reference /
      e-book / Outline / Diff / L Mode around `書く・読む・確かめる`, without
      adding chrome.
-   - **v1.10 Single-document Structure Foundation:** interpret headings,
+   - **v1.10 Single-document Structure Foundation (active):** interpret headings,
      frontmatter, page-break markers, and navigation candidates through one
      shared structure model; show structure and allow only bounded, explicit,
      undoable single-buffer structure edits. No multi-file Book Scope.

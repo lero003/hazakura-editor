@@ -537,22 +537,22 @@ describe("macOS build scripts", () => {
       "docs/current-status.md": [
         "Current package/app version: **`1.8.0`",
         "Published Mac App Store version: **`1.8.0`",
-        "active implementation lane is **v1.9 Writing Loop Clarity**",
+        "lane is **v1.10 Single-document Structure Foundation**",
       ],
       "docs/current-work.md": [
-        "Scope: v1.9 Writing Loop Clarity",
-        "Active Queue — v1.9 Writing Loop Clarity",
+        "Scope: v1.10 Single-document Structure Foundation",
+        "Active Queue — v1.10 Single-document Structure Foundation",
       ],
-      "docs/development-automation.md": ["Phase: **v1.9 Writing Loop Clarity**"],
+      "docs/development-automation.md": ["Phase: **v1.10 Single-document Structure Foundation**"],
       "docs/handoff.md": [
         "Package/app version in tree is **`1.8.0`",
         "Published Mac App Store version is **`1.8.0`",
-        "Active v1.9 Writing Loop Clarity",
+        "Active v1.10 Single-document Structure Foundation",
       ],
       "docs/roadmap.md": [
         "Package/app version in tree: **`1.8.0`",
         "Historical MAS baselines (`1.3.0` Daily Trust",
-        "Active product lane: v1.9 Writing Loop Clarity",
+        "Active product lane: v1.10 Single-document Structure Foundation",
       ],
     };
 

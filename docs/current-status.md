@@ -31,6 +31,16 @@ Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
   as an Outline heading; CRLF and unclosed-frontmatter behavior is pinned by
   tests. This is interpretation-only hardening: it adds no hidden document
   model, structure UI, or source rewrite.
+- **v1.9 Writing Loop Clarity W1–W4 are source complete and reviewed.** The
+  review fixed stale Command Palette labels when locale changes while the
+  palette is open, aligned the returning Start Panel kana CTA, and repaired
+  release/lane document checks. No v1.9 version bump or release preparation
+  has run.
+- **v1.10 S1 shared structure parsing is source complete.**
+  `parseMarkdownStructure` provides one source-offset interpretation of closed
+  leading frontmatter, ATX headings, standalone page-breaks, and EPUB
+  navigation candidates for Outline, e-book, and EPUB. It adds no structure
+  UI, source rewrite, edit transaction, workspace scan, or Book Scope.
 - **v1.6 (`1.6.0`) is closed and published.** Mac App Store App Review passed
   without issues (user-reported 2026-07-10). Release note:
   `docs/releases/1.6.0-app-store-release-notes.md`. Product scope: Import
@@ -259,7 +269,9 @@ Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
   in `docs/archive/operations/v1.1-v1.2-followup.md`.
 - No remaining source-level release blocker is known for the closed v1.6,
   v1.7, or v1.8 lines. Do not reopen them without a reproduced gap. The
-  active implementation lane is **v1.9 Writing Loop Clarity**.
+  v1.9 Writing Loop Clarity W1–W4 source plan is complete and reviewed; no
+  v1.9 version bump or release preparation has run. The active implementation
+  lane is **v1.10 Single-document Structure Foundation**.
   `AppWorkspace` owns a shared
   per-document view-state registry: reader, Editor cursor/scroll, Preview
   reopen, tab transitions, and safe local Markdown-link transitions now
@@ -672,7 +684,7 @@ baseline, and smoke evidence are archived under
 
 ## Active Planning Sources
 
-- `docs/current-work.md`: current v1.9 Writing Loop Clarity queue.
+- `docs/current-work.md`: current v1.10 single-document structure queue.
 - `docs/roadmap.md`: phase order and future boundaries.
 - `docs/product-brief.md`: durable product direction and non-goals.
 - `docs/security-boundary.md`: safe editor constraints.
@@ -682,6 +694,7 @@ baseline, and smoke evidence are archived under
   planning and source-preserving reader/export boundaries.
 - `docs/assist-surface-strategy.md`: assist-surface direction.
 - `docs/v1.8-plus-product-review-roadmap.md`: accepted v1.9, v1.10, distribution-confidence, and v2 sequencing.
+- `docs/v1.10-single-document-structure-design.md`: active structure contract and slice order.
 - `docs/app-store-build.md`: public-safe App Store build/signing boundary.
 
 ## Next Safe Actions
@@ -689,16 +702,13 @@ baseline, and smoke evidence are archived under
 1. Treat **v1.8 (`1.8.0`) as published and closed** after App Review passed
    (user-reported 2026-07-14). Do not move its public tag or reopen it without
    a reproduced hotfix need.
-2. **Active lane is v1.9 Writing Loop Clarity.** Organize Preview / Reference
-   / e-book / Outline / Diff / L Mode around `書く・読む・確かめる` without
-   adding chrome. Keep one read-only reference + one editable Markdown buffer;
-   do not build a generic split editor. See `docs/current-work.md` and
-   `docs/v1.8-plus-product-review-roadmap.md`.
-3. The active post-v1.8 direction is **v1.9+ before v2**. Two-digit minor
-   versions such as `v1.10` are allowed. Clarify the writing loop, add a
-   single-document structure model and bounded structure editing, then run a
-   larger packaged distribution test before multi-file Book Scope.
-   See `docs/v1.8-plus-product-review-roadmap.md`.
+2. **Active lane is v1.10 Single-document Structure Foundation.** S1 shares
+   frontmatter, ATX heading, page-break, and EPUB navigation interpretation
+   across Outline / e-book / EPUB. Next is a read-only overview inside the
+   existing Outline surface; do not add a new pane or edit transaction yet.
+3. Keep v1.9 source complete but unreleased until an explicit version/release
+   preparation decision. Continue v1.10 inside one Markdown buffer, then run
+   the v1.11+ distribution-confidence gate before multi-file Book Scope.
 4. Keep position-continuity, v1.3 Daily Trust, and v1.7 Reference Compare
    closed unless a gap reproduces. Historical notes remain in
    `docs/archive/operations/v1.1-v1.2-followup.md` and
