@@ -330,6 +330,7 @@ function makeWorkspaceProps(
       followActive: "Following",
       importWorkflowHint:
         "Center is the editable draft; right is the source reference. Fix it, then save.",
+      loadingPage: "Loading page",
       narrowFocusLabel: "Reference focus",
       nextPage: "Next page",
       nextReview: "Next to review",

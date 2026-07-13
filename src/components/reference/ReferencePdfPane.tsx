@@ -355,7 +355,7 @@ export function ReferencePdfPane({
       >
         {loading ? (
           <div className="reference-placeholder" role="status">
-            …
+            {copy.loadingPage}
           </div>
         ) : null}
         {error ? (

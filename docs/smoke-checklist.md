@@ -620,7 +620,9 @@ recovered state separately where relevant.
     reference shows the actual page image rather than only the filename/page
     alt text, while the draft remains editable in the center. Exercise
     next/previous page, fit width, fit page, and 150%; keep the existing CSP
-    unchanged (`data:` allowed, `blob:` not required).
+    unchanged (`data:` allowed, `blob:` not required). While a page is
+    rendering, confirm the live status announces localized loading copy rather
+    than an ellipsis-only placeholder.
 22. **Pathless recovery cleanup failure**: with a disposable localStorage
     failure fixture, exercise Save As, Restore, Discard, dirty-tab close, and
     Discard All. Confirm the requested edit/close action still completes, the

@@ -81,6 +81,8 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   read-only editing boundary.
   The Editor full-path copy button now also uses a kana accessible name
   instead of falling back to the English label.
+  Reference PDF loading now exposes a localized status message instead of an
+  ellipsis-only live status.
   The App Store surface smoke also passed on 2026-07-13 (**10 files / 99
   tests**), covering pane controls, Command Palette, settings, review-state,
   and distribution-lane contracts.

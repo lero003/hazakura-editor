@@ -91,6 +91,29 @@ describe("ReferencePdfPane", () => {
     expect(onPageIndexChange).toHaveBeenCalledWith(1, "user");
   });
 
+  it("announces localized loading status while a page is rendering", () => {
+    vi.mocked(renderPdfReferencePage).mockImplementationOnce(
+      () => new Promise(() => {}),
+    );
+
+    render(
+      <ReferencePdfPane
+        copy={referenceCompareCopy("ja")}
+        pageIndex={0}
+        onPageIndexChange={vi.fn()}
+        reference={{
+          kind: "pdf",
+          path: "/ws/a.pdf",
+          name: "a.pdf",
+          pageCount: 1,
+          referenceId: "pdf-ref-1",
+        }}
+      />,
+    );
+
+    expect(screen.getByRole("status").textContent).toBe("ページを読み込み中");
+  });
+
   it("gives the rendered PDF page an accessible file-and-page name", async () => {
     render(
       <ReferencePdfPane

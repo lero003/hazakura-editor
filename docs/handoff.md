@@ -127,7 +127,8 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    generation-lock status also follows the active English / Japanese / kana
    copy while retaining its polite live-region and read-only boundary. The
    Editor full-path copy button also has a kana accessible name rather than an
-   English fallback.
+   English fallback. Reference PDF loading also announces localized status
+   copy instead of an ellipsis-only live status.
    `npm run smoke:app-store-surface` passed on 2026-07-13 (**10 files / 99
    tests**); this is source/App Store-lane surface evidence, not signed
    TestFlight or spoken VoiceOver evidence.

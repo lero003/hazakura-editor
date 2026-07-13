@@ -8,6 +8,11 @@ describe("referenceCompareCopy accessibility labels", () => {
     expect(referenceCompareCopy("kana").narrowFocusLabel).toBe(
       "さんしょうひょうじの たいしょう",
     );
+    expect(referenceCompareCopy("en").loadingPage).toBe("Loading page");
+    expect(referenceCompareCopy("ja").loadingPage).toBe("ページを読み込み中");
+    expect(referenceCompareCopy("kana").loadingPage).toBe(
+      "ページを よみこみちゅう",
+    );
   });
 
   it("exposes the same copy keys across languages", () => {
