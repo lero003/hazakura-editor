@@ -396,6 +396,32 @@ describe("useDocumentExport", () => {
     expect(setStatus).toHaveBeenCalledWith("PDF exported");
   });
 
+  it("treats encoding-only changes as unsaved in export preflight", async () => {
+    const activeTab = makeTab({
+      contents: "saved",
+      encoding: "shift-jis",
+      lastSavedContents: "saved",
+      lastSavedEncoding: "utf-8",
+    });
+    const { result } = renderHook(() =>
+      useDocumentExport({
+        activeContents: "saved",
+        activeTab,
+        setGlobalError: vi.fn(),
+        setStatus: vi.fn(),
+        workspaceRootPath: null,
+      }),
+    );
+
+    await act(async () => {
+      await result.current.exportPdf();
+      await result.current.exportEpubBeta();
+    });
+
+    expect(result.current.pdfExportRequest?.hasUnsavedChanges).toBe(true);
+    expect(result.current.epubExportRequest?.hasUnsavedChanges).toBe(true);
+  });
+
   it("preserves PDF image warnings in the final success status", async () => {
     tauriApi.isTauriRuntime.mockReturnValue(true);
     dialogApi.save.mockResolvedValue("/tmp/image-warning.pdf");

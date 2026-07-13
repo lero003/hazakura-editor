@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Active release lane and future planning boundaries
 Authority: Medium
-Last reviewed: 2026-07-12 (v1.7 published; v1.8 Daily Trust active)
+Last reviewed: 2026-07-13 (v1.8.0 TestFlight candidate preparation)
 
 ## Current Position
 
@@ -15,8 +15,8 @@ Current release state:
 
 - Mac App Store listing:
   `https://apps.apple.com/jp/app/hazakura-editor/id6778637880?mt=12`.
-- Package/app version in tree: **`1.7.0`** (also the published Mac App Store
-  version; v1.8 begins without a version bump). Local
+- Package/app version in tree: **`1.8.0`** (TestFlight candidate). The
+  published Mac App Store version remains `1.7.0`. Local
   package provenance lives in `docs/internal/app-store-candidates/latest.json`.
 - **Published Mac App Store version: `1.7.0`.** App Review passed and the
   release was published (user-reported 2026-07-12). Release notes:
@@ -36,8 +36,9 @@ Current release state:
   continuity, pathless recovery, wrap-safe long-reference rendering, root recovery)
   are in source. Extended recovery, long-reference, and accessibility checks
   continue in v1.8 rather than reopening the published lane.
-- **Active product lane: v1.8 Daily Trust Completion.** Stabilize deterministic
-  tests and complete distribution evidence without adding a large surface.
+- **Active product lane: v1.8 Daily Trust Completion.** `1.8.0` candidate
+  preparation is active: stabilize deterministic tests and complete signed
+  TestFlight distribution evidence without adding a large surface.
 - **Accepted post-v1.7 sequence:** continue through `v1.8`, `v1.9`, `v1.10`,
   and additional `v1.xx` releases as useful. Close daily trust and UX clarity,
   add single-document structure, then run a larger packaged distribution test

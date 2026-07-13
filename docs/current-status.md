@@ -3,12 +3,12 @@
 Status: Operational
 Scope: Current implementation state and next safe actions
 Authority: High
-Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
+Last reviewed: 2026-07-13 (v1.8.0 TestFlight candidate preparation)
 
 ## Current State
 
 - `Hazakura Editor` is a Tauri desktop app for Markdown-first safe text editing.
-- Current development package/app version: **`1.7.0`** across npm, Tauri, Cargo,
+- Current development package/app version: **`1.8.0`** across npm, Tauri, Cargo,
   and lockfile metadata. Local package provenance (build counter, pkg path,
   SHA-256) lives in ignored `docs/internal/app-store-candidates/latest.json`.
 - **v1.6 (`1.6.0`) is closed and published.** Mac App Store App Review passed
@@ -690,8 +690,9 @@ baseline, and smoke evidence are archived under
    versions such as `v1.10` are allowed. Close Daily Trust, clarify the writing
    loop, add a single-document structure model and bounded structure editing,
    then run a larger packaged distribution test before multi-file Book Scope.
-   See `docs/v1.8-plus-product-review-roadmap.md`. This does not authorize a
-   version bump, tag, upload, or release publication.
+   See `docs/v1.8-plus-product-review-roadmap.md`. The `1.8.0` TestFlight
+   candidate version bump is now approved; tag and public release publication
+   remain separate actions.
 4. Keep position-continuity and v1.3 Daily Trust closed unless a gap
    reproduces. Historical notes remain in `docs/v1.1-v1.2-followup.md` and
    `docs/v1.3-followup.md`.
@@ -707,5 +708,6 @@ baseline, and smoke evidence are archived under
    `docs/apple-local-assist-distribution-plan.md`, and
    `docs/apple-local-assist-writing-companion-plan.md`; keep direct
    buffer edits as explicit AI edit transactions.
-8. Do not tag or publish without explicit approval. In-tree and published
-   version remain `1.7.0`; the v1.8 lane starts without a version bump.
+8. Do not tag or publish without explicit approval. In-tree version is
+   `1.8.0`; published Mac App Store version remains `1.7.0` until App Store
+   Connect processing, TestFlight smoke, review, and publication are complete.

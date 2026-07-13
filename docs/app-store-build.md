@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Mac App Store submission build path
 Authority: High
-Last reviewed: 2026-07-12 (1.7.0 published; v1.8 work does not bump version)
+Last reviewed: 2026-07-13 (1.8.0 TestFlight candidate preparation)
 
 ## Purpose
 
@@ -44,7 +44,7 @@ Agent Workbench behind its existing boundary.
 - Published App Store version: `1.7.0` (App Review passed and publication was
   user-reported 2026-07-12; Reference Compare plus trust / daily-use
   hardening). See `docs/releases/1.7.0-app-store-release-notes.md`.
-- Current source / Developer version: `1.7.0`. The active product lane is
+- Current source / Developer version: `1.8.0`. The active product lane is
   v1.8 Daily Trust Completion; see `docs/current-work.md` and
   `docs/v1.8-plus-product-review-roadmap.md`.
 - Latest local App Store package candidate metadata (version, build

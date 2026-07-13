@@ -1,7 +1,6 @@
 import { useState, type RefObject } from "react";
 import type { EpubExportSettings } from "../../features/document/epubExport";
 import type { MenuLanguage } from "../../types";
-import { isJapaneseMenuLanguage } from "../../types";
 import { ExportPreflightSummary } from "./ExportPreflightSummary";
 
 type EpubExportSettingsDialogProps = {
@@ -104,7 +103,20 @@ export function EpubExportSettingsDialog({
 }
 
 function getEpubExportSettingsCopy(menuLanguage: MenuLanguage) {
-  if (isJapaneseMenuLanguage(menuLanguage)) {
+  if (menuLanguage === "kana") {
+    return {
+      authorField: "かいたひと",
+      cancel: "やめる",
+      export: "かきだす",
+      languageField: "ことば",
+      scopeNote:
+        "でんししょせきもーどは よむための ぷれびゅーです。かきだすEPUBは ひとつのMarkdownのふみを たいしょうにします。Hazakuraは EPUBを すべてつくるための どうぐではありません。",
+      title: "EPUBかきだし",
+      titleField: "しょめい",
+    };
+  }
+
+  if (menuLanguage === "ja") {
     return {
       authorField: "著者名",
       cancel: "キャンセル",

@@ -61,4 +61,25 @@ describe("PdfExportSettingsDialog", () => {
       screen.getByRole("button", { name: "Cancel" }),
     );
   });
+
+  it("keeps the PDF dialog controls in kana mode", () => {
+    render(
+      <PdfExportSettingsDialog
+        cancelButtonRef={createRef()}
+        dialogRef={createRef()}
+        documentName="book.md"
+        hasUnsavedChanges={false}
+        initialPreset="standard"
+        menuLanguage="kana"
+        onCancel={vi.fn()}
+        onConfirm={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("dialog", { name: "PDFかきだし" })).toBeTruthy();
+    expect(screen.getByRole("group", { name: "A4の よはく" })).toBeTruthy();
+    expect(screen.getByLabelText(/ふつう/)).toHaveProperty("checked", true);
+    expect(screen.getByRole("button", { name: "かきだす" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "やめる" })).toBeTruthy();
+  });
 });

@@ -3,7 +3,7 @@ import {
   PDF_MARGIN_PRESETS,
   type PdfMarginPreset,
 } from "../../features/document/pdfExport";
-import { isJapaneseMenuLanguage, type MenuLanguage } from "../../types";
+import type { MenuLanguage } from "../../types";
 import { ExportPreflightSummary } from "./ExportPreflightSummary";
 
 type PdfExportSettingsDialogProps = {
@@ -99,7 +99,24 @@ export function PdfExportSettingsDialog({
 }
 
 function getPdfExportSettingsCopy(menuLanguage: MenuLanguage) {
-  if (isJapaneseMenuLanguage(menuLanguage)) {
+  if (menuLanguage === "kana") {
+    return {
+      cancel: "やめる",
+      export: "かきだす",
+      marginDescription: (blockMm: number, inlineMm: number) =>
+        `うえした ${blockMm} mm・ひだりみぎ ${inlineMm} mm`,
+      marginLabel: "A4の よはく",
+      presets: {
+        narrow: "せまい",
+        standard: "ふつう",
+        wide: "ひろい",
+      },
+      scopeNote: "かみの おおきさは A4です。よはくだけ えらびます。",
+      title: "PDFかきだし",
+    };
+  }
+
+  if (menuLanguage === "ja") {
     return {
       cancel: "キャンセル",
       export: "書き出す",

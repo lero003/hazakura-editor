@@ -3,11 +3,12 @@
 Status: Operational
 Scope: Short handoff for the next coding agent
 Authority: Medium
-Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
+Last reviewed: 2026-07-13 (v1.8.0 TestFlight candidate preparation)
 
 ## Current State
 
-- Package and published Mac App Store version are **`1.7.0`**. App Review
+- Package/app version in tree is **`1.8.0`** for the active TestFlight
+  candidate. Published Mac App Store version remains **`1.7.0`**; App Review
   passed and publication was user-reported on 2026-07-12. Local package
   provenance lives in ignored `docs/internal/app-store-candidates/latest.json`.
 - `v1.7.0` is the immutable published source tag. The selected signed pkg is
@@ -179,9 +180,9 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    Preview content intact after each boot animation.
 4. Keep v1.6 closed unless a reproduced gap needs a hotfix. Historical quality
    notes: `docs/quality-inventory-v1.6.md`.
-5. Keep `@codemirror/view` at **6.43.2**. Do not bump, tag, upload, or publish
-   without explicit user approval. In-tree and published version remain
-   **`1.7.0`** while v1.8 work begins.
+5. Keep `@codemirror/view` at **6.43.2**. The user approved `1.8.0` candidate
+   preparation and push. Tag/publication remain separate; published version
+   stays **`1.7.0`** until the App Store lane completes.
 6. Earlier path-backed workspace Recovery forced-termination smoke passed. A
    disposable separate-bundle Developer app also restored a force-terminated
    pathless T-2 draft on 2026-07-12. Signed TestFlight proof remains open.

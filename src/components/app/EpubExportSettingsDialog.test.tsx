@@ -80,6 +80,30 @@ describe("EpubExportSettingsDialog", () => {
     );
   });
 
+  it("keeps the EPUB dialog controls in kana mode", () => {
+    render(
+      <EpubExportSettingsDialog
+        cancelButtonRef={createRef()}
+        dialogRef={createRef()}
+        documentName="book.md"
+        hasUnsavedChanges={false}
+        initialSettings={{
+          author: "",
+          language: "ja",
+          title: "ほん",
+        }}
+        menuLanguage="kana"
+        onCancel={vi.fn()}
+        onConfirm={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("dialog", { name: "EPUBかきだし" })).toBeTruthy();
+    expect(screen.getByLabelText("しょめい")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "かきだす" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "やめる" })).toBeTruthy();
+  });
+
   it("renders the e-book / EPUB scope note in Japanese and English", () => {
     const { rerender } = render(
       <EpubExportSettingsDialog

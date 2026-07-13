@@ -136,7 +136,7 @@ export function GlobalSearch({
   const rowsRef = useLatestValueRef(rows);
   const activeIndexRef = useRef(activeIndex);
   activeIndexRef.current = activeIndex;
-  const activeOptionId = rows[activeIndex]
+  const activeOptionId = canShowSearchResults && rows[activeIndex]
     ? `global-search-option-${activeIndex}`
     : undefined;
 
@@ -246,7 +246,10 @@ export function GlobalSearch({
                 index === 0 ||
                 fileGroupKey(rows[index - 1]) !== fileGroupKey(row);
               return (
-                <div key={`${row.file.path}:${row.match.line}:${row.match.column}`}>
+                <div
+                  key={`${row.file.path}:${row.match.line}:${row.match.column}`}
+                  role="presentation"
+                >
                   {showFileHeader ? (
                     <div className="global-search-file-header">
                       {row.file.relativePath}

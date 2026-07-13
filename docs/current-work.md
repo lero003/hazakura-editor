@@ -1,7 +1,7 @@
 # Current Work
 
 Status: Operational
-Scope: v1.8 Daily Trust Completion (published package remains `1.7.0`)
+Scope: v1.8 Daily Trust Completion (`1.8.0` TestFlight candidate)
 Authority: High
 Last reviewed: 2026-07-13 (v1.7.0 published; v1.8 active)
 
@@ -17,10 +17,12 @@ Start here when choosing the next small `Hazakura Editor` slice.
 | **Post-v1.5 main (not v1.5)** | Merged after v1.5 release | 江戸彼岸 theme; CodeMirror `@codemirror/view` **6.43.2** pin + editor display quality (syntax-tree recompute, resize remeasure, fold gutter removed). |
 | **v1.6** | **Closed / published as `1.6.0`** | Import Assist Phase 1 + edohigan + quality packs. **App Review passed without issues (2026-07-10).** Boundary: `docs/import-assist-boundary-review.md`. Release notes: `docs/releases/1.6.0-app-store-release-notes.md`. Do not reopen unless hotfix. |
 | **v1.7** | **Closed / published as `1.7.0`** | Reference Compare plus trust / daily-use hardening. App Review passed and the release was published (user-reported 2026-07-12). Extended smoke continues in v1.8; do not reopen without a reproduced hotfix. |
-| **v1.8** | **Active — Daily Trust Completion** | Make the shipped v1.7 experience deterministic and distribution-proven. First source slice: full Rust suite host-sensitive test stabilization. No version bump in this slice. |
+| **v1.8** | **Active — `1.8.0` TestFlight candidate preparation** | Make the shipped v1.7 experience deterministic and distribution-proven. Source review and automated gates precede signed package generation and TestFlight smoke. |
 | **v2** | Later | OKF Book Scope, then 縦書き. |
 
-Published Mac App Store version is **`1.7.0`**. See `current-status.md` for lane truth; treat Connect as authoritative for store counters.
+Package/app version in tree is **`1.8.0`**; published Mac App Store version is
+still **`1.7.0`**. See `current-status.md` for lane truth; treat Connect as
+authoritative for store counters.
 
 ## Product Boundary
 

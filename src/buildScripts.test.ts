@@ -527,11 +527,15 @@ describe("macOS build scripts", () => {
     const expectedSnippets = {
       "README.md": [
         "Hazakura Editor `1.7.0` is published",
-        "Current package/app version is `1.7.0`",
+        "Current package/app version is `1.8.0`",
         "The published App Store version is `1.7.0`",
       ],
-      "docs/app-store-build.md": ["Published App Store version: `1.7.0`"],
+      "docs/app-store-build.md": [
+        "Published App Store version: `1.7.0`",
+        "Current source / Developer version: `1.8.0`",
+      ],
       "docs/current-status.md": [
+        "Current development package/app version: **`1.8.0`",
         "Published Mac App Store version: **`1.7.0`",
         "Active product lane: v1.8 — Daily Trust Completion",
       ],
@@ -541,10 +545,12 @@ describe("macOS build scripts", () => {
       ],
       "docs/development-automation.md": ["Phase: **v1.8 Daily Trust Completion**"],
       "docs/handoff.md": [
+        "Package/app version in tree is **`1.8.0`",
         "Published Mac App Store version is **`1.7.0`",
         "Active v1.8 Daily Trust",
       ],
       "docs/roadmap.md": [
+        "Package/app version in tree: **`1.8.0`",
         "Historical MAS baselines (`1.3.0` Daily Trust",
         "Active product lane: v1.8 Daily Trust Completion",
       ],

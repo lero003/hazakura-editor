@@ -26,6 +26,7 @@ import {
 import { embedAndStampPdfImages } from "../../features/document/pdfExportImages";
 import { getMarkdownPreviewCss } from "../../features/document/markdownExportCss";
 import { renderMarkdown } from "../../features/editor/markdown";
+import { isDirty } from "../../features/editor/editorTabs";
 import type { EditorTab } from "../../types";
 
 type UseDocumentExportOptions = {
@@ -74,7 +75,7 @@ export function useDocumentExport({
 
     setPdfExportRequest({
       documentName: activeTab.name,
-      hasUnsavedChanges: activeTab.contents !== activeTab.lastSavedContents,
+      hasUnsavedChanges: isDirty(activeTab),
       preset: DEFAULT_PDF_MARGIN_PRESET,
       tabId: activeTab.id,
     });
@@ -634,7 +635,7 @@ ${bodyHtml}
 
     setEpubExportRequest({
       documentName: activeTab.name,
-      hasUnsavedChanges: activeTab.contents !== activeTab.lastSavedContents,
+      hasUnsavedChanges: isDirty(activeTab),
       settings: defaultEpubExportSettings({
         documentName: activeTab.name,
         markdown: activeContents,

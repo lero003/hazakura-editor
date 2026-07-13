@@ -221,7 +221,19 @@ describe("search surface accessibility semantics", () => {
         onSetActiveIndex={vi.fn()}
         onSetQuery={vi.fn()}
         query="hazakura"
-        rows={[]}
+        rows={[
+          {
+            fileIndex: 0,
+            matchIndex: 0,
+            file: {
+              path: "/workspace/stale.md",
+              relativePath: "stale.md",
+              matches: [],
+              truncated: false,
+            },
+            match: { line: 1, column: 1, text: "stale result" },
+          },
+        ]}
         searchError="Workspace folder is unavailable."
         searching={false}
         summary={null}
@@ -233,6 +245,12 @@ describe("search surface accessibility semantics", () => {
       "検索に失敗しました。Workspace folder is unavailable.",
     );
     expect(screen.queryByText("一致するファイルがありません")).toBeNull();
+    expect(screen.queryByRole("option")).toBeNull();
+    expect(
+      screen
+        .getByRole("combobox", { name: "ファイル内検索" })
+        .getAttribute("aria-activedescendant"),
+    ).toBeNull();
   });
 
   it("uses gentle kana copy for a search failure", () => {
