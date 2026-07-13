@@ -125,7 +125,9 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    with AppTopChrome and Safe Editor locale coverage. Dirty tab descriptions
    now use the localized unsaved-state copy as well. The Local Assist
    generation-lock status also follows the active English / Japanese / kana
-   copy while retaining its polite live-region and read-only boundary.
+   copy while retaining its polite live-region and read-only boundary. The
+   Editor full-path copy button also has a kana accessible name rather than an
+   English fallback.
    `npm run smoke:app-store-surface` passed on 2026-07-13 (**10 files / 99
    tests**); this is source/App Store-lane surface evidence, not signed
    TestFlight or spoken VoiceOver evidence.

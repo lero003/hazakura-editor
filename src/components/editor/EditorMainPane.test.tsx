@@ -172,6 +172,16 @@ describe("EditorMainPane", () => {
     });
   });
 
+  it("uses the kana locale for the full-path copy accessible name", () => {
+    renderEditorMainPane({ menuLanguage: "kana" });
+
+    expect(
+      screen.getByRole("button", {
+        name: "ふるぱすを こぴー: /workspace/docs/draft.md",
+      }),
+    ).toBeTruthy();
+  });
+
   it("shows a root workspace file as its full path only", () => {
     renderEditorMainPane({
       activeTab: {

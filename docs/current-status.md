@@ -79,6 +79,8 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   The Local Assist generation-lock status now follows the active English /
   Japanese / kana copy as well, while retaining its polite live-region and
   read-only editing boundary.
+  The Editor full-path copy button now also uses a kana accessible name
+  instead of falling back to the English label.
   The App Store surface smoke also passed on 2026-07-13 (**10 files / 99
   tests**), covering pane controls, Command Palette, settings, review-state,
   and distribution-lane contracts.

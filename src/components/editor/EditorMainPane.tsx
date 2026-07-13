@@ -208,6 +208,8 @@ function formatCopyFullPathLabel(
   documentPath: string,
 ): string {
   switch (menuLanguage) {
+    case "kana":
+      return `ふるぱすを こぴー: ${documentPath}`;
     case "ja":
       return `フルパスをコピー: ${documentPath}`;
     case "en":
