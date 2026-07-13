@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-07-12 (v1.7 published; v1.8 Daily Trust active)
+Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
@@ -16,7 +16,7 @@ or quality-polish slice.
 - `security-boundary.md`: safety constraints for file handling and execution boundaries.
 - `agent-workbench-boundary.md`: optional CLI-agent workbench trust boundary.
 - `assist-surface-strategy.md`: future assist-surface direction.
-- `current-work.md`: active queue (v1.7 Reference Compare; v1.6 closed / published).
+- `current-work.md`: active queue (v1.8 Daily Trust Completion; v1.7 closed / published).
 - `quality-inventory-v1.6.md`: historical quality inventory for the closed v1.6 lane.
 - `roadmap.md`: active lane and future phase boundaries.
 - `current-status.md`: current implementation and release state.
