@@ -11,18 +11,24 @@ Last reviewed: 2026-07-13 (v1.8.0 TestFlight candidate preparation)
 - Current development package/app version: **`1.8.0`** across npm, Tauri, Cargo,
   and lockfile metadata. Local package provenance (build counter, pkg path,
   SHA-256) lives in ignored `docs/internal/app-store-candidates/latest.json`.
-- **`1.8.0` build `87` is the selected signed local TestFlight candidate.**
+- **`1.8.0` build `89` is the selected signed local TestFlight candidate.**
   App/package signatures, sandbox and helper entitlements, version/build,
   minimum macOS version, and checksum provenance passed local verification on
   2026-07-13. App Store Connect upload, Apple processing, internal-group
   assignment, and signed TestFlight interaction remain unverified.
-- **The v1.8 PDF-reference zoom adjustment is included in signed build `87`.**
+- **The v1.8 PDF-reference zoom adjustment is included in signed build `89`.**
   The duplicate-looking fit-page control was removed;
   PDF reference display now offers fit width plus a raster-independent 150%
   view. The zoomed page is a native two-axis scroll region and supports Arrow
   key / Page Up / Page Down panning without changing pages. Package/app
   signatures and candidate provenance passed; hands-on panning with a real PDF
   remains manual before Transporter upload.
+- **The v1.8 structured-Markdown preparation is included in signed build
+  `89`.** Outline, e-book chapter splitting, and EPUB export now share one
+  leading YAML frontmatter boundary. Heading-like metadata is no longer shown
+  as an Outline heading; CRLF and unclosed-frontmatter behavior is pinned by
+  tests. This is interpretation-only hardening: it adds no hidden document
+  model, structure UI, or source rewrite.
 - **v1.6 (`1.6.0`) is closed and published.** Mac App Store App Review passed
   without issues (user-reported 2026-07-10). Release note:
   `docs/releases/1.6.0-app-store-release-notes.md`. Product scope: Import
