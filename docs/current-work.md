@@ -25,6 +25,19 @@ Package/app version in tree is **`1.8.0`**; published Mac App Store version is
 also **`1.8.0`**. See `current-status.md` for lane truth; treat Connect as
 authoritative for store counters.
 
+## Active Queue — v1.9 Writing Loop Clarity
+
+Goal: 「機能を知っている人だけが使える」状態から、書く・読む・確かめる流れで
+理解できる状態へ進める。 Non-goal: toolbar 増築、汎用 split、設定の大量追加。
+Source: `docs/v1.8-plus-product-review-roadmap.md`.
+
+| Priority | Slice | Acceptance |
+|---|---|---|
+| **Done / source** | **W1 — Returning Start Panel** | Start Panel を first-use / returning に分ける。前回 workspace 再開（path → bookmark → picker）と pathless 復旧候補を Start Panel 上に表示（en/ja/kana）。空エディタ時は上部 Recovery banner と二重表示しない。 |
+| **Next** | **W2 — Pane state copy** | Preview / e-book / Reference / Diff の hidden / retained / closed を目的語で説明する。 |
+| Pending | **W3 — Context continuity audit** | L Mode 往復・tab 切替・Save As 後の作業文脈を監査し、既知ギャップをテスト固定。 |
+| Pending | **W4 — Palette discoverability** | Command Palette の日本語 / かな discoverability を目的語へ揃える。 |
+
 ## Product Boundary
 
 - Safe Editor remains primary.

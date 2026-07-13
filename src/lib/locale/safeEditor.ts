@@ -16,12 +16,20 @@ export type SafeEditorCopy = {
   openWorkspaceFolder: string;
   restoreWorkspaceSidebar: string;
   startHeading: string;
+  /** Returning visit heading when resume or recovery is available. */
+  startHeadingReturning: string;
   startActions: string;
   /** Short purpose-led pitch: write / read / verify. */
   startValuePitch: string;
   startHintWrite: string;
   startHintRead: string;
   startHintVerify: string;
+  /** Primary resume control for the last workspace folder. */
+  startResumeWorkspace: (folderLabel: string) => string;
+  startResumeWorkspaceHint: string;
+  startResumeSection: string;
+  startRecoverySection: string;
+  startRecoveryHeading: string;
   workspace: string;
   workspaceFileTree: string;
 };
@@ -43,11 +51,19 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
       openWorkspaceFolder: "ところをひらく",
       restoreWorkspaceSidebar: "ところをもどす",
       startHeading: "しづかにかきはじめる",
+      startHeadingReturning: "つづきから かく",
       startActions: "はじめのわざ",
       startValuePitch: "かき、よみ、たしかめる。",
       startHintWrite: "かく — Markdown を中央で",
       startHintRead: "よむ — プレビュー・L・電子書籍・参照",
       startHintVerify: "たしかめる — 差分・要確認・下書き復旧",
+      startResumeWorkspace: (folderLabel) =>
+        `前回のところ「${folderLabel}」をひらく`,
+      startResumeWorkspaceHint:
+        "すなばの けんげんが きれていれば、ふぉるだを えらびなおします。",
+      startResumeSection: "つづきを かく",
+      startRecoverySection: "たしかめる",
+      startRecoveryHeading: "みちのない みほぞんの したがき",
       workspace: "ところ",
       workspaceFileTree: "ところのふみならび",
     };
@@ -69,12 +85,20 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
         openWorkspaceFolder: "ワークスペースフォルダを開く",
         restoreWorkspaceSidebar: "ワークスペースサイドバーを戻す",
         startHeading: "静かに書き始める",
+        startHeadingReturning: "続きから書く",
         startActions: "開始操作",
         startValuePitch: "書いて、読んで、確かめる。",
         startHintWrite: "書く — 中央の Markdown 編集",
         startHintRead:
           "読む — プレビュー / L Mode / 電子書籍 / 右の参照",
         startHintVerify: "確かめる — 差分・要確認・未保存下書きの復旧",
+        startResumeWorkspace: (folderLabel) =>
+          `前回のフォルダ「${folderLabel}」を開く`,
+        startResumeWorkspaceHint:
+          "サンドボックスの権限が切れている場合は、フォルダを選び直します。",
+        startResumeSection: "続きを書く",
+        startRecoverySection: "確かめる",
+        startRecoveryHeading: "パスのない未保存下書き",
         workspace: "ワークスペース",
         workspaceFileTree: "ワークスペースのファイルツリー",
       }
@@ -93,11 +117,19 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
         openWorkspaceFolder: "Open workspace folder",
         restoreWorkspaceSidebar: "Restore workspace sidebar",
         startHeading: "Start writing quietly",
+        startHeadingReturning: "Continue where you left off",
         startActions: "Start actions",
         startValuePitch: "Write, read, and verify.",
         startHintWrite: "Write — Markdown in the center",
         startHintRead: "Read — Preview, L Mode, e-book, or a right-hand reference",
         startHintVerify: "Verify — Diff, review flags, and draft recovery",
+        startResumeWorkspace: (folderLabel) =>
+          `Open last folder “${folderLabel}”`,
+        startResumeWorkspaceHint:
+          "If sandbox access expired, you will pick the folder again.",
+        startResumeSection: "Continue writing",
+        startRecoverySection: "Verify",
+        startRecoveryHeading: "Unsaved pathless drafts",
         workspace: "Workspace",
         workspaceFileTree: "Workspace file tree",
       };

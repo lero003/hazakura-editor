@@ -98,6 +98,11 @@ export function AppDocumentFeedback({
   showNextMatch,
   showPreviousMatch,
 }: AppDocumentFeedbackProps) {
+  // When the Start Panel owns pathless recovery (empty editor), keep the
+  // top banner free of a second copy of the same candidates.
+  const bannerOrphanPathlessDrafts =
+    activeTab === null ? [] : orphanPathlessDrafts;
+
   return (
     <div className="document-feedback-row">
       {findVisible ? (
@@ -135,7 +140,7 @@ export function AppDocumentFeedback({
         activeTab={activeTab}
         copy={recoveryCopy}
         draftReviewAvailable={!lModeEnabled}
-        orphanPathlessDrafts={orphanPathlessDrafts}
+        orphanPathlessDrafts={bannerOrphanPathlessDrafts}
         onClearSaveError={clearSaveError}
         onCloseTabWithoutSaving={closeTabNow}
         onDiscardDraft={discardDraft}

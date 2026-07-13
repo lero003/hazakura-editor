@@ -11,12 +11,14 @@ import { writeTextToClipboard } from "../../lib/clipboard";
 import type {
   AppleAssistCopy,
   LModeCopy,
+  RecoveryCopy,
   SafeEditorCopy,
   SlashMenuCopy,
 } from "../../lib/locale";
 import type {
   BaseTheme,
   AppleAssistGenerationLock,
+  DraftRecord,
   EditorSettings,
   EditorTab,
   ImagePreviewState,
@@ -49,6 +51,7 @@ type EditorMainPaneProps = {
   menuLanguage: MenuLanguage;
   onChange: (nextValue: string) => void;
   onEditorViewStateChange: (patch: EditorViewStatePatch) => void;
+  onDiscardDraft?: (draftPathOrKey: string) => void;
   onNewFile: () => void | Promise<void>;
   onOpenFile: () => void | Promise<void>;
   onOpenFolder: () => void | Promise<void>;
@@ -56,9 +59,13 @@ type EditorMainPaneProps = {
     dataBase64: string,
     fileName: string,
   ) => Promise<string | null>;
+  onReopenPersistedWorkspace?: () => void | Promise<void>;
+  onRestoreDraft?: (draft: DraftRecord) => void;
   onScrollRatioChange: (ratio: number) => void;
   onSelectionChange: (selection: EditorSelectionInfo) => void;
   onSendToAgent: (text: string) => void;
+  pathlessDrafts?: DraftRecord[];
+  recoveryCopy?: RecoveryCopy;
   restoreComplete: boolean;
   scrollHudContext: MarkdownHeadingContext;
   scrollHudLine: number;
@@ -88,14 +95,19 @@ export function EditorMainPane({
   lModeCopy,
   menuLanguage,
   onChange,
+  onDiscardDraft,
   onEditorViewStateChange,
   onNewFile,
   onOpenFile,
   onOpenFolder,
   onPasteImage,
+  onReopenPersistedWorkspace,
+  onRestoreDraft,
   onScrollRatioChange,
   onSelectionChange,
   onSendToAgent,
+  pathlessDrafts = [],
+  recoveryCopy,
   restoreComplete,
   scrollHudContext,
   scrollHudLine,
@@ -194,9 +206,15 @@ export function EditorMainPane({
       ) : (
         <StartPanel
           copy={copy}
+          liveWorkspaceRootPath={workspaceRootPath}
+          onDiscardDraft={onDiscardDraft}
           onNewFile={onNewFile}
           onOpenFile={onOpenFile}
           onOpenFolder={onOpenFolder}
+          onReopenPersistedWorkspace={onReopenPersistedWorkspace}
+          onRestoreDraft={onRestoreDraft}
+          pathlessDrafts={pathlessDrafts}
+          recoveryCopy={recoveryCopy}
         />
       )}
     </div>

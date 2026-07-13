@@ -31,4 +31,25 @@ describe("getSafeEditorCopy tab accessibility labels", () => {
       expect(Object.keys(getSafeEditorCopy(language)).sort()).toEqual(keys);
     }
   });
+
+  it("localizes returning start panel resume and recovery labels", () => {
+    expect(getSafeEditorCopy("en").startHeadingReturning).toBe(
+      "Continue where you left off",
+    );
+    expect(getSafeEditorCopy("ja").startHeadingReturning).toBe("続きから書く");
+    expect(getSafeEditorCopy("kana").startHeadingReturning).toBe(
+      "つづきから かく",
+    );
+    expect(getSafeEditorCopy("en").startResumeWorkspace("novel")).toBe(
+      'Open last folder “novel”',
+    );
+    expect(getSafeEditorCopy("ja").startResumeWorkspace("novel")).toBe(
+      "前回のフォルダ「novel」を開く",
+    );
+    expect(getSafeEditorCopy("kana").startResumeWorkspace("novel")).toBe(
+      "前回のところ「novel」をひらく",
+    );
+    expect(getSafeEditorCopy("en").startRecoveryHeading).toMatch(/pathless/i);
+    expect(getSafeEditorCopy("ja").startRecoverySection).toBe("確かめる");
+  });
 });

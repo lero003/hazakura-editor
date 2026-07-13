@@ -7,10 +7,14 @@ import {
   createSecurityScopedBookmark,
   listWorkspaceTree,
   pickWorkspaceFolder,
+  resolveSecurityScopedBookmark,
   setMainActiveWorkspace,
   type WorkspaceTreeEntry,
 } from "../../lib/tauri";
-import { writeWorkspaceRootBookmark } from "../../lib/storage";
+import {
+  readPersistedWorkspaceState,
+  writeWorkspaceRootBookmark,
+} from "../../lib/storage";
 import type { CompareAnchor, CompareViewState } from "../../types";
 
 type UseWorkspaceOpeningOptions = {
@@ -37,7 +41,7 @@ export function useWorkspaceOpening({
   setWorkspaceTree,
 }: UseWorkspaceOpeningOptions) {
   const openWorkspacePath = useCallback(
-    async (path: string) => {
+    async (path: string): Promise<boolean> => {
       setGlobalError(null);
       setStatus("Reading folder...");
 
@@ -63,9 +67,11 @@ export function useWorkspaceOpening({
         setCompareTarget(null);
         rememberRecentFolder(path);
         setStatus("Folder opened");
+        return true;
       } catch (err) {
         setGlobalError(String(err));
         setStatus("Folder open failed");
+        return false;
       }
     },
     [
@@ -100,8 +106,46 @@ export function useWorkspaceOpening({
     }
   }, [openWorkspacePath, setGlobalError, setStatus]);
 
+  /**
+   * Resume the last persisted workspace without inventing new storage.
+   * Tries the stored path, then the security-scoped bookmark, then the
+   * standard folder picker for reauthorization.
+   */
+  const reopenPersistedWorkspace = useCallback(async () => {
+    const persisted = readPersistedWorkspaceState();
+    const path = persisted?.workspaceRootPath;
+
+    if (!path) {
+      await openWorkspace();
+      return;
+    }
+
+    setGlobalError(null);
+    setStatus("Reopening folder...");
+
+    if (await openWorkspacePath(path)) {
+      return;
+    }
+
+    const bookmark = persisted.workspaceRootBookmark;
+    if (bookmark && bookmark.length > 0) {
+      try {
+        const resolvedPath = await resolveSecurityScopedBookmark(bookmark);
+        if (await openWorkspacePath(resolvedPath)) {
+          return;
+        }
+      } catch {
+        // Fall through to the explicit picker reauthorization path.
+      }
+    }
+
+    setStatus("Reauthorization required");
+    await openWorkspace();
+  }, [openWorkspace, openWorkspacePath, setGlobalError, setStatus]);
+
   return {
     openWorkspace,
     openWorkspacePath,
+    reopenPersistedWorkspace,
   };
 }

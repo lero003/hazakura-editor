@@ -1231,9 +1231,10 @@
   font-size: clamp(28px, 3.2vw, 40px);
   font-weight: 740;
   letter-spacing: 0;
-  line-height: 1.1;
+  line-height: 1.15;
   margin: 0;
-  white-space: nowrap;
+  max-width: 100%;
+  white-space: normal;
 }
 
 .start-actions {
@@ -1242,19 +1243,100 @@
   gap: 8px;
 }
 
-.start-actions button:first-child {
+.start-actions button:first-child,
+.start-actions-primary button,
+.start-resume-button {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--surface);
 }
 
-:root[data-theme="yakou"] .start-actions button:first-child {
+.start-section-heading {
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  margin: 0 0 0.35rem;
+}
+
+.start-section-hint {
+  color: var(--text-muted, color-mix(in srgb, var(--text) 68%, transparent));
+  font-size: 0.8rem;
+  line-height: 1.45;
+  margin: 0 0 0.65rem;
+  max-width: 28rem;
+}
+
+.start-resume-section,
+.start-recovery-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0 0 0.35rem;
+  max-width: 28rem;
+  min-width: 0;
+  width: 100%;
+}
+
+.start-recovery-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+}
+
+.start-recovery-item {
+  background: color-mix(in srgb, var(--surface-strong, var(--surface)) 88%, var(--accent) 12%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 10px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 10px 12px;
+}
+
+.start-recovery-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.start-recovery-name {
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.start-recovery-detail {
+  color: var(--text-muted, color-mix(in srgb, var(--text) 68%, transparent));
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.start-recovery-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+:root[data-theme="yakou"] .start-actions button:first-child,
+:root[data-theme="yakou"] .start-actions-primary button,
+:root[data-theme="yakou"] .start-resume-button {
   background: var(--accent-gradient);
   border: 0;
   padding: 7px 13px;
 }
 
-:root[data-theme="shokou"] .start-actions button:first-child {
+:root[data-theme="shokou"] .start-actions button:first-child,
+:root[data-theme="shokou"] .start-actions-primary button,
+:root[data-theme="shokou"] .start-resume-button {
   background: var(--accent-gradient);
   border: 0;
   padding: 7px 13px;

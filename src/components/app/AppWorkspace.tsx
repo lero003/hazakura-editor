@@ -29,6 +29,7 @@ import { getWorkspaceTabMarkerPaths } from "../../features/editor/editorTabs";
 import type {
   AppleAssistCopy,
   LModeCopy,
+  RecoveryCopy,
   SafeEditorCopy,
   SidePaneCopy,
   SlashMenuCopy,
@@ -47,6 +48,7 @@ import type {
   CompareAnchor,
   CompareCase,
   CompareViewState,
+  DraftRecord,
   EditorSettings,
   EditorTab,
   ImagePreviewState,
@@ -97,6 +99,7 @@ type AppWorkspaceProps = {
   createFile: (parentPath: string) => Promise<void> | void;
   createFolder: (parentPath: string) => Promise<void> | void;
   createNewFile: () => unknown;
+  discardDraft: (draftPathOrKey: string) => void;
   currentHeadingLine: number | null;
   documentHeadings: MarkdownHeading[];
   documentKey: string;
@@ -149,6 +152,10 @@ type AppWorkspaceProps = {
   ) => void;
   openRootWorkspaceContextMenu: (event: ReactMouseEvent<HTMLDivElement>) => void;
   openWorkspaceFile: (path: string) => unknown;
+  orphanPathlessDrafts?: DraftRecord[];
+  recoveryCopy: RecoveryCopy;
+  reopenPersistedWorkspace: () => unknown;
+  restoreDraft: (draft: DraftRecord) => void;
   previewColumnPercent: number;
   previewPaneRef: RefObject<HTMLDivElement | null>;
   previewVisible: boolean;
@@ -217,6 +224,7 @@ export function AppWorkspace({
   createFile,
   createFolder,
   createNewFile,
+  discardDraft,
   currentHeadingLine,
   documentHeadings,
   documentKey,
@@ -256,6 +264,10 @@ export function AppWorkspace({
   openWorkspaceContextMenu,
   openRootWorkspaceContextMenu,
   openWorkspaceFile,
+  orphanPathlessDrafts = [],
+  recoveryCopy,
+  reopenPersistedWorkspace,
+  restoreDraft,
   previewColumnPercent,
   previewPaneRef,
   previewVisible,
@@ -609,13 +621,18 @@ export function AppWorkspace({
             menuLanguage={menuLanguage}
             onChange={handleEditorChange}
             onEditorViewStateChange={handleEditorViewStateChange}
+            onDiscardDraft={discardDraft}
             onNewFile={() => void createNewFile()}
             onOpenFile={() => void openFile()}
             onOpenFolder={() => void openWorkspace()}
             onPasteImage={handlePasteImage}
+            onReopenPersistedWorkspace={() => void reopenPersistedWorkspace()}
+            onRestoreDraft={restoreDraft}
             onScrollRatioChange={syncPreviewScroll}
             onSelectionChange={setSelectionInfo}
             onSendToAgent={handleSendSelectionToAgent}
+            pathlessDrafts={orphanPathlessDrafts}
+            recoveryCopy={recoveryCopy}
             restoreComplete={restoreComplete}
             scrollHudContext={scrollHudContext}
             scrollHudLine={scrollHudLine}
