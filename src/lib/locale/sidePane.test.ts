@@ -25,6 +25,7 @@ describe("getSidePaneCopy purpose-led pane titles", () => {
       ebookTabTitle: "ほんのやうに ふみを よみかへす",
       outlineTabTitle: "みだしから もくてきの ばしょへ うつる",
       diffTabTitle: "へんかを みくらべて たしかめる",
+      previewDisabled: "したみのまどは、おこのみで つかわないせっていです。",
     });
   });
 

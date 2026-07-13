@@ -551,6 +551,8 @@ recovered state separately where relevant.
 5. **Preview**: confirm the preview pane renders all elements. If a
    workspace image was added, confirm it displays. Confirm the external
    link is clickable and opens in the OS browser.
+   When Preview is disabled in Preferences and the menu language is kana,
+   confirm the reason is shown in kana rather than the kanji `無効`.
 6. **e-book Mode**: open e-book Mode. Confirm the manuscript paginates
    across H1 / H2 chapter groups, with H3+ headings staying inside the
    current chapter. Confirm page navigation (next/prev) works, one

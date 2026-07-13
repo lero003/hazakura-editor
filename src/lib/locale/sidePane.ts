@@ -55,7 +55,7 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
       documentOutline: "ふみのみだし",
       openTextFileToPreview:
         "Markdown したみをしめすには、てきすとのふみをひらいてください。",
-      previewDisabled: "したみのまどは、おこのみにて無効です。",
+      previewDisabled: "したみのまどは、おこのみで つかわないせっていです。",
       previewTab: "したみ",
       previewTabTitle: "かいた Markdown の みためを たしかめる",
       referenceTab: "さんしょう",
