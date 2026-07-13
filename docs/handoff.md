@@ -119,7 +119,8 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    containers now receive localized names through Safe Editor copy as well. The
    primary Editor pane label follows the same contract and has focused coverage.
    Workspace file rows also localize the open / unsaved state spoken by the
-   tree buttons, with WorkspaceTree and file-ops locale tests.
+   tree buttons, with WorkspaceTree and file-ops locale tests. Loading and
+   per-folder truncation notices now use that same localized copy.
    `npm run smoke:app-store-surface` passed on 2026-07-13 (**10 files / 97
    tests**); this is source/App Store-lane surface evidence, not signed
    TestFlight or spoken VoiceOver evidence.

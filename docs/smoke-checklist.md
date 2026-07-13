@@ -712,7 +712,8 @@ recovered state separately where relevant.
   English / Japanese / kana labels; the contextual Slash command listbox and
   open-file tab row/list and primary Editor pane have corresponding localized
   accessible-name regressions. Workspace file rows also expose localized open /
-  unsaved state labels in the source tree contract.
+  unsaved state labels in the source tree contract; loading and per-folder
+  truncation notices are localized through the same file-ops copy.
 - App Store surface smoke on 2026-07-13: `npm run smoke:app-store-surface`
   passed (**10 files / 97 tests**) for pane controls, Command Palette, settings,
   review-state, and distribution-lane contracts.
