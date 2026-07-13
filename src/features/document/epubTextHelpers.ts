@@ -5,6 +5,8 @@
 // These functions take plain strings and return plain strings. epubExport.ts
 // owns the DOM / archive assembly; this module owns no React or DOM state.
 
+export { stripYamlFrontmatter } from "../editor/markdownFrontmatter";
+
 export function slugify(text: string): string {
   return text
     .trim()
@@ -24,31 +26,6 @@ export function escapeXml(text: string): string {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&apos;");
-}
-
-// Strip a leading YAML frontmatter block delimited by `---` lines. The opener
-// must be the very first line; the closer is the next line that trims to
-// `---`. Content after the closer is returned untouched. If no closer is
-// found the original markdown is returned unchanged.
-export function stripYamlFrontmatter(markdown: string): string {
-  const firstLineEnd = markdown.indexOf("\n");
-  const firstLine = firstLineEnd === -1 ? markdown : markdown.slice(0, firstLineEnd);
-  if (firstLine.trim() !== "---") {
-    return markdown;
-  }
-
-  let lineStart = firstLineEnd === -1 ? markdown.length : firstLineEnd + 1;
-  while (lineStart < markdown.length) {
-    const lineEnd = markdown.indexOf("\n", lineStart);
-    const effectiveLineEnd = lineEnd === -1 ? markdown.length : lineEnd;
-    const line = markdown.slice(lineStart, effectiveLineEnd);
-    if (line.trim() === "---") {
-      return lineEnd === -1 ? "" : markdown.slice(lineEnd + 1);
-    }
-    lineStart = lineEnd === -1 ? markdown.length : lineEnd + 1;
-  }
-
-  return markdown;
 }
 
 // Normalize a media type so JPEG inputs map to the canonical image/jpeg. All

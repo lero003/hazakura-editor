@@ -1,3 +1,5 @@
+import { findYamlFrontmatter } from "./markdownFrontmatter";
+
 // v0.21 e-book Mode PoC — chapter splitting for a single Markdown source.
 //
 // This is a display-only helper. It splits a Markdown source string into
@@ -66,7 +68,7 @@ export function splitMarkdownIntoChapters(source: string): EbookChapter[] {
   let inFence = false;
   let fenceChar = "";
   let fenceLength = 0;
-  const frontmatterEnd = yamlFrontmatterEndOffset(source);
+  const frontmatterEnd = findYamlFrontmatter(source)?.bodyOffset ?? null;
   let currentStart = 0;
   let currentStartLine = 1;
   let currentLevel: number | null = null;
@@ -245,7 +247,7 @@ export function applyEbookPageBreakMarkers(source: string): string {
   let inFence = false;
   let fenceChar = "";
   let fenceLength = 0;
-  const frontmatterEnd = yamlFrontmatterEndOffset(source);
+  const frontmatterEnd = findYamlFrontmatter(source)?.bodyOffset ?? null;
 
   return lines
     .map((line, index) => {
@@ -439,25 +441,4 @@ function nextLineStart(source: string, lineEnd: number): number {
     return lineEnd + 1;
   }
   return lineEnd + 1;
-}
-
-function yamlFrontmatterEndOffset(source: string): number | null {
-  const firstLineEnd = source.indexOf("\n");
-  const firstLine = firstLineEnd === -1 ? source : source.slice(0, firstLineEnd);
-  if (firstLine.trim() !== "---") {
-    return null;
-  }
-
-  let lineStart = firstLineEnd === -1 ? source.length : firstLineEnd + 1;
-  while (lineStart < source.length) {
-    const lineEnd = source.indexOf("\n", lineStart);
-    const effectiveLineEnd = lineEnd === -1 ? source.length : lineEnd;
-    const line = source.slice(lineStart, effectiveLineEnd);
-    if (line.trim() === "---") {
-      return lineEnd === -1 ? source.length : lineEnd + 1;
-    }
-    lineStart = lineEnd === -1 ? source.length : lineEnd + 1;
-  }
-
-  return null;
 }

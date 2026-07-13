@@ -9,6 +9,7 @@ import {
   findCurrentMarkdownHeading,
   parseMarkdownHeadingLine,
 } from "../../lib/utils";
+import { findYamlFrontmatter } from "../../features/editor/markdownFrontmatter";
 
 type UseDocumentOutlineOptions = {
   activeContents: string;
@@ -51,10 +52,15 @@ export function useMarkdownHeadingContext(
 function extractMarkdownOutline(source: string): MarkdownOutline {
   const headings: MarkdownHeading[] = [];
   const lines = source.split(/\r\n|\n|\r/);
+  const frontmatterEndLine = findYamlFrontmatter(source)?.endLine ?? 0;
   let fenceMarker: "`" | "~" | null = null;
   let truncated = false;
 
   for (let index = 0; index < lines.length; index += 1) {
+    if (index + 1 <= frontmatterEndLine) {
+      continue;
+    }
+
     const line = lines[index];
     const trimmedStart = line.trimStart();
     const fenceMatch = trimmedStart.match(/^(```+|~~~+)/);

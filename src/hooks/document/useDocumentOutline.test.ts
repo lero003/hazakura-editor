@@ -94,6 +94,55 @@ describe("useDocumentOutline", () => {
     ]);
   });
 
+  it("skips heading-like lines inside YAML frontmatter", () => {
+    const source = [
+      "---",
+      "title: # Metadata Title",
+      "# internal note",
+      "---",
+      "# Real Heading",
+    ].join("\n");
+
+    const { result } = renderHook(() =>
+      useDocumentOutline({
+        activeContents: source,
+        hasActiveDocument: true,
+        selectionLine: 0,
+      }),
+    );
+
+    expect(result.current.documentHeadings).toEqual([
+      { level: 1, line: 5, text: "Real Heading" },
+    ]);
+  });
+
+  it("supports CRLF frontmatter and keeps an unclosed opener as Markdown", () => {
+    const closed = "---\r\n# internal note\r\n---\r\n## Real Heading";
+    const unclosed = "---\r\n# Real Heading";
+
+    const { result: closedResult } = renderHook(() =>
+      useDocumentOutline({
+        activeContents: closed,
+        hasActiveDocument: true,
+        selectionLine: 0,
+      }),
+    );
+    const { result: unclosedResult } = renderHook(() =>
+      useDocumentOutline({
+        activeContents: unclosed,
+        hasActiveDocument: true,
+        selectionLine: 0,
+      }),
+    );
+
+    expect(closedResult.current.documentHeadings).toEqual([
+      { level: 2, line: 4, text: "Real Heading" },
+    ]);
+    expect(unclosedResult.current.documentHeadings).toEqual([
+      { level: 1, line: 2, text: "Real Heading" },
+    ]);
+  });
+
   it("skips headings inside tilde-fenced blocks", () => {
     const source = [
       "# Real Heading",
