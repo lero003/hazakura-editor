@@ -84,8 +84,6 @@ export function useCommandPalette({
   const [commandPaletteVisible, setCommandPaletteVisible] = useState(false);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
-  const commandsRef = useRef(commands);
-  commandsRef.current = commands;
   const activeIndexRef = useRef(0);
 
   useEffect(() => {
@@ -97,15 +95,15 @@ export function useCommandPalette({
       return [];
     }
     if (!query.trim()) {
-      return commandsRef.current;
+      return commands;
     }
     const normalized = query.toLowerCase();
-    return commandsRef.current
+    return commands
       .map((cmd) => ({ cmd, score: fuzzyScoreCommand(normalized, cmd) }))
       .filter((entry) => entry.score >= 0)
       .sort((a, b) => b.score - a.score)
       .map((entry) => entry.cmd);
-  }, [query, commandPaletteVisible]);
+  }, [commands, query, commandPaletteVisible]);
 
   useEffect(() => {
     setActiveIndex(0);

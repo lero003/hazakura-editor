@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-07-12 (v1.7 published; active lane v1.8 Daily Trust)
+Last reviewed: 2026-07-14 (v1.8 published; active lane v1.9 Writing Loop)
 
 ## Purpose
 
@@ -17,11 +17,11 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **v1.8 Daily Trust Completion** after the published `1.7.0` App Store
+Phase: **v1.9 Writing Loop Clarity** after the published `1.8.0` App Store
 release, unless a public-release hotfix blocker appears. Direction:
 `docs/v1.8-plus-product-review-roadmap.md`.
 
-For recurring automation, use the Active Trust / Daily-use Queue in
+For recurring automation, use the Active Queue in
 `docs/current-work.md`. The old pre-review automation table is exhausted
 and should be reused only when a future pre-review lane explicitly
 reopens it. Each run should pick the first open slice whose required
@@ -30,9 +30,8 @@ environment is available and close it as `implemented`,
 
 Prefer work in this order:
 
-1. Active UX Queue from `docs/current-work.md`, starting with **v1.7 R0**
-   (PDF reference spike) unless a concrete source-loss or public hotfix
-   signal takes priority.
+1. Active v1.9 Writing Loop Clarity queue from `docs/current-work.md` unless a
+   concrete source-loss or public hotfix signal takes priority.
 2. Stale or failing quality gates that block the selected slice.
 3. Core Safe Editor quality risks around open, edit, save, close/quit,
    restore, recovery, preview, diff/review, workspace file operations,

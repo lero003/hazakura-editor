@@ -58,7 +58,7 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
       startHintRead: "よむ — プレビュー・L・電子書籍・参照",
       startHintVerify: "たしかめる — 差分・要確認・下書き復旧",
       startResumeWorkspace: (folderLabel) =>
-        `前回のところ「${folderLabel}」をひらく`,
+        `まへの ところ「${folderLabel}」をひらく`,
       startResumeWorkspaceHint:
         "すなばの けんげんが きれていれば、ふぉるだを えらびなおします。",
       startResumeSection: "つづきを かく",

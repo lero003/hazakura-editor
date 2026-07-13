@@ -526,33 +526,33 @@ describe("macOS build scripts", () => {
   it("keeps living docs aligned on the published version and active lane", () => {
     const expectedSnippets = {
       "README.md": [
-        "Hazakura Editor `1.7.0` is published",
+        "Hazakura Editor `1.8.0` is published",
         "Current package/app version is `1.8.0`",
-        "The published App Store version is `1.7.0`",
+        "The published App Store version is `1.8.0`",
       ],
       "docs/app-store-build.md": [
-        "Published App Store version: `1.7.0`",
+        "Published App Store version: `1.8.0`",
         "Current source / Developer version: `1.8.0`",
       ],
       "docs/current-status.md": [
-        "Current development package/app version: **`1.8.0`",
-        "Published Mac App Store version: **`1.7.0`",
-        "Active product lane: v1.8 — Daily Trust Completion",
+        "Current package/app version: **`1.8.0`",
+        "Published Mac App Store version: **`1.8.0`",
+        "active implementation lane is **v1.9 Writing Loop Clarity**",
       ],
       "docs/current-work.md": [
-        "Scope: v1.8 Daily Trust Completion",
-        "Active Trust / Daily-use Queue — v1.8",
+        "Scope: v1.9 Writing Loop Clarity",
+        "Active Queue — v1.9 Writing Loop Clarity",
       ],
-      "docs/development-automation.md": ["Phase: **v1.8 Daily Trust Completion**"],
+      "docs/development-automation.md": ["Phase: **v1.9 Writing Loop Clarity**"],
       "docs/handoff.md": [
         "Package/app version in tree is **`1.8.0`",
-        "Published Mac App Store version is **`1.7.0`",
-        "Active v1.8 Daily Trust",
+        "Published Mac App Store version is **`1.8.0`",
+        "Active v1.9 Writing Loop Clarity",
       ],
       "docs/roadmap.md": [
         "Package/app version in tree: **`1.8.0`",
         "Historical MAS baselines (`1.3.0` Daily Trust",
-        "Active product lane: v1.8 Daily Trust Completion",
+        "Active product lane: v1.9 Writing Loop Clarity",
       ],
     };
 

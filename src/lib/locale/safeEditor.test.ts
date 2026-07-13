@@ -47,7 +47,7 @@ describe("getSafeEditorCopy tab accessibility labels", () => {
       "前回のフォルダ「novel」を開く",
     );
     expect(getSafeEditorCopy("kana").startResumeWorkspace("novel")).toBe(
-      "前回のところ「novel」をひらく",
+      "まへの ところ「novel」をひらく",
     );
     expect(getSafeEditorCopy("en").startRecoveryHeading).toMatch(/pathless/i);
     expect(getSafeEditorCopy("ja").startRecoverySection).toBe("確かめる");
