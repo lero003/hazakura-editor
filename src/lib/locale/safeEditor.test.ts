@@ -3,6 +3,9 @@ import { getSafeEditorCopy } from "./safeEditor";
 
 describe("getSafeEditorCopy tab accessibility labels", () => {
   it("localizes the tab row and tab list names", () => {
+    expect(getSafeEditorCopy("en").editor).toBe("Editor");
+    expect(getSafeEditorCopy("ja").editor).toBe("編集");
+    expect(getSafeEditorCopy("kana").editor).toBe("へんしゅう");
     expect(getSafeEditorCopy("en").openFiles).toBe("Open files");
     expect(getSafeEditorCopy("en").openFileTabs).toBe("Open file tabs");
     expect(getSafeEditorCopy("ja").openFiles).toBe("開いているファイル");

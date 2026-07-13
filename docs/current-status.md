@@ -67,6 +67,8 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   Japanese / kana labels. The contextual Slash command listbox now also exposes
   a localized accessible name, with copy-key parity coverage. Tab row and tab
   list containers also use localized names for the active menu language.
+  The primary Editor pane label now follows the same locale contract, with
+  focused EditorMainPane and Safe Editor copy coverage.
   The App Store surface smoke also passed on 2026-07-13 (**10 files / 97
   tests**), covering pane controls, Command Palette, settings, review-state,
   and distribution-lane contracts.

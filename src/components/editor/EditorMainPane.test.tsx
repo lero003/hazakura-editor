@@ -146,6 +146,7 @@ describe("EditorMainPane", () => {
   it("shows the active full path in a thin bar below the editor", () => {
     renderEditorMainPane();
 
+    expect(screen.getByLabelText("Editor")).toBeTruthy();
     expect(screen.queryByText("draft.md")).toBeNull();
     expect(screen.queryByText("docs/draft.md")).toBeNull();
     expect(screen.getByRole("button", {

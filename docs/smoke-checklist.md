@@ -710,8 +710,8 @@ recovered state separately where relevant.
   announcement/selection path but does not claim spoken VoiceOver or signed
   TestFlight. Locale coverage also pins the same toolbar key set and the
   English / Japanese / kana labels; the contextual Slash command listbox and
-  open-file tab row/list have corresponding localized accessible-name
-  regressions.
+  open-file tab row/list and primary Editor pane have corresponding localized
+  accessible-name regressions.
 - App Store surface smoke on 2026-07-13: `npm run smoke:app-store-surface`
   passed (**10 files / 97 tests**) for pane controls, Command Palette, settings,
   review-state, and distribution-lane contracts.

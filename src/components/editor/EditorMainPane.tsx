@@ -109,7 +109,7 @@ export function EditorMainPane({
   const appleAssistLocked = generationLock !== null;
 
   return (
-    <div className="pane editor-pane" aria-label="Editor">
+    <div className="pane editor-pane" aria-label={copy.editor}>
       {activeTab ? (
         <>
           <EditorPane
