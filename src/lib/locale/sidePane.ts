@@ -23,6 +23,8 @@ export type SidePaneCopy = {
   outlineSkippedLevel: (previousLevel: number, level: number) => string;
   outlineDuplicateLabel: (firstLine: number) => string;
   outlineLongSection: (lineCount: number) => string;
+  outlinePromoteHeading: (label: string) => string;
+  outlineDemoteHeading: (label: string) => string;
   outlinePageBreak: string;
   outlineTrailingPageBreak: string;
   outlineTab: string;
@@ -77,6 +79,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         `${firstLine}ぎょうめと おなじ みだしです`,
       outlineLongSection: (lineCount) =>
         `この せくしょんは とても ながいです（${lineCount}ぎょう）`,
+      outlinePromoteHeading: (label) => `${label} の だんを ひとつ あげる`,
+      outlineDemoteHeading: (label) => `${label} の だんを ひとつ さげる`,
       outlinePageBreak: "ぺーじの きれめ",
       outlineTrailingPageBreak: "さいごの ぺーじきれめ（ひょうじでは のぞく）",
       outlineTab: "みだし",
@@ -135,6 +139,10 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
           `${firstLine}行目と同じナビゲーション名です`,
         outlineLongSection: (lineCount) =>
           `このセクションは非常に長いです（${lineCount}行）`,
+        outlinePromoteHeading: (label) =>
+          `「${label}」の見出しレベルを1つ上げる`,
+        outlineDemoteHeading: (label) =>
+          `「${label}」の見出しレベルを1つ下げる`,
         outlinePageBreak: "ページ区切り",
         outlineTrailingPageBreak: "末尾のページ区切り（表示では除外）",
         outlineTab: "アウトライン",
@@ -192,6 +200,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
           `Same navigation label as line ${firstLine}`,
         outlineLongSection: (lineCount) =>
           `This section is very long (${lineCount} lines)`,
+        outlinePromoteHeading: (label) => `Promote “${label}” one level`,
+        outlineDemoteHeading: (label) => `Demote “${label}” one level`,
         outlinePageBreak: "Page break",
         outlineTrailingPageBreak: "Trailing page break (not rendered)",
         outlineTab: "Outline",

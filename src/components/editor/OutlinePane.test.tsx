@@ -12,6 +12,7 @@ afterEach(cleanup);
 describe("OutlinePane", () => {
   it("shows heading hierarchy and page breaks in source order", () => {
     const onSelect = vi.fn();
+    const onChangeHeadingLevel = vi.fn();
     const items = markdownStructureItems(
       parseMarkdownStructure("# Chapter\n\n---\n\n### Scene\n"),
     );
@@ -22,6 +23,7 @@ describe("OutlinePane", () => {
         currentHeadingLine={1}
         advisories={[]}
         items={items}
+        onChangeHeadingLevel={onChangeHeadingLevel}
         onSelect={onSelect}
         truncated={false}
       />,
@@ -39,6 +41,21 @@ describe("OutlinePane", () => {
     expect(onSelect).toHaveBeenCalledWith(
       expect.objectContaining({ kind: "page-break", line: 3 }),
     );
+
+    const promoteChapter = screen.getByRole("button", {
+      name: "1: 「Chapter」の見出しレベルを1つ上げる",
+    });
+    expect(promoteChapter.hasAttribute("disabled")).toBe(true);
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "5: 「Scene」の見出しレベルを1つ上げる",
+      }),
+    );
+    expect(onChangeHeadingLevel).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: "heading", level: 3, line: 5 }),
+      "promote",
+    );
   });
 
   it("distinguishes a trailing marker that is omitted from rendered output", () => {
@@ -52,6 +69,7 @@ describe("OutlinePane", () => {
         currentHeadingLine={null}
         advisories={[]}
         items={items}
+        onChangeHeadingLevel={vi.fn()}
         onSelect={vi.fn()}
         truncated={false}
       />,
@@ -82,6 +100,7 @@ describe("OutlinePane", () => {
         copy={getSidePaneCopy("ja")}
         currentHeadingLine={null}
         items={items}
+        onChangeHeadingLevel={vi.fn()}
         onSelect={vi.fn()}
         truncated={false}
       />,

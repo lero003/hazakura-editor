@@ -9,6 +9,10 @@ import {
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getSidePaneCopy } from "../../lib/locale";
 import { captureChangeReviewSnapshot } from "../../features/diff/changeReviewStale";
+import {
+  markdownStructureItems,
+  parseMarkdownStructure,
+} from "../../features/editor/markdownStructure";
 import type { CompareCase, EditorTab, RightPaneMode } from "../../types";
 import { SidePane } from "./SidePane";
 
@@ -67,6 +71,7 @@ function sidePaneProps(
     onPreviewScroll: vi.fn(),
     onPreviewViewStateChange: vi.fn(),
     onRunSelectedFileCompare: vi.fn(),
+    onChangeHeadingLevel: vi.fn(),
     onSelectHeading: vi.fn(),
     outlineTruncated: false,
     previewPaneRef: createRef<HTMLDivElement>(),
@@ -79,6 +84,29 @@ function sidePaneProps(
 }
 
 describe("SidePane", () => {
+  it("forwards an explicit heading-level change from the Outline surface", () => {
+    const source = "## Chapter\nbody\n";
+    const items = markdownStructureItems(parseMarkdownStructure(source));
+    const onChangeHeadingLevel = vi.fn();
+
+    renderSidePane({
+      activeContents: source,
+      documentStructureItems: items,
+      onChangeHeadingLevel,
+      sidePaneMode: "outline",
+    });
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "1: Promote “Chapter” one level",
+      }),
+    );
+    expect(onChangeHeadingLevel).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: "heading", level: 2, line: 1 }),
+      "promote",
+    );
+  });
+
   it("reports and restores Preview scroll through the controlled view state", async () => {
     const previewPaneRef = createRef<HTMLDivElement>();
     const onPreviewScroll = vi.fn();

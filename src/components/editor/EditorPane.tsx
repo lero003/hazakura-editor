@@ -46,6 +46,11 @@ import {
 import { lModeExtension, LModeClasses } from "../../features/editor/lMode";
 import type { LModeCopy } from "../../lib/locale";
 import type { SlashCommand } from "../../types/slash";
+import type { MarkdownStructureHeading } from "../../features/editor/markdownStructure";
+import {
+  buildHeadingLevelChange,
+  type HeadingLevelChangeDirection,
+} from "../../features/editor/markdownStructureEdits";
 
 type SearchMatch = { from: number; to: number };
 type DecoratedSearchMatch = SearchMatch & { active: boolean };
@@ -101,6 +106,10 @@ export type EditorPaneHandle = {
   // the e-book reader paging with the keyboard) so the editor does not
   // steal focus on every page turn.
   goToLine: (line: number, options?: { focus?: boolean }) => void;
+  changeHeadingLevel: (
+    heading: MarkdownStructureHeading,
+    direction: HeadingLevelChangeDirection,
+  ) => boolean;
   applyMarkdownFormat: (format: MarkdownFormat) => void;
   insertTable: (columns: number) => void;
   insertText: (text: string) => void;
@@ -230,6 +239,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   const onPasteImageRef = useRef(onPasteImage);
   const onSendToAgentRef = useRef<(text: string) => void>(() => {});
   const applyingExternalValueRef = useRef(false);
+  const compositionActiveRef = useRef(false);
   const jumpScrollReportFrameRef = useRef<number | null>(null);
   const restoreScrollFrameRef = useRef<number | null>(null);
   // v0.33: scroll イベントは高頻度で発火するため requestAnimationFrame で
@@ -325,6 +335,37 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
 
         applyMarkdownFormat(view, format);
         view.focus();
+      },
+      changeHeadingLevel(heading, direction) {
+        const view = viewRef.current;
+        if (
+          !view ||
+          readOnly ||
+          compositionActiveRef.current ||
+          view.composing
+        ) {
+          return false;
+        }
+        const change = buildHeadingLevelChange(
+          view.state.doc.toString(),
+          heading,
+          direction,
+        );
+        if (!change) {
+          return false;
+        }
+
+        view.dispatch({
+          changes: {
+            from: change.from,
+            to: change.to,
+            insert: change.insert,
+          },
+          selection: { anchor: change.from + change.insert.length },
+          effects: EditorView.scrollIntoView(change.from, { y: "center" }),
+        });
+        view.focus();
+        return true;
       },
       insertTable(columns) {
         const view = viewRef.current;
@@ -536,6 +577,7 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     destroyMountedViewRef.current?.();
     destroyMountedViewRef.current = null;
     viewRef.current = null;
+    compositionActiveRef.current = false;
     mountedEditorSessionKeyRef.current = editorSessionKey;
     mountedKindRef.current = picked.kind;
     mountedLModeEnabledRef.current = lModeEnabled;
@@ -580,6 +622,14 @@ const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       ),
       readOnlyCompartmentRef.current.of(EditorView.editable.of(!readOnly)),
       EditorView.domEventHandlers({
+        compositionstart() {
+          compositionActiveRef.current = true;
+          return false;
+        },
+        compositionend() {
+          compositionActiveRef.current = false;
+          return false;
+        },
         keydown(event, view) {
           if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key === "Enter") {
             const sel = view.state.selection.main;

@@ -260,6 +260,7 @@ function makeWorkspaceProps(
     appleAssistCopy: getAppleAssistCopy("en"),
     clearCompareSource: vi.fn(),
     clearCompareTarget: vi.fn(),
+    changeHeadingLevel: vi.fn(),
     closeCompareView: vi.fn(),
     closeReferenceCompare: vi.fn(),
     onPdfPageIndexChange: vi.fn(),
@@ -588,6 +589,7 @@ describe("AppWorkspace workspace sidebar collapse", () => {
     const editorPaneRef = {
       current: {
         applyMarkdownFormat: vi.fn(),
+        changeHeadingLevel: vi.fn(),
         focus: vi.fn(),
         getActiveDocument: vi.fn(() => null),
         getSelectionText: vi.fn(() => ""),
@@ -800,6 +802,7 @@ describe("AppWorkspace workspace sidebar collapse", () => {
     const editorPaneRef = {
       current: {
         applyMarkdownFormat: vi.fn(),
+        changeHeadingLevel: vi.fn(),
         focus: vi.fn(),
         getActiveDocument: vi.fn(() => null),
         getSelectionText: vi.fn(() => ""),
@@ -843,6 +846,7 @@ describe("AppWorkspace workspace sidebar collapse", () => {
     const editorPaneRef = {
       current: {
         applyMarkdownFormat: vi.fn(),
+        changeHeadingLevel: vi.fn(),
         focus: vi.fn(),
         getActiveDocument: vi.fn(() => null),
         getSelectionText: vi.fn(() => ""),

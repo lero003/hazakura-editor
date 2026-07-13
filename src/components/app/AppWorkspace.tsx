@@ -70,6 +70,7 @@ import type { ReferenceNarrowFocus } from "../../features/referenceCompare/types
 import { reviewPageIndices as collectReviewPageIndices } from "../../features/referenceCompare/importPageMarkers";
 import type { MarkdownStructureItem } from "../../features/editor/markdownStructure";
 import type { MarkdownStructureAdvisory } from "../../features/editor/markdownStructureAdvisories";
+import type { HeadingLevelChangeDirection } from "../../features/editor/markdownStructureEdits";
 
 const EBookPane = lazy(() => import("../editor/preview/EBookPane"));
 
@@ -133,6 +134,10 @@ type AppWorkspaceProps = {
   handleSendSelectionToAgent: (text: string) => void;
   hasWorkspaceSelection: boolean;
   jumpToHeading: (heading: Pick<MarkdownHeading, "line">) => void;
+  changeHeadingLevel: (
+    heading: Extract<MarkdownStructureItem, { kind: "heading" }>,
+    direction: HeadingLevelChangeDirection,
+  ) => void;
   onApplyBackup?: (documentPath: string, backupContents: string) => void;
   loadWorkspaceDirectory: (path: string) => Promise<void>;
   lModeCopy: LModeCopy;
@@ -251,6 +256,7 @@ export function AppWorkspace({
   handleSendSelectionToAgent,
   hasWorkspaceSelection,
   jumpToHeading,
+  changeHeadingLevel,
   loadWorkspaceDirectory,
   lModeCopy,
   onApplyBackup,
@@ -751,6 +757,7 @@ export function AppWorkspace({
             onPreviewScroll={syncEditorScroll}
             onPreviewViewStateChange={handlePreviewViewStateChange}
             onRunSelectedFileCompare={runSelectedFileCompare}
+            onChangeHeadingLevel={changeHeadingLevel}
             onSelectHeading={jumpToHeading}
             outlineTruncated={outlineTruncated}
             previewPaneRef={previewPaneRef}

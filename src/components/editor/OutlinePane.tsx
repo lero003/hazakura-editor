@@ -1,5 +1,6 @@
 import type { MarkdownStructureItem } from "../../features/editor/markdownStructure";
 import type { MarkdownStructureAdvisory } from "../../features/editor/markdownStructureAdvisories";
+import type { HeadingLevelChangeDirection } from "../../features/editor/markdownStructureEdits";
 
 export interface OutlinePaneCopy {
   documentOutline: string;
@@ -9,6 +10,8 @@ export interface OutlinePaneCopy {
   outlineSkippedLevel: (previousLevel: number, level: number) => string;
   outlineDuplicateLabel: (firstLine: number) => string;
   outlineLongSection: (lineCount: number) => string;
+  outlinePromoteHeading: (label: string) => string;
+  outlineDemoteHeading: (label: string) => string;
   outlinePageBreak: string;
   outlineTrailingPageBreak: string;
   outlineTruncated: string;
@@ -19,6 +22,7 @@ export function OutlinePane({
   currentHeadingLine,
   advisories,
   items,
+  onChangeHeadingLevel,
   onSelect,
   truncated,
 }: {
@@ -26,6 +30,10 @@ export function OutlinePane({
   currentHeadingLine: number | null;
   advisories: MarkdownStructureAdvisory[];
   items: MarkdownStructureItem[];
+  onChangeHeadingLevel: (
+    heading: Extract<MarkdownStructureItem, { kind: "heading" }>,
+    direction: HeadingLevelChangeDirection,
+  ) => void;
   onSelect: (item: MarkdownStructureItem) => void;
   truncated: boolean;
 }) {
@@ -60,22 +68,48 @@ export function OutlinePane({
                   className="outline-entry"
                   key={`${item.kind}-${item.startOffset}`}
                 >
-                  <button
-                    aria-label={`${item.line}: ${label}`}
-                    aria-current={current ? "location" : undefined}
-                    className={`outline-item outline-item-${item.kind}${current ? " current" : ""}`}
-                    onClick={() => onSelect(item)}
-                    style={{
-                      paddingLeft: isHeading
-                        ? `${10 + (item.level - 1) * 12}px`
-                        : "10px",
-                    }}
-                    title={`${item.line}: ${label}`}
-                    type="button"
-                  >
-                    <span className="outline-line">{item.line}</span>
-                    <span className="outline-text">{label}</span>
-                  </button>
+                  <div className="outline-entry-row">
+                    <button
+                      aria-label={`${item.line}: ${label}`}
+                      aria-current={current ? "location" : undefined}
+                      className={`outline-item outline-item-${item.kind}${current ? " current" : ""}`}
+                      onClick={() => onSelect(item)}
+                      style={{
+                        paddingLeft: isHeading
+                          ? `${10 + (item.level - 1) * 12}px`
+                          : "10px",
+                      }}
+                      title={`${item.line}: ${label}`}
+                      type="button"
+                    >
+                      <span className="outline-line">{item.line}</span>
+                      <span className="outline-text">{label}</span>
+                    </button>
+                    {isHeading ? (
+                      <span className="outline-heading-actions">
+                        <button
+                          aria-label={`${item.line}: ${copy.outlinePromoteHeading(label)}`}
+                          className="outline-heading-level-button"
+                          disabled={item.level <= 1}
+                          onClick={() => onChangeHeadingLevel(item, "promote")}
+                          title={copy.outlinePromoteHeading(label)}
+                          type="button"
+                        >
+                          ↑
+                        </button>
+                        <button
+                          aria-label={`${item.line}: ${copy.outlineDemoteHeading(label)}`}
+                          className="outline-heading-level-button"
+                          disabled={item.level >= 6}
+                          onClick={() => onChangeHeadingLevel(item, "demote")}
+                          title={copy.outlineDemoteHeading(label)}
+                          type="button"
+                        >
+                          ↓
+                        </button>
+                      </span>
+                    ) : null}
+                  </div>
                   {itemAdvisories.map((advisory) => (
                     <div
                       className="outline-advisory"

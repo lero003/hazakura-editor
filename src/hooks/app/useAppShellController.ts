@@ -1353,6 +1353,7 @@ export function useAppShellController() {
   // section: editor commands
   const {
     applyActiveMarkdownFormat,
+    changeHeadingLevel: changeHeadingLevelUnsafe,
     convertActiveEncoding,
     convertActiveLineEnding,
     handleEditorChange: handleEditorChangeUnsafe,
@@ -1381,6 +1382,15 @@ export function useAppShellController() {
       handleEditorChangeUnsafe(nextValue);
     },
     [activeTab, handleEditorChangeUnsafe, rejectIfAppleAssistLocksTab],
+  );
+  const changeHeadingLevel = useCallback(
+    (...args: Parameters<typeof changeHeadingLevelUnsafe>) => {
+      if (rejectIfAppleAssistLocksTab(activeTab)) {
+        return false;
+      }
+      return changeHeadingLevelUnsafe(...args);
+    },
+    [activeTab, changeHeadingLevelUnsafe, rejectIfAppleAssistLocksTab],
   );
   const onConvertLineEnding = useCallback(
     (lineEnding: Parameters<typeof convertActiveLineEnding>[0]) => {
@@ -1760,6 +1770,7 @@ export function useAppShellController() {
     cancelPendingTabClose,
     clearCompareSource,
     clearCompareTarget,
+    changeHeadingLevel,
     clearSaveError,
     closeReferenceCompare,
     closeCompareView,

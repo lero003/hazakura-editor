@@ -27,6 +27,8 @@ import {
   applyLiveEditorContentsById,
   updateTabsById,
 } from "../../features/editor/editorTabs";
+import type { MarkdownStructureHeading } from "../../features/editor/markdownStructure";
+import type { HeadingLevelChangeDirection } from "../../features/editor/markdownStructureEdits";
 
 function pad2(n: number): string {
   return n.toString().padStart(2, "0");
@@ -100,6 +102,14 @@ export function useEditorCommands({
       setStatus(`Moved to line ${heading.line}`);
     },
     [editorPaneRef, setStatus],
+  );
+
+  const changeHeadingLevel = useCallback(
+    (
+      heading: MarkdownStructureHeading,
+      direction: HeadingLevelChangeDirection,
+    ) => editorPaneRef.current?.changeHeadingLevel(heading, direction) ?? false,
+    [editorPaneRef],
   );
 
   const convertActiveLineEnding = useCallback(
@@ -436,6 +446,7 @@ export function useEditorCommands({
     insertMarkdownAtCursor,
     insertTable,
     jumpToHeading,
+    changeHeadingLevel,
     slashCommands,
   };
 }

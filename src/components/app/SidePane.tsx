@@ -24,6 +24,7 @@ import { PreviewUnavailablePane } from "../editor/preview/PreviewUnavailablePane
 import type { EBookReaderLocation } from "../editor/preview/EBookPane";
 import type { MarkdownStructureItem } from "../../features/editor/markdownStructure";
 import type { MarkdownStructureAdvisory } from "../../features/editor/markdownStructureAdvisories";
+import type { HeadingLevelChangeDirection } from "../../features/editor/markdownStructureEdits";
 
 // PreviewPane pulls in marked + DOMPurify, which together add
 // ~150 kB gzipped to the main bundle. The preview is off by
@@ -60,6 +61,10 @@ type SidePaneProps = {
   onPreviewScroll: () => void;
   onPreviewViewStateChange: (state: PreviewViewState) => void;
   onRunSelectedFileCompare: () => void;
+  onChangeHeadingLevel: (
+    heading: Extract<MarkdownStructureItem, { kind: "heading" }>,
+    direction: HeadingLevelChangeDirection,
+  ) => void;
   onSelectHeading: (heading: Pick<MarkdownHeading, "line">) => void;
   outlineTruncated: boolean;
   previewPaneRef: RefObject<HTMLDivElement | null>;
@@ -92,6 +97,7 @@ export function SidePane({
   onPreviewScroll,
   onPreviewViewStateChange,
   onRunSelectedFileCompare,
+  onChangeHeadingLevel,
   onSelectHeading,
   outlineTruncated,
   previewPaneRef,
@@ -200,6 +206,7 @@ export function SidePane({
           currentHeadingLine={currentHeadingLine}
           advisories={documentStructureAdvisories}
           items={documentStructureItems}
+          onChangeHeadingLevel={onChangeHeadingLevel}
           onSelect={onSelectHeading}
           truncated={outlineTruncated}
         />

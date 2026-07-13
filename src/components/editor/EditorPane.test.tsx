@@ -1,4 +1,11 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { readFileSync } from "node:fs";
 import { createRef } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -15,6 +22,7 @@ import type {
   EditorViewState,
   EditorViewStatePatch,
 } from "../../features/editor/documentViewState";
+import { parseMarkdownStructure } from "../../features/editor/markdownStructure";
 
 const editorPaneSource = readFileSync(
   `${process.cwd()}/src/components/editor/EditorPane.tsx`,
@@ -172,6 +180,55 @@ describe("EditorPane", () => {
     );
 
     expect(container.querySelector(".editor-mount")).not.toBeNull();
+  });
+
+  it("changes a heading level as one undoable editor transaction", async () => {
+    const source = "### Chapter ###\nbody\n";
+    const [heading] = parseMarkdownStructure(source).headings;
+    const editorRef = createRef<EditorPaneHandle>();
+    const onChange = vi.fn();
+    const { container } = render(
+      renderEditorPane({ onChange, ref: editorRef, value: source }),
+    );
+
+    act(() => {
+      expect(editorRef.current?.changeHeadingLevel(heading, "promote")).toBe(
+        true,
+      );
+    });
+
+    expect(onChange).toHaveBeenLastCalledWith("## Chapter ###\nbody\n");
+    expect(editorRef.current?.getActiveDocument()?.text).toBe(
+      "## Chapter ###\nbody\n",
+    );
+
+    fireEvent.keyDown(container.querySelector(".cm-content") as Element, {
+      ctrlKey: true,
+      key: "z",
+    });
+    await waitFor(() => {
+      expect(editorRef.current?.getActiveDocument()?.text).toBe(source);
+    });
+    expect(onChange).toHaveBeenLastCalledWith(source);
+  });
+
+  it("does not change heading structure while IME composition is active", () => {
+    const source = "## Chapter\nbody\n";
+    const [heading] = parseMarkdownStructure(source).headings;
+    const editorRef = createRef<EditorPaneHandle>();
+    const onChange = vi.fn();
+    const { container } = render(
+      renderEditorPane({ onChange, ref: editorRef, value: source }),
+    );
+    const content = container.querySelector(".cm-content") as Element;
+
+    fireEvent.compositionStart(content);
+    expect(editorRef.current?.changeHeadingLevel(heading, "promote")).toBe(
+      false,
+    );
+    expect(onChange).not.toHaveBeenCalled();
+    expect(editorRef.current?.getActiveDocument()?.text).toBe(source);
+    fireEvent.compositionEnd(content);
   });
 
   it("opens the slash command menu from the editor context menu", async () => {
