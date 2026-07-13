@@ -21,6 +21,10 @@ describe("getLModeCopy", () => {
     expect(copy.preferenceLabel).toBe("えるもーど");
     expect(copy.paletteCommand).toBe("えるモードきりかえ");
     expect(copy.exitPillLabel).toBe("へんしゅうへ");
+    expect(copy.typewriterPreferenceHint).toBe(
+      "かーそるぎょうを たてほうこうの ちゅうおうふきんに たもち、かきながら しせんを うごかさないようにします。",
+    );
+    expect(copy.typewriterPreferenceHint).not.toContain("tyo");
   });
 
   it("always exposes the same set of keys across languages", () => {

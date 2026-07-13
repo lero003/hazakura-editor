@@ -261,7 +261,7 @@ Run when the L Mode extension, the GFM parser base, the lMode stylesheet, the pr
 
 ### Typewriter mode (optional setting)
 
-28. In the Preferences dialog, the "Typewriter mode" toggle appears as a sub-option under the L Mode toggle, indented and dimmed when L Mode is off.
+28. In the Preferences dialog, the "Typewriter mode" toggle appears as a sub-option under the L Mode toggle, indented and dimmed when L Mode is off. In kana menu mode, confirm its hint is natural kana copy and contains no garbled Latin fragment.
 29. With typewriter mode ON, the active line stays vertically centered in the viewport as the cursor moves or typing advances the collapsed caret. The scroller's `scroll-behavior: smooth` makes the recenter feel like a soft drift, not a snap. With it OFF, the editor uses the normal top-anchored flow.
 30. With typewriter mode ON, make a range selection with Shift+Arrow and confirm the viewport does not jump just because a selection range is active.
 31. Toggle the setting from the Preferences dialog and confirm the change takes effect without restarting the app.

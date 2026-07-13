@@ -137,6 +137,8 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    falling back to Japanese kanji.
    Editor内検索のkana「前へ」操作も誤記を修正し、検索バーの表示名と
    VoiceOver名を`まえへ`に揃えた。
+   L Modeのkana Typewriter説明に残っていた文字化けも修正し、カーソル行を
+   縦方向中央付近へ保つ説明を自然なかな表記へ揃えた。
    `npm run smoke:app-store-surface` passed on 2026-07-13 (**10 files / 99
    tests**); this is source/App Store-lane surface evidence, not signed
    TestFlight or spoken VoiceOver evidence.

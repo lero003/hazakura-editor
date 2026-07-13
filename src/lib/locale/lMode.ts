@@ -44,7 +44,7 @@ export function getLModeCopy(lang: MenuLanguage): LModeCopy {
       featureDescription: "しずかに かくための じかん。",
       typewriterPreferenceLabel: "たいぷらいたーもーど",
       typewriterPreferenceHint:
-        "そくtyoせんのうほうをちゅうおうにキープします。",
+        "かーそるぎょうを たてほうこうの ちゅうおうふきんに たもち、かきながら しせんを うごかさないようにします。",
       paletteCommand: "えるモードきりかえ",
       exitPillLabel: "へんしゅうへ",
       exitPillTitle: "へんしゅうもーどに きりかへ",

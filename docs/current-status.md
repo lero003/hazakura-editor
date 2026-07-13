@@ -91,6 +91,8 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   falling back to Japanese kanji.
   Editor内検索のkana「前へ」操作も誤記を修正し、検索バーの表示名と
   VoiceOver名を`まえへ`に揃えた。
+  L Modeのkana Typewriter説明に残っていた文字化けも修正し、カーソル行を
+  縦方向中央付近へ保つ説明を自然なかな表記へ揃えた。
   The App Store surface smoke also passed on 2026-07-13 (**10 files / 99
   tests**), covering pane controls, Command Palette, settings, review-state,
   and distribution-lane contracts.
