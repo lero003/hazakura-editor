@@ -11,6 +11,11 @@ Last reviewed: 2026-07-13 (v1.8.0 TestFlight candidate preparation)
   candidate. Published Mac App Store version remains **`1.7.0`**; App Review
   passed and publication was user-reported on 2026-07-12. Local package
   provenance lives in ignored `docs/internal/app-store-candidates/latest.json`.
+- Selected local candidate is **`1.8.0` build `86`** from source commit
+  `f6eb9a8b`. App/package signatures, sandbox and both helpers' inherited
+  entitlements, version/build/minimum-OS metadata, package XML, and checksum
+  provenance passed. It is ready for Transporter but was not uploaded in this
+  pass; Apple processing and signed TestFlight interaction are still open.
 - `v1.7.0` is the immutable published source tag. The selected signed pkg is
   **`1.7.0` build `85`**; static signature, metadata, entitlement, and helper
   checks passed. The user reported basic packaged testing with no issue on
@@ -249,6 +254,16 @@ Read it only for historical context.
 - Do not move or replace published tags/assets silently.
 
 ## Verification Guidance
+
+- 2026-07-13 v1.8.0 candidate review/package pass: frontend suite passed
+  (**164/164 files / 1411 tests**), App Store surface smoke passed (**10 files /
+  99 tests**), Rust passed (**338 passed / 2 explicit host-integration ignored /
+  0 failed**), Rust format and `git diff --check` passed, and the local App
+  Store preview build plus sandbox-preview entitlement probe passed. `npm
+  audit` reported 0 vulnerabilities; `cargo audit` exited 0 with 18 allowed
+  transitive warnings. Signed `1.8.0` build `86` package/app verification
+  passed. Manual spoken VoiceOver, App Store Connect processing, and signed
+  TestFlight interaction were not performed.
 
 - 2026-07-12 v1.8 sandbox preview proof:
   `SKIP_BUILD=1 npm run smoke:macos-sandbox-preview` passed against the latest

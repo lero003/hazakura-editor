@@ -11,6 +11,11 @@ Last reviewed: 2026-07-13 (v1.8.0 TestFlight candidate preparation)
 - Current development package/app version: **`1.8.0`** across npm, Tauri, Cargo,
   and lockfile metadata. Local package provenance (build counter, pkg path,
   SHA-256) lives in ignored `docs/internal/app-store-candidates/latest.json`.
+- **`1.8.0` build `86` is the selected signed local TestFlight candidate.**
+  App/package signatures, sandbox and helper entitlements, version/build,
+  minimum macOS version, and checksum provenance passed local verification on
+  2026-07-13. App Store Connect upload, Apple processing, internal-group
+  assignment, and signed TestFlight interaction remain unverified.
 - **v1.6 (`1.6.0`) is closed and published.** Mac App Store App Review passed
   without issues (user-reported 2026-07-10). Release note:
   `docs/releases/1.6.0-app-store-release-notes.md`. Product scope: Import
