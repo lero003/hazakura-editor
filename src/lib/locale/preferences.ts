@@ -69,7 +69,7 @@ export function getPreferencesCopy(lang: MenuLanguage): PreferencesCopy {
         "Hazakura Local Assist が ほんぶんを かへたら さぶんを すぐ みせます。",
       autoBackup: "うつしのこし",
       autoBackupHint:
-        "じぶんで ON にした ときだけ、未保存の へんこうを 30びょう ごとに .bak として のこします。",
+        "じぶんで ON にした ときだけ、ほぞんしていない へんこうを 30びょう ごとに .bak として のこします。",
       dark: "やみ",
       editor: "えでぃた",
       editorDisplay: "えでぃたのながめ",

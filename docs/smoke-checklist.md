@@ -268,6 +268,8 @@ Run when the L Mode extension, the GFM parser base, the lMode stylesheet, the pr
 32. In the Preferences theme selector with kana menu language, confirm the
     theme hint does not contain split-word corruption such as
     `じょうけ ん て ま す`.
+33. In the Preferences auto-backup setting with kana menu language, confirm
+    the hint uses `ほぞんしていない` rather than the kanji `未保存`.
 
 ## Safe Editor Core
 

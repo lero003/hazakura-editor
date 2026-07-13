@@ -102,4 +102,12 @@ describe("getPreferencesCopy.themeHint", () => {
     }
     expect(kana.themeHint("shokou")).toContain("おもわせる");
   });
+
+  it("keeps the kana auto-backup hint free of Japanese kanji", () => {
+    const hint = getPreferencesCopy("kana").autoBackupHint;
+    expect(hint).toBe(
+      "じぶんで ON にした ときだけ、ほぞんしていない へんこうを 30びょう ごとに .bak として のこします。",
+    );
+    expect(hint).not.toContain("未保存");
+  });
 });

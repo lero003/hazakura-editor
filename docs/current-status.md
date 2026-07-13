@@ -96,6 +96,7 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   Side PaneのPreview無効理由もkanaで表示し、漢字の`無効`へ戻らないようにした。
   Preferencesのkanaテーマ説明に残っていた`じょうけ ん て ま す`の分割崩れも
   修正し、テーマの説明文を自然なかな表記へ揃えた。
+  Auto-backupのkana説明に残っていた`未保存`もかな化した。
   The App Store surface smoke also passed on 2026-07-13 (**10 files / 99
   tests**), covering pane controls, Command Palette, settings, review-state,
   and distribution-lane contracts.

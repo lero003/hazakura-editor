@@ -142,6 +142,7 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    Side PaneのPreview無効理由もkanaで表示し、漢字の`無効`へ戻らないようにした。
    Preferencesのkanaテーマ説明に残っていた`じょうけ ん て ま す`の分割崩れも
    修正し、テーマの説明文を自然なかな表記へ揃えた。
+   Auto-backupのkana説明に残っていた`未保存`もかな化した。
    `npm run smoke:app-store-surface` passed on 2026-07-13 (**10 files / 99
    tests**); this is source/App Store-lane surface evidence, not signed
    TestFlight or spoken VoiceOver evidence.
