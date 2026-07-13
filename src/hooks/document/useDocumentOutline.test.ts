@@ -219,6 +219,7 @@ describe("useDocumentOutline", () => {
     for (let i = 1; i <= MARKDOWN_OUTLINE_MAX_HEADINGS + 5; i += 1) {
       lines.push(`# Heading ${i}`);
     }
+    lines[MARKDOWN_OUTLINE_MAX_HEADINGS] = "### Hidden skipped level";
     const source = lines.join("\n");
 
     const { result } = renderHook(() =>
@@ -234,6 +235,7 @@ describe("useDocumentOutline", () => {
     );
     expect(result.current.documentOutline?.truncated).toBe(true);
     expect(result.current.documentStructureTruncated).toBe(true);
+    expect(result.current.documentStructureAdvisories).toEqual([]);
   });
 
   it("returns no headings for contents with no headings", () => {

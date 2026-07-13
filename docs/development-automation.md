@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current recurring automation guidance
 Authority: High
-Last reviewed: 2026-07-14 (v1.8 published; active lane v1.10 structure)
+Last reviewed: 2026-07-14 (v1.10 representative packaged smoke passed)
 
 ## Purpose
 
@@ -17,9 +17,9 @@ Historical automation prompts and old milestone instructions are archived in `do
 
 Name: `hazakura-note-quality-loop`
 
-Phase: **v1.10 Single-document Structure Foundation** after v1.9 W1–W4 source
-completion and the published `1.8.0` App Store
-release, unless a public-release hotfix blocker appears. Direction:
+Phase: **v1.10 extended packaged structure verification** after S1–S4 source completion,
+v1.9 W1–W4 source completion, and the published `1.8.0` App Store release,
+unless a public-release hotfix blocker appears. Direction:
 `docs/v1.8-plus-product-review-roadmap.md`.
 
 For recurring automation, use the Active Queue in
@@ -31,8 +31,8 @@ environment is available and close it as `implemented`,
 
 Prefer work in this order:
 
-1. Active v1.10 single-document structure queue from `docs/current-work.md` unless a
-   concrete source-loss or public hotfix signal takes priority.
+1. v1.10 structure regression gaps or remaining packaged-smoke breadth from
+   `docs/current-work.md`; do not invent an S5 when no concrete gap appears.
 2. Stale or failing quality gates that block the selected slice.
 3. Core Safe Editor quality risks around open, edit, save, close/quit,
    restore, recovery, preview, diff/review, workspace file operations,

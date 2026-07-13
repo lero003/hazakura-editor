@@ -48,9 +48,11 @@ Current release state:
 - **v1.9 Writing Loop Clarity is source complete; release preparation is not
   started.** W1–W4 organize Preview / Reference / e-book / Outline / Diff /
   L Mode around `書く・読む・確かめる` without adding chrome or a new model.
-- **Active product lane: v1.10 Single-document Structure Foundation.** Share
-  one source-offset interpretation across Outline, e-book, and EPUB before a
-  read-only structure overview or any bounded explicit edit.
+- **v1.10 Single-document Structure Foundation is source complete with
+  representative packaged proof.** One source-offset model now drives Outline,
+  e-book, and EPUB; Outline adds read-only structure/advice plus one explicit,
+  Undo-able heading-level transaction. The temporary-fixture Outline/advice/edit/
+  Undo path passed; extended manual breadth and version/release preparation remain.
 - **Accepted post-v1.7 sequence:** continue through `v1.9`, `v1.10`,
   and additional `v1.xx` releases as useful. Clarify the writing loop,
   add single-document structure, then run a larger packaged distribution test
@@ -205,7 +207,7 @@ Near-term phase order:
    - **v1.9 Writing Loop Clarity (source complete):** organize Preview / Reference /
      e-book / Outline / Diff / L Mode around `書く・読む・確かめる`, without
      adding chrome.
-   - **v1.10 Single-document Structure Foundation (active):** interpret headings,
+   - **v1.10 Single-document Structure Foundation (source complete):** interpret headings,
      frontmatter, page-break markers, and navigation candidates through one
      shared structure model; show structure and allow only bounded, explicit,
      undoable single-buffer structure edits. No multi-file Book Scope.

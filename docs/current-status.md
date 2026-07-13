@@ -36,11 +36,20 @@ Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
   palette is open, aligned the returning Start Panel kana CTA, and repaired
   release/lane document checks. No v1.9 version bump or release preparation
   has run.
-- **v1.10 S1 shared structure parsing is source complete.**
-  `parseMarkdownStructure` provides one source-offset interpretation of closed
-  leading frontmatter, ATX headings, standalone page-breaks, and EPUB
-  navigation candidates for Outline, e-book, and EPUB. It adds no structure
-  UI, source rewrite, edit transaction, workspace scan, or Book Scope.
+- **v1.10 Single-document Structure Foundation S1–S4 is source complete and
+  has representative packaged interaction proof.** `parseMarkdownStructure` provides
+  one source-offset interpretation of closed leading frontmatter, ATX headings,
+  standalone page-breaks, and EPUB navigation candidates. Existing Outline
+  now shows heading hierarchy and page-breaks, exposes non-blocking structure
+  suggestions, and allows only an explicit one-level ATX heading change through
+  one Undo-able CodeMirror transaction. No manifest, second buffer, background
+  scan, automatic correction, section move, or Book Scope was added. Generate
+  deterministic smoke documents with `npm run smoke:fixtures:v1.10-structure`.
+  On 2026-07-14, a fresh local bundle opened the temporary fixture workspace
+  and exposed the expected hierarchy/page-break rows, three overview advice
+  kinds, and the 803-line section advice. A one-level H3→H2 edit set dirty and
+  one `Cmd+Z` restored the original source and clean state. Source-jump breadth,
+  IME, Save As, recovery, e-book/EPUB, and signed TestFlight remain manual proof.
 - **v1.6 (`1.6.0`) is closed and published.** Mac App Store App Review passed
   without issues (user-reported 2026-07-10). Release note:
   `docs/releases/1.6.0-app-store-release-notes.md`. Product scope: Import
@@ -702,10 +711,11 @@ baseline, and smoke evidence are archived under
 1. Treat **v1.8 (`1.8.0`) as published and closed** after App Review passed
    (user-reported 2026-07-14). Do not move its public tag or reopen it without
    a reproduced hotfix need.
-2. **Active lane is v1.10 Single-document Structure Foundation.** S1 shares
-   frontmatter, ATX heading, page-break, and EPUB navigation interpretation
-   across Outline / e-book / EPUB. Next is a read-only overview inside the
-   existing Outline surface; do not add a new pane or edit transaction yet.
+2. **v1.10 S1–S4 is source complete with representative packaged proof.** Finish
+   the remaining source-jump, IME, Save As, recovery, e-book/EPUB, and signed
+   TestFlight items in `docs/smoke-checklist.md` when release breadth is needed.
+   Keep package/app version at `1.8.0` until an explicit release-preparation
+   decision; do not infer TestFlight or signed evidence from source checks.
 3. Keep v1.9 source complete but unreleased until an explicit version/release
    preparation decision. Continue v1.10 inside one Markdown buffer, then run
    the v1.11+ distribution-confidence gate before multi-file Book Scope.

@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current documentation map
 Authority: High
-Last reviewed: 2026-07-14 (v1.9 source complete; v1.10 structure active)
+Last reviewed: 2026-07-14 (v1.10 representative packaged smoke passed)
 
 This directory separates current guidance from historical material. Use current documents for implementation and release decisions. Use `docs/archive/` only for past rationale or old planning context.
 
@@ -16,11 +16,11 @@ or quality-polish slice.
 - `security-boundary.md`: safety constraints for file handling and execution boundaries.
 - `agent-workbench-boundary.md`: optional CLI-agent workbench trust boundary.
 - `assist-surface-strategy.md`: future assist-surface direction.
-- `current-work.md`: active queue (v1.10 Single-document Structure Foundation).
+- `current-work.md`: v1.10 source-complete queue and packaged-smoke handoff.
 - `roadmap.md`: active lane and future phase boundaries.
 - `current-status.md`: current implementation and release state.
 - `v1.8-plus-product-review-roadmap.md`: accepted v1.9, v1.10, distribution-confidence, and v2 sequencing.
-- `v1.10-single-document-structure-design.md`: active v1.10 implementation contract.
+- `v1.10-single-document-structure-design.md`: v1.10 implementation and verification contract.
 - `l-mode-plan.md`: active source-preserving L Mode writing-surface direction.
 - `ebook-mode-epub-export-plan.md`: active single-document e-book and EPUB planning detail.
 

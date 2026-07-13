@@ -35,18 +35,29 @@ export function useDocumentOutline({
     () => (documentStructure ? markdownStructureItems(documentStructure) : []),
     [documentStructure],
   );
-  const documentStructureItems = allStructureItems.slice(
-    0,
-    MARKDOWN_OUTLINE_MAX_HEADINGS,
+  const documentStructureItems = useMemo(
+    () => allStructureItems.slice(0, MARKDOWN_OUTLINE_MAX_HEADINGS),
+    [allStructureItems],
   );
   const documentStructureTruncated =
     allStructureItems.length > MARKDOWN_OUTLINE_MAX_HEADINGS;
+  const visibleStructureHeadingLines = useMemo(
+    () =>
+      new Set(
+        documentStructureItems.flatMap((item) =>
+          item.kind === "heading" ? [item.line] : [],
+        ),
+      ),
+    [documentStructureItems],
+  );
   const documentStructureAdvisories = useMemo(
     () =>
       documentStructure
-        ? analyzeMarkdownStructure(activeContents, documentStructure)
+        ? analyzeMarkdownStructure(activeContents, documentStructure).filter(
+            (advisory) => visibleStructureHeadingLines.has(advisory.line),
+          )
         : [],
-    [activeContents, documentStructure],
+    [activeContents, documentStructure, visibleStructureHeadingLines],
   );
   const documentHeadings = documentOutline?.headings ?? [];
   const currentMarkdownHeading = useMemo(

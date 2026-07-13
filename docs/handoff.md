@@ -29,11 +29,18 @@ Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
   fixed Command Palette labels staying stale when locale changed while open,
   aligned the kana returning CTA, and repaired living-doc release/lane checks.
   Package/app version remains `1.8.0`; no v1.9 release preparation has run.
-- **v1.10 is active.** S1 adds `parseMarkdownStructure`, a read-only,
-  source-offset model shared by Outline, e-book chapters/page-breaks, and EPUB
-  navigation. Empty headings stay structural but do not become EPUB navigation
-  labels. No structure UI, source rewrite, edit transaction, or Book Scope was
-  added. Contract: `docs/v1.10-single-document-structure-design.md`.
+- **v1.10 S1–S4 is source complete with representative packaged smoke.** The shared
+  source-offset model drives Outline, e-book chapters/page-breaks, and EPUB
+  navigation. Outline now shows hierarchy/page-breaks, four non-blocking advice
+  kinds, and explicit H1–H6 one-level controls. The edit revalidates the live
+  source, dispatches once through CodeMirror, participates in Undo/dirty, and
+  refuses read-only, Assist-lock, IME, boundary, and stale-offset cases. Fixture:
+  `npm run smoke:fixtures:v1.10-structure`; contract:
+  `docs/v1.10-single-document-structure-design.md`.
+  A fresh local bundle on 2026-07-14 confirmed the temporary-fixture Outline,
+  three overview advice kinds, 803-line advice, dirty transition, and single-step
+  Undo restoration. Source-jump breadth, IME, Save As, recovery, e-book/EPUB,
+  and signed TestFlight remain open manual evidence.
 - `v1.8.0` is the immutable published source tag. The published signed pkg is
   **`1.8.0` build `89`**; static signature, metadata, entitlement, and helper
   checks passed before upload. Do not move the tag or mutate published assets.
@@ -98,10 +105,12 @@ Last reviewed: 2026-07-14 (v1.8.0 published on the Mac App Store)
 
 Use `docs/current-work.md` for the active queue. Current priority order:
 
-1. **Active v1.10 Single-document Structure Foundation:** S1 shared read-only
-   parsing is landed. Next is S2: show hierarchy and page-breaks inside the
-   existing Outline surface and jump to Editor source positions. Do not add a
-   new pane, automatic correction, source rewrite, or edit transaction in S2.
+1. **v1.10 extended packaged interaction smoke:** S1–S4 source and the
+   representative Outline/advice/edit/Undo path have passed. Use the generated
+   overview/long-section documents to finish source-jump, IME, Save As,
+   recovery, e-book/EPUB, and signed TestFlight breadth only when that evidence
+   is needed. Keep source version `1.8.0`; no release prep, section move, or
+   Book Scope work is implied.
 2. **Review fixes (2026-07-11):** pathless `recoveryId` is UUID (not
    `session:N`); pathless restore always opens a new pathless tab; reference
    text scrolls on `.reference-pane-body` with wrap-safe full rendering

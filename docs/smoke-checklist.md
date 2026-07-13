@@ -3,7 +3,7 @@
 Status: Operational
 Scope: Current manual smoke checks
 Authority: Medium
-Last reviewed: 2026-07-13 (v1.8 purpose-led discovery / long-reference copy proof)
+Last reviewed: 2026-07-14 (v1.10 structure smoke intake)
 
 Use this checklist after changes to file operations, saving, preview rendering, L Mode, Diff / explicit change review, Agent Workbench, workspace behavior, theme/status display, keyboard focus, or release packaging.
 
@@ -28,6 +28,62 @@ onscreen layer-0 app window. It proves the built bundle can surface a
 visible app window on this Mac; it does not prove native dialog
 selection, Hazakura Local Assist transaction review, TestFlight, App Store
 sandbox behavior, or notarization.
+
+## v1.10 Single-document Structure Smoke
+
+Run this after the automated gates and before treating v1.10 as packaged-app
+proven. Generate deterministic local-only documents:
+
+```bash
+npm run smoke:fixtures:v1.10-structure
+```
+
+The command prints the actual OS temporary output directory. It contains
+`structure-overview.md` and `long-section.md`. The generator writes no tracked
+fixture and uses no user workspace or cloud folder.
+
+1. Build and launch the current desktop bundle with `npm run build` (or reuse
+   that exact fresh build). Open the generated folder as the workspace.
+2. Open `structure-overview.md`, show Outline, and confirm frontmatter headings
+   are absent. Confirm H1/H2/H3/H5 indentation, a normal page-break row, and a
+   trailing page-break row. Select each kind and confirm the Editor moves to its
+   source line without changing the source or dirty state.
+3. Confirm Outline shows suggestions for the duplicate navigation label, empty
+   heading, and H2→H5 level jump. Open `long-section.md` and confirm the 800-line
+   section receives the long-section suggestion. These are notes only: Save,
+   Save As, Preview, e-book, PDF, and EPUB actions remain available.
+4. In `structure-overview.md`, use the upward control on `第一場面`. Confirm
+   only `###` becomes `##`, the tab becomes dirty, and no file write occurs.
+   Use `Cmd+Z` once and confirm the complete original source returns; Redo may
+   be used to restore the edit.
+5. Exercise H1/H6 boundaries and confirm the unavailable direction is disabled.
+   Start Japanese IME composition in the Editor and, before committing it,
+   activate a heading-level control. Confirm the structural edit is refused and
+   the composing text remains intact. Commit/cancel composition, then retry.
+6. Repeat one level change, use Save As to a disposable `.md`, and confirm the
+   same tab/session continues with the edited source and normal Undo behavior.
+   The original generated fixture must remain unchanged unless it was explicitly
+   chosen as the save destination.
+7. With auto-backup enabled, make an unsaved level change, wait for the normal
+   backup interval, close/terminate through the existing recovery smoke method,
+   and restore the draft. Confirm the edited heading is restored as a dirty
+   buffer and Save remains explicit. Record path-backed and pathless results
+   separately; do not infer signed TestFlight recovery from a Developer bundle.
+8. Check the normal page break in e-book mode and an exported EPUB. Confirm the
+   shared interpretation matches Outline, while the trailing marker is dropped
+   from rendered/exported output. Confirm no manifest, database, second editable
+   pane, automatic correction, or section-move surface appears.
+
+Record items 2–8 separately. `npm run smoke:macos-window` proves only a visible
+packaged window and does not replace these interactions.
+
+Current representative result (2026-07-14): a fresh local bundle opened the
+generated temporary workspace. Item 2's frontmatter exclusion, hierarchy,
+normal/trailing page-break display and item 3's three overview suggestions plus
+803-line suggestion passed. Item 4 passed for H3→H2, dirty state, and one-step
+`Cmd+Z` restoration to the original clean source. Source-line jump breadth and
+items 5–8 were not exercised; do not infer IME, Save As, recovery, e-book/EPUB,
+or signed TestFlight proof from this representative run.
 
 ## v1.3 Daily Trust Test Intake
 

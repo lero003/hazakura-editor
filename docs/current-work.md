@@ -1,9 +1,9 @@
 # Current Work
 
 Status: Operational
-Scope: v1.10 Single-document Structure Foundation (active); v1.9 source complete
+Scope: v1.10 source complete; representative packaged structure smoke passed
 Authority: High
-Last reviewed: 2026-07-14 (v1.9 source reviewed; v1.10 S1 active)
+Last reviewed: 2026-07-14 (v1.10 representative packaged smoke passed)
 
 ## Purpose
 
@@ -19,14 +19,14 @@ Start here when choosing the next small `Hazakura Editor` slice.
 | **v1.7** | **Closed / published as `1.7.0`** | Reference Compare plus trust / daily-use hardening. App Review passed and the release was published (user-reported 2026-07-12). Extended smoke continues as v1.8 follow-up; do not reopen without a reproduced hotfix. |
 | **v1.8** | **Closed / published as `1.8.0`** | Daily Trust Completion. App Review passed and the release was published (user-reported 2026-07-14, build `89`). Deterministic Rust suite isolation, bounded long-reference, L Mode Reference continuity, a11y / kana UI, export preflight, theme cost, failure-state messaging. Release notes: `docs/releases/1.8.0-app-store-release-notes.md`. Extended TestFlight and spoken VoiceOver breadth remain follow-up evidence. |
 | **v1.9** | **Source complete / release not prepared** | W1–W4 organize Preview / Reference / e-book / Outline / Diff / L Mode around `書く・読む・確かめる`. Review fixes include live locale refresh and kana copy. Version remains `1.8.0`. |
-| **v1.10** | **Active — Single-document Structure Foundation** | Share one source-offset structure interpretation across Outline, e-book, and EPUB before adding read-only overview or bounded edits. |
+| **v1.10** | **Source complete / representative packaged smoke passed** | Shared parsing, Outline hierarchy/page-breaks, non-blocking advice, and one Undo-able heading-level edit are landed. A fresh local bundle passed the temporary-fixture Outline/advice/edit/Undo path; extended manual breadth remains. Version remains `1.8.0`. |
 | **v2** | Later | OKF Book Scope, then 縦書き. |
 
 Package/app version in tree is **`1.8.0`**; published Mac App Store version is
 also **`1.8.0`**. See `current-status.md` for lane truth; treat Connect as
 authoritative for store counters.
 
-## Active Queue — v1.10 Single-document Structure Foundation
+## Source-complete Queue — v1.10 Single-document Structure Foundation
 
 Goal: 一つの Markdown source の構造を、sourceを書き換えず同じ規則で読み取り、
 必要な場合だけ明示的に整えられる基盤へ進める。Source:
@@ -35,9 +35,10 @@ Goal: 一つの Markdown source の構造を、sourceを書き換えず同じ規
 | Priority | Slice | Acceptance |
 |---|---|---|
 | **Done / source** | **S1 — Shared read-only model** | frontmatter、ATX heading、page-break、EPUB navigation候補をsource位置付きで解釈し、Outline / e-book / EPUBで共有。fence length/type、CRLF、空見出しnavigation除外をテスト固定。 |
-| **Next** | **S2 — Structure overview** | 既存Outline surface内でhierarchyとpage-breakを読み取り専用表示し、選択でEditorへ移動。新しいpane/chromeは追加しない。 |
-| **Later** | **S3 — Advisory checks** | skipped level、空見出し、重複navigation label、極端に長いsectionを非blocking助言として示す。 |
-| **Later / proof only** | **S4 — One bounded edit** | heading level change またはsection moveの片方だけを明示的なUndo-able単一-buffer transactionとして実証する。 |
+| **Done / source** | **S2 — Structure overview** | 既存Outline surface内でhierarchyとpage-breakを読み取り専用表示し、選択でEditorへ移動。新しいpane/chromeは追加しない。 |
+| **Done / source** | **S3 — Advisory checks** | skipped level、空見出し、重複navigation label、800行 / 40,000文字以上のsectionを非blocking助言として示す。 |
+| **Done / source** | **S4 — One bounded edit** | heading level changeだけを明示的なUndo-able単一-buffer transactionとして実証。dirty、CRLF metadata、stale offset、IMEを回帰固定。 |
+| **Representative packaged pass / extended manual open** | **Packaged structure smoke** | Temporary fixtureでfrontmatter除外、hierarchy/page-break、3種の構造助言、803行section助言、H3→H2、dirty、Undo復帰を確認済み。source jump全種、IME、Save As、recovery、e-book/EPUB整合は `docs/smoke-checklist.md` に沿って別途確認する。 |
 
 ### Closed Source Queue — v1.9 Writing Loop Clarity
 

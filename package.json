@@ -32,6 +32,7 @@
     "smoke:macos-window": "bash scripts/smoke-macos-window.sh",
     "smoke:macos-sandbox-preview": "bash scripts/smoke-macos-sandbox-preview.sh",
     "smoke:fixtures:v1.8-reference": "node scripts/generate-v1.8-reference-smoke.mjs",
+    "smoke:fixtures:v1.10-structure": "node scripts/generate-v1.10-structure-smoke.mjs",
     "clean:generated": "node scripts/clean-generated-artifacts.mjs",
     "clean:generated:apply": "node scripts/clean-generated-artifacts.mjs --apply",
     "test": "vitest run",

@@ -57,6 +57,10 @@ const textReferenceBudgetSource = readFileSync(
   "src/features/referenceCompare/textReferenceBudget.ts",
   "utf8",
 );
+const structureSmokeSource = readFileSync(
+  "scripts/generate-v1.10-structure-smoke.mjs",
+  "utf8",
+);
 const releaseCandidateScript = readFileSync(
   "scripts/prepare-release-candidate.mjs",
   "utf8",
@@ -447,6 +451,49 @@ describe("macOS build scripts", () => {
     }
   });
 
+  it("generates deterministic v1.10 single-document structure fixtures", () => {
+    expect(packageJson.scripts["smoke:fixtures:v1.10-structure"]).toBe(
+      "node scripts/generate-v1.10-structure-smoke.mjs",
+    );
+    expect(structureSmokeSource).toContain("LONG_SECTION_LINES = 800");
+    const outputDirectory = join(
+      "src-tauri",
+      "target",
+      `v1.10-structure-smoke-test-${process.pid}`,
+    );
+
+    try {
+      const result = JSON.parse(
+        execFileSync(
+          process.execPath,
+          ["scripts/generate-v1.10-structure-smoke.mjs", outputDirectory],
+          { encoding: "utf8" },
+        ),
+      ) as {
+        files: Array<{ name: string; chars: number; lines: number }>;
+      };
+      const overview = readFileSync(
+        join(outputDirectory, "structure-overview.md"),
+        "utf8",
+      );
+      const longSection = readFileSync(
+        join(outputDirectory, "long-section.md"),
+        "utf8",
+      );
+
+      expect(result.files.map((file) => file.name)).toEqual([
+        "structure-overview.md",
+        "long-section.md",
+      ]);
+      expect(overview).toContain("##### レベルが飛ぶ見出し");
+      expect(overview).toContain("## 重複する名前");
+      expect(longSection.split("\n").length).toBe(803);
+      expect(longSection).toContain("LONG-SECTION-END-MARKER");
+    } finally {
+      rmSync(outputDirectory, { force: true, recursive: true });
+    }
+  });
+
   it("keeps smoke/probe scripts on the current App Store preview bundle name", () => {
     expect(macosDistributionProbeScript).toContain(
       "src-tauri/target/release/bundle/macos/Hazakura Editor.app",
@@ -523,7 +570,7 @@ describe("macOS build scripts", () => {
     );
   });
 
-  it("keeps living docs aligned on the published version and active lane", () => {
+  it("keeps living docs aligned on the published version and development lane", () => {
     const expectedSnippets = {
       "README.md": [
         "Hazakura Editor `1.8.0` is published",
@@ -537,22 +584,24 @@ describe("macOS build scripts", () => {
       "docs/current-status.md": [
         "Current package/app version: **`1.8.0`",
         "Published Mac App Store version: **`1.8.0`",
-        "lane is **v1.10 Single-document Structure Foundation**",
+        "v1.10 Single-document Structure Foundation S1–S4 is source complete",
       ],
       "docs/current-work.md": [
-        "Scope: v1.10 Single-document Structure Foundation",
-        "Active Queue — v1.10 Single-document Structure Foundation",
+        "Scope: v1.10 source complete; representative packaged structure smoke passed",
+        "Source-complete Queue — v1.10 Single-document Structure Foundation",
       ],
-      "docs/development-automation.md": ["Phase: **v1.10 Single-document Structure Foundation**"],
+      "docs/development-automation.md": [
+        "Phase: **v1.10 extended packaged structure verification**",
+      ],
       "docs/handoff.md": [
         "Package/app version in tree is **`1.8.0`",
         "Published Mac App Store version is **`1.8.0`",
-        "Active v1.10 Single-document Structure Foundation",
+        "v1.10 S1–S4 is source complete",
       ],
       "docs/roadmap.md": [
         "Package/app version in tree: **`1.8.0`",
         "Historical MAS baselines (`1.3.0` Daily Trust",
-        "Active product lane: v1.10 Single-document Structure Foundation",
+        "v1.10 Single-document Structure Foundation is source complete",
       ],
     };
 
