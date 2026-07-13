@@ -11,16 +11,16 @@ Last reviewed: 2026-07-13 (v1.8.0 TestFlight candidate preparation)
   candidate. Published Mac App Store version remains **`1.7.0`**; App Review
   passed and publication was user-reported on 2026-07-12. Local package
   provenance lives in ignored `docs/internal/app-store-candidates/latest.json`.
-- Selected local candidate is **`1.8.0` build `86`** from source commit
-  `f6eb9a8b`. App/package signatures, sandbox and both helpers' inherited
+- Selected local candidate is **`1.8.0` build `87`** from source commit
+  `464ad564`. App/package signatures, sandbox and both helpers' inherited
   entitlements, version/build/minimum-OS metadata, package XML, and checksum
   provenance passed. It is ready for Transporter but was not uploaded in this
   pass; Apple processing and signed TestFlight interaction are still open.
-- Current source has one post-build PDF-reference adjustment that build `86`
-  does not contain: fit-page was removed, 150% now means 1.5 times the fitted
-  pane width, and the zoomed page supports native two-axis scrolling plus
-  keyboard panning. Do not upload build `86` as the final v1.8 candidate;
-  rebuild and re-verify the signed pkg first.
+- Build `87` contains the PDF-reference zoom simplification: fit-page was
+  removed, 150% now means 1.5 times the fitted pane width, and the zoomed page
+  supports native two-axis scrolling plus keyboard panning. Static package
+  verification passed; hands-on panning with a real PDF remains manual before
+  Transporter upload.
 - `v1.7.0` is the immutable published source tag. The selected signed pkg is
   **`1.7.0` build `85`**; static signature, metadata, entitlement, and helper
   checks passed. The user reported basic packaged testing with no issue on
@@ -266,7 +266,8 @@ Read it only for historical context.
   tests**); Rust passed (**338 passed / 2 explicit host-integration ignored /
   0 failed**); Rust format, `npm run build:vite`, `npm run build`, and `git
   diff --check` passed. The local app bundle built successfully. Packaged
-  hands-on panning with a real PDF and a refreshed signed pkg remain unverified.
+  signed build `87` package/app verification passed. Hands-on panning with a
+  real PDF remains unverified.
 - 2026-07-13 v1.8.0 candidate review/package pass: frontend suite passed
   (**164/164 files / 1411 tests**), App Store surface smoke passed (**10 files /
   99 tests**), Rust passed (**338 passed / 2 explicit host-integration ignored /
