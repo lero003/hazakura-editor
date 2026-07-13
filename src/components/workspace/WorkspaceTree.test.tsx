@@ -105,6 +105,8 @@ type RenderTreeOverrides = {
   onSelectCompareFile?: (entry: WorkspaceTreeEntry) => void;
   onSubmitRename?: (srcPath: string, newName: string) => void;
   openFileStateLabel?: string;
+  loadingLabel?: string;
+  partialEntriesLabel?: string;
   renamingPath?: string | null;
   requestRename?: (path: string) => void;
   renameLabel?: string;
@@ -151,8 +153,12 @@ function renderTree(overrides: RenderTreeOverrides = {}) {
       onOpenFile={onOpenFile}
       onSelectCompareFile={onSelectCompareFile}
       onSubmitRename={onSubmitRename}
+      loadingLabel={overrides.loadingLabel ?? "Loading…"}
       openFileStateLabel={overrides.openFileStateLabel ?? "open"}
       openFilePaths={overrides.openFilePaths ?? []}
+      partialEntriesLabel={
+        overrides.partialEntriesLabel ?? "Some entries are hidden"
+      }
       renameLabel={overrides.renameLabel ?? "Rename"}
       renamingPath={overrides.renamingPath ?? null}
       requestRename={requestRename}
@@ -314,7 +320,10 @@ describe("WorkspaceTree", () => {
             resolveLoad = resolve;
           }),
       );
-      const { view } = renderTree({ onLoadDirectory });
+      const { view } = renderTree({
+        loadingLabel: "読み込み中…",
+        onLoadDirectory,
+      });
 
       // The root is already expanded; expand `dest` to
       // exercise the loading path. `dest` is collapsed by
@@ -339,6 +348,9 @@ describe("WorkspaceTree", () => {
       expect(onLoadDirectory).toHaveBeenCalledWith(destPath);
       expect(destButton.disabled).toBe(true);
       expect(destButton.getAttribute("aria-expanded")).toBe("false");
+      expect(view.container.querySelector(".tree-meta")?.textContent).toBe(
+        "読み込み中…",
+      );
 
       // Resolve the load and let React flush. The
       // disabled state is lifted and `aria-expanded`

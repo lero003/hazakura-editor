@@ -57,6 +57,7 @@ function TreeEntry({
   defaultExpanded = false,
   dirtyFilePaths,
   entry,
+  loadingLabel,
   onLoadDirectory,
   onMoveEntry,
   onOpenContextMenu,
@@ -65,6 +66,7 @@ function TreeEntry({
   onSubmitRename,
   openFileStateLabel,
   openFilePaths,
+  partialEntriesLabel,
   renameLabel,
   renamingPath,
   requestRename,
@@ -78,6 +80,7 @@ function TreeEntry({
   defaultExpanded?: boolean;
   dirtyFilePaths: ReadonlySet<string>;
   entry: WorkspaceTreeEntry;
+  loadingLabel: string;
   renamingPath: string | null;
   requestRename: (path: string) => void;
   onClearRenaming: () => void;
@@ -93,6 +96,7 @@ function TreeEntry({
   onSubmitRename: (srcPath: string, newName: string) => void;
   openFileStateLabel: string;
   openFilePaths: ReadonlySet<string>;
+  partialEntriesLabel: string;
   renameLabel: string;
   unsavedOpenFileStateLabel: string;
 }) {
@@ -331,7 +335,7 @@ function TreeEntry({
       <ChevronIcon expanded={expanded} />
       {expanded ? <FolderOpenIcon /> : <FolderIcon />}
       <span className="tree-name">{entry.name}</span>
-      {loading ? <span className="tree-meta">Loading...</span> : null}
+      {loading ? <span className="tree-meta">{loadingLabel}</span> : null}
     </button>
   );
 
@@ -352,6 +356,7 @@ function TreeEntry({
               compareSelectionEnabled={compareSelectionEnabled}
               dirtyFilePaths={dirtyFilePaths}
               entry={child}
+              loadingLabel={loadingLabel}
               key={child.path}
               onLoadDirectory={onLoadDirectory}
               onMoveEntry={onMoveEntry}
@@ -361,6 +366,7 @@ function TreeEntry({
               onSubmitRename={onSubmitRename}
               openFileStateLabel={openFileStateLabel}
               openFilePaths={openFilePaths}
+              partialEntriesLabel={partialEntriesLabel}
               renameLabel={renameLabel}
               renamingPath={renamingPath}
               requestRename={requestRename}
@@ -370,7 +376,7 @@ function TreeEntry({
           ))}
           {entry.children_truncated ? (
             <div className="tree-partial" role="note">
-              Some entries are hidden by the per-folder limit.
+              {partialEntriesLabel}
             </div>
           ) : null}
         </div>
@@ -452,6 +458,7 @@ export function WorkspaceTree({
   compareSelectionEnabled,
   dirtyFilePaths,
   entry,
+  loadingLabel,
   onClearCompareSelection,
   onLoadDirectory,
   onMoveEntry,
@@ -461,6 +468,7 @@ export function WorkspaceTree({
   onSubmitRename,
   openFileStateLabel,
   openFilePaths,
+  partialEntriesLabel,
   renameLabel,
   renamingPath,
   requestRename,
@@ -472,6 +480,7 @@ export function WorkspaceTree({
   compareSelectionEnabled: boolean;
   dirtyFilePaths: readonly string[];
   entry: WorkspaceTreeEntry;
+  loadingLabel: string;
   onClearCompareSelection: () => void;
   onLoadDirectory: (path: string) => Promise<void>;
   onMoveEntry: (srcPath: string, dstParentPath: string) => void;
@@ -485,6 +494,7 @@ export function WorkspaceTree({
   onSubmitRename: (srcPath: string, newName: string) => void;
   openFileStateLabel: string;
   openFilePaths: readonly string[];
+  partialEntriesLabel: string;
   renameLabel: string;
   renamingPath: string | null;
   requestRename: (path: string) => void;
@@ -534,6 +544,7 @@ export function WorkspaceTree({
         defaultExpanded
         dirtyFilePaths={dirtyPathSet}
         entry={entry}
+        loadingLabel={loadingLabel}
         onLoadDirectory={onLoadDirectory}
         onMoveEntry={onMoveEntry}
         onOpenContextMenu={onOpenContextMenu}
@@ -542,6 +553,7 @@ export function WorkspaceTree({
         onSubmitRename={onSubmitRename}
         openFileStateLabel={openFileStateLabel}
         openFilePaths={openPathSet}
+        partialEntriesLabel={partialEntriesLabel}
         renameLabel={renameLabel}
         renamingPath={renamingPath}
         requestRename={requestRename}

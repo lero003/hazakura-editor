@@ -233,11 +233,13 @@ export function WorkspaceSidebar({
           onOpenFile={onOpenFile}
           onSelectCompareFile={onSelectCompareFile}
           onSubmitRename={onSubmitRename}
+          loadingLabel={fileOpsCopy.loading}
           openFileStateLabel={fileOpsCopy.openFileState}
           openFilePaths={openFilePaths}
           renameLabel={fileOpsCopy.rename}
           renamingPath={renamingPath}
           requestRename={requestRename}
+          partialEntriesLabel={fileOpsCopy.partialEntries}
           unsavedOpenFileStateLabel={fileOpsCopy.unsavedOpenFileState}
         />
       ) : (

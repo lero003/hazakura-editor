@@ -11,6 +11,8 @@ import { isKanaStyle } from "./_helpers";
 // match the existing 3-way split.
 
 export type WorkspaceFileOpsCopy = {
+  loading: string;
+  partialEntries: string;
   openFileState: string;
   unsavedOpenFileState: string;
   sidebarNewButton: string;
@@ -39,6 +41,8 @@ export function getWorkspaceFileOpsCopy(
 ): WorkspaceFileOpsCopy {
   if (isKanaStyle(lang)) {
     return {
+      loading: "よみこみちゅう…",
+      partialEntries: "ふぉるだごとの じょうげんにより いちぶの ふみは みえません。",
       openFileState: "ひらいている",
       unsavedOpenFileState: "ほぞんまえ",
       sidebarNewButton: "あたらしく",
@@ -67,6 +71,8 @@ export function getWorkspaceFileOpsCopy(
 
   return isJapaneseMenuLanguage(lang)
     ? {
+        loading: "読み込み中…",
+        partialEntries: "フォルダごとの上限により一部の項目は非表示です。",
         openFileState: "開いている",
         unsavedOpenFileState: "未保存",
         sidebarNewButton: "新規",
@@ -93,6 +99,8 @@ export function getWorkspaceFileOpsCopy(
         sidebarTrashButton: "ゴミ箱",
       }
     : {
+        loading: "Loading…",
+        partialEntries: "Some entries are hidden by the per-folder limit.",
         openFileState: "open",
         unsavedOpenFileState: "unsaved",
         sidebarNewButton: "New",
