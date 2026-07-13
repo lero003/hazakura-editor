@@ -7,6 +7,8 @@ export type SafeEditorCopy = {
   newFile: string;
   noFileOpen: string;
   noFolderOpen: string;
+  openFileTabs: string;
+  openFiles: string;
   openFile: string;
   openFolder: string;
   openWorkspaceFolder: string;
@@ -30,6 +32,8 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
       newFile: "あたらしきふみ",
       noFileOpen: "ふみなし",
       noFolderOpen: "ふぉるだなし",
+      openFileTabs: "ひらいている ふみのならび",
+      openFiles: "ひらいている ふみ",
       openFile: "ふみをひらく",
       openFolder: "ふぉるだをひらく",
       openWorkspaceFolder: "ところをひらく",
@@ -52,6 +56,8 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
         newFile: "新規ファイル",
         noFileOpen: "ファイル未選択",
         noFolderOpen: "フォルダ未選択",
+        openFileTabs: "開いているファイルの一覧",
+        openFiles: "開いているファイル",
         openFile: "ファイルを開く",
         openFolder: "フォルダを開く",
         openWorkspaceFolder: "ワークスペースフォルダを開く",
@@ -72,6 +78,8 @@ export function getSafeEditorCopy(lang: MenuLanguage): SafeEditorCopy {
         newFile: "New File",
         noFileOpen: "No file open",
         noFolderOpen: "No folder open",
+        openFileTabs: "Open file tabs",
+        openFiles: "Open files",
         openFile: "Open File",
         openFolder: "Open Folder",
         openWorkspaceFolder: "Open workspace folder",

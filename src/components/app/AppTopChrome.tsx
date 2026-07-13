@@ -58,6 +58,8 @@ type AppTopChromeProps = {
   onToggleOutline: () => void;
   onTogglePreview: () => void;
   onToggleReference: () => void;
+  openFileTabsLabel: string;
+  openFilesLabel: string;
   recoveryCopy: RecoveryCopy;
   shouldSuppressTabClick: () => boolean;
   sidePaneCopy: SidePaneCopy;
@@ -98,6 +100,8 @@ export function AppTopChrome({
   onToggleOutline,
   onTogglePreview,
   onToggleReference,
+  openFileTabsLabel,
+  openFilesLabel,
   recoveryCopy,
   shouldSuppressTabClick,
   sidePaneCopy,
@@ -131,6 +135,8 @@ export function AppTopChrome({
       onTabContextMenu={onTabContextMenu}
       onTabPointerDown={onTabPointerDown}
       onTabPointerMove={onTabPointerMove}
+      openFileTabsLabel={openFileTabsLabel}
+      openFilesLabel={openFilesLabel}
       shouldSuppressTabClick={shouldSuppressTabClick}
       selectedImage={selectedImage}
       tabs={tabs}

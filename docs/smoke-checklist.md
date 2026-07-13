@@ -709,10 +709,11 @@ recovered state separately where relevant.
   toolbar and have a focused regression. This improves the source
   announcement/selection path but does not claim spoken VoiceOver or signed
   TestFlight. Locale coverage also pins the same toolbar key set and the
-  English / Japanese / kana labels; the contextual Slash command listbox has
-  the corresponding localized accessible-name regression.
+  English / Japanese / kana labels; the contextual Slash command listbox and
+  open-file tab row/list have corresponding localized accessible-name
+  regressions.
 - App Store surface smoke on 2026-07-13: `npm run smoke:app-store-surface`
-  passed (**10 files / 96 tests**) for pane controls, Command Palette, settings,
+  passed (**10 files / 97 tests**) for pane controls, Command Palette, settings,
   review-state, and distribution-lane contracts.
 - Local PDF visual follow-up on 2026-07-13 rendered pages 1–3 of the existing
   nine-page export with Poppler. No clipping was visible and all four sampled

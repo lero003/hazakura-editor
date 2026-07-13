@@ -115,8 +115,9 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    VoiceOver remains a separate proof boundary. Locale tests also pin the
    toolbar key parity and the English / Japanese / kana names. The contextual
    Slash command listbox now uses the same localized-name contract, with a
-   focused component and locale regression.
-   `npm run smoke:app-store-surface` passed on 2026-07-13 (**10 files / 96
+   focused component and locale regression. Open-file tab row and tablist
+   containers now receive localized names through Safe Editor copy as well.
+   `npm run smoke:app-store-surface` passed on 2026-07-13 (**10 files / 97
    tests**); this is source/App Store-lane surface evidence, not signed
    TestFlight or spoken VoiceOver evidence.
    Local Poppler rendering of PDF pages 1–3 found no clipping and white four-

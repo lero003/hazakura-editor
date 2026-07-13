@@ -1794,6 +1794,8 @@ export function useAppShellController() {
     lModeCopy,
     lModeEnabled: activeLModeEnabled,
     emptyTabsLabel: safeEditorCopy.emptyTabs,
+    openFileTabsLabel: safeEditorCopy.openFileTabs,
+    openFilesLabel: safeEditorCopy.openFiles,
     fileOpsCopy,
     encodingAriaLabel: editorChromeCopy.encodings,
     encodingLabel: editorChromeCopy.encoding,

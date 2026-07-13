@@ -65,8 +65,9 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   name, with a focused regression that pins the selected target for assistive
   technology; locale coverage pins the same toolbar key set and the English /
   Japanese / kana labels. The contextual Slash command listbox now also exposes
-  a localized accessible name, with copy-key parity coverage.
-  The App Store surface smoke also passed on 2026-07-13 (**10 files / 96
+  a localized accessible name, with copy-key parity coverage. Tab row and tab
+  list containers also use localized names for the active menu language.
+  The App Store surface smoke also passed on 2026-07-13 (**10 files / 97
   tests**), covering pane controls, Command Palette, settings, review-state,
   and distribution-lane contracts.
   The installed public `1.7.0` build `85` also passed `⌘⇧P` Command Palette,

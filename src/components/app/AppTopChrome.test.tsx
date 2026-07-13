@@ -63,6 +63,8 @@ function renderTopChrome(
       onToggleOutline={vi.fn()}
       onTogglePreview={vi.fn()}
       onToggleReference={vi.fn()}
+      openFileTabsLabel="Open file tabs"
+      openFilesLabel="Open files"
       recoveryCopy={getRecoveryCopy("en")}
       shouldSuppressTabClick={() => false}
       selectedImage={null}
@@ -86,6 +88,18 @@ describe("AppTopChrome", () => {
     renderTopChrome();
 
     expect(screen.queryByRole("button", { name: "New File" })).toBeNull();
+  });
+
+  it("uses localized names for the tab row and tab list", () => {
+    renderTopChrome({
+      openFileTabsLabel: "開いているファイルの一覧",
+      openFilesLabel: "開いているファイル",
+    });
+
+    expect(screen.getByLabelText("開いているファイル")).toBeTruthy();
+    expect(
+      screen.getByRole("tablist", { name: "開いているファイルの一覧" }),
+    ).toBeTruthy();
   });
 
   it("marks top chrome gaps as Tauri drag regions without making tabs draggable", () => {

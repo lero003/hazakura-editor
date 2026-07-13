@@ -35,6 +35,8 @@ type TabBarProps = {
     tabId: string,
   ) => void;
   onTabPointerMove: (event: ReactPointerEvent<HTMLDivElement>) => void;
+  openFileTabsLabel: string;
+  openFilesLabel: string;
   shouldSuppressTabClick: () => boolean;
   selectedImage: ImagePreviewState | null;
   tabs: EditorTab[];
@@ -89,6 +91,8 @@ export function TabBar({
   onTabContextMenu,
   onTabPointerDown,
   onTabPointerMove,
+  openFileTabsLabel,
+  openFilesLabel,
   shouldSuppressTabClick,
   selectedImage,
   tabs,
@@ -174,7 +178,7 @@ export function TabBar({
     <section
       className="tabs-row lmode-surface"
       data-tauri-drag-region="deep"
-      aria-label="Open files"
+      aria-label={openFilesLabel}
       onPointerEnter={onPointerEnter}
     >
       <div
@@ -184,7 +188,7 @@ export function TabBar({
         onMouseDown={handleWindowDragMouseDown}
       />
       {leadingControl}
-      <div className="tab-list" role="tablist" aria-label="Open file tabs">
+      <div className="tab-list" role="tablist" aria-label={openFileTabsLabel}>
         {showEmptyState ? (
           <span className="empty-tabs">{emptyTabsLabel}</span>
         ) : (
