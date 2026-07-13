@@ -5,6 +5,7 @@ import {
   getLModeCopy,
   getRecoveryCopy,
   getSidePaneCopy,
+  getWorkspaceFileOpsCopy,
 } from "../../lib/locale";
 import { defaultEditorSettings } from "../../lib/editorSettingsDefaults";
 import type { EditorTab } from "../../types";
@@ -144,6 +145,40 @@ describe("AppTopChrome", () => {
     expect(
       screen.queryByRole("button", { name: "Close draft.md" }),
     ).toBeNull();
+  });
+
+  it("uses the active locale for a dirty tab description", () => {
+    const tab: EditorTab = {
+      contents: "draft",
+      encoding: "utf-8",
+      error: null,
+      externalFingerprint: null,
+      fingerprint: "fp",
+      ignoredExternalFingerprint: null,
+      id: "/workspace/draft.md",
+      sessionId: "session:draft",
+      large_file_warning: false,
+      lastSavedContents: "saved",
+      lastSavedEncoding: "utf-8",
+      lastSavedLineEnding: "lf",
+      line_ending: "lf",
+      modified_ms: null,
+      name: "draft.md",
+      path: "/workspace/draft.md",
+      saveStatus: "idle",
+      size: 10,
+    };
+
+    renderTopChrome({
+      activeDirty: true,
+      activeTabId: tab.id,
+      tabs: [tab],
+      unsavedFileStateLabel: getWorkspaceFileOpsCopy("ja").unsavedOpenFileState,
+    });
+
+    expect(
+      screen.getByRole("tab", { name: "draft.md", description: "未保存" }),
+    ).toBeTruthy();
   });
 
   it("marks top chrome gaps as Tauri drag regions without making tabs draggable", () => {

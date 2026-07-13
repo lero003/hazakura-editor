@@ -68,6 +68,7 @@ type AppTopChromeProps = {
   referencePaneVisible: boolean;
   selectedImage: ImagePreviewState | null;
   tabs: EditorTab[];
+  unsavedFileStateLabel?: string;
 };
 
 export function AppTopChrome({
@@ -111,6 +112,7 @@ export function AppTopChrome({
   referencePaneVisible,
   selectedImage,
   tabs,
+  unsavedFileStateLabel,
 }: AppTopChromeProps) {
   const showDevBadge = !lModeEnabled && isDeveloperDistributionLane();
 
@@ -140,6 +142,7 @@ export function AppTopChrome({
       onTabPointerMove={onTabPointerMove}
       openFileTabsLabel={openFileTabsLabel}
       openFilesLabel={openFilesLabel}
+      unsavedFileStateLabel={unsavedFileStateLabel}
       shouldSuppressTabClick={shouldSuppressTabClick}
       selectedImage={selectedImage}
       tabs={tabs}

@@ -1797,6 +1797,7 @@ export function useAppShellController() {
     emptyTabsLabel: safeEditorCopy.emptyTabs,
     openFileTabsLabel: safeEditorCopy.openFileTabs,
     openFilesLabel: safeEditorCopy.openFiles,
+    unsavedFileStateLabel: fileOpsCopy.unsavedOpenFileState,
     fileOpsCopy,
     encodingAriaLabel: editorChromeCopy.encodings,
     encodingLabel: editorChromeCopy.encoding,

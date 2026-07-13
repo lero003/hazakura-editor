@@ -38,6 +38,7 @@ type TabBarProps = {
   onTabPointerMove: (event: ReactPointerEvent<HTMLDivElement>) => void;
   openFileTabsLabel: string;
   openFilesLabel: string;
+  unsavedFileStateLabel?: string;
   shouldSuppressTabClick: () => boolean;
   selectedImage: ImagePreviewState | null;
   tabs: EditorTab[];
@@ -95,6 +96,7 @@ export function TabBar({
   onTabPointerMove,
   openFileTabsLabel,
   openFilesLabel,
+  unsavedFileStateLabel = "unsaved",
   shouldSuppressTabClick,
   selectedImage,
   tabs,
@@ -261,7 +263,7 @@ export function TabBar({
                           hidden
                           id={`tab-dirty-${encodeURIComponent(tab.id)}`}
                         >
-                          unsaved
+                          {unsavedFileStateLabel}
                         </span>
                       </>
                     ) : null}
