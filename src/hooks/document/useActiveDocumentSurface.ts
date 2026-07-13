@@ -46,8 +46,13 @@ export function useActiveDocumentSurface({
   selectionInfo,
   sidePaneMode,
 }: UseActiveDocumentSurfaceOptions) {
-  const { currentMarkdownHeading, documentHeadings, documentOutline } =
-    useDocumentOutline({
+  const {
+    currentMarkdownHeading,
+    documentHeadings,
+    documentOutline,
+    documentStructureItems,
+    documentStructureTruncated,
+  } = useDocumentOutline({
       activeContents,
       hasActiveDocument,
       selectionLine: selectionInfo.line,
@@ -95,6 +100,8 @@ export function useActiveDocumentSurface({
     currentMarkdownHeading,
     documentHeadings,
     documentOutline,
+    documentStructureItems,
+    documentStructureTruncated,
     scrollHudContext,
     scrollHudLine,
     scrollHudVisible,

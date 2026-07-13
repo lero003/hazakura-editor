@@ -6,7 +6,10 @@ import {
   type MarkdownOutline,
 } from "../../types";
 import { findCurrentMarkdownHeading } from "../../lib/utils";
-import { parseMarkdownStructure } from "../../features/editor/markdownStructure";
+import {
+  markdownStructureItems,
+  parseMarkdownStructure,
+} from "../../features/editor/markdownStructure";
 
 type UseDocumentOutlineOptions = {
   activeContents: string;
@@ -19,10 +22,24 @@ export function useDocumentOutline({
   hasActiveDocument,
   selectionLine,
 }: UseDocumentOutlineOptions) {
-  const documentOutline = useMemo(
-    () => (hasActiveDocument ? extractMarkdownOutline(activeContents) : null),
+  const documentStructure = useMemo(
+    () => (hasActiveDocument ? parseMarkdownStructure(activeContents) : null),
     [activeContents, hasActiveDocument],
   );
+  const documentOutline = useMemo(
+    () => (documentStructure ? extractMarkdownOutline(documentStructure) : null),
+    [documentStructure],
+  );
+  const allStructureItems = useMemo(
+    () => (documentStructure ? markdownStructureItems(documentStructure) : []),
+    [documentStructure],
+  );
+  const documentStructureItems = allStructureItems.slice(
+    0,
+    MARKDOWN_OUTLINE_MAX_HEADINGS,
+  );
+  const documentStructureTruncated =
+    allStructureItems.length > MARKDOWN_OUTLINE_MAX_HEADINGS;
   const documentHeadings = documentOutline?.headings ?? [];
   const currentMarkdownHeading = useMemo(
     () => findCurrentMarkdownHeading(documentHeadings, selectionLine),
@@ -33,6 +50,8 @@ export function useDocumentOutline({
     currentMarkdownHeading,
     documentHeadings,
     documentOutline,
+    documentStructureItems,
+    documentStructureTruncated,
   };
 }
 
@@ -46,8 +65,10 @@ export function useMarkdownHeadingContext(
   );
 }
 
-function extractMarkdownOutline(source: string): MarkdownOutline {
-  const navigationHeadings = parseMarkdownStructure(source).headings.filter(
+function extractMarkdownOutline(
+  structure: ReturnType<typeof parseMarkdownStructure>,
+): MarkdownOutline {
+  const navigationHeadings = structure.headings.filter(
     (heading) => heading.navigationLabel !== null,
   );
   const truncated =

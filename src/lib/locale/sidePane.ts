@@ -18,6 +18,8 @@ export type SidePaneCopy = {
   imagePreview: string;
   markdownPreview: string;
   outlineEmpty: string;
+  outlinePageBreak: string;
+  outlineTrailingPageBreak: string;
   outlineTab: string;
   outlineTabTitle: string;
   outlineTabTitleHide: string;
@@ -62,6 +64,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
       imagePreview: "ゑのしたみ",
       markdownPreview: "Markdown したみ",
       outlineEmpty: "このふみに Markdown のみだしはありません。",
+      outlinePageBreak: "ぺーじの きれめ",
+      outlineTrailingPageBreak: "さいごの ぺーじきれめ（ひょうじでは のぞく）",
       outlineTab: "みだし",
       outlineTabTitle: "みだしから もくてきの ばしょへ うつる",
       outlineTabTitleHide: "みだしを かくす",
@@ -110,6 +114,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         imagePreview: "画像プレビュー",
         markdownPreview: "Markdown プレビュー",
         outlineEmpty: "このファイルに Markdown 見出しはありません。",
+        outlinePageBreak: "ページ区切り",
+        outlineTrailingPageBreak: "末尾のページ区切り（表示では除外）",
         outlineTab: "アウトライン",
         outlineTabTitle: "見出しから目的の場所へ移動",
         outlineTabTitleHide: "アウトラインを隠す",
@@ -156,6 +162,8 @@ export function getSidePaneCopy(lang: MenuLanguage): SidePaneCopy {
         imagePreview: "Image Preview",
         markdownPreview: "Markdown preview",
         outlineEmpty: "This file has no Markdown headings.",
+        outlinePageBreak: "Page break",
+        outlineTrailingPageBreak: "Trailing page break (not rendered)",
         outlineTab: "Outline",
         outlineTabTitle: "Jump to a section from its headings",
         outlineTabTitleHide: "Hide outline",

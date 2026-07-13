@@ -26,11 +26,23 @@ export type MarkdownStructurePageBreak = {
   role: "page-break" | "drop";
 };
 
+export type MarkdownStructureItem =
+  | MarkdownStructureHeading
+  | MarkdownStructurePageBreak;
+
 export type MarkdownStructure = {
   frontmatter: MarkdownFrontmatterRange | null;
   headings: MarkdownStructureHeading[];
   pageBreaks: MarkdownStructurePageBreak[];
 };
+
+export function markdownStructureItems(
+  structure: MarkdownStructure,
+): MarkdownStructureItem[] {
+  return [...structure.headings, ...structure.pageBreaks].sort(
+    (left, right) => left.startOffset - right.startOffset,
+  );
+}
 
 type SourceLine = {
   line: number;

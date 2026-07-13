@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { parseMarkdownStructure } from "./markdownStructure";
+import {
+  markdownStructureItems,
+  parseMarkdownStructure,
+} from "./markdownStructure";
 
 describe("parseMarkdownStructure", () => {
   it("shares frontmatter, headings, page breaks, and navigation candidates", () => {
@@ -79,6 +82,17 @@ describe("parseMarkdownStructure", () => {
 
     expect(parseMarkdownStructure(source).pageBreaks).toEqual([
       expect.objectContaining({ line: 3, role: "drop" }),
+    ]);
+  });
+
+  it("returns headings and page breaks in source order for overview consumers", () => {
+    const source = "# One\n\n---\n\n### Three\n";
+    const items = markdownStructureItems(parseMarkdownStructure(source));
+
+    expect(items.map((item) => [item.kind, item.line])).toEqual([
+      ["heading", 1],
+      ["page-break", 3],
+      ["heading", 5],
     ]);
   });
 });

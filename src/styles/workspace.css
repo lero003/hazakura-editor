@@ -1905,6 +1905,14 @@
   font-weight: 700;
 }
 
+.outline-item-page-break {
+  color: var(--text-muted);
+}
+
+.outline-item-page-break .outline-text {
+  font-style: italic;
+}
+
 .outline-line {
   color: var(--text-muted);
   font-family: var(--font-mono);

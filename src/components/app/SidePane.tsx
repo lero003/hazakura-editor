@@ -22,6 +22,7 @@ import { DiffSetupPane } from "../diff/DiffSetupPane";
 import { OutlinePane } from "../editor/OutlinePane";
 import { PreviewUnavailablePane } from "../editor/preview/PreviewUnavailablePane";
 import type { EBookReaderLocation } from "../editor/preview/EBookPane";
+import type { MarkdownStructureItem } from "../../features/editor/markdownStructure";
 
 // PreviewPane pulls in marked + DOMPurify, which together add
 // ~150 kB gzipped to the main bundle. The preview is off by
@@ -44,7 +45,7 @@ type SidePaneProps = {
   compareView: CompareViewState | null;
   copy: SidePaneCopy;
   currentHeadingLine: number | null;
-  documentHeadings: MarkdownHeading[];
+  documentStructureItems: MarkdownStructureItem[];
   getCompareCaseByKey: (caseKey: string) => CompareCase | undefined;
   menuLanguage: MenuLanguage;
   onClearCompareSource: () => void;
@@ -57,7 +58,7 @@ type SidePaneProps = {
   onPreviewScroll: () => void;
   onPreviewViewStateChange: (state: PreviewViewState) => void;
   onRunSelectedFileCompare: () => void;
-  onSelectHeading: (heading: MarkdownHeading) => void;
+  onSelectHeading: (heading: Pick<MarkdownHeading, "line">) => void;
   outlineTruncated: boolean;
   previewPaneRef: RefObject<HTMLDivElement | null>;
   previewViewState: PreviewViewState | null;
@@ -75,7 +76,7 @@ export function SidePane({
   compareView,
   copy,
   currentHeadingLine,
-  documentHeadings,
+  documentStructureItems,
   getCompareCaseByKey,
   menuLanguage,
   onClearCompareSource,
@@ -194,7 +195,7 @@ export function SidePane({
         <OutlinePane
           copy={copy}
           currentHeadingLine={currentHeadingLine}
-          headings={documentHeadings}
+          items={documentStructureItems}
           onSelect={onSelectHeading}
           truncated={outlineTruncated}
         />

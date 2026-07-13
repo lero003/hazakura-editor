@@ -68,6 +68,7 @@ import type { ReferenceCompareState } from "../../features/referenceCompare/type
 import type { ReferenceCompareCopy } from "../../lib/locale/referenceCompare";
 import type { ReferenceNarrowFocus } from "../../features/referenceCompare/types";
 import { reviewPageIndices as collectReviewPageIndices } from "../../features/referenceCompare/importPageMarkers";
+import type { MarkdownStructureItem } from "../../features/editor/markdownStructure";
 
 const EBookPane = lazy(() => import("../editor/preview/EBookPane"));
 
@@ -102,6 +103,7 @@ type AppWorkspaceProps = {
   discardDraft: (draftPathOrKey: string) => void;
   currentHeadingLine: number | null;
   documentHeadings: MarkdownHeading[];
+  documentStructureItems: MarkdownStructureItem[];
   documentKey: string;
   editorPaneRef: RefObject<EditorPaneHandle | null>;
   editorPreviewGridRef: RefObject<HTMLDivElement | null>;
@@ -128,7 +130,7 @@ type AppWorkspaceProps = {
   ) => void;
   handleSendSelectionToAgent: (text: string) => void;
   hasWorkspaceSelection: boolean;
-  jumpToHeading: (heading: MarkdownHeading) => void;
+  jumpToHeading: (heading: Pick<MarkdownHeading, "line">) => void;
   onApplyBackup?: (documentPath: string, backupContents: string) => void;
   loadWorkspaceDirectory: (path: string) => Promise<void>;
   lModeCopy: LModeCopy;
@@ -227,6 +229,7 @@ export function AppWorkspace({
   discardDraft,
   currentHeadingLine,
   documentHeadings,
+  documentStructureItems,
   documentKey,
   editorPaneRef,
   editorPreviewGridRef,
@@ -731,7 +734,7 @@ export function AppWorkspace({
             copy={sidePaneCopy}
             getCompareCaseByKey={getCompareCaseByKey}
             currentHeadingLine={currentHeadingLine}
-            documentHeadings={documentHeadings}
+            documentStructureItems={documentStructureItems}
             menuLanguage={menuLanguage}
             onClearCompareSource={clearCompareSource}
             onClearCompareTarget={clearCompareTarget}

@@ -1,22 +1,24 @@
-import type { MarkdownHeading } from "../../types";
+import type { MarkdownStructureItem } from "../../features/editor/markdownStructure";
 
 export interface OutlinePaneCopy {
   documentOutline: string;
   outlineEmpty: string;
+  outlinePageBreak: string;
+  outlineTrailingPageBreak: string;
   outlineTruncated: string;
 }
 
 export function OutlinePane({
   copy,
   currentHeadingLine,
-  headings,
+  items,
   onSelect,
   truncated,
 }: {
   copy: OutlinePaneCopy;
   currentHeadingLine: number | null;
-  headings: MarkdownHeading[];
-  onSelect: (heading: MarkdownHeading) => void;
+  items: MarkdownStructureItem[];
+  onSelect: (item: MarkdownStructureItem) => void;
   truncated: boolean;
 }) {
   return (
@@ -24,25 +26,39 @@ export function OutlinePane({
       <div className="outline-pane-header">
         <span>{copy.documentOutline}</span>
       </div>
-      {headings.length > 0 ? (
+      {items.length > 0 ? (
         <>
           <div className="outline-list">
-            {headings.map((heading) => (
-              <button
-                aria-current={
-                  heading.line === currentHeadingLine ? "location" : undefined
-                }
-                className={`outline-item${heading.line === currentHeadingLine ? " current" : ""}`}
-                key={`${heading.line}-${heading.text}`}
-                onClick={() => onSelect(heading)}
-                style={{ paddingLeft: `${10 + (heading.level - 1) * 12}px` }}
-                title={`${heading.line}: ${heading.text}`}
-                type="button"
-              >
-                <span className="outline-line">{heading.line}</span>
-                <span className="outline-text">{heading.text}</span>
-              </button>
-            ))}
+            {items.map((item) => {
+              const isHeading = item.kind === "heading";
+              const label = isHeading
+                ? item.text
+                : item.role === "drop"
+                  ? copy.outlineTrailingPageBreak
+                  : copy.outlinePageBreak;
+              const current =
+                isHeading && item.line === currentHeadingLine;
+
+              return (
+                <button
+                  aria-label={`${item.line}: ${label}`}
+                  aria-current={current ? "location" : undefined}
+                  className={`outline-item outline-item-${item.kind}${current ? " current" : ""}`}
+                  key={`${item.kind}-${item.startOffset}`}
+                  onClick={() => onSelect(item)}
+                  style={{
+                    paddingLeft: isHeading
+                      ? `${10 + (item.level - 1) * 12}px`
+                      : "10px",
+                  }}
+                  title={`${item.line}: ${label}`}
+                  type="button"
+                >
+                  <span className="outline-line">{item.line}</span>
+                  <span className="outline-text">{label}</span>
+                </button>
+              );
+            })}
           </div>
           {truncated ? (
             <div className="outline-truncated" role="note">

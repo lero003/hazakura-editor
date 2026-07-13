@@ -22,6 +22,8 @@ describe("useDocumentOutline", () => {
 
     expect(result.current.documentOutline).toBeNull();
     expect(result.current.documentHeadings).toEqual([]);
+    expect(result.current.documentStructureItems).toEqual([]);
+    expect(result.current.documentStructureTruncated).toBe(false);
     expect(result.current.currentMarkdownHeading).toBeNull();
   });
 
@@ -68,6 +70,29 @@ describe("useDocumentOutline", () => {
       line: 3,
       text: "H3",
     });
+  });
+
+  it("returns hierarchy and page breaks in source order for the Outline surface", () => {
+    const source = "# Chapter\n\n---\n\n### Scene\n";
+    const { result } = renderHook(() =>
+      useDocumentOutline({
+        activeContents: source,
+        hasActiveDocument: true,
+        selectionLine: 1,
+      }),
+    );
+
+    expect(
+      result.current.documentStructureItems.map((item) => ({
+        kind: item.kind,
+        line: item.line,
+        level: item.kind === "heading" ? item.level : undefined,
+      })),
+    ).toEqual([
+      { kind: "heading", level: 1, line: 1 },
+      { kind: "page-break", level: undefined, line: 3 },
+      { kind: "heading", level: 3, line: 5 },
+    ]);
   });
 
   it("skips headings inside fenced code blocks", () => {
@@ -208,6 +233,7 @@ describe("useDocumentOutline", () => {
       MARKDOWN_OUTLINE_MAX_HEADINGS,
     );
     expect(result.current.documentOutline?.truncated).toBe(true);
+    expect(result.current.documentStructureTruncated).toBe(true);
   });
 
   it("returns no headings for contents with no headings", () => {

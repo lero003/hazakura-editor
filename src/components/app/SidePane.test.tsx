@@ -52,7 +52,7 @@ function sidePaneProps(
     compareView: null,
     copy: getSidePaneCopy("en"),
     currentHeadingLine: null,
-    documentHeadings: [],
+    documentStructureItems: [],
     getCompareCaseByKey: () => undefined,
     menuLanguage: "en",
     onApplyBackup: vi.fn(),

@@ -95,7 +95,7 @@ export function useEditorCommands({
   }, [editorPaneRef, setStatus]);
 
   const jumpToHeading = useCallback(
-    (heading: MarkdownHeading) => {
+    (heading: Pick<MarkdownHeading, "line">) => {
       editorPaneRef.current?.goToLine(heading.line);
       setStatus(`Moved to line ${heading.line}`);
     },
