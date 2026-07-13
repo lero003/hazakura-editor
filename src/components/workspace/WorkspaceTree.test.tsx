@@ -104,9 +104,11 @@ type RenderTreeOverrides = {
   dirtyFilePaths?: readonly string[];
   onSelectCompareFile?: (entry: WorkspaceTreeEntry) => void;
   onSubmitRename?: (srcPath: string, newName: string) => void;
+  openFileStateLabel?: string;
   renamingPath?: string | null;
   requestRename?: (path: string) => void;
   renameLabel?: string;
+  unsavedOpenFileStateLabel?: string;
 };
 
 function renderTree(overrides: RenderTreeOverrides = {}) {
@@ -149,10 +151,14 @@ function renderTree(overrides: RenderTreeOverrides = {}) {
       onOpenFile={onOpenFile}
       onSelectCompareFile={onSelectCompareFile}
       onSubmitRename={onSubmitRename}
+      openFileStateLabel={overrides.openFileStateLabel ?? "open"}
       openFilePaths={overrides.openFilePaths ?? []}
       renameLabel={overrides.renameLabel ?? "Rename"}
       renamingPath={overrides.renamingPath ?? null}
       requestRename={requestRename}
+      unsavedOpenFileStateLabel={
+        overrides.unsavedOpenFileStateLabel ?? "unsaved"
+      }
     />,
   );
 
@@ -215,6 +221,32 @@ describe("WorkspaceTree", () => {
     expect(dirtyOpenFile?.querySelector(".tree-open-marker")).not.toBeNull();
     expect(dirtyOpenFile?.querySelector(".tree-dirty-marker")).not.toBeNull();
     expect(dirtyOpenFile?.getAttribute("aria-label")).toContain("unsaved");
+  });
+
+  it("uses localized state labels for open and unsaved files", () => {
+    vi.useFakeTimers();
+
+    const { view } = renderTree({
+      dirtyFilePaths: [draftPath],
+      openFilePaths: [draftPath],
+      openFileStateLabel: "開いている",
+      unsavedOpenFileStateLabel: "未保存",
+    });
+
+    expandDirectory(view, sourceDirPath);
+
+    const dirtyOpenFile = view.container.querySelector(
+      `button[title="${draftPath}"]`,
+    );
+    expect(dirtyOpenFile?.getAttribute("aria-label")).toBe(
+      "draft.md, 開いている, 未保存",
+    );
+    expect(dirtyOpenFile?.querySelector(".tree-open-marker")?.getAttribute("title")).toBe(
+      "開いている",
+    );
+    expect(dirtyOpenFile?.querySelector(".tree-dirty-marker")?.getAttribute("title")).toBe(
+      "未保存",
+    );
   });
 
   it("drops a workspace entry onto only the target directory", () => {

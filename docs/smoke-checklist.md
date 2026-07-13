@@ -711,7 +711,8 @@ recovered state separately where relevant.
   TestFlight. Locale coverage also pins the same toolbar key set and the
   English / Japanese / kana labels; the contextual Slash command listbox and
   open-file tab row/list and primary Editor pane have corresponding localized
-  accessible-name regressions.
+  accessible-name regressions. Workspace file rows also expose localized open /
+  unsaved state labels in the source tree contract.
 - App Store surface smoke on 2026-07-13: `npm run smoke:app-store-surface`
   passed (**10 files / 97 tests**) for pane controls, Command Palette, settings,
   review-state, and distribution-lane contracts.

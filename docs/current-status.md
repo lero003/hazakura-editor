@@ -69,6 +69,8 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   list containers also use localized names for the active menu language.
   The primary Editor pane label now follows the same locale contract, with
   focused EditorMainPane and Safe Editor copy coverage.
+  Workspace file rows now localize the open / unsaved state announced to
+  assistive technology, with WorkspaceTree and file-ops locale coverage.
   The App Store surface smoke also passed on 2026-07-13 (**10 files / 97
   tests**), covering pane controls, Command Palette, settings, review-state,
   and distribution-lane contracts.

@@ -233,10 +233,12 @@ export function WorkspaceSidebar({
           onOpenFile={onOpenFile}
           onSelectCompareFile={onSelectCompareFile}
           onSubmitRename={onSubmitRename}
+          openFileStateLabel={fileOpsCopy.openFileState}
           openFilePaths={openFilePaths}
           renameLabel={fileOpsCopy.rename}
           renamingPath={renamingPath}
           requestRename={requestRename}
+          unsavedOpenFileStateLabel={fileOpsCopy.unsavedOpenFileState}
         />
       ) : (
         <div className="workspace-empty">

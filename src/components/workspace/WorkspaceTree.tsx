@@ -63,10 +63,12 @@ function TreeEntry({
   onOpenFile,
   onSelectCompareFile,
   onSubmitRename,
+  openFileStateLabel,
   openFilePaths,
   renameLabel,
   renamingPath,
   requestRename,
+  unsavedOpenFileStateLabel,
   onClearRenaming,
 }: {
   activePath: string | null;
@@ -89,8 +91,10 @@ function TreeEntry({
   onOpenFile: (path: string) => void | Promise<void>;
   onSelectCompareFile: (entry: WorkspaceTreeEntry) => void;
   onSubmitRename: (srcPath: string, newName: string) => void;
+  openFileStateLabel: string;
   openFilePaths: ReadonlySet<string>;
   renameLabel: string;
+  unsavedOpenFileStateLabel: string;
 }) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [loading, setLoading] = useState(false);
@@ -137,9 +141,9 @@ function TreeEntry({
     const isOpen = openFilePaths.has(entry.path);
     const isDirtyOpen = dirtyFilePaths.has(entry.path);
     const fileStateLabel = isDirtyOpen
-      ? `${entry.name}, open, unsaved`
+      ? `${entry.name}, ${openFileStateLabel}, ${unsavedOpenFileStateLabel}`
       : isOpen
-        ? `${entry.name}, open`
+        ? `${entry.name}, ${openFileStateLabel}`
         : entry.name;
     const handleFileClick = () => {
       cancelPendingSingleClick();
@@ -217,14 +221,14 @@ function TreeEntry({
           <span
             aria-hidden="true"
             className="tree-open-marker"
-            title="Open file"
+            title={openFileStateLabel}
           />
         ) : null}
         {isDirtyOpen ? (
           <span
             aria-hidden="true"
             className="tree-dirty-marker"
-            title="Unsaved open file"
+            title={unsavedOpenFileStateLabel}
           />
         ) : null}
       </button>
@@ -355,10 +359,12 @@ function TreeEntry({
               onOpenFile={onOpenFile}
               onSelectCompareFile={onSelectCompareFile}
               onSubmitRename={onSubmitRename}
+              openFileStateLabel={openFileStateLabel}
               openFilePaths={openFilePaths}
               renameLabel={renameLabel}
               renamingPath={renamingPath}
               requestRename={requestRename}
+              unsavedOpenFileStateLabel={unsavedOpenFileStateLabel}
               onClearRenaming={onClearRenaming}
             />
           ))}
@@ -453,10 +459,12 @@ export function WorkspaceTree({
   onOpenFile,
   onSelectCompareFile,
   onSubmitRename,
+  openFileStateLabel,
   openFilePaths,
   renameLabel,
   renamingPath,
   requestRename,
+  unsavedOpenFileStateLabel,
 }: {
   activePath: string | null;
   compareSourcePath: string | null;
@@ -475,10 +483,12 @@ export function WorkspaceTree({
   onOpenFile: (path: string) => void | Promise<void>;
   onSelectCompareFile: (entry: WorkspaceTreeEntry) => void;
   onSubmitRename: (srcPath: string, newName: string) => void;
+  openFileStateLabel: string;
   openFilePaths: readonly string[];
   renameLabel: string;
   renamingPath: string | null;
   requestRename: (path: string) => void;
+  unsavedOpenFileStateLabel: string;
 }) {
   // The renaming path is owned here, not by the controller, so the
   // input is local to the tree. The controller only sees the
@@ -530,10 +540,12 @@ export function WorkspaceTree({
         onOpenFile={onOpenFile}
         onSelectCompareFile={onSelectCompareFile}
         onSubmitRename={onSubmitRename}
+        openFileStateLabel={openFileStateLabel}
         openFilePaths={openPathSet}
         renameLabel={renameLabel}
         renamingPath={renamingPath}
         requestRename={requestRename}
+        unsavedOpenFileStateLabel={unsavedOpenFileStateLabel}
         onClearRenaming={() => requestRename("")}
       />
     </div>
