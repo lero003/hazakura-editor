@@ -93,4 +93,13 @@ describe("getPreferencesCopy.themeHint", () => {
       expect(kanaHint, `kana hint for ${theme}`).not.toBe(enHint);
     }
   });
+
+  it("keeps kana theme hints free of the known split-word corruption", () => {
+    const kana = getPreferencesCopy("kana");
+    for (const theme of ["edohigan", "crt", "shinkai"] as const) {
+      expect(kana.themeHint(theme)).toContain("じょうだんてーまです。");
+      expect(kana.themeHint(theme)).not.toContain("じょうけ ん て ま す");
+    }
+    expect(kana.themeHint("shokou")).toContain("おもわせる");
+  });
 });
