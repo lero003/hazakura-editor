@@ -109,8 +109,10 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    Japanese / kana. A latest-HEAD Developer bundle AX pass confirmed the
    Japanese and kana names; actual VoiceOver speech remains manual.
    The Reference Compare empty-editor hint now has an explicit polite live
-   region and an AppWorkspace regression test, while packaged spoken VoiceOver
-   remains a separate proof boundary.
+   region and an AppWorkspace regression test. Its narrow-pane Draft /
+   Reference toggles now expose `aria-pressed`, with a focused regression that
+   pins the selected target; packaged spoken VoiceOver remains a separate proof
+   boundary.
    `npm run smoke:app-store-surface` passed on 2026-07-13 (**10 files / 96
    tests**); this is source/App Store-lane surface evidence, not signed
    TestFlight or spoken VoiceOver evidence.

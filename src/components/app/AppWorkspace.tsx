@@ -564,6 +564,7 @@ export function AppWorkspace({
           <div className="reference-narrow-switch" role="toolbar">
             <button
               type="button"
+              aria-pressed={referenceNarrowFocus === "editor"}
               className={referenceNarrowFocus === "editor" ? "is-active" : ""}
               onClick={() => setReferenceNarrowFocus("editor")}
             >
@@ -571,6 +572,7 @@ export function AppWorkspace({
             </button>
             <button
               type="button"
+              aria-pressed={referenceNarrowFocus === "reference"}
               className={
                 referenceNarrowFocus === "reference" ? "is-active" : ""
               }

@@ -60,7 +60,9 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   rename inputs use the active English / Japanese / kana label rather than an
   English-only accessible name; packaged VoiceOver smoke remains required. The
   Reference Compare empty-editor hint now carries an explicit polite live-region
-  contract, with a focused AppWorkspace regression.
+  contract, with a focused AppWorkspace regression. Its narrow-pane Draft /
+  Reference toggle buttons now expose `aria-pressed`, with a focused regression
+  that pins the selected target for assistive technology.
   The App Store surface smoke also passed on 2026-07-13 (**10 files / 96
   tests**), covering pane controls, Command Palette, settings, review-state,
   and distribution-lane contracts.

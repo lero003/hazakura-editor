@@ -704,8 +704,10 @@ recovered state separately where relevant.
   Picker interaction and signed TestFlight behavior remain separate evidence.
 - Source a11y follow-up on 2026-07-13 added an explicit `aria-live="polite"`
   contract to the Reference Compare empty-editor hint. Focused AppWorkspace
-  coverage and the full frontend suite passed; this improves the source
-  announcement path but does not claim spoken VoiceOver or signed TestFlight.
+  coverage and the full frontend suite passed; the narrow-pane Draft /
+  Reference toggles now also expose `aria-pressed` and have a focused regression.
+  This improves the source announcement/selection path but does not claim
+  spoken VoiceOver or signed TestFlight.
 - App Store surface smoke on 2026-07-13: `npm run smoke:app-store-surface`
   passed (**10 files / 96 tests**) for pane controls, Command Palette, settings,
   review-state, and distribution-lane contracts.

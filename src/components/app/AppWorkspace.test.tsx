@@ -1185,6 +1185,62 @@ describe("AppWorkspace reference compare layout", () => {
     expect(hint?.getAttribute("aria-live")).toBe("polite");
   });
 
+  it("exposes the active narrow-pane target as a pressed state", () => {
+    const tab = makeTab({ contents: "# draft" });
+    const referenceCompare = {
+      externalChangePending: false,
+      followMode: "off" as const,
+      linkedEditorSessionId: null,
+      origin: "manual" as const,
+      reference: {
+        contents: "# style guide",
+        encoding: "utf-8" as const,
+        kind: "text" as const,
+        name: "guide.md",
+        path: "/workspace/guide.md",
+      },
+      sourceFingerprint: null,
+    };
+    const sharedProps = {
+      activeContents: tab.contents,
+      activeTab: tab,
+      hasWorkspaceSelection: true,
+      referenceCompare,
+      referencePaneVisible: true,
+      referenceNarrowFocus: "editor",
+      tabs: [tab],
+      workspaceRootPath: "/workspace",
+    } as const;
+    const { rerender } = renderWorkspace(sharedProps);
+
+    expect(
+      screen
+        .getByRole("button", { name: "Draft (editable)" })
+        .getAttribute("aria-pressed"),
+    ).toBe("true");
+    expect(
+      screen.getByRole("button", { name: "Reference" }).getAttribute(
+        "aria-pressed",
+      ),
+    ).toBe("false");
+
+    rerenderWorkspace(rerender, {
+      ...sharedProps,
+      referenceNarrowFocus: "reference" as const,
+    });
+
+    expect(
+      screen
+        .getByRole("button", { name: "Draft (editable)" })
+        .getAttribute("aria-pressed"),
+    ).toBe("false");
+    expect(
+      screen.getByRole("button", { name: "Reference" }).getAttribute(
+        "aria-pressed",
+      ),
+    ).toBe("true");
+  });
+
   it("places the editor before the right-hand reference pane (preview-like)", () => {
     const tab = makeTab({
       contents: "# draft",
