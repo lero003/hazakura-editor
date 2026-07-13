@@ -82,6 +82,11 @@ Last reviewed: 2026-07-13 (v1.7 published; v1.8 Daily Trust active)
   The installed public `1.7.0` build `85` also passed `⌘⇧P` Command Palette,
   `⌘⇧F` Global Search, and native 表示-menu traversal on 2026-07-13; this is
   keyboard/menu evidence, not spoken VoiceOver or signed TestFlight evidence.
+  The latest local App Store preview bundle also passed `smoke:macos-window`
+  with a 1282x822 onscreen window, and its macOS accessibility tree exposed
+  the Japanese tab row/list, tab close names, pane controls, workspace tree,
+  and Editor region. This is packaged AX-tree evidence only, not spoken
+  VoiceOver or signed TestFlight evidence.
   A local Poppler render review of the existing nine-page PDF inspected pages
   1–3 with no clipping and white edge samples on all four corners. Poppler
   reported a local `Adobe-Japan1` language-pack limitation, so the disposable

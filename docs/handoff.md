@@ -127,6 +127,11 @@ Use `docs/current-work.md` for the active queue. Current priority order:
    `npm run smoke:app-store-surface` passed on 2026-07-13 (**10 files / 99
    tests**); this is source/App Store-lane surface evidence, not signed
    TestFlight or spoken VoiceOver evidence.
+   The latest local App Store preview bundle also passed
+   `smoke:macos-window` with a 1282x822 onscreen window; its macOS
+   accessibility tree exposed the Japanese tab row/list, tab close names,
+   pane controls, workspace tree, and Editor region. This remains AX-tree
+   evidence only, not spoken VoiceOver or signed TestFlight evidence.
    Local Poppler rendering of PDF pages 1–3 found no clipping and white four-
    corner edge samples, but reported a local `Adobe-Japan1` language-pack
    limitation. A disposable Japanese Markdown fixture was exported to a

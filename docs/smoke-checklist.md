@@ -667,6 +667,12 @@ recovered state separately where relevant.
   source-built App Store preview. Deep signature verification succeeded; the
   app carried sandbox, user-selected read/write, and app-scoped bookmark
   entitlements; both bundled helpers carried sandbox + inherit entitlements.
+- On 2026-07-13, the latest local App Store preview bundle passed
+  `SKIP_BUILD=1 bash scripts/smoke-macos-window.sh` with an onscreen
+  1282x822 window. A packaged AX-tree inspection of the same bundle exposed
+  the Japanese tab row/list, tab close names, pane controls, workspace tree,
+  and Editor region; this does not claim spoken VoiceOver or signed TestFlight
+  interaction.
 - Window launch smoke was intentionally not run because the script first quits
   an existing app with the same bundle ID. This pass did not interrupt the
   user's running Hazakura Editor and does not claim picker interaction.
